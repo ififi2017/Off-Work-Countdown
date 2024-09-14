@@ -30,7 +30,7 @@ git clone https://github.com/ififi2017/off-work-30.git
 
 2. Install dependencies:
 ```
-cd off-work-countdown
+cd off-work-30
 npm install
 ```
 
