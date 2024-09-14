@@ -25,12 +25,12 @@ Off Work Countdown is a Next.js-based web application that helps you keep track 
 
 1. Clone the repository:
 ```
-git clone https://github.com/ififi2017/off-work-30.git
+git clone https://github.com/ififi2017/Off-Work-Countdown.git
 ```
 
 2. Install dependencies:
 ```
-cd off-work-30
+cd Off-Work-Countdown
 npm install
 ```
 
