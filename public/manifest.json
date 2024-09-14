@@ -4,7 +4,7 @@
     "description": "倒计时显示距离下班还有多长时间",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
+    "background_color": "#F3F4F6",
     "theme_color": "#F3F4F6",
     "icons": [
       {
