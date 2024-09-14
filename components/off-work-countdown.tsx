@@ -14,7 +14,16 @@ import { Switch } from "@/components/ui/switch";
 import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Helper function to safely get item from localStorage
+const getLocalStorageItem = (key: string, defaultValue: string) => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem(key) || defaultValue;
+  }
+  return defaultValue;
+};
+
 export function OffWorkCountdown() {
+  const isFirstRender = useRef(true);
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [reminder, setReminder] = useState(false);
@@ -23,6 +32,23 @@ export function OffWorkCountdown() {
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
   const progressBarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      // 如果是初次渲染，从 localStorage 加载值
+      setStartTime(getLocalStorageItem("startTime", "09:00"));
+      setEndTime(getLocalStorageItem("endTime", "18:00"));
+      setReminder(getLocalStorageItem("reminder", "false") === "true");
+      setGradient(getLocalStorageItem("gradient", "false") === "true");
+      isFirstRender.current = false;
+    } else {
+      // 如果不是初次渲染，将值保存到 localStorage
+      localStorage.setItem("startTime", startTime);
+      localStorage.setItem("endTime", endTime);
+      localStorage.setItem("reminder", reminder.toString());
+      localStorage.setItem("gradient", gradient.toString());
+    }
+  }, [startTime, endTime, reminder, gradient]);
 
   const calculateProgress = useCallback(() => {
     const now = new Date();
