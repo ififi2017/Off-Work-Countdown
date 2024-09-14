@@ -15,10 +15,18 @@ import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function OffWorkCountdown() {
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("18:00");
-  const [reminder, setReminder] = useState(false);
-  const [gradient, setGradient] = useState(false);
+  const [startTime, setStartTime] = useState(
+    localStorage.getItem("startTime") || "09:00"
+  );
+  const [endTime, setEndTime] = useState(
+    localStorage.getItem("endTime") || "18:00"
+  );
+  const [reminder, setReminder] = useState(
+    localStorage.getItem("reminder") === "true"
+  );
+  const [gradient, setGradient] = useState(
+    localStorage.getItem("gradient") === "true"
+  );
   const [showCountdown, setShowCountdown] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
@@ -42,6 +50,13 @@ export function OffWorkCountdown() {
       );
     }
   }, [startTime, endTime]);
+
+  useEffect(() => {
+    localStorage.setItem("startTime", startTime);
+    localStorage.setItem("endTime", endTime);
+    localStorage.setItem("reminder", reminder.toString());
+    localStorage.setItem("gradient", gradient.toString());
+  }, [startTime, endTime, reminder, gradient]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
