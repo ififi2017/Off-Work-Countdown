@@ -211,7 +211,7 @@ export function OffWorkCountdown() {
                 className="space-y-4"
               >
                 <div className="text-4xl font-bold text-center">{timeLeft}</div>
-                <div className="relative pt-10 px-3" ref={progressBarRef}>
+                <div className="relative pt-10" ref={progressBarRef}>
                   <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                     <motion.div
                       className="h-full bg-primary"
