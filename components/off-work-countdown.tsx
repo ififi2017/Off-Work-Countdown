@@ -104,6 +104,13 @@ export function OffWorkCountdown() {
   }, [showCountdown, startTime, endTime, reminder, calculateProgress]);
 
   const handleStart = () => {
+    const now = new Date();
+    const start = new Date(now.toDateString() + " " + startTime);
+    if (start > now) {
+      alert("上班时间不能是未来的时间！");
+      return;
+    }
+
     if (startTime && endTime) {
       setShowCountdown(true);
       setProgress(calculateProgress()); // Set initial progress
