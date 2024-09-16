@@ -2,8 +2,6 @@
 
 Off Work Countdown is a Next.js-based web application that helps you keep track of the time remaining until the end of your workday. With a sleek and interactive interface, this app provides a visual countdown and progress bar to make your workday more manageable.
 
-[中文版 README](README_CN.md)
-
 ## Features
 
 - Set custom work start and end times
