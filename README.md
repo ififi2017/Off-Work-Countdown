@@ -11,6 +11,7 @@ Off Work Countdown is a Next.js-based web application that helps you keep track 
 - Animated gradient background option
 - Progressive Web App (PWA) support for offline use
 - Responsive design for various devices
+- Multi-language support (i18n)
 
 ## Technologies Used
 
@@ -20,6 +21,7 @@ Off Work Countdown is a Next.js-based web application that helps you keep track 
 - Tailwind CSS
 - Framer Motion
 - next-pwa
+- next-i18next
 
 ## Getting Started
 
@@ -49,6 +51,7 @@ npm run dev
 4. Click "Start Countdown" to begin tracking your workday.
 5. The app will display the remaining time and a progress bar.
 6. You can return to the settings at any time by clicking the "Return" button.
+7. Use the language selector to switch between available languages.
 
 ## PWA Support
 
@@ -62,6 +65,17 @@ This app supports Progressive Web App features, allowing you to install it on yo
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+### Adding Language Support
+
+We're looking to expand our app's language support. If you'd like to contribute translations:
+
+1. Fork the repository and create a new branch for your language.
+2. Create a new folder for your language in the `public/locales` directory (e.g., `fr/translation.json` for French).
+3. Translate all the strings in the new language file.
+4. Update the language selector component to include the new language option.
+5. Test the app thoroughly with the new language.
+6. Submit a pull request with your changes.
+
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
@@ -72,3 +86,4 @@ Special thanks to:
 - [@v0.dev](https://v0.dev/) for AI assistance in component design
 - [@cursor.com](https://www.cursor.com/) for AI-powered coding assistance
 - [@claude.ai](https://claude.ai/chats) and [@chatgpt.com](https://chatgpt.com/) for large language model support in development
+- [@vercel.com](https://vercel.com/) for providing hosting and deployment services
