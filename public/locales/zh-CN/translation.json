@@ -1,0 +1,15 @@
+{
+    "offWorkCountdown": "下班倒计时",
+    "startTime": "上班时间",
+    "endTime": "下班时间",
+    "reminder": "下班前15分钟提醒我",
+    "gradient": "背景渐变流动色彩",
+    "startCountdown": "开始倒计时",
+    "return": "返回",
+    "timeLeft": "{{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+    "offWorkTime": "下班时间到！",
+    "offWorkReminder": "下班提醒",
+    "fifteenMinutesLeft": "距离下班还有15分钟！",
+    "futureStartTimeError": "上班时间不能是未来的时间！",
+    "chooselanguage": "选择语言"
+  }

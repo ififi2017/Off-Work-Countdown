@@ -1,0 +1,15 @@
+{
+    "offWorkCountdown": "退勤カウントダウン",
+    "startTime": "開始時間",
+    "endTime": "終了時間",
+    "reminder": "退勤15分前にリマインド",
+    "gradient": "アニメーション付きグラデーション背景",
+    "startCountdown": "カウントダウン開始",
+    "return": "戻る",
+    "timeLeft": "{{hours}}時間 {{minutes}}分 {{seconds}}秒",
+    "offWorkTime": "退勤時間！",
+    "offWorkReminder": "退勤リマインダー",
+    "fifteenMinutesLeft": "あと15分！",
+    "futureStartTimeError": "開始時間は未来の時間に設定できません！",
+    "chooselanguage": "言語を選択"
+  }

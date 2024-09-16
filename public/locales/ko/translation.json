@@ -1,0 +1,15 @@
+{
+    "offWorkCountdown": "퇴근 카운트다운",
+    "startTime": "시작 시간",
+    "endTime": "종료 시간",
+    "reminder": "퇴근 15분 전에 알림",
+    "gradient": "애니메이션 그라데이션 배경",
+    "startCountdown": "카운트다운 시작",
+    "return": "돌아가기",
+    "timeLeft": "{{hours}}시간 {{minutes}}분 {{seconds}}초",
+    "offWorkTime": "퇴근 시간!",
+    "offWorkReminder": "퇴근 알림",
+    "fifteenMinutesLeft": "15분 남았습니다!",
+    "futureStartTimeError": "시작 시간은 미래 시간이 될 수 없습니다!",
+    "chooselanguage": "언어 선택"
+  }

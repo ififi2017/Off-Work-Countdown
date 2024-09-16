@@ -2,6 +2,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import type { Metadata } from "next";
+import { I18nProvider } from "@/components/I18nProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -36,13 +37,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang={typeof window !== "undefined" ? window.navigator.language : "en"}
+    >
       <link rel="manifest" href="/manifest.json" />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ServiceWorkerRegistration />
-        {children}
+        <I18nProvider>
+          <ServiceWorkerRegistration />
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

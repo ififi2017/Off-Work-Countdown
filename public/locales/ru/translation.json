@@ -1,0 +1,15 @@
+{
+    "offWorkCountdown": "Обратный отсчет до конца работы",
+    "startTime": "Время начала",
+    "endTime": "Время окончания",
+    "reminder": "Напомнить за 15 минут до конца работы",
+    "gradient": "Анимированный градиентный фон",
+    "startCountdown": "Начать обратный отсчет",
+    "return": "Вернуться",
+    "timeLeft": "{{hours}}ч {{minutes}}м {{seconds}}с",
+    "offWorkTime": "Время окончания работы!",
+    "offWorkReminder": "Напоминание о конце работы",
+    "fifteenMinutesLeft": "Осталось пятнадцать минут!",
+    "futureStartTimeError": "Время начала не может быть будущим временем!",
+    "chooselanguage": "Выбрать язык"
+  }

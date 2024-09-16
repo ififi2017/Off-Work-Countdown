@@ -1,0 +1,15 @@
+{
+    "offWorkCountdown": "Cuenta regresiva para salir del trabajo",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de finalización",
+    "reminder": "Recuérdame 15 minutos antes de salir del trabajo",
+    "gradient": "Fondo de degradado animado",
+    "startCountdown": "Iniciar cuenta regresiva",
+    "return": "Regresar",
+    "timeLeft": "{{hours}}h {{minutes}}m {{seconds}}s",
+    "offWorkTime": "¡Hora de salir del trabajo!",
+    "offWorkReminder": "Recordatorio de salida del trabajo",
+    "fifteenMinutesLeft": "¡Quedan quince minutos!",
+    "futureStartTimeError": "¡La hora de inicio no puede ser una hora futura!",
+    "chooselanguage": "Elige idioma"
+  }

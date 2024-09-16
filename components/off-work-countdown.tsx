@@ -9,10 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -32,6 +40,42 @@ export function OffWorkCountdown() {
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
   const progressBarRef = useRef<HTMLDivElement>(null);
+  const { t, i18n } = useTranslation();
+  const [isMounted, setIsMounted] = useState(false);
+  const [language, setLanguage] = useState("en"); // 默认值设为 "en"
+  const languageMap = {
+    de: "Deutsch",
+    "en-US": "English",
+    es: "Español",
+    fr: "Français",
+    it: "Italiano",
+    ja: "日本語",
+    ko: "한국어",
+    pt: "Português",
+    ru: "Русский",
+    "zh-CN": "简体中文",
+    "zh-TW": "繁體中文",
+  };
+
+  useEffect(() => {
+    setIsMounted(true);
+    const storedLang = getLocalStorageItem("i18nextLng", "en");
+    setLanguage(storedLang);
+
+    const handleStorageChange = () => {
+      const newStoredLang = getLocalStorageItem("i18nextLng", "en");
+      setLanguage(newStoredLang);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    setLanguage(lng);
+    localStorage.setItem("i18nextLng", lng);
+  };
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -80,34 +124,36 @@ export function OffWorkCountdown() {
 
         const diff = end.getTime() - now.getTime();
         if (diff <= 0) {
-          setTimeLeft("下班时间到！");
+          setTimeLeft(t("offWorkTime"));
           setProgress(100);
           clearInterval(interval);
         } else {
           const hours = Math.floor(diff / (1000 * 60 * 60));
           const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-          setTimeLeft(`${hours}小时 ${minutes}分钟 ${seconds}秒`);
+          setTimeLeft(t("timeLeft", { hours, minutes, seconds }));
 
           setProgress(calculateProgress());
 
           if (reminder && diff <= 15 * 60 * 1000 && diff > 14 * 60 * 1000) {
-            new Notification("下班提醒", { body: "距离下班还有15分钟！" });
+            new Notification(t("offWorkReminder"), {
+              body: t("fifteenMinutesLeft"),
+            });
           }
         }
       };
 
-      updateCountdown(); // Run immediately
+      updateCountdown(); // 立即运行
       interval = setInterval(updateCountdown, 1000);
     }
     return () => clearInterval(interval);
-  }, [showCountdown, startTime, endTime, reminder, calculateProgress]);
+  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t]);
 
   const handleStart = () => {
     const now = new Date();
     const start = new Date(now.toDateString() + " " + startTime);
     if (start > now) {
-      alert("上班时间不能是未来的时间！");
+      alert(t("futureStartTimeError"));
       return;
     }
 
@@ -146,9 +192,28 @@ export function OffWorkCountdown() {
     >
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            下班倒计时
-          </CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-2xl font-bold">
+              {t("offWorkCountdown")}
+            </CardTitle>
+            <Select onValueChange={changeLanguage} value={language}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue>
+                  {isMounted
+                    ? languageMap[language as keyof typeof languageMap] ||
+                      language
+                    : null}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(languageMap).map(([code, name]) => (
+                  <SelectItem key={code} value={code}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           <AnimatePresence mode="wait">
@@ -162,7 +227,7 @@ export function OffWorkCountdown() {
                 className="space-y-4"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="startTime">上班时间</Label>
+                  <Label htmlFor="startTime">{t("startTime")}</Label>
                   <select
                     id="startTime"
                     value={startTime}
@@ -177,7 +242,7 @@ export function OffWorkCountdown() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="endTime">下班时间</Label>
+                  <Label htmlFor="endTime">{t("endTime")}</Label>
                   <select
                     id="endTime"
                     value={endTime}
@@ -197,7 +262,7 @@ export function OffWorkCountdown() {
                     checked={reminder}
                     onCheckedChange={setReminder}
                   />
-                  <Label htmlFor="reminder">下班前15分钟提醒我</Label>
+                  <Label htmlFor="reminder">{t("reminder")}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
@@ -205,7 +270,7 @@ export function OffWorkCountdown() {
                     checked={gradient}
                     onCheckedChange={setGradient}
                   />
-                  <Label htmlFor="gradient">背景渐变流动色彩</Label>
+                  <Label htmlFor="gradient">{t("gradient")}</Label>
                 </div>
               </motion.div>
             ) : (
@@ -233,7 +298,7 @@ export function OffWorkCountdown() {
                   <motion.div
                     className="absolute top-0 left-0 transform -translate-y-full"
                     style={{
-                      left: `calc(${progress}%)`, // 调整这里的偏移量
+                      left: `calc(${progress}%)`,
                       x: "-50%",
                     }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -260,7 +325,7 @@ export function OffWorkCountdown() {
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
               >
-                <Button onClick={handleStart}>开始倒计时</Button>
+                <Button onClick={handleStart}>{t("startCountdown")}</Button>
               </motion.div>
             ) : (
               <motion.div
@@ -271,7 +336,7 @@ export function OffWorkCountdown() {
                 transition={{ duration: 0.3 }}
               >
                 <Button variant="outline" onClick={handleReturn}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> 返回
+                  <ArrowLeft className="mr-2 h-4 w-4" /> {t("return")}
                 </Button>
               </motion.div>
             )}

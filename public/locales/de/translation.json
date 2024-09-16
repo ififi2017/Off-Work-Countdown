@@ -1,0 +1,15 @@
+{
+    "offWorkCountdown": "Feierabend-Countdown",
+    "startTime": "Startzeit",
+    "endTime": "Endzeit",
+    "reminder": "Erinnere mich 15 Minuten vor Feierabend",
+    "gradient": "Animierter Farbverlauf-Hintergrund",
+    "startCountdown": "Countdown starten",
+    "return": "Zurück",
+    "timeLeft": "{{hours}}h {{minutes}}m {{seconds}}s",
+    "offWorkTime": "Feierabend!",
+    "offWorkReminder": "Feierabend-Erinnerung",
+    "fifteenMinutesLeft": "Noch fünfzehn Minuten!",
+    "futureStartTimeError": "Startzeit kann keine zukünftige Zeit sein!",
+    "chooselanguage": "Sprache wählen"
+  }

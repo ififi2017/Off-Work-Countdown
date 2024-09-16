@@ -1,0 +1,15 @@
+{
+    "offWorkCountdown": "Off Work Countdown",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "reminder": "Remind me 15 minutes before off work",
+    "gradient": "Animated gradient background",
+    "startCountdown": "Start Countdown",
+    "return": "Return",
+    "timeLeft": "{{hours}}h {{minutes}}m {{seconds}}s",
+    "offWorkTime": "Off work time!",
+    "offWorkReminder": "Off work reminder",
+    "fifteenMinutesLeft": "Fifteen minutes left!",
+    "futureStartTimeError": "Start time cannot be a future time!",
+    "chooselanguage": "Choose language"
+  }
