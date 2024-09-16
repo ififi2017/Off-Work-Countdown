@@ -21,12 +21,12 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "下班倒计时",
-    statusBarStyle: "black-translucent",
+    // statusBarStyle: "black-translucent",
   },
   formatDetection: {
     telephone: false,
   },
-  themeColor: "#F3F4F6",
+  themeColor: "#FFF",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
