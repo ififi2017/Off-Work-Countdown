@@ -314,7 +314,7 @@ export function OffWorkCountdown() {
                   >
                     <div className="relative">
                       <div className="bg-primary text-primary-foreground px-3 py-1 rounded-md shadow-md text-sm font-semibold whitespace-nowrap">
-                        {progress.toFixed(1)}%
+                        {(Math.floor(progress * 10) / 10).toFixed(1)}%
                       </div>
                       <div className="absolute left-1/2 top-full -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-primary" />
                     </div>
