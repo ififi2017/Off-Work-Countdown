@@ -181,16 +181,35 @@ export function OffWorkCountdown() {
     setTimeLeft("");
   };
 
-  const generateTimeOptions = () => {
+  const generateHourOptions = () => {
     const options = [];
     for (let i = 0; i < 24; i++) {
-      for (let j = 0; j < 2; j++) {
-        const hour = i.toString().padStart(2, "0");
-        const minute = (j * 30).toString().padStart(2, "0");
-        options.push(`${hour}:${minute}`);
-      }
+      const hour = i.toString().padStart(2, "0");
+      options.push(hour);
     }
     return options;
+  };
+
+  const generateMinuteOptions = () => {
+    const options = [];
+    for (let i = 0; i < 60; i++) {
+      const minute = i.toString().padStart(2, "0");
+      options.push(minute);
+    }
+    return options;
+  };
+
+  const handleTimeChange = (
+    type: "start" | "end",
+    hour: string,
+    minute: string
+  ) => {
+    const time = `${hour}:${minute}`;
+    if (type === "start") {
+      setStartTime(time);
+    } else {
+      setEndTime(time);
+    }
   };
 
   return (
@@ -236,34 +255,86 @@ export function OffWorkCountdown() {
                 className="space-y-4"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="startTime">{t("startTime")}</Label>
-                  <select
-                    id="startTime"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full p-2 border rounded"
-                  >
-                    {generateTimeOptions().map((time) => (
-                      <option key={time} value={time}>
-                        {time}
-                      </option>
-                    ))}
-                  </select>
+                  <Label htmlFor="startTimeHour">{t("startTime")}</Label>
+                  <div className="flex space-x-2">
+                    <select
+                      id="startTimeHour"
+                      value={startTime.split(":")[0]}
+                      onChange={(e) =>
+                        handleTimeChange(
+                          "start",
+                          e.target.value,
+                          startTime.split(":")[1]
+                        )
+                      }
+                      className="w-1/2 p-2 border rounded"
+                    >
+                      {generateHourOptions().map((hour) => (
+                        <option key={hour} value={hour}>
+                          {hour}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      id="startTimeMinute"
+                      value={startTime.split(":")[1]}
+                      onChange={(e) =>
+                        handleTimeChange(
+                          "start",
+                          startTime.split(":")[0],
+                          e.target.value
+                        )
+                      }
+                      className="w-1/2 p-2 border rounded"
+                    >
+                      {generateMinuteOptions().map((minute) => (
+                        <option key={minute} value={minute}>
+                          {minute}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="endTime">{t("endTime")}</Label>
-                  <select
-                    id="endTime"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full p-2 border rounded"
-                  >
-                    {generateTimeOptions().map((time) => (
-                      <option key={time} value={time}>
-                        {time}
-                      </option>
-                    ))}
-                  </select>
+                  <Label htmlFor="endTimeHour">{t("endTime")}</Label>
+                  <div className="flex space-x-2">
+                    <select
+                      id="endTimeHour"
+                      value={endTime.split(":")[0]}
+                      onChange={(e) =>
+                        handleTimeChange(
+                          "end",
+                          e.target.value,
+                          endTime.split(":")[1]
+                        )
+                      }
+                      className="w-1/2 p-2 border rounded"
+                    >
+                      {generateHourOptions().map((hour) => (
+                        <option key={hour} value={hour}>
+                          {hour}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      id="endTimeMinute"
+                      value={endTime.split(":")[1]}
+                      onChange={(e) =>
+                        handleTimeChange(
+                          "end",
+                          endTime.split(":")[0],
+                          e.target.value
+                        )
+                      }
+                      className="w-1/2 p-2 border rounded"
+                    >
+                      {generateMinuteOptions().map((minute) => (
+                        <option key={minute} value={minute}>
+                          {minute}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
