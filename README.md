@@ -4,6 +4,8 @@ Off Work Countdown is a Next.js-based web application that helps you keep track 
 
 [中文版 README](README_CN.md)
 
+![](readme_image/off_EN.JPEG)
+
 ## Features
 
 - Set custom work start and end times
