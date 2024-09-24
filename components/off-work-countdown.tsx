@@ -150,10 +150,19 @@ export function OffWorkCountdown() {
   }, [showCountdown, startTime, endTime, reminder, calculateProgress, t]);
 
   const handleStart = () => {
+    if (startTime === endTime) {
+      alert(t("sameTimeError"));
+      return;
+    }
+
     const now = new Date();
     const start = new Date(now.toDateString() + " " + startTime);
     if (start > now) {
-      alert(t("futureStartTimeError"));
+      const timeDiff = start.getTime() - now.getTime();
+      const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+      alert(t("futureStartTimeError", { hours, minutes }));
       return;
     }
 

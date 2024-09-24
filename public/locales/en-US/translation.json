@@ -10,6 +10,7 @@
     "offWorkTime": "Off work time!",
     "offWorkReminder": "Off work reminder",
     "fifteenMinutesLeft": "Fifteen minutes left!",
-    "futureStartTimeError": "Start time cannot be a future time!",
+    "futureStartTimeError": "You have set the start time {{hours}} hours and {{minutes}} minutes away from now. The countdown cannot be started at this time. Please try again later or adjust the start time.",
+    "sameTimeError": "The start time and end time cannot be the same. Please select different times.",
     "chooselanguage": "Choose language"
   }

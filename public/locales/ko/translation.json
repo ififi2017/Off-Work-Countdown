@@ -10,6 +10,7 @@
     "offWorkTime": "퇴근 시간!",
     "offWorkReminder": "퇴근 알림",
     "fifteenMinutesLeft": "15분 남았습니다!",
-    "futureStartTimeError": "시작 시간은 미래 시간이 될 수 없습니다!",
+    "futureStartTimeError": "설정하신 근무 시간이 아직 {{hours}} 시간 {{minutes}} 분 남아 있어 카운트다운을 시작할 수 없습니다. 잠시 후 다시 시도하시거나 근무 시간을 조정해 주시기 바랍니다.",
+    "sameTimeError": "시작 시간과 종료 시간은 같을 수 없습니다. 다른 시간을 선택해 주시기 바랍니다.",
     "chooselanguage": "언어 선택"
   }

@@ -10,6 +10,7 @@
     "offWorkTime": "Feierabend!",
     "offWorkReminder": "Feierabend-Erinnerung",
     "fifteenMinutesLeft": "Noch fünfzehn Minuten!",
-    "futureStartTimeError": "Startzeit kann keine zukünftige Zeit sein!",
+    "futureStartTimeError": "Sie haben die Startzeit auf {{hours}} Stunden und {{minutes}} Minuten in der Zukunft festgelegt. Der Countdown kann nicht gestartet werden. Bitte versuchen Sie es später erneut oder passen Sie die Startzeit an.",
+    "sameTimeError": "Die Startzeit und die Endzeit können nicht gleich sein. Bitte wählen Sie verschiedene Zeiten aus.",
     "chooselanguage": "Sprache wählen"
   }

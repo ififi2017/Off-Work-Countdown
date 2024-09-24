@@ -10,6 +10,7 @@
     "offWorkTime": "Hora de sair do trabalho!",
     "offWorkReminder": "Lembrete de saída do trabalho",
     "fifteenMinutesLeft": "Faltam quinze minutos!",
-    "futureStartTimeError": "A hora de início não pode ser uma hora futura!",
+    "futureStartTimeError": "Você configurou a hora de início {{hours}} horas e {{minutes}} minutos a partir da hora atual. O cronômetro não pode ser iniciado neste momento. Por favor, tente novamente mais tarde ou ajuste a hora de início.",
+    "sameTimeError": "A hora de início e término não podem ser iguais. Por favor, escolha horários diferentes.",
     "chooselanguage": "Escolher idioma"
   }
