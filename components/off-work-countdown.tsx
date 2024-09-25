@@ -131,7 +131,26 @@ export function OffWorkCountdown() {
           const hours = Math.floor(diff / (1000 * 60 * 60));
           const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-          setTimeLeft(t("timeLeft", { hours, minutes, seconds }));
+
+          // 计算总工作时间（小时）
+          const totalWorkHours =
+            (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+
+          // 根据总工作时间决定是否显示小时数的前导零
+          const formattedHours =
+            totalWorkHours >= 10
+              ? hours.toString().padStart(2, "0")
+              : hours.toString();
+          const formattedMinutes = minutes.toString().padStart(2, "0");
+          const formattedSeconds = seconds.toString().padStart(2, "0");
+
+          setTimeLeft(
+            t("timeLeft", {
+              hours: formattedHours,
+              minutes: formattedMinutes,
+              seconds: formattedSeconds,
+            })
+          );
 
           setProgress(calculateProgress());
 
@@ -362,7 +381,16 @@ export function OffWorkCountdown() {
                 transition={{ duration: 0.3 }}
                 className="space-y-4"
               >
-                <div className="text-4xl font-bold text-center">{timeLeft}</div>
+                <div
+                  className="text-4xl font-bold text-center whitespace-nowrap overflow-hidden"
+                  style={{
+                    minWidth: 0,
+                    fontSize: "clamp(1.5rem, 5vw, 2.25rem)",
+                    lineHeight: "1.2",
+                  }}
+                >
+                  {timeLeft}
+                </div>
                 <div className="relative pt-10" ref={progressBarRef}>
                   <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                     <motion.div
