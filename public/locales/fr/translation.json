@@ -6,7 +6,7 @@
     "gradient": "Fond dégradé animé",
     "startCountdown": "Démarrer le compte à rebours",
     "return": "Retour",
-    "timeLeft": "{{hours}}h {{minutes}}m {{seconds}}s",
+    "timeLeft": "{{hours}} h {{minutes}} m {{seconds}} s",
     "offWorkTime": "C'est l'heure de la fin du travail!",
     "offWorkReminder": "Rappel de fin de travail",
     "fifteenMinutesLeft": "Il reste quinze minutes!",

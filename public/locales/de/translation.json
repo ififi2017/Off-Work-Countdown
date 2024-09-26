@@ -6,7 +6,7 @@
     "gradient": "Animierter Farbverlauf-Hintergrund",
     "startCountdown": "Countdown starten",
     "return": "Zurück",
-    "timeLeft": "{{hours}}h {{minutes}}m {{seconds}}s",
+    "timeLeft": "{{hours}} h {{minutes}} m {{seconds}} s",
     "offWorkTime": "Feierabend!",
     "offWorkReminder": "Feierabend-Erinnerung",
     "fifteenMinutesLeft": "Noch fünfzehn Minuten!",

@@ -6,7 +6,7 @@
     "gradient": "Sfondo sfumato animato",
     "startCountdown": "Avvia conto alla rovescia",
     "return": "Ritorna",
-    "timeLeft": "{{hours}}h {{minutes}}m {{seconds}}s",
+    "timeLeft": "{{hours}} h {{minutes}} m {{seconds}} s",
     "offWorkTime": "È ora di uscire dal lavoro!",
     "offWorkReminder": "Promemoria per uscire dal lavoro",
     "fifteenMinutesLeft": "Quindici minuti rimasti!",

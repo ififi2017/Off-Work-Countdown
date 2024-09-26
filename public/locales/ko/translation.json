@@ -6,7 +6,7 @@
     "gradient": "애니메이션 그라데이션 배경",
     "startCountdown": "카운트다운 시작",
     "return": "돌아가기",
-    "timeLeft": "{{hours}}시간 {{minutes}}분 {{seconds}}초",
+    "timeLeft": "{{hours}} 시간 {{minutes}} 분 {{seconds}} 초",
     "offWorkTime": "퇴근 시간!",
     "offWorkReminder": "퇴근 알림",
     "fifteenMinutesLeft": "15분 남았습니다!",

@@ -6,7 +6,7 @@
     "gradient": "Fundo gradiente animado",
     "startCountdown": "Iniciar contagem regressiva",
     "return": "Voltar",
-    "timeLeft": "{{hours}}h {{minutes}}m {{seconds}}s",
+    "timeLeft": "{{hours}} h {{minutes}} m {{seconds}} s",
     "offWorkTime": "Hora de sair do trabalho!",
     "offWorkReminder": "Lembrete de saída do trabalho",
     "fifteenMinutesLeft": "Faltam quinze minutos!",

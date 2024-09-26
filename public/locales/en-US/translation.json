@@ -6,7 +6,7 @@
     "gradient": "Animated gradient background",
     "startCountdown": "Start Countdown",
     "return": "Return",
-    "timeLeft": "{{hours}}h {{minutes}}m {{seconds}}s",
+    "timeLeft": "{{hours}} h {{minutes}} m {{seconds}} s",
     "offWorkTime": "Off work time!",
     "offWorkReminder": "Off work reminder",
     "fifteenMinutesLeft": "Fifteen minutes left!",

@@ -6,7 +6,7 @@
     "gradient": "背景漸變流動畫",
     "startCountdown": "開始倒數計時",
     "return": "返回",
-    "timeLeft": "{{hours}}小時 {{minutes}}分鐘 {{seconds}}秒",
+    "timeLeft": "{{hours}} 小時 {{minutes}} 分鐘 {{seconds}} 秒",
     "offWorkTime": "下班時間到！",
     "offWorkReminder": "下班提醒",
     "fifteenMinutesLeft": "距離下班還有15分鐘！",

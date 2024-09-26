@@ -6,7 +6,7 @@
     "gradient": "Анимированный градиентный фон",
     "startCountdown": "Начать обратный отсчет",
     "return": "Вернуться",
-    "timeLeft": "{{hours}}ч {{minutes}}м {{seconds}}с",
+    "timeLeft": "{{hours}} ч {{minutes}} м {{seconds}} с",
     "offWorkTime": "Время окончания работы!",
     "offWorkReminder": "Напоминание о конце работы",
     "fifteenMinutesLeft": "Осталось пятнадцать минут!",

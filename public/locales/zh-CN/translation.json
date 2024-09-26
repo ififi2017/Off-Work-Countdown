@@ -6,7 +6,7 @@
     "gradient": "背景渐变流动色彩",
     "startCountdown": "开始倒计时",
     "return": "返回",
-    "timeLeft": "{{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+    "timeLeft": "{{hours}} 小时 {{minutes}} 分钟 {{seconds}} 秒",
     "offWorkTime": "下班时间到！",
     "offWorkReminder": "下班提醒",
     "fifteenMinutesLeft": "距离下班还有15分钟！",
