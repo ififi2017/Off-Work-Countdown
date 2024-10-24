@@ -1,6 +1,7 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { Analytics } from "@vercel/analytics/react"
 import type { Metadata } from "next";
 import { I18nProvider } from "@/components/I18nProvider";
 
@@ -48,6 +49,7 @@ export default function RootLayout({
           <ServiceWorkerRegistration />
           {children}
         </I18nProvider>
+        <Analytics />
       </body>
     </html>
   );
