@@ -17,12 +17,12 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "下班倒计时",
-  description: "倒计时显示距离下班还有多长时间",
-  applicationName: "下班倒计时",
+  title: "下班倒计时——Off Work Countdown",
+  description: "下班倒计时是一个基于 Next.js的网页应用，帮助您跟踪工作日结束前的剩余时间。通过简洁互动的界面，该应用提供可视化的倒计时和进度条，让您的工作日更易管理。",
+  applicationName: "下班倒计时——Off Work Countdown",
   appleWebApp: {
     capable: true,
-    title: "下班倒计时",
+    title: "下班倒计时——Off Work Countdown",
     // statusBarStyle: "black-translucent",
   },
   formatDetection: {
