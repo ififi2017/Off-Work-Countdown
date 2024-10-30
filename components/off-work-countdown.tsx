@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Github } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
@@ -240,9 +240,20 @@ export function OffWorkCountdown() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-bold">
-              {t("offWorkCountdown")}
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-2xl font-bold">
+                {t("offWorkCountdown")}
+              </CardTitle>
+              <a
+                href="https://github.com/ififi2017/Off-Work-Countdown"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+                title="View source code on GitHub"
+              >
+                <Github size={24} />
+              </a>
+            </div>
             <Select onValueChange={changeLanguage} value={language}>
               <SelectTrigger className="w-[100px]">
                 <SelectValue>
