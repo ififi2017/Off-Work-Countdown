@@ -237,6 +237,9 @@ export function OffWorkCountdown() {
         gradient ? "bg-gradient-animate" : "bg-gray-100"
       }`}
     >
+
+    <h1 className="sr-only">Off Work Countdown - 下班倒计时</h1>
+
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex justify-between items-center">
