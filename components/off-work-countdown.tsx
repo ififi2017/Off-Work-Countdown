@@ -45,7 +45,7 @@ export function OffWorkCountdown() {
   const [language, setLanguage] = useState("en"); // 默认值设为 "en"
   const languageMap = {
     de: "Deutsch",
-    "en-US": "English",
+    en: "English",
     es: "Español",
     fr: "Français",
     it: "Italiano",
@@ -54,7 +54,9 @@ export function OffWorkCountdown() {
     pt: "Português",
     ru: "Русский",
     "zh-CN": "简体中文",
+    "zh-SG": "简体中文",
     "zh-TW": "繁體中文",
+    "zh-HK": "繁體中文",
   };
 
   useEffect(() => {
@@ -231,14 +233,25 @@ export function OffWorkCountdown() {
     }
   };
 
+  // 修改语言显示的逻辑
+  const displayLanguage = (languageCode: string) => {
+    // 首先检查完整的语言代码
+    if (languageMap[languageCode as keyof typeof languageMap]) {
+      return languageMap[languageCode as keyof typeof languageMap];
+    }
+
+    // 如果没有找到，尝试只使用语言部分（例如从 "en-US" 提取 "en"）
+    const baseLanguage = languageCode.split('-')[0];
+    return languageMap[baseLanguage as keyof typeof languageMap] || languageCode;
+  };
+
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-1000 ease-in-out ${
-        gradient ? "bg-gradient-animate" : "bg-gray-100"
-      }`}
+      className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-1000 ease-in-out ${gradient ? "bg-gradient-animate" : "bg-gray-100"
+        }`}
     >
 
-    <h1 className="sr-only">Off Work Countdown - 下班倒计时</h1>
+      <h1 className="sr-only">Off Work Countdown - 下班倒计时</h1>
 
       <Card className="w-full max-w-md">
         <CardHeader>
@@ -259,12 +272,11 @@ export function OffWorkCountdown() {
             </div>
             <Select onValueChange={changeLanguage} value={language}>
               <SelectTrigger className="w-[100px]">
-                <SelectValue>
-                  {isMounted
-                    ? languageMap[language as keyof typeof languageMap] ||
-                      language
-                    : null}
-                </SelectValue>
+              <SelectValue>
+                {isMounted
+                  ? displayLanguage(language)
+                  : null}
+              </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(languageMap).map(([code, name]) => (
