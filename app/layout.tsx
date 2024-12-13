@@ -1,9 +1,10 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
-import type { Metadata } from "next";
 import { I18nProvider } from "@/components/I18nProvider";
+import type { Metadata } from "next";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -72,6 +73,7 @@ export default function RootLayout({
           {children}
         </I18nProvider>
         <Analytics />
+        <SpeedInsights/>
       </body>
     </html>
   );
