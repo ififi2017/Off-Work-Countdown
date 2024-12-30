@@ -269,7 +269,22 @@ export function OffWorkCountdown() {
 
   // 如果 i18n 还没初始化完成，显示加载状态
   if (!isI18nInitialized) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-gray-50 to-gray-100">
+        <div className="text-center">
+          <div className="relative">
+            {/* 加载动画圆环 */}
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+            {/* 渐变文字效果 */}
+            <div className="relative">
+              <span className="text-xl font-medium bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent animate-pulse">
+                Loading...
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
