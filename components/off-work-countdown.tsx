@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Github } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import "../i18n";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -43,6 +44,13 @@ export function OffWorkCountdown() {
   const { t, i18n } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [language, setLanguage] = useState("en"); // 默认值设为 "en"
+  const [isI18nInitialized, setIsI18nInitialized] = useState(false);
+  // 语言代码映射关系
+  const languageVariants = {
+    "zh-CN": ["zh-CN", "zh-SG"],
+    "zh-TW": ["zh-TW", "zh-HK"]
+  };
+
   const languageMap = {
     de: "Deutsch",
     en: "English",
@@ -54,10 +62,9 @@ export function OffWorkCountdown() {
     pt: "Português",
     ru: "Русский",
     "zh-CN": "简体中文",
-    "zh-SG": "简体中文",
-    "zh-TW": "繁體中文",
-    "zh-HK": "繁體中文",
+    "zh-TW": "繁體中文"
   };
+  
 
   useEffect(() => {
     setIsMounted(true);
@@ -233,17 +240,37 @@ export function OffWorkCountdown() {
     }
   };
 
-  // 修改语言显示的逻辑
   const displayLanguage = (languageCode: string) => {
-    // 首先检查完整的语言代码
+    // 检查是否是变体语言代码
+    for (const [mainCode, variants] of Object.entries(languageVariants)) {
+      if (variants.includes(languageCode)) {
+        return languageMap[mainCode as keyof typeof languageMap];
+      }
+    }
+    
+    // 如果不是变体，直接返回对应的语言名称
     if (languageMap[languageCode as keyof typeof languageMap]) {
       return languageMap[languageCode as keyof typeof languageMap];
     }
-
-    // 如果没有找到，尝试只使用语言部分（例如从 "en-US" 提取 "en"）
-    const baseLanguage = languageCode.split('-')[0];
-    return languageMap[baseLanguage as keyof typeof languageMap] || languageCode;
+    
+    // 如果都没找到，返回语言代码本身
+    return languageCode;
   };
+
+  useEffect(() => {
+    i18n.on("initialized", () => {
+      setIsI18nInitialized(true);
+    });
+    
+    if (i18n.isInitialized) {
+      setIsI18nInitialized(true);
+    }
+  }, [i18n]);
+
+  // 如果 i18n 还没初始化完成，显示加载状态
+  if (!isI18nInitialized) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div
@@ -279,12 +306,12 @@ export function OffWorkCountdown() {
               </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(languageMap).map(([code, name]) => (
-                  <SelectItem key={code} value={code}>
-                    {name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+              {Object.entries(languageMap).map(([code, name]) => (
+                <SelectItem key={code} value={code}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
             </Select>
           </div>
         </CardHeader>
