@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,8 +32,12 @@ const getLocalStorageItem = (key: string, defaultValue: string) => {
   return defaultValue;
 };
 
-export function OffWorkCountdown() {
-  const isFirstRender = useRef(true);
+export interface OffWorkCountdownProps {
+  lang: string;
+}
+
+export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
+  const router = useRouter();
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [reminder, setReminder] = useState(false);
@@ -43,14 +48,8 @@ export function OffWorkCountdown() {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
-  const [language, setLanguage] = useState("en"); // 默认值设为 "en"
-  const [isI18nInitialized, setIsI18nInitialized] = useState(false);
-  // 语言代码映射关系
-  const languageVariants = {
-    "zh-CN": ["zh-CN", "zh-SG", "zh-Hans", "zh-Hans-CN", "zh-Hans-SG", "zh", "zh-Hans-HK", "zh-Hans-MO"],
-    "zh-TW": ["zh-TW", "zh-HK", "zh-MO", "zh-Hant", "zh-Hant-TW", "zh-Hant-HK", "zh-Hant-MO"]
-  };
 
+  // 语言名称映射
   const languageMap = {
     de: "Deutsch",
     en: "English",
@@ -64,46 +63,43 @@ export function OffWorkCountdown() {
     pt: "Português",
     ru: "Русский",
     "zh-CN": "简体中文",
-    "zh-TW": "繁體中文"
+    "zh-HK": "繁體中文（香港）",
+    "zh-TW": "繁體中文（台灣）"
   };
-  
 
+  // 初始化和语言同步
   useEffect(() => {
+    if (i18n.language !== lang) {
+      i18n.changeLanguage(lang);
+    }
     setIsMounted(true);
-    const storedLang = getLocalStorageItem("i18nextLng", "en");
-    setLanguage(storedLang);
+  }, [lang, i18n]);
 
-    const handleStorageChange = () => {
-      const newStoredLang = getLocalStorageItem("i18nextLng", "en");
-      setLanguage(newStoredLang);
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
-    setLanguage(lng);
-    localStorage.setItem("i18nextLng", lng);
-  };
-
+  // 加载本地存储的设置
   useEffect(() => {
-    if (isFirstRender.current) {
-      // 如果是初次渲染，从 localStorage 加载值
+    if (isMounted) {
       setStartTime(getLocalStorageItem("startTime", "09:00"));
       setEndTime(getLocalStorageItem("endTime", "18:00"));
       setReminder(getLocalStorageItem("reminder", "false") === "true");
       setGradient(getLocalStorageItem("gradient", "false") === "true");
-      isFirstRender.current = false;
-    } else {
-      // 如果不是初次渲染，将值保存到 localStorage
+    }
+  }, [isMounted]);
+
+  // 保存设置到 localStorage
+  useEffect(() => {
+    if (isMounted) {
       localStorage.setItem("startTime", startTime);
       localStorage.setItem("endTime", endTime);
       localStorage.setItem("reminder", reminder.toString());
       localStorage.setItem("gradient", gradient.toString());
     }
-  }, [startTime, endTime, reminder, gradient]);
+  }, [isMounted, startTime, endTime, reminder, gradient]);
+
+  const changeLanguage = (lng: string) => {
+    const currentPath = window.location.pathname.split('/').slice(2).join('/');
+    const newPath = `/${lng}${currentPath ? `/${currentPath}` : ''}`;
+    router.push(newPath);
+  };
 
   const calculateProgress = useCallback(() => {
     const now = new Date();
@@ -242,51 +238,9 @@ export function OffWorkCountdown() {
     }
   };
 
-  const displayLanguage = (languageCode: string) => {
-    // 检查是否是变体语言代码
-    for (const [mainCode, variants] of Object.entries(languageVariants)) {
-      if (variants.includes(languageCode)) {
-        return languageMap[mainCode as keyof typeof languageMap];
-      }
-    }
-    
-    // 如果不是变体，直接返回对应的语言名称
-    if (languageMap[languageCode as keyof typeof languageMap]) {
-      return languageMap[languageCode as keyof typeof languageMap];
-    }
-    
-    // 如果都没找到，返回语言代码本身
-    return languageCode;
-  };
-
-  useEffect(() => {
-    i18n.on("initialized", () => {
-      setIsI18nInitialized(true);
-    });
-    
-    if (i18n.isInitialized) {
-      setIsI18nInitialized(true);
-    }
-  }, [i18n]);
-
-  // 如果 i18n 还没初始化完成，显示加载状态
-  if (!isI18nInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-gray-50 to-gray-100">
-        <div className="text-center">
-          <div className="relative">
-            {/* 加载动画圆环 */}
-            <div className="w-16 h-16 border-4 border-gray-200 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-            {/* 渐变文字效果 */}
-            <div className="relative">
-              <span className="text-xl font-medium bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent animate-pulse">
-                Loading...
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  // 如果还没有挂载，返回空内容
+  if (!isMounted) {
+    return null;
   }
 
   return (
@@ -314,11 +268,11 @@ export function OffWorkCountdown() {
                 <Github size={24} />
               </a>
             </div>
-            <Select onValueChange={changeLanguage} value={language}>
+            <Select onValueChange={changeLanguage} value={lang}>
               <SelectTrigger className="w-[100px]">
               <SelectValue>
                 {isMounted
-                  ? displayLanguage(language)
+                  ? languageMap[lang as keyof typeof languageMap]
                   : null}
               </SelectValue>
               </SelectTrigger>
