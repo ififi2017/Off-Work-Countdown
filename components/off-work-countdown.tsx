@@ -47,8 +47,8 @@ export function OffWorkCountdown() {
   const [isI18nInitialized, setIsI18nInitialized] = useState(false);
   // 语言代码映射关系
   const languageVariants = {
-    "zh-CN": ["zh-CN", "zh-SG"],
-    "zh-TW": ["zh-TW", "zh-HK"]
+    "zh-CN": ["zh-CN", "zh-SG", "zh-Hans", "zh-Hans-CN", "zh-Hans-SG", "zh", "zh-Hans-HK", "zh-Hans-MO"],
+    "zh-TW": ["zh-TW", "zh-HK", "zh-MO", "zh-Hant", "zh-Hant-TW", "zh-Hant-HK", "zh-Hant-MO"]
   };
 
   const languageMap = {
