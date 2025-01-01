@@ -13,6 +13,22 @@ interface Resources {
 // 资源加载状态跟踪
 const loadingResources: { [key: string]: Promise<Resources> | null } = {};
 
+// 获取初始语言
+function getInitialLanguage(): string {
+  if (typeof window === 'undefined') return defaultLocale;
+  
+  // 从 URL 路径中获取语言
+  const pathSegments = window.location.pathname.split('/');
+  const langFromPath = pathSegments[1];
+  
+  // 如果 URL 中包含有效的语言代码，直接使用
+  if (langFromPath && langFromPath.length >= 2) {
+    return langFromPath;
+  }
+  
+  return defaultLocale;
+}
+
 // 加载指定语言的资源
 async function loadLanguageResources(lng: string): Promise<Resources> {
   // 如果已经在加载中，返回现有的 Promise
@@ -31,6 +47,10 @@ async function loadLanguageResources(lng: string): Promise<Resources> {
       return { translation, seo };
     } catch (e) {
       console.error(`Failed to load resources for ${lng}:`, e);
+      // 如果加载失败且不是默认语言，尝试加载默认语言
+      if (lng !== defaultLocale) {
+        return loadLanguageResources(defaultLocale);
+      }
       return { translation: {}, seo: {} };
     } finally {
       // 加载完成后清除状态
@@ -44,10 +64,12 @@ async function loadLanguageResources(lng: string): Promise<Resources> {
 }
 
 // 初始化 i18n
+const initialLanguage = getInitialLanguage();
+
 i18n
   .use(initReactI18next)
   .init({
-    lng: defaultLocale,
+    lng: initialLanguage,
     fallbackLng: defaultLocale,
     ns: ["translation", "seo"],
     defaultNS: "translation",
@@ -74,10 +96,10 @@ i18n.changeLanguage = async (lng: string | undefined, callback?: Callback) => {
   return originalChangeLanguage(lng, callback);
 };
 
-// 初始加载默认语言资源
-loadLanguageResources(defaultLocale).then(resources => {
-  i18n.addResourceBundle(defaultLocale, 'translation', resources.translation);
-  i18n.addResourceBundle(defaultLocale, 'seo', resources.seo);
+// 初始加载语言资源
+loadLanguageResources(initialLanguage).then(resources => {
+  i18n.addResourceBundle(initialLanguage, 'translation', resources.translation);
+  i18n.addResourceBundle(initialLanguage, 'seo', resources.seo);
 });
 
 export default i18n;
