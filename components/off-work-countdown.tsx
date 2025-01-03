@@ -48,6 +48,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
+  const [isChangingLanguage, setIsChangingLanguage] = useState(false);
 
   // 语言名称映射
   const languageMap = {
@@ -96,10 +97,18 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   }, [isMounted, startTime, endTime, reminder, gradient]);
 
   const changeLanguage = (lng: string) => {
+    setIsChangingLanguage(true);
     const currentPath = window.location.pathname.split('/').slice(2).join('/');
     const newPath = `/${lng}${currentPath ? `/${currentPath}` : ''}`;
     router.push(newPath);
   };
+
+  // 在语言变化时重置加载状态
+  useEffect(() => {
+    if (i18n.language === lang && isChangingLanguage) {
+      setIsChangingLanguage(false);
+    }
+  }, [i18n.language, lang, isChangingLanguage]);
 
   const calculateProgress = useCallback(() => {
     const now = new Date();
@@ -249,7 +258,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         }`}
     >
 
-      <h1 className="sr-only">Off Work Countdown - 下班倒计时</h1>
+      <h1 className="sr-only">{t("seo:siteName")}</h1>
 
       <Card className="w-full max-w-md">
         <CardHeader>
@@ -268,22 +277,32 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 <Github size={24} />
               </a>
             </div>
-            <Select onValueChange={changeLanguage} value={lang}>
-              <SelectTrigger className="w-[100px]">
-              <SelectValue>
-                {isMounted
-                  ? languageMap[lang as keyof typeof languageMap]
-                  : null}
-              </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-              {Object.entries(languageMap).map(([code, name]) => (
-                <SelectItem key={code} value={code}>
-                  {name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-            </Select>
+            <div className="relative">
+              <Select 
+                onValueChange={changeLanguage} 
+                value={lang}
+                disabled={isChangingLanguage}
+              >
+                <SelectTrigger className={`w-[100px] ${isChangingLanguage ? 'opacity-50' : ''}`}>
+                  <SelectValue>
+                    {isChangingLanguage ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : (
+                      languageMap[lang as keyof typeof languageMap]
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(languageMap).map(([code, name]) => (
+                    <SelectItem key={code} value={code}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
