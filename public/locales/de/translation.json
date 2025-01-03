@@ -12,5 +12,6 @@
     "fifteenMinutesLeft": "Noch fünfzehn Minuten!",
     "futureStartTimeError": "Sie haben die Startzeit auf {{hours}} Stunden und {{minutes}} Minuten in der Zukunft festgelegt. Der Countdown kann nicht gestartet werden. Bitte versuchen Sie es später erneut oder passen Sie die Startzeit an.",
     "sameTimeError": "Die Startzeit und die Endzeit können nicht gleich sein. Bitte wählen Sie verschiedene Zeiten aus.",
-    "chooselanguage": "Sprache wählen"
+    "chooselanguage": "Sprache wählen",
+    "offlineStatus": "Sie sind derzeit offline"
   }

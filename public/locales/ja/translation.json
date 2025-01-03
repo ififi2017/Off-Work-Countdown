@@ -12,5 +12,6 @@
     "fifteenMinutesLeft": "あと15分！",
     "futureStartTimeError": "設定した勤務時間まであと {{hours}} 時間 {{minutes}} 分ですので、カウントダウンを開始することはできません。後で再試行するか、勤務時間を調整してください。",
     "sameTimeError": "開始時間と終了時間は同じにできません。異なる時間を選択してください。",
-    "chooselanguage": "言語を選択"
+    "chooselanguage": "言語を選択",
+    "offlineStatus": "現在オフラインです"
   }

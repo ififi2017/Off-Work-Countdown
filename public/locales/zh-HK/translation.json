@@ -12,5 +12,6 @@
     "fifteenMinutesLeft": "距離放工仲有15分鐘！",
     "futureStartTimeError": "你設定嘅返工時間仲有 {{hours}} 小時 {{minutes}} 分先開始，而家未能開始倒數。請稍後再試或者調整返工時間。",
     "sameTimeError": "返工同放工時間唔可以一樣。請揀過第二個時間。",
-    "chooselanguage": "選擇語言"
+    "chooselanguage": "選擇語言",
+    "offlineStatus": "你而家處於離線狀態"
 } 

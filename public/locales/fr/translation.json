@@ -12,5 +12,6 @@
     "fifteenMinutesLeft": "Il reste quinze minutes!",
     "futureStartTimeError": "Vous avez défini l'heure de début {{hours}} heures et {{minutes}} minutes à partir de maintenant. Le compte à rebours ne peut pas être démarré à ce moment. Veuillez réessayer plus tard ou ajuster l'heure de début.",
     "sameTimeError": "L'heure de début et l'heure de fin ne peuvent pas être identiques. Veuillez sélectionner des heures différentes.",
-    "chooselanguage": "Choisir la langue"
+    "chooselanguage": "Choisir la langue",
+    "offlineStatus": "Vous êtes actuellement hors ligne"
   }

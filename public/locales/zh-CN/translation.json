@@ -12,5 +12,6 @@
     "fifteenMinutesLeft": "距离下班还有15分钟！",
     "futureStartTimeError": "您设置的上班时间还有 {{hours}} 小时 {{minutes}} 分钟才开始，暂时无法开启倒计时。请稍后再试或调整上班时间。",
     "sameTimeError": "开始时间和结束时间不能相同。请选择不同的时间。",
-    "chooselanguage": "选择语言"
+    "chooselanguage": "选择语言",
+    "offlineStatus": "您当前处于离线状态"
   }

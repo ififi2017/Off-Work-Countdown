@@ -12,5 +12,6 @@
     "fifteenMinutesLeft": "¡Quedan quince minutos!",
     "futureStartTimeError": "Has establecido la hora de inicio {{hours}} horas y {{minutes}} minutos desde ahora. El cronómetro no puede comenzar en este momento. Por favor, inténtalo de nuevo más tarde o ajusta la hora de inicio.",
     "sameTimeError": "La hora de inicio y la hora de finalización no pueden ser iguales. Por favor, selecciona tiempos diferentes.",
-    "chooselanguage": "Elige idioma"
+    "chooselanguage": "Elige idioma",
+    "offlineStatus": "Actualmente estás sin conexión"
   }
