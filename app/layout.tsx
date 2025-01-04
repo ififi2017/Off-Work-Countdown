@@ -49,16 +49,14 @@ export async function generateMetadata({ params }: { params?: { lang?: string } 
         ])
       )
     },
-    title: {
-      template: '%s | ' + seo.siteName,
-      default: seo.title
-    },
+    title: seo.title,
     description: seo.description,
     keywords: seo.keywords,
     applicationName: seo.siteName,
     appleWebApp: {
       capable: true,
       title: seo.title,
+      statusBarStyle: 'default'
     },
     formatDetection: {
       telephone: false,
@@ -114,7 +112,7 @@ export default function RootLayout({
   return (
     <html lang={lang} suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/manifest" />
         {locales.map((lang) => (
           <link
             key={lang}
