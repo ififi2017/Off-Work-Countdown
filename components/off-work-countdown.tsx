@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Github } from "lucide-react";
+import { ArrowLeft, Github, Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import "../i18n";
@@ -45,6 +45,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [showCountdown, setShowCountdown] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const progressBarRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
@@ -247,6 +248,44 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     }
   };
 
+  // 初始化主题
+  useEffect(() => {
+    if (isMounted) {
+      // 从 localStorage 获取主题设置
+      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+      
+      if (savedTheme) {
+        setTheme(savedTheme);
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+      } else {
+        // 如果没有保存的主题，则使用系统主题
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', prefersDark);
+      }
+
+      // 监听系统主题变化
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e: MediaQueryListEvent) => {
+        if (!localStorage.getItem('theme')) {
+          setTheme(e.matches ? 'dark' : 'light');
+          document.documentElement.classList.toggle('dark', e.matches);
+        }
+      };
+
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, [isMounted]);
+
+  // 切换主题
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    localStorage.setItem('theme', newTheme);
+  };
+
   // 如果还没有挂载，返回空内容
   if (!isMounted) {
     return null;
@@ -254,54 +293,69 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-1000 ease-in-out ${gradient ? "bg-gradient-animate" : "bg-gray-100"
-        }`}
+      className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-1000 ease-in-out ${
+        gradient ? "bg-gradient-animate" : "bg-gray-100 dark:bg-gray-900"
+      }`}
     >
 
       <h1 className="sr-only">{t("seo:siteName")}</h1>
 
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md dark:bg-gray-800 dark:border-gray-700">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-2xl font-bold">
+              <CardTitle className="text-2xl font-bold dark:text-white">
                 {t("offWorkCountdown")}
               </CardTitle>
-              <a
-                href="https://github.com/ififi2017/Off-Work-Countdown"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-gray-700 transition-colors"
-                title="View source code on GitHub"
-              >
-                <Github size={24} />
-              </a>
+              {!showCountdown && (
+                <a
+                  href="https://github.com/ififi2017/Off-Work-Countdown"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
+                  title="View source code on GitHub"
+                >
+                  <Github size={24} />
+                </a>
+              )}
             </div>
-            <div className="relative">
-              <Select 
-                onValueChange={changeLanguage} 
-                value={lang}
-                disabled={isChangingLanguage}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="w-9 h-9 p-0"
               >
-                <SelectTrigger className={`w-[100px] ${isChangingLanguage ? 'opacity-50' : ''}`}>
-                  <SelectValue>
-                    {isChangingLanguage ? (
-                      <div className="flex items-center justify-center">
-                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    ) : (
-                      languageMap[lang as keyof typeof languageMap]
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(languageMap).map(([code, name]) => (
-                    <SelectItem key={code} value={code}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+              </Button>
+              <div className="relative">
+                <Select 
+                  onValueChange={changeLanguage} 
+                  value={lang}
+                  disabled={isChangingLanguage}
+                >
+                  <SelectTrigger className={`w-[100px] ${isChangingLanguage ? 'opacity-50' : ''}`}>
+                    <SelectValue>
+                      {isChangingLanguage ? (
+                        <div className="flex items-center justify-center">
+                          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      ) : (
+                        languageMap[lang as keyof typeof languageMap]
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[40vh] overflow-y-auto">
+                    <div className="grid grid-cols-1 gap-1">
+                      {Object.entries(languageMap).map(([code, name]) => (
+                        <SelectItem key={code} value={code} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </div>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -329,7 +383,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                           startTime.split(":")[1]
                         )
                       }
-                      className="w-1/2 p-2 border rounded"
+                      className="w-1/2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {generateHourOptions().map((hour) => (
                         <option key={hour} value={hour}>
@@ -347,7 +401,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                           e.target.value
                         )
                       }
-                      className="w-1/2 p-2 border rounded"
+                      className="w-1/2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {generateMinuteOptions().map((minute) => (
                         <option key={minute} value={minute}>
@@ -358,7 +412,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="endTimeHour">{t("endTime")}</Label>
+                  <Label htmlFor="endTimeHour" className="dark:text-gray-200">{t("endTime")}</Label>
                   <div className="flex space-x-2">
                     <select
                       id="endTimeHour"
@@ -370,7 +424,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                           endTime.split(":")[1]
                         )
                       }
-                      className="w-1/2 p-2 border rounded"
+                      className="w-1/2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {generateHourOptions().map((hour) => (
                         <option key={hour} value={hour}>
@@ -388,7 +442,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                           e.target.value
                         )
                       }
-                      className="w-1/2 p-2 border rounded"
+                      className="w-1/2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {generateMinuteOptions().map((minute) => (
                         <option key={minute} value={minute}>
@@ -404,7 +458,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     checked={reminder}
                     onCheckedChange={setReminder}
                   />
-                  <Label htmlFor="reminder">{t("reminder")}</Label>
+                  <Label htmlFor="reminder" className="dark:text-gray-200">{t("reminder")}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
@@ -412,7 +466,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     checked={gradient}
                     onCheckedChange={setGradient}
                   />
-                  <Label htmlFor="gradient">{t("gradient")}</Label>
+                  <Label htmlFor="gradient" className="dark:text-gray-200">{t("gradient")}</Label>
                 </div>
               </motion.div>
             ) : (
@@ -425,7 +479,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 className="space-y-4"
               >
                 <div
-                  className="text-4xl font-bold text-center whitespace-nowrap overflow-hidden"
+                  className="text-4xl font-bold text-center whitespace-nowrap overflow-hidden dark:text-white"
                   style={{
                     minWidth: 0,
                     fontSize: "clamp(1.5rem, 5vw, 2.25rem)",
@@ -435,7 +489,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   {timeLeft}
                 </div>
                 <div className="relative pt-10" ref={progressBarRef}>
-                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <motion.div
                       className="h-full bg-primary"
                       style={{ width: `${progress}%` }}
