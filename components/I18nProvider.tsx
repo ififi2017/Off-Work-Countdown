@@ -15,14 +15,11 @@ export function I18nProvider({
 
   useEffect(() => {
     const init = async () => {
-      // 等待 i18n 初始化完成
       if (!i18n.isInitialized) {
         await new Promise(resolve => {
           i18n.on('initialized', resolve);
         });
       }
-      
-      // 切换语言
       await i18n.changeLanguage(lang);
       setMounted(true);
     };
@@ -33,10 +30,13 @@ export function I18nProvider({
   // 在初始化完成前显示加载动画
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-gray-50 to-gray-100 [@media(prefers-color-scheme:dark)]:from-gray-900 [@media(prefers-color-scheme:dark)]:to-gray-800">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-gray-200 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <span className="text-xl font-medium bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent animate-pulse">
+          <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full border-4 border-gray-200 [@media(prefers-color-scheme:dark)]:border-gray-700" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin" />
+          </div>
+          <span className="text-xl font-medium bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent [@media(prefers-color-scheme:dark)]:text-gray-200 animate-pulse">
             Loading...
           </span>
         </div>

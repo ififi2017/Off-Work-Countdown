@@ -29,6 +29,14 @@ function getInitialLanguage(): string {
   return defaultLocale;
 }
 
+// 获取基础 URL
+function getBaseUrl() {
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+}
+
 // 加载指定语言的资源
 async function loadLanguageResources(lng: string): Promise<Resources> {
   // 如果已经在加载中，返回现有的 Promise
@@ -36,12 +44,14 @@ async function loadLanguageResources(lng: string): Promise<Resources> {
     return loadingResources[lng]!;
   }
 
+  const baseUrl = getBaseUrl();
+
   // 创建新的加载 Promise
   const loadingPromise = (async () => {
     try {
       const [translation, seo] = await Promise.all([
-        fetch(`/locales/${lng}/translation.json`).then(r => r.json()),
-        fetch(`/locales/${lng}/seo.json`).then(r => r.json())
+        fetch(`${baseUrl}/locales/${lng}/translation.json`).then(r => r.json()),
+        fetch(`${baseUrl}/locales/${lng}/seo.json`).then(r => r.json())
       ]);
       
       return { translation, seo };
