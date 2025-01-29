@@ -1,0 +1,17 @@
+{
+  "offWorkCountdown": "Đếm ngược giờ tan ca",
+  "startTime": "Thời gian bắt đầu",
+  "endTime": "Thời gian kết thúc",
+  "reminder": "Nhắc tôi 15 phút trước khi tan ca",
+  "gradient": "Nền gradient động",
+  "startCountdown": "Bắt đầu đếm ngược",
+  "return": "Quay lại",
+  "timeLeft": "{{hours}} giờ {{minutes}} phút {{seconds}} giây",
+  "offWorkTime": "Giờ tan ca!",
+  "offWorkReminder": "Nhắc nhở tan ca",
+  "fifteenMinutesLeft": "Còn 15 phút!",
+  "futureStartTimeError": "Bạn đã đặt thời gian bắt đầu là {{hours}} giờ và {{minutes}} phút kể từ bây giờ. Không thể bắt đầu đếm ngược vào lúc này. Vui lòng thử lại sau hoặc điều chỉnh thời gian bắt đầu.",
+  "sameTimeError": "Thời gian bắt đầu và thời gian kết thúc không thể giống nhau. Vui lòng chọn thời gian khác.",
+  "chooselanguage": "Chọn ngôn ngữ",
+  "offlineStatus": "Bạn hiện đang ngoại tuyến"
+}

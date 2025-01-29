@@ -16,7 +16,12 @@ const languages = [
   'pt',
   'ru',
   'hi-IN',
-  'mr-IN'
+  'mr-IN',
+  'tr',
+  'ar',
+  'th',
+  'id',
+  'vi'
 ];
 
 // 语言代码映射

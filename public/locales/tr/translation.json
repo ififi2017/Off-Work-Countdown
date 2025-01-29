@@ -1,0 +1,17 @@
+{
+  "offWorkCountdown": "İş Çıkışı Geri Sayımı",
+  "startTime": "Başlangıç Zamanı",
+  "endTime": "Bitiş Zamanı",
+  "reminder": "İş çıkışımdan 15 dakika önce hatırlat",
+  "gradient": "Animasyonlu gradyan arka plan",
+  "startCountdown": "Geri Sayımı Başlat",
+  "return": "Geri Dön",
+  "timeLeft": "{{hours}} s {{minutes}} d {{seconds}} sn",
+  "offWorkTime": "İş çıkışı zamanı!",
+  "offWorkReminder": "İş çıkışı hatırlatıcısı",
+  "fifteenMinutesLeft": "15 dakika kaldı!",
+  "futureStartTimeError": "Başlangıç zamanını {{hours}} saat ve {{minutes}} dakika sonra ayarladınız. Geri sayım şu anda başlatılamaz. Lütfen daha sonra tekrar deneyin veya başlangıç zamanını ayarlayın.",
+  "sameTimeError": "Başlangıç zamanı ve bitiş zamanı aynı olamaz. Lütfen farklı zamanlar seçin.",
+  "chooselanguage": "Dil Seç",
+  "offlineStatus": "Şu anda çevrimdışısınız"
+}

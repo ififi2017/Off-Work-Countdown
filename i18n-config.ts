@@ -5,6 +5,7 @@ export const locales = [
   'zh-CN',
   'zh-TW',
   'zh-HK',
+  'tr',
   'ja',
   'ko',
   'fr',
@@ -13,8 +14,12 @@ export const locales = [
   'it',
   'pt',
   'ru',
+  'ar',
   'hi-IN',
-  'mr-IN'
+  'mr-IN',
+  'th',
+  'id',
+  'vi'
 ] as const
 
 export type Locale = (typeof locales)[number]
@@ -53,5 +58,10 @@ export const languageNames: { [key: string]: string } = {
   'pt': 'Português',
   'ru': 'Русский',
   'hi-IN': 'हिन्दी',
-  'mr-IN': 'मराठी'
+  'mr-IN': 'मराठी',
+  'tr': 'Türkçe',
+  'ar': 'اَلْعَرَبِيَّةُ',
+  'th': 'ไทย',
+  'id': 'Bahasa Indonesia',
+  'vi': 'Tiếng Việt'
 } 
