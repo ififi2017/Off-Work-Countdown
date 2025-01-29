@@ -64,6 +64,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     "mr-IN": "मराठी",
     pt: "Português",
     ru: "Русский",
+    tr: "Türkçe",
+    ar: "اَلْعَرَبِيَّةُ",
+    th: "ไทย",
+    id: "Bahasa Indonesia",
+    vi: "Tiếng Việt",
     "zh-CN": "简体中文",
     "zh-HK": "繁體中文（香港）",
     "zh-TW": "繁體中文（台灣）"

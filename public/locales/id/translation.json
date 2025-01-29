@@ -1,0 +1,17 @@
+{
+  "offWorkCountdown": "Hitung Mundur Waktu Kerja",
+  "startTime": "Waktu Mulai",
+  "endTime": "Waktu Selesai",
+  "reminder": "Ingatkan saya 15 menit sebelum pulang kerja",
+  "gradient": "Latar belakang gradien animasi",
+  "startCountdown": "Mulai Hitung Mundur",
+  "return": "Kembali",
+  "timeLeft": "{{hours}} jam {{minutes}} menit {{seconds}} detik",
+  "offWorkTime": "Waktu pulang kerja!",
+  "offWorkReminder": "Pengingat pulang kerja",
+  "fifteenMinutesLeft": "Tersisa 15 menit!",
+  "futureStartTimeError": "Anda telah menetapkan waktu mulai {{hours}} jam dan {{minutes}} menit dari sekarang. Hitung mundur tidak dapat dimulai saat ini. Silakan coba lagi nanti atau sesuaikan waktu mulai.",
+  "sameTimeError": "Waktu mulai dan waktu selesai tidak dapat sama. Silakan pilih waktu yang berbeda.",
+  "chooselanguage": "Pilih bahasa",
+  "offlineStatus": "Anda saat ini offline"
+}
