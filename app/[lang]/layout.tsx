@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 import path from 'path';
 import fs from 'fs/promises';
 import { siteConfig } from '@/config/site';
+import { I18nProvider } from '@/components/I18nProvider';
 
 async function getTranslations(lang: string, ns: string) {
   try {
@@ -73,11 +74,14 @@ export async function generateStaticParams() {
 
 export default function Layout({
   children,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   params,
 }: {
   children: ReactNode;
   params: { lang: string };
 }) {
-  return children;
+  return (
+    <I18nProvider lang={params.lang}>
+      {children}
+    </I18nProvider>
+  );
 } 

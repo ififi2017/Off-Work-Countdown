@@ -1,7 +1,0 @@
-# *
-User-agent: *
-Allow: /
-
-# Sitemaps
-Sitemap: ${process.env.NEXT_PUBLIC_BASE_URL}/sitemap.xml
-Sitemap: ${process.env.NEXT_PUBLIC_BASE_URL}/hreflang-sitemap.xml 

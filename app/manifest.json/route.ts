@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
-import { defaultLocale } from '@/i18n-config';
+import { defaultLocale, locales, Locale } from '@/i18n-config';
 import path from 'path';
 import fs from 'fs/promises';
 import { siteConfig } from '@/config/site';
 
 async function getTranslations(lang: string, ns: string) {
   try {
+    // 验证语言代码
+    if (!locales.includes(lang as Locale)) {
+      lang = defaultLocale;
+    }
+
     const filePath = path.join(process.cwd(), 'public', 'locales', lang, `${ns}.json`);
     const content = await fs.readFile(filePath, 'utf8');
     return JSON.parse(content);
@@ -22,6 +27,11 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   let lang = searchParams.get('lang') || defaultLocale;
 
+  // 验证语言代码
+  if (!locales.includes(lang as Locale)) {
+    lang = defaultLocale;
+  }
+
   // 如果没有从查询参数获取到语言，尝试从 Referer 获取
   if (!searchParams.has('lang')) {
     const referer = request.headers.get('referer');
@@ -29,14 +39,17 @@ export async function GET(request: Request) {
       const refererUrl = new URL(referer);
       const pathParts = refererUrl.pathname.split('/');
       if (pathParts.length > 1 && pathParts[1]) {
-        lang = pathParts[1];
+        const refererLang = pathParts[1];
+        if (locales.includes(refererLang as Locale)) {
+          lang = refererLang;
+        }
       }
     }
   }
 
-  console.log('Manifest requested with language:', lang);
-  console.log('Request URL:', request.url);
-  console.log('Referer:', request.headers.get('referer'));
+//   console.log('Manifest requested with language:', lang);
+//   console.log('Request URL:', request.url);
+//   console.log('Referer:', request.headers.get('referer'));
 
   // 获取当前语言的翻译
   const seo = await getTranslations(lang, 'seo');

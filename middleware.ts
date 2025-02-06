@@ -41,13 +41,30 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
-    pathname.includes('.') ||
-    pathname === '/favicon.ico'
+    pathname === '/favicon.ico' ||
+    pathname === '/manifest.json' ||
+    pathname === '/sw.js' ||
+    pathname.startsWith('/workbox-') ||
+    pathname.startsWith('/locales/')
   ) {
     return NextResponse.next();
   }
 
-  // 检查 URL 是否已经包含语言代码
+  // 检查当前路径的语言代码
+  const pathnameParts = pathname.split('/');
+  if (pathnameParts.length > 1) {
+    const currentLocale = pathnameParts[1];
+    // 如果路径包含语言代码但不是有效的语言，重定向到默认语言
+    if (currentLocale && !locales.includes(currentLocale as Locale)) {
+      const newUrl = new URL(
+        `/${defaultLocale}${pathname.substring(currentLocale.length + 1) || ''}`,
+        request.url
+      );
+      return NextResponse.redirect(newUrl);
+    }
+  }
+
+  // 检查 URL 是否已经包含有效的语言代码
   const pathnameHasLocale = locales.some(
     locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
@@ -65,5 +82,18 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-*.js|locales|.*\\..*).*)']
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - manifest.json
+     * - sw.js (Service Worker)
+     * - workbox-*.js (Workbox files)
+     * - locales
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales).*)'
+  ]
 }; 

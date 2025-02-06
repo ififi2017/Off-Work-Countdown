@@ -3,7 +3,6 @@ import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
-import { I18nProvider } from "@/components/I18nProvider";
 import { ManifestLink } from "@/components/ManifestLink";
 import type { Metadata } from "next";
 import { locales } from "@/i18n-config";
@@ -104,27 +103,23 @@ export async function generateMetadata({ params }: { params?: { lang?: string } 
 
 export default function RootLayout({
   children,
-  params,
 }: Readonly<{
   children: React.ReactNode;
-  params?: { lang?: string };
 }>) {
-  const lang = params?.lang || 'en';
-
   return (
-    <html lang={lang} suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head>
         <ManifestLink />
         <meta name="theme-color" content={siteConfig.themeColor} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="下班倒计时" />
-        {locales.map((lang) => (
+        {locales.map((locale) => (
           <link
-            key={lang}
+            key={locale}
             rel="alternate"
-            hrefLang={lang}
-            href={`${siteConfig.baseUrl}/${lang}`}
+            hrefLang={locale}
+            href={`${siteConfig.baseUrl}/${locale}`}
           />
         ))}
         <link
@@ -134,10 +129,8 @@ export default function RootLayout({
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <I18nProvider lang={lang}>
-          <ServiceWorkerRegistration />
-          {children}
-        </I18nProvider>
+        <ServiceWorkerRegistration />
+        {children}
         <Analytics />
         <SpeedInsights/>
       </body>
