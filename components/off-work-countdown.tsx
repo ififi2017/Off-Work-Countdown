@@ -45,7 +45,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [showCountdown, setShowCountdown] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('auto');
   const progressBarRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
@@ -257,23 +257,27 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   useEffect(() => {
     if (isMounted) {
       // 从 localStorage 获取主题设置
-      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
       
       if (savedTheme) {
         setTheme(savedTheme);
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+        if (savedTheme === 'auto') {
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.toggle('dark', prefersDark);
+        } else {
+          document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+        }
       } else {
-        // 如果没有保存的主题，则使用系统主题
+        // 如果没有保存的主题，则默认使用自动模式
+        setTheme('auto');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTheme(prefersDark ? 'dark' : 'light');
         document.documentElement.classList.toggle('dark', prefersDark);
       }
 
       // 监听系统主题变化
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = (e: MediaQueryListEvent) => {
-        if (!localStorage.getItem('theme')) {
-          setTheme(e.matches ? 'dark' : 'light');
+        if (theme === 'auto') {
           document.documentElement.classList.toggle('dark', e.matches);
         }
       };
@@ -281,13 +285,29 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, [isMounted]);
+  }, [isMounted, theme]);
 
   // 切换主题
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let newTheme: 'light' | 'dark' | 'auto';
+
+    if (theme === 'auto') {
+      // 从自动模式切换到明确的模式（与当前系统主题相反）
+      newTheme = prefersDark ? 'light' : 'dark';
+    } else if (theme === 'light') {
+      newTheme = 'dark';
+    } else {
+      // 从深色模式切换回自动模式
+      newTheme = 'auto';
+    }
+
     setTheme(newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    if (newTheme === 'auto') {
+      document.documentElement.classList.toggle('dark', prefersDark);
+    } else {
+      document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    }
     localStorage.setItem('theme', newTheme);
   };
 
@@ -331,7 +351,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 onClick={toggleTheme}
                 className="w-9 h-9 p-0"
               >
-                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                {theme === 'auto' ? (
+                  <div className="relative">
+                    {window.matchMedia('(prefers-color-scheme: dark)').matches ? <Moon size={20} /> : <Sun size={20} />}
+                    <span className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full w-3 h-3 flex items-center justify-center text-[7px] font-bold">A</span>
+                  </div>
+                ) : theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
               </Button>
               <div className="relative">
                 <Select 
