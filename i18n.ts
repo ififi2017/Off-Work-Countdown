@@ -19,11 +19,8 @@ function getInitialLanguage(): string {
   
   // 从 URL 路径中获取语言
   const pathSegments = window.location.pathname.split('/');
-  const langFromPath = pathSegments[1];
-  
-  // 如果 URL 中包含有效的语言代码，直接使用
-  if (langFromPath && langFromPath.length >= 2) {
-    return langFromPath;
+  if (pathSegments.length > 1 && pathSegments[1]) {
+    return pathSegments[1];
   }
   
   return defaultLocale;
@@ -59,6 +56,7 @@ async function loadLanguageResources(lng: string): Promise<Resources> {
       console.error(`Failed to load resources for ${lng}:`, e);
       // 如果加载失败且不是默认语言，尝试加载默认语言
       if (lng !== defaultLocale) {
+        console.warn(`Falling back to default locale (${defaultLocale})`);
         return loadLanguageResources(defaultLocale);
       }
       return { translation: {}, seo: {} };
@@ -88,6 +86,10 @@ i18n
     },
     react: {
       useSuspense: false
+    },
+    load: 'currentOnly', // 只加载具体的语言，不加载语言族
+    detection: {
+      order: ['path'], // 只从路径中检测语言
     }
   });
 
@@ -96,20 +98,25 @@ const originalChangeLanguage = i18n.changeLanguage.bind(i18n);
 i18n.changeLanguage = async (lng: string | undefined, callback?: Callback) => {
   if (!lng) return originalChangeLanguage(lng, callback);
 
-  // 检查是否已加载该语言资源
-  if (!i18n.hasResourceBundle(lng, 'translation')) {
-    const resources = await loadLanguageResources(lng);
-    i18n.addResourceBundle(lng, 'translation', resources.translation);
-    i18n.addResourceBundle(lng, 'seo', resources.seo);
-  }
+  try {
+    // 检查是否已加载该语言资源
+    if (!i18n.hasResourceBundle(lng, 'translation')) {
+      const resources = await loadLanguageResources(lng);
+      i18n.addResourceBundle(lng, 'translation', resources.translation, true, true);
+      i18n.addResourceBundle(lng, 'seo', resources.seo, true, true);
+    }
 
-  return originalChangeLanguage(lng, callback);
+    return originalChangeLanguage(lng, callback);
+  } catch (error) {
+    console.error(`Error changing language to ${lng}:`, error);
+    return originalChangeLanguage(defaultLocale, callback);
+  }
 };
 
 // 初始加载语言资源
 loadLanguageResources(initialLanguage).then(resources => {
-  i18n.addResourceBundle(initialLanguage, 'translation', resources.translation);
-  i18n.addResourceBundle(initialLanguage, 'seo', resources.seo);
+  i18n.addResourceBundle(initialLanguage, 'translation', resources.translation, true, true);
+  i18n.addResourceBundle(initialLanguage, 'seo', resources.seo, true, true);
 });
 
 export default i18n;

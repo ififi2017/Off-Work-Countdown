@@ -1,69 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-
-// 支持的语言列表
-const languages = [
-  'en',
-  'zh-CN',
-  'zh-TW',
-  'zh-HK',
-  'ja',
-  'ko',
-  'fr',
-  'de',
-  'es',
-  'it',
-  'pt',
-  'ru',
-  'hi-IN',
-  'mr-IN',
-  'tr',
-  'ar',
-  'th',
-  'id',
-  'vi'
-];
-
-// 语言代码映射
-const languageMapping: { [key: string]: string } = {
-  'zh': 'zh-CN',
-  'zh-Hans': 'zh-CN',
-  'zh-Hans-CN': 'zh-CN',
-  'zh-Hans-SG': 'zh-CN',
-  'zh-Hans-HK': 'zh-CN',
-  'zh-Hans-MO': 'zh-CN',
-  'zh-SG': 'zh-CN',
-  'zh-Hant': 'zh-TW',
-  'zh-Hant-TW': 'zh-TW',
-  'zh-Hant-HK': 'zh-HK',
-  'zh-Hant-MO': 'zh-HK',
-  'zh-HK': 'zh-HK',
-  'zh-MO': 'zh-HK',
-  'mr': 'mr-IN',
-  'hi': 'hi-IN'
-};
-
-// 获取语言的基础部分
-function getBaseLanguage(lang: string): string {
-  // 首先检查完整的语言代码是否在映射中
-  if (languageMapping[lang]) {
-    return languageMapping[lang];
-  }
-  
-  // 然后检查基础语言代码是否在映射中
-  const baseLang = lang.split('-')[0];
-  if (languageMapping[baseLang]) {
-    return languageMapping[baseLang];
-  }
-  
-  // 如果语言代码包含区域（如 de-DE），返回基础语言代码（如 de）
-  if (lang.includes('-') && languages.includes(baseLang)) {
-    return baseLang;
-  }
-  
-  // 返回原始语言代码
-  return lang;
-}
+import { locales, defaultLocale, getBaseLanguage, Locale } from './i18n-config'
 
 // 获取用户首选语言
 function getPreferredLanguage(request: NextRequest): string {
@@ -71,7 +8,7 @@ function getPreferredLanguage(request: NextRequest): string {
   const savedLang = request.cookies.get('i18nextLng')?.value;
   if (savedLang) {
     const mappedLang = getBaseLanguage(savedLang);
-    if (languages.includes(mappedLang)) {
+    if (locales.includes(mappedLang as Locale)) {
       return mappedLang;
     }
   }
@@ -86,14 +23,14 @@ function getPreferredLanguage(request: NextRequest): string {
     // 尝试找到第一个匹配的语言
     for (const lang of preferredLangs) {
       const mappedLang = getBaseLanguage(lang);
-      if (languages.includes(mappedLang)) {
+      if (locales.includes(mappedLang as Locale)) {
         return mappedLang;
       }
     }
   }
 
   // 默认返回英语
-  return 'en';
+  return defaultLocale;
 }
 
 export function middleware(request: NextRequest) {
@@ -111,7 +48,7 @@ export function middleware(request: NextRequest) {
   }
 
   // 检查 URL 是否已经包含语言代码
-  const pathnameHasLocale = languages.some(
+  const pathnameHasLocale = locales.some(
     locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
@@ -128,5 +65,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|manifest.json|locales|.*\\..*).*)']
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-*.js|locales|.*\\..*).*)']
 }; 

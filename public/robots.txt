@@ -1,6 +1,7 @@
+# *
 User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://off.rainif.com/sitemap.xml
-Sitemap: https://off.rainif.com/hreflang-sitemap.xml 
+Sitemap: ${process.env.NEXT_PUBLIC_BASE_URL}/sitemap.xml
+Sitemap: ${process.env.NEXT_PUBLIC_BASE_URL}/hreflang-sitemap.xml 

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,19 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Github, Moon, Sun } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { TimeSelector } from "./TimeSelector";
+import { LanguageSelector } from "./LanguageSelector";
+import { ThemeToggle } from "./ThemeToggle";
+import { CountdownDisplay } from "./CountdownDisplay";
 import "../i18n";
+import { languageNames } from '@/i18n-config';
+import { SiGithub } from '@icons-pack/react-simple-icons';
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -37,7 +35,6 @@ export interface OffWorkCountdownProps {
 }
 
 export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
-  const router = useRouter();
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [reminder, setReminder] = useState(false);
@@ -46,41 +43,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('auto');
-  const progressBarRef = useRef<HTMLDivElement>(null);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
-  const [isChangingLanguage, setIsChangingLanguage] = useState(false);
-
-  // 语言名称映射
-  const languageMap = {
-    de: "Deutsch",
-    en: "English",
-    es: "Español",
-    fr: "Français",
-    "hi-IN": "हिन्दी",
-    it: "Italiano",
-    ja: "日本語",
-    ko: "한국어",
-    "mr-IN": "मराठी",
-    pt: "Português",
-    ru: "Русский",
-    tr: "Türkçe",
-    ar: "اَلْعَرَبِيَّةُ",
-    th: "ไทย",
-    id: "Bahasa Indonesia",
-    vi: "Tiếng Việt",
-    "zh-CN": "简体中文",
-    "zh-HK": "繁體中文（香港）",
-    "zh-TW": "繁體中文（台灣）"
-  };
 
   // 初始化和语言同步
   useEffect(() => {
-    if (i18n.language !== lang) {
-      i18n.changeLanguage(lang);
-    }
     setIsMounted(true);
-  }, [lang, i18n]);
+  }, []);
 
   // 加载本地存储的设置
   useEffect(() => {
@@ -101,20 +70,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       localStorage.setItem("gradient", gradient.toString());
     }
   }, [isMounted, startTime, endTime, reminder, gradient]);
-
-  const changeLanguage = (lng: string) => {
-    setIsChangingLanguage(true);
-    const currentPath = window.location.pathname.split('/').slice(2).join('/');
-    const newPath = `/${lng}${currentPath ? `/${currentPath}` : ''}`;
-    router.push(newPath);
-  };
-
-  // 在语言变化时重置加载状态
-  useEffect(() => {
-    if (i18n.language === lang && isChangingLanguage) {
-      setIsChangingLanguage(false);
-    }
-  }, [i18n.language, lang, isChangingLanguage]);
 
   const calculateProgress = useCallback(() => {
     const now = new Date();
@@ -222,29 +177,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setTimeLeft("");
   };
 
-  const generateHourOptions = () => {
-    const options = [];
-    for (let i = 0; i < 24; i++) {
-      const hour = i.toString().padStart(2, "0");
-      options.push(hour);
-    }
-    return options;
-  };
-
-  const generateMinuteOptions = () => {
-    const options = [];
-    for (let i = 0; i < 60; i++) {
-      const minute = i.toString().padStart(2, "0");
-      options.push(minute);
-    }
-    return options;
-  };
-
-  const handleTimeChange = (
-    type: "start" | "end",
-    hour: string,
-    minute: string
-  ) => {
+  const handleTimeChange = (type: "start" | "end", hour: string, minute: string) => {
     const time = `${hour}:${minute}`;
     if (type === "start") {
       setStartTime(time);
@@ -322,7 +255,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         gradient ? "bg-gradient-animate" : "bg-gray-100 dark:bg-gray-900"
       }`}
     >
-
       <h1 className="sr-only">{t("seo:siteName")}</h1>
 
       <Card className="w-full max-w-md dark:bg-gray-800 dark:border-gray-700">
@@ -340,52 +272,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
                   title="View source code on GitHub"
                 >
-                  <Github size={24} />
+                  <SiGithub size={24} />
                 </a>
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                className="w-9 h-9 p-0"
-              >
-                {theme === 'auto' ? (
-                  <div className="relative">
-                    {window.matchMedia('(prefers-color-scheme: dark)').matches ? <Moon size={20} /> : <Sun size={20} />}
-                    <span className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full w-3 h-3 flex items-center justify-center text-[7px] font-bold">A</span>
-                  </div>
-                ) : theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-              </Button>
-              <div className="relative">
-                <Select 
-                  onValueChange={changeLanguage} 
-                  value={lang}
-                  disabled={isChangingLanguage}
-                >
-                  <SelectTrigger className={`w-[100px] ${isChangingLanguage ? 'opacity-50' : ''}`}>
-                    <SelectValue>
-                      {isChangingLanguage ? (
-                        <div className="flex items-center justify-center">
-                          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                        </div>
-                      ) : (
-                        languageMap[lang as keyof typeof languageMap]
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[40vh] overflow-y-auto">
-                    <div className="grid grid-cols-1 gap-1">
-                      {Object.entries(languageMap).map(([code, name]) => (
-                        <SelectItem key={code} value={code} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </div>
-                  </SelectContent>
-                </Select>
-              </div>
+              <ThemeToggle theme={theme} onToggle={toggleTheme} />
+              <LanguageSelector currentLang={lang} languageMap={languageNames} />
             </div>
           </div>
         </CardHeader>
@@ -400,88 +293,18 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 transition={{ duration: 0.3 }}
                 className="space-y-4"
               >
-                <div className="space-y-2">
-                  <Label htmlFor="startTimeHour">{t("startTime")}</Label>
-                  <div className="flex space-x-2">
-                    <select
-                      id="startTimeHour"
-                      value={startTime.split(":")[0]}
-                      onChange={(e) =>
-                        handleTimeChange(
-                          "start",
-                          e.target.value,
-                          startTime.split(":")[1]
-                        )
-                      }
-                      className="w-1/2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    >
-                      {generateHourOptions().map((hour) => (
-                        <option key={hour} value={hour}>
-                          {hour}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      id="startTimeMinute"
-                      value={startTime.split(":")[1]}
-                      onChange={(e) =>
-                        handleTimeChange(
-                          "start",
-                          startTime.split(":")[0],
-                          e.target.value
-                        )
-                      }
-                      className="w-1/2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    >
-                      {generateMinuteOptions().map((minute) => (
-                        <option key={minute} value={minute}>
-                          {minute}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="endTimeHour" className="dark:text-gray-200">{t("endTime")}</Label>
-                  <div className="flex space-x-2">
-                    <select
-                      id="endTimeHour"
-                      value={endTime.split(":")[0]}
-                      onChange={(e) =>
-                        handleTimeChange(
-                          "end",
-                          e.target.value,
-                          endTime.split(":")[1]
-                        )
-                      }
-                      className="w-1/2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    >
-                      {generateHourOptions().map((hour) => (
-                        <option key={hour} value={hour}>
-                          {hour}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      id="endTimeMinute"
-                      value={endTime.split(":")[1]}
-                      onChange={(e) =>
-                        handleTimeChange(
-                          "end",
-                          endTime.split(":")[0],
-                          e.target.value
-                        )
-                      }
-                      className="w-1/2 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    >
-                      {generateMinuteOptions().map((minute) => (
-                        <option key={minute} value={minute}>
-                          {minute}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                <TimeSelector
+                  id="startTime"
+                  label={t("startTime")}
+                  value={startTime}
+                  onChange={(hour, minute) => handleTimeChange("start", hour, minute)}
+                />
+                <TimeSelector
+                  id="endTime"
+                  label={t("endTime")}
+                  value={endTime}
+                  onChange={(hour, minute) => handleTimeChange("end", hour, minute)}
+                />
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="reminder"
@@ -500,53 +323,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 </div>
               </motion.div>
             ) : (
-              <motion.div
-                key="countdown"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-4"
-              >
-                <div
-                  className="text-4xl font-bold text-center whitespace-nowrap overflow-hidden dark:text-white"
-                  style={{
-                    minWidth: 0,
-                    fontSize: "clamp(1.5rem, 5vw, 2.25rem)",
-                    lineHeight: "1.2",
-                  }}
-                >
-                  {timeLeft}
-                </div>
-                <div className="relative pt-10" ref={progressBarRef}>
-                  <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-primary"
-                      style={{ width: `${progress}%` }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                    />
-                  </div>
-                  <motion.div
-                    className="absolute top-0 left-0 transform -translate-y-full"
-                    style={{
-                      left: `calc(${progress}%)`,
-                      x: "-50%",
-                    }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  >
-                    <div className="relative">
-                      <div className="bg-primary text-primary-foreground px-3 py-1 rounded-md shadow-md text-sm font-semibold whitespace-nowrap">
-                        {(Math.floor(progress * 10) / 10).toFixed(1)}%
-                      </div>
-                      <div className="absolute left-1/2 top-full -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-primary" />
-                    </div>
-                  </motion.div>
-                </div>
-              </motion.div>
+              <CountdownDisplay timeLeft={timeLeft} progress={progress} />
             )}
           </AnimatePresence>
         </CardContent>

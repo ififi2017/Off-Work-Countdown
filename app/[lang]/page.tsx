@@ -1,13 +1,14 @@
 import { OffWorkCountdown } from '@/components/off-work-countdown';
 
 type Props = {
-  params: { lang: string }
+  params: Promise<{ lang: string }> | { lang: string }
 };
 
-export default function Home({ params }: Props) {
+export default async function Home({ params }: Props) {
+  const { lang } = await params;
   return (
     <div className="min-h-screen">
-      <OffWorkCountdown lang={params.lang} />
+      <OffWorkCountdown lang={lang} />
     </div>
   );
 } 

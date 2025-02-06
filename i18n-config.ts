@@ -1,11 +1,11 @@
 export const defaultLocale = 'en'
 
+// 支持的语言列表
 export const locales = [
   'en',
   'zh-CN',
   'zh-TW',
   'zh-HK',
-  'tr',
   'ja',
   'ko',
   'fr',
@@ -14,15 +14,16 @@ export const locales = [
   'it',
   'pt',
   'ru',
-  'ar',
   'hi-IN',
   'mr-IN',
+  'tr',
+  'ar',
   'th',
   'id',
   'vi'
-] as const
+] as const;
 
-export type Locale = (typeof locales)[number]
+export type Locale = (typeof locales)[number];
 
 // 语言代码映射
 export const languageMapping: { [key: string]: string } = {
@@ -41,7 +42,7 @@ export const languageMapping: { [key: string]: string } = {
   'zh-MO': 'zh-HK',
   'mr': 'mr-IN',
   'hi': 'hi-IN'
-}
+};
 
 // 语言名称映射
 export const languageNames: { [key: string]: string } = {
@@ -64,4 +65,26 @@ export const languageNames: { [key: string]: string } = {
   'th': 'ไทย',
   'id': 'Bahasa Indonesia',
   'vi': 'Tiếng Việt'
+};
+
+// 获取基础语言代码
+export function getBaseLanguage(lang: string): string {
+  // 首先检查完整的语言代码是否在映射中
+  if (languageMapping[lang]) {
+    return languageMapping[lang];
+  }
+  
+  // 然后检查基础语言代码是否在映射中
+  const baseLang = lang.split('-')[0];
+  if (languageMapping[baseLang]) {
+    return languageMapping[baseLang];
+  }
+  
+  // 如果语言代码包含区域（如 de-DE），返回基础语言代码（如 de）
+  if (lang.includes('-') && locales.includes(baseLang as Locale)) {
+    return baseLang;
+  }
+  
+  // 返回原始语言代码
+  return lang;
 } 

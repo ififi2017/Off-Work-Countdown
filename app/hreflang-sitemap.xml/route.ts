@@ -1,40 +1,39 @@
 import { locales } from '@/i18n-config'
 import { NextResponse } from 'next/server'
+import { siteConfig } from '@/config/site'
 
 export const GET = async () => {
-  const baseUrl = 'https://off.rainif.com'
-
   // 生成 XML
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
             xmlns:xhtml="http://www.w3.org/1999/xhtml">
       <url>
-        <loc>${baseUrl}</loc>
+        <loc>${siteConfig.baseUrl}</loc>
         ${locales.map((locale) => `
           <xhtml:link 
             rel="alternate" 
             hreflang="${locale}"
-            href="${baseUrl}/${locale}"
+            href="${siteConfig.baseUrl}/${locale}"
           />`).join('')}
         <xhtml:link 
           rel="alternate" 
           hreflang="x-default"
-          href="${baseUrl}"
+          href="${siteConfig.baseUrl}"
         />
       </url>
       ${locales.map((locale) => `
         <url>
-          <loc>${baseUrl}/${locale}</loc>
+          <loc>${siteConfig.baseUrl}/${locale}</loc>
           ${locales.map((l) => `
             <xhtml:link 
               rel="alternate" 
               hreflang="${l}"
-              href="${baseUrl}/${l}"
+              href="${siteConfig.baseUrl}/${l}"
             />`).join('')}
           <xhtml:link 
             rel="alternate" 
             hreflang="x-default"
-            href="${baseUrl}"
+            href="${siteConfig.baseUrl}"
           />
         </url>
       `).join('')}

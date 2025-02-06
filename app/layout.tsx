@@ -4,10 +4,12 @@ import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistratio
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
 import { I18nProvider } from "@/components/I18nProvider";
+import { ManifestLink } from "@/components/ManifestLink";
 import type { Metadata } from "next";
 import { locales } from "@/i18n-config";
 import fs from 'fs/promises';
 import path from 'path';
+import { siteConfig } from '@/config/site';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -39,13 +41,13 @@ export async function generateMetadata({ params }: { params?: { lang?: string } 
   const seo = await getTranslations(lang, 'seo');
 
   return {
-    metadataBase: new URL('https://off.rainif.com'),
+    metadataBase: new URL(siteConfig.baseUrl),
     alternates: {
-      canonical: `https://off.rainif.com/${lang}`,
+      canonical: `${siteConfig.baseUrl}/${lang}`,
       languages: Object.fromEntries(
         locales.map(l => [
           l,
-          `https://off.rainif.com/${l}`
+          `${siteConfig.baseUrl}/${l}`
         ])
       )
     },
@@ -66,7 +68,7 @@ export async function generateMetadata({ params }: { params?: { lang?: string } 
       description: seo.description,
       type: "website",
       locale: lang,
-      url: `https://off.rainif.com/${lang}`,
+      url: `${siteConfig.baseUrl}/${lang}`,
       siteName: seo.siteName,
       images: [{ 
         url: "https://github.com/ififi2017/Off-Work-Countdown/raw/main/readme_image/demo.jpg",
@@ -112,19 +114,23 @@ export default function RootLayout({
   return (
     <html lang={lang} suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest" />
+        <ManifestLink />
+        <meta name="theme-color" content={siteConfig.themeColor} />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="下班倒计时" />
         {locales.map((lang) => (
           <link
             key={lang}
             rel="alternate"
             hrefLang={lang}
-            href={`https://off.rainif.com/${lang}`}
+            href={`${siteConfig.baseUrl}/${lang}`}
           />
         ))}
         <link
           rel="alternate"
           hrefLang="x-default"
-          href="https://off.rainif.com"
+          href={siteConfig.baseUrl}
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>

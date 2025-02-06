@@ -14,36 +14,81 @@
 - 支持离线使用的渐进式Web应用(PWA)
 - 适应各种设备的响应式设计
 - 多语言支持(i18n)
+- 深色模式支持（明亮/深色/自动）
 
 ## 使用的技术
 
-- Next.js
+- Next.js 15 (App Router)
 - React
 - TypeScript
 - Tailwind CSS
 - Framer Motion
 - next-pwa
-- next-i18next
+- i18next
 
 ## 开始使用
 
 1. 克隆仓库:
-```
+```bash
 git clone https://github.com/ififi2017/Off-Work-Countdown.git
 ```
 
 2. 安装依赖:
-```
+```bash
 cd Off-Work-Countdown
 npm install
 ```
 
-3. 运行开发服务器:
+3. 配置环境变量:
+在根目录创建 `.env.local` 文件:
+```env
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
+
+4. 运行开发服务器:
+```bash
 npm run dev
 ```
 
-4. 在浏览器中打开 [http://localhost:3000](http://localhost:3000) 查看结果。
+5. 在浏览器中打开 [http://localhost:3000](http://localhost:3000) 查看结果。
+
+## 配置说明
+
+### 站点配置
+
+站点配置集中在 `config/site.ts` 文件中：
+
+```typescript
+export const siteConfig = {
+  name: "Off Work Countdown",
+  baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://off.rainif.com',
+  github: "https://github.com/ififi2017/Off-Work-Countdown",
+  themeColor: "#F3F4F6",
+} as const;
+```
+
+### 国际化配置
+
+语言配置管理在 `i18n-config.ts` 文件中：
+
+```typescript
+export const defaultLocale = 'en'
+export const locales = ['en', 'zh-CN', 'zh-TW', ...] as const;
+
+// 语言代码映射（用于处理语言变体）
+export const languageMapping = {
+  'zh': 'zh-CN',
+  'zh-Hans': 'zh-CN',
+  // ... 更多映射
+};
+
+// 语言显示名称
+export const languageNames = {
+  'en': 'English',
+  'zh-CN': '简体中文',
+  // ... 更多语言名称
+};
+```
 
 ## 使用说明
 
@@ -54,6 +99,7 @@ npm run dev
 5. 应用将显示剩余时间和进度条。
 6. 您可以随时点击"返回"按钮回到设置界面。
 7. 使用语言选择器切换可用语言。
+8. 使用主题切换按钮在明亮、深色和自动模式之间切换。
 
 ## PWA支持
 
@@ -72,9 +118,11 @@ npm run dev
 我们希望扩展应用的语言支持。如果您想贡献翻译:
 
 1. Fork仓库并为您的语言创建一个新分支。
-2. 在`public/locales`目录中为您的语言创建一个新文件夹(例如,法语为`fr/translation.json`)。
-3. 翻译新语言文件中的所有字符串。
-4. 更新语言选择器组件以包含新的语言选项。
+2. 在 `i18n-config.ts` 的 `locales` 数组中添加您的语言代码。
+3. 在 `i18n-config.ts` 的 `languageNames` 对象中添加您的语言名称。
+4. 在 `public/locales/[lang]` 目录中创建翻译文件：
+   - `translation.json` - 用于UI字符串
+   - `seo.json` - 用于SEO元数据
 5. 使用新语言彻底测试应用。
 6. 提交包含您更改的pull request。
 
