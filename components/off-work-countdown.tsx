@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Github } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { TimeSelector } from "./TimeSelector";
@@ -20,7 +20,6 @@ import { ThemeToggle } from "./ThemeToggle";
 import { CountdownDisplay } from "./CountdownDisplay";
 import "../i18n";
 import { languageNames } from '@/i18n-config';
-import { SiGithub } from '@icons-pack/react-simple-icons';
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -272,7 +271,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
                   title="View source code on GitHub"
                 >
-                  <SiGithub size={24} />
+                  <Github size={24} />
                 </a>
               )}
             </div>

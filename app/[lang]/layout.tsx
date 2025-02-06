@@ -19,9 +19,8 @@ async function getTranslations(lang: string, ns: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: string }> | { lang: string } }): Promise<Metadata> {
-  const { lang } = await params;
-  const seo = await getTranslations(lang, 'seo');
+export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
+  const seo = await getTranslations(params.lang, 'seo');
 
   return {
     title: seo.title,
@@ -40,8 +39,8 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       title: seo.title,
       description: seo.description,
       type: "website",
-      locale: lang,
-      url: `${siteConfig.baseUrl}/${lang}`,
+      locale: params.lang,
+      url: `${siteConfig.baseUrl}/${params.lang}`,
       siteName: seo.siteName,
       images: [{ 
         url: "https://github.com/ififi2017/Off-Work-Countdown/raw/main/readme_image/demo.jpg",
@@ -57,7 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       images: ['https://github.com/ififi2017/Off-Work-Countdown/raw/main/readme_image/demo.jpg'],
     },
     alternates: {
-      canonical: `${siteConfig.baseUrl}/${lang}`,
+      canonical: `${siteConfig.baseUrl}/${params.lang}`,
       languages: Object.fromEntries(
         locales.map(l => [
           l,
@@ -72,10 +71,13 @@ export async function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
 
-export default async function Layout({
+export default function Layout({
   children,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  params,
 }: {
   children: ReactNode;
+  params: { lang: string };
 }) {
   return children;
 } 

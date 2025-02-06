@@ -16,11 +16,10 @@ Off Work Countdown is a Next.js-based web application that helps you keep track 
 - Progressive Web App (PWA) support for offline use
 - Responsive design for various devices
 - Multi-language support (i18n)
-- Dark mode support (light/dark/auto)
 
 ## Technologies Used
 
-- Next.js 15 (App Router)
+- Next.js 14 (App Router)
 - React
 - TypeScript
 - Tailwind CSS
@@ -41,9 +40,12 @@ cd Off-Work-Countdown
 npm install
 ```
 
-3. Configure environment variables:
-Create a `.env.local` file in the root directory:
-```env
+3. Configure the environment:
+```bash
+# Create .env.local file
+cp .env.example .env.local
+
+# Edit .env.local and set your base URL
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
@@ -75,21 +77,21 @@ Language configuration is managed in `i18n-config.ts`:
 
 ```typescript
 export const defaultLocale = 'en'
-export const locales = ['en', 'zh-CN', 'zh-TW', ...] as const;
+export const locales = ['en', 'zh-CN', 'zh-TW', ...] as const
 
-// Language mapping for variants
+// Language code mapping
 export const languageMapping = {
   'zh': 'zh-CN',
   'zh-Hans': 'zh-CN',
   // ... more mappings
-};
+}
 
 // Language display names
 export const languageNames = {
   'en': 'English',
   'zh-CN': '简体中文',
   // ... more names
-};
+}
 ```
 
 ## Usage
@@ -101,7 +103,6 @@ export const languageNames = {
 5. The app will display the remaining time and a progress bar.
 6. You can return to the settings at any time by clicking the "Return" button.
 7. Use the language selector to switch between available languages.
-8. Toggle between light, dark, and auto theme modes using the theme switcher.
 
 ## PWA Support
 
@@ -120,9 +121,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 We're looking to expand our app's language support. If you'd like to contribute translations:
 
 1. Fork the repository and create a new branch for your language.
-2. Add your language code to the `locales` array in `i18n-config.ts`.
-3. Add your language name to the `languageNames` object in `i18n-config.ts`.
-4. Create translation files in the `public/locales/[lang]` directory:
+2. Add your language code to `locales` array in `i18n-config.ts`.
+3. Add language mapping and display name if needed.
+4. Create translation files in `public/locales/[lang]/`:
    - `translation.json` - for UI strings
    - `seo.json` - for SEO metadata
 5. Test the app thoroughly with the new language.
