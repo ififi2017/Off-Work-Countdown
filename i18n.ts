@@ -2,7 +2,7 @@
 
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import { defaultLocale } from "./i18n-config";
+import { defaultLocale, getBaseLanguage, locales } from "./i18n-config";
 import { Callback } from "i18next";
 
 interface Resources {
@@ -21,6 +21,15 @@ function getInitialLanguage(): string {
   const pathSegments = window.location.pathname.split("/");
   if (pathSegments.length > 1 && pathSegments[1]) {
     return pathSegments[1];
+  }
+
+  // 从浏览器语言设置中获取语言
+  const browserLang = navigator.language || (navigator as any).userLanguage;
+  if (browserLang) {
+    const baseLanguage = getBaseLanguage(browserLang);
+    if (locales.includes(baseLanguage as any)) {
+      return baseLanguage;
+    }
   }
 
   return defaultLocale;
@@ -87,9 +96,13 @@ i18n.use(initReactI18next).init({
   react: {
     useSuspense: false,
   },
-  load: "currentOnly", // 只加载具体的语言，不加载语言族
+  load: "currentOnly",
   detection: {
-    order: ["path"], // 只从路径中检测语言
+    order: ["path", "querystring", "cookie", "localStorage", "navigator"],
+    lookupQuerystring: "lng",
+    lookupCookie: "i18nextLng",
+    lookupLocalStorage: "i18nextLng",
+    caches: ["localStorage", "cookie"],
   },
 });
 
