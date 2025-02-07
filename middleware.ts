@@ -100,7 +100,8 @@ export const config = {
      * - robots.txt
      * - sitemap.xml
      * - hreflang-sitemap.xml
+     * - baidu_verify_codeva-SXZydSeYe0.html
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|robots.txt|sitemap.xml|hreflang-sitemap.xml).*)'
+    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|robots.txt|sitemap.xml|hreflang-sitemap.xml|baidu_verify_codeva-SXZydSeYe0.html).*)'
   ]
 }; 
