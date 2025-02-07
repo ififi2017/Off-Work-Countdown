@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-
-# Sitemaps
-Sitemap: https://off.rainif.com/sitemap.xml
-Sitemap: https://off.rainif.com/hreflang-sitemap.xml 
