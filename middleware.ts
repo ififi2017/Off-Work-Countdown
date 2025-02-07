@@ -46,7 +46,10 @@ export function middleware(request: NextRequest) {
     pathname === '/sw.js' ||
     pathname.startsWith('/workbox-') ||
     pathname.startsWith('/locales/') ||
-    pathname.match(/^\/icon-\d+x\d+\.png$/)
+    pathname.match(/^\/icon-\d+x\d+\.png$/) ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml' ||
+    pathname === '/hreflang-sitemap.xml'
   ) {
     return NextResponse.next();
   }
@@ -94,7 +97,10 @@ export const config = {
      * - sw.js (Service Worker)
      * - workbox-*.js (Workbox files)
      * - locales
+     * - robots.txt
+     * - sitemap.xml
+     * - hreflang-sitemap.xml
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales).*)'
+    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|robots.txt|sitemap.xml|hreflang-sitemap.xml).*)'
   ]
 }; 

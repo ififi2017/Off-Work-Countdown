@@ -8,6 +8,18 @@ const nextConfig = {
         source: '/locales/:path*',
         destination: '/locales/:path*',
       },
+      {
+        source: '/robots.txt',
+        destination: '/robots.txt',
+      },
+      {
+        source: '/sitemap.xml',
+        destination: '/sitemap.xml',
+      },
+      {
+        source: '/hreflang-sitemap.xml',
+        destination: '/hreflang-sitemap.xml',
+      },
     ];
   },
 };
