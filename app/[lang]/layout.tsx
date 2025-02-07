@@ -1,29 +1,19 @@
 import { ReactNode } from 'react';
 import { locales } from '@/i18n-config';
-import { Metadata } from 'next';
-import path from 'path';
-import fs from 'fs/promises';
-import { siteConfig } from '@/config/site';
 import { I18nProvider } from '@/components/I18nProvider';
+import { Metadata, Viewport } from 'next';
+import { siteConfig } from '@/config/site';
+import { getTranslations } from '@/lib/server/i18n';
 
-async function getTranslations(lang: string, ns: string) {
-  try {
-    const filePath = path.join(process.cwd(), 'public', 'locales', lang, `${ns}.json`);
-    const content = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(content);
-  } catch (error) {
-    console.error(`Failed to load translations for ${lang}/${ns}:`, error);
-    // 如果找不到翻译文件，返回英文翻译
-    const enFilePath = path.join(process.cwd(), 'public', 'locales', 'en', `${ns}.json`);
-    const enContent = await fs.readFile(enFilePath, 'utf8');
-    return JSON.parse(enContent);
-  }
-}
+export const viewport: Viewport = {
+  themeColor: siteConfig.themeColor,
+};
 
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
   const seo = await getTranslations(params.lang, 'seo');
 
   return {
+    metadataBase: new URL(siteConfig.baseUrl),
     title: seo.title,
     description: seo.description,
     keywords: seo.keywords,
@@ -64,6 +54,22 @@ export async function generateMetadata({ params }: { params: { lang: string } })
           `${siteConfig.baseUrl}/${l}`
         ])
       )
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    verification: {
+      other: {
+        'baidu-site-verification': 'codeva-SXZydSeYe0'
+      }
     },
   };
 }

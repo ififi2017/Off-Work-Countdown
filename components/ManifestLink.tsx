@@ -25,10 +25,6 @@ export function ManifestLink() {
         href={`/manifest.json?lang=${lang}`}
         crossOrigin="use-credentials"
       />
-      <meta name="theme-color" content="#F3F4F6" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      <meta name="apple-mobile-web-app-title" content="下班倒计时" />
     </>
   );
 } 

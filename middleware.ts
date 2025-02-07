@@ -45,7 +45,8 @@ export function middleware(request: NextRequest) {
     pathname === '/manifest.json' ||
     pathname === '/sw.js' ||
     pathname.startsWith('/workbox-') ||
-    pathname.startsWith('/locales/')
+    pathname.startsWith('/locales/') ||
+    pathname.match(/^\/icon-\d+x\d+\.png$/)
   ) {
     return NextResponse.next();
   }
