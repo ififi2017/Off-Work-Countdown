@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function ManifestLink() {
   const pathname = usePathname();
-  const [lang, setLang] = useState('');
+  const [lang, setLang] = useState("");
 
   useEffect(() => {
     if (pathname) {
-      const pathParts = pathname.split('/');
+      const pathParts = pathname.split("/");
       if (pathParts.length > 1 && pathParts[1]) {
         setLang(pathParts[1]);
       }
@@ -20,11 +20,11 @@ export function ManifestLink() {
 
   return (
     <>
-      <link 
-        rel="manifest" 
+      <link
+        rel="manifest"
         href={`/manifest.json?lang=${lang}`}
         crossOrigin="use-credentials"
       />
     </>
   );
-} 
+}

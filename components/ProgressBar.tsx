@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { motion } from "framer-motion";
 import { useRef } from "react";
@@ -40,4 +40,4 @@ export function ProgressBar({ progress }: ProgressBarProps) {
       </motion.div>
     </div>
   );
-} 
+}

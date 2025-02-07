@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { defaultLocale, locales, Locale } from '@/i18n-config';
-import path from 'path';
-import fs from 'fs/promises';
-import { siteConfig } from '@/config/site';
+import { NextResponse } from "next/server";
+import { defaultLocale, locales, Locale } from "@/i18n-config";
+import path from "path";
+import fs from "fs/promises";
+import { siteConfig } from "@/config/site";
 
 async function getTranslations(lang: string, ns: string) {
   try {
@@ -11,13 +11,25 @@ async function getTranslations(lang: string, ns: string) {
       lang = defaultLocale;
     }
 
-    const filePath = path.join(process.cwd(), 'public', 'locales', lang, `${ns}.json`);
-    const content = await fs.readFile(filePath, 'utf8');
+    const filePath = path.join(
+      process.cwd(),
+      "public",
+      "locales",
+      lang,
+      `${ns}.json`
+    );
+    const content = await fs.readFile(filePath, "utf8");
     return JSON.parse(content);
   } catch (error) {
     console.error(`Failed to load translations for ${lang}/${ns}:`, error);
-    const enFilePath = path.join(process.cwd(), 'public', 'locales', 'en', `${ns}.json`);
-    const enContent = await fs.readFile(enFilePath, 'utf8');
+    const enFilePath = path.join(
+      process.cwd(),
+      "public",
+      "locales",
+      "en",
+      `${ns}.json`
+    );
+    const enContent = await fs.readFile(enFilePath, "utf8");
     return JSON.parse(enContent);
   }
 }
@@ -25,7 +37,7 @@ async function getTranslations(lang: string, ns: string) {
 export async function GET(request: Request) {
   // 从 URL 查询参数中获取语言代码
   const { searchParams } = new URL(request.url);
-  let lang = searchParams.get('lang') || defaultLocale;
+  let lang = searchParams.get("lang") || defaultLocale;
 
   // 验证语言代码
   if (!locales.includes(lang as Locale)) {
@@ -33,11 +45,11 @@ export async function GET(request: Request) {
   }
 
   // 如果没有从查询参数获取到语言，尝试从 Referer 获取
-  if (!searchParams.has('lang')) {
-    const referer = request.headers.get('referer');
+  if (!searchParams.has("lang")) {
+    const referer = request.headers.get("referer");
     if (referer) {
       const refererUrl = new URL(referer);
-      const pathParts = refererUrl.pathname.split('/');
+      const pathParts = refererUrl.pathname.split("/");
       if (pathParts.length > 1 && pathParts[1]) {
         const refererLang = pathParts[1];
         if (locales.includes(refererLang as Locale)) {
@@ -47,12 +59,12 @@ export async function GET(request: Request) {
     }
   }
 
-//   console.log('Manifest requested with language:', lang);
-//   console.log('Request URL:', request.url);
-//   console.log('Referer:', request.headers.get('referer'));
+  //   console.log('Manifest requested with language:', lang);
+  //   console.log('Request URL:', request.url);
+  //   console.log('Referer:', request.headers.get('referer'));
 
   // 获取当前语言的翻译
-  const seo = await getTranslations(lang, 'seo');
+  const seo = await getTranslations(lang, "seo");
 
   const manifest = {
     name: seo.siteName,
@@ -60,7 +72,7 @@ export async function GET(request: Request) {
     description: seo.description,
     id: `/${lang}`,
     start_url: `/${lang}`,
-    scope: '/',
+    scope: "/",
     display: "standalone",
     background_color: siteConfig.themeColor,
     theme_color: siteConfig.themeColor,
@@ -70,20 +82,20 @@ export async function GET(request: Request) {
         src: "/icon-192x192.png",
         sizes: "192x192",
         type: "image/png",
-        purpose: "any maskable"
+        purpose: "any maskable",
       },
       {
         src: "/icon-512x512.png",
         sizes: "512x512",
         type: "image/png",
-        purpose: "any maskable"
-      }
+        purpose: "any maskable",
+      },
     ],
     related_applications: [
       {
         platform: "webapp",
-        url: `${siteConfig.baseUrl}/manifest.json?lang=${lang}`
-      }
+        url: `${siteConfig.baseUrl}/manifest.json?lang=${lang}`,
+      },
     ],
     shortcuts: [
       {
@@ -93,19 +105,19 @@ export async function GET(request: Request) {
           {
             src: "/icon-192x192.png",
             sizes: "192x192",
-            type: "image/png"
-          }
-        ]
-      }
-    ]
+            type: "image/png",
+          },
+        ],
+      },
+    ],
   };
 
   return new NextResponse(JSON.stringify(manifest), {
     headers: {
-      'content-type': 'application/json',
-      'Cache-Control': 'public, max-age=3600',
+      "content-type": "application/json",
+      "Cache-Control": "public, max-age=3600",
     },
   });
 }
 
-export const dynamic = 'force-dynamic'; 
+export const dynamic = "force-dynamic";

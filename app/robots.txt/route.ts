@@ -1,4 +1,4 @@
-import { siteConfig } from '@/config/site';
+import { siteConfig } from "@/config/site";
 
 export function GET() {
   const robotsTxt = `# *
@@ -10,10 +10,10 @@ Sitemap: ${siteConfig.baseUrl}/hreflang-sitemap.xml`;
 
   return new Response(robotsTxt, {
     headers: {
-      'Content-Type': 'text/plain',
-      'Cache-Control': 'public, max-age=3600',
+      "Content-Type": "text/plain",
+      "Cache-Control": "public, max-age=3600",
     },
   });
 }
 
-export const dynamic = 'force-dynamic'; 
+export const dynamic = "force-dynamic";

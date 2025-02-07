@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Label } from "@/components/ui/label";
 
@@ -9,7 +9,12 @@ interface TimeSelectorProps {
   onChange: (hour: string, minute: string) => void;
 }
 
-export function TimeSelector({ id, label, value, onChange }: TimeSelectorProps) {
+export function TimeSelector({
+  id,
+  label,
+  value,
+  onChange,
+}: TimeSelectorProps) {
   const [hour, minute] = value.split(":");
 
   const generateHourOptions = () => {
@@ -32,7 +37,9 @@ export function TimeSelector({ id, label, value, onChange }: TimeSelectorProps) 
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={`${id}Hour`} className="dark:text-gray-200">{label}</Label>
+      <Label htmlFor={`${id}Hour`} className="dark:text-gray-200">
+        {label}
+      </Label>
       <div className="flex space-x-2">
         <select
           id={`${id}Hour`}
@@ -61,4 +68,4 @@ export function TimeSelector({ id, label, value, onChange }: TimeSelectorProps) 
       </div>
     </div>
   );
-} 
+}

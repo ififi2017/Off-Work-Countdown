@@ -1,5 +1,5 @@
-import { locales } from '@/i18n-config'
-import { siteConfig } from '@/config/site'
+import { locales } from "@/i18n-config";
+import { siteConfig } from "@/config/site";
 
 export default async function sitemap() {
   const routes = locales.map((locale) => ({
@@ -13,5 +13,5 @@ export default async function sitemap() {
       lastModified: new Date().toISOString(),
     },
     ...routes,
-  ]
-} 
+  ];
+}

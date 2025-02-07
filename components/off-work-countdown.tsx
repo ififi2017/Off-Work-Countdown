@@ -19,7 +19,7 @@ import { LanguageSelector } from "./LanguageSelector";
 import { ThemeToggle } from "./ThemeToggle";
 import { CountdownDisplay } from "./CountdownDisplay";
 import "../i18n";
-import { languageNames } from '@/i18n-config';
+import { languageNames } from "@/i18n-config";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -41,7 +41,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [showCountdown, setShowCountdown] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
-  const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('auto');
+  const [theme, setTheme] = useState<"light" | "dark" | "auto">("auto");
   const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
 
@@ -176,7 +176,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setTimeLeft("");
   };
 
-  const handleTimeChange = (type: "start" | "end", hour: string, minute: string) => {
+  const handleTimeChange = (
+    type: "start" | "end",
+    hour: string,
+    minute: string
+  ) => {
     const time = `${hour}:${minute}`;
     if (type === "start") {
       setStartTime(time);
@@ -188,59 +192,79 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 初始化主题
   useEffect(() => {
     if (isMounted) {
-      // 从 localStorage 获取主题设置
-      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
-      
-      if (savedTheme) {
-        setTheme(savedTheme);
-        if (savedTheme === 'auto') {
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          document.documentElement.classList.toggle('dark', prefersDark);
-        } else {
-          document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-        }
+      const savedTheme = localStorage.getItem("theme") as
+        | "light"
+        | "dark"
+        | "auto"
+        | null;
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+
+      // 设置初始主题
+      const initialTheme = savedTheme || "auto";
+      setTheme(initialTheme);
+
+      // 应用主题
+      if (initialTheme === "auto") {
+        document.documentElement.classList.toggle("dark", prefersDark);
       } else {
-        // 如果没有保存的主题，则默认使用自动模式
-        setTheme('auto');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.classList.toggle('dark', prefersDark);
+        document.documentElement.classList.toggle(
+          "dark",
+          initialTheme === "dark"
+        );
       }
-
-      // 监听系统主题变化
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = (e: MediaQueryListEvent) => {
-        if (theme === 'auto') {
-          document.documentElement.classList.toggle('dark', e.matches);
-        }
-      };
-
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
     }
+  }, [isMounted]);
+
+  // 监听系统主题变化
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (theme === "auto") {
+        document.documentElement.classList.toggle("dark", e.matches);
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, [isMounted, theme]);
 
   // 切换主题
   const toggleTheme = () => {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    let newTheme: 'light' | 'dark' | 'auto';
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
 
-    if (theme === 'auto') {
-      // 从自动模式切换到明确的模式（与当前系统主题相反）
-      newTheme = prefersDark ? 'light' : 'dark';
-    } else if (theme === 'light') {
-      newTheme = 'dark';
+    let newTheme: "light" | "dark" | "auto";
+
+    // 根据当前主题确定下一个主题
+    if (theme === "auto") {
+      // 从自动模式切换到浅色模式
+      newTheme = "light";
+    } else if (theme === "light") {
+      // 从浅色模式切换到深色模式
+      newTheme = "dark";
     } else {
       // 从深色模式切换回自动模式
-      newTheme = 'auto';
+      newTheme = "auto";
     }
 
+    // 更新主题状态
     setTheme(newTheme);
-    if (newTheme === 'auto') {
-      document.documentElement.classList.toggle('dark', prefersDark);
-    } else {
-      document.documentElement.classList.toggle('dark', newTheme === 'dark');
+
+    // 应用主题
+    document.documentElement.classList.remove("dark");
+    if (newTheme === "auto") {
+      document.documentElement.classList.toggle("dark", prefersDark);
+    } else if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
     }
-    localStorage.setItem('theme', newTheme);
+
+    // 保存到 localStorage
+    localStorage.setItem("theme", newTheme);
   };
 
   // 如果还没有挂载，返回空内容
@@ -277,7 +301,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle theme={theme} onToggle={toggleTheme} />
-              <LanguageSelector currentLang={lang} languageMap={languageNames} />
+              <LanguageSelector
+                currentLang={lang}
+                languageMap={languageNames}
+              />
             </div>
           </div>
         </CardHeader>
@@ -296,13 +323,17 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   id="startTime"
                   label={t("startTime")}
                   value={startTime}
-                  onChange={(hour, minute) => handleTimeChange("start", hour, minute)}
+                  onChange={(hour, minute) =>
+                    handleTimeChange("start", hour, minute)
+                  }
                 />
                 <TimeSelector
                   id="endTime"
                   label={t("endTime")}
                   value={endTime}
-                  onChange={(hour, minute) => handleTimeChange("end", hour, minute)}
+                  onChange={(hour, minute) =>
+                    handleTimeChange("end", hour, minute)
+                  }
                 />
                 <div className="flex items-center space-x-2">
                   <Switch
@@ -310,7 +341,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     checked={reminder}
                     onCheckedChange={setReminder}
                   />
-                  <Label htmlFor="reminder" className="dark:text-gray-200">{t("reminder")}</Label>
+                  <Label htmlFor="reminder" className="dark:text-gray-200">
+                    {t("reminder")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
@@ -318,7 +351,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     checked={gradient}
                     onCheckedChange={setGradient}
                   />
-                  <Label htmlFor="gradient" className="dark:text-gray-200">{t("gradient")}</Label>
+                  <Label htmlFor="gradient" className="dark:text-gray-200">
+                    {t("gradient")}
+                  </Label>
                 </div>
               </motion.div>
             ) : (

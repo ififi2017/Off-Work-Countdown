@@ -5,20 +5,20 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/locales/:path*',
-        destination: '/locales/:path*',
+        source: "/locales/:path*",
+        destination: "/locales/:path*",
       },
       {
-        source: '/robots.txt',
-        destination: '/robots.txt',
+        source: "/robots.txt",
+        destination: "/robots.txt",
       },
       {
-        source: '/sitemap.xml',
-        destination: '/sitemap.xml',
+        source: "/sitemap.xml",
+        destination: "/sitemap.xml",
       },
       {
-        source: '/hreflang-sitemap.xml',
-        destination: '/hreflang-sitemap.xml',
+        source: "/hreflang-sitemap.xml",
+        destination: "/hreflang-sitemap.xml",
       },
     ];
   },
