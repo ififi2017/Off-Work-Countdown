@@ -23,6 +23,24 @@ function getInitialLanguage(): string {
     return pathSegments[1];
   }
 
+  // 优先读取用户已选择的语言（localStorage > cookie）
+  try {
+    const storedLang =
+      window.localStorage.getItem("i18nextLng") ||
+      document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("i18nextLng="))
+        ?.split("=")[1];
+    if (storedLang) {
+      const baseLanguage = getBaseLanguage(storedLang);
+      if (locales.includes(baseLanguage as any)) {
+        return baseLanguage;
+      }
+    }
+  } catch {
+    // ignore storage access issues
+  }
+
   // 从浏览器语言设置中获取语言
   const browserLang = navigator.language || (navigator as any).userLanguage;
   if (browserLang) {
