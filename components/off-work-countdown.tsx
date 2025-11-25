@@ -144,6 +144,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     }
   }, [isMounted, startTime, endTime, reminder, salaryType, salaryAmount, showSalary, hideEarnings]);
 
+  const getDailySalary = useCallback(() => {
+    if (!salaryAmount) return null;
+    const amount = parseFloat(salaryAmount);
+    if (isNaN(amount)) return null;
+    return salaryType === "monthly" ? amount / 21.75 : amount;
+  }, [salaryAmount, salaryType]);
+
   const calculateProgress = useCallback(() => {
     const now = new Date();
     const start = new Date(now.toDateString() + " " + startTime);
@@ -177,6 +184,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           setTimeLeft(t("offWorkTime"));
           setProgress(100);
           setShowConfetti(true);
+          if (showSalary) {
+            const dailySalary = getDailySalary();
+            if (dailySalary !== null) {
+              setMoneyEarned(dailySalary);
+            }
+          }
           clearInterval(interval);
         } else {
           const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -214,12 +227,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           // Calculate money earned
           if (showSalary && salaryAmount) {
             const currentProgress = calculateProgress();
-            const amount = parseFloat(salaryAmount);
-            if (!isNaN(amount)) {
-              let dailySalary = amount;
-              if (salaryType === "monthly") {
-                dailySalary = amount / 21.75;
-              }
+            const dailySalary = getDailySalary();
+            if (dailySalary !== null) {
               setMoneyEarned((dailySalary * currentProgress) / 100);
             }
           }
@@ -230,7 +239,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       interval = setInterval(updateCountdown, 1000);
     }
     return () => clearInterval(interval);
-  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t, salaryAmount, salaryType, showSalary]);
+  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t, showSalary, getDailySalary]);
 
   const handleStart = () => {
     if (startTime === endTime) {
