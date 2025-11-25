@@ -27,5 +27,7 @@
   "amount": "จำนวนเงิน",
   "moneyEarned": "รายได้ที่ได้รับวันนี้",
   "configureSalary": "ตั้งค่าเงินเดือน",
-  "hideSalary": "ซ่อนข้อมูลเงินเดือน"
+  "hideSalary": "ซ่อนข้อมูลเงินเดือน",
+  "hideEarnings": "ซ่อนจำนวนเงิน",
+  "showEarnings": "แสดงจำนวนเงิน"
 }

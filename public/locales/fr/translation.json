@@ -27,5 +27,7 @@
     "amount": "Montant",
     "moneyEarned": "Gains du jour",
     "configureSalary": "Configurer le salaire",
-    "hideSalary": "Masquer le salaire"
+    "hideSalary": "Masquer le salaire",
+    "hideEarnings": "Masquer le montant",
+    "showEarnings": "Afficher le montant"
   }

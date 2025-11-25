@@ -28,6 +28,7 @@ import { CountdownDisplay } from "./CountdownDisplay";
 import { Confetti } from "./Confetti";
 import "../i18n";
 import { languageNames } from "@/i18n-config";
+import { Eye, EyeOff } from "lucide-react";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -59,6 +60,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [showSalary, setShowSalary] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
   const [moneyEarned, setMoneyEarned] = useState(0);
+  const [hideEarnings, setHideEarnings] = useState(false);
+  const [maskAmountField, setMaskAmountField] = useState(true);
 
   // 初始化和语言同步
   useEffect(() => {
@@ -74,6 +77,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setSalaryType((getLocalStorageItem("salaryType", "monthly") as "monthly" | "daily"));
       setSalaryAmount(getLocalStorageItem("salaryAmount", ""));
       setShowSalary(getLocalStorageItem("showSalary", "false") === "true");
+      setHideEarnings(getLocalStorageItem("hideEarnings", "false") === "true");
     }
   }, [isMounted]);
 
@@ -116,8 +120,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       localStorage.setItem("salaryType", salaryType);
       localStorage.setItem("salaryAmount", salaryAmount);
       localStorage.setItem("showSalary", showSalary.toString());
+      localStorage.setItem("hideEarnings", hideEarnings.toString());
     }
-  }, [isMounted, startTime, endTime, reminder]);
+  }, [isMounted, startTime, endTime, reminder, salaryType, salaryAmount, showSalary, hideEarnings]);
 
   const calculateProgress = useCallback(() => {
     const now = new Date();
@@ -447,9 +452,14 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                             <input
                               type="number"
                               className="w-full p-2 rounded-md border bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
-                              value={salaryAmount}
-                              onChange={(e) => setSalaryAmount(e.target.value)}
-                              placeholder="0.00"
+                              value={maskAmountField ? "" : salaryAmount}
+                              onFocus={() => setMaskAmountField(false)}
+                              onBlur={() => setMaskAmountField(true)}
+                              onChange={(e) => {
+                                setMaskAmountField(false);
+                                setSalaryAmount(e.target.value);
+                              }}
+                              placeholder={maskAmountField ? "****" : "0.00"}
                             />
                           </div>
                         </div>
@@ -467,12 +477,25 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     animate={{ opacity: 1, scale: 1 }}
                     className="bg-white/50 dark:bg-black/20 rounded-xl p-4 text-center backdrop-blur-sm"
                   >
-                    <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
-                      <Coins size={16} className="text-yellow-500" />
-                      <span className="text-sm font-medium">{t("moneyEarned")}</span>
+                    <div className="flex items-center justify-between gap-2 text-gray-600 dark:text-gray-400 mb-1">
+                      <div className="flex items-center gap-2">
+                        <Coins size={16} className="text-yellow-500" />
+                        <span className="text-sm font-medium">{t("moneyEarned")}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => setHideEarnings((prev) => !prev)}
+                        aria-pressed={hideEarnings}
+                        aria-label={hideEarnings ? t("showEarnings") : t("hideEarnings")}
+                        title={hideEarnings ? t("showEarnings") : t("hideEarnings")}
+                      >
+                        {hideEarnings ? <Eye size={14} /> : <EyeOff size={14} />}
+                        <span>{hideEarnings ? t("showEarnings") : t("hideEarnings")}</span>
+                      </button>
                     </div>
                     <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-600 dark:from-yellow-400 dark:to-amber-500">
-                      {moneyEarned.toFixed(2)}
+                      {hideEarnings ? "****" : moneyEarned.toFixed(2)}
                     </div>
                   </motion.div>
                 )}

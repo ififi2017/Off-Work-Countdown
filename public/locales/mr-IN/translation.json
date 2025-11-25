@@ -27,5 +27,7 @@
     "amount": "रक्कम",
     "moneyEarned": "आज कमावलेली रक्कम",
     "configureSalary": "पगार कॉन्फिगर करा",
-    "hideSalary": "पगार लपवा"
+    "hideSalary": "पगार लपवा",
+    "hideEarnings": "रक्कम लपवा",
+    "showEarnings": "रक्कम दाखवा"
 } 

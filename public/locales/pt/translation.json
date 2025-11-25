@@ -27,5 +27,7 @@
     "amount": "Valor",
     "moneyEarned": "Dinheiro ganho hoje",
     "configureSalary": "Configurar salário",
-    "hideSalary": "Ocultar salário"
+    "hideSalary": "Ocultar salário",
+    "hideEarnings": "Ocultar valor",
+    "showEarnings": "Mostrar valor"
   }

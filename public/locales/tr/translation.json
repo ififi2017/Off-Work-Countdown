@@ -27,5 +27,7 @@
   "amount": "Tutar",
   "moneyEarned": "Bugün kazanılan para",
   "configureSalary": "Maaşı yapılandır",
-  "hideSalary": "Maaşı gizle"
+  "hideSalary": "Maaşı gizle",
+  "hideEarnings": "Tutarı gizle",
+  "showEarnings": "Tutarı göster"
 }

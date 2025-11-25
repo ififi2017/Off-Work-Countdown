@@ -27,5 +27,7 @@
     "amount": "Importo",
     "moneyEarned": "Guadagno di oggi",
     "configureSalary": "Configura stipendio",
-    "hideSalary": "Nascondi stipendio"
+    "hideSalary": "Nascondi stipendio",
+    "hideEarnings": "Nascondi importo",
+    "showEarnings": "Mostra importo"
   }

@@ -27,5 +27,7 @@
     "amount": "금액",
     "moneyEarned": "오늘 번 금액",
     "configureSalary": "급여 설정하기",
-    "hideSalary": "급여 숨기기"
+    "hideSalary": "급여 숨기기",
+    "hideEarnings": "금액 숨기기",
+    "showEarnings": "금액 보기"
   }

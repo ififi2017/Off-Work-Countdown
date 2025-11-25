@@ -27,5 +27,7 @@
   "amount": "Jumlah",
   "moneyEarned": "Uang yang didapat hari ini",
   "configureSalary": "Atur gaji",
-  "hideSalary": "Sembunyikan gaji"
+  "hideSalary": "Sembunyikan gaji",
+  "hideEarnings": "Sembunyikan jumlah",
+  "showEarnings": "Tampilkan jumlah"
 }

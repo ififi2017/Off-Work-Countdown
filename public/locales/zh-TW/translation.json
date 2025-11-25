@@ -27,5 +27,7 @@
     "amount": "金額",
     "moneyEarned": "今日已賺",
     "configureSalary": "設定薪資",
-    "hideSalary": "隱藏薪資"
+    "hideSalary": "隱藏薪資",
+    "hideEarnings": "隱藏金額",
+    "showEarnings": "顯示金額"
   }

@@ -27,5 +27,7 @@
     "amount": "金額",
     "moneyEarned": "本日の獲得額",
     "configureSalary": "給与を設定",
-    "hideSalary": "給与を非表示"
+    "hideSalary": "給与を非表示",
+    "hideEarnings": "金額を非表示",
+    "showEarnings": "金額を表示"
   }

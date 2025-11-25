@@ -27,5 +27,7 @@
   "amount": "Số tiền",
   "moneyEarned": "Số tiền đã kiếm hôm nay",
   "configureSalary": "Cấu hình lương",
-  "hideSalary": "Ẩn lương"
+  "hideSalary": "Ẩn lương",
+  "hideEarnings": "Ẩn số tiền",
+  "showEarnings": "Hiển thị số tiền"
 }

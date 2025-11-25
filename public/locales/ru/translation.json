@@ -27,5 +27,7 @@
     "amount": "Сумма",
     "moneyEarned": "Заработано сегодня",
     "configureSalary": "Настроить зарплату",
-    "hideSalary": "Скрыть зарплату"
+    "hideSalary": "Скрыть зарплату",
+    "hideEarnings": "Скрыть сумму",
+    "showEarnings": "Показать сумму"
   }

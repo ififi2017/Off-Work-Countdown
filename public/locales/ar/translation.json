@@ -27,5 +27,7 @@
   "amount": "المبلغ",
   "moneyEarned": "الأجر المكتسب اليوم",
   "configureSalary": "تكوين الراتب",
-  "hideSalary": "إخفاء الراتب"
+  "hideSalary": "إخفاء الراتب",
+  "hideEarnings": "إخفاء المبلغ",
+  "showEarnings": "إظهار المبلغ"
 }

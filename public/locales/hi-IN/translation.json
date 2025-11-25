@@ -27,5 +27,7 @@
     "amount": "राशि",
     "moneyEarned": "आज कमाई गई राशि",
     "configureSalary": "वेतन कॉन्फ़िगर करें",
-    "hideSalary": "वेतन छुपाएँ"
+    "hideSalary": "वेतन छुपाएँ",
+    "hideEarnings": "राशि छुपाएँ",
+    "showEarnings": "राशि दिखाएँ"
 } 
