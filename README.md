@@ -4,7 +4,7 @@ Off Work Countdown is a Next.js-based web application that helps you keep track 
 
 [中文版 README](README_CN.md)
 
-![](readme_image/off_EN.JPEG)
+![](readme_image/off_EN.jpg)
 
 ## Features
 
@@ -16,6 +16,7 @@ Off Work Countdown is a Next.js-based web application that helps you keep track 
 - Progressive Web App (PWA) support for offline use
 - Responsive design for various devices
 - Multi-language support (i18n)
+- Support for custom salary calculation
 
 ## Technologies Used
 
@@ -136,7 +137,9 @@ This project is open source and available under the [MIT License](LICENSE).
 ## Acknowledgements
 
 Special thanks to:
-- [@v0.dev](https://v0.dev/) for AI assistance in component design
-- [@cursor.com](https://www.cursor.com/) for AI-powered coding assistance
-- [@claude.ai](https://claude.ai/chats) and [@chatgpt.com](https://chatgpt.com/) for large language model support in development
-- [@vercel.com](https://vercel.com/) for providing hosting and deployment services
+- [@Google Gemini 3 Pro](https://gemini.google.com/) Powerful front-end AI generation capabilities
+- [@v0.dev](https://v0.dev/) AI assistance in component design
+- [@cursor.com](https://www.cursor.com/) AI-powered coding assistance
+- [@claude.ai](https://claude.ai/chats) and [@chatgpt.com](https://chatgpt.com/) Large language model support in development
+- [@vercel.com](https://vercel.com/) Hosting and deployment services
+- [@Cloudflare](https://www.cloudflare.com/) CDN services
