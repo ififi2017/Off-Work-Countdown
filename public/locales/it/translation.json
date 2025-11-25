@@ -19,5 +19,13 @@
     "auto": "Sistema",
     "toggleTheme": "Cambia tema",
     "cyberpunk": "Cyberpunk",
-    "sunset": "Tramonto"
+    "sunset": "Tramonto",
+    "salarySettings": "Impostazioni stipendio",
+    "salaryType": "Tipo di stipendio",
+    "monthly": "Mensile",
+    "daily": "Giornaliero",
+    "amount": "Importo",
+    "moneyEarned": "Guadagno di oggi",
+    "configureSalary": "Configura stipendio",
+    "hideSalary": "Nascondi stipendio"
   }

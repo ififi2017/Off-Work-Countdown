@@ -19,5 +19,13 @@
     "auto": "System",
     "toggleTheme": "Design umschalten",
     "cyberpunk": "Cyberpunk",
-    "sunset": "Sonnenuntergang"
+    "sunset": "Sonnenuntergang",
+    "salarySettings": "Gehaltseinstellungen",
+    "salaryType": "Gehaltstyp",
+    "monthly": "Monatlich",
+    "daily": "Täglich",
+    "amount": "Betrag",
+    "moneyEarned": "Heute verdient",
+    "configureSalary": "Gehalt konfigurieren",
+    "hideSalary": "Gehalt ausblenden"
   }

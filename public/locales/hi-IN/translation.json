@@ -19,5 +19,13 @@
     "auto": "सिस्टम",
     "toggleTheme": "थीम बदलें",
     "cyberpunk": "साइबरपंक",
-    "sunset": "सूर्यास्त"
+    "sunset": "सूर्यास्त",
+    "salarySettings": "वेतन सेटिंग्स",
+    "salaryType": "वेतन प्रकार",
+    "monthly": "मासिक",
+    "daily": "दैनिक",
+    "amount": "राशि",
+    "moneyEarned": "आज कमाई गई राशि",
+    "configureSalary": "वेतन कॉन्फ़िगर करें",
+    "hideSalary": "वेतन छुपाएँ"
 } 

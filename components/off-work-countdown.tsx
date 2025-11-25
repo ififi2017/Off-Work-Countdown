@@ -11,7 +11,14 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Github } from "lucide-react";
+import { ArrowLeft, Github, Coins, Settings2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { TimeSelector } from "./TimeSelector";
@@ -45,6 +52,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  
+  // Salary state
+  const [salaryType, setSalaryType] = useState<"monthly" | "daily">("monthly");
+  const [salaryAmount, setSalaryAmount] = useState("");
+  const [showSalary, setShowSalary] = useState(false);
+  const [isPWA, setIsPWA] = useState(false);
+  const [moneyEarned, setMoneyEarned] = useState(0);
 
   // 初始化和语言同步
   useEffect(() => {
@@ -57,6 +71,14 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setStartTime(getLocalStorageItem("startTime", "09:00"));
       setEndTime(getLocalStorageItem("endTime", "18:00"));
       setReminder(getLocalStorageItem("reminder", "false") === "true");
+      setSalaryType((getLocalStorageItem("salaryType", "monthly") as "monthly" | "daily"));
+      setSalaryAmount(getLocalStorageItem("salaryAmount", ""));
+      setShowSalary(getLocalStorageItem("showSalary", "false") === "true");
+      
+      // Check for PWA
+      if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone) {
+        setIsPWA(true);
+      }
     }
   }, [isMounted]);
 
@@ -66,6 +88,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       localStorage.setItem("startTime", startTime);
       localStorage.setItem("endTime", endTime);
       localStorage.setItem("reminder", reminder.toString());
+      localStorage.setItem("salaryType", salaryType);
+      localStorage.setItem("salaryAmount", salaryAmount);
+      localStorage.setItem("showSalary", showSalary.toString());
     }
   }, [isMounted, startTime, endTime, reminder]);
 
@@ -134,6 +159,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             new Notification(t("offWorkReminder"), {
               body: t("fifteenMinutesLeft"),
             });
+          }
+          
+          // Calculate money earned
+          if (showSalary && salaryAmount) {
+            const currentProgress = calculateProgress();
+            const amount = parseFloat(salaryAmount);
+            if (!isNaN(amount)) {
+              let dailySalary = amount;
+              if (salaryType === "monthly") {
+                dailySalary = amount / 21.75;
+              }
+              setMoneyEarned((dailySalary * currentProgress) / 100);
+            }
           }
         }
       };
@@ -267,7 +305,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       <Confetti trigger={showConfetti} />
       <h1 className="sr-only">{t("seo:siteName")}</h1>
 
-      <Card className="w-full max-w-md glass dark:glass-dark border-0">
+      <Card className={`w-full max-w-md glass dark:glass-dark border-0 ${isPWA ? 'shadow-none bg-transparent border-none' : ''}`}>
         <CardHeader>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -332,9 +370,78 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     {t("reminder")}
                   </Label>
                 </div>
+
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <Label className="flex items-center gap-2 dark:text-gray-200">
+                      <Coins size={16} />
+                      {t("salarySettings")}
+                    </Label>
+                    <Switch
+                      checked={showSalary}
+                      onCheckedChange={setShowSalary}
+                    />
+                  </div>
+                  
+                  <AnimatePresence>
+                    {showSalary && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="space-y-4 overflow-hidden"
+                      >
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs dark:text-gray-400">{t("salaryType")}</Label>
+                            <Select
+                              value={salaryType}
+                              onValueChange={(value) => setSalaryType(value as "monthly" | "daily")}
+                            >
+                              <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                                <SelectValue placeholder={t("salaryType")} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="monthly">{t("monthly")}</SelectItem>
+                                <SelectItem value="daily">{t("daily")}</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs dark:text-gray-400">{t("amount")}</Label>
+                            <input
+                              type="number"
+                              className="w-full p-2 rounded-md border bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
+                              value={salaryAmount}
+                              onChange={(e) => setSalaryAmount(e.target.value)}
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </motion.div>
             ) : (
-              <CountdownDisplay timeLeft={timeLeft} progress={progress} />
+              <div className="space-y-6">
+                <CountdownDisplay timeLeft={timeLeft} progress={progress} />
+                {showSalary && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white/50 dark:bg-black/20 rounded-xl p-4 text-center backdrop-blur-sm"
+                  >
+                    <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
+                      <Coins size={16} className="text-yellow-500" />
+                      <span className="text-sm font-medium">{t("moneyEarned")}</span>
+                    </div>
+                    <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-600 dark:from-yellow-400 dark:to-amber-500">
+                      {moneyEarned.toFixed(2)}
+                    </div>
+                  </motion.div>
+                )}
+              </div>
             )}
           </AnimatePresence>
         </CardContent>

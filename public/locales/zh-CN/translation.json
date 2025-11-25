@@ -19,5 +19,13 @@
   "auto": "跟随系统",
   "toggleTheme": "切换主题",
   "cyberpunk": "赛博朋克",
-  "sunset": "日落"
+  "sunset": "日落",
+  "salarySettings": "薪资设置",
+  "salaryType": "薪资类型",
+  "monthly": "月薪",
+  "daily": "日薪",
+  "amount": "金额",
+  "moneyEarned": "今日已赚",
+  "configureSalary": "配置薪资",
+  "hideSalary": "隐藏薪资"
 }

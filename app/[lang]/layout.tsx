@@ -7,6 +7,11 @@ import { getTranslations } from '@/lib/server/i18n';
 
 export const viewport: Viewport = {
   themeColor: siteConfig.themeColor,
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 };
 
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {

@@ -19,5 +19,13 @@
     "auto": "Sistema",
     "toggleTheme": "Alternar tema",
     "cyberpunk": "Cyberpunk",
-    "sunset": "Pôr do sol"
+    "sunset": "Pôr do sol",
+    "salarySettings": "Configurações de salário",
+    "salaryType": "Tipo de salário",
+    "monthly": "Mensal",
+    "daily": "Diário",
+    "amount": "Valor",
+    "moneyEarned": "Dinheiro ganho hoje",
+    "configureSalary": "Configurar salário",
+    "hideSalary": "Ocultar salário"
   }

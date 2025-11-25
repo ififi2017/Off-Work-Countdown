@@ -19,5 +19,13 @@
     "auto": "सिस्टीम",
     "toggleTheme": "थीम बदला",
     "cyberpunk": "सायबरपंक",
-    "sunset": "सूर्यास्त"
+    "sunset": "सूर्यास्त",
+    "salarySettings": "पगार सेटिंग्ज",
+    "salaryType": "पगार प्रकार",
+    "monthly": "मासिक",
+    "daily": "दैनंदिन",
+    "amount": "रक्कम",
+    "moneyEarned": "आज कमावलेली रक्कम",
+    "configureSalary": "पगार कॉन्फिगर करा",
+    "hideSalary": "पगार लपवा"
 } 
