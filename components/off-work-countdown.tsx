@@ -74,12 +74,37 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setSalaryType((getLocalStorageItem("salaryType", "monthly") as "monthly" | "daily"));
       setSalaryAmount(getLocalStorageItem("salaryAmount", ""));
       setShowSalary(getLocalStorageItem("showSalary", "false") === "true");
-      
-      // Check for PWA
-      if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone) {
-        setIsPWA(true);
-      }
     }
+  }, [isMounted]);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const detectPWA = () => {
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+      const isFullscreen = window.matchMedia("(display-mode: fullscreen)").matches;
+      const isMinimalUi = window.matchMedia("(display-mode: minimal-ui)").matches;
+      const isIOSStandalone = (window.navigator as any).standalone === true;
+      setIsPWA(isStandalone || isFullscreen || isMinimalUi || isIOSStandalone);
+    };
+
+    detectPWA();
+
+    const mediaQueries = [
+      "(display-mode: standalone)",
+      "(display-mode: fullscreen)",
+      "(display-mode: minimal-ui)",
+    ].map((query) => {
+      const mq = window.matchMedia(query);
+      mq.addEventListener("change", detectPWA);
+      return mq;
+    });
+
+    window.addEventListener("appinstalled", detectPWA);
+    return () => {
+      mediaQueries.forEach((mq) => mq.removeEventListener("change", detectPWA));
+      window.removeEventListener("appinstalled", detectPWA);
+    };
   }, [isMounted]);
 
   // 保存设置到 localStorage
@@ -294,19 +319,29 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     return null;
   }
 
+  const isCustomTheme = theme === "cyberpunk" || theme === "sunset";
+
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-1000 ease-in-out ${
-        theme === "cyberpunk" || theme === "sunset"
-          ? ""
-          : "bg-gray-100 dark:bg-gray-900"
+      className={`min-h-screen transition-colors duration-1000 ease-in-out ${
+        isPWA ? "flex flex-col items-stretch justify-start p-0" : "flex items-center justify-center p-4"
+      } ${
+        isCustomTheme ? "" : "bg-gray-100 dark:bg-gray-900"
+      } ${
+        isPWA
+          ? "pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+          : ""
       }`}
     >
       <Confetti trigger={showConfetti} />
       <h1 className="sr-only">{t("seo:siteName")}</h1>
 
-      <Card className={`w-full max-w-md glass dark:glass-dark border-0 ${isPWA ? 'shadow-none bg-transparent border-none' : ''}`}>
-        <CardHeader>
+      <Card className={`w-full glass dark:glass-dark border-0 ${
+        isPWA
+          ? "max-w-none min-h-screen rounded-none shadow-none border-none bg-transparent flex flex-col"
+          : "max-w-md"
+      }`}>
+        <CardHeader className={isPWA ? "p-6 pb-3" : undefined}>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <CardTitle className="text-2xl font-bold dark:text-white">
@@ -333,7 +368,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className={isPWA ? "flex-1 flex flex-col justify-center p-6 pt-2 pb-6" : undefined}>
           <AnimatePresence mode="wait">
             {!showCountdown ? (
               <motion.div
