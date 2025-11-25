@@ -13,5 +13,11 @@
     "futureStartTimeError": "Você configurou a hora de início {{hours}} horas e {{minutes}} minutos a partir da hora atual. O cronômetro não pode ser iniciado neste momento. Por favor, tente novamente mais tarde ou ajuste a hora de início.",
     "sameTimeError": "A hora de início e término não podem ser iguais. Por favor, escolha horários diferentes.",
     "chooselanguage": "Escolher idioma",
-    "offlineStatus": "Você está atualmente offline"
+    "offlineStatus": "Você está atualmente offline",
+    "light": "Claro",
+    "dark": "Escuro",
+    "auto": "Sistema",
+    "toggleTheme": "Alternar tema",
+    "cyberpunk": "Cyberpunk",
+    "sunset": "Pôr do sol"
   }

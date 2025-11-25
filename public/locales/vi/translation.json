@@ -13,5 +13,11 @@
   "futureStartTimeError": "Bạn đã đặt thời gian bắt đầu là {{hours}} giờ và {{minutes}} phút kể từ bây giờ. Không thể bắt đầu đếm ngược vào lúc này. Vui lòng thử lại sau hoặc điều chỉnh thời gian bắt đầu.",
   "sameTimeError": "Thời gian bắt đầu và thời gian kết thúc không thể giống nhau. Vui lòng chọn thời gian khác.",
   "chooselanguage": "Chọn ngôn ngữ",
-  "offlineStatus": "Bạn hiện đang ngoại tuyến"
+  "offlineStatus": "Bạn hiện đang ngoại tuyến",
+  "light": "Sáng",
+  "dark": "Tối",
+  "auto": "Hệ thống",
+  "toggleTheme": "Chuyển chủ đề",
+  "cyberpunk": "Cyberpunk",
+  "sunset": "Hoàng hôn"
 }

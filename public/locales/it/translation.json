@@ -13,5 +13,11 @@
     "futureStartTimeError": "Hai impostato l'ora di inizio {{hours}} ore e {{minutes}} minuti dall'orario corrente. Il conto alla rovescia non può essere avviato in questo momento. Per favore, riprova più tardi o regola l'ora di inizio.",
     "sameTimeError": "L'ora di inizio e l'ora di fine non possono essere uguali. Per favore, scegli tempi diversi.",
     "chooselanguage": "Scegli la lingua",
-    "offlineStatus": "Sei attualmente offline"
+    "offlineStatus": "Sei attualmente offline",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "auto": "Sistema",
+    "toggleTheme": "Cambia tema",
+    "cyberpunk": "Cyberpunk",
+    "sunset": "Tramonto"
   }

@@ -13,5 +13,11 @@
   "futureStartTimeError": "Başlangıç zamanını {{hours}} saat ve {{minutes}} dakika sonra ayarladınız. Geri sayım şu anda başlatılamaz. Lütfen daha sonra tekrar deneyin veya başlangıç zamanını ayarlayın.",
   "sameTimeError": "Başlangıç zamanı ve bitiş zamanı aynı olamaz. Lütfen farklı zamanlar seçin.",
   "chooselanguage": "Dil Seç",
-  "offlineStatus": "Şu anda çevrimdışısınız"
+  "offlineStatus": "Şu anda çevrimdışısınız",
+  "light": "Açık",
+  "dark": "Koyu",
+  "auto": "Sistem",
+  "toggleTheme": "Temayı değiştir",
+  "cyberpunk": "Siberpunk",
+  "sunset": "Gün batımı"
 }

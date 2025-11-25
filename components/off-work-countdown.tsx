@@ -16,8 +16,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { TimeSelector } from "./TimeSelector";
 import { LanguageSelector } from "./LanguageSelector";
-import { ThemeToggle } from "./ThemeToggle";
+import { ThemeToggle, Theme } from "./ThemeToggle";
 import { CountdownDisplay } from "./CountdownDisplay";
+import { Confetti } from "./Confetti";
 import "../i18n";
 import { languageNames } from "@/i18n-config";
 
@@ -37,13 +38,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [reminder, setReminder] = useState(false);
-  const [gradient, setGradient] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
-  const [theme, setTheme] = useState<"light" | "dark" | "auto">("auto");
+  const [theme, setTheme] = useState<Theme>("auto");
   const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   // 初始化和语言同步
   useEffect(() => {
@@ -56,7 +57,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setStartTime(getLocalStorageItem("startTime", "09:00"));
       setEndTime(getLocalStorageItem("endTime", "18:00"));
       setReminder(getLocalStorageItem("reminder", "false") === "true");
-      setGradient(getLocalStorageItem("gradient", "false") === "true");
     }
   }, [isMounted]);
 
@@ -66,9 +66,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       localStorage.setItem("startTime", startTime);
       localStorage.setItem("endTime", endTime);
       localStorage.setItem("reminder", reminder.toString());
-      localStorage.setItem("gradient", gradient.toString());
     }
-  }, [isMounted, startTime, endTime, reminder, gradient]);
+  }, [isMounted, startTime, endTime, reminder]);
 
   const calculateProgress = useCallback(() => {
     const now = new Date();
@@ -102,6 +101,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         if (diff <= 0) {
           setTimeLeft(t("offWorkTime"));
           setProgress(100);
+          setShowConfetti(true);
           clearInterval(interval);
         } else {
           const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -174,6 +174,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setShowCountdown(false);
     setProgress(0);
     setTimeLeft("");
+    setShowConfetti(false);
   };
 
   const handleTimeChange = (
@@ -192,11 +193,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 初始化主题
   useEffect(() => {
     if (isMounted) {
-      const savedTheme = localStorage.getItem("theme") as
-        | "light"
-        | "dark"
-        | "auto"
-        | null;
+      const savedTheme = localStorage.getItem("theme") as Theme | null;
       const prefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)"
       ).matches;
@@ -206,14 +203,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setTheme(initialTheme);
 
       // 应用主题
-      if (initialTheme === "auto") {
-        document.documentElement.classList.toggle("dark", prefersDark);
-      } else {
-        document.documentElement.classList.toggle(
-          "dark",
-          initialTheme === "dark"
-        );
-      }
+      applyTheme(initialTheme, prefersDark);
     }
   }, [isMounted]);
 
@@ -224,7 +214,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e: MediaQueryListEvent) => {
       if (theme === "auto") {
-        document.documentElement.classList.toggle("dark", e.matches);
+        applyTheme("auto", e.matches);
       }
     };
 
@@ -232,38 +222,32 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [isMounted, theme]);
 
+  const applyTheme = (newTheme: Theme, prefersDark: boolean) => {
+    const root = document.documentElement;
+    root.classList.remove("dark", "theme-cyberpunk", "theme-sunset");
+    document.body.className = ""; // Reset body class
+
+    if (newTheme === "auto") {
+      if (prefersDark) root.classList.add("dark");
+    } else if (newTheme === "dark") {
+      root.classList.add("dark");
+    } else if (newTheme === "cyberpunk") {
+      root.classList.add("dark", "theme-cyberpunk");
+      document.body.classList.add("theme-cyberpunk");
+    } else if (newTheme === "sunset") {
+      root.classList.add("theme-sunset");
+      document.body.classList.add("theme-sunset");
+    }
+  };
+
   // 切换主题
-  const toggleTheme = () => {
+  const handleThemeChange = (newTheme: Theme) => {
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)"
     ).matches;
 
-    let newTheme: "light" | "dark" | "auto";
-
-    // 根据当前主题确定下一个主题
-    if (theme === "auto") {
-      // 从自动模式切换到浅色模式
-      newTheme = "light";
-    } else if (theme === "light") {
-      // 从浅色模式切换到深色模式
-      newTheme = "dark";
-    } else {
-      // 从深色模式切换回自动模式
-      newTheme = "auto";
-    }
-
-    // 更新主题状态
     setTheme(newTheme);
-
-    // 应用主题
-    document.documentElement.classList.remove("dark");
-    if (newTheme === "auto") {
-      document.documentElement.classList.toggle("dark", prefersDark);
-    } else if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    }
-
-    // 保存到 localStorage
+    applyTheme(newTheme, prefersDark);
     localStorage.setItem("theme", newTheme);
   };
 
@@ -275,12 +259,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   return (
     <div
       className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-1000 ease-in-out ${
-        gradient ? "bg-gradient-animate" : "bg-gray-100 dark:bg-gray-900"
+        theme === "cyberpunk" || theme === "sunset"
+          ? ""
+          : "bg-gray-100 dark:bg-gray-900"
       }`}
     >
+      <Confetti trigger={showConfetti} />
       <h1 className="sr-only">{t("seo:siteName")}</h1>
 
-      <Card className="w-full max-w-md dark:bg-gray-800 dark:border-gray-700">
+      <Card className="w-full max-w-md glass dark:glass-dark border-0">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -300,7 +287,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <ThemeToggle theme={theme} onToggle={toggleTheme} />
+              <ThemeToggle theme={theme} onThemeChange={handleThemeChange} />
               <LanguageSelector
                 currentLang={lang}
                 languageMap={languageNames}
@@ -343,16 +330,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   />
                   <Label htmlFor="reminder" className="dark:text-gray-200">
                     {t("reminder")}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="gradient"
-                    checked={gradient}
-                    onCheckedChange={setGradient}
-                  />
-                  <Label htmlFor="gradient" className="dark:text-gray-200">
-                    {t("gradient")}
                   </Label>
                 </div>
               </motion.div>
