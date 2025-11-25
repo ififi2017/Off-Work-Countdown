@@ -29,6 +29,7 @@ import { Confetti } from "./Confetti";
 import "../i18n";
 import { languageNames } from "@/i18n-config";
 import { Eye, EyeOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -43,6 +44,7 @@ export interface OffWorkCountdownProps {
 }
 
 export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
+  const { t, i18n } = useTranslation();
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [reminder, setReminder] = useState(false);
@@ -50,7 +52,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<Theme>("auto");
-  const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   
@@ -67,6 +68,22 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // 同步 i18n 语言及缓存
+  useEffect(() => {
+    const normalizedLang = lang || defaultLocale;
+    if (i18n.language !== normalizedLang) {
+      i18n.changeLanguage(normalizedLang);
+    }
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("i18nextLng", normalizedLang);
+        document.cookie = `i18nextLng=${normalizedLang}; path=/; max-age=31536000`;
+      } catch {
+        // ignore storage errors (private mode, etc.)
+      }
+    }
+  }, [i18n, lang]);
 
   // 加载本地存储的设置
   useEffect(() => {
