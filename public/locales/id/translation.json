@@ -13,5 +13,11 @@
   "futureStartTimeError": "Anda telah menetapkan waktu mulai {{hours}} jam dan {{minutes}} menit dari sekarang. Hitung mundur tidak dapat dimulai saat ini. Silakan coba lagi nanti atau sesuaikan waktu mulai.",
   "sameTimeError": "Waktu mulai dan waktu selesai tidak dapat sama. Silakan pilih waktu yang berbeda.",
   "chooselanguage": "Pilih bahasa",
-  "offlineStatus": "Anda saat ini offline"
+  "offlineStatus": "Anda saat ini offline",
+  "light": "Terang",
+  "dark": "Gelap",
+  "auto": "Sistem",
+  "toggleTheme": "Ganti tema",
+  "cyberpunk": "Cyberpunk",
+  "sunset": "Senja"
 }
