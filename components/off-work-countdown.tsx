@@ -214,7 +214,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       interval = setInterval(updateCountdown, 1000);
     }
     return () => clearInterval(interval);
-  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t]);
+  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t, salaryAmount, salaryType, showSalary]);
 
   const handleStart = () => {
     if (startTime === endTime) {
