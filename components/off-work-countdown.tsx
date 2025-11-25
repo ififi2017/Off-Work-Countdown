@@ -20,14 +20,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTranslation } from "react-i18next";
 import { TimeSelector } from "./TimeSelector";
 import { LanguageSelector } from "./LanguageSelector";
 import { ThemeToggle, Theme } from "./ThemeToggle";
 import { CountdownDisplay } from "./CountdownDisplay";
 import { Confetti } from "./Confetti";
 import "../i18n";
-import { languageNames } from "@/i18n-config";
+import { languageNames, defaultLocale } from "@/i18n-config";
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
