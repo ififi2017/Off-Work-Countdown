@@ -11,7 +11,14 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Github } from "lucide-react";
+import { ArrowLeft, Github, Coins } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { TimeSelector } from "./TimeSelector";
@@ -21,6 +28,7 @@ import { CountdownDisplay } from "./CountdownDisplay";
 import { Confetti } from "./Confetti";
 import "../i18n";
 import { languageNames } from "@/i18n-config";
+import { Eye, EyeOff } from "lucide-react";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -45,6 +53,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  
+  // Salary state
+  const [salaryType, setSalaryType] = useState<"monthly" | "daily">("monthly");
+  const [salaryAmount, setSalaryAmount] = useState("");
+  const [showSalary, setShowSalary] = useState(false);
+  const [isPWA, setIsPWA] = useState(false);
+  const [moneyEarned, setMoneyEarned] = useState(0);
+  const [hideEarnings, setHideEarnings] = useState(false);
+  const [maskAmountField, setMaskAmountField] = useState(true);
 
   // 初始化和语言同步
   useEffect(() => {
@@ -57,7 +74,45 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setStartTime(getLocalStorageItem("startTime", "09:00"));
       setEndTime(getLocalStorageItem("endTime", "18:00"));
       setReminder(getLocalStorageItem("reminder", "false") === "true");
+      setSalaryType((getLocalStorageItem("salaryType", "monthly") as "monthly" | "daily"));
+      setSalaryAmount(getLocalStorageItem("salaryAmount", ""));
+      setShowSalary(getLocalStorageItem("showSalary", "false") === "true");
+      setHideEarnings(getLocalStorageItem("hideEarnings", "false") === "true");
     }
+  }, [isMounted]);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const navigatorWithStandalone = window.navigator as Navigator & {
+      standalone?: boolean;
+    };
+
+    const detectPWA = () => {
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+      const isFullscreen = window.matchMedia("(display-mode: fullscreen)").matches;
+      const isMinimalUi = window.matchMedia("(display-mode: minimal-ui)").matches;
+      const isIOSStandalone = navigatorWithStandalone.standalone === true;
+      setIsPWA(isStandalone || isFullscreen || isMinimalUi || isIOSStandalone);
+    };
+
+    detectPWA();
+
+    const mediaQueries = [
+      "(display-mode: standalone)",
+      "(display-mode: fullscreen)",
+      "(display-mode: minimal-ui)",
+    ].map((query) => {
+      const mq = window.matchMedia(query);
+      mq.addEventListener("change", detectPWA);
+      return mq;
+    });
+
+    window.addEventListener("appinstalled", detectPWA);
+    return () => {
+      mediaQueries.forEach((mq) => mq.removeEventListener("change", detectPWA));
+      window.removeEventListener("appinstalled", detectPWA);
+    };
   }, [isMounted]);
 
   // 保存设置到 localStorage
@@ -66,8 +121,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       localStorage.setItem("startTime", startTime);
       localStorage.setItem("endTime", endTime);
       localStorage.setItem("reminder", reminder.toString());
+      localStorage.setItem("salaryType", salaryType);
+      localStorage.setItem("salaryAmount", salaryAmount);
+      localStorage.setItem("showSalary", showSalary.toString());
+      localStorage.setItem("hideEarnings", hideEarnings.toString());
     }
-  }, [isMounted, startTime, endTime, reminder]);
+  }, [isMounted, startTime, endTime, reminder, salaryType, salaryAmount, showSalary, hideEarnings]);
 
   const calculateProgress = useCallback(() => {
     const now = new Date();
@@ -135,6 +194,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               body: t("fifteenMinutesLeft"),
             });
           }
+          
+          // Calculate money earned
+          if (showSalary && salaryAmount) {
+            const currentProgress = calculateProgress();
+            const amount = parseFloat(salaryAmount);
+            if (!isNaN(amount)) {
+              let dailySalary = amount;
+              if (salaryType === "monthly") {
+                dailySalary = amount / 21.75;
+              }
+              setMoneyEarned((dailySalary * currentProgress) / 100);
+            }
+          }
         }
       };
 
@@ -142,7 +214,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       interval = setInterval(updateCountdown, 1000);
     }
     return () => clearInterval(interval);
-  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t]);
+  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t, salaryAmount, salaryType, showSalary]);
 
   const handleStart = () => {
     if (startTime === endTime) {
@@ -256,19 +328,29 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     return null;
   }
 
+  const isCustomTheme = theme === "cyberpunk" || theme === "sunset";
+
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-1000 ease-in-out ${
-        theme === "cyberpunk" || theme === "sunset"
-          ? ""
-          : "bg-gray-100 dark:bg-gray-900"
+      className={`min-h-screen transition-colors duration-1000 ease-in-out ${
+        isPWA ? "flex flex-col items-stretch justify-start p-0" : "flex items-center justify-center p-4"
+      } ${
+        isCustomTheme ? "" : "bg-gray-100 dark:bg-gray-900"
+      } ${
+        isPWA
+          ? "pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+          : ""
       }`}
     >
       <Confetti trigger={showConfetti} />
       <h1 className="sr-only">{t("seo:siteName")}</h1>
 
-      <Card className="w-full max-w-md glass dark:glass-dark border-0">
-        <CardHeader>
+      <Card className={`w-full glass dark:glass-dark border-0 ${
+        isPWA
+          ? "max-w-none min-h-screen rounded-none shadow-none border-none bg-transparent flex flex-col"
+          : "max-w-md"
+      }`}>
+        <CardHeader className={isPWA ? "p-6 pb-3" : undefined}>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <CardTitle className="text-2xl font-bold dark:text-white">
@@ -295,7 +377,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className={isPWA ? "flex-1 flex flex-col justify-center p-6 pt-2 pb-6" : undefined}>
           <AnimatePresence mode="wait">
             {!showCountdown ? (
               <motion.div
@@ -332,9 +414,96 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     {t("reminder")}
                   </Label>
                 </div>
+
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <Label className="flex items-center gap-2 dark:text-gray-200">
+                      <Coins size={16} />
+                      {t("salarySettings")}
+                    </Label>
+                    <Switch
+                      checked={showSalary}
+                      onCheckedChange={setShowSalary}
+                    />
+                  </div>
+                  
+                  <AnimatePresence>
+                    {showSalary && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="space-y-4 overflow-hidden"
+                      >
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs dark:text-gray-400">{t("salaryType")}</Label>
+                            <Select
+                              value={salaryType}
+                              onValueChange={(value) => setSalaryType(value as "monthly" | "daily")}
+                            >
+                              <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                                <SelectValue placeholder={t("salaryType")} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="monthly">{t("monthly")}</SelectItem>
+                                <SelectItem value="daily">{t("daily")}</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs dark:text-gray-400">{t("amount")}</Label>
+                            <input
+                              type="number"
+                              className="w-full p-2 rounded-md border bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
+                              value={maskAmountField ? "" : salaryAmount}
+                              onFocus={() => setMaskAmountField(false)}
+                              onBlur={() => setMaskAmountField(true)}
+                              onChange={(e) => {
+                                setMaskAmountField(false);
+                                setSalaryAmount(e.target.value);
+                              }}
+                              placeholder={maskAmountField ? "****" : "0.00"}
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </motion.div>
             ) : (
-              <CountdownDisplay timeLeft={timeLeft} progress={progress} />
+              <div className="space-y-6">
+                <CountdownDisplay timeLeft={timeLeft} progress={progress} />
+                {showSalary && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white/50 dark:bg-black/20 rounded-xl p-4 text-center backdrop-blur-sm"
+                  >
+                    <div className="flex items-center justify-between gap-2 text-gray-600 dark:text-gray-400 mb-1">
+                      <div className="flex items-center gap-2">
+                        <Coins size={16} className="text-yellow-500" />
+                        <span className="text-sm font-medium">{t("moneyEarned")}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => setHideEarnings((prev) => !prev)}
+                        aria-pressed={hideEarnings}
+                        aria-label={hideEarnings ? t("showEarnings") : t("hideEarnings")}
+                        title={hideEarnings ? t("showEarnings") : t("hideEarnings")}
+                      >
+                        {hideEarnings ? <Eye size={14} /> : <EyeOff size={14} />}
+                        <span>{hideEarnings ? t("showEarnings") : t("hideEarnings")}</span>
+                      </button>
+                    </div>
+                    <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-600 dark:from-yellow-400 dark:to-amber-500">
+                      {hideEarnings ? "****" : moneyEarned.toFixed(2)}
+                    </div>
+                  </motion.div>
+                )}
+              </div>
             )}
           </AnimatePresence>
         </CardContent>

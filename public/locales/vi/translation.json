@@ -19,5 +19,15 @@
   "auto": "Hệ thống",
   "toggleTheme": "Chuyển chủ đề",
   "cyberpunk": "Cyberpunk",
-  "sunset": "Hoàng hôn"
+  "sunset": "Hoàng hôn",
+  "salarySettings": "Cài đặt lương",
+  "salaryType": "Loại lương",
+  "monthly": "Lương tháng",
+  "daily": "Lương ngày",
+  "amount": "Số tiền",
+  "moneyEarned": "Số tiền đã kiếm hôm nay",
+  "configureSalary": "Cấu hình lương",
+  "hideSalary": "Ẩn lương",
+  "hideEarnings": "Ẩn số tiền",
+  "showEarnings": "Hiển thị số tiền"
 }

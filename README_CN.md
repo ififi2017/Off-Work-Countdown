@@ -2,7 +2,7 @@
 
 下班倒计时是一个基于Next.js的网页应用,帮助您跟踪工作日结束前的剩余时间。通过简洁互动的界面,该应用提供可视化的倒计时和进度条,让您的工作日更易管理。
 
-![](readme_image/off_CN.JPEG)
+![](readme_image/off_CN.jpg)
 
 ## 功能特点
 
@@ -14,6 +14,7 @@
 - 支持离线使用的渐进式Web应用(PWA)
 - 适应各种设备的响应式设计
 - 多语言支持(i18n)
+- 支持自定义薪水计算
 
 ## 使用的技术
 
@@ -134,7 +135,9 @@ export const languageNames = {
 ## 致谢
 
 特别感谢:
+- [Google Gemini 3 Pro](https://gemini.google.com/) 强大的前端 AI 生成能力
 - [@v0.dev](https://v0.dev/) 提供AI辅助的组件设计
 - [@cursor.com](https://www.cursor.com/) 提供AI驱动的编码辅助
 - [@claude.ai](https://claude.ai/chats) 和 [@chatgpt.com](https://chatgpt.com/) 在开发过程中提供大型语言模型支持
 - [@vercel.com](https://vercel.com/) 提供托管和部署服务
+- [@Cloudflare](https://www.cloudflare.com/) 提供CDN服务

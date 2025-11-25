@@ -19,5 +19,15 @@
     "auto": "시스템",
     "toggleTheme": "테마 전환",
     "cyberpunk": "사이버펑크",
-    "sunset": "선셋"
+    "sunset": "선셋",
+    "salarySettings": "급여 설정",
+    "salaryType": "급여 유형",
+    "monthly": "월급",
+    "daily": "일급",
+    "amount": "금액",
+    "moneyEarned": "오늘 번 금액",
+    "configureSalary": "급여 설정하기",
+    "hideSalary": "급여 숨기기",
+    "hideEarnings": "금액 숨기기",
+    "showEarnings": "금액 보기"
   }

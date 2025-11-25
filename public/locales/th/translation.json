@@ -19,5 +19,15 @@
   "auto": "ตามระบบ",
   "toggleTheme": "สลับธีม",
   "cyberpunk": "ไซเบอร์พังก์",
-  "sunset": "พระอาทิตย์ตก"
+  "sunset": "พระอาทิตย์ตก",
+  "salarySettings": "การตั้งค่าเงินเดือน",
+  "salaryType": "ประเภทเงินเดือน",
+  "monthly": "รายเดือน",
+  "daily": "รายวัน",
+  "amount": "จำนวนเงิน",
+  "moneyEarned": "รายได้ที่ได้รับวันนี้",
+  "configureSalary": "ตั้งค่าเงินเดือน",
+  "hideSalary": "ซ่อนข้อมูลเงินเดือน",
+  "hideEarnings": "ซ่อนจำนวนเงิน",
+  "showEarnings": "แสดงจำนวนเงิน"
 }

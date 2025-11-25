@@ -19,5 +19,15 @@
   "auto": "Sistem",
   "toggleTheme": "Temayı değiştir",
   "cyberpunk": "Siberpunk",
-  "sunset": "Gün batımı"
+  "sunset": "Gün batımı",
+  "salarySettings": "Maaş ayarları",
+  "salaryType": "Maaş türü",
+  "monthly": "Aylık",
+  "daily": "Günlük",
+  "amount": "Tutar",
+  "moneyEarned": "Bugün kazanılan para",
+  "configureSalary": "Maaşı yapılandır",
+  "hideSalary": "Maaşı gizle",
+  "hideEarnings": "Tutarı gizle",
+  "showEarnings": "Tutarı göster"
 }

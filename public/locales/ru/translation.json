@@ -19,5 +19,15 @@
     "auto": "Системная",
     "toggleTheme": "Переключить тему",
     "cyberpunk": "Киберпанк",
-    "sunset": "Закат"
+    "sunset": "Закат",
+    "salarySettings": "Настройки зарплаты",
+    "salaryType": "Тип зарплаты",
+    "monthly": "Месячная",
+    "daily": "Дневная",
+    "amount": "Сумма",
+    "moneyEarned": "Заработано сегодня",
+    "configureSalary": "Настроить зарплату",
+    "hideSalary": "Скрыть зарплату",
+    "hideEarnings": "Скрыть сумму",
+    "showEarnings": "Показать сумму"
   }

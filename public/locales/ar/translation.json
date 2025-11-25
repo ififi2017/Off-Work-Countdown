@@ -19,5 +19,15 @@
   "auto": "حسب النظام",
   "toggleTheme": "تبديل السمة",
   "cyberpunk": "سايبربانك",
-  "sunset": "غروب الشمس"
+  "sunset": "غروب الشمس",
+  "salarySettings": "إعدادات الراتب",
+  "salaryType": "نوع الراتب",
+  "monthly": "شهري",
+  "daily": "يومي",
+  "amount": "المبلغ",
+  "moneyEarned": "الأجر المكتسب اليوم",
+  "configureSalary": "تكوين الراتب",
+  "hideSalary": "إخفاء الراتب",
+  "hideEarnings": "إخفاء المبلغ",
+  "showEarnings": "إظهار المبلغ"
 }

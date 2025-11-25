@@ -38,9 +38,11 @@ function getInitialLanguage(): string {
 // 获取基础 URL
 function getBaseUrl() {
   if (typeof window !== "undefined") {
-    return window.location.origin;
+    return "";
   }
-  return process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
 }
 
 // 加载指定语言的资源
@@ -56,10 +58,14 @@ async function loadLanguageResources(lng: string): Promise<Resources> {
   const loadingPromise = (async () => {
     try {
       const [translation, seo] = await Promise.all([
-        fetch(`${baseUrl}/locales/${lng}/translation.json`).then((r) =>
-          r.json()
-        ),
-        fetch(`${baseUrl}/locales/${lng}/seo.json`).then((r) => r.json()),
+        fetch(`${baseUrl}/locales/${lng}/translation.json`).then((r) => {
+          if (!r.ok) throw new Error(`translation ${r.status}`);
+          return r.json();
+        }),
+        fetch(`${baseUrl}/locales/${lng}/seo.json`).then((r) => {
+          if (!r.ok) throw new Error(`seo ${r.status}`);
+          return r.json();
+        }),
       ]);
 
       return { translation, seo };

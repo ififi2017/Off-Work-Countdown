@@ -19,5 +19,15 @@
   "auto": "Sistem",
   "toggleTheme": "Ganti tema",
   "cyberpunk": "Cyberpunk",
-  "sunset": "Senja"
+  "sunset": "Senja",
+  "salarySettings": "Pengaturan gaji",
+  "salaryType": "Jenis gaji",
+  "monthly": "Bulanan",
+  "daily": "Harian",
+  "amount": "Jumlah",
+  "moneyEarned": "Uang yang didapat hari ini",
+  "configureSalary": "Atur gaji",
+  "hideSalary": "Sembunyikan gaji",
+  "hideEarnings": "Sembunyikan jumlah",
+  "showEarnings": "Tampilkan jumlah"
 }
