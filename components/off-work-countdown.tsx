@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Github, Coins, Settings2 } from "lucide-react";
+import { ArrowLeft, Github, Coins } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -84,11 +84,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   useEffect(() => {
     if (!isMounted) return;
 
+    const navigatorWithStandalone = window.navigator as Navigator & {
+      standalone?: boolean;
+    };
+
     const detectPWA = () => {
       const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
       const isFullscreen = window.matchMedia("(display-mode: fullscreen)").matches;
       const isMinimalUi = window.matchMedia("(display-mode: minimal-ui)").matches;
-      const isIOSStandalone = (window.navigator as any).standalone === true;
+      const isIOSStandalone = navigatorWithStandalone.standalone === true;
       setIsPWA(isStandalone || isFullscreen || isMinimalUi || isIOSStandalone);
     };
 
