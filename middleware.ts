@@ -4,7 +4,16 @@ import { locales, defaultLocale, getBaseLanguage, Locale } from "./i18n-config";
 
 // 获取用户首选语言
 function getPreferredLanguage(request: NextRequest): string {
-  // 从 Accept-Language 头部获取语言偏好
+  // 先读用户选择的语言（cookie）
+  const savedLang = request.cookies.get("i18nextLng")?.value;
+  if (savedLang) {
+    const mappedLang = getBaseLanguage(savedLang);
+    if (locales.includes(mappedLang as Locale)) {
+      return mappedLang;
+    }
+  }
+
+  // 再从 Accept-Language 头部获取语言偏好
   const acceptLanguage = request.headers.get("accept-language");
   if (acceptLanguage) {
     const preferredLangs = acceptLanguage
@@ -13,26 +22,16 @@ function getPreferredLanguage(request: NextRequest): string {
         const [language, weight] = lang.split(";");
         return {
           language: language.trim(),
-          weight: weight ? parseFloat(weight.split("=")[1]) : 1.0
+          weight: weight ? parseFloat(weight.split("=")[1]) : 1.0,
         };
       })
       .sort((a, b) => b.weight - a.weight);
 
-    // 尝试找到第一个匹配的语言
     for (const { language } of preferredLangs) {
       const mappedLang = getBaseLanguage(language);
       if (locales.includes(mappedLang as Locale)) {
         return mappedLang;
       }
-    }
-  }
-
-  // 检查 cookie
-  const savedLang = request.cookies.get("i18nextLng")?.value;
-  if (savedLang) {
-    const mappedLang = getBaseLanguage(savedLang);
-    if (locales.includes(mappedLang as Locale)) {
-      return mappedLang;
     }
   }
 
