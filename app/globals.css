@@ -109,9 +109,6 @@ body {
   --primary: 320 100% 50%;
   --card: 260 50% 15%;
   --border: 320 100% 50%;
-  background: linear-gradient(135deg, #2b1055, #7597de);
-  background-size: 400% 400%;
-  animation: gradientAnimation 15s ease infinite;
 }
 
 .theme-sunset {
@@ -120,9 +117,6 @@ body {
   --primary: 10 80% 60%;
   --card: 20 50% 98%;
   --border: 10 80% 60%;
-  background: linear-gradient(135deg, #ff9a9e, #fecfef, #feada6);
-  background-size: 400% 400%;
-  animation: gradientAnimation 15s ease infinite;
 }
 
 /* PWA Adaptations */

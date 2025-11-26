@@ -25,6 +25,7 @@ import { LanguageSelector } from "./LanguageSelector";
 import { ThemeToggle, Theme } from "./ThemeToggle";
 import { CountdownDisplay } from "./CountdownDisplay";
 import { Confetti } from "./Confetti";
+import { Background } from "./Background";
 import "../i18n";
 import { languageNames, defaultLocale } from "@/i18n-config";
 import { Eye, EyeOff } from "lucide-react";
@@ -367,6 +368,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           : ""
       }`}
     >
+      <Background theme={theme} />
       <Confetti trigger={showConfetti} />
       <h1 className="sr-only">{t("seo:siteName")}</h1>
 
