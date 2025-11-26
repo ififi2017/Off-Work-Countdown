@@ -15,7 +15,11 @@ export function ProgressBar({ progress }: ProgressBarProps) {
       <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         <motion.div
           className="h-full bg-primary"
-          style={{ width: `${progress}%` }}
+          style={{ 
+            width: `${progress}%`,
+            backfaceVisibility: "hidden",
+            transform: "translateZ(0)",
+          }}
           transition={{
             type: "spring",
             stiffness: 300,
@@ -28,6 +32,8 @@ export function ProgressBar({ progress }: ProgressBarProps) {
         style={{
           left: `calc(${progress}%)`,
           x: "-50%",
+          backfaceVisibility: "hidden",
+          transform: "translateZ(0)",
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
