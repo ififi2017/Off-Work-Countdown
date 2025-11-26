@@ -4,6 +4,7 @@ import { I18nProvider } from '@/components/I18nProvider';
 import { Metadata, Viewport } from 'next';
 import { siteConfig } from '@/config/site';
 import { getTranslations } from '@/lib/server/i18n';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 
 export const viewport: Viewport = {
   themeColor: siteConfig.themeColor,
@@ -93,6 +94,7 @@ export default function Layout({
   return (
     <I18nProvider lang={params.lang}>
       {children}
+      <PWAInstallPrompt />
     </I18nProvider>
   );
 } 

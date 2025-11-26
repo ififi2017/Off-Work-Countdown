@@ -29,5 +29,12 @@
   "configureSalary": "Maaşı yapılandır",
   "hideSalary": "Maaşı gizle",
   "hideEarnings": "Tutarı gizle",
-  "showEarnings": "Tutarı göster"
+  "showEarnings": "Tutarı göster",
+  "installPWA": "PWA Uygulamasını Yükle",
+  "installDescription": "Daha iyi bir deneyim için bu uygulamayı ana ekrana yükleyin",
+  "installButton": "Yükle",
+  "notNow": "Şimdi değil",
+  "safariInstructions1": "Paylaş düğmesine dokunun",
+  "safariInstructions2": "\"Ana Ekrana Ekle\" seçeneğini seçin",
+  "safariInstructions2Mac": "\"Dock'a Ekle\" seçeneğini seçin"
 }

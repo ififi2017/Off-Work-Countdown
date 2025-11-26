@@ -29,5 +29,12 @@
   "configureSalary": "配置薪资",
   "hideSalary": "隐藏薪资",
   "hideEarnings": "隐藏金额",
-  "showEarnings": "显示金额"
+  "showEarnings": "显示金额",
+  "installPWA": "安装 PWA 应用",
+  "installDescription": "安装此应用到主屏幕以获得更好的体验",
+  "installButton": "安装",
+  "notNow": "暂不安装",
+  "safariInstructions1": "点击分享按钮",
+  "safariInstructions2": "选择“添加到主屏幕”",
+  "safariInstructions2Mac": "选择“添加到程序坞”"
 }

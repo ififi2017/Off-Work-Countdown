@@ -29,5 +29,12 @@
     "configureSalary": "給与を設定",
     "hideSalary": "給与を非表示",
     "hideEarnings": "金額を非表示",
-    "showEarnings": "金額を表示"
+    "showEarnings": "金額を表示",
+    "installPWA": "PWAアプリをインストール",
+    "installDescription": "より良い体験のためにこのアプリをホーム画面に追加してください",
+    "installButton": "インストール",
+    "notNow": "後で",
+    "safariInstructions1": "共有ボタンをタップ",
+    "safariInstructions2": "「ホーム画面に追加」を選択",
+    "safariInstructions2Mac": "「Dockに追加」を選択"
   }

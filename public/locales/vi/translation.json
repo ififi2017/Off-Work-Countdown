@@ -29,5 +29,12 @@
   "configureSalary": "Cấu hình lương",
   "hideSalary": "Ẩn lương",
   "hideEarnings": "Ẩn số tiền",
-  "showEarnings": "Hiển thị số tiền"
+  "showEarnings": "Hiển thị số tiền",
+  "installPWA": "Cài đặt ứng dụng PWA",
+  "installDescription": "Cài ứng dụng này vào màn hình chính để có trải nghiệm tốt hơn",
+  "installButton": "Cài đặt",
+  "notNow": "Để sau",
+  "safariInstructions1": "Chạm nút Chia sẻ",
+  "safariInstructions2": "Chọn \"Thêm vào Màn hình chính\"",
+  "safariInstructions2Mac": "Chọn \"Thêm vào Dock\""
 }
