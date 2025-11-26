@@ -29,5 +29,12 @@
     "configureSalary": "Настроить зарплату",
     "hideSalary": "Скрыть зарплату",
     "hideEarnings": "Скрыть сумму",
-    "showEarnings": "Показать сумму"
+    "showEarnings": "Показать сумму",
+    "installPWA": "Установить PWA-приложение",
+    "installDescription": "Установите приложение на главный экран для лучшего опыта",
+    "installButton": "Установить",
+    "notNow": "Не сейчас",
+    "safariInstructions1": "Нажмите кнопку «Поделиться»",
+    "safariInstructions2": "Выберите «Добавить на экран Домой»",
+    "safariInstructions2Mac": "Выберите «Добавить в Dock»"
   }

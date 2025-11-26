@@ -29,5 +29,12 @@
   "configureSalary": "تكوين الراتب",
   "hideSalary": "إخفاء الراتب",
   "hideEarnings": "إخفاء المبلغ",
-  "showEarnings": "إظهار المبلغ"
+  "showEarnings": "إظهار المبلغ",
+  "installPWA": "تثبيت تطبيق PWA",
+  "installDescription": "ثبّت هذا التطبيق على شاشتك الرئيسية لتجربة أفضل",
+  "installButton": "تثبيت",
+  "notNow": "ليس الآن",
+  "safariInstructions1": "اضغط على زر المشاركة",
+  "safariInstructions2": "اختر \"إضافة إلى الشاشة الرئيسية\"",
+  "safariInstructions2Mac": "اختر \"إضافة إلى Dock\""
 }

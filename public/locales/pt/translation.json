@@ -29,5 +29,12 @@
     "configureSalary": "Configurar salário",
     "hideSalary": "Ocultar salário",
     "hideEarnings": "Ocultar valor",
-    "showEarnings": "Mostrar valor"
+    "showEarnings": "Mostrar valor",
+    "installPWA": "Instalar app PWA",
+    "installDescription": "Instale este app na tela inicial para uma experiência melhor",
+    "installButton": "Instalar",
+    "notNow": "Agora não",
+    "safariInstructions1": "Toque no botão Compartilhar",
+    "safariInstructions2": "Selecione \"Adicionar à Tela de Início\"",
+    "safariInstructions2Mac": "Selecione \"Adicionar ao Dock\""
   }

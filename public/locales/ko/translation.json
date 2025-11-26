@@ -29,5 +29,12 @@
     "configureSalary": "급여 설정하기",
     "hideSalary": "급여 숨기기",
     "hideEarnings": "금액 숨기기",
-    "showEarnings": "금액 보기"
+    "showEarnings": "금액 보기",
+    "installPWA": "PWA 앱 설치",
+    "installDescription": "더 나은 사용 경험을 위해 이 앱을 홈 화면에 설치하세요",
+    "installButton": "설치",
+    "notNow": "지금은 안 함",
+    "safariInstructions1": "공유 버튼을 누르세요",
+    "safariInstructions2": "\"홈 화면에 추가\"를 선택",
+    "safariInstructions2Mac": "\"Dock에 추가\"를 선택"
   }

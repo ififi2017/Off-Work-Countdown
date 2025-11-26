@@ -29,5 +29,12 @@
   "configureSalary": "ตั้งค่าเงินเดือน",
   "hideSalary": "ซ่อนข้อมูลเงินเดือน",
   "hideEarnings": "ซ่อนจำนวนเงิน",
-  "showEarnings": "แสดงจำนวนเงิน"
+  "showEarnings": "แสดงจำนวนเงิน",
+  "installPWA": "ติดตั้งแอป PWA",
+  "installDescription": "ติดตั้งแอปนี้บนหน้าจอหลักเพื่อประสบการณ์ที่ดียิ่งขึ้น",
+  "installButton": "ติดตั้ง",
+  "notNow": "ยังไม่ใช่ตอนนี้",
+  "safariInstructions1": "แตะปุ่มแชร์",
+  "safariInstructions2": "เลือก \"เพิ่มไปยังหน้าจอโฮม\"",
+  "safariInstructions2Mac": "เลือก \"เพิ่มไปยัง Dock\""
 }

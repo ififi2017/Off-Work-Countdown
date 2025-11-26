@@ -29,5 +29,12 @@
   "configureSalary": "Atur gaji",
   "hideSalary": "Sembunyikan gaji",
   "hideEarnings": "Sembunyikan jumlah",
-  "showEarnings": "Tampilkan jumlah"
+  "showEarnings": "Tampilkan jumlah",
+  "installPWA": "Pasang Aplikasi PWA",
+  "installDescription": "Pasang aplikasi ini ke layar beranda untuk pengalaman yang lebih baik",
+  "installButton": "Pasang",
+  "notNow": "Tidak sekarang",
+  "safariInstructions1": "Ketuk tombol Bagikan",
+  "safariInstructions2": "Pilih \"Tambahkan ke Layar Utama\"",
+  "safariInstructions2Mac": "Pilih \"Tambahkan ke Dock\""
 }

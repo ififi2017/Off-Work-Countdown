@@ -29,5 +29,12 @@
     "configureSalary": "वेतन कॉन्फ़िगर करें",
     "hideSalary": "वेतन छुपाएँ",
     "hideEarnings": "राशि छुपाएँ",
-    "showEarnings": "राशि दिखाएँ"
+    "showEarnings": "राशि दिखाएँ",
+    "installPWA": "PWA ऐप इंस्टॉल करें",
+    "installDescription": "बेहतर अनुभव के लिए इस ऐप को होम स्क्रीन पर इंस्टॉल करें",
+    "installButton": "इंस्टॉल करें",
+    "notNow": "अभी नहीं",
+    "safariInstructions1": "शेयर बटन टैप करें",
+    "safariInstructions2": "\"होम स्क्रीन में जोड़ें\" चुनें",
+    "safariInstructions2Mac": "\"Dock में जोड़ें\" चुनें"
 } 

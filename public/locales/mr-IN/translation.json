@@ -29,5 +29,12 @@
     "configureSalary": "पगार कॉन्फिगर करा",
     "hideSalary": "पगार लपवा",
     "hideEarnings": "रक्कम लपवा",
-    "showEarnings": "रक्कम दाखवा"
+    "showEarnings": "रक्कम दाखवा",
+    "installPWA": "PWA अॅप इन्स्टॉल करा",
+    "installDescription": "उत्तम अनुभवासाठी हे अॅप होम स्क्रीनवर इन्स्टॉल करा",
+    "installButton": "इन्स्टॉल करा",
+    "notNow": "आत्ता नाही",
+    "safariInstructions1": "शेअर बटणावर टॅप करा",
+    "safariInstructions2": "\"होम स्क्रीनवर जोडा\" निवडा",
+    "safariInstructions2Mac": "\"Dock मध्ये जोडा\" निवडा"
 } 
