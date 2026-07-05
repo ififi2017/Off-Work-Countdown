@@ -25,6 +25,7 @@
   "monthly": "Monthly",
   "daily": "Daily",
   "amount": "Amount",
+  "monthlyWorkingDays": "Working days per month",
   "moneyEarned": "Money Earned Today",
   "configureSalary": "Configure Salary",
   "hideSalary": "Hide Salary",

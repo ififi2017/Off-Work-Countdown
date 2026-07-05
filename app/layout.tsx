@@ -1,6 +1,5 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { ManifestLink } from "@/components/ManifestLink";
@@ -40,7 +39,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ServiceWorkerRegistration />
         {children}
         <Analytics />
         <SpeedInsights />

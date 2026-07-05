@@ -1,7 +1,13 @@
 import path from "path";
 import fs from "fs/promises";
+import { defaultLocale, locales, Locale } from "@/i18n-config";
 
 export async function getTranslations(lang: string, ns: string) {
+  // 白名单校验，防止路径遍历
+  if (!locales.includes(lang as Locale)) {
+    lang = defaultLocale;
+  }
+
   try {
     const filePath = path.join(
       process.cwd(),

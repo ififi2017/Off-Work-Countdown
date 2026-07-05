@@ -10,13 +10,12 @@ export const viewport: Viewport = {
   themeColor: siteConfig.themeColor,
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: 'cover',
 };
 
-export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
-  const seo = await getTranslations(params.lang, 'seo');
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const seo = await getTranslations(lang, 'seo');
 
   return {
     metadataBase: new URL(siteConfig.baseUrl),
@@ -36,8 +35,8 @@ export async function generateMetadata({ params }: { params: { lang: string } })
       title: seo.title,
       description: seo.description,
       type: "website",
-      locale: params.lang,
-      url: `${siteConfig.baseUrl}/${params.lang}`,
+      locale: lang,
+      url: `${siteConfig.baseUrl}/${lang}`,
       siteName: seo.siteName,
       images: [{ 
         url: "https://github.com/ififi2017/Off-Work-Countdown/raw/main/readme_image/demo.jpg",
@@ -53,7 +52,7 @@ export async function generateMetadata({ params }: { params: { lang: string } })
       images: ['https://github.com/ififi2017/Off-Work-Countdown/raw/main/readme_image/demo.jpg'],
     },
     alternates: {
-      canonical: `${siteConfig.baseUrl}/${params.lang}`,
+      canonical: `${siteConfig.baseUrl}/${lang}`,
       languages: Object.fromEntries(
         locales.map(l => [
           l,
@@ -84,17 +83,18 @@ export async function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
 
-export default function Layout({
+export default async function Layout({
   children,
   params,
 }: {
   children: ReactNode;
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }) {
+  const { lang } = await params;
   return (
-    <I18nProvider lang={params.lang}>
+    <I18nProvider lang={lang}>
       {children}
       <PWAInstallPrompt />
     </I18nProvider>
   );
-} 
+}

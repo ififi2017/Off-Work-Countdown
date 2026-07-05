@@ -25,6 +25,7 @@
   "monthly": "Aylık",
   "daily": "Günlük",
   "amount": "Tutar",
+  "monthlyWorkingDays": "Aylık çalışma günü",
   "moneyEarned": "Bugün kazanılan para",
   "configureSalary": "Maaşı yapılandır",
   "hideSalary": "Maaşı gizle",

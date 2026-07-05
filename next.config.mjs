@@ -1,72 +1,23 @@
-import withPWA from 'next-pwa';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import withSerwistInit from '@serwist/next';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: "/locales/:path*",
-        destination: "/locales/:path*",
-      },
-      {
-        source: "/robots.txt",
-        destination: "/robots.txt",
-      },
-      {
-        source: "/sitemap.xml",
-        destination: "/sitemap.xml",
-      },
-      {
-        source: "/hreflang-sitemap.xml",
-        destination: "/hreflang-sitemap.xml",
-      },
-    ];
-  },
+  // Pin the tracing root to this project; multiple lockfiles exist on the machine.
+  outputFileTracingRoot: __dirname,
 };
 
-export default withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
+const withSerwist = withSerwistInit({
+  // Service worker source and output. Runtime caching lives in app/sw.ts.
+  swSrc: 'app/sw.ts',
+  swDest: 'public/sw.js',
+  // Disable the service worker in development, matching the previous next-pwa setup.
   disable: process.env.NODE_ENV === 'development',
-  buildExcludes: [
-    /middleware-manifest\.json$/,
-    /app-build-manifest\.json$/
-  ],
-  runtimeCaching: [
-    {
-      urlPattern: /^https:\/\/off-work-30.*\/_next\/static\/.*/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'static-assets',
-        expiration: {
-          maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
-      }
-    },
-    {
-      urlPattern: /^https:\/\/off-work-30.*\/_next\/image\?.*/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'next-image',
-        expiration: {
-          maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
-      }
-    },
-    {
-      urlPattern: /^https:\/\/off-work-30.*\/api\/.*/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'apis',
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        },
-        networkTimeoutSeconds: 10
-      }
-    }
-  ]
-})(nextConfig);
+  // Auto-register the worker (default), replacing next-pwa's `register: true`.
+  register: true,
+});
+
+export default withSerwist(nextConfig);
