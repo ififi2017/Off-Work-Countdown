@@ -19,7 +19,11 @@ function getInitialLanguage(): string {
 
   // 从 URL 路径中获取语言
   const pathSegments = window.location.pathname.split("/");
-  if (pathSegments.length > 1 && pathSegments[1]) {
+  if (
+    pathSegments.length > 1 &&
+    pathSegments[1] &&
+    locales.includes(pathSegments[1] as (typeof locales)[number])
+  ) {
     return pathSegments[1];
   }
 
@@ -75,12 +79,14 @@ async function loadLanguageResources(lng: string): Promise<Resources> {
   // 创建新的加载 Promise
   const loadingPromise = (async () => {
     try {
+      // 不加时间戳参数：依赖 HTTP 缓存与 Service Worker 的
+      // StaleWhileRevalidate 策略，保证离线可用且更新能随后生效
       const [translation, seo] = await Promise.all([
-        fetch(`${baseUrl}/locales/${lng}/translation.json?v=${new Date().getTime()}`).then((r) => {
+        fetch(`${baseUrl}/locales/${lng}/translation.json`).then((r) => {
           if (!r.ok) throw new Error(`translation ${r.status}`);
           return r.json();
         }),
-        fetch(`${baseUrl}/locales/${lng}/seo.json?v=${new Date().getTime()}`).then((r) => {
+        fetch(`${baseUrl}/locales/${lng}/seo.json`).then((r) => {
           if (!r.ok) throw new Error(`seo ${r.status}`);
           return r.json();
         }),
@@ -121,13 +127,6 @@ i18n.use(initReactI18next).init({
     useSuspense: false,
   },
   load: "currentOnly",
-  detection: {
-    order: ["path", "querystring", "cookie", "localStorage", "navigator"],
-    lookupQuerystring: "lng",
-    lookupCookie: "i18nextLng",
-    lookupLocalStorage: "i18nextLng",
-    caches: ["localStorage", "cookie"],
-  },
 });
 
 // 添加语言切换处理

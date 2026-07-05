@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,6 +28,12 @@ import { Confetti } from "./Confetti";
 import { Background } from "./Background";
 import "../i18n";
 import { languageNames, defaultLocale } from "@/i18n-config";
+import {
+  getShiftBounds,
+  calculateProgress as calculateShiftProgress,
+  getDailySalary as calculateDailySalary,
+  DEFAULT_MONTHLY_WORKING_DAYS,
+} from "@/lib/countdown";
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -54,10 +60,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [theme, setTheme] = useState<Theme>("auto");
   const [isMounted, setIsMounted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  
+  const [formError, setFormError] = useState("");
+  const reminderFiredRef = useRef(false);
+
   // Salary state
   const [salaryType, setSalaryType] = useState<"monthly" | "daily">("monthly");
   const [salaryAmount, setSalaryAmount] = useState("");
+  const [monthlyWorkingDays, setMonthlyWorkingDays] = useState(
+    DEFAULT_MONTHLY_WORKING_DAYS.toString()
+  );
   const [showSalary, setShowSalary] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
   const [moneyEarned, setMoneyEarned] = useState(0);
@@ -93,6 +104,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setReminder(getLocalStorageItem("reminder", "false") === "true");
       setSalaryType((getLocalStorageItem("salaryType", "monthly") as "monthly" | "daily"));
       setSalaryAmount(getLocalStorageItem("salaryAmount", ""));
+      setMonthlyWorkingDays(
+        getLocalStorageItem(
+          "monthlyWorkingDays",
+          DEFAULT_MONTHLY_WORKING_DAYS.toString()
+        )
+      );
       setShowSalary(getLocalStorageItem("showSalary", "false") === "true");
       setHideEarnings(getLocalStorageItem("hideEarnings", "false") === "true");
     }
@@ -140,35 +157,22 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       localStorage.setItem("reminder", reminder.toString());
       localStorage.setItem("salaryType", salaryType);
       localStorage.setItem("salaryAmount", salaryAmount);
+      localStorage.setItem("monthlyWorkingDays", monthlyWorkingDays);
       localStorage.setItem("showSalary", showSalary.toString());
       localStorage.setItem("hideEarnings", hideEarnings.toString());
     }
-  }, [isMounted, startTime, endTime, reminder, salaryType, salaryAmount, showSalary, hideEarnings]);
+  }, [isMounted, startTime, endTime, reminder, salaryType, salaryAmount, monthlyWorkingDays, showSalary, hideEarnings]);
 
   const getDailySalary = useCallback(() => {
-    if (!salaryAmount) return null;
-    const amount = parseFloat(salaryAmount);
-    if (isNaN(amount)) return null;
-    return salaryType === "monthly" ? amount / 21.75 : amount;
-  }, [salaryAmount, salaryType]);
+    return calculateDailySalary(
+      salaryAmount,
+      salaryType,
+      parseFloat(monthlyWorkingDays) || DEFAULT_MONTHLY_WORKING_DAYS
+    );
+  }, [salaryAmount, salaryType, monthlyWorkingDays]);
 
   const calculateProgress = useCallback(() => {
-    const now = new Date();
-    const start = new Date(now.toDateString() + " " + startTime);
-    const end = new Date(now.toDateString() + " " + endTime);
-    if (end < start) end.setDate(end.getDate() + 1);
-
-    const totalDiff = end.getTime() - start.getTime();
-    const currentDiff = end.getTime() - now.getTime();
-
-    if (currentDiff <= 0) {
-      return 100;
-    } else {
-      return Math.max(
-        0,
-        Math.min(100, ((totalDiff - currentDiff) / totalDiff) * 100)
-      );
-    }
+    return calculateShiftProgress(startTime, endTime, new Date());
   }, [startTime, endTime]);
 
   useEffect(() => {
@@ -176,9 +180,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     if (showCountdown) {
       const updateCountdown = () => {
         const now = new Date();
-        const start = new Date(now.toDateString() + " " + startTime);
-        const end = new Date(now.toDateString() + " " + endTime);
-        if (end < start) end.setDate(end.getDate() + 1);
+        const { start, end } = getShiftBounds(startTime, endTime, now);
 
         const diff = end.getTime() - now.getTime();
         if (diff <= 0) {
@@ -219,12 +221,26 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
           setProgress(calculateProgress());
 
-          if (reminder && diff <= 15 * 60 * 1000 && diff > 14 * 60 * 1000) {
-            new Notification(t("offWorkReminder"), {
-              body: t("fifteenMinutesLeft"),
-            });
+          if (
+            reminder &&
+            !reminderFiredRef.current &&
+            diff <= 15 * 60 * 1000 &&
+            diff > 14 * 60 * 1000 &&
+            typeof window !== "undefined" &&
+            "Notification" in window &&
+            Notification.permission === "granted"
+          ) {
+            reminderFiredRef.current = true;
+            try {
+              new Notification(t("offWorkReminder"), {
+                body: t("fifteenMinutesLeft"),
+              });
+            } catch {
+              // Some platforms (e.g. Android Chrome) only allow notifications
+              // via the service worker registration; ignore failures here.
+            }
           }
-          
+
           // Calculate money earned
           if (showSalary && salaryAmount) {
             const currentProgress = calculateProgress();
@@ -240,29 +256,36 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       interval = setInterval(updateCountdown, 1000);
     }
     return () => clearInterval(interval);
-  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t, showSalary, getDailySalary]);
+  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t, showSalary, salaryAmount, getDailySalary]);
 
   const handleStart = () => {
     if (startTime === endTime) {
-      alert(t("sameTimeError"));
+      setFormError(t("sameTimeError"));
       return;
     }
 
     const now = new Date();
-    const start = new Date(now.toDateString() + " " + startTime);
+    const { start } = getShiftBounds(startTime, endTime, now);
     if (start > now) {
       const timeDiff = start.getTime() - now.getTime();
       const hours = Math.floor(timeDiff / (1000 * 60 * 60));
       const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
 
-      alert(t("futureStartTimeError", { hours, minutes }));
+      setFormError(t("futureStartTimeError", { hours, minutes }));
       return;
     }
 
     if (startTime && endTime) {
+      setFormError("");
+      reminderFiredRef.current = false;
       setShowCountdown(true);
       setProgress(calculateProgress()); // Set initial progress
-      if (reminder) {
+      if (
+        reminder &&
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        Notification.permission === "default"
+      ) {
         Notification.requestPermission();
       }
     }
@@ -281,6 +304,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     minute: string
   ) => {
     const time = `${hour}:${minute}`;
+    setFormError("");
     if (type === "start") {
       setStartTime(time);
     } else {
@@ -494,10 +518,32 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                             />
                           </div>
                         </div>
+                        {salaryType === "monthly" && (
+                          <div className="space-y-2">
+                            <Label className="text-xs dark:text-gray-400">
+                              {t("monthlyWorkingDays")}
+                            </Label>
+                            <input
+                              type="number"
+                              min="1"
+                              max="31"
+                              step="0.25"
+                              className="w-full p-2 rounded-md border bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
+                              value={monthlyWorkingDays}
+                              onChange={(e) => setMonthlyWorkingDays(e.target.value)}
+                              placeholder={DEFAULT_MONTHLY_WORKING_DAYS.toString()}
+                            />
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
+                {formError && (
+                  <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+                    {formError}
+                  </p>
+                )}
               </motion.div>
             ) : (
               <div className="space-y-6">

@@ -1,38 +1,7 @@
 import { NextResponse } from "next/server";
 import { defaultLocale, locales, Locale } from "@/i18n-config";
-import path from "path";
-import fs from "fs/promises";
 import { siteConfig } from "@/config/site";
-
-async function getTranslations(lang: string, ns: string) {
-  try {
-    // 验证语言代码
-    if (!locales.includes(lang as Locale)) {
-      lang = defaultLocale;
-    }
-
-    const filePath = path.join(
-      process.cwd(),
-      "public",
-      "locales",
-      lang,
-      `${ns}.json`
-    );
-    const content = await fs.readFile(filePath, "utf8");
-    return JSON.parse(content);
-  } catch (error) {
-    console.error(`Failed to load translations for ${lang}/${ns}:`, error);
-    const enFilePath = path.join(
-      process.cwd(),
-      "public",
-      "locales",
-      "en",
-      `${ns}.json`
-    );
-    const enContent = await fs.readFile(enFilePath, "utf8");
-    return JSON.parse(enContent);
-  }
-}
+import { getTranslations } from "@/lib/server/i18n";
 
 export async function GET(request: Request) {
   // 从 URL 查询参数中获取语言代码
@@ -48,13 +17,17 @@ export async function GET(request: Request) {
   if (!searchParams.has("lang")) {
     const referer = request.headers.get("referer");
     if (referer) {
-      const refererUrl = new URL(referer);
-      const pathParts = refererUrl.pathname.split("/");
-      if (pathParts.length > 1 && pathParts[1]) {
-        const refererLang = pathParts[1];
-        if (locales.includes(refererLang as Locale)) {
-          lang = refererLang;
+      try {
+        const refererUrl = new URL(referer);
+        const pathParts = refererUrl.pathname.split("/");
+        if (pathParts.length > 1 && pathParts[1]) {
+          const refererLang = pathParts[1];
+          if (locales.includes(refererLang as Locale)) {
+            lang = refererLang;
+          }
         }
+      } catch {
+        // 畸形 Referer 头，忽略即可
       }
     }
   }

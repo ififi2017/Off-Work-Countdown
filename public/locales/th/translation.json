@@ -25,6 +25,7 @@
   "monthly": "รายเดือน",
   "daily": "รายวัน",
   "amount": "จำนวนเงิน",
+  "monthlyWorkingDays": "วันทำงานต่อเดือน",
   "moneyEarned": "รายได้ที่ได้รับวันนี้",
   "configureSalary": "ตั้งค่าเงินเดือน",
   "hideSalary": "ซ่อนข้อมูลเงินเดือน",
