@@ -4,7 +4,6 @@ import {
   ExpirationPlugin,
   NetworkFirst,
   Serwist,
-  StaleWhileRevalidate,
 } from "serwist";
 
 declare global {
@@ -40,11 +39,13 @@ const runtimeCaching: RuntimeCaching[] = [
     }),
   },
   {
-    // Translation files: render immediately from cache, refresh in the background.
+    // Translation files: prefer the network so translation updates show up on the
+    // first visit after a deploy; fall back to cache only when offline.
     matcher: ({ url, sameOrigin }) =>
       sameOrigin && url.pathname.startsWith("/locales/"),
-    handler: new StaleWhileRevalidate({
+    handler: new NetworkFirst({
       cacheName: "locales",
+      networkTimeoutSeconds: 10,
       plugins: [new ExpirationPlugin({ maxEntries: 64, maxAgeSeconds: ONE_WEEK })],
     }),
   },

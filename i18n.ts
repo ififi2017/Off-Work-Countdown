@@ -79,14 +79,16 @@ async function loadLanguageResources(lng: string): Promise<Resources> {
   // 创建新的加载 Promise
   const loadingPromise = (async () => {
     try {
-      // 不加时间戳参数：依赖 HTTP 缓存与 Service Worker 的
-      // StaleWhileRevalidate 策略，保证离线可用且更新能随后生效
+      // 用构建 ID 作为版本号：每次部署 URL 变化一次，强制刷新翻译；
+      // 同一部署内 URL 稳定，仍可被缓存/离线使用。配合 SW 的 NetworkFirst 策略。
+      const buildId = process.env.NEXT_PUBLIC_BUILD_ID || "";
+      const v = buildId ? `?v=${encodeURIComponent(buildId)}` : "";
       const [translation, seo] = await Promise.all([
-        fetch(`${baseUrl}/locales/${lng}/translation.json`).then((r) => {
+        fetch(`${baseUrl}/locales/${lng}/translation.json${v}`).then((r) => {
           if (!r.ok) throw new Error(`translation ${r.status}`);
           return r.json();
         }),
-        fetch(`${baseUrl}/locales/${lng}/seo.json`).then((r) => {
+        fetch(`${baseUrl}/locales/${lng}/seo.json${v}`).then((r) => {
           if (!r.ok) throw new Error(`seo ${r.status}`);
           return r.json();
         }),
