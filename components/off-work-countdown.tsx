@@ -26,6 +26,7 @@ import { ThemeToggle, Theme } from "./ThemeToggle";
 import { CountdownDisplay } from "./CountdownDisplay";
 import { Confetti } from "./Confetti";
 import { Background } from "./Background";
+import { ShareButton } from "./ShareButton";
 import "../i18n";
 import { languageNames, defaultLocale } from "@/i18n-config";
 import {
@@ -599,10 +600,16 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
+                className="flex gap-2"
               >
                 <Button variant="outline" onClick={handleReturn}>
                   <ArrowLeft className="mr-2 h-4 w-4" /> {t("return")}
                 </Button>
+                <ShareButton
+                  timeLeft={timeLeft}
+                  progress={progress}
+                  isOff={progress >= 100}
+                />
               </motion.div>
             )}
           </AnimatePresence>
