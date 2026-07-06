@@ -181,14 +181,15 @@ export async function generateShareImage(
     // ignore — falls back to system fonts
   }
 
-  // Generate the QR (dark on white) and load the logo up front.
-  const [qrDataUrl, logo] = await Promise.all([
+  // Generate the QR (dark on white) and load the logo + mood emoji up front.
+  const [qrDataUrl, logo, emojiImg] = await Promise.all([
     QRCode.toDataURL(opts.url, {
       margin: 1,
       width: 320,
       color: { dark: "#111827", light: "#ffffff" },
     }),
     loadImage(opts.logoSrc ?? "/icon-512x512.png").catch(() => null),
+    loadImage(`/emoji/${opts.mood.code}.png`).catch(() => null),
   ]);
   const qrImg = await loadImage(qrDataUrl).catch(() => null);
 
@@ -218,9 +219,16 @@ export async function generateShareImage(
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  // 4) Emoji
-  ctx.font = `${L.emojiSize}px ${EMOJI_FONT}`;
-  ctx.fillText(opts.mood.emoji, L.w / 2, L.emojiY);
+  // 4) Emoji — bundled PNG for reliable rendering across devices (system emoji
+  //    do not rasterize to canvas on iOS Safari). Fall back to text if missing.
+  if (emojiImg) {
+    const size = L.emojiSize;
+    ctx.drawImage(emojiImg, L.w / 2 - size / 2, L.emojiY - size / 2, size, size);
+  } else {
+    ctx.font = `${L.emojiSize}px ${EMOJI_FONT}`;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(opts.mood.emoji, L.w / 2, L.emojiY);
+  }
 
   // 5) Headline (localized "Off work in")
   ctx.font = `600 ${L.headlineSize}px ${SANS}`;
