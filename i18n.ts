@@ -157,16 +157,21 @@ i18n.changeLanguage = async (lng: string | undefined, callback?: Callback) => {
   }
 };
 
-// 初始加载语言资源
-loadLanguageResources(initialLanguage).then((resources) => {
-  i18n.addResourceBundle(
-    initialLanguage,
-    "translation",
-    resources.translation,
-    true,
-    true
-  );
-  i18n.addResourceBundle(initialLanguage, "seo", resources.seo, true, true);
-});
+// 初始加载语言资源（仅在浏览器中）。
+// 服务端渲染/构建期不通过 HTTP 拉取翻译：那会去请求生产域名
+// (off.rainif.com)，构建时可能返回 403，且毫无必要——页面文案在客户端
+// 挂载后加载，SEO/metadata 走 lib/server/i18n.ts 的文件系统读取。
+if (typeof window !== "undefined") {
+  loadLanguageResources(initialLanguage).then((resources) => {
+    i18n.addResourceBundle(
+      initialLanguage,
+      "translation",
+      resources.translation,
+      true,
+      true
+    );
+    i18n.addResourceBundle(initialLanguage, "seo", resources.seo, true, true);
+  });
+}
 
 export default i18n;

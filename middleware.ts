@@ -52,6 +52,7 @@ export function middleware(request: NextRequest) {
     pathname === "/sw.js" ||
     pathname.startsWith("/workbox-") ||
     pathname.startsWith("/locales/") ||
+    pathname.startsWith("/emoji/") ||
     pathname.match(/^\/icon-\d+x\d+\.png$/) ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
@@ -110,6 +111,6 @@ export const config = {
      * - hreflang-sitemap.xml
      * - baidu_verify_codeva-SXZydSeYe0.html
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|robots.txt|sitemap.xml|hreflang-sitemap.xml|baidu_verify_codeva-SXZydSeYe0.html).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|emoji|robots.txt|sitemap.xml|hreflang-sitemap.xml|baidu_verify_codeva-SXZydSeYe0.html).*)",
   ],
 };

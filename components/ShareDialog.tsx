@@ -242,7 +242,7 @@ export function ShareDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md gap-3 p-4 sm:gap-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{t("shareTitle")}</DialogTitle>
           <DialogDescription className="sr-only">
@@ -322,8 +322,8 @@ export function ShareDialog({
               ))}
             </div>
 
-            {/* Preview — fixed height so switching mood/format never shifts layout */}
-            <div className="relative flex h-[320px] items-center justify-center overflow-hidden rounded-lg bg-muted/40 p-2">
+            {/* Preview — fixed height (per breakpoint) so switching mood/format never shifts layout */}
+            <div className="relative flex h-[240px] items-center justify-center overflow-hidden rounded-lg bg-muted/40 p-2 sm:h-[300px]">
               {img.url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
