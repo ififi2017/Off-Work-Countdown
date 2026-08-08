@@ -1,0 +1,56 @@
+{
+  "backToApp": "Back to the countdown",
+  "startCta": "Start this countdown",
+  "scheduleLabel": "Hours",
+  "perDayLabel": "Per day",
+  "perWeekLabel": "Per week",
+  "hoursUnit": "h",
+  "otherPresetsHeading": "Other schedules",
+  "items": {
+    "996": {
+      "name": "996",
+      "metaTitle": "996 schedule - 9am to 9pm, six days a week",
+      "metaDescription": "What a 996 schedule adds up to: twelve hours a day and seventy-two hours a week. Start a live countdown to the end of today's shift.",
+      "intro": "Nine in the morning to nine at night, six days a week.",
+      "body": [
+        "996 is shorthand for a schedule that runs from 9am to 9pm, six days a week. It began as a description of working hours at parts of China's technology industry, and the number is now used well beyond that context.",
+        "The arithmetic is what makes it notable. Twelve hours a day across six days is seventy-two hours a week — close to double a conventional forty-hour week, and that is before any commuting.",
+        "In August 2021 China's Supreme People's Court and the Ministry of Human Resources and Social Security jointly published a set of labour dispute cases stating that 996 arrangements exceed the statutory limits on working hours. Whether that applies to any particular job is a question for your own contract and local rules.",
+        "If this matches your hours, start the countdown and it will track the twelve hours from start to finish. If your day is different, set it yourself on the main page."
+      ]
+    },
+    "9-to-5": {
+      "name": "9 to 5",
+      "metaTitle": "9 to 5 schedule - the standard eight-hour day",
+      "metaDescription": "Nine to five is eight hours a day and forty a week. See how it is counted, what the lunch break does to the total, and start a live countdown.",
+      "intro": "Nine in the morning to five in the afternoon, five days a week.",
+      "body": [
+        "Nine to five is the shorthand for a standard working day: eight hours at work, five days a week, forty hours in total. In the United States the forty-hour week was written into law by the Fair Labor Standards Act in 1938, and the phrase has since become the general name for regular office hours in English.",
+        "Strictly speaking, nine to five is eight hours only where the lunch break is paid. Where it is unpaid, the same clock hours usually amount to seven or seven and a half hours of paid time — worth checking before you compare two offers by their hours alone.",
+        "The countdown measures the clock hours you set, from start to finish. If you want it to reflect paid time only, set the end time an hour earlier."
+      ]
+    },
+    "9-to-6": {
+      "name": "9 to 6",
+      "metaTitle": "9 to 6 schedule - the nine-hour office day",
+      "metaDescription": "Nine to six spans nine clock hours and forty-five a week. Why it usually means the same paid time as nine to five, plus a live countdown.",
+      "intro": "Nine in the morning to six in the evening, five days a week.",
+      "body": [
+        "Nine to six is the common office day across much of East and Southeast Asia: nine clock hours from start to finish, five days a week, forty-five in total.",
+        "The extra hour compared with nine to five is usually the unpaid lunch break, which is why the two schedules often amount to the same quantity of paid work despite the different-looking numbers.",
+        "Start the countdown to track the nine hours from start to finish, or adjust the end time on the main page if your break is counted differently."
+      ]
+    },
+    "night-shift": {
+      "name": "Night shift",
+      "metaTitle": "Night shift countdown - a shift that crosses midnight",
+      "metaDescription": "Ten at night to six in the morning. How a countdown handles a shift whose end time is earlier than its start, without giving a negative result.",
+      "intro": "Ten at night to six the following morning.",
+      "body": [
+        "A night shift is the case where a naive countdown breaks: the finishing time is earlier on the clock than the starting time, so subtracting one from the other gives a negative number.",
+        "This tool reads a shift whose end is earlier than its start as one that crosses midnight. Opening it at one in the morning shows five hours left of the shift that began the previous evening, rather than twenty-nine hours until tonight's.",
+        "The same handling applies to any overnight pattern, not just ten to six — set your own hours on the main page and the shift will be anchored the same way."
+      ]
+    }
+  }
+}

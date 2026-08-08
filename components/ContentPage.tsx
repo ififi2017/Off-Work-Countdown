@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
-import {
-  contentLocales,
-  type ContentLocale,
-  type ContentSlug,
-} from "@/lib/content-locales";
+import { contentLocales, type ContentLocale } from "@/lib/content-locales";
 
 // 内容页语言的自称写法。
 const localeLabels: Record<ContentLocale, string> = {
@@ -17,7 +13,8 @@ const localeLabels: Record<ContentLocale, string> = {
 // 一起产出，是它们能被收录的前提。
 interface ContentPageProps {
   lang: ContentLocale;
-  slug: ContentSlug;
+  /** 语言切换要跳到的同名路径，例如 "faq" 或预设页的 "996"。 */
+  slug: string;
   backLabel: string;
   heading: string;
   intro: string;
