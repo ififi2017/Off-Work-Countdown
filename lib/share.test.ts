@@ -8,6 +8,7 @@ import {
   type SharePlatform,
 } from "./share";
 import { moods, defaultMood, getMood } from "./moods";
+import { trackedEvents, isTrackedEvent } from "./analytics-events";
 
 describe("buildShareUrl", () => {
   it("appends UTM params for attribution", () => {
@@ -138,5 +139,34 @@ describe("moods", () => {
     expect(getMood("nope")).toBe(defaultMood);
     expect(getMood(null)).toBe(defaultMood);
     expect(getMood("firedUp").emoji).toBe("🔥");
+  });
+});
+
+describe("analytics event allowlist", () => {
+  it("accepts exactly the declared events", () => {
+    for (const e of trackedEvents) expect(isTrackedEvent(e)).toBe(true);
+  });
+
+  it("rejects anything else, so the public endpoint cannot write arbitrary keys", () => {
+    for (const bad of [
+      "",
+      " ",
+      "share_land ",
+      "SHARE_LAND",
+      "share_land; DROP",
+      "e:2026-08-08:x",
+      "__proto__",
+      "a".repeat(200),
+    ]) {
+      expect(isTrackedEvent(bad)).toBe(false);
+    }
+  });
+
+  it("keeps event names low-cardinality and key-safe", () => {
+    for (const e of trackedEvents) {
+      expect(e).toMatch(/^[a-z_]+$/);
+      expect(e.length).toBeLessThanOrEqual(32);
+    }
+    expect(new Set(trackedEvents).size).toBe(trackedEvents.length);
   });
 });

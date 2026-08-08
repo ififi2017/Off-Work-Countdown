@@ -39,6 +39,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { resolveContentLocale } from "@/lib/content-locales";
 import { decodeShift } from "@/lib/share";
+import { track } from "@/lib/track";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -144,7 +145,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setEndTime(shift.end);
     setShowCountdown(true);
     // 只有明确标记来自分享时才提示，直接手输 ?s= 的不打扰。
-    setIsSharedView(params.get("from") === "share");
+    const fromShare = params.get("from") === "share";
+    setIsSharedView(fromShare);
+    // 分享落地与预设页 CTA 都带 ?s=，靠 from 区分，二者的转化路径不同。
+    track(fromShare ? "share_land" : "preset_start");
   }, [isMounted]);
 
   useEffect(() => {
@@ -314,6 +318,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       reminderFiredRef.current = false;
       setShowCountdown(true);
       setProgress(calculateProgress()); // Set initial progress
+      track("countdown_start");
       if (
         reminder &&
         typeof window !== "undefined" &&
@@ -346,6 +351,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   };
 
   const handleUseOwnHours = () => {
+    // 分享闭环的关键转化点：接收者从「看别人的班次」变成「设自己的」。
+    track("share_convert");
     exitSharedView();
     setShowCountdown(false);
     setProgress(0);

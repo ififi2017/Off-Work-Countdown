@@ -72,6 +72,31 @@ export const siteConfig = {
 } as const;
 ```
 
+### Analytics (optional)
+
+Aggregate event counters for the share funnel. Entirely optional — with no
+environment variables set, the endpoint accepts requests and does nothing, so
+local development, CI and self-hosted deployments work without any setup.
+
+No cookies, no identifiers, no IP or user-agent storage: the endpoint only
+increments a daily counter per event name, and only for names on a fixed
+allowlist (`lib/analytics-events.ts`).
+
+| Variable | Purpose |
+| --- | --- |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST credentials. `KV_REST_API_URL` / `KV_REST_API_TOKEN` are also accepted. |
+| `ANALYTICS_STATS_TOKEN` | Enables the read-back route. Unset means `/api/e/stats` returns 404. |
+
+On Vercel, add an Upstash Redis integration from the Marketplace and the
+credentials are injected automatically. Read the counters with:
+
+```bash
+curl -H "Authorization: Bearer $ANALYTICS_STATS_TOKEN" https://your-domain/api/e/stats
+```
+
+The endpoint is public, so counts can be inflated by anyone willing to POST to
+it. Treat the numbers as a directional signal, not a source of truth.
+
 ### i18n Configuration
 
 Language configuration is managed in `i18n-config.ts`:
