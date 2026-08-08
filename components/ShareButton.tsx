@@ -33,7 +33,7 @@ export function ShareButton({ timeLeft, progress, isOff }: ShareButtonProps) {
           setOpen(true);
         }}
       >
-        <Share2 className="mr-2 h-4 w-4" /> {t("shareButton")}
+        <Share2 className="me-2 h-4 w-4" /> {t("shareButton")}
       </Button>
       {mounted && (
         <ShareDialog

@@ -53,29 +53,18 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/workbox-") ||
     pathname.startsWith("/locales/") ||
     pathname.startsWith("/emoji/") ||
-    pathname.match(/^\/icon-\d+x\d+\.png$/) ||
+    pathname.match(/^\/icon-[\w-]+\.png$/) ||
     pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml" ||
-    pathname === "/hreflang-sitemap.xml"
+    pathname === "/sitemap.xml"
   ) {
     return NextResponse.next();
   }
 
-  // 检查当前路径的语言代码
-  const pathnameParts = pathname.split("/");
-  if (pathnameParts.length > 1) {
-    const currentLocale = pathnameParts[1];
-    // 如果路径包含语言代码但不是有效的语言，重定向到默认语言
-    if (currentLocale && !locales.includes(currentLocale as Locale)) {
-      const newUrl = new URL(
-        `/${defaultLocale}${
-          pathname.substring(currentLocale.length + 1) || ""
-        }`,
-        request.url
-      );
-      return NextResponse.redirect(newUrl);
-    }
-  }
+  // 注意：这里不能把「首段不是合法语言码」当成语言前缀写错来处理。曾经的实现
+  // 会把首段剥掉再重定向到默认语言，导致 /faq 变成 /en 而不是 /en/faq —— 路径
+  // 被吃掉了。以前站内只有 /[lang] 一种路由所以没暴露，加了内容页后就会出问题。
+  // 统一交给下面的逻辑：没有合法语言前缀就整体补上首选语言。这样 /faq 得到
+  // /en/faq；而真正写错的 /xx/faq 会得到 /en/xx/faq 并 404，这是诚实的结果。
 
   // 检查 URL 是否已经包含有效的语言代码
   const pathnameHasLocale = locales.some(
@@ -108,9 +97,8 @@ export const config = {
      * - locales
      * - robots.txt
      * - sitemap.xml
-     * - hreflang-sitemap.xml
      * - baidu_verify_codeva-SXZydSeYe0.html
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|emoji|robots.txt|sitemap.xml|hreflang-sitemap.xml|baidu_verify_codeva-SXZydSeYe0.html).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|emoji|robots.txt|sitemap.xml|baidu_verify_codeva-SXZydSeYe0.html).*)",
   ],
 };

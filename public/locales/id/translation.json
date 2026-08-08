@@ -61,5 +61,15 @@
   "moodFiredUp": "Bergairah",
   "moodCelebrating": "Merayakan",
   "moodCoffee": "Butuh kopi",
-  "moodCounting": "Tak sabar"
+  "moodCounting": "Tak sabar",
+  "faq": "Pertanyaan umum",
+  "howItWorks": "Cara kerjanya",
+  "landingTagline": "Lihat persis berapa sisa hari kerja Anda",
+  "landingBody": "Atur jam kerja sekali saja. Hitung mundur, bilah kemajuan, dan penghasilan hari ini diperbarui setiap detik. Gratis, tanpa pendaftaran, bisa dipakai offline.",
+  "landingFeature1Title": "Segala pola sif",
+  "landingFeature1Body": "Sembilan sampai enam, sif dua belas jam, atau sif malam yang melewati tengah malam — aplikasi tahu Anda sedang di sif mana.",
+  "landingFeature2Title": "Lihat angkanya naik",
+  "landingFeature2Body": "Masukkan gaji bulanan atau harian, penghasilan hari ini bertambah tiap detik.",
+  "landingFeature3Title": "Tetap di perangkat Anda",
+  "landingFeature3Body": "Jam kerja dan gaji tidak keluar dari peramban. Tambahkan ke layar utama, tetap jalan tanpa internet."
 }

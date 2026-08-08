@@ -129,6 +129,12 @@ i18n.use(initReactI18next).init({
     useSuspense: false,
   },
   load: "currentOnly",
+  // 同步完成初始化。默认的 initImmediate: true 会把内部的语言加载推迟到下一个
+  // tick——那时下面的 changeLanguage 包装器已经装上，但 React 尚未渲染、
+  // I18nProvider 还没注入服务端翻译，包装器就会误判资源缺失而多发一次请求。
+  // 同步初始化后 i18n.language 在模块加载时即就位，各处的 changeLanguage
+  // 守卫也能正确跳过。没有 backend 插件，本就无异步加载可等。
+  initImmediate: false,
 });
 
 // 添加语言切换处理
@@ -157,21 +163,10 @@ i18n.changeLanguage = async (lng: string | undefined, callback?: Callback) => {
   }
 };
 
-// 初始加载语言资源（仅在浏览器中）。
-// 服务端渲染/构建期不通过 HTTP 拉取翻译：那会去请求生产域名
-// (off.rainif.com)，构建时可能返回 403，且毫无必要——页面文案在客户端
-// 挂载后加载，SEO/metadata 走 lib/server/i18n.ts 的文件系统读取。
-if (typeof window !== "undefined") {
-  loadLanguageResources(initialLanguage).then((resources) => {
-    i18n.addResourceBundle(
-      initialLanguage,
-      "translation",
-      resources.translation,
-      true,
-      true
-    );
-    i18n.addResourceBundle(initialLanguage, "seo", resources.seo, true, true);
-  });
-}
+// 这里不再于模块加载时预取翻译。当前语言的资源由服务端读文件后经
+// I18nProvider 的 resources prop 在渲染期同步注入（见 components/I18nProvider.tsx），
+// 首屏即可用；再 fetch 一遍只是重复请求同一份数据。
+// loadLanguageResources 仍保留给上面的 changeLanguage 包装器，用于切到
+// 尚未注入过的语言时按需拉取。
 
 export default i18n;

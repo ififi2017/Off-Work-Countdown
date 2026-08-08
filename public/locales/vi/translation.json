@@ -61,5 +61,15 @@
   "moodFiredUp": "Tràn đầy năng lượng",
   "moodCelebrating": "Ăn mừng",
   "moodCoffee": "Cần cà phê",
-  "moodCounting": "Nóng lòng"
+  "moodCounting": "Nóng lòng",
+  "faq": "Câu hỏi thường gặp",
+  "howItWorks": "Cách hoạt động",
+  "landingTagline": "Biết chính xác còn bao lâu nữa là tan ca",
+  "landingBody": "Đặt giờ làm một lần. Đồng hồ đếm ngược, thanh tiến độ và số tiền kiếm được hôm nay cập nhật từng giây. Miễn phí, không cần đăng ký, dùng được ngoại tuyến.",
+  "landingFeature1Title": "Mọi kiểu ca làm",
+  "landingFeature1Body": "Chín giờ đến sáu giờ, ca mười hai tiếng, hay ca đêm qua nửa đêm — ứng dụng tự biết bạn đang ở ca nào.",
+  "landingFeature2Title": "Nhìn tiền tăng dần",
+  "landingFeature2Body": "Nhập lương tháng hoặc lương ngày, thu nhập hôm nay sẽ cộng dồn theo từng giây.",
+  "landingFeature3Title": "Chỉ nằm trên máy bạn",
+  "landingFeature3Body": "Giờ làm và lương không rời khỏi trình duyệt. Thêm vào màn hình chính là dùng được cả khi mất mạng."
 }

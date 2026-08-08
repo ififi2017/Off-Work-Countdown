@@ -50,18 +50,27 @@ export async function GET(request: Request) {
     background_color: siteConfig.themeColor,
     theme_color: siteConfig.themeColor,
     orientation: "portrait",
+    // "any" 与 "maskable" 必须拆成不同条目：同一张图两种用途是常见反模式。
+    // maskable 图由平台按自己的形状（Android 圆形等）裁切，需要满幅背景且
+    // 内容落在 80% 安全区内；"any" 图则保留透明圆角外形。
     icons: [
       {
         src: "/icon-192x192.png",
         sizes: "192x192",
         type: "image/png",
-        purpose: "any maskable",
+        purpose: "any",
       },
       {
         src: "/icon-512x512.png",
         sizes: "512x512",
         type: "image/png",
-        purpose: "any maskable",
+        purpose: "any",
+      },
+      {
+        src: "/icon-maskable-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
     related_applications: [

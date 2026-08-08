@@ -45,23 +45,23 @@ export function ThemeToggle({ theme, onThemeChange }: ThemeToggleProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => onThemeChange("light")}>
-          <Sun className="mr-2 h-4 w-4" />
+          <Sun className="me-2 h-4 w-4" />
           {t("light")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onThemeChange("dark")}>
-          <Moon className="mr-2 h-4 w-4" />
+          <Moon className="me-2 h-4 w-4" />
           {t("dark")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onThemeChange("auto")}>
-          <Monitor className="mr-2 h-4 w-4" />
+          <Monitor className="me-2 h-4 w-4" />
           {t("auto")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onThemeChange("cyberpunk")}>
-          <Zap className="mr-2 h-4 w-4" />
+          <Zap className="me-2 h-4 w-4" />
           {t("cyberpunk")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onThemeChange("sunset")}>
-          <Sunset className="mr-2 h-4 w-4" />
+          <Sunset className="me-2 h-4 w-4" />
           {t("sunset")}
         </DropdownMenuItem>
       </DropdownMenuContent>

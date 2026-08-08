@@ -61,5 +61,15 @@
   "moodFiredUp": "Enerjik",
   "moodCelebrating": "Kutlama",
   "moodCoffee": "Kahve lazım",
-  "moodCounting": "Sabırsız"
+  "moodCounting": "Sabırsız",
+  "faq": "SSS",
+  "howItWorks": "Nasıl çalışır",
+  "landingTagline": "İş gününüzden ne kadar kaldığını tam olarak görün",
+  "landingBody": "Çalışma saatlerinizi bir kez ayarlayın. Geri sayım, ilerleme çubuğu ve bugünkü kazancınız her saniye güncellenir. Ücretsiz, kayıt gerektirmez, çevrimdışı çalışır.",
+  "landingFeature1Title": "Her vardiya düzeni",
+  "landingFeature1Body": "Dokuz-altı, on iki saatlik vardiya ya da gece yarısını aşan gece vardiyası — hangi vardiyada olduğunuzu kendisi bulur.",
+  "landingFeature2Title": "Arttığını izleyin",
+  "landingFeature2Body": "Aylık ya da günlük maaşınızı girin, bugünkü kazancınız saniye saniye birikir.",
+  "landingFeature3Title": "Cihazınızda kalır",
+  "landingFeature3Body": "Saatleriniz ve maaşınız tarayıcınızdan çıkmaz. Ana ekrana ekleyin, çevrimdışı da çalışır."
 }

@@ -17,6 +17,19 @@ const nextConfig = {
       process.env.NEXT_PUBLIC_BUILD_ID ||
       String(Date.now()),
   },
+  async redirects() {
+    return [
+      {
+        // /hreflang-sitemap.xml 已并入 /sitemap.xml 的 alternates。该 URL 曾写在
+        // robots.txt 里，搜索引擎大概率已收录，给它一个 301 而不是让 middleware
+        // 加上语言前缀重定向到不存在的路径。next.config 的 redirects 先于
+        // middleware 执行，因此这里能拦下。
+        source: '/hreflang-sitemap.xml',
+        destination: '/sitemap.xml',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 const withSerwist = withSerwistInit({

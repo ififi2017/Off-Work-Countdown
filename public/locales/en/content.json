@@ -1,0 +1,95 @@
+{
+  "backToApp": "Back to the countdown",
+  "faq": {
+    "metaTitle": "FAQ - Off Work Countdown",
+    "metaDescription": "Common questions about the Off Work Countdown timer: overnight shifts, hourly wage calculation, offline use, privacy, and installing it as an app.",
+    "heading": "Frequently asked questions",
+    "intro": "Everything about setting up your workday countdown, how the earnings figure is worked out, and what happens to your data.",
+    "items": [
+      {
+        "q": "What is Off Work Countdown?",
+        "a": "It is a free web app that shows exactly how much of your workday is left. You set the time you start and the time you finish, and it counts down the hours, minutes and seconds while a progress bar fills up. There is no account to create and nothing to install."
+      },
+      {
+        "q": "How do I set it up?",
+        "a": "Pick your start and end time, then press Start Countdown. Your times are remembered in the browser, so the next time you open the page it is already configured. You can change them at any time by pressing Return."
+      },
+      {
+        "q": "Does it work for night shifts that run past midnight?",
+        "a": "Yes. If your end time is earlier than your start time, for example 22:00 to 06:00, the countdown treats it as a shift that crosses midnight. Opening the page at 01:00 correctly shows the shift that began the previous evening rather than starting a new one."
+      },
+      {
+        "q": "How is the money earned today calculated?",
+        "a": "Turn on Salary Settings and enter either a monthly or a daily figure. A monthly salary is divided by the number of working days in a month, which defaults to 21.75, to get a daily rate. That daily rate is then multiplied by how much of your shift has elapsed. The How it works page explains where 21.75 comes from and how to change it."
+      },
+      {
+        "q": "Will it still remind me if I close the tab?",
+        "a": "Not at the moment. The optional reminder fires 15 minutes before you finish, but only while the page is still open in a tab. If you close the tab, no notification is sent. If you want the reminder, leave the page open — pinning the tab in your browser is a tidy way to do that."
+      },
+      {
+        "q": "Does it work offline?",
+        "a": "Yes. The app is a progressive web app, so after your first visit it is cached and keeps working without a connection. The countdown is calculated entirely on your device and never needs the network."
+      },
+      {
+        "q": "Is my salary information private?",
+        "a": "Your working hours and salary stay in your browser's local storage and are never sent to a server. Nobody else can see them, and clearing your browser data removes them. There is an eye button next to the earnings figure that masks the amount when someone is looking over your shoulder. The site does collect anonymous page-view and performance statistics, which contain no personal or salary data."
+      },
+      {
+        "q": "Can I install it like a real app?",
+        "a": "Yes. On Android and desktop Chrome or Edge an install prompt appears, and the app then opens in its own window with no browser chrome. On iPhone and iPad, use the Share button in Safari and choose Add to Home Screen. On macOS Safari, choose Add to Dock."
+      },
+      {
+        "q": "Is it free, and is the code open?",
+        "a": "It is completely free, with no accounts, adverts or paid tiers. The source code is published on GitHub under the MIT licence, so anyone can read it, host their own copy or contribute changes."
+      },
+      {
+        "q": "Which languages are supported?",
+        "a": "Nineteen, including English, Simplified and Traditional Chinese, Japanese, Korean, French, German, Spanish, Italian, Portuguese, Russian, Hindi, Marathi, Turkish, Arabic, Thai, Indonesian and Vietnamese. The language is picked from your browser settings on the first visit and can be changed from the selector at any time."
+      }
+    ]
+  },
+  "howItWorks": {
+    "metaTitle": "How it works - Off Work Countdown",
+    "metaDescription": "How the workday countdown handles overnight shifts, and how the hourly wage figure is derived from a monthly salary using 21.75 working days.",
+    "heading": "How it works",
+    "intro": "A short explanation of the arithmetic behind the countdown, the progress bar and the earnings figure, so you can tell whether the numbers match your own contract.",
+    "sections": [
+      {
+        "heading": "Defining a shift",
+        "body": [
+          "A shift is simply a start time and an end time. When you press Start Countdown, both are anchored to today's date and the timer runs to the end of that shift.",
+          "If the end time is earlier than the start time, the shift is understood to cross midnight. A 22:00 to 06:00 shift opened at 01:00 belongs to the evening that has already begun, not to a new one starting tonight, so the remaining time is five hours rather than twenty-nine."
+        ]
+      },
+      {
+        "heading": "The progress bar",
+        "body": [
+          "Progress is the share of the shift that has already passed, measured against its full length rather than against a fixed eight hours. A six-hour shift and a twelve-hour shift both read 50 per cent at the halfway point.",
+          "The value is clamped between 0 and 100, so arriving early or staying late never pushes the bar outside its range."
+        ]
+      },
+      {
+        "heading": "Turning a monthly salary into a daily rate",
+        "body": [
+          "If you enter a monthly salary, it has to be converted to a daily rate before it can be spread across the shift. The default divisor is 21.75 working days per month.",
+          "That number is not arbitrary. A year has 365 days, of which 104 fall on weekends, leaving 261 working days. Divided across twelve months, that is exactly 21.75. It is the monthly salary base prescribed by regulation in mainland China. If you are employed somewhere else, or your contract counts differently, treat it as a starting point rather than a rule — your own contract is what decides.",
+          "If your contract counts differently, for example a six-day week or a four-day week, change the working days per month field and every figure updates accordingly. Entering a daily salary directly skips this step altogether."
+        ]
+      },
+      {
+        "heading": "Earnings during the shift",
+        "body": [
+          "The amount shown is the daily rate multiplied by the proportion of the shift completed, updated once a second. At the halfway point you have earned half the daily rate; when the countdown reaches zero the full amount is shown.",
+          "This is a straight-line estimate. It does not model overtime multipliers, unpaid breaks, bonuses, tax or social insurance, so treat it as a rough sense of progress rather than a payslip."
+        ]
+      },
+      {
+        "heading": "Where your data lives",
+        "body": [
+          "Your hours, salary and preferences are written to your browser's local storage on the device you are using. They are never transmitted to a server, so they are not synchronised between your phone and your computer, and clearing your browser data erases them.",
+          "Because everything is computed locally, the app also works with no connection at all once it has been loaded once."
+        ]
+      }
+    ]
+  }
+}

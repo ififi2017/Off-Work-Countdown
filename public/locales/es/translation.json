@@ -61,5 +61,15 @@
   "moodFiredUp": "Con energía",
   "moodCelebrating": "Celebrando",
   "moodCoffee": "Necesito café",
-  "moodCounting": "Impaciente"
+  "moodCounting": "Impaciente",
+  "faq": "Preguntas frecuentes",
+  "howItWorks": "Cómo funciona",
+  "landingTagline": "Ve exactamente cuánto queda de tu jornada",
+  "landingBody": "Configura tu horario una vez. La cuenta atrás, la barra de progreso y lo que llevas ganado se actualizan cada segundo. Gratis, sin registro y funciona sin conexión.",
+  "landingFeature1Title": "Cualquier turno",
+  "landingFeature1Body": "De nueve a cinco, turnos de doce horas o noches que cruzan la medianoche: sabe en qué turno estás.",
+  "landingFeature2Title": "Míralo crecer",
+  "landingFeature2Body": "Introduce un salario mensual o diario y lo ganado hoy se acumula segundo a segundo.",
+  "landingFeature3Title": "Se queda en tu dispositivo",
+  "landingFeature3Body": "Tu horario y tu salario no salen del navegador. Añádelo a la pantalla de inicio y seguirá funcionando sin conexión."
 }

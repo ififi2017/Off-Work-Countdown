@@ -131,7 +131,7 @@ export function TimeSelector({
       <Label htmlFor={`${id}Hour`} className="dark:text-gray-200">
         {label}
       </Label>
-      <div className="flex space-x-2">
+      <div className="flex gap-2">
         <div className="w-1/2">
           <div className="relative">
             <input
@@ -152,7 +152,7 @@ export function TimeSelector({
             />
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               onClick={() => setOpenMenu((prev) => (prev === "hour" ? null : "hour"))}
               aria-label="Select hour"
             >
@@ -181,7 +181,7 @@ export function TimeSelector({
             />
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               onClick={() => setOpenMenu((prev) => (prev === "minute" ? null : "minute"))}
               aria-label="Select minute"
             >

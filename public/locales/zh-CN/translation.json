@@ -61,5 +61,15 @@
   "moodFiredUp": "斗志满满",
   "moodCelebrating": "庆祝",
   "moodCoffee": "需要咖啡",
-  "moodCounting": "迫不及待"
+  "moodCounting": "迫不及待",
+  "faq": "常见问题",
+  "howItWorks": "时薪换算原理",
+  "landingTagline": "一眼看清今天还剩多少班要上",
+  "landingBody": "设一次上下班时间，倒计时、进度条和今日已赚每秒刷新。免费、免注册、可离线使用。",
+  "landingFeature1Title": "什么班次都支持",
+  "landingFeature1Body": "朝九晚五、十二小时班，或者跨过零点的夜班——它会自己判断你在哪一班。",
+  "landingFeature2Title": "看着钱一点点涨",
+  "landingFeature2Body": "填入月薪或日薪，今日收入按秒累计。",
+  "landingFeature3Title": "只留在你的设备上",
+  "landingFeature3Body": "上下班时间和薪资不会离开你的浏览器。装到主屏后断网也能用。"
 }
