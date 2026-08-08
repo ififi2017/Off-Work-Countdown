@@ -6,6 +6,7 @@ import { Share2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import type { Shift } from "@/lib/share";
+import { track } from "@/lib/track";
 
 // Code-split the dialog (pulls in qrcode + canvas logic) so it only loads
 // when the user actually opens the share sheet.
@@ -32,6 +33,7 @@ export function ShareButton({ timeLeft, progress, isOff, shift }: ShareButtonPro
       <Button
         variant="outline"
         onClick={() => {
+          track("share_open");
           setMounted(true);
           setOpen(true);
         }}
