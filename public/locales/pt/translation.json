@@ -63,5 +63,13 @@
   "moodCoffee": "Preciso de café",
   "moodCounting": "Ansioso",
   "faq": "Perguntas frequentes",
-  "howItWorks": "Como funciona"
+  "howItWorks": "Como funciona",
+  "landingTagline": "Veja exatamente quanto falta do seu dia de trabalho",
+  "landingBody": "Defina o seu horário uma vez. A contagem regressiva, a barra de progresso e o total ganho hoje atualizam a cada segundo. Grátis, sem cadastro e funciona offline.",
+  "landingFeature1Title": "Qualquer turno",
+  "landingFeature1Body": "Das nove às seis, turnos de doze horas ou noites que passam da meia-noite: ele descobre em qual turno você está.",
+  "landingFeature2Title": "Veja o valor subir",
+  "landingFeature2Body": "Informe um salário mensal ou diário e o ganho de hoje se acumula segundo a segundo.",
+  "landingFeature3Title": "Fica no seu aparelho",
+  "landingFeature3Body": "Seus horários e salário não saem do navegador. Adicione à tela de início e continua funcionando offline."
 }

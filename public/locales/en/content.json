@@ -24,7 +24,7 @@
       },
       {
         "q": "Will it still remind me if I close the tab?",
-        "a": "Not at the moment. The optional reminder fires 15 minutes before you finish, but only while the page is still open in a tab. If you close it, no notification is sent. Background reminders that work with the page closed are planned."
+        "a": "Not at the moment. The optional reminder fires 15 minutes before you finish, but only while the page is still open in a tab. If you close the tab, no notification is sent. If you want the reminder, leave the page open — pinning the tab in your browser is a tidy way to do that."
       },
       {
         "q": "Does it work offline?",
@@ -72,7 +72,7 @@
         "heading": "Turning a monthly salary into a daily rate",
         "body": [
           "If you enter a monthly salary, it has to be converted to a daily rate before it can be spread across the shift. The default divisor is 21.75 working days per month.",
-          "That number is not arbitrary. A year has 365 days, of which 104 fall on weekends, leaving 261 working days. Divided across twelve months, that is exactly 21.75. It is the figure used as the statutory monthly salary base in mainland China.",
+          "That number is not arbitrary. A year has 365 days, of which 104 fall on weekends, leaving 261 working days. Divided across twelve months, that is exactly 21.75. It is the monthly salary base prescribed by regulation in mainland China. If you are employed somewhere else, or your contract counts differently, treat it as a starting point rather than a rule — your own contract is what decides.",
           "If your contract counts differently, for example a six-day week or a four-day week, change the working days per month field and every figure updates accordingly. Entering a daily salary directly skips this step altogether."
         ]
       },

@@ -63,5 +63,13 @@
   "moodCoffee": "コーヒーが必要",
   "moodCounting": "待ちきれない",
   "faq": "よくある質問",
-  "howItWorks": "計算のしくみ"
+  "howItWorks": "計算のしくみ",
+  "landingTagline": "今日の勤務があとどれだけ残っているか一目で",
+  "landingBody": "勤務時間を一度設定するだけ。カウントダウン、進捗バー、今日の稼ぎが毎秒更新されます。無料、登録不要、オフライン対応。",
+  "landingFeature1Title": "どんな勤務形態でも",
+  "landingFeature1Body": "9時5時も、12時間勤務も、日付をまたぐ夜勤も、どの勤務にいるか自動で判断します。",
+  "landingFeature2Title": "増えていくのが見える",
+  "landingFeature2Body": "月給か日給を入力すると、今日の収入が秒単位で積み上がります。",
+  "landingFeature3Title": "端末の中だけ",
+  "landingFeature3Body": "勤務時間と給与はブラウザから出ません。ホーム画面に追加すればオフラインでも動きます。"
 }

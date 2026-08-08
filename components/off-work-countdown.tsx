@@ -8,7 +8,6 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -398,7 +397,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     >
       <Background theme={theme} />
       <Confetti trigger={showConfetti} />
-      <h1 className="sr-only">{t("seo:siteName")}</h1>
 
       <div className={isPWA ? "flex flex-1 flex-col" : "w-full max-w-md"}>
       <Card className={`w-full glass dark:glass-dark border-0 ${
@@ -409,9 +407,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         <CardHeader className={isPWA ? "p-6 pb-3" : undefined}>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-2xl font-bold dark:text-white">
+              {/* 这里用真正的 h1 而不是 shadcn 的 CardTitle：后者硬编码为 h3，
+                  会排在下方说明区的 h2 前面，标题层级就颠倒了。原先另有一个
+                  sr-only 的 h1，内容与这里完全相同，属于重复，已一并去掉。 */}
+              <h1 className="text-2xl font-bold leading-none tracking-tight dark:text-white">
                 {t("offWorkCountdown")}
-              </CardTitle>
+              </h1>
               {!showCountdown && (
                 <a
                   href="https://github.com/ififi2017/Off-Work-Countdown"
@@ -620,13 +621,41 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         </CardFooter>
       </Card>
 
+      {/* 说明区。冷启动的搜索流量第一眼只看到一个表单，不知道这是什么，跳出率
+          会很高；同时主应用页的可见正文原本只有 110–285 字符，内容过薄。
+          与页脚同样渲染在设置态（服务端首屏状态），所以这些文字都在初始 HTML 里。
+          刻意不放截图：可交互的实物就在正上方，静态图既冗余又对文字量毫无贡献。 */}
+      {!showCountdown && !isPWA && (
+        <section className="mt-10">
+          <h2 className="text-center text-lg font-semibold text-gray-800 dark:text-gray-100">
+            {t("landingTagline")}
+          </h2>
+          <p className="mx-auto mt-3 max-w-prose text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
+            {t("landingBody")}
+          </p>
+
+          <ul className="mt-8 space-y-5">
+            {[1, 2, 3].map((n) => (
+              <li key={n}>
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                  {t(`landingFeature${n}Title`)}
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-400">
+                  {t(`landingFeature${n}Body`)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* 内容页入口。渲染在设置态（也就是服务端首屏的状态），因此这两个链接
           必然出现在初始 HTML 里 —— 否则内容页会成为无内链的孤儿页，抓取权重
           会明显打折。内容页只有中英两版，按界面语言直接指向正确的一版，
           避免先跳转再重定向。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
           故不渲染。 */}
       {!showCountdown && !isPWA && (
-        <footer className="mt-4 flex items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+        <footer className="mt-8 flex items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400">
           <Link
             href={`/${contentLang}/faq`}
             className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"

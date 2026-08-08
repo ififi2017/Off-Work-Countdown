@@ -63,5 +63,13 @@
   "moodCoffee": "需要咖啡",
   "moodCounting": "迫不及待",
   "faq": "常見問題",
-  "howItWorks": "時薪換算原理"
+  "howItWorks": "時薪換算原理",
+  "landingTagline": "一眼看清今天還剩多少班要上",
+  "landingBody": "設定一次上下班時間，倒數計時、進度條和今日已賺每秒更新。免費、免註冊、可離線使用。",
+  "landingFeature1Title": "什麼班別都支援",
+  "landingFeature1Body": "朝九晚五、十二小時班，或者跨過午夜的夜班——它會自己判斷你在哪一班。",
+  "landingFeature2Title": "看著錢一點一點漲",
+  "landingFeature2Body": "填入月薪或日薪，今日收入按秒累計。",
+  "landingFeature3Title": "只留在你的裝置上",
+  "landingFeature3Body": "上下班時間和薪資不會離開你的瀏覽器。加到主畫面後離線也能用。"
 }

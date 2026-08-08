@@ -63,5 +63,13 @@
   "moodCoffee": "커피 필요",
   "moodCounting": "설렘",
   "faq": "자주 묻는 질문",
-  "howItWorks": "계산 방식"
+  "howItWorks": "계산 방식",
+  "landingTagline": "오늘 근무가 얼마나 남았는지 한눈에",
+  "landingBody": "근무 시간을 한 번만 설정하세요. 카운트다운, 진행 바, 오늘 번 돈이 매초 갱신됩니다. 무료, 가입 불필요, 오프라인 지원.",
+  "landingFeature1Title": "어떤 근무 형태든",
+  "landingFeature1Body": "9시 출근 6시 퇴근도, 12시간 근무도, 자정을 넘기는 야간 근무도 알아서 판단합니다.",
+  "landingFeature2Title": "쌓이는 게 보입니다",
+  "landingFeature2Body": "월급이나 일급을 입력하면 오늘 수입이 초 단위로 쌓입니다.",
+  "landingFeature3Title": "기기 안에만",
+  "landingFeature3Body": "근무 시간과 급여는 브라우저를 벗어나지 않습니다. 홈 화면에 추가하면 오프라인에서도 작동합니다."
 }

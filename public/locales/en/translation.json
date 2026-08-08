@@ -63,5 +63,13 @@
   "moodCoffee": "Need coffee",
   "moodCounting": "Can't wait",
   "faq": "FAQ",
-  "howItWorks": "How it works"
+  "howItWorks": "How it works",
+  "landingTagline": "See exactly how much of your workday is left",
+  "landingBody": "Set your hours once. The countdown, the progress bar and the running total of what you have earned all update every second. Free, no sign-up, works offline.",
+  "landingFeature1Title": "Any shift pattern",
+  "landingFeature1Body": "Nine to five, a twelve-hour day, or a night shift that runs past midnight — it works out which shift you are in.",
+  "landingFeature2Title": "Watch it add up",
+  "landingFeature2Body": "Enter a monthly or daily salary and today's earnings accumulate second by second.",
+  "landingFeature3Title": "Stays on your device",
+  "landingFeature3Body": "Your hours and salary never leave your browser. Add it to your home screen and it keeps working offline."
 }

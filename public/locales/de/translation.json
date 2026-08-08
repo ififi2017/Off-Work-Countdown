@@ -63,5 +63,13 @@
   "moodCoffee": "Brauche Kaffee",
   "moodCounting": "Kann's kaum erwarten",
   "faq": "FAQ",
-  "howItWorks": "So funktioniert es"
+  "howItWorks": "So funktioniert es",
+  "landingTagline": "Sehen Sie genau, wie viel vom Arbeitstag noch übrig ist",
+  "landingBody": "Arbeitszeiten einmal einstellen. Countdown, Fortschrittsbalken und der bisherige Verdienst aktualisieren sich jede Sekunde. Kostenlos, ohne Anmeldung, auch offline.",
+  "landingFeature1Title": "Jedes Schichtmodell",
+  "landingFeature1Body": "Neun bis fünf, Zwölf-Stunden-Schicht oder Nachtschicht über Mitternacht — es erkennt, in welcher Schicht Sie sind.",
+  "landingFeature2Title": "Zusehen, wie es wächst",
+  "landingFeature2Body": "Monats- oder Tagesgehalt eintragen, und der heutige Verdienst summiert sich Sekunde für Sekunde.",
+  "landingFeature3Title": "Bleibt auf Ihrem Gerät",
+  "landingFeature3Body": "Arbeitszeiten und Gehalt verlassen den Browser nicht. Zum Startbildschirm hinzufügen — läuft auch offline."
 }

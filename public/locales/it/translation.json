@@ -63,5 +63,13 @@
   "moodCoffee": "Serve caffè",
   "moodCounting": "Non vedo l'ora",
   "faq": "Domande frequenti",
-  "howItWorks": "Come funziona"
+  "howItWorks": "Come funziona",
+  "landingTagline": "Scopri quanto manca alla fine della giornata",
+  "landingBody": "Imposta l'orario una volta sola. Conto alla rovescia, barra di avanzamento e guadagno di oggi si aggiornano ogni secondo. Gratis, senza registrazione, funziona offline.",
+  "landingFeature1Title": "Qualsiasi turno",
+  "landingFeature1Body": "Nove-diciotto, turni di dodici ore o notti che superano la mezzanotte: capisce in quale turno ti trovi.",
+  "landingFeature2Title": "Guardalo salire",
+  "landingFeature2Body": "Inserisci lo stipendio mensile o giornaliero e il guadagno di oggi cresce secondo dopo secondo.",
+  "landingFeature3Title": "Resta sul tuo dispositivo",
+  "landingFeature3Body": "Orari e stipendio non escono dal browser. Aggiungilo alla schermata home e continua a funzionare offline."
 }
