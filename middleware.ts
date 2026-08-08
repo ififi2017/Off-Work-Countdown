@@ -76,10 +76,12 @@ export function middleware(request: NextRequest) {
   // 获取用户首选语言
   const locale = getPreferredLanguage(request);
 
-  // 创建新的 URL，包含语言代码
-  const newUrl = new URL(`/${locale}${pathname}`, request.url);
+  // 用 clone 而不是 new URL(path, base)：后者的第一个参数是绝对路径时会连同
+  // 查询串一起替换掉。分享链接指向根路径并带着 ?s= 与 utm_*，走旧写法会在这次
+  // 重定向中被整串丢弃——分享归因此前一直没生效，正是这个原因。
+  const newUrl = request.nextUrl.clone();
+  newUrl.pathname = `/${locale}${pathname}`;
 
-  // 返回重定向响应
   return NextResponse.redirect(newUrl);
 }
 

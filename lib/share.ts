@@ -14,12 +14,49 @@ export type SharePlatform =
   | "reddit"
   | "weibo";
 
+export interface Shift {
+  start: string;
+  end: string;
+}
+
+// 班次在 URL 里的紧凑表示："0900-1800"。
+// 只编码上下班时间——薪资属于敏感信息，绝不进入可被转发的链接。
+export function encodeShift({ start, end }: Shift): string {
+  return `${start.replace(":", "")}-${end.replace(":", "")}`;
+}
+
+const SHIFT_PATTERN = /^([0-2]\d)([0-5]\d)-([0-2]\d)([0-5]\d)$/;
+
+// 严格解析，任何不合法的输入一律返回 null 走默认值。链接来自外部转发，
+// 必须当成不可信输入处理。
+export function decodeShift(raw: string | null | undefined): Shift | null {
+  if (!raw) return null;
+  const m = SHIFT_PATTERN.exec(raw);
+  if (!m) return null;
+
+  const [, sh, sm, eh, em] = m;
+  if (Number(sh) > 23 || Number(eh) > 23) return null;
+
+  const start = `${sh}:${sm}`;
+  const end = `${eh}:${em}`;
+  // 起止相同无法构成班次，应用本身也会拒绝这种输入。
+  if (start === end) return null;
+
+  return { start, end };
+}
+
 // Build the promoted site URL with UTM params so shares are measurable in analytics.
-export function buildShareUrl(medium: ShareMedium): string {
+// 指向根路径而非某个语言：middleware 会把接收者带到他自己的语言版本。
+// 带上班次后，对方打开即可直接看到同一个倒计时，而不是一个空表单。
+export function buildShareUrl(medium: ShareMedium, shift?: Shift): string {
   const url = new URL(siteConfig.baseUrl);
   url.searchParams.set("utm_source", "share");
   url.searchParams.set("utm_medium", medium);
   url.searchParams.set("utm_campaign", "countdown");
+  if (shift) {
+    url.searchParams.set("s", encodeShift(shift));
+    url.searchParams.set("from", "share");
+  }
   return url.toString();
 }
 

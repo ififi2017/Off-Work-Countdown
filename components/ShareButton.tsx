@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { Share2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import type { Shift } from "@/lib/share";
 
 // Code-split the dialog (pulls in qrcode + canvas logic) so it only loads
 // when the user actually opens the share sheet.
@@ -17,9 +18,11 @@ interface ShareButtonProps {
   timeLeft: string;
   progress: number;
   isOff: boolean;
+  /** 随分享链接一起带出的班次，接收者打开即可看到同一个倒计时。 */
+  shift: Shift;
 }
 
-export function ShareButton({ timeLeft, progress, isOff }: ShareButtonProps) {
+export function ShareButton({ timeLeft, progress, isOff, shift }: ShareButtonProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -42,6 +45,7 @@ export function ShareButton({ timeLeft, progress, isOff }: ShareButtonProps) {
           timeLeft={timeLeft}
           progress={progress}
           isOff={isOff}
+          shift={shift}
         />
       )}
     </>
