@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:desktop": "BUILD_TARGET=desktop next build",
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run"

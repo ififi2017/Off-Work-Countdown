@@ -62,9 +62,10 @@ npm run dev
 Other useful scripts:
 
 ```bash
-npm run lint   # ESLint
-npm test       # Vitest unit tests
-npm run build  # Production build
+npm run lint           # ESLint
+npm test               # Vitest unit tests
+npm run build          # Production build (web)
+npm run build:desktop  # Static export for the desktop app, output in out/
 ```
 
 Note: `next dev` and `next build` share the `.next` directory. Running a build

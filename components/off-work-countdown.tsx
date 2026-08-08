@@ -52,6 +52,9 @@ import { showNotification } from "@/lib/notify";
 /** 下班前多久提醒。与 translation.json 里 "reminder" 的文案保持一致。 */
 const REMINDER_LEAD_MS = 15 * 60 * 1000;
 
+/** 由 next.config.mjs 在构建期注入，见 docs/PLAN-M5-TAURI.md 决策 1 与 7。 */
+const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
   if (typeof window !== "undefined") {
@@ -86,7 +89,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     DEFAULT_MONTHLY_WORKING_DAYS.toString()
   );
   const [showSalary, setShowSalary] = useState(false);
-  const [isPWA, setIsPWA] = useState(false);
+  // 是否运行在没有浏览器外壳的容器里——PWA 独立窗口与 Tauri 桌面端同属此列，
+  // 二者都应当去掉浏览器版的外边距、让内容铺满窗口。
+  //
+  // 桌面端由构建期常量直接判定：构建时已知意味着首帧就是正确布局，不会出现
+  // 「先渲染成浏览器版、再跳成铺满版」的闪烁；PWA 仍需运行时探测显示模式。
+  const [isPWA, setIsPWA] = useState(IS_DESKTOP_BUILD);
   const [moneyEarned, setMoneyEarned] = useState(0);
   const [hideEarnings, setHideEarnings] = useState(false);
   const [maskAmountField, setMaskAmountField] = useState(true);
@@ -188,7 +196,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       const isFullscreen = window.matchMedia("(display-mode: fullscreen)").matches;
       const isMinimalUi = window.matchMedia("(display-mode: minimal-ui)").matches;
       const isIOSStandalone = navigatorWithStandalone.standalone === true;
-      setIsPWA(isStandalone || isFullscreen || isMinimalUi || isIOSStandalone);
+      setIsPWA(
+        IS_DESKTOP_BUILD ||
+          isStandalone ||
+          isFullscreen ||
+          isMinimalUi ||
+          isIOSStandalone
+      );
     };
 
     detectPWA();

@@ -51,25 +51,31 @@ M4 评估 Web Push 时否掉了它，理由是必须把每个人的下班时刻�
 
 ### 决策 1：构建目标拆分
 
-静态导出（`output: 'export'`）不支持 middleware、`redirects()` 与动态路由处理器。以下清单为 2026-08-08 对仓库的实测结果——**注意它比 PLAN-3.0 里写的更长，M2–M4 期间新增了三项**：
+> ✅ **P0 已实现（2026-08-08）**。以下为实测结论，其中三条推翻了本节最初的判断，已就地更正。
 
-| 阻碍项 | 位置 | 桌面端处理 |
+**排除机制：`pageExtensions`，不需要构建前脚本。**
+
+Web 专属路由命名为 `*.web.ts`，`web` 目标的 `pageExtensions` 包含该后缀、`desktop` 目标不包含，桌面构建因此看不见它们。工作区始终干净，无需在构建期搬动文件。
+
+| 阻碍项 | 实测结果 | 处理 |
 |---|---|---|
-| middleware | [middleware.ts](../middleware.ts) | 排除。Tauri 直接加载 `dist/{lang}/index.html`，语言由本地设置决定，不需要基于 Accept-Language 的重定向 |
-| `redirects()` | [next.config.mjs](../next.config.mjs) | 条件配置。那条 308 只为 Web 端的历史 URL 迁移服务 |
-| `/api/e`（POST，force-dynamic） | [app/api/e/route.ts](../app/api/e/route.ts) | 排除，见决策 5 |
-| `/api/e/stats`（force-dynamic） | app/api/e/stats/route.ts | 排除 |
-| `/manifest.json`（force-dynamic） | app/manifest.json/route.ts | 排除。Tauri 不需要 PWA manifest |
-| sitemap / robots / opengraph-image | — | 无害但无用，可一并排除以缩小产物 |
+| middleware | **只警告，不报错**——Next 15 直接禁用它 | 保留原样，无需任何处理 |
+| `redirects()` | **只警告，不报错** | 仍按目标条件配置，避免留下死配置 |
+| `/api/e`、`/api/e/stats` | 报错（force-dynamic） | 改名为 `route.web.ts` |
+| `/manifest.json` | 报错（force-dynamic） | 改名为 `route.web.ts` |
+| `/robots.txt` | **报错**——即使已移除 force-dynamic，仍要求显式声明 | 改名为 `route.web.ts` |
+| `app/sitemap.ts` | **报错**——同样要求显式声明 | **不能改名**，见下 |
+| `opengraph-image.tsx` | 正常导出 | 无需处理 |
+
+**三条更正**：
+
+1. **middleware 不是阻碍。** 原计划为它预留了「构建前脚本临时移走」的方案 B，实测证明多余——Next 15 遇到 `output: 'export'` 时只是禁用中间件并给出警告。方案 B 整个不需要。
+2. **`robots.txt` 是阻碍。** 原计划把它列为「无害但无用」，实际它会中断构建：静态导出要求元数据路由显式声明 `dynamic = "force-static"`，仅仅不是 `force-dynamic` 并不够。
+3. **`sitemap.ts` 是阻碍，且不能用改名解决。** 它是 Next.js 的元数据文件约定，对文件名敏感——改成 `sitemap.web.ts` 后虽仍被识别为 `/sitemap.xml`，却会从静态预渲染**退化成按请求动态生成**，等于为了桌面端牺牲 Web 端。正确做法是保留文件名并加上 `export const dynamic = "force-static"`：这对 Web 构建是无操作（它本就是静态），对桌面构建则是通过的前提。代价是桌面产物里多一个用不上的 `sitemap.xml`，无害，不值得为它增加复杂度。
+
+**另一处实测发现**：给桌面目标设置自定义 `distDir` 会连带改变静态站点的输出位置（导出产物落进 `distDir` 而非 `out/`）。因此保持约定布局——中间产物在 `.next/`，静态站点在 `out/`，Tauri 指向 `../out` 即可。代价是桌面构建会覆盖 `.next`，与「构建时不要同时开着 dev server」属于同一类注意事项。
 
 **已确认不构成阻碍**：项目未使用 `next/image` 组件（`app/sw.ts` 里只是缓存匹配路径），因此不需要 `images.unoptimized`；`lib/server/*` 的文件系统读取只发生在构建期的预渲染阶段，静态导出正常。
-
-排除机制有两个候选，**都需要先做一次可行性验证再定**：
-
-- **方案 A｜`pageExtensions`**：把 Web 专属路由命名为 `route.web.ts`，两个目标使用不同的 `pageExtensions`。干净、无文件移动。但 `middleware.ts` 不受 `pageExtensions` 影响，覆盖不到。
-- **方案 B｜构建前脚本临时移走**：可靠、覆盖全部情况，但会在构建期改动工作区，中断时需要恢复。
-
-初步倾向：**middleware 用方案 B，路由处理器用方案 A**。落地前先用一个最小实验确认 `output: 'export'` 在 middleware 文件存在但 matcher 为空时是否仍然报错——如果不报错，方案 B 可以省掉。
 
 ### 决策 2：倒计时的真相源留在前端，Rust 只接收一个绝对时刻
 
@@ -172,7 +178,7 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 
 | 阶段 | 内容 | 估时 | 可独立验证的产出 |
 |---|---|---|---|
-| **P0** | 构建目标拆分 | 1 周 | `npm run build:desktop` 产出可直接用浏览器打开的静态站点 |
+| **P0** | 构建目标拆分 | ~~1 周~~ ✅ 已完成 | `npm run build:desktop` 产出可直接用浏览器打开的静态站点 |
 | **P1** | Tauri 骨架 | 1 周 | 应用能启动、加载界面、单实例、关闭到托盘而非退出 |
 | **P2** | 托盘倒计时 + 迷你窗 | 1.5 周 | macOS 菜单栏走字并可点击弹出；Windows 置顶迷你窗可拖动、可切换置顶；关闭主窗口后两者仍然走字 |
 | **P3** | 原生能力 | 1 周 | 到点通知、开机自启、全局快捷键 |
@@ -374,6 +380,7 @@ cask 定义里的版本号与 sha256 需随每次 Release 更新。
 - Windows 托盘方案在实机上是否可接受（P2 结束时判断）
 - 桌面端是否需要「多班次」（不同日期不同时间）。Web 端此项未做，桌面端若要做，两端的数据模型应当一致，不应分叉
 - 是否发布 Linux 版本——建议等 macOS/Windows 有真实用户量后再定
+- 主窗口在被用户拉宽时的表现。当前铺满布局在 380px 宽下观感正确，但窗口若被拉到 1600px，输入框会跟着拉满，观感失衡。倾向在 Tauri 侧设置窗口最大宽度而非改 CSS——留待 P1 定
 - winget 是否接受未签名安装包——决定 Windows 侧走 winget 还是退到 Scoop（P6 第一件事）
 - Homebrew 安装未签名 cask 时的隔离属性行为，决定文档里那条命令要不要带 `--no-quarantine`（P6，必须实测）
 - 未来若有明确用户量增长且观察到安装环节流失，再评估是否购买证书（§6）
