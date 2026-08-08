@@ -166,7 +166,72 @@ Windows 侧的可选方案，都不如 macOS 直观：
 
 **低成本过渡路径**：首个 Beta 可不签名，走 Homebrew Cask（对未签名应用较宽容）+ 文档说明绕过步骤，验证需求后再投入证书。**但不要在正式 1.0 上省这笔钱**——它直接换算成安装转化率。
 
-## 7. 验收标准
+## 7. 发布与分支策略
+
+### 结论：同一个分支，两条独立的发布触发
+
+**不为桌面端开长期分支。** 桌面端本质是「Web 应用 + 一个 Rust 外壳」，`components/`、`lib/`、`app/[lang]/` 与 19 份语言文件全部共用，独有的只有 `src-tauri/` 和构建配置。开两条长期分支意味着每个 UI 修复都要搬运一次，这个成本会随时间复利增长，最终两端必然漂移。决策 1 的构建目标拆分，正是让单分支成立的机制——同一份源码，两种产物。
+
+但**发布节奏必须解耦**：Web 端合并即上线、用户无感知；桌面端每次发布都是一个需要用户下载或更新的签名产物，不该为一个错别字发一版。
+
+| | 触发 | 产物 | 频率 |
+|---|---|---|---|
+| **Web** | 推送到 `main` | Vercel 生产部署 | 每次合并（现状即如此） |
+| **桌面端** | 推送 tag `desktop-v*` | GitHub Release + 安装包 | 攒到有值得下载的内容时 |
+
+### 版本号：各自独立
+
+桌面端的版本写在 `src-tauri/tauri.conf.json`，更新器靠它比较新旧。Web 端没有用户可见的版本概念。**不要强行共用一个号**——否则要么为了对齐版本发一堆无意义的桌面版，要么号本身失去意义。
+
+tag 用 `desktop-v1.2.0` 而非裸 `v1.2.0`，为将来可能出现的其他发布物留出命名空间。
+
+### GitHub 上的最终形态
+
+```
+Releases
+└── desktop-v1.0.0
+    ├── Off Work Countdown_1.0.0_aarch64.dmg      macOS Apple Silicon
+    ├── Off Work Countdown_1.0.0_x64.dmg          macOS Intel
+    ├── Off Work Countdown_1.0.0_x64-setup.exe    Windows (NSIS)
+    ├── Off Work Countdown_1.0.0_x64_en-US.msi    Windows (MSI)
+    ├── latest.json                                更新器读取的清单
+    └── *.sig                                      各产物的更新签名
+```
+
+应用内的自动更新指向 `https://github.com/ififi2017/Off-Work-Countdown/releases/latest/download/latest.json`，由 `tauri-plugin-updater` 定期拉取比对。
+
+### 两条工作流
+
+**① 扩展现有的 [ci.yml](../.github/workflows/ci.yml)**：在 lint / test / build 之外增加一步 `npm run build:desktop`。
+
+这一步**不编译 Rust**，只跑静态导出，几十秒即可完成，且只需 ubuntu runner。它的价值在于：桌面端最常见的破坏方式是有人加了一个 `force-dynamic` 路由或改了 middleware——这类问题会在每个 PR 上几秒内暴露，而不是等到某天打 tag 时才在二十分钟的 Rust 构建里发现。
+
+**② 新增 `release-desktop.yml`**：`on: push: tags: ['desktop-v*']`，用 `tauri-apps/tauri-action`，矩阵覆盖 macOS arm64 / macOS x64 / Windows x64。
+
+必须**只在 tag 上触发**：来自 fork 的 PR 拿不到仓库 secrets，若让它跑发布流程只会得到一堆签名失败。
+
+需要的 secrets：
+
+| 用途 | Secret |
+|---|---|
+| 更新签名（免费自签） | `TAURI_SIGNING_PRIVATE_KEY`、`TAURI_SIGNING_PRIVATE_KEY_PASSWORD` |
+| macOS 代码签名 | `APPLE_CERTIFICATE`、`APPLE_CERTIFICATE_PASSWORD`、`APPLE_SIGNING_IDENTITY` |
+| macOS 公证 | `APPLE_ID`、`APPLE_PASSWORD`（应用专用密码）、`APPLE_TEAM_ID` |
+| Windows 代码签名 | 取决于所选方案（证书文件或 Azure Trusted Signing） |
+
+### 成本：Actions 这块是零
+
+本仓库是**公开仓库**，GitHub Actions 免费额度不限量，**包括 macOS runner**。这点值得单独说明：私有仓库的 macOS runner 按 10 倍分钟数计费，若哪天转为私有，发布流程的成本结构会完全不同。
+
+真正的成本仍然只有 §6 的证书与开发者账号。
+
+### 需要接受的一个后果
+
+桌面端会滞后于 Web 端——用户装的是 v1.0，而 Web 已经往前走了几周。这是解耦节奏的必然代价，缓解手段有两个：自动更新会把差距收敛；而分享链接按决策 6 本就指向网站，接收者用浏览器打开，不受桌面端版本影响。
+
+真正需要留意的是**不要让桌面端独有的行为反过来影响 Web 端的数据契约**，比如分享 URL 的编码格式——那类改动应当始终以 Web 端为准。
+
+## 8. 验收标准
 
 1. `npm run build:desktop` 产出的静态站点可直接用浏览器打开，19 种语言均正常
 2. Web 端构建不受影响：middleware、`/api/e`、`/manifest.json` 行为不变
@@ -177,9 +242,10 @@ Windows 侧的可选方案，都不如 macOS 直观：
 7. 两个平台的安装包均已签名，安装时无安全警告
 8. 打 tag 后 CI 自动产出全部安装包
 
-## 8. 未决问题
+## 9. 未决问题
 
 - 排除机制选方案 A 还是 B——需要一次最小可行性实验（P0 第一件事）
 - Windows 托盘方案在实机上是否可接受（P2 结束时判断）
 - 桌面端是否需要「多班次」（不同日期不同时间）。Web 端此项未做，桌面端若要做，两端的数据模型应当一致，不应分叉
 - 是否发布 Linux 版本——建议等 macOS/Windows 有真实用户量后再定
+- `dev` 分支目前无人使用，但 [ci.yml](../.github/workflows/ci.yml) 仍在监听它。近期流程都是「功能分支 → PR → main」。建议要么明确启用，要么删掉并从 CI 触发条件中移除，避免留一条谁都不看的分支
