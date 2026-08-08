@@ -29,6 +29,7 @@ import {
   canNativeShare,
   canNativeShareFiles,
   type SharePlatform,
+  type Shift,
 } from "@/lib/share";
 import { generateShareImage, type ShareFormat } from "@/lib/shareImage";
 import { siteConfig } from "@/config/site";
@@ -39,6 +40,7 @@ interface ShareDialogProps {
   timeLeft: string;
   progress: number;
   isOff: boolean;
+  shift: Shift;
 }
 
 const MOOD_STORAGE_KEY = "shareMood";
@@ -67,6 +69,7 @@ export function ShareDialog({
   timeLeft,
   progress,
   isOff,
+  shift,
 }: ShareDialogProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<"image" | "text">("image");
@@ -103,7 +106,10 @@ export function ShareDialog({
 
   // Share text (with URL) for copy / native share, and the message-only variant
   // (emoji + line, no URL) for platform intent builders that append the URL.
-  const shareUrl = useMemo(() => buildShareUrl("text"), []);
+  const shareUrl = useMemo(
+    () => buildShareUrl("text", shift),
+    [shift.start, shift.end] // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const message = isOff
     ? t("shareOffWorkText")
     : t("shareText", { time: timeLeft });
@@ -122,7 +128,7 @@ export function ShareDialog({
       timeLeft: isOff ? t("offWorkTime") : timeLeftRef.current,
       headline: isOff ? "" : t("shareImageHeadline"),
       siteName,
-      url: buildShareUrl("image"),
+      url: buildShareUrl("image", shift),
       mood,
       format,
       progress: progressRef.current,
@@ -146,7 +152,7 @@ export function ShareDialog({
     // Intentionally excludes timeLeft/progress (read via refs) so the per-second
     // countdown tick does not regenerate the image.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, tab, moodId, format, isOff]);
+  }, [open, tab, moodId, format, isOff, shift.start, shift.end]);
 
   // Revoke the object URL on unmount.
   useEffect(() => () => {

@@ -71,5 +71,7 @@
   "landingFeature2Title": "Guardalo salire",
   "landingFeature2Body": "Inserisci lo stipendio mensile o giornaliero e il guadagno di oggi cresce secondo dopo secondo.",
   "landingFeature3Title": "Resta sul tuo dispositivo",
-  "landingFeature3Body": "Orari e stipendio non escono dal browser. Aggiungilo alla schermata home e continua a funzionare offline."
+  "landingFeature3Body": "Orari e stipendio non escono dal browser. Aggiungilo alla schermata home e continua a funzionare offline.",
+  "sharedShiftBanner": "Qualcuno ha condiviso questo turno con te",
+  "sharedShiftUseOwn": "Usa i miei orari"
 }

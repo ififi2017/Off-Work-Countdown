@@ -71,5 +71,7 @@
   "landingFeature2Title": "増えていくのが見える",
   "landingFeature2Body": "月給か日給を入力すると、今日の収入が秒単位で積み上がります。",
   "landingFeature3Title": "端末の中だけ",
-  "landingFeature3Body": "勤務時間と給与はブラウザから出ません。ホーム画面に追加すればオフラインでも動きます。"
+  "landingFeature3Body": "勤務時間と給与はブラウザから出ません。ホーム画面に追加すればオフラインでも動きます。",
+  "sharedShiftBanner": "この勤務時間が共有されました",
+  "sharedShiftUseOwn": "自分の時間に変える"
 }

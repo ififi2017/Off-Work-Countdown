@@ -71,5 +71,7 @@
   "landingFeature2Title": "Regardez le total monter",
   "landingFeature2Body": "Saisissez un salaire mensuel ou journalier et vos gains du jour s'accumulent seconde après seconde.",
   "landingFeature3Title": "Rien ne sort d'ici",
-  "landingFeature3Body": "Vos horaires et votre salaire restent dans votre navigateur. Ajoutez-le à votre écran d'accueil, il fonctionne hors ligne."
+  "landingFeature3Body": "Vos horaires et votre salaire restent dans votre navigateur. Ajoutez-le à votre écran d'accueil, il fonctionne hors ligne.",
+  "sharedShiftBanner": "Quelqu'un a partagé cet horaire avec vous",
+  "sharedShiftUseOwn": "Utiliser mes horaires"
 }
