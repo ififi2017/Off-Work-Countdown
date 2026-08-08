@@ -73,5 +73,7 @@
   "landingFeature3Title": "يبقى على جهازك",
   "landingFeature3Body": "ساعات عملك وراتبك لا تغادر متصفحك. أضفه إلى الشاشة الرئيسية ليعمل دون اتصال.",
   "sharedShiftBanner": "شارك أحدهم هذه الوردية معك",
-  "sharedShiftUseOwn": "استخدم أوقاتي"
+  "sharedShiftUseOwn": "استخدم أوقاتي",
+  "workdaysLabel": "أيام العمل",
+  "restDay": "اليوم ليس يوم عمل"
 }

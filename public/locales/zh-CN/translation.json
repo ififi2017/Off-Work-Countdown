@@ -73,5 +73,7 @@
   "landingFeature3Title": "只留在你的设备上",
   "landingFeature3Body": "上下班时间和薪资不会离开你的浏览器。装到主屏后断网也能用。",
   "sharedShiftBanner": "有人给你分享了这个班次",
-  "sharedShiftUseOwn": "换成我的时间"
+  "sharedShiftUseOwn": "换成我的时间",
+  "workdaysLabel": "工作日",
+  "restDay": "今天不上班"
 }

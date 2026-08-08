@@ -6,6 +6,10 @@ import {
   getDailySalary,
   getShiftLengthHours,
   DEFAULT_MONTHLY_WORKING_DAYS,
+  DEFAULT_WORKDAYS,
+  parseWorkdays,
+  serializeWorkdays,
+  isWorkday,
 } from "./countdown";
 import { presets, getPreset, presetSlugs } from "./presets";
 
@@ -145,5 +149,49 @@ describe("presets", () => {
       expect(p.daysPerWeek).toBeGreaterThan(0);
       expect(p.daysPerWeek).toBeLessThanOrEqual(7);
     }
+  });
+});
+
+describe("workdays", () => {
+  it("round-trips through storage, sorted and de-duplicated", () => {
+    expect(serializeWorkdays([5, 1, 1, 3])).toBe("1,3,5");
+    expect(parseWorkdays("1,3,5")).toEqual([1, 3, 5]);
+  });
+
+  it("falls back to Mon-Fri only when nothing was ever stored", () => {
+    expect(parseWorkdays(null)).toEqual(DEFAULT_WORKDAYS);
+    expect(parseWorkdays(undefined)).toEqual(DEFAULT_WORKDAYS);
+  });
+
+  it("treats an empty string as 'no workdays', not as unset", () => {
+    // 这两者必须区分：用户主动清空所有工作日是合法状态，不该被当成没设过
+    expect(parseWorkdays("")).toEqual([]);
+    expect(serializeWorkdays([])).toBe("");
+  });
+
+  it("discards out-of-range and malformed entries", () => {
+    expect(parseWorkdays("1,7,-1,abc,3")).toEqual([1, 3]);
+    expect(serializeWorkdays([1, 9, -2, 6])).toBe("1,6");
+  });
+
+  it("judges an overnight shift by the day it started, not by 'today'", () => {
+    // 2026-07-03 是周五。22:00 开始、次日 06:00 结束的夜班，
+    // 在周六凌晨两点查看时仍应算作周五那一班。
+    const saturdayEarly = new Date(2026, 6, 4, 2, 0, 0, 0);
+    const { start } = getShiftBounds("22:00", "06:00", saturdayEarly);
+    expect(start.getDay()).toBe(5); // 周五
+    expect(isWorkday(start, DEFAULT_WORKDAYS)).toBe(true);
+
+    // 而周六晚上开始的那一班属于周六，默认设置下不是工作日
+    const saturdayNight = new Date(2026, 6, 4, 23, 0, 0, 0);
+    const later = getShiftBounds("22:00", "06:00", saturdayNight);
+    expect(later.start.getDay()).toBe(6);
+    expect(isWorkday(later.start, DEFAULT_WORKDAYS)).toBe(false);
+  });
+
+  it("respects a custom workday set", () => {
+    const sunday = new Date(2026, 6, 5, 10, 0, 0, 0); // 2026-07-05 周日
+    expect(isWorkday(sunday, DEFAULT_WORKDAYS)).toBe(false);
+    expect(isWorkday(sunday, [0, 6])).toBe(true);
   });
 });

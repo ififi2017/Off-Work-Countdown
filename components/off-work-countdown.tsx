@@ -34,7 +34,12 @@ import {
   calculateProgress as calculateShiftProgress,
   getDailySalary as calculateDailySalary,
   DEFAULT_MONTHLY_WORKING_DAYS,
+  DEFAULT_WORKDAYS,
+  parseWorkdays,
+  serializeWorkdays,
+  isWorkday,
 } from "@/lib/countdown";
+import { WorkdaySelector } from "./WorkdaySelector";
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { resolveContentLocale } from "@/lib/content-locales";
@@ -58,6 +63,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [reminder, setReminder] = useState(false);
+  const [workdays, setWorkdays] = useState<number[]>(DEFAULT_WORKDAYS);
   const [showCountdown, setShowCountdown] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
@@ -117,6 +123,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setStartTime(getLocalStorageItem("startTime", "09:00"));
       setEndTime(getLocalStorageItem("endTime", "18:00"));
       setReminder(getLocalStorageItem("reminder", "false") === "true");
+      // 这里不能用 getLocalStorageItem 的默认值兜底：空字符串是「一天都不上班」
+      // 这个合法状态，与「从未设置过」必须区分，交给 parseWorkdays 处理。
+      setWorkdays(
+        parseWorkdays(
+          typeof window !== "undefined"
+            ? localStorage.getItem("workdays")
+            : null
+        )
+      );
       setSalaryType((getLocalStorageItem("salaryType", "monthly") as "monthly" | "daily"));
       setSalaryAmount(getLocalStorageItem("salaryAmount", ""));
       setMonthlyWorkingDays(
@@ -193,13 +208,14 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       localStorage.setItem("startTime", startTime);
       localStorage.setItem("endTime", endTime);
       localStorage.setItem("reminder", reminder.toString());
+      localStorage.setItem("workdays", serializeWorkdays(workdays));
       localStorage.setItem("salaryType", salaryType);
       localStorage.setItem("salaryAmount", salaryAmount);
       localStorage.setItem("monthlyWorkingDays", monthlyWorkingDays);
       localStorage.setItem("showSalary", showSalary.toString());
       localStorage.setItem("hideEarnings", hideEarnings.toString());
     }
-  }, [settingsLoaded, isSharedView, startTime, endTime, reminder, salaryType, salaryAmount, monthlyWorkingDays, showSalary, hideEarnings]);
+  }, [settingsLoaded, isSharedView, startTime, endTime, reminder, workdays, salaryType, salaryAmount, monthlyWorkingDays, showSalary, hideEarnings]);
 
   const getDailySalary = useCallback(() => {
     return calculateDailySalary(
@@ -443,6 +459,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 中文界面（含繁体）指向中文内容页，其余指向英文。
   const contentLang = resolveContentLocale(lang);
 
+  // 今天这一班是否落在工作日。挂载前一律按 true 处理：这个判断依赖当前时间，
+  // 服务端与客户端的结果可能不同，直接算会造成 hydration 不匹配。
+  // 判断用班次的开始时刻而非「现在」，这样跨夜班归属正确（见 isWorkday 注释）。
+  const todayIsWorkday =
+    !isMounted ||
+    isWorkday(getShiftBounds(startTime, endTime, new Date()).start, workdays);
+
   return (
     <div
       className={`min-h-screen transition-colors duration-1000 ease-in-out ${
@@ -538,6 +561,18 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     handleTimeChange("end", hour, minute)
                   }
                 />
+                <WorkdaySelector
+                  lang={lang}
+                  label={t("workdaysLabel")}
+                  value={workdays}
+                  onChange={setWorkdays}
+                />
+                {!todayIsWorkday && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t("restDay")}
+                  </p>
+                )}
+
                 <div className="flex items-center gap-2">
                   <Switch
                     id="reminder"

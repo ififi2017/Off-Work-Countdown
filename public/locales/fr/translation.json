@@ -73,5 +73,7 @@
   "landingFeature3Title": "Rien ne sort d'ici",
   "landingFeature3Body": "Vos horaires et votre salaire restent dans votre navigateur. Ajoutez-le à votre écran d'accueil, il fonctionne hors ligne.",
   "sharedShiftBanner": "Quelqu'un a partagé cet horaire avec vous",
-  "sharedShiftUseOwn": "Utiliser mes horaires"
+  "sharedShiftUseOwn": "Utiliser mes horaires",
+  "workdaysLabel": "Jours travaillés",
+  "restDay": "Pas de travail aujourd'hui"
 }
