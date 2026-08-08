@@ -6,6 +6,7 @@ import {
   contentSlugs,
   defaultContentLocale,
 } from "@/lib/content-locales";
+import { presetSlugs } from "@/lib/presets";
 
 // 单次构建内共用一个时间戳。/sitemap.xml 是静态预渲染的，这个值在构建时即被
 // 固化，并非每次抓取都变新；但每次部署仍会刷新全部条目的 lastModified——内容
@@ -20,9 +21,9 @@ const appAlternates: Record<string, string> = {
   "x-default": siteConfig.baseUrl,
 };
 
-// 内容页只有中英两版，与路由的 generateStaticParams 同源，
+// 内容页与预设页都只有中英两版，与各自路由的 generateStaticParams 同源，
 // 避免 sitemap 里出现会 404 的 URL。
-const contentEntries = contentSlugs.flatMap((slug) => {
+const contentEntries = [...contentSlugs, ...presetSlugs].flatMap((slug) => {
   const alternates = {
     ...Object.fromEntries(
       contentLocales.map((l) => [l, `${siteConfig.baseUrl}/${l}/${slug}`])

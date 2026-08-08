@@ -53,6 +53,16 @@ export function calculateProgress(
   return Math.max(0, Math.min(100, ((totalDiff - currentDiff) / totalDiff) * 100));
 }
 
+// 班次时长（小时）。跨零点的班次按次日结束计算，与 getShiftBounds 的口径一致。
+// 与具体日期无关，因此不需要 `now`——预设页在构建期就要算出每日/每周工时。
+export function getShiftLengthHours(startTime: string, endTime: string): number {
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  let minutes = eh * 60 + em - (sh * 60 + sm);
+  if (minutes <= 0) minutes += 24 * 60;
+  return minutes / 60;
+}
+
 export const DEFAULT_MONTHLY_WORKING_DAYS = 21.75;
 
 export function getDailySalary(
