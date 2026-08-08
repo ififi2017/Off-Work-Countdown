@@ -8,24 +8,30 @@ Off Work Countdown is a Next.js-based web application that helps you keep track 
 
 ## Features
 
-- Set custom work start and end times
-- Real-time countdown display
-- Visual progress bar
-- Optional 15-minute reminder before the end of work
-- Animated gradient background option
+- Set custom work start and end times, including overnight shifts that cross midnight
+- Real-time countdown display and visual progress bar
+- Choose which days of the week you work; the app knows when today is a rest day
+- Live earnings for the day, derived from a monthly or daily salary
+- Weekly and yearly totals estimated from your schedule
+- Optional reminder 15 minutes before the end of work
+- Share your countdown as a mood-based image, or as a link that opens on the same shift
+- Schedule reference pages: 996, 9 to 5, 9 to 6 and night shift
 - Progressive Web App (PWA) support for offline use
+- Light, dark, system and two custom themes
 - Responsive design for various devices
-- Multi-language support (i18n)
-- Support for custom salary calculation
+- 19 languages (i18n)
+
+Your hours and salary are stored only in your browser. They are never sent to a
+server, and nothing is synchronised between devices.
 
 ## Technologies Used
 
-- Next.js 14 (App Router)
-- React
+- Next.js 15 (App Router)
+- React 19
 - TypeScript
 - Tailwind CSS
 - Framer Motion
-- next-pwa
+- Serwist (service worker / PWA)
 - i18next
 
 ## Getting Started
@@ -43,11 +49,7 @@ npm install
 
 3. Configure the environment:
 ```bash
-# Create .env.local file
-cp .env.example .env.local
-
-# Edit .env.local and set your base URL
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
+echo "NEXT_PUBLIC_BASE_URL=http://localhost:3000" > .env.local
 ```
 
 4. Run the development server:
@@ -56,6 +58,18 @@ npm run dev
 ```
 
 5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+Other useful scripts:
+
+```bash
+npm run lint   # ESLint
+npm test       # Vitest unit tests
+npm run build  # Production build
+```
+
+Note: `next dev` and `next build` share the `.next` directory. Running a build
+while the dev server is up will leave the dev server serving chunks that no
+longer exist. Stop the dev server first, or delete `.next` afterwards.
 
 ## Configuration
 
@@ -120,15 +134,29 @@ export const languageNames = {
 }
 ```
 
+### Content pages
+
+The app interface is translated into all 19 languages, but the long-form pages
+— the FAQ, "How it works" and the schedule reference pages — are deliberately
+published in English and Simplified Chinese only (`lib/content-locales.ts`).
+Prose of that length costs far more to translate and maintain than UI strings,
+and spreading it across 19 locales would mostly produce copy nobody has
+reviewed. Requests for those pages in other locales return 404 rather than
+serving English under, say, a Japanese URL.
+
+Chinese interfaces (including Traditional) link to the Chinese pages; every
+other language links to the English ones.
+
 ## Usage
 
-1. Set your work start and end times using the dropdown menus.
-2. Toggle the reminder switch if you want a notification 15 minutes before the end of work.
-3. Enable the animated gradient background if desired.
-4. Click "Start Countdown" to begin tracking your workday.
-5. The app will display the remaining time and a progress bar.
-6. You can return to the settings at any time by clicking the "Return" button.
-7. Use the language selector to switch between available languages.
+1. Set your work start and end times. If the end time is earlier than the start time, the shift is treated as crossing midnight.
+2. Pick the days of the week you work. On a rest day the app says so, but you can still start a countdown.
+3. Toggle the reminder switch if you want a notification 15 minutes before the end of work. The tab may sit in the background, but it has to stay open.
+4. Optionally enter a monthly or daily salary to see the day's earnings accumulate.
+5. Click "Start Countdown" to begin tracking your workday.
+6. Use "Share" to send a friend an image or a link that opens on the same shift.
+7. Return to the settings at any time with the "Return" button.
+8. Use the language selector to switch between available languages.
 
 ## PWA Support
 
@@ -138,9 +166,16 @@ This app supports Progressive Web App features, allowing you to install it on yo
 2. Look for the install prompt in the address bar or menu.
 3. Follow the prompts to install the app on your device.
 
+On iPhone and iPad, use the Share button in Safari and choose "Add to Home
+Screen"; on macOS Safari, choose "Add to Dock".
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+`docs/PLAN-3.0.md` records the current roadmap along with the reasoning behind
+the decisions — including the things that were considered and deliberately not
+built.
 
 ### Adding Language Support
 
@@ -155,6 +190,10 @@ We're looking to expand our app's language support. If you'd like to contribute 
 5. Test the app thoroughly with the new language.
 6. Submit a pull request with your changes.
 
+Those two files are all a new language needs. `content.json` and `presets.json`
+exist only for English and Simplified Chinese by design — see "Content pages"
+above.
+
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
@@ -165,6 +204,7 @@ Special thanks to:
 - [@Google Gemini 3 Pro](https://gemini.google.com/) Powerful front-end AI generation capabilities
 - [@v0.dev](https://v0.dev/) AI assistance in component design
 - [@cursor.com](https://www.cursor.com/) AI-powered coding assistance
+- [@Claude Code](https://claude.com/claude-code) Agentic coding for the SEO groundwork, sharing loop and retention features
 - [@claude.ai](https://claude.ai/chats) and [@chatgpt.com](https://chatgpt.com/) Large language model support in development
 - [@vercel.com](https://vercel.com/) Hosting and deployment services
 - [@Cloudflare](https://www.cloudflare.com/) CDN services
