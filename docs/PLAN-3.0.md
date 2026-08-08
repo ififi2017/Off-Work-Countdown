@@ -154,10 +154,24 @@ src-tauri/src/
 
 ### M2 · 可被发现 —— 2 周 · P0
 
-5. **JSON-LD** —— 注入 `WebApplication` schema（`offers.price: 0`、`applicationCategory`、多语言 `inLanguage`）
-6. **sitemap 合并** —— 统一到 [app/sitemap.ts](../app/sitemap.ts)，补 `alternates.languages`，删除手写 XML 路由；`lastModified` 改为构建时间戳（复用 `NEXT_PUBLIC_BUILD_ID`）
-7. **内容层** —— 每语言 4 个静态页：`/faq`、`/how-it-works`（时薪换算原理）、`/about`、`/changelog`。19 × 4 = **76 个可索引 URL**，从 19 涨到 95
-8. **落地页说明区** —— 首屏表单下方加一句话价值主张 + 3 张截图 + 「为什么要用」。降低冷流量跳出率
+5. **JSON-LD** — ✅ 已完成（2026-08-08）
+   - 在 [app/[lang]/layout.tsx](../app/[lang]/layout.tsx) 注入 `WebApplication` schema，含 `offers.price: 0`、`isAccessibleForFree`、`inLanguage`、`license`、`codeRepository`
+   - 序列化时转义 `<`，防止译文里出现 `</script>` 截断脚本块
+   - 19/19 语言的 JSON-LD 均可正确解析，`inLanguage` 与 `url` 逐一匹配
+6. **sitemap 合并** — ✅ 已完成（2026-08-08）
+   - 统一到 [app/sitemap.ts](../app/sitemap.ts)，补 `alternates.languages` + `x-default`；删除手写的 `app/hreflang-sitemap.xml/route.ts`
+   - 产出 20 条 `<url>`、400 个 hreflang、20 个 x-default —— 每条 URL 都完整列出全部 alternates
+   - `robots.txt` 只声明一份 sitemap；顺带移除其 `force-dynamic`，该路由无请求相关数据，现已变为静态预渲染
+   - **迁移处理**：`/hreflang-sitemap.xml` 曾写在 robots.txt 中、搜索引擎大概率已收录。仅从 middleware 排除列表移除会导致它被加上语言前缀重定向到不存在的路径（307 → 404 链）。已在 [next.config.mjs](../next.config.mjs) 加 308 永久重定向指向 `/sitemap.xml`（next.config 的 redirects 先于 middleware 执行）
+   - 关于 `lastModified`：原诊断说「每次抓取都变成刚更新」**不准确** —— `/sitemap.xml` 是静态预渲染的，时间戳在构建时即固化。真实的（较弱的）问题是每次部署会刷新全部条目。已收敛为单个构建期常量，待内容页有独立更新节奏后再改为按页维护
+7. **内容层** — 🔶 进行中（2026-08-08）
+   - 首批范围收敛为 2 个页面：`/faq` 与 `/how-it-works`（时薪换算原理）。`/about`、`/changelog` 暂缓——SEO 价值低于前两者，且 changelog 需持续维护，否则很快过期变成负资产
+   - 已落地：[lib/server/content.ts](../lib/server/content.ts) + [components/ContentPage.tsx](../components/ContentPage.tsx) + 两个路由。内容页是**纯服务端组件**，无客户端 i18n、无交互，全部文案随首屏 HTML 产出
+   - FAQ 页附 `FAQPage` schema（10 组问答），Google 可在结果里折叠展示
+   - **按语言开放**：路由的 `generateStaticParams` 与 sitemap 条目都由「该语言是否已有 `content.json`」驱动，`dynamicParams = false`。文案未译全的语言直接 404，而不是在该语言 URL 下渲染英文——后者会让搜索引擎收录语言与内容不符的页面。补齐文件后无需改代码，路由与 sitemap 自动扩展
+   - 当前：en + zh-CN 文案已就绪（待审），其余 17 种语言待扩展。文字量 799–3241 字符/页，对比主应用页的 110–285
+   - **顺带修掉一个既有 bug**：middleware 会把非语言码的首段当作「写错的语言前缀」剥离，导致 `/faq` 重定向到 `/en` 而非 `/en/faq`。站内此前只有 `/[lang]` 一种路由所以未暴露。已改为统一补全语言前缀
+8. **落地页说明区** —— 首屏表单下方加一句话价值主张 + 3 张截图 + 「为什么要用」。降低冷流量跳出率 —— 待办
 
 ### M3 · 分享闭环 —— 2 周 · P1
 

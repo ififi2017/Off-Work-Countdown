@@ -115,10 +115,34 @@ export default async function Layout({
     getTranslations(lang, 'seo'),
   ]);
 
+  // 结构化数据。免费、免安装、多语言这几点正是富摘要能体现的差异点。
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: seo.siteName,
+    description: seo.description,
+    url: `${siteConfig.baseUrl}/${lang}`,
+    inLanguage: lang,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    license: 'https://opensource.org/licenses/MIT',
+    codeRepository: siteConfig.github,
+  };
+
   return (
     <html lang={lang} dir={getTextDirection(lang)} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          type="application/ld+json"
+          // 转义 `<`，避免译文里万一出现 `</script>` 截断脚本块。
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
+          }}
+        />
         <link
           rel="manifest"
           href={`/manifest.json?lang=${lang}`}
