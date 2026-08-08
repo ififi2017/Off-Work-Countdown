@@ -164,12 +164,15 @@ src-tauri/src/
    - `robots.txt` 只声明一份 sitemap；顺带移除其 `force-dynamic`，该路由无请求相关数据，现已变为静态预渲染
    - **迁移处理**：`/hreflang-sitemap.xml` 曾写在 robots.txt 中、搜索引擎大概率已收录。仅从 middleware 排除列表移除会导致它被加上语言前缀重定向到不存在的路径（307 → 404 链）。已在 [next.config.mjs](../next.config.mjs) 加 308 永久重定向指向 `/sitemap.xml`（next.config 的 redirects 先于 middleware 执行）
    - 关于 `lastModified`：原诊断说「每次抓取都变成刚更新」**不准确** —— `/sitemap.xml` 是静态预渲染的，时间戳在构建时即固化。真实的（较弱的）问题是每次部署会刷新全部条目。已收敛为单个构建期常量，待内容页有独立更新节奏后再改为按页维护
-7. **内容层** — 🔶 进行中（2026-08-08）
-   - 首批范围收敛为 2 个页面：`/faq` 与 `/how-it-works`（时薪换算原理）。`/about`、`/changelog` 暂缓——SEO 价值低于前两者，且 changelog 需持续维护，否则很快过期变成负资产
-   - 已落地：[lib/server/content.ts](../lib/server/content.ts) + [components/ContentPage.tsx](../components/ContentPage.tsx) + 两个路由。内容页是**纯服务端组件**，无客户端 i18n、无交互，全部文案随首屏 HTML 产出
+7. **内容层** — ✅ 已完成（2026-08-08）
+   - 范围：2 个页面 × 2 种语言。`/about`、`/changelog` 暂缓——SEO 价值低于前两者，且 changelog 需持续维护，否则很快过期变成负资产
+   - **内容页只做中英两版**（[lib/content-locales.ts](../lib/content-locales.ts)）。这是刻意取舍而非未译完：长文案的翻译质量与维护成本远高于 UI 字符串，铺到 19 种语言只会产出大量无人校对的稿子。应用界面本身仍是 19 种语言
+   - 语言路由：中文界面（含 zh-TW / zh-HK）指向 `/zh-CN/*`，其余 16 种语言指向 `/en/*`，由界面直接生成正确链接，不经跳转重定向。内容页右上角提供 English / 中文 切换
+   - 内容页是**纯服务端组件**，无客户端 i18n、无交互，全部文案随首屏 HTML 产出。文字量 799–3241 字符/页，对比主应用页的 110–285
    - FAQ 页附 `FAQPage` schema（10 组问答），Google 可在结果里折叠展示
-   - **按语言开放**：路由的 `generateStaticParams` 与 sitemap 条目都由「该语言是否已有 `content.json`」驱动，`dynamicParams = false`。文案未译全的语言直接 404，而不是在该语言 URL 下渲染英文——后者会让搜索引擎收录语言与内容不符的页面。补齐文件后无需改代码，路由与 sitemap 自动扩展
-   - 当前：en + zh-CN 文案已就绪（待审），其余 17 种语言待扩展。文字量 799–3241 字符/页，对比主应用页的 110–285
+   - `dynamicParams = false`：其余 17 种语言的内容页 URL 直接 404，而不是在该语言 URL 下渲染英文——后者会让搜索引擎收录语言与内容不符的页面
+   - 返回链接指向 `/`，由 middleware 依据 `i18nextLng` cookie 把用户送回他自己的界面语言，而不是内容页所用的中英文
+   - **补上内链**：应用首屏（服务端渲染的设置态）底部提供两个入口，文案按界面语言本地化，19 种语言均已验证。此前建了页面却没从应用链过去，会让它们成为孤儿页，抓取权重明显打折
    - **顺带修掉一个既有 bug**：middleware 会把非语言码的首段当作「写错的语言前缀」剥离，导致 `/faq` 重定向到 `/en` 而非 `/en/faq`。站内此前只有 `/[lang]` 一种路由所以未暴露。已改为统一补全语言前缀
 8. **落地页说明区** —— 首屏表单下方加一句话价值主张 + 3 张截图 + 「为什么要用」。降低冷流量跳出率 —— 待办
 

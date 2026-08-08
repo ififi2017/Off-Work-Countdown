@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -37,6 +38,7 @@ import {
 } from "@/lib/countdown";
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { resolveContentLocale } from "@/lib/content-locales";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -379,6 +381,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 的个性化配置在挂载后由上面的 effect 覆盖，默认值在服务端与客户端首帧
   // 一致，不会产生 hydration 不匹配。
   const isCustomTheme = theme === "cyberpunk" || theme === "sunset";
+  // 中文界面（含繁体）指向中文内容页，其余指向英文。
+  const contentLang = resolveContentLocale(lang);
 
   return (
     <div
@@ -396,10 +400,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       <Confetti trigger={showConfetti} />
       <h1 className="sr-only">{t("seo:siteName")}</h1>
 
+      <div className={isPWA ? "flex flex-1 flex-col" : "w-full max-w-md"}>
       <Card className={`w-full glass dark:glass-dark border-0 ${
         isPWA
           ? "max-w-none min-h-screen rounded-none shadow-none border-none bg-transparent flex flex-col"
-          : "max-w-md"
+          : ""
       }`}>
         <CardHeader className={isPWA ? "p-6 pb-3" : undefined}>
           <div className="flex justify-between items-center">
@@ -614,6 +619,30 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           </AnimatePresence>
         </CardFooter>
       </Card>
+
+      {/* 内容页入口。渲染在设置态（也就是服务端首屏的状态），因此这两个链接
+          必然出现在初始 HTML 里 —— 否则内容页会成为无内链的孤儿页，抓取权重
+          会明显打折。内容页只有中英两版，按界面语言直接指向正确的一版，
+          避免先跳转再重定向。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
+          故不渲染。 */}
+      {!showCountdown && !isPWA && (
+        <footer className="mt-4 flex items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+          <Link
+            href={`/${contentLang}/faq`}
+            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+          >
+            {t("faq")}
+          </Link>
+          <span aria-hidden="true">·</span>
+          <Link
+            href={`/${contentLang}/how-it-works`}
+            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+          >
+            {t("howItWorks")}
+          </Link>
+        </footer>
+      )}
+      </div>
     </div>
   );
 }

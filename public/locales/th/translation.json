@@ -61,5 +61,7 @@
   "moodFiredUp": "ไฟแรง",
   "moodCelebrating": "ฉลอง",
   "moodCoffee": "ต้องการกาแฟ",
-  "moodCounting": "รอไม่ไหว"
+  "moodCounting": "รอไม่ไหว",
+  "faq": "คำถามที่พบบ่อย",
+  "howItWorks": "หลักการคำนวณ"
 }

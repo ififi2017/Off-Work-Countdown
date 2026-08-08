@@ -1,16 +1,28 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
-import { getContent, getContentLocales } from "@/lib/server/content";
+import { getContent } from "@/lib/server/content";
 import { ContentPage } from "@/components/ContentPage";
+import {
+  contentLocales,
+  defaultContentLocale,
+  type ContentLocale,
+} from "@/lib/content-locales";
 
-// 只为已备好文案的语言生成路由；dynamicParams 关掉后，其余语言直接 404，
-// 避免在该语言的 URL 下渲染英文内容。
+// 内容页只做中英两种语言（见 lib/content-locales.ts）。dynamicParams 关掉后，
+// 其余语言直接 404，而不是在该语言的 URL 下渲染英文内容——后者会让搜索引擎
+// 收录到语言与内容不符的页面。应用内的入口链接会按界面语言指向正确的一版。
 export const dynamicParams = false;
 
-export async function generateStaticParams() {
-  const langs = await getContentLocales();
-  return langs.map((lang) => ({ lang }));
+export function generateStaticParams() {
+  return contentLocales.map((lang) => ({ lang }));
 }
+
+const alternateLanguages = {
+  ...Object.fromEntries(
+    contentLocales.map((l) => [l, `${siteConfig.baseUrl}/${l}/faq`])
+  ),
+  "x-default": `${siteConfig.baseUrl}/${defaultContentLocale}/faq`,
+};
 
 export async function generateMetadata({
   params,
@@ -19,7 +31,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const content = await getContent(lang);
-  const langs = await getContentLocales();
 
   return {
     metadataBase: new URL(siteConfig.baseUrl),
@@ -27,9 +38,7 @@ export async function generateMetadata({
     description: content.faq.metaDescription,
     alternates: {
       canonical: `${siteConfig.baseUrl}/${lang}/faq`,
-      languages: Object.fromEntries(
-        langs.map((l) => [l, `${siteConfig.baseUrl}/${l}/faq`])
-      ),
+      languages: alternateLanguages,
     },
     openGraph: {
       title: content.faq.metaTitle,
@@ -71,7 +80,8 @@ export default async function FaqPage({
         }}
       />
       <ContentPage
-        lang={lang}
+        lang={lang as ContentLocale}
+        slug="faq"
         backLabel={content.backToApp}
         heading={content.faq.heading}
         intro={content.faq.intro}

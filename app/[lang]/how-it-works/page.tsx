@@ -1,14 +1,25 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
-import { getContent, getContentLocales } from "@/lib/server/content";
+import { getContent } from "@/lib/server/content";
 import { ContentPage } from "@/components/ContentPage";
+import {
+  contentLocales,
+  defaultContentLocale,
+  type ContentLocale,
+} from "@/lib/content-locales";
 
 export const dynamicParams = false;
 
-export async function generateStaticParams() {
-  const langs = await getContentLocales();
-  return langs.map((lang) => ({ lang }));
+export function generateStaticParams() {
+  return contentLocales.map((lang) => ({ lang }));
 }
+
+const alternateLanguages = {
+  ...Object.fromEntries(
+    contentLocales.map((l) => [l, `${siteConfig.baseUrl}/${l}/how-it-works`])
+  ),
+  "x-default": `${siteConfig.baseUrl}/${defaultContentLocale}/how-it-works`,
+};
 
 export async function generateMetadata({
   params,
@@ -17,7 +28,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const content = await getContent(lang);
-  const langs = await getContentLocales();
 
   return {
     metadataBase: new URL(siteConfig.baseUrl),
@@ -25,9 +35,7 @@ export async function generateMetadata({
     description: content.howItWorks.metaDescription,
     alternates: {
       canonical: `${siteConfig.baseUrl}/${lang}/how-it-works`,
-      languages: Object.fromEntries(
-        langs.map((l) => [l, `${siteConfig.baseUrl}/${l}/how-it-works`])
-      ),
+      languages: alternateLanguages,
     },
     openGraph: {
       title: content.howItWorks.metaTitle,
@@ -50,7 +58,8 @@ export default async function HowItWorksPage({
 
   return (
     <ContentPage
-      lang={lang}
+      lang={lang as ContentLocale}
+      slug="how-it-works"
       backLabel={content.backToApp}
       heading={content.howItWorks.heading}
       intro={content.howItWorks.intro}
