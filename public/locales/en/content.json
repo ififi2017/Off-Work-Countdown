@@ -24,7 +24,7 @@
       },
       {
         "q": "Will it still remind me if I close the tab?",
-        "a": "Not at the moment. The optional reminder fires 15 minutes before you finish, but only while the page is still open in a tab. If you close the tab, no notification is sent. If you want the reminder, leave the page open — pinning the tab in your browser is a tidy way to do that."
+        "a": "Not at the moment. The optional reminder fires 15 minutes before you finish, but only while the page is still open. The tab can sit in the background — it does not have to be the one you are looking at — but if you close it, no notification is sent. Pinning the tab, or installing the app to your home screen and leaving it running, are both tidy ways to keep it alive."
       },
       {
         "q": "Does it work offline?",

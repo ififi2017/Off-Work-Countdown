@@ -45,6 +45,10 @@ import { useTranslation } from "react-i18next";
 import { resolveContentLocale } from "@/lib/content-locales";
 import { decodeShift } from "@/lib/share";
 import { track } from "@/lib/track";
+import { showNotification } from "@/lib/notify";
+
+/** 下班前多久提醒。与 translation.json 里 "reminder" 的文案保持一致。 */
+const REMINDER_LEAD_MS = 15 * 60 * 1000;
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -158,6 +162,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
     setStartTime(shift.start);
     setEndTime(shift.end);
+    // 与 handleStart 同样的处理：落地时若已不足 15 分钟就不再提醒，
+    // 免得页面刚打开就弹「还有十五分钟」。
+    const { end } = getShiftBounds(shift.start, shift.end, new Date());
+    reminderFiredRef.current = end.getTime() - Date.now() <= REMINDER_LEAD_MS;
     setShowCountdown(true);
     // 只有明确标记来自分享时才提示，直接手输 ?s= 的不打扰。
     const fromShare = params.get("from") === "share";
@@ -275,24 +283,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
           setProgress(calculateProgress());
 
-          if (
-            reminder &&
-            !reminderFiredRef.current &&
-            diff <= 15 * 60 * 1000 &&
-            diff > 14 * 60 * 1000 &&
-            typeof window !== "undefined" &&
-            "Notification" in window &&
-            Notification.permission === "granted"
-          ) {
+          // 只保留上界。原实现要求 diff 落在 14–15 分钟之间，是个一分钟宽的
+          // 窗口——而后台标签页的定时器会被浏览器节流到大约每分钟一次甚至更
+          // 稀疏，tick 很容易整个跳过这个窗口，提醒就被静默丢掉了。改成「一旦
+          // 少于 15 分钟就发」，配合 reminderFiredRef 保证只发一次；开始倒计
+          // 时时若已不足 15 分钟，handleStart 会预先标记为已发，避免一点开就
+          // 弹提醒。
+          if (reminder && !reminderFiredRef.current && diff <= REMINDER_LEAD_MS) {
             reminderFiredRef.current = true;
-            try {
-              new Notification(t("offWorkReminder"), {
-                body: t("fifteenMinutesLeft"),
-              });
-            } catch {
-              // Some platforms (e.g. Android Chrome) only allow notifications
-              // via the service worker registration; ignore failures here.
-            }
+            void showNotification(t("offWorkReminder"), t("fifteenMinutesLeft"));
           }
 
           // Calculate money earned
@@ -319,7 +318,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     }
 
     const now = new Date();
-    const { start } = getShiftBounds(startTime, endTime, now);
+    const { start, end } = getShiftBounds(startTime, endTime, now);
     if (start > now) {
       const timeDiff = start.getTime() - now.getTime();
       const hours = Math.floor(timeDiff / (1000 * 60 * 60));
@@ -331,7 +330,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
     if (startTime && endTime) {
       setFormError("");
-      reminderFiredRef.current = false;
+      // 开始时距下班已不足 15 分钟的话，直接标记为已提醒——否则倒计时的第一个
+      // tick 就会立刻弹出「还有十五分钟」，而用户是刚点的开始，这属于打扰。
+      reminderFiredRef.current = end.getTime() - now.getTime() <= REMINDER_LEAD_MS;
       setShowCountdown(true);
       setProgress(calculateProgress()); // Set initial progress
       track("countdown_start");
