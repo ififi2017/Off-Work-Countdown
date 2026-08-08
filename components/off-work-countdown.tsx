@@ -374,11 +374,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     localStorage.setItem("theme", newTheme);
   };
 
-  // 如果还没有挂载，返回空内容
-  if (!isMounted) {
-    return null;
-  }
-
+  // 注意：这里不能因 isMounted 为 false 就返回 null。服务端渲染（以及桌面端
+  // 的静态导出）依赖首屏输出真实 DOM，否则爬虫拿到的是空壳。localStorage 里
+  // 的个性化配置在挂载后由上面的 effect 覆盖，默认值在服务端与客户端首帧
+  // 一致，不会产生 hydration 不匹配。
   const isCustomTheme = theme === "cyberpunk" || theme === "sunset";
 
   return (
@@ -456,7 +455,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     handleTimeChange("end", hour, minute)
                   }
                 />
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <Switch
                     id="reminder"
                     checked={reminder}
@@ -603,7 +602,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 className="flex gap-2"
               >
                 <Button variant="outline" onClick={handleReturn}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> {t("return")}
+                  <ArrowLeft className="me-2 h-4 w-4" /> {t("return")}
                 </Button>
                 <ShareButton
                   timeLeft={timeLeft}

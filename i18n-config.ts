@@ -25,6 +25,13 @@ export const locales = [
 
 export type Locale = (typeof locales)[number];
 
+// 从右向左书写的语言，用于服务端渲染 <html dir>
+const rtlLocales = new Set<string>(["ar"]);
+
+export function getTextDirection(lang: string): "ltr" | "rtl" {
+  return rtlLocales.has(lang) ? "rtl" : "ltr";
+}
+
 // 语言代码映射
 export const languageMapping: { [key: string]: string } = {
   zh: "zh-CN",

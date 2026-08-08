@@ -53,7 +53,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/workbox-") ||
     pathname.startsWith("/locales/") ||
     pathname.startsWith("/emoji/") ||
-    pathname.match(/^\/icon-\d+x\d+\.png$/) ||
+    pathname.match(/^\/icon-[\w-]+\.png$/) ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
     pathname === "/hreflang-sitemap.xml"
