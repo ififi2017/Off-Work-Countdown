@@ -3,9 +3,12 @@ import {
   buildShareUrl,
   buildShareText,
   platformShareUrl,
+  encodeShift,
+  decodeShift,
   type SharePlatform,
 } from "./share";
 import { moods, defaultMood, getMood } from "./moods";
+import { trackedEvents, isTrackedEvent } from "./analytics-events";
 
 describe("buildShareUrl", () => {
   it("appends UTM params for attribution", () => {
@@ -21,6 +24,62 @@ describe("buildShareUrl", () => {
 
   it("produces a valid absolute URL", () => {
     expect(() => new URL(buildShareUrl("text"))).not.toThrow();
+  });
+});
+
+describe("encodeShift / decodeShift", () => {
+  it("round-trips a shift through the compact form", () => {
+    const shift = { start: "09:00", end: "18:00" };
+    expect(encodeShift(shift)).toBe("0900-1800");
+    expect(decodeShift(encodeShift(shift))).toEqual(shift);
+  });
+
+  it("round-trips an overnight shift", () => {
+    const shift = { start: "22:30", end: "06:15" };
+    expect(decodeShift(encodeShift(shift))).toEqual(shift);
+  });
+
+  it("rejects malformed input rather than guessing", () => {
+    for (const bad of [
+      null,
+      undefined,
+      "",
+      "0900",
+      "09:00-18:00",
+      "0900_1800",
+      "2500-1800", // 小时越界
+      "0960-1800", // 分钟越界
+      "0900-2400",
+      "abcd-efgh",
+      "0900-1800extra",
+    ]) {
+      expect(decodeShift(bad)).toBeNull();
+    }
+  });
+
+  it("rejects a zero-length shift, which the app also refuses", () => {
+    expect(decodeShift("0900-0900")).toBeNull();
+  });
+});
+
+describe("buildShareUrl with a shift", () => {
+  it("carries the shift and a share marker", () => {
+    const url = buildShareUrl("text", { start: "09:00", end: "18:00" });
+    expect(url).toContain("s=0900-1800");
+    expect(url).toContain("from=share");
+  });
+
+  it("omits shift params when no shift is given", () => {
+    const url = buildShareUrl("text");
+    expect(url).not.toContain("s=");
+    expect(url).not.toContain("from=");
+  });
+
+  it("never leaks salary-related params", () => {
+    const url = buildShareUrl("image", { start: "22:00", end: "06:00" });
+    for (const leak of ["salary", "amount", "monthly", "daily", "earn"]) {
+      expect(url.toLowerCase()).not.toContain(leak);
+    }
   });
 });
 
@@ -80,5 +139,34 @@ describe("moods", () => {
     expect(getMood("nope")).toBe(defaultMood);
     expect(getMood(null)).toBe(defaultMood);
     expect(getMood("firedUp").emoji).toBe("🔥");
+  });
+});
+
+describe("analytics event allowlist", () => {
+  it("accepts exactly the declared events", () => {
+    for (const e of trackedEvents) expect(isTrackedEvent(e)).toBe(true);
+  });
+
+  it("rejects anything else, so the public endpoint cannot write arbitrary keys", () => {
+    for (const bad of [
+      "",
+      " ",
+      "share_land ",
+      "SHARE_LAND",
+      "share_land; DROP",
+      "e:2026-08-08:x",
+      "__proto__",
+      "a".repeat(200),
+    ]) {
+      expect(isTrackedEvent(bad)).toBe(false);
+    }
+  });
+
+  it("keeps event names low-cardinality and key-safe", () => {
+    for (const e of trackedEvents) {
+      expect(e).toMatch(/^[a-z_]+$/);
+      expect(e.length).toBeLessThanOrEqual(32);
+    }
+    expect(new Set(trackedEvents).size).toBe(trackedEvents.length);
   });
 });

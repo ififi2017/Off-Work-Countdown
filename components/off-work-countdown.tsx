@@ -38,6 +38,8 @@ import {
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { resolveContentLocale } from "@/lib/content-locales";
+import { decodeShift } from "@/lib/share";
+import { track } from "@/lib/track";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -77,6 +79,17 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [hideEarnings, setHideEarnings] = useState(false);
   const [maskAmountField, setMaskAmountField] = useState(true);
 
+  // 通过分享链接进入：班次来自 URL，而不是本人的设置。这种状态下不写
+  // localStorage，否则会把对方的班次覆盖掉访问者自己保存的时间。
+  const [isSharedView, setIsSharedView] = useState(false);
+
+  // 本地设置是否已读入 state。持久化必须等它为真才能开始，否则挂载后的第一次
+  // 提交里，持久化 effect 读到的还是初始默认值（同一次提交中读取 effect 的
+  // setState 尚未生效），会先把 09:00/18:00 写回去覆盖用户已存的时间。
+  // 平时下一次渲染会用真实值再写一遍、看似自愈；但分享落地时 isSharedView
+  // 随即变真、持久化被跳过，那次错误写入就永久留在了 localStorage 里。
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
   // 初始化和语言同步
   useEffect(() => {
     setIsMounted(true);
@@ -114,7 +127,28 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       );
       setShowSalary(getLocalStorageItem("showSalary", "false") === "true");
       setHideEarnings(getLocalStorageItem("hideEarnings", "false") === "true");
+      setSettingsLoaded(true);
     }
+  }, [isMounted]);
+
+  // 分享链接落地：URL 里带合法班次就直接进入倒计时，而不是让对方面对一个
+  // 空表单——这是分享闭环里此前缺失的一环。声明顺序在上面的 localStorage
+  // 读取之后，因此能覆盖掉刚读出来的本人设置。
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const shift = decodeShift(params.get("s"));
+    if (!shift) return;
+
+    setStartTime(shift.start);
+    setEndTime(shift.end);
+    setShowCountdown(true);
+    // 只有明确标记来自分享时才提示，直接手输 ?s= 的不打扰。
+    const fromShare = params.get("from") === "share";
+    setIsSharedView(fromShare);
+    // 分享落地与预设页 CTA 都带 ?s=，靠 from 区分，二者的转化路径不同。
+    track(fromShare ? "share_land" : "preset_start");
   }, [isMounted]);
 
   useEffect(() => {
@@ -151,9 +185,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     };
   }, [isMounted]);
 
-  // 保存设置到 localStorage
+  // 保存设置到 localStorage。两个前提：本地设置已读入 state（见 settingsLoaded
+  // 的说明），且不处于分享视图——那是别人的班次，不该覆盖访问者自己保存的时间，
+  // 等他点了「换成我的时间」再恢复正常持久化。
   useEffect(() => {
-    if (isMounted) {
+    if (settingsLoaded && !isSharedView) {
       localStorage.setItem("startTime", startTime);
       localStorage.setItem("endTime", endTime);
       localStorage.setItem("reminder", reminder.toString());
@@ -163,7 +199,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       localStorage.setItem("showSalary", showSalary.toString());
       localStorage.setItem("hideEarnings", hideEarnings.toString());
     }
-  }, [isMounted, startTime, endTime, reminder, salaryType, salaryAmount, monthlyWorkingDays, showSalary, hideEarnings]);
+  }, [settingsLoaded, isSharedView, startTime, endTime, reminder, salaryType, salaryAmount, monthlyWorkingDays, showSalary, hideEarnings]);
 
   const getDailySalary = useCallback(() => {
     return calculateDailySalary(
@@ -282,6 +318,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       reminderFiredRef.current = false;
       setShowCountdown(true);
       setProgress(calculateProgress()); // Set initial progress
+      track("countdown_start");
       if (
         reminder &&
         typeof window !== "undefined" &&
@@ -294,6 +331,29 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   };
 
   const handleReturn = () => {
+    setShowCountdown(false);
+    setProgress(0);
+    setTimeLeft("");
+    setShowConfetti(false);
+    // 退出分享视图：恢复访问者自己保存的时间，并重新开启持久化。
+    if (isSharedView) exitSharedView();
+  };
+
+  // 「换成我的时间」：把 URL 里别人的班次换回访问者本地保存的设置。
+  // 同时清掉 query，避免刷新或分享当前页时又把别人的班次带上。
+  const exitSharedView = () => {
+    setIsSharedView(false);
+    setStartTime(getLocalStorageItem("startTime", "09:00"));
+    setEndTime(getLocalStorageItem("endTime", "18:00"));
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  };
+
+  const handleUseOwnHours = () => {
+    // 分享闭环的关键转化点：接收者从「看别人的班次」变成「设自己的」。
+    track("share_convert");
+    exitSharedView();
     setShowCountdown(false);
     setProgress(0);
     setTimeLeft("");
@@ -399,6 +459,23 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       <Confetti trigger={showConfetti} />
 
       <div className={isPWA ? "flex flex-1 flex-col" : "w-full max-w-md"}>
+      {/* 接力提示。分享链接落地后对方直接看到的是发送者的班次倒计时，
+          这里说明来源并给出一键切回自己时间的出口 —— 分享→落地→转化的
+          闭环，此前断在落地这一步（对方只会看到一个空表单）。 */}
+      {isSharedView && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-white/70 px-4 py-3 text-sm shadow-sm backdrop-blur-sm dark:bg-black/30">
+          <span className="text-gray-700 dark:text-gray-200">
+            {t("sharedShiftBanner")}
+          </span>
+          <button
+            type="button"
+            onClick={handleUseOwnHours}
+            className="shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+          >
+            {t("sharedShiftUseOwn")}
+          </button>
+        </div>
+      )}
       <Card className={`w-full glass dark:glass-dark border-0 ${
         isPWA
           ? "max-w-none min-h-screen rounded-none shadow-none border-none bg-transparent flex flex-col"
@@ -614,6 +691,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   timeLeft={timeLeft}
                   progress={progress}
                   isOff={progress >= 100}
+                  shift={{ start: startTime, end: endTime }}
                 />
               </motion.div>
             )}

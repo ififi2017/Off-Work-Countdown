@@ -71,5 +71,7 @@
   "landingFeature2Title": "Watch it add up",
   "landingFeature2Body": "Enter a monthly or daily salary and today's earnings accumulate second by second.",
   "landingFeature3Title": "Stays on your device",
-  "landingFeature3Body": "Your hours and salary never leave your browser. Add it to your home screen and it keeps working offline."
+  "landingFeature3Body": "Your hours and salary never leave your browser. Add it to your home screen and it keeps working offline.",
+  "sharedShiftBanner": "Someone shared this shift with you",
+  "sharedShiftUseOwn": "Use my own hours"
 }

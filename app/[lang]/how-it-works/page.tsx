@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { getContent } from "@/lib/server/content";
+import { getPresetCopy } from "@/lib/server/presets";
+import { presets } from "@/lib/presets";
 import { ContentPage } from "@/components/ContentPage";
 import {
   contentLocales,
@@ -54,7 +57,10 @@ export default async function HowItWorksPage({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
-  const content = await getContent(lang);
+  const [content, presetCopy] = await Promise.all([
+    getContent(lang),
+    getPresetCopy(lang),
+  ]);
 
   return (
     <ContentPage
@@ -80,6 +86,26 @@ export default async function HowItWorksPage({
             ))}
           </section>
         ))}
+
+        {/* 预设页的入口。它们需要来自已收录页面的内链，否则会变成孤儿页；
+            放在这里也符合上下文——上面刚讲完班次是怎么算的。 */}
+        <section className="border-t border-gray-200 pt-8 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {presetCopy.otherPresetsHeading}
+          </h2>
+          <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-base">
+            {presets.map((p) => (
+              <li key={p.slug}>
+                <Link
+                  href={`/${lang}/${p.slug}`}
+                  className="text-gray-600 underline-offset-4 transition-colors hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-white"
+                >
+                  {presetCopy.items[p.slug]?.name ?? p.slug}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </ContentPage>
   );

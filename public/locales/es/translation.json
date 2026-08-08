@@ -71,5 +71,7 @@
   "landingFeature2Title": "Míralo crecer",
   "landingFeature2Body": "Introduce un salario mensual o diario y lo ganado hoy se acumula segundo a segundo.",
   "landingFeature3Title": "Se queda en tu dispositivo",
-  "landingFeature3Body": "Tu horario y tu salario no salen del navegador. Añádelo a la pantalla de inicio y seguirá funcionando sin conexión."
+  "landingFeature3Body": "Tu horario y tu salario no salen del navegador. Añádelo a la pantalla de inicio y seguirá funcionando sin conexión.",
+  "sharedShiftBanner": "Alguien ha compartido este horario contigo",
+  "sharedShiftUseOwn": "Usar mi horario"
 }

@@ -4,8 +4,10 @@ import {
   getShiftBounds,
   calculateProgress,
   getDailySalary,
+  getShiftLengthHours,
   DEFAULT_MONTHLY_WORKING_DAYS,
 } from "./countdown";
+import { presets, getPreset, presetSlugs } from "./presets";
 
 // Fixed reference date to keep tests deterministic
 const day = (h: number, m = 0) => {
@@ -92,5 +94,56 @@ describe("getDailySalary", () => {
     expect(getDailySalary("", "monthly")).toBeNull();
     expect(getDailySalary("abc", "daily")).toBeNull();
     expect(getDailySalary("10000", "monthly", 0)).toBeNull();
+  });
+});
+
+describe("getShiftLengthHours", () => {
+  it("measures a same-day shift", () => {
+    expect(getShiftLengthHours("09:00", "18:00")).toBe(9);
+    expect(getShiftLengthHours("09:00", "17:30")).toBe(8.5);
+  });
+
+  it("carries an overnight shift into the next day", () => {
+    expect(getShiftLengthHours("22:00", "06:00")).toBe(8);
+    expect(getShiftLengthHours("23:30", "07:15")).toBe(7.75);
+  });
+
+  it("treats an identical start and end as a full 24 hours", () => {
+    expect(getShiftLengthHours("09:00", "09:00")).toBe(24);
+  });
+});
+
+describe("presets", () => {
+  it("exposes unique slugs that are URL-safe", () => {
+    expect(new Set(presetSlugs).size).toBe(presetSlugs.length);
+    for (const slug of presetSlugs) {
+      expect(slug).toMatch(/^[a-z0-9-]+$/);
+      expect(encodeURIComponent(slug)).toBe(slug);
+    }
+  });
+
+  it("derives the documented daily and weekly hours", () => {
+    const hours = (slug: string) => {
+      const p = getPreset(slug)!;
+      const perDay = getShiftLengthHours(p.shift.start, p.shift.end);
+      return { perDay, perWeek: perDay * p.daysPerWeek };
+    };
+    expect(hours("996")).toEqual({ perDay: 12, perWeek: 72 });
+    expect(hours("9-to-5")).toEqual({ perDay: 8, perWeek: 40 });
+    expect(hours("9-to-6")).toEqual({ perDay: 9, perWeek: 45 });
+    expect(hours("night-shift")).toEqual({ perDay: 8, perWeek: 40 });
+  });
+
+  it("returns undefined for an unknown slug rather than a default", () => {
+    expect(getPreset("nope")).toBeUndefined();
+  });
+
+  it("every preset has a valid shift", () => {
+    for (const p of presets) {
+      expect(p.shift.start).toMatch(/^\d{2}:\d{2}$/);
+      expect(p.shift.end).toMatch(/^\d{2}:\d{2}$/);
+      expect(p.daysPerWeek).toBeGreaterThan(0);
+      expect(p.daysPerWeek).toBeLessThanOrEqual(7);
+    }
   });
 });
