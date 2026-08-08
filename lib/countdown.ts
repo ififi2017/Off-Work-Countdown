@@ -63,6 +63,36 @@ export function getShiftLengthHours(startTime: string, endTime: string): number 
   return minutes / 60;
 }
 
+// 工作日。用 JS 的 getDay() 口径：0 = 周日，6 = 周六。默认周一至周五。
+export const DEFAULT_WORKDAYS = [1, 2, 3, 4, 5];
+
+export function serializeWorkdays(days: number[]): string {
+  return [...new Set(days)].filter((d) => d >= 0 && d <= 6).sort().join(",");
+}
+
+// 解析存储值。空字符串是合法输入，表示「一天都不上班」，必须与「没存过」
+// 区分开——后者才回落到默认值。
+export function parseWorkdays(raw: string | null | undefined): number[] {
+  if (raw === null || raw === undefined) return DEFAULT_WORKDAYS;
+  if (raw.trim() === "") return [];
+  const parsed = raw
+    .split(",")
+    .map((s) => Number(s.trim()))
+    .filter((n) => Number.isInteger(n) && n >= 0 && n <= 6);
+  return [...new Set(parsed)].sort();
+}
+
+/**
+ * 判断某个班次是否落在工作日。
+ *
+ * 注意传入的应当是班次的**开始时刻**而非「现在」：22:00–06:00 的夜班，
+ * 凌晨两点时「今天」已经是周六，但这一班属于周五。用 getShiftBounds 解析出
+ * 的 start 判断才符合直觉。
+ */
+export function isWorkday(shiftStart: Date, workdays: number[]): boolean {
+  return workdays.includes(shiftStart.getDay());
+}
+
 export const DEFAULT_MONTHLY_WORKING_DAYS = 21.75;
 
 export function getDailySalary(

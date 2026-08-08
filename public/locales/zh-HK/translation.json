@@ -73,5 +73,10 @@
   "landingFeature3Title": "只留喺你部機度",
   "landingFeature3Body": "返工放工時間同薪資唔會離開你嘅瀏覽器。加到主畫面後離線都用得。",
   "sharedShiftBanner": "有人分享咗呢個更期畀你",
-  "sharedShiftUseOwn": "換成我嘅時間"
+  "sharedShiftUseOwn": "換成我嘅時間",
+  "workdaysLabel": "返工日",
+  "restDay": "今日唔使返工",
+  "summaryThisWeek": "今個星期",
+  "summaryThisYear": "今年",
+  "summaryEstimateNote": "按目前設定推算"
 }

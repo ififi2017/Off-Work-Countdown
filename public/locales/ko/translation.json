@@ -73,5 +73,10 @@
   "landingFeature3Title": "기기 안에만",
   "landingFeature3Body": "근무 시간과 급여는 브라우저를 벗어나지 않습니다. 홈 화면에 추가하면 오프라인에서도 작동합니다.",
   "sharedShiftBanner": "누군가 이 근무 시간을 공유했습니다",
-  "sharedShiftUseOwn": "내 시간으로 바꾸기"
+  "sharedShiftUseOwn": "내 시간으로 바꾸기",
+  "workdaysLabel": "근무일",
+  "restDay": "오늘은 근무일이 아닙니다",
+  "summaryThisWeek": "이번 주",
+  "summaryThisYear": "올해",
+  "summaryEstimateNote": "현재 설정을 기준으로 한 추정치"
 }

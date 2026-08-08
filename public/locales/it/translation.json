@@ -73,5 +73,10 @@
   "landingFeature3Title": "Resta sul tuo dispositivo",
   "landingFeature3Body": "Orari e stipendio non escono dal browser. Aggiungilo alla schermata home e continua a funzionare offline.",
   "sharedShiftBanner": "Qualcuno ha condiviso questo turno con te",
-  "sharedShiftUseOwn": "Usa i miei orari"
+  "sharedShiftUseOwn": "Usa i miei orari",
+  "workdaysLabel": "Giorni lavorativi",
+  "restDay": "Oggi non si lavora",
+  "summaryThisWeek": "Questa settimana",
+  "summaryThisYear": "Quest'anno",
+  "summaryEstimateNote": "Stima basata sulle impostazioni attuali"
 }

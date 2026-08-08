@@ -73,5 +73,10 @@
   "landingFeature3Title": "只留在你的裝置上",
   "landingFeature3Body": "上下班時間和薪資不會離開你的瀏覽器。加到主畫面後離線也能用。",
   "sharedShiftBanner": "有人分享了這個班別給你",
-  "sharedShiftUseOwn": "換成我的時間"
+  "sharedShiftUseOwn": "換成我的時間",
+  "workdaysLabel": "工作日",
+  "restDay": "今天不上班",
+  "summaryThisWeek": "本週",
+  "summaryThisYear": "今年",
+  "summaryEstimateNote": "依目前設定推算"
 }

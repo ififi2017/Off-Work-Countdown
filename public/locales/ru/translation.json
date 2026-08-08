@@ -73,5 +73,10 @@
   "landingFeature3Title": "Остаётся на устройстве",
   "landingFeature3Body": "График и зарплата не покидают браузер. Добавьте на главный экран — работает и без сети.",
   "sharedShiftBanner": "Кто-то поделился с вами этим графиком",
-  "sharedShiftUseOwn": "Указать своё время"
+  "sharedShiftUseOwn": "Указать своё время",
+  "workdaysLabel": "Рабочие дни",
+  "restDay": "Сегодня не рабочий день",
+  "summaryThisWeek": "На этой неделе",
+  "summaryThisYear": "В этом году",
+  "summaryEstimateNote": "Расчёт по текущим настройкам"
 }

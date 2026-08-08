@@ -73,5 +73,10 @@
   "landingFeature3Title": "Bleibt auf Ihrem Gerät",
   "landingFeature3Body": "Arbeitszeiten und Gehalt verlassen den Browser nicht. Zum Startbildschirm hinzufügen — läuft auch offline.",
   "sharedShiftBanner": "Jemand hat diese Arbeitszeit mit Ihnen geteilt",
-  "sharedShiftUseOwn": "Meine Zeiten verwenden"
+  "sharedShiftUseOwn": "Meine Zeiten verwenden",
+  "workdaysLabel": "Arbeitstage",
+  "restDay": "Heute ist kein Arbeitstag",
+  "summaryThisWeek": "Diese Woche",
+  "summaryThisYear": "Dieses Jahr",
+  "summaryEstimateNote": "Geschätzt anhand Ihrer aktuellen Einstellungen"
 }

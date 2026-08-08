@@ -73,5 +73,10 @@
   "landingFeature3Title": "तुमच्याच उपकरणावर",
   "landingFeature3Body": "तुमची वेळ आणि पगार ब्राउझरबाहेर जात नाही. होम स्क्रीनवर जोडा, ऑफलाइनही चालेल.",
   "sharedShiftBanner": "कोणीतरी तुमच्यासोबत ही शिफ्ट शेअर केली आहे",
-  "sharedShiftUseOwn": "माझी वेळ वापरा"
+  "sharedShiftUseOwn": "माझी वेळ वापरा",
+  "workdaysLabel": "कामाचे दिवस",
+  "restDay": "आज कामाचा दिवस नाही",
+  "summaryThisWeek": "या आठवड्यात",
+  "summaryThisYear": "या वर्षी",
+  "summaryEstimateNote": "तुमच्या सध्याच्या सेटिंग्जवर आधारित अंदाज"
 }

@@ -73,5 +73,10 @@
   "landingFeature3Title": "Fica no seu aparelho",
   "landingFeature3Body": "Seus horários e salário não saem do navegador. Adicione à tela de início e continua funcionando offline.",
   "sharedShiftBanner": "Alguém compartilhou este turno com você",
-  "sharedShiftUseOwn": "Usar o meu horário"
+  "sharedShiftUseOwn": "Usar o meu horário",
+  "workdaysLabel": "Dias de trabalho",
+  "restDay": "Hoje não é dia de trabalho",
+  "summaryThisWeek": "Esta semana",
+  "summaryThisYear": "Este ano",
+  "summaryEstimateNote": "Estimativa com base nas suas configurações atuais"
 }

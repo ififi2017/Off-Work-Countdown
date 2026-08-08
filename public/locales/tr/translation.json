@@ -73,5 +73,10 @@
   "landingFeature3Title": "Cihazınızda kalır",
   "landingFeature3Body": "Saatleriniz ve maaşınız tarayıcınızdan çıkmaz. Ana ekrana ekleyin, çevrimdışı da çalışır.",
   "sharedShiftBanner": "Biri bu vardiyayı sizinle paylaştı",
-  "sharedShiftUseOwn": "Kendi saatlerimi kullan"
+  "sharedShiftUseOwn": "Kendi saatlerimi kullan",
+  "workdaysLabel": "Çalışma günleri",
+  "restDay": "Bugün çalışma günü değil",
+  "summaryThisWeek": "Bu hafta",
+  "summaryThisYear": "Bu yıl",
+  "summaryEstimateNote": "Mevcut ayarlarınıza göre tahmin"
 }

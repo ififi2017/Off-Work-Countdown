@@ -73,5 +73,10 @@
   "landingFeature3Title": "Tetap di perangkat Anda",
   "landingFeature3Body": "Jam kerja dan gaji tidak keluar dari peramban. Tambahkan ke layar utama, tetap jalan tanpa internet.",
   "sharedShiftBanner": "Seseorang membagikan sif ini kepada Anda",
-  "sharedShiftUseOwn": "Pakai jam saya"
+  "sharedShiftUseOwn": "Pakai jam saya",
+  "workdaysLabel": "Hari kerja",
+  "restDay": "Hari ini bukan hari kerja",
+  "summaryThisWeek": "Minggu ini",
+  "summaryThisYear": "Tahun ini",
+  "summaryEstimateNote": "Perkiraan berdasarkan pengaturan Anda saat ini"
 }

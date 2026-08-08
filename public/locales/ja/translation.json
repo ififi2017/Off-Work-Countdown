@@ -73,5 +73,10 @@
   "landingFeature3Title": "端末の中だけ",
   "landingFeature3Body": "勤務時間と給与はブラウザから出ません。ホーム画面に追加すればオフラインでも動きます。",
   "sharedShiftBanner": "この勤務時間が共有されました",
-  "sharedShiftUseOwn": "自分の時間に変える"
+  "sharedShiftUseOwn": "自分の時間に変える",
+  "workdaysLabel": "勤務日",
+  "restDay": "今日は勤務日ではありません",
+  "summaryThisWeek": "今週",
+  "summaryThisYear": "今年",
+  "summaryEstimateNote": "現在の設定からの推計"
 }

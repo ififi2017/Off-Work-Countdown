@@ -73,5 +73,10 @@
   "landingFeature3Title": "आपके डिवाइस पर ही",
   "landingFeature3Body": "आपका समय और वेतन ब्राउज़र से बाहर नहीं जाता। होम स्क्रीन पर जोड़ें, ऑफ़लाइन भी चलेगा।",
   "sharedShiftBanner": "किसी ने आपके साथ यह शिफ़्ट साझा की है",
-  "sharedShiftUseOwn": "मेरा समय इस्तेमाल करें"
+  "sharedShiftUseOwn": "मेरा समय इस्तेमाल करें",
+  "workdaysLabel": "कार्यदिवस",
+  "restDay": "आज कार्यदिवस नहीं है",
+  "summaryThisWeek": "इस सप्ताह",
+  "summaryThisYear": "इस साल",
+  "summaryEstimateNote": "आपकी मौजूदा सेटिंग्स के आधार पर अनुमान"
 }
