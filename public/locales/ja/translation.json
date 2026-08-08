@@ -75,5 +75,8 @@
   "sharedShiftBanner": "この勤務時間が共有されました",
   "sharedShiftUseOwn": "自分の時間に変える",
   "workdaysLabel": "勤務日",
-  "restDay": "今日は勤務日ではありません"
+  "restDay": "今日は勤務日ではありません",
+  "summaryThisWeek": "今週",
+  "summaryThisYear": "今年",
+  "summaryEstimateNote": "現在の設定からの推計"
 }

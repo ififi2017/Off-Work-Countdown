@@ -75,5 +75,8 @@
   "sharedShiftBanner": "Biri bu vardiyayı sizinle paylaştı",
   "sharedShiftUseOwn": "Kendi saatlerimi kullan",
   "workdaysLabel": "Çalışma günleri",
-  "restDay": "Bugün çalışma günü değil"
+  "restDay": "Bugün çalışma günü değil",
+  "summaryThisWeek": "Bu hafta",
+  "summaryThisYear": "Bu yıl",
+  "summaryEstimateNote": "Mevcut ayarlarınıza göre tahmin"
 }

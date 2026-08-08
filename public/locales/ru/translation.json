@@ -75,5 +75,8 @@
   "sharedShiftBanner": "Кто-то поделился с вами этим графиком",
   "sharedShiftUseOwn": "Указать своё время",
   "workdaysLabel": "Рабочие дни",
-  "restDay": "Сегодня не рабочий день"
+  "restDay": "Сегодня не рабочий день",
+  "summaryThisWeek": "На этой неделе",
+  "summaryThisYear": "В этом году",
+  "summaryEstimateNote": "Расчёт по текущим настройкам"
 }

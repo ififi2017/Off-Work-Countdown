@@ -75,5 +75,8 @@
   "sharedShiftBanner": "有人分享咗呢個更期畀你",
   "sharedShiftUseOwn": "換成我嘅時間",
   "workdaysLabel": "返工日",
-  "restDay": "今日唔使返工"
+  "restDay": "今日唔使返工",
+  "summaryThisWeek": "今個星期",
+  "summaryThisYear": "今年",
+  "summaryEstimateNote": "按目前設定推算"
 }

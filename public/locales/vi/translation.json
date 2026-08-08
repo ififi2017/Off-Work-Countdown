@@ -75,5 +75,8 @@
   "sharedShiftBanner": "Ai đó đã chia sẻ ca làm này với bạn",
   "sharedShiftUseOwn": "Dùng giờ của tôi",
   "workdaysLabel": "Ngày làm việc",
-  "restDay": "Hôm nay không phải ngày làm việc"
+  "restDay": "Hôm nay không phải ngày làm việc",
+  "summaryThisWeek": "Tuần này",
+  "summaryThisYear": "Năm nay",
+  "summaryEstimateNote": "Ước tính theo thiết lập hiện tại của bạn"
 }

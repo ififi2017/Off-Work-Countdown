@@ -75,5 +75,8 @@
   "sharedShiftBanner": "Seseorang membagikan sif ini kepada Anda",
   "sharedShiftUseOwn": "Pakai jam saya",
   "workdaysLabel": "Hari kerja",
-  "restDay": "Hari ini bukan hari kerja"
+  "restDay": "Hari ini bukan hari kerja",
+  "summaryThisWeek": "Minggu ini",
+  "summaryThisYear": "Tahun ini",
+  "summaryEstimateNote": "Perkiraan berdasarkan pengaturan Anda saat ini"
 }

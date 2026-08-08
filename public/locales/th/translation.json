@@ -75,5 +75,8 @@
   "sharedShiftBanner": "มีคนแชร์กะนี้ให้คุณ",
   "sharedShiftUseOwn": "ใช้เวลาของฉัน",
   "workdaysLabel": "วันทำงาน",
-  "restDay": "วันนี้ไม่ใช่วันทำงาน"
+  "restDay": "วันนี้ไม่ใช่วันทำงาน",
+  "summaryThisWeek": "สัปดาห์นี้",
+  "summaryThisYear": "ปีนี้",
+  "summaryEstimateNote": "ประมาณการจากการตั้งค่าปัจจุบันของคุณ"
 }

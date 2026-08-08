@@ -75,5 +75,8 @@
   "sharedShiftBanner": "Alguien ha compartido este horario contigo",
   "sharedShiftUseOwn": "Usar mi horario",
   "workdaysLabel": "Días laborables",
-  "restDay": "Hoy no se trabaja"
+  "restDay": "Hoy no se trabaja",
+  "summaryThisWeek": "Esta semana",
+  "summaryThisYear": "Este año",
+  "summaryEstimateNote": "Estimación según tu configuración actual"
 }

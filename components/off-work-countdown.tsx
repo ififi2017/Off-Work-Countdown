@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,8 @@ import {
   isWorkday,
 } from "@/lib/countdown";
 import { WorkdaySelector } from "./WorkdaySelector";
+import { PeriodSummary } from "./PeriodSummary";
+import { summarize, startOfWeek, startOfYear } from "@/lib/summary";
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { resolveContentLocale } from "@/lib/content-locales";
@@ -460,6 +462,41 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 中文界面（含繁体）指向中文内容页，其余指向英文。
   const contentLang = resolveContentLocale(lang);
 
+  // 本周与今年的累计，完全由配置推算（见 lib/summary.ts 的说明）。
+  // 仅在倒计时视图下计算：它依赖当前时间，服务端渲染时算了也不能用。
+  const summaryRows = useMemo(() => {
+    if (!isMounted || !showCountdown) return null;
+    const now = new Date();
+    const common = {
+      now,
+      workdays,
+      startTime,
+      endTime,
+      todayProgress: progress,
+      dailySalary: showSalary ? getDailySalary() : null,
+    };
+    return [
+      {
+        label: t("summaryThisWeek"),
+        data: summarize({ ...common, periodStart: startOfWeek(now) }),
+      },
+      {
+        label: t("summaryThisYear"),
+        data: summarize({ ...common, periodStart: startOfYear(now) }),
+      },
+    ];
+  }, [
+    isMounted,
+    showCountdown,
+    workdays,
+    startTime,
+    endTime,
+    progress,
+    showSalary,
+    getDailySalary,
+    t,
+  ]);
+
   // 今天这一班是否落在工作日。挂载前一律按 true 处理：这个判断依赖当前时间，
   // 服务端与客户端的结果可能不同，直接算会造成 hydration 不匹配。
   // 判断用班次的开始时刻而非「现在」，这样跨夜班归属正确（见 isWorkday 注释）。
@@ -694,6 +731,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                       {hideEarnings ? "****" : moneyEarned.toFixed(2)}
                     </div>
                   </motion.div>
+                )}
+
+                {summaryRows && (
+                  <PeriodSummary
+                    lang={lang}
+                    note={t("summaryEstimateNote")}
+                    rows={summaryRows}
+                    hideEarnings={hideEarnings}
+                  />
                 )}
               </div>
             )}

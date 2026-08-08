@@ -75,5 +75,8 @@
   "sharedShiftBanner": "有人分享了這個班別給你",
   "sharedShiftUseOwn": "換成我的時間",
   "workdaysLabel": "工作日",
-  "restDay": "今天不上班"
+  "restDay": "今天不上班",
+  "summaryThisWeek": "本週",
+  "summaryThisYear": "今年",
+  "summaryEstimateNote": "依目前設定推算"
 }

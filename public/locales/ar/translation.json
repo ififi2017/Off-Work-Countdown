@@ -75,5 +75,8 @@
   "sharedShiftBanner": "شارك أحدهم هذه الوردية معك",
   "sharedShiftUseOwn": "استخدم أوقاتي",
   "workdaysLabel": "أيام العمل",
-  "restDay": "اليوم ليس يوم عمل"
+  "restDay": "اليوم ليس يوم عمل",
+  "summaryThisWeek": "هذا الأسبوع",
+  "summaryThisYear": "هذا العام",
+  "summaryEstimateNote": "تقدير بناءً على إعداداتك الحالية"
 }

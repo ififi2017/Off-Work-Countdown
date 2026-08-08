@@ -75,5 +75,8 @@
   "sharedShiftBanner": "कोणीतरी तुमच्यासोबत ही शिफ्ट शेअर केली आहे",
   "sharedShiftUseOwn": "माझी वेळ वापरा",
   "workdaysLabel": "कामाचे दिवस",
-  "restDay": "आज कामाचा दिवस नाही"
+  "restDay": "आज कामाचा दिवस नाही",
+  "summaryThisWeek": "या आठवड्यात",
+  "summaryThisYear": "या वर्षी",
+  "summaryEstimateNote": "तुमच्या सध्याच्या सेटिंग्जवर आधारित अंदाज"
 }

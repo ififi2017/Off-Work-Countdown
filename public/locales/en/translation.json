@@ -75,5 +75,8 @@
   "sharedShiftBanner": "Someone shared this shift with you",
   "sharedShiftUseOwn": "Use my own hours",
   "workdaysLabel": "Workdays",
-  "restDay": "Not a workday today"
+  "restDay": "Not a workday today",
+  "summaryThisWeek": "This week",
+  "summaryThisYear": "This year",
+  "summaryEstimateNote": "Estimated from your current settings"
 }
