@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Off Work Countdown",
-  "version": "0.1.0",
+  "version": "3.0.0",
   "identifier": "com.rainif.offworkcountdown",
   "build": {
     "frontendDist": "../out",
@@ -15,19 +15,42 @@
         "label": "main",
         "title": "Off Work Countdown",
         "url": "en.html",
-        "width": 380,
-        "height": 620,
-        "minWidth": 340,
-        "minHeight": 520,
-        "maxWidth": 560,
+        "width": 430,
+        "height": 430,
+        "minWidth": 420,
+        "minHeight": 420,
+        "maxWidth": 450,
+        "maxHeight": 450,
         "resizable": true,
+        "maximizable": false,
         "fullscreen": false,
         "titleBarStyle": "Overlay",
-        "hiddenTitle": true
+        "hiddenTitle": true,
+        "acceptFirstMouse": true
+      },
+      {
+        "label": "mini",
+        "title": "Off Work Countdown",
+        "url": "en/mini.html",
+        "width": 252,
+        "height": 104,
+        "minWidth": 252,
+        "minHeight": 104,
+        "maxWidth": 252,
+        "maxHeight": 104,
+        "resizable": false,
+        "maximizable": false,
+        "fullscreen": false,
+        "decorations": false,
+        "backgroundColor": "#18181B",
+        "acceptFirstMouse": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "visible": false
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'"
+      "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost"
     }
   },
   "bundle": {
@@ -40,5 +63,16 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/ififi2017/Off-Work-Countdown/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU5N0FBMzA5NDU0RTNCNUEKUldSYU8wNUZDYU42V1hCMWE5b3dwbkZqSDR1UUZsOGtuMDRUMGxSYmlMQlpwZFdJbG5xYXpLaXoK",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

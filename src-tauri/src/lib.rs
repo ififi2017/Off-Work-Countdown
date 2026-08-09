@@ -1,8 +1,78 @@
+use serde::{Deserialize, Serialize};
+use std::{thread, time::Duration};
+#[cfg(target_os = "windows")]
+use tauri::PhysicalPosition;
 use tauri::{
     menu::{Menu, MenuItem},
-    tray::TrayIconBuilder,
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager, WindowEvent,
 };
+#[cfg(desktop)]
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+#[cfg(desktop)]
+use tauri_plugin_notification::NotificationExt;
+use tauri_plugin_positioner::{Position, WindowExt};
+use tauri_plugin_store::StoreExt;
+
+const STORE_PATH: &str = "desktop-state.json";
+const COUNTDOWN_KEY: &str = "countdown";
+const NOTIFICATION_MARKER_KEY: &str = "notificationMarker";
+const REMINDER_LEAD_MS: i64 = 15 * 60 * 1000;
+#[cfg(target_os = "windows")]
+const MINI_POSITION_KEY: &str = "miniPosition";
+const MINI_ALWAYS_ON_TOP_KEY: &str = "miniAlwaysOnTop";
+
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(default)]
+#[serde(rename_all = "camelCase")]
+struct CountdownState {
+    start_at_ms: i64,
+    end_at_ms: i64,
+    running: bool,
+    reminder: bool,
+    lead_reminder_armed: bool,
+    notification_title: String,
+    lead_notification_body: String,
+    completion_notification_body: String,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+#[serde(rename_all = "camelCase")]
+struct NotificationMarker {
+    end_at_ms: i64,
+    lead_sent: bool,
+    completion_sent: bool,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CountdownNotification {
+    Lead,
+    Complete,
+}
+
+#[cfg(target_os = "windows")]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+struct MiniPosition {
+    x: i32,
+    y: i32,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MiniWindowSettings {
+    platform: &'static str,
+    always_on_top: bool,
+}
+
+fn platform_name() -> &'static str {
+    #[cfg(target_os = "macos")]
+    return "macos";
+    #[cfg(target_os = "windows")]
+    return "windows";
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    return "other";
+}
 
 /// 显示并聚焦主窗口。窗口可能处于隐藏（关闭到托盘）或最小化状态，
 /// 三步都要做，只调 set_focus 对隐藏窗口无效。
@@ -14,15 +84,205 @@ fn show_main_window(app: &AppHandle) {
     }
 }
 
-/// 托盘图标与菜单。
-///
-/// P1 只做「显示 / 退出」两项，托盘上的实时倒计时属于 P2。
-/// 菜单文案暂为英文：托盘标题按计划是语言无关的时间格式，但菜单项需要本地化，
-/// 这需要 Rust 侧读取用户选择的语言，留到 P2 与托盘标题一并处理。
+/// 全局快捷键是切换器：当前正在使用主窗口时隐藏，否则从托盘状态恢复并聚焦。
+fn toggle_main_window(app: &AppHandle) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+    let visible = window.is_visible().unwrap_or(false);
+    let focused = window.is_focused().unwrap_or(false);
+    if visible && focused {
+        let _ = window.hide();
+    } else {
+        show_main_window(app);
+    }
+}
+
+fn toggle_mini_window(app: &AppHandle) {
+    let Some(window) = app.get_webview_window("mini") else {
+        return;
+    };
+
+    if window.is_visible().unwrap_or(false) {
+        let _ = window.hide();
+        return;
+    }
+
+    #[cfg(target_os = "macos")]
+    let _ = window.move_window_constrained(Position::TrayCenter);
+
+    let _ = window.show();
+    let _ = window.set_focus();
+}
+
+fn read_countdown_state(app: &AppHandle) -> CountdownState {
+    app.store(STORE_PATH)
+        .ok()
+        .and_then(|store| store.get(COUNTDOWN_KEY))
+        .and_then(|value| serde_json::from_value(value).ok())
+        .unwrap_or_default()
+}
+
+fn read_notification_marker(app: &AppHandle) -> NotificationMarker {
+    app.store(STORE_PATH)
+        .ok()
+        .and_then(|store| store.get(NOTIFICATION_MARKER_KEY))
+        .and_then(|value| serde_json::from_value(value).ok())
+        .unwrap_or_default()
+}
+
+fn write_notification_marker(app: &AppHandle, marker: NotificationMarker) {
+    let Ok(store) = app.store(STORE_PATH) else {
+        return;
+    };
+    if let Ok(value) = serde_json::to_value(marker) {
+        store.set(NOTIFICATION_MARKER_KEY, value);
+        let _ = store.save();
+    }
+}
+
+/// 推进一次提醒状态。返回值只表示本次需要发送的类型；无论提醒开关是否打开，
+/// 越过的节点都会标记为已处理，防止之后打开开关时补发一条过期通知。
+fn advance_notification_marker(
+    state: &CountdownState,
+    marker: &mut NotificationMarker,
+    now_ms: i64,
+) -> (Option<CountdownNotification>, bool) {
+    if !state.running || state.end_at_ms <= state.start_at_ms {
+        return (None, false);
+    }
+
+    let mut changed = false;
+    if marker.end_at_ms != state.end_at_ms {
+        *marker = NotificationMarker {
+            end_at_ms: state.end_at_ms,
+            lead_sent: !state.lead_reminder_armed,
+            // 第一次观察到的就是已结束快照时视为旧状态，不在启动时补发。
+            completion_sent: now_ms >= state.end_at_ms,
+        };
+        changed = true;
+    }
+
+    let notification = if now_ms >= state.end_at_ms && !marker.completion_sent {
+        marker.completion_sent = true;
+        changed = true;
+        state.reminder.then_some(CountdownNotification::Complete)
+    } else if now_ms >= state.end_at_ms - REMINDER_LEAD_MS
+        && now_ms < state.end_at_ms
+        && !marker.lead_sent
+    {
+        marker.lead_sent = true;
+        changed = true;
+        state.reminder.then_some(CountdownNotification::Lead)
+    } else {
+        None
+    };
+
+    (notification, changed)
+}
+
+#[cfg(desktop)]
+fn send_countdown_notification(
+    app: &AppHandle,
+    state: &CountdownState,
+    notification: CountdownNotification,
+) {
+    let title = if state.notification_title.is_empty() {
+        "Off work reminder"
+    } else {
+        &state.notification_title
+    };
+    let body = match notification {
+        CountdownNotification::Lead if !state.lead_notification_body.is_empty() => {
+            &state.lead_notification_body
+        }
+        CountdownNotification::Complete if !state.completion_notification_body.is_empty() => {
+            &state.completion_notification_body
+        }
+        CountdownNotification::Lead => "Fifteen minutes left!",
+        CountdownNotification::Complete => "Off work time!",
+    };
+
+    if let Err(error) = app.notification().builder().title(title).body(body).show() {
+        log::warn!("failed to send countdown notification: {error}");
+    }
+}
+
+fn format_remaining(end_at_ms: i64, now_ms: i64) -> String {
+    let total_seconds = ((end_at_ms - now_ms).max(0) + 999) / 1000;
+    let hours = total_seconds / 3600;
+    let minutes = (total_seconds % 3600) / 60;
+    let seconds = total_seconds % 60;
+    format!("{hours}:{minutes:02}:{seconds:02}")
+}
+
+/// 独立于 WebView 的后台节拍器。这里只做绝对时间戳相减；跨夜班次等业务
+/// 规则仍由前端唯一实现。即便主窗口隐藏，托盘与迷你窗生命周期也不受影响。
+fn start_tray_timer(app: AppHandle) {
+    thread::spawn(move || {
+        #[cfg(target_os = "windows")]
+        let mut was_running = false;
+        loop {
+            let state = read_countdown_state(&app);
+            let now_ms = chrono_free_now_ms();
+            let valid = state.running && state.end_at_ms > state.start_at_ms;
+            let active = valid && state.end_at_ms > now_ms;
+            let remaining = active.then(|| format_remaining(state.end_at_ms, now_ms));
+
+            let mut marker = read_notification_marker(&app);
+            let (notification, marker_changed) =
+                advance_notification_marker(&state, &mut marker, now_ms);
+            if marker_changed {
+                write_notification_marker(&app, marker);
+            }
+            if let Some(notification) = notification {
+                send_countdown_notification(&app, &state, notification);
+            }
+
+            if let Some(tray) = app.tray_by_id("main") {
+                #[cfg(target_os = "macos")]
+                let _ = tray.set_title(Some(remaining.as_deref().unwrap_or("")));
+
+                let tooltip = remaining
+                    .as_deref()
+                    .map(|time| format!("Off Work Countdown · {time}"))
+                    .unwrap_or_else(|| "Off Work Countdown".to_string());
+                let _ = tray.set_tooltip(Some(tooltip));
+            }
+
+            #[cfg(target_os = "windows")]
+            if active != was_running {
+                if let Some(window) = app.get_webview_window("mini") {
+                    if active {
+                        let _ = window.show();
+                    } else {
+                        let _ = window.hide();
+                    }
+                }
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                was_running = active;
+            }
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+}
+
+fn chrono_free_now_ms() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as i64
+}
+
+/// 托盘图标与菜单：右键打开菜单，左键直接切换迷你窗。
 fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+    let mini = MenuItem::with_id(app, "mini", "Mini Timer", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&show, &quit])?;
+    let menu = Menu::with_items(app, &[&show, &mini, &quit])?;
 
     let icon = app
         .default_window_icon()
@@ -33,19 +293,140 @@ fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
         .icon(icon)
         .tooltip("Off Work Countdown")
         .menu(&menu)
+        .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "show" => show_main_window(app),
+            "mini" => toggle_mini_window(app),
             "quit" => app.exit(0),
             _ => {}
+        })
+        .on_tray_icon_event(|tray, event| {
+            tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
+            if matches!(
+                event,
+                TrayIconEvent::Click {
+                    button: MouseButton::Left,
+                    button_state: MouseButtonState::Up,
+                    ..
+                }
+            ) {
+                toggle_mini_window(tray.app_handle());
+            }
         })
         .build(app)?;
 
     Ok(())
 }
 
+fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
+    let Some(window) = app.get_webview_window("mini") else {
+        return Ok(());
+    };
+
+    #[cfg(target_os = "windows")]
+    {
+        let store = app
+            .store(STORE_PATH)
+            .map_err(|error| std::io::Error::other(error.to_string()))?;
+        let always_on_top = store
+            .get(MINI_ALWAYS_ON_TOP_KEY)
+            .and_then(|value| value.as_bool())
+            .unwrap_or(true);
+        let _ = window.set_always_on_top(always_on_top);
+
+        if let Some(position) = store
+            .get(MINI_POSITION_KEY)
+            .and_then(|value| serde_json::from_value::<MiniPosition>(value).ok())
+        {
+            let _ = window.set_position(PhysicalPosition::new(position.x, position.y));
+        } else {
+            let _ = window.move_window(Position::BottomRight);
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    let _ = window.set_always_on_top(false);
+
+    let handle = window.clone();
+    #[cfg(target_os = "windows")]
+    let app_handle = app.clone();
+    window.on_window_event(move |event| match event {
+        WindowEvent::CloseRequested { api, .. } => {
+            api.prevent_close();
+            let _ = handle.hide();
+        }
+        #[cfg(target_os = "macos")]
+        WindowEvent::Focused(false) => {
+            let _ = handle.hide();
+        }
+        #[cfg(target_os = "windows")]
+        WindowEvent::Moved(position) => {
+            if let Ok(store) = app_handle.store(STORE_PATH) {
+                store.set(
+                    MINI_POSITION_KEY,
+                    serde_json::to_value(MiniPosition {
+                        x: position.x,
+                        y: position.y,
+                    })
+                    .expect("mini window position should serialize"),
+                );
+            }
+        }
+        _ => {}
+    });
+
+    Ok(())
+}
+
+#[tauri::command]
+fn get_mini_window_settings(app: AppHandle) -> Result<MiniWindowSettings, String> {
+    let always_on_top = app
+        .store(STORE_PATH)
+        .map_err(|error| error.to_string())?
+        .get(MINI_ALWAYS_ON_TOP_KEY)
+        .and_then(|value| value.as_bool())
+        .unwrap_or(true);
+
+    Ok(MiniWindowSettings {
+        platform: platform_name(),
+        always_on_top,
+    })
+}
+
+#[tauri::command]
+fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), String> {
+    let window = app
+        .get_webview_window("mini")
+        .ok_or_else(|| "mini window is unavailable".to_string())?;
+    window
+        .set_always_on_top(always_on_top)
+        .map_err(|error| error.to_string())?;
+    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+    store.set(MINI_ALWAYS_ON_TOP_KEY, always_on_top);
+    Ok(())
+}
+
+#[tauri::command]
+fn clear_desktop_countdown_display(app: AppHandle) {
+    if let Some(tray) = app.tray_by_id("main") {
+        #[cfg(target_os = "macos")]
+        let _ = tray.set_title(Some(""));
+        let _ = tray.set_tooltip(Some("Off Work Countdown"));
+    }
+
+    #[cfg(target_os = "windows")]
+    if let Some(window) = app.get_webview_window("mini") {
+        let _ = window.hide();
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default();
+    let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build());
 
     // 单实例必须最先注册：它要在任何窗口创建之前拦下第二个进程，
     // 否则第二次启动会先建好窗口再被关掉，用户能看到窗口一闪。
@@ -54,9 +435,31 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             show_main_window(app);
         }));
+        builder = builder
+            .plugin(tauri_plugin_notification::init())
+            .plugin(tauri_plugin_autostart::init(
+                tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+                None,
+            ))
+            .plugin(
+                tauri_plugin_global_shortcut::Builder::new()
+                    .with_handler(|app, _shortcut, event| {
+                        if event.state == ShortcutState::Pressed {
+                            toggle_main_window(app);
+                        }
+                    })
+                    .build(),
+            );
     }
 
     builder
+        .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_positioner::init())
+        .invoke_handler(tauri::generate_handler![
+            get_mini_window_settings,
+            set_mini_always_on_top,
+            clear_desktop_countdown_display
+        ])
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
@@ -66,11 +469,20 @@ pub fn run() {
                 )?;
             }
 
+            // Rust 先加载 Store，使随后来自前端的 load() 与后台线程共享同一个实例。
+            let _ = app
+                .store(STORE_PATH)
+                .map_err(|error| std::io::Error::other(error.to_string()))?;
+            #[cfg(desktop)]
+            if let Err(error) = app.global_shortcut().register("CommandOrControl+Shift+O") {
+                // 快捷键冲突不应阻止应用启动；用户仍可用 Dock/任务栏与托盘唤起。
+                log::warn!("failed to register global shortcut: {error}");
+            }
             setup_tray(app.handle())?;
+            setup_mini_window(app.handle())?;
+            start_tray_timer(app.handle().clone());
 
-            // 关闭窗口时隐藏而非退出。这是桌面端存在的理由之一：倒计时与提醒
-            // 应当在窗口关掉之后继续运行，而不是随窗口一起消失。
-            // 真正的退出走托盘菜单里的 Quit。
+            // 关闭主窗口时隐藏而非退出。真正的退出走托盘菜单里的 Quit。
             if let Some(window) = app.get_webview_window("main") {
                 let handle = window.clone();
                 window.on_window_event(move |event| {
@@ -87,8 +499,7 @@ pub fn run() {
         .expect("error while building tauri application")
         .run(|app, event| {
             // macOS：应用已在运行时点击 Dock 图标（或再次打开）不会新建进程，
-            // 因此单实例插件不会触发。若此时窗口已被关闭到托盘，没有这个分支
-            // 用户点 Dock 图标会毫无反应——窗口再也回不来。
+            // 因此单实例插件不会触发。
             #[cfg(target_os = "macos")]
             if let tauri::RunEvent::Reopen { .. } = event {
                 show_main_window(app);
@@ -98,4 +509,76 @@ pub fn run() {
                 let _ = (app, event);
             }
         });
+}
+
+#[cfg(test)]
+mod notification_tests {
+    use super::*;
+
+    fn state(end_at_ms: i64) -> CountdownState {
+        CountdownState {
+            start_at_ms: 1_000,
+            end_at_ms,
+            running: true,
+            reminder: true,
+            lead_reminder_armed: true,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn reminder_nodes_fire_once_in_order() {
+        let countdown = state(2_000_000);
+        let mut marker = NotificationMarker::default();
+
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 1_099_999).0,
+            None
+        );
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 1_100_000).0,
+            Some(CountdownNotification::Lead)
+        );
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 1_100_001).0,
+            None
+        );
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 2_000_000).0,
+            Some(CountdownNotification::Complete)
+        );
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 2_000_001).0,
+            None
+        );
+    }
+
+    #[test]
+    fn short_or_stale_countdowns_do_not_backfill_notifications() {
+        let mut short = state(2_000_000);
+        short.lead_reminder_armed = false;
+        let mut marker = NotificationMarker::default();
+        assert_eq!(
+            advance_notification_marker(&short, &mut marker, 1_500_000).0,
+            None
+        );
+
+        let stale = state(2_000_000);
+        let mut stale_marker = NotificationMarker::default();
+        assert_eq!(
+            advance_notification_marker(&stale, &mut stale_marker, 2_000_001).0,
+            None
+        );
+    }
+}
+
+#[cfg(test)]
+mod format_tests {
+    use super::format_remaining;
+
+    #[test]
+    fn formats_remaining_time_without_business_logic() {
+        assert_eq!(format_remaining(3_661_001, 1), "1:01:01");
+        assert_eq!(format_remaining(1, 2), "0:00:00");
+    }
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +12,17 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Github, Coins } from "lucide-react";
+import {
+  ArrowLeft,
+  Github,
+  Coins,
+  Keyboard,
+  Rocket,
+  Settings2,
+  ExternalLink,
+  Info,
+  RefreshCw,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -28,7 +39,14 @@ import { Confetti } from "./Confetti";
 import { Background } from "./Background";
 import { ShareButton } from "./ShareButton";
 import "../i18n";
-import { languageNames, defaultLocale } from "@/i18n-config";
+import {
+  languageNames,
+  defaultLocale,
+  desktopLanguageStorageKey,
+  getBaseLanguage,
+  locales,
+  type Locale,
+} from "@/i18n-config";
 import {
   getShiftBounds,
   calculateProgress as calculateShiftProgress,
@@ -42,18 +60,38 @@ import {
 import { WorkdaySelector } from "./WorkdaySelector";
 import { PeriodSummary } from "./PeriodSummary";
 import { summarize, startOfWeek, startOfYear } from "@/lib/summary";
-import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { resolveContentLocale } from "@/lib/content-locales";
 import { decodeShift } from "@/lib/share";
 import { track } from "@/lib/track";
-import { showNotification } from "@/lib/notify";
+import { siteConfig } from "@/config/site";
+import {
+  requestNotificationPermission,
+  showNotification,
+} from "@/lib/notify";
+import {
+  emptyDesktopCountdownState,
+  getDesktopAutostartEnabled,
+  getMiniWindowSettings,
+  readDesktopCountdownState,
+  setDesktopAutostartEnabled,
+  stopDesktopCountdown,
+  writeDesktopCountdownState,
+} from "@/lib/desktop-state";
 
 /** 下班前多久提醒。与 translation.json 里 "reminder" 的文案保持一致。 */
 const REMINDER_LEAD_MS = 15 * 60 * 1000;
 
 /** 由 next.config.mjs 在构建期注入，见 docs/PLAN-M5-TAURI.md 决策 1 与 7。 */
 const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+
+type DesktopUpdateStatus =
+  | "idle"
+  | "checking"
+  | "installing"
+  | "latest"
+  | "unconfigured"
+  | "error";
 
 // Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
@@ -67,13 +105,132 @@ export interface OffWorkCountdownProps {
   lang: string;
 }
 
+interface SalarySettingsProps {
+  desktop?: boolean;
+  enabled: boolean;
+  onEnabledChange: (enabled: boolean) => void;
+  salaryType: "monthly" | "daily";
+  onSalaryTypeChange: (value: "monthly" | "daily") => void;
+  salaryAmount: string;
+  onSalaryAmountChange: (value: string) => void;
+  monthlyWorkingDays: string;
+  onMonthlyWorkingDaysChange: (value: string) => void;
+  maskAmountField: boolean;
+  onMaskAmountFieldChange: (masked: boolean) => void;
+}
+
+function SalarySettings({
+  desktop = false,
+  enabled,
+  onEnabledChange,
+  salaryType,
+  onSalaryTypeChange,
+  salaryAmount,
+  onSalaryAmountChange,
+  monthlyWorkingDays,
+  onMonthlyWorkingDaysChange,
+  maskAmountField,
+  onMaskAmountFieldChange,
+}: SalarySettingsProps) {
+  const { t } = useTranslation();
+
+  return (
+    <section
+      className={
+        desktop
+          ? "rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10"
+          : "border-t border-gray-200 pt-3 dark:border-gray-700"
+      }
+    >
+      <div className="flex items-center justify-between">
+        <Label className="flex items-center gap-2 dark:text-gray-200">
+          <Coins size={16} />
+          {t("salarySettings")}
+        </Label>
+        <Switch checked={enabled} onCheckedChange={onEnabledChange} />
+      </div>
+
+      <AnimatePresence>
+        {enabled && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="space-y-3 overflow-hidden pt-3"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs dark:text-gray-400">
+                  {t("salaryType")}
+                </Label>
+                <Select
+                  value={salaryType}
+                  onValueChange={(value) =>
+                    onSalaryTypeChange(value as "monthly" | "daily")
+                  }
+                >
+                  <SelectTrigger className="w-full dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                    <SelectValue placeholder={t("salaryType")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">{t("monthly")}</SelectItem>
+                    <SelectItem value="daily">{t("daily")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs dark:text-gray-400">
+                  {t("amount")}
+                </Label>
+                <input
+                  type="number"
+                  className="w-full rounded-md border bg-background p-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                  value={maskAmountField ? "" : salaryAmount}
+                  onFocus={() => onMaskAmountFieldChange(false)}
+                  onBlur={() => onMaskAmountFieldChange(true)}
+                  onChange={(event) => {
+                    onMaskAmountFieldChange(false);
+                    onSalaryAmountChange(event.target.value);
+                  }}
+                  placeholder={maskAmountField ? "****" : "0.00"}
+                />
+              </div>
+            </div>
+            {salaryType === "monthly" && (
+              <div className="space-y-1.5">
+                <Label className="text-xs dark:text-gray-400">
+                  {t("monthlyWorkingDays")}
+                </Label>
+                <input
+                  type="number"
+                  min="1"
+                  max="31"
+                  step="0.25"
+                  className="w-full rounded-md border bg-background p-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                  value={monthlyWorkingDays}
+                  onChange={(event) =>
+                    onMonthlyWorkingDaysChange(event.target.value)
+                  }
+                  placeholder={DEFAULT_MONTHLY_WORKING_DAYS.toString()}
+                />
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}
+
 export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
+  const router = useRouter();
   const { t, i18n } = useTranslation();
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [reminder, setReminder] = useState(false);
   const [workdays, setWorkdays] = useState<number[]>(DEFAULT_WORKDAYS);
   const [showCountdown, setShowCountdown] = useState(false);
+  const [showDesktopSettings, setShowDesktopSettings] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<Theme>("auto");
@@ -94,10 +251,27 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   //
   // 桌面端由构建期常量直接判定：构建时已知意味着首帧就是正确布局，不会出现
   // 「先渲染成浏览器版、再跳成铺满版」的闪烁；PWA 仍需运行时探测显示模式。
-  const [isPWA, setIsPWA] = useState(IS_DESKTOP_BUILD);
+  const [isAppShell, setIsAppShell] = useState(IS_DESKTOP_BUILD);
   const [moneyEarned, setMoneyEarned] = useState(0);
   const [hideEarnings, setHideEarnings] = useState(false);
   const [maskAmountField, setMaskAmountField] = useState(true);
+  const [activeBounds, setActiveBounds] = useState<{
+    start: Date;
+    end: Date;
+    leadReminderArmed: boolean;
+  } | null>(null);
+  const [desktopStateRestored, setDesktopStateRestored] = useState(
+    !IS_DESKTOP_BUILD
+  );
+  const [launchAtLogin, setLaunchAtLogin] = useState(false);
+  const [autostartLoaded, setAutostartLoaded] = useState(!IS_DESKTOP_BUILD);
+  const [autostartPending, setAutostartPending] = useState(false);
+  const [desktopSettingError, setDesktopSettingError] = useState("");
+  const [desktopUpdateStatus, setDesktopUpdateStatus] =
+    useState<DesktopUpdateStatus>("idle");
+  const [desktopPlatform, setDesktopPlatform] = useState<
+    "macos" | "windows" | "other"
+  >("other");
 
   // 通过分享链接进入：班次来自 URL，而不是本人的设置。这种状态下不写
   // localStorage，否则会把对方的班次覆盖掉访问者自己保存的时间。
@@ -114,6 +288,48 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // The exported desktop bundle boots from its English entry point. Restore a
+  // manual choice, or use the OS locale the first time the app is opened.
+  useEffect(() => {
+    if (!IS_DESKTOP_BUILD || !isMounted) return;
+
+    let cancelled = false;
+    void (async () => {
+      let preferred: string | null = null;
+      try {
+        preferred = localStorage.getItem(desktopLanguageStorageKey);
+      } catch {
+        // Fall through to the OS locale.
+      }
+
+      if (!preferred || !locales.includes(preferred as Locale)) {
+        const { locale } = await import("@tauri-apps/plugin-os");
+        const systemLocale = await locale();
+        const resolved = systemLocale
+          ? getBaseLanguage(systemLocale)
+          : defaultLocale;
+        preferred = locales.includes(resolved as Locale)
+          ? resolved
+          : defaultLocale;
+        try {
+          localStorage.setItem(desktopLanguageStorageKey, preferred);
+        } catch {
+          // Routing does not depend on persistence succeeding.
+        }
+      }
+
+      if (!cancelled && preferred !== lang) {
+        router.replace(`/${preferred}`);
+      }
+    })().catch(() => {
+      // If the OS API is unavailable, keep the exported default language.
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isMounted, lang, router]);
 
   // 同步 i18n 语言及缓存
   useEffect(() => {
@@ -160,6 +376,73 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     }
   }, [isMounted]);
 
+  // 桌面端从 Tauri Store 恢复正在进行的绝对班次。只恢复尚未结束的快照，
+  // 避免第二天打开应用时把昨天的「运行中」误算成今天的新班次。
+  useEffect(() => {
+    if (!IS_DESKTOP_BUILD || !settingsLoaded) return;
+
+    let cancelled = false;
+    void readDesktopCountdownState()
+      .then((state) => {
+        if (
+          cancelled ||
+          !state?.running ||
+          state.endAtMs <= Date.now() ||
+          state.endAtMs <= state.startAtMs
+        ) {
+          return;
+        }
+        const start = new Date(state.startAtMs);
+        const end = new Date(state.endAtMs);
+        setActiveBounds({
+          start,
+          end,
+          leadReminderArmed: state.leadReminderArmed ?? false,
+        });
+        reminderFiredRef.current =
+          end.getTime() - Date.now() <= REMINDER_LEAD_MS;
+        setShowCountdown(true);
+      })
+      .catch(() => {
+        // Store 不可用时继续显示主界面；下一次状态写入会再次尝试连接。
+      })
+      .finally(() => {
+        if (!cancelled) setDesktopStateRestored(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [settingsLoaded]);
+
+  useEffect(() => {
+    if (!IS_DESKTOP_BUILD) return;
+
+    let cancelled = false;
+    void getDesktopAutostartEnabled()
+      .then((enabled) => {
+        if (!cancelled) setLaunchAtLogin(enabled);
+      })
+      .catch(() => {
+        if (!cancelled) setDesktopSettingError(t("desktopSettingError"));
+      })
+      .finally(() => {
+        if (!cancelled) setAutostartLoaded(true);
+      });
+
+    void getMiniWindowSettings()
+      .then((settings) => {
+        if (!cancelled) setDesktopPlatform(settings.platform);
+      })
+      .catch(() => {
+        // The shortcut still works if only its platform-specific label fails.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [t]);
+
   // 分享链接落地：URL 里带合法班次就直接进入倒计时，而不是让对方面对一个
   // 空表单——这是分享闭环里此前缺失的一环。声明顺序在上面的 localStorage
   // 读取之后，因此能覆盖掉刚读出来的本人设置。
@@ -174,8 +457,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setEndTime(shift.end);
     // 与 handleStart 同样的处理：落地时若已不足 15 分钟就不再提醒，
     // 免得页面刚打开就弹「还有十五分钟」。
-    const { end } = getShiftBounds(shift.start, shift.end, new Date());
+    const { start, end } = getShiftBounds(shift.start, shift.end, new Date());
     reminderFiredRef.current = end.getTime() - Date.now() <= REMINDER_LEAD_MS;
+    setActiveBounds({
+      start,
+      end,
+      leadReminderArmed: end.getTime() - Date.now() > REMINDER_LEAD_MS,
+    });
     setShowCountdown(true);
     // 只有明确标记来自分享时才提示，直接手输 ?s= 的不打扰。
     const fromShare = params.get("from") === "share";
@@ -196,7 +484,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       const isFullscreen = window.matchMedia("(display-mode: fullscreen)").matches;
       const isMinimalUi = window.matchMedia("(display-mode: minimal-ui)").matches;
       const isIOSStandalone = navigatorWithStandalone.standalone === true;
-      setIsPWA(
+      setIsAppShell(
         IS_DESKTOP_BUILD ||
           isStandalone ||
           isFullscreen ||
@@ -249,16 +537,61 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     );
   }, [salaryAmount, salaryType, monthlyWorkingDays]);
 
+  // 将 UI 的运行状态镜像为一个原子快照。Rust 与迷你窗都只消费这组绝对
+  // 时间戳，不需要理解跨夜班次、工作日等业务规则。
+  useEffect(() => {
+    if (!IS_DESKTOP_BUILD || !settingsLoaded || !desktopStateRestored) return;
+
+    const state =
+      showCountdown && activeBounds
+        ? {
+            startAtMs: activeBounds.start.getTime(),
+            endAtMs: activeBounds.end.getTime(),
+            running: true,
+            reminder,
+            leadReminderArmed: activeBounds.leadReminderArmed,
+            notificationTitle: t("offWorkReminder"),
+            leadNotificationBody: t("fifteenMinutesLeft"),
+            completionNotificationBody: t("offWorkTime"),
+            showSalary,
+            hideEarnings,
+            dailySalary: showSalary ? getDailySalary() : null,
+            lang,
+          }
+        : emptyDesktopCountdownState(lang);
+
+    void writeDesktopCountdownState(state).catch(() => {
+      // 桌面快照失败不应打断 Web 共用的主倒计时界面。
+    });
+  }, [
+    settingsLoaded,
+    desktopStateRestored,
+    showCountdown,
+    activeBounds,
+    reminder,
+    showSalary,
+    hideEarnings,
+    getDailySalary,
+    lang,
+    t,
+  ]);
+
   const calculateProgress = useCallback(() => {
+    if (activeBounds) {
+      const total = activeBounds.end.getTime() - activeBounds.start.getTime();
+      const elapsed = Date.now() - activeBounds.start.getTime();
+      return Math.max(0, Math.min(100, (elapsed / total) * 100));
+    }
     return calculateShiftProgress(startTime, endTime, new Date());
-  }, [startTime, endTime]);
+  }, [activeBounds, startTime, endTime]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (showCountdown) {
       const updateCountdown = () => {
         const now = new Date();
-        const { start, end } = getShiftBounds(startTime, endTime, now);
+        const { start, end } =
+          activeBounds ?? getShiftBounds(startTime, endTime, now);
 
         const diff = end.getTime() - now.getTime();
         if (diff <= 0) {
@@ -305,7 +638,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           // 少于 15 分钟就发」，配合 reminderFiredRef 保证只发一次；开始倒计
           // 时时若已不足 15 分钟，handleStart 会预先标记为已发，避免一点开就
           // 弹提醒。
-          if (reminder && !reminderFiredRef.current && diff <= REMINDER_LEAD_MS) {
+          if (
+            !IS_DESKTOP_BUILD &&
+            reminder &&
+            !reminderFiredRef.current &&
+            diff <= REMINDER_LEAD_MS
+          ) {
             reminderFiredRef.current = true;
             void showNotification(t("offWorkReminder"), t("fifteenMinutesLeft"));
           }
@@ -325,7 +663,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       interval = setInterval(updateCountdown, 1000);
     }
     return () => clearInterval(interval);
-  }, [showCountdown, startTime, endTime, reminder, calculateProgress, t, showSalary, salaryAmount, getDailySalary]);
+  }, [showCountdown, startTime, endTime, activeBounds, reminder, calculateProgress, t, showSalary, salaryAmount, getDailySalary]);
 
   const handleStart = () => {
     if (startTime === endTime) {
@@ -349,22 +687,78 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       // 开始时距下班已不足 15 分钟的话，直接标记为已提醒——否则倒计时的第一个
       // tick 就会立刻弹出「还有十五分钟」，而用户是刚点的开始，这属于打扰。
       reminderFiredRef.current = end.getTime() - now.getTime() <= REMINDER_LEAD_MS;
+      setActiveBounds({
+        start,
+        end,
+        leadReminderArmed: end.getTime() - now.getTime() > REMINDER_LEAD_MS,
+      });
       setShowCountdown(true);
       setProgress(calculateProgress()); // Set initial progress
       track("countdown_start");
-      if (
-        reminder &&
-        typeof window !== "undefined" &&
-        "Notification" in window &&
-        Notification.permission === "default"
-      ) {
-        Notification.requestPermission();
+      if (reminder) void requestNotificationPermission();
+    }
+  };
+
+  const handleAutostartChange = async (enabled: boolean) => {
+    const previous = launchAtLogin;
+    setLaunchAtLogin(enabled);
+    setAutostartPending(true);
+    setDesktopSettingError("");
+    try {
+      await setDesktopAutostartEnabled(enabled);
+    } catch {
+      setLaunchAtLogin(previous);
+      setDesktopSettingError(t("desktopSettingError"));
+    } finally {
+      setAutostartPending(false);
+    }
+  };
+
+  const openDesktopUrl = async (url: string) => {
+    try {
+      const { openUrl } = await import("@tauri-apps/plugin-opener");
+      await openUrl(url);
+    } catch {
+      setDesktopSettingError(t("desktopSettingError"));
+    }
+  };
+
+  const handleCheckForUpdates = async () => {
+    if (!IS_DESKTOP_BUILD) return;
+    setDesktopUpdateStatus("checking");
+    try {
+      const { check } = await import("@tauri-apps/plugin-updater");
+      const update = await check({ timeout: 15_000 });
+      if (!update) {
+        setDesktopUpdateStatus("latest");
+        return;
       }
+
+      setDesktopUpdateStatus("installing");
+      await update.downloadAndInstall();
+      const { relaunch } = await import("@tauri-apps/plugin-process");
+      await relaunch();
+    } catch (error) {
+      const message = String(error).toLowerCase();
+      setDesktopUpdateStatus(
+        message.includes("endpoint") ||
+          message.includes("pubkey") ||
+          message.includes("public key") ||
+          message.includes("configuration")
+          ? "unconfigured"
+          : "error"
+      );
     }
   };
 
   const handleReturn = () => {
+    if (IS_DESKTOP_BUILD) {
+      void stopDesktopCountdown(lang).catch(() => {
+        // The normal snapshot effect remains a fallback.
+      });
+    }
     setShowCountdown(false);
+    setActiveBounds(null);
     setProgress(0);
     setTimeLeft("");
     setShowConfetti(false);
@@ -388,6 +782,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     track("share_convert");
     exitSharedView();
     setShowCountdown(false);
+    setActiveBounds(null);
     setProgress(0);
     setTimeLeft("");
     setShowConfetti(false);
@@ -516,16 +911,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 判断用班次的开始时刻而非「现在」，这样跨夜班归属正确（见 isWorkday 注释）。
   const todayIsWorkday =
     !isMounted ||
-    isWorkday(getShiftBounds(startTime, endTime, new Date()).start, workdays);
+    isWorkday(
+      activeBounds?.start ?? getShiftBounds(startTime, endTime, new Date()).start,
+      workdays
+    );
 
   return (
     <div
       className={`min-h-screen transition-colors duration-1000 ease-in-out ${
-        isPWA ? "flex flex-col items-stretch justify-start p-0" : "flex items-center justify-center p-4"
+        isAppShell ? "flex flex-col items-stretch justify-start p-0" : "flex items-center justify-center p-4"
       } ${
         isCustomTheme ? "" : "bg-gray-100 dark:bg-gray-900"
       } ${
-        isPWA
+        isAppShell
           ? "pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
           : ""
       }`}
@@ -533,7 +931,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       <Background theme={theme} />
       <Confetti trigger={showConfetti} />
 
-      <div className={isPWA ? "flex flex-1 flex-col" : "w-full max-w-md"}>
+      {IS_DESKTOP_BUILD && (
+        <div
+          data-tauri-drag-region="deep"
+          aria-hidden="true"
+          className="fixed inset-x-20 top-0 z-50 h-8 cursor-grab active:cursor-grabbing"
+        />
+      )}
+
+      <div className={isAppShell ? "flex min-h-0 flex-1 flex-col" : "w-full max-w-md"}>
       {/* 接力提示。分享链接落地后对方直接看到的是发送者的班次倒计时，
           这里说明来源并给出一键切回自己时间的出口 —— 分享→落地→转化的
           闭环，此前断在落地这一步（对方只会看到一个空表单）。 */}
@@ -552,20 +958,57 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         </div>
       )}
       <Card className={`w-full glass dark:glass-dark border-0 ${
-        isPWA
-          ? "max-w-none min-h-screen rounded-none shadow-none border-none bg-transparent flex flex-col"
+        isAppShell
+          ? "max-w-none h-screen max-h-screen overflow-hidden rounded-none shadow-none border-none bg-transparent flex flex-col"
           : ""
       }`}>
-        <CardHeader className={isPWA ? "p-6 pb-3" : undefined}>
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
+        <CardHeader
+          className={
+            isAppShell
+              ? IS_DESKTOP_BUILD
+                ? "px-6 pb-3 pt-10"
+                : "p-6 pb-3"
+              : undefined
+          }
+        >
+          <div
+            data-tauri-drag-region={IS_DESKTOP_BUILD ? "deep" : undefined}
+            className="flex items-center justify-between gap-3"
+          >
+            <div className="flex min-w-0 flex-1 items-center gap-2">
               {/* 这里用真正的 h1 而不是 shadcn 的 CardTitle：后者硬编码为 h3，
                   会排在下方说明区的 h2 前面，标题层级就颠倒了。原先另有一个
                   sr-only 的 h1，内容与这里完全相同，属于重复，已一并去掉。 */}
-              <h1 className="text-2xl font-bold leading-none tracking-tight dark:text-white">
-                {t("offWorkCountdown")}
+              {IS_DESKTOP_BUILD && showDesktopSettings && (
+                <button
+                  type="button"
+                  data-tauri-drag-region="false"
+                  onClick={() => setShowDesktopSettings(false)}
+                  className="-ms-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-black/5 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+                  aria-label={t("return")}
+                  title={t("return")}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+              )}
+              <h1
+                data-tauri-drag-region={IS_DESKTOP_BUILD ? "deep" : undefined}
+                title={
+                  IS_DESKTOP_BUILD && showDesktopSettings
+                    ? t("settings")
+                    : t("offWorkCountdown")
+                }
+                className={
+                  IS_DESKTOP_BUILD
+                    ? "min-w-0 truncate whitespace-nowrap text-xl font-bold leading-none tracking-tight dark:text-white"
+                    : "text-2xl font-bold leading-none tracking-tight dark:text-white"
+                }
+              >
+                {IS_DESKTOP_BUILD && showDesktopSettings
+                  ? t("settings")
+                  : t("offWorkCountdown")}
               </h1>
-              {!showCountdown && (
+              {!showCountdown && !IS_DESKTOP_BUILD && (
                 <a
                   href="https://github.com/ififi2017/Off-Work-Countdown"
                   target="_blank"
@@ -577,47 +1020,227 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 </a>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <ThemeToggle theme={theme} onThemeChange={handleThemeChange} />
+            <div
+              data-tauri-drag-region="false"
+              className="flex shrink-0 items-center gap-1.5"
+            >
+              {IS_DESKTOP_BUILD && !showDesktopSettings ? (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-xl border-input bg-background shadow-sm"
+                  onClick={() => setShowDesktopSettings(true)}
+                  aria-label={t("settings")}
+                  title={t("settings")}
+                >
+                  <Settings2 className="h-[1.15rem] w-[1.15rem]" />
+                </Button>
+              ) : !IS_DESKTOP_BUILD ? (
+                <ThemeToggle
+                  theme={theme}
+                  onThemeChange={handleThemeChange}
+                />
+              ) : null}
               <LanguageSelector
                 currentLang={lang}
                 languageMap={languageNames}
+                compact={IS_DESKTOP_BUILD}
               />
             </div>
           </div>
         </CardHeader>
-        <CardContent className={isPWA ? "flex-1 flex flex-col justify-center p-6 pt-2 pb-6" : undefined}>
+        <CardContent
+          className={
+            isAppShell
+              ? `relative z-10 min-h-0 flex-1 flex flex-col p-6 pt-2 pb-4 ${
+                  IS_DESKTOP_BUILD && showDesktopSettings
+                    ? "justify-start overflow-y-auto"
+                    : IS_DESKTOP_BUILD && formError
+                      ? "justify-start overflow-y-auto"
+                      : "justify-center overflow-visible"
+                }`
+              : undefined
+          }
+        >
           <AnimatePresence mode="wait">
-            {!showCountdown ? (
+            {IS_DESKTOP_BUILD && showDesktopSettings ? (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 16 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-3"
+              >
+                <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                  <Label className="text-sm dark:text-gray-200">
+                    {t("toggleTheme")}
+                  </Label>
+                  <ThemeToggle
+                    theme={theme}
+                    onThemeChange={handleThemeChange}
+                    compact
+                  />
+                </section>
+
+                <section className="space-y-2.5 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                  <div className="flex items-center justify-between gap-4">
+                    <Label
+                      htmlFor="launch-at-login"
+                      className="flex items-center gap-2 text-sm dark:text-gray-200"
+                    >
+                      <Rocket size={16} />
+                      {t("launchAtLogin")}
+                    </Label>
+                    <Switch
+                      id="launch-at-login"
+                      checked={launchAtLogin}
+                      disabled={!autostartLoaded || autostartPending}
+                      onCheckedChange={handleAutostartChange}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <span className="flex items-center gap-2">
+                      <Keyboard size={16} />
+                      {t("globalShortcut")}
+                    </span>
+                    <kbd className="rounded-md border border-gray-300 bg-white/70 px-2 py-1 font-mono text-xs text-gray-700 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+                      {desktopPlatform === "macos"
+                        ? "⌘ + Shift + O"
+                        : "Ctrl + Shift + O"}
+                    </kbd>
+                  </div>
+                  {desktopSettingError && (
+                    <p
+                      role="alert"
+                      className="text-xs text-red-600 dark:text-red-400"
+                    >
+                      {desktopSettingError}
+                    </p>
+                  )}
+                </section>
+
+                <SalarySettings
+                  desktop
+                  enabled={showSalary}
+                  onEnabledChange={setShowSalary}
+                  salaryType={salaryType}
+                  onSalaryTypeChange={setSalaryType}
+                  salaryAmount={salaryAmount}
+                  onSalaryAmountChange={setSalaryAmount}
+                  monthlyWorkingDays={monthlyWorkingDays}
+                  onMonthlyWorkingDaysChange={setMonthlyWorkingDays}
+                  maskAmountField={maskAmountField}
+                  onMaskAmountFieldChange={setMaskAmountField}
+                />
+
+                <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white/35 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void openDesktopUrl(
+                        `${siteConfig.baseUrl}/${contentLang}/faq`
+                      )
+                    }
+                    className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Info className="h-4 w-4" />
+                      {t("aboutProject")}
+                    </span>
+                    <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void openDesktopUrl(siteConfig.github)}
+                    className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Github className="h-4 w-4" />
+                      {t("githubRepository")}
+                    </span>
+                    <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleCheckForUpdates()}
+                    disabled={
+                      desktopUpdateStatus === "checking" ||
+                      desktopUpdateStatus === "installing"
+                    }
+                    className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                  >
+                    <span className="flex items-center gap-2">
+                      <RefreshCw
+                        className={`h-4 w-4 ${
+                          desktopUpdateStatus === "checking" ||
+                          desktopUpdateStatus === "installing"
+                            ? "animate-spin"
+                            : ""
+                        }`}
+                      />
+                      {desktopUpdateStatus === "checking"
+                        ? t("checkingForUpdates")
+                        : desktopUpdateStatus === "installing"
+                          ? t("installingUpdate")
+                          : t("checkForUpdates")}
+                    </span>
+                  </button>
+                  {desktopUpdateStatus !== "idle" &&
+                    desktopUpdateStatus !== "checking" &&
+                    desktopUpdateStatus !== "installing" && (
+                      <p
+                        role="status"
+                        className={`border-t border-gray-200/70 px-3 py-2 text-xs dark:border-gray-700/70 ${
+                          desktopUpdateStatus === "latest"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-amber-600 dark:text-amber-400"
+                        }`}
+                      >
+                        {desktopUpdateStatus === "latest"
+                          ? t("upToDate")
+                          : desktopUpdateStatus === "unconfigured"
+                            ? t("updateNotConfigured")
+                            : t("updateFailed")}
+                      </p>
+                    )}
+                </section>
+              </motion.div>
+            ) : !showCountdown ? (
               <motion.div
                 key="input"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-4"
+                className={IS_DESKTOP_BUILD ? "space-y-3" : "space-y-4"}
               >
-                <TimeSelector
-                  id="startTime"
-                  label={t("startTime")}
-                  value={startTime}
-                  onChange={(hour, minute) =>
-                    handleTimeChange("start", hour, minute)
-                  }
-                />
-                <TimeSelector
-                  id="endTime"
-                  label={t("endTime")}
-                  value={endTime}
-                  onChange={(hour, minute) =>
-                    handleTimeChange("end", hour, minute)
-                  }
-                />
+                <div className={IS_DESKTOP_BUILD ? "grid grid-cols-2 gap-3" : "contents"}>
+                  <TimeSelector
+                    id="startTime"
+                    label={t("startTime")}
+                    value={startTime}
+                    compact={IS_DESKTOP_BUILD}
+                    onChange={(hour, minute) =>
+                      handleTimeChange("start", hour, minute)
+                    }
+                  />
+                  <TimeSelector
+                    id="endTime"
+                    label={t("endTime")}
+                    value={endTime}
+                    compact={IS_DESKTOP_BUILD}
+                    onChange={(hour, minute) =>
+                      handleTimeChange("end", hour, minute)
+                    }
+                  />
+                </div>
                 <WorkdaySelector
                   lang={lang}
                   label={t("workdaysLabel")}
                   value={workdays}
                   onChange={setWorkdays}
+                  compact={IS_DESKTOP_BUILD}
                 />
                 {!todayIsWorkday && (
                   <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -625,7 +1248,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   </p>
                 )}
 
-                <div className="flex items-center gap-2">
+                <div className="flex min-h-9 items-center gap-2">
                   <Switch
                     id="reminder"
                     checked={reminder}
@@ -636,79 +1259,20 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   </Label>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-4">
-                    <Label className="flex items-center gap-2 dark:text-gray-200">
-                      <Coins size={16} />
-                      {t("salarySettings")}
-                    </Label>
-                    <Switch
-                      checked={showSalary}
-                      onCheckedChange={setShowSalary}
-                    />
-                  </div>
-                  
-                  <AnimatePresence>
-                    {showSalary && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="space-y-4 overflow-hidden"
-                      >
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-xs dark:text-gray-400">{t("salaryType")}</Label>
-                            <Select
-                              value={salaryType}
-                              onValueChange={(value) => setSalaryType(value as "monthly" | "daily")}
-                            >
-                              <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-                                <SelectValue placeholder={t("salaryType")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="monthly">{t("monthly")}</SelectItem>
-                                <SelectItem value="daily">{t("daily")}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs dark:text-gray-400">{t("amount")}</Label>
-                            <input
-                              type="number"
-                              className="w-full p-2 rounded-md border bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
-                              value={maskAmountField ? "" : salaryAmount}
-                              onFocus={() => setMaskAmountField(false)}
-                              onBlur={() => setMaskAmountField(true)}
-                              onChange={(e) => {
-                                setMaskAmountField(false);
-                                setSalaryAmount(e.target.value);
-                              }}
-                              placeholder={maskAmountField ? "****" : "0.00"}
-                            />
-                          </div>
-                        </div>
-                        {salaryType === "monthly" && (
-                          <div className="space-y-2">
-                            <Label className="text-xs dark:text-gray-400">
-                              {t("monthlyWorkingDays")}
-                            </Label>
-                            <input
-                              type="number"
-                              min="1"
-                              max="31"
-                              step="0.25"
-                              className="w-full p-2 rounded-md border bg-background dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
-                              value={monthlyWorkingDays}
-                              onChange={(e) => setMonthlyWorkingDays(e.target.value)}
-                              placeholder={DEFAULT_MONTHLY_WORKING_DAYS.toString()}
-                            />
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                {!IS_DESKTOP_BUILD && (
+                  <SalarySettings
+                    enabled={showSalary}
+                    onEnabledChange={setShowSalary}
+                    salaryType={salaryType}
+                    onSalaryTypeChange={setSalaryType}
+                    salaryAmount={salaryAmount}
+                    onSalaryAmountChange={setSalaryAmount}
+                    monthlyWorkingDays={monthlyWorkingDays}
+                    onMonthlyWorkingDaysChange={setMonthlyWorkingDays}
+                    maskAmountField={maskAmountField}
+                    onMaskAmountFieldChange={setMaskAmountField}
+                  />
+                )}
                 {formError && (
                   <p role="alert" className="text-sm text-red-600 dark:text-red-400">
                     {formError}
@@ -716,50 +1280,51 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 )}
               </motion.div>
             ) : (
-              <div className="space-y-6">
-                <CountdownDisplay timeLeft={timeLeft} progress={progress} />
-                {showSalary && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white/50 dark:bg-black/20 rounded-xl p-4 text-center backdrop-blur-sm"
-                  >
-                    <div className="flex items-center justify-between gap-2 text-gray-600 dark:text-gray-400 mb-1">
-                      <div className="flex items-center gap-2">
-                        <Coins size={16} className="text-yellow-500" />
-                        <span className="text-sm font-medium">{t("moneyEarned")}</span>
-                      </div>
-                      <button
-                        type="button"
-                        className="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                        onClick={() => setHideEarnings((prev) => !prev)}
-                        aria-pressed={hideEarnings}
-                        aria-label={hideEarnings ? t("showEarnings") : t("hideEarnings")}
-                        title={hideEarnings ? t("showEarnings") : t("hideEarnings")}
-                      >
-                        {hideEarnings ? <Eye size={14} /> : <EyeOff size={14} />}
-                        <span>{hideEarnings ? t("showEarnings") : t("hideEarnings")}</span>
-                      </button>
-                    </div>
-                    <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-600 dark:from-yellow-400 dark:to-amber-500">
-                      {hideEarnings ? "****" : moneyEarned.toFixed(2)}
-                    </div>
-                  </motion.div>
-                )}
-
+              <motion.div
+                key="countdown"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+                className={IS_DESKTOP_BUILD ? "w-full space-y-3" : "space-y-6"}
+              >
+                <CountdownDisplay
+                  timeLeft={timeLeft}
+                  progress={progress}
+                  dense={IS_DESKTOP_BUILD}
+                />
                 {summaryRows && (
                   <PeriodSummary
                     lang={lang}
                     note={t("summaryEstimateNote")}
                     rows={summaryRows}
                     hideEarnings={hideEarnings}
+                    compact={IS_DESKTOP_BUILD}
+                    currentEarnings={
+                      showSalary
+                        ? {
+                            label: t("moneyEarned"),
+                            value: moneyEarned.toFixed(2),
+                            showLabel: t("showEarnings"),
+                            hideLabel: t("hideEarnings"),
+                            onToggle: () => setHideEarnings((previous) => !previous),
+                          }
+                        : undefined
+                    }
                   />
                 )}
-              </div>
+              </motion.div>
             )}
           </AnimatePresence>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        {!(IS_DESKTOP_BUILD && showDesktopSettings) && (
+          <CardFooter
+            className={
+              IS_DESKTOP_BUILD
+                ? "relative z-0 flex justify-center border-t border-white/30 bg-white/20 p-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/10"
+                : "flex justify-center"
+            }
+          >
           <AnimatePresence mode="wait">
             {!showCountdown ? (
               <motion.div
@@ -780,7 +1345,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 transition={{ duration: 0.3 }}
                 className="flex gap-2"
               >
-                <Button variant="outline" onClick={handleReturn}>
+                <Button
+                  variant="outline"
+                  className={IS_DESKTOP_BUILD ? "h-9 rounded-lg px-4" : undefined}
+                  onClick={handleReturn}
+                >
                   <ArrowLeft className="me-2 h-4 w-4" /> {t("return")}
                 </Button>
                 <ShareButton
@@ -788,18 +1357,20 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   progress={progress}
                   isOff={progress >= 100}
                   shift={{ start: startTime, end: endTime }}
+                  desktop={IS_DESKTOP_BUILD}
                 />
               </motion.div>
             )}
           </AnimatePresence>
-        </CardFooter>
+          </CardFooter>
+        )}
       </Card>
 
       {/* 说明区。冷启动的搜索流量第一眼只看到一个表单，不知道这是什么，跳出率
           会很高；同时主应用页的可见正文原本只有 110–285 字符，内容过薄。
           与页脚同样渲染在设置态（服务端首屏状态），所以这些文字都在初始 HTML 里。
           刻意不放截图：可交互的实物就在正上方，静态图既冗余又对文字量毫无贡献。 */}
-      {!showCountdown && !isPWA && (
+      {!showCountdown && !isAppShell && (
         <section className="mt-10">
           <h2 className="text-center text-lg font-semibold text-gray-800 dark:text-gray-100">
             {t("landingTagline")}
@@ -828,7 +1399,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           会明显打折。内容页只有中英两版，按界面语言直接指向正确的一版，
           避免先跳转再重定向。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
           故不渲染。 */}
-      {!showCountdown && !isPWA && (
+      {!showCountdown && !isAppShell && (
         <footer className="mt-8 flex items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400">
           <Link
             href={`/${contentLang}/faq`}
@@ -842,6 +1413,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
           >
             {t("howItWorks")}
+          </Link>
+          <span aria-hidden="true">·</span>
+          <Link
+            href={`/${contentLang}/about`}
+            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+          >
+            {t("aboutProject")}
           </Link>
         </footer>
       )}

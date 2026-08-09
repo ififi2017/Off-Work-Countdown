@@ -21,9 +21,16 @@ interface ShareButtonProps {
   isOff: boolean;
   /** 随分享链接一起带出的班次，接收者打开即可看到同一个倒计时。 */
   shift: Shift;
+  desktop?: boolean;
 }
 
-export function ShareButton({ timeLeft, progress, isOff, shift }: ShareButtonProps) {
+export function ShareButton({
+  timeLeft,
+  progress,
+  isOff,
+  shift,
+  desktop = false,
+}: ShareButtonProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -31,7 +38,8 @@ export function ShareButton({ timeLeft, progress, isOff, shift }: ShareButtonPro
   return (
     <>
       <Button
-        variant="outline"
+        variant={desktop ? "default" : "outline"}
+        className={desktop ? "h-9 rounded-lg px-4 shadow-sm" : undefined}
         onClick={() => {
           track("share_open");
           setMounted(true);
@@ -48,6 +56,7 @@ export function ShareButton({ timeLeft, progress, isOff, shift }: ShareButtonPro
           progress={progress}
           isOff={isOff}
           shift={shift}
+          desktop={desktop}
         />
       )}
     </>

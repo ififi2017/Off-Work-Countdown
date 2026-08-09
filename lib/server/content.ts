@@ -6,7 +6,7 @@ import {
   type ContentLocale,
 } from "@/lib/content-locales";
 
-// 内容页（FAQ / how-it-works）的文案。与 translation.json / seo.json 同目录，
+// 内容页（FAQ / how-it-works / about）的文案。与 translation.json / seo.json 同目录，
 // 但只在服务端读取——内容页是纯服务端组件，不需要客户端 i18n。
 
 export interface FaqItem {
@@ -29,6 +29,13 @@ export interface ContentBundle {
     items: FaqItem[];
   };
   howItWorks: {
+    metaTitle: string;
+    metaDescription: string;
+    heading: string;
+    intro: string;
+    sections: ContentSection[];
+  };
+  about: {
     metaTitle: string;
     metaDescription: string;
     heading: string;

@@ -1,4 +1,5 @@
 export const defaultLocale = "en";
+export const desktopLanguageStorageKey = "desktopPreferredLanguage";
 
 // 支持的语言列表
 export const locales = [

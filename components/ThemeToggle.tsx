@@ -15,9 +15,14 @@ export type Theme = "light" | "dark" | "auto" | "cyberpunk" | "sunset";
 interface ThemeToggleProps {
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
+  compact?: boolean;
 }
 
-export function ThemeToggle({ theme, onThemeChange }: ThemeToggleProps) {
+export function ThemeToggle({
+  theme,
+  onThemeChange,
+  compact = false,
+}: ThemeToggleProps) {
   const { t } = useTranslation();
 
   const getIcon = () => {
@@ -38,7 +43,15 @@ export function ThemeToggle({ theme, onThemeChange }: ThemeToggleProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="glass dark:glass-dark border-0">
+        <Button
+          variant="outline"
+          size="icon"
+          className={`${
+            compact
+              ? "h-9 w-9 rounded-xl border-input bg-background shadow-sm"
+              : "glass border-0 dark:glass-dark"
+          }`}
+        >
           {getIcon()}
           <span className="sr-only">{t("toggleTheme")}</span>
         </Button>

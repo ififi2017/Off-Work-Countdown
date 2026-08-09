@@ -25,5 +25,11 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Check product versions
+        run: npm run check:version
+
       - name: Build
         run: npm run build
+
+      - name: Build desktop frontend
+        run: npm run build:desktop

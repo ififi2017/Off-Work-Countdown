@@ -146,16 +146,18 @@ export default async function Layout({
             __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
           }}
         />
-        <link
-          rel="manifest"
-          href={`/manifest.json?lang=${lang}`}
-          crossOrigin="use-credentials"
-        />
+        {!IS_DESKTOP_BUILD && (
+          <link
+            rel="manifest"
+            href={`/manifest.json?lang=${lang}`}
+            crossOrigin="use-credentials"
+          />
+        )}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <I18nProvider lang={lang} resources={{ translation, seo }}>
           {children}
-          <PWAInstallPrompt />
+          {!IS_DESKTOP_BUILD && <PWAInstallPrompt />}
         </I18nProvider>
         {/* Vercel 的访问统计与性能采集只服务于 Web 端。桌面端不回传任何数据
             （见 docs/PLAN-M5-TAURI.md 决策 5），这里用构建期常量剔除——

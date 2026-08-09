@@ -1,0 +1,48 @@
+{
+  "identifier": "desktop-capability",
+  "platforms": [
+    "macOS",
+    "windows",
+    "linux"
+  ],
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "os:allow-locale",
+    "updater:default",
+    "process:default",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://off.rainif.com/*"
+        },
+        {
+          "url": "https://github.com/ififi2017/Off-Work-Countdown*"
+        },
+        {
+          "url": "https://twitter.com/*"
+        },
+        {
+          "url": "https://www.facebook.com/*"
+        },
+        {
+          "url": "https://wa.me/*"
+        },
+        {
+          "url": "https://t.me/*"
+        },
+        {
+          "url": "https://social-plugins.line.me/*"
+        },
+        {
+          "url": "https://www.reddit.com/*"
+        },
+        {
+          "url": "https://service.weibo.com/*"
+        }
+      ]
+    }
+  ]
+}

@@ -6,11 +6,15 @@ import { ProgressBar } from "./ProgressBar";
 interface CountdownDisplayProps {
   timeLeft: string;
   progress: number;
+  compact?: boolean;
+  dense?: boolean;
 }
 
 export function CountdownDisplay({
   timeLeft,
   progress,
+  compact = false,
+  dense = false,
 }: CountdownDisplayProps) {
   return (
     <motion.div
@@ -19,12 +23,18 @@ export function CountdownDisplay({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
-      className="space-y-4"
+      className={compact ? "space-y-2" : dense ? "space-y-3" : "space-y-4"}
     >
       <div
-        className="text-center font-bold dark:text-white"
+        className={`text-center font-bold tabular-nums dark:text-white ${
+          compact ? "whitespace-nowrap tracking-tight" : ""
+        }`}
         style={{
-          fontSize: "min(8vw, 2.25rem)",
+          fontSize: compact
+            ? "1.7rem"
+            : dense
+              ? "min(8vw, 2.1rem)"
+              : "min(8vw, 2.25rem)",
           lineHeight: "1.2",
           wordBreak: "keep-all",
           overflowWrap: "break-word",
@@ -33,7 +43,7 @@ export function CountdownDisplay({
       >
         {timeLeft}
       </div>
-      <ProgressBar progress={progress} />
+      <ProgressBar progress={progress} compact={compact} dense={dense} />
     </motion.div>
   );
 }

@@ -11,6 +11,7 @@ interface TimeSelectorProps {
   label: string;
   value: string;
   onChange: (hour: string, minute: string) => void;
+  compact?: boolean;
 }
 
 export function TimeSelector({
@@ -18,6 +19,7 @@ export function TimeSelector({
   label,
   value,
   onChange,
+  compact = false,
 }: TimeSelectorProps) {
   const [hourInput, setHourInput] = useState(() => value.split(":")[0]);
   const [minuteInput, setMinuteInput] = useState(() => value.split(":")[1]);
@@ -101,9 +103,11 @@ export function TimeSelector({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: -4 }}
           transition={{ duration: 0.12 }}
-          className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-input bg-popover text-popover-foreground shadow-md"
+          className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-input bg-popover text-popover-foreground shadow-md"
         >
-          <div className="max-h-60 overflow-y-auto p-1">
+          <div
+            className={`${compact ? "max-h-40" : "max-h-60"} overflow-y-auto p-1`}
+          >
             {items.map((item) => (
               <button
                 type="button"
@@ -127,8 +131,11 @@ export function TimeSelector({
   );
 
   return (
-    <div className="space-y-2" ref={containerRef}>
-      <Label htmlFor={`${id}Hour`} className="dark:text-gray-200">
+    <div className={compact ? "space-y-1.5" : "space-y-2"} ref={containerRef}>
+      <Label
+        htmlFor={`${id}Hour`}
+        className={compact ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}
+      >
         {label}
       </Label>
       <div className="flex gap-2">
@@ -143,7 +150,9 @@ export function TimeSelector({
               autoCapitalize="none"
               spellCheck={false}
               pattern="[0-9]*"
-              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className={`flex w-full items-center justify-between rounded-lg border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
+                compact ? "h-9 px-3 py-1.5 pe-8" : "h-10 px-3 py-2 pe-10"
+              }`}
               value={hourInput}
               onChange={(e) => handleHourInput(e.target.value)}
               onFocus={() => setOpenMenu("hour")}
@@ -172,7 +181,9 @@ export function TimeSelector({
               autoCapitalize="none"
               spellCheck={false}
               pattern="[0-9]*"
-              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className={`flex w-full items-center justify-between rounded-lg border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
+                compact ? "h-9 px-3 py-1.5 pe-8" : "h-10 px-3 py-2 pe-10"
+              }`}
               value={minuteInput}
               onChange={(e) => handleMinuteInput(e.target.value)}
               onFocus={() => setOpenMenu("minute")}

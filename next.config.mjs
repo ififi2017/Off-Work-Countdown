@@ -19,7 +19,7 @@ const nextConfig = {
   outputFileTracingRoot: __dirname,
 
   pageExtensions: isDesktop
-    ? ['ts', 'tsx']
+    ? ['desktop.ts', 'desktop.tsx', 'ts', 'tsx']
     : ['web.ts', 'web.tsx', 'ts', 'tsx'],
 
   // Expose a per-deploy build id to the client so translation fetches can be
