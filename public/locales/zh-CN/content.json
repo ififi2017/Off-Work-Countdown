@@ -36,7 +36,7 @@
       },
       {
         "q": "有桌面客户端吗？",
-        "a": "有。macOS 同时支持 Apple 芯片和 Intel 芯片，Windows 目前支持 x64。客户端增加了托盘倒计时、原生提醒、登录时启动、全局快捷键和一键更新；下载页会始终指向最新发布的安装包。Windows ARM64 已列入后续计划。"
+        "a": "有。macOS 同时支持 Apple 芯片和 Intel 芯片，Windows 同时支持 x64 和 ARM64。客户端增加了托盘倒计时、原生提醒、登录时启动、全局快捷键和一键更新；下载页会始终指向最新发布的安装包。"
       },
       {
         "q": "免费吗？开源吗？",
@@ -136,7 +136,7 @@
   },
   "download": {
     "metaTitle": "下载 macOS 与 Windows 客户端 - 下班倒计时",
-    "metaDescription": "下载最新版下班倒计时桌面客户端，支持 Apple Silicon、Intel Mac 与 Windows x64，安装包自动取自 GitHub Releases。",
+    "metaDescription": "下载最新版下班倒计时桌面客户端，支持 Apple Silicon、Intel Mac 与 Windows x64、ARM64，安装包自动取自 GitHub Releases。",
     "heading": "不用一直留着浏览器标签页，也能安心倒计时",
     "intro": "网页版打开就能用，最适合快速开始；桌面客户端则更适合每天常驻。它把倒计时放进菜单栏或系统托盘，能在后台提醒你，也可以用一个快捷键随时唤出。",
     "benefits": [

@@ -582,8 +582,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             hideEarnings,
             dailySalary: showSalary ? getDailySalary() : null,
             lang,
+            countdownNotStarted: t("countdownNotStarted"),
           }
-        : emptyDesktopCountdownState(lang);
+        : emptyDesktopCountdownState(lang, t("countdownNotStarted"));
 
     void writeDesktopCountdownState(state).catch(() => {
       // 桌面快照失败不应打断 Web 共用的主倒计时界面。
@@ -781,7 +782,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   const handleReturn = () => {
     if (IS_DESKTOP_BUILD) {
-      void stopDesktopCountdown(lang).catch(() => {
+      void stopDesktopCountdown(lang, t("countdownNotStarted")).catch(() => {
         // The normal snapshot effect remains a fallback.
       });
     }

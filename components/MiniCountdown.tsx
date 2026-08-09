@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pin, PinOff } from "lucide-react";
+import { Clock3, Pin, PinOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { CountdownDisplay } from "./CountdownDisplay";
-import { ProgressBar } from "./ProgressBar";
 import {
   getDesktopCountdownView,
   getMiniWindowSettings,
@@ -58,6 +56,7 @@ export function MiniCountdown() {
   const hasCountdown = Boolean(
     state?.running && state.endAtMs > state.startAtMs
   );
+  const progress = Math.min(100, Math.max(0, view.progress));
 
   useEffect(() => {
     if (state?.lang && i18n.language !== state.lang) {
@@ -105,16 +104,12 @@ export function MiniCountdown() {
   return (
     <main
       data-tauri-drag-region="deep"
-      className="h-screen w-screen overflow-hidden bg-zinc-100 dark:bg-zinc-950"
+      className="h-screen w-screen overflow-hidden bg-[#ececee] text-zinc-950 dark:bg-[#242426] dark:text-white"
     >
       <section
         data-tauri-drag-region="deep"
-        className="relative flex h-full cursor-grab flex-col justify-center overflow-hidden border border-black/10 bg-gradient-to-b from-white to-zinc-100 px-5 pb-3 pt-4 text-zinc-950 shadow-inner active:cursor-grabbing dark:border-white/10 dark:from-zinc-800 dark:to-zinc-950 dark:text-white"
+        className="relative flex h-full cursor-grab flex-col justify-center overflow-hidden border border-black/10 bg-gradient-to-b from-white/80 to-zinc-200/80 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] active:cursor-grabbing dark:border-white/10 dark:from-zinc-700/90 dark:to-zinc-900/95 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
       >
-        <div
-          data-tauri-drag-region="deep"
-          className="absolute inset-x-0 top-0 h-8"
-        />
         {isWindows && (
           <button
             data-tauri-drag-region="false"
@@ -127,30 +122,48 @@ export function MiniCountdown() {
             title={
               alwaysOnTop ? t("disableAlwaysOnTop") : t("enableAlwaysOnTop")
             }
-            className="absolute end-2 top-1.5 z-10 rounded-md p-1 text-zinc-500 transition-colors hover:bg-black/5 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+            className="absolute end-1.5 top-1.5 z-10 rounded-md p-1 text-zinc-500 transition-colors hover:bg-black/5 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
           >
-            {alwaysOnTop ? <Pin size={13} /> : <PinOff size={13} />}
+            {alwaysOnTop ? <Pin size={11} /> : <PinOff size={11} />}
           </button>
         )}
-        {hasCountdown ? (
-          <CountdownDisplay
-            timeLeft={view.time}
-            progress={view.progress}
-            compact
-          />
-        ) : (
-          <div className="space-y-3">
-            <p className="truncate text-center text-sm font-semibold tracking-tight">
+
+        <div
+          data-tauri-drag-region="deep"
+          className="flex min-w-0 items-center gap-2.5"
+        >
+          <div
+            data-tauri-drag-region="deep"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-sm shadow-orange-950/15"
+          >
+            <Clock3 size={15} strokeWidth={2.4} />
+          </div>
+
+          {hasCountdown ? (
+            <p className="min-w-0 flex-1 whitespace-nowrap text-[22px] font-semibold leading-none tracking-[-0.035em] tabular-nums">
+              {view.time}
+            </p>
+          ) : (
+            <p className="min-w-0 flex-1 truncate text-xs font-semibold tracking-tight text-zinc-700 dark:text-zinc-200">
               {t("countdownNotStarted")}
             </p>
-            <ProgressBar progress={0} compact />
-          </div>
-        )}
-        {view.earned !== null && (
-          <p className="mt-1 truncate text-center text-xs font-medium text-amber-600 dark:text-amber-300">
-            {view.earned.toFixed(2)}
-          </p>
-        )}
+          )}
+
+          {hasCountdown && (
+            <span className="shrink-0 rounded-md bg-black/[0.06] px-1.5 py-1 text-[10px] font-semibold tabular-nums text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
+              {view.earned !== null
+                ? view.earned.toFixed(2)
+                : `${Math.floor(progress)}%`}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/15">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-600 transition-[width] duration-500 ease-out"
+            style={{ width: `${hasCountdown ? progress : 0}%` }}
+          />
+        </div>
       </section>
     </main>
   );

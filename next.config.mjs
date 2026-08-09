@@ -56,6 +56,9 @@ const nextConfig = {
   ...(isDesktop
     ? {
         output: 'export',
+        // Tauri 的开发 WebView 很小，Next.js 的悬浮开发按钮会盖住 Mini
+        // Timer。仅对桌面目标隐藏；错误仍会正常输出到终端和错误覆盖层。
+        devIndicators: false,
       }
     : {
         async redirects() {

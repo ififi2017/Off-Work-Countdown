@@ -20,12 +20,19 @@ jobs:
           - name: macOS Apple Silicon
             platform: macos-latest
             args: --target aarch64-apple-darwin --config src-tauri/tauri.release.conf.json
+            rustTargets: aarch64-apple-darwin
           - name: macOS Intel
             platform: macos-latest
             args: --target x86_64-apple-darwin --config src-tauri/tauri.release.conf.json
+            rustTargets: x86_64-apple-darwin
           - name: Windows x64
             platform: windows-latest
             args: --config src-tauri/tauri.release.conf.json
+            rustTargets: x86_64-pc-windows-msvc
+          - name: Windows ARM64
+            platform: windows-11-arm
+            args: --target aarch64-pc-windows-msvc --config src-tauri/tauri.release.conf.json
+            rustTargets: aarch64-pc-windows-msvc
 
     steps:
       - uses: actions/checkout@v7
@@ -39,7 +46,7 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ startsWith(matrix.platform, 'macos') && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.rustTargets }}
 
       - name: Cache Rust build artifacts
         uses: Swatinem/rust-cache@v2

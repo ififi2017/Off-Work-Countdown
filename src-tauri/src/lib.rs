@@ -1,16 +1,17 @@
 use serde::{Deserialize, Serialize};
 use std::{thread, time::Duration};
-#[cfg(target_os = "windows")]
-use tauri::PhysicalPosition;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager, WindowEvent,
 };
+#[cfg(target_os = "windows")]
+use tauri::{window::Color, PhysicalPosition, WebviewUrl, WebviewWindowBuilder};
 #[cfg(desktop)]
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 #[cfg(desktop)]
 use tauri_plugin_notification::NotificationExt;
+#[cfg(target_os = "windows")]
 use tauri_plugin_positioner::{Position, WindowExt};
 use tauri_plugin_store::StoreExt;
 
@@ -34,6 +35,11 @@ struct CountdownState {
     notification_title: String,
     lead_notification_body: String,
     completion_notification_body: String,
+    show_salary: bool,
+    hide_earnings: bool,
+    daily_salary: Option<f64>,
+    lang: String,
+    countdown_not_started: String,
 }
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
@@ -71,6 +77,56 @@ struct TrayMenuItems {
     quit: MenuItem<tauri::Wry>,
 }
 
+#[cfg(target_os = "macos")]
+mod native_mini {
+    use std::ffi::{c_char, CString};
+
+    extern "C" {
+        fn owc_native_mini_initialize();
+        fn owc_native_mini_toggle();
+        fn owc_native_mini_hide();
+        fn owc_native_mini_update(
+            time: *const c_char,
+            detail: *const c_char,
+            progress: f64,
+            running: i32,
+            empty_text: *const c_char,
+        );
+    }
+
+    fn c_string(value: &str) -> CString {
+        CString::new(value.replace('\0', "")).expect("sanitized native Mini Timer text")
+    }
+
+    pub fn initialize() {
+        unsafe { owc_native_mini_initialize() }
+    }
+
+    pub fn toggle() {
+        unsafe { owc_native_mini_toggle() }
+    }
+
+    #[allow(dead_code)]
+    pub fn hide() {
+        unsafe { owc_native_mini_hide() }
+    }
+
+    pub fn update(time: &str, detail: &str, progress: f64, running: bool, empty_text: &str) {
+        let time = c_string(time);
+        let detail = c_string(detail);
+        let empty_text = c_string(empty_text);
+        unsafe {
+            owc_native_mini_update(
+                time.as_ptr(),
+                detail.as_ptr(),
+                progress,
+                i32::from(running),
+                empty_text.as_ptr(),
+            )
+        }
+    }
+}
+
 fn platform_name() -> &'static str {
     #[cfg(target_os = "macos")]
     return "macos";
@@ -105,20 +161,29 @@ fn toggle_main_window(app: &AppHandle) {
 }
 
 fn toggle_mini_window(app: &AppHandle) {
-    let Some(window) = app.get_webview_window("mini") else {
-        return;
-    };
-
-    if window.is_visible().unwrap_or(false) {
-        let _ = window.hide();
-        return;
+    #[cfg(target_os = "macos")]
+    {
+        let _ = app;
+        native_mini::toggle();
     }
 
-    #[cfg(target_os = "macos")]
-    let _ = window.move_window_constrained(Position::TrayCenter);
+    #[cfg(target_os = "windows")]
+    {
+        let Some(window) = app.get_webview_window("mini") else {
+            return;
+        };
 
-    let _ = window.show();
-    let _ = window.set_focus();
+        if window.is_visible().unwrap_or(false) {
+            let _ = window.hide();
+            return;
+        }
+
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    let _ = app;
 }
 
 fn read_countdown_state(app: &AppHandle) -> CountdownState {
@@ -222,6 +287,14 @@ fn format_remaining(end_at_ms: i64, now_ms: i64) -> String {
     format!("{hours}:{minutes:02}:{seconds:02}")
 }
 
+fn countdown_progress(state: &CountdownState, now_ms: i64) -> f64 {
+    if !state.running || state.end_at_ms <= state.start_at_ms {
+        return 0.0;
+    }
+    let duration = (state.end_at_ms - state.start_at_ms) as f64;
+    ((now_ms - state.start_at_ms) as f64 / duration).clamp(0.0, 1.0)
+}
+
 /// 独立于 WebView 的后台节拍器。这里只做绝对时间戳相减；跨夜班次等业务
 /// 规则仍由前端唯一实现。即便主窗口隐藏，托盘与迷你窗生命周期也不受影响。
 fn start_tray_timer(app: AppHandle) {
@@ -234,6 +307,7 @@ fn start_tray_timer(app: AppHandle) {
             let valid = state.running && state.end_at_ms > state.start_at_ms;
             let active = valid && state.end_at_ms > now_ms;
             let remaining = active.then(|| format_remaining(state.end_at_ms, now_ms));
+            let progress = countdown_progress(&state, now_ms);
 
             let mut marker = read_notification_marker(&app);
             let (notification, marker_changed) =
@@ -254,6 +328,33 @@ fn start_tray_timer(app: AppHandle) {
                     .map(|time| format!("Off Work Countdown · {time}"))
                     .unwrap_or_else(|| "Off Work Countdown".to_string());
                 let _ = tray.set_tooltip(Some(tooltip));
+            }
+
+            #[cfg(target_os = "macos")]
+            {
+                let detail = if active && state.show_salary && !state.hide_earnings {
+                    state
+                        .daily_salary
+                        .filter(|salary| salary.is_finite())
+                        .map(|salary| format!("{:.2}", salary * progress))
+                        .unwrap_or_else(|| format!("{}%", (progress * 100.0).floor() as i64))
+                } else if active {
+                    format!("{}%", (progress * 100.0).floor() as i64)
+                } else {
+                    String::new()
+                };
+                let empty_text = if state.countdown_not_started.is_empty() {
+                    "Countdown not started"
+                } else {
+                    &state.countdown_not_started
+                };
+                native_mini::update(
+                    remaining.as_deref().unwrap_or(""),
+                    &detail,
+                    progress,
+                    active,
+                    empty_text,
+                );
             }
 
             #[cfg(target_os = "windows")]
@@ -328,48 +429,51 @@ fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "windows")]
 fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
-    let Some(window) = app.get_webview_window("mini") else {
-        return Ok(());
+    let store = app
+        .store(STORE_PATH)
+        .map_err(|error| std::io::Error::other(error.to_string()))?;
+    let always_on_top = store
+        .get(MINI_ALWAYS_ON_TOP_KEY)
+        .and_then(|value| value.as_bool())
+        .unwrap_or(true);
+    let url = if cfg!(debug_assertions) {
+        "en/mini"
+    } else {
+        "en/mini.html"
     };
+    let window = WebviewWindowBuilder::new(app, "mini", WebviewUrl::App(url.into()))
+        .title("Off Work Countdown")
+        .inner_size(208.0, 64.0)
+        .min_inner_size(208.0, 64.0)
+        .max_inner_size(208.0, 64.0)
+        .resizable(false)
+        .maximizable(false)
+        .fullscreen(false)
+        .decorations(false)
+        .background_color(Color(236, 236, 238, 255))
+        .always_on_top(always_on_top)
+        .skip_taskbar(true)
+        .visible(false)
+        .build()?;
 
-    #[cfg(target_os = "windows")]
+    if let Some(position) = store
+        .get(MINI_POSITION_KEY)
+        .and_then(|value| serde_json::from_value::<MiniPosition>(value).ok())
     {
-        let store = app
-            .store(STORE_PATH)
-            .map_err(|error| std::io::Error::other(error.to_string()))?;
-        let always_on_top = store
-            .get(MINI_ALWAYS_ON_TOP_KEY)
-            .and_then(|value| value.as_bool())
-            .unwrap_or(true);
-        let _ = window.set_always_on_top(always_on_top);
-
-        if let Some(position) = store
-            .get(MINI_POSITION_KEY)
-            .and_then(|value| serde_json::from_value::<MiniPosition>(value).ok())
-        {
-            let _ = window.set_position(PhysicalPosition::new(position.x, position.y));
-        } else {
-            let _ = window.move_window(Position::BottomRight);
-        }
+        let _ = window.set_position(PhysicalPosition::new(position.x, position.y));
+    } else {
+        let _ = window.move_window(Position::BottomRight);
     }
 
-    #[cfg(target_os = "macos")]
-    let _ = window.set_always_on_top(false);
-
     let handle = window.clone();
-    #[cfg(target_os = "windows")]
     let app_handle = app.clone();
     window.on_window_event(move |event| match event {
         WindowEvent::CloseRequested { api, .. } => {
             api.prevent_close();
             let _ = handle.hide();
         }
-        #[cfg(target_os = "macos")]
-        WindowEvent::Focused(false) => {
-            let _ = handle.hide();
-        }
-        #[cfg(target_os = "windows")]
         WindowEvent::Moved(position) => {
             if let Ok(store) = app_handle.store(STORE_PATH) {
                 store.set(
@@ -405,15 +509,24 @@ fn get_mini_window_settings(app: AppHandle) -> Result<MiniWindowSettings, String
 
 #[tauri::command]
 fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), String> {
-    let window = app
-        .get_webview_window("mini")
-        .ok_or_else(|| "mini window is unavailable".to_string())?;
-    window
-        .set_always_on_top(always_on_top)
-        .map_err(|error| error.to_string())?;
-    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
-    store.set(MINI_ALWAYS_ON_TOP_KEY, always_on_top);
-    Ok(())
+    #[cfg(target_os = "windows")]
+    {
+        let window = app
+            .get_webview_window("mini")
+            .ok_or_else(|| "mini window is unavailable".to_string())?;
+        window
+            .set_always_on_top(always_on_top)
+            .map_err(|error| error.to_string())?;
+        let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+        store.set(MINI_ALWAYS_ON_TOP_KEY, always_on_top);
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = (app, always_on_top);
+        Ok(())
+    }
 }
 
 #[tauri::command]
@@ -508,6 +621,16 @@ pub fn run() {
                 log::warn!("failed to register global shortcut: {error}");
             }
             setup_tray(app.handle())?;
+            #[cfg(target_os = "macos")]
+            {
+                native_mini::initialize();
+                // 本地 UI 验收可显式要求启动时展示原生面板；正式包未设置该
+                // 环境变量，因此仍只在用户点击托盘图标后出现。
+                if cfg!(debug_assertions) && std::env::var_os("OWC_SHOW_NATIVE_MINI").is_some() {
+                    native_mini::toggle();
+                }
+            }
+            #[cfg(target_os = "windows")]
             setup_mini_window(app.handle())?;
             start_tray_timer(app.handle().clone());
 
@@ -603,11 +726,25 @@ mod notification_tests {
 
 #[cfg(test)]
 mod format_tests {
-    use super::format_remaining;
+    use super::{countdown_progress, format_remaining, CountdownState};
 
     #[test]
     fn formats_remaining_time_without_business_logic() {
         assert_eq!(format_remaining(3_661_001, 1), "1:01:01");
         assert_eq!(format_remaining(1, 2), "0:00:00");
+    }
+
+    #[test]
+    fn clamps_native_mini_progress_to_the_shift() {
+        let state = CountdownState {
+            start_at_ms: 1_000,
+            end_at_ms: 2_000,
+            running: true,
+            ..Default::default()
+        };
+        assert_eq!(countdown_progress(&state, 500), 0.0);
+        assert_eq!(countdown_progress(&state, 1_500), 0.5);
+        assert_eq!(countdown_progress(&state, 2_500), 1.0);
+        assert_eq!(countdown_progress(&CountdownState::default(), 1_500), 0.0);
     }
 }

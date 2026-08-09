@@ -36,7 +36,7 @@
       },
       {
         "q": "Is there a desktop app?",
-        "a": "Yes. Native clients are available for macOS on Apple Silicon and Intel, and for Windows x64. They add a tray countdown, native reminders, launch at login, a global shortcut and one-click updates. The Download page always points to the latest published installers; Windows ARM64 is planned."
+        "a": "Yes. Native clients are available for macOS on Apple Silicon and Intel, and for Windows on x64 and ARM64. They add a tray countdown, native reminders, launch at login, a global shortcut and one-click updates. The Download page always points to the latest published installers."
       },
       {
         "q": "Is it free, and is the code open?",
@@ -136,7 +136,7 @@
   },
   "download": {
     "metaTitle": "Download for macOS and Windows - Off Work Countdown",
-    "metaDescription": "Download the latest Off Work Countdown desktop client for Apple Silicon or Intel Macs and Windows x64, resolved automatically from GitHub Releases.",
+    "metaDescription": "Download the latest Off Work Countdown desktop client for Apple Silicon or Intel Macs and Windows x64 or ARM64, resolved automatically from GitHub Releases.",
     "heading": "Your countdown, without keeping a browser tab open",
     "intro": "The web app is the quickest way to start. The desktop client is the better fit when the countdown stays with you through every workday: it lives in the tray, can remind you in the background, and is always one shortcut away.",
     "benefits": [

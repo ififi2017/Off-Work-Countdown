@@ -18,7 +18,7 @@ M4 评估 Web Push 时否掉了它，理由是必须把每个人的下班时刻�
 
 **目标**
 
-- macOS（Apple Silicon + Intel）与 Windows x64
+- macOS（Apple Silicon + Intel）与 Windows（x64 + ARM64）
 - 主界面内容铺满窗口，不出现浏览器版那种四周留白
 - 常驻可见的剩余时间：macOS 走菜单栏 + 点击弹出面板，Windows 走可置顶的迷你窗
 - 窗口关闭后仍然按时提醒
@@ -138,25 +138,26 @@ Web 端的布局是「大片背景中间浮一张 `max-w-md` 卡片」，这在�
 
 顺带把这个概念改名：`isPWA` 表达的其实是「运行在无浏览器外壳的容器里」，PWA 与桌面端共享同一含义，叫 `isAppShell` 之类更贴切。
 
-#### 窗口模型：主窗口 + 迷你窗
+#### 窗口模型：主窗口 + 平台原生形态的迷你计时器
 
 | 窗口 | 用途 | 形态 |
 |---|---|---|
 | **主窗口** | 设置班次、薪资、工作日，查看完整倒计时与周期汇总 | 默认 430×650，只允许在 420–450 × 620–680 的小范围内缩放；macOS 用透明标题栏保留红绿灯按钮，Windows 保留原生标题栏 |
-| **迷你窗** | 常驻可见的倒计时 | 固定 252×104，无边框、无装饰，只有时间 + 进度条（薪资开启时加一行金额） |
+| **迷你计时器** | 常驻或按需可见的倒计时 | macOS 为 228×70 原生 AppKit 弹出面板；Windows 为固定 208×64 的无边框 WebView 小部件 |
 
-迷你窗不要复用主界面组件——那会连带把表单、分享弹窗、汇总一起拉进来。应当是一个轻量组件，复用现有的 `CountdownDisplay` 与 `ProgressBar` 即可。
+Windows 迷你窗不要复用主界面组件——那会连带把表单、分享弹窗、汇总一起拉进来。它使用独立轻量组件；macOS 则不再加载第二个 WebView，而是由 Rust 桥接 AppKit 原生视图。
 
-路由用 `app/[lang]/mini/page.desktop.tsx`，通过决策 1 的 `pageExtensions` 机制**只在桌面构建中存在**，Web 端不会多出一个可索引 URL。静态段 `mini` 优先于 `[preset]` 匹配，不会冲突。
+Windows 路由使用 `app/[lang]/mini/page.desktop.tsx`，通过决策 1 的 `pageExtensions` 机制**只在桌面构建中存在**，Web 端不会多出一个可索引 URL。静态段 `mini` 优先于 `[preset]` 匹配，不会冲突。macOS 不访问该路由。
 
-#### 平台行为：同一个迷你窗，两套配置
+#### 平台行为：两套实现，共享同一份倒计时状态
 
 **macOS —— 菜单栏 + 点击弹出**
 
 - 托盘项用 `set_title` 常驻显示剩余时间（决策 2 已覆盖）
-- 点击托盘图标切换迷你窗显示/隐藏，位置对齐到托盘图标下方（`tauri-plugin-positioner` 的 `TrayCenter`）
+- 点击托盘图标切换原生 `NSPanel`，根据当前菜单栏屏幕定位到图标下方
 - 失焦自动隐藏，符合 macOS 菜单栏弹出面板的惯例
-- 因此 macOS 上迷你窗**不需要置顶**——它是随叫随到的面板，不是常驻窗
+- macOS 26 使用公开的 `NSGlassEffectView` 呈现 Liquid Glass；旧版系统回退到 `NSVisualEffectView` Vibrancy
+- 因此 macOS 上不再创建第二个 WebView，也没有网页白边、CSS 毛玻璃或拖动手势问题
 
 Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）更像原生菜单栏工具，但设置窗口只能从托盘菜单进入，发现成本更高。**v1 建议保留 Dock 图标**，纯菜单栏模式作为后续偏好项。
 
@@ -172,9 +173,9 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 
 无边框窗口需要在顶部留一条 `data-tauri-drag-region` 区域才能拖动，这一点容易漏。
 
-#### 迷你窗的数据来源
+#### 迷你计时器的数据来源
 
-迷你窗自己跑一个每秒的 JS 定时器，从 Tauri store 里读「结束时间戳」做减法即可——与决策 2 同源，不重复班次逻辑，也不需要与主窗口通信。
+Rust 后台线程每秒从 Tauri Store 读取绝对起止时间，并计算剩余时间与班次进度。macOS 直接把结果推送给原生 AppKit 面板；Windows WebView 读取同一份 Store。两端都不复制排班规则，也不依赖主窗口是否可见。
 
 ## 4. 里程碑
 
@@ -185,7 +186,7 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 | **P2** | 托盘倒计时 + 迷你窗 | ~~1.5 周~~ 🟡 实现完成，Windows 实机验收待办 | macOS 菜单栏走字并可点击弹出；Windows 置顶迷你窗可拖动、可切换置顶；关闭主窗口后两者仍然走字 |
 | **P3** | 原生能力 | ~~1 周~~ 🟡 实现完成，快捷键人工按键与 Windows 实机验收待办 | 到点通知、开机自启、全局快捷键 |
 | **P4** | 自动更新 | 🟡 签名链完成，线上升级回环待验收 | 客户端公钥、更新端点、GitHub Secrets、签名产物均已配置并完成本机构建；还需用一次 Draft Release 实测旧版本 → 新版本 |
-| **P5** | 发布 CI + 安装文档 | 🟡 工作流已实现，安装文档待补 | `desktop-v*` 可并行构建 macOS arm64 / x64 与 Windows x64，生成签名、`latest.json` 和 Draft Release；两份 README 安装步骤仍待实测 |
+| **P5** | 发布 CI + 安装文档 | 🟡 工作流已实现，安装文档待补 | `desktop-v*` 可并行构建 macOS arm64 / x64 与 Windows x64 / ARM64，生成签名、`latest.json` 和 Draft Release；两份 README 安装步骤仍待实测 |
 | **P6** | 包管理器分发 | 3–5 天 | Homebrew 自建 tap 可用；winget 或 Scoop 至少一条通路可用（见 §7）|
 
 **P0 是唯一一个纯 Web 侧、且对 Web 端也有价值的阶段**（它会强制把服务端依赖梳理干净），可以先做，风险最低。
@@ -201,10 +202,10 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 
 1. 主界面把 `{startAtMs, endAtMs, running, reminder, salary}` 作为一个原子快照镜像到 `tauri-plugin-store`。重新打开应用时只恢复尚未结束的绝对班次，避免把昨天的状态误算成今天的新班次。
 2. Rust 后台线程每秒只做 `endAtMs - now`，输出语言无关的 `H:MM:SS`；不复制 `lib/countdown.ts` 的跨夜与工作日逻辑。macOS 用 `TrayIcon::set_title` 更新菜单栏，窗口隐藏后仍独立运行。
-3. 新增仅桌面构建可见的 `app/[lang]/mini/page.desktop.tsx`。托盘左键切换迷你窗；macOS 按托盘位置弹出且失焦隐藏，Windows 在倒计时启动时显示、可拖动、可切换置顶且持久化位置与置顶状态。
+3. Windows 新增仅桌面构建可见的 `app/[lang]/mini/page.desktop.tsx`，倒计时启动时显示、可拖动、可切换置顶且持久化位置与置顶状态。macOS 后续已替换为原生 AppKit 面板，托盘左键切换显示并在失焦时隐藏。
 4. 主窗口沿用 app-shell 无边距布局，并给 macOS 透明标题栏补足顶部空间。桌面构建同时移除了无效的 manifest 链接与 PWA 安装提示，避免 WKWebView 被误判成 Safari 后弹出「添加到 Dock」。
 5. 验证结果：前端 62 项测试、lint、TypeScript、Web 构建、19 语言桌面静态导出、Rust `check/test` 均通过；macOS arm64 `.app` 成功打包并用桌面自动化完成实际 UI 验收——设置页与倒计时页无裁切或标题栏重叠，迷你窗秒级走字且切回主窗口后自动隐藏，Store 文件也由实际 WebView/IPC 初始化。Windows 目标当前未安装交叉编译工具链，拖动手感、默认尺寸和置顶观感仍必须在 Windows 实机验收，因此 P2 暂不标全绿。
-6. 纸面方案的 220×72 在同时容纳拖动区、时间、进度条、可选薪资与 Windows 图钉后过紧；首版 240×112 又暴露出外层 Web 背景形成白边的问题。复审后定为固定 252×104，内容改成满铺单层面板，不再用 `p-2 + 白色圆角卡片` 模拟原生弹窗。面板现在跟随系统或应用主题切换浅色／深色，未开始时显示明确状态而不是占位数字。Windows 上仍需结合缩放比例定稿。
+6. 纸面方案与首轮 WebView 实现都暴露出白边、比例臃肿和 CSS 毛玻璃不像系统组件的问题。macOS 最终采用固定 228×70 的原生 `NSPanel`：macOS 26 使用 `NSGlassEffectView`，旧系统用 Vibrancy 回退；内容只保留大号等宽时间、右侧进度／收入和一条细进度条。Windows WebView 收至 208×64，未开始时显示明确状态。Windows 上仍需结合缩放比例定稿。
 
 **P2 已解决的观感问题**：透明标题栏下内容原本从 y=0 开始，红绿灯按钮紧贴卡片标题；桌面主窗口现有独立顶部内边距。
 
@@ -222,19 +223,21 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 
 **第四轮 UI 收尾（2026-08-09）**：分享页进一步压缩桌面端间距、预览与按钮高度，在固定主窗口内完整显示并禁用多余的纵向滚动；“已是最新版本”合并到检查更新同一行，不再撑高设置页。迷你窗增加系统明暗主题与未开始状态；托盘的显示应用、迷你计时器和退出三项由前端按当前界面语言实时更新，覆盖全部 19 种语言。
 
+**第五轮 Mini Timer 原生化（2026-08-09）**：macOS 不再用 WebView 模拟系统弹窗，改为 Rust C ABI 桥接 AppKit。macOS 26 直接使用公开的 `NSGlassEffectView`，旧系统回退到 `NSVisualEffectView`；原生 `NSPanel` 固定 228×70、不可拖动、点击外部自动收起，并随当前菜单栏屏幕定位。计时、进度、薪资／百分比和未开始文案均由现有 Store 驱动。Windows 保留独立 208×64 WebView 小部件，避免为跨平台一致而牺牲各平台惯例。
+
 **第四轮 UI / 桌面行为实测（2026-08-09）**：线上尚未部署 `/about`，设置页的“关于此项目”暂时改为打开现有 FAQ，避免客户端发布后跳到 404；本地 About 页面保留，待 Web 下次部署后再决定是否切回。分享界面在桌面端改为完整覆盖主 WebView，不再套网页弹窗的灰色遮罩和外边框；X、Facebook、WhatsApp、Telegram、LINE、Reddit、微博均改用 `tauri-plugin-opener` 交给系统浏览器，并配置最小域名白名单。全局快捷键提示由运行平台决定：macOS 显示 `⌘ + Shift + O`，Windows / Linux 显示 `Ctrl + Shift + O`。停止倒计时会立即写入 `running: false` 快照并显式清空 macOS 菜单栏标题，后台节拍器也会持续用空字符串覆盖非运行状态，避免最后一秒定格。桌面首次启动通过官方 OS 插件读取系统 locale（macOS 中文已实测自动进入简体中文），此后把用户手动选择作为优先语言持久化。前端 lint、62 项测试、19 语言桌面导出、3 项 Rust 测试与 macOS `.app` 构建全部通过；自动化实测分享界面满铺、设置页快捷键和停止后的 Store 状态，社交按钮的外部站点点击因桌面控制权限未自动批准，仍需发布前做一次人工点击冒烟。
 
 **P4 客户端接入记录（2026-08-09）**：已接入官方 updater、process 与 opener 插件，权限只开放给主窗口。检查更新为一次点击完成 `check → downloadAndInstall → relaunch`，并覆盖检查中、安装中、已是最新与失败状态。“已是最新版本”在检查更新行内显示，不额外增加页面高度。设置页会常驻显示客户端当前版本；发现更新后以 `当前版本 → 最新版本` 明示升级目标。
 
 **P4 签名与发布配置（2026-08-09）**：长期 updater 私钥只保存在仓库外并限制文件权限，随机口令保存在系统钥匙串；仓库只提交可公开的公钥。`TAURI_SIGNING_PRIVATE_KEY` 与 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 已直接写入仓库的 GitHub Actions Secrets，未经过工作区文件。客户端更新端点已经指向 GitHub Releases 的 `latest.json`，Windows 使用 passive 安装模式。普通本地构建不强制生成 updater 包，发布工作流通过 `tauri.release.conf.json` 单独开启 `createUpdaterArtifacts`。
 
-本机发布模式已实际生成并签名 `Off Work Countdown.app.tar.gz` 与 `.sig`，macOS App 同时使用 ad-hoc identity `-` 签名；嵌入公钥与生成公钥已校验一致。新增 `scripts/check-version.mjs`，CI 和 Release 在构建前强制检查 npm、lockfile、Cargo、Tauri 与 `desktop-v*` tag 版本完全一致。新增 `release-desktop.yml`，并行覆盖 macOS Apple Silicon、macOS Intel、Windows x64，使用 `tauri-action@v1` 生成安装包、更新签名、`latest.json` 与 Draft Release；Windows updater JSON 优先选择 NSIS。Draft 同时调用 GitHub Release Notes API，按 `.github/release.yml` 中的 PR 标签自动生成新功能、修复、文档、其他改动、贡献者与完整 Changelog。
+本机发布模式已实际生成并签名 `Off Work Countdown.app.tar.gz` 与 `.sig`，macOS App 同时使用 ad-hoc identity `-` 签名；嵌入公钥与生成公钥已校验一致。新增 `scripts/check-version.mjs`，CI 和 Release 在构建前强制检查 npm、lockfile、Cargo、Tauri 与 `desktop-v*` tag 版本完全一致。新增 `release-desktop.yml`，并行覆盖 macOS Apple Silicon、macOS Intel、Windows x64 与 Windows ARM64，使用 `tauri-action@v1` 生成安装包、更新签名、`latest.json` 与 Draft Release；Windows ARM64 使用 GitHub 原生 `windows-11-arm` runner，updater JSON 优先选择 NSIS。Draft 同时调用 GitHub Release Notes API，按 `.github/release.yml` 中的 PR 标签自动生成新功能、修复、文档、其他改动、贡献者与完整 Changelog。
 
 P4 剩余两个发布门禁：第一，把私钥和钥匙串口令另做一份离线备份，不能只留在这台 Mac 与不可导出的 GitHub Secret 中；第二，提交并推送工作流后，用 `3.0.0 → 3.0.1`（或专用预发布版本）跑一次真实 GitHub Draft Release 和客户端升级回环。未经这两项，不把 P4 标为全绿。
 
 **首次线上 Release 实测补充**：macOS arm64 / x64 job 均成功，Windows 首次失败在 `BUILD_TARGET=desktop next build`——npm scripts 在 Windows 使用 `cmd.exe`，不支持 POSIX 的行内环境变量语法。`build:desktop` 已改为跨平台 Node 启动器 `scripts/build-desktop.mjs`，由 `spawnSync` 给 Next 子进程注入 `BUILD_TARGET=desktop`，无需新增 `cross-env` 依赖。
 
-**拖动修复**：`data-tauri-drag-region` 本身不够，`core:window:default` 不包含 `start_dragging`。现已显式授予 `core:window:allow-start-dragging`，主窗顶部提供独立拖动带；迷你窗使用 Tauri 2.11 的 `data-tauri-drag-region="deep"`，图钉按钮用 `false` 排除。macOS 实机自动化已对两处拖动带发送拖动手势，窗口保持响应；Windows 仍待实机验证。
+**拖动修复**：`data-tauri-drag-region` 本身不够，`core:window:default` 不包含 `start_dragging`。现已显式授予 `core:window:allow-start-dragging`，主窗顶部提供独立拖动带；Windows 迷你窗使用 Tauri 2.11 的 `data-tauri-drag-region="deep"`，图钉按钮用 `false` 排除。macOS 原生 Mini Timer 是菜单栏弹出面板，按系统惯例不允许拖动。Windows 仍待实机验证。
 
 **P6 不阻塞发布**：winget 有外部审核的不确定性，Homebrew 自建 tap 虽然自控但也需要实测隔离属性的行为。这些都排在首个 Release 之后，v1 先靠 README 里的手动安装说明支撑。
 
@@ -258,7 +261,7 @@ P4 剩余两个发布门禁：第一，把私钥和钥匙串口令另做一份�
 |---|---|---|
 | canvas emoji 光栅化 | **已解决** | [lib/moods.ts](../lib/moods.ts) 已用 `public/emoji/*.png` 绕开——当初为 iOS Safari 做的修复，WKWebView 同属 Safari 引擎家族，直接受益 |
 | `ClipboardItem`（分享图复制） | 需处理 | 已有能力检测，WKWebView 下降级为「保存到文件」 |
-| `backdrop-filter`（玻璃拟态） | 需实机验证 | 两个 webview 均支持，但渲染效果有差异 |
+| `backdrop-filter`（玻璃拟态） | 部分规避 | macOS Mini Timer 已改用原生玻璃材质，不依赖 CSS；主窗口与 Windows WebView 仍需实机验证 |
 | framer-motion 掉帧 | 需实机验证 | 尊重 `prefers-reduced-motion`；托盘常驻态本就不该有动画 |
 | `window.location.search`（分享落地） | 需确认 | [off-work-countdown.tsx:161](../components/off-work-countdown.tsx#L161) 读取查询串。Tauri 用 asset 协议加载本地文件，查询串行为需实测；桌面端本身不处理分享落地，必要时按目标关闭该分支 |
 
@@ -349,7 +352,7 @@ Releases
 
 这一步**不编译 Rust**，只跑静态导出，几十秒即可完成，且只需 ubuntu runner。它的价值在于：桌面端最常见的破坏方式是有人加了一个 `force-dynamic` 路由或改了 middleware——这类问题会在每个 PR 上几秒内暴露，而不是等到某天打 tag 时才在二十分钟的 Rust 构建里发现。
 
-**② 新增 `release-desktop.yml`**：`on: push: tags: ['desktop-v*']`，用 `tauri-apps/tauri-action`，矩阵覆盖 macOS arm64 / macOS x64 / Windows x64。
+**② 新增 `release-desktop.yml`**：`on: push: tags: ['desktop-v*']`，用 `tauri-apps/tauri-action`，矩阵覆盖 macOS arm64 / macOS x64 / Windows x64 / Windows ARM64。ARM64 在 GitHub 的原生 `windows-11-arm` runner 上构建，避免跨架构 MSVC 打包差异。
 
 必须**只在 tag 上触发**：来自 fork 的 PR 拿不到仓库 secrets（更新签名密钥也在其中），若让它跑发布流程只会得到一堆失败任务。
 

@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Off Work Countdown",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "identifier": "com.rainif.offworkcountdown",
   "build": {
     "frontendDist": "../out",
@@ -27,26 +27,6 @@
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
         "acceptFirstMouse": true
-      },
-      {
-        "label": "mini",
-        "title": "Off Work Countdown",
-        "url": "en/mini.html",
-        "width": 252,
-        "height": 104,
-        "minWidth": 252,
-        "minHeight": 104,
-        "maxWidth": 252,
-        "maxHeight": 104,
-        "resizable": false,
-        "maximizable": false,
-        "fullscreen": false,
-        "decorations": false,
-        "backgroundColor": "#F4F4F5",
-        "acceptFirstMouse": true,
-        "alwaysOnTop": true,
-        "skipTaskbar": true,
-        "visible": false
       }
     ],
     "security": {
