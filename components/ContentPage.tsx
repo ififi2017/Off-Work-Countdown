@@ -18,6 +18,7 @@ interface ContentPageProps {
   backLabel: string;
   heading: string;
   intro: string;
+  wide?: boolean;
   children: ReactNode;
 }
 
@@ -27,11 +28,16 @@ export function ContentPage({
   backLabel,
   heading,
   intro,
+  wide = false,
   children,
 }: ContentPageProps) {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <div className="mx-auto max-w-2xl px-5 py-12 sm:py-16">
+      <div
+        className={`mx-auto px-5 py-12 sm:py-16 ${
+          wide ? "max-w-5xl" : "max-w-2xl"
+        }`}
+      >
         <div className="flex items-center justify-between gap-4">
           {/* 回到应用走根路径：middleware 会依据 i18nextLng cookie 把用户送回
               他自己的界面语言，而不是内容页所用的中文或英文。 */}

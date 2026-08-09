@@ -65,6 +65,12 @@ struct MiniWindowSettings {
     always_on_top: bool,
 }
 
+struct TrayMenuItems {
+    show: MenuItem<tauri::Wry>,
+    mini: MenuItem<tauri::Wry>,
+    quit: MenuItem<tauri::Wry>,
+}
+
 fn platform_name() -> &'static str {
     #[cfg(target_os = "macos")]
     return "macos";
@@ -251,13 +257,11 @@ fn start_tray_timer(app: AppHandle) {
             }
 
             #[cfg(target_os = "windows")]
-            if active != was_running {
+            // Windows 在倒计时开始时自动露出迷你窗；结束后不再强制隐藏，
+            // 已经打开的窗口会切换为“计时未开始”，由用户决定是否收起。
+            if active && !was_running {
                 if let Some(window) = app.get_webview_window("mini") {
-                    if active {
-                        let _ = window.show();
-                    } else {
-                        let _ = window.hide();
-                    }
+                    let _ = window.show();
                 }
             }
 
@@ -283,6 +287,12 @@ fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let mini = MenuItem::with_id(app, "mini", "Mini Timer", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&show, &mini, &quit])?;
+
+    app.manage(TrayMenuItems {
+        show: show.clone(),
+        mini: mini.clone(),
+        quit: quit.clone(),
+    });
 
     let icon = app
         .default_window_icon()
@@ -407,16 +417,34 @@ fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), Str
 }
 
 #[tauri::command]
+fn update_tray_menu(
+    app: AppHandle,
+    show_label: String,
+    mini_label: String,
+    quit_label: String,
+) -> Result<(), String> {
+    let items = app.state::<TrayMenuItems>();
+    items
+        .show
+        .set_text(show_label)
+        .map_err(|error| error.to_string())?;
+    items
+        .mini
+        .set_text(mini_label)
+        .map_err(|error| error.to_string())?;
+    items
+        .quit
+        .set_text(quit_label)
+        .map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
 fn clear_desktop_countdown_display(app: AppHandle) {
     if let Some(tray) = app.tray_by_id("main") {
         #[cfg(target_os = "macos")]
         let _ = tray.set_title(Some(""));
         let _ = tray.set_tooltip(Some("Off Work Countdown"));
-    }
-
-    #[cfg(target_os = "windows")]
-    if let Some(window) = app.get_webview_window("mini") {
-        let _ = window.hide();
     }
 }
 
@@ -458,6 +486,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_mini_window_settings,
             set_mini_always_on_top,
+            update_tray_menu,
             clear_desktop_countdown_display
         ])
         .setup(|app| {

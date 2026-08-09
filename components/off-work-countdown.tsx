@@ -76,6 +76,7 @@ import {
   readDesktopCountdownState,
   setDesktopAutostartEnabled,
   stopDesktopCountdown,
+  updateDesktopTrayMenu,
   writeDesktopCountdownState,
 } from "@/lib/desktop-state";
 
@@ -348,6 +349,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       }
     }
   }, [i18n, lang]);
+
+  // 托盘菜单由 Rust 创建，但文案跟随前端当前语言。切换语言后直接更新
+  // 已存在的原生菜单项，不需要重启客户端。
+  useEffect(() => {
+    if (!IS_DESKTOP_BUILD) return;
+    void updateDesktopTrayMenu({
+      show: t("trayShowApp"),
+      mini: t("trayMiniTimer"),
+      quit: t("trayQuit"),
+    }).catch(() => {
+      // 托盘文案更新失败不影响主窗口功能。
+    });
+  }, [lang, t]);
 
   // 加载本地存储的设置
   useEffect(() => {
@@ -1153,7 +1167,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     type="button"
                     onClick={() =>
                       void openDesktopUrl(
-                        `${siteConfig.baseUrl}/${contentLang}/faq`
+                        `${siteConfig.baseUrl}/${contentLang}/about`
                       )
                     }
                     className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
@@ -1182,7 +1196,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                       desktopUpdateStatus === "checking" ||
                       desktopUpdateStatus === "installing"
                     }
-                    className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                    className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       <RefreshCw
@@ -1200,6 +1214,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                             ? t("installingUpdate")
                             : t("checkForUpdates")}
                       </span>
+                    </span>
+                    <span
+                      role="status"
+                      aria-live="polite"
+                      className="truncate text-xs font-medium text-emerald-600 dark:text-emerald-400"
+                    >
+                      {desktopUpdateStatus === "latest" ? t("upToDate") : ""}
                     </span>
                     {desktopCurrentVersion && (
                       <span
@@ -1221,20 +1242,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   </button>
                   {desktopUpdateStatus !== "idle" &&
                     desktopUpdateStatus !== "checking" &&
-                    desktopUpdateStatus !== "installing" && (
+                    desktopUpdateStatus !== "installing" &&
+                    desktopUpdateStatus !== "latest" && (
                       <p
                         role="status"
-                        className={`border-t border-gray-200/70 px-3 py-2 text-xs dark:border-gray-700/70 ${
-                          desktopUpdateStatus === "latest"
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-amber-600 dark:text-amber-400"
-                        }`}
+                        className="border-t border-gray-200/70 px-3 py-2 text-xs text-amber-600 dark:border-gray-700/70 dark:text-amber-400"
                       >
-                        {desktopUpdateStatus === "latest"
-                          ? t("upToDate")
-                          : desktopUpdateStatus === "unconfigured"
-                            ? t("updateNotConfigured")
-                            : t("updateFailed")}
+                        {desktopUpdateStatus === "unconfigured"
+                          ? t("updateNotConfigured")
+                          : t("updateFailed")}
                       </p>
                     )}
                 </section>
@@ -1427,13 +1443,20 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         </section>
       )}
 
-      {/* 内容页入口。渲染在设置态（也就是服务端首屏的状态），因此这两个链接
+      {/* 内容页入口。渲染在设置态（也就是服务端首屏的状态），因此这些链接
           必然出现在初始 HTML 里 —— 否则内容页会成为无内链的孤儿页，抓取权重
           会明显打折。内容页只有中英两版，按界面语言直接指向正确的一版，
           避免先跳转再重定向。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
           故不渲染。 */}
       {!showCountdown && !isAppShell && (
-        <footer className="mt-8 flex items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+        <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs font-semibold text-gray-600 dark:text-gray-300">
+          <Link
+            href={`/${contentLang}/download`}
+            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+          >
+            {t("desktopInviteButton")}
+          </Link>
+          <span aria-hidden="true">·</span>
           <Link
             href={`/${contentLang}/faq`}
             className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"

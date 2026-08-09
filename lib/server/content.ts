@@ -6,7 +6,7 @@ import {
   type ContentLocale,
 } from "@/lib/content-locales";
 
-// 内容页（FAQ / how-it-works / about）的文案。与 translation.json / seo.json 同目录，
+// 内容页（FAQ / how-it-works / about / download）的文案。与 translation.json / seo.json 同目录，
 // 但只在服务端读取——内容页是纯服务端组件，不需要客户端 i18n。
 
 export interface FaqItem {
@@ -17,6 +17,12 @@ export interface FaqItem {
 export interface ContentSection {
   heading: string;
   body: string[];
+}
+
+export interface DownloadComparisonRow {
+  feature: string;
+  web: string;
+  desktop: string;
 }
 
 export interface ContentBundle {
@@ -41,6 +47,38 @@ export interface ContentBundle {
     heading: string;
     intro: string;
     sections: ContentSection[];
+  };
+  download: {
+    metaTitle: string;
+    metaDescription: string;
+    heading: string;
+    intro: string;
+    benefits: ContentSection[];
+    comparisonHeading: string;
+    comparisonIntro: string;
+    webLabel: string;
+    desktopLabel: string;
+    comparison: DownloadComparisonRow[];
+    downloadsHeading: string;
+    downloadsIntro: string;
+    latestVersionLabel: string;
+    loadingLabel: string;
+    unavailableLabel: string;
+    downloadLabel: string;
+    windowsTitle: string;
+    windowsDescription: string;
+    windowsX64Label: string;
+    windowsArmLabel: string;
+    macosTitle: string;
+    macosDescription: string;
+    appleSiliconLabel: string;
+    intelLabel: string;
+    linuxTitle: string;
+    linuxDescription: string;
+    linuxX64Label: string;
+    comingSoonLabel: string;
+    githubLabel: string;
+    githubDescription: string;
   };
 }
 

@@ -1,0 +1,176 @@
+import type { Metadata } from "next";
+import { Bell, Keyboard, PanelTop } from "lucide-react";
+import { siteConfig } from "@/config/site";
+import { ContentPage } from "@/components/ContentPage";
+import { DesktopDownloads } from "@/components/DesktopDownloads";
+import { getContent } from "@/lib/server/content";
+import {
+  contentLocales,
+  defaultContentLocale,
+  type ContentLocale,
+} from "@/lib/content-locales";
+
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return contentLocales.map((lang) => ({ lang }));
+}
+
+const alternateLanguages = {
+  ...Object.fromEntries(
+    contentLocales.map((lang) => [lang, `${siteConfig.baseUrl}/${lang}/download`])
+  ),
+  "x-default": `${siteConfig.baseUrl}/${defaultContentLocale}/download`,
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  const content = await getContent(lang);
+
+  return {
+    metadataBase: new URL(siteConfig.baseUrl),
+    title: content.download.metaTitle,
+    description: content.download.metaDescription,
+    alternates: {
+      canonical: `${siteConfig.baseUrl}/${lang}/download`,
+      languages: alternateLanguages,
+    },
+    openGraph: {
+      title: content.download.metaTitle,
+      description: content.download.metaDescription,
+      type: "website",
+      locale: lang,
+      url: `${siteConfig.baseUrl}/${lang}/download`,
+      siteName: siteConfig.name,
+    },
+  };
+}
+
+const benefitIcons = [PanelTop, Bell, Keyboard];
+
+export default async function DownloadPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  const content = await getContent(lang);
+  const copy = content.download;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: siteConfig.name,
+    applicationCategory: "UtilitiesApplication",
+    operatingSystem: "macOS, Windows",
+    isAccessibleForFree: true,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    downloadUrl: `${siteConfig.baseUrl}/${lang}/download`,
+    codeRepository: siteConfig.github,
+  };
+
+  return (
+    <ContentPage
+      lang={lang as ContentLocale}
+      slug="download"
+      backLabel={content.backToApp}
+      heading={copy.heading}
+      intro={copy.intro}
+      wide
+    >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {copy.benefits.map((benefit, index) => {
+          const Icon = benefitIcons[index] ?? PanelTop;
+          return (
+            <section
+              key={benefit.heading}
+              className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            >
+              <span className="mb-4 grid h-10 w-10 place-items-center rounded-xl bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                <Icon className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h2 className="font-semibold text-gray-950 dark:text-white">
+                {benefit.heading}
+              </h2>
+              {benefit.body.map((paragraph) => (
+                <p
+                  key={paragraph}
+                  className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300"
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </section>
+          );
+        })}
+      </div>
+
+      <section className="mt-16">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+          {copy.comparisonHeading}
+        </h2>
+        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
+          {copy.comparisonIntro}
+        </p>
+
+        <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead className="bg-gray-50 text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
+                <tr>
+                  <th className="px-5 py-3 font-medium" scope="col" />
+                  <th className="px-5 py-3 font-medium" scope="col">
+                    {copy.webLabel}
+                  </th>
+                  <th className="px-5 py-3 font-medium" scope="col">
+                    {copy.desktopLabel}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {copy.comparison.map((row) => (
+                  <tr key={row.feature}>
+                    <th
+                      scope="row"
+                      className="px-5 py-4 font-medium text-gray-950 dark:text-white"
+                    >
+                      {row.feature}
+                    </th>
+                    <td className="px-5 py-4 text-gray-600 dark:text-gray-300">
+                      {row.web}
+                    </td>
+                    <td className="px-5 py-4 text-gray-600 dark:text-gray-300">
+                      {row.desktop}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-16" id="downloads">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+          {copy.downloadsHeading}
+        </h2>
+        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
+          {copy.downloadsIntro}
+        </p>
+        <div className="mt-6">
+          <DesktopDownloads copy={copy} releasesUrl={siteConfig.releases} />
+        </div>
+      </section>
+    </ContentPage>
+  );
+}

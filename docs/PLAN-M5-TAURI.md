@@ -204,14 +204,14 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 3. 新增仅桌面构建可见的 `app/[lang]/mini/page.desktop.tsx`。托盘左键切换迷你窗；macOS 按托盘位置弹出且失焦隐藏，Windows 在倒计时启动时显示、可拖动、可切换置顶且持久化位置与置顶状态。
 4. 主窗口沿用 app-shell 无边距布局，并给 macOS 透明标题栏补足顶部空间。桌面构建同时移除了无效的 manifest 链接与 PWA 安装提示，避免 WKWebView 被误判成 Safari 后弹出「添加到 Dock」。
 5. 验证结果：前端 62 项测试、lint、TypeScript、Web 构建、19 语言桌面静态导出、Rust `check/test` 均通过；macOS arm64 `.app` 成功打包并用桌面自动化完成实际 UI 验收——设置页与倒计时页无裁切或标题栏重叠，迷你窗秒级走字且切回主窗口后自动隐藏，Store 文件也由实际 WebView/IPC 初始化。Windows 目标当前未安装交叉编译工具链，拖动手感、默认尺寸和置顶观感仍必须在 Windows 实机验收，因此 P2 暂不标全绿。
-6. 纸面方案的 220×72 在同时容纳拖动区、时间、进度条、可选薪资与 Windows 图钉后过紧；首版 240×112 又暴露出外层 Web 背景形成白边的问题。复审后定为固定 252×104，内容改成满铺深色单层面板，不再用 `p-2 + 白色圆角卡片` 模拟原生弹窗。Windows 上仍需结合缩放比例定稿。
+6. 纸面方案的 220×72 在同时容纳拖动区、时间、进度条、可选薪资与 Windows 图钉后过紧；首版 240×112 又暴露出外层 Web 背景形成白边的问题。复审后定为固定 252×104，内容改成满铺单层面板，不再用 `p-2 + 白色圆角卡片` 模拟原生弹窗。面板现在跟随系统或应用主题切换浅色／深色，未开始时显示明确状态而不是占位数字。Windows 上仍需结合缩放比例定稿。
 
 **P2 已解决的观感问题**：透明标题栏下内容原本从 y=0 开始，红绿灯按钮紧贴卡片标题；桌面主窗口现有独立顶部内边距。
 
 **P3 实现记录（2026-08-09）**：
 
 1. 接入官方 notification、autostart 与 global-shortcut 插件。桌面端的通知权限与发送由 [lib/notify.ts](../lib/notify.ts) 切到 Tauri 插件，Web 端仍保留 Service Worker / Notification API 路径；桌面倒计时不再从 JS 重复发送提醒。
-2. Rust 后台线程在提前 15 分钟与下班时刻推进两个独立提醒节点，并把节点状态持久化到 Store。短于 15 分钟才启动的倒计时不补发提前提醒；应用重启遇到已结束的旧快照也不补发；同一个结束时间的每个节点最多处理一次。下班后托盘文字归零、Windows 迷你窗自动隐藏。
+2. Rust 后台线程在提前 15 分钟与下班时刻推进两个独立提醒节点，并把节点状态持久化到 Store。短于 15 分钟才启动的倒计时不补发提前提醒；应用重启遇到已结束的旧快照也不补发；同一个结束时间的每个节点最多处理一次。下班后托盘文字归零；已经打开的 Windows 迷你窗不再被强制隐藏，而是回到“计时未开始”，由用户决定是否收起。
 3. 主设置页新增「登录时启动」开关和固定快捷键提示（`CommandOrControl+Shift+O`），文案覆盖 19 种语言。快捷键在主窗口聚焦时隐藏，否则从托盘/最小化状态恢复并聚焦；若组合键已被其他应用占用，只记录警告，不阻止客户端启动。
 4. macOS 实机自动化完成自启开关的开→关往返并恢复原状态；一分钟倒计时在主窗口关闭到托盘后仍由 Rust 线程把完成节点写为 `completionSent: true`，证明提醒链路不依赖 WebView 可见。桌面控制工具不能发送系统级全局快捷键，因此实际按键唤起/隐藏仍列人工验收；Windows 的通知、自启与快捷键也待实机验收。
 5. 验证结果：lint、TypeScript、62 项前端测试、3 项 Rust 测试、Web 构建、19 语言桌面静态导出、Rust `check/test` 与 macOS arm64 `.app` 打包均通过。全量 `tauri build` 的 `.app` 成功，DMG 仍因受限环境中的 Finder/AppleScript 外观脚本失败，与 P1 记录一致；改用 `--bundles app` 可稳定产出最终客户端。
@@ -220,11 +220,13 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 
 **第三轮 UI 实测（2026-08-09）**：主流程改为在标题与底栏之间真正垂直居中；时间下拉菜单不再受内容区滚动裁切，桌面端最多显示 160px 并在内部滚动，因此不会伸到底栏下面。今日已赚从独立大卡片合并进“按当前设置推算”汇总卡，开启薪资后窗口高度与信息节奏不变。设置按钮与语言选择器统一为同一圆角、边框、背景和阴影规格；设置页底部新增 Web 关于页、GitHub 仓库与检查更新入口。
 
+**第四轮 UI 收尾（2026-08-09）**：分享页进一步压缩桌面端间距、预览与按钮高度，在固定主窗口内完整显示并禁用多余的纵向滚动；“已是最新版本”合并到检查更新同一行，不再撑高设置页。迷你窗增加系统明暗主题与未开始状态；托盘的显示应用、迷你计时器和退出三项由前端按当前界面语言实时更新，覆盖全部 19 种语言。
+
 **第四轮 UI / 桌面行为实测（2026-08-09）**：线上尚未部署 `/about`，设置页的“关于此项目”暂时改为打开现有 FAQ，避免客户端发布后跳到 404；本地 About 页面保留，待 Web 下次部署后再决定是否切回。分享界面在桌面端改为完整覆盖主 WebView，不再套网页弹窗的灰色遮罩和外边框；X、Facebook、WhatsApp、Telegram、LINE、Reddit、微博均改用 `tauri-plugin-opener` 交给系统浏览器，并配置最小域名白名单。全局快捷键提示由运行平台决定：macOS 显示 `⌘ + Shift + O`，Windows / Linux 显示 `Ctrl + Shift + O`。停止倒计时会立即写入 `running: false` 快照并显式清空 macOS 菜单栏标题，后台节拍器也会持续用空字符串覆盖非运行状态，避免最后一秒定格。桌面首次启动通过官方 OS 插件读取系统 locale（macOS 中文已实测自动进入简体中文），此后把用户手动选择作为优先语言持久化。前端 lint、62 项测试、19 语言桌面导出、3 项 Rust 测试与 macOS `.app` 构建全部通过；自动化实测分享界面满铺、设置页快捷键和停止后的 Store 状态，社交按钮的外部站点点击因桌面控制权限未自动批准，仍需发布前做一次人工点击冒烟。
 
-**P4 客户端接入记录（2026-08-09）**：已接入官方 updater、process 与 opener 插件，权限只开放给主窗口。检查更新为一次点击完成 `check → downloadAndInstall → relaunch`，并覆盖检查中、安装中、已是最新与失败状态。设置页会常驻显示客户端当前版本；发现更新后以 `当前版本 → 最新版本` 明示升级目标。
+**P4 客户端接入记录（2026-08-09）**：已接入官方 updater、process 与 opener 插件，权限只开放给主窗口。检查更新为一次点击完成 `check → downloadAndInstall → relaunch`，并覆盖检查中、安装中、已是最新与失败状态。“已是最新版本”在检查更新行内显示，不额外增加页面高度。设置页会常驻显示客户端当前版本；发现更新后以 `当前版本 → 最新版本` 明示升级目标。
 
-**P4 签名与发布配置（2026-08-09）**：长期 updater 私钥生成在仓库外的 `~/.tauri/off-work-countdown-updater.key`（权限 600），随机口令保存在 macOS 钥匙串服务 `com.rainif.offworkcountdown.updater-signing`；仓库只提交可公开的公钥。`TAURI_SIGNING_PRIVATE_KEY` 与 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 已直接写入 `ififi2017/Off-Work-Countdown` 的 GitHub Actions Secrets，未经过工作区文件。客户端更新端点已经指向 GitHub Releases 的 `latest.json`，Windows 使用 passive 安装模式。普通本地构建不强制生成 updater 包，发布工作流通过 `tauri.release.conf.json` 单独开启 `createUpdaterArtifacts`。
+**P4 签名与发布配置（2026-08-09）**：长期 updater 私钥只保存在仓库外并限制文件权限，随机口令保存在系统钥匙串；仓库只提交可公开的公钥。`TAURI_SIGNING_PRIVATE_KEY` 与 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 已直接写入仓库的 GitHub Actions Secrets，未经过工作区文件。客户端更新端点已经指向 GitHub Releases 的 `latest.json`，Windows 使用 passive 安装模式。普通本地构建不强制生成 updater 包，发布工作流通过 `tauri.release.conf.json` 单独开启 `createUpdaterArtifacts`。
 
 本机发布模式已实际生成并签名 `Off Work Countdown.app.tar.gz` 与 `.sig`，macOS App 同时使用 ad-hoc identity `-` 签名；嵌入公钥与生成公钥已校验一致。新增 `scripts/check-version.mjs`，CI 和 Release 在构建前强制检查 npm、lockfile、Cargo、Tauri 与 `desktop-v*` tag 版本完全一致。新增 `release-desktop.yml`，并行覆盖 macOS Apple Silicon、macOS Intel、Windows x64，使用 `tauri-action@v1` 生成安装包、更新签名、`latest.json` 与 Draft Release；Windows updater JSON 优先选择 NSIS。Draft 同时调用 GitHub Release Notes API，按 `.github/release.yml` 中的 PR 标签自动生成新功能、修复、文档、其他改动、贡献者与完整 Changelog。
 
@@ -425,7 +427,7 @@ cask 定义里的版本号与 sha256 需随每次 Release 更新。
 ### 待决
 
 - Windows 迷你窗在真实桌面上的观感——「不易察觉但需要时一眼能找到」是纸面上定不了的平衡，透明度、默认位置、尺寸都要实机调（P2 结束时判断）
-- 托盘菜单文案的本地化。P2 快照已把界面语言同步给 Rust，但菜单项目前仍是英文；需要在发布前决定是补齐 19 语言，还是明确采用统一英文菜单
+- ~~托盘菜单文案的本地化~~ → **已完成**。前端按当前界面语言把“显示应用／迷你计时器／退出”实时写入原生菜单，19 种语言均有对应文案，切换语言不需要重启
 - 桌面端是否需要「多班次」（不同日期不同时间）。Web 端此项未做，桌面端若要做，两端的数据模型应当一致，不应分叉
 - 是否发布 Linux 版本——建议等 macOS/Windows 有真实用户量后再定
 - winget 是否接受未签名安装包——决定 Windows 侧走 winget 还是退到 Scoop（P6 第一件事）

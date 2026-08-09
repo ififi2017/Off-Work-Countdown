@@ -24,7 +24,7 @@
       },
       {
         "q": "Will it still remind me if I close the tab?",
-        "a": "Not at the moment. The optional reminder fires 15 minutes before you finish, but only while the page is still open. The tab can sit in the background — it does not have to be the one you are looking at — but if you close it, no notification is sent. Pinning the tab, or installing the app to your home screen and leaving it running, are both tidy ways to keep it alive."
+        "a": "The web version can remind you only while its page remains open. The desktop client is built for this job: it keeps the countdown in the system tray when its window is hidden and can send the native reminder from the background."
       },
       {
         "q": "Does it work offline?",
@@ -35,8 +35,8 @@
         "a": "Your working hours and salary stay in your browser's local storage and are never sent to a server. Nobody else can see them, and clearing your browser data removes them. There is an eye button next to the earnings figure that masks the amount when someone is looking over your shoulder. The site does collect anonymous page-view and performance statistics, which contain no personal or salary data."
       },
       {
-        "q": "Can I install it like a real app?",
-        "a": "Yes. On Android and desktop Chrome or Edge an install prompt appears, and the app then opens in its own window with no browser chrome. On iPhone and iPad, use the Share button in Safari and choose Add to Home Screen. On macOS Safari, choose Add to Dock."
+        "q": "Is there a desktop app?",
+        "a": "Yes. Native clients are available for macOS on Apple Silicon and Intel, and for Windows x64. They add a tray countdown, native reminders, launch at login, a global shortcut and one-click updates. The Download page always points to the latest published installers; Windows ARM64 is planned."
       },
       {
         "q": "Is it free, and is the code open?",
@@ -108,7 +108,22 @@
       {
         "heading": "Local-first and private",
         "body": [
-          "Your working hours, workdays, salary and preferences stay on your device. The countdown and earnings estimate are computed locally; the desktop client does not send analytics or personal settings anywhere."
+          "Your working hours, workdays, salary and preferences stay on your device. The countdown and earnings estimate are computed locally. The desktop client contains no analytics and does not send these settings or a user identifier to our servers.",
+          "The web version uses privacy-conscious page-view and performance measurement plus a small set of aggregate product events. Those product events contain only an event name — never your schedule, salary, account or advertising identifier. As with any website, hosting and analytics providers may receive ordinary connection metadata such as an IP address and user agent under their own terms."
+        ]
+      },
+      {
+        "heading": "What the desktop client connects to",
+        "body": [
+          "The desktop client works locally and does not require an account. It accesses the network when you ask it to check or download an update from GitHub, or when you choose an external link or social sharing service. Those third-party destinations apply their own terms and privacy policies.",
+          "Native reminders are scheduled and displayed by your operating system. Countdown settings are kept in the application's local data store and can be removed by uninstalling the app and deleting its application data."
+        ]
+      },
+      {
+        "heading": "Important limits",
+        "body": [
+          "Salary and time totals are estimates for personal reference. They are not payroll records and are not legal, tax, employment or financial advice. Reminders and update checks are convenience features and should not be relied on for safety-critical or legally required timing.",
+          "The software is provided under the MIT licence, as is and without warranty, to the extent permitted by law. The licence text in the repository is the controlling legal notice."
         ]
       },
       {
@@ -118,5 +133,71 @@
         ]
       }
     ]
+  },
+  "download": {
+    "metaTitle": "Download for macOS and Windows - Off Work Countdown",
+    "metaDescription": "Download the latest Off Work Countdown desktop client for Apple Silicon or Intel Macs and Windows x64, resolved automatically from GitHub Releases.",
+    "heading": "Your countdown, without keeping a browser tab open",
+    "intro": "The web app is the quickest way to start. The desktop client is the better fit when the countdown stays with you through every workday: it lives in the tray, can remind you in the background, and is always one shortcut away.",
+    "benefits": [
+      {
+        "heading": "Always within reach",
+        "body": ["See the remaining time in the menu bar or system tray, then show or hide the compact window with a global shortcut. No hunting through browser tabs."]
+      },
+      {
+        "heading": "Made for the background",
+        "body": ["Hide the main window and the countdown keeps running. Native reminders, launch at login and a focused desktop layout make it comfortable to leave on all day."]
+      },
+      {
+        "heading": "Still local-first",
+        "body": ["Your hours, salary and preferences stay on your device. There is no account, and the desktop client does not send analytics or personal settings to a server."]
+      }
+    ],
+    "comparisonHeading": "Web or desktop?",
+    "comparisonIntro": "Both versions share the same countdown and salary estimate. Choose based on how you want it to fit into your day.",
+    "webLabel": "Web app",
+    "desktopLabel": "Desktop client",
+    "comparison": [
+      {
+        "feature": "Start using it",
+        "web": "Open the website — no download",
+        "desktop": "Launch at login or with a shortcut"
+      },
+      {
+        "feature": "Background access",
+        "web": "Keep a browser tab or PWA open",
+        "desktop": "Tray countdown with the window hidden"
+      },
+      {
+        "feature": "Reminders",
+        "web": "Available while the page is open",
+        "desktop": "Native reminder from the background"
+      },
+      {
+        "feature": "Updates",
+        "web": "The website is always current",
+        "desktop": "Signed, one-click app updates"
+      }
+    ],
+    "downloadsHeading": "Choose your version",
+    "downloadsIntro": "These buttons resolve the assets from the latest published GitHub Release, so they always follow the newest stable version.",
+    "latestVersionLabel": "Latest version",
+    "loadingLabel": "Checking the latest release…",
+    "unavailableLabel": "The latest download could not be loaded. You can still open GitHub Releases below.",
+    "downloadLabel": "Download",
+    "windowsTitle": "Windows",
+    "windowsDescription": "Windows 10 or later",
+    "windowsX64Label": "Windows x64",
+    "windowsArmLabel": "Windows ARM64",
+    "macosTitle": "macOS",
+    "macosDescription": "macOS 10.15 or later",
+    "appleSiliconLabel": "Apple Silicon",
+    "intelLabel": "Intel Mac",
+    "linuxTitle": "Linux",
+    "linuxDescription": "Desktop Linux",
+    "linuxX64Label": "Linux x64",
+    "comingSoonLabel": "Coming soon",
+    "githubLabel": "View all releases on GitHub",
+    "githubDescription": "Release notes, signatures and every published installer are available in the public repository."
   }
 }

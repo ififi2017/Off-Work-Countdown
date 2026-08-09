@@ -42,7 +42,7 @@
         "maximizable": false,
         "fullscreen": false,
         "decorations": false,
-        "backgroundColor": "#18181B",
+        "backgroundColor": "#F4F4F5",
         "acceptFirstMouse": true,
         "alwaysOnTop": true,
         "skipTaskbar": true,

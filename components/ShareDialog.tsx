@@ -257,14 +257,17 @@ export function ShareDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={`overflow-y-auto ${
+        data-tauri-drag-region={desktop ? "false" : undefined}
+        className={`${
           desktop
-            ? "inset-0 left-0 top-0 h-screen max-h-none w-screen max-w-none translate-x-0 translate-y-0 gap-2 rounded-none border-0 p-4 pt-10 shadow-none sm:max-w-none sm:rounded-none"
-            : "gap-3 p-4 sm:gap-4 sm:max-w-md sm:p-6"
+            ? "inset-0 left-0 top-0 h-screen max-h-none w-screen max-w-none translate-x-0 translate-y-0 gap-1.5 overflow-hidden rounded-none border-0 px-4 pb-3 pt-9 shadow-none sm:max-w-none sm:rounded-none [&>button]:right-3 [&>button]:top-3"
+            : "gap-3 overflow-y-auto p-4 sm:max-w-md sm:gap-4 sm:p-6"
         }`}
       >
-        <DialogHeader>
-          <DialogTitle>{t("shareTitle")}</DialogTitle>
+        <DialogHeader className={desktop ? "space-y-0" : undefined}>
+          <DialogTitle className={desktop ? "text-base" : undefined}>
+            {t("shareTitle")}
+          </DialogTitle>
           <DialogDescription className="sr-only">
             {t("shareTitle")}
           </DialogDescription>
@@ -275,7 +278,9 @@ export function ShareDialog({
           <button
             type="button"
             onClick={() => setTab("image")}
-            className={`flex items-center justify-center gap-2 rounded-md py-1.5 text-sm font-medium transition-colors ${
+            className={`flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors ${
+              desktop ? "py-1" : "py-1.5"
+            } ${
               tab === "image"
                 ? "bg-background shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -286,7 +291,9 @@ export function ShareDialog({
           <button
             type="button"
             onClick={() => setTab("text")}
-            className={`flex items-center justify-center gap-2 rounded-md py-1.5 text-sm font-medium transition-colors ${
+            className={`flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors ${
+              desktop ? "py-1" : "py-1.5"
+            } ${
               tab === "text"
                 ? "bg-background shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -329,7 +336,7 @@ export function ShareDialog({
         </div>
 
         {tab === "image" ? (
-          <div className="space-y-3">
+          <div className={desktop ? "space-y-2" : "space-y-3"}>
             {/* Format toggle */}
             <div className="flex gap-2">
               {(["square", "story"] as ShareFormat[]).map((f) => (
@@ -337,7 +344,9 @@ export function ShareDialog({
                   key={f}
                   type="button"
                   onClick={() => setFormat(f)}
-                  className={`flex-1 rounded-md border py-1.5 text-sm transition-colors ${
+                  className={`flex-1 rounded-md border text-sm transition-colors ${
+                    desktop ? "py-1" : "py-1.5"
+                  } ${
                     format === f
                       ? "border-primary bg-primary/10 text-foreground"
                       : "border-input text-muted-foreground hover:text-foreground"
@@ -351,7 +360,7 @@ export function ShareDialog({
             {/* Preview — fixed height (per breakpoint) so switching mood/format never shifts layout */}
             <div
               className={`relative flex items-center justify-center overflow-hidden rounded-lg bg-muted/40 p-2 ${
-                desktop ? "h-[108px]" : "h-[240px] sm:h-[300px]"
+                desktop ? "h-24" : "h-[240px] sm:h-[300px]"
               }`}
             >
               {img.url && (
@@ -374,15 +383,15 @@ export function ShareDialog({
 
             {/* Image actions */}
             <div className="flex flex-wrap gap-2">
-              <Button onClick={handleNativeShareImage} className="flex-1 gap-2" disabled={!img.blob}>
+              <Button onClick={handleNativeShareImage} className={`flex-1 gap-2 ${desktop ? "h-8" : ""}`} disabled={!img.blob}>
                 <Share2 className="h-4 w-4" />
                 {canNativeShare() ? t("shareNative") : t("shareDownload")}
               </Button>
-              <Button variant="outline" size="icon" onClick={handleDownload} disabled={!img.url} title={t("shareDownload")} aria-label={t("shareDownload")}>
+              <Button variant="outline" size="icon" className={desktop ? "h-8 w-8" : undefined} onClick={handleDownload} disabled={!img.url} title={t("shareDownload")} aria-label={t("shareDownload")}>
                 <Download className="h-4 w-4" />
               </Button>
               {canCopyImage && (
-                <Button variant="outline" size="icon" onClick={handleCopyImage} disabled={!img.blob} title={t("shareCopyImage")} aria-label={t("shareCopyImage")}>
+                <Button variant="outline" size="icon" className={desktop ? "h-8 w-8" : undefined} onClick={handleCopyImage} disabled={!img.blob} title={t("shareCopyImage")} aria-label={t("shareCopyImage")}>
                   {copied === "image" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
               )}
@@ -428,7 +437,7 @@ export function ShareDialog({
               title={label}
               aria-label={label}
               className={`flex items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-accent ${
-                desktop ? "h-9 w-9" : "h-11 w-11"
+                desktop ? "h-8 w-8" : "h-11 w-11"
               }`}
             >
               <Icon className="h-5 w-5" />
