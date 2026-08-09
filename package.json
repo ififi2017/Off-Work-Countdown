@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:desktop": "BUILD_TARGET=desktop next dev",
     "build": "next build",
-    "build:desktop": "BUILD_TARGET=desktop next build",
+    "build:desktop": "node scripts/build-desktop.mjs",
     "check:build:web": "node scripts/check-build-output.mjs web",
     "check:build:desktop": "node scripts/check-build-output.mjs desktop",
     "check:version": "node scripts/check-version.mjs",

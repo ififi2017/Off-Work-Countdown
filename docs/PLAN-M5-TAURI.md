@@ -230,6 +230,8 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 
 P4 剩余两个发布门禁：第一，把私钥和钥匙串口令另做一份离线备份，不能只留在这台 Mac 与不可导出的 GitHub Secret 中；第二，提交并推送工作流后，用 `3.0.0 → 3.0.1`（或专用预发布版本）跑一次真实 GitHub Draft Release 和客户端升级回环。未经这两项，不把 P4 标为全绿。
 
+**首次线上 Release 实测补充**：macOS arm64 / x64 job 均成功，Windows 首次失败在 `BUILD_TARGET=desktop next build`——npm scripts 在 Windows 使用 `cmd.exe`，不支持 POSIX 的行内环境变量语法。`build:desktop` 已改为跨平台 Node 启动器 `scripts/build-desktop.mjs`，由 `spawnSync` 给 Next 子进程注入 `BUILD_TARGET=desktop`，无需新增 `cross-env` 依赖。
+
 **拖动修复**：`data-tauri-drag-region` 本身不够，`core:window:default` 不包含 `start_dragging`。现已显式授予 `core:window:allow-start-dragging`，主窗顶部提供独立拖动带；迷你窗使用 Tauri 2.11 的 `data-tauri-drag-region="deep"`，图钉按钮用 `false` 排除。macOS 实机自动化已对两处拖动带发送拖动手势，窗口保持响应；Windows 仍待实机验证。
 
 **P6 不阻塞发布**：winget 有外部审核的不确定性，Homebrew 自建 tap 虽然自控但也需要实测隔离属性的行为。这些都排在首个 Release 之后，v1 先靠 README 里的手动安装说明支撑。
