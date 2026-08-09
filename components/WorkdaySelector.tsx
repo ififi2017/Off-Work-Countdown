@@ -15,6 +15,7 @@ interface WorkdaySelectorProps {
   label: string;
   value: number[];
   onChange: (days: number[]) => void;
+  compact?: boolean;
 }
 
 export function WorkdaySelector({
@@ -22,6 +23,7 @@ export function WorkdaySelector({
   label,
   value,
   onChange,
+  compact = false,
 }: WorkdaySelectorProps) {
   const names = useMemo(() => {
     let fmt: Intl.DateTimeFormat;
@@ -52,8 +54,12 @@ export function WorkdaySelector({
   };
 
   return (
-    <div className="space-y-2">
-      <Label className="dark:text-gray-200">{label}</Label>
+    <div className={compact ? "space-y-1.5" : "space-y-2"}>
+      <Label
+        className={compact ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}
+      >
+        {label}
+      </Label>
       <div className="flex gap-1.5">
         {DISPLAY_ORDER.map((day) => {
           const on = value.includes(day);
@@ -67,7 +73,9 @@ export function WorkdaySelector({
               // "الأربعاء" 八字符，泰语更长）。用 min-w-0 + truncate 兜底，
               // 任何语言都不会把这一行撑破；截断只是视觉行为，读屏仍读完整文本。
               title={names[day]}
-              className={`min-w-0 flex-1 truncate rounded-md border px-1 py-1.5 text-xs transition-colors ${
+              className={`min-w-0 flex-1 truncate rounded-md border px-1 text-xs transition-colors ${
+                compact ? "py-1" : "py-1.5"
+              } ${
                 on
                   ? "border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900"
                   : "border-input bg-background text-muted-foreground hover:text-foreground dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400"

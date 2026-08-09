@@ -18,6 +18,9 @@ const config = [
       '.claude/**',
       'public/sw.js',
       'public/swe-worker-*.js',
+      // Cargo 的构建产物。tauri-codegen 会把前端资源压缩后以 .js 落在这里，
+      // 内容是二进制，eslint 解析会直接报错。
+      'src-tauri/target/**',
     ],
   },
   ...compat.extends('next/core-web-vitals'),

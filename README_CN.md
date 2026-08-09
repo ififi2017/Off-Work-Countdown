@@ -59,9 +59,10 @@ npm run dev
 其他常用命令:
 
 ```bash
-npm run lint   # ESLint
-npm test       # Vitest 单元测试
-npm run build  # 生产构建
+npm run lint           # ESLint
+npm test               # Vitest 单元测试
+npm run build          # 生产构建（Web）
+npm run build:desktop  # 桌面端静态导出，产物在 out/
 ```
 
 注意：`next dev` 与 `next build` 共用 `.next` 目录。开发服务器还开着时执行构建，会让它继续引用已被覆盖的 chunk 而报错。请先停掉开发服务器，或事后删除 `.next`。

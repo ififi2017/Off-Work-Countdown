@@ -1,4 +1,4 @@
-// 内容页（FAQ / how-it-works）只做中英两种语言——这是刻意的取舍，不是尚未译完：
+// 内容页（FAQ / how-it-works / about）只做中英两种语言——这是刻意的取舍，不是尚未译完：
 // 长文案的翻译质量与维护成本远高于 UI 字符串，铺到 19 种语言反而会产出大量
 // 无人校对的稿子。应用界面本身仍是 19 种语言。
 //
@@ -18,6 +18,6 @@ export function resolveContentLocale(lang: string): ContentLocale {
   return lang.toLowerCase().startsWith("zh") ? "zh-CN" : defaultContentLocale;
 }
 
-export const contentSlugs = ["faq", "how-it-works"] as const;
+export const contentSlugs = ["faq", "how-it-works", "about"] as const;
 
 export type ContentSlug = (typeof contentSlugs)[number];

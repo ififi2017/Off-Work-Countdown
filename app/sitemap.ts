@@ -8,6 +8,10 @@ import {
 } from "@/lib/content-locales";
 import { presetSlugs } from "@/lib/presets";
 
+// Web 构建按 Next.js metadata 约定静态生成 sitemap。桌面构建不把普通
+// `.ts` 识别为路由，因此该文件不会进入 Tauri 静态导出。
+export const dynamic = "force-static";
+
 // 单次构建内共用一个时间戳。/sitemap.xml 是静态预渲染的，这个值在构建时即被
 // 固化，并非每次抓取都变新；但每次部署仍会刷新全部条目的 lastModified——内容
 // 未变时这是噪声。等内容页有独立更新节奏后，再改成按页维护。

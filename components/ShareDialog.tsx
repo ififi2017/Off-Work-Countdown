@@ -41,6 +41,7 @@ interface ShareDialogProps {
   progress: number;
   isOff: boolean;
   shift: Shift;
+  desktop?: boolean;
 }
 
 const MOOD_STORAGE_KEY = "shareMood";
@@ -70,6 +71,7 @@ export function ShareDialog({
   progress,
   isOff,
   shift,
+  desktop = false,
 }: ShareDialogProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<"image" | "text">("image");
@@ -237,18 +239,30 @@ export function ShareDialog({
     }
   };
 
-  const handlePlatform = (id: SharePlatform) => {
-    window.open(
-      platformShareUrl[id](textWithEmoji, shareUrl),
-      "_blank",
-      "noopener,noreferrer"
-    );
-    track("share", { platform: id, mood: moodId, type: tab });
+  const handlePlatform = async (id: SharePlatform) => {
+    const url = platformShareUrl[id](textWithEmoji, shareUrl);
+    try {
+      if (desktop) {
+        const { openUrl } = await import("@tauri-apps/plugin-opener");
+        await openUrl(url);
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+      track("share", { platform: id, mood: moodId, type: tab });
+    } catch {
+      // A blocked system browser should not close or break the share dialog.
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md gap-3 p-4 sm:gap-4 sm:p-6">
+      <DialogContent
+        className={`overflow-y-auto ${
+          desktop
+            ? "inset-0 left-0 top-0 h-screen max-h-none w-screen max-w-none translate-x-0 translate-y-0 gap-2 rounded-none border-0 p-4 pt-10 shadow-none sm:max-w-none sm:rounded-none"
+            : "gap-3 p-4 sm:gap-4 sm:max-w-md sm:p-6"
+        }`}
+      >
         <DialogHeader>
           <DialogTitle>{t("shareTitle")}</DialogTitle>
           <DialogDescription className="sr-only">
@@ -284,10 +298,14 @@ export function ShareDialog({
 
         {/* Mood picker */}
         <div>
-          <p className="mb-2 text-xs font-medium text-muted-foreground">
+          <p
+            className={`${desktop ? "mb-1" : "mb-2"} text-xs font-medium text-muted-foreground`}
+          >
             {t("shareMoodLabel")}
           </p>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div
+            className={`flex flex-wrap justify-center ${desktop ? "gap-1.5" : "gap-2"}`}
+          >
             {moods.map((m) => (
               <button
                 key={m.id}
@@ -296,7 +314,9 @@ export function ShareDialog({
                 title={t(m.labelKey)}
                 aria-label={t(m.labelKey)}
                 aria-pressed={m.id === moodId}
-                className={`flex h-10 w-10 items-center justify-center rounded-lg text-2xl transition-transform hover:scale-110 ${
+                className={`flex items-center justify-center rounded-lg transition-transform hover:scale-110 ${
+                  desktop ? "h-8 w-8 text-xl" : "h-10 w-10 text-2xl"
+                } ${
                   m.id === moodId
                     ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
                     : "bg-muted"
@@ -329,7 +349,11 @@ export function ShareDialog({
             </div>
 
             {/* Preview — fixed height (per breakpoint) so switching mood/format never shifts layout */}
-            <div className="relative flex h-[240px] items-center justify-center overflow-hidden rounded-lg bg-muted/40 p-2 sm:h-[300px]">
+            <div
+              className={`relative flex items-center justify-center overflow-hidden rounded-lg bg-muted/40 p-2 ${
+                desktop ? "h-[108px]" : "h-[240px] sm:h-[300px]"
+              }`}
+            >
               {img.url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -391,15 +415,21 @@ export function ShareDialog({
         )}
 
         {/* Platform buttons */}
-        <div className="flex flex-wrap justify-center gap-2 border-t pt-4">
+        <div
+          className={`flex flex-wrap justify-center gap-2 border-t ${
+            desktop ? "pt-2" : "pt-4"
+          }`}
+        >
           {PLATFORMS.map(({ id, Icon, label }) => (
             <button
               key={id}
               type="button"
-              onClick={() => handlePlatform(id)}
+              onClick={() => void handlePlatform(id)}
               title={label}
               aria-label={label}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-accent"
+              className={`flex items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-accent ${
+                desktop ? "h-9 w-9" : "h-11 w-11"
+              }`}
             >
               <Icon className="h-5 w-5" />
             </button>

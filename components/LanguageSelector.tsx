@@ -10,15 +10,18 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { desktopLanguageStorageKey } from "@/i18n-config";
 
 interface LanguageSelectorProps {
   currentLang: string;
   languageMap: Record<string, string>;
+  compact?: boolean;
 }
 
 export function LanguageSelector({
   currentLang,
   languageMap,
+  compact = false,
 }: LanguageSelectorProps) {
   const router = useRouter();
   const { i18n } = useTranslation();
@@ -36,6 +39,11 @@ export function LanguageSelector({
     if (lng === currentLang) return;
 
     setIsChangingLanguage(true);
+    try {
+      localStorage.setItem(desktopLanguageStorageKey, lng);
+    } catch {
+      // The route change still works if storage is unavailable.
+    }
     const currentPath = window.location.pathname.split("/").slice(2).join("/");
     const newPath = `/${lng}${currentPath ? `/${currentPath}` : ""}`;
     router.push(newPath);
@@ -49,7 +57,9 @@ export function LanguageSelector({
         disabled={isChangingLanguage}
       >
         <SelectTrigger
-          className={`w-[100px] ${isChangingLanguage ? "opacity-50" : ""}`}
+          className={`${compact ? "h-9 w-[92px] rounded-xl border-input bg-background px-2.5 text-xs shadow-sm" : "w-[100px]"} ${
+            isChangingLanguage ? "opacity-50" : ""
+          }`}
         >
           <SelectValue>
             {isChangingLanguage ? (

@@ -91,5 +91,32 @@
         ]
       }
     ]
+  },
+  "about": {
+    "metaTitle": "About - Off Work Countdown",
+    "metaDescription": "About Off Work Countdown, a free and open-source local-first workday timer for the web, macOS and Windows.",
+    "heading": "About Off Work Countdown",
+    "intro": "A small, open-source tool built to make the remaining workday understandable at a glance — without accounts, adverts or sending your schedule and salary to a server.",
+    "sections": [
+      {
+        "heading": "Why this project exists",
+        "body": [
+          "A workday is easier to reason about when the remaining time, completed percentage and optional earnings estimate are visible in one calm interface. Off Work Countdown turns those numbers into a lightweight utility that can stay open all day.",
+          "The web app works offline after the first visit. The desktop client adds a tray countdown, a compact companion window, native reminders, launch at login and a global shortcut."
+        ]
+      },
+      {
+        "heading": "Local-first and private",
+        "body": [
+          "Your working hours, workdays, salary and preferences stay on your device. The countdown and earnings estimate are computed locally; the desktop client does not send analytics or personal settings anywhere."
+        ]
+      },
+      {
+        "heading": "Free and open source",
+        "body": [
+          "The project is released under the MIT licence. You can inspect the code, report a bug, suggest an improvement or build your own version from the public GitHub repository."
+        ]
+      }
+    ]
   }
 }
