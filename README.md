@@ -1,10 +1,58 @@
 # Off Work Countdown
 
-Off Work Countdown is a Next.js-based web application that helps you keep track of the time remaining until the end of your workday. With a sleek and interactive interface, this app provides a visual countdown and progress bar to make your workday more manageable.
+Off Work Countdown is a privacy-friendly countdown for the end of your workday,
+available on the Web and as a lightweight Tauri desktop app. Set your schedule
+once, then keep the remaining time, progress and estimated earnings at a glance.
 
 [中文版 README](README_CN.md)
 
+[![Web App](https://img.shields.io/badge/Web-open%20app-ff6b35)](https://off.rainif.com/en)
+[![Desktop Release](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
+[![License](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
+
 ![](readme_image/off_EN.jpg)
+
+## Use Off Work Countdown
+
+- **Web:** [open the app](https://off.rainif.com/en) — no installation required.
+- **Desktop:** [open the download page](https://off.rainif.com/en/download) —
+  macOS Apple Silicon / Intel and Windows x64 / ARM64 are available.
+- **Release files:** [latest GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest).
+
+The desktop app adds a menu-bar countdown on macOS, a compact always-on-top
+mini timer on Windows, native notifications, launch at login, a global shortcut
+and one-click updates. It remains local-first: schedules, salary settings and
+countdown state stay on your device.
+
+### Install the desktop app
+
+The current builds are open source but are **not signed with paid Apple or
+Microsoft code-signing certificates**. The updater packages are cryptographically
+signed for Tauri's update verification, but macOS Gatekeeper or Windows
+SmartScreen may still warn on first installation. Download only from this
+repository's Release page and verify that the tag and filename match your
+platform.
+
+#### macOS
+
+1. Download the `aarch64.dmg` for Apple Silicon or `x64.dmg` for an Intel Mac.
+2. Open the DMG and drag Off Work Countdown into Applications.
+3. Try to open it once. If macOS blocks the app, open **System Settings →
+   Privacy & Security**, scroll to Security, choose **Open Anyway**, then confirm
+   **Open**. Apple documents this process in
+   [Open apps safely on your Mac](https://support.apple.com/102445).
+
+#### Windows
+
+1. Download `x64-setup.exe` for most PCs, or `arm64-setup.exe` for a Windows on
+   ARM device. The MSI files are also available for managed installation.
+2. Run the installer. If Microsoft Defender SmartScreen warns about the
+   unrecognised app, review the publisher/source, then choose **More info → Run
+   anyway** if that option is available and you trust the downloaded file.
+3. Windows may apply stricter organisation or Smart App Control policies that do
+   not offer an override. See Microsoft's
+   [App & browser control documentation](https://support.microsoft.com/windows/security/windows-security/app-browser-control-in-the-windows-security-app)
+   for the system controls involved.
 
 ## Features
 
@@ -15,14 +63,19 @@ Off Work Countdown is a Next.js-based web application that helps you keep track 
 - Weekly and yearly totals estimated from your schedule
 - Optional reminder 15 minutes before the end of work
 - Share your countdown as a mood-based image, or as a link that opens on the same shift
+- Native desktop notifications, launch at login and a global show/hide shortcut
+- macOS menu-bar countdown and native glass mini timer; Windows compact mini timer
+- In-app desktop updates from signed GitHub Release artifacts
 - Schedule reference pages: 996, 9 to 5, 9 to 6 and night shift
 - Progressive Web App (PWA) support for offline use
 - Light, dark, system and two custom themes
 - Responsive design for various devices
 - 19 languages (i18n)
 
-Your hours and salary are stored only in your browser. They are never sent to a
-server, and nothing is synchronised between devices.
+Your hours and salary are stored only in your browser or desktop app. They are
+never sent to a server, and nothing is synchronised between devices. Optional
+Web analytics record only allowlisted aggregate event counts—no salary, schedule,
+cookies, IP addresses or device identifiers.
 
 ## Technologies Used
 
@@ -33,6 +86,8 @@ server, and nothing is synchronised between devices.
 - Framer Motion
 - Serwist (service worker / PWA)
 - i18next
+- Tauri 2 and Rust
+- AppKit for the native macOS mini timer
 
 ## Getting Started
 
@@ -67,6 +122,21 @@ npm test               # Vitest unit tests
 npm run build          # Production build (web)
 npm run build:desktop  # Static export for the desktop app, output in out/
 ```
+
+Release automation for maintainers:
+
+```bash
+npm run deploy:web                         # Validate and push committed main
+npm run deploy:web -- --dry-run            # Validate without pushing
+npm run release:desktop                    # Release package.json's version
+npm run release:desktop -- 3.0.3           # Explicitly verify and release 3.0.3
+npm run release:desktop -- --dry-run        # Run every release check, no tag
+```
+
+Both publishing commands require a clean `main` branch and fetch the remote
+before acting. Desktop release additionally requires `HEAD` to equal
+`origin/main`, rejects duplicate tags and asks you to type the exact tag before
+it pushes. Pass `--yes` only in an intentionally non-interactive environment.
 
 Note: `next dev` and `next build` share the `.next` directory. Running a build
 while the dev server is up will leave the dev server serving chunks that no
@@ -169,6 +239,10 @@ This app supports Progressive Web App features, allowing you to install it on yo
 
 On iPhone and iPad, use the Share button in Safari and choose "Add to Home
 Screen"; on macOS Safari, choose "Add to Dock".
+
+The PWA is still supported, but desktop users who want a persistent menu-bar or
+mini-timer experience, native reminders, launch at login and automatic updates
+should use the [desktop app](https://off.rainif.com/en/download).
 
 ## Contributing
 

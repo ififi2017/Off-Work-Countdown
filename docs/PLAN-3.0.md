@@ -1,6 +1,6 @@
 # Off Work Countdown 3.0 升级计划
 
-> 状态：实施中 · 起草于 2026-08-08 · Web / 客户端统一版本 `3.0.0`（[package.json](../package.json)）
+> 状态：3.0 主体已发布，进入跨平台验收与分发阶段 · 起草于 2026-08-08 · 当前 Web / 客户端统一版本 `3.0.2`（[package.json](../package.json)）
 
 ---
 
@@ -59,7 +59,7 @@ JSON-LD       无
 
 - `electron/`、`scripts/`、`types/` 三个空目录，未被 git 跟踪 —— 早期 Electron 尝试的残留，应清理。
 - `out/` 是 5 月的静态导出残留，当前 `next.config.mjs` 已无 `output: 'export'`。
-- CI（[.github/workflows/ci.yml](../.github/workflows/ci.yml)）有 lint + test + build，但**无发布自动化、无多平台矩阵**。
+- 起草时 CI（[.github/workflows/ci.yml](../.github/workflows/ci.yml)）只有 lint + test + Web build，**无发布自动化、无多平台矩阵**；该缺口已在 M5 解决。
 - 测试仅覆盖 [lib/countdown.test.ts](../lib/countdown.test.ts) 与 [lib/share.test.ts](../lib/share.test.ts)，纯函数层。
 - GitHub 仓库 8 star、**0 个 topics**、Discussions 未开、无社交预览图。
 
@@ -105,7 +105,7 @@ src-tauri/src/
 
 桌面端 UI 在 macOS 成品中完成第二轮适配：主窗默认尺寸收至 430×430，并限制在 420–450 的窄范围；主页面移除薪资、自启动和快捷键表单，改由标题栏齿轮进入独立设置页。倒计时、汇总与分享操作采用桌面紧凑密度，分享弹窗在同一高度内完整容纳主要操作，避免继续沿用网页的大面积留白。
 
-第三轮 macOS 成品复审进一步修复了时间下拉菜单被底栏裁切的问题，主流程在标题与底栏之间垂直居中；开启薪资后，今日已赚并入周期汇总卡，不再改变页面长度。设置页新增关于项目、GitHub 和检查更新入口，并接入官方 updater/process/opener 客户端链路。P4 已完成 updater 公钥、GitHub `latest.json` 端点、GitHub Actions Secrets、发布配置与本地签名产物验证；剩余门禁是离线备份私钥，以及用一次 Draft Release 完成旧版本到新版本的线上升级回环。
+第三轮 macOS 成品复审进一步修复了时间下拉菜单被底栏裁切的问题，主流程在标题与底栏之间垂直居中；开启薪资后，今日已赚并入周期汇总卡，不再改变页面长度。设置页新增关于项目、GitHub 和检查更新入口，并接入官方 updater/process/opener 客户端链路。P4 已完成 updater 公钥、GitHub `latest.json` 端点、GitHub Actions Secrets、发布配置与签名产物验证；`desktop-v3.0.2` 已通过 macOS Apple Silicon / Intel、Windows x64 / ARM64 四平台构建并正式发布。自动更新仍需完成一次旧版本到新版本的真实升级闭环，私钥与口令仍需确认已有独立离线备份。
 
 **为什么不是 Electron**：唯一强论据是零新语言 + 单一渲染引擎（所见即所得）。若约束为「两周出货且绝不碰 Rust」则它成立，但与产品定位冲突。
 
@@ -235,13 +235,13 @@ src-tauri/src/
     - 判断用班次的**开始时刻**而非「现在」：22:00–06:00 的夜班在凌晨两点时「今天」已是周六，但这一班属于周五
     - **未做**：不同日期用不同班次时间。这会把数据模型从单一 `{start,end}` 变成按日映射，波及分享 URL 的编码（`?s=` 只能携带一个班次）、预设页与汇总口径，值得作为独立一步来做
 
-### M5 · 桌面端 —— 4–6 周 · P1 —— 🔶 进行中（P0、P1 已完成；P2、P3 实现完成、待跨平台实机验收；P4–P6 待办）
+### M5 · 桌面端 —— 4–6 周 · P1 —— 🔶 主体已发布（P0、P1 完成；P5 发布链完成；P2–P4 与安装说明待补实机验收；P6 待办）
 
 > **完整实施计划见 [PLAN-M5-TAURI.md](PLAN-M5-TAURI.md)**，含实测的静态导出阻碍清单、架构决策与平台差异。以下为概要。
 >
 > 依赖 M1 完成（静态导出必须能产出真实 HTML）—— 已完成。
 >
-> **进度：P0、P1 已完成并实机验证**（2026-08-08）；P2、P3 已完成实现并通过 macOS 打包/自动化验证（2026-08-09）。P2 尚欠 Windows 观感，P3 尚欠全局快捷键人工按键与 Windows 三项能力实测，验收后再转为全绿；P4–P6 待办。
+> **进度（2026-08-09）**：P0、P1 已完成并实机验证；P2、P3 已完成实现并通过 macOS 打包/自动化验证，尚欠 Windows 观感、通知、自启、快捷键与社交外链实测；P4 的签名与发布链已完成，尚欠真实升级回环和离线密钥备份确认；P5 的四平台发布 CI 已由正式版 `3.0.2` 验证。P6 包管理器分发待办。
 >
 > 三处与本节原始描述的出入，以 M5 计划为准：
 > 1. 第 16 项的阻碍清单**不止 middleware**。M2–M4 期间新增了 `redirects()`、`/api/e`、`/api/e/stats`；且实测发现 middleware **根本不阻碍**静态导出，反倒是 `robots.txt` 与 `sitemap.ts` 会中断构建
@@ -253,17 +253,24 @@ src-tauri/src/
 18. **菜单栏/托盘实时倒计时** — 🟡 实现完成、Windows 实机验收待办。macOS 菜单栏直接显示 `2:13:45`；Windows 改用置顶迷你窗。秒级刷新走 Rust 侧计时循环，与 webview 是否可见解耦
 19. **原生能力** — 🟡 实现完成、跨平台实机验收待办。Rust 后台在提前 15 分钟/下班时刻发送去重的原生通知；设置页可切换开机自启；平台化快捷键提示对应 macOS 的 `⌘ + Shift + O` 与 Windows/Linux 的 `Ctrl + Shift + O`。macOS 已验证系统中文首启、停止后 Store 清空、自启开关可往返；全局快捷键人工按键、社交平台外链点击与 Windows 实测待办
 20. **窗口形态** — 🟡 实现完成、Windows 实机验收待办。主窗口默认 430×430、宽高均仅允许在 420–450 内调整并禁止最大化；桌面标题单行、时间双栏、底部操作固定，分享页完整覆盖 WebView 且无需纵向滚动。macOS 26 使用原生 `NSPanel + NSGlassEffectView` 弹出 228×70 Liquid Glass 迷你计时器，旧版 macOS 回退到原生 Vibrancy；Windows 使用固定 208×64 的轻量 WebView 小部件。两者均有明确的未开始状态，Windows 迷你窗保留真实拖动能力（详见 M5 计划决策 7）
-21. **自动更新** — 🟡 签名链与本地 updater 产物已验证，更新源指向 GitHub Releases；待真实版本升级回环后转绿
+21. **自动更新** — 🟡 签名链与线上 updater 产物已验证，更新源指向 GitHub Releases；待真实版本升级回环后转绿
 22. ~~**平台证书与公证**~~ —— 不购买证书；macOS CI 使用 ad-hoc 签名，安装拦截改由 README 说明
-23. **发布 CI** — 🟡 `tauri-action@v1` 工作流已实现，覆盖 macOS(arm64 + x64) / Windows(x64 + ARM64) 并生成 Draft Release；Windows ARM64 使用 GitHub 原生 `windows-11-arm` runner
+23. **发布 CI** — ✅ `desktop-v3.0.2` 已验证 `tauri-action@v1` 四平台矩阵：macOS Apple Silicon / Intel、Windows x64 / ARM64 均成功生成安装包、更新签名与 `latest.json`，Release 已正式发布
 24. **包管理器分发** —— Homebrew 自建 tap + winget/Scoop，首个 Release 之后进行
+
+#### M5 下一步（按顺序）
+
+1. 在 Windows x64 与 ARM64 真机验收迷你窗、通知、自启动、全局快捷键和社交外链。
+2. 用已安装的旧版本完成一次“检查更新 → 下载 → 安装 → 重启 → 显示新版本”的完整升级回环，并确认 updater 私钥与口令已有独立离线备份。
+3. 在目标 macOS / Windows 版本逐步核对 README 的首次安装说明，补必要截图。
+4. 进入 P6：先手工跑通 Homebrew 自建 tap，再评估 winget；若未签名包审核受阻，则改走 Scoop。
 
 ### M6 · 分发与增长 —— 持续
 
-24. **仓库门面** —— 补 topics（`countdown` `pwa` `nextjs` `tauri` `productivity` `work-life-balance` `i18n`）、社交预览图、README 顶部 live demo 徽章 + 演示 GIF、开启 Discussions
-25. **包管理器上架** —— Homebrew Cask、Scoop、winget
-26. **中文渠道（主场）** —— 小红书 / 抖音 / B站 短视频演示、少数派、V2EX、即刻。「下班倒计时」「摸鱼」本身就是中文互联网的梗，传播成本最低
-27. **英文渠道** —— Product Hunt、Show HN、r/productivity、alternativeto.net、awesome-nextjs / awesome-tauri 列表
+25. **仓库门面** —— 补 topics（`countdown` `pwa` `nextjs` `tauri` `productivity` `work-life-balance` `i18n`）、社交预览图、README 顶部入口/徽章 + 演示 GIF、开启 Discussions
+26. **包管理器上架** —— Homebrew Cask、Scoop、winget
+27. **中文渠道（主场）** —— 小红书 / 抖音 / B站 短视频演示、少数派、V2EX、即刻。「下班倒计时」「摸鱼」本身就是中文互联网的梗，传播成本最低
+28. **英文渠道** —— Product Hunt、Show HN、r/productivity、alternativeto.net、awesome-nextjs / awesome-tauri 列表
 
 ---
 
@@ -307,4 +314,4 @@ M5 桌面端虽然是最有存在感的功能，但它服务的是**已有用户
 
 ## 6. 版本号说明
 
-Web 与桌面客户端从本轮起统一使用 `3.0.0`。`package.json`、`src-tauri/Cargo.toml` 与 `src-tauri/tauri.conf.json` 必须在发布提交中保持一致；Web 可以随 `main` 更频繁部署，但只有需要发布客户端安装包时才提升统一版本号。桌面 Release tag 使用 `desktop-v3.0.0`，避免与普通 Web 部署触发混淆。
+Web 与桌面客户端从本轮起使用统一产品版本，当前为 `3.0.2`。`package.json`、锁文件、`src-tauri/Cargo.toml` 与 `src-tauri/tauri.conf.json` 必须在发布提交中保持一致；Web 可以随 `main` 更频繁部署，但只有需要发布客户端安装包时才提升统一版本号。桌面 Release tag 使用 `desktop-v{version}`（例如 `desktop-v3.0.2`），避免与普通 Web 部署触发混淆。

@@ -10,6 +10,8 @@
     "check:build:web": "node scripts/check-build-output.mjs web",
     "check:build:desktop": "node scripts/check-build-output.mjs desktop",
     "check:version": "node scripts/check-version.mjs",
+    "deploy:web": "node scripts/push-ci.mjs",
+    "release:desktop": "node scripts/release-desktop.mjs",
     "tauri": "tauri",
     "tauri:dev": "tauri dev --config src-tauri/tauri.dev.conf.json",
     "tauri:build": "tauri build",

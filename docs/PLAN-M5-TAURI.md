@@ -1,6 +1,6 @@
 # M5 · 桌面端实施计划（Tauri v2）
 
-> 状态：实施中（P0–P3 已实现） · 起草于 2026-08-08 · 承接 [PLAN-3.0.md](PLAN-3.0.md) 的 M1–M4（均已合入 main）
+> 状态：3.0.2 已正式发布（P0、P1 完成；P5 发布链完成；P2–P4 与安装说明待补实机验收；P6 待办） · 起草于 2026-08-08 · 更新于 2026-08-09
 
 ---
 
@@ -185,8 +185,8 @@ Rust 后台线程每秒从 Tauri Store 读取绝对起止时间，并计算剩�
 | **P1** | Tauri 骨架 | ~~1 周~~ ✅ 已完成 | 应用能启动、加载界面、单实例、关闭到托盘而非退出 |
 | **P2** | 托盘倒计时 + 迷你窗 | ~~1.5 周~~ 🟡 实现完成，Windows 实机验收待办 | macOS 菜单栏走字并可点击弹出；Windows 置顶迷你窗可拖动、可切换置顶；关闭主窗口后两者仍然走字 |
 | **P3** | 原生能力 | ~~1 周~~ 🟡 实现完成，快捷键人工按键与 Windows 实机验收待办 | 到点通知、开机自启、全局快捷键 |
-| **P4** | 自动更新 | 🟡 签名链完成，线上升级回环待验收 | 客户端公钥、更新端点、GitHub Secrets、签名产物均已配置并完成本机构建；还需用一次 Draft Release 实测旧版本 → 新版本 |
-| **P5** | 发布 CI + 安装文档 | 🟡 工作流已实现，安装文档待补 | `desktop-v*` 可并行构建 macOS arm64 / x64 与 Windows x64 / ARM64，生成签名、`latest.json` 和 Draft Release；两份 README 安装步骤仍待实测 |
+| **P4** | 自动更新 | 🟡 线上签名链完成，升级回环待验收 | 客户端公钥、更新端点、GitHub Secrets、签名产物与正式 Release 均已验证；还需实测旧版本 → 新版本 |
+| **P5** | 发布 CI + 安装文档 | 🟡 四平台 CI 已完成，安装步骤待目标系统核对 | `desktop-v3.0.2` 已成功产出 macOS arm64 / x64 与 Windows x64 / ARM64 安装包、签名和 `latest.json`；两份 README 已补安装说明，Windows 真机与必要截图待补 |
 | **P6** | 包管理器分发 | 3–5 天 | Homebrew 自建 tap 可用；winget 或 Scoop 至少一条通路可用（见 §7）|
 
 **P0 是唯一一个纯 Web 侧、且对 Web 端也有价值的阶段**（它会强制把服务端依赖梳理干净），可以先做，风险最低。
@@ -233,9 +233,13 @@ Rust 后台线程每秒从 Tauri Store 读取绝对起止时间，并计算剩�
 
 本机发布模式已实际生成并签名 `Off Work Countdown.app.tar.gz` 与 `.sig`，macOS App 同时使用 ad-hoc identity `-` 签名；嵌入公钥与生成公钥已校验一致。新增 `scripts/check-version.mjs`，CI 和 Release 在构建前强制检查 npm、lockfile、Cargo、Tauri 与 `desktop-v*` tag 版本完全一致。新增 `release-desktop.yml`，并行覆盖 macOS Apple Silicon、macOS Intel、Windows x64 与 Windows ARM64，使用 `tauri-action@v1` 生成安装包、更新签名、`latest.json` 与 Draft Release；Windows ARM64 使用 GitHub 原生 `windows-11-arm` runner，updater JSON 优先选择 NSIS。Draft 同时调用 GitHub Release Notes API，按 `.github/release.yml` 中的 PR 标签自动生成新功能、修复、文档、其他改动、贡献者与完整 Changelog。
 
-P4 剩余两个发布门禁：第一，把私钥和钥匙串口令另做一份离线备份，不能只留在这台 Mac 与不可导出的 GitHub Secret 中；第二，提交并推送工作流后，用 `3.0.0 → 3.0.1`（或专用预发布版本）跑一次真实 GitHub Draft Release 和客户端升级回环。未经这两项，不把 P4 标为全绿。
+本地维护流程新增两个跨平台 Node 入口：`npm run deploy:web` 只允许从干净且不落后远端的 `main` 完整验证后推送，触发 CI 与 Web 部署；`npm run release:desktop` 要求干净的 `main` 与 `origin/main` 完全一致、版本号全局对齐且标签不存在，完成 Web／Desktop／Rust 发布检查后创建并推送 `desktop-v*`。两者默认保留精确文本确认，并提供 `--dry-run` 与显式的 `--yes` 自动化选项。
+
+P4 剩余两个验收门禁：第一，确认私钥和钥匙串口令已有一份独立离线备份，不能只留在这台 Mac 与不可导出的 GitHub Secret 中；第二，用已安装的旧版本（例如 `3.0.1 → 3.0.2`）跑一次真实的客户端升级回环。未经这两项，不把 P4 标为全绿。
 
 **首次线上 Release 实测补充**：macOS arm64 / x64 job 均成功，Windows 首次失败在 `BUILD_TARGET=desktop next build`——npm scripts 在 Windows 使用 `cmd.exe`，不支持 POSIX 的行内环境变量语法。`build:desktop` 已改为跨平台 Node 启动器 `scripts/build-desktop.mjs`，由 `spawnSync` 给 Next 子进程注入 `BUILD_TARGET=desktop`，无需新增 `cross-env` 依赖。
+
+**3.0.2 正式发布记录（2026-08-09）**：`desktop-v3.0.2` 的 macOS Apple Silicon、macOS Intel、Windows x64、Windows ARM64 四个 job 全部成功；GitHub Release 已从 Draft 发布为正式版本，并包含两种 macOS DMG、Windows x64 / ARM64 的 NSIS 与 MSI、全部 updater 签名及 `latest.json`。这证明 P5 的多平台构建和发布链已闭环，但不替代 Windows 真机运行验收与 P4 的客户端内升级验收。
 
 **拖动修复**：`data-tauri-drag-region` 本身不够，`core:window:default` 不包含 `start_dragging`。现已显式授予 `core:window:allow-start-dragging`，主窗顶部提供独立拖动带；Windows 迷你窗使用 Tauri 2.11 的 `data-tauri-drag-region="deep"`，图钉按钮用 `false` 排除。macOS 原生 Mini Timer 是菜单栏弹出面板，按系统惯例不允许拖动。Windows 仍待实机验证。
 
@@ -327,19 +331,20 @@ P4 剩余两个发布门禁：第一，把私钥和钥匙串口令另做一份�
 
 ### 版本号：统一版本，发布节奏独立
 
-Web 与桌面客户端统一使用同一个产品版本号，当前为 `3.0.0`。版本必须同时写入 `package.json`、`src-tauri/Cargo.toml` 和 `src-tauri/tauri.conf.json`；锁文件随之同步。统一版本不等于每次 Web 部署都发布客户端：Web 仍随 `main` 部署，只有积累到值得用户更新的客户端变更时才提升版本并打桌面 tag。
+Web 与桌面客户端统一使用同一个产品版本号，当前为 `3.0.2`。版本必须同时写入 `package.json`、`src-tauri/Cargo.toml` 和 `src-tauri/tauri.conf.json`；锁文件随之同步。统一版本不等于每次 Web 部署都发布客户端：Web 仍随 `main` 部署，只有积累到值得用户更新的客户端变更时才提升版本并打桌面 tag。
 
-tag 用 `desktop-v3.0.0` 而非裸 `v3.0.0`，为 Web 部署与将来可能出现的其他发布物留出命名空间。
+tag 用 `desktop-v{version}`（当前为 `desktop-v3.0.2`）而非裸 `v{version}`，为 Web 部署与将来可能出现的其他发布物留出命名空间。
 
 ### GitHub 上的最终形态
 
 ```
 Releases
-└── desktop-v3.0.0
-    ├── Off Work Countdown_3.0.0_aarch64.dmg      macOS Apple Silicon
-    ├── Off Work Countdown_3.0.0_x64.dmg          macOS Intel
-    ├── Off Work Countdown_3.0.0_x64-setup.exe    Windows (NSIS)
-    ├── Off Work Countdown_3.0.0_x64_en-US.msi    Windows (MSI)
+└── desktop-v3.0.2
+    ├── Off Work Countdown_3.0.2_aarch64.dmg      macOS Apple Silicon
+    ├── Off Work Countdown_3.0.2_x64.dmg          macOS Intel
+    ├── Off Work Countdown_3.0.2_x64-setup.exe    Windows x64 (NSIS)
+    ├── Off Work Countdown_3.0.2_arm64-setup.exe  Windows ARM64 (NSIS)
+    ├── Off Work Countdown_3.0.2_*_en-US.msi      Windows x64 / ARM64 (MSI)
     ├── latest.json                                更新器读取的清单
     └── *.sig                                      各产物的更新签名
 ```
@@ -348,11 +353,11 @@ Releases
 
 ### 两条工作流
 
-**① 扩展现有的 [ci.yml](../.github/workflows/ci.yml)**：在 lint / test / build 之外增加一步 `npm run build:desktop`。
+**① [ci.yml](../.github/workflows/ci.yml) 已扩展**：在 lint / test / Web build 之外运行 `npm run build:desktop`。
 
 这一步**不编译 Rust**，只跑静态导出，几十秒即可完成，且只需 ubuntu runner。它的价值在于：桌面端最常见的破坏方式是有人加了一个 `force-dynamic` 路由或改了 middleware——这类问题会在每个 PR 上几秒内暴露，而不是等到某天打 tag 时才在二十分钟的 Rust 构建里发现。
 
-**② 新增 `release-desktop.yml`**：`on: push: tags: ['desktop-v*']`，用 `tauri-apps/tauri-action`，矩阵覆盖 macOS arm64 / macOS x64 / Windows x64 / Windows ARM64。ARM64 在 GitHub 的原生 `windows-11-arm` runner 上构建，避免跨架构 MSVC 打包差异。
+**② [release-desktop.yml](../.github/workflows/release-desktop.yml) 已启用**：`on: push: tags: ['desktop-v*']`，用 `tauri-apps/tauri-action`，矩阵覆盖 macOS arm64 / macOS x64 / Windows x64 / Windows ARM64。ARM64 在 GitHub 的原生 `windows-11-arm` runner 上构建，避免跨架构 MSVC 打包差异。
 
 必须**只在 tag 上触发**：来自 fork 的 PR 拿不到仓库 secrets（更新签名密钥也在其中），若让它跑发布流程只会得到一堆失败任务。
 
@@ -412,18 +417,18 @@ cask 定义里的版本号与 sha256 需随每次 Release 更新。
 
 ## 8. 验收标准
 
-1. `npm run build:desktop` 产出的静态站点可直接用浏览器打开，19 种语言均正常
-2. Web 端构建不受影响：middleware、`/api/e`、`/manifest.json` 行为不变
-3. **主窗口内容铺满，四周无留白**——不出现浏览器版那种「大片背景中间浮一张卡」的观感
-4. macOS 菜单栏显示走字的剩余时间；点击图标弹出迷你窗并对齐到图标下方，失焦自动隐藏
-5. Windows 迷你窗可拖动、位置被记住、置顶可开关、不占用任务栏
-6. **关闭主窗口后，菜单栏／迷你窗仍在走字**
-7. 到达下班时刻时发出系统通知，**主窗口处于关闭状态**
-8. 开机自启可开关；全局快捷键可唤起/隐藏
-9. 应用能从上一版本自动更新到下一版本
-10. **两份 README 均有实测过的安装步骤**，覆盖 macOS Gatekeeper 与 Windows SmartScreen 的拦截提示，并说明原因
-11. 打 tag 后 CI 自动产出全部安装包
-12. （P6）`brew tap` + `brew install --cask` 可完成安装；Windows 侧 winget 或 Scoop 至少一条通路可用
+1. ✅ `npm run build:desktop` 产出的静态站点可直接用浏览器打开，19 种语言均正常
+2. ✅ Web 端构建不受影响：middleware、`/api/e`、`/manifest.json` 行为不变
+3. 🟡 **主窗口内容铺满，四周无留白**；macOS 已验收，Windows 待验收
+4. ✅ macOS 菜单栏显示走字的剩余时间；点击图标弹出迷你窗并对齐到图标下方，失焦自动隐藏
+5. 🟡 Windows 迷你窗可拖动、位置被记住、置顶可开关、不占用任务栏——实现完成，真机待验收
+6. 🟡 **关闭主窗口后，菜单栏／迷你窗仍在走字**——macOS 已实测，Windows 真机待验收
+7. 🟡 到达下班时刻时发出系统通知，**主窗口处于关闭状态**——后台节点已实测，系统通知与 Windows 待人工确认
+8. 🟡 开机自启可开关；全局快捷键可唤起/隐藏——macOS 自启已验收，其余人工验收待办
+9. 🟡 应用能从上一版本自动更新到下一版本——签名和线上清单完成，客户端升级回环待办
+10. 🟡 两份 README 已覆盖 macOS Gatekeeper 与 Windows SmartScreen 的拦截原因和操作路径；目标 Windows 实机与截图待补
+11. ✅ `desktop-v3.0.2` 已验证 tag CI 自动产出四平台全部安装包
+12. ⬜（P6）`brew tap` + `brew install --cask` 可完成安装；Windows 侧 winget 或 Scoop 至少一条通路可用
 
 ## 9. 未决问题
 
@@ -437,7 +442,6 @@ cask 定义里的版本号与 sha256 需随每次 Release 更新。
 - Homebrew 安装未签名 cask 时的隔离属性行为，决定文档里那条命令要不要带 `--no-quarantine`（P6，必须实测）
 - 未来若有明确用户量增长且观察到安装环节流失，再评估是否购买证书（§6）
 - `dev` 分支目前无人使用，但 [ci.yml](../.github/workflows/ci.yml) 仍在监听它。近期流程都是「功能分支 → PR → main」。建议要么明确启用，要么删掉并从 CI 触发条件中移除，避免留一条谁都不看的分支
-- CI 尚未加入 `npm run build:desktop` 这一步（见 §7 的两条工作流）。P0 已经就绪，但工作流文件还没改——桌面端最常见的破坏方式仍然要等打 tag 时才会暴露
 
 ### 已决（留档，避免重复讨论）
 
@@ -445,3 +449,4 @@ cask 定义里的版本号与 sha256 需随每次 Release 更新。
 - ~~主窗口被拉宽时观感失衡~~ → **不能只设一个宽松的 `maxWidth`**。实机复审后最终收敛为默认 430×430、宽高均限制在 420–450，并针对桌面端重排标题、表单、设置和倒计时页。P3 UI 复审已落地
 - ~~Windows 托盘不支持文字标题是否构成卖点缺口~~ → **不构成**。改用置顶迷你窗承担常驻显示（决策 7），托盘只负责菜单与显隐切换
 - ~~是否购买代码签名证书~~ → **不买**（§6）。代价转为首次安装摩擦，用文档补齐
+- ~~CI 是否加入 `npm run build:desktop`~~ → **已完成**。[ci.yml](../.github/workflows/ci.yml) 会在 PR / 主分支构建中验证桌面静态导出，tag 工作流另行编译四平台安装包
