@@ -269,6 +269,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [desktopSettingError, setDesktopSettingError] = useState("");
   const [desktopUpdateStatus, setDesktopUpdateStatus] =
     useState<DesktopUpdateStatus>("idle");
+  const [desktopCurrentVersion, setDesktopCurrentVersion] = useState("");
+  const [desktopLatestVersion, setDesktopLatestVersion] = useState("");
   const [desktopPlatform, setDesktopPlatform] = useState<
     "macos" | "windows" | "other"
   >("other");
@@ -436,6 +438,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       })
       .catch(() => {
         // The shortcut still works if only its platform-specific label fails.
+      });
+
+    void import("@tauri-apps/api/app")
+      .then(({ getVersion }) => getVersion())
+      .then((version) => {
+        if (!cancelled) setDesktopCurrentVersion(version);
+      })
+      .catch(() => {
+        // Version metadata is informative; update checks remain usable without it.
       });
 
     return () => {
@@ -726,6 +737,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const handleCheckForUpdates = async () => {
     if (!IS_DESKTOP_BUILD) return;
     setDesktopUpdateStatus("checking");
+    setDesktopLatestVersion("");
     try {
       const { check } = await import("@tauri-apps/plugin-updater");
       const update = await check({ timeout: 15_000 });
@@ -734,6 +746,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         return;
       }
 
+      setDesktopCurrentVersion(update.currentVersion);
+      setDesktopLatestVersion(update.version);
       setDesktopUpdateStatus("installing");
       await update.downloadAndInstall();
       const { relaunch } = await import("@tauri-apps/plugin-process");
@@ -1170,21 +1184,40 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     }
                     className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
                   >
-                    <span className="flex items-center gap-2">
+                    <span className="flex min-w-0 items-center gap-2">
                       <RefreshCw
-                        className={`h-4 w-4 ${
+                        className={`h-4 w-4 shrink-0 ${
                           desktopUpdateStatus === "checking" ||
                           desktopUpdateStatus === "installing"
                             ? "animate-spin"
                             : ""
                         }`}
                       />
-                      {desktopUpdateStatus === "checking"
-                        ? t("checkingForUpdates")
-                        : desktopUpdateStatus === "installing"
-                          ? t("installingUpdate")
-                          : t("checkForUpdates")}
+                      <span className="truncate">
+                        {desktopUpdateStatus === "checking"
+                          ? t("checkingForUpdates")
+                          : desktopUpdateStatus === "installing"
+                            ? t("installingUpdate")
+                            : t("checkForUpdates")}
+                      </span>
                     </span>
+                    {desktopCurrentVersion && (
+                      <span
+                        dir="ltr"
+                        className="flex shrink-0 items-center gap-1.5 rounded-md border border-gray-200 bg-white/70 px-2 py-1 font-mono text-[11px] leading-none text-gray-600 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                      >
+                        <span>v{desktopCurrentVersion}</span>
+                        {desktopLatestVersion &&
+                          desktopLatestVersion !== desktopCurrentVersion && (
+                            <>
+                              <span className="text-gray-400">→</span>
+                              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                v{desktopLatestVersion}
+                              </span>
+                            </>
+                          )}
+                      </span>
+                    )}
                   </button>
                   {desktopUpdateStatus !== "idle" &&
                     desktopUpdateStatus !== "checking" &&

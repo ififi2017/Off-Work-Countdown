@@ -222,7 +222,7 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 
 **第四轮 UI / 桌面行为实测（2026-08-09）**：线上尚未部署 `/about`，设置页的“关于此项目”暂时改为打开现有 FAQ，避免客户端发布后跳到 404；本地 About 页面保留，待 Web 下次部署后再决定是否切回。分享界面在桌面端改为完整覆盖主 WebView，不再套网页弹窗的灰色遮罩和外边框；X、Facebook、WhatsApp、Telegram、LINE、Reddit、微博均改用 `tauri-plugin-opener` 交给系统浏览器，并配置最小域名白名单。全局快捷键提示由运行平台决定：macOS 显示 `⌘ + Shift + O`，Windows / Linux 显示 `Ctrl + Shift + O`。停止倒计时会立即写入 `running: false` 快照并显式清空 macOS 菜单栏标题，后台节拍器也会持续用空字符串覆盖非运行状态，避免最后一秒定格。桌面首次启动通过官方 OS 插件读取系统 locale（macOS 中文已实测自动进入简体中文），此后把用户手动选择作为优先语言持久化。前端 lint、62 项测试、19 语言桌面导出、3 项 Rust 测试与 macOS `.app` 构建全部通过；自动化实测分享界面满铺、设置页快捷键和停止后的 Store 状态，社交按钮的外部站点点击因桌面控制权限未自动批准，仍需发布前做一次人工点击冒烟。
 
-**P4 客户端接入记录（2026-08-09）**：已接入官方 updater、process 与 opener 插件，权限只开放给主窗口。检查更新为一次点击完成 `check → downloadAndInstall → relaunch`，并覆盖检查中、安装中、已是最新与失败状态。
+**P4 客户端接入记录（2026-08-09）**：已接入官方 updater、process 与 opener 插件，权限只开放给主窗口。检查更新为一次点击完成 `check → downloadAndInstall → relaunch`，并覆盖检查中、安装中、已是最新与失败状态。设置页会常驻显示客户端当前版本；发现更新后以 `当前版本 → 最新版本` 明示升级目标。
 
 **P4 签名与发布配置（2026-08-09）**：长期 updater 私钥生成在仓库外的 `~/.tauri/off-work-countdown-updater.key`（权限 600），随机口令保存在 macOS 钥匙串服务 `com.rainif.offworkcountdown.updater-signing`；仓库只提交可公开的公钥。`TAURI_SIGNING_PRIVATE_KEY` 与 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 已直接写入 `ififi2017/Off-Work-Countdown` 的 GitHub Actions Secrets，未经过工作区文件。客户端更新端点已经指向 GitHub Releases 的 `latest.json`，Windows 使用 passive 安装模式。普通本地构建不强制生成 updater 包，发布工作流通过 `tauri.release.conf.json` 单独开启 `createUpdaterArtifacts`。
 
