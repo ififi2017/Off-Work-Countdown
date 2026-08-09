@@ -41,6 +41,7 @@ function DownloadButton({
   loading,
   loadingLabel,
   event,
+  badgeLabel,
   placeholder = false,
 }: {
   asset: DownloadAsset | null | undefined;
@@ -51,6 +52,7 @@ function DownloadButton({
   loading: boolean;
   loadingLabel: string;
   event: TrackedEvent;
+  badgeLabel?: string;
   placeholder?: boolean;
 }) {
   if (!asset) {
@@ -63,7 +65,14 @@ function DownloadButton({
           "h-auto min-h-12 w-full cursor-not-allowed justify-between gap-3 border-gray-200 bg-gray-50 px-4 py-3 text-gray-400 opacity-80 dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-500"
         )}
       >
-        <span>{label}</span>
+        <span className="inline-flex items-center gap-2">
+          {label}
+          {badgeLabel && (
+            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold leading-none text-blue-700 dark:bg-blue-950/70 dark:text-blue-300">
+              {badgeLabel}
+            </span>
+          )}
+        </span>
         <span className="text-xs font-normal">
           {loading ? (
             <span className="inline-flex items-center gap-1.5">
@@ -88,6 +97,11 @@ function DownloadButton({
       <span className="inline-flex items-center gap-2">
         <Download className="h-4 w-4" aria-hidden="true" />
         {downloadLabel} {label}
+        {badgeLabel && (
+          <span className="rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[10px] font-semibold leading-none text-primary-foreground">
+            {badgeLabel}
+          </span>
+        )}
       </span>
       <span className="text-xs font-normal opacity-70">
         {formatFileSize(asset.size)}
@@ -167,6 +181,7 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
               loading={loading}
               loadingLabel={copy.loadingLabel}
               event="desktop_download_windows_intel"
+              badgeLabel={copy.recommendedLabel}
             />
             <DownloadButton
               asset={downloads?.windowsArm64}

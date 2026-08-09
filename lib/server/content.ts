@@ -69,6 +69,7 @@ export interface ContentBundle {
     windowsDescription: string;
     windowsX64Label: string;
     windowsArmLabel: string;
+    recommendedLabel: string;
     macosTitle: string;
     macosDescription: string;
     appleSiliconLabel: string;
