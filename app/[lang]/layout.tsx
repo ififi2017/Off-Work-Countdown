@@ -4,11 +4,9 @@ import '../globals.css';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
 import { locales, getTextDirection } from '@/i18n-config';
-import { I18nProvider } from '@/components/I18nProvider';
 import { Metadata, Viewport } from 'next';
 import { siteConfig } from '@/config/site';
 import { getTranslations } from '@/lib/server/i18n';
-import { DesktopDownloadInvite } from '@/components/DesktopDownloadInvite';
 
 const geistSans = localFont({
   src: '../fonts/GeistVF.woff',
@@ -112,40 +110,10 @@ export default async function Layout({
 }) {
   const { lang } = await params;
 
-  // 服务端读取翻译，注入客户端 i18n，使首屏渲染出真实文案而非 i18n key。
-  const [translation, seo] = await Promise.all([
-    getTranslations(lang, 'translation'),
-    getTranslations(lang, 'seo'),
-  ]);
-
-  // 结构化数据。免费、免安装、多语言这几点正是富摘要能体现的差异点。
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'WebApplication',
-    name: seo.siteName,
-    description: seo.description,
-    url: `${siteConfig.baseUrl}/${lang}`,
-    inLanguage: lang,
-    applicationCategory: 'UtilitiesApplication',
-    operatingSystem: 'Any',
-    browserRequirements: 'Requires JavaScript',
-    isAccessibleForFree: true,
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    license: 'https://opensource.org/licenses/MIT',
-    codeRepository: siteConfig.github,
-  };
-
   return (
     <html lang={lang} dir={getTextDirection(lang)} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <script
-          type="application/ld+json"
-          // 转义 `<`，避免译文里万一出现 `</script>` 截断脚本块。
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-          }}
-        />
         {!IS_DESKTOP_BUILD && (
           <link
             rel="manifest"
@@ -155,10 +123,7 @@ export default async function Layout({
         )}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <I18nProvider lang={lang} resources={{ translation, seo }}>
-          {children}
-          {!IS_DESKTOP_BUILD && <DesktopDownloadInvite />}
-        </I18nProvider>
+        {children}
         {/* Vercel 的访问统计与性能采集只服务于 Web 端。桌面端不回传任何数据
             （见 docs/PLAN-M5-TAURI.md 决策 5），这里用构建期常量剔除——
             桌面构建下整个分支是死代码，压缩阶段会被移除。 */}

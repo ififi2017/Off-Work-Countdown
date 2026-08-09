@@ -5,6 +5,7 @@ import { getContent } from "@/lib/server/content";
 import { getPresetCopy } from "@/lib/server/presets";
 import { presets } from "@/lib/presets";
 import { ContentPage } from "@/components/ContentPage";
+import { localizedSocialMetadata } from "@/lib/server/metadata";
 import {
   contentLocales,
   defaultContentLocale,
@@ -40,14 +41,13 @@ export async function generateMetadata({
       canonical: `${siteConfig.baseUrl}/${lang}/how-it-works`,
       languages: alternateLanguages,
     },
-    openGraph: {
+    ...localizedSocialMetadata({
+      lang,
+      path: "how-it-works",
       title: content.howItWorks.metaTitle,
       description: content.howItWorks.metaDescription,
       type: "article",
-      locale: lang,
-      url: `${siteConfig.baseUrl}/${lang}/how-it-works`,
-      siteName: siteConfig.name,
-    },
+    }),
   };
 }
 

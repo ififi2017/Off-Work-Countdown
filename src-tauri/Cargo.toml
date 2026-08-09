@@ -1,6 +1,6 @@
 [package]
 name = "off-work-countdown"
-version = "3.0.2"
+version = "3.0.3"
 description = "Off Work Countdown desktop app"
 authors = ["ififi2017"]
 license = "MIT"

@@ -15,6 +15,23 @@ export const trackedEvents = [
   "preset_start",
   /** 在表单里自己点了开始倒计时。 */
   "countdown_start",
+  /** 倒计时自然走到下班时间。 */
+  "countdown_complete",
+  /** 用户真正执行了一次分享、复制或图片下载。 */
+  "share_action",
+  /** Web 首页展示了客户端下载邀请。 */
+  "desktop_invite_view",
+  /** 从邀请进入客户端下载页。 */
+  "desktop_invite_open",
+  /** 用户主动关闭客户端下载邀请。 */
+  "desktop_invite_dismiss",
+  /** 下载页的各平台安装包与 GitHub Releases 点击。 */
+  "desktop_download_windows_intel",
+  "desktop_download_windows_arm",
+  "desktop_download_macos_apple",
+  "desktop_download_macos_intel",
+  "desktop_download_linux_intel",
+  "desktop_download_github",
 ] as const;
 
 export type TrackedEvent = (typeof trackedEvents)[number];

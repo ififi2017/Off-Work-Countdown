@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { ContentPage } from "@/components/ContentPage";
 import { DesktopDownloads } from "@/components/DesktopDownloads";
 import { getContent } from "@/lib/server/content";
+import { localizedSocialMetadata } from "@/lib/server/metadata";
 import {
   contentLocales,
   defaultContentLocale,
@@ -39,14 +40,12 @@ export async function generateMetadata({
       canonical: `${siteConfig.baseUrl}/${lang}/download`,
       languages: alternateLanguages,
     },
-    openGraph: {
+    ...localizedSocialMetadata({
+      lang,
+      path: "download",
       title: content.download.metaTitle,
       description: content.download.metaDescription,
-      type: "website",
-      locale: lang,
-      url: `${siteConfig.baseUrl}/${lang}/download`,
-      siteName: siteConfig.name,
-    },
+    }),
   };
 }
 
@@ -64,6 +63,8 @@ export default async function DownloadPage({
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: siteConfig.name,
+    description: copy.metaDescription,
+    url: `${siteConfig.baseUrl}/${lang}/download`,
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "macOS, Windows",
     isAccessibleForFree: true,

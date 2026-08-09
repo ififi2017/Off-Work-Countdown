@@ -239,6 +239,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [formError, setFormError] = useState("");
   const reminderFiredRef = useRef(false);
+  const completionTrackedRef = useRef(false);
 
   // Salary state
   const [salaryType, setSalaryType] = useState<"monthly" | "daily">("monthly");
@@ -621,6 +622,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
         const diff = end.getTime() - now.getTime();
         if (diff <= 0) {
+          if (!completionTrackedRef.current) {
+            completionTrackedRef.current = true;
+            track("countdown_complete");
+          }
           setTimeLeft(t("offWorkTime"));
           setProgress(100);
           setShowConfetti(true);
@@ -713,6 +718,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       // 开始时距下班已不足 15 分钟的话，直接标记为已提醒——否则倒计时的第一个
       // tick 就会立刻弹出「还有十五分钟」，而用户是刚点的开始，这属于打扰。
       reminderFiredRef.current = end.getTime() - now.getTime() <= REMINDER_LEAD_MS;
+      completionTrackedRef.current = false;
       setActiveBounds({
         start,
         end,
@@ -791,6 +797,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setProgress(0);
     setTimeLeft("");
     setShowConfetti(false);
+    completionTrackedRef.current = false;
     // 退出分享视图：恢复访问者自己保存的时间，并重新开启持久化。
     if (isSharedView) exitSharedView();
   };
@@ -815,6 +822,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setProgress(0);
     setTimeLeft("");
     setShowConfetti(false);
+    completionTrackedRef.current = false;
   };
 
   const handleTimeChange = (
@@ -1068,12 +1076,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 <ThemeToggle
                   theme={theme}
                   onThemeChange={handleThemeChange}
+                  compact
                 />
               ) : null}
               <LanguageSelector
                 currentLang={lang}
                 languageMap={languageNames}
-                compact={IS_DESKTOP_BUILD}
+                compact
               />
             </div>
           </div>

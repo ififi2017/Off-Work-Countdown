@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { contentLocales, type ContentLocale } from "@/lib/content-locales";
+import { siteConfig } from "@/config/site";
 
 // 内容页语言的自称写法。
 const localeLabels: Record<ContentLocale, string> = {
@@ -31,18 +32,41 @@ export function ContentPage({
   wide = false,
   children,
 }: ContentPageProps) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: siteConfig.name,
+        item: `${siteConfig.baseUrl}/${lang}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: heading,
+        item: `${siteConfig.baseUrl}/${lang}/${slug}`,
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <div
         className={`mx-auto px-5 py-12 sm:py-16 ${
           wide ? "max-w-5xl" : "max-w-2xl"
         }`}
       >
         <div className="flex items-center justify-between gap-4">
-          {/* 回到应用走根路径：middleware 会依据 i18nextLng cookie 把用户送回
-              他自己的界面语言，而不是内容页所用的中文或英文。 */}
           <Link
-            href="/"
+            href={`/${lang}`}
             className="inline-flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
           >
             <ArrowLeft size={16} className="rtl:rotate-180" />
