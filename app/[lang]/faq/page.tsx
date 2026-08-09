@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { getContent } from "@/lib/server/content";
 import { ContentPage } from "@/components/ContentPage";
+import { localizedSocialMetadata } from "@/lib/server/metadata";
 import {
   contentLocales,
   defaultContentLocale,
@@ -40,14 +41,13 @@ export async function generateMetadata({
       canonical: `${siteConfig.baseUrl}/${lang}/faq`,
       languages: alternateLanguages,
     },
-    openGraph: {
+    ...localizedSocialMetadata({
+      lang,
+      path: "faq",
       title: content.faq.metaTitle,
       description: content.faq.metaDescription,
       type: "article",
-      locale: lang,
-      url: `${siteConfig.baseUrl}/${lang}/faq`,
-      siteName: siteConfig.name,
-    },
+    }),
   };
 }
 

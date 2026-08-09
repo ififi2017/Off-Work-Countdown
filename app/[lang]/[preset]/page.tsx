@@ -7,6 +7,7 @@ import { getPresetCopy } from "@/lib/server/presets";
 import { presets, getPreset } from "@/lib/presets";
 import { getShiftLengthHours } from "@/lib/countdown";
 import { encodeShift } from "@/lib/share";
+import { localizedSocialMetadata } from "@/lib/server/metadata";
 import {
   contentLocales,
   defaultContentLocale,
@@ -50,14 +51,13 @@ export async function generateMetadata({
       canonical: `${siteConfig.baseUrl}/${lang}/${preset}`,
       languages: alternatesFor(preset),
     },
-    openGraph: {
+    ...localizedSocialMetadata({
+      lang,
+      path: preset,
       title: item.metaTitle,
       description: item.metaDescription,
       type: "article",
-      locale: lang,
-      url: `${siteConfig.baseUrl}/${lang}/${preset}`,
-      siteName: siteConfig.name,
-    },
+    }),
   };
 }
 

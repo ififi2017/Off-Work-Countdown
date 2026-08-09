@@ -4,6 +4,7 @@ import { Github } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { getContent } from "@/lib/server/content";
 import { ContentPage } from "@/components/ContentPage";
+import { localizedSocialMetadata } from "@/lib/server/metadata";
 import {
   contentLocales,
   defaultContentLocale,
@@ -39,14 +40,12 @@ export async function generateMetadata({
       canonical: `${siteConfig.baseUrl}/${lang}/about`,
       languages: alternateLanguages,
     },
-    openGraph: {
+    ...localizedSocialMetadata({
+      lang,
+      path: "about",
       title: content.about.metaTitle,
       description: content.about.metaDescription,
-      type: "website",
-      locale: lang,
-      url: `${siteConfig.baseUrl}/${lang}/about`,
-      siteName: siteConfig.name,
-    },
+    }),
   };
 }
 

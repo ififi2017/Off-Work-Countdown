@@ -12,6 +12,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { LatestReleaseDownloads, DownloadAsset } from "@/lib/github-release";
 import type { ContentBundle } from "@/lib/server/content";
+import { track } from "@/lib/track";
+import type { TrackedEvent } from "@/lib/analytics-events";
 
 type Copy = ContentBundle["download"];
 
@@ -36,6 +38,9 @@ function DownloadButton({
   downloadLabel,
   comingSoonLabel,
   unavailableLabel,
+  loading,
+  loadingLabel,
+  event,
   placeholder = false,
 }: {
   asset: DownloadAsset | null | undefined;
@@ -43,13 +48,16 @@ function DownloadButton({
   downloadLabel: string;
   comingSoonLabel: string;
   unavailableLabel: string;
+  loading: boolean;
+  loadingLabel: string;
+  event: TrackedEvent;
   placeholder?: boolean;
 }) {
   if (!asset) {
     return (
       <div
         aria-disabled="true"
-        title={placeholder ? comingSoonLabel : unavailableLabel}
+        title={loading ? loadingLabel : placeholder ? comingSoonLabel : unavailableLabel}
         className={cn(
           buttonVariants({ variant: "outline" }),
           "h-auto min-h-12 w-full cursor-not-allowed justify-between gap-3 border-gray-200 bg-gray-50 px-4 py-3 text-gray-400 opacity-80 dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-500"
@@ -57,7 +65,12 @@ function DownloadButton({
       >
         <span>{label}</span>
         <span className="text-xs font-normal">
-          {placeholder ? comingSoonLabel : "—"}
+          {loading ? (
+            <span className="inline-flex items-center gap-1.5">
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+              {loadingLabel}
+            </span>
+          ) : placeholder ? comingSoonLabel : "—"}
         </span>
       </div>
     );
@@ -66,6 +79,7 @@ function DownloadButton({
   return (
     <a
       href={asset.url}
+      onClick={() => track(event)}
       className={cn(
         buttonVariants(),
         "h-auto min-h-12 w-full justify-between gap-3 px-4 py-3"
@@ -103,6 +117,7 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
   }, []);
 
   const downloads = state.status === "ready" ? state.release.downloads : null;
+  const loading = state.status === "loading";
   const linuxDownloadsEnabled = false;
 
   return (
@@ -149,6 +164,9 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
               unavailableLabel={copy.unavailableLabel}
+              loading={loading}
+              loadingLabel={copy.loadingLabel}
+              event="desktop_download_windows_intel"
             />
             <DownloadButton
               asset={downloads?.windowsArm64}
@@ -156,7 +174,9 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
               unavailableLabel={copy.unavailableLabel}
-              placeholder
+              loading={loading}
+              loadingLabel={copy.loadingLabel}
+              event="desktop_download_windows_arm"
             />
           </div>
         </section>
@@ -182,6 +202,9 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
               unavailableLabel={copy.unavailableLabel}
+              loading={loading}
+              loadingLabel={copy.loadingLabel}
+              event="desktop_download_macos_apple"
             />
             <DownloadButton
               asset={downloads?.macosIntel}
@@ -189,6 +212,9 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
               unavailableLabel={copy.unavailableLabel}
+              loading={loading}
+              loadingLabel={copy.loadingLabel}
+              event="desktop_download_macos_intel"
             />
           </div>
         </section>
@@ -208,6 +234,9 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
               unavailableLabel={copy.unavailableLabel}
+              loading={loading}
+              loadingLabel={copy.loadingLabel}
+              event="desktop_download_linux_intel"
             />
           </section>
         )}
@@ -217,6 +246,7 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
         href={releasesUrl}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => track("desktop_download_github")}
         className="mt-5 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-5 text-gray-900 transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:border-gray-600 dark:hover:bg-gray-800/70"
       >
         <Github className="h-5 w-5 shrink-0" aria-hidden="true" />

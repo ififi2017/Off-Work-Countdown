@@ -33,6 +33,7 @@ import {
 } from "@/lib/share";
 import { generateShareImage, type ShareFormat } from "@/lib/shareImage";
 import { siteConfig } from "@/config/site";
+import { track as trackAggregate } from "@/lib/track";
 
 interface ShareDialogProps {
   open: boolean;
@@ -184,6 +185,7 @@ export function ShareDialog({
     a.click();
     a.remove();
     track("share", { platform: "download", mood: moodId, type: "image" });
+    trackAggregate("share_action");
   };
 
   const handleNativeShareImage = async () => {
@@ -193,6 +195,7 @@ export function ShareDialog({
       try {
         await navigator.share({ files: [file], text: fullText, title: siteName });
         track("share", { platform: "native", mood: moodId, type: "image" });
+        trackAggregate("share_action");
       } catch {
         // user cancelled — no-op
       }
@@ -214,6 +217,7 @@ export function ShareDialog({
       ]);
       flash("image");
       track("share", { platform: "copy-image", mood: moodId, type: "image" });
+      trackAggregate("share_action");
     } catch {
       // ignore
     }
@@ -224,6 +228,7 @@ export function ShareDialog({
       await navigator.clipboard.writeText(fullText);
       flash("text");
       track("share", { platform: "copy-text", mood: moodId, type: "text" });
+      trackAggregate("share_action");
     } catch {
       // ignore
     }
@@ -234,6 +239,7 @@ export function ShareDialog({
     try {
       await navigator.share({ text: fullText, title: siteName });
       track("share", { platform: "native", mood: moodId, type: "text" });
+      trackAggregate("share_action");
     } catch {
       // cancelled
     }
@@ -249,6 +255,7 @@ export function ShareDialog({
         window.open(url, "_blank", "noopener,noreferrer");
       }
       track("share", { platform: id, mood: moodId, type: tab });
+      trackAggregate("share_action");
     } catch {
       // A blocked system browser should not close or break the share dialog.
     }

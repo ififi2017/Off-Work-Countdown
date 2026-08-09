@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { resolveContentLocale } from "@/lib/content-locales";
+import { track } from "@/lib/track";
 
 const DISMISS_KEY = "desktop-download-invite-v1-dismissed";
 
@@ -25,13 +26,23 @@ export function DesktopDownloadInvite() {
     const isSupportedDesktop = /windows nt|macintosh/.test(userAgent) && !isTouchMac;
     if (!isSupportedDesktop) return;
 
-    const timer = window.setTimeout(() => setVisible(true), 3000);
+    const timer = window.setTimeout(() => {
+      setVisible(true);
+      track("desktop_invite_view");
+    }, 3000);
     return () => window.clearTimeout(timer);
   }, [pathname]);
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, "true");
     setVisible(false);
+    track("desktop_invite_dismiss");
+  };
+
+  const openDownloads = () => {
+    localStorage.setItem(DISMISS_KEY, "true");
+    setVisible(false);
+    track("desktop_invite_open");
   };
 
   const contentLang = resolveContentLocale(i18n.language);
@@ -77,7 +88,7 @@ export function DesktopDownloadInvite() {
             </div>
 
             <Button asChild className="mt-4 w-full gap-2 rounded-xl">
-              <Link href={`/${contentLang}/download`} onClick={dismiss}>
+              <Link href={`/${contentLang}/download`} onClick={openDownloads}>
                 <Download className="h-4 w-4" aria-hidden="true" />
                 {t("desktopInviteButton")}
               </Link>
