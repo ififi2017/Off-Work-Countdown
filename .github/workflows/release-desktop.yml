@@ -66,6 +66,7 @@ jobs:
             Off Work Countdown desktop release.
 
             See README for installation notes on unsigned macOS and Windows builds.
+          generateReleaseNotes: true
           releaseDraft: true
           prerelease: false
           uploadUpdaterJson: true

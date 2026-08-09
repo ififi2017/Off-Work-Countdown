@@ -226,7 +226,7 @@ Dock 图标是否保留是个取舍：隐藏（`activationPolicy: Accessory`）�
 
 **P4 签名与发布配置（2026-08-09）**：长期 updater 私钥生成在仓库外的 `~/.tauri/off-work-countdown-updater.key`（权限 600），随机口令保存在 macOS 钥匙串服务 `com.rainif.offworkcountdown.updater-signing`；仓库只提交可公开的公钥。`TAURI_SIGNING_PRIVATE_KEY` 与 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 已直接写入 `ififi2017/Off-Work-Countdown` 的 GitHub Actions Secrets，未经过工作区文件。客户端更新端点已经指向 GitHub Releases 的 `latest.json`，Windows 使用 passive 安装模式。普通本地构建不强制生成 updater 包，发布工作流通过 `tauri.release.conf.json` 单独开启 `createUpdaterArtifacts`。
 
-本机发布模式已实际生成并签名 `Off Work Countdown.app.tar.gz` 与 `.sig`，macOS App 同时使用 ad-hoc identity `-` 签名；嵌入公钥与生成公钥已校验一致。新增 `scripts/check-version.mjs`，CI 和 Release 在构建前强制检查 npm、lockfile、Cargo、Tauri 与 `desktop-v*` tag 版本完全一致。新增 `release-desktop.yml`，并行覆盖 macOS Apple Silicon、macOS Intel、Windows x64，使用 `tauri-action@v1` 生成安装包、更新签名、`latest.json` 与 Draft Release；Windows updater JSON 优先选择 NSIS。
+本机发布模式已实际生成并签名 `Off Work Countdown.app.tar.gz` 与 `.sig`，macOS App 同时使用 ad-hoc identity `-` 签名；嵌入公钥与生成公钥已校验一致。新增 `scripts/check-version.mjs`，CI 和 Release 在构建前强制检查 npm、lockfile、Cargo、Tauri 与 `desktop-v*` tag 版本完全一致。新增 `release-desktop.yml`，并行覆盖 macOS Apple Silicon、macOS Intel、Windows x64，使用 `tauri-action@v1` 生成安装包、更新签名、`latest.json` 与 Draft Release；Windows updater JSON 优先选择 NSIS。Draft 同时调用 GitHub Release Notes API，按 `.github/release.yml` 中的 PR 标签自动生成新功能、修复、文档、其他改动、贡献者与完整 Changelog。
 
 P4 剩余两个发布门禁：第一，把私钥和钥匙串口令另做一份离线备份，不能只留在这台 Mac 与不可导出的 GitHub Secret 中；第二，提交并推送工作流后，用 `3.0.0 → 3.0.1`（或专用预发布版本）跑一次真实 GitHub Draft Release 和客户端升级回环。未经这两项，不把 P4 标为全绿。
 
