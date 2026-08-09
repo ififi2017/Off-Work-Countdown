@@ -16,6 +16,7 @@ export interface DesktopCountdownState {
   hideEarnings: boolean;
   dailySalary: number | null;
   lang: string;
+  countdownNotStarted: string;
 }
 
 export interface DesktopCountdownView {
@@ -37,6 +38,7 @@ const EMPTY_STATE: DesktopCountdownState = {
   hideEarnings: false,
   dailySalary: null,
   lang: "en",
+  countdownNotStarted: "Countdown not started",
 };
 
 type DesktopStore = Awaited<
@@ -59,8 +61,11 @@ async function getDesktopStore(): Promise<DesktopStore | null> {
   return storePromise;
 }
 
-export function emptyDesktopCountdownState(lang = "en"): DesktopCountdownState {
-  return { ...EMPTY_STATE, lang };
+export function emptyDesktopCountdownState(
+  lang = "en",
+  countdownNotStarted = "Countdown not started"
+): DesktopCountdownState {
+  return { ...EMPTY_STATE, lang, countdownNotStarted };
 }
 
 export async function writeDesktopCountdownState(
@@ -150,9 +155,14 @@ export async function updateDesktopTrayMenu(labels: {
   });
 }
 
-export async function stopDesktopCountdown(lang = "en"): Promise<void> {
+export async function stopDesktopCountdown(
+  lang = "en",
+  countdownNotStarted = "Countdown not started"
+): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
-  await writeDesktopCountdownState(emptyDesktopCountdownState(lang));
+  await writeDesktopCountdownState(
+    emptyDesktopCountdownState(lang, countdownNotStarted)
+  );
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("clear_desktop_countdown_display");
 }

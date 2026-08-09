@@ -88,7 +88,19 @@ export default async function DownloadPage({
         }}
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <section id="downloads">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+          {copy.downloadsHeading}
+        </h2>
+        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
+          {copy.downloadsIntro}
+        </p>
+        <div className="mt-6">
+          <DesktopDownloads copy={copy} releasesUrl={siteConfig.releases} />
+        </div>
+      </section>
+
+      <div className="mt-16 grid gap-4 md:grid-cols-3">
         {copy.benefits.map((benefit, index) => {
           const Icon = benefitIcons[index] ?? PanelTop;
           return (
@@ -157,18 +169,6 @@ export default async function DownloadPage({
               </tbody>
             </table>
           </div>
-        </div>
-      </section>
-
-      <section className="mt-16" id="downloads">
-        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
-          {copy.downloadsHeading}
-        </h2>
-        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
-          {copy.downloadsIntro}
-        </p>
-        <div className="mt-6">
-          <DesktopDownloads copy={copy} releasesUrl={siteConfig.releases} />
         </div>
       </section>
     </ContentPage>

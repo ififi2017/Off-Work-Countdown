@@ -5,7 +5,6 @@ import {
   type GitHubRelease,
 } from "@/lib/github-release";
 
-export const revalidate = 300;
 // 明确保持为运行时 Route Handler，避免构建阶段为探测静态响应而请求 GitHub。
 export const dynamic = "force-dynamic";
 
@@ -27,7 +26,9 @@ export async function GET() {
   try {
     const response = await fetch(releaseApiUrl, {
       headers,
-      next: { revalidate },
+      // Route Handler 自己负责短期 CDN 缓存。这里不再叠加 Next Data Cache，
+      // 否则发布后两层 stale-while-revalidate 会让旧安装包停留很久。
+      cache: "no-store",
     });
 
     if (!response.ok) {
@@ -50,7 +51,7 @@ export async function GET() {
 
     return NextResponse.json(parsed, {
       headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
       },
     });
   } catch (error) {

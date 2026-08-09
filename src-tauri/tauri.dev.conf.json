@@ -1,0 +1,24 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Off Work Countdown",
+        "url": "en",
+        "width": 430,
+        "height": 430,
+        "minWidth": 420,
+        "minHeight": 420,
+        "maxWidth": 450,
+        "maxHeight": 450,
+        "resizable": true,
+        "maximizable": false,
+        "fullscreen": false,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "acceptFirstMouse": true
+      }
+    ]
+  }
+}
