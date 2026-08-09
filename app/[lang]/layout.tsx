@@ -21,6 +21,9 @@ const geistMono = localFont({
   weight: '100 900',
 });
 
+/** 由 next.config.mjs 在构建期注入，见 docs/PLAN-M5-TAURI.md 决策 1。 */
+const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === 'desktop';
+
 // 在首次绘制前把主题类打到 <html> 上，避免深色/自定义主题用户看到一帧浅色。
 // 必须与 off-work-countdown.tsx 的 applyTheme 保持一致。
 const themeInitScript = `(function(){try{var t=localStorage.getItem('theme')||'auto';var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var r=document.documentElement;if(t==='dark'||(t==='auto'&&d)){r.classList.add('dark')}else if(t==='cyberpunk'){r.classList.add('dark','theme-cyberpunk')}else if(t==='sunset'){r.classList.add('theme-sunset')}}catch(e){}})();`;
@@ -154,8 +157,15 @@ export default async function Layout({
           {children}
           <PWAInstallPrompt />
         </I18nProvider>
-        <Analytics />
-        <SpeedInsights />
+        {/* Vercel 的访问统计与性能采集只服务于 Web 端。桌面端不回传任何数据
+            （见 docs/PLAN-M5-TAURI.md 决策 5），这里用构建期常量剔除——
+            桌面构建下整个分支是死代码，压缩阶段会被移除。 */}
+        {!IS_DESKTOP_BUILD && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   );

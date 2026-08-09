@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, resolve } from 'path';
 import withSerwistInit from '@serwist/next';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -32,6 +32,23 @@ const nextConfig = {
       String(Date.now()),
     // 构建期即确定运行形态，界面据此选择无边距布局，避免运行时探测造成首帧闪烁。
     NEXT_PUBLIC_BUILD_TARGET: isDesktop ? 'desktop' : 'web',
+  },
+
+  // 桌面端不回传任何数据（见 docs/PLAN-M5-TAURI.md 决策 5）。仅靠条件渲染
+  // 无法把 Vercel 的埋点模块从产物中剔除——分支是死代码但模块仍会被打包，
+  // 因此在模块解析层直接换成空实现。
+  webpack: (config) => {
+    if (isDesktop) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@vercel/analytics/react': resolve(__dirname, 'lib/analytics-stub.tsx'),
+        '@vercel/speed-insights/next': resolve(
+          __dirname,
+          'lib/analytics-stub.tsx'
+        ),
+      };
+    }
+    return config;
   },
 
   ...(isDesktop

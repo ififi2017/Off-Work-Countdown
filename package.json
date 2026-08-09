@@ -4,8 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:desktop": "BUILD_TARGET=desktop next dev",
     "build": "next build",
     "build:desktop": "BUILD_TARGET=desktop next build",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run"
@@ -42,6 +46,7 @@
     "@eslint/eslintrc": "^3.2.0",
     "@next/eslint-plugin-next": "^15.5.20",
     "@serwist/next": "^9.5.11",
+    "@tauri-apps/cli": "^2.11.4",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^24",
     "@types/qrcode": "^1.5.6",
