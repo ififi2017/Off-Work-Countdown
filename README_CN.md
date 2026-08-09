@@ -1,8 +1,38 @@
 # 下班倒计时
 
-下班倒计时是一个基于Next.js的网页应用,帮助您跟踪工作日结束前的剩余时间。通过简洁互动的界面,该应用提供可视化的倒计时和进度条,让您的工作日更易管理。
+下班倒计时是一款注重隐私的下班时间工具，同时提供网页版与轻量的 Tauri 桌面客户端。设置一次班次后，就能随时查看剩余时间、进度和预估收入。
+
+[English README](README.md)
+
+[![网页版](https://img.shields.io/badge/Web-%E7%AB%8B%E5%8D%B3%E4%BD%BF%E7%94%A8-ff6b35)](https://off.rainif.com/zh-CN)
+[![桌面版](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
+[![许可证](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
 
 ![](readme_image/off_CN.jpg)
+
+## 使用下班倒计时
+
+- **网页版：**[立即使用](https://off.rainif.com/zh-CN)，无需安装。
+- **桌面客户端：**[打开下载页](https://off.rainif.com/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。
+- **安装包列表：**[最新 GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)。
+
+桌面版额外提供 macOS 菜单栏倒计时、Windows 置顶迷你计时器、原生通知、登录时启动、全局快捷键和一键更新。它仍然坚持本地优先：班次、薪资设置与倒计时状态只保存在你的设备上。
+
+### 安装桌面客户端
+
+当前安装包完全开源，但**没有购买 Apple 或 Microsoft 的代码签名证书**。自动更新包带有 Tauri 用于校验更新来源的加密签名，但 macOS Gatekeeper 或 Windows SmartScreen 在首次安装时仍可能警告。请只从本仓库的 Release 页面下载，并核对 tag、平台和文件名。
+
+#### macOS
+
+1. Apple Silicon Mac 下载 `aarch64.dmg`，Intel Mac 下载 `x64.dmg`。
+2. 打开 DMG，把“Off Work Countdown”拖入“应用程序”。
+3. 先尝试打开一次。如果 macOS 阻止运行，请进入**系统设置 → 隐私与安全性**，滚动到“安全性”，点击**仍要打开**，然后再次确认**打开**。Apple 的官方说明见[安全地打开 Mac 上的 App](https://support.apple.com/zh-cn/102445)。
+
+#### Windows
+
+1. 大多数电脑下载 `x64-setup.exe`；Windows on ARM 设备下载 `arm64-setup.exe`。需要受管安装时也可选择对应 MSI。
+2. 运行安装程序。如果 Microsoft Defender SmartScreen 提示无法识别应用，请先核对下载来源；确认信任后，在系统提供该选项时点击**更多信息 → 仍要运行**。
+3. 公司管理策略或 Smart App Control 可能不提供绕过选项。相关系统设置见 Microsoft 的 [Windows 安全中心“应用和浏览器控制”说明](https://support.microsoft.com/zh-cn/windows/security/windows-security/app-browser-control-in-the-windows-security-app)。
 
 ## 功能特点
 
@@ -13,13 +43,16 @@
 - 按当前设置推算本周与今年的累计天数、小时数与收入
 - 可选的下班前 15 分钟提醒
 - 把倒计时分享成心情图片，或分享成一条打开即是同一班次的链接
+- 桌面端原生通知、登录时启动和全局显示/隐藏快捷键
+- macOS 菜单栏倒计时与原生玻璃迷你窗；Windows 紧凑迷你计时器
+- 通过带更新签名的 GitHub Release 在客户端内更新
 - 常见作息说明页：996、朝九晚五、朝九晚六、夜班
 - 支持离线使用的渐进式Web应用(PWA)
 - 浅色、深色、跟随系统，以及两套自定义主题
 - 适应各种设备的响应式设计
 - 19 种语言(i18n)
 
-上下班时间和薪资只存在你的浏览器里，不会发送到服务器，也不会在设备之间同步。
+上下班时间和薪资只存在你的浏览器或桌面客户端里，不会发送到服务器，也不会在设备之间同步。可选的 Web 统计只记录白名单内的聚合事件数，不记录薪资、班次、Cookie、IP 或设备标识。
 
 ## 使用的技术
 
@@ -30,6 +63,8 @@
 - Framer Motion
 - Serwist (Service Worker / PWA)
 - i18next
+- Tauri 2 与 Rust
+- AppKit（macOS 原生迷你计时器）
 
 ## 开始使用
 
@@ -164,6 +199,8 @@ export const languageNames = {
 3. 按照提示在您的设备上安装应用。
 
 iPhone 和 iPad 请在 Safari 里点分享按钮，选"添加到主屏幕"；macOS 的 Safari 选"添加到程序坞"。
+
+PWA 会继续维护；如果你需要常驻菜单栏／迷你计时器、原生提醒、登录时启动和自动更新，建议使用[桌面客户端](https://off.rainif.com/zh-CN/download)。
 
 ## 贡献
 
