@@ -55,23 +55,25 @@ M4 评估 Web Push 时否掉了它，理由是必须把每个人的下班时刻�
 
 **排除机制：`pageExtensions`，不需要构建前脚本。**
 
-Web 专属路由命名为 `*.web.ts`，`web` 目标的 `pageExtensions` 包含该后缀、`desktop` 目标不包含，桌面构建因此看不见它们。工作区始终干净，无需在构建期搬动文件。
+Web Route Handler 保持 Next 官方约定的 `route.ts` 文件名；Web 构建识别普通 `.ts/.tsx`，桌面构建只识别 `.tsx` 与 `.desktop.ts(x)`。因此 API、manifest、robots、sitemap 和 middleware 等 `.ts` 路由不会进入桌面静态导出，共享的 page/layout `.tsx` 正常保留，工作区也无需在构建期搬动文件。首版曾把 Handler 命名为 `route.web.ts`：本地 `next build` 能通过，但 Vercel 部署打包阶段仍按标准 `route.ts` 产物名寻找 `route_client-reference-manifest.js`，导致 `ENOENT`；因此该命名已废弃。
+
+CI 在两个构建后执行产物级断言：Web 必须真实生成 robots、manifest 与两个 API 的标准 `route_client-reference-manifest.js`；Desktop 必须不含这些 Web Handler，同时必须包含主界面和迷你窗静态页面。仅检查命令退出码不足以覆盖 Vercel 这类后处理文件名契约。
 
 | 阻碍项 | 实测结果 | 处理 |
 |---|---|---|
 | middleware | **只警告，不报错**——Next 15 直接禁用它 | 保留原样，无需任何处理 |
 | `redirects()` | **只警告，不报错** | 仍按目标条件配置，避免留下死配置 |
-| `/api/e`、`/api/e/stats` | 报错（force-dynamic） | 改名为 `route.web.ts` |
-| `/manifest.json` | 报错（force-dynamic） | 改名为 `route.web.ts` |
-| `/robots.txt` | **报错**——即使已移除 force-dynamic，仍要求显式声明 | 改名为 `route.web.ts` |
-| `app/sitemap.ts` | **报错**——同样要求显式声明 | **不能改名**，见下 |
+| `/api/e`、`/api/e/stats` | 报错（force-dynamic） | 保持标准 `route.ts`；桌面目标排除普通 `.ts` |
+| `/manifest.json` | 报错（force-dynamic） | 保持标准 `route.ts`；桌面目标排除普通 `.ts` |
+| `/robots.txt` | 报错 | 保持标准 `route.ts`；桌面目标排除普通 `.ts` |
+| `app/sitemap.ts` | 报错 | 桌面目标排除普通 `.ts`；Web 端继续按 metadata 约定生成 |
 | `opengraph-image.tsx` | 正常导出 | 无需处理 |
 
 **三条更正**：
 
 1. **middleware 不是阻碍。** 原计划为它预留了「构建前脚本临时移走」的方案 B，实测证明多余——Next 15 遇到 `output: 'export'` 时只是禁用中间件并给出警告。方案 B 整个不需要。
-2. **`robots.txt` 是阻碍。** 原计划把它列为「无害但无用」，实际它会中断构建：静态导出要求元数据路由显式声明 `dynamic = "force-static"`，仅仅不是 `force-dynamic` 并不够。
-3. **`sitemap.ts` 是阻碍，且不能用改名解决。** 它是 Next.js 的元数据文件约定，对文件名敏感——改成 `sitemap.web.ts` 后虽仍被识别为 `/sitemap.xml`，却会从静态预渲染**退化成按请求动态生成**，等于为了桌面端牺牲 Web 端。正确做法是保留文件名并加上 `export const dynamic = "force-static"`：这对 Web 构建是无操作（它本就是静态），对桌面构建则是通过的前提。代价是桌面产物里多一个用不上的 `sitemap.xml`，无害，不值得为它增加复杂度。
+2. **`robots.txt` 是阻碍。** 原计划把它列为「无害但无用」，实际它会中断静态导出，因此与其他 Web Handler 一起由桌面 `pageExtensions` 排除。
+3. **特殊 Route Handler 后缀不能依赖本地构建结果。** `route.web.ts` 在 Next 编译阶段可工作，但 Vercel 的部署打包器仍依赖标准 `route.ts` 产物命名。最终方案保留官方文件约定，只让桌面目标排除普通 `.ts`；`sitemap.ts` 也因此自然只存在于 Web 构建，不再进入桌面产物。
 
 **另一处实测发现**：给桌面目标设置自定义 `distDir` 会连带改变静态站点的输出位置（导出产物落进 `distDir` 而非 `out/`）。因此保持约定布局——中间产物在 `.next/`，静态站点在 `out/`，Tauri 指向 `../out` 即可。代价是桌面构建会覆盖 `.next`，与「构建时不要同时开着 dev server」属于同一类注意事项。
 

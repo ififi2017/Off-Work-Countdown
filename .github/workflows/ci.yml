@@ -31,5 +31,11 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Check Web build output
+        run: npm run check:build:web
+
       - name: Build desktop frontend
         run: npm run build:desktop
+
+      - name: Check desktop build output
+        run: npm run check:build:desktop

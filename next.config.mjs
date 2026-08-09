@@ -8,9 +8,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 //   web     —— 部署到 Vercel，保留 middleware、动态路由与重定向
 //   desktop —— 静态导出，供 Tauri 打包（见 docs/PLAN-M5-TAURI.md 决策 1）
 //
-// 桌面端排除 Web 专属路由的机制是 pageExtensions：这些文件命名为
-// `*.web.ts`，只有 web 目标把该后缀视为路由，desktop 目标看不见它们。
-// 这样不需要在构建期搬动文件，工作区始终保持干净。
+// Web Route Handlers 保持 Next 官方约定的 `route.ts` 文件名。桌面目标不把
+// 普通 `.ts` 识别为路由，因此 API、manifest、robots 与 sitemap 不会进入静态
+// 导出；共享 page/layout 都是 `.tsx`，桌面专属页使用 `.desktop.tsx`。
+// 不使用 `route.web.ts`：Next 本地编译虽然能识别它，但 Vercel 的部署打包阶段
+// 会按标准 `route.ts` 产物名查找 manifest，导致 ENOENT。
 const isDesktop = process.env.BUILD_TARGET === 'desktop';
 
 /** @type {import('next').NextConfig} */
@@ -19,8 +21,8 @@ const nextConfig = {
   outputFileTracingRoot: __dirname,
 
   pageExtensions: isDesktop
-    ? ['desktop.ts', 'desktop.tsx', 'ts', 'tsx']
-    : ['web.ts', 'web.tsx', 'ts', 'tsx'],
+    ? ['desktop.ts', 'desktop.tsx', 'tsx']
+    : ['ts', 'tsx'],
 
   // Expose a per-deploy build id to the client so translation fetches can be
   // versioned, busting stale caches on each deploy. Evaluated once at build time:

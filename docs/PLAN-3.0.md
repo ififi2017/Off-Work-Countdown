@@ -248,7 +248,7 @@ src-tauri/src/
 > 2. 第 18 项写「Windows 托盘悬浮显示」低估了差异——**Windows 系统托盘不支持文字标题**。已改为用置顶迷你窗承担常驻显示，两个平台各用符合自身惯例的形态
 > 3. 第 22 项「签名与公证」**已决定不做**：开源免费项目不通过安装量变现，代价转为首次安装摩擦，用文档补齐
 
-16. **构建目标拆分** — ✅ 已完成。`pageExtensions` 方案，`npm run build:desktop` 产出静态站点
+16. **构建目标拆分** — ✅ 已完成。Web Route Handler 保持标准 `route.ts`，桌面 `pageExtensions` 排除普通 `.ts` 路由；`npm run build:desktop` 产出静态站点，同时避免 Vercel 对 `route.web.ts` 产物追踪失败
 17. **Tauri v2 骨架** — ✅ 已完成。单实例、托盘、关闭到托盘、Dock 图标唤回窗口，均已实机验证
 18. **菜单栏/托盘实时倒计时** — 🟡 实现完成、Windows 实机验收待办。macOS 菜单栏直接显示 `2:13:45`；Windows 改用置顶迷你窗。秒级刷新走 Rust 侧计时循环，与 webview 是否可见解耦
 19. **原生能力** — 🟡 实现完成、跨平台实机验收待办。Rust 后台在提前 15 分钟/下班时刻发送去重的原生通知；设置页可切换开机自启；平台化快捷键提示对应 macOS 的 `⌘ + Shift + O` 与 Windows/Linux 的 `Ctrl + Shift + O`。macOS 已验证系统中文首启、停止后 Store 清空、自启开关可往返；全局快捷键人工按键、社交平台外链点击与 Windows 实测待办

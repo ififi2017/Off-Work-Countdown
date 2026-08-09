@@ -7,6 +7,8 @@
     "dev:desktop": "BUILD_TARGET=desktop next dev",
     "build": "next build",
     "build:desktop": "BUILD_TARGET=desktop next build",
+    "check:build:web": "node scripts/check-build-output.mjs web",
+    "check:build:desktop": "node scripts/check-build-output.mjs desktop",
     "check:version": "node scripts/check-version.mjs",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
