@@ -233,6 +233,8 @@ Rust 后台线程每秒从 Tauri Store 读取绝对起止时间，并计算剩�
 
 本机发布模式已实际生成并签名 `Off Work Countdown.app.tar.gz` 与 `.sig`，macOS App 同时使用 ad-hoc identity `-` 签名；嵌入公钥与生成公钥已校验一致。新增 `scripts/check-version.mjs`，CI 和 Release 在构建前强制检查 npm、lockfile、Cargo、Tauri 与 `desktop-v*` tag 版本完全一致。新增 `release-desktop.yml`，并行覆盖 macOS Apple Silicon、macOS Intel、Windows x64 与 Windows ARM64，使用 `tauri-action@v1` 生成安装包、更新签名、`latest.json` 与 Draft Release；Windows ARM64 使用 GitHub 原生 `windows-11-arm` runner，updater JSON 优先选择 NSIS。Draft 同时调用 GitHub Release Notes API，按 `.github/release.yml` 中的 PR 标签自动生成新功能、修复、文档、其他改动、贡献者与完整 Changelog。
 
+本地维护流程新增两个跨平台 Node 入口：`npm run deploy:web` 只允许从干净且不落后远端的 `main` 完整验证后推送，触发 CI 与 Web 部署；`npm run release:desktop` 要求干净的 `main` 与 `origin/main` 完全一致、版本号全局对齐且标签不存在，完成 Web／Desktop／Rust 发布检查后创建并推送 `desktop-v*`。两者默认保留精确文本确认，并提供 `--dry-run` 与显式的 `--yes` 自动化选项。
+
 P4 剩余两个发布门禁：第一，把私钥和钥匙串口令另做一份离线备份，不能只留在这台 Mac 与不可导出的 GitHub Secret 中；第二，提交并推送工作流后，用 `3.0.0 → 3.0.1`（或专用预发布版本）跑一次真实 GitHub Draft Release 和客户端升级回环。未经这两项，不把 P4 标为全绿。
 
 **首次线上 Release 实测补充**：macOS arm64 / x64 job 均成功，Windows 首次失败在 `BUILD_TARGET=desktop next build`——npm scripts 在 Windows 使用 `cmd.exe`，不支持 POSIX 的行内环境变量语法。`build:desktop` 已改为跨平台 Node 启动器 `scripts/build-desktop.mjs`，由 `spawnSync` 给 Next 子进程注入 `BUILD_TARGET=desktop`，无需新增 `cross-env` 依赖。

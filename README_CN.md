@@ -65,6 +65,20 @@ npm run build          # 生产构建（Web）
 npm run build:desktop  # 桌面端静态导出，产物在 out/
 ```
 
+维护者发布脚本：
+
+```bash
+npm run deploy:web                         # 验证并推送已经提交的 main
+npm run deploy:web -- --dry-run            # 只验证，不推送
+npm run release:desktop                    # 发布 package.json 中的版本
+npm run release:desktop -- 3.0.3           # 显式核对并发布 3.0.3
+npm run release:desktop -- --dry-run        # 完整验证，但不创建标签
+```
+
+两个发布命令都要求工作区干净、当前位于 `main`，并会在执行前拉取远端状态。
+桌面发布还要求 `HEAD` 与 `origin/main` 完全一致、拒绝重复标签，并要求输入完整
+tag 才会推送。只有明确运行在非交互自动化环境时才应传入 `--yes`。
+
 注意：`next dev` 与 `next build` 共用 `.next` 目录。开发服务器还开着时执行构建，会让它继续引用已被覆盖的 chunk 而报错。请先停掉开发服务器，或事后删除 `.next`。
 
 ## 配置说明

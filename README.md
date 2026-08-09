@@ -68,6 +68,21 @@ npm run build          # Production build (web)
 npm run build:desktop  # Static export for the desktop app, output in out/
 ```
 
+Release automation for maintainers:
+
+```bash
+npm run deploy:web                         # Validate and push committed main
+npm run deploy:web -- --dry-run            # Validate without pushing
+npm run release:desktop                    # Release package.json's version
+npm run release:desktop -- 3.0.3           # Explicitly verify and release 3.0.3
+npm run release:desktop -- --dry-run        # Run every release check, no tag
+```
+
+Both publishing commands require a clean `main` branch and fetch the remote
+before acting. Desktop release additionally requires `HEAD` to equal
+`origin/main`, rejects duplicate tags and asks you to type the exact tag before
+it pushes. Pass `--yes` only in an intentionally non-interactive environment.
+
 Note: `next dev` and `next build` share the `.next` directory. Running a build
 while the dev server is up will leave the dev server serving chunks that no
 longer exist. Stop the dev server first, or delete `.next` afterwards.
