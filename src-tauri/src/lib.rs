@@ -1,17 +1,17 @@
 use serde::{Deserialize, Serialize};
-use std::{thread, time::Duration};
+use std::{sync::OnceLock, thread, time::Duration};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager, WindowEvent,
 };
-#[cfg(target_os = "windows")]
-use tauri::{window::Color, PhysicalPosition, WebviewUrl, WebviewWindowBuilder};
+#[cfg(any(target_os = "windows", debug_assertions))]
+use tauri::{PhysicalPosition, WebviewUrl, WebviewWindowBuilder};
 #[cfg(desktop)]
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 #[cfg(desktop)]
 use tauri_plugin_notification::NotificationExt;
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", debug_assertions))]
 use tauri_plugin_positioner::{Position, WindowExt};
 use tauri_plugin_store::StoreExt;
 
@@ -19,11 +19,32 @@ const STORE_PATH: &str = "desktop-state.json";
 const COUNTDOWN_KEY: &str = "countdown";
 const NOTIFICATION_MARKER_KEY: &str = "notificationMarker";
 const REMINDER_LEAD_MS: i64 = 15 * 60 * 1000;
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", debug_assertions))]
 const MINI_POSITION_KEY: &str = "miniPosition";
 const MINI_ALWAYS_ON_TOP_KEY: &str = "miniAlwaysOnTop";
 
-#[derive(Clone, Debug, Default, Deserialize)]
+/// ObjC 原生面板回调时需要通过 AppHandle 访问 Store。
+static APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
+
+/// 本地验收开关：让 macOS 的 debug 构建把自己当成 Windows，用来验收
+/// Windows 独占的迷你窗（点击唤起主窗口、置顶、关闭按钮等）。
+///
+/// `debug_assertions` 在 `--release` 下为 false，发版脚本产出的包里整个分支
+/// 会被编译器消除，因此这个开关不会出现在正式产物中。
+fn windows_mini_dev_override() -> bool {
+    cfg!(debug_assertions) && std::env::var_os("OWC_FORCE_WINDOWS_MINI").is_some()
+}
+
+/// 是否启用 WebView 版迷你窗。macOS 正常情况下走原生面板，不建这个窗口。
+///
+/// 门控条件与它的所有调用点一致：macOS release 构建里这些代码都不存在，
+/// 函数本身也就不必编译。
+#[cfg(any(target_os = "windows", debug_assertions))]
+fn mini_window_enabled() -> bool {
+    cfg!(target_os = "windows") || windows_mini_dev_override()
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 #[serde(rename_all = "camelCase")]
 struct CountdownState {
@@ -57,7 +78,7 @@ enum CountdownNotification {
     Complete,
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", debug_assertions))]
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 struct MiniPosition {
     x: i32,
@@ -87,10 +108,13 @@ mod native_mini {
         fn owc_native_mini_hide();
         fn owc_native_mini_update(
             time: *const c_char,
-            detail: *const c_char,
+            percent: *const c_char,
+            salary: *const c_char,
             progress: f64,
             running: i32,
             empty_text: *const c_char,
+            show_salary: i32,
+            salary_hidden: i32,
         );
     }
 
@@ -111,23 +135,49 @@ mod native_mini {
         unsafe { owc_native_mini_hide() }
     }
 
-    pub fn update(time: &str, detail: &str, progress: f64, running: bool, empty_text: &str) {
+    pub fn update(
+        time: &str,
+        percent: &str,
+        salary: &str,
+        progress: f64,
+        running: bool,
+        empty_text: &str,
+        show_salary: bool,
+        salary_hidden: bool,
+    ) {
         let time = c_string(time);
-        let detail = c_string(detail);
+        let percent = c_string(percent);
+        let salary = c_string(salary);
         let empty_text = c_string(empty_text);
         unsafe {
             owc_native_mini_update(
                 time.as_ptr(),
-                detail.as_ptr(),
+                percent.as_ptr(),
+                salary.as_ptr(),
                 progress,
                 i32::from(running),
                 empty_text.as_ptr(),
+                i32::from(show_salary),
+                i32::from(salary_hidden),
             )
         }
     }
 }
 
+/// ObjC 原生面板点击眼睛按钮时回调 Rust，翻转 hide_earnings 状态。
+#[cfg(target_os = "macos")]
+#[no_mangle]
+pub extern "C" fn owc_native_mini_toggle_salary_ffi() {
+    if let Some(app) = APP_HANDLE.get() {
+        flip_hide_earnings(app);
+    }
+}
+
 fn platform_name() -> &'static str {
+    // 本地验收时对前端也谎报平台，否则迷你窗里的 Windows 专属交互不会启用。
+    if windows_mini_dev_override() {
+        return "windows";
+    }
     #[cfg(target_os = "macos")]
     return "macos";
     #[cfg(target_os = "windows")]
@@ -138,7 +188,7 @@ fn platform_name() -> &'static str {
 
 /// 显示并聚焦主窗口。窗口可能处于隐藏（关闭到托盘）或最小化状态，
 /// 三步都要做，只调 set_focus 对隐藏窗口无效。
-fn show_main_window(app: &AppHandle) {
+fn focus_main_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
         let _ = window.unminimize();
@@ -156,18 +206,19 @@ fn toggle_main_window(app: &AppHandle) {
     if visible && focused {
         let _ = window.hide();
     } else {
-        show_main_window(app);
+        focus_main_window(app);
     }
 }
 
 fn toggle_mini_window(app: &AppHandle) {
+    // 本地验收 Windows 迷你窗时不要同时弹出 macOS 原生面板，否则两个都在。
     #[cfg(target_os = "macos")]
-    {
-        let _ = app;
+    if !windows_mini_dev_override() {
         native_mini::toggle();
+        return;
     }
 
-    #[cfg(target_os = "windows")]
+    #[cfg(any(target_os = "windows", debug_assertions))]
     {
         let Some(window) = app.get_webview_window("mini") else {
             return;
@@ -182,23 +233,21 @@ fn toggle_mini_window(app: &AppHandle) {
         let _ = window.set_focus();
     }
 
-    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
     let _ = app;
 }
 
 fn hide_mini_window(app: &AppHandle) {
     #[cfg(target_os = "macos")]
-    {
-        let _ = app;
+    if !windows_mini_dev_override() {
         native_mini::hide();
+        return;
     }
 
-    #[cfg(target_os = "windows")]
+    #[cfg(any(target_os = "windows", debug_assertions))]
     if let Some(window) = app.get_webview_window("mini") {
         let _ = window.hide();
     }
 
-    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
     let _ = app;
 }
 
@@ -315,7 +364,7 @@ fn countdown_progress(state: &CountdownState, now_ms: i64) -> f64 {
 /// 规则仍由前端唯一实现。即便主窗口隐藏，托盘与迷你窗生命周期也不受影响。
 fn start_tray_timer(app: AppHandle) {
     thread::spawn(move || {
-        #[cfg(target_os = "windows")]
+        #[cfg(any(target_os = "windows", debug_assertions))]
         let mut was_running = false;
         loop {
             let state = read_countdown_state(&app);
@@ -348,14 +397,19 @@ fn start_tray_timer(app: AppHandle) {
 
             #[cfg(target_os = "macos")]
             {
-                let detail = if active && state.show_salary && !state.hide_earnings {
+                // 百分比与金额分成两个字段下发。早期版本把它们拼成
+                // "90% 645.37" 再由 ObjC 按空格切开，一旦金额改用带分隔符的
+                // 本地化格式（法语千分位就是空格）就会静默错位。
+                let percent = format!("{}%", (progress * 100.0).floor() as i64);
+                let percent_text = if active { percent.as_str() } else { "" };
+                // 开了「显示薪资」但金额栏为空时 daily_salary 是 NaN，此时没有
+                // 可显示的金额，眼睛按钮和右侧的金额行都不应该占位。
+                let salary_text = if active && state.show_salary {
                     state
                         .daily_salary
                         .filter(|salary| salary.is_finite())
                         .map(|salary| format!("{:.2}", salary * progress))
-                        .unwrap_or_else(|| format!("{}%", (progress * 100.0).floor() as i64))
-                } else if active {
-                    format!("{}%", (progress * 100.0).floor() as i64)
+                        .unwrap_or_default()
                 } else {
                     String::new()
                 };
@@ -366,14 +420,17 @@ fn start_tray_timer(app: AppHandle) {
                 };
                 native_mini::update(
                     remaining.as_deref().unwrap_or(""),
-                    &detail,
+                    percent_text,
+                    &salary_text,
                     progress,
                     active,
                     empty_text,
+                    !salary_text.is_empty(),
+                    state.hide_earnings,
                 );
             }
 
-            #[cfg(target_os = "windows")]
+            #[cfg(any(target_os = "windows", debug_assertions))]
             // Windows 在倒计时开始时自动露出迷你窗；结束后不再强制隐藏，
             // 已经打开的窗口会切换为“计时未开始”，由用户决定是否收起。
             if active && !was_running {
@@ -382,7 +439,7 @@ fn start_tray_timer(app: AppHandle) {
                 }
             }
 
-            #[cfg(target_os = "windows")]
+            #[cfg(any(target_os = "windows", debug_assertions))]
             {
                 was_running = active;
             }
@@ -422,7 +479,7 @@ fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
-            "show" => show_main_window(app),
+            "show" => focus_main_window(app),
             "mini" => toggle_mini_window(app),
             "quit" => app.exit(0),
             _ => {}
@@ -445,7 +502,7 @@ fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", debug_assertions))]
 fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
     let store = app
         .store(STORE_PATH)
@@ -461,14 +518,19 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
     };
     let window = WebviewWindowBuilder::new(app, "mini", WebviewUrl::App(url.into()))
         .title("Off Work Countdown")
-        .inner_size(208.0, 64.0)
-        .min_inner_size(208.0, 64.0)
-        .max_inner_size(208.0, 64.0)
+        // 内容面板与 macOS 原生面板同宽（228×72），四周各留 6pt 给圆角
+        // 之外的投影，所以窗口本身要大一圈。
+        .inner_size(240.0, 84.0)
+        .min_inner_size(240.0, 84.0)
+        .max_inner_size(240.0, 84.0)
         .resizable(false)
         .maximizable(false)
         .fullscreen(false)
         .decorations(false)
-        .background_color(Color(236, 236, 238, 255))
+        // 无边框窗口若不透明，CSS 圆角只会把窗口自己的底色露在四个角上，
+        // 看起来就是个直角方块。透明之后圆角和投影才由页面说了算。
+        .transparent(true)
+        .shadow(false)
         .always_on_top(always_on_top)
         .skip_taskbar(true)
         .visible(false)
@@ -525,8 +587,8 @@ fn get_mini_window_settings(app: AppHandle) -> Result<MiniWindowSettings, String
 
 #[tauri::command]
 fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), String> {
-    #[cfg(target_os = "windows")]
-    {
+    #[cfg(any(target_os = "windows", debug_assertions))]
+    if mini_window_enabled() {
         let window = app
             .get_webview_window("mini")
             .ok_or_else(|| "mini window is unavailable".to_string())?;
@@ -535,14 +597,11 @@ fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), Str
             .map_err(|error| error.to_string())?;
         let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
         store.set(MINI_ALWAYS_ON_TOP_KEY, always_on_top);
-        Ok(())
+        return Ok(());
     }
 
-    #[cfg(not(target_os = "windows"))]
-    {
-        let _ = (app, always_on_top);
-        Ok(())
-    }
+    let _ = (app, always_on_top);
+    Ok(())
 }
 
 #[tauri::command]
@@ -553,6 +612,71 @@ fn toggle_mini_timer(app: AppHandle) {
 #[tauri::command]
 fn hide_mini_timer(app: AppHandle) {
     hide_mini_window(&app);
+}
+
+/// Windows 迷你窗点击后唤起主窗口：显示、取消最小化并聚焦。
+#[tauri::command]
+fn show_main_window(app: AppHandle) {
+    focus_main_window(&app);
+}
+
+/// 迷你窗（原生面板或 WebView 版）上的眼睛按钮统一走这里翻转 hide_earnings。
+///
+/// 写回 store 后，store 插件会广播 `store://change`；主窗口和迷你窗都通过
+/// `subscribeToDesktopCountdown` 订阅它，因此两边会同时更新。
+fn flip_hide_earnings(app: &AppHandle) {
+    let mut state = read_countdown_state(app);
+    state.hide_earnings = !state.hide_earnings;
+    if let Ok(store) = app.store(STORE_PATH) {
+        if let Ok(value) = serde_json::to_value(&state) {
+            store.set(COUNTDOWN_KEY, value);
+        }
+    }
+}
+
+#[tauri::command]
+fn toggle_salary_visibility(app: AppHandle) {
+    flip_hide_earnings(&app);
+}
+
+/// 直连 GitHub 下载安装包在中国大陆常常很慢甚至超时。这是**直连失败之后**
+/// 才会用到的备用通道：一份内容相同、但 URL 带反代前缀的清单。
+///
+/// 完整性不受影响：更新包由 minisign 签名，公钥编译在二进制里，校验发生在
+/// 下载之后、安装之前。反代即使返回被篡改的安装包也会在这一步被拒绝，
+/// 所以引入第三方反代不会变成供应链问题。
+///
+/// 前端展示用的主机名在 lib/desktop-state.ts 里有一份副本，改这里要同步。
+const MIRROR_UPDATER_ENDPOINT: &str = "https://gh-proxy.com/https://github.com/ififi2017/Off-Work-Countdown/releases/latest/download/latest-cn.json";
+
+/// 通过镜像清单重新检查、下载并安装更新。
+///
+/// 没法复用前端的 updater 插件调用：JS 侧的 `check()` 只有 `proxy`（HTTP 代理）
+/// 参数，而 gh-proxy 是 URL 前缀重写，两者不是一回事；而且安装包的真实地址
+/// 来自清单内部，光把清单换掉不够——必须整条链路都走镜像，这只有 Rust 侧的
+/// `UpdaterBuilder::endpoints()` 能在运行时做到。
+#[tauri::command]
+async fn install_update_via_mirror(app: AppHandle) -> Result<(), String> {
+    use tauri_plugin_updater::UpdaterExt;
+
+    let endpoint: tauri::Url = MIRROR_UPDATER_ENDPOINT
+        .parse()
+        .map_err(|error| format!("invalid mirror endpoint: {error}"))?;
+    let updater = app
+        .updater_builder()
+        .endpoints(vec![endpoint])
+        .map_err(|error| error.to_string())?
+        .build()
+        .map_err(|error| error.to_string())?;
+    let update = updater
+        .check()
+        .await
+        .map_err(|error| error.to_string())?
+        .ok_or_else(|| "mirror manifest reports no available update".to_string())?;
+    update
+        .download_and_install(|_, _| {}, || {})
+        .await
+        .map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -600,7 +724,7 @@ pub fn run() {
     #[cfg(desktop)]
     {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            show_main_window(app);
+            focus_main_window(app);
         }));
         builder = builder
             .plugin(tauri_plugin_notification::init())
@@ -627,6 +751,9 @@ pub fn run() {
             set_mini_always_on_top,
             toggle_mini_timer,
             hide_mini_timer,
+            show_main_window,
+            toggle_salary_visibility,
+            install_update_via_mirror,
             update_tray_menu,
             clear_desktop_countdown_display
         ])
@@ -651,6 +778,7 @@ pub fn run() {
             setup_tray(app.handle())?;
             #[cfg(target_os = "macos")]
             {
+                APP_HANDLE.set(app.handle().clone()).ok();
                 native_mini::initialize();
                 // 本地 UI 验收可显式要求启动时展示原生面板；正式包未设置该
                 // 环境变量，因此仍只在用户点击托盘图标后出现。
@@ -658,8 +786,10 @@ pub fn run() {
                     native_mini::toggle();
                 }
             }
-            #[cfg(target_os = "windows")]
-            setup_mini_window(app.handle())?;
+            #[cfg(any(target_os = "windows", debug_assertions))]
+            if mini_window_enabled() {
+                setup_mini_window(app.handle())?;
+            }
             start_tray_timer(app.handle().clone());
 
             // 关闭主窗口时隐藏而非退出。真正的退出走托盘菜单里的 Quit。
@@ -682,7 +812,7 @@ pub fn run() {
             // 因此单实例插件不会触发。
             #[cfg(target_os = "macos")]
             if let tauri::RunEvent::Reopen { .. } = event {
-                show_main_window(app);
+                focus_main_window(app);
             }
             #[cfg(not(target_os = "macos"))]
             {

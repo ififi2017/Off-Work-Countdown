@@ -80,3 +80,39 @@ jobs:
           uploadUpdaterSignatures: true
           updaterJsonPreferNsis: true
           args: ${{ matrix.args }}
+
+  # 直连 GitHub 下载安装包在部分地区很慢。客户端在直连失败后会改读这份
+  # latest-cn.json，它与 latest.json 内容相同，只是安装包地址带了反代前缀。
+  # 必须等四个平台都跑完：latest.json 是由各个矩阵任务逐个合并上来的，
+  # 提前读会拿到只含部分平台的半成品。
+  mirror-manifest:
+    name: Mirror updater manifest
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            version=$(node -p "require('./package.json').version")
+            echo "name=desktop-v${version}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and upload latest-cn.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          set -euo pipefail
+          gh release download "$TAG" --pattern latest.json --output latest.json --clobber
+          node scripts/mirror-manifest.mjs latest.json latest-cn.json
+          gh release upload "$TAG" latest-cn.json --clobber
