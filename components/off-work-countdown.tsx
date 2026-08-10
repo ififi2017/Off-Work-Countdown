@@ -21,6 +21,7 @@ import {
   Settings2,
   ExternalLink,
   Info,
+  PictureInPicture2,
   RefreshCw,
 } from "lucide-react";
 import {
@@ -76,6 +77,7 @@ import {
   readDesktopCountdownState,
   setDesktopAutostartEnabled,
   stopDesktopCountdown,
+  toggleDesktopMiniTimer,
   updateDesktopTrayMenu,
   writeDesktopCountdownState,
 } from "@/lib/desktop-state";
@@ -1062,16 +1064,32 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               className="flex shrink-0 items-center gap-1.5"
             >
               {IS_DESKTOP_BUILD && !showDesktopSettings ? (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 rounded-xl border-input bg-background shadow-sm"
-                  onClick={() => setShowDesktopSettings(true)}
-                  aria-label={t("settings")}
-                  title={t("settings")}
-                >
-                  <Settings2 className="h-[1.15rem] w-[1.15rem]" />
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 rounded-xl border-input bg-background shadow-sm"
+                    onClick={() => {
+                      void toggleDesktopMiniTimer().catch(() => {
+                        setDesktopSettingError(t("desktopSettingError"));
+                      });
+                    }}
+                    aria-label={t("toggleMiniTimer")}
+                    title={t("toggleMiniTimer")}
+                  >
+                    <PictureInPicture2 className="h-[1.15rem] w-[1.15rem]" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 rounded-xl border-input bg-background shadow-sm"
+                    onClick={() => setShowDesktopSettings(true)}
+                    aria-label={t("settings")}
+                    title={t("settings")}
+                  >
+                    <Settings2 className="h-[1.15rem] w-[1.15rem]" />
+                  </Button>
+                </>
               ) : !IS_DESKTOP_BUILD ? (
                 <ThemeToggle
                   theme={theme}

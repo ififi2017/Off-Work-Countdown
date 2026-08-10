@@ -141,6 +141,18 @@ export async function setMiniAlwaysOnTop(alwaysOnTop: boolean): Promise<void> {
   await invoke("set_mini_always_on_top", { alwaysOnTop });
 }
 
+export async function toggleDesktopMiniTimer(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("toggle_mini_timer");
+}
+
+export async function hideDesktopMiniTimer(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("hide_mini_timer");
+}
+
 export async function updateDesktopTrayMenu(labels: {
   show: string;
   mini: string;

@@ -22,6 +22,8 @@
   "countdownNotStarted": "काउंटडाउन शुरू नहीं हुआ",
   "enableAlwaysOnTop": "हमेशा ऊपर रखें",
   "disableAlwaysOnTop": "हमेशा ऊपर रखना बंद करें",
+  "toggleMiniTimer": "मिनी टाइमर दिखाएँ या छिपाएँ",
+  "hideMiniTimer": "मिनी टाइमर छिपाएँ",
   "gradient": "एनिमेटेड ग्रेडिएंट बैकग्राउंड",
   "startCountdown": "उलटी गिनती शुरू करें",
   "return": "वापस जाएं",

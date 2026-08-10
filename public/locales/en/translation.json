@@ -22,6 +22,8 @@
   "countdownNotStarted": "Countdown not started",
   "enableAlwaysOnTop": "Enable always on top",
   "disableAlwaysOnTop": "Disable always on top",
+  "toggleMiniTimer": "Show or hide mini timer",
+  "hideMiniTimer": "Hide mini timer",
   "gradient": "Animated gradient background",
   "startCountdown": "Start Countdown",
   "return": "Return",

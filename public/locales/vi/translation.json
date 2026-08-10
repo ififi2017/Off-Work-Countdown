@@ -22,6 +22,8 @@
   "countdownNotStarted": "Chưa bắt đầu đếm ngược",
   "enableAlwaysOnTop": "Bật luôn ở trên cùng",
   "disableAlwaysOnTop": "Tắt luôn ở trên cùng",
+  "toggleMiniTimer": "Hiện hoặc ẩn bộ đếm nhỏ",
+  "hideMiniTimer": "Ẩn bộ đếm nhỏ",
   "gradient": "Nền gradient động",
   "startCountdown": "Bắt đầu đếm ngược",
   "return": "Quay lại",

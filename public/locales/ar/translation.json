@@ -22,6 +22,8 @@
   "countdownNotStarted": "لم يبدأ العد التنازلي",
   "enableAlwaysOnTop": "تفعيل الظهور دائماً في المقدمة",
   "disableAlwaysOnTop": "إلغاء الظهور دائماً في المقدمة",
+  "toggleMiniTimer": "إظهار أو إخفاء المؤقت المصغّر",
+  "hideMiniTimer": "إخفاء المؤقت المصغّر",
   "gradient": "خلفية متدرجة متحركة",
   "startCountdown": "ابدأ العد التنازلي",
   "return": "عودة",

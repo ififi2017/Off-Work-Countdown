@@ -22,6 +22,8 @@
   "countdownNotStarted": "카운트다운이 시작되지 않음",
   "enableAlwaysOnTop": "항상 위에 표시",
   "disableAlwaysOnTop": "항상 위에 표시 해제",
+  "toggleMiniTimer": "미니 타이머 표시 또는 숨기기",
+  "hideMiniTimer": "미니 타이머 숨기기",
   "gradient": "애니메이션 그라데이션 배경",
   "startCountdown": "카운트다운 시작",
   "return": "돌아가기",

@@ -22,6 +22,8 @@
   "countdownNotStarted": "Compte à rebours non démarré",
   "enableAlwaysOnTop": "Activer le premier plan",
   "disableAlwaysOnTop": "Désactiver le premier plan",
+  "toggleMiniTimer": "Afficher ou masquer le mini minuteur",
+  "hideMiniTimer": "Masquer le mini minuteur",
   "gradient": "Fond dégradé animé",
   "startCountdown": "Démarrer le compte à rebours",
   "return": "Retour",

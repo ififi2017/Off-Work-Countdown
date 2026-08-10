@@ -186,6 +186,22 @@ fn toggle_mini_window(app: &AppHandle) {
     let _ = app;
 }
 
+fn hide_mini_window(app: &AppHandle) {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = app;
+        native_mini::hide();
+    }
+
+    #[cfg(target_os = "windows")]
+    if let Some(window) = app.get_webview_window("mini") {
+        let _ = window.hide();
+    }
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    let _ = app;
+}
+
 fn read_countdown_state(app: &AppHandle) -> CountdownState {
     app.store(STORE_PATH)
         .ok()
@@ -530,6 +546,16 @@ fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), Str
 }
 
 #[tauri::command]
+fn toggle_mini_timer(app: AppHandle) {
+    toggle_mini_window(&app);
+}
+
+#[tauri::command]
+fn hide_mini_timer(app: AppHandle) {
+    hide_mini_window(&app);
+}
+
+#[tauri::command]
 fn update_tray_menu(
     app: AppHandle,
     show_label: String,
@@ -599,6 +625,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_mini_window_settings,
             set_mini_always_on_top,
+            toggle_mini_timer,
+            hide_mini_timer,
             update_tray_menu,
             clear_desktop_countdown_display
         ])

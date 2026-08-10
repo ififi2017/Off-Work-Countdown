@@ -22,6 +22,8 @@
   "countdownNotStarted": "Обратный отсчёт не запущен",
   "enableAlwaysOnTop": "Включить поверх всех окон",
   "disableAlwaysOnTop": "Отключить поверх всех окон",
+  "toggleMiniTimer": "Показать или скрыть мини-таймер",
+  "hideMiniTimer": "Скрыть мини-таймер",
   "gradient": "Анимированный градиентный фон",
   "startCountdown": "Начать обратный отсчет",
   "return": "Вернуться",

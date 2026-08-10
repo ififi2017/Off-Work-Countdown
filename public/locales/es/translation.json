@@ -22,6 +22,8 @@
   "countdownNotStarted": "Cuenta atrás no iniciada",
   "enableAlwaysOnTop": "Activar siempre visible",
   "disableAlwaysOnTop": "Desactivar siempre visible",
+  "toggleMiniTimer": "Mostrar u ocultar el temporizador mini",
+  "hideMiniTimer": "Ocultar el temporizador mini",
   "gradient": "Fondo de degradado animado",
   "startCountdown": "Iniciar cuenta regresiva",
   "return": "Regresar",

@@ -22,6 +22,8 @@
   "countdownNotStarted": "Contagem não iniciada",
   "enableAlwaysOnTop": "Ativar sempre visível",
   "disableAlwaysOnTop": "Desativar sempre visível",
+  "toggleMiniTimer": "Mostrar ou ocultar o mini temporizador",
+  "hideMiniTimer": "Ocultar o mini temporizador",
   "gradient": "Fundo gradiente animado",
   "startCountdown": "Iniciar contagem regressiva",
   "return": "Voltar",

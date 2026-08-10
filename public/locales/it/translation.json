@@ -22,6 +22,8 @@
   "countdownNotStarted": "Conto alla rovescia non avviato",
   "enableAlwaysOnTop": "Attiva sempre in primo piano",
   "disableAlwaysOnTop": "Disattiva sempre in primo piano",
+  "toggleMiniTimer": "Mostra o nascondi il mini timer",
+  "hideMiniTimer": "Nascondi il mini timer",
   "gradient": "Sfondo sfumato animato",
   "startCountdown": "Avvia conto alla rovescia",
   "return": "Ritorna",

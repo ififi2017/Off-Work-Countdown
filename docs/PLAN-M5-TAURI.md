@@ -225,6 +225,8 @@ Rust 后台线程每秒从 Tauri Store 读取绝对起止时间，并计算剩�
 
 **第五轮 Mini Timer 原生化（2026-08-09）**：macOS 不再用 WebView 模拟系统弹窗，改为 Rust C ABI 桥接 AppKit。macOS 26 直接使用公开的 `NSGlassEffectView`，旧系统回退到 `NSVisualEffectView`；原生 `NSPanel` 固定 228×70、不可拖动、点击外部自动收起，并随当前菜单栏屏幕定位。计时、进度、薪资／百分比和未开始文案均由现有 Store 驱动。Windows 保留独立 208×64 WebView 小部件，避免为跨平台一致而牺牲各平台惯例。
 
+**第六轮 Mini Timer 控件收尾（2026-08-09）**：Windows 把置顶与隐藏按钮收进独立的右上角控制区，计时与百分比整体下移，避免高 DPI 下图钉覆盖百分比；关闭按钮只隐藏到托盘，不退出后台计时。主窗口标题区在设置按钮旁新增 Mini Timer 切换按钮，通过同一个 Rust command 切换 Windows WebView 或 macOS 原生 AppKit 面板。安装后的产品名暂时继续统一使用 `Off Work Countdown`：macOS 可以用 `InfoPlist.strings` 本地化 Finder 显示名，Windows 安装器也能本地化界面，但 Tauri 的 `productName`、快捷方式、卸载项和产物身份不是普通前端翻译键；若要各语言使用不同安装名，需要额外维护平台安装模板或分语言构建，收益不足以抵消品牌、升级与排障复杂度。
+
 **第四轮 UI / 桌面行为实测（2026-08-09）**：线上尚未部署 `/about`，设置页的“关于此项目”暂时改为打开现有 FAQ，避免客户端发布后跳到 404；本地 About 页面保留，待 Web 下次部署后再决定是否切回。分享界面在桌面端改为完整覆盖主 WebView，不再套网页弹窗的灰色遮罩和外边框；X、Facebook、WhatsApp、Telegram、LINE、Reddit、微博均改用 `tauri-plugin-opener` 交给系统浏览器，并配置最小域名白名单。全局快捷键提示由运行平台决定：macOS 显示 `⌘ + Shift + O`，Windows / Linux 显示 `Ctrl + Shift + O`。停止倒计时会立即写入 `running: false` 快照并显式清空 macOS 菜单栏标题，后台节拍器也会持续用空字符串覆盖非运行状态，避免最后一秒定格。桌面首次启动通过官方 OS 插件读取系统 locale（macOS 中文已实测自动进入简体中文），此后把用户手动选择作为优先语言持久化。前端 lint、62 项测试、19 语言桌面导出、3 项 Rust 测试与 macOS `.app` 构建全部通过；自动化实测分享界面满铺、设置页快捷键和停止后的 Store 状态，社交按钮的外部站点点击因桌面控制权限未自动批准，仍需发布前做一次人工点击冒烟。
 
 **P4 客户端接入记录（2026-08-09）**：已接入官方 updater、process 与 opener 插件，权限只开放给主窗口。检查更新为一次点击完成 `check → downloadAndInstall → relaunch`，并覆盖检查中、安装中、已是最新与失败状态。“已是最新版本”在检查更新行内显示，不额外增加页面高度。设置页会常驻显示客户端当前版本；发现更新后以 `当前版本 → 最新版本` 明示升级目标。

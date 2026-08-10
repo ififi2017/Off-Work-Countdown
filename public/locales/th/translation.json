@@ -22,6 +22,8 @@
   "countdownNotStarted": "ยังไม่ได้เริ่มนับถอยหลัง",
   "enableAlwaysOnTop": "เปิดให้อยู่ด้านบนเสมอ",
   "disableAlwaysOnTop": "ปิดการอยู่ด้านบนเสมอ",
+  "toggleMiniTimer": "แสดงหรือซ่อนตัวจับเวลาขนาดเล็ก",
+  "hideMiniTimer": "ซ่อนตัวจับเวลาขนาดเล็ก",
   "gradient": "พื้นหลังแอนิเมชั่นกราเดียนท์",
   "startCountdown": "เริ่มนับถอยหลัง",
   "return": "ย้อนกลับ",
