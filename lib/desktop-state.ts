@@ -17,6 +17,9 @@ export interface DesktopCountdownState {
   dailySalary: number | null;
   lang: string;
   countdownNotStarted: string;
+  /** 迷你面板眼睛按钮的无障碍描述，随界面语言走。 */
+  showEarningsLabel: string;
+  hideEarningsLabel: string;
 }
 
 export interface DesktopCountdownView {
@@ -39,6 +42,8 @@ const EMPTY_STATE: DesktopCountdownState = {
   dailySalary: null,
   lang: "en",
   countdownNotStarted: "Countdown not started",
+  showEarningsLabel: "Show amount",
+  hideEarningsLabel: "Hide amount",
 };
 
 type DesktopStore = Awaited<
@@ -63,9 +68,20 @@ async function getDesktopStore(): Promise<DesktopStore | null> {
 
 export function emptyDesktopCountdownState(
   lang = "en",
-  countdownNotStarted = "Countdown not started"
+  countdownNotStarted = "Countdown not started",
+  labels?: { showEarnings: string; hideEarnings: string }
 ): DesktopCountdownState {
-  return { ...EMPTY_STATE, lang, countdownNotStarted };
+  // 停止状态下眼睛按钮不显示，但把标签一起带上，免得「有的字段本地化、
+  // 有的不本地化」这种不对称留在状态里让人猜。
+  return {
+    ...EMPTY_STATE,
+    lang,
+    countdownNotStarted,
+    ...(labels && {
+      showEarningsLabel: labels.showEarnings,
+      hideEarningsLabel: labels.hideEarnings,
+    }),
+  };
 }
 
 export async function writeDesktopCountdownState(
@@ -209,11 +225,12 @@ export async function updateDesktopTrayMenu(labels: {
 
 export async function stopDesktopCountdown(
   lang = "en",
-  countdownNotStarted = "Countdown not started"
+  countdownNotStarted = "Countdown not started",
+  labels?: { showEarnings: string; hideEarnings: string }
 ): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
   await writeDesktopCountdownState(
-    emptyDesktopCountdownState(lang, countdownNotStarted)
+    emptyDesktopCountdownState(lang, countdownNotStarted, labels)
   );
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("clear_desktop_countdown_display");

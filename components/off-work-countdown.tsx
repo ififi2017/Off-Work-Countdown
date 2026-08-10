@@ -634,8 +634,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             dailySalary: showSalary ? getDailySalary() : null,
             lang,
             countdownNotStarted: t("countdownNotStarted"),
+            showEarningsLabel: t("showEarnings"),
+            hideEarningsLabel: t("hideEarnings"),
           }
-        : emptyDesktopCountdownState(lang, t("countdownNotStarted"));
+        : emptyDesktopCountdownState(lang, t("countdownNotStarted"), {
+            showEarnings: t("showEarnings"),
+            hideEarnings: t("hideEarnings"),
+          });
 
     void writeDesktopCountdownState(state).catch(() => {
       // 桌面快照失败不应打断 Web 共用的主倒计时界面。
@@ -917,7 +922,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   const handleReturn = () => {
     if (IS_DESKTOP_BUILD) {
-      void stopDesktopCountdown(lang, t("countdownNotStarted")).catch(() => {
+      void stopDesktopCountdown(lang, t("countdownNotStarted"), {
+        showEarnings: t("showEarnings"),
+        hideEarnings: t("hideEarnings"),
+      }).catch(() => {
         // The normal snapshot effect remains a fallback.
       });
     }

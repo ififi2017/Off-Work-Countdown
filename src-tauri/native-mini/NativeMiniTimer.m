@@ -72,6 +72,10 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
 @property(nonatomic) BOOL countdownRunning;
 @property(nonatomic) BOOL salaryHidden;
 @property(nonatomic) BOOL hasSalary;
+/// 眼睛按钮的无障碍描述，由 Rust 按当前界面语言传下来。两个都存着，
+/// 因为点击时会先本地翻转状态，等下一次 tick 再拿新文案就慢了一拍。
+@property(nonatomic, copy) NSString *showEarningsLabel;
+@property(nonatomic, copy) NSString *hideEarningsLabel;
 - (void)updateTime:(NSString *)time
            percent:(NSString *)percent
             salary:(NSString *)salary
@@ -79,7 +83,9 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
            running:(BOOL)running
          emptyText:(NSString *)emptyText
         showSalary:(BOOL)showSalary
-      salaryHidden:(BOOL)salaryHidden;
+      salaryHidden:(BOOL)salaryHidden
+ showEarningsLabel:(NSString *)showEarningsLabel
+ hideEarningsLabel:(NSString *)hideEarningsLabel;
 - (void)toggleSalaryVisibility;
 @end
 
@@ -237,10 +243,14 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
            running:(BOOL)running
          emptyText:(NSString *)emptyText
         showSalary:(BOOL)showSalary
-      salaryHidden:(BOOL)salaryHidden {
+      salaryHidden:(BOOL)salaryHidden
+ showEarningsLabel:(NSString *)showEarningsLabel
+ hideEarningsLabel:(NSString *)hideEarningsLabel {
     self.countdownRunning = running;
     self.hasSalary = showSalary;
     self.salaryHidden = salaryHidden;
+    self.showEarningsLabel = showEarningsLabel;
+    self.hideEarningsLabel = hideEarningsLabel;
     if (running) {
         // 字号交由 -layout 按可用宽度决定，这里只负责内容。
         self.timerLabel.stringValue = time;
@@ -266,7 +276,10 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
     // 图标表示「点下去会发生什么」，与主窗口 PeriodSummary 的约定一致：
     // 当前已隐藏时显示睁眼（点了会显示），当前可见时显示闭眼（点了会隐藏）。
     NSString *symbol = self.salaryHidden ? @"eye.fill" : @"eye.slash.fill";
-    self.salaryToggleButton.image = [NSImage imageWithSystemSymbolName:symbol accessibilityDescription:self.salaryHidden ? @"Show salary" : @"Hide salary"];
+    NSString *label = self.salaryHidden ? self.showEarningsLabel : self.hideEarningsLabel;
+    if (label.length == 0) label = self.salaryHidden ? @"Show salary" : @"Hide salary";
+    self.salaryToggleButton.image = [NSImage imageWithSystemSymbolName:symbol
+                                             accessibilityDescription:label];
     self.salaryToggleButton.contentTintColor = [NSColor secondaryLabelColor];
 }
 
@@ -296,7 +309,9 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
            running:(BOOL)running
          emptyText:(NSString *)emptyText
         showSalary:(BOOL)showSalary
-      salaryHidden:(BOOL)salaryHidden;
+      salaryHidden:(BOOL)salaryHidden
+ showEarningsLabel:(NSString *)showEarningsLabel
+ hideEarningsLabel:(NSString *)hideEarningsLabel;
 @end
 
 @implementation OWCNativeMiniController
@@ -375,7 +390,9 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
            running:(BOOL)running
          emptyText:(NSString *)emptyText
         showSalary:(BOOL)showSalary
-      salaryHidden:(BOOL)salaryHidden {
+      salaryHidden:(BOOL)salaryHidden
+ showEarningsLabel:(NSString *)showEarningsLabel
+ hideEarningsLabel:(NSString *)hideEarningsLabel {
     [self.miniContent updateTime:time
                          percent:percent
                           salary:salary
@@ -383,7 +400,9 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
                          running:running
                        emptyText:emptyText
                       showSalary:showSalary
-                    salaryHidden:salaryHidden];
+                    salaryHidden:salaryHidden
+               showEarningsLabel:showEarningsLabel
+               hideEarningsLabel:hideEarningsLabel];
 }
 
 - (void)showPanel {
@@ -494,12 +513,16 @@ void owc_native_mini_update(
     int running,
     const char *emptyTextValue,
     int showSalary,
-    int salaryHidden
+    int salaryHidden,
+    const char *showEarningsLabelValue,
+    const char *hideEarningsLabelValue
 ) {
     NSString *time = [OWCStringFromUTF8(timeValue) copy];
     NSString *percent = [OWCStringFromUTF8(percentValue) copy];
     NSString *salary = [OWCStringFromUTF8(salaryValue) copy];
     NSString *emptyText = [OWCStringFromUTF8(emptyTextValue) copy];
+    NSString *showEarningsLabel = [OWCStringFromUTF8(showEarningsLabelValue) copy];
+    NSString *hideEarningsLabel = [OWCStringFromUTF8(hideEarningsLabelValue) copy];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[OWCNativeMiniController sharedController]
             updateTime:time
@@ -509,6 +532,8 @@ void owc_native_mini_update(
                 running:running != 0
               emptyText:emptyText
              showSalary:showSalary != 0
-           salaryHidden:salaryHidden != 0];
+           salaryHidden:salaryHidden != 0
+      showEarningsLabel:showEarningsLabel
+      hideEarningsLabel:hideEarningsLabel];
     });
 }

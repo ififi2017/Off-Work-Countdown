@@ -13,7 +13,6 @@
   "updateMirrorNotice": "無法直連 GitHub。鏡像由第三方 {{host}} 提供，安裝檔在安裝前仍會驗證簽章。",
   "downloadingUpdate": "正在下載更新…",
   "restartToUpdate": "重新啟動以更新",
-  "updateDownloaded": "更新已準備好",
   "updateNotConfigured": "自動更新需要先完成發布簽章設定。",
   "updateFailed": "檢查更新失敗，請稍後再試。",
   "startTime": "上班時間",

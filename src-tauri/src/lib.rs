@@ -61,6 +61,10 @@ struct CountdownState {
     daily_salary: Option<f64>,
     lang: String,
     countdown_not_started: String,
+    /// 眼睛按钮的无障碍描述。面板其余文案都随界面语言走，这两个如果留在
+    /// ObjC 里硬编码英文，VoiceOver 用户会在一堆中文里听到 "Hide salary"。
+    show_earnings_label: String,
+    hide_earnings_label: String,
 }
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
@@ -115,6 +119,8 @@ mod native_mini {
             empty_text: *const c_char,
             show_salary: i32,
             salary_hidden: i32,
+            show_earnings_label: *const c_char,
+            hide_earnings_label: *const c_char,
         );
     }
 
@@ -144,11 +150,15 @@ mod native_mini {
         empty_text: &str,
         show_salary: bool,
         salary_hidden: bool,
+        show_earnings_label: &str,
+        hide_earnings_label: &str,
     ) {
         let time = c_string(time);
         let percent = c_string(percent);
         let salary = c_string(salary);
         let empty_text = c_string(empty_text);
+        let show_earnings_label = c_string(show_earnings_label);
+        let hide_earnings_label = c_string(hide_earnings_label);
         unsafe {
             owc_native_mini_update(
                 time.as_ptr(),
@@ -159,6 +169,8 @@ mod native_mini {
                 empty_text.as_ptr(),
                 i32::from(show_salary),
                 i32::from(salary_hidden),
+                show_earnings_label.as_ptr(),
+                hide_earnings_label.as_ptr(),
             )
         }
     }
@@ -427,6 +439,8 @@ fn start_tray_timer(app: AppHandle) {
                     empty_text,
                     !salary_text.is_empty(),
                     state.hide_earnings,
+                    &state.show_earnings_label,
+                    &state.hide_earnings_label,
                 );
             }
 

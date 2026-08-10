@@ -13,7 +13,6 @@
   "updateMirrorNotice": "GitHub war nicht direkt erreichbar. Der Spiegelserver wird von einem Dritten betrieben ({{host}}); die Signatur des Installers wird weiterhin vor der Installation geprüft.",
   "downloadingUpdate": "Update wird heruntergeladen…",
   "restartToUpdate": "Zum Aktualisieren neu starten",
-  "updateDownloaded": "Update bereit zur Installation",
   "updateNotConfigured": "Automatische Updates benötigen eine Release-Signatur.",
   "updateFailed": "Updates konnten nicht geprüft werden.",
   "startTime": "Startzeit",

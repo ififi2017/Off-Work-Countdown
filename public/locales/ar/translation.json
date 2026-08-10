@@ -13,7 +13,6 @@
   "updateMirrorNotice": "تعذّر الوصول إلى GitHub مباشرة. تُدار المرآة بواسطة طرف ثالث ({{host}})، ويظل توقيع المثبِّت يُتحقق منه قبل التثبيت.",
   "downloadingUpdate": "جارٍ تنزيل التحديث…",
   "restartToUpdate": "إعادة التشغيل لتحديث",
-  "updateDownloaded": "التحديث جاهز للتثبيت",
   "updateNotConfigured": "تتطلب التحديثات التلقائية توقيع الإصدار.",
   "updateFailed": "تعذر التحقق من التحديثات.",
   "startTime": "وقت البداية",

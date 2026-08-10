@@ -13,7 +13,6 @@
   "updateMirrorNotice": "Tidak dapat menghubungi GitHub secara langsung. Mirror dikelola pihak ketiga ({{host}}); tanda tangan installer tetap diverifikasi sebelum dipasang.",
   "downloadingUpdate": "Mengunduh pembaruan…",
   "restartToUpdate": "Mulai ulang untuk memperbarui",
-  "updateDownloaded": "Pembaruan siap dipasang",
   "updateNotConfigured": "Pembaruan otomatis memerlukan tanda tangan rilis.",
   "updateFailed": "Tidak dapat memeriksa pembaruan.",
   "startTime": "Waktu Mulai",

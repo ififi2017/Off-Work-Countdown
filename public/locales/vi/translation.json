@@ -13,7 +13,6 @@
   "updateMirrorNotice": "Không thể kết nối trực tiếp tới GitHub. Máy chủ gương do bên thứ ba ({{host}}) vận hành; chữ ký của trình cài đặt vẫn được xác minh trước khi cài.",
   "downloadingUpdate": "Đang tải bản cập nhật…",
   "restartToUpdate": "Khởi động lại để cập nhật",
-  "updateDownloaded": "Bản cập nhật sẵn sàng để cài đặt",
   "updateNotConfigured": "Cập nhật tự động cần cấu hình chữ ký phát hành.",
   "updateFailed": "Không thể kiểm tra cập nhật.",
   "startTime": "Thời gian bắt đầu",

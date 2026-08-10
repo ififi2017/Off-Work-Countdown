@@ -13,7 +13,6 @@
   "updateMirrorNotice": "Não foi possível acessar o GitHub diretamente. O espelho é mantido por terceiros ({{host}}); a assinatura do instalador continua sendo verificada antes da instalação.",
   "downloadingUpdate": "A transferir a atualização…",
   "restartToUpdate": "Reiniciar para atualizar",
-  "updateDownloaded": "Atualização pronta para instalar",
   "updateNotConfigured": "As atualizações automáticas requerem assinatura da versão.",
   "updateFailed": "Não foi possível procurar atualizações.",
   "startTime": "Hora de início",
