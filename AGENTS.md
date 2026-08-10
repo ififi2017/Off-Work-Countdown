@@ -41,6 +41,14 @@ in URLs, analytics payloads or share metadata.
 - The macOS Mini Timer is a non-draggable menu-bar panel. The Windows Mini
   Timer remains draggable, remembers position, can stay on top and does not
   occupy the taskbar.
+- Both Mini Timers and the main window share one `hideEarnings` value in the
+  store. Neither Mini Timer may keep its own local reveal state, and the eye
+  icon everywhere shows what the click will do, not the current state.
+- `OWC_FORCE_WINDOWS_MINI=1` runs the Windows Mini Timer on macOS so it can be
+  reviewed without a Windows machine; it is gated on `debug_assertions` and is
+  absent from release builds. Launch with
+  `open --env OWC_FORCE_WINDOWS_MINI=1 <app>` — plain `open` drops the
+  variable, and running the binary directly loses the bundle identity.
 - Verify both light and dark modes and long English labels before considering a
   Desktop UI change complete.
 
@@ -61,8 +69,11 @@ in URLs, analytics payloads or share metadata.
 - Share URLs encode only start and end times. Never include salary.
 - Analytics are anonymous aggregate event counters. Do not add cookies,
   identifiers, IP/User-Agent storage or individual histories.
-- Keep the desktop client local-only except for explicit update checks,
-  downloads, external links and user-triggered sharing.
+- Keep the desktop client local-only except for update traffic, external links
+  and user-triggered sharing. The version check runs automatically at launch
+  and carries no account, salary or usage data; the installer itself downloads
+  only after the user asks. Changing that balance means updating the About
+  page copy in `public/locales/{en,zh-CN}/content.json`, which states it.
 
 ## Development commands
 
@@ -83,6 +94,13 @@ cargo test --manifest-path src-tauri/Cargo.toml
 `next dev` and `next build` share `.next`. Stop the dev server before running a
 build, otherwise the dev server may reference chunks replaced by the build.
 
+CI compiles Rust for macOS and Windows on every pull request (`cargo fmt
+--check`, `cargo clippy -- -D warnings`, `cargo test`). Before that job
+existed, a platform-specific Rust break stayed invisible until a release tag
+triggered the four-platform build. Keep it green rather than deferring to the
+release; the desktop shell is full of per-platform branches that a macOS-only
+local check cannot exercise.
+
 Before handing off a code change, run checks proportional to its scope. Any
 change touching shared rendering, routes, locales or build configuration must
 pass lint, unit tests, Web build validation and Desktop export validation.
@@ -96,6 +114,14 @@ release build. UI changes require real visual inspection on the affected OS.
   `src-tauri/tauri.conf.json`. Run `npm run check:version`.
 - Normal work uses `feature branch -> pull request -> main`. Do not maintain a
   long-lived Desktop branch.
+- Pull request titles must be Conventional Commits: `type(scope): summary`,
+  with an optional `!`. `.github/workflows/label-pr.yml` derives the label
+  from the prefix — `feat`/`perf` to `enhancement`, `fix` to `bug`, `docs` to
+  `documentation` — and `.github/release.yml` groups the changelog by those
+  labels and nothing else. Any other prefix (`ci`, `chore`, `refactor`,
+  `test`) is deliberately left unlabelled and groups under Other Changes.
+  Only the title is read; commit message bodies do not affect grouping, so a
+  missing or wrong prefix silently misfiles the entry in the release notes.
 - `npm run deploy:web` is an owner convenience command for an already committed
   local `main`. It validates and pushes `main`, triggering CI and the connected
   Web deployment. Prefer the PR flow for ordinary changes.
@@ -103,7 +129,11 @@ release build. UI changes require real visual inspection on the affected OS.
   to `origin/main`, validates the release and pushes `desktop-v<version>`.
 - Desktop tags trigger `.github/workflows/release-desktop.yml`, which builds
   macOS Apple Silicon, macOS Intel, Windows x64 and Windows ARM64 and creates a
-  Draft Release. Inspect assets and `latest.json` before publishing it.
+  Draft Release. Inspect assets, `latest.json` and `latest-cn.json` before
+  publishing it. `latest-cn.json` is the mirror manifest built by the
+  `mirror-manifest` job: same signatures, asset URLs rewritten through a
+  reverse proxy, used only after a direct download fails. Its absence, or a
+  copy whose URLs were not rewritten, silently disables the fallback.
 - Never commit updater private keys, passwords, signing certificates or local
   environment files. Only the updater public key belongs in the repository.
 - macOS uses ad-hoc signing because the project deliberately does not purchase
