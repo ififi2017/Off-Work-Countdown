@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::{sync::OnceLock, thread, time::Duration};
+use std::{thread, time::Duration};
+#[cfg(target_os = "macos")]
+use std::sync::OnceLock;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -24,6 +26,8 @@ const MINI_POSITION_KEY: &str = "miniPosition";
 const MINI_ALWAYS_ON_TOP_KEY: &str = "miniAlwaysOnTop";
 
 /// ObjC 原生面板回调时需要通过 AppHandle 访问 Store。
+/// 写入点（setup）与读取点（FFI 回调）都只存在于 macOS。
+#[cfg(target_os = "macos")]
 static APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
 
 /// 本地验收开关：让 macOS 的 debug 构建把自己当成 Windows，用来验收
@@ -141,6 +145,9 @@ mod native_mini {
         unsafe { owc_native_mini_hide() }
     }
 
+    // 参数表就是对面 C 函数的签名本身，为了少几个参数去包一层结构体，
+    // 只会在 FFI 边界上多一次拆包，读起来反而更绕。
+    #[allow(clippy::too_many_arguments)]
     pub fn update(
         time: &str,
         percent: &str,
@@ -364,6 +371,8 @@ fn format_remaining(end_at_ms: i64, now_ms: i64) -> String {
     format!("{hours}:{minutes:02}:{seconds:02}")
 }
 
+/// 非 macOS 构建里只有单元测试会调用它（原生面板是 macOS 独有的）。
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 fn countdown_progress(state: &CountdownState, now_ms: i64) -> f64 {
     if !state.running || state.end_at_ms <= state.start_at_ms {
         return 0.0;
@@ -384,7 +393,6 @@ fn start_tray_timer(app: AppHandle) {
             let valid = state.running && state.end_at_ms > state.start_at_ms;
             let active = valid && state.end_at_ms > now_ms;
             let remaining = active.then(|| format_remaining(state.end_at_ms, now_ms));
-            let progress = countdown_progress(&state, now_ms);
 
             let mut marker = read_notification_marker(&app);
             let (notification, marker_changed) =
@@ -409,6 +417,9 @@ fn start_tray_timer(app: AppHandle) {
 
             #[cfg(target_os = "macos")]
             {
+                // 只有原生面板用得到进度值；Windows 迷你窗自己从 store 算，
+                // 放在外层会变成每秒算一次然后丢掉。
+                let progress = countdown_progress(&state, now_ms);
                 // 百分比与金额分成两个字段下发。早期版本把它们拼成
                 // "90% 645.37" 再由 ObjC 按空格切开，一旦金额改用带分隔符的
                 // 本地化格式（法语千分位就是空格）就会静默错位。

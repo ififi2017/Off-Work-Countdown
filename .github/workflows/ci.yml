@@ -39,3 +39,45 @@ jobs:
 
       - name: Check desktop build output
         run: npm run check:build:desktop
+
+  # Rust 编译过去完全没有进 CI，而 src-tauri 里有大量按平台分支的代码
+  # （macOS 原生面板、Windows 迷你窗）。结果是任何只影响某一个平台的
+  # 编译错误都要等到打 tag 触发发布构建才暴露，也就是发版当场才发现。
+  # 这里按发布矩阵的两个宿主各跑一次检查，把它提前到 PR 阶段。
+  rust:
+    name: Rust ${{ matrix.name }}
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            platform: macos-latest
+          - name: Windows
+            platform: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+
+      # tauri 的 build.rs 会读 frontendDist 指向的目录，没有它 codegen 会失败。
+      # 只需要目录存在，不必是真正的构建产物，所以这里不跑 Next.js。
+      - name: Stub the frontend bundle
+        shell: bash
+        run: mkdir -p out && touch out/index.html
+
+      - name: Check
+        working-directory: src-tauri
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Test
+        working-directory: src-tauri
+        run: cargo test
