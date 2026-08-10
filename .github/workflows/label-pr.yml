@@ -1,0 +1,68 @@
+name: Label PR
+
+# GitHub 生成的更新日志只按 label 分类（见 .github/release.yml），
+# 而 PR 标题一直是 conventional commit 格式，正好可以直接推导出 label。
+#
+# 这里用 pull_request_target 而不是 pull_request：后者对来自 fork 的 PR
+# 只会发一个只读 token，贴不上 label。代价是这个作业带写权限运行，因此
+# **绝不能检出 PR 的代码**——不 checkout，只读标题、只调 API。
+on:
+  pull_request_target:
+    types: [opened, edited, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply the label implied by the title prefix
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # 标题由 PR 作者控制。只能经 env 传入：把 ${{ }} 直接写进 run
+          # 里会先被展开成脚本正文，标题里的引号或 $() 就成了可执行内容。
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+
+          # feat(desktop)!: xxx -> feat
+          prefix=$(printf '%s' "$PR_TITLE" \
+            | sed -n 's/^\([a-zA-Z]\{2,12\}\)\((.*)\)\{0,1\}!\{0,1\}:.*/\1/p' \
+            | tr '[:upper:]' '[:lower:]')
+
+          case "$prefix" in
+            feat|perf) want=enhancement ;;
+            fix)       want=bug ;;
+            docs)      want=documentation ;;
+            # ci / chore / build / refactor / test 等归入 release.yml 的
+            # "*" 兜底类目，本来就该落在 Other Changes，不贴反而是对的。
+            *)         want="" ;;
+          esac
+
+          if [ -z "$want" ]; then
+            echo "Title prefix '${prefix:-none}' maps to no category; leaving labels untouched."
+            exit 0
+          fi
+
+          current=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json labels \
+            --jq '.labels[].name')
+
+          # 标题改过类别时（feat: 改成 fix:）要把旧的挪走，否则更新日志会
+          # 把它算进第一个命中的类目。只动这三个自己管的 label，人工加的
+          # 其它 label 一概不碰。
+          for stale in enhancement bug documentation; do
+            if [ "$stale" != "$want" ] && printf '%s\n' "$current" | grep -qx "$stale"; then
+              gh pr edit "$PR_NUMBER" --repo "$REPO" --remove-label "$stale"
+              echo "Removed stale label: $stale"
+            fi
+          done
+
+          if printf '%s\n' "$current" | grep -qx "$want"; then
+            echo "Already labelled: $want"
+          else
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "$want"
+            echo "Added label: $want"
+          fi
