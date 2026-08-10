@@ -61,7 +61,7 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: clippy
+          components: clippy, rustfmt
 
       - name: Cache Rust build artifacts
         uses: Swatinem/rust-cache@v2
@@ -73,6 +73,11 @@ jobs:
       - name: Stub the frontend bundle
         shell: bash
         run: mkdir -p out && touch out/index.html
+
+      # 发版脚本本来就会拦格式问题，但那是打 tag 的时候——太晚了。
+      - name: Format
+        working-directory: src-tauri
+        run: cargo fmt --check
 
       - name: Check
         working-directory: src-tauri

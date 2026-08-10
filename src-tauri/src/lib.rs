@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::{thread, time::Duration};
 #[cfg(target_os = "macos")]
 use std::sync::OnceLock;
+use std::{thread, time::Duration};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
