@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Off Work Countdown",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "identifier": "com.rainif.offworkcountdown",
   "build": {
     "frontendDist": "../out",
@@ -10,6 +10,7 @@
     "beforeBuildCommand": "npm run build:desktop"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "label": "main",

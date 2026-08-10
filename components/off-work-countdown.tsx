@@ -23,6 +23,8 @@ import {
   Info,
   PictureInPicture2,
   RefreshCw,
+  Download,
+  Globe,
 } from "lucide-react";
 import {
   Select,
@@ -76,7 +78,10 @@ import {
   getMiniWindowSettings,
   readDesktopCountdownState,
   setDesktopAutostartEnabled,
+  installDesktopUpdateViaMirror,
   stopDesktopCountdown,
+  subscribeToDesktopCountdown,
+  UPDATE_MIRROR_HOST,
   toggleDesktopMiniTimer,
   updateDesktopTrayMenu,
   writeDesktopCountdownState,
@@ -91,9 +96,16 @@ const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
 type DesktopUpdateStatus =
   | "idle"
   | "checking"
+  | "available"
+  | "predownloading"
+  | "predownloaded"
   | "installing"
   | "latest"
   | "unconfigured"
+  // 直连 GitHub 失败（检查或下载）：与一般 error 分开，因为只有这种失败
+  // 值得引导用户改走镜像；镜像也失败之后才落到 error。
+  | "directFailed"
+  | "mirrorInstalling"
   | "error";
 
 // Helper function to safely get item from localStorage
@@ -242,6 +254,14 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [formError, setFormError] = useState("");
   const reminderFiredRef = useRef(false);
   const completionTrackedRef = useRef(false);
+  /** 自动检查时保存的 update 对象，供用户确认后下载 / 安装。 */
+  const pendingUpdateRef = useRef<{
+    version: string;
+    currentVersion: string;
+    download: () => Promise<void>;
+    install: () => Promise<void>;
+    downloadAndInstall: () => Promise<void>;
+  } | null>(null);
 
   // Salary state
   const [salaryType, setSalaryType] = useState<"monthly" | "daily">("monthly");
@@ -466,6 +486,34 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         // Version metadata is informative; update checks remain usable without it.
       });
 
+    // 启动时只**检查**更新，不下载：安装包有十几 MB，未经用户同意就占用
+    // 带宽，与「关于」页对外承诺的「只有当你主动检查或下载更新时才会访问
+    // 网络」相冲突。发现新版本仅把设置按钮点亮，下载由用户点击后触发。
+    // 任何失败都静默忽略，不打扰启动流程。
+    void (async () => {
+      try {
+        const { check } = await import("@tauri-apps/plugin-updater");
+        const update = await check({ timeout: 15_000 });
+        if (cancelled) return;
+        if (!update) {
+          setDesktopUpdateStatus("latest");
+          return;
+        }
+        pendingUpdateRef.current = {
+          version: update.version,
+          currentVersion: update.currentVersion,
+          download: () => update.download(),
+          install: () => update.install(),
+          downloadAndInstall: () => update.downloadAndInstall(),
+        };
+        setDesktopCurrentVersion(update.currentVersion);
+        setDesktopLatestVersion(update.version);
+        setDesktopUpdateStatus("available");
+      } catch {
+        // 静默失败：不干扰启动，也不弹错误。
+      }
+    })();
+
     return () => {
       cancelled = true;
     };
@@ -604,6 +652,32 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     lang,
     t,
   ]);
+
+  // 反向通道：迷你窗上的眼睛按钮由 Rust 改写 store，主窗口必须跟着更新，
+  // 否则两处的隐藏状态会各说各话。只同步 hideEarnings —— 其余字段的真相
+  // 来源始终是主窗口这边的表单状态，收到自己写回的快照时是幂等的。
+  useEffect(() => {
+    if (!IS_DESKTOP_BUILD) return;
+
+    let unsubscribe: (() => void) | null = null;
+    let cancelled = false;
+
+    void subscribeToDesktopCountdown((state) => {
+      if (state) setHideEarnings(state.hideEarnings);
+    })
+      .then((fn) => {
+        if (cancelled) fn();
+        else unsubscribe = fn;
+      })
+      .catch(() => {
+        // 拿不到事件通道时退化为单向同步，不影响倒计时本身。
+      });
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, []);
 
   const calculateProgress = useCallback(() => {
     if (activeBounds) {
@@ -759,6 +833,52 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   const handleCheckForUpdates = async () => {
     if (!IS_DESKTOP_BUILD) return;
+
+    const pending = pendingUpdateRef.current;
+
+    // 已下载完成：直接安装并重启。
+    if (pending && desktopUpdateStatus === "predownloaded") {
+      setDesktopUpdateStatus("installing");
+      try {
+        await pending.install();
+        const { relaunch } = await import("@tauri-apps/plugin-process");
+        await relaunch();
+      } catch {
+        // 安装失败，回退到完整流程重来。
+        pendingUpdateRef.current = null;
+        setDesktopUpdateStatus("available");
+      }
+      return;
+    }
+
+    // 直连失败后的备用通道：重新检查 + 下载 + 安装整条链路都改走镜像，
+    // 由 Rust 侧完成。检查失败（连不上 api.github.com）也走这里，否则被墙
+    // 的用户根本不会知道有新版本可用。
+    if (desktopUpdateStatus === "directFailed") {
+      setDesktopUpdateStatus("mirrorInstalling");
+      try {
+        await installDesktopUpdateViaMirror();
+        const { relaunch } = await import("@tauri-apps/plugin-process");
+        await relaunch();
+      } catch {
+        setDesktopUpdateStatus("error");
+      }
+      return;
+    }
+
+    // 启动时已检查出新版本：这一次点击才是用户同意下载。
+    if (pending && desktopUpdateStatus === "available") {
+      setDesktopUpdateStatus("predownloading");
+      try {
+        // 卡住的连接不能无限等下去，否则用户看不到「改用镜像」这个出口。
+        await pending.download();
+        setDesktopUpdateStatus("predownloaded");
+      } catch {
+        setDesktopUpdateStatus("directFailed");
+      }
+      return;
+    }
+
     setDesktopUpdateStatus("checking");
     setDesktopLatestVersion("");
     try {
@@ -771,6 +891,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
       setDesktopCurrentVersion(update.currentVersion);
       setDesktopLatestVersion(update.version);
+      pendingUpdateRef.current = {
+        version: update.version,
+        currentVersion: update.currentVersion,
+        download: () => update.download(),
+        install: () => update.install(),
+        downloadAndInstall: () => update.downloadAndInstall(),
+      };
       setDesktopUpdateStatus("installing");
       await update.downloadAndInstall();
       const { relaunch } = await import("@tauri-apps/plugin-process");
@@ -783,7 +910,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           message.includes("public key") ||
           message.includes("configuration")
           ? "unconfigured"
-          : "error"
+          : "directFailed"
       );
     }
   };
@@ -1084,10 +1211,31 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     size="icon"
                     className="h-9 w-9 rounded-xl border-input bg-background shadow-sm"
                     onClick={() => setShowDesktopSettings(true)}
-                    aria-label={t("settings")}
-                    title={t("settings")}
+                    aria-label={
+                      desktopUpdateStatus === "available" ||
+                      desktopUpdateStatus === "predownloaded"
+                        ? t("updateAvailable")
+                        : t("settings")
+                    }
+                    title={
+                      desktopUpdateStatus === "available" ||
+                      desktopUpdateStatus === "predownloaded"
+                        ? `${t("updateAvailable")}: v${desktopLatestVersion}`
+                        : t("settings")
+                    }
                   >
-                    <Settings2 className="h-[1.15rem] w-[1.15rem]" />
+                    <span className="relative">
+                      {desktopUpdateStatus === "available" ||
+                      desktopUpdateStatus === "predownloaded" ? (
+                        <Download className="h-[1.15rem] w-[1.15rem] text-orange-500 dark:text-orange-400" />
+                      ) : (
+                        <Settings2 className="h-[1.15rem] w-[1.15rem]" />
+                      )}
+                      {(desktopUpdateStatus === "available" ||
+                        desktopUpdateStatus === "predownloaded") && (
+                        <span className="absolute -end-1.5 -top-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background" />
+                      )}
+                    </span>
                   </Button>
                 </>
               ) : !IS_DESKTOP_BUILD ? (
@@ -1097,11 +1245,13 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   compact
                 />
               ) : null}
+              {!IS_DESKTOP_BUILD && (
               <LanguageSelector
                 currentLang={lang}
                 languageMap={languageNames}
                 compact
               />
+            )}
             </div>
           </div>
         </CardHeader>
@@ -1135,6 +1285,18 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   <ThemeToggle
                     theme={theme}
                     onThemeChange={handleThemeChange}
+                    compact
+                  />
+                </section>
+
+                <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                  <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
+                    <Globe size={16} />
+                    {t("chooselanguage")}
+                  </Label>
+                  <LanguageSelector
+                    currentLang={lang}
+                    languageMap={languageNames}
                     compact
                   />
                 </section>
@@ -1222,6 +1384,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     onClick={() => void handleCheckForUpdates()}
                     disabled={
                       desktopUpdateStatus === "checking" ||
+                      desktopUpdateStatus === "predownloading" ||
+                      desktopUpdateStatus === "mirrorInstalling" ||
                       desktopUpdateStatus === "installing"
                     }
                     className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
@@ -1230,6 +1394,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                       <RefreshCw
                         className={`h-4 w-4 shrink-0 ${
                           desktopUpdateStatus === "checking" ||
+                          desktopUpdateStatus === "predownloading" ||
+                          desktopUpdateStatus === "mirrorInstalling" ||
                           desktopUpdateStatus === "installing"
                             ? "animate-spin"
                             : ""
@@ -1238,9 +1404,18 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                       <span className="truncate">
                         {desktopUpdateStatus === "checking"
                           ? t("checkingForUpdates")
-                          : desktopUpdateStatus === "installing"
-                            ? t("installingUpdate")
-                            : t("checkForUpdates")}
+                          : desktopUpdateStatus === "directFailed"
+                            ? t("retryWithMirror")
+                            : desktopUpdateStatus === "predownloading" ||
+                                desktopUpdateStatus === "mirrorInstalling"
+                              ? t("downloadingUpdate")
+                            : desktopUpdateStatus === "predownloaded"
+                              ? t("restartToUpdate")
+                              : desktopUpdateStatus === "available"
+                                ? t("downloadUpdate")
+                                : desktopUpdateStatus === "installing"
+                                  ? t("installingUpdate")
+                                  : t("checkForUpdates")}
                       </span>
                     </span>
                     <span
@@ -1271,14 +1446,23 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   {desktopUpdateStatus !== "idle" &&
                     desktopUpdateStatus !== "checking" &&
                     desktopUpdateStatus !== "installing" &&
-                    desktopUpdateStatus !== "latest" && (
+                    desktopUpdateStatus !== "latest" &&
+                    desktopUpdateStatus !== "available" &&
+                    desktopUpdateStatus !== "predownloading" &&
+                    desktopUpdateStatus !== "mirrorInstalling" &&
+                    desktopUpdateStatus !== "predownloaded" && (
                       <p
                         role="status"
                         className="border-t border-gray-200/70 px-3 py-2 text-xs text-amber-600 dark:border-gray-700/70 dark:text-amber-400"
                       >
                         {desktopUpdateStatus === "unconfigured"
                           ? t("updateNotConfigured")
-                          : t("updateFailed")}
+                          : desktopUpdateStatus === "directFailed"
+                            ? // 明确告诉用户镜像是第三方，以及签名校验没有被跳过。
+                              t("updateMirrorNotice", {
+                                host: UPDATE_MIRROR_HOST,
+                              })
+                            : t("updateFailed")}
                       </p>
                     )}
                 </section>

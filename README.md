@@ -24,6 +24,17 @@ mini timer on Windows, native notifications, launch at login, a global shortcut
 and one-click updates. It remains local-first: schedules, salary settings and
 countdown state stay on your device.
 
+On launch the app asks GitHub whether a newer version exists. That request
+carries no account, salary or usage data, and the installer is downloaded only
+after you choose to update. If GitHub cannot be reached directly — common on
+some networks — the update panel offers a one-click retry through a public
+mirror (`gh-proxy.com`). The mirror only changes where the bytes come from:
+every updater package is verified against the signing key built into the app
+before it is installed, so a tampered download is rejected either way. To point
+at a different mirror or drop it entirely, change `MIRROR_UPDATER_ENDPOINT` in
+`src-tauri/src/lib.rs`, `UPDATE_MIRROR_HOST` in `lib/desktop-state.ts` and
+`MIRROR_PREFIX` in `scripts/mirror-manifest.mjs`.
+
 ### Install the desktop app
 
 The current builds are open source but are **not signed with paid Apple or
@@ -65,7 +76,7 @@ platform.
 - Share your countdown as a mood-based image, or as a link that opens on the same shift
 - Native desktop notifications, launch at login and a global show/hide shortcut
 - macOS menu-bar countdown and native glass mini timer; Windows compact mini timer
-- In-app desktop updates from signed GitHub Release artifacts
+- In-app desktop updates from signed GitHub Release artifacts, with a mirror fallback when GitHub is unreachable
 - Schedule reference pages: 996, 9 to 5, 9 to 6 and night shift
 - Progressive Web App (PWA) support for offline use
 - Light, dark, system and two custom themes

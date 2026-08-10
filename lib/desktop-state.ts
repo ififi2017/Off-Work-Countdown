@@ -82,6 +82,12 @@ export async function readDesktopCountdownState(): Promise<DesktopCountdownState
   return (await store.get<DesktopCountdownState>(DESKTOP_COUNTDOWN_KEY)) ?? null;
 }
 
+/**
+ * 订阅倒计时状态的变化。
+ *
+ * store 插件的 `store://change` 事件按「路径」共享同一个 resourceId，因此
+ * 主窗口、迷你窗和 Rust 侧的写入彼此都能收到——跨窗口同步只需要这一条通道。
+ */
 export async function subscribeToDesktopCountdown(
   listener: (state: DesktopCountdownState | null) => void
 ): Promise<() => void> {
@@ -151,6 +157,40 @@ export async function hideDesktopMiniTimer(): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("hide_mini_timer");
+}
+
+export async function showDesktopMainWindow(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("show_main_window");
+}
+
+/**
+ * 更新镜像的主机名，仅用于向用户说明「安装包会从哪里下来」。
+ * 真正的地址在 src-tauri/src/lib.rs 的 MIRROR_UPDATER_ENDPOINT，改那边要同步这里。
+ */
+export const UPDATE_MIRROR_HOST = "gh-proxy.com";
+
+/**
+ * 直连 GitHub 下载失败后，改走镜像清单重新检查、下载并安装更新。
+ *
+ * 整条链路在 Rust 侧完成：JS 的 `check()` 无法改写安装包地址（`proxy` 参数是
+ * HTTP 代理，而镜像是 URL 前缀重写）。安装包的 minisign 签名照常校验。
+ */
+export async function installDesktopUpdateViaMirror(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("install_update_via_mirror");
+}
+
+/**
+ * 翻转「隐藏金额」。两个迷你窗都走这里，由 Rust 统一改写 store，
+ * 主窗口通过 {@link subscribeToDesktopCountdown} 收到同一份状态。
+ */
+export async function toggleDesktopSalaryVisibility(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("toggle_salary_visibility");
 }
 
 export async function updateDesktopTrayMenu(labels: {
