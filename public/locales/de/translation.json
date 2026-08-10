@@ -22,6 +22,8 @@
   "countdownNotStarted": "Countdown nicht gestartet",
   "enableAlwaysOnTop": "Immer im Vordergrund aktivieren",
   "disableAlwaysOnTop": "Immer im Vordergrund deaktivieren",
+  "toggleMiniTimer": "Mini-Timer ein- oder ausblenden",
+  "hideMiniTimer": "Mini-Timer ausblenden",
   "gradient": "Animierter Farbverlauf-Hintergrund",
   "startCountdown": "Countdown starten",
   "return": "Zurück",

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock3, Pin, PinOff } from "lucide-react";
+import { Clock3, Pin, PinOff, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   getDesktopCountdownView,
   getMiniWindowSettings,
+  hideDesktopMiniTimer,
   readDesktopCountdownState,
   setMiniAlwaysOnTop,
   subscribeToDesktopCountdown,
@@ -101,6 +102,14 @@ export function MiniCountdown() {
     }
   };
 
+  const hideMiniTimer = async () => {
+    try {
+      await hideDesktopMiniTimer();
+    } catch {
+      // 隐藏失败不影响计时；用户仍可通过托盘菜单切换窗口。
+    }
+  };
+
   return (
     <main
       data-tauri-drag-region="deep"
@@ -108,24 +117,39 @@ export function MiniCountdown() {
     >
       <section
         data-tauri-drag-region="deep"
-        className="relative flex h-full cursor-grab flex-col justify-center overflow-hidden border border-black/10 bg-gradient-to-b from-white/80 to-zinc-200/80 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] active:cursor-grabbing dark:border-white/10 dark:from-zinc-700/90 dark:to-zinc-900/95 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+        className="relative flex h-full cursor-grab flex-col overflow-hidden border border-black/10 bg-gradient-to-b from-white/80 to-zinc-200/80 px-3 pb-1.5 pt-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] active:cursor-grabbing dark:border-white/10 dark:from-zinc-700/90 dark:to-zinc-900/95 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
       >
         {isWindows && (
-          <button
+          <div
             data-tauri-drag-region="false"
-            type="button"
-            onClick={toggleAlwaysOnTop}
-            aria-pressed={alwaysOnTop}
-            aria-label={
-              alwaysOnTop ? t("disableAlwaysOnTop") : t("enableAlwaysOnTop")
-            }
-            title={
-              alwaysOnTop ? t("disableAlwaysOnTop") : t("enableAlwaysOnTop")
-            }
-            className="absolute end-1.5 top-1.5 z-10 rounded-md p-1 text-zinc-500 transition-colors hover:bg-black/5 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+            className="absolute end-1 top-1 z-10 flex items-center gap-0.5"
           >
-            {alwaysOnTop ? <Pin size={11} /> : <PinOff size={11} />}
-          </button>
+            <button
+              data-tauri-drag-region="false"
+              type="button"
+              onClick={toggleAlwaysOnTop}
+              aria-pressed={alwaysOnTop}
+              aria-label={
+                alwaysOnTop ? t("disableAlwaysOnTop") : t("enableAlwaysOnTop")
+              }
+              title={
+                alwaysOnTop ? t("disableAlwaysOnTop") : t("enableAlwaysOnTop")
+              }
+              className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-black/5 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              {alwaysOnTop ? <Pin size={11} /> : <PinOff size={11} />}
+            </button>
+            <button
+              data-tauri-drag-region="false"
+              type="button"
+              onClick={hideMiniTimer}
+              aria-label={t("hideMiniTimer")}
+              title={t("hideMiniTimer")}
+              className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-red-500/10 hover:text-red-600 dark:text-zinc-400 dark:hover:bg-red-400/15 dark:hover:text-red-300"
+            >
+              <X size={12} />
+            </button>
+          </div>
         )}
 
         <div
@@ -158,7 +182,7 @@ export function MiniCountdown() {
           )}
         </div>
 
-        <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/15">
+        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/15">
           <div
             className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-600 transition-[width] duration-500 ease-out"
             style={{ width: `${hasCountdown ? progress : 0}%` }}

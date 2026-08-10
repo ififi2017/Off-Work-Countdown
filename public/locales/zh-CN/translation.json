@@ -22,6 +22,8 @@
   "countdownNotStarted": "计时未开始",
   "enableAlwaysOnTop": "开启窗口置顶",
   "disableAlwaysOnTop": "关闭窗口置顶",
+  "toggleMiniTimer": "显示或隐藏迷你计时器",
+  "hideMiniTimer": "隐藏迷你计时器",
   "gradient": "背景渐变流动色彩",
   "startCountdown": "开始倒计时",
   "return": "返回",

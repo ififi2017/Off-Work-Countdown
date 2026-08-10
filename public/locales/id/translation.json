@@ -22,6 +22,8 @@
   "countdownNotStarted": "Hitung mundur belum dimulai",
   "enableAlwaysOnTop": "Aktifkan selalu di atas",
   "disableAlwaysOnTop": "Nonaktifkan selalu di atas",
+  "toggleMiniTimer": "Tampilkan atau sembunyikan timer mini",
+  "hideMiniTimer": "Sembunyikan timer mini",
   "gradient": "Latar belakang gradien animasi",
   "startCountdown": "Mulai Hitung Mundur",
   "return": "Kembali",

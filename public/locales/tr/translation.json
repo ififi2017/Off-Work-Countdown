@@ -22,6 +22,8 @@
   "countdownNotStarted": "Geri sayım başlatılmadı",
   "enableAlwaysOnTop": "Her zaman üstteyi aç",
   "disableAlwaysOnTop": "Her zaman üstteyi kapat",
+  "toggleMiniTimer": "Mini sayacı göster veya gizle",
+  "hideMiniTimer": "Mini sayacı gizle",
   "gradient": "Animasyonlu gradyan arka plan",
   "startCountdown": "Geri Sayımı Başlat",
   "return": "Geri Dön",
