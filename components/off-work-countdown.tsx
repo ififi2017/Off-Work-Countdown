@@ -295,9 +295,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     useState<DesktopUpdateStatus>("idle");
   const [desktopCurrentVersion, setDesktopCurrentVersion] = useState("");
   const [desktopLatestVersion, setDesktopLatestVersion] = useState("");
+  // 默认按 macOS 算：平台要等 IPC 返回，而这个值决定标题栏区域的留白。
+  // 猜错成 macOS 只是 Windows 上多留 16px 一瞬；猜错成非 macOS 则会让
+  // 交通灯在首帧压住标题，那个更难看。
   const [desktopPlatform, setDesktopPlatform] = useState<
     "macos" | "windows" | "other"
-  >("other");
+  >("macos");
 
   // 通过分享链接进入：班次来自 URL，而不是本人的设置。这种状态下不写
   // localStorage，否则会把对方的班次覆盖掉访问者自己保存的时间。
@@ -683,6 +686,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       unsubscribe?.();
     };
   }, []);
+
+  // macOS 用覆盖式标题栏（tauri.conf.json 的 titleBarStyle: Overlay +
+  // hiddenTitle），交通灯浮在内容上方，所以顶部要留出让位空间，窗口拖动
+  // 也得自己画一条热区。这两项在 Tauri 里都是 macOS 专属配置，Windows
+  // 直接忽略、用的是原生标题栏 —— 那边再留 40px 就是白留一片。
+  const hasOverlayTitleBar = IS_DESKTOP_BUILD && desktopPlatform === "macos";
 
   const calculateProgress = useCallback(() => {
     if (activeBounds) {
@@ -1105,7 +1114,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       <Background theme={theme} />
       <Confetti trigger={showConfetti} />
 
-      {IS_DESKTOP_BUILD && (
+      {hasOverlayTitleBar && (
         <div
           data-tauri-drag-region="deep"
           aria-hidden="true"
@@ -1139,7 +1148,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         <CardHeader
           className={
             isAppShell
-              ? IS_DESKTOP_BUILD
+              ? hasOverlayTitleBar
                 ? "px-6 pb-3 pt-10"
                 : "p-6 pb-3"
               : undefined
