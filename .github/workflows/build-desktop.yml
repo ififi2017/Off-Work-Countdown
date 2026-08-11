@@ -1,0 +1,95 @@
+name: Build Desktop (manual)
+
+# 手动出一份可安装的包，用来在发版之前验证平台相关的改动。
+#
+# 存在的理由：Windows 的安装向导、原生标题栏、托盘菜单这些东西在 macOS 上
+# 复现不出来，而 Desktop Release 只在推 tag 时才跑——等于每验证一次就要发一次版。
+#
+# 与 Desktop Release 的两处刻意差异：
+#   - 不传 tagName，所以 tauri-action 只构建、不创建也不改动任何 Release
+#   - 不加载 tauri.release.conf.json，因此不产出 updater 包、也就完全不需要
+#     签名私钥。这个作业不接触任何 secret。
+#     代价是产物与正式发布包不完全一致（缺 updater 包），验 UI 足够，
+#     验更新流程仍然要走真正的发版。
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platforms to build
+        type: choice
+        default: windows
+        options:
+          - windows
+          - macos
+          - all
+
+jobs:
+  matrix:
+    name: Resolve matrix
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.pick.outputs.include }}
+    steps:
+      - name: Pick targets
+        id: pick
+        env:
+          PLATFORM: ${{ inputs.platform }}
+        run: |
+          set -euo pipefail
+          windows='{"name":"Windows x64","platform":"windows-latest","rustTargets":"x86_64-pc-windows-msvc","args":""}'
+          macos='{"name":"macOS Apple Silicon","platform":"macos-latest","rustTargets":"aarch64-apple-darwin","args":"--target aarch64-apple-darwin"}'
+          case "$PLATFORM" in
+            windows) include="[$windows]" ;;
+            macos)   include="[$macos]" ;;
+            *)       include="[$windows,$macos]" ;;
+          esac
+          echo "include=$include" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: ${{ matrix.name }}
+    needs: matrix
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.include) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rustTargets }}
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build bundles
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_SIGNING_IDENTITY: ${{ startsWith(matrix.platform, 'macos') && '-' || '' }}
+        with:
+          args: ${{ matrix.args }}
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.rustTargets }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            src-tauri/target/**/release/bundle/nsis/*-setup.exe
+            src-tauri/target/**/release/bundle/msi/*.msi
+            src-tauri/target/**/release/bundle/dmg/*.dmg
