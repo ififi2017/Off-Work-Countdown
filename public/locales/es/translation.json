@@ -174,12 +174,10 @@
   "microBreakInterval": "Recordarme cada",
   "microBreakEffectiveTimeNote": "Solo cuenta el trabajo efectivo; no se avisa durante la comida ni fuera del horario.",
   "microBreakMessages": [
-    "Llevas {{minutes}} minutos efectivos. Bebe agua.",
-    "{{minutes}} minutos efectivos — toma un sorbo.",
-    "Tras {{minutes}} minutos, haz una pausa para beber.",
-    "Llevas {{minutes}} minutos efectivos. Levántate y muévete.",
-    "{{minutes}} minutos efectivos — estírate un momento.",
-    "Tras {{minutes}} minutos, descansa hombros y piernas."
+    "Llevas {{minutes}} minutos seguidos. Bebe un poco de agua.",
+    "{{minutes}} minutos sin parar. Levántate y suelta los hombros.",
+    "{{minutes}} minutos frente a la pantalla. Mira a lo lejos un momento.",
+    "{{minutes}} minutos sin descanso. Da unos pasos y vuelve."
   ],
   "floatingTimerSkin": "Estilo del temporizador flotante",
   "standardSkin": "Estándar",

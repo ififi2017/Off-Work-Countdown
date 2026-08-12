@@ -174,12 +174,10 @@
   "microBreakInterval": "알림 간격",
   "microBreakEffectiveTimeNote": "유효 근무 시간만 계산하며 점심시간과 퇴근 후에는 알리지 않습니다.",
   "microBreakMessages": [
-    "유효 근무 {{minutes}}분입니다. 물을 마셔 보세요.",
-    "유효 근무 {{minutes}}분 완료 — 물 한 모금 드세요.",
-    "{{minutes}}분 일했으니 잠시 물을 마셔요.",
-    "유효 근무 {{minutes}}분입니다. 일어나 움직여 보세요.",
-    "유효 근무 {{minutes}}분 완료 — 잠시 스트레칭하세요.",
-    "{{minutes}}분 일했으니 어깨와 다리를 쉬게 해 주세요."
+    "{{minutes}}분째 이어서 하고 있어요. 물 한 잔 마시고 와요.",
+    "{{minutes}}분 지났어요. 일어나서 어깨를 풀어 봐요.",
+    "{{minutes}}분째 화면만 봤어요. 잠깐 먼 곳을 봐요.",
+    "{{minutes}}분 내리 앉아 있었어요. 몇 걸음 걷고 와요."
   ],
   "floatingTimerSkin": "플로팅 타이머 스킨",
   "standardSkin": "기본",
