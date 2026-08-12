@@ -244,10 +244,25 @@ body {
   -webkit-user-drag: none;
 }
 
+/* Tailwind 的 select-none 只输出无前缀的 user-select，而 WKWebView 认的是
+   带前缀的那个——在 Chromium 里怎么试都对，装进 App 就还能框选。 */
+.select-none {
+  -webkit-user-select: none;
+}
+
 /* 禁用框选时要留出输入框：时间和薪资都要能选中、能编辑。 */
 .select-none input,
 .select-none textarea,
 .select-none [contenteditable="true"] {
   -webkit-user-select: text;
   user-select: text;
+}
+
+/* WKWebView 的橡皮筋回弹：双指在窗口里拖会把整个文档拽走，露出窗口底色。
+   桌面端整扇窗就是应用本体，文档层没有需要滚动的东西，直接关掉。 */
+html.desktop-shell,
+body.desktop-shell {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }

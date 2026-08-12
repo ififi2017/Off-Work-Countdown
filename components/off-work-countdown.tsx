@@ -1097,6 +1097,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   // 输入页与倒计时页是同一层的状态切换，纵向交换即可。设置页不在这个
   // AnimatePresence 里——它是整页横移，见下方轨道。
+  // 退场时长同时也是进场的延时，两处必须一致，否则不是叠上就是空一拍。
+  const FLOW_EXIT_SECONDS = 0.14;
+
   // mode="wait" 会等旧页面完全退场才开始进场，退场时长是实打实看得见的空窗：
   // 进出各 280ms 时，倒计时要在屏幕上淡够 280ms 才轮到输入页，看着就是
   // 「计时器残留了一会」。
@@ -1105,15 +1108,23 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 会盖掉 variant 自带的 transition，退场怎么都压不下去。
   const flowPageVariants = {
     initial: { opacity: 0, y: 12 },
+    // 进场延后到退场结束再开始。popLayout 让新页面立刻占位，两段动画默认是
+    // 重叠的，于是倒计时和输入表单会同时显影、糊在一起。加上这段延时就变成
+    // 先送走旧的、再迎进新的，而又不必付 mode="wait" 那三百毫秒的等待。
     animate: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.16, ease: [0.32, 0.72, 0, 1] as const },
+      transition: {
+        duration: 0.22,
+        delay: FLOW_EXIT_SECONDS,
+        ease: [0.32, 0.72, 0, 1] as const,
+      },
     },
-    // 退场直接抹掉，不做动画：mode="wait" 要等退场结束才开始进场，任何退场
-    // 时长都会变成一段「旧页面还在、新页面没来」的空窗。倒计时那页有大字和
-    // 白色进度气泡，淡出过程看着就是残留。
-    exit: { opacity: 0, transition: { duration: 0 } },
+    exit: {
+      opacity: 0,
+      y: -10,
+      transition: { duration: FLOW_EXIT_SECONDS, ease: "easeIn" as const },
+    },
   };
   // 轨道横移是物理方向，阿拉伯语下两页左右互换，位移也要跟着反过来。
   const isRtl = getTextDirection(lang) === "rtl";
@@ -2094,7 +2105,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         <div
           className={
             IS_DESKTOP_BUILD
-              ? "flex min-h-0 w-[200%] flex-1 will-change-transform motion-safe:transition-transform motion-safe:duration-[280ms] motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
+              ? "flex min-h-0 w-[200%] flex-1 will-change-transform motion-safe:transition-transform motion-safe:duration-[340ms] motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
               : "contents"
           }
           style={
@@ -2418,20 +2429,34 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             {!showCountdown ? (
               <motion.div
                 key="start"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  transition: { duration: 0.2, delay: FLOW_EXIT_SECONDS },
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.9,
+                  transition: { duration: FLOW_EXIT_SECONDS },
+                }}
               >
                 <Button onClick={handleStart}>{t("startCountdown")}</Button>
               </motion.div>
             ) : (
               <motion.div
                 key="return"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  transition: { duration: 0.2, delay: FLOW_EXIT_SECONDS },
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.9,
+                  transition: { duration: FLOW_EXIT_SECONDS },
+                }}
                 className="flex gap-2"
               >
                 <Button
