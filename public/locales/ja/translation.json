@@ -6,7 +6,7 @@
   "checkForUpdates": "アップデートを確認",
   "checkingForUpdates": "アップデートを確認中…",
   "installingUpdate": "アップデートをインストール中…",
-  "upToDate": "最新バージョンです。",
+  "upToDate": "最新です",
   "updateAvailable": "アップデートがあります",
   "downloadUpdate": "アップデートをダウンロード",
   "retryWithMirror": "ミラー経由で再試行",
@@ -39,7 +39,7 @@
   "notificationMode": "退勤通知",
   "notificationModeOff": "通知しない",
   "notificationModeSimple": "退勤時のみ",
-  "notificationModeMilestones": "進捗に応じて数回",
+  "notificationModeMilestones": "進捗に応じて",
   "notificationToneMessages": [
     "うれしいお知らせ：",
     "進捗です：",
@@ -180,7 +180,7 @@
     "{{minutes}} 分ぶっ通しです。少し歩いてから戻りましょう。"
   ],
   "floatingTimerSkin": "フローティングタイマー",
-  "standardSkin": "標準",
+  "standardSkin": "シンプル",
   "woodfishSkin": "木魚",
   "woodfishSound": "木魚の音",
   "woodfishFirstTapSilent": "静かな場所で驚かせないよう、最初の一打は鳴りません。",

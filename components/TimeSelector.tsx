@@ -139,6 +139,7 @@ export function TimeSelector({
       >
         {label}
       </Label>
+      {/* 外层 grid 已把两个选择器各分一半，这里铺满自己那一半即可。 */}
       <div className="flex gap-2">
         <div className="w-1/2">
           <div className="relative">
@@ -152,7 +153,7 @@ export function TimeSelector({
               spellCheck={false}
               pattern="[0-9]*"
               className={`flex w-full items-center justify-between rounded-lg border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
-                compact ? "h-9 px-3 py-1.5 pe-8" : "h-10 px-3 py-2 pe-10"
+                compact ? "h-9 px-3 py-1.5 pe-8" : "h-10 px-3 py-2 pe-8"
               }`}
               value={hourInput}
               onChange={(e) => handleHourInput(e.target.value)}
@@ -183,7 +184,7 @@ export function TimeSelector({
               spellCheck={false}
               pattern="[0-9]*"
               className={`flex w-full items-center justify-between rounded-lg border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
-                compact ? "h-9 px-3 py-1.5 pe-8" : "h-10 px-3 py-2 pe-10"
+                compact ? "h-9 px-3 py-1.5 pe-8" : "h-10 px-3 py-2 pe-8"
               }`}
               value={minuteInput}
               onChange={(e) => handleMinuteInput(e.target.value)}

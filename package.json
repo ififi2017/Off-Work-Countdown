@@ -1,10 +1,10 @@
 {
   "name": "off-work-30",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:desktop": "BUILD_TARGET=desktop next dev",
+    "dev:desktop": "BUILD_TARGET=desktop next dev -p 3001",
     "build": "next build",
     "build:desktop": "node scripts/build-desktop.mjs",
     "check:build:web": "node scripts/check-build-output.mjs web",

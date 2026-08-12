@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Off Work Countdown",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "identifier": "com.rainif.offworkcountdown",
   "build": {
     "frontendDist": "../out",
@@ -22,7 +22,7 @@
         "minHeight": 420,
         "maxWidth": 450,
         "maxHeight": 450,
-        "resizable": true,
+        "resizable": false,
         "maximizable": false,
         "fullscreen": false,
         "titleBarStyle": "Overlay",

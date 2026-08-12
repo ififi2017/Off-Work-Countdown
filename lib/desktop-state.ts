@@ -110,7 +110,7 @@ const EMPTY_STATE: DesktopCountdownState = {
     "You've been at it for {{minutes}} minutes. Go get some water.",
     "{{minutes}} minutes straight. Stand up and stretch.",
   ],
-  miniSkin: "standard",
+  miniSkin: "woodfish",
   woodfishSoundEnabled: false,
   showEarningsLabel: "Show amount",
   hideEarningsLabel: "Hide amount",
@@ -397,6 +397,20 @@ export async function installDesktopUpdateViaMirror(): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("install_update_via_mirror");
+}
+
+/** Windows 自绘标题栏：最小化。 */
+export async function minimizeDesktopMainWindow(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("minimize_main_window");
+}
+
+/** Windows 自绘标题栏：关闭（隐藏，不退出）。 */
+export async function hideDesktopMainWindow(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("hide_main_window");
 }
 
 /** 迷你窗工具条上的主窗口按钮：显示 ↔ 隐藏来回切。 */

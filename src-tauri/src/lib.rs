@@ -1427,6 +1427,23 @@ fn toggle_salary_visibility(app: AppHandle) {
     flip_hide_earnings(&app);
 }
 
+/// Windows 自绘标题栏上的最小化按钮。
+#[tauri::command]
+fn minimize_main_window(app: AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.minimize();
+    }
+}
+
+/// Windows 自绘标题栏上的关闭按钮。隐藏而不退出——和点原生标题栏的 X
+/// 一样（那条路径由 CloseRequested 拦下），真正的退出只在托盘菜单里。
+#[tauri::command]
+fn hide_main_window(app: AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.hide();
+    }
+}
+
 /// 迷你窗工具条上的皮肤切换。
 #[tauri::command]
 fn toggle_mini_skin(app: AppHandle) -> Result<(), String> {
@@ -1437,10 +1454,11 @@ fn toggle_mini_skin(app: AppHandle) -> Result<(), String> {
             .migrate_legacy(),
         None => CountdownState::default(),
     };
-    state.mini_skin = if state.mini_skin == "woodfish" {
-        "standard".into()
-    } else {
+    // 木鱼是默认皮肤，空字符串也算木鱼，所以判据是「是不是简约」。
+    state.mini_skin = if state.mini_skin == "standard" {
         "woodfish".into()
+    } else {
+        "standard".into()
     };
     let value = serde_json::to_value(&state).map_err(|error| error.to_string())?;
     store.set(COUNTDOWN_KEY, value);
@@ -1698,6 +1716,8 @@ pub fn run() {
             hide_mini_timer,
             show_main_window,
             toggle_main_window_visibility,
+            minimize_main_window,
+            hide_main_window,
             toggle_salary_visibility,
             toggle_woodfish_sound,
             toggle_mini_skin,
@@ -1754,6 +1774,15 @@ pub fn run() {
                 }
             }
             start_tray_timer(app.handle().clone());
+
+            // Windows 的原生标题栏用的是系统配色，和应用内的玻璃卡片对不上，
+            // 顶着一条灰白（或纯黑）的横条很出戏。这里去掉它，改由前端自绘；
+            // 阴影要显式保留，否则无边框窗口会和桌面糊在一起。
+            #[cfg(target_os = "windows")]
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_decorations(false);
+                let _ = window.set_shadow(true);
+            }
 
             // 关闭主窗口时隐藏而非退出。真正的退出走托盘菜单里的 Quit。
             if let Some(window) = app.get_webview_window("main") {

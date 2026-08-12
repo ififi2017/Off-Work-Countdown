@@ -6,7 +6,7 @@
   "checkForUpdates": "Kiểm tra cập nhật",
   "checkingForUpdates": "Đang kiểm tra cập nhật…",
   "installingUpdate": "Đang cài đặt bản cập nhật…",
-  "upToDate": "Bạn đang dùng phiên bản mới nhất.",
+  "upToDate": "Đã mới nhất",
   "updateAvailable": "Có bản cập nhật",
   "downloadUpdate": "Tải bản cập nhật",
   "retryWithMirror": "Thử lại qua máy chủ gương",
@@ -38,8 +38,8 @@
   "notificationTestBody": "Thông báo đã sẵn sàng. Mức lương sẽ không được hiển thị.",
   "notificationMode": "Thông báo tan ca",
   "notificationModeOff": "Không nhắc",
-  "notificationModeSimple": "Chỉ khi tan làm",
-  "notificationModeMilestones": "Nhiều lần theo tiến độ",
+  "notificationModeSimple": "Khi tan làm",
+  "notificationModeMilestones": "Theo tiến độ",
   "notificationToneMessages": [
     "Tin vui:",
     "Cập nhật nhanh:",
@@ -180,7 +180,7 @@
     "{{minutes}} phút không nghỉ. Đi vài bước rồi quay lại."
   ],
   "floatingTimerSkin": "Giao diện bộ đếm nổi",
-  "standardSkin": "Tiêu chuẩn",
+  "standardSkin": "Tối giản",
   "woodfishSkin": "Mõ gỗ",
   "woodfishSound": "Âm thanh mõ gỗ",
   "woodfishFirstTapSilent": "Lần gõ đầu tiên luôn im lặng để không làm giật mình người xung quanh.",

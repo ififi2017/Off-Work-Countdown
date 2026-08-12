@@ -10,6 +10,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getTextDirection } from "@/i18n-config";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -37,6 +38,8 @@ import {
   Coffee,
   GlassWater,
   Palette,
+  Minus,
+  X,
 } from "lucide-react";
 import {
   Select,
@@ -111,6 +114,8 @@ import {
   getDesktopAutostartEnabled,
   getDesktopGlobalShortcutSettings,
   getMiniWindowSettings,
+  hideDesktopMainWindow,
+  minimizeDesktopMainWindow,
   readDesktopCountdownState,
   setDesktopAutostartEnabled,
   updateDesktopGlobalShortcutSettings,
@@ -362,7 +367,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [overtimeEndTime, setOvertimeEndTime] = useState("19:00");
   const [microBreakEnabled, setMicroBreakEnabled] = useState(false);
   const [microBreakIntervalMinutes, setMicroBreakIntervalMinutes] = useState(60);
-  const [miniSkin, setMiniSkin] = useState<DesktopMiniSkin>("standard");
+  const [miniSkin, setMiniSkin] = useState<DesktopMiniSkin>("woodfish");
   const [woodfishSoundEnabled, setWoodfishSoundEnabled] = useState(false);
   const [desktopStateRestored, setDesktopStateRestored] = useState(
     !IS_DESKTOP_BUILD
@@ -560,9 +565,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         getLocalStorageItem("lunchStartNotificationEnabled", "true") === "true"
       );
       setMiniSkin(
-        getLocalStorageItem("miniSkin", "standard") === "woodfish"
-          ? "woodfish"
-          : "standard"
+        // 木鱼是默认皮肤，所以判据反过来：只有显式存过「简约」才不是木鱼。
+        getLocalStorageItem("miniSkin", "woodfish") === "standard"
+          ? "standard"
+          : "woodfish"
       );
       setWoodfishSoundEnabled(
         getLocalStorageItem("woodfishSoundEnabled", "false") === "true"
@@ -646,9 +652,25 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         if (!cancelled) setGlobalShortcutLoaded(true);
       });
 
+    // 在 macOS 上验收 Windows 的窗口外观没有别的办法：那套自绘标题栏只在
+    // desktopPlatform === "windows" 时才渲染。开发构建下允许用查询参数强制，
+    // 正式包不读它（与迷你窗的 OWC_FORCE_WINDOWS_MINI 同一思路）。
+    const forcedPlatform =
+      process.env.NODE_ENV === "production"
+        ? null
+        : new URLSearchParams(window.location.search).get("platform");
+    const platformOverride =
+      forcedPlatform === "windows" ||
+      forcedPlatform === "macos" ||
+      forcedPlatform === "other"
+        ? forcedPlatform
+        : null;
+    if (platformOverride) setDesktopPlatform(platformOverride);
+
     void getMiniWindowSettings()
       .then((settings) => {
-        if (!cancelled) setDesktopPlatform(settings.platform);
+        // 覆盖生效时不让真实平台把它顶回去；其余初始化照常进行。
+        if (!cancelled && !platformOverride) setDesktopPlatform(settings.platform);
       })
       .catch(() => {
         // The shortcut still works if only its platform-specific label fails.
@@ -1069,6 +1091,44 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 也得自己画一条热区。这两项在 Tauri 里都是 macOS 专属配置，Windows
   // 直接忽略、用的是原生标题栏 —— 那边再留 40px 就是白留一片。
   const hasOverlayTitleBar = IS_DESKTOP_BUILD && desktopPlatform === "macos";
+  // Windows 的原生标题栏用系统配色，压在玻璃卡片上方是一条对不上的灰白横条。
+  // Rust 那边已经把 decorations 关掉，这里补上自绘的拖动条与窗口按钮。
+  const hasWindowsTitleBar = IS_DESKTOP_BUILD && desktopPlatform === "windows";
+
+  // 输入页与倒计时页是同一层的状态切换，纵向交换即可。设置页不在这个
+  // AnimatePresence 里——它是整页横移，见下方轨道。
+  // 退场时长同时也是进场的延时，两处必须一致，否则不是叠上就是空一拍。
+  const FLOW_EXIT_SECONDS = 0.14;
+
+  // mode="wait" 会等旧页面完全退场才开始进场，退场时长是实打实看得见的空窗：
+  // 进出各 280ms 时，倒计时要在屏幕上淡够 280ms 才轮到输入页，看着就是
+  // 「计时器残留了一会」。
+  //
+  // 时长写在 variant 里而不是 transition prop 上：prop 是所有动画的默认值，
+  // 会盖掉 variant 自带的 transition，退场怎么都压不下去。
+  const flowPageVariants = {
+    initial: { opacity: 0, y: 12 },
+    // 进场延后到退场结束再开始。popLayout 让新页面立刻占位，两段动画默认是
+    // 重叠的，于是倒计时和输入表单会同时显影、糊在一起。加上这段延时就变成
+    // 先送走旧的、再迎进新的，而又不必付 mode="wait" 那三百毫秒的等待。
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.22,
+        delay: FLOW_EXIT_SECONDS,
+        ease: [0.32, 0.72, 0, 1] as const,
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -10,
+      transition: { duration: FLOW_EXIT_SECONDS, ease: "easeIn" as const },
+    },
+  };
+  // 轨道横移是物理方向，阿拉伯语下两页左右互换，位移也要跟着反过来。
+  const isRtl = getTextDirection(lang) === "rtl";
+  const settingsScrollRef = useRef<HTMLDivElement>(null);
 
   const triggerCelebration = useCallback((shiftEndAtMs: number) => {
     celebratedShiftRef.current = shiftEndAtMs;
@@ -1404,22 +1464,29 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setShowDesktopSettings(true);
     setHighlightedSetting(key);
 
-    // 设置页是 AnimatePresence 里的一整块，点击那一刻它还没挂上，固定延时
-    // 要么太早（元素不存在）要么白等。这里逐帧重试到元素出现为止，并给
-    // 入场动画留出几帧，否则 scrollIntoView 会按动画中途的位置去算。
-    let frames = 0;
-    const scrollToTarget = () => {
-      const target = document.querySelector(`[data-setting="${key}"]`);
-      if (target && frames > 3) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
-      if (frames < 40) {
-        frames += 1;
-        window.requestAnimationFrame(scrollToTarget);
-      }
-    };
-    window.requestAnimationFrame(scrollToTarget);
+    // 只滚设置页自己的滚动容器。scrollIntoView 会把每一个可滚动祖先都滚一遍：
+    // 设置页挂在横移 200% 的轨道上，点下按钮那一刻目标还在视口外，浏览器为了
+    // 把它拉进来会去横向滚外层容器，整页就跑偏了。
+    //
+    // 位移用两个矩形的差值算。轨道的 transform 对容器和目标是同一份，相减即
+    // 抵消，所以不必等滑动动画结束。
+    window.requestAnimationFrame(() => {
+      const container = settingsScrollRef.current;
+      const target = container?.querySelector<HTMLElement>(
+        `[data-setting="${key}"]`
+      );
+      if (!container || !target) return;
+      const containerRect = container.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      const delta =
+        targetRect.top -
+        containerRect.top -
+        (containerRect.height - targetRect.height) / 2;
+      container.scrollTo({
+        top: Math.max(0, container.scrollTop + delta),
+        behavior: "smooth",
+      });
+    });
 
     window.setTimeout(() => setHighlightedSetting(null), 2400);
   };
@@ -1824,7 +1891,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   return (
     <div
       className={`min-h-screen transition-colors duration-1000 ease-in-out ${
-        isAppShell ? "flex flex-col items-stretch justify-start p-0" : "flex items-center justify-center p-4"
+        isAppShell
+          ? "select-none flex flex-col items-stretch justify-start p-0"
+          : "flex items-center justify-center p-4"
       } ${
         isCustomTheme ? "" : "bg-gray-100 dark:bg-gray-900"
       } ${
@@ -1969,6 +2038,45 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         />
       )}
 
+      {/* Windows 自绘标题栏。不另起一行放标题——窗口只有 430pt 高，而下面的
+          页头已经写着「下班倒计时／设置」了，再来一条只是重复。按钮沿用应用
+          自己的圆角与配色，关闭键悬停变红，遵循 Windows 的位置习惯。 */}
+      {hasWindowsTitleBar && (
+        <div
+          data-tauri-drag-region="deep"
+          className="fixed inset-x-0 top-0 z-50 flex h-9 cursor-grab items-center justify-end gap-0.5 pe-1.5 active:cursor-grabbing"
+        >
+          <button
+            type="button"
+            data-tauri-drag-region="false"
+            onClick={() => {
+              void minimizeDesktopMainWindow().catch(() => {
+                // 最小化失败时窗口保持原状，不影响计时。
+              });
+            }}
+            aria-label={t("menuMinimize")}
+            title={t("menuMinimize")}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-black/5 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            data-tauri-drag-region="false"
+            onClick={() => {
+              void hideDesktopMainWindow().catch(() => {
+                // 隐藏失败时窗口保持原状；托盘里仍可再次唤起。
+              });
+            }}
+            aria-label={t("menuCloseWindow")}
+            title={t("menuCloseWindow")}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-red-500 hover:text-white dark:text-gray-400"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
       <div className={isAppShell ? "flex min-h-0 flex-1 flex-col" : "w-full max-w-md"}>
       {/* 接力提示。分享链接落地后对方直接看到的是发送者的班次倒计时，
           这里说明来源并给出一键切回自己时间的出口 —— 分享→落地→转化的
@@ -1992,10 +2100,33 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           ? "max-w-none h-screen max-h-screen overflow-hidden rounded-none shadow-none border-none bg-transparent flex flex-col"
           : ""
       }`}>
+        {/* 轨道：主页面与设置页各占一半，整条横移。Web 版没有设置页，用
+            display:contents 让这两层在布局里消失。 */}
+        <div
+          className={
+            IS_DESKTOP_BUILD
+              ? "flex min-h-0 w-[200%] flex-1 will-change-transform motion-safe:transition-transform motion-safe:duration-[340ms] motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
+              : "contents"
+          }
+          style={
+            IS_DESKTOP_BUILD
+              ? {
+                  transform: showDesktopSettings
+                    ? `translateX(${isRtl ? "50%" : "-50%"})`
+                    : "translateX(0)",
+                }
+              : undefined
+          }
+        >
+        <div
+          className={
+            IS_DESKTOP_BUILD ? "flex h-full w-1/2 min-h-0 flex-col" : "contents"
+          }
+        >
         <CardHeader
           className={
             isAppShell
-              ? hasOverlayTitleBar
+              ? hasOverlayTitleBar || hasWindowsTitleBar
                 ? "px-6 pb-3 pt-10"
                 : "p-6 pb-3"
               : undefined
@@ -2009,34 +2140,16 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               {/* 这里用真正的 h1 而不是 shadcn 的 CardTitle：后者硬编码为 h3，
                   会排在下方说明区的 h2 前面，标题层级就颠倒了。原先另有一个
                   sr-only 的 h1，内容与这里完全相同，属于重复，已一并去掉。 */}
-              {IS_DESKTOP_BUILD && showDesktopSettings && (
-                <button
-                  type="button"
-                  data-tauri-drag-region="false"
-                  onClick={() => setShowDesktopSettings(false)}
-                  className="-ms-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-black/5 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
-                  aria-label={t("return")}
-                  title={t("return")}
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </button>
-              )}
               <h1
                 data-tauri-drag-region={IS_DESKTOP_BUILD ? "deep" : undefined}
-                title={
-                  IS_DESKTOP_BUILD && showDesktopSettings
-                    ? t("settings")
-                    : t("offWorkCountdown")
-                }
+                title={t("offWorkCountdown")}
                 className={
                   IS_DESKTOP_BUILD
                     ? "min-w-0 truncate whitespace-nowrap text-xl font-bold leading-none tracking-tight dark:text-white"
                     : "text-2xl font-bold leading-none tracking-tight dark:text-white"
                 }
               >
-                {IS_DESKTOP_BUILD && showDesktopSettings
-                  ? t("settings")
-                  : t("offWorkCountdown")}
+                {t("offWorkCountdown")}
               </h1>
               {!showCountdown && !IS_DESKTOP_BUILD && (
                 <a
@@ -2054,7 +2167,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               data-tauri-drag-region="false"
               className="flex shrink-0 items-center gap-1.5"
             >
-              {IS_DESKTOP_BUILD && !showDesktopSettings ? (
+              {IS_DESKTOP_BUILD ? (
                 <>
                   <Button
                     variant="outline"
@@ -2123,521 +2236,30 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           className={
             isAppShell
               ? `relative z-10 min-h-0 flex-1 flex flex-col p-6 pt-2 pb-4 ${
-                  IS_DESKTOP_BUILD && showDesktopSettings
+                  IS_DESKTOP_BUILD && formError
                     ? "justify-start overflow-y-auto"
-                    : IS_DESKTOP_BUILD && formError
-                      ? "justify-start overflow-y-auto"
-                      : "justify-center overflow-visible"
+                    : "justify-center overflow-visible"
                 }`
               : undefined
           }
         >
-          <AnimatePresence mode="wait">
-            {IS_DESKTOP_BUILD && showDesktopSettings ? (
-              <motion.div
-                key="settings"
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 16 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-3"
-              >
-                <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
-                  <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
-                    <Palette size={16} />
-                    {t("toggleTheme")}
-                  </Label>
-                  <ThemeToggle
-                    theme={theme}
-                    onThemeChange={handleThemeChange}
-                    compact
-                  />
-                </section>
-
-                <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
-                  <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
-                    <Globe size={16} />
-                    {t("chooselanguage")}
-                  </Label>
-                  <LanguageSelector
-                    currentLang={lang}
-                    languageMap={languageNames}
-                    compact
-                  />
-                </section>
-
-                <section className="space-y-2.5 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
-                  <div className="flex items-center justify-between gap-4">
-                    <Label
-                      htmlFor="launch-at-login"
-                      className="flex items-center gap-2 text-sm dark:text-gray-200"
-                    >
-                      <Rocket size={16} />
-                      {t("launchAtLogin")}
-                    </Label>
-                    <Switch
-                      id="launch-at-login"
-                      checked={launchAtLogin}
-                      disabled={!autostartLoaded || autostartPending}
-                      onCheckedChange={handleAutostartChange}
-                    />
-                  </div>
-                  {desktopSettingError && (
-                    <p
-                      role="alert"
-                      className="text-xs text-red-600 dark:text-red-400"
-                    >
-                      {desktopSettingError}
-                    </p>
-                  )}
-                </section>
-
-                <section className="space-y-2.5 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
-                  <div className="flex items-center justify-between gap-4">
-                    <Label
-                      htmlFor="global-shortcut-enabled"
-                      className="flex items-center gap-2 text-sm dark:text-gray-200"
-                    >
-                      <Keyboard size={16} />
-                      {t("globalShortcut")}
-                    </Label>
-                    <Switch
-                      id="global-shortcut-enabled"
-                      checked={globalShortcutEnabled}
-                      disabled={!globalShortcutLoaded || globalShortcutPending}
-                      onCheckedChange={handleGlobalShortcutEnabledChange}
-                    />
-                  </div>
-                  <Button
-                    ref={globalShortcutButtonRef}
-                    type="button"
-                    variant="outline"
-                    disabled={!globalShortcutLoaded || globalShortcutPending}
-                    aria-label={t("shortcutChange")}
-                    className={`h-10 w-full justify-between rounded-lg px-3 font-normal ${
-                      globalShortcutCapturing
-                        ? "border-orange-500 ring-2 ring-orange-500/20 dark:border-orange-400"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setGlobalShortcutError("");
-                      setGlobalShortcutCapturing((capturing) => !capturing);
-                    }}
-                    onKeyDown={handleGlobalShortcutKeyDown}
-                    onBlur={() => setGlobalShortcutCapturing(false)}
-                  >
-                    <kbd className="font-mono text-xs font-semibold text-gray-800 dark:text-gray-100">
-                      {globalShortcutCapturing
-                        ? t("shortcutRecording")
-                        : formatDesktopShortcut(
-                            globalShortcutAccelerator,
-                            desktopPlatform
-                          )}
-                    </kbd>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {globalShortcutCapturing
-                        ? t("shortcutCancelHint")
-                        : t("shortcutChange")}
-                    </span>
-                  </Button>
-                  <p className="text-xs leading-4 text-gray-500 dark:text-gray-400">
-                    {/* 提示语按平台给：两个平台的修饰键混在一句里
-                        （Command/Ctrl、Option/Alt）等于让用户自己挑，
-                        而运行时我们明明知道自己在哪个平台上。 */}
-                    {desktopPlatform === "macos"
-                      ? t("shortcutHintMac")
-                      : t("shortcutHintWindows")}
-                  </p>
-                  {globalShortcutError && (
-                    <p
-                      role="alert"
-                      className="text-xs text-red-600 dark:text-red-400"
-                    >
-                      {globalShortcutError}
-                    </p>
-                  )}
-                </section>
-
-                <section className="space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
-                  <div className="flex items-center justify-between gap-3">
-                    <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
-                      <PictureInPicture2 size={16} />
-                      {t("floatingTimer")}
-                    </Label>
-                    <Select
-                      value={miniSkin}
-                      onValueChange={(value) => setMiniSkin(value as DesktopMiniSkin)}
-                    >
-                      <SelectTrigger className="h-9 w-[140px] rounded-xl bg-background">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="standard">{t("standardSkin")}</SelectItem>
-                        <SelectItem value="woodfish">{t("woodfishSkin")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {miniSkin === "woodfish" && (
-                    <div className="flex items-center justify-between gap-4 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
-                      <div>
-                        <Label htmlFor="woodfish-sound" className="text-sm font-normal dark:text-gray-200">
-                          {t("woodfishSound")}
-                        </Label>
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          {t("woodfishFirstTapSilent")}
-                        </p>
-                      </div>
-                      <Switch
-                        id="woodfish-sound"
-                        checked={woodfishSoundEnabled}
-                        onCheckedChange={setWoodfishSoundEnabled}
-                      />
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    className="h-9 w-full rounded-lg"
-                    onClick={() => void toggleDesktopFloatingTimer()}
-                  >
-                    {t("toggleFloatingTimer")}
-                  </Button>
-                </section>
-
-                {/* 三类通知（下班／午休／健康）此前散在主界面和设置页两处，
-                    想「今天别烦我」得跑两个地方。收进同一个分组。 */}
-                <section
-                  data-setting="notification"
-                  className={`space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10 ${
-                    highlightedSetting === "notification" ? "setting-highlight" : ""
-                  }`}
-                >
-                  <div className="flex min-h-9 items-center justify-between gap-3">
-                    <Label
-                      htmlFor="notification-mode"
-                      className="flex items-center gap-2 text-sm dark:text-gray-200"
-                    >
-                      <BellRing size={16} />
-                      {t("notificationMode")}
-                    </Label>
-                    <Select
-                      value={desktopNotificationMode}
-                      onValueChange={(value) =>
-                        handleDesktopNotificationModeChange(
-                          value as DesktopNotificationMode
-                        )
-                      }
-                    >
-                      <SelectTrigger
-                        id="notification-mode"
-                        className="h-9 w-[148px] rounded-xl bg-background"
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="off">
-                          {t("notificationModeOff")}
-                        </SelectItem>
-                        <SelectItem value="simple">
-                          {t("notificationModeSimple")}
-                        </SelectItem>
-                        <SelectItem value="milestones">
-                          {t("notificationModeMilestones")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </section>
-
-                <section
-                  data-setting="lunch"
-                  className={`space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10 ${
-                    highlightedSetting === "lunch" ? "setting-highlight" : ""
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <Label
-                      htmlFor="lunch-enabled"
-                      className="flex items-center gap-2 text-sm dark:text-gray-200"
-                    >
-                      <Coffee size={16} />
-                      {t("lunchBreak")}
-                    </Label>
-                    <Switch
-                      id="lunch-enabled"
-                      checked={lunchEnabled}
-                      onCheckedChange={handleLunchEnabledChange}
-                    />
-                  </div>
-                  {lunchEnabled && (
-                    <div className="space-y-3 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
-                      <div className="grid grid-cols-[minmax(0,1fr)_120px] items-end gap-3">
-                        <TimeSelector
-                          id="lunchStartTime"
-                          label={t("lunchStartTime")}
-                          value={lunchStartTime}
-                          compact
-                          onChange={(hour, minute) =>
-                            setLunchStartTime(`${hour}:${minute}`)
-                          }
-                        />
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-500 dark:text-gray-400">
-                            {t("lunchDuration")}
-                          </Label>
-                          <Select
-                            value={String(lunchDurationMinutes)}
-                            onValueChange={(value) =>
-                              setLunchDurationMinutes(Number(value))
-                            }
-                          >
-                            <SelectTrigger className="h-9 rounded-xl bg-background">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {/* 国内午休两小时很常见（12:00–14:00），
-                                  120 比 45 更该出现在这个列表里。 */}
-                              {[30, 60, 90, 120].map((minutes) => (
-                                <SelectItem key={minutes} value={String(minutes)}>
-                                  {t("minutesShort", { count: minutes })}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <Label
-                          htmlFor="lunch-start-notification"
-                          className="text-sm font-normal dark:text-gray-200"
-                        >
-                          {t("lunchStartReminder")}
-                        </Label>
-                        <Switch
-                          id="lunch-start-notification"
-                          checked={lunchStartNotificationEnabled}
-                          onCheckedChange={handleLunchStartNotificationChange}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <Label
-                          htmlFor="lunch-end-notification"
-                          className="text-sm font-normal dark:text-gray-200"
-                        >
-                          {t("lunchEndReminder")}
-                        </Label>
-                        <Switch
-                          id="lunch-end-notification"
-                          checked={lunchEndNotificationEnabled}
-                          onCheckedChange={handleLunchEndNotificationChange}
-                        />
-                      </div>
-                      {!lunchWithinShift && (
-                        <p
-                          role="alert"
-                          className="text-xs leading-5 text-red-600 dark:text-red-400"
-                        >
-                          {t("lunchOutsideShift")}
-                        </p>
-                      )}
-                      <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
-                        {showSalary ? t("lunchPauseNote") : t("lunchPauseNoteNoSalary")}
-                      </p>
-                    </div>
-                  )}
-                </section>
-
-                <section
-                  data-setting="microBreak"
-                  className={`space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10 ${
-                    highlightedSetting === "microBreak" ? "setting-highlight" : ""
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <Label
-                      htmlFor="micro-break-enabled"
-                      className="flex items-center gap-2 text-sm dark:text-gray-200"
-                    >
-                      <GlassWater size={16} />
-                      {t("microBreakReminder")}
-                    </Label>
-                    <Switch
-                      id="micro-break-enabled"
-                      checked={microBreakEnabled}
-                      onCheckedChange={handleMicroBreakEnabledChange}
-                    />
-                  </div>
-                  {microBreakEnabled && (
-                    <div className="space-y-3 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
-                      <div className="flex items-center justify-between gap-3">
-                        <Label className="text-sm font-normal dark:text-gray-200">
-                          {t("microBreakInterval")}
-                        </Label>
-                        <Select
-                          value={String(microBreakIntervalMinutes)}
-                          onValueChange={(value) =>
-                            setMicroBreakIntervalMinutes(Number(value))
-                          }
-                        >
-                          <SelectTrigger className="h-9 w-[120px] rounded-xl bg-background">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {[30, 45, 60, 90].map((minutes) => (
-                              <SelectItem key={minutes} value={String(minutes)}>
-                                {t("minutesShort", { count: minutes })}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
-                        {t("microBreakEffectiveTimeNote")}
-                      </p>
-                    </div>
-                  )}
-                </section>
-
-                <SalarySettings
-                  desktop
-                  anchor="salary"
-                  highlighted={highlightedSetting === "salary"}
-                  enabled={showSalary}
-                  onEnabledChange={setShowSalary}
-                  salaryType={salaryType}
-                  onSalaryTypeChange={setSalaryType}
-                  salaryAmount={salaryAmount}
-                  onSalaryAmountChange={setSalaryAmount}
-                  monthlyWorkingDays={monthlyWorkingDays}
-                  onMonthlyWorkingDaysChange={setMonthlyWorkingDays}
-                  maskAmountField={maskAmountField}
-                  onMaskAmountFieldChange={setMaskAmountField}
-                />
-
-                <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white/35 shadow-sm dark:border-gray-700 dark:bg-black/10">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void openDesktopUrl(
-                        `${siteConfig.baseUrl}/${contentLang}/about`
-                      )
-                    }
-                    className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Info className="h-4 w-4" />
-                      {t("aboutProject")}
-                    </span>
-                    <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void openDesktopUrl(siteConfig.github)}
-                    className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Github className="h-4 w-4" />
-                      {t("githubRepository")}
-                    </span>
-                    <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleCheckForUpdates()}
-                    disabled={
-                      desktopUpdateStatus === "checking" ||
-                      desktopUpdateStatus === "predownloading" ||
-                      desktopUpdateStatus === "mirrorInstalling" ||
-                      desktopUpdateStatus === "installing"
-                    }
-                    className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
-                  >
-                    <span className="flex min-w-0 items-center gap-2">
-                      <RefreshCw
-                        className={`h-4 w-4 shrink-0 ${
-                          desktopUpdateStatus === "checking" ||
-                          desktopUpdateStatus === "predownloading" ||
-                          desktopUpdateStatus === "mirrorInstalling" ||
-                          desktopUpdateStatus === "installing"
-                            ? "animate-spin"
-                            : ""
-                        }`}
-                      />
-                      <span className="truncate">
-                        {desktopUpdateStatus === "checking"
-                          ? t("checkingForUpdates")
-                          : desktopUpdateStatus === "directFailed"
-                            ? t("retryWithMirror")
-                            : desktopUpdateStatus === "predownloading" ||
-                                desktopUpdateStatus === "mirrorInstalling"
-                              ? t("downloadingUpdate")
-                            : desktopUpdateStatus === "predownloaded"
-                              ? t("restartToUpdate")
-                              : desktopUpdateStatus === "available"
-                                ? t("downloadUpdate")
-                                : desktopUpdateStatus === "installing"
-                                  ? t("installingUpdate")
-                                  : t("checkForUpdates")}
-                      </span>
-                    </span>
-                    <span
-                      role="status"
-                      aria-live="polite"
-                      className="truncate text-xs font-medium text-emerald-600 dark:text-emerald-400"
-                    >
-                      {desktopUpdateStatus === "latest" ? t("upToDate") : ""}
-                    </span>
-                    {desktopCurrentVersion && (
-                      <span
-                        dir="ltr"
-                        className="flex shrink-0 items-center gap-1.5 rounded-md border border-gray-200 bg-white/70 px-2 py-1 font-mono text-[11px] leading-none text-gray-600 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                      >
-                        <span>v{desktopCurrentVersion}</span>
-                        {desktopLatestVersion &&
-                          desktopLatestVersion !== desktopCurrentVersion && (
-                            <>
-                              <span className="text-gray-400">→</span>
-                              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                                v{desktopLatestVersion}
-                              </span>
-                            </>
-                          )}
-                      </span>
-                    )}
-                  </button>
-                  {desktopUpdateStatus !== "idle" &&
-                    desktopUpdateStatus !== "checking" &&
-                    desktopUpdateStatus !== "installing" &&
-                    desktopUpdateStatus !== "latest" &&
-                    desktopUpdateStatus !== "available" &&
-                    desktopUpdateStatus !== "predownloading" &&
-                    desktopUpdateStatus !== "mirrorInstalling" &&
-                    desktopUpdateStatus !== "predownloaded" && (
-                      <p
-                        role="status"
-                        className="border-t border-gray-200/70 px-3 py-2 text-xs text-amber-600 dark:border-gray-700/70 dark:text-amber-400"
-                      >
-                        {desktopUpdateStatus === "unconfigured"
-                          ? t("updateNotConfigured")
-                          : desktopUpdateStatus === "directFailed"
-                            ? // 明确告诉用户镜像是第三方，以及签名校验没有被跳过。
-                              t("updateMirrorNotice", {
-                                host: UPDATE_MIRROR_HOST,
-                              })
-                            : t("updateFailed")}
-                      </p>
-                    )}
-                </section>
-              </motion.div>
-            ) : !showCountdown ? (
+          {/* popLayout 而不是 wait：wait 要等退场信号回来才肯渲染新页面，实测
+              从点击到 DOM 交换要等 300ms 出头，中间那段旧页面还杵在屏幕上，
+              就是「计时器残留一会」。popLayout 让退场元素脱离文档流，新页面
+              立刻布局。 */}
+          <AnimatePresence mode="popLayout">
+            {!showCountdown ? (
               <motion.div
                 key="input"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
+                variants={flowPageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
                 className={IS_DESKTOP_BUILD ? "space-y-3" : "space-y-4"}
               >
-                <div className={IS_DESKTOP_BUILD ? "grid grid-cols-2 gap-3" : "contents"}>
+                {/* 两个选择器并排。Web 版此前各占整行，两位数输入框会拉到
+                    200pt 以上；只加宽度上限又会在右边空出一大块。 */}
+                <div className="grid grid-cols-2 gap-3">
                   <TimeSelector
                     id="startTime"
                     label={t("startTime")}
@@ -2756,10 +2378,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             ) : (
               <motion.div
                 key="countdown"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.2 }}
+                variants={flowPageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
                 className={IS_DESKTOP_BUILD ? "w-full space-y-3" : "space-y-6"}
               >
                 <CountdownDisplay
@@ -2795,7 +2417,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             )}
           </AnimatePresence>
         </CardContent>
-        {!(IS_DESKTOP_BUILD && showDesktopSettings) && (
           <CardFooter
             className={
               IS_DESKTOP_BUILD
@@ -2803,25 +2424,40 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 : "flex justify-center"
             }
           >
-          <AnimatePresence mode="wait">
+          {/* 同上：页脚按钮组也不能等退场信号，否则换页时下方空一拍。
+              这里只淡入淡出、不做缩放：popLayout 会把退场按钮改成绝对定位，
+              宽度随之变成收缩包裹，再叠一层缩放就像按钮自己塌了一圈、把文字
+              挤到第二行。whitespace-nowrap 兜住换行。 */}
+          <AnimatePresence mode="popLayout">
             {!showCountdown ? (
               <motion.div
                 key="start"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
+                className="whitespace-nowrap"
+                initial={{ opacity: 0 }}
+                animate={{
+                  opacity: 1,
+                  transition: { duration: 0.2, delay: FLOW_EXIT_SECONDS },
+                }}
+                exit={{
+                  opacity: 0,
+                  transition: { duration: FLOW_EXIT_SECONDS },
+                }}
               >
                 <Button onClick={handleStart}>{t("startCountdown")}</Button>
               </motion.div>
             ) : (
               <motion.div
                 key="return"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                className="flex gap-2"
+                initial={{ opacity: 0 }}
+                animate={{
+                  opacity: 1,
+                  transition: { duration: 0.2, delay: FLOW_EXIT_SECONDS },
+                }}
+                exit={{
+                  opacity: 0,
+                  transition: { duration: FLOW_EXIT_SECONDS },
+                }}
+                className="flex gap-2 whitespace-nowrap"
               >
                 <Button
                   variant="outline"
@@ -2852,7 +2488,541 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             )}
           </AnimatePresence>
           </CardFooter>
+        </div>
+
+        {/* 设置页是一整页，连页头一起换。此前只有内容区参与转场，页头还写着
+            「下班倒计时」、页脚还挂着倒计时那三个按钮，内容却已经是设置了。
+
+            两页并排放在一条 200% 宽的轨道上整体横移，而不是把设置页浮在主页
+            上方：两页都保持透明，背景渐变继续从底下透出。做成覆盖层就得给它
+            一个不透明底色，自定义主题的渐变会被压掉。 */}
+        {IS_DESKTOP_BUILD && (
+          <div className="flex h-full w-1/2 min-h-0 flex-col">
+            <div
+              className={
+                hasOverlayTitleBar || hasWindowsTitleBar
+                  ? "px-6 pb-3 pt-10"
+                  : "p-6 pb-3"
+              }
+            >
+              <div
+                data-tauri-drag-region="deep"
+                className="flex items-center gap-2"
+              >
+                <button
+                  type="button"
+                  data-tauri-drag-region="false"
+                  onClick={() => setShowDesktopSettings(false)}
+                  className="-ms-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-black/5 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+                  aria-label={t("return")}
+                  title={t("return")}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+                <h2
+                  data-tauri-drag-region="deep"
+                  className="min-w-0 truncate whitespace-nowrap text-xl font-bold leading-none tracking-tight dark:text-white"
+                >
+                  {t("settings")}
+                </h2>
+              </div>
+            </div>
+            <div
+              ref={settingsScrollRef}
+              className="min-h-0 flex-1 space-y-3 overflow-y-auto px-6 pb-4 pt-2"
+            >
+                  <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                    <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
+                      <Palette size={16} />
+                      {t("toggleTheme")}
+                    </Label>
+                    <ThemeToggle
+                      theme={theme}
+                      onThemeChange={handleThemeChange}
+                      compact
+                    />
+                  </section>
+
+                  <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                    <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
+                      <Globe size={16} />
+                      {t("chooselanguage")}
+                    </Label>
+                    <LanguageSelector
+                      currentLang={lang}
+                      languageMap={languageNames}
+                      compact
+                    />
+                  </section>
+
+                  <section className="space-y-2.5 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                    <div className="flex items-center justify-between gap-4">
+                      <Label
+                        htmlFor="launch-at-login"
+                        className="flex items-center gap-2 text-sm dark:text-gray-200"
+                      >
+                        <Rocket size={16} />
+                        {t("launchAtLogin")}
+                      </Label>
+                      <Switch
+                        id="launch-at-login"
+                        checked={launchAtLogin}
+                        disabled={!autostartLoaded || autostartPending}
+                        onCheckedChange={handleAutostartChange}
+                      />
+                    </div>
+                    {desktopSettingError && (
+                      <p
+                        role="alert"
+                        className="text-xs text-red-600 dark:text-red-400"
+                      >
+                        {desktopSettingError}
+                      </p>
+                    )}
+                  </section>
+
+                  <section className="space-y-2.5 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                    <div className="flex items-center justify-between gap-4">
+                      <Label
+                        htmlFor="global-shortcut-enabled"
+                        className="flex items-center gap-2 text-sm dark:text-gray-200"
+                      >
+                        <Keyboard size={16} />
+                        {t("globalShortcut")}
+                      </Label>
+                      <Switch
+                        id="global-shortcut-enabled"
+                        checked={globalShortcutEnabled}
+                        disabled={!globalShortcutLoaded || globalShortcutPending}
+                        onCheckedChange={handleGlobalShortcutEnabledChange}
+                      />
+                    </div>
+                    <Button
+                      ref={globalShortcutButtonRef}
+                      type="button"
+                      variant="outline"
+                      disabled={!globalShortcutLoaded || globalShortcutPending}
+                      aria-label={t("shortcutChange")}
+                      className={`h-10 w-full justify-between rounded-lg px-3 font-normal ${
+                        globalShortcutCapturing
+                          ? "border-orange-500 ring-2 ring-orange-500/20 dark:border-orange-400"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        setGlobalShortcutError("");
+                        setGlobalShortcutCapturing((capturing) => !capturing);
+                      }}
+                      onKeyDown={handleGlobalShortcutKeyDown}
+                      onBlur={() => setGlobalShortcutCapturing(false)}
+                    >
+                      <kbd className="font-mono text-xs font-semibold text-gray-800 dark:text-gray-100">
+                        {globalShortcutCapturing
+                          ? t("shortcutRecording")
+                          : formatDesktopShortcut(
+                              globalShortcutAccelerator,
+                              desktopPlatform
+                            )}
+                      </kbd>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {globalShortcutCapturing
+                          ? t("shortcutCancelHint")
+                          : t("shortcutChange")}
+                      </span>
+                    </Button>
+                    <p className="text-xs leading-4 text-gray-500 dark:text-gray-400">
+                      {/* 提示语按平台给：两个平台的修饰键混在一句里
+                          （Command/Ctrl、Option/Alt）等于让用户自己挑，
+                          而运行时我们明明知道自己在哪个平台上。 */}
+                      {desktopPlatform === "macos"
+                        ? t("shortcutHintMac")
+                        : t("shortcutHintWindows")}
+                    </p>
+                    {globalShortcutError && (
+                      <p
+                        role="alert"
+                        className="text-xs text-red-600 dark:text-red-400"
+                      >
+                        {globalShortcutError}
+                      </p>
+                    )}
+                  </section>
+
+                  <section className="space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                    <div className="flex items-center justify-between gap-3">
+                      <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
+                        <PictureInPicture2 size={16} />
+                        {t("floatingTimer")}
+                      </Label>
+                      <Select
+                        value={miniSkin}
+                        onValueChange={(value) => setMiniSkin(value as DesktopMiniSkin)}
+                      >
+                        <SelectTrigger className="h-9 w-[140px] rounded-xl bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="standard">{t("standardSkin")}</SelectItem>
+                          <SelectItem value="woodfish">{t("woodfishSkin")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {miniSkin === "woodfish" && (
+                      <div className="flex items-center justify-between gap-4 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
+                        <div>
+                          <Label htmlFor="woodfish-sound" className="text-sm font-normal dark:text-gray-200">
+                            {t("woodfishSound")}
+                          </Label>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {t("woodfishFirstTapSilent")}
+                          </p>
+                        </div>
+                        <Switch
+                          id="woodfish-sound"
+                          checked={woodfishSoundEnabled}
+                          onCheckedChange={setWoodfishSoundEnabled}
+                        />
+                      </div>
+                    )}
+                    <Button
+                      variant="outline"
+                      className="h-9 w-full rounded-lg"
+                      onClick={() => void toggleDesktopFloatingTimer()}
+                    >
+                      {t("toggleFloatingTimer")}
+                    </Button>
+                  </section>
+
+                  {/* 三类通知（下班／午休／健康）此前散在主界面和设置页两处，
+                      想「今天别烦我」得跑两个地方。收进同一个分组。 */}
+                  <section
+                    data-setting="notification"
+                    className={`space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10 ${
+                      highlightedSetting === "notification" ? "setting-highlight" : ""
+                    }`}
+                  >
+                    <div className="flex min-h-9 items-center justify-between gap-3">
+                      <Label
+                        htmlFor="notification-mode"
+                        className="flex items-center gap-2 text-sm dark:text-gray-200"
+                      >
+                        <BellRing size={16} />
+                        {t("notificationMode")}
+                      </Label>
+                      <Select
+                        value={desktopNotificationMode}
+                        onValueChange={(value) =>
+                          handleDesktopNotificationModeChange(
+                            value as DesktopNotificationMode
+                          )
+                        }
+                      >
+                        <SelectTrigger
+                          id="notification-mode"
+                          className="h-9 w-[148px] whitespace-nowrap rounded-xl bg-background [&>span]:truncate"
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="off">
+                            {t("notificationModeOff")}
+                          </SelectItem>
+                          <SelectItem value="simple">
+                            {t("notificationModeSimple")}
+                          </SelectItem>
+                          <SelectItem value="milestones">
+                            {t("notificationModeMilestones")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </section>
+
+                  <section
+                    data-setting="lunch"
+                    className={`space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10 ${
+                      highlightedSetting === "lunch" ? "setting-highlight" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <Label
+                        htmlFor="lunch-enabled"
+                        className="flex items-center gap-2 text-sm dark:text-gray-200"
+                      >
+                        <Coffee size={16} />
+                        {t("lunchBreak")}
+                      </Label>
+                      <Switch
+                        id="lunch-enabled"
+                        checked={lunchEnabled}
+                        onCheckedChange={handleLunchEnabledChange}
+                      />
+                    </div>
+                    {lunchEnabled && (
+                      <div className="space-y-3 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
+                        <div className="grid grid-cols-[minmax(0,1fr)_120px] items-end gap-3">
+                          <TimeSelector
+                            id="lunchStartTime"
+                            label={t("lunchStartTime")}
+                            value={lunchStartTime}
+                            compact
+                            onChange={(hour, minute) =>
+                              setLunchStartTime(`${hour}:${minute}`)
+                            }
+                          />
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-500 dark:text-gray-400">
+                              {t("lunchDuration")}
+                            </Label>
+                            <Select
+                              value={String(lunchDurationMinutes)}
+                              onValueChange={(value) =>
+                                setLunchDurationMinutes(Number(value))
+                              }
+                            >
+                              <SelectTrigger className="h-9 rounded-xl bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {/* 国内午休两小时很常见（12:00–14:00），
+                                    120 比 45 更该出现在这个列表里。 */}
+                                {[30, 60, 90, 120].map((minutes) => (
+                                  <SelectItem key={minutes} value={String(minutes)}>
+                                    {t("minutesShort", { count: minutes })}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <Label
+                            htmlFor="lunch-start-notification"
+                            className="text-sm font-normal dark:text-gray-200"
+                          >
+                            {t("lunchStartReminder")}
+                          </Label>
+                          <Switch
+                            id="lunch-start-notification"
+                            checked={lunchStartNotificationEnabled}
+                            onCheckedChange={handleLunchStartNotificationChange}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <Label
+                            htmlFor="lunch-end-notification"
+                            className="text-sm font-normal dark:text-gray-200"
+                          >
+                            {t("lunchEndReminder")}
+                          </Label>
+                          <Switch
+                            id="lunch-end-notification"
+                            checked={lunchEndNotificationEnabled}
+                            onCheckedChange={handleLunchEndNotificationChange}
+                          />
+                        </div>
+                        {!lunchWithinShift && (
+                          <p
+                            role="alert"
+                            className="text-xs leading-5 text-red-600 dark:text-red-400"
+                          >
+                            {t("lunchOutsideShift")}
+                          </p>
+                        )}
+                        <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
+                          {showSalary ? t("lunchPauseNote") : t("lunchPauseNoteNoSalary")}
+                        </p>
+                      </div>
+                    )}
+                  </section>
+
+                  <section
+                    data-setting="microBreak"
+                    className={`space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10 ${
+                      highlightedSetting === "microBreak" ? "setting-highlight" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <Label
+                        htmlFor="micro-break-enabled"
+                        className="flex items-center gap-2 text-sm dark:text-gray-200"
+                      >
+                        <GlassWater size={16} />
+                        {t("microBreakReminder")}
+                      </Label>
+                      <Switch
+                        id="micro-break-enabled"
+                        checked={microBreakEnabled}
+                        onCheckedChange={handleMicroBreakEnabledChange}
+                      />
+                    </div>
+                    {microBreakEnabled && (
+                      <div className="space-y-3 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
+                        <div className="flex items-center justify-between gap-3">
+                          <Label className="text-sm font-normal dark:text-gray-200">
+                            {t("microBreakInterval")}
+                          </Label>
+                          <Select
+                            value={String(microBreakIntervalMinutes)}
+                            onValueChange={(value) =>
+                              setMicroBreakIntervalMinutes(Number(value))
+                            }
+                          >
+                            <SelectTrigger className="h-9 w-[120px] rounded-xl bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[30, 45, 60, 90].map((minutes) => (
+                                <SelectItem key={minutes} value={String(minutes)}>
+                                  {t("minutesShort", { count: minutes })}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
+                          {t("microBreakEffectiveTimeNote")}
+                        </p>
+                      </div>
+                    )}
+                  </section>
+
+                  <SalarySettings
+                    desktop
+                    anchor="salary"
+                    highlighted={highlightedSetting === "salary"}
+                    enabled={showSalary}
+                    onEnabledChange={setShowSalary}
+                    salaryType={salaryType}
+                    onSalaryTypeChange={setSalaryType}
+                    salaryAmount={salaryAmount}
+                    onSalaryAmountChange={setSalaryAmount}
+                    monthlyWorkingDays={monthlyWorkingDays}
+                    onMonthlyWorkingDaysChange={setMonthlyWorkingDays}
+                    maskAmountField={maskAmountField}
+                    onMaskAmountFieldChange={setMaskAmountField}
+                  />
+
+                  <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white/35 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void openDesktopUrl(
+                          `${siteConfig.baseUrl}/${contentLang}/about`
+                        )
+                      }
+                      className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Info className="h-4 w-4" />
+                        {t("aboutProject")}
+                      </span>
+                      <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void openDesktopUrl(siteConfig.github)}
+                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Github className="h-4 w-4" />
+                        {t("githubRepository")}
+                      </span>
+                      <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleCheckForUpdates()}
+                      disabled={
+                        desktopUpdateStatus === "checking" ||
+                        desktopUpdateStatus === "predownloading" ||
+                        desktopUpdateStatus === "mirrorInstalling" ||
+                        desktopUpdateStatus === "installing"
+                      }
+                      className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                    >
+                      <span
+                        role="status"
+                        aria-live="polite"
+                        className={`flex min-w-0 items-center gap-2 ${
+                          desktopUpdateStatus === "latest"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : ""
+                        }`}
+                      >
+                        <RefreshCw
+                          className={`h-4 w-4 shrink-0 ${
+                            desktopUpdateStatus === "checking" ||
+                            desktopUpdateStatus === "predownloading" ||
+                            desktopUpdateStatus === "mirrorInstalling" ||
+                            desktopUpdateStatus === "installing"
+                              ? "animate-spin"
+                              : ""
+                          }`}
+                        />
+                        <span className="truncate">
+                          {desktopUpdateStatus === "checking"
+                            ? t("checkingForUpdates")
+                            : desktopUpdateStatus === "directFailed"
+                              ? t("retryWithMirror")
+                              : desktopUpdateStatus === "predownloading" ||
+                                  desktopUpdateStatus === "mirrorInstalling"
+                                ? t("downloadingUpdate")
+                              : desktopUpdateStatus === "predownloaded"
+                                ? t("restartToUpdate")
+                                : desktopUpdateStatus === "available"
+                                  ? t("downloadUpdate")
+                                  : desktopUpdateStatus === "installing"
+                                    ? t("installingUpdate")
+                                    : desktopUpdateStatus === "latest"
+                                      ? t("upToDate")
+                                      : t("checkForUpdates")}
+                        </span>
+                      </span>
+                      {desktopCurrentVersion && (
+                        <span
+                          dir="ltr"
+                          className="flex shrink-0 items-center gap-1.5 rounded-md border border-gray-200 bg-white/70 px-2 py-1 font-mono text-[11px] leading-none text-gray-600 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                        >
+                          <span>v{desktopCurrentVersion}</span>
+                          {desktopLatestVersion &&
+                            desktopLatestVersion !== desktopCurrentVersion && (
+                              <>
+                                <span className="text-gray-400">→</span>
+                                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                  v{desktopLatestVersion}
+                                </span>
+                              </>
+                            )}
+                        </span>
+                      )}
+                    </button>
+                    {desktopUpdateStatus !== "idle" &&
+                      desktopUpdateStatus !== "checking" &&
+                      desktopUpdateStatus !== "installing" &&
+                      desktopUpdateStatus !== "latest" &&
+                      desktopUpdateStatus !== "available" &&
+                      desktopUpdateStatus !== "predownloading" &&
+                      desktopUpdateStatus !== "mirrorInstalling" &&
+                      desktopUpdateStatus !== "predownloaded" && (
+                        <p
+                          role="status"
+                          className="border-t border-gray-200/70 px-3 py-2 text-xs text-amber-600 dark:border-gray-700/70 dark:text-amber-400"
+                        >
+                          {desktopUpdateStatus === "unconfigured"
+                            ? t("updateNotConfigured")
+                            : desktopUpdateStatus === "directFailed"
+                              ? // 明确告诉用户镜像是第三方，以及签名校验没有被跳过。
+                                t("updateMirrorNotice", {
+                                  host: UPDATE_MIRROR_HOST,
+                                })
+                              : t("updateFailed")}
+                        </p>
+                      )}
+                  </section>
+            </div>
+          </div>
         )}
+        </div>
       </Card>
 
       {/* 说明区。冷启动的搜索流量第一眼只看到一个表单，不知道这是什么，跳出率

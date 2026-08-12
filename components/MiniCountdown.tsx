@@ -335,6 +335,8 @@ export function MiniCountdown() {
       ? "text-[18px]"
       : "text-[21px]";
 
+  const woodfishCountLabel = woodfishCount > 999 ? "999+" : String(woodfishCount);
+
   // 两个皮肤共用同一块读数：金额在上、百分比在下。薪资显隐属于窗口操作，
   // 和置顶、关闭统一放进顶部工具栏，避免它挤压不同皮肤的读数列。
   const readoutColumn = showsReadout ? (
@@ -382,7 +384,7 @@ export function MiniCountdown() {
             }`}
           >
             {/* 声音是木鱼最常用的即时开关，固定放在整排最左侧。 */}
-            {(state?.miniSkin === "woodfish" || forceWoodfishPreview) && (
+            {(state?.miniSkin !== "standard" || forceWoodfishPreview) && (
               <button
                 data-tauri-drag-region="false"
                 type="button"
@@ -491,7 +493,7 @@ export function MiniCountdown() {
           </div>
         )}
 
-        {state?.miniSkin === "woodfish" || forceWoodfishPreview ? (
+        {state?.miniSkin !== "standard" || forceWoodfishPreview ? (
           <div
             data-tauri-drag-region="deep"
             onMouseDown={() => {
@@ -504,6 +506,7 @@ export function MiniCountdown() {
             // 唤起改由右上角的显式按钮承担（标准皮肤无此冲突，保留点击）。
             className="flex min-w-0 translate-y-1.5 items-center gap-2 px-4"
           >
+            {hasCountdown && (
             <span className="relative -translate-y-[7px] shrink-0">
               <button
                 data-tauri-drag-region="false"
@@ -533,7 +536,18 @@ export function MiniCountdown() {
                   </span>
                 ))}
               </span>
+              {/* 常驻计数落在木鱼左下角：+1 飘字是转瞬即逝的反馈，攒了多少
+                  得有个地方能一直看到。放这儿不与右侧的百分比、金额争位置。 */}
+              {woodfishCount > 0 && (
+                <span
+                  title={t("knockCount", { count: woodfishCount })}
+                  className="pointer-events-none absolute -bottom-0.5 start-0.5 text-[9px] font-semibold leading-none tabular-nums text-[#b0763f]/70 dark:text-[#d69b5c]/70"
+                >
+                  {woodfishCountLabel}
+                </span>
+              )}
             </span>
+            )}
             {hasCountdown ? (
               <p
                 className={`flex min-w-0 flex-1 items-baseline ${
