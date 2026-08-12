@@ -7,6 +7,7 @@ import { locales, getTextDirection } from '@/i18n-config';
 import { Metadata, Viewport } from 'next';
 import { siteConfig } from '@/config/site';
 import { getTranslations } from '@/lib/server/i18n';
+import { ThemeRouteSync } from '@/components/ThemeRouteSync';
 
 const geistSans = localFont({
   src: '../fonts/GeistVF.woff',
@@ -132,6 +133,7 @@ export default async function Layout({
           IS_DESKTOP_BUILD ? " desktop-shell" : ""
         }`}
       >
+        <ThemeRouteSync />
         {children}
         {/* Vercel 的访问统计与性能采集只服务于 Web 端。桌面端不回传任何数据
             （见 docs/PLAN-M5-TAURI.md 决策 5），这里用构建期常量剔除——

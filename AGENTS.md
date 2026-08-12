@@ -80,6 +80,18 @@ in URLs, analytics payloads or share metadata.
 
 ## Internationalization and content
 
+- Product copy must sound like it is serving the user, not judging, lecturing
+  or correcting them. Lead with the benefit, acknowledge the user's situation
+  and offer a clear next step; keep the tone warm, respectful and peer-level.
+- Do not expose implementation trivia as marketing copy or make the user carry
+  the product's operational burden. Technical, privacy and security caveats
+  should be neutral, specific and actionable. Avoid scolding phrases such as
+  "if that matters to you", defensive comparisons, and language that implies
+  the user chose incorrectly.
+- Review user-facing copy in context, including loading, empty, error, download
+  and permission states. A technically accurate sentence is not finished if it
+  feels condescending, bureaucratic or written for maintainers instead of the
+  person using the product.
 - The application UI supports all 19 locales in `public/locales/*`.
   User-facing UI keys must be added to every locale.
 - Long-form content pages intentionally support only English and Simplified
