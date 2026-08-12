@@ -86,7 +86,7 @@ jobs:
   # 必须等四个平台都跑完：latest.json 是由各个矩阵任务逐个合并上来的，
   # 提前读会拿到只含部分平台的半成品。
   mirror-manifest:
-    name: Mirror updater manifest
+    name: Mirror manifest and checksums
     needs: publish
     runs-on: ubuntu-latest
     steps:
@@ -116,3 +116,22 @@ jobs:
           gh release download "$TAG" --pattern latest.json --output latest.json --clobber
           node scripts/mirror-manifest.mjs latest.json latest-cn.json
           gh release upload "$TAG" latest-cn.json --clobber
+
+      # 手动下载没有任何校验：更新器那条链路靠 minisign 兜底，而从浏览器
+      # （尤其是走第三方镜像时）拿到的安装包无从验证。附一份校验和，至少
+      # 让愿意核对的人有得可核。
+      - name: Publish SHA-256 checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          set -euo pipefail
+          rm -rf checksum-work && mkdir checksum-work
+          cd checksum-work
+          gh release download "$TAG" --clobber
+          # 只列安装包：清单会被这一步之前的任务改写，签名文件本身不需要校验和
+          rm -f latest.json latest-cn.json checksums.txt ./*.sig
+          sha256sum -- * > ../checksums.txt
+          cd ..
+          cat checksums.txt
+          gh release upload "$TAG" checksums.txt --clobber

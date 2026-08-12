@@ -9,6 +9,9 @@ import {
   MonitorDown,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { DOWNLOAD_MIRROR_HOST, mirroredDownloadUrl } from "@/lib/download-mirror";
 import { cn } from "@/lib/utils";
 import type { LatestReleaseDownloads, DownloadAsset } from "@/lib/github-release";
 import type { ContentBundle } from "@/lib/server/content";
@@ -34,6 +37,7 @@ function formatFileSize(bytes: number): string {
 
 function DownloadButton({
   asset,
+  href,
   label,
   downloadLabel,
   comingSoonLabel,
@@ -45,6 +49,7 @@ function DownloadButton({
   placeholder = false,
 }: {
   asset: DownloadAsset | null | undefined;
+  href?: string;
   label: string;
   downloadLabel: string;
   comingSoonLabel: string;
@@ -87,7 +92,7 @@ function DownloadButton({
 
   return (
     <a
-      href={asset.url}
+      href={href ?? asset.url}
       onClick={() => track(event)}
       className={cn(
         buttonVariants(),
@@ -112,6 +117,9 @@ function DownloadButton({
 
 export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
   const [state, setState] = useState<ReleaseState>({ status: "loading" });
+  // 默认直连，和客户端更新器「直连优先、失败才回落镜像」的取向一致。
+  // 浏览器这边探测不到「下载很慢」，所以由用户自己决定。
+  const [useMirror, setUseMirror] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -132,6 +140,8 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
 
   const downloads = state.status === "ready" ? state.release.downloads : null;
   const loading = state.status === "loading";
+  const hrefFor = (asset: DownloadAsset | null | undefined) =>
+    asset && useMirror ? mirroredDownloadUrl(asset.url) : undefined;
   const linuxDownloadsEnabled = false;
 
   return (
@@ -156,6 +166,33 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
         )}
       </div>
 
+      {/* 镜像开关。只改下载地址，不碰体积、埋点和禁用态。 */}
+      <div className="mb-5 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <Label
+              htmlFor="download-mirror"
+              className="font-medium text-gray-950 dark:text-white"
+            >
+              {copy.mirrorLabel}
+            </Label>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {copy.mirrorHint}
+            </p>
+          </div>
+          <Switch
+            id="download-mirror"
+            checked={useMirror}
+            onCheckedChange={setUseMirror}
+          />
+        </div>
+        {useMirror && (
+          <p className="mt-3 border-t border-gray-100 pt-3 text-sm text-amber-700 dark:border-gray-700 dark:text-amber-400">
+            {copy.mirrorNotice.replace("{host}", DOWNLOAD_MIRROR_HOST)}
+          </p>
+        )}
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2">
         <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-5 flex items-center gap-3">
@@ -174,6 +211,7 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
           <div className="space-y-2.5">
             <DownloadButton
               asset={downloads?.windowsX64}
+              href={hrefFor(downloads?.windowsX64)}
               label={copy.windowsX64Label}
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
@@ -185,6 +223,7 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
             />
             <DownloadButton
               asset={downloads?.windowsArm64}
+              href={hrefFor(downloads?.windowsArm64)}
               label={copy.windowsArmLabel}
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
@@ -213,6 +252,7 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
           <div className="space-y-2.5">
             <DownloadButton
               asset={downloads?.macosAppleSilicon}
+              href={hrefFor(downloads?.macosAppleSilicon)}
               label={copy.appleSiliconLabel}
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
@@ -223,6 +263,7 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
             />
             <DownloadButton
               asset={downloads?.macosIntel}
+              href={hrefFor(downloads?.macosIntel)}
               label={copy.intelLabel}
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
@@ -245,6 +286,7 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
             </p>
             <DownloadButton
               asset={downloads?.linuxX64}
+              href={hrefFor(downloads?.linuxX64)}
               label={copy.linuxX64Label}
               downloadLabel={copy.downloadLabel}
               comingSoonLabel={copy.comingSoonLabel}
