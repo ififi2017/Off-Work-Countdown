@@ -142,15 +142,21 @@
     "benefits": [
       {
         "heading": "Always within reach",
-        "body": ["See the remaining time in the menu bar or system tray, then show or hide the compact window with a global shortcut. No hunting through browser tabs."]
+        "body": [
+          "See the remaining time in the menu bar or system tray, then show or hide the compact window with a global shortcut. No hunting through browser tabs."
+        ]
       },
       {
         "heading": "Made for the background",
-        "body": ["Hide the main window and the countdown keeps running. Native reminders, launch at login and a focused desktop layout make it comfortable to leave on all day."]
+        "body": [
+          "Hide the main window and the countdown keeps running. Native reminders, launch at login and a focused desktop layout make it comfortable to leave on all day."
+        ]
       },
       {
         "heading": "Still local-first",
-        "body": ["Your hours, salary and preferences stay on your device. There is no account, and the desktop client does not send analytics or personal settings to a server."]
+        "body": [
+          "Your hours, salary and preferences stay on your device. There is no account, and the desktop client does not send analytics or personal settings to a server."
+        ]
       }
     ],
     "comparisonHeading": "Web or desktop?",
@@ -191,6 +197,10 @@
     ],
     "downloadsHeading": "Choose your version",
     "downloadsIntro": "These buttons resolve the assets from the latest published GitHub Release, so they always follow the newest stable version.",
+    "demoHeading": "See it running",
+    "demoIntro": "The desktop app, recorded from the real build.",
+    "demoAppAlt": "Setting a shift, starting the countdown and opening settings",
+    "demoMiniAlt": "The floating timer with the woodfish skin",
     "latestVersionLabel": "Latest version",
     "loadingLabel": "Checking the latest release…",
     "unavailableLabel": "The latest download could not be loaded. You can still open GitHub Releases below.",

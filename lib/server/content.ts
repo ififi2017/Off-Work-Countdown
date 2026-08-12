@@ -61,6 +61,10 @@ export interface ContentBundle {
     comparison: DownloadComparisonRow[];
     downloadsHeading: string;
     downloadsIntro: string;
+    demoHeading: string;
+    demoIntro: string;
+    demoAppAlt: string;
+    demoMiniAlt: string;
     latestVersionLabel: string;
     loadingLabel: string;
     unavailableLabel: string;

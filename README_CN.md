@@ -8,7 +8,12 @@
 [![桌面版](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
 [![许可证](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
 
-![](readme_image/off_CN.jpg)
+<p align="center">
+  <img src="readme_image/demo/app-zh-dark.gif#gh-dark-mode-only" width="430" alt="设置班次、开始倒计时、进入设置页">
+  <img src="readme_image/demo/app-zh-light.gif#gh-light-mode-only" width="430" alt="设置班次、开始倒计时、进入设置页">
+  <img src="readme_image/demo/mini-zh-dark.gif#gh-dark-mode-only" width="300" alt="悬浮计时器的木鱼皮肤">
+  <img src="readme_image/demo/mini-zh-light.gif#gh-light-mode-only" width="300" alt="悬浮计时器的木鱼皮肤">
+</p>
 
 ## 使用下班倒计时
 

@@ -59,6 +59,8 @@ export default async function DownloadPage({
   const { lang } = await params;
   const content = await getContent(lang);
   const copy = content.download;
+  // 演示片段按语种各录了一份；内容页只有中英两种语言。
+  const videoLang = lang === "zh-CN" ? "zh" : "en";
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -88,6 +90,47 @@ export default async function DownloadPage({
           __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
         }}
       />
+
+      {/* 演示片段。明暗两版用 dark: 变体切换而不是 prefers-color-scheme：
+          主题类打在 <html> 上，这样手动切主题也跟得上，不只是跟系统。
+          语言不用切——下载页本身就是分语种路由。 */}
+      <section id="demo" className="mb-16">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+          {copy.demoHeading}
+        </h2>
+        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
+          {copy.demoIntro}
+        </p>
+        <div className="mt-6 flex flex-wrap items-start justify-center gap-6">
+          {[
+            { kind: "app", width: 430, alt: copy.demoAppAlt },
+            { kind: "mini", width: 300, alt: copy.demoMiniAlt },
+          ].map(({ kind, width, alt }) =>
+            (["light", "dark"] as const).map((scheme) => (
+              <video
+                key={`${kind}-${scheme}`}
+                src={`/demo/${kind}-${videoLang}-${scheme}.mp4`}
+                // 隐藏的那一个不会自动播；切主题后若浏览器没接着播，
+                // 有海报至少是一帧真实画面而不是空白框。
+                poster={`/demo/${kind}-${videoLang}-${scheme}.jpg`}
+                width={width}
+                aria-label={alt}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                // 宽度上限走行内 style：Tailwind 的 JIT 扫的是字面量，
+                // 模板字符串拼出来的 max-w-[430px] 根本不会被生成。
+                className={`w-full rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700 ${
+                  scheme === "dark" ? "hidden dark:block" : "block dark:hidden"
+                }`}
+                style={{ maxWidth: width }}
+              />
+            ))
+          )}
+        </div>
+      </section>
 
       <section id="downloads">
         <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">

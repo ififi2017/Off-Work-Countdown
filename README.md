@@ -10,7 +10,12 @@ once, then keep the remaining time, progress and estimated earnings at a glance.
 [![Desktop Release](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
 [![License](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
 
-![](readme_image/off_EN.jpg)
+<p align="center">
+  <img src="readme_image/demo/app-en-dark.gif#gh-dark-mode-only" width="430" alt="Setting a shift, starting the countdown and opening settings">
+  <img src="readme_image/demo/app-en-light.gif#gh-light-mode-only" width="430" alt="Setting a shift, starting the countdown and opening settings">
+  <img src="readme_image/demo/mini-en-dark.gif#gh-dark-mode-only" width="300" alt="The floating timer, with the woodfish skin">
+  <img src="readme_image/demo/mini-en-light.gif#gh-light-mode-only" width="300" alt="The floating timer, with the woodfish skin">
+</p>
 
 ## Use Off Work Countdown
 
