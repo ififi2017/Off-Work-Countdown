@@ -859,8 +859,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           )
         : [];
       const safeTones = tones.length > 0 ? tones : [""];
+      // 语气前缀和正文之间要不要空格，取决于前缀收尾的标点：中文的「。」
+      // 「：」本身就带一个字宽的留白，再补空格会多出一条可见的缝。
       const variants = (body: string) =>
-        safeTones.map((tone) => `${tone} ${body}`.trim());
+        safeTones.map((tone) => {
+          const prefix = tone.trim();
+          if (!prefix) return body;
+          const glued = /[\u3000-\u303f\uff00-\uffef]$/.test(prefix);
+          return glued ? `${prefix}${body}` : `${prefix} ${body}`;
+        });
 
       const todayHours = getShiftDurationMs(shift) / (60 * 60 * 1000);
       const now = new Date();
@@ -922,6 +929,16 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             }),
             notificationMode: desktopNotificationMode,
             notificationTitle: t("offWorkReminder"),
+            // 标题带剩余百分比：进度走到 90% 和 95% 时，正文那两句
+            // 「只剩最后一小段」和「马上就能合上电脑了」是同一个意思的
+            // 两种说法，不给数字就分不出自己走到哪儿了。
+            notificationTitles: {
+              milestone50: t("notificationMilestoneTitle", { percent: 50 }),
+              milestone75: t("notificationMilestoneTitle", { percent: 25 }),
+              milestone90: t("notificationMilestoneTitle", { percent: 10 }),
+              milestone95: t("notificationMilestoneTitle", { percent: 5 }),
+              milestone100: t("offWorkTime"),
+            },
             notificationMessages: buildNotificationMessages(activeShift),
             showSalary,
             hideEarnings,

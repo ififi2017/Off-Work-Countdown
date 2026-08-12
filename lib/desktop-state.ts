@@ -25,11 +25,24 @@ export interface DesktopNotificationMessages {
   milestone100: string[];
 }
 
+/**
+ * 里程碑通知的标题。带上剩余百分比，否则 90% 和 95% 两条只有措辞差别，
+ * 看不出自己走到哪儿了。由 JS 侧按当前语言排好版推过来。
+ */
+export interface DesktopNotificationTitles {
+  milestone50: string;
+  milestone75: string;
+  milestone90: string;
+  milestone95: string;
+  milestone100: string;
+}
+
 export interface DesktopCountdownState extends ShiftTimeline {
   running: boolean;
   nextShift: ShiftTimeline | null;
   notificationMode: DesktopNotificationMode;
   notificationTitle: string;
+  notificationTitles: DesktopNotificationTitles;
   notificationMessages: DesktopNotificationMessages;
   showSalary: boolean;
   hideEarnings: boolean;
@@ -67,6 +80,13 @@ const EMPTY_STATE: DesktopCountdownState = {
   nextShift: null,
   notificationMode: "off",
   notificationTitle: "Off work reminder",
+  notificationTitles: {
+    milestone50: "50% left today",
+    milestone75: "25% left today",
+    milestone90: "10% left today",
+    milestone95: "5% left today",
+    milestone100: "Off work time!",
+  },
   notificationMessages: {
     milestone50: ["Halfway there."],
     milestone75: ["The hardest part is behind you."],
@@ -176,6 +196,10 @@ export function normalizeDesktopCountdownState(
     overtimeEndAtMs: current.overtimeEndAtMs ?? null,
     notificationMode:
       current.notificationMode ?? (reminder ? "simple" : "off"),
+    notificationTitles: {
+      ...EMPTY_STATE.notificationTitles,
+      ...current.notificationTitles,
+    },
     notificationMessages: {
       ...EMPTY_STATE.notificationMessages,
       ...current.notificationMessages,
