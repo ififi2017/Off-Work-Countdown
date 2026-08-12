@@ -6,7 +6,7 @@
   "checkForUpdates": "업데이트 확인",
   "checkingForUpdates": "업데이트 확인 중…",
   "installingUpdate": "업데이트 설치 중…",
-  "upToDate": "최신 버전을 사용 중입니다.",
+  "upToDate": "최신 버전",
   "updateAvailable": "업데이트가 있습니다",
   "downloadUpdate": "업데이트 다운로드",
   "retryWithMirror": "미러로 다시 시도",
@@ -39,7 +39,7 @@
   "notificationMode": "퇴근 알림",
   "notificationModeOff": "알리지 않음",
   "notificationModeSimple": "퇴근할 때만",
-  "notificationModeMilestones": "진행에 따라 여러 번",
+  "notificationModeMilestones": "진행에 따라",
   "notificationToneMessages": [
     "좋은 소식이에요:",
     "진행 상황이에요:",
@@ -180,7 +180,7 @@
     "{{minutes}}분 내리 앉아 있었어요. 몇 걸음 걷고 와요."
   ],
   "floatingTimerSkin": "플로팅 타이머 스킨",
-  "standardSkin": "기본",
+  "standardSkin": "심플",
   "woodfishSkin": "목어",
   "woodfishSound": "목어 소리",
   "woodfishFirstTapSilent": "조용한 곳에서 놀라지 않도록 첫 두드림은 소리가 나지 않습니다.",

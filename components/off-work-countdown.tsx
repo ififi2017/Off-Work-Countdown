@@ -37,6 +37,8 @@ import {
   Coffee,
   GlassWater,
   Palette,
+  Minus,
+  X,
 } from "lucide-react";
 import {
   Select,
@@ -111,6 +113,8 @@ import {
   getDesktopAutostartEnabled,
   getDesktopGlobalShortcutSettings,
   getMiniWindowSettings,
+  hideDesktopMainWindow,
+  minimizeDesktopMainWindow,
   readDesktopCountdownState,
   setDesktopAutostartEnabled,
   updateDesktopGlobalShortcutSettings,
@@ -362,7 +366,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [overtimeEndTime, setOvertimeEndTime] = useState("19:00");
   const [microBreakEnabled, setMicroBreakEnabled] = useState(false);
   const [microBreakIntervalMinutes, setMicroBreakIntervalMinutes] = useState(60);
-  const [miniSkin, setMiniSkin] = useState<DesktopMiniSkin>("standard");
+  const [miniSkin, setMiniSkin] = useState<DesktopMiniSkin>("woodfish");
   const [woodfishSoundEnabled, setWoodfishSoundEnabled] = useState(false);
   const [desktopStateRestored, setDesktopStateRestored] = useState(
     !IS_DESKTOP_BUILD
@@ -560,9 +564,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         getLocalStorageItem("lunchStartNotificationEnabled", "true") === "true"
       );
       setMiniSkin(
-        getLocalStorageItem("miniSkin", "standard") === "woodfish"
-          ? "woodfish"
-          : "standard"
+        // 木鱼是默认皮肤，所以判据反过来：只有显式存过「简约」才不是木鱼。
+        getLocalStorageItem("miniSkin", "woodfish") === "standard"
+          ? "standard"
+          : "woodfish"
       );
       setWoodfishSoundEnabled(
         getLocalStorageItem("woodfishSoundEnabled", "false") === "true"
@@ -646,9 +651,25 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         if (!cancelled) setGlobalShortcutLoaded(true);
       });
 
+    // 在 macOS 上验收 Windows 的窗口外观没有别的办法：那套自绘标题栏只在
+    // desktopPlatform === "windows" 时才渲染。开发构建下允许用查询参数强制，
+    // 正式包不读它（与迷你窗的 OWC_FORCE_WINDOWS_MINI 同一思路）。
+    const forcedPlatform =
+      process.env.NODE_ENV === "production"
+        ? null
+        : new URLSearchParams(window.location.search).get("platform");
+    const platformOverride =
+      forcedPlatform === "windows" ||
+      forcedPlatform === "macos" ||
+      forcedPlatform === "other"
+        ? forcedPlatform
+        : null;
+    if (platformOverride) setDesktopPlatform(platformOverride);
+
     void getMiniWindowSettings()
       .then((settings) => {
-        if (!cancelled) setDesktopPlatform(settings.platform);
+        // 覆盖生效时不让真实平台把它顶回去；其余初始化照常进行。
+        if (!cancelled && !platformOverride) setDesktopPlatform(settings.platform);
       })
       .catch(() => {
         // The shortcut still works if only its platform-specific label fails.
@@ -1069,6 +1090,46 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 也得自己画一条热区。这两项在 Tauri 里都是 macOS 专属配置，Windows
   // 直接忽略、用的是原生标题栏 —— 那边再留 40px 就是白留一片。
   const hasOverlayTitleBar = IS_DESKTOP_BUILD && desktopPlatform === "macos";
+  // Windows 的原生标题栏用系统配色，压在玻璃卡片上方是一条对不上的灰白横条。
+  // Rust 那边已经把 decorations 关掉，这里补上自绘的拖动条与窗口按钮。
+  const hasWindowsTitleBar = IS_DESKTOP_BUILD && desktopPlatform === "windows";
+
+  // 三块页面此前各用各的轴：设置页横向、输入页和倒计时页纵向。于是打开设置
+  // 时一个往左滑、另一个往下滑，两条轨迹对不上。
+  //
+  // 设置是子页面，进出用横向推进（它始终待在右边）；输入页和倒计时页是同一
+  // 层的状态切换，保留纵向。方向由「上一页 → 这一页」推出来，而不是让每个
+  // 按钮点击时顺手记一笔——漏记一处就又乱了。
+  const activePageKey =
+    IS_DESKTOP_BUILD && showDesktopSettings
+      ? "settings"
+      : !showCountdown
+        ? "input"
+        : "countdown";
+  const previousPageKeyRef = useRef(activePageKey);
+  const isSettingsNavigation =
+    activePageKey === "settings" || previousPageKeyRef.current === "settings";
+  useEffect(() => {
+    previousPageKeyRef.current = activePageKey;
+  }, [activePageKey]);
+  // 方向必须写成动态 variant，不能直接算成 initial/exit 对象：AnimatePresence
+  // 把被移除子节点的 props 冻结在它最后一次渲染时，那时跳转还没发生，退场页
+  // 拿到的会是「同层切换」的纵向值。variant 函数由 AnimatePresence 的 custom
+  // 在退场那一刻求值，这才是唯一拿得到新方向的入口。
+  const flowPageVariants = {
+    initial: (settingsNav: boolean) =>
+      settingsNav ? { opacity: 0, x: -24, y: 0 } : { opacity: 0, x: 0, y: 16 },
+    animate: { opacity: 1, x: 0, y: 0 },
+    exit: (settingsNav: boolean) =>
+      settingsNav ? { opacity: 0, x: -24, y: 0 } : { opacity: 0, x: 0, y: -16 },
+  };
+  // 设置页永远待在右边：从右侧推入，也退回右侧。
+  const settingsPageVariants = {
+    initial: { opacity: 0, x: 24 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: 24 },
+  };
+  const pageTransition = { duration: 0.22, ease: [0.32, 0.72, 0, 1] as const };
 
   const triggerCelebration = useCallback((shiftEndAtMs: number) => {
     celebratedShiftRef.current = shiftEndAtMs;
@@ -1824,7 +1885,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   return (
     <div
       className={`min-h-screen transition-colors duration-1000 ease-in-out ${
-        isAppShell ? "flex flex-col items-stretch justify-start p-0" : "flex items-center justify-center p-4"
+        isAppShell
+          ? "select-none flex flex-col items-stretch justify-start p-0"
+          : "flex items-center justify-center p-4"
       } ${
         isCustomTheme ? "" : "bg-gray-100 dark:bg-gray-900"
       } ${
@@ -1969,6 +2032,45 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         />
       )}
 
+      {/* Windows 自绘标题栏。不另起一行放标题——窗口只有 430pt 高，而下面的
+          页头已经写着「下班倒计时／设置」了，再来一条只是重复。按钮沿用应用
+          自己的圆角与配色，关闭键悬停变红，遵循 Windows 的位置习惯。 */}
+      {hasWindowsTitleBar && (
+        <div
+          data-tauri-drag-region="deep"
+          className="fixed inset-x-0 top-0 z-50 flex h-9 cursor-grab items-center justify-end gap-0.5 pe-1.5 active:cursor-grabbing"
+        >
+          <button
+            type="button"
+            data-tauri-drag-region="false"
+            onClick={() => {
+              void minimizeDesktopMainWindow().catch(() => {
+                // 最小化失败时窗口保持原状，不影响计时。
+              });
+            }}
+            aria-label={t("menuMinimize")}
+            title={t("menuMinimize")}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-black/5 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            data-tauri-drag-region="false"
+            onClick={() => {
+              void hideDesktopMainWindow().catch(() => {
+                // 隐藏失败时窗口保持原状；托盘里仍可再次唤起。
+              });
+            }}
+            aria-label={t("menuCloseWindow")}
+            title={t("menuCloseWindow")}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-red-500 hover:text-white dark:text-gray-400"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
       <div className={isAppShell ? "flex min-h-0 flex-1 flex-col" : "w-full max-w-md"}>
       {/* 接力提示。分享链接落地后对方直接看到的是发送者的班次倒计时，
           这里说明来源并给出一键切回自己时间的出口 —— 分享→落地→转化的
@@ -1995,7 +2097,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         <CardHeader
           className={
             isAppShell
-              ? hasOverlayTitleBar
+              ? hasOverlayTitleBar || hasWindowsTitleBar
                 ? "px-6 pb-3 pt-10"
                 : "p-6 pb-3"
               : undefined
@@ -2132,14 +2234,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               : undefined
           }
         >
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" custom={isSettingsNavigation}>
             {IS_DESKTOP_BUILD && showDesktopSettings ? (
               <motion.div
                 key="settings"
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 16 }}
-                transition={{ duration: 0.2 }}
+                variants={settingsPageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={pageTransition}
                 className="space-y-3"
               >
                 <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
@@ -2329,7 +2432,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     >
                       <SelectTrigger
                         id="notification-mode"
-                        className="h-9 w-[148px] rounded-xl bg-background"
+                        className="h-9 w-[148px] whitespace-nowrap rounded-xl bg-background [&>span]:truncate"
                       >
                         <SelectValue />
                       </SelectTrigger>
@@ -2549,9 +2652,17 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                       desktopUpdateStatus === "mirrorInstalling" ||
                       desktopUpdateStatus === "installing"
                     }
-                    className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                    className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
                   >
-                    <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      role="status"
+                      aria-live="polite"
+                      className={`flex min-w-0 items-center gap-2 ${
+                        desktopUpdateStatus === "latest"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : ""
+                      }`}
+                    >
                       <RefreshCw
                         className={`h-4 w-4 shrink-0 ${
                           desktopUpdateStatus === "checking" ||
@@ -2576,15 +2687,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                                 ? t("downloadUpdate")
                                 : desktopUpdateStatus === "installing"
                                   ? t("installingUpdate")
-                                  : t("checkForUpdates")}
+                                  : desktopUpdateStatus === "latest"
+                                    ? t("upToDate")
+                                    : t("checkForUpdates")}
                       </span>
-                    </span>
-                    <span
-                      role="status"
-                      aria-live="polite"
-                      className="truncate text-xs font-medium text-emerald-600 dark:text-emerald-400"
-                    >
-                      {desktopUpdateStatus === "latest" ? t("upToDate") : ""}
                     </span>
                     {desktopCurrentVersion && (
                       <span
@@ -2631,10 +2737,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             ) : !showCountdown ? (
               <motion.div
                 key="input"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
+                custom={isSettingsNavigation}
+                variants={flowPageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={pageTransition}
                 className={IS_DESKTOP_BUILD ? "space-y-3" : "space-y-4"}
               >
                 <div className={IS_DESKTOP_BUILD ? "grid grid-cols-2 gap-3" : "contents"}>
@@ -2756,10 +2864,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             ) : (
               <motion.div
                 key="countdown"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.2 }}
+                custom={isSettingsNavigation}
+                variants={flowPageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={pageTransition}
                 className={IS_DESKTOP_BUILD ? "w-full space-y-3" : "space-y-6"}
               >
                 <CountdownDisplay

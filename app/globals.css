@@ -237,3 +237,17 @@ body {
 .wheel-picker-scroll::-webkit-scrollbar {
   display: none;
 }
+
+/* 这是个桌面小工具，不是文档。触控板双指拖动会把图标、文字当成可拖拽内容
+   拖出窗口，木鱼和进度条尤其容易误触；原生拖拽在这里没有任何用途。 */
+* {
+  -webkit-user-drag: none;
+}
+
+/* 禁用框选时要留出输入框：时间和薪资都要能选中、能编辑。 */
+.select-none input,
+.select-none textarea,
+.select-none [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}

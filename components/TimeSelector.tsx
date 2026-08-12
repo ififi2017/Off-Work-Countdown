@@ -139,7 +139,9 @@ export function TimeSelector({
       >
         {label}
       </Label>
-      <div className="flex gap-2">
+      {/* 桌面端两个选择器已被外层 grid 各分一半；Web 版卡片宽得多，
+          不设上限的话「HH」「MM」两个两位数输入框会各自铺到 200px 以上。 */}
+      <div className={`flex gap-2 ${compact ? "" : "max-w-[15rem]"}`}>
         <div className="w-1/2">
           <div className="relative">
             <input

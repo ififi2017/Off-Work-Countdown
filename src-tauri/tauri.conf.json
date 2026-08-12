@@ -22,7 +22,7 @@
         "minHeight": 420,
         "maxWidth": 450,
         "maxHeight": 450,
-        "resizable": true,
+        "resizable": false,
         "maximizable": false,
         "fullscreen": false,
         "titleBarStyle": "Overlay",

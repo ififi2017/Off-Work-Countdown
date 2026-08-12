@@ -6,7 +6,7 @@
   "checkForUpdates": "ตรวจสอบอัปเดต",
   "checkingForUpdates": "กำลังตรวจสอบอัปเดต…",
   "installingUpdate": "กำลังติดตั้งอัปเดต…",
-  "upToDate": "คุณใช้เวอร์ชันล่าสุดแล้ว",
+  "upToDate": "ล่าสุดแล้ว",
   "updateAvailable": "มีอัปเดตใหม่",
   "downloadUpdate": "ดาวน์โหลดการอัปเดต",
   "retryWithMirror": "ลองใหม่ผ่านมิเรอร์",
@@ -38,8 +38,8 @@
   "notificationTestBody": "การแจ้งเตือนพร้อมแล้ว และจะไม่แสดงเงินเดือนของคุณ",
   "notificationMode": "การแจ้งเตือนเลิกงาน",
   "notificationModeOff": "ไม่เตือน",
-  "notificationModeSimple": "เฉพาะตอนเลิกงาน",
-  "notificationModeMilestones": "หลายครั้งตามความคืบหน้า",
+  "notificationModeSimple": "ตอนเลิกงาน",
+  "notificationModeMilestones": "หลายครั้ง",
   "notificationToneMessages": [
     "ข่าวดี:",
     "อัปเดตสั้นๆ:",
@@ -180,7 +180,7 @@
     "นั่งรวดเดียว {{minutes}} นาที เดินสักสองก้าวแล้วค่อยกลับมา"
   ],
   "floatingTimerSkin": "รูปแบบตัวจับเวลาลอย",
-  "standardSkin": "มาตรฐาน",
+  "standardSkin": "เรียบง่าย",
   "woodfishSkin": "ปลาไม้",
   "woodfishSound": "เสียงปลาไม้",
   "woodfishFirstTapSilent": "การเคาะครั้งแรกจะไม่มีเสียง เพื่อไม่ให้รบกวนคนรอบข้าง",

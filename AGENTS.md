@@ -66,8 +66,17 @@ in URLs, analytics payloads or share metadata.
   absent from release builds. Launch with
   `open --env OWC_FORCE_WINDOWS_MINI=1 <app>` — plain `open` drops the
   variable, and running the binary directly loses the bundle identity.
+- `?platform=windows` (also `macos`, `other`) on the main window forces
+  `desktopPlatform`, so the Windows title bar can be reviewed on macOS with
+  `npm run dev:desktop`. Dev builds only — the branch is compiled out of
+  release bundles. Windows drops its native title bar at runtime
+  (`set_decorations(false)`), because `decorations` is one value for every
+  platform in `tauri.conf.json` and macOS needs it for the traffic lights.
+- The main window is not resizable. Text selection is off across the app shell
+  and the Mini Timer; inputs opt back in through `.select-none input`.
 - Verify both light and dark modes and long English labels before considering a
-  Desktop UI change complete.
+  Desktop UI change complete. Select triggers have fixed widths — the longest
+  translated option must fit, not just the English one.
 
 ## Internationalization and content
 

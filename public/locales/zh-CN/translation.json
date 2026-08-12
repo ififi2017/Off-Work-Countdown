@@ -6,7 +6,7 @@
   "checkForUpdates": "检查更新",
   "checkingForUpdates": "正在检查更新…",
   "installingUpdate": "正在安装更新…",
-  "upToDate": "当前已是最新版本。",
+  "upToDate": "已是最新版本",
   "updateAvailable": "发现新版本",
   "downloadUpdate": "下载更新",
   "retryWithMirror": "通过镜像重试",
@@ -180,7 +180,7 @@
     "连续 {{minutes}} 分钟了，走两步再回来吧。"
   ],
   "floatingTimerSkin": "悬浮计时器皮肤",
-  "standardSkin": "标准",
+  "standardSkin": "简约",
   "woodfishSkin": "木鱼",
   "woodfishSound": "木鱼音效",
   "woodfishFirstTapSilent": "为避免在安静场合突然出声，第一次敲击不会响。",
