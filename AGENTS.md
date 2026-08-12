@@ -16,6 +16,10 @@ in URLs, analytics payloads or share metadata.
 - `lib/countdown.ts` is the source of truth for shift calculations. Rust only
   keeps an absolute running snapshot alive when the WebView is hidden; do not
   create a second implementation of schedule rules in Rust.
+- Since 3.1, a running shift is `segments + plannedEndAtMs + overtimeEndAtMs`.
+  Remaining time, progress and earnings must use effective segment duration;
+  never reintroduce `end - now` or a standalone start/end range. Rust may only
+  compare and sum the absolute segments prepared by the frontend.
 - Web and Desktop are separate build targets selected by `BUILD_TARGET`.
   `npm run build` must preserve middleware and Route Handlers; `npm run
   build:desktop` must produce a static export in `out/` without Web-only APIs.
@@ -26,6 +30,10 @@ in URLs, analytics payloads or share metadata.
   `src-tauri/native-mini/NativeMiniTimer.m`, linked by `src-tauri/build.rs`.
   macOS 26 uses `NSGlassEffectView`; older macOS uses Vibrancy. Do not replace
   it with a WebView or CSS glass effect.
+- macOS 3.1 also has an optional WebView floating timer for the standard and
+  woodfish skins. It is a separate window from the native menu-bar panel; do
+  not merge their window lifecycle or make either one appear automatically in
+  release builds.
 - Windows uses the lightweight `/[lang]/mini` Desktop page and programmatic
   Tauri window creation. Platform-specific implementations are intentional.
 
@@ -44,6 +52,15 @@ in URLs, analytics payloads or share metadata.
 - Both Mini Timers and the main window share one `hideEarnings` value in the
   store. Neither Mini Timer may keep its own local reveal state, and the eye
   icon everywhere shows what the click will do, not the current state.
+- Lunch gaps and micro-break schedules are measured only from effective
+  `segments`. Overtime pay is a linear extension of the original hourly rate:
+  UI progress may use the extended duration, while salary uses elapsed
+  effective time divided by the planned effective duration.
+- Rust may switch only to a frontend-supplied `nextShift` snapshot. A stale
+  next shift crossed entirely during sleep must be discarded without
+  backfilled notifications.
+- The woodfish tap count and sound preference stay local. The first woodfish
+  tap is always silent; do not add bundled or downloaded audio assets.
 - `OWC_FORCE_WINDOWS_MINI=1` runs the Windows Mini Timer on macOS so it can be
   reviewed without a Windows machine; it is gated on `debug_assertions` and is
   absent from release builds. Launch with

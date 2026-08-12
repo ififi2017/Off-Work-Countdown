@@ -3,6 +3,7 @@ import {
   emptyDesktopCountdownState,
   formatDesktopDuration,
   getDesktopCountdownView,
+  normalizeDesktopCountdownState,
 } from "./desktop-state";
 
 describe("desktop countdown state", () => {
@@ -16,8 +17,8 @@ describe("desktop countdown state", () => {
   it("derives progress and earned salary from absolute timestamps", () => {
     const state = {
       ...emptyDesktopCountdownState(),
-      startAtMs: 1_000,
-      endAtMs: 11_000,
+      segments: [{ startAtMs: 1_000, endAtMs: 11_000 }],
+      plannedEndAtMs: 11_000,
       running: true,
       showSalary: true,
       dailySalary: 200,
@@ -27,12 +28,88 @@ describe("desktop countdown state", () => {
       time: "0:00:05",
       progress: 50,
       earned: 100,
+      phase: "working",
     });
   });
 
   it("returns an idle view when no countdown is active", () => {
     expect(
       getDesktopCountdownView(emptyDesktopCountdownState(), Date.now())
-    ).toEqual({ time: "--:--:--", progress: 0, earned: null });
+    ).toEqual({ time: "--:--:--", progress: 0, earned: null, phase: "idle" });
+  });
+
+  it("counts down to the end of the break, while progress and pay stay frozen", () => {
+    const state = {
+      ...emptyDesktopCountdownState(),
+      segments: [
+        { startAtMs: 1_000, endAtMs: 4_000 },
+        { startAtMs: 6_000, endAtMs: 11_000 },
+      ],
+      plannedEndAtMs: 11_000,
+      running: true,
+      showSalary: true,
+      dailySalary: 80,
+    };
+
+    // 休息期间显示的是「距休息结束」，不是冻住的下班倒计时——后者整段
+    // 时间纹丝不动，看起来像应用卡死了。进度与计薪则确实是冻结的。
+    expect(getDesktopCountdownView(state, 5_000)).toEqual({
+      time: "0:00:01",
+      progress: 37.5,
+      earned: 30,
+      phase: "break",
+    });
+    // 复工那一刻切回下班倒计时，且进度／计薪从休息前的位置无缝接上。
+    expect(getDesktopCountdownView(state, 6_000)).toMatchObject({
+      time: "0:00:05",
+      progress: 37.5,
+      earned: 30,
+      phase: "working",
+    });
+  });
+
+  it("shows the next-shift gap and pays overtime at the original hourly rate", () => {
+    const state = {
+      ...emptyDesktopCountdownState(),
+      segments: [{ startAtMs: 1_000, endAtMs: 13_000 }],
+      plannedEndAtMs: 11_000,
+      overtimeEndAtMs: 13_000,
+      nextShift: {
+        segments: [{ startAtMs: 21_000, endAtMs: 31_000 }],
+        plannedEndAtMs: 31_000,
+        overtimeEndAtMs: null,
+      },
+      running: true,
+      showSalary: true,
+      dailySalary: 100,
+    };
+    expect(getDesktopCountdownView(state, 13_000)).toEqual({
+      time: "0:00:08",
+      progress: 100,
+      earned: 120,
+      phase: "between",
+    });
+  });
+
+  it("migrates a 3.0 single-range snapshot without recalculating it", () => {
+    const migrated = normalizeDesktopCountdownState({
+      startAtMs: 1_000,
+      endAtMs: 11_000,
+      running: true,
+      reminder: true,
+      lang: "zh-CN",
+    });
+
+    expect(migrated.segments).toEqual([
+      { startAtMs: 1_000, endAtMs: 11_000 },
+    ]);
+    expect(migrated.plannedEndAtMs).toBe(11_000);
+    expect(migrated.overtimeEndAtMs).toBeNull();
+    expect(migrated.running).toBe(true);
+    expect(migrated.notificationMode).toBe("simple");
+    expect(migrated.lang).toBe("zh-CN");
+    expect(migrated).not.toHaveProperty("startAtMs");
+    expect(migrated).not.toHaveProperty("endAtMs");
+    expect(migrated).not.toHaveProperty("reminder");
   });
 });

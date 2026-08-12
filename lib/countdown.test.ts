@@ -1,8 +1,21 @@
 import { describe, it, expect } from "vitest";
 import {
   atTime,
+  buildShiftTimeline,
+  calculateTimelineProgress,
+  calculateTimelinePayRatio,
   getShiftBounds,
   calculateProgress,
+  getShiftDurationMs,
+  getPlannedShiftDurationMs,
+  getShiftElapsedMs,
+  getShiftRemainingMs,
+  getActiveBreakEndAtMs,
+  isValidShiftTimeline,
+  extendShiftWithOvertime,
+  findNextShiftTimeline,
+  resolveOvertimeEndAtMs,
+  suggestOvertimeEndAtMs,
   getDailySalary,
   getShiftLengthHours,
   DEFAULT_MONTHLY_WORKING_DAYS,
@@ -76,6 +89,153 @@ describe("calculateProgress", () => {
   it("handles overnight shifts after midnight", () => {
     // 22:00–06:00 shift, at 02:00 → 4h of 8h done
     expect(calculateProgress("22:00", "06:00", day(2))).toBeCloseTo(50);
+  });
+});
+
+describe("segmented shift timeline", () => {
+  const hour = 60 * 60 * 1000;
+  const at = (hours: number, minutes = 0) =>
+    new Date(2026, 6, 3, hours, minutes).getTime();
+
+  it("builds the existing schedule as one segment", () => {
+    const shift = buildShiftTimeline("09:00", "18:00", day(12));
+    expect(shift).toEqual({
+      segments: [{ startAtMs: at(9), endAtMs: at(18) }],
+      plannedEndAtMs: at(18),
+      overtimeEndAtMs: null,
+    });
+    expect(getShiftDurationMs(shift)).toBe(9 * hour);
+  });
+
+  it("does not count down or accrue progress between segments", () => {
+    const shift = {
+      segments: [
+        { startAtMs: at(9), endAtMs: at(12) },
+        { startAtMs: at(13), endAtMs: at(18) },
+      ],
+      plannedEndAtMs: at(18),
+      overtimeEndAtMs: null,
+    };
+
+    expect(isValidShiftTimeline(shift)).toBe(true);
+    expect(getShiftDurationMs(shift)).toBe(8 * hour);
+    expect(getShiftElapsedMs(shift, at(12, 30))).toBe(3 * hour);
+    expect(getShiftElapsedMs(shift, at(13))).toBe(3 * hour);
+    expect(getShiftRemainingMs(shift, at(12, 30))).toBe(5 * hour);
+    expect(getShiftRemainingMs(shift, at(13))).toBe(5 * hour);
+    expect(calculateTimelineProgress(shift, at(12, 30))).toBeCloseTo(37.5);
+  });
+
+  it("keeps the planned end separate from an overtime end", () => {
+    const shift = {
+      segments: [{ startAtMs: at(9), endAtMs: at(20) }],
+      plannedEndAtMs: at(18),
+      overtimeEndAtMs: at(20),
+    };
+
+    expect(isValidShiftTimeline(shift)).toBe(true);
+    expect(getShiftDurationMs(shift)).toBe(11 * hour);
+    expect(getPlannedShiftDurationMs(shift)).toBe(9 * hour);
+    expect(calculateTimelineProgress(shift, at(18))).toBeCloseTo(100 * 9 / 11);
+    expect(calculateTimelinePayRatio(shift, at(18))).toBeCloseTo(1);
+    expect(calculateTimelinePayRatio(shift, at(20))).toBeCloseTo(11 / 9);
+  });
+
+  it("rejects overlapping or inconsistent snapshots", () => {
+    expect(
+      isValidShiftTimeline({
+        segments: [
+          { startAtMs: at(9), endAtMs: at(13) },
+          { startAtMs: at(12), endAtMs: at(18) },
+        ],
+        plannedEndAtMs: at(18),
+        overtimeEndAtMs: null,
+      })
+    ).toBe(false);
+    expect(
+      isValidShiftTimeline({
+        segments: [{ startAtMs: at(9), endAtMs: at(17) }],
+        plannedEndAtMs: at(18),
+        overtimeEndAtMs: null,
+      })
+    ).toBe(false);
+  });
+
+  it("cuts an enabled lunch break out of effective work time", () => {
+    const shift = buildShiftTimeline("09:00", "18:00", day(10), {
+      breakStartTime: "12:00",
+      breakDurationMinutes: 60,
+    });
+    expect(shift.segments).toEqual([
+      { startAtMs: at(9), endAtMs: at(12) },
+      { startAtMs: at(13), endAtMs: at(18) },
+    ]);
+    expect(getShiftDurationMs(shift)).toBe(8 * hour);
+    expect(getShiftRemainingMs(shift, at(12, 30))).toBe(5 * hour);
+    expect(calculateTimelinePayRatio(shift, at(12, 30))).toBeCloseTo(3 / 8);
+  });
+
+  it("places an overnight lunch time on the correct calendar day", () => {
+    const now = new Date(2026, 6, 3, 23, 0, 0, 0);
+    const shift = buildShiftTimeline("22:00", "06:00", now, {
+      breakStartTime: "02:00",
+      breakDurationMinutes: 30,
+    });
+    expect(new Date(shift.segments[0].endAtMs).getDate()).toBe(4);
+    expect(new Date(shift.segments[0].endAtMs).getHours()).toBe(2);
+    expect(new Date(shift.segments[1].startAtMs).getHours()).toBe(2);
+    expect(new Date(shift.segments[1].startAtMs).getMinutes()).toBe(30);
+    expect(getShiftDurationMs(shift)).toBe(7.5 * hour);
+  });
+
+  it("extends only the final segment when overtime is accepted", () => {
+    const base = buildShiftTimeline("09:00", "18:00", day(10), {
+      breakStartTime: "12:00",
+      breakDurationMinutes: 60,
+    });
+    const extended = extendShiftWithOvertime(base, at(20));
+    expect(extended.plannedEndAtMs).toBe(at(18));
+    expect(extended.overtimeEndAtMs).toBe(at(20));
+    expect(extended.segments[0]).toEqual(base.segments[0]);
+    expect(extended.segments[1].endAtMs).toBe(at(20));
+    expect(getShiftDurationMs(extended)).toBe(10 * hour);
+  });
+
+  it("suggests a future quarter-hour when overtime is added after work", () => {
+    const shift = buildShiftTimeline("09:00", "18:00", day(12));
+    expect(new Date(suggestOvertimeEndAtMs(shift, at(23, 52))).getHours()).toBe(1);
+    expect(new Date(suggestOvertimeEndAtMs(shift, at(23, 52))).getMinutes()).toBe(0);
+    expect(new Date(suggestOvertimeEndAtMs(shift, at(23, 52))).getDate()).toBe(4);
+    expect(resolveOvertimeEndAtMs(shift, "01:00", at(23, 52))).toBe(
+      new Date(2026, 6, 4, 1, 0).getTime()
+    );
+  });
+
+  it("finds the next configured workday without moving schedule rules to Rust", () => {
+    const fridayAfterWork = new Date(2026, 6, 3, 19, 0, 0, 0);
+    const next = findNextShiftTimeline({
+      startTime: "09:00",
+      endTime: "18:00",
+      workdays: DEFAULT_WORKDAYS,
+      afterMs: fridayAfterWork.getTime(),
+      options: { breakStartTime: "12:00", breakDurationMinutes: 60 },
+    });
+    expect(next).not.toBeNull();
+    const start = new Date(next!.segments[0].startAtMs);
+    expect(start.getDay()).toBe(1);
+    expect(start.getDate()).toBe(6);
+    expect(next!.segments).toHaveLength(2);
+  });
+
+  it("returns no next shift when every workday is disabled", () => {
+    expect(
+      findNextShiftTimeline({
+        startTime: "09:00",
+        endTime: "18:00",
+        workdays: [],
+        afterMs: day(19).getTime(),
+      })
+    ).toBeNull();
   });
 });
 
@@ -193,5 +353,42 @@ describe("workdays", () => {
     const sunday = new Date(2026, 6, 5, 10, 0, 0, 0); // 2026-07-05 周日
     expect(isWorkday(sunday, DEFAULT_WORKDAYS)).toBe(false);
     expect(isWorkday(sunday, [0, 6])).toBe(true);
+  });
+});
+
+describe("getActiveBreakEndAtMs", () => {
+  const shift = {
+    segments: [
+      { startAtMs: 1_000, endAtMs: 2_000 },
+      { startAtMs: 3_000, endAtMs: 5_000 },
+    ],
+    plannedEndAtMs: 5_000,
+    overtimeEndAtMs: null,
+  };
+
+  it("reports the end of the gap while inside it", () => {
+    expect(getActiveBreakEndAtMs(shift, 2_000)).toBe(3_000);
+    expect(getActiveBreakEndAtMs(shift, 2_999)).toBe(3_000);
+  });
+
+  it("returns null while working, and at the exact moment work resumes", () => {
+    expect(getActiveBreakEndAtMs(shift, 1_500)).toBeNull();
+    // 边界属于工作段：3_000 是下半场的第一毫秒，不能还算在午休里。
+    expect(getActiveBreakEndAtMs(shift, 3_000)).toBeNull();
+    expect(getActiveBreakEndAtMs(shift, 4_000)).toBeNull();
+  });
+
+  it("returns null before the shift and after it ends", () => {
+    expect(getActiveBreakEndAtMs(shift, 500)).toBeNull();
+    expect(getActiveBreakEndAtMs(shift, 9_000)).toBeNull();
+  });
+
+  it("returns null for a shift without gaps", () => {
+    expect(
+      getActiveBreakEndAtMs(
+        { segments: [{ startAtMs: 0, endAtMs: 10 }], plannedEndAtMs: 10, overtimeEndAtMs: null },
+        5
+      )
+    ).toBeNull();
   });
 });

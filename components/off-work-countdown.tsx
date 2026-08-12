@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -25,6 +32,11 @@ import {
   RefreshCw,
   Download,
   Globe,
+  BellRing,
+  ShieldCheck,
+  Coffee,
+  GlassWater,
+  Palette,
 } from "lucide-react";
 import {
   Select,
@@ -51,9 +63,22 @@ import {
   type Locale,
 } from "@/i18n-config";
 import {
+  buildShiftTimeline,
+  calculateTimelinePayRatio,
+  calculateTimelineProgress,
+  extendShiftWithOvertime,
+  findNextShiftTimeline,
+  resolveOvertimeEndAtMs,
+  suggestOvertimeEndAtMs,
+  getShiftDurationMs,
+  getShiftEndAtMs,
+  getShiftRemainingMs,
+  getActiveBreakEndAtMs,
+  getShiftStartAtMs,
   getShiftBounds,
-  calculateProgress as calculateShiftProgress,
   getDailySalary as calculateDailySalary,
+  isValidShiftTimeline,
+  type ShiftTimeline,
   DEFAULT_MONTHLY_WORKING_DAYS,
   DEFAULT_WORKDAYS,
   parseWorkdays,
@@ -70,25 +95,43 @@ import { track } from "@/lib/track";
 import { siteConfig } from "@/config/site";
 import {
   requestNotificationPermission,
+  requestNotificationPermissionDetailed,
+  openDesktopNotificationSettings,
   showNotification,
 } from "@/lib/notify";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   emptyDesktopCountdownState,
   getDesktopAutostartEnabled,
+  getDesktopGlobalShortcutSettings,
   getMiniWindowSettings,
   readDesktopCountdownState,
   setDesktopAutostartEnabled,
+  updateDesktopGlobalShortcutSettings,
   installDesktopUpdateViaMirror,
   stopDesktopCountdown,
   subscribeToDesktopCountdown,
   UPDATE_MIRROR_HOST,
-  toggleDesktopMiniTimer,
-  updateDesktopTrayMenu,
+  toggleDesktopFloatingTimer,
+  updateDesktopMenus,
   writeDesktopCountdownState,
+  type DesktopNotificationMode,
+  type DesktopMiniSkin,
 } from "@/lib/desktop-state";
+import {
+  formatDesktopShortcut,
+  shortcutFromKeyEvent,
+} from "@/lib/shortcut";
 
 /** 下班前多久提醒。与 translation.json 里 "reminder" 的文案保持一致。 */
 const REMINDER_LEAD_MS = 15 * 60 * 1000;
+const notificationPrimerStorageKey = "desktopNotificationPrimerSeen";
 
 /** 由 next.config.mjs 在构建期注入，见 docs/PLAN-M5-TAURI.md 决策 1 与 7。 */
 const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
@@ -122,6 +165,9 @@ export interface OffWorkCountdownProps {
 
 interface SalarySettingsProps {
   desktop?: boolean;
+  /** 快捷入口的滚动锚点与高亮标记。 */
+  anchor?: string;
+  highlighted?: boolean;
   enabled: boolean;
   onEnabledChange: (enabled: boolean) => void;
   salaryType: "monthly" | "daily";
@@ -136,6 +182,8 @@ interface SalarySettingsProps {
 
 function SalarySettings({
   desktop = false,
+  anchor,
+  highlighted = false,
   enabled,
   onEnabledChange,
   salaryType,
@@ -151,11 +199,12 @@ function SalarySettings({
 
   return (
     <section
-      className={
+      data-setting={anchor}
+      className={`${
         desktop
           ? "rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10"
           : "border-t border-gray-200 pt-3 dark:border-gray-700"
-      }
+      } ${highlighted ? "setting-highlight" : ""}`}
     >
       <div className="flex items-center justify-between">
         <Label className="flex items-center gap-2 dark:text-gray-200">
@@ -243,6 +292,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("18:00");
   const [reminder, setReminder] = useState(false);
+  const [desktopNotificationMode, setDesktopNotificationMode] =
+    useState<DesktopNotificationMode>("off");
   const [workdays, setWorkdays] = useState<number[]>(DEFAULT_WORKDAYS);
   const [showCountdown, setShowCountdown] = useState(false);
   const [showDesktopSettings, setShowDesktopSettings] = useState(false);
@@ -250,10 +301,28 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<Theme>("auto");
   const [isMounted, setIsMounted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
+  // 用自增计数而不是布尔，见 Confetti 组件的说明。
+  const [confettiNonce, setConfettiNonce] = useState(0);
+  /**
+   * 已经为哪一班庆祝过，按该班的结束时间戳去重，并落盘。
+   *
+   * 只放在内存里会导致「每次打开应用都重放一次」——晚上十点打开看一眼，
+   * 又是一场撒花。一次班次只该庆祝一次。
+   */
+  const celebratedShiftRef = useRef<number | null>(null);
+  /** 下班那一刻窗口不可见时保存班次终点，等用户回来再放。 */
+  const celebrationPendingRef = useRef<number | null>(null);
+  const [showNextShiftStatus, setShowNextShiftStatus] = useState(false);
+  /** 午休中：倒计时暂停，界面改为显示距午休结束还有多久。 */
+  const [onLunchBreak, setOnLunchBreak] = useState(false);
+  /** 从主界面快捷入口跳进设置页时，短暂高亮目标分组。 */
+  const [highlightedSetting, setHighlightedSetting] = useState<string | null>(
+    null
+  );
   const [formError, setFormError] = useState("");
   const reminderFiredRef = useRef(false);
   const completionTrackedRef = useRef(false);
+  const pendingNotificationActionRef = useRef<null | (() => void)>(null);
   /** 自动检查时保存的 update 对象，供用户确认后下载 / 安装。 */
   const pendingUpdateRef = useRef<{
     version: string;
@@ -279,18 +348,43 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [moneyEarned, setMoneyEarned] = useState(0);
   const [hideEarnings, setHideEarnings] = useState(false);
   const [maskAmountField, setMaskAmountField] = useState(true);
-  const [activeBounds, setActiveBounds] = useState<{
-    start: Date;
-    end: Date;
-    leadReminderArmed: boolean;
-  } | null>(null);
+  const [activeShift, setActiveShift] = useState<ShiftTimeline | null>(null);
+  /** 供只建立一次的 Store 订阅读取当前班次，避免闭包停在挂载那一刻。 */
+  const activeShiftRef = useRef<ShiftTimeline | null>(null);
+  const [lunchEnabled, setLunchEnabled] = useState(false);
+  const [lunchStartTime, setLunchStartTime] = useState("12:00");
+  const [lunchDurationMinutes, setLunchDurationMinutes] = useState(60);
+  const [lunchStartNotificationEnabled, setLunchStartNotificationEnabled] =
+    useState(true);
+  const [lunchEndNotificationEnabled, setLunchEndNotificationEnabled] =
+    useState(false);
+  const [overtimeDialogOpen, setOvertimeDialogOpen] = useState(false);
+  const [overtimeEndTime, setOvertimeEndTime] = useState("19:00");
+  const [microBreakEnabled, setMicroBreakEnabled] = useState(false);
+  const [microBreakIntervalMinutes, setMicroBreakIntervalMinutes] = useState(60);
+  const [miniSkin, setMiniSkin] = useState<DesktopMiniSkin>("standard");
+  const [woodfishSoundEnabled, setWoodfishSoundEnabled] = useState(false);
   const [desktopStateRestored, setDesktopStateRestored] = useState(
     !IS_DESKTOP_BUILD
   );
   const [launchAtLogin, setLaunchAtLogin] = useState(false);
   const [autostartLoaded, setAutostartLoaded] = useState(!IS_DESKTOP_BUILD);
   const [autostartPending, setAutostartPending] = useState(false);
+  const [globalShortcutEnabled, setGlobalShortcutEnabled] = useState(true);
+  const [globalShortcutAccelerator, setGlobalShortcutAccelerator] = useState(
+    "CommandOrControl+Shift+O"
+  );
+  const [globalShortcutLoaded, setGlobalShortcutLoaded] = useState(
+    !IS_DESKTOP_BUILD
+  );
+  const [globalShortcutPending, setGlobalShortcutPending] = useState(false);
+  const [globalShortcutCapturing, setGlobalShortcutCapturing] = useState(false);
+  const [globalShortcutError, setGlobalShortcutError] = useState("");
+  const globalShortcutButtonRef = useRef<HTMLButtonElement>(null);
   const [desktopSettingError, setDesktopSettingError] = useState("");
+  const [notificationDialog, setNotificationDialog] = useState<
+    "primer" | "denied" | null
+  >(null);
   const [desktopUpdateStatus, setDesktopUpdateStatus] =
     useState<DesktopUpdateStatus>("idle");
   const [desktopCurrentVersion, setDesktopCurrentVersion] = useState("");
@@ -376,16 +470,38 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     }
   }, [i18n, lang]);
 
-  // 托盘菜单由 Rust 创建，但文案跟随前端当前语言。切换语言后直接更新
-  // 已存在的原生菜单项，不需要重启客户端。
+  // 托盘与 macOS 应用菜单由 Rust 创建，但文案跟随前端当前语言。托盘项目
+  // 原地更新，macOS 菜单则按同一批文案重建，不需要重启客户端。
   useEffect(() => {
     if (!IS_DESKTOP_BUILD) return;
-    void updateDesktopTrayMenu({
+    setDesktopSettingError("");
+    void updateDesktopMenus({
       show: t("trayShowApp"),
       mini: t("trayMiniTimer"),
       quit: t("trayQuit"),
-    }).catch(() => {
-      // 托盘文案更新失败不影响主窗口功能。
+      file: t("menuFile"),
+      edit: t("menuEdit"),
+      view: t("menuView"),
+      window: t("menuWindow"),
+      help: t("menuHelp"),
+      about: t("menuAbout"),
+      services: t("menuServices"),
+      hideApp: t("menuHideApp"),
+      hideOthers: t("menuHideOthers"),
+      closeWindow: t("menuCloseWindow"),
+      undo: t("menuUndo"),
+      redo: t("menuRedo"),
+      cut: t("menuCut"),
+      copy: t("menuCopy"),
+      paste: t("menuPaste"),
+      selectAll: t("menuSelectAll"),
+      toggleFullScreen: t("menuToggleFullScreen"),
+      minimize: t("menuMinimize"),
+      zoom: t("menuZoom"),
+      bringAllToFront: t("menuBringAllToFront"),
+    }).catch((error) => {
+      console.error("Failed to localize desktop menus", error);
+      setDesktopSettingError(t("desktopSettingError"));
     });
   }, [lang, t]);
 
@@ -394,7 +510,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     if (isMounted) {
       setStartTime(getLocalStorageItem("startTime", "09:00"));
       setEndTime(getLocalStorageItem("endTime", "18:00"));
-      setReminder(getLocalStorageItem("reminder", "false") === "true");
+      const legacyReminder =
+        getLocalStorageItem("reminder", "false") === "true";
+      setReminder(legacyReminder);
+      const storedNotificationMode = getLocalStorageItem(
+        "desktopNotificationMode",
+        legacyReminder ? "simple" : "off"
+      );
+      setDesktopNotificationMode(
+        storedNotificationMode === "simple" ||
+          storedNotificationMode === "milestones"
+          ? storedNotificationMode
+          : "off"
+      );
       // 这里不能用 getLocalStorageItem 的默认值兜底：空字符串是「一天都不上班」
       // 这个合法状态，与「从未设置过」必须区分，交给 parseWorkdays 处理。
       setWorkdays(
@@ -414,35 +542,68 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       );
       setShowSalary(getLocalStorageItem("showSalary", "false") === "true");
       setHideEarnings(getLocalStorageItem("hideEarnings", "false") === "true");
+      setLunchEnabled(getLocalStorageItem("lunchEnabled", "false") === "true");
+      setLunchStartTime(getLocalStorageItem("lunchStartTime", "12:00"));
+      setLunchDurationMinutes(
+        Number(getLocalStorageItem("lunchDurationMinutes", "60")) || 60
+      );
+      setLunchEndNotificationEnabled(
+        getLocalStorageItem("lunchEndNotificationEnabled", "false") === "true"
+      );
+      setMicroBreakEnabled(
+        getLocalStorageItem("microBreakEnabled", "false") === "true"
+      );
+      setMicroBreakIntervalMinutes(
+        Number(getLocalStorageItem("microBreakIntervalMinutes", "60")) || 60
+      );
+      setLunchStartNotificationEnabled(
+        getLocalStorageItem("lunchStartNotificationEnabled", "true") === "true"
+      );
+      setMiniSkin(
+        getLocalStorageItem("miniSkin", "standard") === "woodfish"
+          ? "woodfish"
+          : "standard"
+      );
+      setWoodfishSoundEnabled(
+        getLocalStorageItem("woodfishSoundEnabled", "false") === "true"
+      );
       setSettingsLoaded(true);
     }
   }, [isMounted]);
 
-  // 桌面端从 Tauri Store 恢复正在进行的绝对班次。只恢复尚未结束的快照，
-  // 避免第二天打开应用时把昨天的「运行中」误算成今天的新班次。
+  // 桌面端从 Tauri Store 恢复绝对班次。若 Rust 在休眠后发现连 nextShift 也
+  // 已经过期，会把 running 置为 false 但保留旧 segments；前端据此继续计算
+  // 再下一工作日，而不是让自动排班永久停止。手动停止写的是空 segments，
+  // 因而不会被这里误恢复。
   useEffect(() => {
     if (!IS_DESKTOP_BUILD || !settingsLoaded) return;
 
     let cancelled = false;
     void readDesktopCountdownState()
       .then((state) => {
-        if (
-          cancelled ||
-          !state?.running ||
-          state.endAtMs <= Date.now() ||
-          state.endAtMs <= state.startAtMs
-        ) {
+        const hasUpcomingShift = Boolean(
+          state?.nextShift &&
+            isValidShiftTimeline(state.nextShift) &&
+            getShiftStartAtMs(state.nextShift) > Date.now()
+        );
+        if (cancelled || !state || !isValidShiftTimeline(state)) {
           return;
         }
-        const start = new Date(state.startAtMs);
-        const end = new Date(state.endAtMs);
-        setActiveBounds({
-          start,
-          end,
-          leadReminderArmed: state.leadReminderArmed ?? false,
+        const needsScheduleRecovery =
+          !state.running && getShiftEndAtMs(state) <= Date.now();
+        if (
+          !needsScheduleRecovery &&
+          (!state.running ||
+            (getShiftEndAtMs(state) <= Date.now() && !hasUpcomingShift))
+        ) return;
+        setActiveShift({
+          segments: state.segments,
+          plannedEndAtMs: state.plannedEndAtMs,
+          overtimeEndAtMs: state.overtimeEndAtMs,
         });
+        setDesktopNotificationMode(state.notificationMode);
         reminderFiredRef.current =
-          end.getTime() - Date.now() <= REMINDER_LEAD_MS;
+          getShiftEndAtMs(state) - Date.now() <= REMINDER_LEAD_MS;
         setShowCountdown(true);
       })
       .catch(() => {
@@ -470,6 +631,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       })
       .finally(() => {
         if (!cancelled) setAutostartLoaded(true);
+      });
+
+    void getDesktopGlobalShortcutSettings()
+      .then((settings) => {
+        if (cancelled) return;
+        setGlobalShortcutEnabled(settings.enabled);
+        setGlobalShortcutAccelerator(settings.accelerator);
+      })
+      .catch(() => {
+        if (!cancelled) setGlobalShortcutError(t("shortcutUpdateFailed"));
+      })
+      .finally(() => {
+        if (!cancelled) setGlobalShortcutLoaded(true);
       });
 
     void getMiniWindowSettings()
@@ -522,6 +696,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     };
   }, [t]);
 
+  useEffect(() => {
+    if (globalShortcutCapturing) globalShortcutButtonRef.current?.focus();
+  }, [globalShortcutCapturing]);
+
   // 分享链接落地：URL 里带合法班次就直接进入倒计时，而不是让对方面对一个
   // 空表单——这是分享闭环里此前缺失的一环。声明顺序在上面的 localStorage
   // 读取之后，因此能覆盖掉刚读出来的本人设置。
@@ -536,12 +714,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setEndTime(shift.end);
     // 与 handleStart 同样的处理：落地时若已不足 15 分钟就不再提醒，
     // 免得页面刚打开就弹「还有十五分钟」。
-    const { start, end } = getShiftBounds(shift.start, shift.end, new Date());
-    reminderFiredRef.current = end.getTime() - Date.now() <= REMINDER_LEAD_MS;
-    setActiveBounds({
-      start,
-      end,
-      leadReminderArmed: end.getTime() - Date.now() > REMINDER_LEAD_MS,
+    const timeline = buildShiftTimeline(shift.start, shift.end, new Date());
+    const endAtMs = getShiftEndAtMs(timeline);
+    reminderFiredRef.current = endAtMs - Date.now() <= REMINDER_LEAD_MS;
+    setActiveShift({
+      ...timeline,
     });
     setShowCountdown(true);
     // 只有明确标记来自分享时才提示，直接手输 ?s= 的不打扰。
@@ -599,14 +776,65 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       localStorage.setItem("startTime", startTime);
       localStorage.setItem("endTime", endTime);
       localStorage.setItem("reminder", reminder.toString());
+      localStorage.setItem("desktopNotificationMode", desktopNotificationMode);
       localStorage.setItem("workdays", serializeWorkdays(workdays));
       localStorage.setItem("salaryType", salaryType);
       localStorage.setItem("salaryAmount", salaryAmount);
       localStorage.setItem("monthlyWorkingDays", monthlyWorkingDays);
       localStorage.setItem("showSalary", showSalary.toString());
       localStorage.setItem("hideEarnings", hideEarnings.toString());
+      localStorage.setItem("lunchEnabled", lunchEnabled.toString());
+      localStorage.setItem("lunchStartTime", lunchStartTime);
+      localStorage.setItem("lunchDurationMinutes", String(lunchDurationMinutes));
+      localStorage.setItem(
+        "lunchEndNotificationEnabled",
+        lunchEndNotificationEnabled.toString()
+      );
+      localStorage.setItem("miniSkin", miniSkin);
+      localStorage.setItem(
+        "woodfishSoundEnabled",
+        woodfishSoundEnabled.toString()
+      );
+      localStorage.setItem("microBreakEnabled", microBreakEnabled.toString());
+      localStorage.setItem(
+        "microBreakIntervalMinutes",
+        String(microBreakIntervalMinutes)
+      );
+      localStorage.setItem(
+        "lunchStartNotificationEnabled",
+        lunchStartNotificationEnabled.toString()
+      );
     }
-  }, [settingsLoaded, isSharedView, startTime, endTime, reminder, workdays, salaryType, salaryAmount, monthlyWorkingDays, showSalary, hideEarnings]);
+  }, [settingsLoaded, isSharedView, startTime, endTime, reminder, desktopNotificationMode, workdays, salaryType, salaryAmount, monthlyWorkingDays, showSalary, hideEarnings, lunchEnabled, lunchStartTime, lunchDurationMinutes, lunchEndNotificationEnabled, microBreakEnabled, microBreakIntervalMinutes, lunchStartNotificationEnabled, miniSkin, woodfishSoundEnabled]);
+
+  // 午休整段落在班次之外时 buildTimelineFromBounds 会直接丢弃它，界面上却
+  // 看不出任何异常——开关还亮着、时间还显示着。这里显式算一次好给出提示。
+
+  const shiftBuildOptions = useMemo(
+    () =>
+      IS_DESKTOP_BUILD && lunchEnabled
+        ? {
+            breakStartTime: lunchStartTime,
+            breakDurationMinutes: lunchDurationMinutes,
+          }
+        : {},
+    [lunchEnabled, lunchStartTime, lunchDurationMinutes]
+  );
+
+  const lunchWithinShift = useMemo(() => {
+    if (!lunchEnabled) return true;
+    // 直接问「真正用来计时的那个 timeline 收下这段午休了吗」，而不是另写一遍
+    // 判断条件：buildTimelineFromBounds 落在班次外时会静默丢弃午休，只留一个
+    // segment。这个警告存在的意义就是揭示那次静默丢弃，自己抄一份规则等于给
+    // 它埋下说谎的可能。
+    const shift = buildShiftTimeline(
+      startTime,
+      endTime,
+      new Date(),
+      shiftBuildOptions
+    );
+    return shift.segments.length > 1;
+  }, [lunchEnabled, startTime, endTime, shiftBuildOptions]);
 
   const getDailySalary = useCallback(() => {
     return calculateDailySalary(
@@ -616,34 +844,114 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     );
   }, [salaryAmount, salaryType, monthlyWorkingDays]);
 
-  // 将 UI 的运行状态镜像为一个原子快照。Rust 与迷你窗都只消费这组绝对
-  // 时间戳，不需要理解跨夜班次、工作日等业务规则。
+  // 将 UI 的运行状态镜像为一个原子快照。Rust 与迷你窗只比较、累加前端已
+  // 解析好的绝对 segments，不需要理解跨夜班次、工作日等业务规则。
   useEffect(() => {
     if (!IS_DESKTOP_BUILD || !settingsLoaded || !desktopStateRestored) return;
 
+    const buildNotificationMessages = (shift: ShiftTimeline) => {
+      const translatedTones = t("notificationToneMessages", {
+        returnObjects: true,
+      }) as unknown;
+      const tones = Array.isArray(translatedTones)
+        ? translatedTones.filter(
+            (value): value is string => typeof value === "string"
+          )
+        : [];
+      const safeTones = tones.length > 0 ? tones : [""];
+      const variants = (body: string) =>
+        safeTones.map((tone) => `${tone} ${body}`.trim());
+
+      const todayHours = getShiftDurationMs(shift) / (60 * 60 * 1000);
+      const now = new Date();
+      const completedYearHours = summarize({
+        periodStart: startOfYear(now),
+        now,
+        workdays,
+        startTime,
+        endTime,
+        todayProgress: 0,
+        dailySalary: null,
+      }).hours;
+      const yearHours =
+        completedYearHours +
+        (isWorkday(new Date(getShiftStartAtMs(shift)), workdays)
+          ? todayHours
+          : 0);
+      const hourFormatter = new Intl.NumberFormat(lang, {
+        style: "unit",
+        unit: "hour",
+        unitDisplay: "short",
+        maximumFractionDigits: 1,
+      });
+
+      return {
+        milestone50: variants(t("notificationMilestone50")),
+        milestone75: variants(t("notificationMilestone75")),
+        milestone90: variants(t("notificationMilestone90")),
+        milestone95: variants(t("notificationMilestone95")),
+        milestone100: variants(
+          t("notificationMilestone100", {
+            today: hourFormatter.format(todayHours),
+            year: hourFormatter.format(yearHours),
+          })
+        ),
+      };
+    };
+
+    const localizedArray = (key: string, fallback: string) => {
+      const translated = t(key, { returnObjects: true }) as unknown;
+      return Array.isArray(translated)
+        ? translated.filter((value): value is string => typeof value === "string")
+        : [fallback];
+    };
+
     const state =
-      showCountdown && activeBounds
+      showCountdown && activeShift
         ? {
-            startAtMs: activeBounds.start.getTime(),
-            endAtMs: activeBounds.end.getTime(),
+            segments: activeShift.segments,
+            plannedEndAtMs: activeShift.plannedEndAtMs,
+            overtimeEndAtMs: activeShift.overtimeEndAtMs,
             running: true,
-            reminder,
-            leadReminderArmed: activeBounds.leadReminderArmed,
+            nextShift: findNextShiftTimeline({
+              startTime,
+              endTime,
+              workdays,
+              afterMs: Math.max(getShiftEndAtMs(activeShift), Date.now()),
+              options: shiftBuildOptions,
+            }),
+            notificationMode: desktopNotificationMode,
             notificationTitle: t("offWorkReminder"),
-            leadNotificationBody: t("fifteenMinutesLeft"),
-            completionNotificationBody: t("offWorkTime"),
+            notificationMessages: buildNotificationMessages(activeShift),
             showSalary,
             hideEarnings,
             dailySalary: showSalary ? getDailySalary() : null,
             lang,
             countdownNotStarted: t("countdownNotStarted"),
+            nextShiftLabel: t("nextShiftCountdown", { time: "__TIME__" }),
+            lunchStartNotification: t("lunchStartNotification"),
+            lunchEndNotification: t("lunchEndNotification"),
+            lunchNotificationEnabled: lunchEnabled && lunchStartNotificationEnabled,
+            lunchEndNotificationEnabled,
+            microBreakEnabled,
+            microBreakIntervalMinutes,
+            microBreakMessages: localizedArray(
+              "microBreakMessages",
+              "You've been at it for {{minutes}} minutes. Time for a break."
+            ),
+            miniSkin,
+            woodfishSoundEnabled,
             showEarningsLabel: t("showEarnings"),
             hideEarningsLabel: t("hideEarnings"),
           }
-        : emptyDesktopCountdownState(lang, t("countdownNotStarted"), {
-            showEarnings: t("showEarnings"),
-            hideEarnings: t("hideEarnings"),
-          });
+        : {
+            ...emptyDesktopCountdownState(lang, t("countdownNotStarted"), {
+              showEarnings: t("showEarnings"),
+              hideEarnings: t("hideEarnings"),
+            }),
+            miniSkin,
+            woodfishSoundEnabled,
+          };
 
     void writeDesktopCountdownState(state).catch(() => {
       // 桌面快照失败不应打断 Web 共用的主倒计时界面。
@@ -652,18 +960,27 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     settingsLoaded,
     desktopStateRestored,
     showCountdown,
-    activeBounds,
-    reminder,
+    activeShift,
+    desktopNotificationMode,
     showSalary,
     hideEarnings,
     getDailySalary,
+    workdays,
+    startTime,
+    endTime,
     lang,
     t,
+    shiftBuildOptions,
+    lunchEnabled,
+    lunchEndNotificationEnabled,
+    microBreakEnabled,
+    microBreakIntervalMinutes,
+    lunchStartNotificationEnabled,
+    miniSkin,
+    woodfishSoundEnabled,
   ]);
 
-  // 反向通道：迷你窗上的眼睛按钮由 Rust 改写 store，主窗口必须跟着更新，
-  // 否则两处的隐藏状态会各说各话。只同步 hideEarnings —— 其余字段的真相
-  // 来源始终是主窗口这边的表单状态，收到自己写回的快照时是幂等的。
+  // 反向通道：迷你窗的眼睛与 Rust 到点切换下一班都会改写 Store。
   useEffect(() => {
     if (!IS_DESKTOP_BUILD) return;
 
@@ -671,7 +988,50 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     let cancelled = false;
 
     void subscribeToDesktopCountdown((state) => {
-      if (state) setHideEarnings(state.hideEarnings);
+      if (!state) return;
+      // 迷你窗能改这两项，主窗口必须跟上——否则主窗口下一次写状态会把
+      // 用户刚在迷你窗上做的切换覆盖回去。
+      setHideEarnings(state.hideEarnings);
+      setWoodfishSoundEnabled(state.woodfishSoundEnabled);
+      setMiniSkin(state.miniSkin);
+      if (!state.running && isValidShiftTimeline(state)) {
+        // Rust 判定“下一班也已完全错过”时只负责丢弃过期 nextShift。这里用旧班次
+        // 触发一次新快照，findNextShiftTimeline 会从当前时刻之后继续排班。
+        setActiveShift({
+          segments: state.segments,
+          plannedEndAtMs: state.plannedEndAtMs,
+          overtimeEndAtMs: state.overtimeEndAtMs,
+        });
+        setShowCountdown(true);
+        setShowNextShiftStatus(true);
+        return;
+      }
+      if (state.running && isValidShiftTimeline(state)) {
+        // 比较放在 updater 外面：state updater 必须是纯函数，React 会在
+        // StrictMode 下双调用、并可能在并发渲染时重放它。把 setShowCountdown
+        // 塞在里面，重放时它有被丢弃的风险——那会留下「activeShift 有值但
+        // showCountdown 是 false」的状态，也就是有班次却不显示倒计时。
+        //
+        // 用 ref 而不是闭包里的 activeShift：这个订阅只建立一次，闭包里的值
+        // 会一直停在挂载那一刻。ref 在这里同步更新，好让同一批事件里的后续
+        // 回调立刻看到新值，不会重复 setState。
+        const current = activeShiftRef.current;
+        const unchanged =
+          current !== null &&
+          getShiftStartAtMs(current) === getShiftStartAtMs(state) &&
+          getShiftEndAtMs(current) === getShiftEndAtMs(state);
+        if (unchanged) return;
+
+        const nextShift = {
+          segments: state.segments,
+          plannedEndAtMs: state.plannedEndAtMs,
+          overtimeEndAtMs: state.overtimeEndAtMs,
+        };
+        activeShiftRef.current = nextShift;
+        completionTrackedRef.current = false;
+        setActiveShift(nextShift);
+        setShowCountdown(true);
+      }
     })
       .then((fn) => {
         if (cancelled) fn();
@@ -693,47 +1053,163 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 直接忽略、用的是原生标题栏 —— 那边再留 40px 就是白留一片。
   const hasOverlayTitleBar = IS_DESKTOP_BUILD && desktopPlatform === "macos";
 
-  const calculateProgress = useCallback(() => {
-    if (activeBounds) {
-      const total = activeBounds.end.getTime() - activeBounds.start.getTime();
-      const elapsed = Date.now() - activeBounds.start.getTime();
-      return Math.max(0, Math.min(100, (elapsed / total) * 100));
+  const triggerCelebration = useCallback((shiftEndAtMs: number) => {
+    celebratedShiftRef.current = shiftEndAtMs;
+    try {
+      // 只有动画真正交给 Confetti 组件后才标记为已庆祝。此前在窗口隐藏时
+      // 就先落盘，若用户在恢复窗口前退出应用，这一班会永远失去庆祝动画。
+      localStorage.setItem("celebratedShiftEnd", String(shiftEndAtMs));
+    } catch {
+      // 落盘失败不影响本次庆祝。
     }
-    return calculateShiftProgress(startTime, endTime, new Date());
-  }, [activeBounds, startTime, endTime]);
+    setConfettiNonce((nonce) => nonce + 1);
+  }, []);
+
+  // 窗口重新可见时把挂起的庆祝补上。
+  //
+  // 判据只看 visibilityState，不看焦点：窗口可见但焦点在别的应用时 macOS
+  // 照常绘制、rAF 照常跑，这时没有理由把庆祝再往后推。WKWebView 会把窗口
+  // 的遮挡状态映射到 visibilityState，所以它正是「rAF 会不会被节流」的判据。
+  // 同时监听 focus，是为了兜住从托盘恢复时 visibilitychange 偶尔不触发。
+  useEffect(() => {
+    const release = () => {
+      const pendingShiftEnd = celebrationPendingRef.current;
+      if (pendingShiftEnd === null) return;
+      if (
+        document.visibilityState !== "visible" &&
+        !document.hasFocus()
+      ) return;
+      celebrationPendingRef.current = null;
+      triggerCelebration(pendingShiftEnd);
+    };
+    document.addEventListener("visibilitychange", release);
+    window.addEventListener("focus", release);
+    return () => {
+      document.removeEventListener("visibilitychange", release);
+      window.removeEventListener("focus", release);
+    };
+  }, [triggerCelebration]);
+
+  const calculateProgress = useCallback(() => {
+    const shift =
+      activeShift ?? buildShiftTimeline(startTime, endTime, new Date(), shiftBuildOptions);
+    return calculateTimelineProgress(shift, Date.now());
+  }, [activeShift, startTime, endTime, shiftBuildOptions]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (showCountdown) {
       const updateCountdown = () => {
         const now = new Date();
-        const { start, end } =
-          activeBounds ?? getShiftBounds(startTime, endTime, now);
+        const shift =
+          activeShift ?? buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
+        const endAtMs = getShiftEndAtMs(shift);
 
-        const diff = end.getTime() - now.getTime();
+        // 午休优先：此时剩余时间是冻结的，界面要说明「在休息」而不是干等。
+        const breakEndAtMs = getActiveBreakEndAtMs(shift, now.getTime());
+        if (breakEndAtMs !== null) {
+          setOnLunchBreak(true);
+          setShowNextShiftStatus(false);
+          const breakSeconds = Math.max(
+            0,
+            Math.ceil((breakEndAtMs - now.getTime()) / 1000)
+          );
+          const breakMinutes = Math.floor(breakSeconds / 60);
+          setTimeLeft(
+            t("lunchCountdown", {
+              time: `${Math.floor(breakMinutes / 60)}:${(breakMinutes % 60)
+                .toString()
+                .padStart(2, "0")}:${(breakSeconds % 60)
+                .toString()
+                .padStart(2, "0")}`,
+            })
+          );
+          setProgress(calculateTimelineProgress(shift, now.getTime()));
+          return;
+        }
+        setOnLunchBreak(false);
+
+        const diff = getShiftRemainingMs(shift, now.getTime());
         if (diff <= 0) {
           if (!completionTrackedRef.current) {
             completionTrackedRef.current = true;
             track("countdown_complete");
           }
-          setTimeLeft(t("offWorkTime"));
+          const nextShift = IS_DESKTOP_BUILD
+            ? findNextShiftTimeline({
+                startTime,
+                endTime,
+                workdays,
+                afterMs: Math.max(endAtMs, now.getTime()),
+                options: shiftBuildOptions,
+              })
+            : null;
+          const nextStartAtMs = nextShift
+            ? getShiftStartAtMs(nextShift)
+            : 0;
+          if (nextStartAtMs > now.getTime()) {
+            setShowNextShiftStatus(true);
+            const nextSeconds = Math.ceil(
+              (nextStartAtMs - now.getTime()) / 1000
+            );
+            const nextHours = Math.floor(nextSeconds / 3600);
+            const nextMinutes = Math.floor((nextSeconds % 3600) / 60);
+            const nextRemainder = nextSeconds % 60;
+            // 「今日已下班」是结果，下一班倒计时是补充信息，拆两行让前者
+            // 一眼可见；挤在一行时最重要的那句会被长数字冲淡。
+            setTimeLeft(
+              t("nextShiftIn", {
+                time: `${nextHours}:${nextMinutes
+                  .toString()
+                  .padStart(2, "0")}:${nextRemainder
+                  .toString()
+                  .padStart(2, "0")}`,
+              })
+            );
+          } else {
+            setShowNextShiftStatus(false);
+            setTimeLeft(t("offWorkTime"));
+          }
           setProgress(100);
-          setShowConfetti(true);
+          // 撒花只在用户真的看得到时才放。下班那一刻窗口常常被别的应用盖着
+          // 或收进了托盘，此时 rAF 被系统节流，canvas-confetti 的 5 秒窗口
+          // 会在后台空转完，粒子一个都画不出来——等于白放。
+          let alreadyCelebrated = celebratedShiftRef.current === endAtMs;
+          if (!alreadyCelebrated) {
+            try {
+              alreadyCelebrated =
+                localStorage.getItem("celebratedShiftEnd") === String(endAtMs);
+            } catch {
+              // 读不到就按未庆祝处理，最坏情况是多放一次。
+            }
+          }
+          if (!alreadyCelebrated) {
+            if (
+              document.visibilityState === "visible" ||
+              document.hasFocus()
+            ) {
+              triggerCelebration(endAtMs);
+            } else {
+              celebrationPendingRef.current = endAtMs;
+            }
+          }
           if (showSalary) {
             const dailySalary = getDailySalary();
             if (dailySalary !== null) {
-              setMoneyEarned(dailySalary);
+              setMoneyEarned(
+                dailySalary * calculateTimelinePayRatio(shift, now.getTime())
+              );
             }
           }
-          clearInterval(interval);
+          if (!IS_DESKTOP_BUILD) clearInterval(interval);
         } else {
+          setShowNextShiftStatus(false);
           const hours = Math.floor(diff / (1000 * 60 * 60));
           const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
           // 计算总工作时间（小时）
-          const totalWorkHours =
-            (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+          const totalWorkHours = getShiftDurationMs(shift) / (1000 * 60 * 60);
 
           // 根据总工作时间决定是否显示小时数的前导零
           const formattedHours =
@@ -763,7 +1239,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             !IS_DESKTOP_BUILD &&
             reminder &&
             !reminderFiredRef.current &&
-            diff <= REMINDER_LEAD_MS
+            endAtMs - now.getTime() <= REMINDER_LEAD_MS
           ) {
             reminderFiredRef.current = true;
             void showNotification(t("offWorkReminder"), t("fifteenMinutesLeft"));
@@ -771,10 +1247,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
           // Calculate money earned
           if (showSalary && salaryAmount) {
-            const currentProgress = calculateProgress();
             const dailySalary = getDailySalary();
             if (dailySalary !== null) {
-              setMoneyEarned((dailySalary * currentProgress) / 100);
+              setMoneyEarned(
+                dailySalary * calculateTimelinePayRatio(shift, now.getTime())
+              );
             }
           }
         }
@@ -784,7 +1261,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       interval = setInterval(updateCountdown, 1000);
     }
     return () => clearInterval(interval);
-  }, [showCountdown, startTime, endTime, activeBounds, reminder, calculateProgress, t, showSalary, salaryAmount, getDailySalary]);
+  }, [showCountdown, startTime, endTime, activeShift, reminder, calculateProgress, t, showSalary, salaryAmount, getDailySalary, shiftBuildOptions, workdays, triggerCelebration]);
 
   const handleStart = () => {
     if (startTime === endTime) {
@@ -793,9 +1270,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     }
 
     const now = new Date();
-    const { start, end } = getShiftBounds(startTime, endTime, now);
-    if (start > now) {
-      const timeDiff = start.getTime() - now.getTime();
+    const shift = buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
+    const startAtMs = getShiftStartAtMs(shift);
+    const endAtMs = getShiftEndAtMs(shift);
+    if (startAtMs > now.getTime()) {
+      const timeDiff = startAtMs - now.getTime();
       const hours = Math.floor(timeDiff / (1000 * 60 * 60));
       const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
 
@@ -807,17 +1286,156 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setFormError("");
       // 开始时距下班已不足 15 分钟的话，直接标记为已提醒——否则倒计时的第一个
       // tick 就会立刻弹出「还有十五分钟」，而用户是刚点的开始，这属于打扰。
-      reminderFiredRef.current = end.getTime() - now.getTime() <= REMINDER_LEAD_MS;
+      reminderFiredRef.current = endAtMs - now.getTime() <= REMINDER_LEAD_MS;
       completionTrackedRef.current = false;
-      setActiveBounds({
-        start,
-        end,
-        leadReminderArmed: end.getTime() - now.getTime() > REMINDER_LEAD_MS,
+      setActiveShift({
+        ...shift,
       });
       setShowCountdown(true);
+      setShowNextShiftStatus(false);
       setProgress(calculateProgress()); // Set initial progress
       track("countdown_start");
-      if (reminder) void requestNotificationPermission();
+      if (!IS_DESKTOP_BUILD && reminder) void requestNotificationPermission();
+    }
+  };
+
+  const enableDesktopNotificationFeature = async (action: () => void) => {
+    const result = await requestNotificationPermissionDetailed();
+    if (!result.granted) {
+      setNotificationDialog("denied");
+      return;
+    }
+
+    action();
+    if (result.newlyGranted) {
+      await showNotification(
+        t("offWorkReminder"),
+        t("notificationTestBody")
+      );
+    }
+  };
+
+  const handleReminderChange = (enabled: boolean) => {
+    setReminder(enabled);
+  };
+
+  const handleDesktopNotificationModeChange = (
+    mode: DesktopNotificationMode
+  ) => {
+    if (mode === "off") {
+      setDesktopNotificationMode("off");
+      return;
+    }
+
+    pendingNotificationActionRef.current = () =>
+      setDesktopNotificationMode(mode);
+
+    requestDesktopNotificationFeature();
+  };
+
+  const requestDesktopNotificationFeature = () => {
+
+    let primerSeen = false;
+    try {
+      primerSeen = localStorage.getItem(notificationPrimerStorageKey) === "true";
+    } catch {
+      // 无法持久化时仍展示一次说明，授权流程本身不受影响。
+    }
+    if (!primerSeen) {
+      setNotificationDialog("primer");
+      return;
+    }
+    const action = pendingNotificationActionRef.current;
+    if (action) void enableDesktopNotificationFeature(action);
+  };
+
+  const confirmNotificationPrimer = async () => {
+    try {
+      localStorage.setItem(notificationPrimerStorageKey, "true");
+    } catch {
+      // 权限请求不依赖说明页状态成功持久化。
+    }
+    setNotificationDialog(null);
+    const action = pendingNotificationActionRef.current;
+    if (action) await enableDesktopNotificationFeature(action);
+  };
+
+
+  const handleLunchEnabledChange = (enabled: boolean) => {
+    if (!enabled) {
+      setLunchEnabled(false);
+      setLunchEndNotificationEnabled(false);
+      return;
+    }
+    pendingNotificationActionRef.current = () => setLunchEnabled(true);
+    requestDesktopNotificationFeature();
+  };
+
+  const handleLunchEndNotificationChange = (enabled: boolean) => {
+    if (!enabled) {
+      setLunchEndNotificationEnabled(false);
+      return;
+    }
+    pendingNotificationActionRef.current = () =>
+      setLunchEndNotificationEnabled(true);
+    requestDesktopNotificationFeature();
+  };
+
+  // 快捷入口：进设置页 → 滚到目标分组 → 高亮两秒。滚动必须等设置页挂载后
+  // 再做，所以放在下一帧而不是同一次事件里。
+  const openSetting = (key: string) => {
+    setShowDesktopSettings(true);
+    setHighlightedSetting(key);
+
+    // 设置页是 AnimatePresence 里的一整块，点击那一刻它还没挂上，固定延时
+    // 要么太早（元素不存在）要么白等。这里逐帧重试到元素出现为止，并给
+    // 入场动画留出几帧，否则 scrollIntoView 会按动画中途的位置去算。
+    let frames = 0;
+    const scrollToTarget = () => {
+      const target = document.querySelector(`[data-setting="${key}"]`);
+      if (target && frames > 3) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      if (frames < 40) {
+        frames += 1;
+        window.requestAnimationFrame(scrollToTarget);
+      }
+    };
+    window.requestAnimationFrame(scrollToTarget);
+
+    window.setTimeout(() => setHighlightedSetting(null), 2400);
+  };
+
+  useEffect(() => {
+    activeShiftRef.current = activeShift;
+  }, [activeShift]);
+
+  const handleLunchStartNotificationChange = (enabled: boolean) => {
+    if (!enabled) {
+      setLunchStartNotificationEnabled(false);
+      return;
+    }
+    pendingNotificationActionRef.current = () =>
+      setLunchStartNotificationEnabled(true);
+    requestDesktopNotificationFeature();
+  };
+
+  const handleMicroBreakEnabledChange = (enabled: boolean) => {
+    if (!enabled) {
+      setMicroBreakEnabled(false);
+      return;
+    }
+    pendingNotificationActionRef.current = () => setMicroBreakEnabled(true);
+    requestDesktopNotificationFeature();
+  };
+
+  const openNotificationSettings = async () => {
+    try {
+      await openDesktopNotificationSettings();
+      setNotificationDialog(null);
+    } catch {
+      setDesktopSettingError(t("desktopSettingError"));
     }
   };
 
@@ -834,6 +1452,53 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     } finally {
       setAutostartPending(false);
     }
+  };
+
+  const applyGlobalShortcutSettings = async (
+    enabled: boolean,
+    accelerator: string
+  ) => {
+    setGlobalShortcutPending(true);
+    setGlobalShortcutError("");
+    try {
+      const settings = await updateDesktopGlobalShortcutSettings({
+        enabled,
+        accelerator,
+      });
+      setGlobalShortcutEnabled(settings.enabled);
+      setGlobalShortcutAccelerator(settings.accelerator);
+    } catch {
+      setGlobalShortcutError(t("shortcutUpdateFailed"));
+    } finally {
+      setGlobalShortcutPending(false);
+    }
+  };
+
+  const handleGlobalShortcutEnabledChange = (enabled: boolean) => {
+    void applyGlobalShortcutSettings(enabled, globalShortcutAccelerator);
+  };
+
+  const handleGlobalShortcutKeyDown = (
+    event: ReactKeyboardEvent<HTMLButtonElement>
+  ) => {
+    if (!globalShortcutCapturing) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.key === "Escape") {
+      setGlobalShortcutCapturing(false);
+      setGlobalShortcutError("");
+      return;
+    }
+    const accelerator = shortcutFromKeyEvent(event);
+    if (!accelerator) {
+      const isModifier = ["Meta", "Control", "Alt", "Shift"].includes(
+        event.key
+      );
+      if (!isModifier) setGlobalShortcutError(t("shortcutInvalid"));
+      return;
+    }
+    setGlobalShortcutCapturing(false);
+    void applyGlobalShortcutSettings(globalShortcutEnabled, accelerator);
   };
 
   const openDesktopUrl = async (url: string) => {
@@ -939,13 +1604,40 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       });
     }
     setShowCountdown(false);
-    setActiveBounds(null);
+    setShowNextShiftStatus(false);
+    setActiveShift(null);
     setProgress(0);
     setTimeLeft("");
-    setShowConfetti(false);
+    celebratedShiftRef.current = null;
+    celebrationPendingRef.current = null;
     completionTrackedRef.current = false;
     // 退出分享视图：恢复访问者自己保存的时间，并重新开启持久化。
     if (isSharedView) exitSharedView();
+  };
+
+  const openOvertimeDialog = () => {
+    if (!activeShift) return;
+    const suggested = new Date(suggestOvertimeEndAtMs(activeShift, Date.now()));
+    setOvertimeEndTime(
+      `${suggested.getHours().toString().padStart(2, "0")}:${suggested
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`
+    );
+    setOvertimeDialogOpen(true);
+  };
+
+  const confirmOvertime = () => {
+    if (!activeShift) return;
+    const extended = extendShiftWithOvertime(
+      activeShift,
+      resolveOvertimeEndAtMs(activeShift, overtimeEndTime, Date.now())
+    );
+    if (extended === activeShift) return;
+    setActiveShift(extended);
+    completionTrackedRef.current = false;
+    celebratedShiftRef.current = null;
+    setOvertimeDialogOpen(false);
   };
 
   // 「换成我的时间」：把 URL 里别人的班次换回访问者本地保存的设置。
@@ -964,10 +1656,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     track("share_convert");
     exitSharedView();
     setShowCountdown(false);
-    setActiveBounds(null);
+    setShowNextShiftStatus(false);
+    setActiveShift(null);
     setProgress(0);
     setTimeLeft("");
-    setShowConfetti(false);
+    celebratedShiftRef.current = null;
+    celebrationPendingRef.current = null;
     completionTrackedRef.current = false;
   };
 
@@ -1066,6 +1760,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       endTime,
       todayProgress: progress,
       dailySalary: showSalary ? getDailySalary() : null,
+      todayEffectiveHours: activeShift
+        ? getShiftDurationMs(activeShift) / (60 * 60 * 1000)
+        : undefined,
+      todayPayRatio: activeShift
+        ? calculateTimelinePayRatio(activeShift, Date.now())
+        : undefined,
     };
     return [
       {
@@ -1086,6 +1786,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     progress,
     showSalary,
     getDailySalary,
+    activeShift,
     t,
   ]);
 
@@ -1095,7 +1796,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const todayIsWorkday =
     !isMounted ||
     isWorkday(
-      activeBounds?.start ?? getShiftBounds(startTime, endTime, new Date()).start,
+      new Date(
+        activeShift
+          ? getShiftStartAtMs(activeShift)
+          : getShiftBounds(startTime, endTime, new Date()).start.getTime()
+      ),
       workdays
     );
 
@@ -1112,7 +1817,132 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       }`}
     >
       <Background theme={theme} />
-      <Confetti trigger={showConfetti} />
+      <Confetti trigger={confettiNonce} />
+
+      {IS_DESKTOP_BUILD && (
+        <>
+        <Dialog
+          open={notificationDialog !== null}
+          onOpenChange={(open) => {
+            if (!open) setNotificationDialog(null);
+          }}
+        >
+          <DialogContent className="max-w-[360px] rounded-2xl p-5">
+            <DialogHeader className="text-start">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300">
+                {notificationDialog === "denied" ? (
+                  <BellRing className="h-5 w-5" />
+                ) : (
+                  <ShieldCheck className="h-5 w-5" />
+                )}
+              </div>
+              <DialogTitle>
+                {t(
+                  notificationDialog === "denied"
+                    ? "notificationDeniedTitle"
+                    : "notificationPrimerTitle"
+                )}
+              </DialogTitle>
+              <DialogDescription className="space-y-2 text-start">
+                <span className="block">
+                  {t(
+                    notificationDialog === "denied"
+                      ? "notificationDeniedBody"
+                      : "notificationPrimerBody"
+                  )}
+                </span>
+                {notificationDialog === "primer" && (
+                  <span className="block font-medium text-gray-700 dark:text-gray-200">
+                    {t("notificationPrivacyNote")}
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-2 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setNotificationDialog(null)}
+              >
+                {t("notNow")}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (notificationDialog === "denied") {
+                    void openNotificationSettings();
+                  } else {
+                    void confirmNotificationPrimer();
+                  }
+                }}
+              >
+                {t(
+                  notificationDialog === "denied"
+                    ? "notificationOpenSettings"
+                    : "notificationContinue"
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={overtimeDialogOpen} onOpenChange={setOvertimeDialogOpen}>
+          <DialogContent className="max-w-[360px] rounded-2xl p-5">
+            <DialogHeader className="text-start">
+              <DialogTitle>{t("overtimeTitle")}</DialogTitle>
+              <DialogDescription>{t("overtimeDescription")}</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Label>{t("overtimeEndTime")}</Label>
+              <div className="grid grid-cols-2 gap-2" dir="ltr">
+                <Select
+                  value={overtimeEndTime.split(":")[0]}
+                  onValueChange={(hour) =>
+                    setOvertimeEndTime(
+                      `${hour}:${overtimeEndTime.split(":")[1]}`
+                    )
+                  }
+                >
+                  <SelectTrigger className="h-10 rounded-xl bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 24 }, (_, hour) =>
+                      hour.toString().padStart(2, "0")
+                    ).map((hour) => (
+                      <SelectItem key={hour} value={hour}>{hour}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={overtimeEndTime.split(":")[1]}
+                  onValueChange={(minute) =>
+                    setOvertimeEndTime(
+                      `${overtimeEndTime.split(":")[0]}:${minute}`
+                    )
+                  }
+                >
+                  <SelectTrigger className="h-10 rounded-xl bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["00", "15", "30", "45"].map((minute) => (
+                      <SelectItem key={minute} value={minute}>{minute}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {t("overtimeNoMultiplier")}
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOvertimeDialogOpen(false)}>
+                {t("notNow")}
+              </Button>
+              <Button onClick={confirmOvertime}>{t("confirmOvertime")}</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        </>
+      )}
 
       {hasOverlayTitleBar && (
         <div
@@ -1214,7 +2044,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     size="icon"
                     className="h-9 w-9 rounded-xl border-input bg-background shadow-sm"
                     onClick={() => {
-                      void toggleDesktopMiniTimer().catch(() => {
+                      void toggleDesktopFloatingTimer().catch(() => {
                         setDesktopSettingError(t("desktopSettingError"));
                       });
                     }}
@@ -1296,7 +2126,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 className="space-y-3"
               >
                 <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
-                  <Label className="text-sm dark:text-gray-200">
+                  <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
+                    <Palette size={16} />
                     {t("toggleTheme")}
                   </Label>
                   <ThemeToggle
@@ -1334,17 +2165,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                       onCheckedChange={handleAutostartChange}
                     />
                   </div>
-                  <div className="flex items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <span className="flex items-center gap-2">
-                      <Keyboard size={16} />
-                      {t("globalShortcut")}
-                    </span>
-                    <kbd className="rounded-md border border-gray-300 bg-white/70 px-2 py-1 font-mono text-xs text-gray-700 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
-                      {desktopPlatform === "macos"
-                        ? "⌘ + Shift + O"
-                        : "Ctrl + Shift + O"}
-                    </kbd>
-                  </div>
                   {desktopSettingError && (
                     <p
                       role="alert"
@@ -1355,8 +2175,310 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   )}
                 </section>
 
+                <section className="space-y-2.5 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                  <div className="flex items-center justify-between gap-4">
+                    <Label
+                      htmlFor="global-shortcut-enabled"
+                      className="flex items-center gap-2 text-sm dark:text-gray-200"
+                    >
+                      <Keyboard size={16} />
+                      {t("globalShortcut")}
+                    </Label>
+                    <Switch
+                      id="global-shortcut-enabled"
+                      checked={globalShortcutEnabled}
+                      disabled={!globalShortcutLoaded || globalShortcutPending}
+                      onCheckedChange={handleGlobalShortcutEnabledChange}
+                    />
+                  </div>
+                  <Button
+                    ref={globalShortcutButtonRef}
+                    type="button"
+                    variant="outline"
+                    disabled={!globalShortcutLoaded || globalShortcutPending}
+                    aria-label={t("shortcutChange")}
+                    className={`h-10 w-full justify-between rounded-lg px-3 font-normal ${
+                      globalShortcutCapturing
+                        ? "border-orange-500 ring-2 ring-orange-500/20 dark:border-orange-400"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      setGlobalShortcutError("");
+                      setGlobalShortcutCapturing((capturing) => !capturing);
+                    }}
+                    onKeyDown={handleGlobalShortcutKeyDown}
+                    onBlur={() => setGlobalShortcutCapturing(false)}
+                  >
+                    <kbd className="font-mono text-xs font-semibold text-gray-800 dark:text-gray-100">
+                      {globalShortcutCapturing
+                        ? t("shortcutRecording")
+                        : formatDesktopShortcut(
+                            globalShortcutAccelerator,
+                            desktopPlatform
+                          )}
+                    </kbd>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {globalShortcutCapturing
+                        ? t("shortcutCancelHint")
+                        : t("shortcutChange")}
+                    </span>
+                  </Button>
+                  <p className="text-xs leading-4 text-gray-500 dark:text-gray-400">
+                    {t("shortcutHint")}
+                  </p>
+                  {globalShortcutError && (
+                    <p
+                      role="alert"
+                      className="text-xs text-red-600 dark:text-red-400"
+                    >
+                      {globalShortcutError}
+                    </p>
+                  )}
+                </section>
+
+                <section className="space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                  <div className="flex items-center justify-between gap-3">
+                    <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
+                      <PictureInPicture2 size={16} />
+                      {t("floatingTimer")}
+                    </Label>
+                    <Select
+                      value={miniSkin}
+                      onValueChange={(value) => setMiniSkin(value as DesktopMiniSkin)}
+                    >
+                      <SelectTrigger className="h-9 w-[140px] rounded-xl bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">{t("standardSkin")}</SelectItem>
+                        <SelectItem value="woodfish">{t("woodfishSkin")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {miniSkin === "woodfish" && (
+                    <div className="flex items-center justify-between gap-4 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
+                      <div>
+                        <Label htmlFor="woodfish-sound" className="text-sm font-normal dark:text-gray-200">
+                          {t("woodfishSound")}
+                        </Label>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {t("woodfishFirstTapSilent")}
+                        </p>
+                      </div>
+                      <Switch
+                        id="woodfish-sound"
+                        checked={woodfishSoundEnabled}
+                        onCheckedChange={setWoodfishSoundEnabled}
+                      />
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="h-9 w-full rounded-lg"
+                    onClick={() => void toggleDesktopFloatingTimer()}
+                  >
+                    {t("toggleFloatingTimer")}
+                  </Button>
+                </section>
+
+                {/* 三类通知（下班／午休／健康）此前散在主界面和设置页两处，
+                    想「今天别烦我」得跑两个地方。收进同一个分组。 */}
+                <section
+                  data-setting="notification"
+                  className={`space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10 ${
+                    highlightedSetting === "notification" ? "setting-highlight" : ""
+                  }`}
+                >
+                  <div className="flex min-h-9 items-center justify-between gap-3">
+                    <Label
+                      htmlFor="notification-mode"
+                      className="flex items-center gap-2 text-sm dark:text-gray-200"
+                    >
+                      <BellRing size={16} />
+                      {t("notificationMode")}
+                    </Label>
+                    <Select
+                      value={desktopNotificationMode}
+                      onValueChange={(value) =>
+                        handleDesktopNotificationModeChange(
+                          value as DesktopNotificationMode
+                        )
+                      }
+                    >
+                      <SelectTrigger
+                        id="notification-mode"
+                        className="h-9 w-[148px] rounded-xl bg-background"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="off">
+                          {t("notificationModeOff")}
+                        </SelectItem>
+                        <SelectItem value="simple">
+                          {t("notificationModeSimple")}
+                        </SelectItem>
+                        <SelectItem value="milestones">
+                          {t("notificationModeMilestones")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </section>
+
+                <section
+                  data-setting="lunch"
+                  className={`space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10 ${
+                    highlightedSetting === "lunch" ? "setting-highlight" : ""
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <Label
+                      htmlFor="lunch-enabled"
+                      className="flex items-center gap-2 text-sm dark:text-gray-200"
+                    >
+                      <Coffee size={16} />
+                      {t("lunchBreak")}
+                    </Label>
+                    <Switch
+                      id="lunch-enabled"
+                      checked={lunchEnabled}
+                      onCheckedChange={handleLunchEnabledChange}
+                    />
+                  </div>
+                  {lunchEnabled && (
+                    <div className="space-y-3 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
+                      <div className="grid grid-cols-[minmax(0,1fr)_120px] items-end gap-3">
+                        <TimeSelector
+                          id="lunchStartTime"
+                          label={t("lunchStartTime")}
+                          value={lunchStartTime}
+                          compact
+                          onChange={(hour, minute) =>
+                            setLunchStartTime(`${hour}:${minute}`)
+                          }
+                        />
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-500 dark:text-gray-400">
+                            {t("lunchDuration")}
+                          </Label>
+                          <Select
+                            value={String(lunchDurationMinutes)}
+                            onValueChange={(value) =>
+                              setLunchDurationMinutes(Number(value))
+                            }
+                          >
+                            <SelectTrigger className="h-9 rounded-xl bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {/* 国内午休两小时很常见（12:00–14:00），
+                                  120 比 45 更该出现在这个列表里。 */}
+                              {[30, 60, 90, 120].map((minutes) => (
+                                <SelectItem key={minutes} value={String(minutes)}>
+                                  {t("minutesShort", { count: minutes })}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <Label
+                          htmlFor="lunch-start-notification"
+                          className="text-sm font-normal dark:text-gray-200"
+                        >
+                          {t("lunchStartReminder")}
+                        </Label>
+                        <Switch
+                          id="lunch-start-notification"
+                          checked={lunchStartNotificationEnabled}
+                          onCheckedChange={handleLunchStartNotificationChange}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <Label
+                          htmlFor="lunch-end-notification"
+                          className="text-sm font-normal dark:text-gray-200"
+                        >
+                          {t("lunchEndReminder")}
+                        </Label>
+                        <Switch
+                          id="lunch-end-notification"
+                          checked={lunchEndNotificationEnabled}
+                          onCheckedChange={handleLunchEndNotificationChange}
+                        />
+                      </div>
+                      {!lunchWithinShift && (
+                        <p
+                          role="alert"
+                          className="text-xs leading-5 text-red-600 dark:text-red-400"
+                        >
+                          {t("lunchOutsideShift")}
+                        </p>
+                      )}
+                      <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
+                        {showSalary ? t("lunchPauseNote") : t("lunchPauseNoteNoSalary")}
+                      </p>
+                    </div>
+                  )}
+                </section>
+
+                <section
+                  data-setting="microBreak"
+                  className={`space-y-3 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10 ${
+                    highlightedSetting === "microBreak" ? "setting-highlight" : ""
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <Label
+                      htmlFor="micro-break-enabled"
+                      className="flex items-center gap-2 text-sm dark:text-gray-200"
+                    >
+                      <GlassWater size={16} />
+                      {t("microBreakReminder")}
+                    </Label>
+                    <Switch
+                      id="micro-break-enabled"
+                      checked={microBreakEnabled}
+                      onCheckedChange={handleMicroBreakEnabledChange}
+                    />
+                  </div>
+                  {microBreakEnabled && (
+                    <div className="space-y-3 border-t border-gray-200/70 pt-3 dark:border-gray-700/70">
+                      <div className="flex items-center justify-between gap-3">
+                        <Label className="text-sm font-normal dark:text-gray-200">
+                          {t("microBreakInterval")}
+                        </Label>
+                        <Select
+                          value={String(microBreakIntervalMinutes)}
+                          onValueChange={(value) =>
+                            setMicroBreakIntervalMinutes(Number(value))
+                          }
+                        >
+                          <SelectTrigger className="h-9 w-[120px] rounded-xl bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[30, 45, 60, 90].map((minutes) => (
+                              <SelectItem key={minutes} value={String(minutes)}>
+                                {t("minutesShort", { count: minutes })}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
+                        {t("microBreakEffectiveTimeNote")}
+                      </p>
+                    </div>
+                  )}
+                </section>
+
                 <SalarySettings
                   desktop
+                  anchor="salary"
+                  highlighted={highlightedSetting === "salary"}
                   enabled={showSalary}
                   onEnabledChange={setShowSalary}
                   salaryType={salaryType}
@@ -1526,16 +2648,68 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                   </p>
                 )}
 
-                <div className="flex min-h-9 items-center gap-2">
-                  <Switch
-                    id="reminder"
-                    checked={reminder}
-                    onCheckedChange={setReminder}
-                  />
-                  <Label htmlFor="reminder" className="dark:text-gray-200">
-                    {t("reminder")}
-                  </Label>
-                </div>
+                {/* 特色功能的快捷入口。只放图标：这一屏是「开始倒计时」的
+                    主路径，配上文字会喧宾夺主；说明留给 tooltip。 */}
+                {IS_DESKTOP_BUILD && (
+                  // 与上方班次配置拉开距离：这排是「去设置里调别的」的入口，
+                  // 和上下班时间不是一类东西。窗口高度固定，下方本来就有余量，
+                  // 这段间距不会把内容顶出去。
+                  <div className="flex items-center justify-center gap-2 pt-3">
+                    <ThemeToggle
+                      theme={theme}
+                      onThemeChange={handleThemeChange}
+                      compact
+                      quick
+                    />
+                    {(
+                      [
+                        [
+                          "notification",
+                          BellRing,
+                          "notificationMode",
+                          desktopNotificationMode !== "off",
+                        ],
+                        ["lunch", Coffee, "lunchBreak", lunchEnabled],
+                        [
+                          "microBreak",
+                          GlassWater,
+                          "microBreakReminder",
+                          microBreakEnabled,
+                        ],
+                        ["salary", Coins, "salarySettings", showSalary],
+                      ] as const
+                    ).map(([key, Icon, labelKey, active]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => openSetting(key)}
+                        aria-pressed={active}
+                        aria-label={t(labelKey)}
+                        title={t(labelKey)}
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border shadow-sm transition-all duration-150 ${
+                          active
+                            ? "border-gray-900 bg-gray-900 text-white shadow-gray-900/20 hover:bg-gray-800 dark:border-white dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+                            : "border-gray-200/80 bg-white/40 text-gray-600 hover:bg-white/70 hover:text-gray-900 dark:border-gray-700 dark:bg-black/10 dark:text-gray-300 dark:hover:bg-black/20 dark:hover:text-white"
+                        }`}
+                      >
+                        <Icon size={16} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {!IS_DESKTOP_BUILD && (
+                  <div className="flex min-h-9 items-center gap-2">
+                    <Switch
+                      id="reminder"
+                      checked={reminder}
+                      onCheckedChange={handleReminderChange}
+                    />
+                    <Label htmlFor="reminder" className="dark:text-gray-200">
+                      {t("reminder")}
+                    </Label>
+                  </div>
+                )}
 
                 {!IS_DESKTOP_BUILD && (
                   <SalarySettings
@@ -1568,8 +2742,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               >
                 <CountdownDisplay
                   timeLeft={timeLeft}
+                  title={showNextShiftStatus ? t("offWorkToday") : undefined}
                   progress={progress}
+                  standby={onLunchBreak}
                   dense={IS_DESKTOP_BUILD}
+                  overtime={Boolean(activeShift?.overtimeEndAtMs)}
+                  status={showNextShiftStatus}
                 />
                 {summaryRows && (
                   <PeriodSummary
@@ -1630,6 +2808,17 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 >
                   <ArrowLeft className="me-2 h-4 w-4" /> {t("return")}
                 </Button>
+                {IS_DESKTOP_BUILD && (
+                  <Button
+                    variant="outline"
+                    className="h-9 rounded-lg px-3"
+                    onClick={openOvertimeDialog}
+                  >
+                    {activeShift?.overtimeEndAtMs
+                      ? t("adjustOvertime")
+                      : t("overtime")}
+                  </Button>
+                )}
                 <ShareButton
                   timeLeft={timeLeft}
                   progress={progress}

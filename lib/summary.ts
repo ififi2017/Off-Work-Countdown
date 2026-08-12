@@ -67,6 +67,10 @@ export function summarize(params: {
   /** 班次进度百分比 0–100，来自正在运行的倒计时。 */
   todayProgress: number;
   dailySalary: number | null;
+  /** 今日实际有效工时；用于午休与加班，未提供时按设置中的名义时长。 */
+  todayEffectiveHours?: number;
+  /** 今日按原日薪线性外推的计薪比例；可因加班超过 1。 */
+  todayPayRatio?: number;
 }): PeriodSummary {
   const {
     periodStart,
@@ -76,6 +80,8 @@ export function summarize(params: {
     endTime,
     todayProgress,
     dailySalary,
+    todayEffectiveHours,
+    todayPayRatio,
   } = params;
 
   const completed = countWorkdays(periodStart, now, workdays);
@@ -84,12 +90,21 @@ export function summarize(params: {
     ? Math.min(100, Math.max(0, todayProgress)) / 100
     : 0;
 
+  const nominalHours = getShiftLengthHours(startTime, endTime);
   const days = completed + todayFraction;
-  const hours = days * getShiftLengthHours(startTime, endTime);
+  const hours =
+    completed * nominalHours +
+    (todayCounts ? (todayEffectiveHours ?? nominalHours) * todayFraction : 0);
+  const earningsFraction = todayCounts
+    ? Math.max(0, todayPayRatio ?? todayFraction)
+    : 0;
 
   return {
     days,
     hours,
-    earnings: dailySalary === null ? null : days * dailySalary,
+    earnings:
+      dailySalary === null
+        ? null
+        : (completed + earningsFraction) * dailySalary,
   };
 }

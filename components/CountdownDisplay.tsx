@@ -5,16 +5,25 @@ import { ProgressBar } from "./ProgressBar";
 
 interface CountdownDisplayProps {
   timeLeft: string;
+  /** 有值时分两行：标题占主字号，timeLeft 降为次行。用于「今日已下班」。 */
+  title?: string;
   progress: number;
   compact?: boolean;
   dense?: boolean;
+  overtime?: boolean;
+  status?: boolean;
+  standby?: boolean;
 }
 
 export function CountdownDisplay({
   timeLeft,
+  title,
   progress,
   compact = false,
   dense = false,
+  overtime = false,
+  status = false,
+  standby = false,
 }: CountdownDisplayProps) {
   return (
     <motion.div
@@ -25,25 +34,44 @@ export function CountdownDisplay({
       transition={{ duration: 0.3 }}
       className={compact ? "space-y-2" : dense ? "space-y-3" : "space-y-4"}
     >
+      {title && (
+        <div
+          className="text-center font-bold dark:text-white"
+          style={{
+            fontSize: compact ? "1.1rem" : dense ? "min(7vw, 1.8rem)" : "min(7vw, 1.9rem)",
+            lineHeight: "1.25",
+          }}
+        >
+          {title}
+        </div>
+      )}
       <div
-        className={`text-center font-bold tabular-nums dark:text-white ${
-          compact ? "whitespace-nowrap tracking-tight" : ""
-        }`}
+        className={`text-center tabular-nums dark:text-white ${
+          title ? "font-semibold text-gray-600 dark:text-gray-300" : "font-bold"
+        } ${compact || status ? "whitespace-nowrap tracking-tight" : ""}`}
         style={{
-          fontSize: compact
+          fontSize: title
+            ? compact
+              ? "0.95rem"
+              : "min(5.5vw, 1.35rem)"
+            : status
+            ? "1.15rem"
+            : compact
             ? "1.7rem"
             : dense
               ? "min(8vw, 2.1rem)"
               : "min(8vw, 2.25rem)",
           lineHeight: "1.2",
           wordBreak: "keep-all",
-          overflowWrap: "break-word",
+          overflowWrap: status ? "normal" : "break-word",
+          overflow: status ? "hidden" : undefined,
+          textOverflow: status ? "ellipsis" : undefined,
           maxWidth: "100%",
         }}
       >
         {timeLeft}
       </div>
-      <ProgressBar progress={progress} compact={compact} dense={dense} />
+      <ProgressBar progress={progress} compact={compact} dense={dense} overtime={overtime} standby={standby} />
     </motion.div>
   );
 }
