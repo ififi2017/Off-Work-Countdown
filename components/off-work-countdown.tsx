@@ -2424,20 +2424,22 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 : "flex justify-center"
             }
           >
-          {/* 同上：页脚按钮组也不能等退场信号，否则换页时下方空一拍。 */}
+          {/* 同上：页脚按钮组也不能等退场信号，否则换页时下方空一拍。
+              这里只淡入淡出、不做缩放：popLayout 会把退场按钮改成绝对定位，
+              宽度随之变成收缩包裹，再叠一层缩放就像按钮自己塌了一圈、把文字
+              挤到第二行。whitespace-nowrap 兜住换行。 */}
           <AnimatePresence mode="popLayout">
             {!showCountdown ? (
               <motion.div
                 key="start"
-                initial={{ opacity: 0, scale: 0.9 }}
+                className="whitespace-nowrap"
+                initial={{ opacity: 0 }}
                 animate={{
                   opacity: 1,
-                  scale: 1,
                   transition: { duration: 0.2, delay: FLOW_EXIT_SECONDS },
                 }}
                 exit={{
                   opacity: 0,
-                  scale: 0.9,
                   transition: { duration: FLOW_EXIT_SECONDS },
                 }}
               >
@@ -2446,18 +2448,16 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             ) : (
               <motion.div
                 key="return"
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0 }}
                 animate={{
                   opacity: 1,
-                  scale: 1,
                   transition: { duration: 0.2, delay: FLOW_EXIT_SECONDS },
                 }}
                 exit={{
                   opacity: 0,
-                  scale: 0.9,
                   transition: { duration: FLOW_EXIT_SECONDS },
                 }}
-                className="flex gap-2"
+                className="flex gap-2 whitespace-nowrap"
               >
                 <Button
                   variant="outline"
