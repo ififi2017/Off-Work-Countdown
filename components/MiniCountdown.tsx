@@ -11,8 +11,9 @@ import {
   setMiniAlwaysOnTop,
   showDesktopMainWindow,
   subscribeToDesktopCountdown,
-  toggleDesktopSalaryVisibility,
+  toggleDesktopMainWindow,
   toggleDesktopMiniSkin,
+  toggleDesktopSalaryVisibility,
   toggleDesktopWoodfishSound,
   type DesktopCountdownState,
 } from "@/lib/desktop-state";
@@ -432,12 +433,12 @@ export function MiniCountdown() {
               data-tauri-drag-region="false"
               type="button"
               onClick={() => {
-                void showDesktopMainWindow().catch(() => {
-                  // 唤起失败不影响挂件继续计时。
+                void toggleDesktopMainWindow().catch(() => {
+                  // 切换失败不影响挂件继续计时。
                 });
               }}
-              aria-label={t("trayShowApp")}
-              title={t("trayShowApp")}
+              aria-label={t("toggleMainWindow")}
+              title={t("toggleMainWindow")}
               className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-black/5 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
             >
               <AppWindow size={11} />

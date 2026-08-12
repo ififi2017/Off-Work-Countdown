@@ -20,11 +20,11 @@
   "reminder": "เตือนฉัน 15 นาที ก่อนหมดงาน",
   "launchAtLogin": "เปิดเมื่อเข้าสู่ระบบ",
   "globalShortcut": "แสดงหรือซ่อนแอป",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "เปลี่ยน",
   "shortcutRecording": "กดปุ่มลัด…",
   "shortcutCancelHint": "Esc เพื่อยกเลิก",
-  "shortcutHint": "ใช้ Command/Ctrl, Option/Alt หรือ Shift ร่วมด้วย",
+  "shortcutHintMac": "ต้องมี Command, Option หรือ Shift",
+  "shortcutHintWindows": "ต้องมี Ctrl, Alt หรือ Shift",
   "shortcutInvalid": "โปรดใช้ปุ่มปรับอย่างน้อยหนึ่งปุ่ม",
   "shortcutUpdateFailed": "ลงทะเบียนปุ่มลัดนี้ไม่ได้ อาจมีการใช้งานอยู่แล้ว",
   "desktopSettingError": "อัปเดตการตั้งค่าเดสก์ท็อปไม่ได้ โปรดลองอีกครั้ง",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "สลับสกิน",
   "offWorkToday": "เลิกงานแล้ววันนี้",
   "nextShiftIn": "กะถัดไปในอีก {{time}}",
-  "nextShiftLabelShort": "อีกกี่ชั่วโมงเข้างาน"
+  "nextShiftLabelShort": "อีกกี่ชั่วโมงเข้างาน",
+  "toggleMainWindow": "แสดงหรือซ่อนหน้าต่างหลัก"
 }

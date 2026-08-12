@@ -20,11 +20,11 @@
   "reminder": "Remind me 15 minutes before off work",
   "launchAtLogin": "Launch at login",
   "globalShortcut": "Show or hide app",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "Change",
   "shortcutRecording": "Press a shortcut…",
   "shortcutCancelHint": "Esc to cancel",
-  "shortcutHint": "Include Command/Ctrl, Option/Alt, or Shift.",
+  "shortcutHintMac": "Include Command, Option or Shift.",
+  "shortcutHintWindows": "Include Ctrl, Alt or Shift.",
   "shortcutInvalid": "Include at least one modifier key.",
   "shortcutUpdateFailed": "That shortcut couldn't be registered. It may already be in use.",
   "desktopSettingError": "Could not update the desktop setting. Please try again.",
@@ -200,5 +200,6 @@
   "switchMiniSkin": "Switch skin",
   "offWorkToday": "Done for today",
   "nextShiftIn": "Next shift in {{time}}",
-  "nextShiftLabelShort": "Next shift in"
+  "nextShiftLabelShort": "Next shift in",
+  "toggleMainWindow": "Show or hide the main window"
 }

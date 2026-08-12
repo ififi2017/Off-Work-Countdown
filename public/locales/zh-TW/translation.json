@@ -20,11 +20,11 @@
   "reminder": "下班前15分鐘提醒我",
   "launchAtLogin": "登入時啟動",
   "globalShortcut": "顯示或隱藏應用程式",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "變更",
   "shortcutRecording": "請按下快速鍵…",
   "shortcutCancelHint": "按 Esc 取消",
-  "shortcutHint": "請包含 Command/Ctrl、Option/Alt 或 Shift。",
+  "shortcutHintMac": "請包含 Command、Option 或 Shift 鍵。",
+  "shortcutHintWindows": "請包含 Ctrl、Alt 或 Shift 鍵。",
   "shortcutInvalid": "請至少包含一個輔助鍵。",
   "shortcutUpdateFailed": "無法註冊此快速鍵，可能已被其他應用程式使用。",
   "desktopSettingError": "桌面設定更新失敗，請重試。",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "切換外觀",
   "offWorkToday": "今日已下班",
   "nextShiftIn": "距下次上班 {{time}}",
-  "nextShiftLabelShort": "距上班還有"
+  "nextShiftLabelShort": "距上班還有",
+  "toggleMainWindow": "顯示或隱藏主視窗"
 }

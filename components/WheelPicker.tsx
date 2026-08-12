@@ -10,7 +10,10 @@ const PADDING = ((VISIBLE_ROWS - 1) / 2) * ITEM_HEIGHT;
 interface WheelPickerProps {
   items: string[];
   value: string;
+  /** 滚动落定时提交。只提交，不关闭——否则滚动过程中菜单会自己消失。 */
   onChange: (value: string) => void;
+  /** 点击某一项时提交。点击是明确的「就它了」，调用方通常顺手收起菜单。 */
+  onSelect?: (value: string) => void;
   ariaLabel: string;
 }
 
@@ -25,6 +28,7 @@ export function WheelPicker({
   items,
   value,
   onChange,
+  onSelect,
   ariaLabel,
 }: WheelPickerProps) {
   const listRef = useRef<HTMLDivElement>(null);
@@ -96,8 +100,11 @@ export function WheelPicker({
             role="option"
             aria-selected={item === value}
             onClick={() => {
+              // 点击后要立刻同步 reportedRef：这次提交会让 value 变化，
+              // 进而触发居中的 scrollTop 赋值，滚动回调随后会再算一次索引。
+              // 不先记下来的话那次回调会把同一个值再提交一遍。
               reportedRef.current = item;
-              onChange(item);
+              (onSelect ?? onChange)(item);
             }}
             className={`flex cursor-pointer items-center justify-center text-sm tabular-nums transition-colors ${
               item === value

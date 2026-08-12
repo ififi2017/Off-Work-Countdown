@@ -20,11 +20,11 @@
   "reminder": "퇴근 15분 전에 알림",
   "launchAtLogin": "로그인 시 실행",
   "globalShortcut": "앱 표시 또는 숨기기",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "변경",
   "shortcutRecording": "단축키를 누르세요…",
   "shortcutCancelHint": "Esc로 취소",
-  "shortcutHint": "Command/Ctrl, Option/Alt 또는 Shift를 포함하세요.",
+  "shortcutHintMac": "Command, Option 또는 Shift를 포함하세요.",
+  "shortcutHintWindows": "Ctrl, Alt 또는 Shift를 포함하세요.",
   "shortcutInvalid": "보조 키를 하나 이상 포함하세요.",
   "shortcutUpdateFailed": "이 단축키를 등록하지 못했습니다. 이미 사용 중일 수 있습니다.",
   "desktopSettingError": "데스크톱 설정을 업데이트하지 못했습니다. 다시 시도해 주세요.",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "스킨 전환",
   "offWorkToday": "오늘 퇴근 완료",
   "nextShiftIn": "다음 근무까지 {{time}}",
-  "nextShiftLabelShort": "다음 근무까지"
+  "nextShiftLabelShort": "다음 근무까지",
+  "toggleMainWindow": "메인 창 표시/숨기기"
 }

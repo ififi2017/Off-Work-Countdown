@@ -20,11 +20,11 @@
   "reminder": "Rappelez-moi 15 minutes avant la fin du travail",
   "launchAtLogin": "Lancer à la connexion",
   "globalShortcut": "Afficher ou masquer l’application",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "Modifier",
   "shortcutRecording": "Appuyez sur un raccourci…",
   "shortcutCancelHint": "Échap pour annuler",
-  "shortcutHint": "Incluez Command/Ctrl, Option/Alt ou Maj.",
+  "shortcutHintMac": "Incluez Command, Option ou Shift.",
+  "shortcutHintWindows": "Incluez Ctrl, Alt ou Maj.",
   "shortcutInvalid": "Incluez au moins une touche de modification.",
   "shortcutUpdateFailed": "Impossible d’enregistrer ce raccourci. Il est peut-être déjà utilisé.",
   "desktopSettingError": "Impossible de mettre à jour le réglage. Réessayez.",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "Changer d'habillage",
   "offWorkToday": "Journée terminée",
   "nextShiftIn": "Prochain service dans {{time}}",
-  "nextShiftLabelShort": "Prochain service dans"
+  "nextShiftLabelShort": "Prochain service dans",
+  "toggleMainWindow": "Afficher ou masquer la fenêtre principale"
 }

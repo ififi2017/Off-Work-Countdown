@@ -20,11 +20,11 @@
   "reminder": "Ricordami 15 minuti prima di uscire dal lavoro",
   "launchAtLogin": "Avvia all’accesso",
   "globalShortcut": "Mostra o nascondi l’app",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "Modifica",
   "shortcutRecording": "Premi una scorciatoia…",
   "shortcutCancelHint": "Esc per annullare",
-  "shortcutHint": "Includi Command/Ctrl, Option/Alt o Maiusc.",
+  "shortcutHintMac": "Includi Command, Option o Shift.",
+  "shortcutHintWindows": "Includi Ctrl, Alt o Maiusc.",
   "shortcutInvalid": "Includi almeno un tasto modificatore.",
   "shortcutUpdateFailed": "Impossibile registrare la scorciatoia. Potrebbe essere già in uso.",
   "desktopSettingError": "Impossibile aggiornare l’impostazione. Riprova.",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "Cambia skin",
   "offWorkToday": "Giornata finita",
   "nextShiftIn": "Prossimo turno tra {{time}}",
-  "nextShiftLabelShort": "Prossimo turno tra"
+  "nextShiftLabelShort": "Prossimo turno tra",
+  "toggleMainWindow": "Mostra o nascondi la finestra principale"
 }

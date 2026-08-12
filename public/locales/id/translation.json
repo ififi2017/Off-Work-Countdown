@@ -20,11 +20,11 @@
   "reminder": "Ingatkan saya 15 menit sebelum pulang kerja",
   "launchAtLogin": "Jalankan saat masuk",
   "globalShortcut": "Tampilkan atau sembunyikan aplikasi",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "Ubah",
   "shortcutRecording": "Tekan pintasan…",
   "shortcutCancelHint": "Esc untuk batal",
-  "shortcutHint": "Sertakan Command/Ctrl, Option/Alt, atau Shift.",
+  "shortcutHintMac": "Sertakan Command, Option, atau Shift.",
+  "shortcutHintWindows": "Sertakan Ctrl, Alt, atau Shift.",
   "shortcutInvalid": "Sertakan setidaknya satu tombol pengubah.",
   "shortcutUpdateFailed": "Pintasan itu tidak dapat didaftarkan. Mungkin sudah digunakan.",
   "desktopSettingError": "Pengaturan desktop tidak dapat diperbarui. Coba lagi.",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "Ganti skin",
   "offWorkToday": "Selesai untuk hari ini",
   "nextShiftIn": "Sif berikutnya dalam {{time}}",
-  "nextShiftLabelShort": "Sif berikutnya dalam"
+  "nextShiftLabelShort": "Sif berikutnya dalam",
+  "toggleMainWindow": "Tampilkan atau sembunyikan jendela utama"
 }
