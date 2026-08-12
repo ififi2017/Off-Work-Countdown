@@ -1097,12 +1097,24 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   // 输入页与倒计时页是同一层的状态切换，纵向交换即可。设置页不在这个
   // AnimatePresence 里——它是整页横移，见下方轨道。
+  // mode="wait" 会等旧页面完全退场才开始进场，退场时长是实打实看得见的空窗：
+  // 进出各 280ms 时，倒计时要在屏幕上淡够 280ms 才轮到输入页，看着就是
+  // 「计时器残留了一会」。
+  //
+  // 时长写在 variant 里而不是 transition prop 上：prop 是所有动画的默认值，
+  // 会盖掉 variant 自带的 transition，退场怎么都压不下去。
   const flowPageVariants = {
-    initial: { opacity: 0, y: 16 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -16 },
+    initial: { opacity: 0, y: 12 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.16, ease: [0.32, 0.72, 0, 1] as const },
+    },
+    // 退场直接抹掉，不做动画：mode="wait" 要等退场结束才开始进场，任何退场
+    // 时长都会变成一段「旧页面还在、新页面没来」的空窗。倒计时那页有大字和
+    // 白色进度气泡，淡出过程看着就是残留。
+    exit: { opacity: 0, transition: { duration: 0 } },
   };
-  const pageTransition = { duration: 0.28, ease: [0.32, 0.72, 0, 1] as const };
   // 轨道横移是物理方向，阿拉伯语下两页左右互换，位移也要跟着反过来。
   const isRtl = getTextDirection(lang) === "rtl";
   const settingsScrollRef = useRef<HTMLDivElement>(null);
@@ -2079,16 +2091,21 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       }`}>
         {/* 轨道：主页面与设置页各占一半，整条横移。Web 版没有设置页，用
             display:contents 让这两层在布局里消失。 */}
-        <motion.div
+        <div
           className={
             IS_DESKTOP_BUILD
-              ? "flex min-h-0 w-[200%] flex-1"
+              ? "flex min-h-0 w-[200%] flex-1 will-change-transform motion-safe:transition-transform motion-safe:duration-[280ms] motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
               : "contents"
           }
-          animate={{
-            x: showDesktopSettings ? (isRtl ? "50%" : "-50%") : "0%",
-          }}
-          transition={pageTransition}
+          style={
+            IS_DESKTOP_BUILD
+              ? {
+                  transform: showDesktopSettings
+                    ? `translateX(${isRtl ? "50%" : "-50%"})`
+                    : "translateX(0)",
+                }
+              : undefined
+          }
         >
         <div
           className={
@@ -2139,7 +2156,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               data-tauri-drag-region="false"
               className="flex shrink-0 items-center gap-1.5"
             >
-              {IS_DESKTOP_BUILD && !showDesktopSettings ? (
+              {IS_DESKTOP_BUILD ? (
                 <>
                   <Button
                     variant="outline"
@@ -2215,7 +2232,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               : undefined
           }
         >
-          <AnimatePresence mode="wait">
+          {/* popLayout 而不是 wait：wait 要等退场信号回来才肯渲染新页面，实测
+              从点击到 DOM 交换要等 300ms 出头，中间那段旧页面还杵在屏幕上，
+              就是「计时器残留一会」。popLayout 让退场元素脱离文档流，新页面
+              立刻布局。 */}
+          <AnimatePresence mode="popLayout">
             {!showCountdown ? (
               <motion.div
                 key="input"
@@ -2223,7 +2244,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                transition={pageTransition}
                 className={IS_DESKTOP_BUILD ? "space-y-3" : "space-y-4"}
               >
                 {/* 两个选择器并排。Web 版此前各占整行，两位数输入框会拉到
@@ -2351,7 +2371,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                transition={pageTransition}
                 className={IS_DESKTOP_BUILD ? "w-full space-y-3" : "space-y-6"}
               >
                 <CountdownDisplay
@@ -2394,7 +2413,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                 : "flex justify-center"
             }
           >
-          <AnimatePresence mode="wait">
+          {/* 同上：页脚按钮组也不能等退场信号，否则换页时下方空一拍。 */}
+          <AnimatePresence mode="popLayout">
             {!showCountdown ? (
               <motion.div
                 key="start"
@@ -2977,7 +2997,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             </div>
           </div>
         )}
-        </motion.div>
+        </div>
       </Card>
 
       {/* 说明区。冷启动的搜索流量第一眼只看到一个表单，不知道这是什么，跳出率

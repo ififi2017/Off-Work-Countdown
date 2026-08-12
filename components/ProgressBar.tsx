@@ -27,9 +27,12 @@ export function ProgressBar({
   // 看到的是一个缺了右半边的方块。这里把气泡框推回可见范围，尖角留在真实
   // 百分比上，读数不会跟着位移走。
   //
-  // 参照系是窗口而不是轨道：轨道两侧本来就还有卡片内边距，按轨道夹会多推
-  // 二十几个像素，把尖角挤到气泡的圆角外面去，看着像脱钩。再对位移本身设
-  // 一道上限，保证尖角无论如何都落在气泡的平直段里。
+  // 全程用轨道内的布局坐标算，不碰 getBoundingClientRect：设置页转场时整条
+  // 轨道带着 transform 横移，视口坐标会跟着走，于是气泡被「夹」到窗口边上，
+  // 页面滑走后还留下半个白球。
+  //
+  // 轨道两侧还有卡片的内边距可用，允许气泡探出去一点，这样位移最小；再对位
+  // 移设一道上限，保证尖角始终落在气泡的平直段里，不会挂到圆角外面。
   const [bubbleShiftPx, setBubbleShiftPx] = useState(0);
   const useIsomorphicLayoutEffect =
     typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -38,21 +41,21 @@ export function ProgressBar({
       const track = progressBarRef.current;
       const bubble = bubbleRef.current;
       if (!track || !bubble) return;
-      const trackRect = track.getBoundingClientRect();
+      const trackWidth = track.clientWidth;
       const halfBubble = bubble.offsetWidth / 2;
-      if (!trackRect.width || !halfBubble) return;
+      if (!trackWidth || !halfBubble) return;
+      // 卡片左右各有 24px 内边距，留 6px 余量。
+      const allowedOverflow = 18;
       // 尖角半宽 6px 加上气泡 6px 的圆角。
       const arrowInset = 12;
-      const edgeMargin = 6;
-      const center = trackRect.left + (trackRect.width * boundedProgress) / 100;
+      const center = (trackWidth * boundedProgress) / 100;
       const clamped = Math.min(
-        Math.max(center, edgeMargin + halfBubble),
-        window.innerWidth - edgeMargin - halfBubble
+        Math.max(center, halfBubble - allowedOverflow),
+        trackWidth - halfBubble + allowedOverflow
       );
       const maxShift = Math.max(0, halfBubble - arrowInset);
-      const shift = clamped - center;
       setBubbleShiftPx(
-        Math.min(Math.max(shift, -maxShift), maxShift)
+        Math.min(Math.max(clamped - center, -maxShift), maxShift)
       );
     };
     measure();
