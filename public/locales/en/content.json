@@ -171,7 +171,17 @@
       {
         "feature": "Reminders",
         "web": "Available while the page is open",
-        "desktop": "Native reminder from the background"
+        "desktop": "Milestones, lunch and effective-time break reminders"
+      },
+      {
+        "feature": "Shift tools",
+        "web": "Core countdown and salary estimate",
+        "desktop": "Automatic next shift, lunch pause and overtime"
+      },
+      {
+        "feature": "Floating timer",
+        "web": "Not available",
+        "desktop": "Native mini panel plus an interactive woodfish skin"
       },
       {
         "feature": "Updates",

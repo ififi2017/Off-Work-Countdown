@@ -139,4 +139,18 @@ describe("summarize", () => {
     });
     expect(s.hours).toBeCloseTo(16);
   });
+
+  it("uses today's effective hours and linear overtime pay without changing past days", () => {
+    const s = summarize({
+      ...base,
+      periodStart: at(2026, 6, 29),
+      now: at(2026, 7, 1, 20),
+      todayProgress: 100,
+      todayEffectiveHours: 10,
+      todayPayRatio: 1.25,
+    });
+    expect(s.days).toBe(3);
+    expect(s.hours).toBe(28); // 两个名义 9 小时工作日 + 今日 10 小时
+    expect(s.earnings).toBe(3250); // 两个日薪 + 今日按 1.25 日薪
+  });
 });

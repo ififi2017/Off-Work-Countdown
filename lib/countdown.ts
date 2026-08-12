@@ -1,6 +1,10 @@
 // Pure countdown/salary helpers, kept framework-free so they can be unit tested.
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+function addCalendarDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
 
 // Build a Date on the same day as `base` at the given "HH:mm" time.
 // Avoids `new Date(string)` parsing, which is inconsistent across browsers (notably Safari).
@@ -14,6 +18,28 @@ export function atTime(base: Date, time: string): Date {
 export interface ShiftBounds {
   start: Date;
   end: Date;
+}
+
+/**
+ * 一段连续的有效工作时间。所有值都是 Unix 毫秒时间戳，方便前端计算后原样
+ * 写入 Tauri Store；Rust 只消费这些绝对时间戳，不重新解释班次规则。
+ */
+export interface ShiftSegment {
+  startAtMs: number;
+  endAtMs: number;
+}
+
+/**
+ * 3.1 起的班次核心模型。
+ *
+ * `plannedEndAtMs` 保留原定下班时间；发生加班时 `overtimeEndAtMs` 才有值，
+ * segments 的最后一段则延伸到实际结束时间。午休等非工作时间不出现在 segments
+ * 中，因此剩余时间、进度和薪资天然使用同一套有效工时口径。
+ */
+export interface ShiftTimeline {
+  segments: ShiftSegment[];
+  plannedEndAtMs: number;
+  overtimeEndAtMs: number | null;
 }
 
 // Resolve the concrete start/end of the shift containing (or nearest to) `now`.
@@ -30,13 +56,265 @@ export function getShiftBounds(
   if (end <= start) {
     if (now < end) {
       // e.g. 01:00 during a 22:00–06:00 shift: it started yesterday
-      start = new Date(start.getTime() - DAY_MS);
+      start = addCalendarDays(start, -1);
     } else {
-      end = new Date(end.getTime() + DAY_MS);
+      end = addCalendarDays(end, 1);
     }
   }
 
   return { start, end };
+}
+
+export interface ShiftBuildOptions {
+  breakStartTime?: string | null;
+  breakDurationMinutes?: number;
+  overtimeEndAtMs?: number | null;
+}
+
+function buildTimelineFromBounds(
+  start: Date,
+  end: Date,
+  options: ShiftBuildOptions
+): ShiftTimeline {
+  const plannedEndAtMs = end.getTime();
+  let segments: ShiftSegment[] = [
+    { startAtMs: start.getTime(), endAtMs: plannedEndAtMs },
+  ];
+
+  const breakDurationMs = Math.floor(options.breakDurationMinutes ?? 0) * 60_000;
+  if (options.breakStartTime && breakDurationMs > 0) {
+    let breakStart = atTime(start, options.breakStartTime);
+    if (breakStart < start) breakStart = addCalendarDays(breakStart, 1);
+    const breakStartAtMs = breakStart.getTime();
+    const breakEndAtMs = breakStartAtMs + breakDurationMs;
+    if (
+      breakStartAtMs > start.getTime() &&
+      breakEndAtMs < plannedEndAtMs
+    ) {
+      segments = [
+        { startAtMs: start.getTime(), endAtMs: breakStartAtMs },
+        { startAtMs: breakEndAtMs, endAtMs: plannedEndAtMs },
+      ];
+    }
+  }
+
+  const overtimeEndAtMs =
+    options.overtimeEndAtMs && options.overtimeEndAtMs > plannedEndAtMs
+      ? options.overtimeEndAtMs
+      : null;
+  if (overtimeEndAtMs !== null) {
+    segments = segments.map((segment, index) =>
+      index === segments.length - 1
+        ? { ...segment, endAtMs: overtimeEndAtMs }
+        : segment
+    );
+  }
+
+  return { segments, plannedEndAtMs, overtimeEndAtMs };
+}
+
+/** 将开始/结束设置解析为分段班次。未提供选项时保持 3.0 的单段行为。 */
+export function buildShiftTimeline(
+  startTime: string,
+  endTime: string,
+  now: Date,
+  options: ShiftBuildOptions = {}
+): ShiftTimeline {
+  const { start, end } = getShiftBounds(startTime, endTime, now);
+  return buildTimelineFromBounds(start, end, options);
+}
+
+export function extendShiftWithOvertime(
+  shift: ShiftTimeline,
+  overtimeEndAtMs: number
+): ShiftTimeline {
+  if (!isValidShiftTimeline(shift) || overtimeEndAtMs <= shift.plannedEndAtMs) {
+    return shift;
+  }
+  return {
+    ...shift,
+    segments: shift.segments.map((segment, index) =>
+      index === shift.segments.length - 1
+        ? { ...segment, endAtMs: overtimeEndAtMs }
+        : segment
+    ),
+    overtimeEndAtMs,
+  };
+}
+
+export function suggestOvertimeEndAtMs(
+  shift: ShiftTimeline,
+  nowMs: number
+): number {
+  if (shift.overtimeEndAtMs) return shift.overtimeEndAtMs;
+  const raw = Math.max(shift.plannedEndAtMs, nowMs) + 60 * 60 * 1000;
+  return Math.ceil(raw / (15 * 60 * 1000)) * 15 * 60 * 1000;
+}
+
+export function resolveOvertimeEndAtMs(
+  shift: ShiftTimeline,
+  overtimeEndTime: string,
+  nowMs: number
+): number {
+  const earliest = Math.max(shift.plannedEndAtMs, nowMs);
+  let resolved = atTime(new Date(earliest), overtimeEndTime);
+  if (resolved.getTime() <= earliest) resolved = addCalendarDays(resolved, 1);
+  return resolved.getTime();
+}
+
+export function findNextShiftTimeline(params: {
+  startTime: string;
+  endTime: string;
+  workdays: number[];
+  afterMs: number;
+  options?: Omit<ShiftBuildOptions, "overtimeEndAtMs">;
+}): ShiftTimeline | null {
+  const { startTime, endTime, workdays, afterMs, options = {} } = params;
+  if (workdays.length === 0) return null;
+
+  const cursor = new Date(afterMs);
+  cursor.setHours(0, 0, 0, 0);
+  for (let offset = 0; offset <= 14; offset += 1) {
+    const day = addCalendarDays(cursor, offset);
+    const start = atTime(day, startTime);
+    if (!workdays.includes(start.getDay()) || start.getTime() <= afterMs) {
+      continue;
+    }
+    let end = atTime(day, endTime);
+    if (end <= start) end = addCalendarDays(end, 1);
+    return buildTimelineFromBounds(start, end, options);
+  }
+  return null;
+}
+
+export function getShiftEndAtMs(shift: ShiftTimeline): number {
+  return shift.overtimeEndAtMs ?? shift.plannedEndAtMs;
+}
+
+export function getShiftStartAtMs(shift: ShiftTimeline): number {
+  return shift.segments[0]?.startAtMs ?? 0;
+}
+
+/**
+ * 校验一个已经解析好的班次快照。这里不修补或重排输入，避免错误状态被静默
+ * 接受后让前端与原生端产生不同结果。
+ */
+export function isValidShiftTimeline(shift: ShiftTimeline): boolean {
+  if (shift.segments.length === 0) return false;
+  if (!Number.isFinite(shift.plannedEndAtMs)) return false;
+  if (
+    shift.overtimeEndAtMs !== null &&
+    (!Number.isFinite(shift.overtimeEndAtMs) ||
+      shift.overtimeEndAtMs <= shift.plannedEndAtMs)
+  ) {
+    return false;
+  }
+
+  let previousEnd = Number.NEGATIVE_INFINITY;
+  for (const segment of shift.segments) {
+    if (
+      !Number.isFinite(segment.startAtMs) ||
+      !Number.isFinite(segment.endAtMs) ||
+      segment.endAtMs <= segment.startAtMs ||
+      segment.startAtMs < previousEnd
+    ) {
+      return false;
+    }
+    previousEnd = segment.endAtMs;
+  }
+
+  const startAtMs = getShiftStartAtMs(shift);
+  const endAtMs = getShiftEndAtMs(shift);
+  return (
+    shift.plannedEndAtMs > startAtMs &&
+    endAtMs === shift.segments[shift.segments.length - 1].endAtMs
+  );
+}
+
+/** 班次包含的有效工作时长；午休等 segments 间隙不计入。 */
+export function getShiftDurationMs(shift: ShiftTimeline): number {
+  if (!isValidShiftTimeline(shift)) return 0;
+  return shift.segments.reduce(
+    (total, segment) => total + segment.endAtMs - segment.startAtMs,
+    0
+  );
+}
+
+/** 原定班次的有效工时。加班延长最后一个 segment 后仍以 plannedEnd 为界截断。 */
+export function getPlannedShiftDurationMs(shift: ShiftTimeline): number {
+  if (!isValidShiftTimeline(shift)) return 0;
+  return shift.segments.reduce((total, segment) => {
+    const endAtMs = Math.min(segment.endAtMs, shift.plannedEndAtMs);
+    return total + Math.max(0, endAtMs - segment.startAtMs);
+  }, 0);
+}
+
+/** 截止某时刻已经过去的有效工作时长；位于间隙时数值保持不变。 */
+export function getShiftElapsedMs(
+  shift: ShiftTimeline,
+  nowMs: number
+): number {
+  if (!isValidShiftTimeline(shift)) return 0;
+  return shift.segments.reduce((total, segment) => {
+    const duration = segment.endAtMs - segment.startAtMs;
+    const elapsed = Math.min(duration, Math.max(0, nowMs - segment.startAtMs));
+    return total + elapsed;
+  }, 0);
+}
+
+/**
+ * 当前时刻若落在两个 segment 之间的休息区间，返回该区间的结束时间；否则返回 null。
+ *
+ * 休息区间是 segments 之间的空隙——午休本来就不进 segments，所以这里不需要
+ * 知道「午休」这个业务概念，只看时间轴上的洞。
+ */
+export function getActiveBreakEndAtMs(
+  shift: ShiftTimeline,
+  nowMs: number
+): number | null {
+  for (let index = 0; index < shift.segments.length - 1; index += 1) {
+    const gapStart = shift.segments[index].endAtMs;
+    const gapEnd = shift.segments[index + 1].startAtMs;
+    if (gapEnd > gapStart && nowMs >= gapStart && nowMs < gapEnd) {
+      return gapEnd;
+    }
+  }
+  return null;
+}
+
+export function getShiftRemainingMs(
+  shift: ShiftTimeline,
+  nowMs: number
+): number {
+  return Math.max(
+    0,
+    getShiftDurationMs(shift) - getShiftElapsedMs(shift, nowMs)
+  );
+}
+
+export function calculateTimelineProgress(
+  shift: ShiftTimeline,
+  nowMs: number
+): number {
+  const duration = getShiftDurationMs(shift);
+  if (duration <= 0) return 0;
+  return Math.max(
+    0,
+    Math.min(100, (getShiftElapsedMs(shift, nowMs) / duration) * 100)
+  );
+}
+
+/**
+ * 按原时薪线性外推的计薪比例。正常班次结束为 1；发生加班时可以大于 1。
+ * 午休不在 segments 内，所以休息期间 elapsed 保持不变。
+ */
+export function calculateTimelinePayRatio(
+  shift: ShiftTimeline,
+  nowMs: number
+): number {
+  const plannedDuration = getPlannedShiftDurationMs(shift);
+  if (plannedDuration <= 0) return 0;
+  return Math.max(0, getShiftElapsedMs(shift, nowMs) / plannedDuration);
 }
 
 // Percentage of the shift already worked, clamped to [0, 100].
@@ -45,12 +323,10 @@ export function calculateProgress(
   endTime: string,
   now: Date
 ): number {
-  const { start, end } = getShiftBounds(startTime, endTime, now);
-  const totalDiff = end.getTime() - start.getTime();
-  const currentDiff = end.getTime() - now.getTime();
-
-  if (currentDiff <= 0) return 100;
-  return Math.max(0, Math.min(100, ((totalDiff - currentDiff) / totalDiff) * 100));
+  return calculateTimelineProgress(
+    buildShiftTimeline(startTime, endTime, now),
+    now.getTime()
+  );
 }
 
 // 班次时长（小时）。跨零点的班次按次日结束计算，与 getShiftBounds 的口径一致。

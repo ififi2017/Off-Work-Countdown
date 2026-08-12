@@ -2,28 +2,48 @@ use serde::{Deserialize, Serialize};
 #[cfg(target_os = "macos")]
 use std::sync::OnceLock;
 use std::{thread, time::Duration};
+#[cfg(target_os = "macos")]
+use tauri::menu::{AboutMetadata, PredefinedMenuItem, Submenu};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager, WindowEvent,
 };
-#[cfg(any(target_os = "windows", debug_assertions))]
+#[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
 use tauri::{PhysicalPosition, WebviewUrl, WebviewWindowBuilder};
 #[cfg(desktop)]
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 #[cfg(desktop)]
 use tauri_plugin_notification::NotificationExt;
-#[cfg(any(target_os = "windows", debug_assertions))]
+use tauri_plugin_opener::OpenerExt;
+#[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
 use tauri_plugin_positioner::{Position, WindowExt};
 use tauri_plugin_store::StoreExt;
 
 const STORE_PATH: &str = "desktop-state.json";
 const COUNTDOWN_KEY: &str = "countdown";
 const NOTIFICATION_MARKER_KEY: &str = "notificationMarker";
-const REMINDER_LEAD_MS: i64 = 15 * 60 * 1000;
-#[cfg(any(target_os = "windows", debug_assertions))]
+#[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
 const MINI_POSITION_KEY: &str = "miniPosition";
 const MINI_ALWAYS_ON_TOP_KEY: &str = "miniAlwaysOnTop";
+const GLOBAL_SHORTCUT_SETTINGS_KEY: &str = "globalShortcutSettings";
+const DEFAULT_GLOBAL_SHORTCUT: &str = "CommandOrControl+Shift+O";
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GlobalShortcutSettings {
+    enabled: bool,
+    accelerator: String,
+}
+
+impl Default for GlobalShortcutSettings {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            accelerator: DEFAULT_GLOBAL_SHORTCUT.into(),
+        }
+    }
+}
 
 /// ObjC 原生面板回调时需要通过 AppHandle 访问 Store。
 /// 写入点（setup）与读取点（FFI 回调）都只存在于 macOS。
@@ -39,54 +59,237 @@ fn windows_mini_dev_override() -> bool {
     cfg!(debug_assertions) && std::env::var_os("OWC_FORCE_WINDOWS_MINI").is_some()
 }
 
-/// 是否启用 WebView 版迷你窗。macOS 正常情况下走原生面板，不建这个窗口。
-///
-/// 门控条件与它的所有调用点一致：macOS release 构建里这些代码都不存在，
-/// 函数本身也就不必编译。
-#[cfg(any(target_os = "windows", debug_assertions))]
+/// 3.1 起 macOS 同时保留原生菜单栏面板与可选 WebView 悬浮窗。
+#[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
 fn mini_window_enabled() -> bool {
-    cfg!(target_os = "windows") || windows_mini_dev_override()
+    cfg!(target_os = "windows") || cfg!(target_os = "macos") || windows_mini_dev_override()
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+#[serde(rename_all = "camelCase")]
+struct ShiftSegment {
+    start_at_ms: i64,
+    end_at_ms: i64,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+enum NotificationMode {
+    #[default]
+    Off,
+    Simple,
+    Milestones,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+#[serde(rename_all = "camelCase")]
+struct NotificationMessages {
+    milestone50: Vec<String>,
+    milestone75: Vec<String>,
+    milestone90: Vec<String>,
+    milestone95: Vec<String>,
+    milestone100: Vec<String>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+#[serde(rename_all = "camelCase")]
+struct ShiftTimelineState {
+    segments: Vec<ShiftSegment>,
+    planned_end_at_ms: i64,
+    overtime_end_at_ms: Option<i64>,
+}
+
+impl ShiftTimelineState {
+    fn end_at_ms(&self) -> i64 {
+        self.overtime_end_at_ms.unwrap_or(self.planned_end_at_ms)
+    }
+
+    fn is_valid(&self) -> bool {
+        valid_shift_parts(
+            &self.segments,
+            self.planned_end_at_ms,
+            self.overtime_end_at_ms,
+        )
+    }
+}
+
+fn valid_shift_parts(
+    segments: &[ShiftSegment],
+    planned_end_at_ms: i64,
+    overtime_end_at_ms: Option<i64>,
+) -> bool {
+    let Some(first) = segments.first() else {
+        return false;
+    };
+    if planned_end_at_ms <= first.start_at_ms
+        || overtime_end_at_ms.is_some_and(|end| end <= planned_end_at_ms)
+    {
+        return false;
+    }
+    let mut previous_end = i64::MIN;
+    for segment in segments {
+        if segment.end_at_ms <= segment.start_at_ms || segment.start_at_ms < previous_end {
+            return false;
+        }
+        previous_end = segment.end_at_ms;
+    }
+    previous_end == overtime_end_at_ms.unwrap_or(planned_end_at_ms)
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 #[serde(rename_all = "camelCase")]
 struct CountdownState {
-    start_at_ms: i64,
-    end_at_ms: i64,
+    segments: Vec<ShiftSegment>,
+    planned_end_at_ms: i64,
+    overtime_end_at_ms: Option<i64>,
+    /// 3.0.x Store 兼容字段：反序列化后立即提升为单 segment，不再写回。
+    #[serde(rename = "startAtMs", skip_serializing)]
+    legacy_start_at_ms: i64,
+    #[serde(rename = "endAtMs", skip_serializing)]
+    legacy_end_at_ms: i64,
     running: bool,
-    reminder: bool,
-    lead_reminder_armed: bool,
+    next_shift: Option<ShiftTimelineState>,
+    notification_mode: Option<NotificationMode>,
     notification_title: String,
-    lead_notification_body: String,
-    completion_notification_body: String,
+    notification_messages: NotificationMessages,
+    /// 3.0.x 通知字段仅用于读取迁移，不再写入新 Store。
+    #[serde(rename = "reminder", skip_serializing)]
+    legacy_reminder: bool,
     show_salary: bool,
     hide_earnings: bool,
     daily_salary: Option<f64>,
     lang: String,
     countdown_not_started: String,
+    next_shift_label: String,
+    lunch_start_notification: String,
+    lunch_end_notification: String,
+    lunch_notification_enabled: bool,
+    lunch_end_notification_enabled: bool,
+    /// 迷你窗皮肤，可从悬浮窗工具条直接切换。
+    mini_skin: String,
+    /// 迷你窗工具条上的声音开关；与主窗口设置项共享同一份状态。
+    woodfish_sound_enabled: bool,
+    micro_break_enabled: bool,
+    micro_break_interval_minutes: u64,
+    /// 喝水与起身合成同一个轮换池：对用户来说都是「该歇一下了」，
+    /// 拆成两类只会把复杂度转嫁到设置页。
+    micro_break_messages: Vec<String>,
     /// 眼睛按钮的无障碍描述。面板其余文案都随界面语言走，这两个如果留在
     /// ObjC 里硬编码英文，VoiceOver 用户会在一堆中文里听到 "Hide salary"。
     show_earnings_label: String,
     hide_earnings_label: String,
 }
 
-#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+impl CountdownState {
+    fn migrate_legacy(mut self) -> Self {
+        if self.segments.is_empty() && self.legacy_end_at_ms > self.legacy_start_at_ms {
+            self.segments.push(ShiftSegment {
+                start_at_ms: self.legacy_start_at_ms,
+                end_at_ms: self.legacy_end_at_ms,
+            });
+            self.planned_end_at_ms = self.legacy_end_at_ms;
+            self.overtime_end_at_ms = None;
+        }
+        if self.notification_mode.is_none() {
+            self.notification_mode = Some(if self.legacy_reminder {
+                NotificationMode::Simple
+            } else {
+                NotificationMode::Off
+            });
+        }
+        self
+    }
+
+    fn end_at_ms(&self) -> i64 {
+        self.overtime_end_at_ms.unwrap_or(self.planned_end_at_ms)
+    }
+
+    fn is_valid_shift(&self) -> bool {
+        valid_shift_parts(
+            &self.segments,
+            self.planned_end_at_ms,
+            self.overtime_end_at_ms,
+        )
+    }
+
+    fn notification_mode(&self) -> NotificationMode {
+        self.notification_mode.unwrap_or(NotificationMode::Off)
+    }
+}
+
+fn advance_to_next_shift(state: &mut CountdownState, now_ms: i64) -> bool {
+    if !state.running || !state.is_valid_shift() || now_ms < state.end_at_ms() {
+        return false;
+    }
+    let Some(next) = state.next_shift.clone() else {
+        return false;
+    };
+    if !next.is_valid() {
+        state.next_shift = None;
+        return true;
+    }
+    let next_start = next.segments[0].start_at_ms;
+    if now_ms < next_start {
+        return false;
+    }
+    if now_ms >= next.end_at_ms() {
+        // 睡眠跨过了整班：丢弃过期快照，绝不补发通知。
+        state.next_shift = None;
+        state.running = false;
+        return true;
+    }
+    state.segments = next.segments;
+    state.planned_end_at_ms = next.planned_end_at_ms;
+    state.overtime_end_at_ms = next.overtime_end_at_ms;
+    state.next_shift = None;
+    true
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 #[serde(rename_all = "camelCase")]
 struct NotificationMarker {
+    model_version: u8,
     end_at_ms: i64,
-    lead_sent: bool,
-    completion_sent: bool,
+    sent_milestones: Vec<u8>,
+    sent_break_starts: Vec<i64>,
+    sent_break_ends: Vec<i64>,
+    sent_micro_breaks: Vec<u64>,
+    micro_break_interval_minutes: u64,
+    /// 健康提醒只累计当前连续工作段。午休把班次拆成多个 segment，进入下一个
+    /// segment 时从零重新计时，而不是续上午休前未满的一轮。
+    micro_break_segment_start_at_ms: Option<i64>,
+    last_observed_ms: i64,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum CountdownNotification {
-    Lead,
-    Complete,
+enum NotificationMilestone {
+    Half = 50,
+    ThreeQuarters = 75,
+    Ninety = 90,
+    NinetyFive = 95,
+    Complete = 100,
 }
 
-#[cfg(any(target_os = "windows", debug_assertions))]
+impl NotificationMilestone {
+    const ALL: [Self; 5] = [
+        Self::Half,
+        Self::ThreeQuarters,
+        Self::Ninety,
+        Self::NinetyFive,
+        Self::Complete,
+    ];
+
+    fn percent(self) -> u8 {
+        self as u8
+    }
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 struct MiniPosition {
     x: i32,
@@ -100,10 +303,66 @@ struct MiniWindowSettings {
     always_on_top: bool,
 }
 
-struct TrayMenuItems {
-    show: MenuItem<tauri::Wry>,
-    mini: MenuItem<tauri::Wry>,
-    quit: MenuItem<tauri::Wry>,
+/// 托盘用 show / mini / quit，其余字段只喂给 macOS 的应用菜单。非 macOS 上
+/// 它们确实没有读取方，但仍要参与反序列化——前端一次性发全量标签，缺字段会
+/// 让整条命令失败。macOS 上所有字段都被读取，那边的 dead_code 检查照常生效。
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DesktopMenuLabels {
+    show: String,
+    mini: String,
+    quit: String,
+    file: String,
+    edit: String,
+    view: String,
+    window: String,
+    help: String,
+    about: String,
+    services: String,
+    hide_app: String,
+    hide_others: String,
+    close_window: String,
+    undo: String,
+    redo: String,
+    cut: String,
+    copy: String,
+    paste: String,
+    select_all: String,
+    toggle_full_screen: String,
+    minimize: String,
+    zoom: String,
+    bring_all_to_front: String,
+}
+
+impl Default for DesktopMenuLabels {
+    fn default() -> Self {
+        Self {
+            show: "Show app".into(),
+            mini: "Mini timer".into(),
+            quit: "Quit".into(),
+            file: "File".into(),
+            edit: "Edit".into(),
+            view: "View".into(),
+            window: "Window".into(),
+            help: "Help".into(),
+            about: "About Off Work Countdown".into(),
+            services: "Services".into(),
+            hide_app: "Hide Off Work Countdown".into(),
+            hide_others: "Hide Others".into(),
+            close_window: "Close Window".into(),
+            undo: "Undo".into(),
+            redo: "Redo".into(),
+            cut: "Cut".into(),
+            copy: "Copy".into(),
+            paste: "Paste".into(),
+            select_all: "Select All".into(),
+            toggle_full_screen: "Toggle Full Screen".into(),
+            minimize: "Minimize".into(),
+            zoom: "Zoom".into(),
+            bring_all_to_front: "Bring All to Front".into(),
+        }
+    }
 }
 
 #[cfg(target_os = "macos")]
@@ -255,14 +514,21 @@ fn toggle_mini_window(app: &AppHandle) {
     let _ = app;
 }
 
-fn hide_mini_window(app: &AppHandle) {
-    #[cfg(target_os = "macos")]
-    if !windows_mini_dev_override() {
-        native_mini::hide();
-        return;
+fn toggle_floating_window(app: &AppHandle) {
+    #[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
+    if let Some(window) = app.get_webview_window("mini") {
+        if window.is_visible().unwrap_or(false) {
+            let _ = window.hide();
+        } else {
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
     }
+    let _ = app;
+}
 
-    #[cfg(any(target_os = "windows", debug_assertions))]
+fn hide_mini_window(app: &AppHandle) {
+    #[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
     if let Some(window) = app.get_webview_window("mini") {
         let _ = window.hide();
     }
@@ -274,8 +540,19 @@ fn read_countdown_state(app: &AppHandle) -> CountdownState {
     app.store(STORE_PATH)
         .ok()
         .and_then(|store| store.get(COUNTDOWN_KEY))
-        .and_then(|value| serde_json::from_value(value).ok())
+        .and_then(|value| serde_json::from_value::<CountdownState>(value).ok())
         .unwrap_or_default()
+        .migrate_legacy()
+}
+
+fn write_countdown_state(app: &AppHandle, state: &CountdownState) {
+    let Ok(store) = app.store(STORE_PATH) else {
+        return;
+    };
+    if let Ok(value) = serde_json::to_value(state) {
+        store.set(COUNTDOWN_KEY, value);
+        let _ = store.save();
+    }
 }
 
 fn read_notification_marker(app: &AppHandle) -> NotificationMarker {
@@ -286,7 +563,7 @@ fn read_notification_marker(app: &AppHandle) -> NotificationMarker {
         .unwrap_or_default()
 }
 
-fn write_notification_marker(app: &AppHandle, marker: NotificationMarker) {
+fn write_notification_marker(app: &AppHandle, marker: &NotificationMarker) {
     let Ok(store) = app.store(STORE_PATH) else {
         return;
     };
@@ -296,75 +573,289 @@ fn write_notification_marker(app: &AppHandle, marker: NotificationMarker) {
     }
 }
 
-/// 推进一次提醒状态。返回值只表示本次需要发送的类型；无论提醒开关是否打开，
-/// 越过的节点都会标记为已处理，防止之后打开开关时补发一条过期通知。
+/// 推进一次里程碑状态。无论通知档位是否开启，越过的节点都会标记为已处理，
+/// 防止之后打开开关时补发；休眠一次跨过多个节点时只返回最高的一个。
 fn advance_notification_marker(
     state: &CountdownState,
     marker: &mut NotificationMarker,
     now_ms: i64,
-) -> (Option<CountdownNotification>, bool) {
-    if !state.running || state.end_at_ms <= state.start_at_ms {
+) -> (Option<NotificationMilestone>, bool) {
+    if !state.running || !state.is_valid_shift() {
         return (None, false);
     }
 
-    let mut changed = false;
-    if marker.end_at_ms != state.end_at_ms {
+    let end_at_ms = state.end_at_ms();
+    let progress = (countdown_progress(state, now_ms) * 100.0).floor() as u8;
+    let crossed: Vec<u8> = NotificationMilestone::ALL
+        .iter()
+        .map(|milestone| milestone.percent())
+        .filter(|percent| *percent <= progress)
+        .collect();
+
+    if marker.model_version != 3 || marker.end_at_ms != end_at_ms {
+        let sent_break_starts = state
+            .segments
+            .windows(2)
+            .map(|pair| pair[0].end_at_ms)
+            .filter(|boundary| *boundary <= now_ms)
+            .collect();
+        let sent_break_ends = state
+            .segments
+            .windows(2)
+            .map(|pair| pair[1].start_at_ms)
+            .filter(|boundary| *boundary <= now_ms)
+            .collect();
         *marker = NotificationMarker {
-            end_at_ms: state.end_at_ms,
-            lead_sent: !state.lead_reminder_armed,
-            // 第一次观察到的就是已结束快照时视为旧状态，不在启动时补发。
-            completion_sent: now_ms >= state.end_at_ms,
+            model_version: 3,
+            end_at_ms,
+            // 第一次看到班次时，把已经越过的节点视为已处理，不补发历史通知。
+            sent_milestones: crossed,
+            sent_break_starts,
+            sent_break_ends,
+            sent_micro_breaks: Vec::new(),
+            micro_break_interval_minutes: state.micro_break_interval_minutes,
+            micro_break_segment_start_at_ms: None,
+            last_observed_ms: now_ms,
         };
-        changed = true;
+        return (None, true);
     }
 
-    let notification = if now_ms >= state.end_at_ms && !marker.completion_sent {
-        marker.completion_sent = true;
-        changed = true;
-        state.reminder.then_some(CountdownNotification::Complete)
-    } else if now_ms >= state.end_at_ms - REMINDER_LEAD_MS
-        && now_ms < state.end_at_ms
-        && !marker.lead_sent
-    {
-        marker.lead_sent = true;
-        changed = true;
-        state.reminder.then_some(CountdownNotification::Lead)
-    } else {
-        None
+    let newly_crossed: Vec<u8> = crossed
+        .into_iter()
+        .filter(|percent| !marker.sent_milestones.contains(percent))
+        .collect();
+    if newly_crossed.is_empty() {
+        return (None, false);
+    }
+
+    marker.sent_milestones.extend(newly_crossed.iter().copied());
+    marker.sent_milestones.sort_unstable();
+    marker.sent_milestones.dedup();
+
+    let highest = *newly_crossed.last().expect("non-empty milestones");
+    let notification = match state.notification_mode() {
+        NotificationMode::Off => None,
+        NotificationMode::Simple => (highest == 100).then_some(NotificationMilestone::Complete),
+        NotificationMode::Milestones => NotificationMilestone::ALL
+            .into_iter()
+            .find(|milestone| milestone.percent() == highest),
     };
 
-    (notification, changed)
+    (notification, true)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum BreakNotification {
+    Start,
+    End,
+}
+
+/// 午休边界只在仍处于对应阶段、且距边界不超过两分钟时通知。
+/// 因而电脑睡眠跨过午休不会在唤醒后补发已经失去语境的提示。
+fn advance_break_notification(
+    state: &CountdownState,
+    marker: &mut NotificationMarker,
+    previous: i64,
+    now_ms: i64,
+) -> (Option<BreakNotification>, bool) {
+    if !state.running || !state.is_valid_shift() || marker.end_at_ms != state.end_at_ms() {
+        return (None, false);
+    }
+    let mut changed = false;
+    const FRESH_MS: i64 = 2 * 60 * 1000;
+
+    for pair in state.segments.windows(2) {
+        let break_start = pair[0].end_at_ms;
+        let break_end = pair[1].start_at_ms;
+        if previous < break_start
+            && now_ms >= break_start
+            && now_ms < break_end
+            && now_ms - break_start <= FRESH_MS
+            && !marker.sent_break_starts.contains(&break_start)
+        {
+            marker.sent_break_starts.push(break_start);
+            changed = true;
+            return (
+                state
+                    .lunch_notification_enabled
+                    .then_some(BreakNotification::Start),
+                changed,
+            );
+        }
+        if previous < break_end
+            && now_ms >= break_end
+            && now_ms < pair[1].end_at_ms
+            && now_ms - break_end <= FRESH_MS
+            && !marker.sent_break_ends.contains(&break_end)
+        {
+            marker.sent_break_ends.push(break_end);
+            changed = true;
+            return (
+                state
+                    .lunch_end_notification_enabled
+                    .then_some(BreakNotification::End),
+                changed,
+            );
+        }
+    }
+    (None, changed)
+}
+
+fn micro_break_body(state: &CountdownState, bucket: u64) -> Option<String> {
+    let pool = &state.micro_break_messages;
+    if pool.is_empty() {
+        return None;
+    }
+    let template = pool.get(bucket as usize % pool.len())?;
+    Some(template.replace(
+        "{{minutes}}",
+        &(bucket * state.micro_break_interval_minutes).to_string(),
+    ))
+}
+
+fn advance_micro_break_marker(
+    state: &CountdownState,
+    marker: &mut NotificationMarker,
+    previous: i64,
+    now_ms: i64,
+) -> (Option<String>, bool) {
+    let interval_ms = state.micro_break_interval_minutes as i64 * 60 * 1000;
+    if !state.running || !state.is_valid_shift() || interval_ms <= 0 {
+        return (None, false);
+    }
+
+    let active_segment = state
+        .segments
+        .iter()
+        .find(|segment| now_ms >= segment.start_at_ms && now_ms < segment.end_at_ms);
+
+    // 午休期间没有活跃工作段：清掉上一段的周期。午休结束进入新的 segment
+    // 时会重新建立基线，因此午休前没满的一轮不会被带到午休后。
+    let Some(active_segment) = active_segment else {
+        if marker.micro_break_segment_start_at_ms.is_none() && marker.sent_micro_breaks.is_empty() {
+            return (None, false);
+        }
+        marker.micro_break_segment_start_at_ms = None;
+        marker.sent_micro_breaks.clear();
+        return (None, true);
+    };
+
+    let current_bucket = ((now_ms - active_segment.start_at_ms) / interval_ms).max(0) as u64;
+    if marker.micro_break_segment_start_at_ms != Some(active_segment.start_at_ms) {
+        marker.micro_break_segment_start_at_ms = Some(active_segment.start_at_ms);
+        // 首次观察到这一连续工作段时不补发此前越过的健康提醒。
+        marker.sent_micro_breaks = (1..=current_bucket).collect();
+        return (None, true);
+    }
+    if marker.micro_break_interval_minutes != state.micro_break_interval_minutes {
+        marker.micro_break_interval_minutes = state.micro_break_interval_minutes;
+        marker.sent_micro_breaks = (1..=current_bucket).collect();
+        // 修改间隔只重建去重基线，不立即弹一条“补发”提醒。
+        return (None, true);
+    }
+    let last_bucket = ((previous - active_segment.start_at_ms).max(0) / interval_ms) as u64;
+    if current_bucket == 0 || current_bucket <= last_bucket {
+        return (None, false);
+    }
+    let crossed: Vec<u64> = ((last_bucket + 1)..=current_bucket).collect();
+    let newest = *crossed.last().expect("non-empty micro-break range");
+    marker.sent_micro_breaks.extend(crossed);
+    marker.sent_micro_breaks.sort_unstable();
+    marker.sent_micro_breaks.dedup();
+
+    let fresh = now_ms.saturating_sub(previous) <= 2 * 60 * 1000;
+    let body = (state.micro_break_enabled && fresh)
+        .then(|| micro_break_body(state, newest))
+        .flatten();
+    (body, true)
+}
+
+fn notification_body(state: &CountdownState, milestone: NotificationMilestone) -> &str {
+    let messages = match milestone {
+        NotificationMilestone::Half => &state.notification_messages.milestone50,
+        NotificationMilestone::ThreeQuarters => &state.notification_messages.milestone75,
+        NotificationMilestone::Ninety => &state.notification_messages.milestone90,
+        NotificationMilestone::NinetyFive => &state.notification_messages.milestone95,
+        NotificationMilestone::Complete => &state.notification_messages.milestone100,
+    };
+    let fallback = match milestone {
+        NotificationMilestone::Half => "Halfway there.",
+        NotificationMilestone::ThreeQuarters => "The hardest part is behind you.",
+        NotificationMilestone::Ninety => "Almost there.",
+        NotificationMilestone::NinetyFive => "Just a little longer.",
+        NotificationMilestone::Complete => "Off work time!",
+    };
+    let body = if messages.is_empty() {
+        fallback
+    } else {
+        let seed = state.end_at_ms().unsigned_abs() as usize + milestone.percent() as usize;
+        messages[seed % messages.len()].as_str()
+    };
+    body
 }
 
 #[cfg(desktop)]
 fn send_countdown_notification(
     app: &AppHandle,
     state: &CountdownState,
-    notification: CountdownNotification,
+    milestone: NotificationMilestone,
 ) {
     let title = if state.notification_title.is_empty() {
         "Off work reminder"
     } else {
         &state.notification_title
     };
-    let body = match notification {
-        CountdownNotification::Lead if !state.lead_notification_body.is_empty() => {
-            &state.lead_notification_body
-        }
-        CountdownNotification::Complete if !state.completion_notification_body.is_empty() => {
-            &state.completion_notification_body
-        }
-        CountdownNotification::Lead => "Fifteen minutes left!",
-        CountdownNotification::Complete => "Off work time!",
-    };
+    let body = notification_body(state, milestone);
 
     if let Err(error) = app.notification().builder().title(title).body(body).show() {
         log::warn!("failed to send countdown notification: {error}");
     }
 }
 
-fn format_remaining(end_at_ms: i64, now_ms: i64) -> String {
-    let total_seconds = ((end_at_ms - now_ms).max(0) + 999) / 1000;
+#[cfg(desktop)]
+fn send_break_notification(app: &AppHandle, state: &CountdownState, kind: BreakNotification) {
+    let title = if state.notification_title.is_empty() {
+        "Off work reminder"
+    } else {
+        &state.notification_title
+    };
+    let body = match kind {
+        BreakNotification::Start => &state.lunch_start_notification,
+        BreakNotification::End => &state.lunch_end_notification,
+    };
+    if !body.is_empty() {
+        if let Err(error) = app.notification().builder().title(title).body(body).show() {
+            log::warn!("failed to send break notification: {error}");
+        }
+    }
+}
+
+#[cfg(desktop)]
+fn send_micro_break_notification(app: &AppHandle, state: &CountdownState, body: &str) {
+    let title = if state.notification_title.is_empty() {
+        "Off work reminder"
+    } else {
+        &state.notification_title
+    };
+    if let Err(error) = app.notification().builder().title(title).body(body).show() {
+        log::warn!("failed to send micro-break notification: {error}");
+    }
+}
+
+/// 当前时刻若落在两个 segment 之间的空隙里，返回该空隙的结束时间。
+///
+/// 与前端 `getActiveBreakEndAtMs` 同口径：这里不认识「午休」这个业务概念，
+/// 只判断时间轴上的洞——业务规则仍然只存在于 lib/countdown.ts。
+fn active_break_end_at_ms(state: &CountdownState, now_ms: i64) -> Option<i64> {
+    state.segments.windows(2).find_map(|pair| {
+        let gap_start = pair[0].end_at_ms;
+        let gap_end = pair[1].start_at_ms;
+        (gap_end > gap_start && now_ms >= gap_start && now_ms < gap_end).then_some(gap_end)
+    })
+}
+
+fn format_remaining(remaining_ms: i64) -> String {
+    let total_seconds = (remaining_ms.max(0) + 999) / 1000;
     let hours = total_seconds / 3600;
     let minutes = (total_seconds % 3600) / 60;
     let seconds = total_seconds % 60;
@@ -374,42 +865,129 @@ fn format_remaining(end_at_ms: i64, now_ms: i64) -> String {
 /// 非 macOS 构建里只有单元测试会调用它（原生面板是 macOS 独有的）。
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 fn countdown_progress(state: &CountdownState, now_ms: i64) -> f64 {
-    if !state.running || state.end_at_ms <= state.start_at_ms {
-        return 0.0;
-    }
-    let duration = (state.end_at_ms - state.start_at_ms) as f64;
-    ((now_ms - state.start_at_ms) as f64 / duration).clamp(0.0, 1.0)
+    countdown_metrics(state, now_ms)
+        .map(|(_, progress)| progress)
+        .unwrap_or(0.0)
 }
 
-/// 独立于 WebView 的后台节拍器。这里只做绝对时间戳相减；跨夜班次等业务
-/// 规则仍由前端唯一实现。即便主窗口隐藏，托盘与迷你窗生命周期也不受影响。
+/// 只有 macOS 原生面板会显示金额；Windows 迷你窗自己从 Store 算。
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+fn countdown_pay_ratio(state: &CountdownState, now_ms: i64) -> f64 {
+    if !state.running || !state.is_valid_shift() {
+        return 0.0;
+    }
+    let planned_duration: i64 = state
+        .segments
+        .iter()
+        .map(|segment| {
+            (segment.end_at_ms.min(state.planned_end_at_ms) - segment.start_at_ms).max(0)
+        })
+        .sum();
+    if planned_duration <= 0 {
+        return 0.0;
+    }
+    let elapsed: i64 = state
+        .segments
+        .iter()
+        .map(|segment| {
+            (now_ms - segment.start_at_ms).clamp(0, segment.end_at_ms - segment.start_at_ms)
+        })
+        .sum();
+    (elapsed as f64 / planned_duration as f64).max(0.0)
+}
+
+/// 只对前端给出的绝对 segments 求和，不推导跨夜、工作日、午休或加班规则。
+/// 位于两个 segment 之间时 elapsed 不变，因此剩余时间与进度都会暂停。
+fn countdown_metrics(state: &CountdownState, now_ms: i64) -> Option<(i64, f64)> {
+    if !state.running || !state.is_valid_shift() {
+        return None;
+    }
+
+    let duration: i64 = state
+        .segments
+        .iter()
+        .map(|segment| segment.end_at_ms - segment.start_at_ms)
+        .sum();
+    if duration <= 0 {
+        return None;
+    }
+    let elapsed: i64 = state
+        .segments
+        .iter()
+        .map(|segment| {
+            (now_ms - segment.start_at_ms).clamp(0, segment.end_at_ms - segment.start_at_ms)
+        })
+        .sum();
+    Some((
+        duration - elapsed,
+        (elapsed as f64 / duration as f64).clamp(0.0, 1.0),
+    ))
+}
+
+/// 独立于 WebView 的后台节拍器。这里只比较、累加前端给出的绝对 segments；
+/// 跨夜班次等业务规则仍由前端唯一实现。即便主窗口隐藏，托盘与迷你窗生命周期
+/// 也不受影响。
 fn start_tray_timer(app: AppHandle) {
     thread::spawn(move || {
         #[cfg(any(target_os = "windows", debug_assertions))]
         let mut was_running = false;
+        let mut marker = read_notification_marker(&app);
         loop {
-            let state = read_countdown_state(&app);
             let now_ms = chrono_free_now_ms();
-            let valid = state.running && state.end_at_ms > state.start_at_ms;
-            let active = valid && state.end_at_ms > now_ms;
-            let remaining = active.then(|| format_remaining(state.end_at_ms, now_ms));
+            let mut state = read_countdown_state(&app);
+            if advance_to_next_shift(&mut state, now_ms) {
+                write_countdown_state(&app, &state);
+            }
+            let metrics = countdown_metrics(&state, now_ms);
+            let active = metrics.is_some() && state.end_at_ms() > now_ms;
+            // 午休时托盘显示距午休结束的时间，而不是冻住的下班倒计时——
+            // 后者在整个午休期间纹丝不动，看起来像应用卡死了。
+            let break_remaining = active
+                .then(|| active_break_end_at_ms(&state, now_ms))
+                .flatten()
+                .map(|end| format_remaining(end - now_ms));
+            let remaining = break_remaining
+                .clone()
+                .or_else(|| active.then(|| format_remaining(metrics.expect("active metrics").0)));
+            let next_remaining = (!active && state.running)
+                .then_some(state.next_shift.as_ref())
+                .flatten()
+                .filter(|next| next.is_valid() && next.segments[0].start_at_ms > now_ms)
+                .map(|next| format_remaining(next.segments[0].start_at_ms - now_ms));
 
-            let mut marker = read_notification_marker(&app);
             let (notification, marker_changed) =
                 advance_notification_marker(&state, &mut marker, now_ms);
-            if marker_changed {
-                write_notification_marker(&app, marker);
+            let previous_observed = marker.last_observed_ms;
+            let (break_notification, break_marker_changed) =
+                advance_break_notification(&state, &mut marker, previous_observed, now_ms);
+            let (micro_break_notification, micro_break_marker_changed) =
+                advance_micro_break_marker(&state, &mut marker, previous_observed, now_ms);
+            marker.last_observed_ms = now_ms;
+            if marker_changed || break_marker_changed || micro_break_marker_changed {
+                write_notification_marker(&app, &marker);
             }
             if let Some(notification) = notification {
                 send_countdown_notification(&app, &state, notification);
             }
+            if let Some(notification) = break_notification {
+                send_break_notification(&app, &state, notification);
+            }
+            if let Some(body) = micro_break_notification {
+                send_micro_break_notification(&app, &state, &body);
+            }
 
             if let Some(tray) = app.tray_by_id("main") {
                 #[cfg(target_os = "macos")]
-                let _ = tray.set_title(Some(remaining.as_deref().unwrap_or("")));
+                let _ = tray.set_title(Some(
+                    remaining
+                        .as_deref()
+                        .or(next_remaining.as_deref())
+                        .unwrap_or(""),
+                ));
 
                 let tooltip = remaining
                     .as_deref()
+                    .or(next_remaining.as_deref())
                     .map(|time| format!("Off Work Countdown · {time}"))
                     .unwrap_or_else(|| "Off Work Countdown".to_string());
                 let _ = tray.set_tooltip(Some(tooltip));
@@ -431,12 +1009,24 @@ fn start_tray_timer(app: AppHandle) {
                     state
                         .daily_salary
                         .filter(|salary| salary.is_finite())
-                        .map(|salary| format!("{:.2}", salary * progress))
+                        .map(|salary| {
+                            format!("{:.2}", salary * countdown_pay_ratio(&state, now_ms))
+                        })
                         .unwrap_or_default()
                 } else {
                     String::new()
                 };
-                let empty_text = if state.countdown_not_started.is_empty() {
+                let between_text = next_remaining.as_ref().map(|time| {
+                    let template = if state.next_shift_label.is_empty() {
+                        "Next shift in __TIME__"
+                    } else {
+                        &state.next_shift_label
+                    };
+                    template.replace("__TIME__", time)
+                });
+                let empty_text = if let Some(text) = between_text.as_deref() {
+                    text
+                } else if state.countdown_not_started.is_empty() {
                     "Countdown not started"
                 } else {
                     &state.countdown_not_started
@@ -458,7 +1048,10 @@ fn start_tray_timer(app: AppHandle) {
             #[cfg(any(target_os = "windows", debug_assertions))]
             // Windows 在倒计时开始时自动露出迷你窗；结束后不再强制隐藏，
             // 已经打开的窗口会切换为“计时未开始”，由用户决定是否收起。
-            if active && !was_running {
+            if (cfg!(target_os = "windows") || windows_mini_dev_override())
+                && active
+                && !was_running
+            {
                 if let Some(window) = app.get_webview_window("mini") {
                     let _ = window.show();
                 }
@@ -481,17 +1074,16 @@ fn chrono_free_now_ms() -> i64 {
 }
 
 /// 托盘图标与菜单：右键打开菜单，左键直接切换迷你窗。
-fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
-    let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
-    let mini = MenuItem::with_id(app, "mini", "Mini Timer", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+fn build_tray_menu(app: &AppHandle, labels: &DesktopMenuLabels) -> tauri::Result<Menu<tauri::Wry>> {
+    let show = MenuItem::with_id(app, "show", &labels.show, true, None::<&str>)?;
+    let mini = MenuItem::with_id(app, "mini", &labels.mini, true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", &labels.quit, true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&show, &mini, &quit])?;
+    Ok(menu)
+}
 
-    app.manage(TrayMenuItems {
-        show: show.clone(),
-        mini: mini.clone(),
-        quit: quit.clone(),
-    });
+fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
+    let menu = build_tray_menu(app, &DesktopMenuLabels::default())?;
 
     let icon = app
         .default_window_icon()
@@ -527,7 +1119,100 @@ fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
-#[cfg(any(target_os = "windows", debug_assertions))]
+/// 用前端当前语言重建 macOS 菜单栏。PredefinedMenuItem 保留系统快捷键和原生
+/// selector，只替换可见文案；应用名按 D2 始终保持英文产品名。
+#[cfg(target_os = "macos")]
+fn set_macos_application_menu(app: &AppHandle, labels: &DesktopMenuLabels) -> tauri::Result<()> {
+    let package = app.package_info();
+    let about_metadata = AboutMetadata {
+        name: Some(package.name.clone()),
+        version: Some(package.version.to_string()),
+        copyright: app.config().bundle.copyright.clone(),
+        authors: app
+            .config()
+            .bundle
+            .publisher
+            .clone()
+            .map(|value| vec![value]),
+        ..Default::default()
+    };
+
+    let app_menu = Submenu::with_items(
+        app,
+        package.name.clone(),
+        true,
+        &[
+            &PredefinedMenuItem::about(app, Some(&labels.about), Some(about_metadata))?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::services(app, Some(&labels.services))?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::hide(app, Some(&labels.hide_app))?,
+            &PredefinedMenuItem::hide_others(app, Some(&labels.hide_others))?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::quit(app, Some(&labels.quit))?,
+        ],
+    )?;
+    let file_menu = Submenu::with_items(
+        app,
+        &labels.file,
+        true,
+        &[&PredefinedMenuItem::close_window(
+            app,
+            Some(&labels.close_window),
+        )?],
+    )?;
+    let edit_menu = Submenu::with_items(
+        app,
+        &labels.edit,
+        true,
+        &[
+            &PredefinedMenuItem::undo(app, Some(&labels.undo))?,
+            &PredefinedMenuItem::redo(app, Some(&labels.redo))?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::cut(app, Some(&labels.cut))?,
+            &PredefinedMenuItem::copy(app, Some(&labels.copy))?,
+            &PredefinedMenuItem::paste(app, Some(&labels.paste))?,
+            &PredefinedMenuItem::select_all(app, Some(&labels.select_all))?,
+        ],
+    )?;
+    let view_menu = Submenu::with_items(
+        app,
+        &labels.view,
+        true,
+        &[&PredefinedMenuItem::fullscreen(
+            app,
+            Some(&labels.toggle_full_screen),
+        )?],
+    )?;
+    let window_menu = Submenu::with_items(
+        app,
+        &labels.window,
+        true,
+        &[
+            &PredefinedMenuItem::minimize(app, Some(&labels.minimize))?,
+            &PredefinedMenuItem::maximize(app, Some(&labels.zoom))?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::close_window(app, Some(&labels.close_window))?,
+            &PredefinedMenuItem::bring_all_to_front(app, Some(&labels.bring_all_to_front))?,
+        ],
+    )?;
+    let help_menu = Submenu::new(app, &labels.help, true)?;
+    let menu = Menu::with_items(
+        app,
+        &[
+            &app_menu,
+            &file_menu,
+            &edit_menu,
+            &view_menu,
+            &window_menu,
+            &help_menu,
+        ],
+    )?;
+    app.set_menu(menu)?;
+    Ok(())
+}
+
+#[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
 fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
     let store = app
         .store(STORE_PATH)
@@ -536,18 +1221,21 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
         .get(MINI_ALWAYS_ON_TOP_KEY)
         .and_then(|value| value.as_bool())
         .unwrap_or(true);
-    let url = if cfg!(debug_assertions) {
+    let force_woodfish = cfg!(debug_assertions) && std::env::var_os("OWC_FORCE_WOODFISH").is_some();
+    let url = if cfg!(debug_assertions) && force_woodfish {
+        "en/mini?skin=woodfish"
+    } else if cfg!(debug_assertions) {
         "en/mini"
     } else {
         "en/mini.html"
     };
     let window = WebviewWindowBuilder::new(app, "mini", WebviewUrl::App(url.into()))
         .title("Off Work Countdown")
-        // 内容面板与 macOS 原生面板同宽（228×72），四周各留 6pt 给圆角
-        // 之外的投影，所以窗口本身要大一圈。
-        .inner_size(240.0, 84.0)
-        .min_inner_size(240.0, 84.0)
-        .max_inner_size(240.0, 84.0)
+        // 四周各留 6pt 给圆角之外的投影。高度比旧版增加 6pt，让顶部工具栏
+        // 与中间读数保持清晰间距；宽度仍与原来的紧凑挂件一致。
+        .inner_size(240.0, 90.0)
+        .min_inner_size(240.0, 90.0)
+        .max_inner_size(240.0, 90.0)
         .resizable(false)
         .maximizable(false)
         .fullscreen(false)
@@ -565,7 +1253,26 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
         .get(MINI_POSITION_KEY)
         .and_then(|value| serde_json::from_value::<MiniPosition>(value).ok())
     {
-        let _ = window.set_position(PhysicalPosition::new(position.x, position.y));
+        let intersects_a_monitor =
+            window
+                .available_monitors()
+                .unwrap_or_default()
+                .iter()
+                .any(|monitor| {
+                    let origin = monitor.position();
+                    let size = monitor.size();
+                    // 只要求至少 40×40 px 仍在任一屏幕内；这样多显示器的合法负坐标
+                    // 不会被误判，拔掉外接屏后完全落在屏外的旧位置则会被修复。
+                    position.x + 40 > origin.x
+                        && position.y + 40 > origin.y
+                        && position.x < origin.x + size.width as i32
+                        && position.y < origin.y + size.height as i32
+                });
+        if intersects_a_monitor {
+            let _ = window.set_position(PhysicalPosition::new(position.x, position.y));
+        } else {
+            let _ = window.move_window(Position::BottomRight);
+        }
     } else {
         let _ = window.move_window(Position::BottomRight);
     }
@@ -612,7 +1319,7 @@ fn get_mini_window_settings(app: AppHandle) -> Result<MiniWindowSettings, String
 
 #[tauri::command]
 fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), String> {
-    #[cfg(any(target_os = "windows", debug_assertions))]
+    #[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
     if mini_window_enabled() {
         let window = app
             .get_webview_window("mini")
@@ -632,6 +1339,11 @@ fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), Str
 #[tauri::command]
 fn toggle_mini_timer(app: AppHandle) {
     toggle_mini_window(&app);
+}
+
+#[tauri::command]
+fn toggle_floating_timer(app: AppHandle) {
+    toggle_floating_window(&app);
 }
 
 #[tauri::command]
@@ -662,6 +1374,147 @@ fn flip_hide_earnings(app: &AppHandle) {
 #[tauri::command]
 fn toggle_salary_visibility(app: AppHandle) {
     flip_hide_earnings(&app);
+}
+
+/// 迷你窗工具条上的皮肤切换。
+#[tauri::command]
+fn toggle_mini_skin(app: AppHandle) -> Result<(), String> {
+    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+    let mut state = match store.get(COUNTDOWN_KEY) {
+        Some(value) => serde_json::from_value::<CountdownState>(value)
+            .map_err(|error| error.to_string())?
+            .migrate_legacy(),
+        None => CountdownState::default(),
+    };
+    state.mini_skin = if state.mini_skin == "woodfish" {
+        "standard".into()
+    } else {
+        "woodfish".into()
+    };
+    let value = serde_json::to_value(&state).map_err(|error| error.to_string())?;
+    store.set(COUNTDOWN_KEY, value);
+    store.save().map_err(|error| error.to_string())
+}
+
+/// 迷你窗工具条上的声音开关。与眼睛按钮同理：由 Rust 改写 store，
+/// 主窗口的设置项通过订阅收到同一份状态，两处不会各说各话。
+#[tauri::command]
+fn toggle_woodfish_sound(app: AppHandle) -> Result<(), String> {
+    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+    let mut state = match store.get(COUNTDOWN_KEY) {
+        Some(value) => serde_json::from_value::<CountdownState>(value)
+            .map_err(|error| error.to_string())?
+            .migrate_legacy(),
+        None => CountdownState::default(),
+    };
+    state.woodfish_sound_enabled = !state.woodfish_sound_enabled;
+    let value = serde_json::to_value(&state).map_err(|error| error.to_string())?;
+    store.set(COUNTDOWN_KEY, value);
+    store.save().map_err(|error| error.to_string())
+}
+
+fn read_global_shortcut_settings(app: &AppHandle) -> GlobalShortcutSettings {
+    app.store(STORE_PATH)
+        .ok()
+        .and_then(|store| store.get(GLOBAL_SHORTCUT_SETTINGS_KEY))
+        .and_then(|value| serde_json::from_value(value).ok())
+        .unwrap_or_default()
+}
+
+fn persist_global_shortcut_settings(
+    app: &AppHandle,
+    settings: &GlobalShortcutSettings,
+) -> Result<(), String> {
+    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+    let value = serde_json::to_value(settings).map_err(|error| error.to_string())?;
+    store.set(GLOBAL_SHORTCUT_SETTINGS_KEY, value);
+    store.save().map_err(|error| error.to_string())
+}
+
+#[cfg(desktop)]
+fn parse_global_shortcut(accelerator: &str) -> Result<Shortcut, String> {
+    let shortcut = accelerator
+        .parse::<Shortcut>()
+        .map_err(|error| error.to_string())?;
+    if shortcut.mods.is_empty() {
+        return Err("global shortcut requires at least one modifier".into());
+    }
+    Ok(shortcut)
+}
+
+#[tauri::command]
+fn get_global_shortcut_settings(app: AppHandle) -> GlobalShortcutSettings {
+    read_global_shortcut_settings(&app)
+}
+
+/// 原子替换全局快捷键：新组合键冲突时旧快捷键仍保持可用；Store 写入失败时，
+/// 系统注册状态也会回滚，避免界面配置与真正生效的按键不一致。
+#[tauri::command]
+fn update_global_shortcut_settings(
+    app: AppHandle,
+    enabled: bool,
+    accelerator: String,
+) -> Result<GlobalShortcutSettings, String> {
+    #[cfg(desktop)]
+    {
+        let accelerator = accelerator.trim().to_string();
+        let requested_shortcut = parse_global_shortcut(&accelerator)?;
+        let previous = read_global_shortcut_settings(&app);
+        let previous_shortcut = parse_global_shortcut(&previous.accelerator).unwrap_or_else(|_| {
+            DEFAULT_GLOBAL_SHORTCUT
+                .parse()
+                .expect("valid default shortcut")
+        });
+        let requested = GlobalShortcutSettings {
+            enabled,
+            accelerator,
+        };
+        let manager = app.global_shortcut();
+        let same_shortcut = previous_shortcut == requested_shortcut;
+        let old_registered = manager.is_registered(previous_shortcut);
+        let mut registered_new = false;
+        let mut unregistered_old = false;
+
+        if requested.enabled && !manager.is_registered(requested_shortcut) {
+            manager
+                .register(requested_shortcut)
+                .map_err(|error| format!("could not register global shortcut: {error}"))?;
+            registered_new = true;
+        }
+
+        if previous.enabled && !requested.enabled && old_registered {
+            manager
+                .unregister(previous_shortcut)
+                .map_err(|error| format!("could not unregister global shortcut: {error}"))?;
+            unregistered_old = true;
+        } else if previous.enabled && requested.enabled && !same_shortcut && old_registered {
+            if let Err(error) = manager.unregister(previous_shortcut) {
+                if registered_new {
+                    let _ = manager.unregister(requested_shortcut);
+                }
+                return Err(format!("could not replace global shortcut: {error}"));
+            }
+            unregistered_old = true;
+        }
+
+        if let Err(error) = persist_global_shortcut_settings(&app, &requested) {
+            if registered_new {
+                let _ = manager.unregister(requested_shortcut);
+            }
+            if unregistered_old {
+                let _ = manager.register(previous_shortcut);
+            }
+            return Err(error);
+        }
+
+        Ok(requested)
+    }
+
+    #[cfg(not(desktop))]
+    {
+        let _ = (app, enabled, accelerator);
+        Err("global shortcuts are unavailable on this platform".into())
+    }
 }
 
 /// 直连 GitHub 下载安装包在中国大陆常常很慢甚至超时。这是**直连失败之后**
@@ -705,25 +1558,25 @@ async fn install_update_via_mirror(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn update_tray_menu(
-    app: AppHandle,
-    show_label: String,
-    mini_label: String,
-    quit_label: String,
-) -> Result<(), String> {
-    let items = app.state::<TrayMenuItems>();
-    items
-        .show
-        .set_text(show_label)
-        .map_err(|error| error.to_string())?;
-    items
-        .mini
-        .set_text(mini_label)
-        .map_err(|error| error.to_string())?;
-    items
-        .quit
-        .set_text(quit_label)
-        .map_err(|error| error.to_string())?;
+fn update_desktop_menus(app: AppHandle, labels: DesktopMenuLabels) -> Result<(), String> {
+    let tray_menu = build_tray_menu(&app, &labels).map_err(|error| {
+        log::error!("failed to build localized tray menu: {error}");
+        error.to_string()
+    })?;
+    let tray = app
+        .tray_by_id("main")
+        .ok_or_else(|| "main tray icon is unavailable".to_string())?;
+    tray.set_menu(Some(tray_menu)).map_err(|error| {
+        log::error!("failed to install localized tray menu: {error}");
+        error.to_string()
+    })?;
+
+    #[cfg(target_os = "macos")]
+    if let Err(error) = set_macos_application_menu(&app, &labels) {
+        log::error!("failed to localize macOS application menu: {error}");
+        return Err(error.to_string());
+    }
+
     Ok(())
 }
 
@@ -734,6 +1587,21 @@ fn clear_desktop_countdown_display(app: AppHandle) {
         let _ = tray.set_title(Some(""));
         let _ = tray.set_tooltip(Some("Off Work Countdown"));
     }
+}
+
+#[tauri::command]
+fn open_notification_settings(app: AppHandle) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    let url = "x-apple.systempreferences:com.apple.Notifications-Settings.extension";
+    #[cfg(target_os = "windows")]
+    let url = "ms-settings:notifications";
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    return Err("notification settings shortcut is unavailable on this platform".into());
+
+    #[cfg(any(target_os = "macos", target_os = "windows"))]
+    app.opener()
+        .open_url(url, None::<&str>)
+        .map_err(|error| error.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -775,12 +1643,18 @@ pub fn run() {
             get_mini_window_settings,
             set_mini_always_on_top,
             toggle_mini_timer,
+            toggle_floating_timer,
             hide_mini_timer,
             show_main_window,
             toggle_salary_visibility,
+            toggle_woodfish_sound,
+            toggle_mini_skin,
+            get_global_shortcut_settings,
+            update_global_shortcut_settings,
             install_update_via_mirror,
-            update_tray_menu,
-            clear_desktop_countdown_display
+            update_desktop_menus,
+            clear_desktop_countdown_display,
+            open_notification_settings
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
@@ -796,13 +1670,22 @@ pub fn run() {
                 .store(STORE_PATH)
                 .map_err(|error| std::io::Error::other(error.to_string()))?;
             #[cfg(desktop)]
-            if let Err(error) = app.global_shortcut().register("CommandOrControl+Shift+O") {
-                // 快捷键冲突不应阻止应用启动；用户仍可用 Dock/任务栏与托盘唤起。
-                log::warn!("failed to register global shortcut: {error}");
+            {
+                let shortcut_settings = read_global_shortcut_settings(app.handle());
+                if shortcut_settings.enabled {
+                    if let Err(error) = app
+                        .global_shortcut()
+                        .register(shortcut_settings.accelerator.as_str())
+                    {
+                        // 快捷键冲突不应阻止应用启动；用户仍可用 Dock/任务栏与托盘唤起。
+                        log::warn!("failed to register global shortcut: {error}");
+                    }
+                }
             }
             setup_tray(app.handle())?;
             #[cfg(target_os = "macos")]
             {
+                set_macos_application_menu(app.handle(), &DesktopMenuLabels::default())?;
                 APP_HANDLE.set(app.handle().clone()).ok();
                 native_mini::initialize();
                 // 本地 UI 验收可显式要求启动时展示原生面板；正式包未设置该
@@ -811,9 +1694,12 @@ pub fn run() {
                     native_mini::toggle();
                 }
             }
-            #[cfg(any(target_os = "windows", debug_assertions))]
+            #[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
             if mini_window_enabled() {
                 setup_mini_window(app.handle())?;
+                if cfg!(debug_assertions) && std::env::var_os("OWC_SHOW_FLOATING_MINI").is_some() {
+                    toggle_floating_window(app.handle());
+                }
             }
             start_tray_timer(app.handle().clone());
 
@@ -850,78 +1736,303 @@ pub fn run() {
 mod notification_tests {
     use super::*;
 
-    fn state(end_at_ms: i64) -> CountdownState {
+    fn state(mode: NotificationMode) -> CountdownState {
         CountdownState {
-            start_at_ms: 1_000,
-            end_at_ms,
+            segments: vec![ShiftSegment {
+                start_at_ms: 0,
+                end_at_ms: 1_000,
+            }],
+            planned_end_at_ms: 1_000,
             running: true,
-            reminder: true,
-            lead_reminder_armed: true,
+            notification_mode: Some(mode),
             ..Default::default()
         }
     }
 
     #[test]
-    fn reminder_nodes_fire_once_in_order() {
-        let countdown = state(2_000_000);
+    fn milestone_nodes_fire_once_in_order() {
+        let countdown = state(NotificationMode::Milestones);
         let mut marker = NotificationMarker::default();
 
         assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 1_099_999).0,
+            advance_notification_marker(&countdown, &mut marker, 0).0,
             None
         );
         assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 1_100_000).0,
-            Some(CountdownNotification::Lead)
+            advance_notification_marker(&countdown, &mut marker, 500).0,
+            Some(NotificationMilestone::Half)
         );
         assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 1_100_001).0,
+            advance_notification_marker(&countdown, &mut marker, 500).0,
             None
         );
         assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 2_000_000).0,
-            Some(CountdownNotification::Complete)
+            advance_notification_marker(&countdown, &mut marker, 750).0,
+            Some(NotificationMilestone::ThreeQuarters)
         );
         assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 2_000_001).0,
+            advance_notification_marker(&countdown, &mut marker, 900).0,
+            Some(NotificationMilestone::Ninety)
+        );
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 950).0,
+            Some(NotificationMilestone::NinetyFive)
+        );
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 1_000).0,
+            Some(NotificationMilestone::Complete)
+        );
+    }
+
+    #[test]
+    fn simple_mode_only_notifies_at_completion() {
+        let countdown = state(NotificationMode::Simple);
+        let mut marker = NotificationMarker::default();
+        advance_notification_marker(&countdown, &mut marker, 0);
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 950).0,
+            None
+        );
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 1_000).0,
+            Some(NotificationMilestone::Complete)
+        );
+    }
+
+    #[test]
+    fn wakeups_emit_only_the_highest_new_milestone() {
+        let countdown = state(NotificationMode::Milestones);
+        let mut marker = NotificationMarker::default();
+        advance_notification_marker(&countdown, &mut marker, 400);
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 960).0,
+            Some(NotificationMilestone::NinetyFive)
+        );
+        assert_eq!(marker.sent_milestones, vec![50, 75, 90, 95]);
+    }
+
+    #[test]
+    fn disabled_or_stale_states_never_backfill() {
+        let mut countdown = state(NotificationMode::Off);
+        let mut marker = NotificationMarker::default();
+        advance_notification_marker(&countdown, &mut marker, 0);
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 800).0,
+            None
+        );
+
+        countdown.notification_mode = Some(NotificationMode::Milestones);
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 800).0,
+            None
+        );
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut marker, 900).0,
+            Some(NotificationMilestone::Ninety)
+        );
+
+        let mut stale_marker = NotificationMarker::default();
+        assert_eq!(
+            advance_notification_marker(&countdown, &mut stale_marker, 1_001).0,
+            None
+        );
+        assert_eq!(stale_marker.sent_milestones, vec![50, 75, 90, 95, 100]);
+    }
+
+    #[test]
+    fn notification_body_never_reads_salary_state() {
+        let mut countdown = state(NotificationMode::Milestones);
+        countdown.daily_salary = Some(123_456.78);
+        countdown.notification_messages.milestone50 = vec!["Safe progress copy".into()];
+        assert_eq!(
+            notification_body(&countdown, NotificationMilestone::Half),
+            "Safe progress copy"
+        );
+    }
+
+    #[test]
+    fn lunch_boundaries_notify_once_but_sleep_does_not_backfill() {
+        let mut countdown = CountdownState {
+            segments: vec![
+                ShiftSegment {
+                    start_at_ms: 0,
+                    end_at_ms: 3_000,
+                },
+                ShiftSegment {
+                    start_at_ms: 4_000,
+                    end_at_ms: 10_000,
+                },
+            ],
+            planned_end_at_ms: 10_000,
+            running: true,
+            lunch_notification_enabled: true,
+            lunch_end_notification_enabled: true,
+            ..Default::default()
+        };
+        let mut marker = NotificationMarker::default();
+        advance_notification_marker(&countdown, &mut marker, 2_900);
+        assert_eq!(
+            advance_break_notification(&countdown, &mut marker, 2_900, 3_001).0,
+            Some(BreakNotification::Start)
+        );
+        assert_eq!(
+            advance_break_notification(&countdown, &mut marker, 3_001, 3_500).0,
+            None
+        );
+        assert_eq!(
+            advance_break_notification(&countdown, &mut marker, 3_500, 4_001).0,
+            Some(BreakNotification::End)
+        );
+
+        // 新班次首次在午休后才被观察到，两个边界都视为历史，不补发。
+        countdown.planned_end_at_ms = 20_000;
+        countdown.segments = vec![
+            ShiftSegment {
+                start_at_ms: 10_000,
+                end_at_ms: 13_000,
+            },
+            ShiftSegment {
+                start_at_ms: 14_000,
+                end_at_ms: 20_000,
+            },
+        ];
+        advance_notification_marker(&countdown, &mut marker, 15_000);
+        assert_eq!(
+            advance_break_notification(&countdown, &mut marker, 15_000, 15_001).0,
             None
         );
     }
 
     #[test]
-    fn short_or_stale_countdowns_do_not_backfill_notifications() {
-        let mut short = state(2_000_000);
-        short.lead_reminder_armed = false;
-        let mut marker = NotificationMarker::default();
+    fn switches_only_to_a_live_frontend_supplied_next_shift() {
+        let mut countdown = state(NotificationMode::Off);
+        countdown.next_shift = Some(ShiftTimelineState {
+            segments: vec![ShiftSegment {
+                start_at_ms: 2_000,
+                end_at_ms: 3_000,
+            }],
+            planned_end_at_ms: 3_000,
+            overtime_end_at_ms: None,
+        });
+        assert!(!advance_to_next_shift(&mut countdown, 1_500));
+        assert!(advance_to_next_shift(&mut countdown, 2_100));
+        assert_eq!(countdown.segments[0].start_at_ms, 2_000);
+        assert!(countdown.next_shift.is_none());
+
+        let mut stale = state(NotificationMode::Off);
+        stale.next_shift = Some(ShiftTimelineState {
+            segments: vec![ShiftSegment {
+                start_at_ms: 2_000,
+                end_at_ms: 3_000,
+            }],
+            planned_end_at_ms: 3_000,
+            overtime_end_at_ms: None,
+        });
+        assert!(advance_to_next_shift(&mut stale, 4_000));
+        assert!(!stale.running);
+    }
+
+    #[test]
+    fn overtime_salary_uses_the_planned_hourly_rate() {
+        let countdown = CountdownState {
+            segments: vec![ShiftSegment {
+                start_at_ms: 0,
+                end_at_ms: 12_000,
+            }],
+            planned_end_at_ms: 10_000,
+            overtime_end_at_ms: Some(12_000),
+            running: true,
+            ..Default::default()
+        };
+        assert!((countdown_pay_ratio(&countdown, 12_000) - 1.2).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn micro_breaks_pause_for_lunch_and_restart_after_it() {
+        let countdown = CountdownState {
+            segments: vec![
+                ShiftSegment {
+                    start_at_ms: 0,
+                    end_at_ms: 50_000,
+                },
+                ShiftSegment {
+                    start_at_ms: 90_000,
+                    end_at_ms: 180_000,
+                },
+            ],
+            planned_end_at_ms: 180_000,
+            running: true,
+            micro_break_enabled: true,
+            micro_break_interval_minutes: 1,
+            micro_break_messages: vec!["Worked {{minutes}} minutes; drink water.".into()],
+            ..Default::default()
+        };
+        let mut marker = NotificationMarker {
+            model_version: 3,
+            end_at_ms: 180_000,
+            last_observed_ms: 49_000,
+            micro_break_interval_minutes: 1,
+            micro_break_segment_start_at_ms: Some(0),
+            ..Default::default()
+        };
+
+        // 午休期间不发送，并清掉午休前已经累计的 50 秒。
         assert_eq!(
-            advance_notification_marker(&short, &mut marker, 1_500_000).0,
-            None
+            advance_micro_break_marker(&countdown, &mut marker, 49_000, 60_000),
+            (None, true)
+        );
+        assert_eq!(marker.micro_break_segment_start_at_ms, None);
+        assert_eq!(
+            advance_micro_break_marker(&countdown, &mut marker, 60_000, 89_999),
+            (None, false)
         );
 
-        let stale = state(2_000_000);
-        let mut stale_marker = NotificationMarker::default();
+        // 午休结束时建立新周期，但不会把上午的 50 秒接到下午。
         assert_eq!(
-            advance_notification_marker(&stale, &mut stale_marker, 2_000_001).0,
+            advance_micro_break_marker(&countdown, &mut marker, 89_999, 90_000),
+            (None, true)
+        );
+        assert_eq!(marker.micro_break_segment_start_at_ms, Some(90_000));
+        assert_eq!(
+            advance_micro_break_marker(&countdown, &mut marker, 90_000, 140_000),
+            (None, false)
+        );
+        assert_eq!(
+            advance_micro_break_marker(&countdown, &mut marker, 149_999, 150_000).0,
+            Some("Worked 1 minutes; drink water.".into())
+        );
+
+        let mut changed = countdown.clone();
+        changed.micro_break_interval_minutes = 2;
+        assert_eq!(
+            advance_micro_break_marker(&changed, &mut marker, 150_000, 150_001).0,
             None
         );
+        assert_eq!(marker.micro_break_interval_minutes, 2);
     }
 }
 
 #[cfg(test)]
 mod format_tests {
-    use super::{countdown_progress, format_remaining, CountdownState};
+    use super::{
+        countdown_metrics, countdown_progress, format_remaining, parse_global_shortcut,
+        CountdownState, GlobalShortcutSettings, ShiftSegment, DEFAULT_GLOBAL_SHORTCUT,
+    };
 
     #[test]
     fn formats_remaining_time_without_business_logic() {
-        assert_eq!(format_remaining(3_661_001, 1), "1:01:01");
-        assert_eq!(format_remaining(1, 2), "0:00:00");
+        assert_eq!(format_remaining(3_661_000), "1:01:01");
+        assert_eq!(format_remaining(-1), "0:00:00");
     }
 
     #[test]
     fn clamps_native_mini_progress_to_the_shift() {
         let state = CountdownState {
-            start_at_ms: 1_000,
-            end_at_ms: 2_000,
+            segments: vec![ShiftSegment {
+                start_at_ms: 1_000,
+                end_at_ms: 2_000,
+            }],
+            planned_end_at_ms: 2_000,
             running: true,
             ..Default::default()
         };
@@ -929,5 +2040,54 @@ mod format_tests {
         assert_eq!(countdown_progress(&state, 1_500), 0.5);
         assert_eq!(countdown_progress(&state, 2_500), 1.0);
         assert_eq!(countdown_progress(&CountdownState::default(), 1_500), 0.0);
+    }
+
+    #[test]
+    fn segmented_metrics_pause_between_work_periods() {
+        let state = CountdownState {
+            segments: vec![
+                ShiftSegment {
+                    start_at_ms: 1_000,
+                    end_at_ms: 4_000,
+                },
+                ShiftSegment {
+                    start_at_ms: 6_000,
+                    end_at_ms: 11_000,
+                },
+            ],
+            planned_end_at_ms: 11_000,
+            running: true,
+            ..Default::default()
+        };
+
+        assert_eq!(countdown_metrics(&state, 5_000), Some((5_000, 0.375)));
+        assert_eq!(countdown_metrics(&state, 6_000), Some((5_000, 0.375)));
+    }
+
+    #[test]
+    fn migrates_the_legacy_single_range_snapshot() {
+        let state = CountdownState {
+            legacy_start_at_ms: 1_000,
+            legacy_end_at_ms: 2_000,
+            running: true,
+            ..Default::default()
+        }
+        .migrate_legacy();
+
+        assert_eq!(state.segments.len(), 1);
+        assert_eq!(state.segments[0].start_at_ms, 1_000);
+        assert_eq!(state.segments[0].end_at_ms, 2_000);
+        assert_eq!(state.planned_end_at_ms, 2_000);
+        assert!(state.is_valid_shift());
+    }
+
+    #[test]
+    fn global_shortcuts_require_a_modifier_and_keep_the_legacy_default() {
+        let settings = GlobalShortcutSettings::default();
+        assert!(settings.enabled);
+        assert_eq!(settings.accelerator, DEFAULT_GLOBAL_SHORTCUT);
+        assert!(parse_global_shortcut("Shift+KeyK").is_ok());
+        assert!(parse_global_shortcut("KeyK").is_err());
+        assert!(parse_global_shortcut("Shift").is_err());
     }
 }

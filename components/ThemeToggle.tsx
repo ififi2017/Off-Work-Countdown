@@ -16,12 +16,14 @@ interface ThemeToggleProps {
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
   compact?: boolean;
+  quick?: boolean;
 }
 
 export function ThemeToggle({
   theme,
   onThemeChange,
   compact = false,
+  quick = false,
 }: ThemeToggleProps) {
   const { t } = useTranslation();
 
@@ -44,11 +46,14 @@ export function ThemeToggle({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          type="button"
           variant="outline"
           size="icon"
           className={`${
-            compact
-              ? "h-9 w-9 rounded-xl border-input bg-background shadow-sm"
+            quick
+              ? "h-9 w-9 rounded-xl border-gray-200/80 bg-white/40 text-gray-600 shadow-sm hover:bg-white/70 hover:text-gray-900 dark:border-gray-700 dark:bg-black/10 dark:text-gray-300 dark:hover:bg-black/20 dark:hover:text-white"
+              : compact
+                ? "h-9 w-9 rounded-xl border-input bg-background shadow-sm"
               : "glass border-0 dark:glass-dark"
           }`}
         >

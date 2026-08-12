@@ -123,3 +123,117 @@ body {
     padding-right: env(safe-area-inset-right);
   }
 }
+
+/* 木鱼敲击反馈：文字从木鱼上部约一成处浮起、边升边淡出。每敲一次生成一个独立实例，
+   连击时多个数字同时在飞，所以动画是一次性的、结束即卸载。
+
+   升程刻意压得很短：面板为了圆角设了 overflow-hidden，越过面板上沿的部分
+   会被直接裁掉，所以宁可短一点也不能飞出去。 */
+@keyframes woodfishFloatUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 2px) scale(0.85);
+  }
+  22% {
+    opacity: 1;
+    transform: translate(-50%, -4px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -18px) scale(1);
+  }
+}
+
+.woodfish-floater {
+  animation: woodfishFloatUp 900ms cubic-bezier(0.22, 0.68, 0.35, 1) forwards;
+}
+
+/* 未敲击时是普通投影；敲击瞬间换成暖色辉光。drop-shadow 跟随路径轮廓，
+   所以光是沿木鱼的边缘走的，不是方框。 */
+.woodfish-idle {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+  transition: filter 260ms ease-out;
+}
+
+.woodfish-struck {
+  filter: drop-shadow(0 0 5px rgba(255, 186, 96, 0.95))
+    drop-shadow(0 0 13px rgba(255, 138, 62, 0.65));
+  transition: filter 60ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .woodfish-floater {
+    animation-duration: 1ms;
+  }
+  .woodfish-idle,
+  .woodfish-struck {
+    transition: none;
+  }
+}
+
+/* 午休待命：进度条本身不动（时间是暂停的），用一道从左掠到右的高光表示
+   「还在计时、只是暂停」。用平移而非改宽度，避免被误读成进度在推进。 */
+@keyframes progressStandby {
+  0% {
+    transform: translateX(-60%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+.progress-standby::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inline-size: 45%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  animation: progressStandby 1.9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-standby::after {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+/* 从主界面快捷入口跳进设置页时的目标高亮。只用外发光而不改背景色，
+   避免在深浅两套主题里各调一遍对比度。 */
+@keyframes settingHighlight {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(249, 168, 60, 0);
+  }
+  25%,
+  75% {
+    box-shadow: 0 0 0 3px rgba(249, 168, 60, 0.45);
+  }
+}
+
+.setting-highlight {
+  animation: settingHighlight 2.2s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setting-highlight {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(249, 168, 60, 0.45);
+  }
+}
+
+/* 滚轮选择器的滚动条要藏起来——它本身就是个轮盘，露出滚动条会破坏隐喻。 */
+.wheel-picker-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wheel-picker-scroll::-webkit-scrollbar {
+  display: none;
+}

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
+import { WheelPicker } from "./WheelPicker";
 
 interface TimeSelectorProps {
   id: string;
@@ -103,28 +104,21 @@ export function TimeSelector({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: -4 }}
           transition={{ duration: 0.12 }}
-          className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-input bg-popover text-popover-foreground shadow-md"
+          // 主题给卡片加了玻璃效果，bg-popover 在这里会透出底下的工作日按钮，
+          // 滚轮读数会糊成一片，所以这层必须自己是不透明的。
+          className="absolute z-30 mt-1 w-full overflow-hidden rounded-lg border border-input bg-white p-1 text-popover-foreground shadow-lg dark:bg-gray-800"
         >
-          <div
-            className={`${compact ? "max-h-40" : "max-h-60"} overflow-y-auto p-1`}
-          >
-            {items.map((item) => (
-              <button
-                type="button"
-                key={item}
-                className="w-full rounded-sm px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                onClick={() => {
-                  commitTime(
-                    type === "hour" ? item : hourInput,
-                    type === "minute" ? item : minuteInput
-                  );
-                  setOpenMenu(null);
-                }}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
+          <WheelPicker
+            items={items}
+            value={type === "hour" ? hourInput : minuteInput}
+            ariaLabel={type === "hour" ? "Select hour" : "Select minute"}
+            onChange={(item) =>
+              commitTime(
+                type === "hour" ? item : hourInput,
+                type === "minute" ? item : minuteInput
+              )
+            }
+          />
         </motion.div>
       )}
     </AnimatePresence>

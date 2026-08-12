@@ -1,22 +1,47 @@
 const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
 
-export async function requestNotificationPermission(): Promise<boolean> {
+export interface NotificationPermissionResult {
+  granted: boolean;
+  newlyGranted: boolean;
+}
+
+export async function requestNotificationPermissionDetailed(): Promise<NotificationPermissionResult> {
   if (IS_DESKTOP_BUILD) {
     try {
       const { isPermissionGranted, requestPermission } = await import(
         "@tauri-apps/plugin-notification"
       );
-      if (await isPermissionGranted()) return true;
-      return (await requestPermission()) === "granted";
+      if (await isPermissionGranted()) {
+        return { granted: true, newlyGranted: false };
+      }
+      const granted = (await requestPermission()) === "granted";
+      return { granted, newlyGranted: granted };
     } catch {
-      return false;
+      return { granted: false, newlyGranted: false };
     }
   }
 
-  if (typeof window === "undefined" || !("Notification" in window)) return false;
-  if (Notification.permission === "granted") return true;
-  if (Notification.permission === "denied") return false;
-  return (await Notification.requestPermission()) === "granted";
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return { granted: false, newlyGranted: false };
+  }
+  if (Notification.permission === "granted") {
+    return { granted: true, newlyGranted: false };
+  }
+  if (Notification.permission === "denied") {
+    return { granted: false, newlyGranted: false };
+  }
+  const granted = (await Notification.requestPermission()) === "granted";
+  return { granted, newlyGranted: granted };
+}
+
+export async function requestNotificationPermission(): Promise<boolean> {
+  return (await requestNotificationPermissionDetailed()).granted;
+}
+
+export async function openDesktopNotificationSettings(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("open_notification_settings");
 }
 
 // 通知发送。桌面构建走 Tauri 原生通知；Web 端优先走 Service Worker 注册，

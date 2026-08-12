@@ -1,22 +1,52 @@
+import {
+  calculateTimelineProgress,
+  calculateTimelinePayRatio,
+  getShiftStartAtMs,
+  getShiftEndAtMs,
+  getShiftRemainingMs,
+  getActiveBreakEndAtMs,
+  isValidShiftTimeline,
+  type ShiftTimeline,
+} from "./countdown";
+
 const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
 
 export const DESKTOP_STORE_PATH = "desktop-state.json";
 export const DESKTOP_COUNTDOWN_KEY = "countdown";
 
-export interface DesktopCountdownState {
-  startAtMs: number;
-  endAtMs: number;
+export type DesktopNotificationMode = "off" | "simple" | "milestones";
+export type DesktopMiniSkin = "standard" | "woodfish";
+
+export interface DesktopNotificationMessages {
+  milestone50: string[];
+  milestone75: string[];
+  milestone90: string[];
+  milestone95: string[];
+  milestone100: string[];
+}
+
+export interface DesktopCountdownState extends ShiftTimeline {
   running: boolean;
-  reminder: boolean;
-  leadReminderArmed: boolean;
+  nextShift: ShiftTimeline | null;
+  notificationMode: DesktopNotificationMode;
   notificationTitle: string;
-  leadNotificationBody: string;
-  completionNotificationBody: string;
+  notificationMessages: DesktopNotificationMessages;
   showSalary: boolean;
   hideEarnings: boolean;
   dailySalary: number | null;
   lang: string;
   countdownNotStarted: string;
+  nextShiftLabel: string;
+  lunchStartNotification: string;
+  lunchEndNotification: string;
+  lunchNotificationEnabled: boolean;
+  lunchEndNotificationEnabled: boolean;
+  microBreakEnabled: boolean;
+  microBreakIntervalMinutes: number;
+  /** 轮换用的健康提醒文案；喝水与起身混在同一个池子里。 */
+  microBreakMessages: string[];
+  miniSkin: DesktopMiniSkin;
+  woodfishSoundEnabled: boolean;
   /** 迷你面板眼睛按钮的无障碍描述，随界面语言走。 */
   showEarningsLabel: string;
   hideEarningsLabel: string;
@@ -26,22 +56,42 @@ export interface DesktopCountdownView {
   time: string;
   progress: number;
   earned: number | null;
+  phase: "idle" | "before" | "working" | "break" | "between" | "done";
 }
 
 const EMPTY_STATE: DesktopCountdownState = {
-  startAtMs: 0,
-  endAtMs: 0,
+  segments: [],
+  plannedEndAtMs: 0,
+  overtimeEndAtMs: null,
   running: false,
-  reminder: false,
-  leadReminderArmed: false,
+  nextShift: null,
+  notificationMode: "off",
   notificationTitle: "Off work reminder",
-  leadNotificationBody: "Fifteen minutes left!",
-  completionNotificationBody: "Off work time!",
+  notificationMessages: {
+    milestone50: ["Halfway there."],
+    milestone75: ["The hardest part is behind you."],
+    milestone90: ["Almost there."],
+    milestone95: ["Just a little longer."],
+    milestone100: ["Off work time!"],
+  },
   showSalary: false,
   hideEarnings: false,
   dailySalary: null,
   lang: "en",
   countdownNotStarted: "Countdown not started",
+  nextShiftLabel: "Next shift in __TIME__",
+  lunchStartNotification: "Lunch break has started. The countdown is paused.",
+  lunchEndNotification: "Lunch break is over. Ready when you are.",
+  lunchNotificationEnabled: false,
+  lunchEndNotificationEnabled: false,
+  microBreakEnabled: false,
+  microBreakIntervalMinutes: 60,
+  microBreakMessages: [
+    "You've been at it for {{minutes}} minutes. Go get some water.",
+    "{{minutes}} minutes straight. Stand up and stretch.",
+  ],
+  miniSkin: "standard",
+  woodfishSoundEnabled: false,
   showEarningsLabel: "Show amount",
   hideEarningsLabel: "Hide amount",
 };
@@ -92,10 +142,86 @@ export async function writeDesktopCountdownState(
   await store.set(DESKTOP_COUNTDOWN_KEY, state);
 }
 
+type PersistedDesktopCountdownState = Partial<DesktopCountdownState> & {
+  /** 3.0.x Store 迁移字段，只读不再写。 */
+  startAtMs?: number;
+  endAtMs?: number;
+  /** 3.0.x 通知字段，只用于迁移。 */
+  reminder?: boolean;
+  leadReminderArmed?: boolean;
+  leadNotificationBody?: string;
+  completionNotificationBody?: string;
+};
+
+/**
+ * 把 3.0.x 的单段快照提升为 3.1 分段模型。迁移只把既有绝对时间戳包成一个
+ * segment，不推导跨夜或工作日，因此没有把业务规则复制到持久化层。
+ */
+export function normalizeDesktopCountdownState(
+  persisted: PersistedDesktopCountdownState
+): DesktopCountdownState {
+  const {
+    startAtMs,
+    endAtMs,
+    reminder,
+    leadReminderArmed: _leadReminderArmed,
+    leadNotificationBody: _leadNotificationBody,
+    completionNotificationBody: _completionNotificationBody,
+    ...current
+  } = persisted;
+  const merged: DesktopCountdownState = {
+    ...EMPTY_STATE,
+    ...current,
+    segments: Array.isArray(current.segments) ? current.segments : [],
+    overtimeEndAtMs: current.overtimeEndAtMs ?? null,
+    notificationMode:
+      current.notificationMode ?? (reminder ? "simple" : "off"),
+    notificationMessages: {
+      ...EMPTY_STATE.notificationMessages,
+      ...current.notificationMessages,
+    },
+    microBreakMessages:
+      Array.isArray(current.microBreakMessages) &&
+      current.microBreakMessages.length > 0
+        ? current.microBreakMessages
+        : EMPTY_STATE.microBreakMessages,
+  };
+  merged.nextShift =
+    merged.nextShift && isValidShiftTimeline(merged.nextShift)
+      ? merged.nextShift
+      : null;
+
+  if (isValidShiftTimeline(merged)) return merged;
+
+  if (
+    Number.isFinite(startAtMs) &&
+    Number.isFinite(endAtMs) &&
+    (endAtMs ?? 0) > (startAtMs ?? 0)
+  ) {
+    return {
+      ...merged,
+      segments: [{ startAtMs: startAtMs!, endAtMs: endAtMs! }],
+      plannedEndAtMs: endAtMs!,
+      overtimeEndAtMs: null,
+    };
+  }
+
+  return {
+    ...merged,
+    segments: [],
+    plannedEndAtMs: 0,
+    overtimeEndAtMs: null,
+    running: false,
+  };
+}
+
 export async function readDesktopCountdownState(): Promise<DesktopCountdownState | null> {
   const store = await getDesktopStore();
   if (!store) return null;
-  return (await store.get<DesktopCountdownState>(DESKTOP_COUNTDOWN_KEY)) ?? null;
+  const persisted = await store.get<PersistedDesktopCountdownState>(
+    DESKTOP_COUNTDOWN_KEY
+  );
+  return persisted ? normalizeDesktopCountdownState(persisted) : null;
 }
 
 /**
@@ -109,9 +235,9 @@ export async function subscribeToDesktopCountdown(
 ): Promise<() => void> {
   const store = await getDesktopStore();
   if (!store) return () => {};
-  return store.onKeyChange<DesktopCountdownState>(
+  return store.onKeyChange<PersistedDesktopCountdownState>(
     DESKTOP_COUNTDOWN_KEY,
-    (value) => listener(value ?? null)
+    (value) => listener(value ? normalizeDesktopCountdownState(value) : null)
   );
 }
 
@@ -129,28 +255,72 @@ export function getDesktopCountdownView(
   state: DesktopCountdownState | null,
   nowMs: number
 ): DesktopCountdownView {
-  if (!state?.running || state.endAtMs <= state.startAtMs) {
-    return { time: "--:--:--", progress: 0, earned: null };
+  if (!state?.running || !isValidShiftTimeline(state)) {
+    return { time: "--:--:--", progress: 0, earned: null, phase: "idle" };
   }
 
-  const duration = state.endAtMs - state.startAtMs;
-  const elapsed = Math.min(duration, Math.max(0, nowMs - state.startAtMs));
-  const progress = (elapsed / duration) * 100;
+  const progress = calculateTimelineProgress(state, nowMs);
+  const startAtMs = getShiftStartAtMs(state);
+  const endAtMs = getShiftEndAtMs(state);
+  const breakEndAtMs = getActiveBreakEndAtMs(state, nowMs);
+  let phase: DesktopCountdownView["phase"] = "working";
+  let time = formatDesktopDuration(getShiftRemainingMs(state, nowMs));
+  if (nowMs < startAtMs) {
+    phase = "before";
+    time = formatDesktopDuration(startAtMs - nowMs);
+  } else if (breakEndAtMs !== null) {
+    // 午休时下班倒计时是冻住的，显示它等于让界面看起来卡死；
+    // 改成距午休结束还有多久，进度条那边再用掠光表示「在待命」。
+    phase = "break";
+    time = formatDesktopDuration(breakEndAtMs - nowMs);
+  } else if (nowMs >= endAtMs) {
+    const nextStart = state.nextShift
+      ? getShiftStartAtMs(state.nextShift)
+      : 0;
+    if (nextStart > nowMs) {
+      phase = "between";
+      time = formatDesktopDuration(nextStart - nowMs);
+    } else {
+      phase = "done";
+      time = "0:00:00";
+    }
+  }
   const earned =
     state.showSalary && !state.hideEarnings && state.dailySalary !== null
-      ? (state.dailySalary * progress) / 100
+      ? state.dailySalary * calculateTimelinePayRatio(state, nowMs)
       : null;
 
   return {
-    time: formatDesktopDuration(state.endAtMs - nowMs),
+    time,
     progress,
     earned,
+    phase,
   };
 }
 
 export interface MiniWindowSettings {
   platform: "macos" | "windows" | "other";
   alwaysOnTop: boolean;
+}
+
+export interface DesktopGlobalShortcutSettings {
+  enabled: boolean;
+  accelerator: string;
+}
+
+export async function getDesktopGlobalShortcutSettings(): Promise<DesktopGlobalShortcutSettings> {
+  const { invoke } = await import("@tauri-apps/api/core");
+  return invoke<DesktopGlobalShortcutSettings>("get_global_shortcut_settings");
+}
+
+export async function updateDesktopGlobalShortcutSettings(
+  settings: DesktopGlobalShortcutSettings
+): Promise<DesktopGlobalShortcutSettings> {
+  const { invoke } = await import("@tauri-apps/api/core");
+  return invoke<DesktopGlobalShortcutSettings>(
+    "update_global_shortcut_settings",
+    { enabled: settings.enabled, accelerator: settings.accelerator }
+  );
 }
 
 export async function getMiniWindowSettings(): Promise<MiniWindowSettings> {
@@ -167,6 +337,12 @@ export async function toggleDesktopMiniTimer(): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("toggle_mini_timer");
+}
+
+export async function toggleDesktopFloatingTimer(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("toggle_floating_timer");
 }
 
 export async function hideDesktopMiniTimer(): Promise<void> {
@@ -203,24 +379,58 @@ export async function installDesktopUpdateViaMirror(): Promise<void> {
  * 翻转「隐藏金额」。两个迷你窗都走这里，由 Rust 统一改写 store，
  * 主窗口通过 {@link subscribeToDesktopCountdown} 收到同一份状态。
  */
+/** 迷你窗工具条上的皮肤切换；与设置页共享同一个 miniSkin。 */
+export async function toggleDesktopMiniSkin(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("toggle_mini_skin");
+}
+
+/** 迷你窗工具条上的声音开关；与设置页共享同一个 woodfishSoundEnabled。 */
+export async function toggleDesktopWoodfishSound(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("toggle_woodfish_sound");
+}
+
 export async function toggleDesktopSalaryVisibility(): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("toggle_salary_visibility");
 }
 
-export async function updateDesktopTrayMenu(labels: {
+export interface DesktopMenuLabels {
   show: string;
   mini: string;
   quit: string;
-}): Promise<void> {
+  file: string;
+  edit: string;
+  view: string;
+  window: string;
+  help: string;
+  about: string;
+  services: string;
+  hideApp: string;
+  hideOthers: string;
+  closeWindow: string;
+  undo: string;
+  redo: string;
+  cut: string;
+  copy: string;
+  paste: string;
+  selectAll: string;
+  toggleFullScreen: string;
+  minimize: string;
+  zoom: string;
+  bringAllToFront: string;
+}
+
+export async function updateDesktopMenus(
+  labels: DesktopMenuLabels
+): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
   const { invoke } = await import("@tauri-apps/api/core");
-  await invoke("update_tray_menu", {
-    showLabel: labels.show,
-    miniLabel: labels.mini,
-    quitLabel: labels.quit,
-  });
+  await invoke("update_desktop_menus", { labels });
 }
 
 export async function stopDesktopCountdown(
