@@ -63,8 +63,13 @@ export interface ContentBundle {
     downloadsIntro: string;
     demoHeading: string;
     demoIntro: string;
+    demoAppHeading: string;
+    demoAppBody: string;
     demoAppAlt: string;
+    demoMiniHeading: string;
+    demoMiniBody: string;
     demoMiniAlt: string;
+    demoCtaLabel: string;
     latestVersionLabel: string;
     loadingLabel: string;
     unavailableLabel: string;

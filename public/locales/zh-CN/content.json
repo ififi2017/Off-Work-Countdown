@@ -137,76 +137,81 @@
   "download": {
     "metaTitle": "下载 macOS 与 Windows 客户端 - 下班倒计时",
     "metaDescription": "下载最新版下班倒计时桌面客户端，支持 Apple Silicon、Intel Mac 与 Windows x64、ARM64，安装包自动取自 GitHub Releases。",
-    "heading": "不用一直留着浏览器标签页，也能安心倒计时",
-    "intro": "网页版打开就能用，最适合快速开始；桌面客户端则更适合每天常驻。它把倒计时放进菜单栏或系统托盘，能在后台提醒你，也可以用一个快捷键随时唤出。",
+    "heading": "让下班倒计时，安静地陪你工作",
+    "intro": "喜欢网页版的轻巧，也想让倒计时更自然地融入每天的工作节奏？桌面客户端可以常驻菜单栏或系统托盘，在后台继续计时、适时提醒，需要时用一个快捷键就能唤出。",
     "benefits": [
       {
-        "heading": "随时都找得到",
+        "heading": "抬眼就能看到",
         "body": [
-          "剩余时间直接显示在菜单栏或系统托盘。一个全局快捷键就能显示或隐藏紧凑窗口，不必再去一堆浏览器标签里翻找。"
+          "剩余时间会留在菜单栏或系统托盘。想看详情时，用全局快捷键唤出紧凑窗口，不用在浏览器标签之间来回寻找。"
         ]
       },
       {
-        "heading": "为后台常驻而生",
+        "heading": "提醒恰到好处",
         "body": [
-          "隐藏主窗口后倒计时仍会继续。原生提醒、登录时启动和专门适配的桌面布局，让它适合一整天安静地待在电脑上。"
+          "隐藏窗口后，倒计时和班次提醒仍会继续。登录时启动、原生通知和专门适配的紧凑布局，让它可以安静地陪你度过整个工作日。"
         ]
       },
       {
-        "heading": "仍然坚持本地优先",
+        "heading": "你的数据，只留在本机",
         "body": [
-          "上下班时间、薪资和偏好只保存在你的设备上。无需账号，桌面客户端也不会把使用统计或个人设置发送到服务器。"
+          "上下班时间、薪资和偏好都保存在你的设备上。无需注册账号，客户端也不会上传使用统计或个人设置。"
         ]
       }
     ],
-    "comparisonHeading": "网页版还是客户端？",
-    "comparisonIntro": "两个版本拥有相同的倒计时和薪资估算能力，区别在于它们如何融入你的工作日。",
+    "comparisonHeading": "网页版轻巧，客户端更适合每天相伴",
+    "comparisonIntro": "两个版本都提供倒计时和薪资估算。网页版适合随开随用；如果你希望它在后台持续运行、主动提醒，桌面客户端会更顺手。",
     "webLabel": "网页版",
     "desktopLabel": "桌面客户端",
     "comparison": [
       {
         "feature": "开始使用",
-        "web": "打开网站即可，无需下载",
-        "desktop": "可登录时启动，也可用快捷键唤出"
+        "web": "打开网页即可开始",
+        "desktop": "可登录时启动，快捷键随时唤出"
       },
       {
         "feature": "后台使用",
-        "web": "需要保留标签页或 PWA",
-        "desktop": "隐藏窗口后托盘仍显示倒计时"
+        "web": "保留网页或 PWA 即可继续计时",
+        "desktop": "隐藏窗口后，托盘仍会显示倒计时"
       },
       {
         "feature": "下班提醒",
-        "web": "页面保持打开时可用",
-        "desktop": "里程碑、午休和按有效工时计算的微休息提醒"
+        "web": "网页保持打开时可以提醒",
+        "desktop": "支持里程碑、午休和按有效工时计算的微休息提醒"
       },
       {
         "feature": "班次工具",
-        "web": "基础倒计时与薪资估算",
-        "desktop": "自动进入下一班、午休暂停和加班"
+        "web": "倒计时与薪资估算",
+        "desktop": "还可自动衔接下一班，并处理午休与加班"
       },
       {
         "feature": "悬浮计时器",
-        "web": "不提供",
-        "desktop": "原生迷你面板与可互动的木鱼皮肤"
+        "web": "使用完整页面查看",
+        "desktop": "提供原生迷你面板与可以敲击的木鱼皮肤"
       },
       {
         "feature": "版本更新",
         "web": "访问时自动使用最新版",
-        "desktop": "签名校验，一键完成应用更新"
+        "desktop": "在客户端内检查并安装更新"
       }
     ],
     "downloadsHeading": "选择适合你的版本",
-    "downloadsIntro": "下载按钮会实时解析 GitHub 上最新发布的正式 Release，无需等待网页手动更新版本号。",
-    "demoHeading": "看看实际效果",
-    "demoIntro": "桌面客户端，录自真实构建产物。",
+    "downloadsIntro": "选择你的系统和芯片类型，即可下载最新稳定版。大多数 Windows 电脑请选择 x64；近几年搭载 M 系列芯片的 Mac 请选择 Apple 芯片版。",
+    "demoHeading": "先睹为快",
+    "demoIntro": "桌面客户端保留了网页版简单直接的倒计时体验，又为每天长时间使用补上了后台常驻、原生提醒和悬浮计时器。下面的画面来自真实客户端。",
+    "demoAppHeading": "熟悉的倒计时，更贴近桌面使用习惯",
+    "demoAppBody": "设置班次后就可以专心工作：主窗口隐藏时倒计时仍会继续，需要调整时间、提醒或薪资设置时，再用快捷键随时打开。",
     "demoAppAlt": "设置班次、开始倒计时、进入设置页",
+    "demoMiniHeading": "把剩余时间留在手边",
+    "demoMiniBody": "迷你计时器可以悬浮在桌面上，也可以换成木鱼皮肤。想放松一下时敲两下，不需要离开当前正在做的事。",
     "demoMiniAlt": "悬浮计时器的木鱼皮肤",
+    "demoCtaLabel": "下载客户端体验",
     "latestVersionLabel": "最新版本",
-    "loadingLabel": "正在检查最新正式版本…",
-    "unavailableLabel": "暂时无法获取最新安装包，你仍然可以通过下方链接前往 GitHub Releases。",
+    "loadingLabel": "正在为你获取最新版本…",
+    "unavailableLabel": "暂时没能获取下载地址。你也可以前往 GitHub Releases 下载最新版本。",
     "mirrorLabel": "中国大陆加速",
-    "mirrorHint": "下载链接改走镜像。GitHub 直连慢的时候可以打开。",
-    "mirrorNotice": "文件由第三方 {host} 转发。安装包本来就没有签名，介意的话可以用 Release 里附带的 SHA-256 校验和自行核对。",
+    "mirrorHint": "如果 GitHub 下载速度较慢，可以开启镜像加速。",
+    "mirrorNotice": "开启后，安装包将通过第三方服务 {host} 转发。若当前版本提供 SHA-256 校验和，你可以在 GitHub Release 页面核对文件完整性。",
     "downloadLabel": "下载",
     "windowsTitle": "Windows",
     "windowsDescription": "Windows 10 或更高版本 · 大多数电脑请选择 x64",
@@ -221,7 +226,7 @@
     "linuxDescription": "Linux 桌面系统",
     "linuxX64Label": "Linux x64",
     "comingSoonLabel": "即将支持",
-    "githubLabel": "前往 GitHub 查看全部版本",
-    "githubDescription": "更新说明、签名文件和所有已经发布的安装包都可以在公开仓库中找到。"
+    "githubLabel": "在 GitHub 查看全部版本",
+    "githubDescription": "你可以在公开仓库中查看更新说明、签名文件和所有历史安装包。"
   }
 }

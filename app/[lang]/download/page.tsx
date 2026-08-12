@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bell, Keyboard, PanelTop } from "lucide-react";
+import { ArrowUp, Bell, Keyboard, PanelTop } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ContentPage } from "@/components/ContentPage";
 import { DesktopDownloads } from "@/components/DesktopDownloads";
@@ -91,47 +91,6 @@ export default async function DownloadPage({
         }}
       />
 
-      {/* 演示片段。明暗两版用 dark: 变体切换而不是 prefers-color-scheme：
-          主题类打在 <html> 上，这样手动切主题也跟得上，不只是跟系统。
-          语言不用切——下载页本身就是分语种路由。 */}
-      <section id="demo" className="mb-16">
-        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
-          {copy.demoHeading}
-        </h2>
-        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
-          {copy.demoIntro}
-        </p>
-        <div className="mt-6 flex flex-wrap items-start justify-center gap-6">
-          {[
-            { kind: "app", width: 430, alt: copy.demoAppAlt },
-            { kind: "mini", width: 300, alt: copy.demoMiniAlt },
-          ].map(({ kind, width, alt }) =>
-            (["light", "dark"] as const).map((scheme) => (
-              <video
-                key={`${kind}-${scheme}`}
-                src={`/demo/${kind}-${videoLang}-${scheme}.mp4`}
-                // 隐藏的那一个不会自动播；切主题后若浏览器没接着播，
-                // 有海报至少是一帧真实画面而不是空白框。
-                poster={`/demo/${kind}-${videoLang}-${scheme}.jpg`}
-                width={width}
-                aria-label={alt}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                // 宽度上限走行内 style：Tailwind 的 JIT 扫的是字面量，
-                // 模板字符串拼出来的 max-w-[430px] 根本不会被生成。
-                className={`w-full rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700 ${
-                  scheme === "dark" ? "hidden dark:block" : "block dark:hidden"
-                }`}
-                style={{ maxWidth: width }}
-              />
-            ))
-          )}
-        </div>
-      </section>
-
       <section id="downloads">
         <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
           {copy.downloadsHeading}
@@ -141,6 +100,80 @@ export default async function DownloadPage({
         </p>
         <div className="mt-6">
           <DesktopDownloads copy={copy} releasesUrl={siteConfig.releases} />
+        </div>
+      </section>
+
+      {/* 先让已经决定下载的用户直接拿到安装包，再用真实画面帮助仍在比较
+          Web 与客户端的用户。明暗版本跟随站内主题类切换。 */}
+      <section id="demo" className="mt-16">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+          {copy.demoHeading}
+        </h2>
+        <p className="mt-2 max-w-3xl leading-7 text-gray-600 dark:text-gray-300">
+          {copy.demoIntro}
+        </p>
+
+        <div className="mt-7 space-y-6">
+          {[
+            {
+              kind: "app",
+              width: 430,
+              heading: copy.demoAppHeading,
+              body: copy.demoAppBody,
+              alt: copy.demoAppAlt,
+            },
+            {
+              kind: "mini",
+              width: 300,
+              heading: copy.demoMiniHeading,
+              body: copy.demoMiniBody,
+              alt: copy.demoMiniAlt,
+            },
+          ].map(({ kind, width, heading, body, alt }) => (
+            <article
+              key={kind}
+              className="grid items-center gap-6 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(260px,0.9fr)] lg:gap-10 dark:border-gray-700 dark:bg-gray-800"
+            >
+              <div className="flex min-h-64 items-center justify-center overflow-hidden rounded-2xl bg-gray-50 p-4 sm:p-6 dark:bg-gray-900/60">
+                {(["light", "dark"] as const).map((scheme) => (
+                  <video
+                    key={`${kind}-${scheme}`}
+                    src={`/demo/${kind}-${videoLang}-${scheme}.mp4`}
+                    poster={`/demo/${kind}-${videoLang}-${scheme}.jpg`}
+                    width={width}
+                    aria-label={alt}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className={`w-full rounded-2xl border border-gray-200 shadow-md dark:border-gray-700 ${
+                      scheme === "dark"
+                        ? "hidden dark:block"
+                        : "block dark:hidden"
+                    }`}
+                    style={{ maxWidth: width }}
+                  />
+                ))}
+              </div>
+
+              <div className="px-1 pb-2 sm:px-0 sm:pb-0">
+                <h3 className="text-xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  {heading}
+                </h3>
+                <p className="mt-3 leading-7 text-gray-600 dark:text-gray-300">
+                  {body}
+                </p>
+                <a
+                  href="#downloads"
+                  className="mt-5 inline-flex items-center gap-2 rounded-full bg-gray-950 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus:ring-offset-gray-800"
+                >
+                  {copy.demoCtaLabel}
+                  <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                </a>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 

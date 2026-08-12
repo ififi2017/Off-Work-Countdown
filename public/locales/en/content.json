@@ -137,76 +137,81 @@
   "download": {
     "metaTitle": "Download for macOS and Windows - Off Work Countdown",
     "metaDescription": "Download the latest Off Work Countdown desktop client for Apple Silicon or Intel Macs and Windows x64 or ARM64, resolved automatically from GitHub Releases.",
-    "heading": "Your countdown, without keeping a browser tab open",
-    "intro": "The web app is the quickest way to start. The desktop client is the better fit when the countdown stays with you through every workday: it lives in the tray, can remind you in the background, and is always one shortcut away.",
+    "heading": "A calmer countdown for your workday",
+    "intro": "Love how quickly the web app gets you started, but want the countdown to fit more naturally into your day? The desktop app stays in your menu bar or system tray, keeps counting in the background, and is always one shortcut away.",
     "benefits": [
       {
-        "heading": "Always within reach",
+        "heading": "Easy to glance at",
         "body": [
-          "See the remaining time in the menu bar or system tray, then show or hide the compact window with a global shortcut. No hunting through browser tabs."
+          "Keep the time remaining in your menu bar or system tray. When you want the details, a global shortcut brings up the compact window without a trip through your browser tabs."
         ]
       },
       {
-        "heading": "Made for the background",
+        "heading": "Helpful, gentle reminders",
         "body": [
-          "Hide the main window and the countdown keeps running. Native reminders, launch at login and a focused desktop layout make it comfortable to leave on all day."
+          "The countdown and shift reminders continue after you hide the window. Launch at login, native notifications and a focused layout make it easy to keep around all day."
         ]
       },
       {
-        "heading": "Still local-first",
+        "heading": "Your data stays with you",
         "body": [
-          "Your hours, salary and preferences stay on your device. There is no account, and the desktop client does not send analytics or personal settings to a server."
+          "Your hours, salary and preferences stay on your device. There is no account to create, and the app does not upload analytics or personal settings."
         ]
       }
     ],
-    "comparisonHeading": "Web or desktop?",
-    "comparisonIntro": "Both versions share the same countdown and salary estimate. Choose based on how you want it to fit into your day.",
+    "comparisonHeading": "Lightweight on the web, at home on your desktop",
+    "comparisonIntro": "Both versions include the countdown and salary estimate. The web app is perfect for dropping in; the desktop app is a better companion when you want background access and native reminders throughout the day.",
     "webLabel": "Web app",
     "desktopLabel": "Desktop client",
     "comparison": [
       {
         "feature": "Start using it",
-        "web": "Open the website — no download",
-        "desktop": "Launch at login or with a shortcut"
+        "web": "Open the website and begin",
+        "desktop": "Launch at login and open with a shortcut"
       },
       {
         "feature": "Background access",
-        "web": "Keep a browser tab or PWA open",
-        "desktop": "Tray countdown with the window hidden"
+        "web": "Keep the webpage or PWA open",
+        "desktop": "Keep counting in the tray with the window hidden"
       },
       {
         "feature": "Reminders",
-        "web": "Available while the page is open",
-        "desktop": "Milestones, lunch and effective-time break reminders"
+        "web": "Available while the page stays open",
+        "desktop": "Milestone, lunch and effective-time break reminders"
       },
       {
         "feature": "Shift tools",
-        "web": "Core countdown and salary estimate",
-        "desktop": "Automatic next shift, lunch pause and overtime"
+        "web": "Countdown and salary estimate",
+        "desktop": "Also handles the next shift, lunch pauses and overtime"
       },
       {
         "feature": "Floating timer",
-        "web": "Not available",
-        "desktop": "Native mini panel plus an interactive woodfish skin"
+        "web": "View everything on the full page",
+        "desktop": "A native mini panel and an interactive woodfish skin"
       },
       {
         "feature": "Updates",
         "web": "The website is always current",
-        "desktop": "Signed, one-click app updates"
+        "desktop": "Check for and install updates in the app"
       }
     ],
     "downloadsHeading": "Choose your version",
-    "downloadsIntro": "These buttons resolve the assets from the latest published GitHub Release, so they always follow the newest stable version.",
-    "demoHeading": "See it running",
-    "demoIntro": "The desktop app, recorded from the real build.",
+    "downloadsIntro": "Choose your operating system and chip to download the latest stable version. x64 is right for most Windows PCs; recent Macs with an M-series chip should use Apple Silicon.",
+    "demoHeading": "See it in action",
+    "demoIntro": "The desktop app keeps the web experience simple while adding the things that make a daily companion more useful: background access, native reminders and a floating timer. These clips come from the real app.",
+    "demoAppHeading": "The countdown you know, made for the desktop",
+    "demoAppBody": "Set your shift and get back to work. The countdown continues when the main window is hidden, and a shortcut brings your time, reminders and salary settings back whenever you need them.",
     "demoAppAlt": "Setting a shift, starting the countdown and opening settings",
+    "demoMiniHeading": "Keep the time close at hand",
+    "demoMiniBody": "Let the mini timer float above your workspace, or switch to the woodfish skin for a small moment of calm. A couple of taps are always there without pulling you away from what you are doing.",
     "demoMiniAlt": "The floating timer with the woodfish skin",
+    "demoCtaLabel": "Download the desktop app",
     "latestVersionLabel": "Latest version",
-    "loadingLabel": "Checking the latest release…",
-    "unavailableLabel": "The latest download could not be loaded. You can still open GitHub Releases below.",
+    "loadingLabel": "Finding the latest version for you…",
+    "unavailableLabel": "We could not load the download links just now. You can still get the latest version from GitHub Releases.",
     "mirrorLabel": "Speed up in mainland China",
-    "mirrorHint": "Downloads are routed through a mirror. Try this if GitHub is slow.",
-    "mirrorNotice": "Files are being served by {host}, a third party. The installers are unsigned either way — if that matters to you, verify the SHA-256 checksums published with the release.",
+    "mirrorHint": "If GitHub is downloading slowly, you can try the mirror.",
+    "mirrorNotice": "When enabled, the installer is delivered through the third-party service {host}. If a SHA-256 checksum is available for this release, you can use it to verify the file on GitHub.",
     "downloadLabel": "Download",
     "windowsTitle": "Windows",
     "windowsDescription": "Windows 10 or later · x64 fits most PCs",
@@ -222,6 +227,6 @@
     "linuxX64Label": "Linux x64",
     "comingSoonLabel": "Coming soon",
     "githubLabel": "View all releases on GitHub",
-    "githubDescription": "Release notes, signatures and every published installer are available in the public repository."
+    "githubDescription": "The public repository includes release notes, signatures and installers from every published version."
   }
 }
