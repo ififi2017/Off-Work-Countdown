@@ -95,7 +95,7 @@ export default async function DownloadPage({
         <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
           {copy.downloadsHeading}
         </h2>
-        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
+        <p className="mt-2 text-gray-600 dark:text-gray-300">
           {copy.downloadsIntro}
         </p>
         <div className="mt-6">
@@ -208,7 +208,7 @@ export default async function DownloadPage({
         <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
           {copy.comparisonHeading}
         </h2>
-        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
+        <p className="mt-2 text-gray-600 dark:text-gray-300">
           {copy.comparisonIntro}
         </p>
 
