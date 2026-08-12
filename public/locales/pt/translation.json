@@ -174,12 +174,10 @@
   "microBreakInterval": "Lembrar a cada",
   "microBreakEffectiveTimeNote": "Só conta o trabalho efetivo; sem avisos no almoço ou fora do expediente.",
   "microBreakMessages": [
-    "Você trabalhou {{minutes}} minutos efetivos. Beba água.",
-    "{{minutes}} minutos efetivos — hora de um gole.",
-    "Após {{minutes}} minutos, faça uma pausa para água.",
-    "Você trabalhou {{minutes}} minutos efetivos. Levante e mexa-se.",
-    "{{minutes}} minutos efetivos — alongue-se um pouco.",
-    "Após {{minutes}} minutos, descanse ombros e pernas."
+    "Você está nisso há {{minutes}} minutos. Vá beber um pouco de água.",
+    "{{minutes}} minutos seguidos. Levante e solte os ombros.",
+    "{{minutes}} minutos na tela. Olhe para longe por um instante.",
+    "{{minutes}} minutos sem parar. Dê uns passos e volte."
   ],
   "floatingTimerSkin": "Tema do timer flutuante",
   "standardSkin": "Padrão",

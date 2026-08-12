@@ -174,12 +174,10 @@
   "microBreakInterval": "通知間隔",
   "microBreakEffectiveTimeNote": "実働時間のみを計測し、昼休みや勤務外には通知しません。",
   "microBreakMessages": [
-    "実働 {{minutes}} 分です。水分を補給しましょう。",
-    "実働 {{minutes}} 分完了。ひと口飲みましょう。",
-    "{{minutes}} 分働いたら、水分休憩を。",
-    "実働 {{minutes}} 分です。立って動きましょう。",
-    "実働 {{minutes}} 分完了。少し伸びをしましょう。",
-    "{{minutes}} 分働いたら、肩と脚を休めましょう。"
+    "{{minutes}} 分続けて作業しています。水を一口どうぞ。",
+    "{{minutes}} 分たちました。立って肩を回しましょう。",
+    "{{minutes}} 分画面を見ています。少し遠くを眺めましょう。",
+    "{{minutes}} 分ぶっ通しです。少し歩いてから戻りましょう。"
   ],
   "floatingTimerSkin": "フローティングタイマー",
   "standardSkin": "標準",

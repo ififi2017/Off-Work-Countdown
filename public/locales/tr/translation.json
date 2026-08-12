@@ -174,12 +174,10 @@
   "microBreakInterval": "Hatırlatma aralığı",
   "microBreakEffectiveTimeNote": "Yalnızca etkin çalışma sayılır; öğle molasında ve mesai dışında bildirim yoktur.",
   "microBreakMessages": [
-    "{{minutes}} etkin dakika çalıştın. Biraz su iç.",
-    "{{minutes}} etkin dakika tamam — bir yudum zamanı.",
-    "{{minutes}} dakikadan sonra kısa bir su molası ver.",
-    "{{minutes}} etkin dakika çalıştın. Ayağa kalk ve hareket et.",
-    "{{minutes}} etkin dakika tamam — biraz esne.",
-    "{{minutes}} dakikadan sonra omuzlarını ve bacaklarını dinlendir."
+    "{{minutes}} dakikadır aralıksız çalışıyorsun. Kalk, biraz su iç.",
+    "{{minutes}} dakika oldu. Ayağa kalk, omuzlarını gevşet.",
+    "{{minutes}} dakikadır ekrandasın. Biraz uzağa bak.",
+    "{{minutes}} dakika ara vermedin. Birkaç adım at, sonra dön."
   ],
   "floatingTimerSkin": "Yüzen zamanlayıcı görünümü",
   "standardSkin": "Standart",

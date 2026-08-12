@@ -21,6 +21,26 @@ describe("UI locale resources", () => {
     }
   });
 
+  it("keeps one merged health reminder set in every locale", () => {
+    // 喝水和起身合并成单个健康提醒时，只有 zh-CN 和 en 跟上了，其余 15 个
+    // 语种在两个版本里一直留着合并前的六条。条数一致是这件事最省事的哨兵。
+    const referenceLength = (
+      loadTranslation("en").microBreakMessages as unknown[]
+    ).length;
+
+    for (const locale of locales) {
+      const messages = loadTranslation(locale).microBreakMessages;
+      expect(Array.isArray(messages), locale).toBe(true);
+      expect(messages, locale).toHaveLength(referenceLength);
+      for (const message of messages as unknown[]) {
+        expect(typeof message, locale).toBe("string");
+        expect(String(message), locale).toContain("{{minutes}}");
+        expect(String(message), locale).not.toContain("{{salary}}");
+        expect(String(message), locale).not.toContain("{{earnings}}");
+      }
+    }
+  });
+
   it("provides five rotating notification tones without salary placeholders", () => {
     for (const locale of locales) {
       const translation = loadTranslation(locale);

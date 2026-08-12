@@ -174,12 +174,10 @@
   "microBreakInterval": "Ingatkan setiap",
   "microBreakEffectiveTimeNote": "Hanya waktu kerja efektif yang dihitung; tidak ada pengingat saat makan siang atau setelah kerja.",
   "microBreakMessages": [
-    "Kamu sudah bekerja efektif {{minutes}} menit. Minumlah air.",
-    "{{minutes}} menit efektif selesai — waktunya minum.",
-    "Setelah {{minutes}} menit, ambil jeda minum singkat.",
-    "Kamu sudah bekerja efektif {{minutes}} menit. Berdiri dan bergeraklah.",
-    "{{minutes}} menit efektif selesai — regangkan tubuh.",
-    "Setelah {{minutes}} menit, istirahatkan bahu dan kaki."
+    "Sudah {{minutes}} menit nonstop. Ambil air minum dulu.",
+    "{{minutes}} menit berlalu. Berdiri dan longgarkan bahu.",
+    "{{minutes}} menit menatap layar. Lihat yang jauh sebentar.",
+    "{{minutes}} menit tanpa jeda. Jalan sebentar, lalu kembali."
   ],
   "floatingTimerSkin": "Tampilan timer mengambang",
   "standardSkin": "Standar",
