@@ -303,6 +303,10 @@ struct MiniWindowSettings {
     always_on_top: bool,
 }
 
+/// 托盘用 show / mini / quit，其余字段只喂给 macOS 的应用菜单。非 macOS 上
+/// 它们确实没有读取方，但仍要参与反序列化——前端一次性发全量标签，缺字段会
+/// 让整条命令失败。macOS 上所有字段都被读取，那边的 dead_code 检查照常生效。
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DesktopMenuLabels {
@@ -866,6 +870,8 @@ fn countdown_progress(state: &CountdownState, now_ms: i64) -> f64 {
         .unwrap_or(0.0)
 }
 
+/// 只有 macOS 原生面板会显示金额；Windows 迷你窗自己从 Store 算。
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 fn countdown_pay_ratio(state: &CountdownState, now_ms: i64) -> f64 {
     if !state.running || !state.is_valid_shift() {
         return 0.0;
