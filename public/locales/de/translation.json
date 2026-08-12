@@ -174,12 +174,10 @@
   "microBreakInterval": "Erinnern alle",
   "microBreakEffectiveTimeNote": "Nur effektive Arbeitszeit zählt; in Pausen und nach Feierabend gibt es keine Erinnerung.",
   "microBreakMessages": [
-    "Du arbeitest seit {{minutes}} effektiven Minuten. Trink etwas Wasser.",
-    "{{minutes}} effektive Minuten geschafft – Zeit für einen Schluck.",
-    "Nach {{minutes}} Minuten ist eine kurze Wasserpause dran.",
-    "Du arbeitest seit {{minutes}} effektiven Minuten. Steh auf und beweg dich.",
-    "{{minutes}} effektive Minuten geschafft – kurz strecken.",
-    "Gönn Schultern und Beinen nach {{minutes}} Minuten eine Pause."
+    "Du sitzt seit {{minutes}} Minuten dran. Hol dir etwas Wasser.",
+    "{{minutes}} Minuten am Stück. Steh auf und lockere die Schultern.",
+    "{{minutes}} Minuten am Bildschirm. Schau kurz in die Ferne.",
+    "{{minutes}} Minuten durchgearbeitet. Geh ein paar Schritte und komm zurück."
   ],
   "floatingTimerSkin": "Design des schwebenden Timers",
   "standardSkin": "Standard",

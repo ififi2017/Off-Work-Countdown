@@ -174,12 +174,10 @@
   "microBreakInterval": "Me rappeler toutes les",
   "microBreakEffectiveTimeNote": "Seul le travail effectif compte ; aucun rappel au déjeuner ni après le travail.",
   "microBreakMessages": [
-    "Vous travaillez depuis {{minutes}} minutes effectives. Buvez un peu d’eau.",
-    "{{minutes}} minutes effectives — prenez une gorgée.",
-    "Après {{minutes}} minutes, accordez-vous une pause eau.",
-    "Vous travaillez depuis {{minutes}} minutes effectives. Levez-vous.",
-    "{{minutes}} minutes effectives — étirez-vous un instant.",
-    "Après {{minutes}} minutes, reposez vos épaules et vos jambes."
+    "Vous y êtes depuis {{minutes}} minutes. Allez boire un peu d’eau.",
+    "{{minutes}} minutes d’affilée. Levez-vous et détendez les épaules.",
+    "{{minutes}} minutes devant l’écran. Regardez au loin un instant.",
+    "{{minutes}} minutes sans pause. Faites quelques pas, puis revenez."
   ],
   "floatingTimerSkin": "Style du minuteur flottant",
   "standardSkin": "Standard",

@@ -174,12 +174,10 @@
   "microBreakInterval": "Nhắc mỗi",
   "microBreakEffectiveTimeNote": "Chỉ tính thời gian làm việc hiệu quả; không nhắc lúc nghỉ trưa hay ngoài giờ.",
   "microBreakMessages": [
-    "Bạn đã làm việc hiệu quả {{minutes}} phút. Hãy uống nước.",
-    "Đã xong {{minutes}} phút hiệu quả — uống một ngụm nhé.",
-    "Sau {{minutes}} phút, hãy nghỉ uống nước một chút.",
-    "Bạn đã làm việc hiệu quả {{minutes}} phút. Hãy đứng dậy vận động.",
-    "Đã xong {{minutes}} phút hiệu quả — giãn cơ một chút.",
-    "Sau {{minutes}} phút, cho vai và chân nghỉ ngơi."
+    "Bạn đã làm liền {{minutes}} phút. Đứng dậy uống chút nước nhé.",
+    "{{minutes}} phút trôi qua rồi. Đứng lên xoay vai một chút.",
+    "{{minutes}} phút nhìn màn hình. Nhìn ra xa một lát.",
+    "{{minutes}} phút không nghỉ. Đi vài bước rồi quay lại."
   ],
   "floatingTimerSkin": "Giao diện bộ đếm nổi",
   "standardSkin": "Tiêu chuẩn",

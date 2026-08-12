@@ -174,12 +174,10 @@
   "microBreakInterval": "Ricordamelo ogni",
   "microBreakEffectiveTimeNote": "Conta solo il lavoro effettivo; niente avvisi a pranzo o fuori orario.",
   "microBreakMessages": [
-    "Hai lavorato {{minutes}} minuti effettivi. Bevi un po’ d’acqua.",
-    "{{minutes}} minuti effettivi — è ora di bere.",
-    "Dopo {{minutes}} minuti, fai una pausa per l’acqua.",
-    "Hai lavorato {{minutes}} minuti effettivi. Alzati e muoviti.",
-    "{{minutes}} minuti effettivi — fai un po’ di stretching.",
-    "Dopo {{minutes}} minuti, riposa spalle e gambe."
+    "Lavori da {{minutes}} minuti. Bevi un po’ d’acqua.",
+    "{{minutes}} minuti di fila. Alzati e sciogli le spalle.",
+    "{{minutes}} minuti davanti allo schermo. Guarda lontano per un attimo.",
+    "{{minutes}} minuti senza pause. Fai due passi e torna."
   ],
   "floatingTimerSkin": "Stile timer mobile",
   "standardSkin": "Standard",
