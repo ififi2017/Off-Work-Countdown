@@ -93,6 +93,19 @@ struct NotificationMessages {
     milestone100: Vec<String>,
 }
 
+/// 里程碑通知的标题，按档位分开。JS 侧把百分比排版进字符串后推过来，
+/// Rust 只负责挑——数字的写法（「还剩 25%」还是「25% left」）是语言问题。
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(default)]
+#[serde(rename_all = "camelCase")]
+struct NotificationTitles {
+    milestone50: String,
+    milestone75: String,
+    milestone90: String,
+    milestone95: String,
+    milestone100: String,
+}
+
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 #[serde(rename_all = "camelCase")]
@@ -155,6 +168,7 @@ struct CountdownState {
     next_shift: Option<ShiftTimelineState>,
     notification_mode: Option<NotificationMode>,
     notification_title: String,
+    notification_titles: NotificationTitles,
     notification_messages: NotificationMessages,
     /// 3.0.x 通知字段仅用于读取迁移，不再写入新 Store。
     #[serde(rename = "reminder", skip_serializing)]
@@ -770,6 +784,26 @@ fn advance_micro_break_marker(
     (body, true)
 }
 
+/// 里程碑通知的标题。缺档位标题时退回通用标题——旧版本 Store 里没有这个
+/// 字段，宁可少个百分比也不要弹一条没有标题的通知。
+fn notification_title(state: &CountdownState, milestone: NotificationMilestone) -> &str {
+    let specific = match milestone {
+        NotificationMilestone::Half => &state.notification_titles.milestone50,
+        NotificationMilestone::ThreeQuarters => &state.notification_titles.milestone75,
+        NotificationMilestone::Ninety => &state.notification_titles.milestone90,
+        NotificationMilestone::NinetyFive => &state.notification_titles.milestone95,
+        NotificationMilestone::Complete => &state.notification_titles.milestone100,
+    };
+    if !specific.is_empty() {
+        return specific;
+    }
+    if state.notification_title.is_empty() {
+        "Off work reminder"
+    } else {
+        &state.notification_title
+    }
+}
+
 fn notification_body(state: &CountdownState, milestone: NotificationMilestone) -> &str {
     let messages = match milestone {
         NotificationMilestone::Half => &state.notification_messages.milestone50,
@@ -800,11 +834,7 @@ fn send_countdown_notification(
     state: &CountdownState,
     milestone: NotificationMilestone,
 ) {
-    let title = if state.notification_title.is_empty() {
-        "Off work reminder"
-    } else {
-        &state.notification_title
-    };
+    let title = notification_title(state, milestone);
     let body = notification_body(state, milestone);
 
     if let Err(error) = app.notification().builder().title(title).body(body).show() {
@@ -1859,6 +1889,30 @@ mod notification_tests {
             None
         );
         assert_eq!(stale_marker.sent_milestones, vec![50, 75, 90, 95, 100]);
+    }
+
+    #[test]
+    fn notification_title_falls_back_when_milestone_titles_are_missing() {
+        // 3.1.0 的 Store 里没有 notificationTitles。升级后第一次通知还没
+        // 写回新字段，此时宁可少个百分比也不能弹一条空标题的通知。
+        let mut countdown = CountdownState {
+            notification_title: "下班提醒".into(),
+            ..CountdownState::default()
+        };
+        assert_eq!(
+            notification_title(&countdown, NotificationMilestone::Ninety),
+            "下班提醒"
+        );
+
+        countdown.notification_titles.milestone90 = "今天还剩 10%".into();
+        assert_eq!(
+            notification_title(&countdown, NotificationMilestone::Ninety),
+            "今天还剩 10%"
+        );
+        assert_eq!(
+            notification_title(&countdown, NotificationMilestone::Half),
+            "下班提醒"
+        );
     }
 
     #[test]

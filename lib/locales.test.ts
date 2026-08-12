@@ -40,6 +40,13 @@ describe("UI locale resources", () => {
         expect(String(message), `${locale} ${milestone}`).not.toContain("{{");
       }
 
+      // 标题是唯一带百分比的地方：正文里 90% 和 95% 两句意思一样，
+      // 数字掉了就分不出走到哪一档了。
+      const title = String(translation.notificationMilestoneTitle);
+      expect(title, locale).toContain("{{percent}}");
+      expect(title, locale).not.toContain("{{salary}}");
+      expect(title, locale).not.toContain("{{earnings}}");
+
       const completion = String(translation.notificationMilestone100);
       expect(completion, locale).toContain("{{today}}");
       expect(completion, locale).toContain("{{year}}");
