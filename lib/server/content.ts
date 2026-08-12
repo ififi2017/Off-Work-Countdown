@@ -68,6 +68,9 @@ export interface ContentBundle {
     latestVersionLabel: string;
     loadingLabel: string;
     unavailableLabel: string;
+    mirrorLabel: string;
+    mirrorHint: string;
+    mirrorNotice: string;
     downloadLabel: string;
     windowsTitle: string;
     windowsDescription: string;
