@@ -1357,6 +1357,27 @@ fn show_main_window(app: AppHandle) {
     focus_main_window(&app);
 }
 
+/// 迷你窗工具条上的「主窗口」按钮：显示 ↔ 隐藏来回切。
+///
+/// 不能复用 toggle_main_window：那个是给全局快捷键写的，要求主窗口「可见
+/// 且已聚焦」才收起。从迷你窗点按钮时焦点在迷你窗上，主窗口永远不满足
+/// 「已聚焦」，于是每次都走到显示分支，按钮就成了单向的。
+///
+/// 最小化的窗口在 macOS 上仍报告 visible，所以要单独排除，否则从 Dock
+/// 最小化状态点这个按钮会「隐藏」一个本来就看不见的窗口。
+#[tauri::command]
+fn toggle_main_window_visibility(app: AppHandle) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+    let showing = window.is_visible().unwrap_or(false) && !window.is_minimized().unwrap_or(false);
+    if showing {
+        let _ = window.hide();
+    } else {
+        focus_main_window(&app);
+    }
+}
+
 /// 迷你窗（原生面板或 WebView 版）上的眼睛按钮统一走这里翻转 hide_earnings。
 ///
 /// 写回 store 后，store 插件会广播 `store://change`；主窗口和迷你窗都通过
@@ -1646,6 +1667,7 @@ pub fn run() {
             toggle_floating_timer,
             hide_mini_timer,
             show_main_window,
+            toggle_main_window_visibility,
             toggle_salary_visibility,
             toggle_woodfish_sound,
             toggle_mini_skin,

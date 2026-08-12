@@ -20,11 +20,11 @@
   "reminder": "काम से छुट्टी से १५ मिनट पहले याद दिलाएं",
   "launchAtLogin": "लॉग इन पर शुरू करें",
   "globalShortcut": "ऐप दिखाएँ या छिपाएँ",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "बदलें",
   "shortcutRecording": "शॉर्टकट दबाएँ…",
   "shortcutCancelHint": "रद्द करने के लिए Esc",
-  "shortcutHint": "Command/Ctrl, Option/Alt या Shift शामिल करें।",
+  "shortcutHintMac": "Command, Option या Shift शामिल करें।",
+  "shortcutHintWindows": "Ctrl, Alt या Shift शामिल करें।",
   "shortcutInvalid": "कम से कम एक मॉडिफ़ायर कुंजी शामिल करें।",
   "shortcutUpdateFailed": "यह शॉर्टकट पंजीकृत नहीं हो सका। यह पहले से उपयोग में हो सकता है।",
   "desktopSettingError": "डेस्कटॉप सेटिंग अपडेट नहीं हो सकी। फिर प्रयास करें।",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "स्किन बदलें",
   "offWorkToday": "आज का काम पूरा",
   "nextShiftIn": "अगली शिफ़्ट {{time}} में",
-  "nextShiftLabelShort": "अगली शिफ़्ट में"
+  "nextShiftLabelShort": "अगली शिफ़्ट में",
+  "toggleMainWindow": "मुख्य विंडो दिखाएँ या छिपाएँ"
 }

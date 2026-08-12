@@ -20,11 +20,11 @@
   "reminder": "تذكير لي قبل 15 دقيقة من نهاية العمل",
   "launchAtLogin": "التشغيل عند تسجيل الدخول",
   "globalShortcut": "إظهار التطبيق أو إخفاؤه",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "تغيير",
   "shortcutRecording": "اضغط اختصارًا…",
   "shortcutCancelHint": "Esc للإلغاء",
-  "shortcutHint": "ضمّن Command/Ctrl أو Option/Alt أو Shift.",
+  "shortcutHintMac": "أدرج مفتاح Command أو Option أو Shift.",
+  "shortcutHintWindows": "أدرج مفتاح Ctrl أو Alt أو Shift.",
   "shortcutInvalid": "ضمّن مفتاح تعديل واحدًا على الأقل.",
   "shortcutUpdateFailed": "تعذر تسجيل هذا الاختصار. قد يكون مستخدمًا بالفعل.",
   "desktopSettingError": "تعذر تحديث إعداد سطح المكتب. حاول مرة أخرى.",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "تبديل المظهر",
   "offWorkToday": "انتهى دوام اليوم",
   "nextShiftIn": "الوردية التالية بعد {{time}}",
-  "nextShiftLabelShort": "الوردية التالية بعد"
+  "nextShiftLabelShort": "الوردية التالية بعد",
+  "toggleMainWindow": "إظهار النافذة الرئيسية أو إخفاؤها"
 }

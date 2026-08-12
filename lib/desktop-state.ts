@@ -375,10 +375,13 @@ export async function installDesktopUpdateViaMirror(): Promise<void> {
   await invoke("install_update_via_mirror");
 }
 
-/**
- * 翻转「隐藏金额」。两个迷你窗都走这里，由 Rust 统一改写 store，
- * 主窗口通过 {@link subscribeToDesktopCountdown} 收到同一份状态。
- */
+/** 迷你窗工具条上的主窗口按钮：显示 ↔ 隐藏来回切。 */
+export async function toggleDesktopMainWindow(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("toggle_main_window_visibility");
+}
+
 /** 迷你窗工具条上的皮肤切换；与设置页共享同一个 miniSkin。 */
 export async function toggleDesktopMiniSkin(): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
@@ -393,6 +396,10 @@ export async function toggleDesktopWoodfishSound(): Promise<void> {
   await invoke("toggle_woodfish_sound");
 }
 
+/**
+ * 翻转「隐藏金额」。两个迷你窗都走这里，由 Rust 统一改写 store，
+ * 主窗口通过 {@link subscribeToDesktopCountdown} 收到同一份状态。
+ */
 export async function toggleDesktopSalaryVisibility(): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
   const { invoke } = await import("@tauri-apps/api/core");

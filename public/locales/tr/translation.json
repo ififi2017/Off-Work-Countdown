@@ -20,11 +20,11 @@
   "reminder": "İş çıkışımdan 15 dakika önce hatırlat",
   "launchAtLogin": "Oturum açınca başlat",
   "globalShortcut": "Uygulamayı göster veya gizle",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "Değiştir",
   "shortcutRecording": "Bir kısayola basın…",
   "shortcutCancelHint": "İptal için Esc",
-  "shortcutHint": "Command/Ctrl, Option/Alt veya Shift ekleyin.",
+  "shortcutHintMac": "Command, Option veya Shift ekleyin.",
+  "shortcutHintWindows": "Ctrl, Alt veya Shift ekleyin.",
   "shortcutInvalid": "En az bir değiştirici tuş ekleyin.",
   "shortcutUpdateFailed": "Bu kısayol kaydedilemedi. Zaten kullanımda olabilir.",
   "desktopSettingError": "Masaüstü ayarı güncellenemedi. Tekrar deneyin.",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "Görünümü değiştir",
   "offWorkToday": "Bugünlük bitti",
   "nextShiftIn": "Sonraki vardiyaya {{time}}",
-  "nextShiftLabelShort": "Sonraki vardiyaya"
+  "nextShiftLabelShort": "Sonraki vardiyaya",
+  "toggleMainWindow": "Ana pencereyi göster veya gizle"
 }

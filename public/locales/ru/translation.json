@@ -20,11 +20,11 @@
   "reminder": "Напомнить за 15 минут до конца работы",
   "launchAtLogin": "Запускать при входе",
   "globalShortcut": "Показать или скрыть приложение",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "Изменить",
   "shortcutRecording": "Нажмите сочетание…",
   "shortcutCancelHint": "Esc — отмена",
-  "shortcutHint": "Добавьте Command/Ctrl, Option/Alt или Shift.",
+  "shortcutHintMac": "Добавьте Command, Option или Shift.",
+  "shortcutHintWindows": "Добавьте Ctrl, Alt или Shift.",
   "shortcutInvalid": "Добавьте хотя бы одну клавишу-модификатор.",
   "shortcutUpdateFailed": "Не удалось зарегистрировать сочетание. Возможно, оно уже используется.",
   "desktopSettingError": "Не удалось обновить настройку. Повторите попытку.",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "Сменить оформление",
   "offWorkToday": "На сегодня всё",
   "nextShiftIn": "До следующей смены {{time}}",
-  "nextShiftLabelShort": "До смены"
+  "nextShiftLabelShort": "До смены",
+  "toggleMainWindow": "Показать или скрыть главное окно"
 }

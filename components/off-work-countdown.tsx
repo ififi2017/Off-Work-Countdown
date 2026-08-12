@@ -2224,7 +2224,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     </span>
                   </Button>
                   <p className="text-xs leading-4 text-gray-500 dark:text-gray-400">
-                    {t("shortcutHint")}
+                    {/* 提示语按平台给：两个平台的修饰键混在一句里
+                        （Command/Ctrl、Option/Alt）等于让用户自己挑，
+                        而运行时我们明明知道自己在哪个平台上。 */}
+                    {desktopPlatform === "macos"
+                      ? t("shortcutHintMac")
+                      : t("shortcutHintWindows")}
                   </p>
                   {globalShortcutError && (
                     <p

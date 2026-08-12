@@ -20,11 +20,11 @@
   "reminder": "退勤15分前にリマインド",
   "launchAtLogin": "ログイン時に起動",
   "globalShortcut": "アプリを表示または非表示",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "変更",
   "shortcutRecording": "ショートカットを押してください…",
   "shortcutCancelHint": "Esc でキャンセル",
-  "shortcutHint": "Command/Ctrl、Option/Alt、Shift のいずれかを含めてください。",
+  "shortcutHintMac": "Command、Option、Shift のいずれかを含めてください。",
+  "shortcutHintWindows": "Ctrl、Alt、Shift のいずれかを含めてください。",
   "shortcutInvalid": "修飾キーを1つ以上含めてください。",
   "shortcutUpdateFailed": "このショートカットを登録できませんでした。すでに使用されている可能性があります。",
   "desktopSettingError": "デスクトップ設定を更新できませんでした。もう一度お試しください。",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "スキンを切り替え",
   "offWorkToday": "本日は終業",
   "nextShiftIn": "次の勤務まで {{time}}",
-  "nextShiftLabelShort": "次の勤務まで"
+  "nextShiftLabelShort": "次の勤務まで",
+  "toggleMainWindow": "メインウィンドウの表示/非表示"
 }

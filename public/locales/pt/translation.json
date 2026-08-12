@@ -20,11 +20,11 @@
   "reminder": "Lembre-me 15 minutos antes de sair do trabalho",
   "launchAtLogin": "Iniciar ao entrar",
   "globalShortcut": "Mostrar ou ocultar o aplicativo",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "Alterar",
   "shortcutRecording": "Pressione um atalho…",
   "shortcutCancelHint": "Esc para cancelar",
-  "shortcutHint": "Inclua Command/Ctrl, Option/Alt ou Shift.",
+  "shortcutHintMac": "Inclua Command, Option ou Shift.",
+  "shortcutHintWindows": "Inclua Ctrl, Alt ou Shift.",
   "shortcutInvalid": "Inclua pelo menos uma tecla modificadora.",
   "shortcutUpdateFailed": "Não foi possível registrar esse atalho. Ele pode já estar em uso.",
   "desktopSettingError": "Não foi possível atualizar a configuração. Tente novamente.",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "Trocar de tema",
   "offWorkToday": "Expediente encerrado",
   "nextShiftIn": "Próximo turno em {{time}}",
-  "nextShiftLabelShort": "Próximo turno em"
+  "nextShiftLabelShort": "Próximo turno em",
+  "toggleMainWindow": "Mostrar ou ocultar a janela principal"
 }

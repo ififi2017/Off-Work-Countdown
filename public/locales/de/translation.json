@@ -20,11 +20,11 @@
   "reminder": "Erinnere mich 15 Minuten vor Feierabend",
   "launchAtLogin": "Beim Anmelden starten",
   "globalShortcut": "App ein- oder ausblenden",
-  "globalShortcutKeys": "⌘/Ctrl + Shift + O",
   "shortcutChange": "Ändern",
   "shortcutRecording": "Tastenkürzel drücken…",
   "shortcutCancelHint": "Esc zum Abbrechen",
-  "shortcutHint": "Command/Strg, Option/Alt oder Umschalt einbeziehen.",
+  "shortcutHintMac": "Command, Option oder Shift muss enthalten sein.",
+  "shortcutHintWindows": "Strg, Alt oder Umschalt muss enthalten sein.",
   "shortcutInvalid": "Mindestens eine Zusatztaste verwenden.",
   "shortcutUpdateFailed": "Dieses Tastenkürzel konnte nicht registriert werden. Es wird möglicherweise bereits verwendet.",
   "desktopSettingError": "Die Desktop-Einstellung konnte nicht aktualisiert werden. Bitte erneut versuchen.",
@@ -202,5 +202,6 @@
   "switchMiniSkin": "Skin wechseln",
   "offWorkToday": "Feierabend für heute",
   "nextShiftIn": "Nächste Schicht in {{time}}",
-  "nextShiftLabelShort": "Nächste Schicht in"
+  "nextShiftLabelShort": "Nächste Schicht in",
+  "toggleMainWindow": "Hauptfenster ein-/ausblenden"
 }

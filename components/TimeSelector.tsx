@@ -118,6 +118,13 @@ export function TimeSelector({
                 type === "minute" ? item : minuteInput
               )
             }
+            onSelect={(item) => {
+              commitTime(
+                type === "hour" ? item : hourInput,
+                type === "minute" ? item : minuteInput
+              );
+              setOpenMenu(null);
+            }}
           />
         </motion.div>
       )}
