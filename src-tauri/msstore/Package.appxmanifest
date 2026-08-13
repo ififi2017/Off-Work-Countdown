@@ -61,9 +61,14 @@
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile
-          Square71x71Logo="Assets\Square71x71Logo.png"
-          Square310x310Logo="Assets\Square310x310Logo.png" />
+        <!--
+          刻意不声明 Square310x310Logo：MSIX 规定一旦声明它就必须同时给出
+          Wide310x150Logo，而 `tauri icon` 只产方形图标，仓库里没有宽图。
+          少了它只是 Start 菜单不能放大到「大」磁贴，不影响安装与商店认证；
+          为它单独手绘一张宽图会在 icons/ 里留下一个 `tauri icon` 不会重新生成
+          的资产，漂移风险比这点收益大。
+        -->
+        <uap:DefaultTile Square71x71Logo="Assets\Square71x71Logo.png" />
       </uap:VisualElements>
 
       <!--
