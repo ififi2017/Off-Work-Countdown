@@ -146,7 +146,7 @@ export default async function DownloadPage({
           {copy.demoIntro}
         </p>
 
-        <div className="mt-7 space-y-6">
+        <div className="mt-7 grid gap-6 md:grid-cols-2">
           {[
             {
               kind: "app",
@@ -165,9 +165,9 @@ export default async function DownloadPage({
           ].map(({ kind, width, heading, body, alt }) => (
             <article
               key={kind}
-              className="grid items-center gap-6 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(260px,0.9fr)] lg:gap-10 dark:border-gray-700 dark:bg-gray-800"
+              className="flex h-full flex-col rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 dark:border-gray-700 dark:bg-gray-800"
             >
-              <div className="flex min-h-64 items-center justify-center overflow-hidden rounded-2xl bg-gray-50 p-4 sm:p-6 dark:bg-gray-900/60">
+              <div className="flex h-72 items-center justify-center overflow-hidden rounded-2xl bg-gray-50 p-4 sm:h-80 sm:p-5 lg:h-[22rem] dark:bg-gray-900/60">
                 {(["light", "dark"] as const).map((scheme) => (
                   <video
                     key={`${kind}-${scheme}`}
@@ -190,7 +190,7 @@ export default async function DownloadPage({
                 ))}
               </div>
 
-              <div className="px-1 pb-2 sm:px-0 sm:pb-0">
+              <div className="flex flex-1 flex-col px-1 pb-1 pt-6 sm:px-0">
                 <h3 className="text-xl font-semibold tracking-tight text-gray-950 dark:text-white">
                   {heading}
                 </h3>
@@ -199,7 +199,7 @@ export default async function DownloadPage({
                 </p>
                 <a
                   href="#comparison"
-                  className="mt-5 inline-flex items-center gap-2 rounded-full bg-gray-950 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus:ring-offset-gray-800"
+                  className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-gray-950 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 sm:mt-auto sm:translate-y-1 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus:ring-offset-gray-800"
                 >
                   {copy.demoCtaLabel}
                   <ArrowDown className="h-4 w-4" aria-hidden="true" />
