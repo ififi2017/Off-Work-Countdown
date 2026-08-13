@@ -91,6 +91,42 @@ export default async function PrivacyPage({
             )}
           </section>
         ))}
+
+        {/* 邮箱与仓库地址从 siteConfig 取，不写进文案里：同一个地址还要填进
+            Partner Center 的商店 listing，两处对不上就是个查起来很烦的问题。 */}
+        <section>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {content.privacy.contactHeading}
+          </h2>
+          {content.privacy.contactBody.map((paragraph) => (
+            <p
+              key={paragraph}
+              className="mt-3 text-base leading-7 text-gray-600 dark:text-gray-300"
+            >
+              {paragraph}
+            </p>
+          ))}
+          <ul className="mt-4 space-y-2 text-base leading-7">
+            <li>
+              <a
+                href={`mailto:${siteConfig.supportEmail}`}
+                className="font-medium text-gray-900 underline decoration-gray-300 underline-offset-4 transition-colors hover:decoration-gray-900 dark:text-white dark:decoration-gray-600 dark:hover:decoration-white"
+              >
+                {siteConfig.supportEmail}
+              </a>
+            </li>
+            <li>
+              <a
+                href={siteConfig.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-gray-900 underline decoration-gray-300 underline-offset-4 transition-colors hover:decoration-gray-900 dark:text-white dark:decoration-gray-600 dark:hover:decoration-white"
+              >
+                GitHub
+              </a>
+            </li>
+          </ul>
+        </section>
       </div>
     </ContentPage>
   );

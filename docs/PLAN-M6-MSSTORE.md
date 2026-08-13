@@ -319,8 +319,10 @@ Store ID 写在 `src-tauri/src/lib.rs` 的 `MICROSOFT_STORE_PRODUCT_ID`，前三
 在商店这条路上是 0。
 
 1. 商店 listing 素材：截图（至少 1 张）、描述、年龄分级问卷
-2. **支持联系方式。** 隐私政策目前只给了 GitHub issue 这一个入口，Partner Center
-   还要一个支持联系邮箱。是否公开一个邮箱地址由你决定，不适合替你定。
+
+**支持联系邮箱**：`offwork@rainif.com`。它写在 `config/site.ts` 的 `supportEmail`，
+隐私政策页从那里读，**Partner Center 的 listing 必须填同一个地址**——两处对不上是
+个查起来很烦的问题。
 
 **隐私政策 URL 已就绪**：`https://off.rainif.com/en/privacy`（简体中文
 `/zh-CN/privacy`）。写它的时候顺带查出两件 About 页没覆盖到的事实，现在都写明了：

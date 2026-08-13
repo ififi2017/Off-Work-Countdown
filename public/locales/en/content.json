@@ -331,13 +331,12 @@
         "body": [
           "If this policy changes, the date at the top changes with it, and anything material is called out in the release notes. Past versions are visible in the repository's history."
         ]
-      },
-      {
-        "heading": "Getting in touch",
-        "body": [
-          "Questions about anything here are welcome as an issue on GitHub. If something in this policy does not match what the code does, that is a bug worth reporting — the code is public and can be checked against every claim on this page."
-        ]
       }
+    ],
+    "contactHeading": "Getting in touch",
+    "contactBody": [
+      "Questions about privacy are welcome by email. Anything else — a bug, a suggestion, or a disagreement with how something works — is usually better as an issue on GitHub, where the answer is visible to everyone.",
+      "If something in this policy does not match what the code does, that is a bug worth reporting: the code is public and can be checked against every claim on this page."
     ]
   }
 }

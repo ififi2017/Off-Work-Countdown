@@ -75,6 +75,10 @@ export interface ContentBundle {
     updatedLabel: string;
     updated: string;
     sections: PrivacySection[];
+    // 联系方式不放进 sections：页面要在它下面渲染邮箱和仓库链接，
+    // 靠「最后一个小节」来定位，加一节就会错位。
+    contactHeading: string;
+    contactBody: string[];
   };
   download: {
     metaTitle: string;
