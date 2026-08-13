@@ -21,6 +21,7 @@
   "endTime": "समाप्ति समय",
   "reminder": "काम से छुट्टी से १५ मिनट पहले याद दिलाएं",
   "launchAtLogin": "लॉग इन पर शुरू करें",
+  "launchAtLoginManagedBySystem": "Windows द्वारा नियंत्रित। इसे सेटिंग्स → ऐप्स → स्टार्टअप में बदलें।",
   "globalShortcut": "ऐप दिखाएँ या छिपाएँ",
   "shortcutChange": "बदलें",
   "shortcutRecording": "शॉर्टकट दबाएँ…",

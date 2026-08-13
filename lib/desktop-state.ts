@@ -503,16 +503,37 @@ export async function stopDesktopCountdown(
   await invoke("clear_desktop_countdown_display");
 }
 
-export async function getDesktopAutostartEnabled(): Promise<boolean> {
-  if (!IS_DESKTOP_BUILD) return false;
-  const { isEnabled } = await import("@tauri-apps/plugin-autostart");
-  return isEnabled();
+/**
+ * 自启动的真实状态。
+ *
+ * `locked` 表示这个开关被系统接管了，应用改不动——只有商店版会出现：MSIX 的
+ * `windows.startupTask` 一旦被用户在「设置 → 应用 → 启动」里关掉，应用请求打开
+ * 不会报错，只是什么都不会发生。GitHub 版写注册表 Run 键，永远是 false。
+ */
+export type DesktopAutostartState = {
+  enabled: boolean;
+  locked: boolean;
+};
+
+/**
+ * 两条渠道都走同一个 Rust 命令，实现差异在 Rust 侧按 feature 二选一
+ * （见 docs/PLAN-M6-MSSTORE.md 决策 3）。前端不需要知道自己跑在哪条上。
+ */
+export async function getDesktopAutostartState(): Promise<DesktopAutostartState> {
+  if (!IS_DESKTOP_BUILD) return { enabled: false, locked: false };
+  const { invoke } = await import("@tauri-apps/api/core");
+  return invoke<DesktopAutostartState>("get_autostart_state");
 }
 
+/**
+ * 返回值是写完之后的**真实**状态，不是入参的回声——被系统锁住时它会是
+ * `{ enabled: false, locked: true }`。照着返回值渲染，才不会出现「开关是开的、
+ * 开机却不启动」。
+ */
 export async function setDesktopAutostartEnabled(
   enabled: boolean
-): Promise<void> {
-  if (!IS_DESKTOP_BUILD) return;
-  const { enable, disable } = await import("@tauri-apps/plugin-autostart");
-  await (enabled ? enable() : disable());
+): Promise<DesktopAutostartState> {
+  if (!IS_DESKTOP_BUILD) return { enabled: false, locked: false };
+  const { invoke } = await import("@tauri-apps/api/core");
+  return invoke<DesktopAutostartState>("set_autostart_enabled", { enabled });
 }

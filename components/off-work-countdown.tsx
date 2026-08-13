@@ -111,7 +111,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   emptyDesktopCountdownState,
-  getDesktopAutostartEnabled,
+  getDesktopAutostartState,
   getDesktopGlobalShortcutSettings,
   getMiniWindowSettings,
   hideDesktopMainWindow,
@@ -384,6 +384,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     !IS_DESKTOP_BUILD
   );
   const [launchAtLogin, setLaunchAtLogin] = useState(false);
+  // 商店版专有：用户在系统「启动」设置里关掉之后，应用无权改回来。
+  // 见 docs/PLAN-M6-MSSTORE.md 决策 3。
+  const [launchAtLoginLocked, setLaunchAtLoginLocked] = useState(false);
   const [autostartLoaded, setAutostartLoaded] = useState(!IS_DESKTOP_BUILD);
   const [autostartPending, setAutostartPending] = useState(false);
   const [globalShortcutEnabled, setGlobalShortcutEnabled] = useState(true);
@@ -639,9 +642,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     if (!IS_DESKTOP_BUILD) return;
 
     let cancelled = false;
-    void getDesktopAutostartEnabled()
-      .then((enabled) => {
-        if (!cancelled) setLaunchAtLogin(enabled);
+    void getDesktopAutostartState()
+      .then((state) => {
+        if (cancelled) return;
+        setLaunchAtLogin(state.enabled);
+        setLaunchAtLoginLocked(state.locked);
       })
       .catch(() => {
         if (!cancelled) setDesktopSettingError(t("desktopSettingError"));
@@ -1568,7 +1573,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setAutostartPending(true);
     setDesktopSettingError("");
     try {
-      await setDesktopAutostartEnabled(enabled);
+      // 按返回的真实状态回填，而不是假定请求成功：商店版被系统锁住时
+      // 请求打开不会报错，只是不生效。见决策 3。
+      const state = await setDesktopAutostartEnabled(enabled);
+      setLaunchAtLogin(state.enabled);
+      setLaunchAtLoginLocked(state.locked);
     } catch {
       setLaunchAtLogin(previous);
       setDesktopSettingError(t("desktopSettingError"));
@@ -2624,10 +2633,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                       <Switch
                         id="launch-at-login"
                         checked={launchAtLogin}
-                        disabled={!autostartLoaded || autostartPending}
+                        disabled={
+                          !autostartLoaded ||
+                          autostartPending ||
+                          launchAtLoginLocked
+                        }
                         onCheckedChange={handleAutostartChange}
                       />
                     </div>
+                    {launchAtLoginLocked && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {t("launchAtLoginManagedBySystem")}
+                      </p>
+                    )}
                     {desktopSettingError && (
                       <p
                         role="alert"

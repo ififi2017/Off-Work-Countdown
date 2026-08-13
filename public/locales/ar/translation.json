@@ -21,6 +21,7 @@
   "endTime": "وقت النهاية",
   "reminder": "تذكير لي قبل 15 دقيقة من نهاية العمل",
   "launchAtLogin": "التشغيل عند تسجيل الدخول",
+  "launchAtLoginManagedBySystem": "يتحكم فيه Windows. غيّره من الإعدادات ← التطبيقات ← بدء التشغيل.",
   "globalShortcut": "إظهار التطبيق أو إخفاؤه",
   "shortcutChange": "تغيير",
   "shortcutRecording": "اضغط اختصارًا…",

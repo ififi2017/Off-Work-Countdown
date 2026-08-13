@@ -21,6 +21,7 @@
   "endTime": "終了時間",
   "reminder": "退勤15分前にリマインド",
   "launchAtLogin": "ログイン時に起動",
+  "launchAtLoginManagedBySystem": "Windows が管理しています。「設定 → アプリ → スタートアップ」で変更できます。",
   "globalShortcut": "アプリを表示または非表示",
   "shortcutChange": "変更",
   "shortcutRecording": "ショートカットを押してください…",

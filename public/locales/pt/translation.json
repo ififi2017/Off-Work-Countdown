@@ -21,6 +21,7 @@
   "endTime": "Hora de término",
   "reminder": "Lembre-me 15 minutos antes de sair do trabalho",
   "launchAtLogin": "Iniciar ao entrar",
+  "launchAtLoginManagedBySystem": "Gerenciado pelo Windows. Altere em Configurações › Aplicativos › Inicializar.",
   "globalShortcut": "Mostrar ou ocultar o aplicativo",
   "shortcutChange": "Alterar",
   "shortcutRecording": "Pressione um atalho…",

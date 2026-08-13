@@ -21,6 +21,7 @@
   "endTime": "Endzeit",
   "reminder": "Erinnere mich 15 Minuten vor Feierabend",
   "launchAtLogin": "Beim Anmelden starten",
+  "launchAtLoginManagedBySystem": "Von Windows verwaltet. Ändern unter Einstellungen › Apps › Autostart.",
   "globalShortcut": "App ein- oder ausblenden",
   "shortcutChange": "Ändern",
   "shortcutRecording": "Tastenkürzel drücken…",

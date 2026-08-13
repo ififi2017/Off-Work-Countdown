@@ -21,6 +21,7 @@
   "endTime": "Waktu Selesai",
   "reminder": "Ingatkan saya 15 menit sebelum pulang kerja",
   "launchAtLogin": "Jalankan saat masuk",
+  "launchAtLoginManagedBySystem": "Dikelola oleh Windows. Ubah di Setelan › Aplikasi › Startup.",
   "globalShortcut": "Tampilkan atau sembunyikan aplikasi",
   "shortcutChange": "Ubah",
   "shortcutRecording": "Tekan pintasan…",

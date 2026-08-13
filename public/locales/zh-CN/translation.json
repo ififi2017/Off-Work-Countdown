@@ -21,6 +21,7 @@
   "endTime": "下班时间",
   "reminder": "下班前15分钟提醒我",
   "launchAtLogin": "登录时启动",
+  "launchAtLoginManagedBySystem": "由 Windows 接管。可在「设置 → 应用 → 启动」中更改。",
   "globalShortcut": "显示或隐藏应用",
   "shortcutChange": "修改",
   "shortcutRecording": "请按下快捷键…",

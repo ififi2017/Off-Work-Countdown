@@ -21,6 +21,7 @@
   "endTime": "Ora di fine",
   "reminder": "Ricordami 15 minuti prima di uscire dal lavoro",
   "launchAtLogin": "Avvia all’accesso",
+  "launchAtLoginManagedBySystem": "Gestito da Windows. Modificalo in Impostazioni › App › Avvio.",
   "globalShortcut": "Mostra o nascondi l’app",
   "shortcutChange": "Modifica",
   "shortcutRecording": "Premi una scorciatoia…",

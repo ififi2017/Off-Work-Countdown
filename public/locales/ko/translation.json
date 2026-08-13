@@ -21,6 +21,7 @@
   "endTime": "종료 시간",
   "reminder": "퇴근 15분 전에 알림",
   "launchAtLogin": "로그인 시 실행",
+  "launchAtLoginManagedBySystem": "Windows에서 관리합니다. '설정 → 앱 → 시작 프로그램'에서 변경하세요.",
   "globalShortcut": "앱 표시 또는 숨기기",
   "shortcutChange": "변경",
   "shortcutRecording": "단축키를 누르세요…",

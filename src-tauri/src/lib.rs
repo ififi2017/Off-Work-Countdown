@@ -1667,18 +1667,150 @@ async fn install_update_via_mirror(app: AppHandle) -> Result<(), String> {
 /// 不是 http scheme，前端那条路要在 capability 白名单里逐条声明。
 #[tauri::command]
 fn open_microsoft_store_listing(app: AppHandle) -> Result<(), String> {
+    // 两个分支互斥，各自都是函数的尾表达式，因此不能写 `return`——在 Windows 上
+    // 编译时另一个分支整块消失，`return` 就成了 clippy::needless_return。
+    // 这条只在 Windows 上跑 clippy 才会暴露，macOS 上这段根本不参与编译。
     #[cfg(target_os = "windows")]
     {
         let url = format!("ms-windows-store://pdp/?productid={MICROSOFT_STORE_PRODUCT_ID}");
-        return app
-            .opener()
+        app.opener()
             .open_url(url, None::<&str>)
-            .map_err(|error| error.to_string());
+            .map_err(|error| error.to_string())
     }
     #[cfg(not(target_os = "windows"))]
     {
         let _ = app;
         Err("the Microsoft Store is only available on Windows".into())
+    }
+}
+
+/// 自启动的真实状态。比一个 bool 多一个 `locked`，因为 MSIX 那条路上「关着」
+/// 有两种含义：应用自己没开，和用户在「设置 → 应用 → 启动」里关掉了——后者
+/// 应用无权改回来，`RequestEnableAsync` 会直接返回原状态。
+///
+/// 两种渠道都返回这个结构，前端因此不必知道自己跑在哪条实现上；注册表那条路
+/// 永远 `locked: false`，因为它确实想开就能开。
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AutostartState {
+    enabled: bool,
+    locked: bool,
+}
+
+/// manifest 里 `<uap5:StartupTask TaskId="...">` 的 TaskId，必须逐字一致，
+/// 对不上的表现是 `StartupTask::GetAsync` 抛异常而不是返回一个禁用状态。
+#[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+const STARTUP_TASK_ID: &str = "OffWorkCountdownStartup";
+
+#[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+fn startup_task() -> Result<windows::ApplicationModel::StartupTask, String> {
+    use windows::core::HSTRING;
+
+    windows::ApplicationModel::StartupTask::GetAsync(&HSTRING::from(STARTUP_TASK_ID))
+        .and_then(|op| op.get())
+        // 没有包标识时（比如把商店渠道的 exe 直接双击运行）这里必然失败。
+        // 保留原始错误：它是排查 TaskId 写错和「没跑在包里」的唯一线索。
+        .map_err(|error| format!("startup task {STARTUP_TASK_ID} is unavailable: {error}"))
+}
+
+#[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+fn read_startup_task_state() -> Result<AutostartState, String> {
+    use windows::ApplicationModel::StartupTaskState;
+
+    let state = startup_task()?.State().map_err(|error| error.to_string())?;
+    Ok(match state {
+        StartupTaskState::Enabled => AutostartState {
+            enabled: true,
+            locked: false,
+        },
+        // 策略打开的同样锁着：应用改不动，只是方向相反。
+        StartupTaskState::EnabledByPolicy => AutostartState {
+            enabled: true,
+            locked: true,
+        },
+        StartupTaskState::DisabledByUser | StartupTaskState::DisabledByPolicy => AutostartState {
+            enabled: false,
+            locked: true,
+        },
+        // Disabled 以及将来可能新增的取值都按「关着但能开」处理。
+        _ => AutostartState {
+            enabled: false,
+            locked: false,
+        },
+    })
+}
+
+/// 读自启动状态。两条实现的分界就是渠道的分界，前端只看到同一个命令。
+#[tauri::command]
+async fn get_autostart_state(app: AppHandle) -> Result<AutostartState, String> {
+    #[cfg(feature = "run-key-autostart")]
+    {
+        use tauri_plugin_autostart::ManagerExt;
+
+        let enabled = app
+            .autolaunch()
+            .is_enabled()
+            .map_err(|error| error.to_string())?;
+        // 注册表 Run 键任何时候都能改，没有"被系统锁住"这回事。
+        Ok(AutostartState {
+            enabled,
+            locked: false,
+        })
+    }
+    #[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+    {
+        let _ = app;
+        read_startup_task_state()
+    }
+    #[cfg(all(not(target_os = "windows"), not(feature = "run-key-autostart")))]
+    {
+        let _ = app;
+        Err("autostart is unavailable in this build".into())
+    }
+}
+
+/// 写自启动状态，并把**写完之后的真实状态**回给前端。
+///
+/// 返回值不是入参的回声：MSIX 那条路上用户可能已经在系统设置里锁死了这个开关，
+/// 这时请求打开不会报错，只是什么都不会发生。前端照着返回值渲染，才不会出现
+/// 「开关是开的、开机却不启动」——那正是 P2 实测到的商店版旧行为。
+#[tauri::command]
+async fn set_autostart_enabled(app: AppHandle, enabled: bool) -> Result<AutostartState, String> {
+    #[cfg(feature = "run-key-autostart")]
+    {
+        use tauri_plugin_autostart::ManagerExt;
+
+        let manager = app.autolaunch();
+        if enabled {
+            manager.enable().map_err(|error| error.to_string())?;
+        } else {
+            manager.disable().map_err(|error| error.to_string())?;
+        }
+        let enabled = manager.is_enabled().map_err(|error| error.to_string())?;
+        Ok(AutostartState {
+            enabled,
+            locked: false,
+        })
+    }
+    #[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+    {
+        let _ = app;
+        let task = startup_task()?;
+        if enabled {
+            // 返回值就是请求之后的真实状态：被用户关掉时它仍然是 DisabledByUser，
+            // 不会报错。把它当成「开成功了」正是决策 3 要避免的那种假开关。
+            task.RequestEnableAsync()
+                .and_then(|op| op.get())
+                .map_err(|error| error.to_string())?;
+        } else {
+            task.Disable().map_err(|error| error.to_string())?;
+        }
+        read_startup_task_state()
+    }
+    #[cfg(all(not(target_os = "windows"), not(feature = "run-key-autostart")))]
+    {
+        let _ = (app, enabled);
+        Err("autostart is unavailable in this build".into())
     }
 }
 
@@ -1752,21 +1884,26 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             focus_main_window(app);
         }));
-        builder = builder
-            .plugin(tauri_plugin_notification::init())
-            .plugin(tauri_plugin_autostart::init(
+        builder = builder.plugin(tauri_plugin_notification::init());
+        // 商店渠道整条注册表 Run 键的路都编译掉：在 MSIX 容器里它的写入会被
+        // 重定向进包的虚拟注册表，Windows 根本看不到，表现成一个「开关是开的、
+        // 开机却不启动」的假开关。见决策 3 与 P2 实测。
+        #[cfg(feature = "run-key-autostart")]
+        {
+            builder = builder.plugin(tauri_plugin_autostart::init(
                 tauri_plugin_autostart::MacosLauncher::LaunchAgent,
                 None,
-            ))
-            .plugin(
-                tauri_plugin_global_shortcut::Builder::new()
-                    .with_handler(|app, _shortcut, event| {
-                        if event.state == ShortcutState::Pressed {
-                            toggle_main_window(app);
-                        }
-                    })
-                    .build(),
-            );
+            ));
+        }
+        builder = builder.plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, _shortcut, event| {
+                    if event.state == ShortcutState::Pressed {
+                        toggle_main_window(app);
+                    }
+                })
+                .build(),
+        );
     }
 
     builder
@@ -1789,6 +1926,8 @@ pub fn run() {
             update_global_shortcut_settings,
             install_update_via_mirror,
             open_microsoft_store_listing,
+            get_autostart_state,
+            set_autostart_enabled,
             update_desktop_menus,
             clear_desktop_countdown_display,
             open_notification_settings

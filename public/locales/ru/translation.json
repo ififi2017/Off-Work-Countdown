@@ -21,6 +21,7 @@
   "endTime": "Время окончания",
   "reminder": "Напомнить за 15 минут до конца работы",
   "launchAtLogin": "Запускать при входе",
+  "launchAtLoginManagedBySystem": "Управляется Windows. Измените в «Параметры → Приложения → Автозагрузка».",
   "globalShortcut": "Показать или скрыть приложение",
   "shortcutChange": "Изменить",
   "shortcutRecording": "Нажмите сочетание…",

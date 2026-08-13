@@ -21,6 +21,7 @@
   "endTime": "End Time",
   "reminder": "Remind me 15 minutes before off work",
   "launchAtLogin": "Launch at login",
+  "launchAtLoginManagedBySystem": "Controlled by Windows. Change it in Settings › Apps › Startup.",
   "globalShortcut": "Show or hide app",
   "shortcutChange": "Change",
   "shortcutRecording": "Press a shortcut…",

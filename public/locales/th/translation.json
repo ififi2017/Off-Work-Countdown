@@ -21,6 +21,7 @@
   "endTime": "เวลาสิ้นสุด",
   "reminder": "เตือนฉัน 15 นาที ก่อนหมดงาน",
   "launchAtLogin": "เปิดเมื่อเข้าสู่ระบบ",
+  "launchAtLoginManagedBySystem": "ควบคุมโดย Windows เปลี่ยนได้ที่ การตั้งค่า → แอป → เริ่มต้นระบบ",
   "globalShortcut": "แสดงหรือซ่อนแอป",
   "shortcutChange": "เปลี่ยน",
   "shortcutRecording": "กดปุ่มลัด…",

@@ -21,6 +21,7 @@
   "endTime": "Thời gian kết thúc",
   "reminder": "Nhắc tôi 15 phút trước khi tan ca",
   "launchAtLogin": "Khởi chạy khi đăng nhập",
+  "launchAtLoginManagedBySystem": "Do Windows quản lý. Thay đổi trong Cài đặt › Ứng dụng › Khởi động.",
   "globalShortcut": "Hiện hoặc ẩn ứng dụng",
   "shortcutChange": "Thay đổi",
   "shortcutRecording": "Nhấn tổ hợp phím…",

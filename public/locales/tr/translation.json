@@ -21,6 +21,7 @@
   "endTime": "Bitiş Zamanı",
   "reminder": "İş çıkışımdan 15 dakika önce hatırlat",
   "launchAtLogin": "Oturum açınca başlat",
+  "launchAtLoginManagedBySystem": "Windows tarafından yönetilir. Ayarlar › Uygulamalar › Başlangıç'tan değiştirin.",
   "globalShortcut": "Uygulamayı göster veya gizle",
   "shortcutChange": "Değiştir",
   "shortcutRecording": "Bir kısayola basın…",

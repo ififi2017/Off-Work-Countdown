@@ -21,6 +21,7 @@
   "endTime": "Heure de fin",
   "reminder": "Rappelez-moi 15 minutes avant la fin du travail",
   "launchAtLogin": "Lancer à la connexion",
+  "launchAtLoginManagedBySystem": "Géré par Windows. Modifiez-le dans Paramètres › Applications › Démarrage.",
   "globalShortcut": "Afficher ou masquer l’application",
   "shortcutChange": "Modifier",
   "shortcutRecording": "Appuyez sur un raccourci…",
