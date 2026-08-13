@@ -159,40 +159,64 @@
         ]
       }
     ],
-    "comparisonHeading": "Lightweight on the web, at home on your desktop",
-    "comparisonIntro": "Both versions include the countdown and salary estimate. The web app is perfect for dropping in; the desktop app is a better companion when you want background access and native reminders throughout the day.",
+    "comparisonHeading": "More than the web app in a desktop window",
+    "comparisonIntro": "The desktop app keeps the web app’s core experience and adds shift planning, background reminders and floating tools for everyday use. Compare the details and choose what fits your workday.",
+    "comparisonFeatureLabel": "Feature",
     "webLabel": "Web app",
     "desktopLabel": "Desktop client",
+    "featureIncludedLabel": "Included",
+    "featureLimitedLabel": "Limited",
+    "featureUnavailableLabel": "Desktop only",
     "comparison": [
       {
-        "feature": "Start using it",
-        "web": "Open the website and begin",
-        "desktop": "Launch at login and open with a shortcut"
+        "feature": "Off-work countdown",
+        "web": { "status": "included", "detail": "Live countdown and progress" },
+        "desktop": { "status": "included", "detail": "Live countdown and progress" }
       },
       {
-        "feature": "Background access",
-        "web": "Keep the webpage or PWA open",
-        "desktop": "Keep counting in the tray with the window hidden"
+        "feature": "Salary estimate",
+        "web": { "status": "included", "detail": "Monthly or daily pay and today’s earnings" },
+        "desktop": { "status": "included", "detail": "Monthly or daily pay and today’s earnings" }
       },
       {
-        "feature": "Reminders",
-        "web": "Available while the page stays open",
-        "desktop": "Milestone, lunch and effective-time break reminders"
+        "feature": "Workdays and overnight shifts",
+        "web": { "status": "included", "detail": "Custom workdays and shifts across midnight" },
+        "desktop": { "status": "included", "detail": "Custom workdays and shifts across midnight" }
       },
       {
-        "feature": "Shift tools",
-        "web": "Countdown and salary estimate",
-        "desktop": "Also handles the next shift, lunch pauses and overtime"
+        "feature": "Off-work reminders",
+        "web": { "status": "limited", "detail": "While the page stays open" },
+        "desktop": { "status": "included", "detail": "Native reminders with the window hidden" }
       },
       {
-        "feature": "Floating timer",
-        "web": "View everything on the full page",
-        "desktop": "A native mini panel and an interactive woodfish skin"
+        "feature": "Lunch calculation",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "Pauses the timer, progress and earnings" }
       },
       {
-        "feature": "Updates",
-        "web": "The website is always current",
-        "desktop": "Check for and install updates in the app"
+        "feature": "Healthy break reminders",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "Move and eye-rest reminders by work time" }
+      },
+      {
+        "feature": "Overtime and next shift",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "Extend this shift and continue into the next one" }
+      },
+      {
+        "feature": "Tray and floating timers",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "Menu bar/tray, mini panel and woodfish skin" }
+      },
+      {
+        "feature": "Launch at login and shortcut",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "Ready after login and available from anywhere" }
+      },
+      {
+        "feature": "Offline and local storage",
+        "web": { "status": "included", "detail": "PWA cache and browser storage" },
+        "desktop": { "status": "included", "detail": "Works offline and stores settings on device" }
       }
     ],
     "downloadsHeading": "Choose your version",
@@ -205,7 +229,7 @@
     "demoMiniHeading": "Keep the time close at hand",
     "demoMiniBody": "Let the mini timer float above your workspace, or switch to the woodfish skin for a small moment of calm. A couple of taps are always there without pulling you away from what you are doing.",
     "demoMiniAlt": "The floating timer with the woodfish skin",
-    "demoCtaLabel": "Download the desktop app",
+    "demoCtaLabel": "See what the desktop app adds",
     "latestVersionLabel": "Latest version",
     "loadingLabel": "Finding the latest version for you…",
     "unavailableLabel": "We could not load the download links just now. You can still get the latest version from GitHub Releases.",

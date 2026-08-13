@@ -969,7 +969,19 @@ fn start_tray_timer(app: AppHandle) {
                 write_countdown_state(&app, &state);
             }
             let metrics = countdown_metrics(&state, now_ms);
-            let active = metrics.is_some() && state.end_at_ms() > now_ms;
+            let shift_start_at_ms = state
+                .segments
+                .first()
+                .map(|segment| segment.start_at_ms)
+                .unwrap_or_default();
+            let active =
+                metrics.is_some() && shift_start_at_ms <= now_ms && state.end_at_ms() > now_ms;
+            let current_start_remaining = (!active && state.running && state.is_valid_shift())
+                .then_some(shift_start_at_ms)
+                .filter(|start| *start > now_ms)
+                .map(|start| format_remaining(start - now_ms));
+            #[cfg(any(target_os = "windows", debug_assertions))]
+            let waiting_for_current_shift = current_start_remaining.is_some();
             // 午休时托盘显示距午休结束的时间，而不是冻住的下班倒计时——
             // 后者在整个午休期间纹丝不动，看起来像应用卡死了。
             let break_remaining = active
@@ -979,11 +991,13 @@ fn start_tray_timer(app: AppHandle) {
             let remaining = break_remaining
                 .clone()
                 .or_else(|| active.then(|| format_remaining(metrics.expect("active metrics").0)));
-            let next_remaining = (!active && state.running)
-                .then_some(state.next_shift.as_ref())
-                .flatten()
-                .filter(|next| next.is_valid() && next.segments[0].start_at_ms > now_ms)
-                .map(|next| format_remaining(next.segments[0].start_at_ms - now_ms));
+            let next_remaining = current_start_remaining.or_else(|| {
+                (!active && state.running)
+                    .then_some(state.next_shift.as_ref())
+                    .flatten()
+                    .filter(|next| next.is_valid() && next.segments[0].start_at_ms > now_ms)
+                    .map(|next| format_remaining(next.segments[0].start_at_ms - now_ms))
+            });
 
             let (notification, marker_changed) =
                 advance_notification_marker(&state, &mut marker, now_ms);
@@ -1076,10 +1090,10 @@ fn start_tray_timer(app: AppHandle) {
             }
 
             #[cfg(any(target_os = "windows", debug_assertions))]
-            // Windows 在倒计时开始时自动露出迷你窗；结束后不再强制隐藏，
+            // Windows 在等待本班开始或正式倒计时时自动露出迷你窗；结束后不再强制隐藏，
             // 已经打开的窗口会切换为“计时未开始”，由用户决定是否收起。
             if (cfg!(target_os = "windows") || windows_mini_dev_override())
-                && active
+                && (active || waiting_for_current_shift)
                 && !was_running
             {
                 if let Some(window) = app.get_webview_window("mini") {
@@ -1089,7 +1103,7 @@ fn start_tray_timer(app: AppHandle) {
 
             #[cfg(any(target_os = "windows", debug_assertions))]
             {
-                was_running = active;
+                was_running = active || waiting_for_current_shift;
             }
             thread::sleep(Duration::from_secs(1));
         }

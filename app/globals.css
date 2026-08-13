@@ -238,6 +238,55 @@ body {
   display: none;
 }
 
+/* WebView2 默认滚动条又宽又带上下箭头，会盖过紧凑桌面窗口本身的视觉层级。
+   设置页保留可拖动的滑块，但把轨道收窄并融入窗口的深浅色背景。 */
+.desktop-scrollbar {
+  scrollbar-color: rgba(107, 114, 128, 0.55) transparent;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+}
+
+.desktop-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.desktop-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.desktop-scrollbar::-webkit-scrollbar-thumb {
+  min-height: 40px;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background: rgba(107, 114, 128, 0.55);
+  background-clip: padding-box;
+}
+
+.desktop-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 0.75);
+  background-clip: padding-box;
+}
+
+.desktop-scrollbar::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.dark .desktop-scrollbar {
+  scrollbar-color: rgba(156, 163, 175, 0.48) transparent;
+}
+
+.dark .desktop-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.48);
+  background-clip: padding-box;
+}
+
+.dark .desktop-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(209, 213, 219, 0.65);
+  background-clip: padding-box;
+}
+
 /* 这是个桌面小工具，不是文档。触控板双指拖动会把图标、文字当成可拖拽内容
    拖出窗口，木鱼和进度条尤其容易误触；原生拖拽在这里没有任何用途。 */
 * {

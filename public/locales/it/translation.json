@@ -13,7 +13,7 @@
   "updateMirrorNotice": "Impossibile raggiungere GitHub direttamente. Il mirror è gestito da terzi ({{host}}); la firma dell'installer viene comunque verificata prima dell'installazione.",
   "downloadingUpdate": "Download dell'aggiornamento…",
   "restartToUpdate": "Riavvia per aggiornare",
-  "updateNotConfigured": "Gli aggiornamenti automatici richiedono la firma della release.",
+  "updateNotConfigured": "Gli aggiornamenti automatici non sono disponibili al momento. Puoi comunque scaricare l'ultima versione dal nostro sito.",
   "updateFailed": "Impossibile controllare gli aggiornamenti.",
   "startTime": "Ora di inizio",
   "endTime": "Ora di fine",

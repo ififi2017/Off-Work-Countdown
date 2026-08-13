@@ -13,7 +13,7 @@
   "updateMirrorNotice": "GitHub に直接接続できませんでした。ミラーは第三者（{{host}}）が運営していますが、インストーラーの署名は適用前に検証されます。",
   "downloadingUpdate": "アップデートをダウンロード中…",
   "restartToUpdate": "再起動して更新",
-  "updateNotConfigured": "自動更新にはリリース署名の設定が必要です。",
+  "updateNotConfigured": "現在、自動更新は利用できません。最新版は公式サイトからダウンロードできます。",
   "updateFailed": "アップデートを確認できませんでした。",
   "startTime": "開始時間",
   "endTime": "終了時間",
