@@ -8,9 +8,9 @@ Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动�
 
 | 阶段 | 内容 | 状态 |
 |---|---|---|
-| **P0** | Partner Center 账号、占名、拿到应用标识三元组 | ⬜ 未开始 |
+| **P0** | Partner Center 账号、占名、拿到应用标识三元组 | 🟡 身份已拿到，隐私政策页待补 |
 | **P1** | `msstore` 构建渠道：更新入口改接商店、自启动改 startupTask | 🟡 更新入口已完成，自启动待做 |
-| **P2** | `Package.appxmanifest` + 本地自签打包，真机验收 | ⬜ 未开始 |
+| **P2** | `Package.appxmanifest` + 本地自签打包，真机验收 | 🟡 manifest 与打包脚本已就位，真机验收待做 |
 | **P3** | 首次人工提交并上架 | ⬜ 未开始 |
 | **P4** | Entra 凭据 + `release-msstore.yml` 自动提交 | ⬜ 未开始 |
 | **P5** | 文档：下载页、README、About 页区分两个渠道 | ⬜ 未开始 |
@@ -23,9 +23,16 @@ Cargo feature、内联 updater capability、商店深链命令与 19 份语言�
 `npx tauri build --config src-tauri/tauri.msstore.conf.json -- --no-default-features`
 在 macOS 上跑通，产物为不含更新器的 `Off Work Countdown` 可执行文件。
 
-自启动（决策 3）留到 P2 与 manifest 一起做：`windows.startupTask` 要有真实的
-`Package.appxmanifest` 才能验证，先写等于写一段无法验收的代码——与决策 2 里
-`StoreContext` 排在 P3 之后是同一个理由。
+**P2 已完成的部分（2026-08-13）**：`src-tauri/msstore/Package.appxmanifest`
+（含 `windows.startupTask` 声明）、`scripts/pack-msix.mjs` 暂存与打包脚本、
+`npm run check:version` 现在一并校验 MSIX 四段版本号。图标不另存副本——
+`tauri icon` 早已在 `src-tauri/icons/` 产出 MSIX 需要的全套尺寸，打包脚本按
+manifest 里实际引用到的文件名去取。
+
+仍然缺一台 Windows：真机装包、跑 WACK、验收 §5 那张表，都要有 Windows 才能做。
+自启动（决策 3）的 Rust 实现也压在这里——`StartupTask` 的状态读写没有真实包就
+没法验证，先写等于写一段无法验收的代码，与决策 2 里 `StoreContext` 排在 P3 之后
+是同一个理由。
 
 ## 0. 核心判断：走 MSIX，不走 EXE/MSI
 
@@ -287,23 +294,36 @@ NSIS、MSI、MSIX 从同一个 tag、同一份源码产出，**互不替代**。
 
 ## 3. 账号与商店侧准备（P0）
 
-现在个人和公司开发者账号都免费——公司注册费在 2026 年 5 月取消，个人账号 2025 年
-底起免费。M5 §6 那张成本表里"Windows 代码签名 $200–400"这一项，在商店这条路上是 0。
+### 已拿到的身份（2026-08-13）
 
-1. 注册 Partner Center 开发者账号
-2. 保留应用名 `Off Work Countdown`
-3. 记下应用标识三元组（产品 → 应用标识）：
-   - `Package/Identity/Name`
-   - `Publisher`（形如 `CN=<GUID>`）
-   - `PackageFamilyName`
+| 字段 | 值 |
+|---|---|
+| `Package/Identity/Name` | `finiaRStudio.OffWorkCountdown` |
+| `Package/Identity/Publisher` | `CN=57D14FB1-9452-4F62-8C84-A50889A0FE89` |
+| `PublisherDisplayName` | `fi_niaR Studio` |
+| Package Family Name | `finiaRStudio.OffWorkCountdown_vzcbgpq3qw6zw` |
+| Store ID | `9PM0HJ2PP2LJ` |
 
-   **⚠️ 这三个值大小写敏感，空格和标点都要一致**，写错会在上传阶段才报错。
-4. 商店 listing 素材：截图（至少 1 张）、描述、支持邮箱、年龄分级问卷
-5. **隐私政策 URL** —— 仓库目前没有 `/privacy` 页面，About 页不构成正式隐私政策。
+这些都不是机密——每个上架的 MSIX 包里都带着它们，任何人解包都能看到，所以直接进
+仓库。真正需要保密的是 §4 那四个 secret。
+
+Store ID 写在 `src-tauri/src/lib.rs` 的 `MICROSOFT_STORE_PRODUCT_ID`，前三个写在
+`src-tauri/msstore/Package.appxmanifest`。两处同属一份不可分割的商店身份。
+
+**深链在 P3 之前打不开**：商店对未发布的产品不提供 `pdp` 页面。这不是 bug。
+
+### 还缺的
+
+账号本身没有成本：个人和公司开发者账号现在都免费（公司注册费 2026 年 5 月取消，
+个人账号 2025 年底起免费）。M5 §6 那张成本表里"Windows 代码签名 $200–400"这一项，
+在商店这条路上是 0。
+
+1. 商店 listing 素材：截图（至少 1 张）、描述、支持邮箱、年龄分级问卷
+2. **隐私政策 URL** —— 仓库目前没有 `/privacy` 页面，About 页不构成正式隐私政策。
    需要先在 `off.rainif.com` 上补一页。内容本身不难写（本地优先、不上传薪资、匿名
    聚合埋点），[AGENTS.md](../AGENTS.md) 的隐私章节已经把事实说清楚了，照实写即可。
 
-第 5 条不要留到最后——它是 listing 的必填项，卡在这里会让 P3 白等一轮。
+第 2 条不要留到最后——它是 listing 的必填项，卡在这里会让 P3 白等一轮。
 
 ## 4. CI 自动发版（P4）
 
@@ -423,7 +443,7 @@ NSIS 安装向导的 14 种语言（[PLAN-3.1.0.md §1.1](PLAN-3.1.0.md)）在 M
 
 | 阶段 | 交付物 | 完成判据 |
 |---|---|---|
-| **P0** | Partner Center 账号、占名、标识三元组、隐私政策页 | 三元组已记录；`off.rainif.com/privacy` 可访问 |
+| **P0** | Partner Center 账号、占名、标识三元组、隐私政策页 | ✅ 三元组已记录（§3）；`off.rainif.com/privacy` 待补 |
 | **P1** | `msstore` 渠道 | `--no-default-features` 构建产物中不含更新器代码与权限；「检查更新」改为跳转商店且能实际打开；About / 设置页文案已按渠道分支 |
 | **P2** | manifest + 本地打包 | 自签 `.msixbundle` 在 Windows 真机装上，§5 表格逐项验收通过；WACK 全绿 |
 | **P3** | 首次上架 | 商店页面可搜到，可安装 |

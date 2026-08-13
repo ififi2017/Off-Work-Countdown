@@ -1611,12 +1611,13 @@ fn update_global_shortcut_settings(
 #[cfg(feature = "self-update")]
 const MIRROR_UPDATER_ENDPOINT: &str ="https://gh-proxy.com/https://github.com/ififi2017/Off-Work-Countdown/releases/latest/download/latest-cn.json";
 
-/// Partner Center 保留应用名之后分配的商店产品 ID（12 位大写字母数字）。
+/// Partner Center 分配的商店产品 ID。与 src-tauri/msstore/Package.appxmanifest
+/// 的 Identity 同属一份不可分割的商店身份，改一个就要核对另一个。
 ///
-/// ⚠️ 占位值。M6 的 P0 拿到真实 ID 后替换，替换前商店版的「检查更新」会打开
-/// 一个不存在的商店页面。见 docs/PLAN-M6-MSSTORE.md §6。
+/// 产品上线之前这个深链打不开任何页面——商店对未发布的产品不提供 pdp 链接。
+/// 这不是 bug，P3 之后自然生效。
 #[cfg(target_os = "windows")]
-const MICROSOFT_STORE_PRODUCT_ID: &str = "TODO_STORE_PRODUCT_ID";
+const MICROSOFT_STORE_PRODUCT_ID: &str = "9PM0HJ2PP2LJ";
 
 /// 通过镜像清单重新检查、下载并安装更新。
 ///
