@@ -8,9 +8,9 @@ Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动�
 
 | 阶段 | 内容 | 状态 |
 |---|---|---|
-| **P0** | Partner Center 账号、占名、拿到应用标识三元组 | 🟡 身份与隐私政策页已就绪，listing 素材待补 |
-| **P1** | `msstore` 构建渠道：更新入口改接商店、自启动改 startupTask | 🟡 更新入口已完成，自启动待做 |
-| **P2** | `Package.appxmanifest` + 本地自签打包，真机验收 | 🟡 manifest 与打包脚本已就位，真机验收待做 |
+| **P0** | Partner Center 账号、占名、拿到应用标识三元组 | 🟢 身份、隐私政策页、支持邮箱已就绪；listing 素材待补 |
+| **P1** | `msstore` 构建渠道：更新入口改接商店、自启动改 startupTask | 🟡 更新入口已完成；自启动 Rust 侧待做 |
+| **P2** | `Package.appxmanifest` + 本地自签打包，真机验收 | 🟡 manifest 与打包脚本已就位；**Windows 真机验收进行中** |
 | **P3** | 首次人工提交并上架 | ⬜ 未开始 |
 | **P4** | Entra 凭据 + `release-msstore.yml` 自动提交 | ⬜ 未开始 |
 | **P5** | 文档：下载页、README、About 页区分两个渠道 | ⬜ 未开始 |
@@ -18,21 +18,76 @@ Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动�
 P3 是硬性串行点：**商店提交 API 只能更新已上架的产品，创建不了产品**，所以
 P4 无论如何排不到 P3 前面。
 
-**P1 已完成的部分（2026-08-13）**：`DESKTOP_CHANNEL` 渠道维度、`self-update`
-Cargo feature、内联 updater capability、商店深链命令与 19 份语言文案。
-`npx tauri build --config src-tauri/tauri.msstore.conf.json -- --no-default-features`
-在 macOS 上跑通，产物为不含更新器的 `Off Work Countdown` 可执行文件。
+### 已完成（2026-08-13）
 
-**P2 已完成的部分（2026-08-13）**：`src-tauri/msstore/Package.appxmanifest`
-（含 `windows.startupTask` 声明）、`scripts/pack-msix.mjs` 暂存与打包脚本、
-`npm run check:version` 现在一并校验 MSIX 四段版本号。图标不另存副本——
-`tauri icon` 早已在 `src-tauri/icons/` 产出 MSIX 需要的全套尺寸，打包脚本按
-manifest 里实际引用到的文件名去取。
+在 macOS 上能验证的部分都做完了，全部在分支 `codex/msstore-msix` 上：
 
-仍然缺一台 Windows：真机装包、跑 WACK、验收 §5 那张表，都要有 Windows 才能做。
-自启动（决策 3）的 Rust 实现也压在这里——`StartupTask` 的状态读写没有真实包就
-没法验证，先写等于写一段无法验收的代码，与决策 2 里 `StoreContext` 排在 P3 之后
-是同一个理由。
+| 交付物 | 位置 |
+|---|---|
+| `DESKTOP_CHANNEL` 渠道维度 | `next.config.mjs`、`scripts/build-desktop.mjs`、`npm run build:desktop:msstore` |
+| 商店构建配置 | `src-tauri/tauri.msstore.conf.json`（`bundle.active: false` + `mainBinaryName`） |
+| 自更新按渠道编译进出 | `self-update` Cargo feature（默认开）、`lib/updater-stub.ts` 模块替换 |
+| updater capability 内联 | `src-tauri/tauri.conf.json` 的 `security.capabilities` |
+| 商店深链 | `open_microsoft_store_listing` 命令 + Store ID `9PM0HJ2PP2LJ` |
+| 「在 Microsoft Store 中检查更新」文案 | 19 份 `translation.json` |
+| 包清单 | `src-tauri/msstore/Package.appxmanifest`（含 `windows.startupTask` 声明） |
+| 打包脚本 | `scripts/pack-msix.mjs`、`npm run pack:msix` |
+| 版本校验扩展 | `npm run check:version` 一并校验 MSIX 四段版本号 |
+| 隐私政策页与支持邮箱 | `/en/privacy`、`/zh-CN/privacy`、`config/site.ts` 的 `supportEmail` |
+
+已验证：`--no-default-features` 的产物中不含更新器代码与权限（前端产物搜不到
+`plugin:updater`，`cargo tree` 里也没有 `tauri-plugin-updater` 与
+`tauri-plugin-process`）；两种 feature 配置下 `cargo fmt --check` 与
+`clippy -D warnings` 均通过；完整 `tauri build` 在 macOS 上产出
+`Off Work Countdown` 可执行文件。
+
+### P2 验收：在 Windows 上怎么跑
+
+⚠️ 以下命令除 `pack:msix` 的暂存逻辑外**都还没在 Windows 上实际跑过**，
+winapp CLI 的具体行为以它自己的输出为准，对不上就以实际为准回来改这份文档。
+
+环境：Windows 11、Node 24、Rust MSVC 工具链，外加
+
+```powershell
+winget install microsoft.winappcli --source winget
+```
+
+```powershell
+npm ci
+npm run check:version
+
+# 1. 构建商店渠道的 exe。注意 `--` 不能省，否则 --no-default-features 会被
+#    tauri CLI 当成未知参数拒掉（见决策 4）
+npx tauri build --config src-tauri/tauri.msstore.conf.json -- --no-default-features
+
+# 2. 先只暂存，确认目录结构与图标齐全再往下走
+npm run pack:msix -- "x64=src-tauri/target/release/Off Work Countdown.exe" --stage-only
+
+# 3. 本地自签打包。证书的 Publisher 必须与 manifest 的 Identity/Publisher 一致，
+#    而 manifest 不在当前目录，cert generate 大概率要显式指路径
+winapp cert generate --if-exists skip
+npm run pack:msix -- "x64=src-tauri/target/release/Off Work Countdown.exe" --cert devcert.pfx
+
+# 4. 信任证书（管理员），每台机器只需一次
+winapp cert install .\devcert.pfx
+
+# 5. 安装
+Add-AppxPackage .\finiaRStudio.OffWorkCountdown_3.1.3.0_x64.msix
+```
+
+装上之后按 §5 那张表逐项验收，另外这三项是本轮最该盯的：
+
+1. **启动时不应有任何更新请求。** 这是商店版最关键的行为差异，用抓包或
+   资源监视器确认一次比读代码可靠。
+2. **「检查更新」会跳商店但打不开页面**——产品还没上架，商店对未发布产品不提供
+   `pdp` 链接。这是预期结果，不是 bug。
+3. **自启动现在是已知不一致的状态**：manifest 声明了 `windows.startupTask`，但
+   Rust 侧仍在写注册表 Run 键（决策 3 的实现还没做）。本轮要收集的正是这个：
+   「设置 → 应用 → 启动」里有没有出现这个条目、应用内开关按下去实际发生了什么。
+   这些观察结果决定 P1 剩下那部分怎么写。
+
+最后跑一遍 WACK（Windows App Certification Kit），它能提前发现大部分会导致商店
+认证失败的 manifest 问题。
 
 ## 0. 核心判断：走 MSIX，不走 EXE/MSI
 
@@ -448,15 +503,16 @@ NSIS 安装向导的 14 种语言（[PLAN-3.1.0.md §1.1](PLAN-3.1.0.md)）在 M
 
 | 阶段 | 交付物 | 完成判据 |
 |---|---|---|
-| **P0** | Partner Center 账号、占名、标识三元组、隐私政策页 | ✅ 三元组已记录（§3）；`/en/privacy` 与 `/zh-CN/privacy` 已上线 |
-| **P1** | `msstore` 渠道 | `--no-default-features` 构建产物中不含更新器代码与权限；「检查更新」改为跳转商店且能实际打开；About / 设置页文案已按渠道分支 |
-| **P2** | manifest + 本地打包 | 自签 `.msixbundle` 在 Windows 真机装上，§5 表格逐项验收通过；WACK 全绿 |
+| **P0** | Partner Center 账号、占名、标识三元组、隐私政策页 | ✅ 三元组已记录（§3）；`/en/privacy` 与 `/zh-CN/privacy` 已就绪 |
+| **P1** | `msstore` 渠道 | ✅ 构建产物中不含更新器代码与权限；文案已按渠道分支<br>⬜ 自启动改 `windows.startupTask`（等 P2 的观察结果）<br>⬜「检查更新」能真正打开商店页（等 P3 上架） |
+| **P2** | manifest + 本地打包 | ✅ manifest 与打包脚本就位<br>⬜ 自签包在 Windows 真机装上，§5 表格逐项验收通过；WACK 全绿 |
 | **P3** | 首次上架 | 商店页面可搜到，可安装 |
 | **P4** | 自动提交 | 推一个 `desktop-v*` tag，商店后台出现新的待认证提交 |
 | **P5** | 文档 | 下载页给出两个渠道及其差异；README 中英双语同步 |
 
-P1 和 P2 可以在 P0 之前动手——标识三元组只在打包时才需要，写代码不用等账号。唯一
-的例外是深链里的 Store product ID，先留占位常量，P0 拿到后再填。
+P1 有两条判据卡在后面的阶段上，这是刻意的：自启动要先在真机上看清 MSIX 里的实际
+行为，深链要等产品真正上架才能点通。两者都属于「先写就是写一段无法验收的代码」，
+与决策 2 里 `StoreContext` 排在 P3 之后同理。
 
 ## 7. 验收标准
 
