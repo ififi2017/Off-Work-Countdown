@@ -252,5 +252,92 @@
     "comingSoonLabel": "Coming soon",
     "githubLabel": "View all releases on GitHub",
     "githubDescription": "The public repository includes release notes, signatures and installers from every published version."
+  },
+  "privacy": {
+    "metaTitle": "Privacy Policy - Off Work Countdown",
+    "metaDescription": "What Off Work Countdown stores on your device, the little it measures, and who else is involved. No accounts, no advertising, no salary data leaving your device.",
+    "heading": "Privacy Policy",
+    "intro": "Off Work Countdown is built so the numbers you care about — your hours and what you have earned — never leave your device. This page sets out exactly what that means, and what the small amount of remaining data is for.",
+    "updatedLabel": "Last updated",
+    "updated": "13 August 2026",
+    "sections": [
+      {
+        "heading": "What stays on your device",
+        "body": [
+          "Everything you enter is stored locally: in your browser's local storage on the web, and in the application's own data folder in the desktop client. It is not uploaded, and there is no account system to attach it to even if we wanted one.",
+          "The countdown, the progress bar and the earnings estimate are all calculated on your device from these values."
+        ],
+        "bullets": [
+          "Start and end times, workdays, lunch break and overtime",
+          "Salary amount and pay period",
+          "Notification, health reminder and mini timer preferences",
+          "Theme, language and the woodfish tap count"
+        ]
+      },
+      {
+        "heading": "What the website measures",
+        "body": [
+          "The site measures two things. The first is page views and loading performance, through Vercel's cookieless analytics. The second is a small set of aggregate product counters that tell us which features get used at all.",
+          "A product event is one word from a fixed, public list — for example share_open or countdown_start — recorded as a per-day tally. Nothing is attached to it: no identifier, no session, no schedule, no salary. A number that counts how many people opened the share panel today cannot be traced back to any of them.",
+          "The full list of events lives in the open-source repository, so this is something you can verify rather than take on trust. As with any website, our hosting and analytics providers receive ordinary connection metadata such as an IP address and browser identification in order to serve the page; we do not store it or build profiles from it."
+        ]
+      },
+      {
+        "heading": "Cookies",
+        "body": [
+          "The site sets one cookie: i18nextLng. It holds a language code so the next page you open is already in the language you picked, and it is written only after you choose a language. It lasts a year and you can delete it at any time along with the rest of the site data.",
+          "There are no advertising or cross-site tracking cookies. The measurement described above is cookieless."
+        ]
+      },
+      {
+        "heading": "Sharing a countdown",
+        "body": [
+          "A share link carries only the start and end time, encoded in the URL. Salary is never included — not hidden, not encoded, simply not there. Whoever opens your link sees a schedule and nothing about your pay.",
+          "When you pick a social service to share through, you leave this site and that service's own privacy policy takes over."
+        ]
+      },
+      {
+        "heading": "The desktop client",
+        "body": [
+          "The desktop client contains no usage analytics. The measurement code is not merely switched off — it is removed at build time, so it is not present in the application you install.",
+          "The version downloaded from GitHub checks on launch whether a newer release exists. That request carries no account, salary or usage data, and the installer is downloaded only after you decide to update. If GitHub cannot be reached directly, you can retry through a third-party mirror; either way the downloaded update is signature-checked before it is installed.",
+          "The version installed from the Microsoft Store makes no update requests at all. Updates are delivered by the Store, and the in-app update entry simply opens the Store listing.",
+          "Reminders are scheduled and displayed by your operating system on your machine. The client also reaches the network when you open an external link or choose a social service to share through."
+        ]
+      },
+      {
+        "heading": "Who else is involved",
+        "body": [
+          "Running a website means other companies handle parts of it. These are all of them:"
+        ],
+        "bullets": [
+          "Vercel — hosting, page-view and performance measurement",
+          "Upstash — stores the aggregate product counters",
+          "GitHub — release information and installer downloads",
+          "Microsoft — distribution and updates for the Microsoft Store version",
+          "A third-party download mirror, only when you choose to retry through it",
+          "The social service you pick when you share a countdown"
+        ]
+      },
+      {
+        "heading": "Removing your data",
+        "body": [
+          "On the web, clearing this site's data in your browser removes everything, including the language cookie. In the desktop client, uninstalling the application and then deleting its data folder does the same.",
+          "Because none of it reaches us in the first place, there is nothing to request from us and nothing for us to delete on your behalf."
+        ]
+      },
+      {
+        "heading": "Changes to this page",
+        "body": [
+          "If this policy changes, the date at the top changes with it, and anything material is called out in the release notes. Past versions are visible in the repository's history."
+        ]
+      },
+      {
+        "heading": "Getting in touch",
+        "body": [
+          "Questions about anything here are welcome as an issue on GitHub. If something in this policy does not match what the code does, that is a bug worth reporting — the code is public and can be checked against every claim on this page."
+        ]
+      }
+    ]
   }
 }

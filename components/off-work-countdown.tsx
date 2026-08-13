@@ -3118,34 +3118,30 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           避免先跳转再重定向。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
           故不渲染。 */}
       {!showCountdown && !isAppShell && (
-        <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs font-semibold text-gray-600 dark:text-gray-300">
-          <Link
-            href={`/${contentLang}/download`}
-            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("desktopInviteButton")}
-          </Link>
-          <span aria-hidden="true">·</span>
-          <Link
-            href={`/${contentLang}/faq`}
-            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("faq")}
-          </Link>
-          <span aria-hidden="true">·</span>
-          <Link
-            href={`/${contentLang}/how-it-works`}
-            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("howItWorks")}
-          </Link>
-          <span aria-hidden="true">·</span>
-          <Link
-            href={`/${contentLang}/about`}
-            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("aboutProject")}
-          </Link>
+        // 间隔点与它后面的链接绑成一组：页脚在窄屏和长标签的语言里本来就会折行，
+        // 分开写会让断点正好落在点之后，上一行结尾挂着一个孤零零的「·」。
+        // 间距用 gap-x-2 而不是 3：英文五项刚好差十来像素才能排成一行。
+        <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs font-semibold text-gray-600 dark:text-gray-300">
+          {[
+            { href: `/${contentLang}/download`, label: t("desktopInviteButton") },
+            { href: `/${contentLang}/faq`, label: t("faq") },
+            { href: `/${contentLang}/how-it-works`, label: t("howItWorks") },
+            { href: `/${contentLang}/about`, label: t("aboutProject") },
+            { href: `/${contentLang}/privacy`, label: t("privacyPolicy") },
+          ].map(({ href, label }, index) => (
+            <span
+              key={href}
+              className="flex items-center gap-x-2 whitespace-nowrap"
+            >
+              {index > 0 && <span aria-hidden="true">·</span>}
+              <Link
+                href={href}
+                className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+              >
+                {label}
+              </Link>
+            </span>
+          ))}
         </footer>
       )}
       </div>

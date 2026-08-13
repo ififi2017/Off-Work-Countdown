@@ -18,6 +18,12 @@ export function resolveContentLocale(lang: string): ContentLocale {
   return lang.toLowerCase().startsWith("zh") ? "zh-CN" : defaultContentLocale;
 }
 
-export const contentSlugs = ["faq", "how-it-works", "about", "download"] as const;
+export const contentSlugs = [
+  "faq",
+  "how-it-works",
+  "about",
+  "download",
+  "privacy",
+] as const;
 
 export type ContentSlug = (typeof contentSlugs)[number];

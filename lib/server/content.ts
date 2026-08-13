@@ -19,6 +19,15 @@ export interface ContentSection {
   body: string[];
 }
 
+/**
+ * 隐私政策的小节。比 ContentSection 多一个可选的要点列表——「保存了哪些字段」
+ * 「有哪些第三方」这类内容排成条目远比塞进段落好读，而读得懂正是一份隐私政策
+ * 唯一的作用。
+ */
+export interface PrivacySection extends ContentSection {
+  bullets?: string[];
+}
+
 export type DownloadFeatureAvailability =
   | "included"
   | "limited"
@@ -57,6 +66,15 @@ export interface ContentBundle {
     heading: string;
     intro: string;
     sections: ContentSection[];
+  };
+  privacy: {
+    metaTitle: string;
+    metaDescription: string;
+    heading: string;
+    intro: string;
+    updatedLabel: string;
+    updated: string;
+    sections: PrivacySection[];
   };
   download: {
     metaTitle: string;
