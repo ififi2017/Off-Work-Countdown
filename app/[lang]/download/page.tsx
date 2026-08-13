@@ -180,7 +180,7 @@ export default async function DownloadPage({
                     loop
                     playsInline
                     preload="metadata"
-                    className={`w-full rounded-2xl border border-gray-200 shadow-md dark:border-gray-700 ${
+                    className={`h-auto max-h-full w-auto max-w-full rounded-2xl border border-gray-200 object-contain shadow-md dark:border-gray-700 ${
                       scheme === "dark"
                         ? "hidden dark:block"
                         : "block dark:hidden"
