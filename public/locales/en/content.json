@@ -115,7 +115,8 @@
       {
         "heading": "What the desktop client connects to",
         "body": [
-          "The desktop client works locally and does not require an account. On launch it asks GitHub whether a newer version exists; that request carries no account, salary, or usage data, and the installer itself is downloaded only after you choose to update. It also reaches the network when you open an external link or pick a social sharing service. Those third-party destinations apply their own terms and privacy policies.",
+          "The desktop client works locally and does not require an account. The version you download from GitHub asks GitHub on launch whether a newer release exists; that request carries no account, salary, or usage data, and the installer itself is downloaded only after you choose to update. The version installed from the Microsoft Store makes no update requests at all — the Store delivers updates, and the in-app update entry simply opens the Store listing.",
+          "Either version reaches the network when you open an external link or pick a social sharing service. Those third-party destinations apply their own terms and privacy policies.",
           "Native reminders are scheduled and displayed by your operating system. Countdown settings are kept in the application's local data store and can be removed by uninstalling the app and deleting its application data."
         ]
       },
