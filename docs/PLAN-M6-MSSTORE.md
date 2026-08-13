@@ -8,7 +8,7 @@ Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动�
 
 | 阶段 | 内容 | 状态 |
 |---|---|---|
-| **P0** | Partner Center 账号、占名、拿到应用标识三元组 | 🟡 身份已拿到，隐私政策页待补 |
+| **P0** | Partner Center 账号、占名、拿到应用标识三元组 | 🟡 身份与隐私政策页已就绪，listing 素材待补 |
 | **P1** | `msstore` 构建渠道：更新入口改接商店、自启动改 startupTask | 🟡 更新入口已完成，自启动待做 |
 | **P2** | `Package.appxmanifest` + 本地自签打包，真机验收 | 🟡 manifest 与打包脚本已就位，真机验收待做 |
 | **P3** | 首次人工提交并上架 | ⬜ 未开始 |
@@ -318,12 +318,15 @@ Store ID 写在 `src-tauri/src/lib.rs` 的 `MICROSOFT_STORE_PRODUCT_ID`，前三
 个人账号 2025 年底起免费）。M5 §6 那张成本表里"Windows 代码签名 $200–400"这一项，
 在商店这条路上是 0。
 
-1. 商店 listing 素材：截图（至少 1 张）、描述、支持邮箱、年龄分级问卷
-2. **隐私政策 URL** —— 仓库目前没有 `/privacy` 页面，About 页不构成正式隐私政策。
-   需要先在 `off.rainif.com` 上补一页。内容本身不难写（本地优先、不上传薪资、匿名
-   聚合埋点），[AGENTS.md](../AGENTS.md) 的隐私章节已经把事实说清楚了，照实写即可。
+1. 商店 listing 素材：截图（至少 1 张）、描述、年龄分级问卷
+2. **支持联系方式。** 隐私政策目前只给了 GitHub issue 这一个入口，Partner Center
+   还要一个支持联系邮箱。是否公开一个邮箱地址由你决定，不适合替你定。
 
-第 2 条不要留到最后——它是 listing 的必填项，卡在这里会让 P3 白等一轮。
+**隐私政策 URL 已就绪**：`https://off.rainif.com/en/privacy`（简体中文
+`/zh-CN/privacy`）。写它的时候顺带查出两件 About 页没覆盖到的事实，现在都写明了：
+站点确实会写一个 cookie（`i18nextLng`，只在你选过语言之后），以及商店版完全不发起
+更新请求——这与 GitHub 版启动时检查新版本是不同的行为，一份不区分两者的隐私政策
+在商店版上就是不准确的。
 
 ## 4. CI 自动发版（P4）
 
@@ -443,7 +446,7 @@ NSIS 安装向导的 14 种语言（[PLAN-3.1.0.md §1.1](PLAN-3.1.0.md)）在 M
 
 | 阶段 | 交付物 | 完成判据 |
 |---|---|---|
-| **P0** | Partner Center 账号、占名、标识三元组、隐私政策页 | ✅ 三元组已记录（§3）；`off.rainif.com/privacy` 待补 |
+| **P0** | Partner Center 账号、占名、标识三元组、隐私政策页 | ✅ 三元组已记录（§3）；`/en/privacy` 与 `/zh-CN/privacy` 已上线 |
 | **P1** | `msstore` 渠道 | `--no-default-features` 构建产物中不含更新器代码与权限；「检查更新」改为跳转商店且能实际打开；About / 设置页文案已按渠道分支 |
 | **P2** | manifest + 本地打包 | 自签 `.msixbundle` 在 Windows 真机装上，§5 表格逐项验收通过；WACK 全绿 |
 | **P3** | 首次上架 | 商店页面可搜到，可安装 |
