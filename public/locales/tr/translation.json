@@ -13,7 +13,7 @@
   "updateMirrorNotice": "GitHub'a doğrudan ulaşılamadı. Yansı üçüncü bir tarafça ({{host}}) işletiliyor; kurulum dosyasının imzası yine de kurulumdan önce doğrulanır.",
   "downloadingUpdate": "Güncelleme indiriliyor…",
   "restartToUpdate": "Güncellemek için yeniden başlat",
-  "updateNotConfigured": "Otomatik güncellemeler sürüm imzası gerektirir.",
+  "updateNotConfigured": "Otomatik güncellemeler şu anda kullanılamıyor. En son sürümü web sitemizden indirebilirsiniz.",
   "updateFailed": "Güncellemeler denetlenemedi.",
   "startTime": "Başlangıç Zamanı",
   "endTime": "Bitiş Zamanı",

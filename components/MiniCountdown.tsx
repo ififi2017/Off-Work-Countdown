@@ -125,10 +125,16 @@ export function MiniCountdown() {
   const view = getDesktopCountdownView(state, nowMs);
   const hasCountdown = Boolean(state?.running && isValidShiftTimeline(state));
   const isBetweenShifts = view.phase === "between";
+  const isWaitingForShift = view.phase === "before";
   const isOnBreak = view.phase === "break";
-  const isActiveCountdown = hasCountdown && !isBetweenShifts && view.phase !== "done";
+  const isActiveCountdown =
+    hasCountdown &&
+    !isWaitingForShift &&
+    !isBetweenShifts &&
+    view.phase !== "done";
   // 班次之间也要显示读数列：进度停在 100%，说明「这一班确实做完了」。
   const showsReadout = isActiveCountdown || isBetweenShifts;
+  const showsCountdown = showsReadout || isWaitingForShift;
   const progress = Math.min(100, Math.max(0, view.progress));
   // 判据是「有没有薪资可显示」，不能用 view.earned —— 它在隐藏状态下就是
   // null，拿它当条件会把眼睛按钮一起藏掉，隐藏之后就再也没法恢复了。
@@ -548,7 +554,18 @@ export function MiniCountdown() {
               )}
             </span>
             )}
-            {hasCountdown ? (
+            {isWaitingForShift ? (
+              <p className="flex min-w-0 flex-1 flex-col justify-center leading-tight">
+                <span className="truncate text-[9px] font-medium text-zinc-500 dark:text-zinc-400">
+                  {t("nextShiftLabelShort")}
+                </span>
+                <span
+                  className={`whitespace-nowrap font-semibold leading-none tracking-[-0.035em] tabular-nums ${woodfishTimeSizeClass}`}
+                >
+                  {view.time}
+                </span>
+              </p>
+            ) : hasCountdown ? (
               <p
                 className={`flex min-w-0 flex-1 items-baseline ${
                   isOnBreak && revealSalary ? "gap-0.5" : "gap-1"
@@ -588,7 +605,7 @@ export function MiniCountdown() {
           onClick={handleContentClick}
           className="flex min-w-0 translate-y-1.5 items-center gap-3 px-4"
         >
-          {isBetweenShifts ? (
+          {isBetweenShifts || isWaitingForShift ? (
             <p className="flex min-w-0 flex-1 flex-col justify-center leading-tight">
               <span className="truncate text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
                 {t("nextShiftLabelShort")}
@@ -627,7 +644,7 @@ export function MiniCountdown() {
             className="h-full rounded-full bg-orange-500 transition-[width] duration-500 ease-out"
             // 班次之间要保持满格：这一班确实做完了，清零会读成「重新开始」。
               // 只有完全没有倒计时（空闲态）才归零。
-              style={{ width: `${showsReadout ? progress : 0}%` }}
+              style={{ width: `${showsCountdown ? progress : 0}%` }}
           />
         </div>
       </section>

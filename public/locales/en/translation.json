@@ -13,7 +13,7 @@
   "updateMirrorNotice": "Couldn't reach GitHub directly. The mirror is run by a third party ({{host}}); the installer's signature is still verified before it is applied.",
   "downloadingUpdate": "Downloading update…",
   "restartToUpdate": "Restart to update",
-  "updateNotConfigured": "Automatic updates need release signing before they can be enabled.",
+  "updateNotConfigured": "Automatic updates aren't available right now. You can still download the latest version from our website.",
   "updateFailed": "Couldn't check for updates. Please try again.",
   "startTime": "Start Time",
   "endTime": "End Time",

@@ -13,7 +13,7 @@
   "updateMirrorNotice": "Impossible de joindre GitHub directement. Le miroir est géré par un tiers ({{host}}) ; la signature de l'installateur reste vérifiée avant application.",
   "downloadingUpdate": "Téléchargement de la mise à jour…",
   "restartToUpdate": "Redémarrer pour mettre à jour",
-  "updateNotConfigured": "Les mises à jour automatiques nécessitent une signature de publication.",
+  "updateNotConfigured": "Les mises à jour automatiques sont indisponibles pour le moment. Vous pouvez toujours télécharger la dernière version sur notre site.",
   "updateFailed": "Impossible de rechercher des mises à jour.",
   "startTime": "Heure de début",
   "endTime": "Heure de fin",

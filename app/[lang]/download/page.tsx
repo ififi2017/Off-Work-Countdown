@@ -1,9 +1,20 @@
 import type { Metadata } from "next";
-import { ArrowUp, Bell, Keyboard, PanelTop } from "lucide-react";
+import {
+  ArrowDown,
+  Bell,
+  Check,
+  Clock3,
+  Keyboard,
+  Minus,
+  PanelTop,
+} from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ContentPage } from "@/components/ContentPage";
 import { DesktopDownloads } from "@/components/DesktopDownloads";
-import { getContent } from "@/lib/server/content";
+import {
+  getContent,
+  type DownloadComparisonOption,
+} from "@/lib/server/content";
 import { localizedSocialMetadata } from "@/lib/server/metadata";
 import {
   contentLocales,
@@ -51,6 +62,40 @@ export async function generateMetadata({
 
 const benefitIcons = [PanelTop, Bell, Keyboard];
 
+function AvailabilityCell({
+  option,
+  labels,
+}: {
+  option: DownloadComparisonOption;
+  labels: Record<DownloadComparisonOption["status"], string>;
+}) {
+  const Icon =
+    option.status === "included"
+      ? Check
+      : option.status === "limited"
+        ? Clock3
+        : Minus;
+  const color =
+    option.status === "included"
+      ? "text-emerald-600 dark:text-emerald-400"
+      : option.status === "limited"
+        ? "text-amber-600 dark:text-amber-400"
+        : "text-gray-400 dark:text-gray-500";
+
+  return (
+    <div className="flex items-start gap-2.5">
+      <Icon
+        className={`mt-0.5 h-4 w-4 shrink-0 ${color}`}
+        aria-hidden="true"
+      />
+      <span className="leading-6 text-gray-600 dark:text-gray-300">
+        <span className="sr-only">{labels[option.status]}: </span>
+        {option.detail}
+      </span>
+    </div>
+  );
+}
+
 export default async function DownloadPage({
   params,
 }: {
@@ -91,21 +136,9 @@ export default async function DownloadPage({
         }}
       />
 
-      <section id="downloads">
-        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
-          {copy.downloadsHeading}
-        </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">
-          {copy.downloadsIntro}
-        </p>
-        <div className="mt-6">
-          <DesktopDownloads copy={copy} releasesUrl={siteConfig.releases} />
-        </div>
-      </section>
-
-      {/* 先让已经决定下载的用户直接拿到安装包，再用真实画面帮助仍在比较
-          Web 与客户端的用户。明暗版本跟随站内主题类切换。 */}
-      <section id="demo" className="mt-16">
+      {/* 首屏文案之后直接让用户看到真实客户端，再逐层展开价值与功能差异。
+          明暗版本跟随站内主题类切换。 */}
+      <section id="demo">
         <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
           {copy.demoHeading}
         </h2>
@@ -165,11 +198,11 @@ export default async function DownloadPage({
                   {body}
                 </p>
                 <a
-                  href="#downloads"
+                  href="#comparison"
                   className="mt-5 inline-flex items-center gap-2 rounded-full bg-gray-950 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus:ring-offset-gray-800"
                 >
                   {copy.demoCtaLabel}
-                  <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                  <ArrowDown className="h-4 w-4" aria-hidden="true" />
                 </a>
               </div>
             </article>
@@ -204,24 +237,26 @@ export default async function DownloadPage({
         })}
       </div>
 
-      <section className="mt-16">
+      <section id="comparison" className="mt-16 scroll-mt-8">
         <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
           {copy.comparisonHeading}
         </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">
+        <p className="mt-2 max-w-3xl leading-7 text-gray-600 dark:text-gray-300">
           {copy.comparisonIntro}
         </p>
 
         <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
+            <table className="w-full min-w-[760px] table-fixed text-left text-sm">
               <thead className="bg-gray-50 text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
                 <tr>
-                  <th className="px-5 py-3 font-medium" scope="col" />
-                  <th className="px-5 py-3 font-medium" scope="col">
+                  <th className="w-[27%] px-5 py-3 font-medium" scope="col">
+                    {copy.comparisonFeatureLabel}
+                  </th>
+                  <th className="w-[36.5%] px-5 py-3 font-medium" scope="col">
                     {copy.webLabel}
                   </th>
-                  <th className="px-5 py-3 font-medium" scope="col">
+                  <th className="w-[36.5%] px-5 py-3 font-medium" scope="col">
                     {copy.desktopLabel}
                   </th>
                 </tr>
@@ -231,21 +266,47 @@ export default async function DownloadPage({
                   <tr key={row.feature}>
                     <th
                       scope="row"
-                      className="px-5 py-4 font-medium text-gray-950 dark:text-white"
+                      className="px-5 py-4 font-medium leading-6 text-gray-950 dark:text-white"
                     >
                       {row.feature}
                     </th>
-                    <td className="px-5 py-4 text-gray-600 dark:text-gray-300">
-                      {row.web}
+                    <td className="px-5 py-4 align-top">
+                      <AvailabilityCell
+                        option={row.web}
+                        labels={{
+                          included: copy.featureIncludedLabel,
+                          limited: copy.featureLimitedLabel,
+                          unavailable: copy.featureUnavailableLabel,
+                        }}
+                      />
                     </td>
-                    <td className="px-5 py-4 text-gray-600 dark:text-gray-300">
-                      {row.desktop}
+                    <td className="px-5 py-4 align-top">
+                      <AvailabilityCell
+                        option={row.desktop}
+                        labels={{
+                          included: copy.featureIncludedLabel,
+                          limited: copy.featureLimitedLabel,
+                          unavailable: copy.featureUnavailableLabel,
+                        }}
+                      />
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      <section id="downloads" className="mt-16 scroll-mt-8">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+          {copy.downloadsHeading}
+        </h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">
+          {copy.downloadsIntro}
+        </p>
+        <div className="mt-6">
+          <DesktopDownloads copy={copy} releasesUrl={siteConfig.releases} />
         </div>
       </section>
     </ContentPage>

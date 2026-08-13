@@ -159,40 +159,64 @@
         ]
       }
     ],
-    "comparisonHeading": "网页版轻巧，客户端更适合每天相伴",
-    "comparisonIntro": "两个版本都提供倒计时和薪资估算。网页版适合随开随用；如果你希望它在后台持续运行、主动提醒，桌面客户端会更顺手。",
+    "comparisonHeading": "不只是把网页版装进桌面",
+    "comparisonIntro": "客户端保留了网页版的核心体验，并为每天常驻补上了班次管理、后台提醒和悬浮工具。看看哪些功能更适合你的工作方式。",
+    "comparisonFeatureLabel": "功能",
     "webLabel": "网页版",
     "desktopLabel": "桌面客户端",
+    "featureIncludedLabel": "支持",
+    "featureLimitedLabel": "有限支持",
+    "featureUnavailableLabel": "客户端专属",
     "comparison": [
       {
-        "feature": "开始使用",
-        "web": "打开网页即可开始",
-        "desktop": "可登录时启动，快捷键随时唤出"
+        "feature": "下班倒计时",
+        "web": { "status": "included", "detail": "实时倒计时与进度" },
+        "desktop": { "status": "included", "detail": "实时倒计时与进度" }
       },
       {
-        "feature": "后台使用",
-        "web": "保留网页或 PWA 即可继续计时",
-        "desktop": "隐藏窗口后，托盘仍会显示倒计时"
+        "feature": "薪资计算",
+        "web": { "status": "included", "detail": "月薪、日薪与今日已赚" },
+        "desktop": { "status": "included", "detail": "月薪、日薪与今日已赚" }
+      },
+      {
+        "feature": "工作日与跨夜班次",
+        "web": { "status": "included", "detail": "自定义工作日和跨零点班次" },
+        "desktop": { "status": "included", "detail": "自定义工作日和跨零点班次" }
       },
       {
         "feature": "下班提醒",
-        "web": "网页保持打开时可以提醒",
-        "desktop": "支持里程碑、午休和按有效工时计算的微休息提醒"
+        "web": { "status": "limited", "detail": "网页保持打开时提醒" },
+        "desktop": { "status": "included", "detail": "窗口隐藏后仍可原生提醒" }
       },
       {
-        "feature": "班次工具",
-        "web": "倒计时与薪资估算",
-        "desktop": "还可自动衔接下一班，并处理午休与加班"
+        "feature": "午休计算",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "暂停倒计时、进度与收入" }
       },
       {
-        "feature": "悬浮计时器",
-        "web": "使用完整页面查看",
-        "desktop": "提供原生迷你面板与可以敲击的木鱼皮肤"
+        "feature": "健康休息提醒",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "按有效工作时间提醒活动和远眺" }
       },
       {
-        "feature": "版本更新",
-        "web": "访问时自动使用最新版",
-        "desktop": "在客户端内检查并安装更新"
+        "feature": "加班与下一班",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "延长本班并自动衔接下一班" }
+      },
+      {
+        "feature": "托盘与悬浮计时器",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "菜单栏/托盘、迷你面板和木鱼皮肤" }
+      },
+      {
+        "feature": "登录启动与全局快捷键",
+        "web": { "status": "unavailable", "detail": "—" },
+        "desktop": { "status": "included", "detail": "登录后自动就绪，随时显示或隐藏" }
+      },
+      {
+        "feature": "离线与本地保存",
+        "web": { "status": "included", "detail": "PWA 缓存，设置保存在浏览器" },
+        "desktop": { "status": "included", "detail": "无需网络，设置保存在本机" }
       }
     ],
     "downloadsHeading": "选择适合你的版本",
@@ -205,7 +229,7 @@
     "demoMiniHeading": "把剩余时间留在手边",
     "demoMiniBody": "迷你计时器可以悬浮在桌面上，也可以换成木鱼皮肤。想放松一下时敲两下，不需要离开当前正在做的事。",
     "demoMiniAlt": "悬浮计时器的木鱼皮肤",
-    "demoCtaLabel": "下载客户端体验",
+    "demoCtaLabel": "看看客户端多了什么",
     "latestVersionLabel": "最新版本",
     "loadingLabel": "正在为你获取最新版本…",
     "unavailableLabel": "暂时没能获取下载地址。你也可以前往 GitHub Releases 下载最新版本。",

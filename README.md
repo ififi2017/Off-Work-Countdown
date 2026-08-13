@@ -11,10 +11,16 @@ once, then keep the remaining time, progress and estimated earnings at a glance.
 [![License](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
 
 <p align="center">
-  <img src="readme_image/demo/app-en-dark.gif#gh-dark-mode-only" width="430" alt="Setting a shift, starting the countdown and opening settings">
-  <img src="readme_image/demo/app-en-light.gif#gh-light-mode-only" width="430" alt="Setting a shift, starting the countdown and opening settings">
-  <img src="readme_image/demo/mini-en-dark.gif#gh-dark-mode-only" width="300" alt="The floating timer, with the woodfish skin">
-  <img src="readme_image/demo/mini-en-light.gif#gh-light-mode-only" width="300" alt="The floating timer, with the woodfish skin">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="readme_image/demo/app-en-dark.gif">
+    <source media="(prefers-color-scheme: light)" srcset="readme_image/demo/app-en-light.gif">
+    <img src="readme_image/demo/app-en-light.gif" width="430" align="middle" alt="Setting a shift, starting the countdown and opening settings">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="readme_image/demo/mini-en-dark.gif">
+    <source media="(prefers-color-scheme: light)" srcset="readme_image/demo/mini-en-light.gif">
+    <img src="readme_image/demo/mini-en-light.gif" width="300" align="middle" alt="The floating timer, with the woodfish skin">
+  </picture>
 </p>
 
 ## Use Off Work Countdown

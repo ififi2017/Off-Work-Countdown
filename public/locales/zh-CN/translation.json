@@ -13,7 +13,7 @@
   "updateMirrorNotice": "无法直连 GitHub。镜像由第三方 {{host}} 提供，安装包在安装前仍会校验签名。",
   "downloadingUpdate": "正在下载更新…",
   "restartToUpdate": "重启以更新",
-  "updateNotConfigured": "自动更新需要先完成发布签名配置。",
+  "updateNotConfigured": "暂时无法自动更新。你仍可以从官网下载最新版本。",
   "updateFailed": "检查更新失败，请稍后重试。",
   "startTime": "上班时间",
   "endTime": "下班时间",

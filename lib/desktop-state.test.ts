@@ -38,6 +38,24 @@ describe("desktop countdown state", () => {
     ).toEqual({ time: "--:--:--", progress: 0, earned: null, phase: "idle" });
   });
 
+  it("counts down to a future shift without starting progress or pay", () => {
+    const state = {
+      ...emptyDesktopCountdownState(),
+      segments: [{ startAtMs: 11_000, endAtMs: 21_000 }],
+      plannedEndAtMs: 21_000,
+      running: true,
+      showSalary: true,
+      dailySalary: 200,
+    };
+
+    expect(getDesktopCountdownView(state, 1_000)).toEqual({
+      time: "0:00:10",
+      progress: 0,
+      earned: 0,
+      phase: "before",
+    });
+  });
+
   it("counts down to the end of the break, while progress and pay stay frozen", () => {
     const state = {
       ...emptyDesktopCountdownState(),

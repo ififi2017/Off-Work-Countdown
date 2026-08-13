@@ -9,10 +9,16 @@
 [![许可证](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
 
 <p align="center">
-  <img src="readme_image/demo/app-zh-dark.gif#gh-dark-mode-only" width="430" alt="设置班次、开始倒计时、进入设置页">
-  <img src="readme_image/demo/app-zh-light.gif#gh-light-mode-only" width="430" alt="设置班次、开始倒计时、进入设置页">
-  <img src="readme_image/demo/mini-zh-dark.gif#gh-dark-mode-only" width="300" alt="悬浮计时器的木鱼皮肤">
-  <img src="readme_image/demo/mini-zh-light.gif#gh-light-mode-only" width="300" alt="悬浮计时器的木鱼皮肤">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="readme_image/demo/app-zh-dark.gif">
+    <source media="(prefers-color-scheme: light)" srcset="readme_image/demo/app-zh-light.gif">
+    <img src="readme_image/demo/app-zh-light.gif" width="430" align="middle" alt="设置班次、开始倒计时、进入设置页">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="readme_image/demo/mini-zh-dark.gif">
+    <source media="(prefers-color-scheme: light)" srcset="readme_image/demo/mini-zh-light.gif">
+    <img src="readme_image/demo/mini-zh-light.gif" width="300" align="middle" alt="悬浮计时器的木鱼皮肤">
+  </picture>
 </p>
 
 ## 使用下班倒计时

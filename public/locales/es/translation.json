@@ -13,7 +13,7 @@
   "updateMirrorNotice": "No se pudo conectar directamente con GitHub. El espejo lo gestiona un tercero ({{host}}); la firma del instalador se sigue verificando antes de aplicarla.",
   "downloadingUpdate": "Descargando actualización…",
   "restartToUpdate": "Reiniciar para actualizar",
-  "updateNotConfigured": "Las actualizaciones automáticas requieren firma de publicación.",
+  "updateNotConfigured": "Las actualizaciones automáticas no están disponibles ahora. Puedes descargar la última versión desde nuestro sitio web.",
   "updateFailed": "No se pudieron buscar actualizaciones.",
   "startTime": "Hora de inicio",
   "endTime": "Hora de finalización",

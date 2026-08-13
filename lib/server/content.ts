@@ -19,10 +19,20 @@ export interface ContentSection {
   body: string[];
 }
 
+export type DownloadFeatureAvailability =
+  | "included"
+  | "limited"
+  | "unavailable";
+
+export interface DownloadComparisonOption {
+  status: DownloadFeatureAvailability;
+  detail: string;
+}
+
 export interface DownloadComparisonRow {
   feature: string;
-  web: string;
-  desktop: string;
+  web: DownloadComparisonOption;
+  desktop: DownloadComparisonOption;
 }
 
 export interface ContentBundle {
@@ -56,8 +66,12 @@ export interface ContentBundle {
     benefits: ContentSection[];
     comparisonHeading: string;
     comparisonIntro: string;
+    comparisonFeatureLabel: string;
     webLabel: string;
     desktopLabel: string;
+    featureIncludedLabel: string;
+    featureLimitedLabel: string;
+    featureUnavailableLabel: string;
     comparison: DownloadComparisonRow[];
     downloadsHeading: string;
     downloadsIntro: string;

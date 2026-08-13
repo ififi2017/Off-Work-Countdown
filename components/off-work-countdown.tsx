@@ -318,6 +318,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   /** 下班那一刻窗口不可见时保存班次终点，等用户回来再放。 */
   const celebrationPendingRef = useRef<number | null>(null);
   const [showNextShiftStatus, setShowNextShiftStatus] = useState(false);
+  /** 客户端允许提前启动：班次开始前显示距上班还有多久，而不是套用网页版报错。 */
+  const [showBeforeShiftStatus, setShowBeforeShiftStatus] = useState(false);
   /** 午休中：倒计时暂停，界面改为显示距午休结束还有多久。 */
   const [onLunchBreak, setOnLunchBreak] = useState(false);
   /** 从主界面快捷入口跳进设置页时，短暂高亮目标分组。 */
@@ -967,7 +969,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             dailySalary: showSalary ? getDailySalary() : null,
             lang,
             countdownNotStarted: t("countdownNotStarted"),
-            nextShiftLabel: t("nextShiftCountdown", { time: "__TIME__" }),
+            // 这句既用于“本班尚未开始”，也用于“等待下一班”，用不带“下一班”
+            // 的短标题可避免用户刚开始计时时误以为当前班次被跳过。
+            nextShiftLabel: `${t("nextShiftLabelShort")} __TIME__`,
             lunchStartNotification: t("lunchStartNotification"),
             lunchEndNotification: t("lunchEndNotification"),
             lunchNotificationEnabled: lunchEnabled && lunchStartNotificationEnabled,
@@ -1180,7 +1184,28 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         const now = new Date();
         const shift =
           activeShift ?? buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
+        const startAtMs = getShiftStartAtMs(shift);
         const endAtMs = getShiftEndAtMs(shift);
+
+        if (IS_DESKTOP_BUILD && startAtMs > now.getTime()) {
+          const beforeSeconds = Math.ceil((startAtMs - now.getTime()) / 1000);
+          setOnLunchBreak(false);
+          setShowBeforeShiftStatus(true);
+          setShowNextShiftStatus(false);
+          setTimeLeft(
+            `${Math.floor(beforeSeconds / 3600)}:${Math.floor(
+              (beforeSeconds % 3600) / 60
+            )
+              .toString()
+              .padStart(2, "0")}:${(beforeSeconds % 60)
+              .toString()
+              .padStart(2, "0")}`
+          );
+          setProgress(0);
+          setMoneyEarned(0);
+          return;
+        }
+        setShowBeforeShiftStatus(false);
 
         // 午休优先：此时剩余时间是冻结的，界面要说明「在休息」而不是干等。
         const breakEndAtMs = getActiveBreakEndAtMs(shift, now.getTime());
@@ -1350,7 +1375,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     const shift = buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
     const startAtMs = getShiftStartAtMs(shift);
     const endAtMs = getShiftEndAtMs(shift);
-    if (startAtMs > now.getTime()) {
+    if (!IS_DESKTOP_BUILD && startAtMs > now.getTime()) {
       const timeDiff = startAtMs - now.getTime();
       const hours = Math.floor(timeDiff / (1000 * 60 * 60));
       const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
@@ -1369,8 +1394,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         ...shift,
       });
       setShowCountdown(true);
+      setShowBeforeShiftStatus(startAtMs > now.getTime());
       setShowNextShiftStatus(false);
-      setProgress(calculateProgress()); // Set initial progress
+      setProgress(calculateTimelineProgress(shift, now.getTime()));
       track("countdown_start");
       if (!IS_DESKTOP_BUILD && reminder) void requestNotificationPermission();
     }
@@ -1688,6 +1714,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       });
     }
     setShowCountdown(false);
+    setShowBeforeShiftStatus(false);
     setShowNextShiftStatus(false);
     setActiveShift(null);
     setProgress(0);
@@ -1740,6 +1767,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     track("share_convert");
     exitSharedView();
     setShowCountdown(false);
+    setShowBeforeShiftStatus(false);
     setShowNextShiftStatus(false);
     setActiveShift(null);
     setProgress(0);
@@ -2386,12 +2414,18 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               >
                 <CountdownDisplay
                   timeLeft={timeLeft}
-                  title={showNextShiftStatus ? t("offWorkToday") : undefined}
+                  title={
+                    showBeforeShiftStatus
+                      ? t("nextShiftLabelShort")
+                      : showNextShiftStatus
+                        ? t("offWorkToday")
+                        : undefined
+                  }
                   progress={progress}
                   standby={onLunchBreak}
                   dense={IS_DESKTOP_BUILD}
                   overtime={Boolean(activeShift?.overtimeEndAtMs)}
-                  status={showNextShiftStatus}
+                  status={showNextShiftStatus || showBeforeShiftStatus}
                 />
                 {summaryRows && (
                   <PeriodSummary
@@ -2529,7 +2563,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             </div>
             <div
               ref={settingsScrollRef}
-              className="min-h-0 flex-1 space-y-3 overflow-y-auto px-6 pb-4 pt-2"
+              className="desktop-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto px-6 pb-4 pt-2"
             >
                   <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
                     <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
