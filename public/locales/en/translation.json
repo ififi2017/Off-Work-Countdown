@@ -4,6 +4,7 @@
   "aboutProject": "About this project",
   "githubRepository": "GitHub repository",
   "checkForUpdates": "Check for updates",
+  "checkForUpdatesInStore": "Check for updates in the Store",
   "checkingForUpdates": "Checking for updates…",
   "installingUpdate": "Installing update…",
   "upToDate": "Up to date",

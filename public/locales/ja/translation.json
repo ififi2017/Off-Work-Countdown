@@ -4,6 +4,7 @@
   "aboutProject": "このプロジェクトについて",
   "githubRepository": "GitHub リポジトリ",
   "checkForUpdates": "アップデートを確認",
+  "checkForUpdatesInStore": "Microsoft Store で更新を確認",
   "checkingForUpdates": "アップデートを確認中…",
   "installingUpdate": "アップデートをインストール中…",
   "upToDate": "最新です",

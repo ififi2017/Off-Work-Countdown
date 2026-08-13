@@ -4,6 +4,7 @@
   "aboutProject": "เกี่ยวกับโครงการนี้",
   "githubRepository": "คลัง GitHub",
   "checkForUpdates": "ตรวจสอบอัปเดต",
+  "checkForUpdatesInStore": "ตรวจสอบอัปเดตใน Store",
   "checkingForUpdates": "กำลังตรวจสอบอัปเดต…",
   "installingUpdate": "กำลังติดตั้งอัปเดต…",
   "upToDate": "ล่าสุดแล้ว",

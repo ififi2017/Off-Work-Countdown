@@ -9,7 +9,7 @@ Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动�
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | **P0** | Partner Center 账号、占名、拿到应用标识三元组 | ⬜ 未开始 |
-| **P1** | `msstore` 构建渠道：更新入口改接商店、自启动改 startupTask | ⬜ 未开始 |
+| **P1** | `msstore` 构建渠道：更新入口改接商店、自启动改 startupTask | 🟡 更新入口已完成，自启动待做 |
 | **P2** | `Package.appxmanifest` + 本地自签打包，真机验收 | ⬜ 未开始 |
 | **P3** | 首次人工提交并上架 | ⬜ 未开始 |
 | **P4** | Entra 凭据 + `release-msstore.yml` 自动提交 | ⬜ 未开始 |
@@ -17,6 +17,15 @@ Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动�
 
 P3 是硬性串行点：**商店提交 API 只能更新已上架的产品，创建不了产品**，所以
 P4 无论如何排不到 P3 前面。
+
+**P1 已完成的部分（2026-08-13）**：`DESKTOP_CHANNEL` 渠道维度、`self-update`
+Cargo feature、内联 updater capability、商店深链命令与 19 份语言文案。
+`npx tauri build --config src-tauri/tauri.msstore.conf.json -- --no-default-features`
+在 macOS 上跑通，产物为不含更新器的 `Off Work Countdown` 可执行文件。
+
+自启动（决策 3）留到 P2 与 manifest 一起做：`windows.startupTask` 要有真实的
+`Package.appxmanifest` 才能验证，先写等于写一段无法验收的代码——与决策 2 里
+`StoreContext` 排在 P3 之后是同一个理由。
 
 ## 0. 核心判断：走 MSIX，不走 EXE/MSI
 
@@ -126,20 +135,38 @@ NEXT_PUBLIC_DESKTOP_CHANNEL: process.env.DESKTOP_CHANNEL === 'msstore' ? 'msstor
 ⚠️ 镜像回退（`install_update_via_mirror` 与 `latest-cn.json`）在商店版里没有对应
 概念——商店自己解决了中国大陆的下载问题。这条链路整体编译掉，不要试图保留。
 
-**capability 的处理方式**：capability 文件支持 `platforms` 过滤，但没有 feature
-过滤。不要试图在一个文件里做条件——用 `tauri.conf.json` 的
-`app.security.capabilities` 显式列举：
+**⚠️ capability 必须内联进 `tauri.conf.json`，不能放在 `capabilities/` 目录里。**
+
+直觉做法是把 `updater:default` 拆到 `capabilities/updater.json`，再用
+`app.security.capabilities` 白名单在商店构建里排除它。**这个做法不成立**，实测
+（2026-08-13）：`tauri-build` 会解析并校验 `capabilities/` 目录下的**每一个**文件，
+白名单只决定哪些生效，不影响校验。于是 `--no-default-features` 构建在 build script
+阶段就炸：
+
+```
+Permission updater:default not found, expected one of autostart:default, …
+```
+
+正确做法是把它作为**内联 Capability 对象**写进 `tauri.conf.json` 的白名单，
+`capabilities/` 目录里不留任何引用更新器的文件：
 
 ```jsonc
-// src-tauri/capabilities/updater.json —— 从 desktop.json 拆出来
-{ "identifier": "updater-capability", "windows": ["main"], "permissions": ["updater:default"] }
+// tauri.conf.json —— 白名单一旦显式列举，就必须把目录里的都列上
+"capabilities": [
+  "default",
+  "desktop-capability",
+  { "identifier": "updater-capability", "windows": ["main"],
+    "permissions": ["updater:default", "process:default"] }
+]
 
-// tauri.msstore.conf.json —— 列举时不包含 updater-capability
+// tauri.msstore.conf.json —— 数组整体替换，内联那项自然消失
 { "app": { "security": { "capabilities": ["default", "desktop-capability"] } } }
 ```
 
-字段留空时会加载 `capabilities/` 下的全部文件（现状即如此），一旦列举就变成白名单。
-GitHub 渠道保持留空，只有商店配置显式列举——这样新增 capability 时不会忘了同步两处。
+`process:default` 跟着一起走：`relaunch()` 只在装完更新后用到，没有第二个调用点。
+
+代价是白名单从此要手工维护——新增 capability 文件必须同时加进这两个列表，否则它
+不会生效。这是内联换来的，不是可选项。
 
 **⚠️ Cargo feature 与 `default` 的方向**：`tauri-plugin-updater` 应当放进
 **默认开启**的 feature（例如 `default = ["self-update"]`），商店构建用
@@ -195,6 +222,12 @@ winapp pack ./dist/x64 ./dist/arm64 \
 识别并回填——正好对上仓库已有的 x64 + ARM64 矩阵。
 
 `--executable` 必须显式传：产物名带空格，且自动探测只在目录里恰好有一个 exe 时才成立。
+
+**⚠️ 产物名要靠 `mainBinaryName` 才对得上。** `bundle.active: false` 时 Tauri 不做
+打包，也就不会把二进制改名成 `productName`——默认吐出来的是 Cargo 包名
+`off-work-countdown`。因此 `tauri.msstore.conf.json` 显式设了
+`"mainBinaryName": "Off Work Countdown"`，让商店版的可执行文件名与 NSIS 版一致，
+manifest 里的 `Executable=` 也就不用为渠道分叉。
 
 **提交商店的包不要签名。** `--cert` / `--generate-cert` 只用于本地 sideload 验收。
 
@@ -318,7 +351,8 @@ Actions 不限量，多编译一遍换来两条产线完全解耦，值。
 
 ```
 job build       matrix: windows-latest(x64) / windows-11-arm(arm64)
-                tauri build --config src-tauri/tauri.msstore.conf.json
+                tauri build --config src-tauri/tauri.msstore.conf.json \
+                            -- --no-default-features
                 upload-artifact: 仅 exe
 
 job publish     needs: build, runs-on: windows-latest
@@ -331,6 +365,12 @@ job publish     needs: build, runs-on: windows-latest
 
 `winapp pack` 需要两个架构的产物在同一台机器上，所以必须拆成两个 job 用 artifact
 汇总——不能像 `release-desktop.yml` 那样让矩阵各自独立完成。
+
+**⚠️ `--no-default-features` 前面那个 `--` 不能省。** Tauri v2 的 CLI 没有这个选项，
+只有 `--features`；裸写会得到
+`error: unexpected argument '--no-default-features' found`。`--` 之后的参数才会被
+透传给 cargo。少一个横杠，构建出来的是一个**带完整自更新链路的商店包**——它能跑、
+能过打包，装到用户机器上才会暴露。
 
 ### 两条限制
 

@@ -4,6 +4,7 @@
   "aboutProject": "關於此專案",
   "githubRepository": "GitHub 儲存庫",
   "checkForUpdates": "檢查更新",
+  "checkForUpdatesInStore": "在 Microsoft Store 中檢查更新",
   "checkingForUpdates": "正在檢查更新…",
   "installingUpdate": "正在安裝更新…",
   "upToDate": "已是最新版本",

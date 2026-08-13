@@ -120,6 +120,7 @@ import {
   setDesktopAutostartEnabled,
   updateDesktopGlobalShortcutSettings,
   installDesktopUpdateViaMirror,
+  openMicrosoftStoreListing,
   stopDesktopCountdown,
   subscribeToDesktopCountdown,
   UPDATE_MIRROR_HOST,
@@ -140,6 +141,14 @@ const notificationPrimerStorageKey = "desktopNotificationPrimerSeen";
 
 /** 由 next.config.mjs 在构建期注入，见 docs/PLAN-M5-TAURI.md 决策 1 与 7。 */
 const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+
+/**
+ * 微软商店渠道。更新由商店负责，应用内不做检查也不做下载——MSIX 的安装目录
+ * 只读，装不上。更新入口保留，改为深链到商店详情页。
+ * 见 docs/PLAN-M6-MSSTORE.md 决策 2。
+ */
+const IS_MSSTORE_BUILD =
+  IS_DESKTOP_BUILD && process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "msstore";
 
 type DesktopUpdateStatus =
   | "idle"
@@ -691,29 +700,33 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     // 带宽，与「关于」页对外承诺的「只有当你主动检查或下载更新时才会访问
     // 网络」相冲突。发现新版本仅把设置按钮点亮，下载由用户点击后触发。
     // 任何失败都静默忽略，不打扰启动流程。
-    void (async () => {
-      try {
-        const { check } = await import("@tauri-apps/plugin-updater");
-        const update = await check({ timeout: 15_000 });
-        if (cancelled) return;
-        if (!update) {
-          setDesktopUpdateStatus("latest");
-          return;
+    //
+    // 商店版整段跳过：更新由商店负责，这里连一次网络请求都不该发。
+    if (!IS_MSSTORE_BUILD) {
+      void (async () => {
+        try {
+          const { check } = await import("@tauri-apps/plugin-updater");
+          const update = await check({ timeout: 15_000 });
+          if (cancelled) return;
+          if (!update) {
+            setDesktopUpdateStatus("latest");
+            return;
+          }
+          pendingUpdateRef.current = {
+            version: update.version,
+            currentVersion: update.currentVersion,
+            download: () => update.download(),
+            install: () => update.install(),
+            downloadAndInstall: () => update.downloadAndInstall(),
+          };
+          setDesktopCurrentVersion(update.currentVersion);
+          setDesktopLatestVersion(update.version);
+          setDesktopUpdateStatus("available");
+        } catch {
+          // 静默失败：不干扰启动，也不弹错误。
         }
-        pendingUpdateRef.current = {
-          version: update.version,
-          currentVersion: update.currentVersion,
-          download: () => update.download(),
-          install: () => update.install(),
-          downloadAndInstall: () => update.downloadAndInstall(),
-        };
-        setDesktopCurrentVersion(update.currentVersion);
-        setDesktopLatestVersion(update.version);
-        setDesktopUpdateStatus("available");
-      } catch {
-        // 静默失败：不干扰启动，也不弹错误。
-      }
-    })();
+      })();
+    }
 
     return () => {
       cancelled = true;
@@ -1622,6 +1635,16 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   const handleCheckForUpdates = async () => {
     if (!IS_DESKTOP_BUILD) return;
+
+    // 商店版：这个入口不检查、不下载，只把用户送到商店详情页，更新在那边完成。
+    if (IS_MSSTORE_BUILD) {
+      try {
+        await openMicrosoftStoreListing();
+      } catch {
+        setDesktopSettingError(t("desktopSettingError"));
+      }
+      return;
+    }
 
     const pending = pendingUpdateRef.current;
 
@@ -2994,7 +3017,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                           }`}
                         />
                         <span className="truncate">
-                          {desktopUpdateStatus === "checking"
+                          {IS_MSSTORE_BUILD
+                            ? t("checkForUpdatesInStore")
+                            : desktopUpdateStatus === "checking"
                             ? t("checkingForUpdates")
                             : desktopUpdateStatus === "directFailed"
                               ? t("retryWithMirror")

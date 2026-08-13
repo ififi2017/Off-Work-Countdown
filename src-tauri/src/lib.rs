@@ -1608,7 +1608,15 @@ fn update_global_shortcut_settings(
 /// 所以引入第三方反代不会变成供应链问题。
 ///
 /// 前端展示用的主机名在 lib/desktop-state.ts 里有一份副本，改这里要同步。
-const MIRROR_UPDATER_ENDPOINT: &str = "https://gh-proxy.com/https://github.com/ififi2017/Off-Work-Countdown/releases/latest/download/latest-cn.json";
+#[cfg(feature = "self-update")]
+const MIRROR_UPDATER_ENDPOINT: &str ="https://gh-proxy.com/https://github.com/ififi2017/Off-Work-Countdown/releases/latest/download/latest-cn.json";
+
+/// Partner Center 保留应用名之后分配的商店产品 ID（12 位大写字母数字）。
+///
+/// ⚠️ 占位值。M6 的 P0 拿到真实 ID 后替换，替换前商店版的「检查更新」会打开
+/// 一个不存在的商店页面。见 docs/PLAN-M6-MSSTORE.md §6。
+#[cfg(target_os = "windows")]
+const MICROSOFT_STORE_PRODUCT_ID: &str = "TODO_STORE_PRODUCT_ID";
 
 /// 通过镜像清单重新检查、下载并安装更新。
 ///
@@ -1618,26 +1626,59 @@ const MIRROR_UPDATER_ENDPOINT: &str = "https://gh-proxy.com/https://github.com/i
 /// `UpdaterBuilder::endpoints()` 能在运行时做到。
 #[tauri::command]
 async fn install_update_via_mirror(app: AppHandle) -> Result<(), String> {
-    use tauri_plugin_updater::UpdaterExt;
+    #[cfg(feature = "self-update")]
+    {
+        use tauri_plugin_updater::UpdaterExt;
 
-    let endpoint: tauri::Url = MIRROR_UPDATER_ENDPOINT
-        .parse()
-        .map_err(|error| format!("invalid mirror endpoint: {error}"))?;
-    let updater = app
-        .updater_builder()
-        .endpoints(vec![endpoint])
-        .map_err(|error| error.to_string())?
-        .build()
-        .map_err(|error| error.to_string())?;
-    let update = updater
-        .check()
-        .await
-        .map_err(|error| error.to_string())?
-        .ok_or_else(|| "mirror manifest reports no available update".to_string())?;
-    update
-        .download_and_install(|_, _| {}, || {})
-        .await
-        .map_err(|error| error.to_string())
+        let endpoint: tauri::Url = MIRROR_UPDATER_ENDPOINT
+            .parse()
+            .map_err(|error| format!("invalid mirror endpoint: {error}"))?;
+        let updater = app
+            .updater_builder()
+            .endpoints(vec![endpoint])
+            .map_err(|error| error.to_string())?
+            .build()
+            .map_err(|error| error.to_string())?;
+        let update = updater
+            .check()
+            .await
+            .map_err(|error| error.to_string())?
+            .ok_or_else(|| "mirror manifest reports no available update".to_string())?;
+        update
+            .download_and_install(|_, _| {}, || {})
+            .await
+            .map_err(|error| error.to_string())
+    }
+    // 商店版整条自更新链路都被编译掉，包括这个镜像回退。前端在 msstore 渠道
+    // 下不会走到这里（更新器模块本身已被 resolve.alias 换掉），保留这个分支
+    // 只是为了让 generate_handler! 的命令列表在两种渠道下保持一致。
+    #[cfg(not(feature = "self-update"))]
+    {
+        let _ = app;
+        Err("self-update is disabled in this build".into())
+    }
+}
+
+/// 商店版的「检查更新」入口：打开自己的商店详情页，由商店负责更新。
+///
+/// 见 docs/PLAN-M6-MSSTORE.md 决策 2。走 Rust 侧的 opener 而不是前端的
+/// `openUrl`，与 `open_notification_settings` 同样的理由：`ms-windows-store:`
+/// 不是 http scheme，前端那条路要在 capability 白名单里逐条声明。
+#[tauri::command]
+fn open_microsoft_store_listing(app: AppHandle) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        let url = format!("ms-windows-store://pdp/?productid={MICROSOFT_STORE_PRODUCT_ID}");
+        return app
+            .opener()
+            .open_url(url, None::<&str>)
+            .map_err(|error| error.to_string());
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = app;
+        Err("the Microsoft Store is only available on Windows".into())
+    }
 }
 
 #[tauri::command]
@@ -1691,9 +1732,17 @@ fn open_notification_settings(app: AppHandle) -> Result<(), String> {
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_updater::Builder::new().build());
+        .plugin(tauri_plugin_opener::init());
+
+    // 商店版由微软商店负责更新，自更新链路整体编译掉（见
+    // docs/PLAN-M6-MSSTORE.md 决策 2）。process 插件只被更新后的 relaunch
+    // 用到，一并跟着走。
+    #[cfg(feature = "self-update")]
+    {
+        builder = builder
+            .plugin(tauri_plugin_process::init())
+            .plugin(tauri_plugin_updater::Builder::new().build());
+    }
 
     // 单实例必须最先注册：它要在任何窗口创建之前拦下第二个进程，
     // 否则第二次启动会先建好窗口再被关掉，用户能看到窗口一闪。
@@ -1738,6 +1787,7 @@ pub fn run() {
             get_global_shortcut_settings,
             update_global_shortcut_settings,
             install_update_via_mirror,
+            open_microsoft_store_listing,
             update_desktop_menus,
             clear_desktop_countdown_display,
             open_notification_settings

@@ -15,6 +15,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // 会按标准 `route.ts` 产物名查找 manifest，导致 ENOENT。
 const isDesktop = process.env.BUILD_TARGET === 'desktop';
 
+// 桌面端的分发渠道，与构建目标正交（见 docs/PLAN-M6-MSSTORE.md 决策 1）：
+//   github  —— NSIS / MSI / DMG，走 tauri-plugin-updater 自更新
+//   msstore —— MSIX，更新由微软商店负责，应用内入口深链过去
+// 只有 isDesktop 时才有意义；Web 构建恒为 github，读到它的分支都在桌面端里。
+const desktopChannel =
+  isDesktop && process.env.DESKTOP_CHANNEL === 'msstore' ? 'msstore' : 'github';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Pin the tracing root to this project; multiple lockfiles exist on the machine.
@@ -34,6 +41,7 @@ const nextConfig = {
       String(Date.now()),
     // 构建期即确定运行形态，界面据此选择无边距布局，避免运行时探测造成首帧闪烁。
     NEXT_PUBLIC_BUILD_TARGET: isDesktop ? 'desktop' : 'web',
+    NEXT_PUBLIC_DESKTOP_CHANNEL: desktopChannel,
   },
 
   // 桌面端不回传任何数据（见 docs/PLAN-M5-TAURI.md 决策 5）。仅靠条件渲染
@@ -48,6 +56,13 @@ const nextConfig = {
           __dirname,
           'lib/analytics-stub.tsx'
         ),
+      };
+    }
+    // 商店版不含更新器：同样是模块解析层剔除，不能只靠条件分支。
+    if (desktopChannel === 'msstore') {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@tauri-apps/plugin-updater': resolve(__dirname, 'lib/updater-stub.ts'),
       };
     }
     return config;

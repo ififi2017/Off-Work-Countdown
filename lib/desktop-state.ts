@@ -399,6 +399,18 @@ export async function installDesktopUpdateViaMirror(): Promise<void> {
   await invoke("install_update_via_mirror");
 }
 
+/**
+ * 打开本应用的微软商店详情页，供商店版的「检查更新」使用。
+ *
+ * 走 Rust 命令而不是 `openUrl`：`ms-windows-store:` 不是 http scheme，前端那条
+ * 路要在 capability 白名单里逐条声明。见 docs/PLAN-M6-MSSTORE.md 决策 2。
+ */
+export async function openMicrosoftStoreListing(): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("open_microsoft_store_listing");
+}
+
 /** Windows 自绘标题栏：最小化。 */
 export async function minimizeDesktopMainWindow(): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;

@@ -14,6 +14,15 @@ rust-version = "1.77.2"
 name = "off_work_countdown_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+# 自更新按渠道开关，见 docs/PLAN-M6-MSSTORE.md 决策 2。
+#
+# ⚠️ 方向不能反：默认**开启**，商店构建用 `--no-default-features` 关掉。
+# 反过来做（默认关、GitHub 构建显式开）会让本地 `npm run tauri:dev` 静默丢失
+# 更新器——那个功能开发期几乎不会被主动测试，问题会一路漏到发版。
+[features]
+default = ["self-update"]
+self-update = ["dep:tauri-plugin-updater", "dep:tauri-plugin-process"]
+
 [build-dependencies]
 tauri-build = { version = "2.6.3", features = [] }
 
@@ -26,7 +35,7 @@ tauri = { version = "2.11.3", features = ["tray-icon", "macos-private-api"] }
 tauri-plugin-log = "2"
 tauri-plugin-store = "2.4.4"
 tauri-plugin-positioner = { version = "2.3.3", features = ["tray-icon"] }
-tauri-plugin-process = "2"
+tauri-plugin-process = { version = "2", optional = true }
 tauri-plugin-opener = "2"
 tauri-plugin-os = "2"
 
@@ -36,4 +45,4 @@ tauri-plugin-global-shortcut = "2.3.2"
 tauri-plugin-notification = "2.3.3"
 # 第二次启动时聚焦已有窗口，而不是再开一个进程
 tauri-plugin-single-instance = "2"
-tauri-plugin-updater = "2"
+tauri-plugin-updater = { version = "2", optional = true }
