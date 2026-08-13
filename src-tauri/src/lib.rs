@@ -1275,11 +1275,21 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
     };
     let window = WebviewWindowBuilder::new(app, "mini", WebviewUrl::App(url.into()))
         .title("Off Work Countdown")
-        // 四周各留 6pt 给圆角之外的投影。高度比旧版增加 6pt，让顶部工具栏
-        // 与中间读数保持清晰间距；宽度仍与原来的紧凑挂件一致。
-        .inner_size(240.0, 90.0)
-        .min_inner_size(240.0, 90.0)
-        .max_inner_size(240.0, 90.0)
+        // 窗口比卡片本身大一圈，多出来的部分纯粹是留给投影的画布：窗口无边框且
+        // 透明，投影由页面的 CSS 画，超出窗口的部分会被**硬生生截断**——截断的
+        // 软阴影正是"廉价"的来源。
+        //
+        // ⚠️ 留白要按 `offset + 1.5×blur + spread` 算，不是 `blur/2`。Chromium 的
+        // box-shadow 用 sigma=blur/2 的高斯核，可见范围到 3σ，也就是 1.5 倍 blur。
+        // 按 blur/2 算会短一大截：实测截断处背景 252、阴影还停在 246，肉眼就是
+        // 一条直边。这一版的最大一层是 `0 3px 8px -3px`，需要 3+12-3=12pt，
+        // 四周留白都比它宽。
+        //
+        // 卡片仍是 228x78（与最初版本一致），留白见 MiniCountdown.tsx：
+        // 左右各 10pt、上 8pt、下 14pt。改这里就要同步改那边，否则卡片会变形。
+        .inner_size(248.0, 100.0)
+        .min_inner_size(248.0, 100.0)
+        .max_inner_size(248.0, 100.0)
         .resizable(false)
         .maximizable(false)
         .fullscreen(false)
