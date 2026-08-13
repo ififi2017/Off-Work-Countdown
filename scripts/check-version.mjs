@@ -27,10 +27,31 @@ if (mismatches.length > 0) {
   process.exit(1);
 }
 
+// MSIX 的包版本必须四段，且第四段保留给商店、必须是 0。它不参与上面那轮比较：
+// 格式本来就不同，硬凑进去只会让错误信息更难读。
+// 见 docs/PLAN-M6-MSSTORE.md 决策 5。
+const appxManifest = readFileSync(
+  "src-tauri/msstore/Package.appxmanifest",
+  "utf8"
+);
+const appxVersion = appxManifest.match(
+  /<Identity[\s\S]*?\bVersion="([^"]+)"/
+)?.[1];
+const expectedAppxVersion = `${expected}.0`;
+
+if (appxVersion !== expectedAppxVersion) {
+  console.error(
+    `Package.appxmanifest version ${appxVersion ?? "(not found)"} must be ${expectedAppxVersion}.`
+  );
+  process.exit(1);
+}
+
 const tag = process.env.GITHUB_REF_NAME;
 if (tag?.startsWith("desktop-v") && tag.slice("desktop-v".length) !== expected) {
   console.error(`Release tag ${tag} does not match product version ${expected}.`);
   process.exit(1);
 }
 
-console.log(`Web and desktop versions are aligned at ${expected}.`);
+console.log(
+  `Web and desktop versions are aligned at ${expected} (MSIX ${expectedAppxVersion}).`
+);

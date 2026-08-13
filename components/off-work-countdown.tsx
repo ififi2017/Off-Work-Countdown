@@ -111,7 +111,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   emptyDesktopCountdownState,
-  getDesktopAutostartEnabled,
+  getDesktopAutostartState,
   getDesktopGlobalShortcutSettings,
   getMiniWindowSettings,
   hideDesktopMainWindow,
@@ -120,6 +120,7 @@ import {
   setDesktopAutostartEnabled,
   updateDesktopGlobalShortcutSettings,
   installDesktopUpdateViaMirror,
+  openMicrosoftStoreListing,
   stopDesktopCountdown,
   subscribeToDesktopCountdown,
   UPDATE_MIRROR_HOST,
@@ -140,6 +141,14 @@ const notificationPrimerStorageKey = "desktopNotificationPrimerSeen";
 
 /** 由 next.config.mjs 在构建期注入，见 docs/PLAN-M5-TAURI.md 决策 1 与 7。 */
 const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+
+/**
+ * 微软商店渠道。更新由商店负责，应用内不做检查也不做下载——MSIX 的安装目录
+ * 只读，装不上。更新入口保留，改为深链到商店详情页。
+ * 见 docs/PLAN-M6-MSSTORE.md 决策 2。
+ */
+const IS_MSSTORE_BUILD =
+  IS_DESKTOP_BUILD && process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "msstore";
 
 type DesktopUpdateStatus =
   | "idle"
@@ -375,6 +384,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     !IS_DESKTOP_BUILD
   );
   const [launchAtLogin, setLaunchAtLogin] = useState(false);
+  // 商店版专有：用户在系统「启动」设置里关掉之后，应用无权改回来。
+  // 见 docs/PLAN-M6-MSSTORE.md 决策 3。
+  const [launchAtLoginLocked, setLaunchAtLoginLocked] = useState(false);
   const [autostartLoaded, setAutostartLoaded] = useState(!IS_DESKTOP_BUILD);
   const [autostartPending, setAutostartPending] = useState(false);
   const [globalShortcutEnabled, setGlobalShortcutEnabled] = useState(true);
@@ -630,9 +642,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     if (!IS_DESKTOP_BUILD) return;
 
     let cancelled = false;
-    void getDesktopAutostartEnabled()
-      .then((enabled) => {
-        if (!cancelled) setLaunchAtLogin(enabled);
+    void getDesktopAutostartState()
+      .then((state) => {
+        if (cancelled) return;
+        setLaunchAtLogin(state.enabled);
+        setLaunchAtLoginLocked(state.locked);
       })
       .catch(() => {
         if (!cancelled) setDesktopSettingError(t("desktopSettingError"));
@@ -691,29 +705,33 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     // 带宽，与「关于」页对外承诺的「只有当你主动检查或下载更新时才会访问
     // 网络」相冲突。发现新版本仅把设置按钮点亮，下载由用户点击后触发。
     // 任何失败都静默忽略，不打扰启动流程。
-    void (async () => {
-      try {
-        const { check } = await import("@tauri-apps/plugin-updater");
-        const update = await check({ timeout: 15_000 });
-        if (cancelled) return;
-        if (!update) {
-          setDesktopUpdateStatus("latest");
-          return;
+    //
+    // 商店版整段跳过：更新由商店负责，这里连一次网络请求都不该发。
+    if (!IS_MSSTORE_BUILD) {
+      void (async () => {
+        try {
+          const { check } = await import("@tauri-apps/plugin-updater");
+          const update = await check({ timeout: 15_000 });
+          if (cancelled) return;
+          if (!update) {
+            setDesktopUpdateStatus("latest");
+            return;
+          }
+          pendingUpdateRef.current = {
+            version: update.version,
+            currentVersion: update.currentVersion,
+            download: () => update.download(),
+            install: () => update.install(),
+            downloadAndInstall: () => update.downloadAndInstall(),
+          };
+          setDesktopCurrentVersion(update.currentVersion);
+          setDesktopLatestVersion(update.version);
+          setDesktopUpdateStatus("available");
+        } catch {
+          // 静默失败：不干扰启动，也不弹错误。
         }
-        pendingUpdateRef.current = {
-          version: update.version,
-          currentVersion: update.currentVersion,
-          download: () => update.download(),
-          install: () => update.install(),
-          downloadAndInstall: () => update.downloadAndInstall(),
-        };
-        setDesktopCurrentVersion(update.currentVersion);
-        setDesktopLatestVersion(update.version);
-        setDesktopUpdateStatus("available");
-      } catch {
-        // 静默失败：不干扰启动，也不弹错误。
-      }
-    })();
+      })();
+    }
 
     return () => {
       cancelled = true;
@@ -1555,7 +1573,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setAutostartPending(true);
     setDesktopSettingError("");
     try {
-      await setDesktopAutostartEnabled(enabled);
+      // 按返回的真实状态回填，而不是假定请求成功：商店版被系统锁住时
+      // 请求打开不会报错，只是不生效。见决策 3。
+      const state = await setDesktopAutostartEnabled(enabled);
+      setLaunchAtLogin(state.enabled);
+      setLaunchAtLoginLocked(state.locked);
     } catch {
       setLaunchAtLogin(previous);
       setDesktopSettingError(t("desktopSettingError"));
@@ -1622,6 +1644,16 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   const handleCheckForUpdates = async () => {
     if (!IS_DESKTOP_BUILD) return;
+
+    // 商店版：这个入口不检查、不下载，只把用户送到商店详情页，更新在那边完成。
+    if (IS_MSSTORE_BUILD) {
+      try {
+        await openMicrosoftStoreListing();
+      } catch {
+        setDesktopSettingError(t("desktopSettingError"));
+      }
+      return;
+    }
 
     const pending = pendingUpdateRef.current;
 
@@ -2601,10 +2633,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                       <Switch
                         id="launch-at-login"
                         checked={launchAtLogin}
-                        disabled={!autostartLoaded || autostartPending}
+                        disabled={
+                          !autostartLoaded ||
+                          autostartPending ||
+                          launchAtLoginLocked
+                        }
                         onCheckedChange={handleAutostartChange}
                       />
                     </div>
+                    {launchAtLoginLocked && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {t("launchAtLoginManagedBySystem")}
+                      </p>
+                    )}
                     {desktopSettingError && (
                       <p
                         role="alert"
@@ -2994,7 +3035,9 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                           }`}
                         />
                         <span className="truncate">
-                          {desktopUpdateStatus === "checking"
+                          {IS_MSSTORE_BUILD
+                            ? t("checkForUpdatesInStore")
+                            : desktopUpdateStatus === "checking"
                             ? t("checkingForUpdates")
                             : desktopUpdateStatus === "directFailed"
                               ? t("retryWithMirror")
@@ -3093,34 +3136,30 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           避免先跳转再重定向。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
           故不渲染。 */}
       {!showCountdown && !isAppShell && (
-        <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs font-semibold text-gray-600 dark:text-gray-300">
-          <Link
-            href={`/${contentLang}/download`}
-            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("desktopInviteButton")}
-          </Link>
-          <span aria-hidden="true">·</span>
-          <Link
-            href={`/${contentLang}/faq`}
-            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("faq")}
-          </Link>
-          <span aria-hidden="true">·</span>
-          <Link
-            href={`/${contentLang}/how-it-works`}
-            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("howItWorks")}
-          </Link>
-          <span aria-hidden="true">·</span>
-          <Link
-            href={`/${contentLang}/about`}
-            className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("aboutProject")}
-          </Link>
+        // 间隔点与它后面的链接绑成一组：页脚在窄屏和长标签的语言里本来就会折行，
+        // 分开写会让断点正好落在点之后，上一行结尾挂着一个孤零零的「·」。
+        // 间距用 gap-x-2 而不是 3：英文五项刚好差十来像素才能排成一行。
+        <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs font-semibold text-gray-600 dark:text-gray-300">
+          {[
+            { href: `/${contentLang}/download`, label: t("desktopInviteButton") },
+            { href: `/${contentLang}/faq`, label: t("faq") },
+            { href: `/${contentLang}/how-it-works`, label: t("howItWorks") },
+            { href: `/${contentLang}/about`, label: t("aboutProject") },
+            { href: `/${contentLang}/privacy`, label: t("privacyPolicy") },
+          ].map(({ href, label }, index) => (
+            <span
+              key={href}
+              className="flex items-center gap-x-2 whitespace-nowrap"
+            >
+              {index > 0 && <span aria-hidden="true">·</span>}
+              <Link
+                href={href}
+                className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+              >
+                {label}
+              </Link>
+            </span>
+          ))}
         </footer>
       )}
       </div>

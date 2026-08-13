@@ -1,0 +1,184 @@
+name: Microsoft Store Release
+
+# MSIX 产线，与 release-desktop.yml 并行但**完全独立**。
+#
+# 为什么不合并进 release-desktop.yml（见 docs/PLAN-M6-MSSTORE.md §4）：
+#   - 商店提交失败不该让 GitHub Release 一起红，反之亦然
+#   - 商店这条链路依赖会过期的 Entra 凭据和外部审核，独立的工作流更好定位
+#   - 它不传 tagName，因此不碰任何 Release
+#
+# 代价是 Windows 的 Rust 编译两遍（NSIS/MSI 一遍、MSIX 一遍）。两遍的配置本来
+# 就不同（渠道开关 + feature），合并反而要在一个 job 里切两次构建配置。
+#
+# ⚠️ 推 tag 会**真的向商店提交**。想先干跑一遍就用 workflow_dispatch，
+# 它默认只产出 msixbundle 当 artifact，不提交。
+on:
+  workflow_dispatch:
+    inputs:
+      submit:
+        description: Submit the package to the Microsoft Store
+        type: boolean
+        default: false
+  push:
+    tags:
+      - "desktop-v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            platform: windows-latest
+            arch: x64
+            rustTargets: x86_64-pc-windows-msvc
+          - name: Windows ARM64
+            platform: windows-11-arm
+            arch: arm64
+            rustTargets: aarch64-pc-windows-msvc
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rustTargets }}
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+          key: msstore-${{ matrix.arch }}
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Check product, tag and MSIX versions
+        run: npm run check:version
+
+      # ⚠️ `--` 不能省：Tauri v2 的 CLI 没有 --no-default-features，裸写会被当成
+      # 未知参数拒掉。`--` 之后的参数才透传给 cargo。少这一个横杠，构建出来的是
+      # 一个**带完整自更新链路的商店包**——能装能跑，装到用户机器上才暴露。
+      # 直接调 node_modules 里的可执行文件，避免 npx 再吃掉一层 `--`。
+      - name: Build store-channel executable
+        run: >
+          .\node_modules\.bin\tauri build
+          --config src-tauri\tauri.msstore.conf.json
+          --target ${{ matrix.rustTargets }}
+          -- --no-default-features
+
+      # 依赖图是判断渠道开关有没有生效的可靠依据；.fingerprint\ 不会因为依赖被
+      # 移除而清理，照着它看会得出「没编译掉」的错误结论（见 P2 实测记录）。
+      - name: Assert the self-update chain is compiled out
+        shell: pwsh
+        run: |
+          $hits = cargo tree --manifest-path src-tauri\Cargo.toml --no-default-features |
+            Select-String "tauri-plugin-(autostart|updater|process)"
+          if ($hits) {
+            Write-Error "Store build still links the self-update chain:`n$hits"
+            exit 1
+          }
+          Write-Host "OK: no updater/process/autostart in the store dependency graph."
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: msstore-${{ matrix.arch }}
+          retention-days: 7
+          if-no-files-found: error
+          path: src-tauri/target/${{ matrix.rustTargets }}/release/Off Work Countdown.exe
+
+  package:
+    name: Pack and publish
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      # winapp pack 要两个架构的产物在同一台机器上，所以必须靠 artifact 汇总，
+      # 不能像 release-desktop.yml 那样让矩阵各自独立完成。
+      - name: Download x64 executable
+        uses: actions/download-artifact@v4
+        with:
+          name: msstore-x64
+          path: dist/x64
+
+      - name: Download arm64 executable
+        uses: actions/download-artifact@v4
+        with:
+          name: msstore-arm64
+          path: dist/arm64
+
+      # ⚠️ 计划里标为风险的一步：winapp CLI 的文档前提是 Windows 11 + winget，
+      # 而 windows-latest 是 Server 镜像。这一步失败不代表方案不成立，退路是改用
+      # Windows SDK 自带的 makeappx.exe（见 docs/PLAN-M6-MSSTORE.md 决策 4）。
+      - name: Install winapp CLI
+        run: winget install microsoft.winappcli --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity
+
+      # 不签名：商店过认证后会用微软证书重签，自签的包会被拒。
+      - name: Pack msixbundle
+        run: >
+          node scripts/pack-msix.mjs
+          "x64=dist/x64/Off Work Countdown.exe"
+          "arm64=dist/arm64/Off Work Countdown.exe"
+
+      - name: Assert the package is unsigned
+        shell: pwsh
+        run: |
+          $pkg = Get-ChildItem -Filter *.msixbundle | Select-Object -First 1
+          if (-not $pkg) { Write-Error "no .msixbundle produced"; exit 1 }
+          $sig = (Get-AuthenticodeSignature $pkg.FullName).Status
+          if ($sig -ne "NotSigned") {
+            Write-Error "Store packages must be unsigned, got: $sig"
+            exit 1
+          }
+          Write-Host "OK: $($pkg.Name) is unsigned."
+
+      - name: Upload msixbundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: msixbundle
+          retention-days: 14
+          if-no-files-found: error
+          path: "*.msixbundle"
+
+      # 推 tag 时自动提交；手动运行默认只出 artifact，方便先干跑验证整条链路。
+      - name: Configure Microsoft Store CLI
+        if: github.event_name == 'push' || inputs.submit
+        uses: microsoft/microsoft-store-apppublisher@v1.1
+
+      - name: Sign in to Partner Center
+        if: github.event_name == 'push' || inputs.submit
+        run: >
+          msstore reconfigure
+          --tenantId ${{ secrets.AZURE_AD_TENANT_ID }}
+          --sellerId ${{ secrets.SELLER_ID }}
+          --clientId ${{ secrets.AZURE_AD_APPLICATION_CLIENT_ID }}
+          --clientSecret ${{ secrets.AZURE_AD_APPLICATION_SECRET }}
+
+      # 提交 ≠ 上线：之后还要过微软认证，几小时到几天。这一步绿只代表提交成功。
+      - name: Publish to the Microsoft Store
+        if: github.event_name == 'push' || inputs.submit
+        shell: pwsh
+        run: |
+          $pkg = Get-ChildItem -Filter *.msixbundle | Select-Object -First 1
+          msstore publish $pkg.FullName -id 9PM0HJ2PP2LJ

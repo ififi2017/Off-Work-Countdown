@@ -1,0 +1,15 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "mainBinaryName": "Off Work Countdown",
+  "build": {
+    "beforeBuildCommand": "npm run build:desktop:msstore"
+  },
+  "app": {
+    "security": {
+      "capabilities": ["default", "desktop-capability"]
+    }
+  },
+  "bundle": {
+    "active": false
+  }
+}

@@ -42,3 +42,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .claude/
+
+# Development certificate
+devcert.pfx
+
+# npm run pack:msix 把包放在仓库根目录。这台机器的全局 gitignore 恰好忽略了
+# *.msix，别人的机器不会——少了这两行，一个 5MB 的包随时可能被 git add . 带进来。
+*.msix
+*.msixbundle

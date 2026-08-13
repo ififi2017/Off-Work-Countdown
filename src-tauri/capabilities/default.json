@@ -10,7 +10,6 @@
     "core:default",
     "core:window:allow-start-dragging",
     "store:default",
-    "notification:default",
-    "autostart:default"
+    "notification:default"
   ]
 }

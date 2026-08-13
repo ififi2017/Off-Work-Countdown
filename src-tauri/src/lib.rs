@@ -1275,11 +1275,21 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
     };
     let window = WebviewWindowBuilder::new(app, "mini", WebviewUrl::App(url.into()))
         .title("Off Work Countdown")
-        // 四周各留 6pt 给圆角之外的投影。高度比旧版增加 6pt，让顶部工具栏
-        // 与中间读数保持清晰间距；宽度仍与原来的紧凑挂件一致。
-        .inner_size(240.0, 90.0)
-        .min_inner_size(240.0, 90.0)
-        .max_inner_size(240.0, 90.0)
+        // 窗口比卡片本身大一圈，多出来的部分纯粹是留给投影的画布：窗口无边框且
+        // 透明，投影由页面的 CSS 画，超出窗口的部分会被**硬生生截断**——截断的
+        // 软阴影正是"廉价"的来源。
+        //
+        // ⚠️ 留白要按 `offset + 1.5×blur + spread` 算，不是 `blur/2`。Chromium 的
+        // box-shadow 用 sigma=blur/2 的高斯核，可见范围到 3σ，也就是 1.5 倍 blur。
+        // 按 blur/2 算会短一大截：实测截断处背景 252、阴影还停在 246，肉眼就是
+        // 一条直边。这一版的最大一层是 `0 3px 8px -3px`，需要 3+12-3=12pt，
+        // 四周留白都比它宽。
+        //
+        // 卡片仍是 228x78（与最初版本一致），留白见 MiniCountdown.tsx：
+        // 左右各 10pt、上 8pt、下 14pt。改这里就要同步改那边，否则卡片会变形。
+        .inner_size(248.0, 100.0)
+        .min_inner_size(248.0, 100.0)
+        .max_inner_size(248.0, 100.0)
         .resizable(false)
         .maximizable(false)
         .fullscreen(false)
@@ -1608,7 +1618,16 @@ fn update_global_shortcut_settings(
 /// 所以引入第三方反代不会变成供应链问题。
 ///
 /// 前端展示用的主机名在 lib/desktop-state.ts 里有一份副本，改这里要同步。
-const MIRROR_UPDATER_ENDPOINT: &str = "https://gh-proxy.com/https://github.com/ififi2017/Off-Work-Countdown/releases/latest/download/latest-cn.json";
+#[cfg(feature = "self-update")]
+const MIRROR_UPDATER_ENDPOINT: &str ="https://gh-proxy.com/https://github.com/ififi2017/Off-Work-Countdown/releases/latest/download/latest-cn.json";
+
+/// Partner Center 分配的商店产品 ID。与 src-tauri/msstore/Package.appxmanifest
+/// 的 Identity 同属一份不可分割的商店身份，改一个就要核对另一个。
+///
+/// 产品上线之前这个深链打不开任何页面——商店对未发布的产品不提供 pdp 链接。
+/// 这不是 bug，P3 之后自然生效。
+#[cfg(target_os = "windows")]
+const MICROSOFT_STORE_PRODUCT_ID: &str = "9PM0HJ2PP2LJ";
 
 /// 通过镜像清单重新检查、下载并安装更新。
 ///
@@ -1618,26 +1637,191 @@ const MIRROR_UPDATER_ENDPOINT: &str = "https://gh-proxy.com/https://github.com/i
 /// `UpdaterBuilder::endpoints()` 能在运行时做到。
 #[tauri::command]
 async fn install_update_via_mirror(app: AppHandle) -> Result<(), String> {
-    use tauri_plugin_updater::UpdaterExt;
+    #[cfg(feature = "self-update")]
+    {
+        use tauri_plugin_updater::UpdaterExt;
 
-    let endpoint: tauri::Url = MIRROR_UPDATER_ENDPOINT
-        .parse()
-        .map_err(|error| format!("invalid mirror endpoint: {error}"))?;
-    let updater = app
-        .updater_builder()
-        .endpoints(vec![endpoint])
-        .map_err(|error| error.to_string())?
-        .build()
-        .map_err(|error| error.to_string())?;
-    let update = updater
-        .check()
-        .await
-        .map_err(|error| error.to_string())?
-        .ok_or_else(|| "mirror manifest reports no available update".to_string())?;
-    update
-        .download_and_install(|_, _| {}, || {})
-        .await
-        .map_err(|error| error.to_string())
+        let endpoint: tauri::Url = MIRROR_UPDATER_ENDPOINT
+            .parse()
+            .map_err(|error| format!("invalid mirror endpoint: {error}"))?;
+        let updater = app
+            .updater_builder()
+            .endpoints(vec![endpoint])
+            .map_err(|error| error.to_string())?
+            .build()
+            .map_err(|error| error.to_string())?;
+        let update = updater
+            .check()
+            .await
+            .map_err(|error| error.to_string())?
+            .ok_or_else(|| "mirror manifest reports no available update".to_string())?;
+        update
+            .download_and_install(|_, _| {}, || {})
+            .await
+            .map_err(|error| error.to_string())
+    }
+    // 商店版整条自更新链路都被编译掉，包括这个镜像回退。前端在 msstore 渠道
+    // 下不会走到这里（更新器模块本身已被 resolve.alias 换掉），保留这个分支
+    // 只是为了让 generate_handler! 的命令列表在两种渠道下保持一致。
+    #[cfg(not(feature = "self-update"))]
+    {
+        let _ = app;
+        Err("self-update is disabled in this build".into())
+    }
+}
+
+/// 商店版的「检查更新」入口：打开自己的商店详情页，由商店负责更新。
+///
+/// 见 docs/PLAN-M6-MSSTORE.md 决策 2。走 Rust 侧的 opener 而不是前端的
+/// `openUrl`，与 `open_notification_settings` 同样的理由：`ms-windows-store:`
+/// 不是 http scheme，前端那条路要在 capability 白名单里逐条声明。
+#[tauri::command]
+fn open_microsoft_store_listing(app: AppHandle) -> Result<(), String> {
+    // 两个分支互斥，各自都是函数的尾表达式，因此不能写 `return`——在 Windows 上
+    // 编译时另一个分支整块消失，`return` 就成了 clippy::needless_return。
+    // 这条只在 Windows 上跑 clippy 才会暴露，macOS 上这段根本不参与编译。
+    #[cfg(target_os = "windows")]
+    {
+        let url = format!("ms-windows-store://pdp/?productid={MICROSOFT_STORE_PRODUCT_ID}");
+        app.opener()
+            .open_url(url, None::<&str>)
+            .map_err(|error| error.to_string())
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = app;
+        Err("the Microsoft Store is only available on Windows".into())
+    }
+}
+
+/// 自启动的真实状态。比一个 bool 多一个 `locked`，因为 MSIX 那条路上「关着」
+/// 有两种含义：应用自己没开，和用户在「设置 → 应用 → 启动」里关掉了——后者
+/// 应用无权改回来，`RequestEnableAsync` 会直接返回原状态。
+///
+/// 两种渠道都返回这个结构，前端因此不必知道自己跑在哪条实现上；注册表那条路
+/// 永远 `locked: false`，因为它确实想开就能开。
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AutostartState {
+    enabled: bool,
+    locked: bool,
+}
+
+/// manifest 里 `<uap5:StartupTask TaskId="...">` 的 TaskId，必须逐字一致，
+/// 对不上的表现是 `StartupTask::GetAsync` 抛异常而不是返回一个禁用状态。
+#[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+const STARTUP_TASK_ID: &str = "OffWorkCountdownStartup";
+
+#[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+fn startup_task() -> Result<windows::ApplicationModel::StartupTask, String> {
+    use windows::core::HSTRING;
+
+    windows::ApplicationModel::StartupTask::GetAsync(&HSTRING::from(STARTUP_TASK_ID))
+        .and_then(|op| op.get())
+        // 没有包标识时（比如把商店渠道的 exe 直接双击运行）这里必然失败。
+        // 保留原始错误：它是排查 TaskId 写错和「没跑在包里」的唯一线索。
+        .map_err(|error| format!("startup task {STARTUP_TASK_ID} is unavailable: {error}"))
+}
+
+#[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+fn read_startup_task_state() -> Result<AutostartState, String> {
+    use windows::ApplicationModel::StartupTaskState;
+
+    let state = startup_task()?.State().map_err(|error| error.to_string())?;
+    Ok(match state {
+        StartupTaskState::Enabled => AutostartState {
+            enabled: true,
+            locked: false,
+        },
+        // 策略打开的同样锁着：应用改不动，只是方向相反。
+        StartupTaskState::EnabledByPolicy => AutostartState {
+            enabled: true,
+            locked: true,
+        },
+        StartupTaskState::DisabledByUser | StartupTaskState::DisabledByPolicy => AutostartState {
+            enabled: false,
+            locked: true,
+        },
+        // Disabled 以及将来可能新增的取值都按「关着但能开」处理。
+        _ => AutostartState {
+            enabled: false,
+            locked: false,
+        },
+    })
+}
+
+/// 读自启动状态。两条实现的分界就是渠道的分界，前端只看到同一个命令。
+#[tauri::command]
+async fn get_autostart_state(app: AppHandle) -> Result<AutostartState, String> {
+    #[cfg(feature = "run-key-autostart")]
+    {
+        use tauri_plugin_autostart::ManagerExt;
+
+        let enabled = app
+            .autolaunch()
+            .is_enabled()
+            .map_err(|error| error.to_string())?;
+        // 注册表 Run 键任何时候都能改，没有"被系统锁住"这回事。
+        Ok(AutostartState {
+            enabled,
+            locked: false,
+        })
+    }
+    #[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+    {
+        let _ = app;
+        read_startup_task_state()
+    }
+    #[cfg(all(not(target_os = "windows"), not(feature = "run-key-autostart")))]
+    {
+        let _ = app;
+        Err("autostart is unavailable in this build".into())
+    }
+}
+
+/// 写自启动状态，并把**写完之后的真实状态**回给前端。
+///
+/// 返回值不是入参的回声：MSIX 那条路上用户可能已经在系统设置里锁死了这个开关，
+/// 这时请求打开不会报错，只是什么都不会发生。前端照着返回值渲染，才不会出现
+/// 「开关是开的、开机却不启动」——那正是 P2 实测到的商店版旧行为。
+#[tauri::command]
+async fn set_autostart_enabled(app: AppHandle, enabled: bool) -> Result<AutostartState, String> {
+    #[cfg(feature = "run-key-autostart")]
+    {
+        use tauri_plugin_autostart::ManagerExt;
+
+        let manager = app.autolaunch();
+        if enabled {
+            manager.enable().map_err(|error| error.to_string())?;
+        } else {
+            manager.disable().map_err(|error| error.to_string())?;
+        }
+        let enabled = manager.is_enabled().map_err(|error| error.to_string())?;
+        Ok(AutostartState {
+            enabled,
+            locked: false,
+        })
+    }
+    #[cfg(all(target_os = "windows", not(feature = "run-key-autostart")))]
+    {
+        let _ = app;
+        let task = startup_task()?;
+        if enabled {
+            // 返回值就是请求之后的真实状态：被用户关掉时它仍然是 DisabledByUser，
+            // 不会报错。把它当成「开成功了」正是决策 3 要避免的那种假开关。
+            task.RequestEnableAsync()
+                .and_then(|op| op.get())
+                .map_err(|error| error.to_string())?;
+        } else {
+            task.Disable().map_err(|error| error.to_string())?;
+        }
+        read_startup_task_state()
+    }
+    #[cfg(all(not(target_os = "windows"), not(feature = "run-key-autostart")))]
+    {
+        let _ = (app, enabled);
+        Err("autostart is unavailable in this build".into())
+    }
 }
 
 #[tauri::command]
@@ -1691,9 +1875,17 @@ fn open_notification_settings(app: AppHandle) -> Result<(), String> {
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_updater::Builder::new().build());
+        .plugin(tauri_plugin_opener::init());
+
+    // 商店版由微软商店负责更新，自更新链路整体编译掉（见
+    // docs/PLAN-M6-MSSTORE.md 决策 2）。process 插件只被更新后的 relaunch
+    // 用到，一并跟着走。
+    #[cfg(feature = "self-update")]
+    {
+        builder = builder
+            .plugin(tauri_plugin_process::init())
+            .plugin(tauri_plugin_updater::Builder::new().build());
+    }
 
     // 单实例必须最先注册：它要在任何窗口创建之前拦下第二个进程，
     // 否则第二次启动会先建好窗口再被关掉，用户能看到窗口一闪。
@@ -1702,21 +1894,26 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             focus_main_window(app);
         }));
-        builder = builder
-            .plugin(tauri_plugin_notification::init())
-            .plugin(tauri_plugin_autostart::init(
+        builder = builder.plugin(tauri_plugin_notification::init());
+        // 商店渠道整条注册表 Run 键的路都编译掉：在 MSIX 容器里它的写入会被
+        // 重定向进包的虚拟注册表，Windows 根本看不到，表现成一个「开关是开的、
+        // 开机却不启动」的假开关。见决策 3 与 P2 实测。
+        #[cfg(feature = "run-key-autostart")]
+        {
+            builder = builder.plugin(tauri_plugin_autostart::init(
                 tauri_plugin_autostart::MacosLauncher::LaunchAgent,
                 None,
-            ))
-            .plugin(
-                tauri_plugin_global_shortcut::Builder::new()
-                    .with_handler(|app, _shortcut, event| {
-                        if event.state == ShortcutState::Pressed {
-                            toggle_main_window(app);
-                        }
-                    })
-                    .build(),
-            );
+            ));
+        }
+        builder = builder.plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, _shortcut, event| {
+                    if event.state == ShortcutState::Pressed {
+                        toggle_main_window(app);
+                    }
+                })
+                .build(),
+        );
     }
 
     builder
@@ -1738,6 +1935,9 @@ pub fn run() {
             get_global_shortcut_settings,
             update_global_shortcut_settings,
             install_update_via_mirror,
+            open_microsoft_store_listing,
+            get_autostart_state,
+            set_autostart_enabled,
             update_desktop_menus,
             clear_desktop_countdown_display,
             open_notification_settings

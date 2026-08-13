@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  微软商店版的包清单。见 docs/PLAN-M6-MSSTORE.md。
+
+  Identity 的三个值来自 Partner Center 的「应用标识」页，不是我们能自己起的名字：
+  写错会在上传阶段才报错，且大小写、空格与标点都必须逐字一致。
+
+  Assets 与 Executable 由 scripts/pack-msix.mjs 在打包前暂存到同一个目录，
+  图标直接取自 src-tauri/icons/（`tauri icon` 已经产出了 MSIX 需要的全套尺寸），
+  不在仓库里另存一份副本。
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap5 rescap">
+
+  <!--
+    Version 必须四段，且第四段保留给商店、必须是 0；npm run check:version 会核对
+    前三段与产品版本一致。ProcessorArchitecture 由 `winapp pack` 按每个切片的
+    PE 头强制回填，这里写什么都会被覆盖。
+  -->
+  <Identity
+    Name="finiaRStudio.OffWorkCountdown"
+    Publisher="CN=57D14FB1-9452-4F62-8C84-A50889A0FE89"
+    Version="3.1.4.0"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>Off Work Countdown</DisplayName>
+    <PublisherDisplayName>fi_niaR Studio</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <!--
+    MinVersion 定在 10.0.19041.0（Windows 10 2004）而不是更低：MSIX 塞不进
+    WebView2 的 bootstrapper，只能依赖系统自带的 Evergreen Runtime。放进更老的
+    系统只会得到一个装得上、打不开的白屏应用。
+  -->
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <!--
+    只声明 en-us：应用 UI 的 19 种语言由前端在运行时切换，与包资源无关。
+    包级别的多语言要 resources.pri，那是独立的一小块工作，不阻塞上架。
+  -->
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <Application
+      Id="App"
+      Executable="Off Work Countdown.exe"
+      EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Off Work Countdown"
+        Description="A quiet countdown to the end of your shift, with what you have earned so far. Everything stays on your device."
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <!--
+          刻意不声明 Square310x310Logo：MSIX 规定一旦声明它就必须同时给出
+          Wide310x150Logo，而 `tauri icon` 只产方形图标，仓库里没有宽图。
+          少了它只是 Start 菜单不能放大到「大」磁贴，不影响安装与商店认证；
+          为它单独手绘一张宽图会在 icons/ 里留下一个 `tauri icon` 不会重新生成
+          的资产，漂移风险比这点收益大。
+        -->
+        <uap:DefaultTile Square71x71Logo="Assets\Square71x71Logo.png" />
+      </uap:VisualElements>
+
+      <!--
+        开机自启。MSIX 里注册表 Run 键不是受支持的方式，而且它会绕过包标识拉起
+        进程，让托盘和通知的 AUMID 失效——表现成「自启动之后通知不弹」。
+
+        Enabled="false" 只是初始状态：装完之后这个开关由系统接管，用户可以在
+        「设置 → 应用 → 启动」里关掉，应用无权强行改回来。见决策 3。
+      -->
+      <Extensions>
+        <uap5:Extension
+          Category="windows.startupTask"
+          Executable="Off Work Countdown.exe"
+          EntryPoint="Windows.FullTrustApplication">
+          <uap5:StartupTask
+            TaskId="OffWorkCountdownStartup"
+            Enabled="false"
+            DisplayName="Off Work Countdown" />
+        </uap5:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

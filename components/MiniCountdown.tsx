@@ -367,14 +367,24 @@ export function MiniCountdown() {
   ) : null;
 
 
+  // 外层 main 的留白就是投影的画布：窗口无边框且透明，CSS 画到窗口之外的部分
+  // 会被直接截断，而被截断的软阴影看起来就是廉价的硬边。
+  //
+  // ⚠️ 算留白用 `offset + 1.5×blur + spread`：Chromium 的 box-shadow 高斯核
+  // 展开到 3σ = 1.5 倍 blur，按 blur/2 估会短一大截，边缘就会留下一条直线。
+  // 最大一层是 `0 3px 8px -3px`，即下方 12pt、左右 9pt、上方 6pt；留白按
+  // 下 14 / 左右 10 / 上 8 取，每个方向都留出余量。阴影往下打，所以不对称。
+  //
+  // 这些值与 src-tauri/src/lib.rs 的 setup_mini_window 窗口尺寸是一对，改一边
+  // 就要改另一边，否则卡片会变形或阴影重新被切掉。
   return (
     <main
       data-tauri-drag-region="deep"
-      className="h-screen w-screen select-none bg-transparent p-1.5 text-zinc-950 dark:text-white"
+      className="h-screen w-screen select-none bg-transparent px-2.5 pb-3.5 pt-2 text-zinc-950 dark:text-white"
     >
       <section
         data-tauri-drag-region="deep"
-        className="group relative flex h-full cursor-grab flex-col justify-center overflow-hidden rounded-[16px] border border-black/[0.08] bg-[#f6f6f7] shadow-[0_1px_2px_rgba(0,0,0,0.10),0_6px_16px_-4px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.85)] active:cursor-grabbing dark:border-white/[0.10] dark:bg-[#232326] dark:shadow-[0_1px_2px_rgba(0,0,0,0.5),0_6px_16px_-4px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.07)]"
+        className="group relative flex h-full cursor-grab flex-col justify-center overflow-hidden rounded-[16px] border border-black/[0.08] bg-[#f6f6f7] shadow-[0_1px_2px_rgba(0,0,0,0.10),0_3px_8px_-3px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.85)] active:cursor-grabbing dark:border-white/[0.10] dark:bg-[#232326] dark:shadow-[0_1px_2px_rgba(0,0,0,0.45),0_3px_8px_-3px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.07)]"
       >
         {/* 常驻的窗口工具按钮会一直和数字抢注意力，而这是个整天挂在屏幕角落
             的挂件。改成指针移入或键盘聚焦时才浮出。

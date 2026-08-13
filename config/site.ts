@@ -5,6 +5,9 @@ export const siteConfig = {
   githubOwner: "ififi2017",
   githubRepo: "Off-Work-Countdown",
   releases: "https://github.com/ififi2017/Off-Work-Countdown/releases",
+  // 支持与隐私问询邮箱。也是 Partner Center 的商店 listing 必填项，
+  // 两处必须是同一个地址（见 docs/PLAN-M6-MSSTORE.md §3）。
+  supportEmail: "offwork@rainif.com",
   themeColor: "#F3F4F6",
 } as const;
 
