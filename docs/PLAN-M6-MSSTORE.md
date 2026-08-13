@@ -9,8 +9,8 @@ Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动�
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | **P0** | Partner Center 账号、占名、拿到应用标识三元组 | 🟢 身份、隐私政策页、支持邮箱已就绪；listing 素材待补 |
-| **P1** | `msstore` 构建渠道：更新入口改接商店、自启动改 startupTask | 🟡 更新入口已完成；自启动 Rust 侧待做 |
-| **P2** | `Package.appxmanifest` + 本地自签打包，真机验收 | 🟡 manifest 与打包脚本已就位；**Windows 真机验收进行中** |
+| **P1** | `msstore` 构建渠道：更新入口改接商店、自启动改 startupTask | 🟢 更新入口与自启动都已完成并在真机验证 |
+| **P2** | `Package.appxmanifest` + 本地自签打包，真机验收 | 🟢 自签包已装机逐项验收，WACK PASS |
 | **P3** | 首次人工提交并上架 | ⬜ 未开始 |
 | **P4** | Entra 凭据 + `release-msstore.yml` 自动提交 | ⬜ 未开始 |
 | **P5** | 文档：下载页、README、About 页区分两个渠道 | ⬜ 未开始 |
@@ -43,8 +43,8 @@ P4 无论如何排不到 P3 前面。
 
 ### P2 验收：在 Windows 上怎么跑
 
-⚠️ 以下命令除 `pack:msix` 的暂存逻辑外**都还没在 Windows 上实际跑过**，
-winapp CLI 的具体行为以它自己的输出为准，对不上就以实际为准回来改这份文档。
+以下命令已在 Windows 11 + winapp CLI 0.5.0 上实际跑通（2026-08-13），
+**与初稿相比有四处必须的订正**，每处都在注释里说明了原因。
 
 环境：Windows 11、Node 24、Rust MSVC 工具链，外加
 
@@ -52,42 +52,180 @@ winapp CLI 的具体行为以它自己的输出为准，对不上就以实际为
 winget install microsoft.winappcli --source winget
 ```
 
+⚠️ **Rust 工具链是真前提，不是「大概装过」。** 初稿把它当既有条件，实际这台机器上
+没有。`winget install Rustlang.Rustup` 装完之后**必须开一个新终端**，否则
+`cargo` 不在 PATH 上，表现是 tauri 报
+`failed to run 'cargo metadata' … program not found`，看起来像 tauri 的问题。
+
 ```powershell
 npm ci
 npm run check:version
 
-# 1. 构建商店渠道的 exe。注意 `--` 不能省，否则 --no-default-features 会被
-#    tauri CLI 当成未知参数拒掉（见决策 4）
-npx tauri build --config src-tauri/tauri.msstore.conf.json -- --no-default-features
+# 1. 构建商店渠道的 exe。
+#
+#    ⚠️ npx 会自己吃掉第一个 `--`，所以经 npx 调用时要写**两个**，否则 tauri CLI
+#    收到 --no-default-features 并拒掉（见决策 4 的报错）。用仓库内的 tauri 可执行
+#    文件则只需一个 `--`——它更直白，推荐这个。
+.\node_modules\.bin\tauri build --config src-tauri\tauri.msstore.conf.json -- --no-default-features
+#    等价的 npx 写法：
+#    npx tauri build --config src-tauri/tauri.msstore.conf.json -- -- --no-default-features
 
 # 2. 先只暂存，确认目录结构与图标齐全再往下走
 npm run pack:msix -- "x64=src-tauri/target/release/Off Work Countdown.exe" --stage-only
 
-# 3. 本地自签打包。证书的 Publisher 必须与 manifest 的 Identity/Publisher 一致，
-#    而 manifest 不在当前目录，cert generate 大概率要显式指路径
-winapp cert generate --if-exists skip
-npm run pack:msix -- "x64=src-tauri/target/release/Off Work Countdown.exe" --cert devcert.pfx
+# 3. 本地自签打包。
+#
+#    ⚠️ cert generate 必须显式指 --manifest。不指的后果不是报错，而是**静默**用
+#    `CN=<当前用户名>` 生成证书并 exit 0，直到签名后装不上才暴露。
+winapp cert generate --manifest src-tauri\msstore\Package.appxmanifest --if-exists skip
+#
+#    ⚠️ 这一步不能走 `npm run pack:msix --`：npm 自己有一个 `--cert` 配置项，会把
+#    它连同值一起吃掉，脚本收不到，于是**打出一个未签名的包**——而未签名的包
+#    Add-AppxPackage 会直接拒绝，所以至少不会漏到更后面。直接调 node 绕开 npm。
+node scripts/pack-msix.mjs "x64=src-tauri/target/release/Off Work Countdown.exe" --cert devcert.pfx
 
-# 4. 信任证书（管理员），每台机器只需一次
+# 4. 信任证书（需要管理员终端），每台机器只需一次
 winapp cert install .\devcert.pfx
 
-# 5. 安装
+# 5. 安装（普通终端即可，证书受信之后不需要管理员）
 Add-AppxPackage .\finiaRStudio.OffWorkCountdown_3.1.3.0_x64.msix
 ```
 
-装上之后按 §5 那张表逐项验收，另外这三项是本轮最该盯的：
+`winapp pack` 与 `winapp package` 是同一个命令的两个名字，别名有效，
+`scripts/pack-msix.mjs` 里用哪个都行——CLI 帮助里的规范名是 `package`。
 
-1. **启动时不应有任何更新请求。** 这是商店版最关键的行为差异，用抓包或
-   资源监视器确认一次比读代码可靠。
-2. **「检查更新」会跳商店但打不开页面**——产品还没上架，商店对未发布产品不提供
-   `pdp` 链接。这是预期结果，不是 bug。
-3. **自启动现在是已知不一致的状态**：manifest 声明了 `windows.startupTask`，但
-   Rust 侧仍在写注册表 Run 键（决策 3 的实现还没做）。本轮要收集的正是这个：
-   「设置 → 应用 → 启动」里有没有出现这个条目、应用内开关按下去实际发生了什么。
-   这些观察结果决定 P1 剩下那部分怎么写。
+**怎么确认 `--no-default-features` 真的生效了**（这是本轮最该自动化的一条检查，
+比读代码和搜前端产物都直接）：
 
-最后跑一遍 WACK（Windows App Certification Kit），它能提前发现大部分会导致商店
-认证失败的 manifest 问题。
+```powershell
+Get-ChildItem src-tauri\target\release\.fingerprint\ -Filter "*updater*"
+Get-ChildItem src-tauri\target\release\.fingerprint\ -Filter "*tauri-plugin-process*"
+```
+
+两条都应该**没有任何输出**，同时 `.fingerprint\` 下有 20 多个其它
+`tauri-plugin-*` 目录作为对照——空结果才有意义。少写一个 `--` 的那种包
+在这里会立刻显形。
+
+⚠️ `.fingerprint\` 有个坑：**它不会因为依赖被移除而清理**。把某个插件改成
+可选之后，旧构建留下的目录还在，照着它看会得出"没编译掉"的错误结论。要判断
+当前配置到底带没带，用依赖图，别看残留：
+
+```powershell
+cargo tree --manifest-path src-tauri\Cargo.toml --no-default-features | Select-String "tauri-plugin-(autostart|updater|process)"
+```
+
+商店渠道下这条应该**一条都匹配不到**，默认渠道下三条齐全。
+
+#### ⚠️ 两种 feature 配置的 clippy/test 不能裸跑
+
+`cargo clippy --no-default-features` 直接跑会在 build script 阶段失败：
+
+```
+failed to resolve ACL: UnknownManifest { key: "updater", ... }
+```
+
+原因是裸 cargo 用的是 `tauri.conf.json`，而那里的 capability 白名单内联了
+`updater-capability`（决策 2），插件却被 `--no-default-features` 编译掉了。
+`tauri build --config` 会替换掉整个数组，裸 cargo 不会。
+
+**这不是本轮改出来的**——在这个分支上一直如此，只是之前的验证跑在 macOS 上，
+而 macOS 上另有一处 Windows-only 代码不参与编译，掩盖了它。正确的跑法是把商店
+渠道的 capability 从环境变量喂进去：
+
+```powershell
+$env:TAURI_CONFIG = '{"app":{"security":{"capabilities":["default","desktop-capability"]}}}'
+cargo clippy --manifest-path src-tauri\Cargo.toml --all-targets --no-default-features -- -D warnings
+cargo test  --manifest-path src-tauri\Cargo.toml --no-default-features
+Remove-Item Env:\TAURI_CONFIG
+```
+
+默认渠道那一轮不需要这个变量。另外 **clippy 必须在 Windows 上也跑一遍**：
+`open_microsoft_store_listing` 里的 `needless_return` 只在 Windows 编译时才存在，
+macOS 上那段被 `#[cfg]` 掉了，本轮就是在 Windows 上才发现的。
+
+### P2 验收结果（2026-08-13，Windows 11 26100 / winapp CLI 0.5.0）
+
+自签包已装机（`finiaRStudio.OffWorkCountdown_3.1.3.0_x64.msix`，4.9 MB），
+`PackageFullName` 的后缀 `vzcbgpq3qw6zw` 与 §3 记录的 Package Family Name 对得上
+——这是三元组没写错的第一个可验证信号。
+
+**WACK：PASS**（`appcert.exe test`，无 FAIL 项）。
+
+三项重点的结论：
+
+1. **启动时零网络请求，已实测。** launch 后连续 45 秒轮询该进程的 TCP/UDP 套接字，
+   `Distinct sockets observed: 0`；先 `Clear-DnsClientCache` 再看
+   `Get-DnsClientCache`，`github`/`gh-proxy` 一条解析都没有。
+   不只是"没有更新请求"，是**整个进程一个连接都没建**。
+2. **「检查更新」跳商店、页面打不开，符合预期。** 商店进程被拉起并跳转，页面显示
+   「你搜索的内容不在此处」。深链机制本身是通的，空页面只是因为产品还没上架。
+   **不是 bug，P3 之后自然生效。**
+3. **自启动：旧行为已确认是个假开关，决策 3 已落地并验证。** 见下。
+
+#### 自启动：MSIX 里注册表那条路坏在哪
+
+改造前的实测（值得留档，因为它比"不受支持"具体得多）：应用内开关按下去 **UI 变成
+"开"，重启之后还是"开"**，但
+
+- 真实的 `HKCU\...\Run` 里**从头到尾没有出现过**这个应用的条目；
+- MSIX 的 StartupTask 状态一直是 `State=0`（禁用）。
+
+也就是说 `tauri-plugin-autostart` 的写入被 MSIX 的**注册表虚拟化**吃进了包容器，
+而它读回来的又是同一份虚拟视图——**自洽，但 Windows 完全看不见**。这比"不生效"
+更难查：应用内的每一个可观察信号都告诉你它开着。
+
+改造后（决策 3，走 `windows.startupTask`）逐步验证：
+
+| 动作 | 观察 |
+|---|---|
+| 装好后首次读 | 开关 = 关，与 `State=0` 一致（旧实现这里会错报"开"） |
+| 应用内打开 | `State` 0 → 2，`UserEnabledStartupOnce` 0 → 1 |
+| 看「设置 → 应用 → 启动」 | **条目出现了**，开关为"开" |
+| 在系统设置里关掉 | `State` → 1（DisabledByUser） |
+| 重启应用再读 | 开关 = 关且**置灰**，并显示「由 Windows 接管。可在「设置 → 应用 → 启动」中更改。」 |
+| 全程 | 真实 `Run` 键始终没被写过 |
+
+⚠️ **别用直接改注册表 `State` 的办法模拟"用户关掉了"**——试过，改成 1 之后
+`StartupTask.State()` 仍然报 Enabled。那个 DWORD 不是 WinRT 的真实来源（或至少
+不是唯一来源）。要模拟只能真的去系统设置里点那个开关。
+
+#### §5 那张表的实测结果
+
+| 功能 | 结果 |
+|---|---|
+| Windows Mini Timer | ✅ **容器内完全正常**——透明圆角、木鱼计数、与主窗读数同步；位置也记住了（重启后回到同一坐标）。这是原先最不确定的一项 |
+| single-instance | ✅ 连开两次，始终只有一个进程、同一个 PID |
+| 托盘图标 | ✅ 已注册，且 `NotifyIconSettings` 里记的是**包标识路径**，`InitialTooltip` 正确 |
+| 主窗渲染 | ✅ WebView2 在容器里正常，无白屏 |
+| 配置读写 | ✅ 能读能写——但**位置与决策 6 的假设不符**，见下 |
+| 通知实际弹出 | ⬜ 未验证（要等到真的触发里程碑，本轮没测） |
+| 全局快捷键实际触发 | ⬜ 未验证（设置项在，没做按键实测） |
+| 托盘菜单的本地化文案 | ⬜ 未验证 |
+| 日志写入 | ➖ 不适用：`tauri_plugin_log` 只在 `debug_assertions` 下注册，release 包根本不写日志文件。§5 原来那一行描述的事情在正式包里不存在 |
+
+#### ⚠️ 决策 6 的前提是错的：配置**是互通的**
+
+决策 6 假设"MSIX 会把 `tauri-plugin-store` 的写入重定向到包容器"。**实测不是这样**：
+
+- 商店版写的是**真实的** `%APPDATA%\com.rainif.offworkcountdown\desktop-state.json`
+  （在应用内改一个设置，这个文件的 mtime 立刻跟着变，而当时只有 MSIX 那个进程在跑）；
+- 包容器 `%LOCALAPPDATA%\Packages\<PFN>\` 下的 `LocalState`、`LocalCache`、
+  `RoamingState` **全是空的**。
+
+被虚拟化的只有**注册表**（`SystemAppData\Helium\User.dat`），文件写入没有。
+这台机器上 NSIS 版也装着，两边读写的是同一份 `desktop-state.json`。
+
+后果要顺着改：
+
+- 决策 6「不做迁移」的**结论仍然成立**，但理由变了——不是"代价用文档承担"，
+  而是**根本不需要迁移**；
+- §7 验收标准第 7 条、以及 P5 要在下载页写的「配置与 GitHub 版不互通」
+  **是错的，不能这么写**；
+- 决策 7 那张表里「配置位置：包容器，与左侧不互通」同样要改；
+- 真正需要提醒的反而是另一面：**两个渠道同时装着会共用一份配置**，同时开两个
+  实例互相覆盖设置是可能的（single-instance 只在同一个包标识内生效）。
+
+这条只在 Windows 真机上暴露，macOS 上的开发验证碰不到，正是 §5 开头那句告诫的例子。
 
 ## 0. 核心判断：走 MSIX，不走 EXE/MSI
 
@@ -268,6 +406,30 @@ Permission updater:default not found, expected one of autostart:default, …
 实现上，Rust 侧用 `windows` crate 的 `StartupTask` API 读写，与 `tauri-plugin-autostart`
 一样按 feature 二选一。
 
+**已实现（2026-08-13）**，形状如下：
+
+| | GitHub 渠道 | 商店渠道 |
+|---|---|---|
+| Cargo feature | `run-key-autostart`（在 `default` 里） | `--no-default-features` 关掉 |
+| 实现 | `tauri-plugin-autostart` 的 **Rust** API | `windows::ApplicationModel::StartupTask` |
+| `locked` | 恒为 `false` | 由 `StartupTaskState` 决定 |
+
+三个当时不明显、但只能这么做的点：
+
+1. **`run-key-autostart` 必须跟 `self-update` 一起放进 `default`，而不是单独一个
+   `--features`。** 商店构建因此仍然只需要一个 `--no-default-features` 就切换全部
+   渠道差异；多一个参数就多一次漏掉的机会，而漏掉的后果是一个"能装能跑、只有
+   自启动悄悄失效"的包——正是这一轮实测到的那种。
+2. **`autostart:default` 从 `capabilities/default.json` 里删掉了。** 插件被编译掉
+   之后这条权限解析不了，会在 build script 阶段炸，与决策 2 的 updater capability
+   是同一个坑。删得掉是因为前端不再直接调 JS 插件：两条渠道都走同一个 Rust 命令
+   （`get_autostart_state` / `set_autostart_enabled`），差异全在 Rust 侧的 `#[cfg]`。
+   顺带 `@tauri-apps/plugin-autostart` 这个 npm 依赖也不再需要。
+3. **写命令返回的是写完之后的真实状态，不是入参的回声。** 被用户在系统设置里锁掉时
+   `RequestEnableAsync` 不报错、只是不生效，把它当成"开成功了"就会又造出一个假开关。
+   前端照返回值回填，并在 `locked` 时置灰开关加一句说明（`launchAtLoginManagedBySystem`，
+   19 份语言文件已补齐）。
+
 ### 决策 4：打包用 winapp CLI，makeappx 作为退路
 
 Tauri 不产 MSIX，`bundle.targets` 里没有这个选项，短期也不会有。选微软官方的
@@ -313,20 +475,25 @@ MSIX 的 `Package/Identity/Version` 必须是四段，且**第四段保留给商
 （版本号本来就单调递增），但意味着**一次提交被拒后不能改完用同一版本号重提**——必须
 升版本。这一点要写进 [AGENTS.md](../AGENTS.md) 的发版规则，否则第一次被拒时必然踩到。
 
-### 决策 6：设置数据不互通，且不做迁移
+### 决策 6：不做迁移（前提已被实测推翻，结论不变）
 
-MSIX 会把 `tauri-plugin-store` 的写入重定向到包容器
-（`%LOCALAPPDATA%\Packages\<PFN>\...`）。**从 GitHub 版换到商店版的用户会看到一份
-空配置。**
+> ⚠️ **本节的原始前提是错的。** 原文假设"MSIX 会把 `tauri-plugin-store` 的写入
+> 重定向到包容器（`%LOCALAPPDATA%\Packages\<PFN>\...`），换渠道的用户会看到一份
+> 空配置"。2026-08-13 的真机实测表明**文件写入根本没有被重定向**：商店版写的是
+> 真实的 `%APPDATA%\com.rainif.offworkcountdown\desktop-state.json`，包容器下的
+> `LocalState` / `LocalCache` / `RoamingState` 全空。被虚拟化的只有注册表。
+> 详见「P2 验收结果」。
 
-技术上可以在首次启动时读旧路径做一次性导入（MSIX 的重定向是写时复制，旧文件仍可读），
-但这条路要处理"两个版本同时装着、各自在改配置"的情况，复杂度不匹配收益——商店版是
-新增入口，主要面向新用户，而不是让老用户搬家。
+因此：
 
-**决定：不做迁移。** 代价用文档承担：下载页需要明确写出两个渠道的配置不互通。这与
-M5 §6 "文档是交付物的一部分"的处理方式一致。
+- **不做迁移**的结论**仍然成立**，但理由从"代价用文档承担"变成**根本不需要迁移**
+  ——两个渠道读写同一份配置，换过去本来就是原样。
+- 下载页**不能**写"配置不互通"，那是错的。真正值得提醒的是反面：两个渠道同时装着
+  会**共用一份配置**，而 single-instance 只在同一个包标识内生效，所以两个实例可以
+  同时开着、互相覆盖设置。这一条要不要写进下载页，属于 P5 的文案取舍。
 
-若将来商店渠道的量级证明值得，再补迁移不会推翻任何现有结构。
+原始前提之所以看起来可信，是因为 MSIX 的注册表虚拟化确实存在——决策 3 那个假开关
+正是它造成的。文件和注册表在这里的行为不一样，不能从一个推另一个。
 
 ### 决策 7：三条 Windows 产线长期并存，各自独立
 
@@ -339,7 +506,7 @@ NSIS、MSI、MSIX 从同一个 tag、同一份源码产出，**互不替代**。
 | 更新 | 应用内更新器 + 镜像回退 | 同左 | 商店（应用内入口深链过去） |
 | 首装摩擦 | SmartScreen 警告 | SmartScreen 警告 | 无 |
 | 自启动 | 注册表 Run 键 | 同左 | `windows.startupTask`，系统可接管 |
-| 配置位置 | `%APPDATA%` | 同左 | 包容器，与左侧不互通 |
+| 配置位置 | `%APPDATA%` | 同左 | **同左**——文件写入未被容器重定向，三者共用一份 |
 | 上线时机 | 推 tag 即发布 | 同左 | 推 tag 后经认证，滞后数小时到数天 |
 
 **MSIX 不放进 GitHub Release。** 商店外分发的 MSIX 需要自购证书签名，否则用户装不上
@@ -479,18 +646,23 @@ Tauri 官方文档在 EXE/MSI 那条路上建议改用 `webviewInstallMode: offl
 MSIX 的容器模型会影响一批平台相关行为，这些都**不能靠 macOS 上的开发验证代替**
 （[AGENTS.md](../AGENTS.md) 已有类似告诫）：
 
-| 功能 | 预期 | 备注 |
+| 功能 | 预期 | 实测（2026-08-13） |
 |---|---|---|
-| 通知 | ✅ 更好 | 有真正的包标识，不再依赖 AUMID 变通 |
-| 托盘图标与本地化菜单 | ✅ 正常 | |
-| 全局快捷键 | ✅ 正常 | |
-| single-instance | ✅ 正常 | |
-| Windows Mini Timer | ⚠️ 待验证 | 程序化建窗 + 记忆位置，容器内需实测 |
-| 自启动 | ⚠️ 行为变化 | 见决策 3 |
-| 日志写入 | ✅ 正常 | 路径被重定向，不影响功能 |
+| 通知 | ✅ 更好 | ⬜ 未验证——托盘图标已带包标识，但没等到真的弹一条 |
+| 托盘图标 | ✅ 正常 | ✅ 已注册，`NotifyIconSettings` 里是包标识路径 |
+| 托盘菜单的本地化文案 | ✅ 正常 | ⬜ 未验证 |
+| 全局快捷键 | ✅ 正常 | ⬜ 未验证——设置项在，没做按键实测 |
+| single-instance | ✅ 正常 | ✅ 连开两次只有一个进程 |
+| Windows Mini Timer | ⚠️ 待验证 | ✅ **正常**，含记忆位置 |
+| 自启动 | ⚠️ 行为变化 | ✅ 已改 `windows.startupTask` 并验证，见决策 3 |
+| 配置读写 | — | ✅ 能读写，但**没有**被重定向到容器，见决策 6 |
+| 日志写入 | ✅ 正常 | ➖ 不适用：release 包不注册 log 插件，压根不写日志 |
+
+细节见上面的「P2 验收结果」。剩下三项未验证的都属于"要真的触发一次才算数"，
+不阻塞 P3，但补测之前别在验收标准里勾掉。
 
 WACK（Windows App Certification Kit）在本地先跑一遍，能提前发现大部分会导致认证
-失败的 manifest 问题。
+失败的 manifest 问题——本轮已跑，**PASS**。
 
 ### 应用显示名的多语言
 
@@ -504,8 +676,8 @@ NSIS 安装向导的 14 种语言（[PLAN-3.1.0.md §1.1](PLAN-3.1.0.md)）在 M
 | 阶段 | 交付物 | 完成判据 |
 |---|---|---|
 | **P0** | Partner Center 账号、占名、标识三元组、隐私政策页 | ✅ 三元组已记录（§3）；`/en/privacy` 与 `/zh-CN/privacy` 已就绪 |
-| **P1** | `msstore` 渠道 | ✅ 构建产物中不含更新器代码与权限；文案已按渠道分支<br>⬜ 自启动改 `windows.startupTask`（等 P2 的观察结果）<br>⬜「检查更新」能真正打开商店页（等 P3 上架） |
-| **P2** | manifest + 本地打包 | ✅ manifest 与打包脚本就位<br>⬜ 自签包在 Windows 真机装上，§5 表格逐项验收通过；WACK 全绿 |
+| **P1** | `msstore` 渠道 | ✅ 构建产物中不含更新器代码与权限；文案已按渠道分支<br>✅ 自启动已改 `windows.startupTask` 并在真机走通全流程<br>⬜「检查更新」能真正打开商店页（等 P3 上架） |
+| **P2** | manifest + 本地打包 | ✅ manifest 与打包脚本就位<br>✅ 自签包已装机，WACK PASS；§5 表格除通知/快捷键/托盘菜单文案三项外均已验收 |
 | **P3** | 首次上架 | 商店页面可搜到，可安装 |
 | **P4** | 自动提交 | 推一个 `desktop-v*` tag，商店后台出现新的待认证提交 |
 | **P5** | 文档 | 下载页给出两个渠道及其差异；README 中英双语同步 |
@@ -516,15 +688,24 @@ P1 有两条判据卡在后面的阶段上，这是刻意的：自启动要先�
 
 ## 7. 验收标准
 
-1. 商店安装的版本**不含任何自行下载安装的代码路径**，「检查更新」跳转到商店详情页，
+1. ✅ 商店安装的版本**不含任何自行下载安装的代码路径**，「检查更新」跳转到商店详情页，
    且 About 页不再声称启动时检查版本
-2. 商店版开机自启可用，且用户在系统"启动"设置里关掉后应用内开关能反映真实状态
-3. 商店版与 GitHub 版可同时安装，互不干扰
-4. x64 与 ARM64 各自从商店安装后功能一致
-5. `npm run check:version` 覆盖 manifest 版本
-6. 推一个 `desktop-v*` tag，**三种 Windows 产物全部产出**：GitHub Release 里仍有
+   —— 已验证：`cargo tree --no-default-features` 里没有 updater/process；启动 45 秒
+   零套接字零 DNS。唯一残留是前端产物里还有一处 `invoke("install_update_via_mirror")`
+   的调用点（`lib/desktop-state.ts` 的 `installDesktopUpdateViaMirror`，商店渠道下
+   不可达），Rust 侧那个命令在商店构建里只剩一个返回 Err 的空壳。真正下载安装的
+   代码两侧都没有了
+2. ✅ 商店版开机自启可用，且用户在系统"启动"设置里关掉后应用内开关能反映真实状态
+   —— 已验证，见决策 3 那张分步表
+3. ✅ 商店版与 GitHub 版可同时安装，互不干扰
+   —— 两个渠道的托盘条目同时存在；但**配置是共用的**（决策 6），"互不干扰"仅指
+   安装与进程，不含设置
+4. ⬜ x64 与 ARM64 各自从商店安装后功能一致（本轮只打了 x64）
+5. ✅ `npm run check:version` 覆盖 manifest 版本
+6. ⬜ 推一个 `desktop-v*` tag，**三种 Windows 产物全部产出**：GitHub Release 里仍有
    NSIS 与 MSI，商店后台出现新的待认证提交；两条工作流任一失败不影响另一条
-7. 下载页明确写出：商店版更新滞后、配置与 GitHub 版不互通
+7. ⬜ 下载页明确写出：商店版更新滞后；**两个渠道共用同一份配置**（原文写的
+   "配置不互通"是错的，见决策 6）
 
 ## 8. 未决问题
 
