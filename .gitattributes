@@ -1,0 +1,9 @@
+# Windows 上 core.autocrlf=true 会把 .mjs 检出成 CRLF，而 scripts/ 下有几个
+# 带 `#!/usr/bin/env node` 的脚本。vitest 剥 shebang 时不处理行尾那个 \r，
+# 留下的残字符让 V8 报 "SyntaxError: Invalid or unexpected token"——报错位置
+# 还指在 *引用它的测试文件* 的 import 那一行，跟真正的原因隔着一层。
+#
+# CI 跑在 ubuntu 上，所以这个问题只在 Windows 检出时出现，绿色的 CI 不能说明
+# 本地也是好的。锁掉 .mjs 的行尾比逐个删 shebang 更根治：它对后来新增的
+# 带 shebang 的脚本同样生效。
+*.mjs text eol=lf
