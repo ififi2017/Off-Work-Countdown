@@ -256,17 +256,17 @@
   },
   "privacy": {
     "metaTitle": "Privacy Policy - Off Work Countdown",
-    "metaDescription": "What Off Work Countdown stores on your device, the little it measures, and who else is involved. No accounts, no advertising, no salary data leaving your device.",
+    "metaDescription": "How Off Work Countdown stores data locally and how the website handles analytics, cookies, sharing and third-party services.",
     "heading": "Privacy Policy",
-    "intro": "Off Work Countdown is built so the numbers you care about — your hours and what you have earned — never leave your device. This page sets out exactly what that means, and what the small amount of remaining data is for.",
+    "intro": "This Privacy Policy explains how Off Work Countdown stores and processes information, including the differences between the website and the desktop client.",
     "updatedLabel": "Last updated",
-    "updated": "13 August 2026",
+    "updated": "14 August 2026",
     "sections": [
       {
-        "heading": "What stays on your device",
+        "heading": "Data stored on your device",
         "body": [
-          "Everything you enter is stored locally: in your browser's local storage on the web, and in the application's own data folder in the desktop client. It is not uploaded, and there is no account system to attach it to even if we wanted one.",
-          "The countdown, the progress bar and the earnings estimate are all calculated on your device from these values."
+          "Information you enter or configure is stored locally: in your browser's local storage on the website, and in the application's data folder in the desktop client. This information is not uploaded to our servers or associated with a user account, because the product does not provide account functionality.",
+          "The countdown, progress and earnings estimate are calculated on your device from this information."
         ],
         "bullets": [
           "Start and end times, workdays, lunch break and overtime",
@@ -276,68 +276,72 @@
         ]
       },
       {
-        "heading": "What the website measures",
+        "heading": "Website analytics",
         "body": [
-          "The site measures two things. The first is page views and loading performance, through Vercel's cookieless analytics. The second is a small set of aggregate product counters that tell us which features get used at all.",
-          "A product event is one word from a fixed, public list — for example share_open or countdown_start — recorded as a per-day tally. Nothing is attached to it: no identifier, no session, no schedule, no salary. A number that counts how many people opened the share panel today cannot be traced back to any of them.",
-          "The full list of events lives in the open-source repository, so this is something you can verify rather than take on trust. As with any website, our hosting and analytics providers receive ordinary connection metadata such as an IP address and browser identification in order to serve the page; we do not store it or build profiles from it."
+          "The website uses Vercel's cookieless analytics to measure page views and loading performance. It also uses a limited set of aggregate counters to understand overall feature usage.",
+          "Product events come from a fixed, public list, such as share_open or countdown_start, and are aggregated by day. They do not contain user identifiers, session information, schedules or salary data and cannot be used to identify or track an individual user.",
+          "The complete event list is available in the open-source repository. To provide hosting and analytics services, the relevant providers may process standard connection information, such as IP addresses and browser identifiers, under their respective privacy policies. This project does not separately store that information or use it to create user profiles."
         ]
       },
       {
         "heading": "Cookies",
         "body": [
-          "The site sets one cookie: i18nextLng. It holds a language code so the next page you open is already in the language you were reading. It is written on your first visit, from the language the page is being shown in, and updated whenever you switch languages. It lasts a year and you can delete it at any time along with the rest of the site data.",
-          "There are no advertising or cross-site tracking cookies. The measurement described above is cookieless."
+          "The website uses a cookie named i18nextLng to store a language code so that subsequent pages are shown in the selected language. The cookie is set on the first visit based on the language currently displayed and is updated when you change languages. It expires after one year and can be removed through your browser at any time.",
+          "The website does not use advertising or cross-site tracking cookies. The analytics described above do not rely on cookies."
         ]
       },
       {
         "heading": "Sharing a countdown",
         "body": [
-          "A share link carries only the start and end time, encoded in the URL. Salary is never included — not hidden, not encoded, simply not there. Whoever opens your link sees a schedule and nothing about your pay.",
-          "When you pick a social service to share through, you leave this site and that service's own privacy policy takes over."
+          "The URL of a share link contains only the start and end times. It does not contain salary information. A person who opens the link can view only the shift times.",
+          "If you choose to share through a third-party social service, the relevant information is processed under that service's privacy policy."
         ]
       },
       {
         "heading": "The desktop client",
         "body": [
-          "The desktop client contains no usage analytics. The measurement code is not merely switched off — it is removed at build time, so it is not present in the application you install.",
-          "The version downloaded from GitHub checks on launch whether a newer release exists. That request carries no account, salary or usage data, and the installer is downloaded only after you decide to update. If GitHub cannot be reached directly, you can retry through a third-party mirror; either way the downloaded update is signature-checked before it is installed.",
-          "The version installed from the Microsoft Store makes no update requests at all. Updates are delivered by the Store, and the in-app update entry simply opens the Store listing.",
-          "Reminders are scheduled and displayed by your operating system on your machine. The client also reaches the network when you open an external link or choose a social service to share through."
+          "The desktop client does not collect usage analytics. The relevant analytics code is removed from the application at build time.",
+          "The version downloaded from GitHub checks for a newer release when it starts. The request contains no account, salary or usage data, and an installer is downloaded only after you confirm an update. If GitHub cannot be reached directly, you may choose to retry through a third-party mirror. Updates downloaded through either channel are signature-checked before installation.",
+          "The version installed from the Microsoft Store does not initiate update checks. Updates are provided by the Microsoft Store, and the in-app update entry only opens the Store listing.",
+          "Reminders are scheduled and displayed locally by the operating system. The desktop client also accesses the network when you open an external link or choose to share through a third-party social service."
         ]
       },
       {
-        "heading": "Who else is involved",
+        "heading": "Third-party services",
         "body": [
-          "Running a website means other companies handle parts of it. These are all of them:"
+          "The product uses the following third-party services to provide website hosting, analytics, downloads, updates and sharing features:"
         ],
         "bullets": [
           "Vercel — hosting, page-view and performance measurement",
-          "Upstash — stores the aggregate product counters",
+          "Upstash — storage of aggregate product event counts",
           "GitHub — release information and installer downloads",
           "Microsoft — distribution and updates for the Microsoft Store version",
-          "A third-party download mirror, only when you choose to retry through it",
-          "The social service you pick when you share a countdown"
+          "A third-party download mirror, used only when you choose to download through it",
+          "The third-party social service you choose when sharing a countdown"
         ]
       },
       {
-        "heading": "Removing your data",
+        "heading": "Deleting local data",
         "body": [
-          "On the web, clearing this site's data in your browser removes everything, including the language cookie. In the desktop client, uninstalling the application and then deleting its data folder does the same.",
-          "Because none of it reaches us in the first place, there is nothing to request from us and nothing for us to delete on your behalf."
+          "Website users can remove locally stored information and the language cookie by clearing this site's data in their browser. Desktop users can uninstall the application and delete its data folder.",
+          "Because this local data is not transmitted to our servers, we cannot access or delete it on the server on your behalf."
         ]
       },
       {
-        "heading": "Changes to this page",
+        "heading": "Changes to this policy",
         "body": [
-          "If this policy changes, the date at the top changes with it, and anything material is called out in the release notes. Past versions are visible in the repository's history."
+          "When this policy is updated, the last-updated date at the top of the page will also be revised. Material changes will be listed in the release notes, and previous versions are available in the open-source repository's commit history."
         ]
       }
     ],
-    "contactHeading": "Getting in touch",
+    "contactHeading": "Contact us",
     "contactBody": [
-      "Questions about privacy are welcome by email. Anything else — a bug, a suggestion, or a disagreement with how something works — is usually better as an issue on GitHub, where the answer is visible to everyone.",
-      "If something in this policy does not match what the code does, that is a bug worth reporting: the code is public and can be checked against every claim on this page."
-    ]
+      "If you have questions about this Privacy Policy or how information is handled, contact us at the email address below. Product issues and suggestions may also be submitted through GitHub Issues.",
+      "If you identify a difference between this policy and the product's actual behavior, please notify us by email or through GitHub."
+    ],
+    "contactEmailLabel": "Contact us by email",
+    "contactEmailDescription": "Questions about this policy or how information is handled",
+    "contactGithubLabel": "Send feedback on GitHub",
+    "contactGithubDescription": "Report product issues, suggestions or behavior differences"
   }
 }
