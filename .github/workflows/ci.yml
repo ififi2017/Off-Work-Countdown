@@ -40,6 +40,21 @@ jobs:
       - name: Check desktop build output
         run: npm run check:build:desktop
 
+      # 商店渠道以前完全没进 CI：它换了一套构建配置和一个 Cargo feature，坏了
+      # 要等打 tag 才知道。这一步只跑前端，几十秒，但能挡住渠道开关被改坏。
+      - name: Build store-channel desktop frontend
+        run: npm run build:desktop:msstore
+
+      # 商店包里存在自更新代码不是「多打包了点东西」，是不该出现的东西。
+      # 光看条件分支没用——分支是死代码但模块仍会被打进产物，所以直接搜产物。
+      - name: Assert the store bundle carries no updater
+        run: |
+          if grep -rl "plugin:updater\|downloadAndInstall" out/_next; then
+            echo "::error::store frontend bundle still contains updater code"
+            exit 1
+          fi
+          echo "OK: no updater code in the store frontend bundle."
+
   # Rust 编译过去完全没有进 CI，而 src-tauri 里有大量按平台分支的代码
   # （macOS 原生面板、Windows 迷你窗）。结果是任何只影响某一个平台的
   # 编译错误都要等到打 tag 触发发布构建才暴露，也就是发版当场才发现。
@@ -86,3 +101,16 @@ jobs:
       - name: Test
         working-directory: src-tauri
         run: cargo test
+
+      # 商店渠道关掉默认 feature，走的是另一套代码路径（startupTask 取代注册表
+      # Run 键，整条自更新链路编译掉）。上面那轮默认 feature 的检查完全碰不到它。
+      #
+      # ⚠️ 必须喂 TAURI_CONFIG：裸 cargo 读的是 tauri.conf.json，那里的 capability
+      # 白名单内联了 updater-capability，而插件已被 --no-default-features 编译掉，
+      # build script 会在解析 ACL 时失败。tauri build --config 会替换掉整个数组，
+      # 裸 cargo 不会。
+      - name: Check the store channel
+        working-directory: src-tauri
+        env:
+          TAURI_CONFIG: '{"app":{"security":{"capabilities":["default","desktop-capability"]}}}'
+        run: cargo clippy --all-targets --no-default-features -- -D warnings
