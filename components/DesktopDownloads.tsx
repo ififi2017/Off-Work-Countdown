@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import {
   Apple,
+  ArrowUpRight,
   Download,
   Github,
   LoaderCircle,
   MonitorDown,
+  Store,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -23,6 +25,7 @@ type Copy = ContentBundle["download"];
 interface DesktopDownloadsProps {
   copy: Copy;
   releasesUrl: string;
+  storeUrl: string;
 }
 
 type ReleaseState =
@@ -47,6 +50,8 @@ function DownloadButton({
   event,
   badgeLabel,
   placeholder = false,
+  variant = "default",
+  className,
 }: {
   asset: DownloadAsset | null | undefined;
   href?: string;
@@ -59,6 +64,8 @@ function DownloadButton({
   event: TrackedEvent;
   badgeLabel?: string;
   placeholder?: boolean;
+  variant?: "default" | "outline";
+  className?: string;
 }) {
   if (!asset) {
     return (
@@ -95,8 +102,9 @@ function DownloadButton({
       href={href ?? asset.url}
       onClick={() => track(event)}
       className={cn(
-        buttonVariants(),
-        "h-auto min-h-12 w-full justify-between gap-3 px-4 py-3"
+        buttonVariants({ variant }),
+        "h-auto min-h-12 w-full justify-between gap-3 px-4 py-3",
+        className
       )}
     >
       <span className="inline-flex items-center gap-2">
@@ -115,7 +123,11 @@ function DownloadButton({
   );
 }
 
-export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
+export function DesktopDownloads({
+  copy,
+  releasesUrl,
+  storeUrl,
+}: DesktopDownloadsProps) {
   const [state, setState] = useState<ReleaseState>({ status: "loading" });
   // 默认直连，和客户端更新器「直连优先、失败才回落镜像」的取向一致。
   // 浏览器这边探测不到「下载很慢」，所以由用户自己决定。
@@ -209,29 +221,57 @@ export function DesktopDownloads({ copy, releasesUrl }: DesktopDownloadsProps) {
             </div>
           </div>
           <div className="space-y-2.5">
-            <DownloadButton
-              asset={downloads?.windowsX64}
-              href={hrefFor(downloads?.windowsX64)}
-              label={copy.windowsX64Label}
-              downloadLabel={copy.downloadLabel}
-              comingSoonLabel={copy.comingSoonLabel}
-              unavailableLabel={copy.unavailableLabel}
-              loading={loading}
-              loadingLabel={copy.loadingLabel}
-              event="desktop_download_windows_intel"
-              badgeLabel={copy.recommendedLabel}
-            />
-            <DownloadButton
-              asset={downloads?.windowsArm64}
-              href={hrefFor(downloads?.windowsArm64)}
-              label={copy.windowsArmLabel}
-              downloadLabel={copy.downloadLabel}
-              comingSoonLabel={copy.comingSoonLabel}
-              unavailableLabel={copy.unavailableLabel}
-              loading={loading}
-              loadingLabel={copy.loadingLabel}
-              event="desktop_download_windows_arm"
-            />
+            {/* 商店排在直链之上：三条 Windows 产线里只有它自动更新，装的时候
+                也不会撞上 SmartScreen。放在 Windows 卡片内部而不是整页最前——
+                它本来就是 Windows 的事，单独占一行会让 Mac 用户以为走错了页。 */}
+            <a
+              href={storeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track("desktop_download_msstore")}
+              className={cn(
+                buttonVariants(),
+                "h-auto min-h-12 w-full justify-between gap-3 bg-blue-600 px-4 py-3 text-white hover:bg-blue-700"
+              )}
+            >
+              <span className="inline-flex items-center gap-2">
+                <Store className="h-4 w-4" aria-hidden="true" />
+                {copy.storeCtaLabel}
+              </span>
+              <ArrowUpRight className="h-4 w-4 opacity-70" aria-hidden="true" />
+            </a>
+            {/* 两个直链并排，标签用短名（"x64"／"ARM64"）：半列宽度放不下
+                「下载 Windows x64 推荐 5.0 MB」那一整串。 */}
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              <DownloadButton
+                asset={downloads?.windowsX64}
+                href={hrefFor(downloads?.windowsX64)}
+                label={copy.windowsX64ShortLabel}
+                downloadLabel={copy.downloadLabel}
+                comingSoonLabel={copy.comingSoonLabel}
+                unavailableLabel={copy.unavailableLabel}
+                loading={loading}
+                loadingLabel={copy.loadingLabel}
+                event="desktop_download_windows_intel"
+                variant="outline"
+                // 两条直链里 x64 适用绝大多数机器。用一圈很淡的蓝色光晕带出这个
+                // 优先级，而不是再挂一个「推荐」徽章——商店那条已经是卡片里唯一
+                // 的实心按钮，再加一个文字标记会让三个元素互相争夺注意力。
+                className="border-blue-300 shadow-[0_0_0_3px_rgba(37,99,235,0.09)] hover:border-blue-400 dark:border-blue-800 dark:shadow-[0_0_0_3px_rgba(96,165,250,0.14)] dark:hover:border-blue-700"
+              />
+              <DownloadButton
+                asset={downloads?.windowsArm64}
+                href={hrefFor(downloads?.windowsArm64)}
+                label={copy.windowsArmShortLabel}
+                downloadLabel={copy.downloadLabel}
+                comingSoonLabel={copy.comingSoonLabel}
+                unavailableLabel={copy.unavailableLabel}
+                loading={loading}
+                loadingLabel={copy.loadingLabel}
+                event="desktop_download_windows_arm"
+                variant="outline"
+              />
+            </div>
           </div>
         </section>
 

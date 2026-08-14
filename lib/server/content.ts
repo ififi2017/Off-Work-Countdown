@@ -101,6 +101,7 @@ export interface ContentBundle {
     comparison: DownloadComparisonRow[];
     downloadsHeading: string;
     downloadsIntro: string;
+    storeCtaLabel: string;
     demoHeading: string;
     demoIntro: string;
     demoAppHeading: string;
@@ -121,6 +122,8 @@ export interface ContentBundle {
     windowsDescription: string;
     windowsX64Label: string;
     windowsArmLabel: string;
+    windowsX64ShortLabel: string;
+    windowsArmShortLabel: string;
     recommendedLabel: string;
     macosTitle: string;
     macosDescription: string;
