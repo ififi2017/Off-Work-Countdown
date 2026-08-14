@@ -178,10 +178,20 @@ jobs:
           --clientId ${{ secrets.AZURE_AD_APPLICATION_CLIENT_ID }}
           --clientSecret ${{ secrets.AZURE_AD_APPLICATION_SECRET }}
 
+      # 先把凭据能看到的应用列出来。publish 失败时报的是「Could not retrieve your
+      # application. Please make sure you have the correct AppId.」——这句话把
+      # 「ID 写错」和「这套凭据根本看不到这个应用」混成了同一条提示，而后者
+      # （Entra 应用没在 Partner Center 里授予 Manager 角色、或 sellerId 不对）
+      # 才是更常见的原因。列一次就能分辨，失败也不该中断后面的诊断。
+      - name: List applications visible to these credentials
+        if: github.event_name == 'push' || inputs.submit
+        continue-on-error: true
+        run: msstore apps list
+
       # 提交 ≠ 上线：之后还要过微软认证，几小时到几天。这一步绿只代表提交成功。
       - name: Publish to the Microsoft Store
         if: github.event_name == 'push' || inputs.submit
         shell: pwsh
         run: |
           $pkg = Get-ChildItem -Filter *.msixbundle | Select-Object -First 1
-          msstore publish $pkg.FullName -id 9PM0HJ2PP2LJ
+          msstore publish $pkg.FullName -id 9PM0HJ2PP2LJ -v
