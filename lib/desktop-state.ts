@@ -403,7 +403,7 @@ export async function installDesktopUpdateViaMirror(): Promise<void> {
  * 打开本应用的微软商店详情页，供商店版的「检查更新」使用。
  *
  * 走 Rust 命令而不是 `openUrl`：`ms-windows-store:` 不是 http scheme，前端那条
- * 路要在 capability 白名单里逐条声明。见 docs/PLAN-M6-MSSTORE.md 决策 2。
+ * 路要在 capability 白名单里逐条声明。见 docs/PLAN-MSSTORE.md 决策 2。
  */
 export async function openMicrosoftStoreListing(): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
@@ -517,7 +517,7 @@ export type DesktopAutostartState = {
 
 /**
  * 两条渠道都走同一个 Rust 命令，实现差异在 Rust 侧按 feature 二选一
- * （见 docs/PLAN-M6-MSSTORE.md 决策 3）。前端不需要知道自己跑在哪条上。
+ * （见 docs/PLAN-MSSTORE.md 决策 3）。前端不需要知道自己跑在哪条上。
  */
 export async function getDesktopAutostartState(): Promise<DesktopAutostartState> {
   if (!IS_DESKTOP_BUILD) return { enabled: false, locked: false };

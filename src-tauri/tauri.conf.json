@@ -37,7 +37,7 @@
         "desktop-capability",
         {
           "identifier": "updater-capability",
-          "description": "Self-update. Inlined rather than kept in capabilities/ because tauri-build validates every file in that directory against the compiled plugins, so a file referencing updater:default breaks the Microsoft Store build (--no-default-features). tauri.msstore.conf.json overrides this list without this entry. process:default lives here because relaunch() is only used after installing an update. See docs/PLAN-M6-MSSTORE.md.",
+          "description": "Self-update. Inlined rather than kept in capabilities/ because tauri-build validates every file in that directory against the compiled plugins, so a file referencing updater:default breaks the Microsoft Store build (--no-default-features). tauri.msstore.conf.json overrides this list without this entry. process:default lives here because relaunch() is only used after installing an update. See docs/PLAN-MSSTORE.md.",
           "platforms": ["macOS", "windows", "linux"],
           "windows": ["main"],
           "permissions": ["updater:default", "process:default"]

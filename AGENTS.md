@@ -183,7 +183,11 @@ release build. UI changes require real visual inspection on the affected OS.
 - Preserve unrelated user changes in a dirty worktree.
 - Do not commit generated `.next`, `out`, `src-tauri/target`, service-worker
   output, installers or local environment files.
-- Keep `docs/PLAN-3.0.md` and `docs/PLAN-M5-TAURI.md` aligned with material
-  architecture or milestone changes. Remove stale TODOs when work is verified.
+- Keep `docs/PLAN-3.0.md`, `docs/PLAN-M5-TAURI.md` and `docs/PLAN-MSSTORE.md`
+  aligned with material architecture or milestone changes. Remove stale TODOs
+  when work is verified.
+- The `mirror-manifest` job downloads every release asset to compute its
+  SHA-256, so each new Release starts at one download per asset (two for
+  `latest.json`). Subtract that before reading the counts as demand.
 - Use focused commits and describe the user-visible reason for non-obvious
   platform work in the pull request.

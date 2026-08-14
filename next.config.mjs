@@ -15,7 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // 会按标准 `route.ts` 产物名查找 manifest，导致 ENOENT。
 const isDesktop = process.env.BUILD_TARGET === 'desktop';
 
-// 桌面端的分发渠道，与构建目标正交（见 docs/PLAN-M6-MSSTORE.md 决策 1）：
+// 桌面端的分发渠道，与构建目标正交（见 docs/PLAN-MSSTORE.md 决策 1）：
 //   github  —— NSIS / MSI / DMG，走 tauri-plugin-updater 自更新
 //   msstore —— MSIX，更新由微软商店负责，应用内入口深链过去
 // 只有 isDesktop 时才有意义；Web 构建恒为 github，读到它的分支都在桌面端里。

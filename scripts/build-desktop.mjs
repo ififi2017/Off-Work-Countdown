@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { rmSync } from "node:fs";
 import { resolve } from "node:path";
 
-// 分发渠道，见 docs/PLAN-M6-MSSTORE.md 决策 1。默认 github（NSIS / MSI / DMG）；
+// 分发渠道，见 docs/PLAN-MSSTORE.md 决策 1。默认 github（NSIS / MSI / DMG）；
 // `--channel=msstore` 产出的前端不含更新器，更新入口深链到微软商店。
 const channelArg = process.argv
   .slice(2)

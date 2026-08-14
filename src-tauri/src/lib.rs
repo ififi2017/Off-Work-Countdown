@@ -1672,7 +1672,7 @@ async fn install_update_via_mirror(app: AppHandle) -> Result<(), String> {
 
 /// 商店版的「检查更新」入口：打开自己的商店详情页，由商店负责更新。
 ///
-/// 见 docs/PLAN-M6-MSSTORE.md 决策 2。走 Rust 侧的 opener 而不是前端的
+/// 见 docs/PLAN-MSSTORE.md 决策 2。走 Rust 侧的 opener 而不是前端的
 /// `openUrl`，与 `open_notification_settings` 同样的理由：`ms-windows-store:`
 /// 不是 http scheme，前端那条路要在 capability 白名单里逐条声明。
 #[tauri::command]
@@ -1936,7 +1936,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init());
 
     // 商店版由微软商店负责更新，自更新链路整体编译掉（见
-    // docs/PLAN-M6-MSSTORE.md 决策 2）。process 插件只被更新后的 relaunch
+    // docs/PLAN-MSSTORE.md 决策 2）。process 插件只被更新后的 relaunch
     // 用到，一并跟着走。
     #[cfg(feature = "self-update")]
     {

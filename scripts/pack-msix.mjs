@@ -1,5 +1,5 @@
 // 把 tauri 产出的可执行文件暂存成 MSIX 打包所需的目录结构，然后调用 winapp CLI
-// 产出 .msixbundle。见 docs/PLAN-M6-MSSTORE.md 决策 4。
+// 产出 .msixbundle。见 docs/PLAN-MSSTORE.md 决策 4。
 //
 //   node scripts/pack-msix.mjs x64="<exe 路径>" arm64="<exe 路径>"
 //   node scripts/pack-msix.mjs x64="<exe 路径>" --stage-only   # 只暂存，不打包
