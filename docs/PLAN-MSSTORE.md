@@ -1,4 +1,7 @@
-# M6 · 微软商店上架计划（MSIX）
+# 微软商店上架计划（MSIX）
+
+> 曾编号为「M6」，与 [PLAN-3.0.md](PLAN-3.0.md) 里的 M6「分发与增长」撞名，
+> 已去掉编号。它是 3.0 计划第 27 项的实现方案。
 
 在现有 NSIS 与 MSI 之外新增一条并行的 MSIX 产线，把 Windows 客户端送进
 Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动向商店提交更新。

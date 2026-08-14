@@ -2,7 +2,7 @@ name: Microsoft Store Release
 
 # MSIX 产线，与 release-desktop.yml 并行但**完全独立**。
 #
-# 为什么不合并进 release-desktop.yml（见 docs/PLAN-M6-MSSTORE.md §4）：
+# 为什么不合并进 release-desktop.yml（见 docs/PLAN-MSSTORE.md §4）：
 #   - 商店提交失败不该让 GitHub Release 一起红，反之亦然
 #   - 商店这条链路依赖会过期的 Entra 凭据和外部审核，独立的工作流更好定位
 #   - 它不传 tagName，因此不碰任何 Release
@@ -133,7 +133,7 @@ jobs:
 
       # ⚠️ 计划里标为风险的一步：winapp CLI 的文档前提是 Windows 11 + winget，
       # 而 windows-latest 是 Server 镜像。这一步失败不代表方案不成立，退路是改用
-      # Windows SDK 自带的 makeappx.exe（见 docs/PLAN-M6-MSSTORE.md 决策 4）。
+      # Windows SDK 自带的 makeappx.exe（见 docs/PLAN-MSSTORE.md 决策 4）。
       - name: Install winapp CLI
         run: winget install microsoft.winappcli --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity
 

@@ -29,7 +29,7 @@ if (mismatches.length > 0) {
 
 // MSIX 的包版本必须四段，且第四段保留给商店、必须是 0。它不参与上面那轮比较：
 // 格式本来就不同，硬凑进去只会让错误信息更难读。
-// 见 docs/PLAN-M6-MSSTORE.md 决策 5。
+// 见 docs/PLAN-MSSTORE.md 决策 5。
 const appxManifest = readFileSync(
   "src-tauri/msstore/Package.appxmanifest",
   "utf8"

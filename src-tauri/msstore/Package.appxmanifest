@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  微软商店版的包清单。见 docs/PLAN-M6-MSSTORE.md。
+  微软商店版的包清单。见 docs/PLAN-MSSTORE.md。
 
   Identity 的三个值来自 Partner Center 的「应用标识」页，不是我们能自己起的名字：
   写错会在上传阶段才报错，且大小写、空格与标点都必须逐字一致。

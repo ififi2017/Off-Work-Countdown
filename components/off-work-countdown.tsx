@@ -145,7 +145,7 @@ const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
 /**
  * 微软商店渠道。更新由商店负责，应用内不做检查也不做下载——MSIX 的安装目录
  * 只读，装不上。更新入口保留，改为深链到商店详情页。
- * 见 docs/PLAN-M6-MSSTORE.md 决策 2。
+ * 见 docs/PLAN-MSSTORE.md 决策 2。
  */
 const IS_MSSTORE_BUILD =
   IS_DESKTOP_BUILD && process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "msstore";
@@ -385,7 +385,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   );
   const [launchAtLogin, setLaunchAtLogin] = useState(false);
   // 商店版专有：用户在系统「启动」设置里关掉之后，应用无权改回来。
-  // 见 docs/PLAN-M6-MSSTORE.md 决策 3。
+  // 见 docs/PLAN-MSSTORE.md 决策 3。
   const [launchAtLoginLocked, setLaunchAtLoginLocked] = useState(false);
   const [autostartLoaded, setAutostartLoaded] = useState(!IS_DESKTOP_BUILD);
   const [autostartPending, setAutostartPending] = useState(false);

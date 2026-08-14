@@ -14,7 +14,7 @@ rust-version = "1.77.2"
 name = "off_work_countdown_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
-# 自更新按渠道开关，见 docs/PLAN-M6-MSSTORE.md 决策 2。
+# 自更新按渠道开关，见 docs/PLAN-MSSTORE.md 决策 2。
 #
 # ⚠️ 方向不能反：默认**开启**，商店构建用 `--no-default-features` 关掉。
 # 反过来做（默认关、GitHub 构建显式开）会让本地 `npm run tauri:dev` 静默丢失
@@ -23,7 +23,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 default = ["self-update", "run-key-autostart"]
 self-update = ["dep:tauri-plugin-updater", "dep:tauri-plugin-process"]
 
-# 自启动实现按渠道二选一，见 docs/PLAN-M6-MSSTORE.md 决策 3。
+# 自启动实现按渠道二选一，见 docs/PLAN-MSSTORE.md 决策 3。
 #
 # 与 self-update 同进同出，是为了让商店构建只需要一个 `--no-default-features`
 # 就切换全部渠道差异；单独再加一个 `--features` 参数迟早会漏掉一个，而漏掉的

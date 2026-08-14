@@ -1,6 +1,9 @@
 # Off Work Countdown 3.0 升级计划
 
-> 状态：3.0 主体已发布，进入跨平台验收与分发阶段 · 起草于 2026-08-08 · 当前 Web / 客户端统一版本 `3.0.2`（[package.json](../package.json)）
+> 状态：M1–M5 已完成 · 起草于 2026-08-08 · 进度更新于 2026-08-14 · 当前 Web / 客户端统一版本 `3.1.4`（[package.json](../package.json)）
+>
+> M6 的分发一节已被现实超车：计划里只写了包管理器，实际先上了 Microsoft Store，
+> 并且做到了推 tag 自动提交。详见 [PLAN-MSSTORE.md](PLAN-MSSTORE.md)。
 
 ---
 
@@ -235,13 +238,19 @@ src-tauri/src/
     - 判断用班次的**开始时刻**而非「现在」：22:00–06:00 的夜班在凌晨两点时「今天」已是周六，但这一班属于周五
     - **未做**：不同日期用不同班次时间。这会把数据模型从单一 `{start,end}` 变成按日映射，波及分享 URL 的编码（`?s=` 只能携带一个班次）、预设页与汇总口径，值得作为独立一步来做
 
-### M5 · 桌面端 —— 4–6 周 · P1 —— 🔶 主体已发布（P0、P1 完成；P5 发布链完成；P2–P4 与安装说明待补实机验收；P6 待办）
+### M5 · 桌面端 —— 4–6 周 · P1 —— ✅ 已完成（2026-08-14）
 
 > **完整实施计划见 [PLAN-M5-TAURI.md](PLAN-M5-TAURI.md)**，含实测的静态导出阻碍清单、架构决策与平台差异。以下为概要。
 >
 > 依赖 M1 完成（静态导出必须能产出真实 HTML）—— 已完成。
 >
-> **进度（2026-08-09）**：P0、P1 已完成并实机验证；P2、P3 已完成实现并通过 macOS 打包/自动化验证，尚欠 Windows 观感、通知、自启、快捷键与社交外链实测；P4 的签名与发布链已完成，尚欠真实升级回环和离线密钥备份确认；P5 的四平台发布 CI 已由正式版 `3.0.2` 验证。P6 包管理器分发待办。
+> **进度（2026-08-14）**：Windows 真机验收已完成，托盘、迷你窗、single-instance、
+> 主窗渲染逐项通过；自动更新的完整升级回环已实际走通多次；窗口形态在两个平台都
+> 复核过，并顺带修掉了 `set_decorations` 把标题栏高度让给客户区、导致 Windows 版
+> 凭空多出约 30pt 留白的问题。
+>
+> 第 24 项包管理器仍未做，但它已不再是唯一的分发出路——Microsoft Store 这条线
+> 走通了，见 M6。
 >
 > 三处与本节原始描述的出入，以 M5 计划为准：
 > 1. 第 16 项的阻碍清单**不止 middleware**。M2–M4 期间新增了 `redirects()`、`/api/e`、`/api/e/stats`；且实测发现 middleware **根本不阻碍**静态导出，反倒是 `robots.txt` 与 `sitemap.ts` 会中断构建
@@ -250,27 +259,36 @@ src-tauri/src/
 
 16. **构建目标拆分** — ✅ 已完成。Web Route Handler 保持标准 `route.ts`，桌面 `pageExtensions` 排除普通 `.ts` 路由；`npm run build:desktop` 产出静态站点，同时避免 Vercel 对 `route.web.ts` 产物追踪失败
 17. **Tauri v2 骨架** — ✅ 已完成。单实例、托盘、关闭到托盘、Dock 图标唤回窗口，均已实机验证
-18. **菜单栏/托盘实时倒计时** — 🟡 实现完成、Windows 实机验收待办。macOS 菜单栏直接显示 `2:13:45`；Windows 改用置顶迷你窗。秒级刷新走 Rust 侧计时循环，与 webview 是否可见解耦
-19. **原生能力** — 🟡 实现完成、跨平台实机验收待办。Rust 后台在提前 15 分钟/下班时刻发送去重的原生通知；设置页可切换开机自启；平台化快捷键提示对应 macOS 的 `⌘ + Shift + O` 与 Windows/Linux 的 `Ctrl + Shift + O`。macOS 已验证系统中文首启、停止后 Store 清空、自启开关可往返；全局快捷键人工按键、社交平台外链点击与 Windows 实测待办
-20. **窗口形态** — 🟡 实现完成、Windows 实机验收待办。主窗口默认 430×430、宽高均仅允许在 420–450 内调整并禁止最大化；桌面标题单行、时间双栏、底部操作固定，分享页完整覆盖 WebView 且无需纵向滚动。macOS 26 使用原生 `NSPanel + NSGlassEffectView` 弹出 228×70 Liquid Glass 迷你计时器，旧版 macOS 回退到原生 Vibrancy；Windows 使用固定 208×64 的轻量 WebView 小部件。两者均有明确的未开始状态，Windows 迷你窗保留真实拖动能力（详见 M5 计划决策 7）
-21. **自动更新** — 🟡 签名链与线上 updater 产物已验证，更新源指向 GitHub Releases；待真实版本升级回环后转绿
+18. **菜单栏/托盘实时倒计时** — ✅ 已完成。Windows 真机验收通过（托盘图标注册正确、迷你窗在 MSIX 容器内也正常、位置可记忆）。macOS 菜单栏直接显示 `2:13:45`；Windows 改用置顶迷你窗。秒级刷新走 Rust 侧计时循环，与 webview 是否可见解耦
+19. **原生能力** — ✅ 已完成。自启动在 Windows 上重写为 MSIX 的 `windows.startupTask`（注册表 Run 键在容器里会被虚拟化吃掉，是个「开关显示开着、开机却不启动」的假开关，见 PLAN-MSSTORE.md 决策 3）。Rust 后台在提前 15 分钟/下班时刻发送去重的原生通知；设置页可切换开机自启；平台化快捷键提示对应 macOS 的 `⌘ + Shift + O` 与 Windows/Linux 的 `Ctrl + Shift + O`。macOS 已验证系统中文首启、停止后 Store 清空、自启开关可往返；全局快捷键人工按键、社交平台外链点击与 Windows 实测待办
+20. **窗口形态** — ✅ 已完成。两个平台均已复核；期间修掉了 Windows 关闭装饰后客户区多出约 30pt 的问题。主窗口默认 430×430、宽高均仅允许在 420–450 内调整并禁止最大化；桌面标题单行、时间双栏、底部操作固定，分享页完整覆盖 WebView 且无需纵向滚动。macOS 26 使用原生 `NSPanel + NSGlassEffectView` 弹出 228×70 Liquid Glass 迷你计时器，旧版 macOS 回退到原生 Vibrancy；Windows 使用固定 208×64 的轻量 WebView 小部件。两者均有明确的未开始状态，Windows 迷你窗保留真实拖动能力（详见 M5 计划决策 7）
+21. **自动更新** — ✅ 已完成。完整升级回环（检查 → 下载 → 安装 → 重启 → 显示新版本）已实际走通多次
 22. ~~**平台证书与公证**~~ —— 不购买证书；macOS CI 使用 ad-hoc 签名，安装拦截改由 README 说明
 23. **发布 CI** — ✅ `desktop-v3.0.2` 已验证 `tauri-action@v1` 四平台矩阵：macOS Apple Silicon / Intel、Windows x64 / ARM64 均成功生成安装包、更新签名与 `latest.json`，Release 已正式发布
-24. **包管理器分发** —— Homebrew 自建 tap + winget/Scoop，首个 Release 之后进行
+24. **包管理器分发** —— ⬜ 仍未做。Homebrew 自建 tap + winget/Scoop。优先级已下降：Microsoft Store 覆盖了 Windows 侧最需要解决的安装摩擦（无 SmartScreen 警告、自动更新），剩下的主要价值在 macOS
 
-#### M5 下一步（按顺序）
+#### M5 遗留（不阻塞，按需处理）
 
-1. 在 Windows x64 与 ARM64 真机验收迷你窗、通知、自启动、全局快捷键和社交外链。
-2. 用已安装的旧版本完成一次“检查更新 → 下载 → 安装 → 重启 → 显示新版本”的完整升级回环，并确认 updater 私钥与口令已有独立离线备份。
-3. 在目标 macOS / Windows 版本逐步核对 README 的首次安装说明，补必要截图。
-4. 进入 P6：先手工跑通 Homebrew 自建 tap，再评估 winget；若未签名包审核受阻，则改走 Scoop。
+1. 通知实际弹出与全局快捷键实际按键，两者的实现都在跑、也没有用户反馈异常，
+   但**没有留下过一次书面验收记录**——想彻底闭环的话补一次即可。
+2. README 首次安装说明的截图仍未补。Windows 那半的紧迫性已经下降：商店版没有
+   SmartScreen 提示，需要「更多信息 → 仍要运行」这套步骤的只剩直链安装包。
+3. 包管理器（第 24 项）。
 
-### M6 · 分发与增长 —— 持续
+### M6 · 分发与增长 —— 持续 —— 🔶 进行中
 
-25. **仓库门面** —— 补 topics（`countdown` `pwa` `nextjs` `tauri` `productivity` `work-life-balance` `i18n`）、社交预览图、README 顶部入口/徽章 + 演示 GIF、开启 Discussions
-26. **包管理器上架** —— Homebrew Cask、Scoop、winget
-27. **中文渠道（主场）** —— 小红书 / 抖音 / B站 短视频演示、少数派、V2EX、即刻。「下班倒计时」「摸鱼」本身就是中文互联网的梗，传播成本最低
-28. **英文渠道** —— Product Hunt、Show HN、r/productivity、alternativeto.net、awesome-nextjs / awesome-tauri 列表
+> ⚠️ 本节写于上架 Microsoft Store 之前，只考虑了包管理器。实际的第一条正规
+> 分发渠道是商店，而且它顺带解决了 Windows 侧最大的安装摩擦。
+
+25. **仓库门面** —— 🔶 topics 已配（8 个）、Discussions 已开、社交预览图已在
+    仓库内、README 顶部有徽章与入口。**演示 GIF 仍未补**；社交预览图是否已在
+    GitHub 设置里真正启用需要人工确认
+26. **包管理器上架** —— ⬜ Homebrew Cask、Scoop、winget，均未做
+27. **Microsoft Store** —— ✅ 已上架并跑通自动发版。MSIX 产线与 NSIS / MSI
+    并行，推 `desktop-v*` tag 即自动提交；商店版由微软签名，因此没有 SmartScreen
+    警告，更新也由商店负责。完整设计与实测记录见 [PLAN-MSSTORE.md](PLAN-MSSTORE.md)
+28. **中文渠道（主场）** —— 小红书 / 抖音 / B站 短视频演示、少数派、V2EX、即刻。「下班倒计时」「摸鱼」本身就是中文互联网的梗，传播成本最低
+29. **英文渠道** —— Product Hunt、Show HN、r/productivity、alternativeto.net、awesome-nextjs / awesome-tauri 列表
 
 ---
 
@@ -281,7 +299,7 @@ src-tauri/src/
 | 项目 | 年费 | 不做的后果 |
 |---|---|---|
 | Apple Developer（macOS 公证） | $99 | Gatekeeper 拦截，用户需右键打开，安装转化大幅流失 |
-| Windows 代码签名证书 | $200–400（Azure Trusted Signing 更低） | SmartScreen 红色警告 |
+| Windows 代码签名证书 | $200–400（Azure Trusted Signing 更低） | ~~SmartScreen 红色警告~~ —— **已不必买**：Microsoft Store 在认证阶段用自己的证书签名，商店版没有任何警告。直链安装包仍未签名 |
 
 **低成本过渡**：首个 Beta 可不签名，走 Homebrew Cask（对未签名应用较宽容）+ 文档说明绕过步骤，验证需求后再投入证书。**但不要在正式 1.0 上省这笔钱**——它直接换算成安装转化率。
 
