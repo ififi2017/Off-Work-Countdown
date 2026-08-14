@@ -268,9 +268,8 @@ EXE/MSI 那条路直接排除了——它的前置条件正是 M5 明确不做�
 
 **非目标**
 
-- **不做 macOS App Store。** 它需要 $99/年的 Apple Developer 账号和真正的公证，
-  与 M5 §6 的决定冲突，且沙盒对托盘 / 全局快捷键 / 原生 Mini Timer 的限制远比
-  MSIX 严苛，不是同一量级的工作。
+- **M6 不做 macOS App Store。** macOS 商店版需要独立的沙盒适配、签名与审核产线，
+  不是 MSIX 上架的附带工作；它已转入 §9 的远期里程碑，不与 M6 串行推进。
 - **不迁移 GitHub 版用户。** 商店版是新增入口，不是替代品。
 - **不做商店内购、不做付费版。** 保持免费——顺带说，GitHub Actions 那条自动
   更新链路目前只支持免费应用（见 §4）。
@@ -734,7 +733,128 @@ P1 有两条判据卡在后面的阶段上，这是刻意的：自启动要先�
 ### 已决（留档，避免重复讨论）
 
 - **不走 EXE/MSI 提交**：需要自购代码签名证书，与 M5 §6 的决定冲突。见 §0。
-- **不做 macOS App Store**：需要 $99/年账号，且沙盒限制远超 MSIX。见 §1。
+- **M6 不做 macOS App Store**：它是独立的远期里程碑，不占用微软商店上架路径。见
+  §1、§9。
 - **不做配置迁移**：复杂度不匹配收益，用文档承担。见决策 6。
 - **不做渠道互斥检测**：两个版本可以共存。见决策 7。
 - **更新器用默认开启的 Cargo feature**：反过来会让本地开发静默丢失更新器。见决策 2。
+
+## 9. 远期里程碑：macOS App Store
+
+> 状态：远期候选，尚未排期。以下是 2026-08-14 对当前源码与 Apple 审核要求的差距审计，
+> 不是对现有 GitHub macOS 版本的发布承诺。
+
+### 9.1 渠道定位
+
+macOS App Store 版与现有 GitHub 直发版**长期并存**。现有版本继续使用 GitHub Release、
+应用内更新器和 ad-hoc 签名；商店版新增独立的 `macappstore` 渠道，使用相同源码，但在
+构建期裁掉商店不允许的能力，并由 App Store 承担安装与更新。
+
+不为商店版开长期分支，也不把它定义成第三个 `BUILD_TARGET`。沿用 M6 的正交渠道模型：
+
+```text
+BUILD_TARGET     = web | desktop
+DESKTOP_CHANNEL  = github | msstore | macappstore
+```
+
+`macappstore` 必须是编译期渠道，不能只靠运行时隐藏按钮。更新器、私有 API 和
+LaunchAgent 自启动等不合规代码及 capability 都不能进入最终商店二进制。
+
+### 9.2 当前结论：不能直接提交
+
+截至 2026-08-14，当前 macOS `.app` **不符合直接提交 Mac App Store 的条件**：
+
+| 阻塞项 | 当前实现 | 商店版要求 |
+|---|---|---|
+| 私有 API / 透明 WebView | `macOSPrivateApi: true`、Cargo `macos-private-api`，浮动 WebView 使用透明窗口 | 移除私有 API；保留状态栏与悬浮窗能力，standard / woodfish 面板改用公开 AppKit API 原生实现 |
+| App Sandbox | 没有商店沙盒 entitlements 与 provisioning profile | 开启 `com.apple.security.app-sandbox`，只申请实际需要的最小权限 |
+| 应用内更新 | updater 从 GitHub 检查、下载并安装更新，另有镜像回退 | 商店包完全移除 updater/process 插件、权限、端点、镜像命令与对应 UI，由 App Store 更新 |
+| 开机自启 | `tauri-plugin-autostart` 使用 `~/Library/LaunchAgents` | 改为公开的 `SMAppService`，由用户明确授权，并验证沙盒内状态同步 |
+| 签名与上传 | Release workflow 在 macOS 使用 ad-hoc identity `-`，产出 `.dmg` / `.app` | 使用 Apple Distribution 签名应用、Mac Installer Distribution 签名 `.pkg`，通过 App Store Connect 上传 |
+| 商店元数据 | 没有 `macappstore` 配置、category、商店 Info.plist 与隐私申报 | 补齐 bundle category、Team / App ID、加密声明、隐私、支持 URL、截图、年龄分级等资料 |
+| 最低系统版本 | 原生 Objective-C 按 macOS 13 编译，Tauri bundle 未显式对齐 | 商店配置显式声明 macOS 13.0，避免包元数据承诺一个实际不能运行的更低版本 |
+
+托盘、通知、原生 AppKit Mini Timer 和默认全局快捷键目前没有被判定为必然阻塞，但必须
+放进沙盒真机验收。特别是快捷键注册、辅助功能权限和睡眠唤醒后的后台行为，不能只凭
+非沙盒 GitHub 版的结果推断。
+
+这里也修正 M6 初稿中的一个概念：Mac App Store 上架需要 Apple Developer Program
+会员、商店分发证书、provisioning profile 和签名 `.pkg`；**不以 Developer ID + 单独
+notarization 作为提交前置条件**。Developer ID 公证是商店外直接分发的链路，不能和
+App Store Connect 提交流程混为一谈。
+
+### 9.3 实施阶段
+
+| 阶段 | 内容 | 完成标准 |
+|---|---|---|
+| **MAS-P0** | 技术可行性验证 | 本地 `macappstore` 渠道可构建；二进制不含私有 API、updater 与 LaunchAgent；启用最小沙盒后可正常启动 |
+| **MAS-P1** | 沙盒功能适配 | 主窗口、状态栏、倒计时、通知、系统语言、外部链接、原生 standard / woodfish Mini Timer、全局快捷键与用户授权的登录项在真机通过 |
+| **MAS-P2** | 分发产线 | 配置 Team ID、App ID、entitlements、profile 与商店专用 Info.plist；产出 Universal `.app` 和正确签名的 `.pkg` |
+| **MAS-P3** | TestFlight 与审核材料 | App Store Connect 上传成功；隐私标签、支持/隐私 URL、截图、描述、年龄分级和审核备注完整 |
+| **MAS-P4** | 首次人工审核 | TestFlight 冒烟通过，处理审核问题并完成首次上架；记录以后可重复执行的发布清单 |
+| **MAS-P5** | 自动发布与渠道文档 | tag 可独立触发商店构建/上传；下载页与 About 页准确区分 GitHub 版和商店版的更新与能力差异 |
+
+阶段顺序不能颠倒：先做 MAS-P0 / P1，确认核心常驻能力在 App Sandbox 中成立，再购买或
+续费开发者会员并投入 listing 与自动化。技术验证失败时，GitHub 直发版不受影响。
+
+### 9.4 关键实现决策
+
+1. **保留状态栏与悬浮窗能力，standard / woodfish 面板改为原生 AppKit。**
+   Mac App Store 不禁止状态栏图标、菜单、置顶悬浮面板或原生透明窗口；需要替换的是当前
+   依赖 `macos-private-api` 的透明 WebView 实现，而不是这些产品能力。
+   `src-tauri/native-mini/NativeMiniTimer.m` 的公开 AppKit 路径继续保留，并扩展或复用为
+   standard / woodfish 的商店实现。改造后的商店版仍须支持：
+   - 状态栏图标与菜单；
+   - 从状态栏或应用入口显示 / 隐藏悬浮面板；
+   - 悬浮窗置顶、倒计时与 standard / woodfish 两种皮肤；
+   - 木鱼点击动画、本地计数，以及首次点击静音且不引入音频资源的既有规则；
+   - 与主窗口共享倒计时快照和唯一的 `hideEarnings` 状态，不在原生面板里复制排班算法
+     或维护独立的收入显隐状态。
+
+   GitHub 版可继续使用现有 WebView 悬浮窗，商店版使用公开 AppKit API 的原生面板；两者
+   可以有不同渲染实现，但对用户承诺的核心能力应一致。若原生重写未达到上述验收标准，
+   MAS-P1 不算完成，不能用直接删除木鱼悬浮窗来绕过。
+2. **更新能力按 Cargo feature 和前端模块替换双重裁剪。**
+   复用 `msstore` 已验证的 `--no-default-features` 思路，但为 `macappstore` 建独立配置与
+   自动化断言；不能让不可达的下载安装命令留在 Rust 二进制里。
+3. **登录项使用 `SMAppService`，不直接写共享目录。**
+   开关必须反映系统真实状态，用户在系统设置里关闭后，应用内不能继续显示为已开启。
+4. **只申请最小 entitlements。**
+   默认不申请用户文件、通讯录、定位、摄像头、麦克风等权限。网络权限仅按最终商店版
+   实际保留的外部链接 / 用户主动分享方案评估；工资、班次和偏好继续只存本机。
+5. **最低系统版本统一为 macOS 13。**
+   `build.rs`、Tauri bundle 与 App Store Connect 元数据必须一致；若要下调，先证明所有
+   原生符号与回退路径可在更低版本运行，而不是只改版本字符串。
+6. **商店发布与 GitHub Release 解耦。**
+   两条工作流可由同一个版本 tag 触发，但任何一条失败都不应阻断另一条产物；商店版
+   不生成 GitHub updater artifact，也不读取 updater 私钥。
+
+### 9.5 上架验收清单
+
+- `npm run lint`、单元测试、Web build/check、Desktop export/check 全部通过
+- `cargo fmt --check`、两组 feature 的 clippy/test 与 macOS release build 全部通过
+- 对商店产物做依赖、字符串与 capability 审计，确认无 updater、镜像端点、私有 API、
+  LaunchAgent 写入和调试开关
+- `codesign --verify --deep --strict`、entitlements、provisioning profile、架构与最低系统
+  版本检查通过，安装包由正确的商店分发身份签名
+- 在受支持的最低 macOS 版本与当前 macOS 上各做一次沙盒真机冒烟；覆盖 light/dark、
+  中英文长文案、休眠唤醒、跨日班次、通知、托盘、Mini Timer、快捷键和登录项
+- App Store Connect / TestFlight 安装的包启动时不访问 GitHub 更新端点，更新入口不承诺
+  应用内下载安装
+- 隐私政策可从应用内和商店元数据访问；App Privacy 申报与实际网络、存储行为一致
+- 审核备注解释菜单栏常驻、通知、全局快捷键和登录项的用户价值与触发方式，并提供可复现
+  的测试步骤
+
+### 9.6 进入排期的门槛
+
+同时满足以下条件后，才把本节从“远期候选”升级为正式里程碑：
+
+1. M6 首次上架完成，不再占用商店渠道基础设施的主要维护精力；
+2. 确认愿意承担 Apple Developer Program 的持续费用和年度证书 / profile 维护；
+3. MAS-P0 证明沙盒版的托盘、原生 Mini Timer、通知和倒计时后台语义可接受；
+4. 接受商店版与 GitHub 版可能存在明确、可解释的功能差异。
+
+参考：[Apple App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)、
+[App Sandbox](https://developer.apple.com/documentation/xcode/configuring-the-macos-app-sandbox)、
+[Mac 软件分发打包](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)、
+[Tauri App Store 指南](https://v2.tauri.app/distribute/app-store/)。
