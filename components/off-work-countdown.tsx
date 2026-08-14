@@ -1647,10 +1647,14 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
     // 商店版：这个入口不检查、不下载，只把用户送到商店详情页，更新在那边完成。
     if (IS_MSSTORE_BUILD) {
+      setDesktopUpdateStatus("idle");
       try {
         await openMicrosoftStoreListing();
       } catch {
-        setDesktopSettingError(t("desktopSettingError"));
+        // 失败要报在更新这一行下面。这里原本写 setDesktopSettingError，但那个
+        // 状态只渲染在上方的「登录时启动」卡片里——用户点的是底部的更新入口，
+        // 当前位置毫无反馈，错误却出现在一个不相干的设置下面。
+        setDesktopUpdateStatus("error");
       }
       return;
     }

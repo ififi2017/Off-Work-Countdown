@@ -1871,8 +1871,66 @@ fn open_notification_settings(app: AppHandle) -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
+/// WebView2 不在时，给出一句能照着做的话，而不是让用户对着一个白窗口。
+///
+/// 三条路都查过了：MSIX 的 `win32dependencies:ExternalDependency` 只有 App
+/// Installer 认，商店安装会**静默忽略**它（而且打包工具不校验，看起来像生效了）；
+/// 内嵌 Fixed Version 要多背 250MB，对一个 5MB 的应用不成比例。剩下的就是微软
+/// 分发文档给的第二个建议——先检测，再把用户引到官方下载页。
+///
+/// NSIS/MSI 那条线已经由 Tauri 默认的 `downloadBootstrapper` 覆盖，但那依赖
+/// 安装时有网，也管不了装完之后运行时被卸载；MSIX 那条线则完全没有别的防线。
+#[cfg(target_os = "windows")]
+fn ensure_webview2_runtime() {
+    use std::os::windows::process::CommandExt;
+    use windows::core::w;
+    use windows::Win32::UI::WindowsAndMessaging::{
+        MessageBoxW, IDOK, MB_ICONINFORMATION, MB_OKCANCEL,
+    };
+
+    if tauri::webview_version().is_ok() {
+        return;
+    }
+
+    // 这一步发生在窗口创建之前，前端和 i18n 都还没起来，拿不到界面语言。
+    // 与长内容页同样的取舍：只做中英双语，而不是猜一个可能猜错的。
+    let choice = unsafe {
+        MessageBoxW(
+            None,
+            w!("Off Work Countdown draws its window with Microsoft Edge WebView2. Most Windows PCs already include it, and this one does not have it yet.\n\n\
+                It is a small, free component from Microsoft and takes about a minute to install. Select OK and we will open the download page for you.\n\n\
+                下班倒计时用 Microsoft Edge WebView2 绘制界面。大多数 Windows 电脑都自带，这台还没有。\n\n\
+                它是微软提供的免费组件，安装大约需要一分钟。点「确定」，我们帮你打开下载页面。"),
+            w!("Off Work Countdown"),
+            MB_OKCANCEL | MB_ICONINFORMATION,
+        )
+    };
+
+    if choice == IDOK {
+        // 用 cmd start 而不是 ShellExecuteW：这段代码在 macOS 上编译不了，
+        // 少碰一个没法本地验证的 Win32 签名，就少一处只有 CI 才会发现的错。
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        let _ = std::process::Command::new("cmd")
+            .args([
+                "/C",
+                "start",
+                "",
+                "https://developer.microsoft.com/microsoft-edge/webview2/consumer/",
+            ])
+            .creation_flags(CREATE_NO_WINDOW)
+            .spawn();
+    }
+
+    std::process::exit(0);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // 必须在 Builder 之前：WebView2 缺失时窗口根本创建不出来，等到那一步
+    // 用户看到的就是一个白框，或者干脆什么都没有。
+    #[cfg(target_os = "windows")]
+    ensure_webview2_runtime();
+
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init());

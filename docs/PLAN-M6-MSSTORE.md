@@ -63,12 +63,11 @@ npm run check:version
 
 # 1. 构建商店渠道的 exe。
 #
-#    ⚠️ npx 会自己吃掉第一个 `--`，所以经 npx 调用时要写**两个**，否则 tauri CLI
-#    收到 --no-default-features 并拒掉（见决策 4 的报错）。用仓库内的 tauri 可执行
-#    文件则只需一个 `--`——它更直白，推荐这个。
-.\node_modules\.bin\tauri build --config src-tauri\tauri.msstore.conf.json -- --no-default-features
-#    等价的 npx 写法：
-#    npx tauri build --config src-tauri/tauri.msstore.conf.json -- -- --no-default-features
+#    ⚠️ 直接用 node 调 tauri.js，别走 npx，也别走 node_modules\.bin\tauri。
+#    Windows 上那两条都是 shell 包装器（.cmd / .ps1），会先把第一个 `--` 自己
+#    吃掉，tauri CLI 收到的就成了裸的 --no-default-features 并拒掉。
+#    走 node 就没有包装器插在中间，一个 `--` 即可，各 shell 表现一致。
+node node_modules/@tauri-apps/cli/tauri.js build --config src-tauri/tauri.msstore.conf.json -- --no-default-features
 
 # 2. 先只暂存，确认目录结构与图标齐全再往下走
 npm run pack:msix -- "x64=src-tauri/target/release/Off Work Countdown.exe" --stage-only

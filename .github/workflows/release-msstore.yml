@@ -72,11 +72,14 @@ jobs:
       # ⚠️ `--` 不能省：Tauri v2 的 CLI 没有 --no-default-features，裸写会被当成
       # 未知参数拒掉。`--` 之后的参数才透传给 cargo。少这一个横杠，构建出来的是
       # 一个**带完整自更新链路的商店包**——能装能跑，装到用户机器上才暴露。
-      # 直接调 node_modules 里的可执行文件，避免 npx 再吃掉一层 `--`。
+      #
+      # ⚠️ 直接 node 调 tauri.js，不走 npx 也不走 node_modules\.bin\tauri：
+      # 那两条在 Windows 上都是 shell 包装器（.cmd / .ps1），会先把第一个 `--`
+      # 自己吃掉，CLI 收到的就成了裸的 --no-default-features。这条踩过一次。
       - name: Build store-channel executable
         run: >
-          .\node_modules\.bin\tauri build
-          --config src-tauri\tauri.msstore.conf.json
+          node node_modules/@tauri-apps/cli/tauri.js build
+          --config src-tauri/tauri.msstore.conf.json
           --target ${{ matrix.rustTargets }}
           -- --no-default-features
 

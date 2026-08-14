@@ -286,7 +286,7 @@
       {
         "heading": "Cookies",
         "body": [
-          "The site sets one cookie: i18nextLng. It holds a language code so the next page you open is already in the language you picked, and it is written only after you choose a language. It lasts a year and you can delete it at any time along with the rest of the site data.",
+          "The site sets one cookie: i18nextLng. It holds a language code so the next page you open is already in the language you were reading. It is written on your first visit, from the language the page is being shown in, and updated whenever you switch languages. It lasts a year and you can delete it at any time along with the rest of the site data.",
           "There are no advertising or cross-site tracking cookies. The measurement described above is cookieless."
         ]
       },
