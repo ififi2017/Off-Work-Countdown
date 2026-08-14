@@ -2052,8 +2052,20 @@ pub fn run() {
             // 阴影要显式保留，否则无边框窗口会和桌面糊在一起。
             #[cfg(target_os = "windows")]
             if let Some(window) = app.get_webview_window("main") {
+                // ⚠️ 关装饰会把原本属于标题栏的那条高度让给客户区：窗口外框不动，
+                // 内容区凭空长高约 30pt，tauri.conf.json 里写的 430x430 到了
+                // Windows 上就成了 430x460。页面仍按 430 排版，多出来的空档摊在
+                // 版面里，看起来就是「Windows 版留白比 macOS 多一圈」。
+                //
+                // 前后各读一次再还回去，而不是硬写 430——尺寸的唯一出处仍然是
+                // tauri.conf.json，改那边不必记得回来同步这里。尺寸本来就没变时
+                // 这是个 no-op。
+                let inner_before = window.inner_size().ok();
                 let _ = window.set_decorations(false);
                 let _ = window.set_shadow(true);
+                if let Some(size) = inner_before {
+                    let _ = window.set_size(size);
+                }
             }
 
             // 关闭主窗口时隐藏而非退出。真正的退出走托盘菜单里的 Quit。
