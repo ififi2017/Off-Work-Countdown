@@ -79,6 +79,10 @@ export interface ContentBundle {
     // 靠「最后一个小节」来定位，加一节就会错位。
     contactHeading: string;
     contactBody: string[];
+    contactEmailLabel: string;
+    contactEmailDescription: string;
+    contactGithubLabel: string;
+    contactGithubDescription: string;
   };
   download: {
     metaTitle: string;

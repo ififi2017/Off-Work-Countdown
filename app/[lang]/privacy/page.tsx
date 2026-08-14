@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ExternalLink, Github, Mail } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { getContent } from "@/lib/server/content";
 import { ContentPage } from "@/components/ContentPage";
@@ -106,26 +107,50 @@ export default async function PrivacyPage({
               {paragraph}
             </p>
           ))}
-          <ul className="mt-4 space-y-2 text-base leading-7">
-            <li>
-              <a
-                href={`mailto:${siteConfig.supportEmail}`}
-                className="font-medium text-gray-900 underline decoration-gray-300 underline-offset-4 transition-colors hover:decoration-gray-900 dark:text-white dark:decoration-gray-600 dark:hover:decoration-white"
-              >
-                {siteConfig.supportEmail}
-              </a>
-            </li>
-            <li>
-              <a
-                href={siteConfig.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-gray-900 underline decoration-gray-300 underline-offset-4 transition-colors hover:decoration-gray-900 dark:text-white dark:decoration-gray-600 dark:hover:decoration-white"
-              >
-                GitHub
-              </a>
-            </li>
-          </ul>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <a
+              href={`mailto:${siteConfig.supportEmail}`}
+              className="group flex min-h-32 flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-[border-color,background-color,box-shadow] hover:border-gray-300 hover:bg-gray-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 dark:hover:bg-gray-800/70 dark:focus-visible:ring-gray-400 dark:focus-visible:ring-offset-gray-900"
+            >
+              <span className="flex items-start justify-between gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                  <Mail className="h-4.5 w-4.5" aria-hidden="true" />
+                </span>
+                <span className="text-sm font-medium text-gray-500 transition-colors group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200">
+                  {siteConfig.supportEmail}
+                </span>
+              </span>
+              <span className="mt-4 block font-semibold text-gray-900 dark:text-white">
+                {content.privacy.contactEmailLabel}
+              </span>
+              <span className="mt-1 block text-sm leading-5 text-gray-500 dark:text-gray-400">
+                {content.privacy.contactEmailDescription}
+              </span>
+            </a>
+
+            <a
+              href={siteConfig.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex min-h-32 flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-[border-color,background-color,box-shadow] hover:border-gray-300 hover:bg-gray-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 dark:hover:bg-gray-800/70 dark:focus-visible:ring-gray-400 dark:focus-visible:ring-offset-gray-900"
+            >
+              <span className="flex items-start justify-between gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                  <Github className="h-4.5 w-4.5" aria-hidden="true" />
+                </span>
+                <ExternalLink
+                  className="h-4 w-4 text-gray-400 transition-colors group-hover:text-gray-600 dark:group-hover:text-gray-200"
+                  aria-hidden="true"
+                />
+              </span>
+              <span className="mt-4 block font-semibold text-gray-900 dark:text-white">
+                {content.privacy.contactGithubLabel}
+              </span>
+              <span className="mt-1 block text-sm leading-5 text-gray-500 dark:text-gray-400">
+                {content.privacy.contactGithubDescription}
+              </span>
+            </a>
+          </div>
         </section>
       </div>
     </ContentPage>
