@@ -71,6 +71,7 @@ function DownloadButton({
     return (
       <div
         aria-disabled="true"
+        aria-label={`${label} — ${loading ? loadingLabel : placeholder ? comingSoonLabel : unavailableLabel}`}
         title={loading ? loadingLabel : placeholder ? comingSoonLabel : unavailableLabel}
         className={cn(
           buttonVariants({ variant: "outline" }),
@@ -85,12 +86,12 @@ function DownloadButton({
             </span>
           )}
         </span>
-        <span className="text-xs font-normal">
+        {/* 加载时只留一个转圈：loadingLabel 是给顶部状态行写的整句话，塞进按钮
+            会换行（x64／ARM64 并排之后只有半列宽），而且那句话顶上已经说过一遍，
+            四个按钮再各说一遍纯属重复。完整文案仍在 title 和 aria-label 里。 */}
+        <span className="shrink-0 text-xs font-normal">
           {loading ? (
-            <span className="inline-flex items-center gap-1.5">
-              <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-              {loadingLabel}
-            </span>
+            <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
           ) : placeholder ? comingSoonLabel : "—"}
         </span>
       </div>
