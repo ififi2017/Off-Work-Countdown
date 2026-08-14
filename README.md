@@ -28,6 +28,9 @@ once, then keep the remaining time, progress and estimated earnings at a glance.
 - **Web:** [open the app](https://off.rainif.com/en) — no installation required.
 - **Desktop:** [open the download page](https://off.rainif.com/en/download) —
   macOS Apple Silicon / Intel and Windows x64 / ARM64 are available.
+- **Windows, from the Microsoft Store:**
+  [get it from the Store](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ) — it
+  updates itself and installs without the SmartScreen prompt.
 - **Release files:** [latest GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest).
 
 The desktop app adds a menu-bar countdown on macOS, a compact always-on-top
@@ -55,6 +58,10 @@ SmartScreen may still warn on first installation. Download only from this
 repository's Release page and verify that the tag and filename match your
 platform.
 
+The Microsoft Store build is the exception: the Store signs it during
+certification, so it installs without any warning and updates through the Store
+rather than through the in-app updater.
+
 #### macOS
 
 1. Download the `aarch64.dmg` for Apple Silicon or `x64.dmg` for an Intel Mac.
@@ -65,6 +72,10 @@ platform.
    [Open apps safely on your Mac](https://support.apple.com/102445).
 
 #### Windows
+
+The [Microsoft Store build](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ) is
+the smoothest route — no SmartScreen prompt, and the Store keeps it updated. The
+steps below are for the direct installers.
 
 1. Download `x64-setup.exe` for most PCs, or `arm64-setup.exe` for a Windows on
    ARM device. The MSI files are also available for managed installation.

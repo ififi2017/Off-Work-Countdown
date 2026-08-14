@@ -43,11 +43,36 @@
   </Dependencies>
 
   <!--
-    只声明 en-us：应用 UI 的 19 种语言由前端在运行时切换，与包资源无关。
-    包级别的多语言要 resources.pri，那是独立的一小块工作，不阻塞上架。
+    商店产品页的「支持的语言」直接读这里——只声明 en-us 时，页面会告诉用户这个
+    应用只有英语，而它实际有 19 种。对一个主要面向中文用户的应用，那一栏写错的
+    代价是实打实的。
+
+    这些语言的翻译确实在包里（public/locales/* 随前端一起嵌进 exe），只是由应用
+    在运行时加载，不走 Windows 的 PRI 资源系统。manifest 里没有任何 ms-resource:
+    引用，所以不存在「声明了却解析不到」的情况。
+
+    ⚠️ 默认语言必须排第一。上限 200 条，19 条远没到。
   -->
   <Resources>
     <Resource Language="en-us" />
+    <Resource Language="zh-hans" />
+    <Resource Language="zh-hant-tw" />
+    <Resource Language="zh-hant-hk" />
+    <Resource Language="ja" />
+    <Resource Language="ko" />
+    <Resource Language="fr" />
+    <Resource Language="de" />
+    <Resource Language="es" />
+    <Resource Language="it" />
+    <Resource Language="pt" />
+    <Resource Language="ru" />
+    <Resource Language="hi" />
+    <Resource Language="mr" />
+    <Resource Language="tr" />
+    <Resource Language="ar" />
+    <Resource Language="th" />
+    <Resource Language="id" />
+    <Resource Language="vi" />
   </Resources>
 
   <Applications>

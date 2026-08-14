@@ -25,6 +25,7 @@
 
 - **网页版：**[立即使用](https://off.rainif.com/zh-CN)，无需安装。
 - **桌面客户端：**[打开下载页](https://off.rainif.com/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。
+- **Windows 用户：**[从 Microsoft Store 获取](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ)，会自动更新，安装时也不会出现 SmartScreen 提示。
 - **安装包列表：**[最新 GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)。
 
 桌面版额外提供 macOS 菜单栏倒计时、Windows 置顶迷你计时器、原生通知、登录时启动、全局快捷键和一键更新。它仍然坚持本地优先：班次、薪资设置与倒计时状态只保存在你的设备上。
@@ -33,6 +34,8 @@
 
 当前安装包完全开源，但**没有购买 Apple 或 Microsoft 的代码签名证书**。自动更新包带有 Tauri 用于校验更新来源的加密签名，但 macOS Gatekeeper 或 Windows SmartScreen 在首次安装时仍可能警告。请只从本仓库的 Release 页面下载，并核对 tag、平台和文件名。
 
+Microsoft Store 版本是个例外：商店在认证阶段用自己的证书签名，因此安装时不会有任何警告，更新也由商店负责，不走应用内更新器。
+
 #### macOS
 
 1. Apple Silicon Mac 下载 `aarch64.dmg`，Intel Mac 下载 `x64.dmg`。
@@ -40,6 +43,8 @@
 3. 先尝试打开一次。如果 macOS 阻止运行，请进入**系统设置 → 隐私与安全性**，滚动到“安全性”，点击**仍要打开**，然后再次确认**打开**。Apple 的官方说明见[安全地打开 Mac 上的 App](https://support.apple.com/zh-cn/102445)。
 
 #### Windows
+
+[Microsoft Store 版本](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ)是最省事的一条：没有 SmartScreen 提示，更新也由商店负责。下面的步骤针对直接下载的安装包。
 
 1. 大多数电脑下载 `x64-setup.exe`；Windows on ARM 设备下载 `arm64-setup.exe`。需要受管安装时也可选择对应 MSI。
 2. 运行安装程序。如果 Microsoft Defender SmartScreen 提示无法识别应用，请先核对下载来源；确认信任后，在系统提供该选项时点击**更多信息 → 仍要运行**。

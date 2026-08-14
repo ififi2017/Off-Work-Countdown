@@ -25,6 +25,8 @@ export const trackedEvents = [
   "desktop_invite_open",
   /** 用户主动关闭客户端下载邀请。 */
   "desktop_invite_dismiss",
+  /** 下载页的微软商店入口点击。与直链分开计数，用来看商店渠道的分流。 */
+  "desktop_download_msstore",
   /** 下载页的各平台安装包与 GitHub Releases 点击。 */
   "desktop_download_windows_intel",
   "desktop_download_windows_arm",

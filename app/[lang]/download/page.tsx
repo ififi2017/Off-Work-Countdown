@@ -306,7 +306,11 @@ export default async function DownloadPage({
           {copy.downloadsIntro}
         </p>
         <div className="mt-6">
-          <DesktopDownloads copy={copy} releasesUrl={siteConfig.releases} />
+          <DesktopDownloads
+            copy={copy}
+            releasesUrl={siteConfig.releases}
+            storeUrl={siteConfig.microsoftStore}
+          />
         </div>
       </section>
     </ContentPage>
