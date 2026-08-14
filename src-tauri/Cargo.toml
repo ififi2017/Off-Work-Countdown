@@ -61,4 +61,8 @@ tauri-plugin-updater = { version = "2", optional = true }
 # （见决策 3 与 P2 的实测记录）。版本跟着 tauri 已经引入的 0.61 走，避免同一个
 # crate 编译两份。非 Windows 平台不需要，因此挂在 windows target 下。
 [target."cfg(target_os = \"windows\")".dependencies]
-windows = { version = "0.61", features = ["ApplicationModel"] }
+windows = { version = "0.61", features = [
+  "ApplicationModel",
+  # 缺 WebView2 时要在窗口创建之前弹一个原生对话框，见 ensure_webview2_runtime。
+  "Win32_UI_WindowsAndMessaging",
+] }
