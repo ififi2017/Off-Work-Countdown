@@ -3,7 +3,6 @@
 import { createElement, useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { siteConfig } from "@/config/site";
-import { isWindowsUserAgent } from "@/lib/user-agent";
 import { track } from "@/lib/track";
 
 const IS_DESKTOP_BUILD =
@@ -11,35 +10,11 @@ const IS_DESKTOP_BUILD =
 
 interface MicrosoftStoreBadgeProps {
   className?: string;
-  windowsOnly?: boolean;
 }
 
-export function MicrosoftStoreBadge({
-  className,
-  windowsOnly = false,
-}: MicrosoftStoreBadgeProps) {
-  // UA 只在挂载后读取，避免服务端与客户端首帧不一致。非 Windows 页面也不会
-  // 下载微软脚本；About 页不做平台限制，因此首屏就能渲染官方徽章。
-  const [visible, setVisible] = useState(!windowsOnly);
+export function MicrosoftStoreBadge({ className }: MicrosoftStoreBadgeProps) {
   const [badgeTheme, setBadgeTheme] = useState<"light" | "dark">();
   const badgeRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (windowsOnly) {
-      // 与主窗口现有的 ?platform= 调试入口一致，方便在非 Windows 机器上做
-      // 真实布局检查；生产构建只看 UA。
-      const forcedPlatform =
-        process.env.NODE_ENV !== "production"
-          ? new URLSearchParams(window.location.search).get("platform")
-          : null;
-      setVisible(
-        forcedPlatform === "windows" ||
-          (forcedPlatform !== "macos" &&
-            forcedPlatform !== "other" &&
-            isWindowsUserAgent(navigator.userAgent))
-      );
-    }
-  }, [windowsOnly]);
 
   useEffect(() => {
     if (IS_DESKTOP_BUILD) return;
@@ -69,9 +44,9 @@ export function MicrosoftStoreBadge({
     // 直接更新标准属性，同时重申 small，避免主题切换后回退到默认 large。
     badge.setAttribute("size", "small");
     badge.setAttribute("theme", badgeTheme);
-  }, [badgeTheme, visible]);
+  }, [badgeTheme]);
 
-  if (IS_DESKTOP_BUILD || !visible) return null;
+  if (IS_DESKTOP_BUILD) return null;
 
   return (
     <>
