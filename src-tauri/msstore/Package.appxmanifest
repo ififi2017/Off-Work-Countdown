@@ -24,7 +24,7 @@
   <Identity
     Name="finiaRStudio.OffWorkCountdown"
     Publisher="CN=57D14FB1-9452-4F62-8C84-A50889A0FE89"
-    Version="3.1.4.0"
+    Version="3.1.5.0"
     ProcessorArchitecture="x64" />
 
   <Properties>
