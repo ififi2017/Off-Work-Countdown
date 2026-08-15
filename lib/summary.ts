@@ -63,6 +63,8 @@ export function summarize(params: {
   workdays: number[];
   /** 当前班次按开始日期归属工作日；跨午夜后仍属于开始的那一天。 */
   currentShiftStart: Date;
+  /** 用于判断该班次是否仍覆盖统计日；跨夜班次的结束日会晚于开始日。 */
+  currentShiftEnd: Date;
   /** 当前设置下一个完整计划班次的有效工时，已经扣除午休。 */
   plannedDailyHours: number;
   /** 班次进度百分比 0–100，来自正在运行的倒计时。 */
@@ -78,6 +80,7 @@ export function summarize(params: {
     asOf,
     workdays,
     currentShiftStart,
+    currentShiftEnd,
     plannedDailyHours,
     todayProgress,
     dailySalary,
@@ -87,19 +90,24 @@ export function summarize(params: {
 
   const shiftDay = new Date(currentShiftStart);
   shiftDay.setHours(0, 0, 0, 0);
+  const shiftEndDay = new Date(currentShiftEnd);
+  shiftEndDay.setHours(0, 0, 0, 0);
   const periodDay = new Date(periodStart);
   periodDay.setHours(0, 0, 0, 0);
   const asOfDay = new Date(asOf);
   asOfDay.setHours(0, 0, 0, 0);
-  const currentShiftBelongsToPeriod =
-    shiftDay >= periodDay && shiftDay <= asOfDay;
+  // 同日班次在当天结束后仍由进度折算，跨夜班次在结束日也继续归属于开班日；
+  // 一旦统计日越过班次结束日，activeShift 就只是 UI 留下的旧快照，不能再
+  // 截断后续工作日。
+  const currentShiftCoversAsOfDay =
+    shiftDay >= periodDay && shiftDay <= asOfDay && shiftEndDay >= asOfDay;
   const completed = countWorkdays(
     periodDay,
-    currentShiftBelongsToPeriod ? shiftDay : asOfDay,
+    currentShiftCoversAsOfDay ? shiftDay : asOfDay,
     workdays
   );
   const todayCounts =
-    currentShiftBelongsToPeriod && workdays.includes(shiftDay.getDay());
+    currentShiftCoversAsOfDay && workdays.includes(shiftDay.getDay());
   const todayFraction = todayCounts
     ? Math.min(100, Math.max(0, todayProgress)) / 100
     : 0;

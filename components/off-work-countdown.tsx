@@ -1094,6 +1094,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
         asOf: now,
         workdays,
         currentShiftStart: new Date(getShiftStartAtMs(shift)),
+        currentShiftEnd: new Date(getShiftEndAtMs(shift)),
         plannedDailyHours:
           getPlannedShiftDurationMs(shift) / (60 * 60 * 1000),
         todayProgress: 100,
@@ -2092,6 +2093,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       asOf: now,
       workdays,
       currentShiftStart: new Date(getShiftStartAtMs(summaryShift)),
+      currentShiftEnd: new Date(getShiftEndAtMs(summaryShift)),
       plannedDailyHours:
         getPlannedShiftDurationMs(summaryShift) / (60 * 60 * 1000),
       todayProgress: progress,

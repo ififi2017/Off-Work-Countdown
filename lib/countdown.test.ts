@@ -229,6 +229,12 @@ describe("segmented shift timeline", () => {
     expect(resolveOvertimeEndAtMs(shift, "18:30", at(19))).toBeNull();
   });
 
+  it("requires overtime to end strictly after the planned shift", () => {
+    const shift = buildShiftTimeline("09:00", "18:00", day(12));
+    expect(resolveOvertimeEndAtMs(shift, "18:00", at(17))).toBeNull();
+    expect(resolveOvertimeEndAtMs(shift, "18:30", at(17))).toBe(at(18, 30));
+  });
+
   it("finds the next configured workday without moving schedule rules to Rust", () => {
     const fridayAfterWork = new Date(2026, 6, 3, 19, 0, 0, 0);
     const next = findNextShiftTimeline({

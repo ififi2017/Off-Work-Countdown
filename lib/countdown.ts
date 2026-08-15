@@ -163,7 +163,10 @@ export function resolveOvertimeEndAtMs(
   if (resolved.getTime() < shift.plannedEndAtMs) {
     resolved = addCalendarDays(resolved, 1);
   }
-  return resolved.getTime() > nowMs ? resolved.getTime() : null;
+  const resolvedAtMs = resolved.getTime();
+  return resolvedAtMs > Math.max(nowMs, shift.plannedEndAtMs)
+    ? resolvedAtMs
+    : null;
 }
 
 export function findNextShiftTimeline(params: {
