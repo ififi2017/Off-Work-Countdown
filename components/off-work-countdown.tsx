@@ -1007,12 +1007,20 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             hideEarningsLabel: t("hideEarnings"),
           }
         : {
-            ...emptyDesktopCountdownState(lang, t("countdownNotStarted"), {
-              showEarnings: t("showEarnings"),
-              hideEarnings: t("hideEarnings"),
-            }),
-            miniSkin,
-            woodfishSoundEnabled,
+            ...emptyDesktopCountdownState(
+              lang,
+              t("countdownNotStarted"),
+              {
+                showEarnings: t("showEarnings"),
+                hideEarnings: t("hideEarnings"),
+              },
+              {
+                showSalary,
+                hideEarnings,
+                miniSkin,
+                woodfishSoundEnabled,
+              }
+            ),
           };
 
     void writeDesktopCountdownState(state).catch(() => {
@@ -1743,10 +1751,20 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   const handleReturn = () => {
     if (IS_DESKTOP_BUILD) {
-      void stopDesktopCountdown(lang, t("countdownNotStarted"), {
-        showEarnings: t("showEarnings"),
-        hideEarnings: t("hideEarnings"),
-      }).catch(() => {
+      void stopDesktopCountdown(
+        lang,
+        t("countdownNotStarted"),
+        {
+          showEarnings: t("showEarnings"),
+          hideEarnings: t("hideEarnings"),
+        },
+        {
+          showSalary,
+          hideEarnings,
+          miniSkin,
+          woodfishSoundEnabled,
+        }
+      ).catch(() => {
         // The normal snapshot effect remains a fallback.
       });
     }
