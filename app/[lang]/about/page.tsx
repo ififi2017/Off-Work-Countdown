@@ -4,6 +4,7 @@ import { Github } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { getContent } from "@/lib/server/content";
 import { ContentPage } from "@/components/ContentPage";
+import { MicrosoftStoreBadge } from "@/components/MicrosoftStoreBadge";
 import { localizedSocialMetadata } from "@/lib/server/metadata";
 import {
   contentLocales,
@@ -82,15 +83,18 @@ export default async function AboutPage({
           </section>
         ))}
 
-        <Link
-          href={siteConfig.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
-        >
-          <Github className="h-4 w-4" />
-          GitHub
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={siteConfig.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+          >
+            <Github className="h-4 w-4" />
+            GitHub
+          </Link>
+          <MicrosoftStoreBadge className="flex min-h-11 items-center" />
+        </div>
       </div>
     </ContentPage>
   );

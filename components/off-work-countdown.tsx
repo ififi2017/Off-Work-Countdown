@@ -90,6 +90,7 @@ import {
 } from "@/lib/countdown";
 import { WorkdaySelector } from "./WorkdaySelector";
 import { PeriodSummary } from "./PeriodSummary";
+import { MicrosoftStoreBadge } from "./MicrosoftStoreBadge";
 import { summarize, startOfWeek, startOfYear } from "@/lib/summary";
 import { useTranslation } from "react-i18next";
 import { resolveContentLocale } from "@/lib/content-locales";
@@ -3140,31 +3141,46 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
           避免先跳转再重定向。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
           故不渲染。 */}
       {!showCountdown && !isAppShell && (
-        // 间隔点与它后面的链接绑成一组：页脚在窄屏和长标签的语言里本来就会折行，
-        // 分开写会让断点正好落在点之后，上一行结尾挂着一个孤零零的「·」。
-        // 间距用 gap-x-2 而不是 3：英文五项刚好差十来像素才能排成一行。
-        <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs font-semibold text-gray-600 dark:text-gray-300">
+        <>
+        <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-3">
+          <MicrosoftStoreBadge
+            windowsOnly
+            className="flex min-h-11 items-center"
+          />
+          <Link
+            href={`/${contentLang}/download`}
+            className="flex h-11 w-[161px] items-center gap-2 rounded-[8px] border border-white/15 bg-[#1a1a1a] px-3 text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:border-black/10 dark:bg-white dark:text-[#1a1a1a] dark:hover:bg-gray-100 dark:focus:ring-offset-gray-900"
+          >
+            <Download className="h-5 w-5 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 text-left leading-none rtl:text-right">
+              <span className="block text-[10px] font-medium opacity-75">
+                {t("moreVersions")}
+              </span>
+              <span className="mt-1 block whitespace-nowrap text-[10px] font-semibold">
+                {t("moreVersionsDescription")}
+              </span>
+            </span>
+          </Link>
+        </div>
+        {/* 圆点分隔符在窄屏换行后会跑到新行开头，让最后一项看起来偏右。
+            这里只用均匀间距，确保每一行的链接文字本身都真正居中。 */}
+        <footer className="mt-8 flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-xs font-semibold text-gray-600 dark:text-gray-300">
           {[
-            { href: `/${contentLang}/download`, label: t("desktopInviteButton") },
             { href: `/${contentLang}/faq`, label: t("faq") },
             { href: `/${contentLang}/how-it-works`, label: t("howItWorks") },
             { href: `/${contentLang}/about`, label: t("aboutProject") },
             { href: `/${contentLang}/privacy`, label: t("privacyPolicy") },
-          ].map(({ href, label }, index) => (
-            <span
+          ].map(({ href, label }) => (
+            <Link
               key={href}
-              className="flex items-center gap-x-2 whitespace-nowrap"
+              href={href}
+              className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
             >
-              {index > 0 && <span aria-hidden="true">·</span>}
-              <Link
-                href={href}
-                className="transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-              >
-                {label}
-              </Link>
-            </span>
+              {label}
+            </Link>
           ))}
         </footer>
+        </>
       )}
       </div>
     </div>
