@@ -7,6 +7,29 @@ import {
 } from "./desktop-state";
 
 describe("desktop countdown state", () => {
+  it("keeps hidden earnings hidden in an idle snapshot", () => {
+    const state = emptyDesktopCountdownState(
+      "zh-CN",
+      "倒计时未开始",
+      { showEarnings: "显示薪资", hideEarnings: "隐藏薪资" },
+      {
+        showSalary: true,
+        hideEarnings: true,
+        miniSkin: "standard",
+        woodfishSoundEnabled: true,
+      }
+    );
+
+    expect(state).toMatchObject({
+      running: false,
+      showSalary: true,
+      hideEarnings: true,
+      miniSkin: "standard",
+      woodfishSoundEnabled: true,
+    });
+    expect(normalizeDesktopCountdownState(state).hideEarnings).toBe(true);
+  });
+
   it("formats a language-neutral duration without wrapping at 24 hours", () => {
     expect(formatDesktopDuration(25 * 60 * 60 * 1000 + 61_000)).toBe(
       "25:01:01"

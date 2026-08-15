@@ -72,6 +72,11 @@ export interface DesktopCountdownView {
   phase: "idle" | "before" | "working" | "break" | "between" | "done";
 }
 
+export type DesktopIdlePreferences = Pick<
+  DesktopCountdownState,
+  "showSalary" | "hideEarnings" | "miniSkin" | "woodfishSoundEnabled"
+>;
+
 const EMPTY_STATE: DesktopCountdownState = {
   segments: [],
   plannedEndAtMs: 0,
@@ -139,12 +144,14 @@ async function getDesktopStore(): Promise<DesktopStore | null> {
 export function emptyDesktopCountdownState(
   lang = "en",
   countdownNotStarted = "Countdown not started",
-  labels?: { showEarnings: string; hideEarnings: string }
+  labels?: { showEarnings: string; hideEarnings: string },
+  preferences?: DesktopIdlePreferences
 ): DesktopCountdownState {
-  // 停止状态下眼睛按钮不显示，但把标签一起带上，免得「有的字段本地化、
-  // 有的不本地化」这种不对称留在状态里让人猜。
+  // 停止状态下眼睛按钮不显示，但隐藏偏好仍必须留在共享 Store 里。否则用户
+  // 返回设置或重启应用时，空快照会把隐藏状态覆盖成默认的「显示」。
   return {
     ...EMPTY_STATE,
+    ...preferences,
     lang,
     countdownNotStarted,
     ...(labels && {
@@ -491,13 +498,14 @@ export async function updateDesktopMenus(
 }
 
 export async function stopDesktopCountdown(
-  lang = "en",
-  countdownNotStarted = "Countdown not started",
-  labels?: { showEarnings: string; hideEarnings: string }
+  lang: string,
+  countdownNotStarted: string,
+  labels: { showEarnings: string; hideEarnings: string },
+  preferences: DesktopIdlePreferences
 ): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
   await writeDesktopCountdownState(
-    emptyDesktopCountdownState(lang, countdownNotStarted, labels)
+    emptyDesktopCountdownState(lang, countdownNotStarted, labels, preferences)
   );
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("clear_desktop_countdown_display");
