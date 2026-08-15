@@ -159,6 +159,18 @@ describe("segmented shift timeline", () => {
         overtimeEndAtMs: null,
       })
     ).toBe(false);
+    expect(
+      isValidShiftTimeline({
+        segments: [
+          { startAtMs: at(9), endAtMs: at(12) },
+          { startAtMs: at(13), endAtMs: at(18) },
+        ],
+        // 原定下班点不能藏在午休缺口里；否则前端与 Rust 会对计划工时产生
+        // 不同解释，薪资比例也会失真。
+        plannedEndAtMs: at(12, 30),
+        overtimeEndAtMs: at(18),
+      })
+    ).toBe(false);
   });
 
   it("cuts an enabled lunch break out of effective work time", () => {
@@ -211,6 +223,12 @@ describe("segmented shift timeline", () => {
     );
   });
 
+  it("rejects an overtime clock that already passed instead of adding 24 hours", () => {
+    const shift = buildShiftTimeline("09:00", "18:00", day(12));
+    expect(resolveOvertimeEndAtMs(shift, "18:00", at(18, 10))).toBeNull();
+    expect(resolveOvertimeEndAtMs(shift, "18:30", at(19))).toBeNull();
+  });
+
   it("finds the next configured workday without moving schedule rules to Rust", () => {
     const fridayAfterWork = new Date(2026, 6, 3, 19, 0, 0, 0);
     const next = findNextShiftTimeline({
@@ -257,7 +275,15 @@ describe("getDailySalary", () => {
   it("returns null for empty or invalid input", () => {
     expect(getDailySalary("", "monthly")).toBeNull();
     expect(getDailySalary("abc", "daily")).toBeNull();
+    expect(getDailySalary("500oops", "daily")).toBeNull();
+    expect(getDailySalary("-1", "daily")).toBeNull();
+    expect(getDailySalary("Infinity", "daily")).toBeNull();
     expect(getDailySalary("10000", "monthly", 0)).toBeNull();
+    expect(getDailySalary("10000", "monthly", 32)).toBeNull();
+  });
+
+  it("allows a zero salary without treating it as missing", () => {
+    expect(getDailySalary("0", "daily")).toBe(0);
   });
 });
 

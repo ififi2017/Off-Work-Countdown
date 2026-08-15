@@ -155,11 +155,15 @@ export function resolveOvertimeEndAtMs(
   shift: ShiftTimeline,
   overtimeEndTime: string,
   nowMs: number
-): number {
-  const earliest = Math.max(shift.plannedEndAtMs, nowMs);
-  let resolved = atTime(new Date(earliest), overtimeEndTime);
-  if (resolved.getTime() <= earliest) resolved = addCalendarDays(resolved, 1);
-  return resolved.getTime();
+): number | null {
+  // 先以原定下班日解释钟点：小于原定下班时间的选择表示跨到次日，例如
+  // 18:00 下班后加班到 01:00。若这样解析后仍早于“现在”，它就是已经过去的
+  // 时间，不能再偷偷多加一天——否则 19:00 时误选 18:30 会变成近 24 小时加班。
+  let resolved = atTime(new Date(shift.plannedEndAtMs), overtimeEndTime);
+  if (resolved.getTime() < shift.plannedEndAtMs) {
+    resolved = addCalendarDays(resolved, 1);
+  }
+  return resolved.getTime() > nowMs ? resolved.getTime() : null;
 }
 
 export function findNextShiftTimeline(params: {
@@ -225,8 +229,11 @@ export function isValidShiftTimeline(shift: ShiftTimeline): boolean {
 
   const startAtMs = getShiftStartAtMs(shift);
   const endAtMs = getShiftEndAtMs(shift);
+  const lastSegment = shift.segments[shift.segments.length - 1];
   return (
     shift.plannedEndAtMs > startAtMs &&
+    shift.plannedEndAtMs > lastSegment.startAtMs &&
+    shift.plannedEndAtMs <= lastSegment.endAtMs &&
     endAtMs === shift.segments[shift.segments.length - 1].endAtMs
   );
 }
@@ -376,10 +383,16 @@ export function getDailySalary(
   type: "monthly" | "daily",
   monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS
 ): number | null {
-  if (!amount) return null;
-  const parsed = parseFloat(amount);
-  if (isNaN(parsed)) return null;
+  if (!amount.trim()) return null;
+  const parsed = Number(amount);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
   if (type === "daily") return parsed;
-  if (!monthlyWorkingDays || monthlyWorkingDays <= 0) return null;
+  if (
+    !Number.isFinite(monthlyWorkingDays) ||
+    monthlyWorkingDays <= 0 ||
+    monthlyWorkingDays > 31
+  ) {
+    return null;
+  }
   return parsed / monthlyWorkingDays;
 }

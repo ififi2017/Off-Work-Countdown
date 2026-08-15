@@ -74,6 +74,7 @@ import {
   resolveOvertimeEndAtMs,
   suggestOvertimeEndAtMs,
   getShiftDurationMs,
+  getPlannedShiftDurationMs,
   getShiftEndAtMs,
   getShiftRemainingMs,
   getActiveBreakEndAtMs,
@@ -166,13 +167,37 @@ type DesktopUpdateStatus =
   | "mirrorInstalling"
   | "error";
 
-// Helper function to safely get item from localStorage
 const getLocalStorageItem = (key: string, defaultValue: string) => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem(key) || defaultValue;
+    try {
+      return localStorage.getItem(key) ?? defaultValue;
+    } catch {
+      // localStorage can be unavailable in hardened/private browser contexts.
+    }
   }
   return defaultValue;
 };
+
+const getOptionalLocalStorageItem = (key: string): string | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+/** 每个字段独立落盘，避免一个标签页改提醒时顺手覆盖另一个标签页的隐私偏好。 */
+function usePersistedSetting(key: string, value: string, enabled: boolean) {
+  useEffect(() => {
+    if (!enabled) return;
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // 存储不可用时保留当前会话状态，不让设置页崩溃。
+    }
+  }, [enabled, key, value]);
+}
 
 export interface OffWorkCountdownProps {
   lang: string;
@@ -263,6 +288,8 @@ function SalarySettings({
                 </Label>
                 <input
                   type="number"
+                  min="0"
+                  step="0.01"
                   className="w-full rounded-md border bg-background p-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   value={maskAmountField ? "" : salaryAmount}
                   onFocus={() => onMaskAmountFieldChange(false)}
@@ -362,7 +389,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 桌面端由构建期常量直接判定：构建时已知意味着首帧就是正确布局，不会出现
   // 「先渲染成浏览器版、再跳成铺满版」的闪烁；PWA 仍需运行时探测显示模式。
   const [isAppShell, setIsAppShell] = useState(IS_DESKTOP_BUILD);
-  const [moneyEarned, setMoneyEarned] = useState(0);
   const [hideEarnings, setHideEarnings] = useState(false);
   const [maskAmountField, setMaskAmountField] = useState(true);
   const [activeShift, setActiveShift] = useState<ShiftTimeline | null>(null);
@@ -381,6 +407,8 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const [microBreakIntervalMinutes, setMicroBreakIntervalMinutes] = useState(60);
   const [miniSkin, setMiniSkin] = useState<DesktopMiniSkin>("woodfish");
   const [woodfishSoundEnabled, setWoodfishSoundEnabled] = useState(false);
+  /** 让周/年汇总即使在两班之间也能于本地午夜自动换期。 */
+  const [calendarDateKey, setCalendarDateKey] = useState("");
   const [desktopStateRestored, setDesktopStateRestored] = useState(
     !IS_DESKTOP_BUILD
   );
@@ -431,6 +459,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    const updateDateKey = () => {
+      const now = new Date();
+      setCalendarDateKey(
+        `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`
+      );
+    };
+    updateDateKey();
+    const timer = window.setInterval(updateDateKey, 60_000);
+    return () => window.clearInterval(timer);
+  }, [isMounted]);
 
   // The exported desktop bundle boots from its English entry point. Restore a
   // manual choice, or use the OS locale the first time the app is opened.
@@ -546,26 +587,35 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       // 这里不能用 getLocalStorageItem 的默认值兜底：空字符串是「一天都不上班」
       // 这个合法状态，与「从未设置过」必须区分，交给 parseWorkdays 处理。
       setWorkdays(
-        parseWorkdays(
-          typeof window !== "undefined"
-            ? localStorage.getItem("workdays")
-            : null
-        )
+        parseWorkdays(getOptionalLocalStorageItem("workdays"))
       );
-      setSalaryType((getLocalStorageItem("salaryType", "monthly") as "monthly" | "daily"));
+      const storedSalaryType = getLocalStorageItem("salaryType", "monthly");
+      setSalaryType(storedSalaryType === "daily" ? "daily" : "monthly");
       setSalaryAmount(getLocalStorageItem("salaryAmount", ""));
-      setMonthlyWorkingDays(
+      const storedMonthlyWorkingDays = Number(
         getLocalStorageItem(
           "monthlyWorkingDays",
           DEFAULT_MONTHLY_WORKING_DAYS.toString()
         )
       );
+      setMonthlyWorkingDays(
+        Number.isFinite(storedMonthlyWorkingDays) &&
+          storedMonthlyWorkingDays > 0 &&
+          storedMonthlyWorkingDays <= 31
+          ? String(storedMonthlyWorkingDays)
+          : DEFAULT_MONTHLY_WORKING_DAYS.toString()
+      );
       setShowSalary(getLocalStorageItem("showSalary", "false") === "true");
       setHideEarnings(getLocalStorageItem("hideEarnings", "false") === "true");
       setLunchEnabled(getLocalStorageItem("lunchEnabled", "false") === "true");
       setLunchStartTime(getLocalStorageItem("lunchStartTime", "12:00"));
+      const storedLunchDuration = Number(
+        getLocalStorageItem("lunchDurationMinutes", "60")
+      );
       setLunchDurationMinutes(
-        Number(getLocalStorageItem("lunchDurationMinutes", "60")) || 60
+        Number.isFinite(storedLunchDuration) && storedLunchDuration > 0
+          ? storedLunchDuration
+          : 60
       );
       setLunchEndNotificationEnabled(
         getLocalStorageItem("lunchEndNotificationEnabled", "false") === "true"
@@ -573,8 +623,14 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setMicroBreakEnabled(
         getLocalStorageItem("microBreakEnabled", "false") === "true"
       );
+      const storedMicroBreakInterval = Number(
+        getLocalStorageItem("microBreakIntervalMinutes", "60")
+      );
       setMicroBreakIntervalMinutes(
-        Number(getLocalStorageItem("microBreakIntervalMinutes", "60")) || 60
+        Number.isFinite(storedMicroBreakInterval) &&
+          storedMicroBreakInterval > 0
+          ? storedMicroBreakInterval
+          : 60
       );
       setLunchStartNotificationEnabled(
         getLocalStorageItem("lunchStartNotificationEnabled", "true") === "true"
@@ -602,12 +658,23 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     let cancelled = false;
     void readDesktopCountdownState()
       .then((state) => {
+        if (cancelled || !state) return;
+        // 3.1.5 及更早的空快照可能把 hideEarnings 写成默认 false。旧快照只
+        // 允许把金额收起，不能把 localStorage 中已隐藏的金额重新公开；新格式
+        // 有版本标记后，Store 才能作为主窗与迷你窗之间的双向真源。
+        setHideEarnings((current) =>
+          state.preferencesVersion >= 1
+            ? state.hideEarnings
+            : current || state.hideEarnings
+        );
+        setWoodfishSoundEnabled(state.woodfishSoundEnabled);
+        setMiniSkin(state.miniSkin);
         const hasUpcomingShift = Boolean(
-          state?.nextShift &&
+          state.nextShift &&
             isValidShiftTimeline(state.nextShift) &&
             getShiftStartAtMs(state.nextShift) > Date.now()
         );
-        if (cancelled || !state || !isValidShiftTimeline(state)) {
+        if (!isValidShiftTimeline(state)) {
           return;
         }
         const needsScheduleRecovery =
@@ -811,44 +878,143 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     };
   }, [isMounted]);
 
-  // 保存设置到 localStorage。两个前提：本地设置已读入 state（见 settingsLoaded
-  // 的说明），且不处于分享视图——那是别人的班次，不该覆盖访问者自己保存的时间，
-  // 等他点了「换成我的时间」再恢复正常持久化。
+  // 每个设置独立落盘。分享链接只借用别人的开始/结束时间，访问者在分享页上
+  // 改的隐私、薪资和提醒偏好仍然是自己的，也必须保存。
+  const persistOwnSchedule = settingsLoaded && !isSharedView;
+  usePersistedSetting("startTime", startTime, persistOwnSchedule);
+  usePersistedSetting("endTime", endTime, persistOwnSchedule);
+  usePersistedSetting("reminder", String(reminder), settingsLoaded);
+  usePersistedSetting(
+    "desktopNotificationMode",
+    desktopNotificationMode,
+    settingsLoaded
+  );
+  usePersistedSetting("workdays", serializeWorkdays(workdays), settingsLoaded);
+  usePersistedSetting("salaryType", salaryType, settingsLoaded);
+  usePersistedSetting("salaryAmount", salaryAmount, settingsLoaded);
+  usePersistedSetting("monthlyWorkingDays", monthlyWorkingDays, settingsLoaded);
+  usePersistedSetting("showSalary", String(showSalary), settingsLoaded);
+  usePersistedSetting("hideEarnings", String(hideEarnings), settingsLoaded);
+  usePersistedSetting("lunchEnabled", String(lunchEnabled), settingsLoaded);
+  usePersistedSetting("lunchStartTime", lunchStartTime, settingsLoaded);
+  usePersistedSetting(
+    "lunchDurationMinutes",
+    String(lunchDurationMinutes),
+    settingsLoaded
+  );
+  usePersistedSetting(
+    "lunchEndNotificationEnabled",
+    String(lunchEndNotificationEnabled),
+    settingsLoaded
+  );
+  usePersistedSetting("miniSkin", miniSkin, settingsLoaded);
+  usePersistedSetting(
+    "woodfishSoundEnabled",
+    String(woodfishSoundEnabled),
+    settingsLoaded
+  );
+  usePersistedSetting(
+    "microBreakEnabled",
+    String(microBreakEnabled),
+    settingsLoaded
+  );
+  usePersistedSetting(
+    "microBreakIntervalMinutes",
+    String(microBreakIntervalMinutes),
+    settingsLoaded
+  );
+  usePersistedSetting(
+    "lunchStartNotificationEnabled",
+    String(lunchStartNotificationEnabled),
+    settingsLoaded
+  );
+
+  // 其他标签页改了某一项时只吸收那一项，避免任一旧标签页随后渲染时用整份
+  // 过期 state 覆盖回来。当前标签页处于分享视图时，仍不接管本地班次时间。
   useEffect(() => {
-    if (settingsLoaded && !isSharedView) {
-      localStorage.setItem("startTime", startTime);
-      localStorage.setItem("endTime", endTime);
-      localStorage.setItem("reminder", reminder.toString());
-      localStorage.setItem("desktopNotificationMode", desktopNotificationMode);
-      localStorage.setItem("workdays", serializeWorkdays(workdays));
-      localStorage.setItem("salaryType", salaryType);
-      localStorage.setItem("salaryAmount", salaryAmount);
-      localStorage.setItem("monthlyWorkingDays", monthlyWorkingDays);
-      localStorage.setItem("showSalary", showSalary.toString());
-      localStorage.setItem("hideEarnings", hideEarnings.toString());
-      localStorage.setItem("lunchEnabled", lunchEnabled.toString());
-      localStorage.setItem("lunchStartTime", lunchStartTime);
-      localStorage.setItem("lunchDurationMinutes", String(lunchDurationMinutes));
-      localStorage.setItem(
-        "lunchEndNotificationEnabled",
-        lunchEndNotificationEnabled.toString()
-      );
-      localStorage.setItem("miniSkin", miniSkin);
-      localStorage.setItem(
-        "woodfishSoundEnabled",
-        woodfishSoundEnabled.toString()
-      );
-      localStorage.setItem("microBreakEnabled", microBreakEnabled.toString());
-      localStorage.setItem(
-        "microBreakIntervalMinutes",
-        String(microBreakIntervalMinutes)
-      );
-      localStorage.setItem(
-        "lunchStartNotificationEnabled",
-        lunchStartNotificationEnabled.toString()
-      );
-    }
-  }, [settingsLoaded, isSharedView, startTime, endTime, reminder, desktopNotificationMode, workdays, salaryType, salaryAmount, monthlyWorkingDays, showSalary, hideEarnings, lunchEnabled, lunchStartTime, lunchDurationMinutes, lunchEndNotificationEnabled, microBreakEnabled, microBreakIntervalMinutes, lunchStartNotificationEnabled, miniSkin, woodfishSoundEnabled]);
+    if (!settingsLoaded) return;
+    const updateFromStorage = ({ key, newValue }: StorageEvent) => {
+      if (key === null || newValue === null) return;
+      const enabled = newValue === "true";
+      switch (key) {
+        case "startTime":
+          if (!isSharedView) setStartTime(newValue);
+          break;
+        case "endTime":
+          if (!isSharedView) setEndTime(newValue);
+          break;
+        case "reminder":
+          setReminder(enabled);
+          break;
+        case "desktopNotificationMode":
+          setDesktopNotificationMode(
+            newValue === "simple" || newValue === "milestones"
+              ? newValue
+              : "off"
+          );
+          break;
+        case "workdays":
+          setWorkdays(parseWorkdays(newValue));
+          break;
+        case "salaryType":
+          setSalaryType(newValue === "daily" ? "daily" : "monthly");
+          break;
+        case "salaryAmount":
+          setSalaryAmount(newValue);
+          break;
+        case "monthlyWorkingDays": {
+          const days = Number(newValue);
+          if (Number.isFinite(days) && days > 0 && days <= 31) {
+            setMonthlyWorkingDays(String(days));
+          }
+          break;
+        }
+        case "showSalary":
+          setShowSalary(enabled);
+          break;
+        case "hideEarnings":
+          setHideEarnings(enabled);
+          break;
+        case "lunchEnabled":
+          setLunchEnabled(enabled);
+          break;
+        case "lunchStartTime":
+          setLunchStartTime(newValue);
+          break;
+        case "lunchDurationMinutes": {
+          const minutes = Number(newValue);
+          if (Number.isFinite(minutes) && minutes > 0) {
+            setLunchDurationMinutes(minutes);
+          }
+          break;
+        }
+        case "lunchEndNotificationEnabled":
+          setLunchEndNotificationEnabled(enabled);
+          break;
+        case "miniSkin":
+          setMiniSkin(newValue === "standard" ? "standard" : "woodfish");
+          break;
+        case "woodfishSoundEnabled":
+          setWoodfishSoundEnabled(enabled);
+          break;
+        case "microBreakEnabled":
+          setMicroBreakEnabled(enabled);
+          break;
+        case "microBreakIntervalMinutes": {
+          const minutes = Number(newValue);
+          if (Number.isFinite(minutes) && minutes > 0) {
+            setMicroBreakIntervalMinutes(minutes);
+          }
+          break;
+        }
+        case "lunchStartNotificationEnabled":
+          setLunchStartNotificationEnabled(enabled);
+          break;
+      }
+    };
+    window.addEventListener("storage", updateFromStorage);
+    return () => window.removeEventListener("storage", updateFromStorage);
+  }, [isSharedView, settingsLoaded]);
 
   // 午休整段落在班次之外时 buildTimelineFromBounds 会直接丢弃它，界面上却
   // 看不出任何异常——开关还亮着、时间还显示着。这里显式算一次好给出提示。
@@ -883,9 +1049,18 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     return calculateDailySalary(
       salaryAmount,
       salaryType,
-      parseFloat(monthlyWorkingDays) || DEFAULT_MONTHLY_WORKING_DAYS
+      Number(monthlyWorkingDays)
     );
   }, [salaryAmount, salaryType, monthlyWorkingDays]);
+
+  const configuredDailySalary = showSalary ? getDailySalary() : null;
+  // 收益完全由当前班次快照与当前设置推导，不保留一份会跨“返回/重新开始”
+  // 残留的副本。清空薪资或关闭显示后，下一次渲染立即不再提供旧金额。
+  const moneyEarned =
+    activeShift && configuredDailySalary !== null
+      ? configuredDailySalary *
+        calculateTimelinePayRatio(activeShift, Date.now())
+      : null;
 
   // 将 UI 的运行状态镜像为一个原子快照。Rust 与迷你窗只比较、累加前端已
   // 解析好的绝对 segments，不需要理解跨夜班次、工作日等业务规则。
@@ -914,20 +1089,17 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
       const todayHours = getShiftDurationMs(shift) / (60 * 60 * 1000);
       const now = new Date();
-      const completedYearHours = summarize({
+      const yearHours = summarize({
         periodStart: startOfYear(now),
-        now,
+        asOf: now,
         workdays,
-        startTime,
-        endTime,
-        todayProgress: 0,
+        currentShiftStart: new Date(getShiftStartAtMs(shift)),
+        plannedDailyHours:
+          getPlannedShiftDurationMs(shift) / (60 * 60 * 1000),
+        todayProgress: 100,
         dailySalary: null,
+        todayEffectiveHours: todayHours,
       }).hours;
-      const yearHours =
-        completedYearHours +
-        (isWorkday(new Date(getShiftStartAtMs(shift)), workdays)
-          ? todayHours
-          : 0);
       const hourFormatter = new Intl.NumberFormat(lang, {
         style: "unit",
         unit: "hour",
@@ -959,6 +1131,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     const state =
       showCountdown && activeShift
         ? {
+            preferencesVersion: 1,
             segments: activeShift.segments,
             plannedEndAtMs: activeShift.plannedEndAtMs,
             overtimeEndAtMs: activeShift.overtimeEndAtMs,
@@ -985,7 +1158,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             notificationMessages: buildNotificationMessages(activeShift),
             showSalary,
             hideEarnings,
-            dailySalary: showSalary ? getDailySalary() : null,
+            dailySalary: configuredDailySalary,
             lang,
             countdownNotStarted: t("countdownNotStarted"),
             // 这句既用于“本班尚未开始”，也用于“等待下一班”，用不带“下一班”
@@ -1034,7 +1207,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     desktopNotificationMode,
     showSalary,
     hideEarnings,
-    getDailySalary,
+    configuredDailySalary,
     workdays,
     startTime,
     endTime,
@@ -1061,7 +1234,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       if (!state) return;
       // 迷你窗能改这两项，主窗口必须跟上——否则主窗口下一次写状态会把
       // 用户刚在迷你窗上做的切换覆盖回去。
-      setHideEarnings(state.hideEarnings);
+      setHideEarnings((current) =>
+        state.preferencesVersion >= 1
+          ? state.hideEarnings
+          : current || state.hideEarnings
+      );
       setWoodfishSoundEnabled(state.woodfishSoundEnabled);
       setMiniSkin(state.miniSkin);
       if (!state.running && isValidShiftTimeline(state)) {
@@ -1229,7 +1406,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               .padStart(2, "0")}`
           );
           setProgress(0);
-          setMoneyEarned(0);
           return;
         }
         setShowBeforeShiftStatus(false);
@@ -1322,14 +1498,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               celebrationPendingRef.current = endAtMs;
             }
           }
-          if (showSalary) {
-            const dailySalary = getDailySalary();
-            if (dailySalary !== null) {
-              setMoneyEarned(
-                dailySalary * calculateTimelinePayRatio(shift, now.getTime())
-              );
-            }
-          }
           if (!IS_DESKTOP_BUILD) clearInterval(interval);
         } else {
           setShowNextShiftStatus(false);
@@ -1373,16 +1541,6 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
             reminderFiredRef.current = true;
             void showNotification(t("offWorkReminder"), t("fifteenMinutesLeft"));
           }
-
-          // Calculate money earned
-          if (showSalary && salaryAmount) {
-            const dailySalary = getDailySalary();
-            if (dailySalary !== null) {
-              setMoneyEarned(
-                dailySalary * calculateTimelinePayRatio(shift, now.getTime())
-              );
-            }
-          }
         }
       };
 
@@ -1390,7 +1548,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       interval = setInterval(updateCountdown, 1000);
     }
     return () => clearInterval(interval);
-  }, [showCountdown, startTime, endTime, activeShift, reminder, calculateProgress, t, showSalary, salaryAmount, getDailySalary, shiftBuildOptions, workdays, triggerCelebration]);
+  }, [showCountdown, startTime, endTime, activeShift, reminder, calculateProgress, t, shiftBuildOptions, workdays, triggerCelebration]);
 
   const handleStart = () => {
     if (startTime === endTime) {
@@ -1795,16 +1953,23 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
   const confirmOvertime = () => {
     if (!activeShift) return;
-    const extended = extendShiftWithOvertime(
+    const overtimeEndAtMs = resolveOvertimeEndAtMs(
       activeShift,
-      resolveOvertimeEndAtMs(activeShift, overtimeEndTime, Date.now())
+      overtimeEndTime,
+      Date.now()
     );
+    if (overtimeEndAtMs === null) return;
+    const extended = extendShiftWithOvertime(activeShift, overtimeEndAtMs);
     if (extended === activeShift) return;
     setActiveShift(extended);
     completionTrackedRef.current = false;
     celebratedShiftRef.current = null;
     setOvertimeDialogOpen(false);
   };
+
+  const overtimeCandidateIsValid =
+    activeShift !== null &&
+    resolveOvertimeEndAtMs(activeShift, overtimeEndTime, Date.now()) !== null;
 
   // 「换成我的时间」：把 URL 里别人的班次换回访问者本地保存的设置。
   // 同时清掉 query，避免刷新或分享当前页时又把别人的班次带上。
@@ -1918,21 +2083,22 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   // 本周与今年的累计，完全由配置推算（见 lib/summary.ts 的说明）。
   // 仅在倒计时视图下计算：它依赖当前时间，服务端渲染时算了也不能用。
   const summaryRows = useMemo(() => {
-    if (!isMounted || !showCountdown) return null;
+    if (!isMounted || !showCountdown || !calendarDateKey) return null;
     const now = new Date();
+    const summaryShift =
+      activeShift ??
+      buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
     const common = {
-      now,
+      asOf: now,
       workdays,
-      startTime,
-      endTime,
+      currentShiftStart: new Date(getShiftStartAtMs(summaryShift)),
+      plannedDailyHours:
+        getPlannedShiftDurationMs(summaryShift) / (60 * 60 * 1000),
       todayProgress: progress,
-      dailySalary: showSalary ? getDailySalary() : null,
-      todayEffectiveHours: activeShift
-        ? getShiftDurationMs(activeShift) / (60 * 60 * 1000)
-        : undefined,
-      todayPayRatio: activeShift
-        ? calculateTimelinePayRatio(activeShift, Date.now())
-        : undefined,
+      dailySalary: configuredDailySalary,
+      todayEffectiveHours:
+        getShiftDurationMs(summaryShift) / (60 * 60 * 1000),
+      todayPayRatio: calculateTimelinePayRatio(summaryShift, Date.now()),
     };
     return [
       {
@@ -1950,10 +2116,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     workdays,
     startTime,
     endTime,
+    shiftBuildOptions,
     progress,
-    showSalary,
-    getDailySalary,
+    configuredDailySalary,
     activeShift,
+    calendarDateKey,
     t,
   ]);
 
@@ -2106,7 +2273,12 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               <Button variant="outline" onClick={() => setOvertimeDialogOpen(false)}>
                 {t("notNow")}
               </Button>
-              <Button onClick={confirmOvertime}>{t("confirmOvertime")}</Button>
+              <Button
+                onClick={confirmOvertime}
+                disabled={!overtimeCandidateIsValid}
+              >
+                {t("confirmOvertime")}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -2490,7 +2662,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                     hideEarnings={hideEarnings}
                     compact={IS_DESKTOP_BUILD}
                     currentEarnings={
-                      showSalary
+                      moneyEarned !== null
                         ? {
                             label: t("moneyEarned"),
                             value: moneyEarned.toFixed(2),

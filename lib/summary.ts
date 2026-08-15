@@ -1,5 +1,3 @@
-import { getShiftLengthHours } from "./countdown";
-
 // 周期性汇总。**完全由配置推算，不依赖任何历史记录。**
 //
 // 这是刻意的选择：用户不会把页面挂满整个工作日，也不会每天都来。真去记录
@@ -9,7 +7,7 @@ import { getShiftLengthHours } from "./countdown";
 // 代价是必须如实标注「按当前设置推算」。
 
 export interface PeriodSummary {
-  /** 已过去的工作日数，今天按班次完成比例计入小数。 */
+  /** 已过去的工作日数，当前班次按完成比例计入小数。 */
   days: number;
   hours: number;
   /** 未配置薪资时为 null。 */
@@ -55,46 +53,63 @@ export function countWorkdays(from: Date, to: Date, workdays: number[]): number 
 /**
  * 汇总从 periodStart 到此刻的工作量。
  *
- * 今天单独计算：只有当天是工作日时才计入，且按班次已完成的比例折算，
- * 与界面上「今日已赚」的口径保持一致。
+ * 当前班次单独计算：只有它的开班日是工作日、且落在当前周期时才计入，
+ * 并按已完成比例折算，与界面上「今日已赚」的口径保持一致。
  */
 export function summarize(params: {
   periodStart: Date;
-  now: Date;
+  /** 汇总所处的当前日，只负责截断未来日期，不决定夜班归属。 */
+  asOf: Date;
   workdays: number[];
-  startTime: string;
-  endTime: string;
+  /** 当前班次按开始日期归属工作日；跨午夜后仍属于开始的那一天。 */
+  currentShiftStart: Date;
+  /** 当前设置下一个完整计划班次的有效工时，已经扣除午休。 */
+  plannedDailyHours: number;
   /** 班次进度百分比 0–100，来自正在运行的倒计时。 */
   todayProgress: number;
   dailySalary: number | null;
-  /** 今日实际有效工时；用于午休与加班，未提供时按设置中的名义时长。 */
+  /** 当前班次实际有效工时；用于午休与加班，未提供时按计划有效时长。 */
   todayEffectiveHours?: number;
-  /** 今日按原日薪线性外推的计薪比例；可因加班超过 1。 */
+  /** 当前班次按原日薪线性外推的计薪比例；可因加班超过 1。 */
   todayPayRatio?: number;
 }): PeriodSummary {
   const {
     periodStart,
-    now,
+    asOf,
     workdays,
-    startTime,
-    endTime,
+    currentShiftStart,
+    plannedDailyHours,
     todayProgress,
     dailySalary,
     todayEffectiveHours,
     todayPayRatio,
   } = params;
 
-  const completed = countWorkdays(periodStart, now, workdays);
-  const todayCounts = workdays.includes(now.getDay());
+  const shiftDay = new Date(currentShiftStart);
+  shiftDay.setHours(0, 0, 0, 0);
+  const periodDay = new Date(periodStart);
+  periodDay.setHours(0, 0, 0, 0);
+  const asOfDay = new Date(asOf);
+  asOfDay.setHours(0, 0, 0, 0);
+  const currentShiftBelongsToPeriod =
+    shiftDay >= periodDay && shiftDay <= asOfDay;
+  const completed = countWorkdays(
+    periodDay,
+    currentShiftBelongsToPeriod ? shiftDay : asOfDay,
+    workdays
+  );
+  const todayCounts =
+    currentShiftBelongsToPeriod && workdays.includes(shiftDay.getDay());
   const todayFraction = todayCounts
     ? Math.min(100, Math.max(0, todayProgress)) / 100
     : 0;
 
-  const nominalHours = getShiftLengthHours(startTime, endTime);
   const days = completed + todayFraction;
   const hours =
-    completed * nominalHours +
-    (todayCounts ? (todayEffectiveHours ?? nominalHours) * todayFraction : 0);
+    completed * plannedDailyHours +
+    (todayCounts
+      ? (todayEffectiveHours ?? plannedDailyHours) * todayFraction
+      : 0);
   const earningsFraction = todayCounts
     ? Math.max(0, todayPayRatio ?? todayFraction)
     : 0;

@@ -149,13 +149,19 @@ fn valid_shift_parts(
         }
         previous_end = segment.end_at_ms;
     }
-    previous_end == overtime_end_at_ms.unwrap_or(planned_end_at_ms)
+    let last = segments.last().expect("segments is known to be non-empty");
+    planned_end_at_ms > last.start_at_ms
+        && planned_end_at_ms <= last.end_at_ms
+        && previous_end == overtime_end_at_ms.unwrap_or(planned_end_at_ms)
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 #[serde(rename_all = "camelCase")]
 struct CountdownState {
+    /// 共享偏好快照格式；旧版本缺失时 serde 默认成 0。
+    #[serde(rename = "preferencesVersion")]
+    _preferences_version: u8,
     segments: Vec<ShiftSegment>,
     planned_end_at_ms: i64,
     overtime_end_at_ms: Option<i64>,
@@ -2468,6 +2474,41 @@ mod format_tests {
         assert_eq!(state.segments[0].end_at_ms, 2_000);
         assert_eq!(state.planned_end_at_ms, 2_000);
         assert!(state.is_valid_shift());
+    }
+
+    #[test]
+    fn rejects_a_planned_end_inside_a_segment_gap() {
+        let state = CountdownState {
+            segments: vec![
+                ShiftSegment {
+                    start_at_ms: 1_000,
+                    end_at_ms: 4_000,
+                },
+                ShiftSegment {
+                    start_at_ms: 6_000,
+                    end_at_ms: 11_000,
+                },
+            ],
+            planned_end_at_ms: 5_000,
+            overtime_end_at_ms: Some(11_000),
+            running: true,
+            ..Default::default()
+        };
+
+        assert!(!state.is_valid_shift());
+    }
+
+    #[test]
+    fn preserves_the_preferences_version_across_the_js_rust_store_bridge() {
+        let state = CountdownState {
+            _preferences_version: 1,
+            ..Default::default()
+        };
+        let value = serde_json::to_value(&state).expect("state should serialize");
+        assert_eq!(value["preferencesVersion"], 1);
+        let restored: CountdownState =
+            serde_json::from_value(value).expect("state should deserialize");
+        assert_eq!(restored._preferences_version, 1);
     }
 
     #[test]
