@@ -110,7 +110,6 @@ export interface ContentBundle {
     demoMiniHeading: string;
     demoMiniBody: string;
     demoMiniAlt: string;
-    demoCtaLabel: string;
     latestVersionLabel: string;
     loadingLabel: string;
     unavailableLabel: string;

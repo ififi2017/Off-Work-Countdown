@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import {
-  ArrowDown,
   Bell,
   Check,
   Clock3,
@@ -197,13 +196,6 @@ export default async function DownloadPage({
                 <p className="mt-3 leading-7 text-gray-600 dark:text-gray-300">
                   {body}
                 </p>
-                <a
-                  href="#comparison"
-                  className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-gray-950 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 sm:mt-auto sm:translate-y-1 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus:ring-offset-gray-800"
-                >
-                  {copy.demoCtaLabel}
-                  <ArrowDown className="h-4 w-4" aria-hidden="true" />
-                </a>
               </div>
             </article>
           ))}
