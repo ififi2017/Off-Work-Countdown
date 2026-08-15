@@ -3143,10 +3143,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       {!showCountdown && !isAppShell && (
         <>
         <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-3">
-          <MicrosoftStoreBadge
-            windowsOnly
-            className="flex min-h-11 items-center"
-          />
+          <MicrosoftStoreBadge className="flex min-h-11 items-center" />
           <Link
             href={`/${contentLang}/download`}
             className="flex h-11 w-[161px] items-center gap-2 rounded-[8px] border border-white/15 bg-[#1a1a1a] px-3 text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:border-black/10 dark:bg-white dark:text-[#1a1a1a] dark:hover:bg-gray-100 dark:focus:ring-offset-gray-900"
