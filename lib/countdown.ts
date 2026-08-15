@@ -146,7 +146,9 @@ export function suggestOvertimeEndAtMs(
   shift: ShiftTimeline,
   nowMs: number
 ): number {
-  if (shift.overtimeEndAtMs) return shift.overtimeEndAtMs;
+  if (shift.overtimeEndAtMs && shift.overtimeEndAtMs > nowMs) {
+    return shift.overtimeEndAtMs;
+  }
   const raw = Math.max(shift.plannedEndAtMs, nowMs) + 60 * 60 * 1000;
   return Math.ceil(raw / (15 * 60 * 1000)) * 15 * 60 * 1000;
 }

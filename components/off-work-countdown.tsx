@@ -113,6 +113,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   emptyDesktopCountdownState,
+  hasAuthoritativeDesktopPreferences,
   getDesktopAutostartState,
   getDesktopGlobalShortcutSettings,
   getMiniWindowSettings,
@@ -659,16 +660,20 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     void readDesktopCountdownState()
       .then((state) => {
         if (cancelled || !state) return;
+        const hasAuthoritativePreferences =
+          hasAuthoritativeDesktopPreferences(state);
         // 3.1.5 及更早的空快照可能把 hideEarnings 写成默认 false。旧快照只
         // 允许把金额收起，不能把 localStorage 中已隐藏的金额重新公开；新格式
         // 有版本标记后，Store 才能作为主窗与迷你窗之间的双向真源。
         setHideEarnings((current) =>
-          state.preferencesVersion >= 1
+          hasAuthoritativePreferences
             ? state.hideEarnings
             : current || state.hideEarnings
         );
-        setWoodfishSoundEnabled(state.woodfishSoundEnabled);
-        setMiniSkin(state.miniSkin);
+        if (hasAuthoritativePreferences) {
+          setWoodfishSoundEnabled(state.woodfishSoundEnabled);
+          setMiniSkin(state.miniSkin);
+        }
         const hasUpcomingShift = Boolean(
           state.nextShift &&
             isValidShiftTimeline(state.nextShift) &&
@@ -1046,10 +1051,15 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   }, [lunchEnabled, startTime, endTime, shiftBuildOptions]);
 
   const getDailySalary = useCallback(() => {
+    // 空输入是用户删掉旧值、准备重输时的正常中间态，placeholder 也约定此时
+    // 采用默认计薪天数。其他非空非法值仍交给计算层拒绝。
+    const workingDays = monthlyWorkingDays.trim()
+      ? Number(monthlyWorkingDays)
+      : undefined;
     return calculateDailySalary(
       salaryAmount,
       salaryType,
-      Number(monthlyWorkingDays)
+      workingDays
     );
   }, [salaryAmount, salaryType, monthlyWorkingDays]);
 
@@ -1233,15 +1243,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
     void subscribeToDesktopCountdown((state) => {
       if (!state) return;
-      // 迷你窗能改这两项，主窗口必须跟上——否则主窗口下一次写状态会把
+      // 迷你窗能改这些偏好，主窗口必须跟上——否则主窗口下一次写状态会把
       // 用户刚在迷你窗上做的切换覆盖回去。
+      const hasAuthoritativePreferences =
+        hasAuthoritativeDesktopPreferences(state);
       setHideEarnings((current) =>
-        state.preferencesVersion >= 1
+        hasAuthoritativePreferences
           ? state.hideEarnings
           : current || state.hideEarnings
       );
-      setWoodfishSoundEnabled(state.woodfishSoundEnabled);
-      setMiniSkin(state.miniSkin);
+      if (hasAuthoritativePreferences) {
+        setWoodfishSoundEnabled(state.woodfishSoundEnabled);
+        setMiniSkin(state.miniSkin);
+      }
       if (!state.running && isValidShiftTimeline(state)) {
         // Rust 判定“下一班也已完全错过”时只负责丢弃过期 nextShift。这里用旧班次
         // 触发一次新快照，findNextShiftTimeline 会从当前时刻之后继续排班。

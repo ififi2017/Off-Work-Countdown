@@ -223,6 +223,13 @@ describe("segmented shift timeline", () => {
     );
   });
 
+  it("replaces an expired overtime end with a new future suggestion", () => {
+    const base = buildShiftTimeline("09:00", "18:00", day(12));
+    const extended = extendShiftWithOvertime(base, at(20));
+    expect(suggestOvertimeEndAtMs(extended, at(19))).toBe(at(20));
+    expect(suggestOvertimeEndAtMs(extended, at(20, 30))).toBe(at(21, 30));
+  });
+
   it("rejects an overtime clock that already passed instead of adding 24 hours", () => {
     const shift = buildShiftTimeline("09:00", "18:00", day(12));
     expect(resolveOvertimeEndAtMs(shift, "18:00", at(18, 10))).toBeNull();

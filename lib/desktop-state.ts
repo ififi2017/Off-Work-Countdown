@@ -79,6 +79,13 @@ export type DesktopIdlePreferences = Pick<
   "showSalary" | "hideEarnings" | "miniSkin" | "woodfishSoundEnabled"
 >;
 
+/** 旧快照缺少偏好字段时会被默认值补齐，只有带版本的新快照才可覆盖本地偏好。 */
+export function hasAuthoritativeDesktopPreferences(
+  state: Pick<DesktopCountdownState, "preferencesVersion">
+): boolean {
+  return state.preferencesVersion >= 1;
+}
+
 const EMPTY_STATE: DesktopCountdownState = {
   preferencesVersion: 0,
   segments: [],
