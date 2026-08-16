@@ -70,8 +70,7 @@ describe("countWorkdays", () => {
 describe("summarize", () => {
   const base = {
     workdays: MON_TO_FRI,
-    startTime: "09:00",
-    endTime: "18:00", // 9 小时
+    plannedDailyHours: 9,
     dailySalary: 1000,
   };
 
@@ -80,7 +79,9 @@ describe("summarize", () => {
     const s = summarize({
       ...base,
       periodStart: at(2026, 6, 29), // 周一
-      now: at(2026, 7, 1, 13), // 周三
+      asOf: at(2026, 7, 1, 13),
+      currentShiftStart: at(2026, 7, 1, 9), // 周三
+      currentShiftEnd: at(2026, 7, 1, 18),
       todayProgress: 50,
     });
     expect(s.days).toBeCloseTo(2.5);
@@ -92,7 +93,9 @@ describe("summarize", () => {
     const s = summarize({
       ...base,
       periodStart: at(2026, 6, 29),
-      now: at(2026, 7, 4, 13), // 周六
+      asOf: at(2026, 7, 4, 13),
+      currentShiftStart: at(2026, 7, 4, 9), // 周六
+      currentShiftEnd: at(2026, 7, 4, 18),
       todayProgress: 80,
     });
     expect(s.days).toBe(5); // 周一至周五，周六不计
@@ -102,7 +105,9 @@ describe("summarize", () => {
     const over = summarize({
       ...base,
       periodStart: at(2026, 6, 29),
-      now: at(2026, 6, 29, 13),
+      asOf: at(2026, 6, 29, 13),
+      currentShiftStart: at(2026, 6, 29, 9),
+      currentShiftEnd: at(2026, 6, 29, 18),
       todayProgress: 250,
     });
     expect(over.days).toBe(1);
@@ -110,7 +115,9 @@ describe("summarize", () => {
     const under = summarize({
       ...base,
       periodStart: at(2026, 6, 29),
-      now: at(2026, 6, 29, 13),
+      asOf: at(2026, 6, 29, 13),
+      currentShiftStart: at(2026, 6, 29, 9),
+      currentShiftEnd: at(2026, 6, 29, 18),
       todayProgress: -40,
     });
     expect(under.days).toBe(0);
@@ -121,30 +128,87 @@ describe("summarize", () => {
       ...base,
       dailySalary: null,
       periodStart: at(2026, 6, 29),
-      now: at(2026, 7, 1, 13),
+      asOf: at(2026, 7, 1, 13),
+      currentShiftStart: at(2026, 7, 1, 9),
+      currentShiftEnd: at(2026, 7, 1, 18),
       todayProgress: 0,
     });
     expect(s.earnings).toBeNull();
     expect(s.hours).toBeCloseTo(18); // 两天 × 9 小时
   });
 
-  it("handles an overnight shift's length correctly", () => {
+  it("uses the night shift's start day for workday and week ownership", () => {
     const s = summarize({
       ...base,
-      startTime: "22:00",
-      endTime: "06:00", // 8 小时
+      plannedDailyHours: 8,
       periodStart: at(2026, 6, 29),
-      now: at(2026, 7, 1, 13),
+      asOf: at(2026, 7, 4, 2),
+      currentShiftStart: at(2026, 7, 3, 22), // 周五开始，周六凌晨仍算周五
+      currentShiftEnd: at(2026, 7, 4, 6),
+      todayProgress: 50,
+    });
+    expect(s.days).toBeCloseTo(4.5);
+    expect(s.hours).toBeCloseTo(36);
+  });
+
+  it("does not carry a Sunday night shift into Monday's new week", () => {
+    const s = summarize({
+      ...base,
+      plannedDailyHours: 8,
+      periodStart: at(2026, 7, 6), // 周一
+      asOf: at(2026, 7, 6, 2),
+      currentShiftStart: at(2026, 7, 5, 22), // 上一周周日开始
+      currentShiftEnd: at(2026, 7, 6, 6),
+      todayProgress: 50,
+    });
+    expect(s).toEqual({ days: 0, hours: 0, earnings: 0 });
+  });
+
+  it("does not carry a New Year's Eve night shift into the new year", () => {
+    const s = summarize({
+      ...base,
+      plannedDailyHours: 8,
+      periodStart: at(2027, 1, 1),
+      asOf: at(2027, 1, 1, 2),
+      currentShiftStart: at(2026, 12, 31, 22),
+      currentShiftEnd: at(2027, 1, 1, 6),
+      todayProgress: 50,
+    });
+    expect(s).toEqual({ days: 0, hours: 0, earnings: 0 });
+  });
+
+  it("does not pull a future shift into the current week", () => {
+    const s = summarize({
+      ...base,
+      periodStart: at(2026, 6, 29),
+      asOf: at(2026, 7, 5, 20), // 周日，下一班是下周一
+      currentShiftStart: at(2026, 7, 6, 9),
+      currentShiftEnd: at(2026, 7, 6, 18),
       todayProgress: 0,
     });
-    expect(s.hours).toBeCloseTo(16);
+    expect(s).toEqual({ days: 5, hours: 45, earnings: 5000 });
+  });
+
+  it("subtracts configured lunch from completed days", () => {
+    const s = summarize({
+      ...base,
+      plannedDailyHours: 8,
+      periodStart: at(2026, 6, 29),
+      asOf: at(2026, 7, 1, 9),
+      currentShiftStart: at(2026, 7, 1, 9),
+      currentShiftEnd: at(2026, 7, 1, 18),
+      todayProgress: 0,
+    });
+    expect(s.hours).toBe(16); // 周一、周二各 8 个有效工时
   });
 
   it("uses today's effective hours and linear overtime pay without changing past days", () => {
     const s = summarize({
       ...base,
       periodStart: at(2026, 6, 29),
-      now: at(2026, 7, 1, 20),
+      asOf: at(2026, 7, 1, 20),
+      currentShiftStart: at(2026, 7, 1, 9),
+      currentShiftEnd: at(2026, 7, 1, 20),
       todayProgress: 100,
       todayEffectiveHours: 10,
       todayPayRatio: 1.25,
@@ -152,5 +216,17 @@ describe("summarize", () => {
     expect(s.days).toBe(3);
     expect(s.hours).toBe(28); // 两个名义 9 小时工作日 + 今日 10 小时
     expect(s.earnings).toBe(3250); // 两个日薪 + 今日按 1.25 日薪
+  });
+
+  it("counts later workdays after a completed shift snapshot becomes stale", () => {
+    const s = summarize({
+      ...base,
+      periodStart: at(2026, 6, 29), // 周一
+      asOf: at(2026, 7, 1, 13), // 页面一直开到周三
+      currentShiftStart: at(2026, 6, 29, 9),
+      currentShiftEnd: at(2026, 6, 29, 18),
+      todayProgress: 100,
+    });
+    expect(s).toEqual({ days: 2, hours: 18, earnings: 2000 });
   });
 });

@@ -3,6 +3,7 @@ import {
   emptyDesktopCountdownState,
   formatDesktopDuration,
   getDesktopCountdownView,
+  hasAuthoritativeDesktopPreferences,
   normalizeDesktopCountdownState,
 } from "./desktop-state";
 
@@ -21,6 +22,7 @@ describe("desktop countdown state", () => {
     );
 
     expect(state).toMatchObject({
+      preferencesVersion: 1,
       running: false,
       showSalary: true,
       hideEarnings: true,
@@ -28,6 +30,18 @@ describe("desktop countdown state", () => {
       woodfishSoundEnabled: true,
     });
     expect(normalizeDesktopCountdownState(state).hideEarnings).toBe(true);
+  });
+
+  it("marks snapshots from older releases as legacy preferences", () => {
+    const legacy = normalizeDesktopCountdownState({ running: false });
+    expect(legacy).toMatchObject({
+      preferencesVersion: 0,
+      running: false,
+    });
+    expect(hasAuthoritativeDesktopPreferences(legacy)).toBe(false);
+    expect(
+      hasAuthoritativeDesktopPreferences(emptyDesktopCountdownState())
+    ).toBe(true);
   });
 
   it("formats a language-neutral duration without wrapping at 24 hours", () => {

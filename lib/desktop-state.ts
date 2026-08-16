@@ -38,6 +38,8 @@ export interface DesktopNotificationTitles {
 }
 
 export interface DesktopCountdownState extends ShiftTimeline {
+  /** 共享偏好有明确写入来源；0 表示 3.1.5 及更早版本留下的旧快照。 */
+  preferencesVersion: number;
   running: boolean;
   nextShift: ShiftTimeline | null;
   notificationMode: DesktopNotificationMode;
@@ -77,7 +79,15 @@ export type DesktopIdlePreferences = Pick<
   "showSalary" | "hideEarnings" | "miniSkin" | "woodfishSoundEnabled"
 >;
 
+/** 旧快照缺少偏好字段时会被默认值补齐，只有带版本的新快照才可覆盖本地偏好。 */
+export function hasAuthoritativeDesktopPreferences(
+  state: Pick<DesktopCountdownState, "preferencesVersion">
+): boolean {
+  return state.preferencesVersion >= 1;
+}
+
 const EMPTY_STATE: DesktopCountdownState = {
+  preferencesVersion: 0,
   segments: [],
   plannedEndAtMs: 0,
   overtimeEndAtMs: null,
@@ -152,6 +162,7 @@ export function emptyDesktopCountdownState(
   return {
     ...EMPTY_STATE,
     ...preferences,
+    preferencesVersion: 1,
     lang,
     countdownNotStarted,
     ...(labels && {
