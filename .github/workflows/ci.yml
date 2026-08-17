@@ -50,20 +50,22 @@ jobs:
       #
       # 正式发布不受这个影响：release-msstore.yml 是全新 checkout 直接 tauri
       # build，中间没有 Web 构建。但断言必须跑在干净产物上才有意义。
-      - name: Build store-channel desktop frontend
+      #
+      # 两个商店渠道各跑一遍：msstore 和 macappstore 用的是同一套模块替换机制，
+      # 但 macappstore 额外依赖 next.config.mjs 里的 NormalModuleReplacementPlugin
+      # 正则。正则写错不会报错，只会静默把真实更新器放进产物——只测其中一个渠道
+      # 挡不住这种失误。
+      - name: Assert neither store bundle carries an updater
         run: |
-          rm -rf .next out
-          npm run build:desktop:msstore
-
-      # 商店包里存在自更新代码不是「多打包了点东西」，是不该出现的东西。
-      # 光看条件分支没用——分支是死代码但模块仍会被打进产物，所以直接搜产物。
-      - name: Assert the store bundle carries no updater
-        run: |
-          if grep -rl "plugin:updater\|downloadAndInstall" out/_next; then
-            echo "::error::store frontend bundle still contains updater code"
-            exit 1
-          fi
-          echo "OK: no updater code in the store frontend bundle."
+          for channel in msstore macappstore; do
+            rm -rf .next out
+            npm run "build:desktop:$channel"
+            if grep -rl "plugin:updater\|plugin:process\|downloadAndInstall\|gh-proxy" out/_next; then
+              echo "::error::$channel frontend bundle still contains updater code"
+              exit 1
+            fi
+            echo "OK: no updater code in the $channel frontend bundle."
+          done
 
   # Rust 编译过去完全没有进 CI，而 src-tauri 里有大量按平台分支的代码
   # （macOS 原生面板、Windows 迷你窗）。结果是任何只影响某一个平台的
@@ -124,3 +126,18 @@ jobs:
         env:
           TAURI_CONFIG: '{"app":{"security":{"capabilities":["default","desktop-capability"]}}}'
         run: cargo clippy --all-targets --no-default-features -- -D warnings
+
+      # clippy --all-targets 只**编译** #[cfg(test)]，不执行它。商店渠道独有的
+      # 测试（如 Widget 快照的隐私字段拦截）因此会在 CI 里一次都不跑。
+      - name: Test the store channel
+        working-directory: src-tauri
+        env:
+          TAURI_CONFIG: '{"app":{"security":{"capabilities":["default","desktop-capability"]}}}'
+        run: cargo test --no-default-features
+
+      # Widget 快照是 TypeScript 生产、Swift 消费。vitest 那侧只能证明序列化结果
+      # 没变，Swift `Decodable` 的字段名或可选性漂移了它是看不见的——只有这条能。
+      # 无第三方依赖，不需要 npm ci。
+      - name: Test the Widget snapshot contract
+        if: runner.os == 'macOS'
+        run: npm run test:widget-contract

@@ -64,9 +64,9 @@
   "menuView": "Görüntü",
   "menuWindow": "Pencere",
   "menuHelp": "Yardım",
-  "menuAbout": "Off Work Countdown Hakkında",
+  "menuAbout": "{{app}} Hakkında",
   "menuServices": "Servisler",
-  "menuHideApp": "Off Work Countdown’u Gizle",
+  "menuHideApp": "{{app}}’nı Gizle",
   "menuHideOthers": "Diğerlerini Gizle",
   "menuCloseWindow": "Pencereyi Kapat",
   "menuUndo": "Geri Al",
@@ -207,5 +207,8 @@
   "offWorkToday": "Bugünlük bitti",
   "nextShiftIn": "Sonraki vardiyaya {{time}}",
   "nextShiftLabelShort": "Sonraki vardiyaya",
-  "toggleMainWindow": "Ana pencereyi göster veya gizle"
+  "toggleMainWindow": "Ana pencereyi göster veya gizle",
+  "widgetWorking": "Çalışıyor",
+  "widgetOpenToRefresh": "Yenilemek için uygulamayı açın",
+  "widgetDescription": "Kalan çalışma sürenizi bir bakışta görün."
 }

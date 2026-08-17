@@ -64,9 +64,9 @@
   "menuView": "顯示方式",
   "menuWindow": "視窗",
   "menuHelp": "輔助說明",
-  "menuAbout": "關於 Off Work Countdown",
+  "menuAbout": "關於 {{app}}",
   "menuServices": "服務",
-  "menuHideApp": "隱藏 Off Work Countdown",
+  "menuHideApp": "隱藏 {{app}}",
   "menuHideOthers": "隱藏其他項目",
   "menuCloseWindow": "關閉視窗",
   "menuUndo": "還原",
@@ -207,5 +207,8 @@
   "offWorkToday": "今日已下班",
   "nextShiftIn": "距下次上班 {{time}}",
   "nextShiftLabelShort": "距上班還有",
-  "toggleMainWindow": "顯示或隱藏主視窗"
+  "toggleMainWindow": "顯示或隱藏主視窗",
+  "widgetWorking": "工作中",
+  "widgetOpenToRefresh": "開啟應用程式以重新整理",
+  "widgetDescription": "一眼查看剩餘工作時間。"
 }

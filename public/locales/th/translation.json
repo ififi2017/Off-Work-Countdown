@@ -64,9 +64,9 @@
   "menuView": "มุมมอง",
   "menuWindow": "หน้าต่าง",
   "menuHelp": "วิธีใช้",
-  "menuAbout": "เกี่ยวกับ Off Work Countdown",
+  "menuAbout": "เกี่ยวกับ {{app}}",
   "menuServices": "บริการ",
-  "menuHideApp": "ซ่อน Off Work Countdown",
+  "menuHideApp": "ซ่อน {{app}}",
   "menuHideOthers": "ซ่อนอื่นๆ",
   "menuCloseWindow": "ปิดหน้าต่าง",
   "menuUndo": "เลิกทำ",
@@ -207,5 +207,8 @@
   "offWorkToday": "เลิกงานแล้ววันนี้",
   "nextShiftIn": "กะถัดไปในอีก {{time}}",
   "nextShiftLabelShort": "อีกกี่ชั่วโมงเข้างาน",
-  "toggleMainWindow": "แสดงหรือซ่อนหน้าต่างหลัก"
+  "toggleMainWindow": "แสดงหรือซ่อนหน้าต่างหลัก",
+  "widgetWorking": "กำลังทำงาน",
+  "widgetOpenToRefresh": "เปิดแอปเพื่อรีเฟรช",
+  "widgetDescription": "ดูเวลาทำงานที่เหลือได้อย่างรวดเร็ว"
 }

@@ -137,25 +137,27 @@ i18n.use(initReactI18next).init({
   initImmediate: false,
 });
 
+/**
+ * 确保某个语言的资源已就位，但**不**切换当前语言。
+ *
+ * 桌面端的托盘与 macOS 应用菜单跟随系统语言，而界面跟随用户选择的语言，两者
+ * 可以不同；这时需要在不影响界面的前提下另外拿到一份系统语言的文案，交给
+ * `i18n.getFixedT(lng)` 使用。
+ */
+export async function ensureLanguageResources(lng: string): Promise<void> {
+  if (i18n.hasResourceBundle(lng, "translation")) return;
+  const resources = await loadLanguageResources(lng);
+  i18n.addResourceBundle(lng, "translation", resources.translation, true, true);
+  i18n.addResourceBundle(lng, "seo", resources.seo, true, true);
+}
+
 // 添加语言切换处理
 const originalChangeLanguage = i18n.changeLanguage.bind(i18n);
 i18n.changeLanguage = async (lng: string | undefined, callback?: Callback) => {
   if (!lng) return originalChangeLanguage(lng, callback);
 
   try {
-    // 检查是否已加载该语言资源
-    if (!i18n.hasResourceBundle(lng, "translation")) {
-      const resources = await loadLanguageResources(lng);
-      i18n.addResourceBundle(
-        lng,
-        "translation",
-        resources.translation,
-        true,
-        true
-      );
-      i18n.addResourceBundle(lng, "seo", resources.seo, true, true);
-    }
-
+    await ensureLanguageResources(lng);
     return originalChangeLanguage(lng, callback);
   } catch (error) {
     console.error(`Error changing language to ${lng}:`, error);

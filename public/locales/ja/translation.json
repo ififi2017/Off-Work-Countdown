@@ -64,9 +64,9 @@
   "menuView": "表示",
   "menuWindow": "ウインドウ",
   "menuHelp": "ヘルプ",
-  "menuAbout": "Off Work Countdownについて",
+  "menuAbout": "{{app}}について",
   "menuServices": "サービス",
-  "menuHideApp": "Off Work Countdownを隠す",
+  "menuHideApp": "{{app}}を隠す",
   "menuHideOthers": "ほかを隠す",
   "menuCloseWindow": "ウインドウを閉じる",
   "menuUndo": "取り消す",
@@ -207,5 +207,8 @@
   "offWorkToday": "本日は終業",
   "nextShiftIn": "次の勤務まで {{time}}",
   "nextShiftLabelShort": "次の勤務まで",
-  "toggleMainWindow": "メインウィンドウの表示/非表示"
+  "toggleMainWindow": "メインウィンドウの表示/非表示",
+  "widgetWorking": "勤務中",
+  "widgetOpenToRefresh": "アプリを開いて更新",
+  "widgetDescription": "残りの勤務時間をひと目で確認できます。"
 }

@@ -64,9 +64,9 @@
   "menuView": "Vista",
   "menuWindow": "Finestra",
   "menuHelp": "Aiuto",
-  "menuAbout": "Informazioni su Off Work Countdown",
+  "menuAbout": "Informazioni su {{app}}",
   "menuServices": "Servizi",
-  "menuHideApp": "Nascondi Off Work Countdown",
+  "menuHideApp": "Nascondi {{app}}",
   "menuHideOthers": "Nascondi altri",
   "menuCloseWindow": "Chiudi finestra",
   "menuUndo": "Annulla",
@@ -207,5 +207,8 @@
   "offWorkToday": "Giornata finita",
   "nextShiftIn": "Prossimo turno tra {{time}}",
   "nextShiftLabelShort": "Prossimo turno tra",
-  "toggleMainWindow": "Mostra o nascondi la finestra principale"
+  "toggleMainWindow": "Mostra o nascondi la finestra principale",
+  "widgetWorking": "Al lavoro",
+  "widgetOpenToRefresh": "Apri l’app per aggiornare",
+  "widgetDescription": "Controlla a colpo d’occhio il tempo di lavoro rimanente."
 }

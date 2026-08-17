@@ -50,3 +50,7 @@ devcert.pfx
 # *.msix，别人的机器不会——少了这两行，一个 5MB 的包随时可能被 git add . 带进来。
 *.msix
 *.msixbundle
+
+# 由 scripts/generate-macos-lproj.mjs 从 docs/msstore-listing-titles.csv 生成，
+# 每次 beforeBuildCommand 重建。入库会多出一份需要手工同步的名称副本。
+/src-tauri/macos-lproj/

@@ -64,9 +64,9 @@
   "menuView": "보기",
   "menuWindow": "윈도우",
   "menuHelp": "도움말",
-  "menuAbout": "Off Work Countdown에 관하여",
+  "menuAbout": "{{app}}에 관하여",
   "menuServices": "서비스",
-  "menuHideApp": "Off Work Countdown 가리기",
+  "menuHideApp": "{{app}} 가리기",
   "menuHideOthers": "기타 가리기",
   "menuCloseWindow": "윈도우 닫기",
   "menuUndo": "실행 취소",
@@ -207,5 +207,8 @@
   "offWorkToday": "오늘 퇴근 완료",
   "nextShiftIn": "다음 근무까지 {{time}}",
   "nextShiftLabelShort": "다음 근무까지",
-  "toggleMainWindow": "메인 창 표시/숨기기"
+  "toggleMainWindow": "메인 창 표시/숨기기",
+  "widgetWorking": "근무 중",
+  "widgetOpenToRefresh": "앱을 열어 새로고침",
+  "widgetDescription": "남은 근무 시간을 한눈에 확인하세요."
 }

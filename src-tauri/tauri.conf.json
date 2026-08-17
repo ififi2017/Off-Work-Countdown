@@ -10,7 +10,7 @@
     "beforeBuildCommand": "npm run build:desktop"
   },
   "app": {
-    "macOSPrivateApi": true,
+    "macOSPrivateApi": false,
     "windows": [
       {
         "label": "main",

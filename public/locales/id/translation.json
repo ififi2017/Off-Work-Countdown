@@ -64,9 +64,9 @@
   "menuView": "Tampilan",
   "menuWindow": "Jendela",
   "menuHelp": "Bantuan",
-  "menuAbout": "Tentang Off Work Countdown",
+  "menuAbout": "Tentang {{app}}",
   "menuServices": "Layanan",
-  "menuHideApp": "Sembunyikan Off Work Countdown",
+  "menuHideApp": "Sembunyikan {{app}}",
   "menuHideOthers": "Sembunyikan Lainnya",
   "menuCloseWindow": "Tutup Jendela",
   "menuUndo": "Urungkan",
@@ -207,5 +207,8 @@
   "offWorkToday": "Selesai untuk hari ini",
   "nextShiftIn": "Sif berikutnya dalam {{time}}",
   "nextShiftLabelShort": "Sif berikutnya dalam",
-  "toggleMainWindow": "Tampilkan atau sembunyikan jendela utama"
+  "toggleMainWindow": "Tampilkan atau sembunyikan jendela utama",
+  "widgetWorking": "Sedang bekerja",
+  "widgetOpenToRefresh": "Buka aplikasi untuk memperbarui",
+  "widgetDescription": "Lihat sisa waktu kerja Anda sekilas."
 }

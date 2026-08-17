@@ -64,9 +64,9 @@
   "menuView": "عرض",
   "menuWindow": "نافذة",
   "menuHelp": "مساعدة",
-  "menuAbout": "حول Off Work Countdown",
+  "menuAbout": "حول {{app}}",
   "menuServices": "الخدمات",
-  "menuHideApp": "إخفاء Off Work Countdown",
+  "menuHideApp": "إخفاء {{app}}",
   "menuHideOthers": "إخفاء الآخرين",
   "menuCloseWindow": "إغلاق النافذة",
   "menuUndo": "تراجع",
@@ -207,5 +207,8 @@
   "offWorkToday": "انتهى دوام اليوم",
   "nextShiftIn": "الوردية التالية بعد {{time}}",
   "nextShiftLabelShort": "الوردية التالية بعد",
-  "toggleMainWindow": "إظهار النافذة الرئيسية أو إخفاؤها"
+  "toggleMainWindow": "إظهار النافذة الرئيسية أو إخفاؤها",
+  "widgetWorking": "أثناء العمل",
+  "widgetOpenToRefresh": "افتح التطبيق للتحديث",
+  "widgetDescription": "اعرض وقت العمل المتبقي بنظرة سريعة."
 }

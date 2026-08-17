@@ -1,5 +1,11 @@
 #import <AppKit/AppKit.h>
 #import <QuartzCore/QuartzCore.h>
+#import <ServiceManagement/ServiceManagement.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <pwd.h>
+#include <unistd.h>
 
 static const NSSize OWCPanelSize = {228.0, 70.0};
 
@@ -505,6 +511,90 @@ void owc_native_mini_hide(void) {
     });
 }
 
+// Mac App Store builds cannot use WKWebView's private `drawsBackground` KVC
+// key. Keep the opaque WebView, but place it edge-to-edge inside a transparent,
+// rounded NSWindow using public AppKit/CALayer APIs. The layer mask removes the
+// rectangular white corners and the native window supplies the outer shadow.
+void owc_configure_store_floating_window(void *windowPointer) {
+    if (!windowPointer) return;
+    NSWindow *window = (__bridge NSWindow *)windowPointer;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        window.opaque = NO;
+        window.backgroundColor = [NSColor clearColor];
+        window.hasShadow = YES;
+        NSView *contentView = window.contentView;
+        contentView.wantsLayer = YES;
+        contentView.layer.cornerRadius = 16.0;
+        contentView.layer.masksToBounds = YES;
+    });
+}
+
+// Store builds use the public macOS 13 login-item API. Status values mirror
+// SMAppServiceStatus so Rust can preserve "requires approval" as a locked UI
+// state rather than pretending the switch succeeded.
+int32_t owc_get_login_item_status(void) {
+    if (@available(macOS 13.0, *)) {
+        return (int32_t)SMAppService.mainAppService.status;
+    }
+    return -1;
+}
+
+int32_t owc_set_login_item_enabled(int32_t enabled) {
+    if (@available(macOS 13.0, *)) {
+        SMAppService *service = SMAppService.mainAppService;
+        NSError *error = nil;
+        BOOL succeeded = enabled
+            ? [service registerAndReturnError:&error]
+            : [service unregisterAndReturnError:&error];
+        if (!succeeded) {
+            NSLog(@"Failed to update the main app login item: %@", error);
+            return -2;
+        }
+        return (int32_t)service.status;
+    }
+    return -1;
+}
+
+// Tauri's default AppData resolver points at the user's global
+// ~/Library/Application Support directory. A sandboxed Mac App Store build
+// must instead ask Foundation for the container-scoped Application Support
+// URL, otherwise macOS presents an "other App data" privacy prompt.
+int32_t owc_copy_sandbox_store_path(char *buffer, size_t capacity) {
+    if (!buffer || capacity == 0) return 0;
+
+    @autoreleasepool {
+        NSArray<NSURL *> *urls = [[NSFileManager defaultManager]
+            URLsForDirectory:NSApplicationSupportDirectory
+                   inDomains:NSUserDomainMask];
+        NSURL *applicationSupportURL = urls.firstObject;
+        NSString *bundleIdentifier = NSBundle.mainBundle.bundleIdentifier;
+        if (!applicationSupportURL || bundleIdentifier.length == 0) return 0;
+
+        NSURL *storeDirectory = [applicationSupportURL
+            URLByAppendingPathComponent:bundleIdentifier
+                             isDirectory:YES];
+        NSError *error = nil;
+        if (![[NSFileManager defaultManager]
+                createDirectoryAtURL:storeDirectory
+          withIntermediateDirectories:YES
+                           attributes:nil
+                                error:&error]) {
+            NSLog(@"Failed to create sandbox store directory: %@", error);
+            return 0;
+        }
+
+        NSURL *storeURL = [storeDirectory
+            URLByAppendingPathComponent:@"desktop-state.json"
+                             isDirectory:NO];
+        const char *path = storeURL.path.fileSystemRepresentation;
+        if (!path) return 0;
+        size_t length = strlen(path) + 1;
+        if (length > capacity) return 0;
+        memcpy(buffer, path, length);
+        return 1;
+    }
+}
+
 void owc_native_mini_update(
     const char *timeValue,
     const char *percentValue,
@@ -536,4 +626,55 @@ void owc_native_mini_update(
       showEarningsLabel:showEarningsLabel
       hideEarningsLabel:hideEarningsLabel];
     });
+}
+
+int32_t owc_write_widget_snapshot(
+    const char *appGroupIdentifierValue,
+    const char *storageModeValue,
+    const uint8_t *bytes,
+    size_t length
+) {
+    if (!storageModeValue || !bytes || length == 0) return 1;
+
+    NSString *storageMode = OWCStringFromUTF8(storageModeValue);
+    NSString *appGroupIdentifier = OWCStringFromUTF8(appGroupIdentifierValue);
+    NSURL *containerURL = nil;
+    if ([storageMode isEqualToString:@"local-support"]) {
+        struct passwd *user = getpwuid(getuid());
+        if (!user || !user->pw_dir) return 2;
+        NSString *homeDirectory = [[NSFileManager defaultManager]
+            stringWithFileSystemRepresentation:user->pw_dir
+                                         length:strlen(user->pw_dir)];
+        containerURL = [NSURL fileURLWithPath:[homeDirectory
+            stringByAppendingPathComponent:@"Library/Application Support"]
+                               isDirectory:YES];
+        containerURL = [containerURL
+            URLByAppendingPathComponent:
+                @"com.rainif.offworkcountdown.macappstore.local-widget"
+                             isDirectory:YES];
+        NSError *directoryError = nil;
+        if (![[NSFileManager defaultManager]
+                createDirectoryAtURL:containerURL
+          withIntermediateDirectories:YES
+                           attributes:@{NSFilePosixPermissions: @0700}
+                                error:&directoryError]) {
+            NSLog(@"Failed to create local Widget snapshot directory: %@", directoryError);
+            return 3;
+        }
+    } else {
+        if (appGroupIdentifier.length == 0) return 1;
+        containerURL = [[NSFileManager defaultManager]
+            containerURLForSecurityApplicationGroupIdentifier:appGroupIdentifier];
+    }
+    if (!containerURL) return 2;
+
+    NSData *data = [NSData dataWithBytes:bytes length:length];
+    NSURL *snapshotURL = [containerURL
+        URLByAppendingPathComponent:@"widget-snapshot-v1.json"
+        isDirectory:NO];
+    NSError *error = nil;
+    if (![data writeToURL:snapshotURL options:NSDataWritingAtomic error:&error]) {
+        return 3;
+    }
+    return 0;
 }

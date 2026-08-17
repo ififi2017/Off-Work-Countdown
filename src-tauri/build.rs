@@ -4,8 +4,10 @@ fn build_native_mini_timer() {
 
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let source = manifest_dir.join("native-mini/NativeMiniTimer.m");
+    let widget_bridge_source = manifest_dir.join("macappstore/WidgetHostBridge.swift");
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let object = out_dir.join("NativeMiniTimer.o");
+    let widget_bridge_object = out_dir.join("WidgetHostBridge.o");
     let library = out_dir.join("libNativeMiniTimer.a");
     let module_cache = out_dir.join("clang-module-cache");
     std::fs::create_dir_all(&module_cache).expect("failed to create Clang module cache");
@@ -53,10 +55,52 @@ fn build_native_mini_timer() {
         );
     }
 
-    let output = Command::new("ar")
-        .args(["crus", library.to_str().unwrap(), object.to_str().unwrap()])
-        .output()
-        .expect("failed to archive native Mini Timer");
+    let include_widget_bridge = env::var_os("CARGO_FEATURE_SELF_UPDATE").is_none();
+    if include_widget_bridge {
+        // 取值必须与 scripts/build-macos-widget.sh 的同名变量保持一致：那边决定
+        // entitlements 怎么生成，这边决定宿主往哪个容器写快照，两者对不上的表现
+        // 是运行期写入失败而不是构建失败。拼错的值在这里就炸掉，别等到 cargo
+        // 跑完之后再由 beforeBundleCommand 拦下。
+        let widget_storage_mode = match env::var("OWC_WIDGET_SIGNING_MODE").as_deref() {
+            Ok("automatic") => "app-group",
+            // 未设置时与脚本的默认值 adhoc 对齐。
+            Ok("adhoc") | Ok("none") | Err(_) => "local-support",
+            Ok(other) => {
+                panic!("OWC_WIDGET_SIGNING_MODE must be adhoc, automatic, or none (got {other})")
+            }
+        };
+        println!("cargo:rustc-env=OWC_WIDGET_STORAGE_MODE={widget_storage_mode}");
+        let swift_target = format!("{architecture}-apple-macosx13.0");
+        let mut swiftc = Command::new("xcrun");
+        swiftc
+            .args(["--sdk", "macosx", "swiftc"])
+            .arg("-parse-as-library")
+            .arg("-emit-object")
+            .arg(&widget_bridge_source)
+            .args(["-target", &swift_target])
+            .args(["-sdk", &sdk])
+            .args(["-module-cache-path", module_cache.to_str().unwrap()])
+            .args(["-o", widget_bridge_object.to_str().unwrap()]);
+        if env::var("PROFILE").as_deref() == Ok("release") {
+            swiftc.arg("-O");
+        } else {
+            swiftc.arg("-Onone");
+        }
+        let output = swiftc.output().expect("failed to run swiftc");
+        if !output.status.success() {
+            panic!(
+                "failed to compile Widget host bridge:\n{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+
+    let mut ar = Command::new("ar");
+    ar.args(["crus", library.to_str().unwrap(), object.to_str().unwrap()]);
+    if include_widget_bridge {
+        ar.arg(&widget_bridge_object);
+    }
+    let output = ar.output().expect("failed to archive native macOS bridge");
     if !output.status.success() {
         panic!(
             "failed to archive native Mini Timer:\n{}",
@@ -65,10 +109,42 @@ fn build_native_mini_timer() {
     }
 
     println!("cargo:rerun-if-changed={}", source.display());
+    println!("cargo:rerun-if-changed={}", widget_bridge_source.display());
+    println!("cargo:rerun-if-env-changed=OWC_APP_GROUP_IDENTIFIER");
+    println!("cargo:rerun-if-env-changed=OWC_WIDGET_SIGNING_MODE");
     println!("cargo:rustc-link-search=native={}", out_dir.display());
     println!("cargo:rustc-link-lib=static=NativeMiniTimer");
     println!("cargo:rustc-link-lib=framework=AppKit");
     println!("cargo:rustc-link-lib=framework=QuartzCore");
+    println!("cargo:rustc-link-lib=framework=ServiceManagement");
+    if include_widget_bridge {
+        println!("cargo:rustc-link-search=native={sdk}/usr/lib/swift");
+        println!("cargo:rustc-link-lib=dylib=swiftCore");
+        // The bridge imports no business module; WidgetKit is used only to ask
+        // the system to reload the timeline after the atomic App Group write.
+        println!("cargo:rustc-link-lib=framework=WidgetKit");
+        for library in [
+            "swiftCoreFoundation",
+            "swiftCoreImage",
+            "swiftCoreLocation",
+            "swiftDispatch",
+            "swiftFoundation",
+            "swiftIOKit",
+            "swiftIntents",
+            "swiftMetal",
+            "swiftOSLog",
+            "swiftObjectiveC",
+            "swiftQuartzCore",
+            "swiftSpatial",
+            "swiftUniformTypeIdentifiers",
+            "swiftXPC",
+            "swift_Builtin_float",
+            "swiftos",
+            "swiftsimd",
+        ] {
+            println!("cargo:rustc-link-lib=dylib={library}");
+        }
+    }
 }
 
 fn main() {

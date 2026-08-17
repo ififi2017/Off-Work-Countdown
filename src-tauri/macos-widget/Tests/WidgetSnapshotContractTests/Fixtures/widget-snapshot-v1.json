@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "generatedAtMs": 3000,
+  "expiresAtMs": 13000,
+  "locale": "en",
+  "shift": {
+    "segments": [
+      {
+        "startAtMs": 1000,
+        "endAtMs": 5000
+      },
+      {
+        "startAtMs": 7000,
+        "endAtMs": 11000
+      }
+    ],
+    "plannedEndAtMs": 11000,
+    "overtimeEndAtMs": null
+  },
+  "entries": [
+    {
+      "dateMs": 3000,
+      "validUntilMs": 5000,
+      "phase": "working",
+      "labelKey": "widgetWorking",
+      "countdownKind": "workRemaining",
+      "countdownValueAtDateMs": 6000,
+      "countdownTargetAtMs": 9000,
+      "remainingEffectiveMsAtDateMs": 6000,
+      "progressAtDate": 25,
+      "nextBoundaryAtMs": 5000
+    },
+    {
+      "dateMs": 5000,
+      "validUntilMs": 7000,
+      "phase": "break",
+      "labelKey": "lunchInProgress",
+      "countdownKind": "breakEnds",
+      "countdownValueAtDateMs": 2000,
+      "countdownTargetAtMs": 7000,
+      "remainingEffectiveMsAtDateMs": 4000,
+      "progressAtDate": 50,
+      "nextBoundaryAtMs": 7000
+    },
+    {
+      "dateMs": 7000,
+      "validUntilMs": 11000,
+      "phase": "working",
+      "labelKey": "widgetWorking",
+      "countdownKind": "workRemaining",
+      "countdownValueAtDateMs": 4000,
+      "countdownTargetAtMs": 11000,
+      "remainingEffectiveMsAtDateMs": 4000,
+      "progressAtDate": 50,
+      "nextBoundaryAtMs": 11000
+    },
+    {
+      "dateMs": 11000,
+      "validUntilMs": 13000,
+      "phase": "done",
+      "labelKey": "offWorkToday",
+      "countdownKind": "complete",
+      "countdownValueAtDateMs": 0,
+      "countdownTargetAtMs": null,
+      "remainingEffectiveMsAtDateMs": 0,
+      "progressAtDate": 100,
+      "nextBoundaryAtMs": null
+    }
+  ]
+}

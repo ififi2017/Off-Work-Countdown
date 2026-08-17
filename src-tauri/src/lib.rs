@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use std::sync::OnceLock;
 use std::{thread, time::Duration};
@@ -20,6 +21,7 @@ use tauri_plugin_opener::OpenerExt;
 use tauri_plugin_positioner::{Position, WindowExt};
 use tauri_plugin_store::StoreExt;
 
+#[cfg(not(all(target_os = "macos", not(feature = "self-update"))))]
 const STORE_PATH: &str = "desktop-state.json";
 const COUNTDOWN_KEY: &str = "countdown";
 const NOTIFICATION_MARKER_KEY: &str = "notificationMarker";
@@ -34,6 +36,26 @@ const DEFAULT_GLOBAL_SHORTCUT: &str = "CommandOrControl+Shift+O";
 struct GlobalShortcutSettings {
     enabled: bool,
     accelerator: String,
+}
+
+#[cfg(all(test, target_os = "macos", not(feature = "self-update")))]
+mod widget_snapshot_tests {
+    use super::widget_snapshot_contains_sensitive_data;
+
+    #[test]
+    fn rejects_sensitive_earnings_fields_at_any_depth() {
+        let safe = serde_json::json!({
+            "schemaVersion": 1,
+            "entries": [{ "remainingEffectiveMsAtDateMs": 1_000 }]
+        });
+        let unsafe_snapshot = serde_json::json!({
+            "schemaVersion": 1,
+            "entries": [{ "DailySalary": 100 }]
+        });
+
+        assert!(!widget_snapshot_contains_sensitive_data(&safe));
+        assert!(widget_snapshot_contains_sensitive_data(&unsafe_snapshot));
+    }
 }
 
 impl Default for GlobalShortcutSettings {
@@ -330,6 +352,13 @@ struct MiniWindowSettings {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DesktopMenuLabels {
+    /// 「关于」面板里的应用名。跟着**应用**语言走，与其余菜单项一致。
+    ///
+    /// ⚠️ 管不到菜单栏最左侧那个粗体应用名。那个标题由 AppKit 从 bundle 名
+    /// 派生，给第一个 Submenu 设标题会被忽略（实机验证过）。菜单栏那个名字由
+    /// macos-lproj 里本地化的 CFBundleName 决定，因此跟随**系统**语言——
+    /// 应用语言与系统语言不一致时，两者会不同，这是 AppKit 的限制不是笔误。
+    app_name: String,
     show: String,
     mini: String,
     quit: String,
@@ -358,6 +387,7 @@ struct DesktopMenuLabels {
 impl Default for DesktopMenuLabels {
     fn default() -> Self {
         Self {
+            app_name: "Off Work Countdown".into(),
             show: "Show app".into(),
             mini: "Mini timer".into(),
             quit: "Quit".into(),
@@ -388,11 +418,26 @@ impl Default for DesktopMenuLabels {
 #[cfg(target_os = "macos")]
 mod native_mini {
     use std::ffi::{c_char, CString};
+    // 只有商店渠道会走沙盒容器路径和公开 AppKit 悬浮窗，GitHub 版编译不到这些
+    // 符号——连 use 一起 cfg 掉，否则默认 feature 下就是一串 unused 警告，而 CI
+    // 的 clippy 带 -D warnings。
+    #[cfg(not(feature = "self-update"))]
+    use std::ffi::{c_void, CStr};
+    #[cfg(not(feature = "self-update"))]
+    use std::path::PathBuf;
 
     extern "C" {
         fn owc_native_mini_initialize();
         fn owc_native_mini_toggle();
         fn owc_native_mini_hide();
+        #[cfg(not(feature = "self-update"))]
+        fn owc_configure_store_floating_window(window: *mut c_void);
+        #[cfg(not(feature = "self-update"))]
+        fn owc_copy_sandbox_store_path(buffer: *mut c_char, capacity: usize) -> i32;
+        #[cfg(not(feature = "run-key-autostart"))]
+        fn owc_get_login_item_status() -> i32;
+        #[cfg(not(feature = "run-key-autostart"))]
+        fn owc_set_login_item_enabled(enabled: i32) -> i32;
         fn owc_native_mini_update(
             time: *const c_char,
             percent: *const c_char,
@@ -422,6 +467,34 @@ mod native_mini {
     #[allow(dead_code)]
     pub fn hide() {
         unsafe { owc_native_mini_hide() }
+    }
+
+    #[cfg(not(feature = "self-update"))]
+    pub fn configure_store_floating_window(window: *mut c_void) {
+        unsafe { owc_configure_store_floating_window(window) }
+    }
+
+    #[cfg(not(feature = "self-update"))]
+    pub fn sandbox_store_path() -> Option<PathBuf> {
+        let mut buffer = [0 as c_char; 4096];
+        let copied = unsafe { owc_copy_sandbox_store_path(buffer.as_mut_ptr(), buffer.len()) };
+        if copied == 0 {
+            return None;
+        }
+        let path = unsafe { CStr::from_ptr(buffer.as_ptr()) }
+            .to_string_lossy()
+            .into_owned();
+        Some(PathBuf::from(path))
+    }
+
+    #[cfg(not(feature = "run-key-autostart"))]
+    pub fn login_item_status() -> i32 {
+        unsafe { owc_get_login_item_status() }
+    }
+
+    #[cfg(not(feature = "run-key-autostart"))]
+    pub fn set_login_item_enabled(enabled: bool) -> i32 {
+        unsafe { owc_set_login_item_enabled(i32::from(enabled)) }
     }
 
     // 参数表就是对面 C 函数的签名本身，为了少几个参数去包一层结构体，
@@ -458,6 +531,90 @@ mod native_mini {
                 show_earnings_label.as_ptr(),
                 hide_earnings_label.as_ptr(),
             )
+        }
+    }
+}
+
+#[cfg(all(target_os = "macos", not(feature = "self-update")))]
+static SANDBOX_STORE_PATH: OnceLock<Result<PathBuf, String>> = OnceLock::new();
+
+fn desktop_store_path() -> Result<PathBuf, String> {
+    // 两个分支互斥，各自都是函数的尾表达式，因此不能写 `return`——另一个分支在
+    // 编译时整块消失，`return` 就成了 clippy::needless_return。这条只在对应渠道
+    // 上跑 clippy 才会暴露。
+    #[cfg(all(target_os = "macos", not(feature = "self-update")))]
+    {
+        SANDBOX_STORE_PATH
+            .get_or_init(|| {
+                native_mini::sandbox_store_path().ok_or_else(|| {
+                    "macOS sandbox Application Support directory is unavailable".to_string()
+                })
+            })
+            .clone()
+    }
+
+    #[cfg(not(all(target_os = "macos", not(feature = "self-update"))))]
+    {
+        Ok(PathBuf::from(STORE_PATH))
+    }
+}
+
+fn desktop_store<R: tauri::Runtime>(
+    app: &AppHandle<R>,
+) -> Result<std::sync::Arc<tauri_plugin_store::Store<R>>, String> {
+    let path = desktop_store_path()?;
+    app.store(path).map_err(|error| error.to_string())
+}
+
+#[cfg(all(target_os = "macos", not(feature = "self-update")))]
+#[tauri::command]
+fn get_desktop_store_path() -> Result<String, String> {
+    desktop_store_path().map(|path| path.to_string_lossy().into_owned())
+}
+
+#[cfg(all(target_os = "macos", not(feature = "self-update")))]
+mod macos_widget {
+    use std::ffi::{c_char, CString};
+
+    const DEFAULT_APP_GROUP_IDENTIFIER: &str = "group.com.rainif.offworkcountdown.macappstore";
+
+    extern "C" {
+        fn owc_write_widget_snapshot(
+            app_group_identifier: *const c_char,
+            storage_mode: *const c_char,
+            bytes: *const u8,
+            length: usize,
+        ) -> i32;
+        fn owc_reload_widget_timelines();
+    }
+
+    pub fn write_snapshot(snapshot_json: &str) -> Result<(), String> {
+        const STORAGE_MODE: &str = env!("OWC_WIDGET_STORAGE_MODE");
+        let app_group_identifier =
+            option_env!("OWC_APP_GROUP_IDENTIFIER").unwrap_or(DEFAULT_APP_GROUP_IDENTIFIER);
+        let app_group_identifier = CString::new(app_group_identifier)
+            .map_err(|_| "the Widget App Group identifier contains a NUL byte".to_string())?;
+        let storage_mode = CString::new(STORAGE_MODE)
+            .map_err(|_| "the Widget storage mode contains a NUL byte".to_string())?;
+        let result = unsafe {
+            owc_write_widget_snapshot(
+                app_group_identifier.as_ptr(),
+                storage_mode.as_ptr(),
+                snapshot_json.as_bytes().as_ptr(),
+                snapshot_json.len(),
+            )
+        };
+        match result {
+            0 => {
+                unsafe { owc_reload_widget_timelines() };
+                Ok(())
+            }
+            1 => Err("the Widget snapshot payload or storage configuration is invalid".into()),
+            2 => Err(format!(
+                "the App Group container is unavailable: {}",
+                app_group_identifier.to_string_lossy()
+            )),
+            _ => Err("the Widget snapshot could not be written atomically".into()),
         }
     }
 }
@@ -557,7 +714,7 @@ fn hide_mini_window(app: &AppHandle) {
 }
 
 fn read_countdown_state(app: &AppHandle) -> CountdownState {
-    app.store(STORE_PATH)
+    desktop_store(app)
         .ok()
         .and_then(|store| store.get(COUNTDOWN_KEY))
         .and_then(|value| serde_json::from_value::<CountdownState>(value).ok())
@@ -566,7 +723,7 @@ fn read_countdown_state(app: &AppHandle) -> CountdownState {
 }
 
 fn write_countdown_state(app: &AppHandle, state: &CountdownState) {
-    let Ok(store) = app.store(STORE_PATH) else {
+    let Ok(store) = desktop_store(app) else {
         return;
     };
     if let Ok(value) = serde_json::to_value(state) {
@@ -576,7 +733,7 @@ fn write_countdown_state(app: &AppHandle, state: &CountdownState) {
 }
 
 fn read_notification_marker(app: &AppHandle) -> NotificationMarker {
-    app.store(STORE_PATH)
+    desktop_store(app)
         .ok()
         .and_then(|store| store.get(NOTIFICATION_MARKER_KEY))
         .and_then(|value| serde_json::from_value(value).ok())
@@ -584,7 +741,7 @@ fn read_notification_marker(app: &AppHandle) -> NotificationMarker {
 }
 
 fn write_notification_marker(app: &AppHandle, marker: &NotificationMarker) {
-    let Ok(store) = app.store(STORE_PATH) else {
+    let Ok(store) = desktop_store(app) else {
         return;
     };
     if let Ok(value) = serde_json::to_value(marker) {
@@ -1175,7 +1332,7 @@ fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
 fn set_macos_application_menu(app: &AppHandle, labels: &DesktopMenuLabels) -> tauri::Result<()> {
     let package = app.package_info();
     let about_metadata = AboutMetadata {
-        name: Some(package.name.clone()),
+        name: Some(labels.app_name.clone()),
         version: Some(package.version.to_string()),
         copyright: app.config().bundle.copyright.clone(),
         authors: app
@@ -1189,7 +1346,7 @@ fn set_macos_application_menu(app: &AppHandle, labels: &DesktopMenuLabels) -> ta
 
     let app_menu = Submenu::with_items(
         app,
-        package.name.clone(),
+        &labels.app_name,
         true,
         &[
             &PredefinedMenuItem::about(app, Some(&labels.about), Some(about_metadata))?,
@@ -1264,9 +1421,7 @@ fn set_macos_application_menu(app: &AppHandle, labels: &DesktopMenuLabels) -> ta
 
 #[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
 fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
-    let store = app
-        .store(STORE_PATH)
-        .map_err(|error| std::io::Error::other(error.to_string()))?;
+    let store = desktop_store(app).map_err(|error| std::io::Error::other(error.to_string()))?;
     let always_on_top = store
         .get(MINI_ALWAYS_ON_TOP_KEY)
         .and_then(|value| value.as_bool())
@@ -1279,7 +1434,15 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
     } else {
         "en/mini.html"
     };
-    let window = WebviewWindowBuilder::new(app, "mini", WebviewUrl::App(url.into()))
+    let store_floating_window = cfg!(all(target_os = "macos", not(feature = "self-update")));
+    let (window_width, window_height) = if store_floating_window {
+        // Store builds remove the CSS shadow canvas and use a public NSWindow
+        // shadow around the rounded content mask instead.
+        (228.0, 78.0)
+    } else {
+        (248.0, 100.0)
+    };
+    let window_builder = WebviewWindowBuilder::new(app, "mini", WebviewUrl::App(url.into()))
         .title("Off Work Countdown")
         // 窗口比卡片本身大一圈，多出来的部分纯粹是留给投影的画布：窗口无边框且
         // 透明，投影由页面的 CSS 画，超出窗口的部分会被**硬生生截断**——截断的
@@ -1293,21 +1456,36 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
         //
         // 卡片仍是 228x78（与最初版本一致），留白见 MiniCountdown.tsx：
         // 左右各 10pt、上 8pt、下 14pt。改这里就要同步改那边，否则卡片会变形。
-        .inner_size(248.0, 100.0)
-        .min_inner_size(248.0, 100.0)
-        .max_inner_size(248.0, 100.0)
+        .inner_size(window_width, window_height)
+        .min_inner_size(window_width, window_height)
+        .max_inner_size(window_width, window_height)
         .resizable(false)
         .maximizable(false)
         .fullscreen(false)
-        .decorations(false)
-        // 无边框窗口若不透明，CSS 圆角只会把窗口自己的底色露在四个角上，
-        // 看起来就是个直角方块。透明之后圆角和投影才由页面说了算。
-        .transparent(true)
-        .shadow(false)
+        .decorations(false);
+    // 无边框窗口若不透明，CSS 圆角只会把窗口自己的底色露在四个角上，
+    // 看起来就是个直角方块。透明之后圆角和投影才由页面说了算。
+    // Mac App Store 渠道不启用这个私有 API；MAS-P1 会用公开 AppKit 面板替代
+    // 商店版的 WebView 悬浮窗，不能在这里偷偷把 feature 加回来。
+    //
+    // ⚠️ cfg 条件必须与 Tauri 给 `transparent()` 本身设的门完全一致，不能只写
+    // `feature = "macos-private-api"`：透明窗只有 **macOS** 需要私有 API，而
+    // `macos-private-api` 是全局默认 feature，微软商店版同样用
+    // `--no-default-features` 构建。只按 feature 判断会让 Windows MSIX 的迷你窗
+    // 丢掉透明度，变成一个 248x100 的不透明直角矩形。
+    #[cfg(any(not(target_os = "macos"), feature = "macos-private-api"))]
+    let window_builder = window_builder.transparent(true);
+    let window = window_builder
+        .shadow(store_floating_window)
         .always_on_top(always_on_top)
         .skip_taskbar(true)
         .visible(false)
         .build()?;
+
+    #[cfg(all(target_os = "macos", not(feature = "self-update")))]
+    if let Ok(ns_window) = window.ns_window() {
+        native_mini::configure_store_floating_window(ns_window);
+    }
 
     if let Some(position) = store
         .get(MINI_POSITION_KEY)
@@ -1345,7 +1523,7 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
             let _ = handle.hide();
         }
         WindowEvent::Moved(position) => {
-            if let Ok(store) = app_handle.store(STORE_PATH) {
+            if let Ok(store) = desktop_store(&app_handle) {
                 store.set(
                     MINI_POSITION_KEY,
                     serde_json::to_value(MiniPosition {
@@ -1364,9 +1542,7 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
 
 #[tauri::command]
 fn get_mini_window_settings(app: AppHandle) -> Result<MiniWindowSettings, String> {
-    let always_on_top = app
-        .store(STORE_PATH)
-        .map_err(|error| error.to_string())?
+    let always_on_top = desktop_store(&app)?
         .get(MINI_ALWAYS_ON_TOP_KEY)
         .and_then(|value| value.as_bool())
         .unwrap_or(true);
@@ -1387,7 +1563,7 @@ fn set_mini_always_on_top(app: AppHandle, always_on_top: bool) -> Result<(), Str
         window
             .set_always_on_top(always_on_top)
             .map_err(|error| error.to_string())?;
-        let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+        let store = desktop_store(&app)?;
         store.set(MINI_ALWAYS_ON_TOP_KEY, always_on_top);
         return Ok(());
     }
@@ -1445,7 +1621,7 @@ fn toggle_main_window_visibility(app: AppHandle) {
 fn flip_hide_earnings(app: &AppHandle) {
     let mut state = read_countdown_state(app);
     state.hide_earnings = !state.hide_earnings;
-    if let Ok(store) = app.store(STORE_PATH) {
+    if let Ok(store) = desktop_store(app) {
         if let Ok(value) = serde_json::to_value(&state) {
             store.set(COUNTDOWN_KEY, value);
         }
@@ -1477,7 +1653,7 @@ fn hide_main_window(app: AppHandle) {
 /// 迷你窗工具条上的皮肤切换。
 #[tauri::command]
 fn toggle_mini_skin(app: AppHandle) -> Result<(), String> {
-    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+    let store = desktop_store(&app)?;
     let mut state = match store.get(COUNTDOWN_KEY) {
         Some(value) => serde_json::from_value::<CountdownState>(value)
             .map_err(|error| error.to_string())?
@@ -1499,7 +1675,7 @@ fn toggle_mini_skin(app: AppHandle) -> Result<(), String> {
 /// 主窗口的设置项通过订阅收到同一份状态，两处不会各说各话。
 #[tauri::command]
 fn toggle_woodfish_sound(app: AppHandle) -> Result<(), String> {
-    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+    let store = desktop_store(&app)?;
     let mut state = match store.get(COUNTDOWN_KEY) {
         Some(value) => serde_json::from_value::<CountdownState>(value)
             .map_err(|error| error.to_string())?
@@ -1513,7 +1689,7 @@ fn toggle_woodfish_sound(app: AppHandle) -> Result<(), String> {
 }
 
 fn read_global_shortcut_settings(app: &AppHandle) -> GlobalShortcutSettings {
-    app.store(STORE_PATH)
+    desktop_store(app)
         .ok()
         .and_then(|store| store.get(GLOBAL_SHORTCUT_SETTINGS_KEY))
         .and_then(|value| serde_json::from_value(value).ok())
@@ -1524,7 +1700,7 @@ fn persist_global_shortcut_settings(
     app: &AppHandle,
     settings: &GlobalShortcutSettings,
 ) -> Result<(), String> {
-    let store = app.store(STORE_PATH).map_err(|error| error.to_string())?;
+    let store = desktop_store(app)?;
     let value = serde_json::to_value(settings).map_err(|error| error.to_string())?;
     store.set(GLOBAL_SHORTCUT_SETTINGS_KEY, value);
     store.save().map_err(|error| error.to_string())
@@ -1635,45 +1811,82 @@ const MIRROR_UPDATER_ENDPOINT: &str ="https://gh-proxy.com/https://github.com/if
 #[cfg(target_os = "windows")]
 const MICROSOFT_STORE_PRODUCT_ID: &str = "9PM0HJ2PP2LJ";
 
+#[cfg(all(target_os = "macos", not(feature = "self-update")))]
+fn widget_snapshot_contains_sensitive_data(value: &serde_json::Value) -> bool {
+    const SENSITIVE_KEYS: &[&str] = &[
+        "salary",
+        "salaryamount",
+        "dailysalary",
+        "hourlyrate",
+        "earnings",
+        "income",
+        "wage",
+    ];
+    match value {
+        serde_json::Value::Object(object) => object.iter().any(|(key, value)| {
+            SENSITIVE_KEYS.contains(&key.to_ascii_lowercase().as_str())
+                || widget_snapshot_contains_sensitive_data(value)
+        }),
+        serde_json::Value::Array(values) => {
+            values.iter().any(widget_snapshot_contains_sensitive_data)
+        }
+        _ => false,
+    }
+}
+
+/// 接收前端业务层已经投影好的时间线并原子写入 App Group。这里只验证传输契约和
+/// 隐私边界，不在 Rust 中推导班次、午休、跨日或加班规则。
+#[cfg(all(target_os = "macos", not(feature = "self-update")))]
+#[tauri::command]
+fn write_widget_snapshot(snapshot_json: String) -> Result<(), String> {
+    const MAX_WIDGET_SNAPSHOT_BYTES: usize = 256 * 1024;
+    if snapshot_json.is_empty() || snapshot_json.len() > MAX_WIDGET_SNAPSHOT_BYTES {
+        return Err("the Widget snapshot payload size is invalid".into());
+    }
+    let snapshot: serde_json::Value =
+        serde_json::from_str(&snapshot_json).map_err(|error| error.to_string())?;
+    if snapshot
+        .get("schemaVersion")
+        .and_then(|value| value.as_u64())
+        != Some(1)
+    {
+        return Err("the Widget snapshot schema is unsupported".into());
+    }
+    if widget_snapshot_contains_sensitive_data(&snapshot) {
+        return Err("the Widget snapshot contains a sensitive earnings field".into());
+    }
+    macos_widget::write_snapshot(&snapshot_json)
+}
+
 /// 通过镜像清单重新检查、下载并安装更新。
 ///
 /// 没法复用前端的 updater 插件调用：JS 侧的 `check()` 只有 `proxy`（HTTP 代理）
 /// 参数，而 gh-proxy 是 URL 前缀重写，两者不是一回事；而且安装包的真实地址
 /// 来自清单内部，光把清单换掉不够——必须整条链路都走镜像，这只有 Rust 侧的
 /// `UpdaterBuilder::endpoints()` 能在运行时做到。
+#[cfg(feature = "self-update")]
 #[tauri::command]
 async fn install_update_via_mirror(app: AppHandle) -> Result<(), String> {
-    #[cfg(feature = "self-update")]
-    {
-        use tauri_plugin_updater::UpdaterExt;
+    use tauri_plugin_updater::UpdaterExt;
 
-        let endpoint: tauri::Url = MIRROR_UPDATER_ENDPOINT
-            .parse()
-            .map_err(|error| format!("invalid mirror endpoint: {error}"))?;
-        let updater = app
-            .updater_builder()
-            .endpoints(vec![endpoint])
-            .map_err(|error| error.to_string())?
-            .build()
-            .map_err(|error| error.to_string())?;
-        let update = updater
-            .check()
-            .await
-            .map_err(|error| error.to_string())?
-            .ok_or_else(|| "mirror manifest reports no available update".to_string())?;
-        update
-            .download_and_install(|_, _| {}, || {})
-            .await
-            .map_err(|error| error.to_string())
-    }
-    // 商店版整条自更新链路都被编译掉，包括这个镜像回退。前端在 msstore 渠道
-    // 下不会走到这里（更新器模块本身已被 resolve.alias 换掉），保留这个分支
-    // 只是为了让 generate_handler! 的命令列表在两种渠道下保持一致。
-    #[cfg(not(feature = "self-update"))]
-    {
-        let _ = app;
-        Err("self-update is disabled in this build".into())
-    }
+    let endpoint: tauri::Url = MIRROR_UPDATER_ENDPOINT
+        .parse()
+        .map_err(|error| format!("invalid mirror endpoint: {error}"))?;
+    let updater = app
+        .updater_builder()
+        .endpoints(vec![endpoint])
+        .map_err(|error| error.to_string())?
+        .build()
+        .map_err(|error| error.to_string())?;
+    let update = updater
+        .check()
+        .await
+        .map_err(|error| error.to_string())?
+        .ok_or_else(|| "mirror manifest reports no available update".to_string())?;
+    update
+        .download_and_install(|_, _| {}, || {})
+        .await
+        .map_err(|error| error.to_string())
 }
 
 /// 商店版的「检查更新」入口：打开自己的商店详情页，由商店负责更新。
@@ -1681,23 +1894,13 @@ async fn install_update_via_mirror(app: AppHandle) -> Result<(), String> {
 /// 见 docs/PLAN-MSSTORE.md 决策 2。走 Rust 侧的 opener 而不是前端的
 /// `openUrl`，与 `open_notification_settings` 同样的理由：`ms-windows-store:`
 /// 不是 http scheme，前端那条路要在 capability 白名单里逐条声明。
+#[cfg(target_os = "windows")]
 #[tauri::command]
 fn open_microsoft_store_listing(app: AppHandle) -> Result<(), String> {
-    // 两个分支互斥，各自都是函数的尾表达式，因此不能写 `return`——在 Windows 上
-    // 编译时另一个分支整块消失，`return` 就成了 clippy::needless_return。
-    // 这条只在 Windows 上跑 clippy 才会暴露，macOS 上这段根本不参与编译。
-    #[cfg(target_os = "windows")]
-    {
-        let url = format!("ms-windows-store://pdp/?productid={MICROSOFT_STORE_PRODUCT_ID}");
-        app.opener()
-            .open_url(url, None::<&str>)
-            .map_err(|error| error.to_string())
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        let _ = app;
-        Err("the Microsoft Store is only available on Windows".into())
-    }
+    let url = format!("ms-windows-store://pdp/?productid={MICROSOFT_STORE_PRODUCT_ID}");
+    app.opener()
+        .open_url(url, None::<&str>)
+        .map_err(|error| error.to_string())
 }
 
 /// 自启动的真实状态。比一个 bool 多一个 `locked`，因为 MSIX 那条路上「关着」
@@ -1711,6 +1914,30 @@ fn open_microsoft_store_listing(app: AppHandle) -> Result<(), String> {
 struct AutostartState {
     enabled: bool,
     locked: bool,
+}
+
+#[cfg(all(target_os = "macos", not(feature = "run-key-autostart")))]
+fn macos_login_item_state(status: i32) -> Result<AutostartState, String> {
+    match status {
+        // SMAppServiceStatusNotRegistered
+        0 => Ok(AutostartState {
+            enabled: false,
+            locked: false,
+        }),
+        // SMAppServiceStatusEnabled
+        1 => Ok(AutostartState {
+            enabled: true,
+            locked: false,
+        }),
+        // SMAppServiceStatusRequiresApproval. The app cannot approve itself;
+        // the user controls this in System Settings → General → Login Items.
+        2 => Ok(AutostartState {
+            enabled: false,
+            locked: true,
+        }),
+        3 => Err("the main app login item was not found".into()),
+        _ => Err("SMAppService is unavailable on this macOS version".into()),
+    }
 }
 
 /// manifest 里 `<uap5:StartupTask TaskId="...">` 的 TaskId，必须逐字一致，
@@ -1778,7 +2005,15 @@ async fn get_autostart_state(app: AppHandle) -> Result<AutostartState, String> {
         let _ = app;
         read_startup_task_state()
     }
-    #[cfg(all(not(target_os = "windows"), not(feature = "run-key-autostart")))]
+    #[cfg(all(target_os = "macos", not(feature = "run-key-autostart")))]
+    {
+        let _ = app;
+        macos_login_item_state(native_mini::login_item_status())
+    }
+    #[cfg(all(
+        not(any(target_os = "windows", target_os = "macos")),
+        not(feature = "run-key-autostart")
+    ))]
     {
         let _ = app;
         Err("autostart is unavailable in this build".into())
@@ -1823,7 +2058,19 @@ async fn set_autostart_enabled(app: AppHandle, enabled: bool) -> Result<Autostar
         }
         read_startup_task_state()
     }
-    #[cfg(all(not(target_os = "windows"), not(feature = "run-key-autostart")))]
+    #[cfg(all(target_os = "macos", not(feature = "run-key-autostart")))]
+    {
+        let _ = app;
+        let current = native_mini::login_item_status();
+        if (enabled && matches!(current, 1 | 2)) || (!enabled && current == 0) {
+            return macos_login_item_state(current);
+        }
+        macos_login_item_state(native_mini::set_login_item_enabled(enabled))
+    }
+    #[cfg(all(
+        not(any(target_os = "windows", target_os = "macos")),
+        not(feature = "run-key-autostart")
+    ))]
     {
         let _ = (app, enabled);
         Err("autostart is unavailable in this build".into())
@@ -1998,8 +2245,14 @@ pub fn run() {
             toggle_mini_skin,
             get_global_shortcut_settings,
             update_global_shortcut_settings,
+            #[cfg(feature = "self-update")]
             install_update_via_mirror,
+            #[cfg(target_os = "windows")]
             open_microsoft_store_listing,
+            #[cfg(all(target_os = "macos", not(feature = "self-update")))]
+            write_widget_snapshot,
+            #[cfg(all(target_os = "macos", not(feature = "self-update")))]
+            get_desktop_store_path,
             get_autostart_state,
             set_autostart_enabled,
             update_desktop_menus,
@@ -2016,8 +2269,7 @@ pub fn run() {
             }
 
             // Rust 先加载 Store，使随后来自前端的 load() 与后台线程共享同一个实例。
-            let _ = app
-                .store(STORE_PATH)
+            let _ = desktop_store(app.handle())
                 .map_err(|error| std::io::Error::other(error.to_string()))?;
             #[cfg(desktop)]
             {

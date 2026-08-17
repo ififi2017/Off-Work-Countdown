@@ -1,0 +1,26 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "identifier": "com.rainif.offworkcountdown.macappstore",
+  "build": {
+    "beforeBuildCommand": "npm run build:desktop:macappstore",
+    "beforeBundleCommand": "./scripts/build-macos-widget.sh"
+  },
+  "app": {
+    "macOSPrivateApi": false,
+    "security": {
+      "capabilities": ["default", "desktop-capability"]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app"],
+    "macOS": {
+      "entitlements": "./target/macos-widget/Host.entitlements",
+      "files": {
+        "PlugIns/OffWorkCountdownWidgetExtension.appex": "./target/macos-widget/OffWorkCountdownWidgetExtension.appex"
+      },
+      "minimumSystemVersion": "13.0",
+      "signingIdentity": "-"
+    }
+  }
+}
