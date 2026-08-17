@@ -13,6 +13,7 @@
     "check:build:web": "node scripts/check-build-output.mjs web",
     "check:build:desktop": "node scripts/check-build-output.mjs desktop",
     "check:version": "node scripts/check-version.mjs",
+    "check:lproj": "node scripts/generate-macos-lproj.mjs && git diff --exit-code -- src-tauri/macos-lproj",
     "pack:msix": "node scripts/pack-msix.mjs",
     "deploy:web": "node scripts/push-ci.mjs",
     "release:desktop": "node scripts/release-desktop.mjs",

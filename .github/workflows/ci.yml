@@ -28,6 +28,11 @@ jobs:
       - name: Check product versions
         run: npm run check:version
 
+      # macOS 应用名的 .lproj 是从译文生成后入库的（不入库会让裸 cargo 失败，
+      # 见生成脚本顶部）。改了 offWorkCountdown 却忘了重新生成时在这里拦下。
+      - name: Check generated macOS localizations
+        run: npm run check:lproj
+
       - name: Build
         run: npm run build
 

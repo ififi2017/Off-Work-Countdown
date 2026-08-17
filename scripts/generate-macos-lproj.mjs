@@ -18,6 +18,14 @@ import { resolve } from "node:path";
 //
 // CFBundleName 有 15 字符的长度建议，fr / es / pt / hi 几种远超过，菜单栏上会占
 // 掉不少宽度。但截断产品名比让它一律显示英文更糟，这里照原样写。
+// ⚠️ 产物**入库**，不要 gitignore。tauri.macos.conf.json 的 bundle.resources 指向
+// 它，而 tauri-build 在解析配置时就会校验路径存在——目录缺失会让**任何**裸 cargo
+// 调用直接失败（cargo build / clippy / test，以及编辑器里的 rust-analyzer），报一句
+// 很难联想到成因的 `resource path 'macos-lproj' doesn't exist`。CI 的 Rust job 正是
+// 跑裸 cargo、不跑 npm，栽过一次。
+//
+// 入库后本脚本仍在每次 beforeBuildCommand 运行，`npm run check:lproj` 负责保证
+// 库里那份和译文没有漂移。
 const LOCALES_DIR = "public/locales";
 const NAME_KEY = "offWorkCountdown";
 const OUTPUT_DIR = "src-tauri/macos-lproj";
