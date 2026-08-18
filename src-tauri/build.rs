@@ -31,13 +31,36 @@ fn build_native_mini_timer() {
         .trim()
         .to_string();
 
+    // 原生代码的最低系统版本必须跟着渠道走，不能写死：GitHub 版是 11.3，商店版是
+    // 13.0（登录项要 SMAppService、小组件要 WidgetKit）。Tauri CLI 会按各自配置里的
+    // `bundle.macOS.minimumSystemVersion` 设置 MACOSX_DEPLOYMENT_TARGET，这里读它即可，
+    // 两边自然对齐。
+    //
+    // ⚠️ 写死一个高于 Rust 侧的值会造出一个**对外声称能跑、实际跑不了**的包：曾经
+    // 这里固定 13.0，而 tauri.conf.json 没设 minimumSystemVersion（Tauri 默认 10.13），
+    // 于是 GitHub 版的 .app 声称支持 10.13、二进制却是 11.0。
+    //
+    // 裸 cargo（CI 的 Rust job、本地 clippy、rust-analyzer）不经过 Tauri CLI，没有这个
+    // 环境变量，此时按正在构建的渠道回退：商店渠道必须是 13.0，低于它 swiftc 会为
+    // WidgetHostBridge.swift 生成回溯部署的兼容库引用（swiftCompatibility56、
+    // swiftCompatibilityConcurrency 等），而那些静态库不在链接行里，直接链接失败。
+    let include_widget_bridge = env::var_os("CARGO_FEATURE_SELF_UPDATE").is_none();
+    let deployment_target = env::var("MACOSX_DEPLOYMENT_TARGET").unwrap_or_else(|_| {
+        if include_widget_bridge {
+            "13.0"
+        } else {
+            "11.3"
+        }
+        .to_string()
+    });
+
     let mut clang = Command::new("clang");
     clang
         .arg("-c")
         .arg(&source)
         .args(["-o", object.to_str().unwrap()])
         .args(["-arch", architecture])
-        .arg("-mmacosx-version-min=13.0")
+        .arg(format!("-mmacosx-version-min={deployment_target}"))
         .args(["-isysroot", &sdk])
         .arg("-fobjc-arc")
         .arg("-fmodules")
@@ -55,7 +78,6 @@ fn build_native_mini_timer() {
         );
     }
 
-    let include_widget_bridge = env::var_os("CARGO_FEATURE_SELF_UPDATE").is_none();
     if include_widget_bridge {
         // 取值必须与 scripts/build-macos-widget.sh 的同名变量保持一致：那边决定
         // entitlements 怎么生成，这边决定宿主往哪个容器写快照，两者对不上的表现
@@ -70,7 +92,7 @@ fn build_native_mini_timer() {
             }
         };
         println!("cargo:rustc-env=OWC_WIDGET_STORAGE_MODE={widget_storage_mode}");
-        let swift_target = format!("{architecture}-apple-macosx13.0");
+        let swift_target = format!("{architecture}-apple-macosx{deployment_target}");
         let mut swiftc = Command::new("xcrun");
         swiftc
             .args(["--sdk", "macosx", "swiftc"])
@@ -112,6 +134,7 @@ fn build_native_mini_timer() {
     println!("cargo:rerun-if-changed={}", widget_bridge_source.display());
     println!("cargo:rerun-if-env-changed=OWC_APP_GROUP_IDENTIFIER");
     println!("cargo:rerun-if-env-changed=OWC_WIDGET_SIGNING_MODE");
+    println!("cargo:rerun-if-env-changed=MACOSX_DEPLOYMENT_TARGET");
     println!("cargo:rustc-link-search=native={}", out_dir.display());
     println!("cargo:rustc-link-lib=static=NativeMiniTimer");
     println!("cargo:rustc-link-lib=framework=AppKit");

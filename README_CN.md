@@ -24,7 +24,7 @@
 ## 使用下班倒计时
 
 - **网页版：**[立即使用](https://off.rainif.com/zh-CN)，无需安装。
-- **桌面客户端：**[打开下载页](https://off.rainif.com/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。
+- **桌面客户端：**[打开下载页](https://off.rainif.com/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。macOS 版需要 macOS 11.3（Big Sur）或更高版本。
 - **Windows 用户：**[从 Microsoft Store 获取](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ)，会自动更新，安装时也不会出现 SmartScreen 提示。
 - **安装包列表：**[最新 GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)。
 
@@ -37,6 +37,8 @@
 Microsoft Store 版本是个例外：商店在认证阶段用自己的证书签名，因此安装时不会有任何警告，更新也由商店负责，不走应用内更新器。
 
 #### macOS
+
+需要 **macOS 11.3（Big Sur）或更高版本**，Apple Silicon 与 Intel 均支持。
 
 1. Apple Silicon Mac 下载 `aarch64.dmg`，Intel Mac 下载 `x64.dmg`。
 2. 打开 DMG，把“Off Work Countdown”拖入“应用程序”。

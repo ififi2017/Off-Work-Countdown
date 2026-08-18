@@ -784,7 +784,7 @@ LaunchAgent 自启动等不合规代码及 capability 都不能进入最终商�
 | 签名与上传 | Release workflow 在 macOS 使用 ad-hoc identity `-`，产出 `.dmg` / `.app` | 使用 Apple Distribution 签名应用、Mac Installer Distribution 签名 `.pkg`，通过 App Store Connect 上传 |
 | 商店元数据 | 没有 `macappstore` 配置、category、商店 Info.plist 与隐私申报 | 补齐 bundle category、Team / App ID、加密声明、隐私、支持 URL、截图、年龄分级等资料 |
 | macOS 小组件 | 已有 SwiftUI / WidgetKit Xcode target、共享快照协议、宿主原子写入与刷新桥；ad-hoc 本地包保留沙盒，以临时文件例外访问 Application Support 后备路径验证 UI，不能代表 App Group 授权 | 为宿主与扩展配置独立 App ID、profile 和共同 App Group，并在 provisioned 沙盒包里验证组件库发现与共享读取 |
-| 最低系统版本 | 原生 Objective-C 按 macOS 13 编译，Tauri bundle 未显式对齐 | 商店配置显式声明 macOS 13.0，避免包元数据承诺一个实际不能运行的更低版本 |
+| 最低系统版本 | ~~原生 Objective-C 按 macOS 13 编译，Tauri bundle 未显式对齐~~ 已解决，见 9.10 | 商店配置显式声明 macOS 13.0，避免包元数据承诺一个实际不能运行的更低版本 |
 
 托盘、通知、原生 AppKit Mini Timer 和默认全局快捷键目前没有被判定为必然阻塞，但必须
 放进沙盒真机验收。特别是快捷键注册、辅助功能权限和睡眠唤醒后的后台行为，不能只凭
@@ -1016,3 +1016,30 @@ GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建
 
 阶段顺序不能颠倒：先做 MAS-P0 / P1，确认核心常驻能力在 App Sandbox 中成立，再购买或
 续费开发者会员并投入 listing 与自动化。技术验证失败时，GitHub 直发版不受影响。
+
+### 9.10 两个渠道的最低系统版本
+
+| 渠道 | 最低版本 | 为什么是这个数 |
+|---|---|---|
+| GitHub | **11.3** | 由 wry 决定，见下 |
+| Mac App Store | **13.0** | 登录项要 `SMAppService`（13.0+），小组件要 WidgetKit |
+
+11.3 这个数不是拍的，是栈里三层地板取最高：
+
+1. **Apple Silicon 本身 11.0。** rustc 对 aarch64-apple-darwin 把 minos 钉死 11.0，
+   `MACOSX_DEPLOYMENT_TARGET=10.15` 会被直接无视（实测）。arm64 上不存在更低的 macOS。
+2. **wry 0.55 / objc2 需要 11.3。** 产物里引用了 `webView:navigationAction:didBecomeDownload:`
+   与 `webView:navigationResponse:didBecomeDownload:`，这两个 WKNavigationDelegate 方法
+   macOS 11.3 才有；objc2 覆盖协议方法时找不到会 panic，见
+   [tauri#15431](https://github.com/tauri-apps/tauri/issues/15431)（上游依赖问题）。
+3. **我们自己的 ObjC 不是瓶颈。** `NativeMiniTimer.m` 在 13.0 与 11.0 下均零警告；
+   只有降到 10.15 才会有两处需要处理（`performAsCurrentDrawingAppearance:` 与
+   SF Symbols 的 `imageWithSystemSymbolName:`，都是 11.0+）。
+
+**曾经的错误声明**：`tauri.conf.json` 一直没设 `minimumSystemVersion`，用了 Tauri 的默认值
+10.13，而 build.rs 把原生代码写死编译在 13.0。实测 2026-08-09 的 GitHub 渠道产物
+`LSMinimumSystemVersion = 10.13` 而二进制 `minos = 11.0`——**包告诉系统它能在 10.13 上跑，
+实际不能**。现已两处对齐：配置里显式写 11.3，build.rs 改为读 `MACOSX_DEPLOYMENT_TARGET`
+（Tauri CLI 按各渠道配置设置它），裸 cargo 无该变量时回退 11.3。
+
+要再往下走只能等上游：objc2 那两个 selector 是硬约束，绕不开。
