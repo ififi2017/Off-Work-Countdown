@@ -1022,7 +1022,7 @@ GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建
 | 渠道 | 最低版本 | 为什么是这个数 |
 |---|---|---|
 | GitHub | **11.3** | 由 wry 决定，见下 |
-| Mac App Store | **13.0** | 登录项要 `SMAppService`（13.0+），小组件要 WidgetKit |
+| Mac App Store | **13.0** | 产品取舍，非技术上限；见下 |
 
 11.3 这个数不是拍的，是栈里三层地板取最高：
 
@@ -1043,3 +1043,21 @@ GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建
 （Tauri CLI 按各渠道配置设置它），裸 cargo 无该变量时回退 11.3。
 
 要再往下走只能等上游：objc2 那两个 selector 是硬约束，绕不开。
+
+**商店渠道的 13.0 是选择，不是技术上限**（2026-08-18 复核，决定维持不变）。实测它
+技术上也能做到 11.3——`WidgetHostBridge.swift` 与 `NativeMiniTimer.m` 在 11.0 就零错误，
+只有 Widget 的 SwiftUI 用了几个便利 API 需要换旧写法：`foregroundStyle` / `.primary`
+（12.0+）、`contentTransition` / `.system(_:design:weight:)`（13.0+），都有等价替代。
+
+真正的代价在功能，不在编译：
+
+- **macOS 12 及以下没有「登录时启动」。** 商店渠道用 `--no-default-features` 构建，
+  `run-key-autostart` 被裁掉，唯一实现是 `SMAppService`（13.0+）。ObjC 侧守卫返回 -1，
+  Rust 映射为「SMAppService is unavailable on this macOS version」——不崩溃，但开关直接
+  报错。这符合决策 3「开关必须反映系统真实状态」，只是那个能力在 12 上不存在。
+- **macOS 13 上小组件只能进通知中心。** WidgetKit 自 Big Sur 就有，但**桌面小组件是
+  macOS 14 Sonoma 才引入的**；`containerBackground(for: .widget)` 已守卫 14.0，所以 13
+  能跑，只是用户在桌面上看不到它——而小组件正是这条渠道的主要卖点。
+
+因此另一个方向是把商店渠道抬到 **14.0**：所有用户都能把小组件放上桌面，也不必维护
+13 的 `containerBackground` 回退分支，代价是放弃 Ventura 用户。当前结论是维持 13.0。
