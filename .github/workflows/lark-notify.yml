@@ -18,6 +18,12 @@ permissions:
   contents: read
   actions: read
 
+# ⚠️ 事件里的外部内容（issue / PR 标题、提交信息）**必须**先经 env 传入，再在
+# shell 里用 "$VAR" 引用。`${{ }}` 是由 runner 在 shell 看到脚本**之前**做文本替换的，
+# 直接内联等于把攻击者可控的字符串拼进脚本：一个带引号的 PR 标题就能逃逸 jq 的
+# --arg 执行任意命令。而这些步骤的 env 里带着飞书密钥，pull_request_target 又运行在
+# 基仓库上下文中——fork 提交者据此即可窃取 secrets。
+
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -57,13 +63,19 @@ jobs:
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+          KIND: ${{ steps.ci.outputs.kind }}
+          REPO: ${{ github.repository }}
+          WORKFLOW: ${{ github.event.workflow_run.name }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
         run: |
-          node scripts/lark-notify.mjs "${{ steps.ci.outputs.kind }}" "$(jq -nc \
-            --arg repo "${{ github.repository }}" \
-            --arg workflow "${{ github.event.workflow_run.name }}" \
-            --arg branch "${{ github.event.workflow_run.head_branch }}" \
-            --arg commitMessage "${{ github.event.workflow_run.head_commit.message }}" \
-            --arg runUrl "${{ github.event.workflow_run.html_url }}" \
+          node scripts/lark-notify.mjs "$KIND" "$(jq -nc \
+            --arg repo "$REPO" \
+            --arg workflow "$WORKFLOW" \
+            --arg branch "$BRANCH" \
+            --arg commitMessage "$COMMIT_MESSAGE" \
+            --arg runUrl "$RUN_URL" \
             '$ARGS.named')"
 
       - name: Send a test notification
@@ -71,12 +83,15 @@ jobs:
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           node scripts/lark-notify.mjs ci-recovered "$(jq -nc \
-            --arg repo "${{ github.repository }}" \
+            --arg repo "$REPO" \
             --arg workflow "Lark Notify（手动自检）" \
-            --arg branch "${{ github.ref_name }}" \
-            --arg runUrl "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg branch "$BRANCH" \
+            --arg runUrl "$RUN_URL" \
             '$ARGS.named')"
 
       - name: Notify new issue
@@ -84,13 +99,18 @@ jobs:
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          SUBJECT: ${{ github.event.issue.title }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+          URL: ${{ github.event.issue.html_url }}
         run: |
           node scripts/lark-notify.mjs issue-opened "$(jq -nc \
-            --arg repo "${{ github.repository }}" \
-            --argjson number ${{ github.event.issue.number }} \
-            --arg subject "${{ github.event.issue.title }}" \
-            --arg author "${{ github.event.issue.user.login }}" \
-            --arg url "${{ github.event.issue.html_url }}" \
+            --arg repo "$REPO" \
+            --arg number "$NUMBER" \
+            --arg subject "$SUBJECT" \
+            --arg author "$AUTHOR" \
+            --arg url "$URL" \
             '$ARGS.named')"
 
       # 只发已合并的，关闭但未合并的不发。
@@ -99,10 +119,14 @@ jobs:
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          SUBJECT: ${{ github.event.pull_request.title }}
+          URL: ${{ github.event.pull_request.html_url }}
         run: |
           node scripts/lark-notify.mjs pr-merged "$(jq -nc \
-            --arg repo "${{ github.repository }}" \
-            --argjson number ${{ github.event.pull_request.number }} \
-            --arg subject "${{ github.event.pull_request.title }}" \
-            --arg url "${{ github.event.pull_request.html_url }}" \
+            --arg repo "$REPO" \
+            --arg number "$NUMBER" \
+            --arg subject "$SUBJECT" \
+            --arg url "$URL" \
             '$ARGS.named')"

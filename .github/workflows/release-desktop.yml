@@ -138,8 +138,10 @@ jobs:
 
       # 草稿的资产链接需要仓库权限才能下载，所以这条只提醒去审核发布，不放下载
       # 链接；等 Release 真正 published 时由 lark-release.yml 再推一条带链接的。
+      # ⚠️ 不要加 `if: always()`。latest-cn.json 或校验和上传失败时草稿是**不完整**的，
+      # 那时再推一条「构建完成，草稿待发布」会诱导维护者发布一个残缺的 Release。
+      # continue-on-error 只保证通知自身失败不影响流程，不改变触发条件。
       - name: Notify Lark that the draft is ready
-        if: always()
         continue-on-error: true
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
