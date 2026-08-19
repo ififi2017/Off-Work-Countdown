@@ -1268,7 +1268,11 @@ fn start_tray_timer(app: AppHandle) {
             {
                 was_running = active || waiting_for_current_shift;
             }
-            thread::sleep(Duration::from_secs(1));
+            // 对齐到墙上时钟的整秒边界，而不是固定 sleep(1s)：后者每轮实际是
+            // 「本轮工作耗时 + 1s」，会累积漂移，与主窗口、迷你窗那两个独立计时器
+            // 越走越远，同一时刻三处显示不同的秒数。见 lib/second-tick.ts。
+            let into_second = (chrono_free_now_ms() % 1000) as u64;
+            thread::sleep(Duration::from_millis(1000 - into_second.min(999)));
         }
     });
 }
@@ -1936,7 +1940,14 @@ fn macos_login_item_state(status: i32) -> Result<AutostartState, String> {
             locked: true,
         }),
         3 => Err("the main app login item was not found".into()),
-        _ => Err("SMAppService is unavailable on this macOS version".into()),
+        // ObjC 侧用负数区分两种完全不同的失败，之前一起落进这个分支，注册失败会被
+        // 报成「系统版本不支持」——看到这条消息的人会去查 macOS 版本，方向就错了。
+        -1 => Err("SMAppService requires macOS 13 or later".into()),
+        -2 => Err(
+            "macOS refused to register the login item; open System Settings → General → Login Items to check"
+                .into(),
+        ),
+        other => Err(format!("unexpected SMAppService status: {other}")),
     }
 }
 

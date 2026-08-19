@@ -139,6 +139,7 @@ import {
   shortcutFromKeyEvent,
 } from "@/lib/shortcut";
 import type { DesktopUpdateCandidate } from "@/lib/desktop-updater";
+import { startSecondTick } from "@/lib/second-tick";
 
 /** 下班前多久提醒。与 translation.json 里 "reminder" 的文案保持一致。 */
 const REMINDER_LEAD_MS = 15 * 60 * 1000;
@@ -1422,7 +1423,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   }, [activeShift, startTime, endTime, shiftBuildOptions]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let stopTick: (() => void) | undefined;
     if (showCountdown) {
       const updateCountdown = () => {
         const now = new Date();
@@ -1538,7 +1539,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               celebrationPendingRef.current = endAtMs;
             }
           }
-          if (!IS_DESKTOP_BUILD) clearInterval(interval);
+          if (!IS_DESKTOP_BUILD) stopTick?.();
         } else {
           setShowNextShiftStatus(false);
           const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -1585,9 +1586,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       };
 
       updateCountdown(); // 立即运行
-      interval = setInterval(updateCountdown, 1000);
+      // 对齐整秒边界：主窗口、迷你窗和 Rust 后台线程是三个独立计时器，用固定
+      // 间隔会各自漂移到不同相位，同一时刻显示不同的秒数。见 lib/second-tick.ts。
+      stopTick = startSecondTick(updateCountdown);
     }
-    return () => clearInterval(interval);
+    return () => stopTick?.();
   }, [showCountdown, startTime, endTime, activeShift, reminder, calculateProgress, t, shiftBuildOptions, workdays, triggerCelebration]);
 
   const handleStart = () => {
