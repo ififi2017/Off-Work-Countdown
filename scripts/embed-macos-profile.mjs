@@ -222,6 +222,64 @@ if (process.env.OWC_WIDGET_SIGNING_MODE === "distribution") {
     process.exit(1);
   }
   console.log("No bundle carries get-task-allow.");
+
+  // 90886：宿主的**签名**里必须有 application-identifier，且与描述文件一致。
+  // Xcode 签嵌套 .appex 时会自动从描述文件补这个键，而宿主是 Tauri 用我们手写的
+  // entitlements 文件签的，没人替它补——缺了要等上传后才收到拒信。
+  const profileAppIdentifier = execFileSync(
+    "plutil",
+    ["-extract", String.raw`Entitlements.com\.apple\.application-identifier`, "raw", "-o", "-", "-"],
+    {
+      input: execFileSync("security", ["cms", "-D", "-i", profile], {
+        encoding: "utf8",
+        maxBuffer: 8 * 1024 * 1024,
+      }),
+      encoding: "utf8",
+    }
+  ).trim();
+  const signedAppIdentifier = (
+    execFileSync("codesign", ["-d", "--entitlements", "-", appPath], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).match(/application-identifier<\/key>\s*<string>([^<]*)/) ??
+    execFileSync("codesign", ["-d", "--entitlements", "-", appPath], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).match(/application-identifier[\s\S]{0,80}?\[String\]\s+(\S+)/)
+  )?.[1];
+  if (signedAppIdentifier !== profileAppIdentifier) {
+    console.error(
+      `Signed application-identifier does not match the provisioning profile:\n` +
+        `  signed:  ${signedAppIdentifier ?? "(missing)"}\n` +
+        `  profile: ${profileAppIdentifier}\n` +
+        `  App Store upload rejects this with error 90886.`
+    );
+    process.exit(1);
+  }
+
+  // 90473：扩展的 CFBundleVersion 必须与宿主一致。
+  const bundleVersion = (bundle) =>
+    execFileSync(
+      "plutil",
+      ["-extract", "CFBundleVersion", "raw", "-o", "-", join(bundle, "Contents/Info.plist")],
+      { encoding: "utf8" }
+    ).trim();
+  const hostVersion = bundleVersion(appPath);
+  const mismatched = pluginBundles(appPath).filter(
+    (bundle) => bundleVersion(bundle) !== hostVersion
+  );
+  if (mismatched.length > 0) {
+    console.error(
+      `CFBundleVersion mismatch (host is ${hostVersion}); App Store upload rejects this with 90473:\n` +
+        mismatched
+          .map((bundle) => `  ${bundle} = ${bundleVersion(bundle)}`)
+          .join("\n")
+    );
+    process.exit(1);
+  }
+  console.log(
+    `application-identifier and CFBundleVersion (${hostVersion}) match across bundles.`
+  );
 }
 
 console.log(`Embedded ${profile}`);

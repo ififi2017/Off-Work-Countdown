@@ -2,6 +2,17 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!--
+	  ⚠️ 这两个键 Xcode 在签名时会**自动从描述文件补上**，因此嵌套的 .appex 天然
+	  就有；而宿主是由 Tauri 用这份手写 entitlements 签的，没人替它补。缺了它们
+	  上传会被拒（90886：the signature for the bundle is missing an application
+	  identifier but has an application identifier in the provisioning profile）。
+	  必须与描述文件里的 application-identifier 完全一致。
+	-->
+	<key>com.apple.application-identifier</key>
+	<string>__OWC_APPLICATION_IDENTIFIER__</string>
+	<key>com.apple.developer.team-identifier</key>
+	<string>__OWC_APPLE_TEAM_ID__</string>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
 	<!-- WKWebView launches WebContent/Networking helper processes even for

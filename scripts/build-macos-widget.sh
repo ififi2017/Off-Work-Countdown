@@ -9,9 +9,13 @@ derived_data="$project_root/src-tauri/target/macos-widget"
 configuration=${OWC_WIDGET_CONFIGURATION:-Release}
 app_group_identifier=${OWC_APP_GROUP_IDENTIFIER:-group.com.rainif.offworkcountdown.macappstore}
 widget_bundle_identifier=${OWC_WIDGET_BUNDLE_IDENTIFIER:-com.rainif.offworkcountdown.macappstore.widget}
-build_number=${OWC_WIDGET_BUILD_NUMBER:-1}
+# ⚠️ 默认必须等于 marketing_version，不能写死 1。扩展的 CFBundleVersion 必须与
+# 宿主一致，否则上传被拒（90473：CFBundleVersion Mismatch）。宿主那边 Tauri 把
+# CFBundleShortVersionString 和 CFBundleVersion 都设成了产品版本号。
+build_number=${OWC_WIDGET_BUILD_NUMBER:-}
 signing_mode=${OWC_WIDGET_SIGNING_MODE:-adhoc}
 marketing_version=$(node -p "require('$project_root/package.json').version")
+build_number=${build_number:-$marketing_version}
 
 case "$signing_mode" in
   automatic|distribution) widget_storage_mode=app-group ;;
@@ -37,7 +41,10 @@ case "$widget_bundle_identifier" in
 esac
 
 mkdir -p "$derived_data"
-sed "s|__OWC_APP_GROUP_IDENTIFIER__|$app_group_identifier|g" \
+host_bundle_identifier=${OWC_HOST_BUNDLE_IDENTIFIER:-com.rainif.offworkcountdown.macappstore}
+sed -e "s|__OWC_APP_GROUP_IDENTIFIER__|$app_group_identifier|g" \
+  -e "s|__OWC_APPLICATION_IDENTIFIER__|${OWC_APPLE_TEAM_ID:-}.$host_bundle_identifier|g" \
+  -e "s|__OWC_APPLE_TEAM_ID__|${OWC_APPLE_TEAM_ID:-}|g" \
   "$project_root/src-tauri/macappstore/Entitlements.plist" \
   > "$derived_data/Host.entitlements"
 plutil -lint "$derived_data/Host.entitlements" >/dev/null
