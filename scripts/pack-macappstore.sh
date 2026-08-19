@@ -15,8 +15,19 @@ set -eu
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 project_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
-app_path=${1:-"$project_root/src-tauri/target/release/bundle/macos/Off Work Countdown.app"}
-output=${OWC_PKG_OUTPUT:-"$project_root/src-tauri/target/release/bundle/macos/OffWorkCountdown.pkg"}
+# 不写死 target/release：带 --target 构建时（Universal 用
+# --target universal-apple-darwin）产物在 target/<triple>/release/ 下。取最新的一个。
+if [ -n "${1:-}" ]; then
+  app_path=$1
+else
+  # ⚠️ maxdepth 至少 5：target/release/... 是 4 层，而带 --target 时
+  # target/<triple>/release/... 是 5 层。写 4 会把 Universal 产物整个漏掉，
+  # 然后安静地拿旧的单架构包去打 .pkg——踩过一次。
+  app_path=$(find "$project_root/src-tauri/target" \
+    -maxdepth 5 -type d -path "*/release/bundle/macos/Off Work Countdown.app" \
+    -exec stat -f "%m %N" {} + 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+fi
+output=${OWC_PKG_OUTPUT:-"${app_path%/*}/OffWorkCountdown.pkg"}
 installer_identity=${OWC_INSTALLER_IDENTITY:-}
 
 if [ ! -d "$app_path" ]; then

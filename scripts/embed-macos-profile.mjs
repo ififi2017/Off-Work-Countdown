@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { copyFileSync, existsSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -31,11 +31,40 @@ const XCODE_PROFILES = join(
 const appPath = process.argv[2] ?? defaultAppPath();
 const identity = process.env.APPLE_SIGNING_IDENTITY ?? "";
 
+/**
+ * 定位刚打好的 .app。
+ *
+ * 不能写死 `target/release/`：带 `--target` 构建时（Universal 走
+ * `--target universal-apple-darwin`）产物在 `target/<triple>/release/` 下，写死会
+ * 让这一步安静地跳过——而"跳过"的表现是包里没有描述文件，直到真机上小组件读不到
+ * 数据才暴露。
+ */
 function defaultAppPath() {
   const config = JSON.parse(
-    execFileSync("node", ["-e", "process.stdout.write(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8'))"], { encoding: "utf8" })
+    readFileSync("src-tauri/tauri.conf.json", "utf8")
   );
-  return resolve(`src-tauri/target/release/bundle/macos/${config.productName}.app`);
+  const name = `${config.productName}.app`;
+  const roots = [
+    resolve("src-tauri/target/release/bundle/macos"),
+    ...(existsSync(resolve("src-tauri/target"))
+      ? readdirSync(resolve("src-tauri/target"), { withFileTypes: true })
+          .filter((entry) => entry.isDirectory() && entry.name.includes("-apple-darwin"))
+          .map((entry) =>
+            resolve(`src-tauri/target/${entry.name}/release/bundle/macos`)
+          )
+      : []),
+  ];
+  const found = roots
+    .map((root) => join(root, name))
+    .filter((path) => existsSync(path))
+    .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs);
+  if (found.length === 0) {
+    throw new Error(
+      `No ${name} found under src-tauri/target/*/release/bundle/macos. ` +
+        `Pass the path explicitly if you built somewhere else.`
+    );
+  }
+  return found[0];
 }
 
 // ad-hoc / 未签名的本地构建照常跳过：它们只用来验证包结构，本来就拿不到 App Group。
