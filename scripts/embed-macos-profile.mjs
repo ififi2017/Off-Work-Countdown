@@ -14,6 +14,15 @@ import { join, resolve } from "node:path";
 //
 // 往已签名的 bundle 里加文件会破坏封签，因此必须重签。
 const PROFILE_NAME = "embedded.provisionprofile";
+
+/** `.app` 里嵌套的扩展。它们各自签名，外层通过并不代表它们也通过。 */
+function pluginBundles(appBundle) {
+  const dir = join(appBundle, "Contents/PlugIns");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".appex"))
+    .map((name) => join(dir, name));
+}
 const XCODE_PROFILES = join(
   homedir(),
   "Library/Developer/Xcode/UserData/Provisioning Profiles"
@@ -163,6 +172,28 @@ if (unauthorized.length > 0) {
   process.exit(1);
 }
 console.log(`Provisioning profile authorizes ${declaredGroups.join(", ")}`);
+
+// 分发构建绝不能带 `get-task-allow`（允许调试器附加，是**开发**签名的标志）。
+// 带着它提交会被 Apple 直接拒，而拒信要等上传之后才收到。宿主用的是我们自己的
+// entitlements 文件所以本来就没有，但嵌套的 .appex 由 Xcode 签，开发签名会自动
+// 加上——因此这里连嵌套 bundle 一起查，而不只查外层。
+if (process.env.OWC_WIDGET_SIGNING_MODE === "distribution") {
+  const carriers = [appPath, ...pluginBundles(appPath)].filter((bundle) => {
+    const entitlements = execFileSync("codesign", ["-d", "--entitlements", "-", bundle], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return entitlements.includes("get-task-allow");
+  });
+  if (carriers.length > 0) {
+    console.error(
+      `These bundles still carry get-task-allow and would be rejected by App Review:\n` +
+        carriers.map((bundle) => `  ${bundle}`).join("\n")
+    );
+    process.exit(1);
+  }
+  console.log("No bundle carries get-task-allow.");
+}
 
 console.log(`Embedded ${profile}`);
 console.log(`Re-signed ${appPath}`);
