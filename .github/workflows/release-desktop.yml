@@ -135,3 +135,19 @@ jobs:
           cd ..
           cat checksums.txt
           gh release upload "$TAG" checksums.txt --clobber
+
+      # 草稿的资产链接需要仓库权限才能下载，所以这条只提醒去审核发布，不放下载
+      # 链接；等 Release 真正 published 时由 lark-release.yml 再推一条带链接的。
+      - name: Notify Lark that the draft is ready
+        if: always()
+        continue-on-error: true
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+          TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          node scripts/lark-notify.mjs release-draft "$(jq -nc \
+            --arg repo "${{ github.repository }}" \
+            --arg version "${TAG#desktop-v}" \
+            --arg releaseUrl "https://github.com/${{ github.repository }}/releases/tag/$TAG" \
+            '$ARGS.named')"

@@ -1,0 +1,93 @@
+name: Lark Notify
+
+# 仓库是 public，**fork 的 PR 拿不到 secrets**——直接在 CI 里发通知会让每个外部
+# 贡献者的 PR 挂一个红叉。workflow_run 跑在基仓库上下文里，有 secrets，因此监听
+# 「某个工作流跑完了」而不是「有人推了代码」。
+on:
+  workflow_run:
+    workflows: ["CI", "Desktop Release", "Microsoft Store Release"]
+    types: [completed]
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    # 通知永远不该让别的东西失败，也不该因为自己失败而变红。
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      # CI 只在**失败**和**由失败转成功**时发。每次成功都发会迅速变成噪音，
+      # 而噪音化的通知等于没有通知。
+      - name: Resolve CI transition
+        if: github.event_name == 'workflow_run'
+        id: ci
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
+          # 上一次同分支同工作流的结论，用来判断是不是「刚刚恢复」。
+          previous=$(gh api \
+            "repos/${{ github.repository }}/actions/workflows/$WORKFLOW_ID/runs?branch=$BRANCH&per_page=2&status=completed" \
+            --jq '[.workflow_runs[] | select(.id != '"$RUN_ID"')][0].conclusion // "none"')
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          if [ "$CONCLUSION" = "failure" ]; then
+            echo "kind=ci-failure" >> "$GITHUB_OUTPUT"
+          elif [ "$CONCLUSION" = "success" ] && [ "$previous" = "failure" ]; then
+            echo "kind=ci-recovered" >> "$GITHUB_OUTPUT"
+          else
+            echo "kind=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Notify CI result
+        if: github.event_name == 'workflow_run' && steps.ci.outputs.kind != ''
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+        run: |
+          node scripts/lark-notify.mjs "${{ steps.ci.outputs.kind }}" "$(jq -nc \
+            --arg repo "${{ github.repository }}" \
+            --arg workflow "${{ github.event.workflow_run.name }}" \
+            --arg branch "${{ github.event.workflow_run.head_branch }}" \
+            --arg commitMessage "${{ github.event.workflow_run.head_commit.message }}" \
+            --arg runUrl "${{ github.event.workflow_run.html_url }}" \
+            '$ARGS.named')"
+
+      - name: Notify new issue
+        if: github.event_name == 'issues'
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+        run: |
+          node scripts/lark-notify.mjs issue-opened "$(jq -nc \
+            --arg repo "${{ github.repository }}" \
+            --argjson number ${{ github.event.issue.number }} \
+            --arg subject "${{ github.event.issue.title }}" \
+            --arg author "${{ github.event.issue.user.login }}" \
+            --arg url "${{ github.event.issue.html_url }}" \
+            '$ARGS.named')"
+
+      # 只发已合并的，关闭但未合并的不发。
+      - name: Notify merged pull request
+        if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+        run: |
+          node scripts/lark-notify.mjs pr-merged "$(jq -nc \
+            --arg repo "${{ github.repository }}" \
+            --argjson number ${{ github.event.pull_request.number }} \
+            --arg subject "${{ github.event.pull_request.title }}" \
+            --arg url "${{ github.event.pull_request.html_url }}" \
+            '$ARGS.named')"
