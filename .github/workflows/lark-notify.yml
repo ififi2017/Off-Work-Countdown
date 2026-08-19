@@ -11,6 +11,8 @@ on:
     types: [opened]
   pull_request_target:
     types: [closed]
+  # 手动自检：改过 secrets、换过机器人之后不必等真事件，跑一次就知道通不通。
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -62,6 +64,19 @@ jobs:
             --arg branch "${{ github.event.workflow_run.head_branch }}" \
             --arg commitMessage "${{ github.event.workflow_run.head_commit.message }}" \
             --arg runUrl "${{ github.event.workflow_run.html_url }}" \
+            '$ARGS.named')"
+
+      - name: Send a test notification
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+        run: |
+          node scripts/lark-notify.mjs ci-recovered "$(jq -nc \
+            --arg repo "${{ github.repository }}" \
+            --arg workflow "Lark Notify（手动自检）" \
+            --arg branch "${{ github.ref_name }}" \
+            --arg runUrl "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             '$ARGS.named')"
 
       - name: Notify new issue
