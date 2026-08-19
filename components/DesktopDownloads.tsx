@@ -156,6 +156,9 @@ export function DesktopDownloads({
   const hrefFor = (asset: DownloadAsset | null | undefined) =>
     asset && useMirror ? mirroredDownloadUrl(asset.url) : undefined;
   const linuxDownloadsEnabled = false;
+  // 商店渠道在构建期把镜像模块换成空实现，此时没有镜像可选。开关留着会变成一个
+  // 点了没反应的按钮，说明文字里的主机名也会渲染成空白，所以整块不渲染。
+  const mirrorAvailable = DOWNLOAD_MIRROR_HOST.length > 0;
 
   return (
     <div>
@@ -180,31 +183,33 @@ export function DesktopDownloads({
       </div>
 
       {/* 镜像开关。只改下载地址，不碰体积、埋点和禁用态。 */}
-      <div className="mb-5 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <Label
-              htmlFor="download-mirror"
-              className="font-medium text-gray-950 dark:text-white"
-            >
-              {copy.mirrorLabel}
-            </Label>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {copy.mirrorHint}
-            </p>
+      {mirrorAvailable && (
+        <div className="mb-5 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <Label
+                htmlFor="download-mirror"
+                className="font-medium text-gray-950 dark:text-white"
+              >
+                {copy.mirrorLabel}
+              </Label>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {copy.mirrorHint}
+              </p>
+            </div>
+            <Switch
+              id="download-mirror"
+              checked={useMirror}
+              onCheckedChange={setUseMirror}
+            />
           </div>
-          <Switch
-            id="download-mirror"
-            checked={useMirror}
-            onCheckedChange={setUseMirror}
-          />
+          {useMirror && (
+            <p className="mt-3 border-t border-gray-100 pt-3 text-sm text-amber-700 dark:border-gray-700 dark:text-amber-400">
+              {copy.mirrorNotice.replace("{host}", DOWNLOAD_MIRROR_HOST)}
+            </p>
+          )}
         </div>
-        {useMirror && (
-          <p className="mt-3 border-t border-gray-100 pt-3 text-sm text-amber-700 dark:border-gray-700 dark:text-amber-400">
-            {copy.mirrorNotice.replace("{host}", DOWNLOAD_MIRROR_HOST)}
-          </p>
-        )}
-      </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">

@@ -64,9 +64,9 @@
   "menuView": "显示",
   "menuWindow": "窗口",
   "menuHelp": "帮助",
-  "menuAbout": "关于 Off Work Countdown",
+  "menuAbout": "关于 {{app}}",
   "menuServices": "服务",
-  "menuHideApp": "隐藏 Off Work Countdown",
+  "menuHideApp": "隐藏 {{app}}",
   "menuHideOthers": "隐藏其他应用",
   "menuCloseWindow": "关闭窗口",
   "menuUndo": "撤销",
@@ -207,5 +207,8 @@
   "offWorkToday": "今日已下班",
   "nextShiftIn": "距下次上班 {{time}}",
   "nextShiftLabelShort": "距上班还有",
-  "toggleMainWindow": "显示或隐藏主窗口"
+  "toggleMainWindow": "显示或隐藏主窗口",
+  "widgetWorking": "工作中",
+  "widgetOpenToRefresh": "打开应用以刷新",
+  "widgetDescription": "一眼查看剩余工作时间。"
 }

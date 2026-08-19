@@ -742,16 +742,24 @@ P1 有两条判据卡在后面的阶段上，这是刻意的：自启动要先�
 - **不做渠道互斥检测**：两个版本可以共存。见决策 7。
 - **更新器用默认开启的 Cargo feature**：反过来会让本地开发静默丢失更新器。见决策 2。
 
-## 9. 远期里程碑：macOS App Store
+## 9. 远期里程碑：macOS App Store 与桌面小组件
 
-> 状态：远期候选，尚未排期。以下是 2026-08-14 对当前源码与 Apple 审核要求的差距审计，
-> 不是对现有 GitHub macOS 版本的发布承诺。
+> 状态：MAS-P0 技术产物已打通，等待带 provisioning profile 的沙盒真机验收。以下是
+> 2026-08-16 的实现进度与后续计划，不是对现有 GitHub macOS 版本的发布承诺。
 
 ### 9.1 渠道定位
 
 macOS App Store 版与现有 GitHub 直发版**长期并存**。现有版本继续使用 GitHub Release、
 应用内更新器和 ad-hoc 签名；商店版新增独立的 `macappstore` 渠道，使用相同源码，但在
 构建期裁掉商店不允许的能力，并由 App Store 承担安装与更新。
+
+商店宿主使用独立 bundle identifier `com.rainif.offworkcountdown.macappstore`，可与
+GitHub 版同时安装；两边不共享包含工资和偏好的 Store，只通过商店宿主自己的 App Group 向 Widget 写入无收入
+字段的只读快照。
+
+商店包同时包含原生 SwiftUI / WidgetKit 小组件扩展。它不是独立收费应用或第三个渠道，
+而是随宿主应用安装，在 macOS 桌面与通知中心提供只读的下班倒计时概览；点击小组件才
+通过深链打开主应用。首版支持 small / medium 两种尺寸，不在小组件内编辑排班或偏好。
 
 不为商店版开长期分支，也不把它定义成第三个 `BUILD_TARGET`。沿用 M6 的正交渠道模型：
 
@@ -765,17 +773,18 @@ LaunchAgent 自启动等不合规代码及 capability 都不能进入最终商�
 
 ### 9.2 当前结论：不能直接提交
 
-截至 2026-08-14，当前 macOS `.app` **不符合直接提交 Mac App Store 的条件**：
+截至 2026-08-16，当前 macOS `.app` **不符合直接提交 Mac App Store 的条件**：
 
 | 阻塞项 | 当前实现 | 商店版要求 |
 |---|---|---|
-| 私有 API / 透明 WebView | `macOSPrivateApi: true`、Cargo `macos-private-api`，浮动 WebView 使用透明窗口 | 移除私有 API；保留状态栏与悬浮窗能力，standard / woodfish 面板改用公开 AppKit API 原生实现 |
+| 私有 API / 透明 WebView | 默认 Cargo `macos-private-api` feature，浮动 WebView 使用透明窗口 | 商店 feature graph 移除私有 API；保留状态栏与悬浮窗能力，standard / woodfish 面板改用公开 AppKit API 原生实现 |
 | App Sandbox | 没有商店沙盒 entitlements 与 provisioning profile | 开启 `com.apple.security.app-sandbox`，只申请实际需要的最小权限 |
 | 应用内更新 | updater 从 GitHub 检查、下载并安装更新，另有镜像回退 | 商店包完全移除 updater/process 插件、权限、端点、镜像命令与对应 UI，由 App Store 更新 |
 | 开机自启 | `tauri-plugin-autostart` 使用 `~/Library/LaunchAgents` | 改为公开的 `SMAppService`，由用户明确授权，并验证沙盒内状态同步 |
 | 签名与上传 | Release workflow 在 macOS 使用 ad-hoc identity `-`，产出 `.dmg` / `.app` | 使用 Apple Distribution 签名应用、Mac Installer Distribution 签名 `.pkg`，通过 App Store Connect 上传 |
 | 商店元数据 | 没有 `macappstore` 配置、category、商店 Info.plist 与隐私申报 | 补齐 bundle category、Team / App ID、加密声明、隐私、支持 URL、截图、年龄分级等资料 |
-| 最低系统版本 | 原生 Objective-C 按 macOS 13 编译，Tauri bundle 未显式对齐 | 商店配置显式声明 macOS 13.0，避免包元数据承诺一个实际不能运行的更低版本 |
+| macOS 小组件 | 已有 SwiftUI / WidgetKit Xcode target、共享快照协议、宿主原子写入与刷新桥；ad-hoc 本地包保留沙盒，以临时文件例外访问 Application Support 后备路径验证 UI，不能代表 App Group 授权 | 为宿主与扩展配置独立 App ID、profile 和共同 App Group，并在 provisioned 沙盒包里验证组件库发现与共享读取 |
+| 最低系统版本 | ~~原生 Objective-C 按 macOS 13 编译，Tauri bundle 未显式对齐~~ 已解决，见 9.10 | 商店配置显式声明 macOS 13.0，避免包元数据承诺一个实际不能运行的更低版本 |
 
 托盘、通知、原生 AppKit Mini Timer 和默认全局快捷键目前没有被判定为必然阻塞，但必须
 放进沙盒真机验收。特别是快捷键注册、辅助功能权限和睡眠唤醒后的后台行为，不能只凭
@@ -788,17 +797,57 @@ App Store Connect 提交流程混为一谈。
 
 ### 9.3 实施阶段
 
-| 阶段 | 内容 | 完成标准 |
-|---|---|---|
-| **MAS-P0** | 技术可行性验证 | 本地 `macappstore` 渠道可构建；二进制不含私有 API、updater 与 LaunchAgent；启用最小沙盒后可正常启动 |
-| **MAS-P1** | 沙盒功能适配 | 主窗口、状态栏、倒计时、通知、系统语言、外部链接、原生 standard / woodfish Mini Timer、全局快捷键与用户授权的登录项在真机通过 |
-| **MAS-P2** | 分发产线 | 配置 Team ID、App ID、entitlements、profile 与商店专用 Info.plist；产出 Universal `.app` 和正确签名的 `.pkg` |
-| **MAS-P3** | TestFlight 与审核材料 | App Store Connect 上传成功；隐私标签、支持/隐私 URL、截图、描述、年龄分级和审核备注完整 |
-| **MAS-P4** | 首次人工审核 | TestFlight 冒烟通过，处理审核问题并完成首次上架；记录以后可重复执行的发布清单 |
-| **MAS-P5** | 自动发布与渠道文档 | tag 可独立触发商店构建/上传；下载页与 About 页准确区分 GitHub 版和商店版的更新与能力差异 |
+截至 2026-08-16，MAS-P0 的代码与本地打包链路已经完成：
 
-阶段顺序不能颠倒：先做 MAS-P0 / P1，确认核心常驻能力在 App Sandbox 中成立，再购买或
-续费开发者会员并投入 listing 与自动化。技术验证失败时，GitHub 直发版不受影响。
+- `DESKTOP_CHANNEL=macappstore` 会在前端与 Rust 两侧裁掉自更新路径，并关闭
+  `macos-private-api`；
+- 已创建真实的 Universal WidgetKit extension Xcode target，Tauri 打包时自动构建并嵌入
+  `Contents/PlugIns/OffWorkCountdownWidgetExtension.appex`；
+- TypeScript 生产端与 Swift 消费端通过同一 fixture 做契约测试，宿主拒绝超大、未知 schema
+  及工资 / 收入字段，并使用 App Group 原子写入；
+- 快照写入后通过公开 `WidgetCenter.reloadTimelines` 请求刷新；小组件复用 19 份 UI locale，
+  stale / incompatible 状态会提示打开应用刷新；
+- 商店渠道的“登录时启动”已切到公开 `SMAppService.mainApp`；读取与写入都返回系统真实
+  状态，`requiresApproval` 会锁定开关并提示用户到系统设置处理，不再落回已裁掉的
+  LaunchAgent 插件路径；
+- ad-hoc 本机架构 `.app` 已通过嵌套签名与最低系统版本检查。本机无可用签名 identity；
+  实测给 ad-hoc 宿主/扩展写入 `group.*` entitlement 会被 `containermanagerd` 以“签名不能
+  访问受 TCC 保护的 group container”拒绝，并在 macOS 15+ 弹出“访问其他 App 数据”。
+  本地构建因此保留沙盒但去掉 App Group，以仅限后备目录的临时文件例外共享权限为 0700
+  的无薪资 Widget 快照；自动签名/商店构建仍走 App Group。其中 Widget extension 已同时包含
+  x86_64 与 arm64，完整 Universal 宿主留到 MAS-P2 的双 target 分发构建完成。
+
+2026-08-17 在真机上跑通并修掉的问题（本地 ad-hoc 包，非 provisioned）：
+
+- **小组件双重内边距。** macOS 14 起 WidgetKit 自己会给内容加一圈 content margins
+  （实测 16pt），`containerBackground` 只保证背景铺满，内容仍被缩进。视图里又叠了
+  18/15pt，实测 medium 缩进 34pt、small 31pt，small 的倒计时被压到截断成 `0:0…`。
+  不用 `contentMarginsDisabled()` 关掉系统那层——它是 macOS 14+ API，而
+  `WidgetConfigurationBuilder` 没有 `buildLimitedAvailability`，`if #available` 两支类型
+  对不上（实测报 “branches have mismatching types”），为它把部署目标抬到 14 又与决策 5
+  冲突。改为在 View 层按版本决定要不要自己加内边距（ViewBuilder 有
+  `buildLimitedAvailability`）。同时补齐 done 相位那支缺失的
+  `lineLimit` / `minimumScaleFactor`——缺了它宽度不足时会截断而不是缩字号。
+- **进度环整段班次不动。** 每个 segment 只发一条 entry，`progressAtDate` 在整段内是常数，
+  9:00–12:00 的进度环会静止三小时而中间的 `.timer` 还在走。WidgetKit 限的是 reload 次数
+  而非一条 timeline 内的 entry 数量，因此段内按「有效工时 / 100」细分（下限 1 分钟），
+  进度约每 1% 前进一次。8 小时班次实测 103 条 entry、40KB，远低于宿主 256KiB 上限。
+  同一 segment 内 elapsed 与墙上时间 1:1，故各子 entry 的 `countdownTargetAtMs` 是同一个
+  绝对时刻，换手时倒计时不跳秒。
+- **快照有效期在 done 态塌缩成 1 小时。** 旧式子 `max(生成时刻+1h, 班次结束+1h)` 在下班
+  之后生成时前项恒大于后项，退化成「从现在起一小时」；而写入只由班次/偏好变化触发，
+  不是定时器。结果是下班一小时后小组件翻成空态，哪怕应用开着、「今日已下班」依然正确
+  （反差是 `running=false` 反而有 24 小时）。改为以**下次上班**为边界：done 相位一路
+  倒数到下次上班，与主界面「距下次上班」一致；下次上班未知时退回 24h 兜底。到期切空态
+  而不继续投影下一班——班次有没有真的开始只有主应用说了算。
+
+**MAS-P0 已于 2026-08-19 完成真机验收。** 开发签名（Apple Development + Mac Development
+描述文件）下，宿主与 extension 由同一 Team 授权同一个 App Group；沙盒应用正常启动，
+小组件在桌面组件库中被发现，并实际读到共享快照——桌面上的 small / medium 与主界面显示
+同一个倒计时、同一个百分比。走通的过程中修掉了三处问题，见 9.11。
+
+仍属 MAS-P2 的是**分发**签名：当前产物带 `com.apple.security.get-task-allow`（开发签名的
+标志），能本机调试但不能提交；上架需要 Apple Distribution + Mac App Store 描述文件。
 
 ### 9.4 关键实现决策
 
@@ -817,6 +866,11 @@ App Store Connect 提交流程混为一谈。
    GitHub 版可继续使用现有 WebView 悬浮窗，商店版使用公开 AppKit API 的原生面板；两者
    可以有不同渲染实现，但对用户承诺的核心能力应一致。若原生重写未达到上述验收标准，
    MAS-P1 不算完成，不能用直接删除木鱼悬浮窗来绕过。
+
+   MAS-P0 的过渡实现保留现有 WebView 内容，但不调用私有 `drawsBackground`：商店渠道把
+   页面无留白地放进由公开 `NSWindow` / `CALayer` API 裁出的圆角窗口，并使用系统原生
+   阴影，避免关闭 `macos-private-api` 后暴露矩形白底。standard / woodfish 的完整原生
+   AppKit 重写及交互等价性仍属于 MAS-P1，不能把这个过渡壳当作阶段完成。
 2. **更新能力按 Cargo feature 和前端模块替换双重裁剪。**
    复用 `msstore` 已验证的 `--no-default-features` 思路，但为 `macappstore` 建独立配置与
    自动化断言；不能让不可达的下载安装命令留在 Rust 二进制里。
@@ -824,13 +878,36 @@ App Store Connect 提交流程混为一谈。
    开关必须反映系统真实状态，用户在系统设置里关闭后，应用内不能继续显示为已开启。
 4. **只申请最小 entitlements。**
    默认不申请用户文件、通讯录、定位、摄像头、麦克风等权限。网络权限仅按最终商店版
-   实际保留的外部链接 / 用户主动分享方案评估；工资、班次和偏好继续只存本机。
+   实际需要拆分：宿主必须保留 outgoing network client，否则 App Sandbox 会让 WKWebView
+   的 WebContent / Networking 子进程在启动时崩溃并导致白屏；Widget extension 不发网络
+   请求，因此不申请该权限。工资、班次和偏好继续只存本机。
 5. **最低系统版本统一为 macOS 13。**
    `build.rs`、Tauri bundle 与 App Store Connect 元数据必须一致；若要下调，先证明所有
    原生符号与回退路径可在更低版本运行，而不是只改版本字符串。
 6. **商店发布与 GitHub Release 解耦。**
    两条工作流可由同一个版本 tag 触发，但任何一条失败都不应阻断另一条产物；商店版
    不生成 GitHub updater artifact，也不读取 updater 私钥。
+7. **小组件是 `lib/countdown.ts` 产出的只读投影，不是第三套倒计时实现。**
+   小组件使用 SwiftUI / WidgetKit，并作为单独 extension 嵌入商店应用；extension 不包含
+   WebView、Rust runtime、网络请求或排班计算。前端仍通过 `lib/countdown.ts` 生成当前班次，
+   再经一个窄 Tauri command 把版本化 `WidgetSnapshot` 原子写入 App Group 容器。快照只包含
+   渲染所需的绝对时间、状态与预计算展示值，至少包括：
+   - schema version、生成时间与过期时间；
+   - 当前状态、有效 segments、下一处边界、计划结束和加班结束时间；
+   - 每个时间线节点对应的剩余有效秒数、进度和本地化文案 key；
+   - 用户已选择的语言与必要的显示偏好。
+
+   Widget extension 只选择当前时间线节点、钳制数值并格式化展示，不推导工作日、午休、
+   微休、跨日或加班规则。当前有效 segment 内可使用 WidgetKit 的动态日期文本显示连续
+   倒计时；segment 边界、排班变更和偏好变更由预生成 timeline entry 与
+   `WidgetCenter.reloadTimelines` 协作刷新。系统不保证在请求时刻精确刷新，因此边界延迟时
+   应显示保守状态，不能承诺与主窗口逐秒同步；快照过期或 schema 不兼容时显示“打开应用
+   以刷新”，不得继续猜算。
+
+   首版 small 只显示状态、剩余时间和进度，medium 再显示下一次休息或结束节点；两者均为
+   只读，点击后打开主应用。首版不把工资、时薪或累计收入写入 App Group，也不在小组件上
+   展示收入，避免桌面常驻内容扩大敏感数据暴露面。小组件需覆盖全部 19 个 UI locale、
+   light / dark、系统着色与单色外观，以及长英文文案。
 
 ### 9.5 上架验收清单
 
@@ -838,10 +915,14 @@ App Store Connect 提交流程混为一谈。
 - `cargo fmt --check`、两组 feature 的 clippy/test 与 macOS release build 全部通过
 - 对商店产物做依赖、字符串与 capability 审计，确认无 updater、镜像端点、私有 API、
   LaunchAgent 写入和调试开关
-- `codesign --verify --deep --strict`、entitlements、provisioning profile、架构与最低系统
-  版本检查通过，安装包由正确的商店分发身份签名
+- `WidgetSnapshot` 的 TypeScript 生产端与 Swift 解码端共用固定 fixture 做契约测试；覆盖
+  工作中、休息中、加班、已结束、次日班次、过期与未知 schema，证明扩展没有复制排班规则
+- `codesign --verify --deep --strict`、entitlements、provisioning profile、App Group、
+  嵌套 Widget extension、架构与最低系统版本检查通过，安装包由正确的商店分发身份签名
 - 在受支持的最低 macOS 版本与当前 macOS 上各做一次沙盒真机冒烟；覆盖 light/dark、
   中英文长文案、休眠唤醒、跨日班次、通知、托盘、Mini Timer、快捷键和登录项
+- 在宿主前台、宿主退出、系统休眠唤醒、修改排班、跨越午休与班次结束等场景验证 small / medium
+  小组件；确认组件库可发现、桌面与通知中心可添加、时间线延迟时不显示负数或敏感数据
 - App Store Connect / TestFlight 安装的包启动时不访问 GitHub 更新端点，更新入口不承诺
   应用内下载安装
 - 隐私政策可从应用内和商店元数据访问；App Privacy 申报与实际网络、存储行为一致
@@ -854,10 +935,174 @@ App Store Connect 提交流程混为一谈。
 
 1. M6 首次上架完成，不再占用商店渠道基础设施的主要维护精力；
 2. 确认愿意承担 Apple Developer Program 的持续费用和年度证书 / profile 维护；
-3. MAS-P0 证明沙盒版的托盘、原生 Mini Timer、通知和倒计时后台语义可接受；
+3. MAS-P0 证明沙盒版的托盘、原生 Mini Timer、通知、倒计时后台语义与 WidgetKit 快照
+   模型可接受；
 4. 接受商店版与 GitHub 版可能存在明确、可解释的功能差异。
 
 参考：[Apple App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)、
 [App Sandbox](https://developer.apple.com/documentation/xcode/configuring-the-macos-app-sandbox)、
 [Mac 软件分发打包](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)、
+[WidgetKit](https://developer.apple.com/documentation/widgetkit)、
+[保持小组件最新](https://developer.apple.com/documentation/widgetkit/keeping-a-widget-up-to-date)、
+[App Groups](https://developer.apple.com/documentation/xcode/configuring-app-groups)、
 [Tauri App Store 指南](https://v2.tauri.app/distribute/app-store/)。
+
+### 9.7 桌面端的语言分层
+
+操作系统外壳跟随**系统语言**，应用界面跟随**用户在应用内选择的语言**。两者可以不同，
+这是刻意的：Finder 里的应用名和菜单栏属于系统的一部分，应当和系统其余部分说同一种话。
+
+| 面向 | 跟随 | 机制 |
+|---|---|---|
+| Finder / 程序坞 / 启动台 / 聚焦的应用名 | 系统语言 | `.lproj` 的 `CFBundleDisplayName` |
+| 菜单栏最左侧的应用名 | 系统语言 | `.lproj` 的 `CFBundleName` |
+| 菜单栏各项、托盘菜单、「关于」面板 | 系统语言 | 前端用 `i18n.getFixedT(系统语言)` 下发 |
+| 应用界面 | 应用语言 | 既有 i18n |
+
+`.lproj` 由 `scripts/generate-macos-lproj.mjs` 从 `public/locales/<locale>/translation.json`
+的 `offWorkCountdown` 生成（**不是**商店商品页那份 `docs/msstore-listing-titles.csv`，两者
+本来就有出入，例如 zh-TW 界面是「下班倒數計時」而商店是「下班倒數計時器」）。生成物不入库，
+每次 `beforeBuildCommand` 重建，并校验 `src-tauri/Info.plist` 的 `CFBundleLocalizations`
+与实际产出一一对应。资源经 `tauri.macos.conf.json` 注入，Windows / Linux 包不受影响。
+
+几处靠实测定下来、猜不对的点：
+
+- `.lproj` 目录名不等于项目里的 i18n locale：`zh-CN`/`zh-TW` → `zh-Hans`/`zh-Hant`；
+  `zh-Hant-HK` 落 **`zh-HK`** 而不是 `zh-Hant`；`hi-IN`/`mr-IN` → `hi`/`mr`（带地区反而
+  匹配不上）；单个 `pt` 同时接住 pt-BR 与 pt-PT。以上均用 `Bundle.preferredLocalizations`
+  （macOS 选 `.lproj` 的实际算法）在真实产物上验过，21 种偏好全部命中，未支持语言回落 en。
+- **菜单栏最左侧那个应用名只能靠 `CFBundleName`。** AppKit 从 bundle 名派生它，给第一个
+  Submenu 设标题会被忽略——实测送到 Rust 的 `labels.app_name` 只对「关于」面板生效，
+  菜单栏纹丝不动。代价是它只能跟随系统语言，无法跟随应用语言；唯一的绕法是
+  `setProcessName:` 那类未文档化手法，对商店审核是风险，不采用。
+- 19 份译文原本把英文产品名写死在 `menuAbout` / `menuHideApp` 里（「关于 Off Work
+  Countdown」），系统语言是中文时也会露英文。已改成 `{{app}}` 占位符由本地化产品名填入。
+  两处需要语法而非机械替换：法语 `d’` 缩合只用于元音前，而法语名以辅音开头，故为
+  `À propos de {{app}}`；土耳其语宾格受元音和谐律支配且第三人称领属后需要 `-n-` 缓冲辅音，
+  土语名 `İş Çıkışı Geri Sayımı` 以领属 `-ı` 结尾，故为 `{{app}}’nı Gizle`（原 `’u` 是照
+  英文名 “Countdown” 的读音定的，换成土语名后两处都不对）。
+
+### 9.8 已知的安装陷阱
+
+用 `cp -R` 覆盖 `/Applications` 里已存在的同名 bundle 会原地截断重写、inode 不变，内核里
+旧二进制的代码签名缓存于是与新页对不上，应用启动即被杀，崩溃报告为
+`EXC_BAD_ACCESS (SIGKILL (Code Signature Invalid))` / `CODESIGNING, Code 2, Invalid Page`。
+macOS 26 的 Code Signing Monitor 对此尤其严格。此时包本身是好的——`codesign --verify
+--deep --strict` 通过且 cdhash 与新构建一致，容易误判成产物损坏。安装前先 `rm -rf` 旧包，
+让新文件拿到新 inode。
+
+### 9.9 GitHub 渠道能否也带小组件
+
+技术上可行，但**当前挡住它的不是签名**：小组件的全部代码都以 `not(feature =
+"self-update")` 为编译条件（`lib.rs` 9 处 + `build.rs` 的 `include_widget_bridge`），
+GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建不出小组件桥。前提条件：
+
+1. 真实 Developer ID 与 Team ID。ad-hoc 不行（见上文 `containermanagerd` 实测）；且
+   **非商店渠道的 App Group 必须带 Team ID 前缀**（`<TeamID>.group.*`），与商店版的
+   `group.*` 不是同一个标识符。另需公证。
+2. 把小组件从 `self-update` 解耦成独立 Cargo feature。
+3. `kind` / App Group / bundle id 按渠道参数化。`kind` 目前硬编码且**写在两处**
+   （`OffWorkCountdownWidget.swift` 与 `WidgetHostBridge.swift`），两渠道并存会撞车，
+   组件库里还会出现两个同名条目。
+4. 验证 tauri-plugin-updater 整包替换带嵌套 `.appex` 的包是否干净（未验证）。
+
+建议顺序上排在 MAS-P0 真机验收之后：App Group 授权后小组件能否被组件库发现、能否读到
+共享快照这个未知数没解决之前，在 GitHub 渠道重做一遍只是把风险复制一份。
+
+| 阶段 | 内容 | 完成标准 |
+|---|---|---|
+| **MAS-P0** | 技术可行性验证 | 本地 `macappstore` 渠道可构建；二进制不含私有 API、updater 与 LaunchAgent；ad-hoc 后备模式可无权限弹窗启动并驱动 Widget；生产配置保留最小沙盒/App Group；WidgetKit extension 可被构建并用 fixture 渲染各状态 |
+| **MAS-P1** | 沙盒功能适配 | 主窗口、状态栏、倒计时、通知、系统语言、外部链接、原生 standard / woodfish Mini Timer、全局快捷键与用户授权的登录项在真机通过；宿主可生成小组件快照并触发时间线刷新 |
+| **MAS-P2** | 分发产线 | 配置宿主、Widget extension 与 App Group 的 Team ID、App ID、entitlements 和 profiles，以及商店专用 Info.plist；产出包含正确签名嵌套扩展的 Universal `.app` 和 `.pkg` |
+| **MAS-P3** | TestFlight 与审核材料 | App Store Connect 上传成功；TestFlight 安装后小组件出现在组件库并能读到共享状态；隐私标签、支持/隐私 URL、截图、描述、年龄分级和审核备注完整 |
+| **MAS-P4** | 首次人工审核 | TestFlight 冒烟通过，处理审核问题并完成首次上架；记录以后可重复执行的发布清单 |
+| **MAS-P5** | 自动发布与渠道文档 | tag 可独立触发商店构建/上传；下载页与 About 页准确区分 GitHub 版和商店版的更新与能力差异 |
+
+阶段顺序不能颠倒：先做 MAS-P0 / P1，确认核心常驻能力在 App Sandbox 中成立，再购买或
+续费开发者会员并投入 listing 与自动化。技术验证失败时，GitHub 直发版不受影响。
+
+### 9.10 两个渠道的最低系统版本
+
+| 渠道 | 最低版本 | 为什么是这个数 |
+|---|---|---|
+| GitHub | **11.3** | 由 wry 决定，见下 |
+| Mac App Store | **13.0** | 产品取舍，非技术上限；见下 |
+
+11.3 这个数不是拍的，是栈里三层地板取最高：
+
+1. **Apple Silicon 本身 11.0。** rustc 对 aarch64-apple-darwin 把 minos 钉死 11.0，
+   `MACOSX_DEPLOYMENT_TARGET=10.15` 会被直接无视（实测）。arm64 上不存在更低的 macOS。
+2. **wry 0.55 / objc2 需要 11.3。** 产物里引用了 `webView:navigationAction:didBecomeDownload:`
+   与 `webView:navigationResponse:didBecomeDownload:`，这两个 WKNavigationDelegate 方法
+   macOS 11.3 才有；objc2 覆盖协议方法时找不到会 panic，见
+   [tauri#15431](https://github.com/tauri-apps/tauri/issues/15431)（上游依赖问题）。
+3. **我们自己的 ObjC 不是瓶颈。** `NativeMiniTimer.m` 在 13.0 与 11.0 下均零警告；
+   只有降到 10.15 才会有两处需要处理（`performAsCurrentDrawingAppearance:` 与
+   SF Symbols 的 `imageWithSystemSymbolName:`，都是 11.0+）。
+
+**曾经的错误声明**：`tauri.conf.json` 一直没设 `minimumSystemVersion`，用了 Tauri 的默认值
+10.13，而 build.rs 把原生代码写死编译在 13.0。实测 2026-08-09 的 GitHub 渠道产物
+`LSMinimumSystemVersion = 10.13` 而二进制 `minos = 11.0`——**包告诉系统它能在 10.13 上跑，
+实际不能**。现已两处对齐：配置里显式写 11.3，build.rs 改为读 `MACOSX_DEPLOYMENT_TARGET`
+（Tauri CLI 按各渠道配置设置它），裸 cargo 无该变量时回退 11.3。
+
+要再往下走只能等上游：objc2 那两个 selector 是硬约束，绕不开。
+
+**商店渠道的 13.0 是选择，不是技术上限**（2026-08-18 复核，决定维持不变）。实测它
+技术上也能做到 11.3——`WidgetHostBridge.swift` 与 `NativeMiniTimer.m` 在 11.0 就零错误，
+只有 Widget 的 SwiftUI 用了几个便利 API 需要换旧写法：`foregroundStyle` / `.primary`
+（12.0+）、`contentTransition` / `.system(_:design:weight:)`（13.0+），都有等价替代。
+
+真正的代价在功能，不在编译：
+
+- **macOS 12 及以下没有「登录时启动」。** 商店渠道用 `--no-default-features` 构建，
+  `run-key-autostart` 被裁掉，唯一实现是 `SMAppService`（13.0+）。ObjC 侧守卫返回 -1，
+  Rust 映射为「SMAppService is unavailable on this macOS version」——不崩溃，但开关直接
+  报错。这符合决策 3「开关必须反映系统真实状态」，只是那个能力在 12 上不存在。
+- **macOS 13 上小组件只能进通知中心。** WidgetKit 自 Big Sur 就有，但**桌面小组件是
+  macOS 14 Sonoma 才引入的**；`containerBackground(for: .widget)` 已守卫 14.0，所以 13
+  能跑，只是用户在桌面上看不到它——而小组件正是这条渠道的主要卖点。
+
+因此另一个方向是把商店渠道抬到 **14.0**：所有用户都能把小组件放上桌面，也不必维护
+13 的 `containerBackground` 回退分支，代价是放弃 Ventura 用户。当前结论是维持 13.0。
+
+### 9.11 真机验收踩到的三个坑
+
+**1. App Group 标识符在开发与分发下形式不同。** 这是最难查的一个。Mac Development
+描述文件授权的是 `<TeamID>.*`，因此 App Group 必须写成
+`3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore`；不带前缀的
+`group.…`（代码里的默认值）**只在 Mac App Store 分发时有效**，两种形式不通用。
+
+失败方式极其隐蔽，值得完整记下来：entitlement 未被描述文件授权时，系统把这个 group 当成
+**别人的**数据，于是弹「想访问其他 App 的数据」——宿主只要用户点了「允许」就照常写入，
+看起来一切正常；而**扩展没有弹窗的能力**，只能被静默拒绝，表现为小组件永远空态，
+`log show` 里也查不到任何拒绝记录。数据、配置、签名、注册逐项检查全部正确，问题却在
+描述文件的授权列表里。
+
+因此 `scripts/embed-macos-profile.mjs` 增加了一道校验：把 `.app` 声明的每个 App Group
+与内嵌描述文件授权的列表（支持 `*` 通配）比对，不匹配直接失败并给出应设的值。反例实测
+可拦下。
+
+本地验收的完整命令：
+
+```sh
+OWC_APP_GROUP_IDENTIFIER=3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore \
+OWC_WIDGET_SIGNING_MODE=automatic OWC_APPLE_TEAM_ID=3GSK5B9S3T \
+APPLE_SIGNING_IDENTITY="Apple Development: … (…)" \
+npm run tauri:build:macappstore
+```
+
+**2. Tauri 不能嵌入描述文件。** `MacConfig` 只有 `entitlements` / `signingIdentity` 等键，
+没有任何 provisioning 相关项。而沙盒应用的 App Group 属于需要授权的 entitlement，没有
+`Contents/embedded.provisionprofile` 就拿不到容器。新增 `scripts/embed-macos-profile.mjs`
+在打包后嵌入并**重签外层**（往已签名的 bundle 里加文件会破坏封签）。重签时不能加
+`--deep`——那会连内嵌 `.appex` 一起重签，把它自己那份正确的签名和描述文件覆盖掉。
+`APPLE_SIGNING_IDENTITY` 环境变量实测**能**盖过配置里的 `signingIdentity`，因此
+`tauri.macappstore.conf.json` 里的 `"-"` 可以留作本地 ad-hoc 默认值。
+
+**3. `build-macos-widget.sh` 会在失败时报成功。** xcodebuild 增量判断产物最新时会直接跳过，
+而脚本只检查「文件存在吗」，于是拿着上一次用**别的模式**构建的旧 appex 通过检查并打印成功
+——entitlements 已是 app-group 模式、appex 却还是几天前 ad-hoc / local-support 的那份。
+现改为校验产物本身（`OWCWidgetStorageMode` 是否与请求一致、automatic 模式下签名是否非
+ad-hoc），并补上 `-allowProvisioningUpdates`（缺它 xcodebuild 只找已存在的描述文件，
+不会现场创建）。

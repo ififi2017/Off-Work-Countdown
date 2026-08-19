@@ -8,8 +8,23 @@ import {
   isValidShiftTimeline,
   type ShiftTimeline,
 } from "./countdown";
+import {
+  defaultLocale,
+  getBaseLanguage,
+  locales,
+  type Locale,
+} from "../i18n-config";
 
 const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+const IS_GITHUB_DESKTOP_BUILD =
+  IS_DESKTOP_BUILD &&
+  process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "github";
+const IS_MSSTORE_BUILD =
+  IS_DESKTOP_BUILD &&
+  process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "msstore";
+const IS_MAC_APP_STORE_BUILD =
+  IS_DESKTOP_BUILD &&
+  process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "macappstore";
 
 export const DESKTOP_STORE_PATH = "desktop-state.json";
 export const DESKTOP_COUNTDOWN_KEY = "countdown";
@@ -141,8 +156,16 @@ async function getDesktopStore(): Promise<DesktopStore | null> {
   if (!IS_DESKTOP_BUILD) return null;
 
   if (!storePromise) {
-    storePromise = import("@tauri-apps/plugin-store")
-      .then(({ load }) => load(DESKTOP_STORE_PATH, { autoSave: 100 }))
+    const storePathPromise = IS_MAC_APP_STORE_BUILD
+      ? import("@tauri-apps/api/core").then(({ invoke }) =>
+          invoke<string>("get_desktop_store_path")
+        )
+      : Promise.resolve(DESKTOP_STORE_PATH);
+    storePromise = Promise.all([
+      import("@tauri-apps/plugin-store"),
+      storePathPromise,
+    ])
+      .then(([{ load }, storePath]) => load(storePath, { autoSave: 100 }))
       .catch((error) => {
         storePromise = null;
         throw error;
@@ -172,12 +195,85 @@ export function emptyDesktopCountdownState(
   };
 }
 
+/**
+ * 快照有效期的下界，只为满足「过期必须晚于生成」这条不变量。
+ * 取得很小是刻意的：取大了会把有效期推过真实边界，例如下次上班只剩 20 分钟时
+ * 反而声称还能用一小时。
+ */
+const WIDGET_SNAPSHOT_MIN_VALIDITY_MS = 60 * 1000;
+/** 没有可依据的下一个边界时的兜底有效期。 */
+const WIDGET_SNAPSHOT_IDLE_VALIDITY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * 快照活到哪一刻。
+ *
+ * ⚠️ 别写成 `max(生成时刻 + 1h, 班次结束 + 1h)`。那个式子在**下班之后**生成时会
+ * 塌缩：此时前一项恒大于后一项，有效期退化成「从现在起一小时」。而
+ * writeDesktopCountdownState 只在班次/偏好变化时被调用，不是定时器——于是下班一
+ * 小时后小组件就翻成「打开应用以刷新」的空态，哪怕应用开着、哪怕「今日已下班」
+ * 依然完全正确。反差最明显的是 running=false 反而能拿到 24 小时。
+ *
+ * 正确的下一个边界是**下次上班时间**：done 相位一路倒数到那时，与主界面的
+ * 「距下次上班」一致。
+ */
+function widgetSnapshotExpiryMs(
+  state: DesktopCountdownState,
+  generatedAtMs: number
+): number {
+  if (!state.running || !isValidShiftTimeline(state)) {
+    return generatedAtMs + WIDGET_SNAPSHOT_IDLE_VALIDITY_MS;
+  }
+
+  const nextShiftStartAtMs =
+    state.nextShift && isValidShiftTimeline(state.nextShift)
+      ? getShiftStartAtMs(state.nextShift)
+      : null;
+  // 内容保持正确的下一个边界就是下次上班：在那之前，「工作中」和「今日已下班」
+  // 都还成立；到了那一刻，班次有没有真的开始只有主应用说了算，小组件不该替它
+  // 猜，所以到期切空态。下次上班未知（未配置工作日，或 14 天内没有工作日）时
+  // 退回兜底值，而不是让有效期缩回一小时。
+  const boundaryAtMs =
+    nextShiftStartAtMs !== null && nextShiftStartAtMs > generatedAtMs
+      ? nextShiftStartAtMs
+      : generatedAtMs + WIDGET_SNAPSHOT_IDLE_VALIDITY_MS;
+
+  return Math.max(
+    generatedAtMs + WIDGET_SNAPSHOT_MIN_VALIDITY_MS,
+    boundaryAtMs
+  );
+}
+
 export async function writeDesktopCountdownState(
   state: DesktopCountdownState
 ): Promise<void> {
   const store = await getDesktopStore();
   if (!store) return;
   await store.set(DESKTOP_COUNTDOWN_KEY, state);
+
+  if (IS_MAC_APP_STORE_BUILD) {
+    // WidgetSnapshot 由前端业务层投影；Rust 只负责把 JSON 原子写进 App Group。
+    // 小组件同步失败不能回滚已经成功的主应用 Store 写入。
+    try {
+      const generatedAtMs = Date.now();
+      const { createWidgetSnapshot, serializeWidgetSnapshot } = await import(
+        "./widget-snapshot"
+      );
+      const snapshot = createWidgetSnapshot({
+        running: state.running,
+        shift: state.running ? state : null,
+        nextShift: state.running ? state.nextShift : null,
+        locale: state.lang,
+        generatedAtMs,
+        expiresAtMs: widgetSnapshotExpiryMs(state, generatedAtMs),
+      });
+      const { invoke } = await import("@tauri-apps/api/core");
+      await invoke("write_widget_snapshot", {
+        snapshotJson: serializeWidgetSnapshot(snapshot),
+      });
+    } catch {
+      // 未配置 App Group 的本地包仍可运行主应用；Widget 会显示保守空态。
+    }
+  }
 }
 
 type PersistedDesktopCountdownState = Partial<DesktopCountdownState> & {
@@ -283,8 +379,19 @@ export async function subscribeToDesktopCountdown(
   );
 }
 
+/**
+ * ⚠️ 必须向下取整，不能用 `Math.ceil`。
+ *
+ * 应用里有四个地方显示同一个倒计时：主窗口、迷你窗、托盘/原生面板、桌面小组件。
+ * 小组件由系统的 `Text(date, style: .timer)` 渲染，**我们改不了它的取整方式**，
+ * 而它与主窗口一致（都相当于向下取整）。这里原本用 ceil，于是只要剩余毫秒不是
+ * 整千——也就是几乎总是——迷你窗就恒定比另外两处多显示一秒。实测截图里主窗口和
+ * 小组件同为 12:22:13，迷你窗却是 12:22:14。
+ *
+ * 这与计时器精度无关：ceil 和 floor 的差值是恒定的 1，对齐计时器解决不了。
+ */
 export function formatDesktopDuration(remainingMs: number): string {
-  const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+  const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
@@ -403,7 +510,9 @@ export async function showDesktopMainWindow(): Promise<void> {
  * 更新镜像的主机名，仅用于向用户说明「安装包会从哪里下来」。
  * 真正的地址在 src-tauri/src/lib.rs 的 MIRROR_UPDATER_ENDPOINT，改那边要同步这里。
  */
-export const UPDATE_MIRROR_HOST = "gh-proxy.com";
+export const UPDATE_MIRROR_HOST = IS_GITHUB_DESKTOP_BUILD
+  ? "gh-proxy.com"
+  : "";
 
 /**
  * 直连 GitHub 下载失败后，改走镜像清单重新检查、下载并安装更新。
@@ -412,7 +521,7 @@ export const UPDATE_MIRROR_HOST = "gh-proxy.com";
  * HTTP 代理，而镜像是 URL 前缀重写）。安装包的 minisign 签名照常校验。
  */
 export async function installDesktopUpdateViaMirror(): Promise<void> {
-  if (!IS_DESKTOP_BUILD) return;
+  if (!IS_GITHUB_DESKTOP_BUILD) return;
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("install_update_via_mirror");
 }
@@ -424,7 +533,7 @@ export async function installDesktopUpdateViaMirror(): Promise<void> {
  * 路要在 capability 白名单里逐条声明。见 docs/PLAN-MSSTORE.md 决策 2。
  */
 export async function openMicrosoftStoreListing(): Promise<void> {
-  if (!IS_DESKTOP_BUILD) return;
+  if (!IS_MSSTORE_BUILD) return;
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("open_microsoft_store_listing");
 }
@@ -475,6 +584,8 @@ export async function toggleDesktopSalaryVisibility(): Promise<void> {
 }
 
 export interface DesktopMenuLabels {
+  /** macOS 菜单栏最左侧的应用名与「关于」面板的名称。 */
+  appName: string;
   show: string;
   mini: string;
   quit: string;
@@ -498,6 +609,29 @@ export interface DesktopMenuLabels {
   minimize: string;
   zoom: string;
   bringAllToFront: string;
+}
+
+/**
+ * 操作系统当前的界面语言，归一到本项目支持的 locale。
+ *
+ * 托盘、macOS 应用菜单和「关于」面板都用它，而不是用户在应用内选的语言：这些
+ * 是操作系统的外壳，应当和系统其余部分说同一种语言。应用名同理，只不过那条走
+ * 的是 bundle 里本地化的 CFBundleName / CFBundleDisplayName（见
+ * scripts/generate-macos-lproj.mjs），同样跟随系统语言。
+ *
+ * 取不到时回退默认语言，让调用方不必各自兜底。
+ */
+export async function getDesktopSystemLocale(): Promise<string> {
+  if (!IS_DESKTOP_BUILD) return defaultLocale;
+  try {
+    const { locale } = await import("@tauri-apps/plugin-os");
+    const systemLocale = await locale();
+    if (!systemLocale) return defaultLocale;
+    const resolved = getBaseLanguage(systemLocale);
+    return locales.includes(resolved as Locale) ? resolved : defaultLocale;
+  } catch {
+    return defaultLocale;
+  }
 }
 
 export async function updateDesktopMenus(

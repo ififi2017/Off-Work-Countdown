@@ -64,9 +64,9 @@
   "menuView": "Xem",
   "menuWindow": "Cửa sổ",
   "menuHelp": "Trợ giúp",
-  "menuAbout": "Giới thiệu Off Work Countdown",
+  "menuAbout": "Giới thiệu {{app}}",
   "menuServices": "Dịch vụ",
-  "menuHideApp": "Ẩn Off Work Countdown",
+  "menuHideApp": "Ẩn {{app}}",
   "menuHideOthers": "Ẩn ứng dụng khác",
   "menuCloseWindow": "Đóng cửa sổ",
   "menuUndo": "Hoàn tác",
@@ -207,5 +207,8 @@
   "offWorkToday": "Xong việc hôm nay",
   "nextShiftIn": "Ca tiếp theo sau {{time}}",
   "nextShiftLabelShort": "Ca tiếp theo sau",
-  "toggleMainWindow": "Hiện hoặc ẩn cửa sổ chính"
+  "toggleMainWindow": "Hiện hoặc ẩn cửa sổ chính",
+  "widgetWorking": "Đang làm việc",
+  "widgetOpenToRefresh": "Mở ứng dụng để làm mới",
+  "widgetDescription": "Xem nhanh thời gian làm việc còn lại."
 }

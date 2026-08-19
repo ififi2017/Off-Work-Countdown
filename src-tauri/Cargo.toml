@@ -20,8 +20,9 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 # 反过来做（默认关、GitHub 构建显式开）会让本地 `npm run tauri:dev` 静默丢失
 # 更新器——那个功能开发期几乎不会被主动测试，问题会一路漏到发版。
 [features]
-default = ["self-update", "run-key-autostart"]
+default = ["self-update", "run-key-autostart", "macos-private-api"]
 self-update = ["dep:tauri-plugin-updater", "dep:tauri-plugin-process"]
+macos-private-api = ["tauri/macos-private-api"]
 
 # 自启动实现按渠道二选一，见 docs/PLAN-MSSTORE.md 决策 3。
 #
@@ -40,8 +41,11 @@ tauri-build = { version = "2.6.3", features = [] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
-# macos-private-api：迷你窗需要透明窗口才能有圆角，见 lib.rs 的 setup_mini_window。
-tauri = { version = "2.11.3", features = ["tray-icon", "macos-private-api"] }
+# macos-private-api：GitHub 版浮动 WebView 需要透明窗口才能有圆角；作为项目的
+# 默认 Cargo feature 开启，Mac App Store 构建用 --no-default-features 完整裁掉。
+# tauri.conf.json 的同名布尔值保持 false：tauri-build 只静态检查依赖行，无法识别
+# 这里的 feature 转发。真正是否编译该 API 以解析后的 Cargo feature graph 为准。
+tauri = { version = "2.11.3", features = ["tray-icon"] }
 tauri-plugin-log = "2"
 tauri-plugin-store = "2.4.4"
 tauri-plugin-positioner = { version = "2.3.3", features = ["tray-icon"] }

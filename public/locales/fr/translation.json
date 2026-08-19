@@ -64,9 +64,9 @@
   "menuView": "Présentation",
   "menuWindow": "Fenêtre",
   "menuHelp": "Aide",
-  "menuAbout": "À propos d’Off Work Countdown",
+  "menuAbout": "À propos de {{app}}",
   "menuServices": "Services",
-  "menuHideApp": "Masquer Off Work Countdown",
+  "menuHideApp": "Masquer {{app}}",
   "menuHideOthers": "Masquer les autres",
   "menuCloseWindow": "Fermer la fenêtre",
   "menuUndo": "Annuler",
@@ -207,5 +207,8 @@
   "offWorkToday": "Journée terminée",
   "nextShiftIn": "Prochain service dans {{time}}",
   "nextShiftLabelShort": "Prochain service dans",
-  "toggleMainWindow": "Afficher ou masquer la fenêtre principale"
+  "toggleMainWindow": "Afficher ou masquer la fenêtre principale",
+  "widgetWorking": "Au travail",
+  "widgetOpenToRefresh": "Ouvrez l’application pour actualiser",
+  "widgetDescription": "Consultez votre temps de travail restant en un coup d’œil."
 }

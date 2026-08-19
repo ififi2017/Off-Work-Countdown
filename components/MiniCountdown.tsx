@@ -18,6 +18,11 @@ import {
   type DesktopCountdownState,
 } from "@/lib/desktop-state";
 import { isValidShiftTimeline } from "@/lib/countdown";
+import { startSecondTick } from "@/lib/second-tick";
+
+const IS_MAC_APP_STORE_BUILD =
+  process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop" &&
+  process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "macappstore";
 
 /** 本地日历日。用 UTC 会让跨天时点在时区偏移处对不上用户的「今天」。 */
 function localDateKey(date = new Date()) {
@@ -95,10 +100,10 @@ export function MiniCountdown() {
     void initialize().catch(() => {
       // IPC/Store 暂时不可用时保留空闲态；窗口本身仍可被关闭或拖动。
     });
-    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
+    const stopTick = startSecondTick(() => setNowMs(Date.now()));
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
+      stopTick();
       unsubscribe();
     };
   }, []);
@@ -380,7 +385,9 @@ export function MiniCountdown() {
   return (
     <main
       data-tauri-drag-region="deep"
-      className="h-screen w-screen select-none bg-transparent px-2.5 pb-3.5 pt-2 text-zinc-950 dark:text-white"
+      className={`h-screen w-screen select-none bg-transparent text-zinc-950 dark:text-white ${
+        IS_MAC_APP_STORE_BUILD ? "p-0" : "px-2.5 pb-3.5 pt-2"
+      }`}
     >
       <section
         data-tauri-drag-region="deep"

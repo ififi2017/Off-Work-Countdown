@@ -10,7 +10,7 @@
     "beforeBuildCommand": "npm run build:desktop"
   },
   "app": {
-    "macOSPrivateApi": true,
+    "macOSPrivateApi": false,
     "windows": [
       {
         "label": "main",
@@ -55,6 +55,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "macOS": {
+      "minimumSystemVersion": "11.3"
+    },
     "windows": {
       "nsis": {
         "languages": [

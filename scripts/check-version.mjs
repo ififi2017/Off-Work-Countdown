@@ -46,6 +46,26 @@ if (appxVersion !== expectedAppxVersion) {
   process.exit(1);
 }
 
+// Xcode builds receive MARKETING_VERSION from build-macos-widget.sh, but the
+// checked-in project should still open with the product version in Xcode.
+const widgetProject = readFileSync(
+  "src-tauri/macos-widget/OffWorkCountdownWidget.xcodeproj/project.pbxproj",
+  "utf8"
+);
+const widgetVersions = [
+  ...widgetProject.matchAll(/MARKETING_VERSION\s*=\s*([^;]+);/g),
+].map((match) => match[1].trim());
+
+if (
+  widgetVersions.length === 0 ||
+  widgetVersions.some((version) => version !== expected)
+) {
+  console.error(
+    `Widget MARKETING_VERSION values (${widgetVersions.join(", ") || "not found"}) must all be ${expected}.`
+  );
+  process.exit(1);
+}
+
 const tag = process.env.GITHUB_REF_NAME;
 if (tag?.startsWith("desktop-v") && tag.slice("desktop-v".length) !== expected) {
   console.error(`Release tag ${tag} does not match product version ${expected}.`);
@@ -53,5 +73,5 @@ if (tag?.startsWith("desktop-v") && tag.slice("desktop-v".length) !== expected) 
 }
 
 console.log(
-  `Web and desktop versions are aligned at ${expected} (MSIX ${expectedAppxVersion}).`
+  `Web, desktop, and Widget versions are aligned at ${expected} (MSIX ${expectedAppxVersion}).`
 );

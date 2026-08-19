@@ -27,7 +27,8 @@ once, then keep the remaining time, progress and estimated earnings at a glance.
 
 - **Web:** [open the app](https://off.rainif.com/en) — no installation required.
 - **Desktop:** [open the download page](https://off.rainif.com/en/download) —
-  macOS Apple Silicon / Intel and Windows x64 / ARM64 are available.
+  macOS Apple Silicon / Intel and Windows x64 / ARM64 are available. The macOS
+  build requires macOS 11.3 (Big Sur) or later.
 - **Windows, from the Microsoft Store:**
   [get it from the Store](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ) — it
   updates itself and installs without the SmartScreen prompt.
@@ -63,6 +64,8 @@ certification, so it installs without any warning and updates through the Store
 rather than through the in-app updater.
 
 #### macOS
+
+Requires **macOS 11.3 (Big Sur) or later**, on Apple Silicon or Intel.
 
 1. Download the `aarch64.dmg` for Apple Silicon or `x64.dmg` for an Intel Mac.
 2. Open the DMG and drag Off Work Countdown into Applications.

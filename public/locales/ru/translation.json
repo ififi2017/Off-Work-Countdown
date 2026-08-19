@@ -64,9 +64,9 @@
   "menuView": "Вид",
   "menuWindow": "Окно",
   "menuHelp": "Справка",
-  "menuAbout": "Об Off Work Countdown",
+  "menuAbout": "Об {{app}}",
   "menuServices": "Службы",
-  "menuHideApp": "Скрыть Off Work Countdown",
+  "menuHideApp": "Скрыть {{app}}",
   "menuHideOthers": "Скрыть остальные",
   "menuCloseWindow": "Закрыть окно",
   "menuUndo": "Отменить",
@@ -207,5 +207,8 @@
   "offWorkToday": "На сегодня всё",
   "nextShiftIn": "До следующей смены {{time}}",
   "nextShiftLabelShort": "До смены",
-  "toggleMainWindow": "Показать или скрыть главное окно"
+  "toggleMainWindow": "Показать или скрыть главное окно",
+  "widgetWorking": "На работе",
+  "widgetOpenToRefresh": "Откройте приложение, чтобы обновить",
+  "widgetDescription": "Сразу видно, сколько рабочего времени осталось."
 }

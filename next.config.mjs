@@ -18,9 +18,17 @@ const isDesktop = process.env.BUILD_TARGET === 'desktop';
 // 桌面端的分发渠道，与构建目标正交（见 docs/PLAN-MSSTORE.md 决策 1）：
 //   github  —— NSIS / MSI / DMG，走 tauri-plugin-updater 自更新
 //   msstore —— MSIX，更新由微软商店负责，应用内入口深链过去
+//   macappstore —— Mac App Store，由 App Store 负责安装与更新
 // 只有 isDesktop 时才有意义；Web 构建恒为 github，读到它的分支都在桌面端里。
+const requestedDesktopChannel = process.env.DESKTOP_CHANNEL;
 const desktopChannel =
-  isDesktop && process.env.DESKTOP_CHANNEL === 'msstore' ? 'msstore' : 'github';
+  isDesktop &&
+  (requestedDesktopChannel === 'msstore' ||
+    requestedDesktopChannel === 'macappstore')
+    ? requestedDesktopChannel
+    : 'github';
+const isStoreChannel =
+  desktopChannel === 'msstore' || desktopChannel === 'macappstore';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -47,7 +55,7 @@ const nextConfig = {
   // 桌面端不回传任何数据（见 docs/PLAN-M5-TAURI.md 决策 5）。仅靠条件渲染
   // 无法把 Vercel 的埋点模块从产物中剔除——分支是死代码但模块仍会被打包，
   // 因此在模块解析层直接换成空实现。
-  webpack: (config) => {
+  webpack: (config, { webpack }) => {
     if (isDesktop) {
       config.resolve.alias = {
         ...config.resolve.alias,
@@ -58,12 +66,35 @@ const nextConfig = {
         ),
       };
     }
-    // 商店版不含更新器：同样是模块解析层剔除，不能只靠条件分支。
-    if (desktopChannel === 'msstore') {
+    // 商店版不含更新器与重启插件：把整层桌面更新适配器替掉，不能只 alias
+    // plugin-updater。否则调用方里的 downloadAndInstall 等代码仍会留在 chunk 中。
+    if (isStoreChannel) {
+      const desktopUpdaterStub = resolve(
+        __dirname,
+        'lib/desktop-updater-stub.ts'
+      );
+      const downloadMirrorStub = resolve(
+        __dirname,
+        'lib/download-mirror-stub.ts'
+      );
       config.resolve.alias = {
         ...config.resolve.alias,
-        '@tauri-apps/plugin-updater': resolve(__dirname, 'lib/updater-stub.ts'),
+        '@/lib/desktop-updater': desktopUpdaterStub,
+        '@/lib/download-mirror': downloadMirrorStub,
       };
+      // tsconfig paths may resolve `@/` to an absolute filename before webpack's
+      // alias table sees it. Replace both request forms so the real adapter can
+      // never enter a Store chunk.
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(
+          /(?:^@\/|[\\/])lib[\\/]desktop-updater(?:\.ts)?$/,
+          desktopUpdaterStub
+        ),
+        new webpack.NormalModuleReplacementPlugin(
+          /(?:^@\/|[\\/])lib[\\/]download-mirror(?:\.ts)?$/,
+          downloadMirrorStub
+        )
+      );
     }
     return config;
   },

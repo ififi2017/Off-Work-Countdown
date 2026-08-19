@@ -1,0 +1,41 @@
+name: Lark Release Notice
+
+# 正式发布才推下载链接。构建完成时 Release 还是草稿（release-desktop.yml 里
+# releaseDraft: true），那时的资产链接需要仓库权限才能下载，发到群里是打不开的。
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Notify Lark with download links
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          # 只列安装包：清单、签名和校验和文件不是给人下载的。
+          # 镜像前缀与 scripts/mirror-manifest.mjs 的 MIRROR_PREFIX 保持一致。
+          assets=$(gh release view "$TAG" --json assets --jq '
+            [.assets[]
+             | select(.name | test("\\.(dmg|app\\.tar\\.gz|exe|msi)$"))
+             | select(.name | test("\\.sig$") | not)
+             | {name: .name,
+                url: .url,
+                mirrorUrl: ("https://gh-proxy.com/" + .url)}]')
+          node scripts/lark-notify.mjs release-published "$(jq -nc \
+            --arg repo "${{ github.repository }}" \
+            --arg version "${TAG#desktop-v}" \
+            --arg releaseUrl "${{ github.event.release.html_url }}" \
+            --argjson assets "$assets" \
+            '$ARGS.named')"

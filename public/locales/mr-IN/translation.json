@@ -64,9 +64,9 @@
   "menuView": "दृश्य",
   "menuWindow": "विंडो",
   "menuHelp": "मदत",
-  "menuAbout": "Off Work Countdown विषयी",
+  "menuAbout": "{{app}} विषयी",
   "menuServices": "सेवा",
-  "menuHideApp": "Off Work Countdown लपवा",
+  "menuHideApp": "{{app}} लपवा",
   "menuHideOthers": "इतर लपवा",
   "menuCloseWindow": "विंडो बंद करा",
   "menuUndo": "पूर्ववत करा",
@@ -207,5 +207,8 @@
   "offWorkToday": "आजचे काम संपले",
   "nextShiftIn": "पुढील शिफ्ट {{time}} मध्ये",
   "nextShiftLabelShort": "पुढील शिफ्टला",
-  "toggleMainWindow": "मुख्य विंडो दाखवा किंवा लपवा"
+  "toggleMainWindow": "मुख्य विंडो दाखवा किंवा लपवा",
+  "widgetWorking": "काम सुरू आहे",
+  "widgetOpenToRefresh": "रिफ्रेश करण्यासाठी ॲप उघडा",
+  "widgetDescription": "उरलेला कामाचा वेळ एका नजरेत पहा."
 }

@@ -129,6 +129,7 @@ import {
   UPDATE_MIRROR_HOST,
   toggleDesktopFloatingTimer,
   updateDesktopMenus,
+  getDesktopSystemLocale,
   writeDesktopCountdownState,
   type DesktopNotificationMode,
   type DesktopMiniSkin,
@@ -137,6 +138,8 @@ import {
   formatDesktopShortcut,
   shortcutFromKeyEvent,
 } from "@/lib/shortcut";
+import type { DesktopUpdateCandidate } from "@/lib/desktop-updater";
+import { startSecondTick } from "@/lib/second-tick";
 
 /** 下班前多久提醒。与 translation.json 里 "reminder" 的文案保持一致。 */
 const REMINDER_LEAD_MS = 15 * 60 * 1000;
@@ -152,6 +155,10 @@ const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
  */
 const IS_MSSTORE_BUILD =
   IS_DESKTOP_BUILD && process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "msstore";
+const IS_MAC_APP_STORE_BUILD =
+  IS_DESKTOP_BUILD &&
+  process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "macappstore";
+const IS_STORE_BUILD = IS_MSSTORE_BUILD || IS_MAC_APP_STORE_BUILD;
 
 type DesktopUpdateStatus =
   | "idle"
@@ -369,13 +376,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const completionTrackedRef = useRef(false);
   const pendingNotificationActionRef = useRef<null | (() => void)>(null);
   /** 自动检查时保存的 update 对象，供用户确认后下载 / 安装。 */
-  const pendingUpdateRef = useRef<{
-    version: string;
-    currentVersion: string;
-    download: () => Promise<void>;
-    install: () => Promise<void>;
-    downloadAndInstall: () => Promise<void>;
-  } | null>(null);
+  const pendingUpdateRef = useRef<DesktopUpdateCandidate | null>(null);
 
   // Salary state
   const [salaryType, setSalaryType] = useState<"monthly" | "daily">("monthly");
@@ -532,40 +533,69 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     }
   }, [i18n, lang]);
 
-  // 托盘与 macOS 应用菜单由 Rust 创建，但文案跟随前端当前语言。托盘项目
-  // 原地更新，macOS 菜单则按同一批文案重建，不需要重启客户端。
+  // 托盘与 macOS 应用菜单由 Rust 创建，文案跟随**系统**语言——它们是操作系统
+  // 的外壳，和 Finder 里的应用名（bundle 里本地化的 CFBundleName）属于同一层，
+  // 应当和系统其余部分说同一种语言，而不是跟着用户在应用内选的界面语言走。
+  //
+  // 因此这个 effect 不依赖 lang：用户切换界面语言时菜单**不**重建。系统语言
+  // 在应用运行期间不会变，所以只需要跑一次。
   useEffect(() => {
     if (!IS_DESKTOP_BUILD) return;
-    setDesktopSettingError("");
-    void updateDesktopMenus({
-      show: t("trayShowApp"),
-      mini: t("trayMiniTimer"),
-      quit: t("trayQuit"),
-      file: t("menuFile"),
-      edit: t("menuEdit"),
-      view: t("menuView"),
-      window: t("menuWindow"),
-      help: t("menuHelp"),
-      about: t("menuAbout"),
-      services: t("menuServices"),
-      hideApp: t("menuHideApp"),
-      hideOthers: t("menuHideOthers"),
-      closeWindow: t("menuCloseWindow"),
-      undo: t("menuUndo"),
-      redo: t("menuRedo"),
-      cut: t("menuCut"),
-      copy: t("menuCopy"),
-      paste: t("menuPaste"),
-      selectAll: t("menuSelectAll"),
-      toggleFullScreen: t("menuToggleFullScreen"),
-      minimize: t("menuMinimize"),
-      zoom: t("menuZoom"),
-      bringAllToFront: t("menuBringAllToFront"),
-    }).catch((error) => {
+    let cancelled = false;
+
+    void (async () => {
+      const systemLocale = await getDesktopSystemLocale();
+      // 系统语言可能与界面语言不同，那份资源未必已经加载过。
+      const { ensureLanguageResources } = await import("@/i18n");
+      await ensureLanguageResources(systemLocale);
+      if (cancelled) return;
+
+      const st = i18n.getFixedT(systemLocale);
+      setDesktopSettingError("");
+      await updateDesktopMenus({
+        // 只影响「关于」面板。菜单栏最左侧那个粗体应用名由 AppKit 从 bundle 名
+        // 派生，改不了，见 lib.rs 里 DesktopMenuLabels::app_name 的注释。
+        appName: st("offWorkCountdown"),
+        show: st("trayShowApp"),
+        mini: st("trayMiniTimer"),
+        quit: st("trayQuit"),
+        file: st("menuFile"),
+        edit: st("menuEdit"),
+        view: st("menuView"),
+        window: st("menuWindow"),
+        help: st("menuHelp"),
+        // 这两条原本把英文产品名写死在译文里（「关于 Off Work Countdown」），
+        // 系统语言是中文时也会露出英文。改成占位符后由本地化的产品名填入。
+        about: st("menuAbout", { app: st("offWorkCountdown") }),
+        services: st("menuServices"),
+        hideApp: st("menuHideApp", { app: st("offWorkCountdown") }),
+        hideOthers: st("menuHideOthers"),
+        closeWindow: st("menuCloseWindow"),
+        undo: st("menuUndo"),
+        redo: st("menuRedo"),
+        cut: st("menuCut"),
+        copy: st("menuCopy"),
+        paste: st("menuPaste"),
+        selectAll: st("menuSelectAll"),
+        toggleFullScreen: st("menuToggleFullScreen"),
+        minimize: st("menuMinimize"),
+        zoom: st("menuZoom"),
+        bringAllToFront: st("menuBringAllToFront"),
+      });
+    })().catch((error) => {
+      if (cancelled) return;
       console.error("Failed to localize desktop menus", error);
+      // 这条提示是给用户看的，用界面语言。
       setDesktopSettingError(t("desktopSettingError"));
     });
-  }, [lang, t]);
+
+    return () => {
+      cancelled = true;
+    };
+    // 菜单固定用系统语言，不能跟着界面语言 lang / t 重建——这正是本 effect 的
+    // 意图，因此依赖数组必须为空。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 加载本地存储的设置
   useEffect(() => {
@@ -780,23 +810,19 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     // 任何失败都静默忽略，不打扰启动流程。
     //
     // 商店版整段跳过：更新由商店负责，这里连一次网络请求都不该发。
-    if (!IS_MSSTORE_BUILD) {
+    if (!IS_STORE_BUILD) {
       void (async () => {
         try {
-          const { check } = await import("@tauri-apps/plugin-updater");
-          const update = await check({ timeout: 15_000 });
+          const { checkForDesktopUpdate } = await import(
+            "@/lib/desktop-updater"
+          );
+          const update = await checkForDesktopUpdate(15_000);
           if (cancelled) return;
           if (!update) {
             setDesktopUpdateStatus("latest");
             return;
           }
-          pendingUpdateRef.current = {
-            version: update.version,
-            currentVersion: update.currentVersion,
-            download: () => update.download(),
-            install: () => update.install(),
-            downloadAndInstall: () => update.downloadAndInstall(),
-          };
+          pendingUpdateRef.current = update;
           setDesktopCurrentVersion(update.currentVersion);
           setDesktopLatestVersion(update.version);
           setDesktopUpdateStatus("available");
@@ -1397,7 +1423,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   }, [activeShift, startTime, endTime, shiftBuildOptions]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let stopTick: (() => void) | undefined;
     if (showCountdown) {
       const updateCountdown = () => {
         const now = new Date();
@@ -1513,7 +1539,7 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
               celebrationPendingRef.current = endAtMs;
             }
           }
-          if (!IS_DESKTOP_BUILD) clearInterval(interval);
+          if (!IS_DESKTOP_BUILD) stopTick?.();
         } else {
           setShowNextShiftStatus(false);
           const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -1560,9 +1586,11 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       };
 
       updateCountdown(); // 立即运行
-      interval = setInterval(updateCountdown, 1000);
+      // 对齐整秒边界：主窗口、迷你窗和 Rust 后台线程是三个独立计时器，用固定
+      // 间隔会各自漂移到不同相位，同一时刻显示不同的秒数。见 lib/second-tick.ts。
+      stopTick = startSecondTick(updateCountdown);
     }
-    return () => clearInterval(interval);
+    return () => stopTick?.();
   }, [showCountdown, startTime, endTime, activeShift, reminder, calculateProgress, t, shiftBuildOptions, workdays, triggerCelebration]);
 
   const handleStart = () => {
@@ -1827,6 +1855,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
   const handleCheckForUpdates = async () => {
     if (!IS_DESKTOP_BUILD) return;
 
+    // Mac App Store 版不带更新器。正式商品页 ID 落定前不放一个无效深链；设置页
+    // 仍会在「关于项目」一行显示当前版本，更新完全交给 App Store。
+    if (IS_MAC_APP_STORE_BUILD) return;
+
     // 商店版：这个入口不检查、不下载，只把用户送到商店详情页，更新在那边完成。
     if (IS_MSSTORE_BUILD) {
       setDesktopUpdateStatus("idle");
@@ -1848,8 +1880,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setDesktopUpdateStatus("installing");
       try {
         await pending.install();
-        const { relaunch } = await import("@tauri-apps/plugin-process");
-        await relaunch();
+        const { relaunchAfterDesktopUpdate } = await import(
+          "@/lib/desktop-updater"
+        );
+        await relaunchAfterDesktopUpdate();
       } catch {
         // 安装失败，回退到完整流程重来。
         pendingUpdateRef.current = null;
@@ -1865,8 +1899,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       setDesktopUpdateStatus("mirrorInstalling");
       try {
         await installDesktopUpdateViaMirror();
-        const { relaunch } = await import("@tauri-apps/plugin-process");
-        await relaunch();
+        const { relaunchAfterDesktopUpdate } = await import(
+          "@/lib/desktop-updater"
+        );
+        await relaunchAfterDesktopUpdate();
       } catch {
         setDesktopUpdateStatus("error");
       }
@@ -1889,8 +1925,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
     setDesktopUpdateStatus("checking");
     setDesktopLatestVersion("");
     try {
-      const { check } = await import("@tauri-apps/plugin-updater");
-      const update = await check({ timeout: 15_000 });
+      const { checkForDesktopUpdate, relaunchAfterDesktopUpdate } = await import(
+        "@/lib/desktop-updater"
+      );
+      const update = await checkForDesktopUpdate(15_000);
       if (!update) {
         setDesktopUpdateStatus("latest");
         return;
@@ -1898,17 +1936,10 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
 
       setDesktopCurrentVersion(update.currentVersion);
       setDesktopLatestVersion(update.version);
-      pendingUpdateRef.current = {
-        version: update.version,
-        currentVersion: update.currentVersion,
-        download: () => update.download(),
-        install: () => update.install(),
-        downloadAndInstall: () => update.downloadAndInstall(),
-      };
+      pendingUpdateRef.current = update;
       setDesktopUpdateStatus("installing");
-      await update.downloadAndInstall();
-      const { relaunch } = await import("@tauri-apps/plugin-process");
-      await relaunch();
+      await update.apply();
+      await relaunchAfterDesktopUpdate();
     } catch (error) {
       const message = String(error).toLowerCase();
       setDesktopUpdateStatus(
@@ -3202,7 +3233,17 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                         <Info className="h-4 w-4" />
                         {t("aboutProject")}
                       </span>
-                      <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                      <span className="flex items-center gap-2">
+                        {IS_MAC_APP_STORE_BUILD && desktopCurrentVersion && (
+                          <span
+                            dir="ltr"
+                            className="rounded-md border border-gray-200 bg-white/70 px-2 py-1 font-mono text-[11px] leading-none text-gray-600 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                          >
+                            v{desktopCurrentVersion}
+                          </span>
+                        )}
+                        <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -3215,76 +3256,79 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
                       </span>
                       <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleCheckForUpdates()}
-                      disabled={
-                        desktopUpdateStatus === "checking" ||
-                        desktopUpdateStatus === "predownloading" ||
-                        desktopUpdateStatus === "mirrorInstalling" ||
-                        desktopUpdateStatus === "installing"
-                      }
-                      className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
-                    >
-                      <span
-                        role="status"
-                        aria-live="polite"
-                        className={`flex min-w-0 items-center gap-2 ${
-                          desktopUpdateStatus === "latest"
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : ""
-                        }`}
+                    {!IS_MAC_APP_STORE_BUILD && (
+                      <button
+                        type="button"
+                        onClick={() => void handleCheckForUpdates()}
+                        disabled={
+                          desktopUpdateStatus === "checking" ||
+                          desktopUpdateStatus === "predownloading" ||
+                          desktopUpdateStatus === "mirrorInstalling" ||
+                          desktopUpdateStatus === "installing"
+                        }
+                        className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
                       >
-                        <RefreshCw
-                          className={`h-4 w-4 shrink-0 ${
-                            desktopUpdateStatus === "checking" ||
-                            desktopUpdateStatus === "predownloading" ||
-                            desktopUpdateStatus === "mirrorInstalling" ||
-                            desktopUpdateStatus === "installing"
-                              ? "animate-spin"
+                        <span
+                          role="status"
+                          aria-live="polite"
+                          className={`flex min-w-0 items-center gap-2 ${
+                            desktopUpdateStatus === "latest"
+                              ? "text-emerald-600 dark:text-emerald-400"
                               : ""
                           }`}
-                        />
-                        <span className="truncate">
-                          {IS_MSSTORE_BUILD
-                            ? t("checkForUpdatesInStore")
-                            : desktopUpdateStatus === "checking"
-                            ? t("checkingForUpdates")
-                            : desktopUpdateStatus === "directFailed"
-                              ? t("retryWithMirror")
-                              : desktopUpdateStatus === "predownloading" ||
-                                  desktopUpdateStatus === "mirrorInstalling"
-                                ? t("downloadingUpdate")
-                              : desktopUpdateStatus === "predownloaded"
-                                ? t("restartToUpdate")
-                                : desktopUpdateStatus === "available"
-                                  ? t("downloadUpdate")
-                                  : desktopUpdateStatus === "installing"
-                                    ? t("installingUpdate")
-                                    : desktopUpdateStatus === "latest"
-                                      ? t("upToDate")
-                                      : t("checkForUpdates")}
-                        </span>
-                      </span>
-                      {desktopCurrentVersion && (
-                        <span
-                          dir="ltr"
-                          className="flex shrink-0 items-center gap-1.5 rounded-md border border-gray-200 bg-white/70 px-2 py-1 font-mono text-[11px] leading-none text-gray-600 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
                         >
-                          <span>v{desktopCurrentVersion}</span>
-                          {desktopLatestVersion &&
-                            desktopLatestVersion !== desktopCurrentVersion && (
-                              <>
-                                <span className="text-gray-400">→</span>
-                                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                                  v{desktopLatestVersion}
-                                </span>
-                              </>
-                            )}
+                          <RefreshCw
+                            className={`h-4 w-4 shrink-0 ${
+                              desktopUpdateStatus === "checking" ||
+                              desktopUpdateStatus === "predownloading" ||
+                              desktopUpdateStatus === "mirrorInstalling" ||
+                              desktopUpdateStatus === "installing"
+                                ? "animate-spin"
+                                : ""
+                            }`}
+                          />
+                          <span className="truncate">
+                            {IS_MSSTORE_BUILD
+                              ? t("checkForUpdatesInStore")
+                              : desktopUpdateStatus === "checking"
+                              ? t("checkingForUpdates")
+                              : desktopUpdateStatus === "directFailed"
+                                ? t("retryWithMirror")
+                                : desktopUpdateStatus === "predownloading" ||
+                                    desktopUpdateStatus === "mirrorInstalling"
+                                  ? t("downloadingUpdate")
+                                : desktopUpdateStatus === "predownloaded"
+                                  ? t("restartToUpdate")
+                                  : desktopUpdateStatus === "available"
+                                    ? t("downloadUpdate")
+                                    : desktopUpdateStatus === "installing"
+                                      ? t("installingUpdate")
+                                      : desktopUpdateStatus === "latest"
+                                        ? t("upToDate")
+                                        : t("checkForUpdates")}
+                          </span>
                         </span>
-                      )}
-                    </button>
-                    {desktopUpdateStatus !== "idle" &&
+                        {desktopCurrentVersion && (
+                          <span
+                            dir="ltr"
+                            className="flex shrink-0 items-center gap-1.5 rounded-md border border-gray-200 bg-white/70 px-2 py-1 font-mono text-[11px] leading-none text-gray-600 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                          >
+                            <span>v{desktopCurrentVersion}</span>
+                            {desktopLatestVersion &&
+                              desktopLatestVersion !== desktopCurrentVersion && (
+                                <>
+                                  <span className="text-gray-400">→</span>
+                                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                    v{desktopLatestVersion}
+                                  </span>
+                                </>
+                              )}
+                          </span>
+                        )}
+                      </button>
+                    )}
+                    {!IS_MAC_APP_STORE_BUILD &&
+                      desktopUpdateStatus !== "idle" &&
                       desktopUpdateStatus !== "checking" &&
                       desktopUpdateStatus !== "installing" &&
                       desktopUpdateStatus !== "latest" &&

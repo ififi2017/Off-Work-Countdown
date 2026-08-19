@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Tauri 会自动把与 tauri.conf.json 同目录的 Info.plist 合并进 macOS 包，Windows
+  与 Linux 构建不读这个文件。
+
+  这里只放 Tauri 配置里没有对应键、又必须写进 Info.plist 的两项，其余（版本、
+  identifier、LSMinimumSystemVersion 等）仍由 tauri.conf.json 生成，不要在这里
+  重复声明，否则两处会各说各话。
+-->
+<plist version="1.0">
+<dict>
+	<!--
+	  告诉 Finder / 程序坞 / 启动台：这个包带本地化名称，去 .lproj 里取
+	  CFBundleDisplayName，别直接用英文那份。缺了这个键，即使 .lproj 都在，系统
+	  也不会去查。
+	-->
+	<key>LSHasLocalizedDisplayName</key>
+	<true/>
+	<!--
+	  与 src-tauri/macos-lproj/ 下的目录一一对应，由
+	  scripts/generate-macos-lproj.mjs 从 docs/msstore-listing-titles.csv 生成；
+	  改语言列表要两边一起改，check:version 会校验它们一致。
+
+	  目录名不等于项目里的 i18n locale：zh-CN/zh-TW 对应 zh-Hans/zh-Hant，
+	  hi-IN/mr-IN 对应 hi/mr，pt 一条同时覆盖 pt-BR 与 pt-PT。理由见生成脚本。
+	-->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>zh-Hans</string>
+		<string>zh-Hant</string>
+		<string>zh-HK</string>
+		<string>ja</string>
+		<string>ko</string>
+		<string>fr</string>
+		<string>de</string>
+		<string>es</string>
+		<string>it</string>
+		<string>pt</string>
+		<string>ru</string>
+		<string>hi</string>
+		<string>mr</string>
+		<string>tr</string>
+		<string>ar</string>
+		<string>th</string>
+		<string>id</string>
+		<string>vi</string>
+	</array>
+</dict>
+</plist>

@@ -100,7 +100,14 @@ in URLs, analytics payloads or share metadata.
 - Chinese UI variants link to Simplified Chinese content; other locales link to
   English content.
 - Desktop startup language follows the OS locale until the user explicitly
-  selects and persists a language. Tray menu labels must update with it.
+  selects and persists a language. That choice governs the in-app UI only.
+- OS-level surfaces follow the **system** language, not the in-app choice: the
+  app name in Finder/Dock/Launchpad and the macOS menu bar (localized
+  `CFBundleName` / `CFBundleDisplayName`), plus the tray menu, macOS application
+  menu and About panel (sent from the frontend with `getFixedT(systemLocale)`).
+  They belong to the OS shell and should speak the same language as the rest of
+  it, so the desktop-menu effect deliberately does not depend on `lang`.
+  See `docs/PLAN-MSSTORE.md` 9.7.
 
 ## Privacy and analytics
 
