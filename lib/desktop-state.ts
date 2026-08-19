@@ -379,8 +379,19 @@ export async function subscribeToDesktopCountdown(
   );
 }
 
+/**
+ * ⚠️ 必须向下取整，不能用 `Math.ceil`。
+ *
+ * 应用里有四个地方显示同一个倒计时：主窗口、迷你窗、托盘/原生面板、桌面小组件。
+ * 小组件由系统的 `Text(date, style: .timer)` 渲染，**我们改不了它的取整方式**，
+ * 而它与主窗口一致（都相当于向下取整）。这里原本用 ceil，于是只要剩余毫秒不是
+ * 整千——也就是几乎总是——迷你窗就恒定比另外两处多显示一秒。实测截图里主窗口和
+ * 小组件同为 12:22:13，迷你窗却是 12:22:14。
+ *
+ * 这与计时器精度无关：ceil 和 floor 的差值是恒定的 1，对齐计时器解决不了。
+ */
 export function formatDesktopDuration(remainingMs: number): string {
-  const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+  const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;

@@ -38,6 +38,41 @@ struct GlobalShortcutSettings {
     accelerator: String,
 }
 
+#[cfg(all(test, target_os = "macos", not(feature = "run-key-autostart")))]
+mod login_item_tests {
+    use super::macos_login_item_state;
+
+    #[test]
+    fn a_never_registered_app_is_not_an_error() {
+        // 实测：全新 bundle 首次读取 SMAppService.status 得到的是 3（NotFound）
+        // 而不是 0（NotRegistered）；register 后变 1，unregister 后才变 0。
+        // 把 3 当错误会让每次全新安装后设置页都挂着「桌面设置更新失败」。
+        for status in [0, 3] {
+            let state = macos_login_item_state(status).expect("should not be an error");
+            assert!(!state.enabled);
+            assert!(!state.locked);
+        }
+    }
+
+    #[test]
+    fn requires_approval_locks_the_toggle_instead_of_lying() {
+        // 用户在系统设置里关掉后，应用请求打开不会报错也不会生效——必须显示成
+        // 「被系统接管」，不能显示成已开启。
+        let state = macos_login_item_state(2).expect("should not be an error");
+        assert!(!state.enabled);
+        assert!(state.locked);
+    }
+
+    #[test]
+    fn distinguishes_unsupported_from_refused() {
+        // 两者混为一谈时，注册被拒会被报成「系统版本不支持」，排查方向完全错。
+        assert!(macos_login_item_state(-1).unwrap_err().contains("macOS 13"));
+        assert!(macos_login_item_state(-2)
+            .unwrap_err()
+            .contains("System Settings"));
+    }
+}
+
 #[cfg(all(test, target_os = "macos", not(feature = "self-update")))]
 mod widget_snapshot_tests {
     use super::widget_snapshot_contains_sensitive_data;
@@ -1047,8 +1082,12 @@ fn active_break_end_at_ms(state: &CountdownState, now_ms: i64) -> Option<i64> {
     })
 }
 
+/// ⚠️ 向下取整，与 lib/desktop-state.ts 的 formatDesktopDuration 保持一致。
+/// 桌面小组件由系统的 `Text(date, style: .timer)` 渲染，取整方式改不了，因此它
+/// 是基准；这里原本是 `(x + 999) / 1000`（向上取整），会让托盘和原生面板恒定
+/// 比小组件与主窗口多显示一秒。
 fn format_remaining(remaining_ms: i64) -> String {
-    let total_seconds = (remaining_ms.max(0) + 999) / 1000;
+    let total_seconds = remaining_ms.max(0) / 1000;
     let hours = total_seconds / 3600;
     let minutes = (total_seconds % 3600) / 60;
     let seconds = total_seconds % 60;
@@ -1923,11 +1962,6 @@ struct AutostartState {
 #[cfg(all(target_os = "macos", not(feature = "run-key-autostart")))]
 fn macos_login_item_state(status: i32) -> Result<AutostartState, String> {
     match status {
-        // SMAppServiceStatusNotRegistered
-        0 => Ok(AutostartState {
-            enabled: false,
-            locked: false,
-        }),
         // SMAppServiceStatusEnabled
         1 => Ok(AutostartState {
             enabled: true,
@@ -1939,7 +1973,17 @@ fn macos_login_item_state(status: i32) -> Result<AutostartState, String> {
             enabled: false,
             locked: true,
         }),
-        3 => Err("the main app login item was not found".into()),
+        // SMAppServiceStatusNotFound。对 `mainAppService` 而言这**不是**错误：
+        // 从未注册过的应用首次读取就是 3，而不是 0（实测：全新 bundle 读到 3，
+        // register 后变 1，unregister 后才变 0）。之前把它当错误返回，导致每次
+        // 全新安装后设置页都挂着一条「桌面设置更新失败」——而用户手动点一下开关
+        // 注册成功后它就消失了，正是这个原因。
+        //
+        // 0 和 3 对用户是同一件事：没开机自启，且可以打开。
+        0 | 3 => Ok(AutostartState {
+            enabled: false,
+            locked: false,
+        }),
         // ObjC 侧用负数区分两种完全不同的失败，之前一起落进这个分支，注册失败会被
         // 报成「系统版本不支持」——看到这条消息的人会去查 macOS 版本，方向就错了。
         -1 => Err("SMAppService requires macOS 13 or later".into()),
@@ -2681,6 +2725,10 @@ mod format_tests {
     fn formats_remaining_time_without_business_logic() {
         assert_eq!(format_remaining(3_661_000), "1:01:01");
         assert_eq!(format_remaining(-1), "0:00:00");
+        // 与小组件、主窗口一致地向下取整。上面两个用例都是整千毫秒，区分不出
+        // ceil 与 floor——而正是那个差异让托盘恒定比小组件多一秒。
+        assert_eq!(format_remaining(1_999), "0:00:01");
+        assert_eq!(format_remaining(999), "0:00:00");
     }
 
     #[test]

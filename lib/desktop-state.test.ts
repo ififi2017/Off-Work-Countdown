@@ -51,6 +51,14 @@ describe("desktop countdown state", () => {
     expect(formatDesktopDuration(-1)).toBe("0:00:00");
   });
 
+  it("truncates sub-second remainders instead of rounding up", () => {
+    // 小组件由系统渲染、取整方式改不了，主窗口也是向下取整；这里用 ceil 会让
+    // 迷你窗与托盘恒定多显示一秒。现有用例都是整千毫秒，区分不出两种取整。
+    expect(formatDesktopDuration(1_999)).toBe("0:00:01");
+    expect(formatDesktopDuration(1_000)).toBe("0:00:01");
+    expect(formatDesktopDuration(999)).toBe("0:00:00");
+  });
+
   it("derives progress and earned salary from absolute timestamps", () => {
     const state = {
       ...emptyDesktopCountdownState(),
