@@ -841,9 +841,13 @@ App Store Connect 提交流程混为一谈。
   倒数到下次上班，与主界面「距下次上班」一致；下次上班未知时退回 24h 兜底。到期切空态
   而不继续投影下一班——班次有没有真的开始只有主应用说了算。
 
-MAS-P0 尚未完成的部分是带真实 profile 的运行时验收：宿主与 extension 必须由同一 Team
-授权同一个 App Group，随后确认沙盒应用可启动、小组件可在组件库发现并实际读到共享快照。
-ad-hoc 签名只能证明包结构正确，不能代替这一步。
+**MAS-P0 已于 2026-08-19 完成真机验收。** 开发签名（Apple Development + Mac Development
+描述文件）下，宿主与 extension 由同一 Team 授权同一个 App Group；沙盒应用正常启动，
+小组件在桌面组件库中被发现，并实际读到共享快照——桌面上的 small / medium 与主界面显示
+同一个倒计时、同一个百分比。走通的过程中修掉了三处问题，见 9.11。
+
+仍属 MAS-P2 的是**分发**签名：当前产物带 `com.apple.security.get-task-allow`（开发签名的
+标志），能本机调试但不能提交；上架需要 Apple Distribution + Mac App Store 描述文件。
 
 ### 9.4 关键实现决策
 
@@ -1061,3 +1065,44 @@ GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建
 
 因此另一个方向是把商店渠道抬到 **14.0**：所有用户都能把小组件放上桌面，也不必维护
 13 的 `containerBackground` 回退分支，代价是放弃 Ventura 用户。当前结论是维持 13.0。
+
+### 9.11 真机验收踩到的三个坑
+
+**1. App Group 标识符在开发与分发下形式不同。** 这是最难查的一个。Mac Development
+描述文件授权的是 `<TeamID>.*`，因此 App Group 必须写成
+`3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore`；不带前缀的
+`group.…`（代码里的默认值）**只在 Mac App Store 分发时有效**，两种形式不通用。
+
+失败方式极其隐蔽，值得完整记下来：entitlement 未被描述文件授权时，系统把这个 group 当成
+**别人的**数据，于是弹「想访问其他 App 的数据」——宿主只要用户点了「允许」就照常写入，
+看起来一切正常；而**扩展没有弹窗的能力**，只能被静默拒绝，表现为小组件永远空态，
+`log show` 里也查不到任何拒绝记录。数据、配置、签名、注册逐项检查全部正确，问题却在
+描述文件的授权列表里。
+
+因此 `scripts/embed-macos-profile.mjs` 增加了一道校验：把 `.app` 声明的每个 App Group
+与内嵌描述文件授权的列表（支持 `*` 通配）比对，不匹配直接失败并给出应设的值。反例实测
+可拦下。
+
+本地验收的完整命令：
+
+```sh
+OWC_APP_GROUP_IDENTIFIER=3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore \
+OWC_WIDGET_SIGNING_MODE=automatic OWC_APPLE_TEAM_ID=3GSK5B9S3T \
+APPLE_SIGNING_IDENTITY="Apple Development: … (…)" \
+npm run tauri:build:macappstore
+```
+
+**2. Tauri 不能嵌入描述文件。** `MacConfig` 只有 `entitlements` / `signingIdentity` 等键，
+没有任何 provisioning 相关项。而沙盒应用的 App Group 属于需要授权的 entitlement，没有
+`Contents/embedded.provisionprofile` 就拿不到容器。新增 `scripts/embed-macos-profile.mjs`
+在打包后嵌入并**重签外层**（往已签名的 bundle 里加文件会破坏封签）。重签时不能加
+`--deep`——那会连内嵌 `.appex` 一起重签，把它自己那份正确的签名和描述文件覆盖掉。
+`APPLE_SIGNING_IDENTITY` 环境变量实测**能**盖过配置里的 `signingIdentity`，因此
+`tauri.macappstore.conf.json` 里的 `"-"` 可以留作本地 ad-hoc 默认值。
+
+**3. `build-macos-widget.sh` 会在失败时报成功。** xcodebuild 增量判断产物最新时会直接跳过，
+而脚本只检查「文件存在吗」，于是拿着上一次用**别的模式**构建的旧 appex 通过检查并打印成功
+——entitlements 已是 app-group 模式、appex 却还是几天前 ad-hoc / local-support 的那份。
+现改为校验产物本身（`OWCWidgetStorageMode` 是否与请求一致、automatic 模式下签名是否非
+ad-hoc），并补上 `-allowProvisioningUpdates`（缺它 xcodebuild 只找已存在的描述文件，
+不会现场创建）。

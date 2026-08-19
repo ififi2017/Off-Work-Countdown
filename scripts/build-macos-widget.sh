@@ -92,7 +92,12 @@ case "$signing_mode" in
       echo "OWC_APPLE_TEAM_ID is required for automatic Widget signing." >&2
       exit 1
     fi
-    set -- "$@" CODE_SIGNING_ALLOWED=YES CODE_SIGN_STYLE=Automatic \
+    # -allowProvisioningUpdates：没有它 xcodebuild 只会去找**已存在**的描述文件，
+    # 找不到就直接失败（"Automatic signing is disabled and unable to generate a
+    # profile"）。加上它才允许 Xcode 按 App ID 现场创建 / 下载。前提是 Xcode 已在
+    # 「设置 → 账户」里登录了对应 Apple ID，否则会以鉴权失败告终。
+    set -- "$@" -allowProvisioningUpdates \
+      CODE_SIGNING_ALLOWED=YES CODE_SIGN_STYLE=Automatic \
       "DEVELOPMENT_TEAM=$OWC_APPLE_TEAM_ID"
     ;;
   adhoc)
@@ -117,6 +122,29 @@ fi
 if [ "$signing_mode" = "adhoc" ]; then
   codesign --force --sign - --entitlements "$derived_data/Widget.entitlements" \
     "$widget_product"
+fi
+
+# ⚠️ 光看 xcodebuild 的退出码不够。增量构建认为产物是最新的时会直接跳过，于是
+# 上面那个「文件存在吗」的检查会拿一个**上一次用别的模式构建出来的旧 appex**
+# 通过，脚本照常报成功。实测踩过：entitlements 已经是 app-group 模式，appex 却
+# 还是几天前 ad-hoc / local-support 的那份，而且是在真机验收时才发现。
+#
+# 因此校验产物本身是否与请求的模式一致，而不是校验命令有没有报错。
+actual_storage_mode=$(plutil -extract OWCWidgetStorageMode raw -o - \
+  "$widget_product/Contents/Info.plist" 2>/dev/null || echo "<missing>")
+if [ "$actual_storage_mode" != "$widget_storage_mode" ]; then
+  echo "Widget storage mode mismatch: built '$actual_storage_mode', expected '$widget_storage_mode'." >&2
+  echo "The build was probably skipped as up-to-date. Remove $derived_data and retry." >&2
+  exit 1
+fi
+
+if [ "$signing_mode" = "automatic" ]; then
+  # ad-hoc 签名的 App Group 容器会被 containermanagerd 拒绝，必须确认拿到的是
+  # 真实团队签名而不是回退的 ad-hoc。
+  if codesign -dvv "$widget_product" 2>&1 | grep -q "flags=.*adhoc"; then
+    echo "Widget was signed ad-hoc despite OWC_WIDGET_SIGNING_MODE=automatic." >&2
+    exit 1
+  fi
 fi
 
 # Tauri 的 bundle.macOS.files 是一张静态路径表，读不到 OWC_WIDGET_CONFIGURATION。
