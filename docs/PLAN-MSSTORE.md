@@ -1011,10 +1011,10 @@ GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建
 
 | 阶段 | 内容 | 完成标准 |
 |---|---|---|
-| **MAS-P0** | 技术可行性验证 | 本地 `macappstore` 渠道可构建；二进制不含私有 API、updater 与 LaunchAgent；ad-hoc 后备模式可无权限弹窗启动并驱动 Widget；生产配置保留最小沙盒/App Group；WidgetKit extension 可被构建并用 fixture 渲染各状态 |
-| **MAS-P1** | 沙盒功能适配 | 主窗口、状态栏、倒计时、通知、系统语言、外部链接、原生 standard / woodfish Mini Timer、全局快捷键与用户授权的登录项在真机通过；宿主可生成小组件快照并触发时间线刷新 |
-| **MAS-P2** | 分发产线 | 配置宿主、Widget extension 与 App Group 的 Team ID、App ID、entitlements 和 profiles，以及商店专用 Info.plist；产出包含正确签名嵌套扩展的 Universal `.app` 和 `.pkg` |
-| **MAS-P3** | TestFlight 与审核材料 | App Store Connect 上传成功；TestFlight 安装后小组件出现在组件库并能读到共享状态；隐私标签、支持/隐私 URL、截图、描述、年龄分级和审核备注完整 |
+| **MAS-P0** | ✅ 技术可行性验证 | 本地 `macappstore` 渠道可构建；二进制不含私有 API、updater 与 LaunchAgent；ad-hoc 后备模式可无权限弹窗启动并驱动 Widget；生产配置保留最小沙盒/App Group；WidgetKit extension 可被构建并用 fixture 渲染各状态 |
+| **MAS-P1** | ✅ 沙盒功能适配 | 主窗口、状态栏、倒计时、通知、系统语言、外部链接、原生 standard / woodfish Mini Timer、全局快捷键与用户授权的登录项在真机通过；宿主可生成小组件快照并触发时间线刷新 |
+| **MAS-P2** | ✅ 分发产线 | 配置宿主、Widget extension 与 App Group 的 Team ID、App ID、entitlements 和 profiles，以及商店专用 Info.plist；产出包含正确签名嵌套扩展的 Universal `.app` 和 `.pkg` |
+| **MAS-P3** | 🟡 TestFlight 与审核材料 | App Store Connect 上传成功；TestFlight 安装后小组件出现在组件库并能读到共享状态；隐私标签、支持/隐私 URL、截图、描述、年龄分级和审核备注完整 |
 | **MAS-P4** | 首次人工审核 | TestFlight 冒烟通过，处理审核问题并完成首次上架；记录以后可重复执行的发布清单 |
 | **MAS-P5** | 自动发布与渠道文档 | tag 可独立触发商店构建/上传；下载页与 About 页准确区分 GitHub 版和商店版的更新与能力差异 |
 
@@ -1106,3 +1106,74 @@ npm run tauri:build:macappstore
 现改为校验产物本身（`OWCWidgetStorageMode` 是否与请求一致、automatic 模式下签名是否非
 ad-hoc），并补上 `-allowProvisioningUpdates`（缺它 xcodebuild 只找已存在的描述文件，
 不会现场创建）。
+
+### 9.12 MAS-P2 / P3 的实测记录（2026-08-19 已提交审核）
+
+**关于 MAS-P1 标记为完成**：决策 1 原本要求把 standard / woodfish 悬浮面板完整重写为
+原生 AppKit。该要求的**技术前提已经消失**——写下它的理由是「当前实现依赖
+`macos-private-api`」，而 MAS-P0 的过渡实现改用公开 `NSWindow` / `CALayer` 之后，商店版
+二进制里 `drawsBackground` 命中数为 0，私有 API 已彻底裁掉。项目所有者据此于 2026-08-19
+决定不做原生重写。P1 其余项（状态栏、通知、外部链接、全局快捷键、登录项）均已真机验过。
+
+
+分发签名、Universal、`.pkg` 打包与首次提交都已跑通。三次上传验证被拒，全部是**只有
+Apple 会告诉你**的规则，因此每条都补了本地守卫，不再靠一来一回试出来：
+
+| 错误码 | 原因 | 处理 |
+|---|---|---|
+| 409 | `LSApplicationCategoryType` 缺失 | 写进 `src-tauri/Info.plist`（Tauri 的 `bundle.macOS` 没有对应配置项），取 `public.app-category.productivity`，需与 App Store Connect 的主类别一致 |
+| 90886 | 宿主签名缺 `application-identifier` | 见下 |
+| 90473 | 扩展 `CFBundleVersion` 与宿主不一致 | `build_number` 原本写死为 1，改为默认取 `marketing_version` |
+
+**90886 的根因值得记住**：Xcode 签嵌套 `.appex` 时会**自动从描述文件补**
+`application-identifier` 与 `team-identifier`，所以扩展天然就有；而宿主是 Tauri 用我们
+手写的 `Entitlements.plist` 签的，没人替它补。两者签进去的键一对比就一目了然，但只看
+宿主本身完全看不出缺了什么。
+
+签名切换过程中另外两个静默失效（都已在脚本里加注释与守卫）：
+
+- **`PROVISIONING_PROFILE` 传文件路径不生效。** xcodebuild 只按 UUID / 名称查找，且只在
+  Xcode 的目录里找。传路径不报错，而是**回落到自动签名**，产出带 `get-task-allow` 的
+  开发签名包。改用 `PROVISIONING_PROFILE_SPECIFIER=<UUID>`，并由脚本自己把描述文件放进
+  Xcode 目录——分发描述文件无法双击装入「系统设置」，构建不能依赖使用者手动导入过。
+- **`get-task-allow` 由 Xcode 注入**，不在我们的 entitlements 文件里。即使签名身份与
+  描述文件都已是分发用的，`xcodebuild build`（相对 `archive` + `exportArchive`）仍按
+  开发用途注入。必须显式 `CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO`。
+
+**App Group 标识符开发与分发通用**：实测 Mac App Store 描述文件授权的同样是
+`<TeamID>.*`，与 Mac Development 一致。原先推测分发要换回不带前缀的 `group.…`，是错的。
+
+### 9.13 待办：GitHub 渠道的 Developer ID 签名
+
+**现状**：GitHub 渠道仍是 ad-hoc。`release-desktop.yml` 里写死
+`APPLE_SIGNING_IDENTITY: '-'`，实测 `desktop-v3.0.2` 产物为
+`flags=0x10002(adhoc,runtime)`、`TeamIdentifier=not set`。README 因此需要教用户走
+「系统设置 → 隐私与安全性 → 仍要打开」。
+
+**注意商店那张证书用不了**：MAS 用 Apple Distribution，GitHub 渠道需要另一张
+**Developer ID Application**，外加公证（notarization）。
+
+**自动化不难**，`tauri-action` 原生支持，无需自己处理钥匙串（比 MAS 那条链路简单得多，
+不涉及描述文件、App Group、嵌套扩展）：
+
+```yaml
+APPLE_CERTIFICATE / APPLE_CERTIFICATE_PASSWORD / APPLE_SIGNING_IDENTITY
+APPLE_ID / APPLE_PASSWORD / APPLE_TEAM_ID
+```
+
+**切换时老用户会遇到两处摩擦**，均只在第一次换签名时发生：
+
+1. 「与之前打开的版本不同」弹窗——macOS 发现签名身份由 ad-hoc 变为 Developer ID，
+   询问是否让新版本继承旧数据。
+2. TCC 授权（通知等）绑定签名身份，身份变更后可能需要用户重新授予。
+
+自更新本身不受影响：Tauri 更新器校验的是 **minisign** 签名，与 Apple 代码签名是两套
+独立机制，只要 minisign 私钥不变，旧版本就能验证并安装新包。
+
+⚠️ **但这条没有验证过。** 我们踩过的内核签名缓存问题（`Invalid Page` 崩溃，见 9.8）
+是手动 `cp -R` 覆盖导致的；更新器走的是另一条替换路径，理论上不受影响，但真要切签名，
+应当先用一个预发布版本完整走一遍自更新流程再推给用户。
+
+**排期建议**：等 App Store 首次审核出结果之后再做。现在动会同时改变两条渠道的变量，
+被拒重提时两边的问题会缠在一起。
+
