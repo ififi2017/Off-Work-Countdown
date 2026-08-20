@@ -137,7 +137,8 @@ export interface ContentBundle {
     macAppStorePerk1: string;
     macAppStorePerk2: string;
     macAppStorePerk3: string;
-    macAppStoreCoffeeNote: string;
+    macAppStorePriceLabel: string;
+    macAppStoreSupportNote: string;
     macAppStoreDialogPrimary: string;
     macAppStoreDialogSecondary: string;
     appleSiliconLabel: string;
@@ -148,6 +149,51 @@ export interface ContentBundle {
     comingSoonLabel: string;
     githubLabel: string;
     githubDescription: string;
+  };
+}
+
+export type MacAppStoreDialogCopy = Pick<
+  ContentBundle["download"],
+  | "macAppStoreCtaLabel"
+  | "macAppStoreDialogTitle"
+  | "macAppStoreDialogIntro"
+  | "macAppStoreWidgetHeading"
+  | "macAppStoreWidgetBody"
+  | "macAppStoreWidgetAlt"
+  | "macAppStoreWidgetImageLight"
+  | "macAppStoreWidgetImageDark"
+  | "macAppStorePerk1"
+  | "macAppStorePerk2"
+  | "macAppStorePerk3"
+  | "macAppStorePriceLabel"
+  | "macAppStoreSupportNote"
+  | "macAppStoreDialogPrimary"
+  | "macAppStoreDialogSecondary"
+>;
+
+/**
+ * 首页只需要付费说明弹窗这组文案。显式挑字段，避免把下载页的比较表、FAQ 和
+ * 下载状态文案全部序列化进客户端 payload。
+ */
+export function pickMacAppStoreDialogCopy(
+  download: ContentBundle["download"]
+): MacAppStoreDialogCopy {
+  return {
+    macAppStoreCtaLabel: download.macAppStoreCtaLabel,
+    macAppStoreDialogTitle: download.macAppStoreDialogTitle,
+    macAppStoreDialogIntro: download.macAppStoreDialogIntro,
+    macAppStoreWidgetHeading: download.macAppStoreWidgetHeading,
+    macAppStoreWidgetBody: download.macAppStoreWidgetBody,
+    macAppStoreWidgetAlt: download.macAppStoreWidgetAlt,
+    macAppStoreWidgetImageLight: download.macAppStoreWidgetImageLight,
+    macAppStoreWidgetImageDark: download.macAppStoreWidgetImageDark,
+    macAppStorePerk1: download.macAppStorePerk1,
+    macAppStorePerk2: download.macAppStorePerk2,
+    macAppStorePerk3: download.macAppStorePerk3,
+    macAppStorePriceLabel: download.macAppStorePriceLabel,
+    macAppStoreSupportNote: download.macAppStoreSupportNote,
+    macAppStoreDialogPrimary: download.macAppStoreDialogPrimary,
+    macAppStoreDialogSecondary: download.macAppStoreDialogSecondary,
   };
 }
 

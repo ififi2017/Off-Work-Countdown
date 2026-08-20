@@ -91,6 +91,7 @@ import {
 } from "@/lib/countdown";
 import { WorkdaySelector } from "./WorkdaySelector";
 import { PeriodSummary } from "./PeriodSummary";
+import { MacAppStoreBadge } from "./MacAppStoreBadge";
 import { MicrosoftStoreBadge } from "./MicrosoftStoreBadge";
 import { summarize, startOfWeek, startOfYear } from "@/lib/summary";
 import { useTranslation } from "react-i18next";
@@ -98,6 +99,7 @@ import { resolveContentLocale } from "@/lib/content-locales";
 import { decodeShift } from "@/lib/share";
 import { track } from "@/lib/track";
 import { siteConfig } from "@/config/site";
+import type { MacAppStoreDialogCopy } from "@/lib/server/content";
 import {
   requestNotificationPermission,
   requestNotificationPermissionDetailed,
@@ -209,6 +211,7 @@ function usePersistedSetting(key: string, value: string, enabled: boolean) {
 
 export interface OffWorkCountdownProps {
   lang: string;
+  macAppStoreCopy: MacAppStoreDialogCopy;
 }
 
 interface SalarySettingsProps {
@@ -336,7 +339,10 @@ function SalarySettings({
   );
 }
 
-export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
+export function OffWorkCountdown({
+  lang,
+  macAppStoreCopy,
+}: OffWorkCountdownProps) {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const [startTime, setStartTime] = useState("09:00");
@@ -3393,10 +3399,14 @@ export function OffWorkCountdown({ lang }: OffWorkCountdownProps) {
       {!showCountdown && !isAppShell && (
         <>
         <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-3">
+          <MacAppStoreBadge
+            copy={macAppStoreCopy}
+            freeVersionHref={`/${contentLang}/download`}
+          />
           <MicrosoftStoreBadge className="flex min-h-11 items-center" />
           <Link
             href={`/${contentLang}/download`}
-            className="flex h-11 w-[161px] items-center gap-2 rounded-[8px] border border-white/15 bg-[#1a1a1a] px-3 text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:border-black/10 dark:bg-white dark:text-[#1a1a1a] dark:hover:bg-gray-100 dark:focus:ring-offset-gray-900"
+            className="flex h-11 min-w-[161px] items-center gap-2 rounded-[8px] border border-white/15 bg-[#1a1a1a] px-3 text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:border-black/10 dark:bg-white dark:text-[#1a1a1a] dark:hover:bg-gray-100 dark:focus:ring-offset-gray-900"
           >
             <Download className="h-5 w-5 shrink-0" aria-hidden="true" />
             <span className="min-w-0 text-left leading-none rtl:text-right">

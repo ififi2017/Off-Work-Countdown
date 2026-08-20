@@ -302,7 +302,6 @@ export default async function DownloadPage({
             copy={copy}
             releasesUrl={siteConfig.releases}
             storeUrl={siteConfig.microsoftStore}
-            macAppStoreUrl={siteConfig.macAppStore}
           />
         </div>
       </section>

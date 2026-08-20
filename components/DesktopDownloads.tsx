@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   Apple,
   ArrowUpRight,
-  Check,
   Download,
   Github,
   LoaderCircle,
@@ -13,13 +12,7 @@ import {
   Store,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { MacAppStorePurchaseDialog } from "@/components/MacAppStorePurchaseDialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { DOWNLOAD_MIRROR_HOST, mirroredDownloadUrl } from "@/lib/download-mirror";
@@ -35,7 +28,6 @@ interface DesktopDownloadsProps {
   copy: Copy;
   releasesUrl: string;
   storeUrl: string;
-  macAppStoreUrl: string;
 }
 
 type ReleaseState =
@@ -60,6 +52,7 @@ function DownloadButton({
   event,
   badgeLabel,
   placeholder = false,
+  compactLabel = false,
   variant = "default",
   className,
 }: {
@@ -74,6 +67,7 @@ function DownloadButton({
   event: TrackedEvent;
   badgeLabel?: string;
   placeholder?: boolean;
+  compactLabel?: boolean;
   variant?: "default" | "outline";
   className?: string;
 }) {
@@ -111,6 +105,7 @@ function DownloadButton({
   return (
     <a
       href={href ?? asset.url}
+      aria-label={`${downloadLabel} ${label}`}
       onClick={() => track(event)}
       className={cn(
         buttonVariants({ variant }),
@@ -118,16 +113,16 @@ function DownloadButton({
         className
       )}
     >
-      <span className="inline-flex items-center gap-2">
-        <Download className="h-4 w-4" aria-hidden="true" />
-        {downloadLabel} {label}
+      <span className="inline-flex min-w-0 items-center gap-2 whitespace-nowrap">
+        <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
+        {compactLabel ? label : `${downloadLabel} ${label}`}
         {badgeLabel && (
           <span className="rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[10px] font-semibold leading-none text-primary-foreground">
             {badgeLabel}
           </span>
         )}
       </span>
-      <span className="text-xs font-normal opacity-70">
+      <span className="shrink-0 whitespace-nowrap text-xs font-normal opacity-70">
         {formatFileSize(asset.size)}
       </span>
     </a>
@@ -138,7 +133,6 @@ export function DesktopDownloads({
   copy,
   releasesUrl,
   storeUrl,
-  macAppStoreUrl,
 }: DesktopDownloadsProps) {
   // 商店入口先解释再跳转：付费差异（小组件）不说清楚，用户点过去看到价格
   // 只会直接退回来。
@@ -274,6 +268,7 @@ export function DesktopDownloads({
                 loadingLabel={copy.loadingLabel}
                 event="desktop_download_windows_intel"
                 variant="outline"
+                compactLabel
                 // 两条直链里 x64 适用绝大多数机器。用一圈很淡的蓝色光晕带出这个
                 // 优先级，而不是再挂一个「推荐」徽章——商店那条已经是卡片里唯一
                 // 的实心按钮，再加一个文字标记会让三个元素互相争夺注意力。
@@ -290,6 +285,7 @@ export function DesktopDownloads({
                 loadingLabel={copy.loadingLabel}
                 event="desktop_download_windows_arm"
                 variant="outline"
+                compactLabel
               />
             </div>
           </div>
@@ -342,6 +338,7 @@ export function DesktopDownloads({
                 loadingLabel={copy.loadingLabel}
                 event="desktop_download_macos_apple"
                 variant="outline"
+                compactLabel
               />
               <DownloadButton
                 asset={downloads?.macosIntel}
@@ -354,6 +351,7 @@ export function DesktopDownloads({
                 loadingLabel={copy.loadingLabel}
                 event="desktop_download_macos_intel"
                 variant="outline"
+                compactLabel
               />
             </div>
           </div>
@@ -399,99 +397,11 @@ export function DesktopDownloads({
         </span>
       </a>
 
-      {/* 付费说明浮窗。三件事按重要性排：先给小组件一张图（这是唯一花钱才有的
-          东西，讲一百字不如看一眼），再列便利性，最后才提钱——而且用「请我喝杯
-          咖啡」的说法，并在同一屏里明确告诉用户免费版一直都在。 */}
-      <Dialog open={macDialogOpen} onOpenChange={setMacDialogOpen}>
-        <DialogContent className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:max-w-lg">
-          <DialogHeader className="px-6 pb-4 pt-6 text-left">
-            <DialogTitle className="text-xl">
-              {copy.macAppStoreDialogTitle}
-            </DialogTitle>
-            <DialogDescription className="pt-1 text-left leading-6">
-              {copy.macAppStoreDialogIntro}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="mx-6 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/60">
-            <div className="flex items-start gap-3 px-4 pb-3 pt-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900">
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-              </span>
-              <div className="min-w-0">
-                <p className="font-semibold text-gray-950 dark:text-white">
-                  {copy.macAppStoreWidgetHeading}
-                </p>
-                <p className="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                  {copy.macAppStoreWidgetBody}
-                </p>
-              </div>
-            </div>
-            {/* 连桌面和 Dock 一起截，是因为单独一块组件浮在卡片上看不出它是
-                「桌面上的东西」——正是这一点在跟免费版做区分。所以图不抠底、
-                贴边铺满，让外层的圆角去裁它。
-                用 dark: 显隐而不是 <picture> + prefers-color-scheme：应用的深色
-                模式是 html 上的 class，跟系统偏好不一定一致。 */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={copy.macAppStoreWidgetImageLight}
-              alt={copy.macAppStoreWidgetAlt}
-              className="block w-full dark:hidden"
-              loading="lazy"
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={copy.macAppStoreWidgetImageDark}
-              alt=""
-              aria-hidden="true"
-              className="hidden w-full dark:block"
-              loading="lazy"
-            />
-          </div>
-
-          {/* 只有前两条是「多出来的东西」。系统版本要求是前提，挂上同样的绿勾会
-              读成第三个卖点，所以降级成脚注。 */}
-          <ul className="mt-5 space-y-2.5 px-6 text-sm text-gray-600 dark:text-gray-300">
-            {[copy.macAppStorePerk1, copy.macAppStorePerk2].map((perk) => (
-              <li key={perk} className="flex items-start gap-2.5">
-                <Check
-                  className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400"
-                  aria-hidden="true"
-                />
-                <span className="leading-6">{perk}</span>
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-3 px-6 pl-[2.375rem] text-xs leading-5 text-gray-500 dark:text-gray-400">
-            {copy.macAppStorePerk3}
-          </p>
-
-          <p className="mx-6 mt-5 rounded-xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-            {copy.macAppStoreCoffeeNote}
-          </p>
-
-          <div className="flex flex-col-reverse gap-2.5 px-6 pb-6 pt-5 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={() => setMacDialogOpen(false)}
-              className={cn(buttonVariants({ variant: "outline" }), "min-h-11")}
-            >
-              {copy.macAppStoreDialogSecondary}
-            </button>
-            <a
-              href={macAppStoreUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => track("desktop_download_macappstore")}
-              className={cn(buttonVariants(), "min-h-11 gap-2")}
-            >
-              <Apple className="h-4 w-4" aria-hidden="true" />
-              {copy.macAppStoreDialogPrimary}
-            </a>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <MacAppStorePurchaseDialog
+        copy={copy}
+        open={macDialogOpen}
+        onOpenChange={setMacDialogOpen}
+      />
     </div>
   );
 }
