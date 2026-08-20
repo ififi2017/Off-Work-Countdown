@@ -8,9 +8,11 @@ import {
   Github,
   LoaderCircle,
   MonitorDown,
+  Sparkles,
   Store,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { MacAppStorePurchaseDialog } from "@/components/MacAppStorePurchaseDialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { DOWNLOAD_MIRROR_HOST, mirroredDownloadUrl } from "@/lib/download-mirror";
@@ -50,6 +52,7 @@ function DownloadButton({
   event,
   badgeLabel,
   placeholder = false,
+  compactLabel = false,
   variant = "default",
   className,
 }: {
@@ -64,6 +67,7 @@ function DownloadButton({
   event: TrackedEvent;
   badgeLabel?: string;
   placeholder?: boolean;
+  compactLabel?: boolean;
   variant?: "default" | "outline";
   className?: string;
 }) {
@@ -101,6 +105,7 @@ function DownloadButton({
   return (
     <a
       href={href ?? asset.url}
+      aria-label={`${downloadLabel} ${label}`}
       onClick={() => track(event)}
       className={cn(
         buttonVariants({ variant }),
@@ -108,16 +113,16 @@ function DownloadButton({
         className
       )}
     >
-      <span className="inline-flex items-center gap-2">
-        <Download className="h-4 w-4" aria-hidden="true" />
-        {downloadLabel} {label}
+      <span className="inline-flex min-w-0 items-center gap-2 whitespace-nowrap">
+        <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
+        {compactLabel ? label : `${downloadLabel} ${label}`}
         {badgeLabel && (
           <span className="rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[10px] font-semibold leading-none text-primary-foreground">
             {badgeLabel}
           </span>
         )}
       </span>
-      <span className="text-xs font-normal opacity-70">
+      <span className="shrink-0 whitespace-nowrap text-xs font-normal opacity-70">
         {formatFileSize(asset.size)}
       </span>
     </a>
@@ -129,6 +134,9 @@ export function DesktopDownloads({
   releasesUrl,
   storeUrl,
 }: DesktopDownloadsProps) {
+  // 商店入口先解释再跳转：付费差异（小组件）不说清楚，用户点过去看到价格
+  // 只会直接退回来。
+  const [macDialogOpen, setMacDialogOpen] = useState(false);
   const [state, setState] = useState<ReleaseState>({ status: "loading" });
   // 默认直连，和客户端更新器「直连优先、失败才回落镜像」的取向一致。
   // 浏览器这边探测不到「下载很慢」，所以由用户自己决定。
@@ -260,6 +268,7 @@ export function DesktopDownloads({
                 loadingLabel={copy.loadingLabel}
                 event="desktop_download_windows_intel"
                 variant="outline"
+                compactLabel
                 // 两条直链里 x64 适用绝大多数机器。用一圈很淡的蓝色光晕带出这个
                 // 优先级，而不是再挂一个「推荐」徽章——商店那条已经是卡片里唯一
                 // 的实心按钮，再加一个文字标记会让三个元素互相争夺注意力。
@@ -276,6 +285,7 @@ export function DesktopDownloads({
                 loadingLabel={copy.loadingLabel}
                 event="desktop_download_windows_arm"
                 variant="outline"
+                compactLabel
               />
             </div>
           </div>
@@ -296,28 +306,54 @@ export function DesktopDownloads({
             </div>
           </div>
           <div className="space-y-2.5">
-            <DownloadButton
-              asset={downloads?.macosAppleSilicon}
-              href={hrefFor(downloads?.macosAppleSilicon)}
-              label={copy.appleSiliconLabel}
-              downloadLabel={copy.downloadLabel}
-              comingSoonLabel={copy.comingSoonLabel}
-              unavailableLabel={copy.unavailableLabel}
-              loading={loading}
-              loadingLabel={copy.loadingLabel}
-              event="desktop_download_macos_apple"
-            />
-            <DownloadButton
-              asset={downloads?.macosIntel}
-              href={hrefFor(downloads?.macosIntel)}
-              label={copy.intelLabel}
-              downloadLabel={copy.downloadLabel}
-              comingSoonLabel={copy.comingSoonLabel}
-              unavailableLabel={copy.unavailableLabel}
-              loading={loading}
-              loadingLabel={copy.loadingLabel}
-              event="desktop_download_macos_intel"
-            />
+            {/* 与 Windows 卡片同构：商店在上、直链在下。区别是这里不直接跳转——
+                macOS 商店版是付费的，且多一个桌面小组件，先用浮窗把差异讲清楚。
+                刻意不在按钮上标价：价格脱离「多了什么」单独出现，只会劝退。 */}
+            <button
+              type="button"
+              onClick={() => {
+                track("desktop_macappstore_dialog_open");
+                setMacDialogOpen(true);
+              }}
+              className={cn(
+                buttonVariants(),
+                "h-auto min-h-12 w-full justify-between gap-3 bg-zinc-900 px-4 py-3 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+              )}
+            >
+              <span className="inline-flex items-center gap-2">
+                <Apple className="h-4 w-4" aria-hidden="true" />
+                {copy.macAppStoreCtaLabel}
+              </span>
+              <Sparkles className="h-4 w-4 opacity-70" aria-hidden="true" />
+            </button>
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              <DownloadButton
+                asset={downloads?.macosAppleSilicon}
+                href={hrefFor(downloads?.macosAppleSilicon)}
+                label={copy.appleSiliconLabel}
+                downloadLabel={copy.downloadLabel}
+                comingSoonLabel={copy.comingSoonLabel}
+                unavailableLabel={copy.unavailableLabel}
+                loading={loading}
+                loadingLabel={copy.loadingLabel}
+                event="desktop_download_macos_apple"
+                variant="outline"
+                compactLabel
+              />
+              <DownloadButton
+                asset={downloads?.macosIntel}
+                href={hrefFor(downloads?.macosIntel)}
+                label={copy.intelLabel}
+                downloadLabel={copy.downloadLabel}
+                comingSoonLabel={copy.comingSoonLabel}
+                unavailableLabel={copy.unavailableLabel}
+                loading={loading}
+                loadingLabel={copy.loadingLabel}
+                event="desktop_download_macos_intel"
+                variant="outline"
+                compactLabel
+              />
+            </div>
           </div>
         </section>
 
@@ -360,6 +396,12 @@ export function DesktopDownloads({
           </span>
         </span>
       </a>
+
+      <MacAppStorePurchaseDialog
+        copy={copy}
+        open={macDialogOpen}
+        onOpenChange={setMacDialogOpen}
+      />
     </div>
   );
 }

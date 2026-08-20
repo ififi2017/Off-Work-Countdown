@@ -2,6 +2,11 @@ import { OffWorkCountdown } from '@/components/off-work-countdown';
 import { DesktopDownloadInvite } from '@/components/DesktopDownloadInvite';
 import { I18nProvider } from '@/components/I18nProvider';
 import { siteConfig } from '@/config/site';
+import { resolveContentLocale } from '@/lib/content-locales';
+import {
+  getContent,
+  pickMacAppStoreDialogCopy,
+} from '@/lib/server/content';
 import { getTranslations } from '@/lib/server/i18n';
 
 const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === 'desktop';
@@ -12,10 +17,12 @@ type Props = {
 
 export default async function Home({ params }: Props) {
   const { lang } = await params;
-  const [translation, seo] = await Promise.all([
+  const [translation, seo, content] = await Promise.all([
     getTranslations(lang, 'translation'),
     getTranslations(lang, 'seo'),
+    getContent(resolveContentLocale(lang)),
   ]);
+  const macAppStoreCopy = pickMacAppStoreDialogCopy(content.download);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -53,7 +60,7 @@ export default async function Home({ params }: Props) {
         }}
       />
       <div className="min-h-screen">
-        <OffWorkCountdown lang={lang} />
+        <OffWorkCountdown lang={lang} macAppStoreCopy={macAppStoreCopy} />
       </div>
       {!IS_DESKTOP_BUILD && <DesktopDownloadInvite />}
     </I18nProvider>

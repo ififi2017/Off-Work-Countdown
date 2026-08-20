@@ -9,6 +9,12 @@ export const siteConfig = {
   // MICROSOFT_STORE_PRODUCT_ID 保持一致，改动时三处一起核对。
   microsoftStoreProductId: "9PM0HJ2PP2LJ",
   microsoftStore: "https://apps.microsoft.com/detail/9PM0HJ2PP2LJ",
+  // Mac App Store 产品页。付费版（见 docs/PLAN-MSSTORE.md 9.9）：桌面小组件是
+  // 它与 GitHub 版的差异点，不是同一个包的两种下载方式。
+  macAppStore: "https://apps.apple.com/us/app/off-work-countdown/id6802803318",
+  // macOS 上由系统 App Store 注册的 URL scheme 直接打开商品页；浏览器链接仍为
+  // 其他平台和未完成 hydration 时的安全回退。
+  macAppStoreApp: "macappstore://itunes.apple.com/app/id6802803318",
   // 支持与隐私问询邮箱。也是 Partner Center 的商店 listing 必填项，
   // 两处必须是同一个地址（见 docs/PLAN-MSSTORE.md §3）。
   supportEmail: "offwork@rainif.com",
