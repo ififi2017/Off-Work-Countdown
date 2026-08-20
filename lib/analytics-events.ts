@@ -27,6 +27,10 @@ export const trackedEvents = [
   "desktop_invite_dismiss",
   /** 下载页的微软商店入口点击。与直链分开计数，用来看商店渠道的分流。 */
   "desktop_download_msstore",
+  /** Mac App Store：浮窗打开、以及从浮窗真正跳转商店，分开计数。
+   *  只记跳转的话，「没人点开」和「点开了但不愿付费」会混成同一个数字。 */
+  "desktop_macappstore_dialog_open",
+  "desktop_download_macappstore",
   /** 下载页的各平台安装包与 GitHub Releases 点击。 */
   "desktop_download_windows_intel",
   "desktop_download_windows_arm",
