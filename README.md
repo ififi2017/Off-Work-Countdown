@@ -32,6 +32,13 @@ once, then keep the remaining time, progress and estimated earnings at a glance.
 - **Windows, from the Microsoft Store:**
   [get it from the Store](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ) — it
   updates itself and installs without the SmartScreen prompt.
+- **macOS, from the Mac App Store:**
+  [get it from the App Store](https://apps.apple.com/us/app/off-work-countdown/id6802803318)
+  — **US$0.99**, and the only paid build. It installs in one click, updates
+  through the App Store, and adds a countdown widget the free build does not
+  have. Buying it is a way to support the project rather than a requirement:
+  the DMGs above are built from this same repository, stay free, and are not
+  going away.
 - **Release files:** [latest GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest).
 
 The desktop app adds a menu-bar countdown on macOS, a compact always-on-top
@@ -59,13 +66,20 @@ SmartScreen may still warn on first installation. Download only from this
 repository's Release page and verify that the tag and filename match your
 platform.
 
-The Microsoft Store build is the exception: the Store signs it during
-certification, so it installs without any warning and updates through the Store
+The two store builds are the exception: Microsoft and Apple sign them during
+certification, so they install without any warning and update through the store
 rather than through the in-app updater.
 
 #### macOS
 
-Requires **macOS 11.3 (Big Sur) or later**, on Apple Silicon or Intel.
+The [Mac App Store build](https://apps.apple.com/us/app/off-work-countdown/id6802803318)
+skips all of this: Apple signs it, so it installs in one click with no
+Gatekeeper detour, and it carries a countdown widget. It needs **macOS 13
+(Ventura) or later** and costs US$0.99 — on macOS 14 (Sonoma) or later the
+widget can sit on the desktop, on macOS 13 it lives in Notification Center.
+The steps below are for the free DMGs, which stay available either way.
+
+The DMGs require **macOS 11.3 (Big Sur) or later**, on Apple Silicon or Intel.
 
 1. Download the `aarch64.dmg` for Apple Silicon or `x64.dmg` for an Intel Mac.
 2. Open the DMG and drag Off Work Countdown into Applications.
