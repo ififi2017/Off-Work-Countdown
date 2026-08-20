@@ -59,6 +59,14 @@ const nextConfig = {
     if (isDesktop) {
       config.resolve.alias = {
         ...config.resolve.alias,
+        // ⚠️ 裸包名 '@vercel/analytics' 必须单独列一条。ShareDialog 从它引入
+        // `track`，只 alias '/react' 会漏掉这个入口——实测桌面产物里因此仍带着
+        // Vercel 埋点代码，而这个应用对外承诺「数据不出本机」。
+        //
+        // 结尾的 `$` 不能省：webpack 的 alias 键默认按**前缀**匹配，写成
+        // '@vercel/analytics' 会连 '@vercel/analytics/react' 一起改写成
+        // '<stub>/react'，构建直接报 Module not found。`$` 表示精确匹配。
+        '@vercel/analytics$': resolve(__dirname, 'lib/analytics-stub.tsx'),
         '@vercel/analytics/react': resolve(__dirname, 'lib/analytics-stub.tsx'),
         '@vercel/speed-insights/next': resolve(
           __dirname,

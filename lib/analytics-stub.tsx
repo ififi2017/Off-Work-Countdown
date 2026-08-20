@@ -14,3 +14,11 @@ export function Analytics() {
 export function SpeedInsights() {
   return null;
 }
+
+/**
+ * ShareDialog 从裸包名 `@vercel/analytics` 引入的 `track`。
+ *
+ * Web 端的分享漏斗埋点在桌面端没有意义（静态导出里没有对应端点），桌面构建把整个
+ * 模块换成这份空实现，产物里因此不含任何第三方埋点代码。
+ */
+export function track(..._args: unknown[]): void {}
