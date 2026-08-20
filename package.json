@@ -24,7 +24,10 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:widget-contract": "CLANG_MODULE_CACHE_PATH=/private/tmp/off-work-countdown-clang-cache swift test --disable-sandbox --package-path src-tauri/macos-widget --cache-path /private/tmp/off-work-countdown-swiftpm-cache --config-path /private/tmp/off-work-countdown-swiftpm-config --security-path /private/tmp/off-work-countdown-swiftpm-security"
+    "test:widget-contract": "CLANG_MODULE_CACHE_PATH=/private/tmp/off-work-countdown-clang-cache swift test --disable-sandbox --package-path src-tauri/macos-widget --cache-path /private/tmp/off-work-countdown-swiftpm-cache --config-path /private/tmp/off-work-countdown-swiftpm-config --security-path /private/tmp/off-work-countdown-swiftpm-security",
+    "shots:macos": "npm run shots:macos:capture && npm run shots:macos:compose",
+    "shots:macos:capture": "node scripts/marketing-shots/macos/capture.mjs",
+    "shots:macos:compose": "node scripts/marketing-shots/macos/compose.mjs"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^11.2.0",
