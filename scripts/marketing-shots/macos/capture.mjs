@@ -156,7 +156,6 @@ for (const [lang, locale] of [["en", "en-US"], ["zh-CN", "zh-CN"]]) {
   await shot({ name: `${lang}-countdown`, url: `${base}&s=0900-1800`, w: 430, h: 430, prelude: seedMain(lang, locale) });
   await shot({ name: `${lang}-setup`, url: base, w: 430, h: 430, prelude: seedMain(lang, locale) });
   await shot({ name: `${lang}-settings`, url: base, w: 430, h: 430, prelude: seedMain(lang, locale), after: openSettings });
-  await shot({ name: `${lang}-mini`, url: `http://localhost:3001/${lang}/mini`, w: 248, h: 100, transparent: true, prelude: miniPrelude(lang, locale) });
   await shot({ name: `${lang}-mini-woodfish`, url: `http://localhost:3001/${lang}/mini?skin=woodfish`, w: 248, h: 100, transparent: true, prelude: miniPrelude(lang, locale) });
 }
 

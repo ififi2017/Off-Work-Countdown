@@ -26,6 +26,9 @@ const OUT = `${DIR}out/`;
 mkdirSync(OUT, { recursive: true });
 
 const img = (n) => `data:image/png;base64,${readFileSync(`${DIR}raw/${n}.png`).toString("base64")}`;
+// assets/ 里的图是真机上截的 SwiftUI 小组件，capture.mjs 造不出来（它只会开
+// 无头浏览器截 Web 界面），所以这几张是进仓库的固定素材，不是生成物。
+const asset = (n) => `data:image/jpeg;base64,${readFileSync(`${DIR}assets/${n}.jpg`).toString("base64")}`;
 
 const COPY = {
   en: [
@@ -37,8 +40,8 @@ const COPY = {
       sub: "Nine to five, twelve-hour days, or a night shift that runs past midnight." },
     { shot: "settings", title: "Set it up the way you work",
       sub: "Launch at login, a global shortcut, 19 languages, light and dark." },
-    { shot: "mini", mini: true, title: "Free, open source, and entirely on your Mac",
-      sub: "No account. Your hours and salary never leave the machine." },
+    { shot: "widget", crop: true, title: "Or keep it on the desktop itself",
+      sub: "Small and medium widgets, on your desktop or in Notification Center. They keep counting with the app closed." },
   ],
   "zh-CN": [
     { shot: "countdown", title: "一眼看清今天还剩多久下班",
@@ -49,8 +52,8 @@ const COPY = {
       sub: "朝九晚六、十二小时班，还是跨过午夜的夜班，都算得对。" },
     { shot: "settings", title: "按你的工作习惯调整",
       sub: "开机自启、全局快捷键、19 种语言，明暗主题跟随系统。" },
-    { shot: "mini", mini: true, title: "免费开源，一切都留在你的 Mac 上",
-      sub: "不用注册。班次和薪资从不离开这台机器。" },
+    { shot: "widget", crop: true, title: "也可以直接放在桌面上",
+      sub: "小号和中号两种小组件，放在桌面或通知中心。应用关着，倒计时照样在走。" },
   ],
 };
 
@@ -76,9 +79,11 @@ const page = (c, lang) => `<!doctype html><meta charset="utf-8"><style>
     color: rgba(255,255,255,.60);
   }
   .stage { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
-  .window { position: relative; width: ${c.mini ? 520 : 500}px; }
+  .window { position: relative; width: ${c.mini ? 520 : c.crop ? 680 : 500}px; }
   .window img { display: block; width: 100%; height: auto; }
-  ${c.mini ? "" : `.window { border-radius: 26px; overflow: hidden;
+  ${c.crop ? `.window { border-radius: 18px; overflow: hidden;
+     box-shadow: 0 44px 88px rgba(0,0,0,.55), 0 10px 24px rgba(0,0,0,.38); }` : ""}
+  ${c.mini || c.crop ? "" : `.window { border-radius: 26px; overflow: hidden;
      box-shadow: 0 44px 88px rgba(0,0,0,.55), 0 10px 24px rgba(0,0,0,.38); }
    /* 交通灯：覆盖式标题栏下由 macOS 绘制，浏览器截图里那块是空的 */
    .lights { position: absolute; top: 19px; left: 21px; display: flex; gap: 8px; z-index: 2; }
@@ -94,8 +99,8 @@ const page = (c, lang) => `<!doctype html><meta charset="utf-8"><style>
   </div>
   <div class="stage">
     <div class="window">
-      ${c.mini ? "" : '<div class="lights"><i></i><i></i><i></i></div>'}
-      <img src="${img(`${lang}-${c.shot}`)}">
+      ${c.mini || c.crop ? "" : '<div class="lights"><i></i><i></i><i></i></div>'}
+      <img src="${c.crop ? asset(`widget-${lang}`) : img(`${lang}-${c.shot}`)}">
     </div>
   </div>
 </body>`;
