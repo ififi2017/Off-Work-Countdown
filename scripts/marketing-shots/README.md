@@ -21,6 +21,10 @@ npm run shots:macos
 产物在 `macos/out/`，`zh-CN-01-countdown.png` 这样的命名，序号就是上传到
 App Store Connect 时的顺序。
 
+跑的过程中别在同一个仓库里执行 `npm run build`：它和 `next dev` 共用 `.next`，
+会把开发服务器正在用的 chunk 覆盖掉，截出来的就是一屏 Runtime Error 而不是应用
+界面——而脚本不会报错，它只管截。
+
 `shots:macos` 是 `capture` 加 `compose` 两步。只改文案不用重截界面，单跑
 `npm run shots:macos:compose` 即可。
 
