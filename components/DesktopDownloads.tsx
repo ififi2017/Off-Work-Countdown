@@ -413,7 +413,7 @@ export function DesktopDownloads({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mx-6 overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
+          <div className="mx-6 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/60">
             <div className="flex items-start gap-3 px-4 pb-3 pt-4">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900">
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
@@ -427,9 +427,11 @@ export function DesktopDownloads({
                 </p>
               </div>
             </div>
-            {/* 明暗两版分别是从真机截下来的组件，白底已抠成透明，所以能直接
-                坐在卡片的渐变上。用 dark: 显隐而不是 <picture> + prefers-color-scheme：
-                应用的深色模式是 html 上的 class，跟系统偏好不一定一致。 */}
+            {/* 连桌面和 Dock 一起截，是因为单独一块组件浮在卡片上看不出它是
+                「桌面上的东西」——正是这一点在跟免费版做区分。所以图不抠底、
+                贴边铺满，让外层的圆角去裁它。
+                用 dark: 显隐而不是 <picture> + prefers-color-scheme：应用的深色
+                模式是 html 上的 class，跟系统偏好不一定一致。 */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={copy.macAppStoreWidgetImageLight}
