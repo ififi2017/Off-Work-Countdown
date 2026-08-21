@@ -84,12 +84,14 @@ fn build_native_mini_timer() {
         // 是运行期写入失败而不是构建失败。拼错的值在这里就炸掉，别等到 cargo
         // 跑完之后再由 beforeBundleCommand 拦下。
         let widget_storage_mode = match env::var("OWC_WIDGET_SIGNING_MODE").as_deref() {
-            Ok("automatic") => "app-group",
+            // distribution 是提交 App Store 用的分发签名，与 automatic 一样走真实的
+            // App Group 容器，区别只在签名身份与描述文件（见 build-macos-widget.sh）。
+            Ok("automatic") | Ok("distribution") => "app-group",
             // 未设置时与脚本的默认值 adhoc 对齐。
             Ok("adhoc") | Ok("none") | Err(_) => "local-support",
-            Ok(other) => {
-                panic!("OWC_WIDGET_SIGNING_MODE must be adhoc, automatic, or none (got {other})")
-            }
+            Ok(other) => panic!(
+                "OWC_WIDGET_SIGNING_MODE must be adhoc, automatic, distribution, or none (got {other})"
+            ),
         };
         println!("cargo:rustc-env=OWC_WIDGET_STORAGE_MODE={widget_storage_mode}");
         let swift_target = format!("{architecture}-apple-macosx{deployment_target}");

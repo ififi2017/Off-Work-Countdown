@@ -11,6 +11,16 @@
 <plist version="1.0">
 <dict>
 	<!--
+	  Mac App Store 的**必填**键，缺了会在上传验证阶段被拒（409：The Info.plist must
+	  contain a LSApplicationCategoryType key）。Tauri 的 bundle.macOS 配置里没有对应
+	  项，只能在这里补。
+
+	  取值必须与 App Store Connect 里选的主类别一致，否则商品页与包元数据对不上。
+	  这是一个计时 / 工作时间管理工具，归 Productivity。
+	-->
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<!--
 	  告诉 Finder / 程序坞 / 启动台：这个包带本地化名称，去 .lproj 里取
 	  CFBundleDisplayName，别直接用英文那份。缺了这个键，即使 .lproj 都在，系统
 	  也不会去查。

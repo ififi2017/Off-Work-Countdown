@@ -991,9 +991,19 @@ macOS 26 的 Code Signing Monitor 对此尤其严格。此时包本身是好的�
 --deep --strict` 通过且 cdhash 与新构建一致，容易误判成产物损坏。安装前先 `rm -rf` 旧包，
 让新文件拿到新 inode。
 
-### 9.9 GitHub 渠道能否也带小组件
+### 9.9 GitHub 渠道**不**带小组件（已决策，勿实现）
 
-技术上可行，但**当前挡住它的不是签名**：小组件的全部代码都以 `not(feature =
+> **决策（2026-08-19，项目所有者）：桌面小组件是 Mac App Store 版的付费差异点，
+> GitHub 渠道刻意不提供。** 下面的技术分析保留，仅用于说明「若将来改变主意需要付出
+> 什么」，**不是待办事项**。当前状态已经符合决策，无需任何改动。
+
+差异化的护城河是**便利性而非技术封锁**：仓库为 MIT 且公开，任何有 Apple 开发者账号的
+人都能自己构建出带小组件的版本，这挡不住也不打算挡。付费买到的是自动更新、免签名配置、
+一键安装——会自己配账号跑构建的人本来也不是付费用户。
+
+---
+
+以下为技术分析（仅供将来参考）。技术上可行，但**当前挡住它的不是签名**：小组件的全部代码都以 `not(feature =
 "self-update")` 为编译条件（`lib.rs` 9 处 + `build.rs` 的 `include_widget_bridge`），
 GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建不出小组件桥。前提条件：
 
@@ -1006,15 +1016,15 @@ GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建
    组件库里还会出现两个同名条目。
 4. 验证 tauri-plugin-updater 整包替换带嵌套 `.appex` 的包是否干净（未验证）。
 
-建议顺序上排在 MAS-P0 真机验收之后：App Group 授权后小组件能否被组件库发现、能否读到
-共享快照这个未知数没解决之前，在 GitHub 渠道重做一遍只是把风险复制一份。
+（原先此处写的是「建议排在 MAS-P0 之后再做」。MAS-P0 已于 2026-08-19 验收通过，但该
+建议已被上面的产品决策取代——不做。）
 
 | 阶段 | 内容 | 完成标准 |
 |---|---|---|
-| **MAS-P0** | 技术可行性验证 | 本地 `macappstore` 渠道可构建；二进制不含私有 API、updater 与 LaunchAgent；ad-hoc 后备模式可无权限弹窗启动并驱动 Widget；生产配置保留最小沙盒/App Group；WidgetKit extension 可被构建并用 fixture 渲染各状态 |
-| **MAS-P1** | 沙盒功能适配 | 主窗口、状态栏、倒计时、通知、系统语言、外部链接、原生 standard / woodfish Mini Timer、全局快捷键与用户授权的登录项在真机通过；宿主可生成小组件快照并触发时间线刷新 |
-| **MAS-P2** | 分发产线 | 配置宿主、Widget extension 与 App Group 的 Team ID、App ID、entitlements 和 profiles，以及商店专用 Info.plist；产出包含正确签名嵌套扩展的 Universal `.app` 和 `.pkg` |
-| **MAS-P3** | TestFlight 与审核材料 | App Store Connect 上传成功；TestFlight 安装后小组件出现在组件库并能读到共享状态；隐私标签、支持/隐私 URL、截图、描述、年龄分级和审核备注完整 |
+| **MAS-P0** | ✅ 技术可行性验证 | 本地 `macappstore` 渠道可构建；二进制不含私有 API、updater 与 LaunchAgent；ad-hoc 后备模式可无权限弹窗启动并驱动 Widget；生产配置保留最小沙盒/App Group；WidgetKit extension 可被构建并用 fixture 渲染各状态 |
+| **MAS-P1** | ✅ 沙盒功能适配 | 主窗口、状态栏、倒计时、通知、系统语言、外部链接、原生 standard / woodfish Mini Timer、全局快捷键与用户授权的登录项在真机通过；宿主可生成小组件快照并触发时间线刷新 |
+| **MAS-P2** | ✅ 分发产线 | 配置宿主、Widget extension 与 App Group 的 Team ID、App ID、entitlements 和 profiles，以及商店专用 Info.plist；产出包含正确签名嵌套扩展的 Universal `.app` 和 `.pkg` |
+| **MAS-P3** | 🟡 TestFlight 与审核材料 | App Store Connect 上传成功；TestFlight 安装后小组件出现在组件库并能读到共享状态；隐私标签、支持/隐私 URL、截图、描述、年龄分级和审核备注完整 |
 | **MAS-P4** | 首次人工审核 | TestFlight 冒烟通过，处理审核问题并完成首次上架；记录以后可重复执行的发布清单 |
 | **MAS-P5** | 自动发布与渠道文档 | tag 可独立触发商店构建/上传；下载页与 About 页准确区分 GitHub 版和商店版的更新与能力差异 |
 
@@ -1106,3 +1116,94 @@ npm run tauri:build:macappstore
 现改为校验产物本身（`OWCWidgetStorageMode` 是否与请求一致、automatic 模式下签名是否非
 ad-hoc），并补上 `-allowProvisioningUpdates`（缺它 xcodebuild 只找已存在的描述文件，
 不会现场创建）。
+
+### 9.12 MAS-P2 / P3 的实测记录（2026-08-19 已提交审核）
+
+**关于 MAS-P1 标记为完成**：决策 1 原本要求把 standard / woodfish 悬浮面板完整重写为
+原生 AppKit。该要求的**技术前提已经消失**——写下它的理由是「当前实现依赖
+`macos-private-api`」，而 MAS-P0 的过渡实现改用公开 `NSWindow` / `CALayer` 之后，商店版
+二进制里 `drawsBackground` 命中数为 0，私有 API 已彻底裁掉。项目所有者据此于 2026-08-19
+决定不做原生重写。P1 其余项（状态栏、通知、外部链接、全局快捷键、登录项）均已真机验过。
+
+
+分发签名、Universal、`.pkg` 打包与首次提交都已跑通。三次上传验证被拒，全部是**只有
+Apple 会告诉你**的规则，因此每条都补了本地守卫，不再靠一来一回试出来：
+
+| 错误码 | 原因 | 处理 |
+|---|---|---|
+| 409 | `LSApplicationCategoryType` 缺失 | 写进 `src-tauri/Info.plist`（Tauri 的 `bundle.macOS` 没有对应配置项），取 `public.app-category.productivity`，需与 App Store Connect 的主类别一致 |
+| 90886 | 宿主签名缺 `application-identifier` | 见下 |
+| 90473 | 扩展 `CFBundleVersion` 与宿主不一致 | `build_number` 原本写死为 1，改为默认取 `marketing_version` |
+
+**90886 的根因值得记住**：Xcode 签嵌套 `.appex` 时会**自动从描述文件补**
+`application-identifier` 与 `team-identifier`，所以扩展天然就有；而宿主是 Tauri 用我们
+手写的 `Entitlements.plist` 签的，没人替它补。两者签进去的键一对比就一目了然，但只看
+宿主本身完全看不出缺了什么。
+
+签名切换过程中另外两个静默失效（都已在脚本里加注释与守卫）：
+
+- **`PROVISIONING_PROFILE` 传文件路径不生效。** xcodebuild 只按 UUID / 名称查找，且只在
+  Xcode 的目录里找。传路径不报错，而是**回落到自动签名**，产出带 `get-task-allow` 的
+  开发签名包。改用 `PROVISIONING_PROFILE_SPECIFIER=<UUID>`，并由脚本自己把描述文件放进
+  Xcode 目录——分发描述文件无法双击装入「系统设置」，构建不能依赖使用者手动导入过。
+- **`get-task-allow` 由 Xcode 注入**，不在我们的 entitlements 文件里。即使签名身份与
+  描述文件都已是分发用的，`xcodebuild build`（相对 `archive` + `exportArchive`）仍按
+  开发用途注入。必须显式 `CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO`。
+
+**App Group 标识符开发与分发通用**：实测 Mac App Store 描述文件授权的同样是
+`<TeamID>.*`，与 Mac Development 一致。原先推测分发要换回不带前缀的 `group.…`，是错的。
+
+### 9.13 待办：GitHub 渠道的 Developer ID 签名
+
+**现状**：GitHub 渠道仍是 ad-hoc。`release-desktop.yml` 里写死
+`APPLE_SIGNING_IDENTITY: '-'`，实测 `desktop-v3.0.2` 产物为
+`flags=0x10002(adhoc,runtime)`、`TeamIdentifier=not set`。README 因此需要教用户走
+「系统设置 → 隐私与安全性 → 仍要打开」。
+
+**注意商店那张证书用不了**：MAS 用 Apple Distribution，GitHub 渠道需要另一张
+**Developer ID Application**，外加公证（notarization）。
+
+**自动化不难**，`tauri-action` 原生支持，无需自己处理钥匙串（比 MAS 那条链路简单得多，
+不涉及描述文件、App Group、嵌套扩展）：
+
+```yaml
+APPLE_CERTIFICATE / APPLE_CERTIFICATE_PASSWORD / APPLE_SIGNING_IDENTITY
+APPLE_ID / APPLE_PASSWORD / APPLE_TEAM_ID
+```
+
+**切换时老用户会遇到两处摩擦**，均只在第一次换签名时发生：
+
+1. 「与之前打开的版本不同」弹窗——macOS 发现签名身份由 ad-hoc 变为 Developer ID，
+   询问是否让新版本继承旧数据。
+2. TCC 授权（通知等）绑定签名身份，身份变更后可能需要用户重新授予。
+
+自更新本身不受影响：Tauri 更新器校验的是 **minisign** 签名，与 Apple 代码签名是两套
+独立机制，只要 minisign 私钥不变，旧版本就能验证并安装新包。
+
+⚠️ **但这条没有验证过。** 我们踩过的内核签名缓存问题（`Invalid Page` 崩溃，见 9.8）
+是手动 `cp -R` 覆盖导致的；更新器走的是另一条替换路径，理论上不受影响，但真要切签名，
+应当先用一个预发布版本完整走一遍自更新流程再推给用户。
+
+**排期建议**：等 App Store 首次审核出结果之后再做。现在动会同时改变两条渠道的变量，
+被拒重提时两边的问题会缠在一起。
+
+### 9.14 Mac App Store 版定价与渠道差异
+
+**定价（2026-08-19 决定）：US$0.99 / ¥8。** 首次上架即为付费。
+
+**渠道差异**：
+
+| | GitHub | Mac App Store |
+|---|---|---|
+| 价格 | 免费 | US$0.99 / ¥8 |
+| 桌面小组件 | 无（见 9.9，刻意） | 有 |
+| 更新 | 应用内自更新（minisign 校验，含镜像回退） | App Store |
+| 签名 | 目前 ad-hoc，待办见 9.13 | Apple Distribution |
+
+**待办：在 README 与下载页说明这个差异。** 目前两处都没提小组件，用户在 GitHub 下完
+发现没有、又在商店看到有，会觉得被误导。诚实标注反而是转化点。项目所有者决定此项**延后**
+处理，不阻塞上架。
+
+这同时回答了 8. 未决问题里「是否把商店徽章放到下载页」——有了付费差异之后，下载页需要
+说明两个渠道的能力区别，那条不再是纯文案问题。
+

@@ -69,6 +69,14 @@ jobs:
               echo "::error::$channel frontend bundle still contains updater code"
               exit 1
             fi
+            # 桌面端对外承诺「数据不出本机」，包里存在第三方埋点代码本身就是问题——
+            # 审计的人不会去逐行确认它没被调用。曾经漏过：alias 只盖了
+            # '@vercel/analytics/react'，而 ShareDialog 从裸包名引入 track，于是埋点
+            # 代码照样进了产物。
+            if grep -rl "Vercel Web Analytics\|@vercel/analytics" out/_next; then
+              echo "::error::$channel frontend bundle still contains analytics code"
+              exit 1
+            fi
             echo "OK: no updater code in the $channel frontend bundle."
           done
 
