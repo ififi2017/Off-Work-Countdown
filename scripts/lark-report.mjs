@@ -176,6 +176,20 @@ export function sparkline(values) {
     .join("");
 }
 
+/**
+ * 渠道占比条。
+ *
+ * 渠道原本挤在一行里用「·」分隔，手机上折成两行，最大的和最小的混在一起，
+ * 扫一眼看不出谁多谁少。改成一行一个 + 一条按最大值缩放的条。
+ *
+ * 非零渠道至少给一格：只有 1 次下载的渠道条长算出来会是 0 格，看着就像没有，
+ * 而它出现在列表里本身就说明有。
+ */
+export function bar(value, max, width = 12) {
+  if (max <= 0 || value <= 0) return "";
+  return "█".repeat(Math.max(1, Math.round((value / max) * width)));
+}
+
 /** 环比。上期为 0 时不显示百分比——除以 0 得不出有意义的倍数。 */
 export function formatDelta(current, previous) {
   if (previous === undefined || previous === null) return "";
@@ -260,13 +274,20 @@ export function buildReportCard({ period, buckets, dailyRows = [], repo }) {
     lines.push(`${label} **${value}**${delta}`);
   }
 
-  const channels = DOWNLOAD_CHANNELS.filter(
-    ([event]) => (current.counts[event] ?? 0) > 0
-  ).map(([event, name]) => `${name} ${current.counts[event]}`);
+  // 按量降序：报表是用来看「哪条渠道在起量」的，固定顺序会让人自己去比大小。
+  const channels = DOWNLOAD_CHANNELS.map(([event, name]) => ({
+    name,
+    value: current.counts[event] ?? 0,
+  }))
+    .filter((c) => c.value > 0)
+    .sort((a, b) => b.value - a.value);
   if (channels.length > 0) {
+    const busiest = channels[0].value;
     lines.push("");
     lines.push("**下载渠道**");
-    lines.push(channels.join(" · "));
+    for (const c of channels) {
+      lines.push(`${c.name} **${c.value}** \`${bar(c.value, busiest)}\``);
+    }
   }
 
   const ratios = RATIOS.map((r) => ({ ...r, value: ratio(current.counts, r.from, r.to) }))
