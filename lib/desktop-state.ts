@@ -9,6 +9,14 @@ import {
   type ShiftTimeline,
 } from "./countdown";
 import {
+  buildShiftReminders,
+  shiftRemindersRevision,
+  type ReminderMilestoneMessages,
+  type ReminderMilestoneTitles,
+  type ReminderNotificationMode,
+  type ShiftReminder,
+} from "./reminders";
+import {
   defaultLocale,
   getBaseLanguage,
   locales,
@@ -29,28 +37,18 @@ const IS_MAC_APP_STORE_BUILD =
 export const DESKTOP_STORE_PATH = "desktop-state.json";
 export const DESKTOP_COUNTDOWN_KEY = "countdown";
 
-export type DesktopNotificationMode = "off" | "simple" | "milestones";
+// 这三个形状的唯一定义在 lib/reminders.ts —— 提醒文案最终是给那个纯函数消费的，
+// 各自声明一份迟早会漂。这里只保留桌面端惯用的名字。
+export type DesktopNotificationMode = ReminderNotificationMode;
 export type DesktopMiniSkin = "standard" | "woodfish";
 
-export interface DesktopNotificationMessages {
-  milestone50: string[];
-  milestone75: string[];
-  milestone90: string[];
-  milestone95: string[];
-  milestone100: string[];
-}
+export type DesktopNotificationMessages = ReminderMilestoneMessages;
 
 /**
  * 里程碑通知的标题。带上剩余百分比，否则 90% 和 95% 两条只有措辞差别，
  * 看不出自己走到哪儿了。由 JS 侧按当前语言排好版推过来。
  */
-export interface DesktopNotificationTitles {
-  milestone50: string;
-  milestone75: string;
-  milestone90: string;
-  milestone95: string;
-  milestone100: string;
-}
+export type DesktopNotificationTitles = ReminderMilestoneTitles;
 
 export interface DesktopCountdownState extends ShiftTimeline {
   /** 共享偏好有明确写入来源；0 表示 3.1.5 及更早版本留下的旧快照。 */
@@ -243,12 +241,48 @@ function widgetSnapshotExpiryMs(
   );
 }
 
+/**
+ * 落盘时附加的派生字段。
+ *
+ * 与 WidgetSnapshot 同一个套路：业务规则留在前端投影，消费方只读结果。
+ * Rust 的托盘计时器据此判断「到点了没」，不再自己从班次推导提醒时刻——
+ * 见 lib/reminders.ts 开头。
+ *
+ * 刻意不进 `DesktopCountdownState`：那是界面构造的输入形状，多一个必填字段
+ * 就要在每个构造点手工填一次，而这两个值永远只能由 state 本身算出来。
+ */
+type PersistedWithReminders = DesktopCountdownState & {
+  reminders: ShiftReminder[];
+  remindersRevision: string;
+};
+
+function projectReminders(state: DesktopCountdownState): PersistedWithReminders {
+  const shift = state.running ? state : null;
+  return {
+    ...state,
+    reminders: buildShiftReminders(shift, {
+      mode: state.notificationMode,
+      fallbackTitle: state.notificationTitle,
+      milestoneTitles: state.notificationTitles,
+      milestoneMessages: state.notificationMessages,
+      lunchStartEnabled: state.lunchNotificationEnabled,
+      lunchStartBody: state.lunchStartNotification,
+      lunchEndEnabled: state.lunchEndNotificationEnabled,
+      lunchEndBody: state.lunchEndNotification,
+      microBreakEnabled: state.microBreakEnabled,
+      microBreakIntervalMinutes: state.microBreakIntervalMinutes,
+      microBreakMessages: state.microBreakMessages,
+    }),
+    remindersRevision: shiftRemindersRevision(shift),
+  };
+}
+
 export async function writeDesktopCountdownState(
   state: DesktopCountdownState
 ): Promise<void> {
   const store = await getDesktopStore();
   if (!store) return;
-  await store.set(DESKTOP_COUNTDOWN_KEY, state);
+  await store.set(DESKTOP_COUNTDOWN_KEY, projectReminders(state));
 
   if (IS_MAC_APP_STORE_BUILD) {
     // WidgetSnapshot 由前端业务层投影；Rust 只负责把 JSON 原子写进 App Group。
@@ -277,6 +311,9 @@ export async function writeDesktopCountdownState(
 }
 
 type PersistedDesktopCountdownState = Partial<DesktopCountdownState> & {
+  /** 写盘时投影出的派生字段，读回时丢弃。 */
+  reminders?: ShiftReminder[];
+  remindersRevision?: string;
   /** 3.0.x Store 迁移字段，只读不再写。 */
   startAtMs?: number;
   endAtMs?: number;
@@ -301,6 +338,10 @@ export function normalizeDesktopCountdownState(
     leadReminderArmed: _leadReminderArmed,
     leadNotificationBody: _leadNotificationBody,
     completionNotificationBody: _completionNotificationBody,
+    // 派生字段只在写盘那一刻投影（见 projectReminders），读回时丢掉：
+    // 留在内存里的那份永远是上一次写盘时的快照，早晚会被误当成当前值。
+    reminders: _reminders,
+    remindersRevision: _remindersRevision,
     ...current
   } = persisted;
   const merged: DesktopCountdownState = {
