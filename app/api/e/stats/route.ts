@@ -1,12 +1,18 @@
 import { trackedEvents } from "@/lib/analytics-events";
-import { eventKey, readCounts, isAnalyticsConfigured } from "@/lib/server/analytics";
+import {
+  eventDate,
+  eventKey,
+  readCounts,
+  isAnalyticsConfigured,
+} from "@/lib/server/analytics";
 
 export const dynamic = "force-dynamic";
 
 const DEFAULT_DAYS = 14;
 const MAX_DAYS = 90;
 
-// 读取最近若干天的事件计数。用 Authorization 头传令牌而不是查询参数——
+// 读取最近若干天的事件计数，天按**北京时间**切分（见 lib/server/analytics.ts）。
+// 用 Authorization 头传令牌而不是查询参数——
 // 令牌是密钥，不该出现在 URL 里（会进日志、Referer 和浏览历史）。
 //
 //   curl -H "Authorization: Bearer $ANALYTICS_STATS_TOKEN" https://off.rainif.com/api/e/stats
@@ -44,7 +50,9 @@ export async function GET(request: Request) {
   try {
     const counts = await readCounts(keys);
     const rows = dates.map((d) => {
-      const date = d.toISOString().slice(0, 10);
+      // 用 eventDate 而不是 toISOString：键按北京时间分桶，标签必须同源，
+      // 否则返回的是「UTC 日的标签配 CST 日的数字」。
+      const date = eventDate(d);
       return {
         date,
         ...Object.fromEntries(

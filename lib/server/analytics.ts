@@ -22,9 +22,26 @@ export function isAnalyticsConfigured(): boolean {
   return credentials() !== null;
 }
 
-/** 事件计数按天分桶：e:2026-08-08:share_land */
+// 分桶按**北京时间**切天，不是 UTC。报表是给人看的，「昨天」必须和读报表的人
+// 心里的昨天是同一天；按 UTC 切，早上收到的「昨日数据」实际覆盖前天 08:00 到
+// 昨天 08:00，每次解读都要在脑子里做一次时区换算。
+//
+// 用固定 +8 而不是 Intl/时区库：中国自 1991 年起不实行夏令时，UTC+8 恒定成立，
+// 为此拉一个时区数据库不划算。
+//
+// ⚠️ 这个偏移是**写入时**决定的，历史数据无法回算：库里存的是整日计数，没有更
+// 细的粒度，切换点之前的键仍然是 UTC 日。跨越切换点的趋势会有一次性的 8 小时
+// 错位，此后一致。
+const CST_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+/** 某个时刻落在哪个北京时间日期，返回 YYYY-MM-DD。 */
+export function eventDate(date = new Date()): string {
+  return new Date(date.getTime() + CST_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+/** 事件计数按天分桶：e:2026-08-08:share_land（日期为北京时间） */
 export function eventKey(event: string, date = new Date()): string {
-  return `e:${date.toISOString().slice(0, 10)}:${event}`;
+  return `e:${eventDate(date)}:${event}`;
 }
 
 export async function incrementEvent(event: string): Promise<void> {
