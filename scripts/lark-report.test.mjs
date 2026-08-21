@@ -200,11 +200,65 @@ describe("buildReportCard", () => {
 });
 
 describe("fetchStats", () => {
+  /** 造一个失败响应，headers.get 按真实 Response 的接口来。 */
+  function failure(status, { body = "", headers = {} } = {}) {
+    return {
+      ok: false,
+      status,
+      headers: { get: (name) => headers[name.toLowerCase()] ?? null },
+      text: async () => body,
+    };
+  }
+
   it("explains a 404 as a missing token rather than a data problem", async () => {
-    const fetchImpl = async () => ({ ok: false, status: 404 });
+    const fetchImpl = async () => failure(404, { body: "Not found" });
     await expect(
       fetchStats({ baseUrl: "https://example.com", token: "t", days: 15, fetchImpl })
     ).rejects.toThrow(/ANALYTICS_STATS_TOKEN/);
+  });
+
+  it("blames the edge for a 403, not the token", async () => {
+    // 路由本身对令牌不对只回 404，从不回 403——403 必然来自前置防护。
+    // 不说清楚，排查方向会跑到 Upstash 上去。
+    const fetchImpl = async () =>
+      failure(403, {
+        body: "<html>Error 1020 Access denied</html>",
+        headers: { "cf-ray": "a2e6a0391e3cc40b-LAX", server: "cloudflare" },
+      });
+    const error = await fetchStats({
+      baseUrl: "https://example.com",
+      token: "t",
+      days: 15,
+      fetchImpl,
+    }).catch((e) => e);
+    expect(error.message).toMatch(/not a token problem/);
+    expect(error.message).toContain("cf-ray=a2e6a0391e3cc40b-LAX");
+    expect(error.message).toContain("Error 1020");
+  });
+
+  it("still reports a status when the body cannot be read", async () => {
+    const fetchImpl = async () => ({
+      ok: false,
+      status: 502,
+      headers: { get: () => null },
+      text: async () => {
+        throw new Error("stream closed");
+      },
+    });
+    await expect(
+      fetchStats({ baseUrl: "https://example.com", token: "t", days: 15, fetchImpl })
+    ).rejects.toThrow(/returned 502/);
+  });
+
+  it("identifies itself instead of sending the default node UA", async () => {
+    let seen;
+    const fetchImpl = async (_url, init) => {
+      seen = init.headers;
+      return { ok: true, json: async () => ({ configured: true, days: [] }) };
+    };
+    await fetchStats({ baseUrl: "https://example.com", token: "t", days: 15, fetchImpl });
+    expect(seen["User-Agent"]).toMatch(/off-work-countdown-report/);
+    expect(seen["User-Agent"]).not.toBe("node");
   });
 
   it("returns null when the deployment has no storage configured", async () => {

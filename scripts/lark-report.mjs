@@ -14,6 +14,7 @@
 import { sendCard } from "./lark-notify.mjs";
 
 const DEFAULT_BASE_URL = "https://off.rainif.com";
+const REPORT_USER_AGENT = "off-work-countdown-report/1.0";
 
 /** 报表里逐个列出的下载渠道，顺序即卡片里的展示顺序。 */
 const DOWNLOAD_CHANNELS = [
@@ -296,21 +297,59 @@ export async function fetchStats({
   fetchImpl = fetch,
 }) {
   const response = await fetchImpl(`${baseUrl}/api/e/stats?days=${days}`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // Node 的 fetch 默认发 `User-Agent: node`，很多 WAF 会因此提高警惕。
+      // 报上真实身份既不吃亏，被拦时对方的日志里也能看出是谁。
+      "User-Agent": `${REPORT_USER_AGENT} (+https://github.com/ififi2017/Off-Work-Countdown)`,
+    },
   });
   if (!response.ok) {
-    // 令牌没配时路由整个不存在，返回的就是 404——这是配置问题，不是取数失败，
-    // 单独说清楚，否则排查时会去怀疑 Upstash。
-    if (response.status === 404) {
-      throw new Error(
-        "/api/e/stats returned 404: ANALYTICS_STATS_TOKEN is unset on the deployment, or the token does not match."
-      );
-    }
-    throw new Error(`/api/e/stats returned ${response.status}`);
+    throw new Error(await describeFailure(response));
   }
   const body = await response.json();
   if (!body.configured) return null;
   return [...body.days].sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+/**
+ * 把一次失败的取数翻译成能直接照着排查的话。
+ *
+ * 这个端点前面隔着 Cloudflare，所以失败可能发生在两个完全不同的地方，而它们的
+ * 修法毫不相干：路由自己只会用 404 表示「令牌不对」，其余状态码基本都是被前置
+ * 防护拦下的。只抛一个裸状态码会让人去翻 Upstash，方向就错了。
+ *
+ * 响应体和 cf-ray 一起带上——Cloudflare 的拦截页里写着是哪条规则干的。
+ */
+async function describeFailure(response) {
+  const ray = response.headers?.get?.("cf-ray");
+  const server = response.headers?.get?.("server");
+  let body = "";
+  try {
+    body = (await response.text()).replace(/\s+/g, " ").trim().slice(0, 300);
+  } catch {
+    // 读不出来就算了，状态码本身已经是主要线索
+  }
+  const suffix = [
+    body && `body="${body}"`,
+    server && `server=${server}`,
+    ray && `cf-ray=${ray}`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  if (response.status === 404) {
+    return `/api/e/stats returned 404: ANALYTICS_STATS_TOKEN is unset on the deployment, or the token does not match. ${suffix}`;
+  }
+  if (response.status === 403 || response.status === 429) {
+    return (
+      `/api/e/stats returned ${response.status}: this is the edge (Cloudflare/WAF) rejecting the runner, ` +
+      `not a token problem — the route itself answers 404 for a bad token and never 403. ` +
+      `GitHub Actions runners come from datacenter IPs that bot protection blocks by default; ` +
+      `add a skip/bypass rule for this path. ${suffix}`
+    );
+  }
+  return `/api/e/stats returned ${response.status}. ${suffix}`;
 }
 
 // ---------------------------------------------------------------- 入口
