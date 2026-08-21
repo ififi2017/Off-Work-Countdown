@@ -2374,8 +2374,9 @@ mod reminder_tests {
 #[cfg(test)]
 mod format_tests {
     use super::{
-        countdown_metrics, countdown_progress, format_remaining, parse_global_shortcut,
-        CountdownState, GlobalShortcutSettings, ShiftSegment, DEFAULT_GLOBAL_SHORTCUT,
+        advance_to_next_shift, countdown_metrics, countdown_pay_ratio, countdown_progress,
+        format_remaining, parse_global_shortcut, CountdownState, GlobalShortcutSettings,
+        ShiftSegment, ShiftTimelineState, DEFAULT_GLOBAL_SHORTCUT,
     };
 
     #[test]
@@ -2428,6 +2429,23 @@ mod format_tests {
     }
 
     #[test]
+    fn overtime_salary_uses_the_planned_hourly_rate() {
+        // 加班是原时薪的线性延长：分母始终是计划时长，所以超出计划的部分让比例
+        // 越过 1.0，而不是像进度那样被夹回 100%。
+        let state = CountdownState {
+            segments: vec![ShiftSegment {
+                start_at_ms: 0,
+                end_at_ms: 12_000,
+            }],
+            planned_end_at_ms: 10_000,
+            overtime_end_at_ms: Some(12_000),
+            running: true,
+            ..Default::default()
+        };
+        assert!((countdown_pay_ratio(&state, 12_000) - 1.2).abs() < f64::EPSILON);
+    }
+
+    #[test]
     fn migrates_the_legacy_single_range_snapshot() {
         let state = CountdownState {
             legacy_start_at_ms: 1_000,
@@ -2464,6 +2482,41 @@ mod format_tests {
         };
 
         assert!(!state.is_valid_shift());
+    }
+
+    #[test]
+    fn switches_only_to_a_live_frontend_supplied_next_shift() {
+        // Rust 不推导下一班，只认前端投影好的快照，所以两条分支从同一份出发。
+        fn shift_with_next() -> CountdownState {
+            CountdownState {
+                segments: vec![ShiftSegment {
+                    start_at_ms: 0,
+                    end_at_ms: 1_000,
+                }],
+                planned_end_at_ms: 1_000,
+                running: true,
+                next_shift: Some(ShiftTimelineState {
+                    segments: vec![ShiftSegment {
+                        start_at_ms: 2_000,
+                        end_at_ms: 3_000,
+                    }],
+                    planned_end_at_ms: 3_000,
+                    overtime_end_at_ms: None,
+                }),
+                ..Default::default()
+            }
+        }
+
+        let mut countdown = shift_with_next();
+        assert!(!advance_to_next_shift(&mut countdown, 1_500));
+        assert!(advance_to_next_shift(&mut countdown, 2_100));
+        assert_eq!(countdown.segments[0].start_at_ms, 2_000);
+        assert!(countdown.next_shift.is_none());
+
+        // 睡眠整段跨过了下一班：快照必须作废并停表，否则醒来会补发整班的提醒。
+        let mut stale = shift_with_next();
+        assert!(advance_to_next_shift(&mut stale, 4_000));
+        assert!(!stale.running);
     }
 
     #[test]
