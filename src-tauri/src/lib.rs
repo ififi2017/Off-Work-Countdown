@@ -130,37 +130,30 @@ struct ShiftSegment {
     end_at_ms: i64,
 }
 
-#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-enum NotificationMode {
-    #[default]
-    Off,
-    Simple,
-    Milestones,
-}
-
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+/// 一条由前端算好的提醒。
+///
+/// 3.1.6 之前，里程碑跨越、午休边界与健康提醒这三套判定都写在下面的每秒轮询
+/// 里——那等于把班次派生规则复制进了 Rust。现在触发时刻与文案都由
+/// `lib/reminders.ts` 一次算好，Rust 只比较这些绝对时间戳，回到 AGENTS.md
+/// 说的「只能比较和求和前端准备好的绝对 segments」。
+///
+/// 字段语义以 `lib/reminders.ts` 为准，那边的单元测试是这里的验收标准。
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(default)]
 #[serde(rename_all = "camelCase")]
-struct NotificationMessages {
-    milestone50: Vec<String>,
-    milestone75: Vec<String>,
-    milestone90: Vec<String>,
-    milestone95: Vec<String>,
-    milestone100: Vec<String>,
-}
-
-/// 里程碑通知的标题，按档位分开。JS 侧把百分比排版进字符串后推过来，
-/// Rust 只负责挑——数字的写法（「还剩 25%」还是「25% left」）是语言问题。
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-#[serde(default)]
-#[serde(rename_all = "camelCase")]
-struct NotificationTitles {
-    milestone50: String,
-    milestone75: String,
-    milestone90: String,
-    milestone95: String,
-    milestone100: String,
+struct ShiftReminder {
+    /// 跨进程稳定的去重键。
+    id: String,
+    at_ms: i64,
+    /// 有效区间是半开的 `[at_ms, expires_at_ms)`；None 表示永不失效。
+    expires_at_ms: Option<i64>,
+    /// 上一拍到现在的最大允许间隔；None 表示不检查。用来识别设备休眠。
+    max_tick_gap_ms: Option<i64>,
+    /// 同组一拍跨过多条时只发最晚的一条，其余仅记为已发。
+    collapse_group: Option<String>,
+    /// None 或空正文表示这条只推进去重标记、不发通知（对应开关关闭）。
+    title: Option<String>,
+    body: Option<String>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -229,32 +222,20 @@ struct CountdownState {
     legacy_end_at_ms: i64,
     running: bool,
     next_shift: Option<ShiftTimelineState>,
-    notification_mode: Option<NotificationMode>,
-    notification_title: String,
-    notification_titles: NotificationTitles,
-    notification_messages: NotificationMessages,
-    /// 3.0.x 通知字段仅用于读取迁移，不再写入新 Store。
-    #[serde(rename = "reminder", skip_serializing)]
-    legacy_reminder: bool,
+    /// 本次班次的全部提醒，由前端投影，按 at_ms 升序。
+    reminders: Vec<ShiftReminder>,
+    /// 提醒列表的修订号；变了说明换了班次，去重记录随之作废。
+    reminders_revision: String,
     show_salary: bool,
     hide_earnings: bool,
     daily_salary: Option<f64>,
     lang: String,
     countdown_not_started: String,
     next_shift_label: String,
-    lunch_start_notification: String,
-    lunch_end_notification: String,
-    lunch_notification_enabled: bool,
-    lunch_end_notification_enabled: bool,
     /// 迷你窗皮肤，可从悬浮窗工具条直接切换。
     mini_skin: String,
     /// 迷你窗工具条上的声音开关；与主窗口设置项共享同一份状态。
     woodfish_sound_enabled: bool,
-    micro_break_enabled: bool,
-    micro_break_interval_minutes: u64,
-    /// 喝水与起身合成同一个轮换池：对用户来说都是「该歇一下了」，
-    /// 拆成两类只会把复杂度转嫁到设置页。
-    micro_break_messages: Vec<String>,
     /// 眼睛按钮的无障碍描述。面板其余文案都随界面语言走，这两个如果留在
     /// ObjC 里硬编码英文，VoiceOver 用户会在一堆中文里听到 "Hide salary"。
     show_earnings_label: String,
@@ -271,13 +252,6 @@ impl CountdownState {
             self.planned_end_at_ms = self.legacy_end_at_ms;
             self.overtime_end_at_ms = None;
         }
-        if self.notification_mode.is_none() {
-            self.notification_mode = Some(if self.legacy_reminder {
-                NotificationMode::Simple
-            } else {
-                NotificationMode::Off
-            });
-        }
         self
     }
 
@@ -291,10 +265,6 @@ impl CountdownState {
             self.planned_end_at_ms,
             self.overtime_end_at_ms,
         )
-    }
-
-    fn notification_mode(&self) -> NotificationMode {
-        self.notification_mode.unwrap_or(NotificationMode::Off)
     }
 }
 
@@ -326,44 +296,19 @@ fn advance_to_next_shift(state: &mut CountdownState, now_ms: i64) -> bool {
     true
 }
 
+/// 必须与 `lib/reminders.ts` 的 `REMINDER_MODEL_VERSION` 一致。不一致时旧标记
+/// 整份作废，而不是拿旧语义去比对新列表。
+const REMINDER_MODEL_VERSION: u8 = 1;
+
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 #[serde(rename_all = "camelCase")]
-struct NotificationMarker {
+struct ReminderMarker {
     model_version: u8,
-    end_at_ms: i64,
-    sent_milestones: Vec<u8>,
-    sent_break_starts: Vec<i64>,
-    sent_break_ends: Vec<i64>,
-    sent_micro_breaks: Vec<u64>,
-    micro_break_interval_minutes: u64,
-    /// 健康提醒只累计当前连续工作段。午休把班次拆成多个 segment，进入下一个
-    /// segment 时从零重新计时，而不是续上午休前未满的一轮。
-    micro_break_segment_start_at_ms: Option<i64>,
+    /// 前端给出的列表修订号。
+    revision: String,
+    sent_ids: Vec<String>,
     last_observed_ms: i64,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum NotificationMilestone {
-    Half = 50,
-    ThreeQuarters = 75,
-    Ninety = 90,
-    NinetyFive = 95,
-    Complete = 100,
-}
-
-impl NotificationMilestone {
-    const ALL: [Self; 5] = [
-        Self::Half,
-        Self::ThreeQuarters,
-        Self::Ninety,
-        Self::NinetyFive,
-        Self::Complete,
-    ];
-
-    fn percent(self) -> u8 {
-        self as u8
-    }
 }
 
 #[cfg(any(target_os = "windows", target_os = "macos", debug_assertions))]
@@ -767,7 +712,7 @@ fn write_countdown_state(app: &AppHandle, state: &CountdownState) {
     }
 }
 
-fn read_notification_marker(app: &AppHandle) -> NotificationMarker {
+fn read_reminder_marker(app: &AppHandle) -> ReminderMarker {
     desktop_store(app)
         .ok()
         .and_then(|store| store.get(NOTIFICATION_MARKER_KEY))
@@ -775,7 +720,7 @@ fn read_notification_marker(app: &AppHandle) -> NotificationMarker {
         .unwrap_or_default()
 }
 
-fn write_notification_marker(app: &AppHandle, marker: &NotificationMarker) {
+fn write_reminder_marker(app: &AppHandle, marker: &ReminderMarker) {
     let Ok(store) = desktop_store(app) else {
         return;
     };
@@ -785,288 +730,107 @@ fn write_notification_marker(app: &AppHandle, marker: &NotificationMarker) {
     }
 }
 
-/// 推进一次里程碑状态。无论通知档位是否开启，越过的节点都会标记为已处理，
-/// 防止之后打开开关时补发；休眠一次跨过多个节点时只返回最高的一个。
-fn advance_notification_marker(
-    state: &CountdownState,
-    marker: &mut NotificationMarker,
+/// 推进一次提醒状态，返回本拍应当发出的通知。
+///
+/// 判定规则的唯一实现在 `lib/reminders.ts` 的 `selectDueReminders`；那边的单元
+/// 测试就是这个函数的验收标准，两处必须给出同一个结果。这里只做三件事：
+/// 按跨越挑出候选、按有效期与跳拍间隔过滤、按分组折叠。
+///
+/// 返回的 bool 表示标记是否需要落盘。`last_observed_ms` 由调用方在每一拍更新，
+/// 但只在这里返回 true 时才写盘——每秒写一次 Store 没有意义，而两次写盘之间
+/// 的那个较旧的 `previous` 正是重启后不补发陈旧提醒所需要的。
+fn advance_reminders<'a>(
+    state: &'a CountdownState,
+    marker: &mut ReminderMarker,
     now_ms: i64,
-) -> (Option<NotificationMilestone>, bool) {
-    if !state.running || !state.is_valid_shift() {
-        return (None, false);
-    }
-
-    let end_at_ms = state.end_at_ms();
-    let progress = (countdown_progress(state, now_ms) * 100.0).floor() as u8;
-    let crossed: Vec<u8> = NotificationMilestone::ALL
-        .iter()
-        .map(|milestone| milestone.percent())
-        .filter(|percent| *percent <= progress)
-        .collect();
-
-    if marker.model_version != 3 || marker.end_at_ms != end_at_ms {
-        let sent_break_starts = state
-            .segments
-            .windows(2)
-            .map(|pair| pair[0].end_at_ms)
-            .filter(|boundary| *boundary <= now_ms)
-            .collect();
-        let sent_break_ends = state
-            .segments
-            .windows(2)
-            .map(|pair| pair[1].start_at_ms)
-            .filter(|boundary| *boundary <= now_ms)
-            .collect();
-        *marker = NotificationMarker {
-            model_version: 3,
-            end_at_ms,
-            // 第一次看到班次时，把已经越过的节点视为已处理，不补发历史通知。
-            sent_milestones: crossed,
-            sent_break_starts,
-            sent_break_ends,
-            sent_micro_breaks: Vec::new(),
-            micro_break_interval_minutes: state.micro_break_interval_minutes,
-            micro_break_segment_start_at_ms: None,
+) -> (Vec<&'a ShiftReminder>, bool) {
+    if marker.model_version != REMINDER_MODEL_VERSION || marker.revision != state.reminders_revision
+    {
+        // 第一次看到这份列表：以当前时刻为基线，此前越过的提醒一律不补发。
+        *marker = ReminderMarker {
+            model_version: REMINDER_MODEL_VERSION,
+            revision: state.reminders_revision.clone(),
+            sent_ids: Vec::new(),
             last_observed_ms: now_ms,
         };
-        return (None, true);
+        return (Vec::new(), true);
     }
 
-    let newly_crossed: Vec<u8> = crossed
-        .into_iter()
-        .filter(|percent| !marker.sent_milestones.contains(percent))
-        .collect();
-    if newly_crossed.is_empty() {
-        return (None, false);
+    let previous = marker.last_observed_ms;
+    if now_ms <= previous {
+        // 系统时钟回拨：不发任何通知，调用方随后会把基线拉回来。
+        return (Vec::new(), false);
     }
 
-    marker.sent_milestones.extend(newly_crossed.iter().copied());
-    marker.sent_milestones.sort_unstable();
-    marker.sent_milestones.dedup();
-
-    let highest = *newly_crossed.last().expect("non-empty milestones");
-    let notification = match state.notification_mode() {
-        NotificationMode::Off => None,
-        NotificationMode::Simple => (highest == 100).then_some(NotificationMilestone::Complete),
-        NotificationMode::Milestones => NotificationMilestone::ALL
-            .into_iter()
-            .find(|milestone| milestone.percent() == highest),
-    };
-
-    (notification, true)
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum BreakNotification {
-    Start,
-    End,
-}
-
-/// 午休边界只在仍处于对应阶段、且距边界不超过两分钟时通知。
-/// 因而电脑睡眠跨过午休不会在唤醒后补发已经失去语境的提示。
-fn advance_break_notification(
-    state: &CountdownState,
-    marker: &mut NotificationMarker,
-    previous: i64,
-    now_ms: i64,
-) -> (Option<BreakNotification>, bool) {
-    if !state.running || !state.is_valid_shift() || marker.end_at_ms != state.end_at_ms() {
-        return (None, false);
-    }
-    let mut changed = false;
-    const FRESH_MS: i64 = 2 * 60 * 1000;
-
-    for pair in state.segments.windows(2) {
-        let break_start = pair[0].end_at_ms;
-        let break_end = pair[1].start_at_ms;
-        if previous < break_start
-            && now_ms >= break_start
-            && now_ms < break_end
-            && now_ms - break_start <= FRESH_MS
-            && !marker.sent_break_starts.contains(&break_start)
-        {
-            marker.sent_break_starts.push(break_start);
-            changed = true;
-            return (
-                state
-                    .lunch_notification_enabled
-                    .then_some(BreakNotification::Start),
-                changed,
-            );
-        }
-        if previous < break_end
-            && now_ms >= break_end
-            && now_ms < pair[1].end_at_ms
-            && now_ms - break_end <= FRESH_MS
-            && !marker.sent_break_ends.contains(&break_end)
-        {
-            marker.sent_break_ends.push(break_end);
-            changed = true;
-            return (
-                state
-                    .lunch_end_notification_enabled
-                    .then_some(BreakNotification::End),
-                changed,
-            );
-        }
-    }
-    (None, changed)
-}
-
-fn micro_break_body(state: &CountdownState, bucket: u64) -> Option<String> {
-    let pool = &state.micro_break_messages;
-    if pool.is_empty() {
-        return None;
-    }
-    let template = pool.get(bucket as usize % pool.len())?;
-    Some(template.replace(
-        "{{minutes}}",
-        &(bucket * state.micro_break_interval_minutes).to_string(),
-    ))
-}
-
-fn advance_micro_break_marker(
-    state: &CountdownState,
-    marker: &mut NotificationMarker,
-    previous: i64,
-    now_ms: i64,
-) -> (Option<String>, bool) {
-    let interval_ms = state.micro_break_interval_minutes as i64 * 60 * 1000;
-    if !state.running || !state.is_valid_shift() || interval_ms <= 0 {
-        return (None, false);
-    }
-
-    let active_segment = state
-        .segments
+    let crossed: Vec<&ShiftReminder> = state
+        .reminders
         .iter()
-        .find(|segment| now_ms >= segment.start_at_ms && now_ms < segment.end_at_ms);
-
-    // 午休期间没有活跃工作段：清掉上一段的周期。午休结束进入新的 segment
-    // 时会重新建立基线，因此午休前没满的一轮不会被带到午休后。
-    let Some(active_segment) = active_segment else {
-        if marker.micro_break_segment_start_at_ms.is_none() && marker.sent_micro_breaks.is_empty() {
-            return (None, false);
-        }
-        marker.micro_break_segment_start_at_ms = None;
-        marker.sent_micro_breaks.clear();
-        return (None, true);
-    };
-
-    let current_bucket = ((now_ms - active_segment.start_at_ms) / interval_ms).max(0) as u64;
-    if marker.micro_break_segment_start_at_ms != Some(active_segment.start_at_ms) {
-        marker.micro_break_segment_start_at_ms = Some(active_segment.start_at_ms);
-        // 首次观察到这一连续工作段时不补发此前越过的健康提醒。
-        marker.sent_micro_breaks = (1..=current_bucket).collect();
-        return (None, true);
+        .filter(|reminder| reminder.at_ms > previous && reminder.at_ms <= now_ms)
+        .filter(|reminder| !marker.sent_ids.iter().any(|id| id == &reminder.id))
+        .collect();
+    if crossed.is_empty() {
+        return (Vec::new(), false);
     }
-    if marker.micro_break_interval_minutes != state.micro_break_interval_minutes {
-        marker.micro_break_interval_minutes = state.micro_break_interval_minutes;
-        marker.sent_micro_breaks = (1..=current_bucket).collect();
-        // 修改间隔只重建去重基线，不立即弹一条“补发”提醒。
-        return (None, true);
-    }
-    let last_bucket = ((previous - active_segment.start_at_ms).max(0) / interval_ms) as u64;
-    if current_bucket == 0 || current_bucket <= last_bucket {
-        return (None, false);
-    }
-    let crossed: Vec<u64> = ((last_bucket + 1)..=current_bucket).collect();
-    let newest = *crossed.last().expect("non-empty micro-break range");
-    marker.sent_micro_breaks.extend(crossed);
-    marker.sent_micro_breaks.sort_unstable();
-    marker.sent_micro_breaks.dedup();
 
-    let fresh = now_ms.saturating_sub(previous) <= 2 * 60 * 1000;
-    let body = (state.micro_break_enabled && fresh)
-        .then(|| micro_break_body(state, newest))
-        .flatten();
-    (body, true)
-}
+    let mut audible: Vec<&ShiftReminder> = crossed
+        .iter()
+        .copied()
+        .filter(|reminder| {
+            let expired = match reminder.expires_at_ms {
+                Some(expires) => now_ms >= expires,
+                None => false,
+            };
+            let stale_tick = match reminder.max_tick_gap_ms {
+                Some(gap) => now_ms - previous > gap,
+                None => false,
+            };
+            let has_body = reminder
+                .body
+                .as_deref()
+                .is_some_and(|body| !body.is_empty());
+            reminder.title.is_some() && has_body && !expired && !stale_tick
+        })
+        .collect();
+    audible.sort_by_key(|reminder| reminder.at_ms);
 
-/// 里程碑通知的标题。缺档位标题时退回通用标题——旧版本 Store 里没有这个
-/// 字段，宁可少个百分比也不要弹一条没有标题的通知。
-fn notification_title(state: &CountdownState, milestone: NotificationMilestone) -> &str {
-    let specific = match milestone {
-        NotificationMilestone::Half => &state.notification_titles.milestone50,
-        NotificationMilestone::ThreeQuarters => &state.notification_titles.milestone75,
-        NotificationMilestone::Ninety => &state.notification_titles.milestone90,
-        NotificationMilestone::NinetyFive => &state.notification_titles.milestone95,
-        NotificationMilestone::Complete => &state.notification_titles.milestone100,
-    };
-    if !specific.is_empty() {
-        return specific;
-    }
-    if state.notification_title.is_empty() {
-        "Off work reminder"
-    } else {
-        &state.notification_title
-    }
-}
-
-fn notification_body(state: &CountdownState, milestone: NotificationMilestone) -> &str {
-    let messages = match milestone {
-        NotificationMilestone::Half => &state.notification_messages.milestone50,
-        NotificationMilestone::ThreeQuarters => &state.notification_messages.milestone75,
-        NotificationMilestone::Ninety => &state.notification_messages.milestone90,
-        NotificationMilestone::NinetyFive => &state.notification_messages.milestone95,
-        NotificationMilestone::Complete => &state.notification_messages.milestone100,
-    };
-    let fallback = match milestone {
-        NotificationMilestone::Half => "Halfway there.",
-        NotificationMilestone::ThreeQuarters => "The hardest part is behind you.",
-        NotificationMilestone::Ninety => "Almost there.",
-        NotificationMilestone::NinetyFive => "Just a little longer.",
-        NotificationMilestone::Complete => "Off work time!",
-    };
-    let body = if messages.is_empty() {
-        fallback
-    } else {
-        let seed = state.end_at_ms().unsigned_abs() as usize + milestone.percent() as usize;
-        messages[seed % messages.len()].as_str()
-    };
-    body
-}
-
-#[cfg(desktop)]
-fn send_countdown_notification(
-    app: &AppHandle,
-    state: &CountdownState,
-    milestone: NotificationMilestone,
-) {
-    let title = notification_title(state, milestone);
-    let body = notification_body(state, milestone);
-
-    if let Err(error) = app.notification().builder().title(title).body(body).show() {
-        log::warn!("failed to send countdown notification: {error}");
-    }
-}
-
-#[cfg(desktop)]
-fn send_break_notification(app: &AppHandle, state: &CountdownState, kind: BreakNotification) {
-    let title = if state.notification_title.is_empty() {
-        "Off work reminder"
-    } else {
-        &state.notification_title
-    };
-    let body = match kind {
-        BreakNotification::Start => &state.lunch_start_notification,
-        BreakNotification::End => &state.lunch_end_notification,
-    };
-    if !body.is_empty() {
-        if let Err(error) = app.notification().builder().title(title).body(body).show() {
-            log::warn!("failed to send break notification: {error}");
+    // 折叠：同组只留触发时刻最晚的一条。休眠一次跨过 50%、75%、90% 三档时，
+    // 连弹三条只是噪音——用户想知道的是「现在到哪儿了」。
+    let mut due: Vec<&'a ShiftReminder> = Vec::new();
+    for reminder in audible {
+        match reminder.collapse_group.as_deref() {
+            None => due.push(reminder),
+            Some(group) => {
+                let existing = due
+                    .iter_mut()
+                    .find(|kept| kept.collapse_group.as_deref() == Some(group));
+                match existing {
+                    // audible 已按 at_ms 升序，后来的天然更晚，直接顶掉先前那条。
+                    Some(slot) => *slot = reminder,
+                    None => due.push(reminder),
+                }
+            }
         }
     }
+    due.sort_by_key(|reminder| reminder.at_ms);
+
+    // 被折叠掉的、被有效期挡掉的、以及开关关闭的，同样记为已发：
+    // 否则下一拍它们会重新算进候选，或者在用户中途打开开关时集体补弹。
+    for reminder in crossed {
+        marker.sent_ids.push(reminder.id.clone());
+    }
+    marker.sent_ids.sort();
+    marker.sent_ids.dedup();
+
+    (due, true)
 }
 
 #[cfg(desktop)]
-fn send_micro_break_notification(app: &AppHandle, state: &CountdownState, body: &str) {
-    let title = if state.notification_title.is_empty() {
-        "Off work reminder"
-    } else {
-        &state.notification_title
+fn send_reminder(app: &AppHandle, reminder: &ShiftReminder) {
+    let (Some(title), Some(body)) = (reminder.title.as_deref(), reminder.body.as_deref()) else {
+        return;
     };
     if let Err(error) = app.notification().builder().title(title).body(body).show() {
-        log::warn!("failed to send micro-break notification: {error}");
+        log::warn!("failed to send reminder {}: {error}", reminder.id);
     }
 }
 
@@ -1163,7 +927,7 @@ fn start_tray_timer(app: AppHandle) {
     thread::spawn(move || {
         #[cfg(any(target_os = "windows", debug_assertions))]
         let mut was_running = false;
-        let mut marker = read_notification_marker(&app);
+        let mut marker = read_reminder_marker(&app);
         loop {
             let now_ms = chrono_free_now_ms();
             let mut state = read_countdown_state(&app);
@@ -1201,25 +965,15 @@ fn start_tray_timer(app: AppHandle) {
                     .map(|next| format_remaining(next.segments[0].start_at_ms - now_ms))
             });
 
-            let (notification, marker_changed) =
-                advance_notification_marker(&state, &mut marker, now_ms);
-            let previous_observed = marker.last_observed_ms;
-            let (break_notification, break_marker_changed) =
-                advance_break_notification(&state, &mut marker, previous_observed, now_ms);
-            let (micro_break_notification, micro_break_marker_changed) =
-                advance_micro_break_marker(&state, &mut marker, previous_observed, now_ms);
+            let (due_reminders, marker_changed) = advance_reminders(&state, &mut marker, now_ms);
             marker.last_observed_ms = now_ms;
-            if marker_changed || break_marker_changed || micro_break_marker_changed {
-                write_notification_marker(&app, &marker);
+            // 先落盘再发送，与重构前的顺序一致：万一进程在两者之间崩溃，
+            // 宁可漏一条，也不要重启后把同一条重新弹一遍。
+            if marker_changed {
+                write_reminder_marker(&app, &marker);
             }
-            if let Some(notification) = notification {
-                send_countdown_notification(&app, &state, notification);
-            }
-            if let Some(notification) = break_notification {
-                send_break_notification(&app, &state, notification);
-            }
-            if let Some(body) = micro_break_notification {
-                send_micro_break_notification(&app, &state, &body);
+            for reminder in due_reminders {
+                send_reminder(&app, reminder);
             }
 
             if let Some(tray) = app.tray_by_id("main") {
@@ -2411,10 +2165,32 @@ pub fn run() {
 }
 
 #[cfg(test)]
-mod notification_tests {
+mod reminder_tests {
     use super::*;
 
-    fn state(mode: NotificationMode) -> CountdownState {
+    // 这些用例只锁 Rust 侧的消费语义：跨越判定、有效期、跳拍间隔、折叠、去重。
+    // 提醒的时刻与文案怎么算出来的属于 lib/reminders.ts，由那边的 vitest 覆盖。
+
+    const REVISION: &str = "1:1000";
+
+    fn milestone(percent: u8, at_ms: i64) -> ShiftReminder {
+        ShiftReminder {
+            id: format!("milestone:{percent}"),
+            at_ms,
+            collapse_group: Some("milestone".into()),
+            title: Some("下班提醒".into()),
+            body: Some(format!("到 {percent}% 了")),
+            ..Default::default()
+        }
+    }
+
+    fn muted(mut reminder: ShiftReminder) -> ShiftReminder {
+        reminder.title = None;
+        reminder.body = None;
+        reminder
+    }
+
+    fn state(reminders: Vec<ShiftReminder>) -> CountdownState {
         CountdownState {
             segments: vec![ShiftSegment {
                 start_at_ms: 0,
@@ -2422,295 +2198,176 @@ mod notification_tests {
             }],
             planned_end_at_ms: 1_000,
             running: true,
-            notification_mode: Some(mode),
+            reminders,
+            reminders_revision: REVISION.into(),
             ..Default::default()
         }
     }
 
-    #[test]
-    fn milestone_nodes_fire_once_in_order() {
-        let countdown = state(NotificationMode::Milestones);
-        let mut marker = NotificationMarker::default();
+    fn milestones() -> Vec<ShiftReminder> {
+        vec![
+            milestone(50, 500),
+            milestone(75, 750),
+            milestone(90, 900),
+            milestone(95, 950),
+            milestone(100, 1_000),
+        ]
+    }
 
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 0).0,
-            None
-        );
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 500).0,
-            Some(NotificationMilestone::Half)
-        );
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 500).0,
-            None
-        );
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 750).0,
-            Some(NotificationMilestone::ThreeQuarters)
-        );
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 900).0,
-            Some(NotificationMilestone::Ninety)
-        );
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 950).0,
-            Some(NotificationMilestone::NinetyFive)
-        );
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 1_000).0,
-            Some(NotificationMilestone::Complete)
-        );
+    /// 走一拍：与托盘计时器里的顺序一致——先推进，再更新基线。
+    fn tick(countdown: &CountdownState, marker: &mut ReminderMarker, now_ms: i64) -> Vec<String> {
+        let (due, _) = advance_reminders(countdown, marker, now_ms);
+        let ids = due.iter().map(|reminder| reminder.id.clone()).collect();
+        marker.last_observed_ms = now_ms;
+        ids
     }
 
     #[test]
-    fn simple_mode_only_notifies_at_completion() {
-        let countdown = state(NotificationMode::Simple);
-        let mut marker = NotificationMarker::default();
-        advance_notification_marker(&countdown, &mut marker, 0);
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 950).0,
-            None
-        );
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 1_000).0,
-            Some(NotificationMilestone::Complete)
-        );
+    fn milestone_nodes_fire_once_in_order() {
+        let countdown = state(milestones());
+        let mut marker = ReminderMarker::default();
+
+        // 第一拍只建立基线。
+        assert!(tick(&countdown, &mut marker, 0).is_empty());
+        assert_eq!(tick(&countdown, &mut marker, 500), vec!["milestone:50"]);
+        assert!(tick(&countdown, &mut marker, 500).is_empty());
+        assert_eq!(tick(&countdown, &mut marker, 750), vec!["milestone:75"]);
+        assert_eq!(tick(&countdown, &mut marker, 900), vec!["milestone:90"]);
+        assert_eq!(tick(&countdown, &mut marker, 950), vec!["milestone:95"]);
+        assert_eq!(tick(&countdown, &mut marker, 1_000), vec!["milestone:100"]);
     }
 
     #[test]
     fn wakeups_emit_only_the_highest_new_milestone() {
-        let countdown = state(NotificationMode::Milestones);
-        let mut marker = NotificationMarker::default();
-        advance_notification_marker(&countdown, &mut marker, 400);
+        let countdown = state(milestones());
+        let mut marker = ReminderMarker::default();
+        tick(&countdown, &mut marker, 400);
+
+        assert_eq!(tick(&countdown, &mut marker, 960), vec!["milestone:95"]);
+        // 被折叠掉的三条同样记为已发，否则下一拍会重新算进候选。
         assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 960).0,
-            Some(NotificationMilestone::NinetyFive)
+            marker.sent_ids,
+            vec![
+                "milestone:50".to_string(),
+                "milestone:75".to_string(),
+                "milestone:90".to_string(),
+                "milestone:95".to_string(),
+            ]
         );
-        assert_eq!(marker.sent_milestones, vec![50, 75, 90, 95]);
+        assert!(tick(&countdown, &mut marker, 970).is_empty());
     }
 
     #[test]
-    fn disabled_or_stale_states_never_backfill() {
-        let mut countdown = state(NotificationMode::Off);
-        let mut marker = NotificationMarker::default();
-        advance_notification_marker(&countdown, &mut marker, 0);
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 800).0,
-            None
-        );
+    fn muted_reminders_advance_the_marker_without_notifying() {
+        // 通知档位关着的那些条目仍然出现在列表里，只是没有文案。它们必须照样
+        // 被记为已发——否则班次进行到一半才打开开关，会立刻补弹一串历史提醒。
+        let countdown = state(milestones().into_iter().map(muted).collect());
+        let mut marker = ReminderMarker::default();
+        tick(&countdown, &mut marker, 0);
 
-        countdown.notification_mode = Some(NotificationMode::Milestones);
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 800).0,
-            None
-        );
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut marker, 900).0,
-            Some(NotificationMilestone::Ninety)
-        );
+        assert!(tick(&countdown, &mut marker, 800).is_empty());
+        assert_eq!(marker.sent_ids.len(), 2);
 
-        let mut stale_marker = NotificationMarker::default();
-        assert_eq!(
-            advance_notification_marker(&countdown, &mut stale_marker, 1_001).0,
-            None
-        );
-        assert_eq!(stale_marker.sent_milestones, vec![50, 75, 90, 95, 100]);
+        let audible = state(milestones());
+        assert!(tick(&audible, &mut marker, 800).is_empty());
+        assert_eq!(tick(&audible, &mut marker, 900), vec!["milestone:90"]);
     }
 
     #[test]
-    fn notification_title_falls_back_when_milestone_titles_are_missing() {
-        // 3.1.0 的 Store 里没有 notificationTitles。升级后第一次通知还没
-        // 写回新字段，此时宁可少个百分比也不能弹一条空标题的通知。
-        let mut countdown = CountdownState {
-            notification_title: "下班提醒".into(),
-            ..CountdownState::default()
+    fn a_new_revision_rebuilds_the_baseline_without_backfilling() {
+        let countdown = state(milestones());
+        let mut stale = ReminderMarker::default();
+
+        // 班次已经走完才第一次看到这份列表：一条都不补。
+        assert!(tick(&countdown, &mut stale, 1_001).is_empty());
+        assert!(stale.sent_ids.is_empty());
+        assert_eq!(stale.revision, REVISION);
+
+        // 换一个班次时，旧的已发记录必须作废。
+        let mut carried = ReminderMarker {
+            model_version: REMINDER_MODEL_VERSION,
+            revision: "1:9999".into(),
+            sent_ids: vec!["milestone:50".into()],
+            last_observed_ms: 400,
         };
-        assert_eq!(
-            notification_title(&countdown, NotificationMilestone::Ninety),
-            "下班提醒"
-        );
-
-        countdown.notification_titles.milestone90 = "今天还剩 10%".into();
-        assert_eq!(
-            notification_title(&countdown, NotificationMilestone::Ninety),
-            "今天还剩 10%"
-        );
-        assert_eq!(
-            notification_title(&countdown, NotificationMilestone::Half),
-            "下班提醒"
-        );
+        assert!(tick(&countdown, &mut carried, 600).is_empty());
+        assert!(carried.sent_ids.is_empty());
+        assert_eq!(carried.last_observed_ms, 600);
     }
 
     #[test]
-    fn notification_body_never_reads_salary_state() {
-        let mut countdown = state(NotificationMode::Milestones);
-        countdown.daily_salary = Some(123_456.78);
-        countdown.notification_messages.milestone50 = vec!["Safe progress copy".into()];
-        assert_eq!(
-            notification_body(&countdown, NotificationMilestone::Half),
-            "Safe progress copy"
-        );
-    }
-
-    #[test]
-    fn lunch_boundaries_notify_once_but_sleep_does_not_backfill() {
-        let mut countdown = CountdownState {
-            segments: vec![
-                ShiftSegment {
-                    start_at_ms: 0,
-                    end_at_ms: 3_000,
-                },
-                ShiftSegment {
-                    start_at_ms: 4_000,
-                    end_at_ms: 10_000,
-                },
-            ],
-            planned_end_at_ms: 10_000,
-            running: true,
-            lunch_notification_enabled: true,
-            lunch_end_notification_enabled: true,
+    fn expired_reminders_are_marked_but_never_sent() {
+        // 午休边界：设备睡到午休结束之后才醒，「午休开始了」已经失去语境。
+        let countdown = state(vec![ShiftReminder {
+            id: "breakStart:3000".into(),
+            at_ms: 3_000,
+            expires_at_ms: Some(4_000),
+            title: Some("下班提醒".into()),
+            body: Some("午休开始".into()),
             ..Default::default()
-        };
-        let mut marker = NotificationMarker::default();
-        advance_notification_marker(&countdown, &mut marker, 2_900);
-        assert_eq!(
-            advance_break_notification(&countdown, &mut marker, 2_900, 3_001).0,
-            Some(BreakNotification::Start)
-        );
-        assert_eq!(
-            advance_break_notification(&countdown, &mut marker, 3_001, 3_500).0,
-            None
-        );
-        assert_eq!(
-            advance_break_notification(&countdown, &mut marker, 3_500, 4_001).0,
-            Some(BreakNotification::End)
-        );
+        }]);
+        let mut marker = ReminderMarker::default();
+        tick(&countdown, &mut marker, 2_900);
 
-        // 新班次首次在午休后才被观察到，两个边界都视为历史，不补发。
-        countdown.planned_end_at_ms = 20_000;
-        countdown.segments = vec![
-            ShiftSegment {
-                start_at_ms: 10_000,
-                end_at_ms: 13_000,
-            },
-            ShiftSegment {
-                start_at_ms: 14_000,
-                end_at_ms: 20_000,
-            },
-        ];
-        advance_notification_marker(&countdown, &mut marker, 15_000);
-        assert_eq!(
-            advance_break_notification(&countdown, &mut marker, 15_000, 15_001).0,
-            None
-        );
+        assert!(tick(&countdown, &mut marker, 4_500).is_empty());
+        assert_eq!(marker.sent_ids, vec!["breakStart:3000".to_string()]);
     }
 
     #[test]
-    fn switches_only_to_a_live_frontend_supplied_next_shift() {
-        let mut countdown = state(NotificationMode::Off);
-        countdown.next_shift = Some(ShiftTimelineState {
-            segments: vec![ShiftSegment {
-                start_at_ms: 2_000,
-                end_at_ms: 3_000,
-            }],
-            planned_end_at_ms: 3_000,
-            overtime_end_at_ms: None,
-        });
-        assert!(!advance_to_next_shift(&mut countdown, 1_500));
-        assert!(advance_to_next_shift(&mut countdown, 2_100));
-        assert_eq!(countdown.segments[0].start_at_ms, 2_000);
-        assert!(countdown.next_shift.is_none());
+    fn micro_break_reminders_skip_a_long_sleep_gap() {
+        // 跳拍间隔看的是「上一拍到现在」，不是「距计划时刻多久」：设备睡着的
+        // 那段时间用户并没有在工作，醒来后提示「该起来活动一下」是错的。
+        let reminders = vec![ShiftReminder {
+            id: "microBreak:0:5".into(),
+            at_ms: 5_000,
+            max_tick_gap_ms: Some(2_000),
+            collapse_group: Some("microBreak:0".into()),
+            title: Some("下班提醒".into()),
+            body: Some("起来走走".into()),
+            ..Default::default()
+        }];
 
-        let mut stale = state(NotificationMode::Off);
-        stale.next_shift = Some(ShiftTimelineState {
-            segments: vec![ShiftSegment {
-                start_at_ms: 2_000,
-                end_at_ms: 3_000,
-            }],
-            planned_end_at_ms: 3_000,
-            overtime_end_at_ms: None,
-        });
-        assert!(advance_to_next_shift(&mut stale, 4_000));
-        assert!(!stale.running);
+        let countdown = state(reminders);
+        let mut normal = ReminderMarker::default();
+        tick(&countdown, &mut normal, 4_500);
+        assert_eq!(tick(&countdown, &mut normal, 5_000), vec!["microBreak:0:5"]);
+
+        let mut slept = ReminderMarker::default();
+        tick(&countdown, &mut slept, 1_000);
+        assert!(tick(&countdown, &mut slept, 6_000).is_empty());
+        assert_eq!(slept.sent_ids, vec!["microBreak:0:5".to_string()]);
     }
 
     #[test]
-    fn overtime_salary_uses_the_planned_hourly_rate() {
-        let countdown = CountdownState {
-            segments: vec![ShiftSegment {
-                start_at_ms: 0,
-                end_at_ms: 12_000,
-            }],
-            planned_end_at_ms: 10_000,
-            overtime_end_at_ms: Some(12_000),
-            running: true,
-            ..Default::default()
-        };
-        assert!((countdown_pay_ratio(&countdown, 12_000) - 1.2).abs() < f64::EPSILON);
+    fn clock_rollback_sends_nothing() {
+        let countdown = state(milestones());
+        let mut marker = ReminderMarker::default();
+        tick(&countdown, &mut marker, 900);
+
+        let (due, changed) = advance_reminders(&countdown, &mut marker, 100);
+        assert!(due.is_empty());
+        assert!(!changed);
     }
 
     #[test]
-    fn micro_breaks_pause_for_lunch_and_restart_after_it() {
-        let countdown = CountdownState {
-            segments: vec![
-                ShiftSegment {
-                    start_at_ms: 0,
-                    end_at_ms: 50_000,
-                },
-                ShiftSegment {
-                    start_at_ms: 90_000,
-                    end_at_ms: 180_000,
-                },
-            ],
-            planned_end_at_ms: 180_000,
-            running: true,
-            micro_break_enabled: true,
-            micro_break_interval_minutes: 1,
-            micro_break_messages: vec!["Worked {{minutes}} minutes; drink water.".into()],
-            ..Default::default()
-        };
-        let mut marker = NotificationMarker {
-            model_version: 3,
-            end_at_ms: 180_000,
-            last_observed_ms: 49_000,
-            micro_break_interval_minutes: 1,
-            micro_break_segment_start_at_ms: Some(0),
-            ..Default::default()
-        };
+    fn quiet_ticks_do_not_ask_for_a_store_write() {
+        // 每秒写一次 Store 没有意义。只有真正跨过提醒、或者列表换版时才落盘。
+        let countdown = state(milestones());
+        let mut marker = ReminderMarker::default();
+        assert!(advance_reminders(&countdown, &mut marker, 0).1);
+        marker.last_observed_ms = 0;
 
-        // 午休期间不发送，并清掉午休前已经累计的 50 秒。
-        assert_eq!(
-            advance_micro_break_marker(&countdown, &mut marker, 49_000, 60_000),
-            (None, true)
-        );
-        assert_eq!(marker.micro_break_segment_start_at_ms, None);
-        assert_eq!(
-            advance_micro_break_marker(&countdown, &mut marker, 60_000, 89_999),
-            (None, false)
-        );
+        assert!(!advance_reminders(&countdown, &mut marker, 100).1);
+        marker.last_observed_ms = 100;
+        assert!(advance_reminders(&countdown, &mut marker, 500).1);
+    }
 
-        // 午休结束时建立新周期，但不会把上午的 50 秒接到下午。
-        assert_eq!(
-            advance_micro_break_marker(&countdown, &mut marker, 89_999, 90_000),
-            (None, true)
-        );
-        assert_eq!(marker.micro_break_segment_start_at_ms, Some(90_000));
-        assert_eq!(
-            advance_micro_break_marker(&countdown, &mut marker, 90_000, 140_000),
-            (None, false)
-        );
-        assert_eq!(
-            advance_micro_break_marker(&countdown, &mut marker, 149_999, 150_000).0,
-            Some("Worked 1 minutes; drink water.".into())
-        );
-
-        let mut changed = countdown.clone();
-        changed.micro_break_interval_minutes = 2;
-        assert_eq!(
-            advance_micro_break_marker(&changed, &mut marker, 150_000, 150_001).0,
-            None
-        );
-        assert_eq!(marker.micro_break_interval_minutes, 2);
+    #[test]
+    fn an_empty_list_is_inert() {
+        let countdown = state(Vec::new());
+        let mut marker = ReminderMarker::default();
+        tick(&countdown, &mut marker, 0);
+        assert!(tick(&countdown, &mut marker, 10_000).is_empty());
     }
 }
 
