@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { eventKey } from "@/lib/server/analytics";
 import {
   KEY_PREFIX,
+  bar,
   bucketByPeriod,
   buildReportCard,
   fetchStats,
@@ -168,8 +169,32 @@ describe("buildReportCard", () => {
       buckets: buckets(() => ({ desktop_download_macappstore: 2 })),
     });
     const text = card.body.elements[0].content;
-    expect(text).toContain("Mac App Store 2");
+    expect(text).toContain("Mac App Store **2**");
     expect(text).not.toContain("Linux");
+  });
+
+  it("puts the busiest channel first and gives each its own line", () => {
+    // 原来所有渠道挤在一行用「·」分隔，手机上折行后最大的和最小的混在一起，
+    // 扫一眼看不出谁多谁少。
+    const card = buildReportCard({
+      period: "daily",
+      buckets: buckets(() => ({
+        desktop_download_msstore: 19,
+        desktop_download_windows_intel: 31,
+        desktop_download_macappstore: 1,
+      })),
+    });
+    const channelLines = card.body.elements[0].content
+      .split("\n")
+      .filter((line) => /\*\*\d+\*\* `/.test(line));
+    expect(channelLines.map((line) => line.split(" **")[0])).toEqual([
+      "Windows x64",
+      "微软商店",
+      "Mac App Store",
+    ]);
+    // 最大的那条最长，最小的那条也得看得见
+    expect(channelLines[0]).toMatch(/`█{12}`/);
+    expect(channelLines[2]).toMatch(/`█`/);
   });
 
   it("says so plainly when no period has completed", () => {
@@ -563,5 +588,22 @@ describe("没记录 ≠ 数据为 0", () => {
     const text = card.body.elements[0].content;
     expect(text).toContain("倒计时开始 **700**");
     expect(text).not.toMatch(/%/); // 不该出现任何环比百分比
+  });
+});
+
+describe("bar", () => {
+  it("scales against the busiest channel", () => {
+    expect(bar(100, 100)).toHaveLength(12);
+    expect(bar(50, 100)).toHaveLength(6);
+  });
+
+  it("still draws something for a channel with a single download", () => {
+    // 按比例算是 0 格，看着就像没有——但它出现在列表里本身就说明有
+    expect(bar(1, 500)).toBe("█");
+  });
+
+  it("draws nothing for zero, and does not divide by zero", () => {
+    expect(bar(0, 100)).toBe("");
+    expect(bar(5, 0)).toBe("");
   });
 });
