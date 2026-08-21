@@ -26,6 +26,7 @@
 - **网页版：**[立即使用](https://off.rainif.com/zh-CN)，无需安装。
 - **桌面客户端：**[打开下载页](https://off.rainif.com/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。macOS 版需要 macOS 11.3（Big Sur）或更高版本。
 - **Windows 用户：**[从 Microsoft Store 获取](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ)，会自动更新，安装时也不会出现 SmartScreen 提示。
+- **macOS 用户：**[从 Mac App Store 获取](https://apps.apple.com/us/app/off-work-countdown/id6802803318)，**US$0.99**，是唯一收费的版本。它一键安装、由 App Store 负责更新，并且多一个免费版没有的倒计时小组件。买它更像是对这个项目的支持，而不是必须：上面那些 DMG 由同一份源码构建，一直免费，也不会下架。
 - **安装包列表：**[最新 GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)。
 
 桌面版额外提供 macOS 菜单栏倒计时、Windows 置顶迷你计时器、原生通知、登录时启动、全局快捷键和一键更新。它仍然坚持本地优先：班次、薪资设置与倒计时状态只保存在你的设备上。
@@ -34,11 +35,13 @@
 
 当前安装包完全开源，但**没有购买 Apple 或 Microsoft 的代码签名证书**。自动更新包带有 Tauri 用于校验更新来源的加密签名，但 macOS Gatekeeper 或 Windows SmartScreen 在首次安装时仍可能警告。请只从本仓库的 Release 页面下载，并核对 tag、平台和文件名。
 
-Microsoft Store 版本是个例外：商店在认证阶段用自己的证书签名，因此安装时不会有任何警告，更新也由商店负责，不走应用内更新器。
+两个商店版本是例外：微软和苹果在认证阶段用自己的证书签名，因此安装时不会有任何警告，更新也由商店负责，不走应用内更新器。
 
 #### macOS
 
-需要 **macOS 11.3（Big Sur）或更高版本**，Apple Silicon 与 Intel 均支持。
+[Mac App Store 版本](https://apps.apple.com/us/app/off-work-countdown/id6802803318)可以跳过下面这一整套：苹果签了名，一键装好，不用再走「仍要打开」那一步，而且带一个倒计时小组件。它需要 **macOS 13（Ventura）或更高版本**，售价 US$0.99——macOS 14（Sonoma）及以上小组件可以放在桌面，macOS 13 上只能放进通知中心。下面的步骤针对免费的 DMG，两条路一直都在。
+
+DMG 需要 **macOS 11.3（Big Sur）或更高版本**，Apple Silicon 与 Intel 均支持。
 
 1. Apple Silicon Mac 下载 `aarch64.dmg`，Intel Mac 下载 `x64.dmg`。
 2. 打开 DMG，把“Off Work Countdown”拖入“应用程序”。
