@@ -1,0 +1,59 @@
+name: Lark Analytics Report
+
+# 埋点日报 / 周报 / 月报，推送到飞书。
+#
+# cron 是 UTC，而报表按北京时间切天（见 lib/server/analytics.ts）。01:00 UTC
+# 即 09:00 CST——此时前一个北京时间日已经走完，日报覆盖的正是完整的「昨天」。
+#
+# 周报、月报错开几分钟，只是为了周一早上和月初那天两条消息不要同秒到达。
+on:
+  schedule:
+    - cron: "0 1 * * *"      # 每天 09:00 CST，报前一天
+    - cron: "5 1 * * 1"      # 周一 09:05 CST，报上一整周（周一至周日）
+    - cron: "10 1 1 * *"     # 每月 1 日 09:10 CST，报上一整月
+  # 手动自检：改过 secrets、想看看卡片长什么样时，不必等到明天早上。
+  workflow_dispatch:
+    inputs:
+      period:
+        description: 报表周期
+        type: choice
+        default: daily
+        options: [daily, weekly, monthly]
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    # 报表挂了不该让仓库变红，和 lark-notify 一致。
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      # 把 cron 表达式映射回周期名。GitHub 把每条 schedule 分别投递，
+      # github.event.schedule 里就是触发那条的原文，据此区分。
+      - name: Resolve period
+        id: period
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+          INPUT: ${{ inputs.period }}
+        run: |
+          set -euo pipefail
+          case "$SCHEDULE" in
+            "0 1 * * *")   period=daily ;;
+            "5 1 * * 1")   period=weekly ;;
+            "10 1 1 * *")  period=monthly ;;
+            *)             period="${INPUT:-daily}" ;;
+          esac
+          echo "period=$period" >> "$GITHUB_OUTPUT"
+
+      - name: Send report
+        env:
+          LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
+          LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
+          # 与 Vercel 上 /api/e/stats 校验的令牌必须是同一个值。
+          ANALYTICS_STATS_TOKEN: ${{ secrets.ANALYTICS_STATS_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PERIOD: ${{ steps.period.outputs.period }}
+        run: node scripts/lark-report.mjs "$PERIOD"
