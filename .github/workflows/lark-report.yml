@@ -52,7 +52,12 @@ jobs:
         env:
           LARK_WEBHOOK: ${{ secrets.LARK_WEBHOOK }}
           LARK_SIGN_SECRET: ${{ secrets.LARK_SIGN_SECRET }}
-          # 与 Vercel 上 /api/e/stats 校验的令牌必须是同一个值。
+          # 直连 Upstash。走 HTTP 打 /api/e/stats 会被站点前面的 Cloudflare 按
+          # 数据中心 IP 拦成 403——runner 天然就是数据中心 IP，这条路在 CI 里走
+          # 不通。配了这两个就优先直连，绕开整条公网链路。
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          # 回退用：没配 Upstash 时才会走到，与 Vercel 上校验的令牌须一致。
           ANALYTICS_STATS_TOKEN: ${{ secrets.ANALYTICS_STATS_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PERIOD: ${{ steps.period.outputs.period }}

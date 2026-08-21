@@ -4,7 +4,19 @@
  * 埋点日报 / 周报 / 月报，推送到飞书。
  *
  * 复用 lark-notify.mjs 的自定义机器人通道（签名算法那个坑已经在那边踩过并注释）。
- * 数据来自 /api/e/stats，天按北京时间切分，见 lib/server/analytics.ts。
+ * 天按北京时间切分，见 lib/server/analytics.ts。
+ *
+ * 取数有两条路，配了 Upstash 就直连，否则走 HTTP：
+ *
+ *   直连 Upstash —— GitHub Actions 的 runner 是数据中心 IP，站点前面的 Cloudflare
+ *     默认按 bot 拦截，/api/e/stats 在 CI 里拿到的是 403。直连绕开整条公网链路，
+ *     也不再依赖站点本身是否可用。
+ *   HTTP /api/e/stats —— 本地调试、以及自部署时前面没有 WAF 的场合。
+ *
+ * ⚠️ 直连意味着键的格式在这里复制了一份。lib/server/analytics.ts 一改，这边会
+ * 静默读到不存在的键、报出一片 0，而不是报错——这种失败最难发现。所以
+ * scripts/lark-report.test.mjs 里有一个契约测试直接 import 那个 TS 的 eventKey，
+ * 两边对不上就红。改键格式时别绕过它。
  *
  * ⚠️ 这套埋点是刻意的**纯聚合计数**：不写 cookie、不记 IP、不带任何标识。所以
  * 报表只能给「事件发生了多少次」和事件之间的比率，给不了 UV、留存，也给不了
@@ -95,7 +107,7 @@ function monthEnd(s) {
  * 90 天窗口截断。留着它们会让环比和趋势图凭空出现一个矮柱，而那是取数窗口的
  * 形状，不是数据本身。
  *
- * @param rows  升序排列的每日行，形如 { date, <event>: n, ... }
+ * @param rows  升序排列的每日行，形如 { date, observed, <event>: n, ... }
  * @param today 北京时间的今天，YYYY-MM-DD
  */
 export function bucketByPeriod(rows, period, today) {
@@ -117,12 +129,22 @@ export function bucketByPeriod(rows, period, today) {
     const start = startOf(row.date);
     let bucket = byStart.get(start);
     if (!bucket) {
-      bucket = { start, end: endOf(row.date), counts: {}, dates: [] };
+      bucket = {
+        start,
+        end: endOf(row.date),
+        counts: {},
+        dates: [],
+        // 「那天有没有留下任何键」。全 0 和「当时还没开始收」在计数上长得一模
+        // 一样，但一个是事实、一个是没有事实，报表里必须分开。
+        observedDays: 0,
+      };
       byStart.set(start, bucket);
     }
     bucket.dates.push(row.date);
+    if (row.observed) bucket.observedDays += 1;
     for (const [key, value] of Object.entries(row)) {
-      if (key === "date") continue;
+      // 只累加计数字段。date 是字符串、observed 是布尔，混进来会把桶算成 NaN。
+      if (key === "date" || typeof value !== "number") continue;
       bucket.counts[key] = (bucket.counts[key] ?? 0) + value;
     }
   }
@@ -190,7 +212,8 @@ export function buildReportCard({ period, buckets, dailyRows = [], repo }) {
   const config = PERIODS[period];
   if (!config) throw new Error(`Unknown period: ${period}`);
 
-  if (buckets.length === 0) {
+  const newest = buckets[buckets.length - 1];
+  if (buckets.length === 0 || newest.observedDays === 0) {
     return {
       schema: "2.0",
       header: {
@@ -201,7 +224,10 @@ export function buildReportCard({ period, buckets, dailyRows = [], repo }) {
         elements: [
           {
             tag: "markdown",
-            content: "取数窗口内还没有一个走完的周期，跳过本次。",
+            content:
+              buckets.length === 0
+                ? "取数窗口内还没有一个走完的周期，跳过本次。"
+                : "这个周期一条记录都没有——是当时还没开始收，不是数据为 0，所以不报数字。",
           },
         ],
       },
@@ -209,7 +235,15 @@ export function buildReportCard({ period, buckets, dailyRows = [], repo }) {
   }
 
   const current = buckets[buckets.length - 1];
-  const previous = buckets[buckets.length - 2];
+  // 上一期完全没有记录时不做环比：拿有数据的一期去除以没数据的一期，会得出
+  // +869% 这种看着惊人、其实只是「那时候还没开始收」的数字。
+  // 只跟**每一天都有记录**的上一期比。埋点上线那一周只覆盖了两天，拿完整一周
+  // 去除以它会得出 +869%：算得对，含义是假的。宁可不显示环比。
+  const rawPrevious = buckets[buckets.length - 2];
+  const previous =
+    rawPrevious && rawPrevious.observedDays === rawPrevious.dates.length
+      ? rawPrevious
+      : undefined;
   const sumDownloads = (counts) =>
     DOWNLOAD_CHANNELS.reduce((total, [event]) => total + (counts[event] ?? 0), 0);
 
@@ -290,6 +324,121 @@ export function buildReportCard({ period, buckets, dailyRows = [], repo }) {
 
 // ---------------------------------------------------------------- 取数
 
+/** 键形如 e:2026-08-21:share_land，前缀与 lib/server/analytics.ts 的 eventKey 一致。 */
+export const KEY_PREFIX = "e:";
+
+/** 从键名反解出日期和事件名。格式对不上返回 null，避免把别的键混进报表。 */
+export function parseEventKey(key) {
+  if (!key.startsWith(KEY_PREFIX)) return null;
+  const rest = key.slice(KEY_PREFIX.length);
+  const separator = rest.indexOf(":");
+  if (separator <= 0) return null;
+  const date = rest.slice(0, separator);
+  const event = rest.slice(separator + 1);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !event) return null;
+  return { date, event };
+}
+
+async function upstash(command, { url, token, fetchImpl }) {
+  const response = await fetchImpl(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(command),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `Upstash ${command[0]} returned ${response.status}: ${(await response.text()).slice(0, 200)}`
+    );
+  }
+  const body = await response.json();
+  if (body.error) throw new Error(`Upstash ${command[0]} failed: ${body.error}`);
+  return body.result;
+}
+
+/**
+ * 遍历所有事件键。
+ *
+ * 用 SCAN 而不是 KEYS：Upstash 的默认 REST token 直接拒掉 KEYS
+ * （`NOPERM this user has no permissions to run the 'keys' command`），
+ * 换成 SCAN 才跑得通——这是拿真库试出来的，不是照文档猜的。
+ *
+ * SCAN 必须循环到游标回到 "0"，只取第一页会静默漏数据；MATCH 和 COUNT 都只是
+ * 提示，某一轮返回空数组不代表扫完了。
+ */
+async function scanEventKeys({ url, token, fetchImpl }) {
+  const keys = [];
+  let cursor = "0";
+  // 防呆上限：真实数据量是「事件数 × 天数」，千级；真跑满说明游标没在推进。
+  for (let round = 0; round < 1000; round++) {
+    const [next, batch] = await upstash(
+      ["SCAN", cursor, "MATCH", `${KEY_PREFIX}*`, "COUNT", "1000"],
+      { url, token, fetchImpl }
+    );
+    keys.push(...(batch ?? []));
+    cursor = String(next);
+    if (cursor === "0") return keys;
+  }
+  throw new Error("Upstash SCAN did not finish; the cursor never returned to 0.");
+}
+
+/**
+ * 直接从 Upstash 读最近 days 天。
+ *
+ * 事件名靠扫键得到，而不是在这里再抄一份 trackedEvents：抄一份就多一处会悄悄
+ * 过时的东西，而漏掉一个新加的事件同样是静默失败。库很小（实测 144 个键），
+ * 扫一遍的代价可以忽略。
+ *
+ * 返回的形状与 HTTP 那条路一致，好让后面的分桶和渲染只认一种输入。窗口内没有
+ * 任何事件的日子也会补一行 0——否则趋势图会缺格，看起来像那天没统计。
+ */
+export async function readStatsFromUpstash({
+  url,
+  token,
+  days,
+  today,
+  fetchImpl = fetch,
+}) {
+  const base = url.replace(/\/$/, "");
+  const oldest = addDays(today, -(days - 1));
+
+  const keys = await scanEventKeys({ url: base, token, fetchImpl });
+
+  const wanted = [];
+  for (const key of keys) {
+    const parsed = parseEventKey(key);
+    if (parsed && parsed.date >= oldest && parsed.date <= today) {
+      wanted.push({ key, ...parsed });
+    }
+  }
+
+  const byDate = new Map();
+  for (let i = 0; i < days; i++) {
+    const date = addDays(oldest, i);
+    byDate.set(date, { date, observed: false });
+  }
+
+  if (wanted.length > 0) {
+    const values = await upstash(["MGET", ...wanted.map((w) => w.key)], {
+      url: base,
+      token,
+      fetchImpl,
+    });
+    wanted.forEach((w, i) => {
+      const row = byDate.get(w.date);
+      if (!row) return;
+      row[w.event] = Number(values?.[i] ?? 0) || 0;
+      // 键存在本身就是证据：那天埋点确实在跑。
+      row.observed = true;
+    });
+  }
+
+  return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+
 export async function fetchStats({
   baseUrl,
   token,
@@ -309,7 +458,11 @@ export async function fetchStats({
   }
   const body = await response.json();
   if (!body.configured) return null;
-  return [...body.days].sort((a, b) => (a.date < b.date ? -1 : 1));
+  // HTTP 那条路分不出「没记录」和「真的是 0」——端点对缺失的键一律返回 0，
+  // 信息在那一层就丢了。只能一律当作有记录，代价是这条路上的环比可能虚高。
+  return [...body.days]
+    .map((row) => ({ ...row, observed: true }))
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
 }
 
 /**
@@ -363,19 +516,18 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   const webhook = process.env.LARK_WEBHOOK;
   const secret = process.env.LARK_SIGN_SECRET;
-  const token = process.env.ANALYTICS_STATS_TOKEN;
+  const statsToken = process.env.ANALYTICS_STATS_TOKEN;
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
   const baseUrl = (process.env.SITE_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/$/, "");
 
   // 缺配置就安静退出，和 lark-notify.mjs 一致：本地和 fork 都拿不到 secrets，
   // 那不是错误。
-  if (!webhook || !token) {
-    console.log("LARK_WEBHOOK or ANALYTICS_STATS_TOKEN is not set; skipping report.");
-    process.exit(0);
-  }
-
-  const rows = await fetchStats({ baseUrl, token, days: PERIODS[period].days });
-  if (rows === null) {
-    console.log("Analytics storage is not configured on the deployment; skipping report.");
+  const canRead = (redisUrl && redisToken) || statsToken;
+  if (!webhook || !canRead) {
+    console.log(
+      "LARK_WEBHOOK, or both data sources, are unset; skipping report."
+    );
     process.exit(0);
   }
 
@@ -383,6 +535,28 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const today = new Date(Date.now() + 8 * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 10);
+
+  let rows;
+  if (redisUrl && redisToken) {
+    rows = await readStatsFromUpstash({
+      url: redisUrl,
+      token: redisToken,
+      days: PERIODS[period].days,
+      today,
+    });
+  } else {
+    rows = await fetchStats({
+      baseUrl,
+      token: statsToken,
+      days: PERIODS[period].days,
+    });
+    if (rows === null) {
+      console.log(
+        "Analytics storage is not configured on the deployment; skipping report."
+      );
+      process.exit(0);
+    }
+  }
 
   const card = buildReportCard({
     period,
