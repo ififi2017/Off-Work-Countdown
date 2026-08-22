@@ -22,6 +22,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  ChevronRight,
+  Clock3,
   Github,
   Coins,
   Keyboard,
@@ -38,6 +42,8 @@ import {
   Coffee,
   GlassWater,
   Palette,
+  Timer,
+  Play,
   Minus,
   X,
 } from "lucide-react";
@@ -107,6 +113,13 @@ import {
   showNotification,
 } from "@/lib/notify";
 import {
+  IS_DESKTOP_BUILD,
+  IS_MOBILE_BUILD,
+  IS_STATIC_SHELL_BUILD,
+  IS_WEB_BUILD,
+} from "@/lib/build-target";
+import { mobileSelectedTabStorageKey } from "@/lib/mobile-navigation";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -147,8 +160,15 @@ import { startSecondTick } from "@/lib/second-tick";
 const REMINDER_LEAD_MS = 15 * 60 * 1000;
 const notificationPrimerStorageKey = "desktopNotificationPrimerSeen";
 
-/** 由 next.config.mjs 在构建期注入，见 docs/PLAN-M5-TAURI.md 决策 1 与 7。 */
-const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+const formatCountdownClock = (durationMs: number) => {
+  const totalSeconds = Math.max(0, Math.ceil(durationMs / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+};
 
 /**
  * 微软商店渠道。更新由商店负责，应用内不做检查也不做下载——MSIX 的安装目录
@@ -160,6 +180,7 @@ const IS_MSSTORE_BUILD =
 const IS_MAC_APP_STORE_BUILD =
   IS_DESKTOP_BUILD &&
   process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "macappstore";
+const IS_APP_STORE_BUILD = IS_MAC_APP_STORE_BUILD || IS_MOBILE_BUILD;
 const IS_STORE_BUILD = IS_MSSTORE_BUILD || IS_MAC_APP_STORE_BUILD;
 
 type DesktopUpdateStatus =
@@ -211,7 +232,7 @@ function usePersistedSetting(key: string, value: string, enabled: boolean) {
 
 export interface OffWorkCountdownProps {
   lang: string;
-  macAppStoreCopy: MacAppStoreDialogCopy;
+  macAppStoreCopy?: MacAppStoreDialogCopy;
 }
 
 interface SalarySettingsProps {
@@ -355,6 +376,9 @@ export function OffWorkCountdown({
   const [showDesktopSettings, setShowDesktopSettings] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
+  // 计时尚未正式开始时，移动端首页仍给出实时班次预览。首帧保持 0，避免
+  // 静态导出与客户端水合时因为 Date.now() 不一致而闪动。
+  const [mobilePreviewNowMs, setMobilePreviewNowMs] = useState(0);
   const [theme, setTheme] = useState<Theme>("auto");
   const [isMounted, setIsMounted] = useState(false);
   // 用自增计数而不是布尔，见 Confetti 组件的说明。
@@ -396,7 +420,7 @@ export function OffWorkCountdown({
   //
   // 桌面端由构建期常量直接判定：构建时已知意味着首帧就是正确布局，不会出现
   // 「先渲染成浏览器版、再跳成铺满版」的闪烁；PWA 仍需运行时探测显示模式。
-  const [isAppShell, setIsAppShell] = useState(IS_DESKTOP_BUILD);
+  const [isAppShell, setIsAppShell] = useState(IS_STATIC_SHELL_BUILD);
   const [hideEarnings, setHideEarnings] = useState(false);
   const [maskAmountField, setMaskAmountField] = useState(true);
   const [activeShift, setActiveShift] = useState<ShiftTimeline | null>(null);
@@ -888,7 +912,7 @@ export function OffWorkCountdown({
       const isMinimalUi = window.matchMedia("(display-mode: minimal-ui)").matches;
       const isIOSStandalone = navigatorWithStandalone.standalone === true;
       setIsAppShell(
-        IS_DESKTOP_BUILD ||
+        IS_STATIC_SHELL_BUILD ||
           isStandalone ||
           isFullscreen ||
           isMinimalUi ||
@@ -1385,6 +1409,61 @@ export function OffWorkCountdown({
   const isRtl = getTextDirection(lang) === "rtl";
   const settingsScrollRef = useRef<HTMLDivElement>(null);
 
+  // The iOS shell owns the real UITabBar so iOS 26 can render the system
+  // Liquid Glass material. Browser previews use the same event contract and
+  // render an HTML equivalent below.
+  useEffect(() => {
+    if (!IS_MOBILE_BUILD) return;
+    const nativeWindow = window as Window & {
+      Capacitor?: { getPlatform?: () => string };
+    };
+    // Next hydrates <html> and can replace classes injected at document start.
+    // Mark the native shell from the hydrated app as well, so the browser-only
+    // tab bar cannot reappear underneath UIKit after a locale redirect.
+    if (nativeWindow.Capacitor?.getPlatform?.() === "ios") {
+      document.documentElement.classList.add("native-ios-tabbar");
+    }
+    try {
+      if (sessionStorage.getItem(mobileSelectedTabStorageKey) === "settings") {
+        setShowDesktopSettings(true);
+      }
+      sessionStorage.removeItem(mobileSelectedTabStorageKey);
+    } catch {
+      // A language switch still succeeds when session storage is unavailable.
+    }
+
+    const handleNativeTab = (event: Event) => {
+      const tab = (event as CustomEvent<{ tab?: string }>).detail?.tab;
+      if (tab === "timer") setShowDesktopSettings(false);
+      if (tab === "settings") setShowDesktopSettings(true);
+    };
+    window.addEventListener("owc:native-tab", handleNativeTab);
+    return () => window.removeEventListener("owc:native-tab", handleNativeTab);
+  }, []);
+
+  useEffect(() => {
+    if (!IS_MOBILE_BUILD) return;
+    const nativeWindow = window as Window & {
+      webkit?: {
+        messageHandlers?: {
+          owcMobileTabs?: { postMessage: (payload: unknown) => void };
+        };
+      };
+    };
+    nativeWindow.webkit?.messageHandlers?.owcMobileTabs?.postMessage({
+      timer: t("timerTab"),
+      settings: t("settings"),
+      selected: showDesktopSettings ? "settings" : "timer",
+      direction: isRtl ? "rtl" : "ltr",
+      appearance:
+        theme === "dark" || theme === "cyberpunk"
+          ? "dark"
+          : theme === "auto"
+            ? "system"
+            : "light",
+    });
+  }, [isRtl, showDesktopSettings, t, theme]);
+
   const triggerCelebration = useCallback((shiftEndAtMs: number) => {
     celebratedShiftRef.current = shiftEndAtMs;
     try {
@@ -1438,7 +1517,7 @@ export function OffWorkCountdown({
         const startAtMs = getShiftStartAtMs(shift);
         const endAtMs = getShiftEndAtMs(shift);
 
-        if (IS_DESKTOP_BUILD && startAtMs > now.getTime()) {
+        if (IS_STATIC_SHELL_BUILD && startAtMs > now.getTime()) {
           const beforeSeconds = Math.ceil((startAtMs - now.getTime()) / 1000);
           setOnLunchBreak(false);
           setShowBeforeShiftStatus(true);
@@ -1487,7 +1566,7 @@ export function OffWorkCountdown({
             completionTrackedRef.current = true;
             track("countdown_complete");
           }
-          const nextShift = IS_DESKTOP_BUILD
+          const nextShift = IS_STATIC_SHELL_BUILD
             ? findNextShiftTimeline({
                 startTime,
                 endTime,
@@ -1545,7 +1624,7 @@ export function OffWorkCountdown({
               celebrationPendingRef.current = endAtMs;
             }
           }
-          if (!IS_DESKTOP_BUILD) stopTick?.();
+          if (!IS_STATIC_SHELL_BUILD) stopTick?.();
         } else {
           setShowNextShiftStatus(false);
           const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -1564,11 +1643,13 @@ export function OffWorkCountdown({
           const formattedSeconds = seconds.toString().padStart(2, "0");
 
           setTimeLeft(
-            t("timeLeft", {
-              hours: formattedHours,
-              minutes: formattedMinutes,
-              seconds: formattedSeconds,
-            })
+            IS_MOBILE_BUILD
+              ? `${formattedHours}:${formattedMinutes}:${formattedSeconds}`
+              : t("timeLeft", {
+                  hours: formattedHours,
+                  minutes: formattedMinutes,
+                  seconds: formattedSeconds,
+                })
           );
 
           setProgress(calculateProgress());
@@ -1580,7 +1661,7 @@ export function OffWorkCountdown({
           // 时时若已不足 15 分钟，handleStart 会预先标记为已发，避免一点开就
           // 弹提醒。
           if (
-            !IS_DESKTOP_BUILD &&
+            IS_WEB_BUILD &&
             reminder &&
             !reminderFiredRef.current &&
             endAtMs - now.getTime() <= REMINDER_LEAD_MS
@@ -1599,6 +1680,13 @@ export function OffWorkCountdown({
     return () => stopTick?.();
   }, [showCountdown, startTime, endTime, activeShift, reminder, calculateProgress, t, shiftBuildOptions, workdays, triggerCelebration]);
 
+  useEffect(() => {
+    if (!IS_MOBILE_BUILD || showCountdown) return;
+    const updatePreviewClock = () => setMobilePreviewNowMs(Date.now());
+    updatePreviewClock();
+    return startSecondTick(updatePreviewClock);
+  }, [showCountdown]);
+
   const handleStart = () => {
     if (startTime === endTime) {
       setFormError(t("sameTimeError"));
@@ -1609,7 +1697,7 @@ export function OffWorkCountdown({
     const shift = buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
     const startAtMs = getShiftStartAtMs(shift);
     const endAtMs = getShiftEndAtMs(shift);
-    if (!IS_DESKTOP_BUILD && startAtMs > now.getTime()) {
+    if (IS_WEB_BUILD && startAtMs > now.getTime()) {
       const timeDiff = startAtMs - now.getTime();
       const hours = Math.floor(timeDiff / (1000 * 60 * 60));
       const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
@@ -1632,7 +1720,7 @@ export function OffWorkCountdown({
       setShowNextShiftStatus(false);
       setProgress(calculateTimelineProgress(shift, now.getTime()));
       track("countdown_start");
-      if (!IS_DESKTOP_BUILD && reminder) void requestNotificationPermission();
+      if (IS_WEB_BUILD && reminder) void requestNotificationPermission();
     }
   };
 
@@ -1661,6 +1749,15 @@ export function OffWorkCountdown({
   ) => {
     if (mode === "off") {
       setDesktopNotificationMode("off");
+      if (IS_MOBILE_BUILD) setReminder(false);
+      return;
+    }
+
+    if (IS_MOBILE_BUILD) {
+      // Match the macOS App Store feature model. P3 turns this mode into the
+      // native absolute reminder projection and requests permission in context.
+      setDesktopNotificationMode(mode);
+      setReminder(true);
       return;
     }
 
@@ -1704,6 +1801,13 @@ export function OffWorkCountdown({
       setLunchEndNotificationEnabled(false);
       return;
     }
+    if (IS_MOBILE_BUILD) {
+      // P3 will hand the resulting absolute reminder projection to
+      // UNUserNotificationCenter. The UI setting itself must remain usable
+      // before that bridge lands; it must not call the Web permission API.
+      setLunchEnabled(true);
+      return;
+    }
     pendingNotificationActionRef.current = () => setLunchEnabled(true);
     requestDesktopNotificationFeature();
   };
@@ -1711,6 +1815,10 @@ export function OffWorkCountdown({
   const handleLunchEndNotificationChange = (enabled: boolean) => {
     if (!enabled) {
       setLunchEndNotificationEnabled(false);
+      return;
+    }
+    if (IS_MOBILE_BUILD) {
+      setLunchEndNotificationEnabled(true);
       return;
     }
     pendingNotificationActionRef.current = () =>
@@ -1760,6 +1868,10 @@ export function OffWorkCountdown({
       setLunchStartNotificationEnabled(false);
       return;
     }
+    if (IS_MOBILE_BUILD) {
+      setLunchStartNotificationEnabled(true);
+      return;
+    }
     pendingNotificationActionRef.current = () =>
       setLunchStartNotificationEnabled(true);
     requestDesktopNotificationFeature();
@@ -1768,6 +1880,10 @@ export function OffWorkCountdown({
   const handleMicroBreakEnabledChange = (enabled: boolean) => {
     if (!enabled) {
       setMicroBreakEnabled(false);
+      return;
+    }
+    if (IS_MOBILE_BUILD) {
+      setMicroBreakEnabled(true);
       return;
     }
     pendingNotificationActionRef.current = () => setMicroBreakEnabled(true);
@@ -1850,6 +1966,10 @@ export function OffWorkCountdown({
   };
 
   const openDesktopUrl = async (url: string) => {
+    if (IS_MOBILE_BUILD) {
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
     try {
       const { openUrl } = await import("@tauri-apps/plugin-opener");
       await openUrl(url);
@@ -2191,16 +2311,96 @@ export function OffWorkCountdown({
       workdays
     );
 
+  const mobilePreview = useMemo(() => {
+    if (!mobilePreviewNowMs || startTime === endTime) {
+      return {
+        label: t("offWorkCountdown"),
+        timeLeft: "--:--:--",
+        progress: 0,
+      };
+    }
+
+    const now = new Date(mobilePreviewNowMs);
+    let shift = buildShiftTimeline(startTime, endTime, now, shiftBuildOptions);
+    let startAtMs = getShiftStartAtMs(shift);
+    const endAtMs = getShiftEndAtMs(shift);
+    const currentShiftIsWorkday = isWorkday(new Date(startAtMs), workdays);
+
+    if (!currentShiftIsWorkday || mobilePreviewNowMs >= endAtMs) {
+      const nextShift = findNextShiftTimeline({
+        startTime,
+        endTime,
+        workdays,
+        afterMs: mobilePreviewNowMs,
+        options: shiftBuildOptions,
+      });
+      if (!nextShift) {
+        return {
+          label: t("restDay"),
+          timeLeft: "--:--:--",
+          progress: 0,
+        };
+      }
+      shift = nextShift;
+      startAtMs = getShiftStartAtMs(shift);
+    }
+
+    if (mobilePreviewNowMs < startAtMs) {
+      return {
+        label: t("nextShiftLabelShort"),
+        timeLeft: formatCountdownClock(startAtMs - mobilePreviewNowMs),
+        progress: 0,
+      };
+    }
+
+    return {
+      label: t("offWorkCountdown"),
+      timeLeft: formatCountdownClock(
+        getShiftRemainingMs(shift, mobilePreviewNowMs)
+      ),
+      progress: calculateTimelineProgress(shift, mobilePreviewNowMs),
+    };
+  }, [
+    endTime,
+    mobilePreviewNowMs,
+    shiftBuildOptions,
+    startTime,
+    t,
+    workdays,
+  ]);
+
+  const mobileNotificationValue = t(
+    desktopNotificationMode === "milestones"
+      ? "notificationModeMilestones"
+      : desktopNotificationMode === "simple"
+        ? "notificationModeSimple"
+        : "notificationModeOff"
+  );
+  const mobileSalaryValue =
+    configuredDailySalary !== null
+      ? hideEarnings
+        ? "••••"
+        : configuredDailySalary.toFixed(2)
+      : t("configureSalary");
+
   return (
     <div
-      className={`min-h-screen transition-colors duration-1000 ease-in-out ${
-        isAppShell
-          ? "select-none flex flex-col items-stretch justify-start p-0"
-          : "flex items-center justify-center p-4"
+      className={`transition-colors duration-1000 ease-in-out ${
+        IS_MOBILE_BUILD
+          ? "mobile-app-surface flex h-[100dvh] min-h-[100dvh] flex-col items-stretch overflow-hidden p-0 select-none"
+          : isAppShell
+            ? "min-h-screen select-none flex flex-col items-stretch justify-start p-0"
+            : "min-h-screen flex items-center justify-center p-4"
       } ${
-        isCustomTheme ? "" : "bg-gray-100 dark:bg-gray-900"
+        isCustomTheme
+          ? IS_MOBILE_BUILD
+            ? "mobile-custom-theme"
+            : ""
+          : IS_MOBILE_BUILD
+            ? "bg-[#f2f2f7] dark:bg-black"
+            : "bg-gray-100 dark:bg-gray-900"
       } ${
-        isAppShell
+        isAppShell && !IS_MOBILE_BUILD
           ? "pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
           : ""
       }`}
@@ -2208,7 +2408,7 @@ export function OffWorkCountdown({
       <Background theme={theme} />
       <Confetti trigger={confettiNonce} />
 
-      {IS_DESKTOP_BUILD && (
+      {IS_STATIC_SHELL_BUILD && (
         <>
         <Dialog
           open={notificationDialog !== null}
@@ -2385,7 +2585,15 @@ export function OffWorkCountdown({
         </div>
       )}
 
-      <div className={isAppShell ? "flex min-h-0 flex-1 flex-col" : "w-full max-w-md"}>
+      <div
+        className={
+          IS_MOBILE_BUILD
+            ? "flex h-full min-h-0 w-full flex-1 flex-col"
+            : isAppShell
+              ? "flex min-h-0 flex-1 flex-col"
+              : "w-full max-w-md"
+        }
+      >
       {/* 接力提示。分享链接落地后对方直接看到的是发送者的班次倒计时，
           这里说明来源并给出一键切回自己时间的出口 —— 分享→落地→转化的
           闭环，此前断在落地这一步（对方只会看到一个空表单）。 */}
@@ -2403,10 +2611,14 @@ export function OffWorkCountdown({
           </button>
         </div>
       )}
-      <Card className={`w-full glass dark:glass-dark border-0 ${
-        isAppShell
-          ? "max-w-none h-screen max-h-screen overflow-hidden rounded-none shadow-none border-none bg-transparent flex flex-col"
-          : ""
+      <Card className={`w-full border-0 ${
+        IS_MOBILE_BUILD
+          ? "mobile-app-card flex h-full min-h-0 max-w-none flex-col overflow-hidden rounded-none bg-transparent shadow-none"
+          : `glass dark:glass-dark ${
+              isAppShell
+                ? "max-w-none h-screen max-h-screen overflow-hidden rounded-none shadow-none border-none bg-transparent flex flex-col"
+                : ""
+            }`
       }`}>
         {/* 轨道：主页面与设置页各占一半，整条横移。Web 版没有设置页，用
             display:contents 让这两层在布局里消失。 */}
@@ -2414,7 +2626,9 @@ export function OffWorkCountdown({
           className={
             IS_DESKTOP_BUILD
               ? "flex min-h-0 w-[200%] flex-1 will-change-transform motion-safe:transition-transform motion-safe:duration-[340ms] motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
-              : "contents"
+              : IS_MOBILE_BUILD
+                ? "relative flex min-h-0 flex-1"
+                : "contents"
           }
           style={
             IS_DESKTOP_BUILD
@@ -2428,23 +2642,35 @@ export function OffWorkCountdown({
         >
         <div
           className={
-            IS_DESKTOP_BUILD ? "flex h-full w-1/2 min-h-0 flex-col" : "contents"
+            IS_DESKTOP_BUILD
+              ? "flex h-full w-1/2 min-h-0 flex-col"
+              : IS_MOBILE_BUILD
+                ? `${showDesktopSettings ? "hidden" : "flex"} h-full w-full min-h-0 flex-col`
+                : "contents"
           }
         >
         <CardHeader
           className={
-            isAppShell
-              ? hasOverlayTitleBar || hasWindowsTitleBar
-                ? "px-6 pb-3 pt-10"
-                : "p-6 pb-3"
-              : undefined
+            IS_MOBILE_BUILD
+              ? "px-5 pb-3 pt-[max(1rem,env(safe-area-inset-top))]"
+              : isAppShell
+                ? hasOverlayTitleBar || hasWindowsTitleBar
+                  ? "px-6 pb-3 pt-10"
+                  : "p-6 pb-3"
+                : undefined
           }
         >
           <div
             data-tauri-drag-region={IS_DESKTOP_BUILD ? "deep" : undefined}
             className="flex items-center justify-between gap-3"
           >
-            <div className="flex min-w-0 flex-1 items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              {IS_MOBILE_BUILD && (
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.9rem] bg-blue-500 text-white shadow-lg shadow-blue-500/20 dark:bg-blue-400 dark:text-gray-950">
+                  <Timer className="h-6 w-6" />
+                </span>
+              )}
+              <div className="min-w-0">
               {/* 这里用真正的 h1 而不是 shadcn 的 CardTitle：后者硬编码为 h3，
                   会排在下方说明区的 h2 前面，标题层级就颠倒了。原先另有一个
                   sr-only 的 h1，内容与这里完全相同，属于重复，已一并去掉。 */}
@@ -2454,12 +2680,20 @@ export function OffWorkCountdown({
                 className={
                   IS_DESKTOP_BUILD
                     ? "min-w-0 truncate whitespace-nowrap text-xl font-bold leading-none tracking-tight dark:text-white"
-                    : "text-2xl font-bold leading-none tracking-tight dark:text-white"
+                    : IS_MOBILE_BUILD
+                      ? "min-w-0 truncate whitespace-nowrap text-[1.4rem] font-bold leading-tight tracking-[-0.02em] text-gray-950 dark:text-white"
+                      : "text-2xl font-bold leading-none tracking-tight dark:text-white"
                 }
               >
                 {t("offWorkCountdown")}
               </h1>
-              {!showCountdown && !IS_DESKTOP_BUILD && (
+              {IS_MOBILE_BUILD && (
+                <p className="mt-0.5 line-clamp-2 text-[0.68rem] leading-4 text-gray-500 dark:text-gray-400">
+                  {t("landingTagline")}
+                </p>
+              )}
+              </div>
+              {!showCountdown && IS_WEB_BUILD && (
                 <a
                   href="https://github.com/ififi2017/Off-Work-Countdown"
                   target="_blank"
@@ -2523,14 +2757,20 @@ export function OffWorkCountdown({
                     </span>
                   </Button>
                 </>
-              ) : !IS_DESKTOP_BUILD ? (
+              ) : IS_MOBILE_BUILD ? (
+                <ThemeToggle
+                  theme={theme}
+                  onThemeChange={handleThemeChange}
+                  mobile
+                />
+              ) : IS_WEB_BUILD ? (
                 <ThemeToggle
                   theme={theme}
                   onThemeChange={handleThemeChange}
                   compact
                 />
               ) : null}
-              {!IS_DESKTOP_BUILD && (
+              {IS_WEB_BUILD && (
               <LanguageSelector
                 currentLang={lang}
                 languageMap={languageNames}
@@ -2542,13 +2782,15 @@ export function OffWorkCountdown({
         </CardHeader>
         <CardContent
           className={
-            isAppShell
-              ? `relative z-10 min-h-0 flex-1 flex flex-col p-6 pt-2 pb-4 ${
-                  IS_DESKTOP_BUILD && formError
-                    ? "justify-start overflow-y-auto"
-                    : "justify-center overflow-visible"
-                }`
-              : undefined
+            IS_MOBILE_BUILD
+              ? "mobile-content-scroll relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-4 pt-2"
+              : isAppShell
+                ? `relative z-10 min-h-0 flex-1 flex flex-col p-6 pt-2 pb-4 ${
+                    IS_DESKTOP_BUILD && formError
+                      ? "justify-start overflow-y-auto"
+                      : "justify-center overflow-visible"
+                  }`
+                : undefined
           }
         >
           {/* popLayout 而不是 wait：wait 要等退场信号回来才肯渲染新页面，实测
@@ -2563,16 +2805,78 @@ export function OffWorkCountdown({
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className={IS_DESKTOP_BUILD ? "space-y-3" : "space-y-4"}
+                className={
+                  IS_DESKTOP_BUILD
+                    ? "space-y-3"
+                    : IS_MOBILE_BUILD
+                      ? "space-y-5"
+                      : "space-y-4"
+                }
               >
+                {IS_MOBILE_BUILD && (
+                  <section className="mobile-timer-hero overflow-hidden rounded-[2rem] border border-white/80 px-5 pb-5 pt-6 shadow-[0_20px_55px_rgba(37,99,235,0.13)] dark:border-white/10">
+                    <p className="text-center text-sm font-semibold text-blue-600 dark:text-blue-300">
+                      {mobilePreview.label}
+                    </p>
+                    <div className="mt-3">
+                      <CountdownDisplay
+                        timeLeft={mobilePreview.timeLeft}
+                        progress={mobilePreview.progress}
+                        mobile
+                        forceLtr
+                      />
+                    </div>
+                    <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[1.35rem] border border-white/80 bg-white/75 px-4 py-3.5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/35">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                          <Clock3 className="h-4 w-4 shrink-0 text-blue-500" />
+                          <span className="truncate">{t("startTime")}</span>
+                        </div>
+                        <p dir="ltr" className="mt-1 text-lg font-bold tabular-nums text-gray-950 dark:text-white">
+                          {startTime}
+                        </p>
+                      </div>
+                      <ArrowRight
+                        aria-hidden="true"
+                        className={`h-5 w-5 text-blue-500 ${isRtl ? "rotate-180" : ""}`}
+                      />
+                      <div className="min-w-0 text-end">
+                        <div className="flex items-center justify-end gap-2 text-xs text-gray-500 dark:text-gray-400">
+                          <span className="truncate">{t("endTime")}</span>
+                          <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded text-emerald-600 dark:text-emerald-400">⚑</span>
+                        </div>
+                        <p dir="ltr" className="mt-1 text-lg font-bold tabular-nums text-gray-950 dark:text-white">
+                          {endTime}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                )}
+
                 {/* 两个选择器并排。Web 版此前各占整行，两位数输入框会拉到
                     200pt 以上；只加宽度上限又会在右边空出一大块。 */}
+                <div
+                  className={
+                    IS_MOBILE_BUILD
+                      ? "space-y-5 rounded-[1.75rem] border border-white/70 bg-white/80 p-4 shadow-[0_12px_32px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/80"
+                      : "contents"
+                  }
+                >
+                {IS_MOBILE_BUILD && (
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-5 w-5 text-blue-500" />
+                    <h2 className="text-base font-semibold text-gray-950 dark:text-white">
+                      {t("workdaysLabel")}
+                    </h2>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <TimeSelector
                     id="startTime"
                     label={t("startTime")}
                     value={startTime}
                     compact={IS_DESKTOP_BUILD}
+                    mobile={IS_MOBILE_BUILD}
                     onChange={(hour, minute) =>
                       handleTimeChange("start", hour, minute)
                     }
@@ -2582,6 +2886,7 @@ export function OffWorkCountdown({
                     label={t("endTime")}
                     value={endTime}
                     compact={IS_DESKTOP_BUILD}
+                    mobile={IS_MOBILE_BUILD}
                     onChange={(hour, minute) =>
                       handleTimeChange("end", hour, minute)
                     }
@@ -2593,11 +2898,58 @@ export function OffWorkCountdown({
                   value={workdays}
                   onChange={setWorkdays}
                   compact={IS_DESKTOP_BUILD}
+                  mobile={IS_MOBILE_BUILD}
                 />
                 {!todayIsWorkday && (
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {t("restDay")}
                   </p>
+                )}
+                </div>
+
+                {IS_MOBILE_BUILD && (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => openSetting("salary")}
+                        className="group flex min-h-[6.5rem] min-w-0 items-center gap-3 rounded-[1.4rem] border border-emerald-100/80 bg-emerald-50/80 p-3 text-start shadow-sm transition-transform active:scale-[0.98] dark:border-emerald-400/10 dark:bg-emerald-400/10"
+                        aria-label={t("salarySettings")}
+                      >
+                        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300">
+                          <Coins className="h-5 w-5" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-xs font-medium text-emerald-700/80 dark:text-emerald-200/75">
+                            {t("salarySettings")}
+                          </span>
+                          <span className="mt-1 block truncate text-sm font-bold text-emerald-800 dark:text-emerald-100">
+                            {mobileSalaryValue}
+                          </span>
+                        </span>
+                        <ChevronRight className={`h-4 w-4 shrink-0 text-emerald-500/60 ${isRtl ? "rotate-180" : ""}`} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openSetting("notification")}
+                        className="group flex min-h-[6.5rem] min-w-0 items-center gap-3 rounded-[1.4rem] border border-orange-100/80 bg-orange-50/80 p-3 text-start shadow-sm transition-transform active:scale-[0.98] dark:border-orange-400/10 dark:bg-orange-400/10"
+                        aria-label={t("notificationMode")}
+                      >
+                        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-500/15 text-orange-600 dark:text-orange-300">
+                          <BellRing className="h-5 w-5" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-xs font-medium text-orange-700/80 dark:text-orange-200/75">
+                            {t("notificationMode")}
+                          </span>
+                          <span className="mt-1 block truncate text-sm font-bold text-orange-800 dark:text-orange-100">
+                            {mobileNotificationValue}
+                          </span>
+                        </span>
+                        <ChevronRight className={`h-4 w-4 shrink-0 text-orange-500/60 ${isRtl ? "rotate-180" : ""}`} />
+                      </button>
+                    </div>
+                  </>
                 )}
 
                 {/* 特色功能的快捷入口。只放图标：这一屏是「开始倒计时」的
@@ -2650,7 +3002,7 @@ export function OffWorkCountdown({
                   </div>
                 )}
 
-                {!IS_DESKTOP_BUILD && (
+                {IS_WEB_BUILD && (
                   <div className="flex min-h-9 items-center gap-2">
                     <Switch
                       id="reminder"
@@ -2663,7 +3015,7 @@ export function OffWorkCountdown({
                   </div>
                 )}
 
-                {!IS_DESKTOP_BUILD && (
+                {IS_WEB_BUILD && (
                   <SalarySettings
                     enabled={showSalary}
                     onEnabledChange={setShowSalary}
@@ -2690,8 +3042,26 @@ export function OffWorkCountdown({
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className={IS_DESKTOP_BUILD ? "w-full space-y-3" : "space-y-6"}
+                className={
+                  IS_DESKTOP_BUILD
+                    ? "w-full space-y-3"
+                    : IS_MOBILE_BUILD
+                      ? "flex flex-col gap-5 pb-2 pt-1"
+                      : "space-y-6"
+                }
               >
+                <div
+                  className={
+                    IS_MOBILE_BUILD
+                      ? "mobile-timer-hero rounded-[2rem] border border-white/80 px-5 pb-5 pt-6 shadow-[0_20px_55px_rgba(37,99,235,0.13)] dark:border-white/10"
+                      : undefined
+                  }
+                >
+                {IS_MOBILE_BUILD && !showNextShiftStatus && !showBeforeShiftStatus && (
+                  <p className="mb-3 text-center text-sm font-semibold text-blue-600 dark:text-blue-300">
+                    {t("offWorkCountdown")}
+                  </p>
+                )}
                 <CountdownDisplay
                   timeLeft={timeLeft}
                   title={
@@ -2704,9 +3074,33 @@ export function OffWorkCountdown({
                   progress={progress}
                   standby={onLunchBreak}
                   dense={IS_DESKTOP_BUILD}
+                  mobile={IS_MOBILE_BUILD}
                   overtime={Boolean(activeShift?.overtimeEndAtMs)}
                   status={showNextShiftStatus || showBeforeShiftStatus}
+                  forceLtr={!showNextShiftStatus}
                 />
+                {IS_MOBILE_BUILD && (
+                  <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[1.35rem] border border-white/80 bg-white/75 px-4 py-3.5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/35">
+                    <div className="min-w-0">
+                      <span className="block truncate text-xs text-gray-500 dark:text-gray-400">
+                        {t("startTime")}
+                      </span>
+                      <span dir="ltr" className="mt-1 block text-lg font-bold tabular-nums text-gray-950 dark:text-white">
+                        {startTime}
+                      </span>
+                    </div>
+                    <ArrowRight className={`h-5 w-5 text-blue-500 ${isRtl ? "rotate-180" : ""}`} />
+                    <div className="min-w-0 text-end">
+                      <span className="block truncate text-xs text-gray-500 dark:text-gray-400">
+                        {t("endTime")}
+                      </span>
+                      <span dir="ltr" className="mt-1 block text-lg font-bold tabular-nums text-gray-950 dark:text-white">
+                        {endTime}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                </div>
                 {summaryRows && (
                   <PeriodSummary
                     lang={lang}
@@ -2714,6 +3108,7 @@ export function OffWorkCountdown({
                     rows={summaryRows}
                     hideEarnings={hideEarnings}
                     compact={IS_DESKTOP_BUILD}
+                    mobile={IS_MOBILE_BUILD}
                     currentEarnings={
                       moneyEarned !== null
                         ? {
@@ -2727,6 +3122,46 @@ export function OffWorkCountdown({
                     }
                   />
                 )}
+                {IS_MOBILE_BUILD && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => openSetting("salary")}
+                      className="flex min-h-20 min-w-0 items-center gap-3 rounded-[1.35rem] border border-emerald-100/80 bg-emerald-50/80 p-3 text-start shadow-sm transition-transform active:scale-[0.98] dark:border-emerald-400/10 dark:bg-emerald-400/10"
+                      aria-label={t("salarySettings")}
+                    >
+                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300">
+                        <Coins className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs text-emerald-700/80 dark:text-emerald-200/75">
+                          {t("salarySettings")}
+                        </span>
+                        <span className="mt-1 block truncate text-sm font-bold text-emerald-800 dark:text-emerald-100">
+                          {mobileSalaryValue}
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openSetting("notification")}
+                      className="flex min-h-20 min-w-0 items-center gap-3 rounded-[1.35rem] border border-orange-100/80 bg-orange-50/80 p-3 text-start shadow-sm transition-transform active:scale-[0.98] dark:border-orange-400/10 dark:bg-orange-400/10"
+                      aria-label={t("notificationMode")}
+                    >
+                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500/15 text-orange-600 dark:text-orange-300">
+                        <BellRing className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs text-orange-700/80 dark:text-orange-200/75">
+                          {t("notificationMode")}
+                        </span>
+                        <span className="mt-1 block truncate text-sm font-bold text-orange-800 dark:text-orange-100">
+                          {mobileNotificationValue}
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -2735,7 +3170,9 @@ export function OffWorkCountdown({
             className={
               IS_DESKTOP_BUILD
                 ? "relative z-0 flex justify-center border-t border-white/30 bg-white/20 p-3 backdrop-blur-sm dark:border-white/10 dark:bg-black/10"
-                : "flex justify-center"
+                : IS_MOBILE_BUILD
+                  ? "relative z-10 flex justify-center px-5 pb-[calc(5.75rem+env(safe-area-inset-bottom))] pt-2"
+                  : "flex justify-center"
             }
           >
           {/* 同上：页脚按钮组也不能等退场信号，否则换页时下方空一拍。
@@ -2746,7 +3183,7 @@ export function OffWorkCountdown({
             {!showCountdown ? (
               <motion.div
                 key="start"
-                className="whitespace-nowrap"
+                className={IS_MOBILE_BUILD ? "w-full whitespace-nowrap" : "whitespace-nowrap"}
                 initial={{ opacity: 0 }}
                 animate={{
                   opacity: 1,
@@ -2757,7 +3194,17 @@ export function OffWorkCountdown({
                   transition: { duration: FLOW_EXIT_SECONDS },
                 }}
               >
-                <Button onClick={handleStart}>{t("startCountdown")}</Button>
+                <Button
+                  className={
+                    IS_MOBILE_BUILD
+                      ? "h-14 w-full rounded-2xl border-0 bg-[linear-gradient(110deg,#3b82f6_0%,#6366f1_58%,#8b5cf6_100%)] text-base font-semibold text-white shadow-lg shadow-indigo-500/25 active:scale-[0.99]"
+                      : undefined
+                  }
+                  onClick={handleStart}
+                >
+                  {IS_MOBILE_BUILD && <Play className="me-2 h-5 w-5 fill-current" />}
+                  {t("startCountdown")}
+                </Button>
               </motion.div>
             ) : (
               <motion.div
@@ -2771,19 +3218,29 @@ export function OffWorkCountdown({
                   opacity: 0,
                   transition: { duration: FLOW_EXIT_SECONDS },
                 }}
-                className="flex gap-2 whitespace-nowrap"
+                className={`flex gap-2 whitespace-nowrap ${IS_MOBILE_BUILD ? "w-full" : ""}`}
               >
                 <Button
                   variant="outline"
-                  className={IS_DESKTOP_BUILD ? "h-9 rounded-lg px-4" : undefined}
+                  className={
+                    IS_DESKTOP_BUILD
+                      ? "h-9 rounded-lg px-4"
+                      : IS_MOBILE_BUILD
+                        ? "h-12 flex-1 rounded-2xl bg-white/80 px-4 shadow-sm backdrop-blur-xl dark:bg-gray-900/80"
+                        : undefined
+                  }
                   onClick={handleReturn}
                 >
                   <ArrowLeft className="me-2 h-4 w-4" /> {t("return")}
                 </Button>
-                {IS_DESKTOP_BUILD && (
+                {IS_STATIC_SHELL_BUILD && (
                   <Button
                     variant="outline"
-                    className="h-9 rounded-lg px-3"
+                    className={
+                      IS_MOBILE_BUILD
+                        ? "h-12 flex-1 rounded-2xl bg-white/80 px-3 shadow-sm backdrop-blur-xl dark:bg-gray-900/80"
+                        : "h-9 rounded-lg px-3"
+                    }
                     onClick={openOvertimeDialog}
                   >
                     {activeShift?.overtimeEndAtMs
@@ -2797,10 +3254,17 @@ export function OffWorkCountdown({
                   isOff={progress >= 100}
                   shift={{ start: startTime, end: endTime }}
                   desktop={IS_DESKTOP_BUILD}
+                  mobile={IS_MOBILE_BUILD}
                 />
               </motion.div>
             )}
           </AnimatePresence>
+          {IS_MOBILE_BUILD && !showCountdown && (
+            <div className="pointer-events-none absolute inset-x-5 bottom-[calc(4.45rem+env(safe-area-inset-bottom))] flex items-center justify-center gap-2 text-center text-xs text-gray-500 dark:text-gray-400">
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              <span>{t("landingFeature3Title")}</span>
+            </div>
+          )}
           </CardFooter>
         </div>
 
@@ -2810,20 +3274,28 @@ export function OffWorkCountdown({
             两页并排放在一条 200% 宽的轨道上整体横移，而不是把设置页浮在主页
             上方：两页都保持透明，背景渐变继续从底下透出。做成覆盖层就得给它
             一个不透明底色，自定义主题的渐变会被压掉。 */}
-        {IS_DESKTOP_BUILD && (
-          <div className="flex h-full w-1/2 min-h-0 flex-col">
+        {IS_STATIC_SHELL_BUILD && (
+          <div
+            className={
+              IS_MOBILE_BUILD
+                ? `${showDesktopSettings ? "flex" : "hidden"} h-full w-full min-h-0 flex-col`
+                : "flex h-full w-1/2 min-h-0 flex-col"
+            }
+          >
             <div
               className={
-                hasOverlayTitleBar || hasWindowsTitleBar
-                  ? "px-6 pb-3 pt-10"
-                  : "p-6 pb-3"
+                IS_MOBILE_BUILD
+                  ? "px-5 pb-3 pt-[max(1rem,env(safe-area-inset-top))]"
+                  : hasOverlayTitleBar || hasWindowsTitleBar
+                    ? "px-6 pb-3 pt-10"
+                    : "p-6 pb-3"
               }
             >
               <div
-                data-tauri-drag-region="deep"
+                data-tauri-drag-region={IS_DESKTOP_BUILD ? "deep" : undefined}
                 className="flex items-center gap-2"
               >
-                <button
+                {IS_DESKTOP_BUILD && <button
                   type="button"
                   data-tauri-drag-region="false"
                   onClick={() => setShowDesktopSettings(false)}
@@ -2832,10 +3304,14 @@ export function OffWorkCountdown({
                   title={t("return")}
                 >
                   <ArrowLeft className="h-4 w-4" />
-                </button>
+                </button>}
                 <h2
-                  data-tauri-drag-region="deep"
-                  className="min-w-0 truncate whitespace-nowrap text-xl font-bold leading-none tracking-tight dark:text-white"
+                  data-tauri-drag-region={IS_DESKTOP_BUILD ? "deep" : undefined}
+                  className={
+                    IS_MOBILE_BUILD
+                      ? "min-w-0 truncate whitespace-nowrap text-[2.1rem] font-bold leading-tight tracking-[-0.03em] text-gray-950 dark:text-white"
+                      : "min-w-0 truncate whitespace-nowrap text-xl font-bold leading-none tracking-tight dark:text-white"
+                  }
                 >
                   {t("settings")}
                 </h2>
@@ -2843,7 +3319,11 @@ export function OffWorkCountdown({
             </div>
             <div
               ref={settingsScrollRef}
-              className="desktop-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto px-6 pb-4 pt-2"
+              className={
+                IS_MOBILE_BUILD
+                  ? "mobile-settings-list mobile-content-scroll min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2"
+                  : "desktop-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto px-6 pb-4 pt-2"
+              }
             >
                   <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
                     <Label className="flex items-center gap-2 text-sm dark:text-gray-200">
@@ -2854,6 +3334,7 @@ export function OffWorkCountdown({
                       theme={theme}
                       onThemeChange={handleThemeChange}
                       compact
+                      mobile={IS_MOBILE_BUILD}
                     />
                   </section>
 
@@ -2866,9 +3347,11 @@ export function OffWorkCountdown({
                       currentLang={lang}
                       languageMap={languageNames}
                       compact
+                      mobile={IS_MOBILE_BUILD}
                     />
                   </section>
 
+                  {IS_DESKTOP_BUILD && <>
                   <section className="space-y-2.5 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
                     <div className="flex items-center justify-between gap-4">
                       <Label
@@ -3014,6 +3497,7 @@ export function OffWorkCountdown({
                       {t("toggleFloatingTimer")}
                     </Button>
                   </section>
+                  </>}
 
                   {/* 三类通知（下班／午休／健康）此前散在主界面和设置页两处，
                       想「今天别烦我」得跑两个地方。收进同一个分组。 */}
@@ -3041,7 +3525,9 @@ export function OffWorkCountdown({
                       >
                         <SelectTrigger
                           id="notification-mode"
-                          className="h-9 w-[148px] whitespace-nowrap rounded-xl bg-background [&>span]:truncate"
+                          className={`w-[148px] whitespace-nowrap rounded-xl bg-background [&>span]:truncate ${
+                            IS_MOBILE_BUILD ? "h-11" : "h-9"
+                          }`}
                         >
                           <SelectValue />
                         </SelectTrigger>
@@ -3262,7 +3748,7 @@ export function OffWorkCountdown({
                       </span>
                       <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
                     </button>
-                    {!IS_MAC_APP_STORE_BUILD && (
+                    {!IS_APP_STORE_BUILD && (
                       <button
                         type="button"
                         onClick={() => void handleCheckForUpdates()}
@@ -3333,7 +3819,7 @@ export function OffWorkCountdown({
                         )}
                       </button>
                     )}
-                    {!IS_MAC_APP_STORE_BUILD &&
+                    {!IS_APP_STORE_BUILD &&
                       desktopUpdateStatus !== "idle" &&
                       desktopUpdateStatus !== "checking" &&
                       desktopUpdateStatus !== "installing" &&
@@ -3363,11 +3849,56 @@ export function OffWorkCountdown({
         </div>
       </Card>
 
+      {/* Browser-only preview/fallback. The iOS target hides this element at
+          document start and supplies a real UITabBar, which receives the
+          system Liquid Glass appearance on iOS 26. Both use the same tab
+          event/state contract. */}
+      {IS_MOBILE_BUILD && (
+        <nav
+          className="mobile-web-tabbar fixed inset-x-0 bottom-0 z-40 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
+          aria-label={t("offWorkCountdown")}
+        >
+          <div
+            role="tablist"
+            className="mx-auto grid max-w-sm grid-cols-2 gap-1 rounded-[1.8rem] border border-white/70 bg-white/[0.72] p-1.5 shadow-[0_16px_50px_rgba(15,23,42,0.2)] backdrop-blur-2xl dark:border-white/15 dark:bg-gray-900/[0.72]"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!showDesktopSettings}
+              onClick={() => setShowDesktopSettings(false)}
+              className={`flex min-h-12 items-center justify-center gap-2 rounded-[1.35rem] px-4 text-sm font-semibold transition-all ${
+                !showDesktopSettings
+                  ? "bg-white text-gray-950 shadow-sm dark:bg-white/[0.18] dark:text-white"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              <Timer className="h-5 w-5" />
+              {t("timerTab")}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={showDesktopSettings}
+              onClick={() => setShowDesktopSettings(true)}
+              className={`flex min-h-12 items-center justify-center gap-2 rounded-[1.35rem] px-4 text-sm font-semibold transition-all ${
+                showDesktopSettings
+                  ? "bg-white text-gray-950 shadow-sm dark:bg-white/[0.18] dark:text-white"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              <Settings2 className="h-5 w-5" />
+              {t("settings")}
+            </button>
+          </div>
+        </nav>
+      )}
+
       {/* 说明区。冷启动的搜索流量第一眼只看到一个表单，不知道这是什么，跳出率
           会很高；同时主应用页的可见正文原本只有 110–285 字符，内容过薄。
           与页脚同样渲染在设置态（服务端首屏状态），所以这些文字都在初始 HTML 里。
           刻意不放截图：可交互的实物就在正上方，静态图既冗余又对文字量毫无贡献。 */}
-      {!showCountdown && !isAppShell && (
+      {IS_WEB_BUILD && !showCountdown && !isAppShell && (
         <section className="mt-10">
           <h2 className="text-center text-lg font-semibold text-gray-800 dark:text-gray-100">
             {t("landingTagline")}
@@ -3396,7 +3927,7 @@ export function OffWorkCountdown({
           会明显打折。内容页只有中英两版，按界面语言直接指向正确的一版，
           避免先跳转再重定向。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
           故不渲染。 */}
-      {!showCountdown && !isAppShell && (
+      {IS_WEB_BUILD && macAppStoreCopy && !showCountdown && !isAppShell && (
         <>
         <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-3">
           <MacAppStoreBadge

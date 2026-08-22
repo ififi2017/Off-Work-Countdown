@@ -17,6 +17,7 @@ interface ThemeToggleProps {
   onThemeChange: (theme: Theme) => void;
   compact?: boolean;
   quick?: boolean;
+  mobile?: boolean;
 }
 
 export function ThemeToggle({
@@ -24,6 +25,7 @@ export function ThemeToggle({
   onThemeChange,
   compact = false,
   quick = false,
+  mobile = false,
 }: ThemeToggleProps) {
   const { t } = useTranslation();
 
@@ -50,7 +52,9 @@ export function ThemeToggle({
           variant="outline"
           size="icon"
           className={`${
-            quick
+            mobile
+              ? "h-11 w-11 rounded-xl border-input bg-background shadow-sm"
+              : quick
               ? "h-9 w-9 rounded-xl border-gray-200/80 bg-white/40 text-gray-600 shadow-sm hover:bg-white/70 hover:text-gray-900 dark:border-gray-700 dark:bg-black/10 dark:text-gray-300 dark:hover:bg-black/20 dark:hover:text-white"
               : compact
                 ? "h-9 w-9 rounded-xl border-input bg-background shadow-sm"

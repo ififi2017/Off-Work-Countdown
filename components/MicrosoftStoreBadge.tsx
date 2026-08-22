@@ -4,9 +4,7 @@ import { createElement, useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { siteConfig } from "@/config/site";
 import { track } from "@/lib/track";
-
-const IS_DESKTOP_BUILD =
-  process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+import { IS_WEB_BUILD } from "@/lib/build-target";
 
 interface MicrosoftStoreBadgeProps {
   className?: string;
@@ -17,7 +15,7 @@ export function MicrosoftStoreBadge({ className }: MicrosoftStoreBadgeProps) {
   const badgeRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (IS_DESKTOP_BUILD) return;
+    if (!IS_WEB_BUILD) return;
 
     const syncTheme = () => {
       // theme 描述的是徽章本身，而不是页面背景：深色页面用浅色徽章，反之亦然。
@@ -46,7 +44,7 @@ export function MicrosoftStoreBadge({ className }: MicrosoftStoreBadgeProps) {
     badge.setAttribute("theme", badgeTheme);
   }, [badgeTheme]);
 
-  if (IS_DESKTOP_BUILD) return null;
+  if (!IS_WEB_BUILD) return null;
 
   return (
     <>
