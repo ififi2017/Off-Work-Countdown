@@ -16,6 +16,12 @@ in URLs, analytics payloads or share metadata.
 - `lib/countdown.ts` is the source of truth for shift calculations. Rust only
   keeps an absolute running snapshot alive when the WebView is hidden; do not
   create a second implementation of schedule rules in Rust.
+- `lib/reminders.ts` is the source of truth for reminder timing and copy. It
+  turns a shift into absolute trigger times; Rust only compares them against
+  the clock. Do not move milestone, lunch-boundary or micro-break derivation
+  back into Rust — that is what the 3.1.6 refactor removed. A mobile shell
+  schedules the same list up front, because a phone cannot poll every second.
+  `lib/reminders.test.ts` is the acceptance spec for every consumer.
 - Since 3.1, a running shift is `segments + plannedEndAtMs + overtimeEndAtMs`.
   Remaining time, progress and earnings must use effective segment duration;
   never reintroduce `end - now` or a standalone start/end range. Rust may only
@@ -190,7 +196,8 @@ release build. UI changes require real visual inspection on the affected OS.
 - Preserve unrelated user changes in a dirty worktree.
 - Do not commit generated `.next`, `out`, `src-tauri/target`, service-worker
   output, installers or local environment files.
-- Keep `docs/PLAN-3.0.md`, `docs/PLAN-M5-TAURI.md` and `docs/PLAN-MSSTORE.md`
+- Keep `docs/PLAN-3.0.md`, `docs/PLAN-M5-TAURI.md`, `docs/PLAN-MSSTORE.md`
+  and `docs/PLAN-MOBILE.md`
   aligned with material architecture or milestone changes. Remove stale TODOs
   when work is verified.
 - The `mirror-manifest` job downloads every release asset to compute its
