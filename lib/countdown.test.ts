@@ -23,6 +23,8 @@ import {
   parseWorkdays,
   serializeWorkdays,
   isWorkday,
+  isScheduledWorkday,
+  findNextRestDate,
 } from "./countdown";
 import { presets, getPreset, presetSlugs } from "./presets";
 
@@ -268,6 +270,47 @@ describe("segmented shift timeline", () => {
       })
     ).toBeNull();
   });
+
+  it("supports alternating single/double weekends from a reference week", () => {
+    const referenceMonday = new Date(2026, 5, 29).getTime();
+    const schedule = {
+      mode: "alternating" as const,
+      referenceWeekStartMs: referenceMonday,
+      referenceWeekType: "single" as const,
+      singleWeekendWorkday: 6 as const,
+    };
+    expect(isScheduledWorkday(new Date(2026, 6, 4), [], schedule)).toBe(true);
+    expect(isScheduledWorkday(new Date(2026, 6, 5), [], schedule)).toBe(false);
+    expect(isScheduledWorkday(new Date(2026, 6, 11), [], schedule)).toBe(false);
+  });
+
+  it("supports calendar-safe work/rest rotations and finds the next rest day", () => {
+    const schedule = {
+      mode: "rotation" as const,
+      rotationAnchorMs: new Date(2026, 6, 1).getTime(),
+      rotationWorkDays: 2,
+      rotationRestDays: 2,
+    };
+    expect(isScheduledWorkday(new Date(2026, 6, 1), [], schedule)).toBe(true);
+    expect(isScheduledWorkday(new Date(2026, 6, 2), [], schedule)).toBe(true);
+    expect(isScheduledWorkday(new Date(2026, 6, 3), [], schedule)).toBe(false);
+    expect(findNextRestDate({
+      afterMs: new Date(2026, 6, 1, 12).getTime(),
+      workdays: [],
+      schedule,
+    })?.getDate()).toBe(3);
+  });
+
+  it("turns off schedule gating and automatic next-shift projection", () => {
+    expect(isScheduledWorkday(new Date(2026, 6, 5), [], { mode: "off" })).toBe(true);
+    expect(findNextShiftTimeline({
+      startTime: "09:00",
+      endTime: "18:00",
+      workdays: DEFAULT_WORKDAYS,
+      afterMs: day(19).getTime(),
+      schedule: { mode: "off" },
+    })).toBeNull();
+  });
 });
 
 describe("getDailySalary", () => {
@@ -297,6 +340,22 @@ describe("getDailySalary", () => {
 
   it("allows a zero salary without treating it as missing", () => {
     expect(getDailySalary("0", "daily")).toBe(0);
+  });
+
+  it("annualizes bonus months for both monthly and daily salaries", () => {
+    expect(getDailySalary("10000", "monthly", 20, 2)).toBeCloseTo(
+      (10000 / 20) * (14 / 12)
+    );
+    expect(getDailySalary("500", "daily", 20, 2)).toBeCloseTo(
+      500 * (14 / 12)
+    );
+  });
+
+  it("accepts manually entered bonuses above twelve months", () => {
+    expect(getDailySalary("10000", "monthly", 20, -1)).toBeNull();
+    expect(getDailySalary("10000", "monthly", 20, 25)).toBeCloseTo(
+      (10000 / 20) * (37 / 12)
+    );
   });
 });
 

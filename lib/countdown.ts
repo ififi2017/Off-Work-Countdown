@@ -71,6 +71,93 @@ export interface ShiftBuildOptions {
   overtimeEndAtMs?: number | null;
 }
 
+export type WorkScheduleMode = "classic" | "alternating" | "rotation" | "off";
+
+/**
+ * Mobile schedule configuration. Dates are local calendar anchors represented
+ * as Unix milliseconds; callers must not advance them by fixed 24-hour spans.
+ */
+export interface WorkScheduleConfig {
+  mode: WorkScheduleMode;
+  referenceWeekStartMs?: number | null;
+  referenceWeekType?: "single" | "double";
+  singleWeekendWorkday?: 0 | 6;
+  rotationAnchorMs?: number | null;
+  rotationWorkDays?: number;
+  rotationRestDays?: number;
+}
+
+function localDay(date: Date): Date {
+  const day = new Date(date);
+  day.setHours(0, 0, 0, 0);
+  return day;
+}
+
+function localWeekStart(date: Date): Date {
+  const day = localDay(date);
+  day.setDate(day.getDate() - ((day.getDay() + 6) % 7));
+  return day;
+}
+
+function calendarDayDifference(from: Date, to: Date): number {
+  // Date.UTC over local Y/M/D components avoids DST making a calendar day 23
+  // or 25 hours long.
+  const fromUTC = Date.UTC(from.getFullYear(), from.getMonth(), from.getDate());
+  const toUTC = Date.UTC(to.getFullYear(), to.getMonth(), to.getDate());
+  return Math.round((toUTC - fromUTC) / 86_400_000);
+}
+
+/** Resolve all supported work patterns without duplicating them in Swift. */
+export function isScheduledWorkday(
+  shiftStart: Date,
+  workdays: number[],
+  schedule?: WorkScheduleConfig | null
+): boolean {
+  const mode = schedule?.mode ?? "classic";
+  if (mode === "off") return true;
+  if (mode === "classic") return isWorkday(shiftStart, workdays);
+
+  if (mode === "alternating") {
+    const weekday = shiftStart.getDay();
+    if (weekday >= 1 && weekday <= 5) return true;
+    const anchor = localWeekStart(
+      new Date(schedule?.referenceWeekStartMs ?? shiftStart.getTime())
+    );
+    const week = localWeekStart(shiftStart);
+    const weeksFromAnchor = Math.floor(calendarDayDifference(anchor, week) / 7);
+    const anchorIsSingle = schedule?.referenceWeekType === "single";
+    const isSingleWeek = Math.abs(weeksFromAnchor) % 2 === 0
+      ? anchorIsSingle
+      : !anchorIsSingle;
+    return isSingleWeek && weekday === (schedule?.singleWeekendWorkday ?? 6);
+  }
+
+  const workLength = Math.max(1, Math.floor(schedule?.rotationWorkDays ?? 1));
+  const restLength = Math.max(1, Math.floor(schedule?.rotationRestDays ?? 1));
+  const anchor = localDay(
+    new Date(schedule?.rotationAnchorMs ?? shiftStart.getTime())
+  );
+  const offset = calendarDayDifference(anchor, localDay(shiftStart));
+  const cycleLength = workLength + restLength;
+  const cycleDay = ((offset % cycleLength) + cycleLength) % cycleLength;
+  return cycleDay < workLength;
+}
+
+export function findNextRestDate(params: {
+  afterMs: number;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+}): Date | null {
+  const { afterMs, workdays, schedule } = params;
+  if (schedule?.mode === "off") return null;
+  const cursor = localDay(new Date(afterMs));
+  for (let offset = 0; offset <= 366; offset += 1) {
+    const day = addCalendarDays(cursor, offset);
+    if (!isScheduledWorkday(day, workdays, schedule)) return day;
+  }
+  return null;
+}
+
 function buildTimelineFromBounds(
   start: Date,
   end: Date,
@@ -176,17 +263,19 @@ export function findNextShiftTimeline(params: {
   endTime: string;
   workdays: number[];
   afterMs: number;
+  schedule?: WorkScheduleConfig | null;
   options?: Omit<ShiftBuildOptions, "overtimeEndAtMs">;
 }): ShiftTimeline | null {
-  const { startTime, endTime, workdays, afterMs, options = {} } = params;
-  if (workdays.length === 0) return null;
+  const { startTime, endTime, workdays, afterMs, schedule, options = {} } = params;
+  if (schedule?.mode === "off") return null;
+  if ((schedule?.mode ?? "classic") === "classic" && workdays.length === 0) return null;
 
   const cursor = new Date(afterMs);
   cursor.setHours(0, 0, 0, 0);
-  for (let offset = 0; offset <= 14; offset += 1) {
+  for (let offset = 0; offset <= 366; offset += 1) {
     const day = addCalendarDays(cursor, offset);
     const start = atTime(day, startTime);
-    if (!workdays.includes(start.getDay()) || start.getTime() <= afterMs) {
+    if (!isScheduledWorkday(start, workdays, schedule) || start.getTime() <= afterMs) {
       continue;
     }
     let end = atTime(day, endTime);
@@ -386,12 +475,17 @@ export const DEFAULT_MONTHLY_WORKING_DAYS = 21.75;
 export function getDailySalary(
   amount: string,
   type: "monthly" | "daily",
-  monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS
+  monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS,
+  annualBonusMonths: number = 0
 ): number | null {
   if (!amount.trim()) return null;
   const parsed = Number(amount);
   if (!Number.isFinite(parsed) || parsed < 0) return null;
-  if (type === "daily") return parsed;
+  if (!Number.isFinite(annualBonusMonths) || annualBonusMonths < 0) {
+    return null;
+  }
+  const annualizedMultiplier = 1 + annualBonusMonths / 12;
+  if (type === "daily") return parsed * annualizedMultiplier;
   if (
     !Number.isFinite(monthlyWorkingDays) ||
     monthlyWorkingDays <= 0 ||
@@ -399,5 +493,5 @@ export function getDailySalary(
   ) {
     return null;
   }
-  return parsed / monthlyWorkingDays;
+  return (parsed / monthlyWorkingDays) * annualizedMultiplier;
 }

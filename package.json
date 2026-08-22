@@ -5,17 +5,18 @@
   "scripts": {
     "dev": "next dev",
     "dev:desktop": "BUILD_TARGET=desktop next dev -p 3001",
+    "dev:mobile": "BUILD_TARGET=mobile next dev -p 3002",
     "build": "next build",
     "build:desktop": "node scripts/build-desktop.mjs",
     "build:mobile": "node scripts/build-mobile.mjs",
-    "sync:mobile:ios": "node scripts/sync-mobile-ios.mjs",
-    "open:mobile:ios": "cap open ios",
+    "build:ios-native-rules": "node scripts/build-ios-native-rules.mjs",
     "build:desktop:msstore": "node scripts/build-desktop.mjs --channel=msstore",
     "build:desktop:macappstore": "node scripts/build-desktop.mjs --channel=macappstore",
     "build:widget": "./scripts/build-macos-widget.sh",
     "check:build:web": "node scripts/check-build-output.mjs web",
     "check:build:desktop": "node scripts/check-build-output.mjs desktop",
     "check:build:mobile": "node scripts/check-build-output.mjs mobile",
+    "check:ios": "node scripts/check-ios-project.mjs",
     "check:version": "node scripts/check-version.mjs",
     "check:lproj": "node scripts/generate-macos-lproj.mjs && git diff --exit-code -- src-tauri/macos-lproj",
     "pack:msix": "node scripts/pack-msix.mjs",
@@ -35,8 +36,6 @@
     "shots:macos:compose": "node scripts/marketing-shots/macos/compose.mjs"
   },
   "dependencies": {
-    "@capacitor/core": "^8.4.2",
-    "@capacitor/ios": "^8.4.2",
     "@icons-pack/react-simple-icons": "^11.2.0",
     "@radix-ui/react-dialog": "^1.1.18",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
@@ -72,7 +71,6 @@
     "postcss": "^8.5.10"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.4.2",
     "@eslint/eslintrc": "^3.2.0",
     "@next/eslint-plugin-next": "^15.5.20",
     "@serwist/next": "^9.5.11",

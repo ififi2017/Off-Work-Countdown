@@ -1,8 +1,10 @@
 # 移动端选型与上线计划（iOS 优先）
 
-在现有 Web 与 Tauri 桌面端之外，新增 iOS 客户端；Android 后置，等 iOS 上线跑
-一段时间、确认维护负担扛得住再启动。壳用 Capacitor，前端复用现有源码与静态导出
-机制，但生成独立的 Mobile 产物；小组件与提醒等原生表面用 Swift 直接写。
+在现有 Web 与 Tauri 桌面端之外，新增 SwiftUI 原生 iOS/iPadOS 客户端；Android 后置，
+等 iOS 上线跑一段时间、确认维护负担扛得住再启动。P1 的 Capacitor 工程保留为已经完成的
+技术 spike 和回归参考，不再是发布架构。生产 target 的界面、导航、通知与系统表面均用
+Swift；`lib/countdown.ts` 和 `lib/reminders.ts` 仍是唯一规则实现，由构建脚本编译成
+JavaScriptCore 资源供 Swift 调用，不使用 WebView，也不在 Swift 复制排班算法。
 
 本文只覆盖「怎么选、怎么落地」。产品定位、隐私底线与文案原则仍以
 [AGENTS.md](../AGENTS.md) 为准，移动端不引入例外。
@@ -11,21 +13,84 @@
 
 | 阶段 | 内容 | 状态 |
 |---|---|---|
-| **D0** | 定 spike 基线与决策期限；P1 实测后锁最低 iOS、设备范围、通用购买与降级矩阵 | 🟡 通用购买已定；最低 iOS 与设备矩阵待 P1b 后锁定 |
+| **D0** | 锁最低 iOS、设备范围、通用购买与降级矩阵 | 🟢 iOS 26、iPhone+iPad、全方向、通用购买已定 |
 | **P0** | 里程碑、午休与健康提醒从 Rust 上移到 TS | 🟡 代码完成，macOS / Windows 平台验收待完成 |
 | **P1a** | 最小 mobile 静态导出：根 `index.html`、语言入口、离线资源 | 🟢 技术启动验证完成，不作为产品 UI 验收 |
-| **P1b** | 专用竖屏 UI + Capacitor：模拟器与至少一台真机实测 | 🟡 iPhone 真机安装、冷启动与前后台恢复已通过；屏幕侧交互确认待完成 |
-| **P2** | 正式 `BUILD_TARGET=mobile`、隐私裁剪、`lib/mobile-state.ts` 桥接层 | ⬜ 未开始 |
-| **P3** | App Group 最小投影 + 阈值规则归一 + 本地提醒预约器 | ⬜ 未开始 |
-| **P4** | 共享 Swift 契约、无薪资小组件、阈值实时活动及旧系统降级 | ⬜ 未开始 |
-| **P5** | UI、无障碍、深链接与前后台恢复适配 | ⬜ 未开始 |
+| **P1b** | 专用竖屏 UI + Capacitor 技术 spike | 🟢 已完成并归档，不作为发布 target |
+| **P2** | SwiftUI 原生 App、JavaScriptCore 共享规则桥与本地状态 | 🟢 iPhone/iPad 自适应主流程已完成 |
+| **P3** | 本地提醒预约器与稳定投影 | 🟡 当前班次+下一班、App Group 投影与重排已接通；后台/强退/时区真机矩阵待验收 |
+| **P4** | 共享 Swift 契约、无薪资 Widget 与预约 Live Activity | 🟡 `.appex`、锁屏与灵动岛已在 Simulator 跑通；Widget 系统着色、VoiceOver 与真机待验收 |
+| **P5** | UI、无障碍、深链接与前后台恢复适配 | 🟡 Claude Design 原生 UI 已实现；完整无障碍矩阵待验收 |
 | **P6** | 签名、TestFlight、截图、隐私清单与审核往返 | ⬜ 未开始 |
 
-顺序是 `D0 基线 → P1a → P1b → D0 定案 → P2 → P3 → P4/P5 → P6`。P1 仍是硬性串行点，
+顺序调整为 `P1 spike 归档 → D0 原生定案 → P2 → P3 → P4/P5 → P6`。P1 的历史结果仍保留，
 但不能直接拿现有 Desktop `out/` 判断移动 UI：那份产物在构建期已经选中了
 Desktop 分支，而且入口是 `en.html`；Capacitor 的 `webDir` 则要求根目录有最终
 `index.html`。因此 P1a 只做足以产出真实 mobile 页面的一次性最小改动，P1b 再
-判断 Capacitor 与现有 UI 是否值得继续。P2 才把 spike 整理成正式、可维护的构建目标。
+判断 Capacitor 与现有 UI 是否值得继续。结论已经是否定：`BUILD_TARGET=mobile` 继续服务 Web
+侧移动回归，App Store 构建入口则是 `src-mobile/ios/App/App.xcodeproj` 的 SwiftUI `App` scheme。
+
+### 原生 SwiftUI 定案与实现记录（2026-08-22）
+
+- Claude Design handoff 的 `iOS App.dc.html`、设计 token、emoji 与 App Icon 已逐项映射到
+  SwiftUI design system；主方向采用原生 grouped background、22pt 卡片、52pt 行高与系统字体；
+- iPhone 竖屏使用系统 `TabView`，横屏使用紧凑侧栏；iPad 使用可收起的原生玻璃侧边栏与
+  独立详情 `NavigationStack`，同时支持横竖屏和多窗口宽度变化；
+- 开始设置、运行中、午休、加班、休息日、完成态、薪资、提醒、健康提醒、主题、系统语言入口、关于
+  与系统分享已实现；分享图、通知和未来系统表面都不含薪资；
+- SwiftUI App 通过 `CFBundleLocalizations` 声明 19 种手动本地化，界面语言跟随 iOS 为本 App
+  设置的语言；应用内不再维护第二套语言偏好，语言入口使用公开 API 打开系统中的 App 设置页；
+- `scripts/build-ios-native-rules.mjs` 把 `lib/countdown.ts` / `lib/reminders.ts` /
+  `lib/summary.ts` 编译为 `CountdownRules.js`；原生 App 通过 JavaScriptCore 获取
+  `segments + plannedEndAtMs + overtimeEndAtMs`、当前班次+下一班的绝对提醒列表，以及
+  与 Web/Desktop 同口径的周/年汇总，不在 Swift 复制汇总规则；
+- 本地通知先提交并核对新 projection，再删除本产品命名空间中的过期请求；64 条保守容量中
+  先保留里程碑与午休边界，再用健康提醒填充；不取消 App 的全部通知；
+- 主 App 与 Widget Extension 共享 App Group；主 App 原子写入 salary-free
+  `widget-snapshot-v1.json`，Widget 直接复用既有 macOS 契约与 SwiftUI 展示层；
+- ActivityKit 已实现 iOS 26 绝对日期预约、前台窗口内补起、班次变更更新与遗留活动清理；
+  Simulator 已实际验证锁屏卡片与 Dynamic Island compact，payload 不含薪资；
+- `App` Debug/Release Simulator 构建、Widget contract、452 项 Vitest、19 locale JSON、Web、
+  Desktop 与保留的 Mobile 回归 build/check 均通过。真机后台到点、强退、Widget 着色和
+  完整无障碍矩阵仍是提交 TestFlight 前的硬门槛；
+- Capacitor 的 `MobileBridgeViewController.swift`、静态产物脚本和 P1 记录暂时保留，便于比较与
+  回归，但已从生产 Xcode target 的 Sources/Resources/SwiftPM 依赖中移除。
+
+### 原生 UI 整改记录（2026-08-22）
+
+- 设计稿复查发现的 6 项 P0 与 13 项 P1 已全部收口：周/年摘要不再显示示例值，休息日与
+  下一班日期取真实日历，完成态可返回并分享，非工作日强制计时按日期自动过期，横屏计时页
+  也保留计时/设置导航；
+- 分享编辑器只保留图片分享，系统 payload 同时携带本地化文案与带归因参数的链接；完成态
+  使用专门的下班文案，360×450 画布可完整显示 `OFF WORK COUNTDOWN`，且不含薪资；
+- 原生页面统一使用橙色 accent、列表按下态、关键操作触感反馈、小屏滚动退化和 iOS 26
+  Liquid Glass 系统底栏；薪资页补入年终奖月数，金额按年薪摊入共享日薪口径；
+- `InfoPlist.strings` 覆盖 19 种语言，桌面短名随系统本地化；Launch Screen 改为系统分组底色
+  与居中品牌图标；分享、设置与旧计时实现中的无引用类型已清理，剩余设置子页收敛到
+  `SettingsDetailDesignViews.swift`；
+- iPhone 17 Pro 与 iPad Pro 11-inch 的浅色竖屏、深色设置、完成态、分享页、设置子页、
+  iPhone 横屏 rail 和 iPad 分栏已做 Simulator 截图验收；Dynamic Island 的最终裁切和语言
+  设置精确落点仍保留真机复验门槛；
+- Release Simulator 构建已通过。两次使用 Instruments CLI `App Launch` 模板录制都在采样
+  结束阶段无响应，未得到可导出的有效 trace，因此没有凭猜测增加 JSContext 预热。静态调用链
+  同时确认默认首次引导/班次设置页不会请求 `snapshot()`；首次启动性能仍须在 TestFlight 前用
+  Instruments GUI + 真机完成一次冷启动归因。
+
+### 排班与系统表面整改记录（2026-08-23）
+
+- 工作日升级为共享的 `classic / alternating / rotation / off` 四种排班：固定星期、单双休、
+  上几休几与手动模式都在 `lib/countdown.ts` 判定，Swift 只保存参数并消费绝对时间线；周/年
+  汇总、下一班、下一休息日、提醒和 Widget 使用同一排班输入；
+- 薪资改为默认关闭且金额为零，年终奖月数允许手动输入任意非负值；关闭排班时隐藏日历汇总，
+  仅在用户启用薪资后展示当日计薪信息；
+- 非工作日不再进入二次确认页：开始按钮先变为警示态，五秒内再次点击才按当天强制计时；午休
+  落在班次外时在开始前阻止并提供直达午休设置的修复入口；
+- 停止计时会按 `owc.shift.*` 命名空间同时清除待发送和已送达通知；健康提醒使用独立标题；
+  Live Activity 到点固定为 100% 和本地化完成文案，并保留一段可阅读的系统生命周期；
+- 休息日 Widget 展示距离下一班的系统倒计时，锁屏圆形 Widget 使用 `00.00%` 百分比并按分钟
+  投影进度；Dynamic Island 的标题、完成文案与边距均由本地化状态传入；
+- 分享编辑器统一为 4:5 图片，八个内置 emoji 与自定义 emoji 同屏；iPad/横屏使用双栏，系统
+  分享同时提交渲染图、链接文案与 App 图标元数据；引导页新增系统表面与自适应布局两页。
 
 ### P1 执行记录（2026-08-22）
 
@@ -211,7 +276,15 @@ iOS/Swift 检查。
 SwiftUI/Compose，共享面缩到只剩语言包；移动端要闭源或换 license；移动端交给
 别人独立维护，协作边界比代码复用更重要。
 
-### 决策 2：壳用 Capacitor，不用 Tauri mobile
+### 决策 2：发布 App 使用 SwiftUI 原生 target；Capacitor 只保留为 P1 spike
+
+Claude Design 定稿同时覆盖 iPhone、iPad、横屏、分栏、Live Activity 和 Widget；发布目标
+直接使用 SwiftUI，避免让 WebView 的布局、导航与原生系统表面长期并存。共享 TypeScript
+业务规则通过 JavaScriptCore build artifact 消费，因此「原生 UI」不等于复制倒计时算法。
+
+P1 的 Capacitor 结果已经证明静态 Mobile 页面、离线资源和 SwiftPM 壳能够运行，但该工程
+不再进入发布 target。保留其源码是为了回归 Web Mobile 页面和记录选型证据，不代表生产 App
+仍加载 `capacitor://localhost`。
 
 Tauri v2 确实支持 iOS/Android，`src-tauri/Cargo.toml` 里也早有
 `cfg(not(any(target_os = "android", target_os = "ios")))` 的守卫。但：
@@ -371,16 +444,14 @@ swift/
   ├── WidgetSnapshotContract/   macOS + iOS 共用的 JSON 契约
   └── WidgetSharedUI/           只放确认能跨平台编译的视图片段与设计 token
 src-tauri/macos-widget/         macOS loader/provider、Extension 与 xcodeproj
-src-mobile/ios/                 Capacitor Xcode 工程、iOS provider、Widget 与 Live Activity
+src-mobile/ios/                 SwiftUI App、共享规则资源、Widget 与 Live Activity
 ```
 
-⚠️ 这一步会动 `Package.swift`、`xcodeproj` 的引用路径、
-`scripts/build-macos-widget.sh` 与 `npm run test:widget-contract` 的
-`--package-path`，**必须在 Mac 上验证**，Linux 容器里做不了。
-
-**它不依赖移动端是否最终上线**，但不应抢在 P1 硬门槛之前扩大改动面。P1 证明路线
-成立后，把「契约提取」作为独立 PR；先只移动 Contract 与 fixture 测试，再按编译结果
-逐个提取共享 View。每一步都同时编译 macOS 与 iOS，避免为了目录好看制造条件编译泥团。
+当前实现先让 iOS Widget target 直接引用 macOS Widget 包中的同一份
+`WidgetSnapshot.swift` 与共享 SwiftUI 视图，已经做到单一实现且通过两端编译，没有复制
+契约。物理迁移到顶层 `swift/` 会同时改 `Package.swift`、两个 `xcodeproj`、构建脚本和测试
+路径，留作独立重构，不再作为 P4 功能验收的前置条件。执行时仍须同时编译 macOS 与 iOS，
+避免为了目录好看制造条件编译泥团。
 
 ## 3. UI 适配清单
 
@@ -526,16 +597,16 @@ labels 生成 Markdown，避免在全局 `.github/release.yml` 上堆互相冲�
 | # | 决策项 | 需要在什么之前定 | 当前结论 / 倾向 |
 |---|---|---|---|
 | A | iOS 定价与是否与 macOS 做通用购买 | 已定；首次上传前核对现有记录与 capability | **通用购买**：作为 macOS 商店版新增 iOS 平台，沿用 `com.rainif.offworkcountdown.macappstore` |
-| B | 最低 iOS：16.1 双路径还是 26 单主路径 | P1 前定 spike 基线；P2 前锁最终版本 | 先在 iOS 26 真机验证预约 Live Activity，再按旧系统用户价值决定是否保留 16.1–25 降级 |
-| C | iPhone-only 还是 iPhone + iPad；方向与分屏范围 | P1 前定 spike 设备；P2 前锁正式矩阵 | 首发 iPhone portrait；若 App Store 记录或产品承诺要求 iPad，再把 iPad 当正式验收目标，不靠兼容模式糊过去 |
-| D | 设置页横滑 vs iOS 左边缘返回手势，二选一 | P5 开始之前 | 让出左边缘，设置页改从右边缘进，或只保留显式按钮导航 |
+| B | 最低 iOS：16.1 双路径还是 26 单主路径 | 已定 | **最低 iOS 26**；只维护预约 Live Activity 主路径与本地通知降级 |
+| C | iPhone-only 还是 iPhone + iPad；方向与分屏范围 | 已定 | **iPhone + iPad**；横竖屏与 iPad 多任务宽度均进入正式验收矩阵 |
+| D | 设置页横滑 vs iOS 左边缘返回手势 | 已定 | 原生 `NavigationStack`，保留系统左边缘返回手势与显式返回按钮，不占用该手势做页面切换 |
 | E | 阈值档位的默认值 | P4 | 15 分钟，与现有「下班前 15 分钟提醒」对齐 |
 | F | 能力不可用时的状态与兜底文案 | P4 | 只承诺已为班次预约提醒；分别说明通知被拒、Live Activities 被关闭和系统未能预约 |
 
-A、B、C 都会改变 Xcode project、bundle capability、截图矩阵或代码分支。P1a 已把
-spike 基线与最终期限写入 D0 ADR；A 已确定为通用购买，B、C 必须在 P1b 取得模拟器和
-真机证据后、P2 开始前定案。A 真正锁死的节点仍是 App Store Connect 记录与首次 build
-的 bundle id，因此首次上传前还要核对现有记录与 capability，不能另建同名 App 记录。
+A、B、C、D 已回写 D0 ADR 与生产 Xcode project。A 真正锁死的节点仍是 App Store
+Connect 记录与首次 build 的 bundle id，因此首次上传前还要核对现有记录与 capability，
+不能另建同名 App 记录。真机结果仍决定能否进入 TestFlight，而不再反向改变已锁定的最低
+系统与设备矩阵。
 
 **已定：首版 iOS Widget、Live Activity 与通知均不显示薪资，与 PC 小组件保持一致。**
 

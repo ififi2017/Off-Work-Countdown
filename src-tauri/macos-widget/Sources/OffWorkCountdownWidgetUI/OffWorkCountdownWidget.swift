@@ -207,11 +207,21 @@ public struct OffWorkCountdownWidgetView: View {
             contentInset {
                 Group {
                     if let snapshotEntry = entry.snapshotEntry {
+                        #if os(iOS)
+                        if family == .accessoryCircular {
+                            circularAccessory(snapshotEntry)
+                        } else if family == .systemMedium {
+                            mediumContent(snapshotEntry)
+                        } else {
+                            smallContent(snapshotEntry)
+                        }
+                        #else
                         if family == .systemMedium {
                             mediumContent(snapshotEntry)
                         } else {
                             smallContent(snapshotEntry)
                         }
+                        #endif
                     } else {
                         emptyContent
                     }
@@ -222,6 +232,39 @@ public struct OffWorkCountdownWidgetView: View {
         .environment(\.locale, Locale(identifier: entry.locale))
         .widgetURL(URL(string: "offworkcountdown://open"))
     }
+
+    #if os(iOS)
+    private func circularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+        TimelineView(.periodic(from: entry.date, by: 60)) { timeline in
+            let progress = projectedProgress(snapshotEntry, at: timeline.date)
+            Gauge(value: progress, in: 0...100) {
+                EmptyView()
+            } currentValueLabel: {
+                Text(String(format: "%05.2f%%", progress))
+                    .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.62)
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
+        }
+    }
+
+    private func projectedProgress(_ snapshotEntry: WidgetTimelineEntry, at date: Date) -> Double {
+        let base = min(100, max(0, snapshotEntry.progressAtDate))
+        guard snapshotEntry.phase == .working,
+              base < 100,
+              snapshotEntry.remainingEffectiveMsAtDateMs > 0
+        else { return base }
+
+        let remaining = Double(snapshotEntry.remainingEffectiveMsAtDateMs)
+        let total = remaining / max(0.000_001, 1 - base / 100)
+        let elapsed = min(
+            remaining,
+            max(0, date.timeIntervalSince1970 * 1_000 - Double(snapshotEntry.dateMs))
+        )
+        return min(100, max(base, base + elapsed / total * 100))
+    }
+    #endif
 
     /// macOS 14 起 WidgetKit 自己就会给内容加一圈默认 content margins（实测
     /// 16pt），`containerBackground` 只保证**背景**铺满整块，内容仍然被缩进。
@@ -531,6 +574,14 @@ public struct OffWorkCountdownWidget: Widget {
                 )
             )
         )
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies(supportedFamilies)
+    }
+
+    private var supportedFamilies: [WidgetFamily] {
+        #if os(iOS)
+        [.systemSmall, .systemMedium, .accessoryCircular]
+        #else
+        [.systemSmall, .systemMedium]
+        #endif
     }
 }

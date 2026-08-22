@@ -1,13 +1,21 @@
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
+import { readFileSync } from 'fs';
 import withSerwistInit from '@serwist/next';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+// Exposed to the Mobile target only. Desktop reads its version from the Tauri
+// bundle and the native iOS app from MARKETING_VERSION, so neither needs this;
+// it comes from the single source `npm run check:version` already validates.
+const packageVersion = JSON.parse(
+  readFileSync(resolve(__dirname, 'package.json'), 'utf8')
+).version;
 
 // 三个构建目标：
 //   web     —— 部署到 Vercel，保留 middleware、动态路由与重定向
 //   desktop —— 静态导出，供 Tauri 打包（见 docs/PLAN-M5-TAURI.md 决策 1）
-//   mobile  —— 独立静态导出，供 Capacitor 打包（见 docs/PLAN-MOBILE.md）
+//   mobile  —— 独立静态导出。iOS 已切换为 SwiftUI 原生（见 docs/PLAN-MOBILE.md），
+//              这个 target 目前只剩 `check:build:mobile` 在用它校验原生 iOS 工程
 //
 // Web Route Handlers 保持 Next 官方约定的 `route.ts` 文件名。静态壳目标不把
 // 普通 `.ts` 识别为路由，因此 API、manifest、robots 与 sitemap 不会进入静态
@@ -64,6 +72,7 @@ const nextConfig = {
     // 构建期即确定运行形态，界面据此选择无边距布局，避免运行时探测造成首帧闪烁。
     NEXT_PUBLIC_BUILD_TARGET: requestedBuildTarget,
     NEXT_PUBLIC_DESKTOP_CHANNEL: desktopChannel,
+    NEXT_PUBLIC_APP_VERSION: packageVersion,
   },
 
   // Desktop 与 Mobile 都不回传任何数据。仅靠条件渲染

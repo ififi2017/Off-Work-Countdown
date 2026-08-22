@@ -1,4 +1,4 @@
-import { OffWorkCountdown } from "@/components/off-work-countdown";
+import { MobileApp } from "@/components/mobile/MobileApp";
 import { I18nProvider } from "@/components/I18nProvider";
 import { getTranslations } from "@/lib/server/i18n";
 
@@ -6,7 +6,13 @@ type Props = {
   params: Promise<{ lang: string }>;
 };
 
-/** Mobile shell entry: no Web marketing metadata, download prompt, or JSON-LD. */
+/**
+ * Mobile shell entry.
+ *
+ * It mounts the iOS app rather than the Web page: no marketing metadata, no
+ * download prompt, no JSON-LD — and, deliberately, none of the Web/Desktop
+ * `OffWorkCountdown` UI. See components/mobile/MobileApp.tsx.
+ */
 export default async function MobileHome({ params }: Props) {
   const { lang } = await params;
   const [translation, seo] = await Promise.all([
@@ -16,9 +22,7 @@ export default async function MobileHome({ params }: Props) {
 
   return (
     <I18nProvider lang={lang} resources={{ translation, seo }}>
-      <div className="min-h-screen">
-        <OffWorkCountdown lang={lang} />
-      </div>
+      <MobileApp lang={lang} />
     </I18nProvider>
   );
 }

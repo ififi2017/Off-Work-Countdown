@@ -87,10 +87,15 @@ if (target === "web") {
   }
 
   const representativePage = readFileSync("out/en.html", "utf8");
-  for (const marker of ["mobile-app-surface", "mobile-web-tabbar", ">Timer<"]) {
-    if (!representativePage.includes(marker)) {
-      fail(`Mobile locale page is missing its dedicated portrait UI marker: ${marker}.`);
-    }
+  if (!representativePage.includes("ios-app")) {
+    fail("Mobile locale page is missing its dedicated app-surface marker.");
+  }
+  const mobileClientBundle = filesUnder("out/_next/static/chunks")
+    .filter((path) => extname(path) === ".js")
+    .map((path) => readFileSync(path, "utf8"))
+    .join("\n");
+  if (!mobileClientBundle.includes("ios-tabbar")) {
+    fail("Mobile client bundle is missing its browser QA tab bar.");
   }
 
   const searchableExtensions = new Set([".html", ".js", ".json", ".txt"]);
@@ -119,80 +124,7 @@ if (target === "web") {
     fail(`Web-only code leaked into the Mobile export:\n${leaks.join("\n")}`);
   }
 
-  const universalBundleId = "com.rainif.offworkcountdown.macappstore";
-  const capacitorConfig = readFileSync("capacitor.config.ts", "utf8");
-  const iosProject = readFileSync(
-    "src-mobile/ios/App/App.xcodeproj/project.pbxproj",
-    "utf8"
-  );
-  const mainStoryboard = readFileSync(
-    "src-mobile/ios/App/App/Base.lproj/Main.storyboard",
-    "utf8"
-  );
-  const iosInfo = readFileSync("src-mobile/ios/App/App/Info.plist", "utf8");
-  const mobileController = readFileSync(
-    "src-mobile/ios/App/App/MobileBridgeViewController.swift",
-    "utf8"
-  );
-  const appIcon = readFileSync(
-    "src-mobile/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
-  );
-  if (!capacitorConfig.includes(`appId: "${universalBundleId}"`)) {
-    fail(`Capacitor appId must stay aligned with Universal Purchase: ${universalBundleId}.`);
-  }
-  const bundleIdAssignments = [
-    ...iosProject.matchAll(/PRODUCT_BUNDLE_IDENTIFIER\s*=\s*([^;]+);/g),
-  ].map((match) => match[1].trim());
-  if (
-    bundleIdAssignments.length === 0 ||
-    bundleIdAssignments.some((value) => value !== universalBundleId)
-  ) {
-    fail(`iOS bundle ids must all be ${universalBundleId}.`);
-  }
-  if (!mainStoryboard.includes('customClass="MobileBridgeViewController"')) {
-    fail("iOS must boot through the native MobileBridgeViewController shell.");
-  }
-  if (!iosProject.includes("TARGETED_DEVICE_FAMILY = 1;")) {
-    fail("The P1 iOS shell must remain iPhone-only until the final device matrix is decided.");
-  }
-  if (
-    !iosInfo.includes("UISupportedInterfaceOrientations") ||
-    !iosInfo.includes("UIInterfaceOrientationPortrait")
-  ) {
-    fail("The P1 iOS shell must declare its portrait orientation baseline.");
-  }
-  if (
-    !mobileController.includes("CAPBridgeViewController") ||
-    !mobileController.includes("UITabBar") ||
-    !mobileController.includes("view.safeAreaLayoutGuide.bottomAnchor") ||
-    !mobileController.includes("overrideUserInterfaceStyle")
-  ) {
-    fail("iOS must keep the Capacitor business-rule bridge inside its safe-area and theme-aware native UITabBar shell.");
-  }
-  const iconWidth = appIcon.readUInt32BE(16);
-  const iconHeight = appIcon.readUInt32BE(20);
-  const iconColorType = appIcon[25];
-  if (
-    iconWidth !== 1024 ||
-    iconHeight !== 1024 ||
-    iconColorType === 4 ||
-    iconColorType === 6
-  ) {
-    fail("The Universal Purchase App Icon must be a 1024x1024 PNG without alpha.");
-  }
-  for (const suffix of ["", "-1", "-2"]) {
-    if (
-      !existsSync(
-        `src-mobile/ios/App/App/Assets.xcassets/Splash.imageset/splash-dark-2732x2732${suffix}.png`
-      )
-    ) {
-      fail("The iOS Launch Screen must include dark appearance assets.");
-    }
-  }
-
-  console.log(
-    "Mobile export has 19 private locale pages and the iOS Universal Purchase shell without Web/Desktop routes."
-  );
+  console.log("Mobile export retains 19 private regression pages.");
 } else {
   fail("Usage: node scripts/check-build-output.mjs <web|desktop|mobile>");
 }

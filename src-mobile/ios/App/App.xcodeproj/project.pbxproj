@@ -3,33 +3,117 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
-		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
-		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
-		A10B00012F00000100000001 /* MobileBridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10B00022F00000100000001 /* MobileBridgeViewController.swift */; };
-		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
-		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		710000011234567890ABCDEF /* LiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000011234567890ABCDEF /* LiveActivityAttributes.swift */; };
+		710000021234567890ABCDEF /* LiveActivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000021234567890ABCDEF /* LiveActivityService.swift */; };
+		710000031234567890ABCDEF /* WidgetSnapshotPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000031234567890ABCDEF /* WidgetSnapshotPublisher.swift */; };
+		710000041234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
+		710000051234567890ABCDEF /* LiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000011234567890ABCDEF /* LiveActivityAttributes.swift */; };
+		710000061234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
+		710000071234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */; };
+		710000081234567890ABCDEF /* OffWorkWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000071234567890ABCDEF /* OffWorkWidgets.swift */; };
+		710000091234567890ABCDEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
+		7100000A1234567890ABCDEF /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
+		7100000B1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E00000010000000000000001 /* OWCDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000010000000000000001 /* OWCDesignSystem.swift */; };
+		E00000020000000000000002 /* CountdownRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000020000000000000002 /* CountdownRules.swift */; };
+		E00000030000000000000003 /* OffWorkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000030000000000000003 /* OffWorkStore.swift */; };
+		E00000040000000000000004 /* NativeLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000040000000000000004 /* NativeLocalizer.swift */; };
+		E00000050000000000000005 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000050000000000000005 /* NotificationService.swift */; };
+		E00000060000000000000006 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000060000000000000006 /* ShareSheet.swift */; };
+		E00000070000000000000007 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000070000000000000007 /* OnboardingView.swift */; };
+		E00000080000000000000008 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000080000000000000008 /* RootView.swift */; };
+		E00000090000000000000009 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000090000000000000009 /* TimerView.swift */; };
+		E000000B000000000000000B /* CountdownRules.js in Resources */ = {isa = PBXBuildFile; fileRef = F000000B000000000000000B /* CountdownRules.js */; };
+		E000000C000000000000000C /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
+		E000000D000000000000000D /* TimerDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000D000000000000000D /* TimerDesignView.swift */; };
+		E000000E000000000000000E /* SettingsDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000E000000000000000E /* SettingsDesignView.swift */; };
+		E000000F000000000000000F /* SettingsDetailDesignViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000F000000000000000F /* SettingsDetailDesignViews.swift */; };
+		E00000100000000000000010 /* TabletDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000100000000000000010 /* TabletDesignView.swift */; };
+		C30000010000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		760000011234567890ABCDEF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 740000011234567890ABCDEF;
+			remoteInfo = OffWorkCountdownWidgetsExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		750000041234567890ABCDEF /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7100000B1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
-		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		A10B00022F00000100000001 /* MobileBridgeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileBridgeViewController.swift; sourceTree = "<group>"; };
-		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
-		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		720000011234567890ABCDEF /* LiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveActivityAttributes.swift; path = Native/Models/LiveActivityAttributes.swift; sourceTree = "<group>"; };
+		720000021234567890ABCDEF /* LiveActivityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveActivityService.swift; path = Native/Services/LiveActivityService.swift; sourceTree = "<group>"; };
+		720000031234567890ABCDEF /* WidgetSnapshotPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WidgetSnapshotPublisher.swift; path = Native/Services/WidgetSnapshotPublisher.swift; sourceTree = "<group>"; };
+		720000041234567890ABCDEF /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		720000051234567890ABCDEF /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WidgetSnapshot.swift; path = "../../../src-tauri/macos-widget/Sources/WidgetSnapshotContract/WidgetSnapshot.swift"; sourceTree = SOURCE_ROOT; };
+		720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OffWorkCountdownWidget.swift; path = "../../../src-tauri/macos-widget/Sources/OffWorkCountdownWidgetUI/OffWorkCountdownWidget.swift"; sourceTree = SOURCE_ROOT; };
+		720000071234567890ABCDEF /* OffWorkWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkWidgets.swift; sourceTree = "<group>"; };
+		720000081234567890ABCDEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		720000091234567890ABCDEF /* Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widget.entitlements; sourceTree = "<group>"; };
+		7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OffWorkCountdownWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F00000010000000000000001 /* OWCDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCDesignSystem.swift; path = Native/DesignSystem/OWCDesignSystem.swift; sourceTree = "<group>"; };
+		F00000020000000000000002 /* CountdownRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CountdownRules.swift; path = Native/Models/CountdownRules.swift; sourceTree = "<group>"; };
+		F00000030000000000000003 /* OffWorkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OffWorkStore.swift; path = Native/Models/OffWorkStore.swift; sourceTree = "<group>"; };
+		F00000040000000000000004 /* NativeLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NativeLocalizer.swift; path = Native/Services/NativeLocalizer.swift; sourceTree = "<group>"; };
+		F00000050000000000000005 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationService.swift; path = Native/Services/NotificationService.swift; sourceTree = "<group>"; };
+		F00000060000000000000006 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShareSheet.swift; path = Native/Services/ShareSheet.swift; sourceTree = "<group>"; };
+		F00000070000000000000007 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = Native/Views/OnboardingView.swift; sourceTree = "<group>"; };
+		F00000080000000000000008 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = Native/Views/RootView.swift; sourceTree = "<group>"; };
+		F00000090000000000000009 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerView.swift; path = Native/Views/TimerView.swift; sourceTree = "<group>"; };
+		F000000B000000000000000B /* CountdownRules.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = CountdownRules.js; path = Resources/CountdownRules.js; sourceTree = "<group>"; };
+		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
+		F000000D000000000000000D /* TimerDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerDesignView.swift; path = Native/Views/TimerDesignView.swift; sourceTree = "<group>"; };
+		F000000E000000000000000E /* SettingsDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsDesignView.swift; path = Native/Views/SettingsDesignView.swift; sourceTree = "<group>"; };
+		F000000F000000000000000F /* SettingsDetailDesignViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsDetailDesignViews.swift; path = Native/Views/SettingsDetailDesignViews.swift; sourceTree = "<group>"; };
+		F00000100000000000000010 /* TabletDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TabletDesignView.swift; path = Native/Views/TabletDesignView.swift; sourceTree = "<group>"; };
+		C10000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C10000020000000000000002 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C10000030000000000000003 /* zh-HK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-HK"; path = "zh-HK.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C10000040000000000000004 /* zh-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-TW"; path = "zh-TW.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C10000050000000000000005 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C10000060000000000000006 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C10000070000000000000007 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C10000080000000000000008 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C10000090000000000000009 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C100000A000000000000000A /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C100000B000000000000000B /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C100000C000000000000000C /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C100000D000000000000000D /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C100000E000000000000000E /* hi-IN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "hi-IN"; path = "hi-IN.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C100000F000000000000000F /* mr-IN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "mr-IN"; path = "mr-IN.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C10000100000000000000010 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C10000110000000000000011 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C10000120000000000000012 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C10000130000000000000013 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +121,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		750000021234567890ABCDEF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -47,8 +137,10 @@
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
-				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
+				730000011234567890ABCDEF /* WidgetExtension */,
+				720000051234567890ABCDEF /* WidgetSnapshot.swift */,
+				720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */,
 				504EC3051FED79650016851F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -57,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -64,17 +157,43 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
-				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
-				A10B00022F00000100000001 /* MobileBridgeViewController.swift */,
-				504EC30B1FED79650016851F /* Main.storyboard */,
+				F00000010000000000000001 /* OWCDesignSystem.swift */,
+				F00000020000000000000002 /* CountdownRules.swift */,
+				F00000030000000000000003 /* OffWorkStore.swift */,
+				720000011234567890ABCDEF /* LiveActivityAttributes.swift */,
+				F00000040000000000000004 /* NativeLocalizer.swift */,
+				F00000050000000000000005 /* NotificationService.swift */,
+				720000021234567890ABCDEF /* LiveActivityService.swift */,
+				720000031234567890ABCDEF /* WidgetSnapshotPublisher.swift */,
+				F00000060000000000000006 /* ShareSheet.swift */,
+				F00000070000000000000007 /* OnboardingView.swift */,
+				F00000080000000000000008 /* RootView.swift */,
+				F00000090000000000000009 /* TimerView.swift */,
+				F000000D000000000000000D /* TimerDesignView.swift */,
+				F000000E000000000000000E /* SettingsDesignView.swift */,
+				F000000F000000000000000F /* SettingsDetailDesignViews.swift */,
+				F00000100000000000000010 /* TabletDesignView.swift */,
+				F000000B000000000000000B /* CountdownRules.js */,
+				F000000C000000000000000C /* locales */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
+				C20000010000000000000001 /* InfoPlist.strings */,
 				504EC3131FED79650016851F /* Info.plist */,
-				2FAD9762203C412B000D30F8 /* config.xml */,
+				720000041234567890ABCDEF /* App.entitlements */,
 				50B271D01FEDC1A000F3C39B /* public */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		730000011234567890ABCDEF /* WidgetExtension */ = {
+			isa = PBXGroup;
+			children = (
+				720000071234567890ABCDEF /* OffWorkWidgets.swift */,
+				720000081234567890ABCDEF /* Info.plist */,
+				720000091234567890ABCDEF /* Widget.entitlements */,
+			);
+			path = WidgetExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -87,18 +206,38 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				750000041234567890ABCDEF /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				770000011234567890ABCDEF /* PBXTargetDependency */,
+			);
+			name = App;
+			packageProductDependencies = (
+			);
+			productName = App;
+			productReference = 504EC3041FED79650016851F /* App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 790000011234567890ABCDEF /* Build configuration list for PBXNativeTarget "OffWorkCountdownWidgetsExtension" */;
+			buildPhases = (
+				750000011234567890ABCDEF /* Sources */,
+				750000021234567890ABCDEF /* Frameworks */,
+				750000031234567890ABCDEF /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = App;
+			name = OffWorkCountdownWidgetsExtension;
 			packageProductDependencies = (
-				4D22ABE82AF431CB00220026 /* CapApp-SPM */,
 			);
-			productName = App;
-			productReference = 504EC3041FED79650016851F /* App.app */;
-			productType = "com.apple.product-type.application";
+			productName = OffWorkCountdownWidgetsExtension;
+			productReference = 7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -114,6 +253,10 @@
 						LastSwiftMigration = 1100;
 						ProvisioningStyle = Automatic;
 					};
+					740000011234567890ABCDEF = {
+						CreatedOnToolsVersion = 26.0;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 504EC2FF1FED79650016851F /* Build configuration list for PBXProject "App" */;
@@ -122,17 +265,35 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				"zh-CN",
+				"zh-HK",
+				"zh-TW",
+				ja,
+				ko,
+				de,
+				es,
+				fr,
+				it,
+				pt,
+				ru,
+				ar,
+				"hi-IN",
+				"mr-IN",
+				id,
+				th,
+				tr,
+				vi,
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
 			packageReferences = (
-				D4C12C0A2AAA248700AAC8A2 /* XCLocalSwiftPackageReference "CapApp-SPM" */,
 			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -143,11 +304,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
-				50B271D11FEDC1A000F3C39B /* public in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
-				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
-				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
-				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				E000000B000000000000000B /* CountdownRules.js in Resources */,
+				E000000C000000000000000C /* locales in Resources */,
+				C30000010000000000000001 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		750000031234567890ABCDEF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				710000091234567890ABCDEF /* Assets.xcassets in Resources */,
+				7100000A1234567890ABCDEF /* locales in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,21 +328,48 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
-				A10B00012F00000100000001 /* MobileBridgeViewController.swift in Sources */,
+				E00000010000000000000001 /* OWCDesignSystem.swift in Sources */,
+				E00000020000000000000002 /* CountdownRules.swift in Sources */,
+				E00000030000000000000003 /* OffWorkStore.swift in Sources */,
+				E00000040000000000000004 /* NativeLocalizer.swift in Sources */,
+				E00000050000000000000005 /* NotificationService.swift in Sources */,
+				710000011234567890ABCDEF /* LiveActivityAttributes.swift in Sources */,
+				710000021234567890ABCDEF /* LiveActivityService.swift in Sources */,
+				710000031234567890ABCDEF /* WidgetSnapshotPublisher.swift in Sources */,
+				710000041234567890ABCDEF /* WidgetSnapshot.swift in Sources */,
+				E00000060000000000000006 /* ShareSheet.swift in Sources */,
+				E00000070000000000000007 /* OnboardingView.swift in Sources */,
+				E00000080000000000000008 /* RootView.swift in Sources */,
+				E00000090000000000000009 /* TimerView.swift in Sources */,
+				E000000D000000000000000D /* TimerDesignView.swift in Sources */,
+				E000000E000000000000000E /* SettingsDesignView.swift in Sources */,
+				E000000F000000000000000F /* SettingsDetailDesignViews.swift in Sources */,
+				E00000100000000000000010 /* TabletDesignView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		750000011234567890ABCDEF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				710000051234567890ABCDEF /* LiveActivityAttributes.swift in Sources */,
+				710000061234567890ABCDEF /* WidgetSnapshot.swift in Sources */,
+				710000071234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */,
+				710000081234567890ABCDEF /* OffWorkWidgets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXVariantGroup section */
-		504EC30B1FED79650016851F /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				504EC30C1FED79650016851F /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
+/* Begin PBXTargetDependency section */
+		770000011234567890ABCDEF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */;
+			targetProxy = 760000011234567890ABCDEF /* PBXContainerItemProxy */;
 		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
 		504EC3101FED79650016851F /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -182,12 +378,37 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
+		C20000010000000000000001 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C10000010000000000000001 /* en */,
+				C10000020000000000000002 /* zh-CN */,
+				C10000030000000000000003 /* zh-HK */,
+				C10000040000000000000004 /* zh-TW */,
+				C10000050000000000000005 /* ja */,
+				C10000060000000000000006 /* ko */,
+				C10000070000000000000007 /* de */,
+				C10000080000000000000008 /* es */,
+				C10000090000000000000009 /* fr */,
+				C100000A000000000000000A /* it */,
+				C100000B000000000000000B /* pt */,
+				C100000C000000000000000C /* ru */,
+				C100000D000000000000000D /* ar */,
+				C100000E000000000000000E /* hi-IN */,
+				C100000F000000000000000F /* mr-IN */,
+				C10000100000000000000010 /* id */,
+				C10000110000000000000011 /* th */,
+				C10000120000000000000012 /* tr */,
+				C10000130000000000000013 /* vi */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		504EC3141FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -288,32 +509,31 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
 		504EC3171FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3GSK5B9S3T;
 				INFOPLIST_FILE = App/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 3.1.6;
-				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
+				OTHER_SWIFT_FLAGS = "$(inherited) -DDEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -321,20 +541,63 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3GSK5B9S3T;
 				INFOPLIST_FILE = App/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 3.1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		780000011234567890ABCDEF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = WidgetExtension/Widget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3GSK5B9S3T;
+				INFOPLIST_FILE = WidgetExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 3.1.6;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		780000021234567890ABCDEF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = WidgetExtension/Widget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3GSK5B9S3T;
+				INFOPLIST_FILE = WidgetExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 3.1.6;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -359,22 +622,16 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		790000011234567890ABCDEF /* Build configuration list for PBXNativeTarget "OffWorkCountdownWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				780000011234567890ABCDEF /* Debug */,
+				780000021234567890ABCDEF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		D4C12C0A2AAA248700AAC8A2 /* XCLocalSwiftPackageReference "CapApp-SPM" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "CapApp-SPM";
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		4D22ABE82AF431CB00220026 /* CapApp-SPM */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D4C12C0A2AAA248700AAC8A2 /* XCLocalSwiftPackageReference "CapApp-SPM" */;
-			productName = "CapApp-SPM";
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 504EC2FC1FED79650016851F /* Project object */;
 }

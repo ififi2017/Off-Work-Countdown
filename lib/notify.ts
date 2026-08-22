@@ -39,6 +39,31 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return (await requestNotificationPermissionDetailed()).granted;
 }
 
+/**
+ * 当前的通知权限，**不发起请求**。
+ *
+ * `unavailable` 与 `denied` 必须分开：界面只在真的被拒绝时才提示用户去系统
+ * 设置里打开，平台还没接上通知能力时保持沉默——否则会把「尚未实现」报成
+ * 「你关掉了通知」。
+ */
+export async function getNotificationPermission(): Promise<NotificationPermission | "unavailable"> {
+  if (IS_DESKTOP_BUILD) {
+    try {
+      const { isPermissionGranted } = await import(
+        "@tauri-apps/plugin-notification"
+      );
+      return (await isPermissionGranted()) ? "granted" : "default";
+    } catch {
+      return "unavailable";
+    }
+  }
+
+  if (!IS_WEB_BUILD || typeof window === "undefined" || !("Notification" in window)) {
+    return "unavailable";
+  }
+  return Notification.permission;
+}
+
 export async function openDesktopNotificationSettings(): Promise<void> {
   if (!IS_DESKTOP_BUILD) return;
   const { invoke } = await import("@tauri-apps/api/core");

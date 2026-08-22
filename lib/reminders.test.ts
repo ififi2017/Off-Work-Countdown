@@ -35,6 +35,7 @@ const inputs: ShiftReminderInputs = {
   lunchEndEnabled: true,
   lunchEndBody: "午休结束",
   microBreakEnabled: true,
+  microBreakTitle: "健康提醒",
   microBreakIntervalMinutes: 1,
   microBreakMessages: ["已经坐了 {{minutes}} 分钟了"],
 };
@@ -269,6 +270,9 @@ describe("buildShiftReminders 健康提醒", () => {
 
   it("文案里的 {{minutes}} 是本段内的连续工作分钟数", () => {
     const reminders = buildShiftReminders(longShift, inputs);
+    expect(byId(reminders, `microBreak:${10 * minute}:1`).title).toBe(
+      "健康提醒"
+    );
     expect(byId(reminders, `microBreak:${10 * minute}:1`).body).toBe(
       "已经坐了 1 分钟了"
     );

@@ -1,3 +1,5 @@
+import { isScheduledWorkday, type WorkScheduleConfig } from "./countdown";
+
 // 周期性汇总。**完全由配置推算，不依赖任何历史记录。**
 //
 // 这是刻意的选择：用户不会把页面挂满整个工作日，也不会每天都来。真去记录
@@ -50,6 +52,25 @@ export function countWorkdays(from: Date, to: Date, workdays: number[]): number 
   return count;
 }
 
+export function countScheduledWorkdays(
+  from: Date,
+  to: Date,
+  workdays: number[],
+  schedule?: WorkScheduleConfig | null
+): number {
+  if (schedule?.mode === "off") return 0;
+  const cursor = new Date(from);
+  cursor.setHours(0, 0, 0, 0);
+  const end = new Date(to);
+  end.setHours(0, 0, 0, 0);
+  let count = 0;
+  while (cursor < end) {
+    if (isScheduledWorkday(cursor, workdays, schedule)) count += 1;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return count;
+}
+
 /**
  * 汇总从 periodStart 到此刻的工作量。
  *
@@ -61,6 +82,7 @@ export function summarize(params: {
   /** 汇总所处的当前日，只负责截断未来日期，不决定夜班归属。 */
   asOf: Date;
   workdays: number[];
+  schedule?: WorkScheduleConfig | null;
   /** 当前班次按开始日期归属工作日；跨午夜后仍属于开始的那一天。 */
   currentShiftStart: Date;
   /** 用于判断该班次是否仍覆盖统计日；跨夜班次的结束日会晚于开始日。 */
@@ -79,6 +101,7 @@ export function summarize(params: {
     periodStart,
     asOf,
     workdays,
+    schedule,
     currentShiftStart,
     currentShiftEnd,
     plannedDailyHours,
@@ -101,13 +124,14 @@ export function summarize(params: {
   // 截断后续工作日。
   const currentShiftCoversAsOfDay =
     shiftDay >= periodDay && shiftDay <= asOfDay && shiftEndDay >= asOfDay;
-  const completed = countWorkdays(
+  const completed = countScheduledWorkdays(
     periodDay,
     currentShiftCoversAsOfDay ? shiftDay : asOfDay,
-    workdays
+    workdays,
+    schedule
   );
   const todayCounts =
-    currentShiftCoversAsOfDay && workdays.includes(shiftDay.getDay());
+    currentShiftCoversAsOfDay && isScheduledWorkday(shiftDay, workdays, schedule);
   const todayFraction = todayCounts
     ? Math.min(100, Math.max(0, todayProgress)) / 100
     : 0;
