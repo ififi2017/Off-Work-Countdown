@@ -8,6 +8,11 @@ import { Metadata, Viewport } from 'next';
 import { siteConfig } from '@/config/site';
 import { getTranslations } from '@/lib/server/i18n';
 import { ThemeRouteSync } from '@/components/ThemeRouteSync';
+import {
+  IS_DESKTOP_BUILD,
+  IS_MOBILE_BUILD,
+  IS_WEB_BUILD,
+} from '@/lib/build-target';
 
 const geistSans = localFont({
   src: '../fonts/GeistVF.woff',
@@ -19,9 +24,6 @@ const geistMono = localFont({
   variable: '--font-geist-mono',
   weight: '100 900',
 });
-
-/** 由 next.config.mjs 在构建期注入，见 docs/PLAN-M5-TAURI.md 决策 1。 */
-const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === 'desktop';
 
 // 在首次绘制前把主题类打到 <html> 上，避免深色/自定义主题用户看到一帧浅色。
 // 必须与 off-work-countdown.tsx 的 applyTheme 保持一致。
@@ -115,12 +117,18 @@ export default async function Layout({
     <html
       lang={lang}
       dir={getTextDirection(lang)}
-      className={IS_DESKTOP_BUILD ? "desktop-shell" : undefined}
+      className={
+        IS_DESKTOP_BUILD
+          ? "desktop-shell"
+          : IS_MOBILE_BUILD
+            ? "mobile-shell"
+            : undefined
+      }
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        {!IS_DESKTOP_BUILD && (
+        {IS_WEB_BUILD && (
           <link
             rel="manifest"
             href={`/manifest.json?lang=${lang}`}
@@ -130,7 +138,11 @@ export default async function Layout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased${
-          IS_DESKTOP_BUILD ? " desktop-shell" : ""
+          IS_DESKTOP_BUILD
+            ? " desktop-shell"
+            : IS_MOBILE_BUILD
+              ? " mobile-shell"
+              : ""
         }`}
       >
         <ThemeRouteSync />
@@ -138,7 +150,7 @@ export default async function Layout({
         {/* Vercel 的访问统计与性能采集只服务于 Web 端。桌面端不回传任何数据
             （见 docs/PLAN-M5-TAURI.md 决策 5），这里用构建期常量剔除——
             桌面构建下整个分支是死代码，压缩阶段会被移除。 */}
-        {!IS_DESKTOP_BUILD && (
+        {IS_WEB_BUILD && (
           <>
             <Analytics />
             <SpeedInsights />

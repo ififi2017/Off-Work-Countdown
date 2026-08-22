@@ -1,4 +1,4 @@
-const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+import { IS_DESKTOP_BUILD, IS_WEB_BUILD } from "./build-target";
 
 export interface NotificationPermissionResult {
   granted: boolean;
@@ -21,7 +21,8 @@ export async function requestNotificationPermissionDetailed(): Promise<Notificat
     }
   }
 
-  if (typeof window === "undefined" || !("Notification" in window)) {
+  // Mobile 在 P3 接原生预约器；绝不能退回 Web Notification。
+  if (!IS_WEB_BUILD || typeof window === "undefined" || !("Notification" in window)) {
     return { granted: false, newlyGranted: false };
   }
   if (Notification.permission === "granted") {
@@ -71,7 +72,9 @@ export async function showNotification(
     }
   }
 
-  if (typeof window === "undefined" || !("Notification" in window)) return false;
+  if (!IS_WEB_BUILD || typeof window === "undefined" || !("Notification" in window)) {
+    return false;
+  }
   if (Notification.permission !== "granted") return false;
 
   const options: NotificationOptions = {

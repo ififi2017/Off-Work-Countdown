@@ -66,6 +66,27 @@ if (
   process.exit(1);
 }
 
+// The Capacitor project is checked in from P1 onward. Its Universal Purchase
+// target shares the product version with Web, Desktop and the Widget so local
+// archives cannot drift from the existing App Store record.
+const mobileProject = readFileSync(
+  "src-mobile/ios/App/App.xcodeproj/project.pbxproj",
+  "utf8"
+);
+const mobileVersions = [
+  ...mobileProject.matchAll(/MARKETING_VERSION\s*=\s*([^;]+);/g),
+].map((match) => match[1].trim());
+
+if (
+  mobileVersions.length === 0 ||
+  mobileVersions.some((version) => version !== expected)
+) {
+  console.error(
+    `iOS MARKETING_VERSION values (${mobileVersions.join(", ") || "not found"}) must all be ${expected}.`
+  );
+  process.exit(1);
+}
+
 const tag = process.env.GITHUB_REF_NAME;
 if (tag?.startsWith("desktop-v") && tag.slice("desktop-v".length) !== expected) {
   console.error(`Release tag ${tag} does not match product version ${expected}.`);
@@ -73,5 +94,5 @@ if (tag?.startsWith("desktop-v") && tag.slice("desktop-v".length) !== expected) 
 }
 
 console.log(
-  `Web, desktop, and Widget versions are aligned at ${expected} (MSIX ${expectedAppxVersion}).`
+  `Web, desktop, Widget, and iOS versions are aligned at ${expected} (MSIX ${expectedAppxVersion}).`
 );

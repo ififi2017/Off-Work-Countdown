@@ -16,6 +16,7 @@ interface WorkdaySelectorProps {
   value: number[];
   onChange: (days: number[]) => void;
   compact?: boolean;
+  mobile?: boolean;
 }
 
 export function WorkdaySelector({
@@ -24,6 +25,7 @@ export function WorkdaySelector({
   value,
   onChange,
   compact = false,
+  mobile = false,
 }: WorkdaySelectorProps) {
   const names = useMemo(() => {
     let fmt: Intl.DateTimeFormat;
@@ -54,9 +56,9 @@ export function WorkdaySelector({
   };
 
   return (
-    <div className={compact ? "space-y-1.5" : "space-y-2"}>
+    <div className={compact ? "space-y-1.5" : mobile ? "space-y-2.5" : "space-y-2"}>
       <Label
-        className={compact ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}
+        className={compact || mobile ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}
       >
         {label}
       </Label>
@@ -73,8 +75,12 @@ export function WorkdaySelector({
               // "الأربعاء" 八字符，泰语更长）。用 min-w-0 + truncate 兜底，
               // 任何语言都不会把这一行撑破；截断只是视觉行为，读屏仍读完整文本。
               title={names[day]}
-              className={`min-w-0 flex-1 truncate rounded-md border px-1 text-xs transition-colors ${
-                compact ? "py-1" : "py-1.5"
+              className={`min-w-0 flex-1 truncate border px-1 text-xs transition-colors ${
+                compact
+                  ? "rounded-md py-1"
+                  : mobile
+                    ? "h-11 rounded-xl py-1.5 font-medium"
+                    : "rounded-md py-1.5"
               } ${
                 on
                   ? "border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900"

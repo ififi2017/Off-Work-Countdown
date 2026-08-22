@@ -13,6 +13,7 @@ interface TimeSelectorProps {
   value: string;
   onChange: (hour: string, minute: string) => void;
   compact?: boolean;
+  mobile?: boolean;
 }
 
 export function TimeSelector({
@@ -21,6 +22,7 @@ export function TimeSelector({
   value,
   onChange,
   compact = false,
+  mobile = false,
 }: TimeSelectorProps) {
   const [hourInput, setHourInput] = useState(() => value.split(":")[0]);
   const [minuteInput, setMinuteInput] = useState(() => value.split(":")[1]);
@@ -132,10 +134,10 @@ export function TimeSelector({
   );
 
   return (
-    <div className={compact ? "space-y-1.5" : "space-y-2"} ref={containerRef}>
+    <div className={compact ? "space-y-1.5" : mobile ? "space-y-2.5" : "space-y-2"} ref={containerRef}>
       <Label
         htmlFor={`${id}Hour`}
-        className={compact ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}
+        className={compact || mobile ? "text-xs font-medium text-muted-foreground" : "dark:text-gray-200"}
       >
         {label}
       </Label>
@@ -152,8 +154,12 @@ export function TimeSelector({
               autoCapitalize="none"
               spellCheck={false}
               pattern="[0-9]*"
-              className={`flex w-full items-center justify-between rounded-lg border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
-                compact ? "h-9 px-3 py-1.5 pe-8" : "h-10 px-3 py-2 pe-8"
+              className={`flex w-full items-center justify-between border border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
+                compact
+                  ? "h-9 rounded-lg px-3 py-1.5 pe-8 text-sm"
+                  : mobile
+                    ? "h-12 rounded-xl px-3 py-2 pe-10 text-base font-semibold tabular-nums"
+                    : "h-10 rounded-lg px-3 py-2 pe-8 text-sm"
               }`}
               value={hourInput}
               onChange={(e) => handleHourInput(e.target.value)}
@@ -163,7 +169,7 @@ export function TimeSelector({
             />
             <button
               type="button"
-              className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className={`absolute end-0 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground ${mobile ? "h-12 w-10" : "h-8 w-8"}`}
               onClick={() => setOpenMenu((prev) => (prev === "hour" ? null : "hour"))}
               aria-label="Select hour"
             >
@@ -183,8 +189,12 @@ export function TimeSelector({
               autoCapitalize="none"
               spellCheck={false}
               pattern="[0-9]*"
-              className={`flex w-full items-center justify-between rounded-lg border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
-                compact ? "h-9 px-3 py-1.5 pe-8" : "h-10 px-3 py-2 pe-8"
+              className={`flex w-full items-center justify-between border border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${
+                compact
+                  ? "h-9 rounded-lg px-3 py-1.5 pe-8 text-sm"
+                  : mobile
+                    ? "h-12 rounded-xl px-3 py-2 pe-10 text-base font-semibold tabular-nums"
+                    : "h-10 rounded-lg px-3 py-2 pe-8 text-sm"
               }`}
               value={minuteInput}
               onChange={(e) => handleMinuteInput(e.target.value)}
@@ -194,7 +204,7 @@ export function TimeSelector({
             />
             <button
               type="button"
-              className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className={`absolute end-0 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground ${mobile ? "h-12 w-10" : "h-8 w-8"}`}
               onClick={() => setOpenMenu((prev) => (prev === "minute" ? null : "minute"))}
               aria-label="Select minute"
             >
