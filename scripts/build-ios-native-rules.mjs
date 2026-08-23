@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import ts from "typescript";
 
 const modules = [
@@ -185,10 +185,15 @@ export function createIOSNativeRulesBundle() {
 `;
 }
 
+export function writeIOSNativeRulesBundle(
+  outputPath = resolve("src-mobile/ios/App/App/Resources/CountdownRules.js")
+) {
+  const bundle = createIOSNativeRulesBundle();
+  mkdirSync(dirname(outputPath), { recursive: true });
+  writeFileSync(outputPath, bundle, "utf8");
+  return bundle;
+}
+
 if (process.argv[1] === new URL(import.meta.url).pathname) {
-  writeFileSync(
-    resolve("src-mobile/ios/App/App/Resources/CountdownRules.js"),
-    createIOSNativeRulesBundle(),
-    "utf8"
-  );
+  writeIOSNativeRulesBundle();
 }

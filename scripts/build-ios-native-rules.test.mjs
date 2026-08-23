@@ -1,11 +1,27 @@
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import vm from "node:vm";
-import { describe, expect, it } from "vitest";
-import { createIOSNativeRulesBundle } from "./build-ios-native-rules.mjs";
+import { afterEach, describe, expect, it } from "vitest";
+import {
+  createIOSNativeRulesBundle,
+  writeIOSNativeRulesBundle,
+} from "./build-ios-native-rules.mjs";
+
+const temporaryDirectories = [];
+
+afterEach(() => {
+  for (const directory of temporaryDirectories.splice(0)) {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 describe("iOS native rule bundle", () => {
   it("keeps countdown, reminder and summary derivation behind the shared TypeScript modules", () => {
-    const bundle = createIOSNativeRulesBundle();
+    const directory = mkdtempSync(join(tmpdir(), "owc-ios-rules-"));
+    temporaryDirectories.push(directory);
+    const outputPath = join(directory, "fresh", "Resources", "CountdownRules.js");
+    const bundle = writeIOSNativeRulesBundle(outputPath);
 
     expect(bundle).toContain('require("./countdown")');
     expect(bundle).toContain('require("./reminders")');
@@ -14,7 +30,7 @@ describe("iOS native rule bundle", () => {
     expect(bundle).toContain(".buildShiftReminders");
     expect(bundle).not.toContain("eval(");
     expect(
-      readFileSync("src-mobile/ios/App/App/Resources/CountdownRules.js", "utf8")
+      readFileSync(outputPath, "utf8")
     ).toBe(bundle);
   });
 
