@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 
 // Guards the native iOS project's shipping configuration.
 //
@@ -156,6 +156,14 @@ for (const suffix of ["", "-1", "-2"]) {
   ) {
     fail("The iOS Launch Screen must include dark appearance assets.");
   }
+}
+const appAssetEntries = readdirSync(
+  "src-mobile/ios/App/App/Assets.xcassets"
+);
+if (appAssetEntries.some((entry) => /^Mood-.*\.imageset$/.test(entry))) {
+  fail(
+    "The native iOS target must render share moods with the system emoji font instead of bundling mood artwork."
+  );
 }
 
 console.log(

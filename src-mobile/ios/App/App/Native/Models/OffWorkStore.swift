@@ -71,7 +71,21 @@ enum ShareMood: String, CaseIterable, Identifiable {
     case coffee = "2615"
 
     var id: String { rawValue }
-    var assetName: String { "Mood-\(rawValue)" }
+
+    /// Rendered at runtime by the system emoji font. Keeping the stable code
+    /// point as the raw value avoids changing picker identity or saved state.
+    var emoji: String {
+        switch self {
+        case .happy: "😄"
+        case .relaxed: "😌"
+        case .tired: "😫"
+        case .crying: "😭"
+        case .firedUp: "🔥"
+        case .excited: "🤩"
+        case .celebrating: "🥳"
+        case .coffee: "☕️"
+        }
+    }
 
     /// Matches the mood keys the Web share dialog already ships in all 19
     /// locales, so the picker reads out properly under VoiceOver.
