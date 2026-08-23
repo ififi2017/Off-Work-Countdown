@@ -197,6 +197,10 @@ private struct TabletSidebar: View {
                         : .regular.interactive(),
                     in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                 )
+                // Glass only paints around the visible label. Define the
+                // interaction shape explicitly so the blank part of the row
+                // remains a full-size tab target as users expect on iPad.
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -233,11 +237,12 @@ private struct TabletTimerView: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            let snapshot = store.snapshot(at: timeline.date)
             ZStack {
                 if !store.countdownStarted {
                     TabletSetupView(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
                         .transition(.opacity.combined(with: .scale(scale: 0.98)))
-                } else if let snapshot = store.snapshot(at: timeline.date), snapshot.remainingMs > 0, snapshot.isWorkday || store.forceToday {
+                } else if let snapshot, snapshot.remainingMs > 0, snapshot.isWorkday || store.forceToday {
                     TabletRunningView(
                         store: store,
                         snapshot: snapshot,
@@ -253,6 +258,24 @@ private struct TabletTimerView: View {
                         .transition(.opacity.combined(with: .scale(scale: 0.98)))
                 }
             }
+            .overlay(alignment: .topLeading) {
+                // Completed, rest-day and rules-error states reuse the common
+                // timer surface, which does not know about the custom iPad
+                // sidebar. Keep the reveal control at the shell boundary so
+                // none of those states can strand the user in full screen.
+                if !sidebarVisible, usesCommonTimerSurface(snapshot) {
+                    Button(action: showSidebar) {
+                        Image(systemName: "sidebar.left")
+                            .frame(width: 38, height: 38)
+                            .background(OWCDesign.card)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.leading, 8)
+                    .padding(.top, 22)
+                    .zIndex(10)
+                }
+            }
             .animation(.smooth(duration: 0.42), value: store.countdownStarted)
         }
         .background(OWCDesign.page)
@@ -266,6 +289,12 @@ private struct TabletTimerView: View {
             OvertimeSheet(store: store)
                 .presentationSizing(.form)
         }
+    }
+
+    private func usesCommonTimerSurface(_ snapshot: NativeShiftSnapshot?) -> Bool {
+        guard store.countdownStarted else { return false }
+        guard let snapshot else { return true }
+        return snapshot.remainingMs <= 0 || (!snapshot.isWorkday && !store.forceToday)
     }
 }
 

@@ -64,7 +64,7 @@ struct ShareComposerView: View {
     var body: some View {
         NavigationStack {
             GeometryReader { proxy in
-                if proxy.size.width > 560 {
+                if proxy.size.width >= 840 {
                     let previewWidth = min(360, proxy.size.height * 0.72)
                     HStack(spacing: 32) {
                         sharePreview(maxWidth: previewWidth)
@@ -75,6 +75,27 @@ struct ShareComposerView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal, 28)
                     .padding(.vertical, 18)
+                } else if proxy.size.width >= 520, proxy.size.height >= 340 {
+                    let horizontalPadding: CGFloat = 20
+                    let columnSpacing: CGFloat = 20
+                    let contentWidth = proxy.size.width - horizontalPadding * 2 - columnSpacing
+                    let previewWidth = min(
+                        300,
+                        contentWidth * 0.48,
+                        (proxy.size.height - 28) * 0.8
+                    )
+                    let controlsWidth = contentWidth - previewWidth
+
+                    HStack(spacing: columnSpacing) {
+                        sharePreview(maxWidth: previewWidth)
+                            .frame(width: previewWidth)
+                        wideShareControls
+                            .frame(width: controlsWidth)
+                            .frame(maxHeight: .infinity)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.vertical, 14)
                 } else {
                     ScrollView {
                         VStack(spacing: 14) {
@@ -110,9 +131,19 @@ struct ShareComposerView: View {
     }
 
     private var moodPicker: some View {
-        HStack(spacing: 4) {
-            ForEach(ShareMood.allCases) { mood in
-                moodButton(mood)
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 4) {
+                ForEach(ShareMood.allCases) { mood in
+                    moodButton(mood)
+                }
+            }
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4),
+                spacing: 4
+            ) {
+                ForEach(ShareMood.allCases) { mood in
+                    moodButton(mood)
+                }
             }
         }
     }
@@ -197,15 +228,14 @@ struct ShareComposerView: View {
         Button {
             withAnimation(.snappy(duration: 0.2)) { store.shareMood = mood }
         } label: {
-            Image(mood.assetName)
-                .resizable()
-                .scaledToFit()
-                .padding(3)
+            Text(verbatim: mood.emoji)
+                .font(.system(size: 25))
                 .frame(width: 34, height: 34)
                 .background(selected ? OWCDesign.control : Color.clear)
                 .clipShape(Circle())
                 .overlay { moodRing(selected) }
                 .opacity(selected ? 1 : 0.74)
+                .accessibilityHidden(true)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(store.t(mood.labelKey))
@@ -277,10 +307,10 @@ private struct ShareCard: View {
                     Spacer(minLength: 8)
                 }
                 Spacer()
-                Image(store.shareMood.assetName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 76, height: 76)
+                Text(verbatim: store.shareMood.emoji)
+                    .font(.system(size: 72))
+                    .frame(width: 82, height: 82)
+                    .accessibilityHidden(true)
                 Text(heroText)
                     .font(.system(size: 38, weight: .heavy).monospacedDigit())
                     .tracking(-1)
