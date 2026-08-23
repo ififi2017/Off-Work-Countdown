@@ -41,6 +41,7 @@ struct OffWorkLiveActivityWidget: Widget {
                     Text(endDate(context), style: .time)
                         .font(.system(size: 13).monospacedDigit())
                         .foregroundStyle(.white.opacity(0.6))
+                        .environment(\.locale, activityLocale(context))
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                         .frame(width: 54, alignment: .trailing)
@@ -97,6 +98,7 @@ private struct LockScreenActivityView: View {
                 Text(Date(timeIntervalSince1970: Double(context.state.endAtMs) / 1_000), style: .time)
                     .font(.system(size: 13).monospacedDigit())
                     .foregroundStyle(.white.opacity(0.7))
+                    .environment(\.locale, activityLocale(context))
             }
             HStack(alignment: .lastTextBaseline, spacing: 10) {
                 activityCountdownText(context, now: timeline.date, size: 44)
@@ -168,9 +170,20 @@ private func activityCountdownText(
         Text(Date(timeIntervalSince1970: Double(context.state.endAtMs) / 1_000), style: .timer)
             .font(.system(size: size, weight: .bold).monospacedDigit())
             .foregroundStyle(.white)
+            // Live Activities run in the Widget extension, whose process
+            // locale can differ from the language selected inside the app.
+            // Always-On Display may replace the seconds timer with a coarse
+            // localized duration (for example "10 minutes"), so the locale
+            // must travel with the activity content instead of falling back
+            // to the extension or system language.
+            .environment(\.locale, activityLocale(context))
             .lineLimit(1)
             .minimumScaleFactor(0.58)
     }
+}
+
+private func activityLocale(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> Locale {
+    Locale(identifier: context.state.locale)
 }
 
 private func activityProgressValue(_ context: ActivityViewContext<OffWorkActivityAttributes>, at date: Date) -> Double {

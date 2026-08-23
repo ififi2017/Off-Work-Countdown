@@ -1,7 +1,10 @@
 # 商店宣传图流水线
 
-生成上架用的商店截图。目前只有 `macos/` 一套，产出 Mac App Store 需要的
-2880×1800 中英各五张。
+生成上架用的商店截图：
+
+- `macos/` 产出 Mac App Store 需要的 2880×1800，中英各五张。
+- `ios/` 产出 iPhone 6.5 英寸 1284×2778 与 iPad 13 英寸 2064×2752，
+  中英各四张，共十六张。
 
 这套东西的价值不在脚本本身，而在于它把「图是怎么来的」固定下来了：审核被拒、
 换文案、发新版本要重出一轮时，不用再从头调一遍尺寸、字体和交通灯的位置。
@@ -79,3 +82,60 @@ locale。同时把时钟钉死在 14:22:08，班次设成 09:00–18:00、月薪
 Chrome 的用户目录刻意建在系统临时目录而不是这里：它里面带着 Chrome 自带扩展的
 JS，留在仓库里 `eslint .` 会去 lint 它们并报错——`.gitignore` 挡得住 git，挡不住
 eslint。
+
+## iPhone 与 iPad
+
+一条命令完成 Debug 构建、模拟器布景、截图、排版与规格检查：
+
+```bash
+npm run shots:ios
+```
+
+需要本机安装 Xcode、iOS 26.5 模拟器运行时、Google Chrome，以及以下两个模拟器：
+
+- `iPhone 17 Pro Max`
+- `iPad Pro 13-inch (M5)`
+
+名字不同时可以覆盖：
+
+```bash
+IOS_SHOTS_IPHONE='你的 iPhone 模拟器名' \
+IOS_SHOTS_IPAD='你的 iPad 模拟器名' \
+npm run shots:ios
+```
+
+`ios/capture.mjs` 会先生成原生规则包，再把 Debug App 构建到系统临时目录。它只把
+已有的 DEBUG QA 值作为当前 App 进程的启动参数，用来切换语言、路由和方向；不会写入
+用户持久设置，也不会把截图入口编进 Release。截图场景为：
+
+- iPhone：主界面、小组件预览、真实 Live Activity 的灵动岛状态、横屏计时页。
+- iPad：主界面、小组件预览、提醒设置、横屏计时页。
+
+截图固定使用浅色外观、标准字号、14:22 状态栏、满格网络和 100% 电量；班次按照
+运行时刻布置成接近下班的状态，确保 Live Activity 已经进入灵动岛。
+
+只改宣传文案或画面排版时，无需重跑 Xcode：
+
+```bash
+npm run shots:ios:compose
+npm run shots:ios:validate
+```
+
+如果 iPhone 使用实机截图，可以直接让排版脚本读取一个素材目录；目录里的文件名为
+`程序主界面-中文.jpeg`、`小组件-中文.jpeg`、`实时活动-中文.jpeg`、
+`横屏模式-中文.jpeg` 及对应的 `-英文.jpeg`：
+
+```bash
+IOS_SHOTS_PLATFORM=ipad npm run shots:ios:capture
+IOS_SHOTS_IPHONE_RAW_DIR='/path/to/iPhone-store-shots' \
+IOS_SHOTS_OUT_DIR='/path/to/output' npm run shots:ios:compose
+IOS_SHOTS_OUT_DIR='/path/to/output' npm run shots:ios:validate
+```
+
+成品在 `ios/out/`。`zh-CN-iphone-01-main.png` 这样的序号就是各语言、各设备上传到
+App Store Connect 的顺序。`ios/validate.mjs` 会确认十六张图尺寸正确且没有 alpha
+通道。
+
+当前尺寸来自 Apple 的 Screenshot specifications：竖版 iPhone 使用 6.9 英寸允许的
+1284×2778，iPad 使用 13 英寸允许的 2064×2752；横屏功能图分别使用
+2778×1284 与 2752×2064，完整保留横屏画面，不在竖版长图里缩小或裁切。

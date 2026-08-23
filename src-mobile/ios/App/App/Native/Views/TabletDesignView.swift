@@ -18,54 +18,78 @@ struct TabletShellView: View {
 
             NavigationStack {
                 ZStack {
-                    Group {
-                        switch store.selectedTab {
-                    case .timer:
-                        NarrowPaneFallback { isNarrow in
-                            if isNarrow {
-                                // Push into this stack rather than take the
-                                // default, which switches to the settings tab —
-                                // the sidebar selection should not move because
-                                // a row on the timer page was tapped.
-                                TimerDesignView(store: store, wide: false) { route in
-                                    store.presentedRoute = route
-                                }
-                            } else {
-                                TabletTimerView(store: store, sidebarVisible: sidebarVisible) {
-                                    withAnimation(.snappy(duration: 0.28)) { sidebarVisible = true }
-                                }
-                            }
-                        }
-                    case .settings:
-                        NarrowPaneFallback { isNarrow in
-                            if isNarrow {
-                                SettingsDesignView(store: store, wide: false)
-                            } else {
-                                TabletSettingsView(store: store, sidebarVisible: sidebarVisible) {
-                                    withAnimation(.snappy(duration: 0.28)) { sidebarVisible = true }
-                                }
-                            }
-                        }
-                        }
-                    }
-                    .id(store.selectedTab)
-                    .transition(.opacity.combined(with: .scale(scale: 0.99)))
+                    OWCDesign.page.ignoresSafeArea()
+
+                    tabletTimerRoot
+                        .opacity(store.selectedTab == .timer ? 1 : 0)
+                        .scaleEffect(store.selectedTab == .timer ? 1 : 0.99)
+                        .allowsHitTesting(store.selectedTab == .timer)
+                        .accessibilityHidden(store.selectedTab != .timer)
+                        .zIndex(store.selectedTab == .timer ? 1 : 0)
+
+                    tabletSettingsRoot
+                        .opacity(store.selectedTab == .settings ? 1 : 0)
+                        .scaleEffect(store.selectedTab == .settings ? 1 : 0.99)
+                        .allowsHitTesting(store.selectedTab == .settings)
+                        .accessibilityHidden(store.selectedTab != .settings)
+                        .zIndex(store.selectedTab == .settings ? 1 : 0)
                 }
                 .animation(.smooth(duration: 0.32), value: store.selectedTab)
+                .navigationDestination(for: AppRoute.self) { route in
+                    routeDestination(route)
+                }
                 .navigationDestination(item: $store.presentedRoute) { route in
-                    switch route {
-                    case .schedule: ScheduleSettingsView(store: store)
-                    case .salary: SalaryDesignView(store: store)
-                    case .notifications: NotificationDesignView(store: store)
-                    case .lunch: LunchSettingsView(store: store)
-                    case .health: HealthReminderSettingsView(store: store)
-                    case .theme: ThemeSettingsView(store: store)
-                    case .about: AboutView(store: store)
-                    }
+                    routeDestination(route)
                 }
             }
         }
         .background(OWCDesign.page)
+    }
+
+    private var tabletTimerRoot: some View {
+        NarrowPaneFallback { isNarrow in
+            if isNarrow {
+                // Push into this stack rather than take the default, which
+                // switches to the settings tab. The sidebar selection should
+                // not move because a row on the timer page was tapped.
+                TimerDesignView(store: store, wide: false) { route in
+                    store.presentedRoute = route
+                }
+            } else {
+                TabletTimerView(store: store, sidebarVisible: sidebarVisible) {
+                    withAnimation(.snappy(duration: 0.28)) { sidebarVisible = true }
+                }
+            }
+        }
+    }
+
+    private var tabletSettingsRoot: some View {
+        // Keep one settings hierarchy mounted at every iPad width. Swapping to
+        // SettingsDesignView when the sidebar reduced the detail width changed
+        // both the row order and NavigationLink style on iPad mini.
+        TabletSettingsView(store: store, sidebarVisible: sidebarVisible) {
+            withAnimation(.snappy(duration: 0.28)) { sidebarVisible = true }
+        }
+    }
+
+    @ViewBuilder
+    private func routeDestination(_ route: AppRoute) -> some View {
+        switch route {
+        case .schedule:
+            ScheduleSettingsView(store: store)
+        case .salary:
+            SalaryDesignView(store: store)
+        case .notifications:
+            NotificationDesignView(store: store)
+        case .lunch:
+            LunchSettingsView(store: store)
+        case .health:
+            HealthReminderSettingsView(store: store)
+        case .theme:
+            ThemeSettingsView(store: store)
+        case .about:
+            AboutView(store: store)
+        }
     }
 }
 
@@ -639,11 +663,7 @@ private struct TabletSettingsView: View {
     private var healthLabel: String { store.microBreakEnabled ? store.t("minutesShort", values: ["count": "\(store.microBreakIntervalMinutes)"]) : store.t("disabledShort") }
     private var salaryLabel: String {
         guard store.salaryEnabled else { return store.t("disabledShort") }
-        let type = store.salaryType == .monthly ? store.t("monthly") : store.t("daily")
-        guard let amount = Double(store.salaryAmount), !store.salaryAmount.isEmpty else { return type }
-        let fractionDigits = amount.rounded() == amount ? 0 : 2
-        let formatted = amount.formatted(.number.precision(.fractionLength(fractionDigits)).locale(store.locale))
-        return "\(type) · \(formatted)"
+        return store.salaryType == .monthly ? store.t("monthly") : store.t("daily")
     }
     private var scheduleLabel: String { switch store.scheduleMode { case .classic: store.t("scheduleClassic"); case .alternating: store.t("scheduleAlternating"); case .rotation: store.t("scheduleRotation"); case .off: store.t("scheduleOff") } }
     private var workdaysDescription: String {
@@ -705,7 +725,10 @@ private struct AdaptiveSettingsColumns<Content: View>: View {
     let spacing: CGFloat
     @ViewBuilder let content: Content
 
-    private static var twoColumnMinimum: CGFloat { 620 }
+    // The iPad mini portrait content area is about 664 pt with the sidebar
+    // hidden. Keep it in one column in both sidebar states so collapsing the
+    // sidebar does not unexpectedly reorder the same settings.
+    private static var twoColumnMinimum: CGFloat { 720 }
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
