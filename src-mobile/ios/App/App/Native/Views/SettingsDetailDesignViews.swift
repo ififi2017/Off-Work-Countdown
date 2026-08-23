@@ -4,7 +4,7 @@ struct ScheduleSettingsView: View {
     @ObservedObject var store: OffWorkStore
 
     var body: some View {
-        ScrollView {
+        OWCContentSizedScrollView {
             VStack(spacing: 0) {
                 OWCGroupCard {
                     modeRow(.classic, title: store.t("scheduleClassic"), subtitle: store.t("scheduleClassicDescription"))
@@ -188,7 +188,7 @@ struct SalaryDesignView: View {
     @State private var amountText = ""
 
     var body: some View {
-        ScrollView {
+        OWCContentSizedScrollView {
             VStack(spacing: 0) {
             OWCGroupCard {
                 HStack {
@@ -591,7 +591,7 @@ struct LunchSettingsView: View {
     @State private var durationText = ""
 
     var body: some View {
-        ScrollView {
+        OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
                     HStack {
@@ -705,7 +705,7 @@ struct HealthReminderSettingsView: View {
     @State private var intervalText = ""
 
     var body: some View {
-        ScrollView {
+        OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
                     HStack {
@@ -774,7 +774,7 @@ struct ThemeSettingsView: View {
     @ObservedObject var store: OffWorkStore
 
     var body: some View {
-        ScrollView {
+        OWCContentSizedScrollView {
             OWCGroupCard {
                 themeRow(.auto, title: store.t("auto"), icon: nil, textIcon: "A")
                 themeRow(.light, title: store.t("light"), icon: "sun.max")

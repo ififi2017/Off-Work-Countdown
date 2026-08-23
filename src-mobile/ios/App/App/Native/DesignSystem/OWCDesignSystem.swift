@@ -91,6 +91,56 @@ struct OWCGroupCard<Content: View>: View {
     }
 }
 
+private struct OWCScrollContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+/// Keeps short settings pages still, while preserving scrolling when their
+/// content actually extends beyond the available height.
+///
+/// A permanently enabled `ScrollView` installs a vertical pan recognizer even
+/// when there is nowhere to scroll. Near the leading edge that recognizer can
+/// win against UIKit's interactive-pop recognizer, making swipe-back feel
+/// unreliable. Measuring the laid-out content lets short pages behave like a
+/// plain `VStack`; pages such as the expanded salary form remain scrollable.
+struct OWCContentSizedScrollView<Content: View>: View {
+    private let showsIndicators: Bool
+    private let content: Content
+    @State private var contentHeight: CGFloat = 0
+
+    init(
+        showsIndicators: Bool = true,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.showsIndicators = showsIndicators
+        self.content = content()
+    }
+
+    var body: some View {
+        GeometryReader { viewport in
+            ScrollView(.vertical, showsIndicators: showsIndicators) {
+                content
+                    .frame(maxWidth: .infinity)
+                    .background {
+                        GeometryReader { contentGeometry in
+                            Color.clear.preference(
+                                key: OWCScrollContentHeightKey.self,
+                                value: contentGeometry.size.height
+                            )
+                        }
+                    }
+            }
+            .scrollDisabled(contentHeight <= viewport.size.height + 1)
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .onPreferenceChange(OWCScrollContentHeightKey.self) { contentHeight = $0 }
+    }
+}
+
 struct OWCRow<Accessory: View>: View {
     let icon: String?
     let textIcon: String?
