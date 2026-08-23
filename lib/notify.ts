@@ -1,4 +1,4 @@
-const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+import { IS_DESKTOP_BUILD, IS_WEB_BUILD } from "./build-target";
 
 export interface NotificationPermissionResult {
   granted: boolean;
@@ -21,7 +21,8 @@ export async function requestNotificationPermissionDetailed(): Promise<Notificat
     }
   }
 
-  if (typeof window === "undefined" || !("Notification" in window)) {
+  // Mobile 在 P3 接原生预约器；绝不能退回 Web Notification。
+  if (!IS_WEB_BUILD || typeof window === "undefined" || !("Notification" in window)) {
     return { granted: false, newlyGranted: false };
   }
   if (Notification.permission === "granted") {
@@ -36,6 +37,31 @@ export async function requestNotificationPermissionDetailed(): Promise<Notificat
 
 export async function requestNotificationPermission(): Promise<boolean> {
   return (await requestNotificationPermissionDetailed()).granted;
+}
+
+/**
+ * 当前的通知权限，**不发起请求**。
+ *
+ * `unavailable` 与 `denied` 必须分开：界面只在真的被拒绝时才提示用户去系统
+ * 设置里打开，平台还没接上通知能力时保持沉默——否则会把「尚未实现」报成
+ * 「你关掉了通知」。
+ */
+export async function getNotificationPermission(): Promise<NotificationPermission | "unavailable"> {
+  if (IS_DESKTOP_BUILD) {
+    try {
+      const { isPermissionGranted } = await import(
+        "@tauri-apps/plugin-notification"
+      );
+      return (await isPermissionGranted()) ? "granted" : "default";
+    } catch {
+      return "unavailable";
+    }
+  }
+
+  if (!IS_WEB_BUILD || typeof window === "undefined" || !("Notification" in window)) {
+    return "unavailable";
+  }
+  return Notification.permission;
 }
 
 export async function openDesktopNotificationSettings(): Promise<void> {
@@ -71,7 +97,9 @@ export async function showNotification(
     }
   }
 
-  if (typeof window === "undefined" || !("Notification" in window)) return false;
+  if (!IS_WEB_BUILD || typeof window === "undefined" || !("Notification" in window)) {
+    return false;
+  }
   if (Notification.permission !== "granted") return false;
 
   const options: NotificationOptions = {

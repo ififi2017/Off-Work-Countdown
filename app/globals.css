@@ -315,3 +315,484 @@ body.desktop-shell {
   overflow: hidden;
   overscroll-behavior: none;
 }
+
+/* Mobile 同样由原生壳提供窗口边界，但软键盘需要文档仍可调整可视高度，
+   所以这里只禁用整页橡皮筋，不照搬 Desktop 的 overflow: hidden。 */
+html.mobile-shell,
+body.mobile-shell {
+  min-height: 100%;
+  overscroll-behavior: none;
+  background: #f2f2f7;
+}
+
+html.dark.mobile-shell,
+.dark body.mobile-shell {
+  background: #000;
+}
+
+/* ─── iOS app surface ───────────────────────────────────────────────────
+   The packaged iPhone/iPad app is not the Web page in a shell. It is built
+   from iOS grouped lists, 44 pt rows and a single accent, so it gets its own
+   token set rather than the Web card language: an iOS grouped list is a
+   different control from a frosted Web card, and faking one with the other is
+   what made the first mobile build read as a website.
+
+   Every value here comes from the design-system tokens (colour, radius,
+   elevation, Geist). Orange is a signal — overtime, selection, a checkmark —
+   never decoration. */
+.ios-app {
+  --ios-bg: #f2f2f7;
+  --ios-grouped: #fff;
+  --ios-label: #000;
+  --ios-title: #09090b;
+  --ios-label-2: rgb(60 60 67 / 60%);
+  --ios-label-3: rgb(60 60 67 / 30%);
+  --ios-separator: rgb(60 60 67 / 12%);
+  --ios-fill: rgb(120 120 128 / 12%);
+  --ios-fill-track: rgb(120 120 128 / 18%);
+  --ios-fill-strong: rgb(120 120 128 / 28%);
+  --ios-bar: rgb(255 255 255 / 72%);
+  --ios-bar-border: rgb(60 60 67 / 16%);
+  --ios-accent: #f97316;
+  --ios-accent-ink: #c2410c;
+  --ios-accent-wash: rgb(249 115 22 / 12%);
+  --ios-inverse: #fff;
+  --ios-group-radius: 22px;
+
+  position: relative;
+  display: flex;
+  /* A definite height, not a minimum: the scroll region inside can only size
+     itself against a parent that already knows how tall it is, and `dvh`
+     follows the software keyboard as it opens. */
+  height: 100dvh;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--ios-bg);
+  color: var(--ios-title);
+  font-feature-settings: "cv11";
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-app input {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.dark .ios-app {
+  --ios-bg: #000;
+  --ios-grouped: #1c1c1e;
+  --ios-label: #fff;
+  --ios-title: #fff;
+  --ios-label-2: rgb(235 235 245 / 60%);
+  --ios-label-3: rgb(235 235 245 / 30%);
+  --ios-separator: rgb(84 84 88 / 65%);
+  --ios-fill: rgb(120 120 128 / 32%);
+  --ios-fill-track: rgb(120 120 128 / 32%);
+  --ios-fill-strong: rgb(120 120 128 / 44%);
+  --ios-bar: rgb(28 28 30 / 72%);
+  --ios-bar-border: rgb(84 84 88 / 65%);
+  --ios-inverse: #09090b;
+}
+
+/* The two extra Web themes keep working on the phone, but they may only move
+   the accent — the chrome stays the near-monochrome iOS one. */
+.theme-cyberpunk .ios-app {
+  --ios-accent: #ec4899;
+  --ios-accent-ink: #f472b6;
+  --ios-accent-wash: rgb(236 72 153 / 14%);
+}
+
+.theme-sunset .ios-app {
+  --ios-accent: #ea580c;
+  --ios-accent-ink: #c2410c;
+}
+
+/* Scrolling is the safety valve, not the layout. Every screen is composed to
+   fit; a small device or 200% Dynamic Type may still overflow, and silently
+   clipping the Start button would be worse than a scroll. */
+/* 56 px is the design's size on a 402 pt canvas; narrower phones scale it down
+   rather than letting the number run into the bezel. */
+.ios-countdown {
+  font-size: clamp(34px, 13.9vw, 56px);
+}
+
+.ios-scroll {
+  min-height: 0;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+}
+
+.ios-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Inset grouped list. */
+.ios-group {
+  overflow: hidden;
+  margin: 0 16px;
+  border-radius: var(--ios-group-radius);
+  background: var(--ios-grouped);
+}
+
+.ios-group-title {
+  padding: 16px 36px 6px;
+  color: var(--ios-label-2);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ios-group-note {
+  margin: 8px 36px 0;
+  color: var(--ios-label-2);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.ios-row {
+  position: relative;
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  color: var(--ios-label);
+  font-size: 17px;
+  letter-spacing: -0.43px;
+  text-align: start;
+}
+
+/* Hairline between rows, inset past the icon column the way iOS insets it. */
+.ios-row-sep::after {
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  inset-inline: 47px 0;
+  height: 0.5px;
+  background: var(--ios-separator);
+  content: "";
+}
+
+.ios-row-sep.ios-row-flush::after {
+  inset-inline: 16px 0;
+}
+
+button.ios-row {
+  width: 100%;
+  border: 0;
+  background: none;
+  font-family: inherit;
+}
+
+button.ios-row:active {
+  background: var(--ios-fill);
+}
+
+.ios-row-value {
+  color: var(--ios-label-2);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ios-chevron {
+  flex: none;
+  color: var(--ios-label-3);
+}
+
+/* Buttons. `filled` is the one primary action per screen. */
+.ios-btn {
+  display: inline-flex;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ios-fill);
+  color: var(--ios-title);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ios-btn:active {
+  background: var(--ios-fill-strong);
+}
+
+.ios-btn-filled {
+  height: 52px;
+  border-radius: 15px;
+  background: var(--ios-title);
+  color: var(--ios-bg);
+  font-size: 17px;
+}
+
+.ios-btn-filled:active {
+  opacity: 0.8;
+  background: var(--ios-title);
+}
+
+.ios-btn[disabled] {
+  opacity: 0.45;
+}
+
+/* Segmented control. */
+.ios-segmented {
+  display: grid;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--ios-fill);
+}
+
+.ios-segment {
+  display: inline-flex;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--ios-label-2);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.ios-segment[aria-selected="true"] {
+  background: var(--ios-grouped);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 10%));
+  color: var(--ios-title);
+  font-weight: 600;
+}
+
+/* Switch — 51×31 pt, the iOS size, with the hit area grown to 44 pt. */
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 51px;
+  height: 31px;
+  flex: none;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--ios-fill);
+  transition: background-color 200ms ease;
+}
+
+.ios-switch::after {
+  position: absolute;
+  inset: -7px -4px;
+  content: "";
+}
+
+.ios-switch[aria-checked="true"] {
+  background: var(--ios-title);
+}
+
+.ios-switch > span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+  transition: transform 200ms ease;
+}
+
+.ios-switch[aria-checked="true"] > span {
+  transform: translateX(20px);
+}
+
+[dir="rtl"] .ios-switch[aria-checked="true"] > span {
+  transform: translateX(-20px);
+}
+
+/* Tab bar. The packaged app hides this and lets UIKit draw the real one so
+   iOS 26 can apply the system Liquid Glass material; the Web copy exists for
+   browser visual QA and for the iPad/landscape rail. */
+.ios-tabbar {
+  position: relative;
+  height: calc(49px + env(safe-area-inset-bottom));
+  flex: none;
+}
+
+.ios-tabbar::before {
+  position: absolute;
+  inset: 0;
+  border-top: 0.5px solid var(--ios-bar-border);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  background: var(--ios-bar);
+  content: "";
+}
+
+/* 49 pt of content is all iOS gives a tab bar: 8 + 26 + 3 + 10 fills it
+   exactly, so the label needs its own line-height — the inherited 1.5 pushes
+   the text out of the bar entirely. */
+.ios-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding-top: 8px;
+  border: 0;
+  background: none;
+  color: var(--ios-label-3);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.ios-tab[aria-selected="true"] {
+  color: var(--ios-title);
+  font-weight: 600;
+}
+
+.native-ios-tabbar .ios-tabbar {
+  display: none;
+}
+
+/* Subpages push in from the trailing edge, so the leading edge stays free for
+   the system back gesture. See docs/PLAN-MOBILE.md §3 risk 2. */
+.ios-subpage {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: var(--ios-bg);
+  inset: 0;
+  animation: ios-push-in 340ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes ios-push-in {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+[dir="rtl"] .ios-subpage {
+  animation-name: ios-push-in-rtl;
+}
+
+@keyframes ios-push-in-rtl {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.ios-sheet {
+  position: absolute;
+  z-index: 30;
+  border-radius: 26px 26px 0 0;
+  background: var(--ios-bg);
+  box-shadow: 0 -12px 40px rgb(0 0 0 / 18%);
+  inset: auto 0 0;
+  animation: ios-sheet-in 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes ios-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.ios-scrim {
+  position: absolute;
+  z-index: 25;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background: rgb(0 0 0 / 32%);
+  inset: 0;
+  animation: ios-fade-in 200ms ease;
+}
+
+@keyframes ios-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* The track sweeps while the fill is frozen, so a lunch pause cannot be
+   misread as progress. */
+.ios-track-paused {
+  background: linear-gradient(
+    100deg,
+    var(--ios-fill-track) 0%,
+    var(--ios-fill-track) 35%,
+    var(--ios-sweep, rgb(255 255 255 / 95%)) 50%,
+    var(--ios-fill-track) 65%,
+    var(--ios-fill-track) 100%
+  );
+  background-size: 300% 100%;
+  animation: ios-sweep 2.4s linear infinite;
+}
+
+.dark .ios-track-paused {
+  --ios-sweep: rgb(255 255 255 / 40%);
+}
+
+@keyframes ios-sweep {
+  from {
+    background-position: 150% 0;
+  }
+
+  to {
+    background-position: -150% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ios-subpage,
+  .ios-sheet,
+  .ios-scrim,
+  .ios-track-paused {
+    animation: none;
+  }
+}
+
+/* Landscape and iPad keep the same groups; only the number of columns changes.
+   Groups must not be split across a column boundary — half a list in each
+   column reads as two unrelated lists. */
+.ios-settings-columns {
+  column-count: 2;
+  column-gap: 4px;
+}
+
+.ios-settings-columns > * {
+  break-inside: avoid;
+  margin-bottom: 12px;
+}
+
+.ios-settings-columns .ios-group {
+  margin: 0 12px;
+}
+
+.ios-settings-columns .ios-group-title {
+  padding: 0 24px 5px;
+}

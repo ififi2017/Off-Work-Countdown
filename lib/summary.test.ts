@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { startOfWeek, startOfYear, countWorkdays, summarize } from "./summary";
+import { startOfWeek, startOfYear, countWorkdays, countScheduledWorkdays, summarize } from "./summary";
 
 // 2026-07-03 是周五，2026-07-04 周六，2026-07-05 周日
 const at = (y: number, m: number, d: number, h = 0) =>
@@ -73,6 +73,31 @@ describe("summarize", () => {
     plannedDailyHours: 9,
     dailySalary: 1000,
   };
+
+  it("counts alternating and rotation patterns through the shared schedule rule", () => {
+    expect(countScheduledWorkdays(
+      at(2026, 6, 29),
+      at(2026, 7, 13),
+      MON_TO_FRI,
+      {
+        mode: "alternating",
+        referenceWeekStartMs: at(2026, 6, 29).getTime(),
+        referenceWeekType: "single",
+        singleWeekendWorkday: 6,
+      }
+    )).toBe(11);
+    expect(countScheduledWorkdays(
+      at(2026, 7, 1),
+      at(2026, 7, 9),
+      [],
+      {
+        mode: "rotation",
+        rotationAnchorMs: at(2026, 7, 1).getTime(),
+        rotationWorkDays: 2,
+        rotationRestDays: 2,
+      }
+    )).toBe(4);
+  });
 
   it("counts finished days in full and today by its progress", () => {
     // 周三午间，本周已完成周一、周二，今天走了一半

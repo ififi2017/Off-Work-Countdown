@@ -1,0 +1,619 @@
+import SwiftUI
+import UIKit
+
+/// The timer surface follows Claude Design direction 1a literally. Business
+/// values still come from CountdownRules; this file only owns presentation.
+struct TimerDesignView: View {
+    @ObservedObject var store: OffWorkStore
+    let wide: Bool
+    let onOpenSettings: ((AppRoute?) -> Void)?
+
+    @State private var showShare = false
+    @State private var showOvertime = false
+
+    init(
+        store: OffWorkStore,
+        wide: Bool,
+        onOpenSettings: ((AppRoute?) -> Void)? = nil
+    ) {
+        self.store = store
+        self.wide = wide
+        self.onOpenSettings = onOpenSettings
+    }
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            Group {
+                if !store.countdownStarted {
+                    ShiftSetupDesignView(store: store, onOpenSettings: openSettings)
+                } else if let snapshot = store.snapshot(at: timeline.date) {
+                    if !snapshot.isWorkday && !store.forceToday {
+                        RestDayDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            onOpenSettings: openSettings
+                        )
+                    } else if snapshot.remainingMs <= 0 {
+                        CompletedShiftDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            showShare: $showShare
+                        )
+                    } else if snapshot.activeBreakEndAtMs != nil {
+                        LunchBreakDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            now: timeline.date,
+                            showShare: $showShare,
+                            showOvertime: $showOvertime
+                        )
+                    } else if snapshot.overtimeEndAtMs != nil,
+                              snapshot.plannedEndAtMs <= timeline.date.timeIntervalSince1970 * 1_000 {
+                        OvertimeDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            now: timeline.date,
+                            showShare: $showShare,
+                            showOvertime: $showOvertime
+                        )
+                    } else {
+                        RunningTimerDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            now: timeline.date,
+                            showShare: $showShare,
+                            showOvertime: $showOvertime
+                        )
+                    }
+                } else {
+                    rulesError
+                }
+            }
+            .frame(maxWidth: wide ? 680 : 402)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(OWCDesign.page)
+        }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showShare) {
+            ShareComposerView(store: store)
+                // Fitted, not full height: the composer is a mood row, a card
+                // and one button, and .large left a screenful of empty sheet
+                // under it.
+                .presentationDetents([.fraction(0.78), .large])
+                .presentationCornerRadius(26)
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showOvertime) {
+            OvertimeSheet(store: store)
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+#if DEBUG
+            let defaults = UserDefaults.standard
+            if defaults.bool(forKey: "ios.native.qaShareComposer") {
+                defaults.removeObject(forKey: "ios.native.qaShareComposer")
+                showShare = true
+            }
+#endif
+        }
+    }
+
+    private func openSettings(_ route: AppRoute?) {
+        if let onOpenSettings {
+            onOpenSettings(route)
+        } else {
+            store.selectedTab = .settings
+            store.presentedRoute = route
+        }
+    }
+
+    private var rulesError: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 28))
+            Text(store.lastRulesError ?? "Countdown rules unavailable")
+                .font(.system(size: 15))
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
+            Button(store.t("return")) { store.stopCountdown() }
+                .buttonStyle(OWCPrimaryButtonStyle())
+        }
+        .padding(20)
+    }
+}
+
+private struct ShiftSetupDesignView: View {
+    @ObservedObject var store: OffWorkStore
+    let onOpenSettings: (AppRoute?) -> Void
+    @State private var timeField: SetupTimeField?
+    @State private var nonWorkdayArmed = false
+    @State private var armResetTask: Task<Void, Never>?
+    @State private var showInvalidLunch = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            OWCAppHeader(store: store)
+
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 12)
+
+            VStack(spacing: 0) {
+                Text("\(store.timeString(store.startMinutes)) — \(store.timeString(store.endMinutes))")
+                    .font(.system(size: 40, weight: .bold).monospacedDigit())
+                    .tracking(-1.2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .environment(\.layoutDirection, .leftToRight)
+                Text(shiftDescription)
+                    .font(.system(size: 15))
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .padding(.top, 9)
+            }
+            .padding(.horizontal, OWCDesign.contentInset)
+            .padding(.top, 22)
+
+            VStack(alignment: .leading, spacing: 0) {
+                OWCSectionHeader(title: store.t("shiftSection"))
+
+                OWCGroupCard {
+                    OWCCompactTimeRow(icon: "sunrise", title: store.t("startTime"), minutes: store.startMinutes) {
+                        timeField = .start
+                    }
+                    OWCCompactTimeRow(icon: "sunset", title: store.t("endTime"), minutes: store.endMinutes) {
+                        timeField = .end
+                    }
+                    Button { onOpenSettings(.schedule) } label: {
+                        OWCRow(icon: "calendar.badge.clock", title: store.t("workSchedule"), isLast: true) {
+                            OWCDetailAccessory(text: scheduleLabel)
+                        }
+                    }
+                    .buttonStyle(OWCRowButtonStyle())
+                }
+            }
+            .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.top, 26)
+
+            OWCGroupCard {
+                Button { onOpenSettings(.salary) } label: {
+                    OWCRow(icon: "banknote", title: store.t("salarySettings")) {
+                        OWCDetailAccessory(text: store.t("configureSalary"))
+                    }
+                }
+                .buttonStyle(OWCRowButtonStyle())
+
+                Button { onOpenSettings(.notifications) } label: {
+                    OWCRow(icon: "bell.badge", title: store.t("offWorkReminder")) {
+                        OWCDetailAccessory(text: notificationModeLabel)
+                    }
+                }
+                .buttonStyle(OWCRowButtonStyle())
+
+                Button { onOpenSettings(.lunch) } label: {
+                    OWCRow(icon: "cup.and.saucer", title: store.t("lunchBreak")) {
+                        OWCDetailAccessory(text: lunchLabel)
+                    }
+                }
+                .buttonStyle(OWCRowButtonStyle())
+
+                Button { onOpenSettings(.health) } label: {
+                    OWCRow(icon: "figure.walk", title: store.t("microBreakReminder"), isLast: true) {
+                        OWCDetailAccessory(text: healthLabel)
+                    }
+                }
+                .buttonStyle(OWCRowButtonStyle())
+            }
+            .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.top, 26)
+
+                        Spacer(minLength: 12)
+                    }
+                    .frame(minHeight: proxy.size.height)
+                }
+                .scrollIndicators(.hidden)
+                .scrollBounceBehavior(.basedOnSize)
+            }
+
+            Button {
+                startTapped()
+            } label: {
+                Label(
+                    nonWorkdayArmed ? store.t("nonWorkdayTapAgain") : store.t("startCountdown"),
+                    systemImage: nonWorkdayArmed ? "exclamationmark.triangle.fill" : "play.fill"
+                )
+                .lineLimit(2)
+                .minimumScaleFactor(0.72)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 8)
+            }
+            .buttonStyle(OWCPrimaryButtonStyle(color: nonWorkdayArmed ? OWCDesign.orangeDeep : OWCDesign.accent))
+            .disabled(startDisabled)
+            .opacity(startDisabled ? 0.45 : 1)
+            .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.bottom, 14)
+        }
+        .sensoryFeedback(.warning, trigger: nonWorkdayArmed)
+        .sheet(item: $timeField) { field in
+            OWCSetupTimePickerSheet(
+                store: store,
+                title: store.t(field == .start ? "startTime" : "endTime"),
+                minutes: Binding(
+                    get: { field == .start ? store.startMinutes : store.endMinutes },
+                    set: { value in
+                        if field == .start { store.startMinutes = value }
+                        else { store.endMinutes = value }
+                    }
+                )
+            )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+        }
+        .alert(store.t("invalidLunchTitle"), isPresented: $showInvalidLunch) {
+            Button(store.t("return"), role: .cancel) {}
+            Button(store.t("goToLunchSettings")) { onOpenSettings(.lunch) }
+        } message: {
+            Text(store.t("invalidLunchMessage"))
+        }
+        .onDisappear { armResetTask?.cancel() }
+    }
+
+    private var shiftDescription: String {
+        var wallMinutes = store.endMinutes - store.startMinutes
+        if wallMinutes <= 0 { wallMinutes += 24 * 60 }
+        let shift = store.formatDuration(Double(wallMinutes) * 60_000, includeSeconds: false)
+        let lunch = store.lunchEnabled
+            ? store.formatDuration(Double(store.lunchDurationMinutes) * 60_000, includeSeconds: false)
+            : store.t("disabledShort")
+        return "\(shift) · \(lunch) · \(workdaysDescription)"
+    }
+
+    private var workdaysDescription: String {
+        if store.scheduleMode == .off { return store.t("scheduleOff") }
+        if store.scheduleMode != .classic { return scheduleLabel }
+        let pairs = Array(zip([1, 2, 3, 4, 5, 6, 0], store.weekdayLabels()))
+            .filter { store.workdays.contains($0.0) }
+            .map(\.1)
+        guard let first = pairs.first else { return store.t("disabledShort") }
+        return pairs.count > 1 ? "\(first) – \(pairs.last ?? first)" : first
+    }
+
+    private var scheduleLabel: String {
+        switch store.scheduleMode {
+        case .classic: store.t("scheduleClassic")
+        case .alternating: store.t("scheduleAlternating")
+        case .rotation: store.t("scheduleRotation")
+        case .off: store.t("scheduleOff")
+        }
+    }
+
+    private var startDisabled: Bool {
+        store.startMinutes == store.endMinutes || (store.scheduleMode == .classic && store.workdays.isEmpty)
+    }
+
+    private func startTapped() {
+        guard store.isLunchInsideShift else {
+            showInvalidLunch = true
+            return
+        }
+        let isNonWorkday = store.scheduleMode != .off && store.snapshot()?.isWorkday == false
+        if isNonWorkday, !nonWorkdayArmed {
+            withAnimation(.snappy(duration: 0.25)) { nonWorkdayArmed = true }
+            armResetTask?.cancel()
+            armResetTask = Task { @MainActor in
+                try? await Task.sleep(for: .seconds(5))
+                guard !Task.isCancelled else { return }
+                withAnimation(.snappy(duration: 0.25)) { nonWorkdayArmed = false }
+            }
+            return
+        }
+        armResetTask?.cancel()
+        withAnimation(.snappy(duration: 0.32)) { store.startCountdown(force: isNonWorkday) }
+    }
+
+    private var notificationModeLabel: String {
+        switch store.notificationMode {
+        case .off: store.t("notificationModeOff")
+        case .simple: store.t("notificationModeSimple")
+        case .milestones: store.t("notificationModeMilestones")
+        }
+    }
+
+    private var lunchLabel: String {
+        guard store.lunchEnabled else { return store.t("disabledShort") }
+        return "\(store.timeString(store.lunchStartMinutes)) · \(store.formatDuration(Double(store.lunchDurationMinutes) * 60_000, includeSeconds: false))"
+    }
+
+    private var healthLabel: String {
+        store.microBreakEnabled
+            ? store.t("minutesShort", values: ["count": "\(store.microBreakIntervalMinutes)"])
+            : store.t("disabledShort")
+    }
+}
+
+private enum SetupTimeField: String, Identifiable {
+    case start, end
+    var id: String { rawValue }
+}
+
+private struct OWCCompactTimeRow: View {
+    let icon: String
+    let title: String
+    let minutes: Int
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.system(size: 19))
+                    .foregroundStyle(OWCDesign.secondary)
+                    .frame(width: 24)
+                Text(title).font(.system(size: 17)).tracking(-0.43)
+                Spacer()
+                Text(String(format: "%02d:%02d", minutes / 60, minutes % 60))
+                    .font(.system(size: 17, weight: .semibold).monospacedDigit())
+                    .foregroundStyle(OWCDesign.primary)
+                    .padding(.horizontal, 12)
+                    .frame(minHeight: 36)
+                    .background(OWCDesign.control)
+                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    .environment(\.layoutDirection, .leftToRight)
+            }
+        }
+        .buttonStyle(OWCRowButtonStyle())
+        .padding(.horizontal, 16)
+        .frame(height: 56)
+        .overlay(alignment: .bottomTrailing) {
+            Rectangle()
+                .fill(OWCDesign.separator)
+                .frame(height: 0.5)
+                .padding(.leading, 16)
+        }
+    }
+
+}
+
+struct OWCSetupTimePickerSheet: View {
+    @ObservedObject var store: OffWorkStore
+    let title: String
+    @Binding var minutes: Int
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            DatePicker(
+                title,
+                selection: Binding(
+                    get: { store.dateForMinutes(minutes) },
+                    set: { minutes = store.minutes(from: $0) }
+                ),
+                displayedComponents: .hourAndMinute
+            )
+            .datePickerStyle(.wheel)
+            .labelsHidden()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(store.t("done")) { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+private struct RunningTimerDesignView: View {
+    @ObservedObject var store: OffWorkStore
+    let snapshot: NativeShiftSnapshot
+    let now: Date
+    @Binding var showShare: Bool
+    @Binding var showOvertime: Bool
+
+    private var onBreak: Bool { snapshot.activeBreakEndAtMs != nil }
+    private var overtime: Bool {
+        snapshot.overtimeEndAtMs != nil && snapshot.plannedEndAtMs <= now.timeIntervalSince1970 * 1_000
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            OWCAppHeader(store: store)
+
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 12)
+
+                        VStack(spacing: 0) {
+                            if overtime {
+                                Text(store.t("overtimeTitle"))
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(OWCDesign.orangeDeep)
+                                    .padding(.bottom, 8)
+                            }
+                            Text(store.formatDuration(displayRemaining))
+                                .font(.system(size: 56, weight: .bold).monospacedDigit())
+                                .tracking(-1.4)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.62)
+                                .environment(\.layoutDirection, .leftToRight)
+                                .contentTransition(.numericText(countsDown: true))
+                            Text(caption)
+                                .font(.system(size: 15))
+                                .foregroundStyle(OWCDesign.secondary)
+                                .padding(.top, 8)
+                        }
+                        .padding(.horizontal, OWCDesign.contentInset)
+                        .padding(.top, overtime ? 18 : 26)
+                        .animation(.linear(duration: 0.16), value: Int(displayRemaining / 1_000))
+
+                        OWCProgressMeter(progress: snapshot.progress, overtime: overtime, paused: onBreak)
+                            .padding(.horizontal, OWCDesign.contentInset)
+                            .padding(.top, 7)
+                            .animation(.linear(duration: 0.9), value: snapshot.progress)
+
+                        summaryCard
+                            .padding(.horizontal, OWCDesign.pageInset)
+                            .padding(.top, 30)
+
+                        if store.scheduleMode != .off {
+                            Text(store.t("summaryEstimateNote"))
+                                .font(.system(size: 13))
+                                .foregroundStyle(OWCDesign.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 36)
+                                .padding(.top, 8)
+                        }
+
+                        VStack(alignment: .leading, spacing: 0) {
+                            OWCSectionHeader(title: store.t("comingUp"))
+                            upcomingCard
+                        }
+                        .padding(.horizontal, OWCDesign.pageInset)
+                        .padding(.top, 16)
+
+                        Spacer(minLength: 12)
+                    }
+                    .frame(minHeight: proxy.size.height)
+                }
+                .scrollIndicators(.hidden)
+                .scrollBounceBehavior(.basedOnSize)
+            }
+
+            HStack(spacing: 10) {
+                Button {
+                    withAnimation(.snappy(duration: 0.3)) { store.stopCountdown() }
+                } label: {
+                    Label(store.t("return"), systemImage: "arrow.left")
+                }
+                .buttonStyle(OWCSecondaryButtonStyle())
+
+                Button { showOvertime = true } label: {
+                    Text(overtime ? store.t("adjustOvertime") : store.t("overtime"))
+                }
+                .buttonStyle(OWCSecondaryButtonStyle())
+
+                Button { showShare = true } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 19, weight: .medium))
+                        .frame(width: 50, height: 50)
+                }
+                .foregroundStyle(OWCDesign.primary)
+                .background(OWCDesign.control)
+                .clipShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
+                .buttonStyle(.plain)
+                .accessibilityLabel(store.t("shareButton"))
+            }
+            .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.bottom, 14)
+        }
+    }
+
+    private var caption: String {
+        if onBreak { return store.t("lunchInProgress") }
+        if overtime { return store.t("overtimeTimeLeftCaption") }
+        return store.t("timeLeftCaption")
+    }
+
+    private var displayRemaining: Double {
+        guard onBreak else { return snapshot.remainingMs }
+        return max(0, (snapshot.activeBreakEndAtMs ?? now.timeIntervalSince1970 * 1_000) - now.timeIntervalSince1970 * 1_000)
+    }
+
+    private var summaryCard: some View {
+        OWCGroupCard {
+            OWCRow(icon: "clock", title: store.t("todaysShift"), isLast: !store.salaryEnabled && store.scheduleMode == .off) {
+                Text("\(store.formatTime(snapshot.startDate)) – \(store.formatTime(snapshot.endDate))")
+                    .font(.system(size: 17).monospacedDigit())
+                    .foregroundStyle(OWCDesign.secondary)
+                    .environment(\.layoutDirection, .leftToRight)
+            }
+            if store.salaryEnabled {
+            OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: store.scheduleMode == .off) {
+                HStack(spacing: 8) {
+                    Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
+                        .font(.system(size: 17, weight: .semibold).monospacedDigit())
+                    Button { store.hideEarnings.toggle() } label: {
+                        Image(systemName: store.hideEarnings ? "eye" : "eye.slash")
+                            .font(.system(size: 17))
+                            .foregroundStyle(OWCDesign.tertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            }
+            if store.scheduleMode != .off {
+            OWCRow(icon: "calendar", title: store.t("summaryThisWeek")) {
+                Text(summaryText(weekSummary))
+                    .font(.system(size: 15).monospacedDigit())
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.66)
+            }
+            OWCRow(icon: "calendar.badge.clock", title: store.t("summaryThisYear"), isLast: true) {
+                Text(summaryText(yearSummary))
+                    .font(.system(size: 15).monospacedDigit())
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.66)
+            }
+            }
+        }
+    }
+
+    private var upcomingCard: some View {
+        OWCGroupCard {
+            OWCRow(icon: "figure.walk", title: store.t("microBreakReminder")) {
+                Text(nextHealthLabel)
+                    .font(.system(size: 17).monospacedDigit())
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineLimit(1)
+            }
+            OWCRow(icon: "rectangle.inset.filled", title: store.t("liveActivity"), isLast: true) {
+                Text(liveActivityLabel)
+                    .font(.system(size: 17).monospacedDigit())
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineLimit(1)
+            }
+        }
+    }
+
+    private var nextHealthLabel: String {
+        guard store.microBreakEnabled,
+              let reminders = try? CountdownRules.shared.reminders(
+                  input: store.rulesInput(at: now),
+                  reminderInputs: store.reminderInputs()
+              ),
+              let reminder = reminders.first(where: { $0.kind == "microBreak" && $0.atMs > now.timeIntervalSince1970 * 1_000 })
+        else { return store.t("disabledShort") }
+        let date = Date(timeIntervalSince1970: reminder.atMs / 1_000)
+        let minutes = max(1, Int((date.timeIntervalSince(now) / 60).rounded(.up)))
+        return "\(store.formatTime(date)) · \(store.t("minutesShort", values: ["count": "\(minutes)"]))"
+    }
+
+    private var liveActivityLabel: String {
+        guard store.liveActivityEnabled else { return store.t("disabledShort") }
+        let start = Date(timeIntervalSince1970: snapshot.plannedEndAtMs / 1_000)
+            .addingTimeInterval(Double(-store.liveActivityLeadMinutes * 60))
+        return store.formatTime(start)
+    }
+
+    private var earned: Double? { snapshot.dailySalary.map { $0 * snapshot.payRatio } }
+
+    private var weekSummary: NativePeriodSummary? { store.periodSummary("week", asOf: now, snapshot: snapshot) }
+    private var yearSummary: NativePeriodSummary? { store.periodSummary("year", asOf: now, snapshot: snapshot) }
+
+    private func summaryText(_ summary: NativePeriodSummary?) -> String {
+        guard let summary else { return "—" }
+        guard store.salaryEnabled else {
+            return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
+        }
+        let money = store.hideEarnings ? "••••" : store.formatMoney(summary.earnings)
+        return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours)) · \(money)"
+    }
+}

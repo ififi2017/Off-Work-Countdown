@@ -5,9 +5,7 @@ import { MacAppStorePurchaseDialog } from "@/components/MacAppStorePurchaseDialo
 import type { MacAppStoreDialogCopy } from "@/lib/server/content";
 import { track } from "@/lib/track";
 import { cn } from "@/lib/utils";
-
-const IS_DESKTOP_BUILD =
-  process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop";
+import { IS_WEB_BUILD } from "@/lib/build-target";
 
 interface MacAppStoreBadgeProps {
   copy: MacAppStoreDialogCopy;
@@ -22,7 +20,7 @@ export function MacAppStoreBadge({
 }: MacAppStoreBadgeProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  if (IS_DESKTOP_BUILD) return null;
+  if (!IS_WEB_BUILD) return null;
 
   return (
     <>

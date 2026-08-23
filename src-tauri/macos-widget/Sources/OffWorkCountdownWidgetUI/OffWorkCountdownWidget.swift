@@ -34,6 +34,18 @@ private enum WidgetCopy {
         }
     }
 
+    /// Compact families prefer a `<key>Short` variant when the bundle has one.
+    /// Keys without a short form are unaffected, so this stays language-safe:
+    /// nothing is truncated by guessing, only by a translator having supplied a
+    /// deliberate short string.
+    static func text(_ key: String, locale: String, compact: Bool) -> String {
+        if compact {
+            let short = text("\(key)Short", locale: locale)
+            if short != "\(key)Short" { return short }
+        }
+        return text(key, locale: locale)
+    }
+
     static func text(_ key: String, locale: String) -> String {
         for candidate in [locale, "en"] {
             guard let url = Bundle.main.url(
@@ -207,11 +219,21 @@ public struct OffWorkCountdownWidgetView: View {
             contentInset {
                 Group {
                     if let snapshotEntry = entry.snapshotEntry {
+                        #if os(iOS)
+                        if family == .accessoryCircular {
+                            circularAccessory(snapshotEntry)
+                        } else if family == .systemMedium {
+                            mediumContent(snapshotEntry)
+                        } else {
+                            smallContent(snapshotEntry)
+                        }
+                        #else
                         if family == .systemMedium {
                             mediumContent(snapshotEntry)
                         } else {
                             smallContent(snapshotEntry)
                         }
+                        #endif
                     } else {
                         emptyContent
                     }
@@ -222,6 +244,42 @@ public struct OffWorkCountdownWidgetView: View {
         .environment(\.locale, Locale(identifier: entry.locale))
         .widgetURL(URL(string: "offworkcountdown://open"))
     }
+
+    #if os(iOS)
+    private func circularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+        TimelineView(.periodic(from: entry.date, by: 60)) { timeline in
+            let progress = projectedProgress(snapshotEntry, at: timeline.date)
+            Gauge(value: progress, in: 0...100) {
+                EmptyView()
+            } currentValueLabel: {
+                // Whole percent only. "89.30%" is six glyphs in a complication
+                // that has room for three, and it wrapped onto a second line.
+                Text("\(roundedProgress(progress))%")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
+        }
+    }
+
+    private func projectedProgress(_ snapshotEntry: WidgetTimelineEntry, at date: Date) -> Double {
+        let base = min(100, max(0, snapshotEntry.progressAtDate))
+        guard snapshotEntry.phase == .working,
+              base < 100,
+              snapshotEntry.remainingEffectiveMsAtDateMs > 0
+        else { return base }
+
+        let remaining = Double(snapshotEntry.remainingEffectiveMsAtDateMs)
+        let total = remaining / max(0.000_001, 1 - base / 100)
+        let elapsed = min(
+            remaining,
+            max(0, date.timeIntervalSince1970 * 1_000 - Double(snapshotEntry.dateMs))
+        )
+        return min(100, max(base, base + elapsed / total * 100))
+    }
+    #endif
 
     /// macOS 14 起 WidgetKit 自己就会给内容加一圈默认 content margins（实测
     /// 16pt），`containerBackground` 只保证**背景**铺满整块，内容仍然被缩进。
@@ -264,14 +322,15 @@ public struct OffWorkCountdownWidgetView: View {
         }
     }
 
-    private func statusBadge(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+    private func statusBadge(_ snapshotEntry: WidgetTimelineEntry, compact: Bool = false) -> some View {
         HStack(spacing: 6) {
             Circle()
                 .fill(phaseColor(snapshotEntry.phase))
                 .frame(width: 6, height: 6)
-            Text(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+            Text(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale, compact: compact))
                 .font(.caption2.weight(.semibold))
                 .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
         .foregroundStyle(.primary.opacity(0.82))
         .padding(.horizontal, 9)
@@ -283,7 +342,7 @@ public struct OffWorkCountdownWidgetView: View {
         VStack(alignment: .leading, spacing: 0) {
             header(compact: true)
             Spacer(minLength: 7)
-            statusBadge(snapshotEntry)
+            statusBadge(snapshotEntry, compact: true)
             Spacer(minLength: 6)
             countdown(for: snapshotEntry, size: 33)
             Spacer(minLength: 7)
@@ -531,6 +590,14 @@ public struct OffWorkCountdownWidget: Widget {
                 )
             )
         )
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies(supportedFamilies)
+    }
+
+    private var supportedFamilies: [WidgetFamily] {
+        #if os(iOS)
+        [.systemSmall, .systemMedium, .accessoryCircular]
+        #else
+        [.systemSmall, .systemMedium]
+        #endif
     }
 }

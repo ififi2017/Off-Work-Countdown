@@ -16,6 +16,7 @@ interface PeriodSummaryProps {
   rows: Row[];
   hideEarnings: boolean;
   compact?: boolean;
+  mobile?: boolean;
   currentEarnings?: {
     label: string;
     value: string;
@@ -31,6 +32,7 @@ export function PeriodSummary({
   rows,
   hideEarnings,
   compact = false,
+  mobile = false,
   currentEarnings,
 }: PeriodSummaryProps) {
   // 天数与小时用 Intl 的 unit 样式：复数形式、小数分隔符、各语言写法都由它处理，
@@ -62,8 +64,12 @@ export function PeriodSummary({
 
   return (
     <div
-      className={`rounded-xl bg-white/50 backdrop-blur-sm dark:bg-black/20 ${
-        compact ? "p-3" : "p-4"
+      className={`bg-white/50 backdrop-blur-sm dark:bg-black/20 ${
+        compact
+          ? "rounded-xl p-3"
+          : mobile
+            ? "rounded-[1.4rem] border border-white/60 p-4 shadow-sm dark:border-white/10"
+            : "rounded-xl p-4"
       }`}
     >
       <p className="text-xs text-gray-500 dark:text-gray-400">{note}</p>
@@ -80,7 +86,9 @@ export function PeriodSummary({
             <button
               type="button"
               onClick={currentEarnings.onToggle}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+              className={`inline-flex items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white ${
+                mobile ? "h-11 w-11" : "h-7 w-7"
+              }`}
               aria-pressed={hideEarnings}
               aria-label={
                 hideEarnings
@@ -94,9 +102,9 @@ export function PeriodSummary({
               }
             >
               {hideEarnings ? (
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className={mobile ? "h-4 w-4" : "h-3.5 w-3.5"} />
               ) : (
-                <EyeOff className="h-3.5 w-3.5" />
+                <EyeOff className={mobile ? "h-4 w-4" : "h-3.5 w-3.5"} />
               )}
             </button>
           </span>

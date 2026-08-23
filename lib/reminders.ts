@@ -121,6 +121,7 @@ export interface ShiftReminderInputs {
   lunchEndEnabled: boolean;
   lunchEndBody: string;
   microBreakEnabled: boolean;
+  microBreakTitle?: string;
   microBreakIntervalMinutes: number;
   /** 轮换用的健康提醒文案；`{{minutes}}` 会被替换成已连续工作的分钟数。 */
   microBreakMessages: string[];
@@ -317,7 +318,7 @@ export function buildShiftReminders(
           expiresAtMs: null,
           maxTickGapMs: MICRO_BREAK_MAX_TICK_GAP_MS,
           collapseGroup: `microBreak:${segment.startAtMs}`,
-          title: body ? breakTitle : null,
+          title: body ? (inputs.microBreakTitle || breakTitle) : null,
           body,
         });
       }

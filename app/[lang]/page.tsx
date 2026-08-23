@@ -8,8 +8,7 @@ import {
   pickMacAppStoreDialogCopy,
 } from '@/lib/server/content';
 import { getTranslations } from '@/lib/server/i18n';
-
-const IS_DESKTOP_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === 'desktop';
+import { IS_WEB_BUILD } from '@/lib/build-target';
 
 type Props = {
   params: Promise<{ lang: string }>
@@ -62,7 +61,7 @@ export default async function Home({ params }: Props) {
       <div className="min-h-screen">
         <OffWorkCountdown lang={lang} macAppStoreCopy={macAppStoreCopy} />
       </div>
-      {!IS_DESKTOP_BUILD && <DesktopDownloadInvite />}
+      {IS_WEB_BUILD && <DesktopDownloadInvite />}
     </I18nProvider>
   );
 }
