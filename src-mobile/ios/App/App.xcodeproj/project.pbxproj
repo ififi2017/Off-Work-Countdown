@@ -21,6 +21,7 @@
 		710000091234567890ABCDEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		7100000A1234567890ABCDEF /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
 		7100000B1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C30000010000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* InfoPlist.strings */; };
 		E00000010000000000000001 /* OWCDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000010000000000000001 /* OWCDesignSystem.swift */; };
 		E00000020000000000000002 /* CountdownRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000020000000000000002 /* CountdownRules.swift */; };
 		E00000030000000000000003 /* OffWorkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000030000000000000003 /* OffWorkStore.swift */; };
@@ -36,7 +37,9 @@
 		E000000E000000000000000E /* SettingsDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000E000000000000000E /* SettingsDesignView.swift */; };
 		E000000F000000000000000F /* SettingsDetailDesignViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000F000000000000000F /* SettingsDetailDesignViews.swift */; };
 		E00000100000000000000010 /* TabletDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000100000000000000010 /* TabletDesignView.swift */; };
-		C30000010000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* InfoPlist.strings */; };
+		E00000110000000000000011 /* TimerStatusViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000110000000000000011 /* TimerStatusViews.swift */; };
+		E00000120000000000000012 /* PhoneLandscapeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000120000000000000012 /* PhoneLandscapeView.swift */; };
+		E00000130000000000000013 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000130000000000000013 /* AboutView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,7 +72,6 @@
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		720000011234567890ABCDEF /* LiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveActivityAttributes.swift; path = Native/Models/LiveActivityAttributes.swift; sourceTree = "<group>"; };
 		720000021234567890ABCDEF /* LiveActivityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveActivityService.swift; path = Native/Services/LiveActivityService.swift; sourceTree = "<group>"; };
 		720000031234567890ABCDEF /* WidgetSnapshotPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WidgetSnapshotPublisher.swift; path = Native/Services/WidgetSnapshotPublisher.swift; sourceTree = "<group>"; };
@@ -80,21 +82,6 @@
 		720000081234567890ABCDEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		720000091234567890ABCDEF /* Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widget.entitlements; sourceTree = "<group>"; };
 		7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OffWorkCountdownWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		F00000010000000000000001 /* OWCDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCDesignSystem.swift; path = Native/DesignSystem/OWCDesignSystem.swift; sourceTree = "<group>"; };
-		F00000020000000000000002 /* CountdownRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CountdownRules.swift; path = Native/Models/CountdownRules.swift; sourceTree = "<group>"; };
-		F00000030000000000000003 /* OffWorkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OffWorkStore.swift; path = Native/Models/OffWorkStore.swift; sourceTree = "<group>"; };
-		F00000040000000000000004 /* NativeLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NativeLocalizer.swift; path = Native/Services/NativeLocalizer.swift; sourceTree = "<group>"; };
-		F00000050000000000000005 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationService.swift; path = Native/Services/NotificationService.swift; sourceTree = "<group>"; };
-		F00000060000000000000006 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShareSheet.swift; path = Native/Services/ShareSheet.swift; sourceTree = "<group>"; };
-		F00000070000000000000007 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = Native/Views/OnboardingView.swift; sourceTree = "<group>"; };
-		F00000080000000000000008 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = Native/Views/RootView.swift; sourceTree = "<group>"; };
-		F00000090000000000000009 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerView.swift; path = Native/Views/TimerView.swift; sourceTree = "<group>"; };
-		F000000B000000000000000B /* CountdownRules.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = CountdownRules.js; path = Resources/CountdownRules.js; sourceTree = "<group>"; };
-		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
-		F000000D000000000000000D /* TimerDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerDesignView.swift; path = Native/Views/TimerDesignView.swift; sourceTree = "<group>"; };
-		F000000E000000000000000E /* SettingsDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsDesignView.swift; path = Native/Views/SettingsDesignView.swift; sourceTree = "<group>"; };
-		F000000F000000000000000F /* SettingsDetailDesignViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsDetailDesignViews.swift; path = Native/Views/SettingsDetailDesignViews.swift; sourceTree = "<group>"; };
-		F00000100000000000000010 /* TabletDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TabletDesignView.swift; path = Native/Views/TabletDesignView.swift; sourceTree = "<group>"; };
 		C10000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000020000000000000002 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		C10000030000000000000003 /* zh-HK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-HK"; path = "zh-HK.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -114,6 +101,24 @@
 		C10000110000000000000011 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000120000000000000012 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000130000000000000013 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		F00000010000000000000001 /* OWCDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCDesignSystem.swift; path = Native/DesignSystem/OWCDesignSystem.swift; sourceTree = "<group>"; };
+		F00000020000000000000002 /* CountdownRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CountdownRules.swift; path = Native/Models/CountdownRules.swift; sourceTree = "<group>"; };
+		F00000030000000000000003 /* OffWorkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OffWorkStore.swift; path = Native/Models/OffWorkStore.swift; sourceTree = "<group>"; };
+		F00000040000000000000004 /* NativeLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NativeLocalizer.swift; path = Native/Services/NativeLocalizer.swift; sourceTree = "<group>"; };
+		F00000050000000000000005 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationService.swift; path = Native/Services/NotificationService.swift; sourceTree = "<group>"; };
+		F00000060000000000000006 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShareSheet.swift; path = Native/Services/ShareSheet.swift; sourceTree = "<group>"; };
+		F00000070000000000000007 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = Native/Views/OnboardingView.swift; sourceTree = "<group>"; };
+		F00000080000000000000008 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = Native/Views/RootView.swift; sourceTree = "<group>"; };
+		F00000090000000000000009 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerView.swift; path = Native/Views/TimerView.swift; sourceTree = "<group>"; };
+		F000000B000000000000000B /* CountdownRules.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = CountdownRules.js; path = Resources/CountdownRules.js; sourceTree = "<group>"; };
+		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
+		F000000D000000000000000D /* TimerDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerDesignView.swift; path = Native/Views/TimerDesignView.swift; sourceTree = "<group>"; };
+		F000000E000000000000000E /* SettingsDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsDesignView.swift; path = Native/Views/SettingsDesignView.swift; sourceTree = "<group>"; };
+		F000000F000000000000000F /* SettingsDetailDesignViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsDetailDesignViews.swift; path = Native/Views/SettingsDetailDesignViews.swift; sourceTree = "<group>"; };
+		F00000100000000000000010 /* TabletDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TabletDesignView.swift; path = Native/Views/TabletDesignView.swift; sourceTree = "<group>"; };
+		F00000110000000000000011 /* TimerStatusViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerStatusViews.swift; path = Native/Views/TimerStatusViews.swift; sourceTree = "<group>"; };
+		F00000120000000000000012 /* PhoneLandscapeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PhoneLandscapeView.swift; path = Native/Views/PhoneLandscapeView.swift; sourceTree = "<group>"; };
+		F00000130000000000000013 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AboutView.swift; path = Native/Views/AboutView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -171,9 +176,12 @@
 				F00000080000000000000008 /* RootView.swift */,
 				F00000090000000000000009 /* TimerView.swift */,
 				F000000D000000000000000D /* TimerDesignView.swift */,
+				F00000110000000000000011 /* TimerStatusViews.swift */,
 				F000000E000000000000000E /* SettingsDesignView.swift */,
 				F000000F000000000000000F /* SettingsDetailDesignViews.swift */,
+				F00000130000000000000013 /* AboutView.swift */,
 				F00000100000000000000010 /* TabletDesignView.swift */,
+				F00000120000000000000012 /* PhoneLandscapeView.swift */,
 				F000000B000000000000000B /* CountdownRules.js */,
 				F000000C000000000000000C /* locales */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
@@ -181,7 +189,6 @@
 				C20000010000000000000001 /* InfoPlist.strings */,
 				504EC3131FED79650016851F /* Info.plist */,
 				720000041234567890ABCDEF /* App.entitlements */,
-				50B271D01FEDC1A000F3C39B /* public */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -345,6 +352,9 @@
 				E000000E000000000000000E /* SettingsDesignView.swift in Sources */,
 				E000000F000000000000000F /* SettingsDetailDesignViews.swift in Sources */,
 				E00000100000000000000010 /* TabletDesignView.swift in Sources */,
+				E00000110000000000000011 /* TimerStatusViews.swift in Sources */,
+				E00000120000000000000012 /* PhoneLandscapeView.swift in Sources */,
+				E00000130000000000000013 /* AboutView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

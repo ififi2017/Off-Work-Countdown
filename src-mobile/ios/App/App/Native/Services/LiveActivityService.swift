@@ -45,7 +45,8 @@ final class LiveActivityService: ObservableObject {
             locale: store.languageCode,
             appTitle: store.t("offWorkCountdown"),
             caption: store.t("timeLeftCaption"),
-            completedCaption: store.t("offWorkTime")
+            completedCaption: store.t("offWorkTime"),
+            completedNote: store.t("offWorkWellDone")
         )
         let content = ActivityContent(
             state: state,
@@ -128,7 +129,8 @@ final class LiveActivityService: ObservableObject {
             locale: store.languageCode,
             appTitle: store.t("offWorkCountdown"),
             caption: store.t("timeLeftCaption"),
-            completedCaption: store.t("offWorkTime")
+            completedCaption: store.t("offWorkTime"),
+            completedNote: store.t("offWorkWellDone")
         )
         let finalContent = ActivityContent(
             state: finalState,

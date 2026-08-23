@@ -72,14 +72,32 @@ enum ShareMood: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
     var assetName: String { "Mood-\(rawValue)" }
+
+    /// Matches the mood keys the Web share dialog already ships in all 19
+    /// locales, so the picker reads out properly under VoiceOver.
+    var labelKey: String {
+        switch self {
+        case .happy: "moodHappy"
+        case .relaxed: "moodRelaxed"
+        case .tired: "moodTired"
+        case .crying: "moodCounting"
+        case .firedUp: "moodFiredUp"
+        case .excited: "moodExcited"
+        case .celebrating: "moodCelebrating"
+        case .coffee: "moodCoffee"
+        }
+    }
 }
 
 @MainActor
 final class OffWorkStore: ObservableObject {
     private enum Key {
         static let onboardingComplete = "ios.native.onboardingComplete"
-        static let selectedTab = "ios.native.selectedTab"
+#if DEBUG
+        static let debugAlwaysOnboarding = "ios.native.debugAlwaysOnboarding"
         static let qaRoute = "ios.native.qaRoute"
+#endif
+        static let selectedTab = "ios.native.selectedTab"
         static let countdownStarted = "ios.native.countdownStarted"
         static let legacyForceToday = "ios.native.forceToday"
         static let forcedWorkdayDate = "ios.native.forcedWorkdayDate"
@@ -107,7 +125,9 @@ final class OffWorkStore: ObservableObject {
         static let notificationMode = "ios.native.notificationMode"
         static let liveActivityEnabled = "ios.native.liveActivityEnabled"
         static let liveActivityLead = "ios.native.liveActivityLead"
-        static let lunchEdgesEnabled = "ios.native.lunchEdgesEnabled"
+        static let legacyLunchEdgesEnabled = "ios.native.lunchEdgesEnabled"
+        static let lunchStartReminderEnabled = "ios.native.lunchStartReminderEnabled"
+        static let lunchEndReminderEnabled = "ios.native.lunchEndReminderEnabled"
         static let microBreakEnabled = "ios.native.microBreakEnabled"
         static let microBreakInterval = "ios.native.microBreakInterval"
         static let overtimeEndAtMs = "ios.native.overtimeEndAtMs"
@@ -123,11 +143,16 @@ final class OffWorkStore: ObservableObject {
     @Published var presentedRoute: AppRoute?
     @Published var onboardingPage = 0
     @Published var shareMood: ShareMood = .happy
-    @Published var shareCustomEmoji = ""
-    @Published var shareUsesCustomEmoji = false
     @Published var lastRulesError: String?
 
     @Published var onboardingComplete: Bool { didSet { defaults.set(onboardingComplete, forKey: Key.onboardingComplete) } }
+#if DEBUG
+    /// Replay the welcome flow on every launch. The property and its storage
+    /// key do not exist in Release builds.
+    @Published var debugAlwaysShowOnboarding: Bool {
+        didSet { defaults.set(debugAlwaysShowOnboarding, forKey: Key.debugAlwaysOnboarding) }
+    }
+#endif
     @Published var countdownStarted: Bool { didSet { defaults.set(countdownStarted, forKey: Key.countdownStarted) } }
     @Published private var forcedWorkdayDate: String? {
         didSet {
@@ -160,7 +185,12 @@ final class OffWorkStore: ObservableObject {
     @Published var notificationMode: OffWorkNotificationMode { didSet { defaults.set(notificationMode.rawValue, forKey: Key.notificationMode) } }
     @Published var liveActivityEnabled: Bool { didSet { defaults.set(liveActivityEnabled, forKey: Key.liveActivityEnabled) } }
     @Published var liveActivityLeadMinutes: Int { didSet { defaults.set(liveActivityLeadMinutes, forKey: Key.liveActivityLead) } }
-    @Published var lunchEdgesEnabled: Bool { didSet { defaults.set(lunchEdgesEnabled, forKey: Key.lunchEdgesEnabled) } }
+    @Published var lunchStartReminderEnabled: Bool {
+        didSet { defaults.set(lunchStartReminderEnabled, forKey: Key.lunchStartReminderEnabled) }
+    }
+    @Published var lunchEndReminderEnabled: Bool {
+        didSet { defaults.set(lunchEndReminderEnabled, forKey: Key.lunchEndReminderEnabled) }
+    }
     @Published var microBreakEnabled: Bool { didSet { defaults.set(microBreakEnabled, forKey: Key.microBreakEnabled) } }
     @Published var microBreakIntervalMinutes: Int { didSet { defaults.set(microBreakIntervalMinutes, forKey: Key.microBreakInterval) } }
     @Published var overtimeEndAtMs: Double? {
@@ -184,12 +214,20 @@ final class OffWorkStore: ObservableObject {
             ? AppTab(rawValue: defaults.string(forKey: Key.selectedTab) ?? "timer") ?? .timer
             : .settings
         presentedRoute = debugRoute
+#if DEBUG
+        let replayOnboarding = defaults.bool(forKey: Key.debugAlwaysOnboarding)
+        debugAlwaysShowOnboarding = replayOnboarding
+        // Same effect as a fresh install, without uninstalling: the flow runs
+        // and completing it still works normally for the rest of the session.
+        onboardingComplete = replayOnboarding ? false : defaults.bool(forKey: Key.onboardingComplete)
+#else
         onboardingComplete = defaults.bool(forKey: Key.onboardingComplete)
+#endif
         countdownStarted = defaults.bool(forKey: Key.countdownStarted)
         let storedForcedDate = defaults.string(forKey: Key.forcedWorkdayDate)
         forcedWorkdayDate = storedForcedDate ?? (defaults.bool(forKey: Key.legacyForceToday) ? Self.dayKey(for: .now) : nil)
         startMinutes = defaults.object(forKey: Key.startMinutes) == nil ? 9 * 60 : defaults.integer(forKey: Key.startMinutes)
-        endMinutes = defaults.object(forKey: Key.endMinutes) == nil ? 18 * 60 : defaults.integer(forKey: Key.endMinutes)
+        endMinutes = defaults.object(forKey: Key.endMinutes) == nil ? 17 * 60 : defaults.integer(forKey: Key.endMinutes)
         let storedDays = defaults.array(forKey: Key.workdays) as? [Int] ?? [1, 2, 3, 4, 5]
         workdays = Set(storedDays)
         scheduleMode = WorkScheduleMode(rawValue: defaults.string(forKey: Key.scheduleMode) ?? "classic") ?? .classic
@@ -203,7 +241,7 @@ final class OffWorkStore: ObservableObject {
         rotationAnchorMs = defaults.object(forKey: Key.rotationAnchorMs) == nil
             ? Calendar.current.startOfDay(for: .now).timeIntervalSince1970 * 1_000
             : defaults.double(forKey: Key.rotationAnchorMs)
-        lunchEnabled = defaults.object(forKey: Key.lunchEnabled) == nil ? true : defaults.bool(forKey: Key.lunchEnabled)
+        lunchEnabled = defaults.object(forKey: Key.lunchEnabled) == nil ? false : defaults.bool(forKey: Key.lunchEnabled)
         lunchStartMinutes = defaults.object(forKey: Key.lunchStartMinutes) == nil ? 12 * 60 : defaults.integer(forKey: Key.lunchStartMinutes)
         lunchDurationMinutes = defaults.object(forKey: Key.lunchDuration) == nil ? 60 : defaults.integer(forKey: Key.lunchDuration)
         salaryAmount = defaults.string(forKey: Key.salaryAmount) ?? "0"
@@ -220,7 +258,13 @@ final class OffWorkStore: ObservableObject {
         liveActivityEnabled = defaults.bool(forKey: Key.liveActivityEnabled)
         let storedLead = defaults.object(forKey: Key.liveActivityLead) == nil ? 15 : defaults.integer(forKey: Key.liveActivityLead)
         liveActivityLeadMinutes = Self.allowedLiveActivityLeadMinutes.contains(storedLead) ? storedLead : 15
-        lunchEdgesEnabled = defaults.bool(forKey: Key.lunchEdgesEnabled)
+        let legacyLunchEdgesEnabled = defaults.bool(forKey: Key.legacyLunchEdgesEnabled)
+        lunchStartReminderEnabled = defaults.object(forKey: Key.lunchStartReminderEnabled) == nil
+            ? legacyLunchEdgesEnabled
+            : defaults.bool(forKey: Key.lunchStartReminderEnabled)
+        lunchEndReminderEnabled = defaults.object(forKey: Key.lunchEndReminderEnabled) == nil
+            ? legacyLunchEdgesEnabled
+            : defaults.bool(forKey: Key.lunchEndReminderEnabled)
         microBreakEnabled = defaults.bool(forKey: Key.microBreakEnabled)
         microBreakIntervalMinutes = defaults.object(forKey: Key.microBreakInterval) == nil ? 60 : defaults.integer(forKey: Key.microBreakInterval)
         overtimeEndAtMs = defaults.object(forKey: Key.overtimeEndAtMs) as? Double
@@ -241,13 +285,18 @@ final class OffWorkStore: ObservableObject {
     var layoutDirection: LayoutDirection { languageCode == "ar" ? .rightToLeft : .leftToRight }
     var locale: Locale { Locale(identifier: languageCode) }
     var forceToday: Bool { forcedWorkdayDate == Self.dayKey(for: .now) }
+    /// SF Symbol for the two explicit themes. `auto` deliberately has none:
+    /// the symbol named "a" is one of the localized symbols and renders as 字
+    /// in Chinese, so Auto draws a literal "A" instead. See quickThemeIsAuto.
     var quickThemeIcon: String {
         switch theme {
-        case .auto: "a"
+        case .auto: ""
         case .light: "sun.max"
         case .dark: "moon"
         }
     }
+
+    var quickThemeIsAuto: Bool { theme == .auto }
 
     func refreshSystemLanguage() {
         let systemLanguage = NativeLocalizer.systemLanguage()
@@ -326,9 +375,9 @@ final class OffWorkStore: ObservableObject {
                 milestone95: [t("notificationMilestone95")],
                 milestone100: [t("offWorkTime")]
             ),
-            lunchStartEnabled: lunchEdgesEnabled,
+            lunchStartEnabled: lunchStartReminderEnabled,
             lunchStartBody: t("lunchStartNotification"),
-            lunchEndEnabled: lunchEdgesEnabled,
+            lunchEndEnabled: lunchEndReminderEnabled,
             lunchEndBody: t("lunchEndNotification"),
             microBreakEnabled: microBreakEnabled,
             microBreakTitle: t("microBreakReminder"),
@@ -350,7 +399,10 @@ final class OffWorkStore: ObservableObject {
 
     func completeOnboarding(enableNotifications: Bool) {
         onboardingComplete = true
-        onboardingPage = 0
+        // Deliberately does NOT reset onboardingPage. The welcome view is still
+        // on screen for the length of the cross-fade, and resetting the page
+        // snapped it back to the first slide mid-transition. `onboardingPage` is
+        // not persisted, so a replay starts at 0 on its own.
         if enableNotifications { notificationMode = .simple }
     }
 
@@ -381,6 +433,28 @@ final class OffWorkStore: ObservableObject {
 
     func anchorRotationToToday() {
         rotationAnchorMs = Calendar.current.startOfDay(for: .now).timeIntervalSince1970 * 1_000
+    }
+
+    var rotationCycleLength: Int {
+        max(2, rotationWorkDays + rotationRestDays)
+    }
+
+    /// Returns today's one-based position in the existing shared rotation
+    /// schedule. Choosing another position only moves the schedule anchor; the
+    /// TypeScript rules remain responsible for deciding work and rest days.
+    var rotationCycleDay: Int {
+        let calendar = Calendar.current
+        let anchor = calendar.startOfDay(for: Date(timeIntervalSince1970: rotationAnchorMs / 1_000))
+        let today = calendar.startOfDay(for: .now)
+        let offset = calendar.dateComponents([.day], from: anchor, to: today).day ?? 0
+        return ((offset % rotationCycleLength) + rotationCycleLength) % rotationCycleLength + 1
+    }
+
+    func setRotationCycleDay(_ day: Int) {
+        let normalizedDay = min(rotationCycleLength, max(1, day))
+        let today = Calendar.current.startOfDay(for: .now)
+        let anchor = Calendar.current.date(byAdding: .day, value: -(normalizedDay - 1), to: today) ?? today
+        rotationAnchorMs = anchor.timeIntervalSince1970 * 1_000
     }
 
     func toggleQuickTheme() {

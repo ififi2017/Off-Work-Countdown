@@ -61,6 +61,16 @@ enum CountdownRulesError: LocalizedError {
 final class CountdownRules {
     static let shared = CountdownRules()
 
+    /// Builds the JSContext and evaluates the rules bundle off the first-frame
+    /// path. Without this the singleton is created lazily inside the first
+    /// `snapshot()` call, which happens while the timer screen is laying out —
+    /// a synchronous 37 KB `evaluateScript` in the middle of launch.
+    static func warmUp() {
+        Task.detached(priority: .utility) {
+            _ = CountdownRules.shared
+        }
+    }
+
     private let context: JSContext?
     private let loadError: CountdownRulesError?
 

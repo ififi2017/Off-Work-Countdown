@@ -60,24 +60,19 @@ struct OvertimeSheet: View {
 struct ShareComposerView: View {
     @ObservedObject var store: OffWorkStore
     @Environment(\.dismiss) private var dismiss
-    @State private var shareItems: [Any] = []
-    @State private var showSystemShare = false
-    @FocusState private var customEmojiFocused: Bool
 
     var body: some View {
         NavigationStack {
             GeometryReader { proxy in
                 if proxy.size.width > 560 {
-                    HStack(spacing: 28) {
-                        sharePreview(maxWidth: min(340, proxy.size.height * 0.72))
-                            .frame(maxWidth: .infinity)
-                        VStack(spacing: 18) {
-                            moodPicker
-                            Spacer(minLength: 0)
-                            shareButton
-                        }
-                        .frame(maxWidth: 330, maxHeight: 440)
+                    let previewWidth = min(360, proxy.size.height * 0.72)
+                    HStack(spacing: 32) {
+                        sharePreview(maxWidth: previewWidth)
+                            .frame(width: previewWidth)
+                        wideShareControls
+                            .frame(maxWidth: 390, maxHeight: previewWidth * 1.25)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal, 28)
                     .padding(.vertical, 18)
                 } else {
@@ -111,59 +106,80 @@ struct ShareComposerView: View {
                 }
             }
         }
-        .sheet(isPresented: $showSystemShare) {
-            ShareSheet(items: shareItems)
-        }
         .sensoryFeedback(.selection, trigger: store.shareMood)
     }
 
     private var moodPicker: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 4) {
-                ForEach(ShareMood.allCases) { mood in
-                    Button {
-                        withAnimation(.snappy(duration: 0.2)) {
-                            store.shareMood = mood
-                            store.shareUsesCustomEmoji = false
-                        }
-                    } label: {
-                        Image(mood.assetName)
-                            .resizable()
-                            .scaledToFit()
-                            .padding(3)
-                            .frame(width: 34, height: 34)
-                            .background(!store.shareUsesCustomEmoji && store.shareMood == mood ? OWCDesign.control : .clear)
-                            .clipShape(Circle())
-                            .overlay {
-                                if !store.shareUsesCustomEmoji && store.shareMood == mood {
-                                    Circle().stroke(OWCDesign.accent, lineWidth: 1.5)
-                                }
-                            }
-                            .opacity(!store.shareUsesCustomEmoji && store.shareMood == mood ? 1 : 0.74)
-                    }
-                    .buttonStyle(.plain)
-                }
+        HStack(spacing: 4) {
+            ForEach(ShareMood.allCases) { mood in
+                moodButton(mood)
             }
-            HStack(spacing: 10) {
-                TextField(store.t("customEmoji"), text: $store.shareCustomEmoji)
-                    .font(.system(size: 22))
-                    .focused($customEmojiFocused)
-                    .onChange(of: store.shareCustomEmoji) {
-                        store.shareCustomEmoji = String(store.shareCustomEmoji.prefix(4))
-                        store.shareUsesCustomEmoji = !store.shareCustomEmoji.isEmpty
-                    }
-                if !store.shareCustomEmoji.isEmpty {
-                    Button(store.t("useCustomEmoji")) {
-                        store.shareUsesCustomEmoji = true
-                        customEmojiFocused = false
-                    }
-                    .font(.system(size: 14, weight: .semibold))
-                }
-            }
-            .padding(.horizontal, 12)
-            .frame(height: 44)
-            .background(OWCDesign.control)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+    }
+
+    /// On a wide sheet the preview and controls read as two deliberate columns.
+    /// `ViewThatFits` keeps that arrangement useful on a short landscape iPhone
+    /// without making the iPad version sparse again.
+    private var wideShareControls: some View {
+        ViewThatFits(in: .vertical) {
+            expandedShareControls
+            compactShareControls
+        }
+    }
+
+    private var expandedShareControls: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(store.t("shareMoodLabel"))
+                .font(.system(size: 20, weight: .semibold))
+            moodPicker
+            shareDetailsCard
+            shareButton
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var compactShareControls: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(store.t("shareMoodLabel"))
+                .font(.system(size: 15, weight: .semibold))
+            moodPicker
+            Text(shareCopy)
+                .font(.system(size: 14))
+                .foregroundStyle(OWCDesign.secondary)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(OWCDesign.card)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            shareButton
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var shareDetailsCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            shareDetailRow("text.quote", text: shareCopy, emphasized: true)
+            Divider()
+            shareDetailRow("square.and.arrow.up", text: store.t("shareComposerNote"))
+            shareDetailRow("lock", text: store.t("sharePrivacyNote"))
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(OWCDesign.card)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func shareDetailRow(_ icon: String, text: String, emphasized: Bool = false) -> some View {
+        HStack(alignment: .top, spacing: 11) {
+            Image(systemName: icon)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(emphasized ? OWCDesign.accent : OWCDesign.secondary)
+                .frame(width: 18)
+            Text(text)
+                .font(.system(size: 14, weight: emphasized ? .medium : .regular))
+                .foregroundStyle(emphasized ? OWCDesign.primary : OWCDesign.secondary)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -175,6 +191,33 @@ struct ShareComposerView: View {
             .shadow(color: .black.opacity(0.12), radius: 14, y: 7)
     }
 
+    @ViewBuilder
+    private func moodButton(_ mood: ShareMood) -> some View {
+        let selected = store.shareMood == mood
+        Button {
+            withAnimation(.snappy(duration: 0.2)) { store.shareMood = mood }
+        } label: {
+            Image(mood.assetName)
+                .resizable()
+                .scaledToFit()
+                .padding(3)
+                .frame(width: 34, height: 34)
+                .background(selected ? OWCDesign.control : Color.clear)
+                .clipShape(Circle())
+                .overlay { moodRing(selected) }
+                .opacity(selected ? 1 : 0.74)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(store.t(mood.labelKey))
+    }
+
+    @ViewBuilder
+    private func moodRing(_ selected: Bool) -> some View {
+        if selected {
+            Circle().stroke(OWCDesign.accent, lineWidth: 1.5)
+        }
+    }
+
     private var shareButton: some View {
         Button { Task { await prepareShare() } } label: {
             Label(store.t("shareNative"), systemImage: "square.and.arrow.up")
@@ -184,7 +227,6 @@ struct ShareComposerView: View {
 
     @MainActor
     private func prepareShare() async {
-        customEmojiFocused = false
         await Task.yield()
         let card = ShareCard(store: store)
             .frame(width: 360, height: 450)
@@ -193,14 +235,15 @@ struct ShareComposerView: View {
         renderer.proposedSize = ProposedViewSize(width: 360, height: 450)
         renderer.isOpaque = true
         guard let image = renderer.uiImage else { return }
+        // Two items, no overlap: the picture, and one string carrying both the
+        // message and the link. Previously the item source also returned that
+        // string, so targets took one or the other and the image was dropped.
         let metadata = ShareMetadataItemSource(
             title: store.t("offWorkCountdown"),
-            text: shareCopy,
-            url: store.shareURL(),
+            text: "\(shareCopy) \(store.shareURL().absoluteString)",
             icon: UIImage(named: "BrandIcon") ?? image
         )
-        shareItems = [image, metadata]
-        showSystemShare = true
+        SystemShare.present(items: [image, metadata])
     }
 
     private var shareCopy: String {
@@ -234,16 +277,10 @@ private struct ShareCard: View {
                     Spacer(minLength: 8)
                 }
                 Spacer()
-                if store.shareUsesCustomEmoji, !store.shareCustomEmoji.isEmpty {
-                    Text(store.shareCustomEmoji)
-                        .font(.system(size: 68))
-                        .frame(height: 76)
-                } else {
-                    Image(store.shareMood.assetName)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 76, height: 76)
-                }
+                Image(store.shareMood.assetName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 76, height: 76)
                 Text(heroText)
                     .font(.system(size: 38, weight: .heavy).monospacedDigit())
                     .tracking(-1)

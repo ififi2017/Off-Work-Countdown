@@ -24,7 +24,7 @@ struct OffWorkLiveActivityWidget: Widget {
                         .resizable()
                         .frame(width: 25, height: 25)
                         .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-                        .padding(.leading, 3)
+                        .padding(.leading, 8)
                 }
                 DynamicIslandExpandedRegion(.center) {
                     Text(context.state.appTitle)
@@ -35,17 +35,21 @@ struct OffWorkLiveActivityWidget: Widget {
                         .padding(.horizontal, 8)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
+                    // The capsule rounds the corners of the expanded area, so
+                    // the trailing content is pulled in far enough that its last
+                    // glyph is not clipped by the curve.
                     Text(endDate(context), style: .time)
                         .font(.system(size: 13).monospacedDigit())
                         .foregroundStyle(.white.opacity(0.6))
                         .lineLimit(1)
-                        .minimumScaleFactor(0.68)
-                        .frame(width: 58, alignment: .trailing)
-                        .padding(.trailing, 3)
+                        .minimumScaleFactor(0.6)
+                        .frame(width: 54, alignment: .trailing)
+                        .padding(.trailing, 8)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     ActivityCountdownPanel(context: context, size: 40)
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 4)
                 }
             } compactLeading: {
                 Image(systemName: "timer")
@@ -55,8 +59,11 @@ struct OffWorkLiveActivityWidget: Widget {
                     .background(activityOrange)
                     .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             } compactTrailing: {
+                // A fixed box with centred content: Text(style: .timer) shrinks
+                // as digits drop, and without this it drifts to the leading edge
+                // once the countdown reaches 0:00.
                 ActivityCompactCountdown(context: context)
-                    .frame(width: 44, alignment: .center)
+                    .frame(width: 50, alignment: .center)
             } minimal: {
                 Image(systemName: "timer")
                     .foregroundStyle(activityOrange)
@@ -93,7 +100,7 @@ private struct LockScreenActivityView: View {
             }
             HStack(alignment: .lastTextBaseline, spacing: 10) {
                 activityCountdownText(context, now: timeline.date, size: 44)
-                Text(activityComplete(context, at: timeline.date) ? context.state.completedCaption : context.state.caption)
+                Text(activityComplete(context, at: timeline.date) ? context.state.completedNote : context.state.caption)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.7))
             }
@@ -133,6 +140,7 @@ private struct ActivityCompactCountdown: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
             activityCountdownText(context, now: timeline.date, size: 14)
+                .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
     }

@@ -8,19 +8,30 @@ struct OffWorkCountdownRootView: View {
     @State private var phoneTimerPath: [AppRoute] = []
     @State private var phoneSettingsPath: [AppRoute] = []
     @State private var serviceTask: Task<Void, Never>?
+    /// Settings changed but the reminders have not been rebuilt yet. Flushed
+    /// when the app leaves the foreground, or immediately when the countdown
+    /// itself starts or stops.
+    @State private var pendingReschedule = false
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
             if !store.onboardingComplete {
                 OnboardingView(store: store)
+                    // Only the outgoing side scales. Scaling the incoming app
+                    // meant its layout settled at a different size than it
+                    // animated at, so everything nudged down once the
+                    // transition finished — a cross-fade cannot do that.
+                    .transition(.opacity.combined(with: .scale(scale: 1.04)))
             } else if horizontalSizeClass == .regular {
-                tabletLayout
+                tabletLayout.transition(.opacity)
             } else {
-                phoneLayout
+                phoneLayout.transition(.opacity)
             }
         }
+        .animation(.smooth(duration: 0.5), value: store.onboardingComplete)
         .preferredColorScheme(store.preferredColorScheme)
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
@@ -36,8 +47,18 @@ struct OffWorkCountdownRootView: View {
         .onChange(of: store.onboardingComplete) {
             if store.onboardingComplete { scheduleServices() }
         }
-        .onChange(of: scheduleSignature) {
+        .onChange(of: store.countdownStarted) {
+            pendingReschedule = false
             scheduleServices()
+        }
+        .onChange(of: scheduleSignature) {
+            // Only remember that it changed. Rescheduling touches
+            // UNUserNotificationCenter, ActivityKit and WidgetKit — cross-process
+            // work that stalls the main runloop and tears down an active text
+            // input session, which is what made the keyboard unusable after the
+            // first edit. None of it is urgent while the app is in front: local
+            // notifications only fire when it is not.
+            pendingReschedule = true
         }
         .onOpenURL { url in
             guard url.scheme == "offworkcountdown" else { return }
@@ -56,9 +77,13 @@ struct OffWorkCountdownRootView: View {
         .onChange(of: scenePhase) {
             if scenePhase == .active {
                 store.refreshSystemLanguage()
+            } else if pendingReschedule {
+                pendingReschedule = false
+                scheduleServices()
             }
         }
         .onAppear {
+            CountdownRules.warmUp()
             store.refreshSystemLanguage()
             applyQAGeometryIfRequested()
         }
@@ -80,7 +105,7 @@ struct OffWorkCountdownRootView: View {
             scheduleFields.joined(separator: "|"),
             "\(store.lunchEnabled)-\(store.lunchStartMinutes)-\(store.lunchDurationMinutes)",
             store.notificationMode.rawValue,
-            "\(store.lunchEdgesEnabled)-\(store.microBreakEnabled)-\(store.microBreakIntervalMinutes)",
+            "\(store.lunchStartReminderEnabled)-\(store.lunchEndReminderEnabled)-\(store.microBreakEnabled)-\(store.microBreakIntervalMinutes)",
             "\(store.overtimeEndAtMs ?? 0)",
             "\(store.annualBonusEnabled)-\(store.annualBonusMonths)",
             "\(store.salaryEnabled)-\(store.salaryAmount)-\(store.salaryType.rawValue)",
@@ -106,8 +131,13 @@ struct OffWorkCountdownRootView: View {
     }
 
     private var phoneLayout: some View {
-        GeometryReader { proxy in
-            if proxy.size.width > proxy.size.height {
+        // Size class, not GeometryReader. The keyboard changes the available
+        // height, which re-ran the GeometryReader body and churned the identity
+        // of the TabView and NavigationStacks underneath it — the pushed screen
+        // was rebuilt mid-edit, which is what dropped the keyboard and replayed
+        // the push animation. Size classes do not move when the keyboard does.
+        Group {
+            if verticalSizeClass == .compact {
                 PhoneLandscapeShellView(store: store)
             } else {
                 TabView(selection: $store.selectedTab) {
@@ -168,6 +198,12 @@ struct OffWorkCountdownRootView: View {
         serviceTask?.cancel()
         guard store.onboardingComplete else { return }
         serviceTask = Task { @MainActor in
+            // Settle first. A single edit can publish several store changes in a
+            // row (a stepper held down, a value committed then clamped), and
+            // each one would otherwise cancel and restart a full reschedule
+            // across UNUserNotificationCenter, ActivityKit and WidgetKit.
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !Task.isCancelled else { return }
             if !store.countdownStarted {
                 await notifications.clearShiftNotifications()
                 await liveActivities.endAll()

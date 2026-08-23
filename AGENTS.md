@@ -270,13 +270,14 @@ Then distribute from Xcode's Organizer. There is no `ExportOptions.plist` and
 no fastlane in the repository, so the export half is deliberately manual — do
 not invent an automated path without agreeing on the signing setup first.
 
-There is also **no iOS job in CI**. A change that breaks the iOS build stays
-invisible until somebody opens Xcode, which is exactly the failure the Rust CI
-job was added to prevent. `npm run check:ios` is the one automated guard, and
-it needs neither Xcode nor a build — it is cheap enough to add to CI as-is, and
-doing so is worth more than any of the manual discipline below. Until an iOS
-job exists, any change touching `lib/`, `public/locales` or `src-mobile/` must
-be built for the simulator locally before hand-off.
+GitHub Actions still has no iOS job. The repository is prepared for Xcode Cloud
+through `src-mobile/ios/App/ci_scripts/ci_post_clone.sh`, which installs the
+Node.js toolchain, generates `CountdownRules.js` and runs `npm run check:ios`
+before Xcode builds. The App Store Connect workflow owns branch/path triggers,
+the Release archive action and TestFlight distribution; keep
+`docs/XCODE-CLOUD.md` aligned with that configuration. Any change touching
+`lib/`, `public/locales` or `src-mobile/` must still be built for the simulator
+locally before hand-off.
 
 CI compiles Rust for macOS and Windows on every pull request (`cargo fmt
 --check`, `cargo clippy -- -D warnings`, `cargo test`). Before that job

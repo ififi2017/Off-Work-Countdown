@@ -31,7 +31,7 @@ struct ScheduleSettingsView: View {
         .background(OWCDesign.page)
         .navigationTitle(store.t("workSchedule"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"))
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("workSchedule"))
         .sensoryFeedback(.selection, trigger: store.scheduleMode)
     }
 
@@ -85,23 +85,53 @@ struct ScheduleSettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 OWCSectionHeader(title: store.t("rotationPattern"))
                 OWCGroupCard {
+                    // Stepper puts its -/+ at the trailing edge of its own
+                    // bounds, outside OWCRow's inset, so it needs the inset back
+                    // or it sits flush against the card edge.
                     Stepper(value: $store.rotationWorkDays, in: 1...30) {
                         OWCRow(title: store.t("rotationWorkDays")) {
                             Text("\(store.rotationWorkDays)").monospacedDigit().foregroundStyle(OWCDesign.secondary)
                         }
                     }
+                    .padding(.trailing, 16)
                     .buttonStyle(OWCRowButtonStyle())
                     .owcPlainDivider()
                     Stepper(value: $store.rotationRestDays, in: 1...30) {
-                        OWCRow(title: store.t("rotationRestDays"), isLast: true) {
+                        OWCRow(title: store.t("rotationRestDays")) {
                             Text("\(store.rotationRestDays)").monospacedDigit().foregroundStyle(OWCDesign.secondary)
+                        }
+                    }
+                    .padding(.trailing, 16)
+                    .buttonStyle(OWCRowButtonStyle())
+                    .owcPlainDivider()
+
+                    Menu {
+                        ForEach(1...store.rotationCycleLength, id: \.self) { day in
+                            Button {
+                                store.setRotationCycleDay(day)
+                            } label: {
+                                Label(
+                                    store.t(
+                                        day <= store.rotationWorkDays ? "rotationWorkdayOption" : "rotationRestdayOption",
+                                        values: ["day": "\(day)"]
+                                    ),
+                                    systemImage: day <= store.rotationWorkDays ? "briefcase" : "bed.double"
+                                )
+                            }
+                        }
+                    } label: {
+                        OWCRow(
+                            icon: "repeat",
+                            title: store.t("rotationStartDay", values: ["day": "\(store.rotationCycleDay)"]),
+                            isLast: true
+                        ) {
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(OWCDesign.tertiary)
                         }
                     }
                     .buttonStyle(OWCRowButtonStyle())
                 }
-                Button(store.t("rotationStartToday")) { store.anchorRotationToToday() }
-                    .buttonStyle(OWCPrimaryButtonStyle(filled: false))
-                    .padding(.top, 12)
             }
             .padding(.horizontal, OWCDesign.pageInset)
         case .off:
@@ -155,6 +185,7 @@ struct SalaryDesignView: View {
     @ObservedObject var store: OffWorkStore
     private enum Field { case amount, bonus }
     @FocusState private var focusedField: Field?
+    @State private var amountText = ""
 
     var body: some View {
         ScrollView {
@@ -189,13 +220,15 @@ struct SalaryDesignView: View {
                     Text(store.t("amount"))
                         .font(.system(size: 17))
                     Spacer()
-                    TextField("0", text: $store.salaryAmount)
-                        .font(.system(size: 19, weight: .semibold).monospacedDigit())
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                        .textSelection(.enabled)
-                        .focused($focusedField, equals: .amount)
-                        .frame(maxWidth: 170)
+                    OWCNumberField(
+                        placeholder: "0",
+                        text: $amountText,
+                        decimal: true,
+                        maxDigits: 9,
+                        emphasized: true,
+                        onCommit: commitAmount
+                    )
+                    .focused($focusedField, equals: .amount)
                 }
                 .padding(.horizontal, 16)
                 .frame(height: 56)
@@ -312,16 +345,19 @@ struct SalaryDesignView: View {
         .navigationTitle(store.t("salarySettings"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar(.visible, for: .navigationBar)
-        .owcDetailBack(title: store.t("settings"))
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("salarySettings"))
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(store.t("done")) {
                     store.annualBonusMonths = max(0, store.annualBonusMonths)
+                    commitAmount()
                     focusedField = nil
                 }
             }
         }
+        .onAppear { amountText = store.salaryAmount }
+        .onDisappear { commitAmount() }
         .sensoryFeedback(.selection, trigger: store.salaryType)
         .sensoryFeedback(.selection, trigger: store.salaryEnabled)
         .sensoryFeedback(.selection, trigger: store.annualBonusEnabled)
@@ -338,6 +374,11 @@ struct SalaryDesignView: View {
         guard let snapshot, let dailySalary = snapshot.dailySalary, snapshot.plannedDurationMs > 0 else { return nil }
         return dailySalary / (snapshot.plannedDurationMs / 3_600_000)
     }
+    private func commitAmount() {
+        let trimmed = amountText.trimmingCharacters(in: .whitespaces)
+        if store.salaryAmount != trimmed { store.salaryAmount = trimmed }
+    }
+
     private var effectiveTimeNote: String {
         guard let snapshot else { return store.t("lunchPauseNoteNoSalary") }
         return "\(store.formatDuration(snapshot.plannedDurationMs, includeSeconds: false)) · \(store.t("lunchPauseNoteNoSalary"))"
@@ -370,7 +411,7 @@ struct NotificationDesignView: View {
         .navigationTitle(store.t("offWorkReminder"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar(.visible, for: .navigationBar)
-        .owcDetailBack(title: store.t("settings"))
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("offWorkReminder"))
         .task { await notifications.refresh() }
         .sensoryFeedback(.selection, trigger: store.notificationMode)
         .sensoryFeedback(.selection, trigger: store.liveActivityEnabled)
@@ -547,6 +588,7 @@ private extension View {
 struct LunchSettingsView: View {
     @ObservedObject var store: OffWorkStore
     @FocusState private var durationFocused: Bool
+    @State private var durationText = ""
 
     var body: some View {
         ScrollView {
@@ -575,13 +617,13 @@ struct LunchSettingsView: View {
                         HStack {
                             Text(store.t("lunchDuration")).font(.system(size: 17))
                             Spacer()
-                            TextField("60", value: $store.lunchDurationMinutes, format: .number)
-                                .font(.system(size: 17, weight: .semibold).monospacedDigit())
-                                .keyboardType(.numberPad)
-                                .multilineTextAlignment(.trailing)
-                                .textSelection(.enabled)
-                                .focused($durationFocused)
-                                .frame(width: 72)
+                            OWCNumberField(
+                                placeholder: "60",
+                                text: $durationText,
+                                width: 72,
+                                onCommit: clampDuration
+                            )
+                            .focused($durationFocused)
                             Text(store.t("minutesUnit"))
                                 .font(.system(size: 16))
                                 .foregroundStyle(OWCDesign.secondary)
@@ -599,7 +641,16 @@ struct LunchSettingsView: View {
                     HStack {
                         Text(store.t("lunchStartReminder")).font(.system(size: 17))
                         Spacer()
-                        Toggle("", isOn: $store.lunchEdgesEnabled).labelsHidden()
+                        Toggle("", isOn: $store.lunchStartReminderEnabled).labelsHidden()
+                    }
+                    .padding(.horizontal, 16)
+                    .frame(height: 56)
+                    .owcDivider()
+
+                    HStack {
+                        Text(store.t("lunchEndReminder")).font(.system(size: 17))
+                        Spacer()
+                        Toggle("", isOn: $store.lunchEndReminderEnabled).labelsHidden()
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 56)
@@ -617,16 +668,18 @@ struct LunchSettingsView: View {
         .background(OWCDesign.page)
         .navigationTitle(store.t("lunchBreak"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"))
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("lunchBreak"))
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(store.t("done")) { durationFocused = false; clampDuration() }
             }
         }
+        .onAppear { durationText = "\(store.lunchDurationMinutes)" }
         .onDisappear { clampDuration() }
         .sensoryFeedback(.selection, trigger: store.lunchEnabled)
-        .sensoryFeedback(.selection, trigger: store.lunchEdgesEnabled)
+        .sensoryFeedback(.selection, trigger: store.lunchStartReminderEnabled)
+        .sensoryFeedback(.selection, trigger: store.lunchEndReminderEnabled)
     }
 
     private var lunchBinding: Binding<Date> {
@@ -637,7 +690,12 @@ struct LunchSettingsView: View {
     }
 
     private func clampDuration() {
-        store.lunchDurationMinutes = min(180, max(10, store.lunchDurationMinutes))
+        let typed = Int(durationText) ?? store.lunchDurationMinutes
+        let clamped = min(180, max(10, typed))
+        if store.lunchDurationMinutes != clamped {
+            store.lunchDurationMinutes = clamped
+        }
+        durationText = "\(clamped)"
     }
 }
 
@@ -662,13 +720,13 @@ struct HealthReminderSettingsView: View {
                         HStack {
                             Text(store.t("microBreakInterval")).font(.system(size: 17))
                             Spacer()
-                            TextField("60", text: $intervalText)
-                                .font(.system(size: 17, weight: .semibold).monospacedDigit())
-                                .keyboardType(.numberPad)
-                                .multilineTextAlignment(.trailing)
-                                .textSelection(.enabled)
-                                .focused($intervalFocused)
-                                .frame(width: 72)
+                            OWCNumberField(
+                                placeholder: "60",
+                                text: $intervalText,
+                                width: 72,
+                                onCommit: clampInterval
+                            )
+                            .focused($intervalFocused)
                             Text(store.t("minutesUnit"))
                                 .font(.system(size: 16))
                                 .foregroundStyle(OWCDesign.secondary)
@@ -690,7 +748,7 @@ struct HealthReminderSettingsView: View {
         .background(OWCDesign.page)
         .navigationTitle(store.t("microBreakReminder"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"))
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("microBreakReminder"))
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -698,18 +756,17 @@ struct HealthReminderSettingsView: View {
             }
         }
         .onAppear { intervalText = "\(store.microBreakIntervalMinutes)" }
-        .onChange(of: intervalText) {
-            let filtered = String(intervalText.filter(\.isNumber).prefix(3))
-            if filtered != intervalText { intervalText = filtered }
-            if let value = Int(filtered) { store.microBreakIntervalMinutes = value }
-        }
         .onDisappear { clampInterval() }
         .sensoryFeedback(.selection, trigger: store.microBreakEnabled)
     }
 
     private func clampInterval() {
-        store.microBreakIntervalMinutes = min(120, max(20, store.microBreakIntervalMinutes))
-        intervalText = "\(store.microBreakIntervalMinutes)"
+        let typed = Int(intervalText) ?? store.microBreakIntervalMinutes
+        let clamped = min(120, max(20, typed))
+        if store.microBreakIntervalMinutes != clamped {
+            store.microBreakIntervalMinutes = clamped
+        }
+        intervalText = "\(clamped)"
     }
 }
 
@@ -719,7 +776,7 @@ struct ThemeSettingsView: View {
     var body: some View {
         ScrollView {
             OWCGroupCard {
-                themeRow(.auto, title: store.t("auto"), icon: "a")
+                themeRow(.auto, title: store.t("auto"), icon: nil, textIcon: "A")
                 themeRow(.light, title: store.t("light"), icon: "sun.max")
                 themeRow(.dark, title: store.t("dark"), icon: "moon", isLast: true)
             }
@@ -729,13 +786,19 @@ struct ThemeSettingsView: View {
         .background(OWCDesign.page)
         .navigationTitle(store.t("theme"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"))
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("theme"))
         .sensoryFeedback(.selection, trigger: store.theme)
     }
 
-    private func themeRow(_ theme: AppTheme, title: String, icon: String, isLast: Bool = false) -> some View {
+    private func themeRow(
+        _ theme: AppTheme,
+        title: String,
+        icon: String?,
+        textIcon: String? = nil,
+        isLast: Bool = false
+    ) -> some View {
         Button { store.theme = theme } label: {
-            OWCRow(icon: icon, title: title, isLast: isLast) {
+            OWCRow(icon: icon, textIcon: textIcon, title: title, isLast: isLast) {
                 if store.theme == theme {
                     Image(systemName: "checkmark")
                         .font(.system(size: 18, weight: .semibold))
@@ -747,66 +810,6 @@ struct ThemeSettingsView: View {
     }
 }
 
-struct AboutView: View {
-    @ObservedObject var store: OffWorkStore
-
-    var body: some View {
-        List {
-            Section {
-                VStack(spacing: 12) {
-                    Image("BrandIcon")
-                        .resizable()
-                        .frame(width: 84, height: 84)
-                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                    Text(store.t("offWorkCountdown"))
-                        .font(.system(size: 22, weight: .bold))
-                    Text("fi_niaR Studio")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(OWCDesign.secondary)
-                    Text("\(store.t("version")) \(version)")
-                        .font(.system(size: 14))
-                        .foregroundStyle(OWCDesign.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 18)
-            }
-            Section {
-                Link(destination: contentURL("privacy")) {
-                    Label(store.t("privacyPolicy"), systemImage: "hand.raised")
-                }
-                Link(destination: URL(string: "https://github.com/renmu123/Off-Work-Countdown")!) {
-                    Label(store.t("githubRepository"), systemImage: "chevron.left.forwardslash.chevron.right")
-                }
-                Link(destination: downloadURL) {
-                    Label(store.t("downloadDesktopApp"), systemImage: "desktopcomputer")
-                }
-            }
-            Section(store.t("developer")) {
-                LabeledContent(store.t("developer"), value: "fi_niaR Studio")
-                Text(store.t("desktopAppPromotion"))
-                    .font(.system(size: 14))
-                    .foregroundStyle(OWCDesign.secondary)
-            }
-        }
-        .navigationTitle(store.t("aboutProject"))
-        .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"))
-    }
-
-    private var version: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-    }
-
-    private func contentURL(_ page: String) -> URL {
-        let contentLocale = store.languageCode.hasPrefix("zh") ? "zh-CN" : "en"
-        return URL(string: "https://off.rainif.com/\(contentLocale)/\(page)")!
-    }
-
-    private var downloadURL: URL {
-        let contentLocale = store.languageCode.hasPrefix("zh") ? "zh-CN" : "en"
-        return URL(string: "https://off.rainif.com/\(contentLocale)/download")!
-    }
-}
 
 private func settingsDetailFooter(_ text: String) -> some View {
     Text(text)

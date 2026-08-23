@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 
 // Guards the native iOS project's shipping configuration.
 //
@@ -30,6 +30,10 @@ const rootView = readFileSync(
   "src-mobile/ios/App/App/Native/Views/RootView.swift",
   "utf8"
 );
+const appScheme = readFileSync(
+  "src-mobile/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme",
+  "utf8"
+);
 const appEntitlements = readFileSync(
   "src-mobile/ios/App/App/App.entitlements",
   "utf8"
@@ -46,6 +50,9 @@ const widgetEntitlements = readFileSync(
   "src-mobile/ios/App/WidgetExtension/Widget.entitlements",
   "utf8"
 );
+const xcodeCloudScriptPath =
+  "src-mobile/ios/App/ci_scripts/ci_post_clone.sh";
+const xcodeCloudScript = readFileSync(xcodeCloudScriptPath, "utf8");
 const appIcon = readFileSync(
   "src-mobile/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 );
@@ -63,6 +70,35 @@ if (
   fail(
     `iOS bundle ids must use ${universalBundleId} for the App and ${widgetBundleId} for its Widget extension.`
   );
+}
+if (
+  !appScheme.includes('<ArchiveAction\n      buildConfiguration = "Release"') ||
+  !appScheme.includes('buildForArchiving = "YES"')
+) {
+  fail("The shared App scheme must archive the application with the Release configuration.");
+}
+const releaseConfigurations = [
+  ...iosProject.matchAll(
+    /\/\* Release \*\/ = \{[\s\S]*?buildSettings = \{([\s\S]*?)\n\s*\};\n\s*name = Release;/g
+  ),
+].map((match) => match[1]);
+if (
+  releaseConfigurations.length !== 3 ||
+  releaseConfigurations.some((settings) => settings.includes("-DDEBUG")) ||
+  releaseConfigurations.filter((settings) =>
+    settings.includes('SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";')
+  ).length !== 2
+) {
+  fail("Every iOS Release configuration must compile without the DEBUG condition.");
+}
+if (
+  (statSync(xcodeCloudScriptPath).mode & 0o111) === 0 ||
+  !xcodeCloudScript.startsWith("#!/bin/sh") ||
+  !xcodeCloudScript.includes("npm ci") ||
+  !xcodeCloudScript.includes("npm run build:ios-native-rules") ||
+  !xcodeCloudScript.includes("npm run check:ios")
+) {
+  fail("Xcode Cloud must install dependencies, generate native rules and validate iOS before building.");
 }
 if (
   !appDelegate.includes("import SwiftUI") ||

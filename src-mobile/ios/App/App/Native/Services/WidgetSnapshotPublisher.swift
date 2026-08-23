@@ -30,34 +30,58 @@ final class WidgetSnapshotPublisher {
         WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
     }
 
+    private func countdownToNextShift(
+        store: OffWorkStore,
+        target: Int64,
+        nowMs: Int64,
+        label: String = "nextShiftLabelShort"
+    ) -> WidgetSnapshot {
+        let end = max(nowMs + 60_000, target)
+        return WidgetSnapshot(
+            schemaVersion: widgetSnapshotSchemaVersion,
+            generatedAtMs: nowMs,
+            expiresAtMs: end,
+            locale: store.languageCode,
+            shift: nil,
+            entries: [entry(
+                date: nowMs,
+                end: end,
+                phase: .before,
+                label: label,
+                kind: .shiftStarts,
+                remaining: max(0, target - nowMs),
+                progress: 0,
+                boundary: target,
+                target: target
+            )]
+        )
+    }
+
     private func makeSnapshot(store: OffWorkStore, shift: NativeShiftSnapshot?, active: Bool, nowMs: Int64) -> WidgetSnapshot {
         if !active,
            store.scheduleMode != .off,
            let shift,
            !shift.isWorkday,
            let nextStart = shift.nextShiftStartAtMs {
-            let target = Int64(nextStart)
-            return WidgetSnapshot(
-                schemaVersion: widgetSnapshotSchemaVersion,
-                generatedAtMs: nowMs,
-                expiresAtMs: max(nowMs + 60_000, target),
-                locale: store.languageCode,
-                shift: nil,
-                entries: [entry(
-                    date: nowMs,
-                    end: max(nowMs + 60_000, target),
-                    phase: .before,
-                    label: "widgetRestDay",
-                    kind: .shiftStarts,
-                    remaining: max(0, target - nowMs),
-                    progress: 0,
-                    boundary: target,
-                    target: target
-                )]
+            return countdownToNextShift(
+                store: store,
+                target: Int64(nextStart),
+                nowMs: nowMs,
+                label: "widgetRestDay"
             )
         }
 
         guard active else {
+            // A configured schedule is enough to know when work starts again,
+            // so the widget counts down to it rather than sitting on "not
+            // started" until the user opens the app and presses a button.
+            if store.scheduleMode != .off,
+               let nextStart = shift?.nextShiftStartAtMs ?? shift.map({ $0.startAtMs }) {
+                let target = Int64(nextStart)
+                if target > nowMs {
+                    return countdownToNextShift(store: store, target: target, nowMs: nowMs)
+                }
+            }
             return WidgetSnapshot(
                 schemaVersion: widgetSnapshotSchemaVersion,
                 generatedAtMs: nowMs,
@@ -137,9 +161,12 @@ final class WidgetSnapshotPublisher {
             }
         }
 
+        // "Off work" is a moment, not a state to sit in for twelve hours: after
+        // a short beat the widget switches to counting down the next shift.
+        let doneUntil = min(expires, max(nowMs, endMs) + 30 * 60 * 1_000)
         entries.append(entry(
             date: max(nowMs, endMs),
-            end: expires,
+            end: doneUntil,
             phase: .done,
             label: "offWorkToday",
             kind: .complete,
@@ -148,6 +175,22 @@ final class WidgetSnapshotPublisher {
             boundary: nil,
             target: nil
         ))
+        if let nextStart = shift.nextShiftStartAtMs {
+            let target = Int64(nextStart)
+            if target > doneUntil {
+                entries.append(entry(
+                    date: doneUntil,
+                    end: target,
+                    phase: .before,
+                    label: "nextShiftLabelShort",
+                    kind: .shiftStarts,
+                    remaining: target - doneUntil,
+                    progress: 0,
+                    boundary: target,
+                    target: target
+                ))
+            }
+        }
 
         return WidgetSnapshot(
             schemaVersion: widgetSnapshotSchemaVersion,

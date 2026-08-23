@@ -34,6 +34,18 @@ private enum WidgetCopy {
         }
     }
 
+    /// Compact families prefer a `<key>Short` variant when the bundle has one.
+    /// Keys without a short form are unaffected, so this stays language-safe:
+    /// nothing is truncated by guessing, only by a translator having supplied a
+    /// deliberate short string.
+    static func text(_ key: String, locale: String, compact: Bool) -> String {
+        if compact {
+            let short = text("\(key)Short", locale: locale)
+            if short != "\(key)Short" { return short }
+        }
+        return text(key, locale: locale)
+    }
+
     static func text(_ key: String, locale: String) -> String {
         for candidate in [locale, "en"] {
             guard let url = Bundle.main.url(
@@ -240,10 +252,13 @@ public struct OffWorkCountdownWidgetView: View {
             Gauge(value: progress, in: 0...100) {
                 EmptyView()
             } currentValueLabel: {
-                Text(String(format: "%05.2f%%", progress))
-                    .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                // Whole percent only. "89.30%" is six glyphs in a complication
+                // that has room for three, and it wrapped onto a second line.
+                Text("\(roundedProgress(progress))%")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                    .minimumScaleFactor(0.62)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
             }
             .gaugeStyle(.accessoryCircularCapacity)
         }
@@ -307,14 +322,15 @@ public struct OffWorkCountdownWidgetView: View {
         }
     }
 
-    private func statusBadge(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+    private func statusBadge(_ snapshotEntry: WidgetTimelineEntry, compact: Bool = false) -> some View {
         HStack(spacing: 6) {
             Circle()
                 .fill(phaseColor(snapshotEntry.phase))
                 .frame(width: 6, height: 6)
-            Text(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+            Text(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale, compact: compact))
                 .font(.caption2.weight(.semibold))
                 .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
         .foregroundStyle(.primary.opacity(0.82))
         .padding(.horizontal, 9)
@@ -326,7 +342,7 @@ public struct OffWorkCountdownWidgetView: View {
         VStack(alignment: .leading, spacing: 0) {
             header(compact: true)
             Spacer(minLength: 7)
-            statusBadge(snapshotEntry)
+            statusBadge(snapshotEntry, compact: true)
             Spacer(minLength: 6)
             countdown(for: snapshotEntry, size: 33)
             Spacer(minLength: 7)

@@ -11,6 +11,9 @@ struct OffWorkActivityAttributes: ActivityAttributes {
         let appTitle: String
         let caption: String
         let completedCaption: String
+        /// Shown under the big "off work" line. Must differ from
+        /// completedCaption or Control Center prints the same sentence twice.
+        let completedNote: String
     }
 
     let shiftStartAtMs: Int64
