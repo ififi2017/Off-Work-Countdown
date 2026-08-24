@@ -337,5 +337,6 @@
   "onboardingLandscapeBody": "横向きではカウントダウンが全画面に。時計とバーだけの表示になります。",
   "onboardingSidebarTitle": "サイドバーを隠す",
   "onboardingSidebarBody": "サイドバーを閉じるとカウントダウンが全画面に。時計とバーだけの表示になります。",
-  "widgetRestDayShort": "次の勤務まで"
+  "widgetRestDayShort": "次の勤務まで",
+  "countdownRulesUnavailable": "カウントダウンは一時的に利用できません。"
 }

@@ -2,19 +2,21 @@ import SwiftUI
 
 struct PhoneLandscapeShellView: View {
     @ObservedObject var store: OffWorkStore
+    @State private var path: [AppRoute] = []
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ZStack(alignment: .leading) {
                 OWCDesign.page.ignoresSafeArea()
 
                 ZStack {
                     if store.selectedTab == .settings {
                         LandscapeSettingsView(store: store)
-                            .transition(.opacity.combined(with: .scale(scale: 0.985)))
+                            .transition(pageTransition)
                     } else {
                         LandscapeTimerView(store: store)
-                            .transition(.opacity.combined(with: .scale(scale: 0.985)))
+                            .transition(pageTransition)
                     }
                 }
                 // The system already supplies the landscape safe-area insets.
@@ -24,7 +26,7 @@ struct PhoneLandscapeShellView: View {
                 .padding(.leading, 72)
                 .padding(.trailing, 8)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .animation(.smooth(duration: 0.32), value: store.selectedTab)
+                .animation(pageAnimation, value: store.selectedTab)
 
                 landscapeRail
             }
@@ -32,24 +34,16 @@ struct PhoneLandscapeShellView: View {
             // portrait settings stack observed it, but the dedicated landscape
             // stack did not, so a route opened while compact-height was active
             // silently stopped at the settings overview.
-            .navigationDestination(item: $store.presentedRoute) { route in
-                routeDestination(route)
+            .navigationDestination(for: AppRoute.self) { route in
+                AppRouteDestination(route: route, store: store)
             }
         }
-        .background(OWCDesign.page)
-    }
-
-    @ViewBuilder
-    private func routeDestination(_ route: AppRoute) -> some View {
-        switch route {
-        case .schedule: ScheduleSettingsView(store: store)
-        case .salary: SalaryDesignView(store: store)
-        case .notifications: NotificationDesignView(store: store)
-        case .lunch: LunchSettingsView(store: store)
-        case .health: HealthReminderSettingsView(store: store)
-        case .theme: ThemeSettingsView(store: store)
-        case .about: AboutView(store: store)
+        .onChange(of: store.presentedRoute) { _, route in
+            guard let route else { return }
+            path.append(route)
+            store.presentedRoute = nil
         }
+        .background(OWCDesign.page)
     }
 
     private var landscapeRail: some View {
@@ -65,7 +59,7 @@ struct PhoneLandscapeShellView: View {
 
     private func railButton(_ tab: AppTab, icon: String, title: String) -> some View {
         Button {
-            withAnimation(.smooth(duration: 0.32)) {
+            withAnimation(pageAnimation) {
                 store.selectedTab = tab
             }
         } label: {
@@ -84,6 +78,14 @@ struct PhoneLandscapeShellView: View {
         }
         .buttonStyle(.plain)
     }
+
+    private var pageAnimation: Animation {
+        reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.32)
+    }
+
+    private var pageTransition: AnyTransition {
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.985))
+    }
 }
 
 private enum LandscapeSetupTimeField: String, Identifiable {
@@ -97,7 +99,6 @@ private struct LandscapeSetupView: View {
     @State private var armed = false
     @State private var armResetTask: Task<Void, Never>?
     @State private var showInvalidLunch = false
-    @State private var navigateLunch = false
 
     var body: some View {
         HStack(alignment: .center, spacing: 24) {
@@ -128,16 +129,16 @@ private struct LandscapeSetupView: View {
             .frame(maxWidth: .infinity)
 
             VStack(spacing: 10) {
-                NavigationLink { ScheduleSettingsView(store: store) } label: {
+                NavigationLink(value: AppRoute.schedule) {
                     setupShortcut("calendar.badge.clock", store.t("workSchedule"), scheduleLabel)
                 }
-                NavigationLink { LunchSettingsView(store: store) } label: {
+                NavigationLink(value: AppRoute.lunch) {
                     setupShortcut("cup.and.saucer", store.t("lunchBreak"), lunchLabel)
                 }
-                NavigationLink { SalaryDesignView(store: store) } label: {
+                NavigationLink(value: AppRoute.salary) {
                     setupShortcut("banknote", store.t("salarySettings"), salaryLabel)
                 }
-                NavigationLink { NotificationDesignView(store: store) } label: {
+                NavigationLink(value: AppRoute.notifications) {
                     setupShortcut("bell.badge", store.t("offWorkReminder"), notificationLabel)
                 }
             }
@@ -161,9 +162,8 @@ private struct LandscapeSetupView: View {
         }
         .alert(store.t("invalidLunchTitle"), isPresented: $showInvalidLunch) {
             Button(store.t("return"), role: .cancel) {}
-            Button(store.t("goToLunchSettings")) { navigateLunch = true }
+            Button(store.t("goToLunchSettings")) { store.presentedRoute = .lunch }
         } message: { Text(store.t("invalidLunchMessage")) }
-        .navigationDestination(isPresented: $navigateLunch) { LunchSettingsView(store: store) }
         .sensoryFeedback(.warning, trigger: armed)
         .onDisappear { armResetTask?.cancel() }
     }
@@ -214,6 +214,7 @@ private struct LandscapeTimerView: View {
     @ObservedObject var store: OffWorkStore
     @State private var showShare = false
     @State private var showOvertime = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
@@ -258,7 +259,7 @@ private struct LandscapeTimerView: View {
                     .padding(.top, 20)
 
                     HStack(spacing: 52) {
-                        landscapeStat(store.t("progress"), String(format: "%.1f%%", snapshot.progress))
+                        landscapeStat(store.t("progress"), store.formatPercent(snapshot.progress))
                         if store.salaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
                         if store.scheduleMode != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot)) }
                     }
@@ -279,16 +280,16 @@ private struct LandscapeTimerView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 20)
-                .transition(.opacity.combined(with: .scale(scale: 0.975)))
+                .transition(timerTransition)
                 } else if !store.countdownStarted {
                     LandscapeSetupView(store: store)
-                        .transition(.opacity.combined(with: .scale(scale: 0.975)))
+                        .transition(timerTransition)
                 } else {
-                    TimerDesignView(store: store, wide: true)
-                        .transition(.opacity.combined(with: .scale(scale: 0.975)))
+                    TimerDesignView(store: store, wide: true, timelineDate: timeline.date)
+                        .transition(timerTransition)
                 }
             }
-            .animation(.smooth(duration: 0.42), value: store.countdownStarted)
+            .animation(timerAnimation, value: store.countdownStarted)
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showShare) {
@@ -301,6 +302,14 @@ private struct LandscapeTimerView: View {
                 .presentationDetents([.height(340)])
                 .presentationCornerRadius(26)
         }
+    }
+
+    private var timerAnimation: Animation {
+        reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.42)
+    }
+
+    private var timerTransition: AnyTransition {
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.975))
     }
 
     private func landscapeStat(_ title: String, _ value: String) -> some View {
@@ -341,7 +350,7 @@ private struct LandscapeSettingsView: View {
                 HStack(alignment: .center, spacing: 18) {
                     VStack(spacing: 10) {
                         compactSection(store.t("appearanceSection")) {
-                            compactLink("display", store.t("theme"), themeLabel) { ThemeSettingsView(store: store) }
+                            compactLink(.theme, icon: "display", title: store.t("theme"), value: themeLabel)
                             Link(destination: OWCSystemSettings.applicationURL) {
                                 OWCRow(icon: "globe", title: store.t("chooselanguage"), isLast: true) {
                                     OWCDetailAccessory(
@@ -353,7 +362,7 @@ private struct LandscapeSettingsView: View {
                             .buttonStyle(OWCRowButtonStyle())
                         }
                         compactSection(store.t("aboutSection")) {
-                            compactLink("info.circle", store.t("aboutProject"), nil) { AboutView(store: store) }
+                            compactLink(.about, icon: "info.circle", title: store.t("aboutProject"), value: nil)
                             OWCRow(icon: "tag", title: store.t("version"), isLast: true) {
                                 Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")
                                     .font(.system(size: 17).monospacedDigit())
@@ -365,13 +374,13 @@ private struct LandscapeSettingsView: View {
 
                     VStack(spacing: 10) {
                         compactSection(store.t("shiftSection")) {
-                            compactLink("calendar.badge.clock", store.t("workSchedule"), scheduleLabel) { ScheduleSettingsView(store: store) }
-                            compactLink("cup.and.saucer", store.t("lunchBreak"), lunchLabel) { LunchSettingsView(store: store) }
-                            compactLink("figure.walk", store.t("microBreakReminder"), healthLabel) { HealthReminderSettingsView(store: store) }
-                            compactLink("banknote", store.t("salarySettings"), store.salaryEnabled ? (store.salaryType == .monthly ? store.t("monthly") : store.t("daily")) : store.t("disabledShort"), last: true) { SalaryDesignView(store: store) }
+                            compactLink(.schedule, icon: "calendar.badge.clock", title: store.t("workSchedule"), value: scheduleLabel)
+                            compactLink(.lunch, icon: "cup.and.saucer", title: store.t("lunchBreak"), value: lunchLabel)
+                            compactLink(.health, icon: "figure.walk", title: store.t("microBreakReminder"), value: healthLabel)
+                            compactLink(.salary, icon: "banknote", title: store.t("salarySettings"), value: store.salaryEnabled ? (store.salaryType == .monthly ? store.t("monthly") : store.t("daily")) : store.t("disabledShort"), last: true)
                         }
                         compactSection(store.t("remindersSection")) {
-                            compactLink("bell.badge", store.t("offWorkReminder"), notificationLabel, last: true) { NotificationDesignView(store: store) }
+                            compactLink(.notifications, icon: "bell.badge", title: store.t("offWorkReminder"), value: notificationLabel, last: true)
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -396,8 +405,8 @@ private struct LandscapeSettingsView: View {
         }
     }
 
-    private func compactLink<Destination: View>(_ icon: String, _ title: String, _ value: String?, last: Bool = false, @ViewBuilder destination: () -> Destination) -> some View {
-        NavigationLink(destination: destination) {
+    private func compactLink(_ route: AppRoute, icon: String, title: String, value: String?, last: Bool = false) -> some View {
+        NavigationLink(value: route) {
             OWCRow(icon: icon, title: title, isLast: last) {
                 OWCDetailAccessory(text: value)
             }

@@ -289,7 +289,7 @@ struct RestDayDesignView: View {
             .padding(.top, 34)
 
             VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("summaryThisWeek"))
+                OWCSectionHeader(title: store.t("summaryEstimateNote"))
                 OWCGroupCard {
                     WeekdayStatusStrip(store: store)
 
@@ -309,7 +309,6 @@ struct RestDayDesignView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 18)
 
-            detailNote(store.t("summaryEstimateNote"))
             Spacer(minLength: 8)
 
             Button {

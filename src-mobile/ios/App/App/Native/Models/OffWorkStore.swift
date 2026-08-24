@@ -548,6 +548,12 @@ final class OffWorkStore: ObservableObject {
         return value.formatted(.number.precision(.fractionLength(2)).locale(locale))
     }
 
+    func formatPercent(_ value: Double) -> String {
+        (value / 100).formatted(
+            .percent.precision(.fractionLength(1)).locale(locale)
+        )
+    }
+
     func weekdayLabels() -> [String] {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = locale

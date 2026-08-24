@@ -5,43 +5,47 @@ import SwiftUI
 struct TabletShellView: View {
     @ObservedObject var store: OffWorkStore
     @State private var sidebarVisible = true
+    @State private var path: [AppRoute] = []
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(spacing: 0) {
             if sidebarVisible {
                 TabletSidebar(store: store) {
-                    withAnimation(.snappy(duration: 0.28)) { sidebarVisible = false }
+                    withAnimation(shellAnimation) { sidebarVisible = false }
                 }
                 .frame(width: 290)
-                .transition(.move(edge: .leading).combined(with: .opacity))
+                .transition(sidebarTransition)
             }
 
-            NavigationStack {
+            NavigationStack(path: $path) {
                 ZStack {
                     OWCDesign.page.ignoresSafeArea()
 
                     tabletTimerRoot
                         .opacity(store.selectedTab == .timer ? 1 : 0)
-                        .scaleEffect(store.selectedTab == .timer ? 1 : 0.99)
+                        .scaleEffect(store.selectedTab == .timer || reduceMotion ? 1 : 0.99)
                         .allowsHitTesting(store.selectedTab == .timer)
                         .accessibilityHidden(store.selectedTab != .timer)
                         .zIndex(store.selectedTab == .timer ? 1 : 0)
 
                     tabletSettingsRoot
                         .opacity(store.selectedTab == .settings ? 1 : 0)
-                        .scaleEffect(store.selectedTab == .settings ? 1 : 0.99)
+                        .scaleEffect(store.selectedTab == .settings || reduceMotion ? 1 : 0.99)
                         .allowsHitTesting(store.selectedTab == .settings)
                         .accessibilityHidden(store.selectedTab != .settings)
                         .zIndex(store.selectedTab == .settings ? 1 : 0)
                 }
-                .animation(.smooth(duration: 0.32), value: store.selectedTab)
+                .animation(shellAnimation, value: store.selectedTab)
                 .navigationDestination(for: AppRoute.self) { route in
-                    routeDestination(route)
-                }
-                .navigationDestination(item: $store.presentedRoute) { route in
-                    routeDestination(route)
+                    AppRouteDestination(route: route, store: store)
                 }
             }
+        }
+        .onChange(of: store.presentedRoute) { _, route in
+            guard let route else { return }
+            path.append(route)
+            store.presentedRoute = nil
         }
         .background(OWCDesign.page)
     }
@@ -52,12 +56,19 @@ struct TabletShellView: View {
                 // Push into this stack rather than take the default, which
                 // switches to the settings tab. The sidebar selection should
                 // not move because a row on the timer page was tapped.
-                TimerDesignView(store: store, wide: false) { route in
-                    store.presentedRoute = route
-                }
+                TimerDesignView(
+                    store: store,
+                    wide: false,
+                    onOpenSettings: { route in store.presentedRoute = route },
+                    timelineActive: store.selectedTab == .timer
+                )
             } else {
-                TabletTimerView(store: store, sidebarVisible: sidebarVisible) {
-                    withAnimation(.snappy(duration: 0.28)) { sidebarVisible = true }
+                TabletTimerView(
+                    store: store,
+                    sidebarVisible: sidebarVisible,
+                    isActive: store.selectedTab == .timer
+                ) {
+                    withAnimation(shellAnimation) { sidebarVisible = true }
                 }
             }
         }
@@ -68,34 +79,24 @@ struct TabletShellView: View {
         // SettingsDesignView when the sidebar reduced the detail width changed
         // both the row order and NavigationLink style on iPad mini.
         TabletSettingsView(store: store, sidebarVisible: sidebarVisible) {
-            withAnimation(.snappy(duration: 0.28)) { sidebarVisible = true }
+            withAnimation(shellAnimation) { sidebarVisible = true }
         }
     }
 
-    @ViewBuilder
-    private func routeDestination(_ route: AppRoute) -> some View {
-        switch route {
-        case .schedule:
-            ScheduleSettingsView(store: store)
-        case .salary:
-            SalaryDesignView(store: store)
-        case .notifications:
-            NotificationDesignView(store: store)
-        case .lunch:
-            LunchSettingsView(store: store)
-        case .health:
-            HealthReminderSettingsView(store: store)
-        case .theme:
-            ThemeSettingsView(store: store)
-        case .about:
-            AboutView(store: store)
-        }
+    private var shellAnimation: Animation {
+        reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.32)
     }
+
+    private var sidebarTransition: AnyTransition {
+        reduceMotion ? .opacity : .move(edge: .leading).combined(with: .opacity)
+    }
+
 }
 
 private struct TabletSidebar: View {
     @ObservedObject var store: OffWorkStore
     let hide: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(spacing: 0) {
@@ -184,7 +185,9 @@ private struct TabletSidebar: View {
 
     private func tabButton(_ tab: AppTab, icon: String, title: String) -> some View {
         Button {
-            withAnimation(.smooth(duration: 0.32)) { store.selectedTab = tab }
+            withAnimation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.32)) {
+                store.selectedTab = tab
+            }
         } label: {
             Label(title, systemImage: icon)
                 .font(.system(size: 17, weight: store.selectedTab == tab ? .semibold : .regular))
@@ -231,17 +234,19 @@ private struct TabletSidebar: View {
 private struct TabletTimerView: View {
     @ObservedObject var store: OffWorkStore
     let sidebarVisible: Bool
+    let isActive: Bool
     let showSidebar: () -> Void
     @State private var showShare = false
     @State private var showOvertime = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+        TimelineView(.periodic(from: .now, by: isActive ? 1 : 86_400)) { timeline in
             let snapshot = store.snapshot(at: timeline.date)
             ZStack {
                 if !store.countdownStarted {
                     TabletSetupView(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
-                        .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                        .transition(timerTransition)
                 } else if let snapshot, snapshot.remainingMs > 0, snapshot.isWorkday || store.forceToday {
                     TabletRunningView(
                         store: store,
@@ -252,10 +257,10 @@ private struct TabletTimerView: View {
                         showShare: $showShare,
                         showOvertime: $showOvertime
                     )
-                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    .transition(timerTransition)
                 } else {
-                    TimerDesignView(store: store, wide: true)
-                        .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    TimerDesignView(store: store, wide: true, timelineDate: timeline.date)
+                        .transition(timerTransition)
                 }
             }
             .overlay(alignment: .topLeading) {
@@ -276,7 +281,7 @@ private struct TabletTimerView: View {
                     .zIndex(10)
                 }
             }
-            .animation(.smooth(duration: 0.42), value: store.countdownStarted)
+            .animation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.42), value: store.countdownStarted)
         }
         .background(OWCDesign.page)
         .navigationBarHidden(true)
@@ -289,6 +294,10 @@ private struct TabletTimerView: View {
             OvertimeSheet(store: store)
                 .presentationSizing(.form)
         }
+    }
+
+    private var timerTransition: AnyTransition {
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.98))
     }
 
     private func usesCommonTimerSurface(_ snapshot: NativeShiftSnapshot?) -> Bool {
@@ -360,7 +369,7 @@ private struct TabletRunningView: View {
                     segmentedProgress
                         .padding(.top, 56)
                     HStack(spacing: 56) {
-                        fullStat(store.t("progress"), String(format: "%.1f%%", snapshot.progress))
+                        fullStat(store.t("progress"), store.formatPercent(snapshot.progress))
                         if store.salaryEnabled { fullStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
                         if store.scheduleMode != .off { fullStat(store.t("daysUntilRest"), daysUntilRest) }
                     }
@@ -498,7 +507,6 @@ private struct TabletSetupView: View {
     @State private var armed = false
     @State private var armResetTask: Task<Void, Never>?
     @State private var showInvalidLunch = false
-    @State private var navigateLunch = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -518,17 +526,17 @@ private struct TabletSetupView: View {
                 OWCGroupCard {
                     TabletTimeRow(store: store, icon: "sunrise", title: store.t("startTime"), minutes: $store.startMinutes)
                     TabletTimeRow(store: store, icon: "sunset", title: store.t("endTime"), minutes: $store.endMinutes)
-                    NavigationLink { ScheduleSettingsView(store: store) } label: {
+                    NavigationLink(value: AppRoute.schedule) {
                         OWCRow(icon: "calendar.badge.clock", title: store.t("workSchedule"), isLast: true) { OWCDetailAccessory(text: scheduleLabel) }
                     }
                     .buttonStyle(OWCRowButtonStyle())
                 }
 
                 HStack(spacing: 14) {
-                    NavigationLink { LunchSettingsView(store: store) } label: {
+                    NavigationLink(value: AppRoute.lunch) {
                         tabletShortcut("cup.and.saucer", store.t("lunchBreak"), lunchLabel)
                     }
-                    NavigationLink { SalaryDesignView(store: store) } label: {
+                    NavigationLink(value: AppRoute.salary) {
                         tabletShortcut("banknote", store.t("salarySettings"), store.salaryEnabled ? (store.salaryType == .monthly ? store.t("monthly") : store.t("daily")) : store.t("disabledShort"))
                     }
                 }
@@ -547,10 +555,9 @@ private struct TabletSetupView: View {
             .frame(maxHeight: .infinity)
             .padding(.horizontal, 40)
         }
-        .navigationDestination(isPresented: $navigateLunch) { LunchSettingsView(store: store) }
         .alert(store.t("invalidLunchTitle"), isPresented: $showInvalidLunch) {
             Button(store.t("return"), role: .cancel) {}
-            Button(store.t("goToLunchSettings")) { navigateLunch = true }
+            Button(store.t("goToLunchSettings")) { store.presentedRoute = .lunch }
         } message: { Text(store.t("invalidLunchMessage")) }
         .sensoryFeedback(.warning, trigger: armed)
         .onDisappear { armResetTask?.cancel() }
@@ -641,10 +648,10 @@ private struct TabletSettingsView: View {
             AdaptiveSettingsColumns(spacing: 26) {
                 VStack(spacing: 20) {
                     section(store.t("shiftSection")) {
-                        NavigationLink { ScheduleSettingsView(store: store) } label: { OWCRow(icon: "calendar.badge.clock", title: store.t("workSchedule")) { OWCDetailAccessory(text: scheduleLabel) } }.buttonStyle(OWCRowButtonStyle())
-                        NavigationLink { LunchSettingsView(store: store) } label: { OWCRow(icon: "cup.and.saucer", title: store.t("lunchBreak")) { OWCDetailAccessory(text: lunchLabel) } }.buttonStyle(OWCRowButtonStyle())
-                        NavigationLink { HealthReminderSettingsView(store: store) } label: { OWCRow(icon: "figure.walk", title: store.t("microBreakReminder")) { OWCDetailAccessory(text: healthLabel) } }.buttonStyle(OWCRowButtonStyle())
-                        NavigationLink { SalaryDesignView(store: store) } label: { OWCRow(icon: "banknote", title: store.t("salarySettings"), isLast: true) { OWCDetailAccessory(text: salaryLabel) } }.buttonStyle(OWCRowButtonStyle())
+                        NavigationLink(value: AppRoute.schedule) { OWCRow(icon: "calendar.badge.clock", title: store.t("workSchedule")) { OWCDetailAccessory(text: scheduleLabel) } }.buttonStyle(OWCRowButtonStyle())
+                        NavigationLink(value: AppRoute.lunch) { OWCRow(icon: "cup.and.saucer", title: store.t("lunchBreak")) { OWCDetailAccessory(text: lunchLabel) } }.buttonStyle(OWCRowButtonStyle())
+                        NavigationLink(value: AppRoute.health) { OWCRow(icon: "figure.walk", title: store.t("microBreakReminder")) { OWCDetailAccessory(text: healthLabel) } }.buttonStyle(OWCRowButtonStyle())
+                        NavigationLink(value: AppRoute.salary) { OWCRow(icon: "banknote", title: store.t("salarySettings"), isLast: true) { OWCDetailAccessory(text: salaryLabel) } }.buttonStyle(OWCRowButtonStyle())
                     }
                     sectionNote(store.t("tabletShiftSettingsNote"))
                 }
@@ -652,15 +659,15 @@ private struct TabletSettingsView: View {
 
                 VStack(spacing: 20) {
                     section(store.t("remindersSection")) {
-                        NavigationLink { NotificationDesignView(store: store) } label: { OWCRow(icon: "bell.badge", title: store.t("offWorkReminder"), isLast: true) { OWCDetailAccessory(text: notificationLabel) } }.buttonStyle(OWCRowButtonStyle())
+                        NavigationLink(value: AppRoute.notifications) { OWCRow(icon: "bell.badge", title: store.t("offWorkReminder"), isLast: true) { OWCDetailAccessory(text: notificationLabel) } }.buttonStyle(OWCRowButtonStyle())
                     }
                     sectionNote(store.t("notificationPrivacyNote"))
                     section(store.t("appearanceSection")) {
-                        NavigationLink { ThemeSettingsView(store: store) } label: { OWCRow(icon: "display", title: store.t("theme")) { OWCDetailAccessory(text: themeLabel) } }.buttonStyle(OWCRowButtonStyle())
+                        NavigationLink(value: AppRoute.theme) { OWCRow(icon: "display", title: store.t("theme")) { OWCDetailAccessory(text: themeLabel) } }.buttonStyle(OWCRowButtonStyle())
                         Link(destination: OWCSystemSettings.applicationURL) { OWCRow(icon: "globe", title: store.t("chooselanguage"), isLast: true) { OWCDetailAccessory(text: store.localizer.languageName(for: store.languageCode), external: true) } }.buttonStyle(OWCRowButtonStyle())
                     }
                     section(store.t("aboutSection")) {
-                        NavigationLink { AboutView(store: store) } label: { OWCRow(icon: "info.circle", title: store.t("aboutProject")) { OWCDetailAccessory(text: nil) } }.buttonStyle(OWCRowButtonStyle())
+                        NavigationLink(value: AppRoute.about) { OWCRow(icon: "info.circle", title: store.t("aboutProject")) { OWCDetailAccessory(text: nil) } }.buttonStyle(OWCRowButtonStyle())
                         OWCRow(icon: "tag", title: store.t("version"), isLast: true) { Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0").foregroundStyle(OWCDesign.secondary) }
                     }
                 }

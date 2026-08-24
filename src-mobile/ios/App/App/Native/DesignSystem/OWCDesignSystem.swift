@@ -35,7 +35,7 @@ struct OWCAppHeader: View {
     var body: some View {
         HStack {
             Text(store.t("offWorkCountdown"))
-                .font(.system(size: 13, weight: .semibold))
+                .font(.footnote.weight(.semibold))
                 .tracking(0.78)
                 .textCase(.uppercase)
                 .foregroundStyle(OWCDesign.secondary)
@@ -45,10 +45,10 @@ struct OWCAppHeader: View {
                 Group {
                     if store.quickThemeIsAuto {
                         Text(verbatim: "A")
-                            .font(.system(size: 17, weight: .semibold))
+                            .font(.body.weight(.semibold))
                     } else {
                         Image(systemName: store.quickThemeIcon)
-                            .font(.system(size: 17, weight: .regular))
+                            .font(.body)
                     }
                 }
                 .foregroundStyle(OWCDesign.secondary)
@@ -69,7 +69,7 @@ struct OWCSectionHeader: View {
 
     var body: some View {
         Text(title.uppercased())
-            .font(.system(size: 13, weight: .regular))
+            .font(.footnote)
             .foregroundStyle(OWCDesign.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 20)
@@ -92,7 +92,7 @@ struct OWCGroupCard<Content: View>: View {
 }
 
 private struct OWCScrollContentHeightKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
+    static let defaultValue: CGFloat = 0
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
@@ -169,23 +169,23 @@ struct OWCRow<Accessory: View>: View {
         HStack(spacing: 12) {
             if let textIcon {
                 Text(verbatim: textIcon)
-                    .font(.system(size: 18, weight: .regular))
+                    .font(.body)
                     .foregroundStyle(OWCDesign.secondary)
                     .frame(width: 19)
             } else if let icon {
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .regular))
+                    .font(.body)
                     .foregroundStyle(OWCDesign.secondary)
                     .frame(width: 19)
             }
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.system(size: 17))
+                    .font(.body)
                     .foregroundStyle(OWCDesign.primary)
                     .lineLimit(2)
                 if let subtitle {
                     Text(subtitle)
-                        .font(.system(size: 13))
+                        .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
                         .lineLimit(2)
                 }
@@ -221,13 +221,13 @@ struct OWCDetailAccessory: View {
         HStack(spacing: 6) {
             if let text {
                 Text(text)
-                    .font(.system(size: 16))
+                    .font(.body)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.72)
             }
             Image(systemName: external ? "arrow.up.right" : "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(OWCDesign.tertiary)
         }
     }
@@ -239,7 +239,7 @@ struct OWCPrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 17, weight: .semibold))
+            .font(.body.weight(.semibold))
             .foregroundStyle(filled ? .white : OWCDesign.primary)
             .frame(maxWidth: .infinity, minHeight: 50)
             .background(filled ? color : OWCDesign.control)
@@ -262,7 +262,7 @@ struct OWCRowButtonStyle: ButtonStyle {
 struct OWCSecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 16, weight: .semibold))
+            .font(.callout.weight(.semibold))
             .foregroundStyle(OWCDesign.primary)
             .frame(maxWidth: .infinity, minHeight: 50)
             .background(OWCDesign.control)
@@ -279,6 +279,7 @@ struct OWCProgressMeter: View {
     var paused = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.locale) private var locale
     @State private var shimmer = false
 
     private var fill: Color { overtime ? OWCDesign.orangeDeep : OWCDesign.accent }
@@ -302,7 +303,9 @@ struct OWCProgressMeter: View {
         GeometryReader { proxy in
             let clamped = min(100, max(0, progress))
             let width = max(8, proxy.size.width * clamped / 100)
-            let label = String(format: "%.1f%%", clamped)
+            let label = (clamped / 100).formatted(
+                .percent.precision(.fractionLength(1)).locale(locale)
+            )
             // Measured, not assumed: a fixed width cannot hold both "0.0%" and
             // "100.0%", and the wide case is exactly the one that overflowed.
             let bubbleWidth = Self.bubbleWidth(for: label)
@@ -658,10 +661,9 @@ struct OWCDetailBackModifier: ViewModifier {
             // Showing it only for a pushed page makes UIKit add its safe-area
             // inset at the end of the transition: the whole destination first
             // lands at one Y position, then jumps down. The bar therefore stays
-            // hidden throughout. SwiftUI disables the edge recognizer when it is
-            // hidden, and UIKit's original delegate continues rejecting it even
-            // after it is enabled. The bridge below supplies the missing gate:
-            // horizontal edge drags may pop, vertical drags remain scrolling.
+            // hidden throughout. The bridge below restores UIKit's own
+            // interactive transition without adding any SwiftUI drag gesture,
+            // so this custom header keeps exactly the same layout.
             .toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .top, spacing: 0) {
                 OWCDetailHeader(
@@ -674,49 +676,8 @@ struct OWCDetailBackModifier: ViewModifier {
                     dismiss()
                 }
             }
-            .background(OWCInteractivePopRestorer())
+            .background(OWCSystemBackSwipeBridge())
             .onAppear { leaving = false }
-    }
-}
-
-private struct OWCInteractivePopRestorer: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> UIViewController {
-        Controller()
-    }
-
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
-
-    private final class Controller: UIViewController, UIGestureRecognizerDelegate {
-        private weak var popRecognizer: UIGestureRecognizer?
-
-        override func viewDidAppear(_ animated: Bool) {
-            super.viewDidAppear(animated)
-            restoreSystemEdgeSwipe()
-        }
-
-        private func restoreSystemEdgeSwipe() {
-            guard let navigationController, navigationController.viewControllers.count > 1 else { return }
-            guard let recognizer = navigationController.interactivePopGestureRecognizer else { return }
-            popRecognizer = recognizer
-            recognizer.delegate = self
-            recognizer.isEnabled = true
-        }
-
-        func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-            guard gestureRecognizer === popRecognizer else { return true }
-            guard let navigationController, navigationController.viewControllers.count > 1 else { return false }
-            guard navigationController.transitionCoordinator == nil else { return false }
-            guard let pan = gestureRecognizer as? UIPanGestureRecognizer else { return true }
-            let velocity = pan.velocity(in: pan.view)
-            return abs(velocity.x) > abs(velocity.y)
-        }
-
-        func gestureRecognizer(
-            _ gestureRecognizer: UIGestureRecognizer,
-            shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
-        ) -> Bool {
-            false
-        }
     }
 }
 
@@ -795,9 +756,10 @@ struct OWCNumberField: View {
     let onCommit: () -> Void
 
     @FocusState private var focused: Bool
+    @State private var selection: TextSelection?
 
     var body: some View {
-        TextField(placeholder, text: $text)
+        TextField(placeholder, text: $text, selection: $selection)
             .font(
                 .system(size: emphasized ? 19 : 17, weight: .semibold)
                 .monospacedDigit()
@@ -810,21 +772,17 @@ struct OWCNumberField: View {
             // once, and the keyboard's own resize could drive it negative.
             .frame(width: width ?? 170)
             .onChange(of: text) { sanitize() }
-            .onChange(of: focused) {
-                if !focused { onCommit() }
+            .onChange(of: focused) { _, isFocused in
+                if isFocused {
+                    Task { @MainActor in
+                        await Task.yield()
+                        selection = TextSelection(range: text.startIndex..<text.endIndex)
+                    }
+                } else {
+                    onCommit()
+                }
             }
             .onSubmit { onCommit() }
-            .onReceive(
-                NotificationCenter.default.publisher(
-                    for: UITextField.textDidBeginEditingNotification
-                )
-            ) { note in
-                guard let field = note.object as? UITextField else { return }
-                // The field has not finished becoming first responder when the
-                // notification lands, so the selection is applied on the next
-                // runloop turn or it is immediately collapsed by the caret.
-                DispatchQueue.main.async { field.selectAll(nil) }
-            }
     }
 
     private func sanitize() {

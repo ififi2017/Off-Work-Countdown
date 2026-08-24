@@ -338,7 +338,7 @@ private struct ShareCard: View {
                 .frame(height: 5)
 
                 HStack {
-                    Text(String(format: "%.1f%%", snapshot?.progress ?? 0))
+                    Text(store.formatPercent(snapshot?.progress ?? 0))
                     Spacer()
                     Text("OFF.RAINIF.COM")
                 }

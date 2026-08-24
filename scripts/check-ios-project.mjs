@@ -60,11 +60,16 @@ const bundleIdAssignments = [
   ...iosProject.matchAll(/PRODUCT_BUNDLE_IDENTIFIER\s*=\s*([^;]+);/g),
 ].map((match) => match[1].trim());
 const widgetBundleId = `${universalBundleId}.widget`;
+const testBundleId = `${universalBundleId}.tests`;
 if (
   !bundleIdAssignments.includes(universalBundleId) ||
   !bundleIdAssignments.includes(widgetBundleId) ||
+  !bundleIdAssignments.includes(testBundleId) ||
   bundleIdAssignments.some(
-    (value) => value !== universalBundleId && value !== widgetBundleId
+    (value) =>
+      value !== universalBundleId &&
+      value !== widgetBundleId &&
+      value !== testBundleId
   )
 ) {
   fail(
@@ -83,7 +88,7 @@ const releaseConfigurations = [
   ),
 ].map((match) => match[1]);
 if (
-  releaseConfigurations.length !== 3 ||
+  releaseConfigurations.length !== 4 ||
   releaseConfigurations.some((settings) => settings.includes("-DDEBUG")) ||
   releaseConfigurations.filter((settings) =>
     settings.includes('SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";')

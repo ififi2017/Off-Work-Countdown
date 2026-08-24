@@ -337,5 +337,6 @@
   "onboardingLandscapeBody": "Yatay modda geri sayım tüm ekranı kaplar — yalnızca saat ve çubuk.",
   "onboardingSidebarTitle": "Kenar çubuğunu gizle",
   "onboardingSidebarBody": "Kenar çubuğunu kapat, geri sayım ekranı doldursun — yalnızca saat ve çubuk.",
-  "widgetRestDayShort": "Sonraki vardiyaya"
+  "widgetRestDayShort": "Sonraki vardiyaya",
+  "countdownRulesUnavailable": "Geri sayım geçici olarak kullanılamıyor."
 }

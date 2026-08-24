@@ -20,8 +20,8 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 | P1 | Capacitor / Mobile Web 技术 spike | ⚪ 已完成并归档，不进入发布包 |
 | P2 | SwiftUI 原生 App、JavaScriptCore 规则桥、本地状态 | 🟢 已完成 |
 | P3 | 本地通知、午休/健康提醒、预约与重排 | 🟢 核心链路完成，继续随 TestFlight 回归 |
-| P4 | iPhone/iPad Widget、锁屏与灵动岛 Live Activity | 🟢 已完成并进入实机回归 |
-| P5 | iPhone/iPad 自适应 UI、设置导航、分享与欢迎页 | 🟢 本轮主要问题已完成实机收口 |
+| P4 | iPhone/iPad Widget、锁屏与灵动岛 Live Activity | 🟡 进度时间线已重构，等待新一轮实机回归 |
+| P5 | iPhone/iPad 自适应 UI、设置导航、分享与欢迎页 | 🟡 首轮 CR 修复完成，继续做真机交互回归 |
 | P6 | Xcode Cloud、TestFlight、商店截图与审核材料 | 🟡 TestFlight 链路已建立，正式提交仍待完成 |
 | W0–W3 | Apple Watch App、同步与表盘组件 | 🔵 下一个主要目标 |
 | X1 | iPhone 与 iPad 的可选跨设备同步 | ⚪ 技术决策保留，当前不实施 |
@@ -92,6 +92,22 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 - 该问题仍加入长期回归：后续每个 TestFlight 候选包都要至少验证普通终止、强制退出、重启、
   系统语言变化和 App 专属语言变化。若再次出现，优先增加版本化原子快照和恢复机制，而不是
   依赖 synchronize 或掩盖成默认值。
+
+### 2.6 2026-08-24 SwiftUI CR 与组件时间线
+
+- iOS Home Screen 与锁屏组件不再依靠组件视图中的 TimelineView 驱动进度。WidgetKit 现在会在
+  工作区间内生成定期进度条目；系统 timer 继续显示秒级倒计时，进度环和线性进度则按受控粒度
+  前进，避免出现倒计时正常而百分比永久停在旧值的问题。
+- 上述密集时间线只用于 iOS。macOS 组件继续使用班次边界条目，防止移动端修复改变桌面组件的
+  唤醒频率和既有行为；共享 WidgetSnapshotContract 已增加投影与边界测试。
+- 设置导航统一为 NavigationLink(value:) 与单一 AppRoute destination 注册，避免不同
+  NavigationStack / NavigationSplitView 列之间找不到目标，并保留系统左边缘返回交互。
+- 通知设置页与根视图共享同一个 NotificationService；App 从系统设置返回前台后重新读取授权
+  状态并立即重建日程，后台切换前不再额外等待可能被系统挂起的延迟任务。
+- 首轮可访问性和性能修复已落地：开关使用真实语义标签、工作日提供选中状态、Reduce Motion
+  使用淡入淡出、设置页停留时暂停被遮挡计时页的一秒刷新，并逐步采用 Dynamic Type 字体。
+- iOS targets 切换到 Swift 6，并加入默认值与持久化单元测试 target。后续继续拆分体积过大的
+  SwiftUI 文件、扩大 Dynamic Type 覆盖，并为通知失败状态补充面向用户的反馈。
 
 ## 3. 当前架构边界
 

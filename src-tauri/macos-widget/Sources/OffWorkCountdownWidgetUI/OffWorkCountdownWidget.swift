@@ -172,6 +172,12 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
             )
         }
 
+        #if os(iOS)
+        var timelineEntries = makeIOSTimelineEntries(
+            snapshot: snapshot,
+            nowMs: nowMs
+        )
+        #else
         var timelineEntries = [
             OffWorkCountdownWidgetEntry(
                 date: now,
@@ -190,6 +196,7 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                     )
                 }
         )
+        #endif
         // 到期时主动切到保守空态，不继续用旧班次猜算。宿主在状态变化时通过
         // WidgetCenter.reloadTimelines 交付下一份快照，因此这里不轮询。
         timelineEntries.append(
@@ -203,6 +210,35 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
         )
         return Timeline(entries: timelineEntries, policy: .never)
     }
+
+    #if os(iOS)
+    /// Home Screen and accessory widgets only redraw reliably when WidgetKit
+    /// advances to a new timeline entry. `Text(style: .timer)` keeps counting on
+    /// its own, but ordinary rings and bars do not, so working intervals include
+    /// lightweight five-minute presentation entries. Schedule decisions remain
+    /// in the producer snapshot and macOS keeps its existing boundary-only path.
+    private func makeIOSTimelineEntries(
+        snapshot: WidgetSnapshot,
+        nowMs: Int64
+    ) -> [OffWorkCountdownWidgetEntry] {
+        let progressStepMs: Int64 = 5 * 60 * 1_000
+        return snapshot.presentationEntries(
+            startingAtMs: nowMs,
+            progressStepMs: progressStepMs
+        ).map { widgetEntry($0, locale: snapshot.locale) }
+    }
+
+    private func widgetEntry(
+        _ snapshotEntry: WidgetTimelineEntry,
+        locale: String
+    ) -> OffWorkCountdownWidgetEntry {
+        OffWorkCountdownWidgetEntry(
+            date: Date(timeIntervalSince1970: Double(snapshotEntry.dateMs) / 1_000),
+            snapshotEntry: snapshotEntry,
+            locale: locale
+        )
+    }
+    #endif
 }
 
 public struct OffWorkCountdownWidgetView: View {
@@ -247,37 +283,18 @@ public struct OffWorkCountdownWidgetView: View {
 
     #if os(iOS)
     private func circularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
-        TimelineView(.periodic(from: entry.date, by: 60)) { timeline in
-            let progress = projectedProgress(snapshotEntry, at: timeline.date)
-            Gauge(value: progress, in: 0...100) {
-                EmptyView()
-            } currentValueLabel: {
-                // Whole percent only. "89.30%" is six glyphs in a complication
-                // that has room for three, and it wrapped onto a second line.
-                Text("\(roundedProgress(progress))%")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-            }
-            .gaugeStyle(.accessoryCircularCapacity)
+        Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
+            EmptyView()
+        } currentValueLabel: {
+            // Whole percent only. "89.30%" is six glyphs in a complication
+            // that has room for three, and it wrapped onto a second line.
+            Text("\(roundedProgress(snapshotEntry.progressAtDate))%")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
         }
-    }
-
-    private func projectedProgress(_ snapshotEntry: WidgetTimelineEntry, at date: Date) -> Double {
-        let base = min(100, max(0, snapshotEntry.progressAtDate))
-        guard snapshotEntry.phase == .working,
-              base < 100,
-              snapshotEntry.remainingEffectiveMsAtDateMs > 0
-        else { return base }
-
-        let remaining = Double(snapshotEntry.remainingEffectiveMsAtDateMs)
-        let total = remaining / max(0.000_001, 1 - base / 100)
-        let elapsed = min(
-            remaining,
-            max(0, date.timeIntervalSince1970 * 1_000 - Double(snapshotEntry.dateMs))
-        )
-        return min(100, max(base, base + elapsed / total * 100))
+        .gaugeStyle(.accessoryCircularCapacity)
     }
     #endif
 
@@ -340,19 +357,7 @@ public struct OffWorkCountdownWidgetView: View {
 
     @ViewBuilder
     private func smallContent(_ snapshotEntry: WidgetTimelineEntry) -> some View {
-        #if os(iOS)
-        // Home Screen widgets receive the same precomputed interval as the
-        // accessory widget. Project only its presentation once a minute so the
-        // bar does not freeze at the percentage captured when the app closed.
-        TimelineView(.periodic(from: entry.date, by: 60)) { timeline in
-            smallContentBody(
-                snapshotEntry,
-                progress: projectedProgress(snapshotEntry, at: timeline.date)
-            )
-        }
-        #else
         smallContentBody(snapshotEntry, progress: snapshotEntry.progressAtDate)
-        #endif
     }
 
     private func smallContentBody(
@@ -380,18 +385,7 @@ public struct OffWorkCountdownWidgetView: View {
 
     @ViewBuilder
     private func mediumContent(_ snapshotEntry: WidgetTimelineEntry) -> some View {
-        #if os(iOS)
-        // Keep the macOS branch snapshot-driven; its host refresh lifecycle is
-        // different and this issue is specific to iOS Home Screen widgets.
-        TimelineView(.periodic(from: entry.date, by: 60)) { timeline in
-            mediumContentBody(
-                snapshotEntry,
-                progress: projectedProgress(snapshotEntry, at: timeline.date)
-            )
-        }
-        #else
         mediumContentBody(snapshotEntry, progress: snapshotEntry.progressAtDate)
-        #endif
     }
 
     private func mediumContentBody(
