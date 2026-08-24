@@ -337,5 +337,6 @@
   "onboardingLandscapeBody": "En horizontal la cuenta atrás ocupa toda la pantalla: solo el reloj y la barra.",
   "onboardingSidebarTitle": "Oculta la barra lateral",
   "onboardingSidebarBody": "Contrae la barra lateral y la cuenta atrás llena la pantalla: solo el reloj y la barra.",
-  "widgetRestDayShort": "Hasta la próxima jornada"
+  "widgetRestDayShort": "Hasta la próxima jornada",
+  "countdownRulesUnavailable": "La cuenta atrás no está disponible temporalmente."
 }

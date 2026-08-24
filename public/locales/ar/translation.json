@@ -337,5 +337,6 @@
   "onboardingLandscapeBody": "في الوضع الأفقي يملأ العد التنازلي الشاشة كاملة — الساعة والشريط فقط.",
   "onboardingSidebarTitle": "إخفاء الشريط الجانبي",
   "onboardingSidebarBody": "اطوِ الشريط الجانبي ليملأ العد التنازلي الشاشة — الساعة والشريط فقط.",
-  "widgetRestDayShort": "حتى الدوام التالي"
+  "widgetRestDayShort": "حتى الدوام التالي",
+  "countdownRulesUnavailable": "العدّ التنازلي غير متاح مؤقتًا."
 }

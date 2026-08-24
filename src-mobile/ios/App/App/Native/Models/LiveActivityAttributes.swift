@@ -2,8 +2,8 @@ import ActivityKit
 import Foundation
 
 /// Salary-free payload shared verbatim by the app and Widget extension.
-struct OffWorkActivityAttributes: ActivityAttributes {
-    struct ContentState: Codable, Hashable {
+struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
+    struct ContentState: Codable, Hashable, Sendable {
         let endAtMs: Int64
         let progress: Double
         let phase: String

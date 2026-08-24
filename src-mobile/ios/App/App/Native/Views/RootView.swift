@@ -15,6 +15,7 @@ struct OffWorkCountdownRootView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -24,17 +25,18 @@ struct OffWorkCountdownRootView: View {
                     // meant its layout settled at a different size than it
                     // animated at, so everything nudged down once the
                     // transition finished — a cross-fade cannot do that.
-                    .transition(.opacity.combined(with: .scale(scale: 1.04)))
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 1.04)))
             } else if horizontalSizeClass == .regular {
                 tabletLayout.transition(.opacity)
             } else {
                 phoneLayout.transition(.opacity)
             }
         }
-        .animation(.smooth(duration: 0.5), value: store.onboardingComplete)
+        .animation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.5), value: store.onboardingComplete)
         .preferredColorScheme(store.preferredColorScheme)
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
+        .environmentObject(notifications)
         .tint(OWCDesign.accent)
         .sensoryFeedback(.success, trigger: store.countdownStarted)
         .task {
@@ -77,6 +79,15 @@ struct OffWorkCountdownRootView: View {
         .onChange(of: scenePhase) {
             if scenePhase == .active {
                 store.refreshSystemLanguage()
+                Task { @MainActor in
+                    // Notification authorization can change while the user is
+                    // in Settings. Refresh the shared status and rebuild the
+                    // pending schedule as soon as the app becomes active.
+                    await notifications.refresh()
+                    guard store.onboardingComplete else { return }
+                    pendingReschedule = false
+                    scheduleServices()
+                }
             } else if pendingReschedule {
                 pendingReschedule = false
                 scheduleServices()
@@ -148,7 +159,7 @@ struct OffWorkCountdownRootView: View {
                             onOpenSettings: openPhoneSettings
                         )
                         .navigationDestination(for: AppRoute.self) { route in
-                            routeDestination(route)
+                            AppRouteDestination(route: route, store: store)
                         }
                     }
                     .tabItem {
@@ -159,11 +170,13 @@ struct OffWorkCountdownRootView: View {
                     NavigationStack(path: $phoneSettingsPath) {
                         SettingsDesignView(store: store, wide: false)
                             .navigationDestination(for: AppRoute.self) { route in
-                                routeDestination(route)
+                                AppRouteDestination(route: route, store: store)
                             }
-                            .navigationDestination(item: $store.presentedRoute) { route in
-                                routeDestination(route)
-                            }
+                    }
+                    .onChange(of: store.presentedRoute) { _, route in
+                        guard let route else { return }
+                        phoneSettingsPath.append(route)
+                        store.presentedRoute = nil
                     }
                     .tabItem {
                         Label(store.t("settings"), systemImage: "slider.horizontal.3")
@@ -182,28 +195,30 @@ struct OffWorkCountdownRootView: View {
     private func openPhoneSettings(_ route: AppRoute?) {
         store.presentedRoute = nil
         if let route {
-            withAnimation(.snappy(duration: 0.28)) {
+            withAnimation(tabAnimation) {
                 phoneTimerPath = [route]
                 store.selectedTab = .timer
             }
         } else {
             phoneSettingsPath.removeAll()
-            withAnimation(.snappy(duration: 0.28)) {
+            withAnimation(tabAnimation) {
                 store.selectedTab = .settings
             }
         }
+    }
+
+    private var tabAnimation: Animation {
+        reduceMotion ? .easeOut(duration: 0.16) : .snappy(duration: 0.28)
     }
 
     private func scheduleServices() {
         serviceTask?.cancel()
         guard store.onboardingComplete else { return }
         serviceTask = Task { @MainActor in
-            // Settle first. A single edit can publish several store changes in a
-            // row (a stepper held down, a value committed then clamped), and
-            // each one would otherwise cancel and restart a full reschedule
-            // across UNUserNotificationCenter, ActivityKit and WidgetKit.
-            try? await Task.sleep(for: .milliseconds(350))
-            guard !Task.isCancelled else { return }
+            // Foreground edits are coalesced by `pendingReschedule`. Once the
+            // app is leaving the foreground there must be no additional sleep:
+            // iOS may suspend the process before a delayed task gets to rebuild
+            // notifications, Live Activities and the widget timeline.
             if !store.countdownStarted {
                 await notifications.clearShiftNotifications()
                 await liveActivities.endAll()
@@ -217,16 +232,4 @@ struct OffWorkCountdownRootView: View {
         }
     }
 
-    @ViewBuilder
-    private func routeDestination(_ route: AppRoute) -> some View {
-        switch route {
-        case .schedule: ScheduleSettingsView(store: store)
-        case .salary: SalaryDesignView(store: store)
-        case .notifications: NotificationDesignView(store: store)
-        case .lunch: LunchSettingsView(store: store)
-        case .health: HealthReminderSettingsView(store: store)
-        case .theme: ThemeSettingsView(store: store)
-        case .about: AboutView(store: store)
-        }
-    }
 }

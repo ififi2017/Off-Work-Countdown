@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ScheduleSettingsView: View {
     @ObservedObject var store: OffWorkStore
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
     var body: some View {
         OWCContentSizedScrollView {
@@ -148,16 +149,26 @@ struct ScheduleSettingsView: View {
         HStack(spacing: 6) {
             ForEach(Array(zip([1, 2, 3, 4, 5, 6, 0], store.weekdayLabels())), id: \.0) { day, label in
                 Button { store.toggleWorkday(day) } label: {
-                    Text(label)
-                        .font(.system(size: 13, weight: store.workdays.contains(day) ? .semibold : .medium))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.62)
-                        .foregroundStyle(store.workdays.contains(day) ? Color(uiColor: .systemBackground) : OWCDesign.secondary)
-                        .frame(maxWidth: .infinity, minHeight: 46)
-                        .background(store.workdays.contains(day) ? OWCDesign.accent : OWCDesign.control)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    ZStack(alignment: .topTrailing) {
+                        Text(label)
+                            .font(.footnote.weight(store.workdays.contains(day) ? .semibold : .medium))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.62)
+                            .foregroundStyle(store.workdays.contains(day) ? Color(uiColor: .systemBackground) : OWCDesign.secondary)
+                            .frame(maxWidth: .infinity, minHeight: 46)
+
+                        if differentiateWithoutColor, store.workdays.contains(day) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.caption2)
+                                .foregroundStyle(Color(uiColor: .systemBackground))
+                                .padding(4)
+                        }
+                    }
+                    .background(store.workdays.contains(day) ? OWCDesign.accent : OWCDesign.control)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(store.workdays.contains(day) ? .isSelected : [])
             }
         }
         .padding(12)
@@ -197,7 +208,7 @@ struct SalaryDesignView: View {
                         Text(store.t("enableSalaryDescription")).font(.system(size: 13)).foregroundStyle(OWCDesign.secondary)
                     }
                     Spacer()
-                    Toggle("", isOn: $store.salaryEnabled).labelsHidden()
+                    Toggle(store.t("enableSalary"), isOn: $store.salaryEnabled).labelsHidden()
                 }
                 .padding(.horizontal, 16)
                 .frame(minHeight: 64)
@@ -264,7 +275,7 @@ struct SalaryDesignView: View {
                     Text(store.t("annualBonus"))
                         .font(.system(size: 17))
                     Spacer()
-                    Toggle("", isOn: $store.annualBonusEnabled)
+                    Toggle(store.t("annualBonus"), isOn: $store.annualBonusEnabled)
                         .labelsHidden()
                 }
                 .padding(.horizontal, 16)
@@ -291,7 +302,7 @@ struct SalaryDesignView: View {
                     Text(store.t("hideSalary"))
                         .font(.system(size: 17))
                     Spacer()
-                    Toggle("", isOn: $store.hideEarnings)
+                    Toggle(store.t("hideSalary"), isOn: $store.hideEarnings)
                         .labelsHidden()
                 }
                 .padding(.horizontal, 16)
@@ -397,7 +408,7 @@ struct SalaryDesignView: View {
 
 struct NotificationDesignView: View {
     @ObservedObject var store: OffWorkStore
-    @StateObject private var notifications = NotificationService()
+    @EnvironmentObject private var notifications: NotificationService
 
     var body: some View {
         Group {
@@ -435,7 +446,7 @@ struct NotificationDesignView: View {
                         Text(store.t("lockScreenLiveActivity"))
                             .font(.system(size: 17))
                         Spacer()
-                        Toggle("", isOn: $store.liveActivityEnabled)
+                        Toggle(store.t("lockScreenLiveActivity"), isOn: $store.liveActivityEnabled)
                             .labelsHidden()
                     }
                     .padding(.horizontal, 16)
@@ -548,7 +559,14 @@ struct NotificationDesignView: View {
         Button {
             withAnimation(.snappy(duration: 0.22)) { store.notificationMode = mode }
             if mode != .off, notifications.status == .notDetermined {
-                Task { _ = await notifications.request() }
+                Task { @MainActor in
+                    let granted = await notifications.request()
+                    if granted {
+                        await notifications.reschedule(store: store)
+                    } else {
+                        store.notificationMode = .off
+                    }
+                }
             }
         } label: {
             OWCRow(title: title, isLast: isLast) {
@@ -597,7 +615,7 @@ struct LunchSettingsView: View {
                     HStack {
                         Text(store.t("lunchBreak")).font(.system(size: 17))
                         Spacer()
-                        Toggle("", isOn: $store.lunchEnabled).labelsHidden()
+                        Toggle(store.t("lunchBreak"), isOn: $store.lunchEnabled).labelsHidden()
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 56)
@@ -641,7 +659,7 @@ struct LunchSettingsView: View {
                     HStack {
                         Text(store.t("lunchStartReminder")).font(.system(size: 17))
                         Spacer()
-                        Toggle("", isOn: $store.lunchStartReminderEnabled).labelsHidden()
+                        Toggle(store.t("lunchStartReminder"), isOn: $store.lunchStartReminderEnabled).labelsHidden()
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 56)
@@ -650,7 +668,7 @@ struct LunchSettingsView: View {
                     HStack {
                         Text(store.t("lunchEndReminder")).font(.system(size: 17))
                         Spacer()
-                        Toggle("", isOn: $store.lunchEndReminderEnabled).labelsHidden()
+                        Toggle(store.t("lunchEndReminder"), isOn: $store.lunchEndReminderEnabled).labelsHidden()
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 56)
@@ -711,7 +729,7 @@ struct HealthReminderSettingsView: View {
                     HStack {
                         Text(store.t("microBreakReminder")).font(.system(size: 17))
                         Spacer()
-                        Toggle("", isOn: $store.microBreakEnabled).labelsHidden()
+                        Toggle(store.t("microBreakReminder"), isOn: $store.microBreakEnabled).labelsHidden()
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 56)

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OffWorkStoreTests.swift */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
@@ -40,9 +41,18 @@
 		E00000110000000000000011 /* TimerStatusViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000110000000000000011 /* TimerStatusViews.swift */; };
 		E00000120000000000000012 /* PhoneLandscapeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000120000000000000012 /* PhoneLandscapeView.swift */; };
 		E00000130000000000000013 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000130000000000000013 /* AboutView.swift */; };
+		E00000140000000000000014 /* OWCSystemBackSwipeBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000140000000000000014 /* OWCSystemBackSwipeBridge.swift */; };
+		E00000150000000000000015 /* AppRouteDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000150000000000000015 /* AppRouteDestination.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		A60000010000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 504EC3031FED79650016851F;
+			remoteInfo = App;
+		};
 		760000011234567890ABCDEF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
@@ -67,6 +77,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A20000010000000000000001 /* OffWorkStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkStoreTests.swift; sourceTree = "<group>"; };
+		A20000020000000000000002 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -119,9 +131,18 @@
 		F00000110000000000000011 /* TimerStatusViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerStatusViews.swift; path = Native/Views/TimerStatusViews.swift; sourceTree = "<group>"; };
 		F00000120000000000000012 /* PhoneLandscapeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PhoneLandscapeView.swift; path = Native/Views/PhoneLandscapeView.swift; sourceTree = "<group>"; };
 		F00000130000000000000013 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AboutView.swift; path = Native/Views/AboutView.swift; sourceTree = "<group>"; };
+		F00000140000000000000014 /* OWCSystemBackSwipeBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCSystemBackSwipeBridge.swift; path = Native/DesignSystem/OWCSystemBackSwipeBridge.swift; sourceTree = "<group>"; };
+		F00000150000000000000015 /* AppRouteDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppRouteDestination.swift; path = Native/Views/AppRouteDestination.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		A40000020000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3011FED79650016851F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -143,6 +164,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3061FED79650016851F /* App */,
+				A30000010000000000000001 /* AppTests */,
 				730000011234567890ABCDEF /* WidgetExtension */,
 				720000051234567890ABCDEF /* WidgetSnapshot.swift */,
 				720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */,
@@ -155,6 +177,7 @@
 			children = (
 				504EC3041FED79650016851F /* App.app */,
 				7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */,
+				A20000020000000000000002 /* AppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -164,6 +187,7 @@
 			children = (
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				F00000010000000000000001 /* OWCDesignSystem.swift */,
+				F00000140000000000000014 /* OWCSystemBackSwipeBridge.swift */,
 				F00000020000000000000002 /* CountdownRules.swift */,
 				F00000030000000000000003 /* OffWorkStore.swift */,
 				720000011234567890ABCDEF /* LiveActivityAttributes.swift */,
@@ -180,6 +204,7 @@
 				F000000E000000000000000E /* SettingsDesignView.swift */,
 				F000000F000000000000000F /* SettingsDetailDesignViews.swift */,
 				F00000130000000000000013 /* AboutView.swift */,
+				F00000150000000000000015 /* AppRouteDestination.swift */,
 				F00000100000000000000010 /* TabletDesignView.swift */,
 				F00000120000000000000012 /* PhoneLandscapeView.swift */,
 				F000000B000000000000000B /* CountdownRules.js */,
@@ -191,6 +216,14 @@
 				720000041234567890ABCDEF /* App.entitlements */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		A30000010000000000000001 /* AppTests */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000001 /* OffWorkStoreTests.swift */,
+			);
+			path = AppTests;
 			sourceTree = "<group>";
 		};
 		730000011234567890ABCDEF /* WidgetExtension */ = {
@@ -206,6 +239,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		A50000010000000000000001 /* AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A90000010000000000000001 /* Build configuration list for PBXNativeTarget "AppTests" */;
+			buildPhases = (
+				A40000010000000000000001 /* Sources */,
+				A40000020000000000000002 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A70000010000000000000001 /* PBXTargetDependency */,
+			);
+			name = AppTests;
+			packageProductDependencies = (
+			);
+			productName = AppTests;
+			productReference = A20000020000000000000002 /* AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		504EC3031FED79650016851F /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "App" */;
@@ -255,6 +307,10 @@
 				LastSwiftUpdateCheck = 0920;
 				LastUpgradeCheck = 0920;
 				TargetAttributes = {
+					A50000010000000000000001 = {
+						CreatedOnToolsVersion = 26.0;
+						ProvisioningStyle = Automatic;
+					};
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 1100;
@@ -301,6 +357,7 @@
 			targets = (
 				504EC3031FED79650016851F /* App */,
 				740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */,
+				A50000010000000000000001 /* AppTests */,
 			);
 		};
 /* End PBXProject section */
@@ -330,6 +387,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		A40000010000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3001FED79650016851F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -355,6 +420,8 @@
 				E00000110000000000000011 /* TimerStatusViews.swift in Sources */,
 				E00000120000000000000012 /* PhoneLandscapeView.swift in Sources */,
 				E00000130000000000000013 /* AboutView.swift in Sources */,
+				E00000140000000000000014 /* OWCSystemBackSwipeBridge.swift in Sources */,
+				E00000150000000000000015 /* AppRouteDestination.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,6 +439,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		A70000010000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 504EC3031FED79650016851F /* App */;
+			targetProxy = A60000010000000000000001 /* PBXContainerItemProxy */;
+		};
 		770000011234567890ABCDEF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */;
@@ -417,6 +489,38 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		A80000010000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3GSK5B9S3T;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
+			};
+			name = Debug;
+		};
+		A80000020000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3GSK5B9S3T;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
+			};
+			name = Release;
+		};
 		504EC3141FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -542,7 +646,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -564,7 +668,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -585,7 +689,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -606,7 +710,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -614,6 +718,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		A90000010000000000000001 /* Build configuration list for PBXNativeTarget "AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000010000000000000001 /* Debug */,
+				A80000020000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		504EC2FF1FED79650016851F /* Build configuration list for PBXProject "App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingView: View {
     @ObservedObject var store: OffWorkStore
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var notifications = NotificationService()
 
     private static let pageAnimation = Animation.snappy(duration: 0.32)
@@ -28,9 +29,9 @@ struct OnboardingView: View {
                 }
             }
             .id(store.onboardingPage)
-            .transition(Self.pageTransition)
+            .transition(pageTransition)
         }
-        .animation(Self.pageAnimation, value: store.onboardingPage)
+        .animation(pageAnimation, value: store.onboardingPage)
         .background(Color(uiColor: .systemBackground))
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
@@ -461,8 +462,16 @@ struct OnboardingView: View {
     }
 
     private func showPage(_ page: Int) {
-        withAnimation(Self.pageAnimation) {
+        withAnimation(pageAnimation) {
             store.onboardingPage = page
         }
+    }
+
+    private var pageAnimation: Animation {
+        reduceMotion ? .easeOut(duration: 0.16) : Self.pageAnimation
+    }
+
+    private var pageTransition: AnyTransition {
+        reduceMotion ? .opacity : Self.pageTransition
     }
 }

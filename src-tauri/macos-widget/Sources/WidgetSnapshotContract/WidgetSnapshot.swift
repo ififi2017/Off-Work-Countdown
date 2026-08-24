@@ -79,6 +79,45 @@ public struct WidgetTimelineEntry: Codable, Equatable, Sendable {
         self.progressAtDate = progressAtDate
         self.nextBoundaryAtMs = nextBoundaryAtMs
     }
+
+    /// Advances a precomputed working interval to a later presentation time.
+    /// Schedule boundaries still come from the producer; this only projects the
+    /// linear values that change while the current work segment is running.
+    public func projected(atMs nowMs: Int64) -> WidgetTimelineEntry {
+        guard phase == .working,
+              nowMs > dateMs,
+              progressAtDate < 100,
+              remainingEffectiveMsAtDateMs > 0
+        else {
+            return self
+        }
+
+        let projectedDateMs = min(nowMs, validUntilMs)
+        let elapsedMs = min(
+            remainingEffectiveMsAtDateMs,
+            max(0, projectedDateMs - dateMs)
+        )
+        let remainingMs = max(0, remainingEffectiveMsAtDateMs - elapsedMs)
+        let remainingFraction = max(0.000_001, 1 - progressAtDate / 100)
+        let totalEffectiveMs = Double(remainingEffectiveMsAtDateMs) / remainingFraction
+        let progress = min(
+            100,
+            max(progressAtDate, progressAtDate + Double(elapsedMs) / totalEffectiveMs * 100)
+        )
+
+        return WidgetTimelineEntry(
+            dateMs: projectedDateMs,
+            validUntilMs: validUntilMs,
+            phase: phase,
+            labelKey: labelKey,
+            countdownKind: countdownKind,
+            countdownValueAtDateMs: max(0, countdownValueAtDateMs - elapsedMs),
+            countdownTargetAtMs: countdownTargetAtMs,
+            remainingEffectiveMsAtDateMs: remainingMs,
+            progressAtDate: progress,
+            nextBoundaryAtMs: nextBoundaryAtMs
+        )
+    }
 }
 
 public struct WidgetSnapshot: Codable, Equatable, Sendable {
@@ -118,5 +157,35 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         return entries.first {
             nowMs >= $0.dateMs && nowMs < $0.validUntilMs
         }
+    }
+
+    /// Expands only the linear presentation of working intervals. It never
+    /// invents schedule boundaries: those remain the producer's responsibility.
+    public func presentationEntries(
+        startingAtMs nowMs: Int64,
+        progressStepMs: Int64
+    ) -> [WidgetTimelineEntry] {
+        guard schemaVersion == widgetSnapshotSchemaVersion,
+              progressStepMs > 0,
+              nowMs >= generatedAtMs,
+              nowMs < expiresAtMs
+        else {
+            return []
+        }
+
+        var result: [WidgetTimelineEntry] = []
+        for source in entries where source.validUntilMs > nowMs && source.dateMs < expiresAtMs {
+            let firstDateMs = max(nowMs, source.dateMs)
+            result.append(source.projected(atMs: firstDateMs))
+
+            guard source.phase == .working else { continue }
+            var updateAtMs = firstDateMs + progressStepMs
+            let intervalEndMs = min(source.validUntilMs, expiresAtMs)
+            while updateAtMs < intervalEndMs {
+                result.append(source.projected(atMs: updateAtMs))
+                updateAtMs += progressStepMs
+            }
+        }
+        return result.sorted { $0.dateMs < $1.dateMs }
     }
 }

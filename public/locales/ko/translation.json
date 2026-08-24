@@ -337,5 +337,6 @@
   "onboardingLandscapeBody": "가로 모드에서는 카운트다운이 전체 화면으로 — 시계와 막대만 남습니다.",
   "onboardingSidebarTitle": "사이드바 접기",
   "onboardingSidebarBody": "사이드바를 접으면 카운트다운이 화면을 가득 채웁니다 — 시계와 막대만 남습니다.",
-  "widgetRestDayShort": "다음 근무까지"
+  "widgetRestDayShort": "다음 근무까지",
+  "countdownRulesUnavailable": "카운트다운을 일시적으로 사용할 수 없습니다."
 }

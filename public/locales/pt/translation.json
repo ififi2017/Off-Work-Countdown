@@ -337,5 +337,6 @@
   "onboardingLandscapeBody": "Na horizontal a contagem ocupa a tela inteira: só o relógio e a barra.",
   "onboardingSidebarTitle": "Ocultar a barra lateral",
   "onboardingSidebarBody": "Recolha a barra lateral e a contagem preenche a tela: só o relógio e a barra.",
-  "widgetRestDayShort": "Até o próximo turno"
+  "widgetRestDayShort": "Até o próximo turno",
+  "countdownRulesUnavailable": "A contagem decrescente está temporariamente indisponível."
 }

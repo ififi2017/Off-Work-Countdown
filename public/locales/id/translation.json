@@ -337,5 +337,6 @@
   "onboardingLandscapeBody": "Dalam mode lanskap hitung mundur memenuhi layar — hanya jam dan bilah.",
   "onboardingSidebarTitle": "Sembunyikan bilah sisi",
   "onboardingSidebarBody": "Tutup bilah sisi dan hitung mundur memenuhi layar — hanya jam dan bilah.",
-  "widgetRestDayShort": "Sampai shift berikutnya"
+  "widgetRestDayShort": "Sampai shift berikutnya",
+  "countdownRulesUnavailable": "Hitung mundur sementara tidak tersedia."
 }

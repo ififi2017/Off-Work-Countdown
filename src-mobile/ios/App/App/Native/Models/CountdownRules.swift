@@ -58,6 +58,7 @@ enum CountdownRulesError: LocalizedError {
     }
 }
 
+@MainActor
 final class CountdownRules {
     static let shared = CountdownRules()
 
@@ -66,7 +67,10 @@ final class CountdownRules {
     /// `snapshot()` call, which happens while the timer screen is laying out —
     /// a synchronous 37 KB `evaluateScript` in the middle of launch.
     static func warmUp() {
-        Task.detached(priority: .utility) {
+        Task { @MainActor in
+            // Let the first SwiftUI frame commit before evaluating the generated
+            // bundle. JavaScriptCore stays on one explicitly isolated executor.
+            await Task.yield()
             _ = CountdownRules.shared
         }
     }

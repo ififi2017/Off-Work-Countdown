@@ -7,6 +7,8 @@ struct TimerDesignView: View {
     @ObservedObject var store: OffWorkStore
     let wide: Bool
     let onOpenSettings: ((AppRoute?) -> Void)?
+    let timelineDate: Date?
+    let timelineActive: Bool
 
     @State private var showShare = false
     @State private var showOvertime = false
@@ -14,64 +16,26 @@ struct TimerDesignView: View {
     init(
         store: OffWorkStore,
         wide: Bool,
-        onOpenSettings: ((AppRoute?) -> Void)? = nil
+        onOpenSettings: ((AppRoute?) -> Void)? = nil,
+        timelineDate: Date? = nil,
+        timelineActive: Bool = true
     ) {
         self.store = store
         self.wide = wide
         self.onOpenSettings = onOpenSettings
+        self.timelineDate = timelineDate
+        self.timelineActive = timelineActive
     }
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { timeline in
-            Group {
-                if !store.countdownStarted {
-                    ShiftSetupDesignView(store: store, onOpenSettings: openSettings)
-                } else if let snapshot = store.snapshot(at: timeline.date) {
-                    if !snapshot.isWorkday && !store.forceToday {
-                        RestDayDesignView(
-                            store: store,
-                            snapshot: snapshot,
-                            onOpenSettings: openSettings
-                        )
-                    } else if snapshot.remainingMs <= 0 {
-                        CompletedShiftDesignView(
-                            store: store,
-                            snapshot: snapshot,
-                            showShare: $showShare
-                        )
-                    } else if snapshot.activeBreakEndAtMs != nil {
-                        LunchBreakDesignView(
-                            store: store,
-                            snapshot: snapshot,
-                            now: timeline.date,
-                            showShare: $showShare,
-                            showOvertime: $showOvertime
-                        )
-                    } else if snapshot.overtimeEndAtMs != nil,
-                              snapshot.plannedEndAtMs <= timeline.date.timeIntervalSince1970 * 1_000 {
-                        OvertimeDesignView(
-                            store: store,
-                            snapshot: snapshot,
-                            now: timeline.date,
-                            showShare: $showShare,
-                            showOvertime: $showOvertime
-                        )
-                    } else {
-                        RunningTimerDesignView(
-                            store: store,
-                            snapshot: snapshot,
-                            now: timeline.date,
-                            showShare: $showShare,
-                            showOvertime: $showOvertime
-                        )
-                    }
-                } else {
-                    rulesError
+        Group {
+            if let timelineDate {
+                timerContent(at: timelineDate)
+            } else {
+                TimelineView(.periodic(from: .now, by: timelineActive ? 1 : 86_400)) { timeline in
+                    timerContent(at: timeline.date)
                 }
             }
-            .frame(maxWidth: wide ? 680 : 402)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(OWCDesign.page)
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
@@ -100,6 +64,59 @@ struct TimerDesignView: View {
         }
     }
 
+    @ViewBuilder
+    private func timerContent(at date: Date) -> some View {
+        Group {
+            if !store.countdownStarted {
+                    ShiftSetupDesignView(store: store, onOpenSettings: openSettings)
+                } else if let snapshot = store.snapshot(at: date) {
+                    if !snapshot.isWorkday && !store.forceToday {
+                        RestDayDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            onOpenSettings: openSettings
+                        )
+                    } else if snapshot.remainingMs <= 0 {
+                        CompletedShiftDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            showShare: $showShare
+                        )
+                    } else if snapshot.activeBreakEndAtMs != nil {
+                        LunchBreakDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            now: date,
+                            showShare: $showShare,
+                            showOvertime: $showOvertime
+                        )
+                    } else if snapshot.overtimeEndAtMs != nil,
+                              snapshot.plannedEndAtMs <= date.timeIntervalSince1970 * 1_000 {
+                        OvertimeDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            now: date,
+                            showShare: $showShare,
+                            showOvertime: $showOvertime
+                        )
+                    } else {
+                        RunningTimerDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            now: date,
+                            showShare: $showShare,
+                            showOvertime: $showOvertime
+                        )
+                    }
+                } else {
+                    rulesError
+                }
+        }
+        .frame(maxWidth: wide ? 680 : 402)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(OWCDesign.page)
+    }
+
     private func openSettings(_ route: AppRoute?) {
         if let onOpenSettings {
             onOpenSettings(route)
@@ -113,7 +130,7 @@ struct TimerDesignView: View {
         VStack(spacing: 14) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 28))
-            Text(store.lastRulesError ?? "Countdown rules unavailable")
+            Text(store.t("countdownRulesUnavailable"))
                 .font(.system(size: 15))
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
@@ -457,18 +474,14 @@ private struct RunningTimerDesignView: View {
                             .padding(.top, 7)
                             .animation(.linear(duration: 0.9), value: snapshot.progress)
 
-                        summaryCard
-                            .padding(.horizontal, OWCDesign.pageInset)
-                            .padding(.top, 30)
-
-                        if store.scheduleMode != .off {
-                            Text(store.t("summaryEstimateNote"))
-                                .font(.system(size: 13))
-                                .foregroundStyle(OWCDesign.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 36)
-                                .padding(.top, 8)
+                        VStack(alignment: .leading, spacing: 0) {
+                            if store.scheduleMode != .off {
+                                OWCSectionHeader(title: store.t("summaryEstimateNote"))
+                            }
+                            summaryCard
                         }
+                        .padding(.horizontal, OWCDesign.pageInset)
+                        .padding(.top, 30)
 
                         VStack(alignment: .leading, spacing: 0) {
                             OWCSectionHeader(title: store.t("comingUp"))
