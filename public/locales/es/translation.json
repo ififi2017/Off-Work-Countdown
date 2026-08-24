@@ -166,6 +166,7 @@
   "lunchStartTime": "Inicio",
   "lunchDuration": "Duración",
   "minutesShort": "{{count}} min",
+  "minutesUnit": "min",
   "lunchEndReminder": "Avisarme al terminar",
   "lunchPauseNote": "La cuenta atrás, el progreso y las ganancias se pausan durante la comida.",
   "lunchStartNotification": "Empieza la pausa. La cuenta atrás está pausada.",

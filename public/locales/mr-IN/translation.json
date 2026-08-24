@@ -166,6 +166,7 @@
   "lunchStartTime": "सुरुवात",
   "lunchDuration": "कालावधी",
   "minutesShort": "{{count}} मिनिटे",
+  "minutesUnit": "मिनिटे",
   "lunchEndReminder": "सुट्टी संपल्यावर आठवण",
   "lunchPauseNote": "दुपारच्या सुट्टीत काउंटडाउन, प्रगती आणि कमाई थांबते.",
   "lunchStartNotification": "दुपारची सुट्टी सुरू झाली. काउंटडाउन थांबवले आहे.",

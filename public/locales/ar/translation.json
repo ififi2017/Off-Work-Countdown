@@ -166,6 +166,7 @@
   "lunchStartTime": "البدء",
   "lunchDuration": "المدة",
   "minutesShort": "{{count}} د",
+  "minutesUnit": "د",
   "lunchEndReminder": "ذكّرني عند انتهائها",
   "lunchPauseNote": "يتوقف العد والتقدم والأرباح أثناء الغداء.",
   "lunchStartNotification": "بدأت استراحة الغداء. تم إيقاف العد مؤقتًا.",

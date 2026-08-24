@@ -166,6 +166,7 @@
   "lunchStartTime": "Starts",
   "lunchDuration": "Duration",
   "minutesShort": "{{count}} min",
+  "minutesUnit": "min",
   "lunchEndReminder": "Remind me when lunch ends",
   "lunchPauseNote": "Countdown, progress and earnings pause during lunch.",
   "lunchStartNotification": "Lunch has started. Your countdown is paused.",

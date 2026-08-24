@@ -166,6 +166,7 @@
   "lunchStartTime": "Başlangıç",
   "lunchDuration": "Süre",
   "minutesShort": "{{count}} dk",
+  "minutesUnit": "dk",
   "lunchEndReminder": "Mola bitince hatırlat",
   "lunchPauseNote": "Öğle molasında geri sayım, ilerleme ve kazanç duraklar.",
   "lunchStartNotification": "Öğle molası başladı. Geri sayım duraklatıldı.",

@@ -166,6 +166,7 @@
   "lunchStartTime": "Mulai",
   "lunchDuration": "Durasi",
   "minutesShort": "{{count}} mnt",
+  "minutesUnit": "mnt",
   "lunchEndReminder": "Ingatkan saat selesai",
   "lunchPauseNote": "Hitung mundur, progres, dan pendapatan dijeda saat makan siang.",
   "lunchStartNotification": "Istirahat makan siang dimulai. Hitung mundur dijeda.",

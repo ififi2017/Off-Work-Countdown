@@ -166,6 +166,7 @@
   "lunchStartTime": "开始时间",
   "lunchDuration": "时长",
   "minutesShort": "{{count}} 分钟",
+  "minutesUnit": "分钟",
   "lunchEndReminder": "午休结束时提醒我",
   "lunchPauseNote": "午休期间倒计时、进度和今日已赚都会暂停。",
   "lunchStartNotification": "午休开始啦，倒计时已暂停。",

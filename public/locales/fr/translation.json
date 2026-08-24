@@ -166,6 +166,7 @@
   "lunchStartTime": "Début",
   "lunchDuration": "Durée",
   "minutesShort": "{{count}} min",
+  "minutesUnit": "min",
   "lunchEndReminder": "Me prévenir à la fin",
   "lunchPauseNote": "Le compte à rebours, la progression et les gains sont en pause pendant le déjeuner.",
   "lunchStartNotification": "La pause déjeuner commence. Le compte à rebours est en pause.",

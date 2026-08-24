@@ -159,6 +159,13 @@ import { startSecondTick } from "@/lib/second-tick";
 /** 下班前多久提醒。与 translation.json 里 "reminder" 的文案保持一致。 */
 const REMINDER_LEAD_MS = 15 * 60 * 1000;
 const notificationPrimerStorageKey = "desktopNotificationPrimerSeen";
+const DEFAULT_LUNCH_DURATION_MINUTES = 60;
+
+function parseLunchDurationMinutes(value: string): number | null {
+  if (!/^\d+$/.test(value)) return null;
+  const minutes = Number(value);
+  return Number.isSafeInteger(minutes) && minutes > 0 ? minutes : null;
+}
 
 const formatCountdownClock = (durationMs: number) => {
   const totalSeconds = Math.max(0, Math.ceil(durationMs / 1000));
@@ -428,7 +435,14 @@ export function OffWorkCountdown({
   const activeShiftRef = useRef<ShiftTimeline | null>(null);
   const [lunchEnabled, setLunchEnabled] = useState(false);
   const [lunchStartTime, setLunchStartTime] = useState("12:00");
-  const [lunchDurationMinutes, setLunchDurationMinutes] = useState(60);
+  // 输入文本与已生效的分钟数分开保存：用户清空旧值准备重输时，当前班次仍
+  // 使用最后一个合法值，不会在输入过程中短暂写入 0 或 NaN。
+  const [lunchDurationMinutes, setLunchDurationMinutes] = useState(
+    DEFAULT_LUNCH_DURATION_MINUTES
+  );
+  const [lunchDurationInput, setLunchDurationInput] = useState(
+    String(DEFAULT_LUNCH_DURATION_MINUTES)
+  );
   const [lunchStartNotificationEnabled, setLunchStartNotificationEnabled] =
     useState(true);
   const [lunchEndNotificationEnabled, setLunchEndNotificationEnabled] =
@@ -670,14 +684,16 @@ export function OffWorkCountdown({
       setHideEarnings(getLocalStorageItem("hideEarnings", "false") === "true");
       setLunchEnabled(getLocalStorageItem("lunchEnabled", "false") === "true");
       setLunchStartTime(getLocalStorageItem("lunchStartTime", "12:00"));
-      const storedLunchDuration = Number(
-        getLocalStorageItem("lunchDurationMinutes", "60")
+      const storedLunchDuration = parseLunchDurationMinutes(
+        getLocalStorageItem(
+          "lunchDurationMinutes",
+          String(DEFAULT_LUNCH_DURATION_MINUTES)
+        )
       );
-      setLunchDurationMinutes(
-        Number.isFinite(storedLunchDuration) && storedLunchDuration > 0
-          ? storedLunchDuration
-          : 60
-      );
+      const restoredLunchDuration =
+        storedLunchDuration ?? DEFAULT_LUNCH_DURATION_MINUTES;
+      setLunchDurationMinutes(restoredLunchDuration);
+      setLunchDurationInput(String(restoredLunchDuration));
       setLunchEndNotificationEnabled(
         getLocalStorageItem("lunchEndNotificationEnabled", "false") === "true"
       );
@@ -1043,9 +1059,10 @@ export function OffWorkCountdown({
           setLunchStartTime(newValue);
           break;
         case "lunchDurationMinutes": {
-          const minutes = Number(newValue);
-          if (Number.isFinite(minutes) && minutes > 0) {
+          const minutes = parseLunchDurationMinutes(newValue);
+          if (minutes !== null) {
             setLunchDurationMinutes(minutes);
+            setLunchDurationInput(String(minutes));
           }
           break;
         }
@@ -3579,28 +3596,45 @@ export function OffWorkCountdown({
                             }
                           />
                           <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-500 dark:text-gray-400">
+                            <Label
+                              htmlFor="lunch-duration-minutes"
+                              className="text-xs text-gray-500 dark:text-gray-400"
+                            >
                               {t("lunchDuration")}
                             </Label>
-                            <Select
-                              value={String(lunchDurationMinutes)}
-                              onValueChange={(value) =>
-                                setLunchDurationMinutes(Number(value))
-                              }
+                            <div
+                              dir="ltr"
+                              className="flex h-9 overflow-hidden rounded-xl border border-input bg-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
                             >
-                              <SelectTrigger className="h-9 rounded-xl bg-background">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {/* 国内午休两小时很常见（12:00–14:00），
-                                    120 比 45 更该出现在这个列表里。 */}
-                                {[30, 60, 90, 120].map((minutes) => (
-                                  <SelectItem key={minutes} value={String(minutes)}>
-                                    {t("minutesShort", { count: minutes })}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              <input
+                                id="lunch-duration-minutes"
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                value={lunchDurationInput}
+                                onChange={(event) => {
+                                  const value = event.target.value;
+                                  if (!/^\d*$/.test(value)) return;
+                                  setLunchDurationInput(value);
+                                  const minutes = parseLunchDurationMinutes(value);
+                                  if (minutes !== null) {
+                                    setLunchDurationMinutes(minutes);
+                                  }
+                                }}
+                                onBlur={() =>
+                                  setLunchDurationInput(
+                                    String(lunchDurationMinutes)
+                                  )
+                                }
+                                className="min-w-0 flex-1 bg-transparent px-3 text-sm tabular-nums outline-none dark:text-white"
+                              />
+                              <span
+                                aria-hidden="true"
+                                className="flex shrink-0 items-center border-l border-input px-2 text-xs text-gray-500 dark:text-gray-400"
+                              >
+                                {t("minutesUnit")}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center justify-between gap-3">

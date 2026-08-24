@@ -166,6 +166,7 @@
   "lunchStartTime": "เริ่ม",
   "lunchDuration": "ระยะเวลา",
   "minutesShort": "{{count}} นาที",
+  "minutesUnit": "นาที",
   "lunchEndReminder": "เตือนเมื่อพักเสร็จ",
   "lunchPauseNote": "เวลานับถอยหลัง ความคืบหน้า และรายได้จะหยุดระหว่างพักกลางวัน",
   "lunchStartNotification": "เริ่มพักกลางวันแล้ว ตัวนับหยุดชั่วคราว",

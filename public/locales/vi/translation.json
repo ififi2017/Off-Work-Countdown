@@ -166,6 +166,7 @@
   "lunchStartTime": "Bắt đầu",
   "lunchDuration": "Thời lượng",
   "minutesShort": "{{count}} phút",
+  "minutesUnit": "phút",
   "lunchEndReminder": "Nhắc khi hết giờ nghỉ",
   "lunchPauseNote": "Đếm ngược, tiến độ và thu nhập tạm dừng trong giờ nghỉ trưa.",
   "lunchStartNotification": "Đã đến giờ nghỉ trưa. Đếm ngược tạm dừng.",

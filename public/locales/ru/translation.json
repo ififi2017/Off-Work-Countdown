@@ -166,6 +166,7 @@
   "lunchStartTime": "Начало",
   "lunchDuration": "Длительность",
   "minutesShort": "{{count}} мин",
+  "minutesUnit": "мин",
   "lunchEndReminder": "Напомнить об окончании",
   "lunchPauseNote": "На обеде таймер, прогресс и заработок приостанавливаются.",
   "lunchStartNotification": "Начался обед. Таймер приостановлен.",

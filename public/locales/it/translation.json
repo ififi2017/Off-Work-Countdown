@@ -166,6 +166,7 @@
   "lunchStartTime": "Inizio",
   "lunchDuration": "Durata",
   "minutesShort": "{{count}} min",
+  "minutesUnit": "min",
   "lunchEndReminder": "Avvisami alla fine",
   "lunchPauseNote": "Conto alla rovescia, avanzamento e guadagni si fermano durante il pranzo.",
   "lunchStartNotification": "Inizia la pausa pranzo. Il conto alla rovescia è in pausa.",

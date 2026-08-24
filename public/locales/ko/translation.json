@@ -166,6 +166,7 @@
   "lunchStartTime": "시작 시간",
   "lunchDuration": "시간",
   "minutesShort": "{{count}}분",
+  "minutesUnit": "분",
   "lunchEndReminder": "점심시간 종료 알림",
   "lunchPauseNote": "점심시간에는 카운트다운, 진행률, 수입이 일시 정지됩니다.",
   "lunchStartNotification": "점심시간이 시작되어 카운트다운을 일시 정지했습니다.",

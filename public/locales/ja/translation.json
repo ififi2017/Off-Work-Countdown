@@ -166,6 +166,7 @@
   "lunchStartTime": "開始時刻",
   "lunchDuration": "時間",
   "minutesShort": "{{count}}分",
+  "minutesUnit": "分",
   "lunchEndReminder": "昼休み終了時に通知",
   "lunchPauseNote": "昼休み中はカウントダウン、進捗、収益が停止します。",
   "lunchStartNotification": "昼休みです。カウントダウンを一時停止しました。",
