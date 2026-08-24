@@ -75,11 +75,20 @@ final class WidgetSnapshotPublisher {
             // A configured schedule is enough to know when work starts again,
             // so the widget counts down to it rather than sitting on "not
             // started" until the user opens the app and presses a button.
-            if store.scheduleMode != .off,
-               let nextStart = shift?.nextShiftStartAtMs ?? shift.map({ $0.startAtMs }) {
-                let target = Int64(nextStart)
-                if target > nowMs {
-                    return countdownToNextShift(store: store, target: target, nowMs: nowMs)
+            if store.scheduleMode != .off, let shift {
+                // `nextShiftStartAtMs` is deliberately searched after this
+                // shift ends. Before today's shift starts that makes it point
+                // at tomorrow (or later), so prefer today's valid future start.
+                let currentStart = Int64(shift.startAtMs)
+                if shift.isWorkday, currentStart > nowMs {
+                    return countdownToNextShift(store: store, target: currentStart, nowMs: nowMs)
+                }
+
+                if let nextStart = shift.nextShiftStartAtMs {
+                    let target = Int64(nextStart)
+                    if target > nowMs {
+                        return countdownToNextShift(store: store, target: target, nowMs: nowMs)
+                    }
                 }
             }
             return WidgetSnapshot(

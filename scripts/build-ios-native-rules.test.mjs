@@ -98,4 +98,32 @@ describe("iOS native rule bundle", () => {
     expect(summary.days).toBeGreaterThan(3);
     expect(summary.hours).toBeGreaterThan(24);
   });
+
+  it("distinguishes a future shift today from the following shift", () => {
+    const context = { console };
+    vm.createContext(context);
+    vm.runInContext(createIOSNativeRulesBundle(), context);
+
+    const mondayBeforeWork = new Date(2026, 7, 24, 1, 0);
+    const mondayStart = new Date(2026, 7, 24, 9, 0);
+    const tuesdayStart = new Date(2026, 7, 25, 9, 0);
+    const snapshot = JSON.parse(context.OWCNative.snapshot(JSON.stringify({
+      startTime: "09:00",
+      endTime: "17:00",
+      nowMs: mondayBeforeWork.getTime(),
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" },
+      breakStartTime: null,
+      breakDurationMinutes: 0,
+      overtimeEndAtMs: null,
+      salaryAmount: "",
+      salaryType: "monthly",
+      monthlyWorkingDays: 22,
+      annualBonusMonths: 0,
+    })));
+
+    expect(snapshot.isWorkday).toBe(true);
+    expect(snapshot.startAtMs).toBe(mondayStart.getTime());
+    expect(snapshot.nextShiftStartAtMs).toBe(tuesdayStart.getTime());
+  });
 });
