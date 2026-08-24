@@ -338,7 +338,27 @@ public struct OffWorkCountdownWidgetView: View {
         .background(phaseColor(snapshotEntry.phase).opacity(0.12), in: Capsule())
     }
 
+    @ViewBuilder
     private func smallContent(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+        #if os(iOS)
+        // Home Screen widgets receive the same precomputed interval as the
+        // accessory widget. Project only its presentation once a minute so the
+        // bar does not freeze at the percentage captured when the app closed.
+        TimelineView(.periodic(from: entry.date, by: 60)) { timeline in
+            smallContentBody(
+                snapshotEntry,
+                progress: projectedProgress(snapshotEntry, at: timeline.date)
+            )
+        }
+        #else
+        smallContentBody(snapshotEntry, progress: snapshotEntry.progressAtDate)
+        #endif
+    }
+
+    private func smallContentBody(
+        _ snapshotEntry: WidgetTimelineEntry,
+        progress: Double
+    ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             header(compact: true)
             Spacer(minLength: 7)
@@ -346,10 +366,10 @@ public struct OffWorkCountdownWidgetView: View {
             Spacer(minLength: 6)
             countdown(for: snapshotEntry, size: 33)
             Spacer(minLength: 7)
-            progressBar(snapshotEntry.progressAtDate)
+            progressBar(progress)
             Spacer(minLength: 5)
             HStack(spacing: 6) {
-                Text("\(roundedProgress(snapshotEntry.progressAtDate))%")
+                Text("\(roundedProgress(progress))%")
                     .font(.caption2.weight(.bold).monospacedDigit())
                     .foregroundStyle(accentColor)
                 Spacer(minLength: 4)
@@ -358,7 +378,26 @@ public struct OffWorkCountdownWidgetView: View {
         }
     }
 
+    @ViewBuilder
     private func mediumContent(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+        #if os(iOS)
+        // Keep the macOS branch snapshot-driven; its host refresh lifecycle is
+        // different and this issue is specific to iOS Home Screen widgets.
+        TimelineView(.periodic(from: entry.date, by: 60)) { timeline in
+            mediumContentBody(
+                snapshotEntry,
+                progress: projectedProgress(snapshotEntry, at: timeline.date)
+            )
+        }
+        #else
+        mediumContentBody(snapshotEntry, progress: snapshotEntry.progressAtDate)
+        #endif
+    }
+
+    private func mediumContentBody(
+        _ snapshotEntry: WidgetTimelineEntry,
+        progress: Double
+    ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             header(compact: false)
             Spacer(minLength: 9)
@@ -370,7 +409,7 @@ public struct OffWorkCountdownWidgetView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                progressRing(snapshotEntry.progressAtDate)
+                progressRing(progress)
             }
         }
     }
