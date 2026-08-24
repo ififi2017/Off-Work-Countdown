@@ -178,7 +178,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = 3.1.6;
+				MARKETING_VERSION = 3.1.7;
 				OWC_APP_GROUP_IDENTIFIER = group.com.rainif.offworkcountdown.macappstore;
 				OWC_WIDGET_STORAGE_MODE = app-group;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.widget;
@@ -206,7 +206,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = 3.1.6;
+				MARKETING_VERSION = 3.1.7;
 				OWC_APP_GROUP_IDENTIFIER = group.com.rainif.offworkcountdown.macappstore;
 				OWC_WIDGET_STORAGE_MODE = app-group;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rainif.offworkcountdown.macappstore.widget;
