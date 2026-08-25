@@ -212,7 +212,6 @@ struct SalaryDesignView: View {
     /// method holds that same struct. `@State` reads through its storage box,
     /// so it is current.
     @State private var lockGeneration = 0
-    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -223,27 +222,36 @@ struct SalaryDesignView: View {
             }
         }
         .task { await unlock() }
-        // Re-lock whenever the app stops being frontmost. The page used to stay
-        // unlocked for as long as it sat on the navigation stack — `unlocked`
-        // only ever moved to `true` — so coming back from the app switcher, or
-        // handing the phone over, showed the salary with no second look at who
-        // was holding it.
-        .onChange(of: scenePhase) { _, phase in
-            guard phase != .active else { return }
-
-            // Hide on either non-active phase: the app switcher shows the scene
-            // live at `.inactive`, before any snapshot is taken.
+        // Hide on UIKit's event, not on `scenePhase`.
+        //
+        // `scenePhase` is a derived value and it lags. Measured on device: for
+        // a second or two after Face ID succeeds the page is visible and fully
+        // interactive while SwiftUI still reports `.inactive` — it never
+        // reported `.active` in between. Opening the app switcher in that
+        // window therefore produced no phase change at all, nothing re-locked,
+        // and the salary went into the thumbnail. Wait those two seconds first
+        // and the same gesture hides it correctly, which is the tell: the
+        // handler was fine, the signal was late.
+        //
+        // `willResignActive` fires on the gesture itself, whatever SwiftUI
+        // currently believes the phase to be.
+        .onReceive(NotificationCenter.default.publisher(
+            for: UIApplication.willResignActiveNotification
+        )) { _ in
             unlocked = false
             focusedField = nil
-
-            // Void only on `.background`. The biometric prompt deactivates the
-            // scene by itself, so voiding at `.inactive` retired the very
-            // authentication the user was in the middle of passing. Background
-            // is the one phase the prompt does not cause, and the one where its
-            // result can no longer be attributed to whoever holds the phone.
-            if phase == .background {
-                lockGeneration += 1
-            }
+        }
+        // Backgrounding additionally voids an authentication still in flight:
+        // its result can no longer be attributed to whoever holds the phone.
+        // Kept separate from resigning active, because the biometric prompt
+        // resigns active by itself and voiding there would retire the very
+        // authentication the user is in the middle of passing.
+        .onReceive(NotificationCenter.default.publisher(
+            for: UIApplication.didEnterBackgroundNotification
+        )) { _ in
+            unlocked = false
+            focusedField = nil
+            lockGeneration += 1
         }
     }
 
