@@ -223,22 +223,32 @@ struct SalaryDesignView: View {
             }
         }
         .task { await unlock() }
-        // Re-lock the moment the app stops being frontmost. Without this the
-        // page stayed unlocked for as long as it sat on the navigation stack:
-        // `unlocked` only ever moved to `true`, so coming back from the app
-        // switcher — or handing the phone over — showed the salary with no
-        // second look at who is holding it.
-        //
-        // `.inactive`, not `.background`. That is the phase iOS moves through
-        // before it takes the app-switcher snapshot, so the locked view is what
-        // gets photographed. Waiting for `.background` would put the figures in
-        // that thumbnail, where they stay visible to anyone flicking through
-        // open apps.
+        // Re-lock whenever the app stops being frontmost. The page used to stay
+        // unlocked for as long as it sat on the navigation stack — `unlocked`
+        // only ever moved to `true` — so coming back from the app switcher, or
+        // handing the phone over, showed the salary with no second look at who
+        // was holding it.
         .onChange(of: scenePhase) { _, phase in
             guard phase != .active else { return }
-            lockGeneration += 1
+            // Hiding and voiding are two different decisions, and conflating
+            // them locked the page out of its own key.
+            //
+            // Hide on either phase. The app-switcher preview is live before the
+            // snapshot is taken and both happen at `.inactive`, so waiting for
+            // `.background` would show the figures on the way out.
             unlocked = false
             focusedField = nil
+
+            // Void only on `.background`. The biometric prompt deactivates the
+            // scene by itself, so bumping the generation here retired the very
+            // authentication the user was in the middle of passing — the guard
+            // in `unlock()` then rejected every success and the page could
+            // never be unlocked at all on a device that actually prompts.
+            //
+            // Backgrounding genuinely is a reason to void: it is also the one
+            // case where the prompt's own result can no longer be trusted to
+            // belong to whoever is now holding the phone.
+            if phase == .background { lockGeneration += 1 }
         }
     }
 
@@ -309,11 +319,10 @@ struct SalaryDesignView: View {
         biometryBlocked = BiometricGate.isBiometryBlocked
         let generation = lockGeneration
         let confirmed = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
-        // Presenting the biometric prompt is itself enough to deactivate the
-        // scene, and the app can be sent to the background while it stands. The
-        // re-lock then runs first and this line used to undo it — unlocking a
-        // page nobody is looking at, in time to be photographed for the app
-        // switcher. Anything that re-locked while we were suspended wins.
+        // Anything that voided this attempt while it was suspended wins: the
+        // app went to the background with the prompt up, so the result can no
+        // longer be said to belong to whoever is holding the phone now.
+        // Deactivation alone does not count — see the phase handler above.
         guard generation == lockGeneration else { return }
         unlocked = confirmed
     }
