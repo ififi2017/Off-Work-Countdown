@@ -16,19 +16,19 @@ import type { MacAppStoreDialogCopy } from "@/lib/server/content";
 import { track } from "@/lib/track";
 import { cn } from "@/lib/utils";
 
-interface MacAppStorePurchaseDialogProps {
+interface MacAppStoreDialogProps {
   copy: MacAppStoreDialogCopy;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  freeVersionHref?: string;
+  directInstallersHref?: string;
 }
 
-export function MacAppStorePurchaseDialog({
+export function MacAppStoreDialog({
   copy,
   open,
   onOpenChange,
-  freeVersionHref,
-}: MacAppStorePurchaseDialogProps) {
+  directInstallersHref,
+}: MacAppStoreDialogProps) {
   const router = useRouter();
   const [isMacOS, setIsMacOS] = useState(false);
 
@@ -102,20 +102,20 @@ export function MacAppStorePurchaseDialog({
 
         <div className="mx-6 mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
           <p className="text-lg font-semibold tracking-tight">
-            {copy.macAppStorePriceLabel}
+            {copy.macAppStoreFreeLabel}
           </p>
           <p className="mt-1 text-sm leading-6">
-            {copy.macAppStoreSupportNote}
+            {copy.macAppStoreRecommendationNote}
           </p>
         </div>
 
         <div className="flex flex-col-reverse gap-2.5 px-6 pb-6 pt-5 sm:flex-row sm:justify-end">
-          {freeVersionHref ? (
+          {directInstallersHref ? (
             <button
               type="button"
               onClick={() => {
                 onOpenChange(false);
-                router.push(freeVersionHref);
+                router.push(directInstallersHref);
               }}
               className={cn(buttonVariants({ variant: "outline" }), "min-h-11")}
             >
