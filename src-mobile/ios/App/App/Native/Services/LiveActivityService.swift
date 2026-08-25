@@ -7,7 +7,25 @@ final class LiveActivityService {
     private(set) var lastError: String?
     private var completionTask: Task<Void, Never>?
 
+    /// Which call owns the activity right now.
+    ///
+    /// `end` and `reschedule` both suspend while ActivityKit works, and the
+    /// countdown can be stopped and restarted across those suspensions. Without
+    /// a token the interleaving below lost the new session's activity outright:
+    ///
+    /// 1. the stop task passes its cancellation check and starts ending;
+    /// 2. `activity.end()` suspends, and the user restarts;
+    /// 3. the new task finds the not-yet-ended activity and updates it;
+    /// 4. the old `end()` lands, and the restarted session has nothing.
+    ///
+    /// Cancelling the enclosing `Task` cannot fix this on its own — cancellation
+    /// is cooperative and the `end()` was already in flight. Every awaited step
+    /// re-checks that it is still the owner instead.
+    private var lifecycleGeneration = 0
+
     func reschedule(store: OffWorkStore, now: Date = .now) async {
+        lifecycleGeneration += 1
+        let generation = lifecycleGeneration
         guard store.countdownStarted else {
             recordDebugStatus("countdown-not-started")
             await endAll()
@@ -62,17 +80,27 @@ final class LiveActivityService {
         }
         if let existing = matching.first {
             await existing.update(content)
+            guard generation == lifecycleGeneration else { return }
             for duplicate in matching.dropFirst() {
                 await duplicate.end(content, dismissalPolicy: .immediate)
+                guard generation == lifecycleGeneration else { return }
             }
-            recordDebugStatus("updated:\(existing.activityState)")
-            scheduleCompletion(store: store, snapshot: snapshot)
-            return
+            // An `end()` already in flight when the update landed can still take
+            // this activity down afterwards; the token cannot recall a call that
+            // has left. If that happened, fall through and request a fresh one
+            // rather than hand the session an activity that is on its way out.
+            if existing.activityState != .ended, existing.activityState != .dismissed {
+                recordDebugStatus("updated:\(existing.activityState)")
+                scheduleCompletion(store: store, snapshot: snapshot)
+                return
+            }
         }
 
         for stale in Activity<OffWorkActivityAttributes>.activities {
+            guard generation == lifecycleGeneration else { return }
             await stale.end(nil, dismissalPolicy: .immediate)
         }
+        guard generation == lifecycleGeneration else { return }
 
         do {
             if scheduledStart > now {
@@ -105,8 +133,13 @@ final class LiveActivityService {
     }
 
     func endAll() async {
+        lifecycleGeneration += 1
+        let generation = lifecycleGeneration
         completionTask?.cancel()
         for activity in Activity<OffWorkActivityAttributes>.activities {
+            // A restart during the previous `end()` has already claimed the
+            // token; whatever it put on screen is newer than this teardown.
+            guard generation == lifecycleGeneration else { return }
             await activity.end(nil, dismissalPolicy: .immediate)
         }
     }

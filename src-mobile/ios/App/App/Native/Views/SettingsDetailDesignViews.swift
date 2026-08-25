@@ -1,3 +1,4 @@
+import ActivityKit
 import SwiftUI
 
 struct ScheduleSettingsView: View {
@@ -204,6 +205,13 @@ struct SalaryDesignView: View {
     /// Sampled alongside each unlock attempt rather than read in `body`, which
     /// would build an `LAContext` on every render.
     @State private var biometryBlocked = false
+    /// Bumped by every re-lock, so an authentication that resolves afterwards
+    /// can tell it has been overtaken. `@State` and not `scenePhase`: an
+    /// `@Environment` value is resolved into the view struct when `body` runs,
+    /// and an `async` method that suspends holds that same struct — reading
+    /// `scenePhase` after an `await` reads the phase from before it. `@State`
+    /// reads through its storage box, so it is current.
+    @State private var lockGeneration = 0
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -228,6 +236,7 @@ struct SalaryDesignView: View {
         // open apps.
         .onChange(of: scenePhase) { _, phase in
             guard phase != .active else { return }
+            lockGeneration += 1
             unlocked = false
             focusedField = nil
         }
@@ -298,7 +307,15 @@ struct SalaryDesignView: View {
     private func unlock() async {
         guard !unlocked else { return }
         biometryBlocked = BiometricGate.isBiometryBlocked
-        unlocked = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
+        let generation = lockGeneration
+        let confirmed = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
+        // Presenting the biometric prompt is itself enough to deactivate the
+        // scene, and the app can be sent to the background while it stands. The
+        // re-lock then runs first and this line used to undo it — unlocking a
+        // page nobody is looking at, in time to be photographed for the app
+        // switcher. Anything that re-locked while we were suspended wins.
+        guard generation == lockGeneration else { return }
+        unlocked = confirmed
     }
 
     private var content: some View {
@@ -513,6 +530,17 @@ struct NotificationDesignView: View {
     @Bindable var store: OffWorkStore
     @Environment(NotificationService.self) private var notifications
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
+
+    /// The system's own Live Activities switch, which is not the notification
+    /// permission and can be turned off on its own.
+    ///
+    /// Sampled rather than read in `body` for the same reason `biometryBlocked`
+    /// is, and refreshed on the way back from Settings, which is where it
+    /// changes. The page used to state "allowed" and draw a checkmark
+    /// unconditionally while `LiveActivityService` quietly bailed out on the
+    /// real value — so the toggle moved and nothing ever appeared.
+    @State private var activitiesEnabled = true
 
     var body: some View {
         Group {
@@ -523,6 +551,12 @@ struct NotificationDesignView: View {
             }
         }
         .background(OWCDesign.page)
+        .task { activitiesEnabled = ActivityAuthorizationInfo().areActivitiesEnabled }
+        // Coming back from Settings is exactly when this changes.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            activitiesEnabled = ActivityAuthorizationInfo().areActivitiesEnabled
+        }
         .navigationTitle(store.t("offWorkReminder"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar(.visible, for: .navigationBar)
@@ -636,9 +670,11 @@ struct NotificationDesignView: View {
                             .foregroundStyle(OWCDesign.orangeDeep)
                     }
                     OWCRow(title: store.t("liveActivity")) {
-                        Text(store.t("notificationAllowedStatus"))
+                        Text(store.t(activitiesEnabled
+                                     ? "notificationAllowedStatus"
+                                     : "notificationDeniedStatus"))
                             .font(.body)
-                            .foregroundStyle(OWCDesign.secondary)
+                            .foregroundStyle(activitiesEnabled ? OWCDesign.secondary : OWCDesign.orangeDeep)
                     }
                     OWCRow(title: store.t("notificationScheduledForShift"), isLast: true) {
                         Text("0 / 0")
@@ -656,9 +692,9 @@ struct NotificationDesignView: View {
                 OWCSectionHeader(title: store.t("notificationStillWorks"))
                 OWCGroupCard {
                     OWCRow(icon: "rectangle.inset.filled", title: store.t("lockScreenLiveActivity")) {
-                        Image(systemName: "checkmark")
+                        Image(systemName: activitiesEnabled ? "checkmark" : "xmark")
                             .font(.headline)
-                            .foregroundStyle(OWCDesign.orange)
+                            .foregroundStyle(activitiesEnabled ? OWCDesign.orange : OWCDesign.secondary)
                     }
                     OWCRow(icon: "square.grid.2x2", title: store.t("notificationHomeWidget"), isLast: true) {
                         Image(systemName: "checkmark")
