@@ -96,6 +96,7 @@
   "futureStartTimeError": "Shift baru mulai {{hours}} jam {{minutes}} menit lagi, jadi belum ada yang bisa dihitung mundur. Majukan jam masuk kalau mau mulai sekarang.",
   "sameTimeError": "Jam masuk dan jam pulang sama, jadi tidak ada durasi shift yang bisa dihitung. Ubah salah satunya.",
   "chooselanguage": "Pilih bahasa",
+  "languageFooter": "Ini hanya mengubah bahasa di dalam aplikasi. Nama di Layar Utama dan dialog sistem tetap mengikuti bahasa perangkat.",
   "offlineStatus": "Offline — hitung mundur tetap jalan",
   "light": "Terang",
   "dark": "Gelap",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Aktifkan perlindungan Face ID",
   "onboardingReadyBody": "Itu saja. Atur jam kerja dan hitung mundur dimulai.",
   "onboardingStartSetup": "Atur hitung mundur",
-  "biometricsUnavailableHint": "Biometrik tidak tersedia — buka Pengaturan",
+  "biometricsUnavailableHint": "Biometrik tidak tersedia — cari {{app}} di daftar aplikasi Pengaturan untuk mengaktifkan",
   "appShortName": "Waktu Pulang"
 }

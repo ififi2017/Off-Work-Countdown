@@ -249,7 +249,18 @@ struct SalaryDesignView: View {
             if biometryBlocked {
                 Link(destination: OWCSystemSettings.applicationURL) {
                     HStack(spacing: 5) {
-                        Text(store.t("biometricsUnavailableHint"))
+                        // Names the app, because `app-settings:` cannot be
+                        // trusted to land on its page: since iOS 18 reorganised
+                        // Settings the link drops the user at the root, where
+                        // third-party apps sit inside a list rather than at the
+                        // top level. The copy stops at "the app list" instead of
+                        // naming Apple's own section — that label is localised
+                        // by iOS, and guessing it in nineteen languages would be
+                        // worse than leaving it out.
+                        Text(store.t(
+                            "biometricsUnavailableHint",
+                            values: ["app": store.t("appShortName")]
+                        ))
                         Image(systemName: "arrow.up.right")
                             .font(.footnote.weight(.semibold))
                     }
@@ -903,6 +914,59 @@ struct ThemeSettingsView: View {
         Button { store.theme = theme } label: {
             OWCRow(icon: icon, textIcon: textIcon, title: title, isLast: isLast) {
                 if store.theme == theme {
+                    Image(systemName: "checkmark")
+                        .font(.headline)
+                        .foregroundStyle(OWCDesign.accent)
+                }
+            }
+        }
+        .buttonStyle(OWCRowButtonStyle())
+    }
+}
+
+
+/// The language list, mirroring the theme page: "System" first, then every
+/// language this build ships, each written in itself.
+///
+/// This page exists because the system route did not work. `chooselanguage`
+/// used to jump to `UIApplication.openSettingsURLString`, which since iOS 18
+/// drops the user at the Settings root rather than on the app's own page — and
+/// third-party apps now live two levels down under "Apps", so nobody found the
+/// language row. Nothing was wrong with the bundle: all nineteen localizations
+/// ship and iOS does offer the choice, on a page we could not navigate to.
+struct LanguageSettingsView: View {
+    @Bindable var store: OffWorkStore
+
+    var body: some View {
+        OWCContentSizedScrollView {
+            OWCGroupCard {
+                languageRow(nil, title: store.t("auto"))
+                ForEach(Array(NativeLocalizer.supportedLanguages.enumerated()), id: \.element.id) { index, language in
+                    languageRow(
+                        language.id,
+                        // Each language names itself, so somebody stranded in a
+                        // language they cannot read can still find their way out.
+                        title: language.name,
+                        isLast: index == NativeLocalizer.supportedLanguages.count - 1
+                    )
+                }
+            }
+            .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.top, 22)
+
+            settingsDetailFooter(store.t("languageFooter"))
+        }
+        .background(OWCDesign.page)
+        .navigationTitle(store.t("chooselanguage"))
+        .navigationBarTitleDisplayMode(.large)
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("chooselanguage"))
+        .sensoryFeedback(.selection, trigger: store.languageOverride)
+    }
+
+    private func languageRow(_ code: String?, title: String, isLast: Bool = false) -> some View {
+        Button { store.languageOverride = code } label: {
+            OWCRow(icon: nil, title: title, isLast: isLast) {
+                if store.languageOverride == code {
                     Image(systemName: "checkmark")
                         .font(.headline)
                         .foregroundStyle(OWCDesign.accent)

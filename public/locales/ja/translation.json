@@ -96,6 +96,7 @@
   "futureStartTimeError": "勤務開始まであと {{hours}} 時間 {{minutes}} 分あるので、まだ数えるものがありません。今すぐ始めたいときは、開始時間を早めてください。",
   "sameTimeError": "開始と終了が同じ時間なので、勤務の長さが残りません。どちらかを変えてください。",
   "chooselanguage": "言語を選択",
+  "languageFooter": "この設定はアプリ内の言語のみを変更します。ホーム画面の名称やシステムのダイアログは端末の言語に従います。",
   "offlineStatus": "オフラインです。カウントダウンはそのまま動きます",
   "light": "ライト",
   "dark": "ダーク",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Face ID 保護をオンにする",
   "onboardingReadyBody": "以上です。勤務時間を設定すればカウントダウンが始まります。",
   "onboardingStartSetup": "カウントダウンを設定",
-  "biometricsUnavailableHint": "生体認証を利用できません · 設定を開く",
+  "biometricsUnavailableHint": "生体認証を利用できません · 設定の App 一覧から「{{app}}」を開いて有効にしてください",
   "appShortName": "退勤"
 }

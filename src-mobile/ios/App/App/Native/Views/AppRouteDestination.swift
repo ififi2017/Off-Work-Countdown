@@ -7,6 +7,9 @@ struct AppRouteDestination: View {
     let route: AppRoute
     let store: OffWorkStore
 
+    // The tab bar deliberately stays up across a push, the way it does in the
+    // App Store. Detail pages owe it clearance instead — see
+    // `OWCContentSizedScrollView`.
     @ViewBuilder
     var body: some View {
         switch route {
@@ -22,6 +25,8 @@ struct AppRouteDestination: View {
             HealthReminderSettingsView(store: store)
         case .theme:
             ThemeSettingsView(store: store)
+        case .language:
+            LanguageSettingsView(store: store)
         case .about:
             AboutView(store: store)
         }

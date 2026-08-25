@@ -9,7 +9,9 @@ struct LunchBreakDesignView: View {
     let now: Date
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
-    @State private var timelineExpanded = false
+    private var timelineExpanded: Bool { store.timelineExpanded }
+    /// Where the timeline starts, i.e. how much room the content above it took.
+    @State private var timelineTop: CGFloat = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -70,15 +72,26 @@ struct LunchBreakDesignView: View {
                             store: store,
                             snapshot: snapshot,
                             now: now,
-                            isExpanded: $timelineExpanded,
-                            collapsedEventLimit: proxy.size.height < 560 ? 1 : 2
+                            isExpanded: store.timelineExpandedBinding,
+                            availableHeight: proxy.size.height - timelineTop
+                                - TimerContentSpace.bottomSlack
                         )
+                            .onGeometryChange(for: CGFloat.self) { geometry in
+                                geometry.frame(in: .named(TimerContentSpace.name)).minY
+                            } action: { top in
+                                // Expanding hides the summary card above, which
+                                // would report a taller gap than the collapsed
+                                // layout actually has. Keep the collapsed one.
+                                guard !timelineExpanded else { return }
+                                timelineTop = top
+                            }
                             .padding(.horizontal, OWCDesign.pageInset)
                             .padding(.top, 16)
 
                         Spacer(minLength: 22)
                     }
                     .frame(minHeight: proxy.size.height, alignment: .top)
+                    .coordinateSpace(.named(TimerContentSpace.name))
                 }
                 .scrollIndicators(.hidden)
                 .scrollBounceBehavior(.basedOnSize)
@@ -104,7 +117,9 @@ struct OvertimeDesignView: View {
     let now: Date
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
-    @State private var timelineExpanded = false
+    private var timelineExpanded: Bool { store.timelineExpanded }
+    /// Where the timeline starts, i.e. how much room the content above it took.
+    @State private var timelineTop: CGFloat = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -168,15 +183,26 @@ struct OvertimeDesignView: View {
                             store: store,
                             snapshot: snapshot,
                             now: now,
-                            isExpanded: $timelineExpanded,
-                            collapsedEventLimit: proxy.size.height < 560 ? 1 : 2
+                            isExpanded: store.timelineExpandedBinding,
+                            availableHeight: proxy.size.height - timelineTop
+                                - TimerContentSpace.bottomSlack
                         )
+                            .onGeometryChange(for: CGFloat.self) { geometry in
+                                geometry.frame(in: .named(TimerContentSpace.name)).minY
+                            } action: { top in
+                                // Expanding hides the summary card above, which
+                                // would report a taller gap than the collapsed
+                                // layout actually has. Keep the collapsed one.
+                                guard !timelineExpanded else { return }
+                                timelineTop = top
+                            }
                             .padding(.horizontal, OWCDesign.pageInset)
                             .padding(.top, 16)
 
                         Spacer(minLength: 22)
                     }
                     .frame(minHeight: proxy.size.height, alignment: .top)
+                    .coordinateSpace(.named(TimerContentSpace.name))
                 }
                 .scrollIndicators(.hidden)
                 .scrollBounceBehavior(.basedOnSize)

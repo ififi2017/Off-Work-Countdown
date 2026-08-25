@@ -29,13 +29,7 @@ struct SettingsSectionCard: View {
 
         case .appearance:
             link(.theme, icon: "display", title: store.t("theme"), value: store.themeLabel)
-            // The language lives in iOS Settings, not in the app.
-            Link(destination: OWCSystemSettings.applicationURL) {
-                OWCRow(icon: "globe", title: store.t("chooselanguage"), isLast: true) {
-                    OWCDetailAccessory(text: store.languageLabel, external: true)
-                }
-            }
-            .buttonStyle(OWCRowButtonStyle())
+            link(.language, icon: "globe", title: store.t("chooselanguage"), value: store.languageLabel, isLast: true)
 
         case .about:
             link(.about, icon: "info.circle", title: store.t("aboutProject"), value: nil)

@@ -96,6 +96,7 @@
   "futureStartTimeError": "离上班还有 {{hours}} 小时 {{minutes}} 分钟，现在还没什么可倒数的。想现在就开始，把上班时间往前调一点就行。",
   "sameTimeError": "上班和下班是同一个时间，这样就没有班次长度了，改一个吧。",
   "chooselanguage": "选择语言",
+  "languageFooter": "此设置只改变 App 内的语言。主屏幕上的名称和系统弹窗仍跟随设备语言。",
   "offlineStatus": "当前离线，倒计时照常走",
   "light": "浅色",
   "dark": "深色",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "开启面容 ID 保护",
   "onboardingReadyBody": "就这些。设好上下班时间，倒计时就开始了。",
   "onboardingStartSetup": "开始设置倒计时",
-  "biometricsUnavailableHint": "生物识别不可用 · 前往系统设置",
+  "biometricsUnavailableHint": "生物识别不可用 · 在系统设置的 App 列表中找到「{{app}}」开启",
   "appShortName": "下班倒计时"
 }

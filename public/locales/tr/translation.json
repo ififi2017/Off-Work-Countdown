@@ -96,6 +96,7 @@
   "futureStartTimeError": "Vardiyan {{hours}} saat {{minutes}} dakika sonra başlıyor, yani sayılacak bir şey henüz yok. Hemen başlamak istersen başlangıç saatini öne al.",
   "sameTimeError": "Başlangıç ve bitiş aynı saatte, geriye sayılacak vardiya kalmıyor. Birini değiştir.",
   "chooselanguage": "Dil Seç",
+  "languageFooter": "Bu yalnızca uygulama içindeki dili değiştirir. Ana Ekran’daki ad ve sistem iletişim kutuları cihaz dilini izlemeye devam eder.",
   "offlineStatus": "Çevrimdışı — geri sayım devam ediyor",
   "light": "Açık",
   "dark": "Koyu",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Face ID korumasını aç",
   "onboardingReadyBody": "Hepsi bu. Mesai saatlerini ayarlayın, geri sayım başlasın.",
   "onboardingStartSetup": "Geri sayımı ayarla",
-  "biometricsUnavailableHint": "Biyometri kullanılamıyor — Ayarlar'ı aç",
+  "biometricsUnavailableHint": "Biyometri kullanılamıyor — Ayarlar’daki uygulama listesinde {{app}} bulup açın",
   "appShortName": "İş Çıkışı"
 }

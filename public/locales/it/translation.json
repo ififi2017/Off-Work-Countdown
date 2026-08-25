@@ -96,6 +96,7 @@
   "futureStartTimeError": "Il turno inizia tra {{hours}} ore e {{minutes}} minuti, quindi non c’è ancora nulla da contare. Anticipa l’orario di inizio se vuoi partire adesso.",
   "sameTimeError": "Inizio e fine sono alla stessa ora, così non resta nessun turno da contare. Cambiane uno.",
   "chooselanguage": "Scegli la lingua",
+  "languageFooter": "Questo cambia solo la lingua all’interno dell’app. Il nome nella schermata Home e le finestre di dialogo di sistema seguono la lingua del dispositivo.",
   "offlineStatus": "Offline: il conto alla rovescia continua",
   "light": "Chiaro",
   "dark": "Scuro",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Attiva la protezione Face ID",
   "onboardingReadyBody": "È tutto. Imposta gli orari e il conto alla rovescia parte.",
   "onboardingStartSetup": "Configura il conto alla rovescia",
-  "biometricsUnavailableHint": "Biometria non disponibile — apri Impostazioni",
+  "biometricsUnavailableHint": "Biometria non disponibile — cerca {{app}} nell’elenco app di Impostazioni per attivarla",
   "appShortName": "Fine lavoro"
 }
