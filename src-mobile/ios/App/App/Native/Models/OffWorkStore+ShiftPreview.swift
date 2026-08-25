@@ -137,7 +137,14 @@ extension OffWorkStore {
         // rather than after the Live Activity, which is only one switch on that
         // page. The timed row above keeps the Live Activity's own name, because
         // that is the thing that actually appears at 22:45.
-        if !liveActivityEnabled || notificationMode == .off {
+        //
+        // Both switches, not either. This asked `||`, so turning off just one
+        // of the two mechanisms printed "off-work reminder: disabled" while the
+        // other was still firing — and with the Live Activity on and
+        // notifications off the list contradicted itself outright, showing the
+        // timed Live Activity row directly above a row calling the same feature
+        // disabled.
+        if !liveActivityEnabled && notificationMode == .off {
             disabled.append(.init(
                 id: "off-work-reminder-off",
                 kind: .offWorkReminder,
