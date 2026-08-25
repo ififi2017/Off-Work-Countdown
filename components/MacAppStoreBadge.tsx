@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MacAppStorePurchaseDialog } from "@/components/MacAppStorePurchaseDialog";
+import { MacAppStoreDialog } from "@/components/MacAppStoreDialog";
 import type { MacAppStoreDialogCopy } from "@/lib/server/content";
 import { track } from "@/lib/track";
 import { cn } from "@/lib/utils";
@@ -9,13 +9,13 @@ import { IS_WEB_BUILD } from "@/lib/build-target";
 
 interface MacAppStoreBadgeProps {
   copy: MacAppStoreDialogCopy;
-  freeVersionHref: string;
+  directInstallersHref: string;
   className?: string;
 }
 
 export function MacAppStoreBadge({
   copy,
-  freeVersionHref,
+  directInstallersHref,
   className,
 }: MacAppStoreBadgeProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -56,11 +56,11 @@ export function MacAppStoreBadge({
         </button>
       </div>
 
-      <MacAppStorePurchaseDialog
+      <MacAppStoreDialog
         copy={copy}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        freeVersionHref={freeVersionHref}
+        directInstallersHref={directInstallersHref}
       />
     </>
   );

@@ -3966,7 +3966,7 @@ export function OffWorkCountdown({
         <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-3">
           <MacAppStoreBadge
             copy={macAppStoreCopy}
-            freeVersionHref={`/${contentLang}/download`}
+            directInstallersHref={`/${contentLang}/download`}
           />
           <MicrosoftStoreBadge className="flex min-h-11 items-center" />
           <Link

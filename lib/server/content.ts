@@ -137,8 +137,8 @@ export interface ContentBundle {
     macAppStorePerk1: string;
     macAppStorePerk2: string;
     macAppStorePerk3: string;
-    macAppStorePriceLabel: string;
-    macAppStoreSupportNote: string;
+    macAppStoreFreeLabel: string;
+    macAppStoreRecommendationNote: string;
     macAppStoreDialogPrimary: string;
     macAppStoreDialogSecondary: string;
     appleSiliconLabel: string;
@@ -165,14 +165,14 @@ export type MacAppStoreDialogCopy = Pick<
   | "macAppStorePerk1"
   | "macAppStorePerk2"
   | "macAppStorePerk3"
-  | "macAppStorePriceLabel"
-  | "macAppStoreSupportNote"
+  | "macAppStoreFreeLabel"
+  | "macAppStoreRecommendationNote"
   | "macAppStoreDialogPrimary"
   | "macAppStoreDialogSecondary"
 >;
 
 /**
- * 首页只需要付费说明弹窗这组文案。显式挑字段，避免把下载页的比较表、FAQ 和
+ * 首页只需要商店推荐弹窗这组文案。显式挑字段，避免把下载页的比较表、FAQ 和
  * 下载状态文案全部序列化进客户端 payload。
  */
 export function pickMacAppStoreDialogCopy(
@@ -190,8 +190,8 @@ export function pickMacAppStoreDialogCopy(
     macAppStorePerk1: download.macAppStorePerk1,
     macAppStorePerk2: download.macAppStorePerk2,
     macAppStorePerk3: download.macAppStorePerk3,
-    macAppStorePriceLabel: download.macAppStorePriceLabel,
-    macAppStoreSupportNote: download.macAppStoreSupportNote,
+    macAppStoreFreeLabel: download.macAppStoreFreeLabel,
+    macAppStoreRecommendationNote: download.macAppStoreRecommendationNote,
     macAppStoreDialogPrimary: download.macAppStoreDialogPrimary,
     macAppStoreDialogSecondary: download.macAppStoreDialogSecondary,
   };

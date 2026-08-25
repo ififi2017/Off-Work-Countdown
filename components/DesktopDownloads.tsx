@@ -12,7 +12,7 @@ import {
   Store,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { MacAppStorePurchaseDialog } from "@/components/MacAppStorePurchaseDialog";
+import { MacAppStoreDialog } from "@/components/MacAppStoreDialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { DOWNLOAD_MIRROR_HOST, mirroredDownloadUrl } from "@/lib/download-mirror";
@@ -134,8 +134,7 @@ export function DesktopDownloads({
   releasesUrl,
   storeUrl,
 }: DesktopDownloadsProps) {
-  // 商店入口先解释再跳转：付费差异（小组件）不说清楚，用户点过去看到价格
-  // 只会直接退回来。
+  // 商店入口先说明独有的小组件与系统要求，再把用户带到推荐渠道。
   const [macDialogOpen, setMacDialogOpen] = useState(false);
   const [state, setState] = useState<ReleaseState>({ status: "loading" });
   // 默认直连，和客户端更新器「直连优先、失败才回落镜像」的取向一致。
@@ -306,9 +305,8 @@ export function DesktopDownloads({
             </div>
           </div>
           <div className="space-y-2.5">
-            {/* 与 Windows 卡片同构：商店在上、直链在下。区别是这里不直接跳转——
-                macOS 商店版是付费的，且多一个桌面小组件，先用浮窗把差异讲清楚。
-                刻意不在按钮上标价：价格脱离「多了什么」单独出现，只会劝退。 */}
+            {/* 与 Windows 卡片同构：推荐的商店渠道在上、直链在下。先用浮窗
+                说明商店版独有的小组件，以及旧系统应改用直装版。 */}
             <button
               type="button"
               onClick={() => {
@@ -397,7 +395,7 @@ export function DesktopDownloads({
         </span>
       </a>
 
-      <MacAppStorePurchaseDialog
+      <MacAppStoreDialog
         copy={copy}
         open={macDialogOpen}
         onOpenChange={setMacDialogOpen}
