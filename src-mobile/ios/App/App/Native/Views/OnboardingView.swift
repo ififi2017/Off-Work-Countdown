@@ -542,6 +542,15 @@ struct OnboardingView: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// Always centred in the page's column.
+    ///
+    /// A bare `HStack` takes its intrinsic width and lets whatever stack it
+    /// sits in decide where that goes, so the dots drifted from page to page:
+    /// centred inside the pages built on a centred `VStack`, hard left inside
+    /// the two built on `VStack(alignment: .leading)`. The indicator belongs in
+    /// the same place on every page — it is the one element that is supposed to
+    /// look identical throughout, being the thing that measures progress across
+    /// them.
     private var pageDots: some View {
         HStack(spacing: 7) {
             ForEach(0..<6, id: \.self) { page in
@@ -550,6 +559,7 @@ struct OnboardingView: View {
                     .frame(width: page == store.onboardingPage ? 20 : 7, height: 7)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     private func feature(_ icon: String, _ title: String, _ body: String) -> some View {
