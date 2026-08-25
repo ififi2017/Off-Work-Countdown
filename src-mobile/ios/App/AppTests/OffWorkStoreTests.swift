@@ -304,6 +304,45 @@ func shiftPreviewRollsBreakBoundariesIndependently() throws {
     #expect(preview.upcoming[0].date == calendar.date(bySettingHour: 13, minute: 0, second: 0, of: duringLunch))
 }
 
+@MainActor
+@Test("After clocking off, the whole preview reads as the next shift, in order")
+func shiftPreviewRollsEveryPastRowToTheNextShift() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let calendar = Calendar.current
+    let afterClockOff = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 24,
+        hour: 18
+    )))
+
+    let store = previewStore(defaults)
+    store.liveActivityEnabled = true
+    store.liveActivityLeadMinutes = 30
+
+    let snapshot = try #require(store.snapshot(at: afterClockOff))
+    let preview = store.shiftPreview(for: snapshot, at: afterClockOff)
+
+    // Everything is behind us, so everything belongs to tomorrow and the list
+    // reads in one direction: in, break, back, warning, out. It used to open
+    // with the Live Activity and clock-off, both hours gone, and close with
+    // tomorrow's clock-in — backwards at its own finish line.
+    #expect(preview.upcoming.map(\.kind) == [
+        .shiftStart, .lunchStart, .lunchEnd, .liveActivity, .shiftEnd,
+    ])
+
+    let nextStart = try #require(snapshot.nextShiftStartDate)
+    let nextEnd = try #require(snapshot.nextShiftEndDate)
+    #expect(preview.upcoming.first?.date == nextStart)
+    #expect(preview.upcoming.last?.date == nextEnd)
+    #expect(preview.upcoming[3].date == nextEnd.addingTimeInterval(-30 * 60))
+
+    // "Today's shift" would be a lie on a row that is now tomorrow's.
+    #expect(preview.upcoming.last?.detail == nil)
+}
+
 /// One row of `shiftPreviewReminderDisabledState`.
 struct ReminderSwitchCase: Sendable {
     let liveActivity: Bool
