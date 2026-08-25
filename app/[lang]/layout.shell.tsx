@@ -148,7 +148,7 @@ export default async function Layout({
         <ThemeRouteSync />
         {children}
         {/* Vercel 的访问统计与性能采集只服务于 Web 端。桌面端不回传任何数据
-            （见 docs/PLAN-M5-TAURI.md 决策 5），这里用构建期常量剔除——
+            （见 plans/003-tauri-desktop.md 决策 5），这里用构建期常量剔除——
             桌面构建下整个分支是死代码，压缩阶段会被移除。 */}
         {IS_WEB_BUILD && (
           <>
