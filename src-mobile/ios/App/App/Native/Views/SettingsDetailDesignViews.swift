@@ -201,6 +201,9 @@ struct SalaryDesignView: View {
     /// not render it until the device owner has confirmed it is them. Devices
     /// with no passcode pass straight through — see `BiometricGate`.
     @State private var unlocked = false
+    /// Sampled alongside each unlock attempt rather than read in `body`, which
+    /// would build an `LAContext` on every render.
+    @State private var biometryBlocked = false
 
     var body: some View {
         Group {
@@ -237,8 +240,27 @@ struct SalaryDesignView: View {
                 Task { await unlock() }
             }
             .buttonStyle(OWCPrimaryButtonStyle())
-            .padding(.bottom, 24)
+
+            // Only when the hardware exists but the app cannot reach it. iOS
+            // asks for biometric permission once and never again, so without
+            // this the page would go on quietly demanding a passcode with no
+            // hint that Face ID could be switched back on, and nothing in the
+            // app could ever bring the prompt back.
+            if biometryBlocked {
+                Link(destination: OWCSystemSettings.applicationURL) {
+                    HStack(spacing: 5) {
+                        Text(store.t("biometricsUnavailableHint"))
+                        Image(systemName: "arrow.up.right")
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                }
+            }
         }
+        .padding(.bottom, 24)
         .padding(.horizontal, OWCDesign.contentInset)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(OWCDesign.page)
@@ -247,6 +269,7 @@ struct SalaryDesignView: View {
 
     private func unlock() async {
         guard !unlocked else { return }
+        biometryBlocked = BiometricGate.isBiometryBlocked
         unlocked = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
     }
 

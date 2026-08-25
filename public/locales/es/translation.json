@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Protegido con Face ID o Touch ID, con el código del dispositivo como respaldo.",
   "onboardingEnableBiometrics": "Activar protección con Face ID",
   "onboardingReadyBody": "Eso es todo. Configura tu horario y empieza la cuenta atrás.",
-  "onboardingStartSetup": "Configurar la cuenta atrás"
+  "onboardingStartSetup": "Configurar la cuenta atrás",
+  "biometricsUnavailableHint": "Biometría no disponible: abrir Ajustes"
 }

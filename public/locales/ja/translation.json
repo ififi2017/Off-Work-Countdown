@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Face ID／Touch ID で保護され、デバイスのパスコードが予備になります。",
   "onboardingEnableBiometrics": "Face ID 保護をオンにする",
   "onboardingReadyBody": "以上です。勤務時間を設定すればカウントダウンが始まります。",
-  "onboardingStartSetup": "カウントダウンを設定"
+  "onboardingStartSetup": "カウントダウンを設定",
+  "biometricsUnavailableHint": "生体認証を利用できません · 設定を開く"
 }

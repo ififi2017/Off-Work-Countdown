@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Được bảo vệ bằng Face ID hoặc Touch ID, dự phòng bằng mật mã thiết bị.",
   "onboardingEnableBiometrics": "Bật bảo vệ Face ID",
   "onboardingReadyBody": "Vậy là xong. Đặt giờ làm và bắt đầu đếm ngược.",
-  "onboardingStartSetup": "Thiết lập đếm ngược"
+  "onboardingStartSetup": "Thiết lập đếm ngược",
+  "biometricsUnavailableHint": "Không dùng được sinh trắc học — mở Cài đặt"
 }

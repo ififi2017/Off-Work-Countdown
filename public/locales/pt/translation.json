@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Protegido por Face ID ou Touch ID, com o código do dispositivo como reserva.",
   "onboardingEnableBiometrics": "Ativar proteção com Face ID",
   "onboardingReadyBody": "É só isso. Defina seu horário e a contagem regressiva começa.",
-  "onboardingStartSetup": "Configurar a contagem regressiva"
+  "onboardingStartSetup": "Configurar a contagem regressiva",
+  "biometricsUnavailableHint": "Biometria indisponível — abrir Ajustes"
 }

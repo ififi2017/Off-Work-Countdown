@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Protetto da Face ID o Touch ID, con il codice del dispositivo come riserva.",
   "onboardingEnableBiometrics": "Attiva la protezione Face ID",
   "onboardingReadyBody": "È tutto. Imposta gli orari e il conto alla rovescia parte.",
-  "onboardingStartSetup": "Configura il conto alla rovescia"
+  "onboardingStartSetup": "Configura il conto alla rovescia",
+  "biometricsUnavailableHint": "Biometria non disponibile — apri Impostazioni"
 }

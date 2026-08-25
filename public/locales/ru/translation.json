@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Защищено Face ID или Touch ID, с кодом устройства в качестве запасного варианта.",
   "onboardingEnableBiometrics": "Включить защиту Face ID",
   "onboardingReadyBody": "Это всё. Задайте часы работы — и обратный отсчёт начнётся.",
-  "onboardingStartSetup": "Настроить обратный отсчёт"
+  "onboardingStartSetup": "Настроить обратный отсчёт",
+  "biometricsUnavailableHint": "Биометрия недоступна — открыть «Настройки»"
 }

@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Face ID/Touch ID로 보호되며 기기 암호로 대체됩니다.",
   "onboardingEnableBiometrics": "Face ID 보호 켜기",
   "onboardingReadyBody": "이게 전부입니다. 근무 시간을 설정하면 카운트다운이 시작됩니다.",
-  "onboardingStartSetup": "카운트다운 설정 시작"
+  "onboardingStartSetup": "카운트다운 설정 시작",
+  "biometricsUnavailableHint": "생체 인증을 사용할 수 없음 · 설정 열기"
 }

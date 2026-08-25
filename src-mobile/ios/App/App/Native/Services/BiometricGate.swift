@@ -10,6 +10,26 @@ import LocalAuthentication
 /// a home-made four-digit code stored by the app is weaker than the one the
 /// Secure Enclave already guards.
 enum BiometricGate {
+    /// Whether the device has biometric hardware the app cannot currently use:
+    /// permission declined, nothing enrolled, or locked out after too many
+    /// failed attempts.
+    ///
+    /// The `biometryType` check is what keeps a device that never had Face ID
+    /// from being told to go and switch it on. It reads as `.none` until
+    /// `canEvaluatePolicy` has run, which is why the call above it is not
+    /// discarded.
+    ///
+    /// This exists because iOS shows an app's biometric permission alert
+    /// exactly once, ever. After a decline there is no API to ask again — the
+    /// only way back is the app's own page in Settings — so the app has to say
+    /// so rather than quietly falling back to the passcode forever.
+    static var isBiometryBlocked: Bool {
+        let context = LAContext()
+        var error: NSError?
+        let usable = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+        return !usable && context.biometryType != .none
+    }
+
     /// Ask the device owner to confirm it is them.
     ///
     /// Returns `true` when there is nothing to ask: a device with no passcode

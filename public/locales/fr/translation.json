@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Protégé par Face ID ou Touch ID, avec le code de l'appareil en secours.",
   "onboardingEnableBiometrics": "Activer la protection Face ID",
   "onboardingReadyBody": "C'est tout. Réglez vos horaires et le compte à rebours démarre.",
-  "onboardingStartSetup": "Configurer le compte à rebours"
+  "onboardingStartSetup": "Configurer le compte à rebours",
+  "biometricsUnavailableHint": "Biométrie indisponible — ouvrir Réglages"
 }

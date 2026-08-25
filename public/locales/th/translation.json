@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "ปกป้องด้วย Face ID หรือ Touch ID และใช้รหัสเครื่องเป็นตัวสำรอง",
   "onboardingEnableBiometrics": "เปิดการป้องกันด้วย Face ID",
   "onboardingReadyBody": "เท่านี้แหละ ตั้งเวลาทำงานแล้วเริ่มนับถอยหลังได้เลย",
-  "onboardingStartSetup": "ตั้งค่าการนับถอยหลัง"
+  "onboardingStartSetup": "ตั้งค่าการนับถอยหลัง",
+  "biometricsUnavailableHint": "ใช้ไบโอเมตริกไม่ได้ · เปิดการตั้งค่า"
 }

@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Face ID veya Touch ID ile korunur, yedek olarak cihaz parolası kullanılır.",
   "onboardingEnableBiometrics": "Face ID korumasını aç",
   "onboardingReadyBody": "Hepsi bu. Mesai saatlerini ayarlayın, geri sayım başlasın.",
-  "onboardingStartSetup": "Geri sayımı ayarla"
+  "onboardingStartSetup": "Geri sayımı ayarla",
+  "biometricsUnavailableHint": "Biyometri kullanılamıyor — Ayarlar'ı aç"
 }

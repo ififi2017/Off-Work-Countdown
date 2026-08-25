@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "由 Face ID／Touch ID 保護，並以裝置密碼作為後備。",
   "onboardingEnableBiometrics": "開啟 Face ID 保護",
   "onboardingReadyBody": "就這些。設好上下班時間，倒數就開始了。",
-  "onboardingStartSetup": "開始設定倒數"
+  "onboardingStartSetup": "開始設定倒數",
+  "biometricsUnavailableHint": "生物辨識無法使用 · 前往系統設定"
 }

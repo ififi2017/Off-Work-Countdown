@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Dilindungi Face ID atau Touch ID, dengan kode sandi perangkat sebagai cadangan.",
   "onboardingEnableBiometrics": "Aktifkan perlindungan Face ID",
   "onboardingReadyBody": "Itu saja. Atur jam kerja dan hitung mundur dimulai.",
-  "onboardingStartSetup": "Atur hitung mundur"
+  "onboardingStartSetup": "Atur hitung mundur",
+  "biometricsUnavailableHint": "Biometrik tidak tersedia — buka Pengaturan"
 }

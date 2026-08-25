@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Protected by Face ID or Touch ID — and your device passcode as backup.",
   "onboardingEnableBiometrics": "Turn on Face ID protection",
   "onboardingReadyBody": "That's everything. Set your hours and the countdown starts.",
-  "onboardingStartSetup": "Set up the countdown"
+  "onboardingStartSetup": "Set up the countdown",
+  "biometricsUnavailableHint": "Biometrics unavailable — open Settings"
 }

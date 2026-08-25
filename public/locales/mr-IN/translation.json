@@ -353,5 +353,6 @@
   "onboardingSalaryLockBody": "Face ID किंवा Touch ID ने संरक्षित, बॅकअप म्हणून डिव्हाइस पासकोड.",
   "onboardingEnableBiometrics": "Face ID संरक्षण चालू करा",
   "onboardingReadyBody": "एवढेच. तुमचे तास सेट करा आणि उलटगणती सुरू.",
-  "onboardingStartSetup": "उलटगणती सेट करा"
+  "onboardingStartSetup": "उलटगणती सेट करा",
+  "biometricsUnavailableHint": "बायोमेट्रिक्स अनुपलब्ध — सेटिंग्ज उघडा"
 }
