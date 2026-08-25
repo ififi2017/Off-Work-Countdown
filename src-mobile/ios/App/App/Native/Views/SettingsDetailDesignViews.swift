@@ -212,6 +212,19 @@ struct SalaryDesignView: View {
     /// `scenePhase` after an `await` reads the phase from before it. `@State`
     /// reads through its storage box, so it is current.
     @State private var lockGeneration = 0
+    /// The scene phase, mirrored into `@State` so `unlock()` can read it after
+    /// its `await`. The `@Environment` value below cannot answer that question:
+    /// it is resolved into the view struct when `body` runs, and a suspended
+    /// `async` method still holds that struct, so it reports the phase from
+    /// before the suspension.
+    @State private var livePhase: ScenePhase = .active
+    /// A successful authentication that landed while the scene was away.
+    ///
+    /// Held rather than applied, because applying it would draw the salary
+    /// while the app is inactive — which is the state the app switcher shows
+    /// live, before the snapshot. Locking again at `.background` would be too
+    /// late; the figures would already be on screen and in the thumbnail.
+    @State private var pendingUnlock = false
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -228,27 +241,38 @@ struct SalaryDesignView: View {
         // only ever moved to `true` — so coming back from the app switcher, or
         // handing the phone over, showed the salary with no second look at who
         // was holding it.
-        .onChange(of: scenePhase) { _, phase in
-            guard phase != .active else { return }
-            // Hiding and voiding are two different decisions, and conflating
-            // them locked the page out of its own key.
-            //
-            // Hide on either phase. The app-switcher preview is live before the
-            // snapshot is taken and both happen at `.inactive`, so waiting for
-            // `.background` would show the figures on the way out.
+        // `initial: true` seeds `livePhase`, which otherwise would not learn the
+        // truth until the first change.
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            livePhase = phase
+
+            guard phase != .active else {
+                // Back in front, and nothing voided the attempt while we were
+                // away: show what it earned.
+                if pendingUnlock {
+                    pendingUnlock = false
+                    unlocked = true
+                }
+                return
+            }
+
+            // Hiding, voiding and deferring are three decisions. Making them
+            // with one line is what locked this page out of its own key.
+
+            // Hide on either non-active phase: the app switcher shows the scene
+            // live at `.inactive`, before any snapshot is taken.
             unlocked = false
             focusedField = nil
 
             // Void only on `.background`. The biometric prompt deactivates the
-            // scene by itself, so bumping the generation here retired the very
-            // authentication the user was in the middle of passing — the guard
-            // in `unlock()` then rejected every success and the page could
-            // never be unlocked at all on a device that actually prompts.
-            //
-            // Backgrounding genuinely is a reason to void: it is also the one
-            // case where the prompt's own result can no longer be trusted to
-            // belong to whoever is now holding the phone.
-            if phase == .background { lockGeneration += 1 }
+            // scene by itself, so voiding at `.inactive` retired the very
+            // authentication the user was in the middle of passing. Background
+            // is the one phase the prompt does not cause, and the one where its
+            // result can no longer be attributed to whoever holds the phone.
+            if phase == .background {
+                lockGeneration += 1
+                pendingUnlock = false
+            }
         }
     }
 
@@ -323,8 +347,18 @@ struct SalaryDesignView: View {
         // app went to the background with the prompt up, so the result can no
         // longer be said to belong to whoever is holding the phone now.
         // Deactivation alone does not count — see the phase handler above.
-        guard generation == lockGeneration else { return }
-        unlocked = confirmed
+        guard generation == lockGeneration, confirmed else { return }
+
+        // Nothing says `evaluatePolicy` resolves only once the scene is active
+        // again, and the phase it resolves in is frequently `.inactive` — the
+        // prompt put it there. Revealing the salary then would paint it into
+        // whatever the app switcher is about to capture, and re-locking at
+        // `.background` would arrive after the fact. Hold it for `.active`.
+        if livePhase == .active {
+            unlocked = true
+        } else {
+            pendingUnlock = true
+        }
     }
 
     private var content: some View {
