@@ -1,3 +1,4 @@
+import LocalAuthentication
 import SwiftUI
 
 struct OnboardingView: View {
@@ -7,6 +8,9 @@ struct OnboardingView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var notifications = NotificationService()
+    /// Sampled once rather than read in `body`, which would build an
+    /// `LAContext` on every render.
+    @State private var biometry: LABiometryType = .none
 
     private static let pageAnimation = Animation.snappy(duration: 0.32)
     /// A pure slide, deliberately without a cross-fade.
@@ -87,6 +91,7 @@ struct OnboardingView: View {
         .background(OWCDesign.page)
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
+        .task { biometry = BiometricGate.status().biometry }
         .onAppear {
 #if DEBUG
             let defaults = UserDefaults.standard
@@ -336,9 +341,15 @@ struct OnboardingView: View {
                     subtitle: store.t("onboardingPrivacyWorkBody")
                 )
                 OWCRow(
-                    icon: "faceid",
+                    // Both the glyph and the copy come from the hardware. A
+                    // face was drawn here on every device, next to a sentence
+                    // that named Face ID, on iPads that only have Touch ID.
+                    icon: biometry.symbolName,
                     title: store.t("salarySettings"),
-                    subtitle: store.t("onboardingSalaryLockBody"),
+                    subtitle: store.t(
+                        "onboardingSalaryLockBody",
+                        values: ["biometry": store.biometryName(biometry)]
+                    ),
                     isLast: true
                 )
             }
@@ -351,7 +362,10 @@ struct OnboardingView: View {
             // gets granted far more often than one that ambushes them later.
             pageDots
             VStack(spacing: 10) {
-                Button(store.t("onboardingEnableBiometrics")) {
+                Button(store.t(
+                    "onboardingEnableBiometrics",
+                    values: ["biometry": store.biometryName(biometry)]
+                )) {
                     Task {
                         _ = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
                         showPage(5)

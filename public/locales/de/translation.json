@@ -351,10 +351,16 @@
   "unlockSalaryReason": "Zum Anzeigen des Gehalts entsperren",
   "salaryLocked": "Gesperrt",
   "unlockSalary": "Entsperren",
-  "onboardingSalaryLockBody": "Geschützt durch Face ID oder Touch ID, mit dem Gerätecode als Rückfallebene.",
-  "onboardingEnableBiometrics": "Face-ID-Schutz aktivieren",
+  "onboardingSalaryLockBody": "Geschützt durch {{biometry}}, mit dem Gerätecode als Rückfallebene.",
+  "onboardingEnableBiometrics": "{{biometry}}-Schutz aktivieren",
   "onboardingReadyBody": "Das war alles. Arbeitszeiten festlegen und der Countdown läuft.",
   "onboardingStartSetup": "Countdown einrichten",
   "biometricsUnavailableHint": "Biometrie nicht verfügbar – {{app}} in der App-Liste der Einstellungen öffnen und aktivieren",
+  "biometryFaceID": "Face ID",
+  "biometrics": "Biometrie",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} ist nicht eingerichtet – in den Einstellungen hinzufügen, um damit zu entsperren",
+  "biometricsLockoutHint": "{{biometry}} ist gesperrt – einmal mit dem Gerätecode entsperren, um es wieder zu aktivieren",
   "appShortName": "Feierabend"
 }

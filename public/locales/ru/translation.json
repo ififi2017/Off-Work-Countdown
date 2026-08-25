@@ -351,10 +351,16 @@
   "unlockSalaryReason": "Разблокируйте, чтобы увидеть зарплату",
   "salaryLocked": "Заблокировано",
   "unlockSalary": "Разблокировать",
-  "onboardingSalaryLockBody": "Защищено Face ID или Touch ID, с кодом устройства в качестве запасного варианта.",
-  "onboardingEnableBiometrics": "Включить защиту Face ID",
+  "onboardingSalaryLockBody": "Защищено {{biometry}}, с кодом устройства в качестве запасного варианта.",
+  "onboardingEnableBiometrics": "Включить защиту {{biometry}}",
   "onboardingReadyBody": "Это всё. Задайте часы работы — и обратный отсчёт начнётся.",
   "onboardingStartSetup": "Настроить обратный отсчёт",
   "biometricsUnavailableHint": "Биометрия недоступна — найдите «{{app}}» в списке приложений «Настроек» и включите",
+  "biometryFaceID": "Face ID",
+  "biometrics": "Биометрия",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} не настроен — добавьте его в «Настройках», чтобы разблокировать им",
+  "biometricsLockoutHint": "{{biometry}} заблокирован — разблокируйте один раз кодом устройства, чтобы включить его снова",
   "appShortName": "Конец работы"
 }

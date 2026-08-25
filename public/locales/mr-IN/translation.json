@@ -351,10 +351,16 @@
   "unlockSalaryReason": "पगार पाहण्यासाठी अनलॉक करा",
   "salaryLocked": "लॉक",
   "unlockSalary": "अनलॉक करा",
-  "onboardingSalaryLockBody": "Face ID किंवा Touch ID ने संरक्षित, बॅकअप म्हणून डिव्हाइस पासकोड.",
-  "onboardingEnableBiometrics": "Face ID संरक्षण चालू करा",
+  "onboardingSalaryLockBody": "{{biometry}} ने संरक्षित, बॅकअप म्हणून डिव्हाइस पासकोड.",
+  "onboardingEnableBiometrics": "{{biometry}} संरक्षण सुरू करा",
   "onboardingReadyBody": "एवढेच. तुमचे तास सेट करा आणि उलटगणती सुरू.",
   "onboardingStartSetup": "उलटगणती सेट करा",
   "biometricsUnavailableHint": "बायोमेट्रिक्स अनुपलब्ध — सेटिंग्जच्या ॲप सूचीत {{app}} शोधून सुरू करा",
+  "biometryFaceID": "Face ID",
+  "biometrics": "बायोमेट्रिक्स",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} सेट केलेले नाही — सेटिंग्जमध्ये जोडा म्हणजे त्याने अनलॉक करता येईल",
+  "biometricsLockoutHint": "{{biometry}} लॉक आहे — डिव्हाइस पासकोडने एकदा अनलॉक करा म्हणजे ते पुन्हा चालू होईल",
   "appShortName": "कामाची सुट्टी"
 }

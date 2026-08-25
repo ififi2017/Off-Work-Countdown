@@ -351,10 +351,16 @@
   "unlockSalaryReason": "Unlock to see your salary",
   "salaryLocked": "Locked",
   "unlockSalary": "Unlock",
-  "onboardingSalaryLockBody": "Protected by Face ID or Touch ID — and your device passcode as backup.",
-  "onboardingEnableBiometrics": "Turn on Face ID protection",
+  "onboardingSalaryLockBody": "Protected by {{biometry}} — and your device passcode as backup.",
+  "onboardingEnableBiometrics": "Turn on {{biometry}} protection",
   "onboardingReadyBody": "That's everything. Set your hours and the countdown starts.",
   "onboardingStartSetup": "Set up the countdown",
   "biometricsUnavailableHint": "Biometrics unavailable — find {{app}} in the Settings app list to turn it on",
+  "biometryFaceID": "Face ID",
+  "biometrics": "Biometrics",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} isn’t set up — add it in Settings to unlock with it",
+  "biometricsLockoutHint": "{{biometry}} is locked — unlock once with your device passcode to re-enable it",
   "appShortName": "Off Work"
 }

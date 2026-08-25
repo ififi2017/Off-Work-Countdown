@@ -351,10 +351,16 @@
   "unlockSalaryReason": "Desbloqueie para ver o salário",
   "salaryLocked": "Bloqueado",
   "unlockSalary": "Desbloquear",
-  "onboardingSalaryLockBody": "Protegido por Face ID ou Touch ID, com o código do dispositivo como reserva.",
-  "onboardingEnableBiometrics": "Ativar proteção com Face ID",
+  "onboardingSalaryLockBody": "Protegido por {{biometry}}, com o código do dispositivo como reserva.",
+  "onboardingEnableBiometrics": "Ativar proteção com {{biometry}}",
   "onboardingReadyBody": "É só isso. Defina seu horário e a contagem regressiva começa.",
   "onboardingStartSetup": "Configurar a contagem regressiva",
   "biometricsUnavailableHint": "Biometria indisponível — encontre {{app}} na lista de apps dos Ajustes para ativar",
+  "biometryFaceID": "Face ID",
+  "biometrics": "Biometria",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} não está configurado — adicione nos Ajustes para desbloquear com ele",
+  "biometricsLockoutHint": "{{biometry}} está bloqueado — desbloqueie uma vez com o código do dispositivo para reativar",
   "appShortName": "Fim do trabalho"
 }

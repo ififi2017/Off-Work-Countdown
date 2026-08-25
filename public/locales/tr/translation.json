@@ -351,10 +351,16 @@
   "unlockSalaryReason": "Maaşı görmek için kilidi aç",
   "salaryLocked": "Kilitli",
   "unlockSalary": "Kilidi aç",
-  "onboardingSalaryLockBody": "Face ID veya Touch ID ile korunur, yedek olarak cihaz parolası kullanılır.",
-  "onboardingEnableBiometrics": "Face ID korumasını aç",
+  "onboardingSalaryLockBody": "{{biometry}} ile korunur, yedek olarak cihaz parolası kullanılır.",
+  "onboardingEnableBiometrics": "{{biometry}} korumasını aç",
   "onboardingReadyBody": "Hepsi bu. Mesai saatlerini ayarlayın, geri sayım başlasın.",
   "onboardingStartSetup": "Geri sayımı ayarla",
   "biometricsUnavailableHint": "Biyometri kullanılamıyor — Ayarlar’daki uygulama listesinde {{app}} bulup açın",
+  "biometryFaceID": "Face ID",
+  "biometrics": "Biyometri",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} ayarlanmamış — kilidi onunla açmak için Ayarlar’da ekleyin",
+  "biometricsLockoutHint": "{{biometry}} kilitli — yeniden etkinleştirmek için cihaz parolanızla bir kez açın",
   "appShortName": "İş Çıkışı"
 }

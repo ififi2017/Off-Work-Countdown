@@ -351,10 +351,16 @@
   "unlockSalaryReason": "वेतन देखने के लिए अनलॉक करें",
   "salaryLocked": "लॉक",
   "unlockSalary": "अनलॉक करें",
-  "onboardingSalaryLockBody": "Face ID या Touch ID से सुरक्षित, बैकअप के रूप में डिवाइस पासकोड।",
-  "onboardingEnableBiometrics": "Face ID सुरक्षा चालू करें",
+  "onboardingSalaryLockBody": "{{biometry}} से सुरक्षित, बैकअप के रूप में डिवाइस पासकोड।",
+  "onboardingEnableBiometrics": "{{biometry}} सुरक्षा चालू करें",
   "onboardingReadyBody": "बस इतना ही। अपने घंटे सेट करें और उलटी गिनती शुरू।",
   "onboardingStartSetup": "उलटी गिनती सेट करें",
   "biometricsUnavailableHint": "बायोमेट्रिक्स अनुपलब्ध — सेटिंग्स की ऐप सूची में {{app}} ढूँढकर चालू करें",
+  "biometryFaceID": "Face ID",
+  "biometrics": "बायोमेट्रिक्स",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} सेट नहीं है — सेटिंग्स में जोड़ें ताकि इससे अनलॉक कर सकें",
+  "biometricsLockoutHint": "{{biometry}} लॉक है — डिवाइस पासकोड से एक बार अनलॉक करें ताकि यह फिर से काम करे",
   "appShortName": "काम से छुट्टी"
 }

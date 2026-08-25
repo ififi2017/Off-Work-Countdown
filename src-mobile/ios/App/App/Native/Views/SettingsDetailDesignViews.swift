@@ -204,7 +204,7 @@ struct SalaryDesignView: View {
     @State private var unlocked = false
     /// Sampled alongside each unlock attempt rather than read in `body`, which
     /// would build an `LAContext` on every render.
-    @State private var biometryBlocked = false
+    @State private var biometryStatus = BiometricGate.Status(biometry: .none, obstacle: nil)
     /// Bumped whenever the page reaches the background, so an authentication
     /// that resolves afterwards can tell it has been overtaken. This is
     /// `@State` rather than a phase read after `await`: an `@Environment` value
@@ -285,7 +285,7 @@ struct SalaryDesignView: View {
             // this the page would go on quietly demanding a passcode with no
             // hint that Face ID could be switched back on, and nothing in the
             // app could ever bring the prompt back.
-            if biometryBlocked {
+            if let obstacle = biometryStatus.obstacle {
                 Link(destination: OWCSystemSettings.applicationURL) {
                     HStack(spacing: 5) {
                         // Names the app, because `app-settings:` cannot be
@@ -296,10 +296,7 @@ struct SalaryDesignView: View {
                         // naming Apple's own section — that label is localised
                         // by iOS, and guessing it in nineteen languages would be
                         // worse than leaving it out.
-                        Text(store.t(
-                            "biometricsUnavailableHint",
-                            values: ["app": store.t("appShortName")]
-                        ))
+                        Text(hintText(for: obstacle))
                         Image(systemName: "arrow.up.right")
                             .font(.footnote.weight(.semibold))
                     }
@@ -317,9 +314,27 @@ struct SalaryDesignView: View {
         .owcDetailBack(title: store.t("settings"), pageTitle: store.t("salarySettings"))
     }
 
+    /// Says which of the three obstacles it is, not just that there is one.
+    ///
+    /// This page used to print one generic "biometrics unavailable" line for
+    /// all of them, while `canEvaluatePolicy` had handed us the exact reason
+    /// and we threw it away. The three want different things: nothing enrolled
+    /// is not a permission problem and no amount of visiting Settings > Privacy
+    /// will fix it, and a lockout clears itself the moment the passcode is used
+    /// once. Only the third is about permission, and only Face ID can reach it,
+    /// because it is the only one that asks.
+    private func hintText(for obstacle: BiometricGate.Obstacle) -> String {
+        let biometry = store.biometryName(biometryStatus.biometry)
+        return switch obstacle {
+        case .notEnrolled: store.t("biometricsNotEnrolledHint", values: ["biometry": biometry])
+        case .lockedOut: store.t("biometricsLockoutHint", values: ["biometry": biometry])
+        case .notPermitted: store.t("biometricsUnavailableHint", values: ["app": store.t("appShortName")])
+        }
+    }
+
     private func unlock() async {
         guard !unlocked else { return }
-        biometryBlocked = BiometricGate.isBiometryBlocked
+        biometryStatus = BiometricGate.status()
         let generation = lockGeneration
         let confirmed = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
         // Anything that voided this attempt while it was suspended wins: the
@@ -554,7 +569,7 @@ struct NotificationDesignView: View {
     /// The system's own Live Activities switch, which is not the notification
     /// permission and can be turned off on its own.
     ///
-    /// Sampled rather than read in `body` for the same reason `biometryBlocked`
+    /// Sampled rather than read in `body` for the same reason `biometryStatus`
     /// is, and refreshed on the way back from Settings, which is where it
     /// changes. The page used to state "allowed" and draw a checkmark
     /// unconditionally while `LiveActivityService` quietly bailed out on the
