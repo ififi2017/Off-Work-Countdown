@@ -258,6 +258,8 @@ public struct OffWorkCountdownWidgetView: View {
                         #if os(iOS)
                         if family == .accessoryCircular {
                             circularAccessory(snapshotEntry)
+                        } else if family == .accessoryRectangular {
+                            rectangularAccessory(snapshotEntry)
                         } else if family == .systemMedium {
                             mediumContent(snapshotEntry)
                         } else {
@@ -281,6 +283,16 @@ public struct OffWorkCountdownWidgetView: View {
                                 .accessibilityLabel(
                                     WidgetCopy.text("countdownNotStarted", locale: entry.locale)
                                 )
+                        } else if family == .accessoryRectangular {
+                            Label {
+                                Text(WidgetCopy.text("countdownNotStarted", locale: entry.locale))
+                            } icon: {
+                                Image(systemName: "play.fill")
+                            }
+                            .font(.headline)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.6)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         } else {
                             emptyContent
                         }
@@ -297,6 +309,13 @@ public struct OffWorkCountdownWidgetView: View {
     }
 
     #if os(iOS)
+    /// A 58pt monochrome circle. The ring carries the progress; the middle
+    /// carries the moment it is counting toward.
+    ///
+    /// It used to read "73%", which says something is three-quarters done
+    /// without saying three-quarters of what — on a Lock Screen full of rings
+    /// that reads like a battery. A nearly-full ring around "19:00" says the
+    /// same thing and names the finish line, in the same five glyphs.
     @ViewBuilder
     private func circularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
         if snapshotEntry.phase == .done {
@@ -310,29 +329,32 @@ public struct OffWorkCountdownWidgetView: View {
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(WidgetCopy.text("offWorkToday", locale: entry.locale))
-        } else if snapshotEntry.phase == .before,
-                  let targetAtMs = snapshotEntry.countdownTargetAtMs {
-            Gauge(value: 0, in: 0...100) {
+        } else if snapshotEntry.phase == .idle {
+            Image(systemName: "play.fill")
+                .font(.body.bold())
+                .accessibilityLabel(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+        } else if let targetAtMs = snapshotEntry.countdownTargetAtMs {
+            // One branch for every timed phase. Before the shift the ring is
+            // empty and the time is when work starts; during it the ring fills
+            // toward the time work ends; through lunch the ring holds still and
+            // the time is when it resumes.
+            Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
                 EmptyView()
             } currentValueLabel: {
                 Text(Date(timeIntervalSince1970: Double(targetAtMs) / 1_000), style: .time)
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.52)
             }
             .gaugeStyle(.accessoryCircularCapacity)
             .accessibilityLabel(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
-        } else if snapshotEntry.phase == .idle {
-            Image(systemName: "play.fill")
-                .font(.body.bold())
-                .accessibilityLabel(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
         } else {
+            // No target to name — fall back to the ring alone rather than an
+            // empty circle.
             Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
                 EmptyView()
             } currentValueLabel: {
-                // Whole percent only. "89.30%" is six glyphs in a complication
-                // that has room for three, and it wrapped onto a second line.
                 Text("\(roundedProgress(snapshotEntry.progressAtDate))%")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .monospacedDigit()
@@ -340,6 +362,51 @@ public struct OffWorkCountdownWidgetView: View {
                     .minimumScaleFactor(0.6)
             }
             .gaugeStyle(.accessoryCircularCapacity)
+            .accessibilityLabel(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+        }
+    }
+
+    /// The wide Lock Screen family, and the one that can actually say what it
+    /// is. A circle this app's size has room for a ring and four or five
+    /// glyphs; naming itself as well would shrink both past legibility. Here
+    /// there is room for the name, the countdown and the bar together.
+    @ViewBuilder
+    private func rectangularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Label {
+                Text(WidgetCopy.text("offWorkCountdown", locale: entry.locale))
+            } icon: {
+                Image(systemName: accessoryGlyph(snapshotEntry.phase))
+            }
+            .font(.caption2)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .widgetAccentable()
+
+            if snapshotEntry.countdownTargetAtMs != nil {
+                countdown(for: snapshotEntry, size: 21)
+                Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
+                    EmptyView()
+                }
+                .gaugeStyle(.accessoryLinearCapacity)
+            } else {
+                Text(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+                    .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func accessoryGlyph(_ phase: WidgetTimelinePhase) -> String {
+        switch phase {
+        case .idle: "play.fill"
+        case .before: "sunrise.fill"
+        case .working: "timer"
+        case .break: "cup.and.saucer.fill"
+        case .done: "flag.checkered"
         }
     }
     #endif
@@ -679,7 +746,7 @@ public struct OffWorkCountdownWidget: Widget {
 
     private var supportedFamilies: [WidgetFamily] {
         #if os(iOS)
-        [.systemSmall, .systemMedium, .accessoryCircular]
+        [.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular]
         #else
         [.systemSmall, .systemMedium]
         #endif
