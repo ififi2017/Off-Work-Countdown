@@ -147,7 +147,18 @@ private struct TabletSidebar: View {
                             sidebarRow(store.t("shiftSection"), "\(store.timeString(store.startMinutes)) – \(store.timeString(store.endMinutes))")
                             sidebarRow(store.t("lunchBreak"), store.lunchLabel, last: !store.salaryEnabled)
                             if store.salaryEnabled {
-                                sidebarRow(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio }), last: true, bold: true)
+                                // The sidebar is where the figure lives while
+                                // the sidebar is open, so this is where the eye
+                                // belongs. Without it the iPad could blank the
+                                // salary from the phone and never restore it,
+                                // and never blank it from here at all.
+                                sidebarRow(
+                                    store.t("moneyEarned"),
+                                    store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio }),
+                                    last: true,
+                                    bold: true,
+                                    accessory: { OWCEarningsVisibilityButton(store: store) }
+                                )
                             }
                         }
                     } else {
@@ -210,7 +221,13 @@ private struct TabletSidebar: View {
         .buttonStyle(.plain)
     }
 
-    private func sidebarRow(_ label: String, _ value: String, last: Bool = false, bold: Bool = false) -> some View {
+    private func sidebarRow<Accessory: View>(
+        _ label: String,
+        _ value: String,
+        last: Bool = false,
+        bold: Bool = false,
+        @ViewBuilder accessory: () -> Accessory = { EmptyView() }
+    ) -> some View {
         HStack {
             Text(label).font(.callout)
             Spacer(minLength: 8)
@@ -219,6 +236,7 @@ private struct TabletSidebar: View {
                 .foregroundStyle(bold ? OWCDesign.primary : OWCDesign.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+            accessory()
         }
         .padding(.horizontal, 14)
         .frame(height: 48)
@@ -323,6 +341,16 @@ private struct TabletRunningView: View {
     let showSidebar: () -> Void
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
+    /// Where the timeline starts, i.e. how much room everything above it took.
+    @State private var timelineTop: CGFloat = 0
+    /// Measured, not guessed: this column carries a different amount above the
+    /// list depending on whether the sidebar is open, so a fixed budget would be
+    /// wrong in one of the two states.
+    @State private var columnHeight: CGFloat = 0
+
+    private var timelineHeight: CGFloat {
+        max(0, columnHeight - timelineTop - TimerContentSpace.bottomSlack)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -378,11 +406,37 @@ private struct TabletRunningView: View {
                         .padding(.top, 56)
                     HStack(spacing: 56) {
                         fullStat(store.t("progress"), store.formatPercent(snapshot.progress))
-                        if store.salaryEnabled { fullStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
+                        if store.salaryEnabled {
+                            fullStat(
+                                store.t("moneyEarned"),
+                                store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio }),
+                                accessory: { OWCEarningsVisibilityButton(store: store) }
+                            )
+                        }
                         if store.scheduleMode != .off { fullStat(store.t("daysUntilRest"), daysUntilRest) }
                     }
                     .padding(.top, 56)
                 }
+
+                // "Coming up" was absent from the iPad entirely — the one
+                // layout where there is most room for it. The phone has carried
+                // it since the redesign; this column simply never got it, so an
+                // iPad user could not see when lunch or clock-off were due
+                // without collapsing the sidebar into the phone layout.
+                UpcomingTimelineView(
+                    store: store,
+                    snapshot: snapshot,
+                    now: now,
+                    isExpanded: store.timelineExpandedBinding,
+                    availableHeight: timelineHeight
+                )
+                .onGeometryChange(for: CGFloat.self) { geometry in
+                    geometry.frame(in: .named(TimerContentSpace.name)).minY
+                } action: { top in
+                    guard !store.timelineExpanded else { return }
+                    timelineTop = top
+                }
+                .padding(.top, 22)
 
                 HStack(spacing: 12) {
                     Button {
@@ -398,6 +452,8 @@ private struct TabletRunningView: View {
             }
             .frame(maxWidth: sidebarVisible ? 560 : 900)
             .frame(maxHeight: .infinity)
+            .coordinateSpace(.named(TimerContentSpace.name))
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { columnHeight = $0 }
             .padding(.horizontal, 40)
             .padding(.bottom, 40)
         }
@@ -451,10 +507,17 @@ private struct TabletRunningView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
-    private func fullStat(_ title: String, _ value: String) -> some View {
+    private func fullStat<Accessory: View>(
+        _ title: String,
+        _ value: String,
+        @ViewBuilder accessory: () -> Accessory = { EmptyView() }
+    ) -> some View {
         VStack(spacing: 6) {
             Text(title).font(.footnote).foregroundStyle(OWCDesign.secondary)
-            Text(value).font(.title.bold().monospacedDigit())
+            HStack(spacing: 8) {
+                Text(value).font(.title.bold().monospacedDigit())
+                accessory()
+            }
         }
     }
 

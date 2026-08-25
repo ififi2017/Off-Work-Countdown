@@ -18,6 +18,36 @@ nonisolated enum TimerContentSpace {
     static let bottomSlack: CGFloat = 22
 }
 
+/// The eye that blanks and restores the earnings figure.
+///
+/// Extracted so the iPad uses the same rule as the phone rather than a second
+/// copy of it. The rule is the asymmetry: hiding is free, revealing is not —
+/// anyone handed the device can blank the figure, only its owner can bring it
+/// back. A second implementation of that is a second chance to get it backwards.
+struct OWCEarningsVisibilityButton: View {
+    let store: OffWorkStore
+
+    var body: some View {
+        Button {
+            guard store.hideEarnings else {
+                store.hideEarnings = true
+                return
+            }
+            Task {
+                if await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason")) {
+                    store.hideEarnings = false
+                }
+            }
+        } label: {
+            Image(systemName: store.hideEarnings ? "eye" : "eye.slash")
+                .font(.body)
+                .foregroundStyle(OWCDesign.tertiary)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(store.t(store.hideEarnings ? "unlockSalary" : "salaryLocked"))
+    }
+}
+
 extension OffWorkStore {
     /// `timelineExpanded` as a `Binding`, so the timer views can hand it to the
     /// list without each of them holding a copy that can drift out of step.
