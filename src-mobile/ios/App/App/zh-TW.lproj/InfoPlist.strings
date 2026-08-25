@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "下班倒數";
 "CFBundleName" = "下班倒數";
+"NSFaceIDUsageDescription" = "Face ID 用於保護本機上的薪資資料不被他人看到。";

@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "เลิกงาน";
 "CFBundleName" = "เลิกงาน";
+"NSFaceIDUsageDescription" = "Face ID ช่วยปกป้องข้อมูลเงินเดือนของคุณบนเครื่องนี้";

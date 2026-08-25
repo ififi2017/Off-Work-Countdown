@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "Off Work";
 "CFBundleName" = "Off Work";
+"NSFaceIDUsageDescription" = "Face ID keeps your salary figures private on this device.";

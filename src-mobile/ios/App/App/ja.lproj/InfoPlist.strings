@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "退勤";
 "CFBundleName" = "退勤";
+"NSFaceIDUsageDescription" = "Face ID は、この端末に保存された給与情報を他人に見られないよう保護します。";

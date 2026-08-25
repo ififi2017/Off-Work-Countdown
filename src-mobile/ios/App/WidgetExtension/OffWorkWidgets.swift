@@ -19,20 +19,22 @@ struct OffWorkLiveActivityWidget: Widget {
                 .widgetURL(URL(string: "offworkcountdown://timer"))
         } dynamicIsland: { context in
             DynamicIsland {
-                DynamicIslandExpandedRegion(.leading) {
-                    Image("BrandIcon")
-                        .resizable()
-                        .frame(width: 25, height: 25)
-                        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-                        .padding(.leading, 8)
-                }
-                DynamicIslandExpandedRegion(.center) {
-                    Text(context.state.appTitle)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.8))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.62)
-                        .padding(.horizontal, 8)
+                DynamicIslandExpandedRegion(.leading, priority: 1) {
+                    HStack(spacing: 8) {
+                        Image("BrandIcon")
+                            .resizable()
+                            .frame(width: 25, height: 25)
+                            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+                        Text(context.state.appTitle)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.8))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.62)
+                            .allowsTightening(true)
+                    }
+                    .frame(maxWidth: 150, alignment: .leading)
+                    .padding(.leading, 8)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     // The capsule rounds the corners of the expanded area, so

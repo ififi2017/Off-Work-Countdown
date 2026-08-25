@@ -23,6 +23,12 @@ enum OWCDesign {
     static let rowHeight: CGFloat = 52
     static let pageInset: CGFloat = 16
     static let contentInset: CGFloat = 20
+
+    /// Fixed vertical rhythm for the setup screen. These used to be `Spacer`s,
+    /// which split the leftover height evenly and left the layout drifting with
+    /// the device.
+    static let heroGap: CGFloat = 26
+    static let sectionGap: CGFloat = 22
 }
 
 enum OWCSystemSettings {
@@ -30,7 +36,7 @@ enum OWCSystemSettings {
 }
 
 struct OWCAppHeader: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
 
     var body: some View {
         HStack {
@@ -86,6 +92,11 @@ struct OWCGroupCard<Content: View>: View {
 
     var body: some View {
         VStack(spacing: 0) { content }
+            // Solid, not `.thinMaterial`. The material picked up so much of the
+            // page underneath that in light mode a card was barely a shade off
+            // the background; `secondarySystemGroupedBackground` is what the
+            // system's own grouped lists sit on, and it separates in both
+            // appearances without needing a border.
             .background(OWCDesign.card)
             .clipShape(RoundedRectangle(cornerRadius: OWCDesign.cardRadius, style: .continuous))
     }
@@ -149,6 +160,16 @@ struct OWCRow<Accessory: View>: View {
     let isLast: Bool
     let accessory: Accessory
 
+    // A fixed gutter, so every title in a card starts on the same vertical line
+    // however wide the glyph is — `calendar.badge.clock` is a good deal wider
+    // than `clock`, and sizing to the glyph left the titles ragged. It is
+    // @ScaledMetric rather than a constant so the gutter grows with the label
+    // and the icon still fits at accessibility sizes.
+    @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 19
+    @ScaledMetric(relativeTo: .body) private var rowHeight: CGFloat = OWCDesign.rowHeight
+    @ScaledMetric(relativeTo: .body) private var iconTitleOffset: CGFloat = 2
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     init(
         icon: String? = nil,
         textIcon: String? = nil,
@@ -165,18 +186,29 @@ struct OWCRow<Accessory: View>: View {
         self.accessory = accessory()
     }
 
+    private var stacksAccessory: Bool { dynamicTypeSize.isAccessibilitySize }
+
+    /// A row carrying a subtitle is a block of text, not a single line. Centring
+    /// the icon against that block parks it between the two lines whenever the
+    /// subtitle wraps; it belongs beside the title.
+    private var alignsToTitle: Bool { subtitle != nil || stacksAccessory }
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: alignsToTitle ? .top : .center, spacing: 12) {
             if let textIcon {
                 Text(verbatim: textIcon)
                     .font(.body)
                     .foregroundStyle(OWCDesign.secondary)
-                    .frame(width: 19)
+                    .frame(width: iconWidth)
+                    .padding(.top, alignsToTitle ? iconTitleOffset : 0)
             } else if let icon {
                 Image(systemName: icon)
                     .font(.body)
                     .foregroundStyle(OWCDesign.secondary)
-                    .frame(width: 19)
+                    .frame(width: iconWidth)
+                    // Nudged down so the glyph sits on the title's optical
+                    // centre rather than on the top of its line box.
+                    .padding(.top, alignsToTitle ? iconTitleOffset : 0)
             }
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
@@ -187,20 +219,33 @@ struct OWCRow<Accessory: View>: View {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
-                        .lineLimit(2)
+                        .lineLimit(3)
+                        // Chinese at footnote size sets very tight by default;
+                        // a wrapped subtitle read as one solid block. Scaled to
+                        // match the 4pt the body copy above these rows uses.
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                // At accessibility sizes the title alone eats the row, and the
+                // value was truncating to "12:00 · …". Drop it onto its own line
+                // instead, the way Settings does.
+                if stacksAccessory { accessory }
             }
             Spacer(minLength: 8)
-            accessory
+            if !stacksAccessory { accessory }
         }
         .padding(.horizontal, 16)
-        .frame(minHeight: OWCDesign.rowHeight)
+        // A wrapped subtitle otherwise sits right on the separator.
+        .padding(.vertical, subtitle == nil ? 0 : 10)
+        .frame(minHeight: rowHeight)
         .overlay(alignment: .bottomTrailing) {
             if !isLast {
                 Rectangle()
                     .fill(OWCDesign.separator)
                     .frame(height: 0.5)
-                    .padding(.leading, icon == nil && textIcon == nil ? 16 : 47)
+                    // Inset to the title, which sits after the icon gutter plus
+                    // both paddings — so it tracks the icon as that scales.
+                    .padding(.leading, icon == nil && textIcon == nil ? 16 : iconWidth + 28)
             }
         }
         .contentShape(Rectangle())
@@ -236,16 +281,19 @@ struct OWCDetailAccessory: View {
 struct OWCPrimaryButtonStyle: ButtonStyle {
     var filled = true
     var color: Color = OWCDesign.accent
+    var minimumHeight: CGFloat = 50
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
             .foregroundStyle(filled ? .white : OWCDesign.primary)
-            .frame(maxWidth: .infinity, minHeight: 50)
+            .frame(maxWidth: .infinity, minHeight: minimumHeight)
             .background(filled ? color : OWCDesign.control)
             .clipShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
             .opacity(configuration.isPressed ? 0.72 : 1)
-            .scaleEffect(configuration.isPressed ? 0.985 : 1)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.985 : 1)
+            .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press, value: configuration.isPressed)
     }
 }
 
@@ -275,6 +323,9 @@ struct OWCSecondaryButtonStyle: ButtonStyle {
 
 struct OWCProgressMeter: View {
     let progress: Double
+    /// Localised name for VoiceOver — the percentage inside the bar is drawn at
+    /// a fixed size and is not a text element the screen reader can reach.
+    let label: String
     var overtime = false
     var paused = false
 
@@ -285,6 +336,10 @@ struct OWCProgressMeter: View {
     private var fill: Color { overtime ? OWCDesign.orangeDeep : OWCDesign.accent }
 
     fileprivate static let bubbleHeight: CGFloat = 22
+    // Fixed on purpose, in both places: the bubble's width is measured with the
+    // matching UIFont below, and the bubble has to stay inside a progress bar
+    // whose height does not grow. Chart annotations don't scale; neither does
+    // this. The percentage is also read out via the meter's accessibility value.
     fileprivate static let bubbleFont = Font.system(size: 13, weight: .semibold).monospacedDigit()
 
     private static let measuringFont = UIFont.monospacedDigitSystemFont(
@@ -392,6 +447,12 @@ struct OWCProgressMeter: View {
         // boundary, rather than one per leaf, because every leaf inside reads
         // that same proxy.
         .transaction { $0.animation = nil }
+        // The percentage is drawn at a fixed size inside the bar, so state it
+        // here instead — this is the only way a VoiceOver user gets the number.
+        .accessibilityElement()
+        .accessibilityLabel(label)
+        .accessibilityValue(Text((min(100, max(0, progress)) / 100)
+            .formatted(.percent.precision(.fractionLength(0)).locale(locale))))
     }
 }
 
@@ -638,7 +699,7 @@ struct OWCPageTitle: View {
 
     var body: some View {
         Text(title)
-            .font(.system(size: 34, weight: .bold))
+            .font(.largeTitle.bold())
             .tracking(-0.7)
             .foregroundStyle(OWCDesign.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -694,7 +755,7 @@ private struct OWCDetailHeader: View {
                 HStack {
                     Button(action: dismiss) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 19, weight: .semibold))
+                            .font(.title3.weight(.semibold))
                             .frame(width: 30, height: 30)
                     }
                     .buttonStyle(.glass)
@@ -706,7 +767,7 @@ private struct OWCDetailHeader: View {
 
                 if compact {
                     Text(pageTitle)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.title3.weight(.semibold))
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
                         .padding(.horizontal, 58)
@@ -717,7 +778,7 @@ private struct OWCDetailHeader: View {
 
             if !compact {
                 Text(pageTitle)
-                    .font(.system(size: 34, weight: .bold))
+                    .font(.largeTitle.bold())
                     .tracking(-0.7)
                     .lineLimit(2)
                     .minimumScaleFactor(0.78)
@@ -761,7 +822,7 @@ struct OWCNumberField: View {
     var body: some View {
         TextField(placeholder, text: $text, selection: $selection)
             .font(
-                .system(size: emphasized ? 19 : 17, weight: .semibold)
+                (emphasized ? Font.title3 : .body).weight(.semibold)
                 .monospacedDigit()
             )
             .keyboardType(decimal ? .decimalPad : .numberPad)
@@ -811,6 +872,11 @@ extension View {
     /// separates a Home Screen widget from the wallpaper behind it.
     func owcShowcaseLift() -> some View {
         self
+            // Flatten first. Without it each shadow is derived from the union of
+            // every sublayer underneath, so the two blurs below are recomputed
+            // against a live subtree on every frame of a page transition rather
+            // than against one finished texture.
+            .compositingGroup()
             .shadow(color: .black.opacity(0.16), radius: 14, y: 6)
             .shadow(color: .black.opacity(0.06), radius: 2, y: 1)
     }

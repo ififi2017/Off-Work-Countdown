@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "Feierabend";
 "CFBundleName" = "Feierabend";
+"NSFaceIDUsageDescription" = "Face ID schützt deine Gehaltsdaten auf diesem Gerät vor fremden Blicken.";

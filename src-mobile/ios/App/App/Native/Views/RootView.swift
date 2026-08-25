@@ -1,12 +1,11 @@
+import Combine
 import SwiftUI
 import UIKit
 
 struct OffWorkCountdownRootView: View {
-    @StateObject private var store = OffWorkStore()
-    @StateObject private var notifications = NotificationService()
-    @StateObject private var liveActivities = LiveActivityService()
-    @State private var phoneTimerPath: [AppRoute] = []
-    @State private var phoneSettingsPath: [AppRoute] = []
+    @State private var store = OffWorkStore()
+    @State private var notifications = NotificationService()
+    @State private var liveActivities = LiveActivityService()
     @State private var serviceTask: Task<Void, Never>?
     /// Settings changed but the reminders have not been rebuilt yet. Flushed
     /// when the app leaves the foreground, or immediately when the countdown
@@ -36,7 +35,7 @@ struct OffWorkCountdownRootView: View {
         .preferredColorScheme(store.preferredColorScheme)
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
-        .environmentObject(notifications)
+        .environment(notifications)
         .tint(OWCDesign.accent)
         .sensoryFeedback(.success, trigger: store.countdownStarted)
         .task {
@@ -65,19 +64,20 @@ struct OffWorkCountdownRootView: View {
         .onOpenURL { url in
             guard url.scheme == "offworkcountdown" else { return }
             if url.host == "timer" {
-                phoneSettingsPath.removeAll()
-                phoneTimerPath.removeAll()
+                store.settingsPath.removeAll()
+                store.timerPath.removeAll()
                 store.selectedTab = .timer
                 store.presentedRoute = nil
                 return
             }
             guard let route = AppRoute(rawValue: url.host ?? "") else { return }
-            phoneSettingsPath.removeAll()
+            store.settingsPath.removeAll()
             store.selectedTab = .settings
             store.presentedRoute = route
         }
         .onChange(of: scenePhase) {
             if scenePhase == .active {
+                store.reconcileCountdownSession()
                 store.refreshSystemLanguage()
                 Task { @MainActor in
                     // Notification authorization can change while the user is
@@ -93,8 +93,15 @@ struct OffWorkCountdownRootView: View {
                 scheduleServices()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            if store.reconcileCountdownSession() {
+                pendingReschedule = false
+                scheduleServices()
+            }
+        }
         .onAppear {
             CountdownRules.warmUp()
+            store.reconcileCountdownSession()
             store.refreshSystemLanguage()
             applyQAGeometryIfRequested()
         }
@@ -152,7 +159,7 @@ struct OffWorkCountdownRootView: View {
                 PhoneLandscapeShellView(store: store)
             } else {
                 TabView(selection: $store.selectedTab) {
-                    NavigationStack(path: $phoneTimerPath) {
+                    NavigationStack(path: $store.timerPath) {
                         TimerDesignView(
                             store: store,
                             wide: false,
@@ -167,7 +174,7 @@ struct OffWorkCountdownRootView: View {
                     }
                     .tag(AppTab.timer)
 
-                    NavigationStack(path: $phoneSettingsPath) {
+                    NavigationStack(path: $store.settingsPath) {
                         SettingsDesignView(store: store, wide: false)
                             .navigationDestination(for: AppRoute.self) { route in
                                 AppRouteDestination(route: route, store: store)
@@ -175,7 +182,7 @@ struct OffWorkCountdownRootView: View {
                     }
                     .onChange(of: store.presentedRoute) { _, route in
                         guard let route else { return }
-                        phoneSettingsPath.append(route)
+                        store.settingsPath.append(route)
                         store.presentedRoute = nil
                     }
                     .tabItem {
@@ -196,11 +203,11 @@ struct OffWorkCountdownRootView: View {
         store.presentedRoute = nil
         if let route {
             withAnimation(tabAnimation) {
-                phoneTimerPath = [route]
+                store.timerPath = [route]
                 store.selectedTab = .timer
             }
         } else {
-            phoneSettingsPath.removeAll()
+            store.settingsPath.removeAll()
             withAnimation(tabAnimation) {
                 store.selectedTab = .settings
             }
@@ -208,7 +215,7 @@ struct OffWorkCountdownRootView: View {
     }
 
     private var tabAnimation: Animation {
-        reduceMotion ? .easeOut(duration: 0.16) : .snappy(duration: 0.28)
+        reduceMotion ? OWCMotion.reduced : OWCMotion.navigation
     }
 
     private func scheduleServices() {

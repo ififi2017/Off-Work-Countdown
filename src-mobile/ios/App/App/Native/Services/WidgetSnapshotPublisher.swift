@@ -57,7 +57,11 @@ final class WidgetSnapshotPublisher {
         )
     }
 
-    private func makeSnapshot(store: OffWorkStore, shift: NativeShiftSnapshot?, active: Bool, nowMs: Int64) -> WidgetSnapshot {
+    /// Internal rather than private so the timeline can be tested without a
+    /// shared app-group container: this is where the phases are decided, and a
+    /// break that produced no entry is exactly the kind of gap a unit test
+    /// catches and a screenshot does not.
+    func makeSnapshot(store: OffWorkStore, shift: NativeShiftSnapshot?, active: Bool, nowMs: Int64) -> WidgetSnapshot {
         if !active,
            store.scheduleMode != .off,
            let shift,
@@ -116,7 +120,16 @@ final class WidgetSnapshotPublisher {
             WidgetShiftSegment(startAtMs: Int64($0.startAtMs), endAtMs: Int64($0.endAtMs))
         }
         let endMs = Int64(shift.endAtMs)
-        let expires = max(endMs + 12 * 60 * 60 * 1_000, nowMs + 60 * 60 * 1_000)
+        let endDate = Date(timeIntervalSince1970: Double(endMs) / 1_000)
+        let endDay = Calendar.current.startOfDay(for: endDate)
+        let rolloverDate = Calendar.current.date(byAdding: .day, value: 1, to: endDay) ?? endDate
+        let rolloverAtMs = Int64(rolloverDate.timeIntervalSince1970 * 1_000)
+        let fallbackExpires = max(
+            rolloverAtMs + 24 * 60 * 60 * 1_000,
+            nowMs + 60 * 60 * 1_000
+        )
+        let nextShiftStartAtMs = shift.nextShiftStartAtMs.map(Int64.init)
+        let expires = nextShiftStartAtMs.flatMap { $0 > nowMs ? $0 : nil } ?? fallbackExpires
         var entries: [WidgetTimelineEntry] = []
 
         if nowMs < Int64(shift.startAtMs) {
@@ -134,71 +147,96 @@ final class WidgetSnapshotPublisher {
         }
 
         for (index, segment) in segments.enumerated() {
-            let date = max(nowMs, segment.startAtMs)
-            guard date < segment.endAtMs else { continue }
             let completedBefore = segments.prefix(index).reduce(Int64(0)) { $0 + $1.endAtMs - $1.startAtMs }
-            let elapsed = completedBefore + max(0, date - segment.startAtMs)
             let duration = max(Int64(1), Int64(shift.durationMs))
-            let remaining = max(0, duration - elapsed)
-            entries.append(entry(
-                date: date,
-                end: segment.endAtMs,
-                phase: .working,
-                label: "widgetWorking",
-                kind: .workRemaining,
-                remaining: remaining,
-                progress: Double(elapsed) / Double(duration) * 100,
-                boundary: segment.endAtMs,
-                target: date + remaining
-            ))
 
-            if index + 1 < segments.count {
-                let next = segments[index + 1]
-                if next.startAtMs > segment.endAtMs, next.startAtMs > nowMs {
-                    entries.append(entry(
-                        date: max(nowMs, segment.endAtMs),
-                        end: next.startAtMs,
-                        phase: .break,
-                        label: "lunchInProgress",
-                        kind: .breakEnds,
-                        remaining: remaining,
-                        progress: Double(elapsed + (segment.endAtMs - date)) / Double(duration) * 100,
-                        boundary: next.startAtMs,
-                        target: next.startAtMs
-                    ))
-                }
-            }
-        }
-
-        // "Off work" is a moment, not a state to sit in for twelve hours: after
-        // a short beat the widget switches to counting down the next shift.
-        let doneUntil = min(expires, max(nowMs, endMs) + 30 * 60 * 1_000)
-        entries.append(entry(
-            date: max(nowMs, endMs),
-            end: doneUntil,
-            phase: .done,
-            label: "offWorkToday",
-            kind: .complete,
-            remaining: 0,
-            progress: 100,
-            boundary: nil,
-            target: nil
-        ))
-        if let nextStart = shift.nextShiftStartAtMs {
-            let target = Int64(nextStart)
-            if target > doneUntil {
+            let workStart = max(nowMs, segment.startAtMs)
+            if workStart < segment.endAtMs {
+                let elapsed = completedBefore + max(0, workStart - segment.startAtMs)
+                let remaining = max(0, duration - elapsed)
                 entries.append(entry(
-                    date: doneUntil,
-                    end: target,
-                    phase: .before,
-                    label: "nextShiftLabelShort",
-                    kind: .shiftStarts,
-                    remaining: target - doneUntil,
-                    progress: 0,
-                    boundary: target,
-                    target: target
+                    date: workStart,
+                    end: segment.endAtMs,
+                    phase: .working,
+                    label: "widgetWorking",
+                    kind: .workRemaining,
+                    remaining: remaining,
+                    progress: Double(elapsed) / Double(duration) * 100,
+                    boundary: segment.endAtMs,
+                    target: workStart + remaining
                 ))
             }
+
+            // The gap after this segment, emitted whether or not the segment
+            // itself is still running. It used to sit inside the branch above,
+            // which was guarded on the segment not having finished — so during
+            // lunch, when it has, nothing at all covered the present moment.
+            // WidgetKit then had no entry to show and every family fell through
+            // to its empty state, reporting "not started" mid-shift.
+            guard index + 1 < segments.count else { continue }
+            let next = segments[index + 1]
+            guard next.startAtMs > segment.endAtMs, next.startAtMs > nowMs else { continue }
+
+            // Progress freezes for the length of the break, matching the app:
+            // every minute of work up to here counts, and none of the break does.
+            let elapsedAtBreak = completedBefore + (segment.endAtMs - segment.startAtMs)
+            entries.append(entry(
+                date: max(nowMs, segment.endAtMs),
+                end: next.startAtMs,
+                phase: .break,
+                label: "lunchInProgress",
+                kind: .breakEnds,
+                remaining: max(0, duration - elapsedAtBreak),
+                progress: Double(elapsedAtBreak) / Double(duration) * 100,
+                boundary: next.startAtMs,
+                target: next.startAtMs
+            ))
+        }
+
+        // Completion belongs to the calendar day that contains the shift end.
+        // At the following midnight the widget advances on its own instead of
+        // keeping yesterday's "Done for today" until the app is reopened.
+        let doneStart = max(nowMs, endMs)
+        let doneUntil = min(expires, rolloverAtMs)
+        if doneStart < doneUntil {
+            entries.append(entry(
+                date: doneStart,
+                end: doneUntil,
+                phase: .done,
+                label: "offWorkToday",
+                kind: .complete,
+                remaining: 0,
+                progress: 100,
+                boundary: nil,
+                target: nil
+            ))
+        }
+
+        let postCompletionStart = max(nowMs, doneUntil)
+        if let target = nextShiftStartAtMs, target > postCompletionStart {
+            entries.append(entry(
+                date: postCompletionStart,
+                end: target,
+                phase: .before,
+                label: "nextShiftLabelShort",
+                kind: .shiftStarts,
+                remaining: target - postCompletionStart,
+                progress: 0,
+                boundary: target,
+                target: target
+            ))
+        } else if postCompletionStart < expires {
+            entries.append(entry(
+                date: postCompletionStart,
+                end: expires,
+                phase: .idle,
+                label: "countdownNotStarted",
+                kind: .none,
+                remaining: 0,
+                progress: 0,
+                boundary: nil,
+                target: nil
+            ))
         }
 
         return WidgetSnapshot(

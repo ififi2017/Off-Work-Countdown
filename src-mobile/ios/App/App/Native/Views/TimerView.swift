@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 
 struct OvertimeSheet: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
     @Environment(\.dismiss) private var dismiss
     @State private var endDate = Date.now
     @State private var confirmed = false
@@ -11,7 +11,7 @@ struct OvertimeSheet: View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
                 Text(store.t("overtimeDescription"))
-                    .font(.system(size: 16))
+                    .font(.callout)
                     .foregroundStyle(OWCDesign.secondary)
                 DatePicker(
                     store.t("overtimeEndTime"),
@@ -23,7 +23,7 @@ struct OvertimeSheet: View {
                 .labelsHidden()
                 .frame(maxWidth: .infinity)
                 Label(store.t("overtimeNoMultiplier"), systemImage: "info.circle")
-                    .font(.system(size: 14))
+                    .font(.subheadline)
                     .foregroundStyle(OWCDesign.secondary)
                 Button(store.t("confirmOvertime")) {
                     store.applyOvertime(date: endDate)
@@ -58,7 +58,7 @@ struct OvertimeSheet: View {
 }
 
 struct ShareComposerView: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -97,21 +97,21 @@ struct ShareComposerView: View {
                     .padding(.horizontal, horizontalPadding)
                     .padding(.vertical, 14)
                 } else {
-                    ScrollView {
-                        VStack(spacing: 14) {
-                            moodPicker
-                            sharePreview(maxWidth: min(300, proxy.size.height * 0.54))
-                        }
-                        .padding(.horizontal, OWCDesign.pageInset)
-                        .padding(.top, 6)
-                        .padding(.bottom, 78)
-                    }
-                    .safeAreaInset(edge: .bottom) {
+                    // No scroll view and no arithmetic: the mood row and the
+                    // button take their natural height, and the card is handed
+                    // whatever is between them. `aspectRatio(.fit)` then picks
+                    // the smaller of that height and the available width, so the
+                    // card can never end up behind the button — which is exactly
+                    // what deriving its size from a height fraction kept doing.
+                    VStack(spacing: 14) {
+                        moodPicker
+                        sharePreview(maxWidth: proxy.size.width - OWCDesign.pageInset * 2)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                         shareButton
-                            .padding(.horizontal, OWCDesign.pageInset)
-                            .padding(.vertical, 10)
-                            .background(.ultraThinMaterial)
                     }
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.top, 6)
+                    .padding(.bottom, 10)
                 }
             }
             .background(OWCDesign.page)
@@ -121,7 +121,7 @@ struct ShareComposerView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                     }
                     .accessibilityLabel(store.t("close"))
                 }
@@ -129,6 +129,7 @@ struct ShareComposerView: View {
         }
         .sensoryFeedback(.selection, trigger: store.shareMood)
     }
+
 
     private var moodPicker: some View {
         ViewThatFits(in: .horizontal) {
@@ -161,7 +162,7 @@ struct ShareComposerView: View {
     private var expandedShareControls: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(store.t("shareMoodLabel"))
-                .font(.system(size: 20, weight: .semibold))
+                .font(.title3.weight(.semibold))
             moodPicker
             shareDetailsCard
             shareButton
@@ -172,10 +173,10 @@ struct ShareComposerView: View {
     private var compactShareControls: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(store.t("shareMoodLabel"))
-                .font(.system(size: 15, weight: .semibold))
+                .font(.subheadline.weight(.semibold))
             moodPicker
             Text(shareCopy)
-                .font(.system(size: 14))
+                .font(.subheadline)
                 .foregroundStyle(OWCDesign.secondary)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -203,11 +204,11 @@ struct ShareComposerView: View {
     private func shareDetailRow(_ icon: String, text: String, emphasized: Bool = false) -> some View {
         HStack(alignment: .top, spacing: 11) {
             Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(emphasized ? OWCDesign.accent : OWCDesign.secondary)
                 .frame(width: 18)
             Text(text)
-                .font(.system(size: 14, weight: emphasized ? .medium : .regular))
+                .font(.subheadline.weight(emphasized ? .medium : .regular))
                 .foregroundStyle(emphasized ? OWCDesign.primary : OWCDesign.secondary)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -229,7 +230,7 @@ struct ShareComposerView: View {
             withAnimation(.snappy(duration: 0.2)) { store.shareMood = mood }
         } label: {
             Text(verbatim: mood.emoji)
-                .font(.system(size: 25))
+                .font(.title)
                 .frame(width: 34, height: 34)
                 .background(selected ? OWCDesign.control : Color.clear)
                 .clipShape(Circle())
@@ -283,8 +284,13 @@ struct ShareComposerView: View {
     }
 }
 
+/// The shareable image, drawn by `ImageRenderer`.
+///
+/// Every size in here is deliberately fixed rather than a Dynamic Type style:
+/// this view is rasterised into a PNG that leaves the device, so its layout has
+/// to be identical for everyone. Do not "migrate" these to semantic fonts.
 private struct ShareCard: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
 
     var body: some View {
         ZStack {
@@ -295,7 +301,7 @@ private struct ShareCard: View {
             )
             VStack(spacing: 0) {
                 HStack(spacing: 8) {
-                    Image("BrandIcon")
+                    Image(.brandIcon)
                         .resizable()
                         .frame(width: 22, height: 22)
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))

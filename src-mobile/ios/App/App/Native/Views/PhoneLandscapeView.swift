@@ -1,12 +1,11 @@
 import SwiftUI
 
 struct PhoneLandscapeShellView: View {
-    @ObservedObject var store: OffWorkStore
-    @State private var path: [AppRoute] = []
+    @Bindable var store: OffWorkStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: $store.activePath) {
             ZStack(alignment: .leading) {
                 OWCDesign.page.ignoresSafeArea()
 
@@ -40,7 +39,7 @@ struct PhoneLandscapeShellView: View {
         }
         .onChange(of: store.presentedRoute) { _, route in
             guard let route else { return }
-            path.append(route)
+            store.activePath.append(route)
             store.presentedRoute = nil
         }
         .background(OWCDesign.page)
@@ -59,13 +58,11 @@ struct PhoneLandscapeShellView: View {
 
     private func railButton(_ tab: AppTab, icon: String, title: String) -> some View {
         Button {
-            withAnimation(pageAnimation) {
-                store.selectedTab = tab
-            }
+            store.selectedTab = tab
         } label: {
             VStack(spacing: 4) {
-                Image(systemName: icon).font(.system(size: 24))
-                Text(title).font(.system(size: 11, weight: store.selectedTab == tab ? .semibold : .medium))
+                Image(systemName: icon).font(.title2)
+                Text(title).font(.caption2.weight(store.selectedTab == tab ? .semibold : .medium))
             }
             .foregroundStyle(store.selectedTab == tab ? OWCDesign.accent : OWCDesign.tertiary)
             .frame(maxWidth: .infinity, minHeight: 64)
@@ -80,70 +77,35 @@ struct PhoneLandscapeShellView: View {
     }
 
     private var pageAnimation: Animation {
-        reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.32)
+        reduceMotion ? OWCMotion.reduced : OWCMotion.navigation
     }
 
     private var pageTransition: AnyTransition {
-        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.985))
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.98))
     }
 }
 
-private enum LandscapeSetupTimeField: String, Identifiable {
-    case start, end
-    var id: String { rawValue }
-}
-
 private struct LandscapeSetupView: View {
-    @ObservedObject var store: OffWorkStore
-    @State private var timeField: LandscapeSetupTimeField?
-    @State private var armed = false
-    @State private var armResetTask: Task<Void, Never>?
-    @State private var showInvalidLunch = false
+    let store: OffWorkStore
+    @State private var timeField: SetupTimeField?
 
     var body: some View {
-        HStack(alignment: .center, spacing: 24) {
-            VStack(spacing: 12) {
-                Text(Date.now.formatted(.dateTime.month().day().weekday(.wide).locale(store.locale)))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(OWCDesign.secondary)
-                Text("\(store.timeString(store.startMinutes)) — \(store.timeString(store.endMinutes))")
-                    .font(.system(size: 42, weight: .bold).monospacedDigit())
-                    .tracking(-1.3)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-
-                OWCGroupCard {
-                    landscapeTimeRow("sunrise", store.t("startTime"), store.startMinutes) { timeField = .start }
-                    landscapeTimeRow("sunset", store.t("endTime"), store.endMinutes) { timeField = .end }
-                }
-
-                Button { startTapped() } label: {
-                    Label(armed ? store.t("nonWorkdayTapAgain") : store.t("startCountdown"), systemImage: armed ? "exclamationmark.triangle.fill" : "play.fill")
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.68)
-                        .multilineTextAlignment(.center)
-                }
-                .buttonStyle(OWCPrimaryButtonStyle(color: armed ? OWCDesign.orangeDeep : OWCDesign.accent))
-                .disabled(startDisabled)
+        HStack(alignment: .center, spacing: 20) {
+            VStack(spacing: 18) {
+                ShiftHeroCard(store: store) { timeField = $0 }
+                ShiftStartButton(store: store) { store.presentedRoute = .lunch }
             }
             .frame(maxWidth: .infinity)
 
-            VStack(spacing: 10) {
-                NavigationLink(value: AppRoute.schedule) {
-                    setupShortcut("calendar.badge.clock", store.t("workSchedule"), scheduleLabel)
-                }
-                NavigationLink(value: AppRoute.lunch) {
-                    setupShortcut("cup.and.saucer", store.t("lunchBreak"), lunchLabel)
-                }
-                NavigationLink(value: AppRoute.salary) {
-                    setupShortcut("banknote", store.t("salarySettings"), salaryLabel)
-                }
-                NavigationLink(value: AppRoute.notifications) {
-                    setupShortcut("bell.badge", store.t("offWorkReminder"), notificationLabel)
-                }
+            ScrollView {
+                ShiftSetupTimelineView(
+                    store: store,
+                    onSelect: { store.presentedRoute = $0 },
+                    onEditTime: { timeField = $0 }
+                )
             }
             .frame(maxWidth: .infinity)
-            .buttonStyle(OWCRowButtonStyle())
+            .scrollIndicators(.hidden)
         }
         .frame(maxHeight: 330)
         .frame(maxHeight: .infinity)
@@ -160,136 +122,100 @@ private struct LandscapeSetupView: View {
             )
             .presentationDetents([.medium])
         }
-        .alert(store.t("invalidLunchTitle"), isPresented: $showInvalidLunch) {
-            Button(store.t("return"), role: .cancel) {}
-            Button(store.t("goToLunchSettings")) { store.presentedRoute = .lunch }
-        } message: { Text(store.t("invalidLunchMessage")) }
-        .sensoryFeedback(.warning, trigger: armed)
-        .onDisappear { armResetTask?.cancel() }
-    }
-
-    private func landscapeTimeRow(_ icon: String, _ title: String, _ minutes: Int, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            OWCRow(icon: icon, title: title) {
-                OWCDetailAccessory(text: store.timeString(minutes))
-            }
-        }
-        .buttonStyle(OWCRowButtonStyle())
-    }
-
-    private func setupShortcut(_ icon: String, _ title: String, _ value: String) -> some View {
-        OWCGroupCard { OWCRow(icon: icon, title: title, isLast: true) { OWCDetailAccessory(text: value) } }
-    }
-
-    private var startDisabled: Bool { store.startMinutes == store.endMinutes || (store.scheduleMode == .classic && store.workdays.isEmpty) }
-    private var scheduleLabel: String { switch store.scheduleMode { case .classic: store.t("scheduleClassic"); case .alternating: store.t("scheduleAlternating"); case .rotation: store.t("scheduleRotation"); case .off: store.t("scheduleOff") } }
-    private var lunchLabel: String { store.lunchEnabled ? "\(store.timeString(store.lunchStartMinutes)) · \(store.formatRelativeDuration(Double(store.lunchDurationMinutes) * 60_000))" : store.t("disabledShort") }
-    private var salaryLabel: String { store.salaryEnabled ? (store.salaryType == .monthly ? store.t("monthly") : store.t("daily")) : store.t("disabledShort") }
-    private var notificationLabel: String { switch store.notificationMode { case .off: store.t("notificationModeOff"); case .simple: store.t("notificationModeSimple"); case .milestones: store.t("notificationModeMilestones") } }
-
-    private func startTapped() {
-        guard store.isLunchInsideShift else { showInvalidLunch = true; return }
-        let nonWorkday = store.scheduleMode != .off && store.snapshot()?.isWorkday == false
-        if nonWorkday, !armed {
-            withAnimation(.snappy) { armed = true }
-            resetArmedState()
-            return
-        }
-        armResetTask?.cancel()
-        withAnimation(.smooth(duration: 0.42)) {
-            store.startCountdown(force: nonWorkday)
-        }
-    }
-    private func resetArmedState() {
-        armResetTask?.cancel()
-        armResetTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(5))
-            guard !Task.isCancelled else { return }
-            withAnimation(.snappy) { armed = false }
-        }
     }
 }
 
 private struct LandscapeTimerView: View {
-    @ObservedObject var store: OffWorkStore
+    // No semantic style goes this large; scale the display size instead.
+    @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 76
+    let store: OffWorkStore
     @State private var showShare = false
     @State private var showOvertime = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            let snapshot = store.countdownStarted ? store.snapshot(at: timeline.date) : nil
+            let phase = TimerVisualPhase.resolve(
+                countdownStarted: store.countdownStarted,
+                snapshot: snapshot,
+                forceToday: store.forceToday
+            )
+
             ZStack {
-                if store.countdownStarted, let snapshot = store.snapshot(at: timeline.date), snapshot.remainingMs > 0 {
+                if phase == .setup {
+                    LandscapeSetupView(store: store)
+                } else if phase.showsActiveTimer, let snapshot {
                     VStack(spacing: 0) {
                         Text(timeline.date.formatted(.dateTime.month().day().weekday(.wide).locale(store.locale)))
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(OWCDesign.secondary)
                             .padding(.bottom, 4)
                         Text(store.formatDuration(snapshot.remainingMs))
-                            .font(.system(size: 76, weight: .bold).monospacedDigit())
+                            .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
                             .tracking(-3)
                             .lineLimit(1)
-                            .contentTransition(.numericText(countsDown: true))
+                            .owcCountdownTextTransition(milliseconds: snapshot.remainingMs)
                         Text(store.t("timeLeftCaption"))
-                            .font(.system(size: 14))
+                            .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
                             .padding(.top, 6)
 
-                    VStack(spacing: 8) {
-                        GeometryReader { proxy in
-                            Capsule().fill(OWCDesign.control)
-                                .overlay(alignment: .leading) {
-                                    Capsule().fill(OWCDesign.accent)
-                                        .frame(width: proxy.size.width * min(1, max(0, snapshot.progress / 100)))
+                        VStack(spacing: 8) {
+                            GeometryReader { proxy in
+                                Capsule().fill(OWCDesign.control)
+                                    .overlay(alignment: .leading) {
+                                        Capsule().fill(OWCDesign.accent)
+                                            .frame(width: proxy.size.width * min(1, max(0, snapshot.progress / 100)))
+                                    }
+                            }
+                            .frame(height: 10)
+                            GeometryReader { proxy in
+                                Text(store.timeString(store.startMinutes)).position(x: 24, y: 8)
+                                if store.lunchEnabled, snapshot.segments.count > 1 {
+                                    Text("\(store.timeString(store.lunchStartMinutes)) · \(store.t("lunchBreak"))")
+                                        .position(x: max(62, min(proxy.size.width - 62, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
                                 }
-                        }
-                        .frame(height: 10)
-                        GeometryReader { proxy in
-                            Text(store.timeString(store.startMinutes)).position(x: 24, y: 8)
-                            if store.lunchEnabled, snapshot.segments.count > 1 {
-                                Text("\(store.timeString(store.lunchStartMinutes)) · \(store.t("lunchBreak"))")
-                                    .position(x: max(62, min(proxy.size.width - 62, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
+                                Text(store.timeString(store.endMinutes)).position(x: proxy.size.width - 24, y: 8)
                             }
-                            Text(store.timeString(store.endMinutes)).position(x: proxy.size.width - 24, y: 8)
+                            .frame(height: 16)
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(OWCDesign.secondary)
                         }
-                        .frame(height: 16)
-                        .font(.system(size: 12).monospacedDigit())
-                        .foregroundStyle(OWCDesign.secondary)
-                    }
-                    .padding(.top, 20)
+                        .padding(.top, 20)
 
-                    HStack(spacing: 52) {
-                        landscapeStat(store.t("progress"), store.formatPercent(snapshot.progress))
-                        if store.salaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
-                        if store.scheduleMode != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot)) }
-                    }
-                    .padding(.top, 20)
+                        HStack(spacing: 52) {
+                            landscapeStat(store.t("progress"), store.formatPercent(snapshot.progress))
+                            if store.salaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
+                            if store.scheduleMode != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot)) }
+                        }
+                        .padding(.top, 20)
 
-                    HStack(spacing: 10) {
-                        Button {
-                            withAnimation(.smooth(duration: 0.42)) {
+                        HStack(spacing: 10) {
+                            Button {
                                 store.stopCountdown()
-                            }
-                        } label: { Label(store.t("return"), systemImage: "arrow.left") }
-                        Button { showOvertime = true } label: { Text(store.t("overtime")) }
-                        Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
+                            } label: { Label(store.t("return"), systemImage: "arrow.left") }
+                            Button { showOvertime = true } label: { Text(store.t("overtime")) }
+                            Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
+                        }
+                        .buttonStyle(LandscapeButtonStyle())
+                        .padding(.top, 20)
                     }
-                    .buttonStyle(LandscapeButtonStyle())
-                    .padding(.top, 20)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 20)
-                .transition(timerTransition)
-                } else if !store.countdownStarted {
-                    LandscapeSetupView(store: store)
-                        .transition(timerTransition)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 20)
                 } else {
-                    TimerDesignView(store: store, wide: true, timelineDate: timeline.date)
-                        .transition(timerTransition)
+                    TimerDesignView(
+                        store: store,
+                        wide: true,
+                        timelineDate: timeline.date,
+                        animatesPhaseChanges: false
+                    )
                 }
             }
-            .animation(timerAnimation, value: store.countdownStarted)
+            .id(phase)
+            .transition(timerTransition)
+            .animation(timerAnimation, value: phase)
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showShare) {
@@ -305,17 +231,17 @@ private struct LandscapeTimerView: View {
     }
 
     private var timerAnimation: Animation {
-        reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.42)
+        reduceMotion ? OWCMotion.reduced : OWCMotion.phase
     }
 
     private var timerTransition: AnyTransition {
-        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.975))
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.98))
     }
 
     private func landscapeStat(_ title: String, _ value: String) -> some View {
         VStack(spacing: 3) {
-            Text(title).font(.system(size: 12)).foregroundStyle(OWCDesign.secondary)
-            Text(value).font(.system(size: 20, weight: .bold).monospacedDigit())
+            Text(title).font(.caption).foregroundStyle(OWCDesign.secondary)
+            Text(value).font(.title3.bold().monospacedDigit())
         }
     }
 
@@ -337,53 +263,30 @@ private struct LandscapeTimerView: View {
 }
 
 private struct LandscapeSettingsView: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
+
+    /// Same sections as portrait, two columns instead of one — landscape has
+    /// the width and not the height. The contents come from `SettingsSectionCard`
+    /// so the two orientations cannot drift apart again.
+    private let columns: [[SettingsSection]] = [[.shift], [.reminders, .appearance, .about]]
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 Text(store.t("settings"))
-                    .font(.system(size: 26, weight: .bold))
+                    .font(.title.bold())
                     .tracking(-0.65)
                     .frame(maxWidth: .infinity, alignment: .center)
 
-                HStack(alignment: .center, spacing: 18) {
-                    VStack(spacing: 10) {
-                        compactSection(store.t("appearanceSection")) {
-                            compactLink(.theme, icon: "display", title: store.t("theme"), value: themeLabel)
-                            Link(destination: OWCSystemSettings.applicationURL) {
-                                OWCRow(icon: "globe", title: store.t("chooselanguage"), isLast: true) {
-                                    OWCDetailAccessory(
-                                        text: store.localizer.languageName(for: store.languageCode),
-                                        external: true
-                                    )
-                                }
-                            }
-                            .buttonStyle(OWCRowButtonStyle())
-                        }
-                        compactSection(store.t("aboutSection")) {
-                            compactLink(.about, icon: "info.circle", title: store.t("aboutProject"), value: nil)
-                            OWCRow(icon: "tag", title: store.t("version"), isLast: true) {
-                                Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")
-                                    .font(.system(size: 17).monospacedDigit())
-                                    .foregroundStyle(OWCDesign.secondary)
+                HStack(alignment: .top, spacing: 18) {
+                    ForEach(columns.indices, id: \.self) { column in
+                        VStack(spacing: 14) {
+                            ForEach(columns[column]) { section in
+                                SettingsSectionCard(store: store, section: section)
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .top)
                     }
-                    .frame(maxWidth: .infinity)
-
-                    VStack(spacing: 10) {
-                        compactSection(store.t("shiftSection")) {
-                            compactLink(.schedule, icon: "calendar.badge.clock", title: store.t("workSchedule"), value: scheduleLabel)
-                            compactLink(.lunch, icon: "cup.and.saucer", title: store.t("lunchBreak"), value: lunchLabel)
-                            compactLink(.health, icon: "figure.walk", title: store.t("microBreakReminder"), value: healthLabel)
-                            compactLink(.salary, icon: "banknote", title: store.t("salarySettings"), value: store.salaryEnabled ? (store.salaryType == .monthly ? store.t("monthly") : store.t("daily")) : store.t("disabledShort"), last: true)
-                        }
-                        compactSection(store.t("remindersSection")) {
-                            compactLink(.notifications, icon: "bell.badge", title: store.t("offWorkReminder"), value: notificationLabel, last: true)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
                 }
                 .padding(.top, 8)
             }
@@ -394,36 +297,12 @@ private struct LandscapeSettingsView: View {
         .background(OWCDesign.page)
         .navigationBarHidden(true)
     }
-
-    private func compactSection<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(title.uppercased()).font(.system(size: 12)).foregroundStyle(OWCDesign.secondary).padding(.horizontal, 14).padding(.bottom, 5)
-            VStack(spacing: 0) { content() }
-                .frame(maxWidth: .infinity)
-                .background(OWCDesign.card)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        }
-    }
-
-    private func compactLink(_ route: AppRoute, icon: String, title: String, value: String?, last: Bool = false) -> some View {
-        NavigationLink(value: route) {
-            OWCRow(icon: icon, title: title, isLast: last) {
-                OWCDetailAccessory(text: value)
-            }
-        }
-        .buttonStyle(OWCRowButtonStyle())
-    }
-    private var themeLabel: String { switch store.theme { case .auto: store.t("auto"); case .light: store.t("light"); case .dark: store.t("dark") } }
-    private var scheduleLabel: String { switch store.scheduleMode { case .classic: store.t("scheduleClassic"); case .alternating: store.t("scheduleAlternating"); case .rotation: store.t("scheduleRotation"); case .off: store.t("scheduleOff") } }
-    private var lunchLabel: String { store.lunchEnabled ? "\(store.timeString(store.lunchStartMinutes)) · \(store.formatRelativeDuration(Double(store.lunchDurationMinutes) * 60_000))" : store.t("disabledShort") }
-    private var healthLabel: String { store.microBreakEnabled ? store.t("minutesShort", values: ["count": "\(store.microBreakIntervalMinutes)"]) : store.t("disabledShort") }
-    private var notificationLabel: String { switch store.notificationMode { case .off: store.t("notificationModeOff"); case .simple: store.t("notificationModeSimple"); case .milestones: store.t("notificationModeMilestones") } }
 }
 
 private struct LandscapeButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 15, weight: .semibold))
+            .font(.subheadline.weight(.semibold))
             .padding(.horizontal, 20)
             .frame(height: 44)
             .background(OWCDesign.card.opacity(0.85))

@@ -258,6 +258,8 @@ public struct OffWorkCountdownWidgetView: View {
                         #if os(iOS)
                         if family == .accessoryCircular {
                             circularAccessory(snapshotEntry)
+                        } else if family == .accessoryRectangular {
+                            rectangularAccessory(snapshotEntry)
                         } else if family == .systemMedium {
                             mediumContent(snapshotEntry)
                         } else {
@@ -271,7 +273,32 @@ public struct OffWorkCountdownWidgetView: View {
                         }
                         #endif
                     } else {
+                        #if os(iOS)
+                        if family == .accessoryCircular {
+                            // A circular complication has room for one glyph.
+                            // The full empty state — a header, a 42pt badge and
+                            // two lines of copy — was being crammed into it.
+                            Image(systemName: "play.fill")
+                                .font(.body.bold())
+                                .accessibilityLabel(
+                                    WidgetCopy.text("countdownNotStarted", locale: entry.locale)
+                                )
+                        } else if family == .accessoryRectangular {
+                            Label {
+                                Text(WidgetCopy.text("countdownNotStarted", locale: entry.locale))
+                            } icon: {
+                                Image(systemName: "play.fill")
+                            }
+                            .font(.headline)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.6)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        } else {
+                            emptyContent
+                        }
+                        #else
                         emptyContent
+                        #endif
                     }
                 }
             }
@@ -282,19 +309,111 @@ public struct OffWorkCountdownWidgetView: View {
     }
 
     #if os(iOS)
+    /// A 58pt monochrome circle. The ring carries the progress; the middle
+    /// carries the moment it is counting toward.
+    ///
+    /// It used to read "73%", which says something is three-quarters done
+    /// without saying three-quarters of what — on a Lock Screen full of rings
+    /// that reads like a battery. A nearly-full ring around "19:00" says the
+    /// same thing and names the finish line, in the same five glyphs.
+    @ViewBuilder
     private func circularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
-        Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
-            EmptyView()
-        } currentValueLabel: {
-            // Whole percent only. "89.30%" is six glyphs in a complication
-            // that has room for three, and it wrapped onto a second line.
-            Text("\(roundedProgress(snapshotEntry.progressAtDate))%")
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
+        if snapshotEntry.phase == .done {
+            VStack(spacing: 1) {
+                Image(systemName: "checkmark")
+                    .font(.caption.bold())
+                Text(WidgetCopy.text("shareDone", locale: entry.locale))
+                    .font(.system(size: 8, weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(WidgetCopy.text("offWorkToday", locale: entry.locale))
+        } else if snapshotEntry.phase == .idle {
+            Image(systemName: "play.fill")
+                .font(.body.bold())
+                .accessibilityLabel(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+        } else if let targetAtMs = snapshotEntry.countdownTargetAtMs {
+            // One branch for every timed phase. Before the shift the ring is
+            // empty and the time is when work starts; during it the ring fills
+            // toward the time work ends; through lunch the ring holds still and
+            // the time is when it resumes.
+            Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
+                EmptyView()
+            } currentValueLabel: {
+                Text(Date(timeIntervalSince1970: Double(targetAtMs) / 1_000), style: .time)
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.52)
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
+            .accessibilityLabel(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+        } else {
+            // No target to name — fall back to the ring alone rather than an
+            // empty circle.
+            Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
+                EmptyView()
+            } currentValueLabel: {
+                Text("\(roundedProgress(snapshotEntry.progressAtDate))%")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
+            .accessibilityLabel(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
         }
-        .gaugeStyle(.accessoryCircularCapacity)
+    }
+
+    /// The wide Lock Screen family, and the one that can actually say what it
+    /// is. A circle this app's size has room for a ring and four or five
+    /// glyphs; naming itself as well would shrink both past legibility. Here
+    /// there is room for the name, the countdown and the bar together.
+    @ViewBuilder
+    private func rectangularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Label {
+                // The short name, not the full one. "Cuenta regresiva para
+                // salir del trabajo" is thirty-nine characters in a strip about
+                // 160pt wide; "Fin del trabajo" is fifteen and says the same
+                // thing. These are the names already shipping as the Home
+                // Screen app label, so they are translations that have been
+                // through review rather than ones invented here.
+                Text(WidgetCopy.text("appShortName", locale: entry.locale))
+            } icon: {
+                Image(systemName: accessoryGlyph(snapshotEntry.phase))
+            }
+            .font(.caption2)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .widgetAccentable()
+
+            if snapshotEntry.countdownTargetAtMs != nil {
+                countdown(for: snapshotEntry, size: 21)
+                Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
+                    EmptyView()
+                }
+                .gaugeStyle(.accessoryLinearCapacity)
+            } else {
+                Text(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+                    .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func accessoryGlyph(_ phase: WidgetTimelinePhase) -> String {
+        switch phase {
+        case .idle: "play.fill"
+        case .before: "sunrise.fill"
+        case .working: "timer"
+        case .break: "cup.and.saucer.fill"
+        case .done: "flag.checkered"
+        }
     }
     #endif
 
@@ -331,9 +450,12 @@ public struct OffWorkCountdownWidgetView: View {
             }
             .frame(width: compact ? 25 : 27, height: compact ? 25 : 27)
 
-            Text(WidgetCopy.text("offWorkCountdown", locale: entry.locale))
+            // Short name here too: the header sits beside a 25pt badge on a
+            // small widget, and the full name wrapped onto a second line in
+            // every language that is not CJK.
+            Text(WidgetCopy.text("appShortName", locale: entry.locale))
                 .font(.caption.weight(.bold))
-                .lineLimit(compact ? 2 : 1)
+                .lineLimit(1)
                 .minimumScaleFactor(0.78)
             Spacer(minLength: 0)
         }
@@ -423,13 +545,18 @@ public struct OffWorkCountdownWidgetView: View {
                 .frame(width: 42, height: 42)
 
                 VStack(alignment: .leading, spacing: 3) {
+                    // Small has roughly 100pt left once the badge is placed,
+                    // which wrapped even five CJK glyphs onto a second line.
+                    // Shrink to fit there; medium has the width to spare.
                     Text(WidgetCopy.text("countdownNotStarted", locale: entry.locale))
                         .font(.callout.weight(.bold))
-                        .lineLimit(2)
+                        .lineLimit(family == .systemMedium ? 2 : 1)
+                        .minimumScaleFactor(0.6)
                     Text(WidgetCopy.text("widgetOpenToRefresh", locale: entry.locale))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
+                        .minimumScaleFactor(0.75)
                 }
             }
             Spacer(minLength: 0)
@@ -628,7 +755,7 @@ public struct OffWorkCountdownWidget: Widget {
 
     private var supportedFamilies: [WidgetFamily] {
         #if os(iOS)
-        [.systemSmall, .systemMedium, .accessoryCircular]
+        [.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular]
         #else
         [.systemSmall, .systemMedium]
         #endif

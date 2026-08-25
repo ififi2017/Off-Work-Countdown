@@ -3,7 +3,7 @@ import SwiftUI
 /// iPad directions 1p/1r/1t/1u. The wide canvas has its own navigation and
 /// density instead of stretching the phone's grouped list.
 struct TabletShellView: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
     @State private var sidebarVisible = true
     @State private var path: [AppRoute] = []
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -84,7 +84,7 @@ struct TabletShellView: View {
     }
 
     private var shellAnimation: Animation {
-        reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.32)
+        reduceMotion ? OWCMotion.reduced : OWCMotion.navigation
     }
 
     private var sidebarTransition: AnyTransition {
@@ -94,26 +94,25 @@ struct TabletShellView: View {
 }
 
 private struct TabletSidebar: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
     let hide: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Image("BrandIcon")
+                Image(.brandIcon)
                     .resizable()
                     .frame(width: 30, height: 30)
                     .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
                 Text(store.t("offWorkCountdown"))
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.body.bold())
                     .tracking(-0.34)
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
                 Spacer(minLength: 4)
                 Button(action: hide) {
                     Image(systemName: "sidebar.left")
-                        .font(.system(size: 17))
+                        .font(.body)
                         .frame(width: 32, height: 32)
                 }
                 .buttonStyle(.glass)
@@ -135,42 +134,43 @@ private struct TabletSidebar: View {
             // froze the sidebar's countdown and bar while the main column kept
             // moving, which read as the app having stalled.
             TimelineView(.periodic(from: .now, by: 1)) { timeline in
-            if store.countdownStarted, let snapshot = store.snapshot(at: timeline.date) {
-                OWCSectionHeader(title: store.selectedTab == .timer ? store.t("todaysShift") : store.t("widgetWorking"))
-                    .padding(.top, 26)
+                if store.countdownStarted, let snapshot = store.snapshot(at: timeline.date) {
+                    OWCSectionHeader(title: store.selectedTab == .timer ? store.t("todaysShift") : store.t("widgetWorking"))
+                        .padding(.top, 26)
 
-                if store.selectedTab == .timer {
-                    OWCGroupCard {
-                        sidebarRow(store.t("shiftSection"), "\(store.timeString(store.startMinutes)) – \(store.timeString(store.endMinutes))")
-                        sidebarRow(store.t("lunchBreak"), lunchLabel, last: !store.salaryEnabled)
-                        if store.salaryEnabled {
-                            sidebarRow(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio }), last: true, bold: true)
+                    if store.selectedTab == .timer {
+                        OWCGroupCard {
+                            sidebarRow(store.t("shiftSection"), "\(store.timeString(store.startMinutes)) – \(store.timeString(store.endMinutes))")
+                            sidebarRow(store.t("lunchBreak"), store.lunchLabel, last: !store.salaryEnabled)
+                            if store.salaryEnabled {
+                                sidebarRow(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio }), last: true, bold: true)
+                            }
                         }
-                    }
-                } else {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(store.formatDuration(snapshot.remainingMs))
-                            .font(.system(size: 30, weight: .bold).monospacedDigit())
-                            .tracking(-0.8)
-                        Text(store.t("timeLeftCaption"))
-                            .font(.system(size: 13))
-                            .foregroundStyle(OWCDesign.secondary)
-                            .padding(.top, 6)
-                        GeometryReader { proxy in
-                            Capsule().fill(OWCDesign.control)
-                                .overlay(alignment: .leading) {
-                                    Capsule().fill(OWCDesign.accent)
-                                        .frame(width: proxy.size.width * min(1, max(0, snapshot.progress / 100)))
-                                }
+                    } else {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(store.formatDuration(snapshot.remainingMs))
+                                .font(.title.bold().monospacedDigit())
+                                .tracking(-0.8)
+                                .owcCountdownTextTransition(milliseconds: snapshot.remainingMs)
+                            Text(store.t("timeLeftCaption"))
+                                .font(.footnote)
+                                .foregroundStyle(OWCDesign.secondary)
+                                .padding(.top, 6)
+                            GeometryReader { proxy in
+                                Capsule().fill(OWCDesign.control)
+                                    .overlay(alignment: .leading) {
+                                        Capsule().fill(OWCDesign.accent)
+                                            .frame(width: proxy.size.width * min(1, max(0, snapshot.progress / 100)))
+                                    }
+                            }
+                            .frame(height: 6)
+                            .padding(.top, 12)
                         }
-                        .frame(height: 6)
-                        .padding(.top, 12)
+                        .padding(16)
+                        .background(OWCDesign.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     }
-                    .padding(16)
-                    .background(OWCDesign.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
-            }
             }
 
             Spacer()
@@ -185,12 +185,10 @@ private struct TabletSidebar: View {
 
     private func tabButton(_ tab: AppTab, icon: String, title: String) -> some View {
         Button {
-            withAnimation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.32)) {
-                store.selectedTab = tab
-            }
+            store.selectedTab = tab
         } label: {
             Label(title, systemImage: icon)
-                .font(.system(size: 17, weight: store.selectedTab == tab ? .semibold : .regular))
+                .font(.body.weight(store.selectedTab == tab ? .semibold : .regular))
                 .foregroundStyle(store.selectedTab == tab ? .white : OWCDesign.primary)
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 .padding(.horizontal, 12)
@@ -210,10 +208,10 @@ private struct TabletSidebar: View {
 
     private func sidebarRow(_ label: String, _ value: String, last: Bool = false, bold: Bool = false) -> some View {
         HStack {
-            Text(label).font(.system(size: 16))
+            Text(label).font(.callout)
             Spacer(minLength: 8)
             Text(value)
-                .font(.system(size: 16, weight: bold ? .semibold : .regular).monospacedDigit())
+                .font(.callout.weight(bold ? .semibold : .regular).monospacedDigit())
                 .foregroundStyle(bold ? OWCDesign.primary : OWCDesign.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
@@ -224,15 +222,10 @@ private struct TabletSidebar: View {
             if !last { Rectangle().fill(OWCDesign.separator).frame(height: 0.5).padding(.leading, 14) }
         }
     }
-
-    private var lunchLabel: String {
-        guard store.lunchEnabled else { return store.t("disabledShort") }
-        return "\(store.timeString(store.lunchStartMinutes)) · \(store.formatRelativeDuration(Double(store.lunchDurationMinutes) * 60_000))"
-    }
 }
 
 private struct TabletTimerView: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
     let sidebarVisible: Bool
     let isActive: Bool
     let showSidebar: () -> Void
@@ -242,12 +235,17 @@ private struct TabletTimerView: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: isActive ? 1 : 86_400)) { timeline in
-            let snapshot = store.snapshot(at: timeline.date)
+            let snapshot = store.countdownStarted ? store.snapshot(at: timeline.date) : nil
+            let phase = TimerVisualPhase.resolve(
+                countdownStarted: store.countdownStarted,
+                snapshot: snapshot,
+                forceToday: store.forceToday
+            )
+
             ZStack {
-                if !store.countdownStarted {
+                if phase == .setup {
                     TabletSetupView(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
-                        .transition(timerTransition)
-                } else if let snapshot, snapshot.remainingMs > 0, snapshot.isWorkday || store.forceToday {
+                } else if phase.showsActiveTimer, let snapshot {
                     TabletRunningView(
                         store: store,
                         snapshot: snapshot,
@@ -257,18 +255,23 @@ private struct TabletTimerView: View {
                         showShare: $showShare,
                         showOvertime: $showOvertime
                     )
-                    .transition(timerTransition)
                 } else {
-                    TimerDesignView(store: store, wide: true, timelineDate: timeline.date)
-                        .transition(timerTransition)
+                    TimerDesignView(
+                        store: store,
+                        wide: true,
+                        timelineDate: timeline.date,
+                        animatesPhaseChanges: false
+                    )
                 }
             }
+            .id(phase)
+            .transition(timerTransition)
             .overlay(alignment: .topLeading) {
                 // Completed, rest-day and rules-error states reuse the common
                 // timer surface, which does not know about the custom iPad
                 // sidebar. Keep the reveal control at the shell boundary so
                 // none of those states can strand the user in full screen.
-                if !sidebarVisible, usesCommonTimerSurface(snapshot) {
+                if !sidebarVisible, phase.usesCommonTimerSurface {
                     Button(action: showSidebar) {
                         Image(systemName: "sidebar.left")
                             .frame(width: 38, height: 38)
@@ -281,7 +284,7 @@ private struct TabletTimerView: View {
                     .zIndex(10)
                 }
             }
-            .animation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.42), value: store.countdownStarted)
+            .animation(timerAnimation, value: phase)
         }
         .background(OWCDesign.page)
         .navigationBarHidden(true)
@@ -300,15 +303,16 @@ private struct TabletTimerView: View {
         reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.98))
     }
 
-    private func usesCommonTimerSurface(_ snapshot: NativeShiftSnapshot?) -> Bool {
-        guard store.countdownStarted else { return false }
-        guard let snapshot else { return true }
-        return snapshot.remainingMs <= 0 || (!snapshot.isWorkday && !store.forceToday)
+    private var timerAnimation: Animation {
+        reduceMotion ? OWCMotion.reduced : OWCMotion.phase
     }
 }
 
 private struct TabletRunningView: View {
-    @ObservedObject var store: OffWorkStore
+    @ScaledMetric(relativeTo: .largeTitle) private var wideCountdownSize: CGFloat = 150
+    // Two display sizes, both scaled: the sidebar squeezes the number.
+    @ScaledMetric(relativeTo: .largeTitle) private var compactCountdownSize: CGFloat = 88
+    let store: OffWorkStore
     let snapshot: NativeShiftSnapshot
     let now: Date
     let sidebarVisible: Bool
@@ -332,7 +336,7 @@ private struct TabletRunningView: View {
                             Label(pill.text, systemImage: pill.symbol)
                         }
                     }
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(pill.tint)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
@@ -341,21 +345,21 @@ private struct TabletRunningView: View {
                 }
 
                 Text(store.formatDuration(displayRemaining))
-                    .font(.system(size: sidebarVisible ? 88 : 150, weight: .bold).monospacedDigit())
+                    .font(.system(size: sidebarVisible ? compactCountdownSize : wideCountdownSize, weight: .bold).monospacedDigit())
                     .tracking(sidebarVisible ? -3 : -5)
                     .foregroundStyle(onBreak ? OWCDesign.secondary : OWCDesign.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.62)
-                    .contentTransition(.numericText(countsDown: true))
+                    .owcCountdownTextTransition(milliseconds: displayRemaining)
                 Text(heroCaption)
-                    .font(.system(size: sidebarVisible ? 17 : 19))
+                    .font(sidebarVisible ? .body : .title3)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                     .padding(.top, sidebarVisible ? 14 : 18)
 
                 if sidebarVisible {
-                    OWCProgressMeter(progress: snapshot.progress, overtime: isOvertime, paused: onBreak)
+                    OWCProgressMeter(progress: snapshot.progress, label: store.t("progress"), overtime: isOvertime, paused: onBreak)
                         .padding(.top, 17)
 
                     if store.scheduleMode != .off {
@@ -378,9 +382,7 @@ private struct TabletRunningView: View {
 
                 HStack(spacing: 12) {
                     Button {
-                        withAnimation(.smooth(duration: 0.42)) {
-                            store.stopCountdown()
-                        }
+                        store.stopCountdown()
                     } label: { Label(store.t("return"), systemImage: "arrow.left") }
                     Button { showOvertime = true } label: {
                         Text(store.t(isOvertime ? "adjustOvertime" : "overtime"))
@@ -436,8 +438,8 @@ private struct TabletRunningView: View {
 
     private func statCard(_ title: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.system(size: 13)).foregroundStyle(OWCDesign.secondary)
-            Text(value).font(.system(size: 20, weight: .semibold).monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
+            Text(title).font(.footnote).foregroundStyle(OWCDesign.secondary)
+            Text(value).font(.title3.weight(.semibold).monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
@@ -447,8 +449,8 @@ private struct TabletRunningView: View {
 
     private func fullStat(_ title: String, _ value: String) -> some View {
         VStack(spacing: 6) {
-            Text(title).font(.system(size: 13)).foregroundStyle(OWCDesign.secondary)
-            Text(value).font(.system(size: 28, weight: .bold).monospacedDigit())
+            Text(title).font(.footnote).foregroundStyle(OWCDesign.secondary)
+            Text(value).font(.title.bold().monospacedDigit())
         }
     }
 
@@ -483,7 +485,7 @@ private struct TabletRunningView: View {
                 Text(store.timeString(store.endMinutes)).position(x: proxy.size.width - 30, y: 9)
             }
             .frame(height: 18)
-            .font(.system(size: 14).monospacedDigit())
+            .font(.subheadline.monospacedDigit())
             .foregroundStyle(OWCDesign.secondary)
         }
     }
@@ -501,130 +503,59 @@ private struct TabletRunningView: View {
 }
 
 private struct TabletSetupView: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
     let sidebarVisible: Bool
     let showSidebar: () -> Void
-    @State private var armed = false
-    @State private var armResetTask: Task<Void, Never>?
-    @State private var showInvalidLunch = false
+    @State private var timeField: SetupTimeField?
 
     var body: some View {
         VStack(spacing: 0) {
             tabletHeader(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
 
-            VStack(spacing: 0) {
-                Text("\(store.timeString(store.startMinutes)) — \(store.timeString(store.endMinutes))")
-                    .font(.system(size: 64, weight: .bold).monospacedDigit())
-                    .tracking(-2.2)
-                Text("\(store.formatRelativeDuration(shiftMs)) · \(lunchLabel) · \(workdaysDescription)")
-                    .font(.system(size: 17))
-                    .foregroundStyle(OWCDesign.secondary)
-                    .padding(.top, 12)
+            ScrollView {
+                VStack(spacing: OWCDesign.sectionGap) {
+                    ShiftHeroCard(store: store) { timeField = $0 }
+                        .padding(.top, OWCDesign.heroGap)
 
-                OWCSectionHeader(title: store.t("shiftSection"))
-                    .padding(.top, 34)
-                OWCGroupCard {
-                    TabletTimeRow(store: store, icon: "sunrise", title: store.t("startTime"), minutes: $store.startMinutes)
-                    TabletTimeRow(store: store, icon: "sunset", title: store.t("endTime"), minutes: $store.endMinutes)
-                    NavigationLink(value: AppRoute.schedule) {
-                        OWCRow(icon: "calendar.badge.clock", title: store.t("workSchedule"), isLast: true) { OWCDetailAccessory(text: scheduleLabel) }
-                    }
-                    .buttonStyle(OWCRowButtonStyle())
+                    ShiftSetupTimelineView(
+                        store: store,
+                        onSelect: { store.presentedRoute = $0 },
+                        onEditTime: { timeField = $0 }
+                    )
                 }
-
-                HStack(spacing: 14) {
-                    NavigationLink(value: AppRoute.lunch) {
-                        tabletShortcut("cup.and.saucer", store.t("lunchBreak"), lunchLabel)
-                    }
-                    NavigationLink(value: AppRoute.salary) {
-                        tabletShortcut("banknote", store.t("salarySettings"), store.salaryEnabled ? (store.salaryType == .monthly ? store.t("monthly") : store.t("daily")) : store.t("disabledShort"))
-                    }
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 20)
-
-                Spacer(minLength: 20)
-                Button { startTapped() } label: { Label(armed ? store.t("nonWorkdayTapAgain") : store.t("startCountdown"), systemImage: armed ? "exclamationmark.triangle.fill" : "play.fill") }
-                    .buttonStyle(OWCPrimaryButtonStyle(color: armed ? OWCDesign.orangeDeep : OWCDesign.accent))
-                    .disabled(startDisabled)
-                    .opacity(startDisabled ? 0.45 : 1)
-                    .frame(height: 56)
-                    .padding(.bottom, 40)
+                .frame(maxWidth: 700)
+                .padding(.horizontal, 40)
+                .padding(.bottom, 24)
             }
-            .frame(maxWidth: 620)
-            .frame(maxHeight: .infinity)
-            .padding(.horizontal, 40)
+            .scrollIndicators(.hidden)
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .alert(store.t("invalidLunchTitle"), isPresented: $showInvalidLunch) {
-            Button(store.t("return"), role: .cancel) {}
-            Button(store.t("goToLunchSettings")) { store.presentedRoute = .lunch }
-        } message: { Text(store.t("invalidLunchMessage")) }
-        .sensoryFeedback(.warning, trigger: armed)
-        .onDisappear { armResetTask?.cancel() }
-    }
-
-    private var shiftMs: Double {
-        let value = store.endMinutes > store.startMinutes ? store.endMinutes - store.startMinutes : store.endMinutes + 1_440 - store.startMinutes
-        return Double(value) * 60_000
-    }
-    private var lunchLabel: String { store.lunchEnabled ? store.formatRelativeDuration(Double(store.lunchDurationMinutes) * 60_000) : store.t("disabledShort") }
-    private var workdaysDescription: String {
-        if store.scheduleMode != .classic { return scheduleLabel }
-        let values = Array(zip([1, 2, 3, 4, 5, 6, 0], store.weekdayLabels())).filter { store.workdays.contains($0.0) }.map(\.1)
-        guard let first = values.first else { return store.t("disabledShort") }
-        return values.count > 1 ? "\(first) – \(values.last ?? first)" : first
-    }
-    private var scheduleLabel: String { switch store.scheduleMode { case .classic: store.t("scheduleClassic"); case .alternating: store.t("scheduleAlternating"); case .rotation: store.t("scheduleRotation"); case .off: store.t("scheduleOff") } }
-    private var startDisabled: Bool { store.startMinutes == store.endMinutes || (store.scheduleMode == .classic && store.workdays.isEmpty) }
-    private func startTapped() {
-        guard store.isLunchInsideShift else { showInvalidLunch = true; return }
-        let nonWorkday = store.scheduleMode != .off && store.snapshot()?.isWorkday == false
-        if nonWorkday, !armed {
-            withAnimation(.snappy) { armed = true }
-            resetArmedState()
-            return
+        .safeAreaInset(edge: .bottom) {
+            ShiftStartButton(store: store, minimumHeight: 56) { store.presentedRoute = .lunch }
+                .frame(maxWidth: 700)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 40)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
+                // Opaque: the scroll view runs underneath this inset.
+                .background(OWCDesign.page)
         }
-        armResetTask?.cancel()
-        withAnimation(.smooth(duration: 0.42)) {
-            store.startCountdown(force: nonWorkday)
-        }
-    }
-    private func resetArmedState() {
-        armResetTask?.cancel()
-        armResetTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(5))
-            guard !Task.isCancelled else { return }
-            withAnimation(.snappy) { armed = false }
-        }
-    }
-    private func tabletShortcut(_ icon: String, _ title: String, _ value: String) -> some View {
-        OWCGroupCard {
-            OWCRow(icon: icon, title: title, isLast: true) { OWCDetailAccessory(text: value) }
-        }
-    }
-}
-
-private struct TabletTimeRow: View {
-    @ObservedObject var store: OffWorkStore
-    let icon: String
-    let title: String
-    @Binding var minutes: Int
-    @State private var showPicker = false
-
-    var body: some View {
-        Button { showPicker = true } label: {
-            OWCRow(icon: icon, title: title) { OWCDetailAccessory(text: store.timeString(minutes)) }
-        }
-        .buttonStyle(OWCRowButtonStyle())
-        .sheet(isPresented: $showPicker) {
-            OWCSetupTimePickerSheet(store: store, title: title, minutes: $minutes)
-                .presentationDetents([.medium])
+        .sheet(item: $timeField) { field in
+            OWCSetupTimePickerSheet(
+                store: store,
+                title: store.t(field == .start ? "startTime" : "endTime"),
+                minutes: Binding(
+                    get: { field == .start ? store.startMinutes : store.endMinutes },
+                    set: { if field == .start { store.startMinutes = $0 } else { store.endMinutes = $0 } }
+                )
+            )
+            .presentationDetents([.medium])
         }
     }
 }
 
 private struct TabletSettingsView: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
     let sidebarVisible: Bool
     let showSidebar: () -> Void
 
@@ -636,7 +567,7 @@ private struct TabletSettingsView: View {
                     .buttonStyle(.plain)
                 }
                 Text(store.t("settings"))
-                    .font(.system(size: 34, weight: .bold))
+                    .font(.largeTitle.bold())
                     .tracking(-0.85)
                 Spacer()
             }
@@ -647,29 +578,16 @@ private struct TabletSettingsView: View {
             // lines. Below the threshold the same sections stack instead.
             AdaptiveSettingsColumns(spacing: 26) {
                 VStack(spacing: 20) {
-                    section(store.t("shiftSection")) {
-                        NavigationLink(value: AppRoute.schedule) { OWCRow(icon: "calendar.badge.clock", title: store.t("workSchedule")) { OWCDetailAccessory(text: scheduleLabel) } }.buttonStyle(OWCRowButtonStyle())
-                        NavigationLink(value: AppRoute.lunch) { OWCRow(icon: "cup.and.saucer", title: store.t("lunchBreak")) { OWCDetailAccessory(text: lunchLabel) } }.buttonStyle(OWCRowButtonStyle())
-                        NavigationLink(value: AppRoute.health) { OWCRow(icon: "figure.walk", title: store.t("microBreakReminder")) { OWCDetailAccessory(text: healthLabel) } }.buttonStyle(OWCRowButtonStyle())
-                        NavigationLink(value: AppRoute.salary) { OWCRow(icon: "banknote", title: store.t("salarySettings"), isLast: true) { OWCDetailAccessory(text: salaryLabel) } }.buttonStyle(OWCRowButtonStyle())
-                    }
+                    SettingsSectionCard(store: store, section: .shift)
                     sectionNote(store.t("tabletShiftSettingsNote"))
                 }
                 .frame(maxWidth: .infinity)
 
                 VStack(spacing: 20) {
-                    section(store.t("remindersSection")) {
-                        NavigationLink(value: AppRoute.notifications) { OWCRow(icon: "bell.badge", title: store.t("offWorkReminder"), isLast: true) { OWCDetailAccessory(text: notificationLabel) } }.buttonStyle(OWCRowButtonStyle())
-                    }
+                    SettingsSectionCard(store: store, section: .reminders)
                     sectionNote(store.t("notificationPrivacyNote"))
-                    section(store.t("appearanceSection")) {
-                        NavigationLink(value: AppRoute.theme) { OWCRow(icon: "display", title: store.t("theme")) { OWCDetailAccessory(text: themeLabel) } }.buttonStyle(OWCRowButtonStyle())
-                        Link(destination: OWCSystemSettings.applicationURL) { OWCRow(icon: "globe", title: store.t("chooselanguage"), isLast: true) { OWCDetailAccessory(text: store.localizer.languageName(for: store.languageCode), external: true) } }.buttonStyle(OWCRowButtonStyle())
-                    }
-                    section(store.t("aboutSection")) {
-                        NavigationLink(value: AppRoute.about) { OWCRow(icon: "info.circle", title: store.t("aboutProject")) { OWCDetailAccessory(text: nil) } }.buttonStyle(OWCRowButtonStyle())
-                        OWCRow(icon: "tag", title: store.t("version"), isLast: true) { Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0").foregroundStyle(OWCDesign.secondary) }
-                    }
+                    SettingsSectionCard(store: store, section: .appearance)
+                    SettingsSectionCard(store: store, section: .about)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -682,38 +600,23 @@ private struct TabletSettingsView: View {
         .background(OWCDesign.page)
         .navigationBarHidden(true)
     }
-
-    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 0) { OWCSectionHeader(title: title); OWCGroupCard(content: content) }
-    }
     private func sectionNote(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 13))
+            .font(.footnote)
             .foregroundStyle(OWCDesign.secondary)
             .lineSpacing(2)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
             .padding(.top, -12)
     }
-    private var lunchLabel: String { store.lunchEnabled ? "\(store.timeString(store.lunchStartMinutes)) · \(store.formatRelativeDuration(Double(store.lunchDurationMinutes) * 60_000))" : store.t("disabledShort") }
-    private var healthLabel: String { store.microBreakEnabled ? store.t("minutesShort", values: ["count": "\(store.microBreakIntervalMinutes)"]) : store.t("disabledShort") }
-    private var salaryLabel: String {
-        guard store.salaryEnabled else { return store.t("disabledShort") }
-        return store.salaryType == .monthly ? store.t("monthly") : store.t("daily")
-    }
-    private var scheduleLabel: String { switch store.scheduleMode { case .classic: store.t("scheduleClassic"); case .alternating: store.t("scheduleAlternating"); case .rotation: store.t("scheduleRotation"); case .off: store.t("scheduleOff") } }
     private var workdaysDescription: String {
-        if store.scheduleMode != .classic { return scheduleLabel }
+        if store.scheduleMode != .classic { return store.scheduleLabel }
         let values = Array(zip([1, 2, 3, 4, 5, 6, 0], store.weekdayLabels()))
             .filter { store.workdays.contains($0.0) }
             .map(\.1)
         guard let first = values.first else { return store.t("disabledShort") }
         return values.count > 1 ? "\(first) – \(values.last ?? first)" : first
     }
-    private var notificationLabel: String {
-        switch store.notificationMode { case .off: store.t("notificationModeOff"); case .simple: store.t("notificationModeSimple"); case .milestones: store.t("notificationModeMilestones") }
-    }
-    private var themeLabel: String { switch store.theme { case .auto: store.t("auto"); case .light: store.t("light"); case .dark: store.t("dark") } }
 }
 
 
@@ -731,14 +634,14 @@ private func tabletHeader(store: OffWorkStore, sidebarVisible: Bool, showSidebar
         }
         Spacer()
         Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(store.locale)).uppercased())
-            .font(.system(size: 13, weight: .semibold))
+            .font(.footnote.weight(.semibold))
             .tracking(0.78)
             .foregroundStyle(OWCDesign.secondary)
         Spacer()
         Button { store.toggleQuickTheme() } label: {
             Group {
                 if store.quickThemeIsAuto {
-                    Text(verbatim: "A").font(.system(size: 17, weight: .semibold))
+                    Text(verbatim: "A").font(.body.weight(.semibold))
                 } else {
                     Image(systemName: store.quickThemeIcon)
                 }

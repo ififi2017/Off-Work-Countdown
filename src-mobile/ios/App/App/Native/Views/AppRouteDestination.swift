@@ -5,7 +5,7 @@ import SwiftUI
 /// into separate destination hierarchies.
 struct AppRouteDestination: View {
     let route: AppRoute
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
 
     @ViewBuilder
     var body: some View {

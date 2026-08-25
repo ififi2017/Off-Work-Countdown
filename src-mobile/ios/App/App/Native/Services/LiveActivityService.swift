@@ -2,8 +2,9 @@
 import Foundation
 
 @MainActor
-final class LiveActivityService: ObservableObject {
-    @Published private(set) var lastError: String?
+@Observable
+final class LiveActivityService {
+    private(set) var lastError: String?
     private var completionTask: Task<Void, Never>?
 
     func reschedule(store: OffWorkStore, now: Date = .now) async {
@@ -43,7 +44,7 @@ final class LiveActivityService: ObservableObject {
             progress: displaySnapshot.progress,
             phase: snapshot.overtimeEndAtMs == nil ? "working" : "overtime",
             locale: store.languageCode,
-            appTitle: store.t("offWorkCountdown"),
+            appTitle: store.t("appShortName"),
             caption: store.t("timeLeftCaption"),
             completedCaption: store.t("offWorkTime"),
             completedNote: store.t("offWorkWellDone")
@@ -127,7 +128,7 @@ final class LiveActivityService: ObservableObject {
             progress: 100,
             phase: "complete",
             locale: store.languageCode,
-            appTitle: store.t("offWorkCountdown"),
+            appTitle: store.t("appShortName"),
             caption: store.t("timeLeftCaption"),
             completedCaption: store.t("offWorkTime"),
             completedNote: store.t("offWorkWellDone")
