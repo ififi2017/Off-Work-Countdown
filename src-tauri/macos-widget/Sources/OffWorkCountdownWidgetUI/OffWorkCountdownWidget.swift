@@ -257,7 +257,15 @@ public struct OffWorkCountdownWidgetView: View {
                     if let snapshotEntry = entry.snapshotEntry {
                         #if os(iOS)
                         if family == .accessoryCircular {
+                            // Fill the slot and centre. Only the `Gauge`
+                            // branches size themselves to the circle; a bare
+                            // glyph or a stacked label keeps its intrinsic size
+                            // and the container parks it in the corner, which is
+                            // what put the "off work" checkmark in the top-left.
+                            // `rectangularAccessory` has carried the same frame
+                            // from the start, which is why it looked right.
                             circularAccessory(snapshotEntry)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
                         } else if family == .accessoryRectangular {
                             rectangularAccessory(snapshotEntry)
                         } else if family == .systemMedium {
@@ -280,6 +288,7 @@ public struct OffWorkCountdownWidgetView: View {
                             // two lines of copy — was being crammed into it.
                             Image(systemName: "play.fill")
                                 .font(.body.bold())
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
                                 .accessibilityLabel(
                                     WidgetCopy.text("countdownNotStarted", locale: entry.locale)
                                 )
