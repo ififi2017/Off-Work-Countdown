@@ -205,26 +205,13 @@ struct SalaryDesignView: View {
     /// Sampled alongside each unlock attempt rather than read in `body`, which
     /// would build an `LAContext` on every render.
     @State private var biometryBlocked = false
-    /// Bumped by every re-lock, so an authentication that resolves afterwards
-    /// can tell it has been overtaken. `@State` and not `scenePhase`: an
-    /// `@Environment` value is resolved into the view struct when `body` runs,
-    /// and an `async` method that suspends holds that same struct — reading
-    /// `scenePhase` after an `await` reads the phase from before it. `@State`
-    /// reads through its storage box, so it is current.
+    /// Bumped whenever the page reaches the background, so an authentication
+    /// that resolves afterwards can tell it has been overtaken. This is
+    /// `@State` rather than a phase read after `await`: an `@Environment` value
+    /// is resolved into the view struct when `body` runs, and a suspended
+    /// method holds that same struct. `@State` reads through its storage box,
+    /// so it is current.
     @State private var lockGeneration = 0
-    /// The scene phase, mirrored into `@State` so `unlock()` can read it after
-    /// its `await`. The `@Environment` value below cannot answer that question:
-    /// it is resolved into the view struct when `body` runs, and a suspended
-    /// `async` method still holds that struct, so it reports the phase from
-    /// before the suspension.
-    @State private var livePhase: ScenePhase = .active
-    /// A successful authentication that landed while the scene was away.
-    ///
-    /// Held rather than applied, because applying it would draw the salary
-    /// while the app is inactive — which is the state the app switcher shows
-    /// live, before the snapshot. Locking again at `.background` would be too
-    /// late; the figures would already be on screen and in the thumbnail.
-    @State private var pendingUnlock = false
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -241,23 +228,8 @@ struct SalaryDesignView: View {
         // only ever moved to `true` — so coming back from the app switcher, or
         // handing the phone over, showed the salary with no second look at who
         // was holding it.
-        // `initial: true` seeds `livePhase`, which otherwise would not learn the
-        // truth until the first change.
-        .onChange(of: scenePhase, initial: true) { _, phase in
-            livePhase = phase
-
-            guard phase != .active else {
-                // Back in front, and nothing voided the attempt while we were
-                // away: show what it earned.
-                if pendingUnlock {
-                    pendingUnlock = false
-                    unlocked = true
-                }
-                return
-            }
-
-            // Hiding, voiding and deferring are three decisions. Making them
-            // with one line is what locked this page out of its own key.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase != .active else { return }
 
             // Hide on either non-active phase: the app switcher shows the scene
             // live at `.inactive`, before any snapshot is taken.
@@ -271,7 +243,6 @@ struct SalaryDesignView: View {
             // result can no longer be attributed to whoever holds the phone.
             if phase == .background {
                 lockGeneration += 1
-                pendingUnlock = false
             }
         }
     }
@@ -349,16 +320,13 @@ struct SalaryDesignView: View {
         // Deactivation alone does not count — see the phase handler above.
         guard generation == lockGeneration, confirmed else { return }
 
-        // Nothing says `evaluatePolicy` resolves only once the scene is active
-        // again, and the phase it resolves in is frequently `.inactive` — the
-        // prompt put it there. Revealing the salary then would paint it into
-        // whatever the app switcher is about to capture, and re-locking at
-        // `.background` would arrive after the fact. Hold it for `.active`.
-        if livePhase == .active {
-            unlocked = true
-        } else {
-            pendingUnlock = true
-        }
+        // Apply the result immediately. Waiting for `.active` adds a visible
+        // delay after Face ID because the successful policy evaluation often
+        // finishes before SwiftUI reports the scene as active again. A Home
+        // press while the policy is still being evaluated is a system
+        // cancellation, so it cannot produce a success to apply here; a real
+        // background transition is also rejected by the generation above.
+        unlocked = true
     }
 
     private var content: some View {

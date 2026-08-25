@@ -60,7 +60,19 @@ struct OnboardingView: View {
                     }
                     .id(store.onboardingPage)
                     .transition(pageTransition)
-                    .frame(minHeight: proxy.size.height)
+                    // `maxWidth: .infinity` is what centres the pages, and it
+                    // has to be here because `GeometryReader` aligns its child
+                    // to `.topLeading`. Before this scroll wrapper existed the
+                    // parent filled the width and every page came out centred by
+                    // accident; afterwards the two pages that cap themselves at
+                    // 560 and stop there — the notification primer and the
+                    // privacy page — were pinned to the left edge on iPad, while
+                    // the pages that happened to add their own
+                    // `.frame(maxWidth: .infinity)` still looked right.
+                    //
+                    // Fixed once here rather than on those two pages, so a page
+                    // added later cannot forget it.
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
                 }
                 .scrollIndicators(.hidden)
                 .scrollBounceBehavior(.basedOnSize)
