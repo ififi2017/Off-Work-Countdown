@@ -96,6 +96,7 @@
   "futureStartTimeError": "Seu turno começa em {{hours}} horas e {{minutes}} minutos, então ainda não há o que contar. Adiante o horário de entrada se quiser começar agora.",
   "sameTimeError": "A entrada e a saída estão no mesmo horário, o que não deixa turno nenhum para contar. Mude um dos dois.",
   "chooselanguage": "Escolher idioma",
+  "languageFooter": "Isto altera apenas o idioma dentro do app. O nome na Tela de Início e as caixas de diálogo do sistema continuam seguindo o idioma do dispositivo.",
   "offlineStatus": "Sem conexão — a contagem continua",
   "light": "Claro",
   "dark": "Escuro",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Ativar proteção com Face ID",
   "onboardingReadyBody": "É só isso. Defina seu horário e a contagem regressiva começa.",
   "onboardingStartSetup": "Configurar a contagem regressiva",
-  "biometricsUnavailableHint": "Biometria indisponível — abrir Ajustes",
+  "biometricsUnavailableHint": "Biometria indisponível — encontre {{app}} na lista de apps dos Ajustes para ativar",
   "appShortName": "Fim do trabalho"
 }

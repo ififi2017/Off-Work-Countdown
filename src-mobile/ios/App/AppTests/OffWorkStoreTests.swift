@@ -226,6 +226,84 @@ func widgetTimelineFollowsOvertime() throws {
     #expect(abs(target - expected) < 1_000)
 }
 
+/// Builds a store whose only timed preview rows are the shift boundaries and
+/// the break, so an order assertion reads as the order and nothing else.
+@MainActor
+private func previewStore(_ defaults: UserDefaults) -> OffWorkStore {
+    let store = OffWorkStore(defaults: defaults)
+    // Not `.off`: that mode reports no `nextShiftStartAtMs` at all, because
+    // without a schedule the rules have no way to say which day comes next.
+    // Rows that have already happened are then dropped rather than moved, for
+    // the break exactly as for the start time.
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 60
+    store.microBreakEnabled = false
+    store.liveActivityEnabled = false
+    store.notificationMode = .off
+    return store
+}
+
+@MainActor
+@Test("A break that has been and gone queues behind the next clock-in")
+func shiftPreviewMovesFinishedBreakToTheNextShift() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let calendar = Calendar.current
+    let afterLunch = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 24,
+        hour: 15
+    )))
+
+    let store = previewStore(defaults)
+    let snapshot = try #require(store.snapshot(at: afterLunch))
+    let preview = store.shiftPreview(for: snapshot, at: afterLunch)
+
+    // Clock-off is the only thing left today; everything else has rolled onto
+    // tomorrow and lines up behind the next clock-in rather than heading a list
+    // of things that are supposedly still coming.
+    #expect(preview.upcoming.map(\.kind) == [.shiftEnd, .shiftStart, .lunchStart, .lunchEnd])
+
+    // Monday 24 August 2026, so the next shift is Tuesday morning.
+    let nextStart = try #require(snapshot.nextShiftStartDate)
+    #expect(preview.upcoming[1].date == nextStart)
+    #expect(preview.upcoming[2].date == nextStart.addingTimeInterval(3 * 3_600))
+    #expect(preview.upcoming[3].date == nextStart.addingTimeInterval(4 * 3_600))
+}
+
+@MainActor
+@Test("Mid-break, only the half that has passed rolls to the next shift")
+func shiftPreviewRollsBreakBoundariesIndependently() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let calendar = Calendar.current
+    let duringLunch = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 24,
+        hour: 12,
+        minute: 30
+    )))
+
+    let store = previewStore(defaults)
+    let snapshot = try #require(store.snapshot(at: duringLunch))
+    let preview = store.shiftPreview(for: snapshot, at: duringLunch)
+
+    // Today's break is half spent: going back to work is still ahead, starting
+    // it is not. Rolling them together would either resurrect a start that has
+    // gone or push away an end that has not.
+    #expect(preview.upcoming.map(\.kind) == [.lunchEnd, .shiftEnd, .shiftStart, .lunchStart])
+    #expect(preview.upcoming[0].date == calendar.date(bySettingHour: 13, minute: 0, second: 0, of: duringLunch))
+}
+
 private func isolatedDefaults() throws -> (UserDefaults, String) {
     let suite = "OffWorkStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))

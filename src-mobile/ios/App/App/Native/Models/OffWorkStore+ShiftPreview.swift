@@ -43,22 +43,47 @@ extension OffWorkStore {
         }
 
         if lunchEnabled, let lunch = lunchWindow(in: snapshot) {
-            upcoming.append(.init(
-                id: "lunch-start",
-                kind: .lunchStart,
-                title: t("lunchBreak"),
-                detail: t("lunchStartTime"),
-                date: lunch.start,
-                route: .lunch
-            ))
-            upcoming.append(.init(
-                id: "lunch-end",
-                kind: .lunchEnd,
-                title: t("lunchBreak"),
-                detail: t("lunchBackAt"),
-                date: lunch.end,
-                route: .lunch
-            ))
+            // Each boundary rolls forward on its own once it has passed, the
+            // same way the start time above does — otherwise an afternoon spent
+            // on this page is headed by a break that finished hours ago.
+            //
+            // Rolling them separately is deliberate: during the break itself
+            // "开始时间" is already the next shift's while "恢复时间" is still
+            // today's, which is exactly what is true.
+            //
+            // The offset is taken from the resolved window rather than from
+            // `lunchStartMinutes` so an overnight shift's after-midnight break
+            // lands on the right day. Every shift is the same shape — one
+            // start, one end, one break for all workdays — so carrying today's
+            // offset onto the next start is exact, not an estimate.
+            func nextOccurrence(of date: Date) -> Date? {
+                snapshot.nextShiftStartDate.map {
+                    $0.addingTimeInterval(date.timeIntervalSince(snapshot.startDate))
+                }
+            }
+
+            // Nil only when the schedule has no further shift to hang it on, in
+            // which case the row is dropped exactly like the start time is.
+            if let start = lunch.start > now ? lunch.start : nextOccurrence(of: lunch.start) {
+                upcoming.append(.init(
+                    id: "lunch-start",
+                    kind: .lunchStart,
+                    title: t("lunchBreak"),
+                    detail: t("lunchStartTime"),
+                    date: start,
+                    route: .lunch
+                ))
+            }
+            if let end = lunch.end > now ? lunch.end : nextOccurrence(of: lunch.end) {
+                upcoming.append(.init(
+                    id: "lunch-end",
+                    kind: .lunchEnd,
+                    title: t("lunchBreak"),
+                    detail: t("lunchBackAt"),
+                    date: end,
+                    route: .lunch
+                ))
+            }
         } else {
             disabled.append(.init(
                 id: "lunch-off",

@@ -96,6 +96,7 @@
   "futureStartTimeError": "Work starts in {{hours}} hours {{minutes}} minutes, so there is nothing to count down yet. Move the start time earlier if you want to begin now.",
   "sameTimeError": "Start and end are set to the same time, which leaves no shift to count. Change one of them.",
   "chooselanguage": "Choose language",
+  "languageFooter": "This changes the language inside the app. The name on your Home Screen and the system's own dialogs still follow your device language.",
   "offlineStatus": "Offline — the countdown keeps running",
   "light": "Light",
   "dark": "Dark",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Turn on Face ID protection",
   "onboardingReadyBody": "That's everything. Set your hours and the countdown starts.",
   "onboardingStartSetup": "Set up the countdown",
-  "biometricsUnavailableHint": "Biometrics unavailable — open Settings",
+  "biometricsUnavailableHint": "Biometrics unavailable — find {{app}} in the Settings app list to turn it on",
   "appShortName": "Off Work"
 }

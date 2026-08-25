@@ -15,6 +15,7 @@ enum AppRoute: String, Hashable, Identifiable {
     case lunch
     case health
     case theme
+    case language
     case about
 
     var id: String { rawValue }
@@ -136,6 +137,7 @@ final class OffWorkStore {
         static let annualBonusMonths = "ios.native.annualBonusMonths"
         static let hideEarnings = "hideEarnings"
         static let theme = "theme"
+        static let languageOverride = "ios.native.languageOverride"
         static let notificationMode = "ios.native.notificationMode"
         static let liveActivityEnabled = "ios.native.liveActivityEnabled"
         static let liveActivityLead = "ios.native.liveActivityLead"
@@ -156,6 +158,15 @@ final class OffWorkStore {
 
     var selectedTab: AppTab { didSet { defaults.set(selectedTab.rawValue, forKey: Key.selectedTab) } }
     var presentedRoute: AppRoute?
+
+    /// Whether the "coming up" list is showing everything.
+    ///
+    /// Held here rather than in the timer views because its lifetime is one
+    /// countdown session, not one view instance. As view `@State` it outlived
+    /// `stopCountdown()`: stopping and starting again inside SwiftUI's retention
+    /// window reattached the same view, and the list came back expanded. Waiting
+    /// a second or two first "fixed" it, which is the tell.
+    var timelineExpanded = false
 
     /// The two navigation stacks, held here rather than in the shells so a
     /// pushed page survives a rotation — portrait and landscape are separate
@@ -211,7 +222,27 @@ final class OffWorkStore {
     var annualBonusMonths: Double { didSet { defaults.set(annualBonusMonths, forKey: Key.annualBonusMonths) } }
     var hideEarnings: Bool { didSet { defaults.set(hideEarnings, forKey: Key.hideEarnings) } }
     var theme: AppTheme { didSet { defaults.set(theme.rawValue, forKey: Key.theme) } }
-    private(set) var languageCode: String
+    /// The language iOS would give us, kept as stored state so a change while
+    /// the app is backgrounded invalidates the views that read it.
+    private(set) var systemLanguageCode: String
+
+    /// The language the user pinned, or nil to follow the system.
+    ///
+    /// The app owns this rather than deferring to iOS because the only way to
+    /// reach the system's per-app language is `UIApplication.openSettingsURLString`,
+    /// and since iOS 18 reorganised Settings that link no longer reliably lands
+    /// on the app's own page — testers were dropped at the Settings root, where
+    /// third-party apps are now buried under "Apps". Every string in this app
+    /// already comes from the bundled JSON via `t()`, so there was nothing to
+    /// gain from routing the choice through a page we cannot navigate to.
+    var languageOverride: String? {
+        didSet { defaults.set(languageOverride, forKey: Key.languageOverride) }
+    }
+
+    /// What the UI actually renders in. Widgets, the Live Activity and the
+    /// notification copy all read this, so pinning a language carries through
+    /// without any of them knowing an override exists.
+    var languageCode: String { languageOverride ?? systemLanguageCode }
     var notificationMode: OffWorkNotificationMode { didSet { defaults.set(notificationMode.rawValue, forKey: Key.notificationMode) } }
     var liveActivityEnabled: Bool { didSet { defaults.set(liveActivityEnabled, forKey: Key.liveActivityEnabled) } }
     var liveActivityLeadMinutes: Int { didSet { defaults.set(liveActivityLeadMinutes, forKey: Key.liveActivityLead) } }
@@ -292,7 +323,12 @@ final class OffWorkStore {
         annualBonusMonths = max(0, storedBonusMonths)
         hideEarnings = defaults.bool(forKey: Key.hideEarnings)
         theme = AppTheme(rawValue: defaults.string(forKey: Key.theme) ?? "auto") ?? .auto
-        languageCode = NativeLocalizer.systemLanguage()
+        systemLanguageCode = NativeLocalizer.systemLanguage()
+        // Only honour a code this build still ships; a language dropped between
+        // versions must fall back rather than leave the UI on missing keys.
+        languageOverride = defaults.string(forKey: Key.languageOverride).flatMap { stored in
+            NativeLocalizer.supportedLanguages.contains { $0.id == stored } ? stored : nil
+        }
         notificationMode = OffWorkNotificationMode(rawValue: defaults.string(forKey: Key.notificationMode) ?? "off") ?? .off
         liveActivityEnabled = defaults.bool(forKey: Key.liveActivityEnabled)
         let storedLead = defaults.object(forKey: Key.liveActivityLead) == nil ? 15 : defaults.integer(forKey: Key.liveActivityLead)
@@ -340,8 +376,8 @@ final class OffWorkStore {
 
     func refreshSystemLanguage() {
         let systemLanguage = NativeLocalizer.systemLanguage()
-        if languageCode != systemLanguage {
-            languageCode = systemLanguage
+        if systemLanguageCode != systemLanguage {
+            systemLanguageCode = systemLanguage
         }
     }
 
@@ -578,6 +614,7 @@ final class OffWorkStore {
 
     func stopCountdown() {
         countdownStarted = false
+        timelineExpanded = false
         forcedWorkdayDate = nil
         activeCountdownEndAtMs = nil
         clearOvertime()

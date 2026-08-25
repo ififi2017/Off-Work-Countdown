@@ -96,6 +96,7 @@
   "futureStartTimeError": "Tu turno empieza dentro de {{hours}} horas y {{minutes}} minutos, así que todavía no hay nada que descontar. Adelanta la hora de entrada si quieres empezar ya.",
   "sameTimeError": "La entrada y la salida están a la misma hora, así no queda turno que contar. Cambia una de las dos.",
   "chooselanguage": "Elige idioma",
+  "languageFooter": "Esto solo cambia el idioma dentro de la app. El nombre en la pantalla de inicio y los diálogos del sistema siguen el idioma del dispositivo.",
   "offlineStatus": "Sin conexión: la cuenta atrás sigue",
   "light": "Claro",
   "dark": "Oscuro",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Activar protección con Face ID",
   "onboardingReadyBody": "Eso es todo. Configura tu horario y empieza la cuenta atrás.",
   "onboardingStartSetup": "Configurar la cuenta atrás",
-  "biometricsUnavailableHint": "Biometría no disponible: abrir Ajustes",
+  "biometricsUnavailableHint": "Biometría no disponible: busca {{app}} en la lista de apps de Ajustes para activarla",
   "appShortName": "Fin del trabajo"
 }

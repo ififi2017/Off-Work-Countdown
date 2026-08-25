@@ -96,6 +96,7 @@
   "futureStartTimeError": "Deine Schicht beginnt erst in {{hours}} Stunden und {{minutes}} Minuten – es gibt noch nichts herunterzuzählen. Setze die Startzeit früher, um jetzt zu beginnen.",
   "sameTimeError": "Start und Ende liegen auf derselben Uhrzeit, damit bleibt keine Schichtdauer übrig. Ändere eine der beiden.",
   "chooselanguage": "Sprache wählen",
+  "languageFooter": "Das ändert nur die Sprache in der App. Der Name auf dem Home-Bildschirm und Systemdialoge folgen weiterhin der Gerätesprache.",
   "offlineStatus": "Offline – der Countdown läuft weiter",
   "light": "Hell",
   "dark": "Dunkel",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Face-ID-Schutz aktivieren",
   "onboardingReadyBody": "Das war alles. Arbeitszeiten festlegen und der Countdown läuft.",
   "onboardingStartSetup": "Countdown einrichten",
-  "biometricsUnavailableHint": "Biometrie nicht verfügbar – Einstellungen öffnen",
+  "biometricsUnavailableHint": "Biometrie nicht verfügbar – {{app}} in der App-Liste der Einstellungen öffnen und aktivieren",
   "appShortName": "Feierabend"
 }

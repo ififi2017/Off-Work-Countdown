@@ -96,6 +96,7 @@
   "futureStartTimeError": "離上班還有 {{hours}} 小時 {{minutes}} 分鐘，現在還沒什麼可倒數的。想現在就開始，把上班時間往前調一點就行。",
   "sameTimeError": "上班和下班是同一個時間，這樣就沒有班次長度了，改一個吧。",
   "chooselanguage": "選擇語言",
+  "languageFooter": "此設定只會變更 App 內的語言。主畫面上的名稱與系統對話框仍跟隨裝置語言。",
   "offlineStatus": "目前離線，倒數照常走",
   "light": "淺色",
   "dark": "深色",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "開啟 Face ID 保護",
   "onboardingReadyBody": "就這些。設好上下班時間，倒數就開始了。",
   "onboardingStartSetup": "開始設定倒數",
-  "biometricsUnavailableHint": "生物辨識無法使用 · 前往系統設定",
+  "biometricsUnavailableHint": "生物辨識無法使用 · 在系統設定的 App 列表中找到「{{app}}」開啟",
   "appShortName": "下班倒數"
 }

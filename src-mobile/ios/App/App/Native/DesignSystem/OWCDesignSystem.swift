@@ -29,6 +29,15 @@ enum OWCDesign {
     /// the device.
     static let heroGap: CGFloat = 26
     static let sectionGap: CGFloat = 22
+
+    /// Clearance a detail page leaves under its last element.
+    ///
+    /// The tab bar stays up across a push, floating over the content, and the
+    /// system inset stops the content at the bar rather than a comfortable
+    /// distance from it — the language page's footer ended about 13pt from the
+    /// glass edge, close enough to read as a mistake. Mirrors the 22pt the
+    /// pages open with.
+    static let detailBottomInset: CGFloat = 24
 }
 
 enum OWCSystemSettings {
@@ -144,6 +153,11 @@ struct OWCContentSizedScrollView<Content: View>: View {
                             )
                         }
                     }
+                    // Outside the measurement above on purpose. The height this
+                    // view reports decides whether the page scrolls at all, and
+                    // padding a short page into scrolling would undo the whole
+                    // point of this container.
+                    .padding(.bottom, OWCDesign.detailBottomInset)
             }
             .scrollDisabled(contentHeight <= viewport.size.height + 1)
             .scrollBounceBehavior(.basedOnSize)

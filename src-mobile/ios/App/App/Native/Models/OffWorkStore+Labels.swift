@@ -51,7 +51,12 @@ extension OffWorkStore {
         }
     }
 
-    var languageLabel: String { localizer.languageName(for: languageCode) }
+    /// Reads like the theme row: say "System" when following it, name the
+    /// language when it has been pinned.
+    var languageLabel: String {
+        guard let languageOverride else { return t("auto") }
+        return localizer.languageName(for: languageOverride)
+    }
 
     var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"

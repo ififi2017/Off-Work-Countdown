@@ -1,29 +1,93 @@
 import SwiftUI
 
+/// How the timer pages tell `UpcomingTimelineView` how much room it has.
+///
+/// The list cannot see the countdown, the meter and the summary card stacked
+/// above it, but it does not need their heights — only where it starts, which is
+/// the same number. Each page names its scroll content with this space and the
+/// list reports its own `minY` inside it. That value does not depend on how many
+/// rows the list ends up drawing, so measuring it cannot feed back into itself.
+/// `nonisolated` because the values are read from `onGeometryChange`'s
+/// measurement closure, which is `@Sendable`. The project defaults declarations
+/// to the main actor, and immutable constants have nothing to protect.
+nonisolated enum TimerContentSpace {
+    static let name = "owc.timer.content"
+
+    /// The `Spacer(minLength:)` every timer page keeps under the list, held back
+    /// so the last row never sits flush against the action bar.
+    static let bottomSlack: CGFloat = 22
+}
+
+extension OffWorkStore {
+    /// `timelineExpanded` as a `Binding`, so the timer views can hand it to the
+    /// list without each of them holding a copy that can drift out of step.
+    var timelineExpandedBinding: Binding<Bool> {
+        Binding(get: { self.timelineExpanded }, set: { self.timelineExpanded = $0 })
+    }
+}
+
 struct UpcomingTimelineView: View {
     let store: OffWorkStore
     let snapshot: NativeShiftSnapshot
     let now: Date
     @Binding var isExpanded: Bool
-    let collapsedEventLimit: Int
+
+    /// Free height between whatever sits above this list and the action bar,
+    /// **in the collapsed layout**. Zero means "not measured yet".
+    ///
+    /// Collapsed specifically: expanding hides the summary card above, which
+    /// moves this list up and would report a much larger figure. Sizing off that
+    /// figure made the list look big enough to hold everything, and the
+    /// "collapse" button — which only appears when it is not — disappeared with
+    /// it, stranding the user in the expanded state. The callers freeze the
+    /// measurement while expanded for that reason.
+    ///
+    /// The list used to take `height < 560 ? 1 : 2`, which asked about the whole
+    /// screen instead of about the gap that is actually free. Two things make
+    /// that gap vary a lot — the phone (a Pro Max is 82pt taller than a Pro) and
+    /// whether the salary row is switched on, which is a whole row of the card
+    /// above. With salary off on a Pro Max there was room for five rows and the
+    /// list still stopped at two, leaving a band of empty page over the buttons.
+    let availableHeight: CGFloat
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(
-        store: OffWorkStore,
-        snapshot: NativeShiftSnapshot,
-        now: Date,
-        isExpanded: Binding<Bool>,
-        collapsedEventLimit: Int = 2
-    ) {
-        self.store = store
-        self.snapshot = snapshot
-        self.now = now
-        _isExpanded = isExpanded
-        self.collapsedEventLimit = max(1, collapsedEventLimit)
+    /// `UpcomingTimelineEventRow` pins itself to `minHeight: 58`, which is what
+    /// its title-and-detail pair measures at the default text size.
+    @ScaledMetric(relativeTo: .body) private var rowHeight: CGFloat = 58
+    /// `OWCSectionHeader`: one footnote line plus its 6pt bottom padding.
+    @ScaledMetric(relativeTo: .footnote) private var headerHeight: CGFloat = 24
+    /// The expand button's own `minHeight`.
+    @ScaledMetric(relativeTo: .footnote) private var expandButtonHeight: CGFloat = 44
+
+    /// Used until the caller has measured. Matches the old fixed limit, so the
+    /// first frame looks like it always did rather than briefly overflowing.
+    private static let unmeasuredLimit = 2
+
+    /// How many rows the free space takes.
+    ///
+    /// Rounds to the nearest row rather than down. Coming up half a row short is
+    /// not a failure — the page already lives in a `ScrollView` and absorbs it —
+    /// while dropping that row leaves a visible band of empty page above the
+    /// buttons, which is the thing this is here to prevent. Flooring cost a row
+    /// on a 17 Pro, where two rows and the button miss the available height by
+    /// about ten points.
+    private func collapsedLimit(eventCount: Int) -> Int {
+        guard availableHeight > 0, rowHeight > 0 else { return Self.unmeasuredLimit }
+
+        let forRows = availableHeight - headerHeight
+        guard forRows >= rowHeight else { return 1 }
+
+        if Int((forRows / rowHeight).rounded()) >= eventCount { return eventCount }
+
+        // Something stays hidden, so the expand button needs its own room —
+        // pushed under the action bar it is an affordance nobody finds.
+        return max(1, Int(((forRows - expandButtonHeight) / rowHeight).rounded()))
     }
 
     var body: some View {
         let events = store.upcomingTimelineEvents(for: snapshot, at: now)
+        let collapsedEventLimit = collapsedLimit(eventCount: events.count)
         let visibleEvents = isExpanded ? events : Array(events.prefix(collapsedEventLimit))
         let hiddenCount = max(0, events.count - collapsedEventLimit)
 

@@ -175,7 +175,7 @@ struct OffWorkCountdownRootView: View {
                     .tag(AppTab.timer)
 
                     NavigationStack(path: $store.settingsPath) {
-                        SettingsDesignView(store: store, wide: false)
+                        SettingsDesignView(store: store)
                             .navigationDestination(for: AppRoute.self) { route in
                                 AppRouteDestination(route: route, store: store)
                             }

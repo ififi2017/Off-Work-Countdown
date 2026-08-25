@@ -62,6 +62,10 @@ struct TabletShellView: View {
                     onOpenSettings: { route in store.presentedRoute = route },
                     timelineActive: store.selectedTab == .timer
                 )
+                // This pane runs the phone layout, which no longer caps its own
+                // width. The pane can be up to 620pt (`tabletMinimum`), so cap
+                // it at the widest iPhone rather than let a phone design stretch.
+                .frame(maxWidth: 440)
             } else {
                 TabletTimerView(
                     store: store,

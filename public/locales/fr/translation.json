@@ -96,6 +96,7 @@
   "futureStartTimeError": "Votre service commence dans {{hours}} heures et {{minutes}} minutes : il n’y a encore rien à décompter. Avancez l’heure de début pour commencer maintenant.",
   "sameTimeError": "Le début et la fin sont à la même heure, il ne reste donc aucune durée à décompter. Modifiez l’une des deux.",
   "chooselanguage": "Choisir la langue",
+  "languageFooter": "Ceci ne change que la langue dans l’app. Le nom sur l’écran d’accueil et les boîtes de dialogue du système suivent la langue de l’appareil.",
   "offlineStatus": "Hors ligne — le décompte continue",
   "light": "Clair",
   "dark": "Sombre",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Activer la protection Face ID",
   "onboardingReadyBody": "C'est tout. Réglez vos horaires et le compte à rebours démarre.",
   "onboardingStartSetup": "Configurer le compte à rebours",
-  "biometricsUnavailableHint": "Biométrie indisponible — ouvrir Réglages",
+  "biometricsUnavailableHint": "Biométrie indisponible — retrouvez {{app}} dans la liste des apps des Réglages pour l’activer",
   "appShortName": "Fin du travail"
 }

@@ -96,6 +96,7 @@
   "futureStartTimeError": "Còn {{hours}} giờ {{minutes}} phút nữa mới tới ca, nên chưa có gì để đếm ngược. Muốn bắt đầu ngay thì chỉnh giờ vào làm sớm hơn.",
   "sameTimeError": "Giờ vào và giờ tan trùng nhau nên không còn ca nào để đếm. Đổi một trong hai.",
   "chooselanguage": "Chọn ngôn ngữ",
+  "languageFooter": "Thiết lập này chỉ đổi ngôn ngữ bên trong ứng dụng. Tên trên Màn hình chính và các hộp thoại hệ thống vẫn theo ngôn ngữ của thiết bị.",
   "offlineStatus": "Ngoại tuyến — đồng hồ vẫn chạy",
   "light": "Sáng",
   "dark": "Tối",
@@ -354,6 +355,6 @@
   "onboardingEnableBiometrics": "Bật bảo vệ Face ID",
   "onboardingReadyBody": "Vậy là xong. Đặt giờ làm và bắt đầu đếm ngược.",
   "onboardingStartSetup": "Thiết lập đếm ngược",
-  "biometricsUnavailableHint": "Không dùng được sinh trắc học — mở Cài đặt",
+  "biometricsUnavailableHint": "Không dùng được sinh trắc học — tìm {{app}} trong danh sách ứng dụng của Cài đặt để bật",
   "appShortName": "Tan ca"
 }
