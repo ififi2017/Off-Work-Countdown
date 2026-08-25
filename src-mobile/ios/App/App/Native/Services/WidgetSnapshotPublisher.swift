@@ -57,7 +57,11 @@ final class WidgetSnapshotPublisher {
         )
     }
 
-    private func makeSnapshot(store: OffWorkStore, shift: NativeShiftSnapshot?, active: Bool, nowMs: Int64) -> WidgetSnapshot {
+    /// Internal rather than private so the timeline can be tested without a
+    /// shared app-group container: this is where the phases are decided, and a
+    /// break that produced no entry is exactly the kind of gap a unit test
+    /// catches and a screenshot does not.
+    func makeSnapshot(store: OffWorkStore, shift: NativeShiftSnapshot?, active: Bool, nowMs: Int64) -> WidgetSnapshot {
         if !active,
            store.scheduleMode != .off,
            let shift,
@@ -143,40 +147,50 @@ final class WidgetSnapshotPublisher {
         }
 
         for (index, segment) in segments.enumerated() {
-            let date = max(nowMs, segment.startAtMs)
-            guard date < segment.endAtMs else { continue }
             let completedBefore = segments.prefix(index).reduce(Int64(0)) { $0 + $1.endAtMs - $1.startAtMs }
-            let elapsed = completedBefore + max(0, date - segment.startAtMs)
             let duration = max(Int64(1), Int64(shift.durationMs))
-            let remaining = max(0, duration - elapsed)
-            entries.append(entry(
-                date: date,
-                end: segment.endAtMs,
-                phase: .working,
-                label: "widgetWorking",
-                kind: .workRemaining,
-                remaining: remaining,
-                progress: Double(elapsed) / Double(duration) * 100,
-                boundary: segment.endAtMs,
-                target: date + remaining
-            ))
 
-            if index + 1 < segments.count {
-                let next = segments[index + 1]
-                if next.startAtMs > segment.endAtMs, next.startAtMs > nowMs {
-                    entries.append(entry(
-                        date: max(nowMs, segment.endAtMs),
-                        end: next.startAtMs,
-                        phase: .break,
-                        label: "lunchInProgress",
-                        kind: .breakEnds,
-                        remaining: remaining,
-                        progress: Double(elapsed + (segment.endAtMs - date)) / Double(duration) * 100,
-                        boundary: next.startAtMs,
-                        target: next.startAtMs
-                    ))
-                }
+            let workStart = max(nowMs, segment.startAtMs)
+            if workStart < segment.endAtMs {
+                let elapsed = completedBefore + max(0, workStart - segment.startAtMs)
+                let remaining = max(0, duration - elapsed)
+                entries.append(entry(
+                    date: workStart,
+                    end: segment.endAtMs,
+                    phase: .working,
+                    label: "widgetWorking",
+                    kind: .workRemaining,
+                    remaining: remaining,
+                    progress: Double(elapsed) / Double(duration) * 100,
+                    boundary: segment.endAtMs,
+                    target: workStart + remaining
+                ))
             }
+
+            // The gap after this segment, emitted whether or not the segment
+            // itself is still running. It used to sit inside the branch above,
+            // which was guarded on the segment not having finished — so during
+            // lunch, when it has, nothing at all covered the present moment.
+            // WidgetKit then had no entry to show and every family fell through
+            // to its empty state, reporting "not started" mid-shift.
+            guard index + 1 < segments.count else { continue }
+            let next = segments[index + 1]
+            guard next.startAtMs > segment.endAtMs, next.startAtMs > nowMs else { continue }
+
+            // Progress freezes for the length of the break, matching the app:
+            // every minute of work up to here counts, and none of the break does.
+            let elapsedAtBreak = completedBefore + (segment.endAtMs - segment.startAtMs)
+            entries.append(entry(
+                date: max(nowMs, segment.endAtMs),
+                end: next.startAtMs,
+                phase: .break,
+                label: "lunchInProgress",
+                kind: .breakEnds,
+                remaining: max(0, duration - elapsedAtBreak),
+                progress: Double(elapsedAtBreak) / Double(duration) * 100,
+                boundary: next.startAtMs,
+                target: next.startAtMs
+            ))
         }
 
         // Completion belongs to the calendar day that contains the shift end.

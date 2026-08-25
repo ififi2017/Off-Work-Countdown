@@ -271,7 +271,22 @@ public struct OffWorkCountdownWidgetView: View {
                         }
                         #endif
                     } else {
+                        #if os(iOS)
+                        if family == .accessoryCircular {
+                            // A circular complication has room for one glyph.
+                            // The full empty state — a header, a 42pt badge and
+                            // two lines of copy — was being crammed into it.
+                            Image(systemName: "play.fill")
+                                .font(.body.bold())
+                                .accessibilityLabel(
+                                    WidgetCopy.text("countdownNotStarted", locale: entry.locale)
+                                )
+                        } else {
+                            emptyContent
+                        }
+                        #else
                         emptyContent
+                        #endif
                     }
                 }
             }
@@ -454,13 +469,18 @@ public struct OffWorkCountdownWidgetView: View {
                 .frame(width: 42, height: 42)
 
                 VStack(alignment: .leading, spacing: 3) {
+                    // Small has roughly 100pt left once the badge is placed,
+                    // which wrapped even five CJK glyphs onto a second line.
+                    // Shrink to fit there; medium has the width to spare.
                     Text(WidgetCopy.text("countdownNotStarted", locale: entry.locale))
                         .font(.callout.weight(.bold))
-                        .lineLimit(2)
+                        .lineLimit(family == .systemMedium ? 2 : 1)
+                        .minimumScaleFactor(0.6)
                     Text(WidgetCopy.text("widgetOpenToRefresh", locale: entry.locale))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
+                        .minimumScaleFactor(0.75)
                 }
             }
             Spacer(minLength: 0)

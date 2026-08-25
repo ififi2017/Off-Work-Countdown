@@ -151,6 +151,41 @@ func overnightTimelineKeepsEventsAfterMidnight() throws {
     #expect(events.map(\.kind) == [.lunchStart, .lunchEnd, .shiftEnd])
 }
 
+@MainActor
+@Test("The widget timeline has an entry covering the lunch break")
+func widgetTimelineCoversLunchBreak() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    // 12:45, inside a 12:30-13:30 break in an 09:00-18:00 shift.
+    let duringLunch = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 12, minute: 45
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .off
+    store.startMinutes = 9 * 60
+    store.endMinutes = 18 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60 + 30
+    store.lunchDurationMinutes = 60
+    store.countdownStarted = true
+
+    let nowMs = Int64(duringLunch.timeIntervalSince1970 * 1_000)
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: duringLunch),
+        active: true,
+        nowMs: nowMs
+    )
+
+    // The entry WidgetKit would pick: the most recent one already due.
+    let current = try #require(snapshot.entries.last { $0.dateMs <= nowMs })
+    #expect(current.phase == .break)
+    #expect(current.labelKey == "lunchInProgress")
+    #expect(nowMs < current.validUntilMs)
+}
+
 private func isolatedDefaults() throws -> (UserDefaults, String) {
     let suite = "OffWorkStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
