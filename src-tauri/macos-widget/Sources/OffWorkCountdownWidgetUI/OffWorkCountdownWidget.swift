@@ -374,7 +374,13 @@ public struct OffWorkCountdownWidgetView: View {
     private func rectangularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Label {
-                Text(WidgetCopy.text("offWorkCountdown", locale: entry.locale))
+                // The short name, not the full one. "Cuenta regresiva para
+                // salir del trabajo" is thirty-nine characters in a strip about
+                // 160pt wide; "Fin del trabajo" is fifteen and says the same
+                // thing. These are the names already shipping as the Home
+                // Screen app label, so they are translations that have been
+                // through review rather than ones invented here.
+                Text(WidgetCopy.text("appShortName", locale: entry.locale))
             } icon: {
                 Image(systemName: accessoryGlyph(snapshotEntry.phase))
             }
@@ -444,9 +450,12 @@ public struct OffWorkCountdownWidgetView: View {
             }
             .frame(width: compact ? 25 : 27, height: compact ? 25 : 27)
 
-            Text(WidgetCopy.text("offWorkCountdown", locale: entry.locale))
+            // Short name here too: the header sits beside a 25pt badge on a
+            // small widget, and the full name wrapped onto a second line in
+            // every language that is not CJK.
+            Text(WidgetCopy.text("appShortName", locale: entry.locale))
                 .font(.caption.weight(.bold))
-                .lineLimit(compact ? 2 : 1)
+                .lineLimit(1)
                 .minimumScaleFactor(0.78)
             Spacer(minLength: 0)
         }

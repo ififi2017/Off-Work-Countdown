@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "Activer la protection Face ID",
   "onboardingReadyBody": "C'est tout. Réglez vos horaires et le compte à rebours démarre.",
   "onboardingStartSetup": "Configurer le compte à rebours",
-  "biometricsUnavailableHint": "Biométrie indisponible — ouvrir Réglages"
+  "biometricsUnavailableHint": "Biométrie indisponible — ouvrir Réglages",
+  "appShortName": "Fin du travail"
 }

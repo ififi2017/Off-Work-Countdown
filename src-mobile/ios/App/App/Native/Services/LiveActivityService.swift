@@ -44,7 +44,7 @@ final class LiveActivityService {
             progress: displaySnapshot.progress,
             phase: snapshot.overtimeEndAtMs == nil ? "working" : "overtime",
             locale: store.languageCode,
-            appTitle: store.t("offWorkCountdown"),
+            appTitle: store.t("appShortName"),
             caption: store.t("timeLeftCaption"),
             completedCaption: store.t("offWorkTime"),
             completedNote: store.t("offWorkWellDone")
@@ -128,7 +128,7 @@ final class LiveActivityService {
             progress: 100,
             phase: "complete",
             locale: store.languageCode,
-            appTitle: store.t("offWorkCountdown"),
+            appTitle: store.t("appShortName"),
             caption: store.t("timeLeftCaption"),
             completedCaption: store.t("offWorkTime"),
             completedNote: store.t("offWorkWellDone")

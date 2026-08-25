@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "Activar protección con Face ID",
   "onboardingReadyBody": "Eso es todo. Configura tu horario y empieza la cuenta atrás.",
   "onboardingStartSetup": "Configurar la cuenta atrás",
-  "biometricsUnavailableHint": "Biometría no disponible: abrir Ajustes"
+  "biometricsUnavailableHint": "Biometría no disponible: abrir Ajustes",
+  "appShortName": "Fin del trabajo"
 }

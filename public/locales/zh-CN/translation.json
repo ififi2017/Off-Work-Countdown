@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "开启面容 ID 保护",
   "onboardingReadyBody": "就这些。设好上下班时间，倒计时就开始了。",
   "onboardingStartSetup": "开始设置倒计时",
-  "biometricsUnavailableHint": "生物识别不可用 · 前往系统设置"
+  "biometricsUnavailableHint": "生物识别不可用 · 前往系统设置",
+  "appShortName": "下班倒计时"
 }

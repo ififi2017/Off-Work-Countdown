@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "Face-ID-Schutz aktivieren",
   "onboardingReadyBody": "Das war alles. Arbeitszeiten festlegen und der Countdown läuft.",
   "onboardingStartSetup": "Countdown einrichten",
-  "biometricsUnavailableHint": "Biometrie nicht verfügbar – Einstellungen öffnen"
+  "biometricsUnavailableHint": "Biometrie nicht verfügbar – Einstellungen öffnen",
+  "appShortName": "Feierabend"
 }

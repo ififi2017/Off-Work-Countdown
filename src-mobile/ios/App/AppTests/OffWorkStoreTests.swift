@@ -186,6 +186,46 @@ func widgetTimelineCoversLunchBreak() throws {
     #expect(nowMs < current.validUntilMs)
 }
 
+@MainActor
+@Test("Overtime carries the widget timeline past the planned end")
+func widgetTimelineFollowsOvertime() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    // 17:30 — half an hour past a 09:00-17:00 shift extended to 18:00.
+    let duringOvertime = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 17, minute: 30
+    )))
+    let overtimeEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 18, minute: 0
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .off
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = false
+    store.applyOvertime(date: overtimeEnd)
+
+    let nowMs = Int64(duringOvertime.timeIntervalSince1970 * 1_000)
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: duringOvertime),
+        active: true,
+        nowMs: nowMs
+    )
+
+    let current = try #require(snapshot.entries.last { $0.dateMs <= nowMs })
+    #expect(current.phase == .working)
+
+    // Counting to the extended end, not to 17:00. A tolerance rather than an
+    // equality: the duration crosses a Double on its way through the rules
+    // engine, so sub-millisecond drift is expected and meaningless.
+    let target = try #require(current.countdownTargetAtMs)
+    let expected = Int64(overtimeEnd.timeIntervalSince1970 * 1_000)
+    #expect(abs(target - expected) < 1_000)
+}
+
 private func isolatedDefaults() throws -> (UserDefaults, String) {
     let suite = "OffWorkStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))

@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "Aktifkan perlindungan Face ID",
   "onboardingReadyBody": "Itu saja. Atur jam kerja dan hitung mundur dimulai.",
   "onboardingStartSetup": "Atur hitung mundur",
-  "biometricsUnavailableHint": "Biometrik tidak tersedia — buka Pengaturan"
+  "biometricsUnavailableHint": "Biometrik tidak tersedia — buka Pengaturan",
+  "appShortName": "Waktu Pulang"
 }

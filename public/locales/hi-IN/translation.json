@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "Face ID सुरक्षा चालू करें",
   "onboardingReadyBody": "बस इतना ही। अपने घंटे सेट करें और उलटी गिनती शुरू।",
   "onboardingStartSetup": "उलटी गिनती सेट करें",
-  "biometricsUnavailableHint": "बायोमेट्रिक्स अनुपलब्ध — सेटिंग्स खोलें"
+  "biometricsUnavailableHint": "बायोमेट्रिक्स अनुपलब्ध — सेटिंग्स खोलें",
+  "appShortName": "काम से छुट्टी"
 }

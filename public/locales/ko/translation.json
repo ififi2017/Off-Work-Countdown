@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "Face ID 보호 켜기",
   "onboardingReadyBody": "이게 전부입니다. 근무 시간을 설정하면 카운트다운이 시작됩니다.",
   "onboardingStartSetup": "카운트다운 설정 시작",
-  "biometricsUnavailableHint": "생체 인증을 사용할 수 없음 · 설정 열기"
+  "biometricsUnavailableHint": "생체 인증을 사용할 수 없음 · 설정 열기",
+  "appShortName": "퇴근"
 }

@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "เปิดการป้องกันด้วย Face ID",
   "onboardingReadyBody": "เท่านี้แหละ ตั้งเวลาทำงานแล้วเริ่มนับถอยหลังได้เลย",
   "onboardingStartSetup": "ตั้งค่าการนับถอยหลัง",
-  "biometricsUnavailableHint": "ใช้ไบโอเมตริกไม่ได้ · เปิดการตั้งค่า"
+  "biometricsUnavailableHint": "ใช้ไบโอเมตริกไม่ได้ · เปิดการตั้งค่า",
+  "appShortName": "เลิกงาน"
 }

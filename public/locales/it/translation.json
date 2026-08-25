@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "Attiva la protezione Face ID",
   "onboardingReadyBody": "È tutto. Imposta gli orari e il conto alla rovescia parte.",
   "onboardingStartSetup": "Configura il conto alla rovescia",
-  "biometricsUnavailableHint": "Biometria non disponibile — apri Impostazioni"
+  "biometricsUnavailableHint": "Biometria non disponibile — apri Impostazioni",
+  "appShortName": "Fine lavoro"
 }

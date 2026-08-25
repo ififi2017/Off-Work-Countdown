@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "開啟 Face ID 保護",
   "onboardingReadyBody": "就這些。設好上下班時間，倒數就開始了。",
   "onboardingStartSetup": "開始設定倒數",
-  "biometricsUnavailableHint": "生物識別無法使用 · 前往系統設定"
+  "biometricsUnavailableHint": "生物識別無法使用 · 前往系統設定",
+  "appShortName": "放工倒數"
 }

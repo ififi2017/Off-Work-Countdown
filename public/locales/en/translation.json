@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "Turn on Face ID protection",
   "onboardingReadyBody": "That's everything. Set your hours and the countdown starts.",
   "onboardingStartSetup": "Set up the countdown",
-  "biometricsUnavailableHint": "Biometrics unavailable — open Settings"
+  "biometricsUnavailableHint": "Biometrics unavailable — open Settings",
+  "appShortName": "Off Work"
 }

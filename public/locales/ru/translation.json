@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "Включить защиту Face ID",
   "onboardingReadyBody": "Это всё. Задайте часы работы — и обратный отсчёт начнётся.",
   "onboardingStartSetup": "Настроить обратный отсчёт",
-  "biometricsUnavailableHint": "Биометрия недоступна — открыть «Настройки»"
+  "biometricsUnavailableHint": "Биометрия недоступна — открыть «Настройки»",
+  "appShortName": "Конец работы"
 }

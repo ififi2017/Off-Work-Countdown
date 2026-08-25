@@ -354,5 +354,6 @@
   "onboardingEnableBiometrics": "تفعيل حماية Face ID",
   "onboardingReadyBody": "هذا كل شيء. حدّد ساعات عملك ليبدأ العد التنازلي.",
   "onboardingStartSetup": "إعداد العد التنازلي",
-  "biometricsUnavailableHint": "المصادقة البيومترية غير متاحة — افتح الإعدادات"
+  "biometricsUnavailableHint": "المصادقة البيومترية غير متاحة — افتح الإعدادات",
+  "appShortName": "نهاية العمل"
 }
