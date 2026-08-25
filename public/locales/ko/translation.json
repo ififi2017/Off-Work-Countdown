@@ -351,10 +351,16 @@
   "unlockSalaryReason": "급여를 보려면 잠금 해제",
   "salaryLocked": "잠김",
   "unlockSalary": "잠금 해제",
-  "onboardingSalaryLockBody": "Face ID/Touch ID로 보호되며 기기 암호로 대체됩니다.",
-  "onboardingEnableBiometrics": "Face ID 보호 켜기",
+  "onboardingSalaryLockBody": "{{biometry}}로 보호되며 기기 암호로 대체됩니다.",
+  "onboardingEnableBiometrics": "{{biometry}} 보호 켜기",
   "onboardingReadyBody": "이게 전부입니다. 근무 시간을 설정하면 카운트다운이 시작됩니다.",
   "onboardingStartSetup": "카운트다운 설정 시작",
   "biometricsUnavailableHint": "생체 인증을 사용할 수 없음 · 설정의 앱 목록에서 '{{app}}'을 찾아 켜세요",
+  "biometryFaceID": "Face ID",
+  "biometrics": "생체 인증",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}}가 등록되지 않았습니다 · 설정에서 등록하면 잠금 해제에 사용할 수 있습니다",
+  "biometricsLockoutHint": "{{biometry}}가 잠겼습니다 · 기기 암호로 한 번 해제하면 다시 사용할 수 있습니다",
   "appShortName": "퇴근"
 }

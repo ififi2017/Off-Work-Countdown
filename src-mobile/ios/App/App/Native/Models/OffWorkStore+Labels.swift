@@ -1,4 +1,5 @@
 import Foundation
+import LocalAuthentication
 
 /// One vocabulary for the setting summaries shown next to a row.
 ///
@@ -53,6 +54,16 @@ extension OffWorkStore {
 
     /// Reads like the theme row: say "System" when following it, name the
     /// language when it has been pinned.
+    /// What this device's biometry is called, for copy that used to say
+    /// "Face ID" no matter what the hardware was.
+    ///
+    /// Falls back to the generic word when there is no biometric hardware, so a
+    /// sentence built around it still reads.
+    func biometryName(_ biometry: LABiometryType) -> String {
+        guard let key = biometry.nameKey else { return t("biometrics") }
+        return t(key)
+    }
+
     var languageLabel: String {
         guard let languageOverride else { return t("auto") }
         return localizer.languageName(for: languageOverride)

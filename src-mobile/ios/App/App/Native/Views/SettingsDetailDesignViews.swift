@@ -1,3 +1,4 @@
+import ActivityKit
 import SwiftUI
 
 struct ScheduleSettingsView: View {
@@ -203,8 +204,14 @@ struct SalaryDesignView: View {
     @State private var unlocked = false
     /// Sampled alongside each unlock attempt rather than read in `body`, which
     /// would build an `LAContext` on every render.
-    @State private var biometryBlocked = false
-    @Environment(\.scenePhase) private var scenePhase
+    @State private var biometryStatus = BiometricGate.Status(biometry: .none, obstacle: nil)
+    /// Bumped whenever the page reaches the background, so an authentication
+    /// that resolves afterwards can tell it has been overtaken. This is
+    /// `@State` rather than a phase read after `await`: an `@Environment` value
+    /// is resolved into the view struct when `body` runs, and a suspended
+    /// method holds that same struct. `@State` reads through its storage box,
+    /// so it is current.
+    @State private var lockGeneration = 0
 
     var body: some View {
         Group {
@@ -215,21 +222,36 @@ struct SalaryDesignView: View {
             }
         }
         .task { await unlock() }
-        // Re-lock the moment the app stops being frontmost. Without this the
-        // page stayed unlocked for as long as it sat on the navigation stack:
-        // `unlocked` only ever moved to `true`, so coming back from the app
-        // switcher — or handing the phone over — showed the salary with no
-        // second look at who is holding it.
+        // Hide on UIKit's event, not on `scenePhase`.
         //
-        // `.inactive`, not `.background`. That is the phase iOS moves through
-        // before it takes the app-switcher snapshot, so the locked view is what
-        // gets photographed. Waiting for `.background` would put the figures in
-        // that thumbnail, where they stay visible to anyone flicking through
-        // open apps.
-        .onChange(of: scenePhase) { _, phase in
-            guard phase != .active else { return }
+        // `scenePhase` is a derived value and it lags. Measured on device: for
+        // a second or two after Face ID succeeds the page is visible and fully
+        // interactive while SwiftUI still reports `.inactive` — it never
+        // reported `.active` in between. Opening the app switcher in that
+        // window therefore produced no phase change at all, nothing re-locked,
+        // and the salary went into the thumbnail. Wait those two seconds first
+        // and the same gesture hides it correctly, which is the tell: the
+        // handler was fine, the signal was late.
+        //
+        // `willResignActive` fires on the gesture itself, whatever SwiftUI
+        // currently believes the phase to be.
+        .onReceive(NotificationCenter.default.publisher(
+            for: UIApplication.willResignActiveNotification
+        )) { _ in
             unlocked = false
             focusedField = nil
+        }
+        // Backgrounding additionally voids an authentication still in flight:
+        // its result can no longer be attributed to whoever holds the phone.
+        // Kept separate from resigning active, because the biometric prompt
+        // resigns active by itself and voiding there would retire the very
+        // authentication the user is in the middle of passing.
+        .onReceive(NotificationCenter.default.publisher(
+            for: UIApplication.didEnterBackgroundNotification
+        )) { _ in
+            unlocked = false
+            focusedField = nil
+            lockGeneration += 1
         }
     }
 
@@ -263,7 +285,7 @@ struct SalaryDesignView: View {
             // this the page would go on quietly demanding a passcode with no
             // hint that Face ID could be switched back on, and nothing in the
             // app could ever bring the prompt back.
-            if biometryBlocked {
+            if let obstacle = biometryStatus.obstacle {
                 Link(destination: OWCSystemSettings.applicationURL) {
                     HStack(spacing: 5) {
                         // Names the app, because `app-settings:` cannot be
@@ -274,10 +296,7 @@ struct SalaryDesignView: View {
                         // naming Apple's own section — that label is localised
                         // by iOS, and guessing it in nineteen languages would be
                         // worse than leaving it out.
-                        Text(store.t(
-                            "biometricsUnavailableHint",
-                            values: ["app": store.t("appShortName")]
-                        ))
+                        Text(hintText(for: obstacle))
                         Image(systemName: "arrow.up.right")
                             .font(.footnote.weight(.semibold))
                     }
@@ -295,10 +314,42 @@ struct SalaryDesignView: View {
         .owcDetailBack(title: store.t("settings"), pageTitle: store.t("salarySettings"))
     }
 
+    /// Says which of the three obstacles it is, not just that there is one.
+    ///
+    /// This page used to print one generic "biometrics unavailable" line for
+    /// all of them, while `canEvaluatePolicy` had handed us the exact reason
+    /// and we threw it away. The three want different things: nothing enrolled
+    /// is not a permission problem and no amount of visiting Settings > Privacy
+    /// will fix it, and a lockout clears itself the moment the passcode is used
+    /// once. Only the third is about permission, and only Face ID can reach it,
+    /// because it is the only one that asks.
+    private func hintText(for obstacle: BiometricGate.Obstacle) -> String {
+        let biometry = store.biometryName(biometryStatus.biometry)
+        return switch obstacle {
+        case .notEnrolled: store.t("biometricsNotEnrolledHint", values: ["biometry": biometry])
+        case .lockedOut: store.t("biometricsLockoutHint", values: ["biometry": biometry])
+        case .notPermitted: store.t("biometricsUnavailableHint", values: ["app": store.t("appShortName")])
+        }
+    }
+
     private func unlock() async {
         guard !unlocked else { return }
-        biometryBlocked = BiometricGate.isBiometryBlocked
-        unlocked = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
+        biometryStatus = BiometricGate.status()
+        let generation = lockGeneration
+        let confirmed = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
+        // Anything that voided this attempt while it was suspended wins: the
+        // app went to the background with the prompt up, so the result can no
+        // longer be said to belong to whoever is holding the phone now.
+        // Deactivation alone does not count — see the phase handler above.
+        guard generation == lockGeneration, confirmed else { return }
+
+        // Apply the result immediately. Waiting for `.active` adds a visible
+        // delay after Face ID because the successful policy evaluation often
+        // finishes before SwiftUI reports the scene as active again. A Home
+        // press while the policy is still being evaluated is a system
+        // cancellation, so it cannot produce a success to apply here; a real
+        // background transition is also rejected by the generation above.
+        unlocked = true
     }
 
     private var content: some View {
@@ -513,6 +564,17 @@ struct NotificationDesignView: View {
     @Bindable var store: OffWorkStore
     @Environment(NotificationService.self) private var notifications
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
+
+    /// The system's own Live Activities switch, which is not the notification
+    /// permission and can be turned off on its own.
+    ///
+    /// Sampled rather than read in `body` for the same reason `biometryStatus`
+    /// is, and refreshed on the way back from Settings, which is where it
+    /// changes. The page used to state "allowed" and draw a checkmark
+    /// unconditionally while `LiveActivityService` quietly bailed out on the
+    /// real value — so the toggle moved and nothing ever appeared.
+    @State private var activitiesEnabled = true
 
     var body: some View {
         Group {
@@ -523,6 +585,12 @@ struct NotificationDesignView: View {
             }
         }
         .background(OWCDesign.page)
+        .task { activitiesEnabled = ActivityAuthorizationInfo().areActivitiesEnabled }
+        // Coming back from Settings is exactly when this changes.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            activitiesEnabled = ActivityAuthorizationInfo().areActivitiesEnabled
+        }
         .navigationTitle(store.t("offWorkReminder"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar(.visible, for: .navigationBar)
@@ -636,9 +704,11 @@ struct NotificationDesignView: View {
                             .foregroundStyle(OWCDesign.orangeDeep)
                     }
                     OWCRow(title: store.t("liveActivity")) {
-                        Text(store.t("notificationAllowedStatus"))
+                        Text(store.t(activitiesEnabled
+                                     ? "notificationAllowedStatus"
+                                     : "notificationDeniedStatus"))
                             .font(.body)
-                            .foregroundStyle(OWCDesign.secondary)
+                            .foregroundStyle(activitiesEnabled ? OWCDesign.secondary : OWCDesign.orangeDeep)
                     }
                     OWCRow(title: store.t("notificationScheduledForShift"), isLast: true) {
                         Text("0 / 0")
@@ -656,9 +726,9 @@ struct NotificationDesignView: View {
                 OWCSectionHeader(title: store.t("notificationStillWorks"))
                 OWCGroupCard {
                     OWCRow(icon: "rectangle.inset.filled", title: store.t("lockScreenLiveActivity")) {
-                        Image(systemName: "checkmark")
+                        Image(systemName: activitiesEnabled ? "checkmark" : "xmark")
                             .font(.headline)
-                            .foregroundStyle(OWCDesign.orange)
+                            .foregroundStyle(activitiesEnabled ? OWCDesign.orange : OWCDesign.secondary)
                     }
                     OWCRow(icon: "square.grid.2x2", title: store.t("notificationHomeWidget"), isLast: true) {
                         Image(systemName: "checkmark")

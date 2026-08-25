@@ -123,14 +123,24 @@ extension OffWorkStore {
 
 
         if liveActivityEnabled {
-            upcoming.append(.init(
-                id: "live-activity",
-                kind: .liveActivity,
-                title: t("liveActivity"),
-                detail: t("liveActivityLead", values: ["count": "\(liveActivityLeadMinutes)"]),
-                date: snapshot.plannedEndDate.addingTimeInterval(Double(-liveActivityLeadMinutes * 60)),
-                route: .notifications
-            ))
+            // Hangs off whichever shift end is still ahead. Opening the app
+            // after clocking off otherwise put this at the top of the list,
+            // announcing a lock-screen banner that came and went hours ago.
+            let lead = Double(-liveActivityLeadMinutes * 60)
+            let thisShift = snapshot.plannedEndDate.addingTimeInterval(lead)
+            let at = thisShift > now
+                ? thisShift
+                : snapshot.nextShiftEndDate?.addingTimeInterval(lead)
+            if let at {
+                upcoming.append(.init(
+                    id: "live-activity",
+                    kind: .liveActivity,
+                    title: t("liveActivity"),
+                    detail: t("liveActivityLead", values: ["count": "\(liveActivityLeadMinutes)"]),
+                    date: at,
+                    route: .notifications
+                ))
+            }
         }
 
         // One row for the whole off-work reminder, named after the page it opens
@@ -155,14 +165,29 @@ extension OffWorkStore {
             ))
         }
 
-        upcoming.append(.init(
-            id: "shift-end",
-            kind: .shiftEnd,
-            title: t("endTime"),
-            detail: t("todaysShift"),
-            date: snapshot.endDate,
-            route: nil
-        ))
+        // The last row that still described a moment already behind us. With
+        // clock-in, the break and the Live Activity all rolling forward, leaving
+        // this one on today's date put "off at 14:00" under tomorrow's 09:00 —
+        // the list read backwards at its own finish line. Rolled, the whole
+        // thing runs in one direction again, and clock-off lands where it
+        // belongs: last.
+        //
+        // `nextShiftEndDate` rather than an offset from the next start: the
+        // rules already resolved it, including any day whose shift the schedule
+        // shapes differently.
+        let endDate: Date? = snapshot.endDate > now ? snapshot.endDate : snapshot.nextShiftEndDate
+        if let endDate {
+            upcoming.append(.init(
+                id: "shift-end",
+                kind: .shiftEnd,
+                title: t("endTime"),
+                // Same as the start row: "today's shift" is a lie once it is
+                // tomorrow's, and the weekday in the time column says which day.
+                detail: snapshot.endDate > now ? t("todaysShift") : nil,
+                date: endDate,
+                route: nil
+            ))
+        }
 
         // The schedule has no single moment either — it decides *which days*
         // exist, not what happens within one — so it belongs with the standing

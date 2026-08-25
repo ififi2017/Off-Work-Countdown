@@ -351,10 +351,16 @@
   "unlockSalaryReason": "Mở khóa để xem lương",
   "salaryLocked": "Đã khóa",
   "unlockSalary": "Mở khóa",
-  "onboardingSalaryLockBody": "Được bảo vệ bằng Face ID hoặc Touch ID, dự phòng bằng mật mã thiết bị.",
-  "onboardingEnableBiometrics": "Bật bảo vệ Face ID",
+  "onboardingSalaryLockBody": "Được bảo vệ bằng {{biometry}}, dự phòng bằng mật mã thiết bị.",
+  "onboardingEnableBiometrics": "Bật bảo vệ bằng {{biometry}}",
   "onboardingReadyBody": "Vậy là xong. Đặt giờ làm và bắt đầu đếm ngược.",
   "onboardingStartSetup": "Thiết lập đếm ngược",
   "biometricsUnavailableHint": "Không dùng được sinh trắc học — tìm {{app}} trong danh sách ứng dụng của Cài đặt để bật",
+  "biometryFaceID": "Face ID",
+  "biometrics": "Sinh trắc học",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "Chưa thiết lập {{biometry}} — thêm trong Cài đặt để mở khóa bằng nó",
+  "biometricsLockoutHint": "{{biometry}} đang bị khóa — mở khóa một lần bằng mật mã thiết bị để bật lại",
   "appShortName": "Tan ca"
 }

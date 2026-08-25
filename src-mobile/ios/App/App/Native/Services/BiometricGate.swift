@@ -10,24 +10,65 @@ import LocalAuthentication
 /// a home-made four-digit code stored by the app is weaker than the one the
 /// Secure Enclave already guards.
 enum BiometricGate {
-    /// Whether the device has biometric hardware the app cannot currently use:
-    /// permission declined, nothing enrolled, or locked out after too many
-    /// failed attempts.
+    /// Why biometry is or is not usable on this device.
     ///
-    /// The `biometryType` check is what keeps a device that never had Face ID
-    /// from being told to go and switch it on. It reads as `.none` until
-    /// `canEvaluatePolicy` has run, which is why the call above it is not
-    /// discarded.
+    /// The `biometryType` check is what keeps a device that never had biometric
+    /// hardware from being told to go and switch it on.
     ///
     /// This exists because iOS shows an app's biometric permission alert
     /// exactly once, ever. After a decline there is no API to ask again — the
     /// only way back is the app's own page in Settings — so the app has to say
     /// so rather than quietly falling back to the passcode forever.
-    static var isBiometryBlocked: Bool {
+    /// What the device can do, and when it cannot, why.
+    struct Status {
+        /// The hardware this device has, whether or not it is usable.
+        let biometry: LABiometryType
+        /// `nil` when biometry works, or when the device has none to begin with.
+        let obstacle: Obstacle?
+    }
+
+    /// Why biometry is present but unusable.
+    ///
+    /// These used to be collapsed into a single `Bool` and the `NSError` from
+    /// `canEvaluatePolicy` was discarded — so the app knew exactly which of
+    /// these it was and said only "unavailable". The three want different
+    /// things from the user and only one of them is about permission.
+    enum Obstacle: Equatable {
+        /// No face or finger recorded. Nothing to grant; go and enrol one.
+        case notEnrolled
+        /// Too many failed attempts. One passcode unlock restores it.
+        case lockedOut
+        /// Refused for this app. Only Face ID can reach this state, because it
+        /// is the only one that asks.
+        case notPermitted
+    }
+
+    static func status() -> Status {
         let context = LAContext()
-        var error: NSError?
-        let usable = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
-        return !usable && context.biometryType != .none
+
+        // `biometryType` is only meaningful once a policy has been evaluated on
+        // this same context, and it reports what the hardware *is* rather than
+        // what is currently usable — which is what lets the messages below name
+        // Touch ID on a device whose owner has not enrolled a finger.
+        var deviceError: NSError?
+        _ = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &deviceError)
+        let biometry = context.biometryType
+
+        var biometryError: NSError?
+        let usable = context.canEvaluatePolicy(
+            .deviceOwnerAuthenticationWithBiometrics,
+            error: &biometryError
+        )
+        guard !usable, biometry != .none else {
+            return Status(biometry: biometry, obstacle: nil)
+        }
+
+        let obstacle: Obstacle = switch LAError.Code(rawValue: biometryError?.code ?? 0) {
+        case .biometryNotEnrolled: .notEnrolled
+        case .biometryLockout: .lockedOut
+        default: .notPermitted
+        }
+        return Status(biometry: biometry, obstacle: obstacle)
     }
 
     /// Ask the device owner to confirm it is them.
@@ -45,6 +86,36 @@ enum BiometricGate {
         } catch {
             // Cancelled, or failed too many times. Either way the answer is no.
             return false
+        }
+    }
+}
+
+extension LABiometryType {
+    /// The translation key naming this hardware, or nil when there is none.
+    ///
+    /// Only Simplified Chinese translates these; every other language keeps
+    /// Apple's product names as they ship, which is what Apple's own
+    /// localisations do. The copy used to say "Face ID" everywhere, which is
+    /// simply wrong on an iPad with Touch ID — and wrong in the one place it
+    /// matters most, the button asking for the permission.
+    var nameKey: String? {
+        switch self {
+        case .faceID: "biometryFaceID"
+        case .touchID: "biometryTouchID"
+        case .opticID: "biometryOpticID"
+        default: nil
+        }
+    }
+
+    /// The matching SF Symbol. `faceid` was hardcoded next to copy that had
+    /// just been made device-aware, which would have been worse than leaving
+    /// both wrong: a face drawn beside the words "Touch ID".
+    var symbolName: String {
+        switch self {
+        case .faceID: "faceid"
+        case .touchID: "touchid"
+        case .opticID: "opticid"
+        default: "lock.shield"
         }
     }
 }

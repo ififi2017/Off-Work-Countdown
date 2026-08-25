@@ -351,10 +351,16 @@
   "unlockSalaryReason": "ปลดล็อกเพื่อดูเงินเดือน",
   "salaryLocked": "ล็อกอยู่",
   "unlockSalary": "ปลดล็อก",
-  "onboardingSalaryLockBody": "ปกป้องด้วย Face ID หรือ Touch ID และใช้รหัสเครื่องเป็นตัวสำรอง",
-  "onboardingEnableBiometrics": "เปิดการป้องกันด้วย Face ID",
+  "onboardingSalaryLockBody": "ปกป้องด้วย {{biometry}} และใช้รหัสเครื่องเป็นตัวสำรอง",
+  "onboardingEnableBiometrics": "เปิดการป้องกันด้วย {{biometry}}",
   "onboardingReadyBody": "เท่านี้แหละ ตั้งเวลาทำงานแล้วเริ่มนับถอยหลังได้เลย",
   "onboardingStartSetup": "ตั้งค่าการนับถอยหลัง",
   "biometricsUnavailableHint": "ใช้ไบโอเมตริกไม่ได้ · ค้นหา {{app}} ในรายการแอปของการตั้งค่าเพื่อเปิดใช้",
+  "biometryFaceID": "Face ID",
+  "biometrics": "ไบโอเมตริก",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "ยังไม่ได้ตั้งค่า {{biometry}} · เพิ่มในการตั้งค่าเพื่อใช้ปลดล็อก",
+  "biometricsLockoutHint": "{{biometry}} ถูกล็อก · ปลดล็อกด้วยรหัสเครื่องหนึ่งครั้งเพื่อเปิดใช้อีกครั้ง",
   "appShortName": "เลิกงาน"
 }

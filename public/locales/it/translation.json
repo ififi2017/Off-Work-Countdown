@@ -351,10 +351,16 @@
   "unlockSalaryReason": "Sblocca per vedere lo stipendio",
   "salaryLocked": "Bloccato",
   "unlockSalary": "Sblocca",
-  "onboardingSalaryLockBody": "Protetto da Face ID o Touch ID, con il codice del dispositivo come riserva.",
-  "onboardingEnableBiometrics": "Attiva la protezione Face ID",
+  "onboardingSalaryLockBody": "Protetto da {{biometry}}, con il codice del dispositivo come riserva.",
+  "onboardingEnableBiometrics": "Attiva la protezione {{biometry}}",
   "onboardingReadyBody": "È tutto. Imposta gli orari e il conto alla rovescia parte.",
   "onboardingStartSetup": "Configura il conto alla rovescia",
   "biometricsUnavailableHint": "Biometria non disponibile — cerca {{app}} nell’elenco app di Impostazioni per attivarla",
+  "biometryFaceID": "Face ID",
+  "biometrics": "Biometria",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} non è configurato — aggiungilo in Impostazioni per sbloccare con esso",
+  "biometricsLockoutHint": "{{biometry}} è bloccato — sbloccalo una volta con il codice del dispositivo per riattivarlo",
   "appShortName": "Fine lavoro"
 }

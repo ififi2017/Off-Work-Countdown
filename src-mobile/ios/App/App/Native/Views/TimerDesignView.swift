@@ -309,24 +309,7 @@ private struct RunningTimerDesignView: View {
                 HStack(spacing: 8) {
                     Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
                         .font(.body.weight(.semibold).monospacedDigit())
-                    // Hiding is free; revealing is not. Anyone can blank the
-                    // figure, only the owner can bring it back.
-                    Button {
-                        guard store.hideEarnings else {
-                            store.hideEarnings = true
-                            return
-                        }
-                        Task {
-                            if await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason")) {
-                                store.hideEarnings = false
-                            }
-                        }
-                    } label: {
-                        Image(systemName: store.hideEarnings ? "eye" : "eye.slash")
-                            .font(.body)
-                            .foregroundStyle(OWCDesign.tertiary)
-                    }
-                    .buttonStyle(.plain)
+                    OWCEarningsVisibilityButton(store: store)
                 }
             }
             }

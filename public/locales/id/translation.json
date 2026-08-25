@@ -351,10 +351,16 @@
   "unlockSalaryReason": "Buka kunci untuk melihat gaji",
   "salaryLocked": "Terkunci",
   "unlockSalary": "Buka kunci",
-  "onboardingSalaryLockBody": "Dilindungi Face ID atau Touch ID, dengan kode sandi perangkat sebagai cadangan.",
-  "onboardingEnableBiometrics": "Aktifkan perlindungan Face ID",
+  "onboardingSalaryLockBody": "Dilindungi {{biometry}}, dengan kode sandi perangkat sebagai cadangan.",
+  "onboardingEnableBiometrics": "Aktifkan perlindungan {{biometry}}",
   "onboardingReadyBody": "Itu saja. Atur jam kerja dan hitung mundur dimulai.",
   "onboardingStartSetup": "Atur hitung mundur",
   "biometricsUnavailableHint": "Biometrik tidak tersedia — cari {{app}} di daftar aplikasi Pengaturan untuk mengaktifkan",
+  "biometryFaceID": "Face ID",
+  "biometrics": "Biometrik",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} belum disiapkan — tambahkan di Pengaturan untuk membuka dengannya",
+  "biometricsLockoutHint": "{{biometry}} terkunci — buka sekali dengan kode sandi perangkat untuk mengaktifkannya lagi",
   "appShortName": "Waktu Pulang"
 }

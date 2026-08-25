@@ -351,10 +351,16 @@
   "unlockSalaryReason": "Déverrouillez pour voir votre salaire",
   "salaryLocked": "Verrouillé",
   "unlockSalary": "Déverrouiller",
-  "onboardingSalaryLockBody": "Protégé par Face ID ou Touch ID, avec le code de l'appareil en secours.",
-  "onboardingEnableBiometrics": "Activer la protection Face ID",
+  "onboardingSalaryLockBody": "Protégé par {{biometry}}, avec le code de l’appareil en secours.",
+  "onboardingEnableBiometrics": "Activer la protection {{biometry}}",
   "onboardingReadyBody": "C'est tout. Réglez vos horaires et le compte à rebours démarre.",
   "onboardingStartSetup": "Configurer le compte à rebours",
   "biometricsUnavailableHint": "Biométrie indisponible — retrouvez {{app}} dans la liste des apps des Réglages pour l’activer",
+  "biometryFaceID": "Face ID",
+  "biometrics": "Biométrie",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} n’est pas configuré — ajoutez-le dans Réglages pour déverrouiller avec",
+  "biometricsLockoutHint": "{{biometry}} est verrouillé — déverrouillez une fois avec le code de l’appareil pour le réactiver",
   "appShortName": "Fin du travail"
 }

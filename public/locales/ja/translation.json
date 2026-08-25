@@ -351,10 +351,16 @@
   "unlockSalaryReason": "給与を表示するにはロックを解除",
   "salaryLocked": "ロック中",
   "unlockSalary": "ロック解除",
-  "onboardingSalaryLockBody": "Face ID／Touch ID で保護され、デバイスのパスコードが予備になります。",
-  "onboardingEnableBiometrics": "Face ID 保護をオンにする",
+  "onboardingSalaryLockBody": "{{biometry}} で保護され、デバイスのパスコードが予備になります。",
+  "onboardingEnableBiometrics": "{{biometry}} 保護をオンにする",
   "onboardingReadyBody": "以上です。勤務時間を設定すればカウントダウンが始まります。",
   "onboardingStartSetup": "カウントダウンを設定",
   "biometricsUnavailableHint": "生体認証を利用できません · 設定の App 一覧から「{{app}}」を開いて有効にしてください",
+  "biometryFaceID": "Face ID",
+  "biometrics": "生体認証",
+  "biometryTouchID": "Touch ID",
+  "biometryOpticID": "Optic ID",
+  "biometricsNotEnrolledHint": "{{biometry}} が未登録です · 設定で登録すると解除に使えます",
+  "biometricsLockoutHint": "{{biometry}} がロックされています · デバイスのパスコードで一度解除すると復帰します",
   "appShortName": "退勤"
 }

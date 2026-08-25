@@ -1,3 +1,4 @@
+import LocalAuthentication
 import SwiftUI
 
 struct OnboardingView: View {
@@ -7,6 +8,9 @@ struct OnboardingView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var notifications = NotificationService()
+    /// Sampled once rather than read in `body`, which would build an
+    /// `LAContext` on every render.
+    @State private var biometry: LABiometryType = .none
 
     private static let pageAnimation = Animation.snappy(duration: 0.32)
     /// A pure slide, deliberately without a cross-fade.
@@ -60,7 +64,19 @@ struct OnboardingView: View {
                     }
                     .id(store.onboardingPage)
                     .transition(pageTransition)
-                    .frame(minHeight: proxy.size.height)
+                    // `maxWidth: .infinity` is what centres the pages, and it
+                    // has to be here because `GeometryReader` aligns its child
+                    // to `.topLeading`. Before this scroll wrapper existed the
+                    // parent filled the width and every page came out centred by
+                    // accident; afterwards the two pages that cap themselves at
+                    // 560 and stop there — the notification primer and the
+                    // privacy page — were pinned to the left edge on iPad, while
+                    // the pages that happened to add their own
+                    // `.frame(maxWidth: .infinity)` still looked right.
+                    //
+                    // Fixed once here rather than on those two pages, so a page
+                    // added later cannot forget it.
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
                 }
                 .scrollIndicators(.hidden)
                 .scrollBounceBehavior(.basedOnSize)
@@ -75,6 +91,7 @@ struct OnboardingView: View {
         .background(OWCDesign.page)
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
+        .task { biometry = BiometricGate.status().biometry }
         .onAppear {
 #if DEBUG
             let defaults = UserDefaults.standard
@@ -324,9 +341,15 @@ struct OnboardingView: View {
                     subtitle: store.t("onboardingPrivacyWorkBody")
                 )
                 OWCRow(
-                    icon: "faceid",
+                    // Both the glyph and the copy come from the hardware. A
+                    // face was drawn here on every device, next to a sentence
+                    // that named Face ID, on iPads that only have Touch ID.
+                    icon: biometry.symbolName,
                     title: store.t("salarySettings"),
-                    subtitle: store.t("onboardingSalaryLockBody"),
+                    subtitle: store.t(
+                        "onboardingSalaryLockBody",
+                        values: ["biometry": store.biometryName(biometry)]
+                    ),
                     isLast: true
                 )
             }
@@ -339,7 +362,10 @@ struct OnboardingView: View {
             // gets granted far more often than one that ambushes them later.
             pageDots
             VStack(spacing: 10) {
-                Button(store.t("onboardingEnableBiometrics")) {
+                Button(store.t(
+                    "onboardingEnableBiometrics",
+                    values: ["biometry": store.biometryName(biometry)]
+                )) {
                     Task {
                         _ = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
                         showPage(5)
@@ -530,6 +556,15 @@ struct OnboardingView: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// Always centred in the page's column.
+    ///
+    /// A bare `HStack` takes its intrinsic width and lets whatever stack it
+    /// sits in decide where that goes, so the dots drifted from page to page:
+    /// centred inside the pages built on a centred `VStack`, hard left inside
+    /// the two built on `VStack(alignment: .leading)`. The indicator belongs in
+    /// the same place on every page — it is the one element that is supposed to
+    /// look identical throughout, being the thing that measures progress across
+    /// them.
     private var pageDots: some View {
         HStack(spacing: 7) {
             ForEach(0..<6, id: \.self) { page in
@@ -538,6 +573,7 @@ struct OnboardingView: View {
                     .frame(width: page == store.onboardingPage ? 20 : 7, height: 7)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     private func feature(_ icon: String, _ title: String, _ body: String) -> some View {
