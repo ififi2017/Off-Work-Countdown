@@ -228,6 +228,10 @@ struct OffWorkCountdownRootView: View {
             // notifications, Live Activities and the widget timeline.
             if !store.countdownStarted {
                 await notifications.clearShiftNotifications()
+                // The start branch below has always checked here; this one did
+                // not, so a countdown restarted mid-teardown had its freshly
+                // created Live Activity ended by the task it replaced.
+                guard !Task.isCancelled else { return }
                 await liveActivities.endAll()
             } else {
                 await notifications.reschedule(store: store)

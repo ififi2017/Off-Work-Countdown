@@ -304,6 +304,50 @@ func shiftPreviewRollsBreakBoundariesIndependently() throws {
     #expect(preview.upcoming[0].date == calendar.date(bySettingHour: 13, minute: 0, second: 0, of: duringLunch))
 }
 
+/// One row of `shiftPreviewReminderDisabledState`.
+struct ReminderSwitchCase: Sendable {
+    let liveActivity: Bool
+    let mode: OffWorkNotificationMode
+    let showsDisabled: Bool
+}
+
+@MainActor
+@Test("The off-work reminder reads as disabled only when both mechanisms are off", arguments: [
+    ReminderSwitchCase(liveActivity: true, mode: .milestones, showsDisabled: false),
+    // The case that contradicted itself: a timed Live Activity row sat directly
+    // above a row calling the same feature disabled.
+    ReminderSwitchCase(liveActivity: true, mode: .off, showsDisabled: false),
+    ReminderSwitchCase(liveActivity: false, mode: .simple, showsDisabled: false),
+    ReminderSwitchCase(liveActivity: false, mode: .off, showsDisabled: true),
+])
+func shiftPreviewReminderDisabledState(_ testCase: ReminderSwitchCase) throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let calendar = Calendar.current
+    let beforeShift = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 24,
+        hour: 8
+    )))
+
+    let store = previewStore(defaults)
+    store.liveActivityEnabled = testCase.liveActivity
+    store.notificationMode = testCase.mode
+
+    let snapshot = try #require(store.snapshot(at: beforeShift))
+    let preview = store.shiftPreview(for: snapshot, at: beforeShift)
+
+    let disabled = preview.disabled.contains { $0.id == "off-work-reminder-off" }
+    #expect(disabled == testCase.showsDisabled)
+
+    // And the timed row tracks the Live Activity switch on its own, so the two
+    // rows can never describe the same feature differently.
+    let timed = preview.upcoming.contains { $0.kind == .liveActivity }
+    #expect(timed == testCase.liveActivity)
+}
+
 private func isolatedDefaults() throws -> (UserDefaults, String) {
     let suite = "OffWorkStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))

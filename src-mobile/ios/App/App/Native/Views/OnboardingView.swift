@@ -25,24 +25,46 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            Group {
-                switch store.onboardingPage {
-                case 0:
-                    welcome
-                case 1:
-                    notificationPrimer
-                case 2:
-                    systemSurfaces
-                case 3:
-                    adaptiveLayouts
-                case 4:
-                    privacy
-                default:
-                    ready
+            // Every page is a fixed `VStack` sized for an upright phone at the
+            // default text size. The app supports landscape (see
+            // `UISupportedInterfaceOrientations`), and onboarding is shown
+            // before any size-class branching, so in landscape — and at
+            // accessibility text sizes — the three-row cards and the two
+            // buttons under them ran past the bottom of the screen and the
+            // continue button was clipped. On the very first launch that is the
+            // whole app.
+            //
+            // `minHeight: proxy.size.height` rather than a plain `ScrollView`:
+            // a scroll view proposes unbounded height, which collapses the
+            // `Spacer`s these pages use to centre themselves and would bunch
+            // every page against the top. With the minimum in place a page that
+            // fits lays out exactly as before and does not scroll at all;
+            // only one that does not fit becomes scrollable.
+            GeometryReader { proxy in
+                ScrollView {
+                    Group {
+                        switch store.onboardingPage {
+                        case 0:
+                            welcome
+                        case 1:
+                            notificationPrimer
+                        case 2:
+                            systemSurfaces
+                        case 3:
+                            adaptiveLayouts
+                        case 4:
+                            privacy
+                        default:
+                            ready
+                        }
+                    }
+                    .id(store.onboardingPage)
+                    .transition(pageTransition)
+                    .frame(minHeight: proxy.size.height)
                 }
+                .scrollIndicators(.hidden)
+                .scrollBounceBehavior(.basedOnSize)
             }
-            .id(store.onboardingPage)
-            .transition(pageTransition)
         }
         .animation(pageAnimation, value: store.onboardingPage)
         // The grouped background, not the plain one: cards are

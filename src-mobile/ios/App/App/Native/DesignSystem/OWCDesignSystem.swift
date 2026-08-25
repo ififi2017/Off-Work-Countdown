@@ -861,19 +861,44 @@ struct OWCNumberField: View {
     }
 
     private func sanitize() {
-        var allowed = text.filter { $0.isNumber || (decimal && ($0 == "." || $0 == ",")) }
+        var allowed = String(text.compactMap(Self.asciiDigitOrSeparator))
         if decimal {
             // Keep only the first separator; "1.2.3" is not a number anybody meant.
             var seenSeparator = false
             allowed = String(allowed.compactMap { character -> Character? in
-                guard character == "." || character == "," else { return character }
+                guard character == "." else { return character }
                 if seenSeparator { return nil }
                 seenSeparator = true
                 return "."
             })
+        } else {
+            allowed = allowed.filter { $0 != "." }
         }
         let capped = String(allowed.prefix(maxDigits))
         if capped != text { text = capped }
+    }
+
+    /// Folds a typed character to an ASCII digit, or to `.` for any separator
+    /// this field accepts, or drops it.
+    ///
+    /// The filter used to be `$0.isNumber`, which is true for Arabic-Indic ٠١٢,
+    /// Devanagari ०१२ and every other Unicode decimal digit. Those keystrokes
+    /// were accepted into the field and then failed everywhere downstream —
+    /// `Int(_:)` returns nil for them, and the salary string reaches the
+    /// JavaScript rules verbatim where `Number()` gives `NaN`. The field looked
+    /// filled in and the calculation came out empty.
+    ///
+    /// U+066B, the Arabic decimal separator, is the same story from the other
+    /// side: it is neither "." nor "," so it was dropped in silence, turning
+    /// "1٫5" into "15".
+    private static func asciiDigitOrSeparator(_ character: Character) -> Character? {
+        if character.isWholeNumber, let value = character.wholeNumberValue, (0...9).contains(value) {
+            return Character(String(value))
+        }
+        switch character {
+        case ".", ",", "\u{066B}": return "."
+        default: return nil
+        }
     }
 }
 

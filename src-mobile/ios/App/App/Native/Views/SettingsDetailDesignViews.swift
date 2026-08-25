@@ -204,6 +204,7 @@ struct SalaryDesignView: View {
     /// Sampled alongside each unlock attempt rather than read in `body`, which
     /// would build an `LAContext` on every render.
     @State private var biometryBlocked = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -214,6 +215,22 @@ struct SalaryDesignView: View {
             }
         }
         .task { await unlock() }
+        // Re-lock the moment the app stops being frontmost. Without this the
+        // page stayed unlocked for as long as it sat on the navigation stack:
+        // `unlocked` only ever moved to `true`, so coming back from the app
+        // switcher — or handing the phone over — showed the salary with no
+        // second look at who is holding it.
+        //
+        // `.inactive`, not `.background`. That is the phase iOS moves through
+        // before it takes the app-switcher snapshot, so the locked view is what
+        // gets photographed. Waiting for `.background` would put the figures in
+        // that thumbnail, where they stay visible to anyone flicking through
+        // open apps.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase != .active else { return }
+            unlocked = false
+            focusedField = nil
+        }
     }
 
     /// Laid out by hand rather than with `ContentUnavailableView`: that view
@@ -526,40 +543,53 @@ struct NotificationDesignView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 26)
 
-            VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("liveActivity"))
-                OWCGroupCard {
-                    HStack {
-                        Text(store.t("lockScreenLiveActivity"))
-                            .font(.body)
-                        Spacer()
-                        Toggle(store.t("lockScreenLiveActivity"), isOn: $store.liveActivityEnabled)
-                            .labelsHidden()
-                    }
-                    .padding(.horizontal, 16)
-                    .frame(height: 52)
-                    .owcPlainDivider()
-
-                    Picker(store.t("liveActivityStartTime"), selection: $store.liveActivityLeadMinutes) {
-                        ForEach(OffWorkStore.allowedLiveActivityLeadMinutes, id: \.self) { minutes in
-                            Text(store.t("liveActivityLead", values: ["count": "\(minutes)"]))
-                                .tag(minutes)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .font(.body)
-                    .padding(.horizontal, 16)
-                    .frame(height: 52)
-                }
-            }
-            .padding(.horizontal, OWCDesign.pageInset)
-            .padding(.top, 16)
+            liveActivitySection
 
             detailFooter(store.t("liveActivityScheduleNote"))
 
             detailFooter(store.t("notificationPrivacyNote"))
             Spacer(minLength: 8)
         }
+    }
+
+    /// The Live Activity controls, shown whether or not local notifications
+    /// were allowed.
+    ///
+    /// These are two different permissions. Local notifications are governed by
+    /// `UNUserNotificationCenter`; Live Activities have their own switch and
+    /// their own `ActivityAuthorizationInfo.areActivitiesEnabled`. The denied
+    /// page used to replace the whole screen, which left the user unable to
+    /// turn the Live Activity on or off or change its lead time — while that
+    /// same page told them, correctly, that Live Activities still worked.
+    private var liveActivitySection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            OWCSectionHeader(title: store.t("liveActivity"))
+            OWCGroupCard {
+                HStack {
+                    Text(store.t("lockScreenLiveActivity"))
+                        .font(.body)
+                    Spacer()
+                    Toggle(store.t("lockScreenLiveActivity"), isOn: $store.liveActivityEnabled)
+                        .labelsHidden()
+                }
+                .padding(.horizontal, 16)
+                .frame(height: 52)
+                .owcPlainDivider()
+
+                Picker(store.t("liveActivityStartTime"), selection: $store.liveActivityLeadMinutes) {
+                    ForEach(OffWorkStore.allowedLiveActivityLeadMinutes, id: \.self) { minutes in
+                        Text(store.t("liveActivityLead", values: ["count": "\(minutes)"]))
+                            .tag(minutes)
+                    }
+                }
+                .pickerStyle(.menu)
+                .font(.body)
+                .padding(.horizontal, 16)
+                .frame(height: 52)
+            }
+        }
+        .padding(.horizontal, OWCDesign.pageInset)
+        .padding(.top, 16)
     }
 
     private var deniedContent: some View {
@@ -594,6 +624,8 @@ struct NotificationDesignView: View {
             .clipShape(RoundedRectangle(cornerRadius: OWCDesign.cardRadius, style: .continuous))
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 24)
+
+            liveActivitySection
 
             VStack(alignment: .leading, spacing: 0) {
                 OWCSectionHeader(title: store.t("notificationCapability"))

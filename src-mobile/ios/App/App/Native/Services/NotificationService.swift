@@ -130,8 +130,18 @@ final class NotificationService {
         }
     }
 
+    /// Removes this app's shift notifications.
+    ///
+    /// Guarded by the same generation the scheduling path uses, and for the same
+    /// reason. Two `await`s separate reading the identifiers from deleting
+    /// them, and a countdown stopped and restarted across that gap left this
+    /// call holding a list captured before the restart — so it deleted the
+    /// notifications the restart had just written. The identifiers are stable,
+    /// which is what made the collision silent: same ids, so nothing looked
+    /// wrong until the reminders never arrived.
     func clearShiftNotifications() async {
         scheduleGeneration += 1
+        let generation = scheduleGeneration
         let center = UNUserNotificationCenter.current()
         let pendingIdentifiers = await center.pendingNotificationRequests()
             .map(\.identifier)
@@ -139,6 +149,9 @@ final class NotificationService {
         let deliveredIdentifiers = await center.deliveredNotifications()
             .map(\.request.identifier)
             .filter { $0.hasPrefix("owc.shift.") }
+        // Somebody rescheduled while we were reading. That work is newer than
+        // this one, so it wins; the notifications it wrote are not ours to drop.
+        guard generation == scheduleGeneration else { return }
         center.removePendingNotificationRequests(withIdentifiers: pendingIdentifiers)
         center.removeDeliveredNotifications(withIdentifiers: deliveredIdentifiers)
     }
