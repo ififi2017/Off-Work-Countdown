@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "Fim do trabalho";
 "CFBundleName" = "Fim do trabalho";
+"NSFaceIDUsageDescription" = "O Face ID mantém os dados do seu salário privados neste dispositivo.";

@@ -116,7 +116,16 @@ final class WidgetSnapshotPublisher {
             WidgetShiftSegment(startAtMs: Int64($0.startAtMs), endAtMs: Int64($0.endAtMs))
         }
         let endMs = Int64(shift.endAtMs)
-        let expires = max(endMs + 12 * 60 * 60 * 1_000, nowMs + 60 * 60 * 1_000)
+        let endDate = Date(timeIntervalSince1970: Double(endMs) / 1_000)
+        let endDay = Calendar.current.startOfDay(for: endDate)
+        let rolloverDate = Calendar.current.date(byAdding: .day, value: 1, to: endDay) ?? endDate
+        let rolloverAtMs = Int64(rolloverDate.timeIntervalSince1970 * 1_000)
+        let fallbackExpires = max(
+            rolloverAtMs + 24 * 60 * 60 * 1_000,
+            nowMs + 60 * 60 * 1_000
+        )
+        let nextShiftStartAtMs = shift.nextShiftStartAtMs.map(Int64.init)
+        let expires = nextShiftStartAtMs.flatMap { $0 > nowMs ? $0 : nil } ?? fallbackExpires
         var entries: [WidgetTimelineEntry] = []
 
         if nowMs < Int64(shift.startAtMs) {
@@ -170,35 +179,50 @@ final class WidgetSnapshotPublisher {
             }
         }
 
-        // "Off work" is a moment, not a state to sit in for twelve hours: after
-        // a short beat the widget switches to counting down the next shift.
-        let doneUntil = min(expires, max(nowMs, endMs) + 30 * 60 * 1_000)
-        entries.append(entry(
-            date: max(nowMs, endMs),
-            end: doneUntil,
-            phase: .done,
-            label: "offWorkToday",
-            kind: .complete,
-            remaining: 0,
-            progress: 100,
-            boundary: nil,
-            target: nil
-        ))
-        if let nextStart = shift.nextShiftStartAtMs {
-            let target = Int64(nextStart)
-            if target > doneUntil {
-                entries.append(entry(
-                    date: doneUntil,
-                    end: target,
-                    phase: .before,
-                    label: "nextShiftLabelShort",
-                    kind: .shiftStarts,
-                    remaining: target - doneUntil,
-                    progress: 0,
-                    boundary: target,
-                    target: target
-                ))
-            }
+        // Completion belongs to the calendar day that contains the shift end.
+        // At the following midnight the widget advances on its own instead of
+        // keeping yesterday's "Done for today" until the app is reopened.
+        let doneStart = max(nowMs, endMs)
+        let doneUntil = min(expires, rolloverAtMs)
+        if doneStart < doneUntil {
+            entries.append(entry(
+                date: doneStart,
+                end: doneUntil,
+                phase: .done,
+                label: "offWorkToday",
+                kind: .complete,
+                remaining: 0,
+                progress: 100,
+                boundary: nil,
+                target: nil
+            ))
+        }
+
+        let postCompletionStart = max(nowMs, doneUntil)
+        if let target = nextShiftStartAtMs, target > postCompletionStart {
+            entries.append(entry(
+                date: postCompletionStart,
+                end: target,
+                phase: .before,
+                label: "nextShiftLabelShort",
+                kind: .shiftStarts,
+                remaining: target - postCompletionStart,
+                progress: 0,
+                boundary: target,
+                target: target
+            ))
+        } else if postCompletionStart < expires {
+            entries.append(entry(
+                date: postCompletionStart,
+                end: expires,
+                phase: .idle,
+                label: "countdownNotStarted",
+                kind: .none,
+                remaining: 0,
+                progress: 0,
+                boundary: nil,
+                target: nil
+            ))
         }
 
         return WidgetSnapshot(

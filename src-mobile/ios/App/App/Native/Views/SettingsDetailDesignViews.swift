@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ScheduleSettingsView: View {
-    @ObservedObject var store: OffWorkStore
+    @Bindable var store: OffWorkStore
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
     var body: some View {
@@ -20,7 +20,7 @@ struct ScheduleSettingsView: View {
                     .padding(.top, 22)
 
                 Text(store.scheduleMode == .off ? store.t("scheduleOffSummaryNote") : store.t("scheduleSharedRulesNote"))
-                    .font(.system(size: 13))
+                    .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineSpacing(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -51,14 +51,14 @@ struct ScheduleSettingsView: View {
                 OWCGroupCard {
                     VStack(alignment: .leading, spacing: 9) {
                         Text(store.t("alternatingCurrentWeek"))
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                         Picker(store.t("alternatingCurrentWeek"), selection: $store.alternatingWeekType) {
                             Text(store.t("singleRestWeek")).tag(AlternatingWeekType.single)
                             Text(store.t("doubleRestWeek")).tag(AlternatingWeekType.double)
                         }
                         .pickerStyle(.segmented)
                         Text(store.t("alternatingCurrentWeekDescription"))
-                            .font(.system(size: 13))
+                            .font(.footnote)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineSpacing(2)
                     }
@@ -66,14 +66,14 @@ struct ScheduleSettingsView: View {
                     .owcPlainDivider()
                     VStack(alignment: .leading, spacing: 9) {
                         Text(store.t("singleWeekWorkday"))
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                         Picker(store.t("singleWeekWorkday"), selection: $store.alternatingWeekendWorkday) {
                             Text(store.t("workOnWeekday", values: ["day": store.weekdayLabels()[5]])).tag(6)
                             Text(store.t("workOnWeekday", values: ["day": store.weekdayLabels()[6]])).tag(0)
                         }
                         .pickerStyle(.segmented)
                         Text(store.t("singleWeekWorkdayDescription"))
-                            .font(.system(size: 13))
+                            .font(.footnote)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineSpacing(2)
                     }
@@ -127,7 +127,7 @@ struct ScheduleSettingsView: View {
                             isLast: true
                         ) {
                             Image(systemName: "chevron.up.chevron.down")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.footnote.weight(.semibold))
                                 .foregroundStyle(OWCDesign.tertiary)
                         }
                     }
@@ -184,7 +184,7 @@ struct ScheduleSettingsView: View {
         } label: {
             OWCRow(title: title, subtitle: subtitle, isLast: isLast) {
                 Image(systemName: store.scheduleMode == mode ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 21))
+                    .font(.title3)
                     .foregroundStyle(store.scheduleMode == mode ? OWCDesign.accent : OWCDesign.tertiary)
             }
         }
@@ -193,19 +193,71 @@ struct ScheduleSettingsView: View {
 }
 
 struct SalaryDesignView: View {
-    @ObservedObject var store: OffWorkStore
+    @Bindable var store: OffWorkStore
     private enum Field { case amount, bonus }
     @FocusState private var focusedField: Field?
     @State private var amountText = ""
+    /// Salary is the one thing in here worth shoulder-surfing, so the page does
+    /// not render it until the device owner has confirmed it is them. Devices
+    /// with no passcode pass straight through — see `BiometricGate`.
+    @State private var unlocked = false
 
     var body: some View {
+        Group {
+            if unlocked {
+                content
+            } else {
+                locked
+            }
+        }
+        .task { await unlock() }
+    }
+
+    /// Laid out by hand rather than with `ContentUnavailableView`: that view
+    /// sizes its action to the button's own width, which squeezed a full-width
+    /// primary button into a stubby blob. The unlock button belongs at the
+    /// bottom edge, the same shape and place as every other primary action.
+    private var locked: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            Image(systemName: "lock.fill")
+                .font(.largeTitle)
+                .foregroundStyle(OWCDesign.secondary)
+            Text(store.t("salaryLocked"))
+                .font(.title3.weight(.semibold))
+                .padding(.top, 16)
+            Text(store.t("unlockSalaryReason"))
+                .font(.subheadline)
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 6)
+            Spacer()
+
+            Button(store.t("unlockSalary")) {
+                Task { await unlock() }
+            }
+            .buttonStyle(OWCPrimaryButtonStyle())
+            .padding(.bottom, 24)
+        }
+        .padding(.horizontal, OWCDesign.contentInset)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(OWCDesign.page)
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("salarySettings"))
+    }
+
+    private func unlock() async {
+        guard !unlocked else { return }
+        unlocked = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
+    }
+
+    private var content: some View {
         OWCContentSizedScrollView {
             VStack(spacing: 0) {
             OWCGroupCard {
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(store.t("enableSalary")).font(.system(size: 17))
-                        Text(store.t("enableSalaryDescription")).font(.system(size: 13)).foregroundStyle(OWCDesign.secondary)
+                        Text(store.t("enableSalary")).font(.body)
+                        Text(store.t("enableSalaryDescription")).font(.footnote).foregroundStyle(OWCDesign.secondary)
                     }
                     Spacer()
                     Toggle(store.t("enableSalary"), isOn: $store.salaryEnabled).labelsHidden()
@@ -229,7 +281,7 @@ struct SalaryDesignView: View {
             OWCGroupCard {
                 HStack {
                     Text(store.t("amount"))
-                        .font(.system(size: 17))
+                        .font(.body)
                     Spacer()
                     OWCNumberField(
                         placeholder: "0",
@@ -253,14 +305,14 @@ struct SalaryDesignView: View {
                     } label: {
                         HStack {
                             Text(store.t("monthlyWorkingDays"))
-                                .font(.system(size: 17))
+                                .font(.body)
                                 .foregroundStyle(OWCDesign.primary)
                             Spacer()
                             Text(Int(store.monthlyWorkingDays).formatted())
-                                .font(.system(size: 17).monospacedDigit())
+                                .font(.body.monospacedDigit())
                                 .foregroundStyle(OWCDesign.secondary)
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.footnote.weight(.semibold))
                                 .foregroundStyle(OWCDesign.tertiary)
                         }
                         .padding(.horizontal, 16)
@@ -273,7 +325,7 @@ struct SalaryDesignView: View {
 
                 HStack {
                     Text(store.t("annualBonus"))
-                        .font(.system(size: 17))
+                        .font(.body)
                     Spacer()
                     Toggle(store.t("annualBonus"), isOn: $store.annualBonusEnabled)
                         .labelsHidden()
@@ -284,10 +336,10 @@ struct SalaryDesignView: View {
 
                 if store.annualBonusEnabled {
                     HStack {
-                        Text(store.t("annualBonusMonths")).font(.system(size: 17))
+                        Text(store.t("annualBonusMonths")).font(.body)
                         Spacer()
                         TextField("0", value: $store.annualBonusMonths, format: .number.precision(.fractionLength(0...2)))
-                            .font(.system(size: 17, weight: .semibold).monospacedDigit())
+                            .font(.body.weight(.semibold).monospacedDigit())
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .focused($focusedField, equals: .bonus)
@@ -300,7 +352,7 @@ struct SalaryDesignView: View {
 
                 HStack {
                     Text(store.t("hideSalary"))
-                        .font(.system(size: 17))
+                        .font(.body)
                     Spacer()
                     Toggle(store.t("hideSalary"), isOn: $store.hideEarnings)
                         .labelsHidden()
@@ -315,10 +367,10 @@ struct SalaryDesignView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(store.t("moneyEarned"))
-                    .font(.system(size: 13))
+                    .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                 Text(store.hideEarnings ? "••••" : store.formatMoney(earnedNow))
-                    .font(.system(size: 32, weight: .bold).monospacedDigit())
+                    .font(.largeTitle.bold().monospacedDigit())
                     .tracking(-0.5)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -333,12 +385,12 @@ struct SalaryDesignView: View {
                 OWCGroupCard {
                     OWCRow(title: store.t("perWorkday")) {
                         Text(store.hideEarnings ? "••••" : store.formatMoney(dailySalary))
-                            .font(.system(size: 17).monospacedDigit())
+                            .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
                     OWCRow(title: store.t("perEffectiveHour"), isLast: true) {
                         Text(store.hideEarnings ? "••••" : store.formatMoney(hourlySalary))
-                            .font(.system(size: 17).monospacedDigit())
+                            .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
                 }
@@ -397,7 +449,7 @@ struct SalaryDesignView: View {
 
     private func detailFooter(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 13))
+            .font(.footnote)
             .foregroundStyle(OWCDesign.secondary)
             .lineSpacing(2)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -407,8 +459,9 @@ struct SalaryDesignView: View {
 }
 
 struct NotificationDesignView: View {
-    @ObservedObject var store: OffWorkStore
-    @EnvironmentObject private var notifications: NotificationService
+    @Bindable var store: OffWorkStore
+    @Environment(NotificationService.self) private var notifications
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -444,7 +497,7 @@ struct NotificationDesignView: View {
                 OWCGroupCard {
                     HStack {
                         Text(store.t("lockScreenLiveActivity"))
-                            .font(.system(size: 17))
+                            .font(.body)
                         Spacer()
                         Toggle(store.t("lockScreenLiveActivity"), isOn: $store.liveActivityEnabled)
                             .labelsHidden()
@@ -460,7 +513,7 @@ struct NotificationDesignView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .font(.system(size: 17))
+                    .font(.body)
                     .padding(.horizontal, 16)
                     .frame(height: 52)
                 }
@@ -480,16 +533,16 @@ struct NotificationDesignView: View {
             VStack(spacing: 14) {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: "bell.slash")
-                        .font(.system(size: 19, weight: .medium))
+                        .font(.title3.weight(.medium))
                         .foregroundStyle(OWCDesign.orangeDeep)
                         .frame(width: 38, height: 38)
                         .background(OWCDesign.orange.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     VStack(alignment: .leading, spacing: 4) {
                         Text(store.t("notificationDeniedTitle"))
-                            .font(.system(size: 17, weight: .semibold))
+                            .font(.body.weight(.semibold))
                         Text(store.t("notificationDeniedBody"))
-                            .font(.system(size: 15))
+                            .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineSpacing(2)
                     }
@@ -513,17 +566,17 @@ struct NotificationDesignView: View {
                 OWCGroupCard {
                     OWCRow(title: store.t("notificationLocal")) {
                         Text(store.t("notificationDeniedStatus"))
-                            .font(.system(size: 17))
+                            .font(.body)
                             .foregroundStyle(OWCDesign.orangeDeep)
                     }
                     OWCRow(title: store.t("liveActivity")) {
                         Text(store.t("notificationAllowedStatus"))
-                            .font(.system(size: 17))
+                            .font(.body)
                             .foregroundStyle(OWCDesign.secondary)
                     }
                     OWCRow(title: store.t("notificationScheduledForShift"), isLast: true) {
                         Text("0 / 0")
-                            .font(.system(size: 17).monospacedDigit())
+                            .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
                 }
@@ -538,12 +591,12 @@ struct NotificationDesignView: View {
                 OWCGroupCard {
                     OWCRow(icon: "rectangle.inset.filled", title: store.t("lockScreenLiveActivity")) {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.headline)
                             .foregroundStyle(OWCDesign.orange)
                     }
                     OWCRow(icon: "square.grid.2x2", title: store.t("notificationHomeWidget"), isLast: true) {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.headline)
                             .foregroundStyle(OWCDesign.orange)
                     }
                 }
@@ -557,7 +610,7 @@ struct NotificationDesignView: View {
 
     private func modeRow(_ mode: OffWorkNotificationMode, title: String, isLast: Bool = false) -> some View {
         Button {
-            withAnimation(.snappy(duration: 0.22)) { store.notificationMode = mode }
+            store.notificationMode = mode
             if mode != .off, notifications.status == .notDetermined {
                 Task { @MainActor in
                     let granted = await notifications.request()
@@ -572,18 +625,27 @@ struct NotificationDesignView: View {
             OWCRow(title: title, isLast: isLast) {
                 if store.notificationMode == mode {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.headline)
                         .foregroundStyle(OWCDesign.orange)
-                        .transition(.scale.combined(with: .opacity))
+                        .transition(notificationModeTransition)
                 }
             }
         }
         .buttonStyle(OWCRowButtonStyle())
+        .animation(notificationModeAnimation, value: store.notificationMode)
+    }
+
+    private var notificationModeAnimation: Animation {
+        reduceMotion ? OWCMotion.reduced : OWCMotion.selection
+    }
+
+    private var notificationModeTransition: AnyTransition {
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.95))
     }
 
     private func detailFooter(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 13))
+            .font(.footnote)
             .foregroundStyle(OWCDesign.secondary)
             .lineSpacing(2)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -604,7 +666,7 @@ private extension View {
 }
 
 struct LunchSettingsView: View {
-    @ObservedObject var store: OffWorkStore
+    @Bindable var store: OffWorkStore
     @FocusState private var durationFocused: Bool
     @State private var durationText = ""
 
@@ -613,7 +675,7 @@ struct LunchSettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
                     HStack {
-                        Text(store.t("lunchBreak")).font(.system(size: 17))
+                        Text(store.t("lunchBreak")).font(.body)
                         Spacer()
                         Toggle(store.t("lunchBreak"), isOn: $store.lunchEnabled).labelsHidden()
                     }
@@ -627,13 +689,13 @@ struct LunchSettingsView: View {
                             selection: lunchBinding,
                             displayedComponents: .hourAndMinute
                         )
-                        .font(.system(size: 17))
+                        .font(.body)
                         .padding(.horizontal, 16)
                         .frame(height: 56)
                         .owcDivider()
 
                         HStack {
-                            Text(store.t("lunchDuration")).font(.system(size: 17))
+                            Text(store.t("lunchDuration")).font(.body)
                             Spacer()
                             OWCNumberField(
                                 placeholder: "60",
@@ -643,7 +705,7 @@ struct LunchSettingsView: View {
                             )
                             .focused($durationFocused)
                             Text(store.t("minutesUnit"))
-                                .font(.system(size: 16))
+                                .font(.callout)
                                 .foregroundStyle(OWCDesign.secondary)
                         }
                         .padding(.horizontal, 16)
@@ -657,7 +719,7 @@ struct LunchSettingsView: View {
                     .padding(.top, 20)
                 OWCGroupCard {
                     HStack {
-                        Text(store.t("lunchStartReminder")).font(.system(size: 17))
+                        Text(store.t("lunchStartReminder")).font(.body)
                         Spacer()
                         Toggle(store.t("lunchStartReminder"), isOn: $store.lunchStartReminderEnabled).labelsHidden()
                     }
@@ -666,7 +728,7 @@ struct LunchSettingsView: View {
                     .owcDivider()
 
                     HStack {
-                        Text(store.t("lunchEndReminder")).font(.system(size: 17))
+                        Text(store.t("lunchEndReminder")).font(.body)
                         Spacer()
                         Toggle(store.t("lunchEndReminder"), isOn: $store.lunchEndReminderEnabled).labelsHidden()
                     }
@@ -718,7 +780,7 @@ struct LunchSettingsView: View {
 }
 
 struct HealthReminderSettingsView: View {
-    @ObservedObject var store: OffWorkStore
+    @Bindable var store: OffWorkStore
     @FocusState private var intervalFocused: Bool
     @State private var intervalText = ""
 
@@ -727,7 +789,7 @@ struct HealthReminderSettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
                     HStack {
-                        Text(store.t("microBreakReminder")).font(.system(size: 17))
+                        Text(store.t("microBreakReminder")).font(.body)
                         Spacer()
                         Toggle(store.t("microBreakReminder"), isOn: $store.microBreakEnabled).labelsHidden()
                     }
@@ -736,7 +798,7 @@ struct HealthReminderSettingsView: View {
 
                     if store.microBreakEnabled {
                         HStack {
-                            Text(store.t("microBreakInterval")).font(.system(size: 17))
+                            Text(store.t("microBreakInterval")).font(.body)
                             Spacer()
                             OWCNumberField(
                                 placeholder: "60",
@@ -746,7 +808,7 @@ struct HealthReminderSettingsView: View {
                             )
                             .focused($intervalFocused)
                             Text(store.t("minutesUnit"))
-                                .font(.system(size: 16))
+                                .font(.callout)
                                 .foregroundStyle(OWCDesign.secondary)
                         }
                         .padding(.horizontal, 16)
@@ -789,7 +851,7 @@ struct HealthReminderSettingsView: View {
 }
 
 struct ThemeSettingsView: View {
-    @ObservedObject var store: OffWorkStore
+    @Bindable var store: OffWorkStore
 
     var body: some View {
         OWCContentSizedScrollView {
@@ -819,7 +881,7 @@ struct ThemeSettingsView: View {
             OWCRow(icon: icon, textIcon: textIcon, title: title, isLast: isLast) {
                 if store.theme == theme {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.headline)
                         .foregroundStyle(OWCDesign.accent)
                 }
             }
@@ -831,7 +893,7 @@ struct ThemeSettingsView: View {
 
 private func settingsDetailFooter(_ text: String) -> some View {
     Text(text)
-        .font(.system(size: 13))
+        .font(.footnote)
         .foregroundStyle(OWCDesign.secondary)
         .lineSpacing(2)
         .frame(maxWidth: .infinity, alignment: .leading)

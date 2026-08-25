@@ -1,4 +1,3 @@
-import Combine
 import Foundation
 import SwiftUI
 
@@ -104,7 +103,8 @@ enum ShareMood: String, CaseIterable, Identifiable {
 }
 
 @MainActor
-final class OffWorkStore: ObservableObject {
+@Observable
+final class OffWorkStore {
     private enum Key {
         static let onboardingComplete = "ios.native.onboardingComplete"
 #if DEBUG
@@ -145,6 +145,7 @@ final class OffWorkStore: ObservableObject {
         static let microBreakEnabled = "ios.native.microBreakEnabled"
         static let microBreakInterval = "ios.native.microBreakInterval"
         static let overtimeEndAtMs = "ios.native.overtimeEndAtMs"
+        static let activeCountdownEndAtMs = "ios.native.activeCountdownEndAtMs"
         static let lastCelebratedEndAtMs = "ios.native.lastCelebratedEndAtMs"
     }
 
@@ -153,67 +154,91 @@ final class OffWorkStore: ObservableObject {
     let localizer = NativeLocalizer()
     private let defaults: UserDefaults
 
-    @Published var selectedTab: AppTab { didSet { defaults.set(selectedTab.rawValue, forKey: Key.selectedTab) } }
-    @Published var presentedRoute: AppRoute?
-    @Published var onboardingPage = 0
-    @Published var shareMood: ShareMood = .happy
-    @Published var lastRulesError: String?
+    var selectedTab: AppTab { didSet { defaults.set(selectedTab.rawValue, forKey: Key.selectedTab) } }
+    var presentedRoute: AppRoute?
 
-    @Published var onboardingComplete: Bool { didSet { defaults.set(onboardingComplete, forKey: Key.onboardingComplete) } }
+    /// The two navigation stacks, held here rather than in the shells so a
+    /// pushed page survives a rotation — portrait and landscape are separate
+    /// view trees, and each used to own its own path. Not persisted.
+    var timerPath: [AppRoute] = []
+    var settingsPath: [AppRoute] = []
+
+    /// Landscape drives a single `NavigationStack` for both tabs, where
+    /// portrait has one per tab; this projects whichever is current.
+    var activePath: [AppRoute] {
+        get { selectedTab == .timer ? timerPath : settingsPath }
+        set {
+            if selectedTab == .timer { timerPath = newValue } else { settingsPath = newValue }
+        }
+    }
+    var onboardingPage = 0
+    var shareMood: ShareMood = .happy
+    var lastRulesError: String?
+
+    var onboardingComplete: Bool { didSet { defaults.set(onboardingComplete, forKey: Key.onboardingComplete) } }
 #if DEBUG
     /// Replay the welcome flow on every launch. The property and its storage
     /// key do not exist in Release builds.
-    @Published var debugAlwaysShowOnboarding: Bool {
+    var debugAlwaysShowOnboarding: Bool {
         didSet { defaults.set(debugAlwaysShowOnboarding, forKey: Key.debugAlwaysOnboarding) }
     }
 #endif
-    @Published var countdownStarted: Bool { didSet { defaults.set(countdownStarted, forKey: Key.countdownStarted) } }
-    @Published private var forcedWorkdayDate: String? {
+    var countdownStarted: Bool { didSet { defaults.set(countdownStarted, forKey: Key.countdownStarted) } }
+    private var forcedWorkdayDate: String? {
         didSet {
             if let forcedWorkdayDate { defaults.set(forcedWorkdayDate, forKey: Key.forcedWorkdayDate) }
             else { defaults.removeObject(forKey: Key.forcedWorkdayDate) }
         }
     }
-    @Published var startMinutes: Int { didSet { defaults.set(startMinutes, forKey: Key.startMinutes); clearOvertime() } }
-    @Published var endMinutes: Int { didSet { defaults.set(endMinutes, forKey: Key.endMinutes); clearOvertime() } }
-    @Published var workdays: Set<Int> { didSet { defaults.set(workdays.sorted(), forKey: Key.workdays) } }
-    @Published var scheduleMode: WorkScheduleMode { didSet { defaults.set(scheduleMode.rawValue, forKey: Key.scheduleMode) } }
-    @Published var alternatingWeekType: AlternatingWeekType { didSet { defaults.set(alternatingWeekType.rawValue, forKey: Key.alternatingWeekType) } }
-    @Published var alternatingWeekendWorkday: Int { didSet { defaults.set(alternatingWeekendWorkday, forKey: Key.alternatingWeekendWorkday) } }
-    @Published var alternatingReferenceWeekStartMs: Double { didSet { defaults.set(alternatingReferenceWeekStartMs, forKey: Key.alternatingReferenceWeekStartMs) } }
-    @Published var rotationWorkDays: Int { didSet { defaults.set(rotationWorkDays, forKey: Key.rotationWorkDays) } }
-    @Published var rotationRestDays: Int { didSet { defaults.set(rotationRestDays, forKey: Key.rotationRestDays) } }
-    @Published var rotationAnchorMs: Double { didSet { defaults.set(rotationAnchorMs, forKey: Key.rotationAnchorMs) } }
-    @Published var lunchEnabled: Bool { didSet { defaults.set(lunchEnabled, forKey: Key.lunchEnabled) } }
-    @Published var lunchStartMinutes: Int { didSet { defaults.set(lunchStartMinutes, forKey: Key.lunchStartMinutes) } }
-    @Published var lunchDurationMinutes: Int { didSet { defaults.set(lunchDurationMinutes, forKey: Key.lunchDuration) } }
-    @Published var salaryAmount: String { didSet { defaults.set(salaryAmount, forKey: Key.salaryAmount) } }
-    @Published var salaryEnabled: Bool { didSet { defaults.set(salaryEnabled, forKey: Key.salaryEnabled) } }
-    @Published var salaryType: SalaryType { didSet { defaults.set(salaryType.rawValue, forKey: Key.salaryType) } }
-    @Published var monthlyWorkingDays: Double { didSet { defaults.set(monthlyWorkingDays, forKey: Key.monthlyWorkingDays) } }
-    @Published var annualBonusEnabled: Bool { didSet { defaults.set(annualBonusEnabled, forKey: Key.annualBonusEnabled) } }
-    @Published var annualBonusMonths: Double { didSet { defaults.set(annualBonusMonths, forKey: Key.annualBonusMonths) } }
-    @Published var hideEarnings: Bool { didSet { defaults.set(hideEarnings, forKey: Key.hideEarnings) } }
-    @Published var theme: AppTheme { didSet { defaults.set(theme.rawValue, forKey: Key.theme) } }
-    @Published private(set) var languageCode: String
-    @Published var notificationMode: OffWorkNotificationMode { didSet { defaults.set(notificationMode.rawValue, forKey: Key.notificationMode) } }
-    @Published var liveActivityEnabled: Bool { didSet { defaults.set(liveActivityEnabled, forKey: Key.liveActivityEnabled) } }
-    @Published var liveActivityLeadMinutes: Int { didSet { defaults.set(liveActivityLeadMinutes, forKey: Key.liveActivityLead) } }
-    @Published var lunchStartReminderEnabled: Bool {
+    var startMinutes: Int { didSet { defaults.set(startMinutes, forKey: Key.startMinutes); clearOvertime() } }
+    var endMinutes: Int { didSet { defaults.set(endMinutes, forKey: Key.endMinutes); clearOvertime() } }
+    var workdays: Set<Int> { didSet { defaults.set(workdays.sorted(), forKey: Key.workdays) } }
+    var scheduleMode: WorkScheduleMode { didSet { defaults.set(scheduleMode.rawValue, forKey: Key.scheduleMode) } }
+    var alternatingWeekType: AlternatingWeekType { didSet { defaults.set(alternatingWeekType.rawValue, forKey: Key.alternatingWeekType) } }
+    var alternatingWeekendWorkday: Int { didSet { defaults.set(alternatingWeekendWorkday, forKey: Key.alternatingWeekendWorkday) } }
+    var alternatingReferenceWeekStartMs: Double { didSet { defaults.set(alternatingReferenceWeekStartMs, forKey: Key.alternatingReferenceWeekStartMs) } }
+    var rotationWorkDays: Int { didSet { defaults.set(rotationWorkDays, forKey: Key.rotationWorkDays) } }
+    var rotationRestDays: Int { didSet { defaults.set(rotationRestDays, forKey: Key.rotationRestDays) } }
+    var rotationAnchorMs: Double { didSet { defaults.set(rotationAnchorMs, forKey: Key.rotationAnchorMs) } }
+    var lunchEnabled: Bool { didSet { defaults.set(lunchEnabled, forKey: Key.lunchEnabled) } }
+    var lunchStartMinutes: Int { didSet { defaults.set(lunchStartMinutes, forKey: Key.lunchStartMinutes) } }
+    var lunchDurationMinutes: Int { didSet { defaults.set(lunchDurationMinutes, forKey: Key.lunchDuration) } }
+    var salaryAmount: String { didSet { defaults.set(salaryAmount, forKey: Key.salaryAmount) } }
+    var salaryEnabled: Bool { didSet { defaults.set(salaryEnabled, forKey: Key.salaryEnabled) } }
+    var salaryType: SalaryType { didSet { defaults.set(salaryType.rawValue, forKey: Key.salaryType) } }
+    var monthlyWorkingDays: Double { didSet { defaults.set(monthlyWorkingDays, forKey: Key.monthlyWorkingDays) } }
+    var annualBonusEnabled: Bool { didSet { defaults.set(annualBonusEnabled, forKey: Key.annualBonusEnabled) } }
+    var annualBonusMonths: Double { didSet { defaults.set(annualBonusMonths, forKey: Key.annualBonusMonths) } }
+    var hideEarnings: Bool { didSet { defaults.set(hideEarnings, forKey: Key.hideEarnings) } }
+    var theme: AppTheme { didSet { defaults.set(theme.rawValue, forKey: Key.theme) } }
+    private(set) var languageCode: String
+    var notificationMode: OffWorkNotificationMode { didSet { defaults.set(notificationMode.rawValue, forKey: Key.notificationMode) } }
+    var liveActivityEnabled: Bool { didSet { defaults.set(liveActivityEnabled, forKey: Key.liveActivityEnabled) } }
+    var liveActivityLeadMinutes: Int { didSet { defaults.set(liveActivityLeadMinutes, forKey: Key.liveActivityLead) } }
+    var lunchStartReminderEnabled: Bool {
         didSet { defaults.set(lunchStartReminderEnabled, forKey: Key.lunchStartReminderEnabled) }
     }
-    @Published var lunchEndReminderEnabled: Bool {
+    var lunchEndReminderEnabled: Bool {
         didSet { defaults.set(lunchEndReminderEnabled, forKey: Key.lunchEndReminderEnabled) }
     }
-    @Published var microBreakEnabled: Bool { didSet { defaults.set(microBreakEnabled, forKey: Key.microBreakEnabled) } }
-    @Published var microBreakIntervalMinutes: Int { didSet { defaults.set(microBreakIntervalMinutes, forKey: Key.microBreakInterval) } }
-    @Published var overtimeEndAtMs: Double? {
+    var microBreakEnabled: Bool { didSet { defaults.set(microBreakEnabled, forKey: Key.microBreakEnabled) } }
+    var microBreakIntervalMinutes: Int { didSet { defaults.set(microBreakIntervalMinutes, forKey: Key.microBreakInterval) } }
+    var overtimeEndAtMs: Double? {
         didSet {
             if let overtimeEndAtMs { defaults.set(overtimeEndAtMs, forKey: Key.overtimeEndAtMs) }
             else { defaults.removeObject(forKey: Key.overtimeEndAtMs) }
         }
     }
-    @Published var lastCelebratedEndAtMs: Double {
+    private var activeCountdownEndAtMs: Double? {
+        didSet {
+            if let activeCountdownEndAtMs {
+                defaults.set(activeCountdownEndAtMs, forKey: Key.activeCountdownEndAtMs)
+            } else {
+                defaults.removeObject(forKey: Key.activeCountdownEndAtMs)
+            }
+        }
+    }
+    var lastCelebratedEndAtMs: Double {
         didSet { defaults.set(lastCelebratedEndAtMs, forKey: Key.lastCelebratedEndAtMs) }
     }
 
@@ -282,6 +307,7 @@ final class OffWorkStore: ObservableObject {
         microBreakEnabled = defaults.bool(forKey: Key.microBreakEnabled)
         microBreakIntervalMinutes = defaults.object(forKey: Key.microBreakInterval) == nil ? 60 : defaults.integer(forKey: Key.microBreakInterval)
         overtimeEndAtMs = defaults.object(forKey: Key.overtimeEndAtMs) as? Double
+        activeCountdownEndAtMs = defaults.object(forKey: Key.activeCountdownEndAtMs) as? Double
         lastCelebratedEndAtMs = defaults.double(forKey: Key.lastCelebratedEndAtMs)
 #if DEBUG
         if debugRoute != nil { defaults.removeObject(forKey: Key.qaRoute) }
@@ -400,15 +426,198 @@ final class OffWorkStore: ObservableObject {
         )
     }
 
-    func startCountdown(force: Bool = false) {
-        forcedWorkdayDate = force ? Self.dayKey(for: .now) : nil
+    /// Builds the presentation timeline from shared absolute boundaries.
+    /// Scheduled reminders stay scoped to today, while the shift start/end
+    /// boundaries remain visible for a complete (including overnight) flow.
+    func upcomingTimelineEvents(
+        for snapshot: NativeShiftSnapshot,
+        at now: Date = .now
+    ) -> [UpcomingTimelineEvent] {
+        let nowMs = now.timeIntervalSince1970 * 1_000
+        var events: [UpcomingTimelineEvent] = []
+
+        // Bounded by the shift, not by the calendar day. Requiring the same day
+        // as `now` silently dropped lunch, health reminders and the Live
+        // Activity lead-in from every overnight shift — they all land after
+        // midnight, so only the shift's own start and end rows survived.
+        func isDuringShift(_ atMs: Double) -> Bool {
+            atMs > nowMs && atMs <= snapshot.endAtMs
+        }
+
+        if snapshot.startAtMs > nowMs {
+            events.append(.init(
+                id: "shift-start-\(Int64(snapshot.startAtMs))",
+                kind: .shiftStart,
+                date: snapshot.startDate,
+                title: t("startTime"),
+                detail: t("todaysShift")
+            ))
+        }
+
+        for (index, segment) in snapshot.segments.dropLast().enumerated() {
+            let nextSegment = snapshot.segments[index + 1]
+            guard nextSegment.startAtMs > segment.endAtMs else { continue }
+
+            if isDuringShift(segment.endAtMs) {
+                events.append(.init(
+                    id: "lunch-start-\(Int64(segment.endAtMs))",
+                    kind: .lunchStart,
+                    date: Date(timeIntervalSince1970: segment.endAtMs / 1_000),
+                    title: t("lunchBreak"),
+                    detail: t("lunchStartTime")
+                ))
+            }
+
+            if isDuringShift(nextSegment.startAtMs) {
+                events.append(.init(
+                    id: "lunch-end-\(Int64(nextSegment.startAtMs))",
+                    kind: .lunchEnd,
+                    date: Date(timeIntervalSince1970: nextSegment.startAtMs / 1_000),
+                    title: t("lunchBreak"),
+                    detail: t("lunchBackAt")
+                ))
+            }
+        }
+
+        // Exactly one micro-break row, carrying its interval, rather than one
+        // per firing — eight identical hourly rows buried the two that matter.
+        // It is effectively permanent near the top of the list, which is the
+        // point: this is the seam a pomodoro timer will plug into later.
+        //
+        // The Live Activity lead-in stays out of the running list. It is a
+        // notification about this countdown rather than an event within it, and
+        // by the time it fires the user is already looking at the screen.
+        if microBreakEnabled,
+           let reminders = try? CountdownRules.shared.reminders(
+               input: rulesInput(at: now),
+               reminderInputs: reminderInputs()
+           ),
+           let next = reminders
+               .filter({ $0.kind == "microBreak" && isDuringShift($0.atMs) })
+               .min(by: { $0.atMs < $1.atMs }) {
+            events.append(.init(
+                id: next.id,
+                kind: .health,
+                date: Date(timeIntervalSince1970: next.atMs / 1_000),
+                title: t("microBreakReminder"),
+                detail: t("minutesShort", values: ["count": "\(microBreakIntervalMinutes)"])
+            ))
+        }
+
+        // One row per push. Unlike the micro-break these fire at distinct points
+        // rather than on a cycle, and seeing them is what turns "ends at 23:00"
+        // into a shift broken into markers — which is why they live here, on the
+        // running screen, and not in the pre-start preview.
+        //
+        // A milestone the rules engine left untitled is a silent tick rather
+        // than a push, so it gets no row; that is also what keeps "at off-work
+        // time only" from listing anything, since its one audible milestone is
+        // the shift's end and the list already has a row for that.
+        if notificationMode == .milestones {
+            events.append(contentsOf: (try? CountdownRules.shared.reminders(
+                input: rulesInput(at: now),
+                reminderInputs: reminderInputs()
+            ))?
+                // The 100% milestone lands on the stroke of the shift's end,
+                // where the list already has a row saying exactly that. Two
+                // rows at 19:00 is not two events.
+                //
+                // Matched by suffix, not equality: the JS bridge re-keys every
+                // reminder as "<scope>:<shiftEnd>:<id>" before handing it back,
+                // so the rule engine's own "milestone:100" is only ever the tail
+                // of what arrives here.
+                .filter {
+                    $0.kind == "milestone" && !$0.id.hasSuffix(":milestone:100")
+                        && $0.title != nil && isDuringShift($0.atMs)
+                }
+                .map { reminder in
+                    UpcomingTimelineEvent(
+                        id: reminder.id,
+                        kind: .milestone,
+                        date: Date(timeIntervalSince1970: reminder.atMs / 1_000),
+                        title: t("offWorkReminder"),
+                        detail: reminder.title ?? ""
+                    )
+                } ?? [])
+        }
+
+        if snapshot.endAtMs > nowMs {
+            events.append(.init(
+                id: "shift-end-\(Int64(snapshot.endAtMs))",
+                kind: .shiftEnd,
+                date: snapshot.endDate,
+                title: t("endTime"),
+                detail: snapshot.overtimeEndAtMs == nil ? t("todaysShift") : t("overtime")
+            ))
+        }
+
+        func boundaryOrder(_ kind: UpcomingTimelineEvent.Kind) -> Int {
+            switch kind {
+            case .shiftStart: 0
+            case .shiftEnd: 2
+            default: 1
+            }
+        }
+
+        return events.sorted {
+            if $0.date == $1.date {
+                let leftOrder = boundaryOrder($0.kind)
+                let rightOrder = boundaryOrder($1.kind)
+                if leftOrder != rightOrder { return leftOrder < rightOrder }
+                return $0.id < $1.id
+            }
+            return $0.date < $1.date
+        }
+    }
+
+    func startCountdown(force: Bool = false, at date: Date = .now) {
+        forcedWorkdayDate = force ? Self.dayKey(for: date) : nil
         countdownStarted = true
+        recordActiveCountdownBoundary(at: date)
     }
 
     func stopCountdown() {
         countdownStarted = false
         forcedWorkdayDate = nil
+        activeCountdownEndAtMs = nil
         clearOvertime()
+    }
+
+    /// A completed shift remains available for the rest of that calendar day,
+    /// then returns to setup the next time the app becomes active. Persisting
+    /// the concrete end boundary avoids accidentally attaching yesterday's
+    /// `countdownStarted` flag to the shift that shared rules resolve today.
+    @discardableResult
+    func reconcileCountdownSession(at date: Date = .now) -> Bool {
+        guard countdownStarted else {
+            activeCountdownEndAtMs = nil
+            return false
+        }
+
+        guard let activeCountdownEndAtMs else {
+            // Migration for sessions created before the concrete boundary was
+            // persisted. Preserve an actually running shift, but do not let an
+            // already-finished or not-yet-started resolved shift masquerade as
+            // the old session.
+            guard let current = snapshot(at: date),
+                  current.remainingMs > 0,
+                  current.startAtMs <= date.timeIntervalSince1970 * 1_000
+            else {
+                stopCountdown()
+                return true
+            }
+            self.activeCountdownEndAtMs = current.endAtMs
+            return false
+        }
+
+        let endDate = Date(timeIntervalSince1970: activeCountdownEndAtMs / 1_000)
+        let endDay = Calendar.current.startOfDay(for: endDate)
+        guard let resetDate = Calendar.current.date(byAdding: .day, value: 1, to: endDay),
+              date >= resetDate
+        else { return false }
+
+        stopCountdown()
+        return true
     }
 
     func completeOnboarding(enableNotifications: Bool) {
@@ -482,10 +691,16 @@ final class OffWorkStore: ObservableObject {
     func applyOvertime(date: Date) {
         overtimeEndAtMs = date.timeIntervalSince1970 * 1_000
         countdownStarted = true
+        activeCountdownEndAtMs = overtimeEndAtMs
     }
 
     func clearOvertime() {
         if overtimeEndAtMs != nil { overtimeEndAtMs = nil }
+        if countdownStarted { recordActiveCountdownBoundary() }
+    }
+
+    private func recordActiveCountdownBoundary(at date: Date = .now) {
+        activeCountdownEndAtMs = snapshot(at: date)?.endAtMs
     }
 
     func timeString(_ minutes: Int) -> String {
@@ -518,20 +733,7 @@ final class OffWorkStore: ObservableObject {
     }
 
     func formatRelativeDuration(_ milliseconds: Double) -> String {
-        let total = max(0, Int(milliseconds / 1_000))
-        let hours = total / 3_600
-        let minutes = (total % 3_600) / 60
-        if languageCode == "en" {
-            return hours > 0 ? "\(hours) h \(minutes) m" : "\(minutes) m"
-        }
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .abbreviated
-        formatter.zeroFormattingBehavior = .dropLeading
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.locale = locale
-        formatter.calendar = calendar
-        return formatter.string(from: TimeInterval(total)) ?? "—"
+        RelativeDurationFormatter.string(milliseconds: milliseconds, languageCode: languageCode)
     }
 
     func formatHours(_ value: Double) -> String {

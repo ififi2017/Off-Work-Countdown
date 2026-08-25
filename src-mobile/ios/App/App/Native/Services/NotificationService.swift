@@ -2,7 +2,8 @@ import UIKit
 import UserNotifications
 
 @MainActor
-final class NotificationService: ObservableObject {
+@Observable
+final class NotificationService {
     enum Status: Equatable {
         case unknown
         case notDetermined
@@ -10,7 +11,7 @@ final class NotificationService: ObservableObject {
         case allowed
     }
 
-    @Published private(set) var status: Status = .unknown
+    private(set) var status: Status = .unknown
     private var scheduleGeneration = 0
 
     func refresh() async {

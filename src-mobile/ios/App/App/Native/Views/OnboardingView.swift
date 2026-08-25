@@ -1,15 +1,26 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @ObservedObject var store: OffWorkStore
+    // Rounded display digits; no text style is this size.
+    @ScaledMetric(relativeTo: .largeTitle) private var heroNumberSize: CGFloat = 46
+    @Bindable var store: OffWorkStore
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @StateObject private var notifications = NotificationService()
+    @State private var notifications = NotificationService()
 
     private static let pageAnimation = Animation.snappy(duration: 0.32)
+    /// A pure slide, deliberately without a cross-fade.
+    ///
+    /// `.opacity` on a transition sets `allowsGroupOpacity`, which forces the
+    /// whole outgoing *and* incoming page — screen-sized, and carrying blurred
+    /// shadows — into an offscreen transparency layer that has to be composited
+    /// again on every frame. At 120 Hz that is an 8.3 ms budget spent on two
+    /// full-screen offscreen renders plus their gaussian blurs, and it is what
+    /// made the paging feel sticky. Translating a layer costs Core Animation
+    /// almost nothing. Reduce Motion still cross-fades — see `pageTransition`.
     private static let pageTransition = AnyTransition.asymmetric(
-        insertion: .move(edge: .trailing).combined(with: .opacity),
-        removal: .move(edge: .leading).combined(with: .opacity)
+        insertion: .move(edge: .trailing),
+        removal: .move(edge: .leading)
     )
 
     var body: some View {
@@ -24,22 +35,29 @@ struct OnboardingView: View {
                     systemSurfaces
                 case 3:
                     adaptiveLayouts
-                default:
+                case 4:
                     privacy
+                default:
+                    ready
                 }
             }
             .id(store.onboardingPage)
             .transition(pageTransition)
         }
         .animation(pageAnimation, value: store.onboardingPage)
-        .background(Color(uiColor: .systemBackground))
+        // The grouped background, not the plain one: cards are
+        // `secondarySystemGroupedBackground`, which is pure white in light mode
+        // — exactly the same white as `systemBackground` — so on a plain
+        // background every card here silently vanished and its rows were left
+        // floating without a container.
+        .background(OWCDesign.page)
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
         .onAppear {
 #if DEBUG
             let defaults = UserDefaults.standard
             if defaults.object(forKey: "ios.native.qaOnboardingPage") != nil {
-                store.onboardingPage = min(4, max(0, defaults.integer(forKey: "ios.native.qaOnboardingPage")))
+                store.onboardingPage = min(5, max(0, defaults.integer(forKey: "ios.native.qaOnboardingPage")))
                 defaults.removeObject(forKey: "ios.native.qaOnboardingPage")
             }
 #endif
@@ -49,19 +67,19 @@ struct OnboardingView: View {
     private var welcome: some View {
         VStack(spacing: 0) {
             Spacer()
-            Image("BrandIcon")
+            Image(.brandIcon)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 96, height: 96)
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .shadow(color: .black.opacity(0.12), radius: 14, y: 7)
             Text(store.t("offWorkCountdown"))
-                .font(.system(size: 34, weight: .bold))
+                .font(.largeTitle.bold())
                 .tracking(-0.8)
                 .multilineTextAlignment(.center)
                 .padding(.top, 26)
             Text(store.t("landingTagline"))
-                .font(.system(size: 17))
+                .font(.body)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.top, 12)
@@ -69,7 +87,7 @@ struct OnboardingView: View {
 #if DEBUG
             Toggle(isOn: $store.debugAlwaysShowOnboarding) {
                 Text(verbatim: "DEBUG · 每次启动显示欢迎页")
-                    .font(.system(size: 13))
+                    .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
             }
             .tint(OWCDesign.accent)
@@ -88,10 +106,12 @@ struct OnboardingView: View {
             .frame(maxWidth: 420)
             Spacer()
 
+            pageDots
             Button(store.t("continue")) {
                 showPage(1)
             }
             .buttonStyle(OWCPrimaryButtonStyle())
+            .padding(.top, 16)
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
         }
@@ -102,17 +122,17 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer()
             Image(systemName: "bell.badge")
-                .font(.system(size: 24, weight: .semibold))
+                .font(.title2.weight(.semibold))
                 .foregroundStyle(OWCDesign.orangeDeep)
                 .frame(width: 52, height: 52)
                 .background(OWCDesign.orange.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             Text(store.t("enableNotificationsTitle"))
-                .font(.system(size: 30, weight: .bold))
+                .font(.title.bold())
                 .tracking(-0.6)
                 .padding(.top, 22)
             Text(store.t("mobileNotificationPrimerBody"))
-                .font(.system(size: 17))
+                .font(.body)
                 .foregroundStyle(OWCDesign.secondary)
                 .lineSpacing(4)
                 .padding(.top, 12)
@@ -137,6 +157,7 @@ struct OnboardingView: View {
             .padding(.top, 28)
             Spacer()
 
+            pageDots
             VStack(spacing: 10) {
                 Button(store.t("notificationContinue")) {
                     Task {
@@ -149,10 +170,11 @@ struct OnboardingView: View {
                 Button(store.t("notNow")) {
                     showPage(2)
                 }
-                .font(.system(size: 17, weight: .medium))
+                .font(.body.weight(.medium))
                 .foregroundStyle(OWCDesign.secondary)
                 .frame(maxWidth: .infinity, minHeight: 50)
             }
+            .padding(.top, 16)
             .padding(.bottom, 24)
         }
         .padding(.horizontal, 28)
@@ -176,14 +198,14 @@ struct OnboardingView: View {
                 // app glyph leading and the timer trailing, not a full-width bar.
                 HStack(spacing: 0) {
                     Image(systemName: "timer")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.caption.bold())
                         .foregroundStyle(.white)
                         .frame(width: 20, height: 20)
                         .background(OWCDesign.orange)
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     Spacer(minLength: 34)
                     Text(verbatim: "14:59")
-                        .font(.system(size: 14, weight: .bold).monospacedDigit())
+                        .font(.subheadline.bold().monospacedDigit())
                         .foregroundStyle(.white)
                 }
                 .padding(.horizontal, 12)
@@ -213,7 +235,7 @@ struct OnboardingView: View {
                                 .stroke(OWCDesign.accent, style: StrokeStyle(lineWidth: 7, lineCap: .round))
                                 .rotationEffect(.degrees(-90))
                             Text(verbatim: "73%")
-                                .font(.system(size: 16, weight: .bold, design: .rounded).monospacedDigit())
+                                .font(.system(.callout, design: .rounded).bold().monospacedDigit())
                         }
                         .frame(width: 84, height: 84)
                         Text(store.t("widgetWorking"))
@@ -254,17 +276,17 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer()
             Image(systemName: "lock.shield")
-                .font(.system(size: 24, weight: .semibold))
+                .font(.title2.weight(.semibold))
                 .foregroundStyle(OWCDesign.orangeDeep)
                 .frame(width: 52, height: 52)
                 .background(OWCDesign.orange.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             Text(store.t("onboardingPrivacyTitle"))
-                .font(.system(size: 30, weight: .bold))
+                .font(.title.bold())
                 .tracking(-0.6)
                 .padding(.top, 22)
             Text(store.t("onboardingPrivacyBody"))
-                .font(.system(size: 17))
+                .font(.body)
                 .foregroundStyle(OWCDesign.secondary)
                 .lineSpacing(4)
                 .padding(.top, 12)
@@ -280,19 +302,34 @@ struct OnboardingView: View {
                     subtitle: store.t("onboardingPrivacyWorkBody")
                 )
                 OWCRow(
-                    icon: "banknote",
+                    icon: "faceid",
                     title: store.t("salarySettings"),
-                    subtitle: store.t("enableSalaryDescription"),
+                    subtitle: store.t("onboardingSalaryLockBody"),
                     isLast: true
                 )
             }
             .padding(.top, 28)
             Spacer()
 
-            Button(store.t("onboardingStartUsing")) {
-                store.completeOnboarding(enableNotifications: false)
+            // Asking here rather than at the salary screen: the first time the
+            // system prompt appears is the one time the user is being told why,
+            // and a permission sheet that arrives with an explanation next to it
+            // gets granted far more often than one that ambushes them later.
+            pageDots
+            VStack(spacing: 10) {
+                Button(store.t("onboardingEnableBiometrics")) {
+                    Task {
+                        _ = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
+                        showPage(5)
+                    }
+                }
+                .buttonStyle(OWCPrimaryButtonStyle())
+                Button(store.t("notNow")) { showPage(5) }
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(OWCDesign.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 50)
             }
-            .buttonStyle(OWCPrimaryButtonStyle())
+            .padding(.top, 16)
             .padding(.bottom, 24)
         }
         .padding(.horizontal, 28)
@@ -307,12 +344,12 @@ struct OnboardingView: View {
             if showsSidebarHint {
                 HStack(spacing: 8) {
                     Image(systemName: "sidebar.left")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.footnote.weight(.semibold))
                         .foregroundStyle(OWCDesign.secondary)
                         .frame(width: 30, height: 30)
                         .background(OWCDesign.control, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.caption2.bold())
                         .foregroundStyle(OWCDesign.tertiary)
                     Spacer(minLength: 0)
                 }
@@ -320,11 +357,11 @@ struct OnboardingView: View {
 
             VStack(spacing: 10) {
                 Text("02:34:18")
-                    .font(.system(size: 46, weight: .bold, design: .rounded).monospacedDigit())
+                    .font(.system(size: heroNumberSize, weight: .bold, design: .rounded).monospacedDigit())
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                 Text(store.t("timeLeftCaption"))
-                    .font(.system(size: 13))
+                    .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                 Capsule().fill(OWCDesign.control)
                     .frame(height: 8)
@@ -355,11 +392,11 @@ struct OnboardingView: View {
         VStack(spacing: 0) {
             Spacer(minLength: 18)
             Text(title)
-                .font(.system(size: 30, weight: .bold))
+                .font(.title.bold())
                 .tracking(-0.6)
                 .multilineTextAlignment(.center)
             Text(body)
-                .font(.system(size: 16))
+                .font(.callout)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
                 .lineSpacing(3)
@@ -384,12 +421,12 @@ struct OnboardingView: View {
     private var onboardingWidget: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 6) {
-                Image("BrandIcon")
+                Image(.brandIcon)
                     .resizable()
                     .frame(width: 18, height: 18)
                     .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
                 Text(store.t("offWorkCountdown"))
-                    .font(.caption.weight(.bold))
+                    .font(.caption.bold())
                     .lineLimit(2)
                     .minimumScaleFactor(0.78)
                 Spacer(minLength: 0)
@@ -407,7 +444,7 @@ struct OnboardingView: View {
             .background(OWCDesign.accent.opacity(0.12), in: Capsule())
             Spacer(minLength: 6)
             Text("02:34:18")
-                .font(.system(size: 27, weight: .bold, design: .rounded).monospacedDigit())
+                .font(.system(.title, design: .rounded).bold().monospacedDigit())
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             Spacer(minLength: 7)
@@ -422,7 +459,7 @@ struct OnboardingView: View {
             Spacer(minLength: 5)
             HStack(spacing: 6) {
                 Text(verbatim: "73%")
-                    .font(.caption2.weight(.bold).monospacedDigit())
+                    .font(.caption2.bold().monospacedDigit())
                     .foregroundStyle(OWCDesign.accent)
                 Spacer(minLength: 4)
                 Text(verbatim: "19:00")
@@ -437,9 +474,43 @@ struct OnboardingView: View {
         .owcShowcaseLift()
     }
 
+    /// The last screen: no more explaining, just the app's name and the way in.
+    private var ready: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            Image(.brandIcon)
+                .resizable()
+                .frame(width: 92, height: 92)
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .owcShowcaseLift()
+            Text(store.t("offWorkCountdown"))
+                .font(.largeTitle.bold())
+                .tracking(-0.8)
+                .padding(.top, 24)
+            Text(store.t("onboardingReadyBody"))
+                .font(.body)
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.top, 10)
+            Spacer()
+
+            pageDots
+            Button(store.t("onboardingStartSetup")) {
+                store.completeOnboarding(enableNotifications: false)
+            }
+            .buttonStyle(OWCPrimaryButtonStyle())
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+        }
+        .padding(.horizontal, 28)
+        .frame(maxWidth: 560)
+        .frame(maxWidth: .infinity)
+    }
+
     private var pageDots: some View {
         HStack(spacing: 7) {
-            ForEach(0..<5, id: \.self) { page in
+            ForEach(0..<6, id: \.self) { page in
                 Capsule()
                     .fill(page == store.onboardingPage ? OWCDesign.accent : OWCDesign.control)
                     .frame(width: page == store.onboardingPage ? 20 : 7, height: 7)
@@ -450,12 +521,12 @@ struct OnboardingView: View {
     private func feature(_ icon: String, _ title: String, _ body: String) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 19, weight: .medium))
+                .font(.title3.weight(.medium))
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.system(size: 16, weight: .semibold))
+                Text(title).font(.callout.weight(.semibold))
                 Text(body)
-                    .font(.system(size: 15))
+                    .font(.subheadline)
                     .foregroundStyle(OWCDesign.secondary)
             }
         }

@@ -282,19 +282,50 @@ public struct OffWorkCountdownWidgetView: View {
     }
 
     #if os(iOS)
+    @ViewBuilder
     private func circularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
-        Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
-            EmptyView()
-        } currentValueLabel: {
-            // Whole percent only. "89.30%" is six glyphs in a complication
-            // that has room for three, and it wrapped onto a second line.
-            Text("\(roundedProgress(snapshotEntry.progressAtDate))%")
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
+        if snapshotEntry.phase == .done {
+            VStack(spacing: 1) {
+                Image(systemName: "checkmark")
+                    .font(.caption.bold())
+                Text(WidgetCopy.text("shareDone", locale: entry.locale))
+                    .font(.system(size: 8, weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(WidgetCopy.text("offWorkToday", locale: entry.locale))
+        } else if snapshotEntry.phase == .before,
+                  let targetAtMs = snapshotEntry.countdownTargetAtMs {
+            Gauge(value: 0, in: 0...100) {
+                EmptyView()
+            } currentValueLabel: {
+                Text(Date(timeIntervalSince1970: Double(targetAtMs) / 1_000), style: .time)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.52)
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
+            .accessibilityLabel(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+        } else if snapshotEntry.phase == .idle {
+            Image(systemName: "play.fill")
+                .font(.body.bold())
+                .accessibilityLabel(WidgetCopy.text(snapshotEntry.labelKey, locale: entry.locale))
+        } else {
+            Gauge(value: snapshotEntry.progressAtDate, in: 0...100) {
+                EmptyView()
+            } currentValueLabel: {
+                // Whole percent only. "89.30%" is six glyphs in a complication
+                // that has room for three, and it wrapped onto a second line.
+                Text("\(roundedProgress(snapshotEntry.progressAtDate))%")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
         }
-        .gaugeStyle(.accessoryCircularCapacity)
     }
     #endif
 

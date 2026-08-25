@@ -1,24 +1,24 @@
 import SwiftUI
 
 struct AboutView: View {
-    @ObservedObject var store: OffWorkStore
+    let store: OffWorkStore
 
     var body: some View {
         OWCContentSizedScrollView {
             VStack(spacing: 22) {
                 OWCGroupCard {
                     VStack(spacing: 12) {
-                        Image("BrandIcon")
+                        Image(.brandIcon)
                             .resizable()
                             .frame(width: 84, height: 84)
                             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                         Text(store.t("offWorkCountdown"))
-                            .font(.system(size: 22, weight: .bold))
+                            .font(.title2.bold())
                         Text("fi_niaR Studio")
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(OWCDesign.secondary)
                         Text("\(store.t("version")) \(version)")
-                            .font(.system(size: 14))
+                            .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
                     }
                     .frame(maxWidth: .infinity)
@@ -69,7 +69,7 @@ struct AboutView: View {
         Link(destination: destination) {
             OWCRow(icon: icon, title: title, isLast: isLast) {
                 Image(systemName: "arrow.up.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(OWCDesign.tertiary)
             }
         }

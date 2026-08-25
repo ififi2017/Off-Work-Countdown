@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "कामाची सुट्टी";
 "CFBundleName" = "कामाची सुट्टी";
+"NSFaceIDUsageDescription" = "Face ID या डिव्हाइसवरील तुमची पगाराची माहिती खाजगी ठेवते.";

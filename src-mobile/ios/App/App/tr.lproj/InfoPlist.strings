@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "İş Çıkışı";
 "CFBundleName" = "İş Çıkışı";
+"NSFaceIDUsageDescription" = "Face ID, bu cihazdaki maaş bilgilerinizi başkalarından korur.";

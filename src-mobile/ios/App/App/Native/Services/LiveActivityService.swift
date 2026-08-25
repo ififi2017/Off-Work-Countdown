@@ -2,8 +2,9 @@
 import Foundation
 
 @MainActor
-final class LiveActivityService: ObservableObject {
-    @Published private(set) var lastError: String?
+@Observable
+final class LiveActivityService {
+    private(set) var lastError: String?
     private var completionTask: Task<Void, Never>?
 
     func reschedule(store: OffWorkStore, now: Date = .now) async {

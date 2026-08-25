@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "نهاية العمل";
 "CFBundleName" = "نهاية العمل";
+"NSFaceIDUsageDescription" = "يحافظ Face ID على خصوصية بيانات راتبك على هذا الجهاز.";
