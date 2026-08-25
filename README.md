@@ -298,7 +298,7 @@ should use the [desktop app](https://off.rainif.com/en/download).
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-`docs/PLAN-3.0.md` records the current roadmap along with the reasoning behind
+`plans/005-product-3.0.md` records the current roadmap along with the reasoning behind
 the decisions — including the things that were considered and deliberately not
 built.
 

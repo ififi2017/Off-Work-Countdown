@@ -1,6 +1,6 @@
 # 微软商店上架计划（MSIX）
 
-> 曾编号为「M6」，与 [PLAN-3.0.md](PLAN-3.0.md) 里的 M6「分发与增长」撞名，
+> 曾编号为「M6」，与 [005-product-3.0.md](../plans/005-product-3.0.md) 里的 M6「分发与增长」撞名，
 > 已去掉编号。它是 3.0 计划第 27 项的实现方案。
 
 在现有 NSIS 与 MSI 之外新增一条并行的 MSIX 产线，把 Windows 客户端送进
@@ -249,7 +249,7 @@ macOS 上那段被 `#[cfg]` 掉了，本轮就是在 Windows 上才发现的。
 | 改造量 | 几乎为零 | 中等（manifest、自启动、更新器） |
 | 更新 | 自己管 | 商店管 |
 
-[PLAN-M5-TAURI.md §6](PLAN-M5-TAURI.md) 已经决定不购买代码签名证书。这一条把
+[003-tauri-desktop.md §6](../plans/003-tauri-desktop.md) 已经决定不购买代码签名证书。这一条把
 EXE/MSI 那条路直接排除了——它的前置条件正是 M5 明确不做的事。
 
 **因此 MSIX 是唯一成立的路线。** 它顺带解决了 M5 §6 遗留的 Windows SmartScreen
@@ -676,7 +676,7 @@ WACK（Windows App Certification Kit）在本地先跑一遍，能提前发现�
 
 ### 应用显示名的多语言
 
-NSIS 安装向导的 14 种语言（[PLAN-3.1.0.md §1.1](PLAN-3.1.0.md)）在 MSIX 里不适用
+NSIS 安装向导的 14 种语言（[004-shift-model-3.1.0.md §1.1](../plans/004-shift-model-3.1.0.md)）在 MSIX 里不适用
 ——MSIX 的显示名走 `resources.pri` 和 `ms-resource:` 引用。初期只做英文
 `Off Work Countdown`，与决策 1 "商店版不新增前端差异"保持一致。若要补，属于独立的
 一小块工作，不阻塞上架。

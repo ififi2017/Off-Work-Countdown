@@ -33,7 +33,7 @@ M4 评估 Web Push 时否掉了它，理由是必须把每个人的下班时刻�
 
 ## 2. 技术选型回顾
 
-结论沿用 [PLAN-3.0.md](PLAN-3.0.md) 的决策 B：**Tauri v2**。
+结论沿用 [005-product-3.0.md](005-product-3.0.md) 的决策 B：**Tauri v2**。
 
 需要重申一处常见误解：**Tauri 的后端是 Rust，不是 Go。** Go 对应的桌面框架是 Wails。
 

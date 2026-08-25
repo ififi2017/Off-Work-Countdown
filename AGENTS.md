@@ -346,8 +346,7 @@ wrong number on a screen rather than as a build failure.
 - Preserve unrelated user changes in a dirty worktree.
 - Do not commit generated `.next`, `out`, `src-tauri/target`, service-worker
   output, installers or local environment files.
-- Keep `docs/PLAN-3.0.md`, `docs/PLAN-M5-TAURI.md`, `docs/PLAN-MSSTORE.md`
-  and `docs/PLAN-MOBILE.md`
+- Keep `docs/PLAN-MSSTORE.md` and `docs/PLAN-MOBILE.md`
   aligned with material architecture or milestone changes. Remove stale TODOs
   when work is verified.
 - The `mirror-manifest` job downloads every release asset to compute its

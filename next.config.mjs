@@ -13,7 +13,7 @@ const packageVersion = JSON.parse(
 
 // 三个构建目标：
 //   web     —— 部署到 Vercel，保留 middleware、动态路由与重定向
-//   desktop —— 静态导出，供 Tauri 打包（见 docs/PLAN-M5-TAURI.md 决策 1）
+//   desktop —— 静态导出，供 Tauri 打包（见 plans/003-tauri-desktop.md 决策 1）
 //   mobile  —— 独立静态导出。iOS 已切换为 SwiftUI 原生（见 docs/PLAN-MOBILE.md），
 //              这个 target 目前只剩 `check:build:mobile` 在用它校验原生 iOS 工程
 //

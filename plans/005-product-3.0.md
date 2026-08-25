@@ -3,7 +3,7 @@
 > 状态：M1–M5 已完成 · 起草于 2026-08-08 · 进度更新于 2026-08-14 · 当前 Web / 客户端统一版本 `3.1.4`（[package.json](../package.json)）
 >
 > M6 的分发一节已被现实超车：计划里只写了包管理器，实际先上了 Microsoft Store，
-> 并且做到了推 tag 自动提交。详见 [PLAN-MSSTORE.md](PLAN-MSSTORE.md)。
+> 并且做到了推 tag 自动提交。详见 [PLAN-MSSTORE.md](../docs/PLAN-MSSTORE.md)。
 
 ---
 
@@ -240,7 +240,7 @@ src-tauri/src/
 
 ### M5 · 桌面端 —— 4–6 周 · P1 —— ✅ 已完成（2026-08-14）
 
-> **完整实施计划见 [PLAN-M5-TAURI.md](PLAN-M5-TAURI.md)**，含实测的静态导出阻碍清单、架构决策与平台差异。以下为概要。
+> **完整实施计划见 [003-tauri-desktop.md](003-tauri-desktop.md)**，含实测的静态导出阻碍清单、架构决策与平台差异。以下为概要。
 >
 > 依赖 M1 完成（静态导出必须能产出真实 HTML）—— 已完成。
 >
@@ -260,7 +260,7 @@ src-tauri/src/
 16. **构建目标拆分** — ✅ 已完成。Web Route Handler 保持标准 `route.ts`，桌面 `pageExtensions` 排除普通 `.ts` 路由；`npm run build:desktop` 产出静态站点，同时避免 Vercel 对 `route.web.ts` 产物追踪失败
 17. **Tauri v2 骨架** — ✅ 已完成。单实例、托盘、关闭到托盘、Dock 图标唤回窗口，均已实机验证
 18. **菜单栏/托盘实时倒计时** — ✅ 已完成。Windows 真机验收通过（托盘图标注册正确、迷你窗在 MSIX 容器内也正常、位置可记忆）。macOS 菜单栏直接显示 `2:13:45`；Windows 改用置顶迷你窗。秒级刷新走 Rust 侧计时循环，与 webview 是否可见解耦
-19. **原生能力** — ✅ 已完成。自启动在 Windows 上重写为 MSIX 的 `windows.startupTask`（注册表 Run 键在容器里会被虚拟化吃掉，是个「开关显示开着、开机却不启动」的假开关，见 PLAN-MSSTORE.md 决策 3）。Rust 后台在提前 15 分钟/下班时刻发送去重的原生通知；设置页可切换开机自启；平台化快捷键提示对应 macOS 的 `⌘ + Shift + O` 与 Windows/Linux 的 `Ctrl + Shift + O`。macOS 已验证系统中文首启、停止后 Store 清空、自启开关可往返；全局快捷键人工按键、社交平台外链点击与 Windows 实测待办
+19. **原生能力** — ✅ 已完成。自启动在 Windows 上重写为 MSIX 的 `windows.startupTask`（注册表 Run 键在容器里会被虚拟化吃掉，是个「开关显示开着、开机却不启动」的假开关，见 ../docs/PLAN-MSSTORE.md 决策 3）。Rust 后台在提前 15 分钟/下班时刻发送去重的原生通知；设置页可切换开机自启；平台化快捷键提示对应 macOS 的 `⌘ + Shift + O` 与 Windows/Linux 的 `Ctrl + Shift + O`。macOS 已验证系统中文首启、停止后 Store 清空、自启开关可往返；全局快捷键人工按键、社交平台外链点击与 Windows 实测待办
 20. **窗口形态** — ✅ 已完成。两个平台均已复核；期间修掉了 Windows 关闭装饰后客户区多出约 30pt 的问题。主窗口默认 430×430、宽高均仅允许在 420–450 内调整并禁止最大化；桌面标题单行、时间双栏、底部操作固定，分享页完整覆盖 WebView 且无需纵向滚动。macOS 26 使用原生 `NSPanel + NSGlassEffectView` 弹出 228×70 Liquid Glass 迷你计时器，旧版 macOS 回退到原生 Vibrancy；Windows 使用固定 208×64 的轻量 WebView 小部件。两者均有明确的未开始状态，Windows 迷你窗保留真实拖动能力（详见 M5 计划决策 7）
 21. **自动更新** — ✅ 已完成。完整升级回环（检查 → 下载 → 安装 → 重启 → 显示新版本）已实际走通多次
 22. ~~**平台证书与公证**~~ —— 不购买证书；macOS CI 使用 ad-hoc 签名，安装拦截改由 README 说明
@@ -286,7 +286,7 @@ src-tauri/src/
 26. **包管理器上架** —— ⬜ Homebrew Cask、Scoop、winget，均未做
 27. **Microsoft Store** —— ✅ 已上架并跑通自动发版。MSIX 产线与 NSIS / MSI
     并行，推 `desktop-v*` tag 即自动提交；商店版由微软签名，因此没有 SmartScreen
-    警告，更新也由商店负责。完整设计与实测记录见 [PLAN-MSSTORE.md](PLAN-MSSTORE.md)
+    警告，更新也由商店负责。完整设计与实测记录见 [PLAN-MSSTORE.md](../docs/PLAN-MSSTORE.md)
 28. **中文渠道（主场）** —— 小红书 / 抖音 / B站 短视频演示、少数派、V2EX、即刻。「下班倒计时」「摸鱼」本身就是中文互联网的梗，传播成本最低
 29. **英文渠道** —— Product Hunt、Show HN、r/productivity、alternativeto.net、awesome-nextjs / awesome-tauri 列表
 
