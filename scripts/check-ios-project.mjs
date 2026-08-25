@@ -131,7 +131,11 @@ if (
   !widgetInfo.includes("com.apple.widgetkit-extension") ||
   !widgetSource.includes("ActivityConfiguration") ||
   !widgetSource.includes("OffWorkCountdownWidget") ||
-  !iosProject.includes("OffWorkCountdownWidgetsExtension.appex in Embed App Extensions")
+  // Xcode renamed this copy-files phase from "Embed App Extensions" to
+  // "Embed Foundation Extensions" and rewrites it on open. The phase is
+  // otherwise identical — same UUIDs, same dstSubfolderSpec 13 — so match
+  // either name rather than pinning the label Xcode happens to use today.
+  !/OffWorkCountdownWidgetsExtension\.appex in Embed \w+ Extensions/.test(iosProject)
 ) {
   fail("The native iOS target must keep its adaptive SwiftUI shell, embedded Widget and Live Activity surfaces.");
 }
