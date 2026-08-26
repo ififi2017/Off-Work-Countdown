@@ -341,22 +341,46 @@ private struct TabletRunningView: View {
     let showSidebar: () -> Void
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
-    /// Where the timeline starts, i.e. how much room everything above it took.
-    @State private var timelineTop: CGFloat = 0
-    /// Measured, not guessed: this column carries a different amount above the
-    /// list depending on whether the sidebar is open, so a fixed budget would be
-    /// wrong in one of the two states.
+    /// The countdown, the meter and the stats — everything whose height the
+    /// timeline cannot change.
+    @State private var headHeight: CGFloat = 0
+    /// The action row under the list, which must never be pushed off either.
+    @State private var actionsHeight: CGFloat = 0
     @State private var columnHeight: CGFloat = 0
 
+    /// What is left for the list once the parts that outrank it have taken
+    /// theirs.
+    ///
+    /// Measured either side of the list rather than at the list's own origin.
+    /// The phone can take that shortcut because its timeline sits last in a
+    /// top-aligned scroll view, where the offset of the list does not move when
+    /// the list grows. This column is centred, so it does: more rows made it
+    /// taller, centring shifted it up, the measurement read more room, and it
+    /// took more rows — until the countdown itself was pushed off the top of
+    /// the screen. Measuring the head and the actions breaks that loop, because
+    /// neither depends on how many rows the list draws.
     private var timelineHeight: CGFloat {
-        max(0, columnHeight - timelineTop - TimerContentSpace.bottomSlack)
+        let chrome = headHeight + actionsHeight + 22 + TimerContentSpace.bottomSlack
+        return max(0, columnHeight - chrome)
     }
 
     var body: some View {
         VStack(spacing: 0) {
             tabletHeader(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
 
-            VStack(spacing: 0) {
+            // Scrollable, but only when it has to be. Expanding the list makes
+            // the column taller than the pane, and without this the collapse
+            // button and the action row went off the bottom — expandable with no
+            // way back. `minHeight` keeps the fitting case identical: the column
+            // still fills the pane and still centres itself.
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: 0) {
+                // Everything from here to the stats is the head: the parts that
+                // outrank the list and must keep their room. Grouped so it can
+                // be measured as one, which is what the list's budget is
+                // subtracted from.
+                VStack(spacing: 0) {
                 // Lunch and overtime were missing here entirely: the iPad drew
                 // the plain running layout in every phase, so a break showed a
                 // frozen number under "time left" with no explanation.
@@ -418,44 +442,90 @@ private struct TabletRunningView: View {
                     .padding(.top, 56)
                 }
 
-                // "Coming up" was absent from the iPad entirely — the one
-                // layout where there is most room for it. The phone has carried
-                // it since the redesign; this column simply never got it, so an
-                // iPad user could not see when lunch or clock-off were due
-                // without collapsing the sidebar into the phone layout.
-                UpcomingTimelineView(
-                    store: store,
-                    snapshot: snapshot,
-                    now: now,
-                    isExpanded: store.timelineExpandedBinding,
-                    availableHeight: timelineHeight
-                )
-                .onGeometryChange(for: CGFloat.self) { geometry in
-                    geometry.frame(in: .named(TimerContentSpace.name)).minY
-                } action: { top in
-                    guard !store.timelineExpanded else { return }
-                    timelineTop = top
                 }
-                .padding(.top, 22)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { headHeight = $0 }
 
-                HStack(spacing: 12) {
-                    Button {
-                        store.stopCountdown()
-                    } label: { Label(store.t("return"), systemImage: "arrow.left") }
-                    Button { showOvertime = true } label: {
-                        Text(store.t(isOvertime ? "adjustOvertime" : "overtime"))
+                // Collapsing the sidebar is how this app goes full screen, and
+                // a full-screen countdown is one thing on purpose. The list and
+                // the controls belong to the sidebar-open layout; here they
+                // would be exactly the furniture the user just cleared away.
+                //
+                // Nothing becomes unreachable. The header keeps the control that
+                // brings the sidebar back, and the sidebar is where stopping,
+                // overtime and sharing live — one tap from here, and a tap the
+                // user already made to get into this mode.
+                if sidebarVisible {
+                    // "Coming up" was absent from the iPad entirely — the one
+                    // layout where there is most room for it. The phone has
+                    // carried it since the redesign; this column never got it,
+                    // so an iPad user could not see when lunch or clock-off
+                    // were due without collapsing the sidebar into the phone
+                    // layout.
+                    UpcomingTimelineView(
+                        store: store,
+                        snapshot: snapshot,
+                        now: now,
+                        isExpanded: store.timelineExpandedBinding,
+                        availableHeight: timelineHeight
+                    )
+                    .padding(.top, 22)
+
+                    HStack(spacing: 12) {
+                        Button {
+                            store.stopCountdown()
+                        } label: { Label(store.t("return"), systemImage: "arrow.left") }
+                        Button { showOvertime = true } label: {
+                            Text(store.t(isOvertime ? "adjustOvertime" : "overtime"))
+                        }
+                        Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
                     }
-                    Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
+                    .buttonStyle(OWCSecondaryButtonStyle())
+                    .padding(.top, 24)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { actionsHeight = $0 }
                 }
-                .buttonStyle(OWCSecondaryButtonStyle())
-                .padding(.top, sidebarVisible ? 24 : 56)
             }
-            .frame(maxWidth: sidebarVisible ? 560 : 900)
-            .frame(maxHeight: .infinity)
-            .coordinateSpace(.named(TimerContentSpace.name))
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { columnHeight = $0 }
-            .padding(.horizontal, 40)
-            .padding(.bottom, 40)
+                    .frame(maxWidth: sidebarVisible ? 560 : 900)
+                    // Centres the capped column. `GeometryReader` aligns its
+                    // child `.topLeading`, so a cap on its own leaves the whole
+                    // countdown pinned to the left with the leftover width
+                    // sitting empty beside it — the same trap the onboarding
+                    // pages fell into. The cap decides how wide, never where.
+                    .frame(maxWidth: .infinity)
+                    // `minHeight` alone, no `maxHeight: .infinity`. Inside a
+                    // scroll view the proposal is unbounded, so a greedy maximum
+                    // fights the minimum and the content's real height stops
+                    // being reported — the list scrolled but its last rows and
+                    // the buttons stayed clipped at the edge. The minimum still
+                    // centres the column when it fits, which is all the maximum
+                    // was doing here.
+                    // Top-aligned only where the column can outgrow the pane.
+                    //
+                    // With the sidebar open it can: expanding the list made the
+                    // column taller than the minimum, and centred, it overflowed
+                    // the frame in both directions while the scrollable extent
+                    // covered only the frame — the countdown clipped at the top,
+                    // the collapse button at the bottom, neither reachable.
+                    // Top-aligned, overflow only ever goes down, which is what
+                    // scrolling is for.
+                    //
+                    // Immersive has no list and no buttons, so it always fits,
+                    // and top-aligning it would strand the countdown above a
+                    // screen of empty page. Centred is the whole point there.
+                    .frame(
+                        minHeight: proxy.size.height,
+                        alignment: sidebarVisible ? .top : .center
+                    )
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
+                }
+                .scrollIndicators(.hidden)
+                .scrollBounceBehavior(.basedOnSize)
+                // The viewport, not the content: the budget is what the pane
+                // can show, and the content's own height is the thing being
+                // budgeted.
+                .onAppear { columnHeight = proxy.size.height }
+                .onChange(of: proxy.size.height) { _, height in columnHeight = height }
+            }
         }
     }
 
