@@ -31,6 +31,7 @@ struct TimerDesignView: View {
         self.animatesPhaseChanges = animatesPhaseChanges
     }
 
+
     var body: some View {
         Group {
             if let timelineDate {
@@ -75,7 +76,8 @@ struct TimerDesignView: View {
         let phase = TimerVisualPhase.resolve(
             countdownStarted: store.countdownStarted,
             snapshot: snapshot,
-            forceToday: store.forceToday
+            forceToday: store.forceToday,
+                endedEarly: snapshot.map(store.isEndedEarly) ?? false
         )
 
         Group {
@@ -172,7 +174,7 @@ struct TimerDesignView: View {
                 .font(.subheadline)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
-            Button(store.t("return")) { store.stopCountdown() }
+            Button { store.requestClockOffEarly() } label: { ClockOffEarlyLabel(store: store) }
                 .buttonStyle(OWCPrimaryButtonStyle())
         }
         .padding(20)
@@ -226,7 +228,13 @@ private struct RunningTimerDesignView: View {
                         .padding(.horizontal, OWCDesign.contentInset)
                         .padding(.top, overtime ? 12 : 16)
 
-                        OWCProgressMeter(progress: snapshot.progress, label: store.t("progress"), overtime: overtime, paused: onBreak)
+                        OWCProgressMeter(
+                            progress: snapshot.progress,
+                            label: store.t("progress"),
+                            overtime: overtime,
+                            paused: onBreak,
+                            pending: beforeStart
+                        )
                             .padding(.horizontal, OWCDesign.contentInset)
                             .padding(.top, 7)
                             .animation(.linear(duration: 0.9), value: snapshot.progress)
@@ -281,13 +289,26 @@ private struct RunningTimerDesignView: View {
         }
     }
 
+    /// Before the shift begins. The countdown is armed but nothing has started,
+    /// and saying "8 hours left in today's shift" at 08:30 is simply not true —
+    /// none of it has been worked yet. The screen counts to clock-in instead,
+    /// and flips to the shift itself when the hour arrives, with nothing for the
+    /// user to press either way.
+    private var beforeStart: Bool {
+        now.timeIntervalSince1970 * 1_000 < snapshot.startAtMs
+    }
+
     private var caption: String {
+        if beforeStart { return store.t("nextShiftLabelShort") }
         if onBreak { return store.t("lunchInProgress") }
         if overtime { return store.t("overtimeTimeLeftCaption") }
         return store.t("timeLeftCaption")
     }
 
     private var displayRemaining: Double {
+        if beforeStart {
+            return max(0, snapshot.startAtMs - now.timeIntervalSince1970 * 1_000)
+        }
         guard onBreak else { return snapshot.remainingMs }
         return max(0, (snapshot.activeBreakEndAtMs ?? now.timeIntervalSince1970 * 1_000) - now.timeIntervalSince1970 * 1_000)
     }

@@ -342,6 +342,10 @@ struct OWCProgressMeter: View {
     let label: String
     var overtime = false
     var paused = false
+    /// Before the shift begins there is no progress to report — not zero
+    /// progress, none. A "0.0%" badge sitting on an empty bar reads as a
+    /// measurement, and invites the question of why it is not moving.
+    var pending = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.locale) private var locale
@@ -420,11 +424,14 @@ struct OWCProgressMeter: View {
                         }
                     }
                     .clipShape(Capsule())
-                Capsule()
-                    .fill(paused ? OWCDesign.secondary.opacity(0.55) : fill)
-                    .frame(width: width)
+                if !pending {
+                    Capsule()
+                        .fill(paused ? OWCDesign.secondary.opacity(0.55) : fill)
+                        .frame(width: width)
+                }
             }
             .overlay(alignment: .topLeading) {
+                if pending { EmptyView() } else {
                 ZStack(alignment: .topLeading) {
                     Text(label)
                         .font(Self.bubbleFont)
@@ -444,6 +451,7 @@ struct OWCProgressMeter: View {
                         .offset(x: targetX - pointerWidth / 2, y: Self.bubbleHeight - 0.5)
                 }
                 .offset(y: -28)
+                }
             }
             .onAppear { shimmer = paused && !reduceMotion }
             // The bar can start shimmering without the view reappearing — the

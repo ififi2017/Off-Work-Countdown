@@ -25,12 +25,19 @@ extension OffWorkStore {
             reminderInputs: reminderInputs()
         )) ?? []
 
-        func isAhead(_ atMs: Double) -> Bool { atMs > nowMs && atMs <= snapshot.endAtMs }
+        // Everything still to come today belongs to a shift the user has said
+        // they are done with, so none of it is coming. Move the whole list past
+        // it and read from the next shift instead — otherwise the page answers
+        // "what happens next" with a lunch and a clock-off that will not.
+        let endedEarly = isEndedEarly(snapshot)
+        let floorMs = endedEarly ? snapshot.endAtMs : nowMs
+
+        func isAhead(_ atMs: Double) -> Bool { atMs > floorMs && atMs <= snapshot.endAtMs }
 
         // Once the shift has begun, "start time" means the *next* one. Giving it
         // that date rather than today's is what moves it to the end of the list
         // on its own, and the row's weekday tells the user which day it is.
-        let startHasPassed = nowMs >= snapshot.startAtMs
+        let startHasPassed = endedEarly || nowMs >= snapshot.startAtMs
         if let start = startHasPassed ? snapshot.nextShiftStartDate : snapshot.startDate {
             upcoming.append(.init(
                 id: "shift-start",
@@ -62,25 +69,23 @@ extension OffWorkStore {
                 }
             }
 
-            // Nil only when the schedule has no further shift to hang it on, in
-            // which case the row is dropped exactly like the start time is.
-            if let start = lunch.start > now ? lunch.start : nextOccurrence(of: lunch.start) {
+            // One row, not two. On the running page the two boundaries are
+            // separate events you are waiting for; here it is a setting, and a
+            // setting is a window — "12:00 – 13:00" says everything the two
+            // rows said, in half the space, on a page whose job is to be
+            // scannable.
+            let windowStart = (!endedEarly && lunch.start > now) ? lunch.start : nextOccurrence(of: lunch.start)
+            let windowEnd = (!endedEarly && lunch.end > now) ? lunch.end : nextOccurrence(of: lunch.end)
+            if let windowStart, let windowEnd {
                 upcoming.append(.init(
-                    id: "lunch-start",
+                    id: "lunch",
                     kind: .lunchStart,
                     title: t("lunchBreak"),
-                    detail: t("lunchStartTime"),
-                    date: start,
-                    route: .lunch
-                ))
-            }
-            if let end = lunch.end > now ? lunch.end : nextOccurrence(of: lunch.end) {
-                upcoming.append(.init(
-                    id: "lunch-end",
-                    kind: .lunchEnd,
-                    title: t("lunchBreak"),
-                    detail: t("lunchBackAt"),
-                    date: end,
+                    detail: t("lunchWindow", values: [
+                        "start": formatTime(windowStart),
+                        "end": formatTime(windowEnd)
+                    ]),
+                    date: windowStart,
                     route: .lunch
                 ))
             }
@@ -128,7 +133,7 @@ extension OffWorkStore {
             // announcing a lock-screen banner that came and went hours ago.
             let lead = Double(-liveActivityLeadMinutes * 60)
             let thisShift = snapshot.plannedEndDate.addingTimeInterval(lead)
-            let at = thisShift > now
+            let at = (!endedEarly && thisShift > now)
                 ? thisShift
                 : snapshot.nextShiftEndDate?.addingTimeInterval(lead)
             if let at {
@@ -175,7 +180,7 @@ extension OffWorkStore {
         // `nextShiftEndDate` rather than an offset from the next start: the
         // rules already resolved it, including any day whose shift the schedule
         // shapes differently.
-        let endDate: Date? = snapshot.endDate > now ? snapshot.endDate : snapshot.nextShiftEndDate
+        let endDate: Date? = (!endedEarly && snapshot.endDate > now) ? snapshot.endDate : snapshot.nextShiftEndDate
         if let endDate {
             upcoming.append(.init(
                 id: "shift-end",
@@ -183,7 +188,7 @@ extension OffWorkStore {
                 title: t("endTime"),
                 // Same as the start row: "today's shift" is a lie once it is
                 // tomorrow's, and the weekday in the time column says which day.
-                detail: snapshot.endDate > now ? t("todaysShift") : nil,
+                detail: (!endedEarly && snapshot.endDate > now) ? t("todaysShift") : nil,
                 date: endDate,
                 route: nil
             ))

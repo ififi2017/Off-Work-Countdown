@@ -133,13 +133,15 @@ private struct LandscapeTimerView: View {
     @State private var showOvertime = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
             let snapshot = store.countdownStarted ? store.snapshot(at: timeline.date) : nil
             let phase = TimerVisualPhase.resolve(
                 countdownStarted: store.countdownStarted,
                 snapshot: snapshot,
-                forceToday: store.forceToday
+                forceToday: store.forceToday,
+                endedEarly: snapshot.map(store.isEndedEarly) ?? false
             )
 
             ZStack {
@@ -193,8 +195,8 @@ private struct LandscapeTimerView: View {
 
                         HStack(spacing: 10) {
                             Button {
-                                store.stopCountdown()
-                            } label: { Label(store.t("return"), systemImage: "arrow.left") }
+                                store.requestClockOffEarly()
+                            } label: { ClockOffEarlyLabel(store: store) }
                             Button { showOvertime = true } label: { Text(store.t("overtime")) }
                             Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
                         }

@@ -107,7 +107,7 @@ describe("iOS native rule bundle", () => {
     const mondayBeforeWork = new Date(2026, 7, 24, 1, 0);
     const mondayStart = new Date(2026, 7, 24, 9, 0);
     const tuesdayStart = new Date(2026, 7, 25, 9, 0);
-    const snapshot = JSON.parse(context.OWCNative.snapshot(JSON.stringify({
+    const rules = {
       startTime: "09:00",
       endTime: "17:00",
       nowMs: mondayBeforeWork.getTime(),
@@ -120,10 +120,25 @@ describe("iOS native rule bundle", () => {
       salaryType: "monthly",
       monthlyWorkingDays: 22,
       annualBonusMonths: 0,
+    };
+    const snapshot = JSON.parse(context.OWCNative.snapshot(JSON.stringify(rules)));
+    const widgetShifts = JSON.parse(context.OWCNative.widgetShifts(JSON.stringify({
+      rules,
+      throughMs: new Date(2026, 7, 27, 23, 59).getTime(),
+      maximumCount: 10,
     })));
 
     expect(snapshot.isWorkday).toBe(true);
     expect(snapshot.startAtMs).toBe(mondayStart.getTime());
     expect(snapshot.nextShiftStartAtMs).toBe(tuesdayStart.getTime());
+    expect(widgetShifts.map((shift) => shift.startAtMs)).toEqual([
+      tuesdayStart.getTime(),
+      new Date(2026, 7, 26, 9, 0).getTime(),
+      new Date(2026, 7, 27, 9, 0).getTime(),
+      // The first shift beyond the requested horizon is retained as the
+      // Widget countdown target, but never rendered as an active interval.
+      new Date(2026, 7, 28, 9, 0).getTime(),
+    ]);
+    expect(widgetShifts.every((shift) => !("dailySalary" in shift))).toBe(true);
   });
 });

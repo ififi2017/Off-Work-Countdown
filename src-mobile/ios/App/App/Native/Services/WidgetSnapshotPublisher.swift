@@ -5,8 +5,11 @@ import WidgetKit
 final class WidgetSnapshotPublisher {
     static let shared = WidgetSnapshotPublisher()
     static let appGroupIdentifier = "group.com.rainif.offworkcountdown.macappstore"
+
     private let snapshotFileName = "widget-snapshot-v1.json"
     private let widgetKind = "com.rainif.offworkcountdown.macappstore.widget"
+    private let recurringHorizonDays = 370
+    private let maximumRecurringShifts = 400
 
     func publish(store: OffWorkStore, now: Date = .now) {
         guard let container = FileManager.default.containerURL(
@@ -15,11 +18,16 @@ final class WidgetSnapshotPublisher {
 
         let nowMs = Int64(now.timeIntervalSince1970 * 1_000)
         let snapshot = store.snapshot(at: now)
-        let payload = makeSnapshot(store: store, shift: snapshot, active: store.countdownStarted, nowMs: nowMs)
+        let payload = makeSnapshot(
+            store: store,
+            shift: snapshot,
+            active: store.countdownStarted,
+            nowMs: nowMs
+        )
         guard let data = try? JSONEncoder().encode(payload) else { return }
 
-        let destination = container.appendingPathComponent(snapshotFileName)
-        let temporary = container.appendingPathComponent("\(snapshotFileName).tmp")
+        let destination = container.appending(path: snapshotFileName)
+        let temporary = container.appending(path: "\(snapshotFileName).tmp")
         do {
             try data.write(to: temporary, options: .atomic)
             _ = try FileManager.default.replaceItemAt(destination, withItemAt: temporary)
@@ -30,178 +38,300 @@ final class WidgetSnapshotPublisher {
         WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
     }
 
-    private func countdownToNextShift(
+    /// Internal so phase coverage can be unit-tested without an App Group.
+    /// Swift never resolves a workday or constructs a shift here: every future
+    /// shift is obtained from the shared TypeScript rules through `store.snapshot`.
+    func makeSnapshot(
         store: OffWorkStore,
-        target: Int64,
-        nowMs: Int64,
-        label: String = "nextShiftLabelShort"
+        shift: NativeShiftSnapshot?,
+        active: Bool,
+        nowMs: Int64
     ) -> WidgetSnapshot {
-        let end = max(nowMs + 60_000, target)
+        // On a schedule the schedule is the authority, not a flag. `active` only
+        // decides anything for manual mode, which genuinely has sessions.
+        //
+        // This used to gate the recurring path on `countdownStarted`, so one
+        // press of the stop button left the widget with nothing to say for every
+        // day afterwards. The user's ask was the opposite: set it up once and
+        // never think about it again.
+        if store.scheduleMode != .off, store.onboardingComplete, let shift {
+            return makeRecurringSnapshot(store: store, initialShift: shift, nowMs: nowMs)
+        }
+        guard active else {
+            return makeInactiveSnapshot(store: store, shift: shift, nowMs: nowMs)
+        }
+        guard let shift else {
+            return idleSnapshot(store: store, nowMs: nowMs)
+        }
+        return makeSingleShiftSnapshot(store: store, shift: shift, nowMs: nowMs)
+    }
+
+    private func makeInactiveSnapshot(
+        store: OffWorkStore,
+        shift: NativeShiftSnapshot?,
+        nowMs: Int64
+    ) -> WidgetSnapshot {
+        guard store.scheduleMode != .off, let shift else {
+            return idleSnapshot(store: store, nowMs: nowMs)
+        }
+
+        let currentStart = Int64(shift.startAtMs)
+        if shift.isWorkday, currentStart > nowMs {
+            return countdownToNextShift(
+                store: store,
+                target: currentStart,
+                nowMs: nowMs
+            )
+        }
+        if let nextStart = shift.nextShiftStartAtMs.map(Int64.init), nextStart > nowMs {
+            return countdownToNextShift(
+                store: store,
+                target: nextStart,
+                nowMs: nowMs
+            )
+        }
+        return idleSnapshot(store: store, nowMs: nowMs)
+    }
+
+    private func makeRecurringSnapshot(
+        store: OffWorkStore,
+        initialShift: NativeShiftSnapshot,
+        nowMs: Int64
+    ) -> WidgetSnapshot {
+        let now = Date(timeIntervalSince1970: Double(nowMs) / 1_000)
+        let horizon = Calendar.current.date(
+            byAdding: .day,
+            value: recurringHorizonDays,
+            to: now
+        ) ?? now.addingTimeInterval(Double(recurringHorizonDays) * 86_400)
+        let expiresAtMs = Int64(horizon.timeIntervalSince1970 * 1_000)
+        let forcedCurrentShift = store.isWorkdayForced(at: now)
+        var entries: [WidgetTimelineEntry] = []
+        var cursor = nowMs
+        var diagnosticShift: WidgetShiftTimeline?
+        let futureShifts = (try? CountdownRules.shared.widgetShifts(
+            input: store.rulesInput(at: now),
+            throughMs: Double(expiresAtMs),
+            maximumCount: maximumRecurringShifts
+        )) ?? []
+
+        // An early clock-off ends the shift it happened in and nothing else, so
+        // the countdown to the next one starts from that moment rather than
+        // from the shift's planned end.
+        if let endedEarlyAtMs = store.isEndedEarly(initialShift) ? store.earlyOffAtMs : nil {
+            cursor = max(cursor, Int64(endedEarlyAtMs))
+        } else if initialShift.isWorkday || forcedCurrentShift {
+            let currentShift = widgetProjection(from: initialShift)
+            diagnosticShift = widgetShift(from: currentShift)
+            appendShift(
+                currentShift,
+                nextShiftStartAtMs: futureShifts.first.map { Int64($0.startAtMs) },
+                cursor: &cursor,
+                expiresAtMs: expiresAtMs,
+                entries: &entries
+            )
+        }
+
+        for (index, nextShift) in futureShifts.enumerated() {
+            let resolvedStartAtMs = Int64(nextShift.startAtMs)
+            guard resolvedStartAtMs > nowMs,
+                  resolvedStartAtMs > cursor || Int64(nextShift.endAtMs) > cursor
+            else { continue }
+            appendCountdown(
+                from: &cursor,
+                to: resolvedStartAtMs,
+                expiresAtMs: expiresAtMs,
+                entries: &entries
+            )
+            guard resolvedStartAtMs < expiresAtMs else { break }
+            appendShift(
+                nextShift,
+                nextShiftStartAtMs: futureShifts.index(after: index) < futureShifts.endIndex
+                    ? Int64(futureShifts[futureShifts.index(after: index)].startAtMs)
+                    : nil,
+                cursor: &cursor,
+                expiresAtMs: expiresAtMs,
+                entries: &entries
+            )
+        }
+
+        if cursor < expiresAtMs {
+            entries.append(idleEntry(nowMs: cursor, expiresAtMs: expiresAtMs))
+        }
+
         return WidgetSnapshot(
             schemaVersion: widgetSnapshotSchemaVersion,
             generatedAtMs: nowMs,
-            expiresAtMs: end,
+            expiresAtMs: expiresAtMs,
             locale: store.languageCode,
-            shift: nil,
-            entries: [entry(
-                date: nowMs,
-                end: end,
-                phase: .before,
-                label: label,
-                kind: .shiftStarts,
-                remaining: max(0, target - nowMs),
-                progress: 0,
-                boundary: target,
-                target: target
-            )]
+            shift: diagnosticShift,
+            entries: entries.isEmpty ? [idleEntry(nowMs: nowMs, expiresAtMs: expiresAtMs)] : entries
         )
     }
 
-    /// Internal rather than private so the timeline can be tested without a
-    /// shared app-group container: this is where the phases are decided, and a
-    /// break that produced no entry is exactly the kind of gap a unit test
-    /// catches and a screenshot does not.
-    func makeSnapshot(store: OffWorkStore, shift: NativeShiftSnapshot?, active: Bool, nowMs: Int64) -> WidgetSnapshot {
-        if !active,
-           store.scheduleMode != .off,
-           let shift,
-           !shift.isWorkday,
-           let nextStart = shift.nextShiftStartAtMs {
-            return countdownToNextShift(
-                store: store,
-                target: Int64(nextStart),
-                nowMs: nowMs,
+    private func makeSingleShiftSnapshot(
+        store: OffWorkStore,
+        shift: NativeShiftSnapshot,
+        nowMs: Int64
+    ) -> WidgetSnapshot {
+        let endMs = Int64(shift.endAtMs)
+        let endDate = Date(timeIntervalSince1970: Double(endMs) / 1_000)
+        let endDay = Calendar.current.startOfDay(for: endDate)
+        let rolloverDate = Calendar.current.date(byAdding: .day, value: 1, to: endDay) ?? endDate
+        let rolloverAtMs = Int64(rolloverDate.timeIntervalSince1970 * 1_000)
+        let expiresAtMs = max(
+            rolloverAtMs + 24 * 60 * 60 * 1_000,
+            nowMs + 60 * 60 * 1_000
+        )
+        var entries: [WidgetTimelineEntry] = []
+        var cursor = nowMs
+        let projectedShift = widgetProjection(from: shift)
+
+        appendShift(
+            projectedShift,
+            nextShiftStartAtMs: nil,
+            cursor: &cursor,
+            expiresAtMs: expiresAtMs,
+            entries: &entries
+        )
+        if cursor < expiresAtMs {
+            entries.append(idleEntry(nowMs: cursor, expiresAtMs: expiresAtMs))
+        }
+
+        return WidgetSnapshot(
+            schemaVersion: widgetSnapshotSchemaVersion,
+            generatedAtMs: nowMs,
+            expiresAtMs: expiresAtMs,
+            locale: store.languageCode,
+            shift: widgetShift(from: projectedShift),
+            entries: entries
+        )
+    }
+
+    private func appendCountdown(
+        from cursor: inout Int64,
+        to targetAtMs: Int64,
+        expiresAtMs: Int64,
+        entries: inout [WidgetTimelineEntry]
+    ) {
+        guard cursor < targetAtMs, cursor < expiresAtMs else { return }
+
+        let targetDate = Date(timeIntervalSince1970: Double(targetAtMs) / 1_000)
+        let targetDayAtMs = Int64(
+            Calendar.current.startOfDay(for: targetDate).timeIntervalSince1970 * 1_000
+        )
+        let restEndAtMs = min(targetDayAtMs, min(targetAtMs, expiresAtMs))
+
+        // Whole calendar days before the workday are rest days. Once the clock
+        // reaches midnight on the shift's own day, the copy changes to the
+        // ordinary pre-work countdown.
+        if cursor < restEndAtMs {
+            entries.append(countdownEntry(
+                date: cursor,
+                end: restEndAtMs,
+                target: targetAtMs,
                 label: "widgetRestDay"
-            )
+            ))
+            cursor = restEndAtMs
         }
 
-        guard active else {
-            // A configured schedule is enough to know when work starts again,
-            // so the widget counts down to it rather than sitting on "not
-            // started" until the user opens the app and presses a button.
-            if store.scheduleMode != .off, let shift {
-                // `nextShiftStartAtMs` is deliberately searched after this
-                // shift ends. Before today's shift starts that makes it point
-                // at tomorrow (or later), so prefer today's valid future start.
-                let currentStart = Int64(shift.startAtMs)
-                if shift.isWorkday, currentStart > nowMs {
-                    return countdownToNextShift(store: store, target: currentStart, nowMs: nowMs)
-                }
-
-                if let nextStart = shift.nextShiftStartAtMs {
-                    let target = Int64(nextStart)
-                    if target > nowMs {
-                        return countdownToNextShift(store: store, target: target, nowMs: nowMs)
-                    }
-                }
-            }
-            return WidgetSnapshot(
-                schemaVersion: widgetSnapshotSchemaVersion,
-                generatedAtMs: nowMs,
-                expiresAtMs: nowMs + 24 * 60 * 60 * 1_000,
-                locale: store.languageCode,
-                shift: nil,
-                entries: [entry(date: nowMs, end: nowMs + 24 * 60 * 60 * 1_000, phase: .idle, label: "countdownNotStarted", kind: .none, remaining: 0, progress: 0, boundary: nil, target: nil)]
-            )
+        let countdownEndAtMs = min(targetAtMs, expiresAtMs)
+        if cursor < countdownEndAtMs {
+            entries.append(countdownEntry(
+                date: cursor,
+                end: countdownEndAtMs,
+                target: targetAtMs,
+                label: "nextShiftLabelShort"
+            ))
+            cursor = countdownEndAtMs
         }
+    }
 
-        guard let shift else {
-            return WidgetSnapshot(
-                schemaVersion: widgetSnapshotSchemaVersion,
-                generatedAtMs: nowMs,
-                expiresAtMs: nowMs + 24 * 60 * 60 * 1_000,
-                locale: store.languageCode,
-                shift: nil,
-                entries: [entry(date: nowMs, end: nowMs + 24 * 60 * 60 * 1_000, phase: .idle, label: "countdownNotStarted", kind: .none, remaining: 0, progress: 0, boundary: nil, target: nil)]
+    private func appendShift(
+        _ shift: NativeWidgetShiftSnapshot,
+        nextShiftStartAtMs: Int64?,
+        cursor: inout Int64,
+        expiresAtMs: Int64,
+        entries: inout [WidgetTimelineEntry]
+    ) {
+        let shiftStartAtMs = Int64(shift.startAtMs)
+        if cursor < shiftStartAtMs {
+            appendCountdown(
+                from: &cursor,
+                to: shiftStartAtMs,
+                expiresAtMs: expiresAtMs,
+                entries: &entries
             )
         }
 
         let segments = shift.segments.map {
             WidgetShiftSegment(startAtMs: Int64($0.startAtMs), endAtMs: Int64($0.endAtMs))
         }
-        let endMs = Int64(shift.endAtMs)
-        let endDate = Date(timeIntervalSince1970: Double(endMs) / 1_000)
-        let endDay = Calendar.current.startOfDay(for: endDate)
-        let rolloverDate = Calendar.current.date(byAdding: .day, value: 1, to: endDay) ?? endDate
-        let rolloverAtMs = Int64(rolloverDate.timeIntervalSince1970 * 1_000)
-        let fallbackExpires = max(
-            rolloverAtMs + 24 * 60 * 60 * 1_000,
-            nowMs + 60 * 60 * 1_000
-        )
-        let nextShiftStartAtMs = shift.nextShiftStartAtMs.map(Int64.init)
-        let expires = nextShiftStartAtMs.flatMap { $0 > nowMs ? $0 : nil } ?? fallbackExpires
-        var entries: [WidgetTimelineEntry] = []
-
-        if nowMs < Int64(shift.startAtMs) {
-            entries.append(entry(
-                date: nowMs,
-                end: Int64(shift.startAtMs),
-                phase: .before,
-                label: "nextShiftLabelShort",
-                kind: .shiftStarts,
-                remaining: Int64(shift.startAtMs) - nowMs,
-                progress: 0,
-                boundary: Int64(shift.startAtMs),
-                target: Int64(shift.startAtMs)
-            ))
-        }
+        let duration = max(Int64(1), Int64(shift.durationMs))
 
         for (index, segment) in segments.enumerated() {
-            let completedBefore = segments.prefix(index).reduce(Int64(0)) { $0 + $1.endAtMs - $1.startAtMs }
-            let duration = max(Int64(1), Int64(shift.durationMs))
+            guard cursor < expiresAtMs else { return }
+            let completedBefore = segments.prefix(index).reduce(Int64(0)) {
+                $0 + $1.endAtMs - $1.startAtMs
+            }
 
-            let workStart = max(nowMs, segment.startAtMs)
-            if workStart < segment.endAtMs {
-                let elapsed = completedBefore + max(0, workStart - segment.startAtMs)
+            if cursor < segment.startAtMs {
+                let breakStartAtMs = max(
+                    cursor,
+                    index == 0 ? shiftStartAtMs : segments[index - 1].endAtMs
+                )
+                let breakEndAtMs = min(segment.startAtMs, expiresAtMs)
+                if breakStartAtMs < breakEndAtMs {
+                    entries.append(entry(
+                        date: breakStartAtMs,
+                        end: breakEndAtMs,
+                        phase: .break,
+                        label: "lunchInProgress",
+                        kind: .breakEnds,
+                        remaining: max(0, duration - completedBefore),
+                        progress: Double(completedBefore) / Double(duration) * 100,
+                        boundary: segment.startAtMs,
+                        target: segment.startAtMs
+                    ))
+                    cursor = breakEndAtMs
+                }
+            }
+
+            let workStartAtMs = max(cursor, segment.startAtMs)
+            let workEndAtMs = min(segment.endAtMs, expiresAtMs)
+            if workStartAtMs < workEndAtMs {
+                let elapsed = completedBefore + max(0, workStartAtMs - segment.startAtMs)
                 let remaining = max(0, duration - elapsed)
                 entries.append(entry(
-                    date: workStart,
-                    end: segment.endAtMs,
+                    date: workStartAtMs,
+                    end: workEndAtMs,
                     phase: .working,
                     label: "widgetWorking",
                     kind: .workRemaining,
                     remaining: remaining,
                     progress: Double(elapsed) / Double(duration) * 100,
                     boundary: segment.endAtMs,
-                    target: workStart + remaining
+                    target: workStartAtMs + remaining
                 ))
+                cursor = workEndAtMs
             }
-
-            // The gap after this segment, emitted whether or not the segment
-            // itself is still running. It used to sit inside the branch above,
-            // which was guarded on the segment not having finished — so during
-            // lunch, when it has, nothing at all covered the present moment.
-            // WidgetKit then had no entry to show and every family fell through
-            // to its empty state, reporting "not started" mid-shift.
-            guard index + 1 < segments.count else { continue }
-            let next = segments[index + 1]
-            guard next.startAtMs > segment.endAtMs, next.startAtMs > nowMs else { continue }
-
-            // Progress freezes for the length of the break, matching the app:
-            // every minute of work up to here counts, and none of the break does.
-            let elapsedAtBreak = completedBefore + (segment.endAtMs - segment.startAtMs)
-            entries.append(entry(
-                date: max(nowMs, segment.endAtMs),
-                end: next.startAtMs,
-                phase: .break,
-                label: "lunchInProgress",
-                kind: .breakEnds,
-                remaining: max(0, duration - elapsedAtBreak),
-                progress: Double(elapsedAtBreak) / Double(duration) * 100,
-                boundary: next.startAtMs,
-                target: next.startAtMs
-            ))
         }
 
-        // Completion belongs to the calendar day that contains the shift end.
-        // At the following midnight the widget advances on its own instead of
-        // keeping yesterday's "Done for today" until the app is reopened.
-        let doneStart = max(nowMs, endMs)
-        let doneUntil = min(expires, rolloverAtMs)
-        if doneStart < doneUntil {
+        let endAtMs = Int64(shift.endAtMs)
+        let endDate = Date(timeIntervalSince1970: Double(endAtMs) / 1_000)
+        let endDay = Calendar.current.startOfDay(for: endDate)
+        let rolloverDate = Calendar.current.date(byAdding: .day, value: 1, to: endDay) ?? endDate
+        let rolloverAtMs = Int64(rolloverDate.timeIntervalSince1970 * 1_000)
+        let doneStartAtMs = max(cursor, endAtMs)
+        let doneEndAtMs = min(
+            min(rolloverAtMs, expiresAtMs),
+            nextShiftStartAtMs ?? Int64.max
+        )
+
+        if doneStartAtMs < doneEndAtMs {
             entries.append(entry(
-                date: doneStart,
-                end: doneUntil,
+                date: doneStartAtMs,
+                end: doneEndAtMs,
                 phase: .done,
                 label: "offWorkToday",
                 kind: .complete,
@@ -210,46 +340,97 @@ final class WidgetSnapshotPublisher {
                 boundary: nil,
                 target: nil
             ))
+            cursor = doneEndAtMs
         }
+    }
 
-        let postCompletionStart = max(nowMs, doneUntil)
-        if let target = nextShiftStartAtMs, target > postCompletionStart {
-            entries.append(entry(
-                date: postCompletionStart,
-                end: target,
-                phase: .before,
-                label: "nextShiftLabelShort",
-                kind: .shiftStarts,
-                remaining: target - postCompletionStart,
-                progress: 0,
-                boundary: target,
-                target: target
-            ))
-        } else if postCompletionStart < expires {
-            entries.append(entry(
-                date: postCompletionStart,
-                end: expires,
-                phase: .idle,
-                label: "countdownNotStarted",
-                kind: .none,
-                remaining: 0,
-                progress: 0,
-                boundary: nil,
-                target: nil
-            ))
-        }
-
+    private func countdownToNextShift(
+        store: OffWorkStore,
+        target: Int64,
+        nowMs: Int64
+    ) -> WidgetSnapshot {
+        let endAtMs = max(nowMs + 60_000, target)
+        var cursor = nowMs
+        var entries: [WidgetTimelineEntry] = []
+        appendCountdown(
+            from: &cursor,
+            to: target,
+            expiresAtMs: endAtMs,
+            entries: &entries
+        )
         return WidgetSnapshot(
             schemaVersion: widgetSnapshotSchemaVersion,
             generatedAtMs: nowMs,
-            expiresAtMs: expires,
+            expiresAtMs: endAtMs,
             locale: store.languageCode,
-            shift: WidgetShiftTimeline(
-                segments: segments,
-                plannedEndAtMs: Int64(shift.plannedEndAtMs),
-                overtimeEndAtMs: shift.overtimeEndAtMs.map(Int64.init)
-            ),
+            shift: nil,
             entries: entries
+        )
+    }
+
+    private func idleSnapshot(store: OffWorkStore, nowMs: Int64) -> WidgetSnapshot {
+        let expiresAtMs = nowMs + 24 * 60 * 60 * 1_000
+        return WidgetSnapshot(
+            schemaVersion: widgetSnapshotSchemaVersion,
+            generatedAtMs: nowMs,
+            expiresAtMs: expiresAtMs,
+            locale: store.languageCode,
+            shift: nil,
+            entries: [idleEntry(nowMs: nowMs, expiresAtMs: expiresAtMs)]
+        )
+    }
+
+    private func countdownEntry(
+        date: Int64,
+        end: Int64,
+        target: Int64,
+        label: String
+    ) -> WidgetTimelineEntry {
+        entry(
+            date: date,
+            end: end,
+            phase: .before,
+            label: label,
+            kind: .shiftStarts,
+            remaining: max(0, target - date),
+            progress: 0,
+            boundary: target,
+            target: target
+        )
+    }
+
+    private func idleEntry(nowMs: Int64, expiresAtMs: Int64) -> WidgetTimelineEntry {
+        entry(
+            date: nowMs,
+            end: expiresAtMs,
+            phase: .idle,
+            label: "countdownNotStarted",
+            kind: .none,
+            remaining: 0,
+            progress: 0,
+            boundary: nil,
+            target: nil
+        )
+    }
+
+    private func widgetProjection(from shift: NativeShiftSnapshot) -> NativeWidgetShiftSnapshot {
+        NativeWidgetShiftSnapshot(
+            segments: shift.segments,
+            startAtMs: shift.startAtMs,
+            endAtMs: shift.endAtMs,
+            plannedEndAtMs: shift.plannedEndAtMs,
+            overtimeEndAtMs: shift.overtimeEndAtMs,
+            durationMs: shift.durationMs
+        )
+    }
+
+    private func widgetShift(from shift: NativeWidgetShiftSnapshot) -> WidgetShiftTimeline {
+        WidgetShiftTimeline(
+            segments: shift.segments.map {
+                WidgetShiftSegment(startAtMs: Int64($0.startAtMs), endAtMs: Int64($0.endAtMs))
+            },
+            plannedEndAtMs: Int64(shift.plannedEndAtMs),
+            overtimeEndAtMs: shift.overtimeEndAtMs.map(Int64.init)
         )
     }
 

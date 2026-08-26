@@ -35,6 +35,18 @@ struct NativeShiftSnapshot: Codable, Hashable {
     var nextShiftEndDate: Date? { nextShiftEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
 }
 
+/// Salary-free absolute shift returned in one batch for WidgetKit. The shared
+/// TypeScript rules still decide every boundary; this narrower projection only
+/// avoids hundreds of Swift-to-JavaScriptCore calls while publishing a year.
+struct NativeWidgetShiftSnapshot: Codable, Hashable {
+    let segments: [NativeShiftSegment]
+    let startAtMs: Double
+    let endAtMs: Double
+    let plannedEndAtMs: Double
+    let overtimeEndAtMs: Double?
+    let durationMs: Double
+}
+
 struct NativePeriodSummary: Codable, Hashable {
     let days: Double
     let hours: Double
@@ -123,6 +135,33 @@ final class CountdownRules {
         return snapshot
     }
 
+    func widgetShifts(
+        input: NativeRulesInput,
+        throughMs: Double,
+        maximumCount: Int
+    ) throws -> [NativeWidgetShiftSnapshot] {
+        if let loadError { throw loadError }
+        let request = NativeWidgetTimelineRequest(
+            rules: input,
+            throughMs: throughMs,
+            maximumCount: maximumCount
+        )
+        guard let context,
+              let bridge = context.objectForKeyedSubscript("OWCNative"),
+              !bridge.isUndefined,
+              let data = try? JSONEncoder().encode(request),
+              let json = String(data: data, encoding: .utf8),
+              let result = bridge.invokeMethod("widgetShifts", withArguments: [json]),
+              !result.isUndefined,
+              !result.isNull,
+              let output = result.toString()?.data(using: .utf8),
+              let shifts = try? JSONDecoder().decode([NativeWidgetShiftSnapshot].self, from: output)
+        else {
+            throw CountdownRulesError.invalidResult
+        }
+        return shifts
+    }
+
     func reminders(input: NativeRulesInput, reminderInputs: NativeReminderInputs) throws -> [NativeReminder] {
         if let loadError { throw loadError }
         let request = NativeReminderRequest(rules: input, reminderInputs: reminderInputs)
@@ -197,6 +236,12 @@ struct NativeRulesInput: Codable {
     let salaryType: String
     let monthlyWorkingDays: Double
     let annualBonusMonths: Double
+}
+
+private struct NativeWidgetTimelineRequest: Codable {
+    let rules: NativeRulesInput
+    let throughMs: Double
+    let maximumCount: Int
 }
 
 struct NativeSummaryInput: Codable {

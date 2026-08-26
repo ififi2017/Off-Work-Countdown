@@ -163,24 +163,26 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     /// invents schedule boundaries: those remain the producer's responsibility.
     public func presentationEntries(
         startingAtMs nowMs: Int64,
-        progressStepMs: Int64
+        progressStepMs: Int64,
+        endingAtMs requestedEndMs: Int64? = nil
     ) -> [WidgetTimelineEntry] {
+        let presentationEndMs = min(expiresAtMs, requestedEndMs ?? expiresAtMs)
         guard schemaVersion == widgetSnapshotSchemaVersion,
               progressStepMs > 0,
               nowMs >= generatedAtMs,
-              nowMs < expiresAtMs
+              nowMs < presentationEndMs
         else {
             return []
         }
 
         var result: [WidgetTimelineEntry] = []
-        for source in entries where source.validUntilMs > nowMs && source.dateMs < expiresAtMs {
+        for source in entries where source.validUntilMs > nowMs && source.dateMs < presentationEndMs {
             let firstDateMs = max(nowMs, source.dateMs)
             result.append(source.projected(atMs: firstDateMs))
 
             guard source.phase == .working else { continue }
             var updateAtMs = firstDateMs + progressStepMs
-            let intervalEndMs = min(source.validUntilMs, expiresAtMs)
+            let intervalEndMs = min(source.validUntilMs, presentationEndMs)
             while updateAtMs < intervalEndMs {
                 result.append(source.projected(atMs: updateAtMs))
                 updateAtMs += progressStepMs

@@ -114,6 +114,9 @@ final class OffWorkStore {
 #endif
         static let selectedTab = "ios.native.selectedTab"
         static let countdownStarted = "ios.native.countdownStarted"
+        static let automaticCountdownMigrationCompleted = "ios.native.automaticCountdownMigrationCompleted"
+        static let earlyOffAtMs = "ios.native.earlyOffAtMs"
+        static let earlyOffShiftEndAtMs = "ios.native.earlyOffShiftEndAtMs"
         static let legacyForceToday = "ios.native.forceToday"
         static let forcedWorkdayDate = "ios.native.forcedWorkdayDate"
         static let startMinutes = "ios.native.startMinutes"
@@ -195,6 +198,27 @@ final class OffWorkStore {
     }
 #endif
     var countdownStarted: Bool { didSet { defaults.set(countdownStarted, forKey: Key.countdownStarted) } }
+
+    /// When the user said they had finished for the day, and at what moment.
+    ///
+    /// This is not a "skip today" switch. It is the first thing this app records
+    /// about what actually happened rather than what was planned — `002`'s
+    /// `actualEndAtMs` on a `.session` record — which is why it stores the
+    /// instant and not a day flag.
+    ///
+    /// It ends **the shift the user was in**, not the calendar day:
+    /// `start <= earlyOffAtMs < end`. That phrasing settles the awkward case on
+    /// its own. Change the hours afterwards so a new shift begins after this
+    /// moment — a night shift, say — and that shift is genuinely new, does not
+    /// match, and counts normally. No special case needed.
+    var earlyOffAtMs: Double? { didSet { defaults.set(earlyOffAtMs, forKey: Key.earlyOffAtMs) } }
+
+    /// The end of the shift that was on screen when they said they had
+    /// finished. Stored because the moment alone is not enough to identify it:
+    /// clocking off *before* a shift begins is a perfectly ordinary thing to do
+    /// — "I'm not going in today" — and a moment earlier than the start falls
+    /// outside the shift's own window.
+    var earlyOffShiftEndAtMs: Double? { didSet { defaults.set(earlyOffShiftEndAtMs, forKey: Key.earlyOffShiftEndAtMs) } }
     private var forcedWorkdayDate: String? {
         didSet {
             if let forcedWorkdayDate { defaults.set(forcedWorkdayDate, forKey: Key.forcedWorkdayDate) }
@@ -343,8 +367,21 @@ final class OffWorkStore {
         microBreakEnabled = defaults.bool(forKey: Key.microBreakEnabled)
         microBreakIntervalMinutes = defaults.object(forKey: Key.microBreakInterval) == nil ? 60 : defaults.integer(forKey: Key.microBreakInterval)
         overtimeEndAtMs = defaults.object(forKey: Key.overtimeEndAtMs) as? Double
+        earlyOffAtMs = defaults.object(forKey: Key.earlyOffAtMs) as? Double
+        earlyOffShiftEndAtMs = defaults.object(forKey: Key.earlyOffShiftEndAtMs) as? Double
         activeCountdownEndAtMs = defaults.object(forKey: Key.activeCountdownEndAtMs) as? Double
         lastCelebratedEndAtMs = defaults.double(forKey: Key.lastCelebratedEndAtMs)
+
+        // Before automatic scheduled countdowns, a completed shift cleared
+        // `countdownStarted` at the following midnight. Arm existing configured
+        // schedules once on upgrade so they do not need another manual start.
+        // The marker preserves an explicit Stop after this migration.
+        if defaults.object(forKey: Key.automaticCountdownMigrationCompleted) == nil {
+            defaults.set(true, forKey: Key.automaticCountdownMigrationCompleted)
+            if onboardingComplete, scheduleMode != .off {
+                countdownStarted = true
+            }
+        }
 #if DEBUG
         if debugRoute != nil { defaults.removeObject(forKey: Key.qaRoute) }
 #endif
@@ -360,7 +397,11 @@ final class OffWorkStore {
 
     var layoutDirection: LayoutDirection { languageCode == "ar" ? .rightToLeft : .leftToRight }
     var locale: Locale { Locale(identifier: languageCode) }
-    var forceToday: Bool { forcedWorkdayDate == Self.dayKey(for: .now) }
+    var forceToday: Bool { isWorkdayForced(at: .now) }
+
+    func isWorkdayForced(at date: Date) -> Bool {
+        forcedWorkdayDate == Self.dayKey(for: date)
+    }
     /// SF Symbol for the two explicit themes. `auto` deliberately has none:
     /// the symbol named "a" is one of the localized symbols and renders as 字
     /// in Chinese, so Auto draws a literal "A" instead. See quickThemeIsAuto.
@@ -609,10 +650,96 @@ final class OffWorkStore {
     func startCountdown(force: Bool = false, at date: Date = .now) {
         forcedWorkdayDate = force ? Self.dayKey(for: date) : nil
         countdownStarted = true
+        // Starting is itself an undo: whatever the user said earlier about
+        // having finished, they are evidently not finished.
+        if let shift = snapshot(at: date), isEndedEarly(shift) {
+            earlyOffAtMs = nil
+            earlyOffShiftEndAtMs = nil
+        }
         recordActiveCountdownBoundary(at: date)
     }
 
+    /// Ends today's shift early. On a schedule this is a record, not a switch.
+    ///
+    /// It used to clear `countdownStarted`, which had no way back: the flag is
+    /// only ever set by a manual start, so one press silenced every scheduled
+    /// shift after it too. The widget then spent working hours counting down to
+    /// tomorrow's clock-in under the words "好好休息".
+    ///
+    /// A schedule does not have sessions to stop, so there is nothing here for
+    /// a session flag to mean. What the user is telling us is that they have
+    /// finished for the day, and that is a fact about them rather than about the
+    /// configuration — so it is written down and the schedule keeps running.
+    /// Whether the clock-off button is waiting for its second press.
+    ///
+    /// Held here rather than in the button because the button exists five times
+    /// over — phone, phone landscape, iPad, iPad immersive, the shared action
+    /// bar — and five copies of a confirmation state is five chances for one of
+    /// them to stay armed after another has fired.
+    var clockOffConfirmPending = false
+
+    /// First press arms, second press commits. Ending the day early is not
+    /// something to do by brushing past a button, and unlike the old "return"
+    /// it now writes a record rather than flipping a switch back.
+    func requestClockOffEarly(at date: Date = .now) {
+        guard scheduleMode != .off else {
+            stopCountdown()
+            return
+        }
+        guard clockOffConfirmPending else {
+            clockOffConfirmPending = true
+            return
+        }
+        clockOffConfirmPending = false
+        clockOffEarly(at: date)
+    }
+
+    /// Disarms without acting. Anything that takes the user's attention
+    /// elsewhere should call this: a confirmation still waiting when they come
+    /// back would fire on a press they meant as their first.
+    func cancelClockOffConfirmation() {
+        if clockOffConfirmPending { clockOffConfirmPending = false }
+    }
+
+    func clockOffEarly(at date: Date = .now) {
+        guard scheduleMode != .off else {
+            stopCountdown()
+            return
+        }
+        earlyOffAtMs = date.timeIntervalSince1970 * 1_000
+        earlyOffShiftEndAtMs = snapshot(at: date)?.endAtMs
+        clockOffConfirmPending = false
+        timelineExpanded = false
+        forcedWorkdayDate = nil
+        activeCountdownEndAtMs = nil
+        clearOvertime()
+    }
+
+    /// Takes it back. Deliberately its own action rather than a side effect of
+    /// editing the schedule: changing tomorrow's hours must never quietly
+    /// resurrect today, or every settings visit becomes a coin toss.
+    func undoEarlyClockOff() {
+        earlyOffAtMs = nil
+        earlyOffShiftEndAtMs = nil
+        recordActiveCountdownBoundary()
+    }
+
+    /// Whether `shift` is one the user already ended by hand.
+    ///
+    /// The comparison is against the shift's own window, so a later change to
+    /// the hours cannot un-end it, and a genuinely new shift beginning after
+    /// that moment is not caught by it.
+    func isEndedEarly(_ shift: NativeShiftSnapshot) -> Bool {
+        guard let earlyOffAtMs, let earlyOffShiftEndAtMs else { return false }
+        // Overlaps the shift that was ended. Two properties fall out of that
+        // one sentence: nudge the hours and it is still the same shift, so it
+        // stays finished; move them far enough that a new shift begins after
+        // the ended one, and it does not overlap, so it counts.
+        return shift.endAtMs > earlyOffAtMs && shift.startAtMs < earlyOffShiftEndAtMs
+    }
+
     func stopCountdown() {
+        clockOffConfirmPending = false
         countdownStarted = false
         timelineExpanded = false
         forcedWorkdayDate = nil
@@ -620,15 +747,41 @@ final class OffWorkStore {
         clearOvertime()
     }
 
-    /// A completed shift remains available for the rest of that calendar day,
-    /// then returns to setup the next time the app becomes active. Persisting
-    /// the concrete end boundary avoids accidentally attaching yesterday's
-    /// `countdownStarted` flag to the shift that shared rules resolve today.
+    /// Scheduled countdowns stay armed across calendar days. The concrete
+    /// boundary still scopes one-off state such as overtime and a forced rest-
+    /// day run to the shift that created it. Manual (`scheduleMode == .off`)
+    /// countdowns retain their one-session behavior and reset after the end day.
     @discardableResult
     func reconcileCountdownSession(at date: Date = .now) -> Bool {
         guard countdownStarted else {
             activeCountdownEndAtMs = nil
             return false
+        }
+
+        if scheduleMode != .off {
+            var changed = false
+            let currentDay = Self.dayKey(for: date)
+
+            if forcedWorkdayDate != nil, forcedWorkdayDate != currentDay {
+                forcedWorkdayDate = nil
+                changed = true
+            }
+
+            if let overtimeEndAtMs {
+                let overtimeEnd = Date(timeIntervalSince1970: overtimeEndAtMs / 1_000)
+                let overtimeEndDay = Calendar.current.startOfDay(for: overtimeEnd)
+                if let resetDate = Calendar.current.date(byAdding: .day, value: 1, to: overtimeEndDay),
+                   date >= resetDate {
+                    self.overtimeEndAtMs = nil
+                    changed = true
+                }
+            }
+
+            if let current = snapshot(at: date), activeCountdownEndAtMs != current.endAtMs {
+                activeCountdownEndAtMs = current.endAtMs
+                changed = true
+            }
+            return changed
         }
 
         guard let activeCountdownEndAtMs else {
@@ -664,6 +817,7 @@ final class OffWorkStore {
         // snapped it back to the first slide mid-transition. `onboardingPage` is
         // not persisted, so a replay starts at 0 on its own.
         if enableNotifications { notificationMode = .simple }
+        if scheduleMode != .off { startCountdown() }
     }
 
     func toggleWorkday(_ day: Int) {

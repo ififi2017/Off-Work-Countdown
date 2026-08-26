@@ -331,6 +331,7 @@ struct CompletedShiftDesignView: View {
     @State private var celebrationBurst = 0
     @State private var celebrationHaptics: Task<Void, Never>?
 
+
     var body: some View {
         GeometryReader { proxy in
             // Landscape has roughly 300 pt of height to work with, and the
@@ -463,9 +464,9 @@ struct CompletedShiftDesignView: View {
     private var actions: some View {
         HStack(spacing: 10) {
             Button {
-                store.stopCountdown()
+                store.requestClockOffEarly()
             } label: {
-                Label(store.t("return"), systemImage: "arrow.left")
+                ClockOffEarlyLabel(store: store)
             }
             .buttonStyle(OWCSecondaryButtonStyle())
 

@@ -72,6 +72,68 @@ func completedCountdownResetsAcrossDayBoundary() throws {
 }
 
 @MainActor
+@Test("Completing setup arms scheduled countdowns until the user stops them")
+func completingSetupArmsScheduledCountdowns() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .classic
+    store.completeOnboarding(enableNotifications: false)
+
+    #expect(store.countdownStarted)
+
+    store.stopCountdown()
+    let relaunched = OffWorkStore(defaults: defaults)
+    #expect(relaunched.countdownStarted == false)
+}
+
+@MainActor
+@Test("Existing configured schedules are armed once on upgrade")
+func existingSchedulesMigrateToAutomaticCountdowns() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    defaults.set(true, forKey: "ios.native.onboardingComplete")
+    defaults.set("classic", forKey: "ios.native.scheduleMode")
+    defaults.set(false, forKey: "ios.native.countdownStarted")
+
+    let migrated = OffWorkStore(defaults: defaults)
+    #expect(migrated.countdownStarted)
+
+    migrated.stopCountdown()
+    let relaunched = OffWorkStore(defaults: defaults)
+    #expect(relaunched.countdownStarted == false)
+}
+
+@MainActor
+@Test("A scheduled countdown stays armed when the next workday begins")
+func scheduledCountdownStaysArmedAcrossWorkdays() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let calendar = Calendar.current
+    let monday = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 10
+    )))
+    let tuesday = try #require(calendar.date(byAdding: .day, value: 1, to: monday))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.startCountdown(at: monday)
+
+    #expect(store.reconcileCountdownSession(at: tuesday))
+    #expect(store.countdownStarted)
+    // Compared with a tolerance: this value crosses the JavaScript bridge as a
+    // Double, and an exact match on the way back is a coin toss.
+    let tuesdayRemaining = try #require(store.snapshot(at: tuesday)?.remainingMs)
+    #expect(abs(tuesdayRemaining - 7 * 60 * 60 * 1_000) < 1)
+}
+
+@MainActor
 @Test("The upcoming timeline starts with clock-in and always ends with clock-off")
 func upcomingTimelineIncludesShiftBoundaries() throws {
     let (defaults, suite) = try isolatedDefaults()
@@ -226,6 +288,118 @@ func widgetTimelineFollowsOvertime() throws {
     #expect(abs(target - expected) < 1_000)
 }
 
+@MainActor
+@Test("The widget starts future scheduled shifts without reopening the app")
+func widgetTimelineStartsFutureShiftAutomatically() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let mondayMorning = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 8
+    )))
+    let tuesdayMorning = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 25, hour: 10
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.countdownStarted = true
+
+    let publishedAtMs = Int64(mondayMorning.timeIntervalSince1970 * 1_000)
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: mondayMorning),
+        active: true,
+        nowMs: publishedAtMs
+    )
+    let futureAtMs = Int64(tuesdayMorning.timeIntervalSince1970 * 1_000)
+    let future = try #require(snapshot.entry(atMs: futureAtMs))
+
+    #expect(future.phase == .working)
+    #expect(future.labelKey == "widgetWorking")
+}
+
+@MainActor
+@Test("Consecutive overnight shifts do not keep the previous done state")
+func widgetTimelineAdvancesBetweenOvernightShifts() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let mondayMorning = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 8
+    )))
+    let tuesdayNight = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 25, hour: 23
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 23 * 60
+    store.endMinutes = 7 * 60
+    store.countdownStarted = true
+
+    let nowMs = Int64(mondayMorning.timeIntervalSince1970 * 1_000)
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: mondayMorning),
+        active: true,
+        nowMs: nowMs
+    )
+    let nextNight = try #require(snapshot.entry(
+        atMs: Int64(tuesdayNight.timeIntervalSince1970 * 1_000)
+    ))
+
+    #expect(nextNight.phase == .working)
+}
+
+@MainActor
+@Test("Rest copy ends when the next workday begins")
+func widgetRestCopyMatchesRestDays() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let fridayEvening = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 28, hour: 18
+    )))
+    let saturdayNoon = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 29, hour: 12
+    )))
+    let mondayMorning = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 31, hour: 8
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.countdownStarted = true
+
+    let nowMs = Int64(fridayEvening.timeIntervalSince1970 * 1_000)
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: fridayEvening),
+        active: true,
+        nowMs: nowMs
+    )
+    let restEntry = try #require(snapshot.entry(
+        atMs: Int64(saturdayNoon.timeIntervalSince1970 * 1_000)
+    ))
+    let workdayEntry = try #require(snapshot.entry(
+        atMs: Int64(mondayMorning.timeIntervalSince1970 * 1_000)
+    ))
+
+    #expect(restEntry.labelKey == "widgetRestDay")
+    #expect(workdayEntry.labelKey == "nextShiftLabelShort")
+}
+
 /// Builds a store whose only timed preview rows are the shift boundaries and
 /// the break, so an order assertion reads as the order and nothing else.
 @MainActor
@@ -269,13 +443,14 @@ func shiftPreviewMovesFinishedBreakToTheNextShift() throws {
     // Clock-off is the only thing left today; everything else has rolled onto
     // tomorrow and lines up behind the next clock-in rather than heading a list
     // of things that are supposedly still coming.
-    #expect(preview.upcoming.map(\.kind) == [.shiftEnd, .shiftStart, .lunchStart, .lunchEnd])
+    // One break row, not two: this is the settings page, where the break is a
+    // window rather than two events being waited for.
+    #expect(preview.upcoming.map(\.kind) == [.shiftEnd, .shiftStart, .lunchStart])
 
     // Monday 24 August 2026, so the next shift is Tuesday morning.
     let nextStart = try #require(snapshot.nextShiftStartDate)
     #expect(preview.upcoming[1].date == nextStart)
     #expect(preview.upcoming[2].date == nextStart.addingTimeInterval(3 * 3_600))
-    #expect(preview.upcoming[3].date == nextStart.addingTimeInterval(4 * 3_600))
 }
 
 @MainActor
@@ -297,11 +472,14 @@ func shiftPreviewRollsBreakBoundariesIndependently() throws {
     let snapshot = try #require(store.snapshot(at: duringLunch))
     let preview = store.shiftPreview(for: snapshot, at: duringLunch)
 
-    // Today's break is half spent: going back to work is still ahead, starting
-    // it is not. Rolling them together would either resurrect a start that has
-    // gone or push away an end that has not.
-    #expect(preview.upcoming.map(\.kind) == [.lunchEnd, .shiftEnd, .shiftStart, .lunchStart])
-    #expect(preview.upcoming[0].date == calendar.date(bySettingHour: 13, minute: 0, second: 0, of: duringLunch))
+    // Merged into one window row, the break is keyed on when it opens — and
+    // that has passed — so the whole window moves to the next shift. The
+    // running page still splits the two boundaries, which is where a user
+    // actually waits for "back at 13:00"; this page is for setting the window,
+    // not for living through it.
+    #expect(preview.upcoming.map(\.kind) == [.shiftEnd, .shiftStart, .lunchStart])
+    let nextDayStart = try #require(snapshot.nextShiftStartDate)
+    #expect(preview.upcoming[2].date == nextDayStart.addingTimeInterval(3 * 3_600))
 }
 
 @MainActor
@@ -326,18 +504,18 @@ func shiftPreviewRollsEveryPastRowToTheNextShift() throws {
     let preview = store.shiftPreview(for: snapshot, at: afterClockOff)
 
     // Everything is behind us, so everything belongs to tomorrow and the list
-    // reads in one direction: in, break, back, warning, out. It used to open
-    // with the Live Activity and clock-off, both hours gone, and close with
-    // tomorrow's clock-in — backwards at its own finish line.
+    // reads in one direction: in, break, warning, out. It used to open with the
+    // Live Activity and clock-off, both hours gone, and close with tomorrow's
+    // clock-in — backwards at its own finish line.
     #expect(preview.upcoming.map(\.kind) == [
-        .shiftStart, .lunchStart, .lunchEnd, .liveActivity, .shiftEnd,
+        .shiftStart, .lunchStart, .liveActivity, .shiftEnd,
     ])
 
     let nextStart = try #require(snapshot.nextShiftStartDate)
     let nextEnd = try #require(snapshot.nextShiftEndDate)
     #expect(preview.upcoming.first?.date == nextStart)
     #expect(preview.upcoming.last?.date == nextEnd)
-    #expect(preview.upcoming[3].date == nextEnd.addingTimeInterval(-30 * 60))
+    #expect(preview.upcoming[2].date == nextEnd.addingTimeInterval(-30 * 60))
 
     // "Today's shift" would be a lie on a row that is now tomorrow's.
     #expect(preview.upcoming.last?.detail == nil)
@@ -385,6 +563,84 @@ func shiftPreviewReminderDisabledState(_ testCase: ReminderSwitchCase) throws {
     // rows can never describe the same feature differently.
     let timed = preview.upcoming.contains { $0.kind == .liveActivity }
     #expect(timed == testCase.liveActivity)
+}
+
+/// The scenario the automatic-countdown work is supposed to remove, written as
+/// the user described it: configure a schedule, use it, press the button the
+/// running screen puts in front of you, and then simply do not open the app.
+@MainActor
+@Test("Stopping once does not silence every scheduled shift after it")
+func widgetKeepsCountingAfterAnExplicitStop() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let mondayAtWork = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 11
+    )))
+    let tuesdayAtWork = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 25, hour: 11
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.startCountdown(at: mondayAtWork)
+    store.clockOffEarly(at: mondayAtWork)
+
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: mondayAtWork),
+        active: store.countdownStarted,
+        nowMs: Int64(mondayAtWork.timeIntervalSince1970 * 1_000)
+    )
+
+    // The next day has to carry itself without the app being opened. This is
+    // the whole point: set it up once, then never think about it.
+    let tomorrow = try #require(snapshot.entry(atMs: Int64(tuesdayAtWork.timeIntervalSince1970 * 1_000)))
+    #expect(tomorrow.phase == .working)
+    #expect(tomorrow.labelKey == "widgetWorking")
+}
+
+/// The case that made "clock off early" the right name for the button: editing
+/// the schedule afterwards is a statement about the plan, and must not reach
+/// back and un-end a shift the user said they had finished.
+@MainActor
+@Test("Changing the hours later does not resurrect a shift already clocked off")
+func editingTheScheduleDoesNotUndoAnEarlyClockOff() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let mondayAtWork = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 11
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.startCountdown(at: mondayAtWork)
+    store.clockOffEarly(at: mondayAtWork)
+
+    // Same shift, hours nudged. Still finished.
+    store.endMinutes = 18 * 60
+    let shift = try #require(store.snapshot(at: mondayAtWork))
+    #expect(store.isEndedEarly(shift))
+
+    // A shift that begins after the moment they stopped is a different shift,
+    // and gets counted — no special case, it simply falls outside the window.
+    store.startMinutes = 20 * 60
+    store.endMinutes = 23 * 60
+    let nightShift = try #require(store.snapshot(at: mondayAtWork))
+    #expect(!store.isEndedEarly(nightShift))
+
+    // And undoing is its own deliberate action.
+    store.undoEarlyClockOff()
+    #expect(store.earlyOffAtMs == nil)
 }
 
 private func isolatedDefaults() throws -> (UserDefaults, String) {

@@ -261,7 +261,8 @@ private struct TabletTimerView: View {
             let phase = TimerVisualPhase.resolve(
                 countdownStarted: store.countdownStarted,
                 snapshot: snapshot,
-                forceToday: store.forceToday
+                forceToday: store.forceToday,
+                endedEarly: snapshot.map(store.isEndedEarly) ?? false
             )
 
             ZStack {
@@ -363,6 +364,7 @@ private struct TabletRunningView: View {
         let chrome = headHeight + actionsHeight + 22 + TimerContentSpace.bottomSlack
         return max(0, columnHeight - chrome)
     }
+
 
     var body: some View {
         VStack(spacing: 0) {
@@ -472,8 +474,8 @@ private struct TabletRunningView: View {
 
                     HStack(spacing: 12) {
                         Button {
-                            store.stopCountdown()
-                        } label: { Label(store.t("return"), systemImage: "arrow.left") }
+                            store.requestClockOffEarly()
+                        } label: { ClockOffEarlyLabel(store: store) }
                         Button { showOvertime = true } label: {
                             Text(store.t(isOvertime ? "adjustOvertime" : "overtime"))
                         }

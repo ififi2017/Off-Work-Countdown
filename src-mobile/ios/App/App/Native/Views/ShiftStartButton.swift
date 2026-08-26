@@ -20,8 +20,8 @@ struct ShiftStartButton: View {
     var body: some View {
         Button(action: start) {
             Label(
-                armState == .armed ? store.t("nonWorkdayTapAgain") : store.t("startCountdown"),
-                systemImage: armState == .armed ? "exclamationmark.triangle.fill" : "play.fill"
+                store.t(titleKey),
+                systemImage: armState == .armed ? "exclamationmark.triangle.fill" : glyph
             )
             .lineLimit(2)
             .minimumScaleFactor(0.72)
@@ -51,6 +51,28 @@ struct ShiftStartButton: View {
         }
     }
 
+    /// One button, three honest names.
+    ///
+    /// The countdown starts itself on a schedule now, so on a workday this no
+    /// longer starts anything — it applies what was just edited. On a day the
+    /// schedule says is off, pressing it means working anyway, and calling that
+    /// "apply settings" would hide the only consequence that matters. Manual
+    /// mode still genuinely starts a session.
+    private var titleKey: String {
+        if armState == .armed { return "nonWorkdayTapAgain" }
+        if store.scheduleMode == .off { return "startCountdown" }
+        return isNonWorkday ? "workTodayAnyway" : "applySettings"
+    }
+
+    private var glyph: String {
+        if store.scheduleMode == .off { return "play.fill" }
+        return isNonWorkday ? "play.fill" : "checkmark"
+    }
+
+    private var isNonWorkday: Bool {
+        store.scheduleMode != .off && store.snapshot()?.isWorkday == false
+    }
+
     private var isDisabled: Bool {
         store.startMinutes == store.endMinutes
             || (store.scheduleMode == .classic && store.workdays.isEmpty)
@@ -61,7 +83,6 @@ struct ShiftStartButton: View {
             showInvalidLunch = true
             return
         }
-        let isNonWorkday = store.scheduleMode != .off && store.snapshot()?.isWorkday == false
         if isNonWorkday, armState == .idle {
             withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection) {
                 armState = .armed

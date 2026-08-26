@@ -6,12 +6,13 @@ struct TimerActionBar: View {
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
 
+
     var body: some View {
         HStack(spacing: 10) {
             Button {
-                store.stopCountdown()
+                store.requestClockOffEarly()
             } label: {
-                Label(store.t("return"), systemImage: "arrow.left")
+                ClockOffEarlyLabel(store: store)
             }
             .buttonStyle(OWCSecondaryButtonStyle())
 

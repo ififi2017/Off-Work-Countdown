@@ -10,8 +10,13 @@ enum TimerVisualPhase: Hashable {
     static func resolve(
         countdownStarted: Bool,
         snapshot: NativeShiftSnapshot?,
-        forceToday: Bool
+        forceToday: Bool,
+        endedEarly: Bool = false
     ) -> Self {
+        // A shift the user has clocked off is over for them whatever the clock
+        // says. Without this the button recorded the early finish and the screen
+        // carried on counting, which read as the button doing nothing at all.
+        guard !endedEarly else { return .setup }
         guard countdownStarted else { return .setup }
         guard let snapshot else { return .rulesError }
         guard snapshot.isWorkday || forceToday else { return .rest }

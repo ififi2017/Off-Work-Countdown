@@ -125,6 +125,49 @@ export function createIOSNativeRulesBundle() {
       });
     },
 
+    widgetShifts(inputJSON) {
+      const request = JSON.parse(inputJSON);
+      const input = request.rules;
+      const throughMs = Number(request.throughMs);
+      const maximumCount = Math.max(0, Math.floor(request.maximumCount || 0));
+      const current = buildShift(input);
+      const shifts = [];
+      let afterMs = Math.max(input.nowMs, countdown.getShiftEndAtMs(current));
+
+      while (shifts.length < maximumCount) {
+        const shift = countdown.findNextShiftTimeline({
+          startTime: input.startTime,
+          endTime: input.endTime,
+          workdays: input.workdays,
+          schedule: input.schedule || null,
+          afterMs,
+          options: {
+            breakStartTime: input.breakStartTime || null,
+            breakDurationMinutes: input.breakDurationMinutes || 0,
+          },
+        });
+        if (!shift) break;
+
+        const startAtMs = countdown.getShiftStartAtMs(shift);
+        const endAtMs = countdown.getShiftEndAtMs(shift);
+        shifts.push({
+          segments: shift.segments,
+          startAtMs,
+          endAtMs,
+          plannedEndAtMs: shift.plannedEndAtMs,
+          overtimeEndAtMs: shift.overtimeEndAtMs,
+          durationMs: countdown.getShiftDurationMs(shift),
+        });
+        // Include the first shift beyond the horizon as a countdown target.
+        // Swift caps its interval at snapshot expiry and does not render that
+        // shift, but the preceding rest days still count toward a real date.
+        if (startAtMs >= throughMs) break;
+        if (endAtMs <= afterMs) break;
+        afterMs = endAtMs;
+      }
+      return JSON.stringify(shifts);
+    },
+
     summarize(inputJSON) {
       const input = JSON.parse(inputJSON);
       const asOf = new Date(input.asOfMs);
