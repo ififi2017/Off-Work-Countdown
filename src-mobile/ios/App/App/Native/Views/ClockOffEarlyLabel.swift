@@ -44,3 +44,31 @@ struct ClockOffEarlyLabel: View {
         }
     }
 }
+
+/// The way back from an early clock-off. Shared by setup and the completed
+/// screen so undoing is the same action in the same words, not two banners
+/// that drift apart. Callers pass `note` so the banner does not ask
+/// JavaScriptCore again after they already decided to show it.
+struct EarlyClockOffBanner: View {
+    let store: OffWorkStore
+    let note: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "figure.walk.departure")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(OWCDesign.secondary)
+            Text(note)
+                .font(.subheadline)
+                .foregroundStyle(OWCDesign.secondary)
+            Spacer(minLength: 8)
+            Button(store.t("undoClockOffEarly")) { store.undoEarlyClockOff() }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(OWCDesign.accent)
+                .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 48)
+        .background(OWCDesign.card, in: RoundedRectangle(cornerRadius: OWCDesign.cardRadius, style: .continuous))
+    }
+}

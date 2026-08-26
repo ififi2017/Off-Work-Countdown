@@ -14,9 +14,28 @@ struct ShiftSetupTimelineView: View {
     let onEditTime: (SetupTimeField) -> Void
 
     var body: some View {
-        // A minute is plenty for a preview — the running screen is the one that
-        // needs a second-by-second clock, and rebuilding a snapshot that often
-        // means re-entering CountdownRules for nothing.
+        // Touch every setting the preview displays so a change invalidates
+        // this view. TimelineView only ticks once a minute; putting those
+        // same fields on `.id` rebuilt the whole tree on every wheel tick.
+        let _ = store.displayedStartMinutes
+        let _ = store.displayedEndMinutes
+        let _ = store.lunchEnabled
+        let _ = store.lunchStartMinutes
+        let _ = store.lunchDurationMinutes
+        let _ = store.microBreakEnabled
+        let _ = store.microBreakIntervalMinutes
+        let _ = store.liveActivityEnabled
+        let _ = store.liveActivityLeadMinutes
+        let _ = store.notificationMode
+        let _ = store.scheduleMode
+        let _ = store.workdays
+        let _ = store.alternatingWeekType
+        let _ = store.alternatingWeekendWorkday
+        let _ = store.alternatingReferenceWeekStartMs
+        let _ = store.rotationWorkDays
+        let _ = store.rotationRestDays
+        let _ = store.rotationAnchorMs
+
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
             content(at: timeline.date)
         }
@@ -24,7 +43,7 @@ struct ShiftSetupTimelineView: View {
 
     @ViewBuilder
     private func content(at now: Date) -> some View {
-        let preview = store.snapshot(at: now).map { store.shiftPreview(for: $0, at: now) }
+        let preview = store.setupSnapshot(at: now).map { store.shiftPreview(for: $0, at: now) }
 
         VStack(alignment: .leading, spacing: OWCDesign.sectionGap) {
             if let upcoming = preview?.upcoming, !upcoming.isEmpty {

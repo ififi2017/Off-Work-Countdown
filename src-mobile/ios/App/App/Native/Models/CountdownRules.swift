@@ -33,6 +33,49 @@ struct NativeShiftSnapshot: Codable, Hashable {
     var nextRestDate: Date? { nextRestAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
     var nextShiftStartDate: Date? { nextShiftStartAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
     var nextShiftEndDate: Date? { nextShiftEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
+
+    func isBeforeStart(at now: Date) -> Bool {
+        now.timeIntervalSince1970 * 1_000 < startAtMs
+    }
+
+    var isOnBreak: Bool { activeBreakEndAtMs != nil }
+
+    func isOvertimeActive(at now: Date) -> Bool {
+        overtimeEndAtMs != nil && now.timeIntervalSince1970 * 1_000 >= plannedEndAtMs
+    }
+
+    /// Remaining time the shared running surfaces count. Before clock-in this is
+    /// time until start; during a break it is time until the break ends;
+    /// otherwise it is effective shift remaining.
+    func heroRemainingMs(at now: Date) -> Double {
+        let nowMs = now.timeIntervalSince1970 * 1_000
+        if nowMs < startAtMs { return max(0, startAtMs - nowMs) }
+        if let breakEnd = activeBreakEndAtMs { return max(0, breakEnd - nowMs) }
+        return remainingMs
+    }
+
+    /// Completed figures stay frozen; tomorrow's hours can still move.
+    func withLiveNextShift(from live: NativeShiftSnapshot) -> NativeShiftSnapshot {
+        NativeShiftSnapshot(
+            segments: segments,
+            startAtMs: startAtMs,
+            endAtMs: endAtMs,
+            plannedEndAtMs: plannedEndAtMs,
+            overtimeEndAtMs: overtimeEndAtMs,
+            durationMs: durationMs,
+            plannedDurationMs: plannedDurationMs,
+            elapsedMs: elapsedMs,
+            remainingMs: remainingMs,
+            progress: progress,
+            payRatio: payRatio,
+            activeBreakEndAtMs: activeBreakEndAtMs,
+            isWorkday: isWorkday,
+            nextRestAtMs: nextRestAtMs,
+            dailySalary: dailySalary,
+            nextShiftStartAtMs: live.nextShiftStartAtMs,
+            nextShiftEndAtMs: live.nextShiftEndAtMs
+        )
+    }
 }
 
 /// Salary-free absolute shift returned in one batch for WidgetKit. The shared

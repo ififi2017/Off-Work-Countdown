@@ -15,13 +15,15 @@ struct ShiftStartButton: View {
 
     @State private var armState = StartArmState.idle
     @State private var showInvalidLunch = false
+    @State private var appliedPulse = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        Button(action: start) {
+        let nonWorkday = isDraftNonWorkday
+        Button(action: { start(nonWorkday: nonWorkday) }) {
             Label(
-                store.t(titleKey),
-                systemImage: armState == .armed ? "exclamationmark.triangle.fill" : glyph
+                store.t(titleKey(nonWorkday: nonWorkday)),
+                systemImage: armState == .armed ? "exclamationmark.triangle.fill" : glyph(nonWorkday: nonWorkday)
             )
             .lineLimit(2)
             .minimumScaleFactor(0.72)
@@ -32,9 +34,11 @@ struct ShiftStartButton: View {
             color: armState == .armed ? OWCDesign.orangeDeep : OWCDesign.accent,
             minimumHeight: minimumHeight
         ))
+        .contentShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.45 : 1)
         .sensoryFeedback(.warning, trigger: armState)
+        .sensoryFeedback(.success, trigger: appliedPulse)
         .task(id: armState) {
             guard armState == .armed else { return }
             try? await Task.sleep(for: .seconds(5))
@@ -58,37 +62,47 @@ struct ShiftStartButton: View {
     /// schedule says is off, pressing it means working anyway, and calling that
     /// "apply settings" would hide the only consequence that matters. Manual
     /// mode still genuinely starts a session.
-    private var titleKey: String {
+    private func titleKey(nonWorkday: Bool) -> String {
         if armState == .armed { return "nonWorkdayTapAgain" }
         if store.scheduleMode == .off { return "startCountdown" }
-        return isNonWorkday ? "workTodayAnyway" : "applySettings"
+        return nonWorkday ? "workTodayAnyway" : "applySettings"
     }
 
-    private var glyph: String {
+    private func glyph(nonWorkday: Bool) -> String {
         if store.scheduleMode == .off { return "play.fill" }
-        return isNonWorkday ? "play.fill" : "checkmark"
+        return nonWorkday ? "play.fill" : "checkmark"
     }
 
-    private var isNonWorkday: Bool {
-        store.scheduleMode != .off && store.snapshot()?.isWorkday == false
+    private var isDraftNonWorkday: Bool {
+        store.scheduleMode != .off && store.setupSnapshot()?.isWorkday == false
     }
 
+    /// Hours that cannot form a shift. An empty classic workday set is not
+    /// included: that state is a rest day, and "work today anyway" must stay
+    /// tappable — it is how a user recovers after unchecking every day.
     private var isDisabled: Bool {
-        store.startMinutes == store.endMinutes
-            || (store.scheduleMode == .classic && store.workdays.isEmpty)
+        store.displayedStartMinutes == store.displayedEndMinutes
     }
 
-    private func start() {
+    private func start(nonWorkday: Bool) {
         guard store.isLunchInsideShift else {
             showInvalidLunch = true
             return
         }
-        if isNonWorkday, armState == .idle {
+        if nonWorkday, armState == .idle {
             withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection) {
                 armState = .armed
             }
             return
         }
-        store.startCountdown(force: isNonWorkday)
+        if store.scheduleMode == .off {
+            store.startCountdown()
+        } else {
+            // Apply commits the draft. It is not undo — an early clock-off
+            // covering today stays until the user presses undo, starts
+            // overtime, or starts a different shift.
+            store.applySettings(force: nonWorkday)
+        }
+        appliedPulse += 1
     }
 }

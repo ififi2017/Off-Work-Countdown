@@ -36,10 +36,12 @@ struct TimerDesignView: View {
         Group {
             if let timelineDate {
                 timerContent(at: timelineDate)
-            } else {
-                TimelineView(.periodic(from: .now, by: timelineActive ? 1 : 86_400)) { timeline in
+            } else if timelineActive, store.visualPhase(at: .now).usesLiveTimeline {
+                TimelineView(.periodic(from: .now, by: 1)) { timeline in
                     timerContent(at: timeline.date)
                 }
+            } else {
+                timerContent(at: .now)
             }
         }
         .navigationTitle("")
@@ -73,12 +75,7 @@ struct TimerDesignView: View {
     @ViewBuilder
     private func timerContent(at date: Date) -> some View {
         let snapshot = store.countdownStarted ? store.snapshot(at: date) : nil
-        let phase = TimerVisualPhase.resolve(
-            countdownStarted: store.countdownStarted,
-            snapshot: snapshot,
-            forceToday: store.forceToday,
-                endedEarly: snapshot.map(store.isEndedEarly) ?? false
-        )
+        let phase = store.visualPhase(snapshot: snapshot)
 
         Group {
             switch phase {
@@ -174,8 +171,10 @@ struct TimerDesignView: View {
                 .font(.subheadline)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
-            Button { store.requestClockOffEarly() } label: { ClockOffEarlyLabel(store: store) }
-                .buttonStyle(OWCPrimaryButtonStyle())
+            Button { store.stopCountdown() } label: {
+                Label(store.t("returnToSetup"), systemImage: "arrow.left")
+            }
+            .buttonStyle(OWCPrimaryButtonStyle())
         }
         .padding(20)
     }
@@ -194,10 +193,9 @@ private struct RunningTimerDesignView: View {
     @State private var timelineTop: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var onBreak: Bool { snapshot.activeBreakEndAtMs != nil }
-    private var overtime: Bool {
-        snapshot.overtimeEndAtMs != nil && snapshot.plannedEndAtMs <= now.timeIntervalSince1970 * 1_000
-    }
+    private var beforeStart: Bool { snapshot.isBeforeStart(at: now) }
+    private var onBreak: Bool { snapshot.isOnBreak }
+    private var overtime: Bool { snapshot.isOvertimeActive(at: now) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -294,10 +292,6 @@ private struct RunningTimerDesignView: View {
     /// none of it has been worked yet. The screen counts to clock-in instead,
     /// and flips to the shift itself when the hour arrives, with nothing for the
     /// user to press either way.
-    private var beforeStart: Bool {
-        now.timeIntervalSince1970 * 1_000 < snapshot.startAtMs
-    }
-
     private var caption: String {
         if beforeStart { return store.t("nextShiftLabelShort") }
         if onBreak { return store.t("lunchInProgress") }
@@ -305,13 +299,7 @@ private struct RunningTimerDesignView: View {
         return store.t("timeLeftCaption")
     }
 
-    private var displayRemaining: Double {
-        if beforeStart {
-            return max(0, snapshot.startAtMs - now.timeIntervalSince1970 * 1_000)
-        }
-        guard onBreak else { return snapshot.remainingMs }
-        return max(0, (snapshot.activeBreakEndAtMs ?? now.timeIntervalSince1970 * 1_000) - now.timeIntervalSince1970 * 1_000)
-    }
+    private var displayRemaining: Double { snapshot.heroRemainingMs(at: now) }
 
     private var summaryTransition: AnyTransition {
         reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top))

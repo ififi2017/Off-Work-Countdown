@@ -25,6 +25,10 @@ struct OffWorkCountdownRootView: View {
                     // animated at, so everything nudged down once the
                     // transition finished — a cross-fade cannot do that.
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 1.04)))
+            } else if verticalSizeClass == .compact {
+                // Compact height is a phone on its side — including Plus/Max,
+                // whose regular width would otherwise take the iPad shell.
+                PhoneLandscapeShellView(store: store).transition(.opacity)
             } else if horizontalSizeClass == .regular {
                 tabletLayout.transition(.opacity)
             } else {
@@ -125,6 +129,9 @@ struct OffWorkCountdownRootView: View {
             store.notificationMode.rawValue,
             "\(store.lunchStartReminderEnabled)-\(store.lunchEndReminderEnabled)-\(store.microBreakEnabled)-\(store.microBreakIntervalMinutes)",
             "\(store.overtimeEndAtMs ?? 0)",
+            "\(store.earlyOffAtMs ?? 0)-\(store.earlyOffShiftEndAtMs ?? 0)",
+            "\(store.dismissedCompletedEndAtMs ?? 0)",
+            store.forcedWorkdayKey ?? "",
             "\(store.annualBonusEnabled)-\(store.annualBonusMonths)",
             "\(store.salaryEnabled)-\(store.salaryAmount)-\(store.salaryType.rawValue)",
             "\(store.liveActivityEnabled)-\(store.liveActivityLeadMinutes)",
@@ -154,45 +161,41 @@ struct OffWorkCountdownRootView: View {
         // of the TabView and NavigationStacks underneath it — the pushed screen
         // was rebuilt mid-edit, which is what dropped the keyboard and replayed
         // the push animation. Size classes do not move when the keyboard does.
-        Group {
-            if verticalSizeClass == .compact {
-                PhoneLandscapeShellView(store: store)
-            } else {
-                TabView(selection: $store.selectedTab) {
-                    NavigationStack(path: $store.timerPath) {
-                        TimerDesignView(
-                            store: store,
-                            wide: false,
-                            onOpenSettings: openPhoneSettings
-                        )
-                        .navigationDestination(for: AppRoute.self) { route in
-                            AppRouteDestination(route: route, store: store)
-                        }
-                    }
-                    .tabItem {
-                        Label(store.t("timerTab"), systemImage: "timer")
-                    }
-                    .tag(AppTab.timer)
-
-                    NavigationStack(path: $store.settingsPath) {
-                        SettingsDesignView(store: store)
-                            .navigationDestination(for: AppRoute.self) { route in
-                                AppRouteDestination(route: route, store: store)
-                            }
-                    }
-                    .onChange(of: store.presentedRoute) { _, route in
-                        guard let route else { return }
-                        store.settingsPath.append(route)
-                        store.presentedRoute = nil
-                    }
-                    .tabItem {
-                        Label(store.t("settings"), systemImage: "slider.horizontal.3")
-                    }
-                    .tag(AppTab.settings)
+        // Compact-height (landscape phone, including Plus/Max) is selected
+        // above, so this is portrait only.
+        TabView(selection: $store.selectedTab) {
+            NavigationStack(path: $store.timerPath) {
+                TimerDesignView(
+                    store: store,
+                    wide: false,
+                    onOpenSettings: openPhoneSettings
+                )
+                .navigationDestination(for: AppRoute.self) { route in
+                    AppRouteDestination(route: route, store: store)
                 }
-                .background(OWCDesign.page)
             }
+            .tabItem {
+                Label(store.t("timerTab"), systemImage: "timer")
+            }
+            .tag(AppTab.timer)
+
+            NavigationStack(path: $store.settingsPath) {
+                SettingsDesignView(store: store)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        AppRouteDestination(route: route, store: store)
+                    }
+            }
+            .onChange(of: store.presentedRoute) { _, route in
+                guard let route else { return }
+                store.settingsPath.append(route)
+                store.presentedRoute = nil
+            }
+            .tabItem {
+                Label(store.t("settings"), systemImage: "slider.horizontal.3")
+            }
+            .tag(AppTab.settings)
         }
+        .background(OWCDesign.page)
     }
 
     private var tabletLayout: some View {

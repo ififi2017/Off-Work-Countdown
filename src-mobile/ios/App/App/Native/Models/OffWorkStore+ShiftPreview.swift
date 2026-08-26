@@ -21,7 +21,11 @@ extension OffWorkStore {
         var disabled: [ShiftPreviewEntry] = []
         let nowMs = now.timeIntervalSince1970 * 1_000
         let reminders = (try? CountdownRules.shared.reminders(
-            input: rulesInput(at: now),
+            input: rulesInput(
+                at: now,
+                startMinutes: minutes(from: snapshot.startDate),
+                endMinutes: minutes(from: snapshot.endDate)
+            ),
             reminderInputs: reminderInputs()
         )) ?? []
 
@@ -31,8 +35,6 @@ extension OffWorkStore {
         // "what happens next" with a lunch and a clock-off that will not.
         let endedEarly = isEndedEarly(snapshot)
         let floorMs = endedEarly ? snapshot.endAtMs : nowMs
-
-        func isAhead(_ atMs: Double) -> Bool { atMs > floorMs && atMs <= snapshot.endAtMs }
 
         // Once the shift has begun, "start time" means the *next* one. Giving it
         // that date rather than today's is what moves it to the end of the list
@@ -49,20 +51,11 @@ extension OffWorkStore {
             ))
         }
 
-        if lunchEnabled, let lunch = lunchWindow(in: snapshot) {
-            // Each boundary rolls forward on its own once it has passed, the
-            // same way the start time above does — otherwise an afternoon spent
-            // on this page is headed by a break that finished hours ago.
-            //
-            // Rolling them separately is deliberate: during the break itself
-            // "开始时间" is already the next shift's while "恢复时间" is still
-            // today's, which is exactly what is true.
-            //
-            // The offset is taken from the resolved window rather than from
-            // `lunchStartMinutes` so an overnight shift's after-midnight break
-            // lands on the right day. Every shift is the same shape — one
-            // start, one end, one break for all workdays — so carrying today's
-            // offset onto the next start is exact, not an estimate.
+        if lunchEnabled {
+            // The setting is on whether or not this snapshot could place a
+            // gap. Using "window missing" as "disabled" is what printed 未开启
+            // after the hours were edited so the break no longer fitted.
+            let lunch = lunchWindow(in: snapshot) ?? configuredLunchWindow(for: snapshot)
             func nextOccurrence(of date: Date) -> Date? {
                 snapshot.nextShiftStartDate.map {
                     $0.addingTimeInterval(date.timeIntervalSince(snapshot.startDate))
@@ -74,21 +67,19 @@ extension OffWorkStore {
             // setting is a window — "12:00 – 13:00" says everything the two
             // rows said, in half the space, on a page whose job is to be
             // scannable.
-            let windowStart = (!endedEarly && lunch.start > now) ? lunch.start : nextOccurrence(of: lunch.start)
-            let windowEnd = (!endedEarly && lunch.end > now) ? lunch.end : nextOccurrence(of: lunch.end)
-            if let windowStart, let windowEnd {
-                upcoming.append(.init(
-                    id: "lunch",
-                    kind: .lunchStart,
-                    title: t("lunchBreak"),
-                    detail: t("lunchWindow", values: [
-                        "start": formatTime(windowStart),
-                        "end": formatTime(windowEnd)
-                    ]),
-                    date: windowStart,
-                    route: .lunch
-                ))
-            }
+            let windowStart = (!endedEarly && lunch.start > now) ? lunch.start : (nextOccurrence(of: lunch.start) ?? lunch.start)
+            let windowEnd = (!endedEarly && lunch.end > now) ? lunch.end : (nextOccurrence(of: lunch.end) ?? lunch.end)
+            upcoming.append(.init(
+                id: "lunch",
+                kind: .lunchStart,
+                title: t("lunchBreak"),
+                detail: t("lunchWindow", values: [
+                    "start": formatTime(windowStart),
+                    "end": formatTime(windowEnd)
+                ]),
+                date: windowStart,
+                route: .lunch
+            ))
         } else {
             disabled.append(.init(
                 id: "lunch-off",
@@ -104,15 +95,21 @@ extension OffWorkStore {
         // shift is eight identical lines. The detail carries the interval so the
         // single row still says it repeats.
         if microBreakEnabled {
+            // Only a time the shared rules actually scheduled. Inventing
+            // nextShiftStart + interval produced a 10:00 on a 09:00–10:00
+            // shift, which the engine never fires.
+            let date = nextScheduledMicroBreakDate(
+                after: floorMs,
+                in: reminders,
+                nextShiftStart: snapshot.nextShiftStartDate,
+                nextShiftEnd: snapshot.nextShiftEndDate
+            )
             upcoming.append(.init(
                 id: "micro-break",
                 kind: .health,
                 title: t("microBreakReminder"),
                 detail: t("minutesShort", values: ["count": "\(microBreakIntervalMinutes)"]),
-                date: reminders
-                    .filter { $0.kind == "microBreak" && isAhead($0.atMs) }
-                    .min(by: { $0.atMs < $1.atMs })
-                    .map { Date(timeIntervalSince1970: $0.atMs / 1_000) },
+                date: date,
                 route: .health
             ))
         } else {
@@ -213,6 +210,53 @@ extension OffWorkStore {
         )
     }
 
+    /// Next health reminder the shared engine actually scheduled. Current-shift
+    /// reminders first; if none remain, the next shift's list, still from JS.
+    /// Never `start + interval` — that time can fall on a segment boundary the
+    /// engine refuses to fire.
+    private func nextScheduledMicroBreakDate(
+        after floorMs: Double,
+        in reminders: [NativeReminder],
+        nextShiftStart: Date?,
+        nextShiftEnd: Date?
+    ) -> Date? {
+        if let next = reminders
+            .filter({ $0.kind == "microBreak" && $0.atMs > floorMs })
+            .min(by: { $0.atMs < $1.atMs }) {
+            return Date(timeIntervalSince1970: next.atMs / 1_000)
+        }
+        guard let nextShiftStart, let nextShiftEnd else { return nil }
+        let nextReminders = (try? CountdownRules.shared.reminders(
+            input: rulesInput(
+                at: nextShiftStart,
+                startMinutes: minutes(from: nextShiftStart),
+                endMinutes: minutes(from: nextShiftEnd)
+            ),
+            reminderInputs: reminderInputs()
+        )) ?? []
+        return nextReminders
+            .filter { $0.kind == "microBreak" }
+            .min(by: { $0.atMs < $1.atMs })
+            .map { Date(timeIntervalSince1970: $0.atMs / 1_000) }
+    }
+
+    /// The lunch gap only if it had already finished by `date` — or by an early
+    /// clock-off on this shift. Reads the frozen snapshot's segments rather
+    /// than the current lunch toggle, so turning the break off later cannot
+    /// rewrite a day that already contained one.
+    func takenLunchWindow(
+        for snapshot: NativeShiftSnapshot,
+        at date: Date = .now
+    ) -> (start: Date, end: Date)? {
+        guard let window = lunchWindow(in: snapshot) else { return nil }
+        let cutoffMs = isEndedEarly(snapshot)
+            ? (earlyOffAtMs ?? date.timeIntervalSince1970 * 1_000)
+            : date.timeIntervalSince1970 * 1_000
+        let lunchEndMs = window.end.timeIntervalSince1970 * 1_000
+        guard cutoffMs >= lunchEndMs else { return nil }
+        return window
+    }
+
     /// The break as the rules engine actually placed it — read off the gap
     /// between two work segments rather than from `lunchStartMinutes`, so an
     /// overnight shift's after-midnight break lands on the right day.
@@ -226,5 +270,16 @@ extension OffWorkStore {
             )
         }
         return nil
+    }
+
+    /// When the current hours cannot place a gap, still describe the setting
+    /// the user turned on rather than pretending it is off.
+    private func configuredLunchWindow(for snapshot: NativeShiftSnapshot) -> (start: Date, end: Date) {
+        var start = dateForMinutes(lunchStartMinutes, base: snapshot.startDate)
+        if start <= snapshot.startDate {
+            start = Calendar.current.date(byAdding: .day, value: 1, to: start) ?? start
+        }
+        let end = start.addingTimeInterval(Double(max(lunchDurationMinutes, 0)) * 60)
+        return (start, end)
     }
 }

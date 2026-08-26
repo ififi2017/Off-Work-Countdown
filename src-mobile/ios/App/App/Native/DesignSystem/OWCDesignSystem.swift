@@ -305,6 +305,7 @@ struct OWCPrimaryButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity, minHeight: minimumHeight)
             .background(filled ? color : OWCDesign.control)
             .clipShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
             .opacity(configuration.isPressed ? 0.72 : 1)
             .scaleEffect(configuration.isPressed && !reduceMotion ? 0.985 : 1)
             .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press, value: configuration.isPressed)

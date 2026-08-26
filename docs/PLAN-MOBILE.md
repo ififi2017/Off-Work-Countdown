@@ -29,11 +29,12 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 
 当前执行顺序是：
 
-1. 保持 iPhone/iPad TestFlight 回归与 App Store 提交链路稳定；
-2. 开始 Apple Watch 的契约和 target 建设；
-3. 完成 Watch App、圆形与长方形表盘组件、双向状态联动；
-4. Watch 稳定后再评估 iPhone/iPad iCloud 同步；
-5. Android 不设启动日期。
+1. **[007](../plans/007-ios-stable-before-subscription.md)**：在记录（002）和订阅（006）之前，把 iOS 倒计时本体做成可过审的稳定版。main 现为 TestFlight；已送审包偏早，正式审核候选以 007 为准。计时页口径见 [IOS-TIMER-SURFACES.md](IOS-TIMER-SURFACES.md)；
+2. 保持 iPhone/iPad TestFlight 回归与 App Store 提交链路稳定；
+3. 开始 Apple Watch 的契约和 target 建设；
+4. 完成 Watch App、圆形与长方形表盘组件、双向状态联动；
+5. Watch 稳定后再评估 iPhone/iPad iCloud 同步（002 的 CloudKit 仍排在 007 之后）；
+6. Android 不设启动日期。
 
 ## 2. 2026-08-23 iPhone / iPad 收口记录
 

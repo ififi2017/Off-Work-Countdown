@@ -83,6 +83,10 @@ final class LiveActivityService {
             await performEndAll()
             return
         }
+        if store.isEndedEarly(snapshot) {
+            await finishAll(store: store, snapshot: snapshot, now: now, generation: generation)
+            return
+        }
         guard snapshot.remainingMs > 0 else {
             await finishAll(store: store, snapshot: snapshot, now: now, generation: generation)
             return

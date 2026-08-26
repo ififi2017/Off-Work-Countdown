@@ -117,6 +117,8 @@ final class OffWorkStore {
         static let automaticCountdownMigrationCompleted = "ios.native.automaticCountdownMigrationCompleted"
         static let earlyOffAtMs = "ios.native.earlyOffAtMs"
         static let earlyOffShiftEndAtMs = "ios.native.earlyOffShiftEndAtMs"
+        static let earlyOffSnapshot = "ios.native.earlyOffSnapshot"
+        static let dismissedCompletedEndAtMs = "ios.native.dismissedCompletedEndAtMs"
         static let legacyForceToday = "ios.native.forceToday"
         static let forcedWorkdayDate = "ios.native.forcedWorkdayDate"
         static let startMinutes = "ios.native.startMinutes"
@@ -171,6 +173,13 @@ final class OffWorkStore {
     /// a second or two first "fixed" it, which is the tell.
     var timelineExpanded = false
 
+    /// Hours the setup page is editing. The running snapshot, notifications
+    /// and widgets keep using `startMinutes`/`endMinutes` until the apply
+    /// button commits them — otherwise dragging the end time to "now" would
+    /// yank the completed screen over the editor.
+    var draftStartMinutes: Int?
+    var draftEndMinutes: Int?
+
     /// The two navigation stacks, held here rather than in the shells so a
     /// pushed page survives a rotation — portrait and landscape are separate
     /// view trees, and each used to own its own path. Not persisted.
@@ -219,14 +228,61 @@ final class OffWorkStore {
     /// — "I'm not going in today" — and a moment earlier than the start falls
     /// outside the shift's own window.
     var earlyOffShiftEndAtMs: Double? { didSet { defaults.set(earlyOffShiftEndAtMs, forKey: Key.earlyOffShiftEndAtMs) } }
+
+    /// The rules snapshot as it stood when they clocked off. Re-querying
+    /// `snapshot(at:)` after a settings change would rebuild elapsed time,
+    /// lunch gaps and pay from the new configuration, which is not a freeze.
+    /// App defaults only — this carries `dailySalary` and must not enter the
+    /// App Group projection.
+    private var earlyOffSnapshot: NativeShiftSnapshot? {
+        didSet { persistEarlyOffSnapshot() }
+    }
+
+    /// The completed shift the user has put away so they can see setup again.
+    ///
+    /// Distinct from early clock-off: the day ended on its own, and they are
+    /// not recording a different finish — they are leaving the celebration
+    /// without disarming the schedule. Matched against `endAtMs` so a later
+    /// shift is not swallowed by yesterday's dismiss.
+    var dismissedCompletedEndAtMs: Double? {
+        didSet { defaults.set(dismissedCompletedEndAtMs, forKey: Key.dismissedCompletedEndAtMs) }
+    }
     private var forcedWorkdayDate: String? {
         didSet {
             if let forcedWorkdayDate { defaults.set(forcedWorkdayDate, forKey: Key.forcedWorkdayDate) }
             else { defaults.removeObject(forKey: Key.forcedWorkdayDate) }
         }
     }
-    var startMinutes: Int { didSet { defaults.set(startMinutes, forKey: Key.startMinutes); clearOvertime() } }
-    var endMinutes: Int { didSet { defaults.set(endMinutes, forKey: Key.endMinutes); clearOvertime() } }
+    var startMinutes: Int {
+        didSet {
+            defaults.set(startMinutes, forKey: Key.startMinutes)
+            clearOvertime()
+            draftStartMinutes = nil
+        }
+    }
+    var endMinutes: Int {
+        didSet {
+            defaults.set(endMinutes, forKey: Key.endMinutes)
+            clearOvertime()
+            draftEndMinutes = nil
+        }
+    }
+
+    var displayedStartMinutes: Int { draftStartMinutes ?? startMinutes }
+    var displayedEndMinutes: Int { draftEndMinutes ?? endMinutes }
+
+    func setDisplayedStartMinutes(_ minutes: Int) {
+        draftStartMinutes = minutes == startMinutes ? nil : minutes
+    }
+
+    func setDisplayedEndMinutes(_ minutes: Int) {
+        draftEndMinutes = minutes == endMinutes ? nil : minutes
+    }
+
+    func commitDisplayedHours() {
+        if let draftStartMinutes { startMinutes = draftStartMinutes }
+        if let draftEndMinutes { endMinutes = draftEndMinutes }
+    }
     var workdays: Set<Int> { didSet { defaults.set(workdays.sorted(), forKey: Key.workdays) } }
     var scheduleMode: WorkScheduleMode { didSet { defaults.set(scheduleMode.rawValue, forKey: Key.scheduleMode) } }
     var alternatingWeekType: AlternatingWeekType { didSet { defaults.set(alternatingWeekType.rawValue, forKey: Key.alternatingWeekType) } }
@@ -369,6 +425,8 @@ final class OffWorkStore {
         overtimeEndAtMs = defaults.object(forKey: Key.overtimeEndAtMs) as? Double
         earlyOffAtMs = defaults.object(forKey: Key.earlyOffAtMs) as? Double
         earlyOffShiftEndAtMs = defaults.object(forKey: Key.earlyOffShiftEndAtMs) as? Double
+        earlyOffSnapshot = Self.decodeEarlyOffSnapshot(from: defaults)
+        dismissedCompletedEndAtMs = defaults.object(forKey: Key.dismissedCompletedEndAtMs) as? Double
         activeCountdownEndAtMs = defaults.object(forKey: Key.activeCountdownEndAtMs) as? Double
         lastCelebratedEndAtMs = defaults.double(forKey: Key.lastCelebratedEndAtMs)
 
@@ -397,10 +455,25 @@ final class OffWorkStore {
 
     var layoutDirection: LayoutDirection { languageCode == "ar" ? .rightToLeft : .leftToRight }
     var locale: Locale { Locale(identifier: languageCode) }
-    var forceToday: Bool { isWorkdayForced(at: .now) }
+    /// Part of the schedule signature. Forcing a rest day changes what the
+    /// widget and the notification list should say, and once the schedule arms
+    /// itself nothing else in that signature moves when the button is pressed —
+    /// `countdownStarted` was already true, so the widget kept publishing
+    /// "rest day" while the app counted the shift down.
+    var forcedWorkdayKey: String? { forcedWorkdayDate }
 
-    func isWorkdayForced(at date: Date) -> Bool {
-        forcedWorkdayDate == Self.dayKey(for: date)
+    /// Whether `shift` is a rest day the user chose to work anyway.
+    ///
+    /// Keyed on the day the shift *starts*, never on today's date. An overnight
+    /// forced shift is one run, and comparing against `.now` ended it at
+    /// midnight: at 00:00 the screen fell back to "today is off" with hours
+    /// still to work, and `reconcileCountdownSession` then deleted the mark for
+    /// good. Reading it off the shift also makes the reverse case work —
+    /// forcing that same shift from the far side of midnight now marks the run
+    /// that is actually on screen instead of a day it does not belong to.
+    func isForcedWorkday(_ shift: NativeShiftSnapshot) -> Bool {
+        guard let forcedWorkdayDate else { return false }
+        return forcedWorkdayDate == Self.dayKey(for: shift.startDate)
     }
     /// SF Symbol for the two explicit themes. `auto` deliberately has none:
     /// the symbol named "a" is one of the localized symbols and renders as 字
@@ -430,21 +503,16 @@ final class OffWorkStore {
         localizer.strings(key, locale: languageCode)
     }
 
-    func snapshot(at date: Date = .now) -> NativeShiftSnapshot? {
+    func snapshot(
+        at date: Date = .now,
+        startMinutes: Int? = nil,
+        endMinutes: Int? = nil
+    ) -> NativeShiftSnapshot? {
         do {
-            let result = try CountdownRules.shared.snapshot(input: .init(
-                startTime: timeString(startMinutes),
-                endTime: timeString(endMinutes),
-                nowMs: date.timeIntervalSince1970 * 1_000,
-                workdays: workdays.sorted(),
-                schedule: nativeSchedule,
-                breakStartTime: lunchEnabled ? timeString(lunchStartMinutes) : nil,
-                breakDurationMinutes: lunchEnabled ? lunchDurationMinutes : 0,
-                overtimeEndAtMs: overtimeEndAtMs,
-                salaryAmount: salaryEnabled ? salaryAmount : "",
-                salaryType: salaryType.rawValue,
-                monthlyWorkingDays: monthlyWorkingDays,
-                annualBonusMonths: annualBonusEnabled ? annualBonusMonths : 0
+            let result = try CountdownRules.shared.snapshot(input: rulesInput(
+                at: date,
+                startMinutes: startMinutes,
+                endMinutes: endMinutes
             ))
             if lastRulesError != nil { lastRulesError = nil }
             return result
@@ -454,10 +522,23 @@ final class OffWorkStore {
         }
     }
 
-    func rulesInput(at date: Date = .now) -> NativeRulesInput {
-        .init(
-            startTime: timeString(startMinutes),
-            endTime: timeString(endMinutes),
+    /// Snapshot of the hours the setup page is currently showing, including
+    /// uncommitted edits. The timer phase must not use this — that is how
+    /// dragging the wheel used to replace the editor with the completed screen.
+    func setupSnapshot(at date: Date = .now) -> NativeShiftSnapshot? {
+        snapshot(at: date, startMinutes: displayedStartMinutes, endMinutes: displayedEndMinutes)
+    }
+
+    func rulesInput(
+        at date: Date = .now,
+        startMinutes: Int? = nil,
+        endMinutes: Int? = nil
+    ) -> NativeRulesInput {
+        let start = startMinutes ?? self.startMinutes
+        let end = endMinutes ?? self.endMinutes
+        return .init(
+            startTime: timeString(start),
+            endTime: timeString(end),
             nowMs: date.timeIntervalSince1970 * 1_000,
             workdays: workdays.sorted(),
             schedule: nativeSchedule,
@@ -647,14 +728,43 @@ final class OffWorkStore {
         }
     }
 
+    /// Commits the setup draft. This is not undo: an early clock-off that still
+    /// covers this shift stays until `undoEarlyClockOff`, overtime, or a
+    /// genuinely new shift that does not overlap the ended one.
+    func applySettings(force: Bool = false, at date: Date = .now) {
+        startCountdown(force: force, at: date)
+    }
+
     func startCountdown(force: Bool = false, at date: Date = .now) {
-        forcedWorkdayDate = force ? Self.dayKey(for: date) : nil
+        if scheduleMode == .off {
+            // Manual "start" is a new session. A leftover early-off from a
+            // scheduled day that was then switched to off would otherwise pin
+            // this button to setup: ended-early only dismisses, never runs.
+            clearEarlyClockOffRecord()
+            dismissedCompletedEndAtMs = nil
+        }
+        let hadDraft = draftStartMinutes != nil || draftEndMinutes != nil
+        commitDisplayedHours()
         countdownStarted = true
-        // Starting is itself an undo: whatever the user said earlier about
-        // having finished, they are evidently not finished.
-        if let shift = snapshot(at: date), isEndedEarly(shift) {
-            earlyOffAtMs = nil
-            earlyOffShiftEndAtMs = nil
+        let shift = snapshot(at: date)
+        // The day the shift starts, not the day the button was pressed. They
+        // differ for an overnight shift forced after midnight, and marking the
+        // press day there would mark a run nobody is looking at.
+        forcedWorkdayDate = force ? Self.dayKey(for: shift?.startDate ?? date) : nil
+        if let shift, isEndedEarly(shift) {
+            // Same shift, possibly with nudged hours. Keep the early-off
+            // record and pin dismiss to the new end so setup does not bounce
+            // back into the celebration.
+            dismissedCompletedEndAtMs = shift.endAtMs
+        } else {
+            // A different shift, or none. The old record must not leak onto it.
+            clearEarlyClockOffRecord()
+            // A draft that has been applied is a new configuration, even if it
+            // lands on a remaining of zero. An apply with nothing pending keeps
+            // a dismissed celebration from bouncing straight back.
+            if hadDraft || (shift?.remainingMs ?? 0) > 0 {
+                dismissedCompletedEndAtMs = nil
+            }
         }
         recordActiveCountdownBoundary(at: date)
     }
@@ -685,6 +795,7 @@ final class OffWorkStore {
             stopCountdown()
             return
         }
+        guard snapshot(at: date) != nil else { return }
         guard clockOffConfirmPending else {
             clockOffConfirmPending = true
             return
@@ -705,21 +816,29 @@ final class OffWorkStore {
             stopCountdown()
             return
         }
+        // No shift means there is nothing to end. Writing the timestamps
+        // anyway left a record that `isEndedEarly` can never match, while
+        // still clearing today's forced-workday mark.
+        guard let shift = snapshot(at: date) else { return }
         earlyOffAtMs = date.timeIntervalSince1970 * 1_000
-        earlyOffShiftEndAtMs = snapshot(at: date)?.endAtMs
+        earlyOffShiftEndAtMs = shift.endAtMs
+        earlyOffSnapshot = shift
+        dismissedCompletedEndAtMs = nil
         clockOffConfirmPending = false
         timelineExpanded = false
         forcedWorkdayDate = nil
         activeCountdownEndAtMs = nil
-        clearOvertime()
+        // Leave overtime in place. Clearing it here shrinks the shift back to
+        // the planned end, so a clock-off during overtime no longer overlaps
+        // that window and the completed page loses the extra hours, pay, and undo.
     }
 
     /// Takes it back. Deliberately its own action rather than a side effect of
     /// editing the schedule: changing tomorrow's hours must never quietly
     /// resurrect today, or every settings visit becomes a coin toss.
     func undoEarlyClockOff() {
-        earlyOffAtMs = nil
-        earlyOffShiftEndAtMs = nil
+        clearEarlyClockOffRecord()
+        dismissedCompletedEndAtMs = nil
         recordActiveCountdownBoundary()
     }
 
@@ -737,12 +856,90 @@ final class OffWorkStore {
         return shift.endAtMs > earlyOffAtMs && shift.startAtMs < earlyOffShiftEndAtMs
     }
 
+    /// Leaves the completed celebration without disarming a schedule.
+    ///
+    /// Manual mode still has a session to stop. On a schedule the day already
+    /// ended on its own; this only puts the setup page back on screen so
+    /// changing tomorrow does not silence every shift after it. Early clock-off
+    /// still has remaining time on the rules snapshot, so remaining alone is
+    /// not enough to recognise a finished day.
+    func dismissCompletedShift(at date: Date = .now) {
+        guard scheduleMode != .off else {
+            stopCountdown()
+            return
+        }
+        guard let shift = snapshot(at: date),
+              shift.remainingMs <= 0 || isEndedEarly(shift)
+        else { return }
+        dismissedCompletedEndAtMs = shift.endAtMs
+        timelineExpanded = false
+    }
+
+    /// Copy for the undo banner. Present while an early clock-off still covers
+    /// the current shift; once the planned end has passed there is nothing left
+    /// to undo.
+    func earlyClockOffNote(for shift: NativeShiftSnapshot) -> String? {
+        guard let earlyOffAtMs, isEndedEarly(shift) else { return nil }
+        let at = Date(timeIntervalSince1970: earlyOffAtMs / 1_000)
+        return t("clockedOffEarlyNote", values: ["time": formatTime(at)])
+    }
+
+    func earlyClockOffNote(at date: Date = .now) -> String? {
+        guard let shift = snapshot(at: date) else { return nil }
+        return earlyClockOffNote(for: shift)
+    }
+
+    /// The shift as it stood when the user clocked off, so completed figures
+    /// do not keep growing after that moment, and do not rebuild from later
+    /// settings edits. Next-shift times stay live so tomorrow's hours can move.
+    func clockOffSnapshot(for shift: NativeShiftSnapshot) -> NativeShiftSnapshot {
+        guard isEndedEarly(shift) else { return shift }
+        guard let frozen = earlyOffSnapshot else { return shift }
+        return frozen.withLiveNextShift(from: shift)
+    }
+
+    func isShiftComplete(_ shift: NativeShiftSnapshot) -> Bool {
+        shift.remainingMs <= 0 || isEndedEarly(shift)
+    }
+
+    func isDismissedCompleted(_ shift: NativeShiftSnapshot) -> Bool {
+        guard let dismissedCompletedEndAtMs else { return false }
+        return shift.endAtMs == dismissedCompletedEndAtMs
+    }
+
+    func visualPhase(snapshot: NativeShiftSnapshot?) -> TimerVisualPhase {
+        TimerVisualPhase.resolve(
+            countdownStarted: countdownStarted,
+            snapshot: snapshot,
+            forceToday: snapshot.map(isForcedWorkday) ?? false,
+            endedEarly: snapshot.map(isEndedEarly) ?? false,
+            dismissedCompleted: snapshot.map(isDismissedCompleted) ?? false
+        )
+    }
+
+    func visualPhase(at date: Date = .now) -> TimerVisualPhase {
+        visualPhase(snapshot: countdownStarted ? snapshot(at: date) : nil)
+    }
+
+    /// Reminders that still belong to a shift the user has already ended.
+    func shouldDeliverReminder(_ reminder: NativeReminder, for snapshot: NativeShiftSnapshot) -> Bool {
+        guard isEndedEarly(snapshot) else { return true }
+        // Classic with an empty workday set has no next shift. Falling back
+        // to `endAtMs` with `>=` would also let milestone:100 through, because
+        // that fires at exactly the planned end.
+        guard let nextStart = snapshot.nextShiftStartAtMs else { return false }
+        return reminder.atMs >= nextStart
+    }
+
     func stopCountdown() {
         clockOffConfirmPending = false
         countdownStarted = false
         timelineExpanded = false
         forcedWorkdayDate = nil
         activeCountdownEndAtMs = nil
+        dismissedCompletedEndAtMs = nil
+        draftStartMinutes = nil
+        draftEndMinutes = nil
         clearOvertime()
     }
 
@@ -759,12 +956,7 @@ final class OffWorkStore {
 
         if scheduleMode != .off {
             var changed = false
-            let currentDay = Self.dayKey(for: date)
-
-            if forcedWorkdayDate != nil, forcedWorkdayDate != currentDay {
-                forcedWorkdayDate = nil
-                changed = true
-            }
+            let current = snapshot(at: date)
 
             if let overtimeEndAtMs {
                 let overtimeEnd = Date(timeIntervalSince1970: overtimeEndAtMs / 1_000)
@@ -776,7 +968,31 @@ final class OffWorkStore {
                 }
             }
 
-            if let current = snapshot(at: date), activeCountdownEndAtMs != current.endAtMs {
+            // Everything below needs a shift to compare against. Without one
+            // the rules are unavailable, and deleting a record because it
+            // cannot be matched right now is how a forced run disappears.
+            guard let current else { return changed }
+
+            // One-off marks are scoped to the shift that created them, and each
+            // already reads as "off" once the schedule has moved past it, so
+            // removing them changes no behaviour. What it removes is dead
+            // weight nothing else clears: a past day key and two past
+            // timestamps no later shift can match, plus the frozen clock-off
+            // snapshot, which otherwise sits in defaults indefinitely.
+            if forcedWorkdayDate != nil, !isForcedWorkday(current) {
+                forcedWorkdayDate = nil
+                changed = true
+            }
+            if dismissedCompletedEndAtMs != nil, !isDismissedCompleted(current) {
+                dismissedCompletedEndAtMs = nil
+                changed = true
+            }
+            if earlyOffAtMs != nil, !isEndedEarly(current) {
+                clearEarlyClockOffRecord()
+                changed = true
+            }
+
+            if activeCountdownEndAtMs != current.endAtMs {
                 activeCountdownEndAtMs = current.endAtMs
                 changed = true
             }
@@ -837,7 +1053,10 @@ final class OffWorkStore {
     }
 
     var isLunchInsideShift: Bool {
-        !lunchEnabled || CountdownRules.shared.validateBreak(input: rulesInput())
+        !lunchEnabled || CountdownRules.shared.validateBreak(input: rulesInput(
+            startMinutes: displayedStartMinutes,
+            endMinutes: displayedEndMinutes
+        ))
     }
 
     func anchorAlternatingWeekToToday() {
@@ -882,6 +1101,28 @@ final class OffWorkStore {
         overtimeEndAtMs = date.timeIntervalSince1970 * 1_000
         countdownStarted = true
         activeCountdownEndAtMs = overtimeEndAtMs
+        // Overtime after an early clock-off is "I wasn't done".
+        clearEarlyClockOffRecord()
+        dismissedCompletedEndAtMs = nil
+    }
+
+    private func clearEarlyClockOffRecord() {
+        earlyOffAtMs = nil
+        earlyOffShiftEndAtMs = nil
+        earlyOffSnapshot = nil
+    }
+
+    private func persistEarlyOffSnapshot() {
+        if let earlyOffSnapshot, let data = try? JSONEncoder().encode(earlyOffSnapshot) {
+            defaults.set(data, forKey: Key.earlyOffSnapshot)
+        } else {
+            defaults.removeObject(forKey: Key.earlyOffSnapshot)
+        }
+    }
+
+    private static func decodeEarlyOffSnapshot(from defaults: UserDefaults) -> NativeShiftSnapshot? {
+        guard let data = defaults.data(forKey: Key.earlyOffSnapshot) else { return nil }
+        return try? JSONDecoder().decode(NativeShiftSnapshot.self, from: data)
     }
 
     func clearOvertime() {
@@ -973,7 +1214,7 @@ final class OffWorkStore {
     func periodSummary(_ period: String, asOf: Date, snapshot: NativeShiftSnapshot) -> NativePeriodSummary? {
         guard scheduleMode != .off else { return nil }
         var summaryWorkdays = workdays
-        if forceToday {
+        if isForcedWorkday(snapshot) {
             summaryWorkdays.insert(Calendar.current.component(.weekday, from: snapshot.startDate) - 1)
         }
         do {

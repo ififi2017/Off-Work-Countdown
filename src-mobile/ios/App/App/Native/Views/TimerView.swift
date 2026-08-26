@@ -279,7 +279,9 @@ struct ShareComposerView: View {
 
     private var shareCopy: String {
         let remaining = store.snapshot()?.remainingMs ?? 0
-        if remaining <= 0 { return store.t("shareOffWorkText") }
+        if let shift = store.snapshot(), store.isShiftComplete(shift) {
+            return store.t("shareOffWorkText")
+        }
         return store.t("shareText", values: ["time": store.formatRelativeDuration(remaining)])
     }
 }
@@ -338,13 +340,13 @@ private struct ShareCard: View {
                         .overlay(alignment: .leading) {
                             Capsule()
                                 .fill(.white)
-                                .frame(width: proxy.size.width * min(1, max(0, snapshot?.progress ?? 0) / 100))
+                                .frame(width: proxy.size.width * min(1, max(0, displaySnapshot?.progress ?? 0) / 100))
                         }
                 }
                 .frame(height: 5)
 
                 HStack {
-                    Text(store.formatPercent(snapshot?.progress ?? 0))
+                    Text(store.formatPercent(displaySnapshot?.progress ?? 0))
                     Spacer()
                     Text("OFF.RAINIF.COM")
                 }
@@ -359,7 +361,10 @@ private struct ShareCard: View {
     }
 
     private var snapshot: NativeShiftSnapshot? { store.snapshot() }
-    private var isComplete: Bool { (snapshot?.remainingMs ?? 0) <= 0 }
+    private var displaySnapshot: NativeShiftSnapshot? {
+        snapshot.map { store.clockOffSnapshot(for: $0) }
+    }
+    private var isComplete: Bool { snapshot.map(store.isShiftComplete) ?? false }
     private var heroText: String {
         isComplete ? store.t("shareDone") : store.formatRelativeDuration(snapshot?.remainingMs ?? 0)
     }

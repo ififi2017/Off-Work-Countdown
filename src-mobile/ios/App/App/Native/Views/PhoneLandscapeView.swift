@@ -93,6 +93,9 @@ private struct LandscapeSetupView: View {
         HStack(alignment: .center, spacing: 20) {
             VStack(spacing: 18) {
                 ShiftHeroCard(store: store) { timeField = $0 }
+                if let note = store.earlyClockOffNote() {
+                    EarlyClockOffBanner(store: store, note: note)
+                }
                 ShiftStartButton(store: store) { store.presentedRoute = .lunch }
             }
             .frame(maxWidth: .infinity)
@@ -116,8 +119,11 @@ private struct LandscapeSetupView: View {
                 store: store,
                 title: store.t(field == .start ? "startTime" : "endTime"),
                 minutes: Binding(
-                    get: { field == .start ? store.startMinutes : store.endMinutes },
-                    set: { if field == .start { store.startMinutes = $0 } else { store.endMinutes = $0 } }
+                    get: { field == .start ? store.displayedStartMinutes : store.displayedEndMinutes },
+                    set: { value in
+                        if field == .start { store.setDisplayedStartMinutes(value) }
+                        else { store.setDisplayedEndMinutes(value) }
+                    }
                 )
             )
             .presentationDetents([.medium])
@@ -135,89 +141,14 @@ private struct LandscapeTimerView: View {
 
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { timeline in
-            let snapshot = store.countdownStarted ? store.snapshot(at: timeline.date) : nil
-            let phase = TimerVisualPhase.resolve(
-                countdownStarted: store.countdownStarted,
-                snapshot: snapshot,
-                forceToday: store.forceToday,
-                endedEarly: snapshot.map(store.isEndedEarly) ?? false
-            )
-
-            ZStack {
-                if phase == .setup {
-                    LandscapeSetupView(store: store)
-                } else if phase.showsActiveTimer, let snapshot {
-                    VStack(spacing: 0) {
-                        Text(timeline.date.formatted(.dateTime.month().day().weekday(.wide).locale(store.locale)))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(OWCDesign.secondary)
-                            .padding(.bottom, 4)
-                        Text(store.formatDuration(snapshot.remainingMs))
-                            .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
-                            .tracking(-3)
-                            .lineLimit(1)
-                            .owcCountdownTextTransition(milliseconds: snapshot.remainingMs)
-                        Text(store.t("timeLeftCaption"))
-                            .font(.subheadline)
-                            .foregroundStyle(OWCDesign.secondary)
-                            .padding(.top, 6)
-
-                        VStack(spacing: 8) {
-                            GeometryReader { proxy in
-                                Capsule().fill(OWCDesign.control)
-                                    .overlay(alignment: .leading) {
-                                        Capsule().fill(OWCDesign.accent)
-                                            .frame(width: proxy.size.width * min(1, max(0, snapshot.progress / 100)))
-                                    }
-                            }
-                            .frame(height: 10)
-                            GeometryReader { proxy in
-                                Text(store.timeString(store.startMinutes)).position(x: 24, y: 8)
-                                if store.lunchEnabled, snapshot.segments.count > 1 {
-                                    Text("\(store.timeString(store.lunchStartMinutes)) · \(store.t("lunchBreak"))")
-                                        .position(x: max(62, min(proxy.size.width - 62, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
-                                }
-                                Text(store.timeString(store.endMinutes)).position(x: proxy.size.width - 24, y: 8)
-                            }
-                            .frame(height: 16)
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(OWCDesign.secondary)
-                        }
-                        .padding(.top, 20)
-
-                        HStack(spacing: 52) {
-                            landscapeStat(store.t("progress"), store.formatPercent(snapshot.progress))
-                            if store.salaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
-                            if store.scheduleMode != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot)) }
-                        }
-                        .padding(.top, 20)
-
-                        HStack(spacing: 10) {
-                            Button {
-                                store.requestClockOffEarly()
-                            } label: { ClockOffEarlyLabel(store: store) }
-                            Button { showOvertime = true } label: { Text(store.t("overtime")) }
-                            Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
-                        }
-                        .buttonStyle(LandscapeButtonStyle())
-                        .padding(.top, 20)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 20)
-                } else {
-                    TimerDesignView(
-                        store: store,
-                        wide: true,
-                        timelineDate: timeline.date,
-                        animatesPhaseChanges: false
-                    )
+        Group {
+            if store.visualPhase(at: .now).usesLiveTimeline {
+                TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                    landscapeContent(at: timeline.date)
                 }
+            } else {
+                landscapeContent(at: .now)
             }
-            .id(phase)
-            .transition(timerTransition)
-            .animation(timerAnimation, value: phase)
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showShare) {
@@ -230,6 +161,102 @@ private struct LandscapeTimerView: View {
                 .presentationDetents([.height(340)])
                 .presentationCornerRadius(26)
         }
+    }
+
+    @ViewBuilder
+    private func landscapeContent(at date: Date) -> some View {
+        let snapshot = store.countdownStarted ? store.snapshot(at: date) : nil
+        let phase = store.visualPhase(snapshot: snapshot)
+
+        ZStack {
+            if phase == .setup {
+                LandscapeSetupView(store: store)
+            } else if phase.showsActiveTimer, let snapshot {
+                let remaining = snapshot.heroRemainingMs(at: date)
+                let beforeStart = snapshot.isBeforeStart(at: date)
+                VStack(spacing: 0) {
+                    Text(date.formatted(.dateTime.month().day().weekday(.wide).locale(store.locale)))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(OWCDesign.secondary)
+                        .padding(.bottom, 4)
+                    Text(store.formatDuration(remaining))
+                        .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
+                        .tracking(-3)
+                        .lineLimit(1)
+                        .owcCountdownTextTransition(milliseconds: remaining)
+                    Text(landscapeCaption(snapshot, at: date))
+                        .font(.subheadline)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .padding(.top, 6)
+
+                    VStack(spacing: 8) {
+                        GeometryReader { proxy in
+                            Capsule().fill(OWCDesign.control)
+                                .overlay(alignment: .leading) {
+                                    if !beforeStart {
+                                        Capsule().fill(OWCDesign.accent)
+                                            .frame(width: proxy.size.width * min(1, max(0, snapshot.progress / 100)))
+                                    }
+                                }
+                        }
+                        .frame(height: 10)
+                        GeometryReader { proxy in
+                            Text(store.timeString(store.startMinutes)).position(x: 24, y: 8)
+                            if store.lunchEnabled, snapshot.segments.count > 1 {
+                                Text("\(store.timeString(store.lunchStartMinutes)) · \(store.t("lunchBreak"))")
+                                    .position(x: max(62, min(proxy.size.width - 62, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
+                            }
+                            Text(store.timeString(store.endMinutes)).position(x: proxy.size.width - 24, y: 8)
+                        }
+                        .frame(height: 16)
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(OWCDesign.secondary)
+                    }
+                    .padding(.top, 20)
+
+                    HStack(spacing: 52) {
+                        if !beforeStart {
+                            landscapeStat(store.t("progress"), store.formatPercent(snapshot.progress))
+                        }
+                        if store.salaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
+                        if store.scheduleMode != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot)) }
+                    }
+                    .padding(.top, 20)
+
+                    HStack(spacing: 10) {
+                        Button {
+                            store.requestClockOffEarly()
+                        } label: { ClockOffEarlyLabel(store: store) }
+                        Button { showOvertime = true } label: { Text(store.t("overtime")) }
+                        Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
+                    }
+                    .buttonStyle(LandscapeButtonStyle())
+                    .padding(.top, 20)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 20)
+            } else {
+                TimerDesignView(
+                    store: store,
+                    wide: true,
+                    timelineDate: date,
+                    animatesPhaseChanges: false
+                )
+            }
+        }
+        .id(phase)
+        .transition(timerTransition)
+        .animation(timerAnimation, value: phase)
+    }
+
+    private func landscapeCaption(_ snapshot: NativeShiftSnapshot, at now: Date) -> String {
+        if snapshot.isBeforeStart(at: now) { return store.t("nextShiftLabelShort") }
+        if let breakEnd = snapshot.activeBreakEndDate {
+            return store.t("pausedUntil", values: ["time": store.formatTime(breakEnd)])
+        }
+        if snapshot.isOvertimeActive(at: now) { return store.t("overtimeTimeLeftCaption") }
+        return store.t("timeLeftCaption")
     }
 
     private var timerAnimation: Animation {

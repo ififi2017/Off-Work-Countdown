@@ -60,8 +60,14 @@ final class NotificationService {
         ) else { return }
         guard generation == scheduleGeneration, store.countdownStarted else { return }
 
-        let future = reminders.filter {
-            $0.atMs > now.timeIntervalSince1970 * 1_000 && $0.title != nil && $0.body != nil
+        let snapshot = store.snapshot(at: now)
+        let future = reminders.filter { reminder in
+            guard reminder.atMs > now.timeIntervalSince1970 * 1_000,
+                  reminder.title != nil,
+                  reminder.body != nil
+            else { return false }
+            guard let snapshot else { return true }
+            return store.shouldDeliverReminder(reminder, for: snapshot)
         }
         let essential = future.filter { $0.kind != "microBreak" }.sorted { $0.atMs < $1.atMs }
         let health = future.filter { $0.kind == "microBreak" }.sorted { $0.atMs < $1.atMs }
@@ -99,8 +105,9 @@ final class NotificationService {
 
         if store.liveActivityEnabled,
            store.notificationMode == .off,
-           let snapshot = store.snapshot(at: now),
+           let snapshot,
            snapshot.endAtMs > now.timeIntervalSince1970 * 1_000,
+           !store.isEndedEarly(snapshot),
            generation == scheduleGeneration,
            store.countdownStarted {
             let identifier = "owc.shift.live.end.\(Int64(snapshot.endAtMs))"

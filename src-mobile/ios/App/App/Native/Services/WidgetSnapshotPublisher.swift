@@ -105,7 +105,7 @@ final class WidgetSnapshotPublisher {
             to: now
         ) ?? now.addingTimeInterval(Double(recurringHorizonDays) * 86_400)
         let expiresAtMs = Int64(horizon.timeIntervalSince1970 * 1_000)
-        let forcedCurrentShift = store.isWorkdayForced(at: now)
+        let forcedCurrentShift = store.isForcedWorkday(initialShift)
         var entries: [WidgetTimelineEntry] = []
         var cursor = nowMs
         var diagnosticShift: WidgetShiftTimeline?
@@ -115,11 +115,19 @@ final class WidgetSnapshotPublisher {
             maximumCount: maximumRecurringShifts
         )) ?? []
 
-        // An early clock-off ends the shift it happened in and nothing else, so
-        // the countdown to the next one starts from that moment rather than
-        // from the shift's planned end.
+        // An early clock-off ends the shift it happened in and nothing else.
+        // The rest of that workday is still "done for today"; rest-day copy
+        // starts at the following midnight, not at the clock-off moment.
         if let endedEarlyAtMs = store.isEndedEarly(initialShift) ? store.earlyOffAtMs : nil {
             cursor = max(cursor, Int64(endedEarlyAtMs))
+            appendDoneWindow(
+                startingAtMs: cursor,
+                shiftEndAtMs: Int64(initialShift.endAtMs),
+                nextShiftStartAtMs: futureShifts.first.map { Int64($0.startAtMs) },
+                cursor: &cursor,
+                expiresAtMs: expiresAtMs,
+                entries: &entries
+            )
         } else if initialShift.isWorkday || forcedCurrentShift {
             let currentShift = widgetProjection(from: initialShift)
             diagnosticShift = widgetShift(from: currentShift)
@@ -318,11 +326,33 @@ final class WidgetSnapshotPublisher {
         }
 
         let endAtMs = Int64(shift.endAtMs)
-        let endDate = Date(timeIntervalSince1970: Double(endAtMs) / 1_000)
+        appendDoneWindow(
+            startingAtMs: endAtMs,
+            shiftEndAtMs: endAtMs,
+            nextShiftStartAtMs: nextShiftStartAtMs,
+            cursor: &cursor,
+            expiresAtMs: expiresAtMs,
+            entries: &entries
+        )
+    }
+
+    /// "Done for today" from `startingAtMs` until the next midnight of the
+    /// shift's end day, or the next shift, whichever is sooner. Early clock-off
+    /// starts this window at the moment they finished rather than the planned
+    /// end, so the rest of a workday is not painted as a rest day.
+    private func appendDoneWindow(
+        startingAtMs: Int64,
+        shiftEndAtMs: Int64,
+        nextShiftStartAtMs: Int64?,
+        cursor: inout Int64,
+        expiresAtMs: Int64,
+        entries: inout [WidgetTimelineEntry]
+    ) {
+        let endDate = Date(timeIntervalSince1970: Double(shiftEndAtMs) / 1_000)
         let endDay = Calendar.current.startOfDay(for: endDate)
         let rolloverDate = Calendar.current.date(byAdding: .day, value: 1, to: endDay) ?? endDate
         let rolloverAtMs = Int64(rolloverDate.timeIntervalSince1970 * 1_000)
-        let doneStartAtMs = max(cursor, endAtMs)
+        let doneStartAtMs = max(cursor, startingAtMs)
         let doneEndAtMs = min(
             min(rolloverAtMs, expiresAtMs),
             nextShiftStartAtMs ?? Int64.max

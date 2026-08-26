@@ -73,9 +73,10 @@ extension OffWorkStore {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
     }
 
-    /// Planned working time for today, lunch already deducted.
+    /// Planned working time for today, lunch already deducted. Uses the hours
+    /// the setup page is showing, including uncommitted edits.
     var plannedWorkLabel: String {
-        guard let snapshot = snapshot() else { return "—" }
+        guard let snapshot = setupSnapshot() else { return "—" }
         return formatRelativeDuration(snapshot.plannedDurationMs)
     }
 }
