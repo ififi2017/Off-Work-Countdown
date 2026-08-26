@@ -91,6 +91,7 @@
   "applySettings": "सेटिंग्ज लागू करा",
   "workTodayAnyway": "आज काम करा",
   "return": "परत जा",
+  "returnToSetup": "सेटअपवर परत जा",
   "clockOffEarly": "लवकर सुट्टी",
   "clockOffEarlyConfirm": "पुष्टी करा",
   "clockedOffEarlyNote": "आज {{time}} वाजता लवकर सुट्टी घेतली",

@@ -91,6 +91,7 @@
   "applySettings": "تطبيق الإعدادات",
   "workTodayAnyway": "العمل اليوم",
   "return": "عودة",
+  "returnToSetup": "العودة إلى صفحة الإعداد",
   "clockOffEarly": "إنهاء العمل مبكرًا",
   "clockOffEarlyConfirm": "تأكيد",
   "clockedOffEarlyNote": "أنهيت العمل مبكرًا اليوم في {{time}}",

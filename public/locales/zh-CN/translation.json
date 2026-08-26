@@ -91,6 +91,7 @@
   "applySettings": "应用配置",
   "workTodayAnyway": "今天加班",
   "return": "返回",
+  "returnToSetup": "返回配置页",
   "clockOffEarly": "提前下班",
   "clockOffEarlyConfirm": "确认下班",
   "clockedOffEarlyNote": "今天已提前下班 · {{time}}",

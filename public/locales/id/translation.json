@@ -91,6 +91,7 @@
   "applySettings": "Terapkan pengaturan",
   "workTodayAnyway": "Bekerja hari ini",
   "return": "Kembali",
+  "returnToSetup": "Kembali ke pengaturan",
   "clockOffEarly": "Pulang lebih awal",
   "clockOffEarlyConfirm": "Konfirmasi",
   "clockedOffEarlyNote": "Hari ini pulang lebih awal pukul {{time}}",

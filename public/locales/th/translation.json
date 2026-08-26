@@ -91,6 +91,7 @@
   "applySettings": "ใช้การตั้งค่า",
   "workTodayAnyway": "ทำงานวันนี้",
   "return": "ย้อนกลับ",
+  "returnToSetup": "กลับไปหน้าตั้งค่า",
   "clockOffEarly": "เลิกงานก่อนเวลา",
   "clockOffEarlyConfirm": "ยืนยัน",
   "clockedOffEarlyNote": "วันนี้เลิกงานก่อนเวลา {{time}}",

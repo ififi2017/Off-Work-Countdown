@@ -464,9 +464,11 @@ struct CompletedShiftDesignView: View {
     private var actions: some View {
         HStack(spacing: 10) {
             Button {
-                store.requestClockOffEarly()
+                store.stopCountdown()
             } label: {
-                ClockOffEarlyLabel(store: store)
+                Label(store.t("returnToSetup"), systemImage: "arrow.left")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
             }
             .buttonStyle(OWCSecondaryButtonStyle())
 

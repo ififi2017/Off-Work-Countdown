@@ -91,6 +91,7 @@
   "applySettings": "Áp dụng cài đặt",
   "workTodayAnyway": "Làm việc hôm nay",
   "return": "Quay lại",
+  "returnToSetup": "Quay lại trang thiết lập",
   "clockOffEarly": "Tan ca sớm",
   "clockOffEarlyConfirm": "Xác nhận",
   "clockedOffEarlyNote": "Hôm nay đã tan ca sớm lúc {{time}}",

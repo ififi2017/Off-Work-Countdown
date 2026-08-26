@@ -91,6 +91,7 @@
   "applySettings": "套用設定",
   "workTodayAnyway": "今天加班",
   "return": "返回",
+  "returnToSetup": "返回設定頁",
   "clockOffEarly": "提前下班",
   "clockOffEarlyConfirm": "確認下班",
   "clockedOffEarlyNote": "今天已提前下班 · {{time}}",

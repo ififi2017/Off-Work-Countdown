@@ -91,6 +91,7 @@
   "applySettings": "Einstellungen übernehmen",
   "workTodayAnyway": "Heute arbeiten",
   "return": "Zurück",
+  "returnToSetup": "Zurück zur Einrichtung",
   "clockOffEarly": "Früher Feierabend",
   "clockOffEarlyConfirm": "Bestätigen",
   "clockedOffEarlyNote": "Heute um {{time}} früher Feierabend gemacht",

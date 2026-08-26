@@ -91,6 +91,7 @@
   "applySettings": "Ayarları uygula",
   "workTodayAnyway": "Bugün çalış",
   "return": "Geri Dön",
+  "returnToSetup": "Ayarlara dön",
   "clockOffEarly": "Erken çık",
   "clockOffEarlyConfirm": "Onayla",
   "clockedOffEarlyNote": "Bugün {{time}}’de erken çıktınız",

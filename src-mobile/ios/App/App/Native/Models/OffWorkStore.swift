@@ -672,10 +672,9 @@ final class OffWorkStore {
     /// configuration — so it is written down and the schedule keeps running.
     /// Whether the clock-off button is waiting for its second press.
     ///
-    /// Held here rather than in the button because the button exists five times
-    /// over — phone, phone landscape, iPad, iPad immersive, the shared action
-    /// bar — and five copies of a confirmation state is five chances for one of
-    /// them to stay armed after another has fired.
+    /// Held here rather than in the button because the action exists across
+    /// several timer layouts, and separate confirmation states could remain
+    /// armed after another layout has already fired.
     var clockOffConfirmPending = false
 
     /// First press arms, second press commits. Ending the day early is not

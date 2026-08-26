@@ -2,9 +2,8 @@ import SwiftUI
 
 /// The label on the button that ends the day, in both of its states.
 ///
-/// Shared because that button exists five times over — phone, phone landscape,
-/// iPad, iPad immersive, the common action bar — and this is the second thing
-/// about it that has to stay identical across all five. The first was the
+/// Shared across the active timer layouts because this is the second thing
+/// about the action that has to stay identical everywhere. The first was the
 /// confirmation state itself, which is why that lives on the store.
 ///
 /// The armed appearance deliberately copies `ShiftStartButton`: the same deep

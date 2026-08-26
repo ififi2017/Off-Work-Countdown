@@ -91,6 +91,7 @@
   "applySettings": "Применить настройки",
   "workTodayAnyway": "Работать сегодня",
   "return": "Вернуться",
+  "returnToSetup": "Вернуться к настройке",
   "clockOffEarly": "Уйти раньше",
   "clockOffEarlyConfirm": "Подтвердить",
   "clockedOffEarlyNote": "Сегодня вы ушли раньше, в {{time}}",

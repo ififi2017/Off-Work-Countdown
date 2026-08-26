@@ -91,6 +91,7 @@
   "applySettings": "設定を適用",
   "workTodayAnyway": "今日は出勤",
   "return": "戻る",
+  "returnToSetup": "設定画面に戻る",
   "clockOffEarly": "早めに退勤",
   "clockOffEarlyConfirm": "確定",
   "clockedOffEarlyNote": "本日は {{time}} に早退しました",

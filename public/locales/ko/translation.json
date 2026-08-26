@@ -91,6 +91,7 @@
   "applySettings": "설정 적용",
   "workTodayAnyway": "오늘 근무",
   "return": "돌아가기",
+  "returnToSetup": "설정 화면으로 돌아가기",
   "clockOffEarly": "조기 퇴근",
   "clockOffEarlyConfirm": "확인",
   "clockedOffEarlyNote": "오늘 {{time}}에 조기 퇴근했습니다",

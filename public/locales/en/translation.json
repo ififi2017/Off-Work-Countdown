@@ -91,6 +91,7 @@
   "applySettings": "Apply settings",
   "workTodayAnyway": "Work today",
   "return": "Return",
+  "returnToSetup": "Back to setup",
   "clockOffEarly": "Clock off early",
   "clockOffEarlyConfirm": "Confirm",
   "clockedOffEarlyNote": "Clocked off early at {{time}}",

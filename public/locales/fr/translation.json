@@ -91,6 +91,7 @@
   "applySettings": "Appliquer les réglages",
   "workTodayAnyway": "Travailler aujourd’hui",
   "return": "Retour",
+  "returnToSetup": "Retour à la configuration",
   "clockOffEarly": "Partir plus tôt",
   "clockOffEarlyConfirm": "Confirmer",
   "clockedOffEarlyNote": "Parti plus tôt aujourd’hui à {{time}}",
