@@ -36,7 +36,11 @@ in URLs, analytics payloads or share metadata.
   feeds it inputs and renders what comes back. **Do not port a rule into Swift**
   — a schedule, summary or salary calculation written twice is two answers, and
   the "This week" row has already shipped disagreeing values that way. If Swift
-  needs a value the bundle does not expose, extend the bundle.
+  needs a value the bundle does not expose, extend the bundle. A port is not
+  forbidden forever, but it is gated: `plans/002-records-life-focus.md` sets the
+  bar as a measurement, not an expectation, and any port must arrive with the
+  TS-generated differential fixtures and an update to this rule in the same
+  change. Until that measurement exists, extend the bundle.
 - The generated bundle is a build artifact, not source. It is regenerated from
   the TypeScript, so never hand-edit it, and never let a Swift change depend on
   a bundle that was not rebuilt from the current `lib/`.
