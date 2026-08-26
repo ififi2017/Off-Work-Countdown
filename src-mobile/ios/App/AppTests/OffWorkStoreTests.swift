@@ -72,7 +72,7 @@ func completedCountdownResetsAcrossDayBoundary() throws {
 }
 
 @MainActor
-@Test("Completing setup arms scheduled countdowns until the user stops them")
+@Test("Completing setup arms scheduled countdowns and stop cannot disarm them")
 func completingSetupArmsScheduledCountdowns() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
@@ -85,7 +85,7 @@ func completingSetupArmsScheduledCountdowns() throws {
 
     store.stopCountdown()
     let relaunched = OffWorkStore(defaults: defaults)
-    #expect(relaunched.countdownStarted == false)
+    #expect(relaunched.countdownStarted)
 }
 
 @MainActor
@@ -103,7 +103,7 @@ func existingSchedulesMigrateToAutomaticCountdowns() throws {
 
     migrated.stopCountdown()
     let relaunched = OffWorkStore(defaults: defaults)
-    #expect(relaunched.countdownStarted == false)
+    #expect(relaunched.countdownStarted)
 }
 
 @MainActor
@@ -119,6 +119,7 @@ func scheduledCountdownStaysArmedAcrossWorkdays() throws {
     let tuesday = try #require(calendar.date(byAdding: .day, value: 1, to: monday))
 
     let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
     store.scheduleMode = .classic
     store.workdays = [1, 2, 3, 4, 5]
     store.startMinutes = 9 * 60
@@ -644,7 +645,7 @@ func editingTheScheduleDoesNotUndoAnEarlyClockOff() throws {
 }
 
 @MainActor
-@Test("Dismissing a completed shift keeps the schedule armed")
+@Test("A completed shift stays on settlement; there is no dismiss back to setup")
 func dismissingCompletedDoesNotStopAScheduledCountdown() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
@@ -663,21 +664,21 @@ func dismissingCompletedDoesNotStopAScheduledCountdown() throws {
 
     let shift = try #require(store.snapshot(at: afterWork))
     #expect(shift.remainingMs <= 0)
-    #expect(store.visualPhase(snapshot: shift) == .completed)
+    #expect(store.visualPhase(snapshot: shift, at: afterWork) == .completed)
 
     store.dismissCompletedShift(at: afterWork)
     #expect(store.countdownStarted)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: afterWork)) == .setup)
+    #expect(store.visualPhase(snapshot: store.snapshot(at: afterWork), at: afterWork) == .completed)
 }
 
 @MainActor
-@Test("Editing hours on setup does not apply until the button is pressed")
+@Test("Next-shift-only hour edits leave today's end unchanged")
 func setupHourEditsDoNotApplyUntilStartCountdown() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
     let afterWork = try #require(Calendar.current.date(from: DateComponents(
-        year: 2026, month: 8, day: 24, hour: 18
+        year: 2026, month: 8, day: 24, hour: 16
     )))
 
     let store = OffWorkStore(defaults: defaults)
@@ -687,18 +688,16 @@ func setupHourEditsDoNotApplyUntilStartCountdown() throws {
     store.startMinutes = 9 * 60
     store.endMinutes = 17 * 60
     store.startCountdown(at: afterWork)
-    store.dismissCompletedShift(at: afterWork)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: afterWork)) == .setup)
 
-    // Same clock as "now" on this page. Writing it through would have made
-    // remaining zero on a new endAtMs and replaced the editor with celebration.
-    store.setDisplayedEndMinutes(18 * 60)
-    #expect(store.endMinutes == 17 * 60)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: afterWork)) == .setup)
-
-    store.startCountdown(at: afterWork)
+    store.applyScheduleChange(
+        ScheduleFieldChange(endMinutes: 18 * 60),
+        decision: .nextShiftOnly,
+        at: afterWork
+    )
     #expect(store.endMinutes == 18 * 60)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: afterWork)) == .completed)
+    #expect(store.effectiveEndMinutes(at: afterWork) == 17 * 60)
+    let today = try #require(store.snapshot(at: afterWork))
+    #expect(store.visualPhase(snapshot: today, at: afterWork) == .running)
 }
 
 @MainActor
@@ -955,15 +954,15 @@ func clockingOffEarlyShowsCompletedUntilDismissed() throws {
     let shift = try #require(store.snapshot(at: mondayAtWork))
     #expect(store.isEndedEarly(shift))
     #expect(store.isShiftComplete(shift))
-    #expect(store.visualPhase(snapshot: shift) == .completed)
+    #expect(store.visualPhase(snapshot: shift, at: mondayAtWork) == .completed)
     #expect(store.countdownStarted)
 
     store.dismissCompletedShift(at: mondayAtWork)
     #expect(store.countdownStarted)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork)) == .setup)
+    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .completed)
 
     store.undoEarlyClockOff()
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork)) == .running)
+    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .running)
 }
 
 @MainActor
@@ -996,7 +995,7 @@ func applyingOvertimeClearsAnEarlyClockOff() throws {
 }
 
 @MainActor
-@Test("Applying settings after an early clock-off does not resurrect today")
+@Test("Changing today also clears an early clock-off")
 func applyingSettingsDoesNotUndoAnEarlyClockOff() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
@@ -1013,24 +1012,16 @@ func applyingSettingsDoesNotUndoAnEarlyClockOff() throws {
     store.endMinutes = 17 * 60
     store.startCountdown(at: mondayAtWork)
     store.clockOffEarly(at: mondayAtWork)
-    store.dismissCompletedShift(at: mondayAtWork)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork)) == .setup)
+    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .completed)
 
-    store.applySettings(at: mondayAtWork)
-    #expect(store.earlyOffAtMs != nil)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork)) == .setup)
-
-    store.setDisplayedEndMinutes(18 * 60)
-    store.applySettings(at: mondayAtWork)
+    store.applyScheduleChange(
+        ScheduleFieldChange(endMinutes: 18 * 60),
+        decision: .applyToToday,
+        at: mondayAtWork
+    )
     #expect(store.endMinutes == 18 * 60)
-    #expect(store.earlyOffAtMs != nil)
-    let afterHoursChange = try #require(store.snapshot(at: mondayAtWork))
-    #expect(store.isEndedEarly(afterHoursChange))
-    #expect(store.visualPhase(snapshot: afterHoursChange) == .setup)
-
-    store.undoEarlyClockOff()
     #expect(store.earlyOffAtMs == nil)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork)) == .running)
+    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .running)
 }
 
 @MainActor
@@ -1324,7 +1315,7 @@ func heroRemainingCountsToBreakEndDuringLunch() throws {
 }
 
 @MainActor
-@Test("A rules error returns to setup when the countdown is stopped")
+@Test("A rules error stays a banner; stopping does not leave the schedule")
 func stoppingACountdownLeavesARulesError() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
@@ -1336,36 +1327,22 @@ func stoppingACountdownLeavesARulesError() throws {
 
     #expect(store.visualPhase(snapshot: nil) == .rulesError)
     store.stopCountdown()
-    #expect(!store.countdownStarted)
-    #expect(store.visualPhase(snapshot: nil) == .setup)
+    #expect(store.countdownStarted)
+    #expect(store.visualPhase(snapshot: nil) == .rulesError)
 }
 
 @MainActor
-@Test("A classic schedule with no workdays can still force today")
+@Test("The last classic workday cannot be removed")
 func emptyWorkdaysStillAllowsWorkingTodayAnyway() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let mondayAtWork = try #require(Calendar.current.date(from: DateComponents(
-        year: 2026, month: 8, day: 24, hour: 11
-    )))
-
     let store = OffWorkStore(defaults: defaults)
     store.onboardingComplete = true
     store.scheduleMode = .classic
-    store.workdays = []
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-
-    let rest = try #require(store.snapshot(at: mondayAtWork))
-    #expect(!rest.isWorkday)
-    #expect(store.visualPhase(snapshot: rest) == .rest)
-
-    store.startCountdown(force: true, at: mondayAtWork)
-    let working = try #require(store.snapshot(at: mondayAtWork))
-    #expect(store.isForcedWorkday(working))
-    #expect(store.visualPhase(snapshot: working) == .running)
+    store.workdays = [1]
+    store.toggleWorkday(1)
+    #expect(store.workdays == Set([1]))
 }
 
 @MainActor
@@ -1517,18 +1494,16 @@ func staleCompletionRecordsAreClearedOnTheNextShift() throws {
     store.endMinutes = 17 * 60
     store.startCountdown(at: mondayAtWork)
     store.clockOffEarly(at: mondayAtWork)
-    store.dismissCompletedShift(at: mondayAtWork)
 
     #expect(store.earlyOffAtMs != nil)
-    #expect(store.dismissedCompletedEndAtMs != nil)
     #expect(defaults.data(forKey: "ios.native.earlyOffSnapshot") != nil)
 
     // Absolute timestamps: no later shift can ever match them again, so
-    // nothing else would have removed them.
+    // nothing else would have removed them. Settlement is not dismissible,
+    // so there is no `dismissedCompleted` mark to clear.
     #expect(store.reconcileCountdownSession(at: tuesdayAfterMidnight))
     #expect(store.earlyOffAtMs == nil)
     #expect(store.earlyOffShiftEndAtMs == nil)
-    #expect(store.dismissedCompletedEndAtMs == nil)
     #expect(defaults.data(forKey: "ios.native.earlyOffSnapshot") == nil)
 
     let tuesday = try #require(store.snapshot(at: tuesdayAfterMidnight))
@@ -1560,6 +1535,121 @@ func forcedRunSurvivesARelaunch() throws {
     #expect(relaunched.forcedWorkdayKey != nil)
     let saturdayShift = try #require(relaunched.snapshot(at: saturday))
     #expect(relaunched.isForcedWorkday(saturdayShift))
+}
+
+@MainActor
+@Test("Clocking in early moves start to now and keeps the planned end")
+func clockingInEarlyLengthensTodayWithoutMovingTheEnd() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let beforeStart = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 8
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.startCountdown(at: beforeStart)
+
+    let waiting = try #require(store.snapshot(at: beforeStart))
+    #expect(waiting.isBeforeStart(at: beforeStart))
+    #expect(store.visualPhase(snapshot: waiting, at: beforeStart) == .running)
+
+    store.clockInEarly(at: beforeStart)
+    let running = try #require(store.snapshot(at: beforeStart))
+    #expect(!running.isBeforeStart(at: beforeStart))
+    #expect(store.effectiveStartMinutes(at: beforeStart) == 8 * 60)
+    #expect(store.effectiveEndMinutes(at: beforeStart) == 17 * 60)
+    #expect(store.visualPhase(snapshot: running, at: beforeStart) == .running)
+
+    store.undoEarlyClockIn()
+    let restored = try #require(store.snapshot(at: beforeStart))
+    #expect(restored.isBeforeStart(at: beforeStart))
+}
+
+@MainActor
+@Test("Cancelling rest-day manual timing returns to rest without an early clock-off")
+func cancellingManualTimingReturnsToRest() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let saturday = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 29, hour: 11
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.startCountdown(force: true, at: saturday)
+
+    let working = try #require(store.snapshot(at: saturday))
+    #expect(store.visualPhase(snapshot: working, at: saturday) == .running)
+    store.cancelManualTiming()
+
+    let rest = try #require(store.snapshot(at: saturday))
+    #expect(!store.isForcedWorkday(rest))
+    #expect(store.earlyOffAtMs == nil)
+    #expect(store.visualPhase(snapshot: rest, at: saturday) == .rest)
+}
+
+@MainActor
+@Test("Unscheduled idle is its own phase, then a session, then midnight resets")
+func unscheduledSessionResetsAfterTheEndDay() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let monday = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 10
+    )))
+    let nextDay = try #require(Calendar.current.date(byAdding: .day, value: 1, to: monday))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .off
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+
+    #expect(store.visualPhase(at: monday) == .unscheduled)
+    store.startCountdown(at: monday)
+    let running = try #require(store.snapshot(at: monday))
+    #expect(store.visualPhase(snapshot: running, at: monday) == .running)
+
+    store.clockOffEarly(at: monday)
+    #expect(store.visualPhase(snapshot: store.snapshot(at: monday), at: monday) == .completed)
+
+    #expect(store.reconcileCountdownSession(at: nextDay))
+    #expect(store.visualPhase(at: nextDay) == .unscheduled)
+}
+
+@MainActor
+@Test("Share copy before clock-in does not claim the shift is ending")
+func shareCopyBeforeClockInCountsToStart() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let beforeStart = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 8
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.languageOverride = "en"
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.startCountdown(at: beforeStart)
+
+    let copy = store.shareCopy(at: beforeStart)
+    #expect(copy.contains("starts"))
+    #expect(!copy.lowercased().contains("off work in"))
 }
 
 private func isolatedDefaults() throws -> (UserDefaults, String) {

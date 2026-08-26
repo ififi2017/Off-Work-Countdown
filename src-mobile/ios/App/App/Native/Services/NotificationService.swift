@@ -50,7 +50,7 @@ final class NotificationService {
             pending.map(\.identifier).filter { $0.hasPrefix("owc.shift.") }
         )
 
-        guard status == .allowed, store.countdownStarted else {
+        guard status == .allowed, store.publishesLiveSurfaces else {
             center.removePendingNotificationRequests(withIdentifiers: Array(existingIdentifiers))
             return
         }
@@ -58,7 +58,7 @@ final class NotificationService {
             input: store.rulesInput(at: now),
             reminderInputs: store.reminderInputs()
         ) else { return }
-        guard generation == scheduleGeneration, store.countdownStarted else { return }
+        guard generation == scheduleGeneration, store.publishesLiveSurfaces else { return }
 
         let snapshot = store.snapshot(at: now)
         let future = reminders.filter { reminder in
@@ -76,7 +76,7 @@ final class NotificationService {
         var allSucceeded = true
 
         for reminder in desired {
-            guard generation == scheduleGeneration, store.countdownStarted else { return }
+            guard generation == scheduleGeneration, store.publishesLiveSurfaces else { return }
             guard let title = reminder.title, let body = reminder.body else { continue }
             let content = UNMutableNotificationContent()
             content.title = title
@@ -109,7 +109,7 @@ final class NotificationService {
            snapshot.endAtMs > now.timeIntervalSince1970 * 1_000,
            !store.isEndedEarly(snapshot),
            generation == scheduleGeneration,
-           store.countdownStarted {
+           store.publishesLiveSurfaces {
             let identifier = "owc.shift.live.end.\(Int64(snapshot.endAtMs))"
             let content = UNMutableNotificationContent()
             content.title = store.t("offWorkTime")
@@ -131,7 +131,7 @@ final class NotificationService {
             }
         }
 
-        if allSucceeded, generation == scheduleGeneration, store.countdownStarted {
+        if allSucceeded, generation == scheduleGeneration, store.publishesLiveSurfaces {
             let stale = existingIdentifiers.subtracting(desiredIdentifiers)
             center.removePendingNotificationRequests(withIdentifiers: Array(stale))
         }

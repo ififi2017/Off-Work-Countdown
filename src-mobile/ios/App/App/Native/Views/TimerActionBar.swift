@@ -2,15 +2,55 @@ import SwiftUI
 
 struct TimerActionBar: View {
     let store: OffWorkStore
-    let overtimeActive: Bool
+    let snapshot: NativeShiftSnapshot
+    let now: Date
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
 
+    private var beforeStart: Bool { snapshot.isBeforeStart(at: now) }
+    private var overtimeActive: Bool { snapshot.isOvertimeActive(at: now) }
 
     var body: some View {
+        Group {
+            if beforeStart {
+                beforeStartBar
+            } else {
+                runningBar
+            }
+        }
+        .padding(.horizontal, OWCDesign.pageInset)
+        .padding(.top, 12)
+        .padding(.bottom, 14)
+    }
+
+    private var beforeStartBar: some View {
         HStack(spacing: 10) {
             Button {
-                store.requestClockOffEarly()
+                store.clockInEarly(at: now)
+            } label: {
+                Text(store.t("clockInEarly"))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+            }
+            .buttonStyle(OWCPrimaryButtonStyle())
+
+            Button(store.t("shareButton"), systemImage: "square.and.arrow.up") {
+                showShare = true
+            }
+            .labelStyle(.iconOnly)
+            .font(.body)
+            .frame(width: 50, height: 50)
+            .foregroundStyle(OWCDesign.primary)
+            .background(OWCDesign.control)
+            .clipShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius))
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var runningBar: some View {
+        HStack(spacing: 10) {
+            Button {
+                store.requestClockOffEarly(at: now)
             } label: {
                 ClockOffEarlyLabel(store: store)
             }
@@ -34,8 +74,5 @@ struct TimerActionBar: View {
             .clipShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius))
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, OWCDesign.pageInset)
-        .padding(.top, 12)
-        .padding(.bottom, 14)
     }
 }

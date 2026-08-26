@@ -63,7 +63,7 @@ final class LiveActivityService {
     private func performReschedule(store: OffWorkStore, now: Date = .now) async {
         lifecycleGeneration += 1
         let generation = lifecycleGeneration
-        guard store.countdownStarted else {
+        guard store.publishesLiveSurfaces else {
             recordDebugStatus("countdown-not-started")
             await performEndAll()
             return
@@ -85,6 +85,16 @@ final class LiveActivityService {
         }
         if store.isEndedEarly(snapshot) {
             await finishAll(store: store, snapshot: snapshot, now: now, generation: generation)
+            return
+        }
+        if !snapshot.isWorkday, !store.isForcedWorkday(snapshot) {
+            recordDebugStatus("rest-day")
+            await performEndAll()
+            return
+        }
+        if snapshot.isBeforeStart(at: now) {
+            recordDebugStatus("before-clock-in")
+            await performEndAll()
             return
         }
         guard snapshot.remainingMs > 0 else {

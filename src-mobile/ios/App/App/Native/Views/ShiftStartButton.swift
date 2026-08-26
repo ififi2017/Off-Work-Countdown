@@ -1,15 +1,11 @@
 import SwiftUI
 
-/// The primary action, shared by the portrait, landscape and iPad setup layouts.
+/// Starts a manual session: a rest-day override, or an unscheduled day.
 ///
-/// Tapping on a day the schedule calls a rest day arms the button instead of
-/// starting; a second tap within five seconds commits. `.task(id:)` owns the
-/// disarm timer, so SwiftUI cancels it when the state changes or the view goes
-/// away — the three hand-rolled `Task` handles this replaced each needed their
-/// own `cancel()` in `onDisappear`, and one of them was easy to forget.
+/// Tapping arms the button instead of starting; a second tap within five
+/// seconds commits. `.task(id:)` owns the disarm timer.
 struct ShiftStartButton: View {
     let store: OffWorkStore
-    // Declared before the closure so callers can use trailing-closure syntax.
     var minimumHeight: CGFloat = 46
     let onOpenLunchSettings: () -> Void
 
@@ -19,11 +15,10 @@ struct ShiftStartButton: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        let nonWorkday = isDraftNonWorkday
-        Button(action: { start(nonWorkday: nonWorkday) }) {
+        Button(action: start) {
             Label(
-                store.t(titleKey(nonWorkday: nonWorkday)),
-                systemImage: armState == .armed ? "exclamationmark.triangle.fill" : glyph(nonWorkday: nonWorkday)
+                store.t(armState == .armed ? "nonWorkdayTapAgain" : "manualTiming"),
+                systemImage: armState == .armed ? "exclamationmark.triangle.fill" : "play.fill"
             )
             .lineLimit(2)
             .minimumScaleFactor(0.72)
@@ -55,54 +50,23 @@ struct ShiftStartButton: View {
         }
     }
 
-    /// One button, three honest names.
-    ///
-    /// The countdown starts itself on a schedule now, so on a workday this no
-    /// longer starts anything — it applies what was just edited. On a day the
-    /// schedule says is off, pressing it means working anyway, and calling that
-    /// "apply settings" would hide the only consequence that matters. Manual
-    /// mode still genuinely starts a session.
-    private func titleKey(nonWorkday: Bool) -> String {
-        if armState == .armed { return "nonWorkdayTapAgain" }
-        if store.scheduleMode == .off { return "startCountdown" }
-        return nonWorkday ? "workTodayAnyway" : "applySettings"
-    }
-
-    private func glyph(nonWorkday: Bool) -> String {
-        if store.scheduleMode == .off { return "play.fill" }
-        return nonWorkday ? "play.fill" : "checkmark"
-    }
-
-    private var isDraftNonWorkday: Bool {
-        store.scheduleMode != .off && store.setupSnapshot()?.isWorkday == false
-    }
-
-    /// Hours that cannot form a shift. An empty classic workday set is not
-    /// included: that state is a rest day, and "work today anyway" must stay
-    /// tappable — it is how a user recovers after unchecking every day.
     private var isDisabled: Bool {
-        store.displayedStartMinutes == store.displayedEndMinutes
+        store.startMinutes == store.endMinutes
     }
 
-    private func start(nonWorkday: Bool) {
+    private func start() {
         guard store.isLunchInsideShift else {
             showInvalidLunch = true
             return
         }
-        if nonWorkday, armState == .idle {
+        if armState == .idle {
             withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection) {
                 armState = .armed
             }
             return
         }
-        if store.scheduleMode == .off {
-            store.startCountdown()
-        } else {
-            // Apply commits the draft. It is not undo — an early clock-off
-            // covering today stays until the user presses undo, starts
-            // overtime, or starts a different shift.
-            store.applySettings(force: nonWorkday)
-        }
+        let forceRestDay = store.followsSchedule
+        store.startCountdown(force: forceRestDay)
         appliedPulse += 1
     }
 }

@@ -522,38 +522,9 @@ struct OnboardingView: View {
         .owcShowcaseLift()
     }
 
-    /// The last screen: no more explaining, just the app's name and the way in.
+    /// The last screen: hours, weekdays, or skip a schedule.
     private var ready: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            Image(.brandIcon)
-                .resizable()
-                .frame(width: 92, height: 92)
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                .owcShowcaseLift()
-            Text(store.t("offWorkCountdown"))
-                .font(.largeTitle.bold())
-                .tracking(-0.8)
-                .padding(.top, 24)
-            Text(store.t("onboardingReadyBody"))
-                .font(.body)
-                .foregroundStyle(OWCDesign.secondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-                .padding(.top, 10)
-            Spacer()
-
-            pageDots
-            Button(store.t("onboardingStartSetup")) {
-                store.completeOnboarding(enableNotifications: false)
-            }
-            .buttonStyle(OWCPrimaryButtonStyle())
-            .padding(.top, 16)
-            .padding(.bottom, 24)
-        }
-        .padding(.horizontal, 28)
-        .frame(maxWidth: 560)
-        .frame(maxWidth: .infinity)
+        OnboardingSchedulePage(store: store)
     }
 
     /// Always centred in the page's column.
@@ -602,5 +573,134 @@ struct OnboardingView: View {
 
     private var pageTransition: AnyTransition {
         reduceMotion ? .opacity : Self.pageTransition
+    }
+}
+
+private struct OnboardingSchedulePage: View {
+    @Bindable var store: OffWorkStore
+    @State private var timeField: SetupTimeField?
+    @State private var skipSchedule = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(store.t("onboardingScheduleTitle"))
+                .font(.title.bold())
+                .tracking(-0.6)
+                .multilineTextAlignment(.center)
+                .padding(.top, 28)
+            Text(store.t("onboardingScheduleBody"))
+                .font(.subheadline)
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 8)
+                .padding(.horizontal, 8)
+
+            HStack(alignment: .timeChipCenter, spacing: 4) {
+                ShiftHeroTimeButton(
+                    title: store.t("startTime"),
+                    time: store.timeString(store.startMinutes)
+                ) { timeField = .start }
+                Text(verbatim: "—")
+                    .font(.title3)
+                    .foregroundStyle(OWCDesign.tertiary)
+                    .alignmentGuide(.timeChipCenter) { $0[VerticalAlignment.center] }
+                    .accessibilityHidden(true)
+                ShiftHeroTimeButton(
+                    title: store.t("endTime"),
+                    time: store.timeString(store.endMinutes)
+                ) { timeField = .end }
+            }
+            .environment(\.layoutDirection, .leftToRight)
+            .padding(.top, 22)
+
+            Toggle(isOn: $skipSchedule) {
+                Text(store.t("onboardingSkipSchedule"))
+                    .font(.subheadline.weight(.semibold))
+            }
+            .tint(OWCDesign.accent)
+            .padding(.top, 18)
+            .onChange(of: skipSchedule) { _, skip in
+                store.scheduleMode = skip ? .off : .classic
+            }
+
+            if !skipSchedule {
+                Text(store.t("workdaysLabel"))
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(OWCDesign.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 16)
+                HStack(spacing: 6) {
+                    ForEach(Array(zip([1, 2, 3, 4, 5, 6, 0], store.weekdayLabels())), id: \.0) { day, label in
+                        let selected = store.workdays.contains(day)
+                        let locked = selected && store.workdays.count == 1
+                        Button {
+                            if locked { return }
+                            store.toggleWorkday(day)
+                        } label: {
+                            Text(label)
+                                .font(.footnote.weight(selected ? .semibold : .medium))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.62)
+                                .foregroundStyle(selected ? Color(uiColor: .systemBackground) : OWCDesign.secondary)
+                                .frame(maxWidth: .infinity, minHeight: 42)
+                                .background(selected ? OWCDesign.accent : OWCDesign.control)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .opacity(locked ? 0.55 : 1)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(selected ? .isSelected : [])
+                    }
+                }
+                .padding(.top, 8)
+                Text(store.t("keepAtLeastOneWorkday"))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .padding(.top, 8)
+            }
+
+            Spacer(minLength: 16)
+
+            onboardingDots
+            Button(store.t("onboardingFinish")) {
+                if skipSchedule { store.scheduleMode = .off }
+                else if store.workdays.isEmpty { store.workdays = [1, 2, 3, 4, 5] }
+                store.completeOnboarding(enableNotifications: false)
+            }
+            .buttonStyle(OWCPrimaryButtonStyle())
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+        }
+        .padding(.horizontal, 28)
+        .frame(maxWidth: 560)
+        .frame(maxWidth: .infinity)
+        .sheet(item: $timeField) { field in
+            OWCSetupTimePickerSheet(
+                store: store,
+                title: store.t(field == .start ? "startTime" : "endTime"),
+                minutes: Binding(
+                    get: { field == .start ? store.startMinutes : store.endMinutes },
+                    set: { value in
+                        if field == .start { store.startMinutes = value }
+                        else { store.endMinutes = value }
+                    }
+                )
+            )
+            .presentationDetents([.medium])
+        }
+        .onAppear {
+            skipSchedule = store.scheduleMode == .off
+            if store.workdays.isEmpty { store.workdays = [1, 2, 3, 4, 5] }
+        }
+    }
+
+    private var onboardingDots: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<6, id: \.self) { page in
+                Capsule()
+                    .fill(page == store.onboardingPage ? OWCDesign.accent : OWCDesign.control)
+                    .frame(width: page == store.onboardingPage ? 20 : 7, height: 7)
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 }

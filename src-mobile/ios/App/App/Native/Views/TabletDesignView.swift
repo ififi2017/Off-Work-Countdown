@@ -138,7 +138,7 @@ private struct TabletSidebar: View {
             // froze the sidebar's countdown and bar while the main column kept
             // moving, which read as the app having stalled.
             TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                if store.countdownStarted, let snapshot = store.snapshot(at: timeline.date) {
+                if store.shouldQuerySnapshot(at: timeline.date), let snapshot = store.snapshot(at: timeline.date) {
                     OWCSectionHeader(title: store.selectedTab == .timer ? store.t("todaysShift") : store.t("widgetWorking"))
                         .padding(.top, 26)
 
@@ -280,13 +280,11 @@ private struct TabletTimerView: View {
 
     @ViewBuilder
     private func tabletTimerContent(at date: Date) -> some View {
-        let snapshot = store.countdownStarted ? store.snapshot(at: date) : nil
-        let phase = store.visualPhase(snapshot: snapshot)
+        let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
+        let phase = store.visualPhase(snapshot: snapshot, at: date)
 
         ZStack {
-            if phase == .setup {
-                TabletSetupView(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
-            } else if phase.showsActiveTimer, let snapshot {
+            if phase.showsActiveTimer, let snapshot {
                 TabletRunningView(
                     store: store,
                     snapshot: snapshot,
@@ -376,6 +374,16 @@ private struct TabletRunningView: View {
         VStack(spacing: 0) {
             tabletHeader(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
 
+            if store.isForcedWorkday(snapshot) {
+                ManualTimingBanner(store: store)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 8)
+            } else if !snapshot.isBeforeStart(at: now), let note = store.earlyClockInNote(at: now) {
+                EarlyClockInBanner(store: store, note: note)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 8)
+            }
+
             // Scrollable, but only when it has to be. Expanding the list makes
             // the column taller than the pane, and without this the collapse
             // button and the action row went off the bottom — expandable with no
@@ -423,10 +431,18 @@ private struct TabletRunningView: View {
                     .padding(.top, sidebarVisible ? 14 : 18)
 
                 if sidebarVisible {
-                    OWCProgressMeter(progress: snapshot.progress, label: store.t("progress"), overtime: isOvertime, paused: onBreak, pending: snapshot.isBeforeStart(at: now))
+                    if snapshot.isBeforeStart(at: now) {
+                        OWCProgressMeter(
+                            progress: store.countdownToClockInFill(snapshot: snapshot, at: now),
+                            label: store.t("progress")
+                        )
                         .padding(.top, 17)
+                    } else {
+                    OWCProgressMeter(progress: snapshot.progress, label: store.t("progress"), overtime: isOvertime, paused: onBreak)
+                        .padding(.top, 17)
+                    }
 
-                    if store.scheduleMode != .off {
+                    if store.followsSchedule(at: now) {
                     HStack(spacing: 14) {
                         statCard(store.t("summaryThisWeek"), summaryLabel(weekSummary, includeMoney: false))
                         statCard(store.t("summaryThisYear"), summaryLabel(yearSummary, includeMoney: store.salaryEnabled))
@@ -436,9 +452,8 @@ private struct TabletRunningView: View {
                 } else {
                     if snapshot.isBeforeStart(at: now) {
                         OWCProgressMeter(
-                            progress: snapshot.progress,
-                            label: store.t("progress"),
-                            pending: true
+                            progress: store.countdownToClockInFill(snapshot: snapshot, at: now),
+                            label: store.t("progress")
                         )
                         .padding(.top, 56)
                     } else {
@@ -446,9 +461,14 @@ private struct TabletRunningView: View {
                             .padding(.top, 56)
                     }
                     HStack(spacing: 56) {
-                        if !snapshot.isBeforeStart(at: now) {
-                            fullStat(store.t("progress"), store.formatPercent(snapshot.progress))
-                        }
+                        fullStat(
+                            store.t("progress"),
+                            store.formatPercent(
+                                snapshot.isBeforeStart(at: now)
+                                    ? store.countdownToClockInFill(snapshot: snapshot, at: now)
+                                    : snapshot.progress
+                            )
+                        )
                         if store.salaryEnabled {
                             fullStat(
                                 store.t("moneyEarned"),
@@ -456,7 +476,7 @@ private struct TabletRunningView: View {
                                 accessory: { OWCEarningsVisibilityButton(store: store) }
                             )
                         }
-                        if store.scheduleMode != .off { fullStat(store.t("daysUntilRest"), daysUntilRest) }
+                        if store.followsSchedule(at: now) { fullStat(store.t("daysUntilRest"), daysUntilRest) }
                     }
                     .padding(.top, 56)
                 }
@@ -474,12 +494,6 @@ private struct TabletRunningView: View {
                 // overtime and sharing live — one tap from here, and a tap the
                 // user already made to get into this mode.
                 if sidebarVisible {
-                    // "Coming up" was absent from the iPad entirely — the one
-                    // layout where there is most room for it. The phone has
-                    // carried it since the redesign; this column never got it,
-                    // so an iPad user could not see when lunch or clock-off
-                    // were due without collapsing the sidebar into the phone
-                    // layout.
                     UpcomingTimelineView(
                         store: store,
                         snapshot: snapshot,
@@ -488,20 +502,35 @@ private struct TabletRunningView: View {
                         availableHeight: timelineHeight
                     )
                     .padding(.top, 22)
-
-                    HStack(spacing: 12) {
-                        Button {
-                            store.requestClockOffEarly()
-                        } label: { ClockOffEarlyLabel(store: store) }
-                        Button { showOvertime = true } label: {
-                            Text(store.t(isOvertime ? "adjustOvertime" : "overtime"))
-                        }
-                        Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
-                    }
-                    .buttonStyle(OWCSecondaryButtonStyle())
-                    .padding(.top, 24)
-                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { actionsHeight = $0 }
                 }
+
+                Group {
+                    if snapshot.isBeforeStart(at: now) {
+                        HStack(spacing: 12) {
+                            Button { store.clockInEarly(at: now) } label: {
+                                Text(store.t("clockInEarly"))
+                            }
+                            Button { showShare = true } label: {
+                                Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    } else {
+                        HStack(spacing: 12) {
+                            Button {
+                                store.requestClockOffEarly(at: now)
+                            } label: { ClockOffEarlyLabel(store: store) }
+                            Button { showOvertime = true } label: {
+                                Text(store.t(isOvertime ? "adjustOvertime" : "overtime"))
+                            }
+                            Button { showShare = true } label: {
+                                Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    }
+                }
+                .buttonStyle(OWCSecondaryButtonStyle())
+                .padding(.top, 24)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { actionsHeight = $0 }
             }
                     .frame(maxWidth: sidebarVisible ? 560 : 900)
                     // Centres the capped column. `GeometryReader` aligns its
@@ -527,12 +556,11 @@ private struct TabletRunningView: View {
                     // Top-aligned, overflow only ever goes down, which is what
                     // scrolling is for.
                     //
-                    // Immersive has no list and no buttons, so it always fits,
-                    // and top-aligning it would strand the countdown above a
-                    // screen of empty page. Centred is the whole point there.
+                    // Immersive still has the action row, so top-align when
+                    // that row is present rather than stranding it off-screen.
                     .frame(
                         minHeight: proxy.size.height,
-                        alignment: sidebarVisible ? .top : .center
+                        alignment: .top
                     )
                     .padding(.horizontal, 40)
                     .padding(.bottom, 40)
@@ -552,7 +580,11 @@ private struct TabletRunningView: View {
 
     private var isOvertime: Bool { snapshot.isOvertimeActive(at: now) }
 
-    private var displayRemaining: Double { snapshot.heroRemainingMs(at: now) }
+    private var displayRemaining: Double {
+        snapshot.isBeforeStart(at: now)
+            ? store.countdownToClockInMs(snapshot: snapshot, at: now)
+            : snapshot.heroRemainingMs(at: now)
+    }
 
     private var heroCaption: String {
         if snapshot.isBeforeStart(at: now) { return store.t("nextShiftLabelShort") }
@@ -647,65 +679,6 @@ private struct TabletRunningView: View {
         guard let date = snapshot.nextRestDate else { return "—" }
         let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now), to: Calendar.current.startOfDay(for: date)).day ?? 0
         return store.formatDays(Double(max(0, days)))
-    }
-}
-
-private struct TabletSetupView: View {
-    let store: OffWorkStore
-    let sidebarVisible: Bool
-    let showSidebar: () -> Void
-    @State private var timeField: SetupTimeField?
-
-    var body: some View {
-        VStack(spacing: 0) {
-            tabletHeader(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
-
-            ScrollView {
-                VStack(spacing: OWCDesign.sectionGap) {
-                    ShiftHeroCard(store: store) { timeField = $0 }
-                        .padding(.top, OWCDesign.heroGap)
-
-                    if let note = store.earlyClockOffNote() {
-                        EarlyClockOffBanner(store: store, note: note)
-                    }
-
-                    ShiftSetupTimelineView(
-                        store: store,
-                        onSelect: { store.presentedRoute = $0 },
-                        onEditTime: { timeField = $0 }
-                    )
-                }
-                .frame(maxWidth: 700)
-                .padding(.horizontal, 40)
-                .padding(.bottom, 24)
-            }
-            .scrollIndicators(.hidden)
-            .scrollBounceBehavior(.basedOnSize)
-        }
-        .safeAreaInset(edge: .bottom) {
-            ShiftStartButton(store: store, minimumHeight: 56) { store.presentedRoute = .lunch }
-                .frame(maxWidth: 700)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 40)
-                .padding(.top, 12)
-                .padding(.bottom, 24)
-                // Opaque: the scroll view runs underneath this inset.
-                .background(OWCDesign.page)
-        }
-        .sheet(item: $timeField) { field in
-            OWCSetupTimePickerSheet(
-                store: store,
-                title: store.t(field == .start ? "startTime" : "endTime"),
-                minutes: Binding(
-                    get: { field == .start ? store.displayedStartMinutes : store.displayedEndMinutes },
-                    set: { value in
-                        if field == .start { store.setDisplayedStartMinutes(value) }
-                        else { store.setDisplayedEndMinutes(value) }
-                    }
-                )
-            )
-            .presentationDetents([.medium])
-        }
     }
 }
 

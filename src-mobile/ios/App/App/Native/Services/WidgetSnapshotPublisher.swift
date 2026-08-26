@@ -54,7 +54,7 @@ final class WidgetSnapshotPublisher {
         // press of the stop button left the widget with nothing to say for every
         // day afterwards. The user's ask was the opposite: set it up once and
         // never think about it again.
-        if store.scheduleMode != .off, store.onboardingComplete, let shift {
+        if store.followsSchedule, let shift {
             return makeRecurringSnapshot(store: store, initialShift: shift, nowMs: nowMs)
         }
         guard active else {
@@ -71,7 +71,7 @@ final class WidgetSnapshotPublisher {
         shift: NativeShiftSnapshot?,
         nowMs: Int64
     ) -> WidgetSnapshot {
-        guard store.scheduleMode != .off, let shift else {
+        guard store.followsSchedule, let shift else {
             return idleSnapshot(store: store, nowMs: nowMs)
         }
 

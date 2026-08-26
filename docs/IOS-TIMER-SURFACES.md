@@ -1,6 +1,6 @@
 # iOS 计时页：形态、布局与班次逻辑
 
-本文是计时页的**目标口径**，2026-08-27 面试锁定，由 [007](../plans/007-ios-stable-before-subscription.md) 落地。落地前工作区代码仍是「配置页 + 七阶段 + 武装开关」；**以本文为准，不以当前 Swift 为准。**
+本文是计时页的**目标口径**，2026-08-27 面试锁定，由 [007](../plans/007-ios-stable-before-subscription.md) 落地。Swift 实现以本文为准。
 
 排班、午休、剩余时间和休息日判定仍以 `lib/countdown.ts` 为唯一实现；Swift 只消费 `NativeShiftSnapshot` 并选择界面。Widget / Live Activity / 通知用同一套 Store 标记，但各自有平行投影，不驱动计时页的阶段枚举。
 

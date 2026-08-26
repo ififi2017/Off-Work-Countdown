@@ -85,52 +85,6 @@ struct PhoneLandscapeShellView: View {
     }
 }
 
-private struct LandscapeSetupView: View {
-    let store: OffWorkStore
-    @State private var timeField: SetupTimeField?
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 20) {
-            VStack(spacing: 18) {
-                ShiftHeroCard(store: store) { timeField = $0 }
-                if let note = store.earlyClockOffNote() {
-                    EarlyClockOffBanner(store: store, note: note)
-                }
-                ShiftStartButton(store: store) { store.presentedRoute = .lunch }
-            }
-            .frame(maxWidth: .infinity)
-
-            ScrollView {
-                ShiftSetupTimelineView(
-                    store: store,
-                    onSelect: { store.presentedRoute = $0 },
-                    onEditTime: { timeField = $0 }
-                )
-            }
-            .frame(maxWidth: .infinity)
-            .scrollIndicators(.hidden)
-        }
-        .frame(maxHeight: 330)
-        .frame(maxHeight: .infinity)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 14)
-        .sheet(item: $timeField) { field in
-            OWCSetupTimePickerSheet(
-                store: store,
-                title: store.t(field == .start ? "startTime" : "endTime"),
-                minutes: Binding(
-                    get: { field == .start ? store.displayedStartMinutes : store.displayedEndMinutes },
-                    set: { value in
-                        if field == .start { store.setDisplayedStartMinutes(value) }
-                        else { store.setDisplayedEndMinutes(value) }
-                    }
-                )
-            )
-            .presentationDetents([.medium])
-        }
-    }
-}
-
 private struct LandscapeTimerView: View {
     // No semantic style goes this large; scale the display size instead.
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 76
@@ -165,16 +119,23 @@ private struct LandscapeTimerView: View {
 
     @ViewBuilder
     private func landscapeContent(at date: Date) -> some View {
-        let snapshot = store.countdownStarted ? store.snapshot(at: date) : nil
-        let phase = store.visualPhase(snapshot: snapshot)
+        let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
+        let phase = store.visualPhase(snapshot: snapshot, at: date)
 
         ZStack {
-            if phase == .setup {
-                LandscapeSetupView(store: store)
-            } else if phase.showsActiveTimer, let snapshot {
-                let remaining = snapshot.heroRemainingMs(at: date)
+            if phase.showsActiveTimer, let snapshot {
+                let remaining = snapshot.isBeforeStart(at: date)
+                    ? store.countdownToClockInMs(snapshot: snapshot, at: date)
+                    : snapshot.heroRemainingMs(at: date)
                 let beforeStart = snapshot.isBeforeStart(at: date)
                 VStack(spacing: 0) {
+                    if store.isForcedWorkday(snapshot) {
+                        ManualTimingBanner(store: store)
+                            .padding(.bottom, 8)
+                    } else if !beforeStart, let note = store.earlyClockInNote(at: date) {
+                        EarlyClockInBanner(store: store, note: note)
+                            .padding(.bottom, 8)
+                    }
                     Text(date.formatted(.dateTime.month().day().weekday(.wide).locale(store.locale)))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(OWCDesign.secondary)
@@ -191,22 +152,23 @@ private struct LandscapeTimerView: View {
 
                     VStack(spacing: 8) {
                         GeometryReader { proxy in
+                            let fill = beforeStart
+                                ? store.countdownToClockInFill(snapshot: snapshot, at: date)
+                                : snapshot.progress
                             Capsule().fill(OWCDesign.control)
                                 .overlay(alignment: .leading) {
-                                    if !beforeStart {
-                                        Capsule().fill(OWCDesign.accent)
-                                            .frame(width: proxy.size.width * min(1, max(0, snapshot.progress / 100)))
-                                    }
+                                    Capsule().fill(OWCDesign.accent)
+                                        .frame(width: proxy.size.width * min(1, max(0, fill / 100)))
                                 }
                         }
                         .frame(height: 10)
                         GeometryReader { proxy in
-                            Text(store.timeString(store.startMinutes)).position(x: 24, y: 8)
-                            if store.lunchEnabled, snapshot.segments.count > 1 {
-                                Text("\(store.timeString(store.lunchStartMinutes)) · \(store.t("lunchBreak"))")
+                            Text(store.timeString(store.effectiveStartMinutes(at: date))).position(x: 24, y: 8)
+                            if store.effectiveLunchEnabled(at: date), snapshot.segments.count > 1 {
+                                Text("\(store.timeString(store.effectiveLunchStartMinutes(at: date))) · \(store.t("lunchBreak"))")
                                     .position(x: max(62, min(proxy.size.width - 62, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
                             }
-                            Text(store.timeString(store.endMinutes)).position(x: proxy.size.width - 24, y: 8)
+                            Text(store.timeString(store.effectiveEndMinutes(at: date))).position(x: proxy.size.width - 24, y: 8)
                         }
                         .frame(height: 16)
                         .font(.caption.monospacedDigit())
@@ -215,20 +177,34 @@ private struct LandscapeTimerView: View {
                     .padding(.top, 20)
 
                     HStack(spacing: 52) {
-                        if !beforeStart {
-                            landscapeStat(store.t("progress"), store.formatPercent(snapshot.progress))
-                        }
+                        landscapeStat(
+                            store.t("progress"),
+                            store.formatPercent(
+                                beforeStart
+                                    ? store.countdownToClockInFill(snapshot: snapshot, at: date)
+                                    : snapshot.progress
+                            )
+                        )
                         if store.salaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
-                        if store.scheduleMode != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot)) }
+                        if store.effectiveScheduleMode(at: date) != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot)) }
                     }
                     .padding(.top, 20)
 
                     HStack(spacing: 10) {
-                        Button {
-                            store.requestClockOffEarly()
-                        } label: { ClockOffEarlyLabel(store: store) }
-                        Button { showOvertime = true } label: { Text(store.t("overtime")) }
-                        Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
+                        if beforeStart {
+                            Button { store.clockInEarly(at: date) } label: {
+                                Text(store.t("clockInEarly"))
+                            }
+                            Button { showShare = true } label: {
+                                Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
+                            }
+                        } else {
+                            Button {
+                                store.requestClockOffEarly(at: date)
+                            } label: { ClockOffEarlyLabel(store: store) }
+                            Button { showOvertime = true } label: { Text(store.t("overtime")) }
+                            Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
+                        }
                     }
                     .buttonStyle(LandscapeButtonStyle())
                     .padding(.top, 20)

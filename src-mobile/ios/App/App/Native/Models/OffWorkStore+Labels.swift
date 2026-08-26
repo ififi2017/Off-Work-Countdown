@@ -9,14 +9,11 @@ import LocalAuthentication
 /// landscape, iPad and the settings list all read them from here now.
 extension OffWorkStore {
     var scheduleLabel: String {
-        // Classic mode with nothing selected is off in practice, even though
-        // the mode itself is still set.
-        if scheduleMode == .classic, workdays.isEmpty { return t("disabledShort") }
-        return switch scheduleMode {
+        return switch effectiveScheduleMode() {
         case .classic: t("scheduleClassic")
         case .alternating: t("scheduleAlternating")
         case .rotation: t("scheduleRotation")
-        case .off: t("disabledShort")
+        case .off: t("scheduleOff")
         }
     }
 

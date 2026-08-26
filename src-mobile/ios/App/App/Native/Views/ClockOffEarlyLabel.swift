@@ -16,9 +16,7 @@ struct ClockOffEarlyLabel: View {
 
     private var armed: Bool { store.clockOffConfirmPending }
 
-    private var titleKey: String {
-        // Manual mode still has a session to leave rather than a day to record.
-        if store.scheduleMode == .off { return "return" }
+    var titleKey: String {
         return armed ? "clockOffEarlyConfirm" : "clockOffEarly"
     }
 
@@ -70,5 +68,66 @@ struct EarlyClockOffBanner: View {
         .padding(.horizontal, 14)
         .frame(minHeight: 48)
         .background(OWCDesign.card, in: RoundedRectangle(cornerRadius: OWCDesign.cardRadius, style: .continuous))
+    }
+}
+
+struct EarlyClockInBanner: View {
+    let store: OffWorkStore
+    let note: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "figure.walk.arrival")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(OWCDesign.secondary)
+            Text(note)
+                .font(.subheadline)
+                .foregroundStyle(OWCDesign.secondary)
+            Spacer(minLength: 8)
+            Button(store.t("undoClockInEarly")) { store.undoEarlyClockIn() }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(OWCDesign.accent)
+                .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 48)
+        .background(OWCDesign.card, in: RoundedRectangle(cornerRadius: OWCDesign.cardRadius, style: .continuous))
+    }
+}
+
+struct ManualTimingBanner: View {
+    let store: OffWorkStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var armed: Bool { store.cancelManualTimingConfirmPending }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "hand.tap")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(OWCDesign.secondary)
+            Text(store.t("manualTimingBanner"))
+                .font(.subheadline)
+                .foregroundStyle(OWCDesign.secondary)
+            Spacer(minLength: 8)
+            Button {
+                store.requestCancelManualTiming()
+            } label: {
+                Text(store.t(armed ? "cancelManualTimingConfirm" : "cancelManualTiming"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(armed ? OWCDesign.orangeDeep : OWCDesign.accent)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 48)
+        .background(OWCDesign.card, in: RoundedRectangle(cornerRadius: OWCDesign.cardRadius, style: .continuous))
+        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: armed)
+        .task(id: armed) {
+            guard armed else { return }
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            store.cancelClockOffConfirmation()
+        }
     }
 }

@@ -74,36 +74,16 @@ struct TimerDesignView: View {
 
     @ViewBuilder
     private func timerContent(at date: Date) -> some View {
-        let snapshot = store.countdownStarted ? store.snapshot(at: date) : nil
-        let phase = store.visualPhase(snapshot: snapshot)
+        let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
+        let phase = store.visualPhase(snapshot: snapshot, at: date)
 
         Group {
             switch phase {
-            case .setup:
-                ShiftSetupView(store: store, onOpenSettings: openSettings)
-            case .running:
+            case .unscheduled:
+                UnscheduledTimerView(store: store)
+            case .running, .lunch, .overtime:
                 if let snapshot {
                     RunningTimerDesignView(
-                        store: store,
-                        snapshot: snapshot,
-                        now: date,
-                        showShare: $showShare,
-                        showOvertime: $showOvertime
-                    )
-                }
-            case .lunch:
-                if let snapshot {
-                    LunchBreakDesignView(
-                        store: store,
-                        snapshot: snapshot,
-                        now: date,
-                        showShare: $showShare,
-                        showOvertime: $showOvertime
-                    )
-                }
-            case .overtime:
-                if let snapshot {
-                    OvertimeDesignView(
                         store: store,
                         snapshot: snapshot,
                         now: date,
@@ -125,7 +105,7 @@ struct TimerDesignView: View {
                     RestDayDesignView(
                         store: store,
                         snapshot: snapshot,
-                        onOpenSettings: openSettings
+                        now: date
                     )
                 }
             case .rulesError:
@@ -167,14 +147,16 @@ struct TimerDesignView: View {
         VStack(spacing: 14) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.title)
-            Text(store.t("countdownRulesUnavailable"))
+            Text(store.t("rulesErrorBanner"))
                 .font(.subheadline)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
-            Button { store.stopCountdown() } label: {
-                Label(store.t("returnToSetup"), systemImage: "arrow.left")
+            Button {
+                openSettings(nil)
+            } label: {
+                Label(store.t("settings"), systemImage: "slider.horizontal.3")
             }
-            .buttonStyle(OWCPrimaryButtonStyle())
+            .buttonStyle(OWCSecondaryButtonStyle())
         }
         .padding(20)
     }
@@ -200,6 +182,16 @@ private struct RunningTimerDesignView: View {
     var body: some View {
         VStack(spacing: 0) {
             OWCAppHeader(store: store)
+
+            if store.isForcedWorkday(snapshot) {
+                ManualTimingBanner(store: store)
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.top, 8)
+            } else if !beforeStart, let note = store.earlyClockInNote(at: now) {
+                EarlyClockInBanner(store: store, note: note)
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.top, 8)
+            }
 
             GeometryReader { proxy in
                 ScrollView {
@@ -227,19 +219,18 @@ private struct RunningTimerDesignView: View {
                         .padding(.top, overtime ? 12 : 16)
 
                         OWCProgressMeter(
-                            progress: snapshot.progress,
+                            progress: meterProgress,
                             label: store.t("progress"),
                             overtime: overtime,
-                            paused: onBreak,
-                            pending: beforeStart
+                            paused: onBreak
                         )
                             .padding(.horizontal, OWCDesign.contentInset)
                             .padding(.top, 7)
-                            .animation(.linear(duration: 0.9), value: snapshot.progress)
+                            .animation(.linear(duration: 0.9), value: meterProgress)
 
                         if !timelineExpanded {
                             VStack(alignment: .leading, spacing: 0) {
-                                if store.scheduleMode != .off {
+                                if store.followsSchedule(at: now) {
                                     OWCSectionHeader(title: store.t("summaryEstimateNote"))
                                 }
                                 summaryCard
@@ -280,7 +271,8 @@ private struct RunningTimerDesignView: View {
 
             TimerActionBar(
                 store: store,
-                overtimeActive: overtime,
+                snapshot: snapshot,
+                now: now,
                 showShare: $showShare,
                 showOvertime: $showOvertime
             )
@@ -299,7 +291,17 @@ private struct RunningTimerDesignView: View {
         return store.t("timeLeftCaption")
     }
 
-    private var displayRemaining: Double { snapshot.heroRemainingMs(at: now) }
+    private var displayRemaining: Double {
+        beforeStart
+            ? store.countdownToClockInMs(snapshot: snapshot, at: now)
+            : snapshot.heroRemainingMs(at: now)
+    }
+
+    private var meterProgress: Double {
+        beforeStart
+            ? store.countdownToClockInFill(snapshot: snapshot, at: now)
+            : snapshot.progress
+    }
 
     private var summaryTransition: AnyTransition {
         reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top))
@@ -307,14 +309,14 @@ private struct RunningTimerDesignView: View {
 
     private var summaryCard: some View {
         OWCGroupCard {
-            OWCRow(icon: "clock", title: store.t("todaysShift"), isLast: !store.salaryEnabled && store.scheduleMode == .off) {
+            OWCRow(icon: "clock", title: store.t("todaysShift"), isLast: !store.salaryEnabled && !store.followsSchedule(at: now)) {
                 Text("\(store.formatTime(snapshot.startDate)) – \(store.formatTime(snapshot.endDate))")
                     .font(.body.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
                     .environment(\.layoutDirection, .leftToRight)
             }
             if store.salaryEnabled {
-            OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: store.scheduleMode == .off) {
+            OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: !store.followsSchedule(at: now)) {
                 HStack(spacing: 8) {
                     Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
                         .font(.body.weight(.semibold).monospacedDigit())
@@ -322,7 +324,7 @@ private struct RunningTimerDesignView: View {
                 }
             }
             }
-            if store.scheduleMode != .off {
+            if store.followsSchedule(at: now) {
             OWCRow(icon: "calendar", title: store.t("summaryThisWeek")) {
                 Text(summaryText(weekSummary))
                     .font(.subheadline.monospacedDigit())

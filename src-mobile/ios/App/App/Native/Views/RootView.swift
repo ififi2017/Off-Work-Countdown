@@ -119,7 +119,7 @@ struct OffWorkCountdownRootView: View {
             "\(store.rotationWorkDays)-\(store.rotationRestDays)-\(store.rotationAnchorMs)",
             store.languageCode,
         ]
-        guard store.countdownStarted else {
+        guard store.publishesLiveSurfaces else {
             return (["false"] + scheduleFields).joined(separator: "|")
         }
         return [
@@ -130,7 +130,7 @@ struct OffWorkCountdownRootView: View {
             "\(store.lunchStartReminderEnabled)-\(store.lunchEndReminderEnabled)-\(store.microBreakEnabled)-\(store.microBreakIntervalMinutes)",
             "\(store.overtimeEndAtMs ?? 0)",
             "\(store.earlyOffAtMs ?? 0)-\(store.earlyOffShiftEndAtMs ?? 0)",
-            "\(store.dismissedCompletedEndAtMs ?? 0)",
+            "\(store.earlyStartAtMs ?? 0)",
             store.forcedWorkdayKey ?? "",
             "\(store.annualBonusEnabled)-\(store.annualBonusMonths)",
             "\(store.salaryEnabled)-\(store.salaryAmount)-\(store.salaryType.rawValue)",
@@ -229,7 +229,7 @@ struct OffWorkCountdownRootView: View {
             // app is leaving the foreground there must be no additional sleep:
             // iOS may suspend the process before a delayed task gets to rebuild
             // notifications, Live Activities and the widget timeline.
-            if !store.countdownStarted {
+            if !store.publishesLiveSurfaces {
                 await notifications.clearShiftNotifications()
                 // The start branch below has always checked here; this one did
                 // not, so a countdown restarted mid-teardown had its freshly

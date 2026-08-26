@@ -278,11 +278,7 @@ struct ShareComposerView: View {
     }
 
     private var shareCopy: String {
-        let remaining = store.snapshot()?.remainingMs ?? 0
-        if let shift = store.snapshot(), store.isShiftComplete(shift) {
-            return store.t("shareOffWorkText")
-        }
-        return store.t("shareText", values: ["time": store.formatRelativeDuration(remaining)])
+        store.shareCopy()
     }
 }
 
@@ -338,15 +334,15 @@ private struct ShareCard: View {
                     Capsule()
                         .fill(.white.opacity(0.35))
                         .overlay(alignment: .leading) {
-                            Capsule()
-                                .fill(.white)
-                                .frame(width: proxy.size.width * min(1, max(0, displaySnapshot?.progress ?? 0) / 100))
+                    Capsule()
+                        .fill(.white)
+                        .frame(width: proxy.size.width * min(1, max(0, store.shareProgress() / 100)))
                         }
                 }
                 .frame(height: 5)
 
                 HStack {
-                    Text(store.formatPercent(displaySnapshot?.progress ?? 0))
+                    Text(store.formatPercent(store.shareProgress()))
                     Spacer()
                     Text("OFF.RAINIF.COM")
                 }
@@ -360,17 +356,6 @@ private struct ShareCard: View {
         }
     }
 
-    private var snapshot: NativeShiftSnapshot? { store.snapshot() }
-    private var displaySnapshot: NativeShiftSnapshot? {
-        snapshot.map { store.clockOffSnapshot(for: $0) }
-    }
-    private var isComplete: Bool { snapshot.map(store.isShiftComplete) ?? false }
-    private var heroText: String {
-        isComplete ? store.t("shareDone") : store.formatRelativeDuration(snapshot?.remainingMs ?? 0)
-    }
-    private var messageText: String {
-        isComplete
-            ? store.t("shareOffWorkText")
-            : store.t("shareText", values: ["time": store.formatRelativeDuration(snapshot?.remainingMs ?? 0)])
-    }
+    private var heroText: String { store.shareHeroText() }
+    private var messageText: String { store.shareCopy() }
 }
