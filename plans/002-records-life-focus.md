@@ -169,6 +169,11 @@ struct CareerPeriod {
     var label: String?
     var timeZoneIdentifier: String
     var calendarIdentifier: String
+    var createdAt: Date          // 决定重叠时的读取顺序
+    var editedAt: Date
+    var tieBreakerID: String
+    var isCleared: Bool          // 墓碑
+    var schemaVersion: Int
 }
 
 struct ScheduleSnapshot {
@@ -178,6 +183,9 @@ struct ScheduleSnapshot {
     var effectiveFrom: Date
     var configurationData: Data
     var fingerprint: String
+    var editedAt: Date
+    var tieBreakerID: String
+    var isCleared: Bool          // 墓碑；父阶段被清空时随之标记，而不是级联删除
 }
 ~~~
 
@@ -241,11 +249,13 @@ enum WorkObservationKind: String {
 
 struct WorkObservation {
     var id: UUID
+    var idempotencyKey: String   // "<shiftAnchorDate>#<kind>#<occurredAt 取整到秒>"
     var shiftAnchorDate: Date
     var occurredAt: Date
     var kind: WorkObservationKind
     var valueData: Data?
     var scheduleSnapshotID: UUID
+    var isCleared: Bool          // 墓碑：用户删除的观察不会被另一台设备重新推回来
     var schemaVersion: Int
 }
 ~~~
@@ -365,17 +375,24 @@ struct CalendarException {
 
 ~~~swift
 struct LifeProfile {
-    var id: UUID
+    static let singletonID = UUID(uuidString: "00000000-0000-0000-0000-00574F524B01")!
+
+    var id: UUID                 // 恒等于 singletonID
     var birthDate: Date?
     var careerStartDate: Date?
     var retirementAge: Int
     var averageSleepHours: Double
     var hidesExactAges: Bool
+    /// 逐字段的最后修改时刻，键是属性名。冲突按字段收敛，而不是整条记录——
+    /// 一台设备改退休年龄、另一台改睡眠时长，两个改动都该留下。
+    var fieldEditedAt: [String: Date]
+    var tieBreakerID: String
     var schemaVersion: Int
 }
 ~~~
 
-单例实体，仍用 UUID 以适配 CloudKit。不含寿命字段——人生视图的右边界是退休。
+单例实体，但 **id 是写死的常量**而不是随机生成：两台设备离线首次写入时必须造出同一条记录，
+否则会出现两份人生档案。不含寿命字段——人生视图的右边界是退休。
 
 ### 7. 每日摘要是派生缓存，不是事实表
 
@@ -477,20 +494,34 @@ CloudKit 回放造成重复记录。
 
 | 实体 | 身份 | 冲突收敛 | 删除 | 恢复 |
 | --- | --- | --- | --- | --- |
-| `LifeProfile` | **固定常量 UUID**（单例，两台设备算出同一个） | 逐字段 `editedAt` 晚者胜 | 不删除，只清空字段 | 无需 |
-| `CareerPeriod` | 随机 UUID + `startsOn` | 起止**重叠**时按 `startsOn` 排序合并为相邻区间，重叠部分归较晚创建的那条 | 墓碑 | 单日详情提示「阶段被改过」 |
-| `ScheduleSnapshot` | 随机 UUID + `effectiveFrom` | 同一 `effectiveFrom` 多条时 `fingerprint` 相同则去重，不同则晚者胜 | 随所属阶段级联墓碑 | 同上 |
-| `WorkObservation` | 随机 UUID + 业务幂等键 | 幂等键相同即同一事件，去重不比较 | 用户可删，写墓碑 | 无需（观察不参与结论） |
+| `LifeProfile` | `singletonID` 常量 | 逐字段比较 `fieldEditedAt[属性名]`，晚者胜；平局比 `tieBreakerID` | 不删除，只清空字段 | 无需 |
+| `CareerPeriod` | 随机 UUID | **不做结构性合并**，见下方「读取时决议」 | `isCleared` 墓碑 | 提示「另一台设备也建过阶段」 |
+| `ScheduleSnapshot` | 随机 UUID | 同一 `careerPeriodID` + `effectiveFrom` 下：`fingerprint` 相同即去重；不同则 `editedAt` → `tieBreakerID` | `isCleared` 墓碑 | 同上 |
+| `WorkObservation` | `idempotencyKey` | 同键即同一事件，直接去重，不比较内容 | `isCleared` 墓碑 | 无需（观察不参与结论） |
 | `DayOverride` | `dayKey` = 班次锚点日 | `editedAt` → `tieBreakerID` | `.cleared` 墓碑 | 保留落败版本并给入口 |
 | `CalendarException` | `dayKey` = `<date>#<origin>` | 同上；用户标记优先于内置数据 | `isCleared` 墓碑 | 同上 |
 | `DailyWorkSummary` | 本地表，**不同步** | 不适用 | 随时可重建 | 不适用 |
+
+#### 职业阶段用「读取时决议」，不做结构性合并
+
+上一版写的是「重叠部分归较晚创建的那条」，那需要真的合并区间，并把落败阶段下面的快照与
+引用重新挂载——一段没人想写、也很难写对的代码。改成不合并：
+
+- **两条重叠的阶段都留着**，谁也不删谁的数据。
+- **任一日期属于哪个阶段，是读取时算出来的纯函数**：取 `startsOn ≤ 该日` 中最晚的一条；
+  并列时比 `createdAt`，再并列比 `tieBreakerID`。和三层优先级链一样，是决议而不是破坏。
+- **因此不存在「引用重挂」问题**：快照始终跟着自己的阶段，`DayOverride` 的 `dayKey` 早已
+  不依赖阶段 ID，谁都不需要被改写。
+- 代价是两台设备各建一次「我现在的工作」时，用户会看到两条相似的阶段。这**交给用户合并**，
+  在阶段列表里给一个「这两段是同一份工作」的动作——**永远不自动销毁用户建的阶段**。
 
 两条通用规则：
 
 - **收敛必须是纯函数。** 每台设备拿到同一批记录，独立算出的结果必须一致；任何依赖「谁先
   收到」的写法都会导致设备间来回翻转。
-- **删除一律写墓碑。** 物理删除会与另一台设备的离线编辑竞争。墓碑可在确认全设备同步后由
-  后台清理，那是优化，不是语义。
+- **删除一律写墓碑，且墓碑不级联。** 物理删除会与另一台设备的离线编辑竞争。清空一个职业
+  阶段时，它的快照各自标记墓碑而不是被父记录连带抹掉——级联删除在分布式场景下会把另一台
+  设备刚建的快照一起带走。墓碑可在确认全设备同步后由后台清理，那是优化，不是语义。
 - **P0A 建立的表**：CareerPeriod、ScheduleSnapshot、WorkObservation、DayOverride、
   CalendarException、LifeProfile、DailyWorkSummary（本地）。P2 的任务与专注表随 P2 建立——
   新增实体在 SwiftData / CloudKit 里是轻量迁移，改已有实体的字段才是贵的，所以字段现在
@@ -519,6 +550,29 @@ CloudKit 回放造成重复记录。
   变陈旧，那是数据风险，不是功能降级。
 - **Apple Account 切换**：CloudKit 会给出账户变更通知。此时同步 store 的内容属于前一个
   账户，必须停止同步并要求用户明确选择，不得静默把前一账户的数据推给新账户。
+- **重装或换新设备**：见下方。
+
+##### 「开启过同步」不能只是一个本机标志
+
+把「是否开启过」存在本机、据此决定建哪种 store，在重装或换机后会塌掉：本地标志没了，
+如果订阅同时已经到期，用户既开不了「付费的同步」，应用也不知道他的私有库里其实躺着几年
+记录。CloudKit 私有库跟随的是**当前 Apple Account**，不是某一次本地安装。
+
+所以要把两件事拆开：
+
+| 动作 | 归属 | 说明 |
+| --- | --- | --- |
+| **新建**一个 iCloud 同步库 | 付费能力 | 入口在记录 Tab 后面，第一次开启时走迁移 |
+| **连接 / 恢复**当前账户已有的云记录 | **数据权利，永久可用** | 不需要订阅，不需要本地标志 |
+
+实现要点：
+
+- 设置页常驻一个「恢复我的 iCloud 记录」入口，**任何权益状态下都可达**。
+- 它**不在启动时自动探测**——探测本身是网络请求，会破坏「不开记录就不联网」。只有用户
+  主动点，才去查私有库里是否存在我们的自定义 zone。
+- 查到有记录：直接建同步 store 并拉回来，不询问订阅状态。查到没有：告诉用户这个 Apple
+  Account 下没有可恢复的记录，并指向「新建同步」的付费入口。
+- 恢复回来的记录按数据权利对待：可查看、可导出、可删除；付费图表仍在墙后。
 
 代价要说清楚：这是一套必须认真测试的迁移代码，是「默认关闭」这个隐私姿态的实际价格。
 接受它，因为不开记录功能的用户就应该和今天完全一样——一次网络请求都不发。
@@ -751,8 +805,11 @@ P0A、P0B 与 P1 依次推进，但 P0B 不阻塞 P0A 的验收，也不应和�
 18. 一台清空某天、另一台同时把它改成 10:00–19:00：结果确定且各设备一致，不出现清空被静默复活。
 19. 首次开启 iCloud 同步：已有本地记录完整上云，条数与 `dayKey` 一致；中途杀掉进程可重试且不丢数据。
 20. 订阅到期后在另一台设备改了明天的班：同步照常，两台设备一致；付费界面不可见但数据不掉队。
-21. 两台设备各自离线初始化职业阶段后联网：阶段按 `startsOn` 合并成相邻区间，同一天的覆盖
-    仍按锚点日撞上同一个 `dayKey`。
+21. 两台设备各自离线建了职业阶段后联网：两条都留着，任一日期归属由读取时决议算出且各设备
+    一致；用户可在阶段列表里主动合并，应用不自动删任何一条。
+22. 曾开启同步 → 订阅到期 → 删除 App 重装（或换新机）：「恢复我的 iCloud 记录」仍可用，
+    已有云记录完整回来，不需要重新订阅。
+23. 从未开启过同步的账户点「恢复」：明确告知没有可恢复的记录，并指向新建同步的付费入口。
 
 ## 一句话原则
 
