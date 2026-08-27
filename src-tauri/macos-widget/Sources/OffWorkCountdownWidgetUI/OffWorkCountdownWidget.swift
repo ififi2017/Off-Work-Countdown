@@ -7,6 +7,14 @@ import WidgetSnapshotContract
 #endif
 
 public let offWorkCountdownWidgetKind = "com.rainif.offworkcountdown.macappstore.widget"
+
+private func widgetProductName(locale: String) -> String {
+    #if os(iOS)
+    "DoneAt"
+    #else
+    WidgetCopy.text("appShortName", locale: locale)
+    #endif
+}
 public let widgetSnapshotFileName = "widget-snapshot-v1.json"
 public let localWidgetSnapshotDirectoryName =
     "com.rainif.offworkcountdown.macappstore.local-widget"
@@ -405,7 +413,7 @@ public struct OffWorkCountdownWidgetView: View {
                 // thing. These are the names already shipping as the Home
                 // Screen app label, so they are translations that have been
                 // through review rather than ones invented here.
-                Text(WidgetCopy.text("appShortName", locale: entry.locale))
+                Text(verbatim: widgetProductName(locale: entry.locale))
             } icon: {
                 Image(systemName: accessoryGlyph(snapshotEntry.phase))
             }
@@ -478,7 +486,7 @@ public struct OffWorkCountdownWidgetView: View {
             // Short name here too: the header sits beside a 25pt badge on a
             // small widget, and the full name wrapped onto a second line in
             // every language that is not CJK.
-            Text(WidgetCopy.text("appShortName", locale: entry.locale))
+            Text(verbatim: widgetProductName(locale: entry.locale))
                 .font(.caption.weight(.bold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
@@ -761,8 +769,7 @@ public struct OffWorkCountdownWidget: Widget {
         }
         .configurationDisplayName(
             Text(
-                verbatim: WidgetCopy.text(
-                    "offWorkCountdown",
+                verbatim: widgetProductName(
                     locale: WidgetCopy.currentLocaleIdentifier
                 )
             )

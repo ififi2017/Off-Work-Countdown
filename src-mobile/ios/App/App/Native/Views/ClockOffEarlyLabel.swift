@@ -13,6 +13,7 @@ import SwiftUI
 struct ClockOffEarlyLabel: View {
     let store: OffWorkStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var warningPulse = 0
 
     private var armed: Bool { store.clockOffConfirmPending }
 
@@ -30,10 +31,43 @@ struct ClockOffEarlyLabel: View {
         // in some places and fight it in others.
         .foregroundStyle(armed ? OWCDesign.orangeDeep : OWCDesign.primary)
         .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: armed)
-        .sensoryFeedback(.warning, trigger: armed)
+        .sensoryFeedback(.warning, trigger: warningPulse)
+        .onChange(of: armed) { _, armed in
+            if armed { warningPulse += 1 }
+        }
         // Disarms itself, like the start button does. A confirmation left
         // standing is one the user meets again much later, having forgotten it,
         // and fires with a press they meant as their first.
+        .task(id: armed) {
+            guard armed else { return }
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            store.cancelClockOffConfirmation()
+        }
+    }
+}
+
+struct ClockInEarlyLabel: View {
+    let store: OffWorkStore
+    var tinted = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var warningPulse = 0
+
+    private var armed: Bool { store.clockInConfirmPending }
+
+    var body: some View {
+        Label(
+            store.t(armed ? "clockInEarlyConfirm" : "clockInEarly"),
+            systemImage: armed ? "exclamationmark.triangle.fill" : "arrow.right"
+        )
+        .lineLimit(1)
+        .minimumScaleFactor(0.72)
+        .foregroundStyle(tinted ? (armed ? OWCDesign.orangeDeep : OWCDesign.primary) : .white)
+        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: armed)
+        .sensoryFeedback(.warning, trigger: warningPulse)
+        .onChange(of: armed) { _, armed in
+            if armed { warningPulse += 1 }
+        }
         .task(id: armed) {
             guard armed else { return }
             try? await Task.sleep(for: .seconds(5))
@@ -97,7 +131,10 @@ struct EarlyClockInBanner: View {
 
 struct ManualTimingBanner: View {
     let store: OffWorkStore
+    var compact = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var warningPulse = 0
+    @State private var commitPulse = 0
 
     private var armed: Bool { store.cancelManualTimingConfirmPending }
 
@@ -107,22 +144,32 @@ struct ManualTimingBanner: View {
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(OWCDesign.secondary)
             Text(store.t("manualTimingBanner"))
-                .font(.subheadline)
+                .font(compact ? .footnote : .subheadline)
                 .foregroundStyle(OWCDesign.secondary)
-            Spacer(minLength: 8)
+            if !compact { Spacer(minLength: 8) }
             Button {
+                let commits = armed
+                if commits { commitPulse += 1 } else { warningPulse += 1 }
                 store.requestCancelManualTiming()
             } label: {
                 Text(store.t(armed ? "cancelManualTimingConfirm" : "cancelManualTiming"))
-                    .font(.subheadline.weight(.semibold))
+                    .font((compact ? Font.footnote : .subheadline).weight(.semibold))
                     .foregroundStyle(armed ? OWCDesign.orangeDeep : OWCDesign.accent)
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 14)
-        .frame(minHeight: 48)
-        .background(OWCDesign.card, in: RoundedRectangle(cornerRadius: OWCDesign.cardRadius, style: .continuous))
+        .padding(.horizontal, compact ? 12 : 14)
+        .frame(minHeight: compact ? 26 : 48)
+        .background(
+            OWCDesign.card,
+            in: RoundedRectangle(
+                cornerRadius: compact ? 100 : OWCDesign.cardRadius,
+                style: .continuous
+            )
+        )
         .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: armed)
+        .sensoryFeedback(.warning, trigger: warningPulse)
+        .sensoryFeedback(.impact(weight: .medium), trigger: commitPulse)
         .task(id: armed) {
             guard armed else { return }
             try? await Task.sleep(for: .seconds(5))

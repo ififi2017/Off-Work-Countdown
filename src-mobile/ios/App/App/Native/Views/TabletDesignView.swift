@@ -104,11 +104,9 @@ private struct TabletSidebar: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Image(.brandIcon)
-                    .resizable()
+                OWCBrandMark()
                     .frame(width: 30, height: 30)
-                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-                Text(store.t("offWorkCountdown"))
+                Text(verbatim: OWCBrand.shortName)
                     .font(.body.bold())
                     .tracking(-0.34)
                     .lineLimit(1)
@@ -212,6 +210,7 @@ private struct TabletSidebar: View {
         case .unscheduled: store.t("unscheduledTitle")
         case .lunch: store.t("lunchInProgress")
         case .overtime: store.t("overtimeTimeLeftCaption")
+        case .clockIn: store.t("nextShiftLabelShort")
         case .running, .rulesError:
             snapshot.isBeforeStart(at: date) ? store.t("nextShiftLabelShort") : store.t("timeLeftCaption")
         }
@@ -225,7 +224,7 @@ private struct TabletSidebar: View {
         switch phase {
         case .completed: 0
         case .rest: store.countdownToClockInMs(snapshot: snapshot, at: date)
-        case .running where snapshot.isBeforeStart(at: date):
+        case .running where snapshot.isBeforeStart(at: date), .clockIn:
             store.countdownToClockInMs(snapshot: snapshot, at: date)
         default:
             snapshot.heroRemainingMs(at: date)
@@ -239,9 +238,9 @@ private struct TabletSidebar: View {
     ) -> Double {
         switch phase {
         case .completed: 100
-        case .rest: store.countdownToClockInFill(snapshot: snapshot, at: date)
-        case .running where snapshot.isBeforeStart(at: date):
-            store.countdownToClockInFill(snapshot: snapshot, at: date)
+        case .rest: store.countdownToClockInProgress(snapshot: snapshot)
+        case .running where snapshot.isBeforeStart(at: date), .clockIn:
+            store.countdownToClockInProgress(snapshot: snapshot)
         default:
             snapshot.progress
         }
@@ -482,7 +481,7 @@ private struct TabletRunningView: View {
                 if sidebarVisible {
                     if snapshot.isBeforeStart(at: now) {
                         OWCProgressMeter(
-                            progress: store.countdownToClockInFill(snapshot: snapshot, at: now),
+                            progress: store.countdownToClockInProgress(snapshot: snapshot),
                             label: store.t("progress")
                         )
                         .padding(.top, 17)
@@ -501,7 +500,7 @@ private struct TabletRunningView: View {
                 } else {
                     if snapshot.isBeforeStart(at: now) {
                         OWCProgressMeter(
-                            progress: store.countdownToClockInFill(snapshot: snapshot, at: now),
+                            progress: store.countdownToClockInProgress(snapshot: snapshot),
                             label: store.t("progress")
                         )
                         .padding(.top, 56)
@@ -514,7 +513,7 @@ private struct TabletRunningView: View {
                             store.t("progress"),
                             store.formatPercent(
                                 snapshot.isBeforeStart(at: now)
-                                    ? store.countdownToClockInFill(snapshot: snapshot, at: now)
+                                    ? store.countdownToClockInProgress(snapshot: snapshot)
                                     : snapshot.progress
                             )
                         )
@@ -556,8 +555,10 @@ private struct TabletRunningView: View {
                 Group {
                     if snapshot.isBeforeStart(at: now) {
                         HStack(spacing: 12) {
-                            Button { store.clockInEarly(at: now) } label: {
-                                Text(store.t("clockInEarly"))
+                            Button {
+                                store.requestClockInEarly(at: now)
+                            } label: {
+                                ClockInEarlyLabel(store: store)
                             }
                             Button { showShare = true } label: {
                                 Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
@@ -605,11 +606,18 @@ private struct TabletRunningView: View {
                     // Top-aligned, overflow only ever goes down, which is what
                     // scrolling is for.
                     //
-                    // Immersive still has the action row, so top-align when
-                    // that row is present rather than stranding it off-screen.
+                    // Immersive has no timeline, so nothing here can grow: the
+                    // countdown, meter, stats and action row are a fixed stack
+                    // that reports its true height. Top-aligning it left the
+                    // whole instrument hugging the header with a screen of empty
+                    // page underneath — the one layout that is supposed to be
+                    // nothing but the clock, and the clock was off-centre.
+                    // Centred, and if an accessibility text size ever does push
+                    // it past the pane the frame simply grows to the content and
+                    // the alignment stops applying.
                     .frame(
                         minHeight: proxy.size.height,
-                        alignment: .top
+                        alignment: sidebarVisible ? .top : .center
                     )
                     .padding(.horizontal, 40)
                     .padding(.bottom, 40)
@@ -651,7 +659,7 @@ private struct TabletRunningView: View {
         if isOvertime, let overtimeEnd = snapshot.overtimeEndDate {
             return (
                 store.t("overtimeUntil", values: ["time": store.formatTime(overtimeEnd)]),
-                "",
+                "clock.badge.plus",
                 OWCDesign.accent
             )
         }
@@ -754,11 +762,8 @@ private struct TabletSettingsView: View {
             // every value truncated and "off-work reminder" wrapping onto two
             // lines. Below the threshold the same sections stack instead.
             AdaptiveSettingsColumns(spacing: 26) {
-                VStack(spacing: 20) {
-                    SettingsSectionCard(store: store, section: .shift)
-                    sectionNote(store.t("tabletShiftSettingsNote"))
-                }
-                .frame(maxWidth: .infinity)
+                SettingsSectionCard(store: store, section: .shift)
+                    .frame(maxWidth: .infinity)
 
                 VStack(spacing: 20) {
                     SettingsSectionCard(store: store, section: .reminders)

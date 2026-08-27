@@ -111,9 +111,12 @@ final class LiveActivityService {
         let state = OffWorkActivityAttributes.ContentState(
             endAtMs: Int64(snapshot.endAtMs),
             progress: displaySnapshot.progress,
+            segments: snapshot.segments.map {
+                .init(startAtMs: Int64($0.startAtMs), endAtMs: Int64($0.endAtMs))
+            },
             phase: snapshot.overtimeEndAtMs == nil ? "working" : "overtime",
             locale: store.languageCode,
-            appTitle: store.t("appShortName"),
+            appTitle: OWCBrand.shortName,
             caption: store.t("timeLeftCaption"),
             completedCaption: store.t("offWorkTime"),
             completedNote: store.t("offWorkWellDone")
@@ -241,9 +244,12 @@ final class LiveActivityService {
         let finalState = OffWorkActivityAttributes.ContentState(
             endAtMs: Int64(snapshot.endAtMs),
             progress: 100,
+            segments: snapshot.segments.map {
+                .init(startAtMs: Int64($0.startAtMs), endAtMs: Int64($0.endAtMs))
+            },
             phase: "complete",
             locale: store.languageCode,
-            appTitle: store.t("appShortName"),
+            appTitle: OWCBrand.shortName,
             caption: store.t("timeLeftCaption"),
             completedCaption: store.t("offWorkTime"),
             completedNote: store.t("offWorkWellDone")

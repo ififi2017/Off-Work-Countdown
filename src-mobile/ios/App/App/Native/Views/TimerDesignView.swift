@@ -81,7 +81,7 @@ struct TimerDesignView: View {
             switch phase {
             case .unscheduled:
                 UnscheduledTimerView(store: store) { openSettings(.lunch) }
-            case .running, .lunch, .overtime:
+            case .running, .lunch, .overtime, .clockIn:
                 if let snapshot {
                     RunningTimerDesignView(
                         store: store,
@@ -198,9 +198,18 @@ private struct RunningTimerDesignView: View {
                     VStack(spacing: 0) {
                         VStack(spacing: 0) {
                             if overtime {
-                                Text(store.t("overtimeTitle"))
-                                    .font(.subheadline.weight(.semibold))
+                                Label(
+                                    store.t(
+                                        "overtimeUntil",
+                                        values: ["time": store.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
+                                    ),
+                                    systemImage: "clock.badge.plus"
+                                )
+                                    .font(.footnote.weight(.semibold))
                                     .foregroundStyle(OWCDesign.orangeDeep)
+                                    .padding(.horizontal, 12)
+                                    .frame(height: 26)
+                                    .background(OWCDesign.orange.opacity(0.12), in: Capsule())
                                     .padding(.bottom, 8)
                             }
                             Text(store.formatDuration(displayRemaining))
@@ -210,10 +219,16 @@ private struct RunningTimerDesignView: View {
                                 .minimumScaleFactor(0.62)
                                 .environment(\.layoutDirection, .leftToRight)
                                 .owcCountdownTextTransition(milliseconds: displayRemaining)
-                            Text(caption)
-                                .font(.subheadline)
-                                .foregroundStyle(OWCDesign.secondary)
-                                .padding(.top, 8)
+                            Group {
+                                if onBreak {
+                                    Label(caption, systemImage: "cup.and.saucer")
+                                } else {
+                                    Text(caption)
+                                }
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(OWCDesign.secondary)
+                            .padding(.top, 8)
                         }
                         .padding(.horizontal, OWCDesign.contentInset)
                         .padding(.top, overtime ? 12 : 16)
@@ -299,7 +314,7 @@ private struct RunningTimerDesignView: View {
 
     private var meterProgress: Double {
         beforeStart
-            ? store.countdownToClockInFill(snapshot: snapshot, at: now)
+            ? store.countdownToClockInProgress(snapshot: snapshot)
             : snapshot.progress
     }
 

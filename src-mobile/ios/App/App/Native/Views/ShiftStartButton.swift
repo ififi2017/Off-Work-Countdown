@@ -11,6 +11,7 @@ struct ShiftStartButton: View {
 
     @State private var armState = StartArmState.idle
     @State private var showInvalidLunch = false
+    @State private var warningPulse = 0
     @State private var appliedPulse = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -32,7 +33,7 @@ struct ShiftStartButton: View {
         .contentShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.45 : 1)
-        .sensoryFeedback(.warning, trigger: armState)
+        .sensoryFeedback(.warning, trigger: warningPulse)
         .sensoryFeedback(.success, trigger: appliedPulse)
         .task(id: armState) {
             guard armState == .armed else { return }
@@ -60,6 +61,7 @@ struct ShiftStartButton: View {
             return
         }
         if armState == .idle {
+            warningPulse += 1
             withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection) {
                 armState = .armed
             }

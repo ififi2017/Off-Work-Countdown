@@ -80,6 +80,7 @@ final class WidgetSnapshotPublisher {
             return countdownToNextShift(
                 store: store,
                 target: currentStart,
+                anchor: Int64(shift.countdownAnchorAtMs ?? shift.startAtMs),
                 nowMs: nowMs
             )
         }
@@ -87,6 +88,7 @@ final class WidgetSnapshotPublisher {
             return countdownToNextShift(
                 store: store,
                 target: nextStart,
+                anchor: Int64(shift.countdownAnchorAtMs ?? shift.startAtMs),
                 nowMs: nowMs
             )
         }
@@ -148,6 +150,7 @@ final class WidgetSnapshotPublisher {
             appendCountdown(
                 from: &cursor,
                 to: resolvedStartAtMs,
+                anchor: Int64(nextShift.countdownAnchorAtMs),
                 expiresAtMs: expiresAtMs,
                 entries: &entries
             )
@@ -219,6 +222,7 @@ final class WidgetSnapshotPublisher {
     private func appendCountdown(
         from cursor: inout Int64,
         to targetAtMs: Int64,
+        anchor anchorAtMs: Int64,
         expiresAtMs: Int64,
         entries: inout [WidgetTimelineEntry]
     ) {
@@ -238,6 +242,8 @@ final class WidgetSnapshotPublisher {
                 date: cursor,
                 end: restEndAtMs,
                 target: targetAtMs,
+                anchor: anchorAtMs,
+                progressEnd: targetDayAtMs,
                 label: "widgetRestDay"
             ))
             cursor = restEndAtMs
@@ -249,6 +255,8 @@ final class WidgetSnapshotPublisher {
                 date: cursor,
                 end: countdownEndAtMs,
                 target: targetAtMs,
+                anchor: targetDayAtMs,
+                progressEnd: targetAtMs,
                 label: "nextShiftLabelShort"
             ))
             cursor = countdownEndAtMs
@@ -267,6 +275,7 @@ final class WidgetSnapshotPublisher {
             appendCountdown(
                 from: &cursor,
                 to: shiftStartAtMs,
+                anchor: Int64(shift.countdownAnchorAtMs),
                 expiresAtMs: expiresAtMs,
                 entries: &entries
             )
@@ -377,6 +386,7 @@ final class WidgetSnapshotPublisher {
     private func countdownToNextShift(
         store: OffWorkStore,
         target: Int64,
+        anchor: Int64,
         nowMs: Int64
     ) -> WidgetSnapshot {
         let endAtMs = max(nowMs + 60_000, target)
@@ -385,6 +395,7 @@ final class WidgetSnapshotPublisher {
         appendCountdown(
             from: &cursor,
             to: target,
+            anchor: anchor,
             expiresAtMs: endAtMs,
             entries: &entries
         )
@@ -414,16 +425,20 @@ final class WidgetSnapshotPublisher {
         date: Int64,
         end: Int64,
         target: Int64,
+        anchor: Int64,
+        progressEnd: Int64,
         label: String
     ) -> WidgetTimelineEntry {
-        entry(
+        let duration = max(Int64(1), progressEnd - anchor)
+        let elapsed = min(duration, max(0, date - anchor))
+        return entry(
             date: date,
             end: end,
             phase: .before,
             label: label,
             kind: .shiftStarts,
             remaining: max(0, target - date),
-            progress: 0,
+            progress: Double(elapsed) / Double(duration) * 100,
             boundary: target,
             target: target
         )
@@ -450,7 +465,8 @@ final class WidgetSnapshotPublisher {
             endAtMs: shift.endAtMs,
             plannedEndAtMs: shift.plannedEndAtMs,
             overtimeEndAtMs: shift.overtimeEndAtMs,
-            durationMs: shift.durationMs
+            durationMs: shift.durationMs,
+            countdownAnchorAtMs: shift.countdownAnchorAtMs ?? shift.startAtMs
         )
     }
 

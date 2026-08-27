@@ -68,6 +68,11 @@
 		E00000320000000000000032 /* OffWorkStore+ShiftPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000320000000000000032 /* OffWorkStore+ShiftPreview.swift */; };
 		E00000330000000000000033 /* ShiftPreviewRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000330000000000000033 /* ShiftPreviewRow.swift */; };
 		E00000340000000000000034 /* BiometricGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000340000000000000034 /* BiometricGate.swift */; };
+		E00000350000000000000035 /* RestDayUpcomingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000350000000000000035 /* RestDayUpcomingView.swift */; };
+		E00000360000000000000036 /* DraggableBrandIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000360000000000000036 /* DraggableBrandIcon.swift */; };
+		E00000370000000000000037 /* OWCBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000370000000000000037 /* OWCBrandMark.swift */; };
+		E00000380000000000000038 /* OnboardingScheduleDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */; };
+		E00000390000000000000039 /* CelebratingBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000390000000000000039 /* CelebratingBrandMark.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -183,6 +188,11 @@
 		F00000320000000000000032 /* OffWorkStore+ShiftPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "OffWorkStore+ShiftPreview.swift"; path = "Native/Models/OffWorkStore+ShiftPreview.swift"; sourceTree = "<group>"; };
 		F00000330000000000000033 /* ShiftPreviewRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftPreviewRow.swift; path = Native/Views/ShiftPreviewRow.swift; sourceTree = "<group>"; };
 		F00000340000000000000034 /* BiometricGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BiometricGate.swift; path = Native/Services/BiometricGate.swift; sourceTree = "<group>"; };
+		F00000350000000000000035 /* RestDayUpcomingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RestDayUpcomingView.swift; path = Native/Views/RestDayUpcomingView.swift; sourceTree = "<group>"; };
+		F00000360000000000000036 /* DraggableBrandIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DraggableBrandIcon.swift; path = Native/Views/DraggableBrandIcon.swift; sourceTree = "<group>"; };
+		F00000370000000000000037 /* OWCBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCBrandMark.swift; path = Native/Views/OWCBrandMark.swift; sourceTree = "<group>"; };
+		F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingScheduleDetailsView.swift; path = Native/Views/OnboardingScheduleDetailsView.swift; sourceTree = "<group>"; };
+		F00000390000000000000039 /* CelebratingBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CelebratingBrandMark.swift; path = Native/Views/CelebratingBrandMark.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -242,6 +252,11 @@
 				F00000140000000000000014 /* OWCSystemBackSwipeBridge.swift */,
 				F00000020000000000000002 /* CountdownRules.swift */,
 				F00000030000000000000003 /* OffWorkStore.swift */,
+				F00000360000000000000036 /* DraggableBrandIcon.swift */,
+				F00000370000000000000037 /* OWCBrandMark.swift */,
+				F00000390000000000000039 /* CelebratingBrandMark.swift */,
+				F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */,
+				F00000350000000000000035 /* RestDayUpcomingView.swift */,
 				F00000340000000000000034 /* BiometricGate.swift */,
 				F00000330000000000000033 /* ShiftPreviewRow.swift */,
 				F00000320000000000000032 /* OffWorkStore+ShiftPreview.swift */,
@@ -473,6 +488,11 @@
 				E00000180000000000000018 /* OWCCountdownTextTransition.swift in Sources */,
 				E00000020000000000000002 /* CountdownRules.swift in Sources */,
 				E00000030000000000000003 /* OffWorkStore.swift in Sources */,
+				E00000360000000000000036 /* DraggableBrandIcon.swift in Sources */,
+				E00000370000000000000037 /* OWCBrandMark.swift in Sources */,
+				E00000390000000000000039 /* CelebratingBrandMark.swift in Sources */,
+				E00000380000000000000038 /* OnboardingScheduleDetailsView.swift in Sources */,
+				E00000350000000000000035 /* RestDayUpcomingView.swift in Sources */,
 				E00000340000000000000034 /* BiometricGate.swift in Sources */,
 				E00000330000000000000033 /* ShiftPreviewRow.swift in Sources */,
 				E00000320000000000000032 /* OffWorkStore+ShiftPreview.swift in Sources */,

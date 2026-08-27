@@ -273,6 +273,8 @@ struct UnscheduledTimerView: View {
         VStack(spacing: 0) {
             OWCAppHeader(store: store)
             Spacer()
+            DraggableBrandIcon()
+                .padding(.bottom, 26)
             Text(store.t("unscheduledTitle"))
                 .font(.largeTitle.bold())
                 .tracking(-0.85)
@@ -308,56 +310,62 @@ struct RestDayDesignView: View {
         VStack(spacing: 0) {
             OWCAppHeader(store: store)
 
-            Text(store.t("widgetRestDay"))
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(OWCDesign.secondary)
-                .padding(.horizontal, 12)
-                .frame(height: 26)
-                .background(OWCDesign.control)
-                .clipShape(Capsule())
-                .padding(.top, 28)
+            OWCContentSizedScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    Label(store.t("widgetRestDay"), systemImage: "bed.double.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(OWCDesign.secondary)
+                        .padding(.horizontal, 12)
+                        .frame(height: 26)
+                        .background(OWCDesign.control, in: Capsule())
+                        .padding(.top, 28)
 
-            Text(store.formatDuration(remainingMs))
-                .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
-                .tracking(-1.4)
-                .foregroundStyle(OWCDesign.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.62)
-                .environment(\.layoutDirection, .leftToRight)
-                .owcCountdownTextTransition(milliseconds: remainingMs)
-                .padding(.top, 16)
+                    Text(store.formatDuration(remainingMs))
+                        .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
+                        .tracking(-1.4)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.62)
+                        .environment(\.layoutDirection, .leftToRight)
+                        .owcCountdownTextTransition(milliseconds: remainingMs)
+                        .padding(.top, 16)
 
-            OWCProgressMeter(
-                progress: store.countdownToClockInFill(snapshot: snapshot, at: now),
-                label: store.t("progress")
-            )
-            .padding(.horizontal, OWCDesign.contentInset)
-            .padding(.top, 7)
-            .opacity(0.72)
+                    OWCProgressMeter(
+                        progress: store.countdownToClockInProgress(snapshot: snapshot),
+                        label: store.t("progress")
+                    )
+                    .padding(.horizontal, OWCDesign.contentInset)
+                    .padding(.top, 7)
+                    .opacity(0.72)
 
-            VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("summaryEstimateNote"))
-                OWCGroupCard {
-                    OWCRow(icon: "calendar", title: store.t("summaryThisWeek")) {
-                        Text(summaryText(weekSummary))
-                            .font(.subheadline.monospacedDigit())
-                            .foregroundStyle(OWCDesign.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.66)
+                    VStack(alignment: .leading, spacing: 0) {
+                        OWCSectionHeader(title: store.t("summaryEstimateNote"))
+                        OWCGroupCard {
+                            OWCRow(icon: "calendar", title: store.t("summaryThisWeek")) {
+                                Text(summaryText(weekSummary))
+                                    .font(.subheadline.monospacedDigit())
+                                    .foregroundStyle(OWCDesign.secondary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.66)
+                            }
+                            OWCRow(icon: "calendar.badge.clock", title: store.t("summaryThisYear"), isLast: true) {
+                                Text(summaryText(yearSummary))
+                                    .font(.subheadline.monospacedDigit())
+                                    .foregroundStyle(OWCDesign.secondary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.66)
+                            }
+                        }
                     }
-                    OWCRow(icon: "calendar.badge.clock", title: store.t("summaryThisYear"), isLast: true) {
-                        Text(summaryText(yearSummary))
-                            .font(.subheadline.monospacedDigit())
-                            .foregroundStyle(OWCDesign.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.66)
-                    }
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.top, 22)
+
+                    RestDayUpcomingView(store: store, snapshot: snapshot, now: now)
+                        .padding(.horizontal, OWCDesign.pageInset)
+                        .padding(.top, 22)
                 }
+                .padding(.bottom, 10)
             }
-            .padding(.horizontal, OWCDesign.pageInset)
-            .padding(.top, 22)
-
-            Spacer(minLength: 8)
 
             ShiftStartButton(store: store, onOpenLunchSettings: onOpenLunchSettings)
                 .padding(.horizontal, OWCDesign.pageInset)
@@ -386,6 +394,7 @@ struct CompletedShiftDesignView: View {
     @Binding var showOvertime: Bool
     @State private var celebrationBurst = 0
     @State private var celebrationHaptics: Task<Void, Never>?
+    @Environment(\.scenePhase) private var scenePhase
 
 
     var body: some View {
@@ -435,6 +444,10 @@ struct CompletedShiftDesignView: View {
         }
         .overlay { OWCConfettiOverlay(burst: celebrationBurst) }
         .onAppear { celebrateIfNeeded() }
+        .onChange(of: celebrationToken) { celebrateIfNeeded() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { celebrateIfNeeded() }
+        }
         .onDisappear { celebrationHaptics?.cancel() }
     }
 
@@ -561,9 +574,9 @@ struct CompletedShiftDesignView: View {
         // Early clock-off is keyed on the moment they pressed, not the planned
         // end — otherwise undoing and finishing the shift later would skip the
         // real celebration, and clocking off early would never fire one.
-        let token = endedEarly ? (store.earlyOffAtMs ?? snapshot.plannedEndAtMs) : snapshot.plannedEndAtMs
-        guard store.lastCelebratedEndAtMs != token else { return }
-        store.markCelebrated(endAtMs: token)
+        // Changing today's hours produces a new planned end, so it plays again.
+        guard store.lastCelebratedEndAtMs != celebrationToken else { return }
+        store.markCelebrated(endAtMs: celebrationToken)
         celebrate()
     }
 
@@ -601,6 +614,9 @@ struct CompletedShiftDesignView: View {
     }
 
     private var endedEarly: Bool { store.isEndedEarly(snapshot) }
+    private var celebrationToken: Double {
+        endedEarly ? (store.earlyOffAtMs ?? snapshot.plannedEndAtMs) : snapshot.plannedEndAtMs
+    }
     private var finishedSnapshot: NativeShiftSnapshot { store.clockOffSnapshot(for: snapshot) }
     private var workedDurationMs: Double { endedEarly ? finishedSnapshot.elapsedMs : snapshot.durationMs }
     private var completedProgress: Double { endedEarly ? finishedSnapshot.progress : 100 }
@@ -628,4 +644,3 @@ struct CompletedShiftDesignView: View {
         return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours)) · \(money)"
     }
 }
-

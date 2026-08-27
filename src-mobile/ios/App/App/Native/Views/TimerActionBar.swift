@@ -26,13 +26,13 @@ struct TimerActionBar: View {
     private var beforeStartBar: some View {
         HStack(spacing: 10) {
             Button {
-                store.clockInEarly(at: now)
+                store.requestClockInEarly(at: now)
             } label: {
-                Text(store.t("clockInEarly"))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.72)
+                ClockInEarlyLabel(store: store, tinted: false)
             }
-            .buttonStyle(OWCPrimaryButtonStyle())
+            .buttonStyle(OWCPrimaryButtonStyle(
+                color: store.clockInConfirmPending ? OWCDesign.orangeDeep : OWCDesign.accent
+            ))
 
             Button(store.t("shareButton"), systemImage: "square.and.arrow.up") {
                 showShare = true

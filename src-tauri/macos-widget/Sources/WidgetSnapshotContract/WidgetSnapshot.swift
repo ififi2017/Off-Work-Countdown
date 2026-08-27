@@ -80,11 +80,18 @@ public struct WidgetTimelineEntry: Codable, Equatable, Sendable {
         self.nextBoundaryAtMs = nextBoundaryAtMs
     }
 
-    /// Advances a precomputed working interval to a later presentation time.
-    /// Schedule boundaries still come from the producer; this only projects the
-    /// linear values that change while the current work segment is running.
+    /// Advances a precomputed interval to a later presentation time. Schedule
+    /// boundaries still come from the producer; this only projects the linear
+    /// values inside one already-resolved interval.
     public func projected(atMs nowMs: Int64) -> WidgetTimelineEntry {
-        guard phase == .working,
+        #if os(iOS)
+        let projectsProgress = phase == .working || phase == .before
+        #else
+        // The macOS product keeps its existing pre-shift presentation. DoneAt
+        // countdown progress is an iOS-only surface change.
+        let projectsProgress = phase == .working
+        #endif
+        guard projectsProgress,
               nowMs > dateMs,
               progressAtDate < 100,
               remainingEffectiveMsAtDateMs > 0

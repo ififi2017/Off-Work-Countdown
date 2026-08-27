@@ -487,14 +487,68 @@ describe("findEndedShiftOnEndCalendarDay", () => {
     ).toBeNull();
   });
 
-  it("does not fire while the overnight shift is still running", () => {
+  it("returns the still-running overnight rather than a later dummy window", () => {
     const saturdayBeforeEnd = new Date(2026, 6, 4, 5, 0);
-    expect(
-      findEndedShiftOnEndCalendarDay({
-        ...overnight,
-        nowMs: saturdayBeforeEnd.getTime(),
-      })
-    ).toBeNull();
+    const ended = findEndedShiftOnEndCalendarDay({
+      ...overnight,
+      nowMs: saturdayBeforeEnd.getTime(),
+    });
+    expect(ended).not.toBeNull();
+    expect(new Date(getShiftStartAtMs(ended!)).getDay()).toBe(5);
+    expect(getShiftRemainingMs(ended!, saturdayBeforeEnd.getTime())).toBeGreaterThan(0);
+  });
+
+  it("keeps a day shift that overtime'd past midnight until the next live window", () => {
+    const mondayStart = new Date(2026, 6, 6, 9, 0);
+    const overtimeEnd = new Date(2026, 6, 7, 1, 0);
+    const stillRunning = new Date(2026, 6, 7, 0, 30);
+    const afterOvertime = new Date(2026, 6, 7, 1, 30);
+    const nextShiftOpen = new Date(2026, 6, 7, 9, 30);
+    const dayShift = {
+      startTime: "09:00",
+      endTime: "17:00",
+      workdays: DEFAULT_WORKDAYS,
+      options: { overtimeEndAtMs: overtimeEnd.getTime() },
+    };
+
+    const during = findEndedShiftOnEndCalendarDay({
+      ...dayShift,
+      nowMs: stillRunning.getTime(),
+    });
+    expect(during).not.toBeNull();
+    expect(getShiftStartAtMs(during!)).toBe(mondayStart.getTime());
+    expect(getShiftEndAtMs(during!)).toBe(overtimeEnd.getTime());
+    expect(getShiftRemainingMs(during!, stillRunning.getTime())).toBeGreaterThan(0);
+
+    const settled = findEndedShiftOnEndCalendarDay({
+      ...dayShift,
+      nowMs: afterOvertime.getTime(),
+    });
+    expect(settled).not.toBeNull();
+    expect(getShiftStartAtMs(settled!)).toBe(mondayStart.getTime());
+    expect(getShiftRemainingMs(settled!, afterOvertime.getTime())).toBe(0);
+
+    const nextLive = findEndedShiftOnEndCalendarDay({
+      ...dayShift,
+      nowMs: nextShiftOpen.getTime(),
+    });
+    expect(nextLive).not.toBeNull();
+    expect(new Date(getShiftStartAtMs(nextLive!)).getDay()).toBe(2);
+  });
+
+  it("keeps overnight overtime that crosses a second midnight", () => {
+    const fridayStart = new Date(2026, 6, 3, 22, 0);
+    const overtimeEnd = new Date(2026, 6, 5, 1, 0);
+    const sundayMorning = new Date(2026, 6, 5, 1, 30);
+    const ended = findEndedShiftOnEndCalendarDay({
+      ...overnight,
+      nowMs: sundayMorning.getTime(),
+      options: { overtimeEndAtMs: overtimeEnd.getTime() },
+    });
+    expect(ended).not.toBeNull();
+    expect(getShiftStartAtMs(ended!)).toBe(fridayStart.getTime());
+    expect(getShiftEndAtMs(ended!)).toBe(overtimeEnd.getTime());
+    expect(getShiftRemainingMs(ended!, sundayMorning.getTime())).toBe(0);
   });
 
   it("keeps a forced rest-day overnight on settlement after 06:00", () => {

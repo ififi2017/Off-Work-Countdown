@@ -6,8 +6,17 @@ struct ScheduleSettingsView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @State private var timeField: SetupTimeField?
     @State private var pendingMinutes: Int = 0
-    @State private var pendingChange: ScheduleFieldChange?
-    @State private var showChangePrompt = false
+    /// Everything the user has changed and not yet saved. The page renders from
+    /// this on top of the store, so an edit is visible immediately without
+    /// having decided yet whether today counts.
+    @State private var showSavePrompt = false
+    @State private var savePromptFeedback = 0
+    @State private var saveCommitFeedback = 0
+
+    private var draft: ScheduleFieldChange {
+        get { store.scheduleSettingsDraft }
+        nonmutating set { store.scheduleSettingsDraft = newValue }
+    }
 
     var body: some View {
         OWCContentSizedScrollView {
@@ -26,10 +35,11 @@ struct ScheduleSettingsView: View {
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 22)
 
+                // Deliberately not animated — see OnboardingSchedulePage.
                 scheduleDetails
                     .padding(.top, 22)
 
-                Text(store.scheduleMode == .off ? store.t("scheduleOffSummaryNote") : store.t("scheduleSharedRulesNote"))
+                Text(draftMode == .off ? store.t("scheduleOffSummaryNote") : store.t("scheduleSharedRulesNote"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineSpacing(2)
@@ -42,8 +52,20 @@ struct ScheduleSettingsView: View {
         .background(OWCDesign.page)
         .navigationTitle(store.t("workSchedule"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("workSchedule"))
-        .sensoryFeedback(.selection, trigger: store.scheduleMode)
+        .owcDetailBack(
+            title: store.t("settings"),
+            pageTitle: store.t("workSchedule"),
+            hasUnsavedChanges: !draft.isEmpty,
+            unsavedChangesTitle: store.t("unsavedChangesTitle"),
+            keepEditingTitle: store.t("keepEditing"),
+            discardChangesTitle: store.t("discardChanges"),
+            onDiscardChanges: { draft = ScheduleFieldChange() }
+        ) {
+            ScheduleSaveButton(store: store, enabled: !draft.isEmpty, action: requestSave)
+        }
+        .sensoryFeedback(.selection, trigger: draftMode)
+        .sensoryFeedback(.warning, trigger: savePromptFeedback)
+        .sensoryFeedback(.success, trigger: saveCommitFeedback)
         .sheet(item: $timeField) { field in
             OWCSetupTimePickerSheet(
                 store: store,
@@ -52,33 +74,16 @@ struct ScheduleSettingsView: View {
             )
             .presentationDetents([.medium])
             .onDisappear {
-                let committed = field == .start ? store.startMinutes : store.endMinutes
-                guard pendingMinutes != committed else { return }
-                pendingChange = field == .start
-                    ? ScheduleFieldChange(startMinutes: pendingMinutes)
-                    : ScheduleFieldChange(endMinutes: pendingMinutes)
-                showChangePrompt = true
+                if field == .start { edit { $0.startMinutes = pendingMinutes } }
+                else { edit { $0.endMinutes = pendingMinutes } }
             }
         }
-        .alert(
-            store.t("applyScheduleTitle"),
-            isPresented: $showChangePrompt
-        ) {
-            Button(store.t("applyFromNextShift")) {
-                if let pendingChange {
-                    store.applyScheduleChange(pendingChange, decision: .nextShiftOnly)
-                }
-                pendingChange = nil
-            }
-            Button(store.t("applyToToday")) {
-                if let pendingChange {
-                    store.applyScheduleChange(pendingChange, decision: .applyToToday)
-                }
-                pendingChange = nil
-            }
-            Button(store.t("cancelAction"), role: .cancel) {
-                pendingChange = nil
-            }
+        .alert(store.t("applyScheduleTitle"), isPresented: $showSavePrompt) {
+            Button(store.t("applyFromNextShift")) { commit(.nextShiftOnly) }
+            Button(store.t("applyToToday")) { commit(.applyToToday) }
+            // Cancel keeps the edits and the page. The user asked to save and
+            // then thought better of the timing, not of the change.
+            Button(store.t("cancelAction"), role: .cancel) {}
         } message: {
             Text(store.t("applyScheduleMessage"))
         }
@@ -87,11 +92,11 @@ struct ScheduleSettingsView: View {
     private var hoursCard: some View {
         OWCGroupCard {
             Button {
-                pendingMinutes = store.startMinutes
+                pendingMinutes = draftStart
                 timeField = .start
             } label: {
                 OWCRow(icon: "clock", title: store.t("startTime")) {
-                    Text(store.timeString(store.startMinutes))
+                    Text(store.timeString(draftStart))
                         .font(.body.monospacedDigit())
                         .foregroundStyle(OWCDesign.secondary)
                         .environment(\.layoutDirection, .leftToRight)
@@ -99,11 +104,11 @@ struct ScheduleSettingsView: View {
             }
             .buttonStyle(OWCRowButtonStyle())
             Button {
-                pendingMinutes = store.endMinutes
+                pendingMinutes = draftEnd
                 timeField = .end
             } label: {
                 OWCRow(icon: "clock", title: store.t("endTime"), isLast: true) {
-                    Text(store.timeString(store.endMinutes))
+                    Text(store.timeString(draftEnd))
                         .font(.body.monospacedDigit())
                         .foregroundStyle(OWCDesign.secondary)
                         .environment(\.layoutDirection, .leftToRight)
@@ -113,26 +118,60 @@ struct ScheduleSettingsView: View {
         }
     }
 
+    // MARK: - Draft
+
+    private var draftStart: Int { draft.startMinutes ?? store.startMinutes }
+    private var draftEnd: Int { draft.endMinutes ?? store.endMinutes }
+    private var draftWorkdays: Set<Int> { draft.workdays ?? store.workdays }
+    private var draftMode: WorkScheduleMode { draft.scheduleMode ?? store.scheduleMode }
+    private var draftRotationWorkDays: Int { draft.rotationWorkDays ?? store.rotationWorkDays }
+    private var draftRotationRestDays: Int { draft.rotationRestDays ?? store.rotationRestDays }
+    private var draftRotationCycleDay: Int { draft.rotationCycleDay ?? store.rotationCycleDay }
+    private var draftRotationCycleLength: Int {
+        max(2, draftRotationWorkDays + draftRotationRestDays)
+    }
+
+    private func edit(_ change: (inout ScheduleFieldChange) -> Void) {
+        var next = draft
+        change(&next)
+        draft = next.settled(against: store)
+    }
+
+    /// A control's value, read through the draft and written back into it.
+    private func binding<Value: Equatable>(
+        _ field: WritableKeyPath<ScheduleFieldChange, Value?>,
+        committed: Value
+    ) -> Binding<Value> {
+        Binding(
+            get: { draft[keyPath: field] ?? committed },
+            set: { value in edit { $0[keyPath: field] = value } }
+        )
+    }
+
+    private func commit(_ decision: ScheduleChangeDecision) {
+        store.applyScheduleChange(draft, decision: decision)
+        draft = ScheduleFieldChange()
+        saveCommitFeedback += 1
+    }
+
+    private func requestSave() {
+        guard !draft.isEmpty else { return }
+        if store.shouldPromptApplyingToToday(draft, scope: .schedule) {
+            savePromptFeedback += 1
+            showSavePrompt = true
+        } else {
+            commit(.nextShiftOnly)
+        }
+    }
+
+
     @ViewBuilder
     private var scheduleDetails: some View {
-        switch store.scheduleMode {
+        switch draftMode {
         case .classic:
             VStack(alignment: .leading, spacing: 0) {
                 OWCSectionHeader(title: store.t("workdaysLabel"))
                 weekdayGrid
-                Button {
-                    guard store.scheduleMode != .off else { return }
-                    pendingChange = ScheduleFieldChange(scheduleMode: .off)
-                    showChangePrompt = true
-                } label: {
-                    Text(store.t("switchToUnscheduledHint"))
-                        .font(.footnote)
-                        .foregroundStyle(OWCDesign.accent)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 8)
-                .padding(.horizontal, 4)
             }
             .padding(.horizontal, OWCDesign.pageInset)
         case .alternating:
@@ -142,7 +181,10 @@ struct ScheduleSettingsView: View {
                     VStack(alignment: .leading, spacing: 9) {
                         Text(store.t("alternatingCurrentWeek"))
                             .font(.subheadline.weight(.semibold))
-                        Picker(store.t("alternatingCurrentWeek"), selection: $store.alternatingWeekType) {
+                        Picker(
+                            store.t("alternatingCurrentWeek"),
+                            selection: binding(\.alternatingWeekType, committed: store.alternatingWeekType)
+                        ) {
                             Text(store.t("singleRestWeek")).tag(AlternatingWeekType.single)
                             Text(store.t("doubleRestWeek")).tag(AlternatingWeekType.double)
                         }
@@ -157,7 +199,10 @@ struct ScheduleSettingsView: View {
                     VStack(alignment: .leading, spacing: 9) {
                         Text(store.t("singleWeekWorkday"))
                             .font(.subheadline.weight(.semibold))
-                        Picker(store.t("singleWeekWorkday"), selection: $store.alternatingWeekendWorkday) {
+                        Picker(
+                            store.t("singleWeekWorkday"),
+                            selection: binding(\.alternatingWeekendWorkday, committed: store.alternatingWeekendWorkday)
+                        ) {
                             Text(store.t("workOnWeekday", values: ["day": store.weekdayLabels()[5]])).tag(6)
                             Text(store.t("workOnWeekday", values: ["day": store.weekdayLabels()[6]])).tag(0)
                         }
@@ -171,7 +216,10 @@ struct ScheduleSettingsView: View {
                 }
             }
             .padding(.horizontal, OWCDesign.pageInset)
-            .onChange(of: store.alternatingWeekType) { store.anchorAlternatingWeekToToday() }
+            // No re-anchoring here any more: the week type is a draft value
+            // until Save, and `applyScheduleChange` anchors it at the moment it
+            // commits. Anchoring on the picker moved the reference week for an
+            // edit the user had not agreed to yet.
         case .rotation:
             VStack(alignment: .leading, spacing: 0) {
                 OWCSectionHeader(title: store.t("rotationPattern"))
@@ -179,17 +227,17 @@ struct ScheduleSettingsView: View {
                     // Stepper puts its -/+ at the trailing edge of its own
                     // bounds, outside OWCRow's inset, so it needs the inset back
                     // or it sits flush against the card edge.
-                    Stepper(value: $store.rotationWorkDays, in: 1...30) {
+                    Stepper(value: binding(\.rotationWorkDays, committed: store.rotationWorkDays), in: 1...30) {
                         OWCRow(title: store.t("rotationWorkDays")) {
-                            Text("\(store.rotationWorkDays)").monospacedDigit().foregroundStyle(OWCDesign.secondary)
+                            Text("\(draftRotationWorkDays)").monospacedDigit().foregroundStyle(OWCDesign.secondary)
                         }
                     }
                     .padding(.trailing, 16)
                     .buttonStyle(OWCRowButtonStyle())
                     .owcPlainDivider()
-                    Stepper(value: $store.rotationRestDays, in: 1...30) {
+                    Stepper(value: binding(\.rotationRestDays, committed: store.rotationRestDays), in: 1...30) {
                         OWCRow(title: store.t("rotationRestDays")) {
-                            Text("\(store.rotationRestDays)").monospacedDigit().foregroundStyle(OWCDesign.secondary)
+                            Text("\(draftRotationRestDays)").monospacedDigit().foregroundStyle(OWCDesign.secondary)
                         }
                     }
                     .padding(.trailing, 16)
@@ -197,23 +245,27 @@ struct ScheduleSettingsView: View {
                     .owcPlainDivider()
 
                     Menu {
-                        ForEach(1...store.rotationCycleLength, id: \.self) { day in
+                        // The cycle the user is looking at, not the saved one:
+                        // shortening the work half has to shorten this list in
+                        // the same breath, or it offers a day the pattern no
+                        // longer has.
+                        ForEach(1...draftRotationCycleLength, id: \.self) { day in
                             Button {
-                                store.setRotationCycleDay(day)
+                                edit { $0.rotationCycleDay = day }
                             } label: {
                                 Label(
                                     store.t(
-                                        day <= store.rotationWorkDays ? "rotationWorkdayOption" : "rotationRestdayOption",
+                                        day <= draftRotationWorkDays ? "rotationWorkdayOption" : "rotationRestdayOption",
                                         values: ["day": "\(day)"]
                                     ),
-                                    systemImage: day <= store.rotationWorkDays ? "briefcase" : "bed.double"
+                                    systemImage: day <= draftRotationWorkDays ? "briefcase" : "bed.double"
                                 )
                             }
                         }
                     } label: {
                         OWCRow(
                             icon: "repeat",
-                            title: store.t("rotationStartDay", values: ["day": "\(store.rotationCycleDay)"]),
+                            title: store.t("rotationStartDay", values: ["day": "\(draftRotationCycleDay)"]),
                             isLast: true
                         ) {
                             Image(systemName: "chevron.up.chevron.down")
@@ -238,14 +290,13 @@ struct ScheduleSettingsView: View {
     private var weekdayGrid: some View {
         HStack(spacing: 6) {
             ForEach(Array(zip([1, 2, 3, 4, 5, 6, 0], store.weekdayLabels())), id: \.0) { day, label in
-                let selected = store.workdays.contains(day)
-                let locked = selected && store.workdays.count == 1
+                let selected = draftWorkdays.contains(day)
+                let locked = selected && draftWorkdays.count == 1
                 Button {
                     if locked { return }
-                    var next = store.workdays
+                    var next = draftWorkdays
                     if selected { next.remove(day) } else { next.insert(day) }
-                    pendingChange = ScheduleFieldChange(workdays: next)
-                    showChangePrompt = true
+                    edit { $0.workdays = next }
                 } label: {
                     ZStack(alignment: .topTrailing) {
                         Text(label)
@@ -278,14 +329,16 @@ struct ScheduleSettingsView: View {
 
     private func modeRow(_ mode: WorkScheduleMode, title: String, subtitle: String, isLast: Bool = false) -> some View {
         Button {
-            guard store.scheduleMode != mode else { return }
-            pendingChange = ScheduleFieldChange(scheduleMode: mode)
-            showChangePrompt = true
+            guard draftMode != mode else { return }
+            edit { $0.scheduleMode = mode }
         } label: {
-            OWCRow(title: title, subtitle: subtitle, isLast: isLast) {
-                Image(systemName: store.scheduleMode == mode ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(store.scheduleMode == mode ? OWCDesign.accent : OWCDesign.tertiary)
+            OWCRow(
+                title: title,
+                subtitle: subtitle,
+                isLast: isLast,
+                centersVertically: true
+            ) {
+                ScheduleModeMark(selected: draftMode == mode)
             }
         }
         .buttonStyle(OWCRowButtonStyle())
@@ -427,7 +480,7 @@ struct SalaryDesignView: View {
         return switch obstacle {
         case .notEnrolled: store.t("biometricsNotEnrolledHint", values: ["biometry": biometry])
         case .lockedOut: store.t("biometricsLockoutHint", values: ["biometry": biometry])
-        case .notPermitted: store.t("biometricsUnavailableHint", values: ["app": store.t("appShortName")])
+        case .notPermitted: store.t("biometricsUnavailableHint", values: ["app": OWCBrand.shortName])
         }
     }
 
@@ -906,50 +959,51 @@ struct LunchSettingsView: View {
     @State private var durationText = ""
     @State private var showStartPicker = false
     @State private var pendingStartMinutes = 0
-    @State private var pendingChange: ScheduleFieldChange?
-    @State private var showChangePrompt = false
+    /// The lunch window the user has changed and not yet saved. The two
+    /// reminder switches below deliberately stay out of it: they decide whether
+    /// a notification fires, not what shape the shift is, so there is no "does
+    /// today count" question to ask about them.
+    @State private var showSavePrompt = false
+    @State private var savePromptFeedback = 0
+    @State private var saveCommitFeedback = 0
+
+    private var draft: ScheduleFieldChange {
+        get { store.lunchSettingsDraft }
+        nonmutating set { store.lunchSettingsDraft = newValue }
+    }
+
+    private var draftEnabled: Bool { draft.lunchEnabled ?? store.lunchEnabled }
+    private var draftStartMinutes: Int { draft.lunchStartMinutes ?? store.lunchStartMinutes }
+    private var draftDurationMinutes: Int { draft.lunchDurationMinutes ?? store.lunchDurationMinutes }
+
+    private var lunchEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { draftEnabled },
+            set: { newValue in edit { $0.lunchEnabled = newValue } }
+        )
+    }
 
     var body: some View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
-                    Button {
-                        pendingChange = ScheduleFieldChange(lunchEnabled: !store.lunchEnabled)
-                        showChangePrompt = true
-                    } label: {
-                        HStack {
-                            Text(store.t("lunchBreak")).font(.body).foregroundStyle(OWCDesign.primary)
-                            Spacer()
-                            Toggle(store.t("lunchBreak"), isOn: .constant(store.lunchEnabled))
-                                .labelsHidden()
-                                .allowsHitTesting(false)
-                                .accessibilityHidden(true)
-                        }
-                        .padding(.horizontal, 16)
-                        .frame(height: 56)
+                    OWCRow(title: store.t("lunchBreak"), isLast: !draftEnabled) {
+                        Toggle(store.t("lunchBreak"), isOn: lunchEnabledBinding)
+                            .labelsHidden()
+                            .tint(OWCDesign.accent)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(store.lunchEnabled ? .isSelected : [])
-                    .owcDivider()
 
-                    if store.lunchEnabled {
-                        Button {
-                            pendingStartMinutes = store.lunchStartMinutes
-                            showStartPicker = true
-                        } label: {
-                            HStack {
-                                Text(store.t("lunchStartTime")).font(.body).foregroundStyle(OWCDesign.primary)
-                                Spacer()
-                                Text(store.timeString(store.lunchStartMinutes))
-                                    .font(.body.monospacedDigit())
-                                    .foregroundStyle(OWCDesign.secondary)
+                    if draftEnabled {
+                        OWCRow(title: store.t("lunchStartTime")) {
+                            Button {
+                                pendingStartMinutes = draftStartMinutes
+                                showStartPicker = true
+                            } label: {
+                                OWCDetailAccessory(text: store.timeString(draftStartMinutes))
                                     .environment(\.layoutDirection, .leftToRight)
                             }
-                            .padding(.horizontal, 16)
-                            .frame(height: 56)
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
-                        .owcDivider()
 
                         HStack {
                             Text(store.t("lunchDuration")).font(.body)
@@ -1005,30 +1059,32 @@ struct LunchSettingsView: View {
         .background(OWCDesign.page)
         .navigationTitle(store.t("lunchBreak"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("lunchBreak"))
+        .owcDetailBack(
+            title: store.t("settings"),
+            pageTitle: store.t("lunchBreak"),
+            hasUnsavedChanges: hasUnsavedChanges,
+            unsavedChangesTitle: store.t("unsavedChangesTitle"),
+            keepEditingTitle: store.t("keepEditing"),
+            discardChangesTitle: store.t("discardChanges"),
+            onDiscardChanges: discardDraft
+        ) {
+            ScheduleSaveButton(store: store, enabled: hasUnsavedChanges, action: requestSave)
+        }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(store.t("done")) { durationFocused = false; clampDuration() }
             }
         }
-        .onAppear { durationText = "\(store.lunchDurationMinutes)" }
+        .onAppear { durationText = "\(draftDurationMinutes)" }
         .onChange(of: durationFocused) { _, focused in
             if !focused { clampDuration() }
         }
-        .onDisappear {
-            if showChangePrompt, let pendingChange {
-                store.pendingSchedulePrompt = pendingChange
-                return
-            }
-            let typed = Int(durationText) ?? store.lunchDurationMinutes
-            let clamped = min(180, max(10, typed))
-            guard store.lunchDurationMinutes != clamped else { return }
-            store.pendingSchedulePrompt = ScheduleFieldChange(lunchDurationMinutes: clamped)
-        }
-        .sensoryFeedback(.selection, trigger: store.lunchEnabled)
+        .sensoryFeedback(.selection, trigger: draftEnabled)
         .sensoryFeedback(.selection, trigger: store.lunchStartReminderEnabled)
         .sensoryFeedback(.selection, trigger: store.lunchEndReminderEnabled)
+        .sensoryFeedback(.warning, trigger: savePromptFeedback)
+        .sensoryFeedback(.success, trigger: saveCommitFeedback)
         .sheet(isPresented: $showStartPicker) {
             OWCSetupTimePickerSheet(
                 store: store,
@@ -1036,44 +1092,61 @@ struct LunchSettingsView: View {
                 minutes: $pendingStartMinutes
             )
             .presentationDetents([.medium])
-            .onDisappear {
-                guard pendingStartMinutes != store.lunchStartMinutes else { return }
-                pendingChange = ScheduleFieldChange(lunchStartMinutes: pendingStartMinutes)
-                showChangePrompt = true
-            }
+            .onDisappear { edit { $0.lunchStartMinutes = pendingStartMinutes } }
         }
-        .alert(
-            store.t("applyScheduleTitle"),
-            isPresented: $showChangePrompt
-        ) {
-            Button(store.t("applyFromNextShift")) {
-                if let pendingChange {
-                    store.applyScheduleChange(pendingChange, decision: .nextShiftOnly)
-                }
-                pendingChange = nil
-            }
-            Button(store.t("applyToToday")) {
-                if let pendingChange {
-                    store.applyScheduleChange(pendingChange, decision: .applyToToday)
-                }
-                pendingChange = nil
-            }
-            Button(store.t("cancelAction"), role: .cancel) {
-                pendingChange = nil
-                durationText = "\(store.lunchDurationMinutes)"
-            }
+        .alert(store.t("applyScheduleTitle"), isPresented: $showSavePrompt) {
+            Button(store.t("applyFromNextShift")) { commit(.nextShiftOnly) }
+            Button(store.t("applyToToday")) { commit(.applyToToday) }
+            Button(store.t("cancelAction"), role: .cancel) {}
         } message: {
             Text(store.t("applyScheduleMessage"))
         }
     }
 
+    private func edit(_ change: (inout ScheduleFieldChange) -> Void) {
+        var next = draft
+        change(&next)
+        draft = next.settled(against: store)
+    }
+
+    private func commit(_ decision: ScheduleChangeDecision) {
+        store.applyScheduleChange(draft, decision: decision)
+        draft = ScheduleFieldChange()
+        durationText = "\(store.lunchDurationMinutes)"
+        saveCommitFeedback += 1
+    }
+
+    private func requestSave() {
+        // The field commits on blur, so a value still being typed has not
+        // reached the draft yet. Save is the last chance to settle it first.
+        durationFocused = false
+        clampDuration()
+        guard !draft.isEmpty else { return }
+        if store.shouldPromptApplyingToToday(draft, scope: .lunch) {
+            savePromptFeedback += 1
+            showSavePrompt = true
+        } else {
+            commit(.nextShiftOnly)
+        }
+    }
+
+    private var hasUnsavedChanges: Bool {
+        var leaving = draft
+        let typed = Int(durationText) ?? draftDurationMinutes
+        leaving.lunchDurationMinutes = min(180, max(10, typed))
+        return !leaving.settled(against: store).isEmpty
+    }
+
+    private func discardDraft() {
+        draft = ScheduleFieldChange()
+        durationText = "\(store.lunchDurationMinutes)"
+    }
+
     private func clampDuration() {
-        let typed = Int(durationText) ?? store.lunchDurationMinutes
+        let typed = Int(durationText) ?? draftDurationMinutes
         let clamped = min(180, max(10, typed))
         durationText = "\(clamped)"
-        guard store.lunchDurationMinutes != clamped else { return }
-        pendingChange = ScheduleFieldChange(lunchDurationMinutes: clamped)
-        showChangePrompt = true
+        edit { $0.lunchDurationMinutes = clamped }
     }
 }
 
@@ -1252,35 +1325,58 @@ private func settingsDetailFooter(_ text: String) -> some View {
         .padding(.top, 8)
 }
 
-extension View {
-    /// Asked from a settings detail that may already have popped, so the alert
-    /// lives on the root rather than the page that queued the change.
-    func owcScheduleChangePrompt(store: OffWorkStore) -> some View {
-        alert(
-            store.t("applyScheduleTitle"),
-            isPresented: Binding(
-                get: { store.pendingSchedulePrompt != nil },
-                set: { if !$0 { store.pendingSchedulePrompt = nil } }
-            )
-        ) {
-            Button(store.t("applyFromNextShift")) {
-                if let pending = store.pendingSchedulePrompt {
-                    store.applyScheduleChange(pending, decision: .nextShiftOnly)
-                }
-                store.pendingSchedulePrompt = nil
-            }
-            Button(store.t("applyToToday")) {
-                if let pending = store.pendingSchedulePrompt {
-                    store.applyScheduleChange(pending, decision: .applyToToday)
-                }
-                store.pendingSchedulePrompt = nil
-            }
-            Button(store.t("cancelAction"), role: .cancel) {
-                store.pendingSchedulePrompt = nil
-            }
-        } message: {
-            Text(store.t("applyScheduleMessage"))
+// MARK: - Editing a schedule without committing on every keystroke
+
+extension ScheduleFieldChange {
+    var isEmpty: Bool { self == ScheduleFieldChange() }
+
+    /// Drops every field that already matches what the store holds.
+    ///
+    /// Without this, opening a picker and putting the value back would leave
+    /// the page "dirty": Save lit up over nothing, and leaving asked whether a
+    /// change that is not a change should include today.
+    func settled(against store: OffWorkStore) -> ScheduleFieldChange {
+        var next = self
+        if next.startMinutes == store.startMinutes { next.startMinutes = nil }
+        if next.endMinutes == store.endMinutes { next.endMinutes = nil }
+        if next.workdays == store.workdays { next.workdays = nil }
+        if next.scheduleMode == store.scheduleMode { next.scheduleMode = nil }
+        if next.lunchEnabled == store.lunchEnabled { next.lunchEnabled = nil }
+        if next.lunchStartMinutes == store.lunchStartMinutes { next.lunchStartMinutes = nil }
+        if next.lunchDurationMinutes == store.lunchDurationMinutes { next.lunchDurationMinutes = nil }
+        if next.alternatingWeekType == store.alternatingWeekType { next.alternatingWeekType = nil }
+        if next.alternatingWeekendWorkday == store.alternatingWeekendWorkday {
+            next.alternatingWeekendWorkday = nil
         }
+        if next.rotationWorkDays == store.rotationWorkDays { next.rotationWorkDays = nil }
+        if next.rotationRestDays == store.rotationRestDays { next.rotationRestDays = nil }
+        if next.rotationCycleDay == store.rotationCycleDay { next.rotationCycleDay = nil }
+        return next
+    }
+}
+
+/// Trailing header control on a page that is saved rather than committed
+/// field by field.
+///
+/// Matches the back chevron: a compact 30 pt glass control. The old capsule label
+/// (`Enregistrer`, `Сохранить`, `जतन करा`) could crowd the compact header
+/// and, with `.glassEffect` inside a `.plain` button, sometimes ate the tap
+/// on device. The checkmark keeps the hit target and the VoiceOver name.
+struct ScheduleSaveButton: View {
+    let store: OffWorkStore
+    let enabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(store.t("saveAction"), systemImage: "checkmark", action: action)
+        .labelStyle(.iconOnly)
+        .font(.title3.weight(.semibold))
+        .frame(width: 30, height: 30)
+        .contentShape(Circle())
+        .buttonStyle(.glass)
+        .tint(enabled ? OWCDesign.accent : nil)
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.4)
     }
 }
 

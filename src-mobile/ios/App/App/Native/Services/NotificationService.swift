@@ -103,10 +103,8 @@ final class NotificationService {
         if store.liveActivityEnabled,
            store.notificationMode == .off,
            let snapshot,
-           snapshot.endAtMs > now.timeIntervalSince1970 * 1_000,
-           !store.isEndedEarly(snapshot),
-           generation == scheduleGeneration,
-           store.publishesLiveSurfaces {
+           store.shouldScheduleLiveActivityEndFallback(snapshot: snapshot, at: now),
+           generation == scheduleGeneration {
             let identifier = "owc.shift.live.end.\(Int64(snapshot.endAtMs))"
             let content = UNMutableNotificationContent()
             content.title = store.t("offWorkTime")

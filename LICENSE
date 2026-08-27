@@ -1,3 +1,12 @@
+The software in this repository is licensed under the MIT License below.
+
+The Geist font files in app/fonts/ (GeistVF.woff, GeistMonoVF.woff) are
+copyright Vercel, in collaboration with basement.studio, and are licensed
+under the SIL Open Font License, Version 1.1 — not MIT.
+See app/fonts/LICENSE.txt.
+
+---
+
 MIT License
 
 Copyright (c) 2024 ififi2017

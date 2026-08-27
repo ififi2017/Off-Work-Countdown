@@ -1,7 +1,11 @@
+import Foundation
+
 enum TimerVisualPhase: Hashable {
     /// `scheduleMode == .off` and today has no manual session.
     case unscheduled
-    /// Clock-in countdown, clock-off countdown, or a lunch / overtime interlude.
+    /// Clock-in countdown: the shift has not started yet.
+    case clockIn
+    /// Clock-off countdown, or a lunch / overtime interlude of that surface.
     case running
     case lunch
     case overtime
@@ -14,7 +18,8 @@ enum TimerVisualPhase: Hashable {
         sessionActive: Bool,
         snapshot: NativeShiftSnapshot?,
         forceToday: Bool,
-        endedEarly: Bool
+        endedEarly: Bool,
+        now: Date
     ) -> Self {
         if !followsSchedule, !sessionActive { return .unscheduled }
         guard let snapshot else { return .rulesError }
@@ -24,6 +29,7 @@ enum TimerVisualPhase: Hashable {
         if endedEarly { return .completed }
         if followsSchedule, !snapshot.isWorkday, !forceToday { return .rest }
         if snapshot.remainingMs <= 0 { return .completed }
+        if snapshot.isBeforeStart(at: now) { return .clockIn }
         if snapshot.activeBreakEndAtMs != nil { return .lunch }
         if snapshot.overtimeEndAtMs != nil,
            snapshot.elapsedMs >= snapshot.plannedDurationMs {
@@ -33,7 +39,7 @@ enum TimerVisualPhase: Hashable {
     }
 
     var showsActiveTimer: Bool {
-        self == .running || self == .lunch || self == .overtime
+        self == .clockIn || self == .running || self == .lunch || self == .overtime
     }
 
     var usesCommonTimerSurface: Bool {
@@ -46,14 +52,16 @@ enum TimerVisualPhase: Hashable {
     var usesLiveTimeline: Bool {
         switch self {
         case .unscheduled, .rulesError: false
-        case .running, .lunch, .overtime, .completed, .rest: true
+        case .clockIn, .running, .lunch, .overtime, .completed, .rest: true
         }
     }
 
     /// Lunch and overtime are interludes of the same running surface. Identity
     /// here must not change between them, or the whole screen cross-fades.
+    /// Clock-in to clock-off is a real state change and should transition.
     var surfaceIdentity: String {
         switch self {
+        case .clockIn: "clockIn"
         case .running, .lunch, .overtime: "active"
         case .completed: "completed"
         case .rest: "rest"

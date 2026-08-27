@@ -15,6 +15,13 @@ struct ShiftPreviewRow: View {
     /// Whether the row does something when tapped. Not derived from `route`:
     /// the shift's own times open a picker rather than navigating.
     let showsChevron: Bool
+    /// Whether to hold the chevron's width open on rows that do not have one.
+    ///
+    /// Right for a list where some rows are tappable and some are not — it is
+    /// what keeps the clock column straight. Wrong for a list where none of
+    /// them are, which then pays a chevron's width of empty margin on every
+    /// row and pushes the times in off the edge for no reason.
+    var reservesChevron = true
 
     @ScaledMetric(relativeTo: .body) private var badgeSize: CGFloat = 32
 
@@ -61,11 +68,13 @@ struct ShiftPreviewRow: View {
             // Always laid out, hidden when the row does nothing. Rendering it
             // conditionally let the inert rows push their time a chevron's
             // width further right, so the clock column came out ragged.
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(OWCDesign.tertiary)
-                .opacity(showsChevron ? 1 : 0)
-                .accessibilityHidden(true)
+            if showsChevron || reservesChevron {
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(OWCDesign.tertiary)
+                    .opacity(showsChevron ? 1 : 0)
+                    .accessibilityHidden(true)
+            }
         }
         .padding(.horizontal, 16)
         .frame(minHeight: 58)

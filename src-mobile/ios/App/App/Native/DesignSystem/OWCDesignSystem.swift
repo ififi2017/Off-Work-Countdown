@@ -1,6 +1,10 @@
 import SwiftUI
 import UIKit
 
+enum OWCBrand {
+    static let shortName = "DoneAt"
+}
+
 enum OWCDesign {
     static let page = Color(uiColor: .systemGroupedBackground)
     static let card = Color(uiColor: .secondarySystemGroupedBackground)
@@ -12,6 +16,8 @@ enum OWCDesign {
     static let control = Color(uiColor: .tertiarySystemFill)
     static let orange = Color(red: 0.976, green: 0.451, blue: 0.086)
     static let orangeDeep = Color(red: 0.918, green: 0.345, blue: 0.047)
+    static let brandPlum = Color(red: 0.169, green: 0.098, blue: 0.208)
+    static let brandCream = Color(red: 1.0, green: 0.945, blue: 0.847)
     static let accent = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 1.0, green: 0.53, blue: 0.18, alpha: 1)
@@ -49,12 +55,6 @@ struct OWCAppHeader: View {
 
     var body: some View {
         HStack {
-            Text(store.t("offWorkCountdown"))
-                .font(.footnote.weight(.semibold))
-                .tracking(0.78)
-                .textCase(.uppercase)
-                .foregroundStyle(OWCDesign.secondary)
-                .lineLimit(1)
             Spacer()
             Button { withAnimation(.snappy(duration: 0.28)) { store.toggleQuickTheme() } } label: {
                 Group {
@@ -173,6 +173,17 @@ struct OWCRow<Accessory: View>: View {
     let subtitle: String?
     let isLast: Bool
     let accessory: Accessory
+    /// Centres the leading glyph and trailing accessory against the whole
+    /// title-plus-subtitle block instead of pinning them to the title line.
+    /// Descriptive onboarding rows and radio-style choices use this layout.
+    var centersVertically = false
+    /// Whether an accessory is actually coming. Set by the initialisers, not by
+    /// the caller: a row with nothing at its trailing edge must not reserve
+    /// room for one, and must let its text claim the full width before the
+    /// spacer takes any — otherwise the text negotiates width against a spacer
+    /// that wants everything, and wraps a word or two early with visible empty
+    /// margin beside it.
+    fileprivate var reservesAccessory = true
 
     // A fixed gutter, so every title in a card starts on the same vertical line
     // however wide the glyph is — `calendar.badge.clock` is a good deal wider
@@ -190,6 +201,7 @@ struct OWCRow<Accessory: View>: View {
         title: String,
         subtitle: String? = nil,
         isLast: Bool = false,
+        centersVertically: Bool = false,
         @ViewBuilder accessory: () -> Accessory
     ) {
         self.icon = icon
@@ -197,6 +209,7 @@ struct OWCRow<Accessory: View>: View {
         self.title = title
         self.subtitle = subtitle
         self.isLast = isLast
+        self.centersVertically = centersVertically
         self.accessory = accessory()
     }
 
@@ -205,7 +218,10 @@ struct OWCRow<Accessory: View>: View {
     /// A row carrying a subtitle is a block of text, not a single line. Centring
     /// the icon against that block parks it between the two lines whenever the
     /// subtitle wraps; it belongs beside the title.
-    private var alignsToTitle: Bool { subtitle != nil || stacksAccessory }
+    ///
+    /// `centersVertically` opts out, for rows whose subtitle is part of the main
+    /// description or whose radio mark belongs in the centre of the whole row.
+    private var alignsToTitle: Bool { !centersVertically && (subtitle != nil || stacksAccessory) }
 
     var body: some View {
         HStack(alignment: alignsToTitle ? .top : .center, spacing: 12) {
@@ -245,8 +261,20 @@ struct OWCRow<Accessory: View>: View {
                 // instead, the way Settings does.
                 if stacksAccessory { accessory }
             }
-            Spacer(minLength: 8)
-            if !stacksAccessory { accessory }
+            // A row with nothing at its trailing edge has no spacer at all.
+            //
+            // Not even `Spacer(minLength: 0)`: a spacer is a flexible view, and
+            // an `HStack` divides the width between its flexible children
+            // rather than letting the first one take what it needs. Measured,
+            // that handed a wrapping subtitle 246 of the 284 pt available and
+            // broke it four characters early, with the empty 38 pt sitting
+            // beside it. Gone, the text is the only flexible thing in the row
+            // and `maxWidth: .infinity` gives it the lot.
+            .frame(maxWidth: reservesAccessory ? nil : .infinity, alignment: .leading)
+            if reservesAccessory {
+                Spacer(minLength: 8)
+                if !stacksAccessory { accessory }
+            }
         }
         .padding(.horizontal, 16)
         // A wrapped subtitle otherwise sits right on the separator.
@@ -267,8 +295,23 @@ struct OWCRow<Accessory: View>: View {
 }
 
 extension OWCRow where Accessory == EmptyView {
-    init(icon: String? = nil, textIcon: String? = nil, title: String, subtitle: String? = nil, isLast: Bool = false) {
-        self.init(icon: icon, textIcon: textIcon, title: title, subtitle: subtitle, isLast: isLast) { EmptyView() }
+    init(
+        icon: String? = nil,
+        textIcon: String? = nil,
+        title: String,
+        subtitle: String? = nil,
+        isLast: Bool = false,
+        centersVertically: Bool = false
+    ) {
+        self.init(
+            icon: icon,
+            textIcon: textIcon,
+            title: title,
+            subtitle: subtitle,
+            isLast: isLast,
+            centersVertically: centersVertically
+        ) { EmptyView() }
+        reservesAccessory = false
     }
 }
 
@@ -314,11 +357,22 @@ struct OWCPrimaryButtonStyle: ButtonStyle {
 
 struct OWCRowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
+        // `.animation(_:body:)`, not `.animation(_:value:)`.
+        //
+        // The value form wraps the row's own label, so everything inside it
+        // inherited the press transaction. Releasing a radio row changes
+        // `isPressed` and the row's checkmark in the same pass, and the label
+        // therefore cross-faded `circle` into `checkmark.circle.fill` in one
+        // 20 pt slot — two symbols legibly stacked, on the tapped row only,
+        // while every other row in the same list swapped instantly. Scoped to
+        // this closure the press decorations still animate and the label's own
+        // content changes on whatever terms its own view set.
         configuration.label
-            .background(configuration.isPressed ? OWCDesign.control : .clear)
-            .opacity(configuration.isPressed ? 0.82 : 1)
-            .scaleEffect(configuration.isPressed ? 0.995 : 1)
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+            .animation(.easeOut(duration: 0.12)) { content in
+                content
+                    .background(configuration.isPressed ? OWCDesign.control : .clear)
+                    .opacity(configuration.isPressed ? 0.82 : 1)
+            }
     }
 }
 
@@ -502,13 +556,24 @@ struct OWCConfettiOverlay: View {
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
+        // Driven by `onChange`, not `.task(id:)`. The task restarts every time
+        // the overlay leaves and returns — switching tabs — and would fire the
+        // same burst again. `onChange` only runs when the counter actually
+        // moves, which is a new celebration or a tap to replay.
+        .onChange(of: burst) { _, newBurst in
+            startBurst(newBurst)
+        }
         .task(id: burst) {
-            guard burst > 0, !reduceMotion else { return }
-            flakes = Self.makeFlakes(seed: burst)
-            startedAt = .now
+            guard burst > 0 else { return }
             try? await Task.sleep(for: .seconds(Self.life + 0.2))
             flakes = []
         }
+    }
+
+    private func startBurst(_ burst: Int) {
+        guard burst > 0, !reduceMotion else { return }
+        flakes = Self.makeFlakes(seed: burst)
+        startedAt = .now
     }
 
     private func draw(
@@ -721,15 +786,46 @@ struct OWCPageTitle: View {
     }
 }
 
-struct OWCDetailBackModifier: ViewModifier {
+struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
     let backTitle: String
     let pageTitle: String
+    /// The page's own control, at the trailing edge of the header row. Empty on
+    /// every page that has nothing to put there.
+    @ViewBuilder let trailing: Trailing
+    let hasUnsavedChanges: Bool
+    let unsavedChangesTitle: String
+    let keepEditingTitle: String
+    let discardChangesTitle: String
+    let onDiscardChanges: () -> Void
     @Environment(\.dismiss) private var dismiss
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     /// Fades the control out the moment it is tapped, so it disappears in place
     /// rather than sliding off with the page — the behaviour Voice Memos has.
     /// There is deliberately no long-press menu: it opened an empty capsule.
     @State private var leaving = false
+    @State private var showDiscardPrompt = false
+    @State private var promptFeedback = 0
+    @State private var discardFeedback = 0
+
+    init(
+        backTitle: String,
+        pageTitle: String,
+        hasUnsavedChanges: Bool = false,
+        unsavedChangesTitle: String = "",
+        keepEditingTitle: String = "",
+        discardChangesTitle: String = "",
+        onDiscardChanges: @escaping () -> Void = {},
+        @ViewBuilder trailing: () -> Trailing
+    ) {
+        self.backTitle = backTitle
+        self.pageTitle = pageTitle
+        self.trailing = trailing()
+        self.hasUnsavedChanges = hasUnsavedChanges
+        self.unsavedChangesTitle = unsavedChangesTitle
+        self.keepEditingTitle = keepEditingTitle
+        self.discardChangesTitle = discardChangesTitle
+        self.onDiscardChanges = onDiscardChanges
+    }
 
     func body(content: Content) -> some View {
         content
@@ -746,38 +842,88 @@ struct OWCDetailBackModifier: ViewModifier {
                     backTitle: backTitle,
                     pageTitle: pageTitle,
                     compact: verticalSizeClass == .compact,
-                    leaving: leaving
-                ) {
-                    leaving = true
-                    dismiss()
-                }
+                    leaving: leaving,
+                    showDiscardPrompt: $showDiscardPrompt,
+                    unsavedChangesTitle: unsavedChangesTitle,
+                    keepEditingTitle: keepEditingTitle,
+                    discardChangesTitle: discardChangesTitle,
+                    discard: discardAndDismiss,
+                    trailing: { trailing },
+                    dismiss: requestDismiss
+                )
             }
-            .background(OWCSystemBackSwipeBridge())
+            .background(
+                OWCSystemBackSwipeBridge(
+                    blocksBackSwipe: hasUnsavedChanges,
+                    onBlockedBackSwipe: requestDismiss
+                )
+            )
+            .sensoryFeedback(.warning, trigger: promptFeedback)
+            .sensoryFeedback(.impact(weight: .medium), trigger: discardFeedback)
             .onAppear { leaving = false }
+    }
+
+    private func requestDismiss() {
+        if hasUnsavedChanges {
+            promptFeedback += 1
+            showDiscardPrompt = true
+        } else {
+            performDismiss()
+        }
+    }
+
+    private func discardAndDismiss() {
+        discardFeedback += 1
+        onDiscardChanges()
+        performDismiss()
+    }
+
+    private func performDismiss() {
+        leaving = true
+        dismiss()
     }
 }
 
-private struct OWCDetailHeader: View {
+private struct OWCDetailHeader<Trailing: View>: View {
     let backTitle: String
     let pageTitle: String
     let compact: Bool
     let leaving: Bool
+    @Binding var showDiscardPrompt: Bool
+    let unsavedChangesTitle: String
+    let keepEditingTitle: String
+    let discardChangesTitle: String
+    let discard: () -> Void
+    @ViewBuilder let trailing: Trailing
     let dismiss: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ZStack {
-                HStack {
-                    Button(action: dismiss) {
-                        Image(systemName: "chevron.left")
-                            .font(.title3.weight(.semibold))
-                            .frame(width: 30, height: 30)
-                    }
-                    .buttonStyle(.glass)
-                    .opacity(leaving ? 0 : 1)
-                    .animation(.easeOut(duration: 0.12), value: leaving)
-                    .accessibilityLabel(backTitle)
-                    Spacer()
+            // Title lives in the HStack, not a ZStack over the buttons.
+            // Overlaying it with allowsHitTesting(false) still ate glass
+            // taps on device — the save control sat under the text.
+            HStack(spacing: 8) {
+                Button(action: dismiss) {
+                    Image(systemName: "chevron.left")
+                        .font(.title3.weight(.semibold))
+                        .frame(width: 30, height: 30)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.glass)
+                .opacity(leaving ? 0 : 1)
+                .animation(.easeOut(duration: 0.12), value: leaving)
+                .accessibilityLabel(backTitle)
+                // The system needs the dialog on the source control itself to
+                // place Liquid Glass and its pointer correctly. A modifier on
+                // the page root loses that source; a hand-drawn pointer cannot
+                // reproduce the platform's spacing across devices and RTL.
+                .confirmationDialog(
+                    unsavedChangesTitle,
+                    isPresented: $showDiscardPrompt,
+                    titleVisibility: .visible
+                ) {
+                    Button(discardChangesTitle, role: .destructive, action: discard)
+                    Button(keepEditingTitle, role: .cancel) {}
                 }
 
                 if compact {
@@ -785,8 +931,19 @@ private struct OWCDetailHeader: View {
                         .font(.title3.weight(.semibold))
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
-                        .padding(.horizontal, 58)
+                        .frame(maxWidth: .infinity)
+                        .allowsHitTesting(false)
+                } else {
+                    Spacer(minLength: 0)
                 }
+
+                // Leaves with the back control, for the same reason: on the
+                // way out it belongs to the page being dismissed, and a
+                // glass capsule sliding away with the content underneath it
+                // is the one part of the transition that catches the eye.
+                trailing
+                    .opacity(leaving ? 0 : 1)
+                    .animation(.easeOut(duration: 0.12), value: leaving)
             }
             .padding(.horizontal, OWCDesign.pageInset)
             .frame(height: compact ? 56 : 52)
@@ -808,7 +965,44 @@ private struct OWCDetailHeader: View {
 
 extension View {
     func owcDetailBack(title: String, pageTitle: String) -> some View {
-        modifier(OWCDetailBackModifier(backTitle: title, pageTitle: pageTitle))
+        modifier(OWCDetailBackModifier(backTitle: title, pageTitle: pageTitle) { EmptyView() })
+    }
+
+    /// The same header with a control at its trailing edge — a page that can be
+    /// saved, rather than one that only commits as you go.
+    func owcDetailBack<Trailing: View>(
+        title: String,
+        pageTitle: String,
+        @ViewBuilder trailing: () -> Trailing
+    ) -> some View {
+        modifier(OWCDetailBackModifier(backTitle: title, pageTitle: pageTitle, trailing: trailing))
+    }
+
+    /// Keeps a page with a local draft in place until the user explicitly
+    /// discards it. The same request path handles the glass back button and the
+    /// native leading-edge swipe.
+    func owcDetailBack<Trailing: View>(
+        title: String,
+        pageTitle: String,
+        hasUnsavedChanges: Bool,
+        unsavedChangesTitle: String,
+        keepEditingTitle: String,
+        discardChangesTitle: String,
+        onDiscardChanges: @escaping () -> Void,
+        @ViewBuilder trailing: () -> Trailing
+    ) -> some View {
+        modifier(
+            OWCDetailBackModifier(
+                backTitle: title,
+                pageTitle: pageTitle,
+                hasUnsavedChanges: hasUnsavedChanges,
+                unsavedChangesTitle: unsavedChangesTitle,
+                keepEditingTitle: keepEditingTitle,
+                discardChangesTitle: discardChangesTitle,
+                onDiscardChanges: onDiscardChanges,
+                trailing: trailing
+            )
+        )
     }
 }
 

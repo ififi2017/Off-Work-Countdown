@@ -10,13 +10,24 @@ struct PhoneLandscapeShellView: View {
                 OWCDesign.page.ignoresSafeArea()
 
                 ZStack {
-                    if store.selectedTab == .settings {
-                        LandscapeSettingsView(store: store)
-                            .transition(pageTransition)
-                    } else {
-                        LandscapeTimerView(store: store)
-                            .transition(pageTransition)
-                    }
+                    // Keep both roots mounted, as the iPad shell does. Removing
+                    // a tree containing interactive glass while its replacement
+                    // was entering left one of the timer controls composited over
+                    // the Version row for roughly a second on iPhone landscape.
+                    LandscapeTimerView(
+                        store: store,
+                        isActive: store.selectedTab == .timer
+                    )
+                    .opacity(store.selectedTab == .timer ? 1 : 0)
+                    .allowsHitTesting(store.selectedTab == .timer)
+                    .accessibilityHidden(store.selectedTab != .timer)
+                    .zIndex(store.selectedTab == .timer ? 1 : 0)
+
+                    LandscapeSettingsView(store: store)
+                        .opacity(store.selectedTab == .settings ? 1 : 0)
+                        .allowsHitTesting(store.selectedTab == .settings)
+                        .accessibilityHidden(store.selectedTab != .settings)
+                        .zIndex(store.selectedTab == .settings ? 1 : 0)
                 }
                 // The system already supplies the landscape safe-area insets.
                 // Reserve only the rail's real footprint; mirroring that inset
@@ -80,15 +91,13 @@ struct PhoneLandscapeShellView: View {
         reduceMotion ? OWCMotion.reduced : OWCMotion.navigation
     }
 
-    private var pageTransition: AnyTransition {
-        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.98))
-    }
 }
 
 private struct LandscapeTimerView: View {
     // No semantic style goes this large; scale the display size instead.
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 76
     let store: OffWorkStore
+    let isActive: Bool
     @State private var showShare = false
     @State private var showOvertime = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -96,7 +105,7 @@ private struct LandscapeTimerView: View {
 
     var body: some View {
         Group {
-            if store.visualPhase(at: .now).usesLiveTimeline {
+            if isActive, store.visualPhase(at: .now).usesLiveTimeline {
                 TimelineView(.periodic(from: .now, by: 1)) { timeline in
                     landscapeContent(at: timeline.date)
                 }
@@ -124,17 +133,48 @@ private struct LandscapeTimerView: View {
 
         ZStack {
             if phase.showsActiveTimer, let snapshot {
-                let remaining = snapshot.isBeforeStart(at: date)
+                let beforeStart = phase == .clockIn
+                let onBreak = phase == .lunch
+                let overtime = phase == .overtime
+                let remaining = beforeStart
                     ? store.countdownToClockInMs(snapshot: snapshot, at: date)
                     : snapshot.heroRemainingMs(at: date)
-                let beforeStart = snapshot.isBeforeStart(at: date)
                 VStack(spacing: 0) {
-                    if store.isForcedWorkday(snapshot) {
-                        ManualTimingBanner(store: store)
-                            .padding(.bottom, 8)
-                    } else if !beforeStart, let note = store.earlyClockInNote(at: date) {
+                    if !store.isForcedWorkday(snapshot),
+                       !beforeStart,
+                       let note = store.earlyClockInNote(at: date) {
                         EarlyClockInBanner(store: store, note: note)
                             .padding(.bottom, 8)
+                    }
+
+                    if store.isForcedWorkday(snapshot) || onBreak || overtime {
+                        HStack(spacing: 8) {
+                            if store.isForcedWorkday(snapshot) {
+                                ManualTimingBanner(store: store, compact: true)
+                            }
+                            if onBreak {
+                                Label(store.t("lunchInProgress"), systemImage: "cup.and.saucer")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(OWCDesign.secondary)
+                                    .padding(.horizontal, 12)
+                                    .frame(height: 26)
+                                    .background(OWCDesign.control, in: Capsule())
+                            } else if overtime {
+                                Label(
+                                    store.t(
+                                        "overtimeUntil",
+                                        values: ["time": store.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
+                                    ),
+                                    systemImage: "clock.badge.plus"
+                                )
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(OWCDesign.orangeDeep)
+                                .padding(.horizontal, 12)
+                                .frame(height: 26)
+                                .background(OWCDesign.orange.opacity(0.12), in: Capsule())
+                            }
+                        }
+                        .padding(.bottom, 8)
                     }
                     Text(date.formatted(.dateTime.month().day().weekday(.wide).locale(store.locale)))
                         .font(.subheadline.weight(.semibold))
@@ -145,7 +185,7 @@ private struct LandscapeTimerView: View {
                         .tracking(-3)
                         .lineLimit(1)
                         .owcCountdownTextTransition(milliseconds: remaining)
-                    Text(landscapeCaption(snapshot, at: date))
+                    landscapeCaption(snapshot, phase: phase)
                         .font(.subheadline)
                         .foregroundStyle(OWCDesign.secondary)
                         .padding(.top, 6)
@@ -153,7 +193,7 @@ private struct LandscapeTimerView: View {
                     VStack(spacing: 8) {
                         GeometryReader { proxy in
                             let fill = beforeStart
-                                ? store.countdownToClockInFill(snapshot: snapshot, at: date)
+                                ? store.countdownToClockInProgress(snapshot: snapshot)
                                 : snapshot.progress
                             Capsule().fill(OWCDesign.control)
                                 .overlay(alignment: .leading) {
@@ -163,12 +203,21 @@ private struct LandscapeTimerView: View {
                         }
                         .frame(height: 10)
                         GeometryReader { proxy in
-                            Text(store.timeString(store.effectiveStartMinutes(at: date))).position(x: 24, y: 8)
-                            if store.effectiveLunchEnabled(at: date), snapshot.segments.count > 1 {
-                                Text("\(store.timeString(store.effectiveLunchStartMinutes(at: date))) · \(store.t("lunchBreak"))")
-                                    .position(x: max(62, min(proxy.size.width - 62, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
+                            if beforeStart {
+                                Text(store.formatTime(countdownAnchor(snapshot, at: date)))
+                                    .position(x: 24, y: 8)
+                                Text(store.formatTime(snapshot.startDate))
+                                    .position(x: proxy.size.width - 24, y: 8)
+                            } else {
+                                Text(store.timeString(store.effectiveStartMinutes(at: date)))
+                                    .position(x: 24, y: 8)
+                                if store.effectiveLunchEnabled(at: date), snapshot.segments.count > 1 {
+                                    Text("\(store.timeString(store.effectiveLunchStartMinutes(at: date))) · \(store.t("lunchBreak"))")
+                                        .position(x: max(110, min(proxy.size.width - 110, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
+                                }
+                                Text(store.timeString(store.effectiveEndMinutes(at: date)))
+                                    .position(x: proxy.size.width - 24, y: 8)
                             }
-                            Text(store.timeString(store.effectiveEndMinutes(at: date))).position(x: proxy.size.width - 24, y: 8)
                         }
                         .frame(height: 16)
                         .font(.caption.monospacedDigit())
@@ -181,7 +230,7 @@ private struct LandscapeTimerView: View {
                             store.t("progress"),
                             store.formatPercent(
                                 beforeStart
-                                    ? store.countdownToClockInFill(snapshot: snapshot, at: date)
+                                    ? store.countdownToClockInProgress(snapshot: snapshot)
                                     : snapshot.progress
                             )
                         )
@@ -192,8 +241,10 @@ private struct LandscapeTimerView: View {
 
                     HStack(spacing: 10) {
                         if beforeStart {
-                            Button { store.clockInEarly(at: date) } label: {
-                                Text(store.t("clockInEarly"))
+                            Button {
+                                store.requestClockInEarly(at: date)
+                            } label: {
+                                ClockInEarlyLabel(store: store)
                             }
                             Button { showShare = true } label: {
                                 Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
@@ -213,7 +264,7 @@ private struct LandscapeTimerView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 24)
-                .padding(.vertical, 20)
+                .padding(.vertical, 12)
             } else {
                 TimerDesignView(
                     store: store,
@@ -228,13 +279,28 @@ private struct LandscapeTimerView: View {
         .animation(timerAnimation, value: phase)
     }
 
-    private func landscapeCaption(_ snapshot: NativeShiftSnapshot, at now: Date) -> String {
-        if snapshot.isBeforeStart(at: now) { return store.t("nextShiftLabelShort") }
-        if let breakEnd = snapshot.activeBreakEndDate {
-            return store.t("pausedUntil", values: ["time": store.formatTime(breakEnd)])
+    @ViewBuilder
+    private func landscapeCaption(
+        _ snapshot: NativeShiftSnapshot,
+        phase: TimerVisualPhase
+    ) -> some View {
+        if phase == .clockIn {
+            Text(store.t("nextShiftLabelShort"))
+        } else if phase == .lunch, let breakEnd = snapshot.activeBreakEndDate {
+            Label(
+                store.t("pausedUntil", values: ["time": store.formatTime(breakEnd)]),
+                systemImage: "cup.and.saucer"
+            )
+        } else if phase == .overtime {
+            Label(store.t("overtimeTimeLeftCaption"), systemImage: "clock.badge.plus")
+        } else {
+            Text(store.t("timeLeftCaption"))
         }
-        if snapshot.isOvertimeActive(at: now) { return store.t("overtimeTimeLeftCaption") }
-        return store.t("timeLeftCaption")
+    }
+
+    private func countdownAnchor(_ snapshot: NativeShiftSnapshot, at date: Date) -> Date {
+        snapshot.countdownAnchorAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) }
+            ?? Calendar.current.startOfDay(for: date)
     }
 
     private var timerAnimation: Animation {

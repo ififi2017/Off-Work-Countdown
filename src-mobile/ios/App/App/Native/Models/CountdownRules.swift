@@ -24,6 +24,9 @@ struct NativeShiftSnapshot: Codable, Hashable {
     let dailySalary: Double?
     let nextShiftStartAtMs: Double?
     let nextShiftEndAtMs: Double?
+    let countdownTargetAtMs: Double?
+    let countdownAnchorAtMs: Double?
+    let countdownProgress: Double
 
     var startDate: Date { Date(timeIntervalSince1970: startAtMs / 1_000) }
     var endDate: Date { Date(timeIntervalSince1970: endAtMs / 1_000) }
@@ -56,6 +59,7 @@ struct NativeShiftSnapshot: Codable, Hashable {
 
     /// Next-shift and next-rest come from `source`. Current-shift figures stay.
     func withProjectedFuture(from source: NativeShiftSnapshot) -> NativeShiftSnapshot {
+        let countsToCurrentStart = countdownTargetAtMs == startAtMs
         let restAtMs: Double?
         if let candidate = source.nextRestAtMs {
             let endDay = Calendar.current.startOfDay(for: endDate)
@@ -82,7 +86,16 @@ struct NativeShiftSnapshot: Codable, Hashable {
             nextRestAtMs: restAtMs,
             dailySalary: dailySalary,
             nextShiftStartAtMs: source.nextShiftStartAtMs,
-            nextShiftEndAtMs: source.nextShiftEndAtMs
+            nextShiftEndAtMs: source.nextShiftEndAtMs,
+            countdownTargetAtMs: countsToCurrentStart
+                ? countdownTargetAtMs
+                : source.countdownTargetAtMs,
+            countdownAnchorAtMs: countsToCurrentStart
+                ? countdownAnchorAtMs
+                : source.countdownAnchorAtMs,
+            countdownProgress: countsToCurrentStart
+                ? countdownProgress
+                : source.countdownProgress
         )
     }
 }
@@ -97,6 +110,7 @@ struct NativeWidgetShiftSnapshot: Codable, Hashable {
     let plannedEndAtMs: Double
     let overtimeEndAtMs: Double?
     let durationMs: Double
+    let countdownAnchorAtMs: Double
 }
 
 struct NativePeriodSummary: Codable, Hashable {
@@ -263,6 +277,31 @@ final class CountdownRules {
         else { return false }
         return result.toBool()
     }
+
+    func shouldPromptApplyToday(
+        current: NativeRulesInput,
+        candidate: NativeRulesInput,
+        kind: String,
+        schedulePatternChanged: Bool
+    ) -> Bool {
+        if loadError != nil { return true }
+        let request = NativeTodayImpactRequest(
+            current: current,
+            candidate: candidate,
+            kind: kind,
+            schedulePatternChanged: schedulePatternChanged
+        )
+        guard let context,
+              let bridge = context.objectForKeyedSubscript("OWCNative"),
+              !bridge.isUndefined,
+              let data = try? JSONEncoder().encode(request),
+              let json = String(data: data, encoding: .utf8),
+              let result = bridge.invokeMethod("shouldPromptApplyToday", withArguments: [json]),
+              !result.isUndefined,
+              !result.isNull
+        else { return true }
+        return result.toBool()
+    }
 }
 
 struct NativeWorkSchedule: Codable {
@@ -295,6 +334,13 @@ private struct NativeWidgetTimelineRequest: Codable {
     let rules: NativeRulesInput
     let throughMs: Double
     let maximumCount: Int
+}
+
+private struct NativeTodayImpactRequest: Codable {
+    let current: NativeRulesInput
+    let candidate: NativeRulesInput
+    let kind: String
+    let schedulePatternChanged: Bool
 }
 
 struct NativeSummaryInput: Codable {

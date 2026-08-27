@@ -7,6 +7,8 @@ struct OffWorkCountdownRootView: View {
     @State private var notifications = NotificationService()
     @State private var liveActivities = LiveActivityService()
     @State private var serviceTask: Task<Void, Never>?
+    @State private var clockInCommitFeedback = 0
+    @State private var clockOffCommitFeedback = 0
     /// Settings changed but the reminders have not been rebuilt yet. Flushed
     /// when the app leaves the foreground, or immediately when the countdown
     /// itself starts or stops.
@@ -41,8 +43,8 @@ struct OffWorkCountdownRootView: View {
         .environment(\.locale, store.locale)
         .environment(notifications)
         .tint(OWCDesign.accent)
-        .owcScheduleChangePrompt(store: store)
-        .sensoryFeedback(.success, trigger: store.countdownStarted)
+        .sensoryFeedback(.success, trigger: clockInCommitFeedback)
+        .sensoryFeedback(.impact(weight: .medium), trigger: clockOffCommitFeedback)
         .task {
             await Task.yield()
             guard store.onboardingComplete else { return }
@@ -56,6 +58,12 @@ struct OffWorkCountdownRootView: View {
         .onChange(of: store.countdownStarted) {
             pendingReschedule = false
             scheduleServices()
+        }
+        .onChange(of: store.earlyStartAtMs) { oldValue, newValue in
+            if newValue != nil, newValue != oldValue { clockInCommitFeedback += 1 }
+        }
+        .onChange(of: store.earlyOffAtMs) { oldValue, newValue in
+            if newValue != nil, newValue != oldValue { clockOffCommitFeedback += 1 }
         }
         .onChange(of: scheduleSignature) {
             // Only remember that it changed. Rescheduling touches
@@ -81,6 +89,9 @@ struct OffWorkCountdownRootView: View {
             store.presentedRoute = route
         }
         .onChange(of: scenePhase) {
+            if scenePhase == .background {
+                store.resetCelebratedSession()
+            }
             if scenePhase == .active {
                 store.reconcileCountdownSession()
                 store.refreshSystemLanguage()
