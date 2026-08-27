@@ -58,23 +58,52 @@ export function createIOSNativeRulesBundle() {
   const reminders = require("./reminders");
   const summary = require("./summary");
 
-  function buildShift(input) {
-    return countdown.buildShiftTimeline(
+  function shiftOptions(input) {
+    return {
+      breakStartTime: input.breakStartTime || null,
+      breakDurationMinutes: input.breakDurationMinutes || 0,
+      overtimeEndAtMs: input.overtimeEndAtMs || null,
+    };
+  }
+
+  function resolveCurrentShift(input) {
+    const options = shiftOptions(input);
+    const live = countdown.buildShiftTimeline(
       input.startTime,
       input.endTime,
       new Date(input.nowMs),
-      {
-        breakStartTime: input.breakStartTime || null,
-        breakDurationMinutes: input.breakDurationMinutes || 0,
-        overtimeEndAtMs: input.overtimeEndAtMs || null,
-      }
+      options
     );
+    const ended = countdown.findEndedShiftOnEndCalendarDay({
+      startTime: input.startTime,
+      endTime: input.endTime,
+      nowMs: input.nowMs,
+      workdays: input.workdays,
+      schedule: input.schedule || null,
+      options,
+      forcedWorkdayStartMs: input.forcedWorkdayStartMs || null,
+    });
+    const liveStart = countdown.getShiftStartAtMs(live);
+    const liveEnd = countdown.getShiftEndAtMs(live);
+    // Settlement of last night's overnight only applies until tonight's
+    // window actually starts. A rest-day 22:00–06:00 on Saturday would
+    // otherwise stay pinned to Friday's 06:00 end all evening, including a
+    // forced Saturday night run.
+    const liveIsOpen = input.nowMs >= liveStart && input.nowMs < liveEnd;
+    if (
+      ended &&
+      countdown.getShiftStartAtMs(ended) !== liveStart &&
+      !liveIsOpen
+    ) {
+      return ended;
+    }
+    return live;
   }
 
   global.OWCNative = {
     snapshot(inputJSON) {
       const input = JSON.parse(inputJSON);
-      const shift = buildShift(input);
+      const shift = resolveCurrentShift(input);
       const nextShift = countdown.findNextShiftTimeline({
         startTime: input.startTime,
         endTime: input.endTime,
@@ -130,7 +159,12 @@ export function createIOSNativeRulesBundle() {
       const input = request.rules;
       const throughMs = Number(request.throughMs);
       const maximumCount = Math.max(0, Math.floor(request.maximumCount || 0));
-      const current = buildShift(input);
+      const current = countdown.buildShiftTimeline(
+        input.startTime,
+        input.endTime,
+        new Date(input.nowMs),
+        shiftOptions(input)
+      );
       const shifts = [];
       let afterMs = Math.max(input.nowMs, countdown.getShiftEndAtMs(current));
 
@@ -191,7 +225,7 @@ export function createIOSNativeRulesBundle() {
 
     reminders(inputJSON) {
       const input = JSON.parse(inputJSON);
-      const shift = buildShift(input);
+      const shift = resolveCurrentShift(input);
       const nextShift = countdown.findNextShiftTimeline({
         startTime: input.startTime,
         endTime: input.endTime,
@@ -221,7 +255,12 @@ export function createIOSNativeRulesBundle() {
     validateBreak(inputJSON) {
       const input = JSON.parse(inputJSON);
       if (!input.breakStartTime || !(input.breakDurationMinutes > 0)) return true;
-      return buildShift(input).segments.length > 1;
+      return countdown.buildShiftTimeline(
+        input.startTime,
+        input.endTime,
+        new Date(input.nowMs),
+        shiftOptions(input)
+      ).segments.length > 1;
     },
   };
 })(globalThis);

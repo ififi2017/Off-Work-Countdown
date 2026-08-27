@@ -646,7 +646,7 @@ func editingTheScheduleDoesNotUndoAnEarlyClockOff() throws {
 
 @MainActor
 @Test("A completed shift stays on settlement; there is no dismiss back to setup")
-func dismissingCompletedDoesNotStopAScheduledCountdown() throws {
+func completedShiftStaysOnSettlement() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
@@ -673,7 +673,7 @@ func dismissingCompletedDoesNotStopAScheduledCountdown() throws {
 
 @MainActor
 @Test("Next-shift-only hour edits leave today's end unchanged")
-func setupHourEditsDoNotApplyUntilStartCountdown() throws {
+func nextShiftOnlyHourEditsLeaveTodayUnchanged() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
@@ -698,6 +698,32 @@ func setupHourEditsDoNotApplyUntilStartCountdown() throws {
     #expect(store.effectiveEndMinutes(at: afterWork) == 17 * 60)
     let today = try #require(store.snapshot(at: afterWork))
     #expect(store.visualPhase(snapshot: today, at: afterWork) == .running)
+
+    let todayEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 17
+    )))
+    let tuesdayEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 25, hour: 18
+    )))
+    #expect(abs(today.endAtMs - todayEnd.timeIntervalSince1970 * 1_000) < 1)
+    let nextEnd = try #require(today.nextShiftEndAtMs)
+    #expect(abs(nextEnd - tuesdayEnd.timeIntervalSince1970 * 1_000) < 1)
+
+    let tuesdayAtWork = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 25, hour: 10
+    )))
+    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: today,
+        active: true,
+        nowMs: Int64(afterWork.timeIntervalSince1970 * 1_000)
+    )
+    let tuesdayEntry = try #require(widget.entry(
+        atMs: Int64(tuesdayAtWork.timeIntervalSince1970 * 1_000)
+    ))
+    #expect(tuesdayEntry.phase == .working)
+    let target = try #require(tuesdayEntry.countdownTargetAtMs)
+    #expect(abs(target - Int64(tuesdayEnd.timeIntervalSince1970 * 1_000)) < 1_000)
 }
 
 @MainActor
@@ -934,7 +960,7 @@ func heroRemainingCountsToClockInBeforeStart() throws {
 
 @MainActor
 @Test("Clocking off early lands on completed, not setup")
-func clockingOffEarlyShowsCompletedUntilDismissed() throws {
+func clockingOffEarlyLandsOnCompleted() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
@@ -1333,7 +1359,7 @@ func stoppingACountdownLeavesARulesError() throws {
 
 @MainActor
 @Test("The last classic workday cannot be removed")
-func emptyWorkdaysStillAllowsWorkingTodayAnyway() throws {
+func lastClassicWorkdayCannotBeRemoved() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
@@ -1446,6 +1472,69 @@ func forcedOvernightShiftSurvivesMidnight() throws {
     // And the day-change reconcile must not delete a mark that still matches.
     #expect(store.reconcileCountdownSession(at: sundayMorning) == false)
     #expect(store.isForcedWorkday(afterMidnight))
+}
+
+@MainActor
+@Test("A forced overnight shift stays on settlement until the end calendar day is over")
+func forcedOvernightShiftSettlesUntilEndCalendarMidnight() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let saturdayNight = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 29, hour: 23
+    )))
+    let sundayAfterEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 30, hour: 6, minute: 30
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 22 * 60
+    store.endMinutes = 6 * 60
+    store.startCountdown(force: true, at: saturdayNight)
+
+    let settled = try #require(store.snapshot(at: sundayAfterEnd))
+    #expect(store.isForcedWorkday(settled))
+    #expect(settled.remainingMs <= 0)
+    #expect(store.visualPhase(snapshot: settled, at: sundayAfterEnd) == .completed)
+    _ = store.reconcileCountdownSession(at: sundayAfterEnd)
+    #expect(store.isForcedWorkday(try #require(store.snapshot(at: sundayAfterEnd))))
+    #expect(store.visualPhase(at: sundayAfterEnd) == .completed)
+}
+
+@MainActor
+@Test("Next-shift-only weekday edits do not make today look like rest")
+func nextShiftOnlyWorkdayEditsKeepTodaysRestDistance() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let mondayAfternoon = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 16
+    )))
+    let saturday = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 29
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.startCountdown(at: mondayAfternoon)
+    store.applyScheduleChange(
+        ScheduleFieldChange(workdays: [2, 3, 4, 5]),
+        decision: .nextShiftOnly,
+        at: mondayAfternoon
+    )
+
+    let today = try #require(store.snapshot(at: mondayAfternoon))
+    let rest = try #require(today.nextRestAtMs)
+    let saturdayStart = Calendar.current.startOfDay(for: saturday).timeIntervalSince1970 * 1_000
+    #expect(abs(rest - saturdayStart) < 1)
+    #expect(store.visualPhase(snapshot: today, at: mondayAfternoon) == .running)
 }
 
 @MainActor
@@ -1566,6 +1655,12 @@ func clockingInEarlyLengthensTodayWithoutMovingTheEnd() throws {
     #expect(store.effectiveEndMinutes(at: beforeStart) == 17 * 60)
     #expect(store.visualPhase(snapshot: running, at: beforeStart) == .running)
 
+    let tuesdayStart = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 25, hour: 9
+    )))
+    let nextStart = try #require(running.nextShiftStartAtMs)
+    #expect(abs(nextStart - tuesdayStart.timeIntervalSince1970 * 1_000) < 1)
+
     store.undoEarlyClockIn()
     let restored = try #require(store.snapshot(at: beforeStart))
     #expect(restored.isBeforeStart(at: beforeStart))
@@ -1650,6 +1745,90 @@ func shareCopyBeforeClockInCountsToStart() throws {
     let copy = store.shareCopy(at: beforeStart)
     #expect(copy.contains("starts"))
     #expect(!copy.lowercased().contains("off work in"))
+}
+
+@MainActor
+@Test("An overnight shift stays on settlement until the end calendar day is over")
+func overnightShiftSettlesUntilEndCalendarMidnight() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let fridayNight = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 7, day: 3, hour: 23
+    )))
+    let saturdayMorning = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 7, day: 4, hour: 6, minute: 30
+    )))
+    let sundayMorning = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 7, day: 5, hour: 0, minute: 30
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 22 * 60
+    store.endMinutes = 6 * 60
+    store.startCountdown(at: fridayNight)
+
+    let saturday = try #require(store.snapshot(at: saturdayMorning))
+    #expect(saturday.isWorkday)
+    #expect(saturday.remainingMs <= 0)
+    #expect(store.visualPhase(snapshot: saturday, at: saturdayMorning) == .completed)
+
+    let fromFridayNight = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: fridayNight),
+        active: true,
+        nowMs: Int64(fridayNight.timeIntervalSince1970 * 1_000)
+    )
+    let fridaySeam = try #require(fromFridayNight.entry(
+        atMs: Int64(saturdayMorning.timeIntervalSince1970 * 1_000)
+    ))
+    #expect(fridaySeam.labelKey == "offWorkToday")
+
+    let fromSaturdayMorning = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: saturday,
+        active: true,
+        nowMs: Int64(saturdayMorning.timeIntervalSince1970 * 1_000)
+    )
+    let saturdaySeam = try #require(fromSaturdayMorning.entry(
+        atMs: Int64(saturdayMorning.timeIntervalSince1970 * 1_000)
+    ))
+    #expect(saturdaySeam.labelKey == "offWorkToday")
+
+    store.clockOffEarly(at: fridayNight)
+    _ = store.reconcileCountdownSession(at: saturdayMorning)
+    #expect(store.isEndedEarly(try #require(store.snapshot(at: saturdayMorning))))
+
+    _ = store.reconcileCountdownSession(at: sundayMorning)
+    #expect(store.earlyOffAtMs == nil)
+    #expect(store.visualPhase(at: sundayMorning) == .rest)
+}
+
+@MainActor
+@Test("Rest days do not schedule reminders for a phantom current shift")
+func restDaysDoNotScheduleCurrentShiftReminders() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let saturdayAfternoon = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 29, hour: 13
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.notificationMode = .milestones
+    store.startCountdown(at: saturdayAfternoon)
+
+    let reminders = try store.shiftReminders(at: saturdayAfternoon)
+    #expect(!reminders.contains { $0.id.hasPrefix("current:") })
+    #expect(reminders.contains { $0.id.hasPrefix("next:") })
 }
 
 private func isolatedDefaults() throws -> (UserDefaults, String) {

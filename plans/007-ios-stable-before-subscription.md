@@ -110,8 +110,8 @@ Watch、跨设备同步、Android 不在范围内。
 落地时未再问你、按我认为的最优解做了的取舍。审查时可对照其他选项。
 
 1. **今日覆盖怎么存**  
-   选：`TodayScheduleOverride` 绑在「当前班次结束落在的日历日次日零点」，这期间规则输入用覆盖层（旧值），底图字段已经是新值。  
-   未选：单独存 `todayStartMinutes` 等一长串；或把「只从下一班」做成 `pendingSchedule` 到下一班才写入底图（小组件在休息日会仍显示旧时刻）。
+   选：覆盖层仍绑在「当前班次结束落在的日历日次日零点」，只用来算**这一班**的时刻。`nextShift*`、提醒的 `next:`、小组件 `widgetShifts` 走底图，所以「只从下一班起」改的是下一班，不是把旧 17:00 画进未来一年。  
+   未选：整份 `rulesInput` 都用覆盖层（小组件关掉 App 后会沿用旧时刻直到再打开）；或 `pendingSchedule` 到下一班才写底图。
 
 2. **休息日 / 上班倒计时进度条分母**  
    选：当前日历日 0 点 → 目标上班点。数字（距上班剩余）连续；条在每个零点按新分母重算，周一 0 点可能跳一下。  
@@ -172,6 +172,38 @@ Watch、跨设备同步、Android 不在范围内。
 16. **计时首页配置源文件**  
     选：主路径不再引用；`ShiftSetupView.swift` / `ShiftHeroCard.swift` / `ShiftSetupTimelineView.swift` 仍留在工程里，避免为删文件改 `pbxproj`。横屏 / iPad 里已删掉未引用的私有配置视图。  
     未选：连同 pbxproj 一起删掉这三个文件（下次专门清理工程文件时再做）。
+
+17. **设置那问用 Alert**  
+    选：`.alert` 三个按钮都画得出来。  
+    未选：`confirmationDialog`（iOS 26 把它收成锚定菜单，取消项不画，点外面才回滚）。
+
+18. **午休 / 加班不换屏身份**  
+    选：`running` / `lunch` / `overtime` 共用 `surfaceIdentity`，整屏不 cross-fade。  
+    未选：`.id(phase)`（穿插在视觉上像换了页）。
+
+19. **夜班结算缝写在规则束里**  
+    选：`findEndedShiftOnEndCalendarDay` 进 `snapshot()`，Swift 继续只渲染。周六 06:30 仍是周五那班 `remainingMs = 0`，撤销窗口也能再匹配上。  
+    未选：在 Swift 里按结束日历日重写一班（两套答案）。
+
+20. **休息日通知**  
+    选：`shiftReminders` 在休息日和结算丢掉 `current:`，Live Activity 那道门之外通知也走同一条。  
+    未选：只靠 `publishesLiveSurfaces`（周六仍会预约 09:00–17:00 的幻影班）。
+
+21. **午休开关**  
+    选：整行 Button，Toggle 只展示、不接 Binding。  
+    未选：自定义 Binding 里 `showChangePrompt = true`（SwiftUI 发现值没变，那问不会出来）。
+
+22. **提前上班的下一班**  
+    选：和覆盖层一样，`nextShift*` / `next:` 走底图。  
+    未选：只在 `todayOverride != nil` 时叠加（08:00 提前上班会把明天也改成 08:00）。
+
+23. **强制夜班结算缝**  
+    选：规则输入多带 `forcedWorkdayStartMs`，`findEndedShiftOnEndCalendarDay` 把那一天当工作日。  
+    未选：把那天塞进 `workdays`（会让周六晚上变成排班班次）。
+
+24. **离开午休页时的那问**  
+    选：未提交的时长（以及正开着的那问）写到 `pendingSchedulePrompt`，Alert 挂在根上。  
+    未选：在正在 pop 的页面上 `showChangePrompt = true`。
 
 ## 明确不在本计划
 

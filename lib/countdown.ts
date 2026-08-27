@@ -258,6 +258,56 @@ export function resolveOvertimeEndAtMs(
     : null;
 }
 
+/**
+ * The work shift that has already ended, whose end falls on `now`'s calendar
+ * day. `getShiftBounds` jumps to the next overnight window the moment that
+ * end passes, so a Friday 22:00–Saturday 06:00 run would otherwise look like
+ * Saturday night's dummy rest-day shift from 06:00 onward.
+ *
+ * Same-day shifts (09:00–17:00 after 17:00) already share bounds with the
+ * live snapshot; callers should ignore a result whose start matches live.
+ */
+export function findEndedShiftOnEndCalendarDay(params: {
+  startTime: string;
+  endTime: string;
+  nowMs: number;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  options?: ShiftBuildOptions;
+  /** Midnight of a start calendar day that counts as work even if the pattern says rest. */
+  forcedWorkdayStartMs?: number | null;
+}): ShiftTimeline | null {
+  const now = new Date(params.nowMs);
+  const today = localDay(now);
+  const startToday = atTime(now, params.startTime);
+  const endToday = atTime(now, params.endTime);
+  const overnight = endToday.getTime() <= startToday.getTime();
+
+  let start: Date;
+  let end: Date;
+  if (overnight) {
+    end = endToday;
+    start = addCalendarDays(startToday, -1);
+    if (params.nowMs < end.getTime()) return null;
+  } else {
+    end = endToday;
+    start = startToday;
+    if (params.nowMs < end.getTime()) return null;
+  }
+
+  if (localDay(end).getTime() !== today.getTime()) return null;
+  const forcedMs = params.forcedWorkdayStartMs;
+  const forcedDay =
+    typeof forcedMs === "number" && Number.isFinite(forcedMs)
+      ? localDay(new Date(forcedMs)).getTime()
+      : null;
+  const startIsWorkday =
+    isScheduledWorkday(start, params.workdays, params.schedule) ||
+    (forcedDay != null && localDay(start).getTime() === forcedDay);
+  if (!startIsWorkday) return null;
+  return buildTimelineFromBounds(start, end, params.options ?? {});
+}
+
 export function findNextShiftTimeline(params: {
   startTime: string;
   endTime: string;

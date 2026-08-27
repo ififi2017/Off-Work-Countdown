@@ -334,9 +334,9 @@ private struct ShareCard: View {
                     Capsule()
                         .fill(.white.opacity(0.35))
                         .overlay(alignment: .leading) {
-                    Capsule()
-                        .fill(.white)
-                        .frame(width: proxy.size.width * min(1, max(0, store.shareProgress() / 100)))
+                            Capsule()
+                                .fill(.white)
+                                .frame(width: proxy.size.width * min(1, max(0, store.shareProgress() / 100)))
                         }
                 }
                 .frame(height: 5)

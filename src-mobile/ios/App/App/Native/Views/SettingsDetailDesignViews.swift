@@ -60,10 +60,9 @@ struct ScheduleSettingsView: View {
                 showChangePrompt = true
             }
         }
-        .confirmationDialog(
+        .alert(
             store.t("applyScheduleTitle"),
-            isPresented: $showChangePrompt,
-            titleVisibility: .visible
+            isPresented: $showChangePrompt
         ) {
             Button(store.t("applyFromNextShift")) {
                 if let pendingChange {
@@ -121,11 +120,19 @@ struct ScheduleSettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 OWCSectionHeader(title: store.t("workdaysLabel"))
                 weekdayGrid
-                Text(store.t("switchToUnscheduledHint"))
-                    .font(.footnote)
-                    .foregroundStyle(OWCDesign.secondary)
-                    .padding(.top, 8)
-                    .padding(.horizontal, 4)
+                Button {
+                    guard store.scheduleMode != .off else { return }
+                    pendingChange = ScheduleFieldChange(scheduleMode: .off)
+                    showChangePrompt = true
+                } label: {
+                    Text(store.t("switchToUnscheduledHint"))
+                        .font(.footnote)
+                        .foregroundStyle(OWCDesign.accent)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 8)
+                .padding(.horizontal, 4)
             }
             .padding(.horizontal, OWCDesign.pageInset)
         case .alternating:
@@ -906,13 +913,23 @@ struct LunchSettingsView: View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
-                    HStack {
-                        Text(store.t("lunchBreak")).font(.body)
-                        Spacer()
-                        Toggle(store.t("lunchBreak"), isOn: lunchEnabledBinding).labelsHidden()
+                    Button {
+                        pendingChange = ScheduleFieldChange(lunchEnabled: !store.lunchEnabled)
+                        showChangePrompt = true
+                    } label: {
+                        HStack {
+                            Text(store.t("lunchBreak")).font(.body).foregroundStyle(OWCDesign.primary)
+                            Spacer()
+                            Toggle(store.t("lunchBreak"), isOn: .constant(store.lunchEnabled))
+                                .labelsHidden()
+                                .allowsHitTesting(false)
+                                .accessibilityHidden(true)
+                        }
+                        .padding(.horizontal, 16)
+                        .frame(height: 56)
                     }
-                    .padding(.horizontal, 16)
-                    .frame(height: 56)
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(store.lunchEnabled ? .isSelected : [])
                     .owcDivider()
 
                     if store.lunchEnabled {
@@ -996,6 +1013,19 @@ struct LunchSettingsView: View {
             }
         }
         .onAppear { durationText = "\(store.lunchDurationMinutes)" }
+        .onChange(of: durationFocused) { _, focused in
+            if !focused { clampDuration() }
+        }
+        .onDisappear {
+            if showChangePrompt, let pendingChange {
+                store.pendingSchedulePrompt = pendingChange
+                return
+            }
+            let typed = Int(durationText) ?? store.lunchDurationMinutes
+            let clamped = min(180, max(10, typed))
+            guard store.lunchDurationMinutes != clamped else { return }
+            store.pendingSchedulePrompt = ScheduleFieldChange(lunchDurationMinutes: clamped)
+        }
         .sensoryFeedback(.selection, trigger: store.lunchEnabled)
         .sensoryFeedback(.selection, trigger: store.lunchStartReminderEnabled)
         .sensoryFeedback(.selection, trigger: store.lunchEndReminderEnabled)
@@ -1012,10 +1042,9 @@ struct LunchSettingsView: View {
                 showChangePrompt = true
             }
         }
-        .confirmationDialog(
+        .alert(
             store.t("applyScheduleTitle"),
-            isPresented: $showChangePrompt,
-            titleVisibility: .visible
+            isPresented: $showChangePrompt
         ) {
             Button(store.t("applyFromNextShift")) {
                 if let pendingChange {
@@ -1036,17 +1065,6 @@ struct LunchSettingsView: View {
         } message: {
             Text(store.t("applyScheduleMessage"))
         }
-    }
-
-    private var lunchEnabledBinding: Binding<Bool> {
-        Binding(
-            get: { store.lunchEnabled },
-            set: { newValue in
-                guard newValue != store.lunchEnabled else { return }
-                pendingChange = ScheduleFieldChange(lunchEnabled: newValue)
-                showChangePrompt = true
-            }
-        )
     }
 
     private func clampDuration() {
@@ -1232,6 +1250,38 @@ private func settingsDetailFooter(_ text: String) -> some View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 36)
         .padding(.top, 8)
+}
+
+extension View {
+    /// Asked from a settings detail that may already have popped, so the alert
+    /// lives on the root rather than the page that queued the change.
+    func owcScheduleChangePrompt(store: OffWorkStore) -> some View {
+        alert(
+            store.t("applyScheduleTitle"),
+            isPresented: Binding(
+                get: { store.pendingSchedulePrompt != nil },
+                set: { if !$0 { store.pendingSchedulePrompt = nil } }
+            )
+        ) {
+            Button(store.t("applyFromNextShift")) {
+                if let pending = store.pendingSchedulePrompt {
+                    store.applyScheduleChange(pending, decision: .nextShiftOnly)
+                }
+                store.pendingSchedulePrompt = nil
+            }
+            Button(store.t("applyToToday")) {
+                if let pending = store.pendingSchedulePrompt {
+                    store.applyScheduleChange(pending, decision: .applyToToday)
+                }
+                store.pendingSchedulePrompt = nil
+            }
+            Button(store.t("cancelAction"), role: .cancel) {
+                store.pendingSchedulePrompt = nil
+            }
+        } message: {
+            Text(store.t("applyScheduleMessage"))
+        }
+    }
 }
 
 private extension View {

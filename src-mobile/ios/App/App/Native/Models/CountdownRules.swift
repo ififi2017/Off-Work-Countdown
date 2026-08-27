@@ -54,9 +54,18 @@ struct NativeShiftSnapshot: Codable, Hashable {
         return remainingMs
     }
 
-    /// Completed figures stay frozen; tomorrow's hours can still move.
-    func withLiveNextShift(from live: NativeShiftSnapshot) -> NativeShiftSnapshot {
-        NativeShiftSnapshot(
+    /// Next-shift and next-rest come from `source`. Current-shift figures stay.
+    func withProjectedFuture(from source: NativeShiftSnapshot) -> NativeShiftSnapshot {
+        let restAtMs: Double?
+        if let candidate = source.nextRestAtMs {
+            let endDay = Calendar.current.startOfDay(for: endDate)
+            let afterEndDay = Calendar.current.date(byAdding: .day, value: 1, to: endDay)
+                .map { $0.timeIntervalSince1970 * 1_000 } ?? endAtMs
+            restAtMs = candidate >= afterEndDay ? candidate : nextRestAtMs
+        } else {
+            restAtMs = nextRestAtMs
+        }
+        return NativeShiftSnapshot(
             segments: segments,
             startAtMs: startAtMs,
             endAtMs: endAtMs,
@@ -70,10 +79,10 @@ struct NativeShiftSnapshot: Codable, Hashable {
             payRatio: payRatio,
             activeBreakEndAtMs: activeBreakEndAtMs,
             isWorkday: isWorkday,
-            nextRestAtMs: nextRestAtMs,
+            nextRestAtMs: restAtMs,
             dailySalary: dailySalary,
-            nextShiftStartAtMs: live.nextShiftStartAtMs,
-            nextShiftEndAtMs: live.nextShiftEndAtMs
+            nextShiftStartAtMs: source.nextShiftStartAtMs,
+            nextShiftEndAtMs: source.nextShiftEndAtMs
         )
     }
 }
@@ -279,6 +288,7 @@ struct NativeRulesInput: Codable {
     let salaryType: String
     let monthlyWorkingDays: Double
     let annualBonusMonths: Double
+    let forcedWorkdayStartMs: Double?
 }
 
 private struct NativeWidgetTimelineRequest: Codable {
@@ -356,6 +366,7 @@ private struct NativeReminderRequest: Codable {
     let salaryType: String
     let monthlyWorkingDays: Double
     let annualBonusMonths: Double
+    let forcedWorkdayStartMs: Double?
     let reminderInputs: NativeReminderInputs
 
     init(rules: NativeRulesInput, reminderInputs: NativeReminderInputs) {
@@ -371,6 +382,7 @@ private struct NativeReminderRequest: Codable {
         salaryType = rules.salaryType
         monthlyWorkingDays = rules.monthlyWorkingDays
         annualBonusMonths = rules.annualBonusMonths
+        forcedWorkdayStartMs = rules.forcedWorkdayStartMs
         self.reminderInputs = reminderInputs
     }
 }

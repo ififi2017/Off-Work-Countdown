@@ -65,6 +65,14 @@ enum ScheduleChangeDecision: String, Equatable {
     case applyToToday
 }
 
+enum RulesScheduleSource {
+    /// Today's override and an early clock-in, if they still cover `date`.
+    case effective
+    /// Persisted hours and pattern. Future shifts and `nextShift*` use this
+    /// so "from the next shift only" does not paint a year of old times.
+    case base
+}
+
 /// One settings mutation that must ask whether today is included.
 struct ScheduleFieldChange: Equatable {
     var startMinutes: Int?
@@ -227,6 +235,9 @@ final class OffWorkStore {
     /// view trees, and each used to own its own path. Not persisted.
     var timerPath: [AppRoute] = []
     var settingsPath: [AppRoute] = []
+    /// Survives the page that asked it. Lunch duration still needs the prompt
+    /// after the detail has popped.
+    var pendingSchedulePrompt: ScheduleFieldChange?
 
     /// Landscape drives a single `NavigationStack` for both tabs, where
     /// portrait has one per tab; this projects whichever is current.
@@ -573,11 +584,17 @@ final class OffWorkStore {
         endMinutes: Int? = nil
     ) -> NativeShiftSnapshot? {
         do {
-            let result = try CountdownRules.shared.snapshot(input: rulesInput(
+            var result = try CountdownRules.shared.snapshot(input: rulesInput(
                 at: date,
                 startMinutes: startMinutes,
                 endMinutes: endMinutes
             ))
+            if startMinutes == nil, endMinutes == nil, projectsFutureFromBase(at: date),
+               let projected = try? CountdownRules.shared.snapshot(
+                input: rulesInput(at: date, using: .base)
+               ) {
+                result = result.withProjectedFuture(from: projected)
+            }
             if lastRulesError != nil { lastRulesError = nil }
             return result
         } catch {
@@ -595,24 +612,58 @@ final class OffWorkStore {
     func rulesInput(
         at date: Date = .now,
         startMinutes: Int? = nil,
-        endMinutes: Int? = nil
+        endMinutes: Int? = nil,
+        using source: RulesScheduleSource = .effective
     ) -> NativeRulesInput {
-        let start = startMinutes ?? effectiveStartMinutes(at: date)
-        let end = endMinutes ?? effectiveEndMinutes(at: date)
+        let applyOverride = source == .effective
+        let start = startMinutes ?? (applyOverride ? effectiveStartMinutes(at: date) : self.startMinutes)
+        let end = endMinutes ?? (applyOverride ? effectiveEndMinutes(at: date) : self.endMinutes)
+        let lunchOn = applyOverride ? effectiveLunchEnabled(at: date) : lunchEnabled
         return .init(
             startTime: timeString(start),
             endTime: timeString(end),
             nowMs: date.timeIntervalSince1970 * 1_000,
-            workdays: effectiveWorkdays(at: date).sorted(),
-            schedule: nativeSchedule(at: date),
-            breakStartTime: effectiveLunchEnabled(at: date) ? timeString(effectiveLunchStartMinutes(at: date)) : nil,
-            breakDurationMinutes: effectiveLunchEnabled(at: date) ? effectiveLunchDurationMinutes(at: date) : 0,
-            overtimeEndAtMs: overtimeEndAtMs,
+            workdays: (applyOverride ? effectiveWorkdays(at: date) : workdays).sorted(),
+            schedule: nativeSchedule(at: date, using: source),
+            breakStartTime: lunchOn
+                ? timeString(applyOverride ? effectiveLunchStartMinutes(at: date) : lunchStartMinutes)
+                : nil,
+            breakDurationMinutes: lunchOn
+                ? (applyOverride ? effectiveLunchDurationMinutes(at: date) : lunchDurationMinutes)
+                : 0,
+            overtimeEndAtMs: applyOverride ? overtimeEndAtMs : nil,
             salaryAmount: salaryEnabled ? salaryAmount : "",
             salaryType: salaryType.rawValue,
             monthlyWorkingDays: monthlyWorkingDays,
-            annualBonusMonths: annualBonusEnabled ? annualBonusMonths : 0
+            annualBonusMonths: annualBonusEnabled ? annualBonusMonths : 0,
+            forcedWorkdayStartMs: applyOverride ? forcedWorkdayStartMs : nil
         )
+    }
+
+    func shiftReminders(at date: Date = .now) throws -> [NativeReminder] {
+        let inputs = reminderInputs()
+        let effective = try CountdownRules.shared.reminders(
+            input: rulesInput(at: date),
+            reminderInputs: inputs
+        )
+        let current = effective.filter { $0.id.hasPrefix("current:") }
+        let next: [NativeReminder]
+        if projectsFutureFromBase(at: date) {
+            next = try CountdownRules.shared.reminders(
+                input: rulesInput(at: date, using: .base),
+                reminderInputs: inputs
+            ).filter { $0.id.hasPrefix("next:") }
+        } else {
+            next = effective.filter { $0.id.hasPrefix("next:") }
+        }
+        guard let snapshot = snapshot(at: date) else { return current + next }
+        // Rest days and settlement both still produce a `current:` window from
+        // `getShiftBounds` — Saturday 09:00–17:00 on a weekend, or Saturday
+        // 22:00 after a Friday overnight ended at 06:00. Those are not a shift
+        // the user is in, so they must not be scheduled.
+        let includeCurrent = (snapshot.isWorkday || isForcedWorkday(snapshot))
+            && !isShiftComplete(snapshot)
+        return (includeCurrent ? current : []) + next
     }
 
     func reminderInputs() -> NativeReminderInputs {
@@ -965,7 +1016,7 @@ final class OffWorkStore {
     func clockOffSnapshot(for shift: NativeShiftSnapshot) -> NativeShiftSnapshot {
         guard isEndedEarly(shift) else { return shift }
         guard let frozen = earlyOffSnapshot else { return shift }
-        return frozen.withLiveNextShift(from: shift)
+        return frozen.withProjectedFuture(from: shift)
     }
 
     func isShiftComplete(_ shift: NativeShiftSnapshot) -> Bool {
@@ -1178,24 +1229,25 @@ final class OffWorkStore {
 
     var nativeSchedule: NativeWorkSchedule { nativeSchedule(at: .now) }
 
-    func nativeSchedule(at date: Date) -> NativeWorkSchedule {
-        let mode = effectiveScheduleMode(at: date)
-        let weekType = usesTodayOverride(at: date)
+    func nativeSchedule(at date: Date, using source: RulesScheduleSource = .effective) -> NativeWorkSchedule {
+        let applyOverride = source == .effective && usesTodayOverride(at: date)
+        let mode = applyOverride ? effectiveScheduleMode(at: date) : scheduleMode
+        let weekType = applyOverride
             ? (todayOverride.flatMap { AlternatingWeekType(rawValue: $0.alternatingWeekType) } ?? alternatingWeekType)
             : alternatingWeekType
-        let weekendDay = usesTodayOverride(at: date)
+        let weekendDay = applyOverride
             ? (todayOverride?.alternatingWeekendWorkday ?? alternatingWeekendWorkday)
             : alternatingWeekendWorkday
-        let weekStart = usesTodayOverride(at: date)
+        let weekStart = applyOverride
             ? (todayOverride?.alternatingReferenceWeekStartMs ?? alternatingReferenceWeekStartMs)
             : alternatingReferenceWeekStartMs
-        let rotWork = usesTodayOverride(at: date)
+        let rotWork = applyOverride
             ? (todayOverride?.rotationWorkDays ?? rotationWorkDays)
             : rotationWorkDays
-        let rotRest = usesTodayOverride(at: date)
+        let rotRest = applyOverride
             ? (todayOverride?.rotationRestDays ?? rotationRestDays)
             : rotationRestDays
-        let rotAnchor = usesTodayOverride(at: date)
+        let rotAnchor = applyOverride
             ? (todayOverride?.rotationAnchorMs ?? rotationAnchorMs)
             : rotationAnchorMs
         return .init(
@@ -1356,6 +1408,23 @@ final class OffWorkStore {
     func usesTodayOverride(at date: Date) -> Bool {
         guard let todayOverride else { return false }
         return date.timeIntervalSince1970 * 1_000 < todayOverride.untilMs
+    }
+
+    /// Future projections must not inherit today's early clock-in or overlay.
+    func projectsFutureFromBase(at date: Date) -> Bool {
+        usesTodayOverride(at: date) || isStartedEarly(at: date)
+    }
+
+    var forcedWorkdayStartMs: Double? {
+        guard let forcedWorkdayDate else { return nil }
+        let parts = forcedWorkdayDate.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return nil }
+        var components = DateComponents()
+        components.year = parts[0]
+        components.month = parts[1]
+        components.day = parts[2]
+        return Calendar.current.date(from: components)
+            .map { Calendar.current.startOfDay(for: $0).timeIntervalSince1970 * 1_000 }
     }
 
     func effectiveScheduleMode(at date: Date = .now) -> WorkScheduleMode {
@@ -1622,7 +1691,7 @@ final class OffWorkStore {
                 period: period,
                 asOfMs: asOf.timeIntervalSince1970 * 1_000,
                 workdays: summaryWorkdays.sorted(),
-                schedule: nativeSchedule,
+                schedule: nativeSchedule(at: asOf),
                 currentShiftStartMs: snapshot.startAtMs,
                 currentShiftEndMs: snapshot.endAtMs,
                 plannedDailyHours: snapshot.plannedDurationMs / 3_600_000,

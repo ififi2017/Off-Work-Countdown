@@ -267,6 +267,7 @@ private func detailNote(_ text: String) -> some View {
 
 struct UnscheduledTimerView: View {
     let store: OffWorkStore
+    var onOpenLunchSettings: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -289,7 +290,7 @@ struct UnscheduledTimerView: View {
                 .padding(.top, 18)
                 .environment(\.layoutDirection, .leftToRight)
             Spacer()
-            ShiftStartButton(store: store) { store.presentedRoute = .lunch }
+            ShiftStartButton(store: store, onOpenLunchSettings: onOpenLunchSettings)
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.bottom, 14)
         }
@@ -301,6 +302,7 @@ struct RestDayDesignView: View {
     let store: OffWorkStore
     let snapshot: NativeShiftSnapshot
     let now: Date
+    var onOpenLunchSettings: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -357,7 +359,7 @@ struct RestDayDesignView: View {
 
             Spacer(minLength: 8)
 
-            ShiftStartButton(store: store) { store.presentedRoute = .lunch }
+            ShiftStartButton(store: store, onOpenLunchSettings: onOpenLunchSettings)
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.bottom, 14)
         }

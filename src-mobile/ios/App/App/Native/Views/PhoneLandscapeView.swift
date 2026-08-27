@@ -202,7 +202,9 @@ private struct LandscapeTimerView: View {
                             Button {
                                 store.requestClockOffEarly(at: date)
                             } label: { ClockOffEarlyLabel(store: store) }
-                            Button { showOvertime = true } label: { Text(store.t("overtime")) }
+                            Button { showOvertime = true } label: {
+                                Text(store.t(snapshot.isOvertimeActive(at: date) ? "adjustOvertime" : "overtime"))
+                            }
                             Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
                         }
                     }
@@ -221,7 +223,7 @@ private struct LandscapeTimerView: View {
                 )
             }
         }
-        .id(phase)
+        .id(phase.surfaceIdentity)
         .transition(timerTransition)
         .animation(timerAnimation, value: phase)
     }

@@ -54,10 +54,7 @@ final class NotificationService {
             center.removePendingNotificationRequests(withIdentifiers: Array(existingIdentifiers))
             return
         }
-        guard let reminders = try? CountdownRules.shared.reminders(
-            input: store.rulesInput(at: now),
-            reminderInputs: store.reminderInputs()
-        ) else { return }
+        guard let reminders = try? store.shiftReminders(at: now) else { return }
         guard generation == scheduleGeneration, store.publishesLiveSurfaces else { return }
 
         let snapshot = store.snapshot(at: now)

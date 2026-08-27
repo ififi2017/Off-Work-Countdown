@@ -14,6 +14,9 @@ import {
   isValidShiftTimeline,
   extendShiftWithOvertime,
   findNextShiftTimeline,
+  findEndedShiftOnEndCalendarDay,
+  getShiftStartAtMs,
+  getShiftEndAtMs,
   resolveOvertimeEndAtMs,
   suggestOvertimeEndAtMs,
   getDailySalary,
@@ -451,6 +454,66 @@ describe("workdays", () => {
     const sunday = new Date(2026, 6, 5, 10, 0, 0, 0); // 2026-07-05 周日
     expect(isWorkday(sunday, DEFAULT_WORKDAYS)).toBe(false);
     expect(isWorkday(sunday, [0, 6])).toBe(true);
+  });
+});
+
+describe("findEndedShiftOnEndCalendarDay", () => {
+  const overnight = {
+    startTime: "22:00",
+    endTime: "06:00",
+    workdays: DEFAULT_WORKDAYS,
+  };
+
+  it("keeps Friday night's overnight shift on Saturday after 06:00", () => {
+    // 2026-07-03 周五 22:00 – 2026-07-04 周六 06:00
+    const saturdayMorning = new Date(2026, 6, 4, 6, 30);
+    const ended = findEndedShiftOnEndCalendarDay({
+      ...overnight,
+      nowMs: saturdayMorning.getTime(),
+    });
+    expect(ended).not.toBeNull();
+    expect(new Date(getShiftStartAtMs(ended!)).getDay()).toBe(5);
+    expect(new Date(getShiftEndAtMs(ended!)).getDate()).toBe(4);
+    expect(getShiftRemainingMs(ended!, saturdayMorning.getTime())).toBe(0);
+  });
+
+  it("does not invent a settlement window on Sunday", () => {
+    const sundayMorning = new Date(2026, 6, 5, 0, 30);
+    expect(
+      findEndedShiftOnEndCalendarDay({
+        ...overnight,
+        nowMs: sundayMorning.getTime(),
+      })
+    ).toBeNull();
+  });
+
+  it("does not fire while the overnight shift is still running", () => {
+    const saturdayBeforeEnd = new Date(2026, 6, 4, 5, 0);
+    expect(
+      findEndedShiftOnEndCalendarDay({
+        ...overnight,
+        nowMs: saturdayBeforeEnd.getTime(),
+      })
+    ).toBeNull();
+  });
+
+  it("keeps a forced rest-day overnight on settlement after 06:00", () => {
+    const sundayMorning = new Date(2026, 6, 5, 6, 30);
+    const saturdayStart = new Date(2026, 6, 4).setHours(0, 0, 0, 0);
+    expect(
+      findEndedShiftOnEndCalendarDay({
+        ...overnight,
+        nowMs: sundayMorning.getTime(),
+      })
+    ).toBeNull();
+    const ended = findEndedShiftOnEndCalendarDay({
+      ...overnight,
+      nowMs: sundayMorning.getTime(),
+      forcedWorkdayStartMs: saturdayStart,
+    });
+    expect(ended).not.toBeNull();
+    expect(new Date(getShiftStartAtMs(ended!)).getDay()).toBe(6);
+    expect(getShiftRemainingMs(ended!, sundayMorning.getTime())).toBe(0);
   });
 });
 

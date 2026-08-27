@@ -49,4 +49,16 @@ enum TimerVisualPhase: Hashable {
         case .running, .lunch, .overtime, .completed, .rest: true
         }
     }
+
+    /// Lunch and overtime are interludes of the same running surface. Identity
+    /// here must not change between them, or the whole screen cross-fades.
+    var surfaceIdentity: String {
+        switch self {
+        case .running, .lunch, .overtime: "active"
+        case .completed: "completed"
+        case .rest: "rest"
+        case .unscheduled: "unscheduled"
+        case .rulesError: "rulesError"
+        }
+    }
 }

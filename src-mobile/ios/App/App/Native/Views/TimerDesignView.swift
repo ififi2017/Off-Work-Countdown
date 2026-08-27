@@ -80,7 +80,7 @@ struct TimerDesignView: View {
         Group {
             switch phase {
             case .unscheduled:
-                UnscheduledTimerView(store: store)
+                UnscheduledTimerView(store: store) { openSettings(.lunch) }
             case .running, .lunch, .overtime:
                 if let snapshot {
                     RunningTimerDesignView(
@@ -106,13 +106,13 @@ struct TimerDesignView: View {
                         store: store,
                         snapshot: snapshot,
                         now: date
-                    )
+                    ) { openSettings(.lunch) }
                 }
             case .rulesError:
                 rulesError
             }
         }
-        .id(phase)
+        .id(phase.surfaceIdentity)
         .transition(phaseTransition)
         // See SettingsDesignView: phones fill their width, `pageInset` sets the
         // margin. The wide cap is for iPad, where a full-width countdown would

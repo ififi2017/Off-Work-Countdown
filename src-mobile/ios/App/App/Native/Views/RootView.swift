@@ -41,6 +41,7 @@ struct OffWorkCountdownRootView: View {
         .environment(\.locale, store.locale)
         .environment(notifications)
         .tint(OWCDesign.accent)
+        .owcScheduleChangePrompt(store: store)
         .sensoryFeedback(.success, trigger: store.countdownStarted)
         .task {
             await Task.yield()

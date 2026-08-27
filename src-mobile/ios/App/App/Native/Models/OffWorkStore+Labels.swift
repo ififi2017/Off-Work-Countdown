@@ -22,6 +22,11 @@ extension OffWorkStore {
         return "\(timeString(lunchStartMinutes)) · \(formatRelativeDuration(Double(lunchDurationMinutes) * 60_000))"
     }
 
+    func lunchLabel(at date: Date) -> String {
+        guard effectiveLunchEnabled(at: date) else { return t("disabledShort") }
+        return "\(timeString(effectiveLunchStartMinutes(at: date))) · \(formatRelativeDuration(Double(effectiveLunchDurationMinutes(at: date)) * 60_000))"
+    }
+
     var healthLabel: String {
         microBreakEnabled
             ? t("minutesShort", values: ["count": "\(microBreakIntervalMinutes)"])

@@ -110,7 +110,7 @@ final class WidgetSnapshotPublisher {
         var cursor = nowMs
         var diagnosticShift: WidgetShiftTimeline?
         let futureShifts = (try? CountdownRules.shared.widgetShifts(
-            input: store.rulesInput(at: now),
+            input: store.rulesInput(at: now, using: .base),
             throughMs: Double(expiresAtMs),
             maximumCount: maximumRecurringShifts
         )) ?? []

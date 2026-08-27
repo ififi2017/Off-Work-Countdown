@@ -144,8 +144,11 @@ private struct TabletSidebar: View {
 
                     if store.selectedTab == .timer {
                         OWCGroupCard {
-                            sidebarRow(store.t("shiftSection"), "\(store.timeString(store.startMinutes)) – \(store.timeString(store.endMinutes))")
-                            sidebarRow(store.t("lunchBreak"), store.lunchLabel, last: !store.salaryEnabled)
+                            sidebarRow(
+                                store.t("shiftSection"),
+                                "\(store.timeString(store.effectiveStartMinutes(at: timeline.date))) – \(store.timeString(store.effectiveEndMinutes(at: timeline.date)))"
+                            )
+                            sidebarRow(store.t("lunchBreak"), store.lunchLabel(at: timeline.date), last: !store.salaryEnabled)
                             if store.salaryEnabled {
                                 // The sidebar is where the figure lives while
                                 // the sidebar is open, so this is where the eye
@@ -162,20 +165,24 @@ private struct TabletSidebar: View {
                             }
                         }
                     } else {
+                        let date = timeline.date
+                        let phase = store.visualPhase(snapshot: snapshot, at: date)
+                        let remaining = sidebarMiniRemaining(snapshot, phase: phase, at: date)
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(store.formatDuration(snapshot.remainingMs))
+                            Text(store.formatDuration(remaining))
                                 .font(.title.bold().monospacedDigit())
                                 .tracking(-0.8)
-                                .owcCountdownTextTransition(milliseconds: snapshot.remainingMs)
-                            Text(store.t("timeLeftCaption"))
+                                .owcCountdownTextTransition(milliseconds: remaining)
+                            Text(sidebarMiniCaption(snapshot, phase: phase, at: date))
                                 .font(.footnote)
                                 .foregroundStyle(OWCDesign.secondary)
                                 .padding(.top, 6)
                             GeometryReader { proxy in
+                                let fill = sidebarMiniFill(snapshot, phase: phase, at: date)
                                 Capsule().fill(OWCDesign.control)
                                     .overlay(alignment: .leading) {
                                         Capsule().fill(OWCDesign.accent)
-                                            .frame(width: proxy.size.width * min(1, max(0, snapshot.progress / 100)))
+                                            .frame(width: proxy.size.width * min(1, max(0, fill / 100)))
                                     }
                             }
                             .frame(height: 6)
@@ -195,6 +202,48 @@ private struct TabletSidebar: View {
         .background(.regularMaterial)
         .overlay(alignment: .trailing) {
             Rectangle().fill(OWCDesign.separator).frame(width: 0.5)
+        }
+    }
+
+    private func sidebarMiniCaption(_ snapshot: NativeShiftSnapshot, phase: TimerVisualPhase, at date: Date) -> String {
+        switch phase {
+        case .rest: store.t("widgetRestDay")
+        case .completed: store.t("offWorkToday")
+        case .unscheduled: store.t("unscheduledTitle")
+        case .lunch: store.t("lunchInProgress")
+        case .overtime: store.t("overtimeTimeLeftCaption")
+        case .running, .rulesError:
+            snapshot.isBeforeStart(at: date) ? store.t("nextShiftLabelShort") : store.t("timeLeftCaption")
+        }
+    }
+
+    private func sidebarMiniRemaining(
+        _ snapshot: NativeShiftSnapshot,
+        phase: TimerVisualPhase,
+        at date: Date
+    ) -> Double {
+        switch phase {
+        case .completed: 0
+        case .rest: store.countdownToClockInMs(snapshot: snapshot, at: date)
+        case .running where snapshot.isBeforeStart(at: date):
+            store.countdownToClockInMs(snapshot: snapshot, at: date)
+        default:
+            snapshot.heroRemainingMs(at: date)
+        }
+    }
+
+    private func sidebarMiniFill(
+        _ snapshot: NativeShiftSnapshot,
+        phase: TimerVisualPhase,
+        at date: Date
+    ) -> Double {
+        switch phase {
+        case .completed: 100
+        case .rest: store.countdownToClockInFill(snapshot: snapshot, at: date)
+        case .running where snapshot.isBeforeStart(at: date):
+            store.countdownToClockInFill(snapshot: snapshot, at: date)
+        default:
+            snapshot.progress
         }
     }
 
@@ -303,7 +352,7 @@ private struct TabletTimerView: View {
                 )
             }
         }
-        .id(phase)
+        .id(phase.surfaceIdentity)
         .transition(timerTransition)
         .overlay(alignment: .topLeading) {
             // Completed, rest-day and rules-error states reuse the common
@@ -657,12 +706,12 @@ private struct TabletRunningView: View {
             }
             .frame(height: 12)
             GeometryReader { proxy in
-                Text(store.timeString(store.startMinutes)).position(x: 30, y: 9)
-                if store.lunchEnabled, snapshot.segments.count > 1 {
-                    Text("\(store.timeString(store.lunchStartMinutes)) · \(store.t("lunchBreak"))")
+                Text(store.timeString(store.effectiveStartMinutes(at: now))).position(x: 30, y: 9)
+                if store.effectiveLunchEnabled(at: now), snapshot.segments.count > 1 {
+                    Text("\(store.timeString(store.effectiveLunchStartMinutes(at: now))) · \(store.t("lunchBreak"))")
                         .position(x: max(68, min(proxy.size.width - 68, proxy.size.width * lunchWallRatio)), y: 9)
                 }
-                Text(store.timeString(store.endMinutes)).position(x: proxy.size.width - 30, y: 9)
+                Text(store.timeString(store.effectiveEndMinutes(at: now))).position(x: proxy.size.width - 30, y: 9)
             }
             .frame(height: 18)
             .font(.subheadline.monospacedDigit())

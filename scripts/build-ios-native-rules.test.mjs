@@ -141,4 +141,101 @@ describe("iOS native rule bundle", () => {
     ]);
     expect(widgetShifts.every((shift) => !("dailySalary" in shift))).toBe(true);
   });
+
+  it("keeps Friday night's overnight shift as Saturday morning settlement", () => {
+    const context = { console };
+    vm.createContext(context);
+    vm.runInContext(createIOSNativeRulesBundle(), context);
+
+    const fridayStart = new Date(2026, 6, 3, 22, 0);
+    const saturdayEnd = new Date(2026, 6, 4, 6, 0);
+    const saturdayMorning = new Date(2026, 6, 4, 6, 30);
+    const snapshot = JSON.parse(context.OWCNative.snapshot(JSON.stringify({
+      startTime: "22:00",
+      endTime: "06:00",
+      nowMs: saturdayMorning.getTime(),
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" },
+      breakStartTime: null,
+      breakDurationMinutes: 0,
+      overtimeEndAtMs: null,
+      salaryAmount: "",
+      salaryType: "monthly",
+      monthlyWorkingDays: 22,
+      annualBonusMonths: 0,
+    })));
+
+    expect(snapshot.isWorkday).toBe(true);
+    expect(snapshot.startAtMs).toBe(fridayStart.getTime());
+    expect(snapshot.endAtMs).toBe(saturdayEnd.getTime());
+    expect(snapshot.remainingMs).toBe(0);
+  });
+
+  it("does not replace a running overnight window with last night's settlement", () => {
+    const context = { console };
+    vm.createContext(context);
+    vm.runInContext(createIOSNativeRulesBundle(), context);
+
+    const fridayNight = new Date(2026, 6, 3, 23, 0);
+    const saturdayStart = new Date(2026, 6, 3, 22, 0);
+    const saturdayNight = new Date(2026, 6, 4, 23, 0);
+    const saturdayNightStart = new Date(2026, 6, 4, 22, 0);
+    const rules = {
+      startTime: "22:00",
+      endTime: "06:00",
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" },
+      breakStartTime: null,
+      breakDurationMinutes: 0,
+      overtimeEndAtMs: null,
+      salaryAmount: "",
+      salaryType: "monthly",
+      monthlyWorkingDays: 22,
+      annualBonusMonths: 0,
+    };
+
+    const fridaySnapshot = JSON.parse(context.OWCNative.snapshot(JSON.stringify({
+      ...rules,
+      nowMs: fridayNight.getTime(),
+    })));
+    expect(fridaySnapshot.startAtMs).toBe(saturdayStart.getTime());
+    expect(fridaySnapshot.remainingMs).toBeGreaterThan(0);
+
+    const saturdaySnapshot = JSON.parse(context.OWCNative.snapshot(JSON.stringify({
+      ...rules,
+      nowMs: saturdayNight.getTime(),
+    })));
+    expect(saturdaySnapshot.startAtMs).toBe(saturdayNightStart.getTime());
+    expect(saturdaySnapshot.remainingMs).toBeGreaterThan(0);
+  });
+
+  it("keeps a forced Saturday overnight as Sunday morning settlement", () => {
+    const context = { console };
+    vm.createContext(context);
+    vm.runInContext(createIOSNativeRulesBundle(), context);
+
+    const saturdayStart = new Date(2026, 6, 4, 22, 0);
+    const sundayEnd = new Date(2026, 6, 5, 6, 0);
+    const sundayMorning = new Date(2026, 6, 5, 6, 30);
+    const snapshot = JSON.parse(context.OWCNative.snapshot(JSON.stringify({
+      startTime: "22:00",
+      endTime: "06:00",
+      nowMs: sundayMorning.getTime(),
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" },
+      forcedWorkdayStartMs: new Date(2026, 6, 4).setHours(0, 0, 0, 0),
+      breakStartTime: null,
+      breakDurationMinutes: 0,
+      overtimeEndAtMs: null,
+      salaryAmount: "",
+      salaryType: "monthly",
+      monthlyWorkingDays: 22,
+      annualBonusMonths: 0,
+    })));
+
+    expect(snapshot.isWorkday).toBe(false);
+    expect(snapshot.startAtMs).toBe(saturdayStart.getTime());
+    expect(snapshot.endAtMs).toBe(sundayEnd.getTime());
+    expect(snapshot.remainingMs).toBe(0);
+  });
 });
