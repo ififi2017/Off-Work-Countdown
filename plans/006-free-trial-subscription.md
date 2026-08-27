@@ -4,8 +4,8 @@
 - **Reviewed against**: 6576842
 - **Severity**: HIGH
 - **Category**: 商业模式 / StoreKit / App Store Connect
-- **Estimated scope**: 两次发布——iOS 首发时改价，付费墙与 [002](002-records-life-focus.md) 的 P1 同版
-- **相关**: [002](002-records-life-focus.md) 定义了什么能被墙、什么永远不能；本文件定义怎么卖
+- **Estimated scope**: 须等 [007](007-ios-stable-before-subscription.md) 把倒计时本体做成可送审的稳定版；付费墙与 [002](002-records-life-focus.md) 的 P1 同版。App Store 记录**已是免费下载**，007 过审上架不会产生买断用户；本计划剩下的是试用、订阅、终身 IAP 与付费墙
+- **相关**: [002](002-records-life-focus.md) 定义了什么能被墙、什么永远不能；本文件定义怎么卖。**须等 [007](007-ios-stable-before-subscription.md) 把倒计时本体做成可过审的稳定版之后才开工**（007 不上 IAP；记录已是免费下载）
 
 ## 一句话
 
@@ -22,9 +22,9 @@ App Store 免费下载，欢迎页之后展示一次可跳过的付费页，提�
 - Mac App Store 上架的是 `src-tauri` 打出来的包，iOS 上架的是 `src-mobile/ios` 的 SwiftUI 包。
   这是 [ADR-MOBILE-D0](../docs/ADR-MOBILE-D0.md) 已锁定的通用购买决策，`check:ios` 也在断言
   这个 bundle id。
-- 通用购买 = 一个记录 = **一个价格**。当前定价 US$0.99 / ¥8 买断。
+- 通用购买 = 一个记录 = **一个价格**。**记录已改为免费下载**（2026-08-27 确认；原先 US$0.99 / ¥8 买断不再是当前标价）。Mac 历史上那 1 单买断仍按下文用兑换码处理，不为此写迁移。
 
-因此 **iOS 改成免费下载，Mac App Store 上的 Tauri 版必然同时变免费**，做不到一端收费一端免费。
+因此 iOS 与 Mac App Store **已经同为免费下载**。006 要做的不是再改一次标价，而是在免费下载之上加试用、订阅和终身买断 IAP；倒计时本体保持免费。
 
 **已定：接受这个连带后果，整个记录改为免费 + IAP。** 代价是放弃 Mac 端的买断收入——而 Mac 端
 至今的销量是 1 单，买家是作者本人，所以实际损失为零。想在 Mac 上使用记录功能的人，走 iPad
@@ -275,10 +275,10 @@ RevenueCat 的价值在跨平台（安卓 / Web 订阅）、定价 A/B、跨端�
 
 ## 发布顺序
 
-### 第一步：iOS 首发（无墙）
+### 第一步：007 过审上架（无墙）
 
-- 整个 App 记录改为免费。Mac App Store 的 Tauri 版随之免费。
-- iOS 首次上架，不含 IAP、不含付费页、不含记录功能。
+- App 记录**已经是免费下载**，Mac App Store 的 Tauri 版同样免费。这一步不再改价。
+- iOS 以 [007](007-ios-stable-before-subscription.md) 的倒计时本体过审上架：不含 IAP、不含付费页、不含记录功能。
 - 目标是攒评价与口碑，也验证 iOS 端本身的稳定性。
 
 ### 第二步：与 002 的 P1 同版

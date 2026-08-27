@@ -104,11 +104,9 @@ private struct TabletSidebar: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Image(.brandIcon)
-                    .resizable()
+                OWCBrandMark()
                     .frame(width: 30, height: 30)
-                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-                Text(store.t("offWorkCountdown"))
+                Text(verbatim: OWCBrand.shortName)
                     .font(.body.bold())
                     .tracking(-0.34)
                     .lineLimit(1)
@@ -138,14 +136,17 @@ private struct TabletSidebar: View {
             // froze the sidebar's countdown and bar while the main column kept
             // moving, which read as the app having stalled.
             TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                if store.countdownStarted, let snapshot = store.snapshot(at: timeline.date) {
+                if store.shouldQuerySnapshot(at: timeline.date), let snapshot = store.snapshot(at: timeline.date) {
                     OWCSectionHeader(title: store.selectedTab == .timer ? store.t("todaysShift") : store.t("widgetWorking"))
                         .padding(.top, 26)
 
                     if store.selectedTab == .timer {
                         OWCGroupCard {
-                            sidebarRow(store.t("shiftSection"), "\(store.timeString(store.startMinutes)) – \(store.timeString(store.endMinutes))")
-                            sidebarRow(store.t("lunchBreak"), store.lunchLabel, last: !store.salaryEnabled)
+                            sidebarRow(
+                                store.t("shiftSection"),
+                                "\(store.timeString(store.effectiveStartMinutes(at: timeline.date))) – \(store.timeString(store.effectiveEndMinutes(at: timeline.date)))"
+                            )
+                            sidebarRow(store.t("lunchBreak"), store.lunchLabel(at: timeline.date), last: !store.salaryEnabled)
                             if store.salaryEnabled {
                                 // The sidebar is where the figure lives while
                                 // the sidebar is open, so this is where the eye
@@ -162,20 +163,24 @@ private struct TabletSidebar: View {
                             }
                         }
                     } else {
+                        let date = timeline.date
+                        let phase = store.visualPhase(snapshot: snapshot, at: date)
+                        let remaining = sidebarMiniRemaining(snapshot, phase: phase, at: date)
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(store.formatDuration(snapshot.remainingMs))
+                            Text(store.formatDuration(remaining))
                                 .font(.title.bold().monospacedDigit())
                                 .tracking(-0.8)
-                                .owcCountdownTextTransition(milliseconds: snapshot.remainingMs)
-                            Text(store.t("timeLeftCaption"))
+                                .owcCountdownTextTransition(milliseconds: remaining)
+                            Text(sidebarMiniCaption(snapshot, phase: phase, at: date))
                                 .font(.footnote)
                                 .foregroundStyle(OWCDesign.secondary)
                                 .padding(.top, 6)
                             GeometryReader { proxy in
+                                let fill = sidebarMiniFill(snapshot, phase: phase, at: date)
                                 Capsule().fill(OWCDesign.control)
                                     .overlay(alignment: .leading) {
                                         Capsule().fill(OWCDesign.accent)
-                                            .frame(width: proxy.size.width * min(1, max(0, snapshot.progress / 100)))
+                                            .frame(width: proxy.size.width * min(1, max(0, fill / 100)))
                                     }
                             }
                             .frame(height: 6)
@@ -195,6 +200,49 @@ private struct TabletSidebar: View {
         .background(.regularMaterial)
         .overlay(alignment: .trailing) {
             Rectangle().fill(OWCDesign.separator).frame(width: 0.5)
+        }
+    }
+
+    private func sidebarMiniCaption(_ snapshot: NativeShiftSnapshot, phase: TimerVisualPhase, at date: Date) -> String {
+        switch phase {
+        case .rest: store.t("widgetRestDay")
+        case .completed: store.t("offWorkToday")
+        case .unscheduled: store.t("unscheduledTitle")
+        case .lunch: store.t("lunchInProgress")
+        case .overtime: store.t("overtimeTimeLeftCaption")
+        case .clockIn: store.t("nextShiftLabelShort")
+        case .running, .rulesError:
+            snapshot.isBeforeStart(at: date) ? store.t("nextShiftLabelShort") : store.t("timeLeftCaption")
+        }
+    }
+
+    private func sidebarMiniRemaining(
+        _ snapshot: NativeShiftSnapshot,
+        phase: TimerVisualPhase,
+        at date: Date
+    ) -> Double {
+        switch phase {
+        case .completed: 0
+        case .rest: store.countdownToClockInMs(snapshot: snapshot, at: date)
+        case .running where snapshot.isBeforeStart(at: date), .clockIn:
+            store.countdownToClockInMs(snapshot: snapshot, at: date)
+        default:
+            snapshot.heroRemainingMs(at: date)
+        }
+    }
+
+    private func sidebarMiniFill(
+        _ snapshot: NativeShiftSnapshot,
+        phase: TimerVisualPhase,
+        at date: Date
+    ) -> Double {
+        switch phase {
+        case .completed: 100
+        case .rest: store.countdownToClockInProgress(snapshot: snapshot)
+        case .running where snapshot.isBeforeStart(at: date), .clockIn:
+            store.countdownToClockInProgress(snapshot: snapshot)
+        default:
+            snapshot.progress
         }
     }
 
@@ -256,57 +304,14 @@ private struct TabletTimerView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: isActive ? 1 : 86_400)) { timeline in
-            let snapshot = store.countdownStarted ? store.snapshot(at: timeline.date) : nil
-            let phase = TimerVisualPhase.resolve(
-                countdownStarted: store.countdownStarted,
-                snapshot: snapshot,
-                forceToday: store.forceToday
-            )
-
-            ZStack {
-                if phase == .setup {
-                    TabletSetupView(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
-                } else if phase.showsActiveTimer, let snapshot {
-                    TabletRunningView(
-                        store: store,
-                        snapshot: snapshot,
-                        now: timeline.date,
-                        sidebarVisible: sidebarVisible,
-                        showSidebar: showSidebar,
-                        showShare: $showShare,
-                        showOvertime: $showOvertime
-                    )
-                } else {
-                    TimerDesignView(
-                        store: store,
-                        wide: true,
-                        timelineDate: timeline.date,
-                        animatesPhaseChanges: false
-                    )
+        Group {
+            if isActive, store.visualPhase(at: .now).usesLiveTimeline {
+                TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                    tabletTimerContent(at: timeline.date)
                 }
+            } else {
+                tabletTimerContent(at: .now)
             }
-            .id(phase)
-            .transition(timerTransition)
-            .overlay(alignment: .topLeading) {
-                // Completed, rest-day and rules-error states reuse the common
-                // timer surface, which does not know about the custom iPad
-                // sidebar. Keep the reveal control at the shell boundary so
-                // none of those states can strand the user in full screen.
-                if !sidebarVisible, phase.usesCommonTimerSurface {
-                    Button(action: showSidebar) {
-                        Image(systemName: "sidebar.left")
-                            .frame(width: 38, height: 38)
-                            .background(OWCDesign.card)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.leading, 8)
-                    .padding(.top, 22)
-                    .zIndex(10)
-                }
-            }
-            .animation(timerAnimation, value: phase)
         }
         .background(OWCDesign.page)
         .navigationBarHidden(true)
@@ -319,6 +324,54 @@ private struct TabletTimerView: View {
             OvertimeSheet(store: store)
                 .presentationSizing(.form)
         }
+    }
+
+    @ViewBuilder
+    private func tabletTimerContent(at date: Date) -> some View {
+        let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
+        let phase = store.visualPhase(snapshot: snapshot, at: date)
+
+        ZStack {
+            if phase.showsActiveTimer, let snapshot {
+                TabletRunningView(
+                    store: store,
+                    snapshot: snapshot,
+                    now: date,
+                    sidebarVisible: sidebarVisible,
+                    showSidebar: showSidebar,
+                    showShare: $showShare,
+                    showOvertime: $showOvertime
+                )
+            } else {
+                TimerDesignView(
+                    store: store,
+                    wide: true,
+                    timelineDate: date,
+                    animatesPhaseChanges: false
+                )
+            }
+        }
+        .id(phase.surfaceIdentity)
+        .transition(timerTransition)
+        .overlay(alignment: .topLeading) {
+            // Completed, rest-day and rules-error states reuse the common
+            // timer surface, which does not know about the custom iPad
+            // sidebar. Keep the reveal control at the shell boundary so
+            // none of those states can strand the user in full screen.
+            if !sidebarVisible, phase.usesCommonTimerSurface {
+                Button(action: showSidebar) {
+                    Image(systemName: "sidebar.left")
+                        .frame(width: 38, height: 38)
+                        .background(OWCDesign.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .padding(.leading, 8)
+                .padding(.top, 22)
+                .zIndex(10)
+            }
+        }
+        .animation(timerAnimation, value: phase)
     }
 
     private var timerTransition: AnyTransition {
@@ -364,9 +417,20 @@ private struct TabletRunningView: View {
         return max(0, columnHeight - chrome)
     }
 
+
     var body: some View {
         VStack(spacing: 0) {
             tabletHeader(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
+
+            if store.isForcedWorkday(snapshot) {
+                ManualTimingBanner(store: store)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 8)
+            } else if !snapshot.isBeforeStart(at: now), let note = store.earlyClockInNote(at: now) {
+                EarlyClockInBanner(store: store, note: note)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 8)
+            }
 
             // Scrollable, but only when it has to be. Expanding the list makes
             // the column taller than the pane, and without this the collapse
@@ -415,10 +479,18 @@ private struct TabletRunningView: View {
                     .padding(.top, sidebarVisible ? 14 : 18)
 
                 if sidebarVisible {
+                    if snapshot.isBeforeStart(at: now) {
+                        OWCProgressMeter(
+                            progress: store.countdownToClockInProgress(snapshot: snapshot),
+                            label: store.t("progress")
+                        )
+                        .padding(.top, 17)
+                    } else {
                     OWCProgressMeter(progress: snapshot.progress, label: store.t("progress"), overtime: isOvertime, paused: onBreak)
                         .padding(.top, 17)
+                    }
 
-                    if store.scheduleMode != .off {
+                    if store.followsSchedule(at: now) {
                     HStack(spacing: 14) {
                         statCard(store.t("summaryThisWeek"), summaryLabel(weekSummary, includeMoney: false))
                         statCard(store.t("summaryThisYear"), summaryLabel(yearSummary, includeMoney: store.salaryEnabled))
@@ -426,10 +498,25 @@ private struct TabletRunningView: View {
                     .padding(.top, 44)
                     }
                 } else {
-                    segmentedProgress
+                    if snapshot.isBeforeStart(at: now) {
+                        OWCProgressMeter(
+                            progress: store.countdownToClockInProgress(snapshot: snapshot),
+                            label: store.t("progress")
+                        )
                         .padding(.top, 56)
+                    } else {
+                        segmentedProgress
+                            .padding(.top, 56)
+                    }
                     HStack(spacing: 56) {
-                        fullStat(store.t("progress"), store.formatPercent(snapshot.progress))
+                        fullStat(
+                            store.t("progress"),
+                            store.formatPercent(
+                                snapshot.isBeforeStart(at: now)
+                                    ? store.countdownToClockInProgress(snapshot: snapshot)
+                                    : snapshot.progress
+                            )
+                        )
                         if store.salaryEnabled {
                             fullStat(
                                 store.t("moneyEarned"),
@@ -437,7 +524,7 @@ private struct TabletRunningView: View {
                                 accessory: { OWCEarningsVisibilityButton(store: store) }
                             )
                         }
-                        if store.scheduleMode != .off { fullStat(store.t("daysUntilRest"), daysUntilRest) }
+                        if store.followsSchedule(at: now) { fullStat(store.t("daysUntilRest"), daysUntilRest) }
                     }
                     .padding(.top, 56)
                 }
@@ -455,12 +542,6 @@ private struct TabletRunningView: View {
                 // overtime and sharing live — one tap from here, and a tap the
                 // user already made to get into this mode.
                 if sidebarVisible {
-                    // "Coming up" was absent from the iPad entirely — the one
-                    // layout where there is most room for it. The phone has
-                    // carried it since the redesign; this column never got it,
-                    // so an iPad user could not see when lunch or clock-off
-                    // were due without collapsing the sidebar into the phone
-                    // layout.
                     UpcomingTimelineView(
                         store: store,
                         snapshot: snapshot,
@@ -469,20 +550,37 @@ private struct TabletRunningView: View {
                         availableHeight: timelineHeight
                     )
                     .padding(.top, 22)
-
-                    HStack(spacing: 12) {
-                        Button {
-                            store.stopCountdown()
-                        } label: { Label(store.t("return"), systemImage: "arrow.left") }
-                        Button { showOvertime = true } label: {
-                            Text(store.t(isOvertime ? "adjustOvertime" : "overtime"))
-                        }
-                        Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
-                    }
-                    .buttonStyle(OWCSecondaryButtonStyle())
-                    .padding(.top, 24)
-                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { actionsHeight = $0 }
                 }
+
+                Group {
+                    if snapshot.isBeforeStart(at: now) {
+                        HStack(spacing: 12) {
+                            Button {
+                                store.requestClockInEarly(at: now)
+                            } label: {
+                                ClockInEarlyLabel(store: store)
+                            }
+                            Button { showShare = true } label: {
+                                Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    } else {
+                        HStack(spacing: 12) {
+                            Button {
+                                store.requestClockOffEarly(at: now)
+                            } label: { ClockOffEarlyLabel(store: store) }
+                            Button { showOvertime = true } label: {
+                                Text(store.t(isOvertime ? "adjustOvertime" : "overtime"))
+                            }
+                            Button { showShare = true } label: {
+                                Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    }
+                }
+                .buttonStyle(OWCSecondaryButtonStyle())
+                .padding(.top, 24)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { actionsHeight = $0 }
             }
                     .frame(maxWidth: sidebarVisible ? 560 : 900)
                     // Centres the capped column. `GeometryReader` aligns its
@@ -508,9 +606,15 @@ private struct TabletRunningView: View {
                     // Top-aligned, overflow only ever goes down, which is what
                     // scrolling is for.
                     //
-                    // Immersive has no list and no buttons, so it always fits,
-                    // and top-aligning it would strand the countdown above a
-                    // screen of empty page. Centred is the whole point there.
+                    // Immersive has no timeline, so nothing here can grow: the
+                    // countdown, meter, stats and action row are a fixed stack
+                    // that reports its true height. Top-aligning it left the
+                    // whole instrument hugging the header with a screen of empty
+                    // page underneath — the one layout that is supposed to be
+                    // nothing but the clock, and the clock was off-centre.
+                    // Centred, and if an accessibility text size ever does push
+                    // it past the pane the frame simply grows to the content and
+                    // the alignment stops applying.
                     .frame(
                         minHeight: proxy.size.height,
                         alignment: sidebarVisible ? .top : .center
@@ -529,26 +633,22 @@ private struct TabletRunningView: View {
         }
     }
 
-    private var onBreak: Bool { snapshot.activeBreakEndAtMs != nil }
+    private var onBreak: Bool { snapshot.isOnBreak }
 
-    private var isOvertime: Bool {
-        snapshot.overtimeEndAtMs != nil
-            && now.timeIntervalSince1970 * 1_000 >= snapshot.plannedEndAtMs
-    }
+    private var isOvertime: Bool { snapshot.isOvertimeActive(at: now) }
 
-    /// On a break the shift clock is frozen, so the screen counts the break down
-    /// instead — the same substitution the phone makes.
     private var displayRemaining: Double {
-        guard onBreak, let breakEnd = snapshot.activeBreakEndAtMs else {
-            return snapshot.remainingMs
-        }
-        return max(0, breakEnd - now.timeIntervalSince1970 * 1_000)
+        snapshot.isBeforeStart(at: now)
+            ? store.countdownToClockInMs(snapshot: snapshot, at: now)
+            : snapshot.heroRemainingMs(at: now)
     }
 
     private var heroCaption: String {
+        if snapshot.isBeforeStart(at: now) { return store.t("nextShiftLabelShort") }
         if onBreak, let breakEnd = snapshot.activeBreakEndDate {
             return store.t("pausedUntil", values: ["time": store.formatTime(breakEnd)])
         }
+        if isOvertime { return store.t("overtimeTimeLeftCaption") }
         return store.t("timeLeftCaption")
     }
 
@@ -559,7 +659,7 @@ private struct TabletRunningView: View {
         if isOvertime, let overtimeEnd = snapshot.overtimeEndDate {
             return (
                 store.t("overtimeUntil", values: ["time": store.formatTime(overtimeEnd)]),
-                "",
+                "clock.badge.plus",
                 OWCDesign.accent
             )
         }
@@ -614,12 +714,12 @@ private struct TabletRunningView: View {
             }
             .frame(height: 12)
             GeometryReader { proxy in
-                Text(store.timeString(store.startMinutes)).position(x: 30, y: 9)
-                if store.lunchEnabled, snapshot.segments.count > 1 {
-                    Text("\(store.timeString(store.lunchStartMinutes)) · \(store.t("lunchBreak"))")
+                Text(store.timeString(store.effectiveStartMinutes(at: now))).position(x: 30, y: 9)
+                if store.effectiveLunchEnabled(at: now), snapshot.segments.count > 1 {
+                    Text("\(store.timeString(store.effectiveLunchStartMinutes(at: now))) · \(store.t("lunchBreak"))")
                         .position(x: max(68, min(proxy.size.width - 68, proxy.size.width * lunchWallRatio)), y: 9)
                 }
-                Text(store.timeString(store.endMinutes)).position(x: proxy.size.width - 30, y: 9)
+                Text(store.timeString(store.effectiveEndMinutes(at: now))).position(x: proxy.size.width - 30, y: 9)
             }
             .frame(height: 18)
             .font(.subheadline.monospacedDigit())
@@ -636,58 +736,6 @@ private struct TabletRunningView: View {
         guard let date = snapshot.nextRestDate else { return "—" }
         let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now), to: Calendar.current.startOfDay(for: date)).day ?? 0
         return store.formatDays(Double(max(0, days)))
-    }
-}
-
-private struct TabletSetupView: View {
-    let store: OffWorkStore
-    let sidebarVisible: Bool
-    let showSidebar: () -> Void
-    @State private var timeField: SetupTimeField?
-
-    var body: some View {
-        VStack(spacing: 0) {
-            tabletHeader(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
-
-            ScrollView {
-                VStack(spacing: OWCDesign.sectionGap) {
-                    ShiftHeroCard(store: store) { timeField = $0 }
-                        .padding(.top, OWCDesign.heroGap)
-
-                    ShiftSetupTimelineView(
-                        store: store,
-                        onSelect: { store.presentedRoute = $0 },
-                        onEditTime: { timeField = $0 }
-                    )
-                }
-                .frame(maxWidth: 700)
-                .padding(.horizontal, 40)
-                .padding(.bottom, 24)
-            }
-            .scrollIndicators(.hidden)
-            .scrollBounceBehavior(.basedOnSize)
-        }
-        .safeAreaInset(edge: .bottom) {
-            ShiftStartButton(store: store, minimumHeight: 56) { store.presentedRoute = .lunch }
-                .frame(maxWidth: 700)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 40)
-                .padding(.top, 12)
-                .padding(.bottom, 24)
-                // Opaque: the scroll view runs underneath this inset.
-                .background(OWCDesign.page)
-        }
-        .sheet(item: $timeField) { field in
-            OWCSetupTimePickerSheet(
-                store: store,
-                title: store.t(field == .start ? "startTime" : "endTime"),
-                minutes: Binding(
-                    get: { field == .start ? store.startMinutes : store.endMinutes },
-                    set: { if field == .start { store.startMinutes = $0 } else { store.endMinutes = $0 } }
-                )
-            )
-            .presentationDetents([.medium])
-        }
     }
 }
 
@@ -714,11 +762,8 @@ private struct TabletSettingsView: View {
             // every value truncated and "off-work reminder" wrapping onto two
             // lines. Below the threshold the same sections stack instead.
             AdaptiveSettingsColumns(spacing: 26) {
-                VStack(spacing: 20) {
-                    SettingsSectionCard(store: store, section: .shift)
-                    sectionNote(store.t("tabletShiftSettingsNote"))
-                }
-                .frame(maxWidth: .infinity)
+                SettingsSectionCard(store: store, section: .shift)
+                    .frame(maxWidth: .infinity)
 
                 VStack(spacing: 20) {
                     SettingsSectionCard(store: store, section: .reminders)

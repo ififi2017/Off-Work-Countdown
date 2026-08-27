@@ -9,20 +9,22 @@ import LocalAuthentication
 /// landscape, iPad and the settings list all read them from here now.
 extension OffWorkStore {
     var scheduleLabel: String {
-        // Classic mode with nothing selected is off in practice, even though
-        // the mode itself is still set.
-        if scheduleMode == .classic, workdays.isEmpty { return t("disabledShort") }
-        return switch scheduleMode {
+        return switch effectiveScheduleMode() {
         case .classic: t("scheduleClassic")
         case .alternating: t("scheduleAlternating")
         case .rotation: t("scheduleRotation")
-        case .off: t("disabledShort")
+        case .off: t("scheduleOff")
         }
     }
 
     var lunchLabel: String {
         guard lunchEnabled else { return t("disabledShort") }
         return "\(timeString(lunchStartMinutes)) · \(formatRelativeDuration(Double(lunchDurationMinutes) * 60_000))"
+    }
+
+    func lunchLabel(at date: Date) -> String {
+        guard effectiveLunchEnabled(at: date) else { return t("disabledShort") }
+        return "\(timeString(effectiveLunchStartMinutes(at: date))) · \(formatRelativeDuration(Double(effectiveLunchDurationMinutes(at: date)) * 60_000))"
     }
 
     var healthLabel: String {
@@ -73,9 +75,10 @@ extension OffWorkStore {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
     }
 
-    /// Planned working time for today, lunch already deducted.
+    /// Planned working time for today, lunch already deducted. Uses the hours
+    /// the setup page is showing, including uncommitted edits.
     var plannedWorkLabel: String {
-        guard let snapshot = snapshot() else { return "—" }
+        guard let snapshot = setupSnapshot() else { return "—" }
         return formatRelativeDuration(snapshot.plannedDurationMs)
     }
 }

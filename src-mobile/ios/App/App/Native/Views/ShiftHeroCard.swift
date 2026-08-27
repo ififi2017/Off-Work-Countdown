@@ -15,7 +15,7 @@ struct ShiftHeroCard: View {
             HStack(alignment: .timeChipCenter, spacing: 4) {
                 ShiftHeroTimeButton(
                     title: store.t("startTime"),
-                    time: store.timeString(store.startMinutes)
+                    time: store.timeString(store.displayedStartMinutes)
                 ) { onEdit(.start) }
 
                 Text(verbatim: "—")
@@ -26,7 +26,7 @@ struct ShiftHeroCard: View {
 
                 ShiftHeroTimeButton(
                     title: store.t("endTime"),
-                    time: store.timeString(store.endMinutes)
+                    time: store.timeString(store.displayedEndMinutes)
                 ) { onEdit(.end) }
             }
             .environment(\.layoutDirection, .leftToRight)

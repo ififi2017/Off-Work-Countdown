@@ -21,10 +21,13 @@ struct OffWorkLiveActivityWidget: Widget {
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading, priority: 1) {
                     HStack(spacing: 8) {
-                        Image("BrandIcon")
+                        // The bare mark, not the plated app icon: the Dynamic
+                        // Island is already a container, and a second rounded
+                        // plate inside it reads as a sticker.
+                        Image("BrandMark")
                             .resizable()
+                            .scaledToFit()
                             .frame(width: 25, height: 25)
-                            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
 
                         Text(context.state.appTitle)
                             .font(.system(size: 13, weight: .semibold))
@@ -88,10 +91,10 @@ private struct LockScreenActivityView: View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 10) {
-                Image("BrandIcon")
+                Image("BrandMark")
                     .resizable()
+                    .scaledToFit()
                     .frame(width: 22, height: 22)
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 Text(context.state.appTitle)
                     .font(.system(size: 13, weight: .semibold))
                     .tracking(0.25)
@@ -190,11 +193,9 @@ private func activityLocale(_ context: ActivityViewContext<OffWorkActivityAttrib
 
 private func activityProgressValue(_ context: ActivityViewContext<OffWorkActivityAttributes>, at date: Date) -> Double {
     if activityComplete(context, at: date) { return 100 }
-    let start = Double(context.attributes.shiftStartAtMs)
-    let end = Double(context.state.endAtMs)
-    guard end > start else { return min(100, max(0, context.state.progress)) }
-    let linear = (date.timeIntervalSince1970 * 1_000 - start) / (end - start) * 100
-    return min(100, max(context.state.progress, linear))
+    return context.state.projectedProgress(
+        atMs: Int64(date.timeIntervalSince1970 * 1_000)
+    )
 }
 
 private func activityProgress(_ progress: Double) -> some View {

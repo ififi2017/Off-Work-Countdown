@@ -45,6 +45,7 @@ struct OWCEarningsVisibilityButton: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(store.t(store.hideEarnings ? "unlockSalary" : "salaryLocked"))
+        .sensoryFeedback(.selection, trigger: store.hideEarnings)
     }
 }
 
@@ -155,6 +156,7 @@ struct UpcomingTimelineView: View {
                     }
                 }
             }
+            .sensoryFeedback(.selection, trigger: isExpanded)
             .onChange(of: events.count) { _, count in
                 guard count <= collapsedEventLimit, isExpanded else { return }
                 withAnimation(expansionAnimation) { isExpanded = false }

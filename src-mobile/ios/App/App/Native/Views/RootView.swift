@@ -7,6 +7,8 @@ struct OffWorkCountdownRootView: View {
     @State private var notifications = NotificationService()
     @State private var liveActivities = LiveActivityService()
     @State private var serviceTask: Task<Void, Never>?
+    @State private var clockInCommitFeedback = 0
+    @State private var clockOffCommitFeedback = 0
     /// Settings changed but the reminders have not been rebuilt yet. Flushed
     /// when the app leaves the foreground, or immediately when the countdown
     /// itself starts or stops.
@@ -25,6 +27,10 @@ struct OffWorkCountdownRootView: View {
                     // animated at, so everything nudged down once the
                     // transition finished — a cross-fade cannot do that.
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 1.04)))
+            } else if verticalSizeClass == .compact {
+                // Compact height is a phone on its side — including Plus/Max,
+                // whose regular width would otherwise take the iPad shell.
+                PhoneLandscapeShellView(store: store).transition(.opacity)
             } else if horizontalSizeClass == .regular {
                 tabletLayout.transition(.opacity)
             } else {
@@ -37,7 +43,8 @@ struct OffWorkCountdownRootView: View {
         .environment(\.locale, store.locale)
         .environment(notifications)
         .tint(OWCDesign.accent)
-        .sensoryFeedback(.success, trigger: store.countdownStarted)
+        .sensoryFeedback(.success, trigger: clockInCommitFeedback)
+        .sensoryFeedback(.impact(weight: .medium), trigger: clockOffCommitFeedback)
         .task {
             await Task.yield()
             guard store.onboardingComplete else { return }
@@ -51,6 +58,12 @@ struct OffWorkCountdownRootView: View {
         .onChange(of: store.countdownStarted) {
             pendingReschedule = false
             scheduleServices()
+        }
+        .onChange(of: store.earlyStartAtMs) { oldValue, newValue in
+            if newValue != nil, newValue != oldValue { clockInCommitFeedback += 1 }
+        }
+        .onChange(of: store.earlyOffAtMs) { oldValue, newValue in
+            if newValue != nil, newValue != oldValue { clockOffCommitFeedback += 1 }
         }
         .onChange(of: scheduleSignature) {
             // Only remember that it changed. Rescheduling touches
@@ -76,6 +89,9 @@ struct OffWorkCountdownRootView: View {
             store.presentedRoute = route
         }
         .onChange(of: scenePhase) {
+            if scenePhase == .background {
+                store.resetCelebratedSession()
+            }
             if scenePhase == .active {
                 store.reconcileCountdownSession()
                 store.refreshSystemLanguage()
@@ -115,7 +131,7 @@ struct OffWorkCountdownRootView: View {
             "\(store.rotationWorkDays)-\(store.rotationRestDays)-\(store.rotationAnchorMs)",
             store.languageCode,
         ]
-        guard store.countdownStarted else {
+        guard store.publishesLiveSurfaces else {
             return (["false"] + scheduleFields).joined(separator: "|")
         }
         return [
@@ -125,6 +141,9 @@ struct OffWorkCountdownRootView: View {
             store.notificationMode.rawValue,
             "\(store.lunchStartReminderEnabled)-\(store.lunchEndReminderEnabled)-\(store.microBreakEnabled)-\(store.microBreakIntervalMinutes)",
             "\(store.overtimeEndAtMs ?? 0)",
+            "\(store.earlyOffAtMs ?? 0)-\(store.earlyOffShiftEndAtMs ?? 0)",
+            "\(store.earlyStartAtMs ?? 0)",
+            store.forcedWorkdayKey ?? "",
             "\(store.annualBonusEnabled)-\(store.annualBonusMonths)",
             "\(store.salaryEnabled)-\(store.salaryAmount)-\(store.salaryType.rawValue)",
             "\(store.liveActivityEnabled)-\(store.liveActivityLeadMinutes)",
@@ -154,45 +173,41 @@ struct OffWorkCountdownRootView: View {
         // of the TabView and NavigationStacks underneath it — the pushed screen
         // was rebuilt mid-edit, which is what dropped the keyboard and replayed
         // the push animation. Size classes do not move when the keyboard does.
-        Group {
-            if verticalSizeClass == .compact {
-                PhoneLandscapeShellView(store: store)
-            } else {
-                TabView(selection: $store.selectedTab) {
-                    NavigationStack(path: $store.timerPath) {
-                        TimerDesignView(
-                            store: store,
-                            wide: false,
-                            onOpenSettings: openPhoneSettings
-                        )
-                        .navigationDestination(for: AppRoute.self) { route in
-                            AppRouteDestination(route: route, store: store)
-                        }
-                    }
-                    .tabItem {
-                        Label(store.t("timerTab"), systemImage: "timer")
-                    }
-                    .tag(AppTab.timer)
-
-                    NavigationStack(path: $store.settingsPath) {
-                        SettingsDesignView(store: store)
-                            .navigationDestination(for: AppRoute.self) { route in
-                                AppRouteDestination(route: route, store: store)
-                            }
-                    }
-                    .onChange(of: store.presentedRoute) { _, route in
-                        guard let route else { return }
-                        store.settingsPath.append(route)
-                        store.presentedRoute = nil
-                    }
-                    .tabItem {
-                        Label(store.t("settings"), systemImage: "slider.horizontal.3")
-                    }
-                    .tag(AppTab.settings)
+        // Compact-height (landscape phone, including Plus/Max) is selected
+        // above, so this is portrait only.
+        TabView(selection: $store.selectedTab) {
+            NavigationStack(path: $store.timerPath) {
+                TimerDesignView(
+                    store: store,
+                    wide: false,
+                    onOpenSettings: openPhoneSettings
+                )
+                .navigationDestination(for: AppRoute.self) { route in
+                    AppRouteDestination(route: route, store: store)
                 }
-                .background(OWCDesign.page)
             }
+            .tabItem {
+                Label(store.t("timerTab"), systemImage: "timer")
+            }
+            .tag(AppTab.timer)
+
+            NavigationStack(path: $store.settingsPath) {
+                SettingsDesignView(store: store)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        AppRouteDestination(route: route, store: store)
+                    }
+            }
+            .onChange(of: store.presentedRoute) { _, route in
+                guard let route else { return }
+                store.settingsPath.append(route)
+                store.presentedRoute = nil
+            }
+            .tabItem {
+                Label(store.t("settings"), systemImage: "slider.horizontal.3")
+            }
+            .tag(AppTab.settings)
         }
+        .background(OWCDesign.page)
     }
 
     private var tabletLayout: some View {
@@ -226,7 +241,7 @@ struct OffWorkCountdownRootView: View {
             // app is leaving the foreground there must be no additional sleep:
             // iOS may suspend the process before a delayed task gets to rebuild
             // notifications, Live Activities and the widget timeline.
-            if !store.countdownStarted {
+            if !store.publishesLiveSurfaces {
                 await notifications.clearShiftNotifications()
                 // The start branch below has always checked here; this one did
                 // not, so a countdown restarted mid-teardown had its freshly

@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17132" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+<!-- Base only, deliberately. The launch screen is loaded by FrontBoard
+     before the app process establishes a localization context, so it
+     resolves to Base.lproj no matter the system language: neither a
+     LaunchScreen.strings nor a full per-.lproj LaunchScreen.storyboard
+     is picked up (both were measured on a clean simulator set to ja).
+     Keep the text here language-neutral, and put anything that has to
+     speak the user's language in the first SwiftUI frame instead. -->
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17105"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,21 +21,40 @@
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="snD-IY-ifK">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" image="BrandIcon" id="QzC-ow-C1a">
-                                <rect key="frame" x="139.5" y="285.5" width="96" height="96"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="96" id="Jke-V9-Pi5"/>
-                                    <constraint firstAttribute="height" constant="96" id="g7R-Rk-91q"/>
-                                </constraints>
-                            </imageView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="Stk-ro-Ot0">
+                                <rect key="frame" x="108" y="678" width="177" height="52"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="Stk-rw-Row">
+                                        <rect key="frame" x="0.0" y="0.0" width="177" height="52"/>
+                                        <subviews>
+                                            <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" image="BrandMark" id="QzC-ow-C1a">
+                                                <rect key="frame" x="0.0" y="4" width="44" height="44"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="44" id="Jke-V9-Pi5"/>
+                                                    <constraint firstAttribute="height" constant="44" id="g7R-Rk-91q"/>
+                                                </constraints>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DoneAt" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="nAm-e0-lbl">
+                                                <rect key="frame" x="58" y="0.0" width="119" height="52"/>
+                                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="34"/>
+                                                <color key="textColor" systemColor="labelColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemGroupedBackgroundColor"/>
+                        <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="QzC-ow-C1a" firstAttribute="centerX" secondItem="snD-IY-ifK" secondAttribute="centerX" id="P4G-Zk-4Gx"/>
-                            <constraint firstItem="QzC-ow-C1a" firstAttribute="centerY" secondItem="snD-IY-ifK" secondAttribute="centerY" id="qTR-7u-GiQ"/>
+                            <constraint firstItem="Stk-ro-Ot0" firstAttribute="centerX" secondItem="snD-IY-ifK" secondAttribute="centerX" id="P4G-Zk-4Gx"/>
+                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="bottom" secondItem="Stk-ro-Ot0" secondAttribute="bottom" constant="88" id="qTR-7u-GiQ"/>
+                            <constraint firstItem="Stk-ro-Ot0" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Bcu-3y-fUS" secondAttribute="leading" constant="24" id="lea-ge-024"/>
+                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Stk-ro-Ot0" secondAttribute="trailing" constant="24" id="tra-ge-024"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -37,9 +64,12 @@
         </scene>
     </scenes>
     <resources>
-        <image name="BrandIcon" width="512" height="512"/>
-        <systemColor name="systemGroupedBackgroundColor">
-            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        <image name="BrandMark" width="96" height="96"/>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
     </resources>
 </document>

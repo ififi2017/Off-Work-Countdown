@@ -258,6 +258,66 @@ export function resolveOvertimeEndAtMs(
     : null;
 }
 
+/**
+ * The shift that still belongs on `now`'s calendar day after live bounds have
+ * jumped. `getShiftBounds` uses the planned `endTime`, so a Monday 09:00–17:00
+ * run that overtime'd to Tuesday 01:00 looks like Tuesday's 09:00 window at
+ * 01:30; a Friday 22:00–Saturday 06:00 run looks like Saturday night after 06:00.
+ *
+ * Uses each candidate's effective end (`getShiftEndAtMs`), so overtime that
+ * crosses midnight still settles on the end calendar day. Callers should ignore
+ * a result whose start matches the live snapshot. Live windows that have
+ * already opened win at the call site (`liveIsOpen`).
+ */
+export function findEndedShiftOnEndCalendarDay(params: {
+  startTime: string;
+  endTime: string;
+  nowMs: number;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  options?: ShiftBuildOptions;
+  /** Midnight of a start calendar day that counts as work even if the pattern says rest. */
+  forcedWorkdayStartMs?: number | null;
+}): ShiftTimeline | null {
+  const now = new Date(params.nowMs);
+  const today = localDay(now);
+  const options = params.options ?? {};
+  const forcedMs = params.forcedWorkdayStartMs;
+  const forcedDay =
+    typeof forcedMs === "number" && Number.isFinite(forcedMs)
+      ? localDay(new Date(forcedMs)).getTime()
+      : null;
+
+  const startIsWorkday = (start: Date) =>
+    isScheduledWorkday(start, params.workdays, params.schedule) ||
+    (forcedDay != null && localDay(start).getTime() === forcedDay);
+
+  // Today, yesterday, and the day before: a day shift plus overtime past
+  // midnight, or an overnight then extended another night, both land here.
+  for (let offset = 0; offset <= 2; offset += 1) {
+    const day = addCalendarDays(today, -offset);
+    const start = atTime(day, params.startTime);
+    let end = atTime(day, params.endTime);
+    if (end.getTime() <= start.getTime()) {
+      end = addCalendarDays(end, 1);
+    }
+    if (!startIsWorkday(start)) continue;
+    const timeline = buildTimelineFromBounds(start, end, options);
+    const startAtMs = getShiftStartAtMs(timeline);
+    const endAtMs = getShiftEndAtMs(timeline);
+    if (params.nowMs >= startAtMs && params.nowMs < endAtMs) {
+      return timeline;
+    }
+    if (
+      params.nowMs >= endAtMs &&
+      localDay(new Date(endAtMs)).getTime() === today.getTime()
+    ) {
+      return timeline;
+    }
+  }
+  return null;
+}
+
 export function findNextShiftTimeline(params: {
   startTime: string;
   endTime: string;

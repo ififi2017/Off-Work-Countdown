@@ -1,5 +1,6 @@
 import LocalAuthentication
 import SwiftUI
+import UIKit
 
 struct OnboardingView: View {
     // Rounded display digits; no text style is this size.
@@ -11,6 +12,7 @@ struct OnboardingView: View {
     /// Sampled once rather than read in `body`, which would build an
     /// `LAContext` on every render.
     @State private var biometry: LABiometryType = .none
+    @State private var navigationFeedback = 0
 
     private static let pageAnimation = Animation.snappy(duration: 0.32)
     /// A pure slide, deliberately without a cross-fade.
@@ -58,8 +60,10 @@ struct OnboardingView: View {
                             adaptiveLayouts
                         case 4:
                             privacy
-                        default:
+                        case 5:
                             ready
+                        default:
+                            allSet
                         }
                     }
                     .id(store.onboardingPage)
@@ -91,12 +95,16 @@ struct OnboardingView: View {
         .background(OWCDesign.page)
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
+        .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedback)
         .task { biometry = BiometricGate.status().biometry }
         .onAppear {
 #if DEBUG
             let defaults = UserDefaults.standard
             if defaults.object(forKey: "ios.native.qaOnboardingPage") != nil {
-                store.onboardingPage = min(5, max(0, defaults.integer(forKey: "ios.native.qaOnboardingPage")))
+                store.onboardingPage = min(
+                    OnboardingPages.count - 1,
+                    max(0, defaults.integer(forKey: "ios.native.qaOnboardingPage"))
+                )
                 defaults.removeObject(forKey: "ios.native.qaOnboardingPage")
             }
 #endif
@@ -106,13 +114,12 @@ struct OnboardingView: View {
     private var welcome: some View {
         VStack(spacing: 0) {
             Spacer()
-            Image(.brandIcon)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 96, height: 96)
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .shadow(color: .black.opacity(0.12), radius: 14, y: 7)
-            Text(store.t("offWorkCountdown"))
+            CelebratingBrandMark()
+                .frame(width: 148, height: 148)
+                // Preserve the existing title baseline: the extra 40 points
+                // grow upward into the intentionally empty welcome-page space.
+                .padding(.top, -40)
+            Text(verbatim: OWCBrand.shortName)
                 .font(.largeTitle.bold())
                 .tracking(-0.8)
                 .multilineTextAlignment(.center)
@@ -179,18 +186,21 @@ struct OnboardingView: View {
                 OWCRow(
                     icon: "chart.line.uptrend.xyaxis",
                     title: store.t("notificationModeMilestones"),
-                    subtitle: store.t("onboardingProgressNotificationsBody")
+                    subtitle: store.t("onboardingProgressNotificationsBody"),
+                    centersVertically: true
                 )
                 OWCRow(
                     icon: "cup.and.saucer",
                     title: store.t("lunchBreak"),
-                    subtitle: store.t("onboardingLunchNotificationsBody")
+                    subtitle: store.t("onboardingLunchNotificationsBody"),
+                    centersVertically: true
                 )
                 OWCRow(
                     icon: "figure.walk",
                     title: store.t("microBreakReminder"),
                     subtitle: store.t("onboardingHealthNotificationsBody"),
-                    isLast: true
+                    isLast: true,
+                    centersVertically: true
                 )
             }
             .padding(.top, 28)
@@ -199,10 +209,11 @@ struct OnboardingView: View {
             pageDots
             VStack(spacing: 10) {
                 Button(store.t("notificationContinue")) {
+                    navigationFeedback += 1
                     Task {
                         let granted = await notifications.request()
                         if granted { store.notificationMode = .simple }
-                        showPage(2)
+                        showPage(2, feedback: false)
                     }
                 }
                 .buttonStyle(OWCPrimaryButtonStyle())
@@ -333,12 +344,14 @@ struct OnboardingView: View {
                 OWCRow(
                     icon: "wifi.slash",
                     title: store.t("onboardingOfflineTitle"),
-                    subtitle: store.t("onboardingOfflineBody")
+                    subtitle: store.t("onboardingOfflineBody"),
+                    centersVertically: true
                 )
                 OWCRow(
                     icon: "briefcase",
                     title: store.t("workSchedule"),
-                    subtitle: store.t("onboardingPrivacyWorkBody")
+                    subtitle: store.t("onboardingPrivacyWorkBody"),
+                    centersVertically: true
                 )
                 OWCRow(
                     // Both the glyph and the copy come from the hardware. A
@@ -350,7 +363,8 @@ struct OnboardingView: View {
                         "onboardingSalaryLockBody",
                         values: ["biometry": store.biometryName(biometry)]
                     ),
-                    isLast: true
+                    isLast: true,
+                    centersVertically: true
                 )
             }
             .padding(.top, 28)
@@ -366,9 +380,10 @@ struct OnboardingView: View {
                     "onboardingEnableBiometrics",
                     values: ["biometry": store.biometryName(biometry)]
                 )) {
+                    navigationFeedback += 1
                     Task {
                         _ = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
-                        showPage(5)
+                        showPage(5, feedback: false)
                     }
                 }
                 .buttonStyle(OWCPrimaryButtonStyle())
@@ -473,7 +488,7 @@ struct OnboardingView: View {
                     .resizable()
                     .frame(width: 18, height: 18)
                     .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                Text(store.t("offWorkCountdown"))
+                Text(verbatim: OWCBrand.shortName)
                     .font(.caption.bold())
                     .lineLimit(2)
                     .minimumScaleFactor(0.78)
@@ -522,62 +537,24 @@ struct OnboardingView: View {
         .owcShowcaseLift()
     }
 
-    /// The last screen: no more explaining, just the app's name and the way in.
+    /// Hours, weekdays, or skip a schedule.
     private var ready: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            Image(.brandIcon)
-                .resizable()
-                .frame(width: 92, height: 92)
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                .owcShowcaseLift()
-            Text(store.t("offWorkCountdown"))
-                .font(.largeTitle.bold())
-                .tracking(-0.8)
-                .padding(.top, 24)
-            Text(store.t("onboardingReadyBody"))
-                .font(.body)
-                .foregroundStyle(OWCDesign.secondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-                .padding(.top, 10)
-            Spacer()
-
-            pageDots
-            Button(store.t("onboardingStartSetup")) {
-                store.completeOnboarding(enableNotifications: false)
-            }
-            .buttonStyle(OWCPrimaryButtonStyle())
-            .padding(.top, 16)
-            .padding(.bottom, 24)
-        }
-        .padding(.horizontal, 28)
-        .frame(maxWidth: 560)
-        .frame(maxWidth: .infinity)
+        OnboardingSchedulePage(store: store, onContinue: advanceToAllSet)
     }
 
-    /// Always centred in the page's column.
-    ///
-    /// A bare `HStack` takes its intrinsic width and lets whatever stack it
-    /// sits in decide where that goes, so the dots drifted from page to page:
-    /// centred inside the pages built on a centred `VStack`, hard left inside
-    /// the two built on `VStack(alignment: .leading)`. The indicator belongs in
-    /// the same place on every page — it is the one element that is supposed to
-    /// look identical throughout, being the thing that measures progress across
-    /// them.
-    private var pageDots: some View {
-        HStack(spacing: 7) {
-            ForEach(0..<6, id: \.self) { page in
-                Capsule()
-                    .fill(page == store.onboardingPage ? OWCDesign.accent : OWCDesign.control)
-                    .frame(width: page == store.onboardingPage ? 20 : 7, height: 7)
-            }
+    /// What that schedule will do, and what is left to explore.
+    private var allSet: some View {
+        OnboardingReadyPage(store: store) {
+            store.completeOnboarding(enableNotifications: false)
         }
-        .frame(maxWidth: .infinity)
+    }
+
+    private var pageDots: some View {
+        OnboardingDots(page: store.onboardingPage)
     }
 
     private func feature(_ icon: String, _ title: String, _ body: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             Image(systemName: icon)
                 .font(.title3.weight(.medium))
                 .frame(width: 22)
@@ -590,10 +567,16 @@ struct OnboardingView: View {
         }
     }
 
-    private func showPage(_ page: Int) {
+    private func showPage(_ page: Int, feedback: Bool = true) {
+        if feedback { navigationFeedback += 1 }
         withAnimation(pageAnimation) {
             store.onboardingPage = page
         }
+    }
+
+    private func advanceToAllSet() {
+        navigationFeedback += 1
+        store.onboardingPage = OnboardingPages.allSet
     }
 
     private var pageAnimation: Animation {
@@ -602,5 +585,342 @@ struct OnboardingView: View {
 
     private var pageTransition: AnyTransition {
         reduceMotion ? .opacity : Self.pageTransition
+    }
+}
+
+/// The pages, in order. One list rather than a count repeated at every call
+/// site: the indicator, the QA jump and the "which page is last" question all
+/// read from here, so adding a page cannot leave one of them behind.
+enum OnboardingPages {
+    static let count = 7
+    static let schedule = 5
+    static let allSet = 6
+}
+
+/// Always centred in the page's column.
+///
+/// A bare `HStack` takes its intrinsic width and lets whatever stack it sits in
+/// decide where that goes, so the dots drifted from page to page: centred
+/// inside the pages built on a centred `VStack`, hard left inside the ones
+/// built on `VStack(alignment: .leading)`. The indicator belongs in the same
+/// place on every page — it is the one element that is supposed to look
+/// identical throughout, being the thing that measures progress across them.
+private struct OnboardingDots: View {
+    let page: Int
+
+    var body: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<OnboardingPages.count, id: \.self) { index in
+                Capsule()
+                    .fill(index == page ? OWCDesign.accent : OWCDesign.control)
+                    .frame(width: index == page ? 20 : 7, height: 7)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private struct OnboardingSchedulePage: View {
+    @Bindable var store: OffWorkStore
+    let onContinue: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var timeField: SetupTimeField?
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 18)
+            Text(store.t("onboardingScheduleTitle"))
+                .font(.title.bold())
+                .tracking(-0.6)
+                .multilineTextAlignment(.center)
+            Text(store.t("onboardingScheduleBody"))
+                .font(.callout)
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.top, 10)
+
+            HStack(alignment: .timeChipCenter, spacing: 4) {
+                ShiftHeroTimeButton(
+                    title: store.t("startTime"),
+                    time: store.timeString(store.startMinutes)
+                ) { timeField = .start }
+                Text(verbatim: "—")
+                    .font(.title3)
+                    .foregroundStyle(OWCDesign.tertiary)
+                    .alignmentGuide(.timeChipCenter) { $0[VerticalAlignment.center] }
+                    .accessibilityHidden(true)
+                ShiftHeroTimeButton(
+                    title: store.t("endTime"),
+                    time: store.timeString(store.endMinutes)
+                ) { timeField = .end }
+            }
+            .environment(\.layoutDirection, .leftToRight)
+            .padding(.top, 22)
+
+            OWCGroupCard {
+                modeRow(.classic, title: store.t("scheduleClassic"), subtitle: store.t("scheduleClassicDescription"))
+                modeRow(.alternating, title: store.t("scheduleAlternating"), subtitle: store.t("scheduleAlternatingDescription"))
+                modeRow(.rotation, title: store.t("scheduleRotation"), subtitle: store.t("scheduleRotationDescription"))
+                modeRow(.off, title: store.t("scheduleOff"), subtitle: store.t("scheduleOffDescription"), isLast: true)
+            }
+            .padding(.top, 22)
+
+            // All four panels are measured in the same fixed stage. Changing
+            // mode therefore never makes the option card, progress dots or CTA
+            // jump; only the detail content changes state.
+            OnboardingScheduleDetailsView(store: store)
+                .padding(.top, 18)
+
+            Spacer(minLength: 18)
+
+            onboardingDots
+            Button(store.t("continue")) {
+                if store.scheduleMode == .classic, store.workdays.isEmpty {
+                    store.workdays = [1, 2, 3, 4, 5]
+                }
+                // Plain assignment: the page change is animated by the
+                // `.animation(_:value:)` on the shell, which is what gives
+                // every other page the same slide.
+                onContinue()
+            }
+            .buttonStyle(OWCPrimaryButtonStyle())
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+        }
+        // Same cap as the notification and privacy pages. The outer
+        // `minHeight: proxy.size.height` is what lets the Spacers centre this
+        // page; a second `frame(maxWidth: .infinity)` here would report the
+        // VStack's ideal height instead, and the form would sit against the
+        // top again — the iPad landscape complaint.
+        .padding(.horizontal, 28)
+        .frame(maxWidth: 560)
+        .sheet(item: $timeField) { field in
+            OWCSetupTimePickerSheet(
+                store: store,
+                title: store.t(field == .start ? "startTime" : "endTime"),
+                minutes: Binding(
+                    get: { field == .start ? store.startMinutes : store.endMinutes },
+                    set: { value in
+                        if field == .start { store.startMinutes = value }
+                        else { store.endMinutes = value }
+                    }
+                )
+            )
+            .presentationDetents([.medium])
+        }
+        .onAppear {
+            if store.workdays.isEmpty { store.workdays = [1, 2, 3, 4, 5] }
+        }
+        .sensoryFeedback(.selection, trigger: store.scheduleMode)
+    }
+
+    private func modeRow(_ mode: WorkScheduleMode, title: String, subtitle: String, isLast: Bool = false) -> some View {
+        let selected = store.scheduleMode == mode
+        return Button {
+            guard !selected else { return }
+            store.scheduleMode = mode
+            if mode == .alternating { store.anchorAlternatingWeekToToday() }
+            if mode == .rotation { store.anchorRotationToToday() }
+            if mode == .classic, store.workdays.isEmpty { store.workdays = [1, 2, 3, 4, 5] }
+        } label: {
+            OWCRow(
+                title: title,
+                subtitle: subtitle,
+                isLast: isLast,
+                centersVertically: true
+            ) {
+                ScheduleModeMark(selected: selected)
+            }
+            .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection) { content in
+                content.background(selected ? OWCDesign.accent.opacity(0.07) : .clear)
+            }
+        }
+        .buttonStyle(OWCRowButtonStyle())
+    }
+
+    private var onboardingDots: some View {
+        OnboardingDots(page: store.onboardingPage)
+    }
+
+}
+
+/// The radio mark on a schedule-mode row.
+///
+/// One `Image` whose symbol changes, plus a content transition, rather than two
+/// images swapped by a conditional. The row highlight responds on touch-down;
+/// on commit, `.symbolEffect(.replace)` gives the circle-to-checkmark change the
+/// shape SF Symbols draws deliberately instead of cross-fading two glyphs in
+/// one 20 pt slot.
+struct ScheduleModeMark: View {
+    let selected: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+            .font(.title3)
+            .foregroundStyle(selected ? OWCDesign.accent : OWCDesign.tertiary)
+            .contentTransition(.symbolEffect(.replace))
+            .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selected)
+    }
+}
+
+/// The last screen: what the schedule they just set is actually going to do,
+/// and the three switches that are worth knowing about before they need them.
+///
+/// The list is the real preview the setup screen shows — the same rows, from
+/// the same shared rules — rather than a mock-up written for onboarding. A
+/// first-run summary that disagrees with the app it is summarising is worse
+/// than no summary, and this one cannot: if the schedule says the next shift
+/// starts Monday at 09:00, that is because the rules said so.
+private struct OnboardingReadyPage: View {
+    @Bindable var store: OffWorkStore
+    let onFinish: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Flipped once, on appear. The rows are laid out at full size from the
+    /// first frame and only their opacity and offset are driven, so nothing
+    /// below them moves while they arrive.
+    @State private var revealed = false
+    @State private var finishFeedback = 0
+
+    /// Four is what fits under the copy on the smallest phone without the
+    /// primary button leaving the screen. The rows are already one per *kind*
+    /// of event, so four covers a shift with lunch and reminders on.
+    private static let maxRows = 4
+
+    var body: some View {
+        let now = Date.now
+        let upcoming = Array(
+            (store.setupSnapshot(at: now).map { store.shiftPreview(for: $0, at: now).upcoming } ?? [])
+                .prefix(Self.maxRows)
+        )
+
+        VStack(spacing: 0) {
+            Spacer(minLength: 18)
+
+            Image(systemName: "calendar.badge.checkmark")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(OWCDesign.orangeDeep)
+                .frame(width: 52, height: 52)
+                .background(OWCDesign.orange.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .frame(maxWidth: .infinity)
+
+            Text(store.t("onboardingAllSetTitle"))
+                .font(.title.bold())
+                .tracking(-0.6)
+                .multilineTextAlignment(.center)
+                .padding(.top, 20)
+            Text(store.t("onboardingAllSetBody"))
+                .font(.callout)
+                .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.top, 10)
+
+            VStack(alignment: .leading, spacing: 0) {
+                OWCSectionHeader(title: store.t("comingUp"))
+                OWCGroupCard {
+                    if upcoming.isEmpty {
+                        // No schedule, or hours the rules cannot place a shift
+                        // in. Saying so beats an empty card, and it is the same
+                        // sentence the schedule page used to describe the mode.
+                        OWCRow(
+                            icon: "calendar.badge.minus",
+                            title: store.t("scheduleOff"),
+                            subtitle: store.t("scheduleOffManualStart"),
+                            isLast: true
+                        )
+                        .owcRevealed(revealed, index: 0, reduceMotion: reduceMotion)
+                    } else {
+                        ForEach(Array(upcoming.enumerated()), id: \.element.id) { index, entry in
+                            ShiftPreviewRow(
+                                store: store,
+                                entry: entry,
+                                now: now,
+                                showsSeparator: index < upcoming.count - 1,
+                                // Nothing on this page navigates; the button
+                                // under it is the only way on. With no row
+                                // tappable there is no ragged clock column to
+                                // protect, so the chevron's width goes back to
+                                // the times rather than sitting empty beside
+                                // them.
+                                showsChevron: false,
+                                reservesChevron: false
+                            )
+                            .owcRevealed(revealed, index: index, reduceMotion: reduceMotion)
+                        }
+                    }
+                }
+            }
+            // Fades in with its own first row, so the page never shows an
+            // empty card waiting to be filled.
+            .owcRevealed(revealed, index: 0, reduceMotion: reduceMotion, travels: false)
+            .padding(.top, 26)
+
+            VStack(alignment: .leading, spacing: 0) {
+                OWCSectionHeader(title: store.t("onboardingExploreTitle"))
+                OWCGroupCard {
+                    OWCRow(
+                        icon: "cup.and.saucer",
+                        title: store.t("lunchBreak"),
+                        subtitle: store.t("onboardingExploreLunchBody"),
+                        centersVertically: true
+                    )
+                    .owcRevealed(revealed, index: exploreIndex(0, after: upcoming.count), reduceMotion: reduceMotion)
+                    OWCRow(
+                        icon: "figure.walk",
+                        title: store.t("microBreakReminder"),
+                        subtitle: store.t("onboardingExploreHealthBody"),
+                        centersVertically: true
+                    )
+                    .owcRevealed(revealed, index: exploreIndex(1, after: upcoming.count), reduceMotion: reduceMotion)
+                    OWCRow(
+                        icon: "bell.badge",
+                        title: store.t("offWorkReminder"),
+                        subtitle: store.t("onboardingExploreReminderBody"),
+                        isLast: true,
+                        centersVertically: true
+                    )
+                    .owcRevealed(revealed, index: exploreIndex(2, after: upcoming.count), reduceMotion: reduceMotion)
+                }
+                Text(store.t("onboardingExploreBody"))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineSpacing(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 9)
+            }
+            .owcRevealed(
+                revealed,
+                index: exploreIndex(0, after: upcoming.count),
+                reduceMotion: reduceMotion,
+                travels: false
+            )
+            .padding(.top, 22)
+
+            Spacer(minLength: 18)
+
+            OnboardingDots(page: store.onboardingPage)
+            Button(store.t("onboardingFinish")) {
+                finishFeedback += 1
+                onFinish()
+            }
+            .buttonStyle(OWCPrimaryButtonStyle())
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+        }
+        // Same cap and inset as the notification and privacy pages.
+        .padding(.horizontal, 28)
+        .frame(maxWidth: 560)
+        .sensoryFeedback(.success, trigger: finishFeedback)
+        .onAppear { revealed = true }
+    }
+
+    /// Continues the stagger across the card boundary, so the two lists read as
+    /// one sequence rather than two that happen to start together.
+    private func exploreIndex(_ offset: Int, after rows: Int) -> Int {
+        max(rows, 1) + offset
     }
 }

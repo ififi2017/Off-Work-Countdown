@@ -4,8 +4,17 @@ import Foundation
 /// Salary-free payload shared verbatim by the app and Widget extension.
 struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
     struct ContentState: Codable, Hashable, Sendable {
+        struct Segment: Codable, Hashable, Sendable {
+            let startAtMs: Int64
+            let endAtMs: Int64
+        }
+
         let endAtMs: Int64
         let progress: Double
+        /// Absolute effective-work intervals prepared by CountdownRules. The
+        /// extension may project inside them, but never reinterprets lunch or
+        /// overtime rules.
+        let segments: [Segment]
         let phase: String
         let locale: String
         let appTitle: String
@@ -14,6 +23,23 @@ struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
         /// Shown under the big "off work" line. Must differ from
         /// completedCaption or Control Center prints the same sentence twice.
         let completedNote: String
+
+        func projectedProgress(atMs nowMs: Int64) -> Double {
+            let duration = segments.reduce(Int64(0)) { total, segment in
+                total + max(0, segment.endAtMs - segment.startAtMs)
+            }
+            guard duration > 0 else { return min(100, max(0, progress)) }
+            let elapsed = segments.reduce(Int64(0)) { total, segment in
+                let segmentDuration = max(0, segment.endAtMs - segment.startAtMs)
+                let segmentElapsed = min(
+                    segmentDuration,
+                    max(0, nowMs - segment.startAtMs)
+                )
+                return total + segmentElapsed
+            }
+            let projected = Double(elapsed) / Double(duration) * 100
+            return min(100, max(progress, projected))
+        }
     }
 
     let shiftStartAtMs: Int64

@@ -323,6 +323,9 @@ above.
 
 This project is open source and available under the [MIT License](LICENSE).
 
+The bundled Geist fonts in `app/fonts/` are licensed separately under the
+[SIL Open Font License 1.1](app/fonts/LICENSE.txt).
+
 ## Acknowledgements
 
 Special thanks to:

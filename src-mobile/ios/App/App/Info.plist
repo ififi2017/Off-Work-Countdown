@@ -35,7 +35,7 @@
 		<string>vi</string>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>Off Work</string>
+	<string>DoneAt</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -43,7 +43,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>DoneAt</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleURLTypes</key>

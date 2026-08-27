@@ -50,18 +50,21 @@ final class NotificationService {
             pending.map(\.identifier).filter { $0.hasPrefix("owc.shift.") }
         )
 
-        guard status == .allowed, store.countdownStarted else {
+        guard status == .allowed, store.publishesLiveSurfaces else {
             center.removePendingNotificationRequests(withIdentifiers: Array(existingIdentifiers))
             return
         }
-        guard let reminders = try? CountdownRules.shared.reminders(
-            input: store.rulesInput(at: now),
-            reminderInputs: store.reminderInputs()
-        ) else { return }
-        guard generation == scheduleGeneration, store.countdownStarted else { return }
+        guard let reminders = try? store.shiftReminders(at: now) else { return }
+        guard generation == scheduleGeneration, store.publishesLiveSurfaces else { return }
 
-        let future = reminders.filter {
-            $0.atMs > now.timeIntervalSince1970 * 1_000 && $0.title != nil && $0.body != nil
+        let snapshot = store.snapshot(at: now)
+        let future = reminders.filter { reminder in
+            guard reminder.atMs > now.timeIntervalSince1970 * 1_000,
+                  reminder.title != nil,
+                  reminder.body != nil
+            else { return false }
+            guard let snapshot else { return true }
+            return store.shouldDeliverReminder(reminder, for: snapshot)
         }
         let essential = future.filter { $0.kind != "microBreak" }.sorted { $0.atMs < $1.atMs }
         let health = future.filter { $0.kind == "microBreak" }.sorted { $0.atMs < $1.atMs }
@@ -70,7 +73,7 @@ final class NotificationService {
         var allSucceeded = true
 
         for reminder in desired {
-            guard generation == scheduleGeneration, store.countdownStarted else { return }
+            guard generation == scheduleGeneration, store.publishesLiveSurfaces else { return }
             guard let title = reminder.title, let body = reminder.body else { continue }
             let content = UNMutableNotificationContent()
             content.title = title
@@ -99,10 +102,9 @@ final class NotificationService {
 
         if store.liveActivityEnabled,
            store.notificationMode == .off,
-           let snapshot = store.snapshot(at: now),
-           snapshot.endAtMs > now.timeIntervalSince1970 * 1_000,
-           generation == scheduleGeneration,
-           store.countdownStarted {
+           let snapshot,
+           store.shouldScheduleLiveActivityEndFallback(snapshot: snapshot, at: now),
+           generation == scheduleGeneration {
             let identifier = "owc.shift.live.end.\(Int64(snapshot.endAtMs))"
             let content = UNMutableNotificationContent()
             content.title = store.t("offWorkTime")
@@ -124,7 +126,7 @@ final class NotificationService {
             }
         }
 
-        if allSucceeded, generation == scheduleGeneration, store.countdownStarted {
+        if allSucceeded, generation == scheduleGeneration, store.publishesLiveSurfaces {
             let stale = existingIdentifiers.subtracting(desiredIdentifiers)
             center.removePendingNotificationRequests(withIdentifiers: Array(stale))
         }

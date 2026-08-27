@@ -29,11 +29,12 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 
 当前执行顺序是：
 
-1. 保持 iPhone/iPad TestFlight 回归与 App Store 提交链路稳定；
-2. 开始 Apple Watch 的契约和 target 建设；
-3. 完成 Watch App、圆形与长方形表盘组件、双向状态联动；
-4. Watch 稳定后再评估 iPhone/iPad iCloud 同步；
-5. Android 不设启动日期。
+1. **[007](../plans/007-ios-stable-before-subscription.md)**：在记录（002）和订阅（006）之前，把 iOS 倒计时本体做成可过审的稳定版。main 现为 TestFlight；已送审包偏早，正式审核候选以 007 为准。计时页口径见 [IOS-TIMER-SURFACES.md](IOS-TIMER-SURFACES.md)；
+2. 保持 iPhone/iPad TestFlight 回归与 App Store 提交链路稳定；
+3. 开始 Apple Watch 的契约和 target 建设；
+4. 完成 Watch App、圆形与长方形表盘组件、双向状态联动；
+5. Watch 稳定后再评估 iPhone/iPad iCloud 同步（002 的 CloudKit 仍排在 007 之后）；
+6. Android 不设启动日期。
 
 ## 2. 2026-08-23 iPhone / iPad 收口记录
 
@@ -95,6 +96,14 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 
 ### 2.6 2026-08-24 SwiftUI CR 与组件时间线
 
+- 完成首次排班设置或手动启动过一次后，固定星期、大小周和上几休几会保持自动计时状态跨日运行；
+  旧版本中被每日重置的既有配置会一次性迁移为已启用，用户显式停止后仍保持停止。
+- iOS Widget 快照现在通过一次 JavaScriptCore 批量调用预投影约一年的绝对班次，Widget Extension
+  每 12 小时从快照重建未来 36 小时的轻量展示条目。App 长期不打开时，组件仍可在后续工作日
+  自动从“距离上班”切到工作倒计时；排班、跨夜、轮班和午休判断仍全部来自 TypeScript 规则束。
+- “好好休息”只覆盖下一工作日之前的完整休息日；进入下一班所属工作日的零点后切回普通上班前
+  倒计时。当前班次结束后的“今日已下班”保留到结束日的日界线，但遇到同日下一场跨夜班时会
+  提前让位，避免两个班次状态重叠。
 - iOS Home Screen 与锁屏组件不再依靠组件视图中的 TimelineView 驱动进度。WidgetKit 现在会在
   工作区间内生成定期进度条目；系统 timer 继续显示秒级倒计时，进度环和线性进度则按受控粒度
   前进，避免出现倒计时正常而百分比永久停在旧值的问题。

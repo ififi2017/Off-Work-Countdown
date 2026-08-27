@@ -8,11 +8,9 @@ struct AboutView: View {
             VStack(spacing: 22) {
                 OWCGroupCard {
                     VStack(spacing: 12) {
-                        Image(.brandIcon)
-                            .resizable()
-                            .frame(width: 84, height: 84)
-                            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                        Text(store.t("offWorkCountdown"))
+                        CelebratingBrandMark()
+                            .frame(width: 168, height: 168)
+                        Text(verbatim: OWCBrand.shortName)
                             .font(.title2.bold())
                         Text("fi_niaR Studio")
                             .font(.subheadline.weight(.semibold))
@@ -35,7 +33,7 @@ struct AboutView: View {
                     aboutLink(
                         store.t("githubRepository"),
                         icon: "chevron.left.forwardslash.chevron.right",
-                        destination: URL(string: "https://github.com/renmu123/Off-Work-Countdown")!
+                        destination: URL(string: "https://github.com/ififi2017/Off-Work-Countdown")!
                     )
                     aboutLink(
                         store.t("visitOfficialWebsite"),

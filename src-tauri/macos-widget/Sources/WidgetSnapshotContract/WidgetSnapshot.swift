@@ -80,11 +80,18 @@ public struct WidgetTimelineEntry: Codable, Equatable, Sendable {
         self.nextBoundaryAtMs = nextBoundaryAtMs
     }
 
-    /// Advances a precomputed working interval to a later presentation time.
-    /// Schedule boundaries still come from the producer; this only projects the
-    /// linear values that change while the current work segment is running.
+    /// Advances a precomputed interval to a later presentation time. Schedule
+    /// boundaries still come from the producer; this only projects the linear
+    /// values inside one already-resolved interval.
     public func projected(atMs nowMs: Int64) -> WidgetTimelineEntry {
-        guard phase == .working,
+        #if os(iOS)
+        let projectsProgress = phase == .working || phase == .before
+        #else
+        // The macOS product keeps its existing pre-shift presentation. DoneAt
+        // countdown progress is an iOS-only surface change.
+        let projectsProgress = phase == .working
+        #endif
+        guard projectsProgress,
               nowMs > dateMs,
               progressAtDate < 100,
               remainingEffectiveMsAtDateMs > 0
@@ -163,24 +170,26 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     /// invents schedule boundaries: those remain the producer's responsibility.
     public func presentationEntries(
         startingAtMs nowMs: Int64,
-        progressStepMs: Int64
+        progressStepMs: Int64,
+        endingAtMs requestedEndMs: Int64? = nil
     ) -> [WidgetTimelineEntry] {
+        let presentationEndMs = min(expiresAtMs, requestedEndMs ?? expiresAtMs)
         guard schemaVersion == widgetSnapshotSchemaVersion,
               progressStepMs > 0,
               nowMs >= generatedAtMs,
-              nowMs < expiresAtMs
+              nowMs < presentationEndMs
         else {
             return []
         }
 
         var result: [WidgetTimelineEntry] = []
-        for source in entries where source.validUntilMs > nowMs && source.dateMs < expiresAtMs {
+        for source in entries where source.validUntilMs > nowMs && source.dateMs < presentationEndMs {
             let firstDateMs = max(nowMs, source.dateMs)
             result.append(source.projected(atMs: firstDateMs))
 
             guard source.phase == .working else { continue }
             var updateAtMs = firstDateMs + progressStepMs
-            let intervalEndMs = min(source.validUntilMs, expiresAtMs)
+            let intervalEndMs = min(source.validUntilMs, presentationEndMs)
             while updateAtMs < intervalEndMs {
                 result.append(source.projected(atMs: updateAtMs))
                 updateAtMs += progressStepMs

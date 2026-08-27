@@ -24,6 +24,9 @@ struct NativeShiftSnapshot: Codable, Hashable {
     let dailySalary: Double?
     let nextShiftStartAtMs: Double?
     let nextShiftEndAtMs: Double?
+    let countdownTargetAtMs: Double?
+    let countdownAnchorAtMs: Double?
+    let countdownProgress: Double
 
     var startDate: Date { Date(timeIntervalSince1970: startAtMs / 1_000) }
     var endDate: Date { Date(timeIntervalSince1970: endAtMs / 1_000) }
@@ -33,6 +36,81 @@ struct NativeShiftSnapshot: Codable, Hashable {
     var nextRestDate: Date? { nextRestAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
     var nextShiftStartDate: Date? { nextShiftStartAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
     var nextShiftEndDate: Date? { nextShiftEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
+
+    func isBeforeStart(at now: Date) -> Bool {
+        now.timeIntervalSince1970 * 1_000 < startAtMs
+    }
+
+    var isOnBreak: Bool { activeBreakEndAtMs != nil }
+
+    func isOvertimeActive(at now: Date) -> Bool {
+        overtimeEndAtMs != nil && now.timeIntervalSince1970 * 1_000 >= plannedEndAtMs
+    }
+
+    /// Remaining time the shared running surfaces count. Before clock-in this is
+    /// time until start; during a break it is time until the break ends;
+    /// otherwise it is effective shift remaining.
+    func heroRemainingMs(at now: Date) -> Double {
+        let nowMs = now.timeIntervalSince1970 * 1_000
+        if nowMs < startAtMs { return max(0, startAtMs - nowMs) }
+        if let breakEnd = activeBreakEndAtMs { return max(0, breakEnd - nowMs) }
+        return remainingMs
+    }
+
+    /// Next-shift and next-rest come from `source`. Current-shift figures stay.
+    func withProjectedFuture(from source: NativeShiftSnapshot) -> NativeShiftSnapshot {
+        let countsToCurrentStart = countdownTargetAtMs == startAtMs
+        let restAtMs: Double?
+        if let candidate = source.nextRestAtMs {
+            let endDay = Calendar.current.startOfDay(for: endDate)
+            let afterEndDay = Calendar.current.date(byAdding: .day, value: 1, to: endDay)
+                .map { $0.timeIntervalSince1970 * 1_000 } ?? endAtMs
+            restAtMs = candidate >= afterEndDay ? candidate : nextRestAtMs
+        } else {
+            restAtMs = nextRestAtMs
+        }
+        return NativeShiftSnapshot(
+            segments: segments,
+            startAtMs: startAtMs,
+            endAtMs: endAtMs,
+            plannedEndAtMs: plannedEndAtMs,
+            overtimeEndAtMs: overtimeEndAtMs,
+            durationMs: durationMs,
+            plannedDurationMs: plannedDurationMs,
+            elapsedMs: elapsedMs,
+            remainingMs: remainingMs,
+            progress: progress,
+            payRatio: payRatio,
+            activeBreakEndAtMs: activeBreakEndAtMs,
+            isWorkday: isWorkday,
+            nextRestAtMs: restAtMs,
+            dailySalary: dailySalary,
+            nextShiftStartAtMs: source.nextShiftStartAtMs,
+            nextShiftEndAtMs: source.nextShiftEndAtMs,
+            countdownTargetAtMs: countsToCurrentStart
+                ? countdownTargetAtMs
+                : source.countdownTargetAtMs,
+            countdownAnchorAtMs: countsToCurrentStart
+                ? countdownAnchorAtMs
+                : source.countdownAnchorAtMs,
+            countdownProgress: countsToCurrentStart
+                ? countdownProgress
+                : source.countdownProgress
+        )
+    }
+}
+
+/// Salary-free absolute shift returned in one batch for WidgetKit. The shared
+/// TypeScript rules still decide every boundary; this narrower projection only
+/// avoids hundreds of Swift-to-JavaScriptCore calls while publishing a year.
+struct NativeWidgetShiftSnapshot: Codable, Hashable {
+    let segments: [NativeShiftSegment]
+    let startAtMs: Double
+    let endAtMs: Double
+    let plannedEndAtMs: Double
+    let overtimeEndAtMs: Double?
+    let durationMs: Double
+    let countdownAnchorAtMs: Double
 }
 
 struct NativePeriodSummary: Codable, Hashable {
@@ -123,6 +201,33 @@ final class CountdownRules {
         return snapshot
     }
 
+    func widgetShifts(
+        input: NativeRulesInput,
+        throughMs: Double,
+        maximumCount: Int
+    ) throws -> [NativeWidgetShiftSnapshot] {
+        if let loadError { throw loadError }
+        let request = NativeWidgetTimelineRequest(
+            rules: input,
+            throughMs: throughMs,
+            maximumCount: maximumCount
+        )
+        guard let context,
+              let bridge = context.objectForKeyedSubscript("OWCNative"),
+              !bridge.isUndefined,
+              let data = try? JSONEncoder().encode(request),
+              let json = String(data: data, encoding: .utf8),
+              let result = bridge.invokeMethod("widgetShifts", withArguments: [json]),
+              !result.isUndefined,
+              !result.isNull,
+              let output = result.toString()?.data(using: .utf8),
+              let shifts = try? JSONDecoder().decode([NativeWidgetShiftSnapshot].self, from: output)
+        else {
+            throw CountdownRulesError.invalidResult
+        }
+        return shifts
+    }
+
     func reminders(input: NativeRulesInput, reminderInputs: NativeReminderInputs) throws -> [NativeReminder] {
         if let loadError { throw loadError }
         let request = NativeReminderRequest(rules: input, reminderInputs: reminderInputs)
@@ -172,6 +277,31 @@ final class CountdownRules {
         else { return false }
         return result.toBool()
     }
+
+    func shouldPromptApplyToday(
+        current: NativeRulesInput,
+        candidate: NativeRulesInput,
+        kind: String,
+        schedulePatternChanged: Bool
+    ) -> Bool {
+        if loadError != nil { return true }
+        let request = NativeTodayImpactRequest(
+            current: current,
+            candidate: candidate,
+            kind: kind,
+            schedulePatternChanged: schedulePatternChanged
+        )
+        guard let context,
+              let bridge = context.objectForKeyedSubscript("OWCNative"),
+              !bridge.isUndefined,
+              let data = try? JSONEncoder().encode(request),
+              let json = String(data: data, encoding: .utf8),
+              let result = bridge.invokeMethod("shouldPromptApplyToday", withArguments: [json]),
+              !result.isUndefined,
+              !result.isNull
+        else { return true }
+        return result.toBool()
+    }
 }
 
 struct NativeWorkSchedule: Codable {
@@ -197,6 +327,20 @@ struct NativeRulesInput: Codable {
     let salaryType: String
     let monthlyWorkingDays: Double
     let annualBonusMonths: Double
+    let forcedWorkdayStartMs: Double?
+}
+
+private struct NativeWidgetTimelineRequest: Codable {
+    let rules: NativeRulesInput
+    let throughMs: Double
+    let maximumCount: Int
+}
+
+private struct NativeTodayImpactRequest: Codable {
+    let current: NativeRulesInput
+    let candidate: NativeRulesInput
+    let kind: String
+    let schedulePatternChanged: Bool
 }
 
 struct NativeSummaryInput: Codable {
@@ -268,6 +412,7 @@ private struct NativeReminderRequest: Codable {
     let salaryType: String
     let monthlyWorkingDays: Double
     let annualBonusMonths: Double
+    let forcedWorkdayStartMs: Double?
     let reminderInputs: NativeReminderInputs
 
     init(rules: NativeRulesInput, reminderInputs: NativeReminderInputs) {
@@ -283,6 +428,7 @@ private struct NativeReminderRequest: Codable {
         salaryType = rules.salaryType
         monthlyWorkingDays = rules.monthlyWorkingDays
         annualBonusMonths = rules.annualBonusMonths
+        forcedWorkdayStartMs = rules.forcedWorkdayStartMs
         self.reminderInputs = reminderInputs
     }
 }

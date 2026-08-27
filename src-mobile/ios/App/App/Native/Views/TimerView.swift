@@ -216,8 +216,9 @@ struct ShareComposerView: View {
     }
 
     private func sharePreview(maxWidth: CGFloat) -> some View {
-        ShareCard(store: store)
-            .frame(maxWidth: maxWidth)
+        let safeWidth = (maxWidth.isFinite && maxWidth > 0) ? maxWidth : nil
+        return ShareCard(store: store)
+            .frame(maxWidth: safeWidth)
             .aspectRatio(4 / 5, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             .shadow(color: .black.opacity(0.12), radius: 14, y: 7)
@@ -270,7 +271,7 @@ struct ShareComposerView: View {
         // message and the link. Previously the item source also returned that
         // string, so targets took one or the other and the image was dropped.
         let metadata = ShareMetadataItemSource(
-            title: store.t("offWorkCountdown"),
+            title: OWCBrand.shortName,
             text: "\(shareCopy) \(store.shareURL().absoluteString)",
             icon: UIImage(named: "BrandIcon") ?? image
         )
@@ -278,9 +279,7 @@ struct ShareComposerView: View {
     }
 
     private var shareCopy: String {
-        let remaining = store.snapshot()?.remainingMs ?? 0
-        if remaining <= 0 { return store.t("shareOffWorkText") }
-        return store.t("shareText", values: ["time": store.formatRelativeDuration(remaining)])
+        store.shareCopy()
     }
 }
 
@@ -305,9 +304,11 @@ private struct ShareCard: View {
                         .resizable()
                         .frame(width: 22, height: 22)
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    Text(store.t("offWorkCountdown").uppercased())
+                    // Mixed-case on purpose: DoneAt is the mark, not a
+                    // small-caps label. Uppercasing it reads as DONEAT.
+                    Text(verbatim: OWCBrand.shortName)
                         .font(.system(size: 10, weight: .bold))
-                        .tracking(1.25)
+                        .tracking(0.3)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                     Spacer(minLength: 8)
@@ -338,13 +339,13 @@ private struct ShareCard: View {
                         .overlay(alignment: .leading) {
                             Capsule()
                                 .fill(.white)
-                                .frame(width: proxy.size.width * min(1, max(0, snapshot?.progress ?? 0) / 100))
+                                .frame(width: proxy.size.width * min(1, max(0, store.shareProgress() / 100)))
                         }
                 }
                 .frame(height: 5)
 
                 HStack {
-                    Text(store.formatPercent(snapshot?.progress ?? 0))
+                    Text(store.formatPercent(store.shareProgress()))
                     Spacer()
                     Text("OFF.RAINIF.COM")
                 }
@@ -358,14 +359,6 @@ private struct ShareCard: View {
         }
     }
 
-    private var snapshot: NativeShiftSnapshot? { store.snapshot() }
-    private var isComplete: Bool { (snapshot?.remainingMs ?? 0) <= 0 }
-    private var heroText: String {
-        isComplete ? store.t("shareDone") : store.formatRelativeDuration(snapshot?.remainingMs ?? 0)
-    }
-    private var messageText: String {
-        isComplete
-            ? store.t("shareOffWorkText")
-            : store.t("shareText", values: ["time": store.formatRelativeDuration(snapshot?.remainingMs ?? 0)])
-    }
+    private var heroText: String { store.shareHeroText() }
+    private var messageText: String { store.shareCopy() }
 }

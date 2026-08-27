@@ -7,6 +7,14 @@ import WidgetSnapshotContract
 #endif
 
 public let offWorkCountdownWidgetKind = "com.rainif.offworkcountdown.macappstore.widget"
+
+private func widgetProductName(locale: String) -> String {
+    #if os(iOS)
+    "DoneAt"
+    #else
+    WidgetCopy.text("appShortName", locale: locale)
+    #endif
+}
 public let widgetSnapshotFileName = "widget-snapshot-v1.json"
 public let localWidgetSnapshotDirectoryName =
     "com.rainif.offworkcountdown.macappstore.local-widget"
@@ -177,6 +185,13 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
             snapshot: snapshot,
             nowMs: nowMs
         )
+        let refreshAtMs = min(
+            snapshot.expiresAtMs,
+            nowMs + 12 * 60 * 60 * 1_000
+        )
+        let reloadPolicy: TimelineReloadPolicy = .after(
+            Date(timeIntervalSince1970: Double(refreshAtMs) / 1_000)
+        )
         #else
         var timelineEntries = [
             OffWorkCountdownWidgetEntry(
@@ -196,9 +211,10 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                     )
                 }
         )
+        let reloadPolicy: TimelineReloadPolicy = .never
         #endif
-        // 到期时主动切到保守空态，不继续用旧班次猜算。宿主在状态变化时通过
-        // WidgetCenter.reloadTimelines 交付下一份快照，因此这里不轮询。
+        // 到期时主动切到保守空态，不继续用旧班次猜算。iOS 会在到期前周期性
+        // 重建轻量展示时间线；macOS 仍由宿主在状态变化时主动 reload。
         timelineEntries.append(
             OffWorkCountdownWidgetEntry(
                 date: Date(
@@ -208,7 +224,7 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                 locale: snapshot.locale
             )
         )
-        return Timeline(entries: timelineEntries, policy: .never)
+        return Timeline(entries: timelineEntries, policy: reloadPolicy)
     }
 
     #if os(iOS)
@@ -222,9 +238,17 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
         nowMs: Int64
     ) -> [OffWorkCountdownWidgetEntry] {
         let progressStepMs: Int64 = 5 * 60 * 1_000
+        // Keep a 36-hour buffer in the current timeline, while asking
+        // WidgetKit to rebuild it every 12 hours from the long-lived snapshot.
+        // This avoids handing WidgetKit a year of five-minute progress entries.
+        let presentationEndMs = min(
+            snapshot.expiresAtMs,
+            nowMs + 36 * 60 * 60 * 1_000
+        )
         return snapshot.presentationEntries(
             startingAtMs: nowMs,
-            progressStepMs: progressStepMs
+            progressStepMs: progressStepMs,
+            endingAtMs: presentationEndMs
         ).map { widgetEntry($0, locale: snapshot.locale) }
     }
 
@@ -389,7 +413,7 @@ public struct OffWorkCountdownWidgetView: View {
                 // thing. These are the names already shipping as the Home
                 // Screen app label, so they are translations that have been
                 // through review rather than ones invented here.
-                Text(WidgetCopy.text("appShortName", locale: entry.locale))
+                Text(verbatim: widgetProductName(locale: entry.locale))
             } icon: {
                 Image(systemName: accessoryGlyph(snapshotEntry.phase))
             }
@@ -462,7 +486,7 @@ public struct OffWorkCountdownWidgetView: View {
             // Short name here too: the header sits beside a 25pt badge on a
             // small widget, and the full name wrapped onto a second line in
             // every language that is not CJK.
-            Text(WidgetCopy.text("appShortName", locale: entry.locale))
+            Text(verbatim: widgetProductName(locale: entry.locale))
                 .font(.caption.weight(.bold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
@@ -745,8 +769,7 @@ public struct OffWorkCountdownWidget: Widget {
         }
         .configurationDisplayName(
             Text(
-                verbatim: WidgetCopy.text(
-                    "offWorkCountdown",
+                verbatim: widgetProductName(
                     locale: WidgetCopy.currentLocaleIdentifier
                 )
             )

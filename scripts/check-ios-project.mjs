@@ -46,6 +46,14 @@ const widgetSource = readFileSync(
   "src-mobile/ios/App/WidgetExtension/OffWorkWidgets.swift",
   "utf8"
 );
+const iosBrandSource = readFileSync(
+  "src-mobile/ios/App/App/Native/DesignSystem/OWCDesignSystem.swift",
+  "utf8"
+);
+const sharedWidgetSource = readFileSync(
+  "src-tauri/macos-widget/Sources/OffWorkCountdownWidgetUI/OffWorkCountdownWidget.swift",
+  "utf8"
+);
 const widgetEntitlements = readFileSync(
   "src-mobile/ios/App/WidgetExtension/Widget.entitlements",
   "utf8"
@@ -157,14 +165,68 @@ if (
 ) {
   fail("The Universal Purchase App Icon must be a 1024x1024 PNG without alpha.");
 }
-for (const suffix of ["", "-1", "-2"]) {
-  if (
-    !existsSync(
-      `src-mobile/ios/App/App/Assets.xcassets/Splash.imageset/splash-dark-2732x2732${suffix}.png`
+// The launch screen uses the same background-free mark as WidgetKit. Its
+// luminosity appearance keeps the clock hand legible on both system
+// backgrounds without putting a second rounded app-icon tile inside the page.
+const launchScreen = readFileSync(
+  "src-mobile/ios/App/App/Base.lproj/LaunchScreen.storyboard",
+  "utf8"
+);
+if (
+  launchScreen.includes('image="BrandIcon"') ||
+  launchScreen.includes('image="LaunchMark"') ||
+  launchScreen.includes('image="LaunchMarkLight"') ||
+  launchScreen.includes('image="LaunchMarkDark"')
+) {
+  fail(
+    "The iOS Launch Screen must draw BrandMark, not a backed app icon or a trait-hidden pair."
+  );
+}
+if (!launchScreen.includes('image="BrandMark"')) {
+  fail("The iOS Launch Screen must include BrandMark.");
+}
+if (!launchScreen.includes('text="DoneAt"') || launchScreen.includes("Off Work Countdown")) {
+  fail("The iOS Launch Screen must show only the DoneAt short name, without an English subtitle.");
+}
+if (
+  !iosInfo.includes("<key>CFBundleDisplayName</key>\n\t<string>DoneAt</string>") ||
+  !iosInfo.includes("<key>CFBundleName</key>\n\t<string>DoneAt</string>") ||
+  !widgetInfo.includes("<key>CFBundleDisplayName</key>\n\t<string>DoneAt</string>") ||
+  !widgetInfo.includes("<key>CFBundleName</key>\n\t<string>DoneAt</string>") ||
+  !iosBrandSource.includes('static let shortName = "DoneAt"') ||
+  !sharedWidgetSource.includes('#if os(iOS)\n    "DoneAt"')
+) {
+  fail("Every iOS outer surface must use the DoneAt short name without renaming the macOS product.");
+}
+const localizedInfoNames = readdirSync("src-mobile/ios/App/App")
+  .filter((entry) => entry.endsWith(".lproj"))
+  .map((entry) => `src-mobile/ios/App/App/${entry}/InfoPlist.strings`)
+  .filter(existsSync);
+if (
+  localizedInfoNames.length !== 19 ||
+  localizedInfoNames.some((path) => {
+    const strings = readFileSync(path, "utf8");
+    return !strings.includes('"CFBundleDisplayName" = "DoneAt";') ||
+      !strings.includes('"CFBundleName" = "DoneAt";');
+  })
+) {
+  fail("All 19 iOS InfoPlist localizations must expose DoneAt on the Home Screen.");
+}
+const brandMark = JSON.parse(
+  readFileSync(
+    "src-mobile/ios/App/App/Assets.xcassets/BrandMark.imageset/Contents.json",
+    "utf8"
+  )
+);
+if (
+  !brandMark.images.some((image) =>
+    (image.appearances ?? []).some(
+      (appearance) =>
+        appearance.appearance === "luminosity" && appearance.value === "dark"
     )
-  ) {
-    fail("The iOS Launch Screen must include dark appearance assets.");
-  }
+  )
+) {
+  fail("BrandMark must keep a dark appearance for WidgetKit and Live Activities.");
 }
 const appAssetEntries = readdirSync(
   "src-mobile/ios/App/App/Assets.xcassets"

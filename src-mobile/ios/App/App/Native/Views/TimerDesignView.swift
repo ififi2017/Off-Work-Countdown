@@ -31,14 +31,17 @@ struct TimerDesignView: View {
         self.animatesPhaseChanges = animatesPhaseChanges
     }
 
+
     var body: some View {
         Group {
             if let timelineDate {
                 timerContent(at: timelineDate)
-            } else {
-                TimelineView(.periodic(from: .now, by: timelineActive ? 1 : 86_400)) { timeline in
+            } else if timelineActive, store.visualPhase(at: .now).usesLiveTimeline {
+                TimelineView(.periodic(from: .now, by: 1)) { timeline in
                     timerContent(at: timeline.date)
                 }
+            } else {
+                timerContent(at: .now)
             }
         }
         .navigationTitle("")
@@ -71,40 +74,16 @@ struct TimerDesignView: View {
 
     @ViewBuilder
     private func timerContent(at date: Date) -> some View {
-        let snapshot = store.countdownStarted ? store.snapshot(at: date) : nil
-        let phase = TimerVisualPhase.resolve(
-            countdownStarted: store.countdownStarted,
-            snapshot: snapshot,
-            forceToday: store.forceToday
-        )
+        let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
+        let phase = store.visualPhase(snapshot: snapshot, at: date)
 
         Group {
             switch phase {
-            case .setup:
-                ShiftSetupView(store: store, onOpenSettings: openSettings)
-            case .running:
+            case .unscheduled:
+                UnscheduledTimerView(store: store) { openSettings(.lunch) }
+            case .running, .lunch, .overtime, .clockIn:
                 if let snapshot {
                     RunningTimerDesignView(
-                        store: store,
-                        snapshot: snapshot,
-                        now: date,
-                        showShare: $showShare,
-                        showOvertime: $showOvertime
-                    )
-                }
-            case .lunch:
-                if let snapshot {
-                    LunchBreakDesignView(
-                        store: store,
-                        snapshot: snapshot,
-                        now: date,
-                        showShare: $showShare,
-                        showOvertime: $showOvertime
-                    )
-                }
-            case .overtime:
-                if let snapshot {
-                    OvertimeDesignView(
                         store: store,
                         snapshot: snapshot,
                         now: date,
@@ -126,14 +105,14 @@ struct TimerDesignView: View {
                     RestDayDesignView(
                         store: store,
                         snapshot: snapshot,
-                        onOpenSettings: openSettings
-                    )
+                        now: date
+                    ) { openSettings(.lunch) }
                 }
             case .rulesError:
                 rulesError
             }
         }
-        .id(phase)
+        .id(phase.surfaceIdentity)
         .transition(phaseTransition)
         // See SettingsDesignView: phones fill their width, `pageInset` sets the
         // margin. The wide cap is for iPad, where a full-width countdown would
@@ -168,12 +147,16 @@ struct TimerDesignView: View {
         VStack(spacing: 14) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.title)
-            Text(store.t("countdownRulesUnavailable"))
+            Text(store.t("rulesErrorBanner"))
                 .font(.subheadline)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
-            Button(store.t("return")) { store.stopCountdown() }
-                .buttonStyle(OWCPrimaryButtonStyle())
+            Button {
+                openSettings(nil)
+            } label: {
+                Label(store.t("settings"), systemImage: "slider.horizontal.3")
+            }
+            .buttonStyle(OWCSecondaryButtonStyle())
         }
         .padding(20)
     }
@@ -192,23 +175,41 @@ private struct RunningTimerDesignView: View {
     @State private var timelineTop: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var onBreak: Bool { snapshot.activeBreakEndAtMs != nil }
-    private var overtime: Bool {
-        snapshot.overtimeEndAtMs != nil && snapshot.plannedEndAtMs <= now.timeIntervalSince1970 * 1_000
-    }
+    private var beforeStart: Bool { snapshot.isBeforeStart(at: now) }
+    private var onBreak: Bool { snapshot.isOnBreak }
+    private var overtime: Bool { snapshot.isOvertimeActive(at: now) }
 
     var body: some View {
         VStack(spacing: 0) {
             OWCAppHeader(store: store)
+
+            if store.isForcedWorkday(snapshot) {
+                ManualTimingBanner(store: store)
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.top, 8)
+            } else if !beforeStart, let note = store.earlyClockInNote(at: now) {
+                EarlyClockInBanner(store: store, note: note)
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.top, 8)
+            }
 
             GeometryReader { proxy in
                 ScrollView {
                     VStack(spacing: 0) {
                         VStack(spacing: 0) {
                             if overtime {
-                                Text(store.t("overtimeTitle"))
-                                    .font(.subheadline.weight(.semibold))
+                                Label(
+                                    store.t(
+                                        "overtimeUntil",
+                                        values: ["time": store.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
+                                    ),
+                                    systemImage: "clock.badge.plus"
+                                )
+                                    .font(.footnote.weight(.semibold))
                                     .foregroundStyle(OWCDesign.orangeDeep)
+                                    .padding(.horizontal, 12)
+                                    .frame(height: 26)
+                                    .background(OWCDesign.orange.opacity(0.12), in: Capsule())
                                     .padding(.bottom, 8)
                             }
                             Text(store.formatDuration(displayRemaining))
@@ -218,22 +219,33 @@ private struct RunningTimerDesignView: View {
                                 .minimumScaleFactor(0.62)
                                 .environment(\.layoutDirection, .leftToRight)
                                 .owcCountdownTextTransition(milliseconds: displayRemaining)
-                            Text(caption)
-                                .font(.subheadline)
-                                .foregroundStyle(OWCDesign.secondary)
-                                .padding(.top, 8)
+                            Group {
+                                if onBreak {
+                                    Label(caption, systemImage: "cup.and.saucer")
+                                } else {
+                                    Text(caption)
+                                }
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(OWCDesign.secondary)
+                            .padding(.top, 8)
                         }
                         .padding(.horizontal, OWCDesign.contentInset)
                         .padding(.top, overtime ? 12 : 16)
 
-                        OWCProgressMeter(progress: snapshot.progress, label: store.t("progress"), overtime: overtime, paused: onBreak)
+                        OWCProgressMeter(
+                            progress: meterProgress,
+                            label: store.t("progress"),
+                            overtime: overtime,
+                            paused: onBreak
+                        )
                             .padding(.horizontal, OWCDesign.contentInset)
                             .padding(.top, 7)
-                            .animation(.linear(duration: 0.9), value: snapshot.progress)
+                            .animation(.linear(duration: 0.9), value: meterProgress)
 
                         if !timelineExpanded {
                             VStack(alignment: .leading, spacing: 0) {
-                                if store.scheduleMode != .off {
+                                if store.followsSchedule(at: now) {
                                     OWCSectionHeader(title: store.t("summaryEstimateNote"))
                                 }
                                 summaryCard
@@ -274,22 +286,36 @@ private struct RunningTimerDesignView: View {
 
             TimerActionBar(
                 store: store,
-                overtimeActive: overtime,
+                snapshot: snapshot,
+                now: now,
                 showShare: $showShare,
                 showOvertime: $showOvertime
             )
         }
     }
 
+    /// Before the shift begins. The countdown is armed but nothing has started,
+    /// and saying "8 hours left in today's shift" at 08:30 is simply not true —
+    /// none of it has been worked yet. The screen counts to clock-in instead,
+    /// and flips to the shift itself when the hour arrives, with nothing for the
+    /// user to press either way.
     private var caption: String {
+        if beforeStart { return store.t("nextShiftLabelShort") }
         if onBreak { return store.t("lunchInProgress") }
         if overtime { return store.t("overtimeTimeLeftCaption") }
         return store.t("timeLeftCaption")
     }
 
     private var displayRemaining: Double {
-        guard onBreak else { return snapshot.remainingMs }
-        return max(0, (snapshot.activeBreakEndAtMs ?? now.timeIntervalSince1970 * 1_000) - now.timeIntervalSince1970 * 1_000)
+        beforeStart
+            ? store.countdownToClockInMs(snapshot: snapshot, at: now)
+            : snapshot.heroRemainingMs(at: now)
+    }
+
+    private var meterProgress: Double {
+        beforeStart
+            ? store.countdownToClockInProgress(snapshot: snapshot)
+            : snapshot.progress
     }
 
     private var summaryTransition: AnyTransition {
@@ -298,14 +324,14 @@ private struct RunningTimerDesignView: View {
 
     private var summaryCard: some View {
         OWCGroupCard {
-            OWCRow(icon: "clock", title: store.t("todaysShift"), isLast: !store.salaryEnabled && store.scheduleMode == .off) {
+            OWCRow(icon: "clock", title: store.t("todaysShift"), isLast: !store.salaryEnabled && !store.followsSchedule(at: now)) {
                 Text("\(store.formatTime(snapshot.startDate)) – \(store.formatTime(snapshot.endDate))")
                     .font(.body.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
                     .environment(\.layoutDirection, .leftToRight)
             }
             if store.salaryEnabled {
-            OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: store.scheduleMode == .off) {
+            OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: !store.followsSchedule(at: now)) {
                 HStack(spacing: 8) {
                     Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
                         .font(.body.weight(.semibold).monospacedDigit())
@@ -313,7 +339,7 @@ private struct RunningTimerDesignView: View {
                 }
             }
             }
-            if store.scheduleMode != .off {
+            if store.followsSchedule(at: now) {
             OWCRow(icon: "calendar", title: store.t("summaryThisWeek")) {
                 Text(summaryText(weekSummary))
                     .font(.subheadline.monospacedDigit())

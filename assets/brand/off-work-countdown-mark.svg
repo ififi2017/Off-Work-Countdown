@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Off Work Countdown mark</title>
+  <desc id="desc">An open clock at five with a warm dot moving into personal time.</desc>
+  <!-- Hands carry the light/dark swap; the ring and the dot read on both. -->
+  <path d="M415 793.8 A 298 298 0 1 1 804.5 568.9"
+        fill="none" stroke="#F45A1E" stroke-width="110" stroke-linecap="round"/>
+  <path d="M512 347 L512 512 L573 617.7"
+        fill="none" stroke="#2B1935" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="664.5" cy="776.1" r="86" fill="#F45A1E"/>
+</svg>

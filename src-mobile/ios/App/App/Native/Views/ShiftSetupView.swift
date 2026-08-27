@@ -26,6 +26,15 @@ struct ShiftSetupView: View {
                 .padding(.top, OWCDesign.heroGap)
                 .padding(.bottom, OWCDesign.sectionGap)
 
+            // The way back from an early clock-off, and the only way back.
+            // Deliberately not a side effect of editing the schedule: changing
+            // tomorrow's hours must never quietly resurrect today.
+            if let note = store.earlyClockOffNote() {
+                EarlyClockOffBanner(store: store, note: note)
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.bottom, OWCDesign.sectionGap)
+            }
+
             ScrollView {
                 ShiftSetupTimelineView(
                     store: store,
@@ -52,10 +61,10 @@ struct ShiftSetupView: View {
                 store: store,
                 title: store.t(field == .start ? "startTime" : "endTime"),
                 minutes: Binding(
-                    get: { field == .start ? store.startMinutes : store.endMinutes },
+                    get: { field == .start ? store.displayedStartMinutes : store.displayedEndMinutes },
                     set: { value in
-                        if field == .start { store.startMinutes = value }
-                        else { store.endMinutes = value }
+                        if field == .start { store.setDisplayedStartMinutes(value) }
+                        else { store.setDisplayedEndMinutes(value) }
                     }
                 )
             )

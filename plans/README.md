@@ -8,11 +8,13 @@
 | 编号 | 计划 | 起草 | 状态 | 备注 |
 | --- | --- | --- | --- | --- |
 | 001 | [统一并收敛全产品动效](001-motion-improvement.md) | 2026-08-24 | TODO | iOS 与 Web/Desktop 两条独立工作流，基准提交 `f10c7f9` |
-| 002 | [工作占比、人生视图与专注](002-records-life-focus.md) | 2026-08-25 | DRAFT | 第一次引入持久化；排班是底图，基准提交 `6576842` |
+| 002 | [工作占比、人生视图与专注](002-records-life-focus.md) | 2026-08-25 | DRAFT | 第一次引入持久化；排班是底图；**须等 007** |
 | 003 | [桌面端实施（Tauri v2）](003-tauri-desktop.md) | 2026-08-08 | IN PROGRESS | 3.0.2 已发布；P2–P4 与安装说明待实机验收，P6 待办 |
 | 004 | [班次模型重构与本地化补齐](004-shift-model-3.1.0.md) | 2026-08-12 | DONE | 3.1.0 已发布，当前 3.1.7 |
 | 005 | [产品 3.0 升级](005-product-3.0.md) | 2026-08-08 | DONE | M1–M5 完成；M6 分发改由 MSIX 计划接管 |
-| 006 | [免费下载、试用与订阅](006-free-trial-subscription.md) | 2026-08-26 | DRAFT | 从 002 拆出；通用购买把 iOS 与 Mac App Store 绑在一个价格上 |
+| 006 | [免费下载、试用与订阅](006-free-trial-subscription.md) | 2026-08-26 | DRAFT | 从 002 拆出；通用购买把 iOS 与 Mac App Store 绑在一个价格上；**须等 007** |
+| 007 | [iOS 订阅前稳定版](007-ios-stable-before-subscription.md) | 2026-08-27 | READY FOR DEVICE QA | 3.1.7 = 计时重做 + DoneAt 外表面；Grill 已锁；真机验收后打 TestFlight |
+| 008 | [DoneAt 品牌换装与 iOS 外表面](008-brand-doneat.md) | 2026-08-27 | HANDOFF | 与 007 同分支；图标/mark 已落地；启动页已是 DoneAt；其余短名见 007 Grill；着色与真机复测待做 |
 
 ## 仍在 `docs/` 的活计划
 

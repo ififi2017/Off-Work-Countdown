@@ -1,26 +1,24 @@
 import SwiftUI
 
-/// The primary action, shared by the portrait, landscape and iPad setup layouts.
+/// Starts a manual session: a rest-day override, or an unscheduled day.
 ///
-/// Tapping on a day the schedule calls a rest day arms the button instead of
-/// starting; a second tap within five seconds commits. `.task(id:)` owns the
-/// disarm timer, so SwiftUI cancels it when the state changes or the view goes
-/// away — the three hand-rolled `Task` handles this replaced each needed their
-/// own `cancel()` in `onDisappear`, and one of them was easy to forget.
+/// Tapping arms the button instead of starting; a second tap within five
+/// seconds commits. `.task(id:)` owns the disarm timer.
 struct ShiftStartButton: View {
     let store: OffWorkStore
-    // Declared before the closure so callers can use trailing-closure syntax.
     var minimumHeight: CGFloat = 46
     let onOpenLunchSettings: () -> Void
 
     @State private var armState = StartArmState.idle
     @State private var showInvalidLunch = false
+    @State private var warningPulse = 0
+    @State private var appliedPulse = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Button(action: start) {
             Label(
-                armState == .armed ? store.t("nonWorkdayTapAgain") : store.t("startCountdown"),
+                store.t(armState == .armed ? "nonWorkdayTapAgain" : "manualTiming"),
                 systemImage: armState == .armed ? "exclamationmark.triangle.fill" : "play.fill"
             )
             .lineLimit(2)
@@ -32,9 +30,11 @@ struct ShiftStartButton: View {
             color: armState == .armed ? OWCDesign.orangeDeep : OWCDesign.accent,
             minimumHeight: minimumHeight
         ))
+        .contentShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.45 : 1)
-        .sensoryFeedback(.warning, trigger: armState)
+        .sensoryFeedback(.warning, trigger: warningPulse)
+        .sensoryFeedback(.success, trigger: appliedPulse)
         .task(id: armState) {
             guard armState == .armed else { return }
             try? await Task.sleep(for: .seconds(5))
@@ -53,7 +53,6 @@ struct ShiftStartButton: View {
 
     private var isDisabled: Bool {
         store.startMinutes == store.endMinutes
-            || (store.scheduleMode == .classic && store.workdays.isEmpty)
     }
 
     private func start() {
@@ -61,13 +60,15 @@ struct ShiftStartButton: View {
             showInvalidLunch = true
             return
         }
-        let isNonWorkday = store.scheduleMode != .off && store.snapshot()?.isWorkday == false
-        if isNonWorkday, armState == .idle {
+        if armState == .idle {
+            warningPulse += 1
             withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection) {
                 armState = .armed
             }
             return
         }
-        store.startCountdown(force: isNonWorkday)
+        let forceRestDay = store.followsSchedule
+        store.startCountdown(force: forceRestDay)
+        appliedPulse += 1
     }
 }

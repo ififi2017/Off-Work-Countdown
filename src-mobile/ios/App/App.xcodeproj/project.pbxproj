@@ -50,6 +50,7 @@
 		E000001A000000000000001A /* UpcomingTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000001A000000000000001A /* UpcomingTimelineView.swift */; };
 		E000001F000000000000001F /* UpcomingTimelineEventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000001F000000000000001F /* UpcomingTimelineEventRow.swift */; };
 		E00000200000000000000020 /* TimerActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000200000000000000020 /* TimerActionBar.swift */; };
+		6BD818DF3D90C7175FC64B96 /* ClockOffEarlyLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E67BB1AA7F2D01B5263CE7 /* ClockOffEarlyLabel.swift */; };
 		E00000230000000000000023 /* OffWorkStore+Labels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000230000000000000023 /* OffWorkStore+Labels.swift */; };
 		E00000240000000000000024 /* SetupTimeField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000240000000000000024 /* SetupTimeField.swift */; };
 		E00000250000000000000025 /* StartArmState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000250000000000000025 /* StartArmState.swift */; };
@@ -67,6 +68,11 @@
 		E00000320000000000000032 /* OffWorkStore+ShiftPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000320000000000000032 /* OffWorkStore+ShiftPreview.swift */; };
 		E00000330000000000000033 /* ShiftPreviewRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000330000000000000033 /* ShiftPreviewRow.swift */; };
 		E00000340000000000000034 /* BiometricGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000340000000000000034 /* BiometricGate.swift */; };
+		E00000350000000000000035 /* RestDayUpcomingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000350000000000000035 /* RestDayUpcomingView.swift */; };
+		E00000360000000000000036 /* DraggableBrandIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000360000000000000036 /* DraggableBrandIcon.swift */; };
+		E00000370000000000000037 /* OWCBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000370000000000000037 /* OWCBrandMark.swift */; };
+		E00000380000000000000038 /* OnboardingScheduleDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */; };
+		E00000390000000000000039 /* CelebratingBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000390000000000000039 /* CelebratingBrandMark.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -164,6 +170,7 @@
 		F000001A000000000000001A /* UpcomingTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpcomingTimelineView.swift; path = Native/Views/UpcomingTimelineView.swift; sourceTree = "<group>"; };
 		F000001F000000000000001F /* UpcomingTimelineEventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpcomingTimelineEventRow.swift; path = Native/Views/UpcomingTimelineEventRow.swift; sourceTree = "<group>"; };
 		F00000200000000000000020 /* TimerActionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerActionBar.swift; path = Native/Views/TimerActionBar.swift; sourceTree = "<group>"; };
+		62E67BB1AA7F2D01B5263CE7 /* ClockOffEarlyLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClockOffEarlyLabel.swift; path = Native/Views/ClockOffEarlyLabel.swift; sourceTree = "<group>"; };
 		F00000230000000000000023 /* OffWorkStore+Labels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "OffWorkStore+Labels.swift"; path = "Native/Models/OffWorkStore+Labels.swift"; sourceTree = "<group>"; };
 		F00000240000000000000024 /* SetupTimeField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SetupTimeField.swift; path = Native/Views/SetupTimeField.swift; sourceTree = "<group>"; };
 		F00000250000000000000025 /* StartArmState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StartArmState.swift; path = Native/Views/StartArmState.swift; sourceTree = "<group>"; };
@@ -181,6 +188,11 @@
 		F00000320000000000000032 /* OffWorkStore+ShiftPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "OffWorkStore+ShiftPreview.swift"; path = "Native/Models/OffWorkStore+ShiftPreview.swift"; sourceTree = "<group>"; };
 		F00000330000000000000033 /* ShiftPreviewRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftPreviewRow.swift; path = Native/Views/ShiftPreviewRow.swift; sourceTree = "<group>"; };
 		F00000340000000000000034 /* BiometricGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BiometricGate.swift; path = Native/Services/BiometricGate.swift; sourceTree = "<group>"; };
+		F00000350000000000000035 /* RestDayUpcomingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RestDayUpcomingView.swift; path = Native/Views/RestDayUpcomingView.swift; sourceTree = "<group>"; };
+		F00000360000000000000036 /* DraggableBrandIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DraggableBrandIcon.swift; path = Native/Views/DraggableBrandIcon.swift; sourceTree = "<group>"; };
+		F00000370000000000000037 /* OWCBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCBrandMark.swift; path = Native/Views/OWCBrandMark.swift; sourceTree = "<group>"; };
+		F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingScheduleDetailsView.swift; path = Native/Views/OnboardingScheduleDetailsView.swift; sourceTree = "<group>"; };
+		F00000390000000000000039 /* CelebratingBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CelebratingBrandMark.swift; path = Native/Views/CelebratingBrandMark.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -240,6 +252,11 @@
 				F00000140000000000000014 /* OWCSystemBackSwipeBridge.swift */,
 				F00000020000000000000002 /* CountdownRules.swift */,
 				F00000030000000000000003 /* OffWorkStore.swift */,
+				F00000360000000000000036 /* DraggableBrandIcon.swift */,
+				F00000370000000000000037 /* OWCBrandMark.swift */,
+				F00000390000000000000039 /* CelebratingBrandMark.swift */,
+				F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */,
+				F00000350000000000000035 /* RestDayUpcomingView.swift */,
 				F00000340000000000000034 /* BiometricGate.swift */,
 				F00000330000000000000033 /* ShiftPreviewRow.swift */,
 				F00000320000000000000032 /* OffWorkStore+ShiftPreview.swift */,
@@ -271,6 +288,7 @@
 				F000001A000000000000001A /* UpcomingTimelineView.swift */,
 				F000001F000000000000001F /* UpcomingTimelineEventRow.swift */,
 				F00000200000000000000020 /* TimerActionBar.swift */,
+				62E67BB1AA7F2D01B5263CE7 /* ClockOffEarlyLabel.swift */,
 				F000000D000000000000000D /* TimerDesignView.swift */,
 				F00000110000000000000011 /* TimerStatusViews.swift */,
 				F000000E000000000000000E /* SettingsDesignView.swift */,
@@ -470,6 +488,11 @@
 				E00000180000000000000018 /* OWCCountdownTextTransition.swift in Sources */,
 				E00000020000000000000002 /* CountdownRules.swift in Sources */,
 				E00000030000000000000003 /* OffWorkStore.swift in Sources */,
+				E00000360000000000000036 /* DraggableBrandIcon.swift in Sources */,
+				E00000370000000000000037 /* OWCBrandMark.swift in Sources */,
+				E00000390000000000000039 /* CelebratingBrandMark.swift in Sources */,
+				E00000380000000000000038 /* OnboardingScheduleDetailsView.swift in Sources */,
+				E00000350000000000000035 /* RestDayUpcomingView.swift in Sources */,
 				E00000340000000000000034 /* BiometricGate.swift in Sources */,
 				E00000330000000000000033 /* ShiftPreviewRow.swift in Sources */,
 				E00000320000000000000032 /* OffWorkStore+ShiftPreview.swift in Sources */,
@@ -502,6 +525,7 @@
 				E000001A000000000000001A /* UpcomingTimelineView.swift in Sources */,
 				E000001F000000000000001F /* UpcomingTimelineEventRow.swift in Sources */,
 				E00000200000000000000020 /* TimerActionBar.swift in Sources */,
+				6BD818DF3D90C7175FC64B96 /* ClockOffEarlyLabel.swift in Sources */,
 				E000000D000000000000000D /* TimerDesignView.swift in Sources */,
 				E000000E000000000000000E /* SettingsDesignView.swift in Sources */,
 				E000000F000000000000000F /* SettingsDetailDesignViews.swift in Sources */,
@@ -720,7 +744,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				INFOPLIST_FILE = App/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -746,7 +770,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				INFOPLIST_FILE = App/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -771,7 +795,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = WidgetExtension/Widget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				INFOPLIST_FILE = WidgetExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -795,7 +819,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = WidgetExtension/Widget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				INFOPLIST_FILE = WidgetExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (

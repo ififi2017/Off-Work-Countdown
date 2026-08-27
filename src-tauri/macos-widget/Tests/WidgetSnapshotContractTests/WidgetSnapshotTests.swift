@@ -130,3 +130,35 @@ func expandsPresentationTimeline() {
     #expect(entries.map(\.progressAtDate) == [30, 40, 50, 60])
     #expect(entries.last?.phase == .break)
 }
+
+@Test("Presentation expansion stays inside the requested refresh window")
+func boundsPresentationTimeline() {
+    let working = WidgetTimelineEntry(
+        dateMs: 1_000,
+        validUntilMs: 10_000,
+        phase: .working,
+        labelKey: "widgetWorking",
+        countdownKind: .workRemaining,
+        countdownValueAtDateMs: 9_000,
+        countdownTargetAtMs: 10_000,
+        remainingEffectiveMsAtDateMs: 9_000,
+        progressAtDate: 10,
+        nextBoundaryAtMs: 10_000
+    )
+    let snapshot = WidgetSnapshot(
+        schemaVersion: widgetSnapshotSchemaVersion,
+        generatedAtMs: 1_000,
+        expiresAtMs: 10_000,
+        locale: "en",
+        shift: nil,
+        entries: [working]
+    )
+
+    let entries = snapshot.presentationEntries(
+        startingAtMs: 2_000,
+        progressStepMs: 1_000,
+        endingAtMs: 5_000
+    )
+
+    #expect(entries.map(\.dateMs) == [2_000, 3_000, 4_000])
+}

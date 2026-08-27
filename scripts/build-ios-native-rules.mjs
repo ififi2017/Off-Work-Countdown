@@ -58,23 +58,147 @@ export function createIOSNativeRulesBundle() {
   const reminders = require("./reminders");
   const summary = require("./summary");
 
-  function buildShift(input) {
-    return countdown.buildShiftTimeline(
+  function shiftOptions(input) {
+    return {
+      breakStartTime: input.breakStartTime || null,
+      breakDurationMinutes: input.breakDurationMinutes || 0,
+      overtimeEndAtMs: input.overtimeEndAtMs || null,
+    };
+  }
+
+  function resolveCurrentShift(input) {
+    const options = shiftOptions(input);
+    const live = countdown.buildShiftTimeline(
       input.startTime,
       input.endTime,
       new Date(input.nowMs),
-      {
-        breakStartTime: input.breakStartTime || null,
-        breakDurationMinutes: input.breakDurationMinutes || 0,
-        overtimeEndAtMs: input.overtimeEndAtMs || null,
-      }
+      options
     );
+    const ended = countdown.findEndedShiftOnEndCalendarDay({
+      startTime: input.startTime,
+      endTime: input.endTime,
+      nowMs: input.nowMs,
+      workdays: input.workdays,
+      schedule: input.schedule || null,
+      options,
+      forcedWorkdayStartMs: input.forcedWorkdayStartMs || null,
+    });
+    const liveStart = countdown.getShiftStartAtMs(live);
+    const liveEnd = countdown.getShiftEndAtMs(live);
+    // Settlement of last night's overnight only applies until tonight's
+    // window actually starts. A rest-day 22:00–06:00 on Saturday would
+    // otherwise stay pinned to Friday's 06:00 end all evening, including a
+    // forced Saturday night run.
+    const liveIsOpen = input.nowMs >= liveStart && input.nowMs < liveEnd;
+    if (
+      ended &&
+      countdown.getShiftStartAtMs(ended) !== liveStart &&
+      !liveIsOpen
+    ) {
+      return ended;
+    }
+    return live;
+  }
+
+  function startOfLocalDayMs(date) {
+    const day = new Date(date);
+    day.setHours(0, 0, 0, 0);
+    return day.getTime();
+  }
+
+  function isForcedShift(input, shift) {
+    if (!(typeof input.forcedWorkdayStartMs === "number")) return false;
+    return startOfLocalDayMs(new Date(countdown.getShiftStartAtMs(shift))) ===
+      startOfLocalDayMs(new Date(input.forcedWorkdayStartMs));
+  }
+
+  function isScheduledShift(input, shift) {
+    return countdown.isScheduledWorkday(
+      new Date(countdown.getShiftStartAtMs(shift)),
+      input.workdays,
+      input.schedule || null
+    );
+  }
+
+  function isActualShift(input, shift) {
+    return isScheduledShift(input, shift) || isForcedShift(input, shift);
+  }
+
+  // The rest-day ring starts after the previous shift's settlement day and
+  // advances monotonically across the rest interval. On the target workday it
+  // becomes the ordinary midnight-to-clock-in ring, so 00:08 before 09:00
+  // reads about 1.5%, not 98.5%.
+  function countdownAnchorAtMs(input, targetAtMs) {
+    const targetDay = new Date(targetAtMs);
+    targetDay.setHours(0, 0, 0, 0);
+
+    for (let offset = 1; offset <= 366; offset += 1) {
+      const candidateDay = new Date(targetDay);
+      candidateDay.setDate(candidateDay.getDate() - offset);
+      const candidateStart = countdown.atTime(candidateDay, input.startTime);
+      if (!countdown.isScheduledWorkday(
+        candidateStart,
+        input.workdays,
+        input.schedule || null
+      )) {
+        continue;
+      }
+
+      const previous = countdown.buildShiftTimeline(
+        input.startTime,
+        input.endTime,
+        candidateDay,
+        {
+          breakStartTime: input.breakStartTime || null,
+          breakDurationMinutes: input.breakDurationMinutes || 0,
+        }
+      );
+      const anchor = new Date(countdown.getShiftEndAtMs(previous));
+      anchor.setHours(0, 0, 0, 0);
+      anchor.setDate(anchor.getDate() + 1);
+      if (anchor.getTime() < targetAtMs) return anchor.getTime();
+    }
+    return targetDay.getTime();
+  }
+
+  function countdownProjection(input, shift, nextShift) {
+    const shiftStartAtMs = countdown.getShiftStartAtMs(shift);
+    const targetAtMs = input.nowMs < shiftStartAtMs && isActualShift(input, shift)
+      ? shiftStartAtMs
+      : nextShift
+        ? countdown.getShiftStartAtMs(nextShift)
+        : null;
+    if (!(typeof targetAtMs === "number") || targetAtMs <= input.nowMs) {
+      return { targetAtMs: null, anchorAtMs: null, progress: 0 };
+    }
+
+    const targetDayAtMs = startOfLocalDayMs(new Date(targetAtMs));
+    const isTargetWorkday = input.nowMs >= targetDayAtMs;
+    const anchorAtMs = isTargetWorkday
+      ? targetDayAtMs
+      : countdownAnchorAtMs(input, targetAtMs);
+    const progressEndAtMs = isTargetWorkday ? targetAtMs : targetDayAtMs;
+    const durationMs = progressEndAtMs - anchorAtMs;
+    const progress = durationMs > 0
+      ? Math.max(0, Math.min(100, (input.nowMs - anchorAtMs) / durationMs * 100))
+      : 0;
+    return { targetAtMs, anchorAtMs, progress };
+  }
+
+  function hasCurrentOrUpcomingBreak(input, shift) {
+    if (!isActualShift(input, shift)) return false;
+    if (input.nowMs >= countdown.getShiftEndAtMs(shift)) return false;
+    for (let index = 0; index < shift.segments.length - 1; index += 1) {
+      const gapEndAtMs = shift.segments[index + 1].startAtMs;
+      if (gapEndAtMs > input.nowMs) return true;
+    }
+    return false;
   }
 
   global.OWCNative = {
     snapshot(inputJSON) {
       const input = JSON.parse(inputJSON);
-      const shift = buildShift(input);
+      const shift = resolveCurrentShift(input);
       const nextShift = countdown.findNextShiftTimeline({
         startTime: input.startTime,
         endTime: input.endTime,
@@ -86,6 +210,7 @@ export function createIOSNativeRulesBundle() {
           breakDurationMinutes: input.breakDurationMinutes || 0,
         },
       });
+      const clockIn = countdownProjection(input, shift, nextShift);
       const dailySalary = countdown.getDailySalary(
         String(input.salaryAmount ?? ""),
         input.salaryType,
@@ -122,7 +247,59 @@ export function createIOSNativeRulesBundle() {
         nextShiftEndAtMs: nextShift
           ? countdown.getShiftEndAtMs(nextShift)
           : null,
+        countdownTargetAtMs: clockIn.targetAtMs,
+        countdownAnchorAtMs: clockIn.anchorAtMs,
+        countdownProgress: clockIn.progress,
       });
+    },
+
+    widgetShifts(inputJSON) {
+      const request = JSON.parse(inputJSON);
+      const input = request.rules;
+      const throughMs = Number(request.throughMs);
+      const maximumCount = Math.max(0, Math.floor(request.maximumCount || 0));
+      const current = countdown.buildShiftTimeline(
+        input.startTime,
+        input.endTime,
+        new Date(input.nowMs),
+        shiftOptions(input)
+      );
+      const shifts = [];
+      let afterMs = Math.max(input.nowMs, countdown.getShiftEndAtMs(current));
+
+      while (shifts.length < maximumCount) {
+        const shift = countdown.findNextShiftTimeline({
+          startTime: input.startTime,
+          endTime: input.endTime,
+          workdays: input.workdays,
+          schedule: input.schedule || null,
+          afterMs,
+          options: {
+            breakStartTime: input.breakStartTime || null,
+            breakDurationMinutes: input.breakDurationMinutes || 0,
+          },
+        });
+        if (!shift) break;
+
+        const startAtMs = countdown.getShiftStartAtMs(shift);
+        const endAtMs = countdown.getShiftEndAtMs(shift);
+        shifts.push({
+          segments: shift.segments,
+          startAtMs,
+          endAtMs,
+          plannedEndAtMs: shift.plannedEndAtMs,
+          overtimeEndAtMs: shift.overtimeEndAtMs,
+          durationMs: countdown.getShiftDurationMs(shift),
+          countdownAnchorAtMs: countdownAnchorAtMs(input, startAtMs),
+        });
+        // Include the first shift beyond the horizon as a countdown target.
+        // Swift caps its interval at snapshot expiry and does not render that
+        // shift, but the preceding rest days still count toward a real date.
+        if (startAtMs >= throughMs) break;
+        if (endAtMs <= afterMs) break;
+        afterMs = endAtMs;
+      }
+      return JSON.stringify(shifts);
     },
 
     summarize(inputJSON) {
@@ -148,7 +325,7 @@ export function createIOSNativeRulesBundle() {
 
     reminders(inputJSON) {
       const input = JSON.parse(inputJSON);
-      const shift = buildShift(input);
+      const shift = resolveCurrentShift(input);
       const nextShift = countdown.findNextShiftTimeline({
         startTime: input.startTime,
         endTime: input.endTime,
@@ -178,7 +355,34 @@ export function createIOSNativeRulesBundle() {
     validateBreak(inputJSON) {
       const input = JSON.parse(inputJSON);
       if (!input.breakStartTime || !(input.breakDurationMinutes > 0)) return true;
-      return buildShift(input).segments.length > 1;
+      return countdown.buildShiftTimeline(
+        input.startTime,
+        input.endTime,
+        new Date(input.nowMs),
+        shiftOptions(input)
+      ).segments.length > 1;
+    },
+
+    shouldPromptApplyToday(requestJSON) {
+      const request = JSON.parse(requestJSON);
+      const current = resolveCurrentShift(request.current);
+      const candidate = resolveCurrentShift(request.candidate);
+
+      if (request.kind === "lunch") {
+        return hasCurrentOrUpcomingBreak(request.current, current) ||
+          hasCurrentOrUpcomingBreak(request.candidate, candidate);
+      }
+
+      const currentIsScheduled = isScheduledShift(request.current, current);
+      if (!currentIsScheduled) return Boolean(request.schedulePatternChanged);
+
+      // A running or upcoming scheduled shift can still be changed today.
+      if (request.current.nowMs < countdown.getShiftEndAtMs(current)) return true;
+
+      // Once the old shift has settled, ask only if applying the draft would
+      // put a scheduled shift back into today's remaining time.
+      return isScheduledShift(request.candidate, candidate) &&
+        request.candidate.nowMs < countdown.getShiftEndAtMs(candidate);
     },
   };
 })(globalThis);

@@ -248,6 +248,8 @@ PWA 会继续维护；如果你需要常驻菜单栏／迷你计时器、原生�
 
 本项目是开源的,遵循[MIT许可证](LICENSE)。
 
+`app/fonts/` 中的 Geist 字体另行遵循 [SIL Open Font License 1.1](app/fonts/LICENSE.txt)，不在 MIT 范围内。
+
 ## 致谢
 
 特别感谢:
