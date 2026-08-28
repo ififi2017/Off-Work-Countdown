@@ -1,7 +1,7 @@
 # 007 — iOS 订阅前稳定版（倒计时本体首发）
 
-- **Status**: READY FOR DEVICE QA — 计时代码、19 份文案与 DoneAt iOS 外表面已落在 `feat/ios-007-timer-surfaces`；真机验收、截图与 TestFlight 仍待做
-- **Reviewed against**: 2026-08-27 计时页面试；2026-08-27 Grill（008 品牌 + 002 / 007 下一步）
+- **Status**: IN PROGRESS — 实现已由 PR #82 合入 `main`，iPhone/iPad 主要界面真机回归完成；Live Activity/锁屏、截图与 3.1.7 TestFlight 待做
+- **Reviewed against**: 2026-08-27 计时页面试与 Grill；2026-08-28 真机收口；`755052f`（PR #82）
 - **Severity**: HIGH
 - **Category**: iOS 产品结构 / 计时页 / App Store 首发
 - **Estimated scope**: `src-mobile/ios` + 19 份 UI 文案 + `OffWorkStoreTests` + iOS 外表面短名（InfoPlist / 启动页 / 灵动岛，**不改**共享 `translation.json`）。Widget / Live Activity / 通知只改与新标记同向的副作用。**不含** [002](002-records-life-focus.md) 记录层，**不含** [006](006-free-trial-subscription.md) 的 StoreKit / 试用 / 付费墙
@@ -106,7 +106,7 @@ Watch、跨设备同步、Android 不在范围内。
 ### P0 — 口径与门
 
 - [x] 计时页目标口径写入 `docs/IOS-TIMER-SURFACES.md`
-- [x] 本计划成文；002 / 006 标明须等 007
+- [x] 本计划成文；002 / 006 初始开工门已写明。2026-08-28 起 002 P0A 门已满足，006 仍等 007 送审闭环。
 - [x] `plans/README.md` 收录 007
 - [x] 实现期间若口径与文档冲突，改文档或改代码，禁止第三套口头约定
 
@@ -149,9 +149,11 @@ Watch、跨设备同步、Android 不在范围内。
 - [x] `CURRENT_PROJECT_VERSION` 已加到 2。Archive / TestFlight 仍按现有 Xcode Cloud 流程，由你在真机验收后上传。
 - [x] 启动页：mark + DoneAt，无英文副标题；`check:ios` 守住。
 - [x] DoneAt 其余外表面：19 份 `InfoPlist.strings` 的显示名、欢迎页首屏、关于页、Widget 画廊、灵动岛 / 锁屏标题。不改共享 `translation.json`，计时 Tab 不显示产品名。
-- [ ] 真机：上面 13 条验收场景 + 至少一次 Live Activity / 锁屏。着色图标和 iPad 启动页后补。
+- [x] iPhone 17 Pro 竖屏/横屏与 iPad 的主要计时、设置、欢迎页、品牌和触感路径已在多轮真机反馈中收口；最后一轮确认无新增问题。
+- [ ] 至少触发一次真机 Live Activity / 锁屏，核对状态、进度与裸 `BrandMark`。着色图标和 iPad 启动页后补。
 - [ ] 重拍 iPhone 截图。
 - [ ] 用 3.1.7 打 TestFlight。3.1.6 过审则先上架、本包作为第一个更新并改商店主名；3.1.6 被拒则本包首发、商店名直接 DoneAt。过审标准是倒计时本体稳定，不是记录或订阅已上。商店已是免费下载，过审后即可上架。
+- [x] PR #82 已合入 `main`；合并后的 Web/Desktop、Rust macOS/Windows、商店渠道与 Widget contract CI 全绿。
 
 ## 实现时的判断
 
@@ -309,7 +311,7 @@ Watch、跨设备同步、Android 不在范围内。
 
 ## 与 002 / 006 的接口
 
-- **002 P0A 开工点（Grill）**：007 真机 QA 把今日标记（`todayOverride` / `clockOffEarly` / `forcedWorkdayDate`）视为冻结之后，就可以在**新分支**写 `DayOverride` 投影表和测试；**不必等 TestFlight 上传，更不必等 3.1.7 上架**。002 **不进**本分支。
+- **002 P0A 开工点（已满足，2026-08-28）**：多轮 iPhone/iPad 真机回归后，PR #82 已合入 `main`，今日标记（`todayOverride` / `clockOffEarly` / `forcedWorkdayDate`）视为冻结。现在可以在**新分支**写 `DayOverride` 投影表和测试；**不必等 Live Activity、截图、TestFlight 上传或 3.1.7 上架**。
 - **P0A 第一刀**：上述本地标记 → `DayOverride` 的投影表和测试。不要先铺 SwiftData 全表或批量展开接口。计时页本地标记是覆盖的前身，不是第二套「实际工时」。
 - 007 不因一次晚到的设置修改倒推 `actualStart`；用户以后在 002 的人生板块手动修正当天真实上班时间。
 - 商店记录已是免费下载、无 IAP，和 006「倒计时本体永久免费」一致。本计划保证上架的是这套钟，而不是配置首页。付费墙与 002 P1 同版，仍排在本计划之后。

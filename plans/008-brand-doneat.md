@@ -1,11 +1,11 @@
 # 008 — DoneAt 品牌换装与 iOS 外表面
 
-- **Status**: HANDOFF — 图标、品牌 mark 与 iOS DoneAt 外表面已落地；着色变体、真机复测待做
-- **Reviewed against**: 2026-08-27 图标评审；2026-08-27 Grill；分支 `feat/ios-007-timer-surfaces`
+- **Status**: IN PROGRESS — 品牌母版与主要 iOS/PWA/Tauri 外表面已合入；Web favicon、着色变体与 Live Activity 实拍待做
+- **Reviewed against**: 2026-08-27 图标评审与 Grill；2026-08-28 真机收口；`755052f`（PR #82）
 - **Severity**: MEDIUM（不挡 007 送审；着色变体后补）
 - **Category**: 品牌 / iOS 外表面 / 全平台图标
 - **Estimated scope**: `assets/brand`、三端图标位图、`src-mobile/ios` 的 `BrandMark` / LaunchScreen / Widget、`scripts/check-ios-project.mjs`
-- **相关**: [007](007-ios-stable-before-subscription.md) 同分支同批次；短名与送审节奏以 007 Grill 为准（正式名 **DoneAt**）；002 / 006 不受影响
+- **相关**: [007](007-ios-stable-before-subscription.md) 已同批合入；短名与送审节奏以 007 Grill 为准（正式名 **DoneAt**）；002 / 006 不受影响
 
 ## 一句话
 
@@ -13,7 +13,7 @@
 
 ## 已完成，不要重做
 
-### 品牌母版（`assets/brand/`，**未跟踪，提交时别漏**）
+### 品牌母版（`assets/brand/`，已跟踪）
 
 | 文件 | 用途 |
 | --- | --- |
@@ -35,6 +35,7 @@
 - `OWCBrandMark.swift` 改成新几何。弧用 `addRelativeArc` 加**正 delta**，绕开 SwiftUI `clockwise:` 在 y 轴向下时方向反直觉的坑。
 - `WidgetExtension/OffWorkWidgets.swift` 两处 `Image("BrandIcon")` → `Image("BrandMark")`，并去掉 `clipShape(RoundedRectangle)`。灵动岛和锁屏卡片本身就是容器，里面再套一层圆角底板会读成贴纸。
 - `Base.lproj/LaunchScreen.storyboard`：底部居中，`[BrandMark] DoneAt` 一行。**没有**分隔线、**没有**英文副标题 `Off Work Countdown`。明暗自适应。
+- 欢迎页和关于页复用可交互的 `CelebratingBrandMark`：只有缺口里的橙色圆点接收五连击，保留细微的系统玻璃按压反光；第五次让指针旋转一圈并回到五点。Logo 本体不会被拖走。
 - `scripts/check-ios-project.mjs`：启动页必须画 `BrandMark` 且文案为 `DoneAt`；禁止 `BrandIcon`、`LaunchMark` / `LaunchMarkLight` / `LaunchMarkDark`，以及英文副标题。`BrandMark` 必须保留 dark appearance（WidgetKit / Live Activity 要用）。已做负向测试。
 - 删除 `Splash.imageset`（6 张 2732×2732）。它是 Capacitor 遗留，**全仓无任何引用**，storyboard 用的一直是 `BrandIcon`。
 
@@ -48,13 +49,18 @@
 - 未排班态里 `OWCBrandMark` 的实拍（用来确认弧的扫掠方向）
 - 所有生成位图的透明度：该透明的角像素 `alpha=0`，该不透明的 `hasAlpha: no`
 
-**未验证，交接时请补**
+**已验证（2026-08-28 真机）**
 
-1. **灵动岛与锁屏 Live Activity 的实际观感**——代码改了，但没有真正触发一个 Live Activity 看过。这是本次改动里唯一没被眼睛确认的表面。
-2. 真机（模拟器只证明能编过，见 `CLAUDE.md`）
-3. iPad 与 iPhone 横屏下的启动页（含 44pt `BrandMark` 是否画得出来；SplashBoard 会缓存旧快照）
-4. iOS 26 着色（tinted）外观下的图标
-5. 启动页改成 DoneAt 之后的浅色 / 深色实拍（Grill 之前拍过带英文副标题的那一版，作废）
+- iPhone 17 Pro 竖屏/横屏与 iPad 上的欢迎页、关于页和侧边栏 Logo 尺寸、居中与明暗色切换
+- 浅色启动页使用浅底适配的 mark，不再显示深色底 App Icon
+- 五连击只命中橙色圆点；指针庆祝可触发，Logo 不再被长距离拖走，细微玻璃按压反馈保留
+
+**仍未验证 / 未完成**
+
+1. **灵动岛与锁屏 Live Activity 的实际观感**——代码改了，但没有真正触发一个 Live Activity 看过。这是仍未被眼睛确认的主要 iOS 运行时表面。
+2. iPad 启动页的最终实拍（SplashBoard 会缓存旧快照）
+3. iOS 26 着色（tinted）外观下的图标
+4. Web 浏览器标签页仍使用旧的 `app/favicon.ico`；PWA manifest、通知和分享使用的新 192/512 图标已经合入
 
 ## 死路，别再走（都有实测）
 
@@ -78,24 +84,18 @@
 
 ### P3 — 真机复测清单
 
-按「未验证」那五条走一遍，重点是灵动岛。触发一次 Live Activity，确认 mark 是裸的、没有底板、在黑色胶囊上读得出来。着色图标和 iPad 启动页不挡 3.1.7。
+主要 App 内表面已真机收口。剩余按「仍未验证 / 未完成」走一遍，重点是灵动岛；触发一次 Live Activity，确认 mark 是裸的、没有底板、在黑色胶囊上读得出来。着色图标和 iPad 启动页不挡 3.1.7。
 
-### P4 — 提交
+### P4 — Web 标签页 favicon
 
-未跟踪、需要一并提交的：
+PWA/manifest 的 192、512 与 maskable 图标已经换新；Next App Router 自动使用的
+`app/favicon.ico` 仍是旧版。后续从圆角品牌母版生成新的多尺寸 `.ico`，并在浏览器清缓存后
+核对浅色/深色标签栏。
 
-```
-assets/brand/
-src-mobile/ios/App/App/Assets.xcassets/BrandMark.imageset/
-src-mobile/ios/App/App/Native/Views/OWCBrandMark.swift
-src-mobile/ios/App/App/Native/Views/DraggableBrandIcon.swift
-```
+### P5 — 提交（已完成）
 
-启动页、`check-ios-project.mjs`、LaunchScreen 已在工作区改过，跟 007 一起提交即可。
-
-（`OnboardingScheduleDetailsView.swift`、`RestDayUpcomingView.swift` 属于 007；`xiaohongshu-tool/` 与本计划无关。）
-
-PR 标题用 Conventional Commits，本计划属 `feat`。
+品牌母版、图片资源、SwiftUI 表面、启动页与检查脚本已随 PR #82 合入 `main`。`xiaohongshu-tool/`
+与本计划无关，未进入提交。
 
 ## 实现时的判断
 

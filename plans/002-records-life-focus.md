@@ -1,11 +1,11 @@
 # 002 — 从「倒计时」到「记录」：工作占比、人生视图与专注
 
 - **Status**: DRAFT
-- **Reviewed against**: efbbbd9
+- **Reviewed against**: 755052f（007 已合入；本计划架构仍以 PR #81 为基线）
 - **Severity**: HIGH
 - **Category**: Product values / Architecture / Persistence / Privacy / New surfaces
 - **Estimated scope**: 按交付顺序为四个可独立验收的阶段：P0A 本地语义 → P1 记录与人生视图（本地先发）→ P0B 同步与数据控制 → P2 任务与专注
-- **相关**: 商业模式、试用与付费墙见 [006](006-free-trial-subscription.md)；本文件只声明「什么能被墙、什么永远不能」。**须等 [007](007-ios-stable-before-subscription.md) 真机 QA 把今日标记视为冻结**（不必等 TestFlight 上传）——提前上/下班等修正先写计时本地标记，P0A 第一刀再投影为当日覆盖；002 不进 007 分支
+- **相关**: 商业模式、试用与付费墙见 [006](006-free-trial-subscription.md)；本文件只声明「什么能被墙、什么永远不能」。[007](007-ios-stable-before-subscription.md) 已在多轮 iPhone/iPad 真机回归后合入 `main`，`todayOverride` / `clockOffEarly` / `forcedWorkdayDate` 视为冻结，**P0A 现在可以另开分支**（不必等 Live Activity、截图或 TestFlight）；提前上/下班等修正先写计时本地标记，P0A 第一刀再投影为当日覆盖
 - **本次修订**: 同步层从「SwiftData 自动镜像 + 自研收敛协议」改为 **CKSyncEngine**。上一版为绕过自动镜像的冲突黑箱，设计了 append-only 修订表、HLC 版本戳、六种控制记录、lineage 与 UUID v5 恢复链——那是在为每年千余条小记录徒手造一个分布式数据库。CKSyncEngine 在冲突回调里同时给出本地版与服务器版，上述发明整体作废。同时把 P1 提前到 P0B 之前：付费墙挂在图表与人生视图上，先用本地版验证付费意愿，再投入同步。二次修订补齐了 CKSyncEngine 周围必须自建的薄层：本地同步适配层（`lastKnownRecord` + dirty outbox）、世代化数据 zone、单条删除的原子批次、P0A 本地 ErasedID 表，并统一平局规则为随机 `editTieBreaker`（墙钟永不参与裁决）。三次修订把「删除全部」的崩溃续跑从本地操作状态改成系统不变量：凡 generation 小于当前 fence 的数据 zone，在启动、fence 更新与旧 zone 重建时一律删除——不依赖跨本地与 CloudKit 的伪原子事务。
 
 ## 出发点：这个 App 现在没有记忆，但「推算」不是缺陷
