@@ -21,10 +21,12 @@
 
 # production
 /build
+/app-store-connect/screenshots/
 
 # misc
 .DS_Store
 *.pem
+*.p8
 /.vscode
 
 # debug

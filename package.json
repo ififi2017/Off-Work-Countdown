@@ -37,7 +37,11 @@
     "shots:ios": "npm run shots:ios:capture && npm run shots:ios:compose && npm run shots:ios:validate",
     "shots:ios:capture": "node scripts/marketing-shots/ios/capture.mjs",
     "shots:ios:compose": "node scripts/marketing-shots/ios/compose.mjs",
-    "shots:ios:validate": "node scripts/marketing-shots/ios/validate.mjs"
+    "shots:ios:validate": "node scripts/marketing-shots/ios/validate.mjs",
+    "asc:check": "node scripts/app-store-connect-sync.mjs --check",
+    "asc:plan": "node scripts/app-store-connect-sync.mjs --plan",
+    "asc:sync": "node scripts/app-store-connect-sync.mjs --apply",
+    "asc:export": "node scripts/app-store-connect-export.mjs"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^11.2.0",
