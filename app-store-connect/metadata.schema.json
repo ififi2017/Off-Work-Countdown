@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://offwork.icu/schemas/app-store-connect-metadata.json",
+  "title": "Off Work Countdown App Store Connect metadata",
+  "type": "object",
+  "required": ["schemaVersion", "app", "localizations"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "exportedFrom": {
+      "type": "object",
+      "required": ["platform", "versionString", "exportedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "platform": { "enum": ["IOS", "MAC_OS", "TV_OS", "VISION_OS"] },
+        "versionString": { "type": "string", "minLength": 1 },
+        "exportedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "screenshotBaseDir": { "type": "string" },
+    "app": {
+      "type": "object",
+      "required": ["bundleId", "platform", "versionString"],
+      "additionalProperties": false,
+      "properties": {
+        "bundleId": { "type": "string", "minLength": 1 },
+        "platform": { "enum": ["IOS", "MAC_OS", "TV_OS", "VISION_OS"] },
+        "versionString": { "type": "string", "minLength": 1 },
+        "createVersionIfMissing": { "type": "boolean" },
+        "releaseType": { "enum": ["MANUAL", "AFTER_APPROVAL", "SCHEDULED"] },
+        "earliestReleaseDate": { "type": "string", "format": "date-time" },
+        "copyright": { "type": "string" },
+        "usesIdfa": { "type": "boolean" }
+      }
+    },
+    "localizations": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "maxLength": 30 },
+          "subtitle": { "type": ["string", "null"], "maxLength": 30 },
+          "privacyPolicyUrl": { "type": ["string", "null"] },
+          "privacyChoicesUrl": { "type": ["string", "null"] },
+          "promotionalText": { "type": ["string", "null"], "maxLength": 170 },
+          "description": { "type": "string", "maxLength": 4000 },
+          "keywords": { "type": "string", "maxLength": 100 },
+          "supportUrl": { "type": "string" },
+          "marketingUrl": { "type": ["string", "null"] },
+          "whatsNew": { "type": ["string", "null"], "maxLength": 4000 },
+          "screenshots": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 10,
+              "uniqueItems": true,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

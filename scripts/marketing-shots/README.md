@@ -136,6 +136,10 @@ IOS_SHOTS_OUT_DIR='/path/to/output' npm run shots:ios:validate
 App Store Connect 的顺序。`ios/validate.mjs` 会确认十六张图尺寸正确且没有 alpha
 通道。
 
-当前尺寸来自 Apple 的 Screenshot specifications：竖版 iPhone 使用 6.9 英寸允许的
+当前尺寸来自 Apple 的 Screenshot specifications：竖版 iPhone 使用 6.5 英寸允许的
 1284×2778，iPad 使用 13 英寸允许的 2064×2752；横屏功能图分别使用
 2778×1284 与 2752×2064，完整保留横屏画面，不在竖版长图里缩小或裁切。
+
+生成完成后，可以用仓库内的 App Store Connect 同步脚手架把成品与各语言商店文案一起
+上传。先读 `docs/APP-STORE-CONNECT-SYNC.md`；默认命令只显示差异，替换已有截图集还需要
+单独的显式参数。
