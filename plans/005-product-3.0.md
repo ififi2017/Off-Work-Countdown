@@ -1,6 +1,6 @@
 # Off Work Countdown 3.0 升级计划
 
-> 状态：M1–M5 已完成 · 起草于 2026-08-08 · 进度更新于 2026-08-14 · 当前 Web / 客户端统一版本 `3.1.4`（[package.json](../package.json)）
+> 状态：M1–M5 已完成 · 起草于 2026-08-08 · 进度更新于 2026-08-28 · 当前 Web / 客户端统一版本 `3.1.7`（[package.json](../package.json)）
 >
 > M6 的分发一节已被现实超车：计划里只写了包管理器，实际先上了 Microsoft Store，
 > 并且做到了推 tag 自动提交。详见 [PLAN-MSSTORE.md](../docs/PLAN-MSSTORE.md)。
@@ -332,4 +332,4 @@ M5 桌面端虽然是最有存在感的功能，但它服务的是**已有用户
 
 ## 6. 版本号说明
 
-Web 与桌面客户端从本轮起使用统一产品版本，当前为 `3.0.2`。`package.json`、锁文件、`src-tauri/Cargo.toml` 与 `src-tauri/tauri.conf.json` 必须在发布提交中保持一致；Web 可以随 `main` 更频繁部署，但只有需要发布客户端安装包时才提升统一版本号。桌面 Release tag 使用 `desktop-v{version}`（例如 `desktop-v3.0.2`），避免与普通 Web 部署触发混淆。
+Web 与桌面客户端从本轮起使用统一产品版本，当前为 `3.1.7`。`package.json`、锁文件、`src-tauri/Cargo.toml` 与 `src-tauri/tauri.conf.json` 必须在发布提交中保持一致；Web 可以随 `main` 更频繁部署，但只有需要发布客户端安装包时才提升统一版本号。桌面 Release tag 使用 `desktop-v{version}`（例如 `desktop-v3.1.7`），避免与普通 Web 部署触发混淆。

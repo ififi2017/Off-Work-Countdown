@@ -1,10 +1,23 @@
 # 001 — 统一并收敛全产品动效
 
-- **Status**: TODO
-- **Commit**: f10c7f9
+- **Status**: IN PROGRESS — iOS 动效地基随 007 合入；Web/Desktop 尚未开始
+- **Commit**: 基线 `f10c7f9`；进度复核 `755052f`（PR #82）
 - **Severity**: HIGH
 - **Category**: Purpose & frequency / Easing & duration / Performance / Accessibility / Cohesion
 - **Estimated scope**: iOS 7–9 files；Web/Desktop 10–13 files；不涉及业务规则
+
+## 当前进度（2026-08-28）
+
+- iOS 已落地 `OWCMotion`、`TimerVisualPhase`、三种尺寸壳的阶段/导航过渡、Reduce Motion
+  分支、主按钮按压反馈和按班次去重的完成庆祝；这些改动随 007 的 PR #82 合入 `main`。
+- 原计划 A1/P1 要求彻底移除逐秒数字滚动，但当前实现改为共享
+  `OWCCountdownTextTransition`，让竖屏、横屏、iPad、午休和休息态使用同一套、且会尊重
+  Reduce Motion 的数字过渡。这里已经是一次明确的产品取舍变化，继续执行 001 前应先决定
+  保留统一滚动还是改回“每秒直接更新”，不能把旧步骤机械地标成完成。
+- Web/Desktop 工作流尚未执行；`transition-all`、高频进度属性和完整 Reduced Motion 矩阵仍需
+  按 B 工作流处理。
+- PR #82 已通过 iOS 模拟器构建、Web/Desktop 构建、lint 和单测；001 专属的 Reduce Motion
+  真机矩阵、浏览器 10 分钟性能检查与 Windows Mini Timer feel check 尚未完成。
 
 ## 目标
 

@@ -1,11 +1,11 @@
 # 006 — 从买断到「免费下载 + 试用 + 订阅」
 
 - **Status**: DRAFT
-- **Reviewed against**: 6576842
+- **Reviewed against**: 755052f（007 已合入，送审闭环未完成）
 - **Severity**: HIGH
 - **Category**: 商业模式 / StoreKit / App Store Connect
-- **Estimated scope**: 须等 [007](007-ios-stable-before-subscription.md) 把倒计时本体做成可送审的稳定版；付费墙与 [002](002-records-life-focus.md) 的 P1 同版。App Store 记录**已是免费下载**，007 过审上架不会产生买断用户；本计划剩下的是试用、订阅、终身 IAP 与付费墙
-- **相关**: [002](002-records-life-focus.md) 定义了什么能被墙、什么永远不能；本文件定义怎么卖。**须等 [007](007-ios-stable-before-subscription.md) 把倒计时本体做成可过审的稳定版之后才开工**（007 不上 IAP；记录已是免费下载）
+- **Estimated scope**: [007](007-ios-stable-before-subscription.md) 的实现与主要真机界面已完成并合入，仍须等 Live Activity/锁屏、截图与 TestFlight 把送审闭环做完；付费墙与 [002](002-records-life-focus.md) 的 P1 同版。App Store 记录**已是免费下载**，007 过审上架不会产生买断用户；本计划剩下的是试用、订阅、终身 IAP 与付费墙
+- **相关**: [002](002-records-life-focus.md) 定义了什么能被墙、什么永远不能；本文件定义怎么卖。002 P0A 已可先行，但 **006 仍等 [007](007-ios-stable-before-subscription.md) 完成送审闭环后再开工**（007 不上 IAP；记录已是免费下载）
 
 ## 一句话
 
