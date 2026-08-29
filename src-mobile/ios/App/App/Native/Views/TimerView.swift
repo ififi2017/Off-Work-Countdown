@@ -347,7 +347,7 @@ private struct ShareCard: View {
                 HStack {
                     Text(store.formatPercent(store.shareProgress()))
                     Spacer()
-                    Text("OFF.RAINIF.COM")
+                    Text(verbatim: "DoneAt.app")
                 }
                 .font(.system(size: 9, weight: .semibold).monospacedDigit())
                 .tracking(0.35)

@@ -505,7 +505,13 @@ struct SalaryDesignView: View {
     }
 
     private var content: some View {
-        OWCContentSizedScrollView {
+        // Focus changes rebuild this view while the keyboard is animating. A
+        // snapshot crosses the JavaScriptCore bridge, so take it once and
+        // derive every salary value from that same result instead of invoking
+        // the rules separately for each row.
+        let preview = salaryPreview(from: store.snapshot())
+
+        return OWCContentSizedScrollView {
             VStack(spacing: 0) {
             OWCGroupCard {
                 HStack {
@@ -623,7 +629,7 @@ struct SalaryDesignView: View {
                 Text(store.t("moneyEarned"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
-                Text(store.hideEarnings ? "••••" : store.formatMoney(earnedNow))
+                Text(store.hideEarnings ? "••••" : store.formatMoney(preview.earnedNow))
                     .font(.largeTitle.bold().monospacedDigit())
                     .tracking(-0.5)
             }
@@ -638,12 +644,12 @@ struct SalaryDesignView: View {
                 OWCSectionHeader(title: store.t("derivedFromThis"))
                 OWCGroupCard {
                     OWCRow(title: store.t("perWorkday")) {
-                        Text(store.hideEarnings ? "••••" : store.formatMoney(dailySalary))
+                        Text(store.hideEarnings ? "••••" : store.formatMoney(preview.dailySalary))
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
                     OWCRow(title: store.t("perEffectiveHour"), isLast: true) {
-                        Text(store.hideEarnings ? "••••" : store.formatMoney(hourlySalary))
+                        Text(store.hideEarnings ? "••••" : store.formatMoney(preview.hourlySalary))
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -652,7 +658,7 @@ struct SalaryDesignView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 20)
 
-            detailFooter(effectiveTimeNote)
+            detailFooter(preview.effectiveTimeNote)
             }
                 Spacer(minLength: 8)
             }
@@ -681,24 +687,36 @@ struct SalaryDesignView: View {
         .sensoryFeedback(.selection, trigger: store.hideEarnings)
     }
 
-    private var snapshot: NativeShiftSnapshot? { store.snapshot() }
-    private var dailySalary: Double? { snapshot?.dailySalary }
-    private var earnedNow: Double? {
-        guard let snapshot, let dailySalary = snapshot.dailySalary else { return nil }
-        return dailySalary * snapshot.payRatio
+    private func salaryPreview(
+        from snapshot: NativeShiftSnapshot?
+    ) -> (
+        dailySalary: Double?,
+        earnedNow: Double?,
+        hourlySalary: Double?,
+        effectiveTimeNote: String
+    ) {
+        let dailySalary = snapshot?.dailySalary
+        let earnedNow: Double? = if let snapshot, let dailySalary {
+            dailySalary * snapshot.payRatio
+        } else {
+            nil
+        }
+        let hourlySalary: Double? = if let snapshot,
+                                       let dailySalary,
+                                       snapshot.plannedDurationMs > 0 {
+            dailySalary / (snapshot.plannedDurationMs / 3_600_000)
+        } else {
+            nil
+        }
+        let effectiveTimeNote = snapshot.map {
+            "\(store.formatDuration($0.plannedDurationMs, includeSeconds: false)) · \(store.t("lunchPauseNoteNoSalary"))"
+        } ?? store.t("lunchPauseNoteNoSalary")
+        return (dailySalary, earnedNow, hourlySalary, effectiveTimeNote)
     }
-    private var hourlySalary: Double? {
-        guard let snapshot, let dailySalary = snapshot.dailySalary, snapshot.plannedDurationMs > 0 else { return nil }
-        return dailySalary / (snapshot.plannedDurationMs / 3_600_000)
-    }
+
     private func commitAmount() {
         let trimmed = amountText.trimmingCharacters(in: .whitespaces)
         if store.salaryAmount != trimmed { store.salaryAmount = trimmed }
-    }
-
-    private var effectiveTimeNote: String {
-        guard let snapshot else { return store.t("lunchPauseNoteNoSalary") }
-        return "\(store.formatDuration(snapshot.plannedDurationMs, includeSeconds: false)) · \(store.t("lunchPauseNoteNoSalary"))"
     }
 
     private func detailFooter(_ text: String) -> some View {
