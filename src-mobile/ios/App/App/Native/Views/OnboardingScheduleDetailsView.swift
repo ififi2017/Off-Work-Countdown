@@ -2,10 +2,11 @@ import SwiftUI
 
 /// The configuration controlled by the four schedule rows above it.
 ///
-/// Every panel remains in one `ZStack`, so the stage adopts the largest
-/// panel's natural height for the current locale and Dynamic Type size. The
-/// surrounding page never reflows when the mode changes, and hidden controls
-/// are removed from hit testing and accessibility.
+/// Only the visible panel is in the layout. Stacking every mode in a `ZStack`
+/// used to size the stage to the tallest panel (rotation), so the first-run
+/// classic grid reserved empty space and English copy that wrapped a line
+/// pushed Continue off the screen. Mode changes swap the panel while it is
+/// faded out, so the height change is not on screen.
 struct OnboardingScheduleDetailsView: View {
     @Bindable var store: OffWorkStore
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
@@ -22,19 +23,15 @@ struct OnboardingScheduleDetailsView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            ForEach(WorkScheduleMode.allCases) { mode in
-                details(for: mode)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .opacity(isPresented(mode) ? 1 : 0)
-                    .offset(y: detailOffset(for: mode))
-                    .allowsHitTesting(isPresented(mode))
-                    .accessibilityHidden(!isPresented(mode))
+        details(for: displayedMode)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .opacity(detailsVisible ? 1 : 0)
+            .offset(y: detailOffset)
+            .allowsHitTesting(detailsVisible)
+            .accessibilityHidden(!detailsVisible)
+            .onChange(of: store.scheduleMode) { _, mode in
+                transition(to: mode)
             }
-        }
-        .onChange(of: store.scheduleMode) { _, mode in
-            transition(to: mode)
-        }
     }
 
     @ViewBuilder
@@ -191,12 +188,8 @@ struct OnboardingScheduleDetailsView: View {
         .clipShape(RoundedRectangle(cornerRadius: OWCDesign.cardRadius, style: .continuous))
     }
 
-    private func isPresented(_ mode: WorkScheduleMode) -> Bool {
-        detailsVisible && displayedMode == mode
-    }
-
-    private func detailOffset(for mode: WorkScheduleMode) -> CGFloat {
-        guard !reduceMotion, displayedMode == mode else { return 0 }
+    private var detailOffset: CGFloat {
+        guard !reduceMotion else { return 0 }
         return detailsVisible ? 0 : -6
     }
 

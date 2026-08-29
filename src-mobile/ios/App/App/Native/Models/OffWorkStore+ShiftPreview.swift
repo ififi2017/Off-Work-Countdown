@@ -51,7 +51,7 @@ extension OffWorkStore {
             ))
         }
 
-        if lunchEnabled {
+        if effectiveLunchEnabled(at: now) {
             // The setting is on whether or not this snapshot could place a
             // gap. Using "window missing" as "disabled" is what printed 未开启
             // after the hours were edited so the break no longer fitted.
@@ -94,7 +94,7 @@ extension OffWorkStore {
         // One row, not one per firing: an hourly reminder across a nine-hour
         // shift is eight identical lines. The detail carries the interval so the
         // single row still says it repeats.
-        if microBreakEnabled {
+        if presentationMicroBreakEnabled {
             // Only a time the shared rules actually scheduled. Inventing
             // nextShiftStart + interval produced a 10:00 on a 09:00–10:00
             // shift, which the engine never fires.
@@ -108,7 +108,7 @@ extension OffWorkStore {
                 id: "micro-break",
                 kind: .health,
                 title: t("microBreakReminder"),
-                detail: t("minutesShort", values: ["count": "\(microBreakIntervalMinutes)"]),
+                detail: t("minutesShort", values: ["count": "\(presentationMicroBreakIntervalMinutes)"]),
                 date: date,
                 route: .health
             ))
@@ -124,7 +124,7 @@ extension OffWorkStore {
         }
 
 
-        if liveActivityEnabled {
+        if presentationLiveActivityEnabled {
             // Hangs off whichever shift end is still ahead. Opening the app
             // after clocking off otherwise put this at the top of the list,
             // announcing a lock-screen banner that came and went hours ago.
@@ -156,7 +156,7 @@ extension OffWorkStore {
         // notifications off the list contradicted itself outright, showing the
         // timed Live Activity row directly above a row calling the same feature
         // disabled.
-        if !liveActivityEnabled && notificationMode == .off {
+        if !presentationLiveActivityEnabled && presentationNotificationMode == .off {
             disabled.append(.init(
                 id: "off-work-reminder-off",
                 kind: .offWorkReminder,

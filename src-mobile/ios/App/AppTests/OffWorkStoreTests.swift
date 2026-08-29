@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import UIKit
 @testable import App
 
 @MainActor
@@ -12,7 +13,9 @@ func freshInstallDefaults() throws {
     #expect(store.onboardingComplete == false)
     #expect(store.startMinutes == 9 * 60)
     #expect(store.endMinutes == 17 * 60)
+    #expect(store.workdays == Set([1, 2, 3, 4, 5]))
     #expect(store.lunchEnabled == false)
+    #expect(store.lunchStartMinutes == 12 * 60)
     #expect(store.lunchDurationMinutes == 60)
     #expect(store.notificationMode == .off)
     #expect(store.salaryEnabled == false)
@@ -247,6 +250,165 @@ func widgetTimelineCoversLunchBreak() throws {
     #expect(current.phase == .break)
     #expect(current.labelKey == "lunchInProgress")
     #expect(nowMs < current.validUntilMs)
+}
+
+@MainActor
+@Test("The widget snapshot carries the in-app coming-up list, salary-free")
+func widgetSnapshotCarriesUpcomingEvents() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let morning = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 10
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .off
+    store.startMinutes = 9 * 60
+    store.endMinutes = 18 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60 + 30
+    store.lunchDurationMinutes = 60
+    store.countdownStarted = true
+
+    let nowMs = Int64(morning.timeIntervalSince1970 * 1_000)
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: morning),
+        active: true,
+        nowMs: nowMs
+    )
+
+    #expect(snapshot.upcoming.contains { $0.kind == "lunchStart" })
+    #expect(snapshot.upcoming.contains { $0.kind == "lunchEnd" })
+    #expect(snapshot.upcoming.contains { $0.kind == "shiftEnd" })
+    #expect(snapshot.upcoming.allSatisfy { $0.dateMs > nowMs })
+    #expect(snapshot.upcoming.allSatisfy { !$0.title.isEmpty })
+}
+
+@MainActor
+@Test("A recurring widget snapshot keeps coming-up rows past the 36-hour presentation window")
+func widgetSnapshotKeepsUpcomingPastPresentationWindow() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    // Monday 10:00. Wednesday 09:00 is 47 hours later, outside the old 36-hour
+    // cap, and WidgetKit would only reread this same snapshot 12 hours later.
+    let monday = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 10
+    )))
+    let wednesdayStart = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 26, hour: 9
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 60
+
+    let nowMs = Int64(monday.timeIntervalSince1970 * 1_000)
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: monday),
+        active: true,
+        nowMs: nowMs
+    )
+    let presentationHorizon = nowMs + 36 * 60 * 60 * 1_000
+    let wednesdayStartMs = Int64(wednesdayStart.timeIntervalSince1970 * 1_000)
+
+    #expect(snapshot.upcoming.contains {
+        $0.kind == "shiftStart" && $0.dateMs == wednesdayStartMs
+    })
+    #expect(snapshot.upcoming.contains { $0.dateMs > presentationHorizon })
+}
+
+@MainActor
+@Test("Rest-day widget snapshots do not project a phantom weekday shift")
+func widgetSnapshotOmitsRestDayShiftEvents() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let saturday = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 22, hour: 10
+    )))
+    let mondayStart = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 9
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 60
+
+    let shift = try #require(store.snapshot(at: saturday))
+    #expect(!shift.isWorkday)
+
+    let nowMs = Int64(saturday.timeIntervalSince1970 * 1_000)
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: shift,
+        active: true,
+        nowMs: nowMs
+    )
+    let calendar = Calendar.current
+    #expect(snapshot.upcoming.allSatisfy { item in
+        calendar.component(
+            .weekday,
+            from: Date(timeIntervalSince1970: Double(item.dateMs) / 1_000)
+        ) != 7
+    })
+    #expect(snapshot.upcoming.contains {
+        $0.kind == "shiftStart"
+            && $0.dateMs == Int64(mondayStart.timeIntervalSince1970 * 1_000)
+    })
+}
+
+@MainActor
+@Test("The circular complication names the planned clock-off, not remaining work on the clock")
+func widgetWorkingTargetIsPlannedEndWhenLunchBreaksTheDay() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    // 10:00 on a 09:00–19:00 shift with 12:30–14:00 lunch. Effective remaining
+    // from 09:00 is 8.5 hours, which on the clock is 17:30 — the circular
+    // face used to print that instead of 19:00.
+    let morning = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 10
+    )))
+    let plannedEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 19
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .off
+    store.startMinutes = 9 * 60
+    store.endMinutes = 19 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60 + 30
+    store.lunchDurationMinutes = 90
+    store.countdownStarted = true
+
+    let nowMs = Int64(morning.timeIntervalSince1970 * 1_000)
+    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: morning),
+        active: true,
+        nowMs: nowMs
+    )
+    let current = try #require(snapshot.entries.last { $0.dateMs <= nowMs })
+    #expect(current.phase == .working)
+    let target = try #require(current.countdownTargetAtMs)
+    let expected = Int64(plannedEnd.timeIntervalSince1970 * 1_000)
+    #expect(abs(target - expected) < 1_000)
+    #expect(abs(target - (nowMs + current.remainingEffectiveMsAtDateMs)) > 30 * 60 * 1_000)
 }
 
 @MainActor
@@ -2018,15 +2180,182 @@ func celebrationDoesNotSurviveRelaunch() throws {
 }
 
 @MainActor
-@Test("Leaving the foreground forgets the shift-end celebration")
-func celebrationResetsWhenLeavingForeground() throws {
+@Test("Orientation policy unlocks landscape after onboarding")
+func orientationPolicyUnlocksAfterOnboarding() {
+    #expect(AppOrientationPolicy.mask(onboardingComplete: false) == .portrait)
+    let unlocked = AppOrientationPolicy.mask(onboardingComplete: true)
+    #expect(unlocked.contains(.portrait))
+    #expect(unlocked.contains(.landscapeLeft))
+    #expect(unlocked.contains(.landscapeRight))
+}
+
+@MainActor
+@Test("A warm session remembers the shift-end celebration")
+func celebrationSurvivesWarmSession() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
     let store = OffWorkStore(defaults: defaults)
     store.markCelebrated(endAtMs: 1_700_000_000_000)
-    store.resetCelebratedSession()
-    #expect(store.lastCelebratedEndAtMs == 0)
+    #expect(store.lastCelebratedEndAtMs == 1_700_000_000_000)
+}
+
+@MainActor
+@Test("Onboarding recap lists chosen weekdays and hours for a classic schedule")
+func onboardingScheduleRecapClassic() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .classic
+    store.workdays = [1, 3, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+
+    let recap = store.onboardingScheduleRecap()
+    let labels = store.weekdayLabels()
+    #expect(recap.contains(labels[0]))
+    #expect(recap.contains(labels[2]))
+    #expect(recap.contains(labels[4]))
+    #expect(!recap.contains(labels[1]))
+    #expect(recap.contains(" · "))
+    #expect(recap.contains(store.timeString(store.startMinutes)))
+    #expect(recap.contains(store.timeString(store.endMinutes)))
+}
+
+@MainActor
+@Test("Onboarding recap collapses a contiguous weekday run to a range")
+func onboardingScheduleRecapCollapsesWeekdayRange() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+
+    let recap = store.onboardingScheduleRecap()
+    let labels = store.weekdayLabels()
+    let expected = store.t("weekdayRange", values: ["start": labels[0], "end": labels[4]])
+    #expect(recap.hasPrefix(expected))
+    #expect(!recap.contains(labels[1]))
+    #expect(recap.contains(" · "))
+}
+
+@MainActor
+@Test("Onboarding recap collapses a full-week selection to Monday through Sunday")
+func onboardingScheduleRecapAllWeekdays() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .classic
+    store.workdays = [0, 1, 2, 3, 4, 5, 6]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+
+    let recap = store.onboardingScheduleRecap()
+    let labels = store.weekdayLabels()
+    let expected = store.t("weekdayRange", values: ["start": labels[0], "end": labels[6]])
+    #expect(recap.hasPrefix(expected))
+    #expect(!recap.contains(labels[1]))
+}
+
+@MainActor
+@Test("Onboarding recap collapses a wrapping weekday run to a range")
+func onboardingScheduleRecapWrappingWeekdays() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults)
+    store.scheduleMode = .classic
+    store.workdays = [5, 6, 0]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+
+    let recap = store.onboardingScheduleRecap()
+    let labels = store.weekdayLabels()
+    let expected = store.t("weekdayRange", values: ["start": labels[4], "end": labels[6]])
+    #expect(recap.hasPrefix(expected))
+    #expect(!recap.contains(labels[5]))
+}
+
+@MainActor
+@Test("Onboarding recap uses the mode name for rotating and alternating schedules")
+func onboardingScheduleRecapNamedModes() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults)
+    store.startMinutes = 22 * 60
+    store.endMinutes = 6 * 60
+
+    store.scheduleMode = .alternating
+    #expect(store.onboardingScheduleRecap().contains(store.t("scheduleAlternating")))
+    #expect(store.onboardingScheduleRecap().contains("22:00"))
+
+    store.scheduleMode = .rotation
+    #expect(store.onboardingScheduleRecap().contains(store.t("scheduleRotation")))
+}
+
+@MainActor
+@Test("Completing onboarding does not overwrite an already chosen reminder mode")
+func completeOnboardingKeepsNotificationMode() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults)
+    store.notificationMode = .milestones
+    store.completeOnboarding(enableNotifications: false)
+    #expect(store.notificationMode == .milestones)
+}
+
+@MainActor
+@Test("Onboarding reminder defaults turn lunch and simple clock-off on once")
+func applyOnboardingReminderDefaultsOnce() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults)
+    #expect(store.lunchEnabled == false)
+    #expect(store.notificationMode == .off)
+
+    store.applyOnboardingReminderDefaultsIfNeeded()
+    #expect(store.lunchEnabled)
+    #expect(store.lunchStartReminderEnabled)
+    #expect(store.lunchEndReminderEnabled)
+    #expect(store.notificationMode == .simple)
+
+    store.lunchEnabled = false
+    store.lunchStartReminderEnabled = false
+    store.lunchEndReminderEnabled = false
+    store.notificationMode = .off
+    store.applyOnboardingReminderDefaultsIfNeeded()
+    #expect(store.lunchEnabled == false)
+    #expect(store.notificationMode == .off)
+}
+
+@MainActor
+@Test("Onboarding sequence skips confirmation when there is no schedule")
+func onboardingSequenceSkipsAllSetWhenOff() {
+    let scheduled = OnboardingPages.sequence(includesAllSet: true)
+    let unscheduled = OnboardingPages.sequence(includesAllSet: false)
+    #expect(scheduled.contains(OnboardingPages.allSet))
+    #expect(!unscheduled.contains(OnboardingPages.allSet))
+    #expect(
+        OnboardingPages.next(from: OnboardingPages.reminders, includesAllSet: false)
+            == OnboardingPages.privacy
+    )
+    #expect(
+        OnboardingPages.previous(from: OnboardingPages.privacy, includesAllSet: false)
+            == OnboardingPages.reminders
+    )
+    #expect(
+        OnboardingPages.next(from: OnboardingPages.reminders, includesAllSet: true)
+            == OnboardingPages.allSet
+    )
+    #expect(OnboardingPages.previous(from: OnboardingPages.landing, includesAllSet: true) == nil)
 }
 
 @MainActor

@@ -127,6 +127,25 @@ public struct WidgetTimelineEntry: Codable, Equatable, Sendable {
     }
 }
 
+/// One row of the in-app "coming up" list, projected salary-free for large
+/// Home Screen widgets. Titles and details are already localized by the
+/// producer; the extension only filters by time and picks a glyph.
+public struct WidgetUpcomingItem: Codable, Equatable, Sendable, Identifiable {
+    public let id: String
+    public let kind: String
+    public let title: String
+    public let detail: String
+    public let dateMs: Int64
+
+    public init(id: String, kind: String, title: String, detail: String, dateMs: Int64) {
+        self.id = id
+        self.kind = kind
+        self.title = title
+        self.detail = detail
+        self.dateMs = dateMs
+    }
+}
+
 public struct WidgetSnapshot: Codable, Equatable, Sendable {
     public let schemaVersion: Int
     public let generatedAtMs: Int64
@@ -134,6 +153,13 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     public let locale: String
     public let shift: WidgetShiftTimeline?
     public let entries: [WidgetTimelineEntry]
+    /// Events still ahead of `generatedAtMs`, used by iOS large / extra-large
+    /// widgets. Recurring snapshots persist the remaining shifts in the
+    /// validity window so a 12-hour WidgetKit reread still has rows after
+    /// the original 36-hour presentation window. Absent from older snapshots;
+    /// the decoder treats that as empty so macOS and the TypeScript fixture
+    /// stay on schema 1.
+    public let upcoming: [WidgetUpcomingItem]
 
     public init(
         schemaVersion: Int,
@@ -141,7 +167,8 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         expiresAtMs: Int64,
         locale: String,
         shift: WidgetShiftTimeline?,
-        entries: [WidgetTimelineEntry]
+        entries: [WidgetTimelineEntry],
+        upcoming: [WidgetUpcomingItem] = []
     ) {
         self.schemaVersion = schemaVersion
         self.generatedAtMs = generatedAtMs
@@ -149,6 +176,35 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         self.locale = locale
         self.shift = shift
         self.entries = entries
+        self.upcoming = upcoming
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case schemaVersion, generatedAtMs, expiresAtMs, locale, shift, entries, upcoming
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        generatedAtMs = try container.decode(Int64.self, forKey: .generatedAtMs)
+        expiresAtMs = try container.decode(Int64.self, forKey: .expiresAtMs)
+        locale = try container.decode(String.self, forKey: .locale)
+        shift = try container.decodeIfPresent(WidgetShiftTimeline.self, forKey: .shift)
+        entries = try container.decode([WidgetTimelineEntry].self, forKey: .entries)
+        upcoming = try container.decodeIfPresent([WidgetUpcomingItem].self, forKey: .upcoming) ?? []
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(schemaVersion, forKey: .schemaVersion)
+        try container.encode(generatedAtMs, forKey: .generatedAtMs)
+        try container.encode(expiresAtMs, forKey: .expiresAtMs)
+        try container.encode(locale, forKey: .locale)
+        try container.encodeIfPresent(shift, forKey: .shift)
+        try container.encode(entries, forKey: .entries)
+        if !upcoming.isEmpty {
+            try container.encode(upcoming, forKey: .upcoming)
+        }
     }
 
     /// Selects a frontend-precomputed interval. This intentionally contains no

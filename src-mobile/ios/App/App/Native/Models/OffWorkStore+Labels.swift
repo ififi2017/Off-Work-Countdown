@@ -17,6 +17,76 @@ extension OffWorkStore {
         }
     }
 
+    /// One-line confirmation of what the schedule form just set.
+    ///
+    /// Classic uses a range when the chosen days are one run on the week
+    /// ("Mon–Fri"), and lists them when they are not ("Mon, Wed, Fri").
+    /// Alternating and rotation use the mode name; the details were on the
+    /// previous page. Hours always join with the same middle dot.
+    func onboardingScheduleRecap() -> String {
+        let hours = "\(timeString(startMinutes))–\(timeString(endMinutes))"
+        switch scheduleMode {
+        case .off:
+            return hours
+        case .alternating:
+            return "\(t("scheduleAlternating")) · \(hours)"
+        case .rotation:
+            return "\(t("scheduleRotation")) · \(hours)"
+        case .classic:
+            let days = classicWeekdayRecap()
+            return days.map { "\($0) · \(hours)" } ?? hours
+        }
+    }
+
+    /// Monday-first order, matching `weekdayLabels()`.
+    private static let weekOrder = [1, 2, 3, 4, 5, 6, 0]
+
+    private func classicWeekdayRecap() -> String? {
+        let order = Self.weekOrder
+        let labels = weekdayLabels()
+        let selected = order.filter { workdays.contains($0) }
+        guard !selected.isEmpty else { return nil }
+        if selected.count >= 2, let range = contiguousWeekdayRange(Set(selected), order: order) {
+            let start = weekdayName(range.start, order: order, labels: labels)
+            let end = weekdayName(range.end, order: order, labels: labels)
+            return t("weekdayRange", values: ["start": start, "end": end])
+        }
+        let names = selected.map { weekdayName($0, order: order, labels: labels) }
+        let formatter = ListFormatter()
+        formatter.locale = locale
+        return formatter.string(from: names) ?? names.joined(separator: ", ")
+    }
+
+    private func weekdayName(_ day: Int, order: [Int], labels: [String]) -> String {
+        guard let index = order.firstIndex(of: day), index < labels.count else { return "" }
+        return labels[index]
+    }
+
+    /// One arc on the Mon–Sun circle. Walking the week twice finds a wrap
+    /// such as Friday–Sunday without treating Mon/Wed/Fri as a span.
+    private func contiguousWeekdayRange(
+        _ selected: Set<Int>,
+        order: [Int]
+    ) -> (start: Int, end: Int)? {
+        var run: [Int] = []
+        var best: [Int] = []
+        for day in order + order {
+            if selected.contains(day) {
+                run.append(day)
+                // Walking the week twice finds a wrap such as Friday–Sunday.
+                // Without the one-cycle cap, a full-week selection grows to
+                // 14 and the equality guard below rejects Monday–Sunday.
+                if run.count <= order.count, run.count > best.count {
+                    best = run
+                }
+            } else {
+                run = []
+            }
+        }
+        guard best.count == selected.count else { return nil }
+        return (best[0], best[best.count - 1])
+    }
+
     var lunchLabel: String {
         guard lunchEnabled else { return t("disabledShort") }
         return "\(timeString(lunchStartMinutes)) · \(formatRelativeDuration(Double(lunchDurationMinutes) * 60_000))"

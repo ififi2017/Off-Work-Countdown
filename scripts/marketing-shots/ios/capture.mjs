@@ -137,9 +137,9 @@ async function capturePhone(udid, language) {
   await returnToHomeScreen(udid);
   screenshot(udid, `${language}-iphone-island`);
 
-  // Onboarding page 2 is the native, source-controlled likeness of the actual
+  // Onboarding page 5 is the native, source-controlled likeness of the actual
   // Home Screen widget, Lock Screen accessory and compact island.
-  launch(udid, language, { onboardingPage: 2, orientation: "portrait" });
+  launch(udid, language, { onboardingPage: 5, orientation: "portrait" });
   await sleep(2200);
   screenshot(udid, `${language}-iphone-widgets`);
 
@@ -153,7 +153,7 @@ async function capturePad(udid, language) {
   await sleep(2600);
   screenshot(udid, `${language}-ipad-main`);
 
-  launch(udid, language, { onboardingPage: 2, orientation: "portrait", liveActivity: false });
+  launch(udid, language, { onboardingPage: 5, orientation: "portrait", liveActivity: false });
   await sleep(2200);
   screenshot(udid, `${language}-ipad-widgets`);
 

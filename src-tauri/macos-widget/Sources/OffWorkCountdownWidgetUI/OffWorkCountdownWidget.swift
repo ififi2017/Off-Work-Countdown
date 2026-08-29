@@ -15,6 +15,20 @@ private func widgetProductName(locale: String) -> String {
     WidgetCopy.text("appShortName", locale: locale)
     #endif
 }
+
+func widgetUpcomingDateShowsWeekday(
+    _ date: Date,
+    relativeTo referenceDate: Date,
+    calendar: Calendar
+) -> Bool {
+    guard !calendar.isDate(date, inSameDayAs: referenceDate),
+          let tomorrow = calendar.date(byAdding: .day, value: 1, to: referenceDate)
+    else {
+        return false
+    }
+    return !calendar.isDate(date, inSameDayAs: tomorrow)
+}
+
 public let widgetSnapshotFileName = "widget-snapshot-v1.json"
 public let localWidgetSnapshotDirectoryName =
     "com.rainif.offworkcountdown.macappstore.local-widget"
@@ -119,15 +133,18 @@ public struct OffWorkCountdownWidgetEntry: TimelineEntry, Sendable {
     public let date: Date
     public let snapshotEntry: WidgetTimelineEntry?
     public let locale: String
+    public let upcoming: [WidgetUpcomingItem]
 
     public init(
         date: Date,
         snapshotEntry: WidgetTimelineEntry?,
-        locale: String
+        locale: String,
+        upcoming: [WidgetUpcomingItem] = []
     ) {
         self.date = date
         self.snapshotEntry = snapshotEntry
         self.locale = locale
+        self.upcoming = upcoming
     }
 }
 
@@ -197,7 +214,8 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
             OffWorkCountdownWidgetEntry(
                 date: now,
                 snapshotEntry: current,
-                locale: snapshot.locale
+                locale: snapshot.locale,
+                upcoming: snapshot.upcoming
             )
         ]
         timelineEntries.append(
@@ -207,7 +225,8 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                     OffWorkCountdownWidgetEntry(
                         date: Date(timeIntervalSince1970: Double($0.dateMs) / 1_000),
                         snapshotEntry: $0,
-                        locale: snapshot.locale
+                        locale: snapshot.locale,
+                        upcoming: snapshot.upcoming
                     )
                 }
         )
@@ -245,21 +264,33 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
             snapshot.expiresAtMs,
             nowMs + 36 * 60 * 60 * 1_000
         )
-        return snapshot.presentationEntries(
+        var presentation = snapshot.presentationEntries(
             startingAtMs: nowMs,
             progressStepMs: progressStepMs,
             endingAtMs: presentationEndMs
-        ).map { widgetEntry($0, locale: snapshot.locale) }
+        )
+        let existingDates = Set(presentation.map(\.dateMs))
+        for item in snapshot.upcoming
+        where item.dateMs > nowMs && item.dateMs < presentationEndMs {
+            guard !existingDates.contains(item.dateMs),
+                  let source = snapshot.entry(atMs: item.dateMs)
+            else { continue }
+            presentation.append(source.projected(atMs: item.dateMs))
+        }
+        return presentation
+            .sorted { $0.dateMs < $1.dateMs }
+            .map { widgetEntry($0, snapshot: snapshot) }
     }
 
     private func widgetEntry(
         _ snapshotEntry: WidgetTimelineEntry,
-        locale: String
+        snapshot: WidgetSnapshot
     ) -> OffWorkCountdownWidgetEntry {
         OffWorkCountdownWidgetEntry(
             date: Date(timeIntervalSince1970: Double(snapshotEntry.dateMs) / 1_000),
             snapshotEntry: snapshotEntry,
-            locale: locale
+            locale: snapshot.locale,
+            upcoming: snapshot.upcoming
         )
     }
     #endif
@@ -268,6 +299,7 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
 public struct OffWorkCountdownWidgetView: View {
     @Environment(\.widgetFamily) private var family
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.calendar) private var calendar
     public let entry: OffWorkCountdownWidgetEntry
 
     public init(entry: OffWorkCountdownWidgetEntry) {
@@ -292,6 +324,12 @@ public struct OffWorkCountdownWidgetView: View {
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                         } else if family == .accessoryRectangular {
                             rectangularAccessory(snapshotEntry)
+                        } else if family == .systemLarge {
+                            largeContent(snapshotEntry)
+                        } else if family == .systemExtraLarge {
+                            extraLargeContent(snapshotEntry)
+                        } else if isSystemExtraLargePortrait {
+                            extraLargePortraitContent(snapshotEntry)
                         } else if family == .systemMedium {
                             mediumContent(snapshotEntry)
                         } else {
@@ -407,15 +445,9 @@ public struct OffWorkCountdownWidgetView: View {
     private func rectangularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Label {
-                // The short name, not the full one. "Cuenta regresiva para
-                // salir del trabajo" is thirty-nine characters in a strip about
-                // 160pt wide; "Fin del trabajo" is fifteen and says the same
-                // thing. These are the names already shipping as the Home
-                // Screen app label, so they are translations that have been
-                // through review rather than ones invented here.
                 Text(verbatim: widgetProductName(locale: entry.locale))
             } icon: {
-                Image(systemName: accessoryGlyph(snapshotEntry.phase))
+                brandMark.frame(width: 12, height: 12)
             }
             .font(.caption2)
             .lineLimit(1)
@@ -437,16 +469,6 @@ public struct OffWorkCountdownWidgetView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
-    }
-
-    private func accessoryGlyph(_ phase: WidgetTimelinePhase) -> String {
-        switch phase {
-        case .idle: "play.fill"
-        case .before: "sunrise.fill"
-        case .working: "timer"
-        case .break: "cup.and.saucer.fill"
-        case .done: "flag.checkered"
-        }
     }
     #endif
 
@@ -473,17 +495,11 @@ public struct OffWorkCountdownWidgetView: View {
     }
 
     private func header(compact: Bool) -> some View {
-        HStack(spacing: 9) {
-            ZStack {
-                Circle()
-                    .fill(accentColor.opacity(colorScheme == .dark ? 0.24 : 0.14))
-                Image(systemName: "clock.badge.checkmark")
-                    .font(.system(size: compact ? 12 : 13, weight: .semibold))
-                    .foregroundStyle(accentColor)
-            }
-            .frame(width: compact ? 25 : 27, height: compact ? 25 : 27)
+        HStack(spacing: 8) {
+            brandMark
+                .frame(width: compact ? 20 : 22, height: compact ? 20 : 22)
 
-            // Short name here too: the header sits beside a 25pt badge on a
+            // Short name here too: the header sits beside a 22pt mark on a
             // small widget, and the full name wrapped onto a second line in
             // every language that is not CJK.
             Text(verbatim: widgetProductName(locale: entry.locale))
@@ -492,6 +508,21 @@ public struct OffWorkCountdownWidgetView: View {
                 .minimumScaleFactor(0.78)
             Spacer(minLength: 0)
         }
+    }
+
+    /// Bare Open Day mark, not the plated app icon. The widget is already a
+    /// rounded container; a second grey plate inside it reads as a sticker.
+    @ViewBuilder
+    private var brandMark: some View {
+        #if os(iOS)
+        Image("BrandMark")
+            .resizable()
+            .scaledToFit()
+            .accessibilityHidden(true)
+        #else
+        WidgetBrandMark()
+            .accessibilityHidden(true)
+        #endif
     }
 
     private func statusBadge(_ snapshotEntry: WidgetTimelineEntry, compact: Bool = false) -> some View {
@@ -563,9 +594,177 @@ public struct OffWorkCountdownWidgetView: View {
         }
     }
 
+    #if os(iOS)
+    /// 4×6 Home Screen / Today View family. The named
+    /// `WidgetFamily.systemExtraLargePortrait` case is visionOS-only in the
+    /// iOS 26 SDK (`@available(iOS, unavailable)`) and becomes an iOS 27
+    /// family in Xcode 27. Raw value 4 is stable across both, so both
+    /// toolchains compile without referencing the unavailable case.
+    fileprivate static let systemExtraLargePortraitRawValue = 4
+
+    private var isSystemExtraLargePortrait: Bool {
+        guard #available(iOS 27.0, *) else { return false }
+        return family.rawValue == Self.systemExtraLargePortraitRawValue
+    }
+
+    private var remainingUpcoming: [WidgetUpcomingItem] {
+        let nowMs = Int64(entry.date.timeIntervalSince1970 * 1_000)
+        return entry.upcoming.filter { $0.dateMs > nowMs }
+    }
+
+    @ViewBuilder
+    private func largeContent(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+        stackedUpcomingContent(snapshotEntry, countdownSize: 40, upcomingLimit: 4)
+    }
+
+    /// iOS 27 4×6 portrait XL. Same width as `.systemLarge`, extra height
+    /// for more of the coming-up list. Not the iPad landscape two-column XL.
+    @ViewBuilder
+    private func extraLargePortraitContent(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+        stackedUpcomingContent(snapshotEntry, countdownSize: 40, upcomingLimit: 6)
+    }
+
+    @ViewBuilder
+    private func stackedUpcomingContent(
+        _ snapshotEntry: WidgetTimelineEntry,
+        countdownSize: CGFloat,
+        upcomingLimit: Int
+    ) -> some View {
+        let upcoming = remainingUpcoming
+        VStack(alignment: .leading, spacing: 0) {
+            header(compact: false)
+            Spacer(minLength: 8)
+            statusBadge(snapshotEntry)
+            Spacer(minLength: 6)
+            countdown(for: snapshotEntry, size: countdownSize)
+            Spacer(minLength: 8)
+            progressBar(snapshotEntry.progressAtDate)
+            HStack(spacing: 6) {
+                Text("\(roundedProgress(snapshotEntry.progressAtDate))%")
+                    .font(.caption2.weight(.bold).monospacedDigit())
+                    .foregroundStyle(accentColor)
+                Spacer(minLength: 4)
+                boundaryTime(snapshotEntry)
+            }
+            .padding(.top, 6)
+            if !upcoming.isEmpty {
+                Spacer(minLength: 14)
+                upcomingSection(upcoming, limit: upcomingLimit)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    @ViewBuilder
+    private func extraLargeContent(_ snapshotEntry: WidgetTimelineEntry) -> some View {
+        let upcoming = remainingUpcoming
+        HStack(alignment: .top, spacing: 22) {
+            VStack(alignment: .leading, spacing: 0) {
+                header(compact: false)
+                Spacer(minLength: 10)
+                statusBadge(snapshotEntry)
+                Spacer(minLength: 8)
+                countdown(for: snapshotEntry, size: 46)
+                Spacer(minLength: 10)
+                progressBar(snapshotEntry.progressAtDate)
+                HStack(spacing: 6) {
+                    Text("\(roundedProgress(snapshotEntry.progressAtDate))%")
+                        .font(.callout.weight(.bold).monospacedDigit())
+                        .foregroundStyle(accentColor)
+                    Spacer(minLength: 4)
+                    boundaryTime(snapshotEntry)
+                }
+                .padding(.top, 8)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if !upcoming.isEmpty {
+                upcomingSection(upcoming, limit: 7)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func upcomingSection(_ items: [WidgetUpcomingItem], limit: Int) -> some View {
+        let visible = Array(items.prefix(limit))
+        return VStack(alignment: .leading, spacing: 0) {
+            Text(WidgetCopy.text("comingUp", locale: entry.locale))
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .padding(.bottom, 8)
+            ForEach(visible) { item in
+                upcomingRow(item, isLast: item.id == visible.last?.id)
+            }
+        }
+    }
+
+    private func upcomingRow(_ item: WidgetUpcomingItem, isLast: Bool) -> some View {
+        let date = Date(timeIntervalSince1970: Double(item.dateMs) / 1_000)
+        let showsWeekday = widgetUpcomingDateShowsWeekday(
+            date,
+            relativeTo: entry.date,
+            calendar: calendar
+        )
+        return HStack(spacing: 8) {
+            Image(systemName: upcomingGlyph(item.kind))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(accentColor)
+                .frame(width: 16)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(item.title)
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                if !item.detail.isEmpty {
+                    Text(item.detail)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+            }
+            Spacer(minLength: 6)
+            Group {
+                if showsWeekday {
+                    Text(date, format: .dateTime.weekday(.abbreviated).hour().minute())
+                } else {
+                    Text(date, style: .time)
+                }
+            }
+            .font(.caption.weight(.medium).monospacedDigit())
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+        }
+        .padding(.vertical, 5)
+        .overlay(alignment: .bottom) {
+            if !isLast {
+                Rectangle()
+                    .fill(Color.primary.opacity(0.08))
+                    .frame(height: 0.5)
+                    .padding(.leading, 24)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func upcomingGlyph(_ kind: String) -> String {
+        switch kind {
+        case "shiftStart": "sunrise.fill"
+        case "lunchStart": "cup.and.saucer.fill"
+        case "lunchEnd": "arrow.right.circle.fill"
+        case "health": "figure.walk"
+        case "milestone": "bell.badge.fill"
+        case "shiftEnd": "flag.checkered"
+        default: "clock"
+        }
+    }
+    #endif
+
     private var emptyContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            header(compact: family != .systemMedium)
+            header(compact: family == .systemSmall)
             Spacer(minLength: 8)
             HStack(spacing: 11) {
                 ZStack {
@@ -601,11 +800,8 @@ public struct OffWorkCountdownWidgetView: View {
         for snapshotEntry: WidgetTimelineEntry,
         size: CGFloat
     ) -> some View {
-        if let targetAtMs = snapshotEntry.countdownTargetAtMs {
-            Text(
-                Date(timeIntervalSince1970: Double(targetAtMs) / 1_000),
-                style: .timer
-            )
+        if let timerDate = timerDate(for: snapshotEntry) {
+            Text(timerDate, style: .timer)
             .font(.system(size: size, weight: .bold, design: .rounded))
             .monospacedDigit()
             .contentTransition(.numericText(countsDown: true))
@@ -619,6 +815,23 @@ public struct OffWorkCountdownWidgetView: View {
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.62)
+        }
+    }
+
+    /// `.timer` counts remaining *effective* work during a shift, so it must
+    /// not use `countdownTargetAtMs` — that field is the wall-clock finish
+    /// (19:00), and treating it as a timer would eat the lunch gap.
+    private func timerDate(for snapshotEntry: WidgetTimelineEntry) -> Date? {
+        switch snapshotEntry.countdownKind {
+        case .workRemaining:
+            let remaining = snapshotEntry.remainingEffectiveMsAtDateMs
+            guard remaining > 0 else { return nil }
+            return Date(
+                timeIntervalSince1970: Double(snapshotEntry.dateMs + remaining) / 1_000
+            )
+        default:
+            guard let targetAtMs = snapshotEntry.countdownTargetAtMs else { return nil }
+            return Date(timeIntervalSince1970: Double(targetAtMs) / 1_000)
         }
     }
 
@@ -787,9 +1000,84 @@ public struct OffWorkCountdownWidget: Widget {
 
     private var supportedFamilies: [WidgetFamily] {
         #if os(iOS)
-        [.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular]
+        var families: [WidgetFamily] = [
+            .systemSmall,
+            .systemMedium,
+            .systemLarge,
+            .systemExtraLarge,
+            .accessoryCircular,
+            .accessoryRectangular,
+        ]
+        if #available(iOS 27.0, *),
+           let portraitXL = WidgetFamily(
+               rawValue: OffWorkCountdownWidgetView.systemExtraLargePortraitRawValue
+           ) {
+            families.append(portraitXL)
+        }
+        return families
         #else
         [.systemSmall, .systemMedium]
         #endif
     }
 }
+
+#if !os(iOS)
+/// Vector twin of `assets/brand/off-work-countdown-mark.svg` for the macOS
+/// widget, which does not ship the iOS `BrandMark` catalog. Ring, hands and
+/// endpoint only — no plated background.
+private struct WidgetBrandMark: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        Canvas { context, size in
+            let scale = min(size.width, size.height) / 1024
+            let centre = CGPoint(x: size.width / 2, y: size.height / 2)
+            var ring = Path()
+            ring.addArc(
+                center: centre,
+                radius: 298 * scale,
+                startAngle: .degrees(109),
+                endAngle: .degrees(109 + 262),
+                clockwise: false
+            )
+            context.stroke(
+                ring,
+                with: .color(Color(red: 0.976, green: 0.451, blue: 0.086)),
+                style: StrokeStyle(lineWidth: 110 * scale, lineCap: .round)
+            )
+
+            let origin = CGPoint(
+                x: centre.x - 512 * scale,
+                y: centre.y - 512 * scale
+            )
+            func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+                CGPoint(x: origin.x + x * scale, y: origin.y + y * scale)
+            }
+            var hands = Path()
+            hands.move(to: point(512, 347))
+            hands.addLine(to: point(512, 512))
+            hands.addLine(to: point(573, 617.7))
+            let handColor = colorScheme == .dark
+                ? Color(red: 1.0, green: 0.945, blue: 0.847)
+                : Color(red: 0.169, green: 0.098, blue: 0.208)
+            context.stroke(
+                hands,
+                with: .color(handColor),
+                style: StrokeStyle(lineWidth: 88 * scale, lineCap: .round, lineJoin: .round)
+            )
+
+            let endpoint = CGRect(
+                x: origin.x + 664.5 * scale - 86 * scale,
+                y: origin.y + 776.1 * scale - 86 * scale,
+                width: 172 * scale,
+                height: 172 * scale
+            )
+            context.fill(
+                Path(ellipseIn: endpoint),
+                with: .color(Color(red: 0.976, green: 0.451, blue: 0.086))
+            )
+        }
+        .aspectRatio(1, contentMode: .fit)
+    }
+}
+#endif

@@ -1,5 +1,6 @@
 import ActivityKit
 import SwiftUI
+import UIKit
 import WidgetKit
 
 @main
@@ -24,10 +25,7 @@ struct OffWorkLiveActivityWidget: Widget {
                         // The bare mark, not the plated app icon: the Dynamic
                         // Island is already a container, and a second rounded
                         // plate inside it reads as a sticker.
-                        Image("BrandMark")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 25, height: 25)
+                        AlwaysDarkBrandMark(size: 25)
 
                         Text(context.state.appTitle)
                             .font(.system(size: 13, weight: .semibold))
@@ -58,12 +56,7 @@ struct OffWorkLiveActivityWidget: Widget {
                         .padding(.bottom, 4)
                 }
             } compactLeading: {
-                Image(systemName: "timer")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 20, height: 20)
-                    .background(activityOrange)
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                AlwaysDarkBrandMark(size: 20)
             } compactTrailing: {
                 // A fixed box with centred content: Text(style: .timer) shrinks
                 // as digits drop, and without this it drifts to the leading edge
@@ -71,8 +64,7 @@ struct OffWorkLiveActivityWidget: Widget {
                 ActivityCompactCountdown(context: context)
                     .frame(width: 50, alignment: .center)
             } minimal: {
-                Image(systemName: "timer")
-                    .foregroundStyle(activityOrange)
+                AlwaysDarkBrandMark(size: 18)
             }
             .widgetURL(URL(string: "offworkcountdown://timer"))
             .keylineTint(activityOrange)
@@ -91,10 +83,7 @@ private struct LockScreenActivityView: View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 10) {
-                Image("BrandMark")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 22, height: 22)
+                AlwaysDarkBrandMark(size: 22)
                 Text(context.state.appTitle)
                     .font(.system(size: 13, weight: .semibold))
                     .tracking(0.25)
@@ -151,6 +140,28 @@ private struct ActivityCompactCountdown: View {
                 .frame(maxWidth: .infinity, alignment: .center)
         }
     }
+}
+
+/// Dynamic Island and the lock-screen Live Activity are always-dark
+/// surfaces. `BrandMark` only swaps the hands by appearance; the light
+/// catalog's plum hands disappear on the black capsule, so pin the dark
+/// variant here instead of inheriting the phone's color scheme.
+private struct AlwaysDarkBrandMark: View {
+    var size: CGFloat
+
+    var body: some View {
+        Image(uiImage: Self.image)
+            .resizable()
+            .scaledToFit()
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
+    }
+
+    private static let image: UIImage = {
+        let traits = UITraitCollection(userInterfaceStyle: .dark)
+        let named = UIImage(named: "BrandMark")
+        return named?.imageAsset?.image(with: traits) ?? named ?? UIImage()
+    }()
 }
 
 private let activityOrange = Color(red: 0.976, green: 0.451, blue: 0.086)

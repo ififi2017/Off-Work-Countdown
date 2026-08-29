@@ -2,6 +2,10 @@ import SwiftUI
 
 struct AboutView: View {
     let store: OffWorkStore
+#if DEBUG
+    @State private var debugUnlockCount = 0
+    @State private var showsDebugMenu = false
+#endif
 
     var body: some View {
         OWCContentSizedScrollView {
@@ -10,8 +14,22 @@ struct AboutView: View {
                     VStack(spacing: 12) {
                         CelebratingBrandMark()
                             .frame(width: 168, height: 168)
+#if DEBUG
                         Text(verbatim: OWCBrand.shortName)
                             .font(.title2.bold())
+                            .contentShape(Rectangle())
+                            .onLongPressGesture(
+                                minimumDuration: 0.55,
+                                maximumDistance: 24,
+                                perform: registerDebugLongPress
+                            )
+                            .accessibilityAction(named: Text(store.t("debugMenu"))) {
+                                registerDebugLongPress()
+                            }
+#else
+                        Text(verbatim: OWCBrand.shortName)
+                            .font(.title2.bold())
+#endif
                         Text("fi_niaR Studio")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(OWCDesign.secondary)
@@ -56,7 +74,31 @@ struct AboutView: View {
         .navigationTitle(store.t("aboutProject"))
         .navigationBarTitleDisplayMode(.large)
         .owcDetailBack(title: store.t("settings"), pageTitle: store.t("aboutProject"))
+#if DEBUG
+        .sensoryFeedback(.selection, trigger: debugUnlockCount)
+        .sensoryFeedback(.success, trigger: showsDebugMenu)
+        .sheet(isPresented: $showsDebugMenu) {
+            DebugMenuView(store: store)
+        }
+        .onAppear(perform: presentDebugMenuForQAIfRequested)
+#endif
     }
+
+#if DEBUG
+    private func registerDebugLongPress() {
+        debugUnlockCount += 1
+        guard debugUnlockCount >= 2 else { return }
+        debugUnlockCount = 0
+        showsDebugMenu = true
+    }
+
+    private func presentDebugMenuForQAIfRequested() {
+        let key = "ios.native.qaDebugMenu"
+        guard UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.removeObject(forKey: key)
+        showsDebugMenu = true
+    }
+#endif
 
     private func aboutLink(
         _ title: String,

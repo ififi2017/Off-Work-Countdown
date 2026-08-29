@@ -65,11 +65,11 @@ struct LunchBreakDesignView: View {
                         if !timelineExpanded {
                             VStack(alignment: .leading, spacing: 0) {
                                 OWCGroupCard {
-                                    OWCRow(icon: "clock", title: store.t("lunchBackAt"), isLast: !store.salaryEnabled) {
+                                    OWCRow(icon: "clock", title: store.t("lunchBackAt"), isLast: !store.presentationSalaryEnabled) {
                                         Text(store.formatTime(breakEnd))
                                             .font(.body.weight(.semibold).monospacedDigit())
                                     }
-                                    if store.salaryEnabled {
+                                    if store.presentationSalaryEnabled {
                                         OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: true) {
                                             Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
                                                 .font(.body.weight(.semibold).monospacedDigit())
@@ -153,13 +153,15 @@ struct OvertimeDesignView: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         VStack(spacing: 0) {
-                            Text(store.t("overtimeUntil", values: ["time": store.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]))
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(OWCDesign.orangeDeep)
-                                .padding(.horizontal, 12)
-                                .frame(height: 26)
-                                .background(OWCDesign.orange.opacity(0.12))
-                                .clipShape(Capsule())
+                            TimerPhasePill(
+                                title: store.t(
+                                    "overtimeUntil",
+                                    values: ["time": store.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
+                                ),
+                                systemImage: "clock.fill",
+                                tint: OWCDesign.orangeDeep,
+                                fill: OWCDesign.orange.opacity(0.12)
+                            )
 
                             Text(store.formatDuration(snapshot.remainingMs))
                                 .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
@@ -191,14 +193,14 @@ struct OvertimeDesignView: View {
                         if !timelineExpanded {
                             VStack(alignment: .leading, spacing: 0) {
                                 OWCGroupCard {
-                                    OWCRow(icon: "clock", title: store.t("shiftEnded"), isLast: !store.salaryEnabled) {
+                                    OWCRow(icon: "clock", title: store.t("shiftEnded"), isLast: !store.presentationSalaryEnabled) {
                                         Text("\(store.formatTime(snapshot.plannedEndDate)) · \(store.t("timeAgo", values: ["time": store.formatRelativeDuration(now.timeIntervalSince(snapshot.plannedEndDate) * 1_000)]))")
                                             .font(.subheadline.monospacedDigit())
                                             .foregroundStyle(OWCDesign.secondary)
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.72)
                                     }
-                                    if store.salaryEnabled {
+                                    if store.presentationSalaryEnabled {
                                         OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: true) {
                                             Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
                                                 .font(.body.weight(.semibold).monospacedDigit())
@@ -267,13 +269,15 @@ private func detailNote(_ text: String) -> some View {
 
 struct UnscheduledTimerView: View {
     let store: OffWorkStore
+    let now: Date
     var onOpenLunchSettings: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
             OWCAppHeader(store: store)
             Spacer()
-            DraggableBrandIcon()
+            CelebratingBrandMark()
+                .frame(width: 168, height: 168)
                 .padding(.bottom, 26)
             Text(store.t("unscheduledTitle"))
                 .font(.largeTitle.bold())
@@ -286,7 +290,10 @@ struct UnscheduledTimerView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 28)
                 .padding(.top, 12)
-            Text("\(store.timeString(store.startMinutes)) – \(store.timeString(store.endMinutes))")
+            Text(
+                "\(store.timeString(store.effectiveStartMinutes(at: now))) – "
+                    + "\(store.timeString(store.effectiveEndMinutes(at: now)))"
+            )
                 .font(.title3.monospacedDigit())
                 .foregroundStyle(OWCDesign.secondary)
                 .padding(.top, 18)
@@ -379,7 +386,7 @@ struct RestDayDesignView: View {
 
     private func summaryText(_ summary: NativePeriodSummary?) -> String {
         guard let summary else { return "—" }
-        guard store.salaryEnabled else {
+        guard store.presentationSalaryEnabled else {
             return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
         }
         let money = store.hideEarnings ? "••••" : store.formatMoney(summary.earnings)
@@ -390,13 +397,11 @@ struct RestDayDesignView: View {
 struct CompletedShiftDesignView: View {
     let store: OffWorkStore
     let snapshot: NativeShiftSnapshot
+    let now: Date
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
     @State private var celebrationBurst = 0
     @State private var celebrationHaptics: Task<Void, Never>?
-    @Environment(\.scenePhase) private var scenePhase
-
-
     var body: some View {
         GeometryReader { proxy in
             // Landscape has roughly 300 pt of height to work with, and the
@@ -445,9 +450,6 @@ struct CompletedShiftDesignView: View {
         .overlay { OWCConfettiOverlay(burst: celebrationBurst) }
         .onAppear { celebrateIfNeeded() }
         .onChange(of: celebrationToken) { celebrateIfNeeded() }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active { celebrateIfNeeded() }
-        }
         .onDisappear { celebrationHaptics?.cancel() }
     }
 
@@ -466,7 +468,9 @@ struct CompletedShiftDesignView: View {
             .padding(.top, 34)
 
             if let nextDate = snapshot.nextShiftStartDate {
-                Text(store.t("nextShiftIn", values: ["time": store.formatRelativeDuration(nextDate.timeIntervalSinceNow * 1_000)]))
+                Text(store.t("nextShiftIn", values: [
+                    "time": store.formatRelativeDuration(nextDate.timeIntervalSince(now) * 1_000),
+                ]))
                     .font(.title2.weight(.semibold).monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
                     .lineLimit(1)
@@ -485,8 +489,8 @@ struct CompletedShiftDesignView: View {
     /// note reads as a condition on the section rather than a footnote nobody
     /// reaches.
     private var todayInFullSection: some View {
-        let lunch = store.takenLunchWindow(for: finishedSnapshot)
-        let showsWeek = store.followsSchedule
+        let lunch = store.takenLunchWindow(for: finishedSnapshot, at: now)
+        let showsWeek = store.followsSchedule(at: now)
         return VStack(alignment: .leading, spacing: 0) {
             OWCSectionHeader(title: store.t("todayInFull"))
             OWCGroupCard {
@@ -525,11 +529,11 @@ struct CompletedShiftDesignView: View {
     /// read off the shift itself.
     private var earningsCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-        if store.followsSchedule {
+        if store.followsSchedule(at: now) {
             OWCSectionHeader(title: store.t("summaryEstimateNote"))
         }
         OWCGroupCard {
-            if store.salaryEnabled {
+            if store.presentationSalaryEnabled {
                 OWCRow(icon: "banknote", title: store.t("moneyEarned")) {
                     Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
                         .font(.body.weight(.semibold).monospacedDigit())
@@ -627,17 +631,15 @@ struct CompletedShiftDesignView: View {
     }
     private var nextShiftDayLabel: String {
         guard let start = snapshot.nextShiftStartDate else { return store.t("nextShiftLabelShort") }
-        return store.relativeDayLabel(for: start)
+        return store.relativeDayLabel(for: start, from: now)
     }
     private var weekSummary: String {
         let asOf: Date
         if endedEarly, let earlyOffAtMs = store.earlyOffAtMs {
             asOf = Date(timeIntervalSince1970: earlyOffAtMs / 1_000)
-        } else {
-            asOf = .now
-        }
+        } else { asOf = now }
         guard let summary = store.periodSummary("week", asOf: asOf, snapshot: finishedSnapshot) else { return "—" }
-        guard store.salaryEnabled else {
+        guard store.presentationSalaryEnabled else {
             return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
         }
         let money = store.hideEarnings ? "••••" : store.formatMoney(summary.earnings)

@@ -42,6 +42,7 @@ struct OffWorkCountdownRootView: View {
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
         .environment(notifications)
+        .environment(liveActivities)
         .tint(OWCDesign.accent)
         .sensoryFeedback(.success, trigger: clockInCommitFeedback)
         .sensoryFeedback(.impact(weight: .medium), trigger: clockOffCommitFeedback)
@@ -53,9 +54,14 @@ struct OffWorkCountdownRootView: View {
             scheduleServices()
         }
         .onChange(of: store.onboardingComplete) {
+            AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
             if store.onboardingComplete { scheduleServices() }
         }
         .onChange(of: store.countdownStarted) {
+            pendingReschedule = false
+            scheduleServices()
+        }
+        .onChange(of: store.debugPresentationToken) {
             pendingReschedule = false
             scheduleServices()
         }
@@ -74,25 +80,14 @@ struct OffWorkCountdownRootView: View {
             // notifications only fire when it is not.
             pendingReschedule = true
         }
-        .onOpenURL { url in
-            guard url.scheme == "offworkcountdown" else { return }
-            if url.host == "timer" {
-                store.settingsPath.removeAll()
-                store.timerPath.removeAll()
-                store.selectedTab = .timer
-                store.presentedRoute = nil
-                return
-            }
-            guard let route = AppRoute(rawValue: url.host ?? "") else { return }
-            store.settingsPath.removeAll()
-            store.selectedTab = .settings
-            store.presentedRoute = route
+        .onOpenURL(perform: handleOpenURL)
+        .onReceive(NotificationCenter.default.publisher(for: .owcOpenURL)) { output in
+            guard let url = output.object as? URL else { return }
+            handleOpenURL(url)
         }
         .onChange(of: scenePhase) {
-            if scenePhase == .background {
-                store.resetCelebratedSession()
-            }
             if scenePhase == .active {
+                AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
                 store.reconcileCountdownSession()
                 store.refreshSystemLanguage()
                 Task { @MainActor in
@@ -116,10 +111,12 @@ struct OffWorkCountdownRootView: View {
             }
         }
         .onAppear {
+            AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
             CountdownRules.warmUp()
             store.reconcileCountdownSession()
             store.refreshSystemLanguage()
             applyQAGeometryIfRequested()
+            clearDebugServicesAfterResetIfNeeded()
         }
     }
 
@@ -163,6 +160,17 @@ struct OffWorkCountdownRootView: View {
             scene.requestGeometryUpdate(.iOS(interfaceOrientations: orientations)) { error in
                 UserDefaults.standard.set(error.localizedDescription, forKey: "ios.native.qaOrientationError")
             }
+        }
+#endif
+    }
+
+    private func clearDebugServicesAfterResetIfNeeded() {
+#if DEBUG
+        guard store.debugDidResetOnLaunch else { return }
+        WidgetSnapshotPublisher.shared.clear()
+        Task { @MainActor in
+            await notifications.clearShiftNotifications()
+            await liveActivities.endAll()
         }
 #endif
     }
@@ -231,6 +239,21 @@ struct OffWorkCountdownRootView: View {
 
     private var tabAnimation: Animation {
         reduceMotion ? OWCMotion.reduced : OWCMotion.navigation
+    }
+
+    private func handleOpenURL(_ url: URL) {
+        guard url.scheme == "offworkcountdown" else { return }
+        if url.host == "timer" {
+            store.settingsPath.removeAll()
+            store.timerPath.removeAll()
+            store.selectedTab = .timer
+            store.presentedRoute = nil
+            return
+        }
+        guard let route = AppRoute(rawValue: url.host ?? "") else { return }
+        store.settingsPath.removeAll()
+        store.selectedTab = .settings
+        store.presentedRoute = route
     }
 
     private func scheduleServices() {
