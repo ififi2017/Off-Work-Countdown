@@ -216,7 +216,7 @@ func portraitExtraLargeRawValue() {
     )
 }
 
-@Test("Upcoming widget dates add a weekday beyond tomorrow")
+@Test("Upcoming widget dates add a weekday on any other calendar day")
 func upcomingWidgetDateWeekdayVisibility() throws {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = try #require(TimeZone(identifier: "Asia/Shanghai"))
@@ -233,6 +233,13 @@ func upcomingWidgetDateWeekdayVisibility() throws {
         day: 29,
         hour: 17
     )))
+    let sundayMorning = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 30,
+        hour: 1,
+        minute: 33
+    )))
     let sunday = try #require(calendar.date(from: DateComponents(
         year: 2026,
         month: 8,
@@ -243,10 +250,11 @@ func upcomingWidgetDateWeekdayVisibility() throws {
         year: 2026,
         month: 8,
         day: 31,
-        hour: 9
+        hour: 10
     )))
 
     #expect(!widgetUpcomingDateShowsWeekday(laterToday, relativeTo: saturday, calendar: calendar))
-    #expect(!widgetUpcomingDateShowsWeekday(sunday, relativeTo: saturday, calendar: calendar))
+    #expect(widgetUpcomingDateShowsWeekday(sunday, relativeTo: saturday, calendar: calendar))
     #expect(widgetUpcomingDateShowsWeekday(monday, relativeTo: saturday, calendar: calendar))
+    #expect(widgetUpcomingDateShowsWeekday(monday, relativeTo: sundayMorning, calendar: calendar))
 }

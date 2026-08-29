@@ -21,12 +21,10 @@ func widgetUpcomingDateShowsWeekday(
     relativeTo referenceDate: Date,
     calendar: Calendar
 ) -> Bool {
-    guard !calendar.isDate(date, inSameDayAs: referenceDate),
-          let tomorrow = calendar.date(byAdding: .day, value: 1, to: referenceDate)
-    else {
-        return false
-    }
-    return !calendar.isDate(date, inSameDayAs: tomorrow)
+    // Same rule as ShiftPreviewRow: only today's clock can stand alone. A
+    // rest-day "coming up" row for Monday 10:00 is tomorrow on Sunday; without
+    // the weekday it reads as today.
+    !calendar.isDate(date, inSameDayAs: referenceDate)
 }
 
 public let widgetSnapshotFileName = "widget-snapshot-v1.json"
