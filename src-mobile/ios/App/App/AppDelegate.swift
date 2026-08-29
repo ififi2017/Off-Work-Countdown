@@ -130,11 +130,6 @@ enum RootOrientationSwizzle {
             original: #selector(getter: UIViewController.supportedInterfaceOrientations),
             swizzled: #selector(UIViewController.owc_supportedInterfaceOrientations)
         )
-        swizzle(
-            class: cls,
-            original: #selector(getter: UIViewController.shouldAutorotate),
-            swizzled: #selector(UIViewController.owc_shouldAutorotate)
-        )
     }
 
     private static func swizzle(class cls: AnyClass, original: Selector, swizzled: Selector) {
@@ -160,10 +155,6 @@ extension UIViewController {
             return AppOrientationPolicy.shared.supportedOrientations
         }
         return owc_supportedInterfaceOrientations()
-    }
-
-    @objc func owc_shouldAutorotate() -> Bool {
-        true
     }
 }
 

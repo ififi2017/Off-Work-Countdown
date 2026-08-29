@@ -46,7 +46,7 @@ struct AboutView: View {
                     aboutLink(
                         store.t("privacyPolicy"),
                         icon: "hand.raised",
-                        destination: contentURL("privacy")
+                        destination: URL(string: "https://doneat.app/privacy")!
                     )
                     aboutLink(
                         store.t("githubRepository"),
@@ -56,12 +56,12 @@ struct AboutView: View {
                     aboutLink(
                         store.t("visitOfficialWebsite"),
                         icon: "safari",
-                        destination: URL(string: "https://off.rainif.com/")!
+                        destination: URL(string: "https://doneat.app/")!
                     )
                     aboutLink(
                         store.t("downloadDesktopApp"),
                         icon: "desktopcomputer",
-                        destination: downloadURL,
+                        destination: URL(string: "https://doneat.app/download")!,
                         isLast: true
                     )
                 }
@@ -120,13 +120,4 @@ struct AboutView: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
     }
 
-    private func contentURL(_ page: String) -> URL {
-        let contentLocale = store.languageCode.hasPrefix("zh") ? "zh-CN" : "en"
-        return URL(string: "https://off.rainif.com/\(contentLocale)/\(page)")!
-    }
-
-    private var downloadURL: URL {
-        let contentLocale = store.languageCode.hasPrefix("zh") ? "zh-CN" : "en"
-        return URL(string: "https://off.rainif.com/\(contentLocale)/download")!
-    }
 }
