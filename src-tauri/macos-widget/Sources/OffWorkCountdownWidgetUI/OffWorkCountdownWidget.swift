@@ -387,14 +387,17 @@ public struct OffWorkCountdownWidgetView: View {
     /// without saying three-quarters of what — on a Lock Screen full of rings
     /// that reads like a battery. A nearly-full ring around "19:00" says the
     /// same thing and names the finish line, in the same five glyphs.
+    ///
+    /// The done state has no ring, so the checkmark and label use the whole
+    /// circle — not the Gauge inner-hole sizes the countdown labels need.
     @ViewBuilder
     private func circularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
         if snapshotEntry.phase == .done {
-            VStack(spacing: 1) {
+            VStack(spacing: 2) {
                 Image(systemName: "checkmark")
-                    .font(.caption.bold())
+                    .font(.title2.bold())
                 Text(WidgetCopy.text("shareDone", locale: entry.locale))
-                    .font(.system(size: 8, weight: .semibold))
+                    .font(.footnote.bold())
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
             }
