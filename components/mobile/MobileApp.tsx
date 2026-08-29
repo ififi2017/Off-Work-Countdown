@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { siteConfig } from "@/config/site";
 import { Monitor, Moon, Sun, Sunset, Zap } from "lucide-react";
 import { getTextDirection } from "@/i18n-config";
 import { mobileSelectedTabStorageKey } from "@/lib/mobile-navigation";
@@ -170,7 +171,7 @@ export function MobileApp({ lang }: { lang: string }) {
   const timerHeader = (
     <div className="flex items-center justify-between px-5 pt-[calc(env(safe-area-inset-top)+6px)]">
       <span className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--ios-label-2)]">
-        {t("offWorkCountdown")}
+        {siteConfig.brandName}
       </span>
       <ThemeQuickToggle app={app} />
     </div>

@@ -184,9 +184,15 @@ const allowedGroups = (() => {
 })();
 
 const authorizes = (group) =>
-  allowedGroups.some((pattern) =>
-    pattern.endsWith("*") ? group.startsWith(pattern.slice(0, -1)) : pattern === group
-  );
+  allowedGroups.some((pattern) => {
+    if (pattern === group) return true;
+    if (teamId && (pattern === `${teamId}.${group}` || `${teamId}.${pattern}` === group)) return true;
+    if (pattern.endsWith("*")) {
+      const prefix = pattern.slice(0, -1);
+      return group.startsWith(prefix) || (teamId && `${teamId}.${group}`.startsWith(prefix));
+    }
+    return false;
+  });
 
 const unauthorized = declaredGroups.filter((group) => !authorizes(group));
 if (unauthorized.length > 0) {

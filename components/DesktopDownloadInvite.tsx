@@ -1,25 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Download, Monitor, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { resolveContentLocale } from "@/lib/content-locales";
+import { officialPageUrl } from "@/lib/site-urls";
 import { track } from "@/lib/track";
 
 const DISMISS_KEY = "desktop-download-invite-v1-dismissed";
 
 export function DesktopDownloadInvite() {
   const { t, i18n } = useTranslation();
-  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem(DISMISS_KEY)) return;
-    if (pathname.endsWith("/download")) return;
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isTouchMac = /macintosh/.test(userAgent) && navigator.maxTouchPoints > 1;
@@ -31,7 +27,7 @@ export function DesktopDownloadInvite() {
       track("desktop_invite_view");
     }, 3000);
     return () => window.clearTimeout(timer);
-  }, [pathname]);
+  }, []);
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, "true");
@@ -45,7 +41,7 @@ export function DesktopDownloadInvite() {
     track("desktop_invite_open");
   };
 
-  const contentLang = resolveContentLocale(i18n.language);
+  const downloadHref = officialPageUrl(i18n.language, "download");
 
   return (
     <AnimatePresence>
@@ -88,10 +84,15 @@ export function DesktopDownloadInvite() {
             </div>
 
             <Button asChild className="mt-4 w-full gap-2 rounded-xl">
-              <Link href={`/${contentLang}/download`} onClick={openDownloads}>
+              <a
+                href={downloadHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={openDownloads}
+              >
                 <Download className="h-4 w-4" aria-hidden="true" />
                 {t("desktopInviteButton")}
-              </Link>
+              </a>
             </Button>
           </div>
         </motion.aside>

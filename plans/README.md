@@ -15,7 +15,7 @@
 | 006 | [免费下载、试用与订阅](006-free-trial-subscription.md) | 2026-08-26 | DRAFT | 从 002 拆出；通用购买把 iOS 与 Mac App Store 绑在一个价格上；等待 007 完成送审闭环 |
 | 007 | [iOS 订阅前稳定版](007-ios-stable-before-subscription.md) | 2026-08-27 | IN PROGRESS | PR #82 已合入且主要真机界面已验收；Live Activity、截图与 3.1.7 TestFlight 待办 |
 | 008 | [DoneAt 品牌换装与 iOS 外表面](008-brand-doneat.md) | 2026-08-27 | IN PROGRESS | 品牌母版和 iOS/PWA/Tauri 图标已合入；Web favicon、iOS 着色图标与 Live Activity 实拍待办 |
-| 009 | [DoneAt 全平台品牌与双域分工](009-doneat-platform-brand-domain.md) | 2026-08-28 | TODO | Grill 已锁；官网仓 `doneat.app`（Astro）；`off.rainif.com` 留 Web App；拆 302 须与桌面 DoneAt 显示名同一窗口 |
+| 009 | [DoneAt 全平台品牌与双域分工](009-doneat-platform-brand-domain.md) | 2026-08-28 | IN PROGRESS | 官网已独立运作；产品仓 Web P3（品牌、301、下载入口）进行中；Desktop DisplayName 仍是 P4 |
 
 ## 仍在 `docs/` 的活计划
 

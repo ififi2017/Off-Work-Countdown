@@ -19,8 +19,8 @@ const geistMono = localFont({
 const themeInitScript = `(function(){try{var t=localStorage.getItem('theme')||'auto';var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var r=document.documentElement;if(t==='dark'||(t==='auto'&&d)){r.classList.add('dark')}else if(t==='cyberpunk'){r.classList.add('dark','theme-cyberpunk')}else if(t==='sunset'){r.classList.add('theme-sunset')}}catch(e){}})();`;
 
 export const metadata: Metadata = {
-  title: "Off Work Countdown",
-  applicationName: "Off Work Countdown",
+  title: "DoneAt",
+  applicationName: "DoneAt",
   formatDetection: { telephone: false },
 };
 

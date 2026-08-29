@@ -36,6 +36,18 @@ const IS_MAC_APP_STORE_BUILD =
 
 export const DESKTOP_STORE_PATH = "desktop-state.json";
 export const DESKTOP_COUNTDOWN_KEY = "countdown";
+/** 改名说明只对「更新前就已经有快照」的桌面用户弹一次。 */
+export const DESKTOP_BRAND_RENAME_NOTICE_KEY = "brandRenameNoticeSeen";
+
+export function shouldOfferBrandRenameNotice({
+  noticeSeen,
+  hadExistingCountdown,
+}: {
+  noticeSeen: boolean;
+  hadExistingCountdown: boolean;
+}): boolean {
+  return hadExistingCountdown && !noticeSeen;
+}
 
 // 这三个形状的唯一定义在 lib/reminders.ts —— 提醒文案最终是给那个纯函数消费的，
 // 各自声明一份迟早会漂。这里只保留桌面端惯用的名字。
@@ -401,6 +413,28 @@ export async function readDesktopCountdownState(): Promise<DesktopCountdownState
     DESKTOP_COUNTDOWN_KEY
   );
   return persisted ? normalizeDesktopCountdownState(persisted) : null;
+}
+
+/**
+ * 必须在本会话第一次写入 countdown 之前调用。新装此时还没有快照，
+ * 当场记下「不必再弹」，否则第二次启动会把刚写下的快照当成存量用户。
+ */
+export async function loadBrandRenameNoticeOffer(): Promise<boolean> {
+  const store = await getDesktopStore();
+  if (!store) return false;
+  const noticeSeen =
+    (await store.get<boolean>(DESKTOP_BRAND_RENAME_NOTICE_KEY)) === true;
+  if (noticeSeen) return false;
+  const countdown = await store.get(DESKTOP_COUNTDOWN_KEY);
+  if (countdown != null) return true;
+  await store.set(DESKTOP_BRAND_RENAME_NOTICE_KEY, true);
+  return false;
+}
+
+export async function markBrandRenameNoticeSeen(): Promise<void> {
+  const store = await getDesktopStore();
+  if (!store) return;
+  await store.set(DESKTOP_BRAND_RENAME_NOTICE_KEY, true);
 }
 
 /**

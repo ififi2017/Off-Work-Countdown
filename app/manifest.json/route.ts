@@ -40,8 +40,8 @@ export async function GET(request: Request) {
   const seo = await getTranslations(lang, "seo");
 
   const manifest = {
-    name: seo.siteName,
-    short_name: seo.siteName,
+    name: siteConfig.brandName,
+    short_name: siteConfig.brandName,
     description: seo.description,
     id: `/${lang}`,
     start_url: `/${lang}`,
@@ -76,12 +76,12 @@ export async function GET(request: Request) {
     related_applications: [
       {
         platform: "webapp",
-        url: `${siteConfig.baseUrl}/manifest.json?lang=${lang}`,
+        url: `${siteConfig.webAppUrl}/manifest.json?lang=${lang}`,
       },
     ],
     shortcuts: [
       {
-        name: seo.siteName,
+        name: siteConfig.brandName,
         url: `/${lang}`,
         icons: [
           {

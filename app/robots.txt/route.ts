@@ -6,7 +6,7 @@ export function GET() {
 User-agent: *
 Allow: /
 
-Sitemap: ${siteConfig.baseUrl}/sitemap.xml`;
+Sitemap: ${siteConfig.webAppUrl}/sitemap.xml`;
 
   return new Response(robotsTxt, {
     headers: {

@@ -17,6 +17,13 @@ and the dot read on both. `off-work-countdown-icon-rounded.svg` is only for
 legacy/Web/Desktop surfaces that display the bitmap directly instead of applying
 a platform icon mask.
 
+The macOS menu-bar tray uses rasterized marks, not the purple-backed App icon:
+`src-tauri/icons/macos-tray-mark.png` (plum hands) and
+`macos-tray-mark-dark.png` (cream hands). Render them with sharp — `qlmanage`
+composites a transparent SVG onto white. Do not list those files in
+`tauri.conf.json` `bundle.icon`, or Windows will pick up the transparent mark
+too.
+
 The files in `layers/` are flat, opaque, aligned 1024 × 1024 SVG canvases for
 Icon Composer. Import them in numeric order — background, ring, hands, dot —
 keep the background full-bleed, and use the ring, the hands and the free-time

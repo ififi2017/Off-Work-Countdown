@@ -146,7 +146,7 @@ in URLs, analytics payloads or share metadata.
   and user-triggered sharing. The version check runs automatically at launch
   and carries no account, salary or usage data; the installer itself downloads
   only after the user asks. Changing that balance means updating the About
-  page copy in `public/locales/{en,zh-CN}/content.json`, which states it.
+  page copy on the official About page at doneat.app, which states it.
 
 ## Development commands
 

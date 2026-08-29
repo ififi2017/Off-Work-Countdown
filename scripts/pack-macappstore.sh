@@ -24,10 +24,10 @@ else
   # target/<triple>/release/... 是 5 层。写 4 会把 Universal 产物整个漏掉，
   # 然后安静地拿旧的单架构包去打 .pkg——踩过一次。
   app_path=$(find "$project_root/src-tauri/target" \
-    -maxdepth 5 -type d -path "*/release/bundle/macos/Off Work Countdown.app" \
+    -maxdepth 5 -type d \( -path "*/release/bundle/macos/DoneAt.app" -o -path "*/release/bundle/macos/Off Work Countdown.app" \) \
     -exec stat -f "%m %N" {} + 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
 fi
-output=${OWC_PKG_OUTPUT:-"${app_path%/*}/OffWorkCountdown.pkg"}
+output=${OWC_PKG_OUTPUT:-"${app_path%/*}/DoneAt.pkg"}
 installer_identity=${OWC_INSTALLER_IDENTITY:-}
 
 if [ ! -d "$app_path" ]; then

@@ -1,7 +1,7 @@
 [package]
 name = "off-work-countdown"
-version = "3.1.7"
-description = "Off Work Countdown desktop app"
+version = "3.1.8"
+description = "DoneAt desktop app"
 authors = ["ififi2017"]
 license = "MIT"
 repository = "https://github.com/ififi2017/Off-Work-Countdown"

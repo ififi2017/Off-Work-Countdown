@@ -339,7 +339,7 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
                       styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskNonactivatingPanel
                         backing:NSBackingStoreBuffered
                           defer:NO];
-        _panel.title = @"Off Work Countdown";
+        _panel.title = @"DoneAt";
         _panel.releasedWhenClosed = NO;
         _panel.opaque = NO;
         _panel.backgroundColor = [NSColor clearColor];
@@ -677,4 +677,51 @@ int32_t owc_write_widget_snapshot(
         return 3;
     }
     return 0;
+}
+
+int32_t owc_effective_appearance_is_dark(void) {
+    if (@available(macOS 10.14, *)) {
+        NSAppearanceName matched = [NSApp.effectiveAppearance
+            bestMatchFromAppearancesWithNames:@[
+                NSAppearanceNameAqua,
+                NSAppearanceNameDarkAqua
+            ]];
+        return [matched isEqualToString:NSAppearanceNameDarkAqua] ? 1 : 0;
+    }
+    return 0;
+}
+
+static void (*OWCAppearanceCallback)(void);
+
+@interface OWCAppearanceObserver : NSObject
+@end
+
+@implementation OWCAppearanceObserver
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change
+                       context:(void *)context {
+    (void)keyPath;
+    (void)object;
+    (void)change;
+    (void)context;
+    if (OWCAppearanceCallback) {
+        OWCAppearanceCallback();
+    }
+}
+@end
+
+void owc_on_effective_appearance_change(void (*callback)(void)) {
+    OWCAppearanceCallback = callback;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (@available(macOS 10.14, *)) {
+            static OWCAppearanceObserver *observer;
+            observer = [OWCAppearanceObserver new];
+            [NSApp addObserver:observer
+                    forKeyPath:@"effectiveAppearance"
+                       options:NSKeyValueObservingOptionNew
+                       context:NULL];
+        }
+    });
 }

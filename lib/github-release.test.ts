@@ -45,4 +45,22 @@ describe("parseLatestRelease", () => {
       "arm64"
     );
   });
+
+  it("still maps assets after the installer prefix becomes DoneAt", () => {
+    const release: GitHubRelease = {
+      tag_name: "desktop-v3.1.8",
+      html_url: "https://example.com/release",
+      published_at: null,
+      assets: [
+        asset("DoneAt_3.1.8_x64-setup.exe"),
+        asset("DoneAt_3.1.8_aarch64.dmg"),
+      ],
+    };
+
+    const result = parseLatestRelease(release);
+    expect(result.downloads.windowsX64?.name).toBe("DoneAt_3.1.8_x64-setup.exe");
+    expect(result.downloads.macosAppleSilicon?.name).toBe(
+      "DoneAt_3.1.8_aarch64.dmg"
+    );
+  });
 });

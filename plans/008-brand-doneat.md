@@ -19,7 +19,7 @@
 | --- | --- |
 | `off-work-countdown-icon.svg` | 满幅 1024 母版 → iOS AppIcon、Web maskable |
 | `off-work-countdown-icon-rounded.svg` | 圆角容器 → Web、Tauri、`BrandIcon` |
-| `off-work-countdown-mark.svg` | 透明 UI mark → `BrandMark`；**只有指针**换明暗色，环和点两边通用 |
+| `off-work-countdown-mark.svg` | 透明 UI mark → `BrandMark`、macOS 菜单栏托盘；**只有指针**换明暗色，环和点两边通用 |
 | `layers/01..04` | Icon Composer 用的四层平色画布（背景 / 环 / 指针 / 点） |
 
 形态：圆心 512,512、半径 298 的橙环，从 109° 起顺时针扫 262°，缺口落在五点；米色指针指 12 与 5（**17:00 是产品默认下班时刻**，不是装饰）；缺口里一个脱落的橙点。旧图标的橙环 + 米色指针是老用户的识别锚点，刻意保留。
@@ -28,7 +28,7 @@
 
 - iOS：`AppIcon-512@2x.png`（1024，无 alpha）、`BrandIcon.imageset`（圆角，透明角）、新增 `BrandMark.imageset`（无底板，明/暗各 1x/2x/3x）
 - Web：`icon-192` / `icon-512`（透明角）、`icon-maskable-512`（满幅不透明）
-- Tauri：17 个，用 `npx tauri icon` 从透明的 1024 源图生成
+- Tauri：17 个，用 `npx tauri icon` 从透明的 1024 源图生成；macOS 菜单栏另用 `macos-tray-mark.png` / `macos-tray-mark-dark.png`（不要写进 `bundle.icon`）
 
 ### 代码
 

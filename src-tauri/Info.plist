@@ -29,8 +29,8 @@
 	<true/>
 	<!--
 	  与 src-tauri/macos-lproj/ 下的目录一一对应，由
-	  scripts/generate-macos-lproj.mjs 从 docs/msstore-listing-titles.csv 生成；
-	  改语言列表要两边一起改，check:version 会校验它们一致。
+	  scripts/generate-macos-lproj.mjs 按 UI 语言各写一份（显示名一律 DoneAt）；
+	  改语言列表要两边一起改。
 
 	  目录名不等于项目里的 i18n locale：zh-CN/zh-TW 对应 zh-Hans/zh-Hant，
 	  hi-IN/mr-IN 对应 hi/mr，pt 一条同时覆盖 pt-BR 与 pt-PT。理由见生成脚本。

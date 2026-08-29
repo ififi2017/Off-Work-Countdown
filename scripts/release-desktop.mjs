@@ -60,7 +60,7 @@ async function main() {
     message: `This will create and push ${tag}, immediately triggering Desktop Release.`,
     yes: options.yes,
   });
-  run("git", ["tag", "-a", tag, "-m", `Off Work Countdown ${version}`]);
+  run("git", ["tag", "-a", tag, "-m", `DoneAt ${version}`]);
   run("git", ["push", "origin", tag]);
   console.log(`${tag} pushed. The Desktop Release workflow can now start.`);
 }

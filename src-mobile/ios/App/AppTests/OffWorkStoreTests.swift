@@ -1914,6 +1914,21 @@ func shareCopyBeforeClockInCountsToStart() throws {
 }
 
 @MainActor
+@Test("Share links stay on the web app origin")
+func shareURLStaysOnWebApp() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults)
+    store.startMinutes = 9 * 60
+    store.endMinutes = 18 * 60
+    let url = store.shareURL()
+    #expect(url.host == "off.rainif.com")
+    #expect(url.absoluteString.contains("s=0900-1800"))
+    #expect(!url.absoluteString.contains("doneat.app"))
+}
+
+@MainActor
 @Test("An overnight shift stays on settlement until the end calendar day is over")
 func overnightShiftSettlesUntilEndCalendarMidnight() throws {
     let (defaults, suite) = try isolatedDefaults()

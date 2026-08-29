@@ -1,8 +1,9 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Off Work Countdown",
-  "version": "3.1.7",
+  "productName": "DoneAt",
+  "version": "3.1.8",
   "identifier": "com.rainif.offworkcountdown",
+  "mainBinaryName": "Off Work Countdown",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
@@ -14,7 +15,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Off Work Countdown",
+        "title": "DoneAt",
         "url": "en.html",
         "width": 430,
         "height": 430,
@@ -78,7 +79,8 @@
         ],
         "installerIcon": "icons/icon.ico",
         "uninstallerIcon": "icons/icon.ico",
-        "displayLanguageSelector": false
+        "displayLanguageSelector": false,
+        "installerHooks": "./windows/installer-hooks.nsh"
       }
     }
   },

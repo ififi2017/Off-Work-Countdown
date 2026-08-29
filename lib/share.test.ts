@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   buildShareUrl,
   buildShareText,
+  formatShareDisplayUrl,
   platformShareUrl,
+  SHARE_IMAGE_FILENAME,
   encodeShift,
   decodeShift,
   type SharePlatform,
@@ -24,6 +26,18 @@ describe("buildShareUrl", () => {
 
   it("produces a valid absolute URL", () => {
     expect(() => new URL(buildShareUrl("text"))).not.toThrow();
+  });
+
+  it("lands on the Web App origin, never the official site", () => {
+    const url = buildShareUrl("text", { start: "09:00", end: "18:00" });
+    expect(url.startsWith("https://off.rainif.com/")).toBe(true);
+    expect(url).not.toContain("doneat.app");
+    expect(formatShareDisplayUrl(url)).toBe("off.rainif.com");
+  });
+
+  it("names the downloaded card after the current brand", () => {
+    expect(SHARE_IMAGE_FILENAME).toBe("doneat.png");
+    expect(SHARE_IMAGE_FILENAME).not.toMatch(/off-work/i);
   });
 });
 

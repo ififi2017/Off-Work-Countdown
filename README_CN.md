@@ -4,6 +4,7 @@
 
 [English README](README.md)
 
+[![官网](https://img.shields.io/badge/DoneAt-doneat.app-0f172a)](https://doneat.app/zh-CN)
 [![网页版](https://img.shields.io/badge/Web-%E7%AB%8B%E5%8D%B3%E4%BD%BF%E7%94%A8-ff6b35)](https://off.rainif.com/zh-CN)
 [![桌面版](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
 [![许可证](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
@@ -24,7 +25,7 @@
 ## 使用下班倒计时
 
 - **网页版：**[立即使用](https://off.rainif.com/zh-CN)，无需安装。
-- **桌面客户端：**[打开下载页](https://off.rainif.com/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。macOS 版需要 macOS 11.3（Big Sur）或更高版本。
+- **桌面客户端：**[打开下载页](https://doneat.app/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。macOS 版需要 macOS 11.3（Big Sur）或更高版本。
 - **Windows 用户：**[从 Microsoft Store 获取](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ)，会自动更新，安装时也不会出现 SmartScreen 提示。
 - **macOS 用户：**[从 Mac App Store 获取](https://apps.apple.com/us/app/off-work-countdown/id6802803318)，**US$0.99**，是唯一收费的版本。它一键安装、由 App Store 负责更新，并且多一个免费版没有的倒计时小组件。买它更像是对这个项目的支持，而不是必须：上面那些 DMG 由同一份源码构建，一直免费，也不会下架。
 - **安装包列表：**[最新 GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)。
@@ -145,8 +146,9 @@ tag 才会推送。只有明确运行在非交互自动化环境时才应传入 
 
 ```typescript
 export const siteConfig = {
-  name: "Off Work Countdown",
-  baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://off.rainif.com',
+  brandName: "DoneAt",
+  webAppUrl: "https://off.rainif.com",
+  officialSiteUrl: "https://doneat.app",
   github: "https://github.com/ififi2017/Off-Work-Countdown",
   themeColor: "#F3F4F6",
 } as const;
@@ -196,9 +198,9 @@ export const languageNames = {
 
 ### 内容页
 
-应用界面本身有 19 种语言，但长文案页面——常见问题、时薪换算原理，以及作息说明页——**刻意只发布中英两版**（见 `lib/content-locales.ts`）。这个长度的文案，翻译与维护成本远高于界面字符串，铺到 19 种语言只会产出大量无人校对的稿子。其余语言访问这些页面会返回 404，而不是在日文 URL 下渲染英文内容——后者会让搜索引擎收录到语言与内容不符的页面。
-
-中文界面（含繁体）指向中文页，其余语言指向英文页。
+FAQ、原理、关于、下载和隐私的长文在 [doneat.app](https://doneat.app)。本站旧 URL
+会永久跳转到那里。Web App 仍只以英文和简体中文发布作息预设页（`/zh-CN/996` 等，见
+`lib/content-locales.ts`）。
 
 ## 使用说明
 
@@ -221,7 +223,7 @@ export const languageNames = {
 
 iPhone 和 iPad 请在 Safari 里点分享按钮，选"添加到主屏幕"；macOS 的 Safari 选"添加到程序坞"。
 
-PWA 会继续维护；如果你需要常驻菜单栏／迷你计时器、原生提醒、登录时启动和自动更新，建议使用[桌面客户端](https://off.rainif.com/zh-CN/download)。
+PWA 会继续维护；如果你需要常驻菜单栏／迷你计时器、原生提醒、登录时启动和自动更新，建议使用[桌面客户端](https://doneat.app/zh-CN/download)。
 
 ## 贡献
 
@@ -242,7 +244,7 @@ PWA 会继续维护；如果你需要常驻菜单栏／迷你计时器、原生�
 5. 使用新语言彻底测试应用。
 6. 提交包含您更改的pull request。
 
-新增语言只需要这两个文件。`content.json` 与 `presets.json` 按设计只有中英两版——参见上面的"内容页"一节。
+新增语言只需要这两个文件。作息预设（`presets.json`）按设计只有中英两版——参见上面的"内容页"一节。
 
 ## 许可证
 

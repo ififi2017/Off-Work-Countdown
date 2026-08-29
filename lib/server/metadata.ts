@@ -7,15 +7,17 @@ export function localizedSocialMetadata({
   title,
   description,
   type = "website",
+  pageOrigin = siteConfig.webAppUrl,
 }: {
   lang: string;
   path: string;
   title: string;
   description: string;
   type?: "website" | "article";
+  pageOrigin?: string;
 }): Pick<Metadata, "openGraph" | "twitter"> {
-  const url = `${siteConfig.baseUrl}/${lang}/${path}`;
-  const image = `${siteConfig.baseUrl}/${lang}/opengraph-image`;
+  const url = `${pageOrigin}/${lang}/${path}`;
+  const image = `${siteConfig.webAppUrl}/${lang}/opengraph-image`;
 
   return {
     openGraph: {
@@ -24,7 +26,7 @@ export function localizedSocialMetadata({
       type,
       locale: lang,
       url,
-      siteName: siteConfig.name,
+      siteName: siteConfig.brandName,
       images: [{ url: image, width: 1200, height: 630, alt: title }],
     },
     twitter: {

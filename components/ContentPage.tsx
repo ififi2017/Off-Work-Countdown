@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
-import { contentLocales, type ContentLocale } from "@/lib/content-locales";
 import { siteConfig } from "@/config/site";
+import { contentLocales, type ContentLocale } from "@/lib/content-locales";
+import { webAppPageUrl } from "@/lib/site-urls";
 
 // 内容页语言的自称写法。
 const localeLabels: Record<ContentLocale, string> = {
@@ -10,8 +11,8 @@ const localeLabels: Record<ContentLocale, string> = {
   "zh-CN": "中文",
 };
 
-// 内容页外壳。刻意做成服务端组件：这些页面没有交互，全部内容随首屏 HTML
-// 一起产出，是它们能被收录的前提。
+// 预设页外壳。刻意做成服务端组件：这些页面没有交互，全部内容随首屏 HTML
+// 一起产出，是它们能被收录的前提。FAQ / About 等长文已迁到官网，不再走这里。
 interface ContentPageProps {
   lang: ContentLocale;
   /** 语言切换要跳到的同名路径，例如 "faq" 或预设页的 "996"。 */
@@ -39,14 +40,14 @@ export function ContentPage({
       {
         "@type": "ListItem",
         position: 1,
-        name: siteConfig.name,
-        item: `${siteConfig.baseUrl}/${lang}`,
+        name: siteConfig.brandName,
+        item: webAppPageUrl(lang),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: heading,
-        item: `${siteConfig.baseUrl}/${lang}/${slug}`,
+        item: webAppPageUrl(lang, slug),
       },
     ],
   };

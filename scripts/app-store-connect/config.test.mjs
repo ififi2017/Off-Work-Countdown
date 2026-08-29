@@ -36,7 +36,7 @@ function validConfig() {
 
 describe("App Store Connect config", () => {
   it("maps every in-app language and covers every App Store-supported locale", () => {
-    const config = loadConfig("app-store-connect/ios/3.1.7.json", { requireFiles: false }).config;
+    const config = loadConfig("app-store-connect/ios/3.1.8.json", { requireFiles: false }).config;
     const appToStoreLocale = {
       en: "en-US",
       "zh-CN": "zh-Hans",

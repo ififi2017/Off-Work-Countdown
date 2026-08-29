@@ -1,5 +1,6 @@
 import QRCode from "qrcode";
 import type { Mood } from "./moods";
+import { formatShareDisplayUrl } from "./share";
 
 // Client-side share-image generator. Draws a polished card on an offscreen
 // <canvas> (2x DPR for retina crispness) with the mood gradient, emoji,
@@ -260,20 +261,16 @@ export async function generateShareImage(
     }
   }
 
-  // 8) Footer — logo + site name (left)
+  // 8) Footer — logo + site name (left).
+  // 新图标本身是圆角方，再裁成正圆会切掉四角，看起来像旧圆形标。
   if (logo) {
+    const size = L.logo.r * 2;
+    const x = L.logo.x - L.logo.r;
+    const y = L.logo.y - L.logo.r;
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(L.logo.x, L.logo.y, L.logo.r, 0, Math.PI * 2);
-    ctx.closePath();
+    roundRectPath(ctx, x, y, size, size, size * 0.22);
     ctx.clip();
-    ctx.drawImage(
-      logo,
-      L.logo.x - L.logo.r,
-      L.logo.y - L.logo.r,
-      L.logo.r * 2,
-      L.logo.r * 2
-    );
+    ctx.drawImage(logo, x, y, size, size);
     ctx.restore();
   }
   ctx.textAlign = "left";
@@ -293,10 +290,7 @@ export async function generateShareImage(
 
   // URL text: clean display (drop protocol, query/UTM and trailing slash);
   // the full tracked URL still lives in the QR code above.
-  const prettyUrl = opts.url
-    .replace(/^https?:\/\//, "")
-    .replace(/[?#].*$/, "")
-    .replace(/\/$/, "");
+  const prettyUrl = formatShareDisplayUrl(opts.url);
   ctx.textAlign = "center";
   ctx.font = `500 ${L.urlSize}px ${SANS}`;
   ctx.fillStyle = "rgba(255,255,255,0.9)";
