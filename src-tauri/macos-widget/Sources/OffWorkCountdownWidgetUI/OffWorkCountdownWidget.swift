@@ -134,17 +134,24 @@ public struct OffWorkCountdownWidgetEntry: TimelineEntry, Sendable {
     public let snapshotEntry: WidgetTimelineEntry?
     public let locale: String
     public let upcoming: [WidgetUpcomingItem]
+    public let clockOffsetMs: Int64
 
     public init(
         date: Date,
         snapshotEntry: WidgetTimelineEntry?,
         locale: String,
-        upcoming: [WidgetUpcomingItem] = []
+        upcoming: [WidgetUpcomingItem] = [],
+        clockOffsetMs: Int64 = 0
     ) {
         self.date = date
         self.snapshotEntry = snapshotEntry
         self.locale = locale
         self.upcoming = upcoming
+        self.clockOffsetMs = clockOffsetMs
+    }
+
+    var logicalNowMs: Int64 {
+        Int64(date.timeIntervalSince1970 * 1_000) - clockOffsetMs
     }
 }
 
@@ -182,9 +189,7 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
 
     func makeTimeline(now: Date) -> Timeline<OffWorkCountdownWidgetEntry> {
         let nowMs = Int64(now.timeIntervalSince1970 * 1_000)
-        guard let snapshot = loader.load(),
-              let current = snapshot.entry(atMs: nowMs)
-        else {
+        guard let snapshot = loader.load() else {
             return Timeline(
                 entries: [
                     OffWorkCountdownWidgetEntry(
@@ -196,14 +201,28 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                 policy: .never
             )
         }
+        let logicalNowMs = snapshot.logicalNowMs(fromRealMs: nowMs)
+        guard let current = snapshot.entry(atMs: logicalNowMs) else {
+            return Timeline(
+                entries: [
+                    OffWorkCountdownWidgetEntry(
+                        date: now,
+                        snapshotEntry: nil,
+                        locale: snapshot.locale,
+                        clockOffsetMs: snapshot.clockOffsetMs
+                    )
+                ],
+                policy: .never
+            )
+        }
 
         #if os(iOS)
         var timelineEntries = makeIOSTimelineEntries(
             snapshot: snapshot,
-            nowMs: nowMs
+            nowMs: logicalNowMs
         )
         let refreshAtMs = min(
-            snapshot.expiresAtMs,
+            snapshot.expiresAtMs + snapshot.clockOffsetMs,
             nowMs + 12 * 60 * 60 * 1_000
         )
         let reloadPolicy: TimelineReloadPolicy = .after(
@@ -215,18 +234,20 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                 date: now,
                 snapshotEntry: current,
                 locale: snapshot.locale,
-                upcoming: snapshot.upcoming
+                upcoming: snapshot.upcoming,
+                clockOffsetMs: snapshot.clockOffsetMs
             )
         ]
         timelineEntries.append(
             contentsOf: snapshot.entries
-                .filter { $0.dateMs > nowMs && $0.dateMs < snapshot.expiresAtMs }
+                .filter { $0.dateMs > logicalNowMs && $0.dateMs < snapshot.expiresAtMs }
                 .map {
                     OffWorkCountdownWidgetEntry(
-                        date: Date(timeIntervalSince1970: Double($0.dateMs) / 1_000),
+                        date: snapshot.realDate(fromLogicalMs: $0.dateMs),
                         snapshotEntry: $0,
                         locale: snapshot.locale,
-                        upcoming: snapshot.upcoming
+                        upcoming: snapshot.upcoming,
+                        clockOffsetMs: snapshot.clockOffsetMs
                     )
                 }
         )
@@ -236,11 +257,10 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
         // 重建轻量展示时间线；macOS 仍由宿主在状态变化时主动 reload。
         timelineEntries.append(
             OffWorkCountdownWidgetEntry(
-                date: Date(
-                    timeIntervalSince1970: Double(snapshot.expiresAtMs) / 1_000
-                ),
+                date: snapshot.realDate(fromLogicalMs: snapshot.expiresAtMs),
                 snapshotEntry: nil,
-                locale: snapshot.locale
+                locale: snapshot.locale,
+                clockOffsetMs: snapshot.clockOffsetMs
             )
         )
         return Timeline(entries: timelineEntries, policy: reloadPolicy)
@@ -287,10 +307,11 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
         snapshot: WidgetSnapshot
     ) -> OffWorkCountdownWidgetEntry {
         OffWorkCountdownWidgetEntry(
-            date: Date(timeIntervalSince1970: Double(snapshotEntry.dateMs) / 1_000),
+            date: snapshot.realDate(fromLogicalMs: snapshotEntry.dateMs),
             snapshotEntry: snapshotEntry,
             locale: snapshot.locale,
-            upcoming: snapshot.upcoming
+            upcoming: snapshot.upcoming,
+            clockOffsetMs: snapshot.clockOffsetMs
         )
     }
     #endif
@@ -300,6 +321,9 @@ public struct OffWorkCountdownWidgetView: View {
     @Environment(\.widgetFamily) private var family
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.calendar) private var calendar
+    #if os(iOS)
+    @Environment(\.widgetContentMargins) private var widgetContentMargins
+    #endif
     public let entry: OffWorkCountdownWidgetEntry
 
     public init(entry: OffWorkCountdownWidgetEntry) {
@@ -486,16 +510,43 @@ public struct OffWorkCountdownWidgetView: View {
     /// types"）。为它把 Widget 的部署目标抬到 14 又与决策 5「最低系统版本统一为
     /// macOS 13」冲突。ViewBuilder 有 `buildLimitedAvailability`，所以按版本决定
     /// 要不要自己加内边距，把分叉留在 View 层。
+    ///
+    /// iOS Home Screen widgets usually arrive already inset (~16pt). iPad
+    /// `.systemLarge` / extra-large often report zero `widgetContentMargins`,
+    /// so the same layout that looks fine on iPhone sits on the rounded
+    /// corners. Top up to 16pt instead of always padding, so iPhone is not
+    /// double-inset.
     @ViewBuilder
     private func contentInset<Content: View>(
         @ViewBuilder content: () -> Content
     ) -> some View {
+        #if os(iOS)
+        content().padding(missingHomeScreenMargins(minimum: 16))
+        #else
         if #available(macOS 14.0, *) {
             content()
         } else {
             content().padding(family == .systemMedium ? 18 : 15)
         }
+        #endif
     }
+
+    #if os(iOS)
+    private func missingHomeScreenMargins(minimum: CGFloat) -> EdgeInsets {
+        switch family {
+        case .accessoryCircular, .accessoryRectangular:
+            return EdgeInsets()
+        default:
+            break
+        }
+        return EdgeInsets(
+            top: max(0, minimum - widgetContentMargins.top),
+            leading: max(0, minimum - widgetContentMargins.leading),
+            bottom: max(0, minimum - widgetContentMargins.bottom),
+            trailing: max(0, minimum - widgetContentMargins.trailing)
+        )
+    }
+    #endif
 
     private func header(compact: Bool) -> some View {
         HStack(spacing: 8) {
@@ -611,7 +662,7 @@ public struct OffWorkCountdownWidgetView: View {
     }
 
     private var remainingUpcoming: [WidgetUpcomingItem] {
-        let nowMs = Int64(entry.date.timeIntervalSince1970 * 1_000)
+        let nowMs = entry.logicalNowMs
         return entry.upcoming.filter { $0.dateMs > nowMs }
     }
 
@@ -706,7 +757,7 @@ public struct OffWorkCountdownWidgetView: View {
         let date = Date(timeIntervalSince1970: Double(item.dateMs) / 1_000)
         let showsWeekday = widgetUpcomingDateShowsWeekday(
             date,
-            relativeTo: entry.date,
+            relativeTo: Date(timeIntervalSince1970: Double(entry.logicalNowMs) / 1_000),
             calendar: calendar
         )
         return HStack(spacing: 8) {
@@ -824,17 +875,25 @@ public struct OffWorkCountdownWidgetView: View {
     /// `.timer` counts remaining *effective* work during a shift, so it must
     /// not use `countdownTargetAtMs` — that field is the wall-clock finish
     /// (19:00), and treating it as a timer would eat the lunch gap.
+    ///
+    /// Debug captures keep those finish times on the virtual clock so
+    /// `Text(style: .time)` still reads 17:00. The system timer itself has
+    /// to land in real time, which is what `clockOffsetMs` is for.
     private func timerDate(for snapshotEntry: WidgetTimelineEntry) -> Date? {
         switch snapshotEntry.countdownKind {
         case .workRemaining:
             let remaining = snapshotEntry.remainingEffectiveMsAtDateMs
             guard remaining > 0 else { return nil }
             return Date(
-                timeIntervalSince1970: Double(snapshotEntry.dateMs + remaining) / 1_000
+                timeIntervalSince1970: Double(
+                    snapshotEntry.dateMs + remaining + entry.clockOffsetMs
+                ) / 1_000
             )
         default:
             guard let targetAtMs = snapshotEntry.countdownTargetAtMs else { return nil }
-            return Date(timeIntervalSince1970: Double(targetAtMs) / 1_000)
+            return Date(
+                timeIntervalSince1970: Double(targetAtMs + entry.clockOffsetMs) / 1_000
+            )
         }
     }
 

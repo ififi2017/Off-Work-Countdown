@@ -260,6 +260,12 @@ struct OffWorkCountdownRootView: View {
         serviceTask?.cancel()
         guard store.onboardingComplete else { return }
         serviceTask = Task { @MainActor in
+            // Write the widget first. Notification and Live Activity work can
+            // take long enough that a replacement task cancels us before the
+            // snapshot lands — debug captures were losing that race, so the
+            // Home Screen kept the real-clock rest-day snapshot.
+            WidgetSnapshotPublisher.shared.publish(store: store)
+            guard !Task.isCancelled else { return }
             // Foreground edits are coalesced by `pendingReschedule`. Once the
             // app is leaving the foreground there must be no additional sleep:
             // iOS may suspend the process before a delayed task gets to rebuild
@@ -276,8 +282,6 @@ struct OffWorkCountdownRootView: View {
                 guard !Task.isCancelled else { return }
                 await liveActivities.reschedule(store: store)
             }
-            guard !Task.isCancelled else { return }
-            WidgetSnapshotPublisher.shared.publish(store: store)
         }
     }
 

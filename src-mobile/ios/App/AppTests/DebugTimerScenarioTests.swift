@@ -52,6 +52,41 @@ func debugCaptureClockHasStableAnchor() {
     #expect(components.second == 0)
 }
 
+@Test(
+    "Debug capture scenarios publish the same phase to the widget",
+    arguments: [
+        (DebugTimerScenario.working, WidgetTimelinePhase.working),
+        (DebugTimerScenario.lunch, WidgetTimelinePhase.break),
+        (DebugTimerScenario.overtime, WidgetTimelinePhase.working),
+        (DebugTimerScenario.completed, WidgetTimelinePhase.done),
+        (DebugTimerScenario.restDay, WidgetTimelinePhase.before),
+        (DebugTimerScenario.manualSchedule, WidgetTimelinePhase.idle),
+    ]
+)
+@MainActor
+func debugCaptureScenarioReachesTheWidget(
+    scenario: DebugTimerScenario,
+    expectedPhase: WidgetTimelinePhase
+) {
+    withDebugStore { store in
+        store.onboardingComplete = true
+        let realAnchor = Date(timeIntervalSince1970: 1_700_000_000)
+        store.activateDebugTimerScenario(scenario, at: realAnchor)
+
+        let published = WidgetSnapshotPublisher.shared.publishedSnapshot(
+            store: store,
+            now: realAnchor
+        )
+        let logicalNow = store.timerDate(from: realAnchor)
+        let logicalNowMs = Int64(logicalNow.timeIntervalSince1970 * 1_000)
+        let realNowMs = Int64(realAnchor.timeIntervalSince1970 * 1_000)
+
+        #expect(published.clockOffsetMs == realNowMs - logicalNowMs)
+        #expect(published.entry(atMs: logicalNowMs)?.phase == expectedPhase)
+        #expect(published.entry(atMs: realNowMs) == nil)
+    }
+}
+
 @Test("Completed capture points to the following day and rest capture points to Monday")
 @MainActor
 func debugCaptureNextShiftDatesAreDeterministic() throws {

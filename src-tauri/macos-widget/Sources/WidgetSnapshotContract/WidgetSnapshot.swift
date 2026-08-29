@@ -160,6 +160,12 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     /// the decoder treats that as empty so macOS and the TypeScript fixture
     /// stay on schema 1.
     public let upcoming: [WidgetUpcomingItem]
+    /// Real clock minus the logical clock the entries were built against.
+    /// Debug captures run on a virtual Friday in 2024; WidgetKit still
+    /// compares timeline dates to `Date()`. The producer writes this offset
+    /// so the extension can look up entries on the virtual clock and hand
+    /// WidgetKit real dates. Absent from older snapshots.
+    public let clockOffsetMs: Int64
 
     public init(
         schemaVersion: Int,
@@ -168,7 +174,8 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         locale: String,
         shift: WidgetShiftTimeline?,
         entries: [WidgetTimelineEntry],
-        upcoming: [WidgetUpcomingItem] = []
+        upcoming: [WidgetUpcomingItem] = [],
+        clockOffsetMs: Int64 = 0
     ) {
         self.schemaVersion = schemaVersion
         self.generatedAtMs = generatedAtMs
@@ -177,10 +184,33 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         self.shift = shift
         self.entries = entries
         self.upcoming = upcoming
+        self.clockOffsetMs = clockOffsetMs
+    }
+
+    public func withClockOffset(_ offsetMs: Int64) -> WidgetSnapshot {
+        WidgetSnapshot(
+            schemaVersion: schemaVersion,
+            generatedAtMs: generatedAtMs,
+            expiresAtMs: expiresAtMs,
+            locale: locale,
+            shift: shift,
+            entries: entries,
+            upcoming: upcoming,
+            clockOffsetMs: offsetMs
+        )
+    }
+
+    public func logicalNowMs(fromRealMs realNowMs: Int64) -> Int64 {
+        realNowMs - clockOffsetMs
+    }
+
+    public func realDate(fromLogicalMs logicalMs: Int64) -> Date {
+        Date(timeIntervalSince1970: Double(logicalMs + clockOffsetMs) / 1_000)
     }
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion, generatedAtMs, expiresAtMs, locale, shift, entries, upcoming
+        case clockOffsetMs
     }
 
     public init(from decoder: Decoder) throws {
@@ -192,6 +222,7 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         shift = try container.decodeIfPresent(WidgetShiftTimeline.self, forKey: .shift)
         entries = try container.decode([WidgetTimelineEntry].self, forKey: .entries)
         upcoming = try container.decodeIfPresent([WidgetUpcomingItem].self, forKey: .upcoming) ?? []
+        clockOffsetMs = try container.decodeIfPresent(Int64.self, forKey: .clockOffsetMs) ?? 0
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -204,6 +235,9 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         try container.encode(entries, forKey: .entries)
         if !upcoming.isEmpty {
             try container.encode(upcoming, forKey: .upcoming)
+        }
+        if clockOffsetMs != 0 {
+            try container.encode(clockOffsetMs, forKey: .clockOffsetMs)
         }
     }
 

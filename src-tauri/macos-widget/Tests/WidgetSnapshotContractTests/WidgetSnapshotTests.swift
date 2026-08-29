@@ -32,6 +32,43 @@ func decodesTypeScriptFixture() throws {
     #expect(snapshot.entries[0].countdownTargetAtMs == 11_000)
     #expect(snapshot.entries[2].countdownTargetAtMs == 11_000)
     #expect(snapshot.upcoming.isEmpty)
+    #expect(snapshot.clockOffsetMs == 0)
+}
+
+@Test("A clock offset remaps WidgetKit's real now onto the logical timeline")
+func clockOffsetRemapsLookup() {
+    let logicalNow: Int64 = 1_724_400_000_000
+    let offset: Int64 = 63_072_000_000
+    let working = WidgetTimelineEntry(
+        dateMs: logicalNow,
+        validUntilMs: logicalNow + 10_000,
+        phase: .working,
+        labelKey: "widgetWorking",
+        countdownKind: .workRemaining,
+        countdownValueAtDateMs: 8_000,
+        countdownTargetAtMs: logicalNow + 8_000,
+        remainingEffectiveMsAtDateMs: 8_000,
+        progressAtDate: 20,
+        nextBoundaryAtMs: logicalNow + 10_000
+    )
+    let snapshot = WidgetSnapshot(
+        schemaVersion: widgetSnapshotSchemaVersion,
+        generatedAtMs: logicalNow,
+        expiresAtMs: logicalNow + 10_000,
+        locale: "en",
+        shift: nil,
+        entries: [working],
+        clockOffsetMs: offset
+    )
+    let realNow = logicalNow + offset
+
+    #expect(snapshot.logicalNowMs(fromRealMs: realNow) == logicalNow)
+    #expect(snapshot.entry(atMs: logicalNow)?.phase == .working)
+    #expect(snapshot.entry(atMs: realNow) == nil)
+    #expect(
+        snapshot.realDate(fromLogicalMs: logicalNow).timeIntervalSince1970
+            == Double(realNow) / 1_000
+    )
 }
 
 @Test("Unknown schemas and pre-generation dates are not rendered")

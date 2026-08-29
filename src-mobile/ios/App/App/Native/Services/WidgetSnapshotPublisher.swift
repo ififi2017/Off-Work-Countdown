@@ -16,14 +16,7 @@ final class WidgetSnapshotPublisher {
             forSecurityApplicationGroupIdentifier: Self.appGroupIdentifier
         ) else { return }
 
-        let nowMs = Int64(now.timeIntervalSince1970 * 1_000)
-        let snapshot = store.snapshot(at: now)
-        let payload = makeSnapshot(
-            store: store,
-            shift: snapshot,
-            active: store.countdownStarted,
-            nowMs: nowMs
-        )
+        let payload = publishedSnapshot(store: store, now: now)
         guard let data = try? JSONEncoder().encode(payload) else { return }
 
         let destination = container.appending(path: snapshotFileName)
@@ -49,6 +42,23 @@ final class WidgetSnapshotPublisher {
             at: container.appending(path: snapshotFileName)
         )
         WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
+    }
+
+    /// Builds the on-disk payload, including a debug capture's virtual clock.
+    /// Internal so tests can assert the widget sees the same phase as the app
+    /// without writing an App Group.
+    func publishedSnapshot(store: OffWorkStore, now: Date = .now) -> WidgetSnapshot {
+        let logicalNow = store.timerDate(from: now)
+        let logicalNowMs = Int64(logicalNow.timeIntervalSince1970 * 1_000)
+        let realNowMs = Int64(now.timeIntervalSince1970 * 1_000)
+        let payload = makeSnapshot(
+            store: store,
+            shift: store.snapshot(at: logicalNow),
+            active: store.shouldQuerySnapshot(at: logicalNow),
+            nowMs: logicalNowMs
+        )
+        let offset = realNowMs - logicalNowMs
+        return offset == 0 ? payload : payload.withClockOffset(offset)
     }
 
     /// Internal so phase coverage can be unit-tested without an App Group.
