@@ -157,10 +157,10 @@
       WriteRegStr HKCU "${RUNKEY}" "${PRODUCTNAME}" $R7
       DeleteRegValue HKCU "${RUNKEY}" "${LEGACY_PRODUCTNAME}"
     ${EndIf}
-    ReadRegBin $R7 HKCU "${STARTUPAPPROVEDKEY}" "${LEGACY_PRODUCTNAME}"
-    ${If} $R7 != ""
-      WriteRegBin HKCU "${STARTUPAPPROVEDKEY}" "${PRODUCTNAME}" $R7
-      DeleteRegValue HKCU "${STARTUPAPPROVEDKEY}" "${LEGACY_PRODUCTNAME}"
-    ${EndIf}
+    ; StartupApproved\Run values are REG_BINARY — NSIS has no built-in
+    ; ReadRegBin so we cannot copy the binary blob. Just remove the stale
+    ; legacy entry; Windows creates a default-enabled StartupApproved
+    ; record for the new name when the Run key fires on next login.
+    DeleteRegValue HKCU "${STARTUPAPPROVEDKEY}" "${LEGACY_PRODUCTNAME}"
   ${EndIf}
 !macroend
