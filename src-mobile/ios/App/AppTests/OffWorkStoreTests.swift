@@ -2533,6 +2533,17 @@ func liveActivityProgressFreezesDuringLunch() {
     #expect(afterLunchProgress > lunchProgress)
 }
 
+@Test("The iPad phone-timer fallback is only for a sidebar-open narrow pane")
+func tabletPhoneFallbackRespectsCollapsedSidebar() {
+    // Mini 5 with the sidebar open: ~478 pt, phone canvas.
+    #expect(TabletTimerPane.usesPhoneFallback(paneWidth: 478, sidebarVisible: true))
+    // Same width after collapse must still take the immersive track.
+    #expect(!TabletTimerPane.usesPhoneFallback(paneWidth: 478, sidebarVisible: false))
+    #expect(!TabletTimerPane.usesPhoneFallback(paneWidth: 610, sidebarVisible: false))
+    #expect(!TabletTimerPane.usesPhoneFallback(paneWidth: 664, sidebarVisible: false))
+    #expect(!TabletTimerPane.usesPhoneFallback(paneWidth: 734, sidebarVisible: true))
+}
+
 private func isolatedDefaults() throws -> (UserDefaults, String) {
     let suite = "OffWorkStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))

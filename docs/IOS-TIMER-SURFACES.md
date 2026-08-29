@@ -44,7 +44,7 @@
 | regular 高 + `horizontalSizeClass == .regular` | `TabletShellView` | iPad 全屏（竖屏与横屏） |
 | compact 宽 + regular 高 | 系统 `TabView` | 所有 iPhone 竖屏；iPad 很窄的分屏 |
 
-iPad 详情栏 &lt; 620 pt 时回落到 iPhone 竖屏计时布局（内容限 440 pt）。≥ 620 pt 才用 iPad 专属密度。侧边栏固定 290 pt。
+iPad 详情栏 &lt; 620 pt **且侧边栏开着** 时回落到 iPhone 竖屏计时布局（内容限 440 pt）。收起侧边栏一律走 iPad 沉浸式（午休墙进度条），不再看这道宽度门——Mini 5 收起后仍可能测得不足 620 pt。侧边栏固定 290 pt。
 
 ---
 
@@ -174,7 +174,7 @@ horizontalSizeClass == .regular
 
 ### 4.4 iPad
 
-窄栏回落（详情 &lt; 620 pt）= 竖屏那套。宽栏：
+窄栏回落（详情 &lt; 620 pt **且侧边栏开着**）= 竖屏那套。收起侧边栏后即使宽度仍低于 620 也走宽栏沉浸式。宽栏：
 
 - 上班 / 下班倒计时：工作台（侧边栏开）或沉浸式（侧边栏关）。
 - **沉浸式必须仍能碰到提前上班、提前下班、加班、分享、取消手动计时。** 不能只活在收起的侧边栏里。

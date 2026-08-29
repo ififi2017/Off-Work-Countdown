@@ -54,7 +54,7 @@ struct TabletShellView: View {
     }
 
     private var tabletTimerRoot: some View {
-        NarrowPaneFallback { isNarrow in
+        NarrowPaneFallback(sidebarVisible: sidebarVisible) { isNarrow in
             if isNarrow {
                 // Push into this stack rather than take the default, which
                 // switches to the settings tab. The sidebar selection should
@@ -876,18 +876,37 @@ private struct AdaptiveSettingsColumns<Content: View>: View {
 /// every value. The phone layout is built for exactly this width, so it is the
 /// right answer rather than a compromise.
 ///
+/// Collapsing the sidebar is how this app enters the immersive clock (the
+/// progress track that names the lunch gap). That gesture must not keep the
+/// phone fallback: an iPad mini 5 can still measure under 620 pt after the
+/// sidebar is gone (system chrome, Display Zoom, a stale reader during the
+/// collapse), and the 620 pt floor was only for the sidebar-open pane.
+///
 /// The reader sits inside the NavigationStack and wraps only the root content:
 /// pushed screens are presented by the stack itself, so a keyboard-driven
 /// resize here cannot churn their identity the way it did on iPhone.
 private struct NarrowPaneFallback<Content: View>: View {
+    var sidebarVisible: Bool
     @ViewBuilder let content: (Bool) -> Content
-
-    private static var tabletMinimum: CGFloat { 620 }
 
     var body: some View {
         GeometryReader { proxy in
-            content(proxy.size.width < Self.tabletMinimum)
-                .frame(width: proxy.size.width, height: proxy.size.height)
+            content(
+                TabletTimerPane.usesPhoneFallback(
+                    paneWidth: proxy.size.width,
+                    sidebarVisible: sidebarVisible
+                )
+            )
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
+    }
+}
+
+/// Shared so the fallback and its tests describe the same door.
+nonisolated enum TabletTimerPane {
+    static let minimumWidth: CGFloat = 620
+
+    static func usesPhoneFallback(paneWidth: CGFloat, sidebarVisible: Bool) -> Bool {
+        sidebarVisible && paneWidth < minimumWidth
     }
 }
