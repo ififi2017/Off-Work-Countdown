@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 
 struct OffWorkCountdownRootView: View {
-    @State private var store = OffWorkStore()
+    @State private var store = OffWorkStore(records: .persisted())
     @State private var notifications = NotificationService()
     @State private var liveActivities = LiveActivityService()
     @State private var serviceTask: Task<Void, Never>?
@@ -55,7 +55,10 @@ struct OffWorkCountdownRootView: View {
         }
         .onChange(of: store.onboardingComplete) {
             AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
-            if store.onboardingComplete { scheduleServices() }
+            if store.onboardingComplete {
+                scheduleServices()
+                store.noteTimerSurfaceVisible()
+            }
         }
         .onChange(of: store.countdownStarted) {
             pendingReschedule = false
@@ -117,6 +120,14 @@ struct OffWorkCountdownRootView: View {
             store.refreshSystemLanguage()
             applyQAGeometryIfRequested()
             clearDebugServicesAfterResetIfNeeded()
+            if store.onboardingComplete {
+                store.noteTimerSurfaceVisible()
+            }
+        }
+        .onChange(of: store.selectedTab) { _, tab in
+            if tab == .timer, store.onboardingComplete {
+                store.noteTimerSurfaceVisible()
+            }
         }
     }
 
@@ -198,6 +209,14 @@ struct OffWorkCountdownRootView: View {
                 Label(store.t("timerTab"), systemImage: "timer")
             }
             .tag(AppTab.timer)
+
+            NavigationStack(path: $store.recordsPath) {
+                RecordsDesignView(store: store)
+            }
+            .tabItem {
+                Label(store.t("recordsTab"), systemImage: "calendar")
+            }
+            .tag(AppTab.records)
 
             NavigationStack(path: $store.settingsPath) {
                 SettingsDesignView(store: store)

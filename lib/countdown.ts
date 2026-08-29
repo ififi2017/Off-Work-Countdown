@@ -555,3 +555,69 @@ export function getDailySalary(
   }
   return (parsed / monthlyWorkingDays) * annualizedMultiplier;
 }
+
+export interface ScheduleDayExpansion {
+  dayKey: string;
+  shiftAnchorStartAtMs: number;
+  isWorkday: boolean;
+  segments: ShiftSegment[];
+}
+
+function localDayKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Expand every local calendar day in `[fromMs, throughMs]` through the shared
+ * shift rules. Rest days still carry the planned segments so a makeup-day
+ * exception can reuse them. Callers must not pass overtime or salary.
+ *
+ * Noon is the probe time so an overnight 22:00–06:00 shift keys as that
+ * calendar day's start, not the previous night.
+ */
+export function expandScheduleRange(params: {
+  startTime: string;
+  endTime: string;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  breakStartTime?: string | null;
+  breakDurationMinutes?: number;
+  fromMs: number;
+  throughMs: number;
+}): ScheduleDayExpansion[] {
+  const from = localDay(new Date(params.fromMs));
+  const through = localDay(new Date(params.throughMs));
+  if (through < from) return [];
+
+  const options: ShiftBuildOptions = {
+    breakStartTime: params.breakStartTime ?? null,
+    breakDurationMinutes: params.breakDurationMinutes ?? 0,
+  };
+  const days: ScheduleDayExpansion[] = [];
+  for (let day = new Date(from); day <= through; day = addCalendarDays(day, 1)) {
+    const noon = new Date(day);
+    noon.setHours(12, 0, 0, 0);
+    const timeline = buildShiftTimeline(
+      params.startTime,
+      params.endTime,
+      noon,
+      options
+    );
+    const shiftAnchorStartAtMs = getShiftStartAtMs(timeline);
+    const shiftStart = new Date(shiftAnchorStartAtMs);
+    days.push({
+      dayKey: localDayKey(shiftStart),
+      shiftAnchorStartAtMs,
+      isWorkday: isScheduledWorkday(
+        shiftStart,
+        params.workdays,
+        params.schedule
+      ),
+      segments: timeline.segments,
+    });
+  }
+  return days;
+}

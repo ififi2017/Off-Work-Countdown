@@ -302,6 +302,20 @@ export function createIOSNativeRulesBundle() {
       return JSON.stringify(shifts);
     },
 
+    expandScheduleRange(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify(countdown.expandScheduleRange({
+        startTime: input.startTime,
+        endTime: input.endTime,
+        workdays: input.workdays,
+        schedule: input.schedule || null,
+        breakStartTime: input.breakStartTime || null,
+        breakDurationMinutes: input.breakDurationMinutes || 0,
+        fromMs: Number(input.fromMs),
+        throughMs: Number(input.throughMs),
+      }));
+    },
+
     summarize(inputJSON) {
       const input = JSON.parse(inputJSON);
       const asOf = new Date(input.asOfMs);

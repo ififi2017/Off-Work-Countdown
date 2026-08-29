@@ -1,7 +1,7 @@
 import Foundation
 import JavaScriptCore
 
-struct NativeShiftSegment: Codable, Hashable {
+struct NativeShiftSegment: Codable, Hashable, Sendable {
     let startAtMs: Double
     let endAtMs: Double
 }
@@ -103,6 +103,15 @@ struct NativeShiftSnapshot: Codable, Hashable {
 /// Salary-free absolute shift returned in one batch for WidgetKit. The shared
 /// TypeScript rules still decide every boundary; this narrower projection only
 /// avoids hundreds of Swift-to-JavaScriptCore calls while publishing a year.
+/// One calendar day's planned hours from `expandScheduleRange`. Rest days
+/// still carry segments so a makeup-day exception can reuse them.
+struct NativeScheduleDayExpansion: Codable, Hashable, Sendable {
+    let dayKey: String
+    let shiftAnchorStartAtMs: Double
+    let isWorkday: Bool
+    let segments: [NativeShiftSegment]
+}
+
 struct NativeWidgetShiftSnapshot: Codable, Hashable {
     let segments: [NativeShiftSegment]
     let startAtMs: Double
@@ -228,6 +237,38 @@ final class CountdownRules {
         return shifts
     }
 
+    func expandScheduleRange(
+        configuration: ScheduleHoursConfiguration,
+        from: Date,
+        through: Date
+    ) throws -> [NativeScheduleDayExpansion] {
+        if let loadError { throw loadError }
+        let request = NativeScheduleRangeRequest(
+            startTime: configuration.startTime,
+            endTime: configuration.endTime,
+            workdays: configuration.workdays,
+            schedule: configuration.schedule,
+            breakStartTime: configuration.breakStartTime,
+            breakDurationMinutes: configuration.breakDurationMinutes,
+            fromMs: from.timeIntervalSince1970 * 1_000,
+            throughMs: through.timeIntervalSince1970 * 1_000
+        )
+        guard let context,
+              let bridge = context.objectForKeyedSubscript("OWCNative"),
+              !bridge.isUndefined,
+              let data = try? JSONEncoder().encode(request),
+              let json = String(data: data, encoding: .utf8),
+              let result = bridge.invokeMethod("expandScheduleRange", withArguments: [json]),
+              !result.isUndefined,
+              !result.isNull,
+              let output = result.toString()?.data(using: .utf8),
+              let days = try? JSONDecoder().decode([NativeScheduleDayExpansion].self, from: output)
+        else {
+            throw CountdownRulesError.invalidResult
+        }
+        return days
+    }
+
     func reminders(input: NativeRulesInput, reminderInputs: NativeReminderInputs) throws -> [NativeReminder] {
         if let loadError { throw loadError }
         let request = NativeReminderRequest(rules: input, reminderInputs: reminderInputs)
@@ -304,7 +345,7 @@ final class CountdownRules {
     }
 }
 
-struct NativeWorkSchedule: Codable {
+struct NativeWorkSchedule: Codable, Equatable, Hashable, Sendable {
     let mode: String
     let referenceWeekStartMs: Double?
     let referenceWeekType: String?
@@ -334,6 +375,17 @@ private struct NativeWidgetTimelineRequest: Codable {
     let rules: NativeRulesInput
     let throughMs: Double
     let maximumCount: Int
+}
+
+private struct NativeScheduleRangeRequest: Codable {
+    let startTime: String
+    let endTime: String
+    let workdays: [Int]
+    let schedule: NativeWorkSchedule
+    let breakStartTime: String?
+    let breakDurationMinutes: Int
+    let fromMs: Double
+    let throughMs: Double
 }
 
 private struct NativeTodayImpactRequest: Codable {

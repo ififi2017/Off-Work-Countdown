@@ -3,6 +3,7 @@ import SwiftUI
 
 enum AppTab: String, CaseIterable, Hashable, Identifiable {
     case timer
+    case records
     case settings
 
     var id: String { rawValue }
@@ -227,6 +228,7 @@ final class OffWorkStore {
     static let allowedLiveActivityLeadMinutes = [5, 15, 30]
 
     let localizer = NativeLocalizer()
+    let records: RecordCoordinator
     private let defaults: UserDefaults
 #if DEBUG
     var debugTimerSession: DebugTimerScenario.Session?
@@ -255,6 +257,7 @@ final class OffWorkStore {
     /// pushed page survives a rotation — portrait and landscape are separate
     /// view trees, and each used to own its own path. Not persisted.
     var timerPath: [AppRoute] = []
+    var recordsPath: [String] = []
     var settingsPath: [AppRoute] = []
     /// Unsaved settings drafts survive rotation because portrait and landscape
     /// use separate navigation view trees. They are intentionally not persisted
@@ -265,9 +268,19 @@ final class OffWorkStore {
     /// Landscape drives a single `NavigationStack` for both tabs, where
     /// portrait has one per tab; this projects whichever is current.
     var activePath: [AppRoute] {
-        get { selectedTab == .timer ? timerPath : settingsPath }
+        get {
+            switch selectedTab {
+            case .timer: timerPath
+            case .records: []
+            case .settings: settingsPath
+            }
+        }
         set {
-            if selectedTab == .timer { timerPath = newValue } else { settingsPath = newValue }
+            switch selectedTab {
+            case .timer: timerPath = newValue
+            case .records: break
+            case .settings: settingsPath = newValue
+            }
         }
     }
     var onboardingPage = 0
@@ -499,7 +512,7 @@ final class OffWorkStore {
     /// once without persisting a permanent suppression flag.
     var lastCelebratedEndAtMs: Double = 0
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, records: RecordCoordinator? = nil) {
 #if DEBUG
         let shouldReset = defaults.bool(forKey: Key.debugResetNextLaunch)
         if shouldReset {
@@ -516,6 +529,7 @@ final class OffWorkStore {
         let debugRoute: AppRoute? = nil
 #endif
         self.defaults = defaults
+        self.records = records ?? RecordCoordinator.inMemory()
         selectedTab = debugRoute == nil
             ? AppTab(rawValue: defaults.string(forKey: Key.selectedTab) ?? "timer") ?? .timer
             : .settings
@@ -613,6 +627,9 @@ final class OffWorkStore {
             defaults.removeObject(forKey: Key.qaDebugScenario)
             activateDebugTimerScenario(debugScenario)
         }
+        if shouldReset {
+            self.records.deleteAllLocalData()
+        }
 #endif
     }
 
@@ -654,6 +671,153 @@ final class OffWorkStore {
     /// `countdownStarted` was already true, so the widget kept publishing
     /// "rest day" while the app counted the shift down.
     var forcedWorkdayKey: String? { forcedWorkdayDate }
+
+    /// Salary-free hours for a schedule snapshot. Overtime and "now" stay off.
+    func hoursConfiguration(at date: Date = .now) -> ScheduleHoursConfiguration {
+        let input = rulesInput(at: date, using: .base)
+        return ScheduleHoursConfiguration(
+            startTime: input.startTime,
+            endTime: input.endTime,
+            workdays: input.workdays,
+            schedule: input.schedule,
+            breakStartTime: input.breakStartTime,
+            breakDurationMinutes: input.breakDurationMinutes
+        )
+    }
+
+    /// First visit to the timer surface today. Not "started work".
+    func resolvedDays(from: Date, through: Date) -> [DayResolution] {
+        records.ensureSeeded(hours: hoursConfiguration(at: from), at: from)
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: from)
+        let end = calendar.startOfDay(for: through)
+        guard start <= end else { return [] }
+
+        var expansions: [UUID: [String: ScheduleExpansion]] = [:]
+        var cursor = start
+        var result: [DayResolution] = []
+        while cursor <= end {
+            let dayKey = Self.dayKey(for: cursor)
+            let period = DayRecordResolver.period(on: cursor, from: records.state.periods)
+            let snapshot = period.flatMap {
+                DayRecordResolver.snapshot(on: cursor, in: $0, from: records.state.snapshots)
+            }
+            if let snapshot, expansions[snapshot.id] == nil {
+                if let configuration = try? JSONDecoder().decode(
+                    ScheduleHoursConfiguration.self,
+                    from: snapshot.configurationData
+                ),
+                   let days = try? CountdownRules.shared.expandScheduleRange(
+                    configuration: configuration,
+                    from: start,
+                    through: end
+                   ) {
+                    expansions[snapshot.id] = Dictionary(
+                        uniqueKeysWithValues: days.map {
+                            ($0.dayKey, ScheduleExpansion(isWorkday: $0.isWorkday, segments: $0.segments))
+                        }
+                    )
+                } else {
+                    expansions[snapshot.id] = [:]
+                }
+            }
+            let expansion = snapshot.flatMap { expansions[$0.id]?[dayKey] }
+                ?? ScheduleExpansion(isWorkday: false, segments: [])
+            result.append(
+                DayRecordResolver.resolve(
+                    dayKey: dayKey,
+                    shiftAnchorDate: cursor,
+                    periods: records.state.periods,
+                    snapshots: records.state.snapshots,
+                    exceptions: records.state.exceptions,
+                    overrides: records.state.overrides,
+                    expand: { _ in expansion }
+                )
+            )
+            guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
+            cursor = next
+        }
+        return result
+    }
+
+    func observations(on day: Date) -> [WorkObservation] {
+        records.state.observations
+            .filter { Calendar.current.isDate($0.shiftAnchorDate, inSameDayAs: day) }
+            .sorted { $0.occurredAt < $1.occurredAt }
+    }
+
+    func exportRecordsFile(at date: Date = .now) throws -> URL {
+        let data = try records.exportJSON(exportedAt: date)
+        let url = FileManager.default.temporaryDirectory.appending(path: "doneat-records.json")
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func noteTimerSurfaceVisible(at date: Date = .now) {
+        writeObservation(.timerSurfaceFirstSeen, at: date, eventID: UUID())
+    }
+
+    func writeObservation(
+        _ kind: WorkObservationKind,
+        at date: Date,
+        eventID: UUID
+    ) {
+        records.ensureSeeded(hours: hoursConfiguration(at: date), at: date)
+        let shift = snapshot(at: date)
+        let anchor = shift?.startDate ?? date
+        var valueData: Data?
+        if kind == .overtimeDeclared, let overtimeEndAtMs {
+            valueData = try? JSONEncoder().encode(["overtimeEndAtMs": overtimeEndAtMs])
+        }
+        records.recordObservation(
+            kind: kind,
+            eventID: eventID,
+            shiftAnchorDate: Calendar.current.startOfDay(for: anchor),
+            occurredAt: date,
+            snapshotID: records.currentSnapshotID(on: anchor) ?? UUID(),
+            valueData: valueData
+        )
+    }
+
+    /// 002 P0A first cut: the live timer marks as a `DayOverride`, or `nil`
+    /// when today still falls through to the schedule.
+    func projectedDayOverride(at date: Date = .now) -> DayOverride? {
+        let useBaseStart = isStartedEarly(at: date)
+        let shift = snapshot(
+            at: date,
+            startMinutes: useBaseStart ? scheduleStartMinutes(at: date) : nil
+        )
+        let marks = timerDayMarks(at: date, workday: shift?.isWorkday == true)
+        guard let shift else { return nil }
+        return DayOverrideProjection.project(
+            marks: marks,
+            dayKey: Self.dayKey(for: shift.startDate),
+            shiftAnchorDate: Calendar.current.startOfDay(for: shift.startDate),
+            plannedSegments: shift.segments
+        )
+    }
+
+    func timerDayMarks(at date: Date = .now, workday: Bool? = nil) -> TimerDayMarks {
+        let current = snapshot(at: date)
+        let endedEarly = current.map(isEndedEarly) ?? false
+        return TimerDayMarks(
+            earlyStartAtMs: isStartedEarly(at: date) ? earlyStartAtMs : nil,
+            earlyOffAtMs: endedEarly ? earlyOffAtMs : nil,
+            forcedWorkdayDate: forcedWorkdayDate,
+            hasTodayOverride: usesTodayOverride(at: date),
+            hasUnscheduledSession: countdownStarted && effectiveScheduleMode(at: date) == .off,
+            isWorkday: workday ?? (current?.isWorkday == true)
+        )
+    }
+
+    /// Hours without an early clock-in, so the projector can apply that bound
+    /// itself instead of baking it into the rules snapshot twice.
+    private func scheduleStartMinutes(at date: Date) -> Int {
+        if usesTodayOverride(at: date), let todayOverride {
+            return todayOverride.startMinutes
+        }
+        return startMinutes
+    }
 
     /// Whether `shift` is a rest day the user chose to work anyway.
     ///
@@ -1100,6 +1264,7 @@ final class OffWorkStore {
             dismissedCompletedEndAtMs = nil
         }
         recordActiveCountdownBoundary(at: date)
+        writeObservation(.countdownStarted, at: date, eventID: UUID())
     }
 
     /// Ends today's shift early. On a schedule this is a record, not a switch.
@@ -1355,7 +1520,7 @@ final class OffWorkStore {
         return reminder.atMs >= nextStart
     }
 
-    func stopCountdown() {
+    func stopCountdown(at date: Date = .now, recordObservation: Bool = true) {
         // A schedule has no session to stop. Unscheduled midnight still
         // tears down today's manual run.
         guard !followsSchedule else {
@@ -1377,6 +1542,9 @@ final class OffWorkStore {
         clearOvertime()
         clearEarlyClockInRecord()
         clearEarlyClockOffRecord()
+        if recordObservation {
+            writeObservation(.countdownStopped, at: date, eventID: UUID())
+        }
     }
 
     /// Scheduled countdowns stay armed across calendar days. The concrete
@@ -1451,7 +1619,7 @@ final class OffWorkStore {
                 let endDay = Calendar.current.startOfDay(for: endDate)
                 if let resetDate = Calendar.current.date(byAdding: .day, value: 1, to: endDay),
                    date >= resetDate {
-                    stopCountdown()
+                    stopCountdown(at: date, recordObservation: false)
                     return true
                 }
                 return changed
@@ -1464,7 +1632,7 @@ final class OffWorkStore {
                   current.remainingMs > 0,
                   current.startAtMs <= date.timeIntervalSince1970 * 1_000
             else {
-                stopCountdown()
+                stopCountdown(at: date, recordObservation: false)
                 return true
             }
             self.activeCountdownEndAtMs = current.endAtMs
@@ -1477,7 +1645,7 @@ final class OffWorkStore {
               date >= resetDate
         else { return changed }
 
-        stopCountdown()
+        stopCountdown(at: date, recordObservation: false)
         return true
     }
 
@@ -1628,6 +1796,7 @@ final class OffWorkStore {
         // Overtime after an early clock-off is "I wasn't done".
         clearEarlyClockOffRecord()
         dismissedCompletedEndAtMs = nil
+        writeObservation(.overtimeDeclared, at: date, eventID: UUID())
     }
 
     func applyScheduleChange(
@@ -1686,6 +1855,16 @@ final class OffWorkStore {
         } else if onboardingComplete, effectiveScheduleMode(at: date) != .off {
             countdownStarted = true
         }
+
+        let effectiveFrom: Date
+        if decision == .applyToToday {
+            effectiveFrom = Calendar.current.startOfDay(for: date)
+        } else if let next = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: date)) {
+            effectiveFrom = next
+        } else {
+            effectiveFrom = date
+        }
+        records.commitHours(hoursConfiguration(at: date), effectiveFrom: effectiveFrom, at: date)
     }
 
     private func clearTodayAdjustments() {
@@ -2079,7 +2258,7 @@ final class OffWorkStore {
         lastCelebratedEndAtMs = 0
     }
 
-    private static func dayKey(for date: Date) -> String {
+    static func dayKey(for date: Date) -> String {
         let components = Calendar.current.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", components.year ?? 0, components.month ?? 0, components.day ?? 0)
     }

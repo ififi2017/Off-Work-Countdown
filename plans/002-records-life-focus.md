@@ -1,6 +1,6 @@
 # 002 — 从「倒计时」到「记录」：工作占比、人生视图与专注
 
-- **Status**: DRAFT
+- **Status**: IN PROGRESS
 - **Reviewed against**: 755052f（007 已合入；本计划架构仍以 PR #81 为基线）
 - **Severity**: HIGH
 - **Category**: Product values / Architecture / Persistence / Privacy / New surfaces
@@ -217,6 +217,43 @@ P0B 的冲突裁决只看 `(editCount, editTieBreaker)`；本地阶段 `editCoun
 这条链是整份设计的骨架，UI 的「数据来源」说明就是它的直接投影：点开某一天，先告诉用户
 这天走的是哪一层，再展示细节。
 
+#### 读取时决议（P0A 第二刀）
+
+`DayRecordResolver` 是这条链的纯函数，仍不写 SwiftData，也不展开班次——共享规则的
+`ScheduleExpansion` 由调用方注入。重叠阶段按 `startsOn`、`createdAt`、`id` 取胜；同槽
+快照按 `(editCount, editTieBreaker, id)` 取胜。`.cleared` 的覆盖或例外是回落，不是一层
+「已清空」结论。`.notWorking` 是请假（覆盖），法定假日是例外，两者不能互换。
+
+#### 其余实体、JSON 与批量展开（P0A 第三刀）
+
+值类型补齐 `WorkObservation` / `LifeProfile` / `DailyWorkSummary`（派生，不进导出）/
+`ErasedID`。`DayOverride` 从第一天带 `editedAt` / `editCount` / `editTieBreaker`，计时
+投影仍把它们留空。
+
+本地档案是 Application Support 里的 JSON，不进 App Group，也不配置
+`cloudKitDatabase`。SwiftData `@Model` 刻意还没铺：JSON 是 Android / 备份契约，表映射
+等 P1 图表缓存真的需要查询层再做，避免 P0B 回头改表。这是顺序，不是改口径。
+
+`ErasedID.logicalKey` 是字符串，不是计划草稿里的 `UUID`。覆盖和例外的身份本来就是
+`dayKey`（云端 recordName 也是 `day.2026-08-26` 这种字符串）。导入默认跳过已擦除身份；
+显式恢复时 UUID 实体换新随机 id，自然键实体写回同一 `dayKey`，擦除行都保留。
+
+`expandScheduleRange` 落在 `lib/countdown.ts`，经 JS 桥一次展开一个日历区间。休息日也
+带着计划片段，补班例外才能复用。**实测（2026-08-30，iPhone 17 Pro 模拟器，主线程
+JavaScriptCore）**：十年工作日 + 午休（2016-01-01…2025-12-31，3653 天）在
+`expandScheduleRangeTenYearMeasurement` 里整段测试约 1.2–1.7s；同一区间在 Node V8 约
+24ms。主线程可感知卡顿的扳机未触发，**不把规则迁到 Swift**。
+
+最小事件已挂上 `OffWorkStore`：计时页首次看见、开始 / 停止、登记加班。跨日
+`reconcile` 只重连，不另写一条开始。观察按 `eventID` 幂等；已擦除的 id 不会被同一
+次重试写回。
+
+#### 免费记录 Tab（P1 只读面，未做付费墙）
+
+第三个 Tab 已接上，`activePath` 按 Tab 分支，记录日详情走自己的 `recordsPath`。免费面
+是今年逐日结论 + 来源 + 已有观察 + 导出 / 本机删除。周 / 月 / 年图表、人生视图、历史
+编辑和 StoreKit **停在 006/007 送审闸门**，没有半成品付费页。
+
 ### 2. 职业阶段与排班快照
 
 ~~~swift
@@ -399,6 +436,30 @@ enum DayOverrideKind: String {
 - 覆盖是用户的话，因此**没有「应用觉得你改错了」这种校验**；只做基本合法性检查（片段不
   交叉、结束晚于开始）。
 - 覆盖影响工时统计与人生视图，**不影响收入**——见「收入口径」。
+
+#### 计时页本地标记 → DayOverride（P0A 第一刀）
+
+007 冻住的计时标记是覆盖的前身，不是第二套「实际工时」。投影是纯函数
+（`DayOverrideProjection`），尚不写 SwiftData。计时标记**只**产出
+`.customSegments` 或「没有覆盖」；`.confirmedAsScheduled` / `.notWorking` /
+`.cleared` 是记录 Tab 的动作，不由计时按钮发明。
+
+| 计时标记 | 覆盖 | 片段 |
+| --- | --- | --- |
+| 无标记 | 无 | 回落到排班 |
+| 提前上班 | `customSegments` | 第一段提到按下时刻，下班不变 |
+| 提前下班 | `customSegments` | 末段裁到按下时刻；**不是**请假 |
+| 提前上 + 提前下 | `customSegments` | 两端都裁 |
+| 休息日手动计时 | `customSegments` | 当天沿用已有时刻；`dayKey` 是班次开始日 |
+| 未排班手动计时 | `customSegments` | 同上；没有 `forcedWorkdayDate` |
+| 「只从下一班起」且今天仍是工作日 | `customSegments` | 覆盖层里的旧时刻 |
+| 「只从下一班起」且今天仍是休息 | 无 | 这是排班快照生效日，不是「这天怎么上的」 |
+| 「今天也改」且没有其它标记 | 无 | 底图排班本身变了 |
+| 只有加班 | 无 | `WorkObservation.overtimeDeclared` |
+| 撤销 / 取消手动计时 | 无 | 标记清掉就回落 |
+
+`dayKey` 永远是班次开始日。周五 22:00–周六 06:00，周六 01:00 提前下班仍键为周五。
+午休空隙来自规则已经切好的 fragments，投影只裁边界，不另写一套班次算法。
 
 ### 5. 日历例外：节假日与调休补班
 
@@ -911,8 +972,10 @@ enum FocusEndReason: String {
 2. ~~只读查看能翻多远~~ **已定**：全历史不限期。免费的是逐日结论、来源与已有观察构成的
    朴素列表；付费的是跨日聚合——周 / 月 / 年图表、比例统计、人生视图与历史编辑。分界线是
    「能不能把它们加起来」，不是「能看多久以前」。
-3. 共享规则的批量展开接口签名与性能预算。**这是 P0A 的交付项，也是 JS 迁移扳机的度量**，
-   越早试越好。
+3. ~~共享规则的批量展开接口签名与性能预算~~ **已测**：`expandScheduleRange({ fromMs,
+   throughMs, hours })` → 逐日 `{ dayKey, shiftAnchorStartAtMs, isWorkday, segments }`。
+   十年展开在 iPhone 17 Pro 模拟器主线程约 1.2–1.7s，未触发迁移。预算若以后在真机年视图
+   滚动掉帧再议。
 4. 人生视图的分享形态：截图会不会带出年龄或出生年份？`hidesExactAges` 是否应该是分享时的
    默认值？
 5. 专注与工作倒计时的 Live Activity 共存策略（P2 的主要技术未知数）。

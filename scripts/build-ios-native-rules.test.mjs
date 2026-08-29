@@ -142,6 +142,26 @@ describe("iOS native rule bundle", () => {
     expect(widgetShifts.every((shift) => !("dailySalary" in shift))).toBe(true);
   });
 
+  it("expands every calendar day including rest-day planned hours", () => {
+    const context = { console };
+    vm.createContext(context);
+    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const days = JSON.parse(context.OWCNative.expandScheduleRange(JSON.stringify({
+      startTime: "09:00",
+      endTime: "17:00",
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" },
+      breakStartTime: null,
+      breakDurationMinutes: 0,
+      fromMs: new Date(2026, 7, 24).getTime(),
+      throughMs: new Date(2026, 7, 30).getTime(),
+    })));
+    expect(days).toHaveLength(7);
+    expect(days.filter((day) => day.isWorkday)).toHaveLength(5);
+    expect(days.find((day) => day.dayKey === "2026-08-29").segments).toHaveLength(1);
+    expect(days.every((day) => !("dailySalary" in day))).toBe(true);
+  });
+
   it("advances clock-in progress from zero and keeps the weekend anchor stable", () => {
     const context = { console };
     vm.createContext(context);
