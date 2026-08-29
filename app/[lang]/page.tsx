@@ -2,11 +2,6 @@ import { OffWorkCountdown } from '@/components/off-work-countdown';
 import { DesktopDownloadInvite } from '@/components/DesktopDownloadInvite';
 import { I18nProvider } from '@/components/I18nProvider';
 import { siteConfig } from '@/config/site';
-import { resolveContentLocale } from '@/lib/content-locales';
-import {
-  getContent,
-  pickMacAppStoreDialogCopy,
-} from '@/lib/server/content';
 import { getTranslations } from '@/lib/server/i18n';
 import { IS_WEB_BUILD } from '@/lib/build-target';
 
@@ -16,28 +11,25 @@ type Props = {
 
 export default async function Home({ params }: Props) {
   const { lang } = await params;
-  const [translation, seo, content] = await Promise.all([
+  const [translation, seo] = await Promise.all([
     getTranslations(lang, 'translation'),
     getTranslations(lang, 'seo'),
-    getContent(resolveContentLocale(lang)),
   ]);
-  const macAppStoreCopy = pickMacAppStoreDialogCopy(content.download);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
       {
         '@type': 'WebSite',
-        name: siteConfig.name,
-        ...(seo.siteName !== siteConfig.name
-          ? { alternateName: seo.siteName }
-          : {}),
-        url: siteConfig.baseUrl,
+        name: siteConfig.brandName,
+        alternateName: 'Off Work Countdown',
+        url: siteConfig.webAppUrl,
       },
       {
         '@type': 'WebApplication',
-        name: seo.siteName,
+        name: siteConfig.brandName,
+        alternateName: seo.siteName !== siteConfig.brandName ? seo.siteName : undefined,
         description: seo.description,
-        url: `${siteConfig.baseUrl}/${lang}`,
+        url: `${siteConfig.webAppUrl}/${lang}`,
         inLanguage: lang,
         applicationCategory: 'UtilitiesApplication',
         operatingSystem: 'Any',
@@ -59,7 +51,7 @@ export default async function Home({ params }: Props) {
         }}
       />
       <div className="min-h-screen">
-        <OffWorkCountdown lang={lang} macAppStoreCopy={macAppStoreCopy} />
+        <OffWorkCountdown lang={lang} />
       </div>
       {IS_WEB_BUILD && <DesktopDownloadInvite />}
     </I18nProvider>

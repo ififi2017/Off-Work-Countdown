@@ -385,7 +385,7 @@ Permission updater:default not found, expected one of autostart:default, …
 问题会一路漏到发版。
 
 **About 页文案要同步改。** [AGENTS.md](../AGENTS.md) 里"版本检查在启动时自动运行"
-那段描述写在 `public/locales/{en,zh-CN}/content.json`，商店版这条链路根本不存在，
+那段描述写在官网 About 页，商店版这条链路根本不存在，
 照抄就是错误陈述。
 
 **设置页需要一条新文案**，不要复用 `updateNotConfigured`——它的语义是"更新器配置
@@ -404,7 +404,7 @@ Permission updater:default not found, expected one of autostart:default, …
 
 ```xml
 <uap5:Extension Category="windows.startupTask" Executable="Off Work Countdown.exe" EntryPoint="Windows.FullTrustApplication">
-  <uap5:StartupTask TaskId="OffWorkCountdownStartup" Enabled="false" DisplayName="Off Work Countdown" />
+  <uap5:StartupTask TaskId="OffWorkCountdownStartup" Enabled="false" DisplayName="DoneAt" />
 </uap5:Extension>
 ```
 
@@ -552,12 +552,13 @@ Store ID 写在 `src-tauri/src/lib.rs` 的 `MICROSOFT_STORE_PRODUCT_ID`，前三
 
 1. 商店 listing 素材：截图（至少 1 张）、描述、年龄分级问卷
 
-**支持联系邮箱**：`offwork@rainif.com`。它写在 `config/site.ts` 的 `supportEmail`，
+**支持联系邮箱**：`hello@doneat.app`。它写在 `config/site.ts` 的 `supportEmail`，
 隐私政策页从那里读，**Partner Center 的 listing 必须填同一个地址**——两处对不上是
-个查起来很烦的问题。
+个查起来很烦的问题。`offwork@rainif.com` 只做转发，不再展示。
 
-**隐私政策 URL 已就绪**：`https://off.rainif.com/en/privacy`（简体中文
-`/zh-CN/privacy`）。写它的时候顺带查出两件 About 页没覆盖到的事实，现在都写明了：
+**隐私政策 URL 已就绪**：`https://doneat.app/en/privacy`（简体中文
+`https://doneat.app/zh-CN/privacy`）。旧的 `off.rainif.com/{lang}/privacy`
+会 301 过去。写它的时候顺带查出两件 About 页没覆盖到的事实，现在都写明了：
 站点确实会写一个 cookie（`i18nextLng`，只在你选过语言之后），以及商店版完全不发起
 更新请求——这与 GitHub 版启动时检查新版本是不同的行为，一份不区分两者的隐私政策
 在商店版上就是不准确的。
@@ -949,18 +950,18 @@ App Store Connect 提交流程混为一谈。
 
 ### 9.7 桌面端的语言分层
 
-操作系统外壳跟随**系统语言**，应用界面跟随**用户在应用内选择的语言**。两者可以不同，
-这是刻意的：Finder 里的应用名和菜单栏属于系统的一部分，应当和系统其余部分说同一种话。
+应用显示名固定为 **DoneAt**，不随系统语言翻译。菜单栏各项、托盘菜单和「关于」
+面板仍跟随系统语言；应用界面跟随用户在应用内选择的语言。两者可以不同。
 
 | 面向 | 跟随 | 机制 |
 |---|---|---|
-| Finder / 程序坞 / 启动台 / 聚焦的应用名 | 系统语言 | `.lproj` 的 `CFBundleDisplayName` |
-| 菜单栏最左侧的应用名 | 系统语言 | `.lproj` 的 `CFBundleName` |
-| 菜单栏各项、托盘菜单、「关于」面板 | 系统语言 | 前端用 `i18n.getFixedT(系统语言)` 下发 |
+| Finder / 程序坞 / 启动台 / 聚焦的应用名 | 固定 DoneAt | `.lproj` 的 `CFBundleDisplayName` |
+| 菜单栏最左侧的应用名 | 固定 DoneAt | `.lproj` 的 `CFBundleName` |
+| 菜单栏各项、托盘菜单、「关于」面板 | 系统语言 | 前端用 `i18n.getFixedT(系统语言)` 下发；`{{app}}` 填 DoneAt |
 | 应用界面 | 应用语言 | 既有 i18n |
 
-`.lproj` 由 `scripts/generate-macos-lproj.mjs` 从 `public/locales/<locale>/translation.json`
-的 `offWorkCountdown` 生成（**不是**商店商品页那份 `docs/msstore-listing-titles.csv`，两者
+`.lproj` 由 `scripts/generate-macos-lproj.mjs` 按 UI 语言各写一份，显示名一律
+`DoneAt`，不再读取 `offWorkCountdown`（**不是**商店商品页那份 `docs/msstore-listing-titles.csv`，两者
 本来就有出入，例如 zh-TW 界面是「下班倒數計時」而商店是「下班倒數計時器」）。生成物不入库，
 每次 `beforeBuildCommand` 重建，并校验 `src-tauri/Info.plist` 的 `CFBundleLocalizations`
 与实际产出一一对应。资源经 `tauri.macos.conf.json` 注入，Windows / Linux 包不受影响。

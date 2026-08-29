@@ -41,14 +41,14 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const seo = await getTranslations(lang, 'seo');
 
   return {
-    metadataBase: new URL(siteConfig.baseUrl),
+    metadataBase: new URL(siteConfig.webAppUrl),
     title: seo.title,
     description: seo.description,
     keywords: seo.keywords,
-    applicationName: seo.siteName,
+    applicationName: siteConfig.brandName,
     appleWebApp: {
       capable: true,
-      title: seo.title,
+      title: siteConfig.brandName,
       statusBarStyle: 'default'
     },
     formatDetection: {
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       description: seo.description,
       type: "website",
       locale: lang,
-      url: `${siteConfig.baseUrl}/${lang}`,
+      url: `${siteConfig.webAppUrl}/${lang}`,
       siteName: seo.siteName,
       // og:image / twitter:image 由 opengraph-image.tsx 自动注入，托管在自有
       // 域名下。不再指向 GitHub raw：那是外部依赖，且原图是 894x1092 的竖图，
@@ -71,14 +71,14 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       description: seo.description,
     },
     alternates: {
-      canonical: `${siteConfig.baseUrl}/${lang}`,
+      canonical: `${siteConfig.webAppUrl}/${lang}`,
       // Next.js 会据此渲染 hreflang link 标签，无需再手写一份（此前 root
       // layout 手动输出过，导致每个 hreflang 重复两次）。
       languages: {
         ...Object.fromEntries(
-          locales.map(l => [l, `${siteConfig.baseUrl}/${l}`])
+          locales.map(l => [l, `${siteConfig.webAppUrl}/${l}`])
         ),
-        'x-default': siteConfig.baseUrl,
+        'x-default': siteConfig.webAppUrl,
       }
     },
     robots: {

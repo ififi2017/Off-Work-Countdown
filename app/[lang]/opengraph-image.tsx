@@ -6,7 +6,7 @@ import { locales } from "@/i18n-config";
 // 大卡会按 2:1 中心裁切，只露出中间一条。
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Off Work Countdown";
+export const alt = "DoneAt";
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
@@ -42,7 +42,7 @@ export default async function OpengraphImage() {
             color: "rgba(255,255,255,0.82)",
           }}
         >
-          OFF WORK COUNTDOWN
+          DONEAT
         </div>
 
         <div

@@ -8,7 +8,6 @@ import {
   useRef,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getTextDirection } from "@/i18n-config";
 import { Button } from "@/components/ui/button";
@@ -37,6 +36,7 @@ import {
   RefreshCw,
   Download,
   Globe,
+  Smartphone,
   BellRing,
   ShieldCheck,
   Coffee,
@@ -97,15 +97,12 @@ import {
 } from "@/lib/countdown";
 import { WorkdaySelector } from "./WorkdaySelector";
 import { PeriodSummary } from "./PeriodSummary";
-import { MacAppStoreBadge } from "./MacAppStoreBadge";
-import { MicrosoftStoreBadge } from "./MicrosoftStoreBadge";
 import { summarize, startOfWeek, startOfYear } from "@/lib/summary";
 import { useTranslation } from "react-i18next";
-import { resolveContentLocale } from "@/lib/content-locales";
 import { decodeShift } from "@/lib/share";
 import { track } from "@/lib/track";
 import { siteConfig } from "@/config/site";
-import type { MacAppStoreDialogCopy } from "@/lib/server/content";
+import { officialHomeUrl, officialPageUrl } from "@/lib/site-urls";
 import {
   requestNotificationPermission,
   requestNotificationPermissionDetailed,
@@ -135,6 +132,8 @@ import {
   hideDesktopMainWindow,
   minimizeDesktopMainWindow,
   readDesktopCountdownState,
+  loadBrandRenameNoticeOffer,
+  markBrandRenameNoticeSeen,
   setDesktopAutostartEnabled,
   updateDesktopGlobalShortcutSettings,
   installDesktopUpdateViaMirror,
@@ -239,7 +238,6 @@ function usePersistedSetting(key: string, value: string, enabled: boolean) {
 
 export interface OffWorkCountdownProps {
   lang: string;
-  macAppStoreCopy?: MacAppStoreDialogCopy;
 }
 
 interface SalarySettingsProps {
@@ -369,7 +367,6 @@ function SalarySettings({
 
 export function OffWorkCountdown({
   lang,
-  macAppStoreCopy,
 }: OffWorkCountdownProps) {
   const router = useRouter();
   const { t, i18n } = useTranslation();
@@ -458,6 +455,7 @@ export function OffWorkCountdown({
   const [desktopStateRestored, setDesktopStateRestored] = useState(
     !IS_DESKTOP_BUILD
   );
+  const [brandRenameNoticeOpen, setBrandRenameNoticeOpen] = useState(false);
   const [launchAtLogin, setLaunchAtLogin] = useState(false);
   // 商店版专有：用户在系统「启动」设置里关掉之后，应用无权改回来。
   // 见 docs/PLAN-MSSTORE.md 决策 3。
@@ -599,7 +597,7 @@ export function OffWorkCountdown({
       await updateDesktopMenus({
         // 只影响「关于」面板。菜单栏最左侧那个粗体应用名由 AppKit 从 bundle 名
         // 派生，改不了，见 lib.rs 里 DesktopMenuLabels::app_name 的注释。
-        appName: st("offWorkCountdown"),
+        appName: siteConfig.brandName,
         show: st("trayShowApp"),
         mini: st("trayMiniTimer"),
         quit: st("trayQuit"),
@@ -610,9 +608,9 @@ export function OffWorkCountdown({
         help: st("menuHelp"),
         // 这两条原本把英文产品名写死在译文里（「关于 Off Work Countdown」），
         // 系统语言是中文时也会露出英文。改成占位符后由本地化的产品名填入。
-        about: st("menuAbout", { app: st("offWorkCountdown") }),
+        about: st("menuAbout", { app: siteConfig.brandName }),
         services: st("menuServices"),
-        hideApp: st("menuHideApp", { app: st("offWorkCountdown") }),
+        hideApp: st("menuHideApp", { app: siteConfig.brandName }),
         hideOthers: st("menuHideOthers"),
         closeWindow: st("menuCloseWindow"),
         undo: st("menuUndo"),
@@ -733,9 +731,14 @@ export function OffWorkCountdown({
     if (!IS_DESKTOP_BUILD || !settingsLoaded) return;
 
     let cancelled = false;
-    void readDesktopCountdownState()
-      .then((state) => {
-        if (cancelled || !state) return;
+    void Promise.all([
+      readDesktopCountdownState(),
+      loadBrandRenameNoticeOffer(),
+    ])
+      .then(([state, offerBrandRenameNotice]) => {
+        if (cancelled) return;
+        if (offerBrandRenameNotice) setBrandRenameNoticeOpen(true);
+        if (!state) return;
         const hasAuthoritativePreferences =
           hasAuthoritativeDesktopPreferences(state);
         // 3.1.5 及更早的空快照可能把 hideEarnings 写成默认 false。旧快照只
@@ -2266,8 +2269,6 @@ export function OffWorkCountdown({
   // 的个性化配置在挂载后由上面的 effect 覆盖，默认值在服务端与客户端首帧
   // 一致，不会产生 hydration 不匹配。
   const isCustomTheme = theme === "cyberpunk" || theme === "sunset";
-  // 中文界面（含繁体）指向中文内容页，其余指向英文。
-  const contentLang = resolveContentLocale(lang);
 
   // 本周与今年的累计，完全由配置推算（见 lib/summary.ts 的说明）。
   // 仅在倒计时视图下计算：它依赖当前时间，服务端渲染时算了也不能用。
@@ -2427,6 +2428,40 @@ export function OffWorkCountdown({
 
       {IS_STATIC_SHELL_BUILD && (
         <>
+        {IS_DESKTOP_BUILD && (
+        <Dialog
+          open={brandRenameNoticeOpen}
+          onOpenChange={(open) => {
+            if (open) return;
+            setBrandRenameNoticeOpen(false);
+            void markBrandRenameNoticeSeen().catch(() => {
+              // 没写下标记就再亮一次，好过假装用户已经看过。
+            });
+          }}
+        >
+          <DialogContent className="max-w-[360px] rounded-2xl p-5">
+            <DialogHeader className="text-start">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300">
+                <Info className="h-5 w-5" />
+              </div>
+              <DialogTitle>{t("brandRenameTitle")}</DialogTitle>
+              <DialogDescription className="text-start">
+                {t("brandRenameBody")}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-2 flex justify-end">
+              <Button
+                onClick={() => {
+                  setBrandRenameNoticeOpen(false);
+                  void markBrandRenameNoticeSeen().catch(() => {});
+                }}
+              >
+                {t("brandRenameContinue")}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        )}
         <Dialog
           open={notificationDialog !== null}
           onOpenChange={(open) => {
@@ -2693,7 +2728,7 @@ export function OffWorkCountdown({
                   sr-only 的 h1，内容与这里完全相同，属于重复，已一并去掉。 */}
               <h1
                 data-tauri-drag-region={IS_DESKTOP_BUILD ? "deep" : undefined}
-                title={t("offWorkCountdown")}
+                title={siteConfig.brandName}
                 className={
                   IS_DESKTOP_BUILD
                     ? "min-w-0 truncate whitespace-nowrap text-xl font-bold leading-none tracking-tight dark:text-white"
@@ -2702,7 +2737,7 @@ export function OffWorkCountdown({
                       : "text-2xl font-bold leading-none tracking-tight dark:text-white"
                 }
               >
-                {t("offWorkCountdown")}
+                {siteConfig.brandName}
               </h1>
               {IS_MOBILE_BUILD && (
                 <p className="mt-0.5 line-clamp-2 text-[0.68rem] leading-4 text-gray-500 dark:text-gray-400">
@@ -2712,11 +2747,11 @@ export function OffWorkCountdown({
               </div>
               {!showCountdown && IS_WEB_BUILD && (
                 <a
-                  href="https://github.com/ififi2017/Off-Work-Countdown"
+                  href={siteConfig.github}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
-                  title="View source code on GitHub"
+                  title={t("githubRepository")}
                 >
                   <Github size={24} />
                 </a>
@@ -3749,9 +3784,7 @@ export function OffWorkCountdown({
                     <button
                       type="button"
                       onClick={() =>
-                        void openDesktopUrl(
-                          `${siteConfig.baseUrl}/${contentLang}/about`
-                        )
+                        void openDesktopUrl(officialPageUrl(lang, "about"))
                       }
                       className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
                     >
@@ -3770,6 +3803,30 @@ export function OffWorkCountdown({
                         )}
                         <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
                       </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void openDesktopUrl(officialPageUrl(lang, "download"))
+                      }
+                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Smartphone className="h-4 w-4" />
+                        {t("downloadMobileApp")}
+                      </span>
+                      <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void openDesktopUrl(officialHomeUrl(lang))}
+                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        {t("visitOfficialWebsite")}
+                      </span>
+                      <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
                     </button>
                     <button
                       type="button"
@@ -3890,7 +3947,7 @@ export function OffWorkCountdown({
       {IS_MOBILE_BUILD && (
         <nav
           className="mobile-web-tabbar fixed inset-x-0 bottom-0 z-40 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
-          aria-label={t("offWorkCountdown")}
+          aria-label={siteConfig.brandName}
         >
           <div
             role="tablist"
@@ -3956,50 +4013,54 @@ export function OffWorkCountdown({
         </section>
       )}
 
-      {/* 内容页入口。渲染在设置态（也就是服务端首屏的状态），因此这些链接
-          必然出现在初始 HTML 里 —— 否则内容页会成为无内链的孤儿页，抓取权重
-          会明显打折。内容页只有中英两版，按界面语言直接指向正确的一版，
-          避免先跳转再重定向。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
+      {/* 下载与长文都归官网。设置态渲染在服务端首屏，所以这一条入口和页脚
+          会出现在初始 HTML 里。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
           故不渲染。 */}
-      {IS_WEB_BUILD && macAppStoreCopy && !showCountdown && !isAppShell && (
+      {IS_WEB_BUILD && !showCountdown && !isAppShell && (
         <>
-        <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-3">
-          <MacAppStoreBadge
-            copy={macAppStoreCopy}
-            directInstallersHref={`/${contentLang}/download`}
-          />
-          <MicrosoftStoreBadge className="flex min-h-11 items-center" />
-          <Link
-            href={`/${contentLang}/download`}
-            className="flex h-11 min-w-[161px] items-center gap-2 rounded-[8px] border border-white/15 bg-[#1a1a1a] px-3 text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:border-black/10 dark:bg-white dark:text-[#1a1a1a] dark:hover:bg-gray-100 dark:focus:ring-offset-gray-900"
+        <div className="mt-8 flex w-full flex-col items-center">
+          <a
+            href={officialPageUrl(lang, "download")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-11 items-center gap-2 rounded-xl bg-gray-950 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus:ring-offset-gray-900"
           >
-            <Download className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="min-w-0 text-left leading-none rtl:text-right">
-              <span className="block text-[10px] font-medium opacity-75">
-                {t("moreVersions")}
-              </span>
-              <span className="mt-1 block whitespace-nowrap text-[10px] font-semibold">
-                {t("moreVersionsDescription")}
-              </span>
-            </span>
-          </Link>
+            <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {t("getApp")}
+          </a>
+          <p className="mt-3 text-sm font-semibold tracking-tight text-gray-800 dark:text-gray-100">
+            {t("getAppPlatforms")}
+          </p>
+          <p className="mt-1 max-w-md text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
+            {t("getAppPlatformsNote")}
+          </p>
         </div>
-        {/* 圆点分隔符在窄屏换行后会跑到新行开头，让最后一项看起来偏右。
-            这里只用均匀间距，确保每一行的链接文字本身都真正居中。 */}
         <footer className="mt-8 flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-xs font-semibold text-gray-600 dark:text-gray-300">
-          {[
-            { href: `/${contentLang}/faq`, label: t("faq") },
-            { href: `/${contentLang}/how-it-works`, label: t("howItWorks") },
-            { href: `/${contentLang}/about`, label: t("aboutProject") },
-            { href: `/${contentLang}/privacy`, label: t("privacyPolicy") },
-          ].map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
+          <a
+            href={officialHomeUrl(lang)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+          >
+            {t("visitOfficialWebsite")}
+          </a>
+          {(
+            [
+              ["faq", t("faq")],
+              ["how-it-works", t("howItWorks")],
+              ["about", t("aboutProject")],
+              ["privacy", t("privacyPolicy")],
+            ] as const
+          ).map(([slug, label]) => (
+            <a
+              key={slug}
+              href={officialPageUrl(lang, slug)}
+              target="_blank"
+              rel="noopener noreferrer"
               className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
             >
               {label}
-            </Link>
+            </a>
           ))}
         </footer>
         </>

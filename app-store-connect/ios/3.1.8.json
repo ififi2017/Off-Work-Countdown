@@ -1,0 +1,223 @@
+{
+  "$schema": "../metadata.schema.json",
+  "schemaVersion": 1,
+  "exportedFrom": {
+    "platform": "IOS",
+    "versionString": "3.1.7",
+    "exportedAt": "2026-08-29T01:33:00.000Z"
+  },
+  "app": {
+    "bundleId": "com.rainif.offworkcountdown.macappstore",
+    "platform": "IOS",
+    "versionString": "3.1.8",
+    "createVersionIfMissing": true,
+    "releaseType": "MANUAL",
+    "copyright": "© 2026 fi_niaR Studio"
+  },
+  "localizations": {
+    "ar-SA": {
+      "name": "DoneAt - عداد نهاية الدوام",
+      "subtitle": "ورديات وويدجت والراتب",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "اعرف موعد بدء دوامك، والوقت المتبقي، وموعد الانصراف على iPhone وiPad والويدجت وشاشة القفل وDynamic Island. تبقى بياناتك على جهازك.",
+      "description": "يجعل DoneAt يوم عملك أوضح من النظرة الأولى.\nاضبط جدولك مرة واحدة. قبل الدوام، يحسب الوقت حتى البداية. وأثناء الوردية، يعرض وقت العمل الفعلي المتبقي ويوقف التقدم خلال استراحة الغداء. وفي أيام الراحة، يبقي الوردية التالية أمامك. وإذا تغير يومك، يمكنك البدء مبكرًا أو الانصراف مبكرًا أو إضافة وقت إضافي أو توقيت يوم غير مجدول دون إعادة بناء جدولك.\nالميزات\n• عد تنازلي مباشر لبداية الدوام ونهايته\n• أيام عمل ثابتة وأسابيع متناوبة ودورات عمل وراحة\n• دعم الورديات الليلية التي تتجاوز منتصف الليل\n• استراحة غداء مخصصة لا تُحتسب من وقت العمل\n• بدء مبكر وانصراف مبكر ووقت إضافي وتوقيت يدوي\n• تقدير اختياري للدخل وملخصات أسبوعية وسنوية\n• تذكيرات بالدوام والغداء والحركة\n• ويدجت للشاشة الرئيسية وشاشة القفل\n• أنشطة مباشرة على شاشة القفل وDynamic Island\n• مؤقت بملمس الزجاج في iOS، فيبدو طبيعياً على الشاشة الرئيسية وشاشة القفل وDynamic Island\n• تخطيط أفقي لـ iPhone وتجربة محسنة لـ iPad\n• مشاركة العد التنازلي كصورة أو رابط\n• متاح بـ19 لغة ويتبع لغة النظام\n\nالخصوصية\nيبقى جدولك وبيانات راتبك على جهازك. لا تظهر مبالغ الراتب في الويدجت أو الإشعارات أو الأنشطة المباشرة. لا تحتاج إلى حساب أو تسجيل، ولا نستخدم تحليلات سلوكية. يعمل العد التنازلي دون اتصال.",
+      "keywords": "عمل,مؤقت,ساعات,انصراف,غداء,إضافي,إنتاجية,حضور,مناوبة,تذكير,تقدم",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "أصبح اسم Off Work Countdown الآن DoneAt.\n\n• مؤقت جديد أوضح قبل الدوام وأثناءه وخلال الغداء والوقت الإضافي وأيام الراحة\n• ابدأ مبكرًا أو انصرف مبكرًا أو أضف وقتًا إضافيًا أو وقّت يومًا غير مجدول\n• إعداد أولي أسهل ومكان مخصص لتعديل الجدول لاحقًا\n• تحسين تخطيطات iPhone الأفقي وiPad\n• توحيد الويدجت وشاشة القفل وDynamic Island مع حالة ورديتك\n• يستخدم المؤقت الآن ملمس الزجاج في iOS، ليتناسب مع شاشة القفل والويدجت وDynamic Island\n• أيقونة وهوية بصرية جديدة لـ DoneAt\n\nيبقى جدولك وبيانات راتبك على جهازك."
+    },
+    "de-DE": {
+      "name": "DoneAt - Feierabend Countdown",
+      "subtitle": "Schichtplan, Widgets & Lohn",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "Sieh auf iPhone, iPad, Widgets, Sperrbildschirm und Dynamic Island, wann deine Schicht beginnt, wie viel noch übrig ist und wann sie endet. Deine Daten bleiben lokal.",
+      "description": "DoneAt macht deinen Arbeitstag auf einen Blick verständlich.\nLege deinen Dienstplan einmal fest. Vor der Arbeit zählt DoneAt bis zum Beginn, während der Schicht zeigt es die effektive Restarbeitszeit und pausiert den Fortschritt in der Mittagspause. An freien Tagen bleibt die nächste Schicht im Blick. Ändert sich dein Tag, kannst du früher anfangen, früher gehen, Überstunden anhängen oder einen ungeplanten Arbeitstag erfassen, ohne den Dienstplan neu aufzubauen.\nFUNKTIONEN\n• Echtzeit-Countdown bis Arbeitsbeginn und Feierabend\n• Feste Wochentage, Wechselwochen und Arbeits-/Freizeit-Rhythmen\n• Nachtschichten über Mitternacht\n• Individuelle Mittagspausen außerhalb der Arbeitszeit\n• Früher anfangen, früher gehen, Überstunden und manuelle Zeiterfassung\n• Optionale Verdienstschätzung sowie Wochen- und Jahresübersichten\n• Erinnerungen für Schicht, Mittagspause und Bewegung\n• Widgets für Home- und Sperrbildschirm\n• Live-Aktivitäten auf Sperrbildschirm und Dynamic Island\n• Timer im iOS-Glaslook, der sich natürlich auf dem Home-Bildschirm, Sperrbildschirm und Dynamic Island einfügt\n• Querformat auf dem iPhone und optimiertes iPad-Layout\n• Countdown als Bild oder Link teilen\n• 19 Sprachen und automatische Systemsprache\n\nDATENSCHUTZ\nDienstplan und Gehaltsdaten bleiben auf deinem Gerät. Gehaltsbeträge erscheinen nie in Widgets, Mitteilungen oder Live-Aktivitäten. Kein Konto, keine Registrierung und keine Verhaltensanalyse. Der Countdown funktioniert offline.",
+      "keywords": "Arbeitszeit,Timer,Stundenlohn,Fortschritt,Uhr,Pause,Überstunden,Nachtschicht,Produktivität",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown heißt jetzt DoneAt.\n\n• Ein neu gestalteter Timer für Arbeitsbeginn, Schicht, Mittagspause, Überstunden und freie Tage\n• Früher anfangen, früher gehen, Überstunden ergänzen oder ungeplante Arbeit manuell erfassen\n• Einfacherer Einstieg und ein eigener Bereich für spätere Dienstplanänderungen\n• Überarbeitete Ansichten für iPhone-Querformat und iPad\n• Widgets, Sperrbildschirm und Dynamic Island folgen jetzt derselben Schichtlogik\n• Der Timer nutzt jetzt den iOS-Glaslook und fügt sich in Sperrbildschirm, Widgets und Dynamic Island ein\n• Neues DoneAt-Symbol und neue visuelle Identität\n\nDienstplan und Gehaltsdaten bleiben weiterhin auf deinem Gerät."
+    },
+    "en-US": {
+      "name": "DoneAt: Work Shift Countdown",
+      "subtitle": "Widgets, Schedule & Pay",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "See when work starts, how much of your shift is left and when it ends—on iPhone, iPad, widgets, the Lock Screen and Dynamic Island. Your data stays on device.",
+      "description": "DoneAt makes your workday easier to read at a glance.\nSet your schedule once. Before work, DoneAt counts down to your start. During your shift, it shows effective work time remaining and pauses progress for lunch. On rest days, it keeps the next shift in sight. When plans change, start early, leave early, add overtime or time an unscheduled workday without rebuilding your schedule.\nFEATURES\n• Real-time countdown to the start and end of work\n• Fixed weekdays, alternating weeks and work/rest rotations\n• Overnight shifts that continue past midnight\n• Custom lunch breaks excluded from working time\n• Early starts, early finishes, overtime and manual timing\n• Optional earnings estimates with weekly and yearly summaries\n• Shift, lunch and movement reminders\n• Home Screen and Lock Screen widgets\n• Live Activities on the Lock Screen and Dynamic Island\n• Designed with the glass look of iOS, so the timer sits naturally on the Home Screen, Lock Screen and Dynamic Island\n• Focused iPhone landscape and iPad-optimized layouts\n• Share your countdown as an image or link\n• Available in 19 languages and follows your system language\n\nPRIVACY\nYour schedule and salary data stay on your device. Salary values never appear in widgets, notifications or Live Activities. There is no account, no sign-up and no behavioral analytics. The countdown works offline.",
+      "keywords": "clock out,timer,workday,lunch,overtime,hours,employee,productivity,break,night shift",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown is now DoneAt.\n\n• A redesigned timer for before work, your shift, lunch, overtime and rest days\n• Start early, leave early, add overtime or time an unscheduled workday\n• A smoother first-run setup and a dedicated place to edit your schedule later\n• Refined iPhone landscape and iPad layouts\n• Widgets, the Lock Screen and Dynamic Island now follow the same shift state\n• The timer now uses the glass look of iOS, so it sits with your Lock Screen, widgets and Dynamic Island\n• A new DoneAt icon and visual identity\n\nYour schedule and salary data still stay on your device."
+    },
+    "es-ES": {
+      "name": "DoneAt - Cuenta atrás laboral",
+      "subtitle": "Turnos, widgets y salario",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "Consulta cuándo empiezas, cuánto queda y a qué hora terminas desde iPhone, iPad, widgets, la pantalla bloqueada y Dynamic Island. Tus datos se quedan en el dispositivo.",
+      "description": "DoneAt te permite entender tu jornada de un vistazo.\nConfigura tu horario una vez. Antes de trabajar, DoneAt cuenta hasta la hora de entrada. Durante el turno, muestra el tiempo efectivo restante y pausa el progreso durante la comida. En los días libres, mantiene visible el próximo turno. Si el día cambia, puedes empezar antes, salir antes, añadir horas extra o cronometrar una jornada no programada sin rehacer tu horario.\nFUNCIONES\n• Cuenta atrás en tiempo real hasta la entrada y la salida\n• Días fijos, semanas alternas y rotaciones de trabajo y descanso\n• Turnos nocturnos que cruzan la medianoche\n• Pausas para comer excluidas del tiempo trabajado\n• Entrada anticipada, salida anticipada, horas extra y conteo manual\n• Estimación opcional de ingresos y resúmenes semanales y anuales\n• Avisos de turno, comida y movimiento\n• Widgets de pantalla de inicio y pantalla bloqueada\n• Actividades en directo en la pantalla bloqueada y Dynamic Island\n• Un temporizador con el aspecto de cristal de iOS, pensado para la pantalla de inicio, la pantalla bloqueada y Dynamic Island\n• Vista horizontal para iPhone y diseño optimizado para iPad\n• Comparte la cuenta atrás como imagen o enlace\n• Disponible en 19 idiomas y adaptado al idioma del sistema\n\nPRIVACIDAD\nTu horario y tus datos salariales permanecen en el dispositivo. Las cantidades de salario nunca aparecen en widgets, notificaciones ni actividades en directo. No hay cuenta, registro ni análisis de comportamiento. La cuenta atrás funciona sin conexión.",
+      "keywords": "trabajo,reloj,fichar,jornada,horario,horas extra,descanso,productividad,salida,empleo",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown ahora se llama DoneAt.\n\n• Un temporizador rediseñado para antes del trabajo, el turno, la comida, las horas extra y los días libres\n• Empieza antes, sal antes, añade horas extra o cuenta una jornada no programada\n• Una configuración inicial más sencilla y un lugar dedicado para editar el horario después\n• Vistas mejoradas para iPhone en horizontal y iPad\n• Los widgets, la pantalla bloqueada y Dynamic Island comparten ahora el mismo estado del turno\n• El temporizador ahora usa el aspecto de cristal de iOS, junto a la pantalla bloqueada, los widgets y Dynamic Island\n• Nuevo icono e identidad visual de DoneAt\n\nTu horario y tus datos salariales siguen permaneciendo en tu dispositivo."
+    },
+    "fr-FR": {
+      "name": "DoneAt - Compte à rebours",
+      "subtitle": "Horaires, widgets et salaire",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "Voyez le début, le temps restant et l'heure de départ sur iPhone, iPad, les widgets, l'écran verrouillé et Dynamic Island. Vos données restent sur l'appareil.",
+      "description": "DoneAt rend votre journée de travail lisible en un coup d'œil.\nDéfinissez votre planning une fois. Avant le travail, DoneAt compte jusqu'à l'heure de début. Pendant le service, l'app affiche le temps de travail effectif restant et met la progression en pause pendant le déjeuner. Les jours de repos, le prochain service reste visible. Si la journée change, commencez plus tôt, partez plus tôt, ajoutez des heures supplémentaires ou chronométrez une journée imprévue sans refaire votre planning.\nFONCTIONNALITÉS\n• Compte à rebours en temps réel avant le début et la fin du travail\n• Jours fixes, semaines alternées et cycles travail/repos\n• Services de nuit au-delà de minuit\n• Pause déjeuner exclue du temps travaillé\n• Début anticipé, départ anticipé, heures supplémentaires et comptage manuel\n• Estimation facultative du salaire et bilans hebdomadaires et annuels\n• Rappels de service, de déjeuner et de mouvement\n• Widgets d'écran d'accueil et d'écran verrouillé\n• Activités en direct sur l'écran verrouillé et Dynamic Island\n• Un minuteur au rendu verre d’iOS, pensé pour l’écran d’accueil, l’écran verrouillé et Dynamic Island\n• Mode paysage iPhone et interface optimisée pour iPad\n• Partage du décompte sous forme d'image ou de lien\n• 19 langues et adaptation à la langue du système\n\nCONFIDENTIALITÉ\nVotre planning et vos données salariales restent sur votre appareil. Les montants ne figurent jamais dans les widgets, notifications ou activités en direct. Aucun compte, aucune inscription et aucune analyse comportementale. Le décompte fonctionne hors ligne.",
+      "keywords": "travail,minuteur,pointer,journée,heures sup,pause,productivité,emploi,service,fin de journée",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown devient DoneAt.\n\n• Un minuteur repensé pour l'avant-travail, le service, le déjeuner, les heures supplémentaires et les jours de repos\n• Commencez plus tôt, partez plus tôt, ajoutez des heures supplémentaires ou comptez une journée imprévue\n• Une première configuration plus fluide et un espace dédié aux modifications ultérieures du planning\n• Interfaces améliorées pour l'iPhone en paysage et l'iPad\n• Les widgets, l'écran verrouillé et Dynamic Island suivent désormais le même état de service\n• Le minuteur reprend le rendu verre d’iOS, pour s’accorder avec l’écran verrouillé, les widgets et Dynamic Island\n• Nouvelle icône et nouvelle identité visuelle DoneAt\n\nVotre planning et vos données salariales restent sur votre appareil."
+    },
+    "hi": {
+      "name": "DoneAt - काम का काउंटडाउन",
+      "subtitle": "शिफ़्ट, विजेट और कमाई",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "iPhone, iPad, विजेट, लॉक स्क्रीन और Dynamic Island पर देखें कि काम कब शुरू होगा, शिफ़्ट में कितना समय बचा है और छुट्टी कब होगी। आपका डेटा डिवाइस पर रहता है।",
+      "description": "DoneAt आपके कामकाजी दिन को एक नज़र में समझना आसान बनाता है।\nअपना शेड्यूल एक बार सेट करें। काम से पहले DoneAt शुरू होने तक गिनता है। शिफ़्ट के दौरान यह बचा हुआ वास्तविक काम का समय दिखाता है और लंच में प्रगति रोक देता है। छुट्टी के दिन अगली शिफ़्ट सामने रहती है। दिन बदल जाए तो शेड्यूल दोबारा बनाए बिना जल्दी शुरू करें, जल्दी छुट्टी लें, ओवरटाइम जोड़ें या बिना तय शिफ़्ट वाले दिन का समय गिनें।\nमुख्य सुविधाएँ\n• काम शुरू और खत्म होने तक लाइव काउंटडाउन\n• तय कार्यदिवस, एकांतर सप्ताह और काम/आराम चक्र\n• आधी रात के बाद तक चलने वाली रात की शिफ़्ट\n• काम के समय से बाहर रखा गया लंच ब्रेक\n• जल्दी शुरुआत, जल्दी छुट्टी, ओवरटाइम और हाथ से समय गिनना\n• वैकल्पिक कमाई अनुमान और साप्ताहिक व वार्षिक सारांश\n• शिफ़्ट, लंच और चलने-फिरने के रिमाइंडर\n• होम स्क्रीन और लॉक स्क्रीन विजेट\n• लॉक स्क्रीन और Dynamic Island पर लाइव ऐक्टिविटी\n• iOS की ग्लास लुक वाला टाइमर, जो होम स्क्रीन, लॉक स्क्रीन और Dynamic Island पर सिस्टम जैसा लगता है\n• iPhone लैंडस्केप और iPad के लिए अनुकूलित लेआउट\n• काउंटडाउन को इमेज या लिंक के रूप में शेयर करें\n• 19 भाषाएँ और सिस्टम भाषा का समर्थन\n\nगोपनीयता\nआपका शेड्यूल और वेतन डेटा आपके डिवाइस पर रहता है। वेतन राशि विजेट, नोटिफ़िकेशन या लाइव ऐक्टिविटी में कभी नहीं दिखती। कोई अकाउंट, साइन-अप या व्यवहार विश्लेषण नहीं। काउंटडाउन ऑफ़लाइन काम करता है।",
+      "keywords": "नौकरी,टाइमर,कार्यदिवस,लंच,ओवरटाइम,घंटे,उत्पादकता,हाजिरी,रिमाइंडर,प्रगति",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown अब DoneAt है।\n\n• काम से पहले, शिफ़्ट, लंच, ओवरटाइम और छुट्टी के दिनों के लिए नया और साफ़ टाइमर\n• जल्दी शुरू करें, जल्दी छुट्टी लें, ओवरटाइम जोड़ें या बिना तय शिफ़्ट वाले दिन का समय गिनें\n• आसान शुरुआती सेटअप और बाद में शेड्यूल बदलने के लिए अलग जगह\n• iPhone लैंडस्केप और iPad के बेहतर लेआउट\n• विजेट, लॉक स्क्रीन और Dynamic Island अब शिफ़्ट की एक ही स्थिति दिखाते हैं\n• टाइमर अब iOS की ग्लास लुक इस्तेमाल करता है, ताकि लॉक स्क्रीन, विजेट और Dynamic Island के साथ एक जैसा लगे\n• नया DoneAt आइकन और विज़ुअल पहचान\n\nआपका शेड्यूल और वेतन डेटा अब भी आपके डिवाइस पर रहता है।"
+    },
+    "id": {
+      "name": "DoneAt - Hitung Mundur Kerja",
+      "subtitle": "Jadwal, widget & penghasilan",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "Lihat kapan kerja dimulai, sisa waktu sif, dan jam pulang di iPhone, iPad, widget, Layar Terkunci, serta Dynamic Island. Data Anda tetap di perangkat.",
+      "description": "DoneAt membuat hari kerja Anda mudah dipahami dalam sekali lihat.\nAtur jadwal sekali saja. Sebelum kerja, DoneAt menghitung mundur hingga waktu mulai. Selama sif, aplikasi menampilkan sisa waktu kerja efektif dan menjeda progres saat makan siang. Pada hari libur, sif berikutnya tetap terlihat. Jika rencana hari ini berubah, mulai lebih awal, pulang lebih awal, tambahkan lembur, atau hitung hari kerja tak terjadwal tanpa menyusun ulang jadwal.\nFITUR\n• Hitung mundur langsung hingga kerja dimulai dan berakhir\n• Hari kerja tetap, minggu bergantian, dan rotasi kerja/libur\n• Sif malam yang melewati tengah malam\n• Istirahat makan siang yang tidak dihitung sebagai waktu kerja\n• Mulai awal, pulang awal, lembur, dan hitung manual\n• Perkiraan penghasilan opsional serta ringkasan mingguan dan tahunan\n• Pengingat sif, makan siang, dan bergerak\n• Widget Layar Utama dan Layar Terkunci\n• Live Activity di Layar Terkunci dan Dynamic Island\n• Timer dengan tampilan kaca iOS, agar terasa alami di Layar Utama, Layar Terkunci, dan Dynamic Island\n• Tampilan lanskap iPhone dan tata letak iPad\n• Bagikan hitung mundur sebagai gambar atau tautan\n• Tersedia dalam 19 bahasa dan mengikuti bahasa sistem\n\nPRIVASI\nJadwal dan data gaji Anda tetap di perangkat. Nilai gaji tidak pernah muncul di widget, notifikasi, atau Live Activity. Tanpa akun, pendaftaran, atau analitik perilaku. Hitung mundur bekerja offline.",
+      "keywords": "pulang,timer,sif,kerja,lembur,jam,istirahat,produktivitas,karyawan,pengingat,progres",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown kini bernama DoneAt.\n\n• Timer baru untuk sebelum kerja, selama sif, makan siang, lembur, dan hari libur\n• Mulai lebih awal, pulang lebih awal, tambah lembur, atau hitung hari kerja tak terjadwal\n• Penyiapan awal yang lebih mudah dan tempat khusus untuk mengubah jadwal nanti\n• Tampilan lanskap iPhone dan tata letak iPad yang disempurnakan\n• Widget, Layar Terkunci, dan Dynamic Island kini mengikuti status sif yang sama\n• Timer kini memakai tampilan kaca iOS, selaras dengan Layar Terkunci, widget, dan Dynamic Island\n• Ikon dan identitas visual DoneAt yang baru\n\nJadwal dan data gaji Anda tetap berada di perangkat."
+    },
+    "it": {
+      "name": "DoneAt - Conto alla rovescia",
+      "subtitle": "Turni, widget e stipendio",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "Vedi quando inizia il lavoro, quanto manca e a che ora finisci su iPhone, iPad, widget, schermata di blocco e Dynamic Island. I tuoi dati restano sul dispositivo.",
+      "description": "DoneAt rende la giornata lavorativa chiara a colpo d'occhio.\nImposta l'orario una volta. Prima del lavoro, DoneAt conta fino all'inizio. Durante il turno mostra il tempo di lavoro effettivo rimanente e mette in pausa l'avanzamento a pranzo. Nei giorni liberi mantiene visibile il prossimo turno. Se la giornata cambia, puoi iniziare prima, uscire prima, aggiungere straordinari o cronometrare un giorno non programmato senza rifare l'orario.\nFUNZIONI\n• Conto alla rovescia in tempo reale fino all'inizio e alla fine del lavoro\n• Giorni fissi, settimane alterne e rotazioni lavoro/riposo\n• Turni notturni oltre la mezzanotte\n• Pausa pranzo esclusa dal tempo lavorato\n• Inizio anticipato, uscita anticipata, straordinari e conteggio manuale\n• Stima facoltativa dei guadagni e riepiloghi settimanali e annuali\n• Promemoria per turno, pranzo e movimento\n• Widget per schermata Home e schermata di blocco\n• Attività in tempo reale su schermata di blocco e Dynamic Island\n• Un timer con l’aspetto in vetro di iOS, pensato per la schermata Home, la schermata di blocco e Dynamic Island\n• Modalità orizzontale iPhone e layout ottimizzato per iPad\n• Condivisione del conto alla rovescia come immagine o link\n• 19 lingue e lingua di sistema automatica\n\nPRIVACY\nOrari e dati dello stipendio restano sul dispositivo. Gli importi non appaiono mai in widget, notifiche o attività in tempo reale. Nessun account, registrazione o analisi del comportamento. Il conto alla rovescia funziona offline.",
+      "keywords": "lavoro,timer,timbrare,giornata,orario,straordinari,pausa,produttività,uscita,ore",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown ora si chiama DoneAt.\n\n• Un timer riprogettato per prima del lavoro, il turno, il pranzo, gli straordinari e i giorni liberi\n• Inizia prima, esci prima, aggiungi straordinari o conta un giorno non programmato\n• Configurazione iniziale più semplice e un'area dedicata per modificare l'orario in seguito\n• Viste migliorate per iPhone in orizzontale e iPad\n• Widget, schermata di blocco e Dynamic Island seguono ora lo stesso stato del turno\n• Il timer ora usa l’aspetto in vetro di iOS, in linea con schermata di blocco, widget e Dynamic Island\n• Nuova icona e identità visiva DoneAt\n\nOrari e dati dello stipendio continuano a restare sul tuo dispositivo."
+    },
+    "ja": {
+      "name": "DoneAt - 退勤カウントダウン",
+      "subtitle": "シフト・ウィジェット・収入",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "始業時刻、勤務の残り時間、退勤時刻をiPhone、iPad、ウィジェット、ロック画面、Dynamic Islandで確認。勤務予定と給与データはデバイス内に保存されます。",
+      "description": "DoneAtなら、今日の仕事の流れがひと目で分かります。\n勤務予定を一度設定するだけ。始業前は仕事が始まるまで、勤務中は実働の残り時間をカウントし、昼休み中は進捗を止めます。休日も次の勤務までの時間を確認できます。予定が変わった日は、シフトを作り直さずに早めの始業・退勤、残業、予定外の勤務を記録できます。\n主な機能\n• 始業と退勤までのリアルタイムカウントダウン\n• 固定曜日、隔週、勤務・休日ローテーション\n• 日をまたぐ夜勤\n• 実働時間から除外される昼休み\n• 早めの始業・退勤、残業、手動計時\n• 任意の収入見込みと週・年のサマリー\n• 勤務、昼休み、運動のリマインダー\n• ホーム画面とロック画面のウィジェット\n• ロック画面とDynamic Islandのライブアクティビティ\n• iOSのガラス質感でデザインしたタイマー。ホーム画面、ロック画面、Dynamic Islandになじみます\n• iPhone横向き表示とiPad向けレイアウト\n• カウントダウンを画像またはリンクで共有\n• 19言語に対応し、システム言語を自動適用\n\nプライバシー\n勤務予定と給与データはデバイス内だけに保存されます。具体的な給与額がウィジェット、通知、ライブアクティビティに表示されることはありません。アカウント登録や行動分析はなく、カウントダウンはオフラインで動作します。",
+      "keywords": "勤務,タイマー,給料,時給,残業,進捗,勤怠,昼休み,夜勤,仕事,退社",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work CountdownはDoneAtに生まれ変わりました。\n\n• 始業前、勤務中、昼休み、残業、休日を分かりやすくする新しいタイマー\n• 早めの始業・退勤、残業、予定外の勤務をシフトの作り直しなしで記録\n• 初回設定を簡潔にし、後から勤務予定を編集できる専用画面を追加\n• iPhone横向き表示とiPadレイアウトを改善\n• ウィジェット、ロック画面、Dynamic Islandの勤務状態を統一\n• タイマーがiOSのガラス質感になり、ロック画面、ウィジェット、Dynamic Islandと揃います\n• DoneAtの新しいアイコンとビジュアル\n\n勤務予定と給与データは、これまでどおりデバイス内に保存されます。"
+    },
+    "ko": {
+      "name": "DoneAt - 퇴근 카운트다운",
+      "subtitle": "교대 일정·위젯·오늘 수입",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "출근 시간, 오늘 근무의 남은 시간과 퇴근 시간을 iPhone, iPad, 위젯, 잠금 화면과 Dynamic Island에서 확인하세요. 일정과 급여 데이터는 기기에만 저장됩니다.",
+      "description": "DoneAt은 오늘의 근무 흐름을 한눈에 보여 줍니다.\n근무 일정을 한 번 설정하세요. 출근 전에는 시작까지, 근무 중에는 실제 남은 근무 시간을 계산하고 점심시간에는 진행을 멈춥니다. 휴무일에도 다음 근무까지 남은 시간을 볼 수 있습니다. 오늘 일정이 달라지면 스케줄을 다시 만들지 않고 일찍 출근하거나 퇴근하고, 야근을 추가하거나 예정에 없던 근무를 직접 시작할 수 있습니다.\n주요 기능\n• 출근과 퇴근까지 실시간 카운트다운\n• 고정 요일, 격주 일정, 근무·휴무 순환\n• 자정을 넘기는 야간 근무\n• 실제 근무 시간에서 제외되는 점심시간\n• 조기 출근·퇴근, 야근, 수동 시간 측정\n• 선택 가능한 예상 수입과 주간·연간 요약\n• 근무, 점심시간, 움직임 알림\n• 홈 화면과 잠금 화면 위젯\n• 잠금 화면과 Dynamic Island의 실시간 현황\n• iOS 글래스 질감으로 만든 타이머로, 홈 화면, 잠금 화면, Dynamic Island에 자연스럽게 어울립니다\n• iPhone 가로 모드와 iPad 최적화 레이아웃\n• 이미지 또는 링크로 카운트다운 공유\n• 19개 언어와 시스템 언어 자동 적용\n\n개인정보 보호\n근무 일정과 급여 데이터는 기기에만 저장됩니다. 구체적인 급여 금액은 위젯, 알림 또는 실시간 현황에 표시되지 않습니다. 계정, 가입, 행동 분석이 없으며 카운트다운은 오프라인으로 작동합니다.",
+      "keywords": "근무,타이머,월급,시급,야근,진행률,근태,점심,알림,업무시간,출근",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown이 DoneAt으로 새로워졌습니다.\n\n• 출근 전, 근무 중, 점심시간, 야근과 휴무일을 더 명확하게 보여 주는 새 타이머\n• 일찍 출근하거나 퇴근하고, 야근을 추가하거나 예정에 없던 근무를 직접 측정\n• 더 간단한 첫 설정과 이후 일정을 편집하는 전용 화면\n• iPhone 가로 모드와 iPad 레이아웃 개선\n• 위젯, 잠금 화면과 Dynamic Island가 동일한 근무 상태를 표시\n• 타이머가 iOS 글래스 질감을 써서 잠금 화면, 위젯, Dynamic Island와 함께 어울립니다\n• 새로운 DoneAt 아이콘과 시각 디자인\n\n근무 일정과 급여 데이터는 계속 기기에만 저장됩니다."
+    },
+    "pt-BR": {
+      "name": "DoneAt - Contagem para sair",
+      "subtitle": "Turnos, widgets e salário",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "Veja quando o trabalho começa, quanto falta no turno e a hora de sair no iPhone, iPad, widgets, Tela Bloqueada e Dynamic Island. Seus dados ficam no aparelho.",
+      "description": "O DoneAt deixa seu dia de trabalho claro em um relance.\nDefina seu horário uma vez. Antes do trabalho, o DoneAt conta até a entrada. Durante o turno, mostra o tempo efetivo restante e pausa o progresso no almoço. Nos dias de folga, mantém o próximo turno à vista. Se o dia mudar, comece mais cedo, saia mais cedo, adicione hora extra ou conte um dia não programado sem refazer seu horário.\nRECURSOS\n• Contagem regressiva em tempo real até a entrada e a saída\n• Dias fixos, semanas alternadas e ciclos de trabalho e folga\n• Turnos noturnos que passam da meia-noite\n• Intervalo de almoço fora do tempo trabalhado\n• Entrada antecipada, saída antecipada, hora extra e contagem manual\n• Estimativa opcional de ganhos e resumos semanais e anuais\n• Lembretes de turno, almoço e movimento\n• Widgets da Tela de Início e Tela Bloqueada\n• Atividades ao Vivo na Tela Bloqueada e Dynamic Island\n• Um timer com o visual de vidro do iOS, pensado para a Tela de Início, a Tela Bloqueada e o Dynamic Island\n• Modo horizontal no iPhone e layout otimizado para iPad\n• Compartilhe a contagem como imagem ou link\n• Disponível em 19 idiomas e segue o idioma do sistema\n\nPRIVACIDADE\nSeu horário e seus dados salariais ficam no aparelho. Valores de salário nunca aparecem em widgets, notificações ou Atividades ao Vivo. Sem conta, cadastro ou análise de comportamento. A contagem funciona offline.",
+      "keywords": "trabalho,relógio,ponto,jornada,horário,hora extra,intervalo,produtividade,emprego,folga",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown agora é DoneAt.\n\n• Um novo timer para antes do trabalho, o turno, o almoço, as horas extras e os dias de folga\n• Comece mais cedo, saia mais cedo, adicione hora extra ou conte um dia não programado\n• Configuração inicial mais simples e uma área própria para editar o horário depois\n• Telas aprimoradas para iPhone na horizontal e iPad\n• Widgets, Tela Bloqueada e Dynamic Island agora mostram o mesmo estado do turno\n• O timer agora usa o visual de vidro do iOS, alinhado à Tela Bloqueada, aos widgets e ao Dynamic Island\n• Novo ícone e identidade visual do DoneAt\n\nSeu horário e seus dados salariais continuam no seu aparelho."
+    },
+    "ru": {
+      "name": "DoneAt - До конца смены",
+      "subtitle": "График, виджеты и зарплата",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "Смотрите время до начала работы, остаток смены и время ухода на iPhone, iPad, в виджетах, на экране блокировки и Dynamic Island. Данные остаются на устройстве.",
+      "description": "DoneAt помогает понять рабочий день с одного взгляда.\nНастройте график один раз. До работы DoneAt считает время до начала, во время смены показывает остаток фактического рабочего времени и ставит прогресс на паузу во время обеда. В выходные следующая смена остается перед глазами. Если планы изменились, можно начать или уйти раньше, добавить переработку либо засечь незапланированный рабочий день, не переделывая график.\nВОЗМОЖНОСТИ\n• Обратный отсчет до начала и конца работы\n• Фиксированные дни, чередующиеся недели и циклы работы/отдыха\n• Ночные смены после полуночи\n• Обеденный перерыв вне рабочего времени\n• Раннее начало и окончание, переработка и ручной отсчет\n• Необязательная оценка дохода, итоги недели и года\n• Напоминания о смене, обеде и движении\n• Виджеты главного экрана и экрана блокировки\n• Live-активности на экране блокировки и Dynamic Island\n• Таймер в стеклянном стиле iOS — он естественно смотрится на домашнем экране, экране блокировки и Dynamic Island\n• Горизонтальный режим iPhone и интерфейс для iPad\n• Отправка отсчета картинкой или ссылкой\n• 19 языков и автоматический выбор языка системы\n\nКОНФИДЕНЦИАЛЬНОСТЬ\nГрафик и данные о зарплате остаются на устройстве. Суммы не появляются в виджетах, уведомлениях или Live-активностях. Без аккаунта, регистрации и поведенческой аналитики. Отсчет работает офлайн.",
+      "keywords": "работа,таймер,табель,рабочий день,часы,обед,переработка,продуктивность,график смен,отдых",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown теперь называется DoneAt.\n\n• Новый таймер для времени до работы, смены, обеда, переработки и выходных\n• Начинайте или уходите раньше, добавляйте переработку или считайте незапланированный рабочий день\n• Более простой первый запуск и отдельное место для последующего изменения графика\n• Улучшенные экраны для горизонтального iPhone и iPad\n• Виджеты, экран блокировки и Dynamic Island теперь показывают единое состояние смены\n• Таймер теперь в стеклянном стиле iOS и сочетается с экраном блокировки, виджетами и Dynamic Island\n• Новые значок и визуальный стиль DoneAt\n\nГрафик и данные о зарплате по-прежнему остаются на вашем устройстве."
+    },
+    "th": {
+      "name": "DoneAt - นับถอยหลังเลิกงาน",
+      "subtitle": "กะงาน วิดเจ็ต และรายได้",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "ดูเวลาเริ่มงาน เวลาที่เหลือของกะ และเวลาเลิกงานบน iPhone, iPad, วิดเจ็ต, หน้าจอล็อก และ Dynamic Island ข้อมูลของคุณอยู่บนเครื่องเท่านั้น",
+      "description": "DoneAt ช่วยให้เข้าใจวันทำงานได้ในพริบตา\nตั้งตารางเพียงครั้งเดียว ก่อนเริ่มงาน DoneAt จะนับถอยหลังถึงเวลาเข้างาน ระหว่างกะจะแสดงเวลาทำงานจริงที่เหลือและหยุดความคืบหน้าช่วงพักกลางวัน วันหยุดก็ยังเห็นกะถัดไป หากแผนวันนี้เปลี่ยน คุณเริ่มก่อน เลิกก่อน เพิ่มล่วงเวลา หรือจับเวลาวันทำงานนอกตารางได้โดยไม่ต้องสร้างตารางใหม่\nคุณสมบัติ\n• นับถอยหลังแบบเรียลไทม์ถึงเวลาเริ่มและเลิกงาน\n• วันทำงานประจำ สัปดาห์สลับ และรอบทำงาน/พัก\n• กะกลางคืนที่ข้ามเที่ยงคืน\n• พักกลางวันที่ไม่นับเป็นเวลาทำงาน\n• เริ่มก่อน เลิกก่อน ล่วงเวลา และจับเวลาเอง\n• ประมาณรายได้เสริมและสรุปรายสัปดาห์/รายปี\n• การเตือนกะ พักกลางวัน และขยับร่างกาย\n• วิดเจ็ตหน้าจอโฮมและหน้าจอล็อก\n• กิจกรรมสดบนหน้าจอล็อกและ Dynamic Island\n• ตัวจับเวลาที่ใช้ลุคกระจกของ iOS ให้กลมกลืนกับหน้าจอโฮม หน้าจอล็อก และ Dynamic Island\n• มุมมองแนวนอนบน iPhone และเลย์เอาต์สำหรับ iPad\n• แชร์การนับถอยหลังเป็นภาพหรือลิงก์\n• รองรับ 19 ภาษาและทำตามภาษาระบบ\n\nความเป็นส่วนตัว\nตารางและข้อมูลเงินเดือนอยู่บนอุปกรณ์ของคุณ จำนวนเงินเดือนไม่ปรากฏในวิดเจ็ต การแจ้งเตือน หรือกิจกรรมสด ไม่ต้องมีบัญชี สมัครสมาชิก หรือการวิเคราะห์พฤติกรรม การนับถอยหลังทำงานออฟไลน์",
+      "keywords": "งาน,ตัวจับเวลา,เข้างาน,ตอกบัตร,ชั่วโมง,พักกลางวัน,ล่วงเวลา,ประสิทธิภาพ,พนักงาน,เตือน",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown เปลี่ยนชื่อเป็น DoneAt แล้ว\n\n• ตัวจับเวลาใหม่สำหรับก่อนเข้างาน ระหว่างกะ พักกลางวัน ล่วงเวลา และวันหยุด\n• เริ่มก่อน เลิกก่อน เพิ่มล่วงเวลา หรือจับเวลาวันทำงานนอกตาราง\n• ตั้งค่าครั้งแรกง่ายขึ้น และมีพื้นที่เฉพาะสำหรับแก้ไขตารางภายหลัง\n• ปรับปรุงมุมมองแนวนอนบน iPhone และเลย์เอาต์ iPad\n• วิดเจ็ต หน้าจอล็อก และ Dynamic Island แสดงสถานะกะเดียวกัน\n• ตัวจับเวลาใช้ลุคกระจกของ iOS ให้เข้ากับหน้าจอล็อก วิดเจ็ต และ Dynamic Island\n• ไอคอนและภาพลักษณ์ใหม่ของ DoneAt\n\nตารางและข้อมูลเงินเดือนของคุณยังคงอยู่บนอุปกรณ์เท่านั้น"
+    },
+    "tr": {
+      "name": "DoneAt - İş Çıkışı Sayacı",
+      "subtitle": "Vardiya, widget ve kazanç",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "İşin ne zaman başlayacağını, vardiyada ne kadar kaldığını ve çıkış saatini iPhone, iPad, widget'lar, Kilit Ekranı ve Dynamic Island'da görün. Veriler cihazda kalır.",
+      "description": "DoneAt çalışma gününü tek bakışta anlaşılır kılar.\nProgramını bir kez ayarla. İşten önce başlangıca kadar sayar; vardiya sırasında kalan etkin çalışma süresini gösterir ve öğle molasında ilerlemeyi durdurur. Tatil günlerinde sonraki vardiya görünür kalır. Günün değişirse programı baştan yapmadan erken başla, erken çık, fazla mesai ekle veya plansız bir çalışma gününü elle say.\nÖZELLİKLER\n• İş başlangıcı ve çıkışına gerçek zamanlı geri sayım\n• Sabit günler, dönüşümlü haftalar ve çalışma/dinlenme döngüleri\n• Gece yarısını geçen vardiyalar\n• Çalışma süresinden çıkarılan öğle molası\n• Erken başlangıç, erken çıkış, fazla mesai ve elle sayım\n• İsteğe bağlı kazanç tahmini, haftalık ve yıllık özetler\n• Vardiya, öğle molası ve hareket hatırlatıcıları\n• Ana Ekran ve Kilit Ekranı widget'ları\n• Kilit Ekranı ve Dynamic Island'da Canlı Etkinlikler\n• iOS’un cam görünümündeki sayaç; Ana Ekran, Kilit Ekranı ve Dynamic Island’da doğal durur\n• iPhone yatay görünüm ve iPad'e özel düzen\n• Geri sayımı görsel veya bağlantı olarak paylaşma\n• 19 dil ve sistem dilini otomatik izleme\n\nGİZLİLİK\nProgramın ve maaş verilerin cihazında kalır. Maaş tutarları widget, bildirim veya Canlı Etkinliklerde görünmez. Hesap, kayıt ve davranış analizi yoktur. Geri sayım çevrimdışı çalışır.",
+      "keywords": "iş,timer,mesai,çalışma saati,mola,puantaj,verimlilik,personel,hatırlatıcı,gece vardiyası",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown artık DoneAt.\n\n• İş öncesi, vardiya, öğle molası, fazla mesai ve tatil günleri için yeniden tasarlanan sayaç\n• Erken başla, erken çık, fazla mesai ekle veya plansız bir çalışma gününü elle say\n• Daha akıcı ilk kurulum ve programı daha sonra düzenlemek için ayrı bir alan\n• iPhone yatay görünüm ve iPad düzenleri iyileştirildi\n• Widget'lar, Kilit Ekranı ve Dynamic Island artık aynı vardiya durumunu gösteriyor\n• Sayaç artık iOS’un cam görünümünü kullanıyor; Kilit Ekranı, widget’lar ve Dynamic Island ile uyumlu\n• Yeni DoneAt simgesi ve görsel kimliği\n\nProgramın ve maaş verilerin cihazında kalmaya devam eder."
+    },
+    "vi": {
+      "name": "DoneAt - Đếm ngược tan ca",
+      "subtitle": "Ca làm, tiện ích và thu nhập",
+      "privacyPolicyUrl": "https://off.rainif.com/en/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "Xem giờ bắt đầu, thời gian còn lại và giờ tan ca trên iPhone, iPad, tiện ích, Màn hình khóa và Dynamic Island. Lịch làm và dữ liệu lương chỉ ở trên thiết bị.",
+      "description": "DoneAt giúp bạn hiểu ngày làm việc chỉ trong nháy mắt.\nĐặt lịch một lần. Trước giờ làm, DoneAt đếm ngược đến lúc bắt đầu. Trong ca, ứng dụng hiển thị thời gian làm việc thực tế còn lại và tạm dừng tiến độ khi nghỉ trưa. Ngày nghỉ vẫn thấy ca tiếp theo. Khi kế hoạch thay đổi, bạn có thể bắt đầu sớm, tan ca sớm, thêm giờ làm hoặc đếm một ngày ngoài lịch mà không cần tạo lại lịch.\nTÍNH NĂNG\n• Đếm ngược theo thời gian thực đến giờ vào và tan ca\n• Ngày cố định, tuần xen kẽ và chu kỳ làm/nghỉ\n• Ca đêm kéo dài qua nửa đêm\n• Nghỉ trưa không tính vào giờ làm\n• Bắt đầu sớm, tan ca sớm, làm thêm và đếm thủ công\n• Ước tính thu nhập tùy chọn và tổng kết tuần/năm\n• Nhắc ca làm, nghỉ trưa và vận động\n• Tiện ích Màn hình chính và Màn hình khóa\n• Hoạt động trực tiếp trên Màn hình khóa và Dynamic Island\n• Bộ đếm với chất liệu kính của iOS, hòa vào Màn hình chính, Màn hình khóa và Dynamic Island\n• Chế độ ngang iPhone và bố cục tối ưu cho iPad\n• Chia sẻ đếm ngược bằng hình ảnh hoặc liên kết\n• Có 19 ngôn ngữ và tự theo ngôn ngữ hệ thống\n\nQUYỀN RIÊNG TƯ\nLịch làm và dữ liệu lương chỉ ở trên thiết bị. Số tiền lương không bao giờ hiện trong tiện ích, thông báo hay Hoạt động trực tiếp. Không tài khoản, đăng ký hay phân tích hành vi. Đếm ngược hoạt động ngoại tuyến.",
+      "keywords": "công việc,hẹn giờ,chấm công,giờ làm,nghỉ trưa,làm thêm,năng suất,nhân viên,nhắc nhở,ca đêm",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "Off Work Countdown nay là DoneAt.\n\n• Bộ đếm mới cho trước giờ làm, trong ca, nghỉ trưa, làm thêm và ngày nghỉ\n• Bắt đầu sớm, tan ca sớm, thêm giờ làm hoặc đếm một ngày ngoài lịch\n• Thiết lập lần đầu dễ hơn và có nơi riêng để sửa lịch sau này\n• Cải thiện giao diện ngang trên iPhone và bố cục iPad\n• Tiện ích, Màn hình khóa và Dynamic Island nay hiển thị cùng trạng thái ca làm\n• Bộ đếm nay dùng chất liệu kính của iOS, khớp với Màn hình khóa, tiện ích và Dynamic Island\n• Biểu tượng và nhận diện DoneAt mới\n\nLịch làm và dữ liệu lương của bạn vẫn chỉ ở trên thiết bị."
+    },
+    "zh-Hans": {
+      "name": "DoneAt - 下班倒计时",
+      "subtitle": "灵动岛、排班与今日已赚",
+      "privacyPolicyUrl": "https://off.rainif.com/zh-CN/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "一眼看清几点上班、这班还剩多久、什么时候下班。iPhone、iPad、小组件、锁定屏幕和灵动岛随时同步进度，排班与薪资数据只留在设备上。",
+      "description": "DoneAt 让你一眼看清今天这班走到哪里。\n只需设置一次排班。上班前，倒数到开工；工作中，显示扣除午休后的实际剩余工时；休息日，也能看到距离下一班还有多久。临时有变化时，无需重做排班，就能提前上班、提前下班、登记加班，或为未排班的一天手动计时。\n主要功能\n• 实时倒数到上班与下班\n• 支持固定工作日、大小周和轮班轮休\n• 支持跨过午夜的夜班\n• 自定义午休，并从实际工作时长中扣除\n• 提前上班、提前下班、加班与手动计时\n• 可选的今日已赚，以及本周和今年汇总\n• 班次、午休和起身活动提醒\n• 主屏幕与锁定屏幕小组件\n• 锁定屏幕实时活动与灵动岛\n• 计时页采用 iOS 的玻璃质感，在主屏幕、锁定屏幕和灵动岛上看起来就是系统的一部分\n• iPhone 横屏模式与 iPad 大屏布局\n• 把倒计时分享成图片或链接\n• 支持 19 种语言并跟随系统语言\n\n隐私\n你的排班和薪资数据只保存在设备上。具体薪资不会出现在小组件、通知或实时活动中。无需账号、无需注册，也没有行为分析；倒计时可离线运行。",
+      "keywords": "打工,摸鱼,计时器,小组件,工资,时薪,考勤,加班,进度,午休,轮班,夜班",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "“下班倒计时”现已更名为 DoneAt。\n\n• 全新计时页面，清楚区分上班前、工作中、午休、加班和休息日\n• 支持提前上班、提前下班、登记加班和未排班日的手动计时\n• 欢迎流程一次配好班次，以后统一在设置中修改\n• 优化 iPhone 横屏与 iPad 大屏布局\n• 小组件、锁定屏幕和灵动岛现在与当前班次状态保持一致\n• 计时页采用 iOS 的玻璃质感，放在锁定屏幕、小组件和灵动岛上都像系统自带的\n• 换上全新的 DoneAt 图标与视觉形象\n\n你的排班和薪资数据仍然只保存在设备上。"
+    },
+    "zh-Hant": {
+      "name": "DoneAt - 下班倒數計時",
+      "subtitle": "動態島、班表與今日已賺",
+      "privacyPolicyUrl": "https://off.rainif.com/zh-CN/privacy",
+      "privacyChoicesUrl": null,
+      "promotionalText": "一眼看清幾點上班、這班還剩多久、何時下班。iPhone、iPad、小工具、鎖定畫面和動態島隨時同步進度，班表與薪資資料只留在裝置上。",
+      "description": "DoneAt 讓你一眼看清今天這班走到哪裡。\n只需設定一次班表。上班前，倒數到開工；工作中，顯示扣除午休後的實際剩餘工時；休息日，也能看到距離下一班還有多久。臨時有變化時，無需重做班表，就能提早上班、提早下班、登記加班，或為未排班的一天手動計時。\n主要功能\n• 即時倒數到上班與下班\n• 支援固定工作日、大小週和輪班輪休\n• 支援跨過午夜的夜班\n• 自訂午休，並從實際工作時數中扣除\n• 提早上班、提早下班、加班與手動計時\n• 可選的今日已賺，以及本週和今年摘要\n• 班次、午休和起身活動提醒\n• 主畫面與鎖定畫面小工具\n• 鎖定畫面即時動態與動態島\n• 計時畫面採用 iOS 的玻璃質感，在主畫面、鎖定畫面和動態島上看起來就是系統的一部分\n• iPhone 橫向模式與 iPad 大螢幕版面\n• 將倒數分享成圖片或連結\n• 支援 19 種語言並跟隨系統語言\n\n隱私\n你的班表和薪資資料只保存在裝置上。具體薪資不會出現在小工具、通知或即時動態中。無需帳號、無需註冊，也沒有行為分析；倒數可離線運作。",
+      "keywords": "返工,放工,計時器,小工具,薪資,時薪,考勤,加班,進度,午休,輪班,夜班",
+      "supportUrl": "https://doneat.app/",
+      "marketingUrl": "https://doneat.app/",
+      "whatsNew": "「下班倒數計時」現已更名為 DoneAt。\n\n• 全新計時畫面，清楚區分上班前、工作中、午休、加班和休息日\n• 支援提早上班、提早下班、登記加班和未排班日的手動計時\n• 歡迎流程一次設好班次，之後統一在設定中修改\n• 最佳化 iPhone 橫向與 iPad 大螢幕版面\n• 小工具、鎖定畫面和動態島現在與目前班次狀態保持一致\n• 計時畫面採用 iOS 的玻璃質感，放在鎖定畫面、小工具和動態島上都像系統自帶的\n• 換上全新的 DoneAt 圖示與視覺形象\n\n你的班表和薪資資料仍然只保存在裝置上。"
+    }
+  }
+}

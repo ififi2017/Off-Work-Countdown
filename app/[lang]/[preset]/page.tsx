@@ -13,9 +13,10 @@ import {
   defaultContentLocale,
   type ContentLocale,
 } from "@/lib/content-locales";
+import { isContentSlug } from "@/lib/site-urls";
 
-// 静态段（faq / how-it-works）优先于动态段匹配，因此这个 [preset] 不会抢走
-// 内容页的路由。配合 dynamicParams = false，未知 slug 直接 404。
+// 五页长文已迁到官网，本仓不再保留同名页面。Web 上旧 URL 由 next.config 301；
+// 若落到这一段（例如桌面静态导出），直接 404，不要当成预设班次。
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -27,9 +28,9 @@ export function generateStaticParams() {
 function alternatesFor(slug: string) {
   return {
     ...Object.fromEntries(
-      contentLocales.map((l) => [l, `${siteConfig.baseUrl}/${l}/${slug}`])
+      contentLocales.map((l) => [l, `${siteConfig.webAppUrl}/${l}/${slug}`])
     ),
-    "x-default": `${siteConfig.baseUrl}/${defaultContentLocale}/${slug}`,
+    "x-default": `${siteConfig.webAppUrl}/${defaultContentLocale}/${slug}`,
   };
 }
 
@@ -39,16 +40,17 @@ export async function generateMetadata({
   params: Promise<{ lang: string; preset: string }>;
 }): Promise<Metadata> {
   const { lang, preset } = await params;
+  if (isContentSlug(preset)) return {};
   const copy = await getPresetCopy(lang);
   const item = copy.items[preset];
   if (!item) return {};
 
   return {
-    metadataBase: new URL(siteConfig.baseUrl),
+    metadataBase: new URL(siteConfig.webAppUrl),
     title: item.metaTitle,
     description: item.metaDescription,
     alternates: {
-      canonical: `${siteConfig.baseUrl}/${lang}/${preset}`,
+      canonical: `${siteConfig.webAppUrl}/${lang}/${preset}`,
       languages: alternatesFor(preset),
     },
     ...localizedSocialMetadata({
@@ -72,6 +74,7 @@ export default async function PresetPage({
   params: Promise<{ lang: string; preset: string }>;
 }) {
   const { lang, preset } = await params;
+  if (isContentSlug(preset)) notFound();
   const definition = getPreset(preset);
   const copy = await getPresetCopy(lang);
   const item = copy.items[preset];
@@ -144,7 +147,7 @@ export default async function PresetPage({
         {copy.startCta}
       </Link>
 
-      {/* 预设页之间互链。内容页与预设页彼此都有入口，爬虫才走得到。 */}
+      {/* 预设页之间互链，爬虫才走得到。 */}
       <section className="mt-12 border-t border-gray-200 pt-6 dark:border-gray-700">
         <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
           {copy.otherPresetsHeading}

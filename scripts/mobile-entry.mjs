@@ -25,14 +25,14 @@ export function createMobileEntryHtml({
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="light dark">
-    <title>Off Work Countdown</title>
+    <title>DoneAt</title>
     <style>
       html,body{height:100%;margin:0}body{display:grid;place-items:center;background:#f3f4f6;color:#374151;font:14px system-ui,-apple-system,sans-serif}span{opacity:.72}@media(prefers-color-scheme:dark){body{background:#111827;color:#e5e7eb}}
     </style>
   </head>
   <body>
     <span role="status" aria-live="polite">Opening…</span>
-    <noscript><a href="${defaultLocale}.html">Open Off Work Countdown</a></noscript>
+    <noscript><a href="${defaultLocale}.html">Open DoneAt</a></noscript>
     <script>
       (function () {
         var locales = ${escapeJsonForInlineScript(localeLookup)};

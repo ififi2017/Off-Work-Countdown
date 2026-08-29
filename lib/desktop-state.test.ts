@@ -5,6 +5,7 @@ import {
   getDesktopCountdownView,
   hasAuthoritativeDesktopPreferences,
   normalizeDesktopCountdownState,
+  shouldOfferBrandRenameNotice,
 } from "./desktop-state";
 
 describe("desktop countdown state", () => {
@@ -152,6 +153,33 @@ describe("desktop countdown state", () => {
       earned: 120,
       phase: "between",
     });
+  });
+
+  it("offers the DoneAt rename notice only to existing desktop installs", () => {
+    expect(
+      shouldOfferBrandRenameNotice({
+        noticeSeen: false,
+        hadExistingCountdown: true,
+      })
+    ).toBe(true);
+    expect(
+      shouldOfferBrandRenameNotice({
+        noticeSeen: true,
+        hadExistingCountdown: true,
+      })
+    ).toBe(false);
+    expect(
+      shouldOfferBrandRenameNotice({
+        noticeSeen: false,
+        hadExistingCountdown: false,
+      })
+    ).toBe(false);
+    expect(
+      shouldOfferBrandRenameNotice({
+        noticeSeen: true,
+        hadExistingCountdown: false,
+      })
+    ).toBe(false);
   });
 
   it("migrates a 3.0 single-range snapshot without recalculating it", () => {

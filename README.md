@@ -6,6 +6,7 @@ once, then keep the remaining time, progress and estimated earnings at a glance.
 
 [中文版 README](README_CN.md)
 
+[![Official site](https://img.shields.io/badge/DoneAt-doneat.app-0f172a)](https://doneat.app)
 [![Web App](https://img.shields.io/badge/Web-open%20app-ff6b35)](https://off.rainif.com/en)
 [![Desktop Release](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
 [![License](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
@@ -26,7 +27,7 @@ once, then keep the remaining time, progress and estimated earnings at a glance.
 ## Use Off Work Countdown
 
 - **Web:** [open the app](https://off.rainif.com/en) — no installation required.
-- **Desktop:** [open the download page](https://off.rainif.com/en/download) —
+- **Desktop:** [open the download page](https://doneat.app/en/download) —
   macOS Apple Silicon / Intel and Windows x64 / ARM64 are available. The macOS
   build requires macOS 11.3 (Big Sur) or later.
 - **Windows, from the Microsoft Store:**
@@ -200,8 +201,9 @@ The site configuration is centralized in `config/site.ts`:
 
 ```typescript
 export const siteConfig = {
-  name: "Off Work Countdown",
-  baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://off.rainif.com',
+  brandName: "DoneAt",
+  webAppUrl: "https://off.rainif.com",
+  officialSiteUrl: "https://doneat.app",
   github: "https://github.com/ififi2017/Off-Work-Countdown",
   themeColor: "#F3F4F6",
 } as const;
@@ -257,16 +259,10 @@ export const languageNames = {
 
 ### Content pages
 
-The app interface is translated into all 19 languages, but the long-form pages
-— the FAQ, "How it works" and the schedule reference pages — are deliberately
-published in English and Simplified Chinese only (`lib/content-locales.ts`).
-Prose of that length costs far more to translate and maintain than UI strings,
-and spreading it across 19 locales would mostly produce copy nobody has
-reviewed. Requests for those pages in other locales return 404 rather than
-serving English under, say, a Japanese URL.
-
-Chinese interfaces (including Traditional) link to the Chinese pages; every
-other language links to the English ones.
+Long-form FAQ, how-it-works, about, download and privacy live on
+[doneat.app](https://doneat.app). Old URLs on this site permanently redirect
+there. The Web App still publishes schedule presets (`/en/996` and the rest)
+in English and Simplified Chinese only (`lib/content-locales.ts`).
 
 ## Usage
 
@@ -292,7 +288,7 @@ Screen"; on macOS Safari, choose "Add to Dock".
 
 The PWA is still supported, but desktop users who want a persistent menu-bar or
 mini-timer experience, native reminders, launch at login and automatic updates
-should use the [desktop app](https://off.rainif.com/en/download).
+should use the [desktop app](https://doneat.app/en/download).
 
 ## Contributing
 
@@ -315,7 +311,7 @@ We're looking to expand our app's language support. If you'd like to contribute 
 5. Test the app thoroughly with the new language.
 6. Submit a pull request with your changes.
 
-Those two files are all a new language needs. `content.json` and `presets.json`
+Those two files are all a new language needs. Schedule presets (`presets.json`)
 exist only for English and Simplified Chinese by design — see "Content pages"
 above.
 

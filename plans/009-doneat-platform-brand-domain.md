@@ -1,6 +1,6 @@
 # 009 — DoneAt 全平台品牌与双域分工
 
-- **Status**: TODO — 2026-08-28 Grill 已锁；尚未开始执行
+- **Status**: IN PROGRESS — 2026-08-29 官网已独立运作；产品仓 Web P3 正在落地
 - **Reviewed against**: 2026-08-28 工作区；[007 Grill](007-ios-stable-before-subscription.md#grill-locked)；[008](008-brand-doneat.md)；2026-08-28 域名响应头实测；2026-08-28 第二至八轮 Grill
 - **Severity**: HIGH（双域 canonical 配错会稀释既有 SEO；桌面改包身份会切断升级与用户状态）
 - **Category**: 品牌 / Web 主域 / Desktop 外表面 / 商店与发布
@@ -135,6 +135,10 @@ FAQ 按现有问题骨架重写：改掉「网页工具、不用下载」这类�
 这条跳转在 3.1.7 只当商店 URL 垫片可以接受，不能作为正式迁移方案。分享链接带
 `?s=...&from=share&utm_*`；迁移时丢查询参数会直接破坏分享闭环。
 
+**2026-08-29 更新：** `doneat.app` 已完成开发并独立运作。产品仓 Web 可以按本计划
+P3 做 301 和改链；Cloudflare 上指向 `off.rainif.com/` 且丢 path/query 的旧 302
+仍属域名侧 G5，不在这次 Web 改代码里动。
+
 ### 双域分工避开 Web 数据迁移
 
 Web 的排班、午休、提醒、薪资、隐藏状态和主题保存在 `off.rainif.com` origin 的
@@ -193,27 +197,35 @@ P0 可先做。P1–P5 的**对外发布**必须落在 G5 的同一窗口；对�
 
 ### P3 — 产品仓 Web 品牌、301 与 SEO
 
-- [ ] `siteConfig.name` 改为 DoneAt；`baseUrl` 拆为 `webAppUrl` 与 `officialSiteUrl`。
-- [ ] 19 份 UI 里作为产品名出现的地方改为 DoneAt；`offWorkCountdown` 仅保留功能词语义，en 改为
+- [x] `siteConfig.name` 改为 DoneAt；`baseUrl` 拆为 `webAppUrl` 与 `officialSiteUrl`。
+- [x] 19 份 UI 里作为产品名出现的地方改为 DoneAt；`offWorkCountdown` 仅保留功能词语义，en 改为
   Work Shift Countdown。
-- [ ] 19 份 SEO `siteName` 改为 DoneAt；title 采用 `DoneAt — {本地化功能解释}`；keywords 原样保留并可新增 `DoneAt`。
-- [ ] PWA manifest `name` / `short_name` 改为 DoneAt；`id` / `start_url` / `scope` 仍在 `off.rainif.com`。
-- [ ] Web App 的 metadata、Open Graph、WebApplication JSON-LD、sitemap、robots、hreflang 与生成图片仍指 `off.rainif.com`。
-- [ ] 五页旧内容 URL 在产品仓做逐路径永久跳转；Web App 主路由永不纳入这条跳转。
-- [ ] 页脚 FAQ/原理/关于/隐私 301 或改指官网；设置态下载区改成单一「获取 App」入口指向 `doneat.app`，拿掉 Web App 上的 Mac App Store badge、Microsoft Store badge 和 GitHub 直装对话框。
-- [ ] 分享链接继续使用 `off.rainif.com`；确认 `s` / `from` / `utm_*` 在语言重定向后完整保留。
+- [x] 19 份 SEO `siteName` 改为 DoneAt；title 采用 `DoneAt — {本地化功能解释}`；keywords 原样保留并可新增 `DoneAt`。
+- [x] PWA manifest `name` / `short_name` 改为 DoneAt；`id` / `start_url` / `scope` 仍在 `off.rainif.com`。
+- [x] Web App 的 metadata、Open Graph、WebApplication JSON-LD、sitemap、robots、hreflang 与生成图片仍指 `off.rainif.com`。
+- [x] 五页旧内容 URL 在产品仓做逐路径永久跳转；产品仓不再编译这五页正文。Web App 主路由永不纳入这条跳转。
+- [x] 页脚 FAQ/原理/关于/隐私改指官网；设置态下载区改成单一「获取 App」入口指向 `doneat.app`，拿掉 Web App 上的 Mac App Store badge、Microsoft Store badge 和 GitHub 直装对话框。页脚与标题栏补「访问官网」。
+- [x] 分享链接继续使用 `off.rainif.com`。语言重定向保留 query 的行为未改。
 - [ ] 验证原 origin 上的倒计时、主题、工资隐藏状态和离线 PWA 无需迁移且全部保留。
-- [ ] Tauri opener / iOS 外链允许名单补上 `doneat.app`（iOS About 硬编码的改写放到域名活了之后的下一次 iOS）。
+- [x] Tauri opener 允许名单补上 `doneat.app`（iOS About 硬编码的改写放到域名活了之后的下一次 iOS）。
 
 ### P4 — Desktop 用户可见品牌
 
-- [ ] Tauri `productName`、主窗口标题、安装器显示名与产物文件名改为 DoneAt；identifier 与
-  Windows exe 名不改。
-- [ ] Windows Mini Timer、托盘、通知、快捷方式、自启动显示名、卸载项与 About 统一 DoneAt。
-- [ ] MSIX 的 `Properties/DisplayName`、`uap:VisualElements` 与 StartupTask DisplayName 改为
-  DoneAt；`Identity Name`、Application Id 与 executable 不改，升级实测不能丢状态。
-- [ ] macOS Finder / Dock / Launchpad、应用菜单、About、托盘与 Widget 画廊统一 DoneAt；
+- [x] Tauri `productName`、主窗口标题、安装器显示名与产物文件名改为 DoneAt；identifier 与
+  Windows exe 名不改（`mainBinaryName` 仍为 `Off Work Countdown`）。
+- [x] Windows Mini Timer、托盘、About 回退文案与 MSIX 自启动 DisplayName 改为 DoneAt。
+- [x] MSIX 的 `Properties/DisplayName`、`uap:VisualElements` 与 StartupTask DisplayName 改为
+  DoneAt；`Identity Name`、Application Id 与 executable 不改。升级回环仍待真机验证。
+- [x] macOS Finder / Dock / Launchpad、应用菜单、About、托盘与 Widget 画廊统一 DoneAt；
   `.lproj` 继续由脚本生成，但品牌名固定为 DoneAt，不再读取 `offWorkCountdown`。
+- [x] 桌面设置「关于此项目」跳转官网 About；其下增加「下载移动端」到下载页；GitHub 仓库
+  按钮上方增加「访问官网」到 `doneat.app`。Web 页脚与标题栏同步。
+- [x] Web favicon / PWA 图标与 Tauri 安装器、托盘图标从同一套品牌母版重出。
+- [x] GitHub 渠道 NSIS 认回旧卸载项 `Off Work Countdown`：原地覆盖原目录，把开始菜单、
+  卸载列表和 Run 键迁到 DoneAt，不新建第二份安装。identifier 与 exe 名不改。真机升级
+  回环仍待验证。
+- [x] 桌面存量用户更新后首次打开弹一次改名说明（班次还在，应用现在叫 DoneAt）；
+  新装不弹，看过即写入 `desktop-state.json`，不再出现。
 - [ ] Mac App Store、Microsoft Store、GitHub 三渠道分别构建；商店渠道继续裁掉 updater，
   GitHub 渠道继续从旧仓库 endpoint 更新。
 - [ ] 升级安装必须复用原 identifier / 数据目录并读回 `desktop-state.json`，验证排班、薪资、

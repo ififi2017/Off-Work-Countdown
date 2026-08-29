@@ -10,6 +10,11 @@ const loadTranslation = (locale: string): Record<string, unknown> =>
     )
   );
 
+const loadSeo = (locale: string): Record<string, string> =>
+  JSON.parse(
+    readFileSync(`${process.cwd()}/public/locales/${locale}/seo.json`, "utf8")
+  );
+
 describe("UI locale resources", () => {
   it("keeps every user-facing key available in all 19 locales", () => {
     const referenceKeys = Object.keys(loadTranslation("en")).sort();
@@ -73,5 +78,22 @@ describe("UI locale resources", () => {
       expect(completion, locale).not.toContain("{{salary}}");
       expect(completion, locale).not.toContain("{{earnings}}");
     }
+  });
+});
+
+describe("SEO locale resources", () => {
+  it("uses DoneAt as the site name and keeps old keywords", () => {
+    for (const locale of locales) {
+      const seo = loadSeo(locale);
+      const translation = loadTranslation(locale);
+      expect(seo.siteName, locale).toBe("DoneAt");
+      expect(seo.title, locale).toBe(
+        `DoneAt — ${String(translation.offWorkCountdown)}`
+      );
+      expect(seo.keywords.toLowerCase(), locale).toContain("doneat");
+    }
+
+    expect(loadSeo("en").keywords).toContain("off work countdown");
+    expect(loadSeo("zh-CN").keywords).toContain("下班倒计时");
   });
 });

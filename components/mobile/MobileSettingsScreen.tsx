@@ -18,7 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { siteConfig } from "@/config/site";
-import { resolveContentLocale } from "@/lib/content-locales";
+import { officialHomeUrl, officialPageUrl } from "@/lib/site-urls";
 import { formatMinutes } from "@/lib/mobile/format";
 import type { IosAppState } from "@/lib/mobile/use-ios-app";
 import { languageNames } from "@/i18n-config";
@@ -157,10 +157,24 @@ export function MobileSettingsScreen({
             external
             separator
             onClick={() =>
-              openExternal(
-                `${siteConfig.baseUrl}/${resolveContentLocale(lang)}/about`
-              )
+              openExternal(officialPageUrl(lang, "about"))
             }
+          />
+          <IosRow
+            icon={Monitor}
+            label={t("downloadDesktopApp")}
+            external
+            separator
+            onClick={() =>
+              openExternal(officialPageUrl(lang, "download"))
+            }
+          />
+          <IosRow
+            icon={Globe}
+            label={t("visitOfficialWebsite")}
+            external
+            separator
+            onClick={() => openExternal(officialHomeUrl(lang))}
           />
           <IosRow
             icon={Code}

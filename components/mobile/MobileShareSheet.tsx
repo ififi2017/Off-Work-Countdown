@@ -8,13 +8,14 @@ import {
   buildShareText,
   buildShareUrl,
   canNativeShareFiles,
+  SHARE_IMAGE_FILENAME,
 } from "@/lib/share";
 import { generateShareImage } from "@/lib/shareImage";
 import { siteConfig } from "@/config/site";
 import { IosButton, IosSheet } from "./ios-kit";
 
 const MOOD_STORAGE_KEY = "shareMood";
-const IMAGE_FILENAME = "off-work-countdown.png";
+const IMAGE_FILENAME = SHARE_IMAGE_FILENAME;
 
 /**
  * Share, handed to iOS.
@@ -66,12 +67,12 @@ export function MobileShareSheet({
     void generateShareImage({
       timeLeft: isOff ? t("offWorkTime") : timeLeft,
       headline: t("shareImageHeadline"),
-      siteName: siteConfig.name,
+      siteName: siteConfig.brandName,
       url,
       mood: getMood(moodId),
       format: "story",
       progress,
-      logoSrc: "/icon-192x192.png",
+      logoSrc: "/icon-512x512.png",
     })
       .then((result) => {
         if (cancelled) {

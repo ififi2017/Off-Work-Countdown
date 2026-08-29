@@ -2014,6 +2014,8 @@ final class OffWorkStore {
         }
     }
 
+    /// 分享落地必须在 Web App 上，对方打开才能接着用同一个班次。
+    /// 官网 `doneat.app` 没有倒计时，不能写进这条链接。
     func shareURL() -> URL {
         let compactStart = timeString(startMinutes).replacingOccurrences(of: ":", with: "")
         let compactEnd = timeString(endMinutes).replacingOccurrences(of: ":", with: "")

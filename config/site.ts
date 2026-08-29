@@ -1,6 +1,34 @@
+const DEFAULT_WEB_APP_URL = "https://off.rainif.com";
+const DEFAULT_OFFICIAL_SITE_URL = "https://doneat.app";
+
+function publicOrigin(
+  value: string | undefined,
+  fallback: string
+): string {
+  const raw = value?.trim();
+  if (!raw) return fallback;
+  return raw.replace(/\/$/, "");
+}
+
+const webAppUrl = publicOrigin(
+  process.env.NEXT_PUBLIC_WEB_APP_URL || process.env.NEXT_PUBLIC_BASE_URL,
+  DEFAULT_WEB_APP_URL
+);
+
 export const siteConfig = {
-  name: "Off Work Countdown",
-  baseUrl: process.env.NEXT_PUBLIC_BASE_URL || "https://off.rainif.com",
+  // 显示名固定为 DoneAt，不随界面语言翻译。`name` 与 `brandName` 同一取值，
+  // 给仍按旧字段读产品名的调用点一个明确别名。
+  brandName: "DoneAt",
+  name: "DoneAt",
+  // 可交互 Web App / PWA / 分享落地。预览可用 NEXT_PUBLIC_WEB_APP_URL；
+  // NEXT_PUBLIC_BASE_URL 是拆域前的旧名，只作为 webAppUrl 的兼容回退。
+  webAppUrl,
+  // 拆域前的字段名。新代码读 webAppUrl；留下别名以免旧调用和本地 worktree 立刻断。
+  baseUrl: webAppUrl,
+  officialSiteUrl: publicOrigin(
+    process.env.NEXT_PUBLIC_OFFICIAL_SITE_URL,
+    DEFAULT_OFFICIAL_SITE_URL
+  ),
   github: "https://github.com/ififi2017/Off-Work-Countdown",
   githubOwner: "ififi2017",
   githubRepo: "Off-Work-Countdown",
@@ -17,7 +45,7 @@ export const siteConfig = {
   macAppStoreApp: "macappstore://itunes.apple.com/app/id6802803318",
   // 支持与隐私问询邮箱。也是 Partner Center 的商店 listing 必填项，
   // 两处必须是同一个地址（见 docs/PLAN-MSSTORE.md §3）。
-  supportEmail: "offwork@rainif.com",
+  supportEmail: "hello@doneat.app",
   themeColor: "#F3F4F6",
 } as const;
 

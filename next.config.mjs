@@ -2,6 +2,11 @@ import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import { readFileSync } from 'fs';
 import withSerwistInit from '@serwist/next';
+import {
+  DEFAULT_OFFICIAL_SITE_URL,
+  UI_LOCALES,
+  buildOfficialContentRedirects,
+} from './lib/official-content-redirects.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Exposed to the Mobile target only. Desktop reads its version from the Tauri
@@ -98,10 +103,6 @@ const nextConfig = {
       };
     }
     if (isMobile) {
-      const storeBadgesStub = resolve(
-        __dirname,
-        'components/store-badges-stub.tsx'
-      );
       const mobileNotifications = resolve(
         __dirname,
         'lib/mobile-notifications.ts'
@@ -129,10 +130,6 @@ const nextConfig = {
       };
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
-          /[\\/]components[\\/](?:MacAppStoreBadge|MicrosoftStoreBadge)(?:\.tsx)?$/,
-          storeBadgesStub
-        ),
-        new webpack.NormalModuleReplacementPlugin(
           /(?:^@\/|[\\/])lib[\\/]notify(?:\.ts)?$/,
           mobileNotifications
         ),
@@ -153,14 +150,9 @@ const nextConfig = {
         __dirname,
         'lib/desktop-updater-stub.ts'
       );
-      const downloadMirrorStub = resolve(
-        __dirname,
-        'lib/download-mirror-stub.ts'
-      );
       config.resolve.alias = {
         ...config.resolve.alias,
         '@/lib/desktop-updater': desktopUpdaterStub,
-        '@/lib/download-mirror': downloadMirrorStub,
       };
       // tsconfig paths may resolve `@/` to an absolute filename before webpack's
       // alias table sees it. Replace both request forms so the real adapter can
@@ -169,10 +161,6 @@ const nextConfig = {
         new webpack.NormalModuleReplacementPlugin(
           /(?:^@\/|[\\/])lib[\\/]desktop-updater(?:\.ts)?$/,
           desktopUpdaterStub
-        ),
-        new webpack.NormalModuleReplacementPlugin(
-          /(?:^@\/|[\\/])lib[\\/]download-mirror(?:\.ts)?$/,
-          downloadMirrorStub
         )
       );
     }
@@ -188,6 +176,9 @@ const nextConfig = {
       }
     : {
         async redirects() {
+          const officialSiteUrl =
+            process.env.NEXT_PUBLIC_OFFICIAL_SITE_URL ||
+            DEFAULT_OFFICIAL_SITE_URL;
           return [
             {
               // /hreflang-sitemap.xml 已并入 /sitemap.xml 的 alternates。该 URL 曾写在
@@ -198,6 +189,13 @@ const nextConfig = {
               destination: '/sitemap.xml',
               permanent: true,
             },
+            // 五页长文归官网。只匹配带语言前缀的路径，主路由 /{lang} 和预设页
+            // /{lang}/{preset} 永不进入。无前缀的 /faq 仍先由 middleware 补上
+            // 界面语言，再落到这里，并按 content-locales 映射到 en / zh-CN。
+            ...buildOfficialContentRedirects({
+              officialSiteUrl,
+              locales: UI_LOCALES,
+            }),
           ];
         },
       }),

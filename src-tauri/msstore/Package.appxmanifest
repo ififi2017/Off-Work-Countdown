@@ -24,11 +24,11 @@
   <Identity
     Name="finiaRStudio.OffWorkCountdown"
     Publisher="CN=57D14FB1-9452-4F62-8C84-A50889A0FE89"
-    Version="3.1.7.0"
+    Version="3.1.8.0"
     ProcessorArchitecture="x64" />
 
   <Properties>
-    <DisplayName>Off Work Countdown</DisplayName>
+    <DisplayName>DoneAt</DisplayName>
     <PublisherDisplayName>fi_niaR Studio</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -81,7 +81,7 @@
       Executable="Off Work Countdown.exe"
       EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="Off Work Countdown"
+        DisplayName="DoneAt"
         Description="A quiet countdown to the end of your shift, with what you have earned so far. Everything stays on your device."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
@@ -111,7 +111,7 @@
           <uap5:StartupTask
             TaskId="OffWorkCountdownStartup"
             Enabled="false"
-            DisplayName="Off Work Countdown" />
+            DisplayName="DoneAt" />
         </uap5:Extension>
       </Extensions>
     </Application>

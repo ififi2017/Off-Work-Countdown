@@ -5,6 +5,15 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL(".", import.meta.url)).replace(/\/$/, "");
 
 export default defineConfig({
+  test: {
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/cypress/**",
+      "**/.{idea,git,cache,output,temp}/**",
+      "**/.claude/worktrees/**",
+    ],
+  },
   resolve: {
     alias: {
       "@": root,

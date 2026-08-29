@@ -28,6 +28,7 @@ import {
   platformShareUrl,
   canNativeShare,
   canNativeShareFiles,
+  SHARE_IMAGE_FILENAME,
   type SharePlatform,
   type Shift,
 } from "@/lib/share";
@@ -46,7 +47,7 @@ interface ShareDialogProps {
 }
 
 const MOOD_STORAGE_KEY = "shareMood";
-const IMAGE_FILENAME = "off-work-countdown.png";
+const IMAGE_FILENAME = SHARE_IMAGE_FILENAME;
 
 type ImageState = {
   loading: boolean;
@@ -88,7 +89,7 @@ export function ShareDialog({
   const urlRef = useRef<string | null>(null);
 
   const mood = getMood(moodId);
-  const siteName = t("seo:siteName") || siteConfig.name;
+  const siteName = siteConfig.brandName;
 
   // The countdown ticks every second, but the share image is a snapshot — keep
   // the latest values in refs so ticking doesn't re-trigger image generation.
@@ -135,6 +136,7 @@ export function ShareDialog({
       mood,
       format,
       progress: progressRef.current,
+      logoSrc: "/icon-512x512.png",
     })
       .then((res) => {
         if (cancelled) {

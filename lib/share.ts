@@ -49,7 +49,7 @@ export function decodeShift(raw: string | null | undefined): Shift | null {
 // 指向根路径而非某个语言：middleware 会把接收者带到他自己的语言版本。
 // 带上班次后，对方打开即可直接看到同一个倒计时，而不是一个空表单。
 export function buildShareUrl(medium: ShareMedium, shift?: Shift): string {
-  const url = new URL(siteConfig.baseUrl);
+  const url = new URL(siteConfig.webAppUrl);
   url.searchParams.set("utm_source", "share");
   url.searchParams.set("utm_medium", medium);
   url.searchParams.set("utm_campaign", "countdown");
@@ -58,6 +58,16 @@ export function buildShareUrl(medium: ShareMedium, shift?: Shift): string {
     url.searchParams.set("from", "share");
   }
   return url.toString();
+}
+
+export const SHARE_IMAGE_FILENAME = "doneat.png";
+
+/** 卡片上印的地址：去掉协议、查询和末尾斜杠。二维码仍编码完整带 UTM 的链接。 */
+export function formatShareDisplayUrl(url: string): string {
+  return url
+    .replace(/^https?:\/\//, "")
+    .replace(/[?#].*$/, "")
+    .replace(/\/$/, "");
 }
 
 // Compose the text-share body: emoji + localized message + site URL.

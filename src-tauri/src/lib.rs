@@ -30,6 +30,7 @@ const MINI_POSITION_KEY: &str = "miniPosition";
 const MINI_ALWAYS_ON_TOP_KEY: &str = "miniAlwaysOnTop";
 const GLOBAL_SHORTCUT_SETTINGS_KEY: &str = "globalShortcutSettings";
 const DEFAULT_GLOBAL_SHORTCUT: &str = "CommandOrControl+Shift+O";
+const DESKTOP_BRAND_NAME: &str = "DoneAt";
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -336,8 +337,7 @@ struct DesktopMenuLabels {
     ///
     /// ⚠️ 管不到菜单栏最左侧那个粗体应用名。那个标题由 AppKit 从 bundle 名
     /// 派生，给第一个 Submenu 设标题会被忽略（实机验证过）。菜单栏那个名字由
-    /// macos-lproj 里本地化的 CFBundleName 决定，因此跟随**系统**语言——
-    /// 应用语言与系统语言不一致时，两者会不同，这是 AppKit 的限制不是笔误。
+    /// macos-lproj 里的 CFBundleName 决定。品牌名固定为 DoneAt，不随语言翻译。
     app_name: String,
     show: String,
     mini: String,
@@ -367,7 +367,7 @@ struct DesktopMenuLabels {
 impl Default for DesktopMenuLabels {
     fn default() -> Self {
         Self {
-            app_name: "Off Work Countdown".into(),
+            app_name: DESKTOP_BRAND_NAME.into(),
             show: "Show app".into(),
             mini: "Mini timer".into(),
             quit: "Quit".into(),
@@ -376,9 +376,9 @@ impl Default for DesktopMenuLabels {
             view: "View".into(),
             window: "Window".into(),
             help: "Help".into(),
-            about: "About Off Work Countdown".into(),
+            about: "About DoneAt".into(),
             services: "Services".into(),
-            hide_app: "Hide Off Work Countdown".into(),
+            hide_app: "Hide DoneAt".into(),
             hide_others: "Hide Others".into(),
             close_window: "Close Window".into(),
             undo: "Undo".into(),
@@ -430,6 +430,8 @@ mod native_mini {
             show_earnings_label: *const c_char,
             hide_earnings_label: *const c_char,
         );
+        fn owc_effective_appearance_is_dark() -> i32;
+        fn owc_on_effective_appearance_change(callback: Option<extern "C" fn()>);
     }
 
     fn c_string(value: &str) -> CString {
@@ -512,6 +514,14 @@ mod native_mini {
                 hide_earnings_label.as_ptr(),
             )
         }
+    }
+
+    pub fn effective_appearance_is_dark() -> bool {
+        unsafe { owc_effective_appearance_is_dark() != 0 }
+    }
+
+    pub fn on_effective_appearance_change(callback: extern "C" fn()) {
+        unsafe { owc_on_effective_appearance_change(Some(callback)) }
     }
 }
 
@@ -988,8 +998,8 @@ fn start_tray_timer(app: AppHandle) {
                 let tooltip = remaining
                     .as_deref()
                     .or(next_remaining.as_deref())
-                    .map(|time| format!("Off Work Countdown · {time}"))
-                    .unwrap_or_else(|| "Off Work Countdown".to_string());
+                    .map(|time| format!("{DESKTOP_BRAND_NAME} · {time}"))
+                    .unwrap_or_else(|| DESKTOP_BRAND_NAME.to_string());
                 let _ = tray.set_tooltip(Some(tooltip));
             }
 
@@ -1086,17 +1096,52 @@ fn build_tray_menu(app: &AppHandle, labels: &DesktopMenuLabels) -> tauri::Result
     Ok(menu)
 }
 
+/// macOS 菜单栏用透明 UI mark，不要用带紫底的 App 图标。浅色菜单栏走梅紫指针，
+/// 深色菜单栏走米色指针；橙环两边通用。不要 `icon_as_template`，否则会变成单色剪影。
+///
+/// `include_image!` 按 `CARGO_MANIFEST_DIR` 解析路径，编译期展开成 RGBA，
+/// 不依赖 `image-png` feature。
+#[cfg(target_os = "macos")]
+fn macos_tray_icon() -> tauri::image::Image<'static> {
+    if native_mini::effective_appearance_is_dark() {
+        tauri::include_image!("icons/macos-tray-mark-dark.png")
+    } else {
+        tauri::include_image!("icons/macos-tray-mark.png")
+    }
+}
+
+fn tray_icon(app: &AppHandle) -> tauri::image::Image<'_> {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = app;
+        macos_tray_icon()
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        app.default_window_icon()
+            .expect("bundle icon missing")
+            .clone()
+    }
+}
+
+#[cfg(target_os = "macos")]
+extern "C" fn refresh_macos_tray_icon() {
+    let Some(app) = APP_HANDLE.get() else {
+        return;
+    };
+    let Some(tray) = app.tray_by_id("main") else {
+        return;
+    };
+    let _ = tray.set_icon(Some(macos_tray_icon()));
+}
+
 fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let menu = build_tray_menu(app, &DesktopMenuLabels::default())?;
+    let icon = tray_icon(app);
 
-    let icon = app
-        .default_window_icon()
-        .expect("bundle icon missing")
-        .clone();
-
-    TrayIconBuilder::with_id("main")
+    let builder = TrayIconBuilder::with_id("main")
         .icon(icon)
-        .tooltip("Off Work Countdown")
+        .tooltip(DESKTOP_BRAND_NAME)
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
@@ -1117,8 +1162,12 @@ fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
             ) {
                 toggle_mini_window(tray.app_handle());
             }
-        })
-        .build(app)?;
+        });
+
+    #[cfg(target_os = "macos")]
+    let builder = builder.icon_as_template(false);
+
+    builder.build(app)?;
 
     Ok(())
 }
@@ -1240,7 +1289,7 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
         (248.0, 100.0)
     };
     let window_builder = WebviewWindowBuilder::new(app, "mini", WebviewUrl::App(url.into()))
-        .title("Off Work Countdown")
+        .title(DESKTOP_BRAND_NAME)
         // 窗口比卡片本身大一圈，多出来的部分纯粹是留给投影的画布：窗口无边框且
         // 透明，投影由页面的 CSS 画，超出窗口的部分会被**硬生生截断**——截断的
         // 软阴影正是"廉价"的来源。
@@ -1914,7 +1963,7 @@ fn clear_desktop_countdown_display(app: AppHandle) {
     if let Some(tray) = app.tray_by_id("main") {
         #[cfg(target_os = "macos")]
         let _ = tray.set_title(Some(""));
-        let _ = tray.set_tooltip(Some("Off Work Countdown"));
+        let _ = tray.set_tooltip(Some(DESKTOP_BRAND_NAME));
     }
 }
 
@@ -1959,11 +2008,11 @@ fn ensure_webview2_runtime() {
     let choice = unsafe {
         MessageBoxW(
             None,
-            w!("Off Work Countdown draws its window with Microsoft Edge WebView2. Most Windows PCs already include it, and this one does not have it yet.\n\n\
+            w!("DoneAt draws its window with Microsoft Edge WebView2. Most Windows PCs already include it, and this one does not have it yet.\n\n\
                 It is a small, free component from Microsoft and takes about a minute to install. Select OK and we will open the download page for you.\n\n\
-                下班倒计时用 Microsoft Edge WebView2 绘制界面。大多数 Windows 电脑都自带，这台还没有。\n\n\
+                DoneAt 用 Microsoft Edge WebView2 绘制界面。大多数 Windows 电脑都自带，这台还没有。\n\n\
                 它是微软提供的免费组件，安装大约需要一分钟。点「确定」，我们帮你打开下载页面。"),
-            w!("Off Work Countdown"),
+            w!("DoneAt"),
             MB_OKCANCEL | MB_ICONINFORMATION,
         )
     };
@@ -2098,6 +2147,7 @@ pub fn run() {
             {
                 set_macos_application_menu(app.handle(), &DesktopMenuLabels::default())?;
                 APP_HANDLE.set(app.handle().clone()).ok();
+                native_mini::on_effective_appearance_change(refresh_macos_tray_icon);
                 native_mini::initialize();
                 // 本地 UI 验收可显式要求启动时展示原生面板；正式包未设置该
                 // 环境变量，因此仍只在用户点击托盘图标后出现。
@@ -2540,5 +2590,55 @@ mod format_tests {
         assert!(parse_global_shortcut("Shift+KeyK").is_ok());
         assert!(parse_global_shortcut("KeyK").is_err());
         assert!(parse_global_shortcut("Shift").is_err());
+    }
+}
+
+#[cfg(test)]
+mod macos_tray_mark_tests {
+    fn png_ihdr(bytes: &[u8]) -> (u32, u32, u8) {
+        assert!(bytes.starts_with(&[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]));
+        assert_eq!(&bytes[12..16], b"IHDR");
+        let width = u32::from_be_bytes(bytes[16..20].try_into().expect("ihdr width"));
+        let height = u32::from_be_bytes(bytes[20..24].try_into().expect("ihdr height"));
+        let color_type = bytes[25];
+        (width, height, color_type)
+    }
+
+    #[test]
+    fn macos_tray_marks_are_transparent_and_not_the_app_icon() {
+        let light = include_bytes!("../icons/macos-tray-mark.png");
+        let dark = include_bytes!("../icons/macos-tray-mark-dark.png");
+        let app_icon = include_bytes!("../icons/32x32.png");
+
+        assert_ne!(light.as_slice(), app_icon.as_slice());
+        assert_ne!(dark.as_slice(), app_icon.as_slice());
+        assert_ne!(light.as_slice(), dark.as_slice());
+
+        for bytes in [light.as_slice(), dark.as_slice()] {
+            let (width, height, color_type) = png_ihdr(bytes);
+            assert_eq!((width, height), (64, 64));
+            // 6 = RGBA。菜单栏必须带着 alpha，否则又会铺出一块实心底。
+            assert_eq!(color_type, 6);
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn decoded_tray_marks_keep_transparent_corners() {
+        for icon in [
+            tauri::include_image!("icons/macos-tray-mark.png"),
+            tauri::include_image!("icons/macos-tray-mark-dark.png"),
+        ] {
+            assert_eq!((icon.width(), icon.height()), (64, 64));
+            let rgba = icon.rgba();
+            assert_eq!(rgba[3], 0);
+            assert_eq!(rgba[63 * 4 + 3], 0);
+            assert_eq!(rgba[(63 * 64) * 4 + 3], 0);
+            assert_eq!(rgba[rgba.len() - 1], 0);
+            assert!(
+                rgba.chunks(4).any(|pixel| pixel[3] > 200),
+                "the mark itself must stay opaque"
+            );
+        }
     }
 }
