@@ -38,6 +38,19 @@ final class WidgetSnapshotPublisher {
         WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
     }
 
+    /// Removes the cross-process projection after a debug data reset. The file
+    /// contains no settings, but leaving it in place would let the widget keep
+    /// showing the previous schedule while the app is back on its welcome page.
+    func clear() {
+        guard let container = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: Self.appGroupIdentifier
+        ) else { return }
+        try? FileManager.default.removeItem(
+            at: container.appending(path: snapshotFileName)
+        )
+        WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
+    }
+
     /// Internal so phase coverage can be unit-tested without an App Group.
     /// Swift never resolves a workday or constructs a shift here: every future
     /// shift is obtained from the shared TypeScript rules through `store.snapshot`.
@@ -176,7 +189,14 @@ final class WidgetSnapshotPublisher {
             expiresAtMs: expiresAtMs,
             locale: store.languageCode,
             shift: diagnosticShift,
-            entries: entries.isEmpty ? [idleEntry(nowMs: nowMs, expiresAtMs: expiresAtMs)] : entries
+            entries: entries.isEmpty ? [idleEntry(nowMs: nowMs, expiresAtMs: expiresAtMs)] : entries,
+            upcoming: upcomingItems(
+                store: store,
+                shift: initialShift,
+                nowMs: nowMs,
+                expiresAtMs: expiresAtMs,
+                futureShifts: futureShifts
+            )
         )
     }
 
@@ -215,7 +235,13 @@ final class WidgetSnapshotPublisher {
             expiresAtMs: expiresAtMs,
             locale: store.languageCode,
             shift: widgetShift(from: projectedShift),
-            entries: entries
+            entries: entries,
+            upcoming: upcomingItems(
+                store: store,
+                shift: shift,
+                nowMs: nowMs,
+                expiresAtMs: expiresAtMs
+            )
         )
     }
 
@@ -328,7 +354,11 @@ final class WidgetSnapshotPublisher {
                     remaining: remaining,
                     progress: Double(elapsed) / Double(duration) * 100,
                     boundary: segment.endAtMs,
-                    target: workStartAtMs + remaining
+                    // Wall-clock clock-off, not `workStart + remaining`.
+                    // Remaining is effective work, so adding it to the clock
+                    // skips lunch and the circular complication would read
+                    // 17:30 for a 19:00 finish with a 90-minute break.
+                    target: Int64(shift.endAtMs)
                 ))
                 cursor = workEndAtMs
             }
@@ -405,7 +435,14 @@ final class WidgetSnapshotPublisher {
             expiresAtMs: endAtMs,
             locale: store.languageCode,
             shift: nil,
-            entries: entries
+            entries: entries,
+            upcoming: upcomingItems(
+                store: store,
+                shift: store.snapshot(
+                    at: Date(timeIntervalSince1970: Double(nowMs) / 1_000)
+                ),
+                nowMs: nowMs
+            )
         )
     }
 
@@ -419,6 +456,114 @@ final class WidgetSnapshotPublisher {
             shift: nil,
             entries: [idleEntry(nowMs: nowMs, expiresAtMs: expiresAtMs)]
         )
+    }
+
+    /// Salary-free projection of the in-app "coming up" list. The extension
+    /// cannot run the rules bundle, so the producer walks every remaining
+    /// shift in the snapshot. Recurring snapshots stay valid for about a
+    /// year and WidgetKit only rereads them every 12 hours, so capping this
+    /// list at the 36-hour presentation window left large widgets empty
+    /// until the app opened again.
+    ///
+    /// Rest-day windows still come back from the rules with a nominal
+    /// 09:00–17:00 range. Those are not a shift the user is in — the same
+    /// eligibility as reminders and the timer surface.
+    private func upcomingItems(
+        store: OffWorkStore,
+        shift: NativeShiftSnapshot?,
+        nowMs: Int64,
+        expiresAtMs: Int64? = nil,
+        futureShifts: [NativeWidgetShiftSnapshot] = []
+    ) -> [WidgetUpcomingItem] {
+        let now = Date(timeIntervalSince1970: Double(nowMs) / 1_000)
+        var items: [WidgetUpcomingItem] = []
+        var seen = Set<String>()
+
+        func appendItem(_ item: WidgetUpcomingItem) {
+            guard item.dateMs > nowMs else { return }
+            if let expiresAtMs, item.dateMs >= expiresAtMs { return }
+            guard seen.insert(item.id).inserted else { return }
+            items.append(item)
+        }
+
+        func appendEvents(from snapshot: NativeShiftSnapshot, at date: Date) {
+            for event in store.upcomingTimelineEvents(for: snapshot, at: date) {
+                appendItem(WidgetUpcomingItem(
+                    id: event.id,
+                    kind: event.kind.rawValue,
+                    title: event.title,
+                    detail: event.detail,
+                    dateMs: Int64(event.date.timeIntervalSince1970 * 1_000)
+                ))
+            }
+        }
+
+        if let shift, shift.isWorkday || store.isForcedWorkday(shift) {
+            appendEvents(from: shift, at: now)
+        }
+
+        if futureShifts.isEmpty {
+            if let shift, let next = shift.nextShiftStartDate, next > now {
+                let previewAt = next.addingTimeInterval(-1)
+                if let nextSnapshot = store.snapshot(at: previewAt) {
+                    appendEvents(from: nextSnapshot, at: previewAt)
+                }
+            }
+        } else {
+            for nextShift in futureShifts {
+                for item in boundaryUpcomingItems(from: nextShift, store: store) {
+                    appendItem(item)
+                }
+            }
+        }
+        return items.sorted { $0.dateMs < $1.dateMs }
+    }
+
+    /// Shift start, lunch gaps and clock-off for a precomputed future shift.
+    /// Health reminders and milestones stay on the current shift, where the
+    /// rules bundle can still name the next firing.
+    private func boundaryUpcomingItems(
+        from shift: NativeWidgetShiftSnapshot,
+        store: OffWorkStore
+    ) -> [WidgetUpcomingItem] {
+        var items: [WidgetUpcomingItem] = []
+        let startMs = Int64(shift.startAtMs)
+        let endMs = Int64(shift.endAtMs)
+        items.append(WidgetUpcomingItem(
+            id: "shift-start-\(startMs)",
+            kind: "shiftStart",
+            title: store.t("startTime"),
+            detail: store.t("todaysShift"),
+            dateMs: startMs
+        ))
+        for (index, segment) in shift.segments.dropLast().enumerated() {
+            let nextSegment = shift.segments[index + 1]
+            guard nextSegment.startAtMs > segment.endAtMs else { continue }
+            let lunchStartMs = Int64(segment.endAtMs)
+            let lunchEndMs = Int64(nextSegment.startAtMs)
+            items.append(WidgetUpcomingItem(
+                id: "lunch-start-\(lunchStartMs)",
+                kind: "lunchStart",
+                title: store.t("lunchBreak"),
+                detail: store.t("lunchStartTime"),
+                dateMs: lunchStartMs
+            ))
+            items.append(WidgetUpcomingItem(
+                id: "lunch-end-\(lunchEndMs)",
+                kind: "lunchEnd",
+                title: store.t("lunchBreak"),
+                detail: store.t("lunchBackAt"),
+                dateMs: lunchEndMs
+            ))
+        }
+        items.append(WidgetUpcomingItem(
+            id: "shift-end-\(endMs)",
+            kind: "shiftEnd",
+            title: store.t("endTime"),
+            detail: shift.overtimeEndAtMs == nil ? store.t("todaysShift") : store.t("overtime"),
+            dateMs: endMs
+        ))
+        return items
     }
 
     private func countdownEntry(

@@ -22,6 +22,7 @@
 		7100000A1234567890ABCDEF /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
 		7100000B1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OffWorkStoreTests.swift */; };
+		A10000020000000000000002 /* DebugTimerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* DebugTimerScenarioTests.swift */; };
 		C30000010000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* InfoPlist.strings */; };
 		E00000010000000000000001 /* OWCDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000010000000000000001 /* OWCDesignSystem.swift */; };
 		E00000020000000000000002 /* CountdownRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000020000000000000002 /* CountdownRules.swift */; };
@@ -73,6 +74,11 @@
 		E00000370000000000000037 /* OWCBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000370000000000000037 /* OWCBrandMark.swift */; };
 		E00000380000000000000038 /* OnboardingScheduleDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */; };
 		E00000390000000000000039 /* CelebratingBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000390000000000000039 /* CelebratingBrandMark.swift */; };
+		E000003A000000000000003A /* OnboardingFinalePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003A000000000000003A /* OnboardingFinalePage.swift */; };
+		E000003B000000000000003B /* OnboardingRemindersPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003B000000000000003B /* OnboardingRemindersPage.swift */; };
+		E000003C000000000000003C /* DebugTimerScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003C000000000000003C /* DebugTimerScenario.swift */; };
+		E000003D000000000000003D /* DebugMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003D000000000000003D /* DebugMenuView.swift */; };
+		E000003E000000000000003E /* LiveActivityService+Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003E000000000000003E /* LiveActivityService+Debug.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -124,6 +130,7 @@
 		7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OffWorkCountdownWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000001 /* OffWorkStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkStoreTests.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000030000000000000003 /* DebugTimerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugTimerScenarioTests.swift; sourceTree = "<group>"; };
 		C10000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000020000000000000002 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		C10000030000000000000003 /* zh-HK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-HK"; path = "zh-HK.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -193,6 +200,11 @@
 		F00000370000000000000037 /* OWCBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCBrandMark.swift; path = Native/Views/OWCBrandMark.swift; sourceTree = "<group>"; };
 		F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingScheduleDetailsView.swift; path = Native/Views/OnboardingScheduleDetailsView.swift; sourceTree = "<group>"; };
 		F00000390000000000000039 /* CelebratingBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CelebratingBrandMark.swift; path = Native/Views/CelebratingBrandMark.swift; sourceTree = "<group>"; };
+		F000003A000000000000003A /* OnboardingFinalePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingFinalePage.swift; path = Native/Views/OnboardingFinalePage.swift; sourceTree = "<group>"; };
+		F000003B000000000000003B /* OnboardingRemindersPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingRemindersPage.swift; path = Native/Views/OnboardingRemindersPage.swift; sourceTree = "<group>"; };
+		F000003C000000000000003C /* DebugTimerScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DebugTimerScenario.swift; path = Native/Models/DebugTimerScenario.swift; sourceTree = "<group>"; };
+		F000003D000000000000003D /* DebugMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DebugMenuView.swift; path = Native/Views/DebugMenuView.swift; sourceTree = "<group>"; };
+		F000003E000000000000003E /* LiveActivityService+Debug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LiveActivityService+Debug.swift"; path = "Native/Services/LiveActivityService+Debug.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -255,6 +267,11 @@
 				F00000360000000000000036 /* DraggableBrandIcon.swift */,
 				F00000370000000000000037 /* OWCBrandMark.swift */,
 				F00000390000000000000039 /* CelebratingBrandMark.swift */,
+				F000003A000000000000003A /* OnboardingFinalePage.swift */,
+				F000003B000000000000003B /* OnboardingRemindersPage.swift */,
+				F000003C000000000000003C /* DebugTimerScenario.swift */,
+				F000003D000000000000003D /* DebugMenuView.swift */,
+				F000003E000000000000003E /* LiveActivityService+Debug.swift */,
 				F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */,
 				F00000350000000000000035 /* RestDayUpcomingView.swift */,
 				F00000340000000000000034 /* BiometricGate.swift */,
@@ -322,6 +339,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000001 /* OffWorkStoreTests.swift */,
+				A20000030000000000000003 /* DebugTimerScenarioTests.swift */,
 			);
 			path = AppTests;
 			sourceTree = "<group>";
@@ -491,6 +509,11 @@
 				E00000360000000000000036 /* DraggableBrandIcon.swift in Sources */,
 				E00000370000000000000037 /* OWCBrandMark.swift in Sources */,
 				E00000390000000000000039 /* CelebratingBrandMark.swift in Sources */,
+				E000003A000000000000003A /* OnboardingFinalePage.swift in Sources */,
+				E000003B000000000000003B /* OnboardingRemindersPage.swift in Sources */,
+				E000003C000000000000003C /* DebugTimerScenario.swift in Sources */,
+				E000003D000000000000003D /* DebugMenuView.swift in Sources */,
+				E000003E000000000000003E /* LiveActivityService+Debug.swift in Sources */,
 				E00000380000000000000038 /* OnboardingScheduleDetailsView.swift in Sources */,
 				E00000350000000000000035 /* RestDayUpcomingView.swift in Sources */,
 				E00000340000000000000034 /* BiometricGate.swift in Sources */,
@@ -554,6 +577,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */,
+				A10000020000000000000002 /* DebugTimerScenarioTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

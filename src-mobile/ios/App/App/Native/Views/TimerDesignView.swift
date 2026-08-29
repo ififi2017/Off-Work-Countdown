@@ -36,12 +36,13 @@ struct TimerDesignView: View {
         Group {
             if let timelineDate {
                 timerContent(at: timelineDate)
-            } else if timelineActive, store.visualPhase(at: .now).usesLiveTimeline {
+            } else if timelineActive,
+                      store.visualPhase(at: store.timerDate(from: .now)).usesLiveTimeline {
                 TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                    timerContent(at: timeline.date)
+                    timerContent(at: store.timerDate(from: timeline.date))
                 }
             } else {
-                timerContent(at: .now)
+                timerContent(at: store.timerDate(from: .now))
             }
         }
         .navigationTitle("")
@@ -80,7 +81,7 @@ struct TimerDesignView: View {
         Group {
             switch phase {
             case .unscheduled:
-                UnscheduledTimerView(store: store) { openSettings(.lunch) }
+                UnscheduledTimerView(store: store, now: date) { openSettings(.lunch) }
             case .running, .lunch, .overtime, .clockIn:
                 if let snapshot {
                     RunningTimerDesignView(
@@ -96,6 +97,7 @@ struct TimerDesignView: View {
                     CompletedShiftDesignView(
                         store: store,
                         snapshot: snapshot,
+                        now: date,
                         showShare: $showShare,
                         showOvertime: $showOvertime
                     )
@@ -198,19 +200,16 @@ private struct RunningTimerDesignView: View {
                     VStack(spacing: 0) {
                         VStack(spacing: 0) {
                             if overtime {
-                                Label(
-                                    store.t(
+                                TimerPhasePill(
+                                    title: store.t(
                                         "overtimeUntil",
                                         values: ["time": store.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
                                     ),
-                                    systemImage: "clock.badge.plus"
+                                    systemImage: "clock.fill",
+                                    tint: OWCDesign.orangeDeep,
+                                    fill: OWCDesign.orange.opacity(0.12)
                                 )
-                                    .font(.footnote.weight(.semibold))
-                                    .foregroundStyle(OWCDesign.orangeDeep)
-                                    .padding(.horizontal, 12)
-                                    .frame(height: 26)
-                                    .background(OWCDesign.orange.opacity(0.12), in: Capsule())
-                                    .padding(.bottom, 8)
+                                .padding(.bottom, 8)
                             }
                             Text(store.formatDuration(displayRemaining))
                                 .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
@@ -324,13 +323,13 @@ private struct RunningTimerDesignView: View {
 
     private var summaryCard: some View {
         OWCGroupCard {
-            OWCRow(icon: "clock", title: store.t("todaysShift"), isLast: !store.salaryEnabled && !store.followsSchedule(at: now)) {
+            OWCRow(icon: "clock", title: store.t("todaysShift"), isLast: !store.presentationSalaryEnabled && !store.followsSchedule(at: now)) {
                 Text("\(store.formatTime(snapshot.startDate)) – \(store.formatTime(snapshot.endDate))")
                     .font(.body.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
                     .environment(\.layoutDirection, .leftToRight)
             }
-            if store.salaryEnabled {
+            if store.presentationSalaryEnabled {
             OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: !store.followsSchedule(at: now)) {
                 HStack(spacing: 8) {
                     Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
@@ -365,7 +364,7 @@ private struct RunningTimerDesignView: View {
 
     private func summaryText(_ summary: NativePeriodSummary?) -> String {
         guard let summary else { return "—" }
-        guard store.salaryEnabled else {
+        guard store.presentationSalaryEnabled else {
             return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
         }
         let money = store.hideEarnings ? "••••" : store.formatMoney(summary.earnings)

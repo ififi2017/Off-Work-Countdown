@@ -47,6 +47,9 @@ struct TabletShellView: View {
             path.append(route)
             store.presentedRoute = nil
         }
+        .onChange(of: store.debugPresentationToken) {
+            path.removeAll()
+        }
         .background(OWCDesign.page)
     }
 
@@ -136,7 +139,8 @@ private struct TabletSidebar: View {
             // froze the sidebar's countdown and bar while the main column kept
             // moving, which read as the app having stalled.
             TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                if store.shouldQuerySnapshot(at: timeline.date), let snapshot = store.snapshot(at: timeline.date) {
+                let date = store.timerDate(from: timeline.date)
+                if store.shouldQuerySnapshot(at: date), let snapshot = store.snapshot(at: date) {
                     OWCSectionHeader(title: store.selectedTab == .timer ? store.t("todaysShift") : store.t("widgetWorking"))
                         .padding(.top, 26)
 
@@ -144,10 +148,10 @@ private struct TabletSidebar: View {
                         OWCGroupCard {
                             sidebarRow(
                                 store.t("shiftSection"),
-                                "\(store.timeString(store.effectiveStartMinutes(at: timeline.date))) – \(store.timeString(store.effectiveEndMinutes(at: timeline.date)))"
+                                "\(store.timeString(store.effectiveStartMinutes(at: date))) – \(store.timeString(store.effectiveEndMinutes(at: date)))"
                             )
-                            sidebarRow(store.t("lunchBreak"), store.lunchLabel(at: timeline.date), last: !store.salaryEnabled)
-                            if store.salaryEnabled {
+                            sidebarRow(store.t("lunchBreak"), store.lunchLabel(at: date), last: !store.presentationSalaryEnabled)
+                            if store.presentationSalaryEnabled {
                                 // The sidebar is where the figure lives while
                                 // the sidebar is open, so this is where the eye
                                 // belongs. Without it the iPad could blank the
@@ -163,7 +167,6 @@ private struct TabletSidebar: View {
                             }
                         }
                     } else {
-                        let date = timeline.date
                         let phase = store.visualPhase(snapshot: snapshot, at: date)
                         let remaining = sidebarMiniRemaining(snapshot, phase: phase, at: date)
                         VStack(alignment: .leading, spacing: 0) {
@@ -305,12 +308,13 @@ private struct TabletTimerView: View {
 
     var body: some View {
         Group {
-            if isActive, store.visualPhase(at: .now).usesLiveTimeline {
+            if isActive,
+               store.visualPhase(at: store.timerDate(from: .now)).usesLiveTimeline {
                 TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                    tabletTimerContent(at: timeline.date)
+                    tabletTimerContent(at: store.timerDate(from: timeline.date))
                 }
             } else {
-                tabletTimerContent(at: .now)
+                tabletTimerContent(at: store.timerDate(from: .now))
             }
         }
         .background(OWCDesign.page)
@@ -420,7 +424,7 @@ private struct TabletRunningView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            tabletHeader(store: store, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
+            tabletHeader(store: store, now: now, sidebarVisible: sidebarVisible, showSidebar: showSidebar)
 
             if store.isForcedWorkday(snapshot) {
                 ManualTimingBanner(store: store)
@@ -449,19 +453,14 @@ private struct TabletRunningView: View {
                 // the plain running layout in every phase, so a break showed a
                 // frozen number under "time left" with no explanation.
                 if let pill = statusPill {
-                    Group {
-                        if pill.symbol.isEmpty {
-                            Text(pill.text)
-                        } else {
-                            Label(pill.text, systemImage: pill.symbol)
-                        }
-                    }
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(pill.tint)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .background(pill.tint.opacity(0.12), in: Capsule())
-                        .padding(.bottom, 18)
+                    TimerPhasePill(
+                        title: pill.text,
+                        systemImage: pill.symbol,
+                        tint: pill.tint,
+                        fill: pill.tint.opacity(0.12),
+                        font: .subheadline.weight(.semibold)
+                    )
+                    .padding(.bottom, 18)
                 }
 
                 Text(store.formatDuration(displayRemaining))
@@ -493,7 +492,7 @@ private struct TabletRunningView: View {
                     if store.followsSchedule(at: now) {
                     HStack(spacing: 14) {
                         statCard(store.t("summaryThisWeek"), summaryLabel(weekSummary, includeMoney: false))
-                        statCard(store.t("summaryThisYear"), summaryLabel(yearSummary, includeMoney: store.salaryEnabled))
+                        statCard(store.t("summaryThisYear"), summaryLabel(yearSummary, includeMoney: store.presentationSalaryEnabled))
                     }
                     .padding(.top, 44)
                     }
@@ -517,7 +516,7 @@ private struct TabletRunningView: View {
                                     : snapshot.progress
                             )
                         )
-                        if store.salaryEnabled {
+                        if store.presentationSalaryEnabled {
                             fullStat(
                                 store.t("moneyEarned"),
                                 store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio }),
@@ -659,7 +658,7 @@ private struct TabletRunningView: View {
         if isOvertime, let overtimeEnd = snapshot.overtimeEndDate {
             return (
                 store.t("overtimeUntil", values: ["time": store.formatTime(overtimeEnd)]),
-                "clock.badge.plus",
+                "clock.fill",
                 OWCDesign.accent
             )
         }
@@ -691,8 +690,8 @@ private struct TabletRunningView: View {
         }
     }
 
-    private var weekSummary: NativePeriodSummary? { store.periodSummary("week", asOf: .now, snapshot: snapshot) }
-    private var yearSummary: NativePeriodSummary? { store.periodSummary("year", asOf: .now, snapshot: snapshot) }
+    private var weekSummary: NativePeriodSummary? { store.periodSummary("week", asOf: now, snapshot: snapshot) }
+    private var yearSummary: NativePeriodSummary? { store.periodSummary("year", asOf: now, snapshot: snapshot) }
 
     private func summaryLabel(_ summary: NativePeriodSummary?, includeMoney: Bool) -> String {
         guard let summary else { return "—" }
@@ -734,7 +733,11 @@ private struct TabletRunningView: View {
 
     private var daysUntilRest: String {
         guard let date = snapshot.nextRestDate else { return "—" }
-        let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now), to: Calendar.current.startOfDay(for: date)).day ?? 0
+        let days = Calendar.current.dateComponents(
+            [.day],
+            from: Calendar.current.startOfDay(for: now),
+            to: Calendar.current.startOfDay(for: date)
+        ).day ?? 0
         return store.formatDays(Double(max(0, days)))
     }
 }
@@ -803,7 +806,12 @@ private struct TabletSettingsView: View {
 
 
 @MainActor
-private func tabletHeader(store: OffWorkStore, sidebarVisible: Bool, showSidebar: @escaping () -> Void) -> some View {
+private func tabletHeader(
+    store: OffWorkStore,
+    now: Date,
+    sidebarVisible: Bool,
+    showSidebar: @escaping () -> Void
+) -> some View {
     HStack {
         if !sidebarVisible {
             Button(action: showSidebar) {
@@ -815,7 +823,7 @@ private func tabletHeader(store: OffWorkStore, sidebarVisible: Bool, showSidebar
             .buttonStyle(.plain)
         }
         Spacer()
-        Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(store.locale)).uppercased())
+        Text(now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(store.locale)).uppercased())
             .font(.footnote.weight(.semibold))
             .tracking(0.78)
             .foregroundStyle(OWCDesign.secondary)

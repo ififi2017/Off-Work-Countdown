@@ -79,6 +79,36 @@ struct OWCAppHeader: View {
 
 }
 
+/// Status chip above a timer (lunch, rest, overtime).
+///
+/// `Image` + `Text`, not `Label`. A `Label` inside a short capsule clips
+/// hierarchical symbols such as `clock.badge.plus` into an empty slot, which
+/// read as a leading space before the Chinese copy and no icon at all.
+struct TimerPhasePill: View {
+    let title: String
+    var systemImage: String
+    var tint: Color
+    var fill: Color
+    var font: Font = .footnote.weight(.semibold)
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: systemImage)
+                .font(font)
+                .symbolRenderingMode(.monochrome)
+                .accessibilityHidden(true)
+            Text(title)
+                .font(font)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 5)
+        .background(fill, in: Capsule())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+    }
+}
+
 struct OWCSectionHeader: View {
     let title: String
 
@@ -244,7 +274,16 @@ struct OWCRow<Accessory: View>: View {
                 Text(title)
                     .font(.body)
                     .foregroundStyle(OWCDesign.primary)
-                    .lineLimit(2)
+                    // Settings rows have a trailing value. A wrapping title is
+                    // flexible, so the `Spacer` beside it used to take half the
+                    // leftover width and "Off work reminder" broke under
+                    // "Off-work progress" even though both strings fit. No
+                    // subtitle means a single line, and the value yields —
+                    // except at accessibility sizes, where the accessory has
+                    // already moved onto its own line and the title can use
+                    // the full width.
+                    .lineLimit(stacksAccessory ? 3 : (subtitle == nil ? 1 : 2))
+                    .minimumScaleFactor(stacksAccessory || subtitle != nil ? 1 : 0.85)
                 if let subtitle {
                     Text(subtitle)
                         .font(.footnote)
@@ -270,6 +309,7 @@ struct OWCRow<Accessory: View>: View {
             // broke it four characters early, with the empty 38 pt sitting
             // beside it. Gone, the text is the only flexible thing in the row
             // and `maxWidth: .infinity` gives it the lot.
+            .layoutPriority(1)
             .frame(maxWidth: reservesAccessory ? nil : .infinity, alignment: .leading)
             if reservesAccessory {
                 Spacer(minLength: 8)
@@ -278,7 +318,7 @@ struct OWCRow<Accessory: View>: View {
         }
         .padding(.horizontal, 16)
         // A wrapped subtitle otherwise sits right on the separator.
-        .padding(.vertical, subtitle == nil ? 0 : 10)
+        .padding(.vertical, subtitle == nil && !stacksAccessory ? 0 : 10)
         .frame(minHeight: rowHeight)
         .overlay(alignment: .bottomTrailing) {
             if !isLast {
@@ -1023,6 +1063,7 @@ struct OWCNumberField: View {
     var maxDigits = 3
     var width: CGFloat?
     var emphasized = false
+    var textAlignment: TextAlignment = .trailing
     let onCommit: () -> Void
 
     @FocusState private var focused: Bool
@@ -1035,7 +1076,7 @@ struct OWCNumberField: View {
                 .monospacedDigit()
             )
             .keyboardType(decimal ? .decimalPad : .numberPad)
-            .multilineTextAlignment(.trailing)
+            .multilineTextAlignment(textAlignment)
             .focused($focused)
             // One deterministic width. Chaining .frame(width:) with a
             // .frame(maxWidth:) left the layout solving for two constraints at

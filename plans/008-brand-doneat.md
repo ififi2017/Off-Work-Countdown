@@ -35,7 +35,7 @@
 - `OWCBrandMark.swift` 改成新几何。弧用 `addRelativeArc` 加**正 delta**，绕开 SwiftUI `clockwise:` 在 y 轴向下时方向反直觉的坑。
 - `WidgetExtension/OffWorkWidgets.swift` 两处 `Image("BrandIcon")` → `Image("BrandMark")`，并去掉 `clipShape(RoundedRectangle)`。灵动岛和锁屏卡片本身就是容器，里面再套一层圆角底板会读成贴纸。
 - `Base.lproj/LaunchScreen.storyboard`：底部居中，`[BrandMark] DoneAt` 一行。**没有**分隔线、**没有**英文副标题 `Off Work Countdown`。明暗自适应。
-- 欢迎页和关于页复用可交互的 `CelebratingBrandMark`：只有缺口里的橙色圆点接收五连击，保留细微的系统玻璃按压反光；第五次让指针旋转一圈并回到五点。Logo 本体不会被拖走。
+- 欢迎页首页、品牌收尾页和关于页复用可交互的 `CelebratingBrandMark`：只有缺口里的橙色圆点接收五连击，保留细微的系统玻璃按压反光；第五次让指针旋转一圈并回到五点。Logo 本体不会被拖走。
 - `scripts/check-ios-project.mjs`：启动页必须画 `BrandMark` 且文案为 `DoneAt`；禁止 `BrandIcon`、`LaunchMark` / `LaunchMarkLight` / `LaunchMarkDark`，以及英文副标题。`BrandMark` 必须保留 dark appearance（WidgetKit / Live Activity 要用）。已做负向测试。
 - 删除 `Splash.imageset`（6 张 2732×2732）。它是 Capacitor 遗留，**全仓无任何引用**，storyboard 用的一直是 `BrandIcon`。
 
@@ -76,7 +76,7 @@
 
 短名是 **DoneAt**。范围、商店材料、3.1.6 / 3.1.7 节奏见 [007 Grill 锁定](007-ios-stable-before-subscription.md#grill-locked)，不要再拍板。
 
-启动页、19 份 `InfoPlist.strings`、欢迎页首屏、关于页、Widget 画廊、灵动岛 / 锁屏标题已由 007 P4 收口为 DoneAt。共享 `translation.json` 未改，Web / Windows / macOS 名称不受影响。
+启动页、19 份 `InfoPlist.strings`、欢迎页首屏、关于页、Widget 画廊、灵动岛 / 锁屏标题已由 007 P4 收口为 DoneAt。共享 `translation.json` 未改，Web / Windows / macOS 名称不受影响；全平台改名见 [009](009-doneat-platform-brand-domain.md#grill-locked)。
 
 ### P2 — 深色与着色外观变体 + Icon Composer
 

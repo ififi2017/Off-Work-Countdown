@@ -32,7 +32,7 @@ const asset = (n) => `data:image/jpeg;base64,${readFileSync(`${DIR}assets/${n}.j
 
 const COPY = {
   en: [
-    { shot: "countdown", title: "See exactly how much of your workday is left",
+    { shot: "countdown", title: "See at a glance how long until you're done",
       sub: "The time remaining, how far through you are, and what you have earned today." },
     { shot: "mini-woodfish", mini: true, title: "Keep it on top of everything",
       sub: "A floating timer you can park in any corner. Tap the woodfish while you wait." },
@@ -44,7 +44,7 @@ const COPY = {
       sub: "Small and medium widgets, on your desktop or in Notification Center. They keep counting with the app closed." },
   ],
   "zh-CN": [
-    { shot: "countdown", title: "一眼看清今天还剩多久下班",
+    { shot: "countdown", title: "离下班还有多久，一眼就知道",
       sub: "剩余时间、已完成进度，以及今天已经挣到的钱。" },
     { shot: "mini-woodfish", mini: true, title: "让倒计时浮在最上层",
       sub: "可以停在屏幕任意角落。等下班的时候，还能敲敲木鱼。" },

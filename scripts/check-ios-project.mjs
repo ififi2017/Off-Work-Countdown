@@ -198,6 +198,14 @@ if (
 ) {
   fail("Every iOS outer surface must use the DoneAt short name without renaming the macOS product.");
 }
+if (
+  !sharedWidgetSource.includes("systemExtraLargePortraitRawValue") ||
+  !sharedWidgetSource.includes("extraLargePortraitContent")
+) {
+  fail(
+    "The iOS widget must declare the iOS 27 4×6 portrait XL family and give it a stacked layout distinct from iPad landscape XL."
+  );
+}
 const localizedInfoNames = readdirSync("src-mobile/ios/App/App")
   .filter((entry) => entry.endsWith(".lproj"))
   .map((entry) => `src-mobile/ios/App/App/${entry}/InfoPlist.strings`)

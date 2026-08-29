@@ -33,8 +33,9 @@ const MIN_WORKING_ENTRY_STEP_MS = 60 * 1000;
  * working 段的细分步长：按有效工时均分，使进度大约每 1% 前进一次。
  *
  * 同一 segment 内 elapsed 与墙上时间是 1:1 的（见 countdown.ts 的
- * getShiftElapsedMs），因此每条子 entry 算出的 `countdownTargetAtMs` 都是同一个
- * 绝对时刻——切换子 entry 不会让倒计时跳数。
+ * getShiftElapsedMs），因此每条子 entry 的下班时刻都是同一个绝对点——
+ * 切换子 entry 不会让圆形复杂功能上的钟点跳一下。倒计时用 remaining
+ * 推出来的锚点，不能把下班时刻当成「剩余工时贴到墙上」。
  */
 function workingEntryStepMs(shift: ShiftTimeline): number {
   const durationMs = getShiftDurationMs(shift);
@@ -68,7 +69,8 @@ export interface WidgetTimelineEntry {
   countdownKind: WidgetCountdownKind;
   /** `dateMs` 时刻需要展示的数值；working 时是有效工时而非墙上时间。 */
   countdownValueAtDateMs: number;
-  /** 供 SwiftUI 动态日期文本使用；working 时可能是合成锚点，不是实际下班时间。 */
+  /** 供 SwiftUI 动态日期文本使用。working 是实际下班时刻；倒计时用
+   *  `dateMs + remainingEffectiveMsAtDateMs`，不要把这个字段当剩余工时锚点。 */
   countdownTargetAtMs: number | null;
   remainingEffectiveMsAtDateMs: number;
   progressAtDate: number;
@@ -157,9 +159,11 @@ function createEntry(
     countdownKind,
     countdownValueAtDateMs,
     countdownTargetAtMs:
-      countdownValueAtDateMs > 0
-        ? dateMs + countdownValueAtDateMs
-        : null,
+      phase === "working"
+        ? getShiftEndAtMs(shift)
+        : countdownValueAtDateMs > 0
+          ? dateMs + countdownValueAtDateMs
+          : null,
     remainingEffectiveMsAtDateMs,
     progressAtDate,
     nextBoundaryAtMs,

@@ -105,12 +105,13 @@ private struct LandscapeTimerView: View {
 
     var body: some View {
         Group {
-            if isActive, store.visualPhase(at: .now).usesLiveTimeline {
+            if isActive,
+               store.visualPhase(at: store.timerDate(from: .now)).usesLiveTimeline {
                 TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                    landscapeContent(at: timeline.date)
+                    landscapeContent(at: store.timerDate(from: timeline.date))
                 }
             } else {
-                landscapeContent(at: .now)
+                landscapeContent(at: store.timerDate(from: .now))
             }
         }
         .navigationBarHidden(true)
@@ -160,18 +161,15 @@ private struct LandscapeTimerView: View {
                                     .frame(height: 26)
                                     .background(OWCDesign.control, in: Capsule())
                             } else if overtime {
-                                Label(
-                                    store.t(
+                                TimerPhasePill(
+                                    title: store.t(
                                         "overtimeUntil",
                                         values: ["time": store.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
                                     ),
-                                    systemImage: "clock.badge.plus"
+                                    systemImage: "clock.fill",
+                                    tint: OWCDesign.orangeDeep,
+                                    fill: OWCDesign.orange.opacity(0.12)
                                 )
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(OWCDesign.orangeDeep)
-                                .padding(.horizontal, 12)
-                                .frame(height: 26)
-                                .background(OWCDesign.orange.opacity(0.12), in: Capsule())
                             }
                         }
                         .padding(.bottom, 8)
@@ -234,8 +232,8 @@ private struct LandscapeTimerView: View {
                                     : snapshot.progress
                             )
                         )
-                        if store.salaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
-                        if store.effectiveScheduleMode(at: date) != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot)) }
+                        if store.presentationSalaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
+                        if store.effectiveScheduleMode(at: date) != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot, now: date)) }
                     }
                     .padding(.top, 20)
 
@@ -292,7 +290,8 @@ private struct LandscapeTimerView: View {
                 systemImage: "cup.and.saucer"
             )
         } else if phase == .overtime {
-            Label(store.t("overtimeTimeLeftCaption"), systemImage: "clock.badge.plus")
+            Label(store.t("overtimeTimeLeftCaption"), systemImage: "clock.fill")
+                .symbolRenderingMode(.monochrome)
         } else {
             Text(store.t("timeLeftCaption"))
         }
@@ -328,9 +327,13 @@ private struct LandscapeTimerView: View {
         return min(1, max(0, (lunchStart - snapshot.startAtMs) / max(1, snapshot.plannedEndAtMs - snapshot.startAtMs)))
     }
 
-    private func daysUntilRest(_ snapshot: NativeShiftSnapshot) -> String {
+    private func daysUntilRest(_ snapshot: NativeShiftSnapshot, now: Date) -> String {
         guard let rest = snapshot.nextRestDate else { return "—" }
-        let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now), to: Calendar.current.startOfDay(for: rest)).day ?? 0
+        let days = Calendar.current.dateComponents(
+            [.day],
+            from: Calendar.current.startOfDay(for: now),
+            to: Calendar.current.startOfDay(for: rest)
+        ).day ?? 0
         return store.formatDays(Double(max(0, days)))
     }
 }

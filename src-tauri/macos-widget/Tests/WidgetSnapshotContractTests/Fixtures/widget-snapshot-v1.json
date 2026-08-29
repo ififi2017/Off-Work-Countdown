@@ -25,7 +25,7 @@
       "labelKey": "widgetWorking",
       "countdownKind": "workRemaining",
       "countdownValueAtDateMs": 6000,
-      "countdownTargetAtMs": 9000,
+      "countdownTargetAtMs": 11000,
       "remainingEffectiveMsAtDateMs": 6000,
       "progressAtDate": 25,
       "nextBoundaryAtMs": 5000

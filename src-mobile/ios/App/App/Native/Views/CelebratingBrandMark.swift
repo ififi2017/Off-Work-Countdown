@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The interactive form of the code-native brand mark used on the two places
-/// where a user may reasonably stop and explore it: onboarding and About.
+/// The interactive form of the code-native brand mark used where a user may
+/// reasonably stop and explore it: onboarding, About, and the no-shift state.
 struct CelebratingBrandMark: View {
     private static let tapThreshold = 5
     private static let designCanvasSide: CGFloat = 1024

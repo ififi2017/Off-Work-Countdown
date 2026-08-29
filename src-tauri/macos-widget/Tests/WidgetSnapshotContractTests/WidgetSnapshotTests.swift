@@ -1,5 +1,7 @@
 import Foundation
 import Testing
+import WidgetKit
+@testable import OffWorkCountdownWidgetUI
 @testable import WidgetSnapshotContract
 
 @Test("Swift decodes the fixture serialized by TypeScript")
@@ -23,6 +25,13 @@ func decodesTypeScriptFixture() throws {
     #expect(snapshot.entries[1].progressAtDate == 50)
     #expect(snapshot.entry(atMs: 7_500)?.phase == .working)
     #expect(snapshot.entry(atMs: 13_000) == nil)
+    // Working entries name the wall-clock finish (11_000), not
+    // dateMs + remainingEffective (3_000 + 6_000 = 9_000). That sum
+    // skips the lunch gap and is what the circular complication used
+    // to print as the clock-off time.
+    #expect(snapshot.entries[0].countdownTargetAtMs == 11_000)
+    #expect(snapshot.entries[2].countdownTargetAtMs == 11_000)
+    #expect(snapshot.upcoming.isEmpty)
 }
 
 @Test("Unknown schemas and pre-generation dates are not rendered")
@@ -161,4 +170,46 @@ func boundsPresentationTimeline() {
     )
 
     #expect(entries.map(\.dateMs) == [2_000, 3_000, 4_000])
+}
+
+@Test("Portrait extra-large keeps raw value 4 across SDK availability flips")
+func portraitExtraLargeRawValue() {
+    #expect(
+        WidgetFamily(rawValue: 4).map { String(describing: $0) } == "systemExtraLargePortrait"
+    )
+}
+
+@Test("Upcoming widget dates add a weekday beyond tomorrow")
+func upcomingWidgetDateWeekdayVisibility() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = try #require(TimeZone(identifier: "Asia/Shanghai"))
+    let saturday = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 29,
+        hour: 14,
+        minute: 22
+    )))
+    let laterToday = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 29,
+        hour: 17
+    )))
+    let sunday = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 30,
+        hour: 9
+    )))
+    let monday = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 31,
+        hour: 9
+    )))
+
+    #expect(!widgetUpcomingDateShowsWeekday(laterToday, relativeTo: saturday, calendar: calendar))
+    #expect(!widgetUpcomingDateShowsWeekday(sunday, relativeTo: saturday, calendar: calendar))
+    #expect(widgetUpcomingDateShowsWeekday(monday, relativeTo: saturday, calendar: calendar))
 }

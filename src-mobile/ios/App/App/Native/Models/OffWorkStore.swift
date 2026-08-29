@@ -173,6 +173,8 @@ final class OffWorkStore {
         static let onboardingComplete = "ios.native.onboardingComplete"
 #if DEBUG
         static let debugAlwaysOnboarding = "ios.native.debugAlwaysOnboarding"
+        static let debugResetNextLaunch = "ios.native.debugResetNextLaunch"
+        static let qaDebugScenario = "ios.native.qaDebugScenario"
         static let qaRoute = "ios.native.qaRoute"
 #endif
         static let selectedTab = "ios.native.selectedTab"
@@ -226,6 +228,10 @@ final class OffWorkStore {
 
     let localizer = NativeLocalizer()
     private let defaults: UserDefaults
+#if DEBUG
+    var debugTimerSession: DebugTimerScenario.Session?
+    private(set) var debugDidResetOnLaunch = false
+#endif
 
     var selectedTab: AppTab { didSet { defaults.set(selectedTab.rawValue, forKey: Key.selectedTab) } }
     var presentedRoute: AppRoute?
@@ -265,6 +271,10 @@ final class OffWorkStore {
         }
     }
     var onboardingPage = 0
+    /// In-memory: the reminders page applies lunch-on and simple clock-off
+    /// once per launch. Persisting it would rewrite a user who turned those
+    /// off, went back, and came in again.
+    var didApplyOnboardingReminderDefaults = false
     var shareMood: ShareMood = .happy
     var lastRulesError: String?
 
@@ -419,6 +429,55 @@ final class OffWorkStore {
     }
     var microBreakEnabled: Bool { didSet { defaults.set(microBreakEnabled, forKey: Key.microBreakEnabled) } }
     var microBreakIntervalMinutes: Int { didSet { defaults.set(microBreakIntervalMinutes, forKey: Key.microBreakInterval) } }
+
+    var presentationNotificationMode: OffWorkNotificationMode {
+#if DEBUG
+        if debugTimerSession != nil { return .milestones }
+#endif
+        return notificationMode
+    }
+
+    var presentationLunchStartReminderEnabled: Bool {
+#if DEBUG
+        if debugTimerSession != nil { return true }
+#endif
+        return lunchStartReminderEnabled
+    }
+
+    var presentationLunchEndReminderEnabled: Bool {
+#if DEBUG
+        if debugTimerSession != nil { return true }
+#endif
+        return lunchEndReminderEnabled
+    }
+
+    var presentationMicroBreakEnabled: Bool {
+#if DEBUG
+        if debugTimerSession != nil { return true }
+#endif
+        return microBreakEnabled
+    }
+
+    var presentationMicroBreakIntervalMinutes: Int {
+#if DEBUG
+        if debugTimerSession != nil { return 60 }
+#endif
+        return microBreakIntervalMinutes
+    }
+
+    var presentationLiveActivityEnabled: Bool {
+#if DEBUG
+        if debugTimerSession != nil { return false }
+#endif
+        return liveActivityEnabled
+    }
+
+    var presentationSalaryEnabled: Bool {
+#if DEBUG
+        if debugTimerSession != nil { return false }
+#endif
+        return salaryEnabled
+    }
     var overtimeEndAtMs: Double? {
         didSet {
             if let overtimeEndAtMs { defaults.set(overtimeEndAtMs, forKey: Key.overtimeEndAtMs) }
@@ -434,15 +493,25 @@ final class OffWorkStore {
             }
         }
     }
-    /// In-memory only: switching tabs must not replay, but leaving the app
-    /// (background or a fresh launch) should celebrate once more. Persisting
-    /// this in UserDefaults made relaunch silent and was never the guard
-    /// against tab switches — those retriggered the overlay's `.task`.
+    /// In-memory only: neither tab switches nor a background/foreground cycle
+    /// may replay the same completed shift. A true cold launch constructs a
+    /// fresh store, so that launch may celebrate the already-completed shift
+    /// once without persisting a permanent suppression flag.
     var lastCelebratedEndAtMs: Double = 0
 
     init(defaults: UserDefaults = .standard) {
 #if DEBUG
+        let shouldReset = defaults.bool(forKey: Key.debugResetNextLaunch)
+        if shouldReset {
+            for key in defaults.dictionaryRepresentation().keys {
+                defaults.removeObject(forKey: key)
+            }
+        }
+        debugDidResetOnLaunch = shouldReset
         let debugRoute = AppRoute(rawValue: defaults.string(forKey: Key.qaRoute) ?? "")
+        let debugScenario = DebugTimerScenario(
+            rawValue: defaults.string(forKey: Key.qaDebugScenario) ?? ""
+        )
 #else
         let debugRoute: AppRoute? = nil
 #endif
@@ -536,9 +605,38 @@ final class OffWorkStore {
             }
         }
 #if DEBUG
-        if debugRoute != nil { defaults.removeObject(forKey: Key.qaRoute) }
+        if let debugRoute {
+            defaults.removeObject(forKey: Key.qaRoute)
+            settingsPath = [debugRoute]
+        }
+        if let debugScenario {
+            defaults.removeObject(forKey: Key.qaDebugScenario)
+            activateDebugTimerScenario(debugScenario)
+        }
 #endif
     }
+
+    var debugPresentationToken: String {
+#if DEBUG
+        debugTimerSession?.scenario.rawValue ?? ""
+#else
+        ""
+#endif
+    }
+
+    func timerDate(from realDate: Date) -> Date {
+#if DEBUG
+        debugTimerSession?.date(for: realDate) ?? realDate
+#else
+        realDate
+#endif
+    }
+
+#if DEBUG
+    func scheduleDebugResetOnNextLaunch() {
+        defaults.set(true, forKey: Key.debugResetNextLaunch)
+    }
+#endif
 
     var preferredColorScheme: ColorScheme? {
         switch theme {
@@ -567,6 +665,9 @@ final class OffWorkStore {
     /// forcing that same shift from the far side of midnight now marks the run
     /// that is actually on screen instead of a day it does not belong to.
     func isForcedWorkday(_ shift: NativeShiftSnapshot) -> Bool {
+#if DEBUG
+        if debugTimerSession != nil { return false }
+#endif
         guard let forcedWorkdayDate else { return false }
         return forcedWorkdayDate == Self.dayKey(for: shift.startDate)
     }
@@ -635,6 +736,28 @@ final class OffWorkStore {
         endMinutes: Int? = nil,
         using source: RulesScheduleSource = .effective
     ) -> NativeRulesInput {
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario {
+            let start = startMinutes ?? scenario.startMinutes
+            let end = endMinutes ?? scenario.endMinutes
+            return .init(
+                startTime: timeString(start),
+                endTime: timeString(end),
+                nowMs: date.timeIntervalSince1970 * 1_000,
+                workdays: scenario.workdays.sorted(),
+                schedule: nativeSchedule(at: date, using: source),
+                breakStartTime: timeString(scenario.lunchStartMinutes),
+                breakDurationMinutes: scenario.lunchDurationMinutes,
+                overtimeEndAtMs: scenario.overtimeEndAtMs(on: date),
+                // Marketing captures must never expose the tester's salary.
+                salaryAmount: "",
+                salaryType: salaryType.rawValue,
+                monthlyWorkingDays: monthlyWorkingDays,
+                annualBonusMonths: 0,
+                forcedWorkdayStartMs: nil
+            )
+        }
+#endif
         let applyOverride = source == .effective
         let start = startMinutes ?? (applyOverride ? effectiveStartMinutes(at: date) : self.startMinutes)
         let end = endMinutes ?? (applyOverride ? effectiveEndMinutes(at: date) : self.endMinutes)
@@ -777,7 +900,7 @@ final class OffWorkStore {
             t("notificationMilestoneTitle", values: ["percent": "\(remaining)"])
         }
         return .init(
-            mode: notificationMode.rawValue,
+            mode: presentationNotificationMode.rawValue,
             fallbackTitle: t("offWorkReminder"),
             milestoneTitles: .init(
                 milestone50: title(50),
@@ -793,13 +916,13 @@ final class OffWorkStore {
                 milestone95: [t("notificationMilestone95")],
                 milestone100: [t("offWorkTime")]
             ),
-            lunchStartEnabled: lunchStartReminderEnabled,
+            lunchStartEnabled: presentationLunchStartReminderEnabled,
             lunchStartBody: t("lunchStartNotification"),
-            lunchEndEnabled: lunchEndReminderEnabled,
+            lunchEndEnabled: presentationLunchEndReminderEnabled,
             lunchEndBody: t("lunchEndNotification"),
-            microBreakEnabled: microBreakEnabled,
+            microBreakEnabled: presentationMicroBreakEnabled,
             microBreakTitle: t("microBreakReminder"),
-            microBreakIntervalMinutes: microBreakIntervalMinutes,
+            microBreakIntervalMinutes: presentationMicroBreakIntervalMinutes,
             microBreakMessages: strings("microBreakMessages")
         )
     }
@@ -865,7 +988,7 @@ final class OffWorkStore {
         // The Live Activity lead-in stays out of the running list. It is a
         // notification about this countdown rather than an event within it, and
         // by the time it fires the user is already looking at the screen.
-        if microBreakEnabled,
+        if presentationMicroBreakEnabled,
            let reminders = try? CountdownRules.shared.reminders(
                input: rulesInput(at: now),
                reminderInputs: reminderInputs()
@@ -878,7 +1001,7 @@ final class OffWorkStore {
                 kind: .health,
                 date: Date(timeIntervalSince1970: next.atMs / 1_000),
                 title: t("microBreakReminder"),
-                detail: t("minutesShort", values: ["count": "\(microBreakIntervalMinutes)"])
+                detail: t("minutesShort", values: ["count": "\(presentationMicroBreakIntervalMinutes)"])
             ))
         }
 
@@ -891,7 +1014,7 @@ final class OffWorkStore {
         // than a push, so it gets no row; that is also what keeps "at off-work
         // time only" from listing anything, since its one audible milestone is
         // the shift's end and the list already has a row for that.
-        if notificationMode == .milestones {
+        if presentationNotificationMode == .milestones {
             events.append(contentsOf: (try? CountdownRules.shared.reminders(
                 input: rulesInput(at: now),
                 reminderInputs: reminderInputs()
@@ -1166,21 +1289,46 @@ final class OffWorkStore {
     }
 
     var publishesLiveSurfaces: Bool {
-        onboardingComplete && (followsSchedule || countdownStarted)
+#if DEBUG
+        if debugTimerSession != nil { return false }
+#endif
+        return onboardingComplete && (followsSchedule || countdownStarted)
     }
 
     var followsSchedule: Bool { followsSchedule(at: .now) }
 
     func followsSchedule(at date: Date = .now) -> Bool {
-        onboardingComplete && effectiveScheduleMode(at: date) != .off
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario {
+            return scenario.scheduleMode != .off
+        }
+#endif
+        return onboardingComplete && effectiveScheduleMode(at: date) != .off
     }
 
     func shouldQuerySnapshot(at date: Date = .now) -> Bool {
-        followsSchedule(at: date) || countdownStarted
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario {
+            return scenario.scheduleMode != .off || scenario.sessionActive
+        }
+#endif
+        return followsSchedule(at: date) || countdownStarted
     }
 
     func visualPhase(snapshot: NativeShiftSnapshot?, at date: Date = .now) -> TimerVisualPhase {
-        TimerVisualPhase.resolve(
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario {
+            return TimerVisualPhase.resolve(
+                followsSchedule: scenario.scheduleMode != .off,
+                sessionActive: scenario.sessionActive,
+                snapshot: snapshot,
+                forceToday: false,
+                endedEarly: false,
+                now: date
+            )
+        }
+#endif
+        return TimerVisualPhase.resolve(
             followsSchedule: followsSchedule(at: date),
             sessionActive: countdownStarted,
             snapshot: snapshot,
@@ -1346,6 +1494,20 @@ final class OffWorkStore {
         clearEarlyClockOffRecord()
     }
 
+    /// First visit to the onboarding reminders page. Lunch on with edge
+    /// notifications, clock-off in simple mode. Later visits — including
+    /// back — keep whatever the user already chose.
+    func applyOnboardingReminderDefaultsIfNeeded() {
+        guard !didApplyOnboardingReminderDefaults else { return }
+        didApplyOnboardingReminderDefaults = true
+        lunchEnabled = true
+        lunchStartReminderEnabled = true
+        lunchEndReminderEnabled = true
+        if notificationMode == .off {
+            notificationMode = .simple
+        }
+    }
+
     func completeOnboarding(enableNotifications: Bool) {
         onboardingComplete = true
         // Deliberately does NOT reset onboardingPage. The welcome view is still
@@ -1370,6 +1532,19 @@ final class OffWorkStore {
     var nativeSchedule: NativeWorkSchedule { nativeSchedule(at: .now) }
 
     func nativeSchedule(at date: Date, using source: RulesScheduleSource = .effective) -> NativeWorkSchedule {
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario {
+            return .init(
+                mode: scenario.scheduleMode.rawValue,
+                referenceWeekStartMs: nil,
+                referenceWeekType: nil,
+                singleWeekendWorkday: nil,
+                rotationAnchorMs: nil,
+                rotationWorkDays: nil,
+                rotationRestDays: nil
+            )
+        }
+#endif
         let applyOverride = source == .effective && usesTodayOverride(at: date)
         let mode = applyOverride ? effectiveScheduleMode(at: date) : scheduleMode
         let weekType = applyOverride
@@ -1566,7 +1741,10 @@ final class OffWorkStore {
 
     /// Future projections must not inherit today's early clock-in or overlay.
     func projectsFutureFromBase(at date: Date) -> Bool {
-        usesTodayOverride(at: date) || isStartedEarly(at: date)
+#if DEBUG
+        if debugTimerSession != nil { return false }
+#endif
+        return usesTodayOverride(at: date) || isStartedEarly(at: date)
     }
 
     var forcedWorkdayStartMs: Double? {
@@ -1582,6 +1760,9 @@ final class OffWorkStore {
     }
 
     func effectiveScheduleMode(at date: Date = .now) -> WorkScheduleMode {
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario { return scenario.scheduleMode }
+#endif
         guard usesTodayOverride(at: date),
               let raw = todayOverride?.scheduleMode,
               let mode = WorkScheduleMode(rawValue: raw)
@@ -1590,6 +1771,9 @@ final class OffWorkStore {
     }
 
     func effectiveStartMinutes(at date: Date) -> Int {
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario { return scenario.startMinutes }
+#endif
         if isStartedEarly(at: date), let earlyStartAtMs {
             return minutes(from: Date(timeIntervalSince1970: earlyStartAtMs / 1_000))
         }
@@ -1600,6 +1784,9 @@ final class OffWorkStore {
     }
 
     func effectiveEndMinutes(at date: Date) -> Int {
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario { return scenario.endMinutes }
+#endif
         if usesTodayOverride(at: date), let todayOverride {
             return todayOverride.endMinutes
         }
@@ -1607,6 +1794,9 @@ final class OffWorkStore {
     }
 
     func effectiveWorkdays(at date: Date) -> Set<Int> {
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario { return scenario.workdays }
+#endif
         if usesTodayOverride(at: date), let todayOverride {
             return Set(todayOverride.workdays)
         }
@@ -1614,6 +1804,9 @@ final class OffWorkStore {
     }
 
     func effectiveLunchEnabled(at date: Date) -> Bool {
+#if DEBUG
+        if debugTimerSession != nil { return true }
+#endif
         if usesTodayOverride(at: date), let todayOverride {
             return todayOverride.lunchEnabled
         }
@@ -1621,6 +1814,9 @@ final class OffWorkStore {
     }
 
     func effectiveLunchStartMinutes(at date: Date) -> Int {
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario { return scenario.lunchStartMinutes }
+#endif
         if usesTodayOverride(at: date), let todayOverride {
             return todayOverride.lunchStartMinutes
         }
@@ -1628,6 +1824,9 @@ final class OffWorkStore {
     }
 
     func effectiveLunchDurationMinutes(at date: Date) -> Int {
+#if DEBUG
+        if let scenario = debugTimerSession?.scenario { return scenario.lunchDurationMinutes }
+#endif
         if usesTodayOverride(at: date), let todayOverride {
             return todayOverride.lunchDurationMinutes
         }
@@ -1871,9 +2070,9 @@ final class OffWorkStore {
         lastCelebratedEndAtMs = endAtMs
     }
 
-    /// Forgetting the token so the next time the completed surface is in
-    /// front — after returning from background, or after a new shift end —
-    /// can fire again. Tab switches do not call this.
+    /// Debug capture scenarios may explicitly clear this in-memory token.
+    /// Normal warm-session lifecycle never does: only constructing a fresh
+    /// store on cold launch makes the completed shift celebrate again.
     func resetCelebratedSession() {
         lastCelebratedEndAtMs = 0
     }

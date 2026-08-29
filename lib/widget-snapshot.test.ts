@@ -149,6 +149,7 @@ describe("WidgetSnapshotV1", () => {
     // 同一 segment 内 elapsed 与墙上时间 1:1，因此子 entry 换手时倒计时的绝对
     // 目标时刻必须保持不变，否则用户会看到秒数原地跳一下。
     expect(new Set(morning.map((entry) => entry.countdownTargetAtMs)).size).toBe(1);
+    expect(morning[0].countdownTargetAtMs).toBe(endAtMs);
 
     // 细分只影响 working，边界语义不变。
     expect(
