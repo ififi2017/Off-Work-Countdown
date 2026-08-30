@@ -21,17 +21,19 @@ const HELP = `App Store Connect metadata sync
 
 Usage:
   npm run asc:check -- --config app-store-connect/ios/3.1.8.json
-  npm run asc:plan  -- --config app-store-connect/ios/3.1.8.json [--include-screenshots]
-  npm run asc:sync  -- --config app-store-connect/ios/3.1.8.json [--include-screenshots] [--replace-screenshots] [--yes]
+  npm run asc:plan  -- --config app-store-connect/ios/3.1.8.json [--include-screenshots] [--include-previews]
+  npm run asc:sync  -- --config app-store-connect/ios/3.1.8.json [--include-screenshots] [--include-previews] [--replace-screenshots] [--replace-previews] [--yes]
 
 Modes:
-  --check                 Validate JSON, field limits, URLs, and local screenshot files. No credentials needed.
+  --check                 Validate JSON, field limits, URLs, and local screenshot/preview files. No credentials needed.
   --plan                  Read App Store Connect and print changes. This is the default and never writes.
   --apply                 Apply the printed metadata changes. Does not submit the version for review.
 
-Screenshot safety:
+Media safety:
   --include-screenshots   Include configured screenshot sets in the plan/apply run.
   --replace-screenshots   Permit deleting and recreating a non-matching existing screenshot set.
+  --include-previews      Include configured app preview sets in the plan/apply run.
+  --replace-previews      Permit deleting and recreating a non-matching existing preview set.
 
 Credentials (team API key):
   ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY_PATH
@@ -135,7 +137,17 @@ async function listScreenshots(api, setId) {
   return api.list(query(`/v1/appScreenshotSets/${setId}/appScreenshots`, { limit: 200 }));
 }
 
-async function readRemoteSnapshot(api, config, { includeScreenshots }) {
+async function listPreviewSets(api, localizationId) {
+  return api.list(
+    query(`/v1/appStoreVersionLocalizations/${localizationId}/appPreviewSets`, { limit: 200 })
+  );
+}
+
+async function listPreviews(api, setId) {
+  return api.list(query(`/v1/appPreviewSets/${setId}/appPreviews`, { limit: 200 }));
+}
+
+async function readRemoteSnapshot(api, config, { includeScreenshots, includePreviews }) {
   const app = await findApp(api, config.app.bundleId);
   const version = await findVersion(api, app.id, config.app);
   const appInfos = await listAppInfos(api, app.id);
@@ -143,18 +155,32 @@ async function readRemoteSnapshot(api, config, { includeScreenshots }) {
   const appInfoLocalizations = appInfo ? await listAppInfoLocalizations(api, appInfo.id) : [];
   const versionLocalizations = version ? await listVersionLocalizations(api, version.id) : [];
   const screenshotSets = new Map();
+  const previewSets = new Map();
 
-  if (includeScreenshots && version) {
+  if ((includeScreenshots || includePreviews) && version) {
     for (const localization of versionLocalizations) {
-      if (!config.localizations[localization.attributes.locale]?.screenshots) continue;
-      const sets = await listScreenshotSets(api, localization.id);
-      const seen = new Set();
-      for (const set of sets) {
-        const displayType = set.attributes.screenshotDisplayType;
-        if (seen.has(displayType)) throw new Error(`Duplicate screenshot set ${displayType} for ${localization.attributes.locale}.`);
-        seen.add(displayType);
-        const screenshots = await listScreenshots(api, set.id);
-        screenshotSets.set(`${localization.attributes.locale}\u0000${displayType}`, { set, screenshots });
+      const locale = localization.attributes.locale;
+      if (includeScreenshots && config.localizations[locale]?.screenshots) {
+        const sets = await listScreenshotSets(api, localization.id);
+        const seen = new Set();
+        for (const set of sets) {
+          const displayType = set.attributes.screenshotDisplayType;
+          if (seen.has(displayType)) throw new Error(`Duplicate screenshot set ${displayType} for ${locale}.`);
+          seen.add(displayType);
+          const screenshots = await listScreenshots(api, set.id);
+          screenshotSets.set(`${locale}\u0000${displayType}`, { set, screenshots });
+        }
+      }
+      if (includePreviews && config.localizations[locale]?.previews) {
+        const sets = await listPreviewSets(api, localization.id);
+        const seen = new Set();
+        for (const set of sets) {
+          const previewType = set.attributes.previewType;
+          if (seen.has(previewType)) throw new Error(`Duplicate preview set ${previewType} for ${locale}.`);
+          seen.add(previewType);
+          const previews = await listPreviews(api, set.id);
+          previewSets.set(`${locale}\u0000${previewType}`, { set, previews });
+        }
       }
     }
   }
@@ -166,6 +192,7 @@ async function readRemoteSnapshot(api, config, { includeScreenshots }) {
     appInfoLocalizations: indexByLocale(appInfoLocalizations),
     versionLocalizations: indexByLocale(versionLocalizations),
     screenshotSets,
+    previewSets,
   };
 }
 
@@ -190,7 +217,13 @@ export function buildMetadataPlan(config, snapshot) {
       const missing = missingCreateFields(localization, "appInfo");
       if (missing.length > 0) blockers.push(`${locale} needs ${missing.join(", ")} to create its App Info localization.`);
       else if (!creatingVersion && !isEditable(snapshot.appInfo)) {
-        blockers.push(`${locale} App Info localization is missing, but App Info state ${resourceState(snapshot.appInfo) ?? "UNKNOWN"} is not editable.`);
+        // Name/subtitle live on the shipping listing. A prepare-for-submission
+        // version can still take screenshots and previews without them.
+        if (snapshot.version && isEditable(snapshot.version)) {
+          unchanged.push(`${locale} app info (live listing; skipped)`);
+        } else {
+          blockers.push(`${locale} App Info localization is missing, but App Info state ${resourceState(snapshot.appInfo) ?? "UNKNOWN"} is not editable.`);
+        }
       } else {
         changes.push({ type: "createAppInfoLocalization", locale, desired: desiredAppInfo });
       }
@@ -198,7 +231,11 @@ export function buildMetadataPlan(config, snapshot) {
       const fieldChanges = diffFields(appInfoLocalization.attributes, desiredAppInfo);
       if (Object.keys(fieldChanges).length === 0) unchanged.push(`${locale} app info`);
       else if (!creatingVersion && !isEditable(snapshot.appInfo)) {
-        blockers.push(`${locale} App Info has changes, but state ${resourceState(snapshot.appInfo) ?? "UNKNOWN"} is not editable.`);
+        if (snapshot.version && isEditable(snapshot.version)) {
+          unchanged.push(`${locale} app info (live listing; skipped)`);
+        } else {
+          blockers.push(`${locale} App Info has changes, but state ${resourceState(snapshot.appInfo) ?? "UNKNOWN"} is not editable.`);
+        }
       } else {
         changes.push({
           type: "updateAppInfoLocalization",
@@ -292,11 +329,44 @@ export function addScreenshotPlan(config, snapshot, assetsBySet, plan, options) 
   }
 }
 
+export function addPreviewPlan(config, snapshot, assetsBySet, plan, options) {
+  if (!options.includePreviews) return;
+  const versionIsEditable = !snapshot.version || isEditable(snapshot.version);
+  for (const [locale, localization] of Object.entries(config.localizations)) {
+    for (const previewType of Object.keys(localization.previews ?? {})) {
+      const key = `${locale}\u0000${previewType}`;
+      const assets = assetsBySet.get(key) ?? [];
+      const remote = snapshot.previewSets?.get(key);
+      if (!versionIsEditable) {
+        plan.blockers.push(`${locale} ${previewType} previews cannot change in version state ${resourceState(snapshot.version)}.`);
+      } else if (!remote || remote.previews.length === 0) {
+        plan.changes.push({ type: "uploadPreviewSet", locale, previewType, count: assets.length });
+      } else if (screenshotSetMatches(remote.previews, assets)) {
+        plan.unchanged.push(`${locale} ${previewType} previews`);
+      } else if (!options.replacePreviews) {
+        plan.blockers.push(
+          `${locale} ${previewType} has different remote previews; inspect the plan and rerun with --replace-previews to replace the whole set.`
+        );
+      } else {
+        plan.changes.push({
+          type: "replacePreviewSet",
+          locale,
+          previewType,
+          count: assets.length,
+          remoteCount: remote.previews.length,
+          destructive: true,
+        });
+      }
+    }
+  }
+}
+
 function printPlan(config, snapshot, plan, options) {
   console.log(`\nApp: ${config.app.bundleId}`);
   console.log(`Target: ${config.app.platform} ${config.app.versionString}`);
   console.log(`Remote version: ${snapshot.version ? `${snapshot.version.id} (${resourceState(snapshot.version)})` : "not created"}`);
   console.log(`Screenshots: ${options.includeScreenshots ? "included" : "skipped (pass --include-screenshots)"}`);
+  console.log(`Previews: ${options.includePreviews ? "included" : "skipped (pass --include-previews)"}`);
   console.log("\nPlanned changes:");
   if (plan.changes.length === 0) console.log("  none");
   for (const action of plan.changes) {
@@ -326,6 +396,14 @@ function printPlan(config, snapshot, plan, options) {
       case "replaceScreenshotSet":
         console.log(
           `  ! ${action.locale}: replace ${action.remoteCount} screenshots with ${action.count} in ${action.displayType}`
+        );
+        break;
+      case "uploadPreviewSet":
+        console.log(`  + ${action.locale}: upload ${action.count} previews to ${action.previewType}`);
+        break;
+      case "replacePreviewSet":
+        console.log(
+          `  ! ${action.locale}: replace ${action.remoteCount} previews with ${action.count} in ${action.previewType}`
         );
         break;
     }
@@ -370,10 +448,15 @@ async function appInfoForApply(api, appId, config) {
     return !current || Object.keys(diffFields(current.attributes, pickFields(localization, APP_INFO_FIELDS))).length > 0;
   });
   if (needsMutation && !isEditable(appInfo)) {
-    appInfo = await waitForEditableAppInfo(api, appId);
-    localizations = indexByLocale(await listAppInfoLocalizations(api, appInfo.id));
+    try {
+      appInfo = await waitForEditableAppInfo(api, appId);
+      localizations = indexByLocale(await listAppInfoLocalizations(api, appInfo.id));
+    } catch {
+      console.log("App Info is locked on the live listing; skipping name and subtitle updates.");
+      return { appInfo, localizations, editable: false };
+    }
   }
-  return { appInfo, localizations };
+  return { appInfo, localizations, editable: isEditable(appInfo) };
 }
 
 function isDuplicateLocaleError(error) {
@@ -426,35 +509,41 @@ export async function createLocalizationOrUseExisting({
 }
 
 async function applyMetadata(api, config, app, version) {
-  const { appInfo, localizations: appInfoLocalizations } = await appInfoForApply(api, app.id, config);
+  const { appInfo, localizations: appInfoLocalizations, editable: appInfoEditable } = await appInfoForApply(
+    api,
+    app.id,
+    config
+  );
   const versionLocalizations = indexByLocale(await listVersionLocalizations(api, version.id));
 
   for (const [locale, localization] of Object.entries(config.localizations)) {
     const desiredAppInfo = pickFields(localization, APP_INFO_FIELDS);
-    let appInfoLocalization = appInfoLocalizations.get(locale);
-    if (!appInfoLocalization) {
-      const result = await createLocalizationOrUseExisting({
-        api,
-        listResources: () => listAppInfoLocalizations(api, appInfo.id),
-        collectionPath: "/v1/appInfoLocalizations",
-        resourceType: "appInfoLocalizations",
-        relationshipName: "appInfo",
-        parentType: "appInfos",
-        parentId: appInfo.id,
-        locale,
-        desired: desiredAppInfo,
-      });
-      appInfoLocalization = result.resource;
-      appInfoLocalizations.set(locale, appInfoLocalization);
-      console.log(`${result.created ? "Created" : "Found Apple-created"} ${locale} App Info localization.`);
-    }
-    const appInfoChanges = diffFields(appInfoLocalization.attributes, desiredAppInfo);
-    if (Object.keys(appInfoChanges).length > 0) {
-      await api.request(`/v1/appInfoLocalizations/${appInfoLocalization.id}`, {
-        method: "PATCH",
-        body: { data: { type: "appInfoLocalizations", id: appInfoLocalization.id, attributes: appInfoChanges } },
-      });
-      console.log(`Updated ${locale} App Info: ${Object.keys(appInfoChanges).join(", ")}.`);
+    if (appInfoEditable) {
+      let appInfoLocalization = appInfoLocalizations.get(locale);
+      if (!appInfoLocalization) {
+        const result = await createLocalizationOrUseExisting({
+          api,
+          listResources: () => listAppInfoLocalizations(api, appInfo.id),
+          collectionPath: "/v1/appInfoLocalizations",
+          resourceType: "appInfoLocalizations",
+          relationshipName: "appInfo",
+          parentType: "appInfos",
+          parentId: appInfo.id,
+          locale,
+          desired: desiredAppInfo,
+        });
+        appInfoLocalization = result.resource;
+        appInfoLocalizations.set(locale, appInfoLocalization);
+        console.log(`${result.created ? "Created" : "Found Apple-created"} ${locale} App Info localization.`);
+      }
+      const appInfoChanges = diffFields(appInfoLocalization.attributes, desiredAppInfo);
+      if (Object.keys(appInfoChanges).length > 0) {
+        await api.request(`/v1/appInfoLocalizations/${appInfoLocalization.id}`, {
+          method: "PATCH",
+          body: { data: { type: "appInfoLocalizations", id: appInfoLocalization.id, attributes: appInfoChanges } },
+        });
+        console.log(`Updated ${locale} App Info: ${Object.keys(appInfoChanges).join(", ")}.`);
+      }
     }
 
     const desiredVersion = pickFields(localization, VERSION_LOCALIZATION_FIELDS);
@@ -564,6 +653,116 @@ async function orderScreenshots(api, setId, screenshotIds) {
   });
 }
 
+async function createPreviewSet(api, localizationId, previewType) {
+  const response = await api.request("/v1/appPreviewSets", {
+    method: "POST",
+    body: {
+      data: {
+        type: "appPreviewSets",
+        attributes: { previewType },
+        relationships: {
+          appStoreVersionLocalization: {
+            data: { type: "appStoreVersionLocalizations", id: localizationId },
+          },
+        },
+      },
+    },
+  });
+  return response.data;
+}
+
+async function waitForPreview(api, id, fileName) {
+  for (let attempt = 0; attempt < 180; attempt += 1) {
+    const response = await api.request(`/v1/appPreviews/${id}`);
+    const state = deliveryState(response.data);
+    if (state === "COMPLETE") return response.data;
+    if (state === "FAILED") {
+      const errors = response.data.attributes.assetDeliveryState?.errors;
+      throw new Error(`Apple failed to process ${fileName}: ${JSON.stringify(errors ?? "unknown error")}`);
+    }
+    await delay(2000);
+  }
+  throw new Error(`Timed out waiting for Apple to process ${fileName}. The upload may still finish in App Store Connect.`);
+}
+
+async function uploadPreview(api, setId, asset) {
+  const content = readFileSync(asset.path);
+  const reservation = await api.request("/v1/appPreviews", {
+    method: "POST",
+    body: {
+      data: {
+        type: "appPreviews",
+        attributes: {
+          fileName: asset.fileName,
+          fileSize: asset.fileSize,
+          mimeType: asset.mimeType,
+          previewFrameTimeCode: "00:00:05:00",
+        },
+        relationships: { appPreviewSet: { data: { type: "appPreviewSets", id: setId } } },
+      },
+    },
+  });
+  const preview = reservation.data;
+  const operations = preview.attributes.uploadOperations ?? [];
+  if (operations.length === 0) throw new Error(`Apple returned no upload operations for ${asset.fileName}.`);
+  await api.uploadParts(operations, content);
+  await api.request(`/v1/appPreviews/${preview.id}`, {
+    method: "PATCH",
+    body: {
+      data: {
+        type: "appPreviews",
+        id: preview.id,
+        attributes: { uploaded: true, sourceFileChecksum: asset.checksum },
+      },
+    },
+  });
+  await waitForPreview(api, preview.id, asset.fileName);
+  console.log(`  uploaded ${asset.fileName}`);
+  return preview.id;
+}
+
+async function orderPreviews(api, setId, previewIds) {
+  await api.request(`/v1/appPreviewSets/${setId}/relationships/appPreviews`, {
+    method: "PATCH",
+    body: { data: previewIds.map((id) => ({ type: "appPreviews", id })) },
+  });
+}
+
+async function applyPreviews(api, config, assetsBySet, versionLocalizations, { replacePreviews }) {
+  for (const [locale, localization] of Object.entries(config.localizations)) {
+    const versionLocalization = versionLocalizations.get(locale);
+    if (!versionLocalization) throw new Error(`Missing ${locale} version localization after metadata sync.`);
+    const currentSets = await listPreviewSets(api, versionLocalization.id);
+    const byPreviewType = new Map(currentSets.map((set) => [set.attributes.previewType, set]));
+
+    for (const previewType of Object.keys(localization.previews ?? {})) {
+      const key = `${locale}\u0000${previewType}`;
+      const assets = assetsBySet.get(key);
+      let set = byPreviewType.get(previewType);
+      let previews = set ? await listPreviews(api, set.id) : [];
+      if (set && screenshotSetMatches(previews, assets)) {
+        console.log(`${locale} ${previewType}: previews already match.`);
+        continue;
+      }
+      if (set && previews.length > 0) {
+        if (!replacePreviews) {
+          throw new Error(`${locale} ${previewType} differs remotely; rerun with --replace-previews.`);
+        }
+        await api.request(`/v1/appPreviewSets/${set.id}`, { method: "DELETE" });
+        console.log(`${locale} ${previewType}: removed the previous ${previews.length}-video set.`);
+        set = null;
+        previews = [];
+      }
+      if (!set) set = await createPreviewSet(api, versionLocalization.id, previewType);
+      console.log(`${locale} ${previewType}: uploading ${assets.length} previews...`);
+      const ids = [];
+      for (const asset of assets) ids.push(await uploadPreview(api, set.id, asset));
+      await orderPreviews(api, set.id, ids);
+      console.log(`${locale} ${previewType}: upload complete and order synchronized.`);
+    }
+  }
+}
+
 async function applyScreenshots(api, config, assetsBySet, versionLocalizations, { replaceScreenshots }) {
   for (const [locale, localization] of Object.entries(config.localizations)) {
     const versionLocalization = versionLocalizations.get(locale);
@@ -621,8 +820,9 @@ async function main() {
   }
   checkPackageVersion(loaded.config);
   const screenshotCount = [...loaded.screenshots.values()].reduce((total, assets) => total + assets.length, 0);
+  const previewCount = [...loaded.previews.values()].reduce((total, assets) => total + assets.length, 0);
   console.log(
-    `Validated ${Object.keys(loaded.config.localizations).length} locales and ${screenshotCount} configured screenshots from ${loaded.absoluteConfigPath}.`
+    `Validated ${Object.keys(loaded.config.localizations).length} locales, ${screenshotCount} screenshots, and ${previewCount} previews from ${loaded.absoluteConfigPath}.`
   );
   if (options.mode === "check") return;
 
@@ -630,6 +830,7 @@ async function main() {
   let snapshot = await readRemoteSnapshot(api, loaded.config, options);
   const plan = buildMetadataPlan(loaded.config, snapshot);
   addScreenshotPlan(loaded.config, snapshot, loaded.screenshots, plan, options);
+  addPreviewPlan(loaded.config, snapshot, loaded.previews, plan, options);
   printPlan(loaded.config, snapshot, plan, options);
   if (options.mode === "plan") return;
   if (plan.blockers.length > 0) throw new Error("The plan is blocked; no changes were written.");
@@ -642,7 +843,7 @@ async function main() {
   await confirmExact({
     expected: `${loaded.config.app.platform} ${loaded.config.app.versionString}`,
     message: `Apply ${plan.changes.length} App Store Connect change groups${
-      replacements ? `, including ${replacements} destructive screenshot-set replacement(s)` : ""
+      replacements ? `, including ${replacements} destructive media-set replacement(s)` : ""
     }? This does not submit the version for review.`,
     yes: options.yes,
   });
@@ -654,6 +855,7 @@ async function main() {
     snapshot = await readRemoteSnapshot(api, loaded.config, options);
     const postCreationPlan = buildMetadataPlan(loaded.config, snapshot);
     addScreenshotPlan(loaded.config, snapshot, loaded.screenshots, postCreationPlan, options);
+    addPreviewPlan(loaded.config, snapshot, loaded.previews, postCreationPlan, options);
     if (postCreationPlan.blockers.length > 0) {
       printPlan(loaded.config, snapshot, postCreationPlan, options);
       throw new Error("The version was created, but its inherited metadata produced blockers. No localization fields were written; update the config and rerun.");
@@ -663,7 +865,7 @@ async function main() {
       printPlan(loaded.config, snapshot, postCreationPlan, options);
       await confirmExact({
         expected: `REPLACE ${loaded.config.app.platform} ${loaded.config.app.versionString}`,
-        message: `The new version inherited ${newlyDiscoveredReplacements} non-matching screenshot set(s). Replace them?`,
+        message: `The new version inherited ${newlyDiscoveredReplacements} non-matching media set(s). Replace them?`,
         yes: options.yes,
       });
     }
@@ -672,9 +874,13 @@ async function main() {
   if (options.includeScreenshots) {
     await applyScreenshots(api, loaded.config, loaded.screenshots, versionLocalizations, options);
   }
+  if (options.includePreviews) {
+    await applyPreviews(api, loaded.config, loaded.previews, versionLocalizations, options);
+  }
   snapshot = await readRemoteSnapshot(api, loaded.config, options);
   const verification = buildMetadataPlan(loaded.config, snapshot);
   addScreenshotPlan(loaded.config, snapshot, loaded.screenshots, verification, options);
+  addPreviewPlan(loaded.config, snapshot, loaded.previews, verification, options);
   if (verification.changes.length > 0 || verification.blockers.length > 0) {
     throw new Error("Sync finished, but verification still found differences. Run asc:plan to inspect them.");
   }

@@ -1,4 +1,5 @@
-// Capture the native iPhone and iPad surfaces used by the App Store artwork.
+// Capture the three portrait surfaces used by the App Store artwork:
+// working timer, Home Screen widgets, lunch. Raw names match compose.mjs.
 //
 // The app already has DEBUG-only QA defaults for deterministic navigation and
 // orientation. This script uses those hooks instead of adding screenshot code
@@ -57,17 +58,6 @@ function terminate(udid) {
   simctl(["terminate", udid, BUNDLE_ID], { allowFailure: true });
 }
 
-async function returnToHomeScreen(udid) {
-  terminate(udid);
-  await sleep(500);
-  // Bouncing through Settings makes SpringBoard render the Home Screen
-  // reliably; terminating an app can otherwise leave its last frame visible.
-  simctl(["launch", udid, "com.apple.Preferences"], { allowFailure: true });
-  await sleep(700);
-  simctl(["terminate", udid, "com.apple.Preferences"], { allowFailure: true });
-  await sleep(2000);
-}
-
 function launch(udid, language, scene = {}) {
   const appleLanguage = language === "zh-CN" ? "zh-Hans" : "en";
   const appleLocale = language === "zh-CN" ? "zh_CN" : "en_US";
@@ -107,6 +97,9 @@ function launch(udid, language, scene = {}) {
   if (scene.route) {
     qaArguments.push("-ios.native.qaRoute", scene.route);
   }
+  if (scene.scenario) {
+    qaArguments.push("-ios.native.qaDebugScenario", scene.scenario);
+  }
   simctl([
     "launch",
     "--terminate-running-process",
@@ -127,43 +120,37 @@ function screenshot(udid, name) {
   console.log(`captured ${name}.png`);
 }
 
+const RAW_LANG = { en: "en", "zh-CN": "zh" };
+
 async function capturePhone(udid, language) {
-  launch(udid, language, { orientation: "portrait" });
+  const stem = RAW_LANG[language];
+  launch(udid, language, { orientation: "portrait", scenario: "working" });
   await sleep(4200);
-  screenshot(udid, `${language}-iphone-main`);
+  screenshot(udid, `${stem}-1`);
 
-  // The Live Activity survives the app leaving the foreground, which exposes
-  // its compact Dynamic Island presentation against the Home Screen.
-  await returnToHomeScreen(udid);
-  screenshot(udid, `${language}-iphone-island`);
-
-  // Onboarding page 5 is the native, source-controlled likeness of the actual
-  // Home Screen widget, Lock Screen accessory and compact island.
+  // Onboarding page 5 is the native likeness of Home Screen widgets and the island.
   launch(udid, language, { onboardingPage: 5, orientation: "portrait" });
   await sleep(2200);
-  screenshot(udid, `${language}-iphone-widgets`);
+  screenshot(udid, `${stem}-2`);
 
-  launch(udid, language, { orientation: "landscape" });
+  launch(udid, language, { orientation: "portrait", scenario: "lunch", liveActivity: false });
   await sleep(2600);
-  screenshot(udid, `${language}-iphone-landscape`);
+  screenshot(udid, `${stem}-3`);
 }
 
 async function capturePad(udid, language) {
-  launch(udid, language, { orientation: "portrait", liveActivity: false });
+  const stem = RAW_LANG[language];
+  launch(udid, language, { orientation: "portrait", scenario: "working", liveActivity: false });
   await sleep(2600);
-  screenshot(udid, `${language}-ipad-main`);
+  screenshot(udid, `${stem}-ipad-1`);
 
   launch(udid, language, { onboardingPage: 5, orientation: "portrait", liveActivity: false });
   await sleep(2200);
-  screenshot(udid, `${language}-ipad-widgets`);
+  screenshot(udid, `${stem}-ipad-2`);
 
-  launch(udid, language, { route: "notifications", orientation: "portrait", liveActivity: false });
-  await sleep(2400);
-  screenshot(udid, `${language}-ipad-reminders`);
-
-  launch(udid, language, { orientation: "landscape", liveActivity: false });
+  launch(udid, language, { orientation: "portrait", scenario: "lunch", liveActivity: false });
   await sleep(2600);
-  screenshot(udid, `${language}-ipad-landscape`);
+  screenshot(udid, `${stem}-ipad-3`);
 }
 
 if (process.env.IOS_SHOTS_SKIP_BUILD !== "1") {

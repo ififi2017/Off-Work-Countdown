@@ -1,6 +1,6 @@
 # 009 — DoneAt 全平台品牌与双域分工
 
-- **Status**: IN PROGRESS — 2026-08-29 官网已独立运作；产品仓 Web P3 正在落地
+- **Status**: IN PROGRESS — 2026-08-30 官网已按 P6 门厅/长文/下载/隐私验收；产品仓 Web P3 已落地。余下是 Desktop 升级回环、三商店 listing 邮箱与 README
 - **Reviewed against**: 2026-08-28 工作区；[007 Grill](007-ios-stable-before-subscription.md#grill-locked)；[008](008-brand-doneat.md)；2026-08-28 域名响应头实测；2026-08-28 第二至八轮 Grill
 - **Severity**: HIGH（双域 canonical 配错会稀释既有 SEO；桌面改包身份会切断升级与用户状态）
 - **Category**: 品牌 / Web 主域 / Desktop 外表面 / 商店与发布
@@ -116,7 +116,7 @@ FAQ 按现有问题骨架重写：改掉「网页工具、不用下载」这类�
 | Web UI、SEO、PWA、内容页 | **Off Work Countdown / 下班倒计时** |
 | GitHub 版 Windows / macOS、Microsoft Store 包与 listing | **Off Work Countdown / 本地化旧名** |
 | GitHub 仓库与 Release / updater | `ififi2017/Off-Work-Countdown` |
-| `doneat.app` | 只是去旧站的临时跳转，不是 canonical 主域 |
+| `doneat.app` | **2026-08-30 已是独立官网**（门厅 / 下载 / 隐私 / 长文）；不再 302 到旧站 |
 
 用户可见品牌可以改；功能描述不应消失；稳定技术身份不改。
 
@@ -138,6 +138,25 @@ FAQ 按现有问题骨架重写：改掉「网页工具、不用下载」这类�
 **2026-08-29 更新：** `doneat.app` 已完成开发并独立运作。产品仓 Web 可以按本计划
 P3 做 301 和改链；Cloudflare 上指向 `off.rainif.com/` 且丢 path/query 的旧 302
 仍属域名侧 G5，不在这次 Web 改代码里动。
+
+**2026-08-30 官网验收：** 旧 302 已拆除。生产上核对过：
+
+- `http://doneat.app/` → HTTPS → `/en`（或按浏览器语言进门厅）；不再跳到 `off.rainif.com`。
+- `www.doneat.app/{path}?query` 308 到裸域并保留 path + query。
+- `off.rainif.com/{en,zh-CN}/privacy|about|faq|how-it-works|download` 301 到官网对应页；
+  无长文语言落到英文或简中（`/ja/privacy` → `/en/privacy`，`/zh-TW/download` → `/zh-CN/download`）。
+- 分享落地 `off.rainif.com/en?s=…` 仍是 200，query 不丢。
+- 门厅 19 语在 sitemap；英/中长文五页各自 canonical。日文等门厅存在，长文 302 到 `en`。
+- 无 `manifest.webmanifest` / `sw.js`。导航 GitHub 是源码，不是直装。下载页一等入口是
+  App Store、Microsoft Store 和网页计时；系统要求下有 GitHub Releases 脚注
+  （未签名桌面包），不当一等 CTA。
+- 隐私页日期 2026-08-30，联系邮箱 `hello@doneat.app`，写明应用不采样、分享不含薪资、
+  GitHub 桌面版才会检查更新。亮暗跟 `prefers-color-scheme`。
+- iOS 店内 About 已指向 `doneat.app`；ASC 配置里的隐私 / 支持 URL 已改到官网。
+  App Info 是否写得进远端，仍看 Universal Purchase 另一侧是否在审。
+
+未在这次核对：旧 PWA 原地保留、Search Console 指标、`hello@doneat.app` 收信与转发、
+窄屏手势走查。下载页桌面 mock 窗口标题仍写「下班倒计时」，是官网仓素材，不挡 iOS 送审。
 
 ### 双域分工避开 Web 数据迁移
 
@@ -176,24 +195,24 @@ P0 可先做。P1–P5 的**对外发布**必须落在 G5 的同一窗口；对�
 
 ### P1 — 官网仓与域名
 
-- [ ] 建立公开仓 `ififi2017/doneat.app`，与产品仓放进同一个 GitHub Project；接到独立 Vercel 项目。
-- [ ] Astro + TypeScript + Tailwind；静态输出。不引用产品仓倒计时树，不注册 Service Worker / 可安装 PWA manifest。
-- [ ] 把 `doneat.app` / `www.doneat.app` DNS 指到官网 Vercel；确认 TLS。
-- [ ] 移除 Cloudflare 当前指向旧站根路径的临时 302；`www` 永久规范到裸域并保留路径查询。
-- [ ] 两域分别生成正确的 canonical、robots 与 sitemap，互不把对方整站声明为镜像。
-- [ ] 增加域名响应头测试，覆盖 `http/https`、裸域/`www`、根路径/内容页、分享 query 与循环。
-  分享 query 的保留验收仍在 `off.rainif.com` 上做。
+- [x] 公开仓 `ififi2017/doneat.app` 已上线，独立 Vercel 项目。
+- [x] Astro + TypeScript + Tailwind；静态输出。无 Service Worker / 可安装 PWA manifest。
+- [x] `doneat.app` / `www.doneat.app` DNS 指到官网 Vercel；TLS 可用。
+- [x] 指向旧站根路径的临时 302 已拆除；`www` 308 到裸域并保留路径查询。
+- [x] 官网自有 robots + `sitemap-index.xml` / `sitemap-0.xml`；canonical 认 `doneat.app`。
+  产品仓 Web App 的 sitemap 仍认 `off.rainif.com`。
+- [ ] 把上述响应头矩阵收成官网仓自动化测试。分享 query 的保留验收仍在 `off.rainif.com` 上做。
 
 ### P2 — 官方首页与五页长文
 
-- [ ] 从产品仓拷贝 `en` / `zh-CN` 的 about / faq / how-it-works / download / privacy，之后以官网仓为准。
-- [ ] `doneat.app/{lang}` 品牌门厅：DoneAt mark、英文品牌句（仅 en）、功能行走各语言
-  `offWorkCountdown` 语义、App Store、Microsoft Store、Web App。**不放 GitHub 直装。**
-- [ ] 官网不把实现架构当卖点；先解释用户何时下班、排班与隐私收益，再给平台选择。
-- [ ] FAQ 按 G3 重写后再标 canonical。
-- [ ] 下载页只放商店级入口 + Web；直装区不出现。
-- [ ] 内容页返回 Web App 的 CTA 指 `off.rainif.com`，不形成来回跳转。
-- [ ] 长内容仍只提供英文和简中。
+- [x] `en` / `zh-CN` 的 about / faq / how-it-works / download / privacy 以官网仓为准。
+- [x] `doneat.app/{lang}` 品牌门厅：DoneAt mark、英文品牌句（仅 en）、功能行走各语言
+  `offWorkCountdown` 语义、App Store、Microsoft Store、Web App。导航 GitHub 是源码。
+- [x] 官网不把实现架构当卖点；先解释用户何时下班、排班与隐私收益，再给平台选择。
+- [x] FAQ 已按 G3 重写并标 canonical。
+- [x] 下载页一等入口是商店 + Web；系统要求下保留 GitHub Releases 脚注（未签名桌面包）。
+- [x] 内容页返回 Web App 的 CTA 指 `off.rainif.com`，不形成来回跳转。
+- [x] 长内容仍只提供英文和简中。
 
 ### P3 — 产品仓 Web 品牌、301 与 SEO
 
@@ -207,7 +226,7 @@ P0 可先做。P1–P5 的**对外发布**必须落在 G5 的同一窗口；对�
 - [x] 页脚 FAQ/原理/关于/隐私改指官网；设置态下载区改成单一「获取 App」入口指向 `doneat.app`，拿掉 Web App 上的 Mac App Store badge、Microsoft Store badge 和 GitHub 直装对话框。页脚与标题栏补「访问官网」。
 - [x] 分享链接继续使用 `off.rainif.com`。语言重定向保留 query 的行为未改。
 - [ ] 验证原 origin 上的倒计时、主题、工资隐藏状态和离线 PWA 无需迁移且全部保留。
-- [x] Tauri opener 允许名单补上 `doneat.app`（iOS About 硬编码的改写放到域名活了之后的下一次 iOS）。
+- [x] Tauri opener 允许名单补上 `doneat.app`。iOS About 已改指 `doneat.app` 的隐私 / 首页 / 下载。
 
 ### P4 — Desktop 用户可见品牌
 
@@ -236,7 +255,8 @@ P0 可先做。P1–P5 的**对外发布**必须落在 G5 的同一窗口；对�
 
 - [ ] Microsoft Store 各语言 listing 主名为 `DoneAt: {该语功能副标题}`；Apple 仍按 007 拆成主名 DoneAt + 副标题，不把两段合并进一个字段。
 - [ ] 商店截图与说明不得展示旧名的新包错配。
-- [ ] 隐私页和三商店后台的支持邮箱改为 `hello@doneat.app`；确认收信与从 `offwork@rainif.com` 的转发后再切页面。
+- [x] 官网隐私页联系邮箱已是 `hello@doneat.app`。Apple 配置里的隐私 / 支持 URL 已改到官网。
+  仍待确认：邮箱能收信、`offwork@rainif.com` 转发，以及三商店后台展示地址一致。
 - [ ] 产品仓 README 标题、仓库 description、Release 模板、截图脚本、安装说明、Gatekeeper / SmartScreen 文案统一为 DoneAt。
 - [ ] 文档写明：内部旧名、仓库 slug 和 exe 名不等于第二款产品。
 - [ ] 版本更新说明只在一个过渡版本写「Off Work Countdown 现为 DoneAt」。
@@ -245,7 +265,8 @@ P0 可先做。P1–P5 的**对外发布**必须落在 G5 的同一窗口；对�
 
 - [ ] Web App：19 语言 UI、light/dark、PWA 首装与旧 PWA、分享 query、离线和本地设置原地保留；
   Web build 与 Desktop export 都过。
-- [ ] 官网：19 语门厅、英中长文、Apple + Microsoft Store + Web 三条 CTA、隐私/支持、移动/桌面布局和 light/dark；确认没有 GitHub 直装按钮、没有可安装 PWA。
+- [x] 官网：19 语门厅、英中长文、Apple + Microsoft Store + Web 三条 CTA、隐私/支持、light/dark；
+  无 GitHub 直装主按钮、无可安装 PWA。窄屏手势走查未做。下载页有 GitHub Releases 脚注。
 - [ ] 双域：逐路由核对 status、Location、canonical、hreflang、robots、sitemap、Open Graph、
   JSON-LD；任何同内容双 canonical、重定向环或 query 丢失都挡发布。
 - [ ] macOS：GitHub 与 Mac App Store 包实装升级、Finder / Dock / 菜单 / About / Widget / mini timer 显示 DoneAt。

@@ -2,6 +2,13 @@ import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
+import {
+  assertNoIosStyleAppGroups,
+  parseAppGroups,
+  pluginBundles,
+  profileAuthorizesAppGroup,
+  readSignedAppGroups,
+} from "./macos-app-group-identifier.mjs";
 
 // 把 provisioning profile 嵌进已打好的 .app，然后重签外层。
 //
@@ -15,14 +22,6 @@ import { join, resolve } from "node:path";
 // 往已签名的 bundle 里加文件会破坏封签，因此必须重签。
 const PROFILE_NAME = "embedded.provisionprofile";
 
-/** `.app` 里嵌套的扩展。它们各自签名，外层通过并不代表它们也通过。 */
-function pluginBundles(appBundle) {
-  const dir = join(appBundle, "Contents/PlugIns");
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((name) => name.endsWith(".appex"))
-    .map((name) => join(dir, name));
-}
 const XCODE_PROFILES = join(
   homedir(),
   "Library/Developer/Xcode/UserData/Provisioning Profiles"
@@ -134,15 +133,25 @@ if (!profile) {
   profile = candidates[0];
 }
 
-copyFileSync(profile, join(appPath, "Contents", PROFILE_NAME));
-
-// ⚠️ 不能加 --deep：那会连内嵌的 .appex 一起重签，把它自己那份正确的签名和
-// 描述文件覆盖掉。只重签外层，嵌套 bundle 的签名会被原样封进去。
 const entitlements = resolve("src-tauri/target/macos-widget/Host.entitlements");
 if (!existsSync(entitlements)) {
   console.error(`Host entitlements not found: ${entitlements}`);
   process.exit(1);
 }
+try {
+  assertNoIosStyleAppGroups(parseAppGroups(readFileSync(entitlements, "utf8")), {
+    source: entitlements,
+    teamId,
+  });
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+}
+
+copyFileSync(profile, join(appPath, "Contents", PROFILE_NAME));
+
+// ⚠️ 不能加 --deep：那会连内嵌的 .appex 一起重签，把它自己那份正确的签名和
+// 描述文件覆盖掉。只重签外层，嵌套 bundle 的签名会被原样封进去。
 execFileSync(
   "codesign",
   ["--force", "--sign", identity, "--entitlements", entitlements, "--options", "runtime", appPath],
@@ -155,15 +164,21 @@ execFileSync("codesign", ["--verify", "--deep", "--strict", appPath], { stdio: "
 // 「允许」就照样能写，而**扩展没有弹窗的能力**，只会静默拿不到容器，小组件永远
 // 空态，日志里也查不到拒绝记录。排查过一整轮才定位到。
 //
-// 根因是两种形式不通用：Mac Development 描述文件授权的是 `<TeamID>.*`，因此
-// App Group 必须写成 `<TeamID>.group.…`；不带前缀的 `group.…` 只在 Mac App Store
-// 分发时有效。同一个标识符不能两边通用。
-const declaredGroups = [
-  ...execFileSync("codesign", ["-d", "--entitlements", "-", appPath], {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
-  }).matchAll(/\[String\]\s+(\S*group\S*)/g),
-].map((match) => match[1]);
+// Mac App Store 另外还会在上传时拒收 iOS 式 `group.…`（409）。描述文件的
+// `<TeamID>.*` 通配只匹配「签进去的那一串」本身，不能把 group.foo 当成已经
+// 授权。automatic / distribution 构建会自动加上 Team ID 前缀。
+const declaredGroups = readSignedAppGroups(appPath);
+try {
+  for (const bundle of [appPath, ...pluginBundles(appPath)]) {
+    assertNoIosStyleAppGroups(readSignedAppGroups(bundle), {
+      source: bundle,
+      teamId,
+    });
+  }
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+}
 
 const allowedGroups = (() => {
   const xml = execFileSync("security", ["cms", "-D", "-i", profile], {
@@ -183,24 +198,15 @@ const allowedGroups = (() => {
   }
 })();
 
-const authorizes = (group) =>
-  allowedGroups.some((pattern) => {
-    if (pattern === group) return true;
-    if (teamId && (pattern === `${teamId}.${group}` || `${teamId}.${pattern}` === group)) return true;
-    if (pattern.endsWith("*")) {
-      const prefix = pattern.slice(0, -1);
-      return group.startsWith(prefix) || (teamId && `${teamId}.${group}`.startsWith(prefix));
-    }
-    return false;
-  });
-
-const unauthorized = declaredGroups.filter((group) => !authorizes(group));
+const unauthorized = declaredGroups.filter(
+  (group) => !profileAuthorizesAppGroup(group, allowedGroups)
+);
 if (unauthorized.length > 0) {
   console.error(
     `The embedded provisioning profile does not authorize these App Groups: ${unauthorized.join(", ")}\n` +
       `  profile allows: ${allowedGroups.join(", ") || "(none)"}\n` +
-      `  A Mac Development profile allows "<TeamID>.*", so set\n` +
-      `  OWC_APP_GROUP_IDENTIFIER=${process.env.OWC_APPLE_TEAM_ID ?? "<TeamID>"}.group.<name> and rebuild.\n` +
+      `  A Mac Development or Mac App Store profile allows "<TeamID>.*", so the signed\n` +
+      `  entitlement must be ${teamId || "<TeamID>"}.group.<name>, not the iOS-style group.<name>.\n` +
       `  Without this the host may still write (if the user grants the TCC prompt) while the\n` +
       `  widget extension is silently denied and shows an empty state forever.`
   );

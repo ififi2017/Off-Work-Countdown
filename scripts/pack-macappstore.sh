@@ -63,6 +63,10 @@ done
 
 codesign --verify --deep --strict "$app_path"
 
+# Mac App Store 拒收宿主签名里未加 Team ID 的 iOS 式 group.*（409）。
+node "$script_dir/macos-app-group-identifier.mjs" --check-bundle "$app_path" \
+  --team-id "${OWC_APPLE_TEAM_ID:-}"
+
 rm -f "$output"
 productbuild \
   --component "$app_path" /Applications \

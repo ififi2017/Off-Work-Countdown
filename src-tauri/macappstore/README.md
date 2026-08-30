@@ -6,10 +6,15 @@ configuration, updater, and signing path.
 
 The store channel uses the separate host identifier
 `com.rainif.offworkcountdown.macappstore`. This allows the two channels to
-coexist without sharing salary or preference storage. Its
-default extension and App Group identifiers are, respectively,
-`com.rainif.offworkcountdown.macappstore.widget` and
-`group.com.rainif.offworkcountdown.macappstore`.
+coexist without sharing salary or preference storage. The Widget bundle id is
+`com.rainif.offworkcountdown.macappstore.widget`. The App Group *name* is the
+same iOS-style identifier the iPhone app uses,
+`group.com.rainif.offworkcountdown.macappstore`; ad-hoc local packages strip App
+Groups entirely, while `automatic` and `distribution` builds prefix it with
+`OWC_APPLE_TEAM_ID` (for example
+`3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore`). Mac App Store
+validation rejects the unprefixed `group.` form on macOS (409). Do not copy the
+iOS entitlement onto the Mac host.
 
 `--no-default-features` is mandatory for the store channel. It removes the
 GitHub updater, process plugin, LaunchAgent autostart path, and
@@ -69,17 +74,21 @@ only `npm run build:widget`, so Rust, the Xcode extension and bundle entitlement
 all select App Group mode. Full Apple Distribution signing and `.pkg` upload
 remain MAS-P2 work.
 
-Identifiers can be overridden without editing tracked files:
+`OWC_APPLE_TEAM_ID` is enough to get the macOS form: both `build.rs` and
+`scripts/build-macos-widget.sh` prefix a `group.*` identifier automatically.
+You can still override the whole string:
 
 ```bash
-OWC_APP_GROUP_IDENTIFIER=group.example.offworkcountdown \
+OWC_APP_GROUP_IDENTIFIER=3GSK5B9S3T.group.example.offworkcountdown \
 OWC_WIDGET_BUNDLE_IDENTIFIER=com.example.offworkcountdown.widget \
 npm run build:widget
 ```
 
-The Rust host uses `OWC_APP_GROUP_IDENTIFIER` at compile time, so pass the same
-value to a full Tauri build. The stable defaults are suitable only when they
-match an App Group registered to the selected team.
+The Rust host uses the resolved identifier at compile time, so pass the same
+`OWC_APPLE_TEAM_ID` / `OWC_APP_GROUP_IDENTIFIER` to a full Tauri build. A
+distribution build that still signs `group.*` without a Team ID prefix is
+rejected locally by `embed-macos-profile.mjs` and `pack-macappstore.sh`, and by
+App Store Connect with 409.
 
 ## Contract and ownership
 
