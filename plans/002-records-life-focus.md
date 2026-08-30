@@ -1,11 +1,12 @@
 # 002 — 从「倒计时」到「记录」：工作占比、人生视图与专注
 
-- **Status**: IN PROGRESS
+- **Status**: IN PROGRESS — 2026-08-30 实现已交 CR，未合入 `main`，真机同步未过
 - **Reviewed against**: 755052f（007 已合入；本计划架构仍以 PR #81 为基线）
 - **Severity**: HIGH
 - **Category**: Product values / Architecture / Persistence / Privacy / New surfaces
 - **Estimated scope**: 四个阶段仍按 P0A → P1 → P0B → P2 验收，但 **P1 与 [006](006-free-trial-subscription.md) 同版**，P0B 与 P2 随同一轮内部验收做完，不再等 007 TestFlight
 - **相关**: 商业模式、试用与付费墙见 [006](006-free-trial-subscription.md)；本文件只声明「什么能被墙、什么永远不能」。[007](007-ios-stable-before-subscription.md) 已合入 `main`。免费记录 Tab 只列实际上下班；周 / 月 / 年图和人生视图才用 `resolvedDays` 展开排班底图
+- **进度（2026-08-30）**: P0A 在 [PR #94](https://github.com/ififi2017/Off-Work-Countdown/pull/94)。P1 图表 / 人生视图 / 历史编辑、P0B CKSyncEngine、P2 专注与 006 付费墙在 [PR #96](https://github.com/ififi2017/Off-Work-Countdown/pull/96)。19 个 locale 隐私与记录文案已改。仍缺：PR 合入、两台真机同步、CloudKit Production schema、商店隐私标签、`doneat.app/privacy` 补购买与 iCloud 段落。
 - **本次修订**: 同步层从「SwiftData 自动镜像 + 自研收敛协议」改为 **CKSyncEngine**。上一版为绕过自动镜像的冲突黑箱，设计了 append-only 修订表、HLC 版本戳、六种控制记录、lineage 与 UUID v5 恢复链——那是在为每年千余条小记录徒手造一个分布式数据库。CKSyncEngine 在冲突回调里同时给出本地版与服务器版，上述发明整体作废。同时把 P1 提前到 P0B 之前：付费墙挂在图表与人生视图上，先用本地版验证付费意愿，再投入同步。二次修订补齐了 CKSyncEngine 周围必须自建的薄层：本地同步适配层（`lastKnownRecord` + dirty outbox）、世代化数据 zone、单条删除的原子批次、P0A 本地 ErasedID 表，并统一平局规则为随机 `editTieBreaker`（墙钟永不参与裁决）。三次修订把「删除全部」的崩溃续跑从本地操作状态改成系统不变量：凡 generation 小于当前 fence 的数据 zone，在启动、fence 更新与旧 zone 重建时一律删除——不依赖跨本地与 CloudKit 的伪原子事务。四次修订钉死时区：视图不跟飞机走；日历日记录自带时区；自动跟排班与进行中的倒计时锁旧区；设置里才能把数据迁到新区；人生视图稍后标出新区记下的日子。
 
 ## 出发点：这个 App 现在没有记忆，但「推算」不是缺陷
@@ -155,8 +156,8 @@ CloudKit private database 适合 Apple 设备之间的私有同步，但不是 A
 
 但**引导页现有的「不会发起网络请求」不能原样保留**——StoreKit 上线后，加载商品与恢复购买
 本身就是网络访问（见 [006](006-free-trial-subscription.md)）。这句绝对表述必须在同一版里
-按 006 给的措辞全量改写 19 个 locale。**截至本次修订，locale 文件尚未改动**，这是 P1 的
-交付项，不是已完成的事。
+按 006 给的措辞全量改写 19 个 locale。**2026-08-30：应用内 19 个 locale 已改完**（随
+PR #96）。官网隐私页与 App Store 隐私标签仍要在上架前补购买与可选 iCloud，见下方清单。
 
 开启后的准确表达是：
 
@@ -166,9 +167,10 @@ CloudKit private database 适合 Apple 设备之间的私有同步，但不是 A
 上线前必须完成：
 
 - 重新评估 App Store 隐私标签，而不是简单把「使用 CloudKit」等同于开发者收集数据。
-- 逐条复核 19 个 locale 里的隐私文案。至少 `onboardingPrivacyBody`、`onboardingOfflineBody`、
+- ~~逐条复核 19 个 locale 里的隐私文案。至少 `onboardingPrivacyBody`、`onboardingOfflineBody`、
   `onboardingPrivacyWorkBody` 与落地页的 `landingFeature3Body` 需要改写成「默认只在本机；
-  开启同步后进入你自己的 iCloud」，不能继续笼统声称「不会发起网络请求」。
+  开启同步后进入你自己的 iCloud」，不能继续笼统声称「不会发起网络请求」。~~
+  **2026-08-30：应用内 19 个 locale 已改。** 落地页 / `doneat.app/privacy` 仍待补。
 - 在应用内提供数据范围说明、同步状态、导出与删除入口。
 - 删除行为明确区分「从此设备移除」和「从 iCloud 及所有设备删除」。后者依赖 zone 删除，
   是服务端原子操作，确认即可说「已删除」；长期离线设备之后重新上传的旧数据会被世代
@@ -1021,6 +1023,8 @@ enum FocusEndReason: String {
 
 ### P0A — 本地语义与持久化
 
+**进度：实现在 [PR #94](https://github.com/ififi2017/Off-Work-Countdown/pull/94)，等合入。**
+
 - 定稿职业阶段、排班快照、观察日志、当日覆盖、日历例外、人生档案与派生摘要——普通可变
   模型 + `editCount`，不做修订表。
 - 三层优先级决议的**纯函数实现与单元测试**：喂进重叠阶段、同槽快照、覆盖与例外的组合，
@@ -1037,6 +1041,8 @@ enum FocusEndReason: String {
 
 ### P1 — 记录 Tab 与人生视图（本地先发）
 
+**进度：实现在 [PR #96](https://github.com/ififi2017/Off-Work-Countdown/pull/96)。** 模拟器过了记录列表、图表墙、人生视图与浅色 / 深色；真机 feel check 未做。
+
 - 先交付周 / 月 / 年记录与单日编辑，再交付人生视图。人生视图标出与阶段时区不同的日子，
   并提供改回老区或以新区为准。P0A 已留下 `timeZoneIdentifier` 与
   `daysRecordedOutsidePeriodTimeZone()`，本阶段只接线，不再改日历日语义。
@@ -1047,6 +1053,8 @@ enum FocusEndReason: String {
 - 19 个 locale 的隐私文案改写随本版落地。
 
 ### P0B — CloudKit 与数据控制
+
+**进度：代码与容器 entitlements 在 PR #96。** Development 容器已开。仍缺 Production schema 部署、两台真机传播、账户切换与额度不足的人工验收。
 
 - CKSyncEngine 接入：世代化 zone、记录映射、冲突裁决、本地同步适配层
   （`lastKnownRecord` + dirty outbox）、按账户隔离的 engine state。
@@ -1061,6 +1069,8 @@ enum FocusEndReason: String {
 本轮内部验收把 P0B 一并做完：开启仍是付费能力，两台真机传播由人工验收。
 
 ### P2 — 任务与专注
+
+**进度：实现在 PR #96**（班次边界、溢出文案、未完成任务滚到次日、截止通知；不另开 Live Activity）。后台截止与真机通知未单独验收。
 
 - 本轮一并做完。一条 Live Activity，工作优先；单独验收后台截止、班次边界与通知。
 

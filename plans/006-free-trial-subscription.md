@@ -1,11 +1,12 @@
 # 006 — 从买断到「免费下载 + 试用 + 订阅」
 
-- **Status**: IN PROGRESS
+- **Status**: IN PROGRESS — 2026-08-30 付费墙已交 CR，ASC 商品 Ready to Submit，未发版
 - **Reviewed against**: 755052f（007 已合入；本轮与 002 同版内部验收，不再等 TestFlight）
 - **Severity**: HIGH
 - **Category**: 商业模式 / StoreKit / App Store Connect
 - **Estimated scope**: 付费墙与 [002](002-records-life-focus.md) 同版。App Store 记录**已是免费下载**；本计划是试用、订阅、终身 IAP 与付费墙。007 送审闭环不再挡住开工——内部测，不发版
 - **相关**: [002](002-records-life-focus.md) 定义了什么能被墙、什么永远不能；本文件定义怎么卖
+- **进度（2026-08-30）**: 实现随 [PR #96](https://github.com/ififi2017/Off-Work-Countdown/pull/96) 等 CR（基线是 002 P0A 的 [PR #94](https://github.com/ififi2017/Off-Work-Countdown/pull/94)）。本地 `DoneAt.storekit` 已接上。ASC 上组 `plus` 与三个商品已建好价格；17 个商店 locale 的显示名 / 描述、审核备注和共用付费页截图已由 `asc:iap:sync` 推上，三件都是 Ready to Submit。仍缺：沙盒 / TestFlight 购买矩阵、商店描述里的标准 EULA 链接、官网隐私页补购买与 iCloud、隐私标签复评。
 
 ## 一句话
 
@@ -94,7 +95,7 @@ sandbox 里还给不出可信值的复杂逻辑，为一个已知为空的用户
 | SKU | 国区 | 外区 | 说明 |
 | --- | --- | --- | --- |
 | 月 | ¥6 | $1.99 | 最低门槛，主要作用是让终身显得划算 |
-| 年 | ¥25 | $9.99 | ≈ 4.2 个月，年比月省一半多 |
+| 年 | ¥28 | $9.99 | ≈ 4.2 个月，年比月省一半多 |
 | 终身 | ¥58 | $24.99 | ≈ 2.3 年，第三年回本；国区用户偏好买断，这是主推 |
 
 外区按当地购买力定价而不是汇率换算，这是 App Store 的普遍做法。
@@ -284,15 +285,22 @@ RevenueCat 的价值在跨平台（安卓 / Web 订阅）、定价 A/B、跨端�
 
 本地用 `src-mobile/ios/App/DoneAt.storekit` 测通。价格仍走 StoreKit `displayPrice`，不写进 locale。
 
+商店元数据由 `app-store-connect/iap.json` + `npm run asc:iap:sync` 维护。**2026-08-30**：
+组本地化、三件商品的 17 个商店 locale、审核备注和共用审核截图已推上，状态均为
+Ready to Submit。脚本不创建商品、不改价格、不送审。
+
 ## 发布顺序
 
 ### 与 [002](002-records-life-focus.md) 同版内部验收
 
 - 不再等 [007](007-ios-stable-before-subscription.md) 的 TestFlight / 截图闭环。内部测，不发版。
+- **2026-08-30**：付费墙、延迟加载商品、年订试用资格查询、恢复购买与设置页在 PR #96。
+  ASC 三件商品 Ready to Submit。沙盒购买矩阵和 TestFlight 复验仍未跑。
 - 上 IAP（月 / 年 / 终身）、付费页、7 天试用，以及记录 Tab **内部**付费能力上的墙
   （聚合图表、人生视图、历史编辑、开启同步、专注；Tab 本身与逐日只读列表不墙）。
 - **首发期下载的用户一视同仁**，同样需要试用或付费才能使用付费能力。
-- 付费页、订阅商品名与描述纳入 19 个 UI locale。
+- 付费页纳入 19 个 UI locale；商店商品名与描述走 17 个 ASC locale（`zh-HK` / `zh-TW` 合成
+  `zh-Hant`，无 `mr-IN`）。
 
 ## 尚未决定
 
