@@ -41,7 +41,10 @@
     "asc:check": "node scripts/app-store-connect-sync.mjs --check",
     "asc:plan": "node scripts/app-store-connect-sync.mjs --plan",
     "asc:sync": "node scripts/app-store-connect-sync.mjs --apply",
-    "asc:export": "node scripts/app-store-connect-export.mjs"
+    "asc:export": "node scripts/app-store-connect-export.mjs",
+    "asc:iap:check": "node scripts/app-store-connect-iap-sync.mjs --check",
+    "asc:iap:plan": "node scripts/app-store-connect-iap-sync.mjs --plan",
+    "asc:iap:sync": "node scripts/app-store-connect-iap-sync.mjs --apply"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^11.2.0",

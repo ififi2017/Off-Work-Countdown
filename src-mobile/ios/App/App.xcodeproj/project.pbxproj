@@ -27,6 +27,11 @@
 		A10000040000000000000004 /* DayRecordResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* DayRecordResolverTests.swift */; };
 		A10000050000000000000005 /* RecordJSONTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* RecordJSONTests.swift */; };
 		A10000060000000000000006 /* RecordCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* RecordCoordinatorTests.swift */; };
+		A10000009000000000000009 /* PlusEntitlementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000009000000000000009 /* PlusEntitlementTests.swift */; };
+		A1000000A00000000000000A /* RecordsMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000A00000000000000A /* RecordsMetricsTests.swift */; };
+		A1000000B00000000000000B /* LifeViewCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000B00000000000000B /* LifeViewCalculatorTests.swift */; };
+		A1000000C00000000000000C /* RecordsSyncAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000C00000000000000C /* RecordsSyncAdapterTests.swift */; };
+		A1000000D00000000000000D /* FocusPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000D00000000000000D /* FocusPlannerTests.swift */; };
 		A10000070000000000000007 /* ScheduleRangeExpandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* ScheduleRangeExpandTests.swift */; };
 		C30000010000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* InfoPlist.strings */; };
 		E00000010000000000000001 /* OWCDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000010000000000000001 /* OWCDesignSystem.swift */; };
@@ -42,6 +47,21 @@
 		E00000460000000000000046 /* DailyWorkSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000460000000000000046 /* DailyWorkSummary.swift */; };
 		E00000470000000000000047 /* RecordJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000470000000000000047 /* RecordJSON.swift */; };
 		E00000480000000000000048 /* RecordCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000480000000000000048 /* RecordCoordinator.swift */; };
+		E000004A000000000000004A /* PlusEntitlement.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004A000000000000004A /* PlusEntitlement.swift */; };
+		E000004B000000000000004B /* RecordsRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004B000000000000004B /* RecordsRoute.swift */; };
+		E000004C000000000000004C /* RecordsMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004C000000000000004C /* RecordsMetrics.swift */; };
+		E000004D000000000000004D /* LifeViewCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004D000000000000004D /* LifeViewCalculator.swift */; };
+		E000004E000000000000004E /* FocusModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004E000000000000004E /* FocusModels.swift */; };
+		E000004F000000000000004F /* FocusPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004F000000000000004F /* FocusPlanner.swift */; };
+		E00000500000000000000050 /* RecordsSyncAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000500000000000000050 /* RecordsSyncAdapter.swift */; };
+		E00000510000000000000051 /* RecordsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000510000000000000051 /* RecordsCloudSync.swift */; };
+		E00000520000000000000052 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000520000000000000052 /* PaywallView.swift */; };
+		E00000530000000000000053 /* PlusSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000530000000000000053 /* PlusSettingsView.swift */; };
+		E00000540000000000000054 /* RecordsChartViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000540000000000000054 /* RecordsChartViews.swift */; };
+		E00000550000000000000055 /* RecordDayEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000550000000000000055 /* RecordDayEditView.swift */; };
+		E00000560000000000000056 /* LifeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000560000000000000056 /* LifeView.swift */; };
+		E00000570000000000000057 /* FocusDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000570000000000000057 /* FocusDesignView.swift */; };
+		E00000580000000000000058 /* RecordsSyncSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000580000000000000058 /* RecordsSyncSettingsView.swift */; };
 		E00000490000000000000049 /* RecordsDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000490000000000000049 /* RecordsDesignView.swift */; };
 		E00000040000000000000004 /* NativeLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000040000000000000004 /* NativeLocalizer.swift */; };
 		E00000050000000000000005 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000050000000000000005 /* NotificationService.swift */; };
@@ -151,6 +171,11 @@
 		A20000050000000000000005 /* DayRecordResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRecordResolverTests.swift; sourceTree = "<group>"; };
 		A20000060000000000000006 /* RecordJSONTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordJSONTests.swift; sourceTree = "<group>"; };
 		A20000070000000000000007 /* RecordCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordCoordinatorTests.swift; sourceTree = "<group>"; };
+		A20000009000000000000009 /* PlusEntitlementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusEntitlementTests.swift; sourceTree = "<group>"; };
+		A2000000A00000000000000A /* RecordsMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsMetricsTests.swift; sourceTree = "<group>"; };
+		A2000000B00000000000000B /* LifeViewCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeViewCalculatorTests.swift; sourceTree = "<group>"; };
+		A2000000C00000000000000C /* RecordsSyncAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsSyncAdapterTests.swift; sourceTree = "<group>"; };
+		A2000000D00000000000000D /* FocusPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusPlannerTests.swift; sourceTree = "<group>"; };
 		A20000080000000000000008 /* ScheduleRangeExpandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleRangeExpandTests.swift; sourceTree = "<group>"; };
 		F000003F000000000000003F /* DayOverride.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DayOverride.swift; path = Native/Models/DayOverride.swift; sourceTree = "<group>"; };
 		F00000400000000000000040 /* DayOverrideProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DayOverrideProjection.swift; path = Native/Models/DayOverrideProjection.swift; sourceTree = "<group>"; };
@@ -162,6 +187,21 @@
 		F00000460000000000000046 /* DailyWorkSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyWorkSummary.swift; path = Native/Models/DailyWorkSummary.swift; sourceTree = "<group>"; };
 		F00000470000000000000047 /* RecordJSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordJSON.swift; path = Native/Models/RecordJSON.swift; sourceTree = "<group>"; };
 		F00000480000000000000048 /* RecordCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordCoordinator.swift; path = Native/Models/RecordCoordinator.swift; sourceTree = "<group>"; };
+		F000004A000000000000004A /* PlusEntitlement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlusEntitlement.swift; path = Native/Models/PlusEntitlement.swift; sourceTree = "<group>"; };
+		F000004B000000000000004B /* RecordsRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsRoute.swift; path = Native/Models/RecordsRoute.swift; sourceTree = "<group>"; };
+		F000004C000000000000004C /* RecordsMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsMetrics.swift; path = Native/Models/RecordsMetrics.swift; sourceTree = "<group>"; };
+		F000004D000000000000004D /* LifeViewCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LifeViewCalculator.swift; path = Native/Models/LifeViewCalculator.swift; sourceTree = "<group>"; };
+		F000004E000000000000004E /* FocusModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusModels.swift; path = Native/Models/FocusModels.swift; sourceTree = "<group>"; };
+		F000004F000000000000004F /* FocusPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusPlanner.swift; path = Native/Models/FocusPlanner.swift; sourceTree = "<group>"; };
+		F00000500000000000000050 /* RecordsSyncAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsSyncAdapter.swift; path = Native/Models/RecordsSyncAdapter.swift; sourceTree = "<group>"; };
+		F00000510000000000000051 /* RecordsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsCloudSync.swift; path = Native/Models/RecordsCloudSync.swift; sourceTree = "<group>"; };
+		F00000520000000000000052 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PaywallView.swift; path = Native/Views/PaywallView.swift; sourceTree = "<group>"; };
+		F00000530000000000000053 /* PlusSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlusSettingsView.swift; path = Native/Views/PlusSettingsView.swift; sourceTree = "<group>"; };
+		F00000540000000000000054 /* RecordsChartViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsChartViews.swift; path = Native/Views/RecordsChartViews.swift; sourceTree = "<group>"; };
+		F00000550000000000000055 /* RecordDayEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordDayEditView.swift; path = Native/Views/RecordDayEditView.swift; sourceTree = "<group>"; };
+		F00000560000000000000056 /* LifeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LifeView.swift; path = Native/Views/LifeView.swift; sourceTree = "<group>"; };
+		F00000570000000000000057 /* FocusDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusDesignView.swift; path = Native/Views/FocusDesignView.swift; sourceTree = "<group>"; };
+		F00000580000000000000058 /* RecordsSyncSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsSyncSettingsView.swift; path = Native/Views/RecordsSyncSettingsView.swift; sourceTree = "<group>"; };
 		F00000490000000000000049 /* RecordsDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsDesignView.swift; path = Native/Views/RecordsDesignView.swift; sourceTree = "<group>"; };
 		C10000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000020000000000000002 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -342,6 +382,21 @@
 				F00000060000000000000006 /* ShareSheet.swift */,
 				F00000070000000000000007 /* OnboardingView.swift */,
 				F00000080000000000000008 /* RootView.swift */,
+				F000004A000000000000004A /* PlusEntitlement.swift */,
+				F000004B000000000000004B /* RecordsRoute.swift */,
+				F000004C000000000000004C /* RecordsMetrics.swift */,
+				F000004D000000000000004D /* LifeViewCalculator.swift */,
+				F000004E000000000000004E /* FocusModels.swift */,
+				F000004F000000000000004F /* FocusPlanner.swift */,
+				F00000500000000000000050 /* RecordsSyncAdapter.swift */,
+				F00000510000000000000051 /* RecordsCloudSync.swift */,
+				F00000520000000000000052 /* PaywallView.swift */,
+				F00000530000000000000053 /* PlusSettingsView.swift */,
+				F00000540000000000000054 /* RecordsChartViews.swift */,
+				F00000550000000000000055 /* RecordDayEditView.swift */,
+				F00000560000000000000056 /* LifeView.swift */,
+				F00000570000000000000057 /* FocusDesignView.swift */,
+				F00000580000000000000058 /* RecordsSyncSettingsView.swift */,
 				F00000490000000000000049 /* RecordsDesignView.swift */,
 				F00000090000000000000009 /* TimerView.swift */,
 				F00000170000000000000017 /* TimerVisualPhase.swift */,
@@ -387,6 +442,11 @@
 				A20000050000000000000005 /* DayRecordResolverTests.swift */,
 				A20000060000000000000006 /* RecordJSONTests.swift */,
 				A20000070000000000000007 /* RecordCoordinatorTests.swift */,
+				A20000009000000000000009 /* PlusEntitlementTests.swift */,
+				A2000000A00000000000000A /* RecordsMetricsTests.swift */,
+				A2000000B00000000000000B /* LifeViewCalculatorTests.swift */,
+				A2000000C00000000000000C /* RecordsSyncAdapterTests.swift */,
+				A2000000D00000000000000D /* FocusPlannerTests.swift */,
 				A20000080000000000000008 /* ScheduleRangeExpandTests.swift */,
 			);
 			path = AppTests;
@@ -600,6 +660,21 @@
 				E00000060000000000000006 /* ShareSheet.swift in Sources */,
 				E00000070000000000000007 /* OnboardingView.swift in Sources */,
 				E00000080000000000000008 /* RootView.swift in Sources */,
+				E000004A000000000000004A /* PlusEntitlement.swift in Sources */,
+				E000004B000000000000004B /* RecordsRoute.swift in Sources */,
+				E000004C000000000000004C /* RecordsMetrics.swift in Sources */,
+				E000004D000000000000004D /* LifeViewCalculator.swift in Sources */,
+				E000004E000000000000004E /* FocusModels.swift in Sources */,
+				E000004F000000000000004F /* FocusPlanner.swift in Sources */,
+				E00000500000000000000050 /* RecordsSyncAdapter.swift in Sources */,
+				E00000510000000000000051 /* RecordsCloudSync.swift in Sources */,
+				E00000520000000000000052 /* PaywallView.swift in Sources */,
+				E00000530000000000000053 /* PlusSettingsView.swift in Sources */,
+				E00000540000000000000054 /* RecordsChartViews.swift in Sources */,
+				E00000550000000000000055 /* RecordDayEditView.swift in Sources */,
+				E00000560000000000000056 /* LifeView.swift in Sources */,
+				E00000570000000000000057 /* FocusDesignView.swift in Sources */,
+				E00000580000000000000058 /* RecordsSyncSettingsView.swift in Sources */,
 				E00000490000000000000049 /* RecordsDesignView.swift in Sources */,
 				E00000090000000000000009 /* TimerView.swift in Sources */,
 				E00000170000000000000017 /* TimerVisualPhase.swift in Sources */,
@@ -641,6 +716,11 @@
 				A10000040000000000000004 /* DayRecordResolverTests.swift in Sources */,
 				A10000050000000000000005 /* RecordJSONTests.swift in Sources */,
 				A10000060000000000000006 /* RecordCoordinatorTests.swift in Sources */,
+				A10000009000000000000009 /* PlusEntitlementTests.swift in Sources */,
+				A1000000A00000000000000A /* RecordsMetricsTests.swift in Sources */,
+				A1000000B00000000000000B /* LifeViewCalculatorTests.swift in Sources */,
+				A1000000C00000000000000C /* RecordsSyncAdapterTests.swift in Sources */,
+				A1000000D00000000000000D /* FocusPlannerTests.swift in Sources */,
 				A10000070000000000000007 /* ScheduleRangeExpandTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

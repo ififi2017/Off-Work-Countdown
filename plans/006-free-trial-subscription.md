@@ -1,11 +1,11 @@
 # 006 — 从买断到「免费下载 + 试用 + 订阅」
 
-- **Status**: DRAFT
-- **Reviewed against**: 755052f（007 已合入，送审闭环未完成）
+- **Status**: IN PROGRESS
+- **Reviewed against**: 755052f（007 已合入；本轮与 002 同版内部验收，不再等 TestFlight）
 - **Severity**: HIGH
 - **Category**: 商业模式 / StoreKit / App Store Connect
-- **Estimated scope**: [007](007-ios-stable-before-subscription.md) 的实现与主要真机界面已完成并合入，仍须等 Live Activity/锁屏、截图与 TestFlight 把送审闭环做完；付费墙与 [002](002-records-life-focus.md) 的 P1 同版。App Store 记录**已是免费下载**，007 过审上架不会产生买断用户；本计划剩下的是试用、订阅、终身 IAP 与付费墙
-- **相关**: [002](002-records-life-focus.md) 定义了什么能被墙、什么永远不能；本文件定义怎么卖。002 P0A 已可先行，但 **006 仍等 [007](007-ios-stable-before-subscription.md) 完成送审闭环后再开工**（007 不上 IAP；记录已是免费下载）
+- **Estimated scope**: 付费墙与 [002](002-records-life-focus.md) 同版。App Store 记录**已是免费下载**；本计划是试用、订阅、终身 IAP 与付费墙。007 送审闭环不再挡住开工——内部测，不发版
+- **相关**: [002](002-records-life-focus.md) 定义了什么能被墙、什么永远不能；本文件定义怎么卖
 
 ## 一句话
 
@@ -273,28 +273,31 @@ RevenueCat 的价值在跨平台（安卓 / Web 订阅）、定价 A/B、跨端�
 - 改价前需要清理 Tauri 端与官网上任何暗示「付费应用」的文案与截图。
 - 想在 Mac 上用记录功能的人，走 iPad 版在 Apple Silicon Mac 上运行。
 
+## 商品 ID（已钉死）
+
+| 角色 | Product ID | 类型 |
+| --- | --- | --- |
+| 订阅组 | `plus` | Auto-Renewable Subscription Group |
+| 月 | `com.rainif.offworkcountdown.plus.monthly` | Auto-renewable |
+| 年 | `com.rainif.offworkcountdown.plus.yearly` | Auto-renewable；唯一带 7 天 introductory offer |
+| 终身 | `com.rainif.offworkcountdown.plus.lifetime` | Non-consumable；开启 Family Sharing |
+
+本地用 `src-mobile/ios/App/DoneAt.storekit` 测通。价格仍走 StoreKit `displayPrice`，不写进 locale。
+
 ## 发布顺序
 
-### 第一步：007 过审上架（无墙）
+### 与 [002](002-records-life-focus.md) 同版内部验收
 
-- App 记录**已经是免费下载**，Mac App Store 的 Tauri 版同样免费。这一步不再改价。
-- iOS 以 [007](007-ios-stable-before-subscription.md) 的倒计时本体过审上架：不含 IAP、不含付费页、不含记录功能。
-- 目标是攒评价与口碑，也验证 iOS 端本身的稳定性。
-
-### 第二步：与 002 的 P1 同版
-
+- 不再等 [007](007-ios-stable-before-subscription.md) 的 TestFlight / 截图闭环。内部测，不发版。
 - 上 IAP（月 / 年 / 终身）、付费页、7 天试用，以及记录 Tab **内部**付费能力上的墙
-  （聚合图表、人生视图、历史编辑；Tab 本身与逐日只读列表不墙）。
-- **首发期下载的用户一视同仁**，同样需要试用或付费才能使用**聚合分析、人生视图与历史编辑**
-  （逐日只读列表和导出对所有人免费）。理由：这些是全新功能，
-  他们没有失去任何已有的东西，倒计时也依然免费；而做「早期用户永久解锁」需要引入一个
-  基于安装时间的不可回测判定，正是本方案刻意删掉的那类复杂度。
+  （聚合图表、人生视图、历史编辑、开启同步、专注；Tab 本身与逐日只读列表不墙）。
+- **首发期下载的用户一视同仁**，同样需要试用或付费才能使用付费能力。
 - 付费页、订阅商品名与描述纳入 19 个 UI locale。
 
 ## 尚未决定
 
-1. 终身买断是否开启家庭共享（Family Sharing）？开了对口碑友好，但一份卖给最多六个人。
-2. 订阅组、商品 ID 与显示名的命名方案。
+1. ~~终身买断是否开启家庭共享~~ **已定：开。**
+2. ~~订阅组、商品 ID 与显示名~~ **已定**：见上方「商品 ID」。
 3. 是否准备 offer code，用于给早期反馈者、媒体或那一单历史买断用户补偿。
 
 （原先列在这里的「退款与试用期内取消如何表现」已由上方权益状态机回答：退款是撤销、权益

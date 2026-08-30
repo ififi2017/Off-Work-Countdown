@@ -4,8 +4,8 @@
 - **Reviewed against**: 755052f（007 已合入；本计划架构仍以 PR #81 为基线）
 - **Severity**: HIGH
 - **Category**: Product values / Architecture / Persistence / Privacy / New surfaces
-- **Estimated scope**: 按交付顺序为四个可独立验收的阶段：P0A 本地语义 → P1 记录与人生视图（本地先发）→ P0B 同步与数据控制 → P2 任务与专注
-- **相关**: 商业模式、试用与付费墙见 [006](006-free-trial-subscription.md)；本文件只声明「什么能被墙、什么永远不能」。[007](007-ios-stable-before-subscription.md) 已在多轮 iPhone/iPad 真机回归后合入 `main`，`todayOverride` / `clockOffEarly` / `forcedWorkdayDate` 视为冻结，**P0A 现在可以另开分支**（不必等 Live Activity、截图或 TestFlight）；提前上/下班等修正先写计时本地标记，P0A 第一刀再投影为当日覆盖
+- **Estimated scope**: 四个阶段仍按 P0A → P1 → P0B → P2 验收，但 **P1 与 [006](006-free-trial-subscription.md) 同版**，P0B 与 P2 随同一轮内部验收做完，不再等 007 TestFlight
+- **相关**: 商业模式、试用与付费墙见 [006](006-free-trial-subscription.md)；本文件只声明「什么能被墙、什么永远不能」。[007](007-ios-stable-before-subscription.md) 已合入 `main`。免费记录 Tab 只列实际上下班；周 / 月 / 年图和人生视图才用 `resolvedDays` 展开排班底图
 - **本次修订**: 同步层从「SwiftData 自动镜像 + 自研收敛协议」改为 **CKSyncEngine**。上一版为绕过自动镜像的冲突黑箱，设计了 append-only 修订表、HLC 版本戳、六种控制记录、lineage 与 UUID v5 恢复链——那是在为每年千余条小记录徒手造一个分布式数据库。CKSyncEngine 在冲突回调里同时给出本地版与服务器版，上述发明整体作废。同时把 P1 提前到 P0B 之前：付费墙挂在图表与人生视图上，先用本地版验证付费意愿，再投入同步。二次修订补齐了 CKSyncEngine 周围必须自建的薄层：本地同步适配层（`lastKnownRecord` + dirty outbox）、世代化数据 zone、单条删除的原子批次、P0A 本地 ErasedID 表，并统一平局规则为随机 `editTieBreaker`（墙钟永不参与裁决）。三次修订把「删除全部」的崩溃续跑从本地操作状态改成系统不变量：凡 generation 小于当前 fence 的数据 zone，在启动、fence 更新与旧 zone 重建时一律删除——不依赖跨本地与 CloudKit 的伪原子事务。四次修订钉死时区：视图不跟飞机走；日历日记录自带时区；自动跟排班与进行中的倒计时锁旧区；设置里才能把数据迁到新区；人生视图稍后标出新区记下的日子。
 
 ## 出发点：这个 App 现在没有记忆，但「推算」不是缺陷
@@ -248,12 +248,12 @@ JavaScriptCore）**：十年工作日 + 午休（2016-01-01…2025-12-31，3653 
 `reconcile` 只重连，不另写一条开始。观察按 `eventID` 幂等；已擦除的 id 不会被同一
 次重试写回。
 
-#### 免费记录 Tab（P1 只读面，未做付费墙）
+#### 免费记录 Tab（P1 只读面）
 
-第三个 Tab 已接上，`activePath` 按 Tab 分支，记录日详情走自己的 `recordsPath`。免费面
-是实际开始 / 结束 / 加班的日子，不是把今年排班预填成一份年历；打开计时页不算上下班。
-导出 / 本机删除仍在。周 / 月 / 年图表、人生视图、历史编辑和 StoreKit **停在 006/007
-送审闸门**，没有半成品付费页。人生视图再投影排班底图。
+第三个 Tab 已接上，`activePath` 按 Tab 分支。免费面是实际开始 / 结束 / 加班的日子，
+不是把今年排班预填成一份年历；打开计时页不算上下班。导出 / 本机删除仍在。
+周 / 月 / 年图表、人生视图与历史编辑走 `resolvedDays` 展开排班底图，并与
+[006](006-free-trial-subscription.md) **同版上墙**——墙在这些能力上，不在 Tab 门口。
 
 ### 2. 职业阶段与排班快照
 
@@ -993,9 +993,9 @@ enum FocusEndReason: String {
   Swift，专注沿用迁移后的实现，同样不另写。
 - 前台使用动画计时；进入后台后依赖 `plannedEndAt` 与系统通知 / Live Activity。不能把
   「后台运行」设计成持续执行 Swift 代码。
-- 决定复用一条统一 Live Activity，还是工作倒计时与专注各一条；若并存，要定义系统排序所需
-  的 relevance 和用户看到的主活动。
-- 启动、更新、结束沿用同一串行化生命周期所有权，避免专注与工作倒计时互相撤掉。
+- **已定：一条 Live Activity。** 工作倒计时继续独占现有 `OffWorkActivityAttributes`。
+  有工作倒计时时只更新工作活动；没有则专注可以占用同一条。不并存两条。边界到点靠
+  `plannedEndAt` 与本地通知。启动、更新、结束沿用同一串行化生命周期所有权。
 - **专注分钟不汇总成工作时长，不进收入，不改变任何工作占比。**
 
 ## 尚未决定
@@ -1009,10 +1009,10 @@ enum FocusEndReason: String {
    throughMs, hours })` → 逐日 `{ dayKey, shiftAnchorStartAtMs, isWorkday, segments }`。
    十年展开在 iPhone 17 Pro 模拟器主线程约 1.2–1.7s，未触发迁移。预算若以后在真机年视图
    滚动掉帧再议。
-4. 人生视图的分享形态：截图会不会带出年龄或出生年份？`hidesExactAges` 是否应该是分享时的
-   默认值？
-5. 专注与工作倒计时的 Live Activity 共存策略（P2 的主要技术未知数）。
-6. JSON schema 具体字段何时冻结——建议在 P0B 之前，因为它同时是 Android 迁移契约。
+4. ~~人生视图的分享形态~~ **本轮不做分享**，避免把年龄或出生年份带进截图。
+5. ~~专注与工作倒计时的 Live Activity 共存~~ **已定**：一条活动，工作优先；见 P2。
+6. ~~JSON schema 何时冻结~~ **本轮冻结**：现有 DTO 加上 Focus 与 sync 适配字段
+   （`lastKnownRecord` / dirty / generation），作为 Android 迁移契约。
 7. ~~`ErasedIDs` 的具体承载形态~~ **已定**：每个身份一条确定性记录
    `erased.<entityType>.<logicalID>`，与数据同 zone、随「删除全部」一起消失。不用单条
    列表记录——无关身份的删除不该争抢同一条记录的冲突合并，列表也没有大小上限。
@@ -1040,8 +1040,10 @@ enum FocusEndReason: String {
 - 先交付周 / 月 / 年记录与单日编辑，再交付人生视图。人生视图标出与阶段时区不同的日子，
   并提供改回老区或以新区为准。P0A 已留下 `timeZoneIdentifier` 与
   `daysRecordedOutsidePeriodTimeZone()`，本阶段只接线，不再改日历日语义。
-- **付费墙与本阶段同版上线**（见 [006](006-free-trial-subscription.md)）。
-- 本地-only：同步入口随 P0B 出现，本版不预留半成品开关。
+- **付费墙与本阶段同版上线**（见 [006](006-free-trial-subscription.md)）。不再等 007
+  TestFlight。
+- 免费列表保持实际打卡；图表与人生视图才展开排班。
+- 同步入口随 P0B 出现，不预留半成品开关。
 - 19 个 locale 的隐私文案改写随本版落地。
 
 ### P0B — CloudKit 与数据控制
@@ -1056,13 +1058,11 @@ enum FocusEndReason: String {
 - 隐私标签复评。
 - 多设备验收使用至少两台真机——模拟器不能注册远程推送，验证不了正常的同步传播。
 
-P0B 是否投入、何时投入，参考 P1 上线后的付费与留存数据——同步本身在付费墙后，先确认
-有人买单。
+本轮内部验收把 P0B 一并做完：开启仍是付费能力，两台真机传播由人工验收。
 
 ### P2 — 任务与专注
 
-- 在记录语义和 Live Activity 所有权稳定后进入。
-- 单独验收后台截止时间、班次边界、通知和多活动排序。
+- 本轮一并做完。一条 Live Activity，工作优先；单独验收后台截止、班次边界与通知。
 
 ## 关键验收场景
 

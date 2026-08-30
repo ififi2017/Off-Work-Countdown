@@ -8,6 +8,8 @@ enum RecordEntityType: String, Codable, Sendable, CaseIterable {
     case dayOverride
     case workObservation
     case lifeProfile
+    case focusTask
+    case focusSession
 }
 
 /// Local tombstone so a later import cannot resurrect a permanently deleted
@@ -43,6 +45,8 @@ enum RecordIncomingValue: Equatable, Sendable {
     case override(DayOverride)
     case observation(WorkObservation)
     case lifeProfile(LifeProfile)
+    case focusTask(FocusTask)
+    case focusSession(FocusSession)
 }
 
 struct RecordImportConflict: Equatable, Sendable {
@@ -84,7 +88,10 @@ struct RecordState: Equatable, Sendable {
     var overrides: [DayOverride] = []
     var observations: [WorkObservation] = []
     var lifeProfile: LifeProfile?
+    var focusTasks: [FocusTask] = []
+    var focusSessions: [FocusSession] = []
     var erased: [ErasedID] = []
+    var sync = SyncLocalState.empty
 
     func isErased(_ type: RecordEntityType, key: String) -> Bool {
         erased.contains { $0.entityType == type && $0.logicalKey == key }
@@ -104,6 +111,10 @@ struct RecordState: Equatable, Sendable {
             observations.removeAll { $0.eventID.uuidString.caseInsensitiveCompare(key) == .orderedSame }
         case .lifeProfile:
             lifeProfile = nil
+        case .focusTask:
+            focusTasks.removeAll { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame }
+        case .focusSession:
+            focusSessions.removeAll { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame }
         }
         if !isErased(type, key: key) {
             erased.append(ErasedID(entityType: type, logicalKey: key, erasedAt: date))
@@ -154,7 +165,9 @@ enum RecordJSON {
                 rowCalendar.timeZone = TimeZone(identifier: observation.timeZoneIdentifier) ?? fileCalendar.timeZone
                 return WorkObservationDTO(observation, calendar: rowCalendar)
             },
-            lifeProfile: state.lifeProfile.map { LifeProfileDTO($0, calendar: fileCalendar) }
+            lifeProfile: state.lifeProfile.map { LifeProfileDTO($0, calendar: fileCalendar) },
+            focusTasks: state.focusTasks.map { FocusTaskDTO($0, calendar: fileCalendar) },
+            focusSessions: state.focusSessions.map { FocusSessionDTO($0, calendar: fileCalendar) }
         )
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
@@ -353,6 +366,68 @@ enum RecordJSON {
             )
         }
 
+        for dto in document.focusTasks ?? [] {
+            guard let incoming = dto.value(calendar: calendar) else {
+                report.rejected.append(
+                    RecordImportRejection(entityType: .focusTask, logicalKey: dto.id)
+                )
+                continue
+            }
+            merge(
+                incoming,
+                type: .focusTask,
+                key: incoming.id.uuidString,
+                mode: mode,
+                state: &state,
+                report: &report,
+                existing: { $0.focusTasks.first { $0.id == incoming.id } },
+                incomingValue: { .focusTask($0) },
+                insert: { archive, value in
+                    var next = value
+                    if mode == .restoreErased, archive.isErased(.focusTask, key: incoming.id.uuidString) {
+                        next.id = UUID()
+                    }
+                    archive.focusTasks.append(next)
+                },
+                replace: { archive, value in
+                    if let index = archive.focusTasks.firstIndex(where: { $0.id == value.id }) {
+                        archive.focusTasks[index] = value
+                    }
+                }
+            )
+        }
+
+        for dto in document.focusSessions ?? [] {
+            guard let incoming = dto.value(calendar: calendar) else {
+                report.rejected.append(
+                    RecordImportRejection(entityType: .focusSession, logicalKey: dto.id)
+                )
+                continue
+            }
+            merge(
+                incoming,
+                type: .focusSession,
+                key: incoming.id.uuidString,
+                mode: mode,
+                state: &state,
+                report: &report,
+                existing: { $0.focusSessions.first { $0.id == incoming.id } },
+                incomingValue: { .focusSession($0) },
+                insert: { archive, value in
+                    var next = value
+                    if mode == .restoreErased, archive.isErased(.focusSession, key: incoming.id.uuidString) {
+                        next.id = UUID()
+                    }
+                    archive.focusSessions.append(next)
+                },
+                replace: { archive, value in
+                    if let index = archive.focusSessions.firstIndex(where: { $0.id == value.id }) {
+                        archive.focusSessions[index] = value
+                    }
+                }
+            )
+        }
+
         if let dto = document.lifeProfile {
             guard let incoming = dto.value(calendar: calendar) else {
                 report.rejected.append(
@@ -411,6 +486,18 @@ enum RecordJSON {
             }
         case .lifeProfile(let profile):
             state.lifeProfile = profile
+        case .focusTask(let task):
+            if let index = state.focusTasks.firstIndex(where: { $0.id == task.id }) {
+                state.focusTasks[index] = task
+            } else {
+                state.focusTasks.append(task)
+            }
+        case .focusSession(let session):
+            if let index = state.focusSessions.firstIndex(where: { $0.id == session.id }) {
+                state.focusSessions[index] = session
+            } else {
+                state.focusSessions.append(session)
+            }
         }
     }
 
@@ -471,6 +558,8 @@ enum RecordJSON {
         case let exception as CalendarException: exception.editCount
         case let override as DayOverride: override.editCount
         case let profile as LifeProfile: profile.editCount
+        case let task as FocusTask: task.editCount
+        case let session as FocusSession: session.editCount
         default: 0
         }
     }
@@ -483,6 +572,8 @@ enum RecordJSON {
         case let override as DayOverride: override.editTieBreaker
         case let profile as LifeProfile: profile.editTieBreaker
         case let observation as WorkObservation: observation.eventID
+        case let task as FocusTask: task.editTieBreaker
+        case let session as FocusSession: session.editTieBreaker
         default: DayOverride.unsetTieBreaker
         }
     }
@@ -590,6 +681,8 @@ struct RecordJSONDocument: Codable, Equatable {
     var dayOverrides: [DayOverrideDTO]
     var workObservations: [WorkObservationDTO]
     var lifeProfile: LifeProfileDTO?
+    var focusTasks: [FocusTaskDTO]?
+    var focusSessions: [FocusSessionDTO]?
 }
 
 struct CareerPeriodDTO: Codable, Equatable {
@@ -862,6 +955,102 @@ struct LifeProfileDTO: Codable, Equatable {
             retirementAge: retirementAge,
             averageSleepHours: averageSleepHours,
             hidesExactAges: hidesExactAges,
+            editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
+            editCount: editCount,
+            editTieBreaker: editTieBreaker
+        )
+    }
+}
+
+struct FocusTaskDTO: Codable, Equatable {
+    var id: String
+    var createdAtMs: Double
+    var plannedForDate: String?
+    var title: String
+    var estimatedPomodoros: Int
+    var completedAtMs: Double?
+    var sortIndex: Int
+    var editedAtMs: Double
+    var editCount: Int
+    var editTieBreaker: String
+
+    init(_ value: FocusTask, calendar: Calendar) {
+        id = value.id.uuidString
+        createdAtMs = value.createdAt.timeIntervalSince1970 * 1_000
+        plannedForDate = value.plannedForDate.map { RecordJSON.dayKey($0, calendar: calendar) }
+        title = value.title
+        estimatedPomodoros = value.estimatedPomodoros
+        completedAtMs = value.completedAt.map { $0.timeIntervalSince1970 * 1_000 }
+        sortIndex = value.sortIndex
+        editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
+        editCount = value.editCount
+        editTieBreaker = value.editTieBreaker.uuidString
+    }
+
+    func value(calendar: Calendar) -> FocusTask? {
+        guard let id = UUID(uuidString: id),
+              let editTieBreaker = UUID(uuidString: editTieBreaker)
+        else { return nil }
+        let planned: Date?
+        if let plannedForDate {
+            guard let date = RecordJSON.date(fromDayKey: plannedForDate, calendar: calendar) else { return nil }
+            planned = date
+        } else {
+            planned = nil
+        }
+        return FocusTask(
+            id: id,
+            createdAt: Date(timeIntervalSince1970: createdAtMs / 1_000),
+            plannedForDate: planned,
+            title: title,
+            estimatedPomodoros: estimatedPomodoros,
+            completedAt: completedAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) },
+            sortIndex: sortIndex,
+            editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
+            editCount: editCount,
+            editTieBreaker: editTieBreaker
+        )
+    }
+}
+
+struct FocusSessionDTO: Codable, Equatable {
+    var id: String
+    var taskID: String?
+    var shiftAnchorDate: String
+    var startedAtMs: Double
+    var plannedEndAtMs: Double
+    var endedAtMs: Double?
+    var endReason: FocusEndReason?
+    var editedAtMs: Double
+    var editCount: Int
+    var editTieBreaker: String
+
+    init(_ value: FocusSession, calendar: Calendar) {
+        id = value.id.uuidString
+        taskID = value.taskID?.uuidString
+        shiftAnchorDate = RecordJSON.dayKey(value.shiftAnchorDate, calendar: calendar)
+        startedAtMs = value.startedAt.timeIntervalSince1970 * 1_000
+        plannedEndAtMs = value.plannedEndAt.timeIntervalSince1970 * 1_000
+        endedAtMs = value.endedAt.map { $0.timeIntervalSince1970 * 1_000 }
+        endReason = value.endReason
+        editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
+        editCount = value.editCount
+        editTieBreaker = value.editTieBreaker.uuidString
+    }
+
+    func value(calendar: Calendar) -> FocusSession? {
+        guard let id = UUID(uuidString: id),
+              let shiftAnchorDate = RecordJSON.date(fromDayKey: shiftAnchorDate, calendar: calendar),
+              let editTieBreaker = UUID(uuidString: editTieBreaker)
+        else { return nil }
+        return FocusSession(
+            id: id,
+            taskID: taskID.flatMap(UUID.init(uuidString:)),
+            shiftAnchorDate: shiftAnchorDate,
+            startedAt: Date(timeIntervalSince1970: startedAtMs / 1_000),
+            plannedEndAt: Date(timeIntervalSince1970: plannedEndAtMs / 1_000),
+            endedAt: endedAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) },
+            endReason: endReason,
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,
             editTieBreaker: editTieBreaker
