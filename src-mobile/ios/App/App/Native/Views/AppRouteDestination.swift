@@ -27,6 +27,8 @@ struct AppRouteDestination: View {
             ThemeSettingsView(store: store)
         case .language:
             LanguageSettingsView(store: store)
+        case .recordsTimeZone:
+            RecordsTimeZoneSettingsView(store: store)
         case .about:
             AboutView(store: store)
         }

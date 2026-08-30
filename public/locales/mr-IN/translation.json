@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "नवीन बदल पडद्यावर आहे, पण या उपकरणाच्या फाइलपर्यंत पोहोचला नाही. थोड्या वेळाने पुन्हा प्रयत्न करा — सध्याचा संग्रह बदललेला नाही.",
   "recordsObservations": "अॅपने काय पाहिले",
   "recordsNoObservations": "या दिवशी अजून निरीक्षण नाही — शिफ्ट तशीच आहे.",
+  "recordsEmptyTitle": "अजून ये-जा नोंद नाही",
+  "recordsEmptyBody": "उलट्या घड्याळ सुरू किंवा संपवलेला दिवस इथे दिसेल. शिफ्ट आधीच भरली जात नाही.",
   "recordsObservedFirstSeen": "टायमर पहिल्यांदा उघडला",
   "recordsObservedStarted": "उलट गणती सुरू केली",
   "recordsObservedStopped": "उलट गणती थांबवली",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "नोंदीचा वेळ क्षेत्र",
   "recordsTimeZoneMigrate": "या उपकरणाचे वेळ क्षेत्र वापरा",
   "recordsTimeZoneMigrateConfirm": "दिनदर्शिकेच्या तारखा हलणार नाहीत. नऊ वाजता नऊच राहतील, या क्षेत्रात वाचले जातील. सुरू असलेला उलट्या घड्याळ संपेपर्यंत जुने क्षेत्र ठेवेल.",
-  "recordsTimeZoneDevice": "हे उपकरण: {{zone}}"
+  "recordsTimeZoneDevice": "हे उपकरण: {{zone}}",
+  "recordsTimeZoneThisDevice": "हे उपकरण",
+  "recordsTimeZoneFooter": "दिनदर्शिका तुम्ही लिहिलेले दिवस ठेवते. प्रवास त्यांना हलवत नाही. इथे आता घर असेल तर या उपकरणाचे वेळ क्षेत्र वापरता येईल."
 }

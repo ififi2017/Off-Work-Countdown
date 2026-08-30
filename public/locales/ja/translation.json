@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "最新の変更は画面に残っていますが、この端末のファイルには届いていません。少ししてからもう一度どうぞ。既存のアーカイブは置き換えていません。",
   "recordsObservations": "アプリが見たこと",
   "recordsNoObservations": "この日の観察はまだない。シフトの土台はそのまま。",
+  "recordsEmptyTitle": "出退勤の記録はまだありません",
+  "recordsEmptyBody": "カウントダウンを開始または終了した日がここに現れます。シフトはあらかじめ埋めません。",
   "recordsObservedFirstSeen": "タイマーを初めて開いた",
   "recordsObservedStarted": "カウントダウンを開始した",
   "recordsObservedStopped": "カウントダウンを止めた",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "記録のタイムゾーン",
   "recordsTimeZoneMigrate": "この端末のタイムゾーンを使う",
   "recordsTimeZoneMigrateConfirm": "カレンダーの日付はそのままです。9時は9時のまま、新しいタイムゾーンで読みます。進行中のカウントダウンは終わるまで前のタイムゾーンのままです。",
-  "recordsTimeZoneDevice": "この端末：{{zone}}"
+  "recordsTimeZoneDevice": "この端末：{{zone}}",
+  "recordsTimeZoneThisDevice": "この端末",
+  "recordsTimeZoneFooter": "カレンダーは書いたときのタイムゾーンのままです。旅行しても日付は動きません。ここが生活の拠点なら、この端末のタイムゾーンに切り替えられます。"
 }

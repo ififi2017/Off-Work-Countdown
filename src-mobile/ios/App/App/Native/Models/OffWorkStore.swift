@@ -17,6 +17,7 @@ enum AppRoute: String, Hashable, Identifiable {
     case health
     case theme
     case language
+    case recordsTimeZone
     case about
 
     var id: String { rawValue }
@@ -361,7 +362,7 @@ final class OffWorkStore {
     }
 
     var systemTimeZoneDiffersFromRecords: Bool {
-        TimeZone.current.identifier != recordsTimeZoneIdentifier
+        systemTimeZoneIdentifier != recordsTimeZoneIdentifier
     }
 
     var recordsTimeZoneLabel: String {
@@ -369,9 +370,13 @@ final class OffWorkStore {
             ?? recordsTimeZoneIdentifier
     }
 
+    var systemTimeZone: TimeZone {
+        TimeZone(identifier: systemTimeZoneIdentifier) ?? .current
+    }
+
     var systemTimeZoneLabel: String {
-        TimeZone.current.localizedName(for: .generic, locale: locale)
-            ?? TimeZone.current.identifier
+        systemTimeZone.localizedName(for: .generic, locale: locale)
+            ?? systemTimeZoneIdentifier
     }
 
     /// When the user said they had finished for the day, and at what moment.
@@ -486,6 +491,10 @@ final class OffWorkStore {
     /// The language iOS would give us, kept as stored state so a change while
     /// the app is backgrounded invalidates the views that read it.
     private(set) var systemLanguageCode: String
+    /// Same reason as `systemLanguageCode`: `TimeZone.current` does not
+    /// invalidate SwiftUI by itself, so a trip through Settings would leave
+    /// the records-timezone page looking like nothing changed.
+    private(set) var systemTimeZoneIdentifier: String
 
     /// The language the user pinned, or nil to follow the system.
     ///
@@ -654,6 +663,7 @@ final class OffWorkStore {
         hideEarnings = defaults.bool(forKey: Key.hideEarnings)
         theme = AppTheme(rawValue: defaults.string(forKey: Key.theme) ?? "auto") ?? .auto
         systemLanguageCode = NativeLocalizer.systemLanguage()
+        systemTimeZoneIdentifier = TimeZone.current.identifier
         // Only honour a code this build still ships; a language dropped between
         // versions must fall back rather than leave the UI on missing keys.
         languageOverride = defaults.string(forKey: Key.languageOverride).flatMap { stored in
@@ -832,6 +842,34 @@ final class OffWorkStore {
             .sorted { $0.occurredAt < $1.occurredAt }
     }
 
+    /// Days the user actually started, stopped, or logged overtime.
+    ///
+    /// The free list is this, not a year of schedule expansion. Opening the
+    /// timer does not create a row. Life view can still project the schedule
+    /// later without stuffing those days in here first.
+    func recordedWorkDays() -> [RecordedWorkDay] {
+        var groups: [String: [WorkObservation]] = [:]
+        var anchors: [String: Date] = [:]
+        for observation in records.state.observations where observation.kind.isWorkSessionRecord {
+            let zone = TimeZone(identifier: observation.timeZoneIdentifier) ?? recordsTimeZone
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = zone
+            let key = RecordJSON.dayKey(observation.shiftAnchorDate, calendar: calendar)
+            groups[key, default: []].append(observation)
+            if anchors[key] == nil {
+                anchors[key] = calendar.startOfDay(for: observation.shiftAnchorDate)
+            }
+        }
+        return groups.keys.map { key in
+            RecordedWorkDay(
+                dayKey: key,
+                shiftAnchorDate: anchors[key] ?? .distantPast,
+                observations: (groups[key] ?? []).sorted { $0.occurredAt < $1.occurredAt }
+            )
+        }
+        .sorted { $0.shiftAnchorDate > $1.shiftAnchorDate }
+    }
+
     func timeZoneIdentifierForWriting(startingNewSession: Bool = false) -> String {
         if startingNewSession, systemTimeZoneDiffersFromRecords {
             return TimeZone.current.identifier
@@ -1005,6 +1043,13 @@ final class OffWorkStore {
         let systemLanguage = NativeLocalizer.systemLanguage()
         if systemLanguageCode != systemLanguage {
             systemLanguageCode = systemLanguage
+        }
+    }
+
+    func refreshSystemTimeZone() {
+        let current = TimeZone.current.identifier
+        if systemTimeZoneIdentifier != current {
+            systemTimeZoneIdentifier = current
         }
     }
 
@@ -1495,6 +1540,7 @@ final class OffWorkStore {
         // knows which calendar day this run belonged to. Overtime stays too:
         // clearing it here would shrink the window and settlement would lose
         // the extra hours.
+        writeObservation(.countdownStopped, at: date, eventID: UUID())
     }
 
     /// Takes it back. Deliberately its own action rather than a side effect of
@@ -1514,6 +1560,7 @@ final class OffWorkStore {
         earlyStartUntilMs = Calendar.current.date(byAdding: .day, value: 1, to: endDay)
             .map { $0.timeIntervalSince1970 * 1_000 }
         clockInConfirmPending = false
+        writeObservation(.countdownStarted, at: date, eventID: UUID())
     }
 
     func undoEarlyClockIn() {

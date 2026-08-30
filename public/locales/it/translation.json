@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "L’ultima modifica è ancora a schermo, ma non è arrivata al file su questo dispositivo. Riprova tra un attimo: l’archivio esistente non è stato sostituito.",
   "recordsObservations": "Cosa ha notato l’app",
   "recordsNoObservations": "Nessuna osservazione per questo giorno: il turno c’è ancora.",
+  "recordsEmptyTitle": "Ancora nessun ingresso o uscita",
+  "recordsEmptyBody": "Un giorno compare qui quando avvii o termini un conto alla rovescia. Il turno non viene precompilato.",
   "recordsObservedFirstSeen": "Timer aperto per la prima volta",
   "recordsObservedStarted": "Conto alla rovescia avviato",
   "recordsObservedStopped": "Conto alla rovescia fermato",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "Fuso dei registri",
   "recordsTimeZoneMigrate": "Usa il fuso di questo dispositivo",
   "recordsTimeZoneMigrateConfirm": "Le date del calendario restano. Le nove restano le nove, lette in questo fuso. Un conto alla rovescia già avviato tiene il precedente fino alla fine.",
-  "recordsTimeZoneDevice": "Questo dispositivo: {{zone}}"
+  "recordsTimeZoneDevice": "Questo dispositivo: {{zone}}",
+  "recordsTimeZoneThisDevice": "Questo dispositivo",
+  "recordsTimeZoneFooter": "Il calendario tiene i giorni che hai scritto. Viaggiare non li sposta. Se qui è casa adesso, puoi passare al fuso di questo dispositivo."
 }

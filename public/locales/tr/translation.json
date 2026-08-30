@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "Son değişiklik ekranda duruyor ama bu cihazdaki dosyaya ulaşmadı. Biraz sonra yeniden dene — mevcut arşiv değiştirilmedi.",
   "recordsObservations": "Uygulamanın fark ettikleri",
   "recordsNoObservations": "Bu gün için gözlem yok — mesai çizelgesi duruyor.",
+  "recordsEmptyTitle": "Henüz giriş-çıkış kaydı yok",
+  "recordsEmptyBody": "Geri sayımı başlattığın veya bitirdiğin gün burada görünür. Mesai çizelgesi önceden doldurulmaz.",
   "recordsObservedFirstSeen": "Zamanlayıcıyı ilk açış",
   "recordsObservedStarted": "Geri sayımı başlattı",
   "recordsObservedStopped": "Geri sayımı durdurdu",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "Kayıtların saat dilimi",
   "recordsTimeZoneMigrate": "Bu cihazın saat dilimini kullan",
   "recordsTimeZoneMigrateConfirm": "Takvim tarihleri yerinde kalır. Saat dokuz yine dokuzdur, bu dilimde okunur. Süregelen geri sayım bitene kadar eskisini korur.",
-  "recordsTimeZoneDevice": "Bu cihaz: {{zone}}"
+  "recordsTimeZoneDevice": "Bu cihaz: {{zone}}",
+  "recordsTimeZoneThisDevice": "Bu cihaz",
+  "recordsTimeZoneFooter": "Takvim yazdığın günleri tutar. Seyahat onları kaydırmaz. Burası artık evinse, bu cihazın saat dilimine geçebilirsin."
 }

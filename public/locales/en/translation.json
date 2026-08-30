@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "The latest change is on screen but did not reach the file on this device. Try again in a moment — the existing archive was not replaced.",
   "recordsObservations": "What the app noticed",
   "recordsNoObservations": "Nothing recorded for this day — the schedule is still here.",
+  "recordsEmptyTitle": "No clock-in records yet",
+  "recordsEmptyBody": "A day shows up here when you start or finish a countdown. Your schedule is not filled in ahead of time.",
   "recordsObservedFirstSeen": "First opened the timer",
   "recordsObservedStarted": "Started the countdown",
   "recordsObservedStopped": "Stopped the countdown",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "Records time zone",
   "recordsTimeZoneMigrate": "Use this device’s time zone",
   "recordsTimeZoneMigrateConfirm": "Calendar dates stay where they are. Nine o’clock is still nine o’clock, now read in this time zone. A countdown that is already running keeps the previous one until it ends.",
-  "recordsTimeZoneDevice": "This device: {{zone}}"
+  "recordsTimeZoneDevice": "This device: {{zone}}",
+  "recordsTimeZoneThisDevice": "This device",
+  "recordsTimeZoneFooter": "The calendar keeps the days you wrote. Travel does not move them. If this is home now, you can switch to this device’s time zone."
 }

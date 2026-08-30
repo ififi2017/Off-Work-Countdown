@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "การเปลี่ยนแปลงล่าสุดยังอยู่บนหน้าจอ แต่ยังไม่ถึงไฟล์บนอุปกรณ์นี้ ลองอีกครั้งในอีกสักครู่ — คลังเดิมไม่ได้ถูกแทนที่",
   "recordsObservations": "สิ่งที่แอปสังเกต",
   "recordsNoObservations": "วันนี้ยังไม่มีการสังเกต — ตารางกะยังอยู่",
+  "recordsEmptyTitle": "ยังไม่มีบันทึกเข้าออกงาน",
+  "recordsEmptyBody": "วันที่จะปรากฏที่นี่เมื่อคุณเริ่มหรือจบการนับถอยหลัง ตารางกะจะไม่ถูกใส่ล่วงหน้า",
   "recordsObservedFirstSeen": "เปิดตัวจับเวลาครั้งแรก",
   "recordsObservedStarted": "เริ่มนับถอยหลัง",
   "recordsObservedStopped": "หยุดนับถอยหลัง",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "เขตเวลาของบันทึก",
   "recordsTimeZoneMigrate": "ใช้เขตเวลาของอุปกรณ์นี้",
   "recordsTimeZoneMigrateConfirm": "วันที่บนปฏิทินไม่ขยับ เก้าโมงยังเป็นเก้าโมง เพียงอ่านด้วยเขตเวลานี้ นาฬิกานับถอยหลังที่กำลังเดินยังใช้เขตเดิมจนกว่าจะจบ",
-  "recordsTimeZoneDevice": "อุปกรณ์นี้: {{zone}}"
+  "recordsTimeZoneDevice": "อุปกรณ์นี้: {{zone}}",
+  "recordsTimeZoneThisDevice": "อุปกรณ์นี้",
+  "recordsTimeZoneFooter": "ปฏิทินเก็บวันที่คุณเขียนไว้ การเดินทางไม่ทำให้วันขยับ ถ้าที่นี่คือบ้านแล้ว สามารถเปลี่ยนเป็นเขตเวลาของอุปกรณ์นี้ได้"
 }

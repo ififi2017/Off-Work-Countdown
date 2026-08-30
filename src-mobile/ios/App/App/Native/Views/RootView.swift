@@ -95,6 +95,7 @@ struct OffWorkCountdownRootView: View {
                 AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
                 store.reconcileCountdownSession()
                 store.refreshSystemLanguage()
+                store.refreshSystemTimeZone()
                 Task { @MainActor in
                     // Notification authorization can change while the user is
                     // in Settings. Refresh the shared status and rebuild the
@@ -120,6 +121,7 @@ struct OffWorkCountdownRootView: View {
             CountdownRules.warmUp()
             store.reconcileCountdownSession()
             store.refreshSystemLanguage()
+            store.refreshSystemTimeZone()
             applyQAGeometryIfRequested()
             clearDebugServicesAfterResetIfNeeded()
             if store.onboardingComplete, store.selectedTab == .timer {

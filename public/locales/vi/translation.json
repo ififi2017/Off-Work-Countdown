@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "Thay đổi mới nhất vẫn trên màn hình nhưng chưa vào tệp trên máy này. Thử lại sau một lát — kho lưu hiện có không bị thay thế.",
   "recordsObservations": "Ứng dụng ghi nhận",
   "recordsNoObservations": "Chưa có ghi nhận ngày này — lịch ca vẫn còn.",
+  "recordsEmptyTitle": "Chưa có giờ vào hay ra",
+  "recordsEmptyBody": "Một ngày hiện ở đây khi bạn bắt đầu hoặc kết thúc đếm ngược. Lịch ca không được điền sẵn.",
   "recordsObservedFirstSeen": "Lần đầu mở bộ đếm",
   "recordsObservedStarted": "Bắt đầu đếm ngược",
   "recordsObservedStopped": "Dừng đếm ngược",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "Múi giờ nhật ký",
   "recordsTimeZoneMigrate": "Dùng múi giờ của máy này",
   "recordsTimeZoneMigrateConfirm": "Ngày trên lịch không dời. Chín giờ vẫn là chín giờ, chỉ đọc theo múi này. Đếm ngược đang chạy giữ múi cũ đến khi kết thúc.",
-  "recordsTimeZoneDevice": "Máy này: {{zone}}"
+  "recordsTimeZoneDevice": "Máy này: {{zone}}",
+  "recordsTimeZoneThisDevice": "Máy này",
+  "recordsTimeZoneFooter": "Lịch giữ những ngày bạn đã ghi. Đi xa không làm chúng dịch. Nếu đây là nhà rồi, bạn có thể chuyển sang múi của máy này."
 }

@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "ताज़ा बदलाव स्क्रीन पर है, लेकिन इस डिवाइस की फ़ाइल तक नहीं पहुँचा। थोड़ी देर बाद फिर कोशिश करें — मौजूदा आर्काइव बदली नहीं गई।",
   "recordsObservations": "ऐप ने क्या देखा",
   "recordsNoObservations": "इस दिन अभी कोई अवलोकन नहीं — शिफ्ट वैसी की वैसी है।",
+  "recordsEmptyTitle": "अभी कोई आना-जाना रिकॉर्ड नहीं",
+  "recordsEmptyBody": "जब आप काउंटडाउन शुरू या खत्म करते हैं, वह दिन यहाँ दिखता है। शिफ्ट पहले से नहीं भरी जाती।",
   "recordsObservedFirstSeen": "टाइमर पहली बार खोला",
   "recordsObservedStarted": "उल्टी गिनती शुरू की",
   "recordsObservedStopped": "उल्टी गिनती रोकी",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "रिकॉर्ड का समय क्षेत्र",
   "recordsTimeZoneMigrate": "इस डिवाइस का समय क्षेत्र इस्तेमाल करें",
   "recordsTimeZoneMigrateConfirm": "कैलेंडर की तिथियाँ नहीं खिसकेंगी। नौ बजे नौ बजे ही रहेंगे, अब इस क्षेत्र में पढ़े जाएँगे। चल रहा काउंटडाउन खत्म होने तक पुराना क्षेत्र रखेगा।",
-  "recordsTimeZoneDevice": "यह डिवाइस: {{zone}}"
+  "recordsTimeZoneDevice": "यह डिवाइस: {{zone}}",
+  "recordsTimeZoneThisDevice": "यह डिवाइस",
+  "recordsTimeZoneFooter": "कैलेंडर आपके लिखे दिन रखता है। यात्रा उन्हें नहीं खिसकाती। अगर अब यहीं घर है, तो इस डिवाइस का समय क्षेत्र अपना सकते हैं।"
 }

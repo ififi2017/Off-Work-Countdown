@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "刚才的改动还在屏幕上，但没有写进这台设备上的文件。可以稍后再试一次——现有档案没有被替换。",
   "recordsObservations": "应用注意到的",
   "recordsNoObservations": "这天还没有观察记录，排班底图还在。",
+  "recordsEmptyTitle": "还没有上下班记录",
+  "recordsEmptyBody": "开始或结束一次倒计时，这一天就会出现在这里。排班不会预先填进列表。",
   "recordsObservedFirstSeen": "第一次打开计时页",
   "recordsObservedStarted": "开始了倒计时",
   "recordsObservedStopped": "停止了倒计时",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "记录时区",
   "recordsTimeZoneMigrate": "改用这台设备的时区",
   "recordsTimeZoneMigrateConfirm": "日历上的日期不会挪动。九点还是九点，只是改按此时区来读。已经在走的倒计时仍用原来的时区，直到这次结束。",
-  "recordsTimeZoneDevice": "这台设备：{{zone}}"
+  "recordsTimeZoneDevice": "这台设备：{{zone}}",
+  "recordsTimeZoneThisDevice": "这台设备",
+  "recordsTimeZoneFooter": "日历按记下时的时区排。人到另一个时区，年历上的日子不会跟着走。如果这里成了常住地，可以改用这台设备的时区。"
 }

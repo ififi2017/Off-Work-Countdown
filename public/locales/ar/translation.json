@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "آخر تعديل ما زال على الشاشة لكنه لم يصل إلى الملف على هذا الجهاز. جرّب مرة أخرى بعد قليل — لم يُستبدل الأرشيف الحالي.",
   "recordsObservations": "ما لاحظه التطبيق",
   "recordsNoObservations": "لا ملاحظات لهذا اليوم — الجدول ما زال موجودًا.",
+  "recordsEmptyTitle": "لا سجلات حضور وانصراف بعد",
+  "recordsEmptyBody": "يظهر اليوم هنا عندما تبدأ العدّ التنازلي أو تنهيه. لا يُملأ الجدول مسبقاً.",
   "recordsObservedFirstSeen": "فتح المؤقت لأول مرة",
   "recordsObservedStarted": "بدأ العد التنازلي",
   "recordsObservedStopped": "أوقف العد التنازلي",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "المنطقة الزمنية للسجلات",
   "recordsTimeZoneMigrate": "استخدام منطقة هذا الجهاز",
   "recordsTimeZoneMigrateConfirm": "تواريخ التقويم لا تتحرك. التاسعة تبقى التاسعة، وتُقرأ في هذه المنطقة. العدّ التنازلي الجاري يحتفظ بالمنطقة السابقة حتى ينتهي.",
-  "recordsTimeZoneDevice": "هذا الجهاز: {{zone}}"
+  "recordsTimeZoneDevice": "هذا الجهاز: {{zone}}",
+  "recordsTimeZoneThisDevice": "هذا الجهاز",
+  "recordsTimeZoneFooter": "التقويم يحتفظ بالأيام التي كتبتها. السفر لا يحرّكها. إن صار هنا بيتك، يمكنك الانتقال إلى منطقة هذا الجهاز."
 }

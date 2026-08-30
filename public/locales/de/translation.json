@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "Die letzte Änderung ist noch auf dem Bildschirm, hat die Datei auf diesem Gerät aber nicht erreicht. Versuch es gleich noch einmal — das vorhandene Archiv wurde nicht ersetzt.",
   "recordsObservations": "Was die App bemerkt hat",
   "recordsNoObservations": "Für diesen Tag gibt es noch keine Beobachtung — der Plan bleibt.",
+  "recordsEmptyTitle": "Noch keine Kommen-Gehen-Einträge",
+  "recordsEmptyBody": "Ein Tag erscheint hier, wenn du einen Countdown startest oder beendest. Der Plan wird nicht vorausgefüllt.",
   "recordsObservedFirstSeen": "Timer zum ersten Mal geöffnet",
   "recordsObservedStarted": "Countdown gestartet",
   "recordsObservedStopped": "Countdown beendet",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "Zeitzone der Einträge",
   "recordsTimeZoneMigrate": "Zeitzone dieses Geräts verwenden",
   "recordsTimeZoneMigrateConfirm": "Kalenderdaten bleiben. Neun Uhr bleibt neun Uhr, jetzt in dieser Zeitzone. Ein laufender Countdown behält die vorherige bis zum Ende.",
-  "recordsTimeZoneDevice": "Dieses Gerät: {{zone}}"
+  "recordsTimeZoneDevice": "Dieses Gerät: {{zone}}",
+  "recordsTimeZoneThisDevice": "Dieses Gerät",
+  "recordsTimeZoneFooter": "Der Kalender behält die Tage, die du geschrieben hast. Reisen verschiebt sie nicht. Wenn hier jetzt zu Hause ist, kannst du die Zeitzone dieses Geräts übernehmen."
 }

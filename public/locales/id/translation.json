@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "Perubahan terbaru masih di layar, tetapi belum masuk ke berkas di perangkat ini. Coba lagi sebentar lagi — arsip yang ada tidak diganti.",
   "recordsObservations": "Yang dilihat aplikasi",
   "recordsNoObservations": "Belum ada observasi hari ini — jadwalnya tetap ada.",
+  "recordsEmptyTitle": "Belum ada catatan masuk-pulang",
+  "recordsEmptyBody": "Satu hari muncul di sini saat Anda mulai atau mengakhiri hitung mundur. Jadwal tidak diisi di muka.",
   "recordsObservedFirstSeen": "Pertama kali membuka timer",
   "recordsObservedStarted": "Memulai hitung mundur",
   "recordsObservedStopped": "Menghentikan hitung mundur",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "Zona waktu catatan",
   "recordsTimeZoneMigrate": "Pakai zona perangkat ini",
   "recordsTimeZoneMigrateConfirm": "Tanggal kalender tetap. Pukul sembilan tetap pukul sembilan, dibaca di zona ini. Hitung mundur yang sedang berjalan memakai zona lama sampai selesai.",
-  "recordsTimeZoneDevice": "Perangkat ini: {{zone}}"
+  "recordsTimeZoneDevice": "Perangkat ini: {{zone}}",
+  "recordsTimeZoneThisDevice": "Perangkat ini",
+  "recordsTimeZoneFooter": "Kalender menyimpan hari yang Anda tulis. Bepergian tidak menggesernya. Jika sini sudah rumah, Anda bisa memakai zona perangkat ini."
 }

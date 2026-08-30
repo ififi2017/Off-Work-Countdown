@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// Free P1 surface: a read-only year of conclusions plus export / delete.
+/// Free records surface: days the user actually started or finished.
 /// Charts, life view, and history edit stay behind the 006 paywall.
 struct RecordsDesignView: View {
     let store: OffWorkStore
-    @State private var days: [DayResolution] = []
+    @State private var days: [RecordedWorkDay] = []
     @State private var exportURL: URL?
     @State private var confirmsDelete = false
     @State private var confirmsQuarantine = false
@@ -29,17 +29,23 @@ struct RecordsDesignView: View {
                     }
 
                     if store.records.archiveBanner != .damaged {
-                        OWCGroupCard {
-                            ForEach(Array(days.enumerated()), id: \.element.dayKey) { index, day in
-                                if index > 0 { Divider().padding(.leading, 16) }
-                                NavigationLink(value: day.dayKey) {
-                                    RecordDayRow(store: store, day: day)
+                        if days.isEmpty {
+                            emptyCard
+                                .padding(.horizontal, OWCDesign.pageInset)
+                                .padding(.top, 14)
+                        } else {
+                            OWCGroupCard {
+                                ForEach(Array(days.enumerated()), id: \.element.dayKey) { index, day in
+                                    if index > 0 { Divider().padding(.leading, 16) }
+                                    NavigationLink(value: day.dayKey) {
+                                        RecordDayRow(store: store, day: day)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             }
+                            .padding(.horizontal, OWCDesign.pageInset)
+                            .padding(.top, 14)
                         }
-                        .padding(.horizontal, OWCDesign.pageInset)
-                        .padding(.top, 14)
 
                         OWCGroupCard {
                             if let exportURL {
@@ -135,40 +141,29 @@ struct RecordsDesignView: View {
         }
     }
 
+    private var emptyCard: some View {
+        OWCGroupCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(store.t("recordsEmptyTitle"))
+                    .font(.body.weight(.medium))
+                Text(store.t("recordsEmptyBody"))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineSpacing(3)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+        }
+    }
+
     private func refresh() {
         if store.records.archiveBanner == .damaged {
             days = []
             exportURL = nil
             return
         }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = store.recordsTimeZone
-        // The seeded career period starts in 2000 so it can cover any later
-        // day. That is not user history — using it here would expand ~26 years
-        // on every visit. Only authored rows may pull the window earlier than
-        // 1 January of this year.
-        let earliest = (
-            store.records.state.overrides.map(\.shiftAnchorDate)
-                + store.records.state.exceptions.map(\.date)
-                + store.records.state.observations.map(\.shiftAnchorDate)
-                + (store.records.state.lifeProfile?.workStartedOn.map { [$0] } ?? [])
-        ).min()
-        let (from, through) = Self.recordsYearBounds(for: Date(), earliest: earliest, calendar: calendar)
-        days = store.resolvedDays(from: from, through: through).reversed()
+        days = store.recordedWorkDays()
         exportURL = try? store.exportRecordsFile()
-    }
-
-    static func recordsYearBounds(
-        for date: Date,
-        earliest: Date? = nil,
-        calendar: Calendar
-    ) -> (from: Date, through: Date) {
-        let year = calendar.component(.year, from: date)
-        let startOfYear = calendar.date(from: DateComponents(year: year, month: 1, day: 1))
-            ?? calendar.startOfDay(for: date)
-        let through = calendar.date(from: DateComponents(year: year, month: 12, day: 31)) ?? startOfYear
-        let from = earliest.map { min(startOfYear, calendar.startOfDay(for: $0)) } ?? startOfYear
-        return (from, through)
     }
 
     private func settingsRow(_ title: String, systemImage: String) -> some View {
@@ -186,21 +181,24 @@ struct RecordsDesignView: View {
 
 private struct RecordDayRow: View {
     let store: OffWorkStore
-    let day: DayResolution
+    let day: RecordedWorkDay
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(dayTitle)
                     .font(.body.weight(.medium))
-                Text(store.t(sourceKey))
+                Text(timesLabel)
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
+                    .environment(\.layoutDirection, .leftToRight)
             }
             Spacer(minLength: 8)
-            Text(hoursLabel)
-                .font(.body.monospacedDigit())
-                .foregroundStyle(day.isScheduledWorkday ? OWCDesign.primary : OWCDesign.tertiary)
+            if let hoursLabel {
+                Text(hoursLabel)
+                    .font(.body.monospacedDigit())
+                    .foregroundStyle(OWCDesign.primary)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -211,35 +209,49 @@ private struct RecordDayRow: View {
         day.shiftAnchorDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
     }
 
-    private var sourceKey: String {
-        switch day.layer {
-        case .override: "recordsSourceOverride"
-        case .calendarException: "recordsSourceException"
-        case .schedule: "recordsSourceSchedule"
-        case .none: "recordsSourceNone"
+    private var timesLabel: String {
+        let start = day.firstStart
+        let stop = day.lastStop
+        if let start, let stop {
+            return "\(timeString(start)) – \(timeString(stop))"
         }
+        if let start { return timeString(start) }
+        if let stop { return timeString(stop) }
+        if let overtime = day.observations.last(where: { $0.kind == .overtimeDeclared }) {
+            return timeString(overtime.occurredAt)
+        }
+        return store.t("recordsObservedOvertime")
     }
 
-    private var hoursLabel: String {
-        if !day.isScheduledWorkday { return store.t("recordsRestDay") }
-        let ms = day.segments.reduce(0) { $0 + ($1.endAtMs - $1.startAtMs) }
-        return RelativeDurationFormatter.string(milliseconds: ms, languageCode: store.languageCode)
+    private var hoursLabel: String? {
+        guard let start = day.firstStart, let stop = day.lastStop, stop > start else { return nil }
+        return RelativeDurationFormatter.string(
+            milliseconds: stop.timeIntervalSince(start) * 1_000,
+            languageCode: store.languageCode
+        )
+    }
+
+    private func timeString(_ date: Date) -> String {
+        date.formatted(date: .omitted, time: .shortened)
     }
 }
 
 private struct RecordDayDetailView: View {
     let store: OffWorkStore
-    let day: DayResolution
+    let day: RecordedWorkDay
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 OWCGroupCard {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(store.t(sourceKey))
+                        Text(timesLabel)
                             .font(.body.weight(.medium))
-                        Text(hoursLabel)
-                            .font(.title3.monospacedDigit())
+                            .environment(\.layoutDirection, .leftToRight)
+                        if let hoursLabel {
+                            Text(hoursLabel)
+                                .font(.title3.monospacedDigit())
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
@@ -250,15 +262,9 @@ private struct RecordDayDetailView: View {
                         Text(store.t("recordsObservations"))
                             .font(.footnote.weight(.semibold))
                             .foregroundStyle(OWCDesign.secondary)
-                        if observations.isEmpty {
-                            Text(store.t("recordsNoObservations"))
+                        ForEach(day.observations) { item in
+                            Text(observationLabel(item))
                                 .font(.body)
-                                .foregroundStyle(OWCDesign.tertiary)
-                        } else {
-                            ForEach(observations) { item in
-                                Text(observationLabel(item))
-                                    .font(.body)
-                            }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -274,23 +280,30 @@ private struct RecordDayDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var observations: [WorkObservation] {
-        store.observations(on: day.shiftAnchorDate)
-    }
-
-    private var sourceKey: String {
-        switch day.layer {
-        case .override: "recordsSourceOverride"
-        case .calendarException: "recordsSourceException"
-        case .schedule: "recordsSourceSchedule"
-        case .none: "recordsSourceNone"
+    private var timesLabel: String {
+        let start = day.firstStart
+        let stop = day.lastStop
+        if let start, let stop {
+            return "\(timeString(start)) – \(timeString(stop))"
         }
+        if let start { return timeString(start) }
+        if let stop { return timeString(stop) }
+        if let overtime = day.observations.last(where: { $0.kind == .overtimeDeclared }) {
+            return timeString(overtime.occurredAt)
+        }
+        return store.t("recordsObservedOvertime")
     }
 
-    private var hoursLabel: String {
-        if !day.isScheduledWorkday { return store.t("recordsRestDay") }
-        let ms = day.segments.reduce(0) { $0 + ($1.endAtMs - $1.startAtMs) }
-        return RelativeDurationFormatter.string(milliseconds: ms, languageCode: store.languageCode)
+    private var hoursLabel: String? {
+        guard let start = day.firstStart, let stop = day.lastStop, stop > start else { return nil }
+        return RelativeDurationFormatter.string(
+            milliseconds: stop.timeIntervalSince(start) * 1_000,
+            languageCode: store.languageCode
+        )
+    }
+
+    private func timeString(_ date: Date) -> String {
+        date.formatted(date: .omitted, time: .shortened)
     }
 
     private func observationLabel(_ item: WorkObservation) -> String {

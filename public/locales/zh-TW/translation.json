@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "剛才的變更還在畫面上，但沒有寫進這台裝置上的檔案。可以稍後再試一次——現有檔案沒有被取代。",
   "recordsObservations": "App 注意到的",
   "recordsNoObservations": "這天還沒有觀察紀錄，排班底圖還在。",
+  "recordsEmptyTitle": "還沒有上下班紀錄",
+  "recordsEmptyBody": "開始或結束一次倒數，這一天就會出現在這裡。排班不會預先填進列表。",
   "recordsObservedFirstSeen": "第一次打開計時頁",
   "recordsObservedStarted": "開始了倒數",
   "recordsObservedStopped": "停止了倒數",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "紀錄時區",
   "recordsTimeZoneMigrate": "改用這台裝置的時區",
   "recordsTimeZoneMigrateConfirm": "日曆上的日期不會移動。九點還是九點，只是改按此時區來讀。已經在走的倒計時仍用原來的時區，直到這次結束。",
-  "recordsTimeZoneDevice": "這台裝置：{{zone}}"
+  "recordsTimeZoneDevice": "這台裝置：{{zone}}",
+  "recordsTimeZoneThisDevice": "這台裝置",
+  "recordsTimeZoneFooter": "日曆按記下時的時區排。人到另一個時區，年曆上的日子不會跟著走。如果這裡成了常住地，可以改用這台裝置的時區。"
 }

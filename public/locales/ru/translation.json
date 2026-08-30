@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "Последнее изменение видно на экране, но не попало в файл на этом устройстве. Попробуйте ещё раз чуть позже — текущий архив не заменён.",
   "recordsObservations": "Что заметило приложение",
   "recordsNoObservations": "За этот день наблюдений нет — график на месте.",
+  "recordsEmptyTitle": "Пока нет прихода и ухода",
+  "recordsEmptyBody": "День появится здесь, когда вы запустите или остановите отсчёт. График заранее не заполняется.",
   "recordsObservedFirstSeen": "Впервые открыли таймер",
   "recordsObservedStarted": "Запустили отсчёт",
   "recordsObservedStopped": "Остановили отсчёт",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "Часовой пояс записей",
   "recordsTimeZoneMigrate": "Использовать пояс этого устройства",
   "recordsTimeZoneMigrateConfirm": "Даты календаря не сдвигаются. Девять часов остаются девятью, теперь в этом поясе. Идущий отсчёт держит прежний пояс до конца.",
-  "recordsTimeZoneDevice": "Это устройство: {{zone}}"
+  "recordsTimeZoneDevice": "Это устройство: {{zone}}",
+  "recordsTimeZoneThisDevice": "Это устройство",
+  "recordsTimeZoneFooter": "Календарь хранит дни, которые вы записали. Поездки их не сдвигают. Если здесь теперь дом, можно перейти на пояс этого устройства."
 }

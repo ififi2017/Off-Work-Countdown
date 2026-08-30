@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "A última alteração está no ecrã, mas não chegou ao ficheiro neste dispositivo. Tenta outra vez daqui a pouco — o arquivo existente não foi substituído.",
   "recordsObservations": "O que a app notou",
   "recordsNoObservations": "Ainda não há observações neste dia — o horário continua.",
+  "recordsEmptyTitle": "Ainda sem entradas ou saídas",
+  "recordsEmptyBody": "Um dia aparece aqui quando começas ou terminas uma contagem. O horário não é preenchido à frente.",
   "recordsObservedFirstSeen": "Abriu o temporizador pela primeira vez",
   "recordsObservedStarted": "Iniciou a contagem",
   "recordsObservedStopped": "Parou a contagem",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "Fuso dos registos",
   "recordsTimeZoneMigrate": "Usar o fuso deste dispositivo",
   "recordsTimeZoneMigrateConfirm": "As datas do calendário ficam. Nove horas continua nove horas, lidas neste fuso. Uma contagem já a correr mantém o anterior até acabar.",
-  "recordsTimeZoneDevice": "Este dispositivo: {{zone}}"
+  "recordsTimeZoneDevice": "Este dispositivo: {{zone}}",
+  "recordsTimeZoneThisDevice": "Este dispositivo",
+  "recordsTimeZoneFooter": "O calendário guarda os dias que escreveste. Viajar não os move. Se aqui é casa agora, podes passar ao fuso deste dispositivo."
 }

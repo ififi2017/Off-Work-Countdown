@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "El último cambio está en pantalla, pero no llegó al archivo de este dispositivo. Prueba de nuevo en un momento: el archivo existente no se ha sustituido.",
   "recordsObservations": "Lo que notó la app",
   "recordsNoObservations": "Aún no hay observaciones este día; el horario sigue ahí.",
+  "recordsEmptyTitle": "Aún no hay fichajes",
+  "recordsEmptyBody": "Un día aparece aquí cuando empiezas o terminas una cuenta atrás. El horario no se rellena de antemano.",
   "recordsObservedFirstSeen": "Abriste el temporizador por primera vez",
   "recordsObservedStarted": "Iniciaste la cuenta atrás",
   "recordsObservedStopped": "Detuviste la cuenta atrás",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "Zona horaria de los registros",
   "recordsTimeZoneMigrate": "Usar la zona de este dispositivo",
   "recordsTimeZoneMigrateConfirm": "Las fechas del calendario no se mueven. Las nueve siguen siendo las nueve, leídas en esta zona. Una cuenta atrás en curso mantiene la anterior hasta que termine.",
-  "recordsTimeZoneDevice": "Este dispositivo: {{zone}}"
+  "recordsTimeZoneDevice": "Este dispositivo: {{zone}}",
+  "recordsTimeZoneThisDevice": "Este dispositivo",
+  "recordsTimeZoneFooter": "El calendario conserva los días que escribiste. Viajar no los mueve. Si aquí es casa ahora, puedes pasar a la zona de este dispositivo."
 }

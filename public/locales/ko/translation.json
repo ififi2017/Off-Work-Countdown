@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "최근 변경은 화면에 있지만 이 기기의 파일에는 반영되지 않았습니다. 잠시 후 다시 시도해 주세요. 기존 보관 파일은 바뀌지 않았습니다.",
   "recordsObservations": "앱이 남긴 메모",
   "recordsNoObservations": "이 날의 관찰은 아직 없습니다. 근무표는 그대로예요.",
+  "recordsEmptyTitle": "출퇴근 기록이 아직 없습니다",
+  "recordsEmptyBody": "카운트다운을 시작하거나 끝낸 날이 여기에 나타납니다. 근무표는 미리 채워 두지 않습니다.",
   "recordsObservedFirstSeen": "타이머를 처음 열음",
   "recordsObservedStarted": "카운트다운을 시작함",
   "recordsObservedStopped": "카운트다운을 멈춤",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "기록 시간대",
   "recordsTimeZoneMigrate": "이 기기의 시간대 사용",
   "recordsTimeZoneMigrateConfirm": "달력 날짜는 그대로입니다. 9시는 여전히 9시이며, 새 시간대로 읽습니다. 이미 진행 중인 카운트다운은 끝날 때까지 이전 시간대를 유지합니다.",
-  "recordsTimeZoneDevice": "이 기기: {{zone}}"
+  "recordsTimeZoneDevice": "이 기기: {{zone}}",
+  "recordsTimeZoneThisDevice": "이 기기",
+  "recordsTimeZoneFooter": "달력은 기록한 시간대를 유지합니다. 여행해도 날짜는 움직이지 않습니다. 이곳이 이제 집이라면 이 기기의 시간대로 바꿀 수 있습니다."
 }

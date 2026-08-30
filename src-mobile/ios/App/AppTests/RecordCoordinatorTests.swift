@@ -241,27 +241,39 @@ func migrateCalendarTimeZoneKeepsDayKeys() {
 }
 
 @MainActor
-@Test("Records year bounds stay on this year unless authored rows are older")
-func recordsYearBoundsIgnoreSeededCareerStart() {
-    var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
-    let today = calendar.date(from: DateComponents(year: 2026, month: 8, day: 30))!
-    let (thisYearFrom, thisYearThrough) = RecordsDesignView.recordsYearBounds(
-        for: today,
-        earliest: nil,
-        calendar: calendar
-    )
-    #expect(RecordJSON.dayKey(thisYearFrom, calendar: calendar) == "2026-01-01")
-    #expect(RecordJSON.dayKey(thisYearThrough, calendar: calendar) == "2026-12-31")
+@Test("Records list is actual start and stop days, not the scheduled year")
+func recordedWorkDaysIgnoreScheduleAndFirstSeen() {
+    let store = OffWorkStore(defaults: isolatedRecordDefaults())
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.noteTimerSurfaceVisible(at: date(2026, 8, 24, 9))
+    #expect(store.recordedWorkDays().isEmpty)
 
-    let authored = calendar.date(from: DateComponents(year: 2024, month: 3, day: 1))!
-    let (authoredFrom, authoredThrough) = RecordsDesignView.recordsYearBounds(
-        for: today,
-        earliest: authored,
-        calendar: calendar
-    )
-    #expect(RecordJSON.dayKey(authoredFrom, calendar: calendar) == "2024-03-01")
-    #expect(RecordJSON.dayKey(authoredThrough, calendar: calendar) == "2026-12-31")
+    store.startCountdown(at: date(2026, 8, 24, 9))
+    store.noteTimerSurfaceVisible(at: date(2026, 8, 25, 9))
+
+    let days = store.recordedWorkDays()
+    #expect(days.map(\.dayKey) == ["2026-08-24"])
+    #expect(days[0].firstStart != nil)
+}
+
+@MainActor
+@Test("Early clock in and off become work records")
+func earlyClockWritesWorkRecords() {
+    let store = OffWorkStore(defaults: isolatedRecordDefaults())
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.clockInEarly(at: date(2026, 8, 24, 8))
+    store.clockOffEarly(at: date(2026, 8, 24, 16))
+
+    let days = store.recordedWorkDays()
+    #expect(days.map(\.dayKey) == ["2026-08-24"])
+    #expect(days[0].observations.contains { $0.kind == .countdownStarted })
+    #expect(days[0].observations.contains { $0.kind == .countdownStopped })
 }
 
 @MainActor

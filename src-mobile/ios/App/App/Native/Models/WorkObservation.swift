@@ -7,6 +7,29 @@ enum WorkObservationKind: String, Codable, Sendable {
     case countdownStarted
     case countdownStopped
     case overtimeDeclared
+
+    /// Opening the timer is not clocking in. The free records list only
+    /// shows days that have one of these.
+    var isWorkSessionRecord: Bool {
+        self != .timerSurfaceFirstSeen
+    }
+}
+
+/// One civil day that actually started, stopped, or logged overtime.
+struct RecordedWorkDay: Equatable, Sendable, Identifiable {
+    var dayKey: String
+    var shiftAnchorDate: Date
+    var observations: [WorkObservation]
+
+    var id: String { dayKey }
+
+    var firstStart: Date? {
+        observations.first { $0.kind == .countdownStarted }?.occurredAt
+    }
+
+    var lastStop: Date? {
+        observations.last { $0.kind == .countdownStopped }?.occurredAt
+    }
 }
 
 /// An immutable use event. Writes never edit; a retry reuses `eventID`.

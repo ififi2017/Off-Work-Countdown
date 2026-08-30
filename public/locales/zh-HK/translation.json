@@ -19,6 +19,8 @@
   "recordsArchiveSaveFailedBody": "啱先嘅改動仲喺畫面度，但未寫入呢部裝置上嘅檔案。可以遲啲再試——而家份檔案冇被取代。",
   "recordsObservations": "App 留意到嘅",
   "recordsNoObservations": "呢日未有觀察紀錄，更表底圖仲喺度。",
+  "recordsEmptyTitle": "未有上下班紀錄",
+  "recordsEmptyBody": "開始或結束一次倒數，呢一日就會出現喺呢度。更表唔會預先填入列表。",
   "recordsObservedFirstSeen": "第一次打開計時頁",
   "recordsObservedStarted": "開始咗倒數",
   "recordsObservedStopped": "停止咗倒數",
@@ -443,5 +445,7 @@
   "recordsTimeZone": "紀錄時區",
   "recordsTimeZoneMigrate": "改用呢部裝置嘅時區",
   "recordsTimeZoneMigrateConfirm": "日曆上嘅日期唔會郁。九點仲係九點，只係改按此時區嚟讀。已經喺度行嘅倒計時仍然用舊時區，直至呢次完。",
-  "recordsTimeZoneDevice": "呢部裝置：{{zone}}"
+  "recordsTimeZoneDevice": "呢部裝置：{{zone}}",
+  "recordsTimeZoneThisDevice": "呢部裝置",
+  "recordsTimeZoneFooter": "日曆按記下時嘅時區排。人到另一個時區，年曆上嘅日子唔會跟住走。如果呢度成咗常住地，可以改用呢部裝置嘅時區。"
 }
