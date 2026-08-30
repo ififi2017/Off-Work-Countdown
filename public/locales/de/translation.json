@@ -10,7 +10,13 @@
   "recordsRestDay": "Frei",
   "recordsExport": "Einträge exportieren",
   "recordsDeleteAll": "Einträge auf diesem Gerät löschen",
-  "recordsDeleteAllConfirm": "Löscht die lokalen Einträge auf diesem Gerät. Ein späterer Import eines alten Backups überspringt Gelöschtes.",
+  "recordsDeleteAllConfirm": "Löscht die lokalen Einträge auf diesem Gerät. Du kannst sie später durch den Import eines alten Backups wiederherstellen.",
+  "recordsArchiveDamagedTitle": "Diese Eintragsdatei lässt sich nicht lesen",
+  "recordsArchiveDamagedBody": "Die Datei auf diesem Gerät ist beschädigt oder unlesbar, darum werden neue Einträge nicht gespeichert. Du kannst sie beiseitelegen und ein neues Archiv beginnen. Die Originaldatei bleibt auf dem Gerät, damit du sie später von Hand retten kannst.",
+  "recordsArchiveQuarantine": "Beschädigtes Archiv isolieren und neu beginnen",
+  "recordsArchiveQuarantineConfirm": "Die alten Einträge kommen damit nicht zurück. Die beschädigte Datei wird als .corrupt-Kopie beiseitegelegt, und auf diesem Gerät startet ein neues Archiv.",
+  "recordsArchiveSaveFailedTitle": "Einträge konnten nicht gespeichert werden",
+  "recordsArchiveSaveFailedBody": "Die letzte Änderung ist noch auf dem Bildschirm, hat die Datei auf diesem Gerät aber nicht erreicht. Versuch es gleich noch einmal — das vorhandene Archiv wurde nicht ersetzt.",
   "recordsObservations": "Was die App bemerkt hat",
   "recordsNoObservations": "Für diesen Tag gibt es noch keine Beobachtung — der Plan bleibt.",
   "recordsObservedFirstSeen": "Timer zum ersten Mal geöffnet",
@@ -433,5 +439,9 @@
   "debugScenarioRestDay": "Ruhetag · Freitag · nächster 09:00–17:00",
   "debugScenarioManual": "Manueller Plan · heute nachfragen",
   "debugLiveActivity": "15-minütige Live-Aktivität starten",
-  "debugLiveActivityDetail": "Startet eine echte Live-Aktivität für eine Aufnahmeschicht von 09:00–19:00."
+  "debugLiveActivityDetail": "Startet eine echte Live-Aktivität für eine Aufnahmeschicht von 09:00–19:00.",
+  "recordsTimeZone": "Zeitzone der Einträge",
+  "recordsTimeZoneMigrate": "Zeitzone dieses Geräts verwenden",
+  "recordsTimeZoneMigrateConfirm": "Kalenderdaten bleiben. Neun Uhr bleibt neun Uhr, jetzt in dieser Zeitzone. Ein laufender Countdown behält die vorherige bis zum Ende.",
+  "recordsTimeZoneDevice": "Dieses Gerät: {{zone}}"
 }

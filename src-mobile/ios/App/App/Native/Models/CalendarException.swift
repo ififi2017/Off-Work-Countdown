@@ -28,6 +28,8 @@ struct CalendarException: Equatable, Sendable {
     var editedAt: Date
     var editCount: Int
     var editTieBreaker: UUID
+    /// Civil day this row was recorded in. Travel does not rewrite it.
+    var timeZoneIdentifier: String = TimeZone.current.identifier
 
     static func dayKey(dateKey: String, origin: CalendarExceptionOrigin) -> String {
         "\(dateKey)#\(origin.rawValue)"

@@ -66,13 +66,21 @@ export function createIOSNativeRulesBundle() {
     };
   }
 
+  function inputTimeZone(input) {
+    return typeof input.timeZoneIdentifier === "string" && input.timeZoneIdentifier.trim()
+      ? input.timeZoneIdentifier.trim()
+      : null;
+  }
+
   function resolveCurrentShift(input) {
     const options = shiftOptions(input);
+    const timeZone = inputTimeZone(input);
     const live = countdown.buildShiftTimeline(
       input.startTime,
       input.endTime,
       new Date(input.nowMs),
-      options
+      options,
+      timeZone
     );
     const ended = countdown.findEndedShiftOnEndCalendarDay({
       startTime: input.startTime,
@@ -82,6 +90,7 @@ export function createIOSNativeRulesBundle() {
       schedule: input.schedule || null,
       options,
       forcedWorkdayStartMs: input.forcedWorkdayStartMs || null,
+      timeZone,
     });
     const liveStart = countdown.getShiftStartAtMs(live);
     const liveEnd = countdown.getShiftEndAtMs(live);
@@ -100,23 +109,26 @@ export function createIOSNativeRulesBundle() {
     return live;
   }
 
-  function startOfLocalDayMs(date) {
-    const day = new Date(date);
-    day.setHours(0, 0, 0, 0);
-    return day.getTime();
+  function startOfLocalDayMs(date, timeZone) {
+    return countdown.startOfCivilDayMs(
+      date instanceof Date ? date.getTime() : Number(date),
+      timeZone || null
+    );
   }
 
   function isForcedShift(input, shift) {
     if (!(typeof input.forcedWorkdayStartMs === "number")) return false;
-    return startOfLocalDayMs(new Date(countdown.getShiftStartAtMs(shift))) ===
-      startOfLocalDayMs(new Date(input.forcedWorkdayStartMs));
+    const timeZone = inputTimeZone(input);
+    return startOfLocalDayMs(countdown.getShiftStartAtMs(shift), timeZone) ===
+      startOfLocalDayMs(input.forcedWorkdayStartMs, timeZone);
   }
 
   function isScheduledShift(input, shift) {
     return countdown.isScheduledWorkday(
       new Date(countdown.getShiftStartAtMs(shift)),
       input.workdays,
-      input.schedule || null
+      input.schedule || null,
+      inputTimeZone(input)
     );
   }
 
@@ -129,36 +141,69 @@ export function createIOSNativeRulesBundle() {
   // becomes the ordinary midnight-to-clock-in ring, so 00:08 before 09:00
   // reads about 1.5%, not 98.5%.
   function countdownAnchorAtMs(input, targetAtMs) {
-    const targetDay = new Date(targetAtMs);
-    targetDay.setHours(0, 0, 0, 0);
+    const timeZone = inputTimeZone(input);
+    if (!timeZone) {
+      const targetDay = new Date(targetAtMs);
+      targetDay.setHours(0, 0, 0, 0);
 
-    for (let offset = 1; offset <= 366; offset += 1) {
-      const candidateDay = new Date(targetDay);
-      candidateDay.setDate(candidateDay.getDate() - offset);
-      const candidateStart = countdown.atTime(candidateDay, input.startTime);
-      if (!countdown.isScheduledWorkday(
-        candidateStart,
-        input.workdays,
-        input.schedule || null
-      )) {
-        continue;
+      for (let offset = 1; offset <= 366; offset += 1) {
+        const candidateDay = new Date(targetDay);
+        candidateDay.setDate(candidateDay.getDate() - offset);
+        const candidateStart = countdown.atTime(candidateDay, input.startTime);
+        if (!countdown.isScheduledWorkday(
+          candidateStart,
+          input.workdays,
+          input.schedule || null
+        )) {
+          continue;
+        }
+
+        const previous = countdown.buildShiftTimeline(
+          input.startTime,
+          input.endTime,
+          candidateDay,
+          {
+            breakStartTime: input.breakStartTime || null,
+            breakDurationMinutes: input.breakDurationMinutes || 0,
+          }
+        );
+        const anchor = new Date(countdown.getShiftEndAtMs(previous));
+        anchor.setHours(0, 0, 0, 0);
+        anchor.setDate(anchor.getDate() + 1);
+        if (anchor.getTime() < targetAtMs) return anchor.getTime();
       }
+      return targetDay.getTime();
+    }
 
+    const targetDayMs = startOfLocalDayMs(targetAtMs, timeZone);
+    for (let offset = 1; offset <= 366; offset += 1) {
+      const candidateDayMs = countdown.addCivilDaysMs(targetDayMs, -offset, timeZone);
       const previous = countdown.buildShiftTimeline(
         input.startTime,
         input.endTime,
-        candidateDay,
+        new Date(candidateDayMs),
         {
           breakStartTime: input.breakStartTime || null,
           breakDurationMinutes: input.breakDurationMinutes || 0,
-        }
+        },
+        timeZone
       );
-      const anchor = new Date(countdown.getShiftEndAtMs(previous));
-      anchor.setHours(0, 0, 0, 0);
-      anchor.setDate(anchor.getDate() + 1);
-      if (anchor.getTime() < targetAtMs) return anchor.getTime();
+      if (!countdown.isScheduledWorkday(
+        new Date(countdown.getShiftStartAtMs(previous)),
+        input.workdays,
+        input.schedule || null,
+        timeZone
+      )) {
+        continue;
+      }
+      const anchorMs = countdown.addCivilDaysMs(
+        startOfLocalDayMs(countdown.getShiftEndAtMs(previous), timeZone),
+        1,
+        timeZone
+      );
+      if (anchorMs < targetAtMs) return anchorMs;
     }
-    return targetDay.getTime();
+    return targetDayMs;
   }
 
   function countdownProjection(input, shift, nextShift) {
@@ -172,7 +217,7 @@ export function createIOSNativeRulesBundle() {
       return { targetAtMs: null, anchorAtMs: null, progress: 0 };
     }
 
-    const targetDayAtMs = startOfLocalDayMs(new Date(targetAtMs));
+    const targetDayAtMs = startOfLocalDayMs(targetAtMs, inputTimeZone(input));
     const isTargetWorkday = input.nowMs >= targetDayAtMs;
     const anchorAtMs = isTargetWorkday
       ? targetDayAtMs
@@ -209,6 +254,7 @@ export function createIOSNativeRulesBundle() {
           breakStartTime: input.breakStartTime || null,
           breakDurationMinutes: input.breakDurationMinutes || 0,
         },
+        timeZone: inputTimeZone(input),
       });
       const clockIn = countdownProjection(input, shift, nextShift);
       const dailySalary = countdown.getDailySalary(
@@ -233,12 +279,14 @@ export function createIOSNativeRulesBundle() {
         isWorkday: countdown.isScheduledWorkday(
           new Date(countdown.getShiftStartAtMs(shift)),
           input.workdays,
-          input.schedule || null
+          input.schedule || null,
+          inputTimeZone(input)
         ),
         nextRestAtMs: countdown.findNextRestDate({
           afterMs: input.nowMs,
           workdays: input.workdays,
           schedule: input.schedule || null,
+          timeZone: inputTimeZone(input),
         })?.getTime() ?? null,
         dailySalary,
         nextShiftStartAtMs: nextShift
@@ -262,7 +310,8 @@ export function createIOSNativeRulesBundle() {
         input.startTime,
         input.endTime,
         new Date(input.nowMs),
-        shiftOptions(input)
+        shiftOptions(input),
+        inputTimeZone(input)
       );
       const shifts = [];
       let afterMs = Math.max(input.nowMs, countdown.getShiftEndAtMs(current));
@@ -278,6 +327,7 @@ export function createIOSNativeRulesBundle() {
             breakStartTime: input.breakStartTime || null,
             breakDurationMinutes: input.breakDurationMinutes || 0,
           },
+          timeZone: inputTimeZone(input),
         });
         if (!shift) break;
 
@@ -313,6 +363,7 @@ export function createIOSNativeRulesBundle() {
         breakDurationMinutes: input.breakDurationMinutes || 0,
         fromMs: Number(input.fromMs),
         throughMs: Number(input.throughMs),
+        timeZone: input.timeZoneIdentifier || null,
       }));
     },
 
@@ -350,6 +401,7 @@ export function createIOSNativeRulesBundle() {
           breakStartTime: input.breakStartTime || null,
           breakDurationMinutes: input.breakDurationMinutes || 0,
         },
+        timeZone: inputTimeZone(input),
       });
       const project = (timeline, scope) =>
         reminders
@@ -373,7 +425,8 @@ export function createIOSNativeRulesBundle() {
         input.startTime,
         input.endTime,
         new Date(input.nowMs),
-        shiftOptions(input)
+        shiftOptions(input),
+        inputTimeZone(input)
       ).segments.length > 1;
     },
 

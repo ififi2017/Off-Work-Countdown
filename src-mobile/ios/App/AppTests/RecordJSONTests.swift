@@ -14,7 +14,7 @@ func recordJSONRejectsUnknownVersion() throws {
 @MainActor
 @Test("Export then import is idempotent and never includes salary")
 func recordJSONRoundTripIsIdempotent() throws {
-    var state = sampleState()
+    let state = sampleState()
     let timeZone = TimeZone(secondsFromGMT: 8 * 3600)!
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = timeZone
@@ -120,6 +120,137 @@ func recordJSONCivilDatesFollowFileTimeZone() throws {
     var imported = RecordState()
     _ = try RecordJSON.apply(try RecordJSON.decode(data), to: &imported, mode: .skipErased)
     #expect(RecordJSON.dayKey(imported.periods[0].startsOn, calendar: tokyo) == "2026-08-24")
+}
+
+@MainActor
+@Test("Older JSON without a per-row time zone inherits the file zone")
+func recordJSONMissingRowTimeZoneInheritsFileZone() throws {
+    let state = sampleState()
+    let data = try export(state)
+    var document = try RecordJSON.decode(data)
+    document.dayOverrides[0].timeZoneIdentifier = nil
+    var imported = RecordState()
+    _ = try RecordJSON.apply(document, to: &imported, mode: .skipErased)
+    #expect(imported.overrides[0].timeZoneIdentifier == TimeZone(secondsFromGMT: 0)!.identifier)
+}
+
+@MainActor
+@Test("Each row keeps its own civil timezone during round trip")
+func recordJSONMixedRowTimeZonesRoundTrip() throws {
+    var state = sampleState()
+    let tokyo = TimeZone(identifier: "Asia/Tokyo")!
+    let la = TimeZone(identifier: "America/Los_Angeles")!
+    var tokyoCalendar = Calendar(identifier: .gregorian)
+    tokyoCalendar.timeZone = tokyo
+    var laCalendar = Calendar(identifier: .gregorian)
+    laCalendar.timeZone = la
+    state.periods[0].startsOn = tokyoCalendar.date(from: DateComponents(year: 2026, month: 8, day: 24))!
+    state.periods[0].timeZoneIdentifier = tokyo.identifier
+    state.overrides[0].timeZoneIdentifier = la.identifier
+    state.overrides[0].shiftAnchorDate = laCalendar.date(from: DateComponents(year: 2026, month: 8, day: 24))!
+    state.snapshots = [
+        ScheduleSnapshot(
+            id: id(30),
+            periodID: id(1),
+            effectiveFrom: tokyoCalendar.date(from: DateComponents(year: 2026, month: 8, day: 24))!,
+            configurationData: Data("{}".utf8),
+            fingerprint: "test",
+            editedAt: Date(timeIntervalSince1970: 0),
+            editCount: 1,
+            editTieBreaker: id(31)
+        )
+    ]
+    state.exceptions = [
+        CalendarException(
+            dayKey: "2026-08-24#user",
+            date: laCalendar.date(from: DateComponents(year: 2026, month: 8, day: 24))!,
+            effect: .rest,
+            origin: .user,
+            isCleared: false,
+            regionIdentifier: nil,
+            datasetVersion: nil,
+            label: nil,
+            editedAt: Date(timeIntervalSince1970: 0),
+            editCount: 1,
+            editTieBreaker: id(32),
+            timeZoneIdentifier: la.identifier
+        )
+    ]
+    state.observations = [
+        WorkObservation(
+            eventID: id(33),
+            shiftAnchorDate: tokyoCalendar.date(from: DateComponents(year: 2026, month: 8, day: 24))!,
+            occurredAt: Date(timeIntervalSince1970: 1_777_000_123),
+            kind: .countdownStarted,
+            valueData: nil,
+            scheduleSnapshotID: id(30),
+            timeZoneIdentifier: tokyo.identifier
+        )
+    ]
+
+    let data = try export(state)
+    var imported = RecordState()
+    _ = try RecordJSON.apply(try RecordJSON.decode(data), to: &imported, mode: .skipErased)
+    #expect(imported.periods[0].timeZoneIdentifier == tokyo.identifier)
+    #expect(RecordJSON.dayKey(imported.periods[0].startsOn, calendar: tokyoCalendar) == "2026-08-24")
+    #expect(imported.overrides[0].timeZoneIdentifier == la.identifier)
+    #expect(RecordJSON.dayKey(imported.overrides[0].shiftAnchorDate, calendar: laCalendar) == "2026-08-24")
+    #expect(RecordJSON.dayKey(imported.snapshots[0].effectiveFrom, calendar: tokyoCalendar) == "2026-08-24")
+    #expect(imported.exceptions[0].timeZoneIdentifier == la.identifier)
+    #expect(RecordJSON.dayKey(imported.exceptions[0].date, calendar: laCalendar) == "2026-08-24")
+    #expect(imported.observations[0].timeZoneIdentifier == tokyo.identifier)
+    #expect(RecordJSON.dayKey(imported.observations[0].shiftAnchorDate, calendar: tokyoCalendar) == "2026-08-24")
+}
+
+@MainActor
+@Test("Invalid civil dates and override segments are rejected")
+func recordJSONRejectsInvalidCivilData() throws {
+    var document = try RecordJSON.decode(export(sampleState()))
+    document.dayOverrides[0].dayKey = "2026-02-30"
+    var state = RecordState()
+    var report = try RecordJSON.apply(document, to: &state, mode: .skipErased)
+    #expect(report.rejected.contains { $0.entityType == .dayOverride })
+
+    document = try RecordJSON.decode(export(sampleState()))
+    document.dayOverrides[0].segments = [
+        NativeShiftSegment(startAtMs: 2, endAtMs: 3),
+        NativeShiftSegment(startAtMs: 1, endAtMs: 4),
+    ]
+    state = RecordState()
+    report = try RecordJSON.apply(document, to: &state, mode: .skipErased)
+    #expect(report.rejected.contains { $0.entityType == .dayOverride })
+
+    document = try RecordJSON.decode(export(sampleState()))
+    document.careerPeriods[0].endsBefore = "2026-02-30"
+    state = RecordState()
+    report = try RecordJSON.apply(document, to: &state, mode: .skipErased)
+    #expect(report.rejected.contains { $0.entityType == .careerPeriod })
+
+    document = try RecordJSON.decode(export(sampleState()))
+    document.lifeProfile = LifeProfileDTO(
+        LifeProfile(
+            workStartedOn: Date(timeIntervalSince1970: 0),
+            editedAt: Date(timeIntervalSince1970: 0),
+            editCount: 1,
+            editTieBreaker: id(40)
+        ),
+        calendar: Calendar(identifier: .gregorian)
+    )
+    document.lifeProfile?.workStartedOn = "2026-02-30"
+    state = RecordState()
+    report = try RecordJSON.apply(document, to: &state, mode: .skipErased)
+    #expect(report.rejected.contains { $0.entityType == .lifeProfile })
+}
+
+@MainActor
+@Test("Duplicate period identities are reported without trapping")
+func recordJSONDuplicatePeriodDoesNotTrap() throws {
+    var document = try RecordJSON.decode(export(sampleState()))
+    document.careerPeriods.append(document.careerPeriods[0])
+    var state = RecordState()
+    let report = try RecordJSON.apply(document, to: &state, mode: .skipErased)
+    #expect(state.periods.count == 1)
+    #expect(report.unchanged[.careerPeriod] == 1)
 }
 
 @MainActor

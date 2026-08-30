@@ -20,6 +20,8 @@ struct WorkObservation: Equatable, Sendable, Identifiable {
     var valueData: Data?
     var scheduleSnapshotID: UUID
     var schemaVersion: Int = WorkObservation.schemaVersion
+    /// Civil day this row was recorded in. Travel does not rewrite it.
+    var timeZoneIdentifier: String = TimeZone.current.identifier
 
     var id: UUID { eventID }
 }

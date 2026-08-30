@@ -10,7 +10,13 @@
   "recordsRestDay": "休息",
   "recordsExport": "匯出紀錄",
   "recordsDeleteAll": "刪除此裝置上嘅紀錄",
-  "recordsDeleteAllConfirm": "會從此裝置移除本機紀錄。之後匯入舊備份時，已刪除嘅項目會預設略過。",
+  "recordsDeleteAllConfirm": "會從此裝置移除本機紀錄。之後可以匯入舊備份嚟恢復呢啲紀錄。",
+  "recordsArchiveDamagedTitle": "呢份紀錄檔案讀唔到",
+  "recordsArchiveDamagedBody": "呢部裝置上嘅紀錄檔已損壞或者讀唔到，新紀錄暫時唔會寫入。你可以將佢放到一邊，重新開始一份檔案。原檔會留喺裝置度，之後仲可以人手恢復。",
+  "recordsArchiveQuarantine": "隔離損壞檔案並重新開始",
+  "recordsArchiveQuarantineConfirm": "呢個唔會恢復舊紀錄。會將損壞檔挪到一邊（檔名帶 .corrupt），再喺呢部裝置開始一份新檔案。",
+  "recordsArchiveSaveFailedTitle": "紀錄未有儲存成功",
+  "recordsArchiveSaveFailedBody": "啱先嘅改動仲喺畫面度，但未寫入呢部裝置上嘅檔案。可以遲啲再試——而家份檔案冇被取代。",
   "recordsObservations": "App 留意到嘅",
   "recordsNoObservations": "呢日未有觀察紀錄，更表底圖仲喺度。",
   "recordsObservedFirstSeen": "第一次打開計時頁",
@@ -433,5 +439,9 @@
   "debugScenarioRestDay": "休息日 · 星期五 · 下次 09:00–17:00",
   "debugScenarioManual": "手動排班 · 詢問今天是否上班",
   "debugLiveActivity": "立即開始 15 分鐘即時動態",
-  "debugLiveActivityDetail": "為 09:00–19:00 示範班次立即啟動真正的即時動態。"
+  "debugLiveActivityDetail": "為 09:00–19:00 示範班次立即啟動真正的即時動態。",
+  "recordsTimeZone": "紀錄時區",
+  "recordsTimeZoneMigrate": "改用呢部裝置嘅時區",
+  "recordsTimeZoneMigrateConfirm": "日曆上嘅日期唔會郁。九點仲係九點，只係改按此時區嚟讀。已經喺度行嘅倒計時仍然用舊時區，直至呢次完。",
+  "recordsTimeZoneDevice": "呢部裝置：{{zone}}"
 }

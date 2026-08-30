@@ -7,6 +7,8 @@ struct RecordsDesignView: View {
     @State private var days: [DayResolution] = []
     @State private var exportURL: URL?
     @State private var confirmsDelete = false
+    @State private var confirmsQuarantine = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -19,37 +21,46 @@ struct RecordsDesignView: View {
 
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    OWCGroupCard {
-                        ForEach(Array(days.enumerated()), id: \.element.dayKey) { index, day in
-                            if index > 0 { Divider().padding(.leading, 16) }
-                            NavigationLink(value: day.dayKey) {
-                                RecordDayRow(store: store, day: day)
-                            }
-                            .buttonStyle(.plain)
-                        }
+                    if let banner = store.records.archiveBanner {
+                        archiveBannerCard(banner)
+                            .padding(.horizontal, OWCDesign.pageInset)
+                            .padding(.top, 14)
+                            .padding(.bottom, banner == .damaged ? 24 : 0)
                     }
-                    .padding(.horizontal, OWCDesign.pageInset)
-                    .padding(.top, 14)
 
-                    OWCGroupCard {
-                        if let exportURL {
-                            ShareLink(item: exportURL) {
-                                settingsRow(store.t("recordsExport"), systemImage: "square.and.arrow.up")
+                    if store.records.archiveBanner != .damaged {
+                        OWCGroupCard {
+                            ForEach(Array(days.enumerated()), id: \.element.dayKey) { index, day in
+                                if index > 0 { Divider().padding(.leading, 16) }
+                                NavigationLink(value: day.dayKey) {
+                                    RecordDayRow(store: store, day: day)
+                                }
+                                .buttonStyle(.plain)
                             }
-                        } else {
-                            settingsRow(store.t("recordsExport"), systemImage: "square.and.arrow.up")
-                                .foregroundStyle(OWCDesign.tertiary)
                         }
-                        Divider().padding(.leading, 16)
-                        Button(role: .destructive) {
-                            confirmsDelete = true
-                        } label: {
-                            settingsRow(store.t("recordsDeleteAll"), systemImage: "trash")
+                        .padding(.horizontal, OWCDesign.pageInset)
+                        .padding(.top, 14)
+
+                        OWCGroupCard {
+                            if let exportURL {
+                                ShareLink(item: exportURL) {
+                                    settingsRow(store.t("recordsExport"), systemImage: "square.and.arrow.up")
+                                }
+                            } else {
+                                settingsRow(store.t("recordsExport"), systemImage: "square.and.arrow.up")
+                                    .foregroundStyle(OWCDesign.tertiary)
+                            }
+                            Divider().padding(.leading, 16)
+                            Button(role: .destructive) {
+                                confirmsDelete = true
+                            } label: {
+                                settingsRow(store.t("recordsDeleteAll"), systemImage: "trash")
+                            }
                         }
+                        .padding(.horizontal, OWCDesign.pageInset)
+                        .padding(.top, 14)
+                        .padding(.bottom, 24)
                     }
-                    .padding(.horizontal, OWCDesign.pageInset)
-                    .padding(.top, 14)
-                    .padding(.bottom, 24)
                 }
             }
         }
@@ -62,6 +73,21 @@ struct RecordsDesignView: View {
             }
         }
         .onAppear(perform: refresh)
+        .onChange(of: store.selectedTab) { _, tab in
+            if tab == .records { refresh() }
+        }
+        .onChange(of: store.records.state) { _, _ in
+            refresh()
+        }
+        .onChange(of: store.records.persistenceError) { _, _ in
+            refresh()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { refresh() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            refresh()
+        }
         .confirmationDialog(
             store.t("recordsDeleteAllConfirm"),
             isPresented: $confirmsDelete,
@@ -72,16 +98,77 @@ struct RecordsDesignView: View {
                 refresh()
             }
         }
+        .confirmationDialog(
+            store.t("recordsArchiveQuarantineConfirm"),
+            isPresented: $confirmsQuarantine,
+            titleVisibility: .visible
+        ) {
+            Button(store.t("recordsArchiveQuarantine")) {
+                do {
+                    try store.records.quarantineCorruptedArchive()
+                    refresh()
+                } catch {
+                    refresh()
+                }
+            }
+        }
+    }
+
+    private func archiveBannerCard(_ banner: RecordsArchiveBanner) -> some View {
+        OWCGroupCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(store.t(banner == .saveFailed ? "recordsArchiveSaveFailedTitle" : "recordsArchiveDamagedTitle"))
+                    .font(.body.weight(.medium))
+                Text(store.t(banner == .saveFailed ? "recordsArchiveSaveFailedBody" : "recordsArchiveDamagedBody"))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                if banner == .damaged {
+                    Button(store.t("recordsArchiveQuarantine")) {
+                        confirmsQuarantine = true
+                    }
+                    .font(.body.weight(.semibold))
+                    .padding(.top, 4)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+        }
     }
 
     private func refresh() {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let from = calendar.date(from: DateComponents(year: calendar.component(.year, from: today), month: 1, day: 1))
-            ?? today
-        let through = calendar.date(byAdding: .day, value: 14, to: today) ?? today
+        if store.records.archiveBanner == .damaged {
+            days = []
+            exportURL = nil
+            return
+        }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = store.recordsTimeZone
+        // The seeded career period starts in 2000 so it can cover any later
+        // day. That is not user history — using it here would expand ~26 years
+        // on every visit. Only authored rows may pull the window earlier than
+        // 1 January of this year.
+        let earliest = (
+            store.records.state.overrides.map(\.shiftAnchorDate)
+                + store.records.state.exceptions.map(\.date)
+                + store.records.state.observations.map(\.shiftAnchorDate)
+                + (store.records.state.lifeProfile?.workStartedOn.map { [$0] } ?? [])
+        ).min()
+        let (from, through) = Self.recordsYearBounds(for: Date(), earliest: earliest, calendar: calendar)
         days = store.resolvedDays(from: from, through: through).reversed()
         exportURL = try? store.exportRecordsFile()
+    }
+
+    static func recordsYearBounds(
+        for date: Date,
+        earliest: Date? = nil,
+        calendar: Calendar
+    ) -> (from: Date, through: Date) {
+        let year = calendar.component(.year, from: date)
+        let startOfYear = calendar.date(from: DateComponents(year: year, month: 1, day: 1))
+            ?? calendar.startOfDay(for: date)
+        let through = calendar.date(from: DateComponents(year: year, month: 12, day: 31)) ?? startOfYear
+        let from = earliest.map { min(startOfYear, calendar.startOfDay(for: $0)) } ?? startOfYear
+        return (from, through)
     }
 
     private func settingsRow(_ title: String, systemImage: String) -> some View {

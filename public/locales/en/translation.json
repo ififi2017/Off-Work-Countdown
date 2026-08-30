@@ -10,7 +10,13 @@
   "recordsRestDay": "Rest",
   "recordsExport": "Export records",
   "recordsDeleteAll": "Delete records on this device",
-  "recordsDeleteAllConfirm": "This removes local records from this device. A later import of an old backup will skip anything you deleted.",
+  "recordsDeleteAllConfirm": "This removes local records from this device. You can restore them later by importing an old backup.",
+  "recordsArchiveDamagedTitle": "This records file can’t be read",
+  "recordsArchiveDamagedBody": "The file on this device is damaged or unreadable, so new records are not being saved. You can set it aside and start a fresh archive. The original file stays on the device for later recovery by hand.",
+  "recordsArchiveQuarantine": "Quarantine the damaged archive and start over",
+  "recordsArchiveQuarantineConfirm": "This does not bring the old records back. It moves the damaged file aside as a .corrupt copy and starts a fresh archive on this device.",
+  "recordsArchiveSaveFailedTitle": "Couldn’t save records",
+  "recordsArchiveSaveFailedBody": "The latest change is on screen but did not reach the file on this device. Try again in a moment — the existing archive was not replaced.",
   "recordsObservations": "What the app noticed",
   "recordsNoObservations": "Nothing recorded for this day — the schedule is still here.",
   "recordsObservedFirstSeen": "First opened the timer",
@@ -433,5 +439,9 @@
   "debugScenarioRestDay": "Rest day · Friday · next 09:00–17:00",
   "debugScenarioManual": "Manual schedule · ask about today",
   "debugLiveActivity": "Start 15-minute Live Activity",
-  "debugLiveActivityDetail": "Starts a real Live Activity for a 09:00–19:00 capture shift."
+  "debugLiveActivityDetail": "Starts a real Live Activity for a 09:00–19:00 capture shift.",
+  "recordsTimeZone": "Records time zone",
+  "recordsTimeZoneMigrate": "Use this device’s time zone",
+  "recordsTimeZoneMigrateConfirm": "Calendar dates stay where they are. Nine o’clock is still nine o’clock, now read in this time zone. A countdown that is already running keeps the previous one until it ends.",
+  "recordsTimeZoneDevice": "This device: {{zone}}"
 }

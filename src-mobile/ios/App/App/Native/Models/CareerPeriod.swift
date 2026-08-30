@@ -29,6 +29,16 @@ struct CareerPeriod: Equatable, Sendable, Identifiable {
     var editCount: Int
     var editTieBreaker: UUID
 
+    var timeZone: TimeZone {
+        TimeZone(identifier: timeZoneIdentifier) ?? .current
+    }
+
+    func civilCalendar() -> Calendar {
+        var calendar = Calendar(identifier: calendarIdentifier == "iso8601" ? .iso8601 : .gregorian)
+        calendar.timeZone = timeZone
+        return calendar
+    }
+
     func covers(_ day: Date) -> Bool {
         if day < startsOn { return false }
         if let endsBefore, day >= endsBefore { return false }

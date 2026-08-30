@@ -33,4 +33,6 @@ struct DayOverride: Equatable, Sendable {
     var editedAt: Date = .distantPast
     var editCount: Int = 0
     var editTieBreaker: UUID = DayOverride.unsetTieBreaker
+    /// Civil day this row was recorded in. Travel does not rewrite it.
+    var timeZoneIdentifier: String = TimeZone.current.identifier
 }

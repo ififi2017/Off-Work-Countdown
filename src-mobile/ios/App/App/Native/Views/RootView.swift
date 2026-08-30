@@ -57,7 +57,9 @@ struct OffWorkCountdownRootView: View {
             AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
             if store.onboardingComplete {
                 scheduleServices()
-                store.noteTimerSurfaceVisible()
+                if store.selectedTab == .timer {
+                    store.noteTimerSurfaceVisible()
+                }
             }
         }
         .onChange(of: store.countdownStarted) {
@@ -120,7 +122,7 @@ struct OffWorkCountdownRootView: View {
             store.refreshSystemLanguage()
             applyQAGeometryIfRequested()
             clearDebugServicesAfterResetIfNeeded()
-            if store.onboardingComplete {
+            if store.onboardingComplete, store.selectedTab == .timer {
                 store.noteTimerSurfaceVisible()
             }
         }

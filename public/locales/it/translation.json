@@ -10,7 +10,13 @@
   "recordsRestDay": "Riposo",
   "recordsExport": "Esporta registro",
   "recordsDeleteAll": "Elimina il registro su questo dispositivo",
-  "recordsDeleteAllConfirm": "Rimuove il registro locale da questo dispositivo. Un import successivo di un vecchio backup salterà ciò che hai eliminato.",
+  "recordsDeleteAllConfirm": "Rimuove il registro locale da questo dispositivo. Puoi ripristinarlo in seguito importando un vecchio backup.",
+  "recordsArchiveDamagedTitle": "Questo file del registro non si può leggere",
+  "recordsArchiveDamagedBody": "Il file su questo dispositivo è danneggiato o illeggibile, quindi i nuovi record non vengono salvati. Puoi metterlo da parte e ricominciare un archivio. Il file originale resta sul dispositivo per un recupero manuale più tardi.",
+  "recordsArchiveQuarantine": "Isola l’archivio danneggiato e ricomincia",
+  "recordsArchiveQuarantineConfirm": "Questo non riporta i record precedenti. Sposta il file danneggiato da parte come copia .corrupt e inizia un nuovo archivio su questo dispositivo.",
+  "recordsArchiveSaveFailedTitle": "Salvataggio non riuscito",
+  "recordsArchiveSaveFailedBody": "L’ultima modifica è ancora a schermo, ma non è arrivata al file su questo dispositivo. Riprova tra un attimo: l’archivio esistente non è stato sostituito.",
   "recordsObservations": "Cosa ha notato l’app",
   "recordsNoObservations": "Nessuna osservazione per questo giorno: il turno c’è ancora.",
   "recordsObservedFirstSeen": "Timer aperto per la prima volta",
@@ -433,5 +439,9 @@
   "debugScenarioRestDay": "Riposo · venerdì · prossimo 09:00–17:00",
   "debugScenarioManual": "Turno manuale · chiedi per oggi",
   "debugLiveActivity": "Avvia Attività in tempo reale di 15 minuti",
-  "debugLiveActivityDetail": "Avvia una vera Attività in tempo reale per un turno di acquisizione 09:00–19:00."
+  "debugLiveActivityDetail": "Avvia una vera Attività in tempo reale per un turno di acquisizione 09:00–19:00.",
+  "recordsTimeZone": "Fuso dei registri",
+  "recordsTimeZoneMigrate": "Usa il fuso di questo dispositivo",
+  "recordsTimeZoneMigrateConfirm": "Le date del calendario restano. Le nove restano le nove, lette in questo fuso. Un conto alla rovescia già avviato tiene il precedente fino alla fine.",
+  "recordsTimeZoneDevice": "Questo dispositivo: {{zone}}"
 }

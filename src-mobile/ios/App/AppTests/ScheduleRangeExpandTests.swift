@@ -69,3 +69,42 @@ func expandScheduleRangeTenYearMeasurement() throws {
     #expect(days.count >= 3650)
     #expect(milliseconds < 30_000)
 }
+
+@MainActor
+@Test("Live snapshot expands clock times in the locked time zone")
+func snapshotHonorsLockedTimeZone() throws {
+    let now = ISO8601DateFormatter().date(from: "2026-08-24T17:00:00Z")!
+    let schedule = NativeWorkSchedule(
+        mode: "classic",
+        referenceWeekStartMs: nil,
+        referenceWeekType: nil,
+        singleWeekendWorkday: nil,
+        rotationAnchorMs: nil,
+        rotationWorkDays: nil,
+        rotationRestDays: nil
+    )
+    func input(_ timeZone: String) -> NativeRulesInput {
+        NativeRulesInput(
+            startTime: "09:00",
+            endTime: "17:00",
+            nowMs: now.timeIntervalSince1970 * 1_000,
+            workdays: [1, 2, 3, 4, 5],
+            schedule: schedule,
+            breakStartTime: nil,
+            breakDurationMinutes: 0,
+            overtimeEndAtMs: nil,
+            salaryAmount: "",
+            salaryType: "monthly",
+            monthlyWorkingDays: 22,
+            annualBonusMonths: 0,
+            forcedWorkdayStartMs: nil,
+            timeZoneIdentifier: timeZone
+        )
+    }
+    let shanghai = try CountdownRules.shared.snapshot(input: input("Asia/Shanghai"))
+    let losAngeles = try CountdownRules.shared.snapshot(input: input("America/Los_Angeles"))
+    let shanghaiStart = ISO8601DateFormatter().date(from: "2026-08-25T01:00:00Z")!
+    let losAngelesStart = ISO8601DateFormatter().date(from: "2026-08-24T16:00:00Z")!
+    #expect(shanghai.startAtMs == shanghaiStart.timeIntervalSince1970 * 1_000)
+    #expect(losAngeles.startAtMs == losAngelesStart.timeIntervalSince1970 * 1_000)
+}

@@ -223,6 +223,9 @@ final class OffWorkStore {
         static let earlyStartAtMs = "ios.native.earlyStartAtMs"
         static let earlyStartUntilMs = "ios.native.earlyStartUntilMs"
         static let todayScheduleOverride = "ios.native.todayScheduleOverride"
+        static let recordsTimeZone = "ios.native.recordsTimeZone"
+        static let sessionTimeZone = "ios.native.sessionTimeZone"
+        static let sessionTimeZoneUntilMs = "ios.native.sessionTimeZoneUntilMs"
     }
 
     static let allowedLiveActivityLeadMinutes = [5, 15, 30]
@@ -300,6 +303,76 @@ final class OffWorkStore {
     }
 #endif
     var countdownStarted: Bool { didSet { defaults.set(countdownStarted, forKey: Key.countdownStarted) } }
+
+    /// Locked civil-day timezone. Travel does not rewrite the year view.
+    var recordsTimeZoneIdentifier: String {
+        didSet { defaults.set(recordsTimeZoneIdentifier, forKey: Key.recordsTimeZone) }
+    }
+
+    /// Timezone of the running countdown session. Nil when following the
+    /// schedule without a manual start.
+    var sessionTimeZoneIdentifier: String? {
+        didSet {
+            if let sessionTimeZoneIdentifier {
+                defaults.set(sessionTimeZoneIdentifier, forKey: Key.sessionTimeZone)
+            } else {
+                defaults.removeObject(forKey: Key.sessionTimeZone)
+            }
+        }
+    }
+
+    /// Instant after which a locked session timezone can fall back to records.
+    private var sessionTimeZoneUntilMs: Double? {
+        didSet {
+            if let sessionTimeZoneUntilMs {
+                defaults.set(sessionTimeZoneUntilMs, forKey: Key.sessionTimeZoneUntilMs)
+            } else {
+                defaults.removeObject(forKey: Key.sessionTimeZoneUntilMs)
+            }
+        }
+    }
+
+    var recordsTimeZone: TimeZone {
+        TimeZone(identifier: recordsTimeZoneIdentifier) ?? .current
+    }
+
+    /// Timezone the running countdown and auto-follow snapshot must use.
+    var countdownTimeZoneIdentifier: String {
+        sessionTimeZoneIdentifier ?? recordsTimeZoneIdentifier
+    }
+
+    var countdownTimeZone: TimeZone {
+        TimeZone(identifier: countdownTimeZoneIdentifier) ?? recordsTimeZone
+    }
+
+    /// Calendar used for records and schedule civil math. It remains anchored
+    /// to the persisted records zone rather than the device's travel zone.
+    var recordsCalendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = recordsTimeZone
+        return calendar
+    }
+
+    /// Always make the civil schedule zone explicit. JavaScriptCore's default
+    /// zone is not guaranteed to match Foundation's `TimeZone.current`, even
+    /// when the records zone is the device zone.
+    var rulesTimeZoneIdentifier: String? {
+        countdownTimeZoneIdentifier
+    }
+
+    var systemTimeZoneDiffersFromRecords: Bool {
+        TimeZone.current.identifier != recordsTimeZoneIdentifier
+    }
+
+    var recordsTimeZoneLabel: String {
+        recordsTimeZone.localizedName(for: .generic, locale: locale)
+            ?? recordsTimeZoneIdentifier
+    }
+
+    var systemTimeZoneLabel: String {
+        TimeZone.current.localizedName(for: .generic, locale: locale)
+            ?? TimeZone.current.identifier
+    }
 
     /// When the user said they had finished for the day, and at what moment.
     ///
@@ -544,6 +617,13 @@ final class OffWorkStore {
         onboardingComplete = defaults.bool(forKey: Key.onboardingComplete)
 #endif
         countdownStarted = defaults.bool(forKey: Key.countdownStarted)
+        let initialRecordsTimeZoneIdentifier = defaults.string(forKey: Key.recordsTimeZone)
+            ?? self.records.state.periods.first?.timeZoneIdentifier
+            ?? TimeZone.current.identifier
+        recordsTimeZoneIdentifier = initialRecordsTimeZoneIdentifier
+        let initialRecordsTimeZone = TimeZone(identifier: initialRecordsTimeZoneIdentifier) ?? .current
+        sessionTimeZoneIdentifier = defaults.string(forKey: Key.sessionTimeZone)
+        sessionTimeZoneUntilMs = defaults.object(forKey: Key.sessionTimeZoneUntilMs) as? Double
         let storedForcedDate = defaults.string(forKey: Key.forcedWorkdayDate)
         forcedWorkdayDate = storedForcedDate ?? (defaults.bool(forKey: Key.legacyForceToday) ? Self.dayKey(for: .now) : nil)
         startMinutes = defaults.object(forKey: Key.startMinutes) == nil ? 9 * 60 : defaults.integer(forKey: Key.startMinutes)
@@ -554,12 +634,12 @@ final class OffWorkStore {
         alternatingWeekType = AlternatingWeekType(rawValue: defaults.string(forKey: Key.alternatingWeekType) ?? "double") ?? .double
         alternatingWeekendWorkday = defaults.object(forKey: Key.alternatingWeekendWorkday) == nil ? 6 : defaults.integer(forKey: Key.alternatingWeekendWorkday)
         alternatingReferenceWeekStartMs = defaults.object(forKey: Key.alternatingReferenceWeekStartMs) == nil
-            ? Self.startOfCurrentWeek().timeIntervalSince1970 * 1_000
+            ? Self.startOfCurrentWeek(timeZone: initialRecordsTimeZone).timeIntervalSince1970 * 1_000
             : defaults.double(forKey: Key.alternatingReferenceWeekStartMs)
         rotationWorkDays = defaults.object(forKey: Key.rotationWorkDays) == nil ? 2 : max(1, defaults.integer(forKey: Key.rotationWorkDays))
         rotationRestDays = defaults.object(forKey: Key.rotationRestDays) == nil ? 2 : max(1, defaults.integer(forKey: Key.rotationRestDays))
         rotationAnchorMs = defaults.object(forKey: Key.rotationAnchorMs) == nil
-            ? Calendar.current.startOfDay(for: .now).timeIntervalSince1970 * 1_000
+            ? Self.startOfDay(for: .now, timeZone: initialRecordsTimeZone).timeIntervalSince1970 * 1_000
             : defaults.double(forKey: Key.rotationAnchorMs)
         lunchEnabled = defaults.object(forKey: Key.lunchEnabled) == nil ? false : defaults.bool(forKey: Key.lunchEnabled)
         lunchStartMinutes = defaults.object(forKey: Key.lunchStartMinutes) == nil ? 12 * 60 : defaults.integer(forKey: Key.lunchStartMinutes)
@@ -687,8 +767,8 @@ final class OffWorkStore {
 
     /// First visit to the timer surface today. Not "started work".
     func resolvedDays(from: Date, through: Date) -> [DayResolution] {
-        records.ensureSeeded(hours: hoursConfiguration(at: from), at: from)
-        let calendar = Calendar.current
+        records.ensureSeeded(hours: hoursConfiguration(at: from), at: from, timeZone: recordsTimeZone)
+        let calendar = recordsCalendar
         let start = calendar.startOfDay(for: from)
         let end = calendar.startOfDay(for: through)
         guard start <= end else { return [] }
@@ -697,20 +777,24 @@ final class OffWorkStore {
         var cursor = start
         var result: [DayResolution] = []
         while cursor <= end {
-            let dayKey = Self.dayKey(for: cursor)
-            let period = DayRecordResolver.period(on: cursor, from: records.state.periods)
-            let snapshot = period.flatMap {
+            let covering = DayRecordResolver.period(on: cursor, from: records.state.periods)
+            let dayCalendar = covering?.civilCalendar() ?? calendar
+            let dayKey = RecordJSON.dayKey(cursor, calendar: dayCalendar)
+            let snapshot = covering.flatMap {
                 DayRecordResolver.snapshot(on: cursor, in: $0, from: records.state.snapshots)
             }
             if let snapshot, expansions[snapshot.id] == nil {
+                let expansionFrom = dayCalendar.startOfDay(for: from)
+                let expansionThrough = dayCalendar.startOfDay(for: through)
                 if let configuration = try? JSONDecoder().decode(
                     ScheduleHoursConfiguration.self,
                     from: snapshot.configurationData
                 ),
                    let days = try? CountdownRules.shared.expandScheduleRange(
                     configuration: configuration,
-                    from: start,
-                    through: end
+                    from: expansionFrom,
+                    through: expansionThrough,
+                    timeZone: covering?.timeZone
                    ) {
                     expansions[snapshot.id] = Dictionary(
                         uniqueKeysWithValues: days.map {
@@ -726,7 +810,7 @@ final class OffWorkStore {
             result.append(
                 DayRecordResolver.resolve(
                     dayKey: dayKey,
-                    shiftAnchorDate: cursor,
+                    shiftAnchorDate: dayCalendar.startOfDay(for: cursor),
                     periods: records.state.periods,
                     snapshots: records.state.snapshots,
                     exceptions: records.state.exceptions,
@@ -741,13 +825,74 @@ final class OffWorkStore {
     }
 
     func observations(on day: Date) -> [WorkObservation] {
-        records.state.observations
-            .filter { Calendar.current.isDate($0.shiftAnchorDate, inSameDayAs: day) }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = recordsTimeZone
+        return records.state.observations
+            .filter { calendar.isDate($0.shiftAnchorDate, inSameDayAs: day) }
             .sorted { $0.occurredAt < $1.occurredAt }
     }
 
+    func timeZoneIdentifierForWriting(startingNewSession: Bool = false) -> String {
+        if startingNewSession, systemTimeZoneDiffersFromRecords {
+            return TimeZone.current.identifier
+        }
+        return countdownTimeZoneIdentifier
+    }
+
+    func writingTimeZone(startingNewSession: Bool = false) -> TimeZone {
+        TimeZone(identifier: timeZoneIdentifierForWriting(startingNewSession: startingNewSession))
+            ?? recordsTimeZone
+    }
+
+    func migrateRecordsTimeZone(to timeZone: TimeZone = .current, at date: Date = .now) {
+        if countdownStarted {
+            lockSessionTimeZone(to: recordsTimeZoneIdentifier, at: date)
+        }
+        records.migrateCalendarTimeZone(to: timeZone.identifier, at: date)
+        recordsTimeZoneIdentifier = timeZone.identifier
+    }
+
+    private func lockSessionTimeZone(to identifier: String, at date: Date) {
+        sessionTimeZoneIdentifier = identifier
+        sessionTimeZoneUntilMs = snapshot(at: date)?.endAtMs
+    }
+
+    private func clearSessionTimeZone() {
+        sessionTimeZoneIdentifier = nil
+        sessionTimeZoneUntilMs = nil
+    }
+
+    @discardableResult
+    private func expireSessionTimeZone(at date: Date) -> Bool {
+        guard let until = sessionTimeZoneUntilMs,
+              date.timeIntervalSince1970 * 1_000 >= until
+        else { return false }
+        clearSessionTimeZone()
+        return true
+    }
+
+    func daysRecordedOutsidePeriodTimeZone() -> [String] {
+        let periodZones = Set(records.state.periods.map(\.timeZoneIdentifier))
+        let tagged = records.state.overrides.map { ($0.dayKey, $0.timeZoneIdentifier) }
+            + records.state.exceptions.map { ($0.dayKey, $0.timeZoneIdentifier) }
+            + records.state.observations.map {
+                (
+                    Self.dayKey(
+                        for: $0.shiftAnchorDate,
+                        timeZone: TimeZone(identifier: $0.timeZoneIdentifier) ?? recordsTimeZone
+                    ),
+                    $0.timeZoneIdentifier
+                )
+            }
+        return Set(
+            tagged.compactMap { dayKey, zone in
+                periodZones.contains(zone) ? nil : dayKey
+            }
+        ).sorted()
+    }
+
     func exportRecordsFile(at date: Date = .now) throws -> URL {
-        let data = try records.exportJSON(exportedAt: date)
+        let data = try records.exportJSON(exportedAt: date, timeZone: recordsTimeZone)
         let url = FileManager.default.temporaryDirectory.appending(path: "doneat-records.json")
         try data.write(to: url, options: .atomic)
         return url
@@ -762,20 +907,24 @@ final class OffWorkStore {
         at date: Date,
         eventID: UUID
     ) {
-        records.ensureSeeded(hours: hoursConfiguration(at: date), at: date)
+        records.ensureSeeded(hours: hoursConfiguration(at: date), at: date, timeZone: recordsTimeZone)
         let shift = snapshot(at: date)
         let anchor = shift?.startDate ?? date
         var valueData: Data?
         if kind == .overtimeDeclared, let overtimeEndAtMs {
             valueData = try? JSONEncoder().encode(["overtimeEndAtMs": overtimeEndAtMs])
         }
+        let zone = writingTimeZone()
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
         records.recordObservation(
             kind: kind,
             eventID: eventID,
-            shiftAnchorDate: Calendar.current.startOfDay(for: anchor),
+            shiftAnchorDate: calendar.startOfDay(for: anchor),
             occurredAt: date,
             snapshotID: records.currentSnapshotID(on: anchor) ?? UUID(),
-            valueData: valueData
+            valueData: valueData,
+            timeZoneIdentifier: zone.identifier
         )
     }
 
@@ -789,11 +938,15 @@ final class OffWorkStore {
         )
         let marks = timerDayMarks(at: date, workday: shift?.isWorkday == true)
         guard let shift else { return nil }
+        let zone = writingTimeZone()
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
         return DayOverrideProjection.project(
             marks: marks,
-            dayKey: Self.dayKey(for: shift.startDate),
-            shiftAnchorDate: Calendar.current.startOfDay(for: shift.startDate),
-            plannedSegments: shift.segments
+            dayKey: Self.dayKey(for: shift.startDate, timeZone: zone),
+            shiftAnchorDate: calendar.startOfDay(for: shift.startDate),
+            plannedSegments: shift.segments,
+            timeZoneIdentifier: zone.identifier
         )
     }
 
@@ -833,7 +986,7 @@ final class OffWorkStore {
         if debugTimerSession != nil { return false }
 #endif
         guard let forcedWorkdayDate else { return false }
-        return forcedWorkdayDate == Self.dayKey(for: shift.startDate)
+        return forcedWorkdayDate == Self.dayKey(for: shift.startDate, timeZone: countdownTimeZone)
     }
     /// SF Symbol for the two explicit themes. `auto` deliberately has none:
     /// the symbol named "a" is one of the localized symbols and renders as 字
@@ -918,7 +1071,8 @@ final class OffWorkStore {
                 salaryType: salaryType.rawValue,
                 monthlyWorkingDays: monthlyWorkingDays,
                 annualBonusMonths: 0,
-                forcedWorkdayStartMs: nil
+                forcedWorkdayStartMs: nil,
+                timeZoneIdentifier: rulesTimeZoneIdentifier
             )
         }
 #endif
@@ -943,7 +1097,8 @@ final class OffWorkStore {
             salaryType: salaryType.rawValue,
             monthlyWorkingDays: monthlyWorkingDays,
             annualBonusMonths: annualBonusEnabled ? annualBonusMonths : 0,
-            forcedWorkdayStartMs: applyOverride ? forcedWorkdayStartMs : nil
+            forcedWorkdayStartMs: applyOverride ? forcedWorkdayStartMs : nil,
+            timeZoneIdentifier: rulesTimeZoneIdentifier
         )
     }
 
@@ -987,7 +1142,8 @@ final class OffWorkStore {
             salaryType: salaryType.rawValue,
             monthlyWorkingDays: monthlyWorkingDays,
             annualBonusMonths: annualBonusEnabled ? annualBonusMonths : 0,
-            forcedWorkdayStartMs: forcedWorkdayStartMs
+            forcedWorkdayStartMs: forcedWorkdayStartMs,
+            timeZoneIdentifier: rulesTimeZoneIdentifier
         )
     }
 
@@ -1001,19 +1157,19 @@ final class OffWorkStore {
         let weekWasReanchored = change.scheduleMode == .alternating
             || change.alternatingWeekType != nil
         let weekStart = weekWasReanchored
-            ? Self.startOfWeek(containing: date).timeIntervalSince1970 * 1_000
+            ? Self.startOfWeek(containing: date, timeZone: recordsTimeZone).timeIntervalSince1970 * 1_000
             : alternatingReferenceWeekStartMs
 
         let rotationWork = change.rotationWorkDays ?? rotationWorkDays
         let rotationRest = change.rotationRestDays ?? rotationRestDays
         var rotationAnchor = change.scheduleMode == .rotation
-            ? Calendar.current.startOfDay(for: date).timeIntervalSince1970 * 1_000
+            ? recordsCalendar.startOfDay(for: date).timeIntervalSince1970 * 1_000
             : rotationAnchorMs
         if let cycleDay = change.rotationCycleDay {
             let length = max(2, rotationWork + rotationRest)
             let normalized = min(length, max(1, cycleDay))
-            let today = Calendar.current.startOfDay(for: date)
-            if let anchor = Calendar.current.date(
+            let today = recordsCalendar.startOfDay(for: date)
+            if let anchor = recordsCalendar.date(
                 byAdding: .day,
                 value: -(normalized - 1),
                 to: today
@@ -1250,12 +1406,21 @@ final class OffWorkStore {
             dismissedCompletedEndAtMs = nil
         }
         commitDisplayedHours()
+        let wasRunning = countdownStarted
         countdownStarted = true
+        if force || scheduleMode == .off, !wasRunning || sessionTimeZoneIdentifier == nil {
+            lockSessionTimeZone(
+                to: timeZoneIdentifierForWriting(startingNewSession: true),
+                at: date
+            )
+        }
         let shift = snapshot(at: date)
         // The day the shift starts, not the day the button was pressed. They
         // differ for an overnight shift forced after midnight, and marking the
         // press day there would mark a run nobody is looking at.
-        forcedWorkdayDate = force ? Self.dayKey(for: shift?.startDate ?? date) : nil
+        forcedWorkdayDate = force
+            ? Self.dayKey(for: shift?.startDate ?? date, timeZone: countdownTimeZone)
+            : nil
         if let shift, isEndedEarly(shift) {
             // Same shift, possibly with nudged hours. Keep the early-off
             // record so settlement stays on this run.
@@ -1545,6 +1710,7 @@ final class OffWorkStore {
         if recordObservation {
             writeObservation(.countdownStopped, at: date, eventID: UUID())
         }
+        clearSessionTimeZone()
     }
 
     /// Scheduled countdowns stay armed across calendar days. The concrete
@@ -1554,6 +1720,7 @@ final class OffWorkStore {
     @discardableResult
     func reconcileCountdownSession(at date: Date = .now) -> Bool {
         var changed = false
+        expireSessionTimeZone(at: date)
         if let override = todayOverride, date.timeIntervalSince1970 * 1_000 >= override.untilMs {
             todayOverride = nil
             changed = true
@@ -1660,6 +1827,7 @@ final class OffWorkStore {
         clearOvertime()
         clearEarlyClockInRecord()
         clearEarlyClockOffRecord()
+        clearSessionTimeZone()
     }
 
     /// First visit to the onboarding reminders page. Lunch on with edge
@@ -1752,11 +1920,11 @@ final class OffWorkStore {
     }
 
     func anchorAlternatingWeekToToday(at date: Date = .now) {
-        alternatingReferenceWeekStartMs = Self.startOfWeek(containing: date).timeIntervalSince1970 * 1_000
+        alternatingReferenceWeekStartMs = Self.startOfWeek(containing: date, timeZone: recordsTimeZone).timeIntervalSince1970 * 1_000
     }
 
     func anchorRotationToToday(at date: Date = .now) {
-        rotationAnchorMs = Calendar.current.startOfDay(for: date).timeIntervalSince1970 * 1_000
+        rotationAnchorMs = recordsCalendar.startOfDay(for: date).timeIntervalSince1970 * 1_000
     }
 
     var rotationCycleLength: Int {
@@ -1767,7 +1935,7 @@ final class OffWorkStore {
     /// schedule. Choosing another position only moves the schedule anchor; the
     /// TypeScript rules remain responsible for deciding work and rest days.
     var rotationCycleDay: Int {
-        let calendar = Calendar.current
+        let calendar = recordsCalendar
         let anchor = calendar.startOfDay(for: Date(timeIntervalSince1970: rotationAnchorMs / 1_000))
         let today = calendar.startOfDay(for: .now)
         let offset = calendar.dateComponents([.day], from: anchor, to: today).day ?? 0
@@ -1776,8 +1944,8 @@ final class OffWorkStore {
 
     func setRotationCycleDay(_ day: Int, at date: Date = .now) {
         let normalizedDay = min(rotationCycleLength, max(1, day))
-        let today = Calendar.current.startOfDay(for: date)
-        let anchor = Calendar.current.date(byAdding: .day, value: -(normalizedDay - 1), to: today) ?? today
+        let today = recordsCalendar.startOfDay(for: date)
+        let anchor = recordsCalendar.date(byAdding: .day, value: -(normalizedDay - 1), to: today) ?? today
         rotationAnchorMs = anchor.timeIntervalSince1970 * 1_000
     }
 
@@ -1789,14 +1957,17 @@ final class OffWorkStore {
         }
     }
 
-    func applyOvertime(date: Date) {
+    func applyOvertime(date: Date, declaredAt: Date = .now) {
         overtimeEndAtMs = date.timeIntervalSince1970 * 1_000
         countdownStarted = true
         activeCountdownEndAtMs = overtimeEndAtMs
+        if sessionTimeZoneIdentifier != nil {
+            sessionTimeZoneUntilMs = overtimeEndAtMs
+        }
         // Overtime after an early clock-off is "I wasn't done".
         clearEarlyClockOffRecord()
         dismissedCompletedEndAtMs = nil
-        writeObservation(.overtimeDeclared, at: date, eventID: UUID())
+        writeObservation(.overtimeDeclared, at: declaredAt, eventID: UUID())
     }
 
     func applyScheduleChange(
@@ -1858,13 +2029,18 @@ final class OffWorkStore {
 
         let effectiveFrom: Date
         if decision == .applyToToday {
-            effectiveFrom = Calendar.current.startOfDay(for: date)
-        } else if let next = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: date)) {
+            effectiveFrom = recordsCalendar.startOfDay(for: date)
+        } else if let next = recordsCalendar.date(byAdding: .day, value: 1, to: recordsCalendar.startOfDay(for: date)) {
             effectiveFrom = next
         } else {
             effectiveFrom = date
         }
-        records.commitHours(hoursConfiguration(at: date), effectiveFrom: effectiveFrom, at: date)
+        records.commitHours(
+            hoursConfiguration(at: date),
+            effectiveFrom: effectiveFrom,
+            at: date,
+            timeZone: recordsTimeZone
+        )
     }
 
     private func clearTodayAdjustments() {
@@ -1894,7 +2070,7 @@ final class OffWorkStore {
     }
 
     private func overrideExpiry(at date: Date) -> Double? {
-        let calendar = Calendar.current
+        let calendar = recordsCalendar
         if let shift = snapshot(at: date) {
             let inShiftContext = shift.isWorkday
                 || isForcedWorkday(shift)
@@ -1934,8 +2110,10 @@ final class OffWorkStore {
         components.year = parts[0]
         components.month = parts[1]
         components.day = parts[2]
-        return Calendar.current.date(from: components)
-            .map { Calendar.current.startOfDay(for: $0).timeIntervalSince1970 * 1_000 }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = countdownTimeZone
+        return calendar.date(from: components)
+            .map { calendar.startOfDay(for: $0).timeIntervalSince1970 * 1_000 }
     }
 
     func effectiveScheduleMode(at date: Date = .now) -> WorkScheduleMode {
@@ -2258,8 +2436,10 @@ final class OffWorkStore {
         lastCelebratedEndAtMs = 0
     }
 
-    static func dayKey(for date: Date) -> String {
-        let components = Calendar.current.dateComponents([.year, .month, .day], from: date)
+    static func dayKey(for date: Date, timeZone: TimeZone = .current) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", components.year ?? 0, components.month ?? 0, components.day ?? 0)
     }
 
@@ -2269,12 +2449,19 @@ final class OffWorkStore {
         return calendar.date(from: parts) ?? date
     }
 
-    private static func startOfCurrentWeek() -> Date {
-        startOfWeek(containing: .now)
+    private static func startOfDay(for date: Date, timeZone: TimeZone) -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        return calendar.startOfDay(for: date)
     }
 
-    private static func startOfWeek(containing date: Date) -> Date {
-        var calendar = Calendar.current
+    private static func startOfCurrentWeek(timeZone: TimeZone) -> Date {
+        startOfWeek(containing: .now, timeZone: timeZone)
+    }
+
+    private static func startOfWeek(containing date: Date, timeZone: TimeZone) -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
         calendar.firstWeekday = 2
         let day = calendar.startOfDay(for: date)
         return calendar.dateInterval(of: .weekOfYear, for: day)?.start ?? day

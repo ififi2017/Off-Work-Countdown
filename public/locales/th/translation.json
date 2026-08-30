@@ -10,7 +10,13 @@
   "recordsRestDay": "วันหยุด",
   "recordsExport": "ส่งออกบันทึก",
   "recordsDeleteAll": "ลบบันทึกบนเครื่องนี้",
-  "recordsDeleteAllConfirm": "ลบบันทึกในเครื่องนี้ การนำเข้าสำรองเก่าในภายหลังจะข้ามรายการที่ลบแล้ว",
+  "recordsDeleteAllConfirm": "ลบบันทึกในเครื่องนี้ คุณสามารถกู้คืนได้ภายหลังด้วยการนำเข้าข้อมูลสำรองเก่า",
+  "recordsArchiveDamagedTitle": "อ่านไฟล์บันทึกนี้ไม่ได้",
+  "recordsArchiveDamagedBody": "ไฟล์บนอุปกรณ์นี้เสียหรืออ่านไม่ได้ จึงยังไม่บันทึกรายการใหม่ คุณสามารถย้ายมันไปข้าง ๆ แล้วเริ่มคลังใหม่ได้ ไฟล์เดิมยังอยู่บนเครื่อง เพื่อกู้คืนด้วยมือในภายหลัง",
+  "recordsArchiveQuarantine": "แยกคลังที่เสียแล้วเริ่มใหม่",
+  "recordsArchiveQuarantineConfirm": "การทำเช่นนี้จะไม่ดึงบันทึกเก่ากลับมา แต่จะย้ายไฟล์ที่เสียไปข้าง ๆ เป็นสำเนา .corrupt แล้วเริ่มคลังใหม่บนอุปกรณ์นี้",
+  "recordsArchiveSaveFailedTitle": "บันทึกไม่สำเร็จ",
+  "recordsArchiveSaveFailedBody": "การเปลี่ยนแปลงล่าสุดยังอยู่บนหน้าจอ แต่ยังไม่ถึงไฟล์บนอุปกรณ์นี้ ลองอีกครั้งในอีกสักครู่ — คลังเดิมไม่ได้ถูกแทนที่",
   "recordsObservations": "สิ่งที่แอปสังเกต",
   "recordsNoObservations": "วันนี้ยังไม่มีการสังเกต — ตารางกะยังอยู่",
   "recordsObservedFirstSeen": "เปิดตัวจับเวลาครั้งแรก",
@@ -433,5 +439,9 @@
   "debugScenarioRestDay": "วันหยุด · วันศุกร์ · ครั้งถัดไป 09:00–17:00",
   "debugScenarioManual": "ตารางแบบกำหนดเอง · ถามว่าวันนี้ทำงานไหม",
   "debugLiveActivity": "เริ่ม Live Activity 15 นาที",
-  "debugLiveActivityDetail": "เริ่ม Live Activity จริงสำหรับกะบันทึกเวลา 09:00–19:00"
+  "debugLiveActivityDetail": "เริ่ม Live Activity จริงสำหรับกะบันทึกเวลา 09:00–19:00",
+  "recordsTimeZone": "เขตเวลาของบันทึก",
+  "recordsTimeZoneMigrate": "ใช้เขตเวลาของอุปกรณ์นี้",
+  "recordsTimeZoneMigrateConfirm": "วันที่บนปฏิทินไม่ขยับ เก้าโมงยังเป็นเก้าโมง เพียงอ่านด้วยเขตเวลานี้ นาฬิกานับถอยหลังที่กำลังเดินยังใช้เขตเดิมจนกว่าจะจบ",
+  "recordsTimeZoneDevice": "อุปกรณ์นี้: {{zone}}"
 }

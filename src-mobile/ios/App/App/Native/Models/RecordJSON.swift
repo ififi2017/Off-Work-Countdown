@@ -25,13 +25,36 @@ struct ErasedID: Equatable, Sendable, Hashable {
 
 enum RecordImportMode: Sendable {
     /// Skip identities listed in the local ErasedID table (default).
+    /// Same-id conflicts keep the local row and include the incoming value
+    /// so a caller can ask, then `applyIncoming`.
     case skipErased
     /// Write erased rows back. UUID identities get a new random id; natural
     /// keys keep the same `dayKey`. The erase row itself stays.
     case restoreErased
+    /// Same-id conflicts pick `(editCount, editTieBreaker)` — wall clock
+    /// never decides. Erased identities still skip.
+    case resolveByEditStamp
+}
+
+enum RecordIncomingValue: Equatable, Sendable {
+    case period(CareerPeriod)
+    case snapshot(ScheduleSnapshot)
+    case exception(CalendarException)
+    case override(DayOverride)
+    case observation(WorkObservation)
+    case lifeProfile(LifeProfile)
 }
 
 struct RecordImportConflict: Equatable, Sendable {
+    var entityType: RecordEntityType
+    var logicalKey: String
+    var incoming: RecordIncomingValue
+    var localEditCount: Int
+    var incomingEditCount: Int
+    var appliedIncoming: Bool
+}
+
+struct RecordImportRejection: Equatable, Sendable {
     var entityType: RecordEntityType
     var logicalKey: String
 }
@@ -41,6 +64,7 @@ struct RecordImportReport: Equatable, Sendable {
     var unchanged: [RecordEntityType: Int] = [:]
     var skippedErased: [RecordEntityType: Int] = [:]
     var restored: [RecordEntityType: Int] = [:]
+    var rejected: [RecordImportRejection] = []
     var conflicts: [RecordImportConflict] = []
 
     var skippedErasedTotal: Int { skippedErased.values.reduce(0, +) }
@@ -110,11 +134,26 @@ enum RecordJSON {
             exportedAtMs: exportedAt.timeIntervalSince1970 * 1_000,
             timeZoneIdentifier: timeZone.identifier,
             calendarIdentifier: calendarIdentifier(fileCalendar),
-            careerPeriods: state.periods.map { CareerPeriodDTO($0, calendar: fileCalendar) },
-            scheduleSnapshots: state.snapshots.map { ScheduleSnapshotDTO($0, calendar: fileCalendar) },
-            calendarExceptions: state.exceptions.map { CalendarExceptionDTO($0, calendar: fileCalendar) },
-            dayOverrides: state.overrides.map { DayOverrideDTO($0, calendar: fileCalendar) },
-            workObservations: state.observations.map { WorkObservationDTO($0, calendar: fileCalendar) },
+            careerPeriods: state.periods.map { CareerPeriodDTO($0, calendar: $0.civilCalendar()) },
+            scheduleSnapshots: state.snapshots.map { snapshot in
+                let period = state.periods.first(where: { $0.id == snapshot.periodID })
+                return ScheduleSnapshotDTO(snapshot, calendar: period?.civilCalendar() ?? fileCalendar)
+            },
+            calendarExceptions: state.exceptions.map { exception in
+                var rowCalendar = Calendar(identifier: .gregorian)
+                rowCalendar.timeZone = TimeZone(identifier: exception.timeZoneIdentifier) ?? fileCalendar.timeZone
+                return CalendarExceptionDTO(exception, calendar: rowCalendar)
+            },
+            dayOverrides: state.overrides.map { override in
+                var rowCalendar = Calendar(identifier: .gregorian)
+                rowCalendar.timeZone = TimeZone(identifier: override.timeZoneIdentifier) ?? fileCalendar.timeZone
+                return DayOverrideDTO(override, calendar: rowCalendar)
+            },
+            workObservations: state.observations.map { observation in
+                var rowCalendar = Calendar(identifier: .gregorian)
+                rowCalendar.timeZone = TimeZone(identifier: observation.timeZoneIdentifier) ?? fileCalendar.timeZone
+                return WorkObservationDTO(observation, calendar: rowCalendar)
+            },
             lifeProfile: state.lifeProfile.map { LifeProfileDTO($0, calendar: fileCalendar) }
         )
         let encoder = JSONEncoder()
@@ -147,9 +186,20 @@ enum RecordJSON {
         var report = RecordImportReport()
         var periodIDMap: [UUID: UUID] = [:]
         var snapshotIDMap: [UUID: UUID] = [:]
+        let periodCalendars = document.careerPeriods.reduce(into: [String: Calendar]()) { result, dto in
+            guard UUID(uuidString: dto.id) != nil, result[dto.id] == nil else { return }
+            result[dto.id] = rowCalendar(
+                timeZoneIdentifier: dto.timeZoneIdentifier,
+                calendarIdentifier: dto.calendarIdentifier,
+                fallback: calendar
+            )
+        }
 
         for dto in document.careerPeriods {
-            guard let incoming = dto.value(calendar: calendar) else { continue }
+            guard let incoming = dto.value(calendar: periodCalendars[dto.id] ?? calendar) else {
+                report.rejected.append(RecordImportRejection(entityType: .careerPeriod, logicalKey: dto.id))
+                continue
+            }
             merge(
                 incoming,
                 type: .careerPeriod,
@@ -158,6 +208,7 @@ enum RecordJSON {
                 state: &state,
                 report: &report,
                 existing: { $0.periods.first { $0.id == incoming.id } },
+                incomingValue: { .period($0) },
                 insert: { archive, value in
                     var next = value
                     if mode == .restoreErased, archive.isErased(.careerPeriod, key: incoming.id.uuidString) {
@@ -166,12 +217,20 @@ enum RecordJSON {
                         next.id = newID
                     }
                     archive.periods.append(next)
+                },
+                replace: { archive, value in
+                    if let index = archive.periods.firstIndex(where: { $0.id == value.id }) {
+                        archive.periods[index] = value
+                    }
                 }
             )
         }
 
         for dto in document.scheduleSnapshots {
-            guard let incoming = dto.value(calendar: calendar) else { continue }
+            guard let incoming = dto.value(calendar: periodCalendars[dto.periodID] ?? calendar) else {
+                report.rejected.append(RecordImportRejection(entityType: .scheduleSnapshot, logicalKey: dto.id))
+                continue
+            }
             merge(
                 incoming,
                 type: .scheduleSnapshot,
@@ -180,6 +239,7 @@ enum RecordJSON {
                 state: &state,
                 report: &report,
                 existing: { $0.snapshots.first { $0.id == incoming.id } },
+                incomingValue: { .snapshot($0) },
                 insert: { archive, value in
                     var next = value
                     if mode == .restoreErased, archive.isErased(.scheduleSnapshot, key: incoming.id.uuidString) {
@@ -191,12 +251,25 @@ enum RecordJSON {
                         next.periodID = mapped
                     }
                     archive.snapshots.append(next)
+                },
+                replace: { archive, value in
+                    if let index = archive.snapshots.firstIndex(where: { $0.id == value.id }) {
+                        archive.snapshots[index] = value
+                    }
                 }
             )
         }
 
         for dto in document.calendarExceptions {
-            guard let incoming = dto.value(calendar: calendar) else { continue }
+            let calendarForRow = rowCalendar(
+                timeZoneIdentifier: dto.timeZoneIdentifier,
+                calendarIdentifier: nil,
+                fallback: calendar
+            )
+            guard let incoming = dto.value(calendar: calendarForRow) else {
+                report.rejected.append(RecordImportRejection(entityType: .calendarException, logicalKey: dto.dayKey))
+                continue
+            }
             merge(
                 incoming,
                 type: .calendarException,
@@ -205,12 +278,26 @@ enum RecordJSON {
                 state: &state,
                 report: &report,
                 existing: { $0.exceptions.first { $0.dayKey == incoming.dayKey } },
-                insert: { archive, value in archive.exceptions.append(value) }
+                incomingValue: { .exception($0) },
+                insert: { archive, value in archive.exceptions.append(value) },
+                replace: { archive, value in
+                    if let index = archive.exceptions.firstIndex(where: { $0.dayKey == value.dayKey }) {
+                        archive.exceptions[index] = value
+                    }
+                }
             )
         }
 
         for dto in document.dayOverrides {
-            guard let incoming = dto.value(calendar: calendar) else { continue }
+            let calendarForRow = rowCalendar(
+                timeZoneIdentifier: dto.timeZoneIdentifier,
+                calendarIdentifier: nil,
+                fallback: calendar
+            )
+            guard let incoming = dto.value(calendar: calendarForRow) else {
+                report.rejected.append(RecordImportRejection(entityType: .dayOverride, logicalKey: dto.dayKey))
+                continue
+            }
             merge(
                 incoming,
                 type: .dayOverride,
@@ -219,12 +306,26 @@ enum RecordJSON {
                 state: &state,
                 report: &report,
                 existing: { $0.overrides.first { $0.dayKey == incoming.dayKey } },
-                insert: { archive, value in archive.overrides.append(value) }
+                incomingValue: { .override($0) },
+                insert: { archive, value in archive.overrides.append(value) },
+                replace: { archive, value in
+                    if let index = archive.overrides.firstIndex(where: { $0.dayKey == value.dayKey }) {
+                        archive.overrides[index] = value
+                    }
+                }
             )
         }
 
         for dto in document.workObservations {
-            guard let incoming = dto.value(calendar: calendar) else { continue }
+            let calendarForRow = rowCalendar(
+                timeZoneIdentifier: dto.timeZoneIdentifier,
+                calendarIdentifier: nil,
+                fallback: calendar
+            )
+            guard let incoming = dto.value(calendar: calendarForRow) else {
+                report.rejected.append(RecordImportRejection(entityType: .workObservation, logicalKey: dto.eventID))
+                continue
+            }
             merge(
                 incoming,
                 type: .workObservation,
@@ -233,6 +334,7 @@ enum RecordJSON {
                 state: &state,
                 report: &report,
                 existing: { $0.observations.first { $0.eventID == incoming.eventID } },
+                incomingValue: { .observation($0) },
                 insert: { archive, value in
                     var next = value
                     if mode == .restoreErased, archive.isErased(.workObservation, key: incoming.eventID.uuidString) {
@@ -242,11 +344,22 @@ enum RecordJSON {
                         next.scheduleSnapshotID = mapped
                     }
                     archive.observations.append(next)
+                },
+                replace: { archive, value in
+                    if let index = archive.observations.firstIndex(where: { $0.eventID == value.eventID }) {
+                        archive.observations[index] = value
+                    }
                 }
             )
         }
 
-        if let dto = document.lifeProfile, let incoming = dto.value(calendar: calendar) {
+        if let dto = document.lifeProfile {
+            guard let incoming = dto.value(calendar: calendar) else {
+                report.rejected.append(
+                    RecordImportRejection(entityType: .lifeProfile, logicalKey: dto.profileID)
+                )
+                return report
+            }
             merge(
                 incoming,
                 type: .lifeProfile,
@@ -255,11 +368,50 @@ enum RecordJSON {
                 state: &state,
                 report: &report,
                 existing: { $0.lifeProfile },
-                insert: { archive, value in archive.lifeProfile = value }
+                incomingValue: { .lifeProfile($0) },
+                insert: { archive, value in archive.lifeProfile = value },
+                replace: { archive, value in archive.lifeProfile = value }
             )
         }
 
         return report
+    }
+
+    static func applyIncoming(_ value: RecordIncomingValue, to state: inout RecordState) {
+        switch value {
+        case .period(let period):
+            if let index = state.periods.firstIndex(where: { $0.id == period.id }) {
+                state.periods[index] = period
+            } else {
+                state.periods.append(period)
+            }
+        case .snapshot(let snapshot):
+            if let index = state.snapshots.firstIndex(where: { $0.id == snapshot.id }) {
+                state.snapshots[index] = snapshot
+            } else {
+                state.snapshots.append(snapshot)
+            }
+        case .exception(let exception):
+            if let index = state.exceptions.firstIndex(where: { $0.dayKey == exception.dayKey }) {
+                state.exceptions[index] = exception
+            } else {
+                state.exceptions.append(exception)
+            }
+        case .override(let override):
+            if let index = state.overrides.firstIndex(where: { $0.dayKey == override.dayKey }) {
+                state.overrides[index] = override
+            } else {
+                state.overrides.append(override)
+            }
+        case .observation(let observation):
+            if let index = state.observations.firstIndex(where: { $0.eventID == observation.eventID }) {
+                state.observations[index] = observation
+            } else {
+                state.observations.append(observation)
+            }
+        case .lifeProfile(let profile):
+            state.lifeProfile = profile
+        }
     }
 
     private static func merge<T: Equatable>(
@@ -270,11 +422,13 @@ enum RecordJSON {
         state: inout RecordState,
         report: inout RecordImportReport,
         existing: (RecordState) -> T?,
-        insert: (inout RecordState, T) -> Void
+        incomingValue: (T) -> RecordIncomingValue,
+        insert: (inout RecordState, T) -> Void,
+        replace: (inout RecordState, T) -> Void
     ) {
         if state.isErased(type, key: key) {
             switch mode {
-            case .skipErased:
+            case .skipErased, .resolveByEditStamp:
                 report.skippedErased[type, default: 0] += 1
                 return
             case .restoreErased:
@@ -286,21 +440,83 @@ enum RecordJSON {
         if let current = existing(state) {
             if current == incoming {
                 report.unchanged[type, default: 0] += 1
-            } else {
-                report.conflicts.append(RecordImportConflict(entityType: type, logicalKey: key))
+                return
             }
+            let localCount = editCount(of: current)
+            let incomingCount = editCount(of: incoming)
+            let takeIncoming = mode == .resolveByEditStamp && incomingWins(incoming, over: current)
+            if takeIncoming {
+                replace(&state, incoming)
+            }
+            report.conflicts.append(
+                RecordImportConflict(
+                    entityType: type,
+                    logicalKey: key,
+                    incoming: incomingValue(incoming),
+                    localEditCount: localCount,
+                    incomingEditCount: incomingCount,
+                    appliedIncoming: takeIncoming
+                )
+            )
             return
         }
         insert(&state, incoming)
         report.inserted[type, default: 0] += 1
     }
 
-    static func calendar(from document: RecordJSONDocument) -> Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        if document.calendarIdentifier == "iso8601" {
-            calendar = Calendar(identifier: .iso8601)
+    private static func editCount(of value: some Equatable) -> Int {
+        switch value {
+        case let period as CareerPeriod: period.editCount
+        case let snapshot as ScheduleSnapshot: snapshot.editCount
+        case let exception as CalendarException: exception.editCount
+        case let override as DayOverride: override.editCount
+        case let profile as LifeProfile: profile.editCount
+        default: 0
         }
-        calendar.timeZone = TimeZone(identifier: document.timeZoneIdentifier) ?? TimeZone(secondsFromGMT: 0)!
+    }
+
+    private static func tieBreaker(of value: some Equatable) -> UUID {
+        switch value {
+        case let period as CareerPeriod: period.editTieBreaker
+        case let snapshot as ScheduleSnapshot: snapshot.editTieBreaker
+        case let exception as CalendarException: exception.editTieBreaker
+        case let override as DayOverride: override.editTieBreaker
+        case let profile as LifeProfile: profile.editTieBreaker
+        case let observation as WorkObservation: observation.eventID
+        default: DayOverride.unsetTieBreaker
+        }
+    }
+
+    private static func incomingWins<T: Equatable>(_ incoming: T, over current: T) -> Bool {
+        let incomingCount = editCount(of: incoming)
+        let localCount = editCount(of: current)
+        if incomingCount != localCount { return incomingCount > localCount }
+        return tieBreaker(of: incoming).uuidString > tieBreaker(of: current).uuidString
+    }
+
+    static func calendar(from document: RecordJSONDocument) -> Calendar {
+        var fallback = Calendar(identifier: .gregorian)
+        fallback.timeZone = TimeZone(secondsFromGMT: 0)!
+        return rowCalendar(
+            timeZoneIdentifier: document.timeZoneIdentifier,
+            calendarIdentifier: document.calendarIdentifier,
+            fallback: fallback
+        )
+    }
+
+    static func rowCalendar(
+        timeZoneIdentifier: String?,
+        calendarIdentifier: String?,
+        fallback: Calendar
+    ) -> Calendar {
+        var calendar: Calendar
+        switch calendarIdentifier {
+        case "iso8601": calendar = Calendar(identifier: .iso8601)
+        case "gregorian", nil: calendar = Calendar(identifier: fallback.identifier)
+        default: calendar = Calendar(identifier: fallback.identifier)
+        }
+        calendar.timeZone = TimeZone(identifier: timeZoneIdentifier ?? fallback.timeZone.identifier)
+            ?? fallback.timeZone
         return calendar
     }
 
@@ -314,13 +530,52 @@ enum RecordJSON {
     }
 
     static func date(fromDayKey key: String, calendar: Calendar) -> Date? {
-        let parts = key.split(separator: "-")
+        let parts = key.split(separator: "-", omittingEmptySubsequences: false)
         guard parts.count == 3,
+              parts[0].count == 4,
+              parts[1].count == 2,
+              parts[2].count == 2,
               let year = Int(parts[0]),
               let month = Int(parts[1]),
-              let day = Int(parts[2])
+              let day = Int(parts[2]),
+              (1...12).contains(month),
+              (1...31).contains(day)
         else { return nil }
-        return calendar.date(from: DateComponents(year: year, month: month, day: day))
+        var components = DateComponents()
+        components.calendar = calendar
+        components.timeZone = calendar.timeZone
+        components.year = year
+        components.month = month
+        components.day = day
+        guard let date = calendar.date(from: components) else { return nil }
+        // Calendar.date(from:) may normalize invalid dates. Round-trip the
+        // components so 2026-02-30 and similar input are rejected.
+        let actual = calendar.dateComponents([.year, .month, .day], from: date)
+        guard actual.year == year, actual.month == month, actual.day == day else {
+            return nil
+        }
+        return date
+    }
+
+    static func validOverrideSegments(
+        _ segments: [NativeShiftSegment],
+        kind: DayOverrideKind
+    ) -> Bool {
+        if kind == .customSegments {
+            guard !segments.isEmpty else { return false }
+        } else if !segments.isEmpty {
+            return false
+        }
+        var previousEnd: Double?
+        for segment in segments {
+            guard segment.startAtMs.isFinite,
+                  segment.endAtMs.isFinite,
+                  segment.endAtMs > segment.startAtMs
+            else { return false }
+            if let previousEnd, segment.startAtMs < previousEnd { return false }
+            previousEnd = segment.endAtMs
+        }
+        return true
     }
 }
 
@@ -342,17 +597,18 @@ struct CareerPeriodDTO: Codable, Equatable {
     var startsOn: String
     var endsBefore: String?
     var label: String?
-    var timeZoneIdentifier: String
-    var calendarIdentifier: String
+    var timeZoneIdentifier: String?
+    var calendarIdentifier: String?
     var createdAtMs: Double
     var editedAtMs: Double
     var editCount: Int
     var editTieBreaker: String
 
-    init(_ value: CareerPeriod, calendar: Calendar) {
+    init(_ value: CareerPeriod, calendar _: Calendar) {
+        let ownCalendar = value.civilCalendar()
         id = value.id.uuidString
-        startsOn = RecordJSON.dayKey(value.startsOn, calendar: calendar)
-        endsBefore = value.endsBefore.map { RecordJSON.dayKey($0, calendar: calendar) }
+        startsOn = RecordJSON.dayKey(value.startsOn, calendar: ownCalendar)
+        endsBefore = value.endsBefore.map { RecordJSON.dayKey($0, calendar: ownCalendar) }
         label = value.label
         timeZoneIdentifier = value.timeZoneIdentifier
         calendarIdentifier = value.calendarIdentifier
@@ -363,18 +619,30 @@ struct CareerPeriodDTO: Codable, Equatable {
     }
 
     func value(calendar: Calendar) -> CareerPeriod? {
+        let rowCalendar = RecordJSON.rowCalendar(
+            timeZoneIdentifier: timeZoneIdentifier,
+            calendarIdentifier: calendarIdentifier,
+            fallback: calendar
+        )
         guard let id = UUID(uuidString: id),
-              let startsOn = RecordJSON.date(fromDayKey: startsOn, calendar: calendar),
+              let startsOn = RecordJSON.date(fromDayKey: startsOn, calendar: rowCalendar),
               let editTieBreaker = UUID(uuidString: editTieBreaker)
         else { return nil }
-        let endsBefore = endsBefore.flatMap { RecordJSON.date(fromDayKey: $0, calendar: calendar) }
+        let parsedEndsBefore: Date?
+        if let endsBefore {
+            guard let date = RecordJSON.date(fromDayKey: endsBefore, calendar: rowCalendar) else { return nil }
+            parsedEndsBefore = date
+        } else {
+            parsedEndsBefore = nil
+        }
+        if let parsedEndsBefore, parsedEndsBefore <= startsOn { return nil }
         return CareerPeriod(
             id: id,
             startsOn: startsOn,
-            endsBefore: endsBefore,
+            endsBefore: parsedEndsBefore,
             label: label,
-            timeZoneIdentifier: timeZoneIdentifier,
-            calendarIdentifier: calendarIdentifier,
+            timeZoneIdentifier: timeZoneIdentifier ?? rowCalendar.timeZone.identifier,
+            calendarIdentifier: calendarIdentifier ?? RecordJSON.calendarIdentifier(rowCalendar),
             createdAt: Date(timeIntervalSince1970: createdAtMs / 1_000),
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,
@@ -435,6 +703,7 @@ struct CalendarExceptionDTO: Codable, Equatable {
     var editedAtMs: Double
     var editCount: Int
     var editTieBreaker: String
+    var timeZoneIdentifier: String?
 
     init(_ value: CalendarException, calendar: Calendar) {
         dayKey = value.dayKey
@@ -448,6 +717,7 @@ struct CalendarExceptionDTO: Codable, Equatable {
         editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
         editCount = value.editCount
         editTieBreaker = value.editTieBreaker.uuidString
+        timeZoneIdentifier = value.timeZoneIdentifier
     }
 
     func value(calendar: Calendar) -> CalendarException? {
@@ -465,7 +735,8 @@ struct CalendarExceptionDTO: Codable, Equatable {
             label: label,
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,
-            editTieBreaker: editTieBreaker
+            editTieBreaker: editTieBreaker,
+            timeZoneIdentifier: timeZoneIdentifier ?? calendar.timeZone.identifier
         )
     }
 }
@@ -478,6 +749,7 @@ struct DayOverrideDTO: Codable, Equatable {
     var editedAtMs: Double
     var editCount: Int
     var editTieBreaker: String
+    var timeZoneIdentifier: String?
 
     init(_ value: DayOverride, calendar: Calendar) {
         _ = calendar
@@ -488,10 +760,12 @@ struct DayOverrideDTO: Codable, Equatable {
         editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
         editCount = value.editCount
         editTieBreaker = value.editTieBreaker.uuidString
+        timeZoneIdentifier = value.timeZoneIdentifier
     }
 
     func value(calendar: Calendar) -> DayOverride? {
-        guard let shiftAnchorDate = RecordJSON.date(fromDayKey: dayKey, calendar: calendar),
+        guard RecordJSON.validOverrideSegments(segments, kind: kind),
+              let shiftAnchorDate = RecordJSON.date(fromDayKey: dayKey, calendar: calendar),
               let editTieBreaker = UUID(uuidString: editTieBreaker)
         else { return nil }
         return DayOverride(
@@ -502,7 +776,8 @@ struct DayOverrideDTO: Codable, Equatable {
             note: note,
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,
-            editTieBreaker: editTieBreaker
+            editTieBreaker: editTieBreaker,
+            timeZoneIdentifier: timeZoneIdentifier ?? calendar.timeZone.identifier
         )
     }
 }
@@ -515,6 +790,7 @@ struct WorkObservationDTO: Codable, Equatable {
     var valueData: Data?
     var scheduleSnapshotID: String
     var schemaVersion: Int
+    var timeZoneIdentifier: String?
 
     init(_ value: WorkObservation, calendar: Calendar) {
         eventID = value.eventID.uuidString
@@ -524,6 +800,7 @@ struct WorkObservationDTO: Codable, Equatable {
         valueData = value.valueData
         scheduleSnapshotID = value.scheduleSnapshotID.uuidString
         schemaVersion = value.schemaVersion
+        timeZoneIdentifier = value.timeZoneIdentifier
     }
 
     func value(calendar: Calendar) -> WorkObservation? {
@@ -538,7 +815,8 @@ struct WorkObservationDTO: Codable, Equatable {
             kind: kind,
             valueData: valueData,
             scheduleSnapshotID: scheduleSnapshotID,
-            schemaVersion: schemaVersion
+            schemaVersion: schemaVersion,
+            timeZoneIdentifier: timeZoneIdentifier ?? calendar.timeZone.identifier
         )
     }
 }
@@ -570,10 +848,17 @@ struct LifeProfileDTO: Codable, Equatable {
         guard let profileID = UUID(uuidString: profileID),
               let editTieBreaker = UUID(uuidString: editTieBreaker)
         else { return nil }
+        let parsedWorkStartedOn: Date?
+        if let workStartedOn {
+            guard let date = RecordJSON.date(fromDayKey: workStartedOn, calendar: calendar) else { return nil }
+            parsedWorkStartedOn = date
+        } else {
+            parsedWorkStartedOn = nil
+        }
         return LifeProfile(
             profileID: profileID,
             birthYear: birthYear,
-            workStartedOn: workStartedOn.flatMap { RecordJSON.date(fromDayKey: $0, calendar: calendar) },
+            workStartedOn: parsedWorkStartedOn,
             retirementAge: retirementAge,
             averageSleepHours: averageSleepHours,
             hidesExactAges: hidesExactAges,

@@ -240,7 +240,8 @@ final class CountdownRules {
     func expandScheduleRange(
         configuration: ScheduleHoursConfiguration,
         from: Date,
-        through: Date
+        through: Date,
+        timeZone: TimeZone? = nil
     ) throws -> [NativeScheduleDayExpansion] {
         if let loadError { throw loadError }
         let request = NativeScheduleRangeRequest(
@@ -251,7 +252,8 @@ final class CountdownRules {
             breakStartTime: configuration.breakStartTime,
             breakDurationMinutes: configuration.breakDurationMinutes,
             fromMs: from.timeIntervalSince1970 * 1_000,
-            throughMs: through.timeIntervalSince1970 * 1_000
+            throughMs: through.timeIntervalSince1970 * 1_000,
+            timeZoneIdentifier: timeZone?.identifier
         )
         guard let context,
               let bridge = context.objectForKeyedSubscript("OWCNative"),
@@ -369,6 +371,7 @@ struct NativeRulesInput: Codable {
     let monthlyWorkingDays: Double
     let annualBonusMonths: Double
     let forcedWorkdayStartMs: Double?
+    var timeZoneIdentifier: String? = nil
 }
 
 private struct NativeWidgetTimelineRequest: Codable {
@@ -386,6 +389,7 @@ private struct NativeScheduleRangeRequest: Codable {
     let breakDurationMinutes: Int
     let fromMs: Double
     let throughMs: Double
+    let timeZoneIdentifier: String?
 }
 
 private struct NativeTodayImpactRequest: Codable {
@@ -465,6 +469,7 @@ private struct NativeReminderRequest: Codable {
     let monthlyWorkingDays: Double
     let annualBonusMonths: Double
     let forcedWorkdayStartMs: Double?
+    let timeZoneIdentifier: String?
     let reminderInputs: NativeReminderInputs
 
     init(rules: NativeRulesInput, reminderInputs: NativeReminderInputs) {
@@ -481,6 +486,7 @@ private struct NativeReminderRequest: Codable {
         monthlyWorkingDays = rules.monthlyWorkingDays
         annualBonusMonths = rules.annualBonusMonths
         forcedWorkdayStartMs = rules.forcedWorkdayStartMs
+        timeZoneIdentifier = rules.timeZoneIdentifier
         self.reminderInputs = reminderInputs
     }
 }

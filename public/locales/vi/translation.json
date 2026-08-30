@@ -10,7 +10,13 @@
   "recordsRestDay": "Nghỉ",
   "recordsExport": "Xuất nhật ký",
   "recordsDeleteAll": "Xóa nhật ký trên máy này",
-  "recordsDeleteAllConfirm": "Xóa nhật ký trên máy này. Nhập bản sao lưu cũ sau đó sẽ bỏ qua mục đã xóa.",
+  "recordsDeleteAllConfirm": "Xóa nhật ký trên máy này. Bạn có thể khôi phục bằng cách nhập bản sao lưu cũ sau đó.",
+  "recordsArchiveDamagedTitle": "Không đọc được tệp nhật ký này",
+  "recordsArchiveDamagedBody": "Tệp trên máy này bị hỏng hoặc không đọc được, nên các bản ghi mới chưa được lưu. Bạn có thể để nó sang một bên và bắt đầu kho lưu mới. Tệp gốc vẫn ở trên máy để khôi phục thủ công sau.",
+  "recordsArchiveQuarantine": "Cách ly kho lưu hỏng và bắt đầu lại",
+  "recordsArchiveQuarantineConfirm": "Việc này không lấy lại bản ghi cũ. Tệp hỏng được để sang một bên thành bản .corrupt và máy này bắt đầu một kho lưu mới.",
+  "recordsArchiveSaveFailedTitle": "Không lưu được nhật ký",
+  "recordsArchiveSaveFailedBody": "Thay đổi mới nhất vẫn trên màn hình nhưng chưa vào tệp trên máy này. Thử lại sau một lát — kho lưu hiện có không bị thay thế.",
   "recordsObservations": "Ứng dụng ghi nhận",
   "recordsNoObservations": "Chưa có ghi nhận ngày này — lịch ca vẫn còn.",
   "recordsObservedFirstSeen": "Lần đầu mở bộ đếm",
@@ -433,5 +439,9 @@
   "debugScenarioRestDay": "Ngày nghỉ · Thứ Sáu · tiếp theo 09:00–17:00",
   "debugScenarioManual": "Lịch thủ công · hỏi về hôm nay",
   "debugLiveActivity": "Bắt đầu Hoạt động trực tiếp 15 phút",
-  "debugLiveActivityDetail": "Bắt đầu Hoạt động trực tiếp thật cho ca ghi hình 09:00–19:00."
+  "debugLiveActivityDetail": "Bắt đầu Hoạt động trực tiếp thật cho ca ghi hình 09:00–19:00.",
+  "recordsTimeZone": "Múi giờ nhật ký",
+  "recordsTimeZoneMigrate": "Dùng múi giờ của máy này",
+  "recordsTimeZoneMigrateConfirm": "Ngày trên lịch không dời. Chín giờ vẫn là chín giờ, chỉ đọc theo múi này. Đếm ngược đang chạy giữ múi cũ đến khi kết thúc.",
+  "recordsTimeZoneDevice": "Máy này: {{zone}}"
 }

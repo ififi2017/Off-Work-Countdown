@@ -10,7 +10,13 @@
   "recordsRestDay": "Repos",
   "recordsExport": "Exporter le journal",
   "recordsDeleteAll": "Supprimer le journal de cet appareil",
-  "recordsDeleteAllConfirm": "Supprime le journal local de cet appareil. Un import ultérieur d’une ancienne sauvegarde ignorera ce qui a été supprimé.",
+  "recordsDeleteAllConfirm": "Supprime le journal local de cet appareil. Vous pourrez le restaurer en important une ancienne sauvegarde.",
+  "recordsArchiveDamagedTitle": "Ce fichier de journal est illisible",
+  "recordsArchiveDamagedBody": "Le fichier sur cet appareil est endommagé ou illisible, donc les nouvelles entrées ne sont pas enregistrées. Vous pouvez le mettre de côté et recommencer une archive. Le fichier d’origine reste sur l’appareil pour une récupération manuelle plus tard.",
+  "recordsArchiveQuarantine": "Isoler l’archive endommagée et recommencer",
+  "recordsArchiveQuarantineConfirm": "Cela ne ramène pas les anciennes entrées. Le fichier endommagé est mis de côté en copie .corrupt, et une nouvelle archive commence sur cet appareil.",
+  "recordsArchiveSaveFailedTitle": "Enregistrement impossible",
+  "recordsArchiveSaveFailedBody": "La dernière modification est à l’écran mais n’a pas atteint le fichier sur cet appareil. Réessayez dans un instant — l’archive existante n’a pas été remplacée.",
   "recordsObservations": "Ce que l’app a remarqué",
   "recordsNoObservations": "Rien de noté pour ce jour — le planning est toujours là.",
   "recordsObservedFirstSeen": "Premier passage sur le minuteur",
@@ -433,5 +439,9 @@
   "debugScenarioRestDay": "Jour de repos · vendredi · prochain 09:00–17:00",
   "debugScenarioManual": "Planning manuel · demander pour aujourd’hui",
   "debugLiveActivity": "Démarrer une activité en direct de 15 min",
-  "debugLiveActivityDetail": "Démarre une vraie activité en direct pour un service de capture de 09:00–19:00."
+  "debugLiveActivityDetail": "Démarre une vraie activité en direct pour un service de capture de 09:00–19:00.",
+  "recordsTimeZone": "Fuseau des journaux",
+  "recordsTimeZoneMigrate": "Utiliser le fuseau de cet appareil",
+  "recordsTimeZoneMigrateConfirm": "Les dates du calendrier ne bougent pas. Neuf heures reste neuf heures, lu dans ce fuseau. Un compte à rebours déjà lancé garde l’ancien jusqu’à la fin.",
+  "recordsTimeZoneDevice": "Cet appareil : {{zone}}"
 }

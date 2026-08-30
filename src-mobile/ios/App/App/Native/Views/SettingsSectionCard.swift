@@ -7,6 +7,7 @@ import SwiftUI
 struct SettingsSectionCard: View {
     let store: OffWorkStore
     let section: SettingsSection
+    @State private var confirmsTimeZoneMigrate = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -22,7 +23,8 @@ struct SettingsSectionCard: View {
             link(.schedule, icon: "calendar.badge.clock", title: store.t("workSchedule"), value: store.scheduleLabel)
             link(.lunch, icon: "cup.and.saucer", title: store.t("lunchBreak"), value: store.lunchLabel)
             link(.health, icon: "figure.walk", title: store.t("microBreakReminder"), value: store.healthLabel)
-            link(.salary, icon: "banknote", title: store.t("salarySettings"), value: store.salaryTypeLabel, isLast: true)
+            link(.salary, icon: "banknote", title: store.t("salarySettings"), value: store.salaryTypeLabel)
+            timeZoneRow(isLast: true)
 
         case .reminders:
             link(.notifications, icon: "bell.badge", title: store.t("offWorkReminder"), value: store.notificationModeLabel, isLast: true)
@@ -56,5 +58,31 @@ struct SettingsSectionCard: View {
             }
         }
         .buttonStyle(OWCRowButtonStyle())
+    }
+
+    private func timeZoneRow(isLast: Bool) -> some View {
+        Button {
+            if store.systemTimeZoneDiffersFromRecords {
+                confirmsTimeZoneMigrate = true
+            }
+        } label: {
+            OWCRow(icon: "clock", title: store.t("recordsTimeZone"), isLast: isLast) {
+                OWCDetailAccessory(text: store.recordsTimeZoneLabel)
+            }
+        }
+        .buttonStyle(OWCRowButtonStyle())
+        .confirmationDialog(
+            store.t("recordsTimeZoneMigrateConfirm"),
+            isPresented: $confirmsTimeZoneMigrate,
+            titleVisibility: .visible
+        ) {
+            Button(store.t("recordsTimeZoneMigrate")) {
+                store.migrateRecordsTimeZone()
+            }
+        } message: {
+            Text(store.t("recordsTimeZoneDevice", values: ["zone": store.systemTimeZoneLabel]))
+        }
+        .disabled(!store.systemTimeZoneDiffersFromRecords)
+        .accessibilityHint(store.recordsTimeZoneLabel)
     }
 }

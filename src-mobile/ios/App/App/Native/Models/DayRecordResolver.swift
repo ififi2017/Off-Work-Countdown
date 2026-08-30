@@ -143,14 +143,14 @@ enum DayRecordResolver {
                     segments: []
                 )
             case .confirmedAsScheduled:
-                return applyExceptionOrSchedule(
+                return DayResolution(
                     dayKey: dayKey,
                     shiftAnchorDate: shiftAnchorDate,
                     layer: .override,
                     periodID: period.id,
                     snapshotID: snapshot?.id,
-                    exception: exception,
-                    expansion: expansion
+                    isScheduledWorkday: expansion.isWorkday,
+                    segments: expansion.isWorkday ? expansion.segments : []
                 )
             case .cleared:
                 break

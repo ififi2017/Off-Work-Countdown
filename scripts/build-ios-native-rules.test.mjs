@@ -432,4 +432,35 @@ describe("iOS native rule bundle", () => {
     expect(next.startAtMs).toBe(new Date(2026, 6, 7, 9, 0).getTime());
     expect(next.remainingMs).toBeGreaterThan(0);
   });
+
+  it("locks a live snapshot to the requested timezone", () => {
+    const context = { console };
+    vm.createContext(context);
+    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const nowMs = Date.parse("2026-08-24T17:00:00.000Z");
+    const rules = {
+      startTime: "09:00",
+      endTime: "17:00",
+      nowMs,
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" },
+      breakStartTime: null,
+      breakDurationMinutes: 0,
+      overtimeEndAtMs: null,
+      salaryAmount: "",
+      salaryType: "monthly",
+      monthlyWorkingDays: 22,
+      annualBonusMonths: 0,
+    };
+    const shanghai = JSON.parse(context.OWCNative.snapshot(JSON.stringify({
+      ...rules,
+      timeZoneIdentifier: "Asia/Shanghai",
+    })));
+    const losAngeles = JSON.parse(context.OWCNative.snapshot(JSON.stringify({
+      ...rules,
+      timeZoneIdentifier: "America/Los_Angeles",
+    })));
+    expect(shanghai.startAtMs).toBe(Date.parse("2026-08-25T01:00:00.000Z"));
+    expect(losAngeles.startAtMs).toBe(Date.parse("2026-08-24T16:00:00.000Z"));
+  });
 });

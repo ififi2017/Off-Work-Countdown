@@ -46,7 +46,8 @@ enum DayOverrideProjection {
         marks: TimerDayMarks,
         dayKey: String,
         shiftAnchorDate: Date,
-        plannedSegments: [NativeShiftSegment]
+        plannedSegments: [NativeShiftSegment],
+        timeZoneIdentifier: String = TimeZone.current.identifier
     ) -> DayOverride? {
         guard marks.createsOverride else { return nil }
         let segments = applyTimeBounds(
@@ -58,7 +59,8 @@ enum DayOverrideProjection {
             dayKey: dayKey,
             shiftAnchorDate: shiftAnchorDate,
             kind: .customSegments,
-            segments: segments
+            segments: segments,
+            timeZoneIdentifier: timeZoneIdentifier
         )
     }
 
