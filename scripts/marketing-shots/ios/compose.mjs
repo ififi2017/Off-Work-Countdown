@@ -27,7 +27,7 @@ for (const name of readdirSync(DIR)) {
 }
 
 const IPHONE_FRAME = join(FRAMES, "iphone-17-pro-max-deep-blue.png");
-const IPAD_FRAME = join(FRAMES, 'iPad Pro (M5) 13" - Space Black - Portrait.png');
+const IPAD_FRAME = join(FRAMES, "ipad-pro-m5-13-inch-space-black-portrait.png");
 
 const IPHONE = {
   canvas: { width: 660, height: 1434, scale: 2 },

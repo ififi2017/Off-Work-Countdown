@@ -63,7 +63,7 @@ locale。同时把时钟钉死在 14:22:08，班次设成 09:00–18:00、月薪
 iOS 官方机框来自 Apple Design Resources，放在 `ios/frames/`：
 
 - `iphone-17-pro-max-deep-blue.png`（1470×3000，屏洞 insets 75 / 66 / 75 / 66）
-- `iPad Pro (M5) 13" - Space Black - Portrait.png`（2300×3000，屏洞 insets 118 / 124 / 118 / 124）
+- `ipad-pro-m5-13-inch-space-black-portrait.png`（2300×3000，屏洞 insets 118 / 124 / 118 / 124）
 
 许可见同目录的 `Apple Design Resources License.rtf`。框自带灵动岛，不要再另造。
 
