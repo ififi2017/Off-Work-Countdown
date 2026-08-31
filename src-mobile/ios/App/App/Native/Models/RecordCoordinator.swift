@@ -72,6 +72,7 @@ final class RecordCoordinator {
     func deleteAllLocalData() {
         guard !blocksWrites else { return }
         state.deleteAllLocalData()
+        state.sync = SyncLocalState.empty
         persist()
     }
 
@@ -108,6 +109,14 @@ final class RecordCoordinator {
     func erase(_ type: RecordEntityType, key: String, at date: Date = .now) {
         guard !blocksWrites else { return }
         state.erase(type, key: key, at: date)
+        RecordsSyncOutbox.markDirty(
+            &state.sync,
+            type: type,
+            key: key,
+            editCount: 0,
+            editTieBreaker: UUID(),
+            erase: true
+        )
         persist()
     }
 
@@ -149,6 +158,7 @@ final class RecordCoordinator {
         )
         state.periods.append(period)
         appendSnapshot(hours, periodID: period.id, effectiveFrom: startsOn, at: date)
+        markDirty(.careerPeriod, key: period.id.uuidString, editCount: period.editCount, tie: period.editTieBreaker)
         persist()
     }
 
@@ -185,6 +195,9 @@ final class RecordCoordinator {
             next.editedAt = date
             state.overrides.append(next)
         }
+        if let row = state.overrides.first(where: { $0.dayKey == draft.dayKey }) {
+            markDirty(.dayOverride, key: row.dayKey, editCount: row.editCount, tie: row.editTieBreaker)
+        }
         persist()
     }
 
@@ -203,13 +216,182 @@ final class RecordCoordinator {
             next.editedAt = date
             state.exceptions.append(next)
         }
+        if let row = state.exceptions.first(where: { $0.dayKey == draft.dayKey }) {
+            markDirty(.calendarException, key: row.dayKey, editCount: row.editCount, tie: row.editTieBreaker)
+        }
         persist()
     }
 
     func updateLifeProfile(_ profile: LifeProfile) {
         guard !blocksWrites else { return }
-        state.lifeProfile = profile
+        var next = profile
+        if let current = state.lifeProfile {
+            next.editCount = current.editCount + 1
+        } else {
+            next.editCount = max(next.editCount, 0) + 1
+        }
+        next.editTieBreaker = UUID()
+        next.editedAt = .now
+        state.lifeProfile = next
+        markDirty(.lifeProfile, key: LifeProfile.profileID.uuidString, editCount: next.editCount, tie: next.editTieBreaker)
         persist()
+    }
+
+    func upsertFocusTask(_ draft: FocusTask, at date: Date = .now) {
+        guard !blocksWrites else { return }
+        var next = draft
+        if let index = state.focusTasks.firstIndex(where: { $0.id == draft.id }) {
+            next.editCount = state.focusTasks[index].editCount + 1
+            next.editTieBreaker = UUID()
+            next.editedAt = date
+            state.focusTasks[index] = next
+        } else {
+            next.editCount = max(next.editCount, 0) + 1
+            next.editTieBreaker = UUID()
+            next.editedAt = date
+            state.focusTasks.append(next)
+        }
+        markDirty(.focusTask, key: next.id.uuidString, editCount: next.editCount, tie: next.editTieBreaker)
+        persist()
+    }
+
+    func upsertFocusSession(_ draft: FocusSession, at date: Date = .now) {
+        guard !blocksWrites else { return }
+        var next = draft
+        if let index = state.focusSessions.firstIndex(where: { $0.id == draft.id }) {
+            next.editCount = state.focusSessions[index].editCount + 1
+            next.editTieBreaker = UUID()
+            next.editedAt = date
+            state.focusSessions[index] = next
+        } else {
+            next.editCount = max(next.editCount, 0) + 1
+            next.editTieBreaker = UUID()
+            next.editedAt = date
+            state.focusSessions.append(next)
+        }
+        markDirty(.focusSession, key: next.id.uuidString, editCount: next.editCount, tie: next.editTieBreaker)
+        persist()
+    }
+
+    func replaceSyncState(_ sync: SyncLocalState) {
+        state.sync = sync
+        persist()
+    }
+
+    func applyIncomingValue(_ value: RecordIncomingValue) {
+        guard !blocksWrites else { return }
+        RecordJSON.applyIncoming(value, to: &state)
+        persist()
+    }
+
+    func applyRemoteErase(type: RecordEntityType, key: String, at date: Date = .now) {
+        guard !blocksWrites else { return }
+        state.erase(type, key: key, at: date)
+        persist()
+    }
+
+    /// Applies a CloudKit row without treating it as a local edit.
+    func applyRemotePayload(
+        type: RecordEntityType,
+        key: String,
+        payload: Data,
+        editCount: Int,
+        editTieBreaker: String,
+        systemFields: Data?,
+        generation: Int
+    ) {
+        guard !blocksWrites else { return }
+        let calendar = RecordsSyncPayload.fileCalendar(for: state)
+        guard let incoming = RecordsSyncPayload.incoming(from: payload, type: type, calendar: calendar) else {
+            return
+        }
+        let local = RecordsSyncPayload.editStamp(type: type, key: key, in: state)
+        let action = RecordsSyncApply.action(
+            type: type,
+            locallyErased: state.isErased(type, key: key),
+            localCount: local?.0,
+            localTie: local?.1,
+            serverCount: editCount,
+            serverTie: editTieBreaker
+        )
+        let name = RecordsSyncIdentity.recordName(type: type, key: key)
+        switch action {
+        case .ignore:
+            break
+        case .insert, .takeServer:
+            RecordJSON.applyIncoming(incoming, to: &state)
+            RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
+        case .keepLocalAndCopyServer:
+            state.sync.conflicts.append(
+                SyncConflictCopy(
+                    entityType: type,
+                    logicalKey: key,
+                    payload: payload,
+                    lostAtMs: Date.now.timeIntervalSince1970 * 1_000
+                )
+            )
+        case .takeServerAndCopyLocal:
+            if let localPayload = RecordsSyncPayload.encode(type: type, key: key, from: state) {
+                state.sync.conflicts.append(
+                    SyncConflictCopy(
+                        entityType: type,
+                        logicalKey: key,
+                        payload: localPayload,
+                        lostAtMs: Date.now.timeIntervalSince1970 * 1_000
+                    )
+                )
+            }
+            RecordJSON.applyIncoming(incoming, to: &state)
+            RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
+        case .mergeLife:
+            if case .lifeProfile(let server) = incoming, let localProfile = state.lifeProfile {
+                let baseline = lastKnownLifeProfile()
+                let merged = RecordsSyncConflict.mergeLifeProfile(
+                    local: localProfile,
+                    server: server,
+                    baseline: baseline
+                )
+                state.lifeProfile = merged
+                RecordsSyncOutbox.markDirty(
+                    &state.sync,
+                    type: .lifeProfile,
+                    key: LifeProfile.profileID.uuidString,
+                    editCount: merged.editCount,
+                    editTieBreaker: merged.editTieBreaker
+                )
+            } else {
+                RecordJSON.applyIncoming(incoming, to: &state)
+                RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
+            }
+        }
+        var row = state.sync.rows[name] ?? SyncAdapterRow(
+            entityType: type,
+            logicalKey: key,
+            recordName: name,
+            dirty: action == .keepLocalAndCopyServer || action == .mergeLife,
+            generation: generation,
+            lastKnownRecord: systemFields,
+            lastKnownPayload: payload,
+            pendingErase: false,
+            editCount: editCount,
+            editTieBreaker: editTieBreaker
+        )
+        row.lastKnownRecord = systemFields
+        row.lastKnownPayload = payload
+        row.generation = generation
+        state.sync.rows[name] = row
+        persist()
+    }
+
+    private func lastKnownLifeProfile() -> LifeProfile? {
+        guard let data = state.sync.rows[RecordsSyncIdentity.recordName(type: .lifeProfile, key: LifeProfile.profileID.uuidString)]?
+            .lastKnownPayload
+        else { return nil }
+        let calendar = RecordsSyncPayload.fileCalendar(for: state)
+        if case .lifeProfile(let profile) = RecordsSyncPayload.incoming(from: data, type: .lifeProfile, calendar: calendar) {
+            return profile
+        }
+        return nil
     }
 
     func currentSnapshotID(on day: Date) -> UUID? {
@@ -298,9 +480,6 @@ final class RecordCoordinator {
                 let migrated = preserveCivilDate(workStartedOn, from: oldLifeCalendar, in: targetCalendar)
                 if migrated != workStartedOn {
                     profile.workStartedOn = migrated
-                    profile.editedAt = date
-                    profile.editCount += 1
-                    profile.editTieBreaker = UUID()
                 }
             }
             state.lifeProfile = profile
@@ -358,6 +537,7 @@ final class RecordCoordinator {
                 timeZoneIdentifier: timeZoneIdentifier
             )
         )
+        markDirty(.workObservation, key: eventID.uuidString, editCount: 1, tie: eventID)
         persist()
     }
 
@@ -368,17 +548,34 @@ final class RecordCoordinator {
         at date: Date
     ) {
         guard let encoded = try? ScheduleHoursCodec.encode(hours) else { return }
-        state.snapshots.append(
-            ScheduleSnapshot(
-                id: UUID(),
-                periodID: periodID,
-                effectiveFrom: effectiveFrom,
-                configurationData: encoded.data,
-                fingerprint: encoded.fingerprint,
-                editedAt: date,
-                editCount: 1,
-                editTieBreaker: UUID()
-            )
+        let snapshot = ScheduleSnapshot(
+            id: UUID(),
+            periodID: periodID,
+            effectiveFrom: effectiveFrom,
+            configurationData: encoded.data,
+            fingerprint: encoded.fingerprint,
+            editedAt: date,
+            editCount: 1,
+            editTieBreaker: UUID()
+        )
+        state.snapshots.append(snapshot)
+        markDirty(.scheduleSnapshot, key: snapshot.id.uuidString, editCount: snapshot.editCount, tie: snapshot.editTieBreaker)
+    }
+
+    private func markDirty(
+        _ type: RecordEntityType,
+        key: String,
+        editCount: Int,
+        tie: UUID,
+        erase: Bool = false
+    ) {
+        RecordsSyncOutbox.markDirty(
+            &state.sync,
+            type: type,
+            key: key,
+            editCount: editCount,
+            editTieBreaker: tie,
+            erase: erase
         )
     }
 
@@ -399,6 +596,7 @@ final class RecordCoordinator {
                     erasedAt: Date(timeIntervalSince1970: $0.erasedAtMs / 1_000)
                 )
             }
+            archive.sync = file.sync ?? .empty
             state = archive
         } catch let error as CocoaError where error.code == .fileReadNoPermission {
             persistenceError = .unreadableArchive
@@ -428,7 +626,8 @@ final class RecordCoordinator {
                 document: documentData,
                 erased: state.erased.map {
                     ErasedDTO(entityType: $0.entityType, logicalKey: $0.logicalKey, erasedAtMs: $0.erasedAt.timeIntervalSince1970 * 1_000)
-                }
+                },
+                sync: state.sync
             )
             let data = try JSONEncoder().encode(file)
             try data.write(to: fileURL, options: .atomic)
@@ -443,6 +642,7 @@ private struct RecordLocalFile: Codable {
     var schemaVersion: Int
     var document: Data
     var erased: [ErasedDTO]
+    var sync: SyncLocalState?
 }
 
 private struct ErasedDTO: Codable {

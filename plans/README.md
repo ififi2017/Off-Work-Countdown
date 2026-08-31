@@ -8,11 +8,11 @@
 | 编号 | 计划 | 起草 | 状态 | 备注 |
 | --- | --- | --- | --- | --- |
 | 001 | [统一并收敛全产品动效](001-motion-improvement.md) | 2026-08-24 | IN PROGRESS | iOS 动效地基随 007 落地；原计划中的逐秒数字策略需复议；Web/Desktop 尚未开始 |
-| 002 | [工作占比、人生视图与专注](002-records-life-focus.md) | 2026-08-25 | IN PROGRESS | P0A 本地语义、JSON、批量展开与最小事件已落地；免费记录 Tab 只列实际上下班，不预填年历；日历日时区锁定、设置迁移与损坏档案隔离提示已定；付费墙 / P0B / P2 未做 |
+| 002 | [工作占比、人生视图与专注](002-records-life-focus.md) | 2026-08-25 | IN PROGRESS | P0A 在 [PR #94](https://github.com/ififi2017/Off-Work-Countdown/pull/94)；P1 / P0B / P2 与 [006](006-free-trial-subscription.md) 同在 [PR #96](https://github.com/ififi2017/Off-Work-Countdown/pull/96) 等 CR。实现已交，真机同步与 TestFlight 未过。免费 Tab 只列实际上下班 |
 | 003 | [桌面端实施（Tauri v2）](003-tauri-desktop.md) | 2026-08-08 | IN PROGRESS | 已连续发布至 3.1.7；Windows 人工验收、真实升级回环与 P6 包管理器分发仍待办 |
 | 004 | [班次模型重构与本地化补齐](004-shift-model-3.1.0.md) | 2026-08-12 | DONE | 3.1.0 已发布，当前 3.1.7 |
 | 005 | [产品 3.0 升级](005-product-3.0.md) | 2026-08-08 | DONE | M1–M5 完成；M6 分发改由 MSIX 计划接管 |
-| 006 | [免费下载、试用与订阅](006-free-trial-subscription.md) | 2026-08-26 | DRAFT | 从 002 拆出；通用购买把 iOS 与 Mac App Store 绑在一个价格上；等待 007 完成送审闭环 |
+| 006 | [免费下载、试用与订阅](006-free-trial-subscription.md) | 2026-08-26 | IN PROGRESS | 付费墙随 [PR #96](https://github.com/ififi2017/Off-Work-Countdown/pull/96) 等 CR。ASC 上月 / 年 / 终身已 Ready to Submit；沙盒购买与商店隐私页尚未收口 |
 | 007 | [iOS 订阅前稳定版](007-ios-stable-before-subscription.md) | 2026-08-27 | IN PROGRESS | PR #82 已合入且主要真机界面已验收；Live Activity、截图与 3.1.7 TestFlight 待办 |
 | 008 | [DoneAt 品牌换装与 iOS 外表面](008-brand-doneat.md) | 2026-08-27 | IN PROGRESS | 品牌母版和 iOS/PWA/Tauri 图标已合入；Web favicon、iOS 着色图标与 Live Activity 实拍待办 |
 | 009 | [DoneAt 全平台品牌与双域分工](009-doneat-platform-brand-domain.md) | 2026-08-28 | IN PROGRESS | 官网已独立运作；产品仓 Web P3（品牌、301、下载入口）进行中；Desktop DisplayName 仍是 P4 |

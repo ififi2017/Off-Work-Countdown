@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "com.rainif.offworkcountdown.macappstore",
+  "subscriptionGroup": "plus",
+  "reviewScreenshot": "app-store-connect/iap/review-paywall.png",
+  "reviewNote": "Plus unlocks week/month/year charts, the life view, editing a past day, Focus, and turning on iCloud sync. The countdown, today's schedule, the Records tab list, export, and delete stay free.\n\nHow to find the paywall:\n1. Finish or skip onboarding. An intro screen appears; tap See plans for prices, or Skip to use the free timer.\n2. Open Records. The day list is free. Week / Month / Year charts, Life, Focus, editing a past day, and Enable iCloud Sync present this paywall. Each one has Continue viewing the list.\n3. Settings includes DoneAt Plus (restore / manage) and iCloud sync. Restore always works.\n\nProducts:\n- Yearly: 7-day introductory free trial, then the yearly price. This is the only trial.\n- Monthly: no trial.\n- Lifetime (non-consumable): Family Sharing on. Buying lifetime does not cancel an active subscription; the app warns first and keeps Manage subscription until that subscription ends.\n\nNo account. StoreKit 2 only. Salary never leaves the device and is not in CloudKit. Use a Sandbox Apple ID.",
+  "groupLocalizations": {
+    "ar-SA": { "name": "DoneAt Plus" },
+    "de-DE": { "name": "DoneAt Plus" },
+    "en-US": { "name": "DoneAt Plus" },
+    "es-ES": { "name": "DoneAt Plus" },
+    "fr-FR": { "name": "DoneAt Plus" },
+    "hi": { "name": "DoneAt Plus" },
+    "id": { "name": "DoneAt Plus" },
+    "it": { "name": "DoneAt Plus" },
+    "ja": { "name": "DoneAt Plus" },
+    "ko": { "name": "DoneAt Plus" },
+    "pt-BR": { "name": "DoneAt Plus" },
+    "ru": { "name": "DoneAt Plus" },
+    "th": { "name": "DoneAt Plus" },
+    "tr": { "name": "DoneAt Plus" },
+    "vi": { "name": "DoneAt Plus" },
+    "zh-Hans": { "name": "DoneAt Plus" },
+    "zh-Hant": { "name": "DoneAt Plus" }
+  },
+  "products": {
+    "com.rainif.offworkcountdown.plus.monthly": {
+      "kind": "subscription",
+      "localizations": {
+        "ar-SA": { "name": "Plus شهري", "description": "رسوم، حياة، تركيز ومزامنة iCloud" },
+        "de-DE": { "name": "Plus Monatlich", "description": "Diagramme, Lebensblick, Fokus, iCloud" },
+        "en-US": { "name": "Plus Monthly", "description": "Charts, life view, Focus, and iCloud sync" },
+        "es-ES": { "name": "Plus Mensual", "description": "Gráficos, vista vida, Focus e iCloud" },
+        "fr-FR": { "name": "Plus Mensuel", "description": "Graphiques, vue vie, Focus, iCloud" },
+        "hi": { "name": "Plus मासिक", "description": "चार्ट, जीवन दृश्य, फ़ोकस और iCloud" },
+        "id": { "name": "Plus Bulanan", "description": "Grafik, tampilan hidup, Fokus, iCloud" },
+        "it": { "name": "Plus Mensile", "description": "Grafici, vista vita, Focus e iCloud" },
+        "ja": { "name": "Plus 月額", "description": "グラフ・人生ビュー・集中とiCloud同期" },
+        "ko": { "name": "Plus 월간", "description": "차트, 인생 보기, 집중, iCloud 동기화" },
+        "pt-BR": { "name": "Plus Mensal", "description": "Gráficos, visão de vida, Focus e iCloud" },
+        "ru": { "name": "Plus на месяц", "description": "Графики, жизнь, Фокус и iCloud" },
+        "th": { "name": "Plus รายเดือน", "description": "กราฟ ชีวิต โฟกัส และ iCloud" },
+        "tr": { "name": "Plus Aylık", "description": "Grafikler, yaşam, Odak ve iCloud" },
+        "vi": { "name": "Plus Theo tháng", "description": "Biểu đồ, đời, Tập trung và iCloud" },
+        "zh-Hans": { "name": "Plus 月订", "description": "图表、人生视图、专注和 iCloud 同步" },
+        "zh-Hant": { "name": "Plus 月訂", "description": "圖表、人生視圖、專注和 iCloud 同步" }
+      }
+    },
+    "com.rainif.offworkcountdown.plus.yearly": {
+      "kind": "subscription",
+      "localizations": {
+        "ar-SA": { "name": "Plus سنوي", "description": "سنوي. 7 أيام مجاناً للمشتركين الجدد" },
+        "de-DE": { "name": "Plus Jährlich", "description": "Jährlich. 7 Tage gratis für Neue" },
+        "en-US": { "name": "Plus Yearly", "description": "Yearly Plus. New subscribers get 7 days free" },
+        "es-ES": { "name": "Plus Anual", "description": "Anual. 7 días gratis para nuevos" },
+        "fr-FR": { "name": "Plus Annuel", "description": "Annuel. 7 jours offerts aux nouveaux" },
+        "hi": { "name": "Plus वार्षिक", "description": "वार्षिक. नए सदस्यों को 7 दिन मुफ़्त" },
+        "id": { "name": "Plus Tahunan", "description": "Tahunan. 7 hari gratis untuk pelanggan baru" },
+        "it": { "name": "Plus Annuale", "description": "Annuale. 7 giorni gratis per i nuovi" },
+        "ja": { "name": "Plus 年額", "description": "年額。初めてなら7日間無料" },
+        "ko": { "name": "Plus 연간", "description": "연간. 신규 구독자 7일 무료" },
+        "pt-BR": { "name": "Plus Anual", "description": "Anual. 7 dias grátis para novos" },
+        "ru": { "name": "Plus на год", "description": "Год. 7 дней бесплатно для новых" },
+        "th": { "name": "Plus รายปี", "description": "รายปี ลูกค้าใหม่ทดลอง 7 วัน" },
+        "tr": { "name": "Plus Yıllık", "description": "Yıllık. Yeni abonelere 7 gün bedava" },
+        "vi": { "name": "Plus Theo năm", "description": "Theo năm. Người mới được dùng thử 7 ngày" },
+        "zh-Hans": { "name": "Plus 年订", "description": "年订。新订阅者可享 7 天免费试用" },
+        "zh-Hant": { "name": "Plus 年訂", "description": "年訂。新訂閱者可享 7 天免費試用" }
+      }
+    },
+    "com.rainif.offworkcountdown.plus.lifetime": {
+      "kind": "nonConsumable",
+      "localizations": {
+        "ar-SA": { "name": "Plus مدى الحياة", "description": "شراء لمرة. مشاركة عائلية" },
+        "de-DE": { "name": "Plus Lebenslang", "description": "Einmalkauf. Teilen mit Familie" },
+        "en-US": { "name": "Plus Lifetime", "description": "One-time unlock. Family Sharing included" },
+        "es-ES": { "name": "Plus De por vida", "description": "Compra única. En familia" },
+        "fr-FR": { "name": "Plus À vie", "description": "Achat unique. Partage familial" },
+        "hi": { "name": "Plus आजीवन", "description": "एक बार खरीदें. परिवार साझा" },
+        "id": { "name": "Plus Seumur hidup", "description": "Beli sekali. Berbagi keluarga" },
+        "it": { "name": "Plus A vita", "description": "Acquisto unico. In famiglia" },
+        "ja": { "name": "Plus 買い切り", "description": "買い切り。ファミリー共有に対応" },
+        "ko": { "name": "Plus 평생", "description": "평생 구매. 가족 공유 포함" },
+        "pt-BR": { "name": "Plus Vitalício", "description": "Compra única. Compartilhamento familiar" },
+        "ru": { "name": "Plus навсегда", "description": "Разово. Семейный доступ" },
+        "th": { "name": "Plus ตลอดชีพ", "description": "ซื้อครั้งเดียว แชร์กับครอบครัว" },
+        "tr": { "name": "Plus Ömür boyu", "description": "Tek seferlik. Aile Paylaşımı" },
+        "vi": { "name": "Plus Trọn đời", "description": "Mua một lần. Chia sẻ gia đình" },
+        "zh-Hans": { "name": "Plus 终身", "description": "一次买断，支持家庭共享" },
+        "zh-Hant": { "name": "Plus 終身", "description": "一次買斷，支援家庭共享" }
+      }
+    }
+  }
+}

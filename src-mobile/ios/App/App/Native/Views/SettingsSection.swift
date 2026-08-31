@@ -9,6 +9,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     case shift
     case reminders
     case appearance
+    case plus
     case about
 
     var id: String { rawValue }
@@ -18,6 +19,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .shift: "shiftSection"
         case .reminders: "remindersSection"
         case .appearance: "appearanceSection"
+        case .plus: "plusSection"
         case .about: "aboutSection"
         }
     }

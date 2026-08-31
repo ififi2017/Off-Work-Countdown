@@ -27,6 +27,8 @@ struct OffWorkCountdownRootView: View {
                     // animated at, so everything nudged down once the
                     // transition finished — a cross-fade cannot do that.
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 1.04)))
+            } else if !store.plus.hasSeenIntro {
+                PlusIntroView(store: store).transition(.opacity)
             } else if verticalSizeClass == .compact {
                 // Compact height is a phone on its side — including Plus/Max,
                 // whose regular width would otherwise take the iPad shell.
@@ -38,6 +40,7 @@ struct OffWorkCountdownRootView: View {
             }
         }
         .animation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.5), value: store.onboardingComplete)
+        .animation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.28), value: store.plus.hasSeenIntro)
         .preferredColorScheme(store.preferredColorScheme)
         .environment(\.layoutDirection, store.layoutDirection)
         .environment(\.locale, store.locale)
@@ -47,6 +50,8 @@ struct OffWorkCountdownRootView: View {
         .sensoryFeedback(.success, trigger: clockInCommitFeedback)
         .sensoryFeedback(.impact(weight: .medium), trigger: clockOffCommitFeedback)
         .task {
+            store.plus.start()
+            store.cloudSync.startIfEnabled()
             await Task.yield()
             guard store.onboardingComplete else { return }
             try? await Task.sleep(for: .milliseconds(650))

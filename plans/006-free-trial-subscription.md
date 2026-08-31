@@ -1,11 +1,12 @@
 # 006 — 从买断到「免费下载 + 试用 + 订阅」
 
-- **Status**: DRAFT
-- **Reviewed against**: 755052f（007 已合入，送审闭环未完成）
+- **Status**: IN PROGRESS — 2026-08-30 付费墙已交 CR，ASC 商品 Ready to Submit，未发版
+- **Reviewed against**: 755052f（007 已合入；本轮与 002 同版内部验收，不再等 TestFlight）
 - **Severity**: HIGH
 - **Category**: 商业模式 / StoreKit / App Store Connect
-- **Estimated scope**: [007](007-ios-stable-before-subscription.md) 的实现与主要真机界面已完成并合入，仍须等 Live Activity/锁屏、截图与 TestFlight 把送审闭环做完；付费墙与 [002](002-records-life-focus.md) 的 P1 同版。App Store 记录**已是免费下载**，007 过审上架不会产生买断用户；本计划剩下的是试用、订阅、终身 IAP 与付费墙
-- **相关**: [002](002-records-life-focus.md) 定义了什么能被墙、什么永远不能；本文件定义怎么卖。002 P0A 已可先行，但 **006 仍等 [007](007-ios-stable-before-subscription.md) 完成送审闭环后再开工**（007 不上 IAP；记录已是免费下载）
+- **Estimated scope**: 付费墙与 [002](002-records-life-focus.md) 同版。App Store 记录**已是免费下载**；本计划是试用、订阅、终身 IAP 与付费墙。007 送审闭环不再挡住开工——内部测，不发版
+- **相关**: [002](002-records-life-focus.md) 定义了什么能被墙、什么永远不能；本文件定义怎么卖
+- **进度（2026-08-30）**: 实现随 [PR #96](https://github.com/ififi2017/Off-Work-Countdown/pull/96) 等 CR（基线是 002 P0A 的 [PR #94](https://github.com/ififi2017/Off-Work-Countdown/pull/94)）。本地 `DoneAt.storekit` 已接上。ASC 上组 `plus` 与三个商品已建好价格；17 个商店 locale 的显示名 / 描述、审核备注和共用付费页截图已由 `asc:iap:sync` 推上，三件都是 Ready to Submit。仍缺：沙盒 / TestFlight 购买矩阵、商店描述里的标准 EULA 链接、官网隐私页补购买与 iCloud、隐私标签复评。
 
 ## 一句话
 
@@ -94,7 +95,7 @@ sandbox 里还给不出可信值的复杂逻辑，为一个已知为空的用户
 | SKU | 国区 | 外区 | 说明 |
 | --- | --- | --- | --- |
 | 月 | ¥6 | $1.99 | 最低门槛，主要作用是让终身显得划算 |
-| 年 | ¥25 | $9.99 | ≈ 4.2 个月，年比月省一半多 |
+| 年 | ¥28 | $9.99 | ≈ 4.2 个月，年比月省一半多 |
 | 终身 | ¥58 | $24.99 | ≈ 2.3 年，第三年回本；国区用户偏好买断，这是主推 |
 
 外区按当地购买力定价而不是汇率换算，这是 App Store 的普遍做法。
@@ -273,28 +274,38 @@ RevenueCat 的价值在跨平台（安卓 / Web 订阅）、定价 A/B、跨端�
 - 改价前需要清理 Tauri 端与官网上任何暗示「付费应用」的文案与截图。
 - 想在 Mac 上用记录功能的人，走 iPad 版在 Apple Silicon Mac 上运行。
 
+## 商品 ID（已钉死）
+
+| 角色 | Product ID | 类型 |
+| --- | --- | --- |
+| 订阅组 | `plus` | Auto-Renewable Subscription Group |
+| 月 | `com.rainif.offworkcountdown.plus.monthly` | Auto-renewable |
+| 年 | `com.rainif.offworkcountdown.plus.yearly` | Auto-renewable；唯一带 7 天 introductory offer |
+| 终身 | `com.rainif.offworkcountdown.plus.lifetime` | Non-consumable；开启 Family Sharing |
+
+本地用 `src-mobile/ios/App/DoneAt.storekit` 测通。价格仍走 StoreKit `displayPrice`，不写进 locale。
+
+商店元数据由 `app-store-connect/iap.json` + `npm run asc:iap:sync` 维护。**2026-08-30**：
+组本地化、三件商品的 17 个商店 locale、审核备注和共用审核截图已推上，状态均为
+Ready to Submit。脚本不创建商品、不改价格、不送审。
+
 ## 发布顺序
 
-### 第一步：007 过审上架（无墙）
+### 与 [002](002-records-life-focus.md) 同版内部验收
 
-- App 记录**已经是免费下载**，Mac App Store 的 Tauri 版同样免费。这一步不再改价。
-- iOS 以 [007](007-ios-stable-before-subscription.md) 的倒计时本体过审上架：不含 IAP、不含付费页、不含记录功能。
-- 目标是攒评价与口碑，也验证 iOS 端本身的稳定性。
-
-### 第二步：与 002 的 P1 同版
-
+- 不再等 [007](007-ios-stable-before-subscription.md) 的 TestFlight / 截图闭环。内部测，不发版。
+- **2026-08-30**：付费墙、延迟加载商品、年订试用资格查询、恢复购买与设置页在 PR #96。
+  ASC 三件商品 Ready to Submit。沙盒购买矩阵和 TestFlight 复验仍未跑。
 - 上 IAP（月 / 年 / 终身）、付费页、7 天试用，以及记录 Tab **内部**付费能力上的墙
-  （聚合图表、人生视图、历史编辑；Tab 本身与逐日只读列表不墙）。
-- **首发期下载的用户一视同仁**，同样需要试用或付费才能使用**聚合分析、人生视图与历史编辑**
-  （逐日只读列表和导出对所有人免费）。理由：这些是全新功能，
-  他们没有失去任何已有的东西，倒计时也依然免费；而做「早期用户永久解锁」需要引入一个
-  基于安装时间的不可回测判定，正是本方案刻意删掉的那类复杂度。
-- 付费页、订阅商品名与描述纳入 19 个 UI locale。
+  （聚合图表、人生视图、历史编辑、开启同步、专注；Tab 本身与逐日只读列表不墙）。
+- **首发期下载的用户一视同仁**，同样需要试用或付费才能使用付费能力。
+- 付费页纳入 19 个 UI locale；商店商品名与描述走 17 个 ASC locale（`zh-HK` / `zh-TW` 合成
+  `zh-Hant`，无 `mr-IN`）。
 
 ## 尚未决定
 
-1. 终身买断是否开启家庭共享（Family Sharing）？开了对口碑友好，但一份卖给最多六个人。
-2. 订阅组、商品 ID 与显示名的命名方案。
+1. ~~终身买断是否开启家庭共享~~ **已定：开。**
+2. ~~订阅组、商品 ID 与显示名~~ **已定**：见上方「商品 ID」。
 3. 是否准备 offer code，用于给早期反馈者、媒体或那一单历史买断用户补偿。
 
 （原先列在这里的「退款与试用期内取消如何表现」已由上方权益状态机回答：退款是撤销、权益

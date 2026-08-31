@@ -32,6 +32,10 @@ struct SettingsSectionCard: View {
             link(.theme, icon: "display", title: store.t("theme"), value: store.themeLabel)
             link(.language, icon: "globe", title: store.t("chooselanguage"), value: store.languageLabel, isLast: true)
 
+        case .plus:
+            link(.plus, icon: "star", title: store.t("plusSettings"), value: plusStatus, isLast: false)
+            link(.iCloudSync, icon: "icloud", title: store.t("syncTitle"), value: nil, isLast: true)
+
         case .about:
             link(.about, icon: "info.circle", title: store.t("aboutProject"), value: nil)
             OWCRow(icon: "tag", title: store.t("version"), isLast: true) {
@@ -48,6 +52,10 @@ struct SettingsSectionCard: View {
                 }
             }
         }
+    }
+
+    private var plusStatus: String {
+        store.plus.isAuthorized ? store.t("plusStatusSubscribed") : store.t("plusStatusNone")
     }
 
     private func link(_ route: AppRoute, icon: String, title: String, value: String?, isLast: Bool = false) -> some View {

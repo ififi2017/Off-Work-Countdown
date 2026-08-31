@@ -185,6 +185,18 @@ iOS App 内支持 19 个语言 locale。App Store Connect 对繁体中文只提�
 以后只有在准备独立校对地区用语和关键词时，再增加 `en-GB`、`es-MX`、`fr-CA`、`pt-PT`
 等变体。
 
+## 订阅与内购本地化
+
+`scripts/app-store-connect-iap-sync.mjs` 同步订阅组 `plus`、月 / 年订和终身买断的显示名、描述、审核备注和审核截图。商品本身、价格和试用仍在 App Store Connect 里创建；这个脚本只补齐元数据。默认只读预览，`--apply` 才写入。
+
+```bash
+npm run asc:iap:check
+npm run asc:iap:plan
+npm run asc:iap:sync -- --yes
+```
+
+配置在 `app-store-connect/iap.json`。locale 集合与商店商品页相同（17 个；不含 `mr-IN`）。审核截图是 `app-store-connect/iap/review-paywall.png`，三件商品共用。已有截图不一致时加 `--replace-screenshot`。
+
 ## 送审必须人工完成
 
 这个工具只管理版本草稿内容。源码中没有调用 `reviewSubmissions`、

@@ -26,6 +26,15 @@ struct DebugMenuView: View {
                 }
 
                 Section {
+                    Button(action: seedSampleRecords) {
+                        Label(store.t("debugSeedRecords"), systemImage: "calendar.badge.plus")
+                    }
+                    .foregroundStyle(.primary)
+                } footer: {
+                    Text(store.t("debugSeedRecordsDetail"))
+                }
+
+                Section {
                     ForEach(DebugTimerScenario.allCases) { scenario in
                         Button {
                             open(scenario)
@@ -38,6 +47,23 @@ struct DebugMenuView: View {
                     Text(store.t("debugCaptureScenarios"))
                 } footer: {
                     Text(store.t("debugCaptureScenariosDetail"))
+                }
+
+                Section {
+                    Button {
+                        store.plus.debugSetAuthorized(!store.plus.isAuthorized)
+                        actionFeedback += 1
+                    } label: {
+                        Label(
+                            store.plus.isAuthorized ? store.t("plusStatusLifetime") : store.t("plusStatusNone"),
+                            systemImage: "star"
+                        )
+                    }
+                    Button {
+                        store.plus.manageSubscriptions()
+                    } label: {
+                        Label(store.t("plusManage"), systemImage: "cart")
+                    }
                 }
 
                 Section {
@@ -78,6 +104,14 @@ struct DebugMenuView: View {
         actionFeedback += 1
         resultTitle = store.t("debugResetNextLaunch")
         resultMessage = store.t("debugResetNextLaunchDetail")
+        showsResult = true
+    }
+
+    private func seedSampleRecords() {
+        let wrote = store.debugSeedSampleRecords()
+        actionFeedback += 1
+        resultTitle = store.t("debugSeedRecords")
+        resultMessage = store.t(wrote ? "debugSeedRecordsDone" : "debugSeedRecordsAlready")
         showsResult = true
     }
 

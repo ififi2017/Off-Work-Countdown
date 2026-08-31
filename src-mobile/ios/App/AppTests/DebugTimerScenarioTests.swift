@@ -135,6 +135,23 @@ func debugResetRunsOnNextLaunch() {
     #expect(relaunched.languageOverride == nil)
 }
 
+@Test("Sample records fill the free list once and stay stable on a second tap")
+@MainActor
+func debugSeedSampleRecordsIsIdempotent() {
+    withDebugStore { store in
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+        let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 30, hour: 15))!
+        #expect(store.debugSeedSampleRecords(now: now))
+        let days = store.recordedWorkDays()
+        #expect(!days.isEmpty)
+        #expect(store.records.state.lifeProfile?.birthYear == 1992)
+        #expect(store.focusTasksForToday().count == 2)
+        #expect(!store.debugSeedSampleRecords(now: now))
+        #expect(store.recordedWorkDays().count == days.count)
+    }
+}
+
 @MainActor
 private func withDebugStore(
     _ body: (OffWorkStore) throws -> Void

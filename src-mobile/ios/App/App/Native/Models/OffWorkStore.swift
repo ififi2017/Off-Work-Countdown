@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UserNotifications
 
 enum AppTab: String, CaseIterable, Hashable, Identifiable {
     case timer
@@ -18,6 +19,8 @@ enum AppRoute: String, Hashable, Identifiable {
     case theme
     case language
     case recordsTimeZone
+    case plus
+    case iCloudSync
     case about
 
     var id: String { rawValue }
@@ -233,6 +236,8 @@ final class OffWorkStore {
 
     let localizer = NativeLocalizer()
     let records: RecordCoordinator
+    let plus: PlusEntitlement
+    let cloudSync = RecordsCloudSync()
     private let defaults: UserDefaults
 #if DEBUG
     var debugTimerSession: DebugTimerScenario.Session?
@@ -261,7 +266,7 @@ final class OffWorkStore {
     /// pushed page survives a rotation — portrait and landscape are separate
     /// view trees, and each used to own its own path. Not persisted.
     var timerPath: [AppRoute] = []
-    var recordsPath: [String] = []
+    var recordsPath: [RecordsRoute] = []
     var settingsPath: [AppRoute] = []
     /// Unsaved settings drafts survive rotation because portrait and landscape
     /// use separate navigation view trees. They are intentionally not persisted
@@ -612,6 +617,8 @@ final class OffWorkStore {
 #endif
         self.defaults = defaults
         self.records = records ?? RecordCoordinator.inMemory()
+        self.plus = PlusEntitlement(defaults: defaults)
+        cloudSync.attach(records: self.records)
         selectedTab = debugRoute == nil
             ? AppTab(rawValue: defaults.string(forKey: Key.selectedTab) ?? "timer") ?? .timer
             : .settings
@@ -742,6 +749,139 @@ final class OffWorkStore {
 #if DEBUG
     func scheduleDebugResetOnNextLaunch() {
         defaults.set(true, forKey: Key.debugResetNextLaunch)
+    }
+
+    /// Temporary archive for records / charts / life / focus QA. Idempotent.
+    @discardableResult
+    func debugSeedSampleRecords(now: Date = .now) -> Bool {
+        let marker = Self.debugSeedID(0)
+        if records.state.observations.contains(where: { $0.eventID == marker }) {
+            return false
+        }
+        records.ensureSeeded(hours: hoursConfiguration(at: now), at: now, timeZone: recordsTimeZone)
+        let calendar = recordsCalendar
+        let zone = recordsTimeZone
+        let today = calendar.startOfDay(for: now)
+        guard let snapshotID = records.currentSnapshotID(on: today) ?? records.state.snapshots.first?.id else {
+            return false
+        }
+        var cursor = calendar.date(byAdding: .day, value: -1, to: today) ?? today
+        var index = 0
+        for _ in 0..<32 {
+            let weekday = calendar.component(.weekday, from: cursor)
+            if (2...6).contains(weekday) {
+                seedSampleWorkday(
+                    cursor,
+                    index: index,
+                    snapshotID: snapshotID,
+                    calendar: calendar,
+                    zone: zone
+                )
+                index += 1
+            }
+            cursor = calendar.date(byAdding: .day, value: -1, to: cursor) ?? cursor
+        }
+        saveLifeProfile(
+            birthYear: 1992,
+            workStartedYear: 2015,
+            retirementAge: 60,
+            sleepHours: 7.5,
+            hidesExactAges: false
+        )
+        records.upsertFocusTask(
+            FocusTask(
+                id: Self.debugSeedID(800),
+                createdAt: now,
+                plannedForDate: today,
+                title: "Weekly notes",
+                estimatedPomodoros: 1,
+                completedAt: nil,
+                sortIndex: 0,
+                editedAt: now,
+                editCount: 0,
+                editTieBreaker: Self.debugSeedID(801)
+            )
+        )
+        records.upsertFocusTask(
+            FocusTask(
+                id: Self.debugSeedID(802),
+                createdAt: now,
+                plannedForDate: today,
+                title: "Review last month",
+                estimatedPomodoros: 2,
+                completedAt: now,
+                sortIndex: 1,
+                editedAt: now,
+                editCount: 0,
+                editTieBreaker: Self.debugSeedID(803)
+            )
+        )
+        selectedTab = .records
+        return true
+    }
+
+    private func seedSampleWorkday(
+        _ day: Date,
+        index: Int,
+        snapshotID: UUID,
+        calendar: Calendar,
+        zone: TimeZone
+    ) {
+        let dayKey = RecordJSON.dayKey(day, calendar: calendar)
+        let startMinutes: Int
+        let stopMinutes: Int
+        switch index {
+        case 2:
+            startMinutes = 8 * 60 + 25
+            stopMinutes = 18 * 60
+        case 5:
+            markDayNotWorking(dayKey: dayKey)
+            return
+        case 8:
+            startMinutes = 9 * 60
+            stopMinutes = 16 * 60 + 10
+            saveCustomHours(dayKey: dayKey, startMinutes: startMinutes, endMinutes: stopMinutes)
+        default:
+            startMinutes = 9 * 60 + (index % 7)
+            stopMinutes = 18 * 60 + (index % 5)
+        }
+        let started = calendar.date(bySettingHour: startMinutes / 60, minute: startMinutes % 60, second: 0, of: day) ?? day
+        let stopped = calendar.date(bySettingHour: stopMinutes / 60, minute: stopMinutes % 60, second: 0, of: day) ?? day
+        records.recordObservation(
+            kind: .countdownStarted,
+            eventID: index == 0 ? Self.debugSeedID(0) : Self.debugSeedID(100 + index * 2),
+            shiftAnchorDate: day,
+            occurredAt: started,
+            snapshotID: snapshotID,
+            timeZoneIdentifier: zone.identifier
+        )
+        records.recordObservation(
+            kind: .countdownStopped,
+            eventID: Self.debugSeedID(100 + index * 2 + 1),
+            shiftAnchorDate: day,
+            occurredAt: stopped,
+            snapshotID: snapshotID,
+            timeZoneIdentifier: zone.identifier
+        )
+        if index == 11 {
+            let overtimeEnd = calendar.date(bySettingHour: 20, minute: 30, second: 0, of: day) ?? day
+            let payload = try? JSONEncoder().encode([
+                "overtimeEndAtMs": overtimeEnd.timeIntervalSince1970 * 1_000
+            ])
+            records.recordObservation(
+                kind: .overtimeDeclared,
+                eventID: Self.debugSeedID(700),
+                shiftAnchorDate: day,
+                occurredAt: stopped,
+                snapshotID: snapshotID,
+                valueData: payload,
+                timeZoneIdentifier: zone.identifier
+            )
+        }
+    }
+
+    private static func debugSeedID(_ n: Int) -> UUID {
+        UUID(uuidString: String(format: "00000000-0026-4000-a000-%012x", n))!
     }
 #endif
 
@@ -945,6 +1085,7 @@ final class OffWorkStore {
         at date: Date,
         eventID: UUID
     ) {
+        guard plus.shouldCollectObservations else { return }
         records.ensureSeeded(hours: hoursConfiguration(at: date), at: date, timeZone: recordsTimeZone)
         let shift = snapshot(at: date)
         let anchor = shift?.startDate ?? date
@@ -1475,6 +1616,7 @@ final class OffWorkStore {
         }
         recordActiveCountdownBoundary(at: date)
         writeObservation(.countdownStarted, at: date, eventID: UUID())
+        persistProjectedDayOverride(at: date)
     }
 
     /// Ends today's shift early. On a schedule this is a record, not a switch.
@@ -1541,6 +1683,7 @@ final class OffWorkStore {
         // clearing it here would shrink the window and settlement would lose
         // the extra hours.
         writeObservation(.countdownStopped, at: date, eventID: UUID())
+        persistProjectedDayOverride(at: date)
     }
 
     /// Takes it back. Deliberately its own action rather than a side effect of
@@ -1561,6 +1704,7 @@ final class OffWorkStore {
             .map { $0.timeIntervalSince1970 * 1_000 }
         clockInConfirmPending = false
         writeObservation(.countdownStarted, at: date, eventID: UUID())
+        persistProjectedDayOverride(at: date)
     }
 
     func undoEarlyClockIn() {
@@ -1767,6 +1911,7 @@ final class OffWorkStore {
     @discardableResult
     func reconcileCountdownSession(at date: Date = .now) -> Bool {
         var changed = false
+        carryIncompleteFocusTasks(at: date)
         expireSessionTimeZone(at: date)
         if let override = todayOverride, date.timeIntervalSince1970 * 1_000 >= override.untilMs {
             todayOverride = nil
@@ -2088,6 +2233,9 @@ final class OffWorkStore {
             at: date,
             timeZone: recordsTimeZone
         )
+        if decision == .applyToToday {
+            persistProjectedDayOverride(at: date)
+        }
     }
 
     private func clearTodayAdjustments() {
@@ -2418,8 +2566,350 @@ final class OffWorkStore {
         }
     }
 
-    /// 分享落地必须在 Web App 上，对方打开才能接着用同一个班次。
-    /// 官网 `doneat.app` 没有倒计时，不能写进这条链接。
+    func persistProjectedDayOverride(at date: Date = .now) {
+        guard let override = projectedDayOverride(at: date) else { return }
+        records.upsertOverride(override, at: date)
+    }
+
+    func resolvedDay(dayKey: String) -> DayResolution? {
+        guard let date = RecordJSON.date(fromDayKey: dayKey, calendar: recordsCalendar) else { return nil }
+        return resolvedDays(from: date, through: date).first
+    }
+
+    func recordsChartWindow(for period: RecordsChartPeriod, now: Date = .now) -> (Date, Date) {
+        let calendar = recordsCalendar
+        let today = calendar.startOfDay(for: now)
+        switch period {
+        case .week:
+            let start = calendar.date(
+                from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
+            ) ?? today
+            let end = calendar.date(byAdding: .day, value: 6, to: start) ?? today
+            return (start, end)
+        case .month:
+            let start = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today
+            let end = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: start) ?? today
+            return (start, end)
+        case .year:
+            let year = calendar.component(.year, from: today)
+            let start = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) ?? today
+            let end = calendar.date(from: DateComponents(year: year, month: 12, day: 31)) ?? today
+            return (start, end)
+        }
+    }
+
+    func recordsMetrics(for days: [DayResolution]) -> RecordsPeriodMetrics {
+        let sleep = records.state.lifeProfile?.averageSleepHours ?? 8
+        let daily = snapshot(at: .now)?.dailySalary ?? 0
+        let items = days.flatMap { observations(on: $0.shiftAnchorDate) }
+        return RecordsMetrics.summarize(
+            days: days,
+            observations: items,
+            sleepHours: sleep,
+            dailySalary: daily,
+            salaryEnabled: salaryEnabled
+        )
+    }
+
+    func openPaidOrRun(_ reason: PlusPaywallReason, _ action: () -> Void) {
+        if plus.isAuthorized {
+            action()
+        } else {
+            recordsPath.append(.paywall(reason))
+        }
+    }
+
+    func openDayEditor(dayKey: String) {
+        guard let date = RecordJSON.date(fromDayKey: dayKey, calendar: recordsCalendar) else { return }
+        if date < recordsCalendar.startOfDay(for: .now), !plus.isAuthorized {
+            recordsPath.append(.paywall(.historyEdit))
+            return
+        }
+        recordsPath.append(.editDay(dayKey))
+    }
+
+    func saveCustomHours(dayKey: String, startMinutes: Int, endMinutes: Int) {
+        guard let date = RecordJSON.date(fromDayKey: dayKey, calendar: recordsCalendar) else { return }
+        records.ensureSeeded(hours: hoursConfiguration(at: date), at: date, timeZone: recordsTimeZone)
+        let period = DayRecordResolver.period(on: date, from: records.state.periods)
+        let snapshot = period.flatMap {
+            DayRecordResolver.snapshot(on: date, in: $0, from: records.state.snapshots)
+        }
+        var planned: [NativeShiftSegment] = []
+        if let snapshot,
+           let configuration = try? JSONDecoder().decode(
+            ScheduleHoursConfiguration.self,
+            from: snapshot.configurationData
+           ),
+           let days = try? CountdownRules.shared.expandScheduleRange(
+            configuration: configuration,
+            from: date,
+            through: date,
+            timeZone: period?.timeZone
+           ) {
+            planned = days.first?.segments ?? []
+        }
+        let start = recordsCalendar.date(
+            bySettingHour: startMinutes / 60,
+            minute: startMinutes % 60,
+            second: 0,
+            of: date
+        ) ?? date
+        var end = recordsCalendar.date(
+            bySettingHour: endMinutes / 60,
+            minute: endMinutes % 60,
+            second: 0,
+            of: date
+        ) ?? date
+        if end <= start {
+            end = recordsCalendar.date(byAdding: .day, value: 1, to: end) ?? end
+        }
+        if planned.isEmpty {
+            planned = [
+                NativeShiftSegment(
+                    startAtMs: start.timeIntervalSince1970 * 1_000,
+                    endAtMs: end.timeIntervalSince1970 * 1_000
+                )
+            ]
+        }
+        records.upsertOverride(
+            DayOverride(
+                dayKey: dayKey,
+                shiftAnchorDate: date,
+                kind: .customSegments,
+                segments: DayOverrideProjection.applyTimeBounds(
+                    to: planned,
+                    startAtMs: start.timeIntervalSince1970 * 1_000,
+                    endAtMs: end.timeIntervalSince1970 * 1_000
+                ),
+                timeZoneIdentifier: recordsTimeZoneIdentifier
+            )
+        )
+    }
+
+    func confirmDayAsScheduled(dayKey: String) {
+        guard let date = RecordJSON.date(fromDayKey: dayKey, calendar: recordsCalendar) else { return }
+        records.upsertOverride(
+            DayOverride(
+                dayKey: dayKey,
+                shiftAnchorDate: date,
+                kind: .confirmedAsScheduled,
+                segments: [],
+                timeZoneIdentifier: recordsTimeZoneIdentifier
+            )
+        )
+    }
+
+    func markDayNotWorking(dayKey: String) {
+        guard let date = RecordJSON.date(fromDayKey: dayKey, calendar: recordsCalendar) else { return }
+        records.upsertOverride(
+            DayOverride(
+                dayKey: dayKey,
+                shiftAnchorDate: date,
+                kind: .notWorking,
+                segments: [],
+                timeZoneIdentifier: recordsTimeZoneIdentifier
+            )
+        )
+    }
+
+    func clearDayOverride(dayKey: String) {
+        guard let date = RecordJSON.date(fromDayKey: dayKey, calendar: recordsCalendar) else { return }
+        records.upsertOverride(
+            DayOverride(
+                dayKey: dayKey,
+                shiftAnchorDate: date,
+                kind: .cleared,
+                segments: [],
+                timeZoneIdentifier: recordsTimeZoneIdentifier
+            )
+        )
+    }
+
+    func markCalendarException(dayKey: String, effect: CalendarEffect) {
+        guard let date = RecordJSON.date(fromDayKey: dayKey, calendar: recordsCalendar) else { return }
+        records.upsertException(
+            CalendarException(
+                dayKey: CalendarException.dayKey(dateKey: dayKey, origin: .user),
+                date: date,
+                effect: effect,
+                origin: .user,
+                isCleared: false,
+                regionIdentifier: nil,
+                datasetVersion: nil,
+                label: nil,
+                editedAt: .now,
+                editCount: 0,
+                editTieBreaker: UUID(),
+                timeZoneIdentifier: recordsTimeZoneIdentifier
+            )
+        )
+    }
+
+    func saveLifeProfile(
+        birthYear: Int?,
+        workStartedYear: Int?,
+        retirementAge: Int?,
+        sleepHours: Double?,
+        hidesExactAges: Bool
+    ) {
+        var profile = records.state.lifeProfile ?? LifeProfile(
+            editedAt: .now,
+            editCount: 0,
+            editTieBreaker: UUID()
+        )
+        profile.birthYear = birthYear
+        if let workStartedYear {
+            profile.workStartedOn = recordsCalendar.date(
+                from: DateComponents(year: workStartedYear, month: 1, day: 1)
+            )
+        }
+        profile.retirementAge = retirementAge
+        profile.averageSleepHours = sleepHours
+        profile.hidesExactAges = hidesExactAges
+        records.updateLifeProfile(profile)
+    }
+
+    func lifeViewModel(now: Date = .now) -> LifeViewModel? {
+        guard let profile = records.state.lifeProfile else { return nil }
+        let overrideDays = Set(
+            records.state.overrides
+                .filter { $0.kind != .cleared }
+                .map(\.dayKey)
+        )
+        return LifeViewCalculator.build(
+            profile: profile,
+            periods: records.state.periods,
+            overrideDays: overrideDays,
+            outsideZoneDays: Set(daysRecordedOutsidePeriodTimeZone()),
+            now: now,
+            calendar: recordsCalendar
+        )
+    }
+
+    func restoreConflict(_ copy: SyncConflictCopy) {
+        let calendar = RecordsSyncPayload.fileCalendar(for: records.state)
+        guard let incoming = RecordsSyncPayload.incoming(
+            from: copy.payload,
+            type: copy.entityType,
+            calendar: calendar
+        ) else { return }
+        records.applyIncomingValue(incoming)
+    }
+
+    private func carryIncompleteFocusTasks(at date: Date) {
+        let today = recordsCalendar.startOfDay(for: date)
+        for task in records.state.focusTasks where task.completedAt == nil {
+            guard let planned = task.plannedForDate, planned < today else { continue }
+            var next = task
+            next.plannedForDate = today
+            records.upsertFocusTask(next)
+        }
+    }
+
+    func addFocusTask(title: String, pomodoros: Int) {
+        openPaidOrRun(.focus) {
+            let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
+            let nextIndex = (records.state.focusTasks.map(\.sortIndex).max() ?? -1) + 1
+            records.upsertFocusTask(
+                FocusTask(
+                    id: UUID(),
+                    createdAt: .now,
+                    plannedForDate: recordsCalendar.startOfDay(for: .now),
+                    title: trimmed,
+                    estimatedPomodoros: max(1, pomodoros),
+                    completedAt: nil,
+                    sortIndex: nextIndex,
+                    editedAt: .now,
+                    editCount: 0,
+                    editTieBreaker: UUID()
+                )
+            )
+        }
+    }
+
+    func focusTasksForToday() -> [FocusTask] {
+        let today = recordsCalendar.startOfDay(for: .now)
+        return FocusTaskOrder.sorted(records.state.focusTasks.filter { task in
+            guard let planned = task.plannedForDate else { return true }
+            return recordsCalendar.isDate(planned, inSameDayAs: today)
+        })
+    }
+
+    func focusOverflow() -> [FocusTask] {
+        let remaining = Int64(snapshot(at: .now)?.remainingMs ?? 0)
+        return FocusPlanner.remainingPomodoros(tasks: focusTasksForToday(), remainingWorkMs: remaining).overflow
+    }
+
+    func activeFocusSession() -> FocusSession? {
+        records.state.focusSessions.first { $0.endedAt == nil }
+    }
+
+    var focusRejectedNoRoom = false
+
+    func startFocus(task: FocusTask) {
+        openPaidOrRun(.focus) {
+            let start = Date.now
+            let current = snapshot(at: start)
+            let remaining = current?.remainingMs ?? 0
+            if remaining < 60_000 {
+                focusRejectedNoRoom = true
+                return
+            }
+            let segments = current?.segments ?? []
+            let planned = FocusPlanner.plannedEnd(
+                from: start,
+                segments: segments,
+                overtimeEndAtMs: overtimeEndAtMs
+            )
+            if planned.timeIntervalSince(start) < 15 {
+                focusRejectedNoRoom = true
+                return
+            }
+            focusRejectedNoRoom = false
+            let session = FocusSession(
+                id: UUID(),
+                taskID: task.id,
+                shiftAnchorDate: recordsCalendar.startOfDay(for: start),
+                startedAt: start,
+                plannedEndAt: planned,
+                endedAt: nil,
+                endReason: nil,
+                editedAt: start,
+                editCount: 0,
+                editTieBreaker: UUID()
+            )
+            records.upsertFocusSession(session)
+            let content = UNMutableNotificationContent()
+            content.title = t("focusTitle")
+            content.body = t("focusEndedAtBoundary")
+            let interval = max(1, planned.timeIntervalSinceNow)
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
+            let request = UNNotificationRequest(
+                identifier: "focus.\(session.id.uuidString)",
+                content: content,
+                trigger: trigger
+            )
+            UNUserNotificationCenter.current().add(request)
+        }
+    }
+
+    func stopFocus(reason: FocusEndReason) {
+        guard var session = activeFocusSession() else { return }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: ["focus.\(session.id.uuidString)"]
+        )
+        session.endedAt = .now
+        session.endReason = reason
+        records.upsertFocusSession(session)
+        if reason == .completed, let taskID = session.taskID,
+           var task = records.state.focusTasks.first(where: { $0.id == taskID }) {
+            task.completedAt = .now
+            records.upsertFocusTask(task)
+        }
+    }
+
     func shareURL() -> URL {
         let compactStart = timeString(startMinutes).replacingOccurrences(of: ":", with: "")
         let compactEnd = timeString(endMinutes).replacingOccurrences(of: ":", with: "")
