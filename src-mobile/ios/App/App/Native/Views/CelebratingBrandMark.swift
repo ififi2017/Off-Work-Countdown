@@ -3,6 +3,14 @@ import SwiftUI
 /// The interactive form of the code-native brand mark used where a user may
 /// reasonably stop and explore it: onboarding, About, and the no-shift state.
 struct CelebratingBrandMark: View {
+    enum EasterEgg {
+        case clockSpin
+        case readyNudge
+    }
+
+    var showsDepth = false
+    var easterEgg: EasterEgg = .clockSpin
+
     private static let tapThreshold = 5
     private static let designCanvasSide: CGFloat = 1024
     private static let endpointCenter = CGPoint(x: 664.5, y: 776.1)
@@ -11,9 +19,11 @@ struct CelebratingBrandMark: View {
     private static let tapTravelLimit: CGFloat = 10
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
     @State private var tapCount = 0
     @State private var handRotation = 0.0
     @State private var reducedPulse = false
+    @State private var readyNudge = false
     @State private var isCelebrating = false
     @State private var gestureIsActive = false
     @State private var pressFeedback = 0
@@ -37,9 +47,12 @@ struct CelebratingBrandMark: View {
             ZStack(alignment: .topLeading) {
                 OWCBrandMark(
                     handRotation: .degrees(handRotation),
-                    showsEndpoint: false
+                    showsEndpoint: false,
+                    showsDepth: showsDepth
                 )
                 .opacity(reducedPulse ? 0.55 : 1)
+                .scaleEffect(readyNudge && !reduceMotion ? 1.025 : 1)
+                .offset(y: readyNudge && !reduceMotion ? -6 : 0)
 
                 // The gesture is attached to the actual glass view rather than
                 // a sibling overlay. `.interactive()` can therefore supply its
@@ -51,6 +64,15 @@ struct CelebratingBrandMark: View {
                         .regular.tint(OWCDesign.orange.opacity(0.32)).interactive(),
                         in: Circle()
                     )
+                    .shadow(
+                        color: showsDepth
+                            ? OWCDesign.brandPlum.opacity(colorScheme == .dark ? 0.44 : 0.11)
+                            : .clear,
+                        radius: max(2, side * 0.022),
+                        y: max(1, side * 0.016)
+                    )
+                    .scaleEffect(readyNudge && !reduceMotion ? 1.10 : 1)
+                    .offset(y: readyNudge && !reduceMotion ? -8 : 0)
                     // Keep Apple's 44 pt touch target without enlarging the
                     // visible endpoint or making the ring tappable.
                     .frame(width: hitDiameter, height: hitDiameter)
@@ -110,7 +132,12 @@ struct CelebratingBrandMark: View {
         if reduceMotion {
             playReducedCelebration()
         } else {
-            playHandRotation()
+            switch easterEgg {
+            case .clockSpin:
+                playHandRotation()
+            case .readyNudge:
+                playReadyNudge()
+            }
         }
     }
 
@@ -132,6 +159,18 @@ struct CelebratingBrandMark: View {
         } completion: {
             withAnimation(OWCMotion.reduced) {
                 reducedPulse = false
+            } completion: {
+                isCelebrating = false
+            }
+        }
+    }
+
+    private func playReadyNudge() {
+        withAnimation(OWCMotion.brandNudge) {
+            readyNudge = true
+        } completion: {
+            withAnimation(OWCMotion.brandSettle) {
+                readyNudge = false
             } completion: {
                 isCelebrating = false
             }

@@ -21,7 +21,7 @@ struct LunchBreakDesignView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store)
+            OWCAppHeader(store: store, showsFocus: true)
 
             GeometryReader { proxy in
                 ScrollView {
@@ -147,7 +147,7 @@ struct OvertimeDesignView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store)
+            OWCAppHeader(store: store, showsFocus: true)
 
             GeometryReader { proxy in
                 ScrollView {
@@ -274,9 +274,9 @@ struct UnscheduledTimerView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store)
+            OWCAppHeader(store: store, showsFocus: true)
             Spacer()
-            CelebratingBrandMark()
+            CelebratingBrandMark(showsDepth: true, easterEgg: .readyNudge)
                 .frame(width: 168, height: 168)
                 .padding(.bottom, 26)
             Text(store.t("unscheduledTitle"))
@@ -315,7 +315,7 @@ struct RestDayDesignView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store)
+            OWCAppHeader(store: store, showsFocus: true)
 
             OWCContentSizedScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
@@ -433,7 +433,7 @@ struct CompletedShiftDesignView: View {
                 .padding(.top, 8)
             } else {
                 VStack(spacing: 0) {
-                    OWCAppHeader(store: store)
+                    OWCAppHeader(store: store, showsFocus: true)
                     hero
                     if let note = store.earlyClockOffNote(for: snapshot) {
                         EarlyClockOffBanner(store: store, note: note)
@@ -619,7 +619,7 @@ struct CompletedShiftDesignView: View {
 
     private var endedEarly: Bool { store.isEndedEarly(snapshot) }
     private var celebrationToken: Double {
-        endedEarly ? (store.earlyOffAtMs ?? snapshot.plannedEndAtMs) : snapshot.plannedEndAtMs
+        endedEarly ? (store.earlyOffAtMs ?? snapshot.plannedEndAtMs) : snapshot.endAtMs
     }
     private var finishedSnapshot: NativeShiftSnapshot { store.clockOffSnapshot(for: snapshot) }
     private var workedDurationMs: Double { endedEarly ? finishedSnapshot.elapsedMs : snapshot.durationMs }

@@ -6,6 +6,8 @@ struct UpcomingTimelineEvent: Identifiable, Hashable {
         case lunchStart
         case lunchEnd
         case health
+        case focus
+        case focusBreak
         case milestone
         case shiftEnd
     }
@@ -15,4 +17,21 @@ struct UpcomingTimelineEvent: Identifiable, Hashable {
     let date: Date
     let title: String
     let detail: String
+    let symbolName: String?
+
+    init(
+        id: String,
+        kind: Kind,
+        date: Date,
+        title: String,
+        detail: String,
+        symbolName: String? = nil
+    ) {
+        self.id = id
+        self.kind = kind
+        self.date = date
+        self.title = title
+        self.detail = detail
+        self.symbolName = symbolName
+    }
 }

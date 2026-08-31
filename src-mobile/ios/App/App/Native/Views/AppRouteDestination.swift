@@ -33,6 +33,14 @@ struct AppRouteDestination: View {
             PlusSettingsView(store: store)
         case .iCloudSync:
             RecordsSyncSettingsView(store: store)
+        case .recordsData:
+            RecordsDataSettingsView(store: store)
+        case .recordsConflicts:
+            RecordsConflictCenter(store: store)
+        case .focus:
+            FocusDesignView(store: store)
+        case .focusPlan:
+            FocusPlanningView(store: store)
         case .about:
             AboutView(store: store)
         }

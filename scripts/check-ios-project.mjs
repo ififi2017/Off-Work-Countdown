@@ -34,6 +34,13 @@ const appScheme = readFileSync(
   "src-mobile/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme",
   "utf8"
 );
+const plusEntitlementSource = readFileSync(
+  "src-mobile/ios/App/App/Native/Models/PlusEntitlement.swift",
+  "utf8"
+);
+const storeKitConfigurationPath =
+  "src-mobile/ios/App/DoneAtConnect.storekit";
+const storeKitConfigurationIdentifier = "../../DoneAtConnect.storekit";
 const appEntitlements = readFileSync(
   "src-mobile/ios/App/App/App.entitlements",
   "utf8"
@@ -89,6 +96,51 @@ if (
   !appScheme.includes('buildForArchiving = "YES"')
 ) {
   fail("The shared App scheme must archive the application with the Release configuration.");
+}
+if (
+  !existsSync(storeKitConfigurationPath) ||
+  !appScheme.includes(`identifier = "${storeKitConfigurationIdentifier}"`)
+) {
+  fail(
+    "The shared App scheme must use the App Store Connect-synced StoreKit configuration."
+  );
+}
+const storeKitConfiguration = JSON.parse(
+  readFileSync(storeKitConfigurationPath, "utf8")
+);
+const expectedStoreKitProductIds = [
+  "com.rainif.offworkcountdown.plus.lifetime",
+  "com.rainif.offworkcountdown.plus.monthly",
+  "com.rainif.offworkcountdown.plus.yearly",
+];
+const storeKitProductIds = [
+  ...(storeKitConfiguration.products ?? []).map((product) => product.productID),
+  ...(storeKitConfiguration.subscriptionGroups ?? []).flatMap((group) =>
+    (group.subscriptions ?? []).map((subscription) => subscription.productID)
+  ),
+].sort();
+const storeKitSubscriptionGroupIds = [
+  ...(storeKitConfiguration.subscriptionGroups ?? []).flatMap((group) =>
+    (group.subscriptions ?? []).map(
+      (subscription) => subscription.subscriptionGroupID
+    )
+  ),
+];
+if (
+  !storeKitConfiguration.settings?._applicationInternalID ||
+  !storeKitConfiguration.settings?._developerTeamID ||
+  JSON.stringify(storeKitProductIds) !==
+    JSON.stringify(expectedStoreKitProductIds.sort()) ||
+  !storeKitSubscriptionGroupIds.length ||
+  storeKitSubscriptionGroupIds.some((groupID) => groupID !== "22345761") ||
+  !plusEntitlementSource.includes(
+    'static let storeKitConfigurationGroupID = "22345761"'
+  ) ||
+  iosProject.includes("DoneAtConnect.storekit in Resources")
+) {
+  fail(
+    "The StoreKit configuration must stay synced with App Store Connect and out of shipping app resources."
+  );
 }
 const releaseConfigurations = [
   ...iosProject.matchAll(

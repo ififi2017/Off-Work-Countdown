@@ -12,7 +12,7 @@ struct AboutView: View {
             VStack(spacing: 22) {
                 OWCGroupCard {
                     VStack(spacing: 12) {
-                        CelebratingBrandMark()
+                        CelebratingBrandMark(showsDepth: true, easterEgg: .clockSpin)
                             .frame(width: 168, height: 168)
 #if DEBUG
                         Text(verbatim: OWCBrand.shortName)

@@ -51,11 +51,14 @@ struct UpcomingTimelineEventRow: View {
     }
 
     private var symbol: String {
-        switch event.kind {
+        if let symbolName = event.symbolName { return symbolName }
+        return switch event.kind {
         case .shiftStart: "sunrise.fill"
         case .lunchStart: "cup.and.saucer.fill"
         case .lunchEnd: "arrow.right.circle.fill"
         case .health: "figure.walk"
+        case .focus: "timer"
+        case .focusBreak: "cup.and.saucer.fill"
         case .milestone: "bell.badge.fill"
         case .shiftEnd: "flag.checkered"
         }
@@ -66,6 +69,8 @@ struct UpcomingTimelineEventRow: View {
         case .shiftStart: .blue
         case .lunchStart, .lunchEnd: .cyan
         case .health: .green
+        case .focus: OWCDesign.accent
+        case .focusBreak: .mint
         case .milestone: .indigo
         case .shiftEnd: OWCDesign.accent
         }

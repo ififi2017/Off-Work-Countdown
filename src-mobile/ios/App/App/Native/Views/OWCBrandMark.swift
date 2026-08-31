@@ -8,6 +8,7 @@ struct OWCBrandMark: View {
     var isPressed = false
     var handRotation: Angle = .zero
     var showsEndpoint = true
+    var showsDepth = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
@@ -63,6 +64,50 @@ struct OWCBrandMark: View {
                 }
             }
             .frame(width: side, height: side, alignment: .topLeading)
+            // Keep the brand mark crisp while giving it a believable place on
+            // the surface: a close plum shadow for elevation, then a wider
+            // ambient glow and a soft contact shadow underneath. The backdrop
+            // is added after `.shadow`, so the glow itself never casts a grey
+            // halo.
+            .shadow(
+                color: showsDepth
+                    ? OWCDesign.brandPlum.opacity(colorScheme == .dark ? 0.48 : 0.13)
+                    : .clear,
+                radius: max(2, side * 0.022),
+                y: max(2, side * 0.016)
+            )
+            .background {
+                if showsDepth {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    colors: [
+                                        OWCDesign.orange.opacity(colorScheme == .dark ? 0.22 : 0.17),
+                                        OWCDesign.orange.opacity(colorScheme == .dark ? 0.055 : 0.035),
+                                        .clear,
+                                    ],
+                                    center: .center,
+                                    startRadius: 4,
+                                    endRadius: side * 0.56
+                                )
+                            )
+                            .frame(width: side * 1.14, height: side * 1.14)
+
+                        Ellipse()
+                            .fill(
+                                OWCDesign.brandPlum.opacity(
+                                    colorScheme == .dark ? 0.28 : 0.075
+                                )
+                            )
+                            .frame(width: side * 0.42, height: side * 0.06)
+                            .blur(radius: side * 0.024)
+                            .offset(y: side * 0.345)
+                    }
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                }
+            }
             .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
         }
         .aspectRatio(1, contentMode: .fit)

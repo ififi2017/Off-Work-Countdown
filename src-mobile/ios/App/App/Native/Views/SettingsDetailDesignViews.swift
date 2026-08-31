@@ -1294,6 +1294,7 @@ struct RecordsTimeZoneSettingsView: View {
             Button(store.t("recordsTimeZoneMigrate")) {
                 store.migrateRecordsTimeZone()
             }
+            Button(store.t("cancel"), role: .cancel) {}
         } message: {
             Text(store.t("recordsTimeZoneDevice", values: ["zone": store.systemTimeZoneLabel]))
         }

@@ -4,6 +4,386 @@ import UIKit
 @testable import App
 
 @MainActor
+@Test("Existing Records snapshots reconcile to the device schedule and lunch")
+func recordsScheduleReconcilesToDevicePreferences() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 60
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = store.recordsTimeZone
+    let now = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 8, day: 31, hour: 18
+    )))
+    let day = calendar.startOfDay(for: now)
+    records.ensureSeeded(hours: store.hoursConfiguration(at: now), at: now, timeZone: store.recordsTimeZone)
+
+    // Simulates an archive produced by an older build where the settings were
+    // persisted but their matching schedule snapshot was never committed.
+    store.startMinutes = 10 * 60
+    store.endMinutes = 19 * 60
+    store.lunchStartMinutes = 12 * 60 + 30
+    store.lunchDurationMinutes = 90
+
+    #expect(store.reconcileRecordSchedule(at: now))
+    let resolution = try #require(store.resolvedDays(from: day, through: day, now: now).first)
+    let workMs = resolution.segments.reduce(0.0) { partial, segment in
+        partial + max(0, segment.endAtMs - segment.startAtMs)
+    }
+    let breakMs = TimeAllocationCalculator.gaps(in: resolution.segments).reduce(0.0) { partial, segment in
+        partial + max(0, segment.endAtMs - segment.startAtMs)
+    }
+    #expect(workMs == 7.5 * 3_600_000)
+    #expect(breakMs == 1.5 * 3_600_000)
+
+    let overtimeEnd = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 8, day: 31, hour: 19, minute: 28
+    )))
+    store.applyOvertime(date: overtimeEnd, declaredAt: overtimeEnd)
+    let allocation = store.dayAllocation(resolution, now: overtimeEnd)
+    #expect(allocation.workMs == Int64(7.5 * 3_600_000))
+    #expect(allocation.breakMs == Int64(1.5 * 3_600_000))
+    #expect(allocation.overtimeMs == Int64(28 * 60_000))
+}
+
+@MainActor
+@Test("Opening Life estimates an empty archive without backdating Records")
+func lifeViewDoesNotPersistSyntheticCareerHistory() throws {
+    let suite = "OffWorkStoreTests.life.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.saveLifeProfile(
+        birthYear: 1990,
+        workStartedYear: 2012,
+        retirementAge: 60,
+        sleepHours: 8,
+        hidesExactAges: false
+    )
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = store.recordsTimeZone
+    let now = try #require(calendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 31,
+        hour: 12
+    )))
+
+    #expect(records.state.periods.isEmpty)
+    let model = try #require(store.lifeViewModel(now: now))
+    #expect(model.workShare > 0)
+    #expect(records.state.periods.isEmpty)
+    #expect(records.state.snapshots.isEmpty)
+}
+
+@MainActor
+@Test("Month and year projections stay in memory and use shared schedule rules")
+func recordsProjectionDoesNotBackdateArchive() async throws {
+    let suite = "OffWorkStoreTests.projection.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.plus.debugSetAuthorized(true)
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 60
+    store.saveLifeProfile(
+        birthYear: 1990,
+        workStartedYear: 2012,
+        retirementAge: 60,
+        sleepHours: 8,
+        hidesExactAges: false
+    )
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = store.recordsTimeZone
+    let now = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 8, day: 31, hour: 12
+    )))
+    let from = try #require(calendar.date(from: DateComponents(
+        year: 2025, month: 9, day: 1
+    )))
+    let through = try #require(calendar.date(byAdding: .day, value: 6, to: from))
+
+    let days = await store.prepareRecordsDisplayDays(from: from, through: through, now: now)
+    let workday = try #require(days.first(where: { $0.isScheduledWorkday && !$0.segments.isEmpty }))
+    let cell = store.recordsDayCell(for: workday, now: now, includesLifeProjection: true)
+    #expect(cell.isProjection)
+    #expect(cell.workMs > 0)
+    #expect(records.state.periods.count == 1)
+    #expect(records.state.periods[0].startsOn == calendar.startOfDay(for: now))
+    #expect(!records.state.periods.contains(where: { $0.startsOn < calendar.startOfDay(for: now) }))
+}
+
+@MainActor
+@Test("Life history backfill uses the currently configured 90-minute lunch")
+func lifeHistoryBackfillUsesCurrentLunchDuration() async throws {
+    let suite = "OffWorkStoreTests.life-current-lunch.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.plus.debugSetAuthorized(true)
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 60
+
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = store.recordsTimeZone
+    let now = try #require(calendar.date(from: DateComponents(year: 2026, month: 8, day: 31, hour: 12)))
+    _ = await store.prepareResolvedDays(from: now, through: now, now: now)
+
+    store.startMinutes = 10 * 60
+    store.endMinutes = 19 * 60
+    store.lunchStartMinutes = 12 * 60 + 30
+    store.lunchDurationMinutes = 90
+    store.saveLifeProfile(
+        birthYear: 1990,
+        workStartedYear: 2012,
+        retirementAge: 60,
+        sleepHours: 8,
+        hidesExactAges: false
+    )
+    let past = try #require(calendar.date(from: DateComponents(year: 2025, month: 9, day: 1)))
+    let days = await store.prepareRecordsDisplayDays(from: past, through: past, now: now)
+    let day = try #require(days.first)
+    let share = store.dayAllocation(day, now: now)
+
+    #expect(share.workMs == Int64(7.5 * 3_600_000))
+    #expect(share.breakMs == 90 * 60 * 1_000)
+}
+
+@MainActor
+@Test("Projected-only periods do not create a recorded summary")
+func projectedOnlyRecordsHaveNoHeadline() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+    store.plus.debugSetAuthorized(true)
+    let cell = RecordsDayCell(
+        dayKey: "2026-08-31",
+        date: .now,
+        appearance: .planned,
+        workMs: 8 * 3_600_000,
+        overtimeMs: 0,
+        breakMs: 3_600_000,
+        freeMs: 0,
+        observationCount: 0,
+        isToday: true,
+        isFuture: false,
+        isProjection: true,
+        hasConflict: false
+    )
+    #expect(store.recordsHeadline(cells: [cell], days: []) == nil)
+}
+
+@MainActor
+@Test("All Records indexes every user-authored civil day without changing work metrics")
+func allRecordsDayIndexIncludesManualFactsAndExcludesSyntheticRows() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    let workDay = utcDay(2026, 8, 24)
+    let leaveDay = utcDay(2026, 8, 25)
+    let restDay = utcDay(2026, 8, 26)
+    let bundledDay = utcDay(2026, 8, 27)
+    let clearedDay = utcDay(2026, 8, 28)
+    let manualHoursDay = utcDay(2026, 8, 29)
+    let makeupWorkday = utcDay(2026, 8, 30)
+
+    records.recordObservation(
+        kind: .timerSurfaceFirstSeen,
+        eventID: UUID(),
+        shiftAnchorDate: workDay,
+        occurredAt: workDay,
+        snapshotID: UUID(),
+        timeZoneIdentifier: "UTC"
+    )
+    records.recordObservation(
+        kind: .countdownStarted,
+        eventID: UUID(),
+        shiftAnchorDate: workDay,
+        occurredAt: workDay.addingTimeInterval(60),
+        snapshotID: UUID(),
+        timeZoneIdentifier: "UTC"
+    )
+    records.upsertOverride(DayOverride(
+        dayKey: "2026-08-25",
+        shiftAnchorDate: leaveDay,
+        kind: .notWorking,
+        segments: [],
+        timeZoneIdentifier: "UTC"
+    ))
+    records.upsertException(CalendarException(
+        dayKey: "2026-08-26#user",
+        date: restDay,
+        effect: .rest,
+        origin: .user,
+        isCleared: false,
+        regionIdentifier: nil,
+        datasetVersion: nil,
+        label: nil,
+        editedAt: restDay,
+        editCount: 0,
+        editTieBreaker: UUID(),
+        timeZoneIdentifier: "UTC"
+    ))
+    records.upsertException(CalendarException(
+        dayKey: "2026-08-27#bundled",
+        date: bundledDay,
+        effect: .rest,
+        origin: .bundled,
+        isCleared: false,
+        regionIdentifier: nil,
+        datasetVersion: nil,
+        label: nil,
+        editedAt: bundledDay,
+        editCount: 0,
+        editTieBreaker: UUID(),
+        timeZoneIdentifier: "UTC"
+    ))
+    records.upsertOverride(DayOverride(
+        dayKey: "2026-08-28",
+        shiftAnchorDate: clearedDay,
+        kind: .cleared,
+        segments: [],
+        timeZoneIdentifier: "UTC"
+    ))
+    records.upsertOverride(DayOverride(
+        dayKey: "2026-08-29",
+        shiftAnchorDate: manualHoursDay,
+        kind: .customSegments,
+        segments: [NativeShiftSegment(
+            startAtMs: manualHoursDay.timeIntervalSince1970 * 1_000 + 9 * 3_600_000,
+            endAtMs: manualHoursDay.timeIntervalSince1970 * 1_000 + 17 * 3_600_000
+        )],
+        timeZoneIdentifier: "UTC"
+    ))
+    records.upsertException(CalendarException(
+        dayKey: "2026-08-30#user",
+        date: makeupWorkday,
+        effect: .work,
+        origin: .user,
+        isCleared: false,
+        regionIdentifier: nil,
+        datasetVersion: nil,
+        label: "Make-up workday",
+        editedAt: makeupWorkday,
+        editCount: 0,
+        editTieBreaker: UUID(),
+        timeZoneIdentifier: "UTC"
+    ))
+
+    let index = store.recordDayIndex()
+    #expect(Set(index.map(\.dayKey)) == Set([
+        "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-29", "2026-08-30",
+    ]))
+    #expect(index.first(where: { $0.dayKey == "2026-08-24" })?.observations.count == 1)
+    #expect(index.first(where: { $0.dayKey == "2026-08-25" })?.hasManualOverride == true)
+    #expect(index.first(where: { $0.dayKey == "2026-08-26" })?.hasUserCalendarException == true)
+    #expect(index.first(where: { $0.dayKey == "2026-08-29" })?.hasManualOverride == true)
+    #expect(index.first(where: { $0.dayKey == "2026-08-30" })?.hasUserCalendarException == true)
+    #expect(store.recordedWorkDays().map(\.dayKey) == ["2026-08-24"])
+}
+
+@MainActor
+@Test("Archived observations stay on their original civil day after a timezone change")
+func observationsKeepOriginalCivilDayAcrossTimeZones() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    let tokyo = try #require(TimeZone(identifier: "Asia/Tokyo"))
+    let losAngeles = try #require(TimeZone(identifier: "America/Los_Angeles"))
+    var tokyoCalendar = Calendar(identifier: .gregorian)
+    tokyoCalendar.timeZone = tokyo
+    let tokyoMidnight = try #require(tokyoCalendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 24
+    )))
+
+    records.recordObservation(
+        kind: .countdownStarted,
+        eventID: UUID(),
+        shiftAnchorDate: tokyoMidnight,
+        occurredAt: tokyoMidnight.addingTimeInterval(60),
+        snapshotID: UUID(),
+        timeZoneIdentifier: tokyo.identifier
+    )
+    store.recordsTimeZoneIdentifier = losAngeles.identifier
+    var losAngelesCalendar = Calendar(identifier: .gregorian)
+    losAngelesCalendar.timeZone = losAngeles
+    let displayedDay = try #require(losAngelesCalendar.date(from: DateComponents(
+        year: 2026,
+        month: 8,
+        day: 24
+    )))
+
+    #expect(store.recordDayIndex().map(\.dayKey) == ["2026-08-24"])
+    #expect(store.observations(on: displayedDay).count == 1)
+}
+
+@MainActor
+@Test("Calendar exception conflict keys mark their civil day in the calendar")
+func calendarExceptionConflictUsesDatePortionOfLogicalKey() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    let day = utcDay(2026, 8, 24)
+    records.ensureSeeded(
+        hours: store.hoursConfiguration(at: day),
+        at: day,
+        timeZone: TimeZone(secondsFromGMT: 0)!
+    )
+    var sync = records.state.sync
+    sync.conflicts = [SyncConflictCopy(
+        entityType: .calendarException,
+        logicalKey: "2026-08-24#user",
+        payload: Data(),
+        lostAtMs: 0
+    )]
+    #expect(records.replaceSyncState(sync))
+
+    let resolution = try #require(store.resolvedDays(from: day, through: day, now: day).first)
+    #expect(store.recordsDayCell(for: resolution, now: day).hasConflict)
+}
+
+@MainActor
+@Test("File importer cancellation stays quiet while a real picker failure is actionable")
+func fileImporterErrorMapping() {
+    #expect(RecordsOperationError.fileImporterFailure(CocoaError(.userCancelled)) == nil)
+    #expect(
+        RecordsOperationError.fileImporterFailure(
+            NSError(domain: NSCocoaErrorDomain, code: CocoaError.Code.fileReadNoPermission.rawValue)
+        ) == .readFailed
+    )
+}
+
+@MainActor
 @Test("A fresh install uses the documented iOS defaults")
 func freshInstallDefaults() throws {
     let (defaults, suite) = try isolatedDefaults()
@@ -83,6 +463,8 @@ func completingSetupArmsScheduledCountdowns() throws {
     let store = OffWorkStore(defaults: defaults)
     store.scheduleMode = .classic
     store.completeOnboarding(enableNotifications: false)
+    #expect(store.countdownStarted == false)
+    store.finishOnboardingLaunch()
 
     #expect(store.countdownStarted)
 
@@ -164,6 +546,43 @@ func upcomingTimelineIncludesShiftBoundaries() throws {
 
     #expect(events.map(\.kind) == [.shiftStart, .lunchStart, .lunchEnd, .shiftEnd])
     #expect(events.last?.date == snapshot.endDate)
+}
+
+@MainActor
+@Test("A scheduled focus task keeps its exact slot and appears in Coming Up")
+func scheduledFocusTaskAppearsInTimeline() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let calendar = Calendar.current
+    let now = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 8
+    )))
+    let start = try #require(calendar.date(byAdding: .hour, value: 2, to: now))
+    let end = try #require(calendar.date(byAdding: .minute, value: 60, to: start))
+
+    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    store.plus.debugSetAuthorized(true)
+    store.scheduleMode = .off
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.addScheduledFocusTask(
+        title: "Write proposal",
+        slot: FocusScheduleSlot(
+            start: start,
+            end: end,
+            shiftAnchor: calendar.startOfDay(for: now),
+            isCurrentShift: true
+        )
+    )
+
+    let task = try #require(store.records.state.focusTasks.first)
+    #expect(task.scheduledStartAt == start)
+    let snapshot = try #require(store.snapshot(at: now))
+    let focusEvent = try #require(
+        store.upcomingTimelineEvents(for: snapshot, at: now).first(where: { $0.kind == .focus })
+    )
+    #expect(focusEvent.date == start)
+    #expect(focusEvent.title == "Write proposal")
 }
 
 /// One row of `relativeDurationFormatting`. A named struct rather than a tuple
@@ -2218,6 +2637,21 @@ func celebrationSurvivesWarmSession() throws {
 }
 
 @MainActor
+@Test("Declaring overtime rearms the warm-session celebration")
+func overtimeRearmsCelebration() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    store.markCelebrated(endAtMs: 1_700_000_000_000)
+    let overtimeEnd = Date(timeIntervalSince1970: 1_700_000_900)
+    store.applyOvertime(date: overtimeEnd, declaredAt: overtimeEnd)
+
+    #expect(store.lastCelebratedEndAtMs == 0)
+    #expect(store.overtimeEndAtMs == overtimeEnd.timeIntervalSince1970 * 1_000)
+}
+
+@MainActor
 @Test("Onboarding recap lists chosen weekdays and hours for a classic schedule")
 func onboardingScheduleRecapClassic() throws {
     let (defaults, suite) = try isolatedDefaults()
@@ -2540,4 +2974,10 @@ private func isolatedDefaults() throws -> (UserDefaults, String) {
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
     return (defaults, suite)
+}
+
+private func utcDay(_ year: Int, _ month: Int, _ day: Int) -> Date {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    return calendar.date(from: DateComponents(year: year, month: month, day: day))!
 }

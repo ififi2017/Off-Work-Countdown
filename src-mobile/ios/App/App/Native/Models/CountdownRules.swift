@@ -1,7 +1,7 @@
 import Foundation
 import JavaScriptCore
 
-struct NativeShiftSegment: Codable, Hashable, Sendable {
+nonisolated struct NativeShiftSegment: Codable, Hashable, Sendable {
     let startAtMs: Double
     let endAtMs: Double
 }
@@ -105,7 +105,7 @@ struct NativeShiftSnapshot: Codable, Hashable {
 /// avoids hundreds of Swift-to-JavaScriptCore calls while publishing a year.
 /// One calendar day's planned hours from `expandScheduleRange`. Rest days
 /// still carry segments so a makeup-day exception can reuse them.
-struct NativeScheduleDayExpansion: Codable, Hashable, Sendable {
+nonisolated struct NativeScheduleDayExpansion: Codable, Hashable, Sendable {
     let dayKey: String
     let shiftAnchorStartAtMs: Double
     let isWorkday: Bool
@@ -128,7 +128,7 @@ struct NativePeriodSummary: Codable, Hashable {
     let earnings: Double?
 }
 
-enum CountdownRulesError: LocalizedError {
+nonisolated enum CountdownRulesError: LocalizedError, Sendable {
     case missingResource
     case unavailableRuntime(String)
     case invalidResult
@@ -159,17 +159,32 @@ final class CountdownRules {
             // bundle. JavaScriptCore stays on one explicitly isolated executor.
             await Task.yield()
             _ = CountdownRules.shared
+            await ScheduleRangeEngine.shared.warmUp()
         }
     }
 
     private let context: JSContext?
     private let loadError: CountdownRulesError?
+    private var expansionCache: [String: [NativeScheduleDayExpansion]] = [:]
+    /// Insertion order, oldest first. This is a warm path for the JavaScriptCore
+    /// walk, not a store, so it must not grow with browsing history.
+    private var expansionCacheOrder: [String] = []
+    private var expansionCacheDays = 0
+    /// Counted in days, not entries: one Life expansion is worth thousands of
+    /// Records windows, so an entry cap would not bound anything.
+    private static let expansionCacheDayBudget = 40_000
 
     private init() {
+        let loaded: (JSContext?, CountdownRulesError?) = LaunchTrace.interval("rulesLoad") {
+            Self.loadContext()
+        }
+        context = loaded.0
+        loadError = loaded.1
+    }
+
+    private static func loadContext() -> (JSContext?, CountdownRulesError?) {
         guard let context = JSContext() else {
-            self.context = nil
-            loadError = .unavailableRuntime("JavaScriptCore could not start.")
-            return
+            return (nil, .unavailableRuntime("JavaScriptCore could not start."))
         }
 
         var capturedError: CountdownRulesError?
@@ -182,14 +197,11 @@ final class CountdownRules {
         guard let url = Bundle.main.url(forResource: "CountdownRules", withExtension: "js"),
               let source = try? String(contentsOf: url, encoding: .utf8)
         else {
-            self.context = nil
-            loadError = .missingResource
-            return
+            return (nil, .missingResource)
         }
 
         context.evaluateScript(source)
-        self.context = context
-        loadError = capturedError
+        return (context, capturedError)
     }
 
     func snapshot(input: NativeRulesInput) throws -> NativeShiftSnapshot {
@@ -243,32 +255,95 @@ final class CountdownRules {
         through: Date,
         timeZone: TimeZone? = nil
     ) throws -> [NativeScheduleDayExpansion] {
-        if let loadError { throw loadError }
-        let request = NativeScheduleRangeRequest(
-            startTime: configuration.startTime,
-            endTime: configuration.endTime,
-            workdays: configuration.workdays,
-            schedule: configuration.schedule,
-            breakStartTime: configuration.breakStartTime,
-            breakDurationMinutes: configuration.breakDurationMinutes,
-            fromMs: from.timeIntervalSince1970 * 1_000,
-            throughMs: through.timeIntervalSince1970 * 1_000,
-            timeZoneIdentifier: timeZone?.identifier
+        let key = Self.expansionCacheKey(
+            configuration: configuration,
+            from: from,
+            through: through,
+            timeZone: timeZone
         )
-        guard let context,
-              let bridge = context.objectForKeyedSubscript("OWCNative"),
-              !bridge.isUndefined,
-              let data = try? JSONEncoder().encode(request),
-              let json = String(data: data, encoding: .utf8),
-              let result = bridge.invokeMethod("expandScheduleRange", withArguments: [json]),
-              !result.isUndefined,
-              !result.isNull,
-              let output = result.toString()?.data(using: .utf8),
-              let days = try? JSONDecoder().decode([NativeScheduleDayExpansion].self, from: output)
-        else {
-            throw CountdownRulesError.invalidResult
-        }
+        if let cached = expansionCache[key] { return cached }
+        let days = try invokeExpandScheduleRange(
+            configuration: configuration,
+            from: from,
+            through: through,
+            timeZone: timeZone
+        )
+        storeExpansion(days, forKey: key)
         return days
+    }
+
+    private func storeExpansion(_ days: [NativeScheduleDayExpansion], forKey key: String) {
+        if let existing = expansionCache.removeValue(forKey: key) {
+            expansionCacheDays -= existing.count
+            expansionCacheOrder.removeAll { $0 == key }
+        }
+        expansionCache[key] = days
+        expansionCacheOrder.append(key)
+        expansionCacheDays += days.count
+        // Keep at least the entry just stored, however large it is: evicting it
+        // immediately would turn every Life read back into a cold walk.
+        while expansionCacheDays > Self.expansionCacheDayBudget, expansionCacheOrder.count > 1 {
+            let oldest = expansionCacheOrder.removeFirst()
+            expansionCacheDays -= expansionCache.removeValue(forKey: oldest)?.count ?? 0
+        }
+    }
+
+    /// Drops every warmed expansion. The next read walks JavaScriptCore again.
+    func purgeExpansionCache() {
+        expansionCache.removeAll()
+        expansionCacheOrder.removeAll()
+        expansionCacheDays = 0
+    }
+
+    /// Fills the expansion cache on a private JSContext so a year view can
+    /// paint its first frame before the 365-day walk runs.
+    func prefetchExpansion(
+        configuration: ScheduleHoursConfiguration,
+        from: Date,
+        through: Date,
+        timeZone: TimeZone? = nil
+    ) async throws {
+        let key = Self.expansionCacheKey(
+            configuration: configuration,
+            from: from,
+            through: through,
+            timeZone: timeZone
+        )
+        if expansionCache[key] != nil { return }
+        let days = try await ScheduleRangeEngine.shared.expand(
+            configuration: configuration,
+            from: from,
+            through: through,
+            timeZone: timeZone
+        )
+        storeExpansion(days, forKey: key)
+    }
+
+    fileprivate func invokeExpandScheduleRange(
+        configuration: ScheduleHoursConfiguration,
+        from: Date,
+        through: Date,
+        timeZone: TimeZone?
+    ) throws -> [NativeScheduleDayExpansion] {
+        if let loadError { throw loadError }
+        return try expandScheduleRangeOnContext(
+            context,
+            configuration: configuration,
+            from: from,
+            through: through,
+            timeZone: timeZone
+        )
+    }
+
+    private static func expansionCacheKey(
+        configuration: ScheduleHoursConfiguration,
+        from: Date,
+        through: Date,
+        timeZone: TimeZone?
+    ) -> String {
+        let fingerprint = (try? ScheduleHoursCodec.encode(configuration).fingerprint) ?? "hours"
+        let zone = timeZone?.identifier ?? "_"
+        return "\(fingerprint)|\(zone)|\(from.timeIntervalSince1970)|\(through.timeIntervalSince1970)"
     }
 
     func reminders(input: NativeRulesInput, reminderInputs: NativeReminderInputs) throws -> [NativeReminder] {
@@ -347,7 +422,44 @@ final class CountdownRules {
     }
 }
 
-struct NativeWorkSchedule: Codable, Equatable, Hashable, Sendable {
+/// Isolated from `CountdownRules` so a background actor can expand a year
+/// without hopping back to the main-actor JSContext. `nonisolated` so both
+/// MainActor and `ScheduleRangeEngine` can call it on their own context.
+nonisolated private func expandScheduleRangeOnContext(
+    _ context: JSContext?,
+    configuration: ScheduleHoursConfiguration,
+    from: Date,
+    through: Date,
+    timeZone: TimeZone?
+) throws -> [NativeScheduleDayExpansion] {
+    let request = NativeScheduleRangeRequest(
+        startTime: configuration.startTime,
+        endTime: configuration.endTime,
+        workdays: configuration.workdays,
+        schedule: configuration.schedule,
+        breakStartTime: configuration.breakStartTime,
+        breakDurationMinutes: configuration.breakDurationMinutes,
+        fromMs: from.timeIntervalSince1970 * 1_000,
+        throughMs: through.timeIntervalSince1970 * 1_000,
+        timeZoneIdentifier: timeZone?.identifier
+    )
+    guard let context,
+          let bridge = context.objectForKeyedSubscript("OWCNative"),
+          !bridge.isUndefined,
+          let data = try? JSONEncoder().encode(request),
+          let json = String(data: data, encoding: .utf8),
+          let result = bridge.invokeMethod("expandScheduleRange", withArguments: [json]),
+          !result.isUndefined,
+          !result.isNull,
+          let output = result.toString()?.data(using: .utf8),
+          let days = try? JSONDecoder().decode([NativeScheduleDayExpansion].self, from: output)
+    else {
+        throw CountdownRulesError.invalidResult
+    }
+    return days
+}
+
+nonisolated struct NativeWorkSchedule: Codable, Equatable, Hashable, Sendable {
     let mode: String
     let referenceWeekStartMs: Double?
     let referenceWeekType: String?
@@ -380,7 +492,7 @@ private struct NativeWidgetTimelineRequest: Codable {
     let maximumCount: Int
 }
 
-private struct NativeScheduleRangeRequest: Codable {
+nonisolated private struct NativeScheduleRangeRequest: Codable, Sendable {
     let startTime: String
     let endTime: String
     let workdays: [Int]
@@ -411,6 +523,7 @@ struct NativeSummaryInput: Codable {
     let dailySalary: Double?
     let todayEffectiveHours: Double
     let todayPayRatio: Double
+    var timeZoneIdentifier: String? = nil
 }
 
 struct NativeReminder: Codable, Hashable {
@@ -488,5 +601,60 @@ private struct NativeReminderRequest: Codable {
         forcedWorkdayStartMs = rules.forcedWorkdayStartMs
         timeZoneIdentifier = rules.timeZoneIdentifier
         self.reminderInputs = reminderInputs
+    }
+}
+
+/// A second JSContext, isolated from the main-actor timer snapshot. Year
+/// expansion used to share that context and freeze the Records tab.
+actor ScheduleRangeEngine {
+    static let shared = ScheduleRangeEngine()
+
+    private var context: JSContext?
+    private var loadError: CountdownRulesError?
+    private var ready = false
+
+    func warmUp() {
+        ensureReady()
+    }
+
+    func expand(
+        configuration: ScheduleHoursConfiguration,
+        from: Date,
+        through: Date,
+        timeZone: TimeZone?
+    ) throws -> [NativeScheduleDayExpansion] {
+        ensureReady()
+        if let loadError { throw loadError }
+        return try expandScheduleRangeOnContext(
+            context,
+            configuration: configuration,
+            from: from,
+            through: through,
+            timeZone: timeZone
+        )
+    }
+
+    private func ensureReady() {
+        guard !ready else { return }
+        ready = true
+        guard let context = JSContext() else {
+            loadError = .unavailableRuntime("JavaScriptCore could not start.")
+            return
+        }
+        var capturedError: CountdownRulesError?
+        context.exceptionHandler = { _, exception in
+            if let message = exception?.toString(), !message.isEmpty {
+                capturedError = .unavailableRuntime(message)
+            }
+        }
+        guard let url = Bundle.main.url(forResource: "CountdownRules", withExtension: "js"),
+              let source = try? String(contentsOf: url, encoding: .utf8)
+        else {
+            loadError = .missingResource
+            return
+        }
+        context.evaluateScript(source)
+        self.context = context
+        loadError = capturedError
     }
 }

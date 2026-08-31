@@ -503,7 +503,8 @@ final class WidgetSnapshotPublisher {
                     kind: event.kind.rawValue,
                     title: event.title,
                     detail: event.detail,
-                    dateMs: Int64(event.date.timeIntervalSince1970 * 1_000)
+                    dateMs: Int64(event.date.timeIntervalSince1970 * 1_000),
+                    symbolName: event.symbolName
                 ))
             }
         }
@@ -565,6 +566,30 @@ final class WidgetSnapshotPublisher {
                 detail: store.t("lunchBackAt"),
                 dateMs: lunchEndMs
             ))
+        }
+        if store.plus.isAuthorized,
+           let templateID = store.focusPlanning.defaultTemplateID,
+           let template = store.focusPlanning.templates.first(where: { $0.id == templateID }) {
+            let blocks = store.focusPlanningBlocks(for: shift)
+            for slot in template.slots where blocks.indices.contains(slot.blockIndex) {
+                let block = blocks[slot.blockIndex]
+                let startMs = block.startAtMs
+                let isBreak = slot.kind == .breakTime
+                items.append(WidgetUpcomingItem(
+                    id: "focus-plan-\(startMs)",
+                    kind: isBreak ? "focusBreak" : "focus",
+                    title: isBreak ? store.t("focusBreak") : (slot.taskTitle ?? store.t("focusTitle")),
+                    detail: store.t(
+                        "focusPomodoroSummary",
+                        values: [
+                            "count": store.formatCount(1),
+                            "minutes": store.formatCount(block.durationMinutes),
+                        ]
+                    ),
+                    dateMs: startMs,
+                    symbolName: isBreak ? "cup.and.saucer.fill" : slot.taskIcon?.systemName
+                ))
+            }
         }
         items.append(WidgetUpcomingItem(
             id: "shift-end-\(endMs)",
