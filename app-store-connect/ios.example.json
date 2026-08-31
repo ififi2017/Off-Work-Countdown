@@ -2,6 +2,7 @@
   "$schema": "./metadata.schema.json",
   "schemaVersion": 1,
   "screenshotBaseDir": "scripts/marketing-shots/ios/out",
+  "previewBaseDir": "scripts/marketing-shots/ios/previews",
   "app": {
     "bundleId": "com.rainif.offworkcountdown.macappstore",
     "platform": "IOS",
@@ -15,51 +16,53 @@
     "en-US": {
       "name": "DoneAt",
       "subtitle": "YOUR SUBTITLE",
-      "privacyPolicyUrl": "https://offwork.icu/en/privacy",
+      "privacyPolicyUrl": "https://doneat.app/en/privacy",
       "promotionalText": "YOUR PROMOTIONAL TEXT",
       "description": "YOUR APP DESCRIPTION",
       "keywords": "YOUR,KEYWORDS",
-      "supportUrl": "https://offwork.icu/en/about",
-      "marketingUrl": "https://offwork.icu/en",
+      "supportUrl": "https://doneat.app/en/about",
+      "marketingUrl": "https://doneat.app/",
       "whatsNew": "WHAT'S NEW IN THIS VERSION",
       "screenshots": {
-        "APP_IPHONE_65": [
-          "en-iphone-01-main.png",
+        "APP_IPHONE_67": [
+          "en-iphone-01-timer.png",
           "en-iphone-02-widgets.png",
-          "en-iphone-03-island.png",
-          "en-iphone-04-landscape.png"
+          "en-iphone-03-lunch.png"
         ],
         "APP_IPAD_PRO_3GEN_129": [
-          "en-ipad-01-main.png",
+          "en-ipad-01-timer.png",
           "en-ipad-02-widgets.png",
-          "en-ipad-03-reminders.png",
-          "en-ipad-04-landscape.png"
+          "en-ipad-03-lunch.png"
         ]
+      },
+      "previews": {
+        "IPHONE_67": ["en-review-886x1920.mov"]
       }
     },
     "zh-Hans": {
       "name": "DoneAt",
       "subtitle": "填写中文副标题",
-      "privacyPolicyUrl": "https://offwork.icu/zh-CN/privacy",
+      "privacyPolicyUrl": "https://doneat.app/zh-CN/privacy",
       "promotionalText": "填写中文推广文本",
       "description": "填写中文应用描述",
       "keywords": "填写,中文,关键词",
-      "supportUrl": "https://offwork.icu/zh-CN/about",
-      "marketingUrl": "https://offwork.icu/zh-CN",
+      "supportUrl": "https://doneat.app/zh-CN/about",
+      "marketingUrl": "https://doneat.app/",
       "whatsNew": "填写此版本的更新内容",
       "screenshots": {
-        "APP_IPHONE_65": [
-          "zh-CN-iphone-01-main.png",
+        "APP_IPHONE_67": [
+          "zh-CN-iphone-01-timer.png",
           "zh-CN-iphone-02-widgets.png",
-          "zh-CN-iphone-03-island.png",
-          "zh-CN-iphone-04-landscape.png"
+          "zh-CN-iphone-03-lunch.png"
         ],
         "APP_IPAD_PRO_3GEN_129": [
-          "zh-CN-ipad-01-main.png",
+          "zh-CN-ipad-01-timer.png",
           "zh-CN-ipad-02-widgets.png",
-          "zh-CN-ipad-03-reminders.png",
-          "zh-CN-ipad-04-landscape.png"
+          "zh-CN-ipad-03-lunch.png"
         ]
+      },
+      "previews": {
+        "IPHONE_67": ["zh-review-886x1920.mov"]
       }
     }
   }

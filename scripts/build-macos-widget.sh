@@ -7,7 +7,6 @@ project_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 widget_root="$project_root/src-tauri/macos-widget"
 derived_data="$project_root/src-tauri/target/macos-widget"
 configuration=${OWC_WIDGET_CONFIGURATION:-Release}
-app_group_identifier=${OWC_APP_GROUP_IDENTIFIER:-group.com.rainif.offworkcountdown.macappstore}
 widget_bundle_identifier=${OWC_WIDGET_BUNDLE_IDENTIFIER:-com.rainif.offworkcountdown.macappstore.widget}
 # ⚠️ 默认必须等于 marketing_version，不能写死 1。扩展的 CFBundleVersion 必须与
 # 宿主一致，否则上传被拒（90473：CFBundleVersion Mismatch）。宿主那边 Tauri 把
@@ -26,12 +25,12 @@ case "$signing_mode" in
     ;;
 esac
 
-case "$app_group_identifier" in
-  *[!A-Za-z0-9.-]*|'')
-    echo "Invalid OWC_APP_GROUP_IDENTIFIER: $app_group_identifier" >&2
-    exit 1
-    ;;
-esac
+# iOS 用 group.*；Mac App Store 要 <TeamID>.group.*。有 Team ID 时这里自动加前缀，
+# 与 src-tauri/build.rs 同一条规则，避免宿主写入的容器和 entitlements 对不上。
+app_group_identifier=$(node "$script_dir/macos-app-group-identifier.mjs" --resolve \
+  --identifier "${OWC_APP_GROUP_IDENTIFIER:-group.com.rainif.offworkcountdown.macappstore}" \
+  --team-id "${OWC_APPLE_TEAM_ID:-}" \
+  --signing-mode "$signing_mode")
 
 case "$widget_bundle_identifier" in
   *[!A-Za-z0-9.-]*|'')
@@ -140,8 +139,9 @@ case "$signing_mode" in
       exit 1
     fi
     xcode_profiles="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
-    mkdir -p "$xcode_profiles"
-    cp "$OWC_WIDGET_PROVISION_PROFILE" "$xcode_profiles/$widget_profile_uuid.provisionprofile"
+    if [ "$OWC_WIDGET_PROVISION_PROFILE" != "$xcode_profiles/$widget_profile_uuid.provisionprofile" ]; then
+      cp "$OWC_WIDGET_PROVISION_PROFILE" "$xcode_profiles/$widget_profile_uuid.provisionprofile"
+    fi
     # CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO：`xcodebuild build`（相对于
     # archive + exportArchive）会把构建当成开发用途，自动往 entitlements 里注入
     # `com.apple.security.get-task-allow`——即便签名身份和描述文件都已经是分发用的。
@@ -219,3 +219,4 @@ cp -R "$widget_product" "$bundled_product"
 
 echo "Built Widget extension: $widget_product"
 echo "Staged for bundling: $bundled_product"
+echo "App Group identifier: $app_group_identifier"

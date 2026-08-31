@@ -22,7 +22,7 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 | P3 | 本地通知、午休/健康提醒、预约与重排 | 🟢 核心链路完成，继续随 TestFlight 回归 |
 | P4 | iPhone/iPad Widget、锁屏与灵动岛 Live Activity | 🟡 进度时间线已重构，等待新一轮实机回归 |
 | P5 | iPhone/iPad 自适应 UI、设置导航、分享与欢迎页 | 🟡 首轮 CR 修复完成，继续做真机交互回归 |
-| P6 | Xcode Cloud、TestFlight、商店截图与审核材料 | 🟡 TestFlight 链路已建立，正式提交仍待完成 |
+| P6 | Xcode Cloud、TestFlight、商店截图与审核材料 | 🟡 3.1.8 截图/Preview 已上传，官网隐私已切 doneat.app；正式送审仍待人工 |
 | W0–W3 | Apple Watch App、同步与表盘组件 | 🔵 下一个主要目标 |
 | X1 | iPhone 与 iPad 的可选跨设备同步 | ⚪ 技术决策保留，当前不实施 |
 | A0 | Android 原生客户端 | ⏸ 暂时搁置 |
@@ -78,10 +78,15 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 - iPad 和 iPhone 横屏分享页采用双栏布局，减少右侧空白，并保持图片与操作区域的视觉重心。
 - 分享图继续保持 salary-free，不把薪资写入图片、链接或分享元数据。
 - iOS 分享页的八个心情选项改为运行时由系统 Emoji 字体渲染，原生 target 不再打包 Mood PNG。
-- 已建立 scripts/marketing-shots/ios 的截图捕获、套框、合成和尺寸验证脚手架，支持 iPhone
-  与 iPad App Store 规格。
-- iPhone 横屏素材保持与其他竖版商店图相同方向；iPad 套框、裁切、圆角、设备大小和画面位置
-  已按实机反馈调整。
+- 商店图流水线在 `scripts/marketing-shots/ios`：模拟器截原片，官方机框按官网
+  DeviceHero 方式叠层（框定盒子、截图铺屏洞、框叠上面），再压成不带 alpha 的
+  1320×2868 / 2064×2752。当前竖图三张：计时、主屏幕小组件、午休。不要挖空边框或
+  重画灵动岛。只改文案或排版时重跑 compose，不必重跑 Xcode。
+- 截图与 App Preview 只上传 `en-US`、`zh-Hans`、`zh-Hant`，其余商店语言继承英文。
+  iPhone 槽位是 `APP_IPHONE_67`（没有 `APP_IPHONE_69`）。替换后要删掉旧的
+  `APP_IPHONE_65` 等闲置槽，否则 Connect 界面会继续展示旧图。
+- Preview 是 `IPHONE_67` 竖版 886×1920，必须带音轨（无声立体声即可）。同步见
+  `docs/APP-STORE-CONNECT-SYNC.md`。
 - Info.plist 已声明 ITSAppUsesNonExemptEncryption = NO。
 - Xcode Cloud 的 ci_post_clone.sh 会安装所需 Node.js、执行 npm ci、生成当前规则包并运行
   npm run check:ios；Archive 使用 Release，TestFlight 不包含 DEBUG 欢迎页和 QA 入口。
@@ -161,6 +166,8 @@ App Group 不能用于 iPhone 和 iPad 跨设备同步，也不能让 iPad 与 A
 ### 3.3 发布与 CI
 
 - App 与 Widget Extension 使用同一 App Store Connect 记录和通用购买 bundle id。
+  名称、副标题和隐私 URL 是 App 级共享信息：一侧版本在审核时 App Info 锁定，
+  `asc:sync` 会跳过这些字段；可编辑的 iOS 版本仍可换截图和 Preview。
 - 当前发布路径是 Xcode Cloud 的 main 分支变更触发、Release Archive 和 TestFlight Internal
   Testing；不创建 ios-v tag 自动上传路径。
 - Xcode Cloud 必须在编译前生成未提交的 CountdownRules.js。

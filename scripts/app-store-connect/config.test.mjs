@@ -72,14 +72,17 @@ describe("App Store Connect config", () => {
   });
 
   it("parses safe-by-default CLI modes", () => {
-    expect(parseArgs(["release.json", "--include-screenshots"])).toMatchObject({
+    expect(parseArgs(["release.json", "--include-screenshots", "--include-previews"])).toMatchObject({
       mode: "plan",
       configPath: "release.json",
       includeScreenshots: true,
       replaceScreenshots: false,
+      includePreviews: true,
+      replacePreviews: false,
     });
     expect(() => parseArgs(["--apply", "--check"])).toThrow(/only one/u);
     expect(() => parseArgs(["--replace-screenshots"])).toThrow(/requires/u);
+    expect(() => parseArgs(["--replace-previews"])).toThrow(/requires/u);
   });
 
   it("enforces Apple's character limits without rejecting multibyte keywords", () => {
@@ -114,6 +117,27 @@ describe("App Store Connect config", () => {
     const loaded = loadConfig(configPath, { cwd: directory });
     expect(loaded.screenshots.get("en-US\u0000APP_IPHONE_65")).toEqual([
       expect.objectContaining({ fileName: "shot.png", fileSize: 39, checksum: expect.stringMatching(/^[a-f0-9]{32}$/u) }),
+    ]);
+  });
+
+  it("loads preview size, MIME type, and MD5 from disk", () => {
+    const directory = mkdtempSync(join(tmpdir(), "owc-asc-preview-"));
+    const videoPath = join(directory, "preview.mov");
+    writeFileSync(videoPath, Buffer.from("not-a-real-mov-but-enough-for-config-io"));
+    const config = validConfig();
+    config.previewBaseDir = ".";
+    config.localizations["en-US"].previews = { IPHONE_67: ["preview.mov"] };
+    const configPath = join(directory, "metadata.json");
+    writeFileSync(configPath, JSON.stringify(config));
+
+    const loaded = loadConfig(configPath, { cwd: directory });
+    expect(loaded.previews.get("en-US\u0000IPHONE_67")).toEqual([
+      expect.objectContaining({
+        fileName: "preview.mov",
+        fileSize: 39,
+        mimeType: "video/quicktime",
+        checksum: expect.stringMatching(/^[a-f0-9]{32}$/u),
+      }),
     ]);
   });
 

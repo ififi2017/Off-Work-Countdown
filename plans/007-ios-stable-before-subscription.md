@@ -1,6 +1,6 @@
 # 007 — iOS 订阅前稳定版（倒计时本体首发）
 
-- **Status**: IN PROGRESS — 实现已由 PR #82 合入 `main`，iPhone/iPad 主要界面真机回归完成；Live Activity/锁屏、截图与 3.1.7 TestFlight 待做
+- **Status**: IN PROGRESS — 实现已合入 `main`；3.1.8 是当前送审候选。英/简/繁截图与 Preview 已上传，官网 `doneat.app` 已验收，真机 Live Activity / 锁屏已看过。余下是选 build 并人工 Add for Review
 - **Reviewed against**: 2026-08-27 计时页面试与 Grill；2026-08-28 真机收口；`755052f`（PR #82）
 - **Severity**: HIGH
 - **Category**: iOS 产品结构 / 计时页 / App Store 首发
@@ -9,7 +9,7 @@
 
 ## 一句话
 
-在记录功能和订阅之前，先把 iOS 倒计时本体做成可以正式过审的稳定版：计时 Tab 只做钟，欢迎页一次配齐，设置承担以后的改动。这一发的产品版本是 **3.1.7**，外表面短名是 **DoneAt**。
+在记录功能和订阅之前，先把 iOS 倒计时本体做成可以正式过审的稳定版：计时 Tab 只做钟，欢迎页一次配齐，设置承担以后的改动。这一发的产品版本最初写成 **3.1.7**；送审候选已滚到 **3.1.8**，外表面短名是 **DoneAt**。
 
 ## Grill 锁定（2026-08-27）
 
@@ -19,6 +19,7 @@
 
 ### 版本与节奏
 
+- **2026-08-30：** 3.1.6 已是 `READY_FOR_DISTRIBUTION`。送审候选是 **3.1.8**（DoneAt 外表面 + 新计时壳）。下面三条是当时的分支策略，保留作记录。
 - 在审包是 **3.1.6**（旧计时壳、旧名）。**过审就先上架**，不要卡开发者发布等 007。
 - **3.1.7 = 本计划**：计时 Tab 重做 + DoneAt 外表面，**不含 002**。与 3.1.6 审核并行，不必等它的结论。桌面 `desktop-v3.1.7` 已从 main 发出，那一发没有 007；iOS 的 3.1.7 是这条分支。
 - **3.1.6 过审**：先以旧名旧壳上架，3.1.7 当第一个更新，**这一发才改商店主名为 DoneAt**。
@@ -32,7 +33,8 @@
 
 品牌句 **Know when your time is yours**；全句 **Know when your time is yours again.** **again 不进 3.1.7 商店文案**，留给 002。
 
-域名 `http://doneat.app/` 已 302 到现站 `off.rainif.com`。3.1.7 商店营销 / 支持 URL 用 **doneat.app**，不为 3.1.7 重做官网。
+域名 `doneat.app` 已是独立官网（2026-08-30 验收，见 [009](009-doneat-platform-brand-domain.md)）。
+3.1.8 商店营销 / 支持 / 隐私 URL 用 **doneat.app**；旧 `off.rainif.com` 内容页 301 过去。
 
 | 位置 | 写什么 |
 | --- | --- |
@@ -150,9 +152,9 @@ Watch、跨设备同步、Android 不在范围内。
 - [x] 启动页：mark + DoneAt，无英文副标题；`check:ios` 守住。
 - [x] DoneAt 其余外表面：19 份 `InfoPlist.strings` 的显示名、欢迎页首屏、关于页、Widget 画廊、灵动岛 / 锁屏标题。不改共享 `translation.json`，计时 Tab 不显示产品名。
 - [x] iPhone 17 Pro 竖屏/横屏与 iPad 的主要计时、设置、欢迎页、品牌和触感路径已在多轮真机反馈中收口；最后一轮确认无新增问题。
-- [ ] 至少触发一次真机 Live Activity / 锁屏，核对状态、进度与裸 `BrandMark`。着色图标和 iPad 启动页后补。
-- [ ] 重拍 iPhone 截图。
-- [ ] 用 3.1.7 打 TestFlight。3.1.6 过审则先上架、本包作为第一个更新并改商店主名；3.1.6 被拒则本包首发、商店名直接 DoneAt。过审标准是倒计时本体稳定，不是记录或订阅已上。商店已是免费下载，过审后即可上架。
+- [x] 至少触发一次真机 Live Activity / 锁屏，核对状态、进度与裸 `BrandMark`。着色图标和 iPad 启动页后补，不挡 3.1.8。
+- [x] 重拍 iPhone / iPad 截图（计时、小组件、午休；英/简/繁）并上传 3.1.8 草稿。App Preview 已带音轨。
+- [ ] 用 3.1.8 选 build 并人工送审。3.1.6 已是 `READY_FOR_DISTRIBUTION`，本包是第一个 DoneAt 更新。过审标准是倒计时本体稳定，不是记录或订阅已上。商店已是免费下载，过审后即可上架。
 - [x] PR #82 已合入 `main`；合并后的 Web/Desktop、Rust macOS/Windows、商店渠道与 Widget contract CI 全绿。
 
 ## 实现时的判断

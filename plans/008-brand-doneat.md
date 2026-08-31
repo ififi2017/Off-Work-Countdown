@@ -1,6 +1,6 @@
 # 008 — DoneAt 品牌换装与 iOS 外表面
 
-- **Status**: IN PROGRESS — 品牌母版与主要 iOS/PWA/Tauri 外表面已合入；Web favicon、着色变体与 Live Activity 实拍待做
+- **Status**: IN PROGRESS — 品牌母版与主要 iOS/PWA/Tauri 外表面已合入；真机 Live Activity / 锁屏已看过。余下是 Web favicon、着色变体和 iPad 启动页实拍
 - **Reviewed against**: 2026-08-27 图标评审与 Grill；2026-08-28 真机收口；`755052f`（PR #82）
 - **Severity**: MEDIUM（不挡 007 送审；着色变体后补）
 - **Category**: 品牌 / iOS 外表面 / 全平台图标
@@ -55,12 +55,15 @@
 - 浅色启动页使用浅底适配的 mark，不再显示深色底 App Icon
 - 五连击只命中橙色圆点；指针庆祝可触发，Logo 不再被长距离拖走，细微玻璃按压反馈保留
 
+**已验证（真机 Live Activity）**
+
+- 触发过锁屏 Live Activity 与灵动岛：状态、进度与裸 `BrandMark`（无底板）已看过。
+
 **仍未验证 / 未完成**
 
-1. **灵动岛与锁屏 Live Activity 的实际观感**——代码改了，但没有真正触发一个 Live Activity 看过。这是仍未被眼睛确认的主要 iOS 运行时表面。
-2. iPad 启动页的最终实拍（SplashBoard 会缓存旧快照）
-3. iOS 26 着色（tinted）外观下的图标
-4. Web 浏览器标签页仍使用旧的 `app/favicon.ico`；PWA manifest、通知和分享使用的新 192/512 图标已经合入
+1. iPad 启动页的最终实拍（SplashBoard 会缓存旧快照）
+2. iOS 26 着色（tinted）外观下的图标
+3. Web 浏览器标签页仍使用旧的 `app/favicon.ico`；PWA manifest、通知和分享使用的新 192/512 图标已经合入
 
 ## 死路，别再走（都有实测）
 
@@ -84,7 +87,7 @@
 
 ### P3 — 真机复测清单
 
-主要 App 内表面已真机收口。剩余按「仍未验证 / 未完成」走一遍，重点是灵动岛；触发一次 Live Activity，确认 mark 是裸的、没有底板、在黑色胶囊上读得出来。着色图标和 iPad 启动页不挡 3.1.7。
+主要 App 内表面与真机 Live Activity / 锁屏已收口。着色图标和 iPad 启动页不挡 3.1.8。
 
 ### P4 — Web 标签页 favicon
 
@@ -94,8 +97,7 @@ PWA/manifest 的 192、512 与 maskable 图标已经换新；Next App Router 自
 
 ### P5 — 提交（已完成）
 
-品牌母版、图片资源、SwiftUI 表面、启动页与检查脚本已随 PR #82 合入 `main`。`xiaohongshu-tool/`
-与本计划无关，未进入提交。
+品牌母版、图片资源、SwiftUI 表面、启动页与检查脚本已随 PR #82 合入 `main`。
 
 ## 实现时的判断
 

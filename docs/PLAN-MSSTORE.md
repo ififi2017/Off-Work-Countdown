@@ -16,7 +16,7 @@ Microsoft Store，并让 `desktop-v*` tag 在发 GitHub Release 的同时自动�
 | **P2** | `Package.appxmanifest` + 本地自签打包，真机验收 | 🟢 自签包已装机逐项验收，WACK PASS |
 | **P3** | 首次人工提交并上架 | ⬜ 未开始 |
 | **P4** | Entra 凭据 + `release-msstore.yml` 自动提交 | ⬜ 未开始 |
-| **P5** | 文档：下载页、README、About 页区分两个渠道 | ⬜ 未开始 |
+| **P5** | 文档：下载页、README、About 页区分两个渠道 | 🟡 官网下载页已区分商店与 GitHub 未签名包；README 仍待 |
 
 P3 是硬性串行点：**商店提交 API 只能更新已上架的产品，创建不了产品**，所以
 P4 无论如何排不到 P3 前面。
@@ -691,7 +691,7 @@ NSIS 安装向导的 14 种语言（[004-shift-model-3.1.0.md §1.1](../plans/00
 | **P2** | manifest + 本地打包 | ✅ manifest 与打包脚本就位<br>✅ 自签包已装机，WACK PASS；§5 表格除通知/快捷键/托盘菜单文案三项外均已验收 |
 | **P3** | 首次上架 | 商店页面可搜到，可安装 |
 | **P4** | 自动提交 | 推一个 `desktop-v*` tag，商店后台出现新的待认证提交 |
-| **P5** | 文档 | 下载页给出两个渠道及其差异；README 中英双语同步 |
+| **P5** | 文档 | 官网下载页已区分商店与 GitHub 未签名包；README 中英双语仍待 |
 
 P1 有两条判据卡在后面的阶段上，这是刻意的：自启动要先在真机上看清 MSIX 里的实际
 行为，深链要等产品真正上架才能点通。两者都属于「先写就是写一段无法验收的代码」，
@@ -1009,7 +1009,7 @@ macOS 26 的 Code Signing Monitor 对此尤其严格。此时包本身是好的�
 GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建不出小组件桥。前提条件：
 
 1. 真实 Developer ID 与 Team ID。ad-hoc 不行（见上文 `containermanagerd` 实测）；且
-   **非商店渠道的 App Group 必须带 Team ID 前缀**（`<TeamID>.group.*`），与商店版的
+   **macOS 的 App Group 必须带 Team ID 前缀**（`<TeamID>.group.*`），与 iOS 的
    `group.*` 不是同一个标识符。另需公证。
 2. 把小组件从 `self-update` 解耦成独立 Cargo feature。
 3. `kind` / App Group / bundle id 按渠道参数化。`kind` 目前硬编码且**写在两处**
@@ -1079,10 +1079,12 @@ GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建
 
 ### 9.11 真机验收踩到的三个坑
 
-**1. App Group 标识符在开发与分发下形式不同。** 这是最难查的一个。Mac Development
-描述文件授权的是 `<TeamID>.*`，因此 App Group 必须写成
-`3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore`；不带前缀的
-`group.…`（代码里的默认值）**只在 Mac App Store 分发时有效**，两种形式不通用。
+**1. App Group 标识符必须带 Team ID 前缀。** 这是最难查的一个。Mac Development 和
+Mac App Store 描述文件授权的都是 `<TeamID>.*`，因此 App Group 必须写成
+`3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore`。iOS 的
+`group.com.rainif.offworkcountdown.macappstore` **不能**直接签进 macOS 宿主——
+App Store Connect 会以 409（Invalid code signing entitlements）拒收。两种形式
+不是同一个容器，也不通用。
 
 失败方式极其隐蔽，值得完整记下来：entitlement 未被描述文件授权时，系统把这个 group 当成
 **别人的**数据，于是弹「想访问其他 App 的数据」——宿主只要用户点了「允许」就照常写入，
@@ -1090,14 +1092,15 @@ GitHub 渠道默认开 `self-update`，因此即使拿到 Developer ID 也构建
 `log show` 里也查不到任何拒绝记录。数据、配置、签名、注册逐项检查全部正确，问题却在
 描述文件的授权列表里。
 
-因此 `scripts/embed-macos-profile.mjs` 增加了一道校验：把 `.app` 声明的每个 App Group
-与内嵌描述文件授权的列表（支持 `*` 通配）比对，不匹配直接失败并给出应设的值。反例实测
-可拦下。
+另一类失败更晚才暴露：本地曾把 `group.*` 当成已被 `<TeamID>.*` 授权（把 Team ID
+拼到声明值前面再去匹配通配），于是分发包能打出来，上传才被商店拒。现在
+`scripts/embed-macos-profile.mjs` 和 `scripts/pack-macappstore.sh` 只拿签进去的
+那一串做比对，并直接拒绝 iOS 式 `group.*`。有 `OWC_APPLE_TEAM_ID` 时，`build.rs`
+与 `scripts/build-macos-widget.sh` 会自动给 `group.*` 加上前缀。
 
 本地验收的完整命令：
 
 ```sh
-OWC_APP_GROUP_IDENTIFIER=3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore \
 OWC_WIDGET_SIGNING_MODE=automatic OWC_APPLE_TEAM_ID=3GSK5B9S3T \
 APPLE_SIGNING_IDENTITY="Apple Development: … (…)" \
 npm run tauri:build:macappstore
@@ -1133,6 +1136,7 @@ Apple 会告诉你**的规则，因此每条都补了本地守卫，不再靠一
 | 错误码 | 原因 | 处理 |
 |---|---|---|
 | 409 | `LSApplicationCategoryType` 缺失 | 写进 `src-tauri/Info.plist`（Tauri 的 `bundle.macOS` 没有对应配置项），取 `public.app-category.productivity`，需与 App Store Connect 的主类别一致 |
+| 409 | 宿主签名里的 App Group 是 iOS 的 `group.…`，没有 Team ID 前缀 | 有 `OWC_APPLE_TEAM_ID` 时自动加上 `<TeamID>.group.…`；`embed-macos-profile.mjs` / `pack-macappstore.sh` 在上传前拦截 |
 | 90886 | 宿主签名缺 `application-identifier` | 见下 |
 | 90473 | 扩展 `CFBundleVersion` 与宿主不一致 | `build_number` 原本写死为 1，改为默认取 `marketing_version` |
 
@@ -1152,7 +1156,14 @@ Apple 会告诉你**的规则，因此每条都补了本地守卫，不再靠一
   开发用途注入。必须显式 `CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO`。
 
 **App Group 标识符开发与分发通用**：实测 Mac App Store 描述文件授权的同样是
-`<TeamID>.*`，与 Mac Development 一致。原先推测分发要换回不带前缀的 `group.…`，是错的。
+`<TeamID>.*`，与 Mac Development 一致。原先推测分发要换回不带前缀的 `group.…`，是错的；
+2026-08-29 的上传验证以 409 再次确认，商店校验看的是签进去的那一串，不接受 iOS 式
+`group.com.rainif.offworkcountdown.macappstore`。
+
+**App Info 与媒体不同步锁定。** Universal Purchase 下名称、副标题和隐私 URL 是 App
+级共享字段。一侧版本在审核时 App Info 锁定；另一侧可编辑草稿仍可换截图和 Preview。
+`asc:sync` 遇到锁定会跳过名称和副标题。iOS 商店图只上传 `en-US` / `zh-Hans` /
+`zh-Hant`，其余语言继承英文；槽位与预览规格见 `docs/APP-STORE-CONNECT-SYNC.md`。
 
 ### 9.13 待办：GitHub 渠道的 Developer ID 签名
 

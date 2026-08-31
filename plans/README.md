@@ -13,9 +13,9 @@
 | 004 | [班次模型重构与本地化补齐](004-shift-model-3.1.0.md) | 2026-08-12 | DONE | 3.1.0 已发布，当前 3.1.7 |
 | 005 | [产品 3.0 升级](005-product-3.0.md) | 2026-08-08 | DONE | M1–M5 完成；M6 分发改由 MSIX 计划接管 |
 | 006 | [免费下载、试用与订阅](006-free-trial-subscription.md) | 2026-08-26 | DRAFT | 从 002 拆出；通用购买把 iOS 与 Mac App Store 绑在一个价格上；等待 007 完成送审闭环 |
-| 007 | [iOS 订阅前稳定版](007-ios-stable-before-subscription.md) | 2026-08-27 | IN PROGRESS | PR #82 已合入且主要真机界面已验收；Live Activity、截图与 3.1.7 TestFlight 待办 |
-| 008 | [DoneAt 品牌换装与 iOS 外表面](008-brand-doneat.md) | 2026-08-27 | IN PROGRESS | 品牌母版和 iOS/PWA/Tauri 图标已合入；Web favicon、iOS 着色图标与 Live Activity 实拍待办 |
-| 009 | [DoneAt 全平台品牌与双域分工](009-doneat-platform-brand-domain.md) | 2026-08-28 | IN PROGRESS | 官网已独立运作；产品仓 Web P3（品牌、301、下载入口）进行中；Desktop DisplayName 仍是 P4 |
+| 007 | [iOS 订阅前稳定版](007-ios-stable-before-subscription.md) | 2026-08-27 | IN PROGRESS | 3.1.8 素材与真机 Live Activity 已齐，待选 build 人工送审 |
+| 008 | [DoneAt 品牌换装与 iOS 外表面](008-brand-doneat.md) | 2026-08-27 | IN PROGRESS | 品牌母版和 iOS 外表面已合入；真机 Live Activity 已看过；Web favicon 与着色图标仍待 |
+| 009 | [DoneAt 全平台品牌与双域分工](009-doneat-platform-brand-domain.md) | 2026-08-28 | IN PROGRESS | 官网 2026-08-30 已验收；产品仓 Web P3 已落地；Desktop 升级回环与商店邮箱仍待 |
 
 ## 仍在 `docs/` 的活计划
 

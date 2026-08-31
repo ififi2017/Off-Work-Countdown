@@ -30,6 +30,7 @@ export const EDITABLE_STATES = new Set([
 const PLATFORMS = new Set(["IOS", "MAC_OS", "TV_OS", "VISION_OS"]);
 const RELEASE_TYPES = new Set(["MANUAL", "AFTER_APPROVAL", "SCHEDULED"]);
 const SCREENSHOT_TYPES = new Set([
+  "APP_IPHONE_69",
   "APP_IPHONE_67",
   "APP_IPHONE_61",
   "APP_IPHONE_65",
@@ -51,6 +52,26 @@ const SCREENSHOT_TYPES = new Set([
   "APP_WATCH_SERIES_3",
   "APP_APPLE_TV",
   "APP_APPLE_VISION_PRO",
+]);
+// App preview sets still use the older PreviewType names. IPHONE_67 is the
+// 6.9" slot; 886×1920 is the accepted portrait size for 6.1–6.9".
+const PREVIEW_TYPES = new Set([
+  "IPHONE_67",
+  "IPHONE_65",
+  "IPHONE_61",
+  "IPHONE_58",
+  "IPHONE_55",
+  "IPHONE_47",
+  "IPHONE_40",
+  "IPHONE_35",
+  "IPAD_PRO_3GEN_129",
+  "IPAD_PRO_3GEN_11",
+  "IPAD_PRO_129",
+  "IPAD_105",
+  "IPAD_97",
+  "DESKTOP",
+  "APPLE_TV",
+  "APPLE_VISION_PRO",
 ]);
 
 const PLACEHOLDER_PATTERN = /\bYOUR(?:\b|_)|^填写|^WHAT(?:'S| IS)\b/u;
@@ -105,6 +126,8 @@ export function parseArgs(argv) {
     configPath: null,
     includeScreenshots: false,
     replaceScreenshots: false,
+    includePreviews: false,
+    replacePreviews: false,
     yes: false,
     help: false,
   };
@@ -128,6 +151,10 @@ export function parseArgs(argv) {
       options.includeScreenshots = true;
     } else if (argument === "--replace-screenshots") {
       options.replaceScreenshots = true;
+    } else if (argument === "--include-previews") {
+      options.includePreviews = true;
+    } else if (argument === "--replace-previews") {
+      options.replacePreviews = true;
     } else if (argument === "--yes" || argument === "-y") {
       options.yes = true;
     } else if (argument === "--help" || argument === "-h") {
@@ -147,7 +174,10 @@ export function parseArgs(argv) {
   if (options.replaceScreenshots && !options.includeScreenshots) {
     throw new Error("--replace-screenshots requires --include-screenshots.");
   }
-  if (options.mode === "check" && (options.replaceScreenshots || options.yes)) {
+  if (options.replacePreviews && !options.includePreviews) {
+    throw new Error("--replace-previews requires --include-previews.");
+  }
+  if (options.mode === "check" && (options.replaceScreenshots || options.replacePreviews || options.yes)) {
     throw new Error("--check does not accept mutation flags.");
   }
   return options;
@@ -157,11 +187,20 @@ export function validateConfig(config) {
   expectObject(config, "root");
   validateKnownKeys(
     config,
-    new Set(["$schema", "schemaVersion", "exportedFrom", "screenshotBaseDir", "app", "localizations"]),
+    new Set([
+      "$schema",
+      "schemaVersion",
+      "exportedFrom",
+      "screenshotBaseDir",
+      "previewBaseDir",
+      "app",
+      "localizations",
+    ]),
     "root"
   );
   if (config.schemaVersion !== 1) fail("schemaVersion must be 1.");
   expectString(config.screenshotBaseDir, "screenshotBaseDir");
+  expectString(config.previewBaseDir, "previewBaseDir");
   if (config.exportedFrom !== undefined) {
     expectObject(config.exportedFrom, "exportedFrom");
     validateKnownKeys(
@@ -226,6 +265,7 @@ export function validateConfig(config) {
     ...APP_INFO_FIELDS,
     ...VERSION_LOCALIZATION_FIELDS,
     "screenshots",
+    "previews",
   ]);
 
   for (const [locale, localization] of locales) {
@@ -270,14 +310,29 @@ export function validateConfig(config) {
         for (const path of paths) expectString(path, `${locale}.${displayType} screenshot`, { required: true });
       }
     }
+    if (localization.previews !== undefined) {
+      expectObject(localization.previews, `localizations.${locale}.previews`);
+      for (const [previewType, paths] of Object.entries(localization.previews)) {
+        if (!PREVIEW_TYPES.has(previewType)) {
+          fail(`localizations.${locale}.previews uses unsupported preview type ${previewType}.`);
+        }
+        if (!Array.isArray(paths) || paths.length < 1 || paths.length > 3) {
+          fail(`localizations.${locale}.previews.${previewType} must contain 1 to 3 paths.`);
+        }
+        if (new Set(paths).size !== paths.length) {
+          fail(`localizations.${locale}.previews.${previewType} contains duplicate paths.`);
+        }
+        for (const path of paths) expectString(path, `${locale}.${previewType} preview`, { required: true });
+      }
+    }
   }
 
   return config;
 }
 
-function screenshotPath(config, path, cwd) {
+function mediaPath(config, path, cwd, baseDirKey) {
   if (isAbsolute(path)) return path;
-  return resolve(cwd, config.screenshotBaseDir ?? ".", path);
+  return resolve(cwd, config[baseDirKey] ?? ".", path);
 }
 
 export function loadConfig(configPath, { cwd = process.cwd(), requireFiles = true } = {}) {
@@ -289,11 +344,12 @@ export function loadConfig(configPath, { cwd = process.cwd(), requireFiles = tru
   }
   const config = validateConfig(JSON.parse(readFileSync(absoluteConfigPath, "utf8")));
   const screenshots = new Map();
+  const previews = new Map();
 
   for (const [locale, localization] of Object.entries(config.localizations)) {
     for (const [displayType, paths] of Object.entries(localization.screenshots ?? {})) {
       const assets = paths.map((path) => {
-        const absolutePath = screenshotPath(config, path, cwd);
+        const absolutePath = mediaPath(config, path, cwd, "screenshotBaseDir");
         if (requireFiles && !existsSync(absolutePath)) {
           fail(`screenshot not found: ${absolutePath}. Run npm run shots:ios first.`);
         }
@@ -312,9 +368,31 @@ export function loadConfig(configPath, { cwd = process.cwd(), requireFiles = tru
       });
       screenshots.set(`${locale}\u0000${displayType}`, assets);
     }
+    for (const [previewType, paths] of Object.entries(localization.previews ?? {})) {
+      const assets = paths.map((path) => {
+        const absolutePath = mediaPath(config, path, cwd, "previewBaseDir");
+        if (requireFiles && !existsSync(absolutePath)) {
+          fail(`preview not found: ${absolutePath}.`);
+        }
+        if (!requireFiles) return { path: absolutePath, fileName: basename(absolutePath) };
+        const extension = absolutePath.toLowerCase().match(/\.(mov|mp4|m4v)$/u)?.[1];
+        if (!extension) fail(`preview must be MOV or MP4: ${absolutePath}.`);
+        const size = statSync(absolutePath).size;
+        if (size === 0) fail(`preview is empty: ${absolutePath}.`);
+        const content = readFileSync(absolutePath);
+        return {
+          path: absolutePath,
+          fileName: basename(absolutePath),
+          fileSize: size,
+          checksum: createHash("md5").update(content).digest("hex"),
+          mimeType: extension === "mp4" || extension === "m4v" ? "video/mp4" : "video/quicktime",
+        };
+      });
+      previews.set(`${locale}\u0000${previewType}`, assets);
+    }
   }
 
-  return { config, absoluteConfigPath, screenshots };
+  return { config, absoluteConfigPath, screenshots, previews };
 }
 
 export function findPlaceholders(config) {

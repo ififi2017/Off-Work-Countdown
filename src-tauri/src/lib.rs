@@ -566,8 +566,6 @@ fn get_desktop_store_path() -> Result<String, String> {
 mod macos_widget {
     use std::ffi::{c_char, CString};
 
-    const DEFAULT_APP_GROUP_IDENTIFIER: &str = "group.com.rainif.offworkcountdown.macappstore";
-
     extern "C" {
         fn owc_write_widget_snapshot(
             app_group_identifier: *const c_char,
@@ -580,9 +578,9 @@ mod macos_widget {
 
     pub fn write_snapshot(snapshot_json: &str) -> Result<(), String> {
         const STORAGE_MODE: &str = env!("OWC_WIDGET_STORAGE_MODE");
-        let app_group_identifier =
-            option_env!("OWC_APP_GROUP_IDENTIFIER").unwrap_or(DEFAULT_APP_GROUP_IDENTIFIER);
-        let app_group_identifier = CString::new(app_group_identifier)
+        // build.rs 在有 Team ID 时会把 iOS 的 group.* 加上前缀，与 entitlements 对齐。
+        const APP_GROUP_IDENTIFIER: &str = env!("OWC_APP_GROUP_IDENTIFIER");
+        let app_group_identifier = CString::new(APP_GROUP_IDENTIFIER)
             .map_err(|_| "the Widget App Group identifier contains a NUL byte".to_string())?;
         let storage_mode = CString::new(STORAGE_MODE)
             .map_err(|_| "the Widget storage mode contains a NUL byte".to_string())?;
