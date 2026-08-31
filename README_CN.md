@@ -1,11 +1,12 @@
 # 下班倒计时
 
-下班倒计时是一款注重隐私的下班时间工具，同时提供网页版与轻量的 Tauri 桌面客户端。设置一次班次后，就能随时查看剩余时间、进度和预估收入。
+下班倒计时是一款注重隐私的下班时间工具，同时提供网页版、轻量的 Tauri 桌面客户端，以及 App Store 上的 iPhone / iPad 原生应用。设置一次班次后，就能随时查看剩余时间、进度和预估收入。
 
 [English README](README.md)
 
 [![官网](https://img.shields.io/badge/DoneAt-doneat.app-0f172a)](https://doneat.app/zh-CN)
 [![网页版](https://img.shields.io/badge/Web-%E7%AB%8B%E5%8D%B3%E4%BD%BF%E7%94%A8-ff6b35)](https://off.rainif.com/zh-CN)
+[![App Store](https://img.shields.io/badge/App%20Store-iPhone%20%26%20iPad-0d96f6?logo=apple&logoColor=white)](https://apps.apple.com/cn/app/id6802803318)
 [![桌面版](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
 [![许可证](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
 
@@ -22,13 +23,24 @@
   </picture>
 </p>
 
+<p align="center">
+  <img src="readme_image/ios/zh-iphone-timer.jpg" width="240" alt="iPhone 计时页：剩余时间、进度和接下来要做的事">
+  <img src="readme_image/ios/zh-iphone-widgets.jpg" width="240" alt="主屏幕小组件和灵动岛，不用打开也能看到倒计时">
+</p>
+<p align="center">
+  <img src="readme_image/ios/zh-ipad-timer.jpg" width="380" alt="iPad 布局：侧边栏、倒计时和今日详情并排">
+</p>
+
 ## 使用下班倒计时
 
 - **网页版：**[立即使用](https://off.rainif.com/zh-CN)，无需安装。
+- **iPhone 和 iPad：**[从 App Store 获取](https://apps.apple.com/cn/app/id6802803318)，**免费**，商店名为 **DoneAt**。原生 SwiftUI，带主屏幕和锁定屏幕小组件、实时活动与灵动岛。需要 **iOS 26** 或 **iPadOS 26**。
 - **桌面客户端：**[打开下载页](https://doneat.app/zh-CN/download)，支持 macOS Apple Silicon / Intel 和 Windows x64 / ARM64。macOS 版需要 macOS 11.3（Big Sur）或更高版本。
 - **Windows 用户：**[从 Microsoft Store 获取](https://apps.microsoft.com/detail/9PM0HJ2PP2LJ)，会自动更新，安装时也不会出现 SmartScreen 提示。
-- **macOS 用户：**[从 Mac App Store 获取](https://apps.apple.com/us/app/off-work-countdown/id6802803318)，**US$0.99**，是唯一收费的版本。它一键安装、由 App Store 负责更新，并且多一个免费版没有的倒计时小组件。买它更像是对这个项目的支持，而不是必须：上面那些 DMG 由同一份源码构建，一直免费，也不会下架。
+- **macOS 用户：**[从 Mac App Store 获取](https://apps.apple.com/cn/app/id6802803318)，同样**免费**，与 iPhone、iPad 共用同一条商品页。它一键安装、由 App Store 负责更新，并且多一个 GitHub DMG 没有的倒计时小组件。那些 DMG 由同一份源码构建，一直免费，也不会下架。
 - **安装包列表：**[最新 GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)。
+
+iOS 版是原生 SwiftUI，班次规则与网页版、桌面版共用。iPhone、iPad 和 Mac 共用同一条 App Store 商品页。
 
 桌面版额外提供 macOS 菜单栏倒计时、Windows 置顶迷你计时器、原生通知、登录时启动、全局快捷键和一键更新。它仍然坚持本地优先：班次、薪资设置与倒计时状态只保存在你的设备上。
 
@@ -40,7 +52,7 @@
 
 #### macOS
 
-[Mac App Store 版本](https://apps.apple.com/us/app/off-work-countdown/id6802803318)可以跳过下面这一整套：苹果签了名，一键装好，不用再走「仍要打开」那一步，而且带一个倒计时小组件。它需要 **macOS 13（Ventura）或更高版本**，售价 US$0.99——macOS 14（Sonoma）及以上小组件可以放在桌面，macOS 13 上只能放进通知中心。下面的步骤针对免费的 DMG，两条路一直都在。
+[Mac App Store 版本](https://apps.apple.com/cn/app/id6802803318)可以跳过下面这一整套：苹果签了名，一键装好，不用再走「仍要打开」那一步，而且带一个倒计时小组件。它需要 **macOS 13（Ventura）或更高版本**——macOS 14（Sonoma）及以上小组件可以放在桌面，macOS 13 上只能放进通知中心。下面的步骤针对 GitHub 上的 DMG，两条路一直都在。
 
 DMG 需要 **macOS 11.3（Big Sur）或更高版本**，Apple Silicon 与 Intel 均支持。
 
@@ -67,6 +79,8 @@ DMG 需要 **macOS 11.3（Big Sur）或更高版本**，Apple Silicon 与 Intel 
 - 把倒计时分享成心情图片，或分享成一条打开即是同一班次的链接
 - 桌面端原生通知、登录时启动和全局显示/隐藏快捷键
 - macOS 菜单栏倒计时与原生玻璃迷你窗；Windows 紧凑迷你计时器
+- iPhone / iPad 原生应用：主屏幕与锁定屏幕小组件、实时活动与灵动岛
+- iPhone 横屏模式与 iPad 大屏布局
 - 通过带更新签名的 GitHub Release 在客户端内更新
 - 常见作息说明页：996、朝九晚五、朝九晚六、夜班
 - 支持离线使用的渐进式Web应用(PWA)
@@ -74,7 +88,7 @@ DMG 需要 **macOS 11.3（Big Sur）或更高版本**，Apple Silicon 与 Intel 
 - 适应各种设备的响应式设计
 - 19 种语言(i18n)
 
-上下班时间和薪资只存在你的浏览器或桌面客户端里，不会发送到服务器，也不会在设备之间同步。可选的 Web 统计只记录白名单内的聚合事件数，不记录薪资、班次、Cookie、IP 或设备标识。
+上下班时间和薪资只存在你的浏览器、桌面客户端或 iPhone / iPad 里，不会发送到服务器，也不会在设备之间同步。可选的 Web 统计只记录白名单内的聚合事件数，不记录薪资、班次、Cookie、IP 或设备标识。
 
 ## 使用的技术
 
@@ -87,6 +101,7 @@ DMG 需要 **macOS 11.3（Big Sur）或更高版本**，Apple Silicon 与 Intel 
 - i18next
 - Tauri 2 与 Rust
 - AppKit（macOS 原生迷你计时器）
+- SwiftUI（iOS 原生应用）
 
 ## 开始使用
 
@@ -221,7 +236,7 @@ FAQ、原理、关于、下载和隐私的长文在 [doneat.app](https://doneat.
 2. 在地址栏或菜单中查找安装提示。
 3. 按照提示在您的设备上安装应用。
 
-iPhone 和 iPad 请在 Safari 里点分享按钮，选"添加到主屏幕"；macOS 的 Safari 选"添加到程序坞"。
+iPhone 和 iPad 若要用小组件和实时活动，请安装 [App Store 上的原生应用](https://apps.apple.com/cn/app/id6802803318)。PWA 仍可用：在 Safari 里点分享按钮，选「添加到主屏幕」。macOS 的 Safari 选「添加到程序坞」。
 
 PWA 会继续维护；如果你需要常驻菜单栏／迷你计时器、原生提醒、登录时启动和自动更新，建议使用[桌面客户端](https://doneat.app/zh-CN/download)。
 
