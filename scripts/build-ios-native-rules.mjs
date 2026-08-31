@@ -178,10 +178,15 @@ export function createIOSNativeRulesBundle() {
     const targetDayMs = startOfLocalDayMs(targetAtMs, timeZone);
     for (let offset = 1; offset <= 366; offset += 1) {
       const candidateDayMs = countdown.addCivilDaysMs(targetDayMs, -offset, timeZone);
+      // Probe from the middle of the candidate day, the way
+      // expandScheduleRangeInZone and findEndedShiftOnEndCalendarDayInZone do.
+      // From civil midnight an overnight 22:00-06:00 resolves to the *previous*
+      // day's shift, so both the workday test and the anchor slid a day back.
+      const candidateProbeMs = candidateDayMs + 12 * 3_600_000;
       const previous = countdown.buildShiftTimeline(
         input.startTime,
         input.endTime,
-        new Date(candidateDayMs),
+        new Date(candidateProbeMs),
         {
           breakStartTime: input.breakStartTime || null,
           breakDurationMinutes: input.breakDurationMinutes || 0,
@@ -370,9 +375,18 @@ export function createIOSNativeRulesBundle() {
     summarize(inputJSON) {
       const input = JSON.parse(inputJSON);
       const asOf = new Date(input.asOfMs);
-      const periodStart = input.period === "year"
-        ? summary.startOfYear(asOf)
-        : summary.startOfWeek(asOf);
+      const timeZone = typeof input.timeZoneIdentifier === "string" && input.timeZoneIdentifier.trim()
+        ? input.timeZoneIdentifier.trim()
+        : undefined;
+      const periodStart = timeZone
+        ? new Date(
+          input.period === "year"
+            ? countdown.zonedYearStartMs(input.asOfMs, timeZone)
+            : countdown.zonedWeekStartMs(input.asOfMs, timeZone)
+        )
+        : input.period === "year"
+          ? summary.startOfYear(asOf)
+          : summary.startOfWeek(asOf);
       return JSON.stringify(summary.summarize({
         periodStart,
         asOf,
@@ -385,6 +399,7 @@ export function createIOSNativeRulesBundle() {
         dailySalary: input.dailySalary,
         todayEffectiveHours: input.todayEffectiveHours,
         todayPayRatio: input.todayPayRatio,
+        timeZone,
       }));
     },
 
