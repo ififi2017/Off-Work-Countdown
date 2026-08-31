@@ -1239,6 +1239,71 @@ struct HealthReminderSettingsView: View {
     }
 }
 
+struct RecordsTimeZoneSettingsView: View {
+    @Bindable var store: OffWorkStore
+    @State private var confirmsMigrate = false
+
+    var body: some View {
+        OWCContentSizedScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                OWCGroupCard {
+                    OWCRow(
+                        title: store.t("recordsTimeZone"),
+                        isLast: !store.systemTimeZoneDiffersFromRecords
+                    ) {
+                        Text(store.recordsTimeZoneLabel)
+                            .font(.body)
+                            .foregroundStyle(OWCDesign.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.72)
+                    }
+                    if store.systemTimeZoneDiffersFromRecords {
+                        OWCRow(title: store.t("recordsTimeZoneThisDevice"), isLast: true) {
+                            Text(store.systemTimeZoneLabel)
+                                .font(.body)
+                                .foregroundStyle(OWCDesign.secondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.72)
+                        }
+                    }
+                }
+                .padding(.horizontal, OWCDesign.pageInset)
+                .padding(.top, 22)
+
+                if store.systemTimeZoneDiffersFromRecords {
+                    Button(store.t("recordsTimeZoneMigrate")) {
+                        confirmsMigrate = true
+                    }
+                    .buttonStyle(OWCPrimaryButtonStyle())
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.top, 22)
+                }
+
+                settingsDetailFooter(store.t("recordsTimeZoneFooter"))
+            }
+        }
+        .background(OWCDesign.page)
+        .navigationTitle(store.t("recordsTimeZone"))
+        .navigationBarTitleDisplayMode(.large)
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("recordsTimeZone"))
+        .confirmationDialog(
+            store.t("recordsTimeZoneMigrateConfirm"),
+            isPresented: $confirmsMigrate,
+            titleVisibility: .visible
+        ) {
+            Button(store.t("recordsTimeZoneMigrate")) {
+                store.migrateRecordsTimeZone()
+            }
+        } message: {
+            Text(store.t("recordsTimeZoneDevice", values: ["zone": store.systemTimeZoneLabel]))
+        }
+        .onAppear { store.refreshSystemTimeZone() }
+        .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
+            store.refreshSystemTimeZone()
+        }
+    }
+}
+
 struct ThemeSettingsView: View {
     @Bindable var store: OffWorkStore
 

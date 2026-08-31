@@ -1,12 +1,12 @@
 # 002 — 从「倒计时」到「记录」：工作占比、人生视图与专注
 
-- **Status**: DRAFT
+- **Status**: IN PROGRESS
 - **Reviewed against**: 755052f（007 已合入；本计划架构仍以 PR #81 为基线）
 - **Severity**: HIGH
 - **Category**: Product values / Architecture / Persistence / Privacy / New surfaces
 - **Estimated scope**: 按交付顺序为四个可独立验收的阶段：P0A 本地语义 → P1 记录与人生视图（本地先发）→ P0B 同步与数据控制 → P2 任务与专注
 - **相关**: 商业模式、试用与付费墙见 [006](006-free-trial-subscription.md)；本文件只声明「什么能被墙、什么永远不能」。[007](007-ios-stable-before-subscription.md) 已在多轮 iPhone/iPad 真机回归后合入 `main`，`todayOverride` / `clockOffEarly` / `forcedWorkdayDate` 视为冻结，**P0A 现在可以另开分支**（不必等 Live Activity、截图或 TestFlight）；提前上/下班等修正先写计时本地标记，P0A 第一刀再投影为当日覆盖
-- **本次修订**: 同步层从「SwiftData 自动镜像 + 自研收敛协议」改为 **CKSyncEngine**。上一版为绕过自动镜像的冲突黑箱，设计了 append-only 修订表、HLC 版本戳、六种控制记录、lineage 与 UUID v5 恢复链——那是在为每年千余条小记录徒手造一个分布式数据库。CKSyncEngine 在冲突回调里同时给出本地版与服务器版，上述发明整体作废。同时把 P1 提前到 P0B 之前：付费墙挂在图表与人生视图上，先用本地版验证付费意愿，再投入同步。二次修订补齐了 CKSyncEngine 周围必须自建的薄层：本地同步适配层（`lastKnownRecord` + dirty outbox）、世代化数据 zone、单条删除的原子批次、P0A 本地 ErasedID 表，并统一平局规则为随机 `editTieBreaker`（墙钟永不参与裁决）。三次修订把「删除全部」的崩溃续跑从本地操作状态改成系统不变量：凡 generation 小于当前 fence 的数据 zone，在启动、fence 更新与旧 zone 重建时一律删除——不依赖跨本地与 CloudKit 的伪原子事务。
+- **本次修订**: 同步层从「SwiftData 自动镜像 + 自研收敛协议」改为 **CKSyncEngine**。上一版为绕过自动镜像的冲突黑箱，设计了 append-only 修订表、HLC 版本戳、六种控制记录、lineage 与 UUID v5 恢复链——那是在为每年千余条小记录徒手造一个分布式数据库。CKSyncEngine 在冲突回调里同时给出本地版与服务器版，上述发明整体作废。同时把 P1 提前到 P0B 之前：付费墙挂在图表与人生视图上，先用本地版验证付费意愿，再投入同步。二次修订补齐了 CKSyncEngine 周围必须自建的薄层：本地同步适配层（`lastKnownRecord` + dirty outbox）、世代化数据 zone、单条删除的原子批次、P0A 本地 ErasedID 表，并统一平局规则为随机 `editTieBreaker`（墙钟永不参与裁决）。三次修订把「删除全部」的崩溃续跑从本地操作状态改成系统不变量：凡 generation 小于当前 fence 的数据 zone，在启动、fence 更新与旧 zone 重建时一律删除——不依赖跨本地与 CloudKit 的伪原子事务。四次修订钉死时区：视图不跟飞机走；日历日记录自带时区；自动跟排班与进行中的倒计时锁旧区；设置里才能把数据迁到新区；人生视图稍后标出新区记下的日子。
 
 ## 出发点：这个 App 现在没有记忆，但「推算」不是缺陷
 
@@ -217,6 +217,44 @@ P0B 的冲突裁决只看 `(editCount, editTieBreaker)`；本地阶段 `editCoun
 这条链是整份设计的骨架，UI 的「数据来源」说明就是它的直接投影：点开某一天，先告诉用户
 这天走的是哪一层，再展示细节。
 
+#### 读取时决议（P0A 第二刀）
+
+`DayRecordResolver` 是这条链的纯函数，仍不写 SwiftData，也不展开班次——共享规则的
+`ScheduleExpansion` 由调用方注入。重叠阶段按 `startsOn`、`createdAt`、`id` 取胜；同槽
+快照按 `(editCount, editTieBreaker, id)` 取胜。`.cleared` 的覆盖或例外是回落，不是一层
+「已清空」结论。`.notWorking` 是请假（覆盖），法定假日是例外，两者不能互换。
+
+#### 其余实体、JSON 与批量展开（P0A 第三刀）
+
+值类型补齐 `WorkObservation` / `LifeProfile` / `DailyWorkSummary`（派生，不进导出）/
+`ErasedID`。`DayOverride` 从第一天带 `editedAt` / `editCount` / `editTieBreaker`，计时
+投影仍把它们留空。
+
+本地档案是 Application Support 里的 JSON，不进 App Group，也不配置
+`cloudKitDatabase`。SwiftData `@Model` 刻意还没铺：JSON 是 Android / 备份契约，表映射
+等 P1 图表缓存真的需要查询层再做，避免 P0B 回头改表。这是顺序，不是改口径。
+
+`ErasedID.logicalKey` 是字符串，不是计划草稿里的 `UUID`。覆盖和例外的身份本来就是
+`dayKey`（云端 recordName 也是 `day.2026-08-26` 这种字符串）。导入默认跳过已擦除身份；
+显式恢复时 UUID 实体换新随机 id，自然键实体写回同一 `dayKey`，擦除行都保留。
+
+`expandScheduleRange` 落在 `lib/countdown.ts`，经 JS 桥一次展开一个日历区间。休息日也
+带着计划片段，补班例外才能复用。**实测（2026-08-30，iPhone 17 Pro 模拟器，主线程
+JavaScriptCore）**：十年工作日 + 午休（2016-01-01…2025-12-31，3653 天）在
+`expandScheduleRangeTenYearMeasurement` 里整段测试约 1.2–1.7s；同一区间在 Node V8 约
+24ms。主线程可感知卡顿的扳机未触发，**不把规则迁到 Swift**。
+
+最小事件已挂上 `OffWorkStore`：计时页首次看见、开始 / 停止、登记加班。跨日
+`reconcile` 只重连，不另写一条开始。观察按 `eventID` 幂等；已擦除的 id 不会被同一
+次重试写回。
+
+#### 免费记录 Tab（P1 只读面，未做付费墙）
+
+第三个 Tab 已接上，`activePath` 按 Tab 分支，记录日详情走自己的 `recordsPath`。免费面
+是实际开始 / 结束 / 加班的日子，不是把今年排班预填成一份年历；打开计时页不算上下班。
+导出 / 本机删除仍在。周 / 月 / 年图表、人生视图、历史编辑和 StoreKit **停在 006/007
+送审闸门**，没有半成品付费页。人生视图再投影排班底图。
+
 ### 2. 职业阶段与排班快照
 
 ~~~swift
@@ -256,7 +294,7 @@ P0B 的冲突裁决只看 `(editCount, editTieBreaker)`；本地阶段 `editCoun
 - 工作片段、午休、跨夜、计划结束和加班延长继续由共享 TypeScript 规则计算，再生成
   CountdownRules.js 供 iOS 使用。**本阶段 Swift 不实现第二套排班算法**——但这不是永久
   禁令，见下方「关于 JS 桥」。
-- 时区变化必须保留原阶段的语义，不能因为用户旅行就把历史班次整体平移。
+- 时区见下方「时区：记录跟着记下的区，不跟着飞机」。
 - **编辑历史快照是用户的修正权，不是数据漂移。** 用户改了某份旧快照，历史日期的解释就
   跟着变——这正是「修正权在用户手里」的含义。因此不需要把观察与覆盖钉死到「当时那一条
   修订」；单日详情按现行数据解释即可。
@@ -280,6 +318,34 @@ P0B 的冲突裁决只看 `(editCount, editTieBreaker)`；本地阶段 `editCoun
   `effectiveFrom` 谁赢——等于把自动合并的难题原封不动搬到一个按钮后面。重复阶段用已有的
   两个动作解决就够了：**删除多余的那条**，必要时**改另一条的起止日期**。既然是重复，
   两边的配置本来就是等价的。
+
+#### 时区：记录跟着记下的区，不跟着飞机
+
+大多数人一辈子待在一个国家、一个时区里。对他们，只要日历日期和钟点显示正常。
+人到了另一个时区，**不能**把年历、哪天上班、几点下班自动改成当地日历——那是污染视图。
+常出差的人也多半仍按常居时区回看历史。
+
+因此：
+
+1. **绝对时刻用时间戳。** 观察的 `occurredAt`、片段的 `startAtMs` / `endAtMs`、编辑戳
+   都是 Unix 毫秒。界面格式化可以用当前时区；那是同一瞬间，不是把历史搬了。
+2. **日历日那一层每条都带着自己的 `timeZoneIdentifier`。** 日覆盖、日历例外、观察的锚点
+   日、职业阶段首日都属于这一层。`dayKey` 是该时区里的 `YYYY-MM-DD`，不是系统今天的日历。
+3. **排班钟点（`09:00`）按记录 / 阶段时区展开**，不按旅行地重算。批量展开可以传入
+   `timeZone`；省略时才用运行时本地时区。
+4. **自动跟排班、没有按「开始」的那天，锁旧区。** 系统时区变了，年历和倒计时仍按已锁定
+   的记录时区走。计时快照把 `timeZoneIdentifier` 传进共享规则；省略时才用运行时本地时区。
+5. **进行中的倒计时锁这次开始时的时区。** 途中换区不拆班次、不改锚点日。只有在新区里
+   **新开始**（无排班的手动开始，或休息日强制开始）的那一次，新写下的日历日记录才带新区。
+6. **迁移是设置里的明确动作，不是检测后的默认。** 「改用这台设备的时区」改的是阶段与所
+   有日历日记录上的 `timeZoneIdentifier`，**不重算、不平移 `dayKey`**——九点还是九点，
+   只是改按新区解释。已经在走的倒计时仍用这次会话的旧区，直到结束。观察是不可变事件：
+   迁移只改时区字段，不改 `eventID` / `occurredAt`。
+7. **人生视图（P1）标出新区记下的日子。** P0A 只打地基：字段、锁定、设置迁移、
+   `daysRecordedOutsidePeriodTimeZone()`。不在免费记录列表上弹选择。人生视图用「同一天
+   出现了与阶段不同的时区」做标记，用户可以按条改回老区或以新区为准。
+
+旧 JSON 没有时区字段时，回落到文件头的 `timeZoneIdentifier` 或阶段时区。
 
 #### 关于 JS 桥：本阶段沿用，但它已经在成本曲线上
 
@@ -334,6 +400,7 @@ enum WorkObservationKind: String {
     var kind: WorkObservationKind
     var valueData: Data?
     var scheduleSnapshotID: UUID // 归属哪份快照
+    var timeZoneIdentifier: String
     var schemaVersion: Int
 }
 ~~~
@@ -379,6 +446,7 @@ enum DayOverrideKind: String {
     var editedAt: Date
     var editCount: Int
     var editTieBreaker: UUID
+    var timeZoneIdentifier: String
     var schemaVersion: Int
 }
 ~~~
@@ -399,6 +467,30 @@ enum DayOverrideKind: String {
 - 覆盖是用户的话，因此**没有「应用觉得你改错了」这种校验**；只做基本合法性检查（片段不
   交叉、结束晚于开始）。
 - 覆盖影响工时统计与人生视图，**不影响收入**——见「收入口径」。
+
+#### 计时页本地标记 → DayOverride（P0A 第一刀）
+
+007 冻住的计时标记是覆盖的前身，不是第二套「实际工时」。投影是纯函数
+（`DayOverrideProjection`），尚不写 SwiftData。计时标记**只**产出
+`.customSegments` 或「没有覆盖」；`.confirmedAsScheduled` / `.notWorking` /
+`.cleared` 是记录 Tab 的动作，不由计时按钮发明。
+
+| 计时标记 | 覆盖 | 片段 |
+| --- | --- | --- |
+| 无标记 | 无 | 回落到排班 |
+| 提前上班 | `customSegments` | 第一段提到按下时刻，下班不变 |
+| 提前下班 | `customSegments` | 末段裁到按下时刻；**不是**请假 |
+| 提前上 + 提前下 | `customSegments` | 两端都裁 |
+| 休息日手动计时 | `customSegments` | 当天沿用已有时刻；`dayKey` 是班次开始日 |
+| 未排班手动计时 | `customSegments` | 同上；没有 `forcedWorkdayDate` |
+| 「只从下一班起」且今天仍是工作日 | `customSegments` | 覆盖层里的旧时刻 |
+| 「只从下一班起」且今天仍是休息 | 无 | 这是排班快照生效日，不是「这天怎么上的」 |
+| 「今天也改」且没有其它标记 | 无 | 底图排班本身变了 |
+| 只有加班 | 无 | `WorkObservation.overtimeDeclared` |
+| 撤销 / 取消手动计时 | 无 | 标记清掉就回落 |
+
+`dayKey` 永远是班次开始日。周五 22:00–周六 06:00，周六 01:00 提前下班仍键为周五。
+午休空隙来自规则已经切好的 fragments，投影只裁边界，不另写一套班次算法。
 
 ### 5. 日历例外：节假日与调休补班
 
@@ -425,6 +517,7 @@ enum CalendarExceptionOrigin: String {
     var editedAt: Date
     var editCount: Int
     var editTieBreaker: UUID
+    var timeZoneIdentifier: String
     var schemaVersion: Int
 }
 ~~~
@@ -653,6 +746,7 @@ settingsPath 之间挑），横屏又是单一 NavigationStack 服务两个 Tab�
 | 排班推算（过去） | 稳定底色，标注「按当时排班估算」 |
 | 排班推演（未来） | 纹理或透明度区别，标注「如果保持当前节奏」 |
 | 用户覆盖 | 单独图例，可编辑、可撤销 |
+| 新区记下的日子 | 克制标记，可改回老区或以新区为准 |
 
 **情绪与交互边界**：
 
@@ -839,7 +933,7 @@ CKSyncEngine 管队列与调度，但有两样东西它不替应用保存，缺�
 | 删除全部在 fence CAS 成功后、本地任何便签写入前崩溃 | 重启读到更高 fence：本地旧数据丢弃且不上云；不变量删掉所有 `g < fence` 的 zone；新世代 zone 不受影响。不依赖本地「待删除」状态 |
 | 两台并发删除全部 | 后写方 CAS 冲突重试到更高世代，不出现双方写同一世代都报成功 |
 | 已开启同步但离线时点「从 iCloud 删除」 | 操作失败，提示联网重试；不自动排队 |
-| 时区与夏令时变化 | 班次锚点和历史比例不漂移 |
+| 时区与夏令时变化 | 班次锚点和历史比例不漂移；旅行不改年历；自动跟排班锁旧区；设置里才能迁移；进行中的倒计时锁会话时区 |
 | Production schema | 发布前部署并由真实容器验证 |
 | JSON 往返 | 导出后清空再导入，语义与 UUID 保持一致；永久删除后再导旧文件不得按原 UUID 复活 |
 
@@ -911,8 +1005,10 @@ enum FocusEndReason: String {
 2. ~~只读查看能翻多远~~ **已定**：全历史不限期。免费的是逐日结论、来源与已有观察构成的
    朴素列表；付费的是跨日聚合——周 / 月 / 年图表、比例统计、人生视图与历史编辑。分界线是
    「能不能把它们加起来」，不是「能看多久以前」。
-3. 共享规则的批量展开接口签名与性能预算。**这是 P0A 的交付项，也是 JS 迁移扳机的度量**，
-   越早试越好。
+3. ~~共享规则的批量展开接口签名与性能预算~~ **已测**：`expandScheduleRange({ fromMs,
+   throughMs, hours })` → 逐日 `{ dayKey, shiftAnchorStartAtMs, isWorkday, segments }`。
+   十年展开在 iPhone 17 Pro 模拟器主线程约 1.2–1.7s，未触发迁移。预算若以后在真机年视图
+   滚动掉帧再议。
 4. 人生视图的分享形态：截图会不会带出年龄或出生年份？`hidesExactAges` 是否应该是分享时的
    默认值？
 5. 专注与工作倒计时的 Live Activity 共存策略（P2 的主要技术未知数）。
@@ -932,14 +1028,18 @@ enum FocusEndReason: String {
 - 共享规则的批量展开接口，并产出实测数字——它同时是 P1 的性能依据和 JS 迁移扳机的门槛。
 - JSON 导入导出引擎与往返测试，含本地 ErasedID 表与「永久删除后导入旧备份默认跳过、
   显式恢复换新 UUID」。
-- 接入最小事件，完成跨夜、时区、重复启动测试。
+- 接入最小事件，完成跨夜、时区、重复启动测试。日历日记录带时区；记录时区锁定；设置提供
+  迁到设备时区；人生视图的新区标记先留字段。
 - 保持主库私有，小组件只接收无薪资投影。
+- 损坏或无法读取的本地档案 fail-closed：不覆盖原文件；Records 页提示，只能「隔离损坏档案并重新开始」（原文件留作 `.corrupt-*`，文案说明可供人工恢复）。保存失败单独提示，不走隔离。
 
 这一阶段先做，是因为观察事件会随时间积累；不是因为它们等于不可追回的真实考勤。
 
 ### P1 — 记录 Tab 与人生视图（本地先发）
 
-- 先交付周 / 月 / 年记录与单日编辑，再交付人生视图。
+- 先交付周 / 月 / 年记录与单日编辑，再交付人生视图。人生视图标出与阶段时区不同的日子，
+  并提供改回老区或以新区为准。P0A 已留下 `timeZoneIdentifier` 与
+  `daysRecordedOutsidePeriodTimeZone()`，本阶段只接线，不再改日历日语义。
 - **付费墙与本阶段同版上线**（见 [006](006-free-trial-subscription.md)）。
 - 本地-only：同步入口随 P0B 出现，本版不预留半成品开关。
 - 19 个 locale 的隐私文案改写随本版落地。

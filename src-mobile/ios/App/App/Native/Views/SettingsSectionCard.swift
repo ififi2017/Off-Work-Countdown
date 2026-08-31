@@ -22,7 +22,8 @@ struct SettingsSectionCard: View {
             link(.schedule, icon: "calendar.badge.clock", title: store.t("workSchedule"), value: store.scheduleLabel)
             link(.lunch, icon: "cup.and.saucer", title: store.t("lunchBreak"), value: store.lunchLabel)
             link(.health, icon: "figure.walk", title: store.t("microBreakReminder"), value: store.healthLabel)
-            link(.salary, icon: "banknote", title: store.t("salarySettings"), value: store.salaryTypeLabel, isLast: true)
+            link(.salary, icon: "banknote", title: store.t("salarySettings"), value: store.salaryTypeLabel)
+            link(.recordsTimeZone, icon: "clock", title: store.t("recordsTimeZone"), value: store.recordsTimeZoneLabel, isLast: true)
 
         case .reminders:
             link(.notifications, icon: "bell.badge", title: store.t("offWorkReminder"), value: store.notificationModeLabel, isLast: true)

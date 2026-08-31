@@ -48,8 +48,12 @@ export interface ShiftTimeline {
 export function getShiftBounds(
   startTime: string,
   endTime: string,
-  now: Date
+  now: Date,
+  timeZone?: string | null
 ): ShiftBounds {
+  if (timeZone?.trim()) {
+    return getShiftBoundsInZone(startTime, endTime, now.getTime(), timeZone.trim());
+  }
   let start = atTime(now, startTime);
   let end = atTime(now, endTime);
 
@@ -111,10 +115,19 @@ function calendarDayDifference(from: Date, to: Date): number {
 export function isScheduledWorkday(
   shiftStart: Date,
   workdays: number[],
-  schedule?: WorkScheduleConfig | null
+  schedule?: WorkScheduleConfig | null,
+  timeZone?: string | null
 ): boolean {
   const mode = schedule?.mode ?? "classic";
   if (mode === "off") return true;
+  if (timeZone?.trim()) {
+    return isScheduledWorkdayInZone(
+      shiftStart.getTime(),
+      workdays,
+      schedule,
+      timeZone.trim()
+    );
+  }
   if (mode === "classic") return isWorkday(shiftStart, workdays);
 
   if (mode === "alternating") {
@@ -147,8 +160,12 @@ export function findNextRestDate(params: {
   afterMs: number;
   workdays: number[];
   schedule?: WorkScheduleConfig | null;
+  timeZone?: string | null;
 }): Date | null {
-  const { afterMs, workdays, schedule } = params;
+  const { afterMs, workdays, schedule, timeZone } = params;
+  if (timeZone?.trim()) {
+    return findNextRestDateInZone(afterMs, workdays, schedule, timeZone.trim());
+  }
   if (schedule?.mode === "off") return null;
   const cursor = localDay(new Date(afterMs));
   for (let offset = 0; offset <= 366; offset += 1) {
@@ -161,7 +178,8 @@ export function findNextRestDate(params: {
 function buildTimelineFromBounds(
   start: Date,
   end: Date,
-  options: ShiftBuildOptions
+  options: ShiftBuildOptions,
+  timeZone?: string | null
 ): ShiftTimeline {
   const plannedEndAtMs = end.getTime();
   let segments: ShiftSegment[] = [
@@ -170,9 +188,11 @@ function buildTimelineFromBounds(
 
   const breakDurationMs = Math.floor(options.breakDurationMinutes ?? 0) * 60_000;
   if (options.breakStartTime && breakDurationMs > 0) {
-    let breakStart = atTime(start, options.breakStartTime);
-    if (breakStart < start) breakStart = addCalendarDays(breakStart, 1);
-    const breakStartAtMs = breakStart.getTime();
+    const breakStartAtMs = breakStartAtMsInZone(
+      start.getTime(),
+      options.breakStartTime,
+      timeZone
+    );
     const breakEndAtMs = breakStartAtMs + breakDurationMs;
     if (
       breakStartAtMs > start.getTime() &&
@@ -205,10 +225,11 @@ export function buildShiftTimeline(
   startTime: string,
   endTime: string,
   now: Date,
-  options: ShiftBuildOptions = {}
+  options: ShiftBuildOptions = {},
+  timeZone?: string | null
 ): ShiftTimeline {
-  const { start, end } = getShiftBounds(startTime, endTime, now);
-  return buildTimelineFromBounds(start, end, options);
+  const { start, end } = getShiftBounds(startTime, endTime, now, timeZone);
+  return buildTimelineFromBounds(start, end, options, timeZone);
 }
 
 export function extendShiftWithOvertime(
@@ -278,7 +299,11 @@ export function findEndedShiftOnEndCalendarDay(params: {
   options?: ShiftBuildOptions;
   /** Midnight of a start calendar day that counts as work even if the pattern says rest. */
   forcedWorkdayStartMs?: number | null;
+  timeZone?: string | null;
 }): ShiftTimeline | null {
+  if (params.timeZone?.trim()) {
+    return findEndedShiftOnEndCalendarDayInZone(params, params.timeZone.trim());
+  }
   const now = new Date(params.nowMs);
   const today = localDay(now);
   const options = params.options ?? {};
@@ -325,8 +350,12 @@ export function findNextShiftTimeline(params: {
   afterMs: number;
   schedule?: WorkScheduleConfig | null;
   options?: Omit<ShiftBuildOptions, "overtimeEndAtMs">;
+  timeZone?: string | null;
 }): ShiftTimeline | null {
-  const { startTime, endTime, workdays, afterMs, schedule, options = {} } = params;
+  const { startTime, endTime, workdays, afterMs, schedule, options = {}, timeZone } = params;
+  if (timeZone?.trim()) {
+    return findNextShiftTimelineInZone(params, timeZone.trim());
+  }
   if (schedule?.mode === "off") return null;
   if ((schedule?.mode ?? "classic") === "classic" && workdays.length === 0) return null;
 
@@ -554,4 +583,649 @@ export function getDailySalary(
     return null;
   }
   return (parsed / monthlyWorkingDays) * annualizedMultiplier;
+}
+
+export interface ScheduleDayExpansion {
+  dayKey: string;
+  shiftAnchorStartAtMs: number;
+  isWorkday: boolean;
+  segments: ShiftSegment[];
+}
+
+function localDayKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+interface ZonedCivil {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+  weekday: number;
+}
+
+function zonedCivil(ms: number, timeZone: string): ZonedCivil {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  });
+  const parts = Object.fromEntries(
+    formatter
+      .formatToParts(new Date(ms))
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value])
+  );
+  const year = Number(parts.year);
+  const month = Number(parts.month);
+  const day = Number(parts.day);
+  return {
+    year,
+    month,
+    day,
+    hour: Number(parts.hour),
+    minute: Number(parts.minute),
+    second: Number(parts.second),
+    weekday: new Date(Date.UTC(year, month - 1, day)).getUTCDay(),
+  };
+}
+
+function zonedOffsetMs(instantMs: number, timeZone: string): number {
+  const civil = zonedCivil(instantMs, timeZone);
+  return (
+    Date.UTC(
+      civil.year,
+      civil.month - 1,
+      civil.day,
+      civil.hour,
+      civil.minute,
+      civil.second
+    ) - instantMs
+  );
+}
+
+function zonedTimeToUtcMs(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  timeZone: string
+): number {
+  // Treat the input as a civil clock reading, not as a UTC timestamp to be
+  // corrected twice.  The latter fails in a spring-forward gap (02:30 can
+  // land at 01:30) and is unstable in a fall-back fold.  Probe the offsets
+  // around the guess, then verify candidates by formatting them back in the
+  // requested zone.  In a fold the earlier instant is the stable policy.
+  const civil = Date.UTC(year, month - 1, day, hour, minute, 0);
+  const probes = [0, -6, 6, -24, 24, -48, 48].map(
+    (hours) => civil + hours * 3_600_000
+  );
+  const offsets = new Set(probes.map((probe) => zonedOffsetMs(probe, timeZone)));
+  const exactCandidates = (civilMs: number, civilParts: ZonedCivil) =>
+    [...offsets]
+    .map((offset) => civilMs - offset)
+    .filter((candidate) => {
+      const actual = zonedCivil(candidate, timeZone);
+      return (
+        actual.year === civilParts.year &&
+        actual.month === civilParts.month &&
+        actual.day === civilParts.day &&
+        actual.hour === civilParts.hour &&
+        actual.minute === civilParts.minute
+      );
+    })
+    .sort((left, right) => left - right);
+  const candidates = exactCandidates(civil, { year, month, day, hour, minute, second: 0, weekday: 0 });
+  if (candidates.length > 0) return candidates[0];
+
+  // The civil time is in a DST gap.  Advance by civil minutes until the next
+  // representable reading (normally the transition boundary).  This also
+  // makes the policy explicit and testable instead of allowing Foundation /
+  // Intl to normalize the clock backwards.
+  for (let delta = 1; delta <= 24 * 60; delta += 1) {
+    const next = new Date(civil + delta * 60_000);
+    const nextParts = {
+      year: next.getUTCFullYear(),
+      month: next.getUTCMonth() + 1,
+      day: next.getUTCDate(),
+      hour: next.getUTCHours(),
+      minute: next.getUTCMinutes(),
+      second: 0,
+      weekday: 0,
+    };
+    const resolved = exactCandidates(next.getTime(), nextParts);
+    if (resolved.length > 0) return resolved[0];
+  }
+  // A valid IANA zone should always resolve within a day. Keep a loud,
+  // deterministic fallback for malformed/runtime-provided zones.
+  return civil;
+}
+
+function addZonedCivilDays(
+  year: number,
+  month: number,
+  day: number,
+  days: number
+): { year: number; month: number; day: number } {
+  const next = new Date(Date.UTC(year, month - 1, day + days));
+  return {
+    year: next.getUTCFullYear(),
+    month: next.getUTCMonth() + 1,
+    day: next.getUTCDate(),
+  };
+}
+
+function compareCivil(
+  left: { year: number; month: number; day: number },
+  right: { year: number; month: number; day: number }
+): number {
+  if (left.year !== right.year) return left.year - right.year;
+  if (left.month !== right.month) return left.month - right.month;
+  return left.day - right.day;
+}
+
+function zonedDayKey(ms: number, timeZone: string): string {
+  const civil = zonedCivil(ms, timeZone);
+  return `${civil.year}-${String(civil.month).padStart(2, "0")}-${String(civil.day).padStart(2, "0")}`;
+}
+
+function zonedDayDifference(
+  fromMs: number,
+  toMs: number,
+  timeZone: string
+): number {
+  const from = zonedCivil(fromMs, timeZone);
+  const to = zonedCivil(toMs, timeZone);
+  return Math.round(
+    (Date.UTC(to.year, to.month - 1, to.day) -
+      Date.UTC(from.year, from.month - 1, from.day)) /
+      86_400_000
+  );
+}
+
+function zonedWeekStartMs(ms: number, timeZone: string): number {
+  const civil = zonedCivil(ms, timeZone);
+  const start = addZonedCivilDays(
+    civil.year,
+    civil.month,
+    civil.day,
+    -((civil.weekday + 6) % 7)
+  );
+  return zonedTimeToUtcMs(start.year, start.month, start.day, 0, 0, timeZone);
+}
+
+function parseClock(time: string): { hour: number; minute: number } {
+  const [hour, minute] = time.split(":").map(Number);
+  return { hour, minute };
+}
+
+function isScheduledWorkdayInZone(
+  shiftStartMs: number,
+  workdays: number[],
+  schedule: WorkScheduleConfig | null | undefined,
+  timeZone: string
+): boolean {
+  const mode = schedule?.mode ?? "classic";
+  if (mode === "off") return false;
+  const weekday = zonedCivil(shiftStartMs, timeZone).weekday;
+  if (mode === "classic") return workdays.includes(weekday);
+
+  if (mode === "alternating") {
+    if (weekday >= 1 && weekday <= 5) return true;
+    const anchor = zonedWeekStartMs(
+      schedule?.referenceWeekStartMs ?? shiftStartMs,
+      timeZone
+    );
+    const week = zonedWeekStartMs(shiftStartMs, timeZone);
+    const weeksFromAnchor = Math.floor(
+      zonedDayDifference(anchor, week, timeZone) / 7
+    );
+    const anchorIsSingle = schedule?.referenceWeekType === "single";
+    const isSingleWeek =
+      Math.abs(weeksFromAnchor) % 2 === 0 ? anchorIsSingle : !anchorIsSingle;
+    return isSingleWeek && weekday === (schedule?.singleWeekendWorkday ?? 6);
+  }
+
+  const workLength = Math.max(1, Math.floor(schedule?.rotationWorkDays ?? 1));
+  const restLength = Math.max(1, Math.floor(schedule?.rotationRestDays ?? 1));
+  const anchorMs = schedule?.rotationAnchorMs ?? shiftStartMs;
+  const offset = zonedDayDifference(anchorMs, shiftStartMs, timeZone);
+  const cycleLength = workLength + restLength;
+  const cycleDay = ((offset % cycleLength) + cycleLength) % cycleLength;
+  return cycleDay < workLength;
+}
+
+export function startOfCivilDayMs(
+  ms: number,
+  timeZone?: string | null
+): number {
+  const zone = timeZone?.trim();
+  if (!zone) {
+    const day = new Date(ms);
+    day.setHours(0, 0, 0, 0);
+    return day.getTime();
+  }
+  const civil = zonedCivil(ms, zone);
+  return zonedTimeToUtcMs(civil.year, civil.month, civil.day, 0, 0, zone);
+}
+
+export function addCivilDaysMs(
+  ms: number,
+  days: number,
+  timeZone?: string | null
+): number {
+  const zone = timeZone?.trim();
+  if (!zone) {
+    return addCalendarDays(new Date(ms), days).getTime();
+  }
+  const civil = zonedCivil(ms, zone);
+  const next = addZonedCivilDays(civil.year, civil.month, civil.day, days);
+  return zonedTimeToUtcMs(
+    next.year,
+    next.month,
+    next.day,
+    civil.hour,
+    civil.minute,
+    zone
+  );
+}
+
+function breakStartAtMsInZone(
+  startAtMs: number,
+  breakStartTime: string,
+  timeZone?: string | null
+): number {
+  const zone = timeZone?.trim();
+  if (!zone) {
+    let breakStart = atTime(new Date(startAtMs), breakStartTime);
+    if (breakStart.getTime() < startAtMs) {
+      breakStart = addCalendarDays(breakStart, 1);
+    }
+    return breakStart.getTime();
+  }
+  const startCivil = zonedCivil(startAtMs, zone);
+  const clock = parseClock(breakStartTime);
+  let breakStartAtMs = zonedTimeToUtcMs(
+    startCivil.year,
+    startCivil.month,
+    startCivil.day,
+    clock.hour,
+    clock.minute,
+    zone
+  );
+  if (breakStartAtMs < startAtMs) {
+    const next = addZonedCivilDays(
+      startCivil.year,
+      startCivil.month,
+      startCivil.day,
+      1
+    );
+    breakStartAtMs = zonedTimeToUtcMs(
+      next.year,
+      next.month,
+      next.day,
+      clock.hour,
+      clock.minute,
+      zone
+    );
+  }
+  return breakStartAtMs;
+}
+
+function getShiftBoundsInZone(
+  startTime: string,
+  endTime: string,
+  nowMs: number,
+  timeZone: string
+): ShiftBounds {
+  const civil = zonedCivil(nowMs, timeZone);
+  const startClock = parseClock(startTime);
+  const endClock = parseClock(endTime);
+  let startAtMs = zonedTimeToUtcMs(
+    civil.year,
+    civil.month,
+    civil.day,
+    startClock.hour,
+    startClock.minute,
+    timeZone
+  );
+  let endAtMs = zonedTimeToUtcMs(
+    civil.year,
+    civil.month,
+    civil.day,
+    endClock.hour,
+    endClock.minute,
+    timeZone
+  );
+  if (endAtMs <= startAtMs) {
+    if (nowMs < endAtMs) {
+      const previous = addZonedCivilDays(civil.year, civil.month, civil.day, -1);
+      startAtMs = zonedTimeToUtcMs(
+        previous.year,
+        previous.month,
+        previous.day,
+        startClock.hour,
+        startClock.minute,
+        timeZone
+      );
+    } else {
+      const next = addZonedCivilDays(civil.year, civil.month, civil.day, 1);
+      endAtMs = zonedTimeToUtcMs(
+        next.year,
+        next.month,
+        next.day,
+        endClock.hour,
+        endClock.minute,
+        timeZone
+      );
+    }
+  }
+  return { start: new Date(startAtMs), end: new Date(endAtMs) };
+}
+
+function findNextRestDateInZone(
+  afterMs: number,
+  workdays: number[],
+  schedule: WorkScheduleConfig | null | undefined,
+  timeZone: string
+): Date | null {
+  if (schedule?.mode === "off") return null;
+  const startCivil = zonedCivil(afterMs, timeZone);
+  for (let offset = 0; offset <= 366; offset += 1) {
+    const day = addZonedCivilDays(
+      startCivil.year,
+      startCivil.month,
+      startCivil.day,
+      offset
+    );
+    const dayStartMs = zonedTimeToUtcMs(
+      day.year,
+      day.month,
+      day.day,
+      0,
+      0,
+      timeZone
+    );
+    if (!isScheduledWorkdayInZone(dayStartMs, workdays, schedule, timeZone)) {
+      return new Date(dayStartMs);
+    }
+  }
+  return null;
+}
+
+function findEndedShiftOnEndCalendarDayInZone(
+  params: {
+    startTime: string;
+    endTime: string;
+    nowMs: number;
+    workdays: number[];
+    schedule?: WorkScheduleConfig | null;
+    options?: ShiftBuildOptions;
+    forcedWorkdayStartMs?: number | null;
+  },
+  timeZone: string
+): ShiftTimeline | null {
+  const todayMs = startOfCivilDayMs(params.nowMs, timeZone);
+  const options = params.options ?? {};
+  const forcedMs = params.forcedWorkdayStartMs;
+  const forcedDay =
+    typeof forcedMs === "number" && Number.isFinite(forcedMs)
+      ? startOfCivilDayMs(forcedMs, timeZone)
+      : null;
+  const startIsWorkday = (startAtMs: number) =>
+    isScheduledWorkdayInZone(
+      startAtMs,
+      params.workdays,
+      params.schedule,
+      timeZone
+    ) ||
+    (forcedDay != null && startOfCivilDayMs(startAtMs, timeZone) === forcedDay);
+
+  for (let offset = 0; offset <= 2; offset += 1) {
+    const dayMs = addCivilDaysMs(todayMs, -offset, timeZone);
+    const civil = zonedCivil(dayMs, timeZone);
+    const { start, end } = getShiftBoundsInZone(
+      params.startTime,
+      params.endTime,
+      zonedTimeToUtcMs(civil.year, civil.month, civil.day, 12, 0, timeZone),
+      timeZone
+    );
+    if (end.getTime() <= start.getTime()) continue;
+    if (!startIsWorkday(start.getTime())) continue;
+    const timeline = buildTimelineFromBounds(start, end, options, timeZone);
+    const startAtMs = getShiftStartAtMs(timeline);
+    const endAtMs = getShiftEndAtMs(timeline);
+    if (params.nowMs >= startAtMs && params.nowMs < endAtMs) {
+      return timeline;
+    }
+    if (
+      params.nowMs >= endAtMs &&
+      startOfCivilDayMs(endAtMs, timeZone) === todayMs
+    ) {
+      return timeline;
+    }
+  }
+  return null;
+}
+
+function findNextShiftTimelineInZone(
+  params: {
+    startTime: string;
+    endTime: string;
+    workdays: number[];
+    afterMs: number;
+    schedule?: WorkScheduleConfig | null;
+    options?: Omit<ShiftBuildOptions, "overtimeEndAtMs">;
+  },
+  timeZone: string
+): ShiftTimeline | null {
+  const { startTime, endTime, workdays, afterMs, schedule, options = {} } = params;
+  if (schedule?.mode === "off") return null;
+  if ((schedule?.mode ?? "classic") === "classic" && workdays.length === 0) {
+    return null;
+  }
+
+  const cursorMs = startOfCivilDayMs(afterMs, timeZone);
+  for (let offset = 0; offset <= 366; offset += 1) {
+    const dayMs = addCivilDaysMs(cursorMs, offset, timeZone);
+    const civil = zonedCivil(dayMs, timeZone);
+    const { start, end } = getShiftBoundsInZone(
+      startTime,
+      endTime,
+      zonedTimeToUtcMs(civil.year, civil.month, civil.day, 12, 0, timeZone),
+      timeZone
+    );
+    if (
+      !isScheduledWorkdayInZone(start.getTime(), workdays, schedule, timeZone) ||
+      start.getTime() <= afterMs
+    ) {
+      continue;
+    }
+    return buildTimelineFromBounds(start, end, options, timeZone);
+  }
+  return null;
+}
+
+function expandDayIsWorkday(
+  shiftStart: Date,
+  workdays: number[],
+  schedule?: WorkScheduleConfig | null
+): boolean {
+  if ((schedule?.mode ?? "classic") === "off") return false;
+  return isScheduledWorkday(shiftStart, workdays, schedule);
+}
+
+/**
+ * Expand every calendar day in `[fromMs, throughMs]` through the shared shift
+ * rules. Rest days still carry the planned segments so a makeup-day exception
+ * can reuse them. Callers must not pass overtime or salary.
+ *
+ * Noon is the probe time so an overnight 22:00–06:00 shift keys as that
+ * calendar day's start, not the previous night. `timeZone` keeps a career
+ * period's civil days in that zone; omit it to use the runtime local zone.
+ * Manual (`.off`) days are rest — they are not a 7-day work week.
+ */
+export function expandScheduleRange(params: {
+  startTime: string;
+  endTime: string;
+  workdays: number[];
+  schedule?: WorkScheduleConfig | null;
+  breakStartTime?: string | null;
+  breakDurationMinutes?: number;
+  fromMs: number;
+  throughMs: number;
+  timeZone?: string | null;
+}): ScheduleDayExpansion[] {
+  const timeZone = params.timeZone?.trim() || null;
+  if (timeZone) {
+    return expandScheduleRangeInZone(params, timeZone);
+  }
+
+  const from = localDay(new Date(params.fromMs));
+  const through = localDay(new Date(params.throughMs));
+  if (through < from) return [];
+
+  const options: ShiftBuildOptions = {
+    breakStartTime: params.breakStartTime ?? null,
+    breakDurationMinutes: params.breakDurationMinutes ?? 0,
+  };
+  const days: ScheduleDayExpansion[] = [];
+  for (let day = new Date(from); day <= through; day = addCalendarDays(day, 1)) {
+    const noon = new Date(day);
+    noon.setHours(12, 0, 0, 0);
+    const timeline = buildShiftTimeline(
+      params.startTime,
+      params.endTime,
+      noon,
+      options
+    );
+    const shiftAnchorStartAtMs = getShiftStartAtMs(timeline);
+    const shiftStart = new Date(shiftAnchorStartAtMs);
+    days.push({
+      dayKey: localDayKey(shiftStart),
+      shiftAnchorStartAtMs,
+      isWorkday: expandDayIsWorkday(
+        shiftStart,
+        params.workdays,
+        params.schedule
+      ),
+      segments: timeline.segments,
+    });
+  }
+  return days;
+}
+
+function expandScheduleRangeInZone(
+  params: {
+    startTime: string;
+    endTime: string;
+    workdays: number[];
+    schedule?: WorkScheduleConfig | null;
+    breakStartTime?: string | null;
+    breakDurationMinutes?: number;
+    fromMs: number;
+    throughMs: number;
+  },
+  timeZone: string
+): ScheduleDayExpansion[] {
+  const fromCivil = zonedCivil(params.fromMs, timeZone);
+  const throughCivil = zonedCivil(params.throughMs, timeZone);
+  if (compareCivil(throughCivil, fromCivil) < 0) return [];
+
+  const startClock = parseClock(params.startTime);
+  const endClock = parseClock(params.endTime);
+  const breakClock = params.breakStartTime
+    ? parseClock(params.breakStartTime)
+    : null;
+  const breakDurationMs =
+    Math.floor(params.breakDurationMinutes ?? 0) * 60_000;
+  const days: ScheduleDayExpansion[] = [];
+
+  for (
+    let civil = { year: fromCivil.year, month: fromCivil.month, day: fromCivil.day };
+    compareCivil(civil, throughCivil) <= 0;
+    civil = addZonedCivilDays(civil.year, civil.month, civil.day, 1)
+  ) {
+    const startAtMs = zonedTimeToUtcMs(
+      civil.year,
+      civil.month,
+      civil.day,
+      startClock.hour,
+      startClock.minute,
+      timeZone
+    );
+    let endAtMs = zonedTimeToUtcMs(
+      civil.year,
+      civil.month,
+      civil.day,
+      endClock.hour,
+      endClock.minute,
+      timeZone
+    );
+    if (endAtMs <= startAtMs) {
+      const next = addZonedCivilDays(civil.year, civil.month, civil.day, 1);
+      endAtMs = zonedTimeToUtcMs(
+        next.year,
+        next.month,
+        next.day,
+        endClock.hour,
+        endClock.minute,
+        timeZone
+      );
+    }
+
+    let segments: ShiftSegment[] = [{ startAtMs, endAtMs }];
+    if (breakClock && breakDurationMs > 0) {
+      let breakStartAtMs = zonedTimeToUtcMs(
+        civil.year,
+        civil.month,
+        civil.day,
+        breakClock.hour,
+        breakClock.minute,
+        timeZone
+      );
+      if (breakStartAtMs < startAtMs) {
+        const next = addZonedCivilDays(civil.year, civil.month, civil.day, 1);
+        breakStartAtMs = zonedTimeToUtcMs(
+          next.year,
+          next.month,
+          next.day,
+          breakClock.hour,
+          breakClock.minute,
+          timeZone
+        );
+      }
+      const breakEndAtMs = breakStartAtMs + breakDurationMs;
+      if (breakStartAtMs > startAtMs && breakEndAtMs < endAtMs) {
+        segments = [
+          { startAtMs, endAtMs: breakStartAtMs },
+          { startAtMs: breakEndAtMs, endAtMs },
+        ];
+      }
+    }
+
+    days.push({
+      dayKey: zonedDayKey(startAtMs, timeZone),
+      shiftAnchorStartAtMs: startAtMs,
+      isWorkday: isScheduledWorkdayInZone(
+        startAtMs,
+        params.workdays,
+        params.schedule,
+        timeZone
+      ),
+      segments,
+    });
+  }
+  return days;
 }

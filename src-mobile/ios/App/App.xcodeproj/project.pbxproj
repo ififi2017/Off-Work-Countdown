@@ -23,10 +23,26 @@
 		7100000B1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OffWorkStoreTests.swift */; };
 		A10000020000000000000002 /* DebugTimerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* DebugTimerScenarioTests.swift */; };
+		A10000030000000000000003 /* DayOverrideProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* DayOverrideProjectionTests.swift */; };
+		A10000040000000000000004 /* DayRecordResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* DayRecordResolverTests.swift */; };
+		A10000050000000000000005 /* RecordJSONTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* RecordJSONTests.swift */; };
+		A10000060000000000000006 /* RecordCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* RecordCoordinatorTests.swift */; };
+		A10000070000000000000007 /* ScheduleRangeExpandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* ScheduleRangeExpandTests.swift */; };
 		C30000010000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* InfoPlist.strings */; };
 		E00000010000000000000001 /* OWCDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000010000000000000001 /* OWCDesignSystem.swift */; };
 		E00000020000000000000002 /* CountdownRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000020000000000000002 /* CountdownRules.swift */; };
 		E00000030000000000000003 /* OffWorkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000030000000000000003 /* OffWorkStore.swift */; };
+		E000003F000000000000003F /* DayOverride.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003F000000000000003F /* DayOverride.swift */; };
+		E00000400000000000000040 /* DayOverrideProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000400000000000000040 /* DayOverrideProjection.swift */; };
+		E00000410000000000000041 /* CareerPeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000410000000000000041 /* CareerPeriod.swift */; };
+		E00000420000000000000042 /* CalendarException.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000420000000000000042 /* CalendarException.swift */; };
+		E00000430000000000000043 /* DayRecordResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000430000000000000043 /* DayRecordResolver.swift */; };
+		E00000440000000000000044 /* WorkObservation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000440000000000000044 /* WorkObservation.swift */; };
+		E00000450000000000000045 /* LifeProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000450000000000000045 /* LifeProfile.swift */; };
+		E00000460000000000000046 /* DailyWorkSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000460000000000000046 /* DailyWorkSummary.swift */; };
+		E00000470000000000000047 /* RecordJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000470000000000000047 /* RecordJSON.swift */; };
+		E00000480000000000000048 /* RecordCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000480000000000000048 /* RecordCoordinator.swift */; };
+		E00000490000000000000049 /* RecordsDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000490000000000000049 /* RecordsDesignView.swift */; };
 		E00000040000000000000004 /* NativeLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000040000000000000004 /* NativeLocalizer.swift */; };
 		E00000050000000000000005 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000050000000000000005 /* NotificationService.swift */; };
 		E00000060000000000000006 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000060000000000000006 /* ShareSheet.swift */; };
@@ -131,6 +147,22 @@
 		A20000010000000000000001 /* OffWorkStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkStoreTests.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000030000000000000003 /* DebugTimerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugTimerScenarioTests.swift; sourceTree = "<group>"; };
+		A20000040000000000000004 /* DayOverrideProjectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayOverrideProjectionTests.swift; sourceTree = "<group>"; };
+		A20000050000000000000005 /* DayRecordResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRecordResolverTests.swift; sourceTree = "<group>"; };
+		A20000060000000000000006 /* RecordJSONTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordJSONTests.swift; sourceTree = "<group>"; };
+		A20000070000000000000007 /* RecordCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordCoordinatorTests.swift; sourceTree = "<group>"; };
+		A20000080000000000000008 /* ScheduleRangeExpandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleRangeExpandTests.swift; sourceTree = "<group>"; };
+		F000003F000000000000003F /* DayOverride.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DayOverride.swift; path = Native/Models/DayOverride.swift; sourceTree = "<group>"; };
+		F00000400000000000000040 /* DayOverrideProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DayOverrideProjection.swift; path = Native/Models/DayOverrideProjection.swift; sourceTree = "<group>"; };
+		F00000410000000000000041 /* CareerPeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CareerPeriod.swift; path = Native/Models/CareerPeriod.swift; sourceTree = "<group>"; };
+		F00000420000000000000042 /* CalendarException.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CalendarException.swift; path = Native/Models/CalendarException.swift; sourceTree = "<group>"; };
+		F00000430000000000000043 /* DayRecordResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DayRecordResolver.swift; path = Native/Models/DayRecordResolver.swift; sourceTree = "<group>"; };
+		F00000440000000000000044 /* WorkObservation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WorkObservation.swift; path = Native/Models/WorkObservation.swift; sourceTree = "<group>"; };
+		F00000450000000000000045 /* LifeProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LifeProfile.swift; path = Native/Models/LifeProfile.swift; sourceTree = "<group>"; };
+		F00000460000000000000046 /* DailyWorkSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyWorkSummary.swift; path = Native/Models/DailyWorkSummary.swift; sourceTree = "<group>"; };
+		F00000470000000000000047 /* RecordJSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordJSON.swift; path = Native/Models/RecordJSON.swift; sourceTree = "<group>"; };
+		F00000480000000000000048 /* RecordCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordCoordinator.swift; path = Native/Models/RecordCoordinator.swift; sourceTree = "<group>"; };
+		F00000490000000000000049 /* RecordsDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsDesignView.swift; path = Native/Views/RecordsDesignView.swift; sourceTree = "<group>"; };
 		C10000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000020000000000000002 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		C10000030000000000000003 /* zh-HK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-HK"; path = "zh-HK.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -263,6 +295,16 @@
 				F00000180000000000000018 /* OWCCountdownTextTransition.swift */,
 				F00000140000000000000014 /* OWCSystemBackSwipeBridge.swift */,
 				F00000020000000000000002 /* CountdownRules.swift */,
+				F000003F000000000000003F /* DayOverride.swift */,
+				F00000400000000000000040 /* DayOverrideProjection.swift */,
+				F00000410000000000000041 /* CareerPeriod.swift */,
+				F00000420000000000000042 /* CalendarException.swift */,
+				F00000430000000000000043 /* DayRecordResolver.swift */,
+				F00000440000000000000044 /* WorkObservation.swift */,
+				F00000450000000000000045 /* LifeProfile.swift */,
+				F00000460000000000000046 /* DailyWorkSummary.swift */,
+				F00000470000000000000047 /* RecordJSON.swift */,
+				F00000480000000000000048 /* RecordCoordinator.swift */,
 				F00000030000000000000003 /* OffWorkStore.swift */,
 				F00000360000000000000036 /* DraggableBrandIcon.swift */,
 				F00000370000000000000037 /* OWCBrandMark.swift */,
@@ -300,6 +342,7 @@
 				F00000060000000000000006 /* ShareSheet.swift */,
 				F00000070000000000000007 /* OnboardingView.swift */,
 				F00000080000000000000008 /* RootView.swift */,
+				F00000490000000000000049 /* RecordsDesignView.swift */,
 				F00000090000000000000009 /* TimerView.swift */,
 				F00000170000000000000017 /* TimerVisualPhase.swift */,
 				F000001A000000000000001A /* UpcomingTimelineView.swift */,
@@ -340,6 +383,11 @@
 			children = (
 				A20000010000000000000001 /* OffWorkStoreTests.swift */,
 				A20000030000000000000003 /* DebugTimerScenarioTests.swift */,
+				A20000040000000000000004 /* DayOverrideProjectionTests.swift */,
+				A20000050000000000000005 /* DayRecordResolverTests.swift */,
+				A20000060000000000000006 /* RecordJSONTests.swift */,
+				A20000070000000000000007 /* RecordCoordinatorTests.swift */,
+				A20000080000000000000008 /* ScheduleRangeExpandTests.swift */,
 			);
 			path = AppTests;
 			sourceTree = "<group>";
@@ -505,6 +553,16 @@
 				E00000160000000000000016 /* OWCMotion.swift in Sources */,
 				E00000180000000000000018 /* OWCCountdownTextTransition.swift in Sources */,
 				E00000020000000000000002 /* CountdownRules.swift in Sources */,
+				E000003F000000000000003F /* DayOverride.swift in Sources */,
+				E00000400000000000000040 /* DayOverrideProjection.swift in Sources */,
+				E00000410000000000000041 /* CareerPeriod.swift in Sources */,
+				E00000420000000000000042 /* CalendarException.swift in Sources */,
+				E00000430000000000000043 /* DayRecordResolver.swift in Sources */,
+				E00000440000000000000044 /* WorkObservation.swift in Sources */,
+				E00000450000000000000045 /* LifeProfile.swift in Sources */,
+				E00000460000000000000046 /* DailyWorkSummary.swift in Sources */,
+				E00000470000000000000047 /* RecordJSON.swift in Sources */,
+				E00000480000000000000048 /* RecordCoordinator.swift in Sources */,
 				E00000030000000000000003 /* OffWorkStore.swift in Sources */,
 				E00000360000000000000036 /* DraggableBrandIcon.swift in Sources */,
 				E00000370000000000000037 /* OWCBrandMark.swift in Sources */,
@@ -542,6 +600,7 @@
 				E00000060000000000000006 /* ShareSheet.swift in Sources */,
 				E00000070000000000000007 /* OnboardingView.swift in Sources */,
 				E00000080000000000000008 /* RootView.swift in Sources */,
+				E00000490000000000000049 /* RecordsDesignView.swift in Sources */,
 				E00000090000000000000009 /* TimerView.swift in Sources */,
 				E00000170000000000000017 /* TimerVisualPhase.swift in Sources */,
 				E00000190000000000000019 /* UpcomingTimelineEvent.swift in Sources */,
@@ -578,6 +637,11 @@
 			files = (
 				A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */,
 				A10000020000000000000002 /* DebugTimerScenarioTests.swift in Sources */,
+				A10000030000000000000003 /* DayOverrideProjectionTests.swift in Sources */,
+				A10000040000000000000004 /* DayRecordResolverTests.swift in Sources */,
+				A10000050000000000000005 /* RecordJSONTests.swift in Sources */,
+				A10000060000000000000006 /* RecordCoordinatorTests.swift in Sources */,
+				A10000070000000000000007 /* ScheduleRangeExpandTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

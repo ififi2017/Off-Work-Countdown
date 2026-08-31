@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 
 struct OffWorkCountdownRootView: View {
-    @State private var store = OffWorkStore()
+    @State private var store = OffWorkStore(records: .persisted())
     @State private var notifications = NotificationService()
     @State private var liveActivities = LiveActivityService()
     @State private var serviceTask: Task<Void, Never>?
@@ -55,7 +55,12 @@ struct OffWorkCountdownRootView: View {
         }
         .onChange(of: store.onboardingComplete) {
             AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
-            if store.onboardingComplete { scheduleServices() }
+            if store.onboardingComplete {
+                scheduleServices()
+                if store.selectedTab == .timer {
+                    store.noteTimerSurfaceVisible()
+                }
+            }
         }
         .onChange(of: store.countdownStarted) {
             pendingReschedule = false
@@ -90,6 +95,7 @@ struct OffWorkCountdownRootView: View {
                 AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
                 store.reconcileCountdownSession()
                 store.refreshSystemLanguage()
+                store.refreshSystemTimeZone()
                 Task { @MainActor in
                     // Notification authorization can change while the user is
                     // in Settings. Refresh the shared status and rebuild the
@@ -115,8 +121,17 @@ struct OffWorkCountdownRootView: View {
             CountdownRules.warmUp()
             store.reconcileCountdownSession()
             store.refreshSystemLanguage()
+            store.refreshSystemTimeZone()
             applyQAGeometryIfRequested()
             clearDebugServicesAfterResetIfNeeded()
+            if store.onboardingComplete, store.selectedTab == .timer {
+                store.noteTimerSurfaceVisible()
+            }
+        }
+        .onChange(of: store.selectedTab) { _, tab in
+            if tab == .timer, store.onboardingComplete {
+                store.noteTimerSurfaceVisible()
+            }
         }
     }
 
@@ -198,6 +213,14 @@ struct OffWorkCountdownRootView: View {
                 Label(store.t("timerTab"), systemImage: "timer")
             }
             .tag(AppTab.timer)
+
+            NavigationStack(path: $store.recordsPath) {
+                RecordsDesignView(store: store)
+            }
+            .tabItem {
+                Label(store.t("recordsTab"), systemImage: "calendar")
+            }
+            .tag(AppTab.records)
 
             NavigationStack(path: $store.settingsPath) {
                 SettingsDesignView(store: store)

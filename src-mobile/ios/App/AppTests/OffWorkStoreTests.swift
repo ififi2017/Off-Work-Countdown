@@ -302,6 +302,7 @@ func widgetSnapshotKeepsUpcomingPastPresentationWindow() throws {
     )))
 
     let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
     store.scheduleMode = .classic
     store.workdays = [1, 2, 3, 4, 5]
     store.startMinutes = 9 * 60
@@ -340,6 +341,7 @@ func widgetSnapshotOmitsRestDayShiftEvents() throws {
     )))
 
     let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
     store.scheduleMode = .classic
     store.workdays = [1, 2, 3, 4, 5]
     store.startMinutes = 9 * 60

@@ -3,7 +3,7 @@ import SwiftUI
 /// iPad directions 1p/1r/1t/1u. The wide canvas has its own navigation and
 /// density instead of stretching the phone's grouped list.
 struct TabletShellView: View {
-    let store: OffWorkStore
+    @Bindable var store: OffWorkStore
     @State private var sidebarVisible = true
     @State private var path: [AppRoute] = []
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -28,6 +28,13 @@ struct TabletShellView: View {
                         .allowsHitTesting(store.selectedTab == .timer)
                         .accessibilityHidden(store.selectedTab != .timer)
                         .zIndex(store.selectedTab == .timer ? 1 : 0)
+
+                    tabletRecordsRoot
+                        .opacity(store.selectedTab == .records ? 1 : 0)
+                        .scaleEffect(store.selectedTab == .records || reduceMotion ? 1 : 0.99)
+                        .allowsHitTesting(store.selectedTab == .records)
+                        .accessibilityHidden(store.selectedTab != .records)
+                        .zIndex(store.selectedTab == .records ? 1 : 0)
 
                     tabletSettingsRoot
                         .opacity(store.selectedTab == .settings ? 1 : 0)
@@ -81,6 +88,13 @@ struct TabletShellView: View {
         }
     }
 
+    private var tabletRecordsRoot: some View {
+        NavigationStack(path: $store.recordsPath) {
+            RecordsDesignView(store: store)
+        }
+        .frame(maxWidth: 620)
+    }
+
     private var tabletSettingsRoot: some View {
         // Keep one settings hierarchy mounted at every iPad width. Swapping to
         // SettingsDesignView when the sidebar reduced the detail width changed
@@ -132,6 +146,7 @@ private struct TabletSidebar: View {
 
             VStack(spacing: 4) {
                 tabButton(.timer, icon: "timer", title: store.t("timerTab"))
+                tabButton(.records, icon: "calendar", title: store.t("recordsTab"))
                 tabButton(.settings, icon: "slider.horizontal.3", title: store.t("settings"))
             }
 

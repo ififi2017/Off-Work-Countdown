@@ -23,6 +23,14 @@ struct PhoneLandscapeShellView: View {
                     .accessibilityHidden(store.selectedTab != .timer)
                     .zIndex(store.selectedTab == .timer ? 1 : 0)
 
+                    NavigationStack(path: $store.recordsPath) {
+                        RecordsDesignView(store: store)
+                    }
+                        .opacity(store.selectedTab == .records ? 1 : 0)
+                        .allowsHitTesting(store.selectedTab == .records)
+                        .accessibilityHidden(store.selectedTab != .records)
+                        .zIndex(store.selectedTab == .records ? 1 : 0)
+
                     LandscapeSettingsView(store: store)
                         .opacity(store.selectedTab == .settings ? 1 : 0)
                         .allowsHitTesting(store.selectedTab == .settings)
@@ -60,6 +68,7 @@ struct PhoneLandscapeShellView: View {
         VStack(spacing: 8) {
             Spacer()
             railButton(.timer, icon: "timer", title: store.t("timerTab"))
+            railButton(.records, icon: "calendar", title: store.t("recordsTab"))
             railButton(.settings, icon: "slider.horizontal.3", title: store.t("settings"))
             Spacer()
         }

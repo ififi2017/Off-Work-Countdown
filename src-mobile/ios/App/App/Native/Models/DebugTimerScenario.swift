@@ -122,6 +122,7 @@ extension OffWorkStore {
         timelineExpanded = false
         presentedRoute = nil
         timerPath.removeAll()
+        recordsPath.removeAll()
         settingsPath.removeAll()
         selectedTab = .timer
         resetCelebratedSession()

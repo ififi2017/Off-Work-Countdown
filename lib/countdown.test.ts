@@ -28,6 +28,8 @@ import {
   isWorkday,
   isScheduledWorkday,
   findNextRestDate,
+  expandScheduleRange,
+  startOfCivilDayMs,
 } from "./countdown";
 import { presets, getPreset, presetSlugs } from "./presets";
 
@@ -605,5 +607,146 @@ describe("getActiveBreakEndAtMs", () => {
         5
       )
     ).toBeNull();
+  });
+});
+
+describe("expandScheduleRange", () => {
+  it("includes rest days with planned segments and keys overnight to the start day", () => {
+    const monday = new Date(2026, 7, 24, 0, 0);
+    const sunday = new Date(2026, 7, 30, 0, 0);
+    const days = expandScheduleRange({
+      startTime: "09:00",
+      endTime: "17:00",
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" },
+      fromMs: monday.getTime(),
+      throughMs: sunday.getTime(),
+    });
+
+    expect(days.map((day) => day.dayKey)).toEqual([
+      "2026-08-24",
+      "2026-08-25",
+      "2026-08-26",
+      "2026-08-27",
+      "2026-08-28",
+      "2026-08-29",
+      "2026-08-30",
+    ]);
+    expect(days.filter((day) => day.isWorkday).map((day) => day.dayKey)).toEqual([
+      "2026-08-24",
+      "2026-08-25",
+      "2026-08-26",
+      "2026-08-27",
+      "2026-08-28",
+    ]);
+    const saturday = days.find((day) => day.dayKey === "2026-08-29");
+    expect(saturday?.isWorkday).toBe(false);
+    expect(saturday?.segments).toHaveLength(1);
+    expect(saturday?.segments[0].endAtMs - saturday!.segments[0].startAtMs).toBe(
+      8 * 60 * 60 * 1000
+    );
+
+    const overnight = expandScheduleRange({
+      startTime: "22:00",
+      endTime: "06:00",
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" },
+      fromMs: new Date(2026, 7, 28, 0, 0).getTime(),
+      throughMs: new Date(2026, 7, 28, 0, 0).getTime(),
+    });
+    expect(overnight).toHaveLength(1);
+    expect(overnight[0].dayKey).toBe("2026-08-28");
+    expect(new Date(overnight[0].shiftAnchorStartAtMs).getHours()).toBe(22);
+    expect(new Date(overnight[0].segments[0].endAtMs).getDate()).toBe(29);
+  });
+
+  it("treats manual off days as rest while still returning planned segments", () => {
+    const monday = new Date(2026, 7, 24, 0, 0);
+    const sunday = new Date(2026, 7, 30, 0, 0);
+    const days = expandScheduleRange({
+      startTime: "09:00",
+      endTime: "17:00",
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "off" },
+      fromMs: monday.getTime(),
+      throughMs: sunday.getTime(),
+    });
+    expect(days).toHaveLength(7);
+    expect(days.every((day) => day.isWorkday === false)).toBe(true);
+    expect(days.every((day) => day.segments.length === 1)).toBe(true);
+  });
+
+  it("keeps civil days in the requested timezone", () => {
+    const instant = Date.UTC(2026, 7, 24, 16, 0, 0);
+    const base = {
+      startTime: "09:00",
+      endTime: "17:00",
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" } as const,
+      fromMs: instant,
+      throughMs: instant,
+    };
+    const losAngeles = expandScheduleRange({
+      ...base,
+      timeZone: "America/Los_Angeles",
+    });
+    const tokyo = expandScheduleRange({
+      ...base,
+      timeZone: "Asia/Tokyo",
+    });
+    expect(losAngeles.map((day) => day.dayKey)).toEqual(["2026-08-24"]);
+    expect(tokyo.map((day) => day.dayKey)).toEqual(["2026-08-25"]);
+    expect(
+      new Date(losAngeles[0].shiftAnchorStartAtMs).toLocaleString("en-US", {
+        timeZone: "America/Los_Angeles",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      })
+    ).toBe("09:00");
+    expect(
+      new Date(tokyo[0].shiftAnchorStartAtMs).toLocaleString("en-US", {
+        timeZone: "Asia/Tokyo",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      })
+    ).toBe("09:00");
+  });
+
+  it("builds a live shift in the requested timezone", () => {
+    const now = new Date("2026-08-24T17:00:00.000Z");
+    const shanghai = getShiftBounds("09:00", "17:00", now, "Asia/Shanghai");
+    const losAngeles = getShiftBounds("09:00", "17:00", now, "America/Los_Angeles");
+    expect(shanghai.start.toISOString()).toBe("2026-08-25T01:00:00.000Z");
+    expect(shanghai.end.toISOString()).toBe("2026-08-25T09:00:00.000Z");
+    expect(losAngeles.start.toISOString()).toBe("2026-08-24T16:00:00.000Z");
+    expect(losAngeles.end.toISOString()).toBe("2026-08-25T00:00:00.000Z");
+    expect(startOfCivilDayMs(now.getTime(), "Asia/Shanghai")).toBe(
+      Date.parse("2026-08-24T16:00:00.000Z")
+    );
+  });
+});
+
+describe("zoned civil time resolution", () => {
+  it("moves a spring-forward gap forward to the next valid local minute", () => {
+    const bounds = getShiftBounds(
+      "02:30",
+      "04:00",
+      new Date("2026-03-08T18:00:00.000Z"),
+      "America/Los_Angeles"
+    );
+    expect(bounds.start.toISOString()).toBe("2026-03-08T10:00:00.000Z");
+    expect(bounds.end.toISOString()).toBe("2026-03-08T11:00:00.000Z");
+  });
+
+  it("chooses the earlier instant for a fall-back fold", () => {
+    const bounds = getShiftBounds(
+      "01:30",
+      "03:00",
+      new Date("2026-11-01T18:00:00.000Z"),
+      "America/Los_Angeles"
+    );
+    expect(bounds.start.toISOString()).toBe("2026-11-01T08:30:00.000Z");
   });
 });
