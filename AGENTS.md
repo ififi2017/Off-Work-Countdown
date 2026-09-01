@@ -67,6 +67,38 @@ in URLs, analytics payloads or share metadata.
 
 ## UI rules
 
+These first six are the default for every target. The platform-specific rules
+below them are exceptions that were argued for, not licence to restyle.
+
+- **Default to restraint.** New UI should first look unremarkable for its
+  platform, then earn any emphasis it gets. Visual weight is paid for by
+  everything else on the screen, so nothing receives it without a reason.
+- **Sizing and spacing are judgements, not a spec.** Decide them from the
+  surface type, the information density, the platform convention, how often the
+  control is used and where it sits in the hierarchy. Do not carry one set of
+  numbers across surfaces, and do not enlarge something because it is
+  important.
+- **Secondary entry points stay out of the visual centre.** Settings, toggles,
+  tool buttons, legends, info buttons, expand/collapse and source labels are
+  support. They must not compete with the countdown, the calendar or a screen's
+  main conclusion.
+- **Use the ordinary metaphor for an ordinary function.** Prefer SF Symbols on
+  iOS/macOS, the existing `lucide-react` set on Web and Desktop, or the
+  industry-standard symbol — never invent an icon for differentiation. A custom
+  mark still has to keep the common silhouette, proportion and meaning.
+- **Express hierarchy with the cheap tools first:** position, grouping, a
+  slight colour shift, a divider, state feedback, and — on pointer devices —
+  hover and tooltips. Exaggerated sizes, heavy colour blocks, large radii,
+  thick borders, strong shadows, decorative gradients and marketing-page
+  layouts are not hierarchy.
+- **Compare against the rest of the screen before calling it done.** If the new
+  element looks out of place, too large, too heavy, or thins out the
+  information density around it, pull it back rather than waiting for review.
+
+These are defaults for new work, not a reason to reopen the design systems
+already in place: the Desktop 420-450 px window, the iOS `OWCDesign` 22 pt card
+and 14 pt control radii, and the shared orange accent are settled conventions.
+
 - The Desktop main window is a compact tool, not the Web page squeezed into a
   small viewport. Preserve its 420-450 px sizing range, single-line title,
   fixed footer and settings subpage.
