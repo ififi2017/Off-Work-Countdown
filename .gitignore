@@ -22,6 +22,7 @@
 # production
 /build
 /app-store-connect/screenshots/
+/dist-debug/
 
 # misc
 .DS_Store

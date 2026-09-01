@@ -8,6 +8,9 @@ import {
   getMiniWindowSettings,
   hideDesktopMiniTimer,
   readDesktopCountdownState,
+  readDesktopStats,
+  seedDesktopWoodfishFromLocalStorage,
+  setDesktopWoodfishCount,
   setMiniAlwaysOnTop,
   showDesktopMainWindow,
   subscribeToDesktopCountdown,
@@ -19,17 +22,14 @@ import {
 } from "@/lib/desktop-state";
 import { isValidShiftTimeline } from "@/lib/countdown";
 import { startSecondTick } from "@/lib/second-tick";
+import {
+  formatWoodfishCountLabel,
+  localDateKey,
+} from "@/lib/desktop-stats";
 
 const IS_MAC_APP_STORE_BUILD =
   process.env.NEXT_PUBLIC_BUILD_TARGET === "desktop" &&
   process.env.NEXT_PUBLIC_DESKTOP_CHANNEL === "macappstore";
-
-/** 本地日历日。用 UTC 会让跨天时点在时区偏移处对不上用户的「今天」。 */
-function localDateKey(date = new Date()) {
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${date.getFullYear()}-${month}-${day}`;
-}
 
 /**
  * 木鱼字形。整块是单条路径，开缝靠路径自身绕向挖成负空间——所以缝里透出的
@@ -109,17 +109,30 @@ export function MiniCountdown() {
   }, []);
 
   useEffect(() => {
-    try {
-      const storedDay = localStorage.getItem("woodfishCountDate");
-      setWoodfishCount(
-        storedDay === localDateKey()
-          ? Number(localStorage.getItem("woodfishCount")) || 0
-          : 0
-      );
-    } catch {
-      // 计数是纯本地彩蛋，存储不可用时仍可敲击。
-    }
+    let cancelled = false;
+    void (async () => {
+      await seedDesktopWoodfishFromLocalStorage().catch(() => {});
+      const stats = await readDesktopStats().catch(() => null);
+      if (cancelled) return;
+      const today = localDateKey();
+      const stored = stats?.days[today]?.woodfishCount ?? 0;
+      if (stored > 0) {
+        setWoodfishCount(stored);
+        return;
+      }
+      try {
+        const storedDay = localStorage.getItem("woodfishCountDate");
+        setWoodfishCount(
+          storedDay === today
+            ? Number(localStorage.getItem("woodfishCount")) || 0
+            : 0
+        );
+      } catch {
+        // 计数是纯本地彩蛋，存储不可用时仍可敲击。
+      }
+    })();
     return () => {
+      cancelled = true;
       if (glowTimerRef.current) window.clearTimeout(glowTimerRef.current);
       if (mutedHintTimerRef.current)
         window.clearTimeout(mutedHintTimerRef.current);
@@ -295,6 +308,9 @@ export function MiniCountdown() {
     } catch {
       // 本地计数失败不影响敲击反馈。
     }
+    void setDesktopWoodfishCount(today, nextCount).catch(() => {
+      // 统计落盘失败不影响这次敲击。
+    });
 
     const floaterId = (floaterIdRef.current += 1);
     setKnockFloaters((current) => [
@@ -346,7 +362,7 @@ export function MiniCountdown() {
       ? "text-[18px]"
       : "text-[21px]";
 
-  const woodfishCountLabel = woodfishCount > 999 ? "999+" : String(woodfishCount);
+  const woodfishCountLabel = formatWoodfishCountLabel(woodfishCount);
 
   // 两个皮肤共用同一块读数：金额在上、百分比在下。薪资显隐属于窗口操作，
   // 和置顶、关闭统一放进顶部工具栏，避免它挤压不同皮肤的读数列。
@@ -564,7 +580,9 @@ export function MiniCountdown() {
               {woodfishCount > 0 && (
                 <span
                   title={t("knockCount", { count: woodfishCount })}
-                  className="pointer-events-none absolute -bottom-0.5 start-0.5 text-[9px] font-semibold leading-none tabular-nums text-[#b0763f]/70 dark:text-[#d69b5c]/70"
+                  className={`pointer-events-none absolute -bottom-0.5 start-0.5 font-semibold leading-none tabular-nums text-[#b0763f]/70 dark:text-[#d69b5c]/70 ${
+                    woodfishCountLabel.length > 3 ? "text-[8px]" : "text-[9px]"
+                  }`}
                 >
                   {woodfishCountLabel}
                 </span>
