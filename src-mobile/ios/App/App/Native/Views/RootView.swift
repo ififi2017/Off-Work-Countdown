@@ -1,4 +1,5 @@
 import Combine
+import StoreKit
 import SwiftUI
 import UIKit
 
@@ -73,6 +74,7 @@ struct OffWorkCountdownRootView: View {
                 }
             }
         }
+        .modifier(AppReviewPromptModifier(store: store))
         .task {
             // First frame first. StoreKit, CloudKit, the rules bundle and
             // notification scheduling all used to start in the same turn as
@@ -225,6 +227,7 @@ struct OffWorkCountdownRootView: View {
             "\(store.lunchEnabled)-\(store.lunchStartMinutes)-\(store.lunchDurationMinutes)",
             store.notificationMode.rawValue,
             "\(store.lunchStartReminderEnabled)-\(store.lunchEndReminderEnabled)-\(store.microBreakEnabled)-\(store.microBreakIntervalMinutes)",
+            "\(store.cycleEndSummaryNotificationEnabled)-\(store.plus.isAuthorized)",
             "\(store.overtimeEndAtMs ?? 0)",
             "\(store.earlyOffAtMs ?? 0)-\(store.earlyOffShiftEndAtMs ?? 0)",
             "\(store.earlyStartAtMs ?? 0)",
@@ -403,6 +406,39 @@ struct OffWorkCountdownRootView: View {
         }
     }
 
+}
+
+private struct AppReviewPromptModifier: ViewModifier {
+    @Bindable var store: OffWorkStore
+    @Environment(\.requestReview) private var requestReview
+
+    func body(content: Content) -> some View {
+        content
+        .alert(store.t("reviewPromptTitle"), isPresented: $store.reviewPromptPresented) {
+            Button(store.t("reviewPromptRateNow")) {
+                store.acceptReviewPrompt()
+                requestReview()
+            }
+            Button(store.t("reviewPromptLater"), role: .cancel) {
+                store.deferReviewPrompt()
+            }
+            Button(store.t("reviewPromptNever"), role: .destructive) {
+                store.disableAutomaticReviewPrompt()
+            }
+        } message: {
+            Text(store.t("reviewPromptBody"))
+        }
+        .task(id: presentationGate) {
+            guard presentationGate else { return }
+            try? await Task.sleep(for: .milliseconds(650))
+            guard !Task.isCancelled, presentationGate else { return }
+            store.presentReviewPromptIfEligible()
+        }
+    }
+
+    private var presentationGate: Bool {
+        store.onboardingComplete && store.plus.hasSeenIntro
+    }
 }
 
 private struct ServiceScheduleSignal: Equatable {

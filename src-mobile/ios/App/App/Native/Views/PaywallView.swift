@@ -1,5 +1,6 @@
 import StoreKit
 import SwiftUI
+import UIKit
 
 /// The paywall as a page: its own scroll container, plus the shared content.
 ///
@@ -580,6 +581,7 @@ private struct PlusSubscriberThankYouView: View {
     @State private var isPlaying = false
     @State private var markDimmed = false
     @State private var handledInitialPlayback = false
+    @State private var rotationHaptics: Task<Void, Never>?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(
@@ -644,6 +646,7 @@ private struct PlusSubscriberThankYouView: View {
             handledInitialPlayback = true
             play(revealsText: true)
         }
+        .onDisappear { rotationHaptics?.cancel() }
     }
 
     private var replayableMark: some View {
@@ -659,15 +662,15 @@ private struct PlusSubscriberThankYouView: View {
                     .opacity(markDimmed ? 0.72 : 1)
                     .frame(width: side, height: side)
 
-                Circle()
-                    .fill(Color.clear)
-                    .contentShape(Circle())
-                    .frame(width: endpointDiameter, height: endpointDiameter)
-                    .position(x: 664.5 * scale, y: 776.1 * scale)
-                    .onTapGesture { play(revealsText: false) }
-                    .accessibilityLabel(store.t("plusReplayCelebration"))
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityAction { play(revealsText: false) }
+                Button { play(revealsText: false) } label: {
+                    Circle()
+                        .fill(Color.clear)
+                        .contentShape(Circle())
+                        .frame(width: endpointDiameter, height: endpointDiameter)
+                }
+                .buttonStyle(.plain)
+                .position(x: 664.5 * scale, y: 776.1 * scale)
+                .accessibilityLabel(store.t("plusReplayCelebration"))
             }
             .frame(width: side, height: side)
             .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
@@ -699,7 +702,8 @@ private struct PlusSubscriberThankYouView: View {
             }
             return
         }
-        withAnimation(.smooth(duration: 1.35)) {
+        playRotationHaptics()
+        withAnimation(OWCMotion.subscriptionCelebration) {
             handRotation += 1_080
         } completion: {
             if revealsText {
@@ -710,6 +714,22 @@ private struct PlusSubscriberThankYouView: View {
                 }
             } else {
                 isPlaying = false
+            }
+        }
+    }
+
+    private func playRotationHaptics() {
+        rotationHaptics?.cancel()
+        let interval = OWCMotion.subscriptionCelebrationDuration
+            / Double(OWCMotion.subscriptionCelebrationTickCount)
+        rotationHaptics = Task { @MainActor in
+            let generator = UISelectionFeedbackGenerator()
+            generator.prepare()
+            for _ in 0..<OWCMotion.subscriptionCelebrationTickCount {
+                try? await Task.sleep(for: .seconds(interval))
+                guard !Task.isCancelled else { return }
+                generator.selectionChanged()
+                generator.prepare()
             }
         }
     }
@@ -767,6 +787,7 @@ extension PlusPaywallReason {
         case .historyEdit: "plusEditLocked"
         case .sync: "plusSyncLocked"
         case .focus: "plusFocusLocked"
+        case .cycleEndSummaryNotifications: "cycleEndSummaryNotificationTitle"
         }
     }
 }

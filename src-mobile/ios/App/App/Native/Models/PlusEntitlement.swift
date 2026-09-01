@@ -162,6 +162,8 @@ enum PlusPendingAction: Equatable, Sendable {
     case addFocusTask(title: String, pomodoros: Int, icon: FocusTaskIcon, isFavorite: Bool)
     case addAndStartFocus(title: String, pomodoros: Int, icon: FocusTaskIcon, isFavorite: Bool)
     case presentAddFocus
+    case openFocus
+    case enableCycleEndSummaryNotifications
     case enableSync
 }
 
@@ -202,6 +204,7 @@ enum PlusPaywallReason: String, Hashable, Sendable, Identifiable {
     case historyEdit
     case sync
     case focus
+    case cycleEndSummaryNotifications
 
     var id: String { rawValue }
 }

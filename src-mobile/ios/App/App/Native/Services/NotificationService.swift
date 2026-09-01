@@ -203,7 +203,11 @@ final class NotificationService {
         }
         let essential = future.filter { $0.kind != "microBreak" }.sorted { $0.atMs < $1.atMs }
         let health = future.filter { $0.kind == "microBreak" }.sorted { $0.atMs < $1.atMs }
-        let desired = Array((essential + health).prefix(store.liveActivityEnabled && store.notificationMode == .off ? 59 : 60))
+        let schedulesLiveActivityFallback = store.shouldScheduleLiveActivityEndFallback(
+            snapshot: snapshot,
+            at: now
+        )
+        let desired = Array((essential + health).prefix(schedulesLiveActivityFallback ? 59 : 60))
         var desiredIdentifiers = Set<String>()
         var allSucceeded = true
 
@@ -235,10 +239,8 @@ final class NotificationService {
             }
         }
 
-        if store.liveActivityEnabled,
-           store.notificationMode == .off,
+        if schedulesLiveActivityFallback,
            let snapshot,
-           store.shouldScheduleLiveActivityEndFallback(snapshot: snapshot, at: now),
            generation == scheduleGeneration {
             let identifier = "owc.shift.live.end.\(Int64(snapshot.endAtMs))"
             let content = UNMutableNotificationContent()

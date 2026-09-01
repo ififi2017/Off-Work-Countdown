@@ -27,7 +27,7 @@ import {
  * 消费方（Rust 托盘计时器、将来的移动端壳）用它判断去重标记还能不能复用：
  * 版本不一致就重建基线，而不是拿旧语义去比对新列表。语义变化必须递增。
  */
-export const REMINDER_MODEL_VERSION = 1;
+export const REMINDER_MODEL_VERSION = 2;
 
 /**
  * 午休边界提醒的有效窗口。错过这么久之后这条提示已经失去语境——设备睡到
@@ -125,6 +125,11 @@ export interface ShiftReminderInputs {
   microBreakIntervalMinutes: number;
   /** 轮换用的健康提醒文案；`{{minutes}}` 会被替换成已连续工作的分钟数。 */
   microBreakMessages: string[];
+  /**
+   * 班次同时是一个连续排班周期的最后一天时，用这段摘要替换 100% 文案。
+   * `null` / 空串表示本班次不是周期末；时间点仍由这里的 100% 里程碑决定。
+   */
+  cycleEndSummaryBody?: string | null;
 }
 
 /** 通用标题的最终兜底。Store 里没有任何标题时也不能弹一条空标题的通知。 */
@@ -246,7 +251,10 @@ export function buildShiftReminders(
     // 与升级前的 Rust 判定同口径：progress 取 floor 后与档位比较，等价于
     // 有效工时越过 `duration * percent / 100` 的那一刻。
     const thresholdMs = Math.ceil((durationMs * milestone) / 100);
+    const cycleEndSummaryBody =
+      milestone === 100 ? inputs.cycleEndSummaryBody?.trim() || null : null;
     const audible =
+      cycleEndSummaryBody !== null ||
       inputs.mode === "milestones" ||
       (inputs.mode === "simple" && milestone === 100);
     reminders.push({
@@ -257,7 +265,9 @@ export function buildShiftReminders(
       maxTickGapMs: null,
       collapseGroup: "milestone",
       title: audible ? milestoneTitle(inputs, milestone) : null,
-      body: audible ? milestoneBody(inputs, milestone, endAtMs) : null,
+      body: audible
+        ? cycleEndSummaryBody ?? milestoneBody(inputs, milestone, endAtMs)
+        : null,
     });
   }
 

@@ -29,6 +29,7 @@
 		A1000000D00000000000000D /* FocusPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000D00000000000000D /* FocusPlannerTests.swift */; };
 		A1000000E00000000000000E /* RecordsPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000E00000000000000E /* RecordsPerformanceTests.swift */; };
 		A1000000F00000000000000F /* FocusStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000F00000000000000F /* FocusStoreTests.swift */; };
+		A10000100000000000000010 /* AppReviewAndCycleSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */; };
 		A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OffWorkStoreTests.swift */; };
 		A10000020000000000000002 /* DebugTimerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* DebugTimerScenarioTests.swift */; };
 		A10000030000000000000003 /* DayOverrideProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* DayOverrideProjectionTests.swift */; };
@@ -125,6 +126,8 @@
 		E000005E000000000000005E /* RecordsConflictCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000005E000000000000005E /* RecordsConflictCenter.swift */; };
 		E000005F000000000000005F /* FocusAddTaskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000005F000000000000005F /* FocusAddTaskSheet.swift */; };
 		E00000600000000000000060 /* FocusPlanningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000600000000000000060 /* FocusPlanningView.swift */; };
+		E00000610000000000000061 /* AppReviewPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000610000000000000061 /* AppReviewPrompt.swift */; };
+		E00000620000000000000062 /* ScheduleCycleSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000620000000000000062 /* ScheduleCycleSummary.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -182,6 +185,7 @@
 		A2000000D00000000000000D /* FocusPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusPlannerTests.swift; sourceTree = "<group>"; };
 		A2000000E00000000000000E /* RecordsPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsPerformanceTests.swift; sourceTree = "<group>"; };
 		A2000000F00000000000000F /* FocusStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusStoreTests.swift; sourceTree = "<group>"; };
+		A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReviewAndCycleSummaryTests.swift; sourceTree = "<group>"; };
 		A20000010000000000000001 /* OffWorkStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkStoreTests.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000030000000000000003 /* DebugTimerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugTimerScenarioTests.swift; sourceTree = "<group>"; };
@@ -299,6 +303,8 @@
 		F000005E000000000000005E /* RecordsConflictCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsConflictCenter.swift; path = Native/Views/RecordsConflictCenter.swift; sourceTree = "<group>"; };
 		F000005F000000000000005F /* FocusAddTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusAddTaskSheet.swift; path = Native/Views/FocusAddTaskSheet.swift; sourceTree = "<group>"; };
 		F00000600000000000000060 /* FocusPlanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusPlanningView.swift; path = Native/Views/FocusPlanningView.swift; sourceTree = "<group>"; };
+		F00000610000000000000061 /* AppReviewPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppReviewPrompt.swift; path = Native/Models/AppReviewPrompt.swift; sourceTree = "<group>"; };
+		F00000620000000000000062 /* ScheduleCycleSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScheduleCycleSummary.swift; path = Native/Models/ScheduleCycleSummary.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -370,6 +376,8 @@
 				F00000470000000000000047 /* RecordJSON.swift */,
 				F00000480000000000000048 /* RecordCoordinator.swift */,
 				F00000030000000000000003 /* OffWorkStore.swift */,
+				F00000610000000000000061 /* AppReviewPrompt.swift */,
+				F00000620000000000000062 /* ScheduleCycleSummary.swift */,
 				F00000360000000000000036 /* DraggableBrandIcon.swift */,
 				F00000370000000000000037 /* OWCBrandMark.swift */,
 				F00000390000000000000039 /* CelebratingBrandMark.swift */,
@@ -481,6 +489,7 @@
 				A2000000D00000000000000D /* FocusPlannerTests.swift */,
 				A2000000E00000000000000E /* RecordsPerformanceTests.swift */,
 				A2000000F00000000000000F /* FocusStoreTests.swift */,
+				A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */,
 				A20000080000000000000008 /* ScheduleRangeExpandTests.swift */,
 			);
 			path = AppTests;
@@ -658,6 +667,8 @@
 				E00000470000000000000047 /* RecordJSON.swift in Sources */,
 				E00000480000000000000048 /* RecordCoordinator.swift in Sources */,
 				E00000030000000000000003 /* OffWorkStore.swift in Sources */,
+				E00000610000000000000061 /* AppReviewPrompt.swift in Sources */,
+				E00000620000000000000062 /* ScheduleCycleSummary.swift in Sources */,
 				E00000360000000000000036 /* DraggableBrandIcon.swift in Sources */,
 				E00000370000000000000037 /* OWCBrandMark.swift in Sources */,
 				E00000390000000000000039 /* CelebratingBrandMark.swift in Sources */,
@@ -765,6 +776,7 @@
 				A1000000D00000000000000D /* FocusPlannerTests.swift in Sources */,
 				A1000000E00000000000000E /* RecordsPerformanceTests.swift in Sources */,
 				A1000000F00000000000000F /* FocusStoreTests.swift in Sources */,
+				A10000100000000000000010 /* AppReviewAndCycleSummaryTests.swift in Sources */,
 				A10000070000000000000007 /* ScheduleRangeExpandTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

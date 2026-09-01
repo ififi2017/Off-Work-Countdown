@@ -575,6 +575,7 @@ struct CompletedShiftDesignView: View {
     }
 
     private func celebrateIfNeeded() {
+        store.noteCountdownCompleted(endAtMs: celebrationToken)
         // Early clock-off is keyed on the moment they pressed, not the planned
         // end — otherwise undoing and finishing the shift later would skip the
         // real celebration, and clocking off early would never fire one.

@@ -106,7 +106,12 @@ struct TabletShellView: View {
     }
 
     private var tabletRecordsRoot: some View {
-        RecordsDesignView(store: store)
+        RecordsDesignView(
+            store: store,
+            showsSidebarButton: !sidebarVisible
+        ) {
+            withAnimation(shellAnimation) { sidebarVisible = true }
+        }
             .frame(maxWidth: 620)
     }
 
@@ -851,34 +856,51 @@ private func tabletHeader(
     showSidebar: @escaping () -> Void
 ) -> some View {
     HStack {
-        if !sidebarVisible {
-            Button(action: showSidebar) {
-                Image(systemName: "sidebar.left")
+        HStack(spacing: 8) {
+            if !sidebarVisible {
+                Button(action: showSidebar) {
+                    Image(systemName: "sidebar.left")
+                        .frame(width: 38, height: 38)
+                        .background(OWCDesign.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+
+            Button {
+                store.openPaidOrRun(.focus, action: .openFocus)
+            } label: {
+                Image(systemName: "timer")
                     .frame(width: 38, height: 38)
-                    .background(OWCDesign.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(store.t("focusTitle"))
         }
-        Spacer()
+        .frame(maxWidth: .infinity, alignment: .leading)
+
         Text(now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(store.locale)).uppercased())
             .font(.footnote.weight(.semibold))
             .tracking(0.78)
             .foregroundStyle(OWCDesign.secondary)
-        Spacer()
-        Button { store.toggleQuickTheme() } label: {
-            Group {
-                if store.quickThemeIsAuto {
-                    Text(verbatim: "A").font(.body.weight(.semibold))
-                } else {
-                    Image(systemName: store.quickThemeIcon)
+
+        HStack {
+            Spacer(minLength: 0)
+            Button { store.toggleQuickTheme() } label: {
+                Group {
+                    if store.quickThemeIsAuto {
+                        Text(verbatim: "A").font(.body.weight(.semibold))
+                    } else {
+                        Image(systemName: store.quickThemeIcon)
+                    }
                 }
+                .frame(width: 38, height: 38)
+                .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
-            .frame(width: 38, height: 38)
-            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .buttonStyle(.plain)
+            .accessibilityLabel(store.t("theme"))
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(store.t("theme"))
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
     .padding(.horizontal, sidebarVisible ? 40 : 26)
     .padding(.top, 22)
