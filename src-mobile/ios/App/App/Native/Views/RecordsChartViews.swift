@@ -7,6 +7,7 @@ struct RecordsChartsHomeView: View {
     @State private var window: (Date, Date)?
     @State private var days: [DayResolution] = []
     @State private var metrics: RecordsPeriodMetrics?
+    @State private var income: Double?
     @State private var selectionFeedback = 0
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
@@ -50,6 +51,7 @@ struct RecordsChartsHomeView: View {
         window = next
         days = resolved
         metrics = store.recordsMetrics(for: resolved)
+        income = store.recordsIncome(for: period)
     }
 
     // MARK: - Metrics
@@ -122,12 +124,12 @@ struct RecordsChartsHomeView: View {
                 value: store.formatRelativeDuration(Double(summary.ownAwakeMs))
             ),
         ]
-        if summary.usesCurrentSalary {
+        if let income {
             items.append(
                 Metric(
                     id: "income",
                     title: store.t("recordsIncomeCurrentSalary"),
-                    value: store.formatMoney(summary.estimatedIncome)
+                    value: store.moneyText(income)
                 )
             )
         }

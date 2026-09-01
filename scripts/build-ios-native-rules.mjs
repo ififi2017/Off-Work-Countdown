@@ -378,15 +378,23 @@ export function createIOSNativeRulesBundle() {
       const timeZone = typeof input.timeZoneIdentifier === "string" && input.timeZoneIdentifier.trim()
         ? input.timeZoneIdentifier.trim()
         : undefined;
-      const periodStart = timeZone
-        ? new Date(
-          input.period === "year"
-            ? countdown.zonedYearStartMs(input.asOfMs, timeZone)
-            : countdown.zonedWeekStartMs(input.asOfMs, timeZone)
-        )
-        : input.period === "year"
-          ? summary.startOfYear(asOf)
-          : summary.startOfWeek(asOf);
+      // An explicit window start wins over the period name. The Records tab
+      // draws week and month grids with the locale's own first weekday, so the
+      // window it summarises is not always the ISO week the period name
+      // derives; it passes the boundary it already drew instead.
+      // Number(null) is 0, a valid epoch, so a null must not reach it.
+      const explicitStartMs = input.periodStartMs == null ? NaN : Number(input.periodStartMs);
+      const periodStart = Number.isFinite(explicitStartMs)
+        ? new Date(explicitStartMs)
+        : timeZone
+          ? new Date(
+            input.period === "year"
+              ? countdown.zonedYearStartMs(input.asOfMs, timeZone)
+              : countdown.zonedWeekStartMs(input.asOfMs, timeZone)
+          )
+          : input.period === "year"
+            ? summary.startOfYear(asOf)
+            : summary.startOfWeek(asOf);
       return JSON.stringify(summary.summarize({
         periodStart,
         asOf,

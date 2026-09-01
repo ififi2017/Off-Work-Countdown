@@ -513,6 +513,11 @@ private struct NativeTodayImpactRequest: Codable {
 
 struct NativeSummaryInput: Codable {
     let period: String
+    /// Explicit window start, winning over `period`. The Records tab draws its
+    /// week and month grids with the locale's own first weekday, so it must
+    /// summarise the boundary it already drew rather than the ISO week the
+    /// period name derives. Omitted for the timer's own week/year rows.
+    var periodStartMs: Double? = nil
     let asOfMs: Double
     let workdays: [Int]
     let schedule: NativeWorkSchedule

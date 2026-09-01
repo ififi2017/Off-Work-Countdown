@@ -3443,6 +3443,17 @@ final class OffWorkStore {
         return value.formatted(.number.precision(.fractionLength(2)).locale(locale))
     }
 
+    /// The only way money should reach the screen.
+    ///
+    /// `hideEarnings` is one switch for the whole product, so every amount has
+    /// to consult it. Spelling the mask out at each call site meant the next
+    /// screen to show an amount simply forgot — which is how the Records tab
+    /// shipped an income figure the eye toggle could not hide. Ask for the
+    /// text here and the mask cannot be left out.
+    func moneyText(_ value: Double?) -> String {
+        hideEarnings ? "••••" : formatMoney(value)
+    }
+
     func formatPercent(_ value: Double, fractionDigits: Int = 1) -> String {
         (value / 100).formatted(
             .percent.precision(.fractionLength(fractionDigits)).locale(locale)
@@ -4280,19 +4291,33 @@ final class OffWorkStore {
         }
     }
 
-    func recordsMetrics(for days: [DayResolution], asOf: Date = .now) -> RecordsPeriodMetrics {
+    func recordsMetrics(for days: [DayResolution]) -> RecordsPeriodMetrics {
         let sleep = records.state.lifeProfile?.averageSleepHours ?? 8
-        let daily = salaryEnabled ? (snapshot(at: asOf)?.dailySalary ?? 0) : 0
         let items = days.flatMap { observations(on: $0.shiftAnchorDate) }
         return RecordsMetrics.summarize(
             days: days,
             observations: items,
             sleepHours: sleep,
-            dailySalary: daily,
-            salaryEnabled: salaryEnabled,
-            asOf: asOf,
             calendar: recordsCalendar
         )
+    }
+
+    /// Income so far in a Records period, from the shared rules bundle.
+    ///
+    /// Records must not carry its own salary formula. The bundle credits the
+    /// running shift by its pay ratio, so a whole-day count here would show
+    /// less money on the Records tab than the timer's own row does for the
+    /// same week — the disagreement `lib/summary.ts` exists to prevent.
+    /// Returns nil when there is no salary to show.
+    func recordsIncome(for period: RecordsChartPeriod, asOf: Date = .now) -> Double? {
+        guard salaryEnabled, let shift = snapshot(at: asOf) else { return nil }
+        let start = recordsChartWindow(for: period, now: asOf).0
+        return periodSummary(
+            period == .year ? "year" : "week",
+            asOf: asOf,
+            snapshot: shift,
+            periodStartMs: start.timeIntervalSince1970 * 1_000
+        )?.earnings
     }
 
     /// Gates an action behind Plus, presenting the paywall over whatever the
@@ -5422,7 +5447,16 @@ final class OffWorkStore {
         return components.url!
     }
 
-    func periodSummary(_ period: String, asOf: Date, snapshot: NativeShiftSnapshot) -> NativePeriodSummary? {
+    /// - Parameter periodStartMs: An explicit window start. Callers that drew
+    ///   their own boundary — the Records tab, whose grids follow the locale's
+    ///   first weekday — pass it so the summary covers the window on screen.
+    ///   Omit it and the rules bundle derives the window from `period`.
+    func periodSummary(
+        _ period: String,
+        asOf: Date,
+        snapshot: NativeShiftSnapshot,
+        periodStartMs: Double? = nil
+    ) -> NativePeriodSummary? {
         guard effectiveScheduleMode(at: asOf) != .off else { return nil }
         var summaryWorkdays = effectiveWorkdays(at: asOf)
         if isForcedWorkday(snapshot) {
@@ -5431,6 +5465,7 @@ final class OffWorkStore {
         do {
             let result = try CountdownRules.shared.summarize(input: .init(
                 period: period,
+                periodStartMs: periodStartMs,
                 asOfMs: asOf.timeIntervalSince1970 * 1_000,
                 workdays: summaryWorkdays.sorted(),
                 schedule: nativeSchedule(at: asOf),

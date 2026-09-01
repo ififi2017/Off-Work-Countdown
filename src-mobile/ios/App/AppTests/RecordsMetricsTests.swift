@@ -20,82 +20,16 @@ func recordsMetricsCountWorkdays() throws {
     )
     let tuesday = try date(2026, 8, 25, calendar: calendar)
     let rest = resolution(on: tuesday, dayKey: "2026-08-25")
-    let asOf = try date(2026, 8, 26, hour: 12, calendar: calendar)
 
     let metrics = RecordsMetrics.summarize(
         days: [work, rest],
         observations: [],
         sleepHours: 8,
-        dailySalary: 100,
-        salaryEnabled: true,
-        asOf: asOf,
         calendar: calendar
     )
     #expect(metrics.workdayCount == 1)
     #expect(metrics.workDurationMs == Int64(8 * hourMs))
     #expect(metrics.longestStreak == 1)
-    #expect(metrics.estimatedIncome == 100)
-}
-
-@MainActor
-@Test("Income uses completed base schedule days, not overrides, today, or future days")
-func recordsIncomeUsesCompletedBaseSchedule() throws {
-    let calendar = utcCalendar()
-    let scheduledSegments = { (day: Date) in
-        [segment(on: day, fromHour: 9, toHour: 17, calendar: calendar)]
-    }
-    let monday = try date(2026, 8, 24, calendar: calendar)
-    let tuesday = try date(2026, 8, 25, calendar: calendar)
-    let wednesday = try date(2026, 8, 26, calendar: calendar)
-    let thursday = try date(2026, 8, 27, calendar: calendar)
-    let custom = [segment(on: tuesday, fromHour: 10, toHour: 19, calendar: calendar)]
-    let days = [
-        // A leave override has no resolved work hours, but its base scheduled
-        // day remains a paid completed day.
-        resolution(
-            on: monday,
-            dayKey: "2026-08-24",
-            layer: .override,
-            baseIsWorkday: true,
-            baseSegments: scheduledSegments(monday)
-        ),
-        // A custom shift on a base rest day contributes work time, not income.
-        resolution(
-            on: tuesday,
-            dayKey: "2026-08-25",
-            layer: .override,
-            isWorkday: true,
-            segments: custom
-        ),
-        resolution(
-            on: wednesday,
-            dayKey: "2026-08-26",
-            isWorkday: true,
-            segments: scheduledSegments(wednesday),
-            baseIsWorkday: true,
-            baseSegments: scheduledSegments(wednesday)
-        ),
-        resolution(
-            on: thursday,
-            dayKey: "2026-08-27",
-            isWorkday: true,
-            segments: scheduledSegments(thursday),
-            baseIsWorkday: true,
-            baseSegments: scheduledSegments(thursday)
-        ),
-    ]
-
-    let metrics = RecordsMetrics.summarize(
-        days: days,
-        observations: [],
-        sleepHours: 8,
-        dailySalary: 100,
-        salaryEnabled: true,
-        asOf: try date(2026, 8, 26, hour: 12, calendar: calendar),
-        calendar: calendar
-    )
-
-    #expect(metrics.estimatedIncome == 100)
 }
 
 @MainActor
@@ -132,9 +66,6 @@ func recordsOvertimeUsesPlannedEnd() throws {
         days: [resolution],
         observations: [observation],
         sleepHours: 8,
-        dailySalary: 0,
-        salaryEnabled: false,
-        asOf: try date(2026, 8, 25, calendar: calendar),
         calendar: calendar
     )
 
@@ -227,9 +158,6 @@ private func metricsForDSTDay(
         days: [resolution(on: day, dayKey: dayKey, isWorkday: true, segments: work)],
         observations: [],
         sleepHours: 8,
-        dailySalary: 0,
-        salaryEnabled: false,
-        asOf: calendar.date(byAdding: .day, value: 1, to: day) ?? day,
         calendar: calendar
     )
 }

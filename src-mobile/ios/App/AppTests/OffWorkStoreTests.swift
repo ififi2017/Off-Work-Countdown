@@ -2981,3 +2981,56 @@ private func utcDay(_ year: Int, _ month: Int, _ day: Int) -> Date {
     calendar.timeZone = TimeZone(secondsFromGMT: 0)!
     return calendar.date(from: DateComponents(year: year, month: month, day: day))!
 }
+
+@MainActor
+@Test("Records income credits the running shift, matching the timer's own row")
+func recordsIncomeMatchesTheSharedSummaryRule() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = false
+    store.salaryEnabled = true
+    store.salaryType = .monthly
+    store.salaryAmount = "22000"
+    store.monthlyWorkingDays = 22
+
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = store.recordsTimeZone
+    // Wednesday, halfway through the shift. Monday and Tuesday are done.
+    let midShift = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 9, day: 2, hour: 13
+    )))
+    store.startCountdown(at: midShift)
+
+    let shift = try #require(store.snapshot(at: midShift))
+    let daily = try #require(shift.dailySalary)
+    let income = try #require(store.recordsIncome(for: .week, asOf: midShift))
+
+    // The rule that Records must not re-implement: the shift on the clock is
+    // credited by its pay ratio, so a Wednesday afternoon is worth more than
+    // the two days that have finished.
+    #expect(abs(income - (2 + shift.payRatio) * daily) < 0.001)
+    #expect(income > 2 * daily)
+
+    // Records and the timer describe the same week with the same number.
+    let timerRow = try #require(store.periodSummary("week", asOf: midShift, snapshot: shift))
+    #expect(abs(income - (timerRow.earnings ?? -1)) < 0.001)
+}
+
+@MainActor
+@Test("Records income stays absent when salary is off")
+func recordsIncomeAbsentWithoutSalary() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.salaryEnabled = false
+    #expect(store.recordsIncome(for: .week) == nil)
+}
