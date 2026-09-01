@@ -10,6 +10,7 @@ enum RecordEntityType: String, Codable, Sendable, CaseIterable {
     case lifeProfile
     case focusTask
     case focusSession
+    case focusPlanningConfiguration
 }
 
 /// Local tombstone so a later import cannot resurrect a permanently deleted
@@ -55,6 +56,7 @@ enum RecordIncomingValue: Equatable, Sendable {
     case lifeProfile(LifeProfile)
     case focusTask(FocusTask)
     case focusSession(FocusSession)
+    case focusPlanningConfiguration(FocusPlanningConfiguration)
 }
 
 struct RecordImportConflict: Equatable, Sendable {
@@ -106,6 +108,7 @@ struct RecordState: Equatable, Sendable {
     var lifeProfile: LifeProfile?
     var focusTasks: [FocusTask] = []
     var focusSessions: [FocusSession] = []
+    var focusPlanningConfiguration: FocusPlanningConfiguration?
     var recordsStartedOn: Date?
     var erased: [ErasedID] = []
     var sync = SyncLocalState.empty
@@ -166,6 +169,8 @@ struct RecordState: Equatable, Sendable {
             focusTasks.removeAll { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame }
         case .focusSession:
             focusSessions.removeAll { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame }
+        case .focusPlanningConfiguration:
+            focusPlanningConfiguration = nil
         }
         if let index = erased.firstIndex(where: {
             $0.entityType == type && $0.logicalKey == key
@@ -192,8 +197,8 @@ struct RecordState: Equatable, Sendable {
 /// calendar; instants are Unix milliseconds so a timezone shift cannot move a
 /// day. Salary never appears.
 enum RecordJSON {
-    static let schemaVersion = 3
-    static let acceptedSchemaVersions = 1...3
+    static let schemaVersion = 4
+    static let acceptedSchemaVersions = 1...4
 
     static func export(
         _ state: RecordState,
@@ -231,6 +236,7 @@ enum RecordJSON {
             lifeProfile: state.lifeProfile.map { LifeProfileDTO($0, calendar: fileCalendar) },
             focusTasks: state.focusTasks.map { FocusTaskDTO($0, calendar: fileCalendar) },
             focusSessions: state.focusSessions.map { FocusSessionDTO($0, calendar: fileCalendar) },
+            focusPlanningConfiguration: state.focusPlanningConfiguration.map(FocusPlanningConfigurationDTO.init),
             recordsStartedOn: state.recordsStartedOn.map { RecordJSON.dayKey($0, calendar: fileCalendar) }
         )
         let encoder = JSONEncoder()
@@ -569,6 +575,36 @@ enum RecordJSON {
             )
         }
 
+        if let dto = document.focusPlanningConfiguration {
+            guard let incoming = dto.value() else {
+                report.rejected.append(
+                    RecordImportRejection(
+                        entityType: .focusPlanningConfiguration,
+                        logicalKey: FocusPlanningConfiguration.logicalKey
+                    )
+                )
+                return report
+            }
+            merge(
+                incoming,
+                type: .focusPlanningConfiguration,
+                key: FocusPlanningConfiguration.logicalKey,
+                mode: mode,
+                state: &state,
+                report: &report,
+                existing: { $0.focusPlanningConfiguration },
+                incomingValue: { .focusPlanningConfiguration($0) },
+                insert: { archive, value in
+                    archive.focusPlanningConfiguration = value
+                    return value
+                },
+                replace: { archive, value in
+                    archive.focusPlanningConfiguration = value
+                    return value
+                }
+            )
+        }
+
         for index in state.snapshots.indices {
             if let mapped = periodIDMap[state.snapshots[index].periodID] {
                 state.snapshots[index].periodID = mapped
@@ -644,6 +680,8 @@ enum RecordJSON {
             } else {
                 state.focusSessions.append(session)
             }
+        case .focusPlanningConfiguration(let configuration):
+            state.focusPlanningConfiguration = configuration
         }
     }
 
@@ -738,6 +776,7 @@ enum RecordJSON {
         case let observation as WorkObservation: observation.eventID.uuidString
         case let task as FocusTask: task.id.uuidString
         case let session as FocusSession: session.id.uuidString
+        case is FocusPlanningConfiguration: FocusPlanningConfiguration.logicalKey
         case is LifeProfile: LifeProfile.profileID.uuidString
         default: nil
         }
@@ -754,6 +793,7 @@ enum RecordJSON {
         case let profile as LifeProfile: profile.editCount
         case let task as FocusTask: task.editCount
         case let session as FocusSession: session.editCount
+        case let configuration as FocusPlanningConfiguration: configuration.editCount
         default: 0
         }
     }
@@ -771,6 +811,7 @@ enum RecordJSON {
                 : observation.editTieBreaker
         case let task as FocusTask: task.editTieBreaker
         case let session as FocusSession: session.editTieBreaker
+        case let configuration as FocusPlanningConfiguration: configuration.editTieBreaker
         default: DayOverride.unsetTieBreaker
         }
     }
@@ -880,6 +921,7 @@ struct RecordJSONDocument: Codable, Equatable {
     var lifeProfile: LifeProfileDTO?
     var focusTasks: [FocusTaskDTO]?
     var focusSessions: [FocusSessionDTO]?
+    var focusPlanningConfiguration: FocusPlanningConfigurationDTO?
     var recordsStartedOn: String?
 }
 
@@ -1263,6 +1305,145 @@ struct FocusTaskDTO: Codable, Equatable {
             editTieBreaker: editTieBreaker,
             templateID: templateID.flatMap(UUID.init(uuidString:)),
             templateTaskKey: templateTaskKey.flatMap(UUID.init(uuidString:))
+        )
+    }
+}
+
+struct FocusPlanningConfigurationDTO: Codable, Equatable {
+    struct DayPlanDTO: Codable, Equatable {
+        var dayKey: String
+        var shiftStartAtMs: Int64
+        var assignments: [FocusPlanAssignment]
+        var appliedTemplateID: String?
+
+        init(_ value: FocusDayPlan) {
+            dayKey = value.dayKey
+            shiftStartAtMs = value.shiftStartAtMs
+            assignments = value.assignments.sorted { $0.blockStartAtMs < $1.blockStartAtMs }
+            appliedTemplateID = value.appliedTemplateID?.uuidString
+        }
+
+        func value() -> FocusDayPlan? {
+            let templateID: UUID?
+            if let appliedTemplateID {
+                guard let parsed = UUID(uuidString: appliedTemplateID) else { return nil }
+                templateID = parsed
+            } else {
+                templateID = nil
+            }
+            return FocusDayPlan(
+                dayKey: dayKey,
+                shiftStartAtMs: shiftStartAtMs,
+                assignments: assignments.sorted { $0.blockStartAtMs < $1.blockStartAtMs },
+                appliedTemplateID: templateID
+            )
+        }
+    }
+
+    struct TemplateDTO: Codable, Equatable {
+        var id: String
+        var name: String
+        var slots: [FocusTemplateSlot]
+        var createdAtMs: Double
+        var updatedAtMs: Double
+
+        init(_ value: FocusTemplate) {
+            id = value.id.uuidString
+            name = value.name
+            slots = value.slots.sorted { $0.blockIndex < $1.blockIndex }
+            createdAtMs = value.createdAt.timeIntervalSince1970 * 1_000
+            updatedAtMs = value.updatedAt.timeIntervalSince1970 * 1_000
+        }
+
+        func value() -> FocusTemplate? {
+            guard let id = UUID(uuidString: id),
+                  createdAtMs.isFinite,
+                  updatedAtMs.isFinite
+            else { return nil }
+            return FocusTemplate(
+                id: id,
+                name: name,
+                slots: slots.sorted { $0.blockIndex < $1.blockIndex },
+                createdAt: Date(timeIntervalSince1970: createdAtMs / 1_000),
+                updatedAt: Date(timeIntervalSince1970: updatedAtMs / 1_000)
+            )
+        }
+    }
+
+    var plans: [DayPlanDTO]
+    var templates: [TemplateDTO]
+    var defaultTemplateID: String?
+    var autoAppliedDayKeys: [String]
+    var focusMinutes: Int
+    var shortBreakMinutes: Int
+    var longBreakMinutes: Int
+    var longBreakEvery: Int
+    var editedAtMs: Double
+    var editCount: Int
+    var editTieBreaker: String
+
+    init(_ value: FocusPlanningConfiguration) {
+        plans = value.planning.plans.values
+            .sorted { $0.dayKey < $1.dayKey }
+            .map(DayPlanDTO.init)
+        templates = value.planning.templates
+            .sorted { $0.id.uuidString < $1.id.uuidString }
+            .map(TemplateDTO.init)
+        defaultTemplateID = value.planning.defaultTemplateID?.uuidString
+        autoAppliedDayKeys = value.planning.autoAppliedDayKeys.sorted()
+        let settings = value.timerSettings.normalized
+        focusMinutes = settings.focusMinutes
+        shortBreakMinutes = settings.shortBreakMinutes
+        longBreakMinutes = settings.longBreakMinutes
+        longBreakEvery = settings.longBreakEvery
+        editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
+        editCount = value.editCount
+        editTieBreaker = value.editTieBreaker.uuidString
+    }
+
+    func value() -> FocusPlanningConfiguration? {
+        guard let editTieBreaker = UUID(uuidString: editTieBreaker),
+              editedAtMs.isFinite,
+              editCount >= 0
+        else { return nil }
+        let decodedPlans = plans.compactMap { $0.value() }
+        guard decodedPlans.count == plans.count else { return nil }
+        var planMap: [String: FocusDayPlan] = [:]
+        for plan in decodedPlans {
+            guard planMap[plan.dayKey] == nil else { return nil }
+            planMap[plan.dayKey] = plan
+        }
+
+        let decodedTemplates = templates.compactMap { $0.value() }
+        guard decodedTemplates.count == templates.count,
+              Set(decodedTemplates.map(\.id)).count == decodedTemplates.count
+        else { return nil }
+
+        let parsedDefaultTemplateID: UUID?
+        if let defaultTemplateID {
+            guard let parsed = UUID(uuidString: defaultTemplateID) else { return nil }
+            parsedDefaultTemplateID = parsed
+        } else {
+            parsedDefaultTemplateID = nil
+        }
+        let availableTemplateIDs = Set(decodedTemplates.map(\.id))
+        let safeDefault = parsedDefaultTemplateID.flatMap { availableTemplateIDs.contains($0) ? $0 : nil }
+        return FocusPlanningConfiguration(
+            planning: FocusPlanningState(
+                plans: planMap,
+                templates: decodedTemplates,
+                defaultTemplateID: safeDefault,
+                autoAppliedDayKeys: Set(autoAppliedDayKeys)
+            ),
+            timerSettings: FocusTimerSettings(
+                focusMinutes: focusMinutes,
+                shortBreakMinutes: shortBreakMinutes,
+                longBreakMinutes: longBreakMinutes,
+                longBreakEvery: longBreakEvery
+            ).normalized,
+            editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
+            editCount: editCount,
+            editTieBreaker: editTieBreaker
         )
     }
 }

@@ -148,6 +148,15 @@ in URLs, analytics payloads or share metadata.
   only after the user asks. Changing that balance means updating the About
   page copy on the official About page at doneat.app, which states it.
 
+## Agent collaboration
+
+- When the environment supports sub-agents, they may be configured and used
+  for concrete, independent subtasks where delegation or parallel work is
+  useful. The primary agent remains responsible for planning, coordination,
+  reviewing the results and integrating the final change.
+- Do not assign the highest-tier model available in the environment to a
+  sub-agent. Choose a lower-tier model appropriate to the subtask's complexity.
+
 ## Development commands
 
 Shared across every target:

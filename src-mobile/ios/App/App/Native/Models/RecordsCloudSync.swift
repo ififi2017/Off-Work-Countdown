@@ -43,7 +43,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                self?.handleAccountChange()
+                await self?.reconcileAccountNotification()
             }
         }
     }
@@ -72,7 +72,12 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     func wipeLocalRecords() async {
         await runExclusive {
             self.stopAndInvalidate()
-            self.records?.deleteAllLocalData()
+            guard let records = self.records, records.deleteAllLocalData() else {
+                self.failPersistence()
+                return
+            }
+            self.lastError = nil
+            self.status = .off
         }
     }
 
@@ -104,6 +109,63 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             }
         }
         status = .accountChanged
+    }
+
+    /// `CKAccountChanged` does not say which account is active. Resolve it
+    /// after any in-flight sync operation, then pause only when the account
+    /// really differs. Treating the notification itself as proof of a switch
+    /// made a normal CKSyncEngine sign-in disable a just-restored sync.
+    private func reconcileAccountNotification() async {
+        await runExclusive { await self.reconcileAccountNotificationUnsynchronized() }
+    }
+
+    private func reconcileAccountNotificationUnsynchronized() async {
+        guard let records, records.state.sync.syncEnabled else { return }
+        do {
+            let currentAccountID = try await CKContainer(identifier: Self.containerID)
+                .userRecordID()
+                .recordName
+            guard RecordsSyncCloudPrerequisites.acceptsAccount(
+                storedAccountID: records.state.sync.accountID,
+                currentAccountID: currentAccountID,
+                mayAdoptCurrentAccount: false
+            ) else {
+                pauseForAccountChange()
+                return
+            }
+        } catch let error as CKError where error.code == .notAuthenticated {
+            pauseForAccountChange()
+        } catch {
+            noteNetworkFailure(error)
+        }
+    }
+
+    /// A newly-created CKSyncEngine reports `.signIn` even when it signed in
+    /// to the exact account we persisted moments earlier. That is a healthy
+    /// bootstrap event, not an account replacement. Sign-out and a genuinely
+    /// different account still fail closed.
+    private func handleAccountChange(_ change: CKSyncEngine.Event.AccountChange) {
+        let currentAccountID: String?
+        switch change.changeType {
+        case .signIn(let currentUser):
+            currentAccountID = currentUser.recordName
+        case .switchAccounts(_, let currentUser):
+            currentAccountID = currentUser.recordName
+        case .signOut:
+            currentAccountID = nil
+        @unknown default:
+            currentAccountID = nil
+        }
+
+        if let records, let currentAccountID,
+           RecordsSyncCloudPrerequisites.acceptsAccount(
+               storedAccountID: records.state.sync.accountID,
+               currentAccountID: currentAccountID,
+               mayAdoptCurrentAccount: false
+           ) {
+            return
+        }
+        pauseForAccountChange()
     }
 
     private func failPersistence() {
@@ -157,7 +219,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             }
             status = .syncing
             await createEngine(container: container)
-            status = .idle
+            if records.state.sync.syncEnabled { status = .idle }
         } catch {
             noteNetworkFailure(error)
         }
@@ -213,7 +275,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             }
             status = .syncing
             await createEngine(container: container)
-            status = .idle
+            if records.state.sync.syncEnabled { status = .idle }
         } catch {
             noteNetworkFailure(error)
         }
@@ -262,7 +324,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             }
             status = .syncing
             await createEngine(container: container)
-            status = .idle
+            if records.state.sync.syncEnabled { status = .idle }
         } catch {
             noteNetworkFailure(error)
         }
@@ -463,8 +525,8 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
             if !records.replaceSyncState(sync) {
                 failPersistence()
             }
-        case .accountChange:
-            handleAccountChange()
+        case .accountChange(let change):
+            handleAccountChange(change)
         case .fetchedRecordZoneChanges(let changes):
             applyFetched(changes.modifications.map(\.record), deletions: changes.deletions.map(\.recordID))
         case .sentDatabaseChanges(let sent):

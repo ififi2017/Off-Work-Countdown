@@ -206,6 +206,8 @@ struct RecordsHeadlineView: View {
                     .font(.caption)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
                 Spacer(minLength: 0)
             }
             .padding(.trailing, 32)
@@ -236,34 +238,60 @@ struct RecordsHeadlineView: View {
         let visible = slices(share).filter { $0.ms > 0 }
         let total = max(1, share.dayLengthMs)
         GeometryReader { proxy in
-            let gaps = CGFloat(max(visible.count - 1, 0)) * 3
-            HStack(spacing: 3) {
-                ForEach(visible) { item in
+            HStack(spacing: 0) {
+                ForEach(Array(visible.enumerated()), id: \.element.id) { index, item in
+                    let isFirst = index == visible.startIndex
+                    let isLast = index == visible.index(before: visible.endIndex)
+                    let shape = UnevenRoundedRectangle(
+                        cornerRadii: RectangleCornerRadii(
+                            topLeading: isFirst ? 10 : 0,
+                            bottomLeading: isFirst ? 10 : 0,
+                            bottomTrailing: isLast ? 10 : 0,
+                            topTrailing: isLast ? 10 : 0
+                        ),
+                        style: .continuous
+                    )
                     Button {
                         selectedKind = item.kind
                     } label: {
-                        Capsule()
+                        shape
                             .fill(item.color)
-                            .frame(width: max(8, (proxy.size.width - gaps) * CGFloat(item.ms) / CGFloat(total)), height: 14)
+                            .frame(
+                                width: max(1, proxy.size.width * CGFloat(item.ms) / CGFloat(total)),
+                                height: 20
+                            )
                             .overlay {
                                 if selectedKind == item.kind {
-                                    Capsule().stroke(OWCDesign.primary, lineWidth: 2)
+                                    // `strokeBorder` stays inside the segment.
+                                    // A centered stroke was clipped by the
+                                    // outer capsule at both bar edges.
+                                    shape.strokeBorder(OWCDesign.primary, lineWidth: 2)
                                 }
                             }
                     }
                     .buttonStyle(.plain)
-                    .frame(minWidth: 10, maxHeight: .infinity)
                     .contentShape(Rectangle())
+                    .frame(height: 44)
                     .accessibilityLabel(store.t(titleKey(item.kind)))
                 }
             }
             .frame(maxHeight: .infinity)
         }
         .frame(height: 44)
+        .background {
+            Capsule()
+                .fill(OWCDesign.control)
+                .frame(height: 20)
+        }
+        .overlay {
+            Capsule()
+                .stroke(OWCDesign.separator, lineWidth: 0.5)
+                .frame(height: 20)
+        }
     }
 
     private func allocationLegend(_ share: TimeAllocationShare) -> some View {
-        return LazyVStack(alignment: .leading, spacing: 2) {
+        return LazyVStack(alignment: .leading, spacing: 4) {
             ForEach(slices(share).filter { $0.kind != .unclassified || $0.ms > 0 }) { item in
                 Button {
                     selectedKind = item.kind
@@ -271,21 +299,21 @@ struct RecordsHeadlineView: View {
                     HStack(spacing: 8) {
                         Circle()
                             .fill(item.color)
-                            .frame(width: 8, height: 8)
+                            .frame(width: 10, height: 10)
                         Text(store.t(titleKey(item.kind)))
-                            .font(.caption)
+                            .font(.callout)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.78)
                         Spacer(minLength: 12)
                         Text(store.formatRelativeDuration(Double(item.ms)))
-                            .font(.caption.weight(.medium).monospacedDigit())
+                            .font(.callout.weight(.semibold).monospacedDigit())
                             .foregroundStyle(OWCDesign.primary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.68)
                             .allowsTightening(true)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -319,12 +347,12 @@ struct RecordsHeadlineView: View {
 
     private func slices(_ share: TimeAllocationShare) -> [AllocationSlice] {
         [
-            AllocationSlice(kind: .work, ms: share.workMs, color: OWCDesign.lifeWork),
-            AllocationSlice(kind: .overtime, ms: share.overtimeMs, color: OWCDesign.orangeDeep),
-            AllocationSlice(kind: .workBreak, ms: share.breakMs, color: OWCDesign.lifeStudy),
-            AllocationSlice(kind: .sleep, ms: share.sleepMs, color: OWCDesign.lifeChildhood),
-            AllocationSlice(kind: .free, ms: share.freeMs, color: OWCDesign.lifeRetirement),
-            AllocationSlice(kind: .unclassified, ms: share.unclassifiedMs, color: OWCDesign.separator),
+            AllocationSlice(kind: .work, ms: share.workMs, color: OWCDesign.recordsWork),
+            AllocationSlice(kind: .overtime, ms: share.overtimeMs, color: OWCDesign.recordsOvertime),
+            AllocationSlice(kind: .workBreak, ms: share.breakMs, color: OWCDesign.recordsBreak),
+            AllocationSlice(kind: .sleep, ms: share.sleepMs, color: OWCDesign.recordsSleep),
+            AllocationSlice(kind: .free, ms: share.freeMs, color: OWCDesign.recordsFree),
+            AllocationSlice(kind: .unclassified, ms: share.unclassifiedMs, color: OWCDesign.recordsUnclassified),
         ]
     }
 
@@ -358,7 +386,7 @@ struct RecordsMonthGrid: View {
 
             LazyVGrid(columns: columns, spacing: 5) {
                 ForEach(Array(0..<blanks), id: \.self) { _ in
-                    Color.clear.frame(height: 44)
+                    Color.clear.aspectRatio(1, contentMode: .fit)
                 }
                 ForEach(cells) { cell in
                     Button {
@@ -366,7 +394,7 @@ struct RecordsMonthGrid: View {
                     } label: {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(fill(cell))
-                            .frame(height: 44)
+                            .aspectRatio(1, contentMode: .fit)
                             .overlay {
                                 Text(store.formatCount(store.recordsCalendar.component(.day, from: cell.date)))
                                     .font(.callout.weight(cell.isToday || cell.dayKey == selectedDayKey ? .semibold : .regular).monospacedDigit())
@@ -380,24 +408,11 @@ struct RecordsMonthGrid: View {
                                 stateMarker(cell)
                                     .padding(4)
                             }
-                            .overlay(alignment: .topLeading) {
-                                if cell.isProjection, cell.appearance != .locked {
-                                    Capsule()
-                                        .fill(cell.dayKey == selectedDayKey ? Color.white.opacity(0.8) : OWCDesign.accent.opacity(0.7))
-                                        .frame(width: 1.5, height: 11)
-                                        .rotationEffect(.degrees(45))
-                                        .padding(5)
-                                        .accessibilityHidden(true)
-                                }
-                            }
                             .overlay {
                                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                                     .strokeBorder(
                                         stroke(cell),
-                                        style: StrokeStyle(
-                                            lineWidth: cell.dayKey == selectedDayKey ? 2 : 1.25,
-                                            dash: cell.appearance == .planned ? [3, 2] : []
-                                        )
+                                        lineWidth: cell.dayKey == selectedDayKey ? 2 : 1.25
                                     )
                             }
                     }
@@ -418,7 +433,7 @@ struct RecordsMonthGrid: View {
         case .locked: OWCDesign.control.opacity(0.45)
         case .unrecorded: Color.clear
         case .rest: OWCDesign.control.opacity(0.36)
-        case .planned: OWCDesign.accent.opacity(0.06)
+        case .planned: OWCDesign.accent.opacity(0.085)
         case .recorded: OWCDesign.accent.opacity(0.10)
         case .corrected: OWCDesign.accent.opacity(0.14)
         }
@@ -517,35 +532,8 @@ struct RecordsWeekStrips: View {
     }
 
     private func weekStack(_ cell: RecordsDayCell) -> some View {
-        let total = max(1, cell.workMs + cell.overtimeMs + cell.breakMs + cell.freeMs)
-        return ZStack(alignment: .bottom) {
-            Capsule()
-                .fill(OWCDesign.control.opacity(0.6))
-                .frame(width: 18, height: 116)
-
-            if cell.appearance == .locked {
-                Image(systemName: "lock.fill")
-                    .font(.caption2)
-                    .foregroundStyle(OWCDesign.tertiary)
-                    .padding(.bottom, 10)
-            } else {
-                VStack(spacing: 2) {
-                    if cell.freeMs > 0 {
-                        Capsule().fill(OWCDesign.lifeRetirement).frame(width: 18, height: bar(cell.freeMs, total: total))
-                    }
-                    if cell.breakMs > 0 {
-                        Capsule().fill(OWCDesign.lifeStudy).frame(width: 18, height: bar(cell.breakMs, total: total))
-                    }
-                    if cell.workMs > 0 {
-                        Capsule().fill(OWCDesign.lifeWork).frame(width: 18, height: bar(cell.workMs, total: total))
-                    }
-                    if cell.overtimeMs > 0 {
-                        Capsule().fill(OWCDesign.orangeDeep).frame(width: 18, height: bar(cell.overtimeMs, total: total))
-                    }
-                }
-                .opacity(cell.isProjection ? 0.48 : 1)
-            }
-
+        ZStack(alignment: .bottom) {
+            weekTrack(cell)
             if cell.observationCount > 0 {
                 Circle()
                     .fill(OWCDesign.accent)
@@ -556,20 +544,51 @@ struct RecordsWeekStrips: View {
         }
     }
 
-    private func bar(_ ms: Int64, total: Int64) -> CGFloat {
-        max(4, CGFloat(ms) / CGFloat(total) * 108)
+    @ViewBuilder
+    private func weekTrack(_ cell: RecordsDayCell) -> some View {
+        if cell.appearance == .locked {
+            Capsule()
+                .fill(OWCDesign.control.opacity(0.6))
+                .frame(width: 18, height: 116)
+                .overlay {
+                    Image(systemName: "lock.fill")
+                        .font(.caption2)
+                        .foregroundStyle(OWCDesign.tertiary)
+                }
+        } else {
+            workloadColumn(cell)
+        }
     }
+
+    private func workloadColumn(_ cell: RecordsDayCell) -> some View {
+        let work = min(1, Double(cell.workMs + cell.overtimeMs) / (12 * 3_600_000))
+        return ZStack(alignment: .bottom) {
+            Capsule().fill(OWCDesign.control.opacity(0.72))
+            // The minimum height is only a visibility aid for a real, short
+            // work interval. Applying it to zero turned rest days into a
+            // misleading orange baseline.
+            if work > 0 {
+                Capsule()
+                    .fill(cell.overtimeMs > 0 ? OWCDesign.recordsOvertime : OWCDesign.recordsWork)
+                    .frame(height: max(5, 116 * work))
+            }
+        }
+        .frame(width: 18, height: 116)
+        .overlay { Capsule().stroke(OWCDesign.separator, lineWidth: 0.5) }
+    }
+
 }
 
 struct RecordsYearCanvas: View {
     let store: OffWorkStore
     let cells: [RecordsDayCell]
     let selectedMonth: Int?
-    var showsMonthPicker = true
     var onSelectMonth: (Int) -> Void
     @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
     @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var calloutMonth: Int?
+    @State private var selectedBucketIndex: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -603,86 +622,100 @@ struct RecordsYearCanvas: View {
                                     lineWidth: contrast == .increased ? 1.5 : 1
                                 )
                             }
-                            if bucket.kind == .planned || bucket.isProjection {
-                                var marker = Path()
-                                marker.move(to: CGPoint(x: rect.minX + 2, y: rect.maxY - 2))
-                                marker.addLine(to: CGPoint(x: rect.maxX - 2, y: rect.minY + 2))
-                                context.stroke(marker, with: .color(OWCDesign.accent.opacity(0.7)), lineWidth: 0.8)
+                        }
+                        if let selectedMonth {
+                            for rect in grid.selectionRects(for: buckets.filter { $0.month == selectedMonth }.map(\.index)) {
+                                context.stroke(
+                                    Path(roundedRect: rect, cornerRadius: min(4, grid.cell / 2)),
+                                    with: .color(OWCDesign.primary.opacity(0.72)),
+                                    lineWidth: contrast == .increased ? 1.8 : 1.25
+                                )
                             }
                         }
                     }
                     .contentShape(Rectangle())
                     .gesture(DragGesture(minimumDistance: 0).onEnded { value in
                         guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
-                        onSelectMonth(buckets[index].month)
+                        select(month: buckets[index].month, bucketIndex: buckets[index].index)
                     })
+                    .overlay {
+                        if let calloutMonth,
+                           let bucket = calloutBucket(for: calloutMonth, in: buckets) {
+                            let rect = grid.rect(at: bucket.index)
+                            RecordsCanvasCallout(
+                                icon: "calendar",
+                                title: monthLabel(calloutMonth),
+                                subtitle: yearLabel
+                            )
+                            .position(
+                                x: min(proxy.size.width - 76, max(76, rect.midX)),
+                                y: min(proxy.size.height - 28, max(28, rect.minY - 18))
+                            )
+                            .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                        }
+                    }
+                    .accessibilityRepresentation {
+                        VStack {
+                            ForEach(1...12, id: \.self) { month in
+                                Button {
+                                    select(month: month, bucketIndex: nil)
+                                } label: {
+                                    Text(monthLabel(month))
+                                }
+                                .accessibilityAddTraits(selectedMonth == month ? .isSelected : [])
+                            }
+                        }
+                    }
                 } else {
                     Color.clear
                 }
             }
             .frame(minHeight: 184, idealHeight: 220, maxHeight: .infinity)
-            .accessibilityHidden(true)
 
-            if showsMonthPicker {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
-                    ForEach(1...12, id: \.self) { month in
-                        Button {
-                            onSelectMonth(month)
-                        } label: {
-                            HStack(spacing: 4) {
-                                Text(monthLabel(month))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.75)
-                                if selectedMonth == month {
-                                    Image(systemName: "checkmark")
-                                        .font(.caption2.bold())
-                                        .accessibilityHidden(true)
-                                }
-                            }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
+                ForEach(1...12, id: \.self) { month in
+                    Button {
+                        select(month: month, bucketIndex: nil)
+                    } label: {
+                        Text(monthLabel(month))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                             .font(.footnote.weight(selectedMonth == month ? .semibold : .medium))
                             .foregroundStyle(selectedMonth == month ? OWCDesign.orangeDeep : OWCDesign.secondary)
                             .frame(maxWidth: .infinity, minHeight: 44)
                             .background(
                                 selectedMonth == month
-                                    ? OWCDesign.orangeDeep.opacity(0.08)
+                                    ? OWCDesign.orangeDeep.opacity(0.16)
                                     : OWCDesign.control,
                                 in: RoundedRectangle(cornerRadius: 10, style: .continuous)
                             )
-                            .overlay(alignment: .leading) {
+                            .overlay {
                                 if selectedMonth == month {
-                                    Capsule()
-                                        .fill(OWCDesign.orangeDeep)
-                                        .frame(width: 3, height: 22)
-                                        .padding(.leading, 5)
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .stroke(OWCDesign.orangeDeep, lineWidth: contrast == .increased ? 2 : 1.25)
                                 }
                             }
-                        }
-                        .buttonStyle(.plain)
                     }
+                    .buttonStyle(.plain)
                 }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
         .animation(
             reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.18),
             value: selectedMonth
         )
-        .animation(
-            reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.2),
-            value: showsMonthPicker
-        )
     }
 
     private func color(_ bucket: RecordsYearBucket) -> Color {
         let base = switch bucket.kind {
-        case .locked: OWCDesign.control.opacity(0.7)
-        case .unrecorded, .rest: OWCDesign.control.opacity(0.42)
-        case .planned: OWCDesign.accent.opacity(0.12)
-        case .recorded: OWCDesign.accent.opacity(withoutColor ? 0.92 : min(0.88, 0.20 + Double(bucket.workMs) / 43_200_000))
-        case .corrected: OWCDesign.orangeDeep.opacity(withoutColor ? 0.92 : 0.78)
+        case .locked: OWCDesign.control.opacity(0.86)
+        case .unrecorded, .rest: OWCDesign.control.opacity(0.65)
+        case .planned: OWCDesign.accent.opacity(withoutColor ? 0.84 : 0.46)
+        case .recorded: OWCDesign.accent.opacity(withoutColor ? 0.96 : min(0.96, 0.54 + Double(bucket.workMs) / 57_600_000))
+        case .corrected: OWCDesign.orangeDeep.opacity(0.96)
         }
         guard let selectedMonth, bucket.month != selectedMonth else { return base }
-        return base.opacity(0.34)
+        return base.opacity(0.58)
     }
 
     private func monthLabel(_ month: Int) -> String {
@@ -691,6 +724,326 @@ struct RecordsYearCanvas: View {
         parts.day = 1
         let date = store.recordsCalendar.date(from: parts) ?? .now
         return store.formatRecordsMonth(date)
+    }
+
+    private var yearLabel: String {
+        let year = store.recordsCalendar.component(.year, from: cells.first?.date ?? .now)
+        return store.formatYear(year)
+    }
+
+    private func select(month: Int, bucketIndex: Int?) {
+        onSelectMonth(month)
+        calloutMonth = month
+        selectedBucketIndex = bucketIndex
+    }
+
+    private func calloutBucket(
+        for month: Int,
+        in buckets: [RecordsYearBucket]
+    ) -> RecordsYearBucket? {
+        if let selectedBucketIndex,
+           let tapped = buckets.first(where: { $0.index == selectedBucketIndex && $0.month == month }) {
+            return tapped
+        }
+        return buckets.first(where: { $0.month == month })
+    }
+}
+
+/// The expanded year.
+///
+/// Collapsed, the year stays `RecordsYearCanvas`: a few hundred small buckets
+/// that read as rhythm — which stretches of the year were heavy. A bucket that
+/// size carries exactly one channel, so overtime has to stay out of it, and
+/// the interactive unit is a whole month regardless of how fine the dots get.
+///
+/// Expanding spends the screen on height, and height is what a comparison
+/// wants. The same year becomes twelve rows on one shared ceiling: overtime is
+/// its own segment, every month is a real 44pt button with its total beside
+/// it, and VoiceOver reads twelve labelled rows instead of a canvas stand-in.
+/// Nothing is recomputed — both forms read the same `RecordsDayCell` values.
+struct RecordsYearMonthBars: View {
+    let store: OffWorkStore
+    let cells: [RecordsDayCell]
+    let selectedMonth: Int?
+    var onSelectMonth: (Int) -> Void
+
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
+    @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// At accessibility sizes a month name, a bar and a duration stop fitting
+    /// on one line, so the row becomes two lines rather than three truncated
+    /// columns.
+    private var stacksRow: Bool { dynamicTypeSize.isAccessibilitySize }
+    private let labelWidth: CGFloat = 64
+    private let valueWidth: CGFloat = 84
+
+    var body: some View {
+        let months = RecordsYearMonthSampler.months(cells: cells, calendar: store.recordsCalendar)
+        let axisMs = RecordsYearMonthSampler.axisCeiling(for: months)
+        VStack(alignment: .leading, spacing: 10) {
+            axisRow(axisMs)
+            // Expanding is a request for height, so the rows spend it: they
+            // stretch to fill the canvas rather than leaving a screen of empty
+            // card under twelve compact lines. Where twelve 44pt rows genuinely
+            // do not fit — a small phone, an accessibility text size — the
+            // second branch scrolls instead of compressing below the minimum
+            // hit target.
+            ViewThatFits(in: .vertical) {
+                rows(months, axisMs: axisMs, stretches: true)
+                ScrollView {
+                    rows(months, axisMs: axisMs, stretches: false)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+            }
+            legend(showsProjection: months.contains { $0.projectedMs > 0 })
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selectedMonth)
+    }
+
+    private func rows(_ months: [RecordsYearMonthBar], axisMs: Int64, stretches: Bool) -> some View {
+        VStack(spacing: 2) {
+            ForEach(months) { month in
+                row(month, axisMs: axisMs)
+                    .frame(maxHeight: stretches ? .infinity : nil)
+            }
+        }
+    }
+
+    /// The ruler the rows are drawn against. Without it a long bar reads as
+    /// "a lot" with no idea of how much.
+    private func axisRow(_ axisMs: Int64) -> some View {
+        HStack(spacing: 10) {
+            if !stacksRow {
+                Color.clear.frame(width: labelWidth, height: 1)
+            }
+            VStack(alignment: .trailing, spacing: 3) {
+                Text(store.formatRelativeDuration(Double(axisMs)))
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(OWCDesign.tertiary)
+                Rectangle()
+                    .fill(OWCDesign.separator)
+                    .frame(height: 1)
+            }
+            if !stacksRow {
+                Color.clear.frame(width: valueWidth, height: 1)
+            }
+        }
+        .padding(.horizontal, 8)
+        .accessibilityHidden(true)
+    }
+
+    private func row(_ month: RecordsYearMonthBar, axisMs: Int64) -> some View {
+        let isSelected = selectedMonth == month.month
+        return Button {
+            onSelectMonth(month.month)
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                if stacksRow {
+                    HStack(spacing: 8) {
+                        monthName(month, isSelected: isSelected)
+                        Spacer(minLength: 8)
+                        valueLabel(month)
+                    }
+                    track(month, axisMs: axisMs)
+                } else {
+                    HStack(spacing: 10) {
+                        monthName(month, isSelected: isSelected)
+                            .frame(width: labelWidth, alignment: .leading)
+                        track(month, axisMs: axisMs)
+                        valueLabel(month)
+                            .frame(width: valueWidth, alignment: .trailing)
+                    }
+                }
+                if isSelected, month.hasRecords {
+                    Text(breakdown(month))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .background(
+                isSelected ? OWCDesign.accent.opacity(0.12) : Color.clear,
+                in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+            )
+            .overlay {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(OWCDesign.accent, lineWidth: contrast == .increased ? 2 : 1.25)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(monthLabel(month.month))
+        .accessibilityValue(accessibilityValue(month))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func monthName(_ month: RecordsYearMonthBar, isSelected: Bool) -> some View {
+        Text(monthLabel(month.month))
+            .font(.subheadline.weight(isSelected ? .semibold : .regular))
+            .foregroundStyle(OWCDesign.primary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+    }
+
+    private func track(_ month: RecordsYearMonthBar, axisMs: Int64) -> some View {
+        GeometryReader { proxy in
+            let widths = segmentWidths(month, axisMs: axisMs, available: proxy.size.width)
+            ZStack(alignment: .leading) {
+                Capsule().fill(OWCDesign.control)
+                HStack(spacing: 2) {
+                    if widths.work > 0 {
+                        Capsule()
+                            .fill(OWCDesign.recordsWork)
+                            .frame(width: widths.work)
+                    }
+                    if widths.overtime > 0 {
+                        Capsule()
+                            .fill(OWCDesign.recordsOvertime)
+                            .frame(width: widths.overtime)
+                            .overlay {
+                                if withoutColor {
+                                    Capsule().strokeBorder(OWCDesign.primary.opacity(0.7), lineWidth: 1)
+                                }
+                            }
+                    }
+                    if widths.projected > 0 {
+                        // A dashed outline rather than a paler fill: "not yet"
+                        // has to survive Differentiate Without Color, and a
+                        // low-opacity solid does not.
+                        Capsule()
+                            .strokeBorder(
+                                OWCDesign.secondary.opacity(0.65),
+                                style: StrokeStyle(lineWidth: 1, dash: [3, 2])
+                            )
+                            .frame(width: widths.projected)
+                    }
+                }
+            }
+        }
+        .frame(height: 12)
+    }
+
+    /// Segment widths on the shared ceiling, floored so twenty minutes of
+    /// overtime still draws, and rescaled if those floors would run a row past
+    /// the end of its track.
+    private func segmentWidths(
+        _ month: RecordsYearMonthBar,
+        axisMs: Int64,
+        available: CGFloat
+    ) -> (work: CGFloat, overtime: CGFloat, projected: CGFloat) {
+        guard available > 0, axisMs > 0 else { return (0, 0, 0) }
+        let scale = available / CGFloat(axisMs)
+        func width(_ ms: Int64) -> CGFloat { ms > 0 ? max(4, CGFloat(ms) * scale) : 0 }
+        var work = width(month.workMs)
+        var overtime = width(month.overtimeMs)
+        var projected = width(month.projectedMs)
+        let drawn = [work, overtime, projected].filter { $0 > 0 }
+        let total = drawn.reduce(0, +) + CGFloat(max(0, drawn.count - 1)) * 2
+        if total > available {
+            let factor = available / total
+            work *= factor
+            overtime *= factor
+            projected *= factor
+        }
+        return (work, overtime, projected)
+    }
+
+    @ViewBuilder
+    private func valueLabel(_ month: RecordsYearMonthBar) -> some View {
+        if month.hasRecords {
+            duration(month.totalMs, style: OWCDesign.secondary)
+        } else if month.projectedMs > 0 {
+            duration(month.projectedMs, style: OWCDesign.tertiary)
+        } else {
+            Text(verbatim: "—")
+                .font(.footnote)
+                .foregroundStyle(OWCDesign.tertiary)
+        }
+    }
+
+    private func duration(_ ms: Int64, style: Color) -> some View {
+        Text(store.formatRelativeDuration(Double(ms)))
+            .font(.footnote.monospacedDigit())
+            .foregroundStyle(style)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+    }
+
+    private func legend(showsProjection: Bool) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 14) {
+                legendItems(showsProjection: showsProjection)
+                Spacer(minLength: 0)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                legendItems(showsProjection: showsProjection)
+            }
+        }
+        .padding(.horizontal, 8)
+    }
+
+    @ViewBuilder
+    private func legendItems(showsProjection: Bool) -> some View {
+        legendItem(store.t("recordsWorkRegular"), color: OWCDesign.recordsWork, dashed: false)
+        legendItem(store.t("recordsOvertime"), color: OWCDesign.recordsOvertime, dashed: false)
+        if showsProjection {
+            legendItem(store.t("recordsSourceProjection"), color: OWCDesign.secondary, dashed: true)
+        }
+    }
+
+    private func legendItem(_ title: String, color: Color, dashed: Bool) -> some View {
+        HStack(spacing: 5) {
+            Group {
+                if dashed {
+                    Capsule().strokeBorder(color.opacity(0.65), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+                } else {
+                    Capsule().fill(color)
+                }
+            }
+            .frame(width: 14, height: 8)
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(OWCDesign.secondary)
+                .lineLimit(1)
+        }
+    }
+
+    private func breakdown(_ month: RecordsYearMonthBar) -> String {
+        var parts = [
+            store.t("recordsMonthWorkdays", values: ["count": store.formatCount(month.workdays)]),
+            "\(store.t("recordsWorkRegular")) \(store.formatRelativeDuration(Double(month.workMs)))"
+        ]
+        if month.overtimeMs > 0 {
+            parts.append("\(store.t("recordsOvertime")) \(store.formatRelativeDuration(Double(month.overtimeMs)))")
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    private func accessibilityValue(_ month: RecordsYearMonthBar) -> String {
+        if month.hasRecords { return breakdown(month) }
+        if month.projectedMs > 0 {
+            return "\(store.t("recordsSourceProjection")) \(store.formatRelativeDuration(Double(month.projectedMs)))"
+        }
+        // Never name the month's real numbers here; a locked month has none
+        // loaded to name.
+        if month.hasLockedDays { return store.t("recordsLockedScale") }
+        return store.t("recordsUnrecorded")
+    }
+
+    private func monthLabel(_ month: Int) -> String {
+        var parts = store.recordsCalendar.dateComponents([.year], from: cells.first?.date ?? .now)
+        parts.month = month
+        parts.day = 1
+        let date = store.recordsCalendar.date(from: parts) ?? .now
+        return store.formatRecordsMonthShort(date)
     }
 }
 
@@ -777,6 +1130,7 @@ struct RecordsLifeCanvas: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
     @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var selectedBucketIndex: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -821,21 +1175,19 @@ struct RecordsLifeCanvas: View {
                         let path = Path(roundedRect: rect, cornerRadius: corner)
                         let base = OWCDesign.lifeColor(bucket.kind)
                         let isDimmed = selectedStage != nil && bucket.kind != selectedStage
+                        let isFutureWork = bucket.kind == .work && bucket.isFuture
                         let fill = base.opacity(
                             bucket.isFuture
-                                ? (isDimmed ? 0.08 : 0.34)
+                                ? (isDimmed ? 0.06 : isFutureWork ? 0.20 : 0.28)
                                 : (isDimmed ? 0.22 : 0.82)
                         )
                         context.fill(path, with: .color(fill))
 
                         if bucket.isFuture {
-                            var texture = Path()
-                            texture.move(to: CGPoint(x: rect.minX + 1, y: rect.maxY - 1))
-                            texture.addLine(to: CGPoint(x: rect.maxX - 1, y: rect.minY + 1))
                             context.stroke(
-                                texture,
-                                with: .color(OWCDesign.lifeColor(bucket.kind).opacity(withoutColor ? 0.9 : 0.55)),
-                                lineWidth: contrast == .increased ? 1.1 : 0.75
+                                Path(roundedRect: rect.insetBy(dx: 0.75, dy: 0.75), cornerRadius: corner),
+                                with: .color(base.opacity(withoutColor ? 0.9 : isFutureWork ? 0.62 : 0.42)),
+                                lineWidth: contrast == .increased ? 1.35 : 0.9
                             )
                         }
 
@@ -866,18 +1218,52 @@ struct RecordsLifeCanvas: View {
                     guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
                     let bucket = buckets[index]
                     let date = bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2)
-                    if let stage = LifeStageCalculator.stage(at: date, stages: stages) {
+                    if let stage = LifeStageCalculator.stage(at: date, stages: stages), stage.kind != .retirement {
+                        selectedBucketIndex = bucket.index
                         onSelect(stage)
                     }
                 })
+                .overlay {
+                    if let stage = selectedStageSpan,
+                       stage.kind != .retirement,
+                       let bucket = selectedBucket(for: stage, in: buckets) {
+                        let rect = grid.rect(at: bucket.index)
+                        RecordsCanvasCallout(
+                            icon: stage.kind.iconName,
+                            title: store.t(stage.kind.titleKey),
+                            subtitle: stageRange(stage)
+                        )
+                            .position(
+                                x: min(proxy.size.width - 76, max(76, rect.midX)),
+                                y: min(proxy.size.height - 28, max(28, rect.minY - 18))
+                            )
+                            .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                        }
+                }
+                .accessibilityRepresentation {
+                    VStack {
+                        ForEach(stages) { stage in
+                            if stage.kind == .retirement {
+                                Text("\(store.t(stage.kind.titleKey)), \(stageRange(stage))")
+                            } else {
+                                Button {
+                                    selectedBucketIndex = selectedBucket(for: stage, in: buckets)?.index
+                                    onSelect(stage)
+                                } label: {
+                                    Text("\(store.t(stage.kind.titleKey)), \(stageRange(stage))")
+                                }
+                                .accessibilityAddTraits(selectedStage == stage.kind ? .isSelected : [])
+                            }
+                        }
+                    }
+                }
             }
             .frame(minHeight: 196, idealHeight: 240, maxHeight: .infinity)
-            .accessibilityHidden(true)
 
             if showsStageLegend {
                 VStack(spacing: 0) {
                     ForEach(Array(stages.enumerated()), id: \.element.id) { index, stage in
-                        Button { onSelect(stage) } label: {
+                        if stage.kind == .retirement {
                             OWCRow(
                                 icon: stage.kind.iconName,
                                 title: store.t(stage.kind.titleKey),
@@ -885,29 +1271,42 @@ struct RecordsLifeCanvas: View {
                                 isLast: index == stages.count - 1,
                                 centersVertically: true
                             ) {
-                                Image(systemName: selectedStage == stage.kind ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(
-                                        selectedStage == stage.kind
-                                            ? OWCDesign.orangeDeep
-                                            : OWCDesign.lifeColor(stage.kind)
-                                    )
-                                    .frame(width: 24, alignment: .center)
+                                EmptyView()
                             }
-                            .background(
-                                selectedStage == stage.kind ? OWCDesign.orangeDeep.opacity(0.08) : Color.clear,
-                                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            )
-                            .overlay(alignment: .leading) {
-                                if selectedStage == stage.kind {
-                                    Capsule()
-                                        .fill(OWCDesign.orangeDeep)
-                                        .frame(width: 3, height: 28)
-                                        .padding(.leading, 4)
+                            .opacity(0.58)
+                            .accessibilityLabel(store.t(stage.kind.titleKey))
+                        } else {
+                            Button {
+                                // A legend is not a specific point on the
+                                // grid. Let the callout use the stage's first
+                                // bucket instead of pretending the last tap
+                                // still identifies this selection.
+                                selectedBucketIndex = nil
+                                onSelect(stage)
+                            } label: {
+                                OWCRow(
+                                    icon: stage.kind.iconName,
+                                    title: store.t(stage.kind.titleKey),
+                                    subtitle: stageRange(stage),
+                                    isLast: index == stages.count - 1,
+                                    centersVertically: true
+                                ) {
+                                    Image(systemName: selectedStage == stage.kind ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(
+                                            selectedStage == stage.kind
+                                                ? OWCDesign.orangeDeep
+                                                : OWCDesign.lifeColor(stage.kind)
+                                        )
+                                        .frame(width: 24, alignment: .center)
                                 }
+                                .background(
+                                    selectedStage == stage.kind ? OWCDesign.orangeDeep.opacity(0.08) : Color.clear,
+                                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                )
                             }
+                            .buttonStyle(OWCRowButtonStyle())
+                            .accessibilityLabel(store.t(stage.kind.titleKey))
                         }
-                        .buttonStyle(OWCRowButtonStyle())
-                        .accessibilityLabel(store.t(stage.kind.titleKey))
                     }
                 }
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -936,12 +1335,50 @@ struct RecordsLifeCanvas: View {
         }
     }
 
+    private var selectedStageSpan: LifeStageSpan? {
+        guard let selectedStage else { return nil }
+        return stages.first(where: { $0.kind == selectedStage })
+    }
+
+    private func selectedBucket(for stage: LifeStageSpan, in buckets: [LifeCanvasBucket]) -> LifeCanvasBucket? {
+        if let selectedBucketIndex,
+           let tapped = buckets.first(where: { $0.index == selectedBucketIndex && $0.kind == stage.kind }) {
+            return tapped
+        }
+        return buckets.first(where: { $0.kind == stage.kind })
+    }
+
     private func yearLabel(_ date: Date, _ precision: CivilDatePrecision?) -> String {
         let year = store.recordsCalendar.component(.year, from: date)
         if precision == .year {
             return store.t("lifeYearApproximate", values: ["year": "\(year)"])
         }
         return "\(year)"
+    }
+}
+
+private struct RecordsCanvasCallout: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.caption.weight(.semibold))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                Text(subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(OWCDesign.secondary)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(OWCDesign.card, in: Capsule())
+        .overlay { Capsule().stroke(OWCDesign.separator, lineWidth: 0.8) }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -972,24 +1409,24 @@ struct RecordsDayDetailCard: View {
 
                     if dynamicTypeSize.isAccessibilitySize {
                         LazyVGrid(columns: [GridItem(.flexible())], spacing: 8) {
-                            detailMetric("recordsWorkRegular", detail.regularWorkMs, color: OWCDesign.lifeWork, helpKey: "recordsMetricWorkHelp")
-                            detailMetric("recordsOvertime", detail.overtimeMs, color: OWCDesign.orangeDeep, helpKey: "recordsMetricOvertimeHelp")
-                            detailMetric("recordsBreakTime", detail.breakMs, color: OWCDesign.lifeStudy, helpKey: "recordsMetricBreakHelp")
-                            detailMetric("recordsSleep", detail.sleepMs, color: OWCDesign.lifeChildhood, helpKey: "recordsMetricSleepHelp")
-                            detailMetric("recordsFreeAwakeShort", detail.freeMs, color: OWCDesign.lifeRetirement, helpKey: "recordsMetricFreeHelp")
+                            detailMetric("recordsWorkRegular", detail.regularWorkMs, color: OWCDesign.recordsWork, helpKey: "recordsMetricWorkHelp")
+                            detailMetric("recordsOvertime", detail.overtimeMs, color: OWCDesign.recordsOvertime, helpKey: "recordsMetricOvertimeHelp")
+                            detailMetric("recordsBreakTime", detail.breakMs, color: OWCDesign.recordsBreak, helpKey: "recordsMetricBreakHelp")
+                            detailMetric("recordsSleep", detail.sleepMs, color: OWCDesign.recordsSleep, helpKey: "recordsMetricSleepHelp")
+                            detailMetric("recordsFreeAwakeShort", detail.freeMs, color: OWCDesign.recordsFree, helpKey: "recordsMetricFreeHelp")
                         }
                     } else {
                         Grid(horizontalSpacing: 8, verticalSpacing: 8) {
                             GridRow {
-                                detailMetric("recordsWorkRegular", detail.regularWorkMs, color: OWCDesign.lifeWork, helpKey: "recordsMetricWorkHelp")
-                                detailMetric("recordsOvertime", detail.overtimeMs, color: OWCDesign.orangeDeep, helpKey: "recordsMetricOvertimeHelp")
+                                detailMetric("recordsWorkRegular", detail.regularWorkMs, color: OWCDesign.recordsWork, helpKey: "recordsMetricWorkHelp")
+                                detailMetric("recordsOvertime", detail.overtimeMs, color: OWCDesign.recordsOvertime, helpKey: "recordsMetricOvertimeHelp")
                             }
                             GridRow {
-                                detailMetric("recordsBreakTime", detail.breakMs, color: OWCDesign.lifeStudy, helpKey: "recordsMetricBreakHelp")
-                                detailMetric("recordsSleep", detail.sleepMs, color: OWCDesign.lifeChildhood, helpKey: "recordsMetricSleepHelp")
+                                detailMetric("recordsBreakTime", detail.breakMs, color: OWCDesign.recordsBreak, helpKey: "recordsMetricBreakHelp")
+                                detailMetric("recordsSleep", detail.sleepMs, color: OWCDesign.recordsSleep, helpKey: "recordsMetricSleepHelp")
                             }
                             GridRow {
-                                wideDetailMetric("recordsFreeAwakeShort", detail.freeMs, color: OWCDesign.lifeRetirement, helpKey: "recordsMetricFreeHelp")
+                                wideDetailMetric("recordsFreeAwakeShort", detail.freeMs, color: OWCDesign.recordsFree, helpKey: "recordsMetricFreeHelp")
                                     .gridCellColumns(2)
                             }
                         }
@@ -1124,6 +1561,8 @@ struct RecordsDayDetailCard: View {
                     .font(.caption)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
                 Spacer(minLength: 0)
             }
             .padding(.trailing, 32)
@@ -1148,30 +1587,34 @@ struct RecordsDayDetailCard: View {
 
     private func wideDetailMetric(_ titleKey: String, _ milliseconds: Int64, color: Color, helpKey: String) -> some View {
         let title = store.t(titleKey)
-        return HStack(spacing: 8) {
-            Circle()
-                .fill(color)
-                .frame(width: 8, height: 8)
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(OWCDesign.secondary)
-                .lineLimit(1)
-            Spacer(minLength: 12)
+        return VStack(spacing: 5) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 8, height: 8)
+                Text(title)
+                    .font(.callout)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineLimit(1)
+                Spacer(minLength: 12)
+                RecordsMetricHelpButton(
+                    title: title,
+                    message: store.t(helpKey),
+                    selection: $selectedHelp
+                )
+                .frame(width: 32, height: 24)
+            }
             Text(store.formatRelativeDuration(Double(milliseconds)))
-                .font(.body.weight(.semibold).monospacedDigit())
+                .font(.title3.weight(.semibold).monospacedDigit())
                 .foregroundStyle(OWCDesign.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.72)
                 .allowsTightening(true)
-            RecordsMetricHelpButton(
-                title: title,
-                message: store.t(helpKey),
-                selection: $selectedHelp
-            )
+                .frame(maxWidth: .infinity, alignment: .center)
         }
-        .padding(.leading, 12)
-        .padding(.trailing, 2)
-        .padding(.vertical, 5)
+        .frame(maxWidth: .infinity, minHeight: 70)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
         .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
     }
 }

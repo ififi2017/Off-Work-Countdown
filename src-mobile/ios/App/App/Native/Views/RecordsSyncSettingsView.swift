@@ -170,7 +170,13 @@ struct RecordsSyncSettingsView: View {
         Button {
             run(action) { await perform() }
         } label: {
-            OWCRow(icon: icon, title: title, subtitle: subtitle, isLast: isLast) {
+            OWCRow(
+                icon: icon,
+                title: title,
+                subtitle: subtitle,
+                isLast: isLast,
+                centersVertically: true
+            ) {
                 if running == action { ProgressView() }
             }
         }
@@ -195,6 +201,7 @@ struct RecordsSyncSettingsView: View {
                 title: title,
                 subtitle: subtitle,
                 isLast: isLast,
+                centersVertically: true,
                 isDestructive: true
             ) {
                 if running == action { ProgressView() }
@@ -246,7 +253,22 @@ struct RecordsSyncSettingsView: View {
     }
 
     private var statusText: String {
-        switch store.cloudSync.status {
+        // Transport status and the persisted opt-in are intentionally stored
+        // separately. Never claim syncing when the durable source of truth is
+        // off, even if an interrupted CloudKit callback left a stale idle
+        // status behind.
+        if !store.records.state.sync.syncEnabled {
+            switch store.cloudSync.status {
+            case .accountChanged: return store.t("syncAccountChanged")
+            case .needsNetwork: return store.t("syncNeedNetwork")
+            case .noCloudRecords: return store.t("syncNoCloudRecords")
+            case .failed(let reason): return store.t(reason == "plus" ? "syncNeedsPlus" : "syncFailed")
+            case .deleted: return store.t("syncDeleted")
+            default: return store.t("syncOff")
+            }
+        }
+
+        return switch store.cloudSync.status {
         case .off: store.t("syncOff")
         case .idle, .syncing: store.t("syncOn")
         case .deleting: store.t("syncDeleting")

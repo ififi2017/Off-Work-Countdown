@@ -3,6 +3,8 @@ import SwiftUI
 /// Direction 1e: one consistent grouped-row vocabulary for every setting.
 struct SettingsDesignView: View {
     let store: OffWorkStore
+    @State private var showsCompactRootBar = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         // Scrolls, because the sections outgrow the window. Four of them
@@ -10,16 +12,7 @@ struct SettingsDesignView: View {
         // put "about" under it at the standard size on every phone.
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 12) {
-                    Text(store.t("settings"))
-                        .font(.largeTitle.bold())
-                        .tracking(-0.85)
-                    Spacer()
-                    SettingsPlusStarButton(store: store)
-                }
-                    .padding(.horizontal, OWCDesign.contentInset)
-                    .padding(.top, 14)
-                    .padding(.bottom, 4)
+                settingsRootHeader
 
                 ForEach(SettingsSection.allCases) { section in
                     SettingsSectionCard(store: store, section: section)
@@ -35,9 +28,43 @@ struct SettingsDesignView: View {
         // `pageInset` is what sets the margin; nothing else should.
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(OWCDesign.page)
-        .navigationTitle("")
+        .coordinateSpace(.named("settingsRootScroll"))
+        .toolbar(.hidden, for: .navigationBar)
+        .overlay(alignment: .top) {
+            if showsCompactRootBar {
+                compactSettingsBar
+                    .transition(.opacity)
+                    .zIndex(10)
+            }
+        }
     }
 
+    private var settingsRootHeader: some View {
+        OWCRootPageHeader(title: store.t("settings")) {
+            EmptyView()
+        } trailing: {
+            SettingsPlusStarButton(store: store)
+        }
+        .padding(.horizontal, OWCDesign.contentInset)
+        .padding(.top, 10)
+        .padding(.bottom, 4)
+        .onGeometryChange(for: Bool.self) { proxy in
+            proxy.frame(in: .named("settingsRootScroll")).maxY < 8
+        } action: { _, shouldShow in
+            guard showsCompactRootBar != shouldShow else { return }
+            withAnimation(reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.16)) {
+                showsCompactRootBar = shouldShow
+            }
+        }
+    }
+
+    private var compactSettingsBar: some View {
+        OWCCompactRootBar(title: store.t("settings")) {
+            EmptyView()
+        } trailing: {
+            SettingsPlusStarButton(store: store)
+        }
+    }
 }
 
 struct SettingsPlusStarButton: View {

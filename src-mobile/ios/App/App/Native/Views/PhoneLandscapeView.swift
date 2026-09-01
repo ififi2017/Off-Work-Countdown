@@ -55,6 +55,10 @@ struct PhoneLandscapeShellView: View {
             .navigationDestination(for: AppRoute.self) { route in
                 AppRouteDestination(route: route, store: store)
             }
+            // Timer deliberately owns no navigation chrome. Put the visibility
+            // decision on the shared stack so an invisible Settings root cannot
+            // reserve another row after a tab switch.
+            .toolbar(store.selectedTab == .timer ? .hidden : .visible, for: .navigationBar)
         }
         .onChange(of: store.presentedRoute) { _, route in
             guard let route else { return }
@@ -123,7 +127,6 @@ private struct LandscapeTimerView: View {
                 landscapeContent(at: store.timerDate(from: .now))
             }
         }
-        .navigationBarHidden(true)
         .sheet(isPresented: $showShare) {
             ShareComposerView(store: store).presentationDetents([.large])
         }
@@ -358,35 +361,36 @@ private struct LandscapeSettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                ZStack {
-                    Text(store.t("settings"))
-                        .font(.title.bold())
-                        .tracking(-0.65)
-                    HStack {
-                        Spacer()
-                        SettingsPlusStarButton(store: store)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-
                 HStack(alignment: .top, spacing: 18) {
-                    ForEach(columns.indices, id: \.self) { column in
+                    ForEach(columns, id: \.self) { column in
                         VStack(spacing: 14) {
-                            ForEach(columns[column]) { section in
+                            ForEach(column) { section in
                                 SettingsSectionCard(store: store, section: section)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .top)
                     }
                 }
-                .padding(.top, 8)
+                .padding(.top, 4)
             }
             .padding(.horizontal, 4)
             .padding(.vertical, 10)
         }
         .scrollBounceBehavior(.basedOnSize)
         .background(OWCDesign.page)
-        .navigationBarHidden(true)
+        .owcNavigationTitle(
+            store.t("settings"),
+            displayMode: .inline,
+            isActive: store.selectedTab == .settings
+        )
+        .toolbar {
+            if store.selectedTab == .settings {
+                ToolbarItem(placement: .topBarTrailing) {
+                    SettingsPlusStarButton(store: store)
+                }
+                .sharedBackgroundVisibility(.hidden)
+            }
+        }
     }
 }
 

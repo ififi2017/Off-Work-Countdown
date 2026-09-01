@@ -1,8 +1,8 @@
 import SwiftUI
 import UIKit
 
-/// Keeps UIKit's interactive navigation gestures available while the app uses
-/// its own SwiftUI header instead of a visible `UINavigationBar`.
+/// Keeps UIKit's interactive navigation gestures available while settings
+/// destinations replace the system back item so unsaved edits can be guarded.
 ///
 /// iOS 26 installs a content-wide pop recognizer on `UINavigationController`.
 /// UIKit owns that recognizer and its conflict handling. The bridge normally

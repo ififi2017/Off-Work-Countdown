@@ -79,7 +79,7 @@ struct SyncConflictCopy: Equatable, Codable, Sendable {
     /// fields (for example shift segments) stay atomic by construction.
     var supportsFieldMerge: Bool {
         switch entityType {
-        case .workObservation, .focusSession, .scheduleSnapshot:
+        case .workObservation, .focusSession, .scheduleSnapshot, .focusPlanningConfiguration:
             return false
         default:
             return localPayload != nil && incomingPayload != nil
@@ -181,6 +181,7 @@ enum RecordsSyncIdentity {
         case .workObservation: return "obs.\(key.lowercased())"
         case .focusTask: return "task.\(key.lowercased())"
         case .focusSession: return "session.\(key.lowercased())"
+        case .focusPlanningConfiguration: return FocusPlanningConfiguration.logicalKey
         }
     }
 
@@ -201,16 +202,48 @@ enum RecordsSyncConflict {
         return localTie > serverTie
     }
 
+    /// Chooses a business version without asking the user whenever the edit
+    /// history gives us a meaningful ordering.
+    ///
+    /// `editCount` is authoritative across devices. Equal counts describe two
+    /// edits made from the same revision, so the later user edit wins. Only an
+    /// exact count-and-time tie is ambiguous enough to require review; the
+    /// random tie-breaker still keeps the currently applied copy deterministic
+    /// while that review is pending, but is never presented as user intent.
+    static func automaticallyPreferredWinner(
+        localCount: Int,
+        localEditedAtMs: Double?,
+        incomingCount: Int,
+        incomingEditedAtMs: Double?
+    ) -> SyncConflictCopy.Winner? {
+        if localCount != incomingCount {
+            return localCount > incomingCount ? .local : .incoming
+        }
+        guard let localEditedAtMs, let incomingEditedAtMs,
+              localEditedAtMs != incomingEditedAtMs
+        else { return nil }
+        return localEditedAtMs > incomingEditedAtMs ? .local : .incoming
+    }
+
     static func mergeLifeProfile(
         local: LifeProfile,
         server: LifeProfile,
         baseline: LifeProfile?
     ) -> LifeProfile {
-        let localWinsOverall = localWins(
+        let automaticWinner = automaticallyPreferredWinner(
             localCount: local.editCount,
-            localTie: local.editTieBreaker.uuidString,
-            serverCount: server.editCount,
-            serverTie: server.editTieBreaker.uuidString
+            localEditedAtMs: local.editedAt.timeIntervalSince1970 * 1_000,
+            incomingCount: server.editCount,
+            incomingEditedAtMs: server.editedAt.timeIntervalSince1970 * 1_000
+        )
+        let localWinsOverall = automaticWinner == .local || (
+            automaticWinner == nil
+            && localWins(
+                localCount: local.editCount,
+                localTie: local.editTieBreaker.uuidString,
+                serverCount: server.editCount,
+                serverTie: server.editTieBreaker.uuidString
+            )
         )
         var merged = server
         var conflicted = false
@@ -247,6 +280,219 @@ enum RecordsSyncConflict {
             : (localWinsOverall ? local.editTieBreaker : server.editTieBreaker)
         merged.editedAt = max(local.editedAt, server.editedAt)
         return merged
+    }
+
+    static func focusPlanningContentIsEqual(
+        _ lhs: FocusPlanningConfiguration,
+        _ rhs: FocusPlanningConfiguration
+    ) -> Bool {
+        lhs.planning == rhs.planning
+            && lhs.timerSettings.normalized == rhs.timerSettings.normalized
+    }
+
+    /// Planning is one CloudKit identity but not one merge field. Templates
+    /// merge by UUID, plans by civil day, and cadence values independently.
+    /// A same-key concurrent edit still converges deterministically: revision
+    /// count first, then the user edit time, with the random tie-breaker only
+    /// for an exact timestamp tie.
+    static func mergeFocusPlanningConfiguration(
+        local: FocusPlanningConfiguration,
+        server: FocusPlanningConfiguration,
+        baseline: FocusPlanningConfiguration?
+    ) -> FocusPlanningConfiguration {
+        let automaticWinner = automaticallyPreferredWinner(
+            localCount: local.editCount,
+            localEditedAtMs: local.editedAt.timeIntervalSince1970 * 1_000,
+            incomingCount: server.editCount,
+            incomingEditedAtMs: server.editedAt.timeIntervalSince1970 * 1_000
+        )
+        let localWinsOverall = automaticWinner == .local || (
+            automaticWinner == nil
+            && localWins(
+                localCount: local.editCount,
+                localTie: local.editTieBreaker.uuidString,
+                serverCount: server.editCount,
+                serverTie: server.editTieBreaker.uuidString
+            )
+        )
+        func take<T: Equatable>(_ localValue: T, _ serverValue: T, _ baselineValue: T?) -> T {
+            let localChanged = baselineValue.map { localValue != $0 } ?? true
+            let serverChanged = baselineValue.map { serverValue != $0 } ?? true
+            switch (localChanged, serverChanged) {
+            case (true, false): return localValue
+            case (false, true): return serverValue
+            case (true, true) where localValue != serverValue:
+                return localWinsOverall ? localValue : serverValue
+            default: return serverValue
+            }
+        }
+        func takeOptional<T: Equatable>(_ localValue: T?, _ serverValue: T?, _ baselineValue: T?) -> T? {
+            let localChanged = localValue != baselineValue
+            let serverChanged = serverValue != baselineValue
+            switch (localChanged, serverChanged) {
+            case (true, false): return localValue
+            case (false, true): return serverValue
+            case (true, true) where localValue != serverValue:
+                return localWinsOverall ? localValue : serverValue
+            default: return serverValue
+            }
+        }
+
+        let baselineSettings = baseline?.timerSettings.normalized ?? .default
+        let localSettings = local.timerSettings.normalized
+        let serverSettings = server.timerSettings.normalized
+        let settings = FocusTimerSettings(
+            focusMinutes: take(localSettings.focusMinutes, serverSettings.focusMinutes, baselineSettings.focusMinutes),
+            shortBreakMinutes: take(localSettings.shortBreakMinutes, serverSettings.shortBreakMinutes, baselineSettings.shortBreakMinutes),
+            longBreakMinutes: take(localSettings.longBreakMinutes, serverSettings.longBreakMinutes, baselineSettings.longBreakMinutes),
+            longBreakEvery: take(localSettings.longBreakEvery, serverSettings.longBreakEvery, baselineSettings.longBreakEvery)
+        ).normalized
+
+        let localTemplates = Dictionary(uniqueKeysWithValues: local.planning.templates.map { ($0.id, $0) })
+        let serverTemplates = Dictionary(uniqueKeysWithValues: server.planning.templates.map { ($0.id, $0) })
+        let baselineTemplates = Dictionary(uniqueKeysWithValues: (baseline?.planning.templates ?? []).map { ($0.id, $0) })
+        let templateIDs = Set(localTemplates.keys).union(serverTemplates.keys).union(baselineTemplates.keys)
+        let templates = templateIDs.compactMap { id in
+            takeOptional(localTemplates[id], serverTemplates[id], baselineTemplates[id])
+        }.sorted { $0.id.uuidString < $1.id.uuidString }
+
+        let planKeys = Set(local.planning.plans.keys)
+            .union(server.planning.plans.keys)
+            .union(Set(baseline?.planning.plans.keys.map { $0 } ?? []))
+        var plans: [String: FocusDayPlan] = [:]
+        for key in planKeys {
+            plans[key] = takeOptional(
+                local.planning.plans[key],
+                server.planning.plans[key],
+                baseline?.planning.plans[key]
+            )
+        }
+
+        let templateIDsAfterMerge = Set(templates.map(\.id))
+        let defaultTemplateID = takeOptional(
+            local.planning.defaultTemplateID,
+            server.planning.defaultTemplateID,
+            baseline?.planning.defaultTemplateID
+        ).flatMap { templateIDsAfterMerge.contains($0) ? $0 : nil }
+
+        return FocusPlanningConfiguration(
+            planning: FocusPlanningState(
+                plans: plans,
+                templates: templates,
+                defaultTemplateID: defaultTemplateID,
+                autoAppliedDayKeys: local.planning.autoAppliedDayKeys.union(server.planning.autoAppliedDayKeys)
+            ),
+            timerSettings: settings,
+            editedAt: max(local.editedAt, server.editedAt),
+            editCount: max(local.editCount, server.editCount) + 1,
+            editTieBreaker: UUID()
+        )
+    }
+
+    private static let syncMetadataKeys = Set(["editCount", "editTieBreaker", "editedAtMs"])
+
+    /// JSON encoders may emit different byte order for equivalent objects.
+    /// Compare the decoded business dictionary and deliberately ignore only
+    /// revision metadata; structural fields remain part of identity safety.
+    static func payloadsHaveSameBusinessContent(_ lhs: Data, _ rhs: Data) -> Bool {
+        guard var left = (try? JSONSerialization.jsonObject(with: lhs)) as? [String: Any],
+              var right = (try? JSONSerialization.jsonObject(with: rhs)) as? [String: Any]
+        else { return false }
+        for key in syncMetadataKeys {
+            left.removeValue(forKey: key)
+            right.removeValue(forKey: key)
+        }
+        return NSDictionary(dictionary: left).isEqual(to: right)
+    }
+
+    /// Three-way merge only the entities whose payload relationships are
+    /// explicitly modelled here. Internal history rows and career boundaries
+    /// remain whole-version choices; guessing their field relationships can
+    /// manufacture an invalid record.
+    static func automaticallyMergedPayload(
+        local: Data,
+        server: Data,
+        baseline: Data?,
+        type: RecordEntityType
+    ) -> Data? {
+        guard let baseline,
+              var localValues = (try? JSONSerialization.jsonObject(with: local)) as? [String: Any],
+              let serverValues = (try? JSONSerialization.jsonObject(with: server)) as? [String: Any],
+              let baselineValues = (try? JSONSerialization.jsonObject(with: baseline)) as? [String: Any]
+        else { return nil }
+
+        let groups: [Set<String>]
+        let editable: Set<String>
+        let structural: Set<String>
+        switch type {
+        case .dayOverride:
+            groups = [["kind", "segments"]]
+            editable = ["kind", "segments", "note"]
+            structural = ["dayKey", "timeZoneIdentifier"]
+        case .calendarException:
+            groups = [["effect", "isCleared"]]
+            editable = ["effect", "isCleared", "label"]
+            structural = ["dayKey", "date", "origin", "regionIdentifier", "datasetVersion", "timeZoneIdentifier"]
+        case .focusTask:
+            groups = [
+                ["plannedForDate", "scheduledStartAtMs"],
+                ["templateID", "templateTaskKey"],
+                ["completedAtMs", "deletedAtMs"],
+            ]
+            editable = [
+                "plannedForDate", "scheduledStartAtMs", "templateID", "templateTaskKey",
+                "completedAtMs", "deletedAtMs", "title", "estimatedPomodoros", "icon",
+                "isFavorite", "sortIndex",
+            ]
+            structural = ["id", "createdAtMs"]
+        default:
+            return nil
+        }
+
+        for key in structural where !jsonValuesEqual(localValues[key], serverValues[key]) {
+            return nil
+        }
+
+        var handled = Set<String>()
+        for group in groups {
+            handled.formUnion(group)
+            let localChanged = group.contains { !jsonValuesEqual(localValues[$0], baselineValues[$0]) }
+            let serverChanged = group.contains { !jsonValuesEqual(serverValues[$0], baselineValues[$0]) }
+            if localChanged, serverChanged {
+                guard group.allSatisfy({ jsonValuesEqual(localValues[$0], serverValues[$0]) }) else {
+                    return nil
+                }
+            } else if serverChanged {
+                for key in group { copyJSONValue(for: key, from: serverValues, to: &localValues) }
+            }
+        }
+
+        for key in editable.subtracting(handled) {
+            let localChanged = !jsonValuesEqual(localValues[key], baselineValues[key])
+            let serverChanged = !jsonValuesEqual(serverValues[key], baselineValues[key])
+            if localChanged, serverChanged, !jsonValuesEqual(localValues[key], serverValues[key]) {
+                return nil
+            }
+            if serverChanged { copyJSONValue(for: key, from: serverValues, to: &localValues) }
+        }
+        return try? JSONSerialization.data(withJSONObject: localValues, options: [.sortedKeys])
+    }
+
+    private static func copyJSONValue(
+        for key: String,
+        from source: [String: Any],
+        to target: inout [String: Any]
+    ) {
+        if let value = source[key] { target[key] = value }
+        else { target.removeValue(forKey: key) }
+    }
+
+    private static func jsonValuesEqual(_ lhs: Any?, _ rhs: Any?) -> Bool {
+        switch (lhs, rhs) {
+        case (nil, nil): return true
+        case (nil, _), (_, nil): return false
+        case let (left?, right?): return (left as AnyObject).isEqual(right)
+        }
     }
 }
 
@@ -374,6 +620,7 @@ enum RecordsSyncApplyAction: Equatable, Sendable {
     case keepLocalAndCopyServer
     case takeServerAndCopyLocal
     case mergeLife
+    case mergeFocusPlanning
 }
 
 enum RecordsSyncApply {
@@ -397,6 +644,7 @@ enum RecordsSyncApply {
         if locallyErased, localCount == nil { return .reassertErase }
         guard let localCount, let localTie else { return .insert }
         if type == .lifeProfile { return .mergeLife }
+        if type == .focusPlanningConfiguration { return .mergeFocusPlanning }
         if RecordsSyncConflict.localWins(
             localCount: localCount,
             localTie: localTie,
@@ -428,6 +676,8 @@ enum RecordsSyncPayload {
             return try? JSONEncoder().encode(FocusTaskDTO(task, calendar: calendar))
         case .focusSession(let session):
             return try? JSONEncoder().encode(FocusSessionDTO(session, calendar: calendar))
+        case .focusPlanningConfiguration(let configuration):
+            return try? JSONEncoder().encode(FocusPlanningConfigurationDTO(configuration))
         }
     }
 
@@ -461,6 +711,9 @@ enum RecordsSyncPayload {
         case .focusSession:
             return state.focusSessions.first(where: { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame })
                 .flatMap { try? JSONEncoder().encode(FocusSessionDTO($0, calendar: calendar)) }
+        case .focusPlanningConfiguration:
+            return state.focusPlanningConfiguration
+                .flatMap { try? JSONEncoder().encode(FocusPlanningConfigurationDTO($0)) }
         }
     }
 
@@ -498,6 +751,10 @@ enum RecordsSyncPayload {
             return (try? JSONDecoder().decode(FocusSessionDTO.self, from: data))
                 .flatMap { $0.value(calendar: calendar) }
                 .map { .focusSession($0) }
+        case .focusPlanningConfiguration:
+            return (try? JSONDecoder().decode(FocusPlanningConfigurationDTO.self, from: data))
+                .flatMap { $0.value() }
+                .map { .focusPlanningConfiguration($0) }
         }
     }
 
@@ -514,6 +771,7 @@ enum RecordsSyncPayload {
         case .lifeProfile(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         case .focusTask(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         case .focusSession(let value): return value.editedAt.timeIntervalSince1970 * 1_000
+        case .focusPlanningConfiguration(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         }
     }
 
@@ -546,6 +804,8 @@ enum RecordsSyncPayload {
         case .focusSession:
             return state.focusSessions.first(where: { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame })
                 .map { ($0.editCount, $0.editTieBreaker.uuidString) }
+        case .focusPlanningConfiguration:
+            return state.focusPlanningConfiguration.map { ($0.editCount, $0.editTieBreaker.uuidString) }
         }
     }
 
@@ -562,6 +822,7 @@ enum RecordsSyncPayload {
         case .lifeProfile(let value): return (value.editCount, value.editTieBreaker.uuidString)
         case .focusTask(let value): return (value.editCount, value.editTieBreaker.uuidString)
         case .focusSession(let value): return (value.editCount, value.editTieBreaker.uuidString)
+        case .focusPlanningConfiguration(let value): return (value.editCount, value.editTieBreaker.uuidString)
         }
     }
 

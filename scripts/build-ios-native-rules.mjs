@@ -235,16 +235,6 @@ export function createIOSNativeRulesBundle() {
     return { targetAtMs, anchorAtMs, progress };
   }
 
-  function hasCurrentOrUpcomingBreak(input, shift) {
-    if (!isActualShift(input, shift)) return false;
-    if (input.nowMs >= countdown.getShiftEndAtMs(shift)) return false;
-    for (let index = 0; index < shift.segments.length - 1; index += 1) {
-      const gapEndAtMs = shift.segments[index + 1].startAtMs;
-      if (gapEndAtMs > input.nowMs) return true;
-    }
-    return false;
-  }
-
   global.OWCNative = {
     snapshot(inputJSON) {
       const input = JSON.parse(inputJSON);
@@ -449,22 +439,20 @@ export function createIOSNativeRulesBundle() {
       const request = JSON.parse(requestJSON);
       const current = resolveCurrentShift(request.current);
       const candidate = resolveCurrentShift(request.candidate);
+      const currentIsScheduled = isScheduledShift(request.current, current);
+      const candidateIsScheduled = isScheduledShift(request.candidate, candidate);
 
       if (request.kind === "lunch") {
-        return hasCurrentOrUpcomingBreak(request.current, current) ||
-          hasCurrentOrUpcomingBreak(request.candidate, candidate);
+        // Even a finished lunch still changes today's Records allocation. Ask
+        // instead of silently making it effective tomorrow while the rest of
+        // the edited schedule appears to have reached today.
+        return currentIsScheduled || candidateIsScheduled;
       }
 
-      const currentIsScheduled = isScheduledShift(request.current, current);
-      if (!currentIsScheduled) return Boolean(request.schedulePatternChanged);
-
-      // A running or upcoming scheduled shift can still be changed today.
-      if (request.current.nowMs < countdown.getShiftEndAtMs(current)) return true;
-
-      // Once the old shift has settled, ask only if applying the draft would
-      // put a scheduled shift back into today's remaining time.
-      return isScheduledShift(request.candidate, candidate) &&
-        request.candidate.nowMs < countdown.getShiftEndAtMs(candidate);
+      // A settled shift is still today's durable Records row. The user must be
+      // able to decide whether a later settings edit revises that row or starts
+      // with the next shift.
+      return currentIsScheduled || candidateIsScheduled;
     },
   };
 })(globalThis);

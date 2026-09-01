@@ -258,6 +258,98 @@ private func resolution(
 }
 
 @MainActor
+@Test("Expanded year rows sum only recorded days and keep projections separate")
+func yearMonthBarsSeparateRecordsFromProjection() throws {
+    let calendar = utcCalendar()
+    let cells = [
+        yearCell("2026-03-02", try date(2026, 3, 2, calendar: calendar), .recorded, workHours: 8, overtimeHours: 1),
+        yearCell("2026-03-03", try date(2026, 3, 3, calendar: calendar), .corrected, workHours: 4, overtimeHours: 0),
+        yearCell("2026-03-07", try date(2026, 3, 7, calendar: calendar), .rest),
+        yearCell("2026-03-08", try date(2026, 3, 8, calendar: calendar), .unrecorded),
+        yearCell("2026-04-01", try date(2026, 4, 1, calendar: calendar), .planned, workHours: 8, isProjection: true),
+        yearCell("2026-04-02", try date(2026, 4, 2, calendar: calendar), .planned, workHours: 8)
+    ]
+
+    let months = RecordsYearMonthSampler.months(cells: cells, calendar: calendar)
+    #expect(months.map(\.month) == [3, 4])
+
+    let march = try #require(months.first)
+    #expect(march.workdays == 2)
+    #expect(march.workMs == Int64(12 * hourMs))
+    #expect(march.overtimeMs == Int64(hourMs))
+    #expect(march.projectedMs == 0)
+
+    // A scheduled future day carries no numbers; only a life projection does,
+    // and it never joins the recorded totals.
+    let april = try #require(months.last)
+    #expect(april.workdays == 0)
+    #expect(april.totalMs == 0)
+    #expect(april.projectedMs == Int64(8 * hourMs))
+}
+
+@MainActor
+@Test("A locked month contributes no numbers to the expanded year")
+func yearMonthBarsRevealNothingForLockedDays() throws {
+    let calendar = utcCalendar()
+    let cells = [
+        yearCell("2026-01-05", try date(2026, 1, 5, calendar: calendar), .locked, workHours: 8, overtimeHours: 2),
+        yearCell("2026-01-06", try date(2026, 1, 6, calendar: calendar), .locked)
+    ]
+
+    let january = try #require(RecordsYearMonthSampler.months(cells: cells, calendar: calendar).first)
+    #expect(january.workdays == 0)
+    #expect(january.workMs == 0)
+    #expect(january.overtimeMs == 0)
+    #expect(january.projectedMs == 0)
+    #expect(january.hasLockedDays)
+}
+
+@MainActor
+@Test("Every month row is drawn against one ceiling that covers the longest row")
+func yearMonthBarsShareOneAxisCeiling() throws {
+    let calendar = utcCalendar()
+    let cells = [
+        yearCell("2026-05-04", try date(2026, 5, 4, calendar: calendar), .recorded, workHours: 30, overtimeHours: 0),
+        yearCell("2026-06-01", try date(2026, 6, 1, calendar: calendar), .recorded, workHours: 150, overtimeHours: 12),
+        yearCell("2026-07-01", try date(2026, 7, 1, calendar: calendar), .planned, workHours: 90, isProjection: true)
+    ]
+    let months = RecordsYearMonthSampler.months(cells: cells, calendar: calendar)
+    let ceiling = RecordsYearMonthSampler.axisCeiling(for: months)
+
+    #expect(ceiling == Int64(200 * hourMs))
+    for month in months {
+        #expect(month.drawnMs <= ceiling)
+    }
+
+    #expect(RecordsYearMonthSampler.axisCeiling(for: []) == Int64(hourMs))
+}
+
+@MainActor
+private func yearCell(
+    _ dayKey: String,
+    _ date: Date,
+    _ appearance: RecordsDayAppearance,
+    workHours: Double = 0,
+    overtimeHours: Double = 0,
+    isProjection: Bool = false
+) -> RecordsDayCell {
+    RecordsDayCell(
+        dayKey: dayKey,
+        date: date,
+        appearance: appearance,
+        workMs: Int64(workHours * hourMs),
+        overtimeMs: Int64(overtimeHours * hourMs),
+        breakMs: 0,
+        freeMs: 0,
+        observationCount: 0,
+        isToday: false,
+        isFuture: false,
+        isProjection: isProjection,
+        hasConflict: false
+    )
+}
+
+@MainActor
 private func utcCalendar() -> Calendar {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(secondsFromGMT: 0)!
