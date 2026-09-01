@@ -1248,10 +1248,7 @@ func completedShiftStaysOnSettlement() throws {
     let shift = try #require(store.snapshot(at: afterWork))
     #expect(shift.remainingMs <= 0)
     #expect(store.visualPhase(snapshot: shift, at: afterWork) == .completed)
-
-    store.dismissCompletedShift(at: afterWork)
     #expect(store.countdownStarted)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: afterWork), at: afterWork) == .completed)
 }
 
 @MainActor
@@ -1565,10 +1562,6 @@ func clockingOffEarlyLandsOnCompleted() throws {
     #expect(store.isShiftComplete(shift))
     #expect(store.visualPhase(snapshot: shift, at: mondayAtWork) == .completed)
     #expect(store.countdownStarted)
-
-    store.dismissCompletedShift(at: mondayAtWork)
-    #expect(store.countdownStarted)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .completed)
 
     store.undoEarlyClockOff()
     #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .running)
@@ -2006,7 +1999,6 @@ func manualStartClearsLeftoverEarlyClockOff() throws {
     store.endMinutes = 17 * 60
     store.startCountdown(at: mondayAtWork)
     store.clockOffEarly(at: mondayAtWork)
-    store.dismissCompletedShift(at: mondayAtWork)
 
     store.scheduleMode = .off
     store.startCountdown(at: mondayAtWork)

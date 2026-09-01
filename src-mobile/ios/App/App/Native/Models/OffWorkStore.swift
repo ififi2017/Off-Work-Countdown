@@ -210,7 +210,6 @@ final class OffWorkStore {
         static let earlyOffAtMs = "ios.native.earlyOffAtMs"
         static let earlyOffShiftEndAtMs = "ios.native.earlyOffShiftEndAtMs"
         static let earlyOffSnapshot = "ios.native.earlyOffSnapshot"
-        static let dismissedCompletedEndAtMs = "ios.native.dismissedCompletedEndAtMs"
         static let legacyForceToday = "ios.native.forceToday"
         static let forcedWorkdayDate = "ios.native.forcedWorkdayDate"
         static let startMinutes = "ios.native.startMinutes"
@@ -459,9 +458,6 @@ final class OffWorkStore {
     /// 007 no longer dismisses settlement back to a configuration page. The
     /// value is still read on upgrade so an old mark can be cleared, and is
     /// never written from new UI.
-    var dismissedCompletedEndAtMs: Double? {
-        didSet { defaults.set(dismissedCompletedEndAtMs, forKey: Key.dismissedCompletedEndAtMs) }
-    }
 
     /// Clocked in before the planned start. Bound to the settlement seam of
     /// that shift so a leftover 08:00 does not become tomorrow's start.
@@ -785,7 +781,6 @@ final class OffWorkStore {
         earlyStartAtMs = defaults.object(forKey: Key.earlyStartAtMs) as? Double
         earlyStartUntilMs = defaults.object(forKey: Key.earlyStartUntilMs) as? Double
         todayOverride = Self.decodeTodayOverride(from: defaults)
-        dismissedCompletedEndAtMs = defaults.object(forKey: Key.dismissedCompletedEndAtMs) as? Double
         activeCountdownEndAtMs = defaults.object(forKey: Key.activeCountdownEndAtMs) as? Double
         reviewPromptState = defaults.data(forKey: Key.appReviewPrompt)
             .flatMap { try? JSONDecoder().decode(AppReviewPromptState.self, from: $0) }
@@ -2339,11 +2334,6 @@ final class OffWorkStore {
         }
     }
 
-    /// Starts a manual session (unscheduled or a rest-day override).
-    func applySettings(force: Bool = false, at date: Date = .now) {
-        startCountdown(force: force, at: date)
-    }
-
     func startCountdown(force: Bool = false, at date: Date = .now) {
         if scheduleMode == .off {
             // Manual "start" is a new session. A leftover early-off from a
@@ -2351,7 +2341,6 @@ final class OffWorkStore {
             // this button to settlement: ended-early never runs.
             clearEarlyClockOffRecord()
             clearEarlyClockInRecord()
-            dismissedCompletedEndAtMs = nil
         }
         commitDisplayedHours()
         let wasRunning = countdownStarted
@@ -2374,7 +2363,6 @@ final class OffWorkStore {
             // record so settlement stays on this run.
         } else {
             clearEarlyClockOffRecord()
-            dismissedCompletedEndAtMs = nil
         }
         recordActiveCountdownBoundary(at: date)
         writeObservation(.countdownStarted, at: date, eventID: UUID())
@@ -2434,7 +2422,6 @@ final class OffWorkStore {
         earlyOffAtMs = date.timeIntervalSince1970 * 1_000
         earlyOffShiftEndAtMs = shift.endAtMs
         earlyOffSnapshot = shift
-        dismissedCompletedEndAtMs = nil
         clockOffConfirmPending = false
         timelineExpanded = false
         // Leave a forced rest-day run in place until settlement: cancelling
@@ -2456,7 +2443,6 @@ final class OffWorkStore {
         let revokedCompletionAtMs = earlyOffAtMs
         clearEarlyClockOffRecord()
         revokeCountdownCompletion(endAtMs: revokedCompletionAtMs)
-        dismissedCompletedEndAtMs = nil
         recordActiveCountdownBoundary()
     }
 
@@ -2515,12 +2501,6 @@ final class OffWorkStore {
         return shift.endAtMs > earlyOffAtMs && shift.startAtMs < earlyOffShiftEndAtMs
     }
 
-    /// Settlement is not dismissible. Kept as a no-op so older tests and
-    /// call sites compile while they are rewritten.
-    func dismissCompletedShift(at date: Date = .now) {
-        _ = date
-    }
-
     /// Copy for the undo banner. Present while an early clock-off still covers
     /// the current shift; once the planned end has passed there is nothing left
     /// to undo.
@@ -2568,11 +2548,6 @@ final class OffWorkStore {
         guard snapshot.endAtMs > date.timeIntervalSince1970 * 1_000 else { return false }
         guard !isEndedEarly(snapshot) else { return false }
         return (snapshot.isWorkday || isForcedWorkday(snapshot)) && !isShiftComplete(snapshot)
-    }
-
-    func isDismissedCompleted(_ shift: NativeShiftSnapshot) -> Bool {
-        guard let dismissedCompletedEndAtMs else { return false }
-        return shift.endAtMs == dismissedCompletedEndAtMs
     }
 
     var publishesLiveSurfaces: Bool {
@@ -2658,7 +2633,6 @@ final class OffWorkStore {
         timelineExpanded = false
         forcedWorkdayDate = nil
         activeCountdownEndAtMs = nil
-        dismissedCompletedEndAtMs = nil
         draftStartMinutes = nil
         draftEndMinutes = nil
         clearOvertime()
@@ -2720,10 +2694,6 @@ final class OffWorkStore {
 
             if forcedWorkdayDate != nil, !isForcedWorkday(current) {
                 forcedWorkdayDate = nil
-                changed = true
-            }
-            if dismissedCompletedEndAtMs != nil, !isDismissedCompleted(current) {
-                dismissedCompletedEndAtMs = nil
                 changed = true
             }
             if earlyOffAtMs != nil, !isEndedEarly(current) {
@@ -2837,8 +2807,6 @@ final class OffWorkStore {
         }
     }
 
-    var canRemoveLastWorkday: Bool { workdays.count <= 1 }
-
     var nativeSchedule: NativeWorkSchedule { nativeSchedule(at: .now) }
 
     func nativeSchedule(at date: Date, using source: RulesScheduleSource = .effective) -> NativeWorkSchedule {
@@ -2942,7 +2910,6 @@ final class OffWorkStore {
         // Overtime after an early clock-off is "I wasn't done".
         clearEarlyClockOffRecord()
         revokeCountdownCompletion(endAtMs: revokedCompletionAtMs)
-        dismissedCompletedEndAtMs = nil
         // Declaring overtime creates a new completion boundary. If the normal
         // clock-off already celebrated during this warm session, let the new
         // boundary celebrate as well — including a retrospective declaration
@@ -3031,7 +2998,6 @@ final class OffWorkStore {
         clearEarlyClockOffRecord()
         clearEarlyClockInRecord()
         clearOvertime()
-        dismissedCompletedEndAtMs = nil
     }
 
     private func captureSchedule(untilMs: Double) -> TodayScheduleOverride {
@@ -3184,13 +3150,6 @@ final class OffWorkStore {
             return max(0, next - nowMs)
         }
         return snapshot.heroRemainingMs(at: date)
-    }
-
-    func countdownToClockInDate(snapshot: NativeShiftSnapshot, at date: Date) -> Date? {
-        if snapshot.isWorkday || isForcedWorkday(snapshot), snapshot.isBeforeStart(at: date) {
-            return snapshot.startDate
-        }
-        return snapshot.nextShiftStartDate
     }
 
     /// Elapsed progress toward the next clock-in, supplied by the generated

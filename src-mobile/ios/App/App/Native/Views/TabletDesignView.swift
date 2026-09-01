@@ -837,14 +837,6 @@ private struct TabletSettingsView: View {
             .padding(.horizontal, 16)
             .padding(.top, -12)
     }
-    private var workdaysDescription: String {
-        if store.scheduleMode != .classic { return store.scheduleLabel }
-        let values = Array(zip([1, 2, 3, 4, 5, 6, 0], store.weekdayLabels()))
-            .filter { store.workdays.contains($0.0) }
-            .map(\.1)
-        guard let first = values.first else { return store.t("disabledShort") }
-        return values.count > 1 ? "\(first) – \(values.last ?? first)" : first
-    }
 }
 
 

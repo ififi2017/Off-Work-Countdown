@@ -885,18 +885,6 @@ private struct OWCDownTriangle: Shape {
     }
 }
 
-struct OWCPageTitle: View {
-    let title: String
-
-    var body: some View {
-        Text(title)
-            .font(.largeTitle.bold())
-            .tracking(-0.7)
-            .foregroundStyle(OWCDesign.primary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
 struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
     let backTitle: String
     let pageTitle: String
