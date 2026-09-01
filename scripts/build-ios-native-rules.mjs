@@ -268,6 +268,7 @@ export function createIOSNativeRulesBundle() {
         input.monthlyWorkingDays,
         input.annualBonusMonths || 0
       );
+      const payRatio = countdown.calculateTimelinePayRatio(shift, input.nowMs);
       return JSON.stringify({
         segments: shift.segments,
         startAtMs: countdown.getShiftStartAtMs(shift),
@@ -279,7 +280,7 @@ export function createIOSNativeRulesBundle() {
         elapsedMs: countdown.getShiftElapsedMs(shift, input.nowMs),
         remainingMs: countdown.getShiftRemainingMs(shift, input.nowMs),
         progress: countdown.calculateTimelineProgress(shift, input.nowMs),
-        payRatio: countdown.calculateTimelinePayRatio(shift, input.nowMs),
+        payRatio,
         activeBreakEndAtMs: countdown.getActiveBreakEndAtMs(shift, input.nowMs),
         isWorkday: countdown.isScheduledWorkday(
           new Date(countdown.getShiftStartAtMs(shift)),
@@ -294,6 +295,7 @@ export function createIOSNativeRulesBundle() {
           timeZone: inputTimeZone(input),
         })?.getTime() ?? null,
         dailySalary,
+        earnedSoFar: summary.earningsForRatio(dailySalary, payRatio),
         nextShiftStartAtMs: nextShift
           ? countdown.getShiftStartAtMs(nextShift)
           : null,
@@ -409,6 +411,22 @@ export function createIOSNativeRulesBundle() {
         todayPayRatio: input.todayPayRatio,
         timeZone,
       }));
+    },
+
+    recordsIncome(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      const dailySalary = countdown.getDailySalary(
+        String(input.salaryAmount ?? ""),
+        input.salaryType,
+        input.monthlyWorkingDays,
+        input.annualBonusMonths || 0
+      );
+      return JSON.stringify({
+        earnings: summary.completedWorkdayIncome(
+          input.completedWorkdays,
+          dailySalary
+        ),
+      });
     },
 
     reminders(inputJSON) {

@@ -2975,12 +2975,14 @@ private func utcDay(_ year: Int, _ month: Int, _ day: Int) -> Date {
 }
 
 @MainActor
-@Test("Records income credits the running shift, matching the timer's own row")
-func recordsIncomeMatchesTheSharedSummaryRule() throws {
+@Test("Records income counts completed base-schedule days and excludes today's live pay")
+func recordsIncomeUsesCompletedScheduledDays() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let store = OffWorkStore(defaults: defaults)
     store.onboardingComplete = true
+    store.plus.debugSetAuthorized(true)
+    store.recordsTimeZoneIdentifier = "UTC"
     store.scheduleMode = .classic
     store.workdays = [1, 2, 3, 4, 5]
     store.startMinutes = 9 * 60
@@ -2991,27 +2993,85 @@ func recordsIncomeMatchesTheSharedSummaryRule() throws {
     store.salaryAmount = "22000"
     store.monthlyWorkingDays = 22
 
-    var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = store.recordsTimeZone
+    let calendar = store.recordsCalendar
     // Wednesday, halfway through the shift. Monday and Tuesday are done.
     let midShift = try #require(calendar.date(from: DateComponents(
         year: 2026, month: 9, day: 2, hour: 13
     )))
-    store.startCountdown(at: midShift)
-
     let shift = try #require(store.snapshot(at: midShift))
     let daily = try #require(shift.dailySalary)
-    let income = try #require(store.recordsIncome(for: .week, asOf: midShift))
+    let monday = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 8, day: 31
+    )))
+    let tuesday = try #require(calendar.date(byAdding: .day, value: 1, to: monday))
+    let wednesday = try #require(calendar.date(byAdding: .day, value: 2, to: monday))
+    let segment = NativeShiftSegment(
+        startAtMs: monday.addingTimeInterval(9 * 3_600).timeIntervalSince1970 * 1_000,
+        endAtMs: monday.addingTimeInterval(17 * 3_600).timeIntervalSince1970 * 1_000
+    )
+    let days = [
+        DayResolution(
+            dayKey: "2026-08-31",
+            shiftAnchorDate: monday,
+            layer: .schedule,
+            periodID: nil,
+            snapshotID: nil,
+            isScheduledWorkday: true,
+            segments: [segment],
+            baseScheduleIsWorkday: true,
+            baseScheduleSegments: [segment]
+        ),
+        // A leave override still earns one base-schedule day by product rule.
+        DayResolution(
+            dayKey: "2026-09-01",
+            shiftAnchorDate: tuesday,
+            layer: .override,
+            periodID: nil,
+            snapshotID: nil,
+            isScheduledWorkday: false,
+            segments: [],
+            baseScheduleIsWorkday: true,
+            baseScheduleSegments: []
+        ),
+        DayResolution(
+            dayKey: "2026-09-02",
+            shiftAnchorDate: wednesday,
+            layer: .schedule,
+            periodID: nil,
+            snapshotID: nil,
+            isScheduledWorkday: true,
+            segments: [],
+            baseScheduleIsWorkday: true,
+            baseScheduleSegments: []
+        ),
+    ]
+    let recordedCell = RecordsDayCell(
+        dayKey: "2026-08-31",
+        date: monday,
+        appearance: .recorded,
+        workMs: 8 * 3_600_000,
+        overtimeMs: 0,
+        breakMs: 0,
+        freeMs: 0,
+        observationCount: 1,
+        isToday: false,
+        isFuture: false,
+        isProjection: false,
+        hasConflict: false
+    )
+    let headline = try #require(store.recordsHeadline(
+        cells: [recordedCell],
+        days: days,
+        now: midShift
+    ))
+    let income = try #require(headline.estimatedIncome)
 
-    // The rule that Records must not re-implement: the shift on the clock is
-    // credited by its pay ratio, so a Wednesday afternoon is worth more than
-    // the two days that have finished.
-    #expect(abs(income - (2 + shift.payRatio) * daily) < 0.001)
-    #expect(income > 2 * daily)
-
-    // Records and the timer describe the same week with the same number.
+    #expect(abs(income - 2 * daily) < 0.001)
     let timerRow = try #require(store.periodSummary("week", asOf: midShift, snapshot: shift))
-    #expect(abs(income - (timerRow.earnings ?? -1)) < 0.001)
+    #expect((timerRow.earnings ?? 0) > income)
+
+    store.hideEarnings = true
+    #expect(store.moneyText(headline.estimatedIncome) == "••••")
 }
 
 @MainActor
@@ -3024,5 +3084,5 @@ func recordsIncomeAbsentWithoutSalary() throws {
     store.scheduleMode = .classic
     store.workdays = [1, 2, 3, 4, 5]
     store.salaryEnabled = false
-    #expect(store.recordsIncome(for: .week) == nil)
+    #expect(store.recordsIncome(completedWorkdays: 2) == nil)
 }

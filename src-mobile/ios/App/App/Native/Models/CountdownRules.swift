@@ -22,6 +22,7 @@ struct NativeShiftSnapshot: Codable, Hashable {
     let isWorkday: Bool
     let nextRestAtMs: Double?
     let dailySalary: Double?
+    let earnedSoFar: Double?
     let nextShiftStartAtMs: Double?
     let nextShiftEndAtMs: Double?
     let countdownTargetAtMs: Double?
@@ -46,14 +47,6 @@ struct NativeShiftSnapshot: Codable, Hashable {
     func isOvertimeActive(at now: Date) -> Bool {
         overtimeEndAtMs != nil && now.timeIntervalSince1970 * 1_000 >= plannedEndAtMs
     }
-
-    /// Pay accrued so far, nil when no salary is configured.
-    ///
-    /// The bundle already decided the pay ratio — overtime extends it past 1
-    /// linearly — so multiplying it out is the whole of the calculation. It
-    /// lives here rather than in each layout because three of them had written
-    /// their own copy of the same multiply.
-    var earnedSoFar: Double? { dailySalary.map { $0 * payRatio } }
 
     /// Remaining time the shared running surfaces count. Before clock-in this is
     /// time until start; during a break it is time until the break ends;
@@ -93,6 +86,7 @@ struct NativeShiftSnapshot: Codable, Hashable {
             isWorkday: isWorkday,
             nextRestAtMs: restAtMs,
             dailySalary: dailySalary,
+            earnedSoFar: earnedSoFar,
             nextShiftStartAtMs: source.nextShiftStartAtMs,
             nextShiftEndAtMs: source.nextShiftEndAtMs,
             countdownTargetAtMs: countsToCurrentStart
@@ -133,6 +127,10 @@ struct NativeWidgetShiftSnapshot: Codable, Hashable {
 struct NativePeriodSummary: Codable, Hashable {
     let days: Double
     let hours: Double
+    let earnings: Double?
+}
+
+struct NativeRecordsIncome: Codable, Hashable {
     let earnings: Double?
 }
 
@@ -395,6 +393,11 @@ final class CountdownRules {
         return try callRule(context, "summarize", input)
     }
 
+    func recordsIncome(input: NativeRecordsIncomeInput) throws -> NativeRecordsIncome {
+        if let loadError { throw loadError }
+        return try callRule(context, "recordsIncome", input)
+    }
+
     func validateBreak(input: NativeRulesInput) -> Bool {
         askRule(context, "validateBreak", input, fallback: false)
     }
@@ -510,6 +513,22 @@ struct NativeSummaryInput: Codable {
     let todayEffectiveHours: Double
     let todayPayRatio: Double
     var timeZoneIdentifier: String? = nil
+}
+
+struct NativeRecordsIncomeInput: Codable {
+    let completedWorkdays: Int
+    let salaryAmount: String
+    let salaryType: String
+    let monthlyWorkingDays: Double
+    let annualBonusMonths: Double
+
+    init(completedWorkdays: Int, rules: NativeRulesInput) {
+        self.completedWorkdays = completedWorkdays
+        salaryAmount = rules.salaryAmount
+        salaryType = rules.salaryType
+        monthlyWorkingDays = rules.monthlyWorkingDays
+        annualBonusMonths = rules.annualBonusMonths
+    }
 }
 
 struct NativeReminder: Codable, Hashable {

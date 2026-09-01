@@ -88,6 +88,7 @@ struct RecordsHeadlineSummary: Equatable, Sendable {
     var regularWorkMs: Int64
     var overtimeMs: Int64
     var wakingFreeMs: Int64
+    var estimatedIncome: Double?
     var allocation: TimeAllocationShare
     var sleepSourceKey: String
 }

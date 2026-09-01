@@ -91,12 +91,21 @@ describe("iOS native rule bundle", () => {
       todayEffectiveHours: snapshot.durationMs / 3_600_000,
       todayPayRatio: snapshot.payRatio,
     })));
+    const recordsIncome = JSON.parse(context.OWCNative.recordsIncome(JSON.stringify({
+      completedWorkdays: 2,
+      salaryAmount: input.salaryAmount,
+      salaryType: input.salaryType,
+      monthlyWorkingDays: input.monthlyWorkingDays,
+      annualBonusMonths: input.annualBonusMonths,
+    })));
     expect(snapshot.segments).toHaveLength(2);
     expect(snapshot.dailySalary).toBeCloseTo((22000 / 22) * (14 / 12));
+    expect(snapshot.earnedSoFar).toBeCloseTo(snapshot.dailySalary * snapshot.payRatio);
     expect(reminders.some((reminder) => reminder.id.startsWith("current:"))).toBe(true);
     expect(reminders.some((reminder) => reminder.id.startsWith("next:"))).toBe(true);
     expect(summary.days).toBeGreaterThan(3);
     expect(summary.hours).toBeGreaterThan(24);
+    expect(recordsIncome.earnings).toBeCloseTo(2 * snapshot.dailySalary);
   });
 
   it("distinguishes a future shift today from the following shift", () => {

@@ -3552,6 +3552,13 @@ final class OffWorkStore {
             return dayAllocation(day, now: now)
         }
         let combined = TimeAllocationCalculator.combining(shares)
+        let today = recordsCalendar.startOfDay(for: now)
+        let completedScheduledWorkdays = days.filter { day in
+            guard day.baseScheduleIsWorkday else { return false }
+            let date = RecordJSON.date(fromDayKey: day.dayKey, calendar: recordsCalendar)
+                ?? day.shiftAnchorDate
+            return recordsCalendar.startOfDay(for: date) < today
+        }.count
         let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
             ? "recordsSleepFromHealth"
             : "recordsSleepEstimated"
@@ -3560,6 +3567,10 @@ final class OffWorkStore {
             regularWorkMs: combined.workMs,
             overtimeMs: combined.overtimeMs,
             wakingFreeMs: combined.wakingFreeMs,
+            estimatedIncome: recordsIncome(
+                completedWorkdays: completedScheduledWorkdays,
+                at: now
+            ),
             allocation: combined,
             sleepSourceKey: sleepKey
         )
@@ -4261,22 +4272,22 @@ final class OffWorkStore {
         )
     }
 
-    /// Income so far in a Records period, from the shared rules bundle.
-    ///
-    /// Records must not carry its own salary formula. The bundle credits the
-    /// running shift by its pay ratio, so a whole-day count here would show
-    /// less money on the Records tab than the timer's own row does for the
-    /// same week — the disagreement `lib/summary.ts` exists to prevent.
-    /// Returns nil when there is no salary to show.
-    func recordsIncome(for period: RecordsChartPeriod, asOf: Date = .now) -> Double? {
-        guard salaryEnabled, let shift = snapshot(at: asOf) else { return nil }
-        let start = recordsChartWindow(for: period, now: asOf).0
-        return periodSummary(
-            period == .year ? "year" : "week",
-            asOf: asOf,
-            snapshot: shift,
-            periodStartMs: start.timeIntervalSince1970 * 1_000
-        )?.earnings
+    /// Records and the timer intentionally answer different questions. Records
+    /// counts completed base-schedule workdays; the bundle applies the current
+    /// salary while excluding today's partial shift and declared overtime.
+    func recordsIncome(completedWorkdays: Int, at date: Date = .now) -> Double? {
+        guard presentationSalaryEnabled else { return nil }
+        do {
+            let result = try CountdownRules.shared.recordsIncome(input: .init(
+                completedWorkdays: completedWorkdays,
+                rules: rulesInput(at: date)
+            ))
+            if lastRulesError != nil { lastRulesError = nil }
+            return result.earnings
+        } catch {
+            lastRulesError = error.localizedDescription
+            return nil
+        }
     }
 
     /// Gates an action behind Plus, presenting the paywall over whatever the
