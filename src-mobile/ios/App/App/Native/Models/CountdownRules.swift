@@ -139,7 +139,10 @@ struct NativePeriodSummary: Codable, Hashable {
 nonisolated enum CountdownRulesError: LocalizedError, Sendable {
     case missingResource
     case unavailableRuntime(String)
-    case invalidResult
+    /// `rule` names the bundle method that failed. It is deliberately absent
+    /// from `errorDescription`: that string is shown to the user, and the
+    /// name of a JavaScript function is not something to put in front of them.
+    case invalidResult(rule: String)
 
     var errorDescription: String? {
         switch self {
@@ -151,6 +154,59 @@ nonisolated enum CountdownRulesError: LocalizedError, Sendable {
             return "The shared countdown rules returned an unreadable snapshot."
         }
     }
+}
+
+/// One crossing of the JavaScriptCore boundary.
+///
+/// Encoding the request, invoking the method and decoding the reply fail in
+/// different ways but read as one outcome to the caller, so each rule used to
+/// carry its own copy of the same eleven-condition guard. `nonisolated` so
+/// both the main-actor bridge and `ScheduleRangeEngine` can use it.
+nonisolated private func invokeRule<Request: Encodable>(
+    _ context: JSContext?,
+    _ rule: String,
+    _ request: Request
+) throws -> JSValue {
+    guard let context,
+          let bridge = context.objectForKeyedSubscript("OWCNative"),
+          !bridge.isUndefined,
+          let data = try? JSONEncoder().encode(request),
+          let json = String(data: data, encoding: .utf8),
+          let result = bridge.invokeMethod(rule, withArguments: [json]),
+          !result.isUndefined,
+          !result.isNull
+    else {
+        throw CountdownRulesError.invalidResult(rule: rule)
+    }
+    return result
+}
+
+/// As `invokeRule`, decoding the reply into the type the caller expects.
+nonisolated private func callRule<Request: Encodable, Response: Decodable>(
+    _ context: JSContext?,
+    _ rule: String,
+    _ request: Request
+) throws -> Response {
+    let result = try invokeRule(context, rule, request)
+    guard let output = result.toString()?.data(using: .utf8),
+          let decoded = try? JSONDecoder().decode(Response.self, from: output)
+    else {
+        throw CountdownRulesError.invalidResult(rule: rule)
+    }
+    return decoded
+}
+
+/// As `invokeRule`, for the rules that answer with a plain boolean. A rule
+/// that cannot be reached answers `fallback` rather than throwing, because
+/// both callers are asking a yes/no question about a settings edit.
+nonisolated private func askRule<Request: Encodable>(
+    _ context: JSContext?,
+    _ rule: String,
+    _ request: Request,
+    fallback: Bool
+) -> Bool {
+    guard let result = try? invokeRule(context, rule, request) else { return fallback }
+    return result.toBool()
 }
 
 @MainActor
@@ -214,20 +270,7 @@ final class CountdownRules {
 
     func snapshot(input: NativeRulesInput) throws -> NativeShiftSnapshot {
         if let loadError { throw loadError }
-        guard let context,
-              let bridge = context.objectForKeyedSubscript("OWCNative"),
-              !bridge.isUndefined,
-              let data = try? JSONEncoder().encode(input),
-              let json = String(data: data, encoding: .utf8),
-              let result = bridge.invokeMethod("snapshot", withArguments: [json]),
-              !result.isUndefined,
-              !result.isNull,
-              let output = result.toString()?.data(using: .utf8),
-              let snapshot = try? JSONDecoder().decode(NativeShiftSnapshot.self, from: output)
-        else {
-            throw CountdownRulesError.invalidResult
-        }
-        return snapshot
+        return try callRule(context, "snapshot", input)
     }
 
     func widgetShifts(
@@ -241,20 +284,7 @@ final class CountdownRules {
             throughMs: throughMs,
             maximumCount: maximumCount
         )
-        guard let context,
-              let bridge = context.objectForKeyedSubscript("OWCNative"),
-              !bridge.isUndefined,
-              let data = try? JSONEncoder().encode(request),
-              let json = String(data: data, encoding: .utf8),
-              let result = bridge.invokeMethod("widgetShifts", withArguments: [json]),
-              !result.isUndefined,
-              !result.isNull,
-              let output = result.toString()?.data(using: .utf8),
-              let shifts = try? JSONDecoder().decode([NativeWidgetShiftSnapshot].self, from: output)
-        else {
-            throw CountdownRulesError.invalidResult
-        }
-        return shifts
+        return try callRule(context, "widgetShifts", request)
     }
 
     func expandScheduleRange(
@@ -357,51 +387,16 @@ final class CountdownRules {
     func reminders(input: NativeRulesInput, reminderInputs: NativeReminderInputs) throws -> [NativeReminder] {
         if let loadError { throw loadError }
         let request = NativeReminderRequest(rules: input, reminderInputs: reminderInputs)
-        guard let context,
-              let bridge = context.objectForKeyedSubscript("OWCNative"),
-              !bridge.isUndefined,
-              let data = try? JSONEncoder().encode(request),
-              let json = String(data: data, encoding: .utf8),
-              let result = bridge.invokeMethod("reminders", withArguments: [json]),
-              !result.isUndefined,
-              !result.isNull,
-              let output = result.toString()?.data(using: .utf8),
-              let reminders = try? JSONDecoder().decode([NativeReminder].self, from: output)
-        else {
-            throw CountdownRulesError.invalidResult
-        }
-        return reminders
+        return try callRule(context, "reminders", request)
     }
 
     func summarize(input: NativeSummaryInput) throws -> NativePeriodSummary {
         if let loadError { throw loadError }
-        guard let context,
-              let bridge = context.objectForKeyedSubscript("OWCNative"),
-              !bridge.isUndefined,
-              let data = try? JSONEncoder().encode(input),
-              let json = String(data: data, encoding: .utf8),
-              let result = bridge.invokeMethod("summarize", withArguments: [json]),
-              !result.isUndefined,
-              !result.isNull,
-              let output = result.toString()?.data(using: .utf8),
-              let summary = try? JSONDecoder().decode(NativePeriodSummary.self, from: output)
-        else {
-            throw CountdownRulesError.invalidResult
-        }
-        return summary
+        return try callRule(context, "summarize", input)
     }
 
     func validateBreak(input: NativeRulesInput) -> Bool {
-        guard let context,
-              let bridge = context.objectForKeyedSubscript("OWCNative"),
-              !bridge.isUndefined,
-              let data = try? JSONEncoder().encode(input),
-              let json = String(data: data, encoding: .utf8),
-              let result = bridge.invokeMethod("validateBreak", withArguments: [json]),
-              !result.isUndefined,
-              !result.isNull
-        else { return false }
-        return result.toBool()
+        askRule(context, "validateBreak", input, fallback: false)
     }
 
     func shouldPromptApplyToday(
@@ -417,16 +412,7 @@ final class CountdownRules {
             kind: kind,
             schedulePatternChanged: schedulePatternChanged
         )
-        guard let context,
-              let bridge = context.objectForKeyedSubscript("OWCNative"),
-              !bridge.isUndefined,
-              let data = try? JSONEncoder().encode(request),
-              let json = String(data: data, encoding: .utf8),
-              let result = bridge.invokeMethod("shouldPromptApplyToday", withArguments: [json]),
-              !result.isUndefined,
-              !result.isNull
-        else { return true }
-        return result.toBool()
+        return askRule(context, "shouldPromptApplyToday", request, fallback: true)
     }
 }
 
@@ -451,20 +437,7 @@ nonisolated private func expandScheduleRangeOnContext(
         throughMs: through.timeIntervalSince1970 * 1_000,
         timeZoneIdentifier: timeZone?.identifier
     )
-    guard let context,
-          let bridge = context.objectForKeyedSubscript("OWCNative"),
-          !bridge.isUndefined,
-          let data = try? JSONEncoder().encode(request),
-          let json = String(data: data, encoding: .utf8),
-          let result = bridge.invokeMethod("expandScheduleRange", withArguments: [json]),
-          !result.isUndefined,
-          !result.isNull,
-          let output = result.toString()?.data(using: .utf8),
-          let days = try? JSONDecoder().decode([NativeScheduleDayExpansion].self, from: output)
-    else {
-        throw CountdownRulesError.invalidResult
-    }
-    return days
+    return try callRule(context, "expandScheduleRange", request)
 }
 
 nonisolated struct NativeWorkSchedule: Codable, Equatable, Hashable, Sendable {
