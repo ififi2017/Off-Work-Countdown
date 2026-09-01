@@ -127,6 +127,8 @@ func customOverrideBeatsExceptionAndSchedule() throws {
     #expect(resolution.layer == .override)
     #expect(resolution.isScheduledWorkday)
     #expect(resolution.segments == custom)
+    #expect(resolution.baseScheduleIsWorkday)
+    #expect(resolution.baseScheduleSegments == weekdaySegments(monday))
 }
 
 @MainActor
@@ -141,6 +143,8 @@ func leaveOverrideIsNotAHoliday() {
     #expect(resolution.layer == .override)
     #expect(resolution.isScheduledWorkday == false)
     #expect(resolution.segments.isEmpty)
+    #expect(resolution.baseScheduleIsWorkday)
+    #expect(resolution.baseScheduleSegments == weekdaySegments(friday))
 }
 
 @MainActor
@@ -188,6 +192,8 @@ func userHolidayBeatsSchedule() {
     #expect(resolution.layer == .calendarException)
     #expect(resolution.isScheduledWorkday == false)
     #expect(resolution.segments.isEmpty)
+    #expect(resolution.baseScheduleIsWorkday)
+    #expect(resolution.baseScheduleSegments == weekdaySegments(monday))
 }
 
 @MainActor
@@ -252,6 +258,33 @@ func periodWithoutSnapshotIsNone() {
     #expect(resolution.layer == .none)
     #expect(resolution.snapshotID == nil)
     #expect(resolution.isScheduledWorkday == false)
+}
+
+@MainActor
+@Test("A shared-rule failure remains visible even when an override can still resolve the day")
+func overrideDoesNotHideBaseExpansionFailure() {
+    let monday = startOf(2026, 8, 24)
+    let custom = [NativeShiftSegment(startAtMs: ms(monday, hour: 10), endAtMs: ms(monday, hour: 18))]
+    let job = period(id: id(1), startsOn: startOf(2024, 1, 1), createdAt: startOf(2024, 1, 1))
+    let hours = snapshot(id: id(10), periodID: id(1), from: startOf(2024, 1, 1), fingerprint: "weekday")
+    let resolution = DayRecordResolver.resolve(
+        dayKey: "2026-08-24",
+        shiftAnchorDate: monday,
+        periods: [job],
+        snapshots: [hours],
+        exceptions: [],
+        overrides: [DayOverride(
+            dayKey: "2026-08-24",
+            shiftAnchorDate: monday,
+            kind: .customSegments,
+            segments: custom
+        )],
+        expand: { _ in .failed }
+    )
+
+    #expect(resolution.segments == custom)
+    #expect(resolution.expansionFailed)
+    #expect(!resolution.baseScheduleIsWorkday)
 }
 
 @MainActor

@@ -23,6 +23,15 @@ struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
         /// Shown under the big "off work" line. Must differ from
         /// completedCaption or Control Center prints the same sentence twice.
         let completedNote: String
+        /// `nil` means the payload was written by a pre-focus release and is
+        /// therefore a work countdown. Optional fields keep old activities
+        /// decodable during an in-place app update.
+        var surface: String? = nil
+        /// Focus and break activities supply their own concise phase label.
+        var timerLabel: String? = nil
+        /// The deep link is data rather than an extension-side policy so work
+        /// and focus can return users to their respective primary surface.
+        var destination: String? = nil
 
         func projectedProgress(atMs nowMs: Int64) -> Double {
             let duration = segments.reduce(Int64(0)) { total, segment in

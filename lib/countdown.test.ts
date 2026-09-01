@@ -714,6 +714,20 @@ describe("expandScheduleRange", () => {
     ).toBe("09:00");
   });
 
+  it("does not expand a DST-collapsed same-day clock pair into a 24-hour shift", () => {
+    const days = expandScheduleRange({
+      startTime: "02:30",
+      endTime: "02:45",
+      workdays: [0],
+      schedule: { mode: "classic" },
+      fromMs: Date.parse("2026-03-08T08:00:00.000Z"),
+      throughMs: Date.parse("2026-03-08T08:00:00.000Z"),
+      timeZone: "America/Los_Angeles",
+    });
+    expect(days).toHaveLength(1);
+    expect(days[0].segments[0].endAtMs - days[0].segments[0].startAtMs).toBe(0);
+  });
+
   it("builds a live shift in the requested timezone", () => {
     const now = new Date("2026-08-24T17:00:00.000Z");
     const shanghai = getShiftBounds("09:00", "17:00", now, "Asia/Shanghai");
@@ -729,6 +743,16 @@ describe("expandScheduleRange", () => {
 });
 
 describe("zoned civil time resolution", () => {
+  it("does not invent an overnight shift when a DST gap collapses two same-day clocks", () => {
+    const bounds = getShiftBounds(
+      "02:30",
+      "02:45",
+      new Date("2026-03-08T18:00:00.000Z"),
+      "America/Los_Angeles"
+    );
+    expect(bounds.end.getTime() - bounds.start.getTime()).toBe(0);
+  });
+
   it("moves a spring-forward gap forward to the next valid local minute", () => {
     const bounds = getShiftBounds(
       "02:30",

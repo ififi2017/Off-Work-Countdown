@@ -2,7 +2,7 @@ import Foundation
 
 /// Hours that can replay the shared rules. Salary, overtime and "now" stay
 /// off this payload so a snapshot can cross CloudKit and JSON later.
-struct ScheduleHoursConfiguration: Codable, Equatable, Sendable {
+nonisolated struct ScheduleHoursConfiguration: Codable, Equatable, Sendable {
     static let schemaVersion = 1
 
     var startTime: String

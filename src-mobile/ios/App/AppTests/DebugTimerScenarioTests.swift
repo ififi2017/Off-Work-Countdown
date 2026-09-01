@@ -146,7 +146,7 @@ func debugSeedSampleRecordsIsIdempotent() {
         let days = store.recordedWorkDays()
         #expect(!days.isEmpty)
         #expect(store.records.state.lifeProfile?.birthYear == 1992)
-        #expect(store.focusTasksForToday().count == 2)
+        #expect(store.focusTasksForToday(at: now).count == 2)
         #expect(!store.debugSeedSampleRecords(now: now))
         #expect(store.recordedWorkDays().count == days.count)
     }

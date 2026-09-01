@@ -1,0 +1,480 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "DE63966E",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "24.99",
+      "familyShareable" : true,
+      "internalID" : "6806745204",
+      "localizations" : [
+        {
+          "description" : "شراء لمرة. مشاركة عائلية",
+          "displayName" : "Plus مدى الحياة",
+          "locale" : "ar"
+        },
+        {
+          "description" : "一次买断，支持家庭共享",
+          "displayName" : "Plus 终身",
+          "locale" : "zh_Hans"
+        },
+        {
+          "description" : "Разово. Семейный доступ",
+          "displayName" : "Plus навсегда",
+          "locale" : "ru"
+        },
+        {
+          "description" : "一次買斷，支援家庭共享",
+          "displayName" : "Plus 終身",
+          "locale" : "zh_Hant"
+        },
+        {
+          "description" : "ซื้อครั้งเดียว แชร์กับครอบครัว",
+          "displayName" : "Plus ตลอดชีพ",
+          "locale" : "th"
+        },
+        {
+          "description" : "One-time unlock. Family Sharing included",
+          "displayName" : "Plus Lifetime",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "एक बार खरीदें. परिवार साझा",
+          "displayName" : "Plus आजीवन",
+          "locale" : "hi"
+        },
+        {
+          "description" : "Mua một lần. Chia sẻ gia đình",
+          "displayName" : "Plus Trọn đời",
+          "locale" : "vi"
+        },
+        {
+          "description" : "Compra única. En familia",
+          "displayName" : "Plus De por vida",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "Einmalkauf. Teilen mit Familie",
+          "displayName" : "Plus Lebenslang",
+          "locale" : "de"
+        },
+        {
+          "description" : "평생 구매. 가족 공유 포함",
+          "displayName" : "Plus 평생",
+          "locale" : "ko"
+        },
+        {
+          "description" : "Achat unique. Partage familial",
+          "displayName" : "Plus À vie",
+          "locale" : "fr"
+        },
+        {
+          "description" : "Tek seferlik. Aile Paylaşımı",
+          "displayName" : "Plus Ömür boyu",
+          "locale" : "tr"
+        },
+        {
+          "description" : "買い切り。ファミリー共有に対応",
+          "displayName" : "Plus 買い切り",
+          "locale" : "ja"
+        },
+        {
+          "description" : "Beli sekali. Berbagi keluarga",
+          "displayName" : "Plus Seumur hidup",
+          "locale" : "id"
+        },
+        {
+          "description" : "Acquisto unico. In famiglia",
+          "displayName" : "Plus A vita",
+          "locale" : "it"
+        },
+        {
+          "description" : "Compra única. Compartilhamento familiar",
+          "displayName" : "Plus Vitalício",
+          "locale" : "pt_BR"
+        }
+      ],
+      "productID" : "com.rainif.offworkcountdown.plus.lifetime",
+      "referenceName" : "Plus Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6802803318",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "3GSK5B9S3T",
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 809854860.90250802,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "22345761",
+      "localizations" : [
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "hi"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "it"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "ja"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "th"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "fr"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "ar"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "zh_Hant"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "zh_Hans"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "pt_BR"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "ko"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "ru"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "tr"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "vi"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "de"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "id"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "",
+          "displayName" : "DoneAt Plus",
+          "locale" : "es_ES"
+        }
+      ],
+      "name" : "plus",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "1.99",
+              "displayPrice" : "1.99",
+              "internalID" : "6806745132_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "1.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6806745132",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : "Grafikler, yaşam, Odak ve iCloud",
+              "displayName" : "Plus Aylık",
+              "locale" : "tr"
+            },
+            {
+              "description" : "Grafik, tampilan hidup, Fokus, iCloud",
+              "displayName" : "Plus Bulanan",
+              "locale" : "id"
+            },
+            {
+              "description" : "Gráficos, visão de vida, Focus e iCloud",
+              "displayName" : "Plus Mensal",
+              "locale" : "pt_BR"
+            },
+            {
+              "description" : "Grafici, vista vita, Focus e iCloud",
+              "displayName" : "Plus Mensile",
+              "locale" : "it"
+            },
+            {
+              "description" : "Gráficos, vista vida, Focus e iCloud",
+              "displayName" : "Plus Mensual",
+              "locale" : "es_ES"
+            },
+            {
+              "description" : "Graphiques, vue vie, Focus, iCloud",
+              "displayName" : "Plus Mensuel",
+              "locale" : "fr"
+            },
+            {
+              "description" : "Diagramme, Lebensblick, Fokus, iCloud",
+              "displayName" : "Plus Monatlich",
+              "locale" : "de"
+            },
+            {
+              "description" : "Charts, life view, Focus, and iCloud sync",
+              "displayName" : "Plus Monthly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Biểu đồ, đời, Tập trung và iCloud",
+              "displayName" : "Plus Theo tháng",
+              "locale" : "vi"
+            },
+            {
+              "description" : "Графики, жизнь, Фокус и iCloud",
+              "displayName" : "Plus на месяц",
+              "locale" : "ru"
+            },
+            {
+              "description" : "رسوم، حياة، تركيز ومزامنة iCloud",
+              "displayName" : "Plus شهري",
+              "locale" : "ar"
+            },
+            {
+              "description" : "चार्ट, जीवन दृश्य, फ़ोकस और iCloud",
+              "displayName" : "Plus मासिक",
+              "locale" : "hi"
+            },
+            {
+              "description" : "กราฟ ชีวิต โฟกัส และ iCloud",
+              "displayName" : "Plus รายเดือน",
+              "locale" : "th"
+            },
+            {
+              "description" : "圖表、人生視圖、專注和 iCloud 同步",
+              "displayName" : "Plus 月訂",
+              "locale" : "zh_Hant"
+            },
+            {
+              "description" : "图表、人生视图、专注和 iCloud 同步",
+              "displayName" : "Plus 月订",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "グラフ・人生ビュー・集中とiCloud同期",
+              "displayName" : "Plus 月額",
+              "locale" : "ja"
+            },
+            {
+              "description" : "차트, 인생 보기, 집중, iCloud 동기화",
+              "displayName" : "Plus 월간",
+              "locale" : "ko"
+            }
+          ],
+          "productID" : "com.rainif.offworkcountdown.plus.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Plus Monthly",
+          "subscriptionGroupID" : "22345761",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "9.99",
+              "displayPrice" : "9.99",
+              "internalID" : "6806744307_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6806744307",
+          "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
+            "internalID" : "E77614C0",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "E77614C0",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
+          "localizations" : [
+            {
+              "description" : "Annuale. 7 giorni gratis per i nuovi",
+              "displayName" : "Plus Annuale",
+              "locale" : "it"
+            },
+            {
+              "description" : "Annuel. 7 jours offerts aux nouveaux",
+              "displayName" : "Plus Annuel",
+              "locale" : "fr"
+            },
+            {
+              "description" : "Anual. 7 dias grátis para novos",
+              "displayName" : "Plus Anual",
+              "locale" : "pt_BR"
+            },
+            {
+              "description" : "Anual. 7 días gratis para nuevos",
+              "displayName" : "Plus Anual",
+              "locale" : "es_ES"
+            },
+            {
+              "description" : "Jährlich. 7 Tage gratis für Neue",
+              "displayName" : "Plus Jährlich",
+              "locale" : "de"
+            },
+            {
+              "description" : "Tahunan. 7 hari gratis untuk pelanggan baru",
+              "displayName" : "Plus Tahunan",
+              "locale" : "id"
+            },
+            {
+              "description" : "Theo năm. Người mới được dùng thử 7 ngày",
+              "displayName" : "Plus Theo năm",
+              "locale" : "vi"
+            },
+            {
+              "description" : "Yearly Plus. New subscribers get 7 days free",
+              "displayName" : "Plus Yearly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Yıllık. Yeni abonelere 7 gün bedava",
+              "displayName" : "Plus Yıllık",
+              "locale" : "tr"
+            },
+            {
+              "description" : "Год. 7 дней бесплатно для новых",
+              "displayName" : "Plus на год",
+              "locale" : "ru"
+            },
+            {
+              "description" : "سنوي. 7 أيام مجاناً للمشتركين الجدد",
+              "displayName" : "Plus سنوي",
+              "locale" : "ar"
+            },
+            {
+              "description" : "वार्षिक. नए सदस्यों को 7 दिन मुफ़्त",
+              "displayName" : "Plus वार्षिक",
+              "locale" : "hi"
+            },
+            {
+              "description" : "รายปี ลูกค้าใหม่ทดลอง 7 วัน",
+              "displayName" : "Plus รายปี",
+              "locale" : "th"
+            },
+            {
+              "description" : "年訂。新訂閱者可享 7 天免費試用",
+              "displayName" : "Plus 年訂",
+              "locale" : "zh_Hant"
+            },
+            {
+              "description" : "年订。新订阅者可享 7 天免费试用",
+              "displayName" : "Plus 年订",
+              "locale" : "zh_Hans"
+            },
+            {
+              "description" : "年額。初めてなら7日間無料",
+              "displayName" : "Plus 年額",
+              "locale" : "ja"
+            },
+            {
+              "description" : "연간. 신규 구독자 7일 무료",
+              "displayName" : "Plus 연간",
+              "locale" : "ko"
+            }
+          ],
+          "productID" : "com.rainif.offworkcountdown.plus.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Plus Yearly",
+          "subscriptionGroupID" : "22345761",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 5,
+    "minor" : 0
+  }
+}

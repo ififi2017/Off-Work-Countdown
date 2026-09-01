@@ -4,7 +4,7 @@ import UIKit
 /// The timer surface follows Claude Design direction 1a literally. Business
 /// values still come from CountdownRules; this file only owns presentation.
 struct TimerDesignView: View {
-    let store: OffWorkStore
+    @Bindable var store: OffWorkStore
     let wide: Bool
     let onOpenSettings: ((AppRoute?) -> Void)?
     let timelineDate: Date?
@@ -61,6 +61,15 @@ struct TimerDesignView: View {
             OvertimeSheet(store: store)
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $store.presentAddFocus) {
+            FocusAddTaskSheet(store: store) {
+                Task { @MainActor in
+                    await Task.yield()
+                    guard store.plus.isAuthorized else { return }
+                    store.timerPath.append(.focus)
+                }
+            }
         }
         .onAppear {
 #if DEBUG
@@ -183,7 +192,7 @@ private struct RunningTimerDesignView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store)
+            OWCAppHeader(store: store, showsFocus: true)
 
             if store.isForcedWorkday(snapshot) {
                 ManualTimingBanner(store: store)

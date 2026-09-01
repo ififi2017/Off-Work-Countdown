@@ -759,7 +759,7 @@ public struct OffWorkCountdownWidgetView: View {
             calendar: calendar
         )
         return HStack(spacing: 8) {
-            Image(systemName: upcomingGlyph(item.kind))
+            Image(systemName: upcomingGlyph(item))
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(accentColor)
                 .frame(width: 16)
@@ -801,12 +801,15 @@ public struct OffWorkCountdownWidgetView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func upcomingGlyph(_ kind: String) -> String {
-        switch kind {
+    private func upcomingGlyph(_ item: WidgetUpcomingItem) -> String {
+        if let symbolName = item.symbolName, !symbolName.isEmpty { return symbolName }
+        return switch item.kind {
         case "shiftStart": "sunrise.fill"
         case "lunchStart": "cup.and.saucer.fill"
         case "lunchEnd": "arrow.right.circle.fill"
         case "health": "figure.walk"
+        case "focus": "timer"
+        case "focusBreak": "cup.and.saucer.fill"
         case "milestone": "bell.badge.fill"
         case "shiftEnd": "flag.checkered"
         default: "clock"

@@ -20,6 +20,13 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
     ) -> UIInterfaceOrientationMask {
         AppOrientationPolicy.shared.supportedOrientations
     }
+
+    /// A warmed year or life expansion is the largest thing this app holds that
+    /// nothing needs. Give it back rather than being the reason a background
+    /// app is killed; the next read rebuilds it.
+    func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
+        CountdownRules.shared.purgeExpansionCache()
+    }
 }
 
 /// Keeps first-run setup upright without taking landscape away from the app.
@@ -163,6 +170,7 @@ struct OffWorkCountdownApp: App {
     @UIApplicationDelegateAdaptor(OffWorkCountdownApplicationDelegate.self) private var appDelegate
 
     init() {
+        LaunchTrace.beginAppInit()
         AppOrientationPolicy.prepare()
     }
 

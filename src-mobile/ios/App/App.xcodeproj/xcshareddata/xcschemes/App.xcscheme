@@ -62,7 +62,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../DoneAt.storekit">
+         identifier = "../../DoneAtConnect.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

@@ -1,12 +1,14 @@
 import Foundation
 
 enum RecordsRoute: Hashable, Sendable {
+    case allRecords
+    case yearList(Int)
+    case monthList(year: Int, month: Int)
     case day(String)
-    case week
-    case month
-    case year
-    case life
-    case editDay(String)
-    case paywall(PlusPaywallReason)
-    case focus
+    case conflictCenter
+}
+
+struct RecordsDayIdentified: Identifiable, Hashable {
+    var id: String { dayKey }
+    var dayKey: String
 }

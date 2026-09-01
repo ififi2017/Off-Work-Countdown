@@ -13,6 +13,9 @@ enum DayResolutionLayer: String, Codable, Sendable {
 struct ScheduleExpansion: Equatable, Sendable {
     var isWorkday: Bool
     var segments: [NativeShiftSegment]
+    var failed: Bool = false
+
+    static let failed = ScheduleExpansion(isWorkday: false, segments: [], failed: true)
 }
 
 /// One day's conclusion after the three-layer chain.
@@ -24,6 +27,12 @@ struct DayResolution: Equatable, Sendable {
     var snapshotID: UUID?
     var isScheduledWorkday: Bool
     var segments: [NativeShiftSegment]
+    /// The schedule snapshot before a calendar exception or a user override
+    /// wins the three-layer resolution. Records income uses this projection so
+    /// leave and temporary schedule edits cannot rewrite salary history.
+    var baseScheduleIsWorkday: Bool = false
+    var baseScheduleSegments: [NativeShiftSegment] = []
+    var expansionFailed: Bool = false
 }
 
 /// Read-time resolution for 002 §1–§2 and §5.
@@ -118,7 +127,23 @@ enum DayRecordResolver {
         guard let period = period(on: shiftAnchorDate, from: periods) else { return empty }
         let snapshot = snapshot(on: shiftAnchorDate, in: period, from: snapshots)
         let expansion = snapshot.map(expand) ?? ScheduleExpansion(isWorkday: false, segments: [])
+        let baseScheduleIsWorkday = snapshot != nil && expansion.isWorkday
+        let baseScheduleSegments = baseScheduleIsWorkday ? expansion.segments : []
         let exception = exception(matching: dayKey, from: exceptions)
+        if expansion.failed, dayOverride(matching: dayKey, from: overrides) == nil, exception == nil {
+            return DayResolution(
+                dayKey: dayKey,
+                shiftAnchorDate: shiftAnchorDate,
+                layer: .none,
+                periodID: period.id,
+                snapshotID: snapshot?.id,
+                isScheduledWorkday: false,
+                segments: [],
+                baseScheduleIsWorkday: false,
+                baseScheduleSegments: [],
+                expansionFailed: true
+            )
+        }
 
         if let override = dayOverride(matching: dayKey, from: overrides) {
             switch override.kind {
@@ -130,7 +155,10 @@ enum DayRecordResolver {
                     periodID: period.id,
                     snapshotID: snapshot?.id,
                     isScheduledWorkday: true,
-                    segments: override.segments
+                    segments: override.segments,
+                    baseScheduleIsWorkday: baseScheduleIsWorkday,
+                    baseScheduleSegments: baseScheduleSegments,
+                    expansionFailed: expansion.failed
                 )
             case .notWorking:
                 return DayResolution(
@@ -140,7 +168,10 @@ enum DayRecordResolver {
                     periodID: period.id,
                     snapshotID: snapshot?.id,
                     isScheduledWorkday: false,
-                    segments: []
+                    segments: [],
+                    baseScheduleIsWorkday: baseScheduleIsWorkday,
+                    baseScheduleSegments: baseScheduleSegments,
+                    expansionFailed: expansion.failed
                 )
             case .confirmedAsScheduled:
                 return DayResolution(
@@ -150,7 +181,10 @@ enum DayRecordResolver {
                     periodID: period.id,
                     snapshotID: snapshot?.id,
                     isScheduledWorkday: expansion.isWorkday,
-                    segments: expansion.isWorkday ? expansion.segments : []
+                    segments: expansion.isWorkday ? expansion.segments : [],
+                    baseScheduleIsWorkday: baseScheduleIsWorkday,
+                    baseScheduleSegments: baseScheduleSegments,
+                    expansionFailed: expansion.failed
                 )
             case .cleared:
                 break
@@ -177,7 +211,10 @@ enum DayRecordResolver {
             periodID: period.id,
             snapshotID: snapshot?.id,
             isScheduledWorkday: expansion.isWorkday,
-            segments: expansion.isWorkday ? expansion.segments : []
+            segments: expansion.isWorkday ? expansion.segments : [],
+            baseScheduleIsWorkday: baseScheduleIsWorkday,
+            baseScheduleSegments: baseScheduleSegments,
+            expansionFailed: expansion.failed
         )
     }
 
@@ -199,7 +236,10 @@ enum DayRecordResolver {
                 periodID: periodID,
                 snapshotID: snapshotID,
                 isScheduledWorkday: isWorkday,
-                segments: isWorkday ? expansion.segments : []
+                segments: isWorkday ? expansion.segments : [],
+                baseScheduleIsWorkday: expansion.isWorkday,
+                baseScheduleSegments: expansion.isWorkday ? expansion.segments : [],
+                expansionFailed: expansion.failed
             )
         }
         return DayResolution(
@@ -209,7 +249,10 @@ enum DayRecordResolver {
             periodID: periodID,
             snapshotID: snapshotID,
             isScheduledWorkday: expansion.isWorkday,
-            segments: expansion.isWorkday ? expansion.segments : []
+            segments: expansion.isWorkday ? expansion.segments : [],
+            baseScheduleIsWorkday: expansion.isWorkday,
+            baseScheduleSegments: expansion.isWorkday ? expansion.segments : [],
+            expansionFailed: expansion.failed
         )
     }
 }

@@ -1,4 +1,10 @@
-import { isScheduledWorkday, type WorkScheduleConfig } from "./countdown";
+import {
+  addCivilDaysMs,
+  isScheduledWorkday,
+  isScheduledWorkdayInZone,
+  startOfCivilDayMs,
+  type WorkScheduleConfig,
+} from "./countdown";
 
 // 周期性汇总。**完全由配置推算，不依赖任何历史记录。**
 //
@@ -56,9 +62,20 @@ export function countScheduledWorkdays(
   from: Date,
   to: Date,
   workdays: number[],
-  schedule?: WorkScheduleConfig | null
+  schedule?: WorkScheduleConfig | null,
+  timeZone?: string
 ): number {
   if (schedule?.mode === "off") return 0;
+  if (timeZone) {
+    let cursor = startOfCivilDayMs(from.getTime(), timeZone);
+    const end = startOfCivilDayMs(to.getTime(), timeZone);
+    let count = 0;
+    while (cursor < end) {
+      if (isScheduledWorkdayInZone(cursor, workdays, schedule, timeZone)) count += 1;
+      cursor = addCivilDaysMs(cursor, 1, timeZone);
+    }
+    return count;
+  }
   const cursor = new Date(from);
   cursor.setHours(0, 0, 0, 0);
   const end = new Date(to);
@@ -96,6 +113,8 @@ export function summarize(params: {
   todayEffectiveHours?: number;
   /** 当前班次按原日薪线性外推的计薪比例；可因加班超过 1。 */
   todayPayRatio?: number;
+  /** 记录时区。缺省时退回运行环境本地时区，iOS 必须传入。 */
+  timeZone?: string;
 }): PeriodSummary {
   const {
     periodStart,
@@ -109,29 +128,37 @@ export function summarize(params: {
     dailySalary,
     todayEffectiveHours,
     todayPayRatio,
+    timeZone,
   } = params;
 
-  const shiftDay = new Date(currentShiftStart);
-  shiftDay.setHours(0, 0, 0, 0);
-  const shiftEndDay = new Date(currentShiftEnd);
-  shiftEndDay.setHours(0, 0, 0, 0);
-  const periodDay = new Date(periodStart);
-  periodDay.setHours(0, 0, 0, 0);
-  const asOfDay = new Date(asOf);
-  asOfDay.setHours(0, 0, 0, 0);
+  const startOfDay = (date: Date) => {
+    if (timeZone) return startOfCivilDayMs(date.getTime(), timeZone);
+    const next = new Date(date);
+    next.setHours(0, 0, 0, 0);
+    return next.getTime();
+  };
+  const shiftDayMs = startOfDay(currentShiftStart);
+  const shiftEndDayMs = startOfDay(currentShiftEnd);
+  const periodDayMs = startOfDay(periodStart);
+  const asOfDayMs = startOfDay(asOf);
   // 同日班次在当天结束后仍由进度折算，跨夜班次在结束日也继续归属于开班日；
   // 一旦统计日越过班次结束日，activeShift 就只是 UI 留下的旧快照，不能再
   // 截断后续工作日。
   const currentShiftCoversAsOfDay =
-    shiftDay >= periodDay && shiftDay <= asOfDay && shiftEndDay >= asOfDay;
+    shiftDayMs >= periodDayMs && shiftDayMs <= asOfDayMs && shiftEndDayMs >= asOfDayMs;
   const completed = countScheduledWorkdays(
-    periodDay,
-    currentShiftCoversAsOfDay ? shiftDay : asOfDay,
+    new Date(periodDayMs),
+    new Date(currentShiftCoversAsOfDay ? shiftDayMs : asOfDayMs),
     workdays,
-    schedule
+    schedule,
+    timeZone
   );
+  // One call for both zones. `isScheduledWorkday` routes to the zoned helper
+  // itself, and unlike that helper it keeps manual (`off`) mode counting — the
+  // split here made an iOS week disagree with the same week on the Web.
   const todayCounts =
-    currentShiftCoversAsOfDay && isScheduledWorkday(shiftDay, workdays, schedule);
+    currentShiftCoversAsOfDay &&
+    isScheduledWorkday(new Date(shiftDayMs), workdays, schedule, timeZone);
   const todayFraction = todayCounts
     ? Math.min(100, Math.max(0, todayProgress)) / 100
     : 0;

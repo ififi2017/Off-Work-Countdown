@@ -16,6 +16,8 @@
 | 007 | [iOS 订阅前稳定版](007-ios-stable-before-subscription.md) | 2026-08-27 | IN PROGRESS | PR #82 已合入且主要真机界面已验收；Live Activity、截图与 3.1.7 TestFlight 待办 |
 | 008 | [DoneAt 品牌换装与 iOS 外表面](008-brand-doneat.md) | 2026-08-27 | IN PROGRESS | 品牌母版和 iOS/PWA/Tauri 图标已合入；Web favicon、iOS 着色图标与 Live Activity 实拍待办 |
 | 009 | [DoneAt 全平台品牌与双域分工](009-doneat-platform-brand-domain.md) | 2026-08-28 | IN PROGRESS | 官网已独立运作；产品仓 Web P3（品牌、301、下载入口）进行中；Desktop DisplayName 仍是 P4 |
+| 010 | [记录 UI 迭代](010-records-ui-iteration.md) | 2026-08-30 | IN PROGRESS | 单画布与记录 IA 已落地；数据 P1、沉浸画布和真机验收由 011 收口 |
+| 011 | [iOS 记录与番茄钟发布阻断收口](011-ios-records-focus-release-remediation.md) | 2026-09-01 | READY FOR DEVICE VALIDATION | 本地修复、284 项 iOS 测试、模拟器截图与三轮逻辑 CR 已通过；等待双真机、通知 / Live Activity 与 Production CloudKit 验收 |
 
 ## 仍在 `docs/` 的活计划
 

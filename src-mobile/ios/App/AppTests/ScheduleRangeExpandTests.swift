@@ -68,6 +68,20 @@ func expandScheduleRangeTenYearMeasurement() throws {
     print("P0A expandScheduleRange 10y: \(days.count) days in \(milliseconds)ms")
     #expect(days.count >= 3650)
     #expect(milliseconds < 30_000)
+
+    let yearFrom = Calendar.current.date(from: DateComponents(year: 2026, month: 1, day: 1))!
+    let yearThrough = Calendar.current.date(from: DateComponents(year: 2026, month: 12, day: 31))!
+    let yearStarted = ContinuousClock.now
+    let yearDays = try CountdownRules.shared.expandScheduleRange(
+        configuration: configuration,
+        from: yearFrom,
+        through: yearThrough
+    )
+    let yearElapsed = yearStarted.duration(to: .now)
+    let yearMilliseconds = yearElapsed.components.seconds * 1_000
+        + yearElapsed.components.attoseconds / 1_000_000_000_000_000
+    print("P0A expandScheduleRange 1y: \(yearDays.count) days in \(yearMilliseconds)ms")
+    #expect(yearDays.count >= 365)
 }
 
 @MainActor

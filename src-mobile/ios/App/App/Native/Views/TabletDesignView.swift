@@ -5,7 +5,7 @@ import SwiftUI
 struct TabletShellView: View {
     @Bindable var store: OffWorkStore
     @State private var sidebarVisible = true
-    @State private var path: [AppRoute] = []
+    @State private var path = NavigationPath()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -55,7 +55,24 @@ struct TabletShellView: View {
             store.presentedRoute = nil
         }
         .onChange(of: store.debugPresentationToken) {
-            path.removeAll()
+            path = NavigationPath()
+        }
+        .onChange(of: store.selectedTab) { _, selectedTab in
+            // Each iPad root owns a NavigationStack. A pushed destination can
+            // otherwise remain hosted above the ZStack after the sidebar has
+            // selected another root, leaving (for example) “All records” on
+            // screen while Settings is highlighted.
+            path = NavigationPath()
+            if selectedTab != .records { store.recordsPath.removeAll() }
+            if selectedTab != .settings { store.settingsPath.removeAll() }
+        }
+        .onAppear {
+            if store.selectedTab != .records { store.recordsPath.removeAll() }
+            if store.selectedTab != .settings { store.settingsPath.removeAll() }
+            if store.selectedTab == .settings, !store.settingsPath.isEmpty {
+                for route in store.settingsPath { path.append(route) }
+                store.settingsPath.removeAll()
+            }
         }
         .background(OWCDesign.page)
     }
@@ -89,10 +106,8 @@ struct TabletShellView: View {
     }
 
     private var tabletRecordsRoot: some View {
-        NavigationStack(path: $store.recordsPath) {
-            RecordsDesignView(store: store)
-        }
-        .frame(maxWidth: 620)
+        RecordsDesignView(store: store)
+            .frame(maxWidth: 620)
     }
 
     private var tabletSettingsRoot: some View {
@@ -763,40 +778,48 @@ private struct TabletSettingsView: View {
     let showSidebar: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                if !sidebarVisible {
-                    Button(action: showSidebar) { Image(systemName: "sidebar.left").frame(width: 38, height: 38).background(OWCDesign.card).clipShape(RoundedRectangle(cornerRadius: 12)) }
-                    .buttonStyle(.plain)
+        // Scrolls for the same reason portrait does: once the stacked
+        // single-column fallback kicks in on an iPad mini, five sections are
+        // taller than the pane.
+        OWCContentSizedScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    if !sidebarVisible {
+                        Button(action: showSidebar) { Image(systemName: "sidebar.left").frame(width: 38, height: 38).background(OWCDesign.card).clipShape(RoundedRectangle(cornerRadius: 12)) }
+                        .buttonStyle(.plain)
+                    }
+                    Text(store.t("settings"))
+                        .font(.largeTitle.bold())
+                        .tracking(-0.85)
+                    Spacer()
+                    SettingsPlusStarButton(store: store)
                 }
-                Text(store.t("settings"))
-                    .font(.largeTitle.bold())
-                    .tracking(-0.85)
-                Spacer()
-            }
 
-            // Two columns only when they actually fit. With the sidebar open an
-            // 11-inch iPad leaves ~544 pt here, and splitting that in two left
-            // every value truncated and "off-work reminder" wrapping onto two
-            // lines. Below the threshold the same sections stack instead.
-            AdaptiveSettingsColumns(spacing: 26) {
-                SettingsSectionCard(store: store, section: .shift)
-                    .frame(maxWidth: .infinity)
-
-                VStack(spacing: 20) {
-                    SettingsSectionCard(store: store, section: .reminders)
-                    sectionNote(store.t("notificationPrivacyNote"))
-                    SettingsSectionCard(store: store, section: .appearance)
-                    SettingsSectionCard(store: store, section: .about)
+                // Two columns only when they actually fit. With the sidebar open an
+                // 11-inch iPad leaves ~544 pt here, and splitting that in two left
+                // every value truncated and "off-work reminder" wrapping onto two
+                // lines. Below the threshold the same sections stack instead.
+                AdaptiveSettingsColumns(spacing: 26) {
+                    ForEach(SettingsSection.twoColumns.indices, id: \.self) { column in
+                        VStack(spacing: 20) {
+                            ForEach(SettingsSection.twoColumns[column]) { section in
+                                SettingsSectionCard(store: store, section: section)
+                                // The privacy note belongs to this section, so
+                                // it travels with it rather than with a column.
+                                if section == .reminders {
+                                    sectionNote(store.t("notificationPrivacyNote"))
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
                 }
-                .frame(maxWidth: .infinity)
+                .padding(.top, 22)
             }
-            .padding(.top, 22)
-            Spacer()
+            .padding(.leading, sidebarVisible ? 34 : 40)
+            .padding(.trailing, 40)
+            .padding(.top, 26)
         }
-        .padding(.leading, sidebarVisible ? 34 : 40)
-        .padding(.trailing, 40)
-        .padding(.top, 26)
         .background(OWCDesign.page)
         .navigationBarHidden(true)
     }
