@@ -566,6 +566,7 @@ struct NativeReminderInputs: Codable {
     let microBreakTitle: String
     let microBreakIntervalMinutes: Int
     let microBreakMessages: [String]
+    let cycleEndSummaryBody: String?
 }
 
 private struct NativeReminderRequest: Codable {

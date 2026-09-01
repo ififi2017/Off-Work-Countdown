@@ -7,6 +7,7 @@ import SwiftUI
 struct SettingsSectionCard: View {
     let store: OffWorkStore
     let section: SettingsSection
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -36,6 +37,18 @@ struct SettingsSectionCard: View {
 
         case .about:
             link(.about, icon: "info.circle", title: store.t("aboutProject"), value: nil)
+            Button {
+                store.disableAutomaticReviewPrompt()
+                openURL(URL(string: "https://apps.apple.com/app/id6802803318?action=write-review")!)
+            } label: {
+                OWCRow(icon: "star.bubble", title: store.t("rateApp")) {
+                    Image(systemName: "arrow.up.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(OWCDesign.secondary)
+                        .accessibilityHidden(true)
+                }
+            }
+            .buttonStyle(OWCRowButtonStyle())
             OWCRow(icon: "tag", title: store.t("version"), isLast: true) {
                 HStack(spacing: 6) {
                     Text(store.appVersion)

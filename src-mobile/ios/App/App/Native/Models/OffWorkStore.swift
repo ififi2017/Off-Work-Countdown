@@ -236,6 +236,7 @@ final class OffWorkStore {
         static let theme = "theme"
         static let languageOverride = "ios.native.languageOverride"
         static let notificationMode = "ios.native.notificationMode"
+        static let cycleEndSummaryNotificationEnabled = "ios.native.cycleEndSummaryNotificationEnabled"
         static let liveActivityEnabled = "ios.native.liveActivityEnabled"
         static let liveActivityLead = "ios.native.liveActivityLead"
         static let legacyLunchEdgesEnabled = "ios.native.lunchEdgesEnabled"
@@ -255,6 +256,7 @@ final class OffWorkStore {
         static let lifeSetupPromptDismissed = "ios.native.lifeSetupPromptDismissed"
         static let focusPlanning = "ios.native.focusPlanning.v1"
         static let focusTimerSettings = "ios.native.focusTimerSettings.v1"
+        static let appReviewPrompt = "ios.native.appReviewPrompt.v1"
     }
 
     static let allowedLiveActivityLeadMinutes = [5, 15, 30]
@@ -572,6 +574,14 @@ final class OffWorkStore {
     /// without any of them knowing an override exists.
     var languageCode: String { languageOverride ?? systemLanguageCode }
     var notificationMode: OffWorkNotificationMode { didSet { defaults.set(notificationMode.rawValue, forKey: Key.notificationMode) } }
+    var cycleEndSummaryNotificationEnabled: Bool {
+        didSet {
+            defaults.set(
+                cycleEndSummaryNotificationEnabled,
+                forKey: Key.cycleEndSummaryNotificationEnabled
+            )
+        }
+    }
     var liveActivityEnabled: Bool { didSet { defaults.set(liveActivityEnabled, forKey: Key.liveActivityEnabled) } }
     var liveActivityLeadMinutes: Int { didSet { defaults.set(liveActivityLeadMinutes, forKey: Key.liveActivityLead) } }
     var lunchStartReminderEnabled: Bool {
@@ -651,6 +661,9 @@ final class OffWorkStore {
     /// fresh store, so that launch may celebrate the already-completed shift
     /// once without persisting a permanent suppression flag.
     var lastCelebratedEndAtMs: Double = 0
+    var reviewPromptPresented = false
+    private var reviewPromptState = AppReviewPromptState()
+    private var reviewPromptEligibleThisLaunch = false
 
     init(defaults: UserDefaults = .standard, records: RecordCoordinator? = nil) {
 #if DEBUG
@@ -752,6 +765,7 @@ final class OffWorkStore {
             NativeLocalizer.supportedLanguages.contains { $0.id == stored } ? stored : nil
         }
         notificationMode = OffWorkNotificationMode(rawValue: defaults.string(forKey: Key.notificationMode) ?? "off") ?? .off
+        cycleEndSummaryNotificationEnabled = defaults.bool(forKey: Key.cycleEndSummaryNotificationEnabled)
         liveActivityEnabled = defaults.bool(forKey: Key.liveActivityEnabled)
         let storedLead = defaults.object(forKey: Key.liveActivityLead) == nil ? 15 : defaults.integer(forKey: Key.liveActivityLead)
         liveActivityLeadMinutes = Self.allowedLiveActivityLeadMinutes.contains(storedLead) ? storedLead : 15
@@ -773,6 +787,14 @@ final class OffWorkStore {
         todayOverride = Self.decodeTodayOverride(from: defaults)
         dismissedCompletedEndAtMs = defaults.object(forKey: Key.dismissedCompletedEndAtMs) as? Double
         activeCountdownEndAtMs = defaults.object(forKey: Key.activeCountdownEndAtMs) as? Double
+        reviewPromptState = defaults.data(forKey: Key.appReviewPrompt)
+            .flatMap { try? JSONDecoder().decode(AppReviewPromptState.self, from: $0) }
+            ?? AppReviewPromptState()
+        reviewPromptEligibleThisLaunch = reviewPromptState.isEligibleOnLaunch(
+            trackedCompletionAtMs: activeCountdownEndAtMs,
+            nowMs: Date.now.timeIntervalSince1970 * 1_000
+        )
+        persistReviewPromptState()
         defaults.removeObject(forKey: Key.lastCelebratedEndAtMs)
         lastCelebratedEndAtMs = 0
 
@@ -1937,22 +1959,33 @@ final class OffWorkStore {
     }
 
     func shiftReminders(at date: Date = .now) throws -> [NativeReminder] {
-        let inputs = reminderInputs()
+        let currentSnapshot = snapshot(at: date)
+        let inputs = reminderInputs(
+            cycleEndSummaryBody: currentSnapshot.flatMap {
+                cycleEndSummaryNotificationBody(for: $0, at: date)
+            }
+        )
         let effective = try CountdownRules.shared.reminders(
             input: rulesInput(at: date),
             reminderInputs: inputs
         )
         let current = effective.filter { $0.id.hasPrefix("current:") }
-        let next: [NativeReminder]
-        if projectsFutureFromBase(at: date) {
-            next = try CountdownRules.shared.reminders(
-                input: rulesInput(at: date, using: .base),
-                reminderInputs: inputs
-            ).filter { $0.id.hasPrefix("next:") }
-        } else {
-            next = effective.filter { $0.id.hasPrefix("next:") }
+        let nextSnapshot = currentSnapshot?.nextShiftStartDate.flatMap {
+            snapshot(at: $0.addingTimeInterval(1))
         }
-        guard let snapshot = snapshot(at: date) else { return current + next }
+        let nextInputs = reminderInputs(
+            cycleEndSummaryBody: nextSnapshot.flatMap {
+                cycleEndSummaryNotificationBody(for: $0, at: $0.startDate)
+            }
+        )
+        let next = try CountdownRules.shared.reminders(
+            input: rulesInput(
+                at: date,
+                using: projectsFutureFromBase(at: date) ? .base : .effective
+            ),
+            reminderInputs: nextInputs
+        ).filter { $0.id.hasPrefix("next:") }
+        guard let snapshot = currentSnapshot else { return current + next }
         // Rest days and settlement both still produce a `current:` window from
         // `getShiftBounds` — Saturday 09:00–17:00 on a weekend, or Saturday
         // 22:00 after a Friday overnight ended at 06:00. Those are not a shift
@@ -1962,7 +1995,7 @@ final class OffWorkStore {
         return (includeCurrent ? current : []) + next
     }
 
-    func reminderInputs() -> NativeReminderInputs {
+    func reminderInputs(cycleEndSummaryBody: String? = nil) -> NativeReminderInputs {
         func title(_ remaining: Int) -> String {
             t("notificationMilestoneTitle", values: ["percent": "\(remaining)"])
         }
@@ -1990,8 +2023,113 @@ final class OffWorkStore {
             microBreakEnabled: presentationMicroBreakEnabled,
             microBreakTitle: t("microBreakReminder"),
             microBreakIntervalMinutes: presentationMicroBreakIntervalMinutes,
-            microBreakMessages: strings("microBreakMessages")
+            microBreakMessages: strings("microBreakMessages"),
+            cycleEndSummaryBody: cycleEndSummaryBody
         )
+    }
+
+    var cycleEndSummaryNotificationsAreActive: Bool {
+        cycleEndSummaryNotificationEnabled && plus.isAuthorized
+    }
+
+    func setCycleEndSummaryNotifications(_ enabled: Bool) {
+        guard enabled else {
+            cycleEndSummaryNotificationEnabled = false
+            return
+        }
+        openPaidOrRun(
+            .cycleEndSummaryNotifications,
+            action: .enableCycleEndSummaryNotifications
+        )
+    }
+
+    /// Builds the body only for the last resolved workday before a rest day.
+    /// Work/rest classification has already come from the shared TypeScript
+    /// expansion and then passed through calendar exceptions and manual edits.
+    func cycleEndSummaryNotificationBody(
+        for snapshot: NativeShiftSnapshot,
+        at date: Date = .now
+    ) -> String? {
+        guard cycleEndSummaryNotificationsAreActive,
+              scheduleMode != .off,
+              snapshot.isWorkday || isForcedWorkday(snapshot)
+        else { return nil }
+
+        let calendar = recordsCalendar
+        let anchor = calendar.startOfDay(for: snapshot.startDate)
+        guard let from = calendar.date(byAdding: .day, value: -31, to: anchor),
+              let through = calendar.date(byAdding: .day, value: 1, to: anchor)
+        else { return nil }
+        let resolved = resolvedDays(from: from, through: through, now: date)
+        let days = resolved.map { day in
+            ScheduleCycleDay(
+                dayKey: day.dayKey,
+                isWorkday: day.isScheduledWorkday,
+                workMs: day.segments.reduce(0) { partial, segment in
+                    partial + Int64(max(0, segment.endAtMs - segment.startAtMs).rounded())
+                },
+                overtimeMs: overtimeSegments(on: day).reduce(0) { partial, segment in
+                    partial + Int64(max(0, segment.endAtMs - segment.startAtMs).rounded())
+                },
+                isComplete: !day.expansionFailed
+            )
+        }
+        let dayKey = RecordJSON.dayKey(snapshot.startDate, calendar: calendar)
+        guard let summary = ScheduleCycleSummaryCalculator.summary(endingAt: dayKey, in: days) else {
+            return nil
+        }
+        return t("cycleEndSummaryNotificationBody", values: [
+            "days": formatCount(summary.workdayCount),
+            "work": formatDuration(Double(summary.workMs), includeSeconds: false),
+            "overtime": formatDuration(Double(summary.overtimeMs), includeSeconds: false),
+        ])
+    }
+
+    func noteCountdownCompleted(endAtMs: Double) {
+        let previous = reviewPromptState
+        reviewPromptState.noteCompletion(atMs: endAtMs)
+        if reviewPromptState != previous { persistReviewPromptState() }
+    }
+
+    func presentReviewPromptIfEligible() {
+        guard reviewPromptEligibleThisLaunch,
+              onboardingComplete,
+              plus.hasSeenIntro,
+              !reviewPromptPresented
+        else { return }
+        reviewPromptEligibleThisLaunch = false
+        reviewPromptPresented = true
+    }
+
+    func acceptReviewPrompt() {
+        reviewPromptState.disable()
+        reviewPromptPresented = false
+        persistReviewPromptState()
+    }
+
+    func deferReviewPrompt() {
+        reviewPromptState.deferUntilNextCompletion()
+        reviewPromptPresented = false
+        persistReviewPromptState()
+    }
+
+    func disableAutomaticReviewPrompt() {
+        reviewPromptEligibleThisLaunch = false
+        reviewPromptState.disable()
+        reviewPromptPresented = false
+        persistReviewPromptState()
+    }
+
+    private func revokeCountdownCompletion(endAtMs: Double?) {
+        guard let endAtMs else { return }
+        let previous = reviewPromptState
+        reviewPromptState.revokeCompletion(atMs: endAtMs)
+        if reviewPromptState != previous { persistReviewPromptState() }
+    }
+
+    private func persistReviewPromptState() {
+        guard let data = try? JSONEncoder().encode(reviewPromptState) else { return }
+        defaults.set(data, forKey: Key.appReviewPrompt)
     }
 
     /// Builds the presentation timeline from shared absolute boundaries.
@@ -2308,13 +2446,16 @@ final class OffWorkStore {
         // the extra hours.
         writeObservation(.countdownStopped, at: date, eventID: UUID())
         persistProjectedDayOverride(at: date)
+        noteCountdownCompleted(endAtMs: earlyOffAtMs ?? date.timeIntervalSince1970 * 1_000)
     }
 
     /// Takes it back. Deliberately its own action rather than a side effect of
     /// editing the schedule: changing tomorrow's hours must never quietly
     /// resurrect today, or every settings visit becomes a coin toss.
     func undoEarlyClockOff() {
+        let revokedCompletionAtMs = earlyOffAtMs
         clearEarlyClockOffRecord()
+        revokeCountdownCompletion(endAtMs: revokedCompletionAtMs)
         dismissedCompletedEndAtMs = nil
         recordActiveCountdownBoundary()
     }
@@ -2423,6 +2564,7 @@ final class OffWorkStore {
         guard liveActivityEnabled, notificationMode == .off else { return false }
         guard publishesLiveSurfaces else { return false }
         guard let snapshot else { return false }
+        guard cycleEndSummaryNotificationBody(for: snapshot, at: date) == nil else { return false }
         guard snapshot.endAtMs > date.timeIntervalSince1970 * 1_000 else { return false }
         guard !isEndedEarly(snapshot) else { return false }
         return (snapshot.isWorkday || isForcedWorkday(snapshot)) && !isShiftComplete(snapshot)
@@ -2790,6 +2932,7 @@ final class OffWorkStore {
     }
 
     func applyOvertime(date: Date, declaredAt: Date = .now) {
+        let revokedCompletionAtMs = earlyOffAtMs ?? activeCountdownEndAtMs
         overtimeEndAtMs = date.timeIntervalSince1970 * 1_000
         countdownStarted = true
         activeCountdownEndAtMs = overtimeEndAtMs
@@ -2798,6 +2941,7 @@ final class OffWorkStore {
         }
         // Overtime after an early clock-off is "I wasn't done".
         clearEarlyClockOffRecord()
+        revokeCountdownCompletion(endAtMs: revokedCompletionAtMs)
         dismissedCompletedEndAtMs = nil
         // Declaring overtime creates a new completion boundary. If the normal
         // clock-off already celebrated during this warm session, let the new
@@ -4198,6 +4342,10 @@ final class OffWorkStore {
             _ = startFocusAuthorized(task)
         case .presentAddFocus:
             presentAddFocus = true
+        case .openFocus:
+            presentedRoute = .focus
+        case .enableCycleEndSummaryNotifications:
+            cycleEndSummaryNotificationEnabled = true
         case .enableSync:
             Task { await cloudSync.enable(authorized: plus.isAuthorized) }
         }

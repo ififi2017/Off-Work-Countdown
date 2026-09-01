@@ -131,6 +131,22 @@ describe("buildShiftReminders 里程碑", () => {
     expect(milestones.every((reminder) => reminder.body === null)).toBe(true);
   });
 
+  it("周期末摘要只替换 100% 文案，并能独立于普通提醒开关发出", () => {
+    const reminders = buildShiftReminders(
+      simpleShift,
+      withoutMicroBreaks({
+        mode: "off",
+        cycleEndSummaryBody: "本周期 5 个工作日，共 40 小时。休息愉快。",
+      })
+    );
+
+    expect(byId(reminders, "milestone:95").body).toBeNull();
+    expect(byId(reminders, "milestone:100").title).toBe("下班了");
+    expect(byId(reminders, "milestone:100").body).toBe(
+      "本周期 5 个工作日，共 40 小时。休息愉快。"
+    );
+  });
+
   it("缺档位标题时退回通用标题，通用标题也缺时退回内置英文", () => {
     const partial = buildShiftReminders(
       simpleShift,
