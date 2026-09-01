@@ -47,6 +47,14 @@ struct NativeShiftSnapshot: Codable, Hashable {
         overtimeEndAtMs != nil && now.timeIntervalSince1970 * 1_000 >= plannedEndAtMs
     }
 
+    /// Pay accrued so far, nil when no salary is configured.
+    ///
+    /// The bundle already decided the pay ratio — overtime extends it past 1
+    /// linearly — so multiplying it out is the whole of the calculation. It
+    /// lives here rather than in each layout because three of them had written
+    /// their own copy of the same multiply.
+    var earnedSoFar: Double? { dailySalary.map { $0 * payRatio } }
+
     /// Remaining time the shared running surfaces count. Before clock-in this is
     /// time until start; during a break it is time until the break ends;
     /// otherwise it is effective shift remaining.

@@ -194,7 +194,7 @@ private struct TabletSidebar: View {
                                 // and never blank it from here at all.
                                 sidebarRow(
                                     store.t("moneyEarned"),
-                                    store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio }),
+                                    store.moneyText(snapshot.earnedSoFar),
                                     last: true,
                                     bold: true,
                                     accessory: { OWCEarningsVisibilityButton(store: store) }
@@ -554,7 +554,7 @@ private struct TabletRunningView: View {
                         if store.presentationSalaryEnabled {
                             fullStat(
                                 store.t("moneyEarned"),
-                                store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio }),
+                                store.moneyText(snapshot.earnedSoFar),
                                 accessory: { OWCEarningsVisibilityButton(store: store) }
                             )
                         }
@@ -731,7 +731,7 @@ private struct TabletRunningView: View {
     private func summaryLabel(_ summary: NativePeriodSummary?, includeMoney: Bool) -> String {
         guard let summary else { return "—" }
         if includeMoney {
-            let money = store.hideEarnings ? "••••" : store.formatMoney(summary.earnings)
+            let money = store.moneyText(summary.earnings)
             return "\(store.formatDays(summary.days)) · \(money)"
         }
         return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"

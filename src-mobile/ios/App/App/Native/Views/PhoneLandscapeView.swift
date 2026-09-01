@@ -241,7 +241,7 @@ private struct LandscapeTimerView: View {
                                     : snapshot.progress
                             )
                         )
-                        if store.presentationSalaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
+                        if store.presentationSalaryEnabled { landscapeStat(store.t("moneyEarned"), store.moneyText(snapshot.earnedSoFar)) }
                         if store.effectiveScheduleMode(at: date) != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot, now: date)) }
                     }
                     .padding(.top, 20)

@@ -341,7 +341,7 @@ private struct RunningTimerDesignView: View {
             if store.presentationSalaryEnabled {
             OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: !store.followsSchedule(at: now)) {
                 HStack(spacing: 8) {
-                    Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
+                    Text(store.moneyText(earned))
                         .font(.body.weight(.semibold).monospacedDigit())
                     OWCEarningsVisibilityButton(store: store)
                 }
@@ -366,7 +366,7 @@ private struct RunningTimerDesignView: View {
         }
     }
 
-    private var earned: Double? { snapshot.dailySalary.map { $0 * snapshot.payRatio } }
+    private var earned: Double? { snapshot.earnedSoFar }
 
     private var weekSummary: NativePeriodSummary? { store.periodSummary("week", asOf: now, snapshot: snapshot) }
     private var yearSummary: NativePeriodSummary? { store.periodSummary("year", asOf: now, snapshot: snapshot) }
@@ -376,7 +376,7 @@ private struct RunningTimerDesignView: View {
         guard store.presentationSalaryEnabled else {
             return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
         }
-        let money = store.hideEarnings ? "••••" : store.formatMoney(summary.earnings)
+        let money = store.moneyText(summary.earnings)
         return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours)) · \(money)"
     }
 }
