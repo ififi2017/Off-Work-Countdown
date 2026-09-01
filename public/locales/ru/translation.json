@@ -381,6 +381,7 @@
   "onboardingLandscapeTitle": "Поверните экран",
   "onboardingLandscapeBody": "В альбомной ориентации отсчёт занимает весь экран — только часы и полоса.",
   "onboardingSidebarTitle": "Скрыть боковую панель",
+  "showSidebar": "Показать боковую панель",
   "onboardingSidebarBody": "Сверните боковую панель, и отсчёт займёт весь экран — только часы и полоса.",
   "widgetRestDayShort": "До следующей смены",
   "countdownRulesUnavailable": "Обратный отсчёт временно недоступен.",

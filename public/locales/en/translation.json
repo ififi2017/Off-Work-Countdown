@@ -381,6 +381,7 @@
   "onboardingLandscapeTitle": "Turn it sideways",
   "onboardingLandscapeBody": "In landscape the countdown goes full screen — just the clock and the bar, nothing else.",
   "onboardingSidebarTitle": "Hide the sidebar",
+  "showSidebar": "Show sidebar",
   "onboardingSidebarBody": "Collapse the sidebar and the countdown fills the display — just the clock and the bar, nothing else.",
   "widgetRestDayShort": "Until next shift",
   "countdownRulesUnavailable": "Countdown is temporarily unavailable.",

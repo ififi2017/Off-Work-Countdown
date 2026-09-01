@@ -381,6 +381,7 @@
   "onboardingLandscapeTitle": "Passez en paysage",
   "onboardingLandscapeBody": "En paysage, le compte à rebours occupe tout l'écran : l'horloge et la barre, rien d'autre.",
   "onboardingSidebarTitle": "Masquer la barre latérale",
+  "showSidebar": "Afficher la barre latérale",
   "onboardingSidebarBody": "Repliez la barre latérale et le compte à rebours remplit l'écran : l'horloge et la barre, rien d'autre.",
   "widgetRestDayShort": "Avant la prochaine journée",
   "countdownRulesUnavailable": "Le compte à rebours est temporairement indisponible.",

@@ -381,6 +381,7 @@
   "onboardingLandscapeTitle": "橫過來看",
   "onboardingLandscapeBody": "橫向時倒數會佔滿整個螢幕——只有時鐘和進度條，別無他物。",
   "onboardingSidebarTitle": "收合側邊欄",
+  "showSidebar": "顯示側邊欄",
   "onboardingSidebarBody": "收合側邊欄，倒數就會佔滿整個螢幕——只有時鐘和進度條，別無他物。",
   "widgetRestDayShort": "距離下次上班",
   "countdownRulesUnavailable": "倒數暫時無法使用。",

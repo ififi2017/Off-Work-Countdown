@@ -106,7 +106,12 @@ struct TabletShellView: View {
     }
 
     private var tabletRecordsRoot: some View {
-        RecordsDesignView(store: store)
+        RecordsDesignView(
+            store: store,
+            showsSidebarButton: !sidebarVisible
+        ) {
+            withAnimation(shellAnimation) { sidebarVisible = true }
+        }
             .frame(maxWidth: 620)
     }
 

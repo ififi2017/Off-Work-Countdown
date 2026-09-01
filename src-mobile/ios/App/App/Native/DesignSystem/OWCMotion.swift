@@ -17,11 +17,10 @@ enum OWCMotion {
     /// A deliberately discovered brand moment. One full turn needs enough
     /// time to read as a clock hand rather than a flicker.
     static let brandCelebration = Animation.smooth(duration: 0.8)
-    /// Three linear clock-hand turns after Plus becomes available. The matching
-    /// selection ticks are spaced from the same duration so sight and touch do
-    /// not drift apart.
+    /// Three fluid clock-hand turns after Plus becomes available. Haptics run
+    /// beside this animation without writing tick state back into SwiftUI.
     static let subscriptionCelebrationDuration: Double = 1.35
-    static let subscriptionCelebration = Animation.linear(duration: subscriptionCelebrationDuration)
+    static let subscriptionCelebration = Animation.smooth(duration: subscriptionCelebrationDuration)
     static let subscriptionCelebrationTickCount = 12
     /// A hidden, user-triggered brand response on the unscheduled screen.
     /// The spring supplies the lift; the strong ease-out gives it a quiet,

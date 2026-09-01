@@ -1,5 +1,6 @@
 import StoreKit
 import SwiftUI
+import UIKit
 
 /// The paywall as a page: its own scroll container, plus the shared content.
 ///
@@ -580,7 +581,6 @@ private struct PlusSubscriberThankYouView: View {
     @State private var isPlaying = false
     @State private var markDimmed = false
     @State private var handledInitialPlayback = false
-    @State private var rotationTickFeedback = 0
     @State private var rotationHaptics: Task<Void, Never>?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -646,7 +646,6 @@ private struct PlusSubscriberThankYouView: View {
             handledInitialPlayback = true
             play(revealsText: true)
         }
-        .sensoryFeedback(.selection, trigger: rotationTickFeedback)
         .onDisappear { rotationHaptics?.cancel() }
     }
 
@@ -724,10 +723,13 @@ private struct PlusSubscriberThankYouView: View {
         let interval = OWCMotion.subscriptionCelebrationDuration
             / Double(OWCMotion.subscriptionCelebrationTickCount)
         rotationHaptics = Task { @MainActor in
+            let generator = UISelectionFeedbackGenerator()
+            generator.prepare()
             for _ in 0..<OWCMotion.subscriptionCelebrationTickCount {
                 try? await Task.sleep(for: .seconds(interval))
                 guard !Task.isCancelled else { return }
-                rotationTickFeedback += 1
+                generator.selectionChanged()
+                generator.prepare()
             }
         }
     }

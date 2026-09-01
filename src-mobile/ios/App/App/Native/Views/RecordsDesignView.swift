@@ -4,6 +4,8 @@ import UniformTypeIdentifiers
 
 struct RecordsDesignView: View {
     let store: OffWorkStore
+    let showsSidebarButton: Bool
+    let showSidebar: () -> Void
     @State private var scale: RecordsScale
     @State private var anchor = Date()
     @State private var selectedDayKey: String?
@@ -26,8 +28,14 @@ struct RecordsDesignView: View {
     private var isExpanded: Bool { expanded[scale] == true }
     private var canExpand: Bool { scale == .year || scale == .life }
 
-    init(store: OffWorkStore) {
+    init(
+        store: OffWorkStore,
+        showsSidebarButton: Bool = false,
+        showSidebar: @escaping () -> Void = {}
+    ) {
         self.store = store
+        self.showsSidebarButton = showsSidebarButton
+        self.showSidebar = showSidebar
 #if DEBUG
         let requested = RecordsScale(
             rawValue: UserDefaults.standard.string(forKey: "ios.native.qaRecordsScale") ?? ""
@@ -189,6 +197,19 @@ struct RecordsDesignView: View {
 
     private var recordsHeader: some View {
         HStack(spacing: 8) {
+            if showsSidebarButton {
+                Button(action: showSidebar) {
+                    Label(store.t("showSidebar"), systemImage: "sidebar.left")
+                        .labelStyle(.iconOnly)
+                        .frame(width: 44, height: 44)
+                        .background(
+                            OWCDesign.control,
+                            in: RoundedRectangle(cornerRadius: 12)
+                        )
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(OWCDesign.primary)
+            }
             Text(store.t("recordsTitle"))
                 .font(.largeTitle.bold())
                 .tracking(-0.85)

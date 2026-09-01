@@ -381,6 +381,7 @@
   "onboardingLandscapeTitle": "横过来看",
   "onboardingLandscapeBody": "横屏时倒计时会占满整个屏幕——只有时钟和进度条，别无他物。",
   "onboardingSidebarTitle": "收起侧边栏",
+  "showSidebar": "显示侧边栏",
   "onboardingSidebarBody": "收起侧边栏，倒计时就会占满整个屏幕——只有时钟和进度条，别无他物。",
   "widgetRestDayShort": "距离下次上班",
   "countdownRulesUnavailable": "倒计时暂时不可用。",

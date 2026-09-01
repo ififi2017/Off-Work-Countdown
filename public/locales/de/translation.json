@@ -381,6 +381,7 @@
   "onboardingLandscapeTitle": "Quer halten",
   "onboardingLandscapeBody": "Im Querformat füllt der Countdown den Bildschirm – nur Uhr und Balken, sonst nichts.",
   "onboardingSidebarTitle": "Seitenleiste ausblenden",
+  "showSidebar": "Seitenleiste einblenden",
   "onboardingSidebarBody": "Klappe die Seitenleiste ein und der Countdown füllt den Bildschirm – nur Uhr und Balken.",
   "widgetRestDayShort": "Bis zur nächsten Schicht",
   "countdownRulesUnavailable": "Der Countdown ist vorübergehend nicht verfügbar.",

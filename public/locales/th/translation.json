@@ -381,6 +381,7 @@
   "onboardingLandscapeTitle": "หมุนเป็นแนวนอน",
   "onboardingLandscapeBody": "ในแนวนอน การนับถอยหลังจะเต็มจอ — มีแค่นาฬิกากับแถบความคืบหน้า",
   "onboardingSidebarTitle": "ซ่อนแถบด้านข้าง",
+  "showSidebar": "แสดงแถบด้านข้าง",
   "onboardingSidebarBody": "ยุบแถบด้านข้าง แล้วการนับถอยหลังจะเต็มจอ — มีแค่นาฬิกากับแถบความคืบหน้า",
   "widgetRestDayShort": "จนถึงกะถัดไป",
   "countdownRulesUnavailable": "ไม่สามารถใช้การนับถอยหลังได้ชั่วคราว",

@@ -381,6 +381,7 @@
   "onboardingLandscapeTitle": "Giralo di lato",
   "onboardingLandscapeBody": "In orizzontale il conto alla rovescia occupa tutto lo schermo: solo l'orologio e la barra.",
   "onboardingSidebarTitle": "Nascondi la barra laterale",
+  "showSidebar": "Mostra la barra laterale",
   "onboardingSidebarBody": "Chiudi la barra laterale e il conto alla rovescia riempie lo schermo: solo l'orologio e la barra.",
   "widgetRestDayShort": "Al prossimo turno",
   "countdownRulesUnavailable": "Il conto alla rovescia non è temporaneamente disponibile.",
