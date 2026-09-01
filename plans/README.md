@@ -19,6 +19,7 @@
 | 010 | [记录 UI 迭代](010-records-ui-iteration.md) | 2026-08-30 | IN PROGRESS | 单画布与记录 IA 已落地；数据 P1、沉浸画布和真机验收由 011 收口 |
 | 011 | [iOS 记录与番茄钟发布阻断收口](011-ios-records-focus-release-remediation.md) | 2026-09-01 | READY FOR DEVICE VALIDATION | 本地修复、iOS 测试基线与模拟器验证已通过；等待双真机、通知 / Live Activity 与 Production CloudKit 验收 |
 | 012 | [iOS 评价引导、周期总结通知与 iPad 入口修复](012-ios-retention-and-cycle-notifications.md) | 2026-09-01 | IMPLEMENTED | 模拟器与自动化验收已通过；订阅成功触感、系统评价弹窗和真实通知投递仍待真机 / TestFlight 终验 |
+| 013 | [记录日画布、视觉语法与单一结论](013-records-day-canvas-and-visual-language.md) | 2026-09-01 | TODO | 保留周 / 月 / 年 / 人生四档；新增统一日画布，收口月格与周日列语义、人生总结与 Plus 锁定文案 |
 
 ## 仍在 `docs/` 的活计划
 
