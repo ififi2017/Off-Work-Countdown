@@ -34,7 +34,8 @@ struct RecordedWorkDay: Equatable, Sendable, Identifiable {
 
 /// An immutable use event. Writes never edit; a retry reuses `eventID`.
 struct WorkObservation: Equatable, Sendable, Identifiable {
-    static let schemaVersion = 1
+    static let schemaVersion = 2
+    static let unsetTieBreaker = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
 
     var eventID: UUID
     var shiftAnchorDate: Date
@@ -45,6 +46,11 @@ struct WorkObservation: Equatable, Sendable, Identifiable {
     var schemaVersion: Int = WorkObservation.schemaVersion
     /// Civil day this row was recorded in. Travel does not rewrite it.
     var timeZoneIdentifier: String = TimeZone.current.identifier
+    /// Sync-only revision metadata. Observations remain immutable business
+    /// events; this changes only when a user resolves a replicated conflict.
+    var editedAt: Date = .distantPast
+    var editCount: Int = 0
+    var editTieBreaker: UUID = WorkObservation.unsetTieBreaker
 
     var id: UUID { eventID }
 }

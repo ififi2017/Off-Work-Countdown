@@ -8,14 +8,17 @@
 | 编号 | 计划 | 起草 | 状态 | 备注 |
 | --- | --- | --- | --- | --- |
 | 001 | [统一并收敛全产品动效](001-motion-improvement.md) | 2026-08-24 | IN PROGRESS | iOS 动效地基随 007 落地；原计划中的逐秒数字策略需复议；Web/Desktop 尚未开始 |
-| 002 | [工作占比、人生视图与专注](002-records-life-focus.md) | 2026-08-25 | IN PROGRESS | P0A 本地语义、JSON、批量展开与最小事件已落地；免费记录 Tab 只列实际上下班，不预填年历；日历日时区锁定、设置迁移与损坏档案隔离提示已定；付费墙 / P0B / P2 未做 |
+| 002 | [工作占比、人生视图与专注](002-records-life-focus.md) | 2026-08-25 | IN PROGRESS | P0A 在 [PR #94](https://github.com/ififi2017/Off-Work-Countdown/pull/94)；P1 / P0B / P2 与 [006](006-free-trial-subscription.md) 同在 [PR #96](https://github.com/ififi2017/Off-Work-Countdown/pull/96) 等 CR。实现已交，真机同步与 TestFlight 未过。免费 Tab 只列实际上下班 |
 | 003 | [桌面端实施（Tauri v2）](003-tauri-desktop.md) | 2026-08-08 | IN PROGRESS | 已连续发布至 3.1.7；Windows 人工验收、真实升级回环与 P6 包管理器分发仍待办 |
 | 004 | [班次模型重构与本地化补齐](004-shift-model-3.1.0.md) | 2026-08-12 | DONE | 3.1.0 已发布，当前 3.1.7 |
 | 005 | [产品 3.0 升级](005-product-3.0.md) | 2026-08-08 | DONE | M1–M5 完成；M6 分发改由 MSIX 计划接管 |
-| 006 | [免费下载、试用与订阅](006-free-trial-subscription.md) | 2026-08-26 | DRAFT | 从 002 拆出；通用购买把 iOS 与 Mac App Store 绑在一个价格上；等待 007 完成送审闭环 |
+| 006 | [免费下载、试用与订阅](006-free-trial-subscription.md) | 2026-08-26 | IN PROGRESS | 付费墙随 [PR #96](https://github.com/ififi2017/Off-Work-Countdown/pull/96) 等 CR。ASC 上月 / 年 / 终身已 Ready to Submit；沙盒购买与商店隐私页尚未收口 |
 | 007 | [iOS 订阅前稳定版](007-ios-stable-before-subscription.md) | 2026-08-27 | IN PROGRESS | 3.1.8 素材与真机 Live Activity 已齐，待选 build 人工送审 |
 | 008 | [DoneAt 品牌换装与 iOS 外表面](008-brand-doneat.md) | 2026-08-27 | IN PROGRESS | 品牌母版和 iOS 外表面已合入；真机 Live Activity 已看过；Web favicon 与着色图标仍待 |
 | 009 | [DoneAt 全平台品牌与双域分工](009-doneat-platform-brand-domain.md) | 2026-08-28 | IN PROGRESS | 官网 2026-08-30 已验收；产品仓 Web P3 已落地；Desktop 升级回环与商店邮箱仍待 |
+| 010 | [记录 UI 迭代](010-records-ui-iteration.md) | 2026-08-30 | IN PROGRESS | 单画布与记录 IA 已落地；数据 P1、沉浸画布和真机验收由 011 收口 |
+| 011 | [iOS 记录与番茄钟发布阻断收口](011-ios-records-focus-release-remediation.md) | 2026-09-01 | READY FOR DEVICE VALIDATION | 本地修复、iOS 测试基线与模拟器验证已通过；等待双真机、通知 / Live Activity 与 Production CloudKit 验收 |
+| 012 | [iOS 评价引导、周期总结通知与 iPad 入口修复](012-ios-retention-and-cycle-notifications.md) | 2026-09-01 | IMPLEMENTED | 模拟器与自动化验收已通过；订阅成功触感、系统评价弹窗和真实通知投递仍待真机 / TestFlight 终验 |
 
 ## 仍在 `docs/` 的活计划
 

@@ -12,6 +12,65 @@ final class NotificationService {
     }
 
     private(set) var status: Status = .unknown
+    enum FocusScheduleResult: Equatable, Sendable {
+        case scheduled
+        case permissionDenied
+        case failed
+        /// The session changed while a system call was suspended. This request
+        /// must not clear or replace the newer session's notification.
+        case superseded
+    }
+
+    enum FocusSchedulingDecision: Equatable, Sendable {
+        case requestPermission
+        case schedule
+        case blocked
+    }
+
+    static func focusSchedulingDecision(for status: Status) -> FocusSchedulingDecision {
+        switch status {
+        case .notDetermined: .requestPermission
+        case .allowed: .schedule
+        case .unknown, .denied: .blocked
+        }
+    }
+
+    /// Pure ownership check used after the system's asynchronous add call.
+    /// A phase that stopped or was replaced while awaiting permission may not
+    /// resurrect its notification afterward.
+    static func shouldKeepFocusNotification(
+        requestGeneration: UInt64,
+        currentGeneration: UInt64,
+        requestID: UUID,
+        activeSessionID: UUID?
+    ) -> Bool {
+        requestGeneration == currentGeneration && requestID == activeSessionID
+    }
+
+    /// The same ownership rule must protect destructive preflight work as well
+    /// as the final request. Keeping it as a named pure decision gives tests a
+    /// way to cover the race without talking to the system notification center.
+    static func mayMutateFocusNotificationChannel(
+        requestGeneration: UInt64,
+        currentGeneration: UInt64,
+        requestID: UUID,
+        activeSessionID: UUID?
+    ) -> Bool {
+        shouldKeepFocusNotification(
+            requestGeneration: requestGeneration,
+            currentGeneration: currentGeneration,
+            requestID: requestID,
+            activeSessionID: activeSessionID
+        )
+    }
+
+    static func cancelAllFocusTimers() async {
+        let center = UNUserNotificationCenter.current()
+        let identifiers = await center.pendingNotificationRequests()
+            .map(\.identifier)
+            .filter { $0.hasPrefix("owc.focus.") }
+        center.removePendingNotificationRequests(withIdentifiers: identifiers)
+    }
     private var scheduleGeneration = 0
 
     func refresh() async {
@@ -38,6 +97,82 @@ final class NotificationService {
     func openSystemSettings() {
         guard let url = URL(string: UIApplication.openNotificationSettingsURLString) else { return }
         UIApplication.shared.open(url)
+    }
+
+    /// Owns the focus/break notification lifecycle. It intentionally has no
+    /// dependency on `OffWorkStore`, so timer model tests can inject a pure
+    /// decision while production still uses the system notification center.
+    static func scheduleFocusTimer(
+        id: UUID,
+        endAt: Date,
+        title: String,
+        body: String,
+        isCurrent: @escaping @MainActor () -> Bool
+    ) async -> FocusScheduleResult {
+        let center = UNUserNotificationCenter.current()
+        // A phase start owns this channel even when authorization later turns
+        // out to be denied. Clear a predecessor first so it cannot become a
+        // stale alert if the user re-enables notifications in Settings.
+        let previous = await center.pendingNotificationRequests()
+            .map(\.identifier)
+            .filter { $0.hasPrefix("owc.focus.") }
+        // `pendingNotificationRequests()` suspends. A stopped/replaced phase
+        // can therefore finish and schedule its successor before this old
+        // request resumes. Check ownership before it clears the shared focus
+        // channel, not only after it has attempted to add its own request.
+        guard isCurrent() else { return .superseded }
+        center.removePendingNotificationRequests(withIdentifiers: previous)
+        let settings = await center.notificationSettings()
+        if settings.authorizationStatus == .notDetermined {
+            do {
+                _ = try await center.requestAuthorization(options: [.alert, .badge, .sound])
+            } catch {
+                return .failed
+            }
+        }
+        let refreshed = await center.notificationSettings()
+        guard refreshed.authorizationStatus == .authorized || refreshed.authorizationStatus == .provisional || refreshed.authorizationStatus == .ephemeral else {
+            return .permissionDenied
+        }
+        // Permission prompts add another suspension point. Do not let an old
+        // phase write after a newly started phase has claimed the channel.
+        guard isCurrent() else { return .superseded }
+        let identifier = focusTimerIdentifier(id)
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(
+                timeInterval: max(1, endAt.timeIntervalSinceNow),
+                repeats: false
+            )
+        )
+        do {
+            try await center.add(request)
+            // A replacement can win while `add` is in flight. Removing only
+            // this request is safe; removing all focus notifications here
+            // would reintroduce the race this guard closes.
+            guard isCurrent() else {
+                center.removePendingNotificationRequests(withIdentifiers: [identifier])
+                return .superseded
+            }
+            return .scheduled
+        } catch {
+            return .failed
+        }
+    }
+
+    static func cancelFocusTimer(id: UUID) {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [focusTimerIdentifier(id)]
+        )
+    }
+
+    private static func focusTimerIdentifier(_ id: UUID) -> String {
+        "owc.focus.\(id.uuidString)"
     }
 
     func reschedule(store: OffWorkStore, now: Date = .now) async {
@@ -68,7 +203,11 @@ final class NotificationService {
         }
         let essential = future.filter { $0.kind != "microBreak" }.sorted { $0.atMs < $1.atMs }
         let health = future.filter { $0.kind == "microBreak" }.sorted { $0.atMs < $1.atMs }
-        let desired = Array((essential + health).prefix(store.liveActivityEnabled && store.notificationMode == .off ? 59 : 60))
+        let schedulesLiveActivityFallback = store.shouldScheduleLiveActivityEndFallback(
+            snapshot: snapshot,
+            at: now
+        )
+        let desired = Array((essential + health).prefix(schedulesLiveActivityFallback ? 59 : 60))
         var desiredIdentifiers = Set<String>()
         var allSucceeded = true
 
@@ -100,10 +239,8 @@ final class NotificationService {
             }
         }
 
-        if store.liveActivityEnabled,
-           store.notificationMode == .off,
+        if schedulesLiveActivityFallback,
            let snapshot,
-           store.shouldScheduleLiveActivityEndFallback(snapshot: snapshot, at: now),
            generation == scheduleGeneration {
             let identifier = "owc.shift.live.end.\(Int64(snapshot.endAtMs))"
             let content = UNMutableNotificationContent()

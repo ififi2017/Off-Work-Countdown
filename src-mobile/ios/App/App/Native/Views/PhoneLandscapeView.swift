@@ -241,7 +241,7 @@ private struct LandscapeTimerView: View {
                                     : snapshot.progress
                             )
                         )
-                        if store.presentationSalaryEnabled { landscapeStat(store.t("moneyEarned"), store.hideEarnings ? "••••" : store.formatMoney(snapshot.dailySalary.map { $0 * snapshot.payRatio })) }
+                        if store.presentationSalaryEnabled { landscapeStat(store.t("moneyEarned"), store.moneyText(snapshot.earnedSoFar)) }
                         if store.effectiveScheduleMode(at: date) != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot, now: date)) }
                     }
                     .padding(.top, 20)
@@ -351,17 +351,23 @@ private struct LandscapeSettingsView: View {
     let store: OffWorkStore
 
     /// Same sections as portrait, two columns instead of one — landscape has
-    /// the width and not the height. The contents come from `SettingsSectionCard`
-    /// so the two orientations cannot drift apart again.
-    private let columns: [[SettingsSection]] = [[.shift], [.reminders, .appearance, .about]]
+    /// the width and not the height. Both the contents and the split come from
+    /// shared code, so the two orientations cannot drift apart again.
+    private var columns: [[SettingsSection]] { SettingsSection.twoColumns }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                Text(store.t("settings"))
-                    .font(.title.bold())
-                    .tracking(-0.65)
-                    .frame(maxWidth: .infinity, alignment: .center)
+                ZStack {
+                    Text(store.t("settings"))
+                        .font(.title.bold())
+                        .tracking(-0.65)
+                    HStack {
+                        Spacer()
+                        SettingsPlusStarButton(store: store)
+                    }
+                }
+                .frame(maxWidth: .infinity)
 
                 HStack(alignment: .top, spacing: 18) {
                     ForEach(columns.indices, id: \.self) { column in

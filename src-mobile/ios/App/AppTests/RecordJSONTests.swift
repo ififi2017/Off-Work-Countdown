@@ -5,9 +5,55 @@ import Testing
 @MainActor
 @Test("Unknown JSON schema versions are rejected")
 func recordJSONRejectsUnknownVersion() throws {
-    let data = Data(#"{"schemaVersion":2,"exportedAtMs":0,"timeZoneIdentifier":"UTC","calendarIdentifier":"gregorian","careerPeriods":[],"scheduleSnapshots":[],"calendarExceptions":[],"dayOverrides":[],"workObservations":[]}"#.utf8)
-    #expect(throws: RecordJSONError.unknownSchemaVersion(2)) {
+    let data = Data(#"{"schemaVersion":4,"exportedAtMs":0,"timeZoneIdentifier":"UTC","calendarIdentifier":"gregorian","careerPeriods":[],"scheduleSnapshots":[],"calendarExceptions":[],"dayOverrides":[],"workObservations":[]}"#.utf8)
+    #expect(throws: RecordJSONError.unknownSchemaVersion(4)) {
         _ = try RecordJSON.decode(data)
+    }
+}
+
+@MainActor
+@Test("Observation sync stamps round-trip and v1/v2 documents migrate them")
+func workObservationSyncStampMigration() throws {
+    let eventID = id(72)
+    let occurredAt = Date(timeIntervalSince1970: 1_788_000_000)
+    var state = RecordState()
+    state.observations = [
+        WorkObservation(
+            eventID: eventID,
+            shiftAnchorDate: occurredAt,
+            occurredAt: occurredAt,
+            kind: .countdownStarted,
+            valueData: Data("manual".utf8),
+            scheduleSnapshotID: id(73),
+            timeZoneIdentifier: "UTC",
+            editedAt: occurredAt.addingTimeInterval(60),
+            editCount: 4,
+            editTieBreaker: id(74)
+        )
+    ]
+
+    let exported = try export(state)
+    let current = try RecordJSON.decode(exported)
+    #expect(current.schemaVersion == 3)
+    #expect(current.workObservations[0].editCount == 4)
+    #expect(current.workObservations[0].editTieBreaker == id(74).uuidString)
+    var roundTripped = RecordState()
+    _ = try RecordJSON.apply(current, to: &roundTripped, mode: .skipErased)
+    #expect(roundTripped.observations[0].editCount == 4)
+    #expect(roundTripped.observations[0].editTieBreaker == id(74))
+
+    for version in [1, 2] {
+        var legacy = current
+        legacy.schemaVersion = version
+        legacy.workObservations[0].editedAtMs = nil
+        legacy.workObservations[0].editCount = nil
+        legacy.workObservations[0].editTieBreaker = nil
+        var migrated = RecordState()
+        _ = try RecordJSON.apply(try RecordJSON.decode(JSONEncoder().encode(legacy)), to: &migrated, mode: .skipErased)
+        let observation = try #require(migrated.observations.first)
+        #expect(observation.editedAt == occurredAt)
+        #expect(observation.editCount == 1)
+        #expect(observation.editTieBreaker == eventID)
     }
 }
 
@@ -41,6 +87,36 @@ func recordJSONRoundTripIsIdempotent() throws {
     #expect(second.unchanged[.dayOverride] == 1)
     #expect(second.inserted.isEmpty)
     #expect(second.conflicts.isEmpty)
+}
+
+@MainActor
+@Test("Focus task icon, favorite, and soft deletion survive export")
+func recordJSONPreservesFocusTaskPresentationFields() throws {
+    let day = Date(timeIntervalSince1970: 1_788_076_800)
+    var state = RecordState()
+    state.focusTasks = [FocusTask(
+        id: id(90),
+        createdAt: day,
+        plannedForDate: day,
+        scheduledStartAt: day.addingTimeInterval(3_600),
+        title: "Write",
+        estimatedPomodoros: 2,
+        icon: .writing,
+        isFavorite: true,
+        completedAt: nil,
+        deletedAt: day.addingTimeInterval(7_200),
+        sortIndex: 0,
+        editedAt: day,
+        editCount: 2,
+        editTieBreaker: id(91)
+    )]
+    let document = try RecordJSON.decode(try export(state))
+    var restored = RecordState()
+    _ = try RecordJSON.apply(document, to: &restored, mode: .skipErased)
+    let task = try #require(restored.focusTasks.first)
+    #expect(task.icon == .writing)
+    #expect(task.isFavorite)
+    #expect(task.deletedAt == day.addingTimeInterval(7_200))
 }
 
 @MainActor
@@ -86,6 +162,98 @@ func recordJSONRestoreIssuesNewUUID() throws {
     #expect(state.periods.count == 1)
     #expect(state.periods[0].id != originalID)
     #expect(state.isErased(.careerPeriod, key: originalID.uuidString))
+}
+
+@MainActor
+@Test("Restoring erased periods remaps snapshots, observations, tasks, and sessions")
+func recordJSONRestoreRemapsRelationshipGraph() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    let day = calendar.date(from: DateComponents(year: 2026, month: 8, day: 24))!
+    var state = sampleState()
+    let periodID = state.periods[0].id
+    let snapshotID = id(30)
+    let taskID = id(40)
+    state.snapshots = [
+        ScheduleSnapshot(
+            id: snapshotID,
+            periodID: periodID,
+            effectiveFrom: day,
+            configurationData: Data("{}".utf8),
+            fingerprint: "test",
+            editedAt: day,
+            editCount: 1,
+            editTieBreaker: id(31)
+        )
+    ]
+    state.observations = [
+        WorkObservation(
+            eventID: id(33),
+            shiftAnchorDate: day,
+            occurredAt: day,
+            kind: .countdownStarted,
+            valueData: nil,
+            scheduleSnapshotID: snapshotID,
+            timeZoneIdentifier: "UTC"
+        )
+    ]
+    state.focusTasks = [
+        FocusTask(
+            id: taskID,
+            createdAt: day,
+            plannedForDate: day,
+            scheduledStartAt: day.addingTimeInterval(3_600),
+            title: "Write",
+            estimatedPomodoros: 1,
+            completedAt: nil,
+            sortIndex: 0,
+            editedAt: day,
+            editCount: 1,
+            editTieBreaker: id(41)
+        )
+    ]
+    state.focusSessions = [
+        FocusSession(
+            id: id(50),
+            taskID: taskID,
+            shiftAnchorDate: day,
+            startedAt: day,
+            plannedEndAt: day.addingTimeInterval(1_500),
+            endedAt: day.addingTimeInterval(1_500),
+            endReason: .completed,
+            editedAt: day,
+            editCount: 1,
+            editTieBreaker: id(51)
+        )
+    ]
+    let data = try export(state)
+    state.erase(.careerPeriod, key: periodID.uuidString, at: day)
+    state.erase(.scheduleSnapshot, key: snapshotID.uuidString, at: day)
+    state.erase(.focusTask, key: taskID.uuidString, at: day)
+    let report = try RecordJSON.apply(try RecordJSON.decode(data), to: &state, mode: .restoreErased)
+    #expect(report.restored[.careerPeriod] == 1)
+    #expect(report.restored[.scheduleSnapshot] == 1)
+    #expect(report.restored[.focusTask] == 1)
+    #expect(state.periods[0].id != periodID)
+    #expect(state.snapshots[0].id != snapshotID)
+    #expect(state.snapshots[0].periodID == state.periods[0].id)
+    #expect(state.observations[0].scheduleSnapshotID == state.snapshots[0].id)
+    #expect(state.focusTasks[0].id != taskID)
+    #expect(state.focusTasks[0].scheduledStartAt == day.addingTimeInterval(3_600))
+    #expect(state.focusSessions[0].taskID == state.focusTasks[0].id)
+}
+
+@MainActor
+@Test("Legacy focus sessions derive their anchor key from the archived day")
+func legacyFocusSessionAnchorKeyMigrates() throws {
+    let data = Data(#"{"id":"00000000-0000-0000-0000-000000000050","taskID":null,"shiftAnchorDate":"2026-08-31","startedAtMs":0,"plannedEndAtMs":1500000,"endedAtMs":1500000,"endReason":"completed","editedAtMs":0,"editCount":0,"editTieBreaker":"00000000-0000-0000-0000-000000000051"}"#.utf8)
+    let dto = try JSONDecoder().decode(FocusSessionDTO.self, from: data)
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+    let session = try #require(dto.value(calendar: calendar))
+    #expect(session.kind == .focus)
+    #expect(session.anchorDayKey == "2026-08-31")
+    #expect(session.plannedEndReason == .completed)
 }
 
 @MainActor

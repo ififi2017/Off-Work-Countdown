@@ -1,5 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { startOfWeek, startOfYear, countWorkdays, countScheduledWorkdays, summarize } from "./summary";
+import { zonedWeekStartMs, zonedYearStartMs } from "./countdown";
+import {
+  completedWorkdayIncome,
+  countScheduledWorkdays,
+  countWorkdays,
+  earningsForRatio,
+  startOfWeek,
+  startOfYear,
+  summarize,
+} from "./summary";
 
 // 2026-07-03 是周五，2026-07-04 周六，2026-07-05 周日
 const at = (y: number, m: number, d: number, h = 0) =>
@@ -64,6 +73,20 @@ describe("countWorkdays", () => {
     // 多数北半球时区在三月切换夏令时；按毫秒累加会漏掉或重复一天
     expect(countWorkdays(at(2026, 3, 1), at(2026, 4, 1), [0, 1, 2, 3, 4, 5, 6]))
       .toBe(31);
+  });
+});
+
+describe("earnings", () => {
+  it("keeps live pay-ratio derivation in the shared rules", () => {
+    expect(earningsForRatio(1_000, 0.5)).toBe(500);
+    expect(earningsForRatio(1_000, 1.25)).toBe(1_250);
+    expect(earningsForRatio(null, 1)).toBeNull();
+  });
+
+  it("counts only whole completed workdays for Records", () => {
+    expect(completedWorkdayIncome(2, 1_000)).toBe(2_000);
+    expect(completedWorkdayIncome(2.9, 1_000)).toBe(2_000);
+    expect(completedWorkdayIncome(2, null)).toBeNull();
   });
 });
 
@@ -253,5 +276,54 @@ describe("summarize", () => {
       todayProgress: 100,
     });
     expect(s).toEqual({ days: 2, hours: 18, earnings: 2000 });
+  });
+
+  it("counts the week in the records time zone, not the host calendar", () => {
+    // 2026-07-06 04:00 UTC is Monday afternoon in Tokyo and still Sunday evening
+    // in Los Angeles. The same asOf must not share a week boundary.
+    const asOfMs = Date.parse("2026-07-06T04:00:00.000Z");
+    const shiftStartMs = Date.parse("2026-07-06T00:00:00.000Z");
+    const tokyo = summarize({
+      ...base,
+      periodStart: new Date(zonedWeekStartMs(asOfMs, "Asia/Tokyo")),
+      asOf: new Date(asOfMs),
+      currentShiftStart: new Date(shiftStartMs),
+      currentShiftEnd: new Date(shiftStartMs + 9 * 3_600_000),
+      todayProgress: 0,
+      timeZone: "Asia/Tokyo",
+    });
+    const losAngeles = summarize({
+      ...base,
+      periodStart: new Date(zonedWeekStartMs(asOfMs, "America/Los_Angeles")),
+      asOf: new Date(asOfMs),
+      currentShiftStart: new Date(shiftStartMs),
+      currentShiftEnd: new Date(shiftStartMs + 9 * 3_600_000),
+      todayProgress: 0,
+      timeZone: "America/Los_Angeles",
+    });
+    expect(tokyo.days).not.toBe(losAngeles.days);
+  });
+
+  it("counts the year in the records time zone, not the host calendar", () => {
+    const asOfMs = Date.parse("2026-01-01T04:00:00.000Z");
+    const tokyo = summarize({
+      ...base,
+      periodStart: new Date(zonedYearStartMs(asOfMs, "Asia/Tokyo")),
+      asOf: new Date(asOfMs),
+      currentShiftStart: new Date(asOfMs),
+      currentShiftEnd: new Date(asOfMs + 9 * 3_600_000),
+      todayProgress: 0,
+      timeZone: "Asia/Tokyo",
+    });
+    const losAngeles = summarize({
+      ...base,
+      periodStart: new Date(zonedYearStartMs(asOfMs, "America/Los_Angeles")),
+      asOf: new Date(asOfMs),
+      currentShiftStart: new Date(asOfMs),
+      currentShiftEnd: new Date(asOfMs + 9 * 3_600_000),
+      todayProgress: 0,
+      timeZone: "America/Los_Angeles",
+    });
+    expect(tokyo.days).not.toBe(losAngeles.days);
   });
 });

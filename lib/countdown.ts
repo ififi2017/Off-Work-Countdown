@@ -609,7 +609,12 @@ interface ZonedCivil {
   weekday: number;
 }
 
-function zonedCivil(ms: number, timeZone: string): ZonedCivil {
+const zonedFormatters = new Map<string, Intl.DateTimeFormat>();
+const zonedUtcMsCache = new Map<string, number>();
+
+function zonedFormatter(timeZone: string): Intl.DateTimeFormat {
+  const cached = zonedFormatters.get(timeZone);
+  if (cached) return cached;
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone,
     year: "numeric",
@@ -620,8 +625,13 @@ function zonedCivil(ms: number, timeZone: string): ZonedCivil {
     second: "2-digit",
     hourCycle: "h23",
   });
+  zonedFormatters.set(timeZone, formatter);
+  return formatter;
+}
+
+function zonedCivil(ms: number, timeZone: string): ZonedCivil {
   const parts = Object.fromEntries(
-    formatter
+    zonedFormatter(timeZone)
       .formatToParts(new Date(ms))
       .filter((part) => part.type !== "literal")
       .map((part) => [part.type, part.value])
@@ -662,6 +672,10 @@ function zonedTimeToUtcMs(
   minute: number,
   timeZone: string
 ): number {
+  const cacheKey = `${timeZone}|${year}-${month}-${day} ${hour}:${minute}`;
+  const cached = zonedUtcMsCache.get(cacheKey);
+  if (cached !== undefined) return cached;
+
   // Treat the input as a civil clock reading, not as a UTC timestamp to be
   // corrected twice.  The latter fails in a spring-forward gap (02:30 can
   // land at 01:30) and is unstable in a fall-back fold.  Probe the offsets
@@ -687,7 +701,10 @@ function zonedTimeToUtcMs(
     })
     .sort((left, right) => left - right);
   const candidates = exactCandidates(civil, { year, month, day, hour, minute, second: 0, weekday: 0 });
-  if (candidates.length > 0) return candidates[0];
+  if (candidates.length > 0) {
+    zonedUtcMsCache.set(cacheKey, candidates[0]);
+    return candidates[0];
+  }
 
   // The civil time is in a DST gap.  Advance by civil minutes until the next
   // representable reading (normally the transition boundary).  This also
@@ -705,10 +722,14 @@ function zonedTimeToUtcMs(
       weekday: 0,
     };
     const resolved = exactCandidates(next.getTime(), nextParts);
-    if (resolved.length > 0) return resolved[0];
+    if (resolved.length > 0) {
+      zonedUtcMsCache.set(cacheKey, resolved[0]);
+      return resolved[0];
+    }
   }
   // A valid IANA zone should always resolve within a day. Keep a loud,
   // deterministic fallback for malformed/runtime-provided zones.
+  zonedUtcMsCache.set(cacheKey, civil);
   return civil;
 }
 
@@ -754,7 +775,7 @@ function zonedDayDifference(
   );
 }
 
-function zonedWeekStartMs(ms: number, timeZone: string): number {
+export function zonedWeekStartMs(ms: number, timeZone: string): number {
   const civil = zonedCivil(ms, timeZone);
   const start = addZonedCivilDays(
     civil.year,
@@ -770,7 +791,12 @@ function parseClock(time: string): { hour: number; minute: number } {
   return { hour, minute };
 }
 
-function isScheduledWorkdayInZone(
+export function zonedYearStartMs(ms: number, timeZone: string): number {
+  const civil = zonedCivil(ms, timeZone);
+  return zonedTimeToUtcMs(civil.year, 1, 1, 0, 0, timeZone);
+}
+
+export function isScheduledWorkdayInZone(
   shiftStartMs: number,
   workdays: number[],
   schedule: WorkScheduleConfig | null | undefined,
@@ -909,6 +935,14 @@ function getShiftBoundsInZone(
     timeZone
   );
   if (endAtMs <= startAtMs) {
+    const startMinutes = startClock.hour * 60 + startClock.minute;
+    const endMinutes = endClock.hour * 60 + endClock.minute;
+    // A DST spring-forward gap can legalize two same-day clocks onto one
+    // instant. That is not an overnight shift; treating it as one invented
+    // a ~24 hour day.
+    if (endMinutes > startMinutes) {
+      return { start: new Date(startAtMs), end: new Date(startAtMs) };
+    }
     if (nowMs < endAtMs) {
       const previous = addZonedCivilDays(civil.year, civil.month, civil.day, -1);
       startAtMs = zonedTimeToUtcMs(
@@ -983,9 +1017,13 @@ function findEndedShiftOnEndCalendarDayInZone(
     typeof forcedMs === "number" && Number.isFinite(forcedMs)
       ? startOfCivilDayMs(forcedMs, timeZone)
       : null;
+  // `isScheduledWorkday`, not the zoned helper directly: manual (`off`) mode
+  // has no rest pattern, so every day is eligible here exactly as it is on the
+  // local path. `isScheduledWorkdayInZone` answers the opposite for `off`
+  // because `expandScheduleRange` needs manual days to expand as rest.
   const startIsWorkday = (startAtMs: number) =>
-    isScheduledWorkdayInZone(
-      startAtMs,
+    isScheduledWorkday(
+      new Date(startAtMs),
       params.workdays,
       params.schedule,
       timeZone
@@ -1174,15 +1212,21 @@ function expandScheduleRangeInZone(
       timeZone
     );
     if (endAtMs <= startAtMs) {
-      const next = addZonedCivilDays(civil.year, civil.month, civil.day, 1);
-      endAtMs = zonedTimeToUtcMs(
-        next.year,
-        next.month,
-        next.day,
-        endClock.hour,
-        endClock.minute,
-        timeZone
-      );
+      const startMinutes = startClock.hour * 60 + startClock.minute;
+      const endMinutes = endClock.hour * 60 + endClock.minute;
+      if (endMinutes > startMinutes) {
+        endAtMs = startAtMs;
+      } else {
+        const next = addZonedCivilDays(civil.year, civil.month, civil.day, 1);
+        endAtMs = zonedTimeToUtcMs(
+          next.year,
+          next.month,
+          next.day,
+          endClock.hour,
+          endClock.minute,
+          timeZone
+        );
+      }
     }
 
     let segments: ShiftSegment[] = [{ startAtMs, endAtMs }];

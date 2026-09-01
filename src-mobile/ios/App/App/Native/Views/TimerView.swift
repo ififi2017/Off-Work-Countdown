@@ -42,10 +42,12 @@ struct OvertimeSheet: View {
                 }
             }
             .onAppear {
-                endDate = max(
-                    minimumDate,
-                    store.overtimeEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } ?? minimumDate
-                )
+                let existing = store.overtimeEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) }
+                // After clock-off this becomes a retrospective record and
+                // defaults to now, so someone who actually stayed late can
+                // save the time already worked without adding another forced
+                // 15-minute block.
+                endDate = max(minimumDate, existing ?? .now)
             }
             .sensoryFeedback(.impact(weight: .medium), trigger: confirmed)
         }
@@ -53,7 +55,9 @@ struct OvertimeSheet: View {
 
     private var minimumDate: Date {
         let planned = store.snapshot()?.plannedEndDate ?? .now
-        return max(planned, .now).addingTimeInterval(15 * 60)
+        // An overtime end cannot precede either the planned clock-off or the
+        // device's current time. There is deliberately no minimum duration.
+        return max(planned, .now)
     }
 }
 

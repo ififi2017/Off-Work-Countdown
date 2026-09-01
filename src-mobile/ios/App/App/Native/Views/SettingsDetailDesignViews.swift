@@ -629,7 +629,7 @@ struct SalaryDesignView: View {
                 Text(store.t("moneyEarned"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
-                Text(store.hideEarnings ? "••••" : store.formatMoney(preview.earnedNow))
+                Text(store.moneyText(preview.earnedNow))
                     .font(.largeTitle.bold().monospacedDigit())
                     .tracking(-0.5)
             }
@@ -644,12 +644,12 @@ struct SalaryDesignView: View {
                 OWCSectionHeader(title: store.t("derivedFromThis"))
                 OWCGroupCard {
                     OWCRow(title: store.t("perWorkday")) {
-                        Text(store.hideEarnings ? "••••" : store.formatMoney(preview.dailySalary))
+                        Text(store.moneyText(preview.dailySalary))
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
                     OWCRow(title: store.t("perEffectiveHour"), isLast: true) {
-                        Text(store.hideEarnings ? "••••" : store.formatMoney(preview.hourlySalary))
+                        Text(store.moneyText(preview.hourlySalary))
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -769,6 +769,18 @@ struct NotificationDesignView: View {
         .sensoryFeedback(.selection, trigger: store.notificationMode)
         .sensoryFeedback(.selection, trigger: store.liveActivityEnabled)
         .sensoryFeedback(.selection, trigger: store.liveActivityLeadMinutes)
+        .sensoryFeedback(.selection, trigger: store.cycleEndSummaryNotificationEnabled)
+        .onChange(of: store.cycleEndSummaryNotificationEnabled) { _, enabled in
+            guard enabled, notifications.status == .notDetermined else { return }
+            Task { @MainActor in
+                let granted = await notifications.request()
+                if granted {
+                    await notifications.reschedule(store: store)
+                } else {
+                    store.cycleEndSummaryNotificationEnabled = false
+                }
+            }
+        }
     }
 
     private var settingsContent: some View {
@@ -783,11 +795,49 @@ struct NotificationDesignView: View {
 
             liveActivitySection
 
+            cycleEndSummarySection
+
             detailFooter(store.t("liveActivityScheduleNote"))
 
             detailFooter(store.t("notificationPrivacyNote"))
             Spacer(minLength: 8)
         }
+    }
+
+    private var cycleEndSummarySection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            OWCSectionHeader(title: store.t("cycleEndSummaryNotificationTitle"))
+            OWCGroupCard {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(store.t("cycleEndSummaryNotificationTitle"))
+                            .font(.body)
+                        if !store.plus.isAuthorized {
+                            Text(store.t("plusStatusSubscribed"))
+                                .font(.caption2.bold())
+                                .foregroundStyle(OWCDesign.accent)
+                        }
+                    }
+                    Spacer()
+                    Toggle(
+                        store.t("cycleEndSummaryNotificationTitle"),
+                        isOn: Binding(
+                            get: { store.cycleEndSummaryNotificationsAreActive },
+                            set: { enabled in
+                                store.setCycleEndSummaryNotifications(enabled)
+                            }
+                        )
+                    )
+                    .labelsHidden()
+                }
+                .padding(.horizontal, 16)
+                .frame(minHeight: 58)
+            }
+            detailFooter(store.t("cycleEndSummaryNotificationNote"))
+                .padding(.horizontal, 0)
+        }
+        .padding(.horizontal, OWCDesign.pageInset)
+        .padding(.top, 16)
     }
 
     /// The Live Activity controls, shown whether or not local notifications
@@ -1294,6 +1344,7 @@ struct RecordsTimeZoneSettingsView: View {
             Button(store.t("recordsTimeZoneMigrate")) {
                 store.migrateRecordsTimeZone()
             }
+            Button(store.t("cancel"), role: .cancel) {}
         } message: {
             Text(store.t("recordsTimeZoneDevice", values: ["zone": store.systemTimeZoneLabel]))
         }

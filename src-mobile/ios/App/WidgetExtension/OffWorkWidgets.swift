@@ -17,7 +17,7 @@ struct OffWorkLiveActivityWidget: Widget {
             LockScreenActivityView(context: context)
                 .activityBackgroundTint(Color.white.opacity(0.12))
                 .activitySystemActionForegroundColor(.white)
-                .widgetURL(URL(string: "offworkcountdown://timer"))
+                .widgetURL(activityDestination(context))
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading, priority: 1) {
@@ -27,7 +27,7 @@ struct OffWorkLiveActivityWidget: Widget {
                         // plate inside it reads as a sticker.
                         AlwaysDarkBrandMark(size: 25)
 
-                        Text(context.state.appTitle)
+                        Text(activityTitle(context))
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(.white.opacity(0.8))
                             .lineLimit(1)
@@ -58,15 +58,11 @@ struct OffWorkLiveActivityWidget: Widget {
             } compactLeading: {
                 AlwaysDarkBrandMark(size: 20)
             } compactTrailing: {
-                // A fixed box with centred content: Text(style: .timer) shrinks
-                // as digits drop, and without this it drifts to the leading edge
-                // once the countdown reaches 0:00.
                 ActivityCompactCountdown(context: context)
-                    .frame(width: 50, alignment: .center)
             } minimal: {
                 AlwaysDarkBrandMark(size: 18)
             }
-            .widgetURL(URL(string: "offworkcountdown://timer"))
+            .widgetURL(activityDestination(context))
             .keylineTint(activityOrange)
         }
     }
@@ -83,8 +79,11 @@ private struct LockScreenActivityView: View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 10) {
-                AlwaysDarkBrandMark(size: 22)
-                Text(context.state.appTitle)
+                // The lock-screen card has enough room for the full icon and
+                // benefits from its solid plate against the glass material.
+                // Dynamic Island remains on the lighter transparent mark.
+                ActivityAppIcon(size: 24)
+                Text(activityTitle(context))
                     .font(.system(size: 13, weight: .semibold))
                     .tracking(0.25)
                     .foregroundStyle(.white.opacity(0.8))
@@ -136,9 +135,23 @@ private struct ActivityCompactCountdown: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
             activityCountdownText(context, now: timeline.date, size: 14)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, alignment: .center)
+                // Let ActivityKit recompute the compact island from the actual
+                // glyph count. A fixed 00:00-sized box left a phantom digit of
+                // space after the countdown became 0:00.
+                .fixedSize(horizontal: true, vertical: false)
         }
+    }
+}
+
+private struct ActivityAppIcon: View {
+    var size: CGFloat
+
+    var body: some View {
+        Image("BrandIcon")
+            .resizable()
+            .scaledToFit()
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
     }
 }
 
@@ -168,6 +181,14 @@ private let activityOrange = Color(red: 0.976, green: 0.451, blue: 0.086)
 
 private func activityComplete(_ context: ActivityViewContext<OffWorkActivityAttributes>, at date: Date) -> Bool {
     context.state.phase == "complete" || date.timeIntervalSince1970 * 1_000 >= Double(context.state.endAtMs)
+}
+
+private func activityDestination(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> URL? {
+    context.state.destination.flatMap(URL.init(string:)) ?? URL(string: "offworkcountdown://timer")
+}
+
+private func activityTitle(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> String {
+    context.state.timerLabel ?? context.state.appTitle
 }
 
 @ViewBuilder
@@ -204,6 +225,14 @@ private func activityLocale(_ context: ActivityViewContext<OffWorkActivityAttrib
 
 private func activityProgressValue(_ context: ActivityViewContext<OffWorkActivityAttributes>, at date: Date) -> Double {
     if activityComplete(context, at: date) { return 100 }
+    // Focus/break payloads carry one absolute segment. Unlike work progress,
+    // their progress should simply advance from the session start to its end.
+    if context.state.surface != nil {
+        let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
+        guard let segment = context.state.segments.first else { return context.state.progress }
+        let total = max(1, segment.endAtMs - segment.startAtMs)
+        return min(100, max(0, Double(nowMs - segment.startAtMs) / Double(total) * 100))
+    }
     return context.state.projectedProgress(
         atMs: Int64(date.timeIntervalSince1970 * 1_000)
     )

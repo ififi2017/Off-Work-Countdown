@@ -24,6 +24,38 @@ enum OWCDesign {
             : UIColor(red: 0.95, green: 0.35, blue: 0.04, alpha: 1)
     })
 
+    static let lifeChildhood = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.62, green: 0.72, blue: 0.86, alpha: 1)
+            : UIColor(red: 0.45, green: 0.58, blue: 0.76, alpha: 1)
+    })
+    static let lifeStudy = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.55, green: 0.78, blue: 0.68, alpha: 1)
+            : UIColor(red: 0.32, green: 0.58, blue: 0.50, alpha: 1)
+    })
+    static let lifeWork = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.86, green: 0.64, blue: 0.38, alpha: 1)
+            : UIColor(red: 0.72, green: 0.48, blue: 0.20, alpha: 1)
+    })
+    static let lifeRetirement = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.70, green: 0.68, blue: 0.78, alpha: 1)
+            : UIColor(red: 0.52, green: 0.50, blue: 0.62, alpha: 1)
+    })
+    static let lifeUnset = Color(uiColor: .tertiarySystemFill)
+
+    static func lifeColor(_ kind: LifeStageKind) -> Color {
+        switch kind {
+        case .childhood: lifeChildhood
+        case .study: lifeStudy
+        case .work: lifeWork
+        case .retirement: lifeRetirement
+        case .unset: lifeUnset
+        }
+    }
+
     static let cardRadius: CGFloat = 22
     static let controlRadius: CGFloat = 14
     static let rowHeight: CGFloat = 52
@@ -52,9 +84,22 @@ enum OWCSystemSettings {
 
 struct OWCAppHeader: View {
     let store: OffWorkStore
+    var showsFocus = false
 
     var body: some View {
         HStack {
+            if showsFocus {
+                NavigationLink(value: AppRoute.focus) {
+                    Label(store.t("focusTitle"), systemImage: "timer")
+                        .labelStyle(.iconOnly)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(OWCDesign.secondary)
+                        .frame(width: 44, height: 44)
+                        .glassEffect(.regular.interactive(), in: Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(store.t("focusTitle"))
+            }
             Spacer()
             Button { withAnimation(.snappy(duration: 0.28)) { store.toggleQuickTheme() } } label: {
                 Group {
@@ -74,16 +119,16 @@ struct OWCAppHeader: View {
             .accessibilityLabel(store.t("theme"))
         }
         .padding(.horizontal, OWCDesign.contentInset)
-        .frame(height: 40)
+        .frame(minHeight: 44)
     }
 
 }
 
 /// Status chip above a timer (lunch, rest, overtime).
 ///
-/// `Image` + `Text`, not `Label`. A `Label` inside a short capsule clips
-/// hierarchical symbols such as `clock.badge.plus` into an empty slot, which
-/// read as a leading space before the Chinese copy and no icon at all.
+/// `Image` + `Text`, not `Label`. A `Label` inside a short capsule can clip
+/// hierarchical symbols into an empty slot, which reads as a leading space
+/// before the Chinese copy and no icon at all.
 struct TimerPhasePill: View {
     let title: String
     var systemImage: String
@@ -106,6 +151,19 @@ struct TimerPhasePill: View {
         .background(fill, in: Capsule())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(title)
+    }
+}
+
+enum OWCText {
+    /// "09:00 – 18:00", still in that order inside an Arabic or Hebrew layout.
+    ///
+    /// A clock range is a left-to-right sequence in every language, but the
+    /// surrounding paragraph direction would otherwise reorder the two ends of
+    /// it. The isolate does this at the text level, so it survives being handed
+    /// to a `String` parameter — flipping `layoutDirection` on the view is not
+    /// available there, and applied to a whole row it would mirror the row.
+    static func ltrRange(_ from: String, _ to: String) -> String {
+        "\u{2066}\(from) – \(to)\u{2069}"
     }
 }
 
@@ -207,6 +265,10 @@ struct OWCRow<Accessory: View>: View {
     /// title-plus-subtitle block instead of pinning them to the title line.
     /// Descriptive onboarding rows and radio-style choices use this layout.
     var centersVertically = false
+    /// Tints the glyph and title red, for rows that delete something. The
+    /// confirmation is still the caller's job; this only stops a destructive
+    /// row from reading like a neutral one.
+    var isDestructive = false
     /// Whether an accessory is actually coming. Set by the initialisers, not by
     /// the caller: a row with nothing at its trailing edge must not reserve
     /// room for one, and must let its text claim the full width before the
@@ -232,6 +294,7 @@ struct OWCRow<Accessory: View>: View {
         subtitle: String? = nil,
         isLast: Bool = false,
         centersVertically: Bool = false,
+        isDestructive: Bool = false,
         @ViewBuilder accessory: () -> Accessory
     ) {
         self.icon = icon
@@ -240,6 +303,7 @@ struct OWCRow<Accessory: View>: View {
         self.subtitle = subtitle
         self.isLast = isLast
         self.centersVertically = centersVertically
+        self.isDestructive = isDestructive
         self.accessory = accessory()
     }
 
@@ -264,7 +328,7 @@ struct OWCRow<Accessory: View>: View {
             } else if let icon {
                 Image(systemName: icon)
                     .font(.body)
-                    .foregroundStyle(OWCDesign.secondary)
+                    .foregroundStyle(isDestructive ? Color.red : OWCDesign.secondary)
                     .frame(width: iconWidth)
                     // Nudged down so the glyph sits on the title's optical
                     // centre rather than on the top of its line box.
@@ -273,7 +337,7 @@ struct OWCRow<Accessory: View>: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.body)
-                    .foregroundStyle(OWCDesign.primary)
+                    .foregroundStyle(isDestructive ? Color.red : OWCDesign.primary)
                     // Settings rows have a trailing value. A wrapping title is
                     // flexible, so the `Spacer` beside it used to take half the
                     // leftover width and "Off work reminder" broke under
@@ -341,7 +405,8 @@ extension OWCRow where Accessory == EmptyView {
         title: String,
         subtitle: String? = nil,
         isLast: Bool = false,
-        centersVertically: Bool = false
+        centersVertically: Bool = false,
+        isDestructive: Bool = false
     ) {
         self.init(
             icon: icon,
@@ -349,7 +414,8 @@ extension OWCRow where Accessory == EmptyView {
             title: title,
             subtitle: subtitle,
             isLast: isLast,
-            centersVertically: centersVertically
+            centersVertically: centersVertically,
+            isDestructive: isDestructive
         ) { EmptyView() }
         reservesAccessory = false
     }
@@ -380,18 +446,23 @@ struct OWCPrimaryButtonStyle: ButtonStyle {
     var color: Color = OWCDesign.accent
     var minimumHeight: CGFloat = 50
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
+        let pressing = isEnabled && configuration.isPressed
         configuration.label
             .font(.body.weight(.semibold))
-            .foregroundStyle(filled ? .white : OWCDesign.primary)
+            .foregroundStyle(filled ? Color.white.opacity(isEnabled ? 1 : 0.72) : OWCDesign.primary.opacity(isEnabled ? 1 : 0.45))
             .frame(maxWidth: .infinity, minHeight: minimumHeight)
-            .background(filled ? color : OWCDesign.control)
+            .background((filled ? color : OWCDesign.control).opacity(isEnabled ? 1 : 0.42))
             .clipShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
             .contentShape(RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
-            .opacity(configuration.isPressed ? 0.72 : 1)
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.985 : 1)
-            .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press, value: configuration.isPressed)
+            .opacity(pressing ? 0.72 : 1)
+            .scaleEffect(pressing && !reduceMotion ? 0.985 : 1)
+            .animation(
+                isEnabled && !reduceMotion ? OWCMotion.press : OWCMotion.reduced,
+                value: configuration.isPressed
+            )
     }
 }
 
@@ -811,18 +882,6 @@ private struct OWCDownTriangle: Shape {
         path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
         path.closeSubpath()
         return path
-    }
-}
-
-struct OWCPageTitle: View {
-    let title: String
-
-    var body: some View {
-        Text(title)
-            .font(.largeTitle.bold())
-            .tracking(-0.7)
-            .foregroundStyle(OWCDesign.primary)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

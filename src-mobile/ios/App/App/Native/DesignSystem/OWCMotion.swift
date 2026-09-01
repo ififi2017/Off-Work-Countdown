@@ -11,10 +11,22 @@ enum OWCMotion {
     static let stateEnter = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.18)
     static let navigation = Animation.snappy(duration: 0.28)
     static let phase = Animation.smooth(duration: 0.28)
+    static let recordsExpansion = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.26)
+    static let paywallPresentation = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.32)
     static let dragReturn = Animation.spring(duration: 0.38, bounce: 0.12)
     /// A deliberately discovered brand moment. One full turn needs enough
     /// time to read as a clock hand rather than a flicker.
     static let brandCelebration = Animation.smooth(duration: 0.8)
+    /// Three fluid clock-hand turns after Plus becomes available. Haptics run
+    /// beside this animation without writing tick state back into SwiftUI.
+    static let subscriptionCelebrationDuration: Double = 1.35
+    static let subscriptionCelebration = Animation.smooth(duration: subscriptionCelebrationDuration)
+    static let subscriptionCelebrationTickCount = 12
+    /// A hidden, user-triggered brand response on the unscheduled screen.
+    /// The spring supplies the lift; the strong ease-out gives it a quiet,
+    /// grounded landing rather than a repeating bounce.
+    static let brandNudge = Animation.spring(duration: 0.4, bounce: 0.2)
+    static let brandSettle = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.2)
 
     /// One row of a first-run summary arriving.
     ///

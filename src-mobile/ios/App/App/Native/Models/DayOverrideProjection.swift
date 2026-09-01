@@ -72,6 +72,10 @@ enum DayOverrideProjection {
         endAtMs: Double?
     ) -> [NativeShiftSegment] {
         var result = segments
+        // The planned window's own end, captured before clipping. Extending is
+        // only correct past that end: an early clock-off that lands inside a
+        // lunch gap must still finish work at the gap, not swallow the break.
+        let plannedEndAtMs = segments.map(\.endAtMs).max()
         if let startAtMs {
             result = result.compactMap { segment in
                 if segment.endAtMs <= startAtMs { return nil }
@@ -94,6 +98,12 @@ enum DayOverrideProjection {
                     return NativeShiftSegment(startAtMs: segment.startAtMs, endAtMs: endAtMs)
                 }
                 return segment
+            }
+            if let plannedEndAtMs, endAtMs > plannedEndAtMs, let last = result.last {
+                result[result.count - 1] = NativeShiftSegment(
+                    startAtMs: last.startAtMs,
+                    endAtMs: endAtMs
+                )
             }
         }
         return result

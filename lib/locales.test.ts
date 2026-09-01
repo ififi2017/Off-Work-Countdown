@@ -15,6 +15,98 @@ const loadSeo = (locale: string): Record<string, string> =>
     readFileSync(`${process.cwd()}/public/locales/${locale}/seo.json`, "utf8")
   );
 
+// 002 P1 走查发现 89 个新 key 里有 74–82 个在非中文语种里还是英文原文：
+// 界面导航是德语，Paywall、图表、Life、Focus 全是英文。逐个 key 看没人能发现，
+// 因为每一行单独看都"像已经填过了"。这里的哨兵是：值和英文逐字相同就要解释。
+//
+// 允许相同的只有三类，其他一律视为漏翻：
+// 1. 品牌与产品名（DoneAt Plus、Face ID、Woodfish 皮肤名）。
+// 2. 目标语言里本来就借用英文的词（法语/意大利语的 Focus，德语的 Status）。
+// 3. 纯符号或数字排版模板（{{start}} – {{end}}）。
+const SAME_AS_ENGLISH_ON_PURPOSE: Record<string, "*" | readonly string[]> = {
+  // 品牌、产品名与平台名
+  plusSection: "*",
+  plusSettings: "*",
+  plusStatusSubscribed: "*",
+  getAppPlatforms: "*",
+  biometryFaceID: "*",
+  biometryTouchID: "*",
+  biometryOpticID: "*",
+  liveActivity: ["id"],
+  woodfishSkin: [
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "hi-IN",
+    "id",
+    "it",
+    "mr-IN",
+    "pt",
+    "ru",
+    "th",
+    "tr",
+  ],
+  cyberpunk: ["de", "es", "fr", "id", "it", "pt", "vi"],
+  standardSkin: ["de", "fr"],
+  meritGain: ["de", "es", "fr", "id", "it", "pt", "tr"],
+  faq: ["de", "fr"],
+  // 纯排版模板：只有分隔符和占位符
+  lunchWindow: "*",
+  recordsAllocationTap: "*",
+  weekdayRange: [
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "hi-IN",
+    "id",
+    "it",
+    "ko",
+    "mr-IN",
+    "pt",
+    "ru",
+    "th",
+    "tr",
+    "vi",
+  ],
+  timeLeft: ["de", "es", "fr", "it", "pt"],
+  minutesShort: ["es", "fr", "it", "pt"],
+  minutesUnit: ["es", "fr", "it", "pt"],
+  daysShort: ["es", "pt"],
+  focusPomodoroSummary: ["es", "fr", "it", "pt"],
+  // 目标语言里通用的英文借词
+  focusTitle: ["fr", "it"],
+  recordsFocus: ["fr", "it"],
+  focusStart: ["de"],
+  plusStatus: ["de", "id"],
+  notificationCapability: ["de", "id", "pt"],
+  timerTab: ["de", "id", "it"],
+  version: ["de", "fr"],
+  auto: ["de"],
+  inTime: ["de"],
+  shareTabLink: ["de", "it", "pt"],
+  shareTabText: ["de"],
+  shareTabImage: ["fr"],
+  shareFormatStory: ["fr"],
+  shiftSection: ["id"],
+  trayMiniTimer: ["it"],
+  disabledShort: ["it"],
+  menuFile: ["id", "it"],
+  menuEdit: ["id"],
+  menuZoom: ["es", "fr", "id", "it", "pt"],
+  menuServices: ["fr"],
+};
+
+const mayMatchEnglish = (key: string, locale: string): boolean => {
+  const allowed = SAME_AS_ENGLISH_ON_PURPOSE[key];
+  if (!allowed) return false;
+  return allowed === "*" || allowed.includes(locale);
+};
+
+const placeholders = (value: string): string[] =>
+  [...value.matchAll(/\{\{(\w+)\}\}/g)].map((match) => match[1]).sort();
+
 describe("UI locale resources", () => {
   it("keeps every user-facing key available in all 19 locales", () => {
     const referenceKeys = Object.keys(loadTranslation("en")).sort();
@@ -23,6 +115,39 @@ describe("UI locale resources", () => {
       expect(Object.keys(loadTranslation(locale)).sort(), locale).toEqual(
         referenceKeys
       );
+    }
+  });
+
+  it("does not leave English copy sitting in the other 18 locales", () => {
+    const en = loadTranslation("en");
+
+    for (const locale of locales) {
+      if (locale === "en") continue;
+      const translation = loadTranslation(locale);
+      const untranslated = Object.keys(en).filter((key) => {
+        const english = en[key];
+        if (typeof english !== "string") return false;
+        if (translation[key] !== english) return false;
+        return !mayMatchEnglish(key, locale);
+      });
+
+      expect(untranslated, `${locale} still shows English copy`).toEqual([]);
+    }
+  });
+
+  it("keeps interpolation placeholders identical across locales", () => {
+    const en = loadTranslation("en");
+
+    for (const locale of locales) {
+      const translation = loadTranslation(locale);
+      for (const [key, english] of Object.entries(en)) {
+        if (typeof english !== "string") continue;
+        const translated = translation[key];
+        expect(typeof translated, `${locale} ${key}`).toBe("string");
+        expect(placeholders(String(translated)), `${locale} ${key}`).toEqual(
+          placeholders(english)
+        );
+      }
     }
   });
 

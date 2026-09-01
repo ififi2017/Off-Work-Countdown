@@ -136,13 +136,22 @@ public struct WidgetUpcomingItem: Codable, Equatable, Sendable, Identifiable {
     public let title: String
     public let detail: String
     public let dateMs: Int64
+    public let symbolName: String?
 
-    public init(id: String, kind: String, title: String, detail: String, dateMs: Int64) {
+    public init(
+        id: String,
+        kind: String,
+        title: String,
+        detail: String,
+        dateMs: Int64,
+        symbolName: String? = nil
+    ) {
         self.id = id
         self.kind = kind
         self.title = title
         self.detail = detail
         self.dateMs = dateMs
+        self.symbolName = symbolName
     }
 }
 

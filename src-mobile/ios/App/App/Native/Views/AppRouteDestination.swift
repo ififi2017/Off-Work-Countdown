@@ -29,6 +29,18 @@ struct AppRouteDestination: View {
             LanguageSettingsView(store: store)
         case .recordsTimeZone:
             RecordsTimeZoneSettingsView(store: store)
+        case .plus:
+            PlusSettingsView(store: store)
+        case .iCloudSync:
+            RecordsSyncSettingsView(store: store)
+        case .recordsData:
+            RecordsDataSettingsView(store: store)
+        case .recordsConflicts:
+            RecordsConflictCenter(store: store)
+        case .focus:
+            FocusDesignView(store: store)
+        case .focusPlan:
+            FocusPlanningView(store: store)
         case .about:
             AboutView(store: store)
         }

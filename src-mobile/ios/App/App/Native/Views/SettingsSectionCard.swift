@@ -7,6 +7,7 @@ import SwiftUI
 struct SettingsSectionCard: View {
     let store: OffWorkStore
     let section: SettingsSection
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -22,8 +23,7 @@ struct SettingsSectionCard: View {
             link(.schedule, icon: "calendar.badge.clock", title: store.t("workSchedule"), value: store.scheduleLabel)
             link(.lunch, icon: "cup.and.saucer", title: store.t("lunchBreak"), value: store.lunchLabel)
             link(.health, icon: "figure.walk", title: store.t("microBreakReminder"), value: store.healthLabel)
-            link(.salary, icon: "banknote", title: store.t("salarySettings"), value: store.salaryTypeLabel)
-            link(.recordsTimeZone, icon: "clock", title: store.t("recordsTimeZone"), value: store.recordsTimeZoneLabel, isLast: true)
+            link(.salary, icon: "banknote", title: store.t("salarySettings"), value: store.salaryTypeLabel, isLast: true)
 
         case .reminders:
             link(.notifications, icon: "bell.badge", title: store.t("offWorkReminder"), value: store.notificationModeLabel, isLast: true)
@@ -32,8 +32,23 @@ struct SettingsSectionCard: View {
             link(.theme, icon: "display", title: store.t("theme"), value: store.themeLabel)
             link(.language, icon: "globe", title: store.t("chooselanguage"), value: store.languageLabel, isLast: true)
 
+        case .recordsData:
+            link(.recordsData, icon: "externaldrive", title: store.t("recordsDataTitle"), value: store.recordsDataStatusLabel, isLast: true)
+
         case .about:
             link(.about, icon: "info.circle", title: store.t("aboutProject"), value: nil)
+            Button {
+                store.disableAutomaticReviewPrompt()
+                openURL(URL(string: "https://apps.apple.com/app/id6802803318?action=write-review")!)
+            } label: {
+                OWCRow(icon: "star.bubble", title: store.t("rateApp")) {
+                    Image(systemName: "arrow.up.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(OWCDesign.secondary)
+                        .accessibilityHidden(true)
+                }
+            }
+            .buttonStyle(OWCRowButtonStyle())
             OWCRow(icon: "tag", title: store.t("version"), isLast: true) {
                 HStack(spacing: 6) {
                     Text(store.appVersion)
