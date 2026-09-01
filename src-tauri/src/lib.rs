@@ -1326,6 +1326,9 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
         .visible(false)
         .build()?;
 
+    #[cfg(target_os = "windows")]
+    pin_webview_to_monitor_dpi(&window);
+
     #[cfg(all(target_os = "macos", not(feature = "self-update")))]
     if let Ok(ns_window) = window.ns_window() {
         native_mini::configure_store_floating_window(ns_window);
@@ -1377,6 +1380,10 @@ fn setup_mini_window(app: &AppHandle) -> tauri::Result<()> {
                     .expect("mini window position should serialize"),
                 );
             }
+        }
+        #[cfg(target_os = "windows")]
+        WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
+            pin_webview_to_monitor_dpi_with_scale(&handle, *scale_factor);
         }
         _ => {}
     });
@@ -1980,6 +1987,39 @@ fn open_notification_settings(app: AppHandle) -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
+/// WebView2 默认的 RasterizationScale = 显示器 DPI ×「设置 → 辅助功能 → 文本大小」。
+/// 主窗口和悬浮窗都是按逻辑像素排的固定工具窗，系统字号会把整块 UI 同比放大。
+///
+/// 关掉自动跟随后，只写入当前窗口的显示器 DPI（`scale_factor`）；换屏时再跟着
+/// `ScaleFactorChanged` 更新。125%/150% 的显示器缩放仍然有效，只是不再吃字号。
+#[cfg(target_os = "windows")]
+fn pin_webview_to_monitor_dpi(window: &tauri::WebviewWindow) {
+    let scale = window.scale_factor().unwrap_or(1.0);
+    pin_webview_to_monitor_dpi_with_scale(window, scale);
+}
+
+#[cfg(target_os = "windows")]
+fn pin_webview_to_monitor_dpi_with_scale(window: &tauri::WebviewWindow, scale: f64) {
+    if let Err(error) = window.with_webview(move |webview| {
+        use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Controller3;
+        use windows::core::Interface;
+
+        // SAFETY: wry 在控制器创建完成后才把 PlatformWebview 交给 `with_webview`。
+        // ICoreWebView2Controller3 从 WebView2 1.0.774.44 起可用；QueryInterface
+        // 失败只跳过，不保留任何 COM 指针越过这个闭包。
+        unsafe {
+            let Ok(controller) = Interface::cast::<ICoreWebView2Controller3>(&webview.controller())
+            else {
+                return;
+            };
+            let _ = controller.SetShouldDetectMonitorScaleChanges(false);
+            let _ = controller.SetRasterizationScale(scale);
+        }
+    }) {
+        log::warn!("failed to pin WebView2 rasterization scale: {error}");
+    }
+}
+
 /// WebView2 不在时，给出一句能照着做的话，而不是让用户对着一个白窗口。
 ///
 /// 三条路都查过了：MSIX 的 `win32dependencies:ExternalDependency` 只有 App
@@ -2181,6 +2221,7 @@ pub fn run() {
                 if let Some(size) = inner_before {
                     let _ = window.set_size(size);
                 }
+                pin_webview_to_monitor_dpi(&window);
             }
 
             // 关闭主窗口时隐藏而非退出。真正的退出走托盘菜单里的 Quit。
@@ -2190,6 +2231,10 @@ pub fn run() {
                     if let WindowEvent::CloseRequested { api, .. } = event {
                         api.prevent_close();
                         let _ = handle.hide();
+                    }
+                    #[cfg(target_os = "windows")]
+                    if let WindowEvent::ScaleFactorChanged { scale_factor, .. } = event {
+                        pin_webview_to_monitor_dpi_with_scale(&handle, *scale_factor);
                     }
                 });
             }
