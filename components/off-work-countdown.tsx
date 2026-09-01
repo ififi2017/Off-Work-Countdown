@@ -97,6 +97,7 @@ import {
 } from "@/lib/countdown";
 import { WorkdaySelector } from "./WorkdaySelector";
 import { PeriodSummary } from "./PeriodSummary";
+import { DesktopStatsPage } from "./DesktopStatsPage";
 import { summarize, startOfWeek, startOfYear } from "@/lib/summary";
 import { useTranslation } from "react-i18next";
 import { decodeShift } from "@/lib/share";
@@ -138,6 +139,8 @@ import {
   updateDesktopGlobalShortcutSettings,
   installDesktopUpdateViaMirror,
   openMicrosoftStoreListing,
+  recordDesktopAttendance,
+  seedDesktopWoodfishFromLocalStorage,
   stopDesktopCountdown,
   subscribeToDesktopCountdown,
   UPDATE_MIRROR_HOST,
@@ -154,6 +157,7 @@ import {
 } from "@/lib/shortcut";
 import type { DesktopUpdateCandidate } from "@/lib/desktop-updater";
 import { startSecondTick } from "@/lib/second-tick";
+import { localDateKey } from "@/lib/desktop-stats";
 
 /** 下班前多久提醒。与 translation.json 里 "reminder" 的文案保持一致。 */
 const REMINDER_LEAD_MS = 15 * 60 * 1000;
@@ -378,6 +382,7 @@ export function OffWorkCountdown({
   const [workdays, setWorkdays] = useState<number[]>(DEFAULT_WORKDAYS);
   const [showCountdown, setShowCountdown] = useState(false);
   const [showDesktopSettings, setShowDesktopSettings] = useState(false);
+  const [showDesktopStats, setShowDesktopStats] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [progress, setProgress] = useState(0);
   // 计时尚未正式开始时，移动端首页仍给出实时班次预览。首帧保持 0，避免
@@ -789,6 +794,17 @@ export function OffWorkCountdown({
       cancelled = true;
     };
   }, [settingsLoaded]);
+
+  useEffect(() => {
+    if (!IS_DESKTOP_BUILD || !settingsLoaded) return;
+    void seedDesktopWoodfishFromLocalStorage().catch(() => {
+      // 旧的当日木鱼计数迁不进来，统计页从这次敲击重新累计。
+    });
+  }, [settingsLoaded]);
+
+  useEffect(() => {
+    if (!showDesktopSettings) setShowDesktopStats(false);
+  }, [showDesktopSettings]);
 
   useEffect(() => {
     if (!IS_DESKTOP_BUILD) return;
@@ -1286,6 +1302,20 @@ export function OffWorkCountdown({
     void writeDesktopCountdownState(state).catch(() => {
       // 桌面快照失败不应打断 Web 共用的主倒计时界面。
     });
+
+    if (showCountdown && activeShift && isValidShiftTimeline(activeShift)) {
+      void recordDesktopAttendance({
+        date: localDateKey(new Date(getShiftStartAtMs(activeShift))),
+        plannedMs: getPlannedShiftDurationMs(activeShift),
+        overtimeMs: Math.max(
+          0,
+          getShiftDurationMs(activeShift) -
+            getPlannedShiftDurationMs(activeShift)
+        ),
+      }).catch(() => {
+        // 出勤统计写失败不应打断正在跑的倒计时。
+      });
+    }
   }, [
     settingsLoaded,
     desktopStateRestored,
@@ -3350,7 +3380,11 @@ export function OffWorkCountdown({
                 {IS_DESKTOP_BUILD && <button
                   type="button"
                   data-tauri-drag-region="false"
-                  onClick={() => setShowDesktopSettings(false)}
+                  onClick={() =>
+                    showDesktopStats
+                      ? setShowDesktopStats(false)
+                      : setShowDesktopSettings(false)
+                  }
                   className="-ms-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-black/5 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
                   aria-label={t("return")}
                   title={t("return")}
@@ -3365,16 +3399,39 @@ export function OffWorkCountdown({
                       : "min-w-0 truncate whitespace-nowrap text-xl font-bold leading-none tracking-tight dark:text-white"
                   }
                 >
-                  {t("settings")}
+                  {showDesktopStats ? t("desktopStats") : t("settings")}
                 </h2>
               </div>
             </div>
             <div
+              className={
+                IS_MOBILE_BUILD
+                  ? "min-h-0 flex-1"
+                  : "relative min-h-0 flex-1 overflow-hidden"
+              }
+            >
+              <div
+                className={
+                  IS_DESKTOP_BUILD
+                    ? "flex h-full min-h-0 w-[200%] will-change-transform motion-safe:transition-transform motion-safe:duration-[340ms] motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
+                    : "contents"
+                }
+                style={
+                  IS_DESKTOP_BUILD
+                    ? {
+                        transform: showDesktopStats
+                          ? `translateX(${isRtl ? "50%" : "-50%"})`
+                          : "translateX(0)",
+                      }
+                    : undefined
+                }
+              >
+            <div
               ref={settingsScrollRef}
               className={
                 IS_MOBILE_BUILD
-                  ? "mobile-settings-list mobile-content-scroll min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2"
-                  : "desktop-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto px-6 pb-4 pt-2"
+                  ? "mobile-settings-list mobile-content-scroll min-h-0 h-full space-y-4 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2"
+                  : "desktop-scrollbar h-full w-1/2 min-h-0 space-y-3 overflow-y-auto px-6 pb-4 pt-2"
               }
             >
                   <section className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
@@ -3404,6 +3461,19 @@ export function OffWorkCountdown({
                   </section>
 
                   {IS_DESKTOP_BUILD && <>
+                  <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white/35 shadow-sm dark:border-gray-700 dark:bg-black/10">
+                    <button
+                      type="button"
+                      onClick={() => setShowDesktopStats(true)}
+                      className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
+                    >
+                      <span className="flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4" />
+                        {t("desktopStats")}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </button>
+                  </section>
                   <section className="space-y-2.5 rounded-xl border border-gray-200/80 bg-white/35 p-3 shadow-sm dark:border-gray-700 dark:bg-black/10">
                     <div className="flex items-center justify-between gap-4">
                       <Label
@@ -3786,7 +3856,7 @@ export function OffWorkCountdown({
                       onClick={() =>
                         void openDesktopUrl(officialPageUrl(lang, "about"))
                       }
-                      className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
+                      className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/5"
                     >
                       <span className="flex items-center gap-2">
                         <Info className="h-4 w-4" />
@@ -3809,7 +3879,7 @@ export function OffWorkCountdown({
                       onClick={() =>
                         void openDesktopUrl(officialPageUrl(lang, "download"))
                       }
-                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
                     >
                       <span className="flex items-center gap-2">
                         <Smartphone className="h-4 w-4" />
@@ -3820,7 +3890,7 @@ export function OffWorkCountdown({
                     <button
                       type="button"
                       onClick={() => void openDesktopUrl(officialHomeUrl(lang))}
-                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
                     >
                       <span className="flex items-center gap-2">
                         <Globe className="h-4 w-4" />
@@ -3831,7 +3901,7 @@ export function OffWorkCountdown({
                     <button
                       type="button"
                       onClick={() => void openDesktopUrl(siteConfig.github)}
-                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                      className="flex w-full items-center justify-between gap-3 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
                     >
                       <span className="flex items-center gap-2">
                         <Github className="h-4 w-4" />
@@ -3849,7 +3919,7 @@ export function OffWorkCountdown({
                           desktopUpdateStatus === "mirrorInstalling" ||
                           desktopUpdateStatus === "installing"
                         }
-                        className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
+                        className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-gray-200/70 px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5 disabled:cursor-wait disabled:opacity-60 dark:border-gray-700/70 dark:text-gray-200 dark:hover:bg-white/5"
                       >
                         <span
                           role="status"
@@ -3934,6 +4004,13 @@ export function OffWorkCountdown({
                         </p>
                       )}
                   </section>
+            </div>
+            {IS_DESKTOP_BUILD && (
+              <div className="desktop-scrollbar h-full w-1/2 min-h-0 overflow-y-auto px-6 pb-4 pt-2">
+                <DesktopStatsPage lang={lang} />
+              </div>
+            )}
+              </div>
             </div>
           </div>
         )}
