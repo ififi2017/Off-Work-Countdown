@@ -305,10 +305,7 @@ struct RecordsChartsHomeView: View {
                 ForEach(Array(months.enumerated()), id: \.element.id) { index, month in
                     OWCRow(
                         title: store.formatRecordsMonthYear(month.start),
-                        subtitle: store.t(
-                            "recordsMonthWorkdays",
-                            values: ["count": store.formatCount(month.workdays)]
-                        ),
+                        subtitle: store.t("recordsMonthWorkdays", count: month.workdays),
                         isLast: index == months.count - 1,
                         centersVertically: true
                     ) {

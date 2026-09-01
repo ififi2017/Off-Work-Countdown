@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "У дней, которые вы изменили, есть обводка, а список ниже повторяет те же часы текстом.",
   "recordsByMonth": "По месяцам",
   "recordsMonthWorkdays": "{{count}} рабочих дней",
+  "recordsMonthWorkdays_one": "{{count}} рабочий день",
   "recordsSectionHours": "Часы",
   "recordsSectionKind": "Этот день",
   "recordsKindCustomHours": "Задать часы",

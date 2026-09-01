@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "Những ngày bạn đã sửa có viền, và danh sách bên dưới ghi lại đúng số giờ đó bằng chữ.",
   "recordsByMonth": "Theo tháng",
   "recordsMonthWorkdays": "{{count}} ngày làm việc",
+  "recordsMonthWorkdays_one": "{{count}} ngày làm việc",
   "recordsSectionHours": "Giờ",
   "recordsSectionKind": "Ngày này",
   "recordsKindCustomHours": "Tự đặt giờ",

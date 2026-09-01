@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "जिन दिनों को आपने बदला है उनके किनारे पर रेखा है, और नीचे की सूची वही घंटे शब्दों में देती है।",
   "recordsByMonth": "महीने के हिसाब से",
   "recordsMonthWorkdays": "{{count}} काम के दिन",
+  "recordsMonthWorkdays_one": "{{count}} काम का दिन",
   "recordsSectionHours": "घंटे",
   "recordsSectionKind": "यह दिन",
   "recordsKindCustomHours": "घंटे ख़ुद तय करें",

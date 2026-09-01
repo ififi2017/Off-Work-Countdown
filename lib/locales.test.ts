@@ -151,6 +151,47 @@ describe("UI locale resources", () => {
     }
   });
 
+  it("keeps the plural variants of a key in step with its base form", () => {
+    // recordsMonthWorkdays 是硬编码复数，一个月只记了一天时 iOS 渲染成
+    // "1 workdays"、"1 Arbeitstage"。i18next 的 `_one` 后缀补上单数，
+    // 不带后缀的 key 继续充当 other 形式。这条哨兵盯两件事：19 个语种都要
+    // 有变体（少一个就会回落到英文，德语界面里冒出 "1 workday"），
+    // 以及有屈折的语种必须真的换词，不能照抄复数。
+    const INFLECTS_FOR_ONE = [
+      "en",
+      "de",
+      "es",
+      "fr",
+      "it",
+      "pt",
+      "ru",
+      "hi-IN",
+      "mr-IN",
+    ];
+    const en = loadTranslation("en");
+    const pluralKeys = Object.keys(en).filter((key) => key.endsWith("_one"));
+
+    expect(pluralKeys).toContain("recordsMonthWorkdays_one");
+
+    for (const variantKey of pluralKeys) {
+      const baseKey = variantKey.slice(0, -"_one".length);
+      expect(Object.keys(en), `${baseKey} lost its other form`).toContain(
+        baseKey
+      );
+
+      for (const locale of locales) {
+        const translation = loadTranslation(locale);
+        const singular = translation[variantKey];
+        expect(typeof singular, `${locale} ${variantKey}`).toBe("string");
+
+        const differs = singular !== translation[baseKey];
+        expect(differs, `${locale} ${variantKey}`).toBe(
+          INFLECTS_FOR_ONE.includes(locale)
+        );
+      }
+    }
+  });
+
   it("keeps one merged health reminder set in every locale", () => {
     // 喝水和起身合并成单个健康提醒时，只有 zh-CN 和 en 跟上了，其余 15 个
     // 语种在两个版本里一直留着合并前的六条。条数一致是这件事最省事的哨兵。

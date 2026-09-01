@@ -31,6 +31,7 @@
 		A1000000F00000000000000F /* FocusStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000F00000000000000F /* FocusStoreTests.swift */; };
 		A10000100000000000000010 /* AppReviewAndCycleSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */; };
 		A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OffWorkStoreTests.swift */; };
+		A10000110000000000000011 /* NativeLocalizerPluralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000110000000000000011 /* NativeLocalizerPluralTests.swift */; };
 		A10000020000000000000002 /* DebugTimerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* DebugTimerScenarioTests.swift */; };
 		A10000030000000000000003 /* DayOverrideProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* DayOverrideProjectionTests.swift */; };
 		A10000040000000000000004 /* DayRecordResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* DayRecordResolverTests.swift */; };
@@ -187,6 +188,7 @@
 		A2000000F00000000000000F /* FocusStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusStoreTests.swift; sourceTree = "<group>"; };
 		A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReviewAndCycleSummaryTests.swift; sourceTree = "<group>"; };
 		A20000010000000000000001 /* OffWorkStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkStoreTests.swift; sourceTree = "<group>"; };
+		A20000110000000000000011 /* NativeLocalizerPluralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeLocalizerPluralTests.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000030000000000000003 /* DebugTimerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugTimerScenarioTests.swift; sourceTree = "<group>"; };
 		A20000040000000000000004 /* DayOverrideProjectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayOverrideProjectionTests.swift; sourceTree = "<group>"; };
@@ -491,6 +493,7 @@
 				A2000000F00000000000000F /* FocusStoreTests.swift */,
 				A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */,
 				A20000080000000000000008 /* ScheduleRangeExpandTests.swift */,
+				A20000110000000000000011 /* NativeLocalizerPluralTests.swift */,
 			);
 			path = AppTests;
 			sourceTree = "<group>";
@@ -778,6 +781,7 @@
 				A1000000F00000000000000F /* FocusStoreTests.swift in Sources */,
 				A10000100000000000000010 /* AppReviewAndCycleSummaryTests.swift in Sources */,
 				A10000070000000000000007 /* ScheduleRangeExpandTests.swift in Sources */,
+				A10000110000000000000011 /* NativeLocalizerPluralTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

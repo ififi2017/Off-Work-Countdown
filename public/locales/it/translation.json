@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "I giorni che hai modificato hanno un contorno, e l’elenco qui sotto riporta le stesse ore in testo.",
   "recordsByMonth": "Per mese",
   "recordsMonthWorkdays": "{{count}} giorni lavorati",
+  "recordsMonthWorkdays_one": "{{count}} giorno lavorato",
   "recordsSectionHours": "Orario",
   "recordsSectionKind": "Questo giorno",
   "recordsKindCustomHours": "Imposta l’orario",

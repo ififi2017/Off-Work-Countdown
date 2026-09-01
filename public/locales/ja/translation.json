@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "自分で直した日には枠線が付き、下のリストにも同じ時間が文字で出ます。",
   "recordsByMonth": "月ごと",
   "recordsMonthWorkdays": "{{count}} 勤務日",
+  "recordsMonthWorkdays_one": "{{count}} 勤務日",
   "recordsSectionHours": "時間",
   "recordsSectionKind": "この日",
   "recordsKindCustomHours": "時間を自分で決める",

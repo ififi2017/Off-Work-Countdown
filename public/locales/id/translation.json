@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "Hari yang kamu ubah punya garis tepi, dan daftar di bawah menuliskan jam yang sama.",
   "recordsByMonth": "Per bulan",
   "recordsMonthWorkdays": "{{count}} hari kerja",
+  "recordsMonthWorkdays_one": "{{count}} hari kerja",
   "recordsSectionHours": "Jam",
   "recordsSectionKind": "Hari ini",
   "recordsKindCustomHours": "Atur jamnya sendiri",

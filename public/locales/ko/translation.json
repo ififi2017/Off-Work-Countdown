@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "직접 고친 날에는 테두리가 있고, 아래 목록에도 같은 시간이 글로 나옵니다.",
   "recordsByMonth": "월별",
   "recordsMonthWorkdays": "근무일 {{count}}일",
+  "recordsMonthWorkdays_one": "근무일 {{count}}일",
   "recordsSectionHours": "시간",
   "recordsSectionKind": "이 날",
   "recordsKindCustomHours": "시간 직접 지정",

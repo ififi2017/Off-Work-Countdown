@@ -1776,6 +1776,17 @@ final class OffWorkStore {
         localizer.string(key, locale: languageCode, values: values)
     }
 
+    /// Plural-aware lookup. `count` picks the grammatical variant and, unless
+    /// the caller supplies its own, also fills `{{count}}` with the
+    /// locale-formatted number. Keeping both on one argument is the point:
+    /// when a call site formatted the number itself and left the lookup
+    /// countless, German rendered a single recorded day as "1 Arbeitstage".
+    func t(_ key: String, count: Int, values: [String: String] = [:]) -> String {
+        var merged = values
+        if merged["count"] == nil { merged["count"] = formatCount(count) }
+        return localizer.string(key, locale: languageCode, count: count, values: merged)
+    }
+
     func strings(_ key: String) -> [String] {
         localizer.strings(key, locale: languageCode)
     }

@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "Days you changed carry an outline, and the list below gives the same hours as text.",
   "recordsByMonth": "By month",
   "recordsMonthWorkdays": "{{count}} workdays",
+  "recordsMonthWorkdays_one": "{{count}} workday",
   "recordsSectionHours": "Hours",
   "recordsSectionKind": "This day",
   "recordsKindCustomHours": "Set the hours",
