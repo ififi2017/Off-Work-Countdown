@@ -3,131 +3,23 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
-		6BD818DF3D90C7175FC64B96 /* ClockOffEarlyLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E67BB1AA7F2D01B5263CE7 /* ClockOffEarlyLabel.swift */; };
-		710000011234567890ABCDEF /* LiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000011234567890ABCDEF /* LiveActivityAttributes.swift */; };
-		710000021234567890ABCDEF /* LiveActivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000021234567890ABCDEF /* LiveActivityService.swift */; };
-		710000031234567890ABCDEF /* WidgetSnapshotPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000031234567890ABCDEF /* WidgetSnapshotPublisher.swift */; };
 		710000041234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
-		710000051234567890ABCDEF /* LiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000011234567890ABCDEF /* LiveActivityAttributes.swift */; };
 		710000061234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
 		710000071234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */; };
 		710000081234567890ABCDEF /* OffWorkWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000071234567890ABCDEF /* OffWorkWidgets.swift */; };
 		710000091234567890ABCDEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		7100000A1234567890ABCDEF /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
 		7100000B1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A10000009000000000000009 /* PlusEntitlementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000009000000000000009 /* PlusEntitlementTests.swift */; };
-		A1000000A00000000000000A /* RecordsMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000A00000000000000A /* RecordsMetricsTests.swift */; };
-		A1000000B00000000000000B /* LifeViewCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000B00000000000000B /* LifeViewCalculatorTests.swift */; };
-		A1000000C00000000000000C /* RecordsSyncAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000C00000000000000C /* RecordsSyncAdapterTests.swift */; };
-		A1000000D00000000000000D /* FocusPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000D00000000000000D /* FocusPlannerTests.swift */; };
-		A1000000E00000000000000E /* RecordsPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000E00000000000000E /* RecordsPerformanceTests.swift */; };
-		A1000000F00000000000000F /* FocusStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000F00000000000000F /* FocusStoreTests.swift */; };
-		A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OffWorkStoreTests.swift */; };
-		A10000110000000000000011 /* NativeLocalizerPluralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000110000000000000011 /* NativeLocalizerPluralTests.swift */; };
-		A10000020000000000000002 /* DebugTimerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* DebugTimerScenarioTests.swift */; };
-		A10000030000000000000003 /* DayOverrideProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* DayOverrideProjectionTests.swift */; };
-		A10000040000000000000004 /* DayRecordResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* DayRecordResolverTests.swift */; };
-		A10000050000000000000005 /* RecordJSONTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* RecordJSONTests.swift */; };
-		A10000060000000000000006 /* RecordCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* RecordCoordinatorTests.swift */; };
-		A10000070000000000000007 /* ScheduleRangeExpandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* ScheduleRangeExpandTests.swift */; };
-		A10000100000000000000010 /* AppReviewAndCycleSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */; };
 		C30000010000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* InfoPlist.strings */; };
-		E00000010000000000000001 /* OWCDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000010000000000000001 /* OWCDesignSystem.swift */; };
-		E00000020000000000000002 /* CountdownRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000020000000000000002 /* CountdownRules.swift */; };
-		E00000030000000000000003 /* OffWorkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000030000000000000003 /* OffWorkStore.swift */; };
-		E00000040000000000000004 /* NativeLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000040000000000000004 /* NativeLocalizer.swift */; };
-		E00000050000000000000005 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000050000000000000005 /* NotificationService.swift */; };
-		E00000060000000000000006 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000060000000000000006 /* ShareSheet.swift */; };
-		E00000070000000000000007 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000070000000000000007 /* OnboardingView.swift */; };
-		E00000080000000000000008 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000080000000000000008 /* RootView.swift */; };
-		E00000090000000000000009 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000090000000000000009 /* TimerView.swift */; };
 		E000000B000000000000000B /* CountdownRules.js in Resources */ = {isa = PBXBuildFile; fileRef = F000000B000000000000000B /* CountdownRules.js */; };
 		E000000C000000000000000C /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
-		E000000D000000000000000D /* TimerDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000D000000000000000D /* TimerDesignView.swift */; };
-		E000000E000000000000000E /* SettingsDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000E000000000000000E /* SettingsDesignView.swift */; };
-		E000000F000000000000000F /* SettingsDetailDesignViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000000F000000000000000F /* SettingsDetailDesignViews.swift */; };
-		E00000100000000000000010 /* TabletDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000100000000000000010 /* TabletDesignView.swift */; };
-		E00000110000000000000011 /* TimerStatusViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000110000000000000011 /* TimerStatusViews.swift */; };
-		E00000120000000000000012 /* PhoneLandscapeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000120000000000000012 /* PhoneLandscapeView.swift */; };
-		E00000130000000000000013 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000130000000000000013 /* AboutView.swift */; };
-		E00000140000000000000014 /* OWCSystemBackSwipeBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000140000000000000014 /* OWCSystemBackSwipeBridge.swift */; };
-		E00000150000000000000015 /* AppRouteDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000150000000000000015 /* AppRouteDestination.swift */; };
-		E00000160000000000000016 /* OWCMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000160000000000000016 /* OWCMotion.swift */; };
-		E00000170000000000000017 /* TimerVisualPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000170000000000000017 /* TimerVisualPhase.swift */; };
-		E00000180000000000000018 /* OWCCountdownTextTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000180000000000000018 /* OWCCountdownTextTransition.swift */; };
-		E00000190000000000000019 /* UpcomingTimelineEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000190000000000000019 /* UpcomingTimelineEvent.swift */; };
-		E000001A000000000000001A /* UpcomingTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000001A000000000000001A /* UpcomingTimelineView.swift */; };
-		E000001F000000000000001F /* UpcomingTimelineEventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000001F000000000000001F /* UpcomingTimelineEventRow.swift */; };
-		E00000200000000000000020 /* TimerActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000200000000000000020 /* TimerActionBar.swift */; };
-		E00000230000000000000023 /* OffWorkStore+Labels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000230000000000000023 /* OffWorkStore+Labels.swift */; };
-		E00000240000000000000024 /* SetupTimeField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000240000000000000024 /* SetupTimeField.swift */; };
-		E00000250000000000000025 /* StartArmState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000250000000000000025 /* StartArmState.swift */; };
-		E00000260000000000000026 /* ShiftHeroTimeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000260000000000000026 /* ShiftHeroTimeButton.swift */; };
-		E00000270000000000000027 /* ShiftHeroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000270000000000000027 /* ShiftHeroCard.swift */; };
-		E00000290000000000000029 /* ShiftStartButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000290000000000000029 /* ShiftStartButton.swift */; };
-		E000002A000000000000002A /* OWCSetupTimePickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000002A000000000000002A /* OWCSetupTimePickerSheet.swift */; };
-		E000002B000000000000002B /* ShiftSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000002B000000000000002B /* ShiftSetupView.swift */; };
-		E000002C000000000000002C /* OWCHeroButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000002C000000000000002C /* OWCHeroButtonStyle.swift */; };
-		E000002D000000000000002D /* RelativeDurationFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000002D000000000000002D /* RelativeDurationFormatter.swift */; };
-		E000002E000000000000002E /* SettingsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000002E000000000000002E /* SettingsSection.swift */; };
-		E000002F000000000000002F /* SettingsSectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000002F000000000000002F /* SettingsSectionCard.swift */; };
-		E00000300000000000000030 /* ShiftSetupTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000300000000000000030 /* ShiftSetupTimelineView.swift */; };
-		E00000310000000000000031 /* ShiftPreviewEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000310000000000000031 /* ShiftPreviewEntry.swift */; };
-		E00000320000000000000032 /* OffWorkStore+ShiftPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000320000000000000032 /* OffWorkStore+ShiftPreview.swift */; };
-		E00000330000000000000033 /* ShiftPreviewRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000330000000000000033 /* ShiftPreviewRow.swift */; };
-		E00000340000000000000034 /* BiometricGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000340000000000000034 /* BiometricGate.swift */; };
-		E00000350000000000000035 /* RestDayUpcomingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000350000000000000035 /* RestDayUpcomingView.swift */; };
-		E00000360000000000000036 /* DraggableBrandIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000360000000000000036 /* DraggableBrandIcon.swift */; };
-		E00000370000000000000037 /* OWCBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000370000000000000037 /* OWCBrandMark.swift */; };
-		E00000380000000000000038 /* OnboardingScheduleDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */; };
-		E00000390000000000000039 /* CelebratingBrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000390000000000000039 /* CelebratingBrandMark.swift */; };
-		E000003A000000000000003A /* OnboardingFinalePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003A000000000000003A /* OnboardingFinalePage.swift */; };
-		E000003B000000000000003B /* OnboardingRemindersPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003B000000000000003B /* OnboardingRemindersPage.swift */; };
-		E000003C000000000000003C /* DebugTimerScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003C000000000000003C /* DebugTimerScenario.swift */; };
-		E000003D000000000000003D /* DebugMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003D000000000000003D /* DebugMenuView.swift */; };
-		E000003E000000000000003E /* LiveActivityService+Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003E000000000000003E /* LiveActivityService+Debug.swift */; };
-		E000003F000000000000003F /* DayOverride.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000003F000000000000003F /* DayOverride.swift */; };
-		E00000400000000000000040 /* DayOverrideProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000400000000000000040 /* DayOverrideProjection.swift */; };
-		E00000410000000000000041 /* CareerPeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000410000000000000041 /* CareerPeriod.swift */; };
-		E00000420000000000000042 /* CalendarException.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000420000000000000042 /* CalendarException.swift */; };
-		E00000430000000000000043 /* DayRecordResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000430000000000000043 /* DayRecordResolver.swift */; };
-		E00000440000000000000044 /* WorkObservation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000440000000000000044 /* WorkObservation.swift */; };
-		E00000450000000000000045 /* LifeProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000450000000000000045 /* LifeProfile.swift */; };
-		E00000460000000000000046 /* DailyWorkSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000460000000000000046 /* DailyWorkSummary.swift */; };
-		E00000470000000000000047 /* RecordJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000470000000000000047 /* RecordJSON.swift */; };
-		E00000480000000000000048 /* RecordCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000480000000000000048 /* RecordCoordinator.swift */; };
-		E00000490000000000000049 /* RecordsDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000490000000000000049 /* RecordsDesignView.swift */; };
-		E000004A000000000000004A /* PlusEntitlement.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004A000000000000004A /* PlusEntitlement.swift */; };
-		E000004B000000000000004B /* RecordsRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004B000000000000004B /* RecordsRoute.swift */; };
-		E000004C000000000000004C /* RecordsMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004C000000000000004C /* RecordsMetrics.swift */; };
-		E000004D000000000000004D /* LifeViewCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004D000000000000004D /* LifeViewCalculator.swift */; };
-		E000004E000000000000004E /* FocusModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004E000000000000004E /* FocusModels.swift */; };
-		E000004F000000000000004F /* FocusPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000004F000000000000004F /* FocusPlanner.swift */; };
-		E00000500000000000000050 /* RecordsSyncAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000500000000000000050 /* RecordsSyncAdapter.swift */; };
-		E00000510000000000000051 /* RecordsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000510000000000000051 /* RecordsCloudSync.swift */; };
-		E00000520000000000000052 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000520000000000000052 /* PaywallView.swift */; };
-		E00000530000000000000053 /* PlusSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000530000000000000053 /* PlusSettingsView.swift */; };
-		E00000550000000000000055 /* RecordDayEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000550000000000000055 /* RecordDayEditView.swift */; };
-		E00000560000000000000056 /* LifeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000560000000000000056 /* LifeView.swift */; };
-		E00000570000000000000057 /* FocusDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000570000000000000057 /* FocusDesignView.swift */; };
-		E00000580000000000000058 /* RecordsSyncSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000580000000000000058 /* RecordsSyncSettingsView.swift */; };
-		E00000590000000000000059 /* LaunchTrace.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000590000000000000059 /* LaunchTrace.swift */; };
-		E000005A000000000000005A /* RecordsScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000005A000000000000005A /* RecordsScale.swift */; };
-		E000005B000000000000005B /* RecordsCanvasViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000005B000000000000005B /* RecordsCanvasViews.swift */; };
-		E000005C000000000000005C /* RecordsAllRecordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000005C000000000000005C /* RecordsAllRecordsView.swift */; };
-		E000005D000000000000005D /* RecordsDataSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000005D000000000000005D /* RecordsDataSettingsView.swift */; };
-		E000005E000000000000005E /* RecordsConflictCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000005E000000000000005E /* RecordsConflictCenter.swift */; };
-		E000005F000000000000005F /* FocusAddTaskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F000005F000000000000005F /* FocusAddTaskSheet.swift */; };
-		E00000600000000000000060 /* FocusPlanningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000600000000000000060 /* FocusPlanningView.swift */; };
-		E00000610000000000000061 /* AppReviewPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000610000000000000061 /* AppReviewPrompt.swift */; };
-		E00000620000000000000062 /* ScheduleCycleSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000620000000000000062 /* ScheduleCycleSummary.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -167,10 +59,6 @@
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		62E67BB1AA7F2D01B5263CE7 /* ClockOffEarlyLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClockOffEarlyLabel.swift; path = Native/Views/ClockOffEarlyLabel.swift; sourceTree = "<group>"; };
-		720000011234567890ABCDEF /* LiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveActivityAttributes.swift; path = Native/Models/LiveActivityAttributes.swift; sourceTree = "<group>"; };
-		720000021234567890ABCDEF /* LiveActivityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveActivityService.swift; path = Native/Services/LiveActivityService.swift; sourceTree = "<group>"; };
-		720000031234567890ABCDEF /* WidgetSnapshotPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WidgetSnapshotPublisher.swift; path = Native/Services/WidgetSnapshotPublisher.swift; sourceTree = "<group>"; };
 		720000041234567890ABCDEF /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		720000051234567890ABCDEF /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WidgetSnapshot.swift; path = "../../../src-tauri/macos-widget/Sources/WidgetSnapshotContract/WidgetSnapshot.swift"; sourceTree = SOURCE_ROOT; };
 		720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OffWorkCountdownWidget.swift; path = "../../../src-tauri/macos-widget/Sources/OffWorkCountdownWidgetUI/OffWorkCountdownWidget.swift"; sourceTree = SOURCE_ROOT; };
@@ -178,23 +66,7 @@
 		720000081234567890ABCDEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		720000091234567890ABCDEF /* Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widget.entitlements; sourceTree = "<group>"; };
 		7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OffWorkCountdownWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		A20000009000000000000009 /* PlusEntitlementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusEntitlementTests.swift; sourceTree = "<group>"; };
-		A2000000A00000000000000A /* RecordsMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsMetricsTests.swift; sourceTree = "<group>"; };
-		A2000000B00000000000000B /* LifeViewCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeViewCalculatorTests.swift; sourceTree = "<group>"; };
-		A2000000C00000000000000C /* RecordsSyncAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsSyncAdapterTests.swift; sourceTree = "<group>"; };
-		A2000000D00000000000000D /* FocusPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusPlannerTests.swift; sourceTree = "<group>"; };
-		A2000000E00000000000000E /* RecordsPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsPerformanceTests.swift; sourceTree = "<group>"; };
-		A2000000F00000000000000F /* FocusStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusStoreTests.swift; sourceTree = "<group>"; };
-		A20000010000000000000001 /* OffWorkStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkStoreTests.swift; sourceTree = "<group>"; };
-		A20000110000000000000011 /* NativeLocalizerPluralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeLocalizerPluralTests.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A20000030000000000000003 /* DebugTimerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugTimerScenarioTests.swift; sourceTree = "<group>"; };
-		A20000040000000000000004 /* DayOverrideProjectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayOverrideProjectionTests.swift; sourceTree = "<group>"; };
-		A20000050000000000000005 /* DayRecordResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRecordResolverTests.swift; sourceTree = "<group>"; };
-		A20000060000000000000006 /* RecordJSONTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordJSONTests.swift; sourceTree = "<group>"; };
-		A20000070000000000000007 /* RecordCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordCoordinatorTests.swift; sourceTree = "<group>"; };
-		A20000080000000000000008 /* ScheduleRangeExpandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleRangeExpandTests.swift; sourceTree = "<group>"; };
-		A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReviewAndCycleSummaryTests.swift; sourceTree = "<group>"; };
 		A2DFBCE33045632B0085459E /* DoneAt.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = DoneAt.storekit; sourceTree = "<group>"; };
 		A2DFBCE4304567860085459E /* DoneAtConnect.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = DoneAtConnect.storekit; sourceTree = "<group>"; };
 		C10000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -216,96 +88,35 @@
 		C10000110000000000000011 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000120000000000000012 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C10000130000000000000013 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		F00000010000000000000001 /* OWCDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCDesignSystem.swift; path = Native/DesignSystem/OWCDesignSystem.swift; sourceTree = "<group>"; };
-		F00000020000000000000002 /* CountdownRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CountdownRules.swift; path = Native/Models/CountdownRules.swift; sourceTree = "<group>"; };
-		F00000030000000000000003 /* OffWorkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OffWorkStore.swift; path = Native/Models/OffWorkStore.swift; sourceTree = "<group>"; };
-		F00000040000000000000004 /* NativeLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NativeLocalizer.swift; path = Native/Services/NativeLocalizer.swift; sourceTree = "<group>"; };
-		F00000050000000000000005 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationService.swift; path = Native/Services/NotificationService.swift; sourceTree = "<group>"; };
-		F00000060000000000000006 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShareSheet.swift; path = Native/Services/ShareSheet.swift; sourceTree = "<group>"; };
-		F00000070000000000000007 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = Native/Views/OnboardingView.swift; sourceTree = "<group>"; };
-		F00000080000000000000008 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = Native/Views/RootView.swift; sourceTree = "<group>"; };
-		F00000090000000000000009 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerView.swift; path = Native/Views/TimerView.swift; sourceTree = "<group>"; };
 		F000000B000000000000000B /* CountdownRules.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = CountdownRules.js; path = Resources/CountdownRules.js; sourceTree = "<group>"; };
 		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
-		F000000D000000000000000D /* TimerDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerDesignView.swift; path = Native/Views/TimerDesignView.swift; sourceTree = "<group>"; };
-		F000000E000000000000000E /* SettingsDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsDesignView.swift; path = Native/Views/SettingsDesignView.swift; sourceTree = "<group>"; };
-		F000000F000000000000000F /* SettingsDetailDesignViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsDetailDesignViews.swift; path = Native/Views/SettingsDetailDesignViews.swift; sourceTree = "<group>"; };
-		F00000100000000000000010 /* TabletDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TabletDesignView.swift; path = Native/Views/TabletDesignView.swift; sourceTree = "<group>"; };
-		F00000110000000000000011 /* TimerStatusViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerStatusViews.swift; path = Native/Views/TimerStatusViews.swift; sourceTree = "<group>"; };
-		F00000120000000000000012 /* PhoneLandscapeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PhoneLandscapeView.swift; path = Native/Views/PhoneLandscapeView.swift; sourceTree = "<group>"; };
-		F00000130000000000000013 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AboutView.swift; path = Native/Views/AboutView.swift; sourceTree = "<group>"; };
-		F00000140000000000000014 /* OWCSystemBackSwipeBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCSystemBackSwipeBridge.swift; path = Native/DesignSystem/OWCSystemBackSwipeBridge.swift; sourceTree = "<group>"; };
-		F00000150000000000000015 /* AppRouteDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppRouteDestination.swift; path = Native/Views/AppRouteDestination.swift; sourceTree = "<group>"; };
-		F00000160000000000000016 /* OWCMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCMotion.swift; path = Native/DesignSystem/OWCMotion.swift; sourceTree = "<group>"; };
-		F00000170000000000000017 /* TimerVisualPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerVisualPhase.swift; path = Native/Views/TimerVisualPhase.swift; sourceTree = "<group>"; };
-		F00000180000000000000018 /* OWCCountdownTextTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCCountdownTextTransition.swift; path = Native/DesignSystem/OWCCountdownTextTransition.swift; sourceTree = "<group>"; };
-		F00000190000000000000019 /* UpcomingTimelineEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpcomingTimelineEvent.swift; path = Native/Models/UpcomingTimelineEvent.swift; sourceTree = "<group>"; };
-		F000001A000000000000001A /* UpcomingTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpcomingTimelineView.swift; path = Native/Views/UpcomingTimelineView.swift; sourceTree = "<group>"; };
-		F000001F000000000000001F /* UpcomingTimelineEventRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpcomingTimelineEventRow.swift; path = Native/Views/UpcomingTimelineEventRow.swift; sourceTree = "<group>"; };
-		F00000200000000000000020 /* TimerActionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TimerActionBar.swift; path = Native/Views/TimerActionBar.swift; sourceTree = "<group>"; };
-		F00000230000000000000023 /* OffWorkStore+Labels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "OffWorkStore+Labels.swift"; path = "Native/Models/OffWorkStore+Labels.swift"; sourceTree = "<group>"; };
-		F00000240000000000000024 /* SetupTimeField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SetupTimeField.swift; path = Native/Views/SetupTimeField.swift; sourceTree = "<group>"; };
-		F00000250000000000000025 /* StartArmState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StartArmState.swift; path = Native/Views/StartArmState.swift; sourceTree = "<group>"; };
-		F00000260000000000000026 /* ShiftHeroTimeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftHeroTimeButton.swift; path = Native/Views/ShiftHeroTimeButton.swift; sourceTree = "<group>"; };
-		F00000270000000000000027 /* ShiftHeroCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftHeroCard.swift; path = Native/Views/ShiftHeroCard.swift; sourceTree = "<group>"; };
-		F00000290000000000000029 /* ShiftStartButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftStartButton.swift; path = Native/Views/ShiftStartButton.swift; sourceTree = "<group>"; };
-		F000002A000000000000002A /* OWCSetupTimePickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCSetupTimePickerSheet.swift; path = Native/Views/OWCSetupTimePickerSheet.swift; sourceTree = "<group>"; };
-		F000002B000000000000002B /* ShiftSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftSetupView.swift; path = Native/Views/ShiftSetupView.swift; sourceTree = "<group>"; };
-		F000002C000000000000002C /* OWCHeroButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCHeroButtonStyle.swift; path = Native/DesignSystem/OWCHeroButtonStyle.swift; sourceTree = "<group>"; };
-		F000002D000000000000002D /* RelativeDurationFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RelativeDurationFormatter.swift; path = Native/Models/RelativeDurationFormatter.swift; sourceTree = "<group>"; };
-		F000002E000000000000002E /* SettingsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsSection.swift; path = Native/Views/SettingsSection.swift; sourceTree = "<group>"; };
-		F000002F000000000000002F /* SettingsSectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsSectionCard.swift; path = Native/Views/SettingsSectionCard.swift; sourceTree = "<group>"; };
-		F00000300000000000000030 /* ShiftSetupTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftSetupTimelineView.swift; path = Native/Views/ShiftSetupTimelineView.swift; sourceTree = "<group>"; };
-		F00000310000000000000031 /* ShiftPreviewEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftPreviewEntry.swift; path = Native/Models/ShiftPreviewEntry.swift; sourceTree = "<group>"; };
-		F00000320000000000000032 /* OffWorkStore+ShiftPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "OffWorkStore+ShiftPreview.swift"; path = "Native/Models/OffWorkStore+ShiftPreview.swift"; sourceTree = "<group>"; };
-		F00000330000000000000033 /* ShiftPreviewRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftPreviewRow.swift; path = Native/Views/ShiftPreviewRow.swift; sourceTree = "<group>"; };
-		F00000340000000000000034 /* BiometricGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BiometricGate.swift; path = Native/Services/BiometricGate.swift; sourceTree = "<group>"; };
-		F00000350000000000000035 /* RestDayUpcomingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RestDayUpcomingView.swift; path = Native/Views/RestDayUpcomingView.swift; sourceTree = "<group>"; };
-		F00000360000000000000036 /* DraggableBrandIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DraggableBrandIcon.swift; path = Native/Views/DraggableBrandIcon.swift; sourceTree = "<group>"; };
-		F00000370000000000000037 /* OWCBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OWCBrandMark.swift; path = Native/Views/OWCBrandMark.swift; sourceTree = "<group>"; };
-		F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingScheduleDetailsView.swift; path = Native/Views/OnboardingScheduleDetailsView.swift; sourceTree = "<group>"; };
-		F00000390000000000000039 /* CelebratingBrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CelebratingBrandMark.swift; path = Native/Views/CelebratingBrandMark.swift; sourceTree = "<group>"; };
-		F000003A000000000000003A /* OnboardingFinalePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingFinalePage.swift; path = Native/Views/OnboardingFinalePage.swift; sourceTree = "<group>"; };
-		F000003B000000000000003B /* OnboardingRemindersPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingRemindersPage.swift; path = Native/Views/OnboardingRemindersPage.swift; sourceTree = "<group>"; };
-		F000003C000000000000003C /* DebugTimerScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DebugTimerScenario.swift; path = Native/Models/DebugTimerScenario.swift; sourceTree = "<group>"; };
-		F000003D000000000000003D /* DebugMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DebugMenuView.swift; path = Native/Views/DebugMenuView.swift; sourceTree = "<group>"; };
-		F000003E000000000000003E /* LiveActivityService+Debug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LiveActivityService+Debug.swift"; path = "Native/Services/LiveActivityService+Debug.swift"; sourceTree = "<group>"; };
-		F000003F000000000000003F /* DayOverride.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DayOverride.swift; path = Native/Models/DayOverride.swift; sourceTree = "<group>"; };
-		F00000400000000000000040 /* DayOverrideProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DayOverrideProjection.swift; path = Native/Models/DayOverrideProjection.swift; sourceTree = "<group>"; };
-		F00000410000000000000041 /* CareerPeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CareerPeriod.swift; path = Native/Models/CareerPeriod.swift; sourceTree = "<group>"; };
-		F00000420000000000000042 /* CalendarException.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CalendarException.swift; path = Native/Models/CalendarException.swift; sourceTree = "<group>"; };
-		F00000430000000000000043 /* DayRecordResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DayRecordResolver.swift; path = Native/Models/DayRecordResolver.swift; sourceTree = "<group>"; };
-		F00000440000000000000044 /* WorkObservation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WorkObservation.swift; path = Native/Models/WorkObservation.swift; sourceTree = "<group>"; };
-		F00000450000000000000045 /* LifeProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LifeProfile.swift; path = Native/Models/LifeProfile.swift; sourceTree = "<group>"; };
-		F00000460000000000000046 /* DailyWorkSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyWorkSummary.swift; path = Native/Models/DailyWorkSummary.swift; sourceTree = "<group>"; };
-		F00000470000000000000047 /* RecordJSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordJSON.swift; path = Native/Models/RecordJSON.swift; sourceTree = "<group>"; };
-		F00000480000000000000048 /* RecordCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordCoordinator.swift; path = Native/Models/RecordCoordinator.swift; sourceTree = "<group>"; };
-		F00000490000000000000049 /* RecordsDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsDesignView.swift; path = Native/Views/RecordsDesignView.swift; sourceTree = "<group>"; };
-		F000004A000000000000004A /* PlusEntitlement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlusEntitlement.swift; path = Native/Models/PlusEntitlement.swift; sourceTree = "<group>"; };
-		F000004B000000000000004B /* RecordsRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsRoute.swift; path = Native/Models/RecordsRoute.swift; sourceTree = "<group>"; };
-		F000004C000000000000004C /* RecordsMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsMetrics.swift; path = Native/Models/RecordsMetrics.swift; sourceTree = "<group>"; };
-		F000004D000000000000004D /* LifeViewCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LifeViewCalculator.swift; path = Native/Models/LifeViewCalculator.swift; sourceTree = "<group>"; };
-		F000004E000000000000004E /* FocusModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusModels.swift; path = Native/Models/FocusModels.swift; sourceTree = "<group>"; };
-		F000004F000000000000004F /* FocusPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusPlanner.swift; path = Native/Models/FocusPlanner.swift; sourceTree = "<group>"; };
-		F00000500000000000000050 /* RecordsSyncAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsSyncAdapter.swift; path = Native/Models/RecordsSyncAdapter.swift; sourceTree = "<group>"; };
-		F00000510000000000000051 /* RecordsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsCloudSync.swift; path = Native/Models/RecordsCloudSync.swift; sourceTree = "<group>"; };
-		F00000520000000000000052 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PaywallView.swift; path = Native/Views/PaywallView.swift; sourceTree = "<group>"; };
-		F00000530000000000000053 /* PlusSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlusSettingsView.swift; path = Native/Views/PlusSettingsView.swift; sourceTree = "<group>"; };
-		F00000550000000000000055 /* RecordDayEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordDayEditView.swift; path = Native/Views/RecordDayEditView.swift; sourceTree = "<group>"; };
-		F00000560000000000000056 /* LifeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LifeView.swift; path = Native/Views/LifeView.swift; sourceTree = "<group>"; };
-		F00000570000000000000057 /* FocusDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusDesignView.swift; path = Native/Views/FocusDesignView.swift; sourceTree = "<group>"; };
-		F00000580000000000000058 /* RecordsSyncSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsSyncSettingsView.swift; path = Native/Views/RecordsSyncSettingsView.swift; sourceTree = "<group>"; };
-		F00000590000000000000059 /* LaunchTrace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LaunchTrace.swift; path = Native/Services/LaunchTrace.swift; sourceTree = "<group>"; };
-		F000005A000000000000005A /* RecordsScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsScale.swift; path = Native/Models/RecordsScale.swift; sourceTree = "<group>"; };
-		F000005B000000000000005B /* RecordsCanvasViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsCanvasViews.swift; path = Native/Views/RecordsCanvasViews.swift; sourceTree = "<group>"; };
-		F000005C000000000000005C /* RecordsAllRecordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsAllRecordsView.swift; path = Native/Views/RecordsAllRecordsView.swift; sourceTree = "<group>"; };
-		F000005D000000000000005D /* RecordsDataSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsDataSettingsView.swift; path = Native/Views/RecordsDataSettingsView.swift; sourceTree = "<group>"; };
-		F000005E000000000000005E /* RecordsConflictCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsConflictCenter.swift; path = Native/Views/RecordsConflictCenter.swift; sourceTree = "<group>"; };
-		F000005F000000000000005F /* FocusAddTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusAddTaskSheet.swift; path = Native/Views/FocusAddTaskSheet.swift; sourceTree = "<group>"; };
-		F00000600000000000000060 /* FocusPlanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusPlanningView.swift; path = Native/Views/FocusPlanningView.swift; sourceTree = "<group>"; };
-		F00000610000000000000061 /* AppReviewPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppReviewPrompt.swift; path = Native/Models/AppReviewPrompt.swift; sourceTree = "<group>"; };
-		F00000620000000000000062 /* ScheduleCycleSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScheduleCycleSummary.swift; path = Native/Models/ScheduleCycleSummary.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		FA0000030000000000000003 /* Exceptions for "Native" folder in "OffWorkCountdownWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Models/LiveActivityAttributes.swift,
+			);
+			target = 740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		FA0000010000000000000001 /* Native */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				FA0000030000000000000003 /* Exceptions for "Native" folder in "OffWorkCountdownWidgetsExtension" target */,
+			);
+			path = Native;
+			sourceTree = "<group>";
+		};
+		FA0000020000000000000002 /* AppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AppTests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		504EC3011FED79650016851F /* Frameworks */ = {
@@ -338,7 +149,7 @@
 				A2DFBCE33045632B0085459E /* DoneAt.storekit */,
 				A2DFBCE4304567860085459E /* DoneAtConnect.storekit */,
 				504EC3061FED79650016851F /* App */,
-				A30000010000000000000001 /* AppTests */,
+				FA0000020000000000000002 /* AppTests */,
 				730000011234567890ABCDEF /* WidgetExtension */,
 				720000051234567890ABCDEF /* WidgetSnapshot.swift */,
 				720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */,
@@ -360,97 +171,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3071FED79650016851F /* AppDelegate.swift */,
-				F00000010000000000000001 /* OWCDesignSystem.swift */,
-				F00000160000000000000016 /* OWCMotion.swift */,
-				F00000180000000000000018 /* OWCCountdownTextTransition.swift */,
-				F00000140000000000000014 /* OWCSystemBackSwipeBridge.swift */,
-				F00000020000000000000002 /* CountdownRules.swift */,
-				F000003F000000000000003F /* DayOverride.swift */,
-				F00000400000000000000040 /* DayOverrideProjection.swift */,
-				F00000410000000000000041 /* CareerPeriod.swift */,
-				F00000420000000000000042 /* CalendarException.swift */,
-				F00000430000000000000043 /* DayRecordResolver.swift */,
-				F00000440000000000000044 /* WorkObservation.swift */,
-				F00000450000000000000045 /* LifeProfile.swift */,
-				F00000460000000000000046 /* DailyWorkSummary.swift */,
-				F00000470000000000000047 /* RecordJSON.swift */,
-				F00000480000000000000048 /* RecordCoordinator.swift */,
-				F00000030000000000000003 /* OffWorkStore.swift */,
-				F00000610000000000000061 /* AppReviewPrompt.swift */,
-				F00000620000000000000062 /* ScheduleCycleSummary.swift */,
-				F00000360000000000000036 /* DraggableBrandIcon.swift */,
-				F00000370000000000000037 /* OWCBrandMark.swift */,
-				F00000390000000000000039 /* CelebratingBrandMark.swift */,
-				F000003A000000000000003A /* OnboardingFinalePage.swift */,
-				F000003B000000000000003B /* OnboardingRemindersPage.swift */,
-				F000003C000000000000003C /* DebugTimerScenario.swift */,
-				F000003D000000000000003D /* DebugMenuView.swift */,
-				F000003E000000000000003E /* LiveActivityService+Debug.swift */,
-				F00000380000000000000038 /* OnboardingScheduleDetailsView.swift */,
-				F00000350000000000000035 /* RestDayUpcomingView.swift */,
-				F00000340000000000000034 /* BiometricGate.swift */,
-				F00000330000000000000033 /* ShiftPreviewRow.swift */,
-				F00000320000000000000032 /* OffWorkStore+ShiftPreview.swift */,
-				F00000310000000000000031 /* ShiftPreviewEntry.swift */,
-				F00000300000000000000030 /* ShiftSetupTimelineView.swift */,
-				F000002F000000000000002F /* SettingsSectionCard.swift */,
-				F000002E000000000000002E /* SettingsSection.swift */,
-				F000002D000000000000002D /* RelativeDurationFormatter.swift */,
-				F000002C000000000000002C /* OWCHeroButtonStyle.swift */,
-				F000002B000000000000002B /* ShiftSetupView.swift */,
-				F000002A000000000000002A /* OWCSetupTimePickerSheet.swift */,
-				F00000290000000000000029 /* ShiftStartButton.swift */,
-				F00000270000000000000027 /* ShiftHeroCard.swift */,
-				F00000260000000000000026 /* ShiftHeroTimeButton.swift */,
-				F00000250000000000000025 /* StartArmState.swift */,
-				F00000240000000000000024 /* SetupTimeField.swift */,
-				F00000230000000000000023 /* OffWorkStore+Labels.swift */,
-				F00000190000000000000019 /* UpcomingTimelineEvent.swift */,
-				720000011234567890ABCDEF /* LiveActivityAttributes.swift */,
-				F00000040000000000000004 /* NativeLocalizer.swift */,
-				F00000050000000000000005 /* NotificationService.swift */,
-				F00000590000000000000059 /* LaunchTrace.swift */,
-				720000021234567890ABCDEF /* LiveActivityService.swift */,
-				720000031234567890ABCDEF /* WidgetSnapshotPublisher.swift */,
-				F00000060000000000000006 /* ShareSheet.swift */,
-				F00000070000000000000007 /* OnboardingView.swift */,
-				F00000080000000000000008 /* RootView.swift */,
-				F000004A000000000000004A /* PlusEntitlement.swift */,
-				F000004B000000000000004B /* RecordsRoute.swift */,
-				F000005A000000000000005A /* RecordsScale.swift */,
-				F000005B000000000000005B /* RecordsCanvasViews.swift */,
-				F000005C000000000000005C /* RecordsAllRecordsView.swift */,
-				F000005D000000000000005D /* RecordsDataSettingsView.swift */,
-				F000005E000000000000005E /* RecordsConflictCenter.swift */,
-				F000005F000000000000005F /* FocusAddTaskSheet.swift */,
-				F00000600000000000000060 /* FocusPlanningView.swift */,
-				F000004C000000000000004C /* RecordsMetrics.swift */,
-				F000004D000000000000004D /* LifeViewCalculator.swift */,
-				F000004E000000000000004E /* FocusModels.swift */,
-				F000004F000000000000004F /* FocusPlanner.swift */,
-				F00000500000000000000050 /* RecordsSyncAdapter.swift */,
-				F00000510000000000000051 /* RecordsCloudSync.swift */,
-				F00000520000000000000052 /* PaywallView.swift */,
-				F00000530000000000000053 /* PlusSettingsView.swift */,
-				F00000550000000000000055 /* RecordDayEditView.swift */,
-				F00000560000000000000056 /* LifeView.swift */,
-				F00000570000000000000057 /* FocusDesignView.swift */,
-				F00000580000000000000058 /* RecordsSyncSettingsView.swift */,
-				F00000490000000000000049 /* RecordsDesignView.swift */,
-				F00000090000000000000009 /* TimerView.swift */,
-				F00000170000000000000017 /* TimerVisualPhase.swift */,
-				F000001A000000000000001A /* UpcomingTimelineView.swift */,
-				F000001F000000000000001F /* UpcomingTimelineEventRow.swift */,
-				F00000200000000000000020 /* TimerActionBar.swift */,
-				62E67BB1AA7F2D01B5263CE7 /* ClockOffEarlyLabel.swift */,
-				F000000D000000000000000D /* TimerDesignView.swift */,
-				F00000110000000000000011 /* TimerStatusViews.swift */,
-				F000000E000000000000000E /* SettingsDesignView.swift */,
-				F000000F000000000000000F /* SettingsDetailDesignViews.swift */,
-				F00000130000000000000013 /* AboutView.swift */,
-				F00000150000000000000015 /* AppRouteDestination.swift */,
-				F00000100000000000000010 /* TabletDesignView.swift */,
-				F00000120000000000000012 /* PhoneLandscapeView.swift */,
+				FA0000010000000000000001 /* Native */,
 				F000000B000000000000000B /* CountdownRules.js */,
 				F000000C000000000000000C /* locales */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
@@ -472,35 +193,15 @@
 			path = WidgetExtension;
 			sourceTree = "<group>";
 		};
-		A30000010000000000000001 /* AppTests */ = {
-			isa = PBXGroup;
-			children = (
-				A20000010000000000000001 /* OffWorkStoreTests.swift */,
-				A20000030000000000000003 /* DebugTimerScenarioTests.swift */,
-				A20000040000000000000004 /* DayOverrideProjectionTests.swift */,
-				A20000050000000000000005 /* DayRecordResolverTests.swift */,
-				A20000060000000000000006 /* RecordJSONTests.swift */,
-				A20000070000000000000007 /* RecordCoordinatorTests.swift */,
-				A20000009000000000000009 /* PlusEntitlementTests.swift */,
-				A2000000A00000000000000A /* RecordsMetricsTests.swift */,
-				A2000000B00000000000000B /* LifeViewCalculatorTests.swift */,
-				A2000000C00000000000000C /* RecordsSyncAdapterTests.swift */,
-				A2000000D00000000000000D /* FocusPlannerTests.swift */,
-				A2000000E00000000000000E /* RecordsPerformanceTests.swift */,
-				A2000000F00000000000000F /* FocusStoreTests.swift */,
-				A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */,
-				A20000080000000000000008 /* ScheduleRangeExpandTests.swift */,
-				A20000110000000000000011 /* NativeLocalizerPluralTests.swift */,
-			);
-			path = AppTests;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		504EC3031FED79650016851F /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "App" */;
+			fileSystemSynchronizedGroups = (
+				FA0000010000000000000001 /* Native */,
+			);
 			buildPhases = (
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
@@ -541,6 +242,9 @@
 		A50000010000000000000001 /* AppTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A90000010000000000000001 /* Build configuration list for PBXNativeTarget "AppTests" */;
+			fileSystemSynchronizedGroups = (
+				FA0000020000000000000002 /* AppTests */,
+			);
 			buildPhases = (
 				A40000010000000000000001 /* Sources */,
 				A40000020000000000000002 /* Frameworks */,
@@ -652,98 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
-				E00000010000000000000001 /* OWCDesignSystem.swift in Sources */,
-				E00000160000000000000016 /* OWCMotion.swift in Sources */,
-				E00000180000000000000018 /* OWCCountdownTextTransition.swift in Sources */,
-				E00000020000000000000002 /* CountdownRules.swift in Sources */,
-				E000003F000000000000003F /* DayOverride.swift in Sources */,
-				E00000400000000000000040 /* DayOverrideProjection.swift in Sources */,
-				E00000410000000000000041 /* CareerPeriod.swift in Sources */,
-				E00000420000000000000042 /* CalendarException.swift in Sources */,
-				E00000430000000000000043 /* DayRecordResolver.swift in Sources */,
-				E00000440000000000000044 /* WorkObservation.swift in Sources */,
-				E00000450000000000000045 /* LifeProfile.swift in Sources */,
-				E00000460000000000000046 /* DailyWorkSummary.swift in Sources */,
-				E00000470000000000000047 /* RecordJSON.swift in Sources */,
-				E00000480000000000000048 /* RecordCoordinator.swift in Sources */,
-				E00000030000000000000003 /* OffWorkStore.swift in Sources */,
-				E00000610000000000000061 /* AppReviewPrompt.swift in Sources */,
-				E00000620000000000000062 /* ScheduleCycleSummary.swift in Sources */,
-				E00000360000000000000036 /* DraggableBrandIcon.swift in Sources */,
-				E00000370000000000000037 /* OWCBrandMark.swift in Sources */,
-				E00000390000000000000039 /* CelebratingBrandMark.swift in Sources */,
-				E000003A000000000000003A /* OnboardingFinalePage.swift in Sources */,
-				E000003B000000000000003B /* OnboardingRemindersPage.swift in Sources */,
-				E000003C000000000000003C /* DebugTimerScenario.swift in Sources */,
-				E000003D000000000000003D /* DebugMenuView.swift in Sources */,
-				E000003E000000000000003E /* LiveActivityService+Debug.swift in Sources */,
-				E00000380000000000000038 /* OnboardingScheduleDetailsView.swift in Sources */,
-				E00000350000000000000035 /* RestDayUpcomingView.swift in Sources */,
-				E00000340000000000000034 /* BiometricGate.swift in Sources */,
-				E00000330000000000000033 /* ShiftPreviewRow.swift in Sources */,
-				E00000320000000000000032 /* OffWorkStore+ShiftPreview.swift in Sources */,
-				E00000310000000000000031 /* ShiftPreviewEntry.swift in Sources */,
-				E00000300000000000000030 /* ShiftSetupTimelineView.swift in Sources */,
-				E000002F000000000000002F /* SettingsSectionCard.swift in Sources */,
-				E000002E000000000000002E /* SettingsSection.swift in Sources */,
-				E000002D000000000000002D /* RelativeDurationFormatter.swift in Sources */,
-				E000002C000000000000002C /* OWCHeroButtonStyle.swift in Sources */,
-				E000002B000000000000002B /* ShiftSetupView.swift in Sources */,
-				E000002A000000000000002A /* OWCSetupTimePickerSheet.swift in Sources */,
-				E00000290000000000000029 /* ShiftStartButton.swift in Sources */,
-				E00000270000000000000027 /* ShiftHeroCard.swift in Sources */,
-				E00000260000000000000026 /* ShiftHeroTimeButton.swift in Sources */,
-				E00000250000000000000025 /* StartArmState.swift in Sources */,
-				E00000240000000000000024 /* SetupTimeField.swift in Sources */,
-				E00000230000000000000023 /* OffWorkStore+Labels.swift in Sources */,
-				E00000040000000000000004 /* NativeLocalizer.swift in Sources */,
-				E00000050000000000000005 /* NotificationService.swift in Sources */,
-				E00000590000000000000059 /* LaunchTrace.swift in Sources */,
-				710000011234567890ABCDEF /* LiveActivityAttributes.swift in Sources */,
-				710000021234567890ABCDEF /* LiveActivityService.swift in Sources */,
-				710000031234567890ABCDEF /* WidgetSnapshotPublisher.swift in Sources */,
 				710000041234567890ABCDEF /* WidgetSnapshot.swift in Sources */,
-				E00000060000000000000006 /* ShareSheet.swift in Sources */,
-				E00000070000000000000007 /* OnboardingView.swift in Sources */,
-				E00000080000000000000008 /* RootView.swift in Sources */,
-				E000004A000000000000004A /* PlusEntitlement.swift in Sources */,
-				E000004B000000000000004B /* RecordsRoute.swift in Sources */,
-				E000005A000000000000005A /* RecordsScale.swift in Sources */,
-				E000005B000000000000005B /* RecordsCanvasViews.swift in Sources */,
-				E000005C000000000000005C /* RecordsAllRecordsView.swift in Sources */,
-				E000005D000000000000005D /* RecordsDataSettingsView.swift in Sources */,
-				E000005E000000000000005E /* RecordsConflictCenter.swift in Sources */,
-				E000005F000000000000005F /* FocusAddTaskSheet.swift in Sources */,
-				E00000600000000000000060 /* FocusPlanningView.swift in Sources */,
-				E000004C000000000000004C /* RecordsMetrics.swift in Sources */,
-				E000004D000000000000004D /* LifeViewCalculator.swift in Sources */,
-				E000004E000000000000004E /* FocusModels.swift in Sources */,
-				E000004F000000000000004F /* FocusPlanner.swift in Sources */,
-				E00000500000000000000050 /* RecordsSyncAdapter.swift in Sources */,
-				E00000510000000000000051 /* RecordsCloudSync.swift in Sources */,
-				E00000520000000000000052 /* PaywallView.swift in Sources */,
-				E00000530000000000000053 /* PlusSettingsView.swift in Sources */,
-				E00000550000000000000055 /* RecordDayEditView.swift in Sources */,
-				E00000560000000000000056 /* LifeView.swift in Sources */,
-				E00000570000000000000057 /* FocusDesignView.swift in Sources */,
-				E00000580000000000000058 /* RecordsSyncSettingsView.swift in Sources */,
-				E00000490000000000000049 /* RecordsDesignView.swift in Sources */,
-				E00000090000000000000009 /* TimerView.swift in Sources */,
-				E00000170000000000000017 /* TimerVisualPhase.swift in Sources */,
-				E00000190000000000000019 /* UpcomingTimelineEvent.swift in Sources */,
-				E000001A000000000000001A /* UpcomingTimelineView.swift in Sources */,
-				E000001F000000000000001F /* UpcomingTimelineEventRow.swift in Sources */,
-				E00000200000000000000020 /* TimerActionBar.swift in Sources */,
-				6BD818DF3D90C7175FC64B96 /* ClockOffEarlyLabel.swift in Sources */,
-				E000000D000000000000000D /* TimerDesignView.swift in Sources */,
-				E000000E000000000000000E /* SettingsDesignView.swift in Sources */,
-				E000000F000000000000000F /* SettingsDetailDesignViews.swift in Sources */,
-				E00000100000000000000010 /* TabletDesignView.swift in Sources */,
-				E00000110000000000000011 /* TimerStatusViews.swift in Sources */,
-				E00000120000000000000012 /* PhoneLandscapeView.swift in Sources */,
-				E00000130000000000000013 /* AboutView.swift in Sources */,
-				E00000140000000000000014 /* OWCSystemBackSwipeBridge.swift in Sources */,
-				E00000150000000000000015 /* AppRouteDestination.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -751,7 +364,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				710000051234567890ABCDEF /* LiveActivityAttributes.swift in Sources */,
 				710000061234567890ABCDEF /* WidgetSnapshot.swift in Sources */,
 				710000071234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */,
 				710000081234567890ABCDEF /* OffWorkWidgets.swift in Sources */,
@@ -762,22 +374,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */,
-				A10000020000000000000002 /* DebugTimerScenarioTests.swift in Sources */,
-				A10000030000000000000003 /* DayOverrideProjectionTests.swift in Sources */,
-				A10000040000000000000004 /* DayRecordResolverTests.swift in Sources */,
-				A10000050000000000000005 /* RecordJSONTests.swift in Sources */,
-				A10000060000000000000006 /* RecordCoordinatorTests.swift in Sources */,
-				A10000009000000000000009 /* PlusEntitlementTests.swift in Sources */,
-				A1000000A00000000000000A /* RecordsMetricsTests.swift in Sources */,
-				A1000000B00000000000000B /* LifeViewCalculatorTests.swift in Sources */,
-				A1000000C00000000000000C /* RecordsSyncAdapterTests.swift in Sources */,
-				A1000000D00000000000000D /* FocusPlannerTests.swift in Sources */,
-				A1000000E00000000000000E /* RecordsPerformanceTests.swift in Sources */,
-				A1000000F00000000000000F /* FocusStoreTests.swift in Sources */,
-				A10000100000000000000010 /* AppReviewAndCycleSummaryTests.swift in Sources */,
-				A10000070000000000000007 /* ScheduleRangeExpandTests.swift in Sources */,
-				A10000110000000000000011 /* NativeLocalizerPluralTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

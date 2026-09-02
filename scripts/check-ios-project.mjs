@@ -165,10 +165,24 @@ if (
 ) {
   fail("Xcode Cloud must install dependencies, generate native rules and validate iOS before building.");
 }
+// App/Native is a synchronized folder, so a file that lands there is compiled
+// without ever appearing in project.pbxproj. Scanning the directory keeps this
+// guard honest; the pbxproj check still covers an explicit reference elsewhere.
+const nativeSources = [];
+const walkNative = (dir) => {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const child = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) walkNative(child);
+    else nativeSources.push(entry.name);
+  }
+};
+walkNative("src-mobile/ios/App/App/Native");
+
 if (
   !appDelegate.includes("import SwiftUI") ||
   !appDelegate.includes("OffWorkCountdownRootView()") ||
-  iosProject.includes("MobileBridgeViewController.swift in Sources")
+  iosProject.includes("MobileBridgeViewController.swift in Sources") ||
+  nativeSources.includes("MobileBridgeViewController.swift")
 ) {
   fail("The release iOS target must boot the SwiftUI root without compiling the archived Capacitor controller.");
 }

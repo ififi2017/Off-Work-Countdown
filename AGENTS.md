@@ -225,9 +225,9 @@ Skills are optional playbooks an agent loads mid-task. They live in
 translation before they fit this repository:
 
 - Its "one runnable check" rule is written for scripts. Here that check belongs
-  in `AppTests/*.swift` as Swift Testing — registered in `project.pbxproj`,
-  since this project has no file-system synchronized groups — or in a vitest
-  file beside the module. Never an `assert`-based `__main__` block.
+  in `AppTests/*.swift` as Swift Testing — dropping the file in the directory
+  is enough, because `AppTests` is a synchronized folder — or in a vitest file
+  beside the module. Never an `assert`-based `__main__` block.
 - Its "at most three short lines" output rule does not govern commit messages
   or pull request bodies. Those are deliberately long enough here to explain
   the user-visible reason for non-obvious platform work.
@@ -380,6 +380,26 @@ Both sign into App Group `group.com.rainif.offworkcountdown.macappstore`, which
 carries the salary-free `WidgetSnapshot` projection and nothing else. That
 `group.` identifier is iOS-only; the Mac App Store build uses the Team ID
 prefix described above.
+
+`App/Native` and `AppTests` are **synchronized folders**
+(`PBXFileSystemSynchronizedRootGroup`, project `objectVersion = 77`): Xcode
+takes their membership from the file system, so a new Swift file is compiled
+as soon as it lands in the directory, and `project.pbxproj` does not change.
+Create files in the subfolder that matches their kind — `Native/DesignSystem`,
+`Native/Models`, `Native/Services`, `Native/Views` — and do not hand-write
+`PBXFileReference` or `PBXBuildFile` entries for anything under them. The
+corollary is that a stray file in those directories now builds: a scratch or
+backup copy left beside real source will be compiled, not ignored.
+
+Everything else in the project is still an explicit reference, and must be
+registered by hand: `AppDelegate.swift`, the localized `InfoPlist.strings`,
+`Assets.xcassets`, `Resources/CountdownRules.js`, the `public/locales` folder
+reference, `WidgetExtension/`, and the two widget sources shared from
+`src-tauri/macos-widget`. One file crosses targets —
+`Native/Models/LiveActivityAttributes.swift` is compiled into the widget as
+well, through the single `PBXFileSystemSynchronizedBuildFileExceptionSet` in
+the project. Anything else that needs to be shared with the widget goes in
+that same exception set.
 
 `npm run check:ios` guards the shipping configuration of that project — bundle
 ids against Universal Purchase, the SwiftUI entry point, iPhone/iPad
