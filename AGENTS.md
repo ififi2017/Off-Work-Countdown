@@ -401,6 +401,23 @@ well, through the single `PBXFileSystemSynchronizedBuildFileExceptionSet` in
 the project. Anything else that needs to be shared with the widget goes in
 that same exception set.
 
+`npm run qa:ios-shots` walks every shell instead of every model. The app has
+three navigation shells — phone portrait, phone landscape and the iPad sidebar
+— sharing most of their views, so a change aimed at one lands in all three and
+no test notices: every test in `AppTests` is model-layer. The sweep launches
+eight surfaces on an iPhone and an iPad, both orientations, through the
+DEBUG-only launch arguments the app already reads, and writes
+`scripts/ios-qa-shots/index.html` — a contact sheet to scan before hand-off. It
+verifies what it asked for rather than that a file appeared: a launch that
+fails, an app that is not running, or a shot that came back in the wrong
+orientation is reported as a miss with the reason, because a screenshot of the
+Home Screen is a perfectly valid PNG. `IOS_QA_SCENES`, `IOS_QA_THEME=both`,
+`IOS_QA_LANGUAGE`, `IOS_QA_IPHONE` / `IOS_QA_IPAD` and `IOS_QA_SKIP_BUILD=1`
+narrow or redirect it; it builds into its own DerivedData so it never fights
+Xcode. Known gap: the `qaOrientation` landscape hook does not currently rotate,
+so those columns report "still portrait" until it is fixed — the app writes the
+reason to `ios.native.qaOrientationError`.
+
 `npm run check:ios` guards the shipping configuration of that project — bundle
 ids against Universal Purchase, the SwiftUI entry point, iPhone/iPad
 orientations, the App Group both targets share, the embedded widget, Live

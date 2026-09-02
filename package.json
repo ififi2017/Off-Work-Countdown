@@ -17,6 +17,7 @@
     "check:build:desktop": "node scripts/check-build-output.mjs desktop",
     "check:build:mobile": "node scripts/check-build-output.mjs mobile",
     "check:ios": "node scripts/check-ios-project.mjs",
+    "qa:ios-shots": "node scripts/ios-qa-shots.mjs",
     "check:version": "node scripts/check-version.mjs",
     "check:lproj": "node scripts/generate-macos-lproj.mjs && git diff --exit-code -- src-tauri/macos-lproj",
     "pack:msix": "node scripts/pack-msix.mjs",
