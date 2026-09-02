@@ -1307,10 +1307,7 @@ func completedShiftStaysOnSettlement() throws {
     let shift = try #require(store.snapshot(at: afterWork))
     #expect(shift.remainingMs <= 0)
     #expect(store.visualPhase(snapshot: shift, at: afterWork) == .completed)
-
-    store.dismissCompletedShift(at: afterWork)
     #expect(store.countdownStarted)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: afterWork), at: afterWork) == .completed)
 }
 
 @MainActor
@@ -1624,10 +1621,6 @@ func clockingOffEarlyLandsOnCompleted() throws {
     #expect(store.isShiftComplete(shift))
     #expect(store.visualPhase(snapshot: shift, at: mondayAtWork) == .completed)
     #expect(store.countdownStarted)
-
-    store.dismissCompletedShift(at: mondayAtWork)
-    #expect(store.countdownStarted)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .completed)
 
     store.undoEarlyClockOff()
     #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .running)
@@ -2065,7 +2058,6 @@ func manualStartClearsLeftoverEarlyClockOff() throws {
     store.endMinutes = 17 * 60
     store.startCountdown(at: mondayAtWork)
     store.clockOffEarly(at: mondayAtWork)
-    store.dismissCompletedShift(at: mondayAtWork)
 
     store.scheduleMode = .off
     store.startCountdown(at: mondayAtWork)
@@ -3039,4 +3031,117 @@ private func utcDay(_ year: Int, _ month: Int, _ day: Int) -> Date {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(secondsFromGMT: 0)!
     return calendar.date(from: DateComponents(year: year, month: month, day: day))!
+}
+
+@MainActor
+@Test("Records income counts completed base-schedule days and excludes today's live pay")
+func recordsIncomeUsesCompletedScheduledDays() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.plus.debugSetAuthorized(true)
+    store.recordsTimeZoneIdentifier = "UTC"
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = false
+    store.salaryEnabled = true
+    store.salaryType = .monthly
+    store.salaryAmount = "22000"
+    store.monthlyWorkingDays = 22
+
+    let calendar = store.recordsCalendar
+    // Wednesday, halfway through the shift. Monday and Tuesday are done.
+    let midShift = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 9, day: 2, hour: 13
+    )))
+    let shift = try #require(store.snapshot(at: midShift))
+    let daily = try #require(shift.dailySalary)
+    let monday = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 8, day: 31
+    )))
+    let tuesday = try #require(calendar.date(byAdding: .day, value: 1, to: monday))
+    let wednesday = try #require(calendar.date(byAdding: .day, value: 2, to: monday))
+    let segment = NativeShiftSegment(
+        startAtMs: monday.addingTimeInterval(9 * 3_600).timeIntervalSince1970 * 1_000,
+        endAtMs: monday.addingTimeInterval(17 * 3_600).timeIntervalSince1970 * 1_000
+    )
+    let days = [
+        DayResolution(
+            dayKey: "2026-08-31",
+            shiftAnchorDate: monday,
+            layer: .schedule,
+            periodID: nil,
+            snapshotID: nil,
+            isScheduledWorkday: true,
+            segments: [segment],
+            baseScheduleIsWorkday: true,
+            baseScheduleSegments: [segment]
+        ),
+        // A leave override still earns one base-schedule day by product rule.
+        DayResolution(
+            dayKey: "2026-09-01",
+            shiftAnchorDate: tuesday,
+            layer: .override,
+            periodID: nil,
+            snapshotID: nil,
+            isScheduledWorkday: false,
+            segments: [],
+            baseScheduleIsWorkday: true,
+            baseScheduleSegments: []
+        ),
+        DayResolution(
+            dayKey: "2026-09-02",
+            shiftAnchorDate: wednesday,
+            layer: .schedule,
+            periodID: nil,
+            snapshotID: nil,
+            isScheduledWorkday: true,
+            segments: [],
+            baseScheduleIsWorkday: true,
+            baseScheduleSegments: []
+        ),
+    ]
+    let recordedCell = RecordsDayCell(
+        dayKey: "2026-08-31",
+        date: monday,
+        appearance: .recorded,
+        workMs: 8 * 3_600_000,
+        overtimeMs: 0,
+        breakMs: 0,
+        freeMs: 0,
+        observationCount: 1,
+        isToday: false,
+        isFuture: false,
+        isProjection: false,
+        hasConflict: false
+    )
+    let headline = try #require(store.recordsHeadline(
+        cells: [recordedCell],
+        days: days,
+        now: midShift
+    ))
+    let income = try #require(headline.estimatedIncome)
+
+    #expect(abs(income - 2 * daily) < 0.001)
+    let timerRow = try #require(store.periodSummary("week", asOf: midShift, snapshot: shift))
+    #expect((timerRow.earnings ?? 0) > income)
+
+    store.hideEarnings = true
+    #expect(store.moneyText(headline.estimatedIncome) == "••••")
+}
+
+@MainActor
+@Test("Records income stays absent when salary is off")
+func recordsIncomeAbsentWithoutSalary() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.salaryEnabled = false
+    #expect(store.recordsIncome(completedWorkdays: 2) == nil)
 }

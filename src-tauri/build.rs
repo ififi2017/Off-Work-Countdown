@@ -79,10 +79,48 @@ fn build_native_mini_timer() {
     }
 
     if include_widget_bridge {
-        // 取值必须与 scripts/build-macos-widget.sh 的同名变量保持一致：那边决定
+        // 取值必须与 scripts/macos-app-group-identifier.mjs 保持一致：那边决定
         // entitlements 怎么生成，这边决定宿主往哪个容器写快照，两者对不上的表现
         // 是运行期写入失败而不是构建失败。拼错的值在这里就炸掉，别等到 cargo
         // 跑完之后再由 beforeBundleCommand 拦下。
+        //
+        // iOS 式 `group.*` 在有 Team ID 时加上前缀。Mac App Store 拒收未加前缀的
+        // `group.com.rainif…`（409 Invalid code signing entitlements）。
+        fn macos_app_group_identifier() -> String {
+            const DEFAULT: &str = "group.com.rainif.offworkcountdown.macappstore";
+            let identifier =
+                std::env::var("OWC_APP_GROUP_IDENTIFIER").unwrap_or_else(|_| DEFAULT.to_string());
+            if identifier.is_empty()
+                || identifier
+                    .chars()
+                    .any(|c| !c.is_ascii_alphanumeric() && c != '.' && c != '-')
+            {
+                panic!("Invalid OWC_APP_GROUP_IDENTIFIER: {identifier}");
+            }
+            let team_id = std::env::var("OWC_APPLE_TEAM_ID").unwrap_or_default();
+            let mut resolved = identifier;
+            if resolved.starts_with("group.") && !team_id.is_empty() {
+                resolved = format!("{team_id}.{resolved}");
+            }
+            let signing_mode =
+                std::env::var("OWC_WIDGET_SIGNING_MODE").unwrap_or_else(|_| "adhoc".to_string());
+            if signing_mode == "automatic" || signing_mode == "distribution" {
+                if team_id.is_empty() {
+                    panic!(
+                        "OWC_APPLE_TEAM_ID is required for OWC_WIDGET_SIGNING_MODE={signing_mode}"
+                    );
+                }
+                if !resolved.starts_with(&format!("{team_id}.")) {
+                    panic!(
+                        "OWC_APP_GROUP_IDENTIFIER ({resolved}) must start with {team_id}. \
+                         Mac App Store rejects iOS-style group.* identifiers (409)."
+                    );
+                }
+            }
+            resolved
+        }
+        let app_group_identifier = macos_app_group_identifier();
+        println!("cargo:rustc-env=OWC_APP_GROUP_IDENTIFIER={app_group_identifier}");
         let widget_storage_mode = match env::var("OWC_WIDGET_SIGNING_MODE").as_deref() {
             // distribution 是提交 App Store 用的分发签名，与 automatic 一样走真实的
             // App Group 容器，区别只在签名身份与描述文件（见 build-macos-widget.sh）。
@@ -135,6 +173,7 @@ fn build_native_mini_timer() {
     println!("cargo:rerun-if-changed={}", source.display());
     println!("cargo:rerun-if-changed={}", widget_bridge_source.display());
     println!("cargo:rerun-if-env-changed=OWC_APP_GROUP_IDENTIFIER");
+    println!("cargo:rerun-if-env-changed=OWC_APPLE_TEAM_ID");
     println!("cargo:rerun-if-env-changed=OWC_WIDGET_SIGNING_MODE");
     println!("cargo:rerun-if-env-changed=MACOSX_DEPLOYMENT_TARGET");
     println!("cargo:rustc-link-search=native={}", out_dir.display());

@@ -7,11 +7,13 @@
 它管理两类 Apple 资源：
 
 - App 级本地化：名称、副标题、隐私政策 URL、隐私选择 URL。
-- 版本级本地化：推广文本、描述、关键词、支持 URL、营销 URL、版本更新说明和截图。
+- 版本级本地化：推广文本、描述、关键词、支持 URL、营销 URL、版本更新说明、截图和
+  App Preview。
 
 这个项目的 iOS 与 Mac App Store 使用同一个 Universal Purchase App 记录。名称、副标题和
-隐私 URL 是共享的 App 级信息；改它们时要同时检查 macOS 商品页。描述、关键词、版本更新
-说明和截图则跟随配置指定的 `IOS` 版本。
+隐私 URL 是共享的 App 级信息；改它们时要同时检查 macOS 商品页。任一端版本在审核时
+App Info 会锁定，`asc:sync` 会跳过这些字段，不要为了换截图去碰名称。描述、关键词、
+版本更新说明、截图和 Preview 跟随配置指定的 `IOS` 版本；可编辑的草稿仍可同步媒体。
 
 ## 一次性准备 API Key
 
@@ -66,11 +68,14 @@ cp app-store-connect/ios.example.json app-store-connect/ios/3.1.8.json
       "subtitle": "……",
       "description": "……",
       "keywords": "关键词一,关键词二",
-      "supportUrl": "https://offwork.icu/zh-CN/about",
+      "supportUrl": "https://doneat.app/zh-CN/about",
       "whatsNew": "……",
       "screenshots": {
-        "APP_IPHONE_65": ["zh-CN-iphone-01-main.png"],
-        "APP_IPAD_PRO_3GEN_129": ["zh-CN-ipad-01-main.png"]
+        "APP_IPHONE_67": ["zh-CN-iphone-01-timer.png"],
+        "APP_IPAD_PRO_3GEN_129": ["zh-CN-ipad-01-timer.png"]
+      },
+      "previews": {
+        "IPHONE_67": ["zh-review-886x1920.mov"]
       }
     }
   }
@@ -111,10 +116,10 @@ npm run shots:ios:validate
 npm run asc:check -- --config app-store-connect/ios/3.1.8.json
 
 # 2. 读取远端并显示字段级差异；仍然不会写入
-npm run asc:plan -- --config app-store-connect/ios/3.1.8.json --include-screenshots
+npm run asc:plan -- --config app-store-connect/ios/3.1.8.json --include-screenshots --include-previews
 
 # 3. 确认预览后同步。交互式输入 "IOS 3.1.8" 才会继续
-npm run asc:sync -- --config app-store-connect/ios/3.1.8.json --include-screenshots
+npm run asc:sync -- --config app-store-connect/ios/3.1.8.json --include-screenshots --include-previews
 ```
 
 自动化或已经人工确认过输出时可以加 `--yes` 跳过交互确认。`--apply` 会在配置允许时创建
@@ -203,15 +208,25 @@ npm run asc:iap:sync -- --yes
 `reviewSubmissionItems` 或旧的 `appStoreVersionSubmissions` 端点，因此 `asc:sync` 完成后
 版本仍然留在 App Store Connect，必须人工完成当前的两步流程：
 
-1. 选择正确的 build，点击 **Add for Review**，把 3.1.7 加入草稿审核提交。
+1. 选择正确的 build，点击 **Add for Review**，把当前 iOS 草稿（现为 3.1.8）加入审核提交。
 2. 在 Draft Submission 中重新检查所有项目，再点击 **Submit for Review**。
 
 Apple 明确说明第一步不会把内容送进审核队列，只有第二步才会真正送审。导出、plan 和 check
 都是远端只读；sync 会写元数据和截图，但不会执行上述任一步。
 
-当前成品尺寸 `1284×2778` 属于 6.5 英寸槽位，所以配置使用 `APP_IPHONE_65`；
-`2064×2752` 的 iPad 成品使用 `APP_IPAD_PRO_3GEN_129`。不要仅凭设备营销名称改 API 枚举，
-尺寸与槽位要一起核对。
+当前成品尺寸 `1320×2868` 属于 6.9 英寸显示，但 App Store Connect API 仍把这个槽叫
+`APP_IPHONE_67`（没有 `APP_IPHONE_69`）。`2064×2752` 的 iPad 成品使用
+`APP_IPAD_PRO_3GEN_129`。App Preview 的对应枚举是 `IPHONE_67`，竖版必须是
+`886×1920`，并且必须带音轨——无声片用静音立体声 AAC 即可，缺音轨会被拒。不要仅凭
+设备营销名称改 API 枚举，尺寸与槽位要一起核对。
+
+截图和 Preview 只写进 `en-US`、`zh-Hans`、`zh-Hant`。其余商店语言不要上传媒体，
+让它们继承英文。17 个 locale 各传一套既慢又容易留下过期槽。
+
+替换截图后，删掉该 locale 上不再使用的 display type（例如旧的 `APP_IPHONE_65`）。
+Connect 控制台会优先展示闲置的旧槽，于是简体看起来还是旧图、繁体已经是新图。
+脚本只同步配置里出现的槽，不会自动清掉配置外的远端集；发现错槽时用
+`--replace-screenshots` 重建目标槽，并在 Connect 里删掉多余的那一组。
 
 ## 范围与失败处理
 

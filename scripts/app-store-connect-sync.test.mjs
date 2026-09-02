@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import {
+  addPreviewPlan,
   addScreenshotPlan,
   buildMetadataPlan,
   createLocalizationOrUseExisting,
@@ -82,6 +83,16 @@ describe("App Store Connect metadata plan", () => {
     ]);
   });
 
+  it("skips locked App Info when the version itself is still editable", () => {
+    const current = snapshot();
+    current.appInfo = resource("appInfos", "info", { state: "READY_FOR_DISTRIBUTION" });
+    current.appInfoLocalizations.get("en-US").attributes.subtitle = "Old";
+    const plan = buildMetadataPlan(config({ subtitle: "Changed" }), current);
+    expect(plan.blockers).toEqual([]);
+    expect(plan.changes.some((action) => action.type.includes("AppInfo"))).toBe(false);
+    expect(plan.unchanged.join(" ")).toMatch(/live listing/u);
+  });
+
   it("blocks non-promotional edits on a live version", () => {
     const plan = buildMetadataPlan(
       config({ description: "Changed" }),
@@ -149,6 +160,43 @@ describe("App Store Connect metadata plan", () => {
     });
     expect(permitted.changes).toContainEqual(
       expect.objectContaining({ type: "replaceScreenshotSet", destructive: true })
+    );
+  });
+
+  it("blocks a different preview set unless replacement is explicit", () => {
+    const nextConfig = config({ previews: { IPHONE_67: ["new.mov"] } });
+    const current = snapshot();
+    current.previewSets = new Map([
+      [
+        "en-US\u0000IPHONE_67",
+        {
+          previews: [
+            {
+              attributes: {
+                fileName: "old.mov",
+                sourceFileChecksum: "old",
+                assetDeliveryState: { state: "COMPLETE" },
+              },
+            },
+          ],
+        },
+      ],
+    ]);
+    const assets = new Map([["en-US\u0000IPHONE_67", [{ fileName: "new.mov", checksum: "new" }]]]);
+    const guarded = buildMetadataPlan(nextConfig, current);
+    addPreviewPlan(nextConfig, current, assets, guarded, {
+      includePreviews: true,
+      replacePreviews: false,
+    });
+    expect(guarded.blockers.join(" ")).toMatch(/--replace-previews/u);
+
+    const permitted = buildMetadataPlan(nextConfig, current);
+    addPreviewPlan(nextConfig, current, assets, permitted, {
+      includePreviews: true,
+      replacePreviews: true,
+    });
+    expect(permitted.changes).toContainEqual(
+      expect.objectContaining({ type: "replacePreviewSet", destructive: true })
     );
   });
 });

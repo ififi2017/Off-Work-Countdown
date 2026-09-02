@@ -8,8 +8,6 @@ struct RecordsPeriodMetrics: Equatable, Sendable {
     var shareOfAwake: Double
     var longestStreak: Int
     var ownAwakeMs: Int64
-    var estimatedIncome: Double
-    var usesCurrentSalary: Bool
 }
 
 /// Facts captured when the user extends a shift. `plannedEndAtMs` was added
@@ -26,9 +24,6 @@ enum RecordsMetrics {
         days: [DayResolution],
         observations: [WorkObservation],
         sleepHours: Double,
-        dailySalary: Double,
-        salaryEnabled: Bool,
-        asOf: Date,
         calendar: Calendar
     ) -> RecordsPeriodMetrics {
         let workDays = days.filter { $0.isScheduledWorkday && !$0.segments.isEmpty }
@@ -64,11 +59,6 @@ enum RecordsMetrics {
         let shareOfDay = totalDayMs == 0 ? 0 : Double(workDuration) / Double(totalDayMs)
         let shareOfAwake = awakeMs == 0 ? 0 : Double(workDuration) / Double(awakeMs)
         let ownAwake = max(0, awakeMs - workDuration)
-        let today = calendar.startOfDay(for: asOf)
-        let completedScheduledDays = days.filter { day in
-            guard day.baseScheduleIsWorkday else { return false }
-            return civilDayStart(for: day, calendar: calendar) < today
-        }
         return RecordsPeriodMetrics(
             workdayCount: workDays.count,
             workDurationMs: workDuration,
@@ -76,9 +66,7 @@ enum RecordsMetrics {
             shareOfDay: shareOfDay,
             shareOfAwake: min(1, max(0, shareOfAwake)),
             longestStreak: longestStreak(in: days),
-            ownAwakeMs: ownAwake,
-            estimatedIncome: salaryEnabled ? Double(completedScheduledDays.count) * dailySalary : 0,
-            usesCurrentSalary: salaryEnabled
+            ownAwakeMs: ownAwake
         )
     }
 

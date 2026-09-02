@@ -9,6 +9,14 @@ import {
   type ShiftTimeline,
 } from "./countdown";
 import {
+  emptyDesktopStats,
+  mergeWoodfishSeed,
+  normalizeDesktopStats,
+  recordAttendanceDay,
+  setWoodfishDay,
+  type DesktopStatsState,
+} from "./desktop-stats";
+import {
   buildShiftReminders,
   shiftRemindersRevision,
   type ReminderMilestoneMessages,
@@ -36,6 +44,7 @@ const IS_MAC_APP_STORE_BUILD =
 
 export const DESKTOP_STORE_PATH = "desktop-state.json";
 export const DESKTOP_COUNTDOWN_KEY = "countdown";
+export const DESKTOP_STATS_KEY = "stats";
 /** 改名说明只对「更新前就已经有快照」的桌面用户弹一次。 */
 export const DESKTOP_BRAND_RENAME_NOTICE_KEY = "brandRenameNoticeSeen";
 
@@ -435,6 +444,81 @@ export async function markBrandRenameNoticeSeen(): Promise<void> {
   const store = await getDesktopStore();
   if (!store) return;
   await store.set(DESKTOP_BRAND_RENAME_NOTICE_KEY, true);
+}
+
+export async function readDesktopStats(): Promise<DesktopStatsState> {
+  const store = await getDesktopStore();
+  if (!store) return emptyDesktopStats();
+  const persisted = await store.get<unknown>(DESKTOP_STATS_KEY);
+  return normalizeDesktopStats(persisted);
+}
+
+let statsWriteChain: Promise<void> = Promise.resolve();
+
+async function writeDesktopStats(stats: DesktopStatsState): Promise<void> {
+  const store = await getDesktopStore();
+  if (!store) return;
+  await store.set(DESKTOP_STATS_KEY, stats);
+}
+
+function enqueueDesktopStatsUpdate(
+  mutator: (stats: DesktopStatsState) => DesktopStatsState
+): Promise<DesktopStatsState> {
+  const pending = statsWriteChain.then(async () => {
+    const current = await readDesktopStats();
+    const next = mutator(current);
+    await writeDesktopStats(next);
+    return next;
+  });
+  statsWriteChain = pending.then(
+    () => undefined,
+    () => undefined
+  );
+  return pending;
+}
+
+export async function subscribeToDesktopStats(
+  listener: (stats: DesktopStatsState) => void
+): Promise<() => void> {
+  const store = await getDesktopStore();
+  if (!store) return () => {};
+  return store.onKeyChange<unknown>(DESKTOP_STATS_KEY, (value) =>
+    listener(normalizeDesktopStats(value))
+  );
+}
+
+export async function recordDesktopAttendance(input: {
+  date: string;
+  plannedMs: number;
+  overtimeMs: number;
+}): Promise<void> {
+  if (!IS_DESKTOP_BUILD) return;
+  await enqueueDesktopStatsUpdate((stats) => recordAttendanceDay(stats, input));
+}
+
+export async function setDesktopWoodfishCount(
+  date: string,
+  count: number
+): Promise<number> {
+  if (!IS_DESKTOP_BUILD) return count;
+  const next = await enqueueDesktopStatsUpdate((stats) =>
+    setWoodfishDay(stats, date, count)
+  );
+  return next.days[date]?.woodfishCount ?? count;
+}
+
+export async function seedDesktopWoodfishFromLocalStorage(): Promise<void> {
+  if (!IS_DESKTOP_BUILD || typeof window === "undefined") return;
+  try {
+    const date = localStorage.getItem("woodfishCountDate");
+    const count = Number(localStorage.getItem("woodfishCount")) || 0;
+    if (!date || count <= 0) return;
+    await enqueueDesktopStatsUpdate((stats) =>
+      mergeWoodfishSeed(stats, date, count)
+    );
+  } catch {
+    // 旧的当日计数读不到就从零开始，不影响倒计时。
+  }
 }
 
 /**

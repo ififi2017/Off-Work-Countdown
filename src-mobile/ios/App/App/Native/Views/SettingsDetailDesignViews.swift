@@ -629,7 +629,7 @@ struct SalaryDesignView: View {
                 Text(store.t("moneyEarned"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
-                Text(store.hideEarnings ? "••••" : store.formatMoney(preview.earnedNow))
+                Text(store.moneyText(preview.earnedNow))
                     .font(.largeTitle.bold().monospacedDigit())
                     .tracking(-0.5)
             }
@@ -644,12 +644,12 @@ struct SalaryDesignView: View {
                 OWCSectionHeader(title: store.t("derivedFromThis"))
                 OWCGroupCard {
                     OWCRow(title: store.t("perWorkday")) {
-                        Text(store.hideEarnings ? "••••" : store.formatMoney(preview.dailySalary))
+                        Text(store.moneyText(preview.dailySalary))
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
                     OWCRow(title: store.t("perEffectiveHour"), isLast: true) {
-                        Text(store.hideEarnings ? "••••" : store.formatMoney(preview.hourlySalary))
+                        Text(store.moneyText(preview.hourlySalary))
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }

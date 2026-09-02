@@ -71,7 +71,7 @@ struct LunchBreakDesignView: View {
                                     }
                                     if store.presentationSalaryEnabled {
                                         OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: true) {
-                                            Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
+                                            Text(store.moneyText(earned))
                                                 .font(.body.weight(.semibold).monospacedDigit())
                                         }
                                     }
@@ -125,7 +125,7 @@ struct LunchBreakDesignView: View {
 
     private var breakEnd: Date { snapshot.activeBreakEndDate ?? now }
     private var breakRemainingMs: Double { snapshot.heroRemainingMs(at: now) }
-    private var earned: Double? { snapshot.dailySalary.map { $0 * snapshot.payRatio } }
+    private var earned: Double? { snapshot.earnedSoFar }
 }
 struct OvertimeDesignView: View {
     // No semantic style goes this large; scale the display size instead.
@@ -202,7 +202,7 @@ struct OvertimeDesignView: View {
                                     }
                                     if store.presentationSalaryEnabled {
                                         OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: true) {
-                                            Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
+                                            Text(store.moneyText(earned))
                                                 .font(.body.weight(.semibold).monospacedDigit())
                                         }
                                     }
@@ -254,7 +254,7 @@ struct OvertimeDesignView: View {
         }
     }
 
-    private var earned: Double? { snapshot.dailySalary.map { $0 * snapshot.payRatio } }
+    private var earned: Double? { snapshot.earnedSoFar }
 }
 
 private func detailNote(_ text: String) -> some View {
@@ -389,7 +389,7 @@ struct RestDayDesignView: View {
         guard store.presentationSalaryEnabled else {
             return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
         }
-        let money = store.hideEarnings ? "••••" : store.formatMoney(summary.earnings)
+        let money = store.moneyText(summary.earnings)
         return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours)) · \(money)"
     }
 }
@@ -535,7 +535,7 @@ struct CompletedShiftDesignView: View {
         OWCGroupCard {
             if store.presentationSalaryEnabled {
                 OWCRow(icon: "banknote", title: store.t("moneyEarned")) {
-                    Text(store.hideEarnings ? "••••" : store.formatMoney(earned))
+                    Text(store.moneyText(earned))
                         .font(.body.weight(.semibold).monospacedDigit())
                 }
             }
@@ -625,7 +625,7 @@ struct CompletedShiftDesignView: View {
     private var finishedSnapshot: NativeShiftSnapshot { store.clockOffSnapshot(for: snapshot) }
     private var workedDurationMs: Double { endedEarly ? finishedSnapshot.elapsedMs : snapshot.durationMs }
     private var completedProgress: Double { endedEarly ? finishedSnapshot.progress : 100 }
-    private var earned: Double? { finishedSnapshot.dailySalary.map { $0 * finishedSnapshot.payRatio } }
+    private var earned: Double? { finishedSnapshot.earnedSoFar }
     private var nextShiftRange: String {
         guard let start = snapshot.nextShiftStartDate, let end = snapshot.nextShiftEndDate else { return "—" }
         return "\(store.formatTime(start)) – \(store.formatTime(end))"
@@ -643,7 +643,7 @@ struct CompletedShiftDesignView: View {
         guard store.presentationSalaryEnabled else {
             return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
         }
-        let money = store.hideEarnings ? "••••" : store.formatMoney(summary.earnings)
+        let money = store.moneyText(summary.earnings)
         return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours)) · \(money)"
     }
 }

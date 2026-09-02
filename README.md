@@ -1,13 +1,15 @@
 # Off Work Countdown
 
 Off Work Countdown is a privacy-friendly countdown for the end of your workday,
-available on the Web and as a lightweight Tauri desktop app. Set your schedule
-once, then keep the remaining time, progress and estimated earnings at a glance.
+available on the Web, as a lightweight Tauri desktop app, and as a native
+iPhone and iPad app on the App Store. Set your schedule once, then keep the
+remaining time, progress and estimated earnings at a glance.
 
 [中文版 README](README_CN.md)
 
 [![Official site](https://img.shields.io/badge/DoneAt-doneat.app-0f172a)](https://doneat.app)
 [![Web App](https://img.shields.io/badge/Web-open%20app-ff6b35)](https://off.rainif.com/en)
+[![App Store](https://img.shields.io/badge/App%20Store-iPhone%20%26%20iPad-0d96f6?logo=apple&logoColor=white)](https://apps.apple.com/us/app/off-work-countdown/id6802803318)
 [![Desktop Release](https://img.shields.io/github/v/release/ififi2017/Off-Work-Countdown?filter=desktop-v*&label=desktop)](https://github.com/ififi2017/Off-Work-Countdown/releases/latest)
 [![License](https://img.shields.io/github/license/ififi2017/Off-Work-Countdown)](LICENSE)
 
@@ -24,9 +26,22 @@ once, then keep the remaining time, progress and estimated earnings at a glance.
   </picture>
 </p>
 
+<p align="center">
+  <img src="readme_image/ios/en-iphone-timer.jpg" width="240" alt="iPhone timer: remaining time, progress and what comes next">
+  <img src="readme_image/ios/en-iphone-widgets.jpg" width="240" alt="Home Screen widgets and Dynamic Island keeping the countdown in view">
+</p>
+<p align="center">
+  <img src="readme_image/ios/en-ipad-timer.jpg" width="380" alt="iPad layout with sidebar, countdown and today's details">
+</p>
+
 ## Use Off Work Countdown
 
 - **Web:** [open the app](https://off.rainif.com/en) — no installation required.
+- **iPhone and iPad:**
+  [get it from the App Store](https://apps.apple.com/us/app/off-work-countdown/id6802803318)
+  — **free**, listed as **DoneAt**. Native SwiftUI, with Home Screen and Lock
+  Screen widgets, Live Activities and Dynamic Island. It needs **iOS 26** or
+  **iPadOS 26**.
 - **Desktop:** [open the download page](https://doneat.app/en/download) —
   macOS Apple Silicon / Intel and Windows x64 / ARM64 are available. The macOS
   build requires macOS 11.3 (Big Sur) or later.
@@ -35,12 +50,14 @@ once, then keep the remaining time, progress and estimated earnings at a glance.
   updates itself and installs without the SmartScreen prompt.
 - **macOS, from the Mac App Store:**
   [get it from the App Store](https://apps.apple.com/us/app/off-work-countdown/id6802803318)
-  — **US$0.99**, and the only paid build. It installs in one click, updates
-  through the App Store, and adds a countdown widget the free build does not
-  have. Buying it is a way to support the project rather than a requirement:
-  the DMGs above are built from this same repository, stay free, and are not
-  going away.
+  — also **free**, on the same listing as iPhone and iPad. It installs in one
+  click, updates through the App Store, and adds a countdown widget the GitHub
+  DMGs do not have. Those DMGs are built from this same repository, stay free,
+  and are not going away.
 - **Release files:** [latest GitHub Release](https://github.com/ififi2017/Off-Work-Countdown/releases/latest).
+
+The iOS app is native SwiftUI and shares the same schedule rules as Web and
+Desktop. iPhone, iPad and Mac share one App Store listing.
 
 The desktop app adds a menu-bar countdown on macOS, a compact always-on-top
 mini timer on Windows, native notifications, launch at login, a global shortcut
@@ -76,9 +93,9 @@ rather than through the in-app updater.
 The [Mac App Store build](https://apps.apple.com/us/app/off-work-countdown/id6802803318)
 skips all of this: Apple signs it, so it installs in one click with no
 Gatekeeper detour, and it carries a countdown widget. It needs **macOS 13
-(Ventura) or later** and costs US$0.99 — on macOS 14 (Sonoma) or later the
-widget can sit on the desktop, on macOS 13 it lives in Notification Center.
-The steps below are for the free DMGs, which stay available either way.
+(Ventura) or later**. On macOS 14 (Sonoma) or later the widget can sit on the
+desktop; on macOS 13 it lives in Notification Center. The steps below are for
+the GitHub DMGs, which stay available either way.
 
 The DMGs require **macOS 11.3 (Big Sur) or later**, on Apple Silicon or Intel.
 
@@ -116,6 +133,8 @@ steps below are for the direct installers.
 - Share your countdown as a mood-based image, or as a link that opens on the same shift
 - Native desktop notifications, launch at login and a global show/hide shortcut
 - macOS menu-bar countdown and native glass mini timer; Windows compact mini timer
+- Native iOS app on iPhone and iPad: Home Screen and Lock Screen widgets, Live Activities and Dynamic Island
+- iPhone landscape and iPad-optimized layouts
 - In-app desktop updates from signed GitHub Release artifacts, with a mirror fallback when GitHub is unreachable
 - Schedule reference pages: 996, 9 to 5, 9 to 6 and night shift
 - Progressive Web App (PWA) support for offline use
@@ -123,10 +142,10 @@ steps below are for the direct installers.
 - Responsive design for various devices
 - 19 languages (i18n)
 
-Your hours and salary are stored only in your browser or desktop app. They are
-never sent to a server, and nothing is synchronised between devices. Optional
-Web analytics record only allowlisted aggregate event counts—no salary, schedule,
-cookies, IP addresses or device identifiers.
+Your hours and salary are stored only in your browser, desktop app, iPhone or
+iPad. They are never sent to a server, and nothing is synchronised between
+devices. Optional Web analytics record only allowlisted aggregate event
+counts—no salary, schedule, cookies, IP addresses or device identifiers.
 
 ## Technologies Used
 
@@ -139,6 +158,7 @@ cookies, IP addresses or device identifiers.
 - i18next
 - Tauri 2 and Rust
 - AppKit for the native macOS mini timer
+- SwiftUI for the native iOS app
 
 ## Getting Started
 
@@ -283,8 +303,10 @@ This app supports Progressive Web App features, allowing you to install it on yo
 2. Look for the install prompt in the address bar or menu.
 3. Follow the prompts to install the app on your device.
 
-On iPhone and iPad, use the Share button in Safari and choose "Add to Home
-Screen"; on macOS Safari, choose "Add to Dock".
+On iPhone and iPad the [native App Store app](https://apps.apple.com/us/app/off-work-countdown/id6802803318)
+is the one with widgets and Live Activities. The PWA path is still there if you
+prefer it: use the Share button in Safari and choose "Add to Home Screen". On
+macOS Safari, choose "Add to Dock".
 
 The PWA is still supported, but desktop users who want a persistent menu-bar or
 mini-timer experience, native reminders, launch at login and automatic updates

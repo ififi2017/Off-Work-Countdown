@@ -1,6 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { zonedWeekStartMs, zonedYearStartMs } from "./countdown";
-import { startOfWeek, startOfYear, countWorkdays, countScheduledWorkdays, summarize } from "./summary";
+import {
+  completedWorkdayIncome,
+  countScheduledWorkdays,
+  countWorkdays,
+  earningsForRatio,
+  startOfWeek,
+  startOfYear,
+  summarize,
+} from "./summary";
 
 // 2026-07-03 是周五，2026-07-04 周六，2026-07-05 周日
 const at = (y: number, m: number, d: number, h = 0) =>
@@ -65,6 +73,20 @@ describe("countWorkdays", () => {
     // 多数北半球时区在三月切换夏令时；按毫秒累加会漏掉或重复一天
     expect(countWorkdays(at(2026, 3, 1), at(2026, 4, 1), [0, 1, 2, 3, 4, 5, 6]))
       .toBe(31);
+  });
+});
+
+describe("earnings", () => {
+  it("keeps live pay-ratio derivation in the shared rules", () => {
+    expect(earningsForRatio(1_000, 0.5)).toBe(500);
+    expect(earningsForRatio(1_000, 1.25)).toBe(1_250);
+    expect(earningsForRatio(null, 1)).toBeNull();
+  });
+
+  it("counts only whole completed workdays for Records", () => {
+    expect(completedWorkdayIncome(2, 1_000)).toBe(2_000);
+    expect(completedWorkdayIncome(2.9, 1_000)).toBe(2_000);
+    expect(completedWorkdayIncome(2, null)).toBeNull();
   });
 });
 

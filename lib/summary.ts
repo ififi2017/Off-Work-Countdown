@@ -22,6 +22,29 @@ export interface PeriodSummary {
   earnings: number | null;
 }
 
+/** Apply one salary ratio in the shared rules layer for every native surface. */
+export function earningsForRatio(
+  dailySalary: number | null,
+  payRatio: number
+): number | null {
+  if (dailySalary === null) return null;
+  return Math.max(0, payRatio) * dailySalary;
+}
+
+/**
+ * Records income deliberately counts only completed scheduled workdays.
+ * The current day and overtime belong to the timer's live summary instead.
+ */
+export function completedWorkdayIncome(
+  completedWorkdays: number,
+  dailySalary: number | null
+): number | null {
+  const days = Number.isFinite(completedWorkdays)
+    ? Math.max(0, Math.trunc(completedWorkdays))
+    : 0;
+  return earningsForRatio(dailySalary, days);
+}
+
 /** 一周的起点固定为周一（ISO 8601），与界面上工作日选择器的排列一致。 */
 export function startOfWeek(date: Date): Date {
   const d = new Date(date);
@@ -176,9 +199,6 @@ export function summarize(params: {
   return {
     days,
     hours,
-    earnings:
-      dailySalary === null
-        ? null
-        : (completed + earningsFraction) * dailySalary,
+    earnings: earningsForRatio(dailySalary, completed + earningsFraction),
   };
 }

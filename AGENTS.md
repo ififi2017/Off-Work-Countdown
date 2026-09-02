@@ -67,6 +67,38 @@ in URLs, analytics payloads or share metadata.
 
 ## UI rules
 
+These first six are the default for every target. The platform-specific rules
+below them are exceptions that were argued for, not licence to restyle.
+
+- **Default to restraint.** New UI should first look unremarkable for its
+  platform, then earn any emphasis it gets. Visual weight is paid for by
+  everything else on the screen, so nothing receives it without a reason.
+- **Sizing and spacing are judgements, not a spec.** Decide them from the
+  surface type, the information density, the platform convention, how often the
+  control is used and where it sits in the hierarchy. Do not carry one set of
+  numbers across surfaces, and do not enlarge something because it is
+  important.
+- **Secondary entry points stay out of the visual centre.** Settings, toggles,
+  tool buttons, legends, info buttons, expand/collapse and source labels are
+  support. They must not compete with the countdown, the calendar or a screen's
+  main conclusion.
+- **Use the ordinary metaphor for an ordinary function.** Prefer SF Symbols on
+  iOS/macOS, the existing `lucide-react` set on Web and Desktop, or the
+  industry-standard symbol — never invent an icon for differentiation. A custom
+  mark still has to keep the common silhouette, proportion and meaning.
+- **Express hierarchy with the cheap tools first:** position, grouping, a
+  slight colour shift, a divider, state feedback, and — on pointer devices —
+  hover and tooltips. Exaggerated sizes, heavy colour blocks, large radii,
+  thick borders, strong shadows, decorative gradients and marketing-page
+  layouts are not hierarchy.
+- **Compare against the rest of the screen before calling it done.** If the new
+  element looks out of place, too large, too heavy, or thins out the
+  information density around it, pull it back rather than waiting for review.
+
+These are defaults for new work, not a reason to reopen the design systems
+already in place: the Desktop 420-450 px window, the iOS `OWCDesign` 22 pt card
+and 14 pt control radii, and the shared orange accent are settled conventions.
+
 - The Desktop main window is a compact tool, not the Web page squeezed into a
   small viewport. Preserve its 420-450 px sizing range, single-line title,
   fixed footer and settings subpage.
@@ -219,6 +251,60 @@ drives `.github/workflows/release-desktop.yml`, which builds macOS Apple
 Silicon, macOS Intel, Windows x64 and Windows ARM64 into a Draft Release.
 Inspect the assets, `latest.json` and `latest-cn.json` before publishing.
 
+### Mac App Store (Tauri + WidgetKit)
+
+The store `.app` shares an App Store Connect record and bundle id with iOS
+(`com.rainif.offworkcountdown.macappstore`) through Universal Purchase. It is
+still a Tauri shell plus a nested WidgetKit `.appex`, not an iOS build.
+`npm run tauri:build:macappstore` already passes `--no-default-features`;
+omitting that flag produces a GitHub-channel binary even with the store config.
+
+**App Group.** iOS signs `group.com.rainif.offworkcountdown.macappstore`. macOS
+App Store validation rejects that string (409). With `OWC_APPLE_TEAM_ID` set,
+`build.rs` and `scripts/build-macos-widget.sh` prefix it automatically, so the
+signed value is `3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore`.
+Do not copy the iOS entitlements file onto the Mac host. Ad-hoc local packages
+strip App Groups entirely (`src-tauri/macappstore/README.md`).
+
+**Profiles.** Widget `distribution` signing needs an explicit Mac App Store
+`.provisionprofile`. The host profile can be omitted: `embed-macos-profile.mjs`
+then searches `~/Library/Developer/Xcode/UserData/Provisioning Profiles`.
+Current owner copies:
+
+| Role | File |
+|---|---|
+| Host | `~/Downloads/Off_Work_Countdown_macOS_App_Store.provisionprofile` |
+| Widget | `~/Downloads/Off_Work_Countdown_Widget_App_Store.provisionprofile` |
+
+Do not use iOS `.mobileprovision` files. The app is signed with **Apple
+Distribution**; look up the identity with
+`security find-identity -v -p codesigning`. The `.pkg` is signed separately
+with **Mac Installer Distribution** (`3rd Party Mac Developer Installer` in
+the keychain). `pack:macappstore` must not re-sign the `.app`.
+
+```bash
+OWC_WIDGET_SIGNING_MODE=distribution \
+OWC_APPLE_TEAM_ID=3GSK5B9S3T \
+OWC_WIDGET_PROVISION_PROFILE="$HOME/Downloads/Off_Work_Countdown_Widget_App_Store.provisionprofile" \
+OWC_MACOS_PROVISION_PROFILE="$HOME/Downloads/Off_Work_Countdown_macOS_App_Store.provisionprofile" \
+APPLE_SIGNING_IDENTITY="Apple Distribution: … (3GSK5B9S3T)" \
+npm run tauri:build:macappstore
+
+npm run pack:macappstore
+```
+
+After signing, the host entitlement must be the Team ID-prefixed group, not
+`group.com.rainif…`:
+
+```bash
+codesign -d --entitlements - --xml DoneAt.app \
+  | plutil -extract 'com.apple.security.application-groups' xml1 -o - -
+```
+
+`embed-macos-profile.mjs` and `pack-macappstore.sh` reject an iOS-style
+`group.*` locally. Past upload rejects and the profile/App Group pitfalls are
+in `docs/PLAN-MSSTORE.md` 9.11–9.12.
+
 ### iOS (native SwiftUI)
 
 **Generate the rules bundle first.** It is not committed, so a fresh clone has
@@ -245,7 +331,9 @@ Universal Purchase:
 | Widget extension | `OffWorkCountdownWidgetsExtension` | `…macappstore.widget` |
 
 Both sign into App Group `group.com.rainif.offworkcountdown.macappstore`, which
-carries the salary-free `WidgetSnapshot` projection and nothing else.
+carries the salary-free `WidgetSnapshot` projection and nothing else. That
+`group.` identifier is iOS-only; the Mac App Store build uses the Team ID
+prefix described above.
 
 `npm run check:ios` guards the shipping configuration of that project — bundle
 ids against Universal Purchase, the SwiftUI entry point, iPhone/iPad
@@ -326,6 +414,23 @@ wrong number on a screen rather than as a build failure.
   tag-driven workflow for it. Universal Purchase means iOS and the Mac App
   Store build share one record and one bundle id, so an iOS submission is a
   release of that shared product, not an independent one.
+- Store listing media is generated by `scripts/marketing-shots/` and synced
+  with `npm run asc:sync` (`docs/APP-STORE-CONNECT-SYNC.md`). Upload
+  screenshots and App Previews only for `en-US`, `zh-Hans` and `zh-Hant`; the
+  other App Store locales inherit English. Do not upload all 17 locales.
+- 1320×2868 iPhone shots use API display type `APP_IPHONE_67` — there is no
+  `APP_IPHONE_69`. After replacing shots, delete leftover sets on unused
+  display types such as `APP_IPHONE_65`. The Connect UI prefers those leftovers,
+  so one locale can look stale while another already shows the new set.
+- App Info (name, subtitle, privacy URLs) is shared with the Mac listing. When
+  either platform version is in review, App Info is locked; `asc:sync` skips
+  those fields. Version-level screenshots and previews on an editable iOS
+  version still apply.
+- Compose official Apple frames the same way as the site DeviceHero: the frame
+  PNG sizes the box, the capture sits in the hole, the frame stacks on top.
+  Do not punch bezels or redraw the Dynamic Island. App Previews are
+  `IPHONE_67` 886×1920 portrait and must include an audio track (silent stereo
+  is fine).
 - Normal work uses `feature branch -> pull request -> main`. Do not maintain a
   long-lived Desktop branch.
 - Pull request titles must be Conventional Commits: `type(scope): summary`,
@@ -350,9 +455,11 @@ wrong number on a screen rather than as a build failure.
   copy whose URLs were not rewritten, silently disables the fallback.
 - Never commit updater private keys, passwords, signing certificates or local
   environment files. Only the updater public key belongs in the repository.
-- macOS uses ad-hoc signing because the project deliberately does not purchase
-  platform code-signing certificates. Installation documentation must explain
-  Gatekeeper and Windows SmartScreen accurately.
+- GitHub-channel macOS builds use ad-hoc signing because the project
+  deliberately does not purchase Developer ID certificates. Installation
+  documentation must explain Gatekeeper and Windows SmartScreen accurately.
+  The Mac App Store channel is the exception: it uses Apple Distribution and
+  Mac Installer Distribution, as described above.
 
 ## Repository hygiene
 

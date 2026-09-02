@@ -154,6 +154,14 @@ struct RecordsHeadlineView: View {
                         metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), icon: "briefcase.fill", helpKey: "recordsMetricWorkHelp")
                         metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)), icon: "clock.fill", helpKey: "recordsMetricOvertimeHelp")
                         metric("recordsFreeAwakeShort", store.formatRelativeDuration(Double(summary.wakingFreeMs)), icon: "sun.max.fill", helpKey: "recordsMetricFreeHelp")
+                        if let income = summary.estimatedIncome {
+                            metric(
+                                "recordsIncomeCurrentSalary",
+                                store.moneyText(income),
+                                icon: "banknote.fill",
+                                helpKey: nil
+                            )
+                        }
                     }
 
                     Divider()
@@ -192,7 +200,7 @@ struct RecordsHeadlineView: View {
         }
     }
 
-    private func metric(_ titleKey: String, _ value: String, icon: String, helpKey: String) -> some View {
+    private func metric(_ titleKey: String, _ value: String, icon: String, helpKey: String?) -> some View {
         let title = store.t(titleKey)
         return VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 8) {
@@ -210,7 +218,7 @@ struct RecordsHeadlineView: View {
                     .layoutPriority(1)
                 Spacer(minLength: 0)
             }
-            .padding(.trailing, 32)
+            .padding(.trailing, helpKey == nil ? 0 : 32)
             Text(value)
                 .font(.title3.weight(.semibold).monospacedDigit())
                 .foregroundStyle(OWCDesign.primary)
@@ -222,13 +230,15 @@ struct RecordsHeadlineView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .overlay(alignment: .topTrailing) {
-            RecordsMetricHelpButton(
-                title: title,
-                message: store.t(helpKey),
-                selection: $selectedHelp
-            )
-            .padding(.top, 4)
-            .padding(.trailing, 2)
+            if let helpKey {
+                RecordsMetricHelpButton(
+                    title: title,
+                    message: store.t(helpKey),
+                    selection: $selectedHelp
+                )
+                .padding(.top, 4)
+                .padding(.trailing, 2)
+            }
         }
         .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
     }
@@ -1716,6 +1726,13 @@ struct RecordsYearSelectionCard: View {
                         metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), helpKey: "recordsMetricWorkHelp")
                         metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)), helpKey: "recordsMetricOvertimeHelp")
                         metric("recordsFreeAwakeShort", store.formatRelativeDuration(Double(summary.wakingFreeMs)), helpKey: "recordsMetricFreeHelp")
+                        if let income = summary.estimatedIncome {
+                            metric(
+                                "recordsIncomeCurrentSalary",
+                                store.moneyText(income),
+                                helpKey: nil
+                            )
+                        }
                     }
                 }
                 .padding(16)
@@ -1733,7 +1750,7 @@ struct RecordsYearSelectionCard: View {
         return store.formatRecordsMonthYear(store.recordsCalendar.date(from: parts) ?? .now)
     }
 
-    private func metric(_ titleKey: String, _ value: String, helpKey: String) -> some View {
+    private func metric(_ titleKey: String, _ value: String, helpKey: String?) -> some View {
         let label = store.t(titleKey)
         return VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 4) {
@@ -1743,7 +1760,7 @@ struct RecordsYearSelectionCard: View {
                     .lineLimit(2)
                 Spacer(minLength: 0)
             }
-            .padding(.trailing, 32)
+            .padding(.trailing, helpKey == nil ? 0 : 32)
             Text(value)
                 .font(.title3.weight(.semibold).monospacedDigit())
                 .foregroundStyle(OWCDesign.primary)
@@ -1755,13 +1772,15 @@ struct RecordsYearSelectionCard: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .overlay(alignment: .topTrailing) {
-            RecordsMetricHelpButton(
-                title: label,
-                message: store.t(helpKey),
-                selection: $selectedHelp
-            )
-            .padding(.top, 4)
-            .padding(.trailing, 2)
+            if let helpKey {
+                RecordsMetricHelpButton(
+                    title: label,
+                    message: store.t(helpKey),
+                    selection: $selectedHelp
+                )
+                .padding(.top, 4)
+                .padding(.trailing, 2)
+            }
         }
         .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
     }

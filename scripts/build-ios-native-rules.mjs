@@ -258,6 +258,7 @@ export function createIOSNativeRulesBundle() {
         input.monthlyWorkingDays,
         input.annualBonusMonths || 0
       );
+      const payRatio = countdown.calculateTimelinePayRatio(shift, input.nowMs);
       return JSON.stringify({
         segments: shift.segments,
         startAtMs: countdown.getShiftStartAtMs(shift),
@@ -269,7 +270,7 @@ export function createIOSNativeRulesBundle() {
         elapsedMs: countdown.getShiftElapsedMs(shift, input.nowMs),
         remainingMs: countdown.getShiftRemainingMs(shift, input.nowMs),
         progress: countdown.calculateTimelineProgress(shift, input.nowMs),
-        payRatio: countdown.calculateTimelinePayRatio(shift, input.nowMs),
+        payRatio,
         activeBreakEndAtMs: countdown.getActiveBreakEndAtMs(shift, input.nowMs),
         isWorkday: countdown.isScheduledWorkday(
           new Date(countdown.getShiftStartAtMs(shift)),
@@ -284,6 +285,7 @@ export function createIOSNativeRulesBundle() {
           timeZone: inputTimeZone(input),
         })?.getTime() ?? null,
         dailySalary,
+        earnedSoFar: summary.earningsForRatio(dailySalary, payRatio),
         nextShiftStartAtMs: nextShift
           ? countdown.getShiftStartAtMs(nextShift)
           : null,
@@ -368,15 +370,23 @@ export function createIOSNativeRulesBundle() {
       const timeZone = typeof input.timeZoneIdentifier === "string" && input.timeZoneIdentifier.trim()
         ? input.timeZoneIdentifier.trim()
         : undefined;
-      const periodStart = timeZone
-        ? new Date(
-          input.period === "year"
-            ? countdown.zonedYearStartMs(input.asOfMs, timeZone)
-            : countdown.zonedWeekStartMs(input.asOfMs, timeZone)
-        )
-        : input.period === "year"
-          ? summary.startOfYear(asOf)
-          : summary.startOfWeek(asOf);
+      // An explicit window start wins over the period name. The Records tab
+      // draws week and month grids with the locale's own first weekday, so the
+      // window it summarises is not always the ISO week the period name
+      // derives; it passes the boundary it already drew instead.
+      // Number(null) is 0, a valid epoch, so a null must not reach it.
+      const explicitStartMs = input.periodStartMs == null ? NaN : Number(input.periodStartMs);
+      const periodStart = Number.isFinite(explicitStartMs)
+        ? new Date(explicitStartMs)
+        : timeZone
+          ? new Date(
+            input.period === "year"
+              ? countdown.zonedYearStartMs(input.asOfMs, timeZone)
+              : countdown.zonedWeekStartMs(input.asOfMs, timeZone)
+          )
+          : input.period === "year"
+            ? summary.startOfYear(asOf)
+            : summary.startOfWeek(asOf);
       return JSON.stringify(summary.summarize({
         periodStart,
         asOf,
@@ -391,6 +401,22 @@ export function createIOSNativeRulesBundle() {
         todayPayRatio: input.todayPayRatio,
         timeZone,
       }));
+    },
+
+    recordsIncome(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      const dailySalary = countdown.getDailySalary(
+        String(input.salaryAmount ?? ""),
+        input.salaryType,
+        input.monthlyWorkingDays,
+        input.annualBonusMonths || 0
+      );
+      return JSON.stringify({
+        earnings: summary.completedWorkdayIncome(
+          input.completedWorkdays,
+          dailySalary
+        ),
+      });
     },
 
     reminders(inputJSON) {

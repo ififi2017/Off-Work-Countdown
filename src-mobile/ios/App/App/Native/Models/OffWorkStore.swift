@@ -210,7 +210,6 @@ final class OffWorkStore {
         static let earlyOffAtMs = "ios.native.earlyOffAtMs"
         static let earlyOffShiftEndAtMs = "ios.native.earlyOffShiftEndAtMs"
         static let earlyOffSnapshot = "ios.native.earlyOffSnapshot"
-        static let dismissedCompletedEndAtMs = "ios.native.dismissedCompletedEndAtMs"
         static let legacyForceToday = "ios.native.forceToday"
         static let forcedWorkdayDate = "ios.native.forcedWorkdayDate"
         static let startMinutes = "ios.native.startMinutes"
@@ -459,9 +458,6 @@ final class OffWorkStore {
     /// 007 no longer dismisses settlement back to a configuration page. The
     /// value is still read on upgrade so an old mark can be cleared, and is
     /// never written from new UI.
-    var dismissedCompletedEndAtMs: Double? {
-        didSet { defaults.set(dismissedCompletedEndAtMs, forKey: Key.dismissedCompletedEndAtMs) }
-    }
 
     /// Clocked in before the planned start. Bound to the settlement seam of
     /// that shift so a leftover 08:00 does not become tomorrow's start.
@@ -785,7 +781,6 @@ final class OffWorkStore {
         earlyStartAtMs = defaults.object(forKey: Key.earlyStartAtMs) as? Double
         earlyStartUntilMs = defaults.object(forKey: Key.earlyStartUntilMs) as? Double
         todayOverride = Self.decodeTodayOverride(from: defaults)
-        dismissedCompletedEndAtMs = defaults.object(forKey: Key.dismissedCompletedEndAtMs) as? Double
         activeCountdownEndAtMs = defaults.object(forKey: Key.activeCountdownEndAtMs) as? Double
         reviewPromptState = defaults.data(forKey: Key.appReviewPrompt)
             .flatMap { try? JSONDecoder().decode(AppReviewPromptState.self, from: $0) }
@@ -1798,6 +1793,17 @@ final class OffWorkStore {
         localizer.string(key, locale: languageCode, values: values)
     }
 
+    /// Plural-aware lookup. `count` picks the grammatical variant and, unless
+    /// the caller supplies its own, also fills `{{count}}` with the
+    /// locale-formatted number. Keeping both on one argument is the point:
+    /// when a call site formatted the number itself and left the lookup
+    /// countless, German rendered a single recorded day as "1 Arbeitstage".
+    func t(_ key: String, count: Int, values: [String: String] = [:]) -> String {
+        var merged = values
+        if merged["count"] == nil { merged["count"] = formatCount(count) }
+        return localizer.string(key, locale: languageCode, count: count, values: merged)
+    }
+
     func strings(_ key: String) -> [String] {
         localizer.strings(key, locale: languageCode)
     }
@@ -2356,11 +2362,6 @@ final class OffWorkStore {
         }
     }
 
-    /// Starts a manual session (unscheduled or a rest-day override).
-    func applySettings(force: Bool = false, at date: Date = .now) {
-        startCountdown(force: force, at: date)
-    }
-
     func startCountdown(force: Bool = false, at date: Date = .now) {
         if scheduleMode == .off {
             // Manual "start" is a new session. A leftover early-off from a
@@ -2368,7 +2369,6 @@ final class OffWorkStore {
             // this button to settlement: ended-early never runs.
             clearEarlyClockOffRecord()
             clearEarlyClockInRecord()
-            dismissedCompletedEndAtMs = nil
         }
         commitDisplayedHours()
         let wasRunning = countdownStarted
@@ -2391,7 +2391,6 @@ final class OffWorkStore {
             // record so settlement stays on this run.
         } else {
             clearEarlyClockOffRecord()
-            dismissedCompletedEndAtMs = nil
         }
         recordActiveCountdownBoundary(at: date)
         writeObservation(.countdownStarted, at: date, eventID: UUID())
@@ -2451,7 +2450,6 @@ final class OffWorkStore {
         earlyOffAtMs = date.timeIntervalSince1970 * 1_000
         earlyOffShiftEndAtMs = shift.endAtMs
         earlyOffSnapshot = shift
-        dismissedCompletedEndAtMs = nil
         clockOffConfirmPending = false
         timelineExpanded = false
         // Leave a forced rest-day run in place until settlement: cancelling
@@ -2473,7 +2471,6 @@ final class OffWorkStore {
         let revokedCompletionAtMs = earlyOffAtMs
         clearEarlyClockOffRecord()
         revokeCountdownCompletion(endAtMs: revokedCompletionAtMs)
-        dismissedCompletedEndAtMs = nil
         recordActiveCountdownBoundary()
     }
 
@@ -2532,12 +2529,6 @@ final class OffWorkStore {
         return shift.endAtMs > earlyOffAtMs && shift.startAtMs < earlyOffShiftEndAtMs
     }
 
-    /// Settlement is not dismissible. Kept as a no-op so older tests and
-    /// call sites compile while they are rewritten.
-    func dismissCompletedShift(at date: Date = .now) {
-        _ = date
-    }
-
     /// Copy for the undo banner. Present while an early clock-off still covers
     /// the current shift; once the planned end has passed there is nothing left
     /// to undo.
@@ -2585,11 +2576,6 @@ final class OffWorkStore {
         guard snapshot.endAtMs > date.timeIntervalSince1970 * 1_000 else { return false }
         guard !isEndedEarly(snapshot) else { return false }
         return (snapshot.isWorkday || isForcedWorkday(snapshot)) && !isShiftComplete(snapshot)
-    }
-
-    func isDismissedCompleted(_ shift: NativeShiftSnapshot) -> Bool {
-        guard let dismissedCompletedEndAtMs else { return false }
-        return shift.endAtMs == dismissedCompletedEndAtMs
     }
 
     var publishesLiveSurfaces: Bool {
@@ -2675,7 +2661,6 @@ final class OffWorkStore {
         timelineExpanded = false
         forcedWorkdayDate = nil
         activeCountdownEndAtMs = nil
-        dismissedCompletedEndAtMs = nil
         draftStartMinutes = nil
         draftEndMinutes = nil
         clearOvertime()
@@ -2737,10 +2722,6 @@ final class OffWorkStore {
 
             if forcedWorkdayDate != nil, !isForcedWorkday(current) {
                 forcedWorkdayDate = nil
-                changed = true
-            }
-            if dismissedCompletedEndAtMs != nil, !isDismissedCompleted(current) {
-                dismissedCompletedEndAtMs = nil
                 changed = true
             }
             if earlyOffAtMs != nil, !isEndedEarly(current) {
@@ -2854,8 +2835,6 @@ final class OffWorkStore {
         }
     }
 
-    var canRemoveLastWorkday: Bool { workdays.count <= 1 }
-
     var nativeSchedule: NativeWorkSchedule { nativeSchedule(at: .now) }
 
     func nativeSchedule(at date: Date, using source: RulesScheduleSource = .effective) -> NativeWorkSchedule {
@@ -2959,7 +2938,6 @@ final class OffWorkStore {
         // Overtime after an early clock-off is "I wasn't done".
         clearEarlyClockOffRecord()
         revokeCountdownCompletion(endAtMs: revokedCompletionAtMs)
-        dismissedCompletedEndAtMs = nil
         // Declaring overtime creates a new completion boundary. If the normal
         // clock-off already celebrated during this warm session, let the new
         // boundary celebrate as well — including a retrospective declaration
@@ -3056,7 +3034,6 @@ final class OffWorkStore {
         clearEarlyClockOffRecord()
         clearEarlyClockInRecord()
         clearOvertime()
-        dismissedCompletedEndAtMs = nil
     }
 
     private func captureSchedule(untilMs: Double) -> TodayScheduleOverride {
@@ -3209,13 +3186,6 @@ final class OffWorkStore {
             return max(0, next - nowMs)
         }
         return snapshot.heroRemainingMs(at: date)
-    }
-
-    func countdownToClockInDate(snapshot: NativeShiftSnapshot, at date: Date) -> Date? {
-        if snapshot.isWorkday || isForcedWorkday(snapshot), snapshot.isBeforeStart(at: date) {
-            return snapshot.startDate
-        }
-        return snapshot.nextShiftStartDate
     }
 
     /// Elapsed progress toward the next clock-in, supplied by the generated
@@ -3474,6 +3444,17 @@ final class OffWorkStore {
         return value.formatted(.number.precision(.fractionLength(2)).locale(locale))
     }
 
+    /// The only way money should reach the screen.
+    ///
+    /// `hideEarnings` is one switch for the whole product, so every amount has
+    /// to consult it. Spelling the mask out at each call site meant the next
+    /// screen to show an amount simply forgot — which is how the Records tab
+    /// shipped an income figure the eye toggle could not hide. Ask for the
+    /// text here and the mask cannot be left out.
+    func moneyText(_ value: Double?) -> String {
+        hideEarnings ? "••••" : formatMoney(value)
+    }
+
     func formatPercent(_ value: Double, fractionDigits: Int = 1) -> String {
         (value / 100).formatted(
             .percent.precision(.fractionLength(fractionDigits)).locale(locale)
@@ -3640,6 +3621,13 @@ final class OffWorkStore {
             return dayAllocation(day, now: now)
         }
         let combined = TimeAllocationCalculator.combining(shares)
+        let today = recordsCalendar.startOfDay(for: now)
+        let completedScheduledWorkdays = days.filter { day in
+            guard day.baseScheduleIsWorkday else { return false }
+            let date = RecordJSON.date(fromDayKey: day.dayKey, calendar: recordsCalendar)
+                ?? day.shiftAnchorDate
+            return recordsCalendar.startOfDay(for: date) < today
+        }.count
         let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
             ? "recordsSleepFromHealth"
             : "recordsSleepEstimated"
@@ -3648,6 +3636,10 @@ final class OffWorkStore {
             regularWorkMs: combined.workMs,
             overtimeMs: combined.overtimeMs,
             wakingFreeMs: combined.wakingFreeMs,
+            estimatedIncome: recordsIncome(
+                completedWorkdays: completedScheduledWorkdays,
+                at: now
+            ),
             allocation: combined,
             sleepSourceKey: sleepKey
         )
@@ -4334,46 +4326,33 @@ final class OffWorkStore {
         )
     }
 
-    func recordsChartWindow(for period: RecordsChartPeriod, now: Date = .now) -> (Date, Date) {
-        // The grid calendar, not the plain records calendar: "this week" has to
-        // start on the same weekday as the month grid's first column. With
-        // `Calendar(identifier:)` the week ran Sunday–Saturday while a German
-        // month grid started on Monday, so the two views described different
-        // weeks. Month and year boundaries do not depend on `firstWeekday`.
-        let calendar = recordsGridCalendar
-        let today = calendar.startOfDay(for: now)
-        switch period {
-        case .week:
-            let start = calendar.date(
-                from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
-            ) ?? today
-            let end = calendar.date(byAdding: .day, value: 6, to: start) ?? today
-            return (start, end)
-        case .month:
-            let start = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today
-            let end = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: start) ?? today
-            return (start, end)
-        case .year:
-            let year = calendar.component(.year, from: today)
-            let start = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) ?? today
-            let end = calendar.date(from: DateComponents(year: year, month: 12, day: 31)) ?? today
-            return (start, end)
-        }
-    }
-
-    func recordsMetrics(for days: [DayResolution], asOf: Date = .now) -> RecordsPeriodMetrics {
+    func recordsMetrics(for days: [DayResolution]) -> RecordsPeriodMetrics {
         let sleep = records.state.lifeProfile?.averageSleepHours ?? 8
-        let daily = salaryEnabled ? (snapshot(at: asOf)?.dailySalary ?? 0) : 0
         let items = days.flatMap { observations(on: $0.shiftAnchorDate) }
         return RecordsMetrics.summarize(
             days: days,
             observations: items,
             sleepHours: sleep,
-            dailySalary: daily,
-            salaryEnabled: salaryEnabled,
-            asOf: asOf,
             calendar: recordsCalendar
         )
+    }
+
+    /// Records and the timer intentionally answer different questions. Records
+    /// counts completed base-schedule workdays; the bundle applies the current
+    /// salary while excluding today's partial shift and declared overtime.
+    func recordsIncome(completedWorkdays: Int, at date: Date = .now) -> Double? {
+        guard presentationSalaryEnabled else { return nil }
+        do {
+            let result = try CountdownRules.shared.recordsIncome(input: .init(
+                completedWorkdays: completedWorkdays,
+                rules: rulesInput(at: date)
+            ))
+            if lastRulesError != nil { lastRulesError = nil }
+            return result.earnings
+        } catch {
+            lastRulesError = error.localizedDescription
+            return nil
+        }
     }
 
     /// Gates an action behind Plus, presenting the paywall over whatever the
@@ -5511,7 +5490,16 @@ final class OffWorkStore {
         return components.url!
     }
 
-    func periodSummary(_ period: String, asOf: Date, snapshot: NativeShiftSnapshot) -> NativePeriodSummary? {
+    /// - Parameter periodStartMs: An explicit window start. Callers that drew
+    ///   their own boundary — the Records tab, whose grids follow the locale's
+    ///   first weekday — pass it so the summary covers the window on screen.
+    ///   Omit it and the rules bundle derives the window from `period`.
+    func periodSummary(
+        _ period: String,
+        asOf: Date,
+        snapshot: NativeShiftSnapshot,
+        periodStartMs: Double? = nil
+    ) -> NativePeriodSummary? {
         guard effectiveScheduleMode(at: asOf) != .off else { return nil }
         var summaryWorkdays = effectiveWorkdays(at: asOf)
         if isForcedWorkday(snapshot) {
@@ -5520,6 +5508,7 @@ final class OffWorkStore {
         do {
             let result = try CountdownRules.shared.summarize(input: .init(
                 period: period,
+                periodStartMs: periodStartMs,
                 asOfMs: asOf.timeIntervalSince1970 * 1_000,
                 workdays: summaryWorkdays.sorted(),
                 schedule: nativeSchedule(at: asOf),
