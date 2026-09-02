@@ -189,6 +189,52 @@ and 14 pt control radii, and the shared orange accent are settled conventions.
 - Do not assign the highest-tier model available in the environment to a
   sub-agent. Choose a lower-tier model appropriate to the subtask's complexity.
 
+## Skills
+
+Skills are optional playbooks an agent loads mid-task. They live in
+`.agents/skills/` with symlinks in `.claude/skills/`, are recorded in
+`skills-lock.json`, and are installed with
+`npx skills add <owner>/<repo> --agent claude-code`.
+
+- **All three paths are excluded from git**, so skills exist on one machine
+  only. CI, Xcode Cloud and a fresh clone have none of them. Never write a rule
+  in this file, in a plan, or in a script that depends on a skill being
+  installed.
+- **This file wins.** A skill advises; it does not amend the boundaries above.
+  The checks a change owes before hand-off, the ban on porting schedule,
+  summary or salary rules into Swift, the 19-locale requirement and the release
+  gates are not negotiable by a loaded skill.
+- Skills run with full agent permissions. Read a `SKILL.md` before its first
+  use, and install with `--agent claude-code` rather than `--all` — `--all`
+  expands to every supported agent and writes an untracked `agent/skills/`
+  copy into the repository root.
+
+| Skill | Reach for it when |
+|---|---|
+| `write-swift` | Writing or migrating Swift: value types, Swift 6 concurrency and data-race safety, `some` vs `any`, ARC, Swift Testing |
+| `swiftui-expert-skill` | Writing or refactoring SwiftUI, and for Instruments `.trace` analysis of hangs and view-update storms. Its default caution about Liquid Glass does not apply here — this app already adopts it |
+| `swiftui-pro` | A structured review pass over SwiftUI: deprecated API, view invalidation, data flow, navigation, HIG, accessibility, performance, hygiene |
+| `animate` | Building a new animation, in the order that decides whether it feels right. `OWCMotion` already holds this app's curves and durations — extend it rather than inlining new numbers |
+| `review-animations` | Judging the motion in a diff |
+| `improve-animations` | Auditing motion across a target and producing a plan; read-only, it does not apply fixes. Pairs with plan 001 |
+| `emil-design-eng` | UI polish and component-level design judgement, alongside the UI rules above |
+| `grill-me` | Pressure-testing a plan or a design decision before it is written down. Plans 007 and 008 were locked that way |
+| `ponytail` (+ `-review`, `-audit`, `-debt`, `-gain`, `-help`) | Cutting over-engineering: YAGNI, stdlib before custom code, native before dependencies, deletion before addition |
+
+`ponytail` is a persistent mode, and three of its rules need a local
+translation before they fit this repository:
+
+- Its "one runnable check" rule is written for scripts. Here that check belongs
+  in `AppTests/*.swift` as Swift Testing — registered in `project.pbxproj`,
+  since this project has no file-system synchronized groups — or in a vitest
+  file beside the module. Never an `assert`-based `__main__` block.
+- Its "at most three short lines" output rule does not govern commit messages
+  or pull request bodies. Those are deliberately long enough here to explain
+  the user-visible reason for non-obvious platform work.
+- A `ponytail:` comment marking a deliberate shortcut must name the ceiling and
+  the upgrade path in plain language, so it still reads correctly to someone
+  who has never heard of the skill.
+
 ## Development commands
 
 Shared across every target:
