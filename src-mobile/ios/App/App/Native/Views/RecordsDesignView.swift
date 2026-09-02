@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct RecordsDesignView: View {
     let store: OffWorkStore
     let showsSidebarButton: Bool
+    let usesOwnHeader: Bool
     let showSidebar: () -> Void
     @State private var scale: RecordsScale
     @State private var anchor = Date()
@@ -24,23 +25,30 @@ struct RecordsDesignView: View {
     @State private var confirmsQuarantine = false
     @State private var loadGeneration = 0
     @State private var showsCompactRootBar = false
+    @State private var canvasWidth: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     private var isExpanded: Bool { expanded[scale] == true }
     private var canExpand: Bool { scale == .year || scale == .life }
+    /// Draw the title and its controls inside the page instead of borrowing a
+    /// navigation bar. True in phone portrait, and on iPad, where the shell
+    /// keeps its bar hidden for every root so switching tabs cannot resize the
+    /// safe area under a cross-fade.
     private var usesPhonePortraitHeader: Bool {
-        horizontalSizeClass == .compact && verticalSizeClass != .compact
+        usesOwnHeader || (horizontalSizeClass == .compact && verticalSizeClass != .compact)
     }
 
     init(
         store: OffWorkStore,
         showsSidebarButton: Bool = false,
+        usesOwnHeader: Bool = false,
         showSidebar: @escaping () -> Void = {}
     ) {
         self.store = store
         self.showsSidebarButton = showsSidebarButton
+        self.usesOwnHeader = usesOwnHeader
         self.showSidebar = showSidebar
 #if DEBUG
         let requested = RecordsScale(
@@ -139,42 +147,26 @@ struct RecordsDesignView: View {
 
                 RecordsScalePicker(store: store, scale: scaleBinding)
 
-                visualization(expandedPresentation: false)
-
-                if scale == .week || scale == .month {
-                    RecordsDaySummaryCard(
-                        store: store,
-                        detail: detail,
-                        locked: selectedIsLocked,
-                        onUnlock: { store.paywallSheet = .charts },
-                        onOpenDay: openSelectedDay
-                    )
-                } else if scale == .year, let selectedYearMonth {
-                    RecordsYearSelectionCard(
-                        store: store,
-                        month: selectedYearMonth,
-                        cells: yearSelectionCells,
-                        summary: yearSelectionSummary
-                    )
-                }
-                // The life scale is behind Plus, so this conclusion is too. A
-                // locked life view must not print a projected number under a
-                // locked canvas.
-                if scale == .life, store.plus.isAuthorized, store.records.state.lifeProfile != nil {
-                    RecordsLifeAllocationCard(store: store, model: lifeModel)
-                }
-                if shouldOfferLifeSetup {
-                    lifeSetupCard
-                }
-                // One lock at a time. When the chosen date is already behind
-                // the free window, the totals lock underneath it repeats the
-                // same sentence in the same card and says nothing new.
-                if scale != .life, hasActualRecords, !selectedIsLocked {
-                    RecordsHeadlineView(
-                        store: store,
-                        summary: summary,
-                        onUnlock: { store.paywallSheet = .charts }
-                    )
+                // Side by side once there is room for both. An iPad in
+                // landscape stretched a single column across the whole pane,
+                // so a month grid and a summary card each ran the width of the
+                // screen. The chart keeps the larger share; the conclusions
+                // are text and stop at a readable measure.
+                //
+                // Measured rather than `ViewThatFits`: that asks each
+                // candidate for its ideal width, and the legend row inside the
+                // chart card reports the width it would like as one unbroken
+                // line, which is enough to reject the two-column layout on a
+                // pane that has ample room for it.
+                if canvasWidth >= Self.twoColumnMinimum {
+                    HStack(alignment: .top, spacing: 14) {
+                        visualization(expandedPresentation: false)
+                        conclusionColumn
+                            .frame(maxWidth: Self.conclusionColumnWidth, alignment: .top)
+                    }
+                } else {
+                    visualization(expandedPresentation: false)
+                    conclusionColumn
                 }
             }
             .padding(.horizontal, OWCDesign.pageInset)
@@ -183,6 +175,52 @@ struct RecordsDesignView: View {
         }
         .scrollIndicators(.hidden)
         .coordinateSpace(.named("recordsRootScroll"))
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { canvasWidth = $0 }
+    }
+
+    /// Measured, not guessed from the device: the same iPad is wide with the
+    /// sidebar hidden and narrow with it shown, and an iPhone in landscape
+    /// borrows this page at about 680 pt and has to stay in one column.
+    private static let twoColumnMinimum: CGFloat = 720
+    private static let conclusionColumnWidth: CGFloat = 420
+
+    /// Everything that answers the question, as opposed to drawing it.
+    @ViewBuilder
+    private var conclusionColumn: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if scale == .week || scale == .month {
+                RecordsDaySummaryCard(
+                    store: store,
+                    detail: detail,
+                    locked: selectedIsLocked,
+                    onUnlock: { store.paywallSheet = .charts },
+                    onOpenDay: openSelectedDay
+                )
+            } else if scale == .year, let selectedYearMonth {
+                RecordsYearSelectionCard(
+                    store: store,
+                    month: selectedYearMonth,
+                    cells: yearSelectionCells,
+                    summary: yearSelectionSummary
+                )
+            }
+            // The life scale is behind Plus, so this conclusion is too. A
+            // locked life view must not print a projected number under a
+            // locked canvas.
+            if scale == .life, store.plus.isAuthorized, store.records.state.lifeProfile != nil {
+                RecordsLifeAllocationCard(store: store, model: lifeModel)
+            }
+            if shouldOfferLifeSetup {
+                lifeSetupCard
+            }
+            if scale != .life, hasActualRecords, !selectedIsLocked {
+                RecordsHeadlineView(
+                    store: store,
+                    summary: summary,
+                    onUnlock: { store.paywallSheet = .charts }
+                )
+            }
+        }
     }
 
     /// A separate layout branch keeps expansion from being a taller version
