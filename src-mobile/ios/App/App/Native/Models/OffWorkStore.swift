@@ -4245,33 +4245,6 @@ final class OffWorkStore {
         )
     }
 
-    func recordsChartWindow(for period: RecordsChartPeriod, now: Date = .now) -> (Date, Date) {
-        // The grid calendar, not the plain records calendar: "this week" has to
-        // start on the same weekday as the month grid's first column. With
-        // `Calendar(identifier:)` the week ran Sunday–Saturday while a German
-        // month grid started on Monday, so the two views described different
-        // weeks. Month and year boundaries do not depend on `firstWeekday`.
-        let calendar = recordsGridCalendar
-        let today = calendar.startOfDay(for: now)
-        switch period {
-        case .week:
-            let start = calendar.date(
-                from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
-            ) ?? today
-            let end = calendar.date(byAdding: .day, value: 6, to: start) ?? today
-            return (start, end)
-        case .month:
-            let start = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today
-            let end = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: start) ?? today
-            return (start, end)
-        case .year:
-            let year = calendar.component(.year, from: today)
-            let start = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) ?? today
-            let end = calendar.date(from: DateComponents(year: year, month: 12, day: 31)) ?? today
-            return (start, end)
-        }
-    }
-
     func recordsMetrics(for days: [DayResolution]) -> RecordsPeriodMetrics {
         let sleep = records.state.lifeProfile?.averageSleepHours ?? 8
         let items = days.flatMap { observations(on: $0.shiftAnchorDate) }

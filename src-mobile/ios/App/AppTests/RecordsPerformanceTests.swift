@@ -81,7 +81,7 @@ struct RecordsPerformanceTests {
         let store = seededStore(days: 520)
         // Warm the JavaScriptCore bundle and any lazily-built caches so the
         // numbers describe the steady state a user actually pays.
-        let window = store.recordsChartWindow(for: .year)
+        let window = store.recordsWindow(for: .year, anchor: .now)
         _ = store.resolvedDays(from: window.0, through: window.1)
 
         _ = milliseconds("recordedWorkDays (Records list)") { _ = store.recordedWorkDays() }
