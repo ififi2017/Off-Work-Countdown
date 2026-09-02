@@ -353,23 +353,35 @@ final class WidgetSnapshotPublisher {
             let workStartAtMs = max(cursor, segment.startAtMs)
             let workEndAtMs = min(segment.endAtMs, expiresAtMs)
             if workStartAtMs < workEndAtMs {
-                let elapsed = completedBefore + max(0, workStartAtMs - segment.startAtMs)
-                let remaining = max(0, duration - elapsed)
-                entries.append(entry(
-                    date: workStartAtMs,
-                    end: workEndAtMs,
-                    phase: .working,
-                    label: "widgetWorking",
-                    kind: .workRemaining,
-                    remaining: remaining,
-                    progress: Double(elapsed) / Double(duration) * 100,
-                    boundary: segment.endAtMs,
-                    // Wall-clock clock-off, not `workStart + remaining`.
-                    // Remaining is effective work, so adding it to the clock
-                    // skips lunch and the circular complication would read
-                    // 17:30 for a 19:00 finish with a 90-minute break.
-                    target: Int64(shift.endAtMs)
-                ))
+                // Overtime is still `.working` — the countdown, the gauge and
+                // the reload cadence are identical. It is a different *label*,
+                // so a surface that wants to say which one you are in can,
+                // and the split puts a timeline entry exactly at the planned
+                // end so the change lands on the minute it happens.
+                let overtimeStartAtMs = shift.overtimeEndAtMs == nil
+                    ? workEndAtMs
+                    : min(max(Int64(shift.plannedEndAtMs), workStartAtMs), workEndAtMs)
+                for (start, end, label) in [
+                    (workStartAtMs, overtimeStartAtMs, "widgetWorking"),
+                    (overtimeStartAtMs, workEndAtMs, "overtime"),
+                ] where start < end {
+                    let elapsed = completedBefore + max(0, start - segment.startAtMs)
+                    entries.append(entry(
+                        date: start,
+                        end: end,
+                        phase: .working,
+                        label: label,
+                        kind: .workRemaining,
+                        remaining: max(0, duration - elapsed),
+                        progress: Double(elapsed) / Double(duration) * 100,
+                        boundary: segment.endAtMs,
+                        // Wall-clock clock-off, not `workStart + remaining`.
+                        // Remaining is effective work, so adding it to the clock
+                        // skips lunch and the circular complication would read
+                        // 17:30 for a 19:00 finish with a 90-minute break.
+                        target: Int64(shift.endAtMs)
+                    ))
+                }
                 cursor = workEndAtMs
             }
         }

@@ -733,6 +733,86 @@ func widgetTimelineCoversLunchBreak() throws {
 }
 
 @MainActor
+@Test("Overtime is its own widget label so a complication can say which it is")
+func widgetTimelineSeparatesOvertimeFromRegularWork() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    // A 09:00-17:00 Monday, extended to 20:00 while it is still running.
+    let atWork = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 16
+    )))
+    let overtimeEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 20
+    )))
+    let beforePlannedEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 16, minute: 30
+    )))
+    let afterPlannedEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 18
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.startCountdown(at: atWork)
+    store.applyOvertime(date: overtimeEnd)
+
+    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: atWork),
+        active: store.countdownStarted,
+        nowMs: Int64(atWork.timeIntervalSince1970 * 1_000)
+    )
+
+    let regular = try #require(widget.entry(atMs: Int64(beforePlannedEnd.timeIntervalSince1970 * 1_000)))
+    #expect(regular.phase == .working)
+    #expect(regular.labelKey == "widgetWorking")
+
+    // Same phase, same countdown, different label — the split exists so a
+    // surface can name the state, not so the timeline behaves differently.
+    let overtime = try #require(widget.entry(atMs: Int64(afterPlannedEnd.timeIntervalSince1970 * 1_000)))
+    #expect(overtime.phase == .working)
+    #expect(overtime.labelKey == "overtime")
+    #expect(overtime.countdownKind == .workRemaining)
+}
+
+@MainActor
+@Test("A rest day keeps its own widget label even though it shows a countdown")
+func widgetTimelineLabelsRestDaysDistinctly() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    // Saturday. The next shift is Monday, so the complication draws the same
+    // countdown and bar it would on a workday morning.
+    let saturday = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 29, hour: 10
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+
+    let nowMs = Int64(saturday.timeIntervalSince1970 * 1_000)
+    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: saturday),
+        active: false,
+        nowMs: nowMs
+    )
+
+    let current = try #require(widget.entry(atMs: nowMs))
+    #expect(current.labelKey == "widgetRestDay")
+    #expect(current.countdownTargetAtMs != nil)
+}
+
+@MainActor
 @Test("The widget snapshot carries the in-app coming-up list, salary-free")
 func widgetSnapshotCarriesUpcomingEvents() throws {
     let (defaults, suite) = try isolatedDefaults()
