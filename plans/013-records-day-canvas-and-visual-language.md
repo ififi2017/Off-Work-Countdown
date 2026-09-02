@@ -297,7 +297,7 @@ iPad 与手机横屏不是同一套导航 chrome：`TabletDesignView` 与 `Phone
 - [ ] 保存当前周、月、年、人生和日期详情的浅色 / 深色基线截图。
 - [ ] 确认 011 的真机发布阻断验证不会被本计划混入同一提交或 PR。
 - [ ] 先读 `RecordDayEditView.swift` 里现有的 `RecordDayDetailHost` / `RecordResolvedDayView`，确定日画布吸收哪些部分、退役哪些部分，再动手写新文件。
-- [ ] 处理 `RecordsChartViews.swift`：`RecordsChartsHomeView` 已无任何 route 或 View 引用，全仓只剩 `RecordsPerformanceTests` 还在用 `recordsChartWindow`。它偏偏是 `recordsOwnTime` 与 `recordsShareOfDay` 当前唯一的使用者，而这正是日画布要重建的词汇。要么删掉这套遗留面并迁移性能测试，要么在本节写明为什么留着——不能让 013 在活页面里重造一份已经躺在死页面里的文案。
+- [x] 处理 `RecordsChartViews.swift` —— 已由 [PR #105](https://github.com/ififi2017/Off-Work-Countdown/pull/105) 删除。它是 010 之前那版记录页，早已无任何 route 或 View 引用；`recordsChartWindow` 是 `recordsWindow` 的副本，唯一调用方（`RecordsPerformanceTests` 的预热行）已改指后者，测量口径不变。`recordsOwnTime`、`recordsShareOfDay`、`recordsHeatScale`、`recordsHeatWithoutColor` 等十个键**刻意保留**在 19 个 locale 里，就是留给本计划的日画布和收起态年视图复用——实现时直接用，不要重新造词。同时删掉的还有 `RecordsChartPeriod` 和 `OWCChartCellButtonStyle`。
 - [ ] 核实“自主时间”问题的真实范围：`recordsFreeAwake`（属于你的清醒时间）19 个 locale 已存在，`wakingFreeMs = breakMs + freeMs` 也已就位。真正错的是 `RecordsCanvasViews.swift` 里两处把 `wakingFreeMs` 的值配上 `recordsFreeAwakeShort` 标签和描述 `freeMs` 的 `recordsMetricFreeHelp`。先确认这一点，Phase 1 的本地化工作量会显著缩小。
 
 ### Phase 1 — 文案、来源与展示模型
@@ -407,7 +407,7 @@ iPad 与手机横屏不是同一套导航 chrome：`TabletDesignView` 与 `Phone
 | 记录根、摘要与路由 | `Native/Views/RecordsDesignView.swift`、`RecordsRoute.swift` |
 | 月格、年视图、标题总结 | `Native/Views/RecordsCanvasViews.swift` |
 | 日期详情现状与编辑 | `Native/Views/RecordDayEditView.swift`：`RecordDayDetailHost` 与 `RecordResolvedDayView` 是被日画布取代的正文，`RecordDayEditView` 继续承担编辑 sheet |
-| 遗留 charts 面 | `Native/Views/RecordsChartViews.swift` 与 `OffWorkStore.recordsChartWindow`：已无引用，Phase 0 决定删除或留存 |
+| 已退役的 charts 面 | `RecordsChartViews.swift` 与 `OffWorkStore.recordsChartWindow` 已随 PR #105 删除；`RecordsMetrics.summarize` / `recordsMetrics(for:)` 保留但只剩测试可达，本计划的时间分配走 `TimeAllocationCalculator`，不要改道回它 |
 | 周视图分段 | `Native/Views/RecordsCanvasViews.swift` 中的 `RecordsWeekStrips` |
 | iPad / 横屏导航壳 | `Native/Views/TabletDesignView.swift`、`PhoneLandscapeView.swift` |
 | 时间分配 | `Native/Models/LifeViewCalculator.swift` 中现有 `TimeAllocationCalculator`，实现时可按职责拆文件但不复制算法 |
