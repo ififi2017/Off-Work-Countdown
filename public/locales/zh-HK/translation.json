@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "你改過嘅日子有外框，下面嘅清單都用文字寫出同樣嘅工時。",
   "recordsByMonth": "按月睇",
   "recordsMonthWorkdays": "{{count}} 個工作日",
+  "recordsMonthWorkdays_one": "{{count}} 個工作日",
   "recordsSectionHours": "時間",
   "recordsSectionKind": "呢日算咩",
   "recordsKindCustomHours": "自己填時間",

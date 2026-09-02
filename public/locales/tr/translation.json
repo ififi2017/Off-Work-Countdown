@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "Değiştirdiğin günlerin çerçevesi vardır, aşağıdaki liste de aynı saatleri yazıyla verir.",
   "recordsByMonth": "Aya göre",
   "recordsMonthWorkdays": "{{count}} çalışma günü",
+  "recordsMonthWorkdays_one": "{{count}} çalışma günü",
   "recordsSectionHours": "Saatler",
   "recordsSectionKind": "Bu gün",
   "recordsKindCustomHours": "Saatleri kendin gir",

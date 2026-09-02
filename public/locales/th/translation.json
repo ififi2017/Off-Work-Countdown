@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "วันที่คุณแก้เองจะมีเส้นขอบ และรายการด้านล่างก็บอกจำนวนชั่วโมงเดียวกันเป็นตัวอักษร",
   "recordsByMonth": "แยกตามเดือน",
   "recordsMonthWorkdays": "{{count}} วันทำงาน",
+  "recordsMonthWorkdays_one": "{{count}} วันทำงาน",
   "recordsSectionHours": "เวลา",
   "recordsSectionKind": "วันนี้",
   "recordsKindCustomHours": "กำหนดเวลาเอง",

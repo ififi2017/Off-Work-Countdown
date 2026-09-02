@@ -31,6 +31,7 @@
 		A1000000F00000000000000F /* FocusStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000F00000000000000F /* FocusStoreTests.swift */; };
 		A10000100000000000000010 /* AppReviewAndCycleSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */; };
 		A10000010000000000000001 /* OffWorkStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* OffWorkStoreTests.swift */; };
+		A10000110000000000000011 /* NativeLocalizerPluralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000110000000000000011 /* NativeLocalizerPluralTests.swift */; };
 		A10000020000000000000002 /* DebugTimerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* DebugTimerScenarioTests.swift */; };
 		A10000030000000000000003 /* DayOverrideProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* DayOverrideProjectionTests.swift */; };
 		A10000040000000000000004 /* DayRecordResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* DayRecordResolverTests.swift */; };
@@ -113,7 +114,6 @@
 		E00000510000000000000051 /* RecordsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000510000000000000051 /* RecordsCloudSync.swift */; };
 		E00000520000000000000052 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000520000000000000052 /* PaywallView.swift */; };
 		E00000530000000000000053 /* PlusSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000530000000000000053 /* PlusSettingsView.swift */; };
-		E00000540000000000000054 /* RecordsChartViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000540000000000000054 /* RecordsChartViews.swift */; };
 		E00000550000000000000055 /* RecordDayEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000550000000000000055 /* RecordDayEditView.swift */; };
 		E00000560000000000000056 /* LifeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000560000000000000056 /* LifeView.swift */; };
 		E00000570000000000000057 /* FocusDesignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000570000000000000057 /* FocusDesignView.swift */; };
@@ -187,6 +187,7 @@
 		A2000000F00000000000000F /* FocusStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusStoreTests.swift; sourceTree = "<group>"; };
 		A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReviewAndCycleSummaryTests.swift; sourceTree = "<group>"; };
 		A20000010000000000000001 /* OffWorkStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffWorkStoreTests.swift; sourceTree = "<group>"; };
+		A20000110000000000000011 /* NativeLocalizerPluralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeLocalizerPluralTests.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000030000000000000003 /* DebugTimerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugTimerScenarioTests.swift; sourceTree = "<group>"; };
 		A20000040000000000000004 /* DayOverrideProjectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayOverrideProjectionTests.swift; sourceTree = "<group>"; };
@@ -290,7 +291,6 @@
 		F00000510000000000000051 /* RecordsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsCloudSync.swift; path = Native/Models/RecordsCloudSync.swift; sourceTree = "<group>"; };
 		F00000520000000000000052 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PaywallView.swift; path = Native/Views/PaywallView.swift; sourceTree = "<group>"; };
 		F00000530000000000000053 /* PlusSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlusSettingsView.swift; path = Native/Views/PlusSettingsView.swift; sourceTree = "<group>"; };
-		F00000540000000000000054 /* RecordsChartViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordsChartViews.swift; path = Native/Views/RecordsChartViews.swift; sourceTree = "<group>"; };
 		F00000550000000000000055 /* RecordDayEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordDayEditView.swift; path = Native/Views/RecordDayEditView.swift; sourceTree = "<group>"; };
 		F00000560000000000000056 /* LifeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LifeView.swift; path = Native/Views/LifeView.swift; sourceTree = "<group>"; };
 		F00000570000000000000057 /* FocusDesignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FocusDesignView.swift; path = Native/Views/FocusDesignView.swift; sourceTree = "<group>"; };
@@ -432,7 +432,6 @@
 				F00000510000000000000051 /* RecordsCloudSync.swift */,
 				F00000520000000000000052 /* PaywallView.swift */,
 				F00000530000000000000053 /* PlusSettingsView.swift */,
-				F00000540000000000000054 /* RecordsChartViews.swift */,
 				F00000550000000000000055 /* RecordDayEditView.swift */,
 				F00000560000000000000056 /* LifeView.swift */,
 				F00000570000000000000057 /* FocusDesignView.swift */,
@@ -491,6 +490,7 @@
 				A2000000F00000000000000F /* FocusStoreTests.swift */,
 				A20000100000000000000010 /* AppReviewAndCycleSummaryTests.swift */,
 				A20000080000000000000008 /* ScheduleRangeExpandTests.swift */,
+				A20000110000000000000011 /* NativeLocalizerPluralTests.swift */,
 			);
 			path = AppTests;
 			sourceTree = "<group>";
@@ -723,7 +723,6 @@
 				E00000510000000000000051 /* RecordsCloudSync.swift in Sources */,
 				E00000520000000000000052 /* PaywallView.swift in Sources */,
 				E00000530000000000000053 /* PlusSettingsView.swift in Sources */,
-				E00000540000000000000054 /* RecordsChartViews.swift in Sources */,
 				E00000550000000000000055 /* RecordDayEditView.swift in Sources */,
 				E00000560000000000000056 /* LifeView.swift in Sources */,
 				E00000570000000000000057 /* FocusDesignView.swift in Sources */,
@@ -778,6 +777,7 @@
 				A1000000F00000000000000F /* FocusStoreTests.swift in Sources */,
 				A10000100000000000000010 /* AppReviewAndCycleSummaryTests.swift in Sources */,
 				A10000070000000000000007 /* ScheduleRangeExpandTests.swift in Sources */,
+				A10000110000000000000011 /* NativeLocalizerPluralTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

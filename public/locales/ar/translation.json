@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "الأيام التي عدّلتها لها إطار، والقائمة أدناه تعطي الساعات نفسها كنص.",
   "recordsByMonth": "حسب الشهر",
   "recordsMonthWorkdays": "{{count}} يوم عمل",
+  "recordsMonthWorkdays_one": "{{count}} يوم عمل",
   "recordsSectionHours": "الساعات",
   "recordsSectionKind": "هذا اليوم",
   "recordsKindCustomHours": "تحديد الساعات",

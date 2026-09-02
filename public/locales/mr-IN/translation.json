@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "तुम्ही बदललेल्या दिवसांना कडा आहे, आणि खालची यादी तेच तास शब्दांत देते.",
   "recordsByMonth": "महिन्यानुसार",
   "recordsMonthWorkdays": "{{count}} कामाचे दिवस",
+  "recordsMonthWorkdays_one": "{{count}} कामाचा दिवस",
   "recordsSectionHours": "तास",
   "recordsSectionKind": "हा दिवस",
   "recordsKindCustomHours": "तास स्वतः ठरवा",

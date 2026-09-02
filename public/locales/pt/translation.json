@@ -604,6 +604,7 @@
   "recordsHeatWithoutColor": "Os dias que alterou têm contorno, e a lista abaixo dá as mesmas horas em texto.",
   "recordsByMonth": "Por mês",
   "recordsMonthWorkdays": "{{count}} dias trabalhados",
+  "recordsMonthWorkdays_one": "{{count}} dia trabalhado",
   "recordsSectionHours": "Horário",
   "recordsSectionKind": "Este dia",
   "recordsKindCustomHours": "Definir o horário",

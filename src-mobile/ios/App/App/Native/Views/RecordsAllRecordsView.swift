@@ -76,7 +76,7 @@ struct RecordsAllRecordsView: View {
                                     subtitle: store.plus.isAuthorized
                                         ? store.t(
                                             "recordsMonthWorkdays",
-                                            values: ["count": "\(presentation.count(in: year))"]
+                                            count: presentation.count(in: year)
                                         )
                                         : nil,
                                     isLast: index == presentation.years.count - 1

@@ -1776,6 +1776,17 @@ final class OffWorkStore {
         localizer.string(key, locale: languageCode, values: values)
     }
 
+    /// Plural-aware lookup. `count` picks the grammatical variant and, unless
+    /// the caller supplies its own, also fills `{{count}}` with the
+    /// locale-formatted number. Keeping both on one argument is the point:
+    /// when a call site formatted the number itself and left the lookup
+    /// countless, German rendered a single recorded day as "1 Arbeitstage".
+    func t(_ key: String, count: Int, values: [String: String] = [:]) -> String {
+        var merged = values
+        if merged["count"] == nil { merged["count"] = formatCount(count) }
+        return localizer.string(key, locale: languageCode, count: count, values: merged)
+    }
+
     func strings(_ key: String) -> [String] {
         localizer.strings(key, locale: languageCode)
     }
@@ -4232,33 +4243,6 @@ final class OffWorkStore {
                 isFavorite: isFavorite
             )
         )
-    }
-
-    func recordsChartWindow(for period: RecordsChartPeriod, now: Date = .now) -> (Date, Date) {
-        // The grid calendar, not the plain records calendar: "this week" has to
-        // start on the same weekday as the month grid's first column. With
-        // `Calendar(identifier:)` the week ran Sunday–Saturday while a German
-        // month grid started on Monday, so the two views described different
-        // weeks. Month and year boundaries do not depend on `firstWeekday`.
-        let calendar = recordsGridCalendar
-        let today = calendar.startOfDay(for: now)
-        switch period {
-        case .week:
-            let start = calendar.date(
-                from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
-            ) ?? today
-            let end = calendar.date(byAdding: .day, value: 6, to: start) ?? today
-            return (start, end)
-        case .month:
-            let start = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today
-            let end = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: start) ?? today
-            return (start, end)
-        case .year:
-            let year = calendar.component(.year, from: today)
-            let start = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) ?? today
-            let end = calendar.date(from: DateComponents(year: year, month: 12, day: 31)) ?? today
-            return (start, end)
-        }
     }
 
     func recordsMetrics(for days: [DayResolution]) -> RecordsPeriodMetrics {
