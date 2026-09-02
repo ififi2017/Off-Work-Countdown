@@ -15,6 +15,7 @@ struct RecordsDesignView: View {
     @State private var cells: [RecordsDayCell] = []
     @State private var summary: RecordsHeadlineSummary?
     @State private var detail: RecordsDayDetail?
+    @State private var lifeModel: LifeViewModel?
     @State private var expanded: [RecordsScale: Bool]
     @State private var pinch: CGFloat = 1
     @State private var scaleFeedback = 0
@@ -141,12 +142,12 @@ struct RecordsDesignView: View {
                 visualization(expandedPresentation: false)
 
                 if scale == .week || scale == .month {
-                    RecordsDayDetailCard(
+                    RecordsDaySummaryCard(
                         store: store,
                         detail: detail,
                         locked: selectedIsLocked,
                         onUnlock: { store.paywallSheet = .charts },
-                        onEdit: editSelected
+                        onOpenDay: openSelectedDay
                     )
                 } else if scale == .year, let selectedYearMonth {
                     RecordsYearSelectionCard(
@@ -156,10 +157,19 @@ struct RecordsDesignView: View {
                         summary: yearSelectionSummary
                     )
                 }
+                // The life scale is behind Plus, so this conclusion is too. A
+                // locked life view must not print a projected number under a
+                // locked canvas.
+                if scale == .life, store.plus.isAuthorized, store.records.state.lifeProfile != nil {
+                    RecordsLifeAllocationCard(store: store, model: lifeModel)
+                }
                 if shouldOfferLifeSetup {
                     lifeSetupCard
                 }
-                if scale != .life, hasActualRecords {
+                // One lock at a time. When the chosen date is already behind
+                // the free window, the totals lock underneath it repeats the
+                // same sentence in the same card and says nothing new.
+                if scale != .life, hasActualRecords, !selectedIsLocked {
                     RecordsHeadlineView(
                         store: store,
                         summary: summary,
@@ -406,10 +416,12 @@ struct RecordsDesignView: View {
                     RecordsMonthGrid(store: store, cells: cells, selectedDayKey: selectedDayKey) { cell in
                         select(cell)
                     }
+                    markLegend
                 case .week:
                     RecordsWeekStrips(store: store, cells: cells, selectedDayKey: selectedDayKey) { cell in
                         select(cell)
                     }
+                    markLegend
                 case .year:
                     // The year changes form when it is given the whole screen:
                     // the collapsed density canvas answers "when was it heavy",
@@ -453,6 +465,10 @@ struct RecordsDesignView: View {
                     pinch = 1
                 }
         )
+    }
+
+    private var markLegend: some View {
+        RecordsMarkLegend(store: store, includesLock: !store.plus.isAuthorized)
     }
 
     @ViewBuilder
@@ -592,11 +608,10 @@ struct RecordsDesignView: View {
     }
 
     private var yearSelectionSummary: RecordsHeadlineSummary? {
-        let keys = Set(yearSelectionCells.map(\.dayKey))
-        return store.recordsHeadline(
-            cells: yearSelectionCells,
-            days: days.filter { keys.contains($0.dayKey) }
-        )
+        // The whole year is handed over on purpose: the month's own totals are
+        // taken from its cells, and the day before the first needs to be
+        // reachable so an overnight shift is not cut at the month boundary.
+        store.recordsHeadline(cells: yearSelectionCells, days: days)
     }
 
     private var selectedIsLocked: Bool {
@@ -655,16 +670,22 @@ struct RecordsDesignView: View {
     private func select(_ cell: RecordsDayCell) {
         selectedDayKey = cell.dayKey
         selectionFeedback += 1
-        if let resolution = days.first(where: { $0.dayKey == cell.dayKey }) {
-            detail = store.recordsDayDetail(for: resolution, includesLifeProjection: true)
-        } else {
+        guard let index = days.firstIndex(where: { $0.dayKey == cell.dayKey }) else {
             detail = nil
+            return
         }
+        detail = store.recordsDayDetail(
+            for: days[index],
+            previous: index > 0 ? days[index - 1] : nil,
+            includesLifeProjection: true
+        )
     }
 
-    private func editSelected() {
+    /// Selecting a date updates this page; "see this day" is the hierarchy
+    /// step. Editing now lives on the day itself, one level down.
+    private func openSelectedDay() {
         guard let selectedDayKey else { return }
-        store.openDayEditor(dayKey: selectedDayKey)
+        store.recordsPath.append(.day(selectedDayKey))
     }
 
     @ViewBuilder
@@ -677,7 +698,7 @@ struct RecordsDesignView: View {
         case .monthList(let year, let month):
             RecordsMonthRecordsView(store: store, year: year, month: month)
         case .day(let dayKey):
-            RecordDayDetailHost(store: store, dayKey: dayKey)
+            RecordsDayCanvasView(store: store, dayKey: dayKey)
         case .conflictCenter:
             RecordsConflictCenter(store: store)
         }
@@ -693,19 +714,39 @@ struct RecordsDesignView: View {
             cells = []
             summary = nil
             if selectedLifeStageKind == nil { selectCurrentLifeStage() }
+            // Expanding a career's worth of schedule runs off the main actor;
+            // the life canvas itself only needs the profile's stage dates.
+            let projection = store.plus.isAuthorized ? await store.prepareLifeViewModel() : nil
+            guard generation == loadGeneration, requestedScale == scale else { return }
+            lifeModel = projection
             return
         }
         if requestedScale == .year, selectedYearMonth == nil {
             selectedYearMonth = store.recordsCalendar.component(.month, from: .now)
         }
         let window = store.recordsWindow(for: requestedScale, anchor: requestedAnchor)
-        let resolved = await store.prepareRecordsDisplayDays(from: window.0, through: window.1)
+        // One day of lead-in, because the shift that ends at 06:00 on the first
+        // of the month started the night before and still belongs to that
+        // morning. The extra day is never drawn.
+        let leadIn = store.recordsCalendar.date(byAdding: .day, value: -1, to: window.0) ?? window.0
+        let resolved = await store.prepareRecordsDisplayDays(from: leadIn, through: window.1)
         guard generation == loadGeneration,
               requestedScale == scale,
               requestedAnchor == anchor
         else { return }
+        let firstKey = RecordJSON.dayKey(window.0, calendar: store.recordsCalendar)
         days = resolved
-        cells = resolved.map { store.recordsDayCell(for: $0, includesLifeProjection: true) }
+        var built: [RecordsDayCell] = []
+        for (index, day) in resolved.enumerated() where day.dayKey >= firstKey {
+            built.append(
+                store.recordsDayCell(
+                    for: day,
+                    previous: index > 0 ? resolved[index - 1] : nil,
+                    includesLifeProjection: true
+                )
+            )
+        }
+        cells = built
         summary = store.recordsHeadline(cells: cells, days: resolved)
         if selectingToday {
             let todayKey = RecordJSON.dayKey(.now, calendar: store.recordsCalendar)

@@ -391,45 +391,6 @@ extension RecordsAccess {
 }
 
 extension TimeAllocationCalculator {
-    static func share(
-        dayStart: Date,
-        nextDayStart: Date,
-        workSegments: [NativeShiftSegment],
-        overtimeSegments: [NativeShiftSegment] = [],
-        breakSegments: [NativeShiftSegment] = [],
-        sleepHours: Double,
-        incomplete: Bool = false
-    ) -> TimeAllocationShare {
-        let dayStartMs = Int64((dayStart.timeIntervalSince1970 * 1_000).rounded())
-        let dayEndMs = Int64((nextDayStart.timeIntervalSince1970 * 1_000).rounded())
-        let dayLength = max(0, dayEndMs - dayStartMs)
-        let work = clippedDuration(workSegments, from: dayStartMs, to: dayEndMs)
-        let overtime = clippedDuration(overtimeSegments, from: dayStartMs, to: dayEndMs)
-        let breaks = clippedDuration(breakSegments, from: dayStartMs, to: dayEndMs)
-        let sleepBudget = Int64(max(0, sleepHours) * 3_600_000)
-        let occupied = min(dayLength, work + overtime)
-        let sleep = min(sleepBudget, max(0, dayLength - occupied))
-        var free = max(0, dayLength - occupied - sleep)
-        let boundedBreak = min(breaks, free)
-        free -= boundedBreak
-        let unclassified: Int64
-        if incomplete {
-            unclassified = free
-            free = 0
-        } else {
-            unclassified = 0
-        }
-        return TimeAllocationShare(
-            workMs: work,
-            overtimeMs: overtime,
-            breakMs: boundedBreak,
-            sleepMs: sleep,
-            freeMs: free,
-            unclassifiedMs: unclassified,
-            dayLengthMs: dayLength
-        )
-    }
-
     static func combining(_ shares: [TimeAllocationShare]) -> TimeAllocationShare {
         shares.reduce(TimeAllocationShare(
             workMs: 0,
@@ -449,15 +410,6 @@ extension TimeAllocationCalculator {
                 unclassifiedMs: partial.unclassifiedMs + next.unclassifiedMs,
                 dayLengthMs: partial.dayLengthMs + next.dayLengthMs
             )
-        }
-    }
-
-    static func gaps(in segments: [NativeShiftSegment]) -> [NativeShiftSegment] {
-        let sorted = segments.sorted { $0.startAtMs < $1.startAtMs }
-        guard sorted.count >= 2 else { return [] }
-        return zip(sorted, sorted.dropFirst()).compactMap { current, next in
-            guard next.startAtMs > current.endAtMs else { return nil }
-            return NativeShiftSegment(startAtMs: current.endAtMs, endAtMs: next.startAtMs)
         }
     }
 }

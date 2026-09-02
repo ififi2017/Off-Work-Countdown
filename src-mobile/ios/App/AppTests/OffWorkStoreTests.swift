@@ -657,6 +657,8 @@ struct DurationCase: Sendable {
     DurationCase(milliseconds: 5_400_000, language: "en", expected: "1 h 30 m"),
     DurationCase(milliseconds: 2_700_000, language: "en", expected: "45 m"),
     DurationCase(milliseconds: 0, language: "en", expected: "0 m"),
+    // A life-scale projection reaches five figures. "67571 h" is unreadable.
+    DurationCase(milliseconds: 243_255_600_000, language: "en", expected: "67,571 h"),
     DurationCase(milliseconds: 43_200_000, language: "zh-CN", expected: "12小时"),
     DurationCase(milliseconds: 5_400_000, language: "zh-CN", expected: "1小时30分钟"),
     DurationCase(milliseconds: 0, language: "zh-CN", expected: "0分钟"),

@@ -1,6 +1,7 @@
 # 013 — 记录日画布、视觉语法与单一结论
 
-- **状态**：TODO — 产品口径已定，尚未实现
+- **状态**：IN PROGRESS — Phase 0–5 的代码已落地并通过模拟器构建；Phase 5 的录屏、Phase 6 的多设备与真机验收未完成
+- **进度（2026-09-02）**：日画布、统一日期路由、月格与周日列分段、图例、紧凑摘要、人生时间分配结论、19 locale 文案与日模型测试已完成；`TimeAllocationCalculator.share` 已由 `RecordsDayCanvasModel.build` 取代，civil day 现在会读取前一夜的班次。偏差记录见「实现偏差」。
 - **日期**：2026-09-01
 - **范围**：iOS / iPadOS 原生 SwiftUI 的记录主画布、周日列与月格视觉语法、日期详情、人生总结、Plus 锁定文案与 19 个 UI locale
 - **依赖**：[010](010-records-ui-iteration.md) 的单画布与记录 IA、[011](011-ios-records-focus-release-remediation.md) 的发布阻断修复、[006](006-free-trial-subscription.md) 的权益模型
@@ -292,60 +293,75 @@ iPad 与手机横屏不是同一套导航 chrome：`TabletDesignView` 与 `Phone
 
 ### Phase 0 — 契约与回归基线
 
-- [ ] 为 `freeMs` 与 `wakingFreeMs` 写命名 / 数值测试，锁定“自主时间”和“属于你的清醒时间”不是同一个值。
-- [ ] 为 civil day 构造相邻班次相交 fixture：日班、跨夜、午休、多 segment、加班、23 / 25 小时 DST 日。
+- [x] 为 `freeMs` 与 `wakingFreeMs` 写命名 / 数值测试，锁定“自主时间”和“属于你的清醒时间”不是同一个值。
+- [x] 为 civil day 构造相邻班次相交 fixture：日班、跨夜、午休、多 segment、加班、23 / 25 小时 DST 日。
 - [ ] 保存当前周、月、年、人生和日期详情的浅色 / 深色基线截图。
 - [ ] 确认 011 的真机发布阻断验证不会被本计划混入同一提交或 PR。
-- [ ] 先读 `RecordDayEditView.swift` 里现有的 `RecordDayDetailHost` / `RecordResolvedDayView`，确定日画布吸收哪些部分、退役哪些部分，再动手写新文件。
+- [x] 先读 `RecordDayEditView.swift` 里现有的 `RecordDayDetailHost` / `RecordResolvedDayView`，确定日画布吸收哪些部分、退役哪些部分，再动手写新文件。
 - [x] 处理 `RecordsChartViews.swift` —— 已由 [PR #105](https://github.com/ififi2017/Off-Work-Countdown/pull/105) 删除。它是 010 之前那版记录页，早已无任何 route 或 View 引用；`recordsChartWindow` 是 `recordsWindow` 的副本，唯一调用方（`RecordsPerformanceTests` 的预热行）已改指后者，测量口径不变。`recordsOwnTime`、`recordsShareOfDay`、`recordsHeatScale`、`recordsHeatWithoutColor` 等十个键**刻意保留**在 19 个 locale 里，就是留给本计划的日画布和收起态年视图复用——实现时直接用，不要重新造词。同时删掉的还有 `RecordsChartPeriod` 和 `OWCChartCellButtonStyle`。
-- [ ] 核实“自主时间”问题的真实范围：`recordsFreeAwake`（属于你的清醒时间）19 个 locale 已存在，`wakingFreeMs = breakMs + freeMs` 也已就位。真正错的是 `RecordsCanvasViews.swift` 里两处把 `wakingFreeMs` 的值配上 `recordsFreeAwakeShort` 标签和描述 `freeMs` 的 `recordsMetricFreeHelp`。先确认这一点，Phase 1 的本地化工作量会显著缩小。
+- [x] 核实“自主时间”问题的真实范围：`recordsFreeAwake`（属于你的清醒时间）19 个 locale 已存在，`wakingFreeMs = breakMs + freeMs` 也已就位。真正错的是 `RecordsCanvasViews.swift` 里两处把 `wakingFreeMs` 的值配上 `recordsFreeAwakeShort` 标签和描述 `freeMs` 的 `recordsMetricFreeHelp`。先确认这一点，Phase 1 的本地化工作量会显著缩小。
 
 ### Phase 1 — 文案、来源与展示模型
 
-- [ ] 新增 `RecordsDayCanvasModel` 与来源枚举，所有计算在纯模型层完成。
-- [ ] 修正“自主时间”与“属于你的清醒时间”的标签与帮助文案配对，让每个指标的说明描述它真正显示的那个值；只有在确实缺键时才新增，并补齐 19 locale 与 translator comment。
-- [ ] 更新 Plus 锁定文案，保持锁定模型零真实值。
-- [ ] 为实际、修正、排班推算、人生推算、计划、未记录、休息和锁定建立统一文案映射。
+- [x] 新增 `RecordsDayCanvasModel` 与来源枚举，所有计算在纯模型层完成。
+- [x] 修正“自主时间”与“属于你的清醒时间”的标签与帮助文案配对，让每个指标的说明描述它真正显示的那个值；只有在确实缺键时才新增，并补齐 19 locale 与 translator comment。
+- [x] 更新 Plus 锁定文案，保持锁定模型零真实值。
+- [x] 为实际、修正、排班推算、人生推算、计划、未记录、休息和锁定建立统一文案映射。
 
 ### Phase 2 — 月格与紧凑摘要
 
-- [ ] 用正常工作 / 加班分段迷你柱替换月格单一橙色活动条。
-- [ ] 对齐实心、斜纹、修正、今天、选择、锁定和冲突状态；增加可达图例。
-- [ ] 把周 / 月日期详情压缩为摘要，并增加“看这一天”。
+- [x] 用正常工作 / 加班分段迷你柱替换月格单一橙色活动条。
+- [x] 对齐实心、斜纹、修正、今天、选择、锁定和冲突状态；增加可达图例。
+- [x] 把周 / 月日期详情压缩为摘要，并增加“看这一天”。
 - [ ] 验证免费窗口外没有真实值、购买回流保持尺度与日期。
 
 ### Phase 3 — 日画布与统一日期路由
 
-- [ ] 让 `RecordsRoute.day` 承载统一日画布；全部记录与周 / 月共用。
-- [ ] 实现 civil-day 时间带、今天线、投影起点、单一主结论和时间段列表。
-- [ ] 复用现有观察 / Focus 历史，移除第二套重复日期详情。
-- [ ] 接入一个 / 多个班次锚点的编辑选择，编辑继续使用现有 sheet 与 Plus gate。
-- [ ] 处理空、休息、计划、投影、损坏、规则展开失败和锁定状态。
+- [x] 让 `RecordsRoute.day` 承载统一日画布；全部记录与周 / 月共用。
+- [x] 实现 civil-day 时间带、今天线、投影起点、单一主结论和时间段列表。
+- [x] 复用现有观察 / Focus 历史，移除第二套重复日期详情。
+- [x] 接入一个 / 多个班次锚点的编辑选择，编辑继续使用现有 sheet 与 Plus gate。
+- [x] 处理空、休息、计划、投影、损坏、规则展开失败和锁定状态。
 
 ### Phase 4 — 年 / 人生结论收口
 
-- [ ] 年视图只对齐颜色、纹理和选择语义，不改变双形态结构。
-- [ ] 人生非沉浸态增加推算时间分配结论与输入不足状态。
-- [ ] 确认人生总结不生成持久记录、不上传、不在锁定树中泄漏。
+- [x] 年视图只对齐颜色、纹理和选择语义，不改变双形态结构。
+- [x] 人生非沉浸态增加推算时间分配结论与输入不足状态。
+- [x] 确认人生总结不生成持久记录、不上传、不在锁定树中泄漏。
 - [ ] 审查所有人生文案，移除评判、宿命或把推算写成事实的句子。
 
 ### Phase 5 — 无障碍、动效与性能
 
-- [ ] 日时间带使用可读的 accessibility representation；VoiceOver 顺序与时间段列表一致。
+- [x] 日时间带使用可读的 accessibility representation；VoiceOver 顺序与时间段列表一致。
 - [ ] Differentiate Without Color、Increase Contrast、Reduce Transparency 和 Reduce Motion 分支完成。
 - [ ] 所有交互对象至少 44pt；月格视觉可小，但按钮命中区和语义保持完整。
-- [ ] 把日画布模型构造（含相邻班次求交）加进既有的 `RecordsPerformanceTests.surfaceCost()`，做成能回归的门槛，而不是只靠一次人工录屏。
+- [x] 把日画布模型构造（含相邻班次求交）加进既有的 `RecordsPerformanceTests.surfaceCost()`，做成能回归的门槛，而不是只靠一次人工录屏。
 - [ ] release 构建测量月格滚动、尺度切换和日画布进入，持续 60fps，无主线程长停顿。
 - [ ] 完整流程录屏：月选日 → 日画布 → 编辑 → 保存 → 返回；购买回流单独录制。
 
 ### Phase 6 — 构建与设备验收
 
-- [ ] `npm run build:ios-native-rules`。
-- [ ] `npm run check:ios`。
+- [x] `npm run build:ios-native-rules`。
+- [x] `npm run check:ios`。
 - [ ] 相关 Swift Testing 全量通过。
 - [ ] iPhone 模拟器 build 通过；若触及共享 `lib/`，额外通过 `npm test`。
 - [ ] iPhone Pro、iPhone SE 级别、iPad 与 Apple Silicon Mac 完成布局检查。
 - [ ] iPhone / iPad 真机完成手势、触感、60fps 与系统 sheet 终验。
+
+## 实现偏差
+
+实现时有六处偏离了上文写死的做法，理由记在这里，不要当成漏做：
+
+1. **月格迷你柱是横向的。** §「一个日格的固定层级」写的是「柱高表示当天有效工时」。48pt 的格子里同时放可读的日期数字和一根有刻度的竖柱，两者必然争夺同一段高度，4 小时和 8 小时只差 5pt，看不出来。改成横向：柱长表示工时，正常工作在前，加班仍是尾段并使用 `recordsOvertime`。要求的实质——一根柱、两段、分类色、不用品牌橙——全部保留，Dynamic Type 的降级顺序（柱先压到 2pt，再撤右上状态位，日期数字永不缩）照原样实现。
+2. **`TimeAllocationCalculator.share` 被删除。** 一天的数字现在只有一个来源：`RecordsDayCanvasModel.build` 先把区间摆好，再把摆出来的东西加起来。原来的写法是「先算数字，再画图」，两条路迟早会对同一天给出两个答案，正是 `AGENTS.md` 点名的那种分歧。`gaps` 与 `combining` 保留，`LifeViewCalculatorTests` 里的两个分配用例迁到 `RecordsDayCanvasModelTests`。
+3. **班中休息现在优先于睡眠估算。** 旧公式先扣满睡眠预算，再把休息压缩进剩余的自主时间，极端长班次会把真实存在的午休压成 0。新的次序是：工作、加班、休息都是事实，先落位；睡眠是估算，只能占没被占用的时间。普通 9-18 班次的数字不变。
+4. **civil day 会读取前一夜的班次。** 这是 §4 要求的，但影响不止日画布：`dayAllocation` 之前把 22:00–06:00 班次夹在锚点日的 00:00–24:00 里，凌晨那半截在月格、汇总和年视图里**整个消失**。现在按 civil day 归属，月窗口两端各多取一天用于求交。夜班用户的月度工时会因此变化——那是修正，不是回归。
+5. **`RecordDayDetailHost` / `RecordResolvedDayView` 已删除。** §「新增纯展示模型」写的是保留 `RecordDayDetailHost` 的权限分支。实际实现里日画布自己就是权限分支：锁定日走 `RecordsDayCanvasModel.locked`（零真实值）加 `RecordsLockedDayCard`，后者按 013 的新顺序说话（能力 → 本机仍在保存 → 查看方案），比旧占位更符合本计划。`RecordsLockedHistoryPlaceholder` 保留，「全部记录」的年 / 月列表仍在用。
+6. **展开态年视图的投影改用同一套斜纹。** 原来是虚线描边，月格和日时间带是 135° 斜纹。同一件事两种画法正是原则 3 要消灭的，统一为斜纹。
+
+7. **两处顺带修好的东西。** `RelativeDurationFormatter` 的英文分支直接插值 `Int`，人生尺度的六位数小时显示成 `67571 h`，改为按 locale 分组（一千以下毫无变化）。`isRecordedDay` 原来每次都重建整份 `recordDayIndex()`，月格现在每格要问两次（当天 + 前一夜），按 `records.revision` 加了缓存。
+
+另有三个 key（`recordsMetricBreakHelp`、`recordsMetricSleepHelp`、`recordsMetricFreeHelp`）随被取代的五指标日期卡一起从 19 个 locale 删除——它们唯一的入口就是那张卡。`recordsFreeAwake`、`recordsShareOfDay`、`recordsHeatScale`、`recordsHeatWithoutColor` 按计划要求直接复用，没有另造新词。
 
 ## 自动化验收矩阵
 

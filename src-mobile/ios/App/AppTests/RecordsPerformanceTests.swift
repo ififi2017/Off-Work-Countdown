@@ -96,6 +96,24 @@ struct RecordsPerformanceTests {
             for day in year { _ = store.observations(on: day.shiftAnchorDate) }
         }
 
+        // A month of cells is what the calendar draws on every load, and each
+        // one now also intersects the night before. This is the regression
+        // gate for that: a screen recording cannot catch it getting slower.
+        let month = Array(year.suffix(31))
+        var monthCells: [RecordsDayCell] = []
+        let cellsMs = milliseconds("recordsDayCell with adjacent shifts, one month") {
+            monthCells = month.enumerated().map { index, day in
+                store.recordsDayCell(
+                    for: day,
+                    previous: index > 0 ? month[index - 1] : nil,
+                    includesLifeProjection: true
+                )
+            }
+        }
+        let canvasMs = await milliseconds("recordsDayCanvas (one day, both shifts)") {
+            _ = await store.recordsDayCanvas(dayKey: year[year.count - 1].dayKey)
+        }
+
         store.saveLifeProfile(
             birthYear: 1992,
             workStartedYear: 2014,
@@ -112,7 +130,10 @@ struct RecordsPerformanceTests {
 
         #expect(store.recordedWorkDays().count == 520)
         #expect(year.count >= 365)
+        #expect(monthCells.count == 31)
         #expect(yearMs < 15_000)
+        #expect(cellsMs < 5_000)
+        #expect(canvasMs < 5_000)
         #expect(lifePrepareMs < 20_000)
         #expect(lifeMs < 20_000)
     }

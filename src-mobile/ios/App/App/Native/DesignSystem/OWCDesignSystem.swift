@@ -56,6 +56,19 @@ enum OWCDesign {
     static let recordsFree = Color(uiColor: .systemPurple)
     static let recordsUnclassified = Color(uiColor: .systemGray2)
 
+    /// The categorical token for a stretch of a day. Brand orange is absent on
+    /// purpose: it means selection and today, never a kind of time.
+    static func recordsColor(_ kind: TimeAllocationKind) -> Color {
+        switch kind {
+        case .work: recordsWork
+        case .overtime: recordsOvertime
+        case .workBreak: recordsBreak
+        case .sleep: recordsSleep
+        case .free: recordsFree
+        case .unclassified: recordsUnclassified
+        }
+    }
+
     static func lifeColor(_ kind: LifeStageKind) -> Color {
         switch kind {
         case .childhood: lifeChildhood
@@ -90,6 +103,47 @@ enum OWCDesign {
 
 enum OWCSystemSettings {
     static let applicationURL = URL(string: UIApplication.openSettingsURLString)!
+}
+
+/// 135° hatching — the app's one mark for "estimated or planned".
+///
+/// Deliberately a texture and not a lower opacity: a faded block reads as
+/// *less important*, and an estimate is not less important than a fact, only
+/// less certain. Because it is a shape rather than a colour, it also survives
+/// Differentiate Without Color and a black-and-white screenshot.
+struct OWCHatchPattern: Shape {
+    var spacing: CGFloat = 5
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        guard spacing > 0, rect.height > 0 else { return path }
+        var x = rect.minX - rect.height
+        while x <= rect.maxX {
+            path.move(to: CGPoint(x: x, y: rect.minY))
+            path.addLine(to: CGPoint(x: x + rect.height, y: rect.maxY))
+            x += spacing
+        }
+        return path
+    }
+}
+
+extension View {
+    /// Marks a filled shape as an estimate. The caller clips it, because only
+    /// the caller knows whether the thing is a capsule, a cell or a bar.
+    func owcEstimated(
+        _ isEstimated: Bool,
+        tint: Color = OWCDesign.secondary,
+        spacing: CGFloat = 5,
+        lineWidth: CGFloat = 1
+    ) -> some View {
+        overlay {
+            if isEstimated {
+                OWCHatchPattern(spacing: spacing)
+                    .stroke(tint.opacity(0.55), lineWidth: lineWidth)
+                    .allowsHitTesting(false)
+            }
+        }
+    }
 }
 
 /// Shared circular Liquid Glass geometry for compact toolbar controls.
