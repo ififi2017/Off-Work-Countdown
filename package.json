@@ -1,6 +1,6 @@
 {
   "name": "off-work-30",
-  "version": "3.1.8",
+  "version": "3.1.9",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -38,6 +38,9 @@
     "shots:ios:capture": "node scripts/marketing-shots/ios/capture.mjs",
     "shots:ios:compose": "node scripts/marketing-shots/ios/compose.mjs",
     "shots:ios:validate": "node scripts/marketing-shots/ios/validate.mjs",
+    "shots:xiaohongshu": "npm run shots:xiaohongshu:compose && npm run shots:xiaohongshu:validate",
+    "shots:xiaohongshu:compose": "node scripts/marketing-shots/xiaohongshu/compose.mjs",
+    "shots:xiaohongshu:validate": "node scripts/marketing-shots/xiaohongshu/validate.mjs",
     "asc:check": "node scripts/app-store-connect-sync.mjs --check",
     "asc:plan": "node scripts/app-store-connect-sync.mjs --plan",
     "asc:sync": "node scripts/app-store-connect-sync.mjs --apply",

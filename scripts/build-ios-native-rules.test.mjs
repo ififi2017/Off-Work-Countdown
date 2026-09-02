@@ -212,7 +212,7 @@ describe("iOS native rule bundle", () => {
     expect(sunday.countdownProgress).toBeGreaterThan(saturday.countdownProgress);
   });
 
-  it("asks about today only while a schedule change can still alter today", () => {
+  it("asks about today whenever a schedule change can alter today's record", () => {
     const context = { console };
     vm.createContext(context);
     vm.runInContext(createIOSNativeRulesBundle(), context);
@@ -240,7 +240,7 @@ describe("iOS native rule bundle", () => {
     const mondayAfterWork = new Date(2026, 7, 24, 18, 0).getTime();
     const settled = { ...base, nowMs: mondayAfterWork };
     expect(shouldPrompt(settled, { ...settled, startTime: "08:00", endTime: "16:00" }))
-      .toBe(false);
+      .toBe(true);
     expect(shouldPrompt(settled, { ...settled, endTime: "19:00" })).toBe(true);
 
     const saturday = { ...base, nowMs: new Date(2026, 7, 29, 11, 0).getTime() };
@@ -260,7 +260,7 @@ describe("iOS native rule bundle", () => {
     )).toBe(true);
   });
 
-  it("asks about today only when the old or proposed lunch is still ahead", () => {
+  it("asks about today when lunch changes its record even after the break", () => {
     const context = { console };
     vm.createContext(context);
     vm.runInContext(createIOSNativeRulesBundle(), context);
@@ -290,7 +290,7 @@ describe("iOS native rule bundle", () => {
       ...afterLunch,
       breakStartTime: null,
       breakDurationMinutes: 0,
-    })).toBe(false);
+    })).toBe(true);
     expect(shouldPrompt(afterLunch, {
       ...afterLunch,
       breakStartTime: "15:00",

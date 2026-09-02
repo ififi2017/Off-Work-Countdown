@@ -16,8 +16,8 @@ enum FocusSessionKind: String, Codable, Sendable {
     case longBreak
 }
 
-/// Local timer preferences. Sessions persist their planned end, so changing a
-/// preference only affects the next timer and never rewrites time in flight.
+/// Timer preferences. Sessions persist their planned end, so a synced change
+/// only affects the next timer and never rewrites time already in flight.
 struct FocusTimerSettings: Codable, Equatable, Sendable {
     var focusMinutes = 25
     var shortBreakMinutes = 5
@@ -169,6 +169,27 @@ struct FocusPlanningState: Codable, Equatable, Sendable {
     var templates: [FocusTemplate] = []
     var defaultTemplateID: UUID?
     var autoAppliedDayKeys: Set<String> = []
+}
+
+/// The single durable identity for planning preferences. Keeping the complete
+/// planning graph atomic lets CloudKit merge templates by UUID and plans by
+/// civil day without ever exposing implementation rows to the user.
+struct FocusPlanningConfiguration: Equatable, Sendable {
+    static let logicalKey = "focus-planning"
+
+    var planning: FocusPlanningState
+    var timerSettings: FocusTimerSettings
+    var editedAt: Date
+    var editCount: Int
+    var editTieBreaker: UUID
+
+    var hasUserContent: Bool {
+        !planning.plans.isEmpty
+            || !planning.templates.isEmpty
+            || planning.defaultTemplateID != nil
+            || !planning.autoAppliedDayKeys.isEmpty
+            || timerSettings.normalized != .default
+    }
 }
 
 struct FocusSession: Equatable, Sendable, Identifiable {

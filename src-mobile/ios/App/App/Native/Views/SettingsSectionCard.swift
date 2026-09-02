@@ -50,17 +50,13 @@ struct SettingsSectionCard: View {
             }
             .buttonStyle(OWCRowButtonStyle())
             OWCRow(icon: "tag", title: store.t("version"), isLast: true) {
-                HStack(spacing: 6) {
-                    Text(store.appVersion)
-                        .font(.body.monospacedDigit())
-                        .foregroundStyle(OWCDesign.secondary)
-                    // Reserves the chevron's slot so the version lines up with
-                    // the values on the rows above, which all have one.
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .opacity(0)
-                        .accessibilityHidden(true)
-                }
+                // Version is informational, not a disclosure row. Keeping a
+                // value-only accessory lets the shared OWCRow template place
+                // it on the same trailing edge as other settings values,
+                // without reserving an empty chevron slot.
+                Text(store.appVersion)
+                    .font(.body.monospacedDigit())
+                    .foregroundStyle(OWCDesign.secondary)
             }
         }
     }

@@ -30,6 +30,10 @@ struct CelebratingBrandMark: View {
     @State private var releaseFeedback = 0
     @State private var celebrationFeedback = 0
 
+    private var interactionIsActive: Bool {
+        gestureIsActive || isCelebrating
+    }
+
     var body: some View {
         GeometryReader { geometry in
             let side = min(geometry.size.width, geometry.size.height)
@@ -46,6 +50,7 @@ struct CelebratingBrandMark: View {
 
             ZStack(alignment: .topLeading) {
                 OWCBrandMark(
+                    isPressed: interactionIsActive,
                     handRotation: .degrees(handRotation),
                     showsEndpoint: false,
                     showsDepth: showsDepth
@@ -57,6 +62,31 @@ struct CelebratingBrandMark: View {
                 // The gesture is attached to the actual glass view rather than
                 // a sibling overlay. `.interactive()` can therefore supply its
                 // native optical response while the logo itself stays fixed.
+                if showsDepth || interactionIsActive {
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    OWCDesign.orange.opacity(interactionIsActive ? 0.38 : 0.18),
+                                    OWCDesign.orange.opacity(interactionIsActive ? 0.12 : 0.045),
+                                    .clear,
+                                ],
+                                center: .center,
+                                startRadius: 2,
+                                endRadius: visualDiameter * 0.92
+                            )
+                        )
+                        .frame(width: visualDiameter * 1.84, height: visualDiameter * 1.84)
+                        .blur(radius: visualDiameter * (interactionIsActive ? 0.1 : 0.075))
+                        .scaleEffect(interactionIsActive && !reduceMotion ? 1.08 : 1)
+                        .position(
+                            x: origin.x + Self.endpointCenter.x * scale,
+                            y: origin.y + Self.endpointCenter.y * scale
+                        )
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+
                 Circle()
                     .fill(OWCBrandMark.orangeGradient)
                     .frame(width: visualDiameter, height: visualDiameter)
@@ -90,6 +120,7 @@ struct CelebratingBrandMark: View {
             }
         }
         .aspectRatio(1, contentMode: .fit)
+        .animation(reduceMotion ? nil : OWCMotion.press, value: interactionIsActive)
         .sensoryFeedback(.impact(weight: .light), trigger: pressFeedback)
         .sensoryFeedback(.selection, trigger: releaseFeedback)
         .sensoryFeedback(.success, trigger: celebrationFeedback)

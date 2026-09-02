@@ -797,6 +797,7 @@ struct NotificationDesignView: View {
 
             cycleEndSummarySection
 
+            detailFooter(store.t("cycleEndSummaryNotificationNote"))
             detailFooter(store.t("liveActivityScheduleNote"))
 
             detailFooter(store.t("notificationPrivacyNote"))
@@ -833,8 +834,6 @@ struct NotificationDesignView: View {
                 .padding(.horizontal, 16)
                 .frame(minHeight: 58)
             }
-            detailFooter(store.t("cycleEndSummaryNotificationNote"))
-                .padding(.horizontal, 0)
         }
         .padding(.horizontal, OWCDesign.pageInset)
         .padding(.top, 16)
@@ -1492,25 +1491,25 @@ extension ScheduleFieldChange {
 /// Trailing header control on a page that is saved rather than committed
 /// field by field.
 ///
-/// Matches the back chevron: a compact 30 pt glass control. The old capsule label
-/// (`Enregistrer`, `Сохранить`, `जतन करा`) could crowd the compact header
-/// and, with `.glassEffect` inside a `.plain` button, sometimes ate the tap
-/// on device. The checkmark keeps the hit target and the VoiceOver name.
+/// Matches the native back chevron without drawing a second glass surface.
+/// `ToolbarItem` supplies its own Liquid Glass chrome on iOS 26, so the label
+/// must remain a plain symbol. The old capsule label (`Enregistrer`,
+/// `Сохранить`, `जतन करा`) could crowd the compact header; the checkmark keeps
+/// the system hit target and the VoiceOver name.
 struct ScheduleSaveButton: View {
     let store: OffWorkStore
     let enabled: Bool
     let action: () -> Void
 
     var body: some View {
-        Button(store.t("saveAction"), systemImage: "checkmark", action: action)
-        .labelStyle(.iconOnly)
-        .font(.title3.weight(.semibold))
-        .frame(width: 30, height: 30)
-        .contentShape(Circle())
-        .buttonStyle(.glass)
+        Button(action: action) {
+            Image(systemName: "checkmark")
+                .font(.body.weight(.semibold))
+        }
         .tint(enabled ? OWCDesign.accent : nil)
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.4)
+        .accessibilityLabel(store.t("saveAction"))
     }
 }
 

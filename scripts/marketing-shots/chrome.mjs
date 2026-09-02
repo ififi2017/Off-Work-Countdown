@@ -57,7 +57,7 @@ export async function captureHtml({ html, htmlPath, width, height, scale, outFil
     { stdio: "ignore" },
   );
   try {
-    await waitForFile(outFile, 15000);
+    await waitForFile(outFile, 20000);
   } finally {
     chrome.kill("SIGKILL");
     await sleep(50);
@@ -65,7 +65,7 @@ export async function captureHtml({ html, htmlPath, width, height, scale, outFil
   }
 }
 
-/** App Store Connect rejects PNGs with an alpha channel. */
+/** App Store Connect and Xiaohongshu both want fully opaque pixels. */
 export function flattenPng(file) {
   const bmp = `${file}.opaque.bmp`;
   const bmpResult = spawnSync("sips", ["-s", "format", "bmp", file, "--out", bmp], {

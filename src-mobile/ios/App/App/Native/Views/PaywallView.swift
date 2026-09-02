@@ -656,6 +656,7 @@ private struct PlusSubscriberThankYouView: View {
             let endpointDiameter = max(44, 172 * scale)
             ZStack {
                 OWCBrandMark(
+                    isPressed: isPlaying,
                     handRotation: .degrees(handRotation),
                     showsDepth: true
                 )

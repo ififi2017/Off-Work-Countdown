@@ -44,6 +44,20 @@ struct TabletShellView: View {
                         .zIndex(store.selectedTab == .settings ? 1 : 0)
                 }
                 .animation(shellAnimation, value: store.selectedTab)
+                // All three tab roots stay mounted for smooth glass
+                // transitions, so navigation chrome must belong to the shell.
+                // Otherwise an invisible Settings root can overwrite the
+                // visible Records title and toolbar.
+                .navigationTitle(
+                    store.selectedTab == .records
+                        ? store.t("recordsTitle")
+                        : store.selectedTab == .settings ? store.t("settings") : ""
+                )
+                .navigationBarTitleDisplayMode(.large)
+                // All iPad roots provide their own chrome. Leaving the empty
+                // NavigationStack bar in the layout squeezed every timer state
+                // down by one row before its own header could start.
+                .toolbar(store.selectedTab == .timer ? .hidden : .visible, for: .navigationBar)
                 .navigationDestination(for: AppRoute.self) { route in
                     AppRouteDestination(route: route, store: store)
                 }
@@ -112,7 +126,10 @@ struct TabletShellView: View {
         ) {
             withAnimation(shellAnimation) { sidebarVisible = true }
         }
-            .frame(maxWidth: 620)
+        // Records and Settings now consume the same detail-pane proposal. The
+        // previous 620pt cap left a visible narrow column on larger iPads even
+        // though the charts and cards are already adaptive.
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var tabletSettingsRoot: some View {
@@ -150,11 +167,12 @@ private struct TabletSidebar: View {
                     .minimumScaleFactor(0.82)
                 Spacer(minLength: 4)
                 Button(action: hide) {
-                    Image(systemName: "sidebar.left")
-                        .font(.body)
-                        .frame(width: 32, height: 32)
+                    OWCGlassCircleLabel {
+                        Image(systemName: "sidebar.left")
+                            .font(.body)
+                    }
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.plain)
             }
             .padding(.leading, 10)
             // The collapse control belongs near the sidebar's own edge. With the
@@ -353,7 +371,7 @@ private struct TabletTimerView: View {
             }
         }
         .background(OWCDesign.page)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showShare) {
             ShareComposerView(store: store)
                 .presentationSizing(.page)
@@ -403,6 +421,8 @@ private struct TabletTimerView: View {
                         .frame(width: 38, height: 38)
                         .background(OWCDesign.card)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 8)
@@ -452,7 +472,7 @@ private struct TabletRunningView: View {
     /// the screen. Measuring the head and the actions breaks that loop, because
     /// neither depends on how many rows the list draws.
     private var timelineHeight: CGFloat {
-        let chrome = headHeight + actionsHeight + 22 + TimerContentSpace.bottomSlack
+        let chrome = headHeight + actionsHeight + 22 + 24 + TimerContentSpace.bottomSlack
         return max(0, columnHeight - chrome)
     }
 
@@ -584,37 +604,23 @@ private struct TabletRunningView: View {
                         availableHeight: timelineHeight
                     )
                     .padding(.top, 22)
-                }
+                    // The expandable timeline may be shorter than the pane.
+                    // Let this spacer consume that difference so the actions
+                    // remain anchored by the lower edge rather than floating
+                    // directly below a short list. In the overflowing case it
+                    // stays at its minimum and the whole column scrolls.
+                    Spacer(minLength: 24)
 
-                Group {
-                    if snapshot.isBeforeStart(at: now) {
-                        HStack(spacing: 12) {
-                            Button {
-                                store.requestClockInEarly(at: now)
-                            } label: {
-                                ClockInEarlyLabel(store: store)
-                            }
-                            Button { showShare = true } label: {
-                                Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
-                            }
-                        }
-                    } else {
-                        HStack(spacing: 12) {
-                            Button {
-                                store.requestClockOffEarly(at: now)
-                            } label: { ClockOffEarlyLabel(store: store) }
-                            Button { showOvertime = true } label: {
-                                Text(store.t(isOvertime ? "adjustOvertime" : "overtime"))
-                            }
-                            Button { showShare = true } label: {
-                                Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
-                            }
-                        }
-                    }
+                    TabletTimerActionBar(
+                        store: store,
+                        snapshot: snapshot,
+                        now: now,
+                        showShare: $showShare,
+                        showOvertime: $showOvertime
+                    )
+                    .padding(.top, 24)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { actionsHeight = $0 }
                 }
-                .buttonStyle(OWCSecondaryButtonStyle())
-                .padding(.top, 24)
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { actionsHeight = $0 }
             }
                     .frame(maxWidth: sidebarVisible ? 560 : 900)
                     // Centres the capped column. `GeometryReader` aligns its
@@ -641,7 +647,7 @@ private struct TabletRunningView: View {
                     // scrolling is for.
                     //
                     // Immersive has no timeline, so nothing here can grow: the
-                    // countdown, meter, stats and action row are a fixed stack
+                    // countdown, meter and stats are a fixed stack
                     // that reports its true height. Top-aligning it left the
                     // whole instrument hugging the header with a screen of empty
                     // page underneath — the one layout that is supposed to be
@@ -777,6 +783,66 @@ private struct TabletRunningView: View {
     }
 }
 
+/// iPad keeps the critical actions in the sidebar-open timer mode. The share
+/// affordance has a fixed circular footprint, leaving the two labelled actions
+/// enough horizontal room even with long localisations.
+private struct TabletTimerActionBar: View {
+    let store: OffWorkStore
+    let snapshot: NativeShiftSnapshot
+    let now: Date
+    @Binding var showShare: Bool
+    @Binding var showOvertime: Bool
+
+    private var beforeStart: Bool { snapshot.isBeforeStart(at: now) }
+    private var overtimeActive: Bool { snapshot.isOvertimeActive(at: now) }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if beforeStart {
+                Button {
+                    store.requestClockInEarly(at: now)
+                } label: {
+                    ClockInEarlyLabel(store: store)
+                }
+                .buttonStyle(OWCSecondaryButtonStyle())
+                .layoutPriority(1)
+            } else {
+                Button {
+                    store.requestClockOffEarly(at: now)
+                } label: {
+                    ClockOffEarlyLabel(store: store)
+                }
+                .buttonStyle(OWCSecondaryButtonStyle())
+                .layoutPriority(1)
+
+                Button {
+                    showOvertime = true
+                } label: {
+                    Text(store.t(overtimeActive ? "adjustOvertime" : "overtime"))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+                }
+                .buttonStyle(OWCSecondaryButtonStyle())
+                .layoutPriority(1)
+            }
+
+            Button {
+                showShare = true
+            } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.body)
+                    .frame(width: 50, height: 50)
+                    .foregroundStyle(OWCDesign.primary)
+                    .background(OWCDesign.control, in: Circle())
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(store.t("shareButton"))
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
 private struct TabletSettingsView: View {
     let store: OffWorkStore
     let sidebarVisible: Bool
@@ -788,26 +854,14 @@ private struct TabletSettingsView: View {
         // taller than the pane.
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    if !sidebarVisible {
-                        Button(action: showSidebar) { Image(systemName: "sidebar.left").frame(width: 38, height: 38).background(OWCDesign.card).clipShape(RoundedRectangle(cornerRadius: 12)) }
-                        .buttonStyle(.plain)
-                    }
-                    Text(store.t("settings"))
-                        .font(.largeTitle.bold())
-                        .tracking(-0.85)
-                    Spacer()
-                    SettingsPlusStarButton(store: store)
-                }
-
                 // Two columns only when they actually fit. With the sidebar open an
                 // 11-inch iPad leaves ~544 pt here, and splitting that in two left
                 // every value truncated and "off-work reminder" wrapping onto two
                 // lines. Below the threshold the same sections stack instead.
                 AdaptiveSettingsColumns(spacing: 26) {
-                    ForEach(SettingsSection.twoColumns.indices, id: \.self) { column in
+                    ForEach(SettingsSection.twoColumns, id: \.self) { column in
                         VStack(spacing: 20) {
-                            ForEach(SettingsSection.twoColumns[column]) { section in
+                            ForEach(column) { section in
                                 SettingsSectionCard(store: store, section: section)
                                 // The privacy note belongs to this section, so
                                 // it travels with it rather than with a column.
@@ -819,14 +873,30 @@ private struct TabletSettingsView: View {
                         .frame(maxWidth: .infinity)
                     }
                 }
-                .padding(.top, 22)
+                .padding(.top, 12)
             }
-            .padding(.leading, sidebarVisible ? 34 : 40)
-            .padding(.trailing, 40)
-            .padding(.top, 26)
+            .padding(.horizontal, OWCDesign.pageInset)
         }
         .background(OWCDesign.page)
-        .navigationBarHidden(true)
+        .toolbar {
+            if store.selectedTab == .settings {
+                if !sidebarVisible {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: showSidebar) {
+                            OWCGlassCircleLabel {
+                                Image(systemName: "sidebar.left")
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(store.t("showSidebar"))
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    SettingsPlusStarButton(store: store)
+                }
+                .sharedBackgroundVisibility(.hidden)
+            }
+        }
     }
     private func sectionNote(_ text: String) -> some View {
         Text(text)
@@ -855,6 +925,8 @@ private func tabletHeader(
                         .frame(width: 38, height: 38)
                         .background(OWCDesign.card)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
@@ -862,9 +934,9 @@ private func tabletHeader(
             Button {
                 store.openPaidOrRun(.focus, action: .openFocus)
             } label: {
-                Image(systemName: "timer")
-                    .frame(width: 38, height: 38)
-                    .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                OWCGlassCircleLabel(visualSize: 38) {
+                    Image(systemName: "timer")
+                }
             }
             .buttonStyle(.plain)
             .accessibilityLabel(store.t("focusTitle"))
@@ -879,15 +951,15 @@ private func tabletHeader(
         HStack {
             Spacer(minLength: 0)
             Button { store.toggleQuickTheme() } label: {
-                Group {
-                    if store.quickThemeIsAuto {
-                        Text(verbatim: "A").font(.body.weight(.semibold))
-                    } else {
-                        Image(systemName: store.quickThemeIcon)
+                OWCGlassCircleLabel(visualSize: 38) {
+                    Group {
+                        if store.quickThemeIsAuto {
+                            Text(verbatim: "A").font(.body.weight(.semibold))
+                        } else {
+                            Image(systemName: store.quickThemeIcon)
+                        }
                     }
                 }
-                .frame(width: 38, height: 38)
-                .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
             .accessibilityLabel(store.t("theme"))

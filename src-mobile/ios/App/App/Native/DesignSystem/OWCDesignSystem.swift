@@ -46,6 +46,16 @@ enum OWCDesign {
     })
     static let lifeUnset = Color(uiColor: .tertiarySystemFill)
 
+    /// Records uses a stronger categorical palette than the Life timeline.
+    /// Those cells are much smaller and sit next to one another, so the softer
+    /// life-stage colors collapsed into nearly the same tint on a phone.
+    static let recordsWork = Color(uiColor: .systemIndigo)
+    static let recordsOvertime = Color(uiColor: .systemOrange)
+    static let recordsBreak = Color(uiColor: .systemTeal)
+    static let recordsSleep = Color(uiColor: .systemBlue)
+    static let recordsFree = Color(uiColor: .systemPurple)
+    static let recordsUnclassified = Color(uiColor: .systemGray2)
+
     static func lifeColor(_ kind: LifeStageKind) -> Color {
         switch kind {
         case .childhood: lifeChildhood
@@ -82,43 +92,153 @@ enum OWCSystemSettings {
     static let applicationURL = URL(string: UIApplication.openSettingsURLString)!
 }
 
+/// Shared circular Liquid Glass geometry for compact toolbar controls.
+/// The glass remains visually compact while the outer frame preserves the
+/// platform's 44-point minimum hit target.
+struct OWCGlassCircleLabel<Content: View>: View {
+    var visualSize: CGFloat = 34
+    @ViewBuilder let content: Content
+
+    init(visualSize: CGFloat = 34, @ViewBuilder content: () -> Content) {
+        self.visualSize = visualSize
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .frame(width: visualSize, height: visualSize)
+            .glassEffect(.regular.interactive(), in: Circle())
+            .contentShape(Circle())
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
+    }
+}
+
+/// A root page's large title and controls share one row. System large-title
+/// navigation deliberately puts trailing toolbar items on the row above the
+/// title, which is not the hierarchy used by the Timer, Records and Settings
+/// roots in this app.
+struct OWCRootPageHeader<Leading: View, Trailing: View>: View {
+    let title: String
+    @ViewBuilder let leading: Leading
+    @ViewBuilder let trailing: Trailing
+
+    init(
+        title: String,
+        @ViewBuilder leading: () -> Leading,
+        @ViewBuilder trailing: () -> Trailing
+    ) {
+        self.title = title
+        self.leading = leading()
+        self.trailing = trailing()
+    }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            leading
+            Text(title)
+                .font(.largeTitle.bold())
+                .tracking(-0.85)
+                .foregroundStyle(OWCDesign.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+            Spacer(minLength: 8)
+            trailing
+        }
+        .frame(minHeight: 52)
+    }
+}
+
+/// Appears only after `OWCRootPageHeader` has scrolled away. It overlays the
+/// scroll view instead of changing its safe-area inset, so crossing the
+/// collapse threshold cannot move the user's content.
+struct OWCCompactRootBar<Leading: View, Trailing: View>: View {
+    let title: String
+    @ViewBuilder let leading: Leading
+    @ViewBuilder let trailing: Trailing
+
+    init(
+        title: String,
+        @ViewBuilder leading: () -> Leading,
+        @ViewBuilder trailing: () -> Trailing
+    ) {
+        self.title = title
+        self.leading = leading()
+        self.trailing = trailing()
+    }
+
+    var body: some View {
+        ZStack {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(OWCDesign.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+                .padding(.horizontal, 72)
+
+            HStack(spacing: 8) {
+                leading
+                Spacer(minLength: 8)
+                trailing
+            }
+        }
+        .padding(.horizontal, OWCDesign.contentInset)
+        .frame(height: 52)
+        .background {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea(edges: .top)
+        }
+        .overlay(alignment: .bottom) {
+            Divider().opacity(0.35)
+        }
+    }
+}
+
 struct OWCAppHeader: View {
     let store: OffWorkStore
     var showsFocus = false
+
+    private let visualSize: CGFloat = 34
+    /// Align the visible circle with the cards' 16pt page inset. The shared
+    /// label has a wider 44pt hit target, so using the same inset on that outer
+    /// frame made the circle itself look five points farther inward.
+    private var hitTargetInset: CGFloat {
+        OWCDesign.pageInset - (44 - visualSize) / 2
+    }
 
     var body: some View {
         HStack {
             if showsFocus {
                 NavigationLink(value: AppRoute.focus) {
-                    Label(store.t("focusTitle"), systemImage: "timer")
-                        .labelStyle(.iconOnly)
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(OWCDesign.secondary)
-                        .frame(width: 44, height: 44)
-                        .glassEffect(.regular.interactive(), in: Circle())
+                    OWCGlassCircleLabel(visualSize: visualSize) {
+                        Image(systemName: "timer")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(store.t("focusTitle"))
             }
             Spacer()
             Button { withAnimation(.snappy(duration: 0.28)) { store.toggleQuickTheme() } } label: {
-                Group {
-                    if store.quickThemeIsAuto {
-                        Text(verbatim: "A")
-                            .font(.body.weight(.semibold))
-                    } else {
-                        Image(systemName: store.quickThemeIcon)
-                            .font(.body)
+                OWCGlassCircleLabel(visualSize: visualSize) {
+                    Group {
+                        if store.quickThemeIsAuto {
+                            Text(verbatim: "A")
+                                .font(.body.weight(.semibold))
+                        } else {
+                            Image(systemName: store.quickThemeIcon)
+                                .font(.body)
+                        }
                     }
+                    .foregroundStyle(OWCDesign.secondary)
                 }
-                .foregroundStyle(OWCDesign.secondary)
-                .frame(width: 34, height: 34)
-                .glassEffect(.regular.interactive(), in: Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(store.t("theme"))
         }
-        .padding(.horizontal, OWCDesign.contentInset)
+        .padding(.horizontal, hitTargetInset)
         .frame(minHeight: 44)
     }
 
@@ -438,6 +558,58 @@ struct OWCDetailAccessory: View {
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(OWCDesign.tertiary)
         }
+    }
+}
+
+/// A navigation row whose disclosure indicator remains centered in the row,
+/// even when the title wraps or gains supporting text.
+///
+/// Keep navigation lists on this shared primitive instead of rebuilding the
+/// trailing chevron in each feature. That makes the hit target, separator and
+/// alignment consistent across Records, Settings and future detail screens.
+struct OWCDisclosureRow: View {
+    let title: String
+    var subtitle: String? = nil
+    let isLast: Bool
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.body)
+                    .foregroundStyle(OWCDesign.primary)
+                    .lineLimit(subtitle == nil ? 1 : 2)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.footnote)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .lineLimit(3)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .layoutPriority(1)
+
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(OWCDesign.tertiary)
+                .frame(width: 24, height: 44, alignment: .center)
+                .accessibilityHidden(true)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, subtitle == nil ? 0 : 10)
+        .frame(minHeight: OWCDesign.rowHeight)
+        .overlay(alignment: .bottom) {
+            if !isLast {
+                Rectangle()
+                    .fill(OWCDesign.separator)
+                    .frame(height: 0.5)
+                    .padding(.leading, 16)
+            }
+        }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -897,11 +1069,6 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
     let discardChangesTitle: String
     let onDiscardChanges: () -> Void
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
-    /// Fades the control out the moment it is tapped, so it disappears in place
-    /// rather than sliding off with the page — the behaviour Voice Memos has.
-    /// There is deliberately no long-press menu: it opened an empty capsule.
-    @State private var leaving = false
     @State private var showDiscardPrompt = false
     @State private var promptFeedback = 0
     @State private var discardFeedback = 0
@@ -928,28 +1095,33 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            // The settings roots intentionally hide UIKit's navigation bar.
-            // Showing it only for a pushed page makes UIKit add its safe-area
-            // inset at the end of the transition: the whole destination first
-            // lands at one Y position, then jumps down. The bar therefore stays
-            // hidden throughout. The bridge below restores UIKit's own
-            // interactive transition without adding any SwiftUI drag gesture,
-            // so this custom header keeps exactly the same layout.
-            .toolbar(.hidden, for: .navigationBar)
-            .safeAreaInset(edge: .top, spacing: 0) {
-                OWCDetailHeader(
-                    backTitle: backTitle,
-                    pageTitle: pageTitle,
-                    compact: verticalSizeClass == .compact,
-                    leaving: leaving,
-                    showDiscardPrompt: $showDiscardPrompt,
-                    unsavedChangesTitle: unsavedChangesTitle,
-                    keepEditingTitle: keepEditingTitle,
-                    discardChangesTitle: discardChangesTitle,
-                    discard: discardAndDismiss,
-                    trailing: { trailing },
-                    dismiss: requestDismiss
-                )
+            // Settings destinations now use the same native large-title
+            // navigation as the roots. The title therefore collapses into the
+            // translucent system bar while a language/theme/etc. list scrolls.
+            .navigationTitle(pageTitle)
+            .navigationBarTitleDisplayMode(.large)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: requestDismiss) {
+                        Image(systemName: "chevron.left")
+                            .font(.body.weight(.semibold))
+                    }
+                    .accessibilityLabel(backTitle)
+                    .confirmationDialog(
+                        unsavedChangesTitle,
+                        isPresented: $showDiscardPrompt,
+                        titleVisibility: .visible
+                    ) {
+                        Button(discardChangesTitle, role: .destructive, action: discardAndDismiss)
+                        Button(keepEditingTitle, role: .cancel) {}
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    trailing
+                }
             }
             .background(
                 OWCSystemBackSwipeBridge(
@@ -959,7 +1131,6 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
             )
             .sensoryFeedback(.warning, trigger: promptFeedback)
             .sensoryFeedback(.impact(weight: .medium), trigger: discardFeedback)
-            .onAppear { leaving = false }
     }
 
     private func requestDismiss() {
@@ -978,91 +1149,30 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
     }
 
     private func performDismiss() {
-        leaving = true
         dismiss()
     }
 }
 
-private struct OWCDetailHeader<Trailing: View>: View {
-    let backTitle: String
-    let pageTitle: String
-    let compact: Bool
-    let leaving: Bool
-    @Binding var showDiscardPrompt: Bool
-    let unsavedChangesTitle: String
-    let keepEditingTitle: String
-    let discardChangesTitle: String
-    let discard: () -> Void
-    @ViewBuilder let trailing: Trailing
-    let dismiss: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Title lives in the HStack, not a ZStack over the buttons.
-            // Overlaying it with allowsHitTesting(false) still ate glass
-            // taps on device — the save control sat under the text.
-            HStack(spacing: 8) {
-                Button(action: dismiss) {
-                    Image(systemName: "chevron.left")
-                        .font(.title3.weight(.semibold))
-                        .frame(width: 30, height: 30)
-                        .contentShape(Circle())
-                }
-                .buttonStyle(.glass)
-                .opacity(leaving ? 0 : 1)
-                .animation(.easeOut(duration: 0.12), value: leaving)
-                .accessibilityLabel(backTitle)
-                // The system needs the dialog on the source control itself to
-                // place Liquid Glass and its pointer correctly. A modifier on
-                // the page root loses that source; a hand-drawn pointer cannot
-                // reproduce the platform's spacing across devices and RTL.
-                .confirmationDialog(
-                    unsavedChangesTitle,
-                    isPresented: $showDiscardPrompt,
-                    titleVisibility: .visible
-                ) {
-                    Button(discardChangesTitle, role: .destructive, action: discard)
-                    Button(keepEditingTitle, role: .cancel) {}
-                }
-
-                if compact {
-                    Text(pageTitle)
-                        .font(.title3.weight(.semibold))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.72)
-                        .frame(maxWidth: .infinity)
-                        .allowsHitTesting(false)
-                } else {
-                    Spacer(minLength: 0)
-                }
-
-                // Leaves with the back control, for the same reason: on the
-                // way out it belongs to the page being dismissed, and a
-                // glass capsule sliding away with the content underneath it
-                // is the one part of the transition that catches the eye.
-                trailing
-                    .opacity(leaving ? 0 : 1)
-                    .animation(.easeOut(duration: 0.12), value: leaving)
-            }
-            .padding(.horizontal, OWCDesign.pageInset)
-            .frame(height: compact ? 56 : 52)
-
-            if !compact {
-                Text(pageTitle)
-                    .font(.largeTitle.bold())
-                    .tracking(-0.7)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.78)
-                    .padding(.horizontal, OWCDesign.pageInset)
-                    .padding(.bottom, 8)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(OWCDesign.page)
-    }
-}
-
 extension View {
+    /// Adds navigation chrome only while a permanently-mounted tab root is
+    /// active. Tablet and landscape roots intentionally stay in the view tree
+    /// during tab changes so Liquid Glass does not flash; an ordinary
+    /// `navigationTitle` on an invisible sibling can otherwise keep winning
+    /// the shared NavigationStack's preference resolution.
+    @ViewBuilder
+    func owcNavigationTitle(
+        _ title: String,
+        displayMode: NavigationBarItem.TitleDisplayMode,
+        isActive: Bool
+    ) -> some View {
+        if isActive {
+            navigationTitle(title)
+                .navigationBarTitleDisplayMode(displayMode)
+        } else {
+            self
+        }
+    }
+
     func owcDetailBack(title: String, pageTitle: String) -> some View {
         modifier(OWCDetailBackModifier(backTitle: title, pageTitle: pageTitle) { EmptyView() })
     }

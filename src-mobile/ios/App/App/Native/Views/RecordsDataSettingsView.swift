@@ -126,19 +126,19 @@ struct RecordsDataSettingsView: View {
                     }
                     .buttonStyle(OWCRowButtonStyle())
 
-                    NavigationLink(value: AppRoute.recordsConflicts) {
-                        OWCRow(icon: "exclamationmark.arrow.triangle.2.circlepath", title: store.t("recordsConflictCenter")) {
-                            OWCDetailAccessory(
-                                text: store.records.state.sync.conflicts.isEmpty
-                                    ? store.t("recordsConflictNone")
-                                    : store.t(
+                    if !store.records.state.sync.conflicts.isEmpty {
+                        NavigationLink(value: AppRoute.recordsConflicts) {
+                            OWCRow(icon: "exclamationmark.arrow.triangle.2.circlepath", title: store.t("recordsConflictCenter")) {
+                                OWCDetailAccessory(
+                                    text: store.t(
                                         "recordsConflictCount",
                                         values: ["count": "\(store.records.state.sync.conflicts.count)"]
                                     )
-                            )
+                                )
+                            }
                         }
+                        .buttonStyle(OWCRowButtonStyle())
                     }
-                    .buttonStyle(OWCRowButtonStyle())
 
                     NavigationLink(value: AppRoute.recordsTimeZone) {
                         OWCRow(

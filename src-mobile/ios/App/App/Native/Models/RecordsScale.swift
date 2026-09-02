@@ -110,6 +110,77 @@ struct RecordsYearBucket: Equatable, Sendable, Identifiable {
     var isProjection: Bool
 }
 
+/// One month of the expanded year chart.
+///
+/// `workMs` and `overtimeMs` are summed from the same per-day
+/// `TimeAllocationShare` values `recordsHeadline` combines, over the same
+/// recorded-or-corrected days, so a month row and the month selection card
+/// cannot print different numbers for the same month.
+struct RecordsYearMonthBar: Equatable, Sendable, Identifiable {
+    var id: Int { month }
+    var month: Int
+    var workMs: Int64
+    var overtimeMs: Int64
+    /// Future days a life projection can actually price. A merely scheduled
+    /// future day carries no numbers, and inventing them here would be the
+    /// fabricated history 010 removed.
+    var projectedMs: Int64
+    var workdays: Int
+    var hasLockedDays: Bool
+
+    var totalMs: Int64 { workMs + overtimeMs }
+    var hasRecords: Bool { workdays > 0 }
+    /// The full length a row draws, recorded work plus any projection sitting
+    /// after it.
+    var drawnMs: Int64 { totalMs + projectedMs }
+}
+
+enum RecordsYearMonthSampler {
+    private static let hourMs = 3_600_000.0
+
+    static func months(cells: [RecordsDayCell], calendar: Calendar) -> [RecordsYearMonthBar] {
+        guard !cells.isEmpty else { return [] }
+        var byMonth: [Int: RecordsYearMonthBar] = [:]
+        for cell in cells {
+            let month = calendar.component(.month, from: cell.date)
+            var bar = byMonth[month] ?? RecordsYearMonthBar(
+                month: month,
+                workMs: 0,
+                overtimeMs: 0,
+                projectedMs: 0,
+                workdays: 0,
+                hasLockedDays: false
+            )
+            switch cell.appearance {
+            case .recorded, .corrected:
+                bar.workMs += cell.workMs
+                bar.overtimeMs += cell.overtimeMs
+                bar.workdays += 1
+            case .locked:
+                // A locked cell carries zeroes by construction. Recording only
+                // that the month has one keeps the row from claiming the month
+                // was empty.
+                bar.hasLockedDays = true
+            case .planned, .unrecorded, .rest:
+                if cell.isProjection { bar.projectedMs += cell.workMs + cell.overtimeMs }
+            }
+            byMonth[month] = bar
+        }
+        return byMonth.keys.sorted().compactMap { byMonth[$0] }
+    }
+
+    /// One ceiling shared by every row. Each month filling its own track would
+    /// make twelve bars that cannot be compared, which is the whole point of
+    /// this form.
+    static func axisCeiling(for months: [RecordsYearMonthBar]) -> Int64 {
+        let peak = months.map(\.drawnMs).max() ?? 0
+        guard peak > 0 else { return Int64(hourMs) }
+        let hours = Double(peak) / hourMs
+        let step: Double = if hours <= 40 { 10 } else if hours <= 120 { 20 } else { 50 }
+        return Int64((hours / step).rounded(.up) * step * hourMs)
+    }
+}
+
 enum LifeStageKind: String, Equatable, Sendable {
     case childhood
     case study

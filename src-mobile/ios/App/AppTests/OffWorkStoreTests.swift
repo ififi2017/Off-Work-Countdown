@@ -55,6 +55,65 @@ func recordsScheduleReconcilesToDevicePreferences() throws {
 }
 
 @MainActor
+@Test("Applying a new schedule to today removes its stale timer projection")
+func applyingScheduleToTodayRecalculatesRecordedWork() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 60
+
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = store.recordsTimeZone
+    let earlyStart = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 9, day: 1, hour: 8, minute: 30
+    )))
+    let editTime = try #require(calendar.date(from: DateComponents(
+        year: 2026, month: 9, day: 1, hour: 14
+    )))
+    let day = calendar.startOfDay(for: editTime)
+    records.ensureSeeded(
+        hours: store.hoursConfiguration(at: earlyStart),
+        at: earlyStart,
+        timeZone: store.recordsTimeZone
+    )
+
+    store.clockInEarly(at: earlyStart)
+    #expect(records.state.overrides.contains { $0.dayKey == "2026-09-01" })
+
+    store.applyScheduleChange(
+        ScheduleFieldChange(
+            startMinutes: 10 * 60,
+            endMinutes: 19 * 60,
+            lunchEnabled: true,
+            lunchStartMinutes: 12 * 60 + 30,
+            lunchDurationMinutes: 90
+        ),
+        decision: .applyToToday,
+        at: editTime
+    )
+
+    #expect(!records.state.overrides.contains { $0.dayKey == "2026-09-01" })
+    let resolution = try #require(store.resolvedDays(from: day, through: day, now: editTime).first)
+    let regularWorkMs = resolution.segments.reduce(0.0) { partial, segment in
+        partial + max(0, segment.endAtMs - segment.startAtMs)
+    }
+    let breakMs = TimeAllocationCalculator.gaps(in: resolution.segments).reduce(0.0) { partial, segment in
+        partial + max(0, segment.endAtMs - segment.startAtMs)
+    }
+    #expect(resolution.layer == .schedule)
+    #expect(regularWorkMs == 7.5 * 3_600_000)
+    #expect(breakMs == 1.5 * 3_600_000)
+}
+
+@MainActor
 @Test("Opening Life estimates an empty archive without backdating Records")
 func lifeViewDoesNotPersistSyntheticCareerHistory() throws {
     let suite = "OffWorkStoreTests.life.\(UUID().uuidString)"
@@ -2859,8 +2918,8 @@ func restDayWidgetProgressAdvances() throws {
 }
 
 @MainActor
-@Test("Schedule save asks only while today can still change")
-func scheduleSavePromptTracksTodayImpact() throws {
+@Test("Schedule save keeps today's settled record an explicit choice")
+func scheduleSavePromptTracksTodayRecordImpact() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let mondayAfterWork = try #require(Calendar.current.date(from: DateComponents(
@@ -2876,7 +2935,7 @@ func scheduleSavePromptTracksTodayImpact() throws {
     store.startMinutes = 9 * 60
     store.endMinutes = 17 * 60
 
-    #expect(!store.shouldPromptApplyingToToday(
+    #expect(store.shouldPromptApplyingToToday(
         ScheduleFieldChange(startMinutes: 8 * 60, endMinutes: 16 * 60),
         scope: .schedule,
         at: mondayAfterWork
@@ -2899,8 +2958,8 @@ func scheduleSavePromptTracksTodayImpact() throws {
 }
 
 @MainActor
-@Test("Lunch save ignores a finished lunch but asks for a remaining one")
-func lunchSavePromptTracksRemainingBreak() throws {
+@Test("Lunch save keeps a finished lunch in today's record an explicit choice")
+func lunchSavePromptTracksTodayRecordImpact() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let beforeLunch = try #require(Calendar.current.date(from: DateComponents(
@@ -2919,7 +2978,7 @@ func lunchSavePromptTracksRemainingBreak() throws {
     store.lunchStartMinutes = 12 * 60
     store.lunchDurationMinutes = 60
 
-    #expect(!store.shouldPromptApplyingToToday(
+    #expect(store.shouldPromptApplyingToToday(
         ScheduleFieldChange(lunchEnabled: false),
         scope: .lunch,
         at: afterLunch

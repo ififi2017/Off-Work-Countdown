@@ -5,8 +5,8 @@ import Testing
 @MainActor
 @Test("Unknown JSON schema versions are rejected")
 func recordJSONRejectsUnknownVersion() throws {
-    let data = Data(#"{"schemaVersion":4,"exportedAtMs":0,"timeZoneIdentifier":"UTC","calendarIdentifier":"gregorian","careerPeriods":[],"scheduleSnapshots":[],"calendarExceptions":[],"dayOverrides":[],"workObservations":[]}"#.utf8)
-    #expect(throws: RecordJSONError.unknownSchemaVersion(4)) {
+    let data = Data(#"{"schemaVersion":5,"exportedAtMs":0,"timeZoneIdentifier":"UTC","calendarIdentifier":"gregorian","careerPeriods":[],"scheduleSnapshots":[],"calendarExceptions":[],"dayOverrides":[],"workObservations":[]}"#.utf8)
+    #expect(throws: RecordJSONError.unknownSchemaVersion(5)) {
         _ = try RecordJSON.decode(data)
     }
 }
@@ -34,7 +34,7 @@ func workObservationSyncStampMigration() throws {
 
     let exported = try export(state)
     let current = try RecordJSON.decode(exported)
-    #expect(current.schemaVersion == 3)
+    #expect(current.schemaVersion == 4)
     #expect(current.workObservations[0].editCount == 4)
     #expect(current.workObservations[0].editTieBreaker == id(74).uuidString)
     var roundTripped = RecordState()
@@ -55,6 +55,73 @@ func workObservationSyncStampMigration() throws {
         #expect(observation.editCount == 1)
         #expect(observation.editTieBreaker == eventID)
     }
+}
+
+@MainActor
+@Test("Focus planning, templates, defaults, assignments, and timer settings round-trip")
+func recordJSONPreservesFocusPlanningConfiguration() throws {
+    let templateID = id(80)
+    let taskKey = id(81)
+    let editedAt = Date(timeIntervalSince1970: 1_788_000_000)
+    var state = RecordState()
+    state.focusPlanningConfiguration = FocusPlanningConfiguration(
+        planning: FocusPlanningState(
+            plans: [
+                "2026-09-02": FocusDayPlan(
+                    dayKey: "2026-09-02",
+                    shiftStartAtMs: 1_788_000_000_000,
+                    assignments: [
+                        FocusPlanAssignment(
+                            blockStartAtMs: 1_788_000_000_000,
+                            kind: .task,
+                            taskID: nil,
+                            taskTitle: "Write release notes",
+                            taskIcon: .writing
+                        )
+                    ],
+                    appliedTemplateID: templateID
+                )
+            ],
+            templates: [
+                FocusTemplate(
+                    id: templateID,
+                    name: "Release day",
+                    slots: [
+                        FocusTemplateSlot(
+                            blockIndex: 0,
+                            kind: .task,
+                            taskKey: taskKey,
+                            taskTitle: "Write release notes",
+                            taskIcon: .writing
+                        )
+                    ],
+                    createdAt: editedAt,
+                    updatedAt: editedAt
+                )
+            ],
+            defaultTemplateID: templateID,
+            autoAppliedDayKeys: ["2026-09-02"]
+        ),
+        timerSettings: FocusTimerSettings(
+            focusMinutes: 40,
+            shortBreakMinutes: 8,
+            longBreakMinutes: 20,
+            longBreakEvery: 3
+        ),
+        editedAt: editedAt,
+        editCount: 7,
+        editTieBreaker: id(82)
+    )
+
+    let document = try RecordJSON.decode(try export(state))
+    #expect(document.schemaVersion == 4)
+    var restored = RecordState()
+    _ = try RecordJSON.apply(document, to: &restored, mode: .skipErased)
+
+    let configuration = try #require(restored.focusPlanningConfiguration)
+    #expect(configuration == state.focusPlanningConfiguration)
+    #expect(configuration.planning.defaultTemplateID == templateID)
+    #expect(configuration.timerSettings.focusMinutes == 40)
 }
 
 @MainActor

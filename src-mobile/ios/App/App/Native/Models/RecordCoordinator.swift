@@ -82,16 +82,20 @@ final class RecordCoordinator {
         if fileURL != nil { load() }
     }
 
-    func deleteAllLocalData() {
-        guard !blocksWrites else { return }
+    @discardableResult
+    func deleteAllLocalData() -> Bool {
+        guard !blocksWrites else { return false }
         let next = RecordState()
         do {
             try writeArchive(next)
             state = next
             revision &+= 1
             persistenceError = nil
+            onExternalStateApplied?()
+            return true
         } catch {
             persistenceError = .writeFailed
+            return false
         }
     }
 
@@ -391,6 +395,29 @@ final class RecordCoordinator {
         persist()
     }
 
+    func upsertFocusPlanningConfiguration(
+        _ draft: FocusPlanningConfiguration,
+        at date: Date = .now
+    ) {
+        guard !blocksWrites else { return }
+        var next = draft
+        if let current = state.focusPlanningConfiguration {
+            next.editCount = current.editCount + 1
+        } else {
+            next.editCount = max(next.editCount, 0) + 1
+        }
+        next.editTieBreaker = UUID()
+        next.editedAt = date
+        state.focusPlanningConfiguration = next
+        markDirty(
+            .focusPlanningConfiguration,
+            key: FocusPlanningConfiguration.logicalKey,
+            editCount: next.editCount,
+            tie: next.editTieBreaker
+        )
+        persist()
+    }
+
     @discardableResult
     func replaceSyncState(_ sync: SyncLocalState) -> Bool {
         guard !blocksWrites else { return false }
@@ -685,6 +712,13 @@ final class RecordCoordinator {
             target.focusSessions[index].editTieBreaker = UUID()
             target.focusSessions[index].editedAt = date
             return (target.focusSessions[index].editCount, target.focusSessions[index].editTieBreaker)
+        case .focusPlanningConfiguration:
+            guard var configuration = target.focusPlanningConfiguration else { return nil }
+            configuration.editCount = max(configuration.editCount + 1, atLeastEditCount)
+            configuration.editTieBreaker = UUID()
+            configuration.editedAt = date
+            target.focusPlanningConfiguration = configuration
+            return (configuration.editCount, configuration.editTieBreaker)
         }
     }
 
@@ -699,6 +733,8 @@ final class RecordCoordinator {
         case .lifeProfile(let profile): return (.lifeProfile, LifeProfile.profileID.uuidString, profile.editCount)
         case .focusTask(let task): return (.focusTask, task.id.uuidString, task.editCount)
         case .focusSession(let session): return (.focusSession, session.id.uuidString, session.editCount)
+        case .focusPlanningConfiguration(let configuration):
+            return (.focusPlanningConfiguration, FocusPlanningConfiguration.logicalKey, configuration.editCount)
         }
     }
 
@@ -763,7 +799,7 @@ final class RecordCoordinator {
     ) {
         guard !blocksWrites else { return }
         let local = RecordsSyncPayload.editStamp(type: type, key: key, in: state)
-        let action = RecordsSyncApply.action(
+        var action = RecordsSyncApply.action(
             type: type,
             locallyErased: state.isErased(type, key: key),
             localCount: local?.0,
@@ -790,6 +826,45 @@ final class RecordCoordinator {
         }
         let localPayload = RecordsSyncPayload.encode(type: type, key: key, from: state)
         let baselinePayload = state.sync.rows[name]?.lastKnownPayload
+        let localEditedAtMs = localPayload.flatMap {
+            RecordsSyncPayload.editedAtMs(from: $0, type: type, calendar: calendar)
+        }
+        let incomingEditedAtMs = RecordsSyncPayload.editedAtMs(
+            from: payload,
+            type: type,
+            calendar: calendar
+        )
+        let hasSameBusinessContent = localPayload.map {
+            RecordsSyncConflict.payloadsHaveSameBusinessContent($0, payload)
+        } ?? false
+        let automaticallyMergedPayload = localPayload.flatMap {
+            RecordsSyncConflict.automaticallyMergedPayload(
+                local: $0,
+                server: payload,
+                baseline: baselinePayload,
+                type: type
+            )
+        }
+        var requiresManualReview = false
+        if action == .keepLocalAndCopyServer || action == .takeServerAndCopyLocal,
+           let localCount = local?.0 {
+            switch RecordsSyncConflict.automaticallyPreferredWinner(
+                localCount: localCount,
+                localEditedAtMs: localEditedAtMs,
+                incomingCount: editCount,
+                incomingEditedAtMs: incomingEditedAtMs
+            ) {
+            case .local:
+                action = .keepLocalAndCopyServer
+            case .incoming:
+                action = .takeServerAndCopyLocal
+            case .unknown:
+                assertionFailure("Automatic conflict resolution never returns an unknown winner")
+                requiresManualReview = true
+            case nil:
+                requiresManualReview = true
+            }
+        }
         // The server row out-ranked the tombstone, so this identity is alive
         // again. Drop the local tombstone or `.skipErased` imports would keep
         // skipping the day and the next fetch would erase it a second time.
@@ -801,23 +876,54 @@ final class RecordCoordinator {
             RecordJSON.applyIncoming(incoming, to: &state)
             RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
         case .keepLocalAndCopyServer:
-            state.sync.conflicts.append(
-                SyncConflictCopy(
-                    entityType: type,
-                    logicalKey: key,
-                    payload: payload,
-                    lostAtMs: Date.now.timeIntervalSince1970 * 1_000,
-                    localPayload: localPayload,
-                    incomingPayload: payload,
-                    baselinePayload: baselinePayload,
-                    localEditedAtMs: localPayload.flatMap { RecordsSyncPayload.editedAtMs(from: $0, type: type, calendar: calendar) },
-                    incomingEditedAtMs: RecordsSyncPayload.editedAtMs(from: payload, type: type, calendar: calendar),
-                    currentWinner: .local
+            guard !hasSameBusinessContent else {
+                removeCloudConflict(type: type, key: key)
+                break
+            }
+            if let automaticallyMergedPayload,
+               applyAutomaticallyMergedPayload(
+                   automaticallyMergedPayload,
+                   type: type,
+                   key: key,
+                   localPayload: localPayload,
+                   incomingPayload: payload,
+                   calendar: calendar
+               ) {
+                break
+            }
+            if requiresManualReview {
+                parkCloudConflict(
+                    SyncConflictCopy(
+                        entityType: type,
+                        logicalKey: key,
+                        payload: payload,
+                        lostAtMs: Date.now.timeIntervalSince1970 * 1_000,
+                        localPayload: localPayload,
+                        incomingPayload: payload,
+                        baselinePayload: baselinePayload,
+                        localEditedAtMs: localEditedAtMs,
+                        incomingEditedAtMs: incomingEditedAtMs,
+                        currentWinner: .local
+                    )
                 )
-            )
+            } else {
+                removeCloudConflict(type: type, key: key)
+            }
         case .takeServerAndCopyLocal:
-            if let localPayload {
-                state.sync.conflicts.append(
+            if !hasSameBusinessContent,
+               let automaticallyMergedPayload,
+               applyAutomaticallyMergedPayload(
+                   automaticallyMergedPayload,
+                   type: type,
+                   key: key,
+                   localPayload: localPayload,
+                   incomingPayload: payload,
+                   calendar: calendar
+               ) {
+                break
+            }
+            if requiresManualReview, let localPayload, !hasSameBusinessContent {
+                parkCloudConflict(
                     SyncConflictCopy(
                         entityType: type,
                         logicalKey: key,
@@ -826,11 +932,14 @@ final class RecordCoordinator {
                         localPayload: localPayload,
                         incomingPayload: payload,
                         baselinePayload: baselinePayload,
-                        localEditedAtMs: RecordsSyncPayload.editedAtMs(from: localPayload, type: type, calendar: calendar),
-                        incomingEditedAtMs: RecordsSyncPayload.editedAtMs(from: payload, type: type, calendar: calendar),
+                        localEditedAtMs: localEditedAtMs,
+                        incomingEditedAtMs: incomingEditedAtMs,
                         currentWinner: .incoming
                     )
                 )
+            }
+            if hasSameBusinessContent || !requiresManualReview {
+                removeCloudConflict(type: type, key: key)
             }
             RecordJSON.applyIncoming(incoming, to: &state)
             RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
@@ -854,6 +963,43 @@ final class RecordCoordinator {
                 RecordJSON.applyIncoming(incoming, to: &state)
                 RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
             }
+        case .mergeFocusPlanning:
+            if case .focusPlanningConfiguration(let server) = incoming,
+               let localConfiguration = state.focusPlanningConfiguration {
+                if RecordsSyncConflict.focusPlanningContentIsEqual(localConfiguration, server) {
+                    removeCloudConflict(type: type, key: key)
+                    if RecordsSyncConflict.localWins(
+                        localCount: localConfiguration.editCount,
+                        localTie: localConfiguration.editTieBreaker.uuidString,
+                        serverCount: server.editCount,
+                        serverTie: server.editTieBreaker.uuidString
+                    ) {
+                        // The local stamp is already dirty or will be found by
+                        // the pending scan. No user-visible conflict exists.
+                    } else {
+                        state.focusPlanningConfiguration = server
+                        RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
+                    }
+                } else {
+                    let baseline = lastKnownFocusPlanningConfiguration()
+                    let merged = RecordsSyncConflict.mergeFocusPlanningConfiguration(
+                        local: localConfiguration,
+                        server: server,
+                        baseline: baseline
+                    )
+                    state.focusPlanningConfiguration = merged
+                    RecordsSyncOutbox.markDirty(
+                        &state.sync,
+                        type: .focusPlanningConfiguration,
+                        key: FocusPlanningConfiguration.logicalKey,
+                        editCount: merged.editCount,
+                        editTieBreaker: merged.editTieBreaker
+                    )
+                }
+            } else {
+                RecordJSON.applyIncoming(incoming, to: &state)
+                RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
+            }
         case .reassertErase:
             assertionFailure("Reasserted erasures return before payload application")
         }
@@ -861,7 +1007,7 @@ final class RecordCoordinator {
             entityType: type,
             logicalKey: key,
             recordName: name,
-            dirty: action == .keepLocalAndCopyServer || action == .mergeLife,
+            dirty: action == .keepLocalAndCopyServer || action == .mergeLife || action == .mergeFocusPlanning,
             generation: generation,
             lastKnownRecord: systemFields,
             lastKnownPayload: payload,
@@ -906,6 +1052,68 @@ final class RecordCoordinator {
             return profile
         }
         return nil
+    }
+
+    private func lastKnownFocusPlanningConfiguration() -> FocusPlanningConfiguration? {
+        let name = RecordsSyncIdentity.recordName(
+            type: .focusPlanningConfiguration,
+            key: FocusPlanningConfiguration.logicalKey
+        )
+        guard let data = state.sync.rows[name]?.lastKnownPayload,
+              case .focusPlanningConfiguration(let configuration) = RecordsSyncPayload.incoming(
+                  from: data,
+                  type: .focusPlanningConfiguration,
+                  calendar: RecordsSyncPayload.fileCalendar(for: state)
+              )
+        else { return nil }
+        return configuration
+    }
+
+    /// One logical identity has at most one pending review. Repeated engine
+    /// delivery updates the candidates instead of multiplying cards with
+    /// random conflict IDs.
+    private func parkCloudConflict(_ copy: SyncConflictCopy) {
+        removeCloudConflict(type: copy.entityType, key: copy.logicalKey)
+        state.sync.conflicts.append(copy)
+    }
+
+    private func removeCloudConflict(type: RecordEntityType, key: String) {
+        state.sync.conflicts.removeAll {
+            $0.entityType == type && $0.logicalKey == key
+        }
+    }
+
+    private func applyAutomaticallyMergedPayload(
+        _ payload: Data,
+        type: RecordEntityType,
+        key: String,
+        localPayload: Data?,
+        incomingPayload: Data,
+        calendar: Calendar
+    ) -> Bool {
+        guard let incoming = RecordsSyncPayload.incoming(from: payload, type: type, calendar: calendar) else {
+            return false
+        }
+        RecordJSON.applyIncoming(incoming, to: &state)
+        let conflictMaximum = [localPayload, incomingPayload]
+            .compactMap { $0 }
+            .compactMap { RecordsSyncPayload.editStamp(from: $0, type: type, calendar: calendar)?.0 }
+            .max() ?? 0
+        guard let bumped = bumpEntityStamp(
+            in: &state,
+            type: type,
+            key: key,
+            atLeastEditCount: conflictMaximum + 1
+        ) else { return false }
+        RecordsSyncOutbox.markDirty(
+            &state.sync,
+            type: type,
+            key: key,
+            editCount: bumped.0,
+            editTieBreaker: bumped.1
+        )
+        removeCloudConflict(type: type, key: key)
+        return true
     }
 
     func currentSnapshotID(on day: Date) -> UUID? {
@@ -1309,8 +1517,10 @@ final class RecordCoordinator {
                 profile.migrateLegacyFields(calendar: RecordsSyncPayload.fileCalendar(for: archive))
                 archive.lifeProfile = profile
             }
+            let normalizedConflicts = normalizeStoredConflicts(in: &archive)
             state = archive
             revision &+= 1
+            if normalizedConflicts { try writeArchive(archive) }
         } catch let error as CocoaError where error.code == .fileReadNoPermission {
             persistenceError = .unreadableArchive
         } catch {
@@ -1326,6 +1536,64 @@ final class RecordCoordinator {
         } catch {
             persistenceError = .writeFailed
         }
+    }
+
+    /// Archives written by earlier builds may contain metadata-only copies,
+    /// an already-selected newer CloudKit revision, or repeated deliveries for
+    /// the same logical identity. None represents a decision a person can make,
+    /// so remove them during archive migration before the badge is rendered.
+    @discardableResult
+    private func normalizeStoredConflicts(in archive: inout RecordState) -> Bool {
+        let original = archive.sync.conflicts
+        var latestByIdentity: [String: SyncConflictCopy] = [:]
+        let calendar = RecordsSyncPayload.fileCalendar(for: archive)
+        for conflict in original {
+            if let local = conflict.localPayload,
+               let incoming = conflict.incomingPayload,
+               RecordsSyncConflict.payloadsHaveSameBusinessContent(local, incoming) {
+                continue
+            }
+            if conflict.source != "import",
+               let local = conflict.localPayload,
+               let incoming = conflict.incomingPayload,
+               let localStamp = RecordsSyncPayload.editStamp(
+                   from: local,
+                   type: conflict.entityType,
+                   calendar: calendar
+               ),
+               let incomingStamp = RecordsSyncPayload.editStamp(
+                   from: incoming,
+                   type: conflict.entityType,
+                   calendar: calendar
+               ),
+               let preferred = RecordsSyncConflict.automaticallyPreferredWinner(
+                   localCount: localStamp.0,
+                   localEditedAtMs: conflict.localEditedAtMs ?? RecordsSyncPayload.editedAtMs(
+                       from: local,
+                       type: conflict.entityType,
+                       calendar: calendar
+                   ),
+                   incomingCount: incomingStamp.0,
+                   incomingEditedAtMs: conflict.incomingEditedAtMs ?? RecordsSyncPayload.editedAtMs(
+                       from: incoming,
+                       type: conflict.entityType,
+                       calendar: calendar
+                   )
+               ),
+               preferred == conflict.currentWinner {
+                continue
+            }
+            let identity = "\(conflict.entityType.rawValue).\(conflict.logicalKey)"
+            if let previous = latestByIdentity[identity], previous.lostAtMs > conflict.lostAtMs {
+                continue
+            }
+            latestByIdentity[identity] = conflict
+        }
+        archive.sync.conflicts = latestByIdentity.values.sorted {
+            if $0.lostAtMs != $1.lostAtMs { return $0.lostAtMs < $1.lostAtMs }
+            return $0.id.uuidString < $1.id.uuidString
+        }
+        return archive.sync.conflicts != original
     }
 
     private func writeArchive(_ archive: RecordState) throws {

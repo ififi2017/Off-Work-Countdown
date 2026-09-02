@@ -71,7 +71,7 @@ struct RecordsAllRecordsView: View {
                     OWCGroupCard {
                         ForEach(Array(presentation.years.enumerated()), id: \.element) { index, year in
                             NavigationLink(value: RecordsRoute.yearList(year)) {
-                                OWCRow(
+                                OWCDisclosureRow(
                                     title: "\(year)",
                                     subtitle: store.plus.isAuthorized
                                         ? store.t(
@@ -80,9 +80,7 @@ struct RecordsAllRecordsView: View {
                                         )
                                         : nil,
                                     isLast: index == presentation.years.count - 1
-                                ) {
-                                    OWCDetailAccessory(text: nil)
-                                }
+                                )
                             }
                             .buttonStyle(OWCRowButtonStyle())
                         }
@@ -150,12 +148,10 @@ struct RecordsYearRecordsView: View {
             OWCGroupCard {
                 ForEach(Array(months.enumerated()), id: \.element) { index, month in
                     NavigationLink(value: RecordsRoute.monthList(year: year, month: month)) {
-                        OWCRow(
+                        OWCDisclosureRow(
                             title: monthTitle(month),
                             isLast: index == months.count - 1
-                        ) {
-                            OWCDetailAccessory(text: nil)
-                        }
+                        )
                     }
                     .buttonStyle(OWCRowButtonStyle())
                 }
@@ -208,12 +204,10 @@ struct RecordsMonthRecordsView: View {
             OWCGroupCard {
                 ForEach(Array(days.enumerated()), id: \.element.dayKey) { index, day in
                     NavigationLink(value: RecordsRoute.day(day.dayKey)) {
-                        OWCRow(
+                        OWCDisclosureRow(
                             title: store.formatRecordsDayTitle(dayKey: day.dayKey),
                             isLast: index == days.count - 1
-                        ) {
-                            OWCDetailAccessory(text: nil)
-                        }
+                        )
                     }
                     .buttonStyle(OWCRowButtonStyle())
                 }

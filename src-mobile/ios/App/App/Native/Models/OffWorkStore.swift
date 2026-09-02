@@ -532,8 +532,9 @@ final class OffWorkStore {
         didSet { defaults.set(lifeSetupPromptDismissed, forKey: Key.lifeSetupPromptDismissed) }
     }
     private(set) var focusPlanning = FocusPlanningState()
-    /// Deliberately local-only: a person's preferred cadence is not shared
-    /// data. Existing sessions carry their own fixed `plannedEndAt`.
+    /// Synced with the planning configuration. Existing sessions carry their
+    /// own fixed `plannedEndAt`, so a remote preference never rewrites a timer
+    /// already in flight.
     private(set) var focusTimerSettings = FocusTimerSettings.default
     /// Cheap invalidation token for Widget / notification publication. The
     /// plan itself can contain hundreds of assignments, so RootView observes
@@ -697,7 +698,6 @@ final class OffWorkStore {
            let stored = try? JSONDecoder().decode(FocusTimerSettings.self, from: data) {
             focusTimerSettings = stored.normalized
         }
-        cloudSync.attach(records: self.records)
         if debugRoute != nil {
             selectedTab = .settings
         } else if debugRecordsRoute != nil || debugRecordsScale != nil {
@@ -810,6 +810,23 @@ final class OffWorkStore {
         // Carryover is lifecycle work, never a rendering side effect. The
         // Focus page may be evaluated repeatedly by SwiftUI without mutating
         // the archive or producing a cloud write.
+        if let configuration = self.records.state.focusPlanningConfiguration {
+            focusPlanning = configuration.planning
+            focusTimerSettings = configuration.timerSettings.normalized
+            mirrorFocusConfigurationToLegacyDefaults()
+        } else {
+            let legacy = FocusPlanningConfiguration(
+                planning: focusPlanning,
+                timerSettings: focusTimerSettings,
+                editedAt: .now,
+                editCount: 0,
+                editTieBreaker: UUID()
+            )
+            if legacy.hasUserContent {
+                self.records.upsertFocusPlanningConfiguration(legacy)
+            }
+        }
+        cloudSync.attach(records: self.records)
         carryIncompleteFocusTasks(at: .now)
 #if DEBUG
         if let debugRoute {
@@ -1135,8 +1152,8 @@ final class OffWorkStore {
         var incoming = local
         incoming.kind = .confirmedAsScheduled
         incoming.note = "Imported correction"
-        incoming.editedAt = date
-        incoming.editCount = local.editCount + 1
+        incoming.editedAt = local.editedAt
+        incoming.editCount = local.editCount
         incoming.editTieBreaker = Self.debugSeedID(900)
 
         let calendar = RecordsSyncPayload.fileCalendar(for: records.state)
@@ -1152,7 +1169,7 @@ final class OffWorkStore {
                 logicalKey: local.dayKey,
                 payload: incomingPayload,
                 lostAtMs: date.timeIntervalSince1970 * 1_000,
-                source: "import",
+                source: nil,
                 localPayload: localPayload,
                 incomingPayload: incomingPayload,
                 localEditedAtMs: local.editedAt.timeIntervalSince1970 * 1_000,
@@ -2934,6 +2951,14 @@ final class OffWorkStore {
         decision: ScheduleChangeDecision,
         at date: Date = .now
     ) {
+        // Applying a change to today removes timer-only adjustments. Capture
+        // their projection before mutating the schedule so a matching durable
+        // override can be removed as well. Otherwise that old custom row keeps
+        // winning over the new schedule snapshot in Records indefinitely.
+        let replacedTimerProjection = decision == .applyToToday
+            ? projectedDayOverride(at: date)
+            : nil
+
         if decision == .nextShiftOnly, let until = overrideExpiry(at: date) {
             todayOverride = captureSchedule(untilMs: until)
         } else {
@@ -3001,7 +3026,7 @@ final class OffWorkStore {
             timeZone: recordsTimeZone
         )
         if decision == .applyToToday {
-            persistProjectedDayOverride(at: date)
+            replaceProjectedDayOverride(replacing: replacedTimerProjection, at: date)
         }
     }
 
@@ -3323,6 +3348,12 @@ final class OffWorkStore {
         recordsDateString(date, template: "MMMM")
     }
 
+    /// The expanded year lists all twelve months in one narrow column beside a
+    /// bar. "Dezember" and "листопада" do not fit there at full length.
+    func formatRecordsMonthShort(_ date: Date) -> String {
+        recordsDateString(date, template: "MMM")
+    }
+
     /// A clock time as read in the records zone, not the device's.
     func formatRecordsTime(_ date: Date) -> String {
         recordsDateString(date, template: "jm")
@@ -3443,6 +3474,33 @@ final class OffWorkStore {
     func persistProjectedDayOverride(at date: Date = .now) {
         guard let override = projectedDayOverride(at: date) else { return }
         records.upsertOverride(override, at: date)
+    }
+
+    /// Reconciles only the timer projection that existed before an explicit
+    /// “change today too” decision. A Records-tab edit with different business
+    /// content remains intact; it is not timer housekeeping.
+    private func replaceProjectedDayOverride(
+        replacing previous: DayOverride?,
+        at date: Date
+    ) {
+        if let override = projectedDayOverride(at: date) {
+            records.upsertOverride(override, at: date)
+            return
+        }
+        guard let previous,
+              let stored = records.state.overrides.first(where: { $0.dayKey == previous.dayKey }),
+              Self.hasSameDayOverrideContent(stored, previous)
+        else { return }
+        records.erase(.dayOverride, key: previous.dayKey, at: date)
+    }
+
+    private static func hasSameDayOverrideContent(_ lhs: DayOverride, _ rhs: DayOverride) -> Bool {
+        lhs.dayKey == rhs.dayKey
+            && lhs.shiftAnchorDate == rhs.shiftAnchorDate
+            && lhs.kind == rhs.kind
+            && lhs.segments == rhs.segments
+            && lhs.note == rhs.note
+            && lhs.timeZoneIdentifier == rhs.timeZoneIdentifier
     }
 
     func resolvedDay(dayKey: String) -> DayResolution? {
@@ -3724,10 +3782,10 @@ final class OffWorkStore {
         // Rejecting a cadence change is safer than silently mapping a saved
         // task slot onto a recovery block.
         guard focusPlanning.templates.isEmpty else { return false }
-        focusTimerSettings = settings.normalized
-        if let data = try? JSONEncoder().encode(focusTimerSettings) {
-            defaults.set(data, forKey: Key.focusTimerSettings)
-        }
+        let normalized = settings.normalized
+        guard normalized != focusTimerSettings else { return true }
+        focusTimerSettings = normalized
+        persistFocusConfiguration()
         return true
     }
 
@@ -4192,9 +4250,32 @@ final class OffWorkStore {
     }
 
     private func persistFocusPlanning() {
-        guard let data = try? JSONEncoder().encode(focusPlanning) else { return }
-        defaults.set(data, forKey: Key.focusPlanning)
+        persistFocusConfiguration()
+    }
+
+    private func persistFocusConfiguration(at date: Date = .now) {
+        let current = records.state.focusPlanningConfiguration
+        records.upsertFocusPlanningConfiguration(
+            FocusPlanningConfiguration(
+                planning: focusPlanning,
+                timerSettings: focusTimerSettings.normalized,
+                editedAt: current?.editedAt ?? date,
+                editCount: current?.editCount ?? 0,
+                editTieBreaker: current?.editTieBreaker ?? UUID()
+            ),
+            at: date
+        )
+        mirrorFocusConfigurationToLegacyDefaults()
         focusPlanningRevision &+= 1
+    }
+
+    private func mirrorFocusConfigurationToLegacyDefaults() {
+        if let planningData = try? JSONEncoder().encode(focusPlanning) {
+            defaults.set(planningData, forKey: Key.focusPlanning)
+        }
+        if let settingsData = try? JSONEncoder().encode(focusTimerSettings.normalized) {
+            defaults.set(settingsData, forKey: Key.focusTimerSettings)
+        }
     }
 
     func addScheduledFocusTask(
@@ -4826,6 +4907,14 @@ final class OffWorkStore {
     /// Carry first so a yesterday task imported today remains findable; then
     /// converge open sessions before any system timer is republished.
     private func reconcileExternallyAppliedRecordState(at date: Date = .now) {
+        let syncedPlanning = records.state.focusPlanningConfiguration?.planning ?? FocusPlanningState()
+        let syncedSettings = records.state.focusPlanningConfiguration?.timerSettings.normalized ?? .default
+        if syncedPlanning != focusPlanning || syncedSettings != focusTimerSettings.normalized {
+            focusPlanning = syncedPlanning
+            focusTimerSettings = syncedSettings
+            mirrorFocusConfigurationToLegacyDefaults()
+            focusPlanningRevision &+= 1
+        }
         carryIncompleteFocusTasks(at: date)
         reconcileOpenFocusSessions(at: date)
         focusRuntimeRevision &+= 1

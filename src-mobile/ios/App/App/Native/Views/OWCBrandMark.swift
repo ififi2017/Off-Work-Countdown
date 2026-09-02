@@ -26,8 +26,30 @@ struct OWCBrandMark: View {
             let side = min(geometry.size.width, geometry.size.height)
             let scale = side / 1024
             let motion = reduceMotion ? CGSize.zero : interactionOffset
+            let ringGlowLineWidth = (isPressed ? 176 : 142) * scale
+            let ringGlowBlur = (isPressed ? 11 : 8) * scale
+            let endpointGlowSide = (isPressed ? 272 : 224) * scale
 
             ZStack(alignment: .topLeading) {
+                // The mark's interactive response should belong to the whole
+                // clock, not just the endpoint. A soft duplicate of the ring
+                // makes the pressed/celebrating state read as one expanding
+                // light, while the crisp stroke below keeps the logo legible.
+                if showsDepth || isPressed {
+                    OpenDayRing()
+                        .stroke(
+                            Self.orangeGradient.opacity(isPressed ? 0.52 : 0.24),
+                            style: StrokeStyle(
+                                lineWidth: ringGlowLineWidth,
+                                lineCap: .round
+                            )
+                        )
+                        .blur(radius: ringGlowBlur)
+                        .opacity(isPressed && reduceMotion ? 0.7 : 1)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+
                 // The workday as a ring, broken open where the day ends.
                 OpenDayRing()
                     .stroke(
@@ -51,6 +73,33 @@ struct OWCBrandMark: View {
                     .offset(x: motion.width * -0.01, y: motion.height * -0.01)
 
                 if showsEndpoint {
+                    // Give the endpoint the same ambient field as the outer
+                    // ring. The existing glass effect remains the crisp,
+                    // interactive surface; this layer supplies the diffuse
+                    // halo that was previously visible only on the hands.
+                    if showsDepth || isPressed {
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    colors: [
+                                        OWCDesign.orange.opacity(isPressed ? 0.38 : 0.2),
+                                        OWCDesign.orange.opacity(isPressed ? 0.14 : 0.06),
+                                        .clear,
+                                    ],
+                                    center: .center,
+                                    startRadius: 2,
+                                    endRadius: endpointGlowSide * 0.5
+                                )
+                            )
+                            .frame(width: endpointGlowSide, height: endpointGlowSide)
+                            .blur(radius: (isPressed ? 8 : 6) * scale)
+                            .scaleEffect(isPressed && !reduceMotion ? 1.08 : 1)
+                            .position(x: 664.5 * scale, y: 776.1 * scale)
+                            .offset(x: motion.width * 0.09, y: motion.height * 0.09)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
+
                     Circle()
                         .fill(Self.orangeGradient)
                         .frame(width: 172 * scale, height: 172 * scale)
@@ -59,6 +108,10 @@ struct OWCBrandMark: View {
                             in: Circle()
                         )
                         .scaleEffect(isPressed && !reduceMotion ? 0.92 : 1)
+                        .shadow(
+                            color: OWCDesign.orange.opacity(isPressed ? 0.32 : (showsDepth ? 0.16 : 0)),
+                            radius: (isPressed ? 12 : 7) * scale
+                        )
                         .position(x: 664.5 * scale, y: 776.1 * scale)
                         .offset(x: motion.width * 0.09, y: motion.height * 0.09)
                 }
@@ -111,6 +164,7 @@ struct OWCBrandMark: View {
             .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
         }
         .aspectRatio(1, contentMode: .fit)
+        .animation(reduceMotion ? nil : OWCMotion.press, value: isPressed)
         // The containing surface decides whether this mark is interactive.
         // Disabling hit testing here also disables the real Button/gesture
         // used by onboarding, About, and the draggable empty state.

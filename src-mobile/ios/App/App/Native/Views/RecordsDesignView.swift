@@ -11,7 +11,6 @@ struct RecordsDesignView: View {
     @State private var selectedDayKey: String?
     @State private var selectedYearMonth: Int?
     @State private var selectedLifeStageKind: LifeStageKind?
-    @State private var presentedStage: LifeStageSpan?
     @State private var days: [DayResolution] = []
     @State private var cells: [RecordsDayCell] = []
     @State private var summary: RecordsHeadlineSummary?
@@ -23,10 +22,16 @@ struct RecordsDesignView: View {
     @State private var showsLifeEditor = false
     @State private var confirmsQuarantine = false
     @State private var loadGeneration = 0
+    @State private var showsCompactRootBar = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     private var isExpanded: Bool { expanded[scale] == true }
     private var canExpand: Bool { scale == .year || scale == .life }
+    private var usesPhonePortraitHeader: Bool {
+        horizontalSizeClass == .compact && verticalSizeClass != .compact
+    }
 
     init(
         store: OffWorkStore,
@@ -61,12 +66,16 @@ struct RecordsDesignView: View {
             }
         }
         .background(OWCDesign.page)
-        .navigationTitle("")
+        .owcNavigationTitle(
+            store.t("recordsTitle"),
+            displayMode: .large,
+            isActive: store.selectedTab == .records && !isExpanded && !usesPhonePortraitHeader
+        )
         // Expansion is a contained browsing mode. The calendar remains inside
         // the same navigation stack, but the surrounding tab and navigation
         // chrome must get out of the way so the canvas can use the available
         // width and height on both phones and iPad split panes.
-        .toolbar(isExpanded ? .hidden : .visible, for: .navigationBar)
+        .toolbar(isExpanded || usesPhonePortraitHeader ? .hidden : .visible, for: .navigationBar)
         .toolbar(isExpanded ? .hidden : .visible, for: .tabBar)
         .navigationDestination(for: RecordsRoute.self) { route in
             recordsDestination(route)
@@ -84,13 +93,13 @@ struct RecordsDesignView: View {
         .sheet(isPresented: $showsLifeEditor) {
             LifeProfileEditView(store: store)
         }
-        .sheet(item: Binding(
-            get: { presentedStage.map(LifeStageSheetItem.init) },
-            set: { if $0 == nil { presentedStage = nil } }
-        )) { item in
-            LifeStageDetailSheet(store: store, stage: item.stage)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
+        .toolbar { recordsToolbar }
+        .overlay(alignment: .top) {
+            if usesPhonePortraitHeader, showsCompactRootBar, !isExpanded {
+                compactRecordsBar
+                    .transition(.opacity)
+                    .zIndex(10)
+            }
         }
         .task { await load(selectingToday: true) }
         .onChange(of: store.selectedTab) { _, tab in
@@ -119,7 +128,9 @@ struct RecordsDesignView: View {
     private var regularCanvas: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                recordsHeader
+                if usesPhonePortraitHeader {
+                    recordsRootHeader
+                }
 
                 if let banner = store.records.archiveBanner {
                     archiveBannerCard(banner)
@@ -157,10 +168,11 @@ struct RecordsDesignView: View {
                 }
             }
             .padding(.horizontal, OWCDesign.pageInset)
-            .padding(.top, 6)
+            .padding(.top, 12)
             .padding(.bottom, 104)
         }
         .scrollIndicators(.hidden)
+        .coordinateSpace(.named("recordsRootScroll"))
     }
 
     /// A separate layout branch keeps expansion from being a taller version
@@ -195,48 +207,116 @@ struct RecordsDesignView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var recordsHeader: some View {
-        HStack(spacing: 8) {
+    @ToolbarContentBuilder
+    private var recordsToolbar: some ToolbarContent {
+        if !isExpanded, !usesPhonePortraitHeader, store.selectedTab == .records {
             if showsSidebarButton {
-                Button(action: showSidebar) {
-                    Label(store.t("showSidebar"), systemImage: "sidebar.left")
-                        .labelStyle(.iconOnly)
-                        .frame(width: 44, height: 44)
-                        .background(
-                            OWCDesign.control,
-                            in: RoundedRectangle(cornerRadius: 12)
-                        )
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: showSidebar) {
+                        OWCGlassCircleLabel {
+                            Image(systemName: "sidebar.left")
+                                .foregroundStyle(OWCDesign.primary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(store.t("showSidebar"))
+                }
+                .sharedBackgroundVisibility(.hidden)
+            }
+
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                if showsTodayButton {
+                    Button(action: returnToToday) {
+                        OWCGlassCircleLabel {
+                            Image(systemName: "scope")
+                                .foregroundStyle(OWCDesign.accent)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(store.t("recordsToday"))
+                }
+
+                NavigationLink(value: RecordsRoute.allRecords) {
+                    OWCGlassCircleLabel {
+                        Image(systemName: "list.bullet.rectangle")
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(OWCDesign.primary)
+                .accessibilityLabel(store.t("recordsAllRecords"))
             }
-            Text(store.t("recordsTitle"))
-                .font(.largeTitle.bold())
-                .tracking(-0.85)
-            Spacer(minLength: 8)
+            .sharedBackgroundVisibility(.hidden)
+        }
+    }
+
+    private var recordsRootHeader: some View {
+        OWCRootPageHeader(title: store.t("recordsTitle")) {
+            recordsLeadingControl
+        } trailing: {
+            recordsTrailingControls
+        }
+        .padding(.horizontal, max(0, OWCDesign.contentInset - OWCDesign.pageInset))
+        .padding(.top, 2)
+        .onGeometryChange(for: Bool.self) { proxy in
+            proxy.frame(in: .named("recordsRootScroll")).maxY < 8
+        } action: { _, shouldShow in
+            updateCompactRootBar(shouldShow)
+        }
+    }
+
+    private var compactRecordsBar: some View {
+        OWCCompactRootBar(title: store.t("recordsTitle")) {
+            recordsLeadingControl
+        } trailing: {
+            recordsTrailingControls
+        }
+    }
+
+    @ViewBuilder
+    private var recordsLeadingControl: some View {
+        if showsSidebarButton {
+            Button(action: showSidebar) {
+                OWCGlassCircleLabel {
+                    Image(systemName: "sidebar.left")
+                        .foregroundStyle(OWCDesign.primary)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(store.t("showSidebar"))
+        }
+    }
+
+    private var recordsTrailingControls: some View {
+        HStack(spacing: 8) {
             if showsTodayButton {
                 Button(action: returnToToday) {
-                    Image(systemName: "scope")
-                        .frame(width: 44, height: 44)
-                        .background(OWCDesign.control, in: Circle())
+                    OWCGlassCircleLabel {
+                        Image(systemName: "scope")
+                            .foregroundStyle(OWCDesign.accent)
+                    }
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(OWCDesign.accent)
                 .accessibilityLabel(store.t("recordsToday"))
                 .transition(.opacity.combined(with: .scale(scale: 0.92)))
             }
+
             NavigationLink(value: RecordsRoute.allRecords) {
-                Image(systemName: "list.bullet.rectangle")
-                    .frame(width: 44, height: 44)
-                    .background(OWCDesign.control, in: Circle())
+                OWCGlassCircleLabel {
+                    Image(systemName: "list.bullet.rectangle")
+                        .foregroundStyle(OWCDesign.secondary)
+                }
             }
             .buttonStyle(.plain)
-            .foregroundStyle(OWCDesign.secondary)
             .accessibilityLabel(store.t("recordsAllRecords"))
         }
-        .padding(.horizontal, max(0, OWCDesign.contentInset - OWCDesign.pageInset))
-        .padding(.top, 8)
         .animation(reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.18), value: showsTodayButton)
+    }
+
+    private func updateCompactRootBar(_ shouldShow: Bool) {
+        guard showsCompactRootBar != shouldShow else { return }
+        withAnimation(reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.16)) {
+            showsCompactRootBar = shouldShow
+        }
     }
 
     private var periodHeader: some View {
@@ -331,14 +411,28 @@ struct RecordsDesignView: View {
                         select(cell)
                     }
                 case .year:
-                    RecordsYearCanvas(
-                        store: store,
-                        cells: cells,
-                        selectedMonth: selectedYearMonth,
-                        showsMonthPicker: !expandedPresentation
-                    ) { month in
-                        selectedYearMonth = month
-                        selectionFeedback += 1
+                    // The year changes form when it is given the whole screen:
+                    // the collapsed density canvas answers "when was it heavy",
+                    // and the expanded rows answer "how do the months compare",
+                    // which is a question a 12pt bucket cannot hold.
+                    if expandedPresentation {
+                        RecordsYearMonthBars(
+                            store: store,
+                            cells: cells,
+                            selectedMonth: selectedYearMonth
+                        ) { month in
+                            selectedYearMonth = month
+                            selectionFeedback += 1
+                        }
+                    } else {
+                        RecordsYearCanvas(
+                            store: store,
+                            cells: cells,
+                            selectedMonth: selectedYearMonth
+                        ) { month in
+                            selectedYearMonth = month
+                            selectionFeedback += 1
+                        }
                     }
                 case .life:
                     lifeCanvas(expandedPresentation: expandedPresentation)
@@ -348,12 +442,12 @@ struct RecordsDesignView: View {
         .frame(maxWidth: .infinity, alignment: .top)
         .scaleEffect(reduceMotion || pinch == 1 ? 1 : max(0.96, min(1.04, pinch)))
         .gesture(
-            MagnificationGesture()
-                .onChanged { pinch = $0 }
+            MagnifyGesture()
+                .onChanged { pinch = $0.magnification }
                 .onEnded { value in
-                    if value > 1.22 {
+                    if value.magnification > 1.22 {
                         switchScale(to: scale.zoomedIn)
-                    } else if value < 0.82 {
+                    } else if value.magnification < 0.82 {
                         switchScale(to: scale.zoomedOut)
                     }
                     pinch = 1
@@ -374,7 +468,6 @@ struct RecordsDesignView: View {
                     showsStageLegend: !expandedPresentation
                 ) { stage in
                     selectedLifeStageKind = stage.kind
-                    presentedStage = stage
                     selectionFeedback += 1
                 }
             } else {
@@ -490,7 +583,6 @@ struct RecordsDesignView: View {
                 ? store.recordsCalendar.component(.month, from: .now)
                 : nil
             selectedLifeStageKind = nil
-            presentedStage = nil
             expanded = [:]
             pinch = 1
             if nextScale == .life { selectCurrentLifeStage() }
@@ -556,7 +648,8 @@ struct RecordsDesignView: View {
             return
         }
         let stages = LifeStageCalculator.stages(profile: profile, calendar: store.recordsCalendar)
-        selectedLifeStageKind = LifeStageCalculator.stage(at: now, stages: stages)?.kind
+        let current = LifeStageCalculator.stage(at: now, stages: stages)?.kind
+        selectedLifeStageKind = current == .retirement ? nil : current
     }
 
     private func select(_ cell: RecordsDayCell) {

@@ -589,6 +589,169 @@ func remotePayloadReassertsPermanentErase() throws {
 }
 
 @MainActor
+@Test("A remote revision of identical content does not create a conflict")
+func identicalRemotePayloadDoesNotCreateConflict() throws {
+    let records = RecordCoordinator.inMemory()
+    let day = startOf(2026, 9, 1)
+    let key = "2026-09-01"
+    records.upsertOverride(
+        DayOverride(
+            dayKey: key,
+            shiftAnchorDate: day,
+            kind: .notWorking,
+            segments: [],
+            note: "Leave",
+            timeZoneIdentifier: "UTC"
+        ),
+        at: day
+    )
+    let local = try #require(records.state.overrides.first)
+    var remote = local
+    remote.editCount = local.editCount + 1
+    remote.editTieBreaker = recordID(98)
+    remote.editedAt = day.addingTimeInterval(60)
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    let payload = try #require(RecordsSyncPayload.encode(.override(remote), calendar: calendar))
+
+    records.applyRemotePayload(
+        type: .dayOverride,
+        key: key,
+        payload: payload,
+        editCount: remote.editCount,
+        editTieBreaker: remote.editTieBreaker.uuidString,
+        systemFields: nil,
+        generation: 1
+    )
+
+    #expect(records.state.sync.conflicts.isEmpty)
+    #expect(records.state.overrides.first?.note == "Leave")
+    #expect(records.state.overrides.first?.editCount == remote.editCount)
+}
+
+@MainActor
+@Test("A newer remote revision replaces the local copy without asking")
+func newerRemoteRevisionResolvesSilently() throws {
+    let records = RecordCoordinator.inMemory()
+    let day = startOf(2026, 9, 2)
+    let key = "2026-09-02"
+    records.upsertOverride(
+        DayOverride(
+            dayKey: key,
+            shiftAnchorDate: day,
+            kind: .notWorking,
+            segments: [],
+            note: "Local",
+            timeZoneIdentifier: "UTC"
+        ),
+        at: day
+    )
+    let local = try #require(records.state.overrides.first)
+    var remote = local
+    remote.note = "Cloud"
+    remote.editCount = local.editCount + 1
+    remote.editedAt = day.addingTimeInterval(60)
+    remote.editTieBreaker = recordID(120)
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    let payload = try #require(RecordsSyncPayload.encode(.override(remote), calendar: calendar))
+
+    records.applyRemotePayload(
+        type: .dayOverride,
+        key: key,
+        payload: payload,
+        editCount: remote.editCount,
+        editTieBreaker: remote.editTieBreaker.uuidString,
+        systemFields: nil,
+        generation: 1
+    )
+
+    #expect(records.state.overrides.first?.note == "Cloud")
+    #expect(records.state.sync.conflicts.isEmpty)
+}
+
+@MainActor
+@Test("A later edit from the same revision replaces the older copy without asking")
+func laterConcurrentRemoteEditResolvesSilently() throws {
+    let records = RecordCoordinator.inMemory()
+    let day = startOf(2026, 9, 3)
+    let key = "2026-09-03"
+    records.upsertOverride(
+        DayOverride(
+            dayKey: key,
+            shiftAnchorDate: day,
+            kind: .notWorking,
+            segments: [],
+            note: "Earlier",
+            timeZoneIdentifier: "UTC"
+        ),
+        at: day
+    )
+    let local = try #require(records.state.overrides.first)
+    var remote = local
+    remote.note = "Later"
+    remote.editedAt = local.editedAt.addingTimeInterval(60)
+    remote.editTieBreaker = recordID(121)
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    let payload = try #require(RecordsSyncPayload.encode(.override(remote), calendar: calendar))
+
+    records.applyRemotePayload(
+        type: .dayOverride,
+        key: key,
+        payload: payload,
+        editCount: remote.editCount,
+        editTieBreaker: remote.editTieBreaker.uuidString,
+        systemFields: nil,
+        generation: 1
+    )
+
+    #expect(records.state.overrides.first?.note == "Later")
+    #expect(records.state.sync.conflicts.isEmpty)
+}
+
+@MainActor
+@Test("Only an exact same-revision and same-time disagreement asks for review")
+func trulyAmbiguousRemoteEditCreatesReview() throws {
+    let records = RecordCoordinator.inMemory()
+    let day = startOf(2026, 9, 4)
+    let key = "2026-09-04"
+    records.upsertOverride(
+        DayOverride(
+            dayKey: key,
+            shiftAnchorDate: day,
+            kind: .notWorking,
+            segments: [],
+            note: "Device A",
+            timeZoneIdentifier: "UTC"
+        ),
+        at: day
+    )
+    let local = try #require(records.state.overrides.first)
+    var remote = local
+    remote.note = "Device B"
+    remote.editTieBreaker = recordID(122)
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    let payload = try #require(RecordsSyncPayload.encode(.override(remote), calendar: calendar))
+
+    records.applyRemotePayload(
+        type: .dayOverride,
+        key: key,
+        payload: payload,
+        editCount: remote.editCount,
+        editTieBreaker: remote.editTieBreaker.uuidString,
+        systemFields: nil,
+        generation: 1
+    )
+
+    let conflict = try #require(records.state.sync.conflicts.first)
+    #expect(conflict.logicalKey == key)
+    #expect(conflict.localPayload != nil)
+    #expect(conflict.incomingPayload != nil)
+}
+
+@MainActor
 @Test("A failed sync-state write leaves the last durable state active")
 func syncStateWriteFailureIsTransactional() {
     let missingParent = FileManager.default.temporaryDirectory

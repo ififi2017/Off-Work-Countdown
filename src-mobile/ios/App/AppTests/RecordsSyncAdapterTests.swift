@@ -3,11 +3,40 @@ import Testing
 @testable import App
 
 @MainActor
-@Test("Conflict winner is editCount, then tie-breaker, never the wall clock")
-func syncConflictIgnoresClock() {
+@Test("Revision stamp winner is editCount, then its deterministic tie-breaker")
+func syncRevisionStampIsDeterministic() {
     #expect(RecordsSyncConflict.localWins(localCount: 3, localTie: "a", serverCount: 2, serverTie: "z"))
     #expect(!RecordsSyncConflict.localWins(localCount: 2, localTie: "z", serverCount: 3, serverTie: "a"))
     #expect(RecordsSyncConflict.localWins(localCount: 2, localTie: "b", serverCount: 2, serverTie: "a"))
+}
+
+@MainActor
+@Test("Automatic conflict handling uses revision count, then the later user edit")
+func automaticConflictWinnerPrefersNewestEdit() {
+    #expect(
+        RecordsSyncConflict.automaticallyPreferredWinner(
+            localCount: 3,
+            localEditedAtMs: 10,
+            incomingCount: 2,
+            incomingEditedAtMs: 20
+        ) == .local
+    )
+    #expect(
+        RecordsSyncConflict.automaticallyPreferredWinner(
+            localCount: 2,
+            localEditedAtMs: 10,
+            incomingCount: 2,
+            incomingEditedAtMs: 20
+        ) == .incoming
+    )
+    #expect(
+        RecordsSyncConflict.automaticallyPreferredWinner(
+            localCount: 2,
+            localEditedAtMs: 20,
+            incomingCount: 2,
+            incomingEditedAtMs: 20
+        ) == nil
+    )
 }
 
 @MainActor
@@ -111,6 +140,75 @@ func lifeProfileMergesByField() {
     let merged = RecordsSyncConflict.mergeLifeProfile(local: local, server: server, baseline: baseline)
     #expect(merged.retirementAge == 62)
     #expect(merged.averageSleepHours == 7)
+}
+
+@MainActor
+@Test("Revision-only payload differences are not user-visible conflicts")
+func syncConflictIgnoresRevisionOnlyPayloadDifferences() {
+    let local = Data(#"{"calendarIdentifier":"gregorian","createdAtMs":1788245646901.092,"editCount":2,"editTieBreaker":"local","editedAtMs":1788245646901.092,"startsOn":"2026-09-01","timeZoneIdentifier":"Asia/Shanghai"}"#.utf8)
+    let server = Data(#"{"timeZoneIdentifier":"Asia/Shanghai","startsOn":"2026-09-01","editedAtMs":1788245650000,"editTieBreaker":"server","editCount":3,"createdAtMs":1788245646901.092,"calendarIdentifier":"gregorian"}"#.utf8)
+    let changed = Data(#"{"calendarIdentifier":"gregorian","createdAtMs":1788245646901.092,"editCount":3,"editTieBreaker":"server","editedAtMs":1788245650000,"startsOn":"2026-09-02","timeZoneIdentifier":"Asia/Shanghai"}"#.utf8)
+
+    #expect(RecordsSyncConflict.payloadsHaveSameBusinessContent(local, server))
+    #expect(!RecordsSyncConflict.payloadsHaveSameBusinessContent(local, changed))
+}
+
+@MainActor
+@Test("Disjoint edits to one day merge without asking the user")
+func syncConflictAutomaticallyMergesDisjointDayFields() throws {
+    let baseline = Data(#"{"dayKey":"2026-09-01","editCount":1,"editTieBreaker":"base","editedAtMs":1,"kind":"customSegments","note":"Original","segments":[{"endAtMs":20,"startAtMs":10}],"timeZoneIdentifier":"Asia/Shanghai"}"#.utf8)
+    let local = Data(#"{"dayKey":"2026-09-01","editCount":2,"editTieBreaker":"local","editedAtMs":2,"kind":"customSegments","note":"Local note","segments":[{"endAtMs":20,"startAtMs":10}],"timeZoneIdentifier":"Asia/Shanghai"}"#.utf8)
+    let server = Data(#"{"dayKey":"2026-09-01","editCount":2,"editTieBreaker":"server","editedAtMs":3,"kind":"customSegments","note":"Original","segments":[{"endAtMs":30,"startAtMs":10}],"timeZoneIdentifier":"Asia/Shanghai"}"#.utf8)
+
+    let merged = try #require(
+        RecordsSyncConflict.automaticallyMergedPayload(
+            local: local,
+            server: server,
+            baseline: baseline,
+            type: .dayOverride
+        )
+    )
+    let values = try #require(JSONSerialization.jsonObject(with: merged) as? [String: Any])
+    #expect(values["note"] as? String == "Local note")
+    let segments = try #require(values["segments"] as? [[String: Any]])
+    #expect(segments.first?["endAtMs"] as? Int == 30)
+}
+
+@MainActor
+@Test("Focus planning merges separate days and timer fields")
+func focusPlanningConfigurationMergesWithoutConflictUI() {
+    let baseline = focusPlanningConfiguration(editCount: 1)
+    var local = baseline
+    local.planning.plans["2026-09-01"] = FocusDayPlan(
+        dayKey: "2026-09-01",
+        shiftStartAtMs: 1,
+        assignments: [],
+        appliedTemplateID: nil
+    )
+    local.timerSettings.focusMinutes = 40
+    local.editCount = 2
+    local.editTieBreaker = syncTestID(2)
+
+    var server = baseline
+    server.planning.plans["2026-09-02"] = FocusDayPlan(
+        dayKey: "2026-09-02",
+        shiftStartAtMs: 2,
+        assignments: [],
+        appliedTemplateID: nil
+    )
+    server.timerSettings.shortBreakMinutes = 8
+    server.editCount = 2
+    server.editTieBreaker = syncTestID(3)
+
+    let merged = RecordsSyncConflict.mergeFocusPlanningConfiguration(
+        local: local,
+        server: server,
+        baseline: baseline
+    )
+    #expect(merged.planning.plans.keys.sorted() == ["2026-09-01", "2026-09-02"])
+    #expect(merged.timerSettings.focusMinutes == 40)
+    #expect(merged.timerSettings.shortBreakMinutes == 8)
+    #expect(merged.editCount == 3)
 }
 
 @MainActor
@@ -333,6 +431,32 @@ func lifeProfileConflictIncrementsVersion() {
 }
 
 @MainActor
+@Test("A later same-revision life edit wins the overlapping field")
+func laterLifeProfileEditWinsOverlappingField() {
+    let baseline = LifeProfile(
+        birthYear: 1990,
+        retirementAge: 60,
+        editedAt: Date(timeIntervalSince1970: 1),
+        editCount: 1,
+        editTieBreaker: syncTestID(70)
+    )
+    var local = baseline
+    local.retirementAge = 62
+    local.editedAt = Date(timeIntervalSince1970: 2)
+    local.editCount = 2
+    local.editTieBreaker = syncTestID(99)
+    var server = baseline
+    server.retirementAge = 65
+    server.editedAt = Date(timeIntervalSince1970: 3)
+    server.editCount = 2
+    server.editTieBreaker = syncTestID(1)
+
+    let merged = RecordsSyncConflict.mergeLifeProfile(local: local, server: server, baseline: baseline)
+    #expect(merged.retirementAge == 65)
+    #expect(merged.editCount == 3)
+}
+
+@MainActor
 @Test("A higher fence discards local records, conflicts, and engine state")
 func higherFenceDiscardsLocalArchive() {
     var archive = RecordState()
@@ -377,4 +501,20 @@ func dayLayersClearOverrideWhenWritingException() {
         DayRecordLayers.plan(for: .clear)
             == .exception(override: .cleared, effect: .rest, exceptionCleared: true)
     )
+}
+
+@MainActor
+private func focusPlanningConfiguration(editCount: Int) -> FocusPlanningConfiguration {
+    FocusPlanningConfiguration(
+        planning: FocusPlanningState(),
+        timerSettings: .default,
+        editedAt: Date(timeIntervalSince1970: Double(editCount)),
+        editCount: editCount,
+        editTieBreaker: syncTestID(editCount)
+    )
+}
+
+@MainActor
+private func syncTestID(_ value: Int) -> UUID {
+    UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", value))!
 }
