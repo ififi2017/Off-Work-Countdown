@@ -250,6 +250,23 @@ JavaScriptCore）**：十年工作日 + 午休（2016-01-01…2025-12-31，3653 
 `expandScheduleRangeTenYearMeasurement` 里整段测试约 1.2–1.7s；同一区间在 Node V8 约
 24ms。主线程可感知卡顿的扳机未触发，**不把规则迁到 Swift**。
 
+那条结论只覆盖 JS 展开，不覆盖展开之后的 Swift 侧。**补测（2026-09-03，iPhone 17
+Pro 模拟器，Debug，`RecordsPerformanceTests`）**：人生视图一次冷构建
+`prepareLifeViewModel` 在 **0.4–1.2s** 之间（Debug 模拟器抖动很大，两次分别为 416ms 与
+1233ms）。JavaScriptCore 展开已经在后台 actor 上，这段代价全在主线程的逐日
+`resolveDays`（入职到退休约 15,700 天）与 `LifeViewCalculator`。同一批热点在 Mac `-O`
+下拆开量到：`RecordJSON.dayKey` 的 `String(format:)` 42.7ms、`Calendar` 调用约 33ms、
+档案的逐日 `filter` 约 16ms。已修的部分是把 `dayKey` 改成手写补零、用
+`DayRecordLookup` 预索引例外与覆盖、消掉每天重复的 period/snapshot 查找（Mac `-O` 下
+走查 132.9 → 71.7ms），并缓存 `lifeViewModel`——**重复进入该 Tab 现在是 0.0ms**，
+过去每一次都要付上面那个冷构建。
+
+**仍未做**：那次冷构建依然阻塞主线程。要搬到后台，需要 `DayRecordResolver`、
+`DayResolution`、`CareerPeriod`／`ScheduleSnapshot`／`CalendarException`／`DayOverride`、
+`LifeProfile` 与 `LifeViewCalculator` 全部标 `nonisolated`——工程默认
+`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`，所以这是一次跨这些文件的隔离重构，不是
+局部改动。在做之前，扳机的正确说法是：**冷构建一次可感知，重复进入不再有代价。**
+
 最小事件已挂上 `OffWorkStore`：计时页首次看见、开始 / 停止、登记加班。跨日
 `reconcile` 只重连，不另写一条开始。观察按 `eventID` 幂等；已擦除的 id 不会被同一
 次重试写回。

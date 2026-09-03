@@ -121,10 +121,14 @@ struct RecordsPerformanceTests {
             sleepHours: 8,
             hidesExactAges: false
         )
-        let lifePrepareMs = await milliseconds("prepareLifeViewModel (background expansion)") {
+        // Cold, then warm. The first line is what a user pays once, after an
+        // edit or on the first visit; the second is what returning to the tab
+        // costs now that the model is cached, and used to cost the first line
+        // every single time.
+        let lifePrepareMs = await milliseconds("prepareLifeViewModel (cold, whole career)") {
             _ = await store.prepareLifeViewModel()
         }
-        let lifeMs = milliseconds("lifeViewModel (cached main-actor assembly)") {
+        let lifeMs = milliseconds("lifeViewModel (warm, cached)") {
             _ = store.lifeViewModel()
         }
 

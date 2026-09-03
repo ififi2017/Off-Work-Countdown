@@ -855,7 +855,31 @@ enum RecordJSON {
 
     static func dayKey(_ date: Date, calendar: Calendar) -> String {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
-        return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+        return dayKey(year: parts.year ?? 0, month: parts.month ?? 0, day: parts.day ?? 0)
+    }
+
+    /// The hottest string in the app: every resolved day, cell, observation and
+    /// override is addressed by one of these. `String(format:)` goes through
+    /// NSString's formatter, which measured at 42 ms of the 133 ms a
+    /// life-sized day walk spent resolving days — a third of the walk in one
+    /// line. Padding by hand is about forty times cheaper for the same output.
+    /// `RecordJSONTests` holds the two implementations to the same result.
+    static func dayKey(year: Int, month: Int, day: Int) -> String {
+        "\(padded(year, width: 4))-\(padded(month, width: 2))-\(padded(day, width: 2))"
+    }
+
+    private static func padded(_ value: Int, width: Int) -> String {
+        // Records dates are civil dates in a proleptic Gregorian or ISO 8601
+        // calendar, so a negative component cannot occur; it is handled only so
+        // the function is total.
+        guard value >= 0 else { return "-\(padded(-value, width: width))" }
+        return switch (width, value) {
+        case (2, 0..<10): "0\(value)"
+        case (4, 0..<10): "000\(value)"
+        case (4, 10..<100): "00\(value)"
+        case (4, 100..<1_000): "0\(value)"
+        default: "\(value)"
+        }
     }
 
     static func date(fromDayKey key: String, calendar: Calendar) -> Date? {

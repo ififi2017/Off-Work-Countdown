@@ -271,9 +271,21 @@ final class OffWorkStore {
     private let civilCalendars = CivilCalendarCache()
     @ObservationIgnored
     private var observationIndexCache: (revision: UInt64, byDay: [String: [WorkObservation]])?
+    /// Ignored like every other cache here. Without it, the first
+    /// `isRecordedDay` of a calendar body registered a mutation while that body
+    /// was still being evaluated, invalidating the view that had just asked.
+    @ObservationIgnored
     private var recordedDayKeysCache: (revision: UInt64, keys: Set<String>)?
     @ObservationIgnored
     private var resolvedDaysCache: (revision: UInt64, from: Date, through: Date, days: [DayResolution])?
+    /// Life spans a career, so its model costs two orders of magnitude more
+    /// than any other Records window. Nothing about it changes between two
+    /// visits to the tab on the same day with the same archive, and it used to
+    /// be rebuilt from scratch on every one of them.
+    @ObservationIgnored
+    private var lifeViewModelCache: (key: LifeViewModelCacheKey, model: LifeViewModel?)?
+    @ObservationIgnored
+    private var lifeWorkProjectionBoundsCache: LifeWorkProjectionBoundsCache?
 #if DEBUG
     var debugTimerSession: DebugTimerScenario.Session?
     private(set) var debugDidResetOnLaunch = false
@@ -1303,11 +1315,19 @@ final class OffWorkStore {
             return cached.days
         }
 
+        // Exceptions and overrides are keyed by day, so their winners do not
+        // depend on which day is being resolved. Deciding them once is what
+        // keeps a career-length walk from re-filtering the archive per day.
+        let lookup = DayRecordLookup(
+            exceptions: records.state.exceptions,
+            overrides: records.state.overrides
+        )
         var expansions: [UUID: [String: ScheduleExpansion]] = [:]
         var expansionFailures: Set<UUID> = []
         var periodCalendars: [UUID: Calendar] = [:]
         var cursor = start
         var result: [DayResolution] = []
+        result.reserveCapacity((calendar.dateComponents([.day], from: start, to: end).day ?? 0) + 1)
         while cursor <= end {
             let covering = DayRecordResolver.period(on: cursor, from: periods)
             let dayCalendar: Calendar
@@ -1360,15 +1380,34 @@ final class OffWorkStore {
                 expansion = snapshot.flatMap { expansions[$0.id]?[dayKey] }
                     ?? ScheduleExpansion(isWorkday: false, segments: [])
             }
+            // `cursor` is already the start of its day in `calendar`, so the
+            // only reason to normalize again is a period that keeps a
+            // different civil zone.
+            let sharesCivilDay = dayCalendar.timeZone == calendar.timeZone
+                && dayCalendar.identifier == calendar.identifier
+            let anchor = sharesCivilDay ? cursor : dayCalendar.startOfDay(for: cursor)
+            // The chain has always been resolved against the anchor while the
+            // expansion above was picked against the cursor, and across a
+            // period that keeps its own zone those are two different days.
+            // That behaviour is preserved; what is dropped is repeating the
+            // lookup when they are the same day, which is every day for
+            // everyone who has not moved between zones.
+            let anchorPeriod = sharesCivilDay
+                ? covering
+                : DayRecordResolver.period(on: anchor, from: periods)
+            let anchorSnapshot = sharesCivilDay
+                ? snapshot
+                : anchorPeriod.flatMap {
+                    DayRecordResolver.snapshot(on: anchor, in: $0, from: snapshots)
+                }
             result.append(
                 DayRecordResolver.resolve(
                     dayKey: dayKey,
-                    shiftAnchorDate: dayCalendar.startOfDay(for: cursor),
-                    periods: periods,
-                    snapshots: snapshots,
-                    exceptions: records.state.exceptions,
-                    overrides: records.state.overrides,
-                    expand: { _ in expansion }
+                    shiftAnchorDate: anchor,
+                    period: anchorPeriod,
+                    snapshot: anchorSnapshot,
+                    lookup: lookup,
+                    expansion: expansion
                 )
             )
             guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
@@ -4987,7 +5026,35 @@ final class OffWorkStore {
         records.state.lifeProfile?.hidesExactAges ?? false
     }
 
+    /// The window is entirely a property of the life profile — `now` is not
+    /// read — but it is asked for once per calendar cell and once per resolved
+    /// day, and each answer used to migrate the profile and re-anchor two
+    /// partial dates. That is a full profile migration fifteen thousand times
+    /// during a life build.
     private func lifeWorkProjectionBounds(now: Date) -> (start: Date, end: Date)? {
+        let revision = records.revision
+        let zone = recordsTimeZoneIdentifier
+        if let cached = lifeWorkProjectionBoundsCache,
+           cached.revision == revision,
+           cached.timeZoneIdentifier == zone {
+            return cached.bounds
+        }
+        let bounds = computeLifeWorkProjectionBounds()
+        lifeWorkProjectionBoundsCache = LifeWorkProjectionBoundsCache(
+            revision: revision,
+            timeZoneIdentifier: zone,
+            bounds: bounds
+        )
+        return bounds
+    }
+
+    private struct LifeWorkProjectionBoundsCache {
+        var revision: UInt64
+        var timeZoneIdentifier: String
+        var bounds: (start: Date, end: Date)?
+    }
+
+    private func computeLifeWorkProjectionBounds() -> (start: Date, end: Date)? {
         guard var profile = records.state.lifeProfile else { return nil }
         let calendar = recordsCalendar
         profile.migrateLegacyFields(calendar: calendar)
@@ -5005,7 +5072,36 @@ final class OffWorkStore {
         return day >= bounds.start && day < bounds.end
     }
 
+    /// Everything `lifeViewModel` reads that is not covered by the archive
+    /// revision. The civil day is in here because Life divides the timeline
+    /// into what has been lived and what is projected, and the hours
+    /// configuration because an empty or short archive is backfilled from the
+    /// current schedule rather than from anything the revision counts.
+    private struct LifeViewModelCacheKey: Equatable {
+        var revision: UInt64
+        var dayKey: String
+        var timeZoneIdentifier: String
+        var hours: ScheduleHoursConfiguration?
+    }
+
+    private func lifeViewModelCacheKey(now: Date) -> LifeViewModelCacheKey {
+        LifeViewModelCacheKey(
+            revision: records.revision,
+            dayKey: RecordJSON.dayKey(now, calendar: recordsCalendar),
+            timeZoneIdentifier: recordsTimeZone.identifier,
+            hours: hoursConfiguration(at: now)
+        )
+    }
+
     func lifeViewModel(now: Date = .now) -> LifeViewModel? {
+        let cacheKey = lifeViewModelCacheKey(now: now)
+        if let cached = lifeViewModelCache, cached.key == cacheKey { return cached.model }
+        let model = buildLifeViewModel(now: now)
+        lifeViewModelCache = (cacheKey, model)
+        return model
+    }
+
+    private func buildLifeViewModel(now: Date) -> LifeViewModel? {
         guard var profile = records.state.lifeProfile else { return nil }
         let calendar = recordsCalendar
         profile.migrateLegacyFields(calendar: calendar)
@@ -5056,6 +5152,12 @@ final class OffWorkStore {
     /// ScheduleRangeEngine. The synchronous builder then only walks cached
     /// results and assembles week cells on the main actor.
     func prepareLifeViewModel(now: Date = .now) async -> LifeViewModel? {
+        // Before the prefetch, not only inside the builder: decoding a
+        // configuration and hopping to the range engine once per snapshot is
+        // itself worth skipping when the answer is already known.
+        if let cached = lifeViewModelCache, cached.key == lifeViewModelCacheKey(now: now) {
+            return cached.model
+        }
         guard var profile = records.state.lifeProfile else { return nil }
         let calendar = recordsCalendar
         profile.migrateLegacyFields(calendar: calendar)
@@ -5091,6 +5193,18 @@ final class OffWorkStore {
                 timeZone: period.timeZone
             )
         }
+        // The life canvas only needs the profile's stage dates, so it can be on
+        // screen before the career is walked. Yielding lets the scale change
+        // that asked for this commit its own frame first.
+        //
+        // This is ordering, not a fix: `lifeViewModel` below still resolves
+        // roughly fifteen thousand days on the main actor, which is why its
+        // result is cached — a visit to the tab pays it once rather than every
+        // time. Moving that walk off the main actor needs `DayRecordResolver`,
+        // the archive value types and `LifeViewCalculator` to be `nonisolated`,
+        // which this project's main-actor-by-default isolation makes a change
+        // across every one of those files rather than a local one.
+        await Task.yield()
         return lifeViewModel(now: now)
     }
 

@@ -35,6 +35,63 @@ struct DayResolution: Equatable, Sendable {
     var expansionFailed: Bool = false
 }
 
+/// The winning exception and override for every day an archive mentions,
+/// decided once instead of per resolved day.
+///
+/// Both layers are addressed by day key, so their winner never depends on
+/// which day is being resolved — only on the archive. Deriving it per day
+/// meant a `filter` over the whole exception list and a linear scan of the
+/// override list for each of a career's fifteen thousand days, each one
+/// allocating.
+///
+/// It deliberately does not restate the chooser rules: it buckets the archive
+/// by day and asks `DayRecordResolver` itself, in the original array order, so
+/// there is still exactly one definition of which exception wins.
+struct DayRecordLookup {
+    private let exceptions: [String: CalendarException]
+    private let overrides: [String: DayOverride]
+
+    init(exceptions allExceptions: [CalendarException], overrides allOverrides: [DayOverride]) {
+        var byDate: [String: [CalendarException]] = [:]
+        for exception in allExceptions {
+            // `matches(dateKey:)` is a `"<date>#<origin>"` prefix test, so the
+            // date half is the bucket.
+            guard let dateKey = exception.dayKey.split(
+                separator: "#",
+                maxSplits: 1,
+                omittingEmptySubsequences: false
+            ).first else { continue }
+            byDate[String(dateKey), default: []].append(exception)
+        }
+        var winners: [String: CalendarException] = [:]
+        winners.reserveCapacity(byDate.count)
+        for (dateKey, bucket) in byDate {
+            // Assigning `nil` removes the key, which is what a day with only
+            // cleared exceptions should look like.
+            winners[dateKey] = DayRecordResolver.exception(matching: dateKey, from: bucket)
+        }
+        exceptions = winners
+
+        // `first(where:)` is what the per-day accessor used, so an earlier row
+        // shadows a later one with the same key — including a `.cleared` row,
+        // which the accessor below drops exactly as the original did.
+        var firstByKey: [String: DayOverride] = [:]
+        firstByKey.reserveCapacity(allOverrides.count)
+        for override in allOverrides where firstByKey[override.dayKey] == nil {
+            firstByKey[override.dayKey] = override
+        }
+        overrides = firstByKey
+    }
+
+    func exception(on dayKey: String) -> CalendarException? { exceptions[dayKey] }
+
+    /// `nil` when missing or `.cleared`, so the chain falls through.
+    func dayOverride(on dayKey: String) -> DayOverride? {
+        guard let override = overrides[dayKey], override.kind != .cleared else { return nil }
+        return override
+    }
+}
+
 /// Read-time resolution for 002 §1–§2 and §5.
 ///
 /// Order is fixed: an active day override, else a calendar exception, else
@@ -115,6 +172,43 @@ enum DayRecordResolver {
         overrides: [DayOverride],
         expand: (ScheduleSnapshot) -> ScheduleExpansion
     ) -> DayResolution {
+        // Qualified and renamed: a local `period`/`snapshot` shadows the static
+        // lookup of the same name inside its own initializer.
+        let coveringPeriod = Self.period(on: shiftAnchorDate, from: periods)
+        let winningSnapshot = coveringPeriod.flatMap {
+            Self.snapshot(on: shiftAnchorDate, in: $0, from: snapshots)
+        }
+        return resolve(
+            dayKey: dayKey,
+            shiftAnchorDate: shiftAnchorDate,
+            period: coveringPeriod,
+            snapshot: winningSnapshot,
+            lookup: DayRecordLookup(exceptions: exceptions, overrides: overrides),
+            expansion: winningSnapshot.map(expand) ?? ScheduleExpansion(isWorkday: false, segments: [])
+        )
+    }
+
+    /// The same chain with its four archive lookups already done.
+    ///
+    /// Resolving one day is cheap; resolving a career is not. The convenience
+    /// above re-derives the covering period, its snapshot and a filtered copy
+    /// of the exception and override lists for every day it is handed, which
+    /// over fifteen thousand days is the same scan fifteen thousand times. A
+    /// caller walking a range decides the period and snapshot as it goes and
+    /// builds the lookup once.
+    static func resolve(
+        dayKey: String,
+        shiftAnchorDate: Date,
+        period: CareerPeriod?,
+        snapshot: ScheduleSnapshot?,
+        lookup: DayRecordLookup,
+        expansion resolvedExpansion: ScheduleExpansion
+    ) -> DayResolution {
+        // A day with no snapshot has no expansion to speak of, whatever the
+        // caller passed.
+        let expansion = snapshot == nil
+            ? ScheduleExpansion(isWorkday: false, segments: [])
+            : resolvedExpansion
         let empty = DayResolution(
             dayKey: dayKey,
             shiftAnchorDate: shiftAnchorDate,
@@ -124,13 +218,12 @@ enum DayRecordResolver {
             isScheduledWorkday: false,
             segments: []
         )
-        guard let period = period(on: shiftAnchorDate, from: periods) else { return empty }
-        let snapshot = snapshot(on: shiftAnchorDate, in: period, from: snapshots)
-        let expansion = snapshot.map(expand) ?? ScheduleExpansion(isWorkday: false, segments: [])
+        guard let period else { return empty }
         let baseScheduleIsWorkday = snapshot != nil && expansion.isWorkday
         let baseScheduleSegments = baseScheduleIsWorkday ? expansion.segments : []
-        let exception = exception(matching: dayKey, from: exceptions)
-        if expansion.failed, dayOverride(matching: dayKey, from: overrides) == nil, exception == nil {
+        let exception = lookup.exception(on: dayKey)
+        let dayOverride = lookup.dayOverride(on: dayKey)
+        if expansion.failed, dayOverride == nil, exception == nil {
             return DayResolution(
                 dayKey: dayKey,
                 shiftAnchorDate: shiftAnchorDate,
@@ -145,7 +238,7 @@ enum DayRecordResolver {
             )
         }
 
-        if let override = dayOverride(matching: dayKey, from: overrides) {
+        if let override = dayOverride {
             switch override.kind {
             case .customSegments:
                 return DayResolution(

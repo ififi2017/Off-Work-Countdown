@@ -24,6 +24,7 @@ struct RecordsDesignView: View {
     @State private var showsLifeEditor = false
     @State private var confirmsQuarantine = false
     @State private var loadGeneration = 0
+    @State private var loadedSignature: RecordsLoadSignature?
     @State private var showsCompactRootBar = false
     @State private var canvasWidth: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -112,7 +113,13 @@ struct RecordsDesignView: View {
         }
         .task { await load(selectingToday: true) }
         .onChange(of: store.selectedTab) { _, tab in
-            if tab == .records { Task { await load() } }
+            // Returning to the tab is not by itself news. The archive, the
+            // entitlement and the civil day each have their own trigger, and
+            // reloading unconditionally meant every visit paid for the window
+            // again — on the life scale that is a career expanded from
+            // scratch, landing inside the tab's own transition.
+            guard tab == .records, loadedSignature != currentLoadSignature else { return }
+            Task { await load() }
         }
         .onChange(of: store.records.revision) { _, _ in
             Task { await load() }
@@ -425,6 +432,12 @@ struct RecordsDesignView: View {
                     maxHeight: expandedPresentation ? .infinity : nil,
                     alignment: .top
                 )
+                // The scale owns the canvas's identity: a week strip and a
+                // month grid are two charts, not one chart with different
+                // numbers, and without this SwiftUI tries to carry cells from
+                // one into the other.
+                .id(scale)
+                .transition(.opacity)
                 .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsExpansion, value: expandedPresentation)
         }
     }
@@ -622,9 +635,14 @@ struct RecordsDesignView: View {
 
     private func switchScale(to nextScale: RecordsScale) {
         guard nextScale != scale else { return }
-        var transaction = Transaction(animation: nil)
-        transaction.disablesAnimations = true
-        withTransaction(transaction) {
+        // One cross-fade of the whole canvas. The reset underneath is what the
+        // animation used to be suppressed for — thirty calendar cells
+        // dismissing one by one is not a transition — but suppressing it left
+        // the picker's knob sliding over a canvas that simply blinked. The
+        // visualization now carries the scale's identity, so the outgoing and
+        // incoming charts are two views and the emptied arrays are never
+        // something the user watches happen.
+        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange) {
             loadGeneration += 1
             scale = nextScale
             days = []
@@ -747,11 +765,33 @@ struct RecordsDesignView: View {
         }
     }
 
+    /// Everything the loaded window depends on. The civil day is in here
+    /// because "today" decides selection, and which cells are already lived
+    /// through rather than planned.
+    private struct RecordsLoadSignature: Equatable {
+        var scale: RecordsScale
+        var anchor: Date
+        var revision: UInt64
+        var authorized: Bool
+        var dayKey: String
+    }
+
+    private var currentLoadSignature: RecordsLoadSignature {
+        RecordsLoadSignature(
+            scale: scale,
+            anchor: anchor,
+            revision: store.records.revision,
+            authorized: store.plus.isAuthorized,
+            dayKey: RecordJSON.dayKey(.now, calendar: store.recordsCalendar)
+        )
+    }
+
     private func load(selectingToday: Bool = false) async {
         loadGeneration += 1
         let generation = loadGeneration
         let requestedScale = scale
         let requestedAnchor = anchor
+        let signature = currentLoadSignature
         if scale == .life {
             days = []
             cells = []
@@ -762,6 +802,7 @@ struct RecordsDesignView: View {
             let projection = store.plus.isAuthorized ? await store.prepareLifeViewModel() : nil
             guard generation == loadGeneration, requestedScale == scale else { return }
             lifeModel = projection
+            loadedSignature = signature
             return
         }
         if requestedScale == .year, selectedYearMonth == nil {
@@ -807,6 +848,7 @@ struct RecordsDesignView: View {
             selectedDayKey = nil
             detail = nil
         }
+        loadedSignature = signature
     }
 }
 
