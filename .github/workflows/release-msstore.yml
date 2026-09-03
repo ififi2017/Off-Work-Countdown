@@ -168,6 +168,8 @@ jobs:
       - name: Configure Microsoft Store CLI
         if: github.event_name == 'push' || inputs.submit
         uses: microsoft/microsoft-store-apppublisher@v1.1
+        with:
+          version: v0.4.2
 
       - name: Sign in to Partner Center
         if: github.event_name == 'push' || inputs.submit
@@ -194,6 +196,4 @@ jobs:
         shell: pwsh
         run: |
           $pkg = Get-ChildItem -Filter *.msixbundle | Select-Object -First 1
-          # msstore-cli 0.4.0/0.4.1 incorrectly defaults an omitted upload timeout
-          # to zero. Keep this explicit until microsoft/msstore-cli#162 is fixed.
-          msstore publish $pkg.FullName -id 9PM0HJ2PP2LJ -v --uploadTimeout 300
+          msstore publish $pkg.FullName -id 9PM0HJ2PP2LJ -v
