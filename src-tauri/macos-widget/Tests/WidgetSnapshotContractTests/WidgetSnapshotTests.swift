@@ -12,15 +12,17 @@ func missingSnapshotRetriesInsteadOfSticking() throws {
 
     #expect(timeline.entries.count == 1)
     #expect(timeline.entries[0].snapshotEntry == nil)
-    guard case let .after(retryAt) = timeline.policy else {
-        Issue.record("Missing snapshot timeline must use an after policy")
-        return
-    }
+    // `TimelineReloadPolicy` is a struct whose `after(_:)` is a static
+    // function, not an enum case, so it cannot be pattern-matched. It is
+    // Equatable; compare against the policy this timeline is meant to carry.
     #expect(
-        retryAt == now.addingTimeInterval(
-            OffWorkCountdownTimelineProvider.unavailableSnapshotRetryInterval
+        timeline.policy == .after(
+            now.addingTimeInterval(
+                OffWorkCountdownTimelineProvider.unavailableSnapshotRetryInterval
+            )
         )
     )
+    #expect(timeline.policy != .never)
 }
 
 @Test("Swift decodes the fixture serialized by TypeScript")

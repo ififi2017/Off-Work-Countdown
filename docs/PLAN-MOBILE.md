@@ -163,6 +163,11 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 - 「接下来」只投给真正会画它的三个 family；锁屏 accessory 的容器背景换成 `Color.clear`，
   原来的渐变加 38pt 模糊在 vibrant 渲染下会被系统丢弃，却每个条目合成一次。
 - `getSnapshot` 不再构建整条时间线再取第一个条目。
+- 快照读不到或已过期时的重载策略从 `.never` 改为 `.after(30 分钟)`。`.never` 会让组件停在
+  「未开始」实态直到 App 下次运行——这是与灰色占位不同的另一种卡住。间隔取 30 分钟而不是
+  5 分钟：真正的恢复都是推的（App 写完快照就调 `WidgetCenter.reloadTimelines`），这个间隔
+  只需要兜住 App 再也不运行的情况；WidgetKit 每天只发数十次刷新，申请 288 次不会拿到更多，
+  只会把额度花在注定再次失败的读上。
 - 新增一行 `com.rainif.offworkcountdown.widget` 的 `Logger` 输出：family、快照字节数、快照
   条目数、时间线条目数、耗时和 `phys_footprint`。`phys_footprint` 正是系统判定回收时看的
   数字，Console.app 或 sysdiagnose 里可直接读，不需要接调试器。

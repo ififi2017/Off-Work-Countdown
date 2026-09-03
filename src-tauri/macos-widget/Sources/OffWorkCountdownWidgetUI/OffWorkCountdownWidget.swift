@@ -334,7 +334,15 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
     /// App Group write, or while iOS is restoring the widget extension. Never
     /// let that transient read become the final timeline: `.never` would leave
     /// the widget on its empty state until the app next runs.
-    static let unavailableSnapshotRetryInterval: TimeInterval = 5 * 60
+    ///
+    /// Half an hour, not five minutes. Every real recovery is pushed rather
+    /// than polled — the app calls `WidgetCenter.reloadTimelines` the moment it
+    /// writes a snapshot — so this interval only has to catch the case where
+    /// the app never runs again. WidgetKit grants a widget on the order of tens
+    /// of reloads a day, and asking for 288 of them does not produce more; it
+    /// just spends the allowance on reads that will fail again, which is its
+    /// own way of leaving a widget looking stuck.
+    static let unavailableSnapshotRetryInterval: TimeInterval = 30 * 60
 
     private let loader: SharedWidgetSnapshotLoader
 
