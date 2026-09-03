@@ -168,6 +168,8 @@ jobs:
       - name: Configure Microsoft Store CLI
         if: github.event_name == 'push' || inputs.submit
         uses: microsoft/microsoft-store-apppublisher@v1.1
+        with:
+          version: v0.4.2
 
       - name: Sign in to Partner Center
         if: github.event_name == 'push' || inputs.submit
