@@ -1,6 +1,8 @@
-# Off Work Countdown
+# DoneAt
 
-Off Work Countdown is a privacy-friendly countdown for the end of your workday,
+Off Work Countdown is now DoneAt.
+
+DoneAt is a privacy-friendly countdown for the end of your workday,
 available on the Web, as a lightweight Tauri desktop app, and as a native
 iPhone and iPad app on the App Store. Set your schedule once, then keep the
 remaining time, progress and estimated earnings at a glance.
@@ -34,7 +36,7 @@ remaining time, progress and estimated earnings at a glance.
   <img src="readme_image/ios/en-ipad-timer.jpg" width="380" alt="iPad layout with sidebar, countdown and today's details">
 </p>
 
-## Use Off Work Countdown
+## Use DoneAt
 
 - **Web:** [open the app](https://off.rainif.com/en) — no installation required.
 - **iPhone and iPad:**
@@ -100,7 +102,7 @@ the GitHub DMGs, which stay available either way.
 The DMGs require **macOS 11.3 (Big Sur) or later**, on Apple Silicon or Intel.
 
 1. Download the `aarch64.dmg` for Apple Silicon or `x64.dmg` for an Intel Mac.
-2. Open the DMG and drag Off Work Countdown into Applications.
+2. Open the DMG and drag DoneAt into Applications.
 3. Try to open it once. If macOS blocks the app, open **System Settings →
    Privacy & Security**, scroll to Security, choose **Open Anyway**, then confirm
    **Open**. Apple documents this process in
