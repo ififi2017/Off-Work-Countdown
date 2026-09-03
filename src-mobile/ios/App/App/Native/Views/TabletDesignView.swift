@@ -384,6 +384,11 @@ private struct TabletTimerView: View {
         }
         .sheet(isPresented: $showOvertime) {
             OvertimeSheet(store: store)
+                // Deliberately plain `.form`, not `.fitted`: fitted sizing
+                // measures the content without accounting for the sheet's
+                // NavigationStack title bar, which lays the description out
+                // underneath the title instead of below it. The sheet keeps
+                // its fixed standard size and the content scrolls inside it.
                 .presentationSizing(.form)
         }
     }

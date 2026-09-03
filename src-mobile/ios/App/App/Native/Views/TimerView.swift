@@ -9,30 +9,42 @@ struct OvertimeSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
-                Text(store.t("overtimeDescription"))
-                    .font(.callout)
-                    .foregroundStyle(OWCDesign.secondary)
-                DatePicker(
-                    store.t("overtimeEndTime"),
-                    selection: $endDate,
-                    in: minimumDate...,
-                    displayedComponents: .hourAndMinute
-                )
-                .datePickerStyle(.wheel)
-                .labelsHidden()
-                .frame(maxWidth: .infinity)
-                Label(store.t("overtimeNoMultiplier"), systemImage: "info.circle")
-                    .font(.subheadline)
-                    .foregroundStyle(OWCDesign.secondary)
+            // The wheel picker alone is most of a sheet's height, so on iPad's
+            // fixed `.form` size the four stacked elements overran it and the
+            // confirm button fell past the bottom edge. Scroll the reading
+            // material and keep the button pinned, so the primary action is
+            // visible the moment the sheet opens no matter how tall the
+            // description and info label render in a given locale.
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text(store.t("overtimeDescription"))
+                            .font(.callout)
+                            .foregroundStyle(OWCDesign.secondary)
+                        DatePicker(
+                            store.t("overtimeEndTime"),
+                            selection: $endDate,
+                            in: minimumDate...,
+                            displayedComponents: .hourAndMinute
+                        )
+                        .datePickerStyle(.wheel)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity)
+                        Label(store.t("overtimeNoMultiplier"), systemImage: "info.circle")
+                            .font(.subheadline)
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
+                }
                 Button(store.t("confirmOvertime")) {
                     store.applyOvertime(date: endDate)
                     confirmed.toggle()
                     dismiss()
                 }
                 .buttonStyle(OWCPrimaryButtonStyle())
+                .padding(20)
             }
-            .padding(20)
             .navigationTitle(store.t("overtimeTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
