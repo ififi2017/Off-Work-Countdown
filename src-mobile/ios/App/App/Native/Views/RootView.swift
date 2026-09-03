@@ -189,6 +189,9 @@ struct OffWorkCountdownRootView: View {
             store.refreshSystemTimeZone()
             applyQAGeometryIfRequested()
             clearDebugServicesAfterResetIfNeeded()
+            // The launch arguments are applied during init, before any `didSet`
+            // observer exists, so the opening surface needs saying once here.
+            store.writeQASurfaceMarker()
         }
         .onChange(of: store.selectedTab) { _, tab in
             if tab == .timer, store.onboardingComplete {

@@ -40,20 +40,31 @@ const todayKey = [
   String(today.getDate()).padStart(2, "0"),
 ].join("-");
 
-/// Every surface whose layout differs between the shells. `records-day` and
+/// Every surface whose layout differs between the shells, with the marker each
+/// one must report before its screenshot counts. `records-day` and
 /// `settings-detail` are pushed pages: they are where a navigation bar's own
 /// margins show up, which is exactly where the iPad title regressed.
+///
+/// No scene passes `qaDebugScenario`. That hook calls `activateDebugTimerScenario`,
+/// which runs *after* the records setup and clears `recordsPath` and switches
+/// to the Timer — so every Records scene that used it silently photographed
+/// the timer instead. The shift is set up with plain hours instead.
 const SCENES = [
-  { name: "timer", args: [] },
-  { name: "records-week", args: ["-ios.native.qaRecordsScale", "week"] },
-  { name: "records-month", args: ["-ios.native.qaRecordsScale", "month"] },
-  { name: "records-year", args: ["-ios.native.qaRecordsScale", "year"] },
-  { name: "records-life", args: ["-ios.native.qaRecordsScale", "life"] },
-  { name: "records-day", args: ["-ios.native.qaRecordsRoute", `day:${todayKey}`] },
-  { name: "settings", args: ["-ios.native.selectedTab", "settings"] },
+  { name: "timer", args: [], expect: "timer" },
+  { name: "records-week", args: ["-ios.native.qaRecordsScale", "week"], expect: "records" },
+  { name: "records-month", args: ["-ios.native.qaRecordsScale", "month"], expect: "records" },
+  { name: "records-year", args: ["-ios.native.qaRecordsScale", "year"], expect: "records" },
+  { name: "records-life", args: ["-ios.native.qaRecordsScale", "life"], expect: "records" },
+  {
+    name: "records-day",
+    args: ["-ios.native.qaRecordsRoute", `day:${todayKey}`],
+    expect: "records.day",
+  },
+  { name: "settings", args: ["-ios.native.selectedTab", "settings"], expect: "settings" },
   {
     name: "settings-detail",
     args: ["-ios.native.selectedTab", "settings", "-ios.native.qaRoute", "schedule"],
+    expect: "route.schedule",
   },
 ];
 
@@ -120,11 +131,20 @@ function launch(udid, scene, orientation, theme) {
     "-ios.native.onboardingComplete", "YES",
     "-ios.native.debugAlwaysOnboarding", "NO",
     "-ios.native.selectedTab", "timer",
+    "-ios.native.countdownStarted", "YES",
+    "-ios.native.scheduleMode", "classic",
+    "-ios.native.startMinutes", "540",
+    "-ios.native.endMinutes", "1020",
+    "-ios.native.lunchEnabled", "YES",
+    "-ios.native.lunchStartMinutes", "720",
+    "-ios.native.lunchDuration", "60",
     "-ios.native.salaryEnabled", "YES",
     "-ios.native.salaryType", "monthly",
     "-ios.native.salaryAmount", "12000",
     "-ios.native.monthlyWorkingDays", "22",
-    "-ios.native.qaDebugScenario", "working",
+    // Year, Life and the day canvas are behind Plus. Without this the sweep
+    // photographs the paywall and calls it a Records screen.
+    "-ios.native.debugPlusAuthorized", "YES",
     "-ios.native.qaOrientation", orientation,
     ...scene.args,
   ];
@@ -150,11 +170,32 @@ function pixelSize(path) {
   return Number.isFinite(width) && Number.isFinite(height) ? { width, height } : null;
 }
 
+/// What the app says is on screen, from its own container. Read from disk
+/// rather than through `defaults`, which cfprefsd caches.
+function surface(udid) {
+  const container = run("xcrun", ["simctl", "get_app_container", udid, BUNDLE_ID, "data"], {
+    capture: true,
+    allowFailure: true,
+  }).trim();
+  if (!container) return null;
+  try {
+    return readFileSync(join(container, "Library/Caches/qa-surface.txt"), "utf8").trim();
+  } catch {
+    return null;
+  }
+}
+
 /// Checks what it asked for rather than that a file appeared. A screenshot of
-/// the Home Screen is a perfectly valid PNG, and reporting it as a captured
-/// screen is worse than reporting nothing at all.
-function screenshot(udid, name, orientation) {
+/// the Home Screen — or of a paywall, or of the Timer tab — is a perfectly
+/// valid PNG, and reporting one as the requested screen is worse than
+/// reporting nothing at all.
+function screenshot(udid, name, orientation, expect) {
   if (!isRunning(udid)) return "app not running";
+  const shown = surface(udid);
+  if (!shown) return "no surface marker";
+  if (!shown.split(" ").some((token) => token === expect || token.startsWith(`${expect}.`))) {
+    return `on ${shown}`;
+  }
   const path = join(OUT, `${name}.png`);
   rmSync(path, { force: true });
   simctl(["io", udid, "screenshot", "--type=png", "--mask=ignored", path], {
@@ -264,7 +305,9 @@ for (const scene of scenes) {
         // settle. Records seeds a sample archive on first use, which is the
         // slowest of them.
         await sleep(6000);
-        const problem = pid ? screenshot(device.udid, name, orientation) : "launch failed";
+        const problem = pid
+          ? screenshot(device.udid, name, orientation, scene.expect)
+          : "launch failed";
         if (problem) {
           notes[key] = problem;
           missing += 1;

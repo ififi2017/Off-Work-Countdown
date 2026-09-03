@@ -350,7 +350,10 @@ struct RecordsHeadlineView: View {
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(OWCDesign.secondary)
-                    .lineLimit(2)
+                    // Three, because the longest of these labels is the one
+                    // that matters most and two lines was already clipping it
+                    // in English at the default type size.
+                    .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
                     .layoutPriority(1)
                 Spacer(minLength: 0)
@@ -446,6 +449,14 @@ struct RecordsMonthGrid: View {
                                     )
                             }
                     }
+                    // Seven columns in a phone's width leave about 42 points a
+                    // side, and no amount of spacing arithmetic gets a square
+                    // cell to 44 without the grid ceasing to be a calendar. The
+                    // touch target reaches into the gutter instead; the drawn
+                    // cell and the layout are untouched.
+                    .padding(-3)
+                    .contentShape(Rectangle())
+                    .padding(3)
                     .buttonStyle(.plain)
                     .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
                 }
@@ -612,6 +623,9 @@ struct RecordsWeekStrips: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
+                .padding(.horizontal, -3)
+                .contentShape(Rectangle())
+                .padding(.horizontal, 3)
                 .buttonStyle(.plain)
                 .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
             }
@@ -1757,7 +1771,6 @@ struct RecordsDaySummaryCard: View {
     let detail: RecordsDayDetail?
     var locked: Bool
     var onUnlock: () -> Void
-    var onOpenDay: () -> Void
 
     var body: some View {
         if locked || detail == nil && !store.plus.isAuthorized {
@@ -1801,7 +1814,11 @@ struct RecordsDaySummaryCard: View {
                         markers(detail)
                     }
 
-                    Button(action: onOpenDay) {
+                    // A link, not a programmatic push: this card is hosted by
+                    // three different navigation stacks and only the phone's is
+                    // bound to `store.recordsPath`. Appending there did nothing
+                    // at all on iPad, where the shell owns its own path.
+                    NavigationLink(value: RecordsRoute.day(detail.dayKey)) {
                         HStack(spacing: 6) {
                             Text(store.t("recordsSeeThisDay"))
                                 .font(.body.weight(.semibold))

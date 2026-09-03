@@ -313,13 +313,15 @@ extension RecordsDayCanvasModel {
                 anchorDayKey: nil
             )
         }
-        intervals.sort { $0.startAtMs < $1.startAtMs }
-
         let nowMs = input.isToday ? milliseconds(minuteFloor(input.now)) : nil
         let projectionStart = nowMs.flatMap { value -> Double? in
             guard value >= lower, value < upper else { return nil }
             return value
         }
+        if let projectionStart {
+            intervals = splitAtNow(intervals, at: projectionStart)
+        }
+        intervals.sort { $0.startAtMs < $1.startAtMs }
 
         let editable = shifts.compactMap { shift -> RecordsDayEditableShift? in
             guard shift.isEditable else { return nil }
@@ -476,6 +478,28 @@ extension RecordsDayCanvasModel {
             }
         }
         return (sleep, remainder)
+    }
+
+    /// Today past the now line is the schedule, not a fact. A stretch that
+    /// straddles the line becomes two, and everything after it that was being
+    /// drawn as recorded is redrawn as the estimate it actually is. Anything
+    /// already estimated — sleep, a plan, a projection — keeps the source it
+    /// had, because it was never claiming otherwise.
+    private static func splitAtNow(
+        _ intervals: [RecordsDayInterval],
+        at nowAtMs: Double
+    ) -> [RecordsDayInterval] {
+        intervals.flatMap { interval -> [RecordsDayInterval] in
+            guard !interval.source.isEstimated, interval.endAtMs > nowAtMs else { return [interval] }
+            var future = interval
+            future.source = .afterNow
+            future.sourceKey = RecordsDaySource.afterNow.titleKey
+            guard interval.startAtMs < nowAtMs else { return [future] }
+            var past = interval
+            past.endAtMs = nowAtMs
+            future.startAtMs = nowAtMs
+            return [past, future]
+        }
     }
 
     private static func allocation(

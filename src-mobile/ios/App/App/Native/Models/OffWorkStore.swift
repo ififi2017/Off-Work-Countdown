@@ -279,7 +279,12 @@ final class OffWorkStore {
     private(set) var debugDidResetOnLaunch = false
 #endif
 
-    var selectedTab: AppTab { didSet { defaults.set(selectedTab.rawValue, forKey: Key.selectedTab) } }
+    var selectedTab: AppTab {
+        didSet {
+            defaults.set(selectedTab.rawValue, forKey: Key.selectedTab)
+            writeQASurfaceMarker()
+        }
+    }
     var presentedRoute: AppRoute?
 
     /// Whether the "coming up" list is showing everything.
@@ -301,11 +306,11 @@ final class OffWorkStore {
     /// pushed page survives a rotation — portrait and landscape are separate
     /// view trees, and each used to own its own path. Not persisted.
     var timerPath: [AppRoute] = []
-    var recordsPath: [RecordsRoute] = []
-    var settingsPath: [AppRoute] = []
+    var recordsPath: [RecordsRoute] = [] { didSet { writeQASurfaceMarker() } }
+    var settingsPath: [AppRoute] = [] { didSet { writeQASurfaceMarker() } }
     /// The paywall a gated action asked for, presented as a sheet by the root
     /// view so it appears over the current stack whichever one that is.
-    var paywallSheet: PlusPaywallReason?
+    var paywallSheet: PlusPaywallReason? { didSet { writeQASurfaceMarker() } }
     var pendingPlusAction: PlusPendingAction?
     var editingDayKey: String?
     var presentAddFocus = false
@@ -903,6 +908,26 @@ final class OffWorkStore {
         case ("day", let key?): return .day(key)
         default: return nil
         }
+    }
+
+    /// Names what is on screen, in the app container, for `qa:ios-shots`.
+    ///
+    /// A screenshot tool cannot see a screen: the first version of that sweep
+    /// reported eight green captures of a paywall and a Timer tab, because a
+    /// running process and a PNG of the right size is all it could check. This
+    /// is the missing half — the app says where it actually is, and the script
+    /// refuses any shot that does not match what it asked for. Debug only;
+    /// nothing in the shipping build reads it.
+    func writeQASurfaceMarker() {
+#if DEBUG
+        var parts = [selectedTab.rawValue]
+        if paywallSheet != nil { parts.append("paywall") }
+        if let route = recordsPath.last { parts.append("records.\(route)") }
+        if let route = settingsPath.last ?? presentedRoute { parts.append("route.\(route.rawValue)") }
+        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+        guard let url = caches?.appendingPathComponent("qa-surface.txt") else { return }
+        try? parts.joined(separator: " ").write(to: url, atomically: true, encoding: .utf8)
+#endif
     }
 
     func scheduleDebugResetOnNextLaunch() {
@@ -1555,6 +1580,15 @@ final class OffWorkStore {
             return dayKey
         }
         return formatRecordsDayTitle(date)
+    }
+
+    /// The sync conflict recorded against a civil day, if any. Conflict keys
+    /// carry a `#user` suffix, so the day page's exact string comparison never
+    /// matched one the month grid had already flagged.
+    func recordsConflict(forDayKey dayKey: String) -> SyncConflictCopy? {
+        records.state.sync.conflicts.first {
+            Self.civilDayKey(fromExceptionKey: $0.logicalKey) == dayKey
+        }
     }
 
     private static func civilDayKey(fromExceptionKey key: String) -> String {
@@ -3601,9 +3635,12 @@ final class OffWorkStore {
         // A 22:00–06:00 shift is two hours of its anchor day and six of the
         // next one. Reading only this day's own resolution dropped the morning
         // half from the cell, the summary and every total above them.
-        let contributors = [previous, resolution]
-            .compactMap { $0 }
-            .filter { contributesHours($0, now: now, includesLifeProjection: includesLifeProjection) }
+        let contributors = contributingShifts(
+            for: resolution,
+            previous: previous,
+            now: now,
+            includesLifeProjection: includesLifeProjection
+        )
         let share = revealed && !contributors.isEmpty
             ? dayAllocation(resolution, contributedBy: contributors, now: now)
             : TimeAllocationShare(workMs: 0, overtimeMs: 0, sleepMs: 0, freeMs: 0, dayLengthMs: 0)
@@ -3724,6 +3761,23 @@ final class OffWorkStore {
         )
     }
 
+    /// The shifts allowed to put hours on a civil day: the day itself and the
+    /// night before, each only if its own record, correction or life projection
+    /// lets it count. Every surface that prints a per-day number reads this, so
+    /// the calendar cell, the compact summary and the day canvas cannot
+    /// disagree — the cell used to filter and the other two did not, which put
+    /// "not recorded, 0 h" in the grid above a solid eight-hour day.
+    func contributingShifts(
+        for resolution: DayResolution,
+        previous: DayResolution?,
+        now: Date = .now,
+        includesLifeProjection: Bool
+    ) -> [DayResolution] {
+        [previous, resolution]
+            .compactMap { $0 }
+            .filter { contributesHours($0, now: now, includesLifeProjection: includesLifeProjection) }
+    }
+
     private func previousDay(
         before day: DayResolution,
         in index: [String: DayResolution]
@@ -3770,7 +3824,10 @@ final class OffWorkStore {
                 sleepSourceKey: sleepKey,
                 isToday: recordsCalendar.isDate(start, inSameDayAs: now),
                 now: now,
-                rulesFailed: resolution.expansionFailed
+                // Any contributing shift, not just this day's. When last
+                // night's expansion failed its overnight tail is missing, and
+                // the hole it leaves here is unaccounted for rather than free.
+                rulesFailed: shifts.contains(where: \.expansionFailed)
             )
         )
     }
@@ -3811,9 +3868,18 @@ final class OffWorkStore {
             includesLifeProjection: includesLifeProjection
         )
         guard cell.appearance != .locked else { return nil }
-        // The same inputs the cell above it used, so the calendar and the
-        // summary under it cannot print two different days.
-        let share = dayAllocation(resolution, previous: previous, now: now)
+        // The same qualified inputs the cell above it used, so the calendar and
+        // the summary under it cannot print two different days.
+        let share = dayAllocation(
+            resolution,
+            contributedBy: contributingShifts(
+                for: resolution,
+                previous: previous,
+                now: now,
+                includesLifeProjection: includesLifeProjection
+            ),
+            now: now
+        )
         // The same words the day canvas uses. Two mappings meant the compact
         // summary could call a day one thing and its own page another.
         let sourceKey = recordsDaySource(cell: cell, resolution: resolution).titleKey
@@ -3879,18 +3945,31 @@ final class OffWorkStore {
         )
         // Records edits a day that has already happened. A future day is
         // changed by moving the schedule or by running the timer, not by
-        // writing history forward.
+        // writing history forward — and a day the life profile merely projects
+        // has no original input to open, so it gets no editor either.
         let today = recordsCalendar.startOfDay(for: now)
         let editableAnchors: Set<String> = plus.isAuthorized
             ? Set(
                 resolved
-                    .filter { recordsCalendar.startOfDay(for: $0.shiftAnchorDate) <= today }
+                    .filter { candidate in
+                        let anchor = recordsCalendar.startOfDay(for: candidate.shiftAnchorDate)
+                        guard anchor <= today else { return false }
+                        if contributesHours(candidate, now: now, includesLifeProjection: false) {
+                            return true
+                        }
+                        return !isInsideLifeWorkProjection(anchor, now: now)
+                    }
                     .map(\.dayKey)
             )
             : []
         return dayCanvasModel(
             for: resolution,
-            contributedBy: [previous, resolution].compactMap { $0 },
+            contributedBy: contributingShifts(
+                for: resolution,
+                previous: previous,
+                now: now,
+                includesLifeProjection: true
+            ),
             source: recordsDaySource(cell: cell, resolution: resolution),
             now: now,
             editableAnchors: editableAnchors
@@ -4934,7 +5013,12 @@ final class OffWorkStore {
             periods: archive.periods,
             snapshots: archive.snapshots,
             usesSharedCache: false
-        ).compactMap(LifeScheduleDay.init)
+        ).compactMap { resolution in
+            LifeScheduleDay(
+                resolution: resolution,
+                overtimeSegments: overtimeSegments(on: resolution)
+            )
+        }
         return LifeViewCalculator.build(
             profile: profile,
             scheduleDays: scheduleDays,

@@ -193,8 +193,7 @@ struct RecordsDesignView: View {
                     store: store,
                     detail: detail,
                     locked: selectedIsLocked,
-                    onUnlock: { store.paywallSheet = .charts },
-                    onOpenDay: openSelectedDay
+                    onUnlock: { store.paywallSheet = .charts }
                 )
             } else if scale == .year, let selectedYearMonth {
                 RecordsYearSelectionCard(
@@ -717,13 +716,6 @@ struct RecordsDesignView: View {
             previous: index > 0 ? days[index - 1] : nil,
             includesLifeProjection: true
         )
-    }
-
-    /// Selecting a date updates this page; "see this day" is the hierarchy
-    /// step. Editing now lives on the day itself, one level down.
-    private func openSelectedDay() {
-        guard let selectedDayKey else { return }
-        store.recordsPath.append(.day(selectedDayKey))
     }
 
     @ViewBuilder

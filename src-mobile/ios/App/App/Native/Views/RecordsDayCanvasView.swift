@@ -118,13 +118,21 @@ struct RecordsDayCanvasView: View {
     /// back to 24.
     private func axis(_ model: RecordsDayCanvasModel) -> some View {
         let total = model.dayEnd.timeIntervalSince(model.dayStart)
+        let calendar = store.recordsCalendar
         return GeometryReader { proxy in
             ForEach([0, 6, 12, 18, 24], id: \.self) { hour in
-                let moment = model.dayStart.addingTimeInterval(Double(hour) * 3_600)
+                // Built from calendar components, not from elapsed seconds: on
+                // a 23-hour day six hours after midnight is 07:00 on the wall,
+                // and on a 25-hour day the closing tick is next midnight rather
+                // than something an hour short of the right edge.
+                let moment = hour == 24
+                    ? model.dayEnd
+                    : calendar.date(bySettingHour: hour, minute: 0, second: 0, of: model.dayStart)
+                        ?? model.dayStart.addingTimeInterval(Double(hour) * 3_600)
                 let offset = total > 0
                     ? min(1, max(0, moment.timeIntervalSince(model.dayStart) / total))
                     : 0
-                Text(store.formatRecordsTime(min(moment, model.dayEnd)))
+                Text(store.formatRecordsTime(moment))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(OWCDesign.tertiary)
                     .fixedSize()
@@ -231,7 +239,7 @@ struct RecordsDayCanvasView: View {
     /// It is never folded into a Plus message.
     @ViewBuilder
     private var conflictCard: some View {
-        if let conflict = store.records.state.sync.conflicts.first(where: { $0.logicalKey == dayKey }) {
+        if let conflict = store.recordsConflict(forDayKey: dayKey) {
             OWCGroupCard {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(store.t("recordsConflictCopy"))
