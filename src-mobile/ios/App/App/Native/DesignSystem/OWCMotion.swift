@@ -12,6 +12,11 @@ enum OWCMotion {
     static let navigation = Animation.snappy(duration: 0.28)
     static let phase = Animation.smooth(duration: 0.28)
     static let recordsExpansion = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.26)
+    /// One chart replacing another under the scale picker. Shorter than the
+    /// expansion above it: the segmented control has already snapped by the
+    /// time this starts, so anything slower reads as the canvas lagging the
+    /// control rather than following it.
+    static let recordsScaleChange = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.20)
     static let paywallPresentation = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.32)
     static let dragReturn = Animation.spring(duration: 0.38, bounce: 0.12)
     /// A deliberately discovered brand moment. One full turn needs enough

@@ -357,3 +357,42 @@ func lifeProgressIsClamped() {
     #expect(LifeStageCalculator.progress(from: start, to: end, at: Date(timeIntervalSince1970: 1_500)) == 0.5)
     #expect(LifeStageCalculator.progress(from: start, to: end, at: Date(timeIntervalSince1970: 3_000)) == 1)
 }
+
+/// The life model is now cached, because rebuilding it expands a career's
+/// worth of schedule and that was happening on every visit to the Records tab.
+/// A cache that misses an edit is worse than no cache: the grid would keep
+/// showing a retirement date the user has already changed.
+@MainActor
+@Test("The cached life model is rebuilt when the archive changes")
+func lifeViewModelCacheFollowsTheArchive() async {
+    let defaults = UserDefaults(suiteName: "owc.lifecache.\(UUID().uuidString)")!
+    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    store.saveLifeProfile(
+        birthYear: 1992,
+        workStartedYear: 2014,
+        retirementAge: 60,
+        sleepHours: 8,
+        hidesExactAges: false
+    )
+
+    // Asking twice for the same archive on the same day has to give the same
+    // answer, whether or not the second one came out of the cache.
+    let first = await store.prepareLifeViewModel()
+    let repeated = await store.prepareLifeViewModel()
+    #expect(first != nil)
+    #expect(first == repeated)
+
+    // Retiring five years later is more weeks of life, so the cache must not
+    // hand back the shorter timeline.
+    store.saveLifeProfile(
+        birthYear: 1992,
+        workStartedYear: 2014,
+        retirementAge: 65,
+        sleepHours: 8,
+        hidesExactAges: false
+    )
+    let afterEdit = await store.prepareLifeViewModel()
+    #expect(afterEdit != nil)
+    #expect(afterEdit != first)
+    #expect((afterEdit?.cells.count ?? 0) > (first?.cells.count ?? 0))
+}

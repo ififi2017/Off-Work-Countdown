@@ -538,3 +538,42 @@ private func sampleState() -> RecordState {
 private func id(_ value: Int) -> UUID {
     UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", value)) ?? UUID()
 }
+
+/// `dayKey` used to build its string through `String(format:)`, which measured
+/// at a third of the cost of walking a career's worth of days. The replacement
+/// pads by hand, so the two have to be held to the same output — a day key is
+/// a persisted identity, and a single unpadded month would orphan every
+/// override, exception and observation written against that day.
+@MainActor
+@Test("Hand-padded day keys match the formatter they replaced")
+func dayKeyMatchesFormattedOutput() {
+    for year in [1, 9, 10, 99, 100, 999, 1_000, 1_970, 2_026, 9_999] {
+        for month in 1...12 {
+            for day in [1, 9, 10, 28, 31] {
+                #expect(
+                    RecordJSON.dayKey(year: year, month: month, day: day)
+                        == String(format: "%04d-%02d-%02d", year, month, day)
+                )
+            }
+        }
+    }
+}
+
+/// The date-taking overload is what every caller actually uses, so the civil
+/// calendar has to reach the padded components unchanged.
+@MainActor
+@Test("Day keys read the civil calendar's own components")
+func dayKeyUsesCivilCalendar() {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+    let newYear = calendar.date(from: DateComponents(year: 2026, month: 1, day: 5))!
+    #expect(RecordJSON.dayKey(newYear, calendar: calendar) == "2026-01-05")
+
+    // 15:30 UTC on 4 January is already 5 January in Shanghai. The key must
+    // follow the records zone, not the absolute instant's UTC date.
+    var utc = Calendar(identifier: .gregorian)
+    utc.timeZone = TimeZone(identifier: "UTC")!
+    let evening = utc.date(from: DateComponents(year: 2026, month: 1, day: 4, hour: 15, minute: 30))!
+    #expect(RecordJSON.dayKey(evening, calendar: calendar) == "2026-01-05")
+    #expect(RecordJSON.dayKey(evening, calendar: utc) == "2026-01-04")
+}
