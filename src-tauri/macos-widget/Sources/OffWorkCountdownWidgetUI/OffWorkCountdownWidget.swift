@@ -960,7 +960,13 @@ public struct OffWorkCountdownWidgetView: View {
     /// iOS 26 SDK (`@available(iOS, unavailable)`) and becomes an iOS 27
     /// family in Xcode 27. Raw value 4 is stable across both, so both
     /// toolchains compile without referencing the unavailable case.
-    fileprivate static let systemExtraLargePortraitRawValue = 4
+    ///
+    /// `nonisolated` because it is a family number, not view state: the
+    /// timeline provider decides from it whether a family carries the "coming
+    /// up" list, and that runs off the main actor. Without it the constant
+    /// inherits this `View`'s main-actor isolation and reading it there is a
+    /// concurrency warning today and an error under full Swift 6 checking.
+    fileprivate nonisolated static let systemExtraLargePortraitRawValue = 4
 
     private var isSystemExtraLargePortrait: Bool {
         guard #available(iOS 27.0, *) else { return false }
