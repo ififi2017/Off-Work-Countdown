@@ -4,6 +4,25 @@ import WidgetKit
 @testable import OffWorkCountdownWidgetUI
 @testable import WidgetSnapshotContract
 
+@Test("A missing snapshot schedules another WidgetKit read")
+func missingSnapshotRetriesInsteadOfSticking() throws {
+    let now = Date(timeIntervalSince1970: 1_800_000_000)
+    let provider = OffWorkCountdownTimelineProvider(appGroupIdentifier: nil)
+    let timeline = provider.makeTimeline(now: now)
+
+    #expect(timeline.entries.count == 1)
+    #expect(timeline.entries[0].snapshotEntry == nil)
+    guard case let .after(retryAt) = timeline.policy else {
+        Issue.record("Missing snapshot timeline must use an after policy")
+        return
+    }
+    #expect(
+        retryAt == now.addingTimeInterval(
+            OffWorkCountdownTimelineProvider.unavailableSnapshotRetryInterval
+        )
+    )
+}
+
 @Test("Swift decodes the fixture serialized by TypeScript")
 func decodesTypeScriptFixture() throws {
     let fixtureURL = try #require(

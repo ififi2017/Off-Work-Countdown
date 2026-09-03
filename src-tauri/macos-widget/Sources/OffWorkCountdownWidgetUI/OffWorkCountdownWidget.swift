@@ -154,6 +154,12 @@ public struct OffWorkCountdownWidgetEntry: TimelineEntry, Sendable {
 }
 
 public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
+    /// A snapshot can be briefly unavailable while the app is making its first
+    /// App Group write (or while iOS is restoring the widget extension). Never
+    /// make that transient read the final timeline: WidgetCenter reloads are
+    /// best-effort and may be coalesced before the file becomes visible.
+    static let unavailableSnapshotRetryInterval: TimeInterval = 5 * 60
+
     private let loader: SharedWidgetSnapshotLoader
 
     public init(appGroupIdentifier: String?, storageMode: String = "app-group") {
@@ -188,29 +194,17 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
     func makeTimeline(now: Date) -> Timeline<OffWorkCountdownWidgetEntry> {
         let nowMs = Int64(now.timeIntervalSince1970 * 1_000)
         guard let snapshot = loader.load() else {
-            return Timeline(
-                entries: [
-                    OffWorkCountdownWidgetEntry(
-                        date: now,
-                        snapshotEntry: nil,
-                        locale: WidgetCopy.currentLocaleIdentifier
-                    )
-                ],
-                policy: .never
+            return unavailableSnapshotTimeline(
+                now: now,
+                locale: WidgetCopy.currentLocaleIdentifier
             )
         }
         let logicalNowMs = snapshot.logicalNowMs(fromRealMs: nowMs)
         guard let current = snapshot.entry(atMs: logicalNowMs) else {
-            return Timeline(
-                entries: [
-                    OffWorkCountdownWidgetEntry(
-                        date: now,
-                        snapshotEntry: nil,
-                        locale: snapshot.locale,
-                        clockOffsetMs: snapshot.clockOffsetMs
-                    )
-                ],
-                policy: .never
+            return unavailableSnapshotTimeline(
+                now: now,
+                locale: snapshot.locale,
+                clockOffsetMs: snapshot.clockOffsetMs
             )
         }
 
@@ -262,6 +256,26 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
             )
         )
         return Timeline(entries: timelineEntries, policy: reloadPolicy)
+    }
+
+    private func unavailableSnapshotTimeline(
+        now: Date,
+        locale: String,
+        clockOffsetMs: Int64 = 0
+    ) -> Timeline<OffWorkCountdownWidgetEntry> {
+        Timeline(
+            entries: [
+                OffWorkCountdownWidgetEntry(
+                    date: now,
+                    snapshotEntry: nil,
+                    locale: locale,
+                    clockOffsetMs: clockOffsetMs
+                )
+            ],
+            policy: .after(
+                now.addingTimeInterval(Self.unavailableSnapshotRetryInterval)
+            )
+        )
     }
 
     #if os(iOS)
