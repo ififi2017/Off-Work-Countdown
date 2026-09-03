@@ -448,6 +448,8 @@ struct RecordsMonthGrid: View {
                                         lineWidth: 2
                                     )
                             }
+                            .padding(3)
+                            .contentShape(Rectangle())
                     }
                     // Seven columns in a phone's width leave about 42 points a
                     // side, and no amount of spacing arithmetic gets a square
@@ -455,8 +457,6 @@ struct RecordsMonthGrid: View {
                     // touch target reaches into the gutter instead; the drawn
                     // cell and the layout are untouched.
                     .padding(-3)
-                    .contentShape(Rectangle())
-                    .padding(3)
                     .buttonStyle(.plain)
                     .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
                 }
@@ -622,10 +622,10 @@ struct RecordsWeekStrips: View {
                         .background(cell.dayKey == selectedDayKey ? OWCDesign.accent : Color.clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     }
                     .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 3)
+                    .contentShape(Rectangle())
                 }
                 .padding(.horizontal, -3)
-                .contentShape(Rectangle())
-                .padding(.horizontal, 3)
                 .buttonStyle(.plain)
                 .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
             }

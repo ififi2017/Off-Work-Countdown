@@ -306,8 +306,8 @@ final class OffWorkStore {
     /// pushed page survives a rotation — portrait and landscape are separate
     /// view trees, and each used to own its own path. Not persisted.
     var timerPath: [AppRoute] = []
-    var recordsPath: [RecordsRoute] = [] { didSet { writeQASurfaceMarker() } }
-    var settingsPath: [AppRoute] = [] { didSet { writeQASurfaceMarker() } }
+    var recordsPath: [RecordsRoute] = []
+    var settingsPath: [AppRoute] = []
     /// The paywall a gated action asked for, presented as a sheet by the root
     /// view so it appears over the current stack whichever one that is.
     var paywallSheet: PlusPaywallReason? { didSet { writeQASurfaceMarker() } }
@@ -918,17 +918,24 @@ final class OffWorkStore {
     /// is the missing half — the app says where it actually is, and the script
     /// refuses any shot that does not match what it asked for. Debug only;
     /// nothing in the shipping build reads it.
-    func writeQASurfaceMarker() {
+    func writeQASurfaceMarker(_ visibleSurface: String? = nil) {
 #if DEBUG
-        var parts = [selectedTab.rawValue]
-        if paywallSheet != nil { parts.append("paywall") }
-        if let route = recordsPath.last { parts.append("records.\(route)") }
-        if let route = settingsPath.last ?? presentedRoute { parts.append("route.\(route.rawValue)") }
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
         guard let url = caches?.appendingPathComponent("qa-surface.txt") else { return }
-        try? parts.joined(separator: " ").write(to: url, atomically: true, encoding: .utf8)
+        try? qaSurfaceName(visibleSurface).write(to: url, atomically: true, encoding: .utf8)
 #endif
     }
+
+#if DEBUG
+    /// One exclusive visible surface. Navigation paths express intent; only a
+    /// destination view's `onAppear` is proof that the push actually landed.
+    func qaSurfaceName(_ visibleSurface: String? = nil) -> String {
+        if !onboardingComplete { return "onboarding" }
+        if !plus.hasSeenIntro { return "plus-intro" }
+        if paywallSheet != nil { return "paywall" }
+        return visibleSurface ?? selectedTab.rawValue
+    }
+#endif
 
     func scheduleDebugResetOnNextLaunch() {
         defaults.set(true, forKey: Key.debugResetNextLaunch)
@@ -3803,23 +3810,38 @@ final class OffWorkStore {
         let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
             ? "recordsSleepFromHealth"
             : "recordsSleepEstimated"
+        var canvasShifts = shifts.map { shift in
+            RecordsDayShift(
+                anchorDayKey: shift.dayKey,
+                segments: shift.segments,
+                overtimeSegments: overtimeSegments(on: shift),
+                source: shift.dayKey == resolution.dayKey
+                    ? source
+                    : shiftSource(of: shift, now: now),
+                isEditable: editableAnchors.contains(shift.dayKey)
+            )
+        }
+        // A past rest or unrecorded day has no contributing hours, but it is
+        // still a real edit anchor. Keep that anchor without feeding its
+        // scheduled estimate into the factual allocation.
+        if editableAnchors.contains(resolution.dayKey),
+           !canvasShifts.contains(where: { $0.anchorDayKey == resolution.dayKey }) {
+            canvasShifts.append(
+                RecordsDayShift(
+                    anchorDayKey: resolution.dayKey,
+                    segments: [],
+                    source: source,
+                    isEditable: true
+                )
+            )
+        }
         return RecordsDayCanvasModel.build(
             RecordsDayCanvasModel.Input(
                 dayKey: resolution.dayKey,
                 dayStart: start,
                 dayEnd: next,
                 source: source,
-                shifts: shifts.map { shift in
-                    RecordsDayShift(
-                        anchorDayKey: shift.dayKey,
-                        segments: shift.segments,
-                        overtimeSegments: overtimeSegments(on: shift),
-                        source: shift.dayKey == resolution.dayKey
-                            ? source
-                            : shiftSource(of: shift, now: now),
-                        isEditable: editableAnchors.contains(shift.dayKey)
-                    )
-                },
+                shifts: canvasShifts,
                 sleepHours: records.state.lifeProfile?.averageSleepHours ?? 8,
                 sleepSourceKey: sleepKey,
                 isToday: recordsCalendar.isDate(start, inSameDayAs: now),
@@ -3827,7 +3849,8 @@ final class OffWorkStore {
                 // Any contributing shift, not just this day's. When last
                 // night's expansion failed its overnight tail is missing, and
                 // the hole it leaves here is unaccounted for rather than free.
-                rulesFailed: shifts.contains(where: \.expansionFailed)
+                rulesFailed: resolution.expansionFailed
+                    || shifts.contains(where: \.expansionFailed)
             )
         )
     }
@@ -3870,19 +3893,20 @@ final class OffWorkStore {
         guard cell.appearance != .locked else { return nil }
         // The same qualified inputs the cell above it used, so the calendar and
         // the summary under it cannot print two different days.
-        let share = dayAllocation(
-            resolution,
+        let canvas = dayCanvasModel(
+            for: resolution,
             contributedBy: contributingShifts(
                 for: resolution,
                 previous: previous,
                 now: now,
                 includesLifeProjection: includesLifeProjection
             ),
+            source: recordsDaySource(cell: cell, resolution: resolution),
             now: now
         )
         // The same words the day canvas uses. Two mappings meant the compact
         // summary could call a day one thing and its own page another.
-        let sourceKey = recordsDaySource(cell: cell, resolution: resolution).titleKey
+        let sourceKey = canvas.source.titleKey
         let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
             ? "recordsSleepFromHealth"
             : "recordsSleepEstimated"
@@ -3902,11 +3926,11 @@ final class OffWorkStore {
             date: resolution.shiftAnchorDate,
             appearance: cell.appearance,
             sourceKey: sourceKey,
-            regularWorkMs: share.workMs,
-            overtimeMs: share.overtimeMs,
-            breakMs: share.breakMs,
-            sleepMs: share.sleepMs,
-            freeMs: share.freeMs,
+            regularWorkMs: canvas.allocation.workMs,
+            overtimeMs: canvas.allocation.overtimeMs,
+            breakMs: canvas.allocation.breakMs,
+            sleepMs: canvas.allocation.sleepMs,
+            freeMs: canvas.allocation.freeMs,
             sleepSourceKey: sleepKey,
             observations: notes,
             isPlanned: cell.appearance == .planned,

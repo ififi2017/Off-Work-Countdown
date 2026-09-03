@@ -203,14 +203,24 @@ enum LifeViewCalculator {
         }
         let totalMs = lifeEnd.timeIntervalSince(lifeStart) * 1_000
         let workMs = workIntervals.reduce(0) { $0 + ($1.endMs - $1.startMs) }
-        let workShare = totalMs > 0 ? min(1, max(0, workMs / totalMs)) : 0
+        let overtimeMs = subtracting(
+            mergedIntervals(
+                scheduleDays.flatMap(\.overtimeSegments),
+                clippedFrom: lifeStart,
+                through: lifeEnd
+            ),
+            from: workIntervals
+        )
+        let workShare = totalMs > 0
+            ? min(1, max(0, (workMs + overtimeMs) / totalMs))
+            : 0
         let configuredSleepHours = resolvedProfile.averageSleepHours
             ?? resolvedProfile.averageSleepMinutes.map { Double($0) / 60 }
             ?? 8
         let sleepHours = min(24, max(0, configuredSleepHours))
         let sleepMs = totalMs * sleepHours / 24
         let ownAwakeShare = totalMs > 0
-            ? min(1, max(0, (totalMs - sleepMs - workMs) / totalMs))
+            ? min(1, max(0, (totalMs - sleepMs - workMs - overtimeMs) / totalMs))
             : 0
         return LifeViewModel(
             cells: cells,
@@ -219,14 +229,7 @@ enum LifeViewCalculator {
             allocation: allocation(
                 totalMs: totalMs,
                 workMs: workMs,
-                overtimeMs: subtracting(
-                    mergedIntervals(
-                        scheduleDays.flatMap(\.overtimeSegments),
-                        clippedFrom: lifeStart,
-                        through: lifeEnd
-                    ),
-                    from: workIntervals
-                ),
+                overtimeMs: overtimeMs,
                 breakMs: mergedIntervals(
                     scheduleDays.flatMap { TimeAllocationCalculator.gaps(in: $0.segments) },
                     clippedFrom: lifeStart,

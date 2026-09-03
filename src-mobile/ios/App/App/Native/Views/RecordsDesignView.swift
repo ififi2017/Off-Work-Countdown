@@ -720,17 +720,30 @@ struct RecordsDesignView: View {
 
     @ViewBuilder
     private func recordsDestination(_ route: RecordsRoute) -> some View {
+        Group {
+            switch route {
+            case .allRecords:
+                RecordsAllRecordsView(store: store)
+            case .yearList(let year):
+                RecordsYearRecordsView(store: store, year: year)
+            case .monthList(let year, let month):
+                RecordsMonthRecordsView(store: store, year: year, month: month)
+            case .day(let dayKey):
+                RecordsDayCanvasView(store: store, dayKey: dayKey)
+            case .conflictCenter:
+                RecordsConflictCenter(store: store)
+            }
+        }
+        .onAppear { store.writeQASurfaceMarker(qaSurfaceName(for: route)) }
+    }
+
+    private func qaSurfaceName(for route: RecordsRoute) -> String {
         switch route {
-        case .allRecords:
-            RecordsAllRecordsView(store: store)
-        case .yearList(let year):
-            RecordsYearRecordsView(store: store, year: year)
-        case .monthList(let year, let month):
-            RecordsMonthRecordsView(store: store, year: year, month: month)
-        case .day(let dayKey):
-            RecordsDayCanvasView(store: store, dayKey: dayKey)
-        case .conflictCenter:
-            RecordsConflictCenter(store: store)
+        case .allRecords: "records.allRecords"
+        case .yearList: "records.yearList"
+        case .monthList: "records.monthList"
+        case .day: "records.day"
+        case .conflictCenter: "records.conflicts"
         }
     }
 

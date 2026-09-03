@@ -3109,6 +3109,89 @@ private func isolatedDefaults() throws -> (UserDefaults, String) {
     return (defaults, suite)
 }
 
+@MainActor
+@Test("QA surface marker reports the visible gate before the requested destination")
+func qaSurfaceMarkerUsesVisibleSurface() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+
+    #expect(store.qaSurfaceName("records.day") == "onboarding")
+    store.onboardingComplete = true
+    #expect(store.qaSurfaceName("records.day") == "plus-intro")
+    store.plus.markIntroSeen()
+    #expect(store.qaSurfaceName("records.day") == "records.day")
+    store.paywallSheet = .charts
+    #expect(store.qaSurfaceName("records.day") == "paywall")
+}
+
+@MainActor
+@Test("An unrecorded past workday keeps an edit anchor without inventing worked hours")
+func unrecordedPastWorkdayKeepsEmptyEditAnchor() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+    store.recordsTimeZoneIdentifier = "UTC"
+    let day = utcDay(2026, 8, 24)
+    let resolution = DayResolution(
+        dayKey: "2026-08-24",
+        shiftAnchorDate: day,
+        layer: .schedule,
+        periodID: nil,
+        snapshotID: nil,
+        isScheduledWorkday: true,
+        segments: [
+            NativeShiftSegment(
+                startAtMs: day.timeIntervalSince1970 * 1_000 + 9 * 3_600_000,
+                endAtMs: day.timeIntervalSince1970 * 1_000 + 17 * 3_600_000
+            ),
+        ]
+    )
+
+    let canvas = store.dayCanvasModel(
+        for: resolution,
+        contributedBy: [],
+        source: .unrecorded,
+        now: day.addingTimeInterval(86_400),
+        editableAnchors: [resolution.dayKey]
+    )
+
+    #expect(canvas.allocation.workMs == 0)
+    #expect(canvas.editableShifts.map(\.anchorDayKey) == [resolution.dayKey])
+    #expect(canvas.editableShifts[0].hasHours == false)
+}
+
+@MainActor
+@Test("A failed current-day expansion remains unclassified without a contributing shift")
+func failedCurrentExpansionRemainsUnclassified() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+    store.recordsTimeZoneIdentifier = "UTC"
+    let day = utcDay(2026, 8, 24)
+    let resolution = DayResolution(
+        dayKey: "2026-08-24",
+        shiftAnchorDate: day,
+        layer: .schedule,
+        periodID: nil,
+        snapshotID: nil,
+        isScheduledWorkday: false,
+        segments: [],
+        expansionFailed: true
+    )
+
+    let canvas = store.dayCanvasModel(
+        for: resolution,
+        contributedBy: [],
+        source: .scheduleEstimate,
+        now: day.addingTimeInterval(86_400)
+    )
+
+    #expect(canvas.hasIncompleteRules)
+    #expect(canvas.allocation.unclassifiedMs > 0)
+    #expect(canvas.allocation.freeMs == 0)
+}
+
 private func utcDay(_ year: Int, _ month: Int, _ day: Int) -> Date {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(secondsFromGMT: 0)!

@@ -104,13 +104,15 @@ function deviceId(named) {
   return device.udid;
 }
 
-/// A clean install per run, not per shot: the review prompt only appears once a
-/// completed shift is on file, and a fresh container has none. Every scene then
-/// runs the "working" scenario, which never completes one.
+/// A clean install per run, not per shot. Each scene supplies only the launch
+/// arguments it needs, so one setup hook cannot erase another scene's route.
 function prepare(udid, appPath) {
   simctl(["boot", udid], { allowFailure: true });
   simctl(["bootstatus", udid, "-b"], { allowFailure: true });
   simctl(["uninstall", udid, BUNDLE_ID], { allowFailure: true });
+  // CoreSimulator can retain the cfprefsd domain after uninstalling, which
+  // leaks a previous scene's DEBUG route into the next supposedly clean run.
+  simctl(["spawn", udid, "defaults", "delete", BUNDLE_ID], { allowFailure: true });
   simctl(["install", udid, appPath]);
   simctl(["status_bar", udid, "override",
     "--time", "9:41",
@@ -145,6 +147,7 @@ function launch(udid, scene, orientation, theme) {
     // Year, Life and the day canvas are behind Plus. Without this the sweep
     // photographs the paywall and calls it a Records screen.
     "-ios.native.debugPlusAuthorized", "YES",
+    "-ios.native.plusHasSeenIntro", "YES",
     "-ios.native.qaOrientation", orientation,
     ...scene.args,
   ];
@@ -193,7 +196,7 @@ function screenshot(udid, name, orientation, expect) {
   if (!isRunning(udid)) return "app not running";
   const shown = surface(udid);
   if (!shown) return "no surface marker";
-  if (!shown.split(" ").some((token) => token === expect || token.startsWith(`${expect}.`))) {
+  if (shown !== expect) {
     return `on ${shown}`;
   }
   const path = join(OUT, `${name}.png`);

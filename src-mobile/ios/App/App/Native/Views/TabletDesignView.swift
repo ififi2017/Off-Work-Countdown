@@ -84,6 +84,10 @@ struct TabletShellView: View {
         .onAppear {
             if store.selectedTab != .records { store.recordsPath.removeAll() }
             if store.selectedTab != .settings { store.settingsPath.removeAll() }
+            if store.selectedTab == .records, !store.recordsPath.isEmpty {
+                for route in store.recordsPath { path.append(route) }
+                store.recordsPath.removeAll()
+            }
             if store.selectedTab == .settings, !store.settingsPath.isEmpty {
                 for route in store.settingsPath { path.append(route) }
                 store.settingsPath.removeAll()

@@ -323,6 +323,19 @@ extension RecordsDayCanvasModel {
         }
         intervals.sort { $0.startAtMs < $1.startAtMs }
 
+        // A recorded overnight tail is the fact this civil day is showing,
+        // even when the day anchored at this midnight is itself a rest day.
+        // Do not let the empty local schedule contradict visible work.
+        let resolvedSource: RecordsDaySource
+        if input.source == .rest || input.source == .unrecorded,
+           let contributingSource = intervals.first(where: {
+               $0.kind == .work || $0.kind == .overtime
+           })?.source {
+            resolvedSource = contributingSource
+        } else {
+            resolvedSource = input.source
+        }
+
         let editable = shifts.compactMap { shift -> RecordsDayEditableShift? in
             guard shift.isEditable else { return nil }
             let hours = !clip(shift.segments, lower: lower, upper: upper).isEmpty
@@ -343,7 +356,7 @@ extension RecordsDayCanvasModel {
             dayKey: input.dayKey,
             dayStart: input.dayStart,
             dayEnd: input.dayEnd,
-            source: input.source,
+            source: resolvedSource,
             intervals: intervals,
             allocation: allocation(of: intervals, dayLengthMs: dayLength),
             isToday: input.isToday,

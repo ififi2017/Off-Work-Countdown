@@ -100,12 +100,18 @@ struct RecordsDayCanvasModelTests {
         )
 
         let first = model(dayStart: day, shifts: [shift])
-        let second = model(dayStart: next, dayKey: "2026-08-25", shifts: [shift])
+        let second = model(
+            dayStart: next,
+            dayKey: "2026-08-25",
+            shifts: [shift],
+            source: .rest
+        )
 
         #expect(first.allocation.workMs == Int64(4 * hour))
         #expect(second.allocation.workMs == Int64(4 * hour))
         #expect(first.allocation.totalMs == first.allocation.dayLengthMs)
         #expect(second.allocation.totalMs == second.allocation.dayLengthMs)
+        #expect(second.source == .recorded)
         // The morning half still belongs to the shift that produced it, so the
         // editor can open the right record from either day.
         #expect(second.workIntervals.allSatisfy { $0.anchorDayKey == "2026-08-24" })
@@ -256,6 +262,11 @@ struct RecordsDayCanvasModelTests {
         let expected = day.timeIntervalSince1970 * 1_000 + (14 * 60 + 32) * 60_000
         #expect(today.nowAtMs == expected)
         #expect(today.projectionStartsAtMs == expected)
+        #expect(today.workIntervals.count == 2)
+        #expect(today.workIntervals[0].endAtMs == expected)
+        #expect(today.workIntervals[0].source == .recorded)
+        #expect(today.workIntervals[1].startAtMs == expected)
+        #expect(today.workIntervals[1].source == .afterNow)
     }
 
     @Test("A locked day carries no interval, duration, anchor or source of its own")
