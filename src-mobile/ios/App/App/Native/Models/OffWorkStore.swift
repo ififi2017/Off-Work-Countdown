@@ -910,22 +910,6 @@ final class OffWorkStore {
         }
     }
 
-    /// Names what is on screen, in the app container, for `qa:ios-shots`.
-    ///
-    /// A screenshot tool cannot see a screen: the first version of that sweep
-    /// reported eight green captures of a paywall and a Timer tab, because a
-    /// running process and a PNG of the right size is all it could check. This
-    /// is the missing half — the app says where it actually is, and the script
-    /// refuses any shot that does not match what it asked for. Debug only;
-    /// nothing in the shipping build reads it.
-    func writeQASurfaceMarker(_ visibleSurface: String? = nil) {
-#if DEBUG
-        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
-        guard let url = caches?.appendingPathComponent("qa-surface.txt") else { return }
-        try? qaSurfaceName(visibleSurface).write(to: url, atomically: true, encoding: .utf8)
-#endif
-    }
-
 #if DEBUG
     /// One exclusive visible surface. Navigation paths express intent; only a
     /// destination view's `onAppear` is proof that the push actually landed.
@@ -1213,6 +1197,22 @@ final class OffWorkStore {
         _ = records.replaceSyncState(sync)
     }
 #endif
+
+    /// Names what is on screen, in the app container, for `qa:ios-shots`.
+    ///
+    /// A screenshot tool cannot see a screen: the first version of that sweep
+    /// reported eight green captures of a paywall and a Timer tab, because a
+    /// running process and a PNG of the right size is all it could check. This
+    /// is the missing half — the app says where it actually is, and the script
+    /// refuses any shot that does not match what it asked for. Debug only;
+    /// nothing in the shipping build reads it.
+    func writeQASurfaceMarker(_ visibleSurface: String? = nil) {
+#if DEBUG
+        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+        guard let url = caches?.appendingPathComponent("qa-surface.txt") else { return }
+        try? qaSurfaceName(visibleSurface).write(to: url, atomically: true, encoding: .utf8)
+#endif
+    }
 
     var preferredColorScheme: ColorScheme? {
         switch theme {
