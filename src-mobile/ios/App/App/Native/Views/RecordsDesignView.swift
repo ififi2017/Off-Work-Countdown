@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct RecordsDesignView: View {
     let store: OffWorkStore
     let showsSidebarButton: Bool
+    let usesOwnHeader: Bool
     let showSidebar: () -> Void
     @State private var scale: RecordsScale
     @State private var anchor = Date()
@@ -15,6 +16,7 @@ struct RecordsDesignView: View {
     @State private var cells: [RecordsDayCell] = []
     @State private var summary: RecordsHeadlineSummary?
     @State private var detail: RecordsDayDetail?
+    @State private var lifeModel: LifeViewModel?
     @State private var expanded: [RecordsScale: Bool]
     @State private var pinch: CGFloat = 1
     @State private var scaleFeedback = 0
@@ -23,23 +25,30 @@ struct RecordsDesignView: View {
     @State private var confirmsQuarantine = false
     @State private var loadGeneration = 0
     @State private var showsCompactRootBar = false
+    @State private var canvasWidth: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     private var isExpanded: Bool { expanded[scale] == true }
     private var canExpand: Bool { scale == .year || scale == .life }
+    /// Draw the title and its controls inside the page instead of borrowing a
+    /// navigation bar. True in phone portrait, and on iPad, where the shell
+    /// keeps its bar hidden for every root so switching tabs cannot resize the
+    /// safe area under a cross-fade.
     private var usesPhonePortraitHeader: Bool {
-        horizontalSizeClass == .compact && verticalSizeClass != .compact
+        usesOwnHeader || (horizontalSizeClass == .compact && verticalSizeClass != .compact)
     }
 
     init(
         store: OffWorkStore,
         showsSidebarButton: Bool = false,
+        usesOwnHeader: Bool = false,
         showSidebar: @escaping () -> Void = {}
     ) {
         self.store = store
         self.showsSidebarButton = showsSidebarButton
+        self.usesOwnHeader = usesOwnHeader
         self.showSidebar = showSidebar
 #if DEBUG
         let requested = RecordsScale(
@@ -138,33 +147,26 @@ struct RecordsDesignView: View {
 
                 RecordsScalePicker(store: store, scale: scaleBinding)
 
-                visualization(expandedPresentation: false)
-
-                if scale == .week || scale == .month {
-                    RecordsDayDetailCard(
-                        store: store,
-                        detail: detail,
-                        locked: selectedIsLocked,
-                        onUnlock: { store.paywallSheet = .charts },
-                        onEdit: editSelected
-                    )
-                } else if scale == .year, let selectedYearMonth {
-                    RecordsYearSelectionCard(
-                        store: store,
-                        month: selectedYearMonth,
-                        cells: yearSelectionCells,
-                        summary: yearSelectionSummary
-                    )
-                }
-                if shouldOfferLifeSetup {
-                    lifeSetupCard
-                }
-                if scale != .life, hasActualRecords {
-                    RecordsHeadlineView(
-                        store: store,
-                        summary: summary,
-                        onUnlock: { store.paywallSheet = .charts }
-                    )
+                // Side by side once there is room for both. An iPad in
+                // landscape stretched a single column across the whole pane,
+                // so a month grid and a summary card each ran the width of the
+                // screen. The chart keeps the larger share; the conclusions
+                // are text and stop at a readable measure.
+                //
+                // Measured rather than `ViewThatFits`: that asks each
+                // candidate for its ideal width, and the legend row inside the
+                // chart card reports the width it would like as one unbroken
+                // line, which is enough to reject the two-column layout on a
+                // pane that has ample room for it.
+                if canvasWidth >= Self.twoColumnMinimum {
+                    HStack(alignment: .top, spacing: 14) {
+                        visualization(expandedPresentation: false)
+                        conclusionColumn
+                            .frame(maxWidth: Self.conclusionColumnWidth, alignment: .top)
+                    }
+                } else {
+                    visualization(expandedPresentation: false)
+                    conclusionColumn
                 }
             }
             .padding(.horizontal, OWCDesign.pageInset)
@@ -173,6 +175,51 @@ struct RecordsDesignView: View {
         }
         .scrollIndicators(.hidden)
         .coordinateSpace(.named("recordsRootScroll"))
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { canvasWidth = $0 }
+    }
+
+    /// Measured, not guessed from the device: the same iPad is wide with the
+    /// sidebar hidden and narrow with it shown, and an iPhone in landscape
+    /// borrows this page at about 680 pt and has to stay in one column.
+    private static let twoColumnMinimum: CGFloat = 720
+    private static let conclusionColumnWidth: CGFloat = 420
+
+    /// Everything that answers the question, as opposed to drawing it.
+    @ViewBuilder
+    private var conclusionColumn: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if scale == .week || scale == .month {
+                RecordsDaySummaryCard(
+                    store: store,
+                    detail: detail,
+                    locked: selectedIsLocked,
+                    onUnlock: { store.paywallSheet = .charts }
+                )
+            } else if scale == .year, let selectedYearMonth {
+                RecordsYearSelectionCard(
+                    store: store,
+                    month: selectedYearMonth,
+                    cells: yearSelectionCells,
+                    summary: yearSelectionSummary
+                )
+            }
+            // The life scale is behind Plus, so this conclusion is too. A
+            // locked life view must not print a projected number under a
+            // locked canvas.
+            if scale == .life, store.plus.isAuthorized, store.records.state.lifeProfile != nil {
+                RecordsLifeAllocationCard(store: store, model: lifeModel)
+            }
+            if shouldOfferLifeSetup {
+                lifeSetupCard
+            }
+            if scale != .life, hasActualRecords, !selectedIsLocked {
+                RecordsHeadlineView(
+                    store: store,
+                    summary: summary,
+                    onUnlock: { store.paywallSheet = .charts }
+                )
+            }
+        }
     }
 
     /// A separate layout branch keeps expansion from being a taller version
@@ -406,10 +453,12 @@ struct RecordsDesignView: View {
                     RecordsMonthGrid(store: store, cells: cells, selectedDayKey: selectedDayKey) { cell in
                         select(cell)
                     }
+                    markLegend
                 case .week:
                     RecordsWeekStrips(store: store, cells: cells, selectedDayKey: selectedDayKey) { cell in
                         select(cell)
                     }
+                    markLegend
                 case .year:
                     // The year changes form when it is given the whole screen:
                     // the collapsed density canvas answers "when was it heavy",
@@ -453,6 +502,10 @@ struct RecordsDesignView: View {
                     pinch = 1
                 }
         )
+    }
+
+    private var markLegend: some View {
+        RecordsMarkLegend(store: store, includesLock: !store.plus.isAuthorized)
     }
 
     @ViewBuilder
@@ -592,11 +645,10 @@ struct RecordsDesignView: View {
     }
 
     private var yearSelectionSummary: RecordsHeadlineSummary? {
-        let keys = Set(yearSelectionCells.map(\.dayKey))
-        return store.recordsHeadline(
-            cells: yearSelectionCells,
-            days: days.filter { keys.contains($0.dayKey) }
-        )
+        // The whole year is handed over on purpose: the month's own totals are
+        // taken from its cells, and the day before the first needs to be
+        // reachable so an overnight shift is not cut at the month boundary.
+        store.recordsHeadline(cells: yearSelectionCells, days: days)
     }
 
     private var selectedIsLocked: Bool {
@@ -655,31 +707,43 @@ struct RecordsDesignView: View {
     private func select(_ cell: RecordsDayCell) {
         selectedDayKey = cell.dayKey
         selectionFeedback += 1
-        if let resolution = days.first(where: { $0.dayKey == cell.dayKey }) {
-            detail = store.recordsDayDetail(for: resolution, includesLifeProjection: true)
-        } else {
+        guard let index = days.firstIndex(where: { $0.dayKey == cell.dayKey }) else {
             detail = nil
+            return
         }
-    }
-
-    private func editSelected() {
-        guard let selectedDayKey else { return }
-        store.openDayEditor(dayKey: selectedDayKey)
+        detail = store.recordsDayDetail(
+            for: days[index],
+            previous: index > 0 ? days[index - 1] : nil,
+            includesLifeProjection: true
+        )
     }
 
     @ViewBuilder
     private func recordsDestination(_ route: RecordsRoute) -> some View {
+        Group {
+            switch route {
+            case .allRecords:
+                RecordsAllRecordsView(store: store)
+            case .yearList(let year):
+                RecordsYearRecordsView(store: store, year: year)
+            case .monthList(let year, let month):
+                RecordsMonthRecordsView(store: store, year: year, month: month)
+            case .day(let dayKey):
+                RecordsDayCanvasView(store: store, dayKey: dayKey)
+            case .conflictCenter:
+                RecordsConflictCenter(store: store)
+            }
+        }
+        .onAppear { store.writeQASurfaceMarker(qaSurfaceName(for: route)) }
+    }
+
+    private func qaSurfaceName(for route: RecordsRoute) -> String {
         switch route {
-        case .allRecords:
-            RecordsAllRecordsView(store: store)
-        case .yearList(let year):
-            RecordsYearRecordsView(store: store, year: year)
-        case .monthList(let year, let month):
-            RecordsMonthRecordsView(store: store, year: year, month: month)
-        case .day(let dayKey):
-            RecordDayDetailHost(store: store, dayKey: dayKey)
-        case .conflictCenter:
-            RecordsConflictCenter(store: store)
+        case .allRecords: "records.allRecords"
+        case .yearList: "records.yearList"
+        case .monthList: "records.monthList"
+        case .day: "records.day"
+        case .conflictCenter: "records.conflicts"
         }
     }
 
@@ -693,19 +757,39 @@ struct RecordsDesignView: View {
             cells = []
             summary = nil
             if selectedLifeStageKind == nil { selectCurrentLifeStage() }
+            // Expanding a career's worth of schedule runs off the main actor;
+            // the life canvas itself only needs the profile's stage dates.
+            let projection = store.plus.isAuthorized ? await store.prepareLifeViewModel() : nil
+            guard generation == loadGeneration, requestedScale == scale else { return }
+            lifeModel = projection
             return
         }
         if requestedScale == .year, selectedYearMonth == nil {
             selectedYearMonth = store.recordsCalendar.component(.month, from: .now)
         }
         let window = store.recordsWindow(for: requestedScale, anchor: requestedAnchor)
-        let resolved = await store.prepareRecordsDisplayDays(from: window.0, through: window.1)
+        // One day of lead-in, because the shift that ends at 06:00 on the first
+        // of the month started the night before and still belongs to that
+        // morning. The extra day is never drawn.
+        let leadIn = store.recordsCalendar.date(byAdding: .day, value: -1, to: window.0) ?? window.0
+        let resolved = await store.prepareRecordsDisplayDays(from: leadIn, through: window.1)
         guard generation == loadGeneration,
               requestedScale == scale,
               requestedAnchor == anchor
         else { return }
+        let firstKey = RecordJSON.dayKey(window.0, calendar: store.recordsCalendar)
         days = resolved
-        cells = resolved.map { store.recordsDayCell(for: $0, includesLifeProjection: true) }
+        var built: [RecordsDayCell] = []
+        for (index, day) in resolved.enumerated() where day.dayKey >= firstKey {
+            built.append(
+                store.recordsDayCell(
+                    for: day,
+                    previous: index > 0 ? resolved[index - 1] : nil,
+                    includesLifeProjection: true
+                )
+            )
+        }
+        cells = built
         summary = store.recordsHeadline(cells: cells, days: resolved)
         if selectingToday {
             let todayKey = RecordJSON.dayKey(.now, calendar: store.recordsCalendar)

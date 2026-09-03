@@ -225,9 +225,9 @@ Skills are optional playbooks an agent loads mid-task. They live in
 translation before they fit this repository:
 
 - Its "one runnable check" rule is written for scripts. Here that check belongs
-  in `AppTests/*.swift` as Swift Testing — registered in `project.pbxproj`,
-  since this project has no file-system synchronized groups — or in a vitest
-  file beside the module. Never an `assert`-based `__main__` block.
+  in `AppTests/*.swift` as Swift Testing — dropping the file in the directory
+  is enough, because `AppTests` is a synchronized folder — or in a vitest file
+  beside the module. Never an `assert`-based `__main__` block.
 - Its "at most three short lines" output rule does not govern commit messages
   or pull request bodies. Those are deliberately long enough here to explain
   the user-visible reason for non-obvious platform work.
@@ -380,6 +380,43 @@ Both sign into App Group `group.com.rainif.offworkcountdown.macappstore`, which
 carries the salary-free `WidgetSnapshot` projection and nothing else. That
 `group.` identifier is iOS-only; the Mac App Store build uses the Team ID
 prefix described above.
+
+`App/Native` and `AppTests` are **synchronized folders**
+(`PBXFileSystemSynchronizedRootGroup`, project `objectVersion = 77`): Xcode
+takes their membership from the file system, so a new Swift file is compiled
+as soon as it lands in the directory, and `project.pbxproj` does not change.
+Create files in the subfolder that matches their kind — `Native/DesignSystem`,
+`Native/Models`, `Native/Services`, `Native/Views` — and do not hand-write
+`PBXFileReference` or `PBXBuildFile` entries for anything under them. The
+corollary is that a stray file in those directories now builds: a scratch or
+backup copy left beside real source will be compiled, not ignored.
+
+Everything else in the project is still an explicit reference, and must be
+registered by hand: `AppDelegate.swift`, the localized `InfoPlist.strings`,
+`Assets.xcassets`, `Resources/CountdownRules.js`, the `public/locales` folder
+reference, `WidgetExtension/`, and the two widget sources shared from
+`src-tauri/macos-widget`. One file crosses targets —
+`Native/Models/LiveActivityAttributes.swift` is compiled into the widget as
+well, through the single `PBXFileSystemSynchronizedBuildFileExceptionSet` in
+the project. Anything else that needs to be shared with the widget goes in
+that same exception set.
+
+`npm run qa:ios-shots` walks every shell instead of every model. The app has
+three navigation shells — phone portrait, phone landscape and the iPad sidebar
+— sharing most of their views, so a change aimed at one lands in all three and
+no test notices: every test in `AppTests` is model-layer. The sweep launches
+eight surfaces on an iPhone and an iPad, both orientations, through the
+DEBUG-only launch arguments the app already reads, and writes
+`scripts/ios-qa-shots/index.html` — a contact sheet to scan before hand-off. It
+verifies what it asked for rather than that a file appeared: a launch that
+fails, an app that is not running, or a shot that came back in the wrong
+orientation is reported as a miss with the reason, because a screenshot of the
+Home Screen is a perfectly valid PNG. `IOS_QA_SCENES`, `IOS_QA_THEME=both`,
+`IOS_QA_LANGUAGE`, `IOS_QA_IPHONE` / `IOS_QA_IPAD` and `IOS_QA_SKIP_BUILD=1`
+narrow or redirect it; it builds into its own DerivedData so it never fights
+Xcode. Known gap: the `qaOrientation` landscape hook does not currently rotate,
+so those columns report "still portrait" until it is fixed — the app writes the
+reason to `ios.native.qaOrientationError`.
 
 `npm run check:ios` guards the shipping configuration of that project — bundle
 ids against Universal Purchase, the SwiftUI entry point, iPhone/iPad

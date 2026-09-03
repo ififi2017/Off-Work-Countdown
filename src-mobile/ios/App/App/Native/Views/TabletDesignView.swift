@@ -44,24 +44,25 @@ struct TabletShellView: View {
                         .zIndex(store.selectedTab == .settings ? 1 : 0)
                 }
                 .animation(shellAnimation, value: store.selectedTab)
-                // All three tab roots stay mounted for smooth glass
-                // transitions, so navigation chrome must belong to the shell.
-                // Otherwise an invisible Settings root can overwrite the
-                // visible Records title and toolbar.
-                .navigationTitle(
-                    store.selectedTab == .records
-                        ? store.t("recordsTitle")
-                        : store.selectedTab == .settings ? store.t("settings") : ""
-                )
-                .navigationBarTitleDisplayMode(.large)
-                // All iPad roots provide their own chrome. Leaving the empty
-                // NavigationStack bar in the layout squeezed every timer state
-                // down by one row before its own header could start.
-                .toolbar(store.selectedTab == .timer ? .hidden : .visible, for: .navigationBar)
+                // Hidden for every root, not just the timer's. All three roots
+                // stay mounted and cross-fade, so a bar that appeared for
+                // Records and vanished for the timer resized the shared safe
+                // area mid-transition: the timer's schedule rows jumped up
+                // while they were still visible, and the bar itself flickered
+                // in and out behind them. Each root now draws its own header,
+                // which is what the timer already did.
+                .toolbar(.hidden, for: .navigationBar)
                 .navigationDestination(for: AppRoute.self) { route in
                     AppRouteDestination(route: route, store: store)
                 }
             }
+            // A NavigationStack sitting in an HStack begins 290 pt from the
+            // screen edge, and UIKit reads that as "already inset": a pushed
+            // page's large title got no leading margin at all and sat against
+            // the sidebar divider, left of both the back button and its own
+            // content. The bar's margins are not reachable from SwiftUI, so
+            // the gap is real: the detail pane starts inside it, bar included.
+            .padding(.leading, OWCDesign.pageInset)
         }
         .onChange(of: store.presentedRoute) { _, route in
             guard let route else { return }
@@ -83,6 +84,10 @@ struct TabletShellView: View {
         .onAppear {
             if store.selectedTab != .records { store.recordsPath.removeAll() }
             if store.selectedTab != .settings { store.settingsPath.removeAll() }
+            if store.selectedTab == .records, !store.recordsPath.isEmpty {
+                for route in store.recordsPath { path.append(route) }
+                store.recordsPath.removeAll()
+            }
             if store.selectedTab == .settings, !store.settingsPath.isEmpty {
                 for route in store.settingsPath { path.append(route) }
                 store.settingsPath.removeAll()
@@ -122,7 +127,8 @@ struct TabletShellView: View {
     private var tabletRecordsRoot: some View {
         RecordsDesignView(
             store: store,
-            showsSidebarButton: !sidebarVisible
+            showsSidebarButton: !sidebarVisible,
+            usesOwnHeader: true
         ) {
             withAnimation(shellAnimation) { sidebarVisible = true }
         }
@@ -371,7 +377,6 @@ private struct TabletTimerView: View {
             }
         }
         .background(OWCDesign.page)
-        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showShare) {
             ShareComposerView(store: store)
                 .presentationSizing(.page)
@@ -417,14 +422,12 @@ private struct TabletTimerView: View {
             // none of those states can strand the user in full screen.
             if !sidebarVisible, phase.usesCommonTimerSurface {
                 Button(action: showSidebar) {
-                    Image(systemName: "sidebar.left")
-                        .frame(width: 38, height: 38)
-                        .background(OWCDesign.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                    OWCGlassCircleLabel(visualSize: 38) {
+                        Image(systemName: "sidebar.left")
+                    }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(store.t("showSidebar"))
                 .padding(.leading, 8)
                 .padding(.top, 22)
                 .zIndex(10)
@@ -854,6 +857,24 @@ private struct TabletSettingsView: View {
         // taller than the pane.
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
+                // The shell's navigation bar is hidden for every root now, so
+                // the title and its two controls live in the page.
+                OWCRootPageHeader(title: store.t("settings")) {
+                    if !sidebarVisible {
+                        Button(action: showSidebar) {
+                            OWCGlassCircleLabel {
+                                Image(systemName: "sidebar.left")
+                                    .foregroundStyle(OWCDesign.primary)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(store.t("showSidebar"))
+                    }
+                } trailing: {
+                    SettingsPlusStarButton(store: store)
+                }
+                .padding(.top, 2)
+
                 // Two columns only when they actually fit. With the sidebar open an
                 // 11-inch iPad leaves ~544 pt here, and splitting that in two left
                 // every value truncated and "off-work reminder" wrapping onto two
@@ -878,25 +899,6 @@ private struct TabletSettingsView: View {
             .padding(.horizontal, OWCDesign.pageInset)
         }
         .background(OWCDesign.page)
-        .toolbar {
-            if store.selectedTab == .settings {
-                if !sidebarVisible {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button(action: showSidebar) {
-                            OWCGlassCircleLabel {
-                                Image(systemName: "sidebar.left")
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(store.t("showSidebar"))
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    SettingsPlusStarButton(store: store)
-                }
-                .sharedBackgroundVisibility(.hidden)
-            }
-        }
     }
     private func sectionNote(_ text: String) -> some View {
         Text(text)
@@ -920,15 +922,17 @@ private func tabletHeader(
     HStack {
         HStack(spacing: 8) {
             if !sidebarVisible {
+                // The same 38pt glass circle as Focus and the theme toggle it
+                // sits beside. It used to be a card-backed rounded square, so
+                // the one row of controls on the page carried two shapes and
+                // two materials for three buttons of equal rank.
                 Button(action: showSidebar) {
-                    Image(systemName: "sidebar.left")
-                        .frame(width: 38, height: 38)
-                        .background(OWCDesign.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                    OWCGlassCircleLabel(visualSize: 38) {
+                        Image(systemName: "sidebar.left")
+                    }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(store.t("showSidebar"))
             }
 
             Button {

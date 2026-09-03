@@ -746,14 +746,29 @@ public struct OffWorkCountdownWidgetView: View {
     @ViewBuilder
     private func rectangularAccessory(_ snapshotEntry: WidgetTimelineEntry) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Label {
-                Text(verbatim: widgetProductName(locale: entry.locale))
-            } icon: {
-                brandMark.frame(width: 12, height: 12)
+            HStack(spacing: 4) {
+                Label {
+                    Text(verbatim: widgetProductName(locale: entry.locale))
+                } icon: {
+                    brandMark.frame(width: 12, height: 12)
+                }
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+                // On a rest day and on a workday morning this complication
+                // draws the same countdown and the same bar, so the state it
+                // is in was the one thing it never said. The glyph is the
+                // cheapest place to say it: the name row already exists and
+                // its trailing end was empty.
+                if let status = rectangularStatus(snapshotEntry) {
+                    Spacer(minLength: 2)
+                    Image(systemName: status.symbol)
+                        .accessibilityLabel(
+                            WidgetCopy.text(status.labelKey, locale: entry.locale)
+                        )
+                }
             }
             .font(.caption2)
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
             .widgetAccentable()
 
             if snapshotEntry.countdownTargetAtMs != nil {
@@ -771,6 +786,22 @@ public struct OffWorkCountdownWidgetView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
+    }
+
+    /// The four states worth a mark, in the symbols the app already uses for
+    /// them elsewhere. "Done for today" is deliberately absent: it arrives as
+    /// a notification and the complication says it in words, so a glyph would
+    /// be the third time.
+    private func rectangularStatus(
+        _ snapshotEntry: WidgetTimelineEntry
+    ) -> (symbol: String, labelKey: String)? {
+        switch snapshotEntry.labelKey {
+        case "widgetWorking": ("briefcase.fill", "widgetWorking")
+        case "lunchInProgress": ("cup.and.saucer.fill", "lunchInProgress")
+        case "overtime": ("clock.arrow.circlepath", "overtime")
+        case "widgetRestDay": ("bed.double.fill", "recordsRestDay")
+        default: nil
+        }
     }
     #endif
 

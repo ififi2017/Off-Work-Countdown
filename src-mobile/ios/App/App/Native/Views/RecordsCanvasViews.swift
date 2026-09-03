@@ -58,13 +58,19 @@ struct RecordsLockedPlaceholder: View {
                     .font(.system(size: 34, weight: .semibold))
                     .foregroundStyle(OWCDesign.accent)
                     .symbolRenderingMode(.hierarchical)
-                VStack(spacing: 4) {
+                // Capability, then reassurance, then the way in. Someone who
+                // hits a lock should learn that nothing is being lost before
+                // they are shown a price.
+                VStack(spacing: 6) {
                     Text(store.t(titleKey))
                         .font(.body.weight(.semibold))
                         .foregroundStyle(OWCDesign.primary)
-                    Text(store.t("plusSeePlans"))
+                    Text(store.t("recordsLockedKeepsSaving"))
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
+                    Text(store.t("plusSeePlans"))
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(OWCDesign.accent)
                 }
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -81,7 +87,7 @@ struct RecordsLockedPlaceholder: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(store.t(titleKey))
+        .accessibilityLabel("\(store.t(titleKey)). \(store.t("recordsLockedKeepsSaving"))")
         .accessibilityHint(store.t("plusSeePlans"))
     }
 }
@@ -132,122 +138,42 @@ private struct RecordsMetricHelpPopover: View {
     }
 }
 
-struct RecordsHeadlineView: View {
+/// The 100% allocation bar and its legend.
+///
+/// One implementation, because the window summary and the life projection have
+/// to divide a span into the same six categories with the same colours — two
+/// bars drawn twice would eventually disagree about what "free" means.
+struct RecordsAllocationBar: View {
     let store: OffWorkStore
-    let summary: RecordsHeadlineSummary?
-    var onUnlock: () -> Void
+    let share: TimeAllocationShare
     @State private var selectedKind: TimeAllocationKind?
-    @State private var selectedHelp: RecordsMetricHelp?
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        if let summary {
-            OWCGroupCard {
-                VStack(alignment: .leading, spacing: 14) {
-                    let columns = dynamicTypeSize.isAccessibilitySize ? 1 : 2
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: 8, alignment: .topLeading), count: columns),
-                        alignment: .leading,
-                        spacing: 8
-                    ) {
-                        metric("recordsWorkdays", store.formatCount(summary.workdays), icon: "calendar.badge.checkmark", helpKey: "recordsMetricWorkdaysHelp")
-                        metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), icon: "briefcase.fill", helpKey: "recordsMetricWorkHelp")
-                        metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)), icon: "clock.fill", helpKey: "recordsMetricOvertimeHelp")
-                        metric("recordsFreeAwakeShort", store.formatRelativeDuration(Double(summary.wakingFreeMs)), icon: "sun.max.fill", helpKey: "recordsMetricFreeHelp")
-                        if let income = summary.estimatedIncome {
-                            metric(
-                                "recordsIncomeCurrentSalary",
-                                store.moneyText(income),
-                                icon: "banknote.fill",
-                                helpKey: nil
-                            )
-                        }
-                    }
-
-                    Divider()
-
-                    VStack(spacing: 6) {
-                        allocationBar(summary.allocation)
-                        allocationLegend(summary.allocation)
-                    }
-
-                    if let selectedKind, let item = slice(selectedKind, in: summary.allocation) {
-                        Text(
-                            store.t(
-                                "recordsAllocationTap",
-                                values: [
-                                    "label": store.t(titleKey(selectedKind)),
-                                    "duration": store.formatRelativeDuration(Double(item.ms)),
-                                    "percent": store.formatPercent(item.percent),
-                                ]
-                            )
-                        )
-                        .font(.footnote)
-                        .foregroundStyle(OWCDesign.secondary)
-                        .contentTransition(.numericText())
-                    }
-                    Text(store.t(summary.sleepSourceKey))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.tertiary)
-                }
-                .padding(16)
-            }
-            .popover(item: $selectedHelp) { help in
-                RecordsMetricHelpPopover(help: help)
-            }
-        } else {
-            RecordsLockedPlaceholder(store: store, kind: .summary, onUnlock: onUnlock)
-        }
-    }
-
-    private func metric(_ titleKey: String, _ value: String, icon: String, helpKey: String?) -> some View {
-        let title = store.t(titleKey)
-        return VStack(alignment: .leading, spacing: 7) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(OWCDesign.accent)
-                    .frame(width: 28, height: 28)
-                    .background(OWCDesign.accent.opacity(0.12), in: Circle())
-                    .accessibilityHidden(true)
-                Text(title)
-                    .font(.caption)
-                    .foregroundStyle(OWCDesign.secondary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .layoutPriority(1)
-                Spacer(minLength: 0)
-            }
-            .padding(.trailing, helpKey == nil ? 0 : 32)
-            Text(value)
-                .font(.title3.weight(.semibold).monospacedDigit())
-                .foregroundStyle(OWCDesign.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.56)
-                .allowsTightening(true)
-        }
-        .frame(maxWidth: .infinity, minHeight: 65, alignment: .topLeading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .overlay(alignment: .topTrailing) {
-            if let helpKey {
-                RecordsMetricHelpButton(
-                    title: title,
-                    message: store.t(helpKey),
-                    selection: $selectedHelp
+        VStack(alignment: .leading, spacing: 6) {
+            bar
+            legend
+            if let selectedKind, let item = slice(selectedKind) {
+                Text(
+                    store.t(
+                        "recordsAllocationTap",
+                        values: [
+                            "label": store.t(selectedKind.titleKey),
+                            "duration": store.formatRelativeDuration(Double(item.ms)),
+                            "percent": store.formatPercent(item.percent),
+                        ]
+                    )
                 )
-                .padding(.top, 4)
-                .padding(.trailing, 2)
+                .font(.footnote)
+                .foregroundStyle(OWCDesign.secondary)
+                .contentTransition(.numericText())
             }
         }
-        .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
     }
 
-    @ViewBuilder
-    private func allocationBar(_ share: TimeAllocationShare) -> some View {
-        let visible = slices(share).filter { $0.ms > 0 }
+    private var bar: some View {
+        let visible = slices.filter { $0.ms > 0 }
         let total = max(1, share.dayLengthMs)
-        GeometryReader { proxy in
+        return GeometryReader { proxy in
             HStack(spacing: 0) {
                 ForEach(Array(visible.enumerated()), id: \.element.id) { index, item in
                     let isFirst = index == visible.startIndex
@@ -282,7 +208,7 @@ struct RecordsHeadlineView: View {
                     .buttonStyle(.plain)
                     .contentShape(Rectangle())
                     .frame(height: 44)
-                    .accessibilityLabel(store.t(titleKey(item.kind)))
+                    .accessibilityLabel(store.t(item.kind.titleKey))
                 }
             }
             .frame(maxHeight: .infinity)
@@ -300,9 +226,9 @@ struct RecordsHeadlineView: View {
         }
     }
 
-    private func allocationLegend(_ share: TimeAllocationShare) -> some View {
-        return LazyVStack(alignment: .leading, spacing: 4) {
-            ForEach(slices(share).filter { $0.kind != .unclassified || $0.ms > 0 }) { item in
+    private var legend: some View {
+        LazyVStack(alignment: .leading, spacing: 4) {
+            ForEach(slices.filter { $0.kind != .unclassified || $0.ms > 0 }) { item in
                 Button {
                     selectedKind = item.kind
                 } label: {
@@ -310,7 +236,7 @@ struct RecordsHeadlineView: View {
                         Circle()
                             .fill(item.color)
                             .frame(width: 10, height: 10)
-                        Text(store.t(titleKey(item.kind)))
+                        Text(store.t(item.kind.titleKey))
                             .font(.callout)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineLimit(1)
@@ -331,19 +257,20 @@ struct RecordsHeadlineView: View {
         }
     }
 
-    private func titleKey(_ kind: TimeAllocationKind) -> String {
-        switch kind {
-        case .work: "recordsWorkRegular"
-        case .overtime: "recordsOvertime"
-        case .workBreak: "recordsBreakTime"
-        case .sleep: "recordsSleep"
-        case .free: "recordsFreeAwakeShort"
-        case .unclassified: "recordsUnclassified"
+    private var slices: [AllocationSlice] {
+        TimeAllocationKind.allCases.map { kind in
+            AllocationSlice(kind: kind, ms: duration(kind), color: OWCDesign.recordsColor(kind))
         }
     }
 
-    private func slice(_ kind: TimeAllocationKind, in share: TimeAllocationShare) -> (titleKey: String, ms: Int64, percent: Double)? {
-        let ms: Int64 = switch kind {
+    private func slice(_ kind: TimeAllocationKind) -> (titleKey: String, ms: Int64, percent: Double)? {
+        guard share.dayLengthMs > 0 else { return nil }
+        let ms = duration(kind)
+        return (kind.titleKey, ms, Double(ms) / Double(share.dayLengthMs) * 100)
+    }
+
+    private func duration(_ kind: TimeAllocationKind) -> Int64 {
+        switch kind {
         case .work: share.workMs
         case .overtime: share.overtimeMs
         case .workBreak: share.breakMs
@@ -351,19 +278,6 @@ struct RecordsHeadlineView: View {
         case .free: share.freeMs
         case .unclassified: share.unclassifiedMs
         }
-        guard share.dayLengthMs > 0 else { return nil }
-        return (titleKey(kind), ms, Double(ms) / Double(share.dayLengthMs) * 100)
-    }
-
-    private func slices(_ share: TimeAllocationShare) -> [AllocationSlice] {
-        [
-            AllocationSlice(kind: .work, ms: share.workMs, color: OWCDesign.recordsWork),
-            AllocationSlice(kind: .overtime, ms: share.overtimeMs, color: OWCDesign.recordsOvertime),
-            AllocationSlice(kind: .workBreak, ms: share.breakMs, color: OWCDesign.recordsBreak),
-            AllocationSlice(kind: .sleep, ms: share.sleepMs, color: OWCDesign.recordsSleep),
-            AllocationSlice(kind: .free, ms: share.freeMs, color: OWCDesign.recordsFree),
-            AllocationSlice(kind: .unclassified, ms: share.unclassifiedMs, color: OWCDesign.recordsUnclassified),
-        ]
     }
 
     private struct AllocationSlice: Identifiable {
@@ -374,11 +288,109 @@ struct RecordsHeadlineView: View {
     }
 }
 
+struct RecordsHeadlineView: View {
+    let store: OffWorkStore
+    let summary: RecordsHeadlineSummary?
+    var onUnlock: () -> Void
+    @State private var selectedHelp: RecordsMetricHelp?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        if let summary {
+            OWCGroupCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    let columns = dynamicTypeSize.isAccessibilitySize ? 1 : 2
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible(), spacing: 8, alignment: .topLeading), count: columns),
+                        alignment: .leading,
+                        spacing: 8
+                    ) {
+                        metric("recordsWorkdays", store.formatCount(summary.workdays), icon: "calendar.badge.checkmark", helpKey: "recordsMetricWorkdaysHelp")
+                        metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), icon: "briefcase.fill", helpKey: "recordsMetricWorkHelp")
+                        metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)), icon: "clock.fill", helpKey: "recordsMetricOvertimeHelp")
+                        metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)), icon: "sun.max.fill", helpKey: "recordsMetricFreeAwakeHelp")
+                        if let income = summary.estimatedIncome {
+                            metric(
+                                "recordsIncomeCurrentSalary",
+                                store.moneyText(income),
+                                icon: "banknote.fill",
+                                helpKey: nil
+                            )
+                        }
+                    }
+
+                    Divider()
+
+                    RecordsAllocationBar(store: store, share: summary.allocation)
+
+                    Text(store.t(summary.sleepSourceKey))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.tertiary)
+                }
+                .padding(16)
+            }
+            .popover(item: $selectedHelp) { help in
+                RecordsMetricHelpPopover(help: help)
+            }
+        } else {
+            RecordsLockedPlaceholder(store: store, kind: .summary, onUnlock: onUnlock)
+        }
+    }
+
+    private func metric(_ titleKey: String, _ value: String, icon: String, helpKey: String?) -> some View {
+        let title = store.t(titleKey)
+        return VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(OWCDesign.accent)
+                    .frame(width: 28, height: 28)
+                    .background(OWCDesign.accent.opacity(0.12), in: Circle())
+                    .accessibilityHidden(true)
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(OWCDesign.secondary)
+                    // Three, because the longest of these labels is the one
+                    // that matters most and two lines was already clipping it
+                    // in English at the default type size.
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
+                Spacer(minLength: 0)
+            }
+            .padding(.trailing, helpKey == nil ? 0 : 32)
+            Text(value)
+                .font(.title3.weight(.semibold).monospacedDigit())
+                .foregroundStyle(OWCDesign.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.56)
+                .allowsTightening(true)
+        }
+        .frame(maxWidth: .infinity, minHeight: 65, alignment: .topLeading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .overlay(alignment: .topTrailing) {
+            if let helpKey {
+                RecordsMetricHelpButton(
+                    title: title,
+                    message: store.t(helpKey),
+                    selection: $selectedHelp
+                )
+                .padding(.top, 4)
+                .padding(.trailing, 2)
+            }
+        }
+        .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
+    }
+
+}
+
 struct RecordsMonthGrid: View {
     let store: OffWorkStore
     let cells: [RecordsDayCell]
     let selectedDayKey: String?
     var onSelect: (RecordsDayCell) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 5), count: 7)
@@ -405,14 +417,25 @@ struct RecordsMonthGrid: View {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(fill(cell))
                             .aspectRatio(1, contentMode: .fit)
+                            .owcEstimated(
+                                RecordsDayMarks.isEstimated(cell),
+                                tint: OWCDesign.secondary,
+                                spacing: 4
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .overlay {
                                 Text(store.formatCount(store.recordsCalendar.component(.day, from: cell.date)))
                                     .font(.callout.weight(cell.isToday || cell.dayKey == selectedDayKey ? .semibold : .regular).monospacedDigit())
                                     .foregroundStyle(label(cell))
                             }
                             .overlay(alignment: .bottom) {
-                                activityMarker(cell)
-                                    .padding(.bottom, 4)
+                                RecordsMiniWorkBar(
+                                    workMs: cell.workMs,
+                                    overtimeMs: cell.overtimeMs,
+                                    maxWidth: 24,
+                                    height: barHeight
+                                )
+                                .padding(.bottom, 4)
                             }
                             .overlay(alignment: .topTrailing) {
                                 stateMarker(cell)
@@ -422,12 +445,20 @@ struct RecordsMonthGrid: View {
                                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                                     .strokeBorder(
                                         stroke(cell),
-                                        lineWidth: cell.dayKey == selectedDayKey ? 2 : 1.25
+                                        lineWidth: 2
                                     )
                             }
+                            .padding(3)
+                            .contentShape(Rectangle())
                     }
+                    // Seven columns in a phone's width leave about 42 points a
+                    // side, and no amount of spacing arithmetic gets a square
+                    // cell to 44 without the grid ceasing to be a calendar. The
+                    // touch target reaches into the gutter instead; the drawn
+                    // cell and the layout are untouched.
+                    .padding(-3)
                     .buttonStyle(.plain)
-                    .accessibilityLabel(accessibility(cell))
+                    .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
                 }
             }
         }
@@ -437,73 +468,131 @@ struct RecordsMonthGrid: View {
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
+    /// 48 points cannot hold a readable date, a bar and a status glyph at the
+    /// largest sizes. The date never shrinks; the bar gives way first, and the
+    /// status glyph after it — both remain in the VoiceOver value.
+    private var barHeight: CGFloat {
+        dynamicTypeSize >= .accessibility1 ? 2 : (dynamicTypeSize >= .xxLarge ? 2.5 : 3)
+    }
+
+    private var showsStateMarker: Bool { dynamicTypeSize < .accessibility1 }
+
+    /// Brand orange means selection and today. Nothing here encodes hours: the
+    /// bar does that, in the shared category colours. Selection is a ring
+    /// rather than a solid block precisely so the bar inside keeps its own
+    /// colour instead of sitting on orange.
     private func fill(_ cell: RecordsDayCell) -> Color {
-        if cell.dayKey == selectedDayKey { return OWCDesign.accent }
+        if cell.dayKey == selectedDayKey { return OWCDesign.accent.opacity(0.12) }
         return switch cell.appearance {
         case .locked: OWCDesign.control.opacity(0.45)
-        case .unrecorded: Color.clear
+        case .unrecorded, .planned: Color.clear
         case .rest: OWCDesign.control.opacity(0.36)
-        case .planned: OWCDesign.accent.opacity(0.085)
-        case .recorded: OWCDesign.accent.opacity(0.10)
-        case .corrected: OWCDesign.accent.opacity(0.14)
+        case .recorded, .corrected: OWCDesign.control.opacity(0.5)
         }
     }
 
     private func label(_ cell: RecordsDayCell) -> Color {
-        if cell.dayKey == selectedDayKey { return .white }
         if cell.appearance == .locked { return OWCDesign.tertiary }
-        if cell.isToday { return OWCDesign.accent }
+        if cell.isToday || cell.dayKey == selectedDayKey { return OWCDesign.accent }
         return OWCDesign.primary
     }
 
+    /// Two different structures, one colour: selection draws a ring, today
+    /// only tints its own number. A 2pt and a 1.25pt ring of the same orange
+    /// would have been the same state twice.
     private func stroke(_ cell: RecordsDayCell) -> Color {
-        if cell.dayKey == selectedDayKey { return OWCDesign.accent }
-        if cell.appearance == .corrected { return OWCDesign.accent.opacity(0.65) }
-        if cell.isToday { return OWCDesign.accent }
-        if cell.appearance == .planned { return OWCDesign.accent.opacity(0.45) }
-        return .clear
-    }
-
-    @ViewBuilder
-    private func activityMarker(_ cell: RecordsDayCell) -> some View {
-        if cell.dayKey != selectedDayKey,
-           cell.appearance == .recorded || cell.appearance == .corrected {
-            Capsule()
-                .fill(OWCDesign.accent)
-                .frame(width: min(22, max(8, 8 + CGFloat(cell.workMs) / 3_600_000)), height: 3)
-        }
+        cell.dayKey == selectedDayKey ? OWCDesign.accent : .clear
     }
 
     @ViewBuilder
     private func stateMarker(_ cell: RecordsDayCell) -> some View {
-        if cell.hasConflict {
-            Image(systemName: "exclamationmark.circle.fill")
-                .font(.system(size: 8, weight: .bold))
-                .foregroundStyle(cell.dayKey == selectedDayKey ? .white : OWCDesign.orangeDeep)
-        } else if cell.appearance == .corrected {
-            Image(systemName: "pencil")
-                .font(.system(size: 8, weight: .bold))
-                .foregroundStyle(cell.dayKey == selectedDayKey ? .white : OWCDesign.accent)
-        } else if cell.appearance == .locked {
-            Image(systemName: "lock.fill")
-                .font(.system(size: 7, weight: .semibold))
-                .foregroundStyle(OWCDesign.tertiary)
+        if showsStateMarker {
+            if cell.hasConflict {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(OWCDesign.orangeDeep)
+            } else if cell.appearance == .corrected {
+                Image(systemName: "pencil")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(OWCDesign.secondary)
+            } else if cell.appearance == .locked {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 7, weight: .semibold))
+                    .foregroundStyle(OWCDesign.tertiary)
+            }
+        }
+    }
+}
+
+/// One bar, drawn the same way in the month grid, the week column and the
+/// expanded year: regular work first, declared overtime as the tail segment.
+/// Overtime keeps the system orange it has always had, but it is told apart by
+/// its position, never by asking anyone to compare two oranges.
+struct RecordsMiniWorkBar: View {
+    let workMs: Int64
+    let overtimeMs: Int64
+    var maxWidth: CGFloat = 24
+    var height: CGFloat = 3
+
+    var body: some View {
+        let total = Double(max(0, workMs) + max(0, overtimeMs))
+        if total > 0 {
+            let hours = total / 3_600_000
+            let width = min(maxWidth, max(8, 6 + hours * 1.8))
+            let overtimeWidth = overtimeMs > 0
+                ? max(2, width * CGFloat(Double(overtimeMs) / total))
+                : 0
+            HStack(spacing: overtimeWidth > 0 ? 1 : 0) {
+                if workMs > 0 {
+                    Capsule().fill(OWCDesign.recordsWork)
+                        .frame(width: max(2, width - overtimeWidth), height: height)
+                }
+                if overtimeWidth > 0 {
+                    Capsule().fill(OWCDesign.recordsOvertime)
+                        .frame(width: overtimeWidth, height: height)
+                }
+            }
+        }
+    }
+}
+
+/// One vocabulary for a day's marks, shared by the month grid and the week
+/// columns so the same day cannot be described two ways on two screens.
+enum RecordsDayMarks {
+    /// Hatching says "these hours are an estimate". A rest day inside a career
+    /// projection has no hours at all, so hatching it would claim an estimated
+    /// day of work where the honest answer is simply "not a workday".
+    static func isEstimated(_ cell: RecordsDayCell) -> Bool {
+        (cell.isProjection || cell.appearance == .planned)
+            && cell.workMs + cell.overtimeMs > 0
+    }
+
+    static func sourceKey(_ cell: RecordsDayCell) -> String {
+        if cell.appearance == .locked { return "recordsLockedDay" }
+        if cell.isProjection { return "recordsSourceProjection" }
+        return switch cell.appearance {
+        case .unrecorded: "recordsUnrecorded"
+        case .recorded: "recordsSourceRecorded"
+        case .corrected: "recordsSourceOverride"
+        case .planned: "recordsPlanned"
+        case .rest: "recordsRestDay"
+        case .locked: "recordsLockedDay"
         }
     }
 
-    private func accessibility(_ cell: RecordsDayCell) -> String {
+    /// A locked day says only that it is locked — no date arithmetic, no
+    /// hours, nothing a screen reader could read out from behind the lock.
+    static func accessibilityLabel(_ cell: RecordsDayCell, store: OffWorkStore) -> String {
         if cell.appearance == .locked { return store.t("recordsLockedDay") }
-        let status = if cell.isProjection {
-            store.t("recordsSourceProjection")
-        } else { switch cell.appearance {
-        case .unrecorded: store.t("recordsUnrecorded")
-        case .recorded: store.t("recordsSourceSchedule")
-        case .corrected: store.t("recordsSourceOverride")
-        case .planned: store.t("recordsPlanned")
-        case .rest: store.t("recordsRestDay")
-        case .locked: store.t("recordsLockedDay")
-        } }
-        return "\(store.formatRecordsDayTitle(cell.date)), \(status)"
+        var parts = [store.formatRecordsDayTitle(cell.date), store.t(sourceKey(cell))]
+        if cell.workMs > 0 {
+            parts.append(store.formatRelativeDuration(Double(cell.workMs)))
+        }
+        if cell.overtimeMs > 0 {
+            parts.append("\(store.t("recordsOvertime")) \(store.formatRelativeDuration(Double(cell.overtimeMs)))")
+        }
+        if cell.hasConflict { parts.append(store.t("recordsConflictCopy")) }
+        return parts.joined(separator: ", ")
     }
 }
 
@@ -533,9 +622,12 @@ struct RecordsWeekStrips: View {
                         .background(cell.dayKey == selectedDayKey ? OWCDesign.accent : Color.clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     }
                     .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 3)
+                    .contentShape(Rectangle())
                 }
+                .padding(.horizontal, -3)
                 .buttonStyle(.plain)
-                .accessibilityLabel(cell.appearance == .locked ? store.t("recordsLockedDay") : store.formatRecordsDayTitle(cell.date))
+                .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
             }
         }
         .frame(height: 188)
@@ -546,10 +638,18 @@ struct RecordsWeekStrips: View {
             weekTrack(cell)
             if cell.observationCount > 0 {
                 Circle()
-                    .fill(OWCDesign.accent)
+                    .fill(OWCDesign.secondary)
                     .frame(width: 7, height: 7)
                     .overlay(Circle().stroke(OWCDesign.card, lineWidth: 2))
                     .offset(y: 4)
+            }
+        }
+        .overlay(alignment: .top) {
+            if cell.appearance == .corrected {
+                Image(systemName: "pencil")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(OWCDesign.secondary)
+                    .offset(y: -2)
             }
         }
     }
@@ -570,18 +670,34 @@ struct RecordsWeekStrips: View {
         }
     }
 
+    /// Regular work first, declared overtime stacked on its end — the same
+    /// two-part bar the month cell and the expanded year draw. Colouring the
+    /// whole column orange said "this day has overtime" in a hue the eye had
+    /// to compare against another orange, and threw away how much.
     private func workloadColumn(_ cell: RecordsDayCell) -> some View {
-        let work = min(1, Double(cell.workMs + cell.overtimeMs) / (12 * 3_600_000))
+        let scale = 12 * 3_600_000.0
+        let work = min(1, Double(cell.workMs) / scale)
+        let overtime = min(1 - work, Double(cell.overtimeMs) / scale)
         return ZStack(alignment: .bottom) {
             Capsule().fill(OWCDesign.control.opacity(0.72))
             // The minimum height is only a visibility aid for a real, short
             // work interval. Applying it to zero turned rest days into a
-            // misleading orange baseline.
-            if work > 0 {
-                Capsule()
-                    .fill(cell.overtimeMs > 0 ? OWCDesign.recordsOvertime : OWCDesign.recordsWork)
-                    .frame(height: max(5, 116 * work))
+            // misleading coloured baseline.
+            VStack(spacing: 0) {
+                if overtime > 0 {
+                    Rectangle().fill(OWCDesign.recordsOvertime)
+                        .frame(height: max(4, 116 * overtime))
+                }
+                if work > 0 {
+                    Rectangle().fill(OWCDesign.recordsWork)
+                        .frame(height: max(4, 116 * work))
+                }
             }
+            // The hatch belongs to the hours, not to the track behind them.
+            // Over the whole column an empty rest day read as a full day of
+            // estimated work.
+            .owcEstimated(RecordsDayMarks.isEstimated(cell), tint: .white, spacing: 4)
+            .clipShape(Capsule())
         }
         .frame(width: 18, height: 116)
         .overlay { Capsule().stroke(OWCDesign.separator, lineWidth: 0.5) }
@@ -709,6 +825,14 @@ struct RecordsYearCanvas: View {
                     .buttonStyle(.plain)
                 }
             }
+
+            // The collapsed year answers "when was it heavy" with depth alone,
+            // so it has to say so — and say what carries that information when
+            // colour is not available.
+            Text(store.t(withoutColor ? "recordsHeatWithoutColor" : "recordsHeatScale"))
+                .font(.caption2)
+                .foregroundStyle(OWCDesign.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .animation(
             reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.18),
@@ -716,13 +840,16 @@ struct RecordsYearCanvas: View {
         )
     }
 
+    /// Depth of the work colour is how much; brand orange stays out of it
+    /// entirely, because on this canvas it already means "this is the month
+    /// you picked".
     private func color(_ bucket: RecordsYearBucket) -> Color {
         let base = switch bucket.kind {
         case .locked: OWCDesign.control.opacity(0.86)
         case .unrecorded, .rest: OWCDesign.control.opacity(0.65)
-        case .planned: OWCDesign.accent.opacity(withoutColor ? 0.84 : 0.46)
-        case .recorded: OWCDesign.accent.opacity(withoutColor ? 0.96 : min(0.96, 0.54 + Double(bucket.workMs) / 57_600_000))
-        case .corrected: OWCDesign.orangeDeep.opacity(0.96)
+        case .planned: OWCDesign.recordsWork.opacity(withoutColor ? 0.84 : 0.46)
+        case .recorded: OWCDesign.recordsWork.opacity(withoutColor ? 0.96 : min(0.96, 0.54 + Double(bucket.workMs) / 57_600_000))
+        case .corrected: OWCDesign.recordsWork.opacity(0.96)
         }
         guard let selectedMonth, bucket.month != selectedMonth else { return base }
         return base.opacity(0.58)
@@ -925,14 +1052,15 @@ struct RecordsYearMonthBars: View {
                             }
                     }
                     if widths.projected > 0 {
-                        // A dashed outline rather than a paler fill: "not yet"
-                        // has to survive Differentiate Without Color, and a
-                        // low-opacity solid does not.
+                        // The same 135° hatching the month cells and the day
+                        // band use for "not a fact yet". A texture rather than
+                        // a paler fill, so it survives Differentiate Without
+                        // Color — and one texture rather than two, so a reader
+                        // does not have to learn a dash here and a hatch there.
                         Capsule()
-                            .strokeBorder(
-                                OWCDesign.secondary.opacity(0.65),
-                                style: StrokeStyle(lineWidth: 1, dash: [3, 2])
-                            )
+                            .fill(OWCDesign.recordsWork.opacity(0.22))
+                            .owcEstimated(true, tint: OWCDesign.recordsWork, spacing: 4)
+                            .clipShape(Capsule())
                             .frame(width: widths.projected)
                     }
                 }
@@ -1005,7 +1133,7 @@ struct RecordsYearMonthBars: View {
         legendItem(store.t("recordsWorkRegular"), color: OWCDesign.recordsWork, dashed: false)
         legendItem(store.t("recordsOvertime"), color: OWCDesign.recordsOvertime, dashed: false)
         if showsProjection {
-            legendItem(store.t("recordsSourceProjection"), color: OWCDesign.secondary, dashed: true)
+            legendItem(store.t("recordsSourceProjection"), color: OWCDesign.recordsWork, dashed: true)
         }
     }
 
@@ -1013,7 +1141,10 @@ struct RecordsYearMonthBars: View {
         HStack(spacing: 5) {
             Group {
                 if dashed {
-                    Capsule().strokeBorder(color.opacity(0.65), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+                    Capsule()
+                        .fill(color.opacity(0.22))
+                        .owcEstimated(true, tint: color, spacing: 4)
+                        .clipShape(Capsule())
                 } else {
                     Capsule().fill(color)
                 }
@@ -1392,247 +1523,6 @@ private struct RecordsCanvasCallout: View {
     }
 }
 
-struct RecordsDayDetailCard: View {
-    let store: OffWorkStore
-    let detail: RecordsDayDetail?
-    var locked: Bool
-    var onUnlock: () -> Void
-    var onEdit: () -> Void
-    @State private var selectedHelp: RecordsMetricHelp?
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    var body: some View {
-        if locked || detail == nil && !store.plus.isAuthorized {
-            RecordsLockedPlaceholder(store: store, kind: .day, onUnlock: onUnlock)
-        } else if let detail {
-            OWCGroupCard {
-                VStack(alignment: .leading, spacing: 14) {
-                    RecordsDayDetailHeader(
-                        dateTitle: store.formatRecordsDayTitle(detail.date),
-                        sourceTitle: store.t(
-                            detail.isProjection
-                                ? detail.sourceKey
-                                : detail.appearance == .unrecorded ? "recordsUnrecorded" : detail.sourceKey
-                        ),
-                        sourceTint: detail.isPlanned ? OWCDesign.accent : OWCDesign.secondary
-                    )
-
-                    if dynamicTypeSize.isAccessibilitySize {
-                        LazyVGrid(columns: [GridItem(.flexible())], spacing: 8) {
-                            detailMetric("recordsWorkRegular", detail.regularWorkMs, color: OWCDesign.recordsWork, helpKey: "recordsMetricWorkHelp")
-                            detailMetric("recordsOvertime", detail.overtimeMs, color: OWCDesign.recordsOvertime, helpKey: "recordsMetricOvertimeHelp")
-                            detailMetric("recordsBreakTime", detail.breakMs, color: OWCDesign.recordsBreak, helpKey: "recordsMetricBreakHelp")
-                            detailMetric("recordsSleep", detail.sleepMs, color: OWCDesign.recordsSleep, helpKey: "recordsMetricSleepHelp")
-                            detailMetric("recordsFreeAwakeShort", detail.freeMs, color: OWCDesign.recordsFree, helpKey: "recordsMetricFreeHelp")
-                        }
-                    } else {
-                        Grid(horizontalSpacing: 8, verticalSpacing: 8) {
-                            GridRow {
-                                detailMetric("recordsWorkRegular", detail.regularWorkMs, color: OWCDesign.recordsWork, helpKey: "recordsMetricWorkHelp")
-                                detailMetric("recordsOvertime", detail.overtimeMs, color: OWCDesign.recordsOvertime, helpKey: "recordsMetricOvertimeHelp")
-                            }
-                            GridRow {
-                                detailMetric("recordsBreakTime", detail.breakMs, color: OWCDesign.recordsBreak, helpKey: "recordsMetricBreakHelp")
-                                detailMetric("recordsSleep", detail.sleepMs, color: OWCDesign.recordsSleep, helpKey: "recordsMetricSleepHelp")
-                            }
-                            GridRow {
-                                wideDetailMetric("recordsFreeAwakeShort", detail.freeMs, color: OWCDesign.recordsFree, helpKey: "recordsMetricFreeHelp")
-                                    .gridCellColumns(2)
-                            }
-                        }
-                    }
-
-                    Text(store.t(detail.sleepSourceKey))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.tertiary)
-
-                    focusHistory(detail.dayKey)
-
-                    Divider()
-
-                    if detail.observations.isEmpty {
-                        Text(store.t("recordsNoObservations"))
-                            .font(.footnote)
-                            .foregroundStyle(OWCDesign.secondary)
-                    } else {
-                        ForEach(detail.observations, id: \.self) { line in
-                            HStack(alignment: .top, spacing: 8) {
-                                Circle()
-                                    .fill(OWCDesign.accent)
-                                    .frame(width: 6, height: 6)
-                                    .padding(.top, 6)
-                                Text(line)
-                                    .font(.footnote)
-                            }
-                        }
-                    }
-
-                    if store.plus.isAuthorized {
-                        Button(action: onEdit) {
-                            Label(store.t("recordsEditDay"), systemImage: "pencil")
-                                .font(.body.weight(.semibold))
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(OWCDesign.accent)
-                    } else {
-                        Text(store.t("recordsEditPlusHint"))
-                            .font(.footnote)
-                            .foregroundStyle(OWCDesign.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-            }
-            .popover(item: $selectedHelp) { help in
-                RecordsMetricHelpPopover(help: help)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func focusHistory(_ dayKey: String) -> some View {
-        let sessions = store.focusSessions(forDayKey: dayKey)
-        if !sessions.isEmpty {
-            Divider()
-            VStack(alignment: .leading, spacing: 10) {
-                Label(store.t("focusHistory"), systemImage: "timer")
-                    .font(.body.weight(.semibold))
-                ForEach(sessions) { session in
-                    let task = session.taskID.flatMap { id in
-                        store.records.state.focusTasks.first(where: { $0.id == id })
-                    }
-                    let end = session.endedAt ?? min(.now, session.plannedEndAt)
-                    HStack(spacing: 10) {
-                        Image(systemName: task?.icon.systemName ?? "timer")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(OWCDesign.accent)
-                            .frame(width: 30, height: 30)
-                            .background(OWCDesign.accent.opacity(0.11), in: Circle())
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(task?.title ?? store.t("focusTitle"))
-                                .font(.callout.weight(.medium))
-                                .lineLimit(2)
-                            Text(OWCText.ltrRange(store.formatTime(session.startedAt), store.formatTime(end)))
-                                .font(.caption.monospacedDigit())
-                                .foregroundStyle(OWCDesign.secondary)
-                        }
-                        Spacer(minLength: 8)
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(store.formatRelativeDuration(max(0, end.timeIntervalSince(session.startedAt)) * 1_000))
-                                .font(.caption.weight(.semibold).monospacedDigit())
-                                .lineLimit(1)
-                            Label(
-                                store.t(focusReasonKey(session.endReason)),
-                                systemImage: focusReasonSymbol(session.endReason)
-                            )
-                            .labelStyle(.titleAndIcon)
-                            .font(.caption2)
-                            .foregroundStyle(OWCDesign.secondary)
-                        }
-                    }
-                    .accessibilityElement(children: .combine)
-                }
-            }
-        }
-    }
-
-    private func focusReasonKey(_ reason: FocusEndReason?) -> String {
-        switch reason {
-        case .completed: "focusHistoryCompleted"
-        case .stoppedByUser: "focusHistoryStopped"
-        case .stoppedAtBoundary: "focusHistoryBoundary"
-        case .abandoned: "focusHistoryAbandoned"
-        case .supersededBySync: "focusHistorySupersededBySync"
-        case nil: "focusRunning"
-        }
-    }
-
-    private func focusReasonSymbol(_ reason: FocusEndReason?) -> String {
-        switch reason {
-        case .completed: "checkmark.circle.fill"
-        case .stoppedByUser: "stop.circle"
-        case .stoppedAtBoundary: "pause.circle"
-        case .abandoned: "exclamationmark.circle"
-        case .supersededBySync: "arrow.triangle.2.circlepath"
-        case nil: "circle.dotted"
-        }
-    }
-
-    private func detailMetric(_ titleKey: String, _ milliseconds: Int64, color: Color, helpKey: String) -> some View {
-        let title = store.t(titleKey)
-        return VStack(alignment: .leading, spacing: 5) {
-            HStack(spacing: 7) {
-                Circle()
-                    .fill(color)
-                    .frame(width: 8, height: 8)
-                Text(title)
-                    .font(.caption)
-                    .foregroundStyle(OWCDesign.secondary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .layoutPriority(1)
-                Spacer(minLength: 0)
-            }
-            .padding(.trailing, 32)
-            Text(store.formatRelativeDuration(Double(milliseconds)))
-                .font(.body.weight(.semibold).monospacedDigit())
-                .foregroundStyle(OWCDesign.primary)
-        }
-        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .overlay(alignment: .topTrailing) {
-            RecordsMetricHelpButton(
-                title: title,
-                message: store.t(helpKey),
-                selection: $selectedHelp
-            )
-            .padding(.top, 4)
-            .padding(.trailing, 2)
-        }
-        .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
-    }
-
-    private func wideDetailMetric(_ titleKey: String, _ milliseconds: Int64, color: Color, helpKey: String) -> some View {
-        let title = store.t(titleKey)
-        return VStack(spacing: 5) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(color)
-                    .frame(width: 8, height: 8)
-                Text(title)
-                    .font(.callout)
-                    .foregroundStyle(OWCDesign.secondary)
-                    .lineLimit(1)
-                Spacer(minLength: 12)
-                RecordsMetricHelpButton(
-                    title: title,
-                    message: store.t(helpKey),
-                    selection: $selectedHelp
-                )
-                .frame(width: 32, height: 24)
-            }
-            Text(store.formatRelativeDuration(Double(milliseconds)))
-                .font(.title3.weight(.semibold).monospacedDigit())
-                .foregroundStyle(OWCDesign.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-                .allowsTightening(true)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .frame(maxWidth: .infinity, minHeight: 70)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
-    }
-}
-
-/// Keeps a long source/status label from competing with the date title. The
-/// horizontal arrangement is used when it genuinely fits; German, Arabic,
-/// and accessibility text sizes get a full-width second line instead of a
-/// single-line capsule that truncates or squeezes the title.
 private struct RecordsDayDetailHeader: View {
     let dateTitle: String
     let sourceTitle: String
@@ -1725,7 +1615,7 @@ struct RecordsYearSelectionCard: View {
                         metric("recordsWorkdays", store.formatCount(summary.workdays), helpKey: "recordsMetricWorkdaysHelp")
                         metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), helpKey: "recordsMetricWorkHelp")
                         metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)), helpKey: "recordsMetricOvertimeHelp")
-                        metric("recordsFreeAwakeShort", store.formatRelativeDuration(Double(summary.wakingFreeMs)), helpKey: "recordsMetricFreeHelp")
+                        metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)), helpKey: "recordsMetricFreeAwakeHelp")
                         if let income = summary.estimatedIncome {
                             metric(
                                 "recordsIncomeCurrentSalary",
@@ -1783,5 +1673,292 @@ struct RecordsYearSelectionCard: View {
             }
         }
         .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
+    }
+}
+
+/// What solid, hatched, pencil and lock mean, next to the grid that uses them.
+///
+/// A legend shown once and then removed forever is a legend nobody can check.
+/// It stays reachable: a wrapping row while it fits, an info button and a
+/// popover once the text or the type size no longer allows the row.
+struct RecordsMarkLegend: View {
+    let store: OffWorkStore
+    var includesLock: Bool
+    @State private var showsPopover = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var items: [(symbol: String, key: String)] {
+        var rows = [
+            ("square.fill", "recordsLegendRecorded"),
+            ("square.lefthalf.filled", "recordsLegendEstimated"),
+            ("pencil", "recordsLegendCorrected"),
+        ]
+        if includesLock { rows.append(("lock.fill", "recordsLegendLocked")) }
+        return rows
+    }
+
+    var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            Button {
+                showsPopover = true
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.footnote.weight(.semibold))
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(OWCDesign.tertiary)
+            .accessibilityLabel(store.t("recordsLegendTitle"))
+            .popover(isPresented: $showsPopover) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(store.t("recordsLegendTitle"))
+                        .font(.headline)
+                    ForEach(items, id: \.key) { item in
+                        row(item)
+                    }
+                }
+                .frame(idealWidth: 300, alignment: .leading)
+                .padding(18)
+                .presentationCompactAdaptation(.popover)
+            }
+        } else {
+            // One row while the four fit; two columns once a language needs
+            // the width. Truncating a legend defeats the point of having one.
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: 14) {
+                    ForEach(items, id: \.key) { item in
+                        row(item).fixedSize()
+                    }
+                    Spacer(minLength: 0)
+                }
+                LazyVGrid(
+                    columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
+                    alignment: .leading,
+                    spacing: 4
+                ) {
+                    ForEach(items, id: \.key) { item in
+                        row(item)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(store.t("recordsLegendTitle"))
+        }
+    }
+
+    private func row(_ item: (symbol: String, key: String)) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: item.symbol)
+                .font(.system(size: 9, weight: .semibold))
+            Text(store.t(item.key))
+                .font(.caption2)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundStyle(OWCDesign.tertiary)
+    }
+}
+
+/// The compact summary under the calendar.
+///
+/// It answers "what was this day, roughly" and then hands over: the whole
+/// account of a day belongs on the day's own page, not stacked as a second
+/// dense chart directly beneath the month grid.
+struct RecordsDaySummaryCard: View {
+    let store: OffWorkStore
+    let detail: RecordsDayDetail?
+    var locked: Bool
+    var onUnlock: () -> Void
+
+    var body: some View {
+        if locked || detail == nil && !store.plus.isAuthorized {
+            RecordsLockedPlaceholder(store: store, kind: .day, onUnlock: onUnlock)
+        } else if let detail {
+            OWCGroupCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    RecordsDayDetailHeader(
+                        dateTitle: store.formatRecordsDayTitle(detail.date),
+                        sourceTitle: store.t(detail.sourceKey),
+                        sourceTint: detail.isPlanned ? OWCDesign.accent : OWCDesign.secondary
+                    )
+
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 18) {
+                            workSummary(detail)
+                            Spacer(minLength: 0)
+                        }
+                        VStack(alignment: .leading, spacing: 8) {
+                            workSummary(detail)
+                        }
+                    }
+
+                    Divider()
+
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(store.t("recordsFreeAwake"))
+                            .font(.callout)
+                            .foregroundStyle(OWCDesign.secondary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 8)
+                        Text(store.formatRelativeDuration(Double(detail.breakMs + detail.freeMs)))
+                            .font(.callout.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(OWCDesign.primary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+
+                    if detail.observations.count > 0 || detail.sleepMs > 0 {
+                        markers(detail)
+                    }
+
+                    // A link, not a programmatic push: this card is hosted by
+                    // three different navigation stacks and only the phone's is
+                    // bound to `store.recordsPath`. Appending there did nothing
+                    // at all on iPad, where the shell owns its own path.
+                    NavigationLink(value: RecordsRoute.day(detail.dayKey)) {
+                        HStack(spacing: 6) {
+                            Text(store.t("recordsSeeThisDay"))
+                                .font(.body.weight(.semibold))
+                            Image(systemName: "chevron.forward")
+                                .font(.footnote.weight(.semibold))
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(OWCDesign.accent)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+            }
+        }
+    }
+
+    /// Two numbers at most, and an honest word when there are none. A rest day
+    /// should say "rest", not print four zeroes.
+    @ViewBuilder
+    private func workSummary(_ detail: RecordsDayDetail) -> some View {
+        if detail.regularWorkMs == 0 && detail.overtimeMs == 0 {
+            Text(store.t(emptyKey(detail)))
+                .font(.body)
+                .foregroundStyle(OWCDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        } else {
+            amount("recordsWorkRegular", detail.regularWorkMs, color: OWCDesign.recordsWork)
+            if detail.overtimeMs > 0 {
+                amount("recordsOvertime", detail.overtimeMs, color: OWCDesign.recordsOvertime)
+            }
+        }
+    }
+
+    private func emptyKey(_ detail: RecordsDayDetail) -> String {
+        switch detail.appearance {
+        case .rest: "recordsRestDay"
+        case .planned: "recordsPlanned"
+        default: "recordsUnrecorded"
+        }
+    }
+
+    private func amount(_ titleKey: String, _ milliseconds: Int64, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                Circle().fill(color).frame(width: 8, height: 8)
+                Text(store.t(titleKey))
+                    .font(.caption)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineLimit(1)
+            }
+            Text(store.formatRelativeDuration(Double(milliseconds)))
+                .font(.title3.weight(.semibold).monospacedDigit())
+                .foregroundStyle(OWCDesign.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Restrained status, not a second data layer: how many things the app
+    /// noticed, and where sleep came from. The detail is one tap away.
+    private func markers(_ detail: RecordsDayDetail) -> some View {
+        HStack(spacing: 10) {
+            if !detail.observations.isEmpty {
+                Label(
+                    store.formatCount(detail.observations.count),
+                    systemImage: "circle.dotted"
+                )
+            }
+            Label(store.t(detail.sleepSourceKey), systemImage: "moon.zzz")
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Spacer(minLength: 0)
+        }
+        .font(.caption)
+        .foregroundStyle(OWCDesign.tertiary)
+    }
+}
+
+/// The life scale's one conclusion.
+///
+/// Every other scale ends with a number that happened; this one ends with a
+/// number that has not, so it says so first and stays descriptive. It reads a
+/// projection held in memory and writes nothing: no override, no summary, no
+/// observation, no record of any kind is created by looking at it.
+struct RecordsLifeAllocationCard: View {
+    let store: OffWorkStore
+    let model: LifeViewModel?
+
+    var body: some View {
+        OWCGroupCard {
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(store.t("lifeWhereTimeGoes"))
+                        .font(.title3.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(store.t("recordsSourceProjection"))
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if let allocation = usableAllocation {
+                    Text(
+                        store.t(
+                            "lifeAllocationEstimate",
+                            values: [
+                                "duration": store.formatRelativeDuration(
+                                    Double(allocation.workMs + allocation.overtimeMs)
+                                )
+                            ]
+                        )
+                    )
+                    .font(.body)
+                    .foregroundStyle(OWCDesign.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                    RecordsAllocationBar(store: store, share: allocation)
+                } else {
+                    // No retirement boundary, no career, or a schedule the
+                    // rules could not expand: say what is missing instead of
+                    // inventing a percentage out of the parts that do exist.
+                    Text(store.t("lifeAllocationMissing"))
+                        .font(.body)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+        }
+    }
+
+    private var usableAllocation: TimeAllocationShare? {
+        guard let allocation = model?.allocation,
+              allocation.dayLengthMs > 0,
+              allocation.workMs > 0
+        else { return nil }
+        return allocation
     }
 }

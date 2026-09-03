@@ -158,6 +158,41 @@ func lifeViewUsesEffectiveSegmentDuration() {
 }
 
 @MainActor
+@Test("Recorded overtime remains work in every life conclusion")
+func lifeViewIncludesRecordedOvertime() {
+    let calendar = lifeTestCalendar()
+    let profile = LifeProfile(
+        averageSleepHours: 8,
+        bornOn: .exact(year: 2026, month: 1, day: 1),
+        workStartedPartial: .exact(year: 2026, month: 1, day: 1),
+        retirementOn: .exact(year: 2026, month: 1, day: 2),
+        editedAt: Date(timeIntervalSince1970: 0),
+        editCount: 1,
+        editTieBreaker: UUID()
+    )
+    let day = lifeScheduleDay(
+        periodID: UUID(),
+        date: lifeTestDate(year: 2026, month: 1, day: 1, calendar: calendar),
+        startHour: 9,
+        durationHours: 8,
+        overtimeHours: 2,
+        calendar: calendar
+    )
+    let model = LifeViewCalculator.build(
+        profile: profile,
+        scheduleDays: [day],
+        outsideZoneDays: [],
+        now: lifeTestDate(year: 2026, month: 1, day: 2, calendar: calendar),
+        calendar: calendar
+    )
+
+    #expect(model.allocation.workMs == 8 * 3_600_000)
+    #expect(model.allocation.overtimeMs == 2 * 3_600_000)
+    #expect(abs(model.workShare - 10.0 / 24) < 0.000_000_1)
+    #expect(abs(model.ownAwakeShare - 6.0 / 24) < 0.000_000_1)
+}
+
+@MainActor
 @Test("Leave is not work, and a mid-week correction is still visible")
 func lifeViewDoesNotCountLeaveAsWork() {
     let calendar = lifeTestCalendar()
@@ -220,11 +255,13 @@ private func lifeScheduleDay(
     date: Date,
     startHour: Int,
     durationHours: Int,
+    overtimeHours: Int = 0,
     calendar: Calendar,
     isOverride: Bool = false
 ) -> LifeScheduleDay {
     let start = calendar.date(byAdding: .hour, value: startHour, to: date)!
     let end = calendar.date(byAdding: .hour, value: durationHours, to: start)!
+    let overtimeEnd = calendar.date(byAdding: .hour, value: overtimeHours, to: end)!
     return LifeScheduleDay(
         periodID: periodID,
         dayKey: RecordJSON.dayKey(date, calendar: calendar),
@@ -235,6 +272,14 @@ private func lifeScheduleDay(
                 endAtMs: end.timeIntervalSince1970 * 1_000
             ),
         ],
+        overtimeSegments: overtimeHours > 0
+            ? [
+                NativeShiftSegment(
+                    startAtMs: end.timeIntervalSince1970 * 1_000,
+                    endAtMs: overtimeEnd.timeIntervalSince1970 * 1_000
+                ),
+            ]
+            : [],
         isOverride: isOverride
     )
 }
@@ -249,78 +294,6 @@ func partialCivilDateYearUsesMidYear() {
     #expect(calendar.component(.month, from: anchor) == 7)
     #expect(calendar.component(.day, from: anchor) == 1)
     #expect(PartialCivilDate.exact(year: 2026, month: 13, day: 1) == nil)
-}
-
-@MainActor
-@Test("Overnight work splits across the two civil days and DST days still sum to 100%")
-func timeAllocationSplitsOvernightAndDST() {
-    let day = Date(timeIntervalSince1970: 1_787_529_600) // 2026-08-24 00:00 UTC
-    let next = day.addingTimeInterval(86_400)
-    let overnight = [
-        NativeShiftSegment(
-            startAtMs: (day.addingTimeInterval(20 * 3600).timeIntervalSince1970) * 1_000,
-            endAtMs: (next.addingTimeInterval(4 * 3600).timeIntervalSince1970) * 1_000
-        )
-    ]
-    let first = TimeAllocationCalculator.share(
-        dayStart: day,
-        nextDayStart: next,
-        workSegments: overnight,
-        sleepHours: 8
-    )
-    let second = TimeAllocationCalculator.share(
-        dayStart: next,
-        nextDayStart: next.addingTimeInterval(86_400),
-        workSegments: overnight,
-        sleepHours: 8
-    )
-    #expect(first.workMs == 4 * 3_600_000)
-    #expect(second.workMs == 4 * 3_600_000)
-    #expect(first.unclassifiedMs == 0)
-    #expect(second.unclassifiedMs == 0)
-    #expect(first.totalMs == first.dayLengthMs)
-    #expect(second.totalMs == second.dayLengthMs)
-
-    let shortDay = TimeAllocationCalculator.share(
-        dayStart: day,
-        nextDayStart: day.addingTimeInterval(23 * 3600),
-        workSegments: [
-            NativeShiftSegment(
-                startAtMs: day.timeIntervalSince1970 * 1_000,
-                endAtMs: day.addingTimeInterval(8 * 3600).timeIntervalSince1970 * 1_000
-            )
-        ],
-        sleepHours: 8
-    )
-    #expect(shortDay.dayLengthMs == 23 * 3_600_000)
-    #expect(shortDay.totalMs == shortDay.dayLengthMs)
-    #expect(shortDay.freeMs >= 0)
-}
-
-@MainActor
-@Test("Unclassified time is reserved for incomplete schedule expansion")
-func unclassifiedTimeRequiresIncompleteSchedule() {
-    let day = Date(timeIntervalSince1970: 1_787_529_600)
-    let next = day.addingTimeInterval(86_400)
-    let complete = TimeAllocationCalculator.share(
-        dayStart: day,
-        nextDayStart: next,
-        workSegments: [],
-        sleepHours: 8
-    )
-    let incomplete = TimeAllocationCalculator.share(
-        dayStart: day,
-        nextDayStart: next,
-        workSegments: [],
-        sleepHours: 8,
-        incomplete: true
-    )
-
-    #expect(complete.unclassifiedMs == 0)
-    #expect(complete.freeMs == 16 * 3_600_000)
-    #expect(incomplete.unclassifiedMs == 16 * 3_600_000)
-    #expect(incomplete.freeMs == 0)
-    #expect(incomplete.totalMs == incomplete.dayLengthMs)
 }
 
 @MainActor

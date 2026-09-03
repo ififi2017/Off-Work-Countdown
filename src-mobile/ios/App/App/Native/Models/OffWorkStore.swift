@@ -271,6 +271,7 @@ final class OffWorkStore {
     private let civilCalendars = CivilCalendarCache()
     @ObservationIgnored
     private var observationIndexCache: (revision: UInt64, byDay: [String: [WorkObservation]])?
+    private var recordedDayKeysCache: (revision: UInt64, keys: Set<String>)?
     @ObservationIgnored
     private var resolvedDaysCache: (revision: UInt64, from: Date, through: Date, days: [DayResolution])?
 #if DEBUG
@@ -278,7 +279,12 @@ final class OffWorkStore {
     private(set) var debugDidResetOnLaunch = false
 #endif
 
-    var selectedTab: AppTab { didSet { defaults.set(selectedTab.rawValue, forKey: Key.selectedTab) } }
+    var selectedTab: AppTab {
+        didSet {
+            defaults.set(selectedTab.rawValue, forKey: Key.selectedTab)
+            writeQASurfaceMarker()
+        }
+    }
     var presentedRoute: AppRoute?
 
     /// Whether the "coming up" list is showing everything.
@@ -304,7 +310,7 @@ final class OffWorkStore {
     var settingsPath: [AppRoute] = []
     /// The paywall a gated action asked for, presented as a sheet by the root
     /// view so it appears over the current stack whichever one that is.
-    var paywallSheet: PlusPaywallReason?
+    var paywallSheet: PlusPaywallReason? { didSet { writeQASurfaceMarker() } }
     var pendingPlusAction: PlusPendingAction?
     var editingDayKey: String?
     var presentAddFocus = false
@@ -903,6 +909,33 @@ final class OffWorkStore {
         default: return nil
         }
     }
+
+    /// Names what is on screen, in the app container, for `qa:ios-shots`.
+    ///
+    /// A screenshot tool cannot see a screen: the first version of that sweep
+    /// reported eight green captures of a paywall and a Timer tab, because a
+    /// running process and a PNG of the right size is all it could check. This
+    /// is the missing half — the app says where it actually is, and the script
+    /// refuses any shot that does not match what it asked for. Debug only;
+    /// nothing in the shipping build reads it.
+    func writeQASurfaceMarker(_ visibleSurface: String? = nil) {
+#if DEBUG
+        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+        guard let url = caches?.appendingPathComponent("qa-surface.txt") else { return }
+        try? qaSurfaceName(visibleSurface).write(to: url, atomically: true, encoding: .utf8)
+#endif
+    }
+
+#if DEBUG
+    /// One exclusive visible surface. Navigation paths express intent; only a
+    /// destination view's `onAppear` is proof that the push actually landed.
+    func qaSurfaceName(_ visibleSurface: String? = nil) -> String {
+        if !onboardingComplete { return "onboarding" }
+        if !plus.hasSeenIntro { return "plus-intro" }
+        if paywallSheet != nil { return "paywall" }
+        return visibleSurface ?? selectedTab.rawValue
+    }
+#endif
 
     func scheduleDebugResetOnNextLaunch() {
         defaults.set(true, forKey: Key.debugResetNextLaunch)
@@ -1554,6 +1587,15 @@ final class OffWorkStore {
             return dayKey
         }
         return formatRecordsDayTitle(date)
+    }
+
+    /// The sync conflict recorded against a civil day, if any. Conflict keys
+    /// carry a `#user` suffix, so the day page's exact string comparison never
+    /// matched one the month grid had already flagged.
+    func recordsConflict(forDayKey dayKey: String) -> SyncConflictCopy? {
+        records.state.sync.conflicts.first {
+            Self.civilDayKey(fromExceptionKey: $0.logicalKey) == dayKey
+        }
     }
 
     private static func civilDayKey(fromExceptionKey key: String) -> String {
@@ -3546,12 +3588,22 @@ final class OffWorkStore {
         }
     }
 
+    /// Cached against the archive revision. Drawing a month asks this twice
+    /// per cell — once for the day, once for the night before it — and
+    /// rebuilding the whole index each time made a calendar cost hundreds of
+    /// passes over every observation, override and exception on file.
     func isRecordedDay(_ dayKey: String) -> Bool {
-        recordDayIndex().contains { $0.dayKey == dayKey }
+        if let cached = recordedDayKeysCache, cached.revision == records.revision {
+            return cached.keys.contains(dayKey)
+        }
+        let keys = Set(recordDayIndex().map(\.dayKey))
+        recordedDayKeysCache = (records.revision, keys)
+        return keys.contains(dayKey)
     }
 
     func recordsDayCell(
         for resolution: DayResolution,
+        previous: DayResolution? = nil,
         now: Date = .now,
         includesLifeProjection: Bool = false
     ) -> RecordsDayCell {
@@ -3587,8 +3639,17 @@ final class OffWorkStore {
         } else {
             appearance = .unrecorded
         }
-        let share = revealed && (recorded || projected)
-            ? dayAllocation(resolution, now: now)
+        // A 22:00–06:00 shift is two hours of its anchor day and six of the
+        // next one. Reading only this day's own resolution dropped the morning
+        // half from the cell, the summary and every total above them.
+        let contributors = contributingShifts(
+            for: resolution,
+            previous: previous,
+            now: now,
+            includesLifeProjection: includesLifeProjection
+        )
+        let share = revealed && !contributors.isEmpty
+            ? dayAllocation(resolution, contributedBy: contributors, now: now)
             : TimeAllocationShare(workMs: 0, overtimeMs: 0, sleepMs: 0, freeMs: 0, dayLengthMs: 0)
         return RecordsDayCell(
             dayKey: resolution.dayKey,
@@ -3616,9 +3677,24 @@ final class OffWorkStore {
         guard plus.isAuthorized else { return nil }
         let recordedKeys = Set(cells.filter { $0.appearance == .recorded || $0.appearance == .corrected }.map(\.dayKey))
         guard !recordedKeys.isEmpty else { return nil }
-        let shares = days.compactMap { day -> TimeAllocationShare? in
-            guard recordedKeys.contains(day.dayKey) else { return nil }
-            return dayAllocation(day, now: now)
+        // Only recorded and corrected days contribute hours — a schedule-only
+        // estimate is still not a fact. A day that merely *receives* those
+        // hours after midnight is counted for its time, never as a workday.
+        // `days` may reach one day either side of the window so an overnight
+        // shift at the edge can still be found; the totals stay on `cells`.
+        let byKey = Dictionary(days.map { ($0.dayKey, $0) }, uniquingKeysWith: { first, _ in first })
+        let counted = Set(
+            days
+                .filter { contributesHours($0, now: now, includesLifeProjection: false) }
+                .map(\.dayKey)
+        )
+        let shares = cells.compactMap { cell -> TimeAllocationShare? in
+            guard let day = byKey[cell.dayKey] else { return nil }
+            let contributors = [previousDay(before: day, in: byKey), day]
+                .compactMap { $0 }
+                .filter { counted.contains($0.dayKey) }
+            guard !contributors.isEmpty else { return nil }
+            return dayAllocation(day, contributedBy: contributors, now: now)
         }
         let combined = TimeAllocationCalculator.combining(shares)
         let today = recordsCalendar.startOfDay(for: now)
@@ -3645,21 +3721,151 @@ final class OffWorkStore {
         )
     }
 
-    func dayAllocation(_ resolution: DayResolution, now: Date = .now) -> TimeAllocationShare {
-        let start = recordsCalendar.startOfDay(for: resolution.shiftAnchorDate)
-        let next = recordsCalendar.date(byAdding: .day, value: 1, to: start) ?? start.addingTimeInterval(86_400)
-        let overtime = overtimeSegments(on: resolution)
-        let sleep = records.state.lifeProfile?.averageSleepHours ?? 8
-        let incomplete = resolution.expansionFailed
-        return TimeAllocationCalculator.share(
-            dayStart: start,
-            nextDayStart: next,
-            workSegments: resolution.segments,
-            overtimeSegments: overtime,
-            breakSegments: TimeAllocationCalculator.gaps(in: resolution.segments),
-            sleepHours: sleep,
-            incomplete: incomplete
+    /// One civil day's numbers, cut from the shifts allowed to contribute to
+    /// it. Both the month cell and the day canvas read this, so a day cannot
+    /// print one total in the calendar and a different one on its own page.
+    func dayAllocation(
+        _ resolution: DayResolution,
+        contributedBy shifts: [DayResolution],
+        now: Date = .now
+    ) -> TimeAllocationShare {
+        dayCanvasModel(
+            for: resolution,
+            contributedBy: shifts,
+            source: .scheduleEstimate,
+            now: now
+        ).allocation
+    }
+
+    func dayAllocation(
+        _ resolution: DayResolution,
+        previous: DayResolution? = nil,
+        now: Date = .now
+    ) -> TimeAllocationShare {
+        dayAllocation(
+            resolution,
+            contributedBy: [previous, resolution].compactMap { $0 },
+            now: now
         )
+    }
+
+    /// Whether a day's own hours may be shown as something that happened. A
+    /// schedule expansion on its own is not a record; a life projection is
+    /// shown, but always labelled as one.
+    private func contributesHours(
+        _ resolution: DayResolution,
+        now: Date,
+        includesLifeProjection: Bool
+    ) -> Bool {
+        if isRecordedDay(resolution.dayKey) { return true }
+        if records.state.overrides.contains(where: {
+            $0.dayKey == resolution.dayKey && $0.kind != .cleared
+        }) { return true }
+        guard includesLifeProjection else { return false }
+        return isInsideLifeWorkProjection(
+            recordsCalendar.startOfDay(for: resolution.shiftAnchorDate),
+            now: now
+        )
+    }
+
+    /// The shifts allowed to put hours on a civil day: the day itself and the
+    /// night before, each only if its own record, correction or life projection
+    /// lets it count. Every surface that prints a per-day number reads this, so
+    /// the calendar cell, the compact summary and the day canvas cannot
+    /// disagree — the cell used to filter and the other two did not, which put
+    /// "not recorded, 0 h" in the grid above a solid eight-hour day.
+    func contributingShifts(
+        for resolution: DayResolution,
+        previous: DayResolution?,
+        now: Date = .now,
+        includesLifeProjection: Bool
+    ) -> [DayResolution] {
+        [previous, resolution]
+            .compactMap { $0 }
+            .filter { contributesHours($0, now: now, includesLifeProjection: includesLifeProjection) }
+    }
+
+    private func previousDay(
+        before day: DayResolution,
+        in index: [String: DayResolution]
+    ) -> DayResolution? {
+        guard let date = RecordJSON.date(fromDayKey: day.dayKey, calendar: recordsCalendar),
+              let earlier = recordsCalendar.date(byAdding: .day, value: -1, to: date)
+        else { return nil }
+        return index[RecordJSON.dayKey(earlier, calendar: recordsCalendar)]
+    }
+
+    /// The whole civil day, ready to draw. Views never intersect shifts, clip
+    /// overtime, derive a lunch gap or decide what a source is.
+    func dayCanvasModel(
+        for resolution: DayResolution,
+        contributedBy shifts: [DayResolution],
+        source: RecordsDaySource,
+        now: Date = .now,
+        editableAnchors: Set<String> = []
+    ) -> RecordsDayCanvasModel {
+        let start = recordsCalendar.startOfDay(for: resolution.shiftAnchorDate)
+        let next = recordsCalendar.date(byAdding: .day, value: 1, to: start)
+            ?? start.addingTimeInterval(86_400)
+        let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
+            ? "recordsSleepFromHealth"
+            : "recordsSleepEstimated"
+        var canvasShifts = shifts.map { shift in
+            RecordsDayShift(
+                anchorDayKey: shift.dayKey,
+                segments: shift.segments,
+                overtimeSegments: overtimeSegments(on: shift),
+                source: shift.dayKey == resolution.dayKey
+                    ? source
+                    : shiftSource(of: shift, now: now),
+                isEditable: editableAnchors.contains(shift.dayKey)
+            )
+        }
+        // A past rest or unrecorded day has no contributing hours, but it is
+        // still a real edit anchor. Keep that anchor without feeding its
+        // scheduled estimate into the factual allocation.
+        if editableAnchors.contains(resolution.dayKey),
+           !canvasShifts.contains(where: { $0.anchorDayKey == resolution.dayKey }) {
+            canvasShifts.append(
+                RecordsDayShift(
+                    anchorDayKey: resolution.dayKey,
+                    segments: [],
+                    source: source,
+                    isEditable: true
+                )
+            )
+        }
+        return RecordsDayCanvasModel.build(
+            RecordsDayCanvasModel.Input(
+                dayKey: resolution.dayKey,
+                dayStart: start,
+                dayEnd: next,
+                source: source,
+                shifts: canvasShifts,
+                sleepHours: records.state.lifeProfile?.averageSleepHours ?? 8,
+                sleepSourceKey: sleepKey,
+                isToday: recordsCalendar.isDate(start, inSameDayAs: now),
+                now: now,
+                // Any contributing shift, not just this day's. When last
+                // night's expansion failed its overnight tail is missing, and
+                // the hole it leaves here is unaccounted for rather than free.
+                rulesFailed: resolution.expansionFailed
+                    || shifts.contains(where: \.expansionFailed)
+            )
+        )
+    }
+
+    /// The source of a neighbouring shift reaching into the day on screen.
+    private func shiftSource(of resolution: DayResolution, now: Date) -> RecordsDaySource {
+        if records.state.overrides.contains(where: {
+            $0.dayKey == resolution.dayKey && $0.kind != .cleared
+        }) { return .corrected }
+        if isRecordedDay(resolution.dayKey) {
+            return resolution.layer == .calendarException ? .exception : .recorded
+        }
+        let date = recordsCalendar.startOfDay(for: resolution.shiftAnchorDate)
+        if date > recordsCalendar.startOfDay(for: now) { return .planned }
+        return isInsideLifeWorkProjection(date, now: now) ? .lifeProjection : .scheduleEstimate
     }
 
     private func overtimeSegments(on resolution: DayResolution) -> [NativeShiftSegment] {
@@ -3674,27 +3880,33 @@ final class OffWorkStore {
 
     func recordsDayDetail(
         for resolution: DayResolution,
+        previous: DayResolution? = nil,
         now: Date = .now,
         includesLifeProjection: Bool = false
     ) -> RecordsDayDetail? {
         let cell = recordsDayCell(
             for: resolution,
+            previous: previous,
             now: now,
             includesLifeProjection: includesLifeProjection
         )
         guard cell.appearance != .locked else { return nil }
-        let share = dayAllocation(resolution, now: now)
-        let sourceKey: String
-        if cell.isProjection {
-            sourceKey = "recordsSourceProjection"
-        } else {
-            switch resolution.layer {
-            case .schedule: sourceKey = "recordsSourceSchedule"
-            case .calendarException: sourceKey = "recordsSourceException"
-            case .override: sourceKey = "recordsSourceOverride"
-            case .none: sourceKey = "recordsSourceNone"
-            }
-        }
+        // The same qualified inputs the cell above it used, so the calendar and
+        // the summary under it cannot print two different days.
+        let canvas = dayCanvasModel(
+            for: resolution,
+            contributedBy: contributingShifts(
+                for: resolution,
+                previous: previous,
+                now: now,
+                includesLifeProjection: includesLifeProjection
+            ),
+            source: recordsDaySource(cell: cell, resolution: resolution),
+            now: now
+        )
+        // The same words the day canvas uses. Two mappings meant the compact
+        // summary could call a day one thing and its own page another.
+        let sourceKey = canvas.source.titleKey
         let sleepKey = records.state.lifeProfile?.sleepSource == .healthSuggested
             ? "recordsSleepFromHealth"
             : "recordsSleepEstimated"
@@ -3714,16 +3926,100 @@ final class OffWorkStore {
             date: resolution.shiftAnchorDate,
             appearance: cell.appearance,
             sourceKey: sourceKey,
-            regularWorkMs: share.workMs,
-            overtimeMs: share.overtimeMs,
-            breakMs: share.breakMs,
-            sleepMs: share.sleepMs,
-            freeMs: share.freeMs,
+            regularWorkMs: canvas.allocation.workMs,
+            overtimeMs: canvas.allocation.overtimeMs,
+            breakMs: canvas.allocation.breakMs,
+            sleepMs: canvas.allocation.sleepMs,
+            freeMs: canvas.allocation.freeMs,
             sleepSourceKey: sleepKey,
             observations: notes,
             isPlanned: cell.appearance == .planned,
             isProjection: cell.isProjection
         )
+    }
+
+    /// The day canvas for one civil day, including the part of the night
+    /// before that runs into it. A locked day resolves to a model that carries
+    /// no interval, duration, source or anchor at all — there is nothing to
+    /// blur, because nothing real was ever built.
+    func recordsDayCanvas(dayKey: String, now: Date = .now) async -> RecordsDayCanvasModel? {
+        guard let date = RecordJSON.date(fromDayKey: dayKey, calendar: recordsCalendar) else {
+            return nil
+        }
+        let start = recordsCalendar.startOfDay(for: date)
+        let end = recordsCalendar.date(byAdding: .day, value: 1, to: start)
+            ?? start.addingTimeInterval(86_400)
+        guard RecordsAccess.canRevealDay(
+            dayKey: dayKey,
+            today: now,
+            calendar: recordsCalendar,
+            authorized: plus.isAuthorized
+        ) else {
+            return .locked(dayKey: dayKey, dayStart: start, dayEnd: end)
+        }
+        let earlier = recordsCalendar.date(byAdding: .day, value: -1, to: start) ?? start
+        let resolved = await prepareRecordsDisplayDays(from: earlier, through: start, now: now)
+        guard let resolution = resolved.first(where: { $0.dayKey == dayKey }) else { return nil }
+        let previous = resolved.last(where: { $0.dayKey != dayKey })
+        let cell = recordsDayCell(
+            for: resolution,
+            previous: previous,
+            now: now,
+            includesLifeProjection: true
+        )
+        // Records edits a day that has already happened. A future day is
+        // changed by moving the schedule or by running the timer, not by
+        // writing history forward — and a day the life profile merely projects
+        // has no original input to open, so it gets no editor either.
+        let today = recordsCalendar.startOfDay(for: now)
+        let editableAnchors: Set<String> = plus.isAuthorized
+            ? Set(
+                resolved
+                    .filter { candidate in
+                        let anchor = recordsCalendar.startOfDay(for: candidate.shiftAnchorDate)
+                        guard anchor <= today else { return false }
+                        if contributesHours(candidate, now: now, includesLifeProjection: false) {
+                            return true
+                        }
+                        return !isInsideLifeWorkProjection(anchor, now: now)
+                    }
+                    .map(\.dayKey)
+            )
+            : []
+        return dayCanvasModel(
+            for: resolution,
+            contributedBy: contributingShifts(
+                for: resolution,
+                previous: previous,
+                now: now,
+                includesLifeProjection: true
+            ),
+            source: recordsDaySource(cell: cell, resolution: resolution),
+            now: now,
+            editableAnchors: editableAnchors
+        )
+    }
+
+    /// One mapping from a day's appearance to the words that describe it, so
+    /// the calendar cell, the compact summary and the day canvas cannot each
+    /// invent their own vocabulary for the same day.
+    func recordsDaySource(cell: RecordsDayCell, resolution: DayResolution) -> RecordsDaySource {
+        if cell.appearance == .locked { return .locked }
+        if cell.isProjection { return .lifeProjection }
+        switch cell.appearance {
+        case .planned: return .planned
+        case .rest: return .rest
+        case .unrecorded: return .unrecorded
+        case .corrected: return .corrected
+        case .locked: return .locked
+        case .recorded:
+            switch resolution.layer {
+            case .override: return .corrected
+            case .calendarException: return .exception
+            case .schedule: return .recorded
+            case .none: return .unrecorded
+            }
+        }
     }
 
     func focusScheduleSlots(at date: Date = .now) -> [FocusScheduleSlot] {
@@ -4741,7 +5037,12 @@ final class OffWorkStore {
             periods: archive.periods,
             snapshots: archive.snapshots,
             usesSharedCache: false
-        ).compactMap(LifeScheduleDay.init)
+        ).compactMap { resolution in
+            LifeScheduleDay(
+                resolution: resolution,
+                overtimeSegments: overtimeSegments(on: resolution)
+            )
+        }
         return LifeViewCalculator.build(
             profile: profile,
             scheduleDays: scheduleDays,

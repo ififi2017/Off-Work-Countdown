@@ -657,6 +657,8 @@ struct DurationCase: Sendable {
     DurationCase(milliseconds: 5_400_000, language: "en", expected: "1 h 30 m"),
     DurationCase(milliseconds: 2_700_000, language: "en", expected: "45 m"),
     DurationCase(milliseconds: 0, language: "en", expected: "0 m"),
+    // A life-scale projection reaches five figures. "67571 h" is unreadable.
+    DurationCase(milliseconds: 243_255_600_000, language: "en", expected: "67,571 h"),
     DurationCase(milliseconds: 43_200_000, language: "zh-CN", expected: "12小时"),
     DurationCase(milliseconds: 5_400_000, language: "zh-CN", expected: "1小时30分钟"),
     DurationCase(milliseconds: 0, language: "zh-CN", expected: "0分钟"),
@@ -728,6 +730,86 @@ func widgetTimelineCoversLunchBreak() throws {
     #expect(current.phase == .break)
     #expect(current.labelKey == "lunchInProgress")
     #expect(nowMs < current.validUntilMs)
+}
+
+@MainActor
+@Test("Overtime is its own widget label so a complication can say which it is")
+func widgetTimelineSeparatesOvertimeFromRegularWork() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    // A 09:00-17:00 Monday, extended to 20:00 while it is still running.
+    let atWork = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 16
+    )))
+    let overtimeEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 20
+    )))
+    let beforePlannedEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 16, minute: 30
+    )))
+    let afterPlannedEnd = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 24, hour: 18
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.startCountdown(at: atWork)
+    store.applyOvertime(date: overtimeEnd)
+
+    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: atWork),
+        active: store.countdownStarted,
+        nowMs: Int64(atWork.timeIntervalSince1970 * 1_000)
+    )
+
+    let regular = try #require(widget.entry(atMs: Int64(beforePlannedEnd.timeIntervalSince1970 * 1_000)))
+    #expect(regular.phase == .working)
+    #expect(regular.labelKey == "widgetWorking")
+
+    // Same phase, same countdown, different label — the split exists so a
+    // surface can name the state, not so the timeline behaves differently.
+    let overtime = try #require(widget.entry(atMs: Int64(afterPlannedEnd.timeIntervalSince1970 * 1_000)))
+    #expect(overtime.phase == .working)
+    #expect(overtime.labelKey == "overtime")
+    #expect(overtime.countdownKind == .workRemaining)
+}
+
+@MainActor
+@Test("A rest day keeps its own widget label even though it shows a countdown")
+func widgetTimelineLabelsRestDaysDistinctly() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+
+    // Saturday. The next shift is Monday, so the complication draws the same
+    // countdown and bar it would on a workday morning.
+    let saturday = try #require(Calendar.current.date(from: DateComponents(
+        year: 2026, month: 8, day: 29, hour: 10
+    )))
+
+    let store = OffWorkStore(defaults: defaults)
+    store.onboardingComplete = true
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+
+    let nowMs = Int64(saturday.timeIntervalSince1970 * 1_000)
+    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
+        store: store,
+        shift: store.snapshot(at: saturday),
+        active: false,
+        nowMs: nowMs
+    )
+
+    let current = try #require(widget.entry(atMs: nowMs))
+    #expect(current.labelKey == "widgetRestDay")
+    #expect(current.countdownTargetAtMs != nil)
 }
 
 @MainActor
@@ -3025,6 +3107,89 @@ private func isolatedDefaults() throws -> (UserDefaults, String) {
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
     return (defaults, suite)
+}
+
+@MainActor
+@Test("QA surface marker reports the visible gate before the requested destination")
+func qaSurfaceMarkerUsesVisibleSurface() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+
+    #expect(store.qaSurfaceName("records.day") == "onboarding")
+    store.onboardingComplete = true
+    #expect(store.qaSurfaceName("records.day") == "plus-intro")
+    store.plus.markIntroSeen()
+    #expect(store.qaSurfaceName("records.day") == "records.day")
+    store.paywallSheet = .charts
+    #expect(store.qaSurfaceName("records.day") == "paywall")
+}
+
+@MainActor
+@Test("An unrecorded past workday keeps an edit anchor without inventing worked hours")
+func unrecordedPastWorkdayKeepsEmptyEditAnchor() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+    store.recordsTimeZoneIdentifier = "UTC"
+    let day = utcDay(2026, 8, 24)
+    let resolution = DayResolution(
+        dayKey: "2026-08-24",
+        shiftAnchorDate: day,
+        layer: .schedule,
+        periodID: nil,
+        snapshotID: nil,
+        isScheduledWorkday: true,
+        segments: [
+            NativeShiftSegment(
+                startAtMs: day.timeIntervalSince1970 * 1_000 + 9 * 3_600_000,
+                endAtMs: day.timeIntervalSince1970 * 1_000 + 17 * 3_600_000
+            ),
+        ]
+    )
+
+    let canvas = store.dayCanvasModel(
+        for: resolution,
+        contributedBy: [],
+        source: .unrecorded,
+        now: day.addingTimeInterval(86_400),
+        editableAnchors: [resolution.dayKey]
+    )
+
+    #expect(canvas.allocation.workMs == 0)
+    #expect(canvas.editableShifts.map(\.anchorDayKey) == [resolution.dayKey])
+    #expect(canvas.editableShifts[0].hasHours == false)
+}
+
+@MainActor
+@Test("A failed current-day expansion remains unclassified without a contributing shift")
+func failedCurrentExpansionRemainsUnclassified() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults)
+    store.recordsTimeZoneIdentifier = "UTC"
+    let day = utcDay(2026, 8, 24)
+    let resolution = DayResolution(
+        dayKey: "2026-08-24",
+        shiftAnchorDate: day,
+        layer: .schedule,
+        periodID: nil,
+        snapshotID: nil,
+        isScheduledWorkday: false,
+        segments: [],
+        expansionFailed: true
+    )
+
+    let canvas = store.dayCanvasModel(
+        for: resolution,
+        contributedBy: [],
+        source: .scheduleEstimate,
+        now: day.addingTimeInterval(86_400)
+    )
+
+    #expect(canvas.hasIncompleteRules)
+    #expect(canvas.allocation.unclassifiedMs > 0)
+    #expect(canvas.allocation.freeMs == 0)
 }
 
 private func utcDay(_ year: Int, _ month: Int, _ day: Int) -> Date {

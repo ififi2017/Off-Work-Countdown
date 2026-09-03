@@ -39,6 +39,18 @@ struct LifeViewModel: Equatable, Sendable {
     var cells: [LifeWeekCell]
     var workShare: Double
     var ownAwakeShare: Double
+    /// Birth to retirement, divided into the same six categories every other
+    /// records surface uses. Entirely a projection: it is read from the life
+    /// profile and the expanded schedule, and never written anywhere.
+    var allocation: TimeAllocationShare = TimeAllocationShare(
+        workMs: 0,
+        overtimeMs: 0,
+        breakMs: 0,
+        sleepMs: 0,
+        freeMs: 0,
+        unclassifiedMs: 0,
+        dayLengthMs: 0
+    )
 
     /// Working weeks already behind the user.
     var workedWeeks: Int {
@@ -60,6 +72,10 @@ struct LifeScheduleDay: Equatable, Sendable {
     let dayKey: String
     let shiftAnchorDate: Date
     let segments: [NativeShiftSegment]
+    /// Overtime the user actually declared on this day. Only ever a record —
+    /// nothing forecasts it forward — but the days that have one are facts and
+    /// dropping them deleted real hours from the life total.
+    let overtimeSegments: [NativeShiftSegment]
     let isOverride: Bool
 
     init(
@@ -67,22 +83,25 @@ struct LifeScheduleDay: Equatable, Sendable {
         dayKey: String,
         shiftAnchorDate: Date,
         segments: [NativeShiftSegment],
+        overtimeSegments: [NativeShiftSegment] = [],
         isOverride: Bool
     ) {
         self.periodID = periodID
         self.dayKey = dayKey
         self.shiftAnchorDate = shiftAnchorDate
         self.segments = segments
+        self.overtimeSegments = overtimeSegments
         self.isOverride = isOverride
     }
 
-    init?(resolution: DayResolution) {
+    init?(resolution: DayResolution, overtimeSegments: [NativeShiftSegment] = []) {
         guard let periodID = resolution.periodID else { return nil }
         self.init(
             periodID: periodID,
             dayKey: resolution.dayKey,
             shiftAnchorDate: resolution.shiftAnchorDate,
             segments: resolution.segments,
+            overtimeSegments: overtimeSegments,
             isOverride: resolution.layer == .override && !resolution.segments.isEmpty
         )
     }
@@ -184,16 +203,88 @@ enum LifeViewCalculator {
         }
         let totalMs = lifeEnd.timeIntervalSince(lifeStart) * 1_000
         let workMs = workIntervals.reduce(0) { $0 + ($1.endMs - $1.startMs) }
-        let workShare = totalMs > 0 ? min(1, max(0, workMs / totalMs)) : 0
+        let overtimeMs = subtracting(
+            mergedIntervals(
+                scheduleDays.flatMap(\.overtimeSegments),
+                clippedFrom: lifeStart,
+                through: lifeEnd
+            ),
+            from: workIntervals
+        )
+        let workShare = totalMs > 0
+            ? min(1, max(0, (workMs + overtimeMs) / totalMs))
+            : 0
         let configuredSleepHours = resolvedProfile.averageSleepHours
             ?? resolvedProfile.averageSleepMinutes.map { Double($0) / 60 }
             ?? 8
         let sleepHours = min(24, max(0, configuredSleepHours))
         let sleepMs = totalMs * sleepHours / 24
         let ownAwakeShare = totalMs > 0
-            ? min(1, max(0, (totalMs - sleepMs - workMs) / totalMs))
+            ? min(1, max(0, (totalMs - sleepMs - workMs - overtimeMs) / totalMs))
             : 0
-        return LifeViewModel(cells: cells, workShare: workShare, ownAwakeShare: ownAwakeShare)
+        return LifeViewModel(
+            cells: cells,
+            workShare: workShare,
+            ownAwakeShare: ownAwakeShare,
+            allocation: allocation(
+                totalMs: totalMs,
+                workMs: workMs,
+                overtimeMs: overtimeMs,
+                breakMs: mergedIntervals(
+                    scheduleDays.flatMap { TimeAllocationCalculator.gaps(in: $0.segments) },
+                    clippedFrom: lifeStart,
+                    through: lifeEnd
+                ).reduce(0) { $0 + ($1.endMs - $1.startMs) },
+                sleepHours: sleepHours
+            )
+        )
+    }
+
+    /// Overtime the user recorded is a fact and keeps its own slice; nothing
+    /// forecasts more of it, so a life with none simply shows none. Sleep is
+    /// the profile's average, and whatever is left is the person's own.
+    private static func allocation(
+        totalMs: Double,
+        workMs: Double,
+        overtimeMs: Double,
+        breakMs: Double,
+        sleepHours: Double
+    ) -> TimeAllocationShare {
+        guard totalMs > 0 else {
+            return TimeAllocationShare(
+                workMs: 0, overtimeMs: 0, breakMs: 0,
+                sleepMs: 0, freeMs: 0, unclassifiedMs: 0, dayLengthMs: 0
+            )
+        }
+        let work = min(totalMs, max(0, workMs))
+        let overtime = min(totalMs - work, max(0, overtimeMs))
+        let breaks = min(totalMs - work - overtime, max(0, breakMs))
+        let sleep = min(totalMs - work - overtime - breaks, totalMs * sleepHours / 24)
+        let free = max(0, totalMs - work - overtime - breaks - sleep)
+        return TimeAllocationShare(
+            workMs: Int64(work),
+            overtimeMs: Int64(overtime),
+            breakMs: Int64(breaks),
+            sleepMs: Int64(sleep),
+            freeMs: Int64(free),
+            unclassifiedMs: 0,
+            dayLengthMs: Int64(totalMs)
+        )
+    }
+
+    /// Overtime that lies outside regular work. Declared overtime is normally
+    /// past the shift's end, but an edited day can move the end backwards over
+    /// it, and the same minute must not be counted in two categories.
+    private static func subtracting(
+        _ intervals: [WorkInterval],
+        from taken: [WorkInterval]
+    ) -> Double {
+        intervals.reduce(0) { total, interval in
+            let overlap = taken.reduce(0.0) { covered, block in
+                covered + max(0, min(interval.endMs, block.endMs) - max(interval.startMs, block.startMs))
+            }
+            return total + max(0, interval.endMs - interval.startMs - overlap)
+        }
     }
 
     private struct WorkInterval {
@@ -252,13 +343,29 @@ enum LifeViewCalculator {
     }
 }
 
-enum TimeAllocationKind: Equatable, Hashable, Sendable {
+enum TimeAllocationKind: String, Equatable, Hashable, Sendable, CaseIterable {
     case work
     case overtime
     case workBreak
     case sleep
     case free
     case unclassified
+}
+
+extension TimeAllocationKind {
+    /// One name per category. The allocation bar, the day band, the interval
+    /// list and the month legend all read it from here, so the same fact
+    /// cannot be called two things on two screens.
+    var titleKey: String {
+        switch self {
+        case .work: "recordsWorkRegular"
+        case .overtime: "recordsOvertime"
+        case .workBreak: "recordsBreakTime"
+        case .sleep: "recordsSleep"
+        case .free: "recordsFreeAwakeShort"
+        case .unclassified: "recordsUnclassified"
+        }
+    }
 }
 
 struct TimeAllocationShare: Equatable, Sendable {
@@ -275,36 +382,14 @@ struct TimeAllocationShare: Equatable, Sendable {
 }
 
 enum TimeAllocationCalculator {
-    /// Intersects work segments with a civil day. An overnight 20:00–04:00
-    /// contributes four hours to each calendar day; the shift still counts as
-    /// one workday on its anchor. Sleep is clipped so it cannot go negative
-    /// against remaining awake time.
-    static func share(
-        dayStart: Date,
-        nextDayStart: Date,
-        workSegments: [NativeShiftSegment],
-        overtimeSegments: [NativeShiftSegment] = [],
-        sleepHours: Double
-    ) -> TimeAllocationShare {
-        share(
-            dayStart: dayStart,
-            nextDayStart: nextDayStart,
-            workSegments: workSegments,
-            overtimeSegments: overtimeSegments,
-            breakSegments: [],
-            sleepHours: sleepHours
-        )
-    }
-
-    static func clippedDuration(
-        _ segments: [NativeShiftSegment],
-        from startMs: Int64,
-        to endMs: Int64
-    ) -> Int64 {
-        segments.reduce(0) { total, segment in
-            let lo = max(startMs, Int64(segment.startAtMs.rounded()))
-            let hi = min(endMs, Int64(segment.endAtMs.rounded()))
-            return total + max(0, hi - lo)
+    /// Gaps inside one shift. A lunch break is the space the schedule left
+    /// between two work segments, so it is derived here rather than stored.
+    static func gaps(in segments: [NativeShiftSegment]) -> [NativeShiftSegment] {
+        let sorted = segments.sorted { $0.startAtMs < $1.startAtMs }
+        guard sorted.count >= 2 else { return [] }
+        return zip(sorted, sorted.dropFirst()).compactMap { current, next in
+            guard next.startAtMs > current.endAtMs else { return nil }
+            return NativeShiftSegment(startAtMs: current.endAtMs, endAtMs: next.startAtMs)
         }
     }
 }
