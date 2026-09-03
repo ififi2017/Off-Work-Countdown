@@ -1,4 +1,6 @@
-# 下班倒计时
+# DoneAt
+
+下班倒计时现为 DoneAt.
 
 下班倒计时是一款注重隐私的下班时间工具，同时提供网页版、轻量的 Tauri 桌面客户端，以及 App Store 上的 iPhone / iPad 原生应用。设置一次班次后，就能随时查看剩余时间、进度和预估收入。
 
@@ -31,7 +33,7 @@
   <img src="readme_image/ios/zh-ipad-timer.jpg" width="380" alt="iPad 布局：侧边栏、倒计时和今日详情并排">
 </p>
 
-## 使用下班倒计时
+## 使用 DoneAt
 
 - **网页版：**[立即使用](https://off.rainif.com/zh-CN)，无需安装。
 - **iPhone 和 iPad：**[从 App Store 获取](https://apps.apple.com/cn/app/id6802803318)，**免费**，商店名为 **DoneAt**。原生 SwiftUI，带主屏幕和锁定屏幕小组件、实时活动与灵动岛。需要 **iOS 26** 或 **iPadOS 26**。
@@ -57,7 +59,7 @@ iOS 版是原生 SwiftUI，班次规则与网页版、桌面版共用。iPhone�
 DMG 需要 **macOS 11.3（Big Sur）或更高版本**，Apple Silicon 与 Intel 均支持。
 
 1. Apple Silicon Mac 下载 `aarch64.dmg`，Intel Mac 下载 `x64.dmg`。
-2. 打开 DMG，把“Off Work Countdown”拖入“应用程序”。
+2. 打开 DMG，把“DoneAt”拖入“应用程序”。
 3. 先尝试打开一次。如果 macOS 阻止运行，请进入**系统设置 → 隐私与安全性**，滚动到“安全性”，点击**仍要打开**，然后再次确认**打开**。Apple 的官方说明见[安全地打开 Mac 上的 App](https://support.apple.com/zh-cn/102445)。
 
 #### Windows
