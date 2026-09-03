@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import WidgetKit
 import Darwin
+import os
 #if OWC_SWIFT_PACKAGE
 import WidgetSnapshotContract
 #endif
@@ -30,6 +31,56 @@ func widgetUpcomingDateShowsWeekday(
 public let widgetSnapshotFileName = "widget-snapshot-v1.json"
 public let localWidgetSnapshotDirectoryName =
     "com.rainif.offworkcountdown.macappstore.local-widget"
+
+/// One log line per timeline build, readable in Console.app and in a
+/// sysdiagnose without a debugger attached.
+///
+/// A Lock Screen complication stuck on the redacted placeholder is never a
+/// drawing bug: it means the extension did not deliver a rendered timeline,
+/// and the usual reason is that the process was killed for exceeding its
+/// memory footprint while WidgetKit rendered the entries. That is invisible
+/// from inside the app, so the numbers that decide it — how many entries this
+/// build asked WidgetKit to render, and the process footprint when it
+/// finished — are recorded here rather than reconstructed from a user report.
+/// `phys_footprint` is the figure jetsam compares against the extension limit.
+enum WidgetDiagnostics {
+    private static let log = Logger(
+        subsystem: "com.rainif.offworkcountdown.widget",
+        category: "timeline"
+    )
+
+    static func timelineBuilt(
+        family: String,
+        snapshotBytes: Int,
+        snapshotEntries: Int,
+        timelineEntries: Int,
+        elapsed: TimeInterval
+    ) {
+        log.info(
+            "timeline family=\(family, privacy: .public) snapshotBytes=\(snapshotBytes, privacy: .public) snapshotEntries=\(snapshotEntries, privacy: .public) timelineEntries=\(timelineEntries, privacy: .public) elapsedMs=\(Int(elapsed * 1_000), privacy: .public) footprintKB=\(footprintBytes() / 1_024, privacy: .public)"
+        )
+    }
+
+    static func snapshotUnavailable(family: String, reason: String) {
+        log.info(
+            "snapshot-unavailable family=\(family, privacy: .public) reason=\(reason, privacy: .public) footprintKB=\(footprintBytes() / 1_024, privacy: .public)"
+        )
+    }
+
+    /// Resident footprint as jetsam measures it, not `resident_size`.
+    private static func footprintBytes() -> UInt64 {
+        var info = task_vm_info_data_t()
+        var count = mach_msg_type_number_t(
+            MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<natural_t>.size
+        )
+        let result = withUnsafeMutablePointer(to: &info) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count)
+            }
+        }
+        return result == KERN_SUCCESS ? info.phys_footprint : 0
+    }
+}
 
 private enum WidgetCopy {
     static var currentLocaleIdentifier: String {
@@ -68,20 +119,64 @@ private enum WidgetCopy {
 
     static func text(_ key: String, locale: String) -> String {
         for candidate in [locale, "en"] {
+            if let value = table.value(forKey: key, locale: candidate) {
+                return value
+            }
+        }
+        return key
+    }
+
+    /// Every lookup used to re-open and re-parse the locale's ~45 KB,
+    /// 800-key translation file. WidgetKit renders every timeline entry up
+    /// front, so a single accessory reload paid that cost once per entry —
+    /// around two hundred times — and the autoreleased dictionaries were a
+    /// large share of what a widget extension is allowed to hold before
+    /// jetsam takes it, which is what leaves a Lock Screen complication
+    /// stuck on the redacted placeholder. A resource inside the bundle
+    /// cannot change while the process lives, so one parse per locale is
+    /// enough for all of them.
+    private static let table = TranslationTable()
+
+    /// WidgetKit can build timelines for several families off the main
+    /// thread, so the table is guarded by a lock rather than isolated to an
+    /// actor: every caller is a synchronous `View` body and has to stay that
+    /// way.
+    private final class TranslationTable: @unchecked Sendable {
+        private let lock = NSLock()
+        private var loaded: [String: [String: String]] = [:]
+
+        func value(forKey key: String, locale: String) -> String? {
+            lock.lock()
+            defer { lock.unlock() }
+            if let cached = loaded[locale] {
+                return cached[key]
+            }
+            let table = Self.read(locale: locale)
+            // A locale with no bundled file caches as empty on purpose, so a
+            // missing translation costs one failed lookup instead of one per
+            // entry.
+            loaded[locale] = table
+            return table[key]
+        }
+
+        private static func read(locale: String) -> [String: String] {
             guard let url = Bundle.main.url(
                 forResource: "translation",
                 withExtension: "json",
-                subdirectory: "locales/\(candidate)"
+                subdirectory: "locales/\(locale)"
             ),
             let data = try? Data(contentsOf: url),
-            let dictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let value = dictionary[key] as? String
+            let object = try? JSONSerialization.jsonObject(with: data)
+                as? [String: Any]
             else {
-                continue
+                return [:]
             }
-            return value
+            // `notificationToneMessages` and `microBreakMessages` are arrays.
+            // Decoding straight into `[String: String]` would fail on them and
+            // take every other key down with it, so non-strings are dropped
+            // the same way the original `as? String` cast dropped them.
+            return object.compactMapValues { $0 as? String }
         }
-        return key
     }
 }
 
@@ -95,6 +190,17 @@ public struct SharedWidgetSnapshotLoader: Sendable {
     }
 
     public func load() -> WidgetSnapshot? {
+        loadMeasured()?.snapshot
+    }
+
+    /// The decoded snapshot together with the size of the file it came from,
+    /// so the diagnostic log line can report what this reload actually read.
+    func loadMeasured() -> (snapshot: WidgetSnapshot, bytes: Int)? {
+        guard let snapshotURL else { return nil }
+        return Self.cache.snapshot(at: snapshotURL)
+    }
+
+    private var snapshotURL: URL? {
         let containerURL: URL?
         if storageMode == "local-support" {
             if let user = getpwuid(getuid()), let home = user.pointee.pw_dir {
@@ -116,14 +222,65 @@ public struct SharedWidgetSnapshotLoader: Sendable {
         }
 
         guard let containerURL else { return nil }
-        let snapshotURL = containerURL.appendingPathComponent(
+        return containerURL.appendingPathComponent(
             widgetSnapshotFileName,
             isDirectory: false
         )
-        guard let data = try? Data(contentsOf: snapshotURL) else {
-            return nil
+    }
+
+    /// One extension process serves every placed family, so a user with two
+    /// Lock Screen complications and a Home Screen tile decoded the same
+    /// half-megabyte file three times in a row, sometimes concurrently. The
+    /// producer replaces the file atomically and never edits it in place, so
+    /// its modification date and size together identify a generation.
+    private static let cache = SnapshotCache()
+
+    private final class SnapshotCache: @unchecked Sendable {
+        private let lock = NSLock()
+        private var url: URL?
+        private var modified: Date?
+        private var bytes: Int?
+        private var cached: WidgetSnapshot?
+
+        func snapshot(at url: URL) -> (snapshot: WidgetSnapshot, bytes: Int)? {
+            // Stat outside the lock: it is the common path and it does not
+            // touch anything shared.
+            let attributes = try? FileManager.default
+                .attributesOfItem(atPath: url.path)
+            let modified = attributes?[.modificationDate] as? Date
+            let size = (attributes?[.size] as? NSNumber)?.intValue
+
+            lock.lock()
+            defer { lock.unlock() }
+
+            if let cached,
+               self.url == url,
+               let modified,
+               let size,
+               self.modified == modified,
+               self.bytes == size {
+                return (cached, size)
+            }
+
+            guard let data = try? Data(contentsOf: url),
+                  let decoded = try? JSONDecoder()
+                    .decode(WidgetSnapshot.self, from: data)
+            else {
+                // A miss is never cached: the file is expected to appear as
+                // soon as the app publishes, and the next read must see it.
+                self.cached = nil
+                self.url = nil
+                self.modified = nil
+                self.bytes = nil
+                return nil
+            }
+
+            self.url = url
+            self.modified = modified
+            self.bytes = data.count
+            self.cached = decoded
+            return (decoded, data.count)
         }
-        return try? JSONDecoder().decode(WidgetSnapshot.self, from: data)
     }
 }
 
@@ -154,6 +311,25 @@ public struct OffWorkCountdownWidgetEntry: TimelineEntry, Sendable {
 }
 
 public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
+    /// How far ahead one timeline reaches, and how finely a working interval
+    /// is expanded inside it.
+    ///
+    /// WidgetKit renders every entry of a timeline up front, inside the
+    /// extension's memory budget, so the entry count is a price paid on every
+    /// reload — and an extension killed mid-render does not show an error, it
+    /// leaves the Lock Screen sitting on its redacted placeholder. A
+    /// five-minute step across this window produced around two hundred entries
+    /// for an ordinary nine-to-six schedule. Fifteen minutes brings the same
+    /// window under eighty while the ring still advances about 3% per entry,
+    /// which is finer than the eye reads on a 58pt circle.
+    ///
+    /// The window stays at 36 hours deliberately. WidgetKit is asked to rebuild
+    /// every 12 hours but may defer that under its refresh budget, and the
+    /// extra day of slack is what stops a deferred reload from stranding the
+    /// complication on the last entry it was handed.
+    static let presentationWindowMs: Int64 = 36 * 60 * 60 * 1_000
+    static let progressStepMs: Int64 = 15 * 60 * 1_000
+
     private let loader: SharedWidgetSnapshotLoader
 
     public init(appGroupIdentifier: String?, storageMode: String = "app-group") {
@@ -172,22 +348,58 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
     }
 
     public func getSnapshot(
-        in _: Context,
+        in context: Context,
         completion: @escaping @Sendable (OffWorkCountdownWidgetEntry) -> Void
     ) {
-        completion(makeTimeline(now: Date()).entries[0])
+        completion(makeSnapshotEntry(now: Date(), family: context.family))
     }
 
     public func getTimeline(
-        in _: Context,
+        in context: Context,
         completion: @escaping @Sendable (Timeline<OffWorkCountdownWidgetEntry>) -> Void
     ) {
-        completion(makeTimeline(now: Date()))
+        completion(makeTimeline(now: Date(), family: context.family))
     }
 
-    func makeTimeline(now: Date) -> Timeline<OffWorkCountdownWidgetEntry> {
+    /// The single entry WidgetKit asks for when it wants a preview instead of a
+    /// timeline. This used to be `makeTimeline(now:).entries[0]`: it built a
+    /// full presentation timeline and threw all but one entry away, which is
+    /// the most expensive possible answer to the cheapest question the provider
+    /// is asked.
+    func makeSnapshotEntry(
+        now: Date,
+        family: WidgetFamily? = nil
+    ) -> OffWorkCountdownWidgetEntry {
         let nowMs = Int64(now.timeIntervalSince1970 * 1_000)
         guard let snapshot = loader.load() else {
+            return OffWorkCountdownWidgetEntry(
+                date: now,
+                snapshotEntry: nil,
+                locale: WidgetCopy.currentLocaleIdentifier
+            )
+        }
+        let logicalNowMs = snapshot.logicalNowMs(fromRealMs: nowMs)
+        return OffWorkCountdownWidgetEntry(
+            date: now,
+            snapshotEntry: snapshot.entry(atMs: logicalNowMs),
+            locale: snapshot.locale,
+            upcoming: Self.familyCarriesUpcoming(family) ? snapshot.upcoming : [],
+            clockOffsetMs: snapshot.clockOffsetMs
+        )
+    }
+
+    func makeTimeline(
+        now: Date,
+        family: WidgetFamily? = nil
+    ) -> Timeline<OffWorkCountdownWidgetEntry> {
+        let startedAt = Date()
+        let familyName = Self.familyName(family)
+        let nowMs = Int64(now.timeIntervalSince1970 * 1_000)
+        guard let measured = loader.loadMeasured() else {
+            WidgetDiagnostics.snapshotUnavailable(
+                family: familyName,
+                reason: "no-snapshot"
+            )
             return Timeline(
                 entries: [
                     OffWorkCountdownWidgetEntry(
@@ -199,8 +411,13 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                 policy: .never
             )
         }
+        let snapshot = measured.snapshot
         let logicalNowMs = snapshot.logicalNowMs(fromRealMs: nowMs)
         guard let current = snapshot.entry(atMs: logicalNowMs) else {
+            WidgetDiagnostics.snapshotUnavailable(
+                family: familyName,
+                reason: "no-current-entry"
+            )
             return Timeline(
                 entries: [
                     OffWorkCountdownWidgetEntry(
@@ -213,11 +430,13 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                 policy: .never
             )
         }
+        let carriesUpcoming = Self.familyCarriesUpcoming(family)
 
         #if os(iOS)
         var timelineEntries = makeIOSTimelineEntries(
             snapshot: snapshot,
-            nowMs: logicalNowMs
+            nowMs: logicalNowMs,
+            carriesUpcoming: carriesUpcoming
         )
         let refreshAtMs = min(
             snapshot.expiresAtMs + snapshot.clockOffsetMs,
@@ -232,7 +451,7 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                 date: now,
                 snapshotEntry: current,
                 locale: snapshot.locale,
-                upcoming: snapshot.upcoming,
+                upcoming: carriesUpcoming ? snapshot.upcoming : [],
                 clockOffsetMs: snapshot.clockOffsetMs
             )
         ]
@@ -244,7 +463,7 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                         date: snapshot.realDate(fromLogicalMs: $0.dateMs),
                         snapshotEntry: $0,
                         locale: snapshot.locale,
-                        upcoming: snapshot.upcoming,
+                        upcoming: carriesUpcoming ? snapshot.upcoming : [],
                         clockOffsetMs: snapshot.clockOffsetMs
                     )
                 }
@@ -261,33 +480,66 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
                 clockOffsetMs: snapshot.clockOffsetMs
             )
         )
+        WidgetDiagnostics.timelineBuilt(
+            family: familyName,
+            snapshotBytes: measured.bytes,
+            snapshotEntries: snapshot.entries.count,
+            timelineEntries: timelineEntries.count,
+            elapsed: Date().timeIntervalSince(startedAt)
+        )
         return Timeline(entries: timelineEntries, policy: reloadPolicy)
+    }
+
+    /// Only the families that actually draw the "coming up" list need to carry
+    /// it. A recurring snapshot's list runs to roughly a thousand localized
+    /// rows, and every entry of every timeline used to hold one — including on
+    /// a Lock Screen complication with no room to show a single row of it.
+    static func familyCarriesUpcoming(_ family: WidgetFamily?) -> Bool {
+        #if os(iOS)
+        // No family means a caller that is not WidgetKit (a test, or the
+        // default path); keep the whole payload rather than guessing.
+        guard let family else { return true }
+        if family == .systemLarge || family == .systemExtraLarge { return true }
+        if #available(iOS 27.0, *),
+           family.rawValue
+               == OffWorkCountdownWidgetView.systemExtraLargePortraitRawValue {
+            return true
+        }
+        return false
+        #else
+        return true
+        #endif
+    }
+
+    private static func familyName(_ family: WidgetFamily?) -> String {
+        guard let family else { return "unspecified" }
+        return String(describing: family)
     }
 
     #if os(iOS)
     /// Home Screen and accessory widgets only redraw reliably when WidgetKit
     /// advances to a new timeline entry. `Text(style: .timer)` keeps counting on
     /// its own, but ordinary rings and bars do not, so working intervals include
-    /// lightweight five-minute presentation entries. Schedule decisions remain
-    /// in the producer snapshot and macOS keeps its existing boundary-only path.
+    /// lightweight presentation entries. Schedule decisions remain in the
+    /// producer snapshot and macOS keeps its existing boundary-only path.
     private func makeIOSTimelineEntries(
         snapshot: WidgetSnapshot,
-        nowMs: Int64
+        nowMs: Int64,
+        carriesUpcoming: Bool
     ) -> [OffWorkCountdownWidgetEntry] {
-        let progressStepMs: Int64 = 5 * 60 * 1_000
-        // Keep a 36-hour buffer in the current timeline, while asking
-        // WidgetKit to rebuild it every 12 hours from the long-lived snapshot.
-        // This avoids handing WidgetKit a year of five-minute progress entries.
         let presentationEndMs = min(
             snapshot.expiresAtMs,
-            nowMs + 36 * 60 * 60 * 1_000
+            nowMs + Self.presentationWindowMs
         )
         var presentation = snapshot.presentationEntries(
             startingAtMs: nowMs,
-            progressStepMs: progressStepMs,
+            progressStepMs: Self.progressStepMs,
             endingAtMs: presentationEndMs
         )
         let existingDates = Set(presentation.map(\.dateMs))
+        // The upcoming list still schedules redraws at event boundaries even
+        // for families that do not carry it: knowing when to redraw is not the
+        // same as needing the rows in the payload.
         for item in snapshot.upcoming
         where item.dateMs > nowMs && item.dateMs < presentationEndMs {
             guard !existingDates.contains(item.dateMs),
@@ -297,18 +549,21 @@ public struct OffWorkCountdownTimelineProvider: TimelineProvider, Sendable {
         }
         return presentation
             .sorted { $0.dateMs < $1.dateMs }
-            .map { widgetEntry($0, snapshot: snapshot) }
+            .map {
+                widgetEntry($0, snapshot: snapshot, carriesUpcoming: carriesUpcoming)
+            }
     }
 
     private func widgetEntry(
         _ snapshotEntry: WidgetTimelineEntry,
-        snapshot: WidgetSnapshot
+        snapshot: WidgetSnapshot,
+        carriesUpcoming: Bool
     ) -> OffWorkCountdownWidgetEntry {
         OffWorkCountdownWidgetEntry(
             date: snapshot.realDate(fromLogicalMs: snapshotEntry.dateMs),
             snapshotEntry: snapshotEntry,
             locale: snapshot.locale,
-            upcoming: snapshot.upcoming,
+            upcoming: carriesUpcoming ? snapshot.upcoming : [],
             clockOffsetMs: snapshot.clockOffsetMs
         )
     }
@@ -984,11 +1239,30 @@ public struct OffWorkCountdownWidgetView: View {
         if #available(macOS 14.0, *) {
             content()
                 .containerBackground(for: .widget) {
-                    backgroundLayer
+                    // Accessory families render vibrant on the Lock Screen and
+                    // the system discards whatever the widget draws behind
+                    // them. The gradient and its 38pt blur were being
+                    // composited once per timeline entry and then thrown away,
+                    // on the one surface where the extension can least afford
+                    // it. The container background itself still has to be
+                    // declared — iOS 17 requires it of every widget.
+                    if isAccessoryFamily {
+                        Color.clear
+                    } else {
+                        backgroundLayer
+                    }
                 }
         } else {
             content().background(backgroundLayer)
         }
+    }
+
+    private var isAccessoryFamily: Bool {
+        #if os(iOS)
+        family == .accessoryCircular || family == .accessoryRectangular
+        #else
+        false
+        #endif
     }
 
     private var backgroundLayer: some View {

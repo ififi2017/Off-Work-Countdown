@@ -258,3 +258,96 @@ func upcomingWidgetDateWeekdayVisibility() throws {
     #expect(widgetUpcomingDateShowsWeekday(monday, relativeTo: saturday, calendar: calendar))
     #expect(widgetUpcomingDateShowsWeekday(monday, relativeTo: sundayMorning, calendar: calendar))
 }
+
+/// A year of shifts, shaped like `WidgetSnapshotPublisher.makeRecurringSnapshot`
+/// writes them: rest window, pre-work countdown, morning, lunch, afternoon,
+/// then "done for today".
+private func recurringSnapshot(
+    days: Int = 370,
+    startingAtMs day0: Int64 = 1_772_150_400_000
+) -> WidgetSnapshot {
+    let hour: Int64 = 3_600_000
+    let dayMs: Int64 = 24 * hour
+    var entries: [WidgetTimelineEntry] = []
+
+    func entry(
+        _ dateMs: Int64,
+        _ validUntilMs: Int64,
+        _ phase: WidgetTimelinePhase
+    ) -> WidgetTimelineEntry {
+        WidgetTimelineEntry(
+            dateMs: dateMs,
+            validUntilMs: validUntilMs,
+            phase: phase,
+            labelKey: "widgetWorking",
+            countdownKind: phase == .working ? .workRemaining : .shiftStarts,
+            countdownValueAtDateMs: validUntilMs - dateMs,
+            countdownTargetAtMs: validUntilMs,
+            remainingEffectiveMsAtDateMs: validUntilMs - dateMs,
+            progressAtDate: 10,
+            nextBoundaryAtMs: validUntilMs
+        )
+    }
+
+    for day in 0..<Int64(days) {
+        let midnight = day0 + day * dayMs
+        let start = midnight + 9 * hour
+        entries.append(entry(midnight, start, .before))
+        entries.append(entry(start, start + 3 * hour, .working))
+        entries.append(entry(start + 3 * hour, start + 4 * hour, .break))
+        entries.append(entry(start + 4 * hour, start + 9 * hour, .working))
+        entries.append(entry(start + 9 * hour, midnight + dayMs, .done))
+    }
+
+    return WidgetSnapshot(
+        schemaVersion: widgetSnapshotSchemaVersion,
+        generatedAtMs: day0,
+        expiresAtMs: day0 + Int64(days) * dayMs,
+        locale: "en",
+        shift: nil,
+        entries: entries
+    )
+}
+
+/// The regression this guards is not a wrong number on screen — it is a Lock
+/// Screen complication stuck on its redacted placeholder. WidgetKit renders
+/// every entry of a timeline up front inside the extension's memory budget, so
+/// the entry count is the cost of a reload. A five-minute step across the same
+/// 36-hour window produced around two hundred entries for this schedule, which
+/// is what a widget extension is killed for.
+@Test("One reload stays small enough for WidgetKit to render")
+func boundsTimelineSizeForAWorkingDay() {
+    let snapshot = recurringSnapshot()
+    // 08:00 on the first day: the window covers two full shifts, the worst
+    // case for the expansion.
+    let nowMs = snapshot.generatedAtMs + 8 * 3_600_000
+
+    let entries = snapshot.presentationEntries(
+        startingAtMs: nowMs,
+        progressStepMs: OffWorkCountdownTimelineProvider.progressStepMs,
+        endingAtMs: nowMs + OffWorkCountdownTimelineProvider.presentationWindowMs
+    )
+
+    // The shipped constants produce 70 entries for this schedule. A five-minute
+    // step over the same window produced 198, and ten minutes 102, so this
+    // bound fails on a regression toward density while leaving room for an
+    // extra boundary or two.
+    #expect(entries.count <= 80)
+    // Shrinking the window is the tempting wrong way to cut the count. It must
+    // still reach well past the 12 hours WidgetKit is asked to rebuild in,
+    // because WidgetKit may defer that reload and the slack is what keeps a
+    // deferred reload from stranding the complication on its last entry.
+    #expect(entries.last.map { $0.dateMs > nowMs + 24 * 3_600_000 } == true)
+}
+
+@Test("A missing snapshot still answers WidgetKit's preview request")
+func snapshotEntrySurvivesAMissingFile() {
+    let provider = OffWorkCountdownTimelineProvider(appGroupIdentifier: nil)
+    let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+    let entry = provider.makeSnapshotEntry(now: now)
+
+    #expect(entry.snapshotEntry == nil)
+    #expect(entry.date == now)
+    #expect(entry.upcoming.isEmpty)
+}
