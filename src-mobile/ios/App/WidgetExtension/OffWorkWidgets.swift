@@ -134,13 +134,70 @@ private struct ActivityCompactCountdown: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
-            activityCountdownText(context, now: timeline.date, size: 14)
-                // Let ActivityKit recompute the compact island from the actual
-                // glyph count. A fixed 00:00-sized box left a phantom digit of
-                // space after the countdown became 0:00.
-                .fixedSize(horizontal: true, vertical: false)
+            if activityComplete(context, at: timeline.date) {
+                // completedCaption is a full, localized sentence (6 characters
+                // in zh-CN, 36 in fr) meant for the lock screen and expanded
+                // panel where there's room for it. The compact slot has none:
+                // `.fixedSize` reports the sentence's true, un-scaled width as
+                // "ideal," the region doesn't fall back to minimumScaleFactor
+                // the way normal layout would, and the trailing-anchored text
+                // just clips off its own leading character instead. A
+                // checkmark needs no localization and can't overflow.
+                Image(systemName: "checkmark")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(.white)
+            } else {
+                // `Text(_:style:.timer)` is required here, not a convenience:
+                // Live Activities have no timeline of their own — the widget
+                // extension is suspended almost all the time, and only a real
+                // `Activity.update()` push re-renders it. `.timer`-style Text
+                // is one of the few primitives iOS interpolates frame-by-frame
+                // outside the extension process, so it's the only thing that
+                // visibly ticks without one (confirmed the hard way: an
+                // earlier attempt to render this from a plain TimelineView
+                // string looked right for one frame, then froze).
+                //
+                // Its cost is a long-standing, still-unfixed ActivityKit bug
+                // (https://developer.apple.com/forums/thread/723316): inside
+                // Dynamic Island's compact regions it reports a broken,
+                // oversized ideal width, so `.fixedSize` blows the island out
+                // to its expanded shape with the countdown rendered blank.
+                // Hence the explicit width below.
+                Text(Date(timeIntervalSince1970: Double(context.state.endAtMs) / 1_000), style: .timer)
+                    .font(.system(size: 14, weight: .bold).monospacedDigit())
+                    .foregroundStyle(.white)
+                    .environment(\.locale, activityLocale(context))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    // Leading, not trailing: the phantom width `.timer`
+                    // reserves sits on the text's own trailing edge, so
+                    // anchoring the glyphs left lets the frame clip that tail
+                    // instead of printing it as a gap before the capsule.
+                    .frame(width: compactTimerWidth(context, now: timeline.date), alignment: .leading)
+            }
         }
     }
+}
+
+/// Width for the compact island's `.timer` text, sized to the digits the
+/// system is actually showing right now.
+///
+/// A single fixed width cannot work: `Text(_:style:.timer)` must be given a
+/// bounded width (unbounded, it reports a broken ideal width and blows the
+/// island out), but the format it renders shrinks from `H:MM:SS` to `MM:SS`
+/// to `M:SS` as the shift runs down, and any box wide enough for the longest
+/// one leaves dead space inside the shorter ones. `minimumScaleFactor` on the
+/// text absorbs the rounding, so these only have to be close.
+private func compactTimerWidth(
+    _ context: ActivityViewContext<OffWorkActivityAttributes>,
+    now: Date
+) -> CGFloat {
+    let remaining = Double(context.state.endAtMs) / 1_000 - now.timeIntervalSince1970
+    // ~9pt per glyph at 14pt bold monospaced digits.
+    if remaining >= 36_000 { return 74 }  // HH:MM:SS
+    if remaining >= 3_600 { return 65 }   // H:MM:SS
+    if remaining >= 600 { return 47 }     // MM:SS
+    return 38                             // M:SS
 }
 
 private struct ActivityAppIcon: View {
