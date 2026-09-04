@@ -788,10 +788,14 @@ public struct OffWorkCountdownWidgetView: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// The four states worth a mark, in the symbols the app already uses for
-    /// them elsewhere. "Done for today" is deliberately absent: it arrives as
-    /// a notification and the complication says it in words, so a glyph would
-    /// be the third time.
+    /// Every state that draws a countdown, in the symbols the app already uses
+    /// for it elsewhere — `sunrise.fill` is the same glyph `upcomingGlyph`
+    /// gives a `shiftStart`.
+    ///
+    /// The two states that draw *words* instead of a countdown are
+    /// deliberately absent, because the words already say it and a glyph would
+    /// be saying it twice: "done for today", which also arrives as a
+    /// notification, and the idle state before a shift is scheduled.
     private func rectangularStatus(
         _ snapshotEntry: WidgetTimelineEntry
     ) -> (symbol: String, labelKey: String)? {
@@ -800,6 +804,7 @@ public struct OffWorkCountdownWidgetView: View {
         case "lunchInProgress": ("cup.and.saucer.fill", "lunchInProgress")
         case "overtime": ("clock.arrow.circlepath", "overtime")
         case "widgetRestDay": ("bed.double.fill", "recordsRestDay")
+        case "nextShiftLabelShort": ("sunrise.fill", "nextShiftLabelShort")
         default: nil
         }
     }
