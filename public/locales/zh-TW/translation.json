@@ -492,6 +492,7 @@
   "plusAutoRenew": "訂閱會自動續訂，直到你取消。年訂可含 7 天試用，試用結束後按年價計費。終身是一次性買斷，不會自動取消已有訂閱。",
   "plusTerms": "使用條款",
   "plusPrivacy": "隱私權政策",
+  "plusPurchaseUnverified": "這台裝置無法驗證這筆購買。可以點「回復購買項目」，或稍後再試一次。",
   "plusWaitingApproval": "正在等待批准",
   "plusLifetimeWhileSubscribed": "買終身不會自動取消你現在的訂閱。買完請到「管理訂閱」把它關掉。",
   "plusAlsoHasSubscription": "你還有一個仍在續訂的訂閱。在它結束前，管理入口會一直留著。",

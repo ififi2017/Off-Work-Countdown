@@ -492,6 +492,7 @@
   "plusAutoRenew": "Las suscripciones se renuevan solas hasta que las canceles. El plan anual puede incluir 7 días gratis; después se cobra el precio anual. La compra para siempre es un pago único y no cancela una suscripción activa.",
   "plusTerms": "Términos",
   "plusPrivacy": "Privacidad",
+  "plusPurchaseUnverified": "Este dispositivo no pudo verificar la compra. Prueba «Restaurar compras» o inténtalo de nuevo en un momento.",
   "plusWaitingApproval": "Esperando aprobación",
   "plusLifetimeWhileSubscribed": "La compra para siempre no cancela tu suscripción actual. Desactívala después en «Gestionar suscripción».",
   "plusAlsoHasSubscription": "También tienes una suscripción que sigue renovándose. Puedes gestionarla aquí hasta que termine.",

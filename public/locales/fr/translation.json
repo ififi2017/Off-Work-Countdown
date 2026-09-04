@@ -492,6 +492,7 @@
   "plusAutoRenew": "Les abonnements se renouvellent automatiquement jusqu’à leur annulation. L’offre annuelle peut inclure 7 jours gratuits, puis le tarif annuel s’applique. L’achat à vie est un paiement unique et n’annule pas un abonnement en cours.",
   "plusTerms": "Conditions",
   "plusPrivacy": "Confidentialité",
+  "plusPurchaseUnverified": "Cet appareil n’a pas pu vérifier l’achat. Essayez « Restaurer les achats », ou réessayez dans un instant.",
   "plusWaitingApproval": "En attente d’approbation",
   "plusLifetimeWhileSubscribed": "L’achat à vie n’annule pas votre abonnement en cours. Désactivez-le ensuite dans « Gérer l’abonnement ».",
   "plusAlsoHasSubscription": "Vous avez aussi un abonnement qui se renouvelle encore. Vous pouvez le gérer ici jusqu’à sa fin.",

@@ -36,7 +36,6 @@ enum PlusAuthorization: Equatable, Sendable {
     case authorized(PlusAuthorizationKind)
     case unauthorized
     case pendingAskToBuy
-    case unverified
 }
 
 nonisolated struct PlusLifetimeEvidence: Equatable, Sendable {
@@ -87,9 +86,21 @@ nonisolated struct PlusSubscriptionEvidence: Equatable, Sendable {
 }
 
 struct PlusEntitlementSnapshot: Equatable, Sendable {
+    /// Apple expires an unanswered Ask to Buy request after 24 hours, and a
+    /// declined one produces no signal at all — StoreKit simply never delivers
+    /// the transaction. A stored `Bool` therefore had no way back: a child
+    /// whose parent said no stayed "waiting for approval" forever. The flag is
+    /// a timestamp so the same deadline Apple applies also applies here.
+    static let askToBuyLifetimeSeconds: TimeInterval = 24 * 60 * 60
+
     var lifetime: PlusLifetimeEvidence?
     var subscription: PlusSubscriptionEvidence?
-    var askToBuyPending: Bool
+    var askToBuyPendingSince: Date?
+
+    func askToBuyPending(now: Date) -> Bool {
+        guard let since = askToBuyPendingSince else { return false }
+        return now.timeIntervalSince(since) < Self.askToBuyLifetimeSeconds
+    }
 }
 
 enum PlusRefreshOutcome: Equatable, Sendable {
@@ -121,7 +132,7 @@ enum PlusEntitlementDecision {
                 break
             }
         }
-        if snapshot.askToBuyPending {
+        if snapshot.askToBuyPending(now: now) {
             return .pendingAskToBuy
         }
         return .unauthorized
@@ -137,21 +148,46 @@ enum PlusEntitlementDecision {
     /// Network / verification failures keep the last verified snapshot and
     /// honor its deadline. A confirmed empty snapshot is the only path that
     /// may overwrite a cached grant.
+    ///
+    /// `.unverified` is deliberately treated like `.unavailable` rather than
+    /// like "not entitled". A single transaction StoreKit cannot verify used to
+    /// drop a lifetime buyer straight onto the paywall, and refusing to trust
+    /// the cache buys nothing: the cache can only carry a grant that was
+    /// verified once, and every time-limited grant in it is still re-resolved
+    /// against `now`. An expired subscription stays expired; only a purchase
+    /// that genuinely has no deadline survives, which is what was bought.
     static func applyRefresh(
         now: Date,
         cached: PlusEntitlementSnapshot,
         outcome: PlusRefreshOutcome
     ) -> (authorization: PlusAuthorization, snapshot: PlusEntitlementSnapshot, persist: Bool) {
         switch outcome {
-        case .unverified:
-            return (.unverified, cached, false)
-        case .unavailable:
+        case .unverified, .unavailable:
             return (offlineAccess(now: now, cached: cached), cached, false)
         case .confirmed(var snapshot):
-            if resolve(now: now, snapshot: snapshot) == .unauthorized, cached.askToBuyPending {
-                snapshot.askToBuyPending = true
+            if resolve(now: now, snapshot: snapshot) == .unauthorized, cached.askToBuyPending(now: now) {
+                snapshot.askToBuyPendingSince = cached.askToBuyPendingSince
             }
             return (resolve(now: now, snapshot: snapshot), snapshot, true)
+        }
+    }
+
+    /// Whether new work observations may be written.
+    ///
+    /// 006 scenario 19 stops collection once a purchase has lapsed, but a user
+    /// who never bought anything keeps filling the free 7-day list. Ask to Buy
+    /// has to sit on the free side of that line: it is a purchase that has not
+    /// happened yet, and treating it as a lapsed one silently stopped a child
+    /// account from recording any work at all the moment they asked to buy.
+    static func collectsObservations(
+        authorization: PlusAuthorization,
+        snapshot: PlusEntitlementSnapshot
+    ) -> Bool {
+        switch authorization {
+        case .authorized:
+            return true
+        case .pendingAskToBuy, .unauthorized:
+            return snapshot.subscription == nil && snapshot.lifetime == nil
         }
     }
 }
@@ -234,9 +270,13 @@ final class PlusEntitlement {
     }
 
     private let defaults: UserDefaults
+    /// Supplied by `OffWorkStore`, which owns the language choice. StoreKit's
+    /// own failures already arrive as display strings, so the one message this
+    /// layer writes itself has to be a display string too.
+    var localize: (String) -> String = { $0 }
     private var updatesTask: Task<Void, Never>?
     private var statusTask: Task<Void, Never>?
-    private var cachedSnapshot = PlusEntitlementSnapshot(askToBuyPending: false)
+    private var cachedSnapshot = PlusEntitlementSnapshot(askToBuyPendingSince: nil)
 
     var isAuthorized: Bool {
         if case .authorized = authorization { return true }
@@ -268,14 +308,10 @@ final class PlusEntitlement {
     /// New observations stop after expire/revoke. A skip-the-paywall user still
     /// collects clock-in rows for the free list.
     var shouldCollectObservations: Bool {
-        switch authorization {
-        case .authorized, .unverified:
-            return true
-        case .pendingAskToBuy:
-            return false
-        case .unauthorized:
-            return cachedSnapshot.subscription == nil && cachedSnapshot.lifetime == nil
-        }
+        PlusEntitlementDecision.collectsObservations(
+            authorization: authorization,
+            snapshot: cachedSnapshot
+        )
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -294,7 +330,7 @@ final class PlusEntitlement {
     }
 
     func start() {
-        guard updatesTask == nil else { return }
+        guard updatesTask == nil, statusTask == nil else { return }
         updatesTask = Task { [weak self] in
             await Task.yield()
             await self?.refreshFromStore()
@@ -352,13 +388,23 @@ final class PlusEntitlement {
             let result = try await product.purchase()
             switch result {
             case .success(let verification):
-                if let transaction = try? checkVerified(verification) {
+                // Not `try?`: the App Store took the money and handed back a
+                // transaction this device cannot verify. Swallowing that left
+                // the paywall completely inert — no error, no entitlement, no
+                // haptic — and the only thing left to do was tap Buy again.
+                do {
+                    let transaction = try checkVerified(verification)
                     await transaction.finish()
+                } catch {
+                    // Deliberately not finished: an unverified transaction is
+                    // redelivered through `Transaction.updates`, which is the
+                    // path that can still recover this purchase.
+                    lastProductError = localize("plusPurchaseUnverified")
                 }
                 await refreshFromStore()
             case .pending:
                 var pending = cachedSnapshot
-                pending.askToBuyPending = true
+                pending.askToBuyPendingSince = .now
                 cachedSnapshot = pending
                 if let data = try? JSONEncoder().encode(CodableSnapshot(snapshot: pending)) {
                     defaults.set(data, forKey: Key.cachedSnapshot)
@@ -387,9 +433,20 @@ final class PlusEntitlement {
     }
 
     func manageSubscriptions() {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        // `connectedScenes` is unordered, so on iPad — Stage Manager, Split
+        // View, or simply a second window — `.first` could hand StoreKit a
+        // background scene, and the sheet would never appear.
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        guard let scene = scenes.first(where: { $0.activationState == .foregroundActive })
+            ?? scenes.first(where: { $0.activationState == .foregroundInactive })
+            ?? scenes.first
+        else { return }
         Task {
-            try? await AppStore.showManageSubscriptions(in: scene)
+            do {
+                try await AppStore.showManageSubscriptions(in: scene)
+            } catch {
+                lastProductError = error.localizedDescription
+            }
         }
     }
 
@@ -430,7 +487,7 @@ final class PlusEntitlement {
                 PlusEntitlementSnapshot(
                     lifetime: fetched.lifetime,
                     subscription: fetched.subscription,
-                    askToBuyPending: false
+                    askToBuyPendingSince: nil
                 )
             )
         }
@@ -647,7 +704,11 @@ private struct CodableSnapshot: Codable {
     var expirationMs: Double?
     var graceMs: Double?
     var isTrial: Bool
+    /// Legacy flag from the build that stored Ask to Buy as a plain `Bool`.
+    /// Decoded only so an upgrade does not lose a request that is genuinely
+    /// still open; it is re-encoded as a date.
     var askToBuyPending: Bool
+    var askToBuyPendingSinceMs: Double?
 
     var snapshot: PlusEntitlementSnapshot {
         var lifetime: PlusLifetimeEvidence?
@@ -672,17 +733,24 @@ private struct CodableSnapshot: Codable {
                 isTrial: isTrial
             )
         }
+        var since = askToBuyPendingSinceMs.map { Date(timeIntervalSince1970: $0 / 1_000) }
+        // A stored `true` with no timestamp came from the previous schema. It
+        // is dated now rather than dropped or kept forever: the request is
+        // either answered within Apple's window, or it lapses like any other.
+        if since == nil, askToBuyPending { since = .now }
         return PlusEntitlementSnapshot(
             lifetime: lifetime,
             subscription: subscription,
-            askToBuyPending: askToBuyPending
+            askToBuyPendingSince: since
         )
     }
 
     init(snapshot: PlusEntitlementSnapshot) {
         hasLifetime = snapshot.lifetime != nil
         lifetimeRevoked = snapshot.lifetime?.revoked
-        askToBuyPending = snapshot.askToBuyPending
+        askToBuyPending = false
+        askToBuyPendingSinceMs = snapshot.askToBuyPendingSince
+            .map { $0.timeIntervalSince1970 * 1_000 }
         isTrial = snapshot.subscription?.isTrial ?? false
         expirationMs = snapshot.subscription?.expirationDate.map { $0.timeIntervalSince1970 * 1_000 }
         graceMs = snapshot.subscription?.gracePeriodExpirationDate.map { $0.timeIntervalSince1970 * 1_000 }

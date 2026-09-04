@@ -492,6 +492,7 @@
   "plusAutoRenew": "订阅会自动续期，直到你取消。年订可含 7 天试用，试用结束后按年价计费。终身是一次性买断，不会自动取消已有订阅。",
   "plusTerms": "使用条款",
   "plusPrivacy": "隐私政策",
+  "plusPurchaseUnverified": "这台设备无法验证这笔购买。可以点“恢复购买”，或稍后再试一次。",
   "plusWaitingApproval": "正在等待批准",
   "plusLifetimeWhileSubscribed": "买终身不会自动取消你现在的订阅。买完请到「管理订阅」把它关掉。",
   "plusAlsoHasSubscription": "你还有一个仍在续期的订阅。在它结束前，管理入口会一直留着。",

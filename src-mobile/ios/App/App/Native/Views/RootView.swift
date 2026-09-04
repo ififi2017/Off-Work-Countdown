@@ -56,7 +56,7 @@ struct OffWorkCountdownRootView: View {
         // Here rather than in each shell: a gated tap can come from the Records
         // stack, the Settings stack or the iPad detail pane, and the paywall
         // belongs over whichever one is on screen.
-        .sheet(item: $store.paywallSheet) { reason in
+        .sheet(item: $store.paywallSheet, onDismiss: store.settlePaywallDismissal) { reason in
             NavigationStack {
                 PaywallView(store: store, reason: reason, showsDismissButton: false) {
                     store.paywallSheet = nil
@@ -64,10 +64,6 @@ struct OffWorkCountdownRootView: View {
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button(store.t("close")) {
-                            if store.plus.isAuthorized {
-                                store.plus.markIntroSeen()
-                                store.resumePendingPlusActionIfAuthorized()
-                            }
                             store.paywallSheet = nil
                         }
                     }

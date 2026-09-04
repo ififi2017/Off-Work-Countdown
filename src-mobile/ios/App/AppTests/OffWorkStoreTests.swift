@@ -3310,3 +3310,51 @@ func recordsIncomeAbsentWithoutSalary() throws {
     store.salaryEnabled = false
     #expect(store.recordsIncome(completedWorkdays: 2) == nil)
 }
+
+@MainActor
+@Test("Dismissing the paywall without buying forgets what was tapped")
+func declinedPaywallDropsThePendingAction() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    store.plus.debugSetAuthorized(false)
+    let yesterday = try #require(
+        store.recordsCalendar.date(byAdding: .day, value: -1, to: .now)
+    )
+    let dayKey = RecordJSON.dayKey(yesterday, calendar: store.recordsCalendar)
+
+    store.openDayEditor(dayKey: dayKey)
+    #expect(store.paywallSheet == .historyEdit)
+    #expect(store.pendingPlusAction == .historyEdit(dayKey: dayKey))
+
+    // The swipe the sheet allows by default: `paywallSheet` goes to nil and
+    // SwiftUI calls onDismiss. Nothing was bought, so nothing may be replayed
+    // at the next unrelated purchase.
+    store.paywallSheet = nil
+    store.settlePaywallDismissal()
+
+    #expect(store.pendingPlusAction == nil)
+    #expect(store.editingDayKey == nil)
+}
+
+@MainActor
+@Test("Buying Plus and swiping the paywall away still opens the tapped day")
+func purchasedPaywallResumesOnSwipeDismiss() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    store.plus.debugSetAuthorized(false)
+    let yesterday = try #require(
+        store.recordsCalendar.date(byAdding: .day, value: -1, to: .now)
+    )
+    let dayKey = RecordJSON.dayKey(yesterday, calendar: store.recordsCalendar)
+    store.openDayEditor(dayKey: dayKey)
+
+    store.plus.debugSetAuthorized(true)
+    store.paywallSheet = nil
+    store.settlePaywallDismissal()
+
+    #expect(store.editingDayKey == dayKey)
+    #expect(store.pendingPlusAction == nil)
+    #expect(store.plus.hasSeenIntro)
+}

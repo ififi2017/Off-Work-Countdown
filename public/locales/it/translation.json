@@ -492,6 +492,7 @@
   "plusAutoRenew": "Gli abbonamenti si rinnovano automaticamente finché non li annulli. Il piano annuale può includere 7 giorni gratuiti; poi si applica il prezzo annuale. L’acquisto per sempre è un pagamento unico e non annulla un abbonamento in corso.",
   "plusTerms": "Termini",
   "plusPrivacy": "Privacy",
+  "plusPurchaseUnverified": "Questo dispositivo non è riuscito a verificare l’acquisto. Prova «Ripristina acquisti» oppure riprova tra poco.",
   "plusWaitingApproval": "In attesa di approvazione",
   "plusLifetimeWhileSubscribed": "L’acquisto per sempre non annulla l’abbonamento in corso. Disattivalo poi da «Gestisci abbonamento».",
   "plusAlsoHasSubscription": "Hai anche un abbonamento che continua a rinnovarsi. Puoi gestirlo qui fino alla sua scadenza.",

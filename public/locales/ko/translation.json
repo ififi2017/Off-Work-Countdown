@@ -492,6 +492,7 @@
   "plusAutoRenew": "구독은 취소할 때까지 자동으로 갱신됩니다. 연간 요금제에는 7일 무료 기간이 포함될 수 있고, 끝나면 연 요금이 청구됩니다. 평생은 한 번만 결제하며, 이미 있는 구독을 자동으로 취소하지는 않습니다.",
   "plusTerms": "이용약관",
   "plusPrivacy": "개인정보 처리방침",
+  "plusPurchaseUnverified": "이 기기에서 구입을 확인하지 못했습니다. ‘구입 항목 복원’을 눌러 보거나 잠시 후 다시 시도해 주세요.",
   "plusWaitingApproval": "승인을 기다리는 중",
   "plusLifetimeWhileSubscribed": "평생을 구입해도 지금의 구독은 자동으로 취소되지 않습니다. 구입 후 ‘구독 관리’에서 해지해 주세요.",
   "plusAlsoHasSubscription": "갱신 중인 구독도 있습니다. 끝날 때까지 여기서 관리할 수 있습니다.",

@@ -61,7 +61,7 @@ struct PlusSettingsView: View {
             return store.t("plusGraceUntil", values: ["date": store.formatDate(expires)])
         case .pendingAskToBuy:
             return store.t("plusWaitingApproval")
-        case .unauthorized, .unverified:
+        case .unauthorized:
             return nil
         }
     }
