@@ -99,42 +99,84 @@ struct FocusBandView: View {
         .accessibilityHidden(true)
     }
 
+    /// Lunch, and the leftover a segment cannot fill. Two different facts, so
+    /// two different treatments.
+    ///
+    /// Only the lunch break ever splits a shift's segments, so a gap between
+    /// two of them is lunch and can say so. It used to render as
+    /// `tertiarySystemFill` — the same grey as a disabled control — with
+    /// "Break · not editable" in it, which read as a hole in the drawing
+    /// rather than as the middle of the day, and led with a restriction
+    /// instead of naming the thing.
     @ViewBuilder
     private func gapTile(_ gap: FocusDayCanvasModel.Gap) -> some View {
         let height = model.height(ofMs: gap.endAtMs - gap.startAtMs)
-        Group {
-            switch gap.kind {
-            case .betweenSegments:
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .fill(OWCDesign.control)
-            case .tail:
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .strokeBorder(
-                        OWCDesign.separator,
-                        style: StrokeStyle(lineWidth: 1, dash: [3, 3])
-                    )
-            }
+        switch gap.kind {
+        case .betweenSegments: lunchTile(gap, height: height)
+        case .tail: tailTile(gap, height: height)
         }
-        .frame(height: height)
-        .overlay(alignment: .leading) {
-            if height >= 20 {
-                Text(gapLabel(gap))
-                    .font(.caption2)
-                    .foregroundStyle(OWCDesign.tertiary)
-                    .padding(.leading, 14)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityHidden(true)
     }
 
-    private func gapLabel(_ gap: FocusDayCanvasModel.Gap) -> String {
-        switch gap.kind {
-        case .betweenSegments:
-            return store.t("focusBandGapBreak")
-        case .tail:
-            return store.t("focusBandGapTooShort", values: ["count": "\(gap.durationMinutes)"])
-        }
+    private func lunchTile(_ gap: FocusDayCanvasModel.Gap, height: CGFloat) -> some View {
+        // Rest time, in the same teal the records canvas already gives a break,
+        // but with no leading bar: the bar marks a slot that is yours to fill,
+        // and lunch belongs to the shift.
+        RoundedRectangle(cornerRadius: 6, style: .continuous)
+            .fill(OWCDesign.recordsBreak.opacity(0.10))
+            .frame(height: height)
+            .overlay(alignment: .leading) {
+                Group {
+                    if height >= 44 {
+                        HStack(spacing: 10) {
+                            Image(systemName: "fork.knife")
+                                .font(.footnote)
+                                .foregroundStyle(OWCDesign.recordsBreak)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(store.t("lunchBreak"))
+                                    .font(.subheadline)
+                                    .foregroundStyle(OWCDesign.secondary)
+                                Text(gapDetail(gap))
+                                    .font(.caption2.monospacedDigit())
+                                    .foregroundStyle(OWCDesign.tertiary)
+                            }
+                        }
+                    } else if height >= 20 {
+                        Label(store.t("lunchBreak"), systemImage: "fork.knife")
+                            .font(.caption2)
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
+                }
+                .padding(.leading, 14)
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityElement()
+            .accessibilityLabel("\(store.t("lunchBreak")) · \(gapDetail(gap))")
+    }
+
+    private func tailTile(_ gap: FocusDayCanvasModel.Gap, height: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: 4, style: .continuous)
+            .strokeBorder(OWCDesign.separator, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            .frame(height: height)
+            .overlay(alignment: .leading) {
+                if height >= 20 {
+                    Text(store.t("focusBandGapTooShort", values: ["count": "\(gap.durationMinutes)"]))
+                        .font(.caption2)
+                        .foregroundStyle(OWCDesign.tertiary)
+                        .padding(.leading, 14)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityHidden(true)
+    }
+
+    private func gapDetail(_ gap: FocusDayCanvasModel.Gap) -> String {
+        let start = Date(timeIntervalSince1970: Double(gap.startAtMs) / 1_000)
+        let end = Date(timeIntervalSince1970: Double(gap.endAtMs) / 1_000)
+        let window = store.t("lunchWindow", values: [
+            "start": store.formatTime(start),
+            "end": store.formatTime(end)
+        ])
+        return "\(window) · \(store.formatRelativeDuration(Double(gap.endAtMs - gap.startAtMs)))"
     }
 
     @ViewBuilder

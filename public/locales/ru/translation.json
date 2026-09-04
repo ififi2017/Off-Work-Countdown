@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "Что сюда поставить",
   "focusBandBlockHint": "Открывает этот блок",
   "focusBandBreakMinutes": "Перерыв {{count}} мин",
-  "focusBandGapBreak": "Перерыв · не редактируется",
   "focusBandGapTooShort": "{{count}} мин · на блок не хватает",
   "focusBandStatePast": "Прошло",
   "focusBandStateCurrent": "Сейчас",

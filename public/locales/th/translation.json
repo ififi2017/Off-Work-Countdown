@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "ใส่อะไรตรงนี้",
   "focusBandBlockHint": "เปิดช่วงนี้",
   "focusBandBreakMinutes": "พัก {{count}} นาที",
-  "focusBandGapBreak": "พัก · แก้ไขไม่ได้",
   "focusBandGapTooShort": "{{count}} นาที · ไม่พอหนึ่งช่วง",
   "focusBandStatePast": "ผ่านแล้ว",
   "focusBandStateCurrent": "ตอนนี้",

@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "Isi blok ini",
   "focusBandBlockHint": "Membuka blok ini",
   "focusBandBreakMinutes": "Istirahat {{count}} mnt",
-  "focusBandGapBreak": "Istirahat · tidak bisa diubah",
   "focusBandGapTooShort": "{{count}} mnt · kurang untuk satu blok",
   "focusBandStatePast": "Lewat",
   "focusBandStateCurrent": "Sekarang",

@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "Buraya bir şey ekle",
   "focusBandBlockHint": "Bu bloğu açar",
   "focusBandBreakMinutes": "{{count}} dk mola",
-  "focusBandGapBreak": "Mola · düzenlenemez",
   "focusBandGapTooShort": "{{count}} dk · bir bloğa yetmez",
   "focusBandStatePast": "Geçti",
   "focusBandStateCurrent": "Şimdi",

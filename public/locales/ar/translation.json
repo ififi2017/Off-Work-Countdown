@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "أضِف شيئًا هنا",
   "focusBandBlockHint": "يفتح هذه الفترة",
   "focusBandBreakMinutes": "استراحة {{count}} دقيقة",
-  "focusBandGapBreak": "استراحة · غير قابلة للتعديل",
   "focusBandGapTooShort": "{{count}} دقيقة · لا تكفي لفترة",
   "focusBandStatePast": "انتهت",
   "focusBandStateCurrent": "الآن",

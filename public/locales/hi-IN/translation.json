@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "यहाँ कुछ जोड़ें",
   "focusBandBlockHint": "यह ब्लॉक खोलता है",
   "focusBandBreakMinutes": "{{count}} मिनट का विराम",
-  "focusBandGapBreak": "विराम · संपादन योग्य नहीं",
   "focusBandGapTooShort": "{{count}} मिनट · एक ब्लॉक के लिए कम",
   "focusBandStatePast": "बीत गया",
   "focusBandStateCurrent": "अभी",

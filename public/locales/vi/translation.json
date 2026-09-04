@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "Thêm gì đó vào đây",
   "focusBandBlockHint": "Mở ô này",
   "focusBandBreakMinutes": "Nghỉ {{count}} phút",
-  "focusBandGapBreak": "Nghỉ · không sửa được",
   "focusBandGapTooShort": "{{count}} phút · không đủ một ô",
   "focusBandStatePast": "Đã qua",
   "focusBandStateCurrent": "Bây giờ",

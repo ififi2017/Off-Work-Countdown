@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "여기에 넣기",
   "focusBandBlockHint": "이 블록 열기",
   "focusBandBreakMinutes": "휴식 {{count}}분",
-  "focusBandGapBreak": "휴식 · 편집 불가",
   "focusBandGapTooShort": "{{count}}분 · 블록 하나가 안 됩니다",
   "focusBandStatePast": "지남",
   "focusBandStateCurrent": "현재",

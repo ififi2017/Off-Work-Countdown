@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "Adicionar algo aqui",
   "focusBandBlockHint": "Abre este bloco",
   "focusBandBreakMinutes": "Pausa de {{count}} min",
-  "focusBandGapBreak": "Pausa · não editável",
   "focusBandGapTooShort": "{{count}} min · curto demais para um bloco",
   "focusBandStatePast": "Passado",
   "focusBandStateCurrent": "Agora",

@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "ここに入れる",
   "focusBandBlockHint": "このブロックを開く",
   "focusBandBreakMinutes": "休憩 {{count}} 分",
-  "focusBandGapBreak": "休憩 · 編集不可",
   "focusBandGapTooShort": "{{count}} 分 · 1 ブロックに足りません",
   "focusBandStatePast": "終了",
   "focusBandStateCurrent": "現在",

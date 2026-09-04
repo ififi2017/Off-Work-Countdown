@@ -850,7 +850,6 @@
   "focusBandEmptyBlock": "放點什麼進來",
   "focusBandBlockHint": "開啟這一格",
   "focusBandBreakMinutes": "休息 {{count}} 分鐘",
-  "focusBandGapBreak": "午休 · 不可編輯",
   "focusBandGapTooShort": "{{count}} 分鐘 · 裝不下一格",
   "focusBandStatePast": "已過",
   "focusBandStateCurrent": "現在",
