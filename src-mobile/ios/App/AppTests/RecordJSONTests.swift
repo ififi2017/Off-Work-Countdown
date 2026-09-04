@@ -569,11 +569,16 @@ func dayKeyUsesCivilCalendar() {
     let newYear = calendar.date(from: DateComponents(year: 2026, month: 1, day: 5))!
     #expect(RecordJSON.dayKey(newYear, calendar: calendar) == "2026-01-05")
 
-    // 15:30 UTC on 4 January is already 5 January in Shanghai. The key must
-    // follow the records zone, not the absolute instant's UTC date.
+    // 16:30 UTC on 4 January is already 00:30 on 5 January in Shanghai. The key
+    // must follow the records zone, not the absolute instant's UTC date.
+    //
+    // This read 15:30 and still expected 5 January, which is 23:30 the same day
+    // at UTC+8 — the assertion was arithmetic, not behaviour, and it failed the
+    // moment the suite was run. The hour is corrected rather than the
+    // expectation, so the case still crosses the boundary it was written for.
     var utc = Calendar(identifier: .gregorian)
     utc.timeZone = TimeZone(identifier: "UTC")!
-    let evening = utc.date(from: DateComponents(year: 2026, month: 1, day: 4, hour: 15, minute: 30))!
+    let evening = utc.date(from: DateComponents(year: 2026, month: 1, day: 4, hour: 16, minute: 30))!
     #expect(RecordJSON.dayKey(evening, calendar: calendar) == "2026-01-05")
     #expect(RecordJSON.dayKey(evening, calendar: utc) == "2026-01-04")
 }
