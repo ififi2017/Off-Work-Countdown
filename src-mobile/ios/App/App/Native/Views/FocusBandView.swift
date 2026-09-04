@@ -142,12 +142,23 @@ struct FocusBandView: View {
         let height = model.height(ofMs: block.durationMs)
         if block.kind == .breakTime {
             breakTile(block, height: height)
-        } else {
-            Button { onPick(block) } label: { workTile(block, height: height) }
-                .buttonStyle(.plain)
-                .disabled(!block.isEditable)
+                .accessibilityElement()
                 .accessibilityLabel(spokenLabel(block))
-                .accessibilityHint(block.isEditable ? store.t("focusBandBlockHint") : "")
+        } else {
+            Button { onPick(block) } label: {
+                // A block the user turned into a break draws as one. Its kind
+                // stays `.task`, which is what keeps it editable — otherwise
+                // converting a block would be a one-way door.
+                if block.isUserBreak {
+                    breakTile(block, height: height)
+                } else {
+                    workTile(block, height: height)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(!block.isEditable)
+            .accessibilityLabel(spokenLabel(block))
+            .accessibilityHint(block.isEditable ? store.t("focusBandBlockHint") : "")
         }
     }
 
@@ -162,21 +173,35 @@ struct FocusBandView: View {
                 .fill(OWCDesign.recordsBreak)
                 .frame(width: 3.5)
             if height >= 20 {
-                Label(
-                    store.t("focusBandBreakMinutes", values: ["count": "\(block.durationMs / 60_000)"]),
-                    systemImage: "cup.and.saucer.fill"
-                )
-                .font(.caption2)
-                .labelStyle(.titleAndIcon)
-                .foregroundStyle(OWCDesign.recordsBreak)
+                VStack(alignment: .leading, spacing: 1) {
+                    if block.isUserBreak {
+                        Text(store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)))
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
+                    Label(
+                        store.t("focusBandBreakMinutes", values: ["count": "\(block.durationMs / 60_000)"]),
+                        systemImage: "cup.and.saucer.fill"
+                    )
+                    .font(.caption2)
+                    .labelStyle(.titleAndIcon)
+                    .foregroundStyle(OWCDesign.recordsBreak)
+                }
                 .padding(.leading, 14)
             }
         }
         .frame(height: height)
         .opacity(block.state == .past ? 0.45 : 1)
         .frame(maxWidth: .infinity)
-        .accessibilityElement()
-        .accessibilityLabel(spokenLabel(block))
+        .overlay {
+            if block.state == .current {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(OWCDesign.accent, lineWidth: 2)
+            } else if selectedBlock == block.startAtMs {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(OWCDesign.accent.opacity(0.6), lineWidth: 2)
+            }
+        }
     }
 
     private func workTile(_ block: FocusDayCanvasModel.Block, height: CGFloat) -> some View {
@@ -242,6 +267,9 @@ struct FocusBandView: View {
     private func spokenLabel(_ block: FocusDayCanvasModel.Block) -> String {
         let time = store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000))
         let minutes = "\(block.durationMs / 60_000)"
+        if block.rendersAsBreak {
+            return "\(time) · " + store.t("focusBandBreakMinutes", values: ["count": minutes])
+        }
         switch block.kind {
         case .breakTime:
             return "\(time) · " + store.t("focusBandBreakMinutes", values: ["count": minutes])
@@ -284,13 +312,13 @@ struct FocusBandList: View {
     }
 
     private func rowIcon(_ block: FocusDayCanvasModel.Block) -> String {
-        if block.kind == .breakTime { return "cup.and.saucer.fill" }
+        if block.rendersAsBreak { return "cup.and.saucer.fill" }
         return (block.taskIcon ?? .focus).systemName
     }
 
     private func subtitle(_ block: FocusDayCanvasModel.Block) -> String {
         let minutes = "\(block.durationMs / 60_000)"
-        if block.kind == .breakTime {
+        if block.rendersAsBreak {
             return store.t("focusBandBreakMinutes", values: ["count": minutes])
         }
         let what = block.taskTitle ?? store.t("focusBandEmptyBlock")

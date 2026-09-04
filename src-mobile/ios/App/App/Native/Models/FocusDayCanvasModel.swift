@@ -50,9 +50,24 @@ struct FocusDayCanvasModel: Equatable, Sendable {
         var taskID: UUID?
         var taskTitle: String?
         var taskIcon: FocusTaskIcon?
+        /// A work block the user turned into a break.
+        ///
+        /// Separate from `kind`, which stays the grid's own answer, because
+        /// the two drive different things: the grid decides whether a block
+        /// can be edited at all, the assignment decides what it looks like.
+        /// Collapsing them would make a converted break uneditable and strand
+        /// the user with no way back.
+        var isUserBreak = false
 
         var durationMs: Int64 { max(0, endAtMs - startAtMs) }
+        /// A task sits here. Drives the colour bar and the completion tick.
         var isAssigned: Bool { taskID != nil }
+        /// Anything sits here — a task or a break the user chose. Drives
+        /// whether the block is free and whether "clear" is offered.
+        var hasAssignment: Bool { taskID != nil || isUserBreak }
+        /// What to draw: the cadence's own breaks and the user's converted
+        /// ones look the same, because they are the same thing.
+        var rendersAsBreak: Bool { kind == .breakTime || isUserBreak }
 
         /// Only a future work block accepts an edit.
         ///
@@ -146,7 +161,7 @@ struct FocusDayCanvasModel: Equatable, Sendable {
     /// The first future work block with nothing in it — where "put it in the
     /// next empty block" lands.
     var nextEmptyBlock: Block? {
-        blocks.first { $0.kind == .task && $0.state != .past && !$0.isAssigned }
+        blocks.first { $0.kind == .task && $0.state != .past && !$0.hasAssignment }
     }
 
     var currentBlock: Block? {

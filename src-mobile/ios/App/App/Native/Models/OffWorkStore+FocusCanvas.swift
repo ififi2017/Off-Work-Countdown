@@ -96,7 +96,8 @@ extension OffWorkStore {
                 state: state,
                 taskID: assignment?.taskID,
                 taskTitle: assignment?.taskTitle,
-                taskIcon: assignment?.taskIcon
+                taskIcon: assignment?.taskIcon,
+                isUserBreak: assignment?.kind == .breakTime
             )
         }
         model.gaps = Self.canvasGaps(segments: segments, blocks: blocks, shiftEndAtMs: model.shiftEndAtMs)

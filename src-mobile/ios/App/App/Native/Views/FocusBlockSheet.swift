@@ -76,11 +76,20 @@ struct FocusBlockSheet: View {
                             OWCRow(
                                 icon: "cup.and.saucer.fill",
                                 title: store.t("focusBlockMakeBreak"),
-                                isLast: !block.isAssigned
-                            ) { EmptyView() }
+                                isLast: !block.hasAssignment
+                            ) {
+                                // Without this, "make a break" and "clear"
+                                // looked like the same action: the block came
+                                // back empty either way and the sheet showed
+                                // no sign that a break was already set.
+                                if block.isUserBreak {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(OWCDesign.accent)
+                                }
+                            }
                         }
                         .buttonStyle(OWCRowButtonStyle())
-                        if block.isAssigned {
+                        if block.hasAssignment {
                             Button {
                                 store.clearBlock(startingAt: block.startAtMs)
                                 dismiss()

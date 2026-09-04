@@ -377,3 +377,38 @@ func writesFollowTheDrawnShift() throws {
     #expect(store.focusDayCanvas(at: afterWork).blocks
         .first { $0.startAtMs == target.startAtMs }?.taskTitle == nil)
 }
+
+@MainActor
+@Test("A block turned into a break reads as a break, and can be turned back")
+func convertedBreakIsVisibleAndReversible() throws {
+    // On device "make this a break" and "clear this block" were
+    // indistinguishable: the canvas took each block's kind from the grid, so a
+    // converted block came back as `.task` with no task — exactly what an
+    // empty block looks like — and the sheet's clear row, gated on `taskID`,
+    // never appeared for it.
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 9, minute: 5))
+    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
+    #expect(!target.rendersAsBreak)
+    #expect(!target.hasAssignment)
+
+    store.markBlockAsBreak(startingAt: target.startAtMs, at: at)
+    let converted = try #require(store.focusDayCanvas(at: at).blocks
+        .first { $0.startAtMs == target.startAtMs })
+    #expect(converted.isUserBreak)
+    #expect(converted.rendersAsBreak)
+    #expect(converted.hasAssignment)
+    // Still a task block underneath, which is what keeps it editable: turning
+    // a block into a break must not be a one-way door.
+    #expect(converted.kind == .task)
+    #expect(converted.isEditable)
+    // And it is no longer free, so "put it in the next empty block" skips it.
+    #expect(store.focusDayCanvas(at: at).nextEmptyBlock?.startAtMs != target.startAtMs)
+
+    store.clearBlock(startingAt: target.startAtMs, at: at)
+    let cleared = try #require(store.focusDayCanvas(at: at).blocks
+        .first { $0.startAtMs == target.startAtMs })
+    #expect(!cleared.isUserBreak)
+    #expect(!cleared.hasAssignment)
+    #expect(store.focusDayCanvas(at: at).nextEmptyBlock?.startAtMs == target.startAtMs)
+}
