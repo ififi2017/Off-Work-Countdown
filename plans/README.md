@@ -20,6 +20,7 @@
 | 011 | [iOS 记录与番茄钟发布阻断收口](011-ios-records-focus-release-remediation.md) | 2026-09-01 | READY FOR DEVICE VALIDATION | TestFlight 双真机已验证记录与番茄钟的正常传播；冲突回写、双 open session、删除 fence、Production schema、通知 / Live Activity 仍未验。番茄钟排布另需重做 |
 | 012 | [iOS 评价引导、周期总结通知与 iPad 入口修复](012-ios-retention-and-cycle-notifications.md) | 2026-09-01 | IMPLEMENTED | 模拟器与自动化验收已通过；订阅成功触感、系统评价弹窗和真实通知投递仍待真机 / TestFlight 终验 |
 | 013 | [记录日画布、视觉语法与单一结论](013-records-day-canvas-and-visual-language.md) | 2026-09-01 | IN PROGRESS | Phase 0–4 已随 [PR #111](https://github.com/ififi2017/Off-Work-Countdown/pull/111) / [#112](https://github.com/ififi2017/Off-Work-Countdown/pull/112) 合入 `main`（3.1.9）；自动化门禁与模拟器截图已过。仍缺无障碍分支、60fps 测量、流程录屏、人生文案复审与真机终验 |
+| 014 | [番茄钟画布重排：现在 / 今天 / 常用](014-ios-focus-canvas-redesign.md) | 2026-09-04 | DRAFT | 只出方案未动代码；现状地图、三尺度原则与九项结构性问题已成文，时间带 / 放进下一个空格 / 格子优先三个分叉已拍板。实现前须确认 011 的番茄钟行为验收已签收 |
 
 ## 仍在 `docs/` 的活计划
 
