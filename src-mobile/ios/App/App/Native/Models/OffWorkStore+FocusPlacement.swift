@@ -94,6 +94,23 @@ extension OffWorkStore {
         return assign(task, toBlockStartingAt: blockStartAtMs, at: date)
     }
 
+    /// Resolves a block key against the shift the canvas is actually drawing.
+    ///
+    /// `focusWorkBlocks(at:)` reads `snapshot(at:)`, which is always today's
+    /// shift. After clock-off the canvas draws the *next* one, so its blocks
+    /// were invisible to every write and each edit came back as "no shift" —
+    /// a band you could see and could not touch.
+    private func canvasBlock(
+        startingAt blockStartAtMs: Int64,
+        at date: Date
+    ) -> (block: FocusWorkBlock, shift: NativeShiftSnapshot)? {
+        guard let shift = focusCanvasShift(at: date)?.snapshot else { return nil }
+        let blocks = FocusPlanner.workBlocks(segments: shift.segments, settings: focusTimerSettings)
+        guard let block = blocks.first(where: { $0.startAtMs == blockStartAtMs }), block.kind == .task
+        else { return nil }
+        return (block, shift)
+    }
+
     /// Assigns by block key rather than by `FocusWorkBlock`, so a view can act
     /// on what the canvas model gave it without rebuilding the grid.
     @discardableResult
@@ -103,10 +120,8 @@ extension OffWorkStore {
         at date: Date = .now
     ) -> FocusPlacementResult {
         guard plus.isAuthorized else { return .locked }
-        guard let block = focusWorkBlocks(at: date).first(where: { $0.startAtMs == blockStartAtMs }),
-              block.kind == .task
-        else { return .noShift }
-        assignFocusBlock(block, to: task, at: date)
+        guard let found = canvasBlock(startingAt: blockStartAtMs, at: date) else { return .noShift }
+        assignFocusBlock(found.block, to: task, in: found.shift, at: date)
         return .placed(taskID: task.id, blockStartAtMs: blockStartAtMs)
     }
 
@@ -114,18 +129,16 @@ extension OffWorkStore {
     /// own break blocks are not editable.
     func markBlockAsBreak(startingAt blockStartAtMs: Int64, at date: Date = .now) {
         guard plus.isAuthorized,
-              let block = focusWorkBlocks(at: date).first(where: { $0.startAtMs == blockStartAtMs }),
-              block.kind == .task
+              let found = canvasBlock(startingAt: blockStartAtMs, at: date)
         else { return }
-        assignFocusBreak(block, at: date)
+        assignFocusBreak(found.block, in: found.shift, at: date)
     }
 
     func clearBlock(startingAt blockStartAtMs: Int64, at date: Date = .now) {
         guard plus.isAuthorized,
-              let block = focusWorkBlocks(at: date).first(where: { $0.startAtMs == blockStartAtMs }),
-              block.kind == .task
+              let found = canvasBlock(startingAt: blockStartAtMs, at: date)
         else { return }
-        clearFocusBlock(block, at: date)
+        clearFocusBlock(found.block, in: found.shift, at: date)
     }
 
     /// Why the cadence cannot be changed right now, or nil when it can.

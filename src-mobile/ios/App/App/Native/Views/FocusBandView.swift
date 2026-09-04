@@ -18,7 +18,7 @@ struct FocusBandView: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private var rulerWidth: CGFloat { 40 }
+    private var rulerWidth: CGFloat { 58 }
 
     var body: some View {
         // At accessibility sizes the band's meaning comes from height
@@ -62,6 +62,8 @@ struct FocusBandView: View {
                 Text(store.formatTime(Date(timeIntervalSince1970: Double(ms) / 1_000)))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(OWCDesign.tertiary)
+                    .lineLimit(1)
+                    .fixedSize()
                     .offset(y: model.offset(ofMs: ms) - 7)
             }
         }
@@ -100,19 +102,30 @@ struct FocusBandView: View {
     @ViewBuilder
     private func gapTile(_ gap: FocusDayCanvasModel.Gap) -> some View {
         let height = model.height(ofMs: gap.endAtMs - gap.startAtMs)
-        RoundedRectangle(cornerRadius: 4, style: .continuous)
-            .fill(OWCDesign.control)
-            .frame(height: height)
-            .overlay(alignment: .leading) {
-                if height >= 20 {
-                    Text(gapLabel(gap))
-                        .font(.caption2)
-                        .foregroundStyle(OWCDesign.tertiary)
-                        .padding(.leading, 12)
-                }
+        Group {
+            switch gap.kind {
+            case .betweenSegments:
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(OWCDesign.control)
+            case .tail:
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .strokeBorder(
+                        OWCDesign.separator,
+                        style: StrokeStyle(lineWidth: 1, dash: [3, 3])
+                    )
             }
-            .frame(maxWidth: .infinity)
-            .accessibilityHidden(true)
+        }
+        .frame(height: height)
+        .overlay(alignment: .leading) {
+            if height >= 20 {
+                Text(gapLabel(gap))
+                    .font(.caption2)
+                    .foregroundStyle(OWCDesign.tertiary)
+                    .padding(.leading, 14)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityHidden(true)
     }
 
     private func gapLabel(_ gap: FocusDayCanvasModel.Gap) -> String {
@@ -139,34 +152,37 @@ struct FocusBandView: View {
     }
 
     private func breakTile(_ block: FocusDayCanvasModel.Block, height: CGFloat) -> some View {
-        RoundedRectangle(cornerRadius: height >= 12 ? 3 : 1.5, style: .continuous)
-            .fill(OWCDesign.recordsBreak)
-            .opacity(block.state == .past ? 0.45 : 0.9)
-            .frame(height: height)
-            .overlay(alignment: .leading) {
-                // Below roughly a line of text there is nothing to put a label
-                // on, so the shape carries the meaning and VoiceOver carries
-                // the words.
-                if height >= 20 {
-                    Label(
-                        store.t("focusBandBreakMinutes", values: ["count": "\(block.durationMs / 60_000)"]),
-                        systemImage: "cup.and.saucer.fill"
-                    )
-                    .font(.caption2)
-                    .labelStyle(.titleAndIcon)
-                    .foregroundStyle(.white)
-                    .padding(.leading, 12)
-                }
+        // A break separates the work; it is not the work. Solid teal at full
+        // saturation made these the loudest thing on the band, so they get the
+        // same tinted ground and leading bar as a work block and sit behind it.
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: height >= 12 ? 3 : 1.5, style: .continuous)
+                .fill(OWCDesign.recordsBreak.opacity(0.16))
+            RoundedRectangle(cornerRadius: height >= 12 ? 1.75 : 0.75, style: .continuous)
+                .fill(OWCDesign.recordsBreak)
+                .frame(width: 3.5)
+            if height >= 20 {
+                Label(
+                    store.t("focusBandBreakMinutes", values: ["count": "\(block.durationMs / 60_000)"]),
+                    systemImage: "cup.and.saucer.fill"
+                )
+                .font(.caption2)
+                .labelStyle(.titleAndIcon)
+                .foregroundStyle(OWCDesign.recordsBreak)
+                .padding(.leading, 14)
             }
-            .frame(maxWidth: .infinity)
-            .accessibilityElement()
-            .accessibilityLabel(spokenLabel(block))
+        }
+        .frame(height: height)
+        .opacity(block.state == .past ? 0.45 : 1)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement()
+        .accessibilityLabel(spokenLabel(block))
     }
 
     private func workTile(_ block: FocusDayCanvasModel.Block, height: CGFloat) -> some View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(block.isAssigned ? OWCDesign.recordsWork.opacity(0.14) : OWCDesign.control.opacity(0.5))
+                .fill(block.isAssigned ? OWCDesign.recordsWork.opacity(0.14) : Color.clear)
             if block.isAssigned {
                 RoundedRectangle(cornerRadius: 1.75, style: .continuous)
                     .fill(OWCDesign.recordsWork)
@@ -175,8 +191,8 @@ struct FocusBandView: View {
             } else {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .strokeBorder(
-                        OWCDesign.separator,
-                        style: StrokeStyle(lineWidth: 1, dash: [4, 3])
+                        OWCDesign.tertiary,
+                        style: StrokeStyle(lineWidth: 1, dash: [5, 4])
                     )
             }
             VStack(alignment: .leading, spacing: 1) {

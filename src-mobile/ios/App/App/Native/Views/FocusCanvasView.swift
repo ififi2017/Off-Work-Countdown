@@ -75,6 +75,7 @@ struct FocusCanvasView: View {
                     }
                     .padding(.horizontal, OWCDesign.pageInset)
                     .padding(.top, 14)
+                    .padding(.bottom, OWCDesign.detailBottomInset)
                     .onChange(of: selectedBlock) { _, value in
                         guard let value else { return }
                         withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter) {
@@ -312,13 +313,19 @@ struct FocusNowBand: View {
                 Text(store.t(block.state == .current ? "focusThisBlock" : "focusNextBlock"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
-                Text(block.taskTitle ?? store.t("focusBandEmptyBlock"))
+                Text(block.taskTitle ?? idleDetail(block))
                     .font(.title3.weight(.semibold))
-                    .foregroundStyle(OWCDesign.primary)
+                    .foregroundStyle(block.taskTitle == nil ? OWCDesign.secondary : OWCDesign.primary)
                     .lineLimit(1)
-                Text(idleDetail(block))
-                    .font(.caption)
-                    .foregroundStyle(OWCDesign.secondary)
+                if block.taskTitle != nil {
+                    Text(idleDetail(block))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                } else {
+                    Text(store.t("focusBandEmptyBlock"))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                }
             }
             Spacer(minLength: 8)
             if let task = task(for: block) {

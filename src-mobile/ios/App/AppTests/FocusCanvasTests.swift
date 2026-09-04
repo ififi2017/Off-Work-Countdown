@@ -346,3 +346,34 @@ func lockedUsersKeepTheFixedInterval() throws {
     #expect(!store.focusOwnsBreaks(at: at))
     #expect(store.focusBreakReminders(at: at).isEmpty)
 }
+
+@MainActor
+@Test("The shift the band draws is the shift a write lands in")
+func writesFollowTheDrawnShift() throws {
+    // Caught on device, not by the model tests: after clock-off the canvas
+    // draws the next shift, but every write resolved its block through
+    // `snapshot(at:)` — always today's — so the band was visible and inert,
+    // and each edit returned "no shift".
+    let store = try canvasStore()
+    let afterWork = try #require(day(store, hour: 21, minute: 0))
+    let drawn = try #require(store.focusCanvasShift(at: afterWork))
+    #expect(drawn.isNext)
+
+    let canvas = store.focusDayCanvas(at: afterWork)
+    let target = try #require(canvas.nextEmptyBlock)
+    let task = makeTask(store, title: "Tomorrow morning", at: drawn.snapshot.startDate)
+
+    let result = store.assign(task, toBlockStartingAt: target.startAtMs, at: afterWork)
+    #expect(result == .placed(taskID: task.id, blockStartAtMs: target.startAtMs))
+
+    let after = store.focusDayCanvas(at: afterWork)
+    #expect(after.blocks.first { $0.startAtMs == target.startAtMs }?.taskTitle == "Tomorrow morning")
+
+    // And it is filed under the drawn shift's day, not today's.
+    let dayKey = RecordJSON.dayKey(drawn.snapshot.startDate, calendar: store.recordsCalendar)
+    #expect(store.focusPlanning.plans[dayKey]?.assignments.contains { $0.taskID == task.id } == true)
+
+    store.clearBlock(startingAt: target.startAtMs, at: afterWork)
+    #expect(store.focusDayCanvas(at: afterWork).blocks
+        .first { $0.startAtMs == target.startAtMs }?.taskTitle == nil)
+}

@@ -4136,9 +4136,14 @@ final class OffWorkStore {
         return focusPlanning.plans[key]?.assignments.first { $0.blockStartAtMs == block.startAtMs }
     }
 
-    func assignFocusBlock(_ block: FocusWorkBlock, to task: FocusTask, at date: Date = .now) {
+    func assignFocusBlock(
+        _ block: FocusWorkBlock,
+        to task: FocusTask,
+        in shift: NativeShiftSnapshot? = nil,
+        at date: Date = .now
+    ) {
         guard block.kind == .task, plus.isAuthorized, task.deletedAt == nil,
-              let current = snapshot(at: date)
+              let current = shift ?? snapshot(at: date)
         else { return }
         let key = RecordJSON.dayKey(current.startDate, calendar: recordsCalendar)
         let replacedTaskID = focusPlanning.plans[key]?.assignments
@@ -4161,8 +4166,14 @@ final class OffWorkStore {
         }
     }
 
-    func assignFocusBreak(_ block: FocusWorkBlock, at date: Date = .now) {
-        guard block.kind == .task, plus.isAuthorized, let current = snapshot(at: date) else { return }
+    func assignFocusBreak(
+        _ block: FocusWorkBlock,
+        in shift: NativeShiftSnapshot? = nil,
+        at date: Date = .now
+    ) {
+        guard block.kind == .task, plus.isAuthorized,
+              let current = shift ?? snapshot(at: date)
+        else { return }
         let key = RecordJSON.dayKey(current.startDate, calendar: recordsCalendar)
         let replacedTaskID = focusPlanning.plans[key]?.assignments
             .first(where: { $0.blockStartAtMs == block.startAtMs })?.taskID
@@ -4182,8 +4193,12 @@ final class OffWorkStore {
         }
     }
 
-    func clearFocusBlock(_ block: FocusWorkBlock, at date: Date = .now) {
-        guard let current = snapshot(at: date) else { return }
+    func clearFocusBlock(
+        _ block: FocusWorkBlock,
+        in shift: NativeShiftSnapshot? = nil,
+        at date: Date = .now
+    ) {
+        guard let current = shift ?? snapshot(at: date) else { return }
         let key = RecordJSON.dayKey(current.startDate, calendar: recordsCalendar)
         let removedTaskID = focusPlanning.plans[key]?.assignments
             .first(where: { $0.blockStartAtMs == block.startAtMs })?.taskID
