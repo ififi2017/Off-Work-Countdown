@@ -196,6 +196,9 @@ enum PlusPendingAction: Equatable, Sendable {
     case historyEdit(dayKey: String)
     case startFocus(taskID: UUID)
     case addFocusTask(title: String, pomodoros: Int, icon: FocusTaskIcon, isFavorite: Bool)
+    /// Carries the landing, not a timestamp. A task picked up after a purchase
+    /// used to lose the slot it was headed for and arrive as a loose task.
+    case addFocusTaskInNextBlock(title: String, pomodoros: Int, icon: FocusTaskIcon, isFavorite: Bool)
     case addAndStartFocus(title: String, pomodoros: Int, icon: FocusTaskIcon, isFavorite: Bool)
     case presentAddFocus
     case openFocus

@@ -32,6 +32,23 @@ struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
         /// The deep link is data rather than an extension-side policy so work
         /// and focus can return users to their respective primary surface.
         var destination: String? = nil
+        /// What the block is for. The Dynamic Island had no way to tell a
+        /// focus activity from a work countdown — same mark, same countdown —
+        /// and never said what was being worked on.
+        var taskTitle: String? = nil
+        /// SF Symbol name. In the minimal presentation this is the only glyph
+        /// there is room for, so it is what distinguishes the two activities.
+        var taskIcon: String? = nil
+        /// What happens when this block ends. A pomodoro activity that cannot
+        /// say "then a 15 minute break" is withholding the one thing the
+        /// cadence knows and the user does not.
+        var nextLabel: String? = nil
+        /// Time left in the shift itself, phrased by the app.
+        ///
+        /// Only one activity may be live, so starting a block ends the work
+        /// countdown. Carrying this line means the focus activity can answer
+        /// both scales instead of displacing one of them.
+        var shiftRemainingLabel: String? = nil
 
         func projectedProgress(atMs nowMs: Int64) -> Double {
             let duration = segments.reduce(Int64(0)) { total, segment in

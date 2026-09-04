@@ -63,7 +63,10 @@ struct TimerDesignView: View {
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $store.presentAddFocus) {
-            FocusAddTaskSheet(store: store) {
+            // The quick path from the timer root. It lands in the next empty
+            // block by default, then opens the canvas on it — the change
+            // should show up where it happened.
+            FocusQuickCreateSheet(store: store) { _ in
                 Task { @MainActor in
                     await Task.yield()
                     guard store.plus.isAuthorized else { return }

@@ -38,10 +38,12 @@ struct AppRouteDestination: View {
                 RecordsDataSettingsView(store: store)
             case .recordsConflicts:
                 RecordsConflictCenter(store: store)
-            case .focus:
-                FocusDesignView(store: store)
-            case .focusPlan:
-                FocusPlanningView(store: store)
+            // One canvas, three scales. `focusPlan` used to be a second page
+            // reached from the first; it stays as a route so existing links
+            // and QA markers still land somewhere, and now lands on the same
+            // canvas.
+            case .focus, .focusPlan:
+                FocusCanvasView(store: store)
             case .about:
                 AboutView(store: store)
             }

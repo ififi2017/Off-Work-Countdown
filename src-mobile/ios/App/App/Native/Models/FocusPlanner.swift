@@ -12,46 +12,48 @@ enum FocusPlanner {
     /// the shared rules bundle. The first boundary that cannot fit the next
     /// phase ends the timeline instead of silently stretching a break to a
     /// 25-minute tile or crossing lunch/clock-off.
+    /// The grid for a whole shift.
+    ///
+    /// It is deliberately a pure function of the segments and the cadence.
+    /// Micro-break times used to be passed in here as hard cuts, which made
+    /// the grid depend on the clock: the set of cuts was filtered to "later
+    /// than now", so a block's `startAtMs` — the key a plan assignment is
+    /// stored under — moved during the day and the morning's plan stopped
+    /// matching. Breaks now come from the cadence alone, and the health
+    /// reminder follows the plan instead of cutting it.
     static func workBlocks(
         segments: [NativeShiftSegment],
-        settings: FocusTimerSettings = .default,
-        extraBoundaries: [Date] = []
+        settings: FocusTimerSettings = .default
     ) -> [FocusWorkBlock] {
         let configuration = settings.normalized
         var result: [FocusWorkBlock] = []
         var completedFocusRounds = 0
         for segment in segments.sorted(by: { $0.startAtMs < $1.startAtMs }) {
-            let segmentStart = Int64(segment.startAtMs.rounded())
-            let segmentEnd = Int64(segment.endAtMs.rounded())
-            let cuts = extraBoundaries.map { Int64($0.timeIntervalSince1970 * 1_000) }
-                .filter { $0 > segmentStart && $0 < segmentEnd }
-                .sorted()
-            for (startMs, endMs) in zip([segmentStart] + cuts, cuts + [segmentEnd]) {
-                var cursor = startMs
-                while cursor < endMs {
-                    let focusMs = Int64(configuration.focusMinutes * 60_000)
-                    guard cursor + focusMs <= endMs else { break }
-                    result.append(FocusWorkBlock(
-                        index: result.count,
-                        start: Date(timeIntervalSince1970: Double(cursor) / 1_000),
-                        end: Date(timeIntervalSince1970: Double(cursor + focusMs) / 1_000),
-                        kind: .task
-                    ))
-                    cursor += focusMs
-                    completedFocusRounds += 1
+            let endMs = Int64(segment.endAtMs.rounded())
+            var cursor = Int64(segment.startAtMs.rounded())
+            while cursor < endMs {
+                let focusMs = Int64(configuration.focusMinutes * 60_000)
+                guard cursor + focusMs <= endMs else { break }
+                result.append(FocusWorkBlock(
+                    index: result.count,
+                    start: Date(timeIntervalSince1970: Double(cursor) / 1_000),
+                    end: Date(timeIntervalSince1970: Double(cursor + focusMs) / 1_000),
+                    kind: .task
+                ))
+                cursor += focusMs
+                completedFocusRounds += 1
 
-                    let breakMinutes = completedFocusRounds % configuration.longBreakEvery == 0
-                        ? configuration.longBreakMinutes : configuration.shortBreakMinutes
-                    let breakMs = Int64(breakMinutes * 60_000)
-                    guard cursor + breakMs <= endMs else { break }
-                    result.append(FocusWorkBlock(
-                        index: result.count,
-                        start: Date(timeIntervalSince1970: Double(cursor) / 1_000),
-                        end: Date(timeIntervalSince1970: Double(cursor + breakMs) / 1_000),
-                        kind: .breakTime
-                    ))
-                    cursor += breakMs
-                }
+                let breakMinutes = completedFocusRounds % configuration.longBreakEvery == 0
+                    ? configuration.longBreakMinutes : configuration.shortBreakMinutes
+                let breakMs = Int64(breakMinutes * 60_000)
+                guard cursor + breakMs <= endMs else { break }
+                result.append(FocusWorkBlock(
+                    index: result.count,
+                    start: Date(timeIntervalSince1970: Double(cursor) / 1_000),
+                    end: Date(timeIntervalSince1970: Double(cursor + breakMs) / 1_000),
+                    kind: .breakTime
+                ))
+                cursor += breakMs
             }
         }
         return result
@@ -81,14 +83,9 @@ enum FocusPlanner {
         after start: Date,
         segments: [NativeShiftSegment],
         overtimeEndAtMs: Double?,
-        durationMinutes: Int = pomodoroMinutes,
-        extraBoundaries: [Date] = []
+        durationMinutes: Int = pomodoroMinutes
     ) -> FocusBoundary? {
         let startMs = start.timeIntervalSince1970 * 1_000
-        let natural = start.addingTimeInterval(Double(durationMinutes * 60))
-        let extraBoundary = extraBoundaries
-            .filter { $0 > start && $0 < natural }
-            .min()
         let sorted = segments.sorted { $0.startAtMs < $1.startAtMs }
         for (index, segment) in sorted.enumerated() {
             if startMs < segment.startAtMs {
@@ -111,9 +108,6 @@ enum FocusPlanner {
                             reason: .stoppedAtBoundary
                         )
                     }
-                    if let extraBoundary {
-                        return FocusBoundary(at: extraBoundary, reason: .stoppedAtBoundary)
-                    }
                     return nil
                 }
                 // `endMs` already carries the declared overtime. Clamping it
@@ -121,43 +115,33 @@ enum FocusPlanner {
                 // cut the block at the planned clock-off. Only a segment with
                 // a lunch gap after it still stops at its own end.
                 let boundaryMs = sorted[safe: index + 1] == nil ? endMs : segment.endAtMs
-                let segmentBoundary = FocusBoundary(
+                return FocusBoundary(
                     at: Date(timeIntervalSince1970: boundaryMs / 1_000),
                     reason: .stoppedAtBoundary
                 )
-                if let extraBoundary, extraBoundary < segmentBoundary.at {
-                    return FocusBoundary(at: extraBoundary, reason: .stoppedAtBoundary)
-                }
-                return segmentBoundary
             }
         }
         if let overtimeEndAtMs, overtimeEndAtMs > startMs {
-            let overtimeBoundary = FocusBoundary(
+            return FocusBoundary(
                 at: Date(timeIntervalSince1970: overtimeEndAtMs / 1_000),
                 reason: .stoppedAtBoundary
             )
-            if let extraBoundary, extraBoundary < overtimeBoundary.at {
-                return FocusBoundary(at: extraBoundary, reason: .stoppedAtBoundary)
-            }
-            return overtimeBoundary
         }
-        return extraBoundary.map { FocusBoundary(at: $0, reason: .stoppedAtBoundary) }
+        return nil
     }
 
     static func plannedEnd(
         from start: Date,
         segments: [NativeShiftSegment],
         overtimeEndAtMs: Double?,
-        durationMinutes: Int = pomodoroMinutes,
-        extraBoundaries: [Date] = []
+        durationMinutes: Int = pomodoroMinutes
     ) -> Date {
         let natural = start.addingTimeInterval(Double(durationMinutes * 60))
         if let boundary = nextBoundary(
             after: start,
             segments: segments,
             overtimeEndAtMs: overtimeEndAtMs,
-            durationMinutes: durationMinutes,
-            extraBoundaries: extraBoundaries
+            durationMinutes: durationMinutes
         ),
            boundary.at < natural {
             return boundary.at

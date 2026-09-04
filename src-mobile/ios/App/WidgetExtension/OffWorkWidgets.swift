@@ -24,8 +24,18 @@ struct OffWorkLiveActivityWidget: Widget {
                     HStack(spacing: 8) {
                         // The bare mark, not the plated app icon: the Dynamic
                         // Island is already a container, and a second rounded
-                        // plate inside it reads as a sticker.
-                        AlwaysDarkBrandMark(size: 25)
+                        // plate inside it reads as a sticker. Focus and break
+                        // activities show their own glyph instead — two
+                        // activities wearing the same mark are two the user
+                        // cannot tell apart.
+                        if let symbol = activitySymbol(context) {
+                            Image(systemName: symbol)
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(activityTint(context))
+                                .frame(width: 25, height: 25)
+                        } else {
+                            AlwaysDarkBrandMark(size: 25)
+                        }
 
                         Text(activityTitle(context))
                             .font(.system(size: 13, weight: .semibold))
@@ -51,19 +61,45 @@ struct OffWorkLiveActivityWidget: Widget {
                         .padding(.trailing, 8)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    ActivityCountdownPanel(context: context, size: 40)
-                        .padding(.horizontal, 10)
-                        .padding(.bottom, 4)
+                    VStack(alignment: .leading, spacing: 4) {
+                        ActivityCountdownPanel(context: context, size: 40)
+                        // What comes after this block. The cadence knows it and
+                        // the user does not, which is exactly the sort of thing
+                        // an activity should be carrying.
+                        if let next = context.state.nextLabel {
+                            Text(next)
+                                .font(.system(size: 12))
+                                .foregroundStyle(.white.opacity(0.62))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 4)
                 }
             } compactLeading: {
-                AlwaysDarkBrandMark(size: 20)
+                if let symbol = activitySymbol(context) {
+                    Image(systemName: symbol)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(activityTint(context))
+                } else {
+                    AlwaysDarkBrandMark(size: 20)
+                }
             } compactTrailing: {
                 ActivityCompactCountdown(context: context)
             } minimal: {
-                AlwaysDarkBrandMark(size: 18)
+                // The one slot another app's activity can squeeze this into.
+                // A single glyph has to say which of ours it is.
+                if let symbol = activitySymbol(context) {
+                    Image(systemName: symbol)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(activityTint(context))
+                } else {
+                    AlwaysDarkBrandMark(size: 18)
+                }
             }
             .widgetURL(activityDestination(context))
-            .keylineTint(activityOrange)
+            .keylineTint(activityTint(context))
         }
     }
 
@@ -102,6 +138,23 @@ private struct LockScreenActivityView: View {
             .padding(.top, 12)
             activityProgress(activityProgressValue(context, at: timeline.date))
                 .padding(.top, 14)
+            // Only one activity may be live, so a focus block ends the work
+            // countdown. These two lines put the shift back: the block above,
+            // the shift below — the canvas's first two scales in one card.
+            if context.state.nextLabel != nil || context.state.shiftRemainingLabel != nil {
+                HStack(spacing: 8) {
+                    if let next = context.state.nextLabel {
+                        Text(next).lineLimit(1)
+                    }
+                    Spacer(minLength: 4)
+                    if let shift = context.state.shiftRemainingLabel {
+                        Text(shift).lineLimit(1)
+                    }
+                }
+                .font(.system(size: 12))
+                .foregroundStyle(.white.opacity(0.62))
+                .padding(.top, 10)
+            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 16)
@@ -245,7 +298,28 @@ private func activityDestination(_ context: ActivityViewContext<OffWorkActivityA
 }
 
 private func activityTitle(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> String {
-    context.state.timerLabel ?? context.state.appTitle
+    // The task wins over the phase: "Spec review" says more than "Focus", and
+    // the countdown beside it already establishes that this is a timer.
+    context.state.taskTitle ?? context.state.timerLabel ?? context.state.appTitle
+}
+
+/// Focus indigo, break teal, work orange — the canvas palette, where orange
+/// means "now" and "selected" rather than a kind of time.
+private let activityFocusTint = Color(red: 0.368, green: 0.360, blue: 0.902)
+private let activityBreakTint = Color(red: 0.251, green: 0.784, blue: 0.878)
+
+private func activityTint(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> Color {
+    switch context.state.surface {
+    case "focus": activityFocusTint
+    case "shortBreak", "longBreak": activityBreakTint
+    default: activityOrange
+    }
+}
+
+/// nil for the work countdown, which keeps the brand mark.
+private func activitySymbol(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> String? {
+    guard let surface = context.state.surface, surface != "work" else { return nil }
+    return context.state.taskIcon ?? "timer"
 }
 
 @ViewBuilder
