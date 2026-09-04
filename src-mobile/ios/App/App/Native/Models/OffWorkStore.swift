@@ -887,6 +887,12 @@ final class OffWorkStore {
         self.records.onExternalStateApplied = { [weak self] in
             self?.reconcileExternallyAppliedRecordState()
         }
+        // StoreKit's own failures arrive already localized by the system. The
+        // one message the entitlement layer writes itself has to follow the
+        // in-app language choice, which only the store knows.
+        self.plus.localize = { [weak self] key in
+            self?.t(key) ?? key
+        }
     }
 
     var debugPresentationToken: String {
@@ -4712,6 +4718,22 @@ final class OffWorkStore {
         performPendingPlusAction(action)
     }
 
+    /// Every way the paywall can close ends here.
+    ///
+    /// This used to hang off the toolbar's Close button alone, so the sheet's
+    /// own swipe-to-dismiss — which nothing disables — skipped it: a user who
+    /// bought Plus and flicked the sheet away never landed back on the day, the
+    /// task or the sync switch they had tapped, and the stranded action then sat
+    /// in the store waiting to replay itself at an unrelated purchase days later.
+    func settlePaywallDismissal() {
+        if plus.isAuthorized {
+            plus.markIntroSeen()
+            resumePendingPlusActionIfAuthorized()
+        } else {
+            pendingPlusAction = nil
+        }
+    }
+
     func performPendingPlusAction(_ action: PlusPendingAction) {
         switch action {
         case .historyEdit(let dayKey):
@@ -5016,7 +5038,7 @@ final class OffWorkStore {
             return t("plusStatusGrace")
         case .pendingAskToBuy:
             return t("plusStatusPending")
-        case .unauthorized, .unverified:
+        case .unauthorized:
             return t("plusStatusNone")
         }
     }

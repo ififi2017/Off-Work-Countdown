@@ -297,6 +297,43 @@ Ready to Submit。脚本不创建商品、不改价格、不送审。
 - 不再等 [007](007-ios-stable-before-subscription.md) 的 TestFlight / 截图闭环。内部测，不发版。
 - **2026-08-30**：付费墙、延迟加载商品、年订试用资格查询、恢复购买与设置页在 PR #96。
   ASC 三件商品 Ready to Submit。沙盒购买矩阵和 TestFlight 复验仍未跑。
+- **2026-09-04（TestFlight 沙盒第一轮）**：真机沙盒里跑通了双设备的订阅状态同步——一端
+  购买，另一端拿到同样的权益。**只有这一条通过**，下方二十个验收场景的其余项、尤其是
+  加速续订、退款撤销、宽限期、Ask to Buy、离线跨过到期日和「未运行时过期」的启动对账，
+  全部仍未跑。用户明确要求在正式发版前对这一层做一次逐行 CR 加完整测试：订阅是这个产品
+  的收入来源，沙盒跑通一条正常路径不足以签收。
+- **2026-09-04（逐行 CR 与回归测试）**：审了 `PlusEntitlement`、`PaywallView`、付费页 sheet
+  生命周期和 `openPaidOrRun` 回流链。纯状态机 `PlusEntitlementDecision` 没有发现问题——
+  离线截止、宽限期、同组多状态排序都实现正确。六处缺陷全在它之外，已修：
+
+  1. **Ask to Buy 会永久停掉记录采集。** `shouldCollectObservations` 把 `.pendingAskToBuy`
+     当成"已失效的购买"，而它是所有工作观察的唯一闸门。家庭共享的孩子一按购买就不再记录
+     任何上下班；家长拒绝后 StoreKit 不发任何信号，`askToBuyPending` 这个 `Bool` 于是永远
+     为真，界面永远停在"等待批准"。改为：Ask to Buy 归在免费一侧照常采集，并把标志换成
+     时间戳，按 Apple 自己的 24 小时窗口失效（旧的 `Bool` 迁移时记为"从现在开始"）。
+  2. **购买成功但验签失败时完全静默。** `try?` 吞掉异常，既不给错误也不给权益，用户付了钱
+     只会再点一次。改为写入 `plusPurchaseUnverified`（新增，19 个 locale 齐），并**故意不**
+     finish 该交易，让它经 `Transaction.updates` 重投。
+  3. **下滑关闭付费页会丢掉用户点的那件事。** 回流只挂在工具栏关闭按钮上，而 sheet 的滑动
+     关闭没有被禁用。买完一滑，回不到那一天 / 那个任务 / 那个同步开关，且残留的
+     `pendingPlusAction` 会在几天后一次无关购买时replay。改为收敛到
+     `settlePaywallDismissal()`，由 `.sheet(onDismiss:)` 统一处理，未授权时清除。
+  4. **一次偶发验签失败把终身用户打回免费。** `.unverified` 现在与 `.unavailable` 同样处理，
+     沿用缓存授权。缓存只能承载曾经验证过的授权，且每个带期限的授权仍按 `now` 重新裁决，
+     所以这不会凭空造出权益。
+  5. `start()` 只 guard 了 `updatesTask`，重复调用会泄漏 `statusTask`。
+  6. `manageSubscriptions()` 用 `connectedScenes.first`，iPad 分屏 / 台前调度下可能拿到后台
+     scene 而静默失败；改为优先选前台 active scene，并上报失败。
+
+  **另有一条 CR 提出后又撤回**：曾怀疑"status 查询返回空集合"会把付费用户降级，拟把空响应
+  也判为 `unavailable`。该改法会让终身购买退款后收不回权益（退款时那行会整个消失，又没有
+  订阅状态行可查），因此不改；现有 `queryFailed` 判定是对的。
+
+  新增 8 个 Swift Testing 用例（六个纯层 + 两个 store 层），iOS 全量 342 项通过。
+  `npm run lint`、`npm test`(322)、Web 与 Desktop 构建校验均通过。
+
+  **仍然只能人工跑的验收场景**：1、2、3、5、9、10、11、12、13、16、18、20。自动化现在覆盖
+  4、6、7、8、14、15、17、19。
 - **2026-08-30（UI 走查整改）**：`PaywallContent` 与滚动容器拆开，设置页不再嵌第二层
   ScrollView；未授权 / 试用 / 订阅中 / Lifetime / Ask to Buy / 宽限期分别成状态，Lifetime
   用户不再看到购买 CTA，只有真实订阅显示「管理订阅」；商品数组为空时给明确说明和重试，

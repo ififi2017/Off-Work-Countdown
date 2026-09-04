@@ -12,7 +12,7 @@ func lifetimeAuthorizesUntilRevoked() {
         snapshot: PlusEntitlementSnapshot(
             lifetime: PlusLifetimeEvidence(revoked: false),
             subscription: nil,
-            askToBuyPending: false
+            askToBuyPendingSince: nil
         )
     )
     #expect(authorized == .authorized(.lifetime))
@@ -22,7 +22,7 @@ func lifetimeAuthorizesUntilRevoked() {
         snapshot: PlusEntitlementSnapshot(
             lifetime: PlusLifetimeEvidence(revoked: true),
             subscription: nil,
-            askToBuyPending: false
+            askToBuyPendingSince: nil
         )
     )
     #expect(revoked == .unauthorized)
@@ -44,7 +44,7 @@ func gracePeriodUsesGraceDeadline() {
                 gracePeriodExpirationDate: grace,
                 isTrial: false
             ),
-            askToBuyPending: false
+            askToBuyPendingSince: nil
         )
     )
     #expect(access == .authorized(.inGracePeriod(graceExpiresAt: grace)))
@@ -64,7 +64,7 @@ func offlineMonthlyDoesNotExtendLocally() {
                 gracePeriodExpirationDate: nil,
                 isTrial: false
             ),
-            askToBuyPending: false
+            askToBuyPendingSince: nil
         )
     )
     #expect(access == .unauthorized)
@@ -78,7 +78,7 @@ func askToBuyIsPending() {
         snapshot: PlusEntitlementSnapshot(
             lifetime: nil,
             subscription: nil,
-            askToBuyPending: true
+            askToBuyPendingSince: .now
         )
     )
     #expect(access == .pendingAskToBuy)
@@ -92,7 +92,7 @@ func askToBuyDoesNotReplaceLifetime() {
         snapshot: PlusEntitlementSnapshot(
             lifetime: PlusLifetimeEvidence(revoked: false),
             subscription: nil,
-            askToBuyPending: true
+            askToBuyPendingSince: .now
         )
     )
     #expect(access == .authorized(.lifetime))
@@ -110,7 +110,7 @@ func unavailableRefreshKeepsCachedGrant() {
             gracePeriodExpirationDate: nil,
             isTrial: false
         ),
-        askToBuyPending: false
+        askToBuyPendingSince: nil
     )
     let applied = PlusEntitlementDecision.applyRefresh(
         now: now,
@@ -128,12 +128,12 @@ func confirmedEmptyRefreshClearsGrant() {
     let cached = PlusEntitlementSnapshot(
         lifetime: PlusLifetimeEvidence(revoked: false),
         subscription: nil,
-        askToBuyPending: false
+        askToBuyPendingSince: nil
     )
     let applied = PlusEntitlementDecision.applyRefresh(
         now: now,
         cached: cached,
-        outcome: .confirmed(PlusEntitlementSnapshot(lifetime: nil, subscription: nil, askToBuyPending: false))
+        outcome: .confirmed(PlusEntitlementSnapshot(lifetime: nil, subscription: nil, askToBuyPendingSince: nil))
     )
     #expect(applied.authorization == .unauthorized)
     #expect(applied.persist)
@@ -259,4 +259,134 @@ func freeAllRecordsPresentationDoesNotLeakLockedYearsOrCounts() {
     #expect(paid.visibleEntries.count == entries.count)
     #expect(paid.years == [2026, 2025, 2024])
     #expect(!paid.hasLockedHistory)
+}
+
+// MARK: - Ask to Buy is a purchase that has not happened yet
+
+@MainActor
+@Test("Asking to buy does not stop a free user from recording work")
+func askToBuyKeepsCollectingObservations() {
+    let snapshot = PlusEntitlementSnapshot(
+        lifetime: nil,
+        subscription: nil,
+        askToBuyPendingSince: .now
+    )
+    #expect(PlusEntitlementDecision.collectsObservations(
+        authorization: .pendingAskToBuy,
+        snapshot: snapshot
+    ))
+}
+
+@MainActor
+@Test("A lapsed purchase does stop new observations")
+func lapsedPurchaseStopsCollectingObservations() {
+    let snapshot = PlusEntitlementSnapshot(
+        lifetime: nil,
+        subscription: PlusSubscriptionEvidence(
+            state: .expired,
+            expirationDate: Date(timeIntervalSince1970: 1_770_000_000),
+            gracePeriodExpirationDate: nil,
+            isTrial: false
+        ),
+        askToBuyPendingSince: nil
+    )
+    #expect(!PlusEntitlementDecision.collectsObservations(
+        authorization: .unauthorized,
+        snapshot: snapshot
+    ))
+}
+
+@MainActor
+@Test("An unanswered Ask to Buy lapses instead of waiting forever")
+func askToBuyLapsesAfterApplesWindow() {
+    let asked = Date(timeIntervalSince1970: 1_777_000_000)
+    let snapshot = PlusEntitlementSnapshot(
+        lifetime: nil,
+        subscription: nil,
+        askToBuyPendingSince: asked
+    )
+    let while_open = PlusEntitlementDecision.resolve(
+        now: asked.addingTimeInterval(60 * 60),
+        snapshot: snapshot
+    )
+    let after = PlusEntitlementDecision.resolve(
+        now: asked.addingTimeInterval(PlusEntitlementSnapshot.askToBuyLifetimeSeconds + 1),
+        snapshot: snapshot
+    )
+    #expect(while_open == .pendingAskToBuy)
+    #expect(after == .unauthorized)
+}
+
+@MainActor
+@Test("A refresh carries a live Ask to Buy but drops a lapsed one")
+func refreshCarriesOnlyLiveAskToBuy() {
+    let asked = Date(timeIntervalSince1970: 1_777_000_000)
+    let cached = PlusEntitlementSnapshot(
+        lifetime: nil,
+        subscription: nil,
+        askToBuyPendingSince: asked
+    )
+    let empty = PlusEntitlementSnapshot(lifetime: nil, subscription: nil, askToBuyPendingSince: nil)
+    let live = PlusEntitlementDecision.applyRefresh(
+        now: asked.addingTimeInterval(60),
+        cached: cached,
+        outcome: .confirmed(empty)
+    )
+    let lapsed = PlusEntitlementDecision.applyRefresh(
+        now: asked.addingTimeInterval(PlusEntitlementSnapshot.askToBuyLifetimeSeconds + 1),
+        cached: cached,
+        outcome: .confirmed(empty)
+    )
+    #expect(live.authorization == .pendingAskToBuy)
+    #expect(live.snapshot.askToBuyPendingSince == asked)
+    #expect(lapsed.authorization == .unauthorized)
+    #expect(lapsed.snapshot.askToBuyPendingSince == nil)
+}
+
+// MARK: - An unverifiable transaction is not proof of no purchase
+
+@MainActor
+@Test("A transaction StoreKit cannot verify keeps the cached grant")
+func unverifiedRefreshKeepsCachedGrant() {
+    let now = Date(timeIntervalSince1970: 1_777_000_000)
+    let cached = PlusEntitlementSnapshot(
+        lifetime: PlusLifetimeEvidence(revoked: false),
+        subscription: nil,
+        askToBuyPendingSince: nil
+    )
+    let applied = PlusEntitlementDecision.applyRefresh(
+        now: now,
+        cached: cached,
+        outcome: .unverified
+    )
+    #expect(applied.authorization == .authorized(.lifetime))
+    #expect(!applied.persist)
+}
+
+@MainActor
+@Test("An unverified refresh cannot invent a grant the cache never held")
+func unverifiedRefreshCannotCreateGrant() {
+    let now = Date(timeIntervalSince1970: 1_777_000_000)
+    let expiredCache = PlusEntitlementSnapshot(
+        lifetime: nil,
+        subscription: PlusSubscriptionEvidence(
+            state: .subscribed,
+            expirationDate: now.addingTimeInterval(-60),
+            gracePeriodExpirationDate: nil,
+            isTrial: false
+        ),
+        askToBuyPendingSince: nil
+    )
+    let empty = PlusEntitlementDecision.applyRefresh(
+        now: now,
+        cached: PlusEntitlementSnapshot(lifetime: nil, subscription: nil, askToBuyPendingSince: nil),
+        outcome: .unverified
+    )
+    let expired = PlusEntitlementDecision.applyRefresh(
+        now: now,
+        cached: expiredCache,
+        outcome: .unverified
+    )
+    #expect(empty.authorization == .unauthorized)
+    #expect(expired.authorization == .unauthorized)
 }

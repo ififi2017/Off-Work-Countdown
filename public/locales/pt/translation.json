@@ -492,6 +492,7 @@
   "plusAutoRenew": "As subscrições renovam-se automaticamente até serem canceladas. O plano anual pode incluir 7 dias grátis; depois aplica-se o preço anual. O vitalício é um pagamento único e não cancela uma subscrição ativa.",
   "plusTerms": "Termos",
   "plusPrivacy": "Privacidade",
+  "plusPurchaseUnverified": "Este dispositivo não conseguiu verificar a compra. Tente «Restaurar compras» ou tente de novo daqui a pouco.",
   "plusWaitingApproval": "À espera de aprovação",
   "plusLifetimeWhileSubscribed": "O vitalício não cancela a sua subscrição atual. Desative-a depois em «Gerir subscrição».",
   "plusAlsoHasSubscription": "Também tem uma subscrição que continua a renovar-se. Pode geri-la aqui até terminar.",

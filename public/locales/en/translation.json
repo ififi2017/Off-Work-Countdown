@@ -492,6 +492,7 @@
   "plusAutoRenew": "Subscriptions renew automatically until you cancel. The yearly plan can include a 7-day trial. After the trial, the yearly price applies. Lifetime is a one-time purchase and does not cancel an active subscription.",
   "plusTerms": "Terms of Use",
   "plusPrivacy": "Privacy Policy",
+  "plusPurchaseUnverified": "This device could not verify the purchase. Try “Restore purchases”, or try again in a moment.",
   "plusWaitingApproval": "Waiting for approval",
   "plusLifetimeWhileSubscribed": "Buying lifetime does not cancel your current subscription. After this purchase, turn the subscription off in Manage subscription.",
   "plusAlsoHasSubscription": "You also have a subscription that is still renewing. Manage it here until it ends.",

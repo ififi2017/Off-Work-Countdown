@@ -492,6 +492,7 @@
   "plusAutoRenew": "Abonelikler sen iptal edene kadar kendiliğinden yenilenir. Yıllık planda 7 gün ücretsiz olabilir; sonrasında yıllık fiyat üzerinden ücret alınır. Tek seferlik satın alma bir kez ödenir ve süren aboneliği kendiliğinden iptal etmez.",
   "plusTerms": "Koşullar",
   "plusPrivacy": "Gizlilik",
+  "plusPurchaseUnverified": "Bu cihaz satın alımı doğrulayamadı. “Satın alımları geri yükle” seçeneğini deneyin ya da birazdan tekrar deneyin.",
   "plusWaitingApproval": "Onay bekleniyor",
   "plusLifetimeWhileSubscribed": "Tek seferlik satın alma mevcut aboneliğini iptal etmez. Sonrasında “Aboneliği yönet” bölümünden kapat.",
   "plusAlsoHasSubscription": "Yenilenmeye devam eden bir aboneliğin de var. Bitene kadar buradan yönetebilirsin.",

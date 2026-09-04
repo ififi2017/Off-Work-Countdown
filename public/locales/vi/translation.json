@@ -492,6 +492,7 @@
   "plusAutoRenew": "Đăng ký tự gia hạn cho tới khi bạn hủy. Gói năm có thể kèm 7 ngày miễn phí, sau đó tính theo giá năm. Bản trả một lần chỉ thanh toán một lần và không tự hủy đăng ký đang chạy.",
   "plusTerms": "Điều khoản",
   "plusPrivacy": "Quyền riêng tư",
+  "plusPurchaseUnverified": "Thiết bị này không xác minh được giao dịch. Hãy thử “Phục hồi giao dịch”, hoặc thử lại sau giây lát.",
   "plusWaitingApproval": "Đang chờ phê duyệt",
   "plusLifetimeWhileSubscribed": "Mua bản trả một lần không tự hủy đăng ký hiện tại. Sau khi mua, hãy tắt nó ở “Quản lý đăng ký”.",
   "plusAlsoHasSubscription": "Bạn còn một đăng ký vẫn đang gia hạn. Cho tới khi nó kết thúc, bạn vẫn quản lý được ở đây.",
