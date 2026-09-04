@@ -1,7 +1,9 @@
 # 013 — 记录日画布、视觉语法与单一结论
 
-- **状态**：IN PROGRESS — Phase 0–5 的代码已落地并通过模拟器构建；Phase 5 的录屏、Phase 6 的多设备与真机验收未完成
-- **进度（2026-09-02）**：日画布、统一日期路由、月格与周日列分段、图例、紧凑摘要、人生时间分配结论、19 locale 文案与日模型测试已完成；`TimeAllocationCalculator.share` 已由 `RecordsDayCanvasModel.build` 取代，civil day 现在会读取前一夜的班次。偏差记录见「实现偏差」。
+- **状态**：IN PROGRESS — Phase 0–4 已合入 `main`，Phase 6 的自动化门禁已过；Phase 5 的无障碍分支、60fps 测量与录屏，以及真机验收未完成
+- **进度（2026-09-04）**：实现已随 [PR #111](https://github.com/ififi2017/Off-Work-Countdown/pull/111) 与 [PR #112](https://github.com/ififi2017/Off-Work-Countdown/pull/112) 合入 `main`，产品版本滚到 3.1.9。日画布、统一日期路由、月格与周日列分段、图例、紧凑摘要、人生时间分配结论、19 locale 文案与日模型测试已完成；`TimeAllocationCalculator.share` 已由 `RecordsDayCanvasModel.build` 取代，civil day 现在会读取前一夜的班次。合入前的一轮 review 关掉十项发现（iPad「看这一天」失效、三个界面对「一天」口径不一致、今天线之后仍按事实着色、人生结论吞掉已记录加班、纯投影日提供编辑、截图 sweep 给自己打假绿灯），偏差记录见「实现偏差」。
+- **已通过的自动验证**：`npm test`（27 个文件、322 项）、`npm run test:widget-contract`（12 项）、`npm run build:ios-native-rules`、`npm run check:ios`、`npm run check:version`、iPhone 17 Pro 模拟器 `xcodebuild test`（331 项、0 失败；#112 复跑同样 331 项）、iPhone 与 iPad 的浅色 / 深色截图 sweep。
+- **仍缺**：Phase 5 的四个无障碍分支、44pt 命中区核对、release 构建 60fps 测量与完整流程录屏；Phase 4 的人生文案复审；iPhone SE 级别与 Apple Silicon Mac 布局；iPhone / iPad 真机终验。
 - **日期**：2026-09-01
 - **范围**：iOS / iPadOS 原生 SwiftUI 的记录主画布、周日列与月格视觉语法、日期详情、人生总结、Plus 锁定文案与 19 个 UI locale
 - **依赖**：[010](010-records-ui-iteration.md) 的单画布与记录 IA、[011](011-ios-records-focus-release-remediation.md) 的发布阻断修复、[006](006-free-trial-subscription.md) 的权益模型
@@ -295,8 +297,8 @@ iPad 与手机横屏不是同一套导航 chrome：`TabletDesignView` 与 `Phone
 
 - [x] 为 `freeMs` 与 `wakingFreeMs` 写命名 / 数值测试，锁定“自主时间”和“属于你的清醒时间”不是同一个值。
 - [x] 为 civil day 构造相邻班次相交 fixture：日班、跨夜、午休、多 segment、加班、23 / 25 小时 DST 日。
-- [ ] 保存当前周、月、年、人生和日期详情的浅色 / 深色基线截图。
-- [ ] 确认 011 的真机发布阻断验证不会被本计划混入同一提交或 PR。
+- [ ] ~~保存当前周、月、年、人生和日期详情的浅色 / 深色基线截图。~~ 没做，实现已经合入，这条前置基线补不回来了；改由 Phase 5 的逐张主题检查承担对照职责。
+- [x] 确认 011 的真机发布阻断验证不会被本计划混入同一提交或 PR —— 013 走 PR #111 / #112 独立合入，011 的双真机与 Production CloudKit 验收仍未开始，两者没有共用提交。
 - [x] 先读 `RecordDayEditView.swift` 里现有的 `RecordDayDetailHost` / `RecordResolvedDayView`，确定日画布吸收哪些部分、退役哪些部分，再动手写新文件。
 - [x] 处理 `RecordsChartViews.swift` —— 已由 [PR #105](https://github.com/ififi2017/Off-Work-Countdown/pull/105) 删除。它是 010 之前那版记录页，早已无任何 route 或 View 引用；`recordsChartWindow` 是 `recordsWindow` 的副本，唯一调用方（`RecordsPerformanceTests` 的预热行）已改指后者，测量口径不变。`recordsOwnTime`、`recordsShareOfDay`、`recordsHeatScale`、`recordsHeatWithoutColor` 等十个键**刻意保留**在 19 个 locale 里，就是留给本计划的日画布和收起态年视图复用——实现时直接用，不要重新造词。同时删掉的还有 `RecordsChartPeriod` 和 `OWCChartCellButtonStyle`。
 - [x] 核实“自主时间”问题的真实范围：`recordsFreeAwake`（属于你的清醒时间）19 个 locale 已存在，`wakingFreeMs = breakMs + freeMs` 也已就位。真正错的是 `RecordsCanvasViews.swift` 里两处把 `wakingFreeMs` 的值配上 `recordsFreeAwakeShort` 标签和描述 `freeMs` 的 `recordsMetricFreeHelp`。先确认这一点，Phase 1 的本地化工作量会显著缩小。
@@ -343,9 +345,9 @@ iPad 与手机横屏不是同一套导航 chrome：`TabletDesignView` 与 `Phone
 
 - [x] `npm run build:ios-native-rules`。
 - [x] `npm run check:ios`。
-- [ ] 相关 Swift Testing 全量通过。
-- [ ] iPhone 模拟器 build 通过；若触及共享 `lib/`，额外通过 `npm test`。
-- [ ] iPhone Pro、iPhone SE 级别、iPad 与 Apple Silicon Mac 完成布局检查。
+- [x] 相关 Swift Testing 全量通过 —— iPhone 17 Pro 模拟器 331 项、0 失败（#111），#112 以 Release 全模块优化复跑同样 331 项。
+- [x] iPhone 模拟器 build 通过；若触及共享 `lib/`，额外通过 `npm test` —— `npm test` 27 个文件、322 项通过。
+- [ ] iPhone Pro、iPhone SE 级别、iPad 与 Apple Silicon Mac 完成布局检查 —— `npm run qa:ios-shots` 已扫过 iPhone 17 Pro 与 iPad Pro 13-inch (M5)；iPhone SE 级别与 Apple Silicon Mac 仍未看。
 - [ ] iPhone / iPad 真机完成手势、触感、60fps 与系统 sheet 终验。
 
 ## 实现偏差
@@ -435,6 +437,7 @@ iPad 与手机横屏不是同一套导航 chrome：`TabletDesignView` 与 `Phone
 ## 发布与提交边界
 
 1. 013 在 011 的双真机 / Production CloudKit / TestFlight 发布阻断验收完成后再进入实现，避免视觉迭代掩盖数据与通知终验。
+   **实际没有按这条走**：011 的真机验收至今未开始，013 已经先合入 `main`。代价是这两份计划现在共用同一批真机验收——做 011 的双设备同步、通知与 Live Activity 终验时，看到的已经是 013 的记录界面。补救办法只有一个：真机批次里把「数据与通知是否正确」和「日画布是否好用」当成两张清单分别记结论，不要用一次通过替另一份签收。
 2. 推荐拆为三笔可独立回滚的提交：展示模型与文案；月格与摘要；日画布与人生总结。
 3. 如果实现时必须改共享 TypeScript 规则，单独提交规则、fixtures 与生成桥，并按 AGENTS.md 完成三端验证。
 4. 不在 013 中顺手重写 RecordStore、CKSyncEngine、StoreKit、Focus 或 HealthKit。
