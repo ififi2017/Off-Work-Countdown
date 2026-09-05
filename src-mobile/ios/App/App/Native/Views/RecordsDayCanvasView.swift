@@ -134,7 +134,7 @@ struct RecordsDayCanvasView: View {
                     : 0
                 Text(store.formatRecordsTime(moment))
                     .font(.caption2.monospacedDigit())
-                    .foregroundStyle(OWCDesign.tertiary)
+                    .foregroundStyle(OWCDesign.secondary)
                     .fixedSize()
                     .position(
                         x: min(proxy.size.width - 14, max(14, proxy.size.width * offset)),
@@ -167,10 +167,11 @@ struct RecordsDayCanvasView: View {
                         .foregroundStyle(OWCDesign.secondary)
                         .contentTransition(.numericText())
                         .accessibilityLabel(store.t("recordsShareOfDay"))
+                        .accessibilityValue(store.formatPercent(model.wakingFreeShare * 100))
                 }
                 Text(store.t("recordsFreeAwakeFootnote"))
                     .font(.footnote)
-                    .foregroundStyle(OWCDesign.tertiary)
+                    .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -372,6 +373,7 @@ struct RecordsDayIntervalRow: View {
             Circle()
                 .fill(OWCDesign.recordsColor(interval.kind))
                 .owcEstimated(interval.source.isEstimated, tint: .white, spacing: 3, lineWidth: 0.8)
+                .clipShape(Circle())
                 .frame(width: 9, height: 9)
                 .alignmentGuide(.firstTextBaseline) { $0.height - 1 }
             VStack(alignment: .leading, spacing: 2) {
@@ -381,7 +383,7 @@ struct RecordsDayIntervalRow: View {
                 if interval.source != daySource {
                     Text(store.t(interval.sourceKey))
                         .font(.caption)
-                        .foregroundStyle(OWCDesign.tertiary)
+                        .foregroundStyle(OWCDesign.secondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }

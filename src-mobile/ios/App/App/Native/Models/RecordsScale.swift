@@ -413,3 +413,10 @@ extension TimeAllocationCalculator {
         }
     }
 }
+
+/// One shared axis preserves comparisons without clipping long shifts.
+enum RecordsWeekAxis {
+    static func ceiling(for cells: [RecordsDayCell]) -> Int64 {
+        max(12 * 3_600_000, cells.map { $0.workMs + $0.overtimeMs }.max() ?? 0)
+    }
+}

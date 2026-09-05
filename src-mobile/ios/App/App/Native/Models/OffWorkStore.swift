@@ -3745,8 +3745,9 @@ final class OffWorkStore {
         }
         let combined = TimeAllocationCalculator.combining(shares)
         let today = recordsCalendar.startOfDay(for: now)
+        let visibleKeys = Set(cells.map(\.dayKey))
         let completedScheduledWorkdays = days.filter { day in
-            guard day.baseScheduleIsWorkday else { return false }
+            guard visibleKeys.contains(day.dayKey), day.baseScheduleIsWorkday else { return false }
             let date = RecordJSON.date(fromDayKey: day.dayKey, calendar: recordsCalendar)
                 ?? day.shiftAnchorDate
             return recordsCalendar.startOfDay(for: date) < today
