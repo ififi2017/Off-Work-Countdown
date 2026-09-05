@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// One interaction for the brand wherever it appears. About/onboarding hide
 /// a turn behind five nearby taps; the subscriber page offers direct replay.
@@ -20,6 +21,7 @@ struct CelebratingBrandMark: View {
     @State private var playbackID = 0
     @State private var tapFeedback = 0
     @State private var settledFeedback = 0
+    @State private var hapticTask: Task<Void, Never>?
 
     var body: some View {
         Button(action: registerTap) {
@@ -34,15 +36,13 @@ struct CelebratingBrandMark: View {
         .buttonStyle(BrandMarkButtonStyle())
         .accessibilityLabel(Text(verbatim: accessibilityTitle))
         .accessibilityIdentifier("brand.celebration")
-        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.45), trigger: tapFeedback)
-        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.25), trigger: settledFeedback)
+        .sensoryFeedback(.impact(weight: .medium, intensity: 0.85), trigger: tapFeedback)
+        .sensoryFeedback(.impact(weight: .medium, intensity: 0.9), trigger: settledFeedback)
         .onAppear {
             isVisible = true
             if playsOnAppear, !handledInitialPlayback, isActive {
                 handledInitialPlayback = true
-                // The purchase flow already confirms authorization with its
-                // success haptic. Automatic playback adds no second pattern.
-                play(withHaptics: false)
+                play()
             }
         }
         .onDisappear {
@@ -62,11 +62,11 @@ struct CelebratingBrandMark: View {
         guard !isPlaying, isActive else { return }
         tapFeedback += 1
         if replaysOnTap || taps.register(at: Date.timeIntervalSinceReferenceDate) {
-            play(withHaptics: true)
+            play()
         }
     }
 
-    private func play(withHaptics: Bool) {
+    private func play() {
         guard !isPlaying else { return }
         isPlaying = true
         playbackID += 1
@@ -77,28 +77,55 @@ struct CelebratingBrandMark: View {
             } completion: {
                 guard playbackID == id, isVisible, isActive else { return }
                 withAnimation(OWCMotion.reduced) { pulse = false } completion: {
-                    finishPlayback(id: id, withHaptics: withHaptics)
+                    finishPlayback(id: id)
                 }
             }
         } else {
+            startHapticTicks(id: id)
             withAnimation(OWCMotion.brandCelebration, completionCriteria: .removed) {
-                handRotation += 360
+                handRotation += OWCMotion.brandCelebrationDegrees
             } completion: {
-                finishPlayback(id: id, withHaptics: withHaptics)
+                finishPlayback(id: id)
             }
         }
     }
 
-    private func finishPlayback(id: Int, withHaptics: Bool) {
+    private func startHapticTicks(id: Int) {
+        let clock = ContinuousClock()
+        let start = clock.now
+        let tick = UIImpactFeedbackGenerator(style: .rigid)
+        tick.prepare()
+        hapticTask = Task { @MainActor in
+            for time in OWCMotion.brandCelebrationTickTimes {
+                let deadline = start.advanced(by: .seconds(time))
+                do {
+                    try await clock.sleep(until: deadline, tolerance: .milliseconds(5))
+                } catch { return }
+                guard !Task.isCancelled, playbackID == id, isVisible,
+                      isActive, scenePhase == .active, !reduceMotion else { return }
+                // A busy main thread must skip missed detents, never replay
+                // them as a burst after the hands have already moved on.
+                guard deadline.duration(to: clock.now) < .milliseconds(80) else { continue }
+                tick.impactOccurred(intensity: 0.85)
+                tick.prepare()
+            }
+        }
+    }
+
+    private func finishPlayback(id: Int) {
         guard playbackID == id, isVisible, isActive, scenePhase == .active else { return }
+        hapticTask?.cancel()
+        hapticTask = nil
         isPlaying = false
-        if withHaptics { settledFeedback += 1 }
+        settledFeedback += 1
     }
 
     private func resetPlayback() {
         // Invalidates completion callbacks as well as the tap sequence. Leaving
         // a page mid-turn must never deliver a late haptic on the next page.
         playbackID += 1
+        hapticTask?.cancel()
+        hapticTask = nil
         taps = BrandTapSequence()
         var transaction = Transaction()
         transaction.disablesAnimations = true

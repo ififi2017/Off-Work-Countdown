@@ -19,9 +19,18 @@ enum OWCMotion {
     static let recordsScaleChange = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.20)
     static let paywallPresentation = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.32)
     static let dragReturn = Animation.spring(duration: 0.38, bounce: 0.12)
-    /// A discovered brand moment: one turn, decelerating into five o'clock.
-    /// Longer than ordinary UI feedback so the clock's path stays readable.
-    static let brandCelebration = Animation.timingCurve(0.23, 1, 0.32, 1, duration: 0.8)
+    /// A clock winding down: the native coast curve also determines when each
+    /// 45-degree haptic tick happens, so soundless clicks follow the hands.
+    static let brandCelebrationCurve = UnitCurve.easeOut
+    static let brandCelebrationDuration = 4.8
+    static let brandCelebrationDegrees = 4.0 * 360
+    static let brandCelebration = Animation.timingCurve(
+        brandCelebrationCurve, duration: brandCelebrationDuration
+    )
+    // The final detent is delivered by the animation's completion, not a timer.
+    static let brandCelebrationTickTimes: [Double] = (1..<32).map {
+        brandCelebrationCurve.inverse.value(at: Double($0) / 32) * brandCelebrationDuration
+    }
 
     /// One row of a first-run summary arriving.
     ///
