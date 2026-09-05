@@ -3580,3 +3580,45 @@ func recordsScheduleContinuesWithoutAppVisits() async throws {
     #expect(edited.source == .corrected)
     #expect(edited.allocation.workMs == 0)
 }
+
+@MainActor
+@Test("Records passes monthly salary settings through the native bridge for a full February")
+func recordsMonthlySalaryUsesCalendarMonth() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    store.onboardingComplete = true
+    store.plus.debugSetAuthorized(true)
+    store.recordsTimeZoneIdentifier = "UTC"
+    store.salaryEnabled = true
+    store.salaryAmount = "10000"
+    store.salaryType = .monthly
+    store.monthlyWorkingDays = 22
+    store.annualBonusEnabled = false
+    store.workdays = [1, 2, 3, 4, 5]
+    let now = utcDay(2026, 1, 1)
+    let days = (1...28).compactMap { number -> DayResolution? in
+        let date = utcDay(2026, 2, number)
+        guard (2...6).contains(store.recordsCalendar.component(.weekday, from: date)) else { return nil }
+        let segments = [NativeShiftSegment(
+            startAtMs: date.addingTimeInterval(9 * 3_600).timeIntervalSince1970 * 1_000,
+            endAtMs: date.addingTimeInterval(17 * 3_600).timeIntervalSince1970 * 1_000
+        )]
+        return DayResolution(
+            dayKey: RecordJSON.dayKey(date, calendar: store.recordsCalendar),
+            shiftAnchorDate: date, layer: .schedule, periodID: nil, snapshotID: nil,
+            isScheduledWorkday: true, segments: segments,
+            baseScheduleIsWorkday: true, baseScheduleSegments: segments
+        )
+    }
+    let cells = days.map { day in
+        RecordsDayCell(
+            dayKey: day.dayKey, date: day.shiftAnchorDate, appearance: .planned,
+            workMs: 28_800_000, overtimeMs: 0, breakMs: 0, freeMs: 0,
+            observationCount: 0, isToday: false, isFuture: true,
+            isProjection: false, hasConflict: false
+        )
+    }
+    let total = try #require(store.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.total.earnings)
+    #expect(abs(total - 10_000) < 0.001)
+}

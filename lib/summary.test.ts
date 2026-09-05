@@ -646,3 +646,62 @@ describe("summarize", () => {
     expect(tokyo.days).not.toBe(losAngeles.days);
   });
 });
+
+describe("Records calendar-month salary", () => {
+  const monthlyRules = {
+    salaryAmount: "10000", salaryType: "monthly" as const,
+    workdays: MON_TO_FRI, annualBonusMonths: 0, timeZoneIdentifier: "UTC",
+  };
+  function monthDays(year: number, month: number) {
+    return Array.from({ length: new Date(Date.UTC(year, month, 0)).getUTCDate() }, (_, index) => {
+      const start = Date.UTC(year, month - 1, index + 1, 9);
+      if (!MON_TO_FRI.includes(new Date(start).getUTCDay())) return null;
+      const segments = [{ startAtMs: start, endAtMs: start + 8 * 3_600_000 }];
+      return {
+        dayKey: new Date(start).toISOString().slice(0, 10),
+        resolvedSegments: segments, plannedSegments: segments,
+        overtimeSegments: [], observations: [], isActiveAnchor: false,
+      };
+    }).filter(value => value !== null);
+  }
+  it.each([2, 4, 7, 9])("pays 10000 for full attendance in month %i, independent of average daily pay", month => {
+    const result = summarizeRecordsActualAndForecast({
+      days: monthDays(2026, month), dailySalary: 10000 / 22,
+      asOfMs: Date.UTC(2026, 0, 1), salaryRules: monthlyRules,
+    });
+    expect(result.forecast.earnings).toBeCloseTo(10000, 8);
+  });
+  it("adds actual and remaining forecast to one full monthly salary", () => {
+    const days = monthDays(2026, 9);
+    const split = 4;
+    const result = summarizeRecordsActualAndForecast({
+      days: days.map((day, index) => index < split ? { ...day, actualKind: "corrected" as const } : day),
+      dailySalary: 10000 / 22, asOfMs: Date.UTC(2026, 8, 5), salaryRules: monthlyRules,
+    });
+    expect(result.actual.earnings).toBeCloseTo(10000 * split / days.length, 8);
+    expect(result.total.earnings).toBeCloseTo(10000, 8);
+  });
+  it("allocates a cross-month week using each month's own scheduled days", () => {
+    const feb = monthDays(2026, 2), mar = monthDays(2026, 3);
+    const result = summarizeRecordsActualAndForecast({
+      days: [...feb.slice(-2), ...mar.slice(0, 3)], dailySalary: 10000 / 22,
+      asOfMs: Date.UTC(2026, 0, 1), salaryRules: monthlyRules,
+    });
+    expect(result.total.earnings).toBeCloseTo(10000 * (2 / feb.length + 3 / mar.length), 8);
+  });
+  it("pays twelve full monthly salaries over a full year", () => {
+    const result = summarizeRecordsActualAndForecast({
+      days: Array.from({ length: 12 }, (_, index) => monthDays(2026, index + 1)).flat(),
+      dailySalary: 10000 / 22, asOfMs: Date.UTC(2025, 0, 1), salaryRules: monthlyRules,
+    });
+    expect(result.total.earnings).toBeCloseTo(120000, 7);
+  });
+  it("keeps daily wages proportional to attended days", () => {
+    const days = monthDays(2026, 2);
+    const result = summarizeRecordsActualAndForecast({
+      days, dailySalary: 500, asOfMs: Date.UTC(2026, 0, 1),
+      salaryRules: { ...monthlyRules, salaryType: "daily", salaryAmount: "500" },
+    });
+    expect(result.total.earnings).toBe(days.length * 500);
+  });
+});
