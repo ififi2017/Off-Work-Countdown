@@ -591,6 +591,7 @@ struct NativeLifetimeIncomeInput: Codable {
 }
 
 struct NativeRecordsActualForecastDay: Codable {
+    var dayKey: String? = nil
     let actualKind: String?
     let resolvedSegments: [NativeShiftSegment]
     let plannedSegments: [NativeShiftSegment]
@@ -608,6 +609,7 @@ struct NativeRecordsActualForecastInput: Codable {
     let days: [NativeRecordsActualForecastDay]
     let dailySalary: Double?
     let asOfMs: Double
+    var salaryRules: NativeRulesInput? = nil
 }
 
 struct NativeReminder: Codable, Hashable {

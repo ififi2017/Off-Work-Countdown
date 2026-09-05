@@ -3888,6 +3888,7 @@ final class OffWorkStore {
                 )
             }
             return NativeRecordsActualForecastDay(
+                dayKey: day.dayKey,
                 actualKind: actualKind,
                 resolvedSegments: day.segments,
                 plannedSegments: day.baseScheduleSegments,
@@ -3900,7 +3901,8 @@ final class OffWorkStore {
         return try? CountdownRules.shared.recordsActualForecast(input: .init(
             days: inputs,
             dailySalary: currentSnapshot?.dailySalary,
-            asOfMs: now.timeIntervalSince1970 * 1_000
+            asOfMs: now.timeIntervalSince1970 * 1_000,
+            salaryRules: rulesInput(at: now, using: .base)
         ))
     }
 

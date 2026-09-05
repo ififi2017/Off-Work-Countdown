@@ -1,5 +1,6 @@
 import {
   addCivilDaysMs,
+  getDailySalary,
   isScheduledWorkday,
   isScheduledWorkdayInZone,
   startOfCivilDayMs,
@@ -59,6 +60,8 @@ export interface RecordsSummaryObservation {
 }
 
 export interface RecordsActualForecastDay {
+  /** Shift anchor civil date, including for overnight shifts. */
+  dayKey?: string;
   /** Null is a forecast row; an actual row always wins for its civil date. */
   actualKind?: "corrected" | "observed" | null;
   /** The final override/calendar/schedule-chain answer for this date. */
@@ -234,15 +237,53 @@ export function summarizeRecordsActualAndForecast(params: {
   days: RecordsActualForecastDay[];
   dailySalary: number | null;
   asOfMs: number;
+  salaryRules?: {
+    salaryAmount: string;
+    salaryType: "monthly" | "daily";
+    workdays: number[];
+    schedule?: WorkScheduleConfig | null;
+    timeZoneIdentifier?: string | null;
+    annualBonusMonths: number;
+  };
 }): RecordsActualForecastSummary {
   let actualDays = 0;
   let actualMs = 0;
-  let actualPayRatio = 0;
+  let actualPay = 0;
   let forecastDays = 0;
   let forecastMs = 0;
-  let forecastPayRatio = 0;
+  let forecastPay = 0;
 
+  const monthRates = new Map<string, number | null>();
+  const dailyRate = (day: RecordsActualForecastDay): number | null => {
+    const rules = params.salaryRules;
+    if (!rules || rules.salaryType === "daily") return params.dailySalary;
+    const anchor = day.plannedSegments[0] ?? day.resolvedSegments[0];
+    const civil = day.dayKey ? civilDay(day.dayKey) : null;
+    if (!anchor || !civil) return null;
+    const monthKey = day.dayKey!.slice(0, 7);
+    if (!monthRates.has(monthKey)) {
+      const zone = rules.timeZoneIdentifier || undefined;
+      const start = addCivilDaysMs(
+        startOfCivilDayMs(anchor.startAtMs, zone), 1 - civil.day, zone,
+      );
+      const daysInMonth = new Date(Date.UTC(civil.year, civil.month, 0)).getUTCDate();
+      const end = addCivilDaysMs(start, daysInMonth, zone);
+      const scheduledDays = countScheduledWorkdays(
+        new Date(start), new Date(end), rules.workdays, rules.schedule, zone,
+      );
+      // Monthly pay is allocated across this calendar month's scheduled days,
+      // never across the average-day setting used by the live timer.
+      monthRates.set(monthKey, scheduledDays > 0
+        ? getDailySalary(rules.salaryAmount, "monthly", scheduledDays, rules.annualBonusMonths)
+        : null);
+    }
+    return monthRates.get(monthKey) ?? null;
+  };
+  let hasSalary = params.dailySalary !== null;
   for (const day of params.days) {
+    if (day.resolvedSegments.length === 0 && day.overtimeSegments.length === 0) continue;
+    const rate = dailyRate(day);
+    if (rate === null) hasSalary = false;
     const plannedMs = mergedSegmentDuration(day.plannedSegments);
     const isActual = day.actualKind === "corrected" || day.actualKind === "observed";
     if (isActual) {
@@ -264,7 +305,7 @@ export function summarizeRecordsActualAndForecast(params: {
       if (workedMs > 0) {
         actualDays += 1;
         actualMs += workedMs;
-        actualPayRatio += plannedMs > 0 ? workedMs / plannedMs : 1;
+        actualPay += (rate ?? 0) * (plannedMs > 0 ? workedMs / plannedMs : 1);
       }
       if (day.isActiveAnchor) {
         const futureMs = mergedSegmentDuration(
@@ -276,7 +317,7 @@ export function summarizeRecordsActualAndForecast(params: {
         if (futureMs > 0) {
           if (workedMs <= 0) forecastDays += 1;
           forecastMs += futureMs;
-          forecastPayRatio += plannedMs > 0 ? futureMs / plannedMs : (workedMs <= 0 ? 1 : 0);
+          forecastPay += (rate ?? 0) * (plannedMs > 0 ? futureMs / plannedMs : (workedMs <= 0 ? 1 : 0));
         }
       }
       continue;
@@ -285,11 +326,11 @@ export function summarizeRecordsActualAndForecast(params: {
     if (forecastWorkMs <= 0) continue;
     forecastDays += 1;
     forecastMs += forecastWorkMs;
-    forecastPayRatio += 1;
+    forecastPay += rate ?? 0;
   }
 
-  const actualEarnings = earningsForRatio(params.dailySalary, actualPayRatio);
-  const forecastEarnings = earningsForRatio(params.dailySalary, forecastPayRatio);
+  const actualEarnings = hasSalary ? actualPay : null;
+  const forecastEarnings = hasSalary ? forecastPay : null;
   return {
     actual: {
       days: actualDays,
