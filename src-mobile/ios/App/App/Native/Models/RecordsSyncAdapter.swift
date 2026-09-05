@@ -834,6 +834,30 @@ enum RecordsSyncPayload {
 }
 
 enum RecordsSyncOutbox {
+    /// A missing server row needs a create, not another update with a stale
+    /// change tag. Keep the local revision, payload and erase/revival intent.
+    static func forgetMissingRecord(
+        _ state: inout SyncLocalState,
+        name: String,
+        generation: Int,
+        expectedSystemFields: Data
+    ) -> Bool {
+        guard state.generation == generation else { return false }
+        for (key, var row) in state.rows where row.generation == generation {
+            if row.recordName == name, row.lastKnownRecord == expectedSystemFields {
+                row.lastKnownRecord = nil
+            } else if RecordsSyncIdentity.erasedName(type: row.entityType, key: row.logicalKey) == name,
+                      row.lastKnownErasedRecord == expectedSystemFields {
+                row.lastKnownErasedRecord = nil
+            } else {
+                continue
+            }
+            state.rows[key] = row
+            return true
+        }
+        return false
+    }
+
     static func markDirty(
         _ state: inout SyncLocalState,
         type: RecordEntityType,
