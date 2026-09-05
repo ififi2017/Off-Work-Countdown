@@ -274,9 +274,8 @@ struct UnscheduledTimerView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store, showsFocus: true)
             Spacer()
-            CelebratingBrandMark(showsDepth: true, easterEgg: .readyNudge)
+            CelebratingBrandMark(showsDepth: true, isActive: store.selectedTab == .timer)
                 .frame(width: 168, height: 168)
                 .padding(.bottom, 26)
             Text(store.t("unscheduledTitle"))
@@ -315,8 +314,6 @@ struct RestDayDesignView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store, showsFocus: true)
-
             OWCContentSizedScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     Label(store.t("widgetRestDay"), systemImage: "bed.double.fill")
@@ -433,7 +430,6 @@ struct CompletedShiftDesignView: View {
                 .padding(.top, 8)
             } else {
                 VStack(spacing: 0) {
-                    OWCAppHeader(store: store, showsFocus: true)
                     hero
                     if let note = store.earlyClockOffNote(for: snapshot) {
                         EarlyClockOffBanner(store: store, note: note)

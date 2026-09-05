@@ -156,36 +156,38 @@ struct RecordsDesignView: View {
                     recordsRootHeader
                 }
 
-                if let banner = store.records.archiveBanner {
-                    archiveBannerCard(banner)
-                }
+                VStack(alignment: .leading, spacing: 14) {
+                    if let banner = store.records.archiveBanner {
+                        archiveBannerCard(banner)
+                    }
 
-                RecordsScalePicker(store: store, scale: scaleBinding)
+                    RecordsScalePicker(store: store, scale: scaleBinding)
 
-                // Side by side once there is room for both. An iPad in
-                // landscape stretched a single column across the whole pane,
-                // so a month grid and a summary card each ran the width of the
-                // screen. The chart keeps the larger share; the conclusions
-                // are text and stop at a readable measure.
-                //
-                // Measured rather than `ViewThatFits`: that asks each
-                // candidate for its ideal width, and the legend row inside the
-                // chart card reports the width it would like as one unbroken
-                // line, which is enough to reject the two-column layout on a
-                // pane that has ample room for it.
-                if canvasWidth >= Self.twoColumnMinimum {
-                    HStack(alignment: .top, spacing: 14) {
+                    // Side by side once there is room for both. An iPad in
+                    // landscape stretched a single column across the whole pane,
+                    // so a month grid and a summary card each ran the width of the
+                    // screen. The chart keeps the larger share; the conclusions
+                    // are text and stop at a readable measure.
+                    //
+                    // Measured rather than `ViewThatFits`: that asks each
+                    // candidate for its ideal width, and the legend row inside the
+                    // chart card reports the width it would like as one unbroken
+                    // line, which is enough to reject the two-column layout on a
+                    // pane that has ample room for it.
+                    if canvasWidth >= Self.twoColumnMinimum {
+                        HStack(alignment: .top, spacing: 14) {
+                            visualization(expandedPresentation: false)
+                            conclusionColumn
+                                .frame(maxWidth: Self.conclusionColumnWidth, alignment: .top)
+                        }
+                    } else {
                         visualization(expandedPresentation: false)
                         conclusionColumn
-                            .frame(maxWidth: Self.conclusionColumnWidth, alignment: .top)
                     }
-                } else {
-                    visualization(expandedPresentation: false)
-                    conclusionColumn
                 }
+                .padding(.horizontal, OWCDesign.pageInset)
             }
-            .padding(.horizontal, OWCDesign.pageInset)
-            .padding(.top, 12)
+            .padding(.top, usesPhonePortraitHeader ? 0 : 12)
             .padding(.bottom, 104)
         }
         .scrollIndicators(.hidden)
@@ -290,26 +292,8 @@ struct RecordsDesignView: View {
                 .sharedBackgroundVisibility(.hidden)
             }
 
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                if showsTodayButton {
-                    Button(action: returnToToday) {
-                        OWCGlassCircleLabel {
-                            Image(systemName: "scope")
-                                .foregroundStyle(OWCDesign.accent)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(store.t("recordsToday"))
-                }
-
-                NavigationLink(value: RecordsRoute.allRecords) {
-                    OWCGlassCircleLabel {
-                        Image(systemName: "list.bullet.rectangle")
-                            .foregroundStyle(OWCDesign.secondary)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(store.t("recordsAllRecords"))
+            ToolbarItem(placement: .topBarTrailing) {
+                recordsTrailingControls
             }
             .sharedBackgroundVisibility(.hidden)
         }
@@ -321,8 +305,6 @@ struct RecordsDesignView: View {
         } trailing: {
             recordsTrailingControls
         }
-        .padding(.horizontal, max(0, OWCDesign.contentInset - OWCDesign.pageInset))
-        .padding(.top, 2)
         .onGeometryChange(for: Bool.self) { proxy in
             proxy.frame(in: .named("recordsRootScroll")).maxY < 8
         } action: { _, shouldShow in
@@ -353,29 +335,14 @@ struct RecordsDesignView: View {
     }
 
     private var recordsTrailingControls: some View {
-        HStack(spacing: 8) {
-            if showsTodayButton {
-                Button(action: returnToToday) {
-                    OWCGlassCircleLabel {
-                        Image(systemName: "scope")
-                            .foregroundStyle(OWCDesign.accent)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(store.t("recordsToday"))
-                .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
+        NavigationLink(value: RecordsRoute.allRecords) {
+            OWCGlassCircleLabel {
+                Image(systemName: "list.bullet.rectangle")
+                    .foregroundStyle(OWCDesign.secondary)
             }
-
-            NavigationLink(value: RecordsRoute.allRecords) {
-                OWCGlassCircleLabel {
-                    Image(systemName: "list.bullet.rectangle")
-                        .foregroundStyle(OWCDesign.secondary)
-                }
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(store.t("recordsAllRecords"))
         }
-        .animation(reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.18), value: showsTodayButton)
+        .buttonStyle(.plain)
+        .accessibilityLabel(store.t("recordsAllRecords"))
     }
 
     private func updateCompactRootBar(_ shouldShow: Bool) {
@@ -398,13 +365,13 @@ struct RecordsDesignView: View {
                 }
                 .accessibilityLabel(store.t("recordsPreviousPeriod"))
             }
-            Text(periodTitle)
-                .font(.title3.bold())
-                .foregroundStyle(OWCDesign.primary)
-                .contentTransition(.numericText())
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-                .frame(maxWidth: .infinity)
+            if showsTodayButton {
+                Button(action: returnToToday) { periodTitleLabel }
+                    .accessibilityLabel(store.t("recordsToday"))
+                    .accessibilityValue(periodTitle)
+            } else {
+                periodTitleLabel.accessibilityAddTraits(.isHeader)
+            }
             if scale != .life {
                 Button {
                     anchor = store.shiftRecordsAnchor(anchor, scale: scale, by: 1)
@@ -431,6 +398,24 @@ struct RecordsDesignView: View {
         .buttonStyle(.plain)
         .foregroundStyle(OWCDesign.secondary)
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+    }
+
+    private var periodTitleLabel: some View {
+        HStack(spacing: 6) {
+            Text(periodTitle)
+                .font(.title3.bold())
+                .foregroundStyle(OWCDesign.primary)
+                .contentTransition(.numericText())
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+            if showsTodayButton {
+                Image(systemName: "scope")
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.accent)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .contentShape(Rectangle())
     }
 
     @ViewBuilder

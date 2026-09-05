@@ -105,13 +105,10 @@ struct TabletShellView: View {
                 TimerDesignView(
                     store: store,
                     wide: false,
+                    onShowSidebar: sidebarVisible ? nil : { withAnimation(shellAnimation) { sidebarVisible = true } },
                     onOpenSettings: { route in store.presentedRoute = route },
                     timelineActive: store.selectedTab == .timer
                 )
-                // This pane runs the phone layout, which no longer caps its own
-                // width. The pane can be up to 620pt (`tabletMinimum`), so cap
-                // it at the widest iPhone rather than let a phone design stretch.
-                .frame(maxWidth: 440)
             } else {
                 TabletTimerView(
                     store: store,
@@ -413,6 +410,7 @@ private struct TabletTimerView: View {
                 TimerDesignView(
                     store: store,
                     wide: true,
+                    onShowSidebar: sidebarVisible ? nil : showSidebar,
                     timelineDate: date,
                     animatesPhaseChanges: false
                 )
@@ -420,24 +418,6 @@ private struct TabletTimerView: View {
         }
         .id(phase.surfaceIdentity)
         .transition(timerTransition)
-        .overlay(alignment: .topLeading) {
-            // Completed, rest-day and rules-error states reuse the common
-            // timer surface, which does not know about the custom iPad
-            // sidebar. Keep the reveal control at the shell boundary so
-            // none of those states can strand the user in full screen.
-            if !sidebarVisible, phase.usesCommonTimerSurface {
-                Button(action: showSidebar) {
-                    OWCGlassCircleLabel(visualSize: 38) {
-                        Image(systemName: "sidebar.left")
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(store.t("showSidebar"))
-                .padding(.leading, 8)
-                .padding(.top, 22)
-                .zIndex(10)
-            }
-        }
         .animation(timerAnimation, value: phase)
     }
 
@@ -878,7 +858,6 @@ private struct TabletSettingsView: View {
                 } trailing: {
                     SettingsPlusStarButton(store: store)
                 }
-                .padding(.top, 2)
 
                 // Two columns only when they actually fit. With the sidebar open an
                 // 11-inch iPad leaves ~544 pt here, and splitting that in two left
@@ -899,9 +878,9 @@ private struct TabletSettingsView: View {
                         .frame(maxWidth: .infinity)
                     }
                 }
-                .padding(.top, 12)
+                .padding(.top, 14)
+                .padding(.horizontal, OWCDesign.pageInset)
             }
-            .padding(.horizontal, OWCDesign.pageInset)
         }
         .background(OWCDesign.page)
     }
@@ -927,12 +906,9 @@ private func tabletHeader(
     HStack {
         HStack(spacing: 8) {
             if !sidebarVisible {
-                // The same 38pt glass circle as Focus and the theme toggle it
-                // sits beside. It used to be a card-backed rounded square, so
-                // the one row of controls on the page carried two shapes and
-                // two materials for three buttons of equal rank.
+                // Use the same control geometry as the Records and Settings roots.
                 Button(action: showSidebar) {
-                    OWCGlassCircleLabel(visualSize: 38) {
+                    OWCGlassCircleLabel {
                         Image(systemName: "sidebar.left")
                     }
                 }
@@ -943,7 +919,7 @@ private func tabletHeader(
             Button {
                 store.openPaidOrRun(.focus, action: .openFocus)
             } label: {
-                OWCGlassCircleLabel(visualSize: 38) {
+                OWCGlassCircleLabel {
                     Image(systemName: "timer")
                 }
             }
@@ -960,7 +936,7 @@ private func tabletHeader(
         HStack {
             Spacer(minLength: 0)
             Button { store.toggleQuickTheme() } label: {
-                OWCGlassCircleLabel(visualSize: 38) {
+                OWCGlassCircleLabel {
                     Group {
                         if store.quickThemeIsAuto {
                             Text(verbatim: "A").font(.body.weight(.semibold))
@@ -975,8 +951,9 @@ private func tabletHeader(
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
-    .padding(.horizontal, sidebarVisible ? 40 : 26)
-    .padding(.top, 22)
+    .frame(minHeight: OWCDesign.rootHeaderHeight)
+    .padding(.horizontal, OWCDesign.rootControlInset)
+    .padding(.top, OWCDesign.rootHeaderTopInset)
 }
 
 /// Lays two settings columns side by side when the pane is wide enough, and

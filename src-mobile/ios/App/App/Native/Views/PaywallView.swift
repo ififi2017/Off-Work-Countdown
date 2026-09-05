@@ -1,6 +1,5 @@
 import StoreKit
 import SwiftUI
-import UIKit
 
 /// The paywall as a page: its own scroll container, plus the shared content.
 ///
@@ -23,9 +22,9 @@ struct PaywallView: View {
                 if !store.plus.isAuthorized {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(store.t(reason.lockedTitleKey))
-                            .font(.largeTitle.bold())
-                            .tracking(-0.6)
+                            .font(.title.bold())
                             .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
 
                         Text(store.t("plusIntroBody"))
                             .font(.callout)
@@ -46,8 +45,9 @@ struct PaywallView: View {
                     authorizedAction: finishAuthorizedFlow
                 )
             }
+            .frame(maxWidth: 560, alignment: .leading)
             .padding(.horizontal, OWCDesign.contentInset)
-            .padding(.top, 28)
+            .padding(.top, 24)
             .animation(
                 reduceMotion ? OWCMotion.reduced : OWCMotion.paywallPresentation,
                 value: store.plus.isAuthorized
@@ -214,7 +214,7 @@ struct PaywallContent: View {
                 .padding(.vertical, 9)
                 .accessibilityElement(children: .combine)
                 if index < PlusBenefit.all.count - 1 {
-                    Divider().overlay(OWCDesign.separator).padding(.leading, 44)
+                    Divider().overlay(OWCDesign.separator).padding(.leading, 62)
                 }
             }
         }
@@ -292,22 +292,29 @@ struct PaywallContent: View {
         .frame(maxWidth: .infinity, minHeight: 44)
     }
 
-    /// Keep all three prices visible in one glance. Accessibility Dynamic Type
-    /// falls back to full-width rows so the labels never become tiny just to
-    /// preserve the compact layout.
+    /// Narrow panes and accessibility text sizes use full-width rows, keeping
+    /// plan names readable without squeezing three tiles into the available space.
     @ViewBuilder
     private var planPicker: some View {
         if dynamicTypeSize.isAccessibilitySize {
-            VStack(spacing: 8) {
-                ForEach(visiblePlans) { plan in
-                    planRow(plan)
-                }
-            }
+            planRows
         } else {
-            HStack(alignment: .top, spacing: 8) {
-                ForEach(visiblePlans) { plan in
-                    planTile(plan)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: 8) {
+                    ForEach(visiblePlans) { plan in
+                        planTile(plan)
+                            .frame(minWidth: 112)
+                    }
                 }
+                planRows
+            }
+        }
+    }
+
+    private var planRows: some View {
+        VStack(spacing: 8) {
+            ForEach(visiblePlans) { plan in
+                planRow(plan)
             }
         }
     }
@@ -576,44 +583,31 @@ private struct PlusSubscriberThankYouView: View {
     let store: OffWorkStore
     let playsOnAppear: Bool
     let onContinue: (() -> Void)?
-    @State private var handRotation = 0.0
-    @State private var textVisible: Bool
-    @State private var isPlaying = false
-    @State private var markDimmed = false
-    @State private var handledInitialPlayback = false
-    @State private var rotationHaptics: Task<Void, Never>?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    init(
-        store: OffWorkStore,
-        playsOnAppear: Bool,
-        onContinue: (() -> Void)?
-    ) {
-        self.store = store
-        self.playsOnAppear = playsOnAppear
-        self.onContinue = onContinue
-        _textVisible = State(initialValue: !playsOnAppear)
-    }
-
     var body: some View {
-        VStack(spacing: 0) {
-            replayableMark
-                .frame(maxWidth: 290)
-                .frame(height: 290)
+        VStack(alignment: .leading, spacing: 0) {
+            CelebratingBrandMark(
+                showsDepth: true,
+                replaysOnTap: true,
+                playsOnAppear: playsOnAppear,
+                accessibilityTitle: store.t("plusReplayCelebration"),
+                isActive: store.plus.isAuthorized
+            )
+                .frame(width: 144, height: 144)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 24)
 
-            VStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text(store.t("plusThanksTitle"))
-                    .font(.largeTitle.bold())
-                    .multilineTextAlignment(.center)
+                    .font(.title.bold())
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
                 Text(store.t("plusThanksBody"))
                     .font(.callout)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineSpacing(3)
-                    .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .opacity(textVisible ? 1 : 0)
-            .offset(y: textVisible || reduceMotion ? 0 : 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             OWCGroupCard {
                 OWCRow(
@@ -641,98 +635,6 @@ private struct PlusSubscriberThankYouView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .task {
-            guard playsOnAppear, !handledInitialPlayback else { return }
-            handledInitialPlayback = true
-            play(revealsText: true)
-        }
-        .onDisappear { rotationHaptics?.cancel() }
-    }
-
-    private var replayableMark: some View {
-        GeometryReader { geometry in
-            let side = min(geometry.size.width, geometry.size.height)
-            let scale = side / 1024
-            let endpointDiameter = max(44, 172 * scale)
-            ZStack {
-                OWCBrandMark(
-                    isPressed: isPlaying,
-                    handRotation: .degrees(handRotation),
-                    showsDepth: true
-                )
-                    .opacity(markDimmed ? 0.72 : 1)
-                    .frame(width: side, height: side)
-
-                Button { play(revealsText: false) } label: {
-                    Circle()
-                        .fill(Color.clear)
-                        .contentShape(Circle())
-                        .frame(width: endpointDiameter, height: endpointDiameter)
-                }
-                .buttonStyle(.plain)
-                .position(x: 664.5 * scale, y: 776.1 * scale)
-                .accessibilityLabel(store.t("plusReplayCelebration"))
-            }
-            .frame(width: side, height: side)
-            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-        }
-        .aspectRatio(1, contentMode: .fit)
-    }
-
-    private func play(revealsText: Bool) {
-        guard !isPlaying else { return }
-        isPlaying = true
-        if revealsText { textVisible = false }
-        if reduceMotion {
-            if revealsText {
-                withAnimation(OWCMotion.reduced) {
-                    textVisible = true
-                } completion: {
-                    isPlaying = false
-                }
-            } else {
-                withAnimation(OWCMotion.reduced) {
-                    markDimmed = true
-                } completion: {
-                    withAnimation(OWCMotion.reduced) {
-                        markDimmed = false
-                    } completion: {
-                        isPlaying = false
-                    }
-                }
-            }
-            return
-        }
-        playRotationHaptics()
-        withAnimation(OWCMotion.subscriptionCelebration) {
-            handRotation += 1_080
-        } completion: {
-            if revealsText {
-                withAnimation(.easeOut(duration: 0.32)) {
-                    textVisible = true
-                } completion: {
-                    isPlaying = false
-                }
-            } else {
-                isPlaying = false
-            }
-        }
-    }
-
-    private func playRotationHaptics() {
-        rotationHaptics?.cancel()
-        let interval = OWCMotion.subscriptionCelebrationDuration
-            / Double(OWCMotion.subscriptionCelebrationTickCount)
-        rotationHaptics = Task { @MainActor in
-            let generator = UISelectionFeedbackGenerator()
-            generator.prepare()
-            for _ in 0..<OWCMotion.subscriptionCelebrationTickCount {
-                try? await Task.sleep(for: .seconds(interval))
-                guard !Task.isCancelled else { return }
-                generator.selectionChanged()
-                generator.prepare()
-            }
-        }
     }
 }
 
