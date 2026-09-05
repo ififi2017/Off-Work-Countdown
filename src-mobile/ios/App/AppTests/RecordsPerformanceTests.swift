@@ -11,20 +11,37 @@ import Testing
 @Suite("Records surface cost")
 struct RecordsPerformanceTests {
     /// Roughly two years of a normal shift: clock-in and clock-out every day.
-    private func seededStore(days: Int) -> OffWorkStore {
+    private func seededStore(days: Int) throws -> OffWorkStore {
         let defaults = UserDefaults(suiteName: "owc.perf.\(UUID().uuidString)")!
-        let store = OffWorkStore(defaults: defaults, records: .inMemory())
         let zone = TimeZone(identifier: "Asia/Shanghai")!
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = zone
         let today = calendar.startOfDay(for: .now)
 
-        let snapshotID = UUID()
+        let records = RecordCoordinator.inMemory()
+        let firstDay = try #require(calendar.date(byAdding: .day, value: -(days - 1), to: today))
+        records.ensureSeeded(
+            hours: ScheduleHoursConfiguration(
+                startTime: "22:00", endTime: "06:00", workdays: Array(0...6),
+                schedule: NativeWorkSchedule(
+                    mode: "classic", referenceWeekStartMs: nil, referenceWeekType: nil,
+                    singleWeekendWorkday: nil, rotationAnchorMs: nil,
+                    rotationWorkDays: nil, rotationRestDays: nil
+                ),
+                breakStartTime: "02:00", breakDurationMinutes: 60
+            ),
+            at: firstDay, timeZone: zone
+        )
+        let store = OffWorkStore(defaults: defaults, records: records)
+        store.onboardingComplete = true
+        store.plus.debugSetAuthorized(true)
+        store.recordsTimeZoneIdentifier = zone.identifier
+        let snapshotID = try #require(records.state.snapshots.first?.id)
         for offset in 0..<days {
             guard let anchor = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
             for (kind, at) in [
-                (WorkObservationKind.countdownStarted, anchor.addingTimeInterval(9 * 3600)),
-                (WorkObservationKind.countdownStopped, anchor.addingTimeInterval(18 * 3600)),
+                (WorkObservationKind.countdownStarted, anchor.addingTimeInterval(22 * 3600)),
+                (WorkObservationKind.countdownStopped, anchor.addingTimeInterval(30 * 3600)),
             ] {
                 store.records.recordObservation(
                     kind: kind,
@@ -77,8 +94,8 @@ struct RecordsPerformanceTests {
     }
 
     @Test("reports what one pass over the Records surfaces costs")
-    func surfaceCost() async {
-        let store = seededStore(days: 520)
+    func surfaceCost() async throws {
+        let store = try seededStore(days: 520)
         // Warm the JavaScriptCore bundle and any lazily-built caches so the
         // numbers describe the steady state a user actually pays.
         let window = store.recordsWindow(for: .year, anchor: .now)
@@ -99,10 +116,14 @@ struct RecordsPerformanceTests {
         // A month of cells is what the calendar draws on every load, and each
         // one now also intersects the night before. This is the regression
         // gate for that: a screen recording cannot catch it getting slower.
-        let month = Array(year.suffix(31))
+        let calendar = store.recordsCalendar
+        let today = calendar.startOfDay(for: .now)
+        let end = try #require(calendar.date(byAdding: .day, value: -1, to: today))
+        let start = try #require(calendar.date(byAdding: .day, value: -32, to: today))
+        let month = store.resolvedDays(from: start, through: end)
         var monthCells: [RecordsDayCell] = []
         let cellsMs = milliseconds("recordsDayCell with adjacent shifts, one month") {
-            monthCells = month.enumerated().map { index, day in
+            monthCells = month.enumerated().dropFirst().map { index, day in
                 store.recordsDayCell(
                     for: day,
                     previous: index > 0 ? month[index - 1] : nil,
@@ -110,9 +131,16 @@ struct RecordsPerformanceTests {
                 )
             }
         }
+        let dayKey = try #require(month.last?.dayKey)
+        var canvas: RecordsDayCanvasModel?
         let canvasMs = await milliseconds("recordsDayCanvas (one day, both shifts)") {
-            _ = await store.recordsDayCanvas(dayKey: year[year.count - 1].dayKey)
+            canvas = await store.recordsDayCanvas(dayKey: dayKey)
         }
+        let rendered = try #require(canvas)
+        #expect(!rendered.isLocked)
+        #expect(rendered.allocation.workMs > 0)
+        #expect(Set(rendered.intervals.compactMap(\.anchorDayKey)).count >= 2)
+        #expect(monthCells.allSatisfy { $0.appearance != .locked && $0.workMs > 0 })
 
         store.saveLifeProfile(
             birthYear: 1992,

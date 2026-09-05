@@ -31,7 +31,6 @@ struct RecordsScalePicker: View {
             }
             .accessibilityLabel(store.t(scale.titleKey))
         }
-        .sensoryFeedback(.selection, trigger: scale)
         // Dense chart navigation has to keep all four destinations visible.
         // Descriptive cards below continue to honor the user's full Dynamic
         // Type setting; only this compact control uses a readable upper bound.
@@ -305,15 +304,14 @@ struct RecordsHeadlineView: View {
                         alignment: .leading,
                         spacing: 8
                     ) {
-                        metric("recordsWorkdays", store.formatCount(summary.workdays), icon: "calendar.badge.checkmark", helpKey: "recordsMetricWorkdaysHelp")
-                        metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), icon: "briefcase.fill", helpKey: "recordsMetricWorkHelp")
-                        metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)), icon: "clock.fill", helpKey: "recordsMetricOvertimeHelp")
-                        metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)), icon: "sun.max.fill", helpKey: "recordsMetricFreeAwakeHelp")
+                        metric("recordsWorkdays", store.formatCount(summary.workdays), helpKey: "recordsMetricWorkdaysHelp")
+                        metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), helpKey: "recordsMetricWorkHelp")
+                        metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)), helpKey: "recordsMetricOvertimeHelp")
+                        metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)), helpKey: "recordsMetricFreeAwakeHelp")
                         if let income = summary.estimatedIncome {
                             metric(
                                 "recordsIncomeCurrentSalary",
                                 store.moneyText(income),
-                                icon: "banknote.fill",
                                 helpKey: nil
                             )
                         }
@@ -337,28 +335,14 @@ struct RecordsHeadlineView: View {
         }
     }
 
-    private func metric(_ titleKey: String, _ value: String, icon: String, helpKey: String?) -> some View {
+    private func metric(_ titleKey: String, _ value: String, helpKey: String?) -> some View {
         let title = store.t(titleKey)
         return VStack(alignment: .leading, spacing: 7) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(OWCDesign.accent)
-                    .frame(width: 28, height: 28)
-                    .background(OWCDesign.accent.opacity(0.12), in: Circle())
-                    .accessibilityHidden(true)
-                Text(title)
-                    .font(.caption)
-                    .foregroundStyle(OWCDesign.secondary)
-                    // Three, because the longest of these labels is the one
-                    // that matters most and two lines was already clipping it
-                    // in English at the default type size.
-                    .lineLimit(3)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .layoutPriority(1)
-                Spacer(minLength: 0)
-            }
-            .padding(.trailing, helpKey == nil ? 0 : 32)
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(OWCDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.trailing, helpKey == nil ? 0 : 32)
             Text(value)
                 .font(.title3.weight(.semibold).monospacedDigit())
                 .foregroundStyle(OWCDesign.primary)
@@ -419,8 +403,8 @@ struct RecordsMonthGrid: View {
                             .aspectRatio(1, contentMode: .fit)
                             .owcEstimated(
                                 RecordsDayMarks.isEstimated(cell),
-                                tint: OWCDesign.secondary,
-                                spacing: 4
+                                tint: OWCDesign.secondary.opacity(0.55),
+                                spacing: 6
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .overlay {
@@ -631,6 +615,9 @@ struct RecordsWeekStrips: View {
             }
         }
         .frame(height: 188)
+        // Dense chart labels have a bounded scale; the full day description
+        // remains available to VoiceOver and in the selected-day summary.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     private func weekStack(_ cell: RecordsDayCell) -> some View {
@@ -675,7 +662,7 @@ struct RecordsWeekStrips: View {
     /// whole column orange said "this day has overtime" in a hue the eye had
     /// to compare against another orange, and threw away how much.
     private func workloadColumn(_ cell: RecordsDayCell) -> some View {
-        let scale = 12 * 3_600_000.0
+        let scale = Double(RecordsWeekAxis.ceiling(for: cells))
         let work = min(1, Double(cell.workMs) / scale)
         let overtime = min(1 - work, Double(cell.overtimeMs) / scale)
         return ZStack(alignment: .bottom) {
@@ -760,7 +747,7 @@ struct RecordsYearCanvas: View {
                         }
                     }
                     .contentShape(Rectangle())
-                    .gesture(DragGesture(minimumDistance: 0).onEnded { value in
+                    .gesture(SpatialTapGesture().onEnded { value in
                         guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
                         select(month: buckets[index].month, bucketIndex: buckets[index].index)
                     })
@@ -777,7 +764,7 @@ struct RecordsYearCanvas: View {
                                 x: min(proxy.size.width - 76, max(76, rect.midX)),
                                 y: min(proxy.size.height - 28, max(28, rect.minY - 18))
                             )
-                            .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                            .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
                         }
                     }
                     .accessibilityRepresentation {
@@ -831,11 +818,11 @@ struct RecordsYearCanvas: View {
             // colour is not available.
             Text(store.t(withoutColor ? "recordsHeatWithoutColor" : "recordsHeatScale"))
                 .font(.caption2)
-                .foregroundStyle(OWCDesign.tertiary)
+                .foregroundStyle(OWCDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .animation(
-            reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.18),
+            reduceMotion ? nil : .easeOut(duration: 0.18),
             value: selectedMonth
         )
     }
@@ -937,7 +924,7 @@ struct RecordsYearMonthBars: View {
             legend(showsProjection: months.contains { $0.projectedMs > 0 })
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selectedMonth)
+        .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedMonth)
     }
 
     private func rows(_ months: [RecordsYearMonthBar], axisMs: Int64, stretches: Bool) -> some View {
@@ -1355,7 +1342,7 @@ struct RecordsLifeCanvas: View {
                     }
                 }
                 .contentShape(Rectangle())
-                .gesture(DragGesture(minimumDistance: 0).onEnded { value in
+                .gesture(SpatialTapGesture().onEnded { value in
                     guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
                     let bucket = buckets[index]
                     let date = bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2)
@@ -1378,7 +1365,7 @@ struct RecordsLifeCanvas: View {
                                 x: min(proxy.size.width - 76, max(76, rect.midX)),
                                 y: min(proxy.size.height - 28, max(28, rect.minY - 18))
                             )
-                            .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                            .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
                         }
                 }
                 .accessibilityRepresentation {
@@ -1450,11 +1437,11 @@ struct RecordsLifeCanvas: View {
                         }
                     }
                 }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
             }
         }
         .animation(
-            reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.18),
+            reduceMotion ? nil : .easeOut(duration: 0.18),
             value: selectedStage
         )
         .animation(
@@ -1757,7 +1744,7 @@ struct RecordsMarkLegend: View {
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .foregroundStyle(OWCDesign.tertiary)
+        .foregroundStyle(OWCDesign.secondary)
     }
 }
 

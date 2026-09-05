@@ -3283,11 +3283,27 @@ func recordsIncomeUsesCompletedScheduledDays() throws {
         isProjection: false,
         hasConflict: false
     )
+    let visibleCells = days.map { day in
+        var cell = recordedCell
+        cell.dayKey = day.dayKey
+        cell.date = day.shiftAnchorDate
+        return cell
+    }
     let headline = try #require(store.recordsHeadline(
-        cells: [recordedCell],
+        cells: visibleCells,
         days: days,
         now: midShift
     ))
+    // The same resolver input includes adjacent shifts and can cover a year.
+    // Each month must count only its own civil days, including paid leave.
+    let august = try #require(store.recordsHeadline(
+        cells: [recordedCell], days: days, now: midShift
+    )?.estimatedIncome)
+    let september = try #require(store.recordsHeadline(
+        cells: Array(visibleCells.dropFirst()), days: days, now: midShift
+    )?.estimatedIncome)
+    #expect(abs(august - daily) < 0.001)
+    #expect(abs(september - daily) < 0.001)
     let income = try #require(headline.estimatedIncome)
 
     #expect(abs(income - 2 * daily) < 0.001)
@@ -3357,4 +3373,27 @@ func purchasedPaywallResumesOnSwipeDismiss() throws {
     #expect(store.editingDayKey == dayKey)
     #expect(store.pendingPlusAction == nil)
     #expect(store.plus.hasSeenIntro)
+}
+
+@MainActor
+@Test("Weekly axis includes all overtime and keeps days comparable")
+func recordsWeekAxisPreservesOvertime() {
+    let hour: Int64 = 3_600_000
+    func cell(work: Int64, overtime: Int64) -> RecordsDayCell {
+        RecordsDayCell(
+            dayKey: "2026-09-01", date: .distantPast, appearance: .recorded,
+            workMs: work * hour, overtimeMs: overtime * hour,
+            breakMs: 0, freeMs: 0, observationCount: 1,
+            isToday: false, isFuture: false, isProjection: false, hasConflict: false
+        )
+    }
+    #expect(RecordsWeekAxis.ceiling(for: []) == 12 * hour)
+    #expect(RecordsWeekAxis.ceiling(for: [cell(work: 8, overtime: 1)]) == 12 * hour)
+    let days = [cell(work: 12, overtime: 2), cell(work: 11, overtime: 3)]
+    let axis = RecordsWeekAxis.ceiling(for: days)
+    #expect(axis == 14 * hour)
+    for day in days {
+        #expect(day.workMs + day.overtimeMs <= axis)
+        #expect(Double(day.overtimeMs) / Double(axis) > 0)
+    }
 }

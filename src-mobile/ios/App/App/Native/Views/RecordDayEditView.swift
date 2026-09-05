@@ -172,6 +172,8 @@ struct RecordDayEditView: View {
                 }
             }
         }
+        .environment(\.timeZone, store.recordsTimeZone)
+        .environment(\.calendar, store.recordsCalendar)
         .interactiveDismissDisabled(hasChanges)
         .confirmationDialog(store.t("recordsDiscardEdits"), isPresented: $confirmsDiscard, titleVisibility: .visible) {
             Button(store.t("recordsDiscardEdits"), role: .destructive) { dismiss() }

@@ -27,6 +27,7 @@ struct RecordsDesignView: View {
     @State private var loadedSignature: RecordsLoadSignature?
     @State private var showsCompactRootBar = false
     @State private var canvasWidth: CGFloat = 0
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
@@ -111,20 +112,24 @@ struct RecordsDesignView: View {
                     .zIndex(10)
             }
         }
-        .task { await load(selectingToday: true) }
-        .onChange(of: store.selectedTab) { _, tab in
-            // Returning to the tab is not by itself news. The archive, the
-            // entitlement and the civil day each have their own trigger, and
-            // reloading unconditionally meant every visit paid for the window
-            // again — on the life scale that is a career expanded from
-            // scratch, landing inside the tab's own transition.
-            guard tab == .records, loadedSignature != currentLoadSignature else { return }
-            Task { await load() }
+        .task(id: scenePhase == .active && store.selectedTab == .records) {
+            guard scenePhase == .active, store.selectedTab == .records else { return }
+            // A minute-level check catches midnight while browsing. Returning
+            // from Home refreshes immediately, without resetting the selection.
+            while !Task.isCancelled {
+                if loadedSignature != currentLoadSignature {
+                    await load(selectingToday: loadedSignature == nil)
+                }
+                do { try await Task.sleep(for: .seconds(60)) }
+                catch { return }
+            }
         }
         .onChange(of: store.records.revision) { _, _ in
+            guard scenePhase == .active, store.selectedTab == .records else { return }
             Task { await load() }
         }
         .onChange(of: store.plus.isAuthorized) { _, _ in
+            guard scenePhase == .active, store.selectedTab == .records else { return }
             Task { await load() }
         }
         .sensoryFeedback(.selection, trigger: scaleFeedback)
@@ -351,7 +356,7 @@ struct RecordsDesignView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(store.t("recordsToday"))
-                .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
             }
 
             NavigationLink(value: RecordsRoute.allRecords) {
@@ -464,12 +469,12 @@ struct RecordsDesignView: View {
                 switch scale {
                 case .month:
                     RecordsMonthGrid(store: store, cells: cells, selectedDayKey: selectedDayKey) { cell in
-                        select(cell)
+                        selectFromTap(cell)
                     }
                     markLegend
                 case .week:
                     RecordsWeekStrips(store: store, cells: cells, selectedDayKey: selectedDayKey) { cell in
-                        select(cell)
+                        selectFromTap(cell)
                     }
                     markLegend
                 case .year:
@@ -722,9 +727,13 @@ struct RecordsDesignView: View {
         selectedLifeStageKind = current == .retirement ? nil : current
     }
 
+    private func selectFromTap(_ cell: RecordsDayCell) {
+        if selectedDayKey != cell.dayKey { selectionFeedback += 1 }
+        select(cell)
+    }
+
     private func select(_ cell: RecordsDayCell) {
         selectedDayKey = cell.dayKey
-        selectionFeedback += 1
         guard let index = days.firstIndex(where: { $0.dayKey == cell.dayKey }) else {
             detail = nil
             return
@@ -774,6 +783,12 @@ struct RecordsDesignView: View {
         var revision: UInt64
         var authorized: Bool
         var dayKey: String
+        var timeZone: String
+        var language: String
+        var salaryEnabled: Bool
+        var salaryType: SalaryType
+        var salaryAmount: String
+        var monthlyWorkingDays: Double
     }
 
     private var currentLoadSignature: RecordsLoadSignature {
@@ -782,7 +797,13 @@ struct RecordsDesignView: View {
             anchor: anchor,
             revision: store.records.revision,
             authorized: store.plus.isAuthorized,
-            dayKey: RecordJSON.dayKey(.now, calendar: store.recordsCalendar)
+            dayKey: RecordJSON.dayKey(.now, calendar: store.recordsCalendar),
+            timeZone: store.recordsTimeZone.identifier,
+            language: store.languageCode,
+            salaryEnabled: store.salaryEnabled,
+            salaryType: store.salaryType,
+            salaryAmount: store.salaryAmount,
+            monthlyWorkingDays: store.monthlyWorkingDays
         )
     }
 
@@ -832,7 +853,7 @@ struct RecordsDesignView: View {
         }
         cells = built
         summary = store.recordsHeadline(cells: cells, days: resolved)
-        if selectingToday {
+        if selectingToday || (loadedSignature == nil && (scale == .week || scale == .month)) {
             let todayKey = RecordJSON.dayKey(.now, calendar: store.recordsCalendar)
             if let today = cells.first(where: { $0.dayKey == todayKey }) {
                 select(today)
