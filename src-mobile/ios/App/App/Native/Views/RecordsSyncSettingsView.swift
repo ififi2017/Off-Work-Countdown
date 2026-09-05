@@ -57,7 +57,7 @@ struct RecordsSyncSettingsView: View {
                         title: store.t("syncRestore"),
                         subtitle: store.t("syncRestoreDetail"),
                         isLast: true
-                    ) { await store.cloudSync.restore() }
+                    ) { await store.restoreCloudSyncFromSettings() }
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 20)
@@ -86,6 +86,12 @@ struct RecordsSyncSettingsView: View {
             }
         }
         .background(OWCDesign.page)
+        .sheet(isPresented: Binding(
+            get: { store.showsFirstRunCloudChoice },
+            set: { store.showsFirstRunCloudChoice = $0 }
+        )) {
+            FirstRunRecoveryView(store: store, isExistingLocalSetup: true)
+        }
         .navigationTitle(store.t("syncTitle"))
         .navigationBarTitleDisplayMode(.large)
         .owcDetailBack(title: store.t("settings"), pageTitle: store.t("syncTitle"))
@@ -135,7 +141,7 @@ struct RecordsSyncSettingsView: View {
             set: { wantsOn in
                 if wantsOn {
                     if store.plus.isAuthorized {
-                        run(.toggle) { await store.cloudSync.enable(authorized: true) }
+                        run(.toggle) { await store.enableCloudSyncFromSettings() }
                     } else {
                         store.openPaidOrRun(.sync, action: .enableSync)
                     }

@@ -134,6 +134,7 @@ func lifeProfileMergesByField() throws {
     var local = baseline
     local.retirementAge = 62
     local.workHistoryMode = .detailed
+    local.futureIncomeDecline = LifeIncomeDecline(startsAtAge: 45, retirementRatio: 0.6)
     local.employmentPeriods = [
         LifeEmploymentPeriod(
             id: syncTestID(100),
@@ -153,6 +154,7 @@ func lifeProfileMergesByField() throws {
     #expect(merged.workHistoryMode == .detailed)
     #expect(merged.employmentPeriods == local.employmentPeriods)
     #expect(merged.roughCurrentSalary == server.roughCurrentSalary)
+    #expect(merged.futureIncomeDecline == local.futureIncomeDecline)
 }
 
 @MainActor

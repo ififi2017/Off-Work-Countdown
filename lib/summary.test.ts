@@ -204,6 +204,106 @@ describe("lifetime gross income", () => {
     });
     expect(result).toEqual({ historicalGross: 0, projectedGross: 0, totalGross: 0 });
   });
+
+  it("keeps older profiles at the current salary when no decline is saved", () => {
+    const input = {
+      asOf: "2030-01-01",
+      retirementOn: "2040-01-01",
+      periods: [],
+      currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" as const },
+    };
+    expect(projectLifetimeGrossIncome(input).projectedGross).toBe(1_200_000);
+    expect(projectLifetimeGrossIncome({ ...input, futureIncomeDecline: null }).projectedGross)
+      .toBe(1_200_000);
+    expect(projectLifetimeGrossIncome({
+      ...input,
+      futureIncomeDecline: { startsOn: "2035-06-15", retirementRatio: 1 },
+    }).projectedGross).toBeCloseTo(1_200_000, 8);
+  });
+
+  it("declines linearly from the chosen age to the retirement ratio", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2030-01-01",
+      retirementOn: "2040-01-01",
+      periods: [],
+      currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" },
+      futureIncomeDecline: { startsOn: "2035-01-01", retirementRatio: 0.6 },
+    });
+    // Five years at 100%, then five years averaging 80%.
+    expect(Math.abs(result.projectedGross - 1_080_000)).toBeLessThan(100);
+  });
+
+  it("anchors an already-passed decline age at today's current income", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2035-01-01",
+      retirementOn: "2040-01-01",
+      periods: [{
+        startsOn: "2030-01-01",
+        endsOn: "2035-01-01",
+        salaryAmount: 120_000,
+        salaryCadence: "yearly",
+      }],
+      currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" },
+      futureIncomeDecline: { startsOn: "2032-01-01", retirementRatio: 0.6 },
+    });
+    expect(result.historicalGross).toBe(600_000);
+    expect(Math.abs(result.projectedGross - 480_000)).toBeLessThan(100);
+  });
+
+  it("keeps gaps and history untouched and reaches zero at retirement", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2030-01-01",
+      retirementOn: "2040-01-01",
+      periods: [{
+        startsOn: "2020-01-01",
+        endsOn: "2025-01-01",
+        salaryAmount: 60_000,
+        salaryCadence: "yearly",
+      }],
+      currentSalary: {
+        startsOn: "2035-01-01",
+        salaryAmount: 120_000,
+        salaryCadence: "yearly",
+      },
+      futureIncomeDecline: { startsOn: "2030-01-01", retirementRatio: 0 },
+    });
+    expect(result.historicalGross).toBe(300_000);
+    expect(Math.abs(result.projectedGross - 300_000)).toBeLessThan(200);
+    expect(Math.abs(result.totalGross - 600_000)).toBeLessThan(200);
+
+    const retired = projectLifetimeGrossIncome({
+      asOf: "2040-01-01",
+      retirementOn: "2040-01-01",
+      periods: [],
+      currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" },
+      futureIncomeDecline: { startsOn: "2030-01-01", retirementRatio: 0 },
+    });
+    expect(retired.projectedGross).toBe(0);
+  });
+
+  it("uses the same curve for equivalent monthly and yearly salaries", () => {
+    const calculate = (salaryAmount: number, salaryCadence: "monthly" | "yearly") =>
+      projectLifetimeGrossIncome({
+        asOf: "2030-04-15",
+        retirementOn: "2040-07-01",
+        periods: [],
+        currentSalary: { salaryAmount, salaryCadence },
+        futureIncomeDecline: { startsOn: "2032-07-01", retirementRatio: 0.55 },
+      }).projectedGross;
+    expect(calculate(10_000, "monthly")).toBeCloseTo(calculate(120_000, "yearly"), 8);
+  });
+
+  it("updates the forecast when the saved decline choices change", () => {
+    const calculate = (startsOn: string, retirementRatio: number) =>
+      projectLifetimeGrossIncome({
+        asOf: "2030-01-01",
+        retirementOn: "2040-01-01",
+        periods: [],
+        currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" },
+        futureIncomeDecline: { startsOn, retirementRatio },
+      }).projectedGross;
+    expect(calculate("2037-01-01", 0.8)).toBeGreaterThan(calculate("2035-01-01", 0.6));
+  });
 });
 
 describe("records actual and forecast", () => {

@@ -23,7 +23,9 @@ struct OffWorkCountdownRootView: View {
 
     var body: some View {
         Group {
-            if !store.onboardingComplete {
+            if !store.onboardingComplete && !store.firstRunRecoveryResolved {
+                FirstRunRecoveryView(store: store)
+            } else if !store.onboardingComplete {
                 OnboardingView(store: store)
                     // Only the outgoing side scales. Scaling the incoming app
                     // meant its layout settled at a different size than it
@@ -95,14 +97,16 @@ struct OffWorkCountdownRootView: View {
             try? await Task.sleep(for: .milliseconds(16))
             LaunchTrace.endAppInit()
             CountdownRules.warmUp()
+            store.plus.start()
+            guard store.onboardingComplete else { return }
             store.reconcileCountdownSession()
             _ = store.reconcileRecordSchedule()
             if store.onboardingComplete, store.selectedTab == .timer {
                 store.noteTimerSurfaceVisible()
             }
-            store.plus.start()
             _ = store.applyDefaultFocusTemplateIfNeeded()
             store.cloudSync.startIfEnabled()
+            await store.resumeRestoredSyncIfNeeded()
             guard store.onboardingComplete else { return }
             try? await Task.sleep(for: .milliseconds(650))
             guard !Task.isCancelled, store.onboardingComplete else { return }
@@ -128,8 +132,9 @@ struct OffWorkCountdownRootView: View {
             scheduleServices()
         }
         .onChange(of: store.plus.isAuthorized) { _, authorized in
-            guard authorized else { return }
+            guard authorized, store.onboardingComplete else { return }
             if store.applyDefaultFocusTemplateIfNeeded() { scheduleServices() }
+            Task { await store.resumeRestoredSyncIfNeeded() }
         }
         .onChange(of: store.debugPresentationToken) {
             pendingReschedule = false
@@ -371,18 +376,9 @@ struct OffWorkCountdownRootView: View {
         guard let route = AppRoute(rawValue: url.host ?? "") else { return }
         if route == .focus || route == .focusPlan {
             store.settingsPath.removeAll()
-            if horizontalSizeClass == .regular, verticalSizeClass != .compact {
-                // TabletShell owns its own destination path. Sending the route
-                // to the phone timer stack only highlighted a different
-                // sidebar item while leaving the iPad detail unchanged.
-                store.timerPath.removeAll()
-                store.selectedTab = .settings
-                store.presentedRoute = route
-            } else {
-                store.presentedRoute = nil
-                store.timerPath = [route]
-                store.selectedTab = .timer
-            }
+            store.presentedRoute = nil
+            store.timerPath = [route]
+            store.selectedTab = .timer
             return
         }
         store.settingsPath.removeAll()

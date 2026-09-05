@@ -41,6 +41,13 @@ export interface LifeIncomeSalary {
   startsOn?: string;
 }
 
+export interface LifeIncomeDecline {
+  /** Gregorian civil date derived from the user's chosen starting age. */
+  startsOn: string;
+  /** Share of today's current salary at retirement, from 0 through 1. */
+  retirementRatio: number;
+}
+
 export interface LifetimeIncomeSummary {
   /** Income before asOf, based only on salaries the user supplied. */
   historicalGross: number;
@@ -166,6 +173,8 @@ function civilMonthsBetween(start: CivilDay, end: CivilDay): number {
 export function projectLifetimeGrossIncome(params: {
   periods: LifeIncomePeriod[];
   currentSalary?: LifeIncomeSalary | null;
+  /** Missing keeps the current salary unchanged, preserving older profiles. */
+  futureIncomeDecline?: LifeIncomeDecline | null;
   asOf: string;
   retirementOn: string;
 }): LifetimeIncomeSummary {
@@ -188,8 +197,9 @@ export function projectLifetimeGrossIncome(params: {
     period: LifeIncomePeriod;
     start: CivilDay;
     end: CivilDay;
+    isCurrentSalary: boolean;
   }> = [];
-  for (const period of periods) {
+  for (const [index, period] of periods.entries()) {
     const start = civilDay(period.startsOn);
     const explicitEnd = period.endsOn ? civilDay(period.endsOn) : retirement;
     if (
@@ -198,7 +208,12 @@ export function projectLifetimeGrossIncome(params: {
     ) continue;
     const end = explicitEnd.dayNumber <= retirement.dayNumber ? explicitEnd : retirement;
     if (end.dayNumber <= start.dayNumber) continue;
-    validPeriods.push({ period, start, end });
+    validPeriods.push({
+      period,
+      start,
+      end,
+      isCurrentSalary: params.currentSalary != null && index === periods.length - 1,
+    });
   }
   validPeriods.sort((left, right) => left.start.dayNumber - right.start.dayNumber);
 
@@ -212,7 +227,16 @@ export function projectLifetimeGrossIncome(params: {
 
   let historicalGross = 0;
   let projectedGross = 0;
-  for (const { period, start, end } of validPeriods) {
+  const declineStart = params.futureIncomeDecline
+    ? civilDay(params.futureIncomeDecline.startsOn)
+    : null;
+  const retirementRatio = params.futureIncomeDecline?.retirementRatio;
+  const validDecline = declineStart !== null
+    && retirementRatio !== undefined
+    && Number.isFinite(retirementRatio)
+    && retirementRatio >= 0
+    && retirementRatio <= 1;
+  for (const { period, start, end, isCurrentSalary } of validPeriods) {
     const monthlySalary = period.salaryCadence === "monthly"
       ? period.salaryAmount
       : period.salaryAmount / 12;
@@ -220,13 +244,61 @@ export function projectLifetimeGrossIncome(params: {
     const totalForPeriod = monthlySalary * civilMonthsBetween(start, end);
     const historicalForPeriod = monthlySalary * civilMonthsBetween(start, historicalEnd);
     historicalGross += historicalForPeriod;
-    projectedGross += totalForPeriod - historicalForPeriod;
+    const projectedStart = start.dayNumber >= asOf.dayNumber ? start : asOf;
+    if (!isCurrentSalary || !validDecline || projectedStart.dayNumber >= end.dayNumber) {
+      projectedGross += totalForPeriod - historicalForPeriod;
+      continue;
+    }
+    const anchorDay = Math.max(projectedStart.dayNumber, declineStart.dayNumber);
+    projectedGross += monthlySalary * civilMonthsBetween(projectedStart, {
+      ...projectedStart,
+      dayNumber: Math.min(anchorDay, end.dayNumber),
+    });
+    if (anchorDay < end.dayNumber) {
+      projectedGross += proratedDecliningIncome(
+        monthlySalary,
+        { ...projectedStart, dayNumber: anchorDay },
+        end,
+        anchorDay,
+        retirement.dayNumber,
+        retirementRatio,
+      );
+    }
   }
   return {
     historicalGross,
     projectedGross,
     totalGross: historicalGross + projectedGross,
   };
+}
+
+function proratedDecliningIncome(
+  monthlySalary: number,
+  start: CivilDay,
+  end: CivilDay,
+  declineStartDay: number,
+  retirementDay: number,
+  retirementRatio: number,
+): number {
+  const ratioAt = (dayNumber: number) => {
+    if (retirementDay <= declineStartDay) return 1;
+    const progress = Math.max(0, Math.min(1,
+      (dayNumber - declineStartDay) / (retirementDay - declineStartDay)
+    ));
+    return 1 - (1 - retirementRatio) * progress;
+  };
+  let cursor = start.dayNumber;
+  let total = 0;
+  while (cursor < end.dayNumber) {
+    const date = new Date(cursor * DAY_MS);
+    const monthStart = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1) / DAY_MS;
+    const nextMonth = Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1) / DAY_MS;
+    const segmentEnd = Math.min(end.dayNumber, nextMonth);
+    const monthShare = (segmentEnd - cursor) / (nextMonth - monthStart);
+    total += monthlySalary * monthShare * (ratioAt(cursor) + ratioAt(segmentEnd)) / 2;
+    cursor = segmentEnd;
+  }
+  return total;
 }
 
 /**

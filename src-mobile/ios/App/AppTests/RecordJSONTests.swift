@@ -139,6 +139,7 @@ func recordJSONPreservesLifeIncomeHistory() throws {
         workHistoryMode: .detailed,
         roughCurrentSalary: LifeSalary(amount: 10_000, cadence: .monthly),
         employmentPeriods: [period],
+        futureIncomeDecline: LifeIncomeDecline(startsAtAge: 45, retirementRatio: 0.6),
         editedAt: editedAt,
         editCount: 3,
         editTieBreaker: id(85)
@@ -152,12 +153,17 @@ func recordJSONPreservesLifeIncomeHistory() throws {
     #expect(restored.lifeProfile?.workHistoryMode == .detailed)
     #expect(restored.lifeProfile?.roughCurrentSalary?.amount == 10_000)
     #expect(restored.lifeProfile?.employmentPeriods == [period])
+    #expect(restored.lifeProfile?.futureIncomeDecline == LifeIncomeDecline(
+        startsAtAge: 45,
+        retirementRatio: 0.6
+    ))
 
     var legacyObject = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
     var legacyProfile = try #require(legacyObject["lifeProfile"] as? [String: Any])
     legacyProfile.removeValue(forKey: "workHistoryMode")
     legacyProfile.removeValue(forKey: "roughCurrentSalary")
     legacyProfile.removeValue(forKey: "employmentPeriods")
+    legacyProfile.removeValue(forKey: "futureIncomeDecline")
     legacyObject["lifeProfile"] = legacyProfile
     legacyObject["schemaVersion"] = 4
     let legacyData = try JSONSerialization.data(withJSONObject: legacyObject)
@@ -167,6 +173,7 @@ func recordJSONPreservesLifeIncomeHistory() throws {
     #expect(migrated.lifeProfile?.workHistoryMode == .rough)
     #expect(migrated.lifeProfile?.roughCurrentSalary == nil)
     #expect(migrated.lifeProfile?.employmentPeriods.isEmpty == true)
+    #expect(migrated.lifeProfile?.futureIncomeDecline == nil)
 }
 
 @MainActor
@@ -513,6 +520,21 @@ func recordJSONRejectsInvalidCivilData() throws {
         calendar: Calendar(identifier: .gregorian)
     )
     document.lifeProfile?.workStartedOn = "2026-02-30"
+    state = RecordState()
+    report = try RecordJSON.apply(document, to: &state, mode: .skipErased)
+    #expect(report.rejected.contains { $0.entityType == .lifeProfile })
+
+    document = try RecordJSON.decode(export(sampleState()))
+    document.lifeProfile = LifeProfileDTO(
+        LifeProfile(
+            futureIncomeDecline: LifeIncomeDecline(startsAtAge: 45, retirementRatio: 0.6),
+            editedAt: Date(timeIntervalSince1970: 0),
+            editCount: 1,
+            editTieBreaker: id(41)
+        ),
+        calendar: Calendar(identifier: .gregorian)
+    )
+    document.lifeProfile?.futureIncomeDecline?.retirementRatio = 2
     state = RecordState()
     report = try RecordJSON.apply(document, to: &state, mode: .skipErased)
     #expect(report.rejected.contains { $0.entityType == .lifeProfile })

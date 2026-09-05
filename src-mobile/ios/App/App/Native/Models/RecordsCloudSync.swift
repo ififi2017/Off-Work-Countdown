@@ -20,13 +20,134 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
 
     private(set) var status: RecordsCloudSyncStatus = .off
     private(set) var lastError: String?
+    private(set) var existingDataRequiresChoice = false
     private weak var records: RecordCoordinator?
     private var engine: CKSyncEngine?
     private var accountObserver: NSObjectProtocol?
+    private var firstRunDownload: FirstRunCloudSnapshot?
+    private var uploadsReady = false
     private var starting = false
     private var operation: Task<Void, Never>?
     private var acceptRemote = true
     private var recoveringMissingRows: Set<String> = []
+
+    /// Read only: no zone creation, preference seed, or outgoing sync engine.
+    func checkForExistingData() async throws -> Bool {
+        firstRunDownload = nil
+        let container = CKContainer(identifier: Self.containerID)
+        let account = try await container.userRecordID().recordName
+        let fence = try await fetchFence(container: container)
+        guard fence > 0 else { return false }
+        let database = container.privateCloudDatabase
+        let zoneID = CKRecordZone.ID(zoneName: RecordsSyncIdentity.dataZone(generation: fence))
+        let zones = try await database.allRecordZones()
+        guard zones.contains(where: { $0.zoneID == zoneID }) else { return false }
+        var token: CKServerChangeToken?
+        var downloaded: [CKRecord.ID: CKRecord] = [:]
+        var more = true
+        while more {
+            try Task.checkCancellation()
+            let page = try await database.recordZoneChanges(inZoneWith: zoneID, since: token)
+            for (id, result) in page.modificationResultsByID {
+                downloaded[id] = try result.get().record
+            }
+            for deletion in page.deletions { downloaded[deletion.recordID] = nil }
+            token = page.changeToken
+            more = page.moreComing
+        }
+        guard try await fetchFence(container: container) == fence,
+              try await container.userRecordID().recordName == account else {
+            throw FirstRunRecoveryError.cloudChanged
+        }
+        let rows = Array(downloaded.values)
+        // A surviving empty zone or erasure marker is not a recoverable setup.
+        let hasData = rows.contains { row in
+            row.recordType == "RecordRow" && row["payload"] as? Data != nil
+                && (row["generation"] as? Int) == fence
+        }
+        guard hasData else { return false }
+        firstRunDownload = FirstRunCloudSnapshot(accountID: account, generation: fence, rows: rows)
+        return true
+    }
+
+    /// Explicitly choosing the cloud copy makes it authoritative for setup
+    /// preferences; locally created records remain available to the merge.
+    func restoreFirstRunData(authorized: Bool, allowReplacingLocalData: Bool = false) async throws -> Bool {
+        guard let snapshot = firstRunDownload, let records else {
+            throw FirstRunRecoveryError.noDownload
+        }
+        let container = CKContainer(identifier: Self.containerID)
+        guard try await container.userRecordID().recordName == snapshot.accountID,
+              try await fetchFence(container: container) == snapshot.generation else {
+            throw FirstRunRecoveryError.cloudChanged
+        }
+        guard RecordsSyncCloudPrerequisites.acceptsAccount(
+            storedAccountID: records.state.sync.accountID,
+            currentAccountID: snapshot.accountID, mayAdoptCurrentAccount: true
+        ) else { throw FirstRunRecoveryError.cloudChanged }
+        let restored = try prepareFirstRunRestore(snapshot, initialState: records.state, authorized: authorized, allowReplacingLocalData: allowReplacingLocalData)
+        try records.commitRestoredState(restored)
+        firstRunDownload = nil
+        existingDataRequiresChoice = false
+        status = restored.sync.syncEnabled ? .syncing : .off
+        if restored.sync.syncEnabled { startIfEnabled() }
+        return restored.syncedPreferences != nil
+    }
+
+    /// Pure staging boundary, also exercised without an iCloud account.
+    func prepareFirstRunRestore(_ snapshot: FirstRunCloudSnapshot, initialState: RecordState, authorized: Bool = false, allowReplacingLocalData: Bool = false) throws -> RecordState {
+        var initial = initialState
+        let localPreferences = RecordsSyncPayload.encode(type: .syncedPreferences, key: SyncedPreferences.logicalKey, from: initial)
+        if snapshot.generation > initial.sync.generation {
+            guard allowReplacingLocalData || !initial.hasUnpairedRecords else {
+                throw FirstRunRecoveryError.localDataNeedsReview
+            }
+            _ = RecordsSyncOutbox.discardLocalArchive(&initial, fence: snapshot.generation)
+        }
+        guard snapshot.generation >= initial.sync.generation else {
+            throw FirstRunRecoveryError.cloudChanged
+        }
+        initial.syncedPreferences = nil
+        initial.sync.rows[RecordsSyncIdentity.recordName(type: .syncedPreferences, key: SyncedPreferences.logicalKey)] = nil
+        let candidate = RecordCoordinator.restoreCandidate(from: initial)
+        for row in snapshot.rows where (row["generation"] as? Int) == snapshot.generation {
+            if let (type, key) = erasedIdentity(row.recordID.recordName) {
+                candidate.applyRemoteErase(
+                    type: type, key: key, erasedEditCount: row["editCount"] as? Int,
+                    systemFields: encodeSystemFields(row), generation: snapshot.generation
+                )
+                continue
+            }
+            guard let type = RecordEntityType(rawValue: row["entityType"] as? String ?? ""),
+                  let key = row["logicalKey"] as? String,
+                  let payload = row["payload"] as? Data,
+                  RecordsSyncPayload.incoming(from: payload, type: type, calendar: RecordsSyncPayload.fileCalendar(for: candidate.state)) != nil
+            else { throw RecordPersistenceError.invalidArchive }
+            candidate.applyRemotePayload(
+                type: type, key: key, payload: payload,
+                editCount: row["editCount"] as? Int ?? 0,
+                editTieBreaker: row["editTieBreaker"] as? String ?? "",
+                systemFields: encodeSystemFields(row), generation: snapshot.generation,
+                persistImmediately: false
+            )
+        }
+        var restored = candidate.state
+        if let localPreferences,
+           let cloudPreferences = RecordsSyncPayload.encode(type: .syncedPreferences, key: SyncedPreferences.logicalKey, from: restored),
+           !RecordsSyncConflict.payloadsHaveSameBusinessContent(localPreferences, cloudPreferences) {
+            restored.sync.conflicts.append(SyncConflictCopy(
+                entityType: .syncedPreferences, logicalKey: SyncedPreferences.logicalKey,
+                payload: localPreferences, lostAtMs: Date.now.timeIntervalSince1970 * 1_000,
+                source: "restore", localPayload: localPreferences, incomingPayload: cloudPreferences,
+                currentWinner: .incoming
+            ))
+        }
+        restored.sync.accountID = snapshot.accountID
+        restored.sync.generation = snapshot.generation
+        restored.sync.engineState = nil
+        restored.sync.syncEnabled = authorized
+        return restored
+    }
 
     func attach(records: RecordCoordinator) {
         self.records = records
@@ -94,6 +215,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
 
     private func stopAndInvalidate() {
         acceptRemote = false
+        uploadsReady = false
         recoveringMissingRows.removeAll()
         let invalidatedEngine = engine
         engine = nil
@@ -221,13 +343,14 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             }
             status = .syncing
             await createEngine(container: container)
-            if records.state.sync.syncEnabled { status = .idle }
+            if records.state.sync.syncEnabled, uploadsReady { status = .idle }
         } catch {
             noteNetworkFailure(error)
         }
     }
 
     private func enableUnsynchronized(authorized: Bool) async {
+        existingDataRequiresChoice = false
         guard authorized else {
             status = .failed("plus")
             return
@@ -242,6 +365,11 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 mayAdoptCurrentAccount: true
             ) else {
                 pauseForAccountChange()
+                return
+            }
+            if records.state.sync.accountID == nil, try await checkForExistingData() {
+                existingDataRequiresChoice = true
+                status = .off
                 return
             }
             let fetchedFence = try await fetchFence(container: container)
@@ -277,7 +405,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             }
             status = .syncing
             await createEngine(container: container)
-            if records.state.sync.syncEnabled { status = .idle }
+            if records.state.sync.syncEnabled, uploadsReady { status = .idle }
         } catch {
             noteNetworkFailure(error)
         }
@@ -326,7 +454,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             }
             status = .syncing
             await createEngine(container: container)
-            if records.state.sync.syncEnabled { status = .idle }
+            if records.state.sync.syncEnabled, uploadsReady { status = .idle }
         } catch {
             noteNetworkFailure(error)
         }
@@ -372,6 +500,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             // app launch before it can upload.
             if records.state.sync.syncEnabled {
                 await createEngine(container: container)
+                guard uploadsReady else { return }
             }
             status = .deleted
         } catch {
@@ -389,6 +518,11 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
         starting = true
         defer { starting = false }
         guard let records, records.state.sync.syncEnabled else { return }
+        uploadsReady = false
+        let previous = engine
+        engine = nil
+        await previous?.cancelOperations()
+        guard records.state.sync.syncEnabled else { return }
         let database = container.privateCloudDatabase
         acceptRemote = true
         var configuration = CKSyncEngine.Configuration(
@@ -398,8 +532,25 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             },
             delegate: self
         )
-        configuration.automaticallySync = true
-        engine = CKSyncEngine(configuration)
+        // Never upload fresh-device defaults before the initial server read.
+        // A manual engine cannot dispatch serialized database saves either.
+        uploadsReady = false
+        configuration.automaticallySync = false
+        let reader = CKSyncEngine(configuration)
+        engine = reader
+        do {
+            try await reader.fetchChanges()
+            guard engine === reader, acceptRemote, records.persistenceError == nil else { return }
+            configuration.stateSerialization = records.state.sync.engineState.flatMap {
+                try? JSONDecoder().decode(CKSyncEngine.State.Serialization.self, from: $0)
+            }
+            configuration.automaticallySync = true
+            engine = CKSyncEngine(configuration)
+            uploadsReady = true
+        } catch {
+            noteNetworkFailure(error)
+            return
+        }
         let zoneID = CKRecordZone.ID(
             zoneName: RecordsSyncIdentity.dataZone(generation: records.state.sync.generation)
         )
@@ -413,7 +564,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     }
 
     private func enqueueLocalRecords() async {
-        guard let records, records.state.sync.syncEnabled, let engine else { return }
+        guard uploadsReady, let records, records.state.sync.syncEnabled, let engine else { return }
         let zoneID = CKRecordZone.ID(
             zoneName: RecordsSyncIdentity.dataZone(generation: records.state.sync.generation)
         )
@@ -444,19 +595,18 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     private func fetchFence(container: CKContainer) async throws -> Int {
         let database = container.privateCloudDatabase
         let zoneID = CKRecordZone.ID(zoneName: RecordsSyncIdentity.controlZone)
-        _ = try? await database.save(CKRecordZone(zoneID: zoneID))
         let recordID = CKRecord.ID(recordName: RecordsSyncIdentity.fenceRecord, zoneID: zoneID)
         do {
             let record = try await database.record(for: recordID)
             return record["generation"] as? Int ?? 0
-        } catch let error as CKError where error.code == .unknownItem {
+        } catch let error as CKError where error.code == .unknownItem || error.code == .zoneNotFound {
             return 0
         }
     }
 
     private func saveFenceCAS(database: CKDatabase, atLeast minimum: Int) async throws -> Int {
         let zoneID = CKRecordZone.ID(zoneName: RecordsSyncIdentity.controlZone)
-        _ = try? await database.save(CKRecordZone(zoneID: zoneID))
+        _ = try await database.save(CKRecordZone(zoneID: zoneID))
         let recordID = CKRecord.ID(recordName: RecordsSyncIdentity.fenceRecord, zoneID: zoneID)
         var attempts = 0
         while attempts < 8 {
@@ -731,7 +881,7 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
     }
 
     private func makeNextBatch() -> CKSyncEngine.RecordZoneChangeBatch? {
-        guard let records else { return nil }
+        guard uploadsReady, let records else { return nil }
         let zoneID = CKRecordZone.ID(
             zoneName: RecordsSyncIdentity.dataZone(generation: records.state.sync.generation)
         )

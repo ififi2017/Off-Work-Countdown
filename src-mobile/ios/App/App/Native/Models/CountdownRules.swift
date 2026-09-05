@@ -583,9 +583,15 @@ struct NativeLifetimeIncomeSalary: Codable {
     let startsOn: String?
 }
 
+struct NativeLifetimeIncomeDecline: Codable {
+    let startsOn: String
+    let retirementRatio: Double
+}
+
 struct NativeLifetimeIncomeInput: Codable {
     let periods: [NativeLifetimeIncomePeriod]
     let currentSalary: NativeLifetimeIncomeSalary?
+    let futureIncomeDecline: NativeLifetimeIncomeDecline?
     let asOf: String
     let retirementOn: String
 }

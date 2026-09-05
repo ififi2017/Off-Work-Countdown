@@ -1988,7 +1988,7 @@ struct RecordsLifeAllocationCard: View {
                     incomeRow("lifeIncomeHistory", value: income.historicalGross)
                     incomeRow("lifeIncomeFuture", value: income.projectedGross)
                     incomeRow("lifeIncomeTotal", value: income.totalGross)
-                    Text(store.t("lifeIncomeMethod"))
+                    Text(store.lifeIncomeMethodText())
                         .font(.caption)
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
