@@ -22,7 +22,7 @@ enum OWCMotion {
     /// A clock winding down: the native coast curve also determines when each
     /// 45-degree haptic tick happens, so soundless clicks follow the hands.
     static let brandCelebrationCurve = UnitCurve.easeOut
-    static let brandCelebrationDuration = 4.8
+    static let brandCelebrationDuration = 2.8
     static let brandCelebrationDegrees = 4.0 * 360
     static let brandCelebration = Animation.timingCurve(
         brandCelebrationCurve, duration: brandCelebrationDuration
