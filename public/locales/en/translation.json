@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "See today's blocks",
   "focusActivityThenBreak": "Then a {{count}} min break",
   "focusActivityThenTask": "Back to {{task}} at {{time}}",
-  "focusActivityShiftLeft": "{{duration}} left today"
+  "focusActivityShiftLeft": "{{duration}} left today",
+  "focusAddAndStart": "Add and start",
+  "focusEndBreakTitle": "End this break?",
+  "focusEndBreakBody": "You can choose a task and start the next round when you are ready."
 }

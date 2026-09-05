@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "오늘 배치 보기",
   "focusActivityThenBreak": "이후 {{count}}분 휴식",
   "focusActivityThenTask": "{{time}}에 {{task}}(으)로 복귀",
-  "focusActivityShiftLeft": "오늘 {{duration}} 남음"
+  "focusActivityShiftLeft": "오늘 {{duration}} 남음",
+  "focusAddAndStart": "추가하고 시작",
+  "focusEndBreakTitle": "휴식을 끝낼까요?",
+  "focusEndBreakBody": "준비가 되면 작업을 선택하고 다음 집중을 시작할 수 있어요."
 }

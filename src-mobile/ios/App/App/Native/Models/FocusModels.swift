@@ -126,6 +126,7 @@ struct FocusWorkBlock: Equatable, Sendable, Identifiable {
     /// A planning timeline contains both work and recovery phases. Defaulting
     /// to task keeps persisted v1 plan rows and existing call sites readable.
     var kind: FocusPlanBlockKind = .task
+    var breakKind: FocusSessionKind? = nil
     var startAtMs: Int64 { Int64(start.timeIntervalSince1970 * 1_000) }
     var durationMinutes: Int { max(1, Int(end.timeIntervalSince(start) / 60)) }
 }

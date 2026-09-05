@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "Heutige Blöcke ansehen",
   "focusActivityThenBreak": "Danach {{count}} Min. Pause",
   "focusActivityThenTask": "Um {{time}} zurück zu {{task}}",
-  "focusActivityShiftLeft": "Heute noch {{duration}}"
+  "focusActivityShiftLeft": "Heute noch {{duration}}",
+  "focusAddAndStart": "Hinzufügen und starten",
+  "focusEndBreakTitle": "Diese Pause beenden?",
+  "focusEndBreakBody": "Wenn du bereit bist, kannst du eine Aufgabe wählen und die nächste Runde starten."
 }

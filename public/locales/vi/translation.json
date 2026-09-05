@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "Xem các ô hôm nay",
   "focusActivityThenBreak": "Sau đó nghỉ {{count}} phút",
   "focusActivityThenTask": "{{time}} quay lại {{task}}",
-  "focusActivityShiftLeft": "Hôm nay còn {{duration}}"
+  "focusActivityShiftLeft": "Hôm nay còn {{duration}}",
+  "focusAddAndStart": "Thêm và bắt đầu",
+  "focusEndBreakTitle": "Kết thúc giờ nghỉ này?",
+  "focusEndBreakBody": "Khi sẵn sàng, bạn có thể chọn công việc và bắt đầu phiên tiếp theo."
 }

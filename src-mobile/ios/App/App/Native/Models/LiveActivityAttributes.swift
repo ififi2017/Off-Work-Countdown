@@ -43,12 +43,12 @@ struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
         /// say "then a 15 minute break" is withholding the one thing the
         /// cadence knows and the user does not.
         var nextLabel: String? = nil
-        /// Time left in the shift itself, phrased by the app.
-        ///
-        /// Only one activity may be live, so starting a block ends the work
-        /// countdown. Carrying this line means the focus activity can answer
-        /// both scales instead of displacing one of them.
+        /// Retained for decoding activities from older app versions; new
+        /// views deliberately omit this frozen duration.
         var shiftRemainingLabel: String? = nil
+        /// Absolute clock-off from the shared rules snapshot, with no salary.
+        var shiftEndAtMs: Int64? = nil
+        var shiftEndLabel: String? = nil
 
         func projectedProgress(atMs nowMs: Int64) -> Double {
             let duration = segments.reduce(Int64(0)) { total, segment in

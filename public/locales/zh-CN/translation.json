@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "去看今天的排布",
   "focusActivityThenBreak": "之后休息 {{count}} 分钟",
   "focusActivityThenTask": "{{time}} 回到 {{task}}",
-  "focusActivityShiftLeft": "今天还剩 {{duration}}"
+  "focusActivityShiftLeft": "今天还剩 {{duration}}",
+  "focusAddAndStart": "添加并开始",
+  "focusEndBreakTitle": "结束这次休息？",
+  "focusEndBreakBody": "准备好后，你可以选择任务，开始下一轮专注。"
 }

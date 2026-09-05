@@ -185,6 +185,7 @@ struct FocusTemplateEditorView: View {
             next.taskID = nil
             next.taskTitle = slot?.taskTitle
             next.taskIcon = slot?.taskIcon
+            next.isUserBreak = block.kind == .task && slot?.kind == .breakTime
             return next
         }
         return model
@@ -195,7 +196,7 @@ struct FocusTemplateEditorView: View {
         // trip, so they are resolved once and passed down.
         let blocks = store.focusTemplateBlocks()
         let canvas = templateCanvas(from: store.focusDayCanvas())
-        let emptyWorkBlocks = canvas.blocks.count { $0.kind == .task && $0.taskTitle == nil }
+        let emptyWorkBlocks = canvas.blocks.count { $0.kind == .task && !$0.isUserBreak && $0.taskTitle == nil }
         return NavigationStack {
             OWCContentSizedScrollView {
                 VStack(alignment: .leading, spacing: 14) {
@@ -294,6 +295,15 @@ struct FocusTemplateEditorView: View {
                     }
                     .buttonStyle(OWCPrimaryButtonStyle())
                     .disabled(newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    Button(store.t("focusBlockMakeBreak")) {
+                        draft.slots.removeAll { $0.blockIndex == blockIndex }
+                        draft.slots.append(FocusTemplateSlot(
+                            blockIndex: blockIndex, kind: .breakTime,
+                            taskKey: nil, taskTitle: nil, taskIcon: nil
+                        ))
+                        editingIndex = nil
+                    }
+                    .buttonStyle(OWCSecondaryButtonStyle())
                     Button(store.t("focusBlockClear"), role: .destructive) {
                         draft.slots.removeAll { $0.blockIndex == blockIndex }
                         editingIndex = nil
@@ -324,10 +334,10 @@ struct FocusTemplateEditorView: View {
     }
 
     private func save() {
-        // Break slots come from the cadence, not from the user, so they are
-        // rebuilt here rather than carried in the draft.
-        var slots = draft.slots.filter { $0.kind == .task }
-        slots.append(contentsOf: store.focusTemplateBlocks().filter { $0.kind == .breakTime }.map {
+        let blocks = store.focusTemplateBlocks()
+        // Keep recovery slots the user drew inside task blocks as well.
+        var slots = draft.slots.filter { slot in blocks.contains { $0.index == slot.blockIndex && $0.kind == .task } }
+        slots.append(contentsOf: blocks.filter { $0.kind == .breakTime }.map {
             FocusTemplateSlot(blockIndex: $0.index, kind: .breakTime, taskKey: nil, taskTitle: nil, taskIcon: nil)
         })
         if let template = draft.template {

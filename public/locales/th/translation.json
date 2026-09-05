@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "ดูช่วงของวันนี้",
   "focusActivityThenBreak": "จากนั้นพัก {{count}} นาที",
   "focusActivityThenTask": "{{time}} กลับไปทำ {{task}}",
-  "focusActivityShiftLeft": "วันนี้เหลือ {{duration}}"
+  "focusActivityShiftLeft": "วันนี้เหลือ {{duration}}",
+  "focusAddAndStart": "เพิ่มและเริ่ม",
+  "focusEndBreakTitle": "สิ้นสุดการพักนี้ไหม?",
+  "focusEndBreakBody": "เมื่อพร้อม คุณสามารถเลือกงานและเริ่มรอบถัดไปได้"
 }

@@ -27,6 +27,12 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 | X1 | iPhone 与 iPad 的可选跨设备同步 | ⚪ 技术决策保留，当前不实施 |
 | A0 | Android 原生客户端 | ⏸ 暂时搁置 |
 
+2026-09-05 分支验收：专注画布已补回「专注 → 休息 → 下一轮」操作，修复晚开始越格、
+模板跨日与手动休息保留、健康提醒关闭仍被接管、立即开始丢失估算等问题。创建表单与辅助字号
+排版同步调整；专注实时活动采用系统计时进度，下班信息改为准确的结束时刻，避免后台冻结的
+剩余时间字符串。模型测试和模拟器回归见 [IOS-FOCUS-REVIEW-FIXES.md](IOS-FOCUS-REVIEW-FIXES.md)；
+P4/P5 的真机验收状态不因此改为完成。
+
 当前执行顺序是：
 
 1. **[007](../plans/007-ios-stable-before-subscription.md)**：在记录（002）和订阅（006）之前，把 iOS 倒计时本体做成可过审的稳定版。main 现为 TestFlight；已送审包偏早，正式审核候选以 007 为准。计时页口径见 [IOS-TIMER-SURFACES.md](IOS-TIMER-SURFACES.md)；

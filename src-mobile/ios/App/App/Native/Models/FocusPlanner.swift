@@ -43,15 +43,16 @@ enum FocusPlanner {
                 cursor += focusMs
                 completedFocusRounds += 1
 
-                let breakMinutes = completedFocusRounds % configuration.longBreakEvery == 0
-                    ? configuration.longBreakMinutes : configuration.shortBreakMinutes
+                let isLongBreak = completedFocusRounds % configuration.longBreakEvery == 0
+                let breakMinutes = isLongBreak ? configuration.longBreakMinutes : configuration.shortBreakMinutes
                 let breakMs = Int64(breakMinutes * 60_000)
                 guard cursor + breakMs <= endMs else { break }
                 result.append(FocusWorkBlock(
                     index: result.count,
                     start: Date(timeIntervalSince1970: Double(cursor) / 1_000),
                     end: Date(timeIntervalSince1970: Double(cursor + breakMs) / 1_000),
-                    kind: .breakTime
+                    kind: .breakTime,
+                    breakKind: isLongBreak ? .longBreak : .shortBreak
                 ))
                 cursor += breakMs
             }

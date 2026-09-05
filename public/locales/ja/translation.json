@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "今日の予定を見る",
   "focusActivityThenBreak": "このあと {{count}} 分の休憩",
   "focusActivityThenTask": "{{time}} に {{task}} へ戻ります",
-  "focusActivityShiftLeft": "今日は残り {{duration}}"
+  "focusActivityShiftLeft": "今日は残り {{duration}}",
+  "focusAddAndStart": "追加して開始",
+  "focusEndBreakTitle": "休憩を終了しますか？",
+  "focusEndBreakBody": "準備ができたら、タスクを選んで次の集中を始められます。"
 }

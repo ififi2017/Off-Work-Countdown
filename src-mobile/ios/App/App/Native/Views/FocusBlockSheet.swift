@@ -155,6 +155,12 @@ struct FocusQuickCreateSheet: View {
     let store: OffWorkStore
     var onResult: (FocusPlacementResult) -> Void
 
+    init(store: OffWorkStore, initialLanding: Landing = .nextBlock, onResult: @escaping (FocusPlacementResult) -> Void) {
+        self.store = store
+        self.onResult = onResult
+        _landing = State(initialValue: initialLanding)
+    }
+
     enum Landing: String, CaseIterable, Identifiable {
         case nextBlock
         case startNow
@@ -170,6 +176,7 @@ struct FocusQuickCreateSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     private var canSave: Bool { !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    private var canStart: Bool { store.activeFocusSession() == nil && store.hasFocusRoom() }
     private var nextBlock: FocusWorkBlock? { store.nextEmptyFocusBlock() }
 
     var body: some View {
@@ -183,46 +190,52 @@ struct FocusQuickCreateSheet: View {
                         focused: $titleFocused,
                         placeholder: store.t("focusTaskPlaceholder")
                     )
-                    FocusTaskIconPicker(store: store, selection: $icon)
-
-                    OWCGroupCard {
-                        // The estimate lives only on this path. On the
-                        // block-first path the number of blocks you place says
-                        // it, so a stepper there would be a second answer to
-                        // the same question.
-                        OWCRow(
-                            icon: "number",
-                            title: store.t("focusEstimate"),
-                            subtitle: store.t("focusEstimateDetail", values: [
-                                "count": "\(pomodoros)",
-                                "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
-                            ]),
-                            isLast: true
-                        ) {
-                            Stepper("", value: $pomodoros, in: 1...12)
-                                .labelsHidden()
-                                .accessibilityLabel(store.t("focusEstimate"))
-                        }
-                    }
-
                     OWCSectionHeader(title: store.t("focusLanding"))
                     OWCGroupCard {
                         landingRow(.nextBlock, icon: "calendar.badge.plus", title: nextBlockTitle)
                         landingRow(.startNow, icon: "play.fill", title: store.t("focusStartNow"), isLast: true)
                     }
+                    Button(store.t(landing == .startNow ? "focusAddAndStart" : "focusSaveTask"), action: save)
+                        .buttonStyle(OWCPrimaryButtonStyle())
+                        .disabled(!canSave || (landing == .startNow && !canStart))
+                    DisclosureGroup(store.t("moreActions")) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            FocusTaskIconPicker(store: store, selection: $icon)
 
-                    Button {
-                        isFavorite.toggle()
-                    } label: {
-                        Label(
-                            store.t(isFavorite ? "focusFavoriteOn" : "focusMakeFavorite"),
-                            systemImage: isFavorite ? "star.fill" : "star"
-                        )
-                        .font(.callout.weight(.medium))
-                        .foregroundStyle(isFavorite ? OWCDesign.orangeDeep : OWCDesign.secondary)
-                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            OWCGroupCard {
+                                // The estimate lives only on this path. On the
+                                // block-first path the number of blocks you place says
+                                // it, so a stepper there would be a second answer to
+                                // the same question.
+                                OWCRow(
+                                    icon: "number",
+                                    title: store.t("focusEstimate"),
+                                    subtitle: store.t("focusEstimateDetail", values: [
+                                        "count": "\(pomodoros)",
+                                        "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
+                                    ]),
+                                    isLast: true
+                                ) {
+                                    Stepper("", value: $pomodoros, in: 1...12)
+                                        .labelsHidden()
+                                        .accessibilityLabel(store.t("focusEstimate"))
+                                }
+                            }
+
+                            Button {
+                                isFavorite.toggle()
+                            } label: {
+                                Label(
+                                    store.t(isFavorite ? "focusFavoriteOn" : "focusMakeFavorite"),
+                                    systemImage: isFavorite ? "star.fill" : "star"
+                                )
+                                .font(.callout.weight(.medium))
+                                .foregroundStyle(isFavorite ? OWCDesign.orangeDeep : OWCDesign.secondary)
+                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            }
+                            .buttonStyle(.plain)
+                        }.padding(.top, 12)
                     }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 14)
@@ -234,9 +247,6 @@ struct FocusQuickCreateSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(store.t("cancel")) { dismiss() }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(store.t("focusSaveTask"), action: save).disabled(!canSave)
                 }
             }
         }
@@ -260,7 +270,7 @@ struct FocusQuickCreateSheet: View {
             }
         }
         .buttonStyle(OWCRowButtonStyle())
-        .disabled(value == .nextBlock && nextBlock == nil)
+        .disabled(value == .nextBlock ? nextBlock == nil : !canStart)
     }
 
     private func save() {
@@ -274,7 +284,8 @@ struct FocusQuickCreateSheet: View {
                 isFavorite: isFavorite
             ))
         case .startNow:
-            store.addAndStartFocusTask(title: title, icon: icon, isFavorite: isFavorite)
+            guard canStart else { return }
+            store.addAndStartFocusTask(title: title, pomodoros: pomodoros, icon: icon, isFavorite: isFavorite)
         }
         dismiss()
     }

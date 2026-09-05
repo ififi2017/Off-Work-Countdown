@@ -120,6 +120,8 @@ private struct LockScreenActivityView: View {
                 // Dynamic Island remains on the lighter transparent mark.
                 ActivityAppIcon(size: 24)
                 Text(activityTitle(context))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                     .font(.system(size: 13, weight: .semibold))
                     .tracking(0.25)
                     .foregroundStyle(.white.opacity(0.8))
@@ -136,23 +138,28 @@ private struct LockScreenActivityView: View {
                     .foregroundStyle(.white.opacity(0.7))
             }
             .padding(.top, 12)
-            activityProgress(activityProgressValue(context, at: timeline.date))
+            activityProgress(context, at: timeline.date)
                 .padding(.top, 14)
             // Only one activity may be live, so a focus block ends the work
             // countdown. These two lines put the shift back: the block above,
             // the shift below — the canvas's first two scales in one card.
-            if context.state.nextLabel != nil || context.state.shiftRemainingLabel != nil {
+            if context.state.nextLabel != nil || context.state.shiftEndAtMs != nil {
                 HStack(spacing: 8) {
                     if let next = context.state.nextLabel {
                         Text(next).lineLimit(1)
                     }
                     Spacer(minLength: 4)
-                    if let shift = context.state.shiftRemainingLabel {
-                        Text(shift).lineLimit(1)
+                    if let endAtMs = context.state.shiftEndAtMs, let label = context.state.shiftEndLabel {
+                        HStack(spacing: 4) {
+                            Text(label)
+                            Text(Date(timeIntervalSince1970: Double(endAtMs) / 1_000), style: .time)
+                                .environment(\.locale, activityLocale(context))
+                        }
+                        .lineLimit(1)
                     }
                 }
                 .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.62))
+                .foregroundStyle(.white.opacity(0.8))
                 .padding(.top, 10)
             }
         }
@@ -172,11 +179,17 @@ private struct ActivityCountdownPanel: View {
                 HStack {
                     activityCountdownText(context, now: timeline.date, size: size)
                     Spacer()
-                    Text(String(format: "%.1f%%", activityProgressValue(context, at: timeline.date)))
-                        .font(.system(size: 15, weight: .semibold).monospacedDigit())
-                        .foregroundStyle(activityOrange)
+                    if activitySymbol(context) != nil {
+                        Text(context.state.caption)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(activityTint(context))
+                    } else {
+                        Text(String(format: "%.1f%%", activityProgressValue(context, at: timeline.date)))
+                            .font(.system(size: 15, weight: .semibold).monospacedDigit())
+                            .foregroundStyle(activityOrange)
+                    }
                 }
-                activityProgress(activityProgressValue(context, at: timeline.date))
+                activityProgress(context, at: timeline.date)
             }
         }
     }
@@ -358,7 +371,7 @@ private func activityProgressValue(_ context: ActivityViewContext<OffWorkActivit
     if activityComplete(context, at: date) { return 100 }
     // Focus/break payloads carry one absolute segment. Unlike work progress,
     // their progress should simply advance from the session start to its end.
-    if context.state.surface != nil {
+    if activitySymbol(context) != nil {
         let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
         guard let segment = context.state.segments.first else { return context.state.progress }
         let total = max(1, segment.endAtMs - segment.startAtMs)
@@ -367,6 +380,23 @@ private func activityProgressValue(_ context: ActivityViewContext<OffWorkActivit
     return context.state.projectedProgress(
         atMs: Int64(date.timeIntervalSince1970 * 1_000)
     )
+}
+
+@ViewBuilder
+private func activityProgress(_ context: ActivityViewContext<OffWorkActivityAttributes>, at date: Date) -> some View {
+    if activitySymbol(context) != nil, let segment = context.state.segments.first {
+        let start = Date(timeIntervalSince1970: Double(segment.startAtMs) / 1_000)
+        let end = Date(timeIntervalSince1970: Double(segment.endAtMs) / 1_000)
+        // System interpolation keeps this moving without waking the extension.
+        ProgressView(timerInterval: start...max(start, end), countsDown: false) {
+            EmptyView()
+        } currentValueLabel: { EmptyView() }
+        .tint(activityTint(context))
+        .labelsHidden()
+        .frame(height: 6)
+    } else {
+        activityProgress(activityProgressValue(context, at: date))
+    }
 }
 
 private func activityProgress(_ progress: Double) -> some View {

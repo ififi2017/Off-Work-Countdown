@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "Bugünün bloklarına bak",
   "focusActivityThenBreak": "Sonra {{count}} dk mola",
   "focusActivityThenTask": "{{time}}’de {{task}} göreve dönüş",
-  "focusActivityShiftLeft": "Bugün {{duration}} kaldı"
+  "focusActivityShiftLeft": "Bugün {{duration}} kaldı",
+  "focusAddAndStart": "Ekle ve başlat",
+  "focusEndBreakTitle": "Bu mola bitsin mi?",
+  "focusEndBreakBody": "Hazır olduğunda bir görev seçip sonraki oturumu başlatabilirsin."
 }

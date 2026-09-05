@@ -221,30 +221,23 @@ final class LiveActivityService {
         return (icon ?? .focus).systemName
     }
 
-    /// What follows this block, taken from the plan rather than guessed.
+    /// Describe the next timer phase, not an unrelated future planning tile.
     static func focusNextLabel(session: FocusSession, store: OffWorkStore, now: Date) -> String? {
-        let canvas = store.focusDayCanvas(at: now)
-        let endMs = Int64(session.plannedEndAt.timeIntervalSince1970 * 1_000)
-        guard let next = canvas.blocks.first(where: { $0.startAtMs >= endMs }) else { return nil }
-        let at = store.formatTime(Date(timeIntervalSince1970: Double(next.startAtMs) / 1_000))
-        switch next.kind {
-        case .breakTime:
-            return store.t("focusActivityThenBreak", values: [
-                "count": "\(next.durationMs / 60_000)"
-            ])
-        case .task:
-            guard let title = next.taskTitle else { return nil }
-            return store.t("focusActivityThenTask", values: ["time": at, "task": title])
-        }
+        guard session.kind == .focus else { return store.t("focusStartNextFocus") }
+        guard session.plannedEndReason == .completed else { return nil }
+        let kind = store.nextFocusBreakKind(after: session)
+        guard store.hasFocusRoom(at: session.plannedEndAt) else { return nil }
+        let settings = store.focusTimerSettings.normalized
+        return store.t("focusActivityThenBreak", values: [
+            "count": "\(kind == .longBreak ? settings.longBreakMinutes : settings.shortBreakMinutes)"
+        ])
     }
 
-    /// The shift line the focus activity carries so it does not simply
-    /// displace the work countdown.
-    static func shiftRemainingLabel(store: OffWorkStore, at now: Date) -> String? {
+    /// A fixed clock-off time stays truthful while the app is suspended,
+    /// including across lunch. Never format a ticking duration into a payload.
+    static func shiftEndAtMs(store: OffWorkStore, at now: Date) -> Int64? {
         guard let snapshot = store.snapshot(at: now), snapshot.remainingMs > 0 else { return nil }
-        return store.t("focusActivityShiftLeft", values: [
-            "duration": store.formatDuration(snapshot.remainingMs, includeSeconds: false)
-        ])
+        return Int64(snapshot.endAtMs)
     }
 
     private func focusCopy(for surface: LiveActivitySurface, store: OffWorkStore) -> (
@@ -499,7 +492,8 @@ final class LiveActivityService {
             taskTitle: Self.focusTaskTitle(session: session, surface: decision.surface, store: store),
             taskIcon: Self.focusTaskIcon(session: session, surface: decision.surface, store: store),
             nextLabel: Self.focusNextLabel(session: session, store: store, now: now),
-            shiftRemainingLabel: Self.shiftRemainingLabel(store: store, at: now)
+            shiftEndAtMs: Self.shiftEndAtMs(store: store, at: now),
+            shiftEndLabel: store.t("endTime")
         )
         let content = ActivityContent(state: state, staleDate: session.plannedEndAt, relevanceScore: 90)
         let desired = LiveActivityIdentity(

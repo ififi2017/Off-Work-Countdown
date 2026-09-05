@@ -41,8 +41,8 @@ struct FocusBandView: View {
                 }
                 ForEach(model.blocks) { block in
                     blockTile(block)
-                        .offset(y: model.offset(ofMs: block.startAtMs))
                         .id(block.startAtMs)
+                        .padding(.top, model.offset(ofMs: block.startAtMs))
                 }
                 if let nowAtMs = model.nowAtMs {
                     nowLine.offset(y: model.offset(ofMs: nowAtMs) - 1)
@@ -348,6 +348,7 @@ struct FocusBandList: View {
                     ) { EmptyView() }
                 }
                 .buttonStyle(OWCRowButtonStyle())
+                .id(block.startAtMs)
                 .disabled(!block.isEditable)
             }
         }

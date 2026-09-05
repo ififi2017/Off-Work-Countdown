@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "Voir les blocs du jour",
   "focusActivityThenBreak": "Ensuite {{count}} min de pause",
   "focusActivityThenTask": "Retour à {{task}} à {{time}}",
-  "focusActivityShiftLeft": "Encore {{duration}} aujourd’hui"
+  "focusActivityShiftLeft": "Encore {{duration}} aujourd’hui",
+  "focusAddAndStart": "Ajouter et démarrer",
+  "focusEndBreakTitle": "Terminer cette pause ?",
+  "focusEndBreakBody": "Quand vous êtes prêt, choisissez une tâche pour démarrer la prochaine session."
 }

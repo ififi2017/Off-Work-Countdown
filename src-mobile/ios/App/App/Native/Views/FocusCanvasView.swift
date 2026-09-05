@@ -22,7 +22,9 @@ struct FocusCanvasView: View {
     @State private var scale: Scale = .today
     @State private var selectedBlock: Int64?
     @State private var editingBlock: FocusDayCanvasModel.Block?
-    @State private var showsQuickCreate = false
+    @State private var quickCreateLanding: FocusQuickCreateSheet.Landing?
+    @State private var now = Date.now
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showsTimerSettings = false
     @State private var editingTemplate: FocusTemplateDraft?
     @State private var notice: String?
@@ -39,7 +41,7 @@ struct FocusCanvasView: View {
         // JavaScriptCore round trip through the shared rules, and the canvas
         // needs two of them plus a scan of today's sessions — as a computed
         // property this ran six times for one render.
-        let model = store.focusDayCanvas()
+        let model = store.focusDayCanvas(at: now)
         return VStack(spacing: 0) {
             // Pinned, so "what am I in" survives scrolling to the far end of
             // the shift. Only this band is pinned: the scale picker costs
@@ -48,7 +50,10 @@ struct FocusCanvasView: View {
                 store: store,
                 model: model,
                 onStop: { confirmsStop = true },
-                onStart: { start($0) }
+                onStart: { start($0) },
+                onAdd: {
+                    quickCreateLanding = store.hasFocusRoom() ? .startNow : .nextBlock
+                }
             )
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 14)
@@ -76,10 +81,17 @@ struct FocusCanvasView: View {
                     .padding(.horizontal, OWCDesign.pageInset)
                     .padding(.top, 14)
                     .padding(.bottom, OWCDesign.detailBottomInset)
+                    .onAppear {
+                        if let block = model.currentBlock {
+                            proxy.scrollTo(block.startAtMs, anchor: .top)
+                        }
+                    }
                     .onChange(of: selectedBlock) { _, value in
                         guard let value else { return }
-                        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter) {
+                        if reduceMotion {
                             proxy.scrollTo(value, anchor: .center)
+                        } else {
+                            withAnimation(OWCMotion.stateEnter) { proxy.scrollTo(value, anchor: .center) }
                         }
                     }
                 }
@@ -90,7 +102,7 @@ struct FocusCanvasView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showsQuickCreate = true } label: {
+                Button { quickCreateLanding = .nextBlock } label: {
                     Label(store.t("focusQuickCreate"), systemImage: "plus")
                 }
                 .disabled(store.focusDayCanvasIsLocked)
@@ -107,8 +119,8 @@ struct FocusCanvasView: View {
                 apply(result)
             }
         }
-        .sheet(isPresented: $showsQuickCreate) {
-            FocusQuickCreateSheet(store: store) { result in apply(result) }
+        .sheet(item: $quickCreateLanding) { landing in
+            FocusQuickCreateSheet(store: store, initialLanding: landing) { result in apply(result) }
         }
         .sheet(isPresented: $showsTimerSettings) {
             FocusTimerSettingsSheet(store: store)
@@ -116,19 +128,36 @@ struct FocusCanvasView: View {
         .sheet(item: $editingTemplate) { draft in
             FocusTemplateEditorView(store: store, draft: draft)
         }
-        .alert(store.t("focusStopTitle"), isPresented: $confirmsStop) {
+        .alert(store.t(session?.kind == .focus ? "focusStopTitle" : "focusEndBreakTitle"), isPresented: $confirmsStop) {
             Button(store.t("focusStop"), role: .destructive) {
                 store.stopFocus(reason: .stoppedByUser)
             }
             Button(store.t("cancel"), role: .cancel) {}
         } message: {
-            Text(store.t("focusStopConfirm"))
+            Text(store.t(session?.kind == .focus ? "focusStopConfirm" : "focusEndBreakBody"))
         }
         .alert(
             notice ?? "",
             isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })
         ) {
             Button(store.t("okAction"), role: .cancel) { notice = nil }
+        }
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            while !Task.isCancelled {
+                now = .now
+                _ = store.finishElapsedFocusSession(at: now)
+                // Refresh the whole canvas only on a minute or a block boundary.
+                // Timer Text/ProgressView animate their own seconds independently.
+                let canvas = store.focusDayCanvas(at: now)
+                let nextMinute = Date(timeIntervalSince1970: (floor(now.timeIntervalSince1970 / 60) + 1) * 60)
+                let boundary = canvas.blocks.flatMap { [$0.startAtMs, $0.endAtMs] }
+                    .map { Date(timeIntervalSince1970: Double($0) / 1_000) }
+                    .filter { $0 > now }.min() ?? nextMinute
+                let wake = min(boundary, nextMinute, session?.plannedEndAt ?? nextMinute)
+                do { try await Task.sleep(for: .seconds(max(0.1, wake.timeIntervalSinceNow))) }
+                catch { return }
+            }
         }
         .sensoryFeedback(.selection, trigger: selectionFeedback)
         .sensoryFeedback(.success, trigger: placedFeedback)
@@ -193,9 +222,10 @@ struct FocusCanvasView: View {
 
     // MARK: - actions
 
-    private func start(_ task: FocusTask?) {
-        guard let task else { return }
-        _ = store.startFocus(task: task)
+    private func start(_ block: FocusDayCanvasModel.Block) {
+        guard let task = store.records.state.focusTasks.first(where: { $0.id == block.taskID }),
+              store.startFocus(task: task, inBlockStartingAt: block.startAtMs)
+        else { now = .now; return }
         selectionFeedback &+= 1
     }
 
@@ -224,134 +254,169 @@ struct FocusNowBand: View {
     let store: OffWorkStore
     let model: FocusDayCanvasModel
     var onStop: () -> Void
-    var onStart: (FocusTask?) -> Void
+    var onStart: (FocusDayCanvasModel.Block) -> Void
+    var onAdd: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.openURL) private var openURL
+    @State private var showsNotificationIssue = false
 
     private var session: FocusSession? { store.activeFocusSession() }
+    private var layout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
+    }
 
     var body: some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 0) {
                 content.padding(18)
+                if session != nil, let issue = store.focusNotificationIssue {
+                    notificationIssue(issue).padding(.horizontal, 18).padding(.bottom, 12)
+                }
                 if let session, session.plannedEndAt > .now {
-                    ProgressView(
-                        timerInterval: session.startedAt...session.plannedEndAt,
-                        countsDown: false
-                    ) { EmptyView() } currentValueLabel: { EmptyView() }
+                    ProgressView(timerInterval: session.startedAt...session.plannedEndAt, countsDown: false) {
+                        EmptyView()
+                    } currentValueLabel: { EmptyView() }
                     .progressViewStyle(.linear)
-                    .tint(OWCDesign.accent)
+                    .tint(session.kind == .focus ? Color.indigo : Color.teal)
                     .frame(height: 3)
                     .labelsHidden()
                 }
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     @ViewBuilder
     private var content: some View {
         if model.isLocked {
-            lockedContent
+            VStack(alignment: .leading, spacing: 8) {
+                Label(store.t("focusLockedTitle"), systemImage: "lock").font(.headline)
+                Text(store.t("focusLockedBody")).font(.footnote).foregroundStyle(OWCDesign.secondary)
+                Button(store.t("plusSeePlans")) { store.presentedRoute = .plus }
+                    .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 36))
+            }
         } else if let session {
             runningContent(session)
-        } else if let block = model.currentBlock, block.kind == .task {
+        } else if store.focusLastNextAction == .startShortBreak || store.focusLastNextAction == .startLongBreak {
+            breakOffer
+        } else if let block = model.currentBlock, block.kind == .task, !block.isUserBreak {
             idleContent(block)
-        } else if let next = model.blocks.first(where: { $0.state == .future && $0.kind == .task }) {
-            idleContent(next)
         } else {
-            Text(store.t("focusNoShift"))
-                .font(.footnote)
-                .foregroundStyle(OWCDesign.secondary)
-        }
-    }
-
-    private var lockedContent: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label(store.t("focusLockedTitle"), systemImage: "lock")
-                .font(.headline)
-            Text(store.t("focusLockedBody"))
-                .font(.footnote)
-                .foregroundStyle(OWCDesign.secondary)
-            Button(store.t("plusSeePlans")) { store.presentedRoute = .plus }
-                .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 36))
-                .frame(maxWidth: 160)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(store.t(store.focusLastNextAction == .startNextFocus ? "focusStartNextFocus" : "focusTitle"))
+                    .font(.headline)
+                if let next = model.blocks.first(where: { $0.state == .future && $0.kind == .task && !$0.isUserBreak }) {
+                    Text(next.taskTitle.map { "\($0) · \(range(next))" } ?? range(next))
+                        .font(.footnote).foregroundStyle(OWCDesign.secondary)
+                } else {
+                    Text(store.t("focusNoShift")).font(.footnote).foregroundStyle(OWCDesign.secondary)
+                }
+                Button(store.t(store.hasFocusRoom() ? "focusAddAndStart" : "focusQuickCreate"), action: onAdd)
+                    .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
+            }
         }
     }
 
     private func runningContent(_ session: FocusSession) -> some View {
-        HStack(alignment: .center, spacing: 12) {
+        layout {
             VStack(alignment: .leading, spacing: 2) {
                 Text(runningTitle(session))
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                    .fixedSize(horizontal: false, vertical: true)
                     .font(.footnote.weight(.semibold))
-                    .foregroundStyle(OWCDesign.accent)
-                Text(timerInterval: .now...session.plannedEndAt, countsDown: true)
+                    .foregroundStyle(session.kind == .focus ? Color.indigo : Color.teal)
+                Text(timerInterval: session.startedAt...max(session.startedAt, session.plannedEndAt), countsDown: true)
                     .font(.title.monospacedDigit().weight(.semibold))
                     .foregroundStyle(OWCDesign.primary)
-                // The end time, not only the countdown: this block may have
-                // been cut short by lunch or clock-off, and the number alone
-                // does not say that.
                 Text(store.t("focusEndsAt", values: ["time": store.formatTime(session.plannedEndAt)]))
-                    .font(.caption)
-                    .foregroundStyle(OWCDesign.secondary)
+                    .font(.caption).foregroundStyle(OWCDesign.secondary)
             }
-            Spacer(minLength: 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
             Button(store.t("focusStop"), action: onStop)
                 .buttonStyle(OWCSecondaryButtonStyle())
-                .frame(width: 76)
+                .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : 76)
+                .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
+        }
+    }
+
+    private var breakOffer: some View {
+        let kind: FocusSessionKind = store.focusLastNextAction == .startLongBreak ? .longBreak : .shortBreak
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(store.t("focusPhaseComplete")).font(.headline)
+            Text(store.t("focusNextBreakBody")).font(.footnote).foregroundStyle(OWCDesign.secondary)
+            layout {
+                Button(store.t(kind == .longBreak ? "focusStartLongBreak" : "focusStartShortBreak")) {
+                    _ = store.startBreak(kind: kind)
+                }
+                .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
+                .disabled(!store.canStartFocusBreak(kind: kind))
+                Button(store.t("focusSkipBreak")) { _ = store.skipSuggestedFocusBreak() }
+                    .buttonStyle(OWCSecondaryButtonStyle())
+            }
+        }
+    }
+
+    private func notificationIssue(_ issue: FocusNotificationIssue) -> some View {
+        Button { showsNotificationIssue = true } label: {
+            Label(store.t("focusNotificationIssue"), systemImage: "bell.badge")
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .alert(store.t("focusTitle"), isPresented: $showsNotificationIssue) {
+            if issue == .permissionDenied {
+                Button(store.t("focusNotificationOpenSettings")) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                }
+            } else {
+                Button(store.t("focusNotificationRetry")) { store.retryFocusNotification() }
+            }
+            Button(store.t("cancel"), role: .cancel) {}
+        } message: {
+            Text(store.t(issue == .permissionDenied ? "focusNotificationPermissionDenied" : "focusNotificationIssue"))
         }
     }
 
     private func runningTitle(_ session: FocusSession) -> String {
-        if session.kind != .focus { return store.t("focusOnBreak") }
-        let title = session.taskID
-            .flatMap { id in store.records.state.focusTasks.first(where: { $0.id == id }) }?
-            .title
-        return title.map { store.t("focusRunningOn", values: ["task": $0]) } ?? store.t("focusRunning")
+        if session.kind != .focus { return store.t(session.kind == .shortBreak ? "focusShortBreak" : "focusLongBreak") }
+        let title = session.taskID.flatMap { id in store.records.state.focusTasks.first(where: { $0.id == id }) }?.title
+        return title ?? store.t("focusRunning")
     }
 
     private func idleContent(_ block: FocusDayCanvasModel.Block) -> some View {
-        HStack(alignment: .center, spacing: 12) {
+        layout {
             VStack(alignment: .leading, spacing: 2) {
-                Text(store.t(block.state == .current ? "focusThisBlock" : "focusNextBlock"))
-                    .font(.footnote)
-                    .foregroundStyle(OWCDesign.secondary)
-                Text(block.taskTitle ?? idleDetail(block))
+                Text(store.t(store.focusLastNextAction == .startNextFocus ? "focusStartNextFocus" : "focusThisBlock")).font(.footnote).foregroundStyle(OWCDesign.secondary)
+                Text(block.taskTitle ?? range(block))
                     .font(.title3.weight(.semibold))
-                    .foregroundStyle(block.taskTitle == nil ? OWCDesign.secondary : OWCDesign.primary)
-                    .lineLimit(1)
-                if block.taskTitle != nil {
-                    Text(idleDetail(block))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.secondary)
-                } else {
-                    Text(store.t("focusBandEmptyBlock"))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.secondary)
-                }
+                    .foregroundStyle(OWCDesign.primary)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(block.taskTitle == nil ? store.t("focusBandEmptyBlock") : range(block))
+                    .font(.caption).foregroundStyle(OWCDesign.secondary)
             }
-            Spacer(minLength: 8)
-            if let task = task(for: block) {
-                Button {
-                    onStart(task)
-                } label: {
-                    Label(store.t("focusStart"), systemImage: "play.fill")
-                        .labelStyle(.titleAndIcon)
-                }
-                .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
-                .frame(width: 92)
-                .disabled(!store.hasFocusRoom())
+            .frame(maxWidth: .infinity, alignment: .leading)
+            if let task = store.records.state.focusTasks.first(where: { $0.id == block.taskID }) {
+                Button(store.t("focusStart"), systemImage: "play.fill") { onStart(block) }
+                    .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
+                    .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : 92)
+                    .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
+                    .disabled(store.focusStartAvailability(task) != .ready || Double(block.endAtMs) / 1_000 - Date.now.timeIntervalSince1970 < 60)
+            } else {
+                Button(store.t("focusAddAndStart"), action: onAdd)
+                    .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
+                    .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : 112)
+                    .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
+                    .disabled(!store.hasFocusRoom())
             }
         }
     }
 
-    /// Says where this block actually ends, because a block that starts now
-    /// may be shorter than the cadence promises.
-    private func idleDetail(_ block: FocusDayCanvasModel.Block) -> String {
+    private func range(_ block: FocusDayCanvasModel.Block) -> String {
         let start = Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)
         let end = Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000)
         return "\(store.formatTime(start)) – \(store.formatTime(end))"
-    }
-
-    private func task(for block: FocusDayCanvasModel.Block) -> FocusTask? {
-        block.taskID.flatMap { id in store.records.state.focusTasks.first(where: { $0.id == id }) }
     }
 }
 
@@ -373,6 +438,24 @@ struct FocusTaskLedger: View {
                             subtitle: subtitle(row),
                             isLast: index == model.tasks.count - 1
                         ) {
+                            if let task = store.records.state.focusTasks.first(where: { $0.id == row.id }) {
+                                Menu {
+                                    Button(store.t("focusStartNow"), systemImage: "play.fill") {
+                                        _ = store.startFocus(task: task)
+                                    }
+                                    .disabled(store.focusStartAvailability(task) != .ready)
+                                    Button(store.t(task.isFavorite ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: "star") {
+                                        store.toggleFocusFavorite(task)
+                                    }
+                                    Button(store.t("focusDeleteTask"), systemImage: "trash", role: .destructive) {
+                                        _ = store.deleteFocusTask(task)
+                                    }
+                                    .disabled(row.isRunning)
+                                } label: {
+                                    Image(systemName: "ellipsis").frame(minWidth: 44, minHeight: 44)
+                                }
+                                .accessibilityLabel(store.t("moreActions") + " · " + row.title)
+                            }
                             if row.isRunning {
                                 Text(store.t("focusRunning"))
                                     .font(.caption)

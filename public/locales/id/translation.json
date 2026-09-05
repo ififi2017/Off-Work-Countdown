@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "Lihat blok hari ini",
   "focusActivityThenBreak": "Lalu istirahat {{count}} mnt",
   "focusActivityThenTask": "Kembali ke {{task}} pukul {{time}}",
-  "focusActivityShiftLeft": "Sisa {{duration}} hari ini"
+  "focusActivityShiftLeft": "Sisa {{duration}} hari ini",
+  "focusAddAndStart": "Tambah dan mulai",
+  "focusEndBreakTitle": "Akhiri istirahat ini?",
+  "focusEndBreakBody": "Saat siap, pilih tugas dan mulai sesi berikutnya."
 }

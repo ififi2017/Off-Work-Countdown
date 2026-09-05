@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "Посмотреть блоки на сегодня",
   "focusActivityThenBreak": "Затем перерыв {{count}} мин",
   "focusActivityThenTask": "В {{time}} снова {{task}}",
-  "focusActivityShiftLeft": "Сегодня осталось {{duration}}"
+  "focusActivityShiftLeft": "Сегодня осталось {{duration}}",
+  "focusAddAndStart": "Добавить и начать",
+  "focusEndBreakTitle": "Завершить перерыв?",
+  "focusEndBreakBody": "Когда будете готовы, выберите задачу и начните следующий сеанс."
 }

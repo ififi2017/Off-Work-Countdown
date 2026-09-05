@@ -13,7 +13,7 @@ extension OffWorkStore {
     /// also means someone who plans a day but never presses start still gets
     /// reminded.
     func focusOwnsBreaks(at date: Date = .now) -> Bool {
-        guard plus.isAuthorized, let shift = focusCanvasShift(at: date)?.snapshot else { return false }
+        guard microBreakEnabled, plus.isAuthorized, let shift = focusCanvasShift(at: date)?.snapshot else { return false }
         let dayKey = RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
         return focusPlanning.plans[dayKey]?.assignments.contains { $0.kind == .task && $0.taskID != nil } ?? false
     }
@@ -28,10 +28,9 @@ extension OffWorkStore {
     /// anyway.
     func focusBreakReminders(at date: Date = .now) -> [NativeReminder] {
         guard focusOwnsBreaks(at: date) else { return [] }
-        let settings = focusTimerSettings.normalized
         let nowMs = date.timeIntervalSince1970 * 1_000
-        return focusWorkBlocks(at: date)
-            .filter { $0.kind == .breakTime && $0.durationMinutes >= settings.longBreakMinutes }
+        return focusTemplateBlocks(at: date)
+            .filter { $0.breakKind == .longBreak }
             .filter { Double($0.startAtMs) > nowMs }
             .map { block in
                 NativeReminder(

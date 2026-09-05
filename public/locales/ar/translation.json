@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "اطّلع على فترات اليوم",
   "focusActivityThenBreak": "ثم استراحة {{count}} دقيقة",
   "focusActivityThenTask": "العودة إلى {{task}} في {{time}}",
-  "focusActivityShiftLeft": "بقي {{duration}} اليوم"
+  "focusActivityShiftLeft": "بقي {{duration}} اليوم",
+  "focusAddAndStart": "إضافة وبدء",
+  "focusEndBreakTitle": "إنهاء هذه الاستراحة؟",
+  "focusEndBreakBody": "عندما تكون مستعدًا، يمكنك اختيار مهمة وبدء الجولة التالية."
 }

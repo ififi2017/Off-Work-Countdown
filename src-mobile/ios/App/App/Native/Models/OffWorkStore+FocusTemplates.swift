@@ -14,7 +14,7 @@ extension OffWorkStore {
         let dayKey = RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
         let assignments = focusPlanning.plans[dayKey]?.assignments ?? []
         var taskKeys: [UUID: UUID] = [:]
-        return focusWorkBlocks(at: date).compactMap { block in
+        return focusTemplateBlocks(at: date).compactMap { block in
             guard block.kind == .task else { return nil }
             guard let assignment = assignments.first(where: { $0.blockStartAtMs == block.startAtMs })
             else { return nil }

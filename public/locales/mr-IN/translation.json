@@ -896,5 +896,8 @@
   "microBreakOpenFocus": "आजचे ब्लॉक पाहा",
   "focusActivityThenBreak": "नंतर {{count}} मिनिटांची विश्रांती",
   "focusActivityThenTask": "{{time}} वाजता {{task}} वर परत",
-  "focusActivityShiftLeft": "आज {{duration}} उरले"
+  "focusActivityShiftLeft": "आज {{duration}} उरले",
+  "focusAddAndStart": "जोडा आणि सुरू करा",
+  "focusEndBreakTitle": "हा विराम संपवायचा?",
+  "focusEndBreakBody": "तयार झाल्यावर तुम्ही काम निवडून पुढचे सत्र सुरू करू शकता."
 }

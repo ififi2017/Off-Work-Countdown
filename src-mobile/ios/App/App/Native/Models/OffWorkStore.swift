@@ -4271,8 +4271,8 @@ final class OffWorkStore {
 
     @discardableResult
     func applyFocusTemplate(_ template: FocusTemplate, at date: Date = .now) -> Bool {
-        guard plus.isAuthorized, let current = snapshot(at: date) else { return false }
-        let blocks = focusWorkBlocks(at: date)
+        guard plus.isAuthorized, let current = focusCanvasShift(at: date)?.snapshot else { return false }
+        let blocks = focusPlanningBlocks(for: current)
         guard !blocks.isEmpty else { return false }
         let key = RecordJSON.dayKey(current.startDate, calendar: recordsCalendar)
         // The template identifier alone is insufficient: a user can clear or
@@ -4289,11 +4289,10 @@ final class OffWorkStore {
         for slot in template.slots.sorted(by: { $0.blockIndex < $1.blockIndex }) {
             guard blocks.indices.contains(slot.blockIndex) else { continue }
             let block = blocks[slot.blockIndex]
-            // A template is indexed against a specific phase timeline. Never
-            // reinterpret a stale task slot as a break (or vice versa) after
-            // the shared schedule produced a different shape.
-            guard slot.kind == block.kind else { continue }
-            if block.kind == .breakTime {
+            // Tasks cannot replace automatic recovery. A user-drawn break
+            // may occupy either a task slot or an automatic recovery slot.
+            guard slot.kind == .breakTime || block.kind == .task else { continue }
+            if slot.kind == .breakTime {
                 assignments.append(FocusPlanAssignment(
                     blockStartAtMs: block.startAtMs,
                     kind: .breakTime,
@@ -4390,7 +4389,7 @@ final class OffWorkStore {
     @discardableResult
     func applyDefaultFocusTemplateIfNeeded(at date: Date = .now) -> Bool {
         guard plus.isAuthorized,
-              let current = snapshot(at: date)
+              let current = focusCanvasShift(at: date)?.snapshot
         else { return false }
         let key = RecordJSON.dayKey(current.startDate, calendar: recordsCalendar)
         guard !focusPlanning.autoAppliedDayKeys.contains(key) else { return false }
@@ -4426,10 +4425,10 @@ final class OffWorkStore {
         return template.slots.compactMap { slot in
             guard blocks.indices.contains(slot.blockIndex) else { return nil }
             let block = blocks[slot.blockIndex]
-            guard slot.kind == block.kind else { return nil }
+            guard slot.kind == .breakTime || block.kind == .task else { return nil }
             return (block, FocusPlanAssignment(
                 blockStartAtMs: block.startAtMs,
-                kind: block.kind,
+                kind: slot.kind,
                 taskID: nil,
                 taskTitle: slot.taskTitle,
                 taskIcon: slot.taskIcon
@@ -4517,7 +4516,7 @@ final class OffWorkStore {
         let expected = template.slots.sorted(by: { $0.blockIndex < $1.blockIndex }).compactMap { slot -> (FocusTemplateSlot, FocusWorkBlock)? in
             guard blocks.indices.contains(slot.blockIndex) else { return nil }
             let block = blocks[slot.blockIndex]
-            return slot.kind == block.kind ? (slot, block) : nil
+            return slot.kind == .breakTime || block.kind == .task ? (slot, block) : nil
         }
         guard !expected.isEmpty, plan.assignments.count == expected.count else { return false }
 
@@ -4675,6 +4674,7 @@ final class OffWorkStore {
 
     func addAndStartFocusTask(
         title: String,
+        pomodoros: Int = 1,
         icon: FocusTaskIcon = .focus,
         isFavorite: Bool = false
     ) {
@@ -4684,7 +4684,7 @@ final class OffWorkStore {
             .focus,
             action: .addAndStartFocus(
                 title: trimmed,
-                pomodoros: 1,
+                pomodoros: pomodoros,
                 icon: icon,
                 isFavorite: isFavorite
             )
@@ -5621,7 +5621,11 @@ final class OffWorkStore {
             overtimeEndAtMs: overtimeEndAtMs,
             durationMinutes: breakDurationMinutes(kind)
         )
-        return planned.timeIntervalSince(date) >= 60 ? planned : nil
+        let block = focusWorkBlocks(at: date).first {
+            $0.kind == .breakTime && $0.start <= date && date < $0.end
+        }
+        let end = min(block?.end ?? planned, planned)
+        return end.timeIntervalSince(date) >= 60 ? end : nil
     }
 
     func focusStartAvailability(_ task: FocusTask, at date: Date = .now) -> FocusStartAvailability {
@@ -5649,9 +5653,8 @@ final class OffWorkStore {
     }
 
     @discardableResult
-    private func startFocusAuthorized(_ task: FocusTask) -> Bool {
+    private func startFocusAuthorized(_ task: FocusTask, at start: Date = .now, blockEnd: Date? = nil) -> Bool {
         guard activeFocusSession() == nil, task.completedAt == nil, task.deletedAt == nil else { return false }
-        let start = Date.now
         guard focusTaskUnavailableUntil(task, at: start) == nil else { return false }
         guard hasFocusRoom(at: start) else {
             focusRejectedNoRoom = true
@@ -5659,12 +5662,15 @@ final class OffWorkStore {
         }
         focusRejectedNoRoom = false
         let current = snapshot(at: start)
-        let planned = FocusPlanner.plannedEnd(
+        let freeEnd = FocusPlanner.plannedEnd(
             from: start,
             segments: current?.segments ?? [],
             overtimeEndAtMs: overtimeEndAtMs,
             durationMinutes: focusTimerSettings.normalized.focusMinutes
         )
+        let planned = min(blockEnd ?? freeEnd, freeEnd)
+        guard planned.timeIntervalSince(start) >= 60 else { return false }
+        focusLastNextAction = .none
         let timeZone = recordsCalendar.timeZone
         let session = FocusSession(
             id: UUID(),
@@ -5681,7 +5687,7 @@ final class OffWorkStore {
             timeZoneIdentifier: timeZone.identifier,
             anchorDayKey: RecordJSON.dayKey(start, calendar: recordsCalendar),
             actualDurationSeconds: nil,
-            plannedEndReason: FocusPlanner.endReason(
+            plannedEndReason: blockEnd == planned ? .completed : FocusPlanner.endReason(
                 startedAt: start,
                 plannedEndAt: planned,
                 expectedDurationMinutes: focusTimerSettings.normalized.focusMinutes
@@ -5693,6 +5699,35 @@ final class OffWorkStore {
         return true
     }
 
+    /// A scheduled start consumes the remainder of that exact block.
+    @discardableResult
+    func startFocus(task: FocusTask, inBlockStartingAt blockStart: Int64, at date: Date = .now) -> Bool {
+        guard plus.isAuthorized,
+              let block = focusDayCanvas(at: date).blocks.first(where: { $0.startAtMs == blockStart }),
+              block.state == .current, block.kind == .task, !block.isUserBreak,
+              block.taskID == task.id
+        else { return false }
+        return startFocusAuthorized(task, at: date, blockEnd: Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000))
+    }
+
+    func nextFocusBreakKind(after session: FocusSession) -> FocusSessionKind {
+        let blocks = focusWorkBlocks(at: session.startedAt)
+        if let index = blocks.firstIndex(where: {
+            $0.kind == .task && $0.start <= session.startedAt && $0.end == session.plannedEndAt
+        }), let next = blocks.dropFirst(index + 1).first, let kind = next.breakKind {
+            return kind
+        }
+        let dayKey = session.anchorDayKey ?? RecordJSON.dayKey(session.shiftAnchorDate, calendar: recordsCalendar)
+        let rounds = focusSessions(forDayKey: dayKey).count {
+            $0.id != session.id && $0.kind == .focus && $0.endReason == .completed
+        } + 1
+        return rounds % focusTimerSettings.normalized.longBreakEvery == 0 ? .longBreak : .shortBreak
+    }
+
+    func canStartFocusBreak(kind: FocusSessionKind, at date: Date = .now) -> Bool {
+        activeFocusSession() == nil && plannedFocusBreakEnd(kind: kind, at: date) != nil
+    }
+
     @discardableResult
     func startBreak(kind: FocusSessionKind, at start: Date = .now) -> Bool {
         let requiredAction: FocusNextAction = kind == .shortBreak ? .startShortBreak : .startLongBreak
@@ -5702,6 +5737,7 @@ final class OffWorkStore {
               let planned = plannedFocusBreakEnd(kind: kind, at: start)
         else { return false }
         let duration = breakDurationMinutes(kind)
+        focusLastNextAction = .none
         let session = FocusSession(
             id: UUID(), taskID: nil,
             shiftAnchorDate: recordsCalendar.startOfDay(for: start),
@@ -5825,7 +5861,9 @@ final class OffWorkStore {
         }
         session.endReason = reason
         records.upsertFocusSession(session)
-        if reason == .completed, session.kind != .focus {
+        focusNotificationIssue = nil
+        focusLastNextAction = .none
+        if session.kind != .focus {
             focusLastNextAction = .startNextFocus
             return
         }
@@ -5839,13 +5877,7 @@ final class OffWorkStore {
             task.completedAt = date
             records.upsertFocusTask(task)
         }
-        let dayKey = session.anchorDayKey ?? RecordJSON.dayKey(session.shiftAnchorDate, calendar: recordsCalendar)
-        let round = records.state.focusSessions.count {
-            $0.kind == .focus && $0.endReason == .completed
-                && ($0.anchorDayKey ?? RecordJSON.dayKey($0.shiftAnchorDate, calendar: recordsCalendar)) == dayKey
-        }
-        let suggestedKind: FocusSessionKind = round % focusTimerSettings.normalized.longBreakEvery == 0
-            ? .longBreak : .shortBreak
+        let suggestedKind = nextFocusBreakKind(after: session)
         let suggestedAction: FocusNextAction = suggestedKind == .longBreak
             ? .startLongBreak : .startShortBreak
         // Do not surface a break CTA that cannot start because this block just
@@ -5895,13 +5927,7 @@ final class OffWorkStore {
             focusLastNextAction = .none
             return
         }
-        let dayKey = latest.anchorDayKey ?? RecordJSON.dayKey(latest.shiftAnchorDate, calendar: recordsCalendar)
-        let rounds = records.state.focusSessions.count {
-            $0.kind == .focus
-                && $0.endReason == .completed
-                && ($0.anchorDayKey ?? RecordJSON.dayKey($0.shiftAnchorDate, calendar: recordsCalendar)) == dayKey
-        }
-        focusLastNextAction = rounds % focusTimerSettings.normalized.longBreakEvery == 0
+        focusLastNextAction = nextFocusBreakKind(after: latest) == .longBreak
             ? .startLongBreak : .startShortBreak
     }
 
