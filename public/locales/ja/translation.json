@@ -646,8 +646,8 @@
   "recordsAllRecords": "すべての記録",
   "recordsToday": "今日に戻る",
   "recordsFreeAwakeShort": "自由時間",
-  "recordsMetricWorkdaysHelp": "実際の勤務記録がある日数です。シフトだけから推定した日は含みません。",
-  "recordsMetricWorkHelp": "通常勤務は、休憩と残業を除いた記録済みの所定勤務時間です。",
+  "recordsMetricWorkdaysHelp": "有効な保存済みシフトまたは手動記録に基づく日数です。毎日アプリを開く必要はありません。未来の日付と推定された過去の人生期間は含みません。",
+  "recordsMetricWorkHelp": "通常勤務は当時有効なシフトに基づき、手動変更を優先します。休憩と残業は含みません。",
   "recordsMetricOvertimeHelp": "残業は、通常の勤務区間を超えて記録された勤務時間です。",
   "recordsDataSection": "記録とデータ",
   "recordsDataTitle": "記録とデータ",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "今日は残り {{duration}}",
   "focusAddAndStart": "追加して開始",
   "focusEndBreakTitle": "休憩を終了しますか？",
-  "focusEndBreakBody": "準備ができたら、タスクを選んで次の集中を始められます。"
+  "focusEndBreakBody": "準備ができたら、タスクを選んで次の集中を始められます。",
+  "recordsRecordedDays": "記録のある日数",
+  "recordsAnnualSummary": "{{year}}年の集計",
+  "recordsIncomeBasis": "終了したシフト勤務日 {{count}} 日と現在の給与から推定。有給休暇を含み、今日は含みません。",
+  "recordsTimeBreakdown": "時間の内訳",
+  "recordsAllocationBasis": "この集計の {{count}} 日が対象です。日をまたぐ勤務を含み、睡眠と自由時間は推定値です。",
+  "lifeStageWorkElapsed": "仕事 · これまで",
+  "lifeStageWorkFuture": "仕事 · これからの推定",
+  "lifeStagePresent": "現在",
+  "lifeWorkPeriodBasis": "ライフプロフィールに基づく区分です。経過した期間は、記録された実際の労働時間を表すものではありません。"
 }

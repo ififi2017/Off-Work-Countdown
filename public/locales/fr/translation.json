@@ -646,8 +646,8 @@
   "recordsAllRecords": "Tous les relevés",
   "recordsToday": "Revenir à aujourd’hui",
   "recordsFreeAwakeShort": "Temps libre",
-  "recordsMetricWorkdaysHelp": "Jours comportant un relevé de travail réel. Les estimations fondées uniquement sur le planning ne comptent pas.",
-  "recordsMetricWorkHelp": "Le travail normal est le temps planifié enregistré, hors pauses et heures supplémentaires.",
+  "recordsMetricWorkdaysHelp": "Jours comptés selon votre planning enregistré en vigueur ou vos saisies. Inutile d’ouvrir l’app chaque jour. Les dates futures et l’historique de vie estimé sont exclus.",
+  "recordsMetricWorkHelp": "Le travail normal suit le planning en vigueur à cette date, avec priorité aux modifications manuelles. Les pauses et heures supplémentaires sont exclues.",
   "recordsMetricOvertimeHelp": "Les heures supplémentaires sont le travail enregistré au-delà des créneaux normaux.",
   "recordsDataSection": "Relevés et données",
   "recordsDataTitle": "Relevés et données",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "Encore {{duration}} aujourd’hui",
   "focusAddAndStart": "Ajouter et démarrer",
   "focusEndBreakTitle": "Terminer cette pause ?",
-  "focusEndBreakBody": "Quand vous êtes prêt, choisissez une tâche pour démarrer la prochaine session."
+  "focusEndBreakBody": "Quand vous êtes prêt, choisissez une tâche pour démarrer la prochaine session.",
+  "recordsRecordedDays": "Jours avec des données",
+  "recordsAnnualSummary": "Bilan {{year}}",
+  "recordsIncomeBasis": "Jours de travail planifiés écoulés : {{count}}. Estimation au salaire actuel, congés payés inclus et journée en cours exclue.",
+  "recordsTimeBreakdown": "Répartition du temps",
+  "recordsAllocationBasis": "Couvre {{count}} dates de ce bilan, travail après minuit compris. Le sommeil et le temps libre sont estimés.",
+  "lifeStageWorkElapsed": "Travail · écoulé",
+  "lifeStageWorkFuture": "Travail · projection",
+  "lifeStagePresent": "Maintenant",
+  "lifeWorkPeriodBasis": "Les étapes suivent votre profil de vie. Le temps écoulé ne correspond pas aux heures de travail enregistrées."
 }

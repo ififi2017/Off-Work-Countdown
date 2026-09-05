@@ -646,8 +646,8 @@
   "recordsAllRecords": "All records",
   "recordsToday": "Back to today",
   "recordsFreeAwakeShort": "Free time",
-  "recordsMetricWorkdaysHelp": "Days that contain an actual work record. Schedule-only estimates are not counted.",
-  "recordsMetricWorkHelp": "Regular work is recorded scheduled work time, excluding breaks and overtime.",
+  "recordsMetricWorkdaysHelp": "Days counted from your effective saved schedule or manual records. Daily app visits are not required. Future dates and life-history estimates are excluded.",
+  "recordsMetricWorkHelp": "Regular work follows the schedule effective on that date, with manual edits taking priority. Breaks and overtime are excluded.",
   "recordsMetricOvertimeHelp": "Overtime is recorded work beyond the regular scheduled segments.",
   "recordsDataSection": "Records & data",
   "recordsDataTitle": "Records & data",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "{{duration}} left today",
   "focusAddAndStart": "Add and start",
   "focusEndBreakTitle": "End this break?",
-  "focusEndBreakBody": "You can choose a task and start the next round when you are ready."
+  "focusEndBreakBody": "You can choose a task and start the next round when you are ready.",
+  "recordsRecordedDays": "Days with records",
+  "recordsAnnualSummary": "{{year}} summary",
+  "recordsIncomeBasis": "Completed scheduled days: {{count}}. Estimated at your current rate; includes paid leave and excludes today.",
+  "recordsTimeBreakdown": "Time breakdown",
+  "recordsAllocationBasis": "Covers {{count}} dates in this summary, including overnight work. Sleep and free time are estimates.",
+  "lifeStageWorkElapsed": "Work · elapsed",
+  "lifeStageWorkFuture": "Work · projected",
+  "lifeStagePresent": "Now",
+  "lifeWorkPeriodBasis": "Stages follow your life profile. Elapsed time does not represent recorded hours worked."
 }

@@ -33,6 +33,11 @@ iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代�
 剩余时间字符串。模型测试和模拟器回归见 [IOS-FOCUS-REVIEW-FIXES.md](IOS-FOCUS-REVIEW-FIXES.md)；
 P4/P5 的真机验收状态不因此改为完成。
 
+2026-09-05 记录页口径补充：已保存并生效的排班在过去日期默认按正常上下班计入画布与汇总，
+不以打开 App 或计时观察为出勤条件；手动覆盖与例外优先。人生档案补出的早期历史与未来
+仍是推算，不生成逐日事实。响应式点阵保留，工作阶段按现在分为已走过／未来推算两个
+选择区间；细节见 [010 的补充决策](../plans/010-records-ui-iteration.md)。真机触感与帧率仍待终验。
+
 当前执行顺序是：
 
 1. **[007](../plans/007-ios-stable-before-subscription.md)**：在记录（002）和订阅（006）之前，把 iOS 倒计时本体做成可过审的稳定版。main 现为 TestFlight；已送审包偏早，正式审核候选以 007 为准。计时页口径见 [IOS-TIMER-SURFACES.md](IOS-TIMER-SURFACES.md)；

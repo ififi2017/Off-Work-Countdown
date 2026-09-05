@@ -3306,6 +3306,7 @@ func recordsIncomeUsesCompletedScheduledDays() throws {
     #expect(abs(september - daily) < 0.001)
     let income = try #require(headline.estimatedIncome)
 
+    #expect(headline.completedScheduledWorkdays == 2)
     #expect(abs(income - 2 * daily) < 0.001)
     let timerRow = try #require(store.periodSummary("week", asOf: midShift, snapshot: shift))
     #expect((timerRow.earnings ?? 0) > income)
@@ -3396,4 +3397,107 @@ func recordsWeekAxisPreservesOvertime() {
         #expect(day.workMs + day.overtimeMs <= axis)
         #expect(Double(day.overtimeMs) / Double(axis) > 0)
     }
+}
+
+@MainActor
+@Test("Records allocation includes the following day only for real overnight work", arguments: [16.5, 24.0, 30.0])
+func recordsHeadlineCivilDayCoverage(endHour: Double) throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.onboardingComplete = true
+    store.plus.debugSetAuthorized(true)
+    store.recordsTimeZoneIdentifier = "UTC"
+    let first = utcDay(2026, 9, 1)
+    let second = utcDay(2026, 9, 2)
+    let now = utcDay(2026, 9, 3)
+    let startHour = endHour > 24 ? 22.0 : 9.0
+    let snapshotID = UUID()
+    records.recordObservation(
+        kind: .countdownStarted, eventID: UUID(), shiftAnchorDate: first,
+        occurredAt: first.addingTimeInterval(startHour * 3_600),
+        snapshotID: snapshotID, timeZoneIdentifier: "UTC"
+    )
+    let segment = NativeShiftSegment(
+        startAtMs: first.addingTimeInterval(startHour * 3_600).timeIntervalSince1970 * 1_000,
+        endAtMs: first.addingTimeInterval(endHour * 3_600).timeIntervalSince1970 * 1_000
+    )
+    let days = [
+        DayResolution(dayKey: "2026-09-01", shiftAnchorDate: first, layer: .schedule,
+                      periodID: nil, snapshotID: snapshotID, isScheduledWorkday: true,
+                      segments: [segment], baseScheduleIsWorkday: true),
+        DayResolution(dayKey: "2026-09-02", shiftAnchorDate: second, layer: .schedule,
+                      periodID: nil, snapshotID: snapshotID, isScheduledWorkday: true,
+                      segments: [], baseScheduleIsWorkday: true),
+    ]
+    let cells = days.enumerated().map { index, day in
+        store.recordsDayCell(for: day, previous: index > 0 ? days[index - 1] : nil, now: now)
+    }
+    let summary = try #require(store.recordsHeadline(cells: cells, days: days, now: now))
+    #expect(summary.workdays == 1)
+    #expect(summary.completedScheduledWorkdays == 2)
+    #expect(summary.allocationDays == (endHour > 24 ? 2 : 1))
+    #expect(summary.allocation.dayLengthMs == Int64(summary.allocationDays) * 86_400_000)
+    #expect(summary.regularWorkMs == Int64((endHour - startHour) * 3_600_000))
+}
+
+@MainActor
+@Test("Saved schedules count after a week without opening the app; life backfill and future dates remain projections")
+func recordsScheduleContinuesWithoutAppVisits() async throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.onboardingComplete = true
+    store.plus.debugSetAuthorized(true)
+    store.recordsTimeZoneIdentifier = "UTC"
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 60
+    store.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
+                          sleepHours: 8, hidesExactAges: false)
+    let setup = utcDay(2026, 9, 1)
+    let now = utcDay(2026, 9, 8).addingTimeInterval(12 * 3_600)
+    records.ensureSeeded(hours: store.hoursConfiguration(at: setup), at: setup, timeZone: store.recordsTimeZone)
+    let days = await store.prepareRecordsDisplayDays(from: utcDay(2026, 8, 31), through: utcDay(2026, 9, 9), now: now)
+    let cells = days.enumerated().map { index, day in
+        store.recordsDayCell(for: day, previous: index > 0 ? days[index - 1] : nil,
+                             now: now, includesLifeProjection: true)
+    }
+    let yesterday = try #require(cells.first { $0.dayKey == "2026-09-07" })
+    #expect(yesterday.appearance == .recorded)
+    #expect(yesterday.isFromSavedSchedule)
+    #expect(!yesterday.isProjection)
+    #expect(yesterday.workMs == 7 * 3_600_000)
+    let canvas = try #require(await store.recordsDayCanvas(dayKey: yesterday.dayKey, now: now))
+    #expect(canvas.source == .scheduled)
+    #expect(!canvas.source.isEstimated)
+    #expect(canvas.allocation.workMs == yesterday.workMs)
+    #expect(canvas.editableShifts.contains { $0.anchorDayKey == yesterday.dayKey })
+    #expect(cells.first { $0.dayKey == "2026-08-31" }?.isProjection == true)
+    #expect(cells.first { $0.dayKey == "2026-09-09" }?.appearance == .planned)
+    let summary = try #require(store.recordsHeadline(
+        cells: cells.filter { $0.date < utcDay(2026, 9, 8) }, days: days, now: now
+    ))
+    #expect(summary.workdays == 5)
+    #expect(summary.regularWorkMs == 35 * 3_600_000)
+    #expect(records.state.observations.isEmpty)
+    #expect(records.state.overrides.isEmpty)
+    #expect(records.state.periods.count == 1)
+    #expect(records.state.periods.first?.startsOn == setup)
+
+    // An explicit day edit still wins the same resolver chain.
+    records.upsertOverride(DayOverride(
+        dayKey: yesterday.dayKey, shiftAnchorDate: yesterday.date, kind: .notWorking,
+        segments: [], note: nil, editedAt: now,
+        editCount: 1, editTieBreaker: UUID(), timeZoneIdentifier: "UTC"
+    ), at: now)
+    let edited = try #require(await store.recordsDayCanvas(dayKey: yesterday.dayKey, now: now))
+    #expect(edited.source == .corrected)
+    #expect(edited.allocation.workMs == 0)
 }

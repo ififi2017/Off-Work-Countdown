@@ -3648,6 +3648,21 @@ final class OffWorkStore {
         return keys.contains(dayKey)
     }
 
+    /// A durable, effective schedule is the user's standing agreement. App
+    /// visits are observations, not attendance checks. Life's synthetic
+    /// history uses separate IDs and never qualifies as this source.
+    private func hasSavedSchedule(_ resolution: DayResolution) -> Bool {
+        guard !resolution.expansionFailed, resolution.layer != .none,
+              let periodID = resolution.periodID, let snapshotID = resolution.snapshotID
+        else { return false }
+        return records.state.periods.contains {
+            $0.id == periodID && $0.covers(resolution.shiftAnchorDate)
+        } && records.state.snapshots.contains {
+            $0.id == snapshotID && $0.periodID == periodID
+                && $0.effectiveFrom <= resolution.shiftAnchorDate
+        }
+    }
+
     func recordsDayCell(
         for resolution: DayResolution,
         previous: DayResolution? = nil,
@@ -3665,12 +3680,14 @@ final class OffWorkStore {
         )
         let future = date > today
         let recorded = isRecordedDay(resolution.dayKey)
+        let scheduled = !future && hasSavedSchedule(resolution)
         let corrected = records.state.overrides.contains {
             $0.dayKey == resolution.dayKey && $0.kind != .cleared
         }
         let projected = includesLifeProjection
             && !recorded
             && !corrected
+            && !scheduled
             && isInsideLifeWorkProjection(date, now: now)
         let appearance: RecordsDayAppearance
         if !revealed {
@@ -3679,7 +3696,7 @@ final class OffWorkStore {
             appearance = resolution.isScheduledWorkday ? .planned : .rest
         } else if corrected {
             appearance = .corrected
-        } else if recorded {
+        } else if recorded || (scheduled && resolution.isScheduledWorkday) {
             appearance = .recorded
         } else if !resolution.isScheduledWorkday {
             appearance = .rest
@@ -3712,7 +3729,8 @@ final class OffWorkStore {
             isProjection: projected,
             hasConflict: records.state.sync.conflicts.contains {
                 Self.civilDayKey(fromExceptionKey: $0.logicalKey) == resolution.dayKey
-            }
+            },
+            isFromSavedSchedule: revealed && scheduled && !recorded && !corrected
         )
     }
 
@@ -3724,8 +3742,8 @@ final class OffWorkStore {
         guard plus.isAuthorized else { return nil }
         let recordedKeys = Set(cells.filter { $0.appearance == .recorded || $0.appearance == .corrected }.map(\.dayKey))
         guard !recordedKeys.isEmpty else { return nil }
-        // Only recorded and corrected days contribute hours — a schedule-only
-        // estimate is still not a fact. A day that merely *receives* those
+        // Observed, corrected and elapsed saved-schedule days count. Life's
+        // synthetic history remains an estimate. A day that merely *receives* those
         // hours after midnight is counted for its time, never as a workday.
         // `days` may reach one day either side of the window so an overnight
         // shift at the edge can still be found; the totals stay on `cells`.
@@ -3741,7 +3759,13 @@ final class OffWorkStore {
                 .compactMap { $0 }
                 .filter { counted.contains($0.dayKey) }
             guard !contributors.isEmpty else { return nil }
-            return dayAllocation(day, contributedBy: contributors, now: now)
+            let allocation = dayAllocation(day, contributedBy: contributors, now: now)
+            // A neighbouring record alone does not make this a covered day.
+            // Keep only actual spillover, or a record/correction on this date.
+            guard recordedKeys.contains(day.dayKey)
+                || allocation.workMs > 0 || allocation.overtimeMs > 0 || allocation.breakMs > 0
+            else { return nil }
+            return allocation
         }
         let combined = TimeAllocationCalculator.combining(shares)
         let today = recordsCalendar.startOfDay(for: now)
@@ -3764,6 +3788,8 @@ final class OffWorkStore {
                 completedWorkdays: completedScheduledWorkdays,
                 at: now
             ),
+            completedScheduledWorkdays: completedScheduledWorkdays,
+            allocationDays: shares.count,
             allocation: combined,
             sleepSourceKey: sleepKey
         )
@@ -3797,9 +3823,8 @@ final class OffWorkStore {
         )
     }
 
-    /// Whether a day's own hours may be shown as something that happened. A
-    /// schedule expansion on its own is not a record; a life projection is
-    /// shown, but always labelled as one.
+    /// Saved schedules continue without daily attendance in the app. Only
+    /// future schedules and synthetic life history require projection access.
     private func contributesHours(
         _ resolution: DayResolution,
         now: Date,
@@ -3809,6 +3834,10 @@ final class OffWorkStore {
         if records.state.overrides.contains(where: {
             $0.dayKey == resolution.dayKey && $0.kind != .cleared
         }) { return true }
+        if hasSavedSchedule(resolution) {
+            return recordsCalendar.startOfDay(for: resolution.shiftAnchorDate)
+                <= recordsCalendar.startOfDay(for: now) || includesLifeProjection
+        }
         guard includesLifeProjection else { return false }
         return isInsideLifeWorkProjection(
             recordsCalendar.startOfDay(for: resolution.shiftAnchorDate),
@@ -3817,7 +3846,7 @@ final class OffWorkStore {
     }
 
     /// The shifts allowed to put hours on a civil day: the day itself and the
-    /// night before, each only if its own record, correction or life projection
+    /// night before, each if its saved schedule, record, correction or life projection
     /// lets it count. Every surface that prints a per-day number reads this, so
     /// the calendar cell, the compact summary and the day canvas cannot
     /// disagree — the cell used to filter and the other two did not, which put
@@ -3913,6 +3942,9 @@ final class OffWorkStore {
         }
         let date = recordsCalendar.startOfDay(for: resolution.shiftAnchorDate)
         if date > recordsCalendar.startOfDay(for: now) { return .planned }
+        if hasSavedSchedule(resolution) {
+            return resolution.layer == .calendarException ? .exception : .scheduled
+        }
         return isInsideLifeWorkProjection(date, now: now) ? .lifeProjection : .scheduleEstimate
     }
 
@@ -4064,7 +4096,7 @@ final class OffWorkStore {
             switch resolution.layer {
             case .override: return .corrected
             case .calendarException: return .exception
-            case .schedule: return .recorded
+            case .schedule: return isRecordedDay(resolution.dayKey) ? .recorded : .scheduled
             case .none: return .unrecorded
             }
         }

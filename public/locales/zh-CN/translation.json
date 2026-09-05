@@ -646,8 +646,8 @@
   "recordsAllRecords": "全部记录",
   "recordsToday": "回到今天",
   "recordsFreeAwakeShort": "自主时间",
-  "recordsMetricWorkdaysHelp": "包含实际工作记录的天数。仅按排班推演的日期不会计入。",
-  "recordsMetricWorkHelp": "正常工作是已记录的排班工作时间，不包含班中休息和加班。",
+  "recordsMetricWorkdaysHelp": "按已生效排班或手动记录计入的天数，无需每天打开 App。未来日期和人生历史推算不计入。",
+  "recordsMetricWorkHelp": "正常工作按当时生效的排班计入，手动修改优先；不含班中休息和加班。",
   "recordsMetricOvertimeHelp": "加班是正常排班时段以外记录的工作时间。",
   "recordsDataSection": "记录与数据",
   "recordsDataTitle": "记录与数据",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "今天还剩 {{duration}}",
   "focusAddAndStart": "添加并开始",
   "focusEndBreakTitle": "结束这次休息？",
-  "focusEndBreakBody": "准备好后，你可以选择任务，开始下一轮专注。"
+  "focusEndBreakBody": "准备好后，你可以选择任务，开始下一轮专注。",
+  "recordsRecordedDays": "记录天数",
+  "recordsAnnualSummary": "{{year}} 年汇总",
+  "recordsIncomeBasis": "按已结束的 {{count}} 个排班工作日及当前薪资估算，含带薪休假，不含今天。",
+  "recordsTimeBreakdown": "时间分配",
+  "recordsAllocationBasis": "覆盖 {{count}} 个统计日期，含跨夜延伸；睡眠与空闲为估算。",
+  "lifeStageWorkElapsed": "工作 · 已走过",
+  "lifeStageWorkFuture": "工作 · 未来推算",
+  "lifeStagePresent": "现在",
+  "lifeWorkPeriodBasis": "按人生档案划分阶段；已走过的阶段不代表已记录的实际工时。"
 }

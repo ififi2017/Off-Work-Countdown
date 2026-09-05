@@ -646,8 +646,8 @@
   "recordsAllRecords": "Tüm kayıtlar",
   "recordsToday": "Bugüne dön",
   "recordsFreeAwakeShort": "Boş zaman",
-  "recordsMetricWorkdaysHelp": "Gerçek çalışma kaydı içeren günler. Yalnızca programa dayalı tahminler sayılmaz.",
-  "recordsMetricWorkHelp": "Normal çalışma, molalar ve fazla mesai hariç kaydedilmiş programlı çalışma süresidir.",
+  "recordsMetricWorkdaysHelp": "Geçerli kayıtlı programa veya elle girilen kayıtlara göre sayılan günler. Uygulamayı her gün açmak gerekmez. Gelecek tarihler ve tahmini yaşam geçmişi hariçtir.",
+  "recordsMetricWorkHelp": "Normal çalışma o tarihte geçerli programa dayanır; elle yapılan değişiklikler önceliklidir. Molalar ve fazla mesai hariçtir.",
   "recordsMetricOvertimeHelp": "Fazla mesai, normal programlı çalışma aralıklarının dışında kaydedilen çalışmadır.",
   "recordsDataSection": "Kayıtlar ve veri",
   "recordsDataTitle": "Kayıtlar ve veri",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "Bugün {{duration}} kaldı",
   "focusAddAndStart": "Ekle ve başlat",
   "focusEndBreakTitle": "Bu mola bitsin mi?",
-  "focusEndBreakBody": "Hazır olduğunda bir görev seçip sonraki oturumu başlatabilirsin."
+  "focusEndBreakBody": "Hazır olduğunda bir görev seçip sonraki oturumu başlatabilirsin.",
+  "recordsRecordedDays": "Kayıtlı günler",
+  "recordsAnnualSummary": "{{year}} özeti",
+  "recordsIncomeBasis": "Geçmiş planlı iş günleri: {{count}}. Mevcut ücrete göre tahmin edilir; ücretli izin dahildir, bugün hariçtir.",
+  "recordsTimeBreakdown": "Zaman dağılımı",
+  "recordsAllocationBasis": "Gece yarısını aşan çalışma dahil bu özetteki {{count}} tarihi kapsar. Uyku ve boş zaman tahminidir.",
+  "lifeStageWorkElapsed": "Çalışma · geçmiş",
+  "lifeStageWorkFuture": "Çalışma · öngörülen",
+  "lifeStagePresent": "Şimdi",
+  "lifeWorkPeriodBasis": "Dönemler yaşam profiline dayanır. Geçen süre, kaydedilmiş çalışma saatlerini temsil etmez."
 }
