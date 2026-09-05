@@ -30,19 +30,18 @@ struct OffWorkLiveActivityWidget: Widget {
                         // cannot tell apart.
                         if let symbol = activitySymbol(context) {
                             Image(systemName: symbol)
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(activityTint(context))
                                 .frame(width: 25, height: 25)
                         } else {
                             AlwaysDarkBrandMark(size: 25)
                         }
 
-                        Text(activityTitle(context))
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.8))
+                        Text(context.state.timerLabel ?? context.state.appTitle)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.9))
                             .lineLimit(1)
-                            .minimumScaleFactor(0.62)
-                            .allowsTightening(true)
+                            .minimumScaleFactor(0.85)
                     }
                     .frame(maxWidth: 150, alignment: .leading)
                     .padding(.leading, 8)
@@ -52,30 +51,28 @@ struct OffWorkLiveActivityWidget: Widget {
                     // the trailing content is pulled in far enough that its last
                     // glyph is not clipped by the curve.
                     Text(endDate(context), style: .time)
-                        .font(.system(size: 13).monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.6))
+                        .font(.system(size: 14).monospacedDigit())
+                        .foregroundStyle(.white.opacity(0.8))
                         .environment(\.locale, activityLocale(context))
                         .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                        .frame(width: 54, alignment: .trailing)
+                        .fixedSize(horizontal: true, vertical: false)
                         .padding(.trailing, 8)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(alignment: .leading, spacing: 4) {
-                        ActivityCountdownPanel(context: context, size: 40)
-                        // What comes after this block. The cadence knows it and
-                        // the user does not, which is exactly the sort of thing
-                        // an activity should be carrying.
-                        if let next = context.state.nextLabel {
-                            Text(next)
-                                .font(.system(size: 12))
-                                .foregroundStyle(.white.opacity(0.62))
+                        // A task name needs the width below the camera, not
+                        // the narrow leading slot and an unreadable shrink.
+                        if let title = context.state.taskTitle {
+                            Text(title)
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.white)
                                 .lineLimit(1)
-                                .minimumScaleFactor(0.7)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
+                        ActivityCountdownPanel(context: context, size: activitySymbol(context) == nil ? 40 : 48)
                     }
                     .padding(.horizontal, 10)
-                    .padding(.bottom, 4)
+                    .padding(.bottom, 2)
                 }
             } compactLeading: {
                 if let symbol = activitySymbol(context) {
@@ -175,15 +172,34 @@ private struct ActivityCountdownPanel: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
-            VStack(spacing: 14) {
+            VStack(spacing: activitySymbol(context) == nil ? 14 : 6) {
                 HStack {
-                    activityCountdownText(context, now: timeline.date, size: size)
-                    Spacer()
-                    if activitySymbol(context) != nil {
-                        Text(context.state.caption)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(activityTint(context))
+                    if activitySymbol(context) != nil, !activityComplete(context, at: timeline.date) {
+                        let end = Date(timeIntervalSince1970: Double(context.state.endAtMs) / 1_000)
+                        // The interval timer fills the available width without
+                        // the .timer style's oversized ideal width shrinking it.
+                        Text(timerInterval: timeline.date...max(timeline.date, end), countsDown: true)
+                            .font(.system(size: size, weight: .bold).monospacedDigit())
+                            .foregroundStyle(.white)
+                            .environment(\.locale, activityLocale(context))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     } else {
+                        activityCountdownText(context, now: timeline.date, size: size)
+                        Spacer()
+                    }
+                    if activitySymbol(context) != nil, let next = context.state.nextLabel {
+                        // Keep the next phase beside the timer so the expanded
+                        // region can fit it above the rounded bottom edge.
+                        Text(next)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.white.opacity(0.8))
+                            .multilineTextAlignment(.trailing)
+                            .lineLimit(2)
+                            .frame(maxWidth: 120, alignment: .trailing)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else if activitySymbol(context) == nil {
                         Text(String(format: "%.1f%%", activityProgressValue(context, at: timeline.date)))
                             .font(.system(size: 15, weight: .semibold).monospacedDigit())
                             .foregroundStyle(activityOrange)

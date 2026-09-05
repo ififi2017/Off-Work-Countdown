@@ -56,10 +56,12 @@ xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
 
 锁屏与灵动岛证据：短休 compact 显示杯子及持续变化的倒计时；锁屏显示休息进度、下一轮提示和下班时刻。临时截图保存在本次环境的 `/tmp/owc-focus-fixed-live-lock.png`、`/tmp/owc-focus-fixed-short-break.png`、`/tmp/owc-focus-fixed-break-offer.png`；不作为长期 CI 产物。
 
-## 尚未签收的验收
+2026-09-05 展开态追加修复：根据用户截图，将任务名从窄 leading 区移到摄像头下方的整行区域（17 pt），避免缩到约 8 pt；阶段与结束时刻保持在顶行。专注 / 休息倒计时改为 48 pt 的系统区间计时，下一步提示改为右侧 14 pt 双行文字，并收紧进度条间距以适配展开高度。此改动的模拟器构建与 `check:ios` 已通过；用户协助在 iPhone 17 Pro Max 模拟器长按展开后，已确认专注任务名、倒计时、下一步提示及进度条完整显示，没有底部裁切。最终临时截图为 `/tmp/owc-island-expanded-final.png`。
+
+## 补充回归与尚未签收的验收
 
 解锁后的补充回归已完成：任务菜单、通知详情入口、最大字号开始 / 停止与长标题、格子分配定位、模板手动休息保存与应用，以及 iPad 深色横竖屏均已检查。最终截图为 `/tmp/owc-focus-fixed-final-accessibility.png`。测试计时已停止，iPhone 字号已恢复普通大小。
 
 通知拒绝路径已实测；模拟器打开的是系统设置，未保证能直接落到 App 专属通知设置页。通知调度失败的重试分支仍由代码走查和模型覆盖，未在可重复的系统调度故障下完成端到端恢复验收。
 
-未可靠完成灵动岛 expanded / minimal 的真实长按和多活动切换，也未做物理设备的 AOD / 锁屏生命周期验收。模拟器 compact 和锁屏检查不能替代这些真机项；全 19 locale、RTL、VoiceOver 与全部设备方向也未在本次逐一操作。
+灵动岛专注 expanded 布局已通过上述模拟器长按复核；休息 expanded、minimal 与多活动切换仍未完成交互验收，也未做物理设备的 AOD / 锁屏生命周期验收。模拟器检查不能替代这些真机项；全 19 locale、RTL、VoiceOver 与全部设备方向也未在本次逐一操作。
