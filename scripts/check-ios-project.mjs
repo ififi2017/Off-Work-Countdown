@@ -17,6 +17,19 @@ function fail(message) {
 }
 
 const universalBundleId = "com.rainif.offworkcountdown.macappstore";
+// Required-reason APIs used by local preferences and the widget snapshot cache.
+for (const [path, category, reason] of [
+  ["App/Native/PrivacyInfo.xcprivacy", "UserDefaults", "CA92.1"],
+  ["WidgetExtension/PrivacyInfo.xcprivacy", "FileTimestamp", "C617.1"],
+]) {
+  const manifestPath = `src-mobile/ios/App/${path}`;
+  if (!existsSync(manifestPath)) fail(`Missing privacy manifest: ${manifestPath}`);
+  const manifest = readFileSync(manifestPath, "utf8");
+  if (!manifest.includes(`<string>NSPrivacyAccessedAPICategory${category}</string>`)
+      || !manifest.includes(`<string>${reason}</string>`)) {
+    fail(`Privacy manifest must declare ${category} / ${reason}: ${manifestPath}`);
+  }
+}
 const iosProject = readFileSync(
   "src-mobile/ios/App/App.xcodeproj/project.pbxproj",
   "utf8"

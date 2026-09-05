@@ -613,7 +613,9 @@ private struct PlusSubscriberThankYouView: View {
                 OWCRow(
                     icon: store.plus.isLifetime ? "infinity" : "arrow.triangle.2.circlepath",
                     title: store.t(store.plus.isLifetime ? "plusOwnedTitle" : "plusThanksCurrentPlan"),
-                    subtitle: store.plus.isLifetime ? store.t("plusOwnedBody") : store.plusStatusLabel,
+                    subtitle: store.plus.isLifetime
+                        ? store.t(store.plus.hasActiveSubscription ? "plusLifetimeWhileSubscribed" : "plusOwnedBody")
+                        : store.plusStatusLabel,
                     isLast: true,
                     centersVertically: true
                 ) {
