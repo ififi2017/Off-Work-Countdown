@@ -26,6 +26,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     private var starting = false
     private var operation: Task<Void, Never>?
     private var acceptRemote = true
+    private var recoveringMissingRows: Set<String> = []
 
     func attach(records: RecordCoordinator) {
         self.records = records
@@ -93,6 +94,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
 
     private func stopAndInvalidate() {
         acceptRemote = false
+        recoveringMissingRows.removeAll()
         let invalidatedEngine = engine
         engine = nil
         Task { await invalidatedEngine?.cancelOperations() }
@@ -560,6 +562,21 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
                     .filter { $0.value.code == .unknownItem }
                     .map(\.key.recordName)
             )
+        // A later revival must create a new record. Keeping the deleted
+        // record's change tag here turns that revival into an invalid update.
+        for row in sync.rows.values {
+            if deletedNames.contains(row.recordName), let fields = row.lastKnownRecord {
+                _ = RecordsSyncOutbox.forgetMissingRecord(
+                    &sync, name: row.recordName, generation: row.generation, expectedSystemFields: fields
+                )
+            }
+            let erasedName = RecordsSyncIdentity.erasedName(type: row.entityType, key: row.logicalKey)
+            if deletedNames.contains(erasedName), let fields = row.lastKnownErasedRecord {
+                _ = RecordsSyncOutbox.forgetMissingRecord(
+                    &sync, name: erasedName, generation: row.generation, expectedSystemFields: fields
+                )
+            }
+        }
         for saved in sent.savedRecords {
             let name = saved.recordID.recordName
             guard let row = sync.rows[name] ?? sync.rows.first(where: { _, value in
@@ -620,8 +637,75 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
             applyFetched([server], deletions: [])
         } else if error.code == .zoneNotFound {
             recoverMissingDataZone()
+        } else if error.code == .unknownItem {
+            recoverMissingRecord(failure.record)
         } else {
             noteCloudFailure(error)
+        }
+    }
+
+    private func recoverMissingRecord(_ failed: CKRecord) {
+        guard let records, let engine else { return }
+        let name = failed.recordID.recordName
+        let identity = erasedIdentity(name)
+        let rowName = identity.map { RecordsSyncIdentity.recordName(type: $0.0, key: $0.1) } ?? name
+        guard let row = records.state.sync.rows[rowName],
+              let fields = identity == nil ? row.lastKnownRecord : row.lastKnownErasedRecord,
+              restoreOrCreate(recordID: failed.recordID, type: failed.recordType, systemFields: fields)
+                .recordChangeTag == failed.recordChangeTag,
+              recoveringMissingRows.insert(rowName).inserted else { return }
+        let generation = records.state.sync.generation
+        Task { @MainActor in
+            defer {
+                if self.engine === engine { recoveringMissingRows.remove(rowName) }
+            }
+            do {
+                let container = CKContainer(identifier: Self.containerID)
+                let fence = try await fetchFence(container: container)
+                guard self.engine === engine, acceptRemote,
+                      records.state.sync.generation == generation else { return }
+                if fence > generation {
+                    stopAndInvalidate()
+                    guard records.discardForHigherFence(fence) else { failPersistence(); return }
+                    startIfEnabled()
+                    return
+                }
+                guard fence == generation else {
+                    failClosed("The iCloud fence is older than this device's local generation.")
+                    return
+                }
+                // Fetch the deletion marker before recreating a missing data
+                // record. Another device may have intentionally erased it.
+                if identity == nil {
+                    let erasedID = CKRecord.ID(
+                        recordName: RecordsSyncIdentity.erasedName(type: row.entityType, key: row.logicalKey),
+                        zoneID: failed.recordID.zoneID
+                    )
+                    do {
+                        let erased = try await container.privateCloudDatabase.record(for: erasedID)
+                        guard self.engine === engine, acceptRemote,
+                              records.state.sync.generation == generation else { return }
+                        applyFetched([erased], deletions: [])
+                    } catch let error as CKError where error.code == .unknownItem {
+                        // No deletion marker: preserve the local edit and retry a create.
+                    }
+                }
+                guard self.engine === engine, acceptRemote,
+                      records.state.sync.generation == generation else { return }
+                var sync = records.state.sync
+                if RecordsSyncOutbox.forgetMissingRecord(
+                    &sync, name: name, generation: generation, expectedSystemFields: fields
+                ) {
+                    guard records.replaceSyncState(sync) else { failPersistence(); return }
+                }
+                recoveringMissingRows.remove(rowName)
+                await enqueueLocalRecords()
+                lastError = nil
+                status = .syncing
+            } catch {
+                guard self.engine === engine else { return }
+                noteNetworkFailure(error)
+            }
         }
     }
 
@@ -656,7 +740,7 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
         var saves: [CKRecord] = []
         var deletes: [CKRecord.ID] = []
         var atomic = false
-        for row in pending {
+        for row in pending where !recoveringMissingRows.contains(row.recordName) {
             let dataID = CKRecord.ID(recordName: row.recordName, zoneID: zoneID)
             let erasedID = CKRecord.ID(
                 recordName: RecordsSyncIdentity.erasedName(type: row.entityType, key: row.logicalKey),
@@ -679,6 +763,7 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
                 }
             }
         }
+        guard !saves.isEmpty || !deletes.isEmpty else { return nil }
         return CKSyncEngine.RecordZoneChangeBatch(
             recordsToSave: saves,
             recordIDsToDelete: deletes,

@@ -150,6 +150,39 @@ struct RecordsDesignView: View {
     }
 
     private var regularCanvas: some View {
+        Group {
+            if canvasWidth >= Self.twoColumnMinimum {
+                VStack(alignment: .leading, spacing: 14) {
+                    if let banner = store.records.archiveBanner {
+                        archiveBannerCard(banner)
+                    }
+                    RecordsScalePicker(store: store, scale: scaleBinding)
+                    HStack(alignment: .top, spacing: 14) {
+                        ScrollView {
+                            visualization(expandedPresentation: false)
+                                .padding(.bottom, OWCDesign.detailBottomInset)
+                        }
+                        .accessibilityIdentifier("records.visualizationScroll")
+                        ScrollView {
+                            conclusionColumn
+                                .padding(.bottom, OWCDesign.detailBottomInset)
+                        }
+                        .frame(maxWidth: Self.conclusionColumnWidth)
+                        .accessibilityIdentifier("records.conclusionScroll")
+                    }
+                }
+                .padding(.horizontal, OWCDesign.pageInset)
+                .padding(.top, 12)
+            } else {
+                singleColumnCanvas
+            }
+        }
+        .scrollIndicators(.hidden)
+        .coordinateSpace(.named("recordsRootScroll"))
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { canvasWidth = $0 }
+    }
+
+    private var singleColumnCanvas: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 if usesPhonePortraitHeader {
@@ -163,36 +196,14 @@ struct RecordsDesignView: View {
 
                     RecordsScalePicker(store: store, scale: scaleBinding)
 
-                    // Side by side once there is room for both. An iPad in
-                    // landscape stretched a single column across the whole pane,
-                    // so a month grid and a summary card each ran the width of the
-                    // screen. The chart keeps the larger share; the conclusions
-                    // are text and stop at a readable measure.
-                    //
-                    // Measured rather than `ViewThatFits`: that asks each
-                    // candidate for its ideal width, and the legend row inside the
-                    // chart card reports the width it would like as one unbroken
-                    // line, which is enough to reject the two-column layout on a
-                    // pane that has ample room for it.
-                    if canvasWidth >= Self.twoColumnMinimum {
-                        HStack(alignment: .top, spacing: 14) {
-                            visualization(expandedPresentation: false)
-                            conclusionColumn
-                                .frame(maxWidth: Self.conclusionColumnWidth, alignment: .top)
-                        }
-                    } else {
-                        visualization(expandedPresentation: false)
-                        conclusionColumn
-                    }
+                    visualization(expandedPresentation: false)
+                    conclusionColumn
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
             }
             .padding(.top, usesPhonePortraitHeader ? 0 : 12)
             .padding(.bottom, 104)
         }
-        .scrollIndicators(.hidden)
-        .coordinateSpace(.named("recordsRootScroll"))
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { canvasWidth = $0 }
     }
 
     /// Measured, not guessed from the device: the same iPad is wide with the
