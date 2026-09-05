@@ -121,8 +121,26 @@ private struct RecordsMetricHelpButton: View {
 
 private struct RecordsMetricHelpPopover: View {
     let help: RecordsMetricHelp
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                ScrollView {
+                    content.padding(18)
+                }
+                .frame(idealWidth: 480)
+                .presentationDragIndicator(.visible)
+            } else {
+                content
+                    .frame(idealWidth: 300, alignment: .leading)
+                    .padding(18)
+            }
+        }
+        .presentationCompactAdaptation(dynamicTypeSize.isAccessibilitySize ? .sheet : .popover)
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(help.title)
                 .font(.headline)
@@ -131,9 +149,6 @@ private struct RecordsMetricHelpPopover: View {
                 .foregroundStyle(OWCDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(idealWidth: 300, alignment: .leading)
-        .padding(18)
-        .presentationCompactAdaptation(.popover)
     }
 }
 
@@ -289,84 +304,129 @@ struct RecordsAllocationBar: View {
 
 struct RecordsHeadlineView: View {
     let store: OffWorkStore
+    let title: String
     let summary: RecordsHeadlineSummary?
+    var isCollapsible = false
     var onUnlock: () -> Void
+    @State private var isExpanded = false
+    @State private var showsAllocation = false
     @State private var selectedHelp: RecordsMetricHelp?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         if let summary {
             OWCGroupCard {
-                VStack(alignment: .leading, spacing: 14) {
-                    let columns = dynamicTypeSize.isAccessibilitySize ? 1 : 2
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: 8, alignment: .topLeading), count: columns),
-                        alignment: .leading,
-                        spacing: 8
-                    ) {
-                        metric("recordsWorkdays", store.formatCount(summary.workdays), helpKey: "recordsMetricWorkdaysHelp")
-                        metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), helpKey: "recordsMetricWorkHelp")
-                        metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)), helpKey: "recordsMetricOvertimeHelp")
-                        metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)), helpKey: "recordsMetricFreeAwakeHelp")
-                        if let income = summary.estimatedIncome {
-                            metric(
-                                "recordsIncomeCurrentSalary",
-                                store.moneyText(income),
-                                helpKey: nil
-                            )
+                Group {
+                    if isCollapsible {
+                        DisclosureGroup(isExpanded: $isExpanded) {
+                            content(summary).padding(.top, 12)
+                        } label: {
+                            Text(title)
+                                .font(.subheadline.weight(.medium))
+                                .multilineTextAlignment(.leading)
+                                .foregroundStyle(OWCDesign.secondary)
+                                .frame(minHeight: 44, alignment: .leading)
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(title)
+                                    .font(.headline)
+                                    .foregroundStyle(OWCDesign.primary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Spacer(minLength: 0)
+                                RecordsMetricHelpButton(
+                                    title: title,
+                                    message: store.t("recordsMetricWorkHelp") + "\n\n"
+                                        + store.t("recordsMetricOvertimeHelp"),
+                                    selection: $selectedHelp
+                                )
+                            }
+                            content(summary)
                         }
                     }
-
-                    Divider()
-
-                    RecordsAllocationBar(store: store, share: summary.allocation)
-
-                    Text(store.t(summary.sleepSourceKey))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.tertiary)
                 }
                 .padding(16)
             }
             .popover(item: $selectedHelp) { help in
                 RecordsMetricHelpPopover(help: help)
             }
+        } else if store.plus.isAuthorized {
+            OWCGroupCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(title).font(.headline)
+                    Text(store.t("recordsUnrecorded"))
+                        .font(.subheadline)
+                        .foregroundStyle(OWCDesign.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+            }
         } else {
             RecordsLockedPlaceholder(store: store, kind: .summary, onUnlock: onUnlock)
         }
     }
 
-    private func metric(_ titleKey: String, _ value: String, helpKey: String?) -> some View {
-        let title = store.t(titleKey)
-        return VStack(alignment: .leading, spacing: 7) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(OWCDesign.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.trailing, helpKey == nil ? 0 : 32)
-            Text(value)
-                .font(.title3.weight(.semibold).monospacedDigit())
-                .foregroundStyle(OWCDesign.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.56)
-                .allowsTightening(true)
-        }
-        .frame(maxWidth: .infinity, minHeight: 65, alignment: .topLeading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .overlay(alignment: .topTrailing) {
-            if let helpKey {
-                RecordsMetricHelpButton(
-                    title: title,
-                    message: store.t(helpKey),
-                    selection: $selectedHelp
-                )
-                .padding(.top, 4)
-                .padding(.trailing, 2)
+    private func content(_ summary: RecordsHeadlineSummary) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), prominent: true)
+            metric("recordsRecordedDays", store.formatDays(Double(summary.workdays)))
+            metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)))
+
+            if let income = summary.estimatedIncome {
+                Divider()
+                VStack(alignment: .leading, spacing: 6) {
+                    metric("recordsIncomeCurrentSalary", store.moneyText(income))
+                    Text(store.t("recordsIncomeBasis", values: ["count": store.formatCount(summary.completedScheduledWorkdays)]))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            Divider()
+            DisclosureGroup(isExpanded: $showsAllocation) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(store.t("recordsAllocationBasis", values: ["count": store.formatCount(summary.allocationDays)]))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)))
+                    RecordsAllocationBar(store: store, share: summary.allocation)
+                    Text(store.t(summary.sleepSourceKey))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                }
+                .padding(.top, 10)
+            } label: {
+                Text(store.t("recordsTimeBreakdown"))
+                    .font(.subheadline)
+                    .multilineTextAlignment(.leading)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .frame(minHeight: 44, alignment: .leading)
             }
         }
-        .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
     }
 
+    private func metric(_ titleKey: String, _ value: String, prominent: Bool = false) -> some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 12))
+        return layout {
+            Text(store.t(titleKey))
+                .font(.subheadline)
+                .foregroundStyle(OWCDesign.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(value)
+                .font(prominent ? .title2.weight(.semibold).monospacedDigit() : .body.weight(.medium).monospacedDigit())
+                .foregroundStyle(OWCDesign.primary)
+                .multilineTextAlignment(dynamicTypeSize.isAccessibilitySize ? .leading : .trailing)
+                .fixedSize(horizontal: false, vertical: true)
+                .layoutPriority(1)
+        }
+        .accessibilityElement(children: .combine)
+    }
 }
 
 struct RecordsMonthGrid: View {
@@ -556,7 +616,7 @@ enum RecordsDayMarks {
         if cell.isProjection { return "recordsSourceProjection" }
         return switch cell.appearance {
         case .unrecorded: "recordsUnrecorded"
-        case .recorded: "recordsSourceRecorded"
+        case .recorded: cell.isFromSavedSchedule ? "recordsSourceSchedule" : "recordsSourceRecorded"
         case .corrected: "recordsSourceOverride"
         case .planned: "recordsPlanned"
         case .rest: "recordsRestDay"
@@ -696,12 +756,12 @@ struct RecordsYearCanvas: View {
     let store: OffWorkStore
     let cells: [RecordsDayCell]
     let selectedMonth: Int?
+    @Binding var calloutMonth: Int?
+    @Binding var selectedDate: Date?
     var onSelectMonth: (Int) -> Void
     @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
     @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var calloutMonth: Int?
-    @State private var selectedBucketIndex: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -737,41 +797,43 @@ struct RecordsYearCanvas: View {
                             }
                         }
                         if let selectedMonth {
-                            for rect in grid.selectionRects(for: buckets.filter { $0.month == selectedMonth }.map(\.index)) {
-                                context.stroke(
-                                    Path(roundedRect: rect, cornerRadius: min(4, grid.cell / 2)),
-                                    with: .color(OWCDesign.primary.opacity(0.72)),
-                                    lineWidth: contrast == .increased ? 1.8 : 1.25
-                                )
-                            }
+                            let outline = grid.selectionPath(for: buckets.filter { $0.month == selectedMonth }.map(\.index))
+                            context.stroke(
+                                outline,
+                                with: .color(OWCDesign.orangeDeep.opacity(0.8)),
+                                style: StrokeStyle(lineWidth: contrast == .increased ? 1.8 : 1.25, lineJoin: .round)
+                            )
                         }
                     }
                     .contentShape(Rectangle())
                     .gesture(SpatialTapGesture().onEnded { value in
                         guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
-                        select(month: buckets[index].month, bucketIndex: buckets[index].index)
+                        let bucket = buckets[index]
+                        select(month: bucket.month, date: bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2))
                     })
                     .overlay {
-                        if let calloutMonth,
-                           let bucket = calloutBucket(for: calloutMonth, in: buckets) {
-                            let rect = grid.rect(at: bucket.index)
-                            RecordsCanvasCallout(
-                                icon: "calendar",
-                                title: monthLabel(calloutMonth),
-                                subtitle: yearLabel
-                            )
-                            .position(
-                                x: min(proxy.size.width - 76, max(76, rect.midX)),
-                                y: min(proxy.size.height - 28, max(28, rect.minY - 18))
-                            )
-                            .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
+                        ZStack {
+                            if let calloutMonth,
+                               let bucket = calloutBucket(for: calloutMonth, in: buckets) {
+                                let rect = grid.rect(at: bucket.index)
+                                RecordsCanvasCalloutLayout(anchor: rect) {
+                                    RecordsCanvasCallout(
+                                        icon: "calendar",
+                                        title: monthLabel(calloutMonth),
+                                        subtitle: yearLabel
+                                    )
+                                }
+                                .transition(.opacity)
+                            }
                         }
+                        .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedDate)
+                        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: calloutMonth)
                     }
                     .accessibilityRepresentation {
                         VStack {
                             ForEach(1...12, id: \.self) { month in
                                 Button {
-                                    select(month: month, bucketIndex: nil)
+                                    select(month: month, date: nil)
                                 } label: {
                                     Text(monthLabel(month))
                                 }
@@ -788,7 +850,7 @@ struct RecordsYearCanvas: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
                 ForEach(1...12, id: \.self) { month in
                     Button {
-                        select(month: month, bucketIndex: nil)
+                        select(month: month, date: nil)
                     } label: {
                         Text(monthLabel(month))
                             .lineLimit(1)
@@ -821,10 +883,7 @@ struct RecordsYearCanvas: View {
                 .foregroundStyle(OWCDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .animation(
-            reduceMotion ? nil : .easeOut(duration: 0.18),
-            value: selectedMonth
-        )
+
     }
 
     /// Depth of the work colour is how much; brand orange stays out of it
@@ -839,7 +898,7 @@ struct RecordsYearCanvas: View {
         case .corrected: OWCDesign.recordsWork.opacity(0.96)
         }
         guard let selectedMonth, bucket.month != selectedMonth else { return base }
-        return base.opacity(0.58)
+        return base.opacity(0.76)
     }
 
     private func monthLabel(_ month: Int) -> String {
@@ -855,18 +914,18 @@ struct RecordsYearCanvas: View {
         return store.formatYear(year)
     }
 
-    private func select(month: Int, bucketIndex: Int?) {
-        onSelectMonth(month)
+    private func select(month: Int, date: Date?) {
+        if selectedMonth != month { onSelectMonth(month) }
         calloutMonth = month
-        selectedBucketIndex = bucketIndex
+        selectedDate = date
     }
 
     private func calloutBucket(
         for month: Int,
         in buckets: [RecordsYearBucket]
     ) -> RecordsYearBucket? {
-        if let selectedBucketIndex,
-           let tapped = buckets.first(where: { $0.index == selectedBucketIndex && $0.month == month }) {
+        if let selectedDate,
+           let tapped = buckets.first(where: { $0.start <= selectedDate && selectedDate < $0.end && $0.month == month }) {
             return tapped
         }
         return buckets.first(where: { $0.month == month })
@@ -1175,7 +1234,7 @@ struct RecordsYearMonthBars: View {
     }
 }
 
-private struct RecordsCanvasGrid {
+struct RecordsCanvasGrid {
     let columns: Int
     let rows: Int
     let cell: CGFloat
@@ -1209,11 +1268,17 @@ private struct RecordsCanvasGrid {
 
     func index(at point: CGPoint) -> Int? {
         let pitch = cell + gap
-        guard pitch > 0 else { return nil }
+        guard pitch > 0, point.x >= 0, point.y >= 0 else { return nil }
         let column = Int(point.x / pitch)
         let row = Int(point.y / pitch)
         guard column >= 0, column < columns, row >= 0, row < rows else { return nil }
         return row * columns + column
+    }
+
+    func selectionPath(for indices: [Int]) -> Path {
+        selectionRects(for: indices).reduce(Path()) { path, rect in
+            path.union(Path(rect))
+        }
     }
 
     /// Turns a contiguous timeline selection into one outlined block per row.
@@ -1239,10 +1304,10 @@ private struct RecordsCanvasGrid {
             let leading = rect(at: first)
             let trailing = rect(at: last)
             return CGRect(
-                x: leading.minX - 1.5,
-                y: leading.minY - 1.5,
-                width: trailing.maxX - leading.minX + 3,
-                height: cell + 3
+                x: leading.minX - gap / 2,
+                y: leading.minY - gap / 2,
+                width: trailing.maxX - leading.minX + gap,
+                height: cell + gap
             )
         }
     }
@@ -1252,13 +1317,14 @@ struct RecordsLifeCanvas: View {
     let store: OffWorkStore
     let stages: [LifeStageSpan]
     let bounds: (Date, Date)
-    let selectedStage: LifeStageKind?
+    let selectedStageID: String?
+    let referenceDate: Date
+    @Binding var selectedDate: Date?
     var showsStageLegend = true
     var onSelect: (LifeStageSpan) -> Void
     @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
     @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var selectedBucketIndex: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -1294,7 +1360,7 @@ struct RecordsLifeCanvas: View {
                     from: bounds.0,
                     to: bounds.1,
                     count: grid.count,
-                    now: .now
+                    now: referenceDate
                 )
                 Canvas { context, _ in
                     for bucket in buckets {
@@ -1302,12 +1368,12 @@ struct RecordsLifeCanvas: View {
                         let corner = min(3, grid.cell / 3)
                         let path = Path(roundedRect: rect, cornerRadius: corner)
                         let base = OWCDesign.lifeColor(bucket.kind)
-                        let isDimmed = selectedStage != nil && bucket.kind != selectedStage
+                        let isDimmed = selectedStageID != nil && bucket.stageID != selectedStageID
                         let isFutureWork = bucket.kind == .work && bucket.isFuture
                         let fill = base.opacity(
                             bucket.isFuture
-                                ? (isDimmed ? 0.06 : isFutureWork ? 0.20 : 0.28)
-                                : (isDimmed ? 0.22 : 0.82)
+                                ? (isDimmed ? 0.14 : isFutureWork ? 0.20 : 0.28)
+                                : (isDimmed ? 0.42 : 0.82)
                         )
                         context.fill(path, with: .color(fill))
 
@@ -1317,6 +1383,12 @@ struct RecordsLifeCanvas: View {
                                 with: .color(base.opacity(withoutColor ? 0.9 : isFutureWork ? 0.62 : 0.42)),
                                 lineWidth: contrast == .increased ? 1.35 : 0.9
                             )
+                            if isFutureWork {
+                                var hatch = Path()
+                                hatch.move(to: CGPoint(x: rect.minX + 2, y: rect.maxY - 2))
+                                hatch.addLine(to: CGPoint(x: rect.maxX - 2, y: rect.minY + 2))
+                                context.stroke(hatch, with: .color(base.opacity(withoutColor ? 0.8 : 0.42)), lineWidth: 0.75)
+                            }
                         }
 
                         if withoutColor, !bucket.isFuture {
@@ -1347,40 +1419,40 @@ struct RecordsLifeCanvas: View {
                     let bucket = buckets[index]
                     let date = bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2)
                     if let stage = LifeStageCalculator.stage(at: date, stages: stages), stage.kind != .retirement {
-                        selectedBucketIndex = bucket.index
-                        onSelect(stage)
+                        select(stage, date: date)
                     }
                 })
                 .overlay {
-                    if let stage = selectedStageSpan,
-                       stage.kind != .retirement,
-                       let bucket = selectedBucket(for: stage, in: buckets) {
-                        let rect = grid.rect(at: bucket.index)
-                        RecordsCanvasCallout(
-                            icon: stage.kind.iconName,
-                            title: store.t(stage.kind.titleKey),
-                            subtitle: stageRange(stage)
-                        )
-                            .position(
-                                x: min(proxy.size.width - 76, max(76, rect.midX)),
-                                y: min(proxy.size.height - 28, max(28, rect.minY - 18))
-                            )
-                            .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
+                    ZStack {
+                        if let stage = selectedStageSpan,
+                           stage.kind != .retirement,
+                           let bucket = selectedBucket(for: stage, in: buckets) {
+                            let rect = grid.rect(at: bucket.index)
+                            RecordsCanvasCalloutLayout(anchor: rect) {
+                                RecordsCanvasCallout(
+                                    icon: stage.kind.iconName,
+                                    title: store.t(stage.titleKey),
+                                    subtitle: stageRange(stage)
+                                )
+                            }
+                            .transition(.opacity)
                         }
+                    }
+                    .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedDate)
+                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selectedStageID)
                 }
                 .accessibilityRepresentation {
                     VStack {
                         ForEach(stages) { stage in
                             if stage.kind == .retirement {
-                                Text("\(store.t(stage.kind.titleKey)), \(stageRange(stage))")
+                                Text("\(store.t(stage.titleKey)), \(stageRange(stage))")
                             } else {
                                 Button {
-                                    selectedBucketIndex = selectedBucket(for: stage, in: buckets)?.index
-                                    onSelect(stage)
+                                    select(stage, date: nil)
                                 } label: {
-                                    Text("\(store.t(stage.kind.titleKey)), \(stageRange(stage))")
+                                    Text("\(store.t(stage.titleKey)), \(stageRange(stage))")
                                 }
-                                .accessibilityAddTraits(selectedStage == stage.kind ? .isSelected : [])
+                                .accessibilityAddTraits(selectedStageID == stage.id ? .isSelected : [])
                             }
                         }
                     }
@@ -1394,7 +1466,7 @@ struct RecordsLifeCanvas: View {
                         if stage.kind == .retirement {
                             OWCRow(
                                 icon: stage.kind.iconName,
-                                title: store.t(stage.kind.titleKey),
+                                title: store.t(stage.titleKey),
                                 subtitle: stageRange(stage),
                                 isLast: index == stages.count - 1,
                                 centersVertically: true
@@ -1402,52 +1474,59 @@ struct RecordsLifeCanvas: View {
                                 EmptyView()
                             }
                             .opacity(0.58)
-                            .accessibilityLabel(store.t(stage.kind.titleKey))
+                            .accessibilityLabel(store.t(stage.titleKey))
                         } else {
                             Button {
                                 // A legend is not a specific point on the
                                 // grid. Let the callout use the stage's first
                                 // bucket instead of pretending the last tap
                                 // still identifies this selection.
-                                selectedBucketIndex = nil
-                                onSelect(stage)
+                                select(stage, date: nil)
                             } label: {
                                 OWCRow(
                                     icon: stage.kind.iconName,
-                                    title: store.t(stage.kind.titleKey),
+                                    title: store.t(stage.titleKey),
                                     subtitle: stageRange(stage),
                                     isLast: index == stages.count - 1,
                                     centersVertically: true
                                 ) {
-                                    Image(systemName: selectedStage == stage.kind ? "checkmark.circle.fill" : "circle")
+                                    Image(systemName: selectedStageID == stage.id ? "checkmark.circle.fill" : "circle")
                                         .foregroundStyle(
-                                            selectedStage == stage.kind
+                                            selectedStageID == stage.id
                                                 ? OWCDesign.orangeDeep
                                                 : OWCDesign.lifeColor(stage.kind)
                                         )
                                         .frame(width: 24, alignment: .center)
                                 }
                                 .background(
-                                    selectedStage == stage.kind ? OWCDesign.orangeDeep.opacity(0.08) : Color.clear,
+                                    selectedStageID == stage.id ? OWCDesign.orangeDeep.opacity(0.08) : Color.clear,
                                     in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                                 )
                             }
                             .buttonStyle(OWCRowButtonStyle())
-                            .accessibilityLabel(store.t(stage.kind.titleKey))
+                            .accessibilityLabel(store.t(stage.titleKey))
                         }
                     }
                 }
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+                if stages.contains(where: { $0.workPeriod != nil }) {
+                    Text(store.t("lifeWorkPeriodBasis"))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
+
         .animation(
-            reduceMotion ? nil : .easeOut(duration: 0.18),
-            value: selectedStage
-        )
-        .animation(
-            reduceMotion ? OWCMotion.reduced : .easeOut(duration: 0.2),
+            reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange,
             value: showsStageLegend
         )
+    }
+
+    private func select(_ stage: LifeStageSpan, date: Date?) {
+        selectedDate = date
+        if selectedStageID != stage.id { onSelect(stage) }
     }
 
     private func stageRange(_ stage: LifeStageSpan) -> String {
@@ -1455,7 +1534,11 @@ struct RecordsLifeCanvas: View {
         case (nil, nil):
             return store.t("lifeUnset")
         case (let start?, let end?):
-            return "\(yearLabel(start, stage.startPrecision)) – \(yearLabel(end, stage.endPrecision))"
+            let startLabel = stage.workPeriod == .future && start == referenceDate
+                ? store.t("lifeStagePresent") : yearLabel(start, stage.startPrecision)
+            let endLabel = stage.workPeriod == .elapsed && end == referenceDate
+                ? store.t("lifeStagePresent") : yearLabel(end, stage.endPrecision)
+            return "\(startLabel) – \(endLabel)"
         case (let start?, nil):
             return yearLabel(start, stage.startPrecision)
         case (nil, let end?):
@@ -1464,16 +1547,19 @@ struct RecordsLifeCanvas: View {
     }
 
     private var selectedStageSpan: LifeStageSpan? {
-        guard let selectedStage else { return nil }
-        return stages.first(where: { $0.kind == selectedStage })
+        guard let selectedStageID else { return nil }
+        return stages.first(where: { $0.id == selectedStageID })
     }
 
     private func selectedBucket(for stage: LifeStageSpan, in buckets: [LifeCanvasBucket]) -> LifeCanvasBucket? {
-        if let selectedBucketIndex,
-           let tapped = buckets.first(where: { $0.index == selectedBucketIndex && $0.kind == stage.kind }) {
+        if let selectedDate,
+           let tapped = buckets.first(where: { $0.start <= selectedDate && selectedDate < $0.end && $0.stageID == stage.id }) {
             return tapped
         }
-        return buckets.first(where: { $0.kind == stage.kind })
+        if stage.workPeriod == .elapsed {
+            return buckets.last(where: { $0.stageID == stage.id })
+        }
+        return buckets.first(where: { $0.stageID == stage.id })
     }
 
     private func yearLabel(_ date: Date, _ precision: CivilDatePrecision?) -> String {
@@ -1502,10 +1588,15 @@ private struct RecordsCanvasCallout: View {
                     .foregroundStyle(OWCDesign.secondary)
             }
         }
+        // The anchor may move, but the label must immediately describe the
+        // selected interval. Cross-fading glyphs makes two months overlap.
+        .transaction { $0.animation = nil }
         .padding(.horizontal, 10)
         .padding(.vertical, 7)
         .background(OWCDesign.card, in: Capsule())
         .overlay { Capsule().stroke(OWCDesign.separator, lineWidth: 0.8) }
+        .fixedSize(horizontal: false, vertical: true)
+        .allowsHitTesting(false)
         .accessibilityElement(children: .combine)
     }
 }
@@ -1575,91 +1666,6 @@ private struct RecordsDayDetailHeader: View {
             .padding(.horizontal, 9)
             .padding(.vertical, 5)
             .background(OWCDesign.control, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-    }
-}
-
-struct RecordsYearSelectionCard: View {
-    let store: OffWorkStore
-    let month: Int
-    let cells: [RecordsDayCell]
-    let summary: RecordsHeadlineSummary?
-    @State private var selectedHelp: RecordsMetricHelp?
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    var body: some View {
-        if let summary {
-            OWCGroupCard {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(title)
-                        .font(.title3.weight(.semibold))
-
-                    let columns = dynamicTypeSize.isAccessibilitySize ? 1 : 2
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: columns),
-                        alignment: .leading,
-                        spacing: 8
-                    ) {
-                        metric("recordsWorkdays", store.formatCount(summary.workdays), helpKey: "recordsMetricWorkdaysHelp")
-                        metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), helpKey: "recordsMetricWorkHelp")
-                        metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)), helpKey: "recordsMetricOvertimeHelp")
-                        metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)), helpKey: "recordsMetricFreeAwakeHelp")
-                        if let income = summary.estimatedIncome {
-                            metric(
-                                "recordsIncomeCurrentSalary",
-                                store.moneyText(income),
-                                helpKey: nil
-                            )
-                        }
-                    }
-                }
-                .padding(16)
-            }
-            .popover(item: $selectedHelp) { help in
-                RecordsMetricHelpPopover(help: help)
-            }
-        }
-    }
-
-    private var title: String {
-        var parts = store.recordsCalendar.dateComponents([.year], from: cells.first?.date ?? .now)
-        parts.month = month
-        parts.day = 1
-        return store.formatRecordsMonthYear(store.recordsCalendar.date(from: parts) ?? .now)
-    }
-
-    private func metric(_ titleKey: String, _ value: String, helpKey: String?) -> some View {
-        let label = store.t(titleKey)
-        return VStack(alignment: .leading, spacing: 7) {
-            HStack(spacing: 4) {
-                Text(label)
-                    .font(.caption)
-                    .foregroundStyle(OWCDesign.secondary)
-                    .lineLimit(2)
-                Spacer(minLength: 0)
-            }
-            .padding(.trailing, helpKey == nil ? 0 : 32)
-            Text(value)
-                .font(.title3.weight(.semibold).monospacedDigit())
-                .foregroundStyle(OWCDesign.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.56)
-                .allowsTightening(true)
-        }
-        .frame(maxWidth: .infinity, minHeight: 65, alignment: .leading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .overlay(alignment: .topTrailing) {
-            if let helpKey {
-                RecordsMetricHelpButton(
-                    title: label,
-                    message: store.t(helpKey),
-                    selection: $selectedHelp
-                )
-                .padding(.top, 4)
-                .padding(.trailing, 2)
-            }
-        }
-        .background(OWCDesign.elevated, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
     }
 }
 

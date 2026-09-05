@@ -646,8 +646,8 @@
   "recordsAllRecords": "كل السجلات",
   "recordsToday": "العودة إلى اليوم",
   "recordsFreeAwakeShort": "الوقت الحر",
-  "recordsMetricWorkdaysHelp": "الأيام التي تحتوي على سجل عمل فعلي. لا تُحتسب تقديرات الجدول فقط.",
-  "recordsMetricWorkHelp": "العمل العادي هو وقت العمل المجدول والمسجل، دون الاستراحات والعمل الإضافي.",
+  "recordsMetricWorkdaysHelp": "أيام تُحتسب من جدولك المحفوظ الساري أو سجلاتك اليدوية. لا يلزم فتح التطبيق يوميًا. تُستثنى التواريخ المستقبلية وتقديرات تاريخ الحياة.",
+  "recordsMetricWorkHelp": "يتبع العمل العادي الجدول الساري في ذلك التاريخ، مع أولوية التعديلات اليدوية. تُستثنى الاستراحات والعمل الإضافي.",
   "recordsMetricOvertimeHelp": "العمل الإضافي هو العمل المسجل خارج فترات العمل العادية المجدولة.",
   "recordsDataSection": "السجلات والبيانات",
   "recordsDataTitle": "السجلات والبيانات",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "بقي {{duration}} اليوم",
   "focusAddAndStart": "إضافة وبدء",
   "focusEndBreakTitle": "إنهاء هذه الاستراحة؟",
-  "focusEndBreakBody": "عندما تكون مستعدًا، يمكنك اختيار مهمة وبدء الجولة التالية."
+  "focusEndBreakBody": "عندما تكون مستعدًا، يمكنك اختيار مهمة وبدء الجولة التالية.",
+  "recordsRecordedDays": "أيام بها سجلات",
+  "recordsAnnualSummary": "ملخص {{year}}",
+  "recordsIncomeBasis": "أيام العمل المجدولة المنقضية: {{count}}. تقدير وفق الأجر الحالي يشمل الإجازة المدفوعة ويستثني اليوم.",
+  "recordsTimeBreakdown": "توزيع الوقت",
+  "recordsAllocationBasis": "يشمل {{count}} من تواريخ هذا الملخص، بما فيها العمل بعد منتصف الليل. النوم ووقت الفراغ تقديريان.",
+  "lifeStageWorkElapsed": "العمل · الفترة المنقضية",
+  "lifeStageWorkFuture": "العمل · التوقعات المستقبلية",
+  "lifeStagePresent": "الآن",
+  "lifeWorkPeriodBasis": "تستند المراحل إلى ملف حياتك. الوقت المنقضي لا يمثل ساعات العمل المسجلة فعليًا."
 }

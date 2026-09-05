@@ -63,6 +63,7 @@ struct RecordsDayCell: Equatable, Sendable, Identifiable {
     var isFuture: Bool
     var isProjection: Bool
     var hasConflict: Bool
+    var isFromSavedSchedule: Bool = false
 }
 
 struct RecordsDayDetail: Equatable, Sendable {
@@ -81,7 +82,7 @@ struct RecordsDayDetail: Equatable, Sendable {
     var isProjection: Bool
 }
 
-/// Four headline numbers plus the 100% allocation bar. Locked summaries
+/// Recorded hours, their civil-day coverage, and a separate salary basis. Locked summaries
 /// never carry these values into a view.
 struct RecordsHeadlineSummary: Equatable, Sendable {
     var workdays: Int
@@ -89,6 +90,8 @@ struct RecordsHeadlineSummary: Equatable, Sendable {
     var overtimeMs: Int64
     var wakingFreeMs: Int64
     var estimatedIncome: Double?
+    var completedScheduledWorkdays: Int
+    var allocationDays: Int
     var allocation: TimeAllocationShare
     var sleepSourceKey: String
 }
@@ -210,12 +213,26 @@ enum LifeStageKind: String, Equatable, Sendable {
 }
 
 struct LifeStageSpan: Equatable, Sendable, Identifiable {
-    var id: LifeStageKind { kind }
+    var id: String { kind.rawValue + (workPeriod.map { "." + $0.rawValue } ?? "") }
     var kind: LifeStageKind
     var start: Date?
     var end: Date?
     var startPrecision: CivilDatePrecision?
     var endPrecision: CivilDatePrecision?
+    var workPeriod: LifeWorkPeriod? = nil
+
+    var titleKey: String {
+        switch workPeriod {
+        case .elapsed: "lifeStageWorkElapsed"
+        case .future: "lifeStageWorkFuture"
+        case nil: kind.titleKey
+        }
+    }
+}
+
+enum LifeWorkPeriod: String, Equatable, Sendable {
+    case elapsed
+    case future
 }
 
 struct LifeCanvasBucket: Equatable, Sendable, Identifiable {
@@ -224,6 +241,7 @@ struct LifeCanvasBucket: Equatable, Sendable, Identifiable {
     var start: Date
     var end: Date
     var kind: LifeStageKind
+    var stageID: String
     var isCurrent: Bool
     var isFuture: Bool
 }
@@ -237,6 +255,30 @@ struct FocusScheduleSlot: Equatable, Sendable, Identifiable {
 }
 
 enum LifeStageCalculator {
+    /// Presentation intervals only: split the career at now without creating
+    /// work records or changing the profile's retirement boundary.
+    static func canvasStages(_ stages: [LifeStageSpan], now: Date) -> [LifeStageSpan] {
+        stages.flatMap { stage -> [LifeStageSpan] in
+            guard stage.kind == .work, let start = stage.start else { return [stage] }
+            var result: [LifeStageSpan] = []
+            if start < now {
+                var elapsed = stage
+                elapsed.end = min(stage.end ?? now, now)
+                elapsed.workPeriod = .elapsed
+                if elapsed.end == now { elapsed.endPrecision = .day }
+                result.append(elapsed)
+            }
+            if let end = stage.end, end > now {
+                var future = stage
+                future.start = max(start, now)
+                future.workPeriod = .future
+                if future.start == now { future.startPrecision = .day }
+                result.append(future)
+            }
+            return result.isEmpty ? [stage] : result
+        }
+    }
+
     static func stages(profile: LifeProfile, calendar: Calendar) -> [LifeStageSpan] {
         var next = profile
         next.migrateLegacyFields(calendar: calendar)
@@ -303,11 +345,13 @@ enum LifeStageCalculator {
             let start = from.addingTimeInterval(span * Double(index) / Double(count))
             let end = from.addingTimeInterval(span * Double(index + 1) / Double(count))
             let mid = start.addingTimeInterval(end.timeIntervalSince(start) / 2)
+            let stage = stage(at: mid, stages: stages)
             return LifeCanvasBucket(
                 index: index,
                 start: start,
                 end: end,
-                kind: kind(at: mid, stages: stages),
+                kind: stage?.kind ?? .unset,
+                stageID: stage?.id ?? LifeStageKind.unset.rawValue,
                 isCurrent: now >= start && now < end,
                 isFuture: mid > now
             )

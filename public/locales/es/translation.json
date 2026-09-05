@@ -646,8 +646,8 @@
   "recordsAllRecords": "Todos los registros",
   "recordsToday": "Volver a hoy",
   "recordsFreeAwakeShort": "Tiempo libre",
-  "recordsMetricWorkdaysHelp": "Días con un registro de trabajo real. Las estimaciones basadas solo en el horario no cuentan.",
-  "recordsMetricWorkHelp": "El trabajo normal es el tiempo programado registrado, sin descansos ni horas extra.",
+  "recordsMetricWorkdaysHelp": "Días según tu horario guardado vigente o tus registros manuales. No hace falta abrir la app a diario. Se excluyen las fechas futuras y la historia de vida estimada.",
+  "recordsMetricWorkHelp": "El trabajo normal sigue el horario vigente en esa fecha; los cambios manuales tienen prioridad. Se excluyen descansos y horas extra.",
   "recordsMetricOvertimeHelp": "Las horas extra son el trabajo registrado fuera de los tramos normales programados.",
   "recordsDataSection": "Registros y datos",
   "recordsDataTitle": "Registros y datos",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "Quedan {{duration}} hoy",
   "focusAddAndStart": "Añadir y empezar",
   "focusEndBreakTitle": "¿Terminar este descanso?",
-  "focusEndBreakBody": "Cuando estés listo, puedes elegir una tarea y empezar la siguiente sesión."
+  "focusEndBreakBody": "Cuando estés listo, puedes elegir una tarea y empezar la siguiente sesión.",
+  "recordsRecordedDays": "Días con registros",
+  "recordsAnnualSummary": "Resumen de {{year}}",
+  "recordsIncomeBasis": "Días laborables programados ya transcurridos: {{count}}. Estimación con el salario actual; incluye permisos remunerados y excluye hoy.",
+  "recordsTimeBreakdown": "Distribución del tiempo",
+  "recordsAllocationBasis": "Incluye {{count}} fechas de este resumen, incluido el trabajo después de medianoche. El sueño y el tiempo libre son estimaciones.",
+  "lifeStageWorkElapsed": "Trabajo · transcurrido",
+  "lifeStageWorkFuture": "Trabajo · proyectado",
+  "lifeStagePresent": "Ahora",
+  "lifeWorkPeriodBasis": "Las etapas se basan en tu perfil de vida. El tiempo transcurrido no equivale a horas de trabajo registradas."
 }

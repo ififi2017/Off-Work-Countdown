@@ -646,8 +646,8 @@
   "recordsAllRecords": "Mọi bản ghi",
   "recordsToday": "Trở về hôm nay",
   "recordsFreeAwakeShort": "Thời gian tự do",
-  "recordsMetricWorkdaysHelp": "Số ngày có bản ghi làm việc thực tế. Ngày chỉ được ước tính từ lịch làm việc sẽ không được tính.",
-  "recordsMetricWorkHelp": "Công việc thường lệ là thời gian làm việc theo lịch đã ghi, không gồm giờ nghỉ và tăng ca.",
+  "recordsMetricWorkdaysHelp": "Số ngày theo lịch đã lưu có hiệu lực hoặc bản ghi thủ công. Không cần mở ứng dụng mỗi ngày. Không tính ngày tương lai và lịch sử cuộc đời ước tính.",
+  "recordsMetricWorkHelp": "Giờ làm thông thường theo lịch có hiệu lực vào ngày đó; chỉnh sửa thủ công được ưu tiên. Không gồm giờ nghỉ và làm thêm.",
   "recordsMetricOvertimeHelp": "Tăng ca là thời gian làm việc được ghi ngoài các khoảng làm việc thường lệ.",
   "recordsDataSection": "Bản ghi và dữ liệu",
   "recordsDataTitle": "Bản ghi và dữ liệu",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "Hôm nay còn {{duration}}",
   "focusAddAndStart": "Thêm và bắt đầu",
   "focusEndBreakTitle": "Kết thúc giờ nghỉ này?",
-  "focusEndBreakBody": "Khi sẵn sàng, bạn có thể chọn công việc và bắt đầu phiên tiếp theo."
+  "focusEndBreakBody": "Khi sẵn sàng, bạn có thể chọn công việc và bắt đầu phiên tiếp theo.",
+  "recordsRecordedDays": "Ngày có bản ghi",
+  "recordsAnnualSummary": "Tổng kết năm {{year}}",
+  "recordsIncomeBasis": "Số ngày làm việc theo lịch đã qua: {{count}}. Ước tính theo mức lương hiện tại, gồm nghỉ có lương và không tính hôm nay.",
+  "recordsTimeBreakdown": "Phân bổ thời gian",
+  "recordsAllocationBasis": "Bao gồm {{count}} ngày trong tổng kết này, kể cả công việc qua nửa đêm. Giấc ngủ và thời gian rảnh là ước tính.",
+  "lifeStageWorkElapsed": "Làm việc · đã qua",
+  "lifeStageWorkFuture": "Làm việc · dự tính",
+  "lifeStagePresent": "Hiện tại",
+  "lifeWorkPeriodBasis": "Các giai đoạn dựa trên hồ sơ cuộc đời. Thời gian đã qua không phải số giờ làm việc thực tế đã ghi nhận."
 }

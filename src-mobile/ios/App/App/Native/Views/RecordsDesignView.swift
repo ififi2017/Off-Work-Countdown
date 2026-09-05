@@ -11,7 +11,10 @@ struct RecordsDesignView: View {
     @State private var anchor = Date()
     @State private var selectedDayKey: String?
     @State private var selectedYearMonth: Int?
-    @State private var selectedLifeStageKind: LifeStageKind?
+    @State private var selectedLifeStageID: String?
+    @State private var yearCalloutMonth: Int?
+    @State private var yearSelectionDate: Date?
+    @State private var lifeSelectionDate: Date?
     @State private var days: [DayResolution] = []
     @State private var cells: [RecordsDayCell] = []
     @State private var summary: RecordsHeadlineSummary?
@@ -208,11 +211,11 @@ struct RecordsDesignView: View {
                     onUnlock: { store.paywallSheet = .charts }
                 )
             } else if scale == .year, let selectedYearMonth {
-                RecordsYearSelectionCard(
+                RecordsHeadlineView(
                     store: store,
-                    month: selectedYearMonth,
-                    cells: yearSelectionCells,
-                    summary: yearSelectionSummary
+                    title: selectedMonthTitle(selectedYearMonth),
+                    summary: yearSelectionSummary,
+                    onUnlock: { store.paywallSheet = .charts }
                 )
             }
             // The life scale is behind Plus, so this conclusion is too. A
@@ -227,7 +230,11 @@ struct RecordsDesignView: View {
             if scale != .life, hasActualRecords, !selectedIsLocked {
                 RecordsHeadlineView(
                     store: store,
+                    title: scale == .year
+                        ? store.t("recordsAnnualSummary", values: ["year": store.formatYear(store.recordsCalendar.component(.year, from: anchor))])
+                        : periodTitle,
                     summary: summary,
+                    isCollapsible: scale == .year,
                     onUnlock: { store.paywallSheet = .charts }
                 )
             }
@@ -488,17 +495,21 @@ struct RecordsDesignView: View {
                             cells: cells,
                             selectedMonth: selectedYearMonth
                         ) { month in
+                            if selectedYearMonth != month { selectionFeedback += 1 }
                             selectedYearMonth = month
-                            selectionFeedback += 1
+                            yearCalloutMonth = month
+                            yearSelectionDate = nil
                         }
                     } else {
                         RecordsYearCanvas(
                             store: store,
                             cells: cells,
-                            selectedMonth: selectedYearMonth
+                            selectedMonth: selectedYearMonth,
+                            calloutMonth: $yearCalloutMonth,
+                            selectedDate: $yearSelectionDate
                         ) { month in
+                            if selectedYearMonth != month { selectionFeedback += 1 }
                             selectedYearMonth = month
-                            selectionFeedback += 1
                         }
                     }
                 case .life:
@@ -529,16 +540,20 @@ struct RecordsDesignView: View {
     @ViewBuilder
     private func lifeCanvas(expandedPresentation: Bool) -> some View {
         if let profile = store.records.state.lifeProfile {
-            let stages = LifeStageCalculator.stages(profile: profile, calendar: store.recordsCalendar)
-            if let bounds = LifeStageCalculator.timelineBounds(stages: stages, now: .now) {
+            let now = Date.now
+            let profileStages = LifeStageCalculator.stages(profile: profile, calendar: store.recordsCalendar)
+            let stages = LifeStageCalculator.canvasStages(profileStages, now: now)
+            if let bounds = LifeStageCalculator.timelineBounds(stages: profileStages, now: now) {
                 RecordsLifeCanvas(
                     store: store,
                     stages: stages,
                     bounds: bounds,
-                    selectedStage: selectedLifeStageKind,
+                    selectedStageID: selectedLifeStageID,
+                    referenceDate: now,
+                    selectedDate: $lifeSelectionDate,
                     showsStageLegend: !expandedPresentation
                 ) { stage in
-                    selectedLifeStageKind = stage.kind
+                    selectedLifeStageID = stage.id
                     selectionFeedback += 1
                 }
             } else {
@@ -658,13 +673,23 @@ struct RecordsDesignView: View {
             selectedYearMonth = nextScale == .year
                 ? store.recordsCalendar.component(.month, from: .now)
                 : nil
-            selectedLifeStageKind = nil
+            selectedLifeStageID = nil
+            yearCalloutMonth = nil
+            yearSelectionDate = nil
+            lifeSelectionDate = nil
             expanded = [:]
             pinch = 1
             if nextScale == .life { selectCurrentLifeStage() }
         }
         scaleFeedback += 1
         Task { await load(selectingToday: nextScale == .week || nextScale == .month) }
+    }
+
+    private func selectedMonthTitle(_ month: Int) -> String {
+        var parts = store.recordsCalendar.dateComponents([.year], from: anchor)
+        parts.month = month
+        parts.day = 1
+        return store.formatRecordsMonthYear(store.recordsCalendar.date(from: parts) ?? anchor)
     }
 
     private var yearSelectionSummary: RecordsHeadlineSummary? {
@@ -703,6 +728,8 @@ struct RecordsDesignView: View {
             anchor = .now
             if scale == .year {
                 selectedYearMonth = store.recordsCalendar.component(.month, from: .now)
+                yearCalloutMonth = nil
+                yearSelectionDate = nil
             }
         }
         selectionFeedback += 1
@@ -719,12 +746,14 @@ struct RecordsDesignView: View {
 
     private func selectCurrentLifeStage(now: Date = .now) {
         guard let profile = store.records.state.lifeProfile else {
-            selectedLifeStageKind = nil
+            selectedLifeStageID = nil
             return
         }
-        let stages = LifeStageCalculator.stages(profile: profile, calendar: store.recordsCalendar)
-        let current = LifeStageCalculator.stage(at: now, stages: stages)?.kind
-        selectedLifeStageKind = current == .retirement ? nil : current
+        let stages = LifeStageCalculator.canvasStages(
+            LifeStageCalculator.stages(profile: profile, calendar: store.recordsCalendar), now: now
+        )
+        let current = LifeStageCalculator.stage(at: now.addingTimeInterval(-0.001), stages: stages)
+        selectedLifeStageID = current?.kind == .retirement ? nil : current?.id
     }
 
     private func selectFromTap(_ cell: RecordsDayCell) {
@@ -817,7 +846,7 @@ struct RecordsDesignView: View {
             days = []
             cells = []
             summary = nil
-            if selectedLifeStageKind == nil { selectCurrentLifeStage() }
+            if selectedLifeStageID == nil { selectCurrentLifeStage() }
             // Expanding a career's worth of schedule runs off the main actor;
             // the life canvas itself only needs the profile's stage dates.
             let projection = store.plus.isAuthorized ? await store.prepareLifeViewModel() : nil

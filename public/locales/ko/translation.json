@@ -646,8 +646,8 @@
   "recordsAllRecords": "모든 기록",
   "recordsToday": "오늘로 돌아가기",
   "recordsFreeAwakeShort": "자유 시간",
-  "recordsMetricWorkdaysHelp": "실제 근무 기록이 있는 날짜 수입니다. 일정만으로 추정한 날짜는 포함하지 않습니다.",
-  "recordsMetricWorkHelp": "정규 근무는 휴식과 초과 근무를 제외한 기록된 예정 근무 시간입니다.",
+  "recordsMetricWorkdaysHelp": "유효한 저장 근무 일정이나 수동 기록으로 계산한 날짜 수입니다. 매일 앱을 열 필요는 없습니다. 미래 날짜와 추정한 과거 인생 기간은 제외합니다.",
+  "recordsMetricWorkHelp": "정상 근무는 당시 유효한 일정에 따르며 수동 수정이 우선합니다. 휴식과 초과 근무는 제외합니다.",
   "recordsMetricOvertimeHelp": "초과 근무는 정규 예정 구간을 넘어 기록된 근무 시간입니다.",
   "recordsDataSection": "기록과 데이터",
   "recordsDataTitle": "기록과 데이터",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "오늘 {{duration}} 남음",
   "focusAddAndStart": "추가하고 시작",
   "focusEndBreakTitle": "휴식을 끝낼까요?",
-  "focusEndBreakBody": "준비가 되면 작업을 선택하고 다음 집중을 시작할 수 있어요."
+  "focusEndBreakBody": "준비가 되면 작업을 선택하고 다음 집중을 시작할 수 있어요.",
+  "recordsRecordedDays": "기록된 날짜 수",
+  "recordsAnnualSummary": "{{year}}년 요약",
+  "recordsIncomeBasis": "지난 예정 근무일 {{count}}일과 현재 급여로 추정합니다. 유급 휴가를 포함하며 오늘은 제외합니다.",
+  "recordsTimeBreakdown": "시간 구성",
+  "recordsAllocationBasis": "이 요약의 {{count}}일을 포함하며 자정을 넘긴 근무도 반영합니다. 수면과 자유 시간은 추정치입니다.",
+  "lifeStageWorkElapsed": "근무 · 지나온 기간",
+  "lifeStageWorkFuture": "근무 · 미래 예상",
+  "lifeStagePresent": "현재",
+  "lifeWorkPeriodBasis": "인생 프로필에 따른 단계입니다. 지나온 기간은 기록된 실제 근무 시간을 뜻하지 않습니다."
 }

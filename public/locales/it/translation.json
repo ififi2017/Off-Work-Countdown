@@ -646,8 +646,8 @@
   "recordsAllRecords": "Tutti i registri",
   "recordsToday": "Torna a oggi",
   "recordsFreeAwakeShort": "Tempo libero",
-  "recordsMetricWorkdaysHelp": "Giorni con una registrazione di lavoro effettiva. Le stime basate solo sul turno non contano.",
-  "recordsMetricWorkHelp": "Il lavoro regolare è il tempo programmato registrato, escluse pause e ore extra.",
+  "recordsMetricWorkdaysHelp": "Giorni conteggiati dal turno salvato in vigore o dalle registrazioni manuali. Non occorre aprire l’app ogni giorno. Date future e storia di vita stimata sono escluse.",
+  "recordsMetricWorkHelp": "Il lavoro normale segue il turno in vigore in quella data; le modifiche manuali hanno priorità. Pause e straordinari sono esclusi.",
   "recordsMetricOvertimeHelp": "Le ore extra sono il lavoro registrato oltre i normali segmenti programmati.",
   "recordsDataSection": "Registri e dati",
   "recordsDataTitle": "Registri e dati",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "Restano {{duration}} oggi",
   "focusAddAndStart": "Aggiungi e inizia",
   "focusEndBreakTitle": "Terminare questa pausa?",
-  "focusEndBreakBody": "Quando vuoi, puoi scegliere un’attività e iniziare la prossima sessione."
+  "focusEndBreakBody": "Quando vuoi, puoi scegliere un’attività e iniziare la prossima sessione.",
+  "recordsRecordedDays": "Giorni con registrazioni",
+  "recordsAnnualSummary": "Riepilogo {{year}}",
+  "recordsIncomeBasis": "Giorni di lavoro programmati trascorsi: {{count}}. Stima con la retribuzione attuale; include i congedi retribuiti ed esclude oggi.",
+  "recordsTimeBreakdown": "Ripartizione del tempo",
+  "recordsAllocationBasis": "Copre {{count}} date del riepilogo, incluso il lavoro oltre mezzanotte. Sonno e tempo libero sono stime.",
+  "lifeStageWorkElapsed": "Lavoro · trascorso",
+  "lifeStageWorkFuture": "Lavoro · previsto",
+  "lifeStagePresent": "Ora",
+  "lifeWorkPeriodBasis": "Le fasi si basano sul tuo profilo di vita. Il tempo trascorso non corrisponde alle ore di lavoro registrate."
 }

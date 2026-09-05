@@ -646,8 +646,8 @@
   "recordsAllRecords": "सारे रिकॉर्ड",
   "recordsToday": "आज पर लौटें",
   "recordsFreeAwakeShort": "खाली समय",
-  "recordsMetricWorkdaysHelp": "वे दिन जिनमें वास्तविक काम का रिकॉर्ड है। केवल शेड्यूल से बने अनुमान शामिल नहीं हैं।",
-  "recordsMetricWorkHelp": "नियमित काम दर्ज किया गया तय काम का समय है, जिसमें ब्रेक और ओवरटाइम शामिल नहीं हैं।",
+  "recordsMetricWorkdaysHelp": "लागू सहेजे गए शेड्यूल या मैन्युअल रिकॉर्ड के अनुसार गिने गए दिन। रोज़ ऐप खोलना ज़रूरी नहीं। भविष्य की तारीखें और अनुमानित जीवन इतिहास शामिल नहीं हैं।",
+  "recordsMetricWorkHelp": "सामान्य काम उस दिन लागू शेड्यूल के अनुसार है; मैन्युअल बदलाव को प्राथमिकता मिलती है। ब्रेक और ओवरटाइम शामिल नहीं हैं।",
   "recordsMetricOvertimeHelp": "ओवरटाइम सामान्य तय कार्य अवधियों के बाहर दर्ज किया गया काम है।",
   "recordsDataSection": "रिकॉर्ड और डेटा",
   "recordsDataTitle": "रिकॉर्ड और डेटा",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "आज {{duration}} बचा है",
   "focusAddAndStart": "जोड़ें और शुरू करें",
   "focusEndBreakTitle": "यह विराम समाप्त करें?",
-  "focusEndBreakBody": "जब आप तैयार हों, कोई कार्य चुनकर अगला सत्र शुरू कर सकते हैं।"
+  "focusEndBreakBody": "जब आप तैयार हों, कोई कार्य चुनकर अगला सत्र शुरू कर सकते हैं।",
+  "recordsRecordedDays": "रिकॉर्ड वाले दिन",
+  "recordsAnnualSummary": "{{year}} का सारांश",
+  "recordsIncomeBasis": "बीते हुए निर्धारित कार्यदिवस: {{count}}। वर्तमान वेतन पर अनुमान; सवेतन छुट्टी शामिल है, आज का दिन नहीं।",
+  "recordsTimeBreakdown": "समय का विवरण",
+  "recordsAllocationBasis": "इस सारांश की {{count}} तारीखें शामिल हैं, जिनमें आधी रात के बाद का काम भी है। नींद और खाली समय अनुमानित हैं।",
+  "lifeStageWorkElapsed": "काम · बीता समय",
+  "lifeStageWorkFuture": "काम · भविष्य का अनुमान",
+  "lifeStagePresent": "अभी",
+  "lifeWorkPeriodBasis": "चरण आपकी जीवन प्रोफ़ाइल पर आधारित हैं। बीता समय रिकॉर्ड किए गए वास्तविक काम के घंटों को नहीं दर्शाता।"
 }

@@ -646,8 +646,8 @@
   "recordsAllRecords": "Semua catatan",
   "recordsToday": "Kembali ke hari ini",
   "recordsFreeAwakeShort": "Waktu bebas",
-  "recordsMetricWorkdaysHelp": "Hari yang memiliki catatan kerja nyata. Perkiraan yang hanya berdasarkan jadwal tidak dihitung.",
-  "recordsMetricWorkHelp": "Kerja reguler adalah waktu kerja terjadwal yang tercatat, tanpa istirahat dan lembur.",
+  "recordsMetricWorkdaysHelp": "Hari dihitung dari jadwal tersimpan yang berlaku atau catatan manual. Tidak perlu membuka aplikasi setiap hari. Tanggal mendatang dan perkiraan riwayat hidup tidak dihitung.",
+  "recordsMetricWorkHelp": "Kerja reguler mengikuti jadwal yang berlaku saat itu, dengan perubahan manual diutamakan. Istirahat dan lembur tidak termasuk.",
   "recordsMetricOvertimeHelp": "Lembur adalah kerja yang tercatat di luar segmen jadwal reguler.",
   "recordsDataSection": "Catatan & data",
   "recordsDataTitle": "Catatan & data",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "Sisa {{duration}} hari ini",
   "focusAddAndStart": "Tambah dan mulai",
   "focusEndBreakTitle": "Akhiri istirahat ini?",
-  "focusEndBreakBody": "Saat siap, pilih tugas dan mulai sesi berikutnya."
+  "focusEndBreakBody": "Saat siap, pilih tugas dan mulai sesi berikutnya.",
+  "recordsRecordedDays": "Hari dengan catatan",
+  "recordsAnnualSummary": "Ringkasan {{year}}",
+  "recordsIncomeBasis": "Hari kerja terjadwal yang telah berlalu: {{count}}. Perkiraan berdasarkan gaji saat ini; termasuk cuti berbayar dan tidak termasuk hari ini.",
+  "recordsTimeBreakdown": "Pembagian waktu",
+  "recordsAllocationBasis": "Mencakup {{count}} tanggal dalam ringkasan ini, termasuk kerja lewat tengah malam. Tidur dan waktu luang adalah perkiraan.",
+  "lifeStageWorkElapsed": "Kerja · telah berlalu",
+  "lifeStageWorkFuture": "Kerja · proyeksi",
+  "lifeStagePresent": "Sekarang",
+  "lifeWorkPeriodBasis": "Tahap mengikuti profil hidupmu. Waktu yang berlalu bukan jumlah jam kerja yang tercatat."
 }

@@ -9,6 +9,8 @@ import Foundation
 enum RecordsDaySource: String, Equatable, Hashable, Sendable, CaseIterable {
     /// The user's own timer wrote this day.
     case recorded
+    /// The saved schedule applies unless the user supplies an exception.
+    case scheduled
     /// The user edited this day in Records.
     case corrected
     /// A holiday or makeup day from the calendar.
@@ -33,6 +35,7 @@ enum RecordsDaySource: String, Equatable, Hashable, Sendable, CaseIterable {
     var titleKey: String {
         switch self {
         case .recorded: "recordsSourceRecorded"
+        case .scheduled: "recordsSourceSchedule"
         case .corrected: "recordsSourceOverride"
         case .exception: "recordsSourceException"
         case .scheduleEstimate: "recordsSourceSchedule"
@@ -51,7 +54,7 @@ enum RecordsDaySource: String, Equatable, Hashable, Sendable, CaseIterable {
     var isEstimated: Bool {
         switch self {
         case .scheduleEstimate, .afterNow, .lifeProjection, .planned, .sleepEstimate: true
-        case .recorded, .corrected, .exception, .unrecorded, .rest, .locked: false
+        case .recorded, .scheduled, .corrected, .exception, .unrecorded, .rest, .locked: false
         }
     }
 

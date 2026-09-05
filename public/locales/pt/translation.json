@@ -646,8 +646,8 @@
   "recordsAllRecords": "Todos os registros",
   "recordsToday": "Voltar para hoje",
   "recordsFreeAwakeShort": "Tempo livre",
-  "recordsMetricWorkdaysHelp": "Dias com um registro de trabalho real. Estimativas baseadas apenas no horário não contam.",
-  "recordsMetricWorkHelp": "Trabalho regular é o tempo programado registrado, sem pausas e horas extras.",
+  "recordsMetricWorkdaysHelp": "Dias contados pela escala salva em vigor ou pelos registros manuais. Não é preciso abrir o app diariamente. Datas futuras e histórico de vida estimado são excluídos.",
+  "recordsMetricWorkHelp": "O trabalho normal segue a escala vigente naquela data; alterações manuais têm prioridade. Intervalos e horas extras são excluídos.",
   "recordsMetricOvertimeHelp": "Horas extras são o trabalho registrado além dos períodos regulares programados.",
   "recordsDataSection": "Registros e dados",
   "recordsDataTitle": "Registros e dados",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "Faltam {{duration}} hoje",
   "focusAddAndStart": "Adicionar e iniciar",
   "focusEndBreakTitle": "Terminar esta pausa?",
-  "focusEndBreakBody": "Quando quiser, escolha uma tarefa e inicie a próxima sessão."
+  "focusEndBreakBody": "Quando quiser, escolha uma tarefa e inicie a próxima sessão.",
+  "recordsRecordedDays": "Dias com registros",
+  "recordsAnnualSummary": "Resumo de {{year}}",
+  "recordsIncomeBasis": "Dias de trabalho programados já decorridos: {{count}}. Estimativa com o salário atual; inclui licenças remuneradas e exclui hoje.",
+  "recordsTimeBreakdown": "Distribuição do tempo",
+  "recordsAllocationBasis": "Abrange {{count}} datas deste resumo, incluindo trabalho após a meia-noite. Sono e tempo livre são estimativas.",
+  "lifeStageWorkElapsed": "Trabalho · decorrido",
+  "lifeStageWorkFuture": "Trabalho · projetado",
+  "lifeStagePresent": "Agora",
+  "lifeWorkPeriodBasis": "As etapas seguem seu perfil de vida. O tempo decorrido não representa horas de trabalho registradas."
 }

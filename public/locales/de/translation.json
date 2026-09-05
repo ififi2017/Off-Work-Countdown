@@ -646,8 +646,8 @@
   "recordsAllRecords": "Alle Einträge",
   "recordsToday": "Zurück zu heute",
   "recordsFreeAwakeShort": "Freie Zeit",
-  "recordsMetricWorkdaysHelp": "Tage mit einem tatsächlichen Arbeitseintrag. Reine Dienstplan-Schätzungen zählen nicht.",
-  "recordsMetricWorkHelp": "Reguläre Arbeit ist erfasste planmäßige Arbeitszeit ohne Pausen und Überstunden.",
+  "recordsMetricWorkdaysHelp": "Tage aus deinem gültigen gespeicherten Dienstplan oder manuellen Einträgen. Du musst die App nicht täglich öffnen. Zukunft und geschätzte Lebenshistorie zählen nicht.",
+  "recordsMetricWorkHelp": "Reguläre Arbeit folgt dem damals gültigen Dienstplan. Manuelle Änderungen haben Vorrang; Pausen und Überstunden sind ausgeschlossen.",
   "recordsMetricOvertimeHelp": "Überstunden sind erfasste Arbeitszeit außerhalb der regulären Arbeitsabschnitte.",
   "recordsDataSection": "Einträge & Daten",
   "recordsDataTitle": "Einträge & Daten",
@@ -899,5 +899,14 @@
   "focusActivityShiftLeft": "Heute noch {{duration}}",
   "focusAddAndStart": "Hinzufügen und starten",
   "focusEndBreakTitle": "Diese Pause beenden?",
-  "focusEndBreakBody": "Wenn du bereit bist, kannst du eine Aufgabe wählen und die nächste Runde starten."
+  "focusEndBreakBody": "Wenn du bereit bist, kannst du eine Aufgabe wählen und die nächste Runde starten.",
+  "recordsRecordedDays": "Tage mit Einträgen",
+  "recordsAnnualSummary": "Jahresübersicht {{year}}",
+  "recordsIncomeBasis": "Abgeschlossene geplante Arbeitstage: {{count}}. Schätzung zum aktuellen Gehalt, einschließlich bezahlten Urlaubs und ohne heute.",
+  "recordsTimeBreakdown": "Zeitaufteilung",
+  "recordsAllocationBasis": "Umfasst {{count}} Tage dieser Übersicht, einschließlich Arbeit über Mitternacht. Schlaf und Freizeit sind geschätzt.",
+  "lifeStageWorkElapsed": "Arbeit · vergangen",
+  "lifeStageWorkFuture": "Arbeit · vorausberechnet",
+  "lifeStagePresent": "Jetzt",
+  "lifeWorkPeriodBasis": "Die Phasen basieren auf deinem Lebensprofil. Vergangene Zeit entspricht nicht erfassten Arbeitsstunden."
 }
