@@ -84,6 +84,11 @@ enum OWCDesign {
     static let rowHeight: CGFloat = 52
     static let pageInset: CGFloat = 16
     static let contentInset: CGFloat = 20
+    // Visible 34pt circles align with the cards; their 44pt hit targets extend
+    // five points beyond that edge. Every root header owns this spacing.
+    static let rootControlInset: CGFloat = pageInset - 5
+    static let rootHeaderHeight: CGFloat = 52
+    static let rootHeaderTopInset: CGFloat = 8
 
     /// Fixed vertical rhythm for the setup screen. These used to be `Spacer`s,
     /// which split the leftover height evenly and left the layout drifting with
@@ -190,16 +195,21 @@ struct OWCRootPageHeader<Leading: View, Trailing: View>: View {
     var body: some View {
         HStack(spacing: 8) {
             leading
-            Text(title)
-                .font(.largeTitle.bold())
-                .tracking(-0.85)
-                .foregroundStyle(OWCDesign.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
+            if !title.isEmpty {
+                Text(title)
+                    .font(.largeTitle.bold())
+                    .tracking(-0.85)
+                    .foregroundStyle(OWCDesign.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .padding(.leading, 5)
+            }
             Spacer(minLength: 8)
             trailing
         }
-        .frame(minHeight: 52)
+        .frame(minHeight: OWCDesign.rootHeaderHeight)
+        .padding(.horizontal, OWCDesign.rootControlInset)
+        .padding(.top, OWCDesign.rootHeaderTopInset)
     }
 }
 
@@ -236,8 +246,9 @@ struct OWCCompactRootBar<Leading: View, Trailing: View>: View {
                 trailing
             }
         }
-        .padding(.horizontal, OWCDesign.contentInset)
-        .frame(height: 52)
+        .padding(.horizontal, OWCDesign.rootControlInset)
+        .frame(height: OWCDesign.rootHeaderHeight)
+        .padding(.top, OWCDesign.rootHeaderTopInset)
         .background {
             Rectangle()
                 .fill(.ultraThinMaterial)
@@ -252,31 +263,38 @@ struct OWCCompactRootBar<Leading: View, Trailing: View>: View {
 struct OWCAppHeader: View {
     let store: OffWorkStore
     var showsFocus = false
+    var onShowSidebar: (() -> Void)? = nil
 
-    private let visualSize: CGFloat = 34
-    /// Align the visible circle with the cards' 16pt page inset. The shared
-    /// label has a wider 44pt hit target, so using the same inset on that outer
-    /// frame made the circle itself look five points farther inward.
-    private var hitTargetInset: CGFloat {
-        OWCDesign.pageInset - (44 - visualSize) / 2
-    }
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack {
-            if showsFocus {
-                NavigationLink(value: AppRoute.focus) {
-                    OWCGlassCircleLabel(visualSize: visualSize) {
-                        Image(systemName: "timer")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(OWCDesign.secondary)
+        OWCRootPageHeader(title: "") {
+            HStack(spacing: 8) {
+                if let onShowSidebar {
+                    Button(action: onShowSidebar) {
+                        OWCGlassCircleLabel {
+                            Image(systemName: "sidebar.left")
+                                .foregroundStyle(OWCDesign.secondary)
+                        }
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(store.t("showSidebar"))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(store.t("focusTitle"))
+                if showsFocus {
+                    NavigationLink(value: AppRoute.focus) {
+                        OWCGlassCircleLabel {
+                            Image(systemName: "timer")
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(OWCDesign.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(store.t("focusTitle"))
+                }
             }
-            Spacer()
-            Button { withAnimation(.snappy(duration: 0.28)) { store.toggleQuickTheme() } } label: {
-                OWCGlassCircleLabel(visualSize: visualSize) {
+        } trailing: {
+            Button { withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) { store.toggleQuickTheme() } } label: {
+                OWCGlassCircleLabel {
                     Group {
                         if store.quickThemeIsAuto {
                             Text(verbatim: "A")
@@ -292,8 +310,6 @@ struct OWCAppHeader: View {
             .buttonStyle(.plain)
             .accessibilityLabel(store.t("theme"))
         }
-        .padding(.horizontal, hitTargetInset)
-        .frame(minHeight: 44)
     }
 
 }
@@ -1114,6 +1130,7 @@ private struct OWCDownTriangle: Shape {
 struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
     let backTitle: String
     let pageTitle: String
+    let titleDisplayMode: NavigationBarItem.TitleDisplayMode
     /// The page's own control, at the trailing edge of the header row. Empty on
     /// every page that has nothing to put there.
     @ViewBuilder let trailing: Trailing
@@ -1130,6 +1147,7 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
     init(
         backTitle: String,
         pageTitle: String,
+        titleDisplayMode: NavigationBarItem.TitleDisplayMode = .large,
         hasUnsavedChanges: Bool = false,
         unsavedChangesTitle: String = "",
         keepEditingTitle: String = "",
@@ -1139,6 +1157,7 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
     ) {
         self.backTitle = backTitle
         self.pageTitle = pageTitle
+        self.titleDisplayMode = titleDisplayMode
         self.trailing = trailing()
         self.hasUnsavedChanges = hasUnsavedChanges
         self.unsavedChangesTitle = unsavedChangesTitle
@@ -1149,11 +1168,10 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            // Settings destinations now use the same native large-title
-            // navigation as the roots. The title therefore collapses into the
-            // translucent system bar while a language/theme/etc. list scrolls.
+            // Detail lists use a collapsing large title. Pages with their own
+            // content headline can keep the navigation title compact.
             .navigationTitle(pageTitle)
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(titleDisplayMode)
             .navigationBarBackButtonHidden(true)
             .toolbar(.visible, for: .navigationBar)
             .toolbar {
@@ -1227,8 +1245,16 @@ extension View {
         }
     }
 
-    func owcDetailBack(title: String, pageTitle: String) -> some View {
-        modifier(OWCDetailBackModifier(backTitle: title, pageTitle: pageTitle) { EmptyView() })
+    func owcDetailBack(
+        title: String,
+        pageTitle: String,
+        titleDisplayMode: NavigationBarItem.TitleDisplayMode = .large
+    ) -> some View {
+        modifier(OWCDetailBackModifier(
+            backTitle: title,
+            pageTitle: pageTitle,
+            titleDisplayMode: titleDisplayMode
+        ) { EmptyView() })
     }
 
     /// The same header with a control at its trailing edge — a page that can be

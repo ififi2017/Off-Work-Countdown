@@ -45,9 +45,6 @@ struct SettingsDesignView: View {
         } trailing: {
             SettingsPlusStarButton(store: store)
         }
-        .padding(.horizontal, OWCDesign.contentInset)
-        .padding(.top, 10)
-        .padding(.bottom, 4)
         .onGeometryChange(for: Bool.self) { proxy in
             proxy.frame(in: .named("settingsRootScroll")).maxY < 8
         } action: { _, shouldShow in
@@ -72,30 +69,25 @@ struct SettingsPlusStarButton: View {
 
     var body: some View {
         NavigationLink(value: AppRoute.plus) {
-            ZStack {
-                if store.plus.isAuthorized {
-                    Circle()
-                        .fill(Color.yellow.opacity(0.14))
-                        .frame(width: 42, height: 42)
-                        .shadow(color: Color.yellow.opacity(0.42), radius: 12)
-                    Circle()
-                        .stroke(Color.yellow.opacity(0.34), lineWidth: 1.5)
-                        .frame(width: 34, height: 34)
-                } else {
-                    Circle()
-                        .fill(OWCDesign.control)
-                        .frame(width: 42, height: 42)
+            if store.plus.isAuthorized {
+                OWCGlassCircleLabel {
+                    Image(systemName: "star.fill")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(OWCDesign.accent)
                 }
-                Image(systemName: store.plus.isAuthorized ? "star.fill" : "star")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(store.plus.isAuthorized ? Color.yellow : OWCDesign.secondary)
-                    .shadow(
-                        color: store.plus.isAuthorized ? Color.orange.opacity(0.55) : .clear,
-                        radius: 5
-                    )
+            } else {
+                HStack(spacing: 5) {
+                    Image(systemName: "star")
+                    Text(verbatim: "Plus")
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(OWCDesign.accent)
+                .padding(.horizontal, 12)
+                .frame(height: 34)
+                .glassEffect(.regular.interactive(), in: Capsule())
+                .padding(5)
+                .contentShape(Rectangle())
             }
-            .frame(width: 44, height: 44)
-            .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(store.t("plusSettings"))

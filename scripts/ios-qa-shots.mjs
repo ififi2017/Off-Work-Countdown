@@ -16,8 +16,8 @@ import { join, relative } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
 const ROOT = new URL("../", import.meta.url).pathname;
-const OUT = join(ROOT, "scripts/ios-qa-shots");
-const DERIVED_DATA = join(tmpdir(), "off-work-countdown-ios-qa-derived-data");
+const OUT = process.env.IOS_QA_OUTPUT || join(ROOT, "scripts/ios-qa-shots");
+const DERIVED_DATA = process.env.IOS_QA_DERIVED_DATA || join(tmpdir(), "off-work-countdown-ios-qa-derived-data");
 const PROJECT = join(ROOT, "src-mobile/ios/App/App.xcodeproj");
 const BUNDLE_ID = "com.rainif.offworkcountdown.macappstore";
 const IPHONE_NAME = process.env.IOS_QA_IPHONE || "iPhone 17 Pro";
@@ -45,12 +45,13 @@ const todayKey = [
 /// `settings-detail` are pushed pages: they are where a navigation bar's own
 /// margins show up, which is exactly where the iPad title regressed.
 ///
-/// No scene passes `qaDebugScenario`. That hook calls `activateDebugTimerScenario`,
+/// Records scenes must not pass `qaDebugScenario`. That hook calls `activateDebugTimerScenario`,
 /// which runs *after* the records setup and clears `recordsPath` and switches
 /// to the Timer — so every Records scene that used it silently photographed
 /// the timer instead. The shift is set up with plain hours instead.
 const SCENES = [
-  { name: "timer", args: [], expect: "timer" },
+  { name: "timer", args: ["-ios.native.qaDebugScenario", "working"], expect: "timer" },
+  { name: "timer-unscheduled", args: ["-ios.native.qaDebugScenario", "manualSchedule"], expect: "timer" },
   { name: "records-week", args: ["-ios.native.qaRecordsScale", "week"], expect: "records" },
   { name: "records-month", args: ["-ios.native.qaRecordsScale", "month"], expect: "records" },
   { name: "records-year", args: ["-ios.native.qaRecordsScale", "year"], expect: "records" },
@@ -61,6 +62,18 @@ const SCENES = [
     expect: "records.day",
   },
   { name: "settings", args: ["-ios.native.selectedTab", "settings"], expect: "settings" },
+  {
+    name: "settings-unsubscribed",
+    args: ["-ios.native.selectedTab", "settings", "-ios.native.debugPlusAuthorized", "NO"],
+    expect: "settings",
+  },
+  { name: "about", args: ["-ios.native.qaRoute", "about"], expect: "route.about" },
+  { name: "plus", args: ["-ios.native.qaRoute", "plus"], expect: "route.plus" },
+  {
+    name: "plus-unsubscribed",
+    args: ["-ios.native.qaRoute", "plus", "-ios.native.debugPlusAuthorized", "NO"],
+    expect: "route.plus",
+  },
   {
     name: "settings-detail",
     args: ["-ios.native.selectedTab", "settings", "-ios.native.qaRoute", "schedule"],

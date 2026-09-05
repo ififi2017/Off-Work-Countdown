@@ -1,210 +1,124 @@
 import SwiftUI
 
-/// The interactive form of the code-native brand mark used where a user may
-/// reasonably stop and explore it: onboarding, About, and the no-shift state.
+/// One interaction for the brand wherever it appears. About/onboarding hide
+/// a turn behind five nearby taps; the subscriber page offers direct replay.
 struct CelebratingBrandMark: View {
-    enum EasterEgg {
-        case clockSpin
-        case readyNudge
-    }
-
     var showsDepth = false
-    var easterEgg: EasterEgg = .clockSpin
-
-    private static let tapThreshold = 5
-    private static let designCanvasSide: CGFloat = 1024
-    private static let endpointCenter = CGPoint(x: 664.5, y: 776.1)
-    private static let endpointDiameter: CGFloat = 172
-    private static let minimumHitDiameter: CGFloat = 44
-    private static let tapTravelLimit: CGFloat = 10
+    var replaysOnTap = false
+    var playsOnAppear = false
+    var accessibilityTitle = OWCBrand.shortName
+    var isActive = true
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.colorScheme) private var colorScheme
-    @State private var tapCount = 0
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var taps = BrandTapSequence()
     @State private var handRotation = 0.0
-    @State private var reducedPulse = false
-    @State private var readyNudge = false
-    @State private var isCelebrating = false
-    @State private var gestureIsActive = false
-    @State private var pressFeedback = 0
-    @State private var releaseFeedback = 0
-    @State private var celebrationFeedback = 0
-
-    private var interactionIsActive: Bool {
-        gestureIsActive || isCelebrating
-    }
+    @State private var isPlaying = false
+    @State private var pulse = false
+    @State private var isVisible = false
+    @State private var handledInitialPlayback = false
+    @State private var playbackID = 0
+    @State private var tapFeedback = 0
+    @State private var settledFeedback = 0
 
     var body: some View {
-        GeometryReader { geometry in
-            let side = min(geometry.size.width, geometry.size.height)
-            let scale = side / Self.designCanvasSide
-            let origin = CGPoint(
-                x: (geometry.size.width - side) / 2,
-                y: (geometry.size.height - side) / 2
+        Button(action: registerTap) {
+            OWCBrandMark(
+                isPressed: isPlaying,
+                handRotation: .degrees(handRotation),
+                showsDepth: showsDepth
             )
-            let hitDiameter = max(
-                Self.minimumHitDiameter,
-                Self.endpointDiameter * scale
-            )
-            let visualDiameter = Self.endpointDiameter * scale
-
-            ZStack(alignment: .topLeading) {
-                OWCBrandMark(
-                    isPressed: interactionIsActive,
-                    handRotation: .degrees(handRotation),
-                    showsEndpoint: false,
-                    showsDepth: showsDepth
-                )
-                .opacity(reducedPulse ? 0.55 : 1)
-                .scaleEffect(readyNudge && !reduceMotion ? 1.025 : 1)
-                .offset(y: readyNudge && !reduceMotion ? -6 : 0)
-
-                // The gesture is attached to the actual glass view rather than
-                // a sibling overlay. `.interactive()` can therefore supply its
-                // native optical response while the logo itself stays fixed.
-                if showsDepth || interactionIsActive {
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    OWCDesign.orange.opacity(interactionIsActive ? 0.38 : 0.18),
-                                    OWCDesign.orange.opacity(interactionIsActive ? 0.12 : 0.045),
-                                    .clear,
-                                ],
-                                center: .center,
-                                startRadius: 2,
-                                endRadius: visualDiameter * 0.92
-                            )
-                        )
-                        .frame(width: visualDiameter * 1.84, height: visualDiameter * 1.84)
-                        .blur(radius: visualDiameter * (interactionIsActive ? 0.1 : 0.075))
-                        .scaleEffect(interactionIsActive && !reduceMotion ? 1.08 : 1)
-                        .position(
-                            x: origin.x + Self.endpointCenter.x * scale,
-                            y: origin.y + Self.endpointCenter.y * scale
-                        )
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                }
-
-                Circle()
-                    .fill(OWCBrandMark.orangeGradient)
-                    .frame(width: visualDiameter, height: visualDiameter)
-                    .glassEffect(
-                        .regular.tint(OWCDesign.orange.opacity(0.32)).interactive(),
-                        in: Circle()
-                    )
-                    .shadow(
-                        color: showsDepth
-                            ? OWCDesign.brandPlum.opacity(colorScheme == .dark ? 0.44 : 0.11)
-                            : .clear,
-                        radius: max(2, side * 0.022),
-                        y: max(1, side * 0.016)
-                    )
-                    .scaleEffect(readyNudge && !reduceMotion ? 1.10 : 1)
-                    .offset(y: readyNudge && !reduceMotion ? -8 : 0)
-                    // Keep Apple's 44 pt touch target without enlarging the
-                    // visible endpoint or making the ring tappable.
-                    .frame(width: hitDiameter, height: hitDiameter)
-                    .contentShape(Circle())
-                    .position(
-                        x: origin.x + Self.endpointCenter.x * scale,
-                        y: origin.y + Self.endpointCenter.y * scale
-                    )
-                    .gesture(endpointGesture)
-                    .accessibilityLabel(Text(verbatim: OWCBrand.shortName))
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityAction {
-                        registerTap()
-                    }
+            .opacity(pulse ? 0.80 : 1)
+            .contentShape(Circle())
+        }
+        .buttonStyle(BrandMarkButtonStyle())
+        .accessibilityLabel(Text(verbatim: accessibilityTitle))
+        .accessibilityIdentifier("brand.celebration")
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.45), trigger: tapFeedback)
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.25), trigger: settledFeedback)
+        .onAppear {
+            isVisible = true
+            if playsOnAppear, !handledInitialPlayback, isActive {
+                handledInitialPlayback = true
+                // The purchase flow already confirms authorization with its
+                // success haptic. Automatic playback adds no second pattern.
+                play(withHaptics: false)
             }
         }
-        .aspectRatio(1, contentMode: .fit)
-        .animation(reduceMotion ? nil : OWCMotion.press, value: interactionIsActive)
-        .sensoryFeedback(.impact(weight: .light), trigger: pressFeedback)
-        .sensoryFeedback(.selection, trigger: releaseFeedback)
-        .sensoryFeedback(.success, trigger: celebrationFeedback)
-    }
-
-    private var endpointGesture: some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onChanged { _ in
-                guard !gestureIsActive else { return }
-                gestureIsActive = true
-                pressFeedback += 1
-            }
-            .onEnded(handleEndpointGestureEnded)
-    }
-
-    private func handleEndpointGestureEnded(_ value: DragGesture.Value) {
-        gestureIsActive = false
-
-        let stayedNearEndpoint = max(
-            abs(value.translation.width),
-            abs(value.translation.height)
-        ) <= Self.tapTravelLimit
-
-        if stayedNearEndpoint {
-            registerTap()
-        } else {
-            releaseFeedback += 1
+        .onDisappear {
+            isVisible = false
+            resetPlayback()
         }
+        .onChange(of: isActive) { _, active in
+            if !active { resetPlayback() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { resetPlayback() }
+        }
+        .onChange(of: reduceMotion) { resetPlayback() }
     }
 
     private func registerTap() {
-        guard !isCelebrating else { return }
-        tapCount += 1
-        guard tapCount >= Self.tapThreshold else { return }
+        guard !isPlaying, isActive else { return }
+        tapFeedback += 1
+        if replaysOnTap || taps.register(at: Date.timeIntervalSinceReferenceDate) {
+            play(withHaptics: true)
+        }
+    }
 
-        tapCount = 0
-        isCelebrating = true
-        celebrationFeedback += 1
-
+    private func play(withHaptics: Bool) {
+        guard !isPlaying else { return }
+        isPlaying = true
+        playbackID += 1
+        let id = playbackID
         if reduceMotion {
-            playReducedCelebration()
-        } else {
-            switch easterEgg {
-            case .clockSpin:
-                playHandRotation()
-            case .readyNudge:
-                playReadyNudge()
-            }
-        }
-    }
-
-    private func playHandRotation() {
-        withAnimation(OWCMotion.brandCelebration) {
-            // Keep the accumulated angle instead of snapping from 360 back to
-            // zero at completion. Both render at five o'clock, but retaining
-            // the animated value guarantees the full path is visible on a
-            // physical device and lets a later celebration continue to 720.
-            handRotation += 360
-        } completion: {
-            isCelebrating = false
-        }
-    }
-
-    private func playReducedCelebration() {
-        withAnimation(OWCMotion.reduced) {
-            reducedPulse = true
-        } completion: {
             withAnimation(OWCMotion.reduced) {
-                reducedPulse = false
+                pulse = true
             } completion: {
-                isCelebrating = false
+                guard playbackID == id, isVisible, isActive else { return }
+                withAnimation(OWCMotion.reduced) { pulse = false } completion: {
+                    finishPlayback(id: id, withHaptics: withHaptics)
+                }
+            }
+        } else {
+            withAnimation(OWCMotion.brandCelebration, completionCriteria: .removed) {
+                handRotation += 360
+            } completion: {
+                finishPlayback(id: id, withHaptics: withHaptics)
             }
         }
     }
 
-    private func playReadyNudge() {
-        withAnimation(OWCMotion.brandNudge) {
-            readyNudge = true
-        } completion: {
-            withAnimation(OWCMotion.brandSettle) {
-                readyNudge = false
-            } completion: {
-                isCelebrating = false
-            }
+    private func finishPlayback(id: Int, withHaptics: Bool) {
+        guard playbackID == id, isVisible, isActive, scenePhase == .active else { return }
+        isPlaying = false
+        if withHaptics { settledFeedback += 1 }
+    }
+
+    private func resetPlayback() {
+        // Invalidates completion callbacks as well as the tap sequence. Leaving
+        // a page mid-turn must never deliver a late haptic on the next page.
+        playbackID += 1
+        taps = BrandTapSequence()
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            isPlaying = false
+            pulse = false
+            handRotation = 0
         }
+    }
+}
+
+private struct BrandMarkButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press) { content in
+                content
+                    .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
+                    .opacity(configuration.isPressed ? 0.88 : 1)
+            }
     }
 }

@@ -6,6 +6,7 @@ import UIKit
 struct TimerDesignView: View {
     @Bindable var store: OffWorkStore
     let wide: Bool
+    let onShowSidebar: (() -> Void)?
     let onOpenSettings: ((AppRoute?) -> Void)?
     let timelineDate: Date?
     let timelineActive: Bool
@@ -18,6 +19,7 @@ struct TimerDesignView: View {
     init(
         store: OffWorkStore,
         wide: Bool,
+        onShowSidebar: (() -> Void)? = nil,
         onOpenSettings: ((AppRoute?) -> Void)? = nil,
         timelineDate: Date? = nil,
         timelineActive: Bool = true,
@@ -25,6 +27,7 @@ struct TimerDesignView: View {
     ) {
         self.store = store
         self.wide = wide
+        self.onShowSidebar = onShowSidebar
         self.onOpenSettings = onOpenSettings
         self.timelineDate = timelineDate
         self.timelineActive = timelineActive
@@ -47,6 +50,7 @@ struct TimerDesignView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showShare) {
             ShareComposerView(store: store)
                 // One detent, fitted. The composer is a mood row, a card and
@@ -90,50 +94,51 @@ struct TimerDesignView: View {
         let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
         let phase = store.visualPhase(snapshot: snapshot, at: date)
 
-        Group {
-            switch phase {
-            case .unscheduled:
-                UnscheduledTimerView(store: store, now: date) { openSettings(.lunch) }
-            case .running, .lunch, .overtime, .clockIn:
-                if let snapshot {
-                    RunningTimerDesignView(
-                        store: store,
-                        snapshot: snapshot,
-                        now: date,
-                        showShare: $showShare,
-                        showOvertime: $showOvertime
-                    )
+        VStack(spacing: 0) {
+            OWCAppHeader(store: store, showsFocus: true, onShowSidebar: onShowSidebar)
+            Group {
+                switch phase {
+                case .unscheduled:
+                    UnscheduledTimerView(store: store, now: date) { openSettings(.lunch) }
+                case .running, .lunch, .overtime, .clockIn:
+                    if let snapshot {
+                        RunningTimerDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            now: date,
+                            showShare: $showShare,
+                            showOvertime: $showOvertime
+                        )
+                    }
+                case .completed:
+                    if let snapshot {
+                        CompletedShiftDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            now: date,
+                            showShare: $showShare,
+                            showOvertime: $showOvertime
+                        )
+                    }
+                case .rest:
+                    if let snapshot {
+                        RestDayDesignView(
+                            store: store,
+                            snapshot: snapshot,
+                            now: date
+                        ) { openSettings(.lunch) }
+                    }
+                case .rulesError:
+                    rulesError
                 }
-            case .completed:
-                if let snapshot {
-                    CompletedShiftDesignView(
-                        store: store,
-                        snapshot: snapshot,
-                        now: date,
-                        showShare: $showShare,
-                        showOvertime: $showOvertime
-                    )
-                }
-            case .rest:
-                if let snapshot {
-                    RestDayDesignView(
-                        store: store,
-                        snapshot: snapshot,
-                        now: date
-                    ) { openSettings(.lunch) }
-                }
-            case .rulesError:
-                rulesError
             }
+            .id(phase.surfaceIdentity)
+            .transition(phaseTransition)
+            // Cap the instrument, while its header keeps the pane-wide alignment
+            // used by Records and Settings in every timer phase.
+            .frame(maxWidth: wide ? 680 : .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .id(phase.surfaceIdentity)
-        .transition(phaseTransition)
-        // See SettingsDesignView: phones fill their width, `pageInset` sets the
-        // margin. The wide cap is for iPad, where a full-width countdown would
-        // stretch past any comfortable measure. The one caller that renders this
-        // phone layout in an iPad pane caps itself.
-        .frame(maxWidth: wide ? 680 : .infinity)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(OWCDesign.page)
         .animation(phaseAnimation, value: phase)
     }
@@ -195,8 +200,6 @@ private struct RunningTimerDesignView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store, showsFocus: true)
-
             if store.isForcedWorkday(snapshot) {
                 ManualTimingBanner(store: store)
                     .padding(.horizontal, OWCDesign.pageInset)
