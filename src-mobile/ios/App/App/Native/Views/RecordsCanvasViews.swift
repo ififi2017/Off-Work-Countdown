@@ -369,42 +369,79 @@ struct RecordsHeadlineView: View {
 
     private func content(_ summary: RecordsHeadlineSummary) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), prominent: true)
-            metric("recordsRecordedDays", store.formatDays(Double(summary.workdays)))
-            metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)))
+            if let split = summary.actualForecast {
+                actualForecastContent(split)
+            } else {
+                metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), prominent: true)
+                metric("recordsRecordedDays", store.formatDays(Double(summary.workdays)))
+                metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)))
 
-            if let income = summary.estimatedIncome {
-                Divider()
-                VStack(alignment: .leading, spacing: 6) {
+                if let income = summary.estimatedIncome {
+                    Divider()
                     metric("recordsIncomeCurrentSalary", store.moneyText(income))
-                    Text(store.t("recordsIncomeBasis", values: ["count": store.formatCount(summary.completedScheduledWorkdays)]))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
+            }
+
+            if summary.allocationDays > 0 {
+                Divider()
+                DisclosureGroup(isExpanded: $showsAllocation) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(store.t("recordsAllocationBasis", values: ["count": store.formatCount(summary.allocationDays)]))
+                            .font(.caption)
+                            .foregroundStyle(OWCDesign.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)))
+                        RecordsAllocationBar(store: store, share: summary.allocation)
+                        Text(store.t(summary.sleepSourceKey))
+                            .font(.caption)
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
+                    .padding(.top, 10)
+                } label: {
+                    Text(store.t("recordsTimeBreakdown"))
+                        .font(.subheadline)
+                        .multilineTextAlignment(.leading)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .frame(minHeight: 44, alignment: .leading)
+                }
+            }
+        }
+    }
+
+    private func actualForecastContent(_ split: NativeRecordsActualForecastSummary) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(store.t("recordsActualTitle"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(OWCDesign.primary)
+            metric(
+                "recordsActualHours",
+                store.formatRelativeDuration(split.actual.hours * 3_600_000),
+                prominent: true
+            )
+            metric("recordsActualDays", store.formatDays(split.actual.days))
+            if let earnings = split.actual.earnings {
+                metric("recordsActualIncome", store.moneyText(earnings))
             }
 
             Divider()
-            DisclosureGroup(isExpanded: $showsAllocation) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(store.t("recordsAllocationBasis", values: ["count": store.formatCount(summary.allocationDays)]))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)))
-                    RecordsAllocationBar(store: store, share: summary.allocation)
-                    Text(store.t(summary.sleepSourceKey))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.secondary)
-                }
-                .padding(.top, 10)
-            } label: {
-                Text(store.t("recordsTimeBreakdown"))
-                    .font(.subheadline)
-                    .multilineTextAlignment(.leading)
-                    .foregroundStyle(OWCDesign.secondary)
-                    .frame(minHeight: 44, alignment: .leading)
+            Text(store.t("recordsForecastTitle"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(OWCDesign.primary)
+            metric("recordsForecastHours", store.formatRelativeDuration(split.forecast.hours * 3_600_000))
+            metric("recordsForecastDays", store.formatDays(split.forecast.days))
+            if let earnings = split.forecast.earnings {
+                metric("recordsForecastIncome", store.moneyText(earnings))
             }
+
+            Divider()
+            metric("recordsCombinedHours", store.formatRelativeDuration(split.total.hours * 3_600_000))
+            if let earnings = split.total.earnings {
+                metric("recordsCombinedIncome", store.moneyText(earnings))
+            }
+            Text(store.t("recordsForecastMethod"))
+                .font(.caption)
+                .foregroundStyle(OWCDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -1046,6 +1083,7 @@ struct RecordsYearMonthBars: View {
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 8)
@@ -1515,6 +1553,7 @@ struct RecordsLifeCanvas: View {
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+
             }
         }
 
@@ -1941,6 +1980,19 @@ struct RecordsLifeAllocationCard: View {
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+
+                if let income = model?.income {
+                    Divider()
+                    Text(store.t("lifeIncomeTitle"))
+                        .font(.subheadline.weight(.semibold))
+                    incomeRow("lifeIncomeHistory", value: income.historicalGross)
+                    incomeRow("lifeIncomeFuture", value: income.projectedGross)
+                    incomeRow("lifeIncomeTotal", value: income.totalGross)
+                    Text(store.t("lifeIncomeMethod"))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
@@ -1953,5 +2005,18 @@ struct RecordsLifeAllocationCard: View {
               allocation.workMs > 0
         else { return nil }
         return allocation
+    }
+
+    private func incomeRow(_ titleKey: String, value: Double) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(store.t(titleKey))
+                .font(.subheadline)
+                .foregroundStyle(OWCDesign.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(store.moneyText(value))
+                .font(.body.weight(.medium).monospacedDigit())
+                .multilineTextAlignment(.trailing)
+        }
+        .accessibilityElement(children: .combine)
     }
 }

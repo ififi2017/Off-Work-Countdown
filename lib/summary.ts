@@ -22,6 +22,68 @@ export interface PeriodSummary {
   earnings: number | null;
 }
 
+export type LifeSalaryCadence = "monthly" | "yearly";
+
+export interface LifeIncomePeriod {
+  /** Gregorian civil date, YYYY-MM-DD. */
+  startsOn: string;
+  /** Nil means this salary continues until retirement. */
+  endsOn?: string | null;
+  salaryAmount: number;
+  salaryCadence: LifeSalaryCadence;
+}
+
+export interface LifeIncomeSalary {
+  salaryAmount: number;
+  salaryCadence: LifeSalaryCadence;
+  /** Defaults to asOf; rough profiles may start at a future work year. */
+  startsOn?: string;
+}
+
+export interface LifetimeIncomeSummary {
+  /** Income before asOf, based only on salaries the user supplied. */
+  historicalGross: number;
+  /** Income from asOf to retirement at the salary covering that interval. */
+  projectedGross: number;
+  totalGross: number;
+}
+
+export interface RecordsSummarySegment {
+  startAtMs: number;
+  endAtMs: number;
+}
+
+export interface RecordsSummaryObservation {
+  kind: "started" | "stopped";
+  occurredAtMs: number;
+}
+
+export interface RecordsActualForecastDay {
+  /** Null is a forecast row; an actual row always wins for its civil date. */
+  actualKind?: "corrected" | "observed" | null;
+  /** The final override/calendar/schedule-chain answer for this date. */
+  resolvedSegments: RecordsSummarySegment[];
+  /** Base schedule duration is the pay denominator for corrected work. */
+  plannedSegments: RecordsSummarySegment[];
+  /** Immutable declarations can overlap, so the shared rule unions them. */
+  overtimeSegments: RecordsSummarySegment[];
+  observations: RecordsSummaryObservation[];
+  /** Whether this civil date owns the currently running shift. */
+  isActiveAnchor: boolean;
+}
+
+export interface RecordsActualForecastPart {
+  days: number;
+  hours: number;
+  earnings: number | null;
+}
+
+export interface RecordsActualForecastSummary {
+  actual: RecordsActualForecastPart;
+  forecast: RecordsActualForecastPart;
+  total: RecordsActualForecastPart;
+}
+
 /** Apply one salary ratio in the shared rules layer for every native surface. */
 export function earningsForRatio(
   dailySalary: number | null,
@@ -43,6 +105,279 @@ export function completedWorkdayIncome(
     ? Math.max(0, Math.trunc(completedWorkdays))
     : 0;
   return earningsForRatio(dailySalary, days);
+}
+
+const DAY_MS = 86_400_000;
+
+interface CivilDay {
+  year: number;
+  month: number;
+  day: number;
+  dayNumber: number;
+}
+
+function civilDay(value: string): CivilDay | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const timestamp = Date.UTC(year, month - 1, day);
+  const parsed = new Date(timestamp);
+  if (
+    parsed.getUTCFullYear() !== year ||
+    parsed.getUTCMonth() !== month - 1 ||
+    parsed.getUTCDate() !== day
+  ) return null;
+  return { year, month, day, dayNumber: timestamp / DAY_MS };
+}
+
+/** Each partial calendar month is prorated by that month's actual day count. */
+function civilMonthsBetween(start: CivilDay, end: CivilDay): number {
+  if (end.dayNumber <= start.dayNumber) return 0;
+  let cursor = start.dayNumber;
+  let total = 0;
+  while (cursor < end.dayNumber) {
+    const cursorDate = new Date(cursor * DAY_MS);
+    const monthStart = Date.UTC(
+      cursorDate.getUTCFullYear(),
+      cursorDate.getUTCMonth(),
+      1,
+    ) / DAY_MS;
+    const nextMonth = Date.UTC(
+      cursorDate.getUTCFullYear(),
+      cursorDate.getUTCMonth() + 1,
+      1,
+    ) / DAY_MS;
+    const segmentEnd = Math.min(end.dayNumber, nextMonth);
+    total += (segmentEnd - cursor) / (nextMonth - monthStart);
+    cursor = segmentEnd;
+  }
+  return total;
+}
+
+/**
+ * Gross lifetime income from user-entered salary intervals. Gaps contribute
+ * zero; no raise, inflation, investment return, or missing salary is inferred.
+ */
+export function projectLifetimeGrossIncome(params: {
+  periods: LifeIncomePeriod[];
+  currentSalary?: LifeIncomeSalary | null;
+  asOf: string;
+  retirementOn: string;
+}): LifetimeIncomeSummary {
+  const asOf = civilDay(params.asOf);
+  const retirement = civilDay(params.retirementOn);
+  if (asOf === null || retirement === null) {
+    return { historicalGross: 0, projectedGross: 0, totalGross: 0 };
+  }
+
+  const periods = [...params.periods];
+  if (params.currentSalary) {
+    periods.push({
+      startsOn: params.currentSalary.startsOn ?? params.asOf,
+      endsOn: params.retirementOn,
+      salaryAmount: params.currentSalary.salaryAmount,
+      salaryCadence: params.currentSalary.salaryCadence,
+    });
+  }
+  const validPeriods: Array<{
+    period: LifeIncomePeriod;
+    start: CivilDay;
+    end: CivilDay;
+  }> = [];
+  for (const period of periods) {
+    const start = civilDay(period.startsOn);
+    const explicitEnd = period.endsOn ? civilDay(period.endsOn) : retirement;
+    if (
+      start === null || explicitEnd === null ||
+      !Number.isFinite(period.salaryAmount) || period.salaryAmount <= 0
+    ) continue;
+    const end = explicitEnd.dayNumber <= retirement.dayNumber ? explicitEnd : retirement;
+    if (end.dayNumber <= start.dayNumber) continue;
+    validPeriods.push({ period, start, end });
+  }
+  validPeriods.sort((left, right) => left.start.dayNumber - right.start.dayNumber);
+
+  // Work history is sequential. Reject overlap rather than inventing which
+  // salary wins or counting two full-time jobs for the same calendar day.
+  if (validPeriods.some((value, index) =>
+    index > 0 && value.start.dayNumber < validPeriods[index - 1].end.dayNumber
+  )) {
+    return { historicalGross: 0, projectedGross: 0, totalGross: 0 };
+  }
+
+  let historicalGross = 0;
+  let projectedGross = 0;
+  for (const { period, start, end } of validPeriods) {
+    const monthlySalary = period.salaryCadence === "monthly"
+      ? period.salaryAmount
+      : period.salaryAmount / 12;
+    const historicalEnd = end.dayNumber <= asOf.dayNumber ? end : asOf;
+    const totalForPeriod = monthlySalary * civilMonthsBetween(start, end);
+    const historicalForPeriod = monthlySalary * civilMonthsBetween(start, historicalEnd);
+    historicalGross += historicalForPeriod;
+    projectedGross += totalForPeriod - historicalForPeriod;
+  }
+  return {
+    historicalGross,
+    projectedGross,
+    totalGross: historicalGross + projectedGross,
+  };
+}
+
+/**
+ * Split recorded/corrected work from schedule estimates for one visible
+ * period. One logical day can enter only one side; actual always wins.
+ */
+export function summarizeRecordsActualAndForecast(params: {
+  days: RecordsActualForecastDay[];
+  dailySalary: number | null;
+  asOfMs: number;
+}): RecordsActualForecastSummary {
+  let actualDays = 0;
+  let actualMs = 0;
+  let actualPayRatio = 0;
+  let forecastDays = 0;
+  let forecastMs = 0;
+  let forecastPayRatio = 0;
+
+  for (const day of params.days) {
+    const plannedMs = mergedSegmentDuration(day.plannedSegments);
+    const isActual = day.actualKind === "corrected" || day.actualKind === "observed";
+    if (isActual) {
+      const regularSegments = day.actualKind === "corrected"
+        ? day.resolvedSegments
+        : intersectSegments(
+            observedWorkSegments(day.observations, params.asOfMs, day.isActiveAnchor),
+            day.resolvedSegments,
+          );
+      const elapsedRegular = regularSegments.map(segment => ({
+        ...segment,
+        endAtMs: Math.min(segment.endAtMs, params.asOfMs),
+      }));
+      const elapsedOvertime = day.overtimeSegments.map(segment => ({
+        ...segment,
+        endAtMs: Math.min(segment.endAtMs, params.asOfMs),
+      }));
+      const workedMs = mergedSegmentDuration([...elapsedRegular, ...elapsedOvertime]);
+      if (workedMs > 0) {
+        actualDays += 1;
+        actualMs += workedMs;
+        actualPayRatio += plannedMs > 0 ? workedMs / plannedMs : 1;
+      }
+      if (day.isActiveAnchor) {
+        const futureMs = mergedSegmentDuration(
+          [...day.resolvedSegments, ...day.overtimeSegments].map(segment => ({
+            ...segment,
+            startAtMs: Math.max(segment.startAtMs, params.asOfMs),
+          })),
+        );
+        if (futureMs > 0) {
+          if (workedMs <= 0) forecastDays += 1;
+          forecastMs += futureMs;
+          forecastPayRatio += plannedMs > 0 ? futureMs / plannedMs : (workedMs <= 0 ? 1 : 0);
+        }
+      }
+      continue;
+    }
+    const forecastWorkMs = mergedSegmentDuration(day.resolvedSegments);
+    if (forecastWorkMs <= 0) continue;
+    forecastDays += 1;
+    forecastMs += forecastWorkMs;
+    forecastPayRatio += 1;
+  }
+
+  const actualEarnings = earningsForRatio(params.dailySalary, actualPayRatio);
+  const forecastEarnings = earningsForRatio(params.dailySalary, forecastPayRatio);
+  return {
+    actual: {
+      days: actualDays,
+      hours: actualMs / 3_600_000,
+      earnings: actualEarnings,
+    },
+    forecast: {
+      days: forecastDays,
+      hours: forecastMs / 3_600_000,
+      earnings: forecastEarnings,
+    },
+    total: {
+      days: actualDays + forecastDays,
+      hours: (actualMs + forecastMs) / 3_600_000,
+      earnings: actualEarnings === null || forecastEarnings === null
+        ? null
+        : actualEarnings + forecastEarnings,
+    },
+  };
+}
+
+function mergedSegmentDuration(segments: RecordsSummarySegment[]): number {
+  const sorted = segments.flatMap(segment => {
+    if (
+      !Number.isFinite(segment.startAtMs) ||
+      !Number.isFinite(segment.endAtMs) ||
+      segment.endAtMs <= segment.startAtMs
+    ) return [];
+    return [{ start: segment.startAtMs, end: segment.endAtMs }];
+  }).sort((left, right) => left.start - right.start || left.end - right.end);
+  let total = 0;
+  let start: number | null = null;
+  let end: number | null = null;
+  for (const segment of sorted) {
+    if (start === null || end === null) {
+      start = segment.start;
+      end = segment.end;
+    } else if (segment.start <= end) {
+      end = Math.max(end, segment.end);
+    } else {
+      total += end - start;
+      start = segment.start;
+      end = segment.end;
+    }
+  }
+  return start === null || end === null ? total : total + end - start;
+}
+
+function intersectSegments(
+  left: RecordsSummarySegment[],
+  right: RecordsSummarySegment[],
+): RecordsSummarySegment[] {
+  return left.flatMap(first => right.flatMap(second => {
+    const startAtMs = Math.max(first.startAtMs, second.startAtMs);
+    const endAtMs = Math.min(first.endAtMs, second.endAtMs);
+    return endAtMs > startAtMs ? [{ startAtMs, endAtMs }] : [];
+  }));
+}
+
+function observedWorkSegments(
+  observations: RecordsSummaryObservation[],
+  asOfMs: number,
+  closesOpenObservation: boolean,
+): RecordsSummarySegment[] {
+  const sorted = observations
+    .filter(value => Number.isFinite(value.occurredAtMs))
+    .sort((left, right) => left.occurredAtMs - right.occurredAtMs);
+  const result: RecordsSummarySegment[] = [];
+  let startedAt: number | null = null;
+  for (const observation of sorted) {
+    if (observation.kind === "started") {
+      if (startedAt === null) startedAt = observation.occurredAtMs;
+    } else if (startedAt !== null) {
+      if (observation.occurredAtMs > startedAt) {
+        result.push({ startAtMs: startedAt, endAtMs: observation.occurredAtMs });
+      }
+      startedAt = null;
+    }
+  }
+  if (
+    startedAt !== null &&
+    closesOpenObservation &&
+    Number.isFinite(asOfMs) &&
+    asOfMs > startedAt
+  ) {
+    result.push({ startAtMs: startedAt, endAtMs: asOfMs });
+  }
+  return result;
 }
 
 /** 一周的起点固定为周一（ISO 8601），与界面上工作日选择器的排列一致。 */

@@ -45,7 +45,7 @@ enum AppRoute: String, Hashable, Identifiable {
     var id: String { rawValue }
 }
 
-enum WorkScheduleMode: String, CaseIterable, Identifiable {
+enum WorkScheduleMode: String, CaseIterable, Codable, Identifiable, Sendable {
     case classic
     case alternating
     case rotation
@@ -54,14 +54,14 @@ enum WorkScheduleMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-enum AlternatingWeekType: String, CaseIterable, Identifiable {
+enum AlternatingWeekType: String, CaseIterable, Codable, Identifiable, Sendable {
     case single
     case double
 
     var id: String { rawValue }
 }
 
-enum AppTheme: String, CaseIterable, Identifiable {
+enum AppTheme: String, CaseIterable, Codable, Identifiable, Sendable {
     case auto
     case light
     case dark
@@ -69,14 +69,14 @@ enum AppTheme: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-enum SalaryType: String, CaseIterable, Identifiable {
+enum SalaryType: String, CaseIterable, Codable, Identifiable, Sendable {
     case monthly
     case daily
 
     var id: String { rawValue }
 }
 
-enum OffWorkNotificationMode: String, CaseIterable, Identifiable {
+enum OffWorkNotificationMode: String, CaseIterable, Codable, Identifiable, Sendable {
     case off
     case simple
     case milestones
@@ -286,6 +286,8 @@ final class OffWorkStore {
     private var lifeViewModelCache: (key: LifeViewModelCacheKey, model: LifeViewModel?)?
     @ObservationIgnored
     private var lifeWorkProjectionBoundsCache: LifeWorkProjectionBoundsCache?
+    @ObservationIgnored
+    private var isApplyingSyncedPreferences = false
 #if DEBUG
     var debugTimerSession: DebugTimerScenario.Session?
     private(set) var debugDidResetOnLaunch = false
@@ -371,7 +373,10 @@ final class OffWorkStore {
 
     /// Locked civil-day timezone. Travel does not rewrite the year view.
     var recordsTimeZoneIdentifier: String {
-        didSet { defaults.set(recordsTimeZoneIdentifier, forKey: Key.recordsTimeZone) }
+        didSet {
+            defaults.set(recordsTimeZoneIdentifier, forKey: Key.recordsTimeZone)
+            syncPreferencesAfterLocalChange()
+        }
     }
 
     /// Timezone of the running countdown session. Nil when following the
@@ -504,12 +509,14 @@ final class OffWorkStore {
         didSet {
             defaults.set(startMinutes, forKey: Key.startMinutes)
             draftStartMinutes = nil
+            syncPreferencesAfterLocalChange()
         }
     }
     var endMinutes: Int {
         didSet {
             defaults.set(endMinutes, forKey: Key.endMinutes)
             draftEndMinutes = nil
+            syncPreferencesAfterLocalChange()
         }
     }
 
@@ -528,23 +535,23 @@ final class OffWorkStore {
         if let draftStartMinutes { startMinutes = draftStartMinutes }
         if let draftEndMinutes { endMinutes = draftEndMinutes }
     }
-    var workdays: Set<Int> { didSet { defaults.set(workdays.sorted(), forKey: Key.workdays) } }
-    var scheduleMode: WorkScheduleMode { didSet { defaults.set(scheduleMode.rawValue, forKey: Key.scheduleMode) } }
-    var alternatingWeekType: AlternatingWeekType { didSet { defaults.set(alternatingWeekType.rawValue, forKey: Key.alternatingWeekType) } }
-    var alternatingWeekendWorkday: Int { didSet { defaults.set(alternatingWeekendWorkday, forKey: Key.alternatingWeekendWorkday) } }
-    var alternatingReferenceWeekStartMs: Double { didSet { defaults.set(alternatingReferenceWeekStartMs, forKey: Key.alternatingReferenceWeekStartMs) } }
-    var rotationWorkDays: Int { didSet { defaults.set(rotationWorkDays, forKey: Key.rotationWorkDays) } }
-    var rotationRestDays: Int { didSet { defaults.set(rotationRestDays, forKey: Key.rotationRestDays) } }
-    var rotationAnchorMs: Double { didSet { defaults.set(rotationAnchorMs, forKey: Key.rotationAnchorMs) } }
-    var lunchEnabled: Bool { didSet { defaults.set(lunchEnabled, forKey: Key.lunchEnabled) } }
-    var lunchStartMinutes: Int { didSet { defaults.set(lunchStartMinutes, forKey: Key.lunchStartMinutes) } }
-    var lunchDurationMinutes: Int { didSet { defaults.set(lunchDurationMinutes, forKey: Key.lunchDuration) } }
-    var salaryAmount: String { didSet { defaults.set(salaryAmount, forKey: Key.salaryAmount) } }
-    var salaryEnabled: Bool { didSet { defaults.set(salaryEnabled, forKey: Key.salaryEnabled) } }
-    var salaryType: SalaryType { didSet { defaults.set(salaryType.rawValue, forKey: Key.salaryType) } }
-    var monthlyWorkingDays: Double { didSet { defaults.set(monthlyWorkingDays, forKey: Key.monthlyWorkingDays) } }
-    var annualBonusEnabled: Bool { didSet { defaults.set(annualBonusEnabled, forKey: Key.annualBonusEnabled) } }
-    var annualBonusMonths: Double { didSet { defaults.set(annualBonusMonths, forKey: Key.annualBonusMonths) } }
+    var workdays: Set<Int> { didSet { persist(workdays.sorted(), key: Key.workdays) } }
+    var scheduleMode: WorkScheduleMode { didSet { persist(scheduleMode.rawValue, key: Key.scheduleMode) } }
+    var alternatingWeekType: AlternatingWeekType { didSet { persist(alternatingWeekType.rawValue, key: Key.alternatingWeekType) } }
+    var alternatingWeekendWorkday: Int { didSet { persist(alternatingWeekendWorkday, key: Key.alternatingWeekendWorkday) } }
+    var alternatingReferenceWeekStartMs: Double { didSet { persist(alternatingReferenceWeekStartMs, key: Key.alternatingReferenceWeekStartMs) } }
+    var rotationWorkDays: Int { didSet { persist(rotationWorkDays, key: Key.rotationWorkDays) } }
+    var rotationRestDays: Int { didSet { persist(rotationRestDays, key: Key.rotationRestDays) } }
+    var rotationAnchorMs: Double { didSet { persist(rotationAnchorMs, key: Key.rotationAnchorMs) } }
+    var lunchEnabled: Bool { didSet { persist(lunchEnabled, key: Key.lunchEnabled) } }
+    var lunchStartMinutes: Int { didSet { persist(lunchStartMinutes, key: Key.lunchStartMinutes) } }
+    var lunchDurationMinutes: Int { didSet { persist(lunchDurationMinutes, key: Key.lunchDuration) } }
+    var salaryAmount: String { didSet { persist(salaryAmount, key: Key.salaryAmount) } }
+    var salaryEnabled: Bool { didSet { persist(salaryEnabled, key: Key.salaryEnabled) } }
+    var salaryType: SalaryType { didSet { persist(salaryType.rawValue, key: Key.salaryType) } }
+    var monthlyWorkingDays: Double { didSet { persist(monthlyWorkingDays, key: Key.monthlyWorkingDays) } }
+    var annualBonusEnabled: Bool { didSet { persist(annualBonusEnabled, key: Key.annualBonusEnabled) } }
+    var annualBonusMonths: Double { didSet { persist(annualBonusMonths, key: Key.annualBonusMonths) } }
     var hideEarnings: Bool { didSet { defaults.set(hideEarnings, forKey: Key.hideEarnings) } }
     var lifeSetupPromptDismissed: Bool {
         didSet { defaults.set(lifeSetupPromptDismissed, forKey: Key.lifeSetupPromptDismissed) }
@@ -562,7 +569,7 @@ final class OffWorkStore {
     /// row without changing local preferences. RootView observes this token to
     /// rebuild the one Live Activity and notification channel immediately.
     private(set) var focusRuntimeRevision: UInt64 = 0
-    var theme: AppTheme { didSet { defaults.set(theme.rawValue, forKey: Key.theme) } }
+    var theme: AppTheme { didSet { persist(theme.rawValue, key: Key.theme) } }
     /// The language iOS would give us, kept as stored state so a change while
     /// the app is backgrounded invalidates the views that read it.
     private(set) var systemLanguageCode: String
@@ -581,32 +588,36 @@ final class OffWorkStore {
     /// already comes from the bundled JSON via `t()`, so there was nothing to
     /// gain from routing the choice through a page we cannot navigate to.
     var languageOverride: String? {
-        didSet { defaults.set(languageOverride, forKey: Key.languageOverride) }
+        didSet {
+            defaults.set(languageOverride, forKey: Key.languageOverride)
+            syncPreferencesAfterLocalChange()
+        }
     }
 
     /// What the UI actually renders in. Widgets, the Live Activity and the
     /// notification copy all read this, so pinning a language carries through
     /// without any of them knowing an override exists.
     var languageCode: String { languageOverride ?? systemLanguageCode }
-    var notificationMode: OffWorkNotificationMode { didSet { defaults.set(notificationMode.rawValue, forKey: Key.notificationMode) } }
+    var notificationMode: OffWorkNotificationMode { didSet { persist(notificationMode.rawValue, key: Key.notificationMode) } }
     var cycleEndSummaryNotificationEnabled: Bool {
         didSet {
             defaults.set(
                 cycleEndSummaryNotificationEnabled,
                 forKey: Key.cycleEndSummaryNotificationEnabled
             )
+            syncPreferencesAfterLocalChange()
         }
     }
     var liveActivityEnabled: Bool { didSet { defaults.set(liveActivityEnabled, forKey: Key.liveActivityEnabled) } }
     var liveActivityLeadMinutes: Int { didSet { defaults.set(liveActivityLeadMinutes, forKey: Key.liveActivityLead) } }
     var lunchStartReminderEnabled: Bool {
-        didSet { defaults.set(lunchStartReminderEnabled, forKey: Key.lunchStartReminderEnabled) }
+        didSet { persist(lunchStartReminderEnabled, key: Key.lunchStartReminderEnabled) }
     }
     var lunchEndReminderEnabled: Bool {
-        didSet { defaults.set(lunchEndReminderEnabled, forKey: Key.lunchEndReminderEnabled) }
+        didSet { persist(lunchEndReminderEnabled, key: Key.lunchEndReminderEnabled) }
     }
-    var microBreakEnabled: Bool { didSet { defaults.set(microBreakEnabled, forKey: Key.microBreakEnabled) } }
-    var microBreakIntervalMinutes: Int { didSet { defaults.set(microBreakIntervalMinutes, forKey: Key.microBreakInterval) } }
+    var microBreakEnabled: Bool { didSet { persist(microBreakEnabled, key: Key.microBreakEnabled) } }
+    var microBreakIntervalMinutes: Int { didSet { persist(microBreakIntervalMinutes, key: Key.microBreakInterval) } }
 
     var presentationNotificationMode: OffWorkNotificationMode {
 #if DEBUG
@@ -844,6 +855,26 @@ final class OffWorkStore {
                 self.records.upsertFocusPlanningConfiguration(legacy)
             }
         }
+        if let preferences = self.records.state.syncedPreferences {
+            applySyncedPreferences(preferences)
+        } else {
+            // Legacy UserDefaults have no trustworthy edit timestamp. A fixed
+            // old stamp lets an established cloud row beat a device that only
+            // just upgraded, instead of making the last upgraded device win.
+            self.records.upsertSyncedPreferences(
+                currentSyncedPreferences(),
+                at: .distantPast
+            )
+        }
+#if DEBUG
+        // Screenshot launch arguments deliberately override the persisted
+        // appearance, including preferences restored from the record archive.
+        let launchPreferences = defaults.volatileDomain(forName: UserDefaults.argumentDomain)
+        if let requestedTheme = launchPreferences[Key.theme] as? String,
+           let requestedTheme = AppTheme(rawValue: requestedTheme) {
+            theme = requestedTheme
+        }
+#endif
         cloudSync.attach(records: self.records)
         carryIncompleteFocusTasks(at: .now)
 #if DEBUG
@@ -2244,6 +2275,79 @@ final class OffWorkStore {
         defaults.set(data, forKey: Key.appReviewPrompt)
     }
 
+    /// Focus appointments remain meaningful when no work shift is running.
+    /// Shared by the app timeline and its salary-free widget projection.
+    func focusUpcomingTimelineEvents(
+        for snapshot: NativeShiftSnapshot?,
+        at now: Date = .now
+    ) -> [UpcomingTimelineEvent] {
+        var events: [UpcomingTimelineEvent] = []
+        if plus.isAuthorized {
+            if let session = activeFocusSession(), session.plannedEndAt > now {
+                let icon = session.taskID
+                    .flatMap { id in records.state.focusTasks.first(where: { $0.id == id }) }
+                    .map { $0.icon.systemName }
+                events.append(.init(
+                    id: "focus-session-\(session.id.uuidString)",
+                    kind: .focus,
+                    date: session.plannedEndAt,
+                    title: t("focusRunning"),
+                    detail: t("focusEndsAt", values: ["time": formatTime(session.plannedEndAt)]),
+                    symbolName: icon
+                ))
+            }
+
+            let horizon = now.addingTimeInterval(2 * 86_400)
+            let planned = (snapshot.map { focusPlanAssignments(for: $0) } ?? []).filter {
+                $0.block.start > now && $0.block.start <= horizon
+            }
+            let plannedTaskIDs = Set(planned.compactMap { $0.assignment.taskID })
+            for item in planned {
+                let isBreak = item.assignment.kind == .breakTime
+                events.append(.init(
+                    id: "focus-plan-\(item.assignment.blockStartAtMs)",
+                    kind: isBreak ? .focusBreak : .focus,
+                    date: item.block.start,
+                    title: isBreak
+                        ? t("focusBreak")
+                        : (item.assignment.taskTitle ?? t("focusTitle")),
+                    detail: t(
+                        "focusPomodoroSummary",
+                        values: [
+                            "count": formatCount(1),
+                            "minutes": formatCount(item.block.durationMinutes),
+                        ]
+                    ),
+                    symbolName: isBreak ? "cup.and.saucer.fill" : item.assignment.taskIcon?.systemName
+                ))
+            }
+
+            for task in records.state.focusTasks where task.completedAt == nil && task.deletedAt == nil {
+                guard !plannedTaskIDs.contains(task.id),
+                      let start = task.scheduledStartAt,
+                      start > now,
+                      start <= horizon
+                else { continue }
+                events.append(.init(
+                    id: "focus-task-\(task.id.uuidString)",
+                    kind: .focus,
+                    date: start,
+                    title: task.title,
+                    detail: t(
+                        "focusPomodoroSummary",
+                        values: [
+                            "count": formatCount(max(1, task.estimatedPomodoros)),
+                            "minutes": formatCount(focusTimerSettings.normalized.focusMinutes),
+                        ]
+                    ),
+                    symbolName: task.icon.systemName
+                ))
+            }
+        }
+
+        return events.sorted { $0.date < $1.date }
+    }
+
     /// Builds the presentation timeline from shared absolute boundaries.
     /// Scheduled reminders stay scoped to today, while the shift start/end
     /// boundaries remain visible for a complete (including overnight) flow.
@@ -2322,68 +2426,7 @@ final class OffWorkStore {
             ))
         }
 
-        if plus.isAuthorized {
-            if let session = activeFocusSession(), session.plannedEndAt > now {
-                let icon = session.taskID
-                    .flatMap { id in records.state.focusTasks.first(where: { $0.id == id }) }
-                    .map { $0.icon.systemName }
-                events.append(.init(
-                    id: "focus-session-\(session.id.uuidString)",
-                    kind: .focus,
-                    date: session.plannedEndAt,
-                    title: t("focusRunning"),
-                    detail: t("focusEndsAt", values: ["time": formatTime(session.plannedEndAt)]),
-                    symbolName: icon
-                ))
-            }
-
-            let horizon = now.addingTimeInterval(2 * 86_400)
-            let planned = focusPlanAssignments(for: snapshot).filter {
-                $0.block.start > now && $0.block.start <= horizon
-            }
-            let plannedTaskIDs = Set(planned.compactMap { $0.assignment.taskID })
-            for item in planned {
-                let isBreak = item.assignment.kind == .breakTime
-                events.append(.init(
-                    id: "focus-plan-\(item.assignment.blockStartAtMs)",
-                    kind: isBreak ? .focusBreak : .focus,
-                    date: item.block.start,
-                    title: isBreak
-                        ? t("focusBreak")
-                        : (item.assignment.taskTitle ?? t("focusTitle")),
-                    detail: t(
-                        "focusPomodoroSummary",
-                        values: [
-                            "count": formatCount(1),
-                            "minutes": formatCount(item.block.durationMinutes),
-                        ]
-                    ),
-                    symbolName: isBreak ? "cup.and.saucer.fill" : item.assignment.taskIcon?.systemName
-                ))
-            }
-
-            for task in records.state.focusTasks where task.completedAt == nil && task.deletedAt == nil {
-                guard !plannedTaskIDs.contains(task.id),
-                      let start = task.scheduledStartAt,
-                      start > now,
-                      start <= horizon
-                else { continue }
-                events.append(.init(
-                    id: "focus-task-\(task.id.uuidString)",
-                    kind: .focus,
-                    date: start,
-                    title: task.title,
-                    detail: t(
-                        "focusPomodoroSummary",
-                        values: [
-                            "count": formatCount(max(1, task.estimatedPomodoros)),
-                            "minutes": formatCount(focusTimerSettings.normalized.focusMinutes),
-                        ]
-                    ),
-                    symbolName: task.icon.systemName
-                ))
-            }
-        }
+        events.append(contentsOf: focusUpcomingTimelineEvents(for: snapshot, at: now))
 
         // One row per push. Unlike the micro-break these fire at distinct points
         // rather than on a cycle, and seeing them is what turns "ends at 23:00"
@@ -3741,7 +3784,10 @@ final class OffWorkStore {
     ) -> RecordsHeadlineSummary? {
         guard plus.isAuthorized else { return nil }
         let recordedKeys = Set(cells.filter { $0.appearance == .recorded || $0.appearance == .corrected }.map(\.dayKey))
-        guard !recordedKeys.isEmpty else { return nil }
+        let actualForecast = recordsActualForecast(cells: cells, days: days, now: now)
+        guard !recordedKeys.isEmpty
+            || actualForecast.map({ $0.forecast.days > 0 || $0.forecast.hours > 0 }) == true
+        else { return nil }
         // Observed, corrected and elapsed saved-schedule days count. Life's
         // synthetic history remains an estimate. A day that merely *receives* those
         // hours after midnight is counted for its time, never as a workday.
@@ -3791,8 +3837,71 @@ final class OffWorkStore {
             completedScheduledWorkdays: completedScheduledWorkdays,
             allocationDays: shares.count,
             allocation: combined,
-            sleepSourceKey: sleepKey
+            sleepSourceKey: sleepKey,
+            actualForecast: actualForecast
         )
+    }
+
+    /// One shift-anchor row per visible date. A corrected or explicitly
+    /// observed row is actual; every other schedule-backed row is forecast.
+    /// The TypeScript rule applies salary ratios and makes actual win, so the
+    /// same logical date can never be paid on both sides of the card.
+    private func recordsActualForecast(
+        cells: [RecordsDayCell],
+        days: [DayResolution],
+        now: Date
+    ) -> NativeRecordsActualForecastSummary? {
+        let cellsByKey = Dictionary(cells.map { ($0.dayKey, $0) }, uniquingKeysWith: { first, _ in first })
+        let observationsByDay = observationIndex()
+        let currentSnapshot = snapshot(at: now)
+        let activeAnchorDayKey = countdownStarted
+            ? currentSnapshot.map { RecordJSON.dayKey($0.startDate, calendar: recordsCalendar) }
+            : nil
+        let inputs = days.compactMap { day -> NativeRecordsActualForecastDay? in
+            guard let cell = cellsByKey[day.dayKey] else { return nil }
+            let dayObservations = observationsByDay[day.dayKey] ?? []
+            let hasActualObservation = dayObservations.contains { $0.kind.isWorkSessionRecord }
+            let actualKind: String? = if cell.appearance == .corrected {
+                "corrected"
+            } else if cell.appearance == .recorded && hasActualObservation {
+                "observed"
+            } else {
+                nil
+            }
+            let isForecast = actualKind == nil && (
+                cell.isFromSavedSchedule
+                    || cell.appearance == .planned
+                    || cell.isProjection
+                    || (cell.appearance == .recorded && !hasActualObservation)
+            )
+            guard actualKind != nil || isForecast else { return nil }
+            let observations = dayObservations.compactMap { item -> NativeRecordsSummaryObservation? in
+                let kind: String
+                switch item.kind {
+                case .countdownStarted: kind = "started"
+                case .countdownStopped: kind = "stopped"
+                case .timerSurfaceFirstSeen, .overtimeDeclared: return nil
+                }
+                return NativeRecordsSummaryObservation(
+                    kind: kind,
+                    occurredAtMs: item.occurredAt.timeIntervalSince1970 * 1_000
+                )
+            }
+            return NativeRecordsActualForecastDay(
+                actualKind: actualKind,
+                resolvedSegments: day.segments,
+                plannedSegments: day.baseScheduleSegments,
+                overtimeSegments: actualKind == nil ? [] : overtimeSegments(on: day),
+                observations: observations,
+                isActiveAnchor: activeAnchorDayKey == day.dayKey
+            )
+        }
+        guard !inputs.isEmpty else { return nil }
+        return try? CountdownRules.shared.recordsActualForecast(input: .init(
+            days: inputs,
+            dailySalary: currentSnapshot?.dailySalary,
+            asOfMs: now.timeIntervalSince1970 * 1_000
+        ))
     }
 
     /// One civil day's numbers, cut from the shifts allowed to contribute to
@@ -3949,13 +4058,20 @@ final class OffWorkStore {
     }
 
     private func overtimeSegments(on resolution: DayResolution) -> [NativeShiftSegment] {
-        (observationIndex()[resolution.dayKey] ?? []).compactMap { item in
-            RecordsMetrics.declaredOvertimeSegment(
-                observation: item,
+        let latest = (observationIndex()[resolution.dayKey] ?? [])
+            .filter { $0.kind == .overtimeDeclared }
+            .max { lhs, rhs in
+                if lhs.occurredAt != rhs.occurredAt { return lhs.occurredAt < rhs.occurredAt }
+                return lhs.eventID.uuidString < rhs.eventID.uuidString
+            }
+        guard let latest,
+              let segment = RecordsMetrics.declaredOvertimeSegment(
+                observation: latest,
                 day: resolution,
                 avoidingRegularWork: true
-            )
-        }
+              )
+        else { return [] }
+        return [segment]
     }
 
     func recordsDayDetail(
@@ -5201,13 +5317,15 @@ final class OffWorkStore {
             ?? now
         let workStart = max(lifeStart, configuredWorkStart)
         guard workStart < lifeEnd else {
-            return LifeViewCalculator.build(
+            var model = LifeViewCalculator.build(
                 profile: profile,
                 scheduleDays: [],
                 outsideZoneDays: Set(daysRecordedOutsidePeriodTimeZone()),
                 now: now,
                 calendar: calendar
             )
+            model.income = lifeIncomeSummary(profile: profile, now: now, calendar: calendar)
+            return model
         }
 
         let archive = lifeScheduleArchive(workStart: workStart, now: now)
@@ -5225,13 +5343,74 @@ final class OffWorkStore {
                 overtimeSegments: overtimeSegments(on: resolution)
             )
         }
-        return LifeViewCalculator.build(
+        var model = LifeViewCalculator.build(
             profile: profile,
             scheduleDays: scheduleDays,
             outsideZoneDays: Set(daysRecordedOutsidePeriodTimeZone()),
             now: now,
             calendar: calendar
         )
+        model.income = lifeIncomeSummary(profile: profile, now: now, calendar: calendar)
+        return model
+    }
+
+    private func lifeIncomeSummary(
+        profile: LifeProfile,
+        now: Date,
+        calendar: Calendar
+    ) -> NativeLifetimeIncomeSummary? {
+        guard let retirement = profile.retirementOn?.calculationAnchor(in: calendar) else { return nil }
+        let asOf = RecordJSON.dayKey(now, calendar: calendar)
+        let salary = profile.roughCurrentSalary
+            ?? profile.employmentPeriods.first(where: { $0.endsOn == nil })?.salary
+        var currentSalaryStartsOn = asOf
+        let periods: [NativeLifetimeIncomePeriod]
+        switch profile.workHistoryMode {
+        case .rough:
+            let start = profile.workStartedPartial
+                ?? profile.suggestedWorkYear.map(PartialCivilDate.yearOnly)
+            guard let start,
+                  let salary,
+                  salary.isValid,
+                  let startsOn = lifeCivilDay(start, calendar: calendar)
+            else { return nil }
+            currentSalaryStartsOn = max(startsOn, asOf)
+            periods = [NativeLifetimeIncomePeriod(
+                startsOn: startsOn,
+                endsOn: asOf,
+                salaryAmount: salary.amount,
+                salaryCadence: salary.cadence.rawValue
+            )]
+        case .detailed:
+            periods = profile.employmentPeriods.compactMap { period in
+                guard period.salary.isValid,
+                      let startsOn = lifeCivilDay(period.startsOn, calendar: calendar)
+                else { return nil }
+                return NativeLifetimeIncomePeriod(
+                    startsOn: startsOn,
+                    endsOn: period.endsOn.flatMap { lifeCivilDay($0, calendar: calendar) } ?? asOf,
+                    salaryAmount: period.salary.amount,
+                    salaryCadence: period.salary.cadence.rawValue
+                )
+            }
+            guard !periods.isEmpty || salary?.isValid == true else { return nil }
+        }
+        return try? CountdownRules.shared.lifetimeIncome(input: .init(
+            periods: periods,
+            currentSalary: salary.map {
+                NativeLifetimeIncomeSalary(
+                    salaryAmount: $0.amount,
+                    salaryCadence: $0.cadence.rawValue,
+                    startsOn: currentSalaryStartsOn
+                )
+            },
+            asOf: asOf,
+            retirementOn: RecordJSON.dayKey(retirement, calendar: calendar)
+        ))
+    }
+
+    private func lifeCivilDay(_ value: PartialCivilDate, calendar: Calendar) -> String? {
+        value.calculationAnchor(in: calendar).map { RecordJSON.dayKey($0, calendar: calendar) }
     }
 
     /// Warms every shared-rule expansion needed by Life on the background
@@ -5408,6 +5587,9 @@ final class OffWorkStore {
     /// Carry first so a yesterday task imported today remains findable; then
     /// converge open sessions before any system timer is republished.
     private func reconcileExternallyAppliedRecordState(at date: Date = .now) {
+        if let preferences = records.state.syncedPreferences {
+            applySyncedPreferences(preferences)
+        }
         let syncedPlanning = records.state.focusPlanningConfiguration?.planning ?? FocusPlanningState()
         let syncedSettings = records.state.focusPlanningConfiguration?.timerSettings.normalized ?? .default
         if syncedPlanning != focusPlanning || syncedSettings != focusTimerSettings.normalized {
@@ -5419,6 +5601,88 @@ final class OffWorkStore {
         carryIncompleteFocusTasks(at: date)
         reconcileOpenFocusSessions(at: date)
         focusRuntimeRevision &+= 1
+    }
+
+    private func syncPreferencesAfterLocalChange() {
+        guard !isApplyingSyncedPreferences else { return }
+        records.upsertSyncedPreferences(currentSyncedPreferences())
+    }
+
+    private func persist(_ value: some Any, key: String) {
+        defaults.set(value, forKey: key)
+        syncPreferencesAfterLocalChange()
+    }
+
+    private func currentSyncedPreferences() -> SyncedPreferences {
+        SyncedPreferences(
+            startMinutes: startMinutes,
+            endMinutes: endMinutes,
+            workdays: workdays.sorted(),
+            scheduleMode: scheduleMode,
+            alternatingWeekType: alternatingWeekType,
+            alternatingWeekendWorkday: alternatingWeekendWorkday,
+            alternatingReferenceWeekStartMs: alternatingReferenceWeekStartMs,
+            rotationWorkDays: rotationWorkDays,
+            rotationRestDays: rotationRestDays,
+            rotationAnchorMs: rotationAnchorMs,
+            lunchEnabled: lunchEnabled,
+            lunchStartMinutes: lunchStartMinutes,
+            lunchDurationMinutes: lunchDurationMinutes,
+            recordsTimeZoneIdentifier: recordsTimeZoneIdentifier,
+            salaryAmount: salaryAmount,
+            salaryEnabled: salaryEnabled,
+            salaryType: salaryType,
+            monthlyWorkingDays: monthlyWorkingDays,
+            annualBonusEnabled: annualBonusEnabled,
+            annualBonusMonths: annualBonusMonths,
+            notificationMode: notificationMode,
+            cycleEndSummaryNotificationEnabled: cycleEndSummaryNotificationEnabled,
+            lunchStartReminderEnabled: lunchStartReminderEnabled,
+            lunchEndReminderEnabled: lunchEndReminderEnabled,
+            microBreakEnabled: microBreakEnabled,
+            microBreakIntervalMinutes: microBreakIntervalMinutes,
+            theme: theme,
+            languageOverride: languageOverride,
+            editedAtMs: Date.now.timeIntervalSince1970 * 1_000,
+            editCount: records.state.syncedPreferences?.editCount ?? 0,
+            editTieBreaker: records.state.syncedPreferences?.editTieBreaker ?? UUID()
+        )
+    }
+
+    private func applySyncedPreferences(_ preferences: SyncedPreferences) {
+        guard preferences.isValid else { return }
+        isApplyingSyncedPreferences = true
+        defer { isApplyingSyncedPreferences = false }
+        startMinutes = preferences.startMinutes
+        endMinutes = preferences.endMinutes
+        workdays = Set(preferences.workdays)
+        scheduleMode = preferences.scheduleMode
+        alternatingWeekType = preferences.alternatingWeekType
+        alternatingWeekendWorkday = preferences.alternatingWeekendWorkday
+        alternatingReferenceWeekStartMs = preferences.alternatingReferenceWeekStartMs
+        rotationWorkDays = preferences.rotationWorkDays
+        rotationRestDays = preferences.rotationRestDays
+        rotationAnchorMs = preferences.rotationAnchorMs
+        lunchEnabled = preferences.lunchEnabled
+        lunchStartMinutes = preferences.lunchStartMinutes
+        lunchDurationMinutes = preferences.lunchDurationMinutes
+        recordsTimeZoneIdentifier = preferences.recordsTimeZoneIdentifier
+        salaryAmount = preferences.salaryAmount
+        salaryEnabled = preferences.salaryEnabled
+        salaryType = preferences.salaryType
+        monthlyWorkingDays = preferences.monthlyWorkingDays
+        annualBonusEnabled = preferences.annualBonusEnabled
+        annualBonusMonths = preferences.annualBonusMonths
+        notificationMode = preferences.notificationMode
+        cycleEndSummaryNotificationEnabled = preferences.cycleEndSummaryNotificationEnabled
+        lunchStartReminderEnabled = preferences.lunchStartReminderEnabled
+        lunchEndReminderEnabled = preferences.lunchEndReminderEnabled
+        microBreakEnabled = preferences.microBreakEnabled
+        microBreakIntervalMinutes = preferences.microBreakIntervalMinutes
+        theme = preferences.theme
+        languageOverride = preferences.languageOverride.flatMap { stored in
+            NativeLocalizer.supportedLanguages.contains { $0.id == stored } ? stored : nil
+        }
     }
 
     private func carryIncompleteFocusTasks(at date: Date) {

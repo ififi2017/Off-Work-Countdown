@@ -98,6 +98,43 @@ describe("iOS native rule bundle", () => {
       monthlyWorkingDays: input.monthlyWorkingDays,
       annualBonusMonths: input.annualBonusMonths,
     })));
+    const lifetimeIncome = JSON.parse(context.OWCNative.lifetimeIncome(JSON.stringify({
+      asOf: "2026-08-21",
+      retirementOn: "2027-08-21",
+      periods: [{
+        startsOn: "2025-08-21",
+        endsOn: null,
+        salaryAmount: 120_000,
+        salaryCadence: "yearly",
+      }],
+    })));
+    const recordsActualForecast = JSON.parse(
+      context.OWCNative.recordsActualForecast(JSON.stringify({
+        dailySalary: 1_000,
+        asOfMs: 20 * 3_600_000,
+        days: [
+          {
+            actualKind: "observed",
+            resolvedSegments: [{ startAtMs: 9 * 3_600_000, endAtMs: 17 * 3_600_000 }],
+            plannedSegments: [{ startAtMs: 9 * 3_600_000, endAtMs: 17 * 3_600_000 }],
+            overtimeSegments: [],
+            observations: [
+              { kind: "started", occurredAtMs: 9 * 3_600_000 },
+              { kind: "stopped", occurredAtMs: 17 * 3_600_000 },
+            ],
+            isActiveAnchor: false,
+          },
+          {
+            actualKind: null,
+            resolvedSegments: [{ startAtMs: 33 * 3_600_000, endAtMs: 41 * 3_600_000 }],
+            plannedSegments: [{ startAtMs: 33 * 3_600_000, endAtMs: 41 * 3_600_000 }],
+            overtimeSegments: [],
+            observations: [],
+            isActiveAnchor: false,
+          },
+        ],
+      }))
+    );
     expect(snapshot.segments).toHaveLength(2);
     expect(snapshot.dailySalary).toBeCloseTo((22000 / 22) * (14 / 12));
     expect(snapshot.earnedSoFar).toBeCloseTo(snapshot.dailySalary * snapshot.payRatio);
@@ -106,6 +143,9 @@ describe("iOS native rule bundle", () => {
     expect(summary.days).toBeGreaterThan(3);
     expect(summary.hours).toBeGreaterThan(24);
     expect(recordsIncome.earnings).toBeCloseTo(2 * snapshot.dailySalary);
+    expect(lifetimeIncome.totalGross).toBeCloseTo(240_000, -2);
+    expect(recordsActualForecast.actual.earnings).toBe(1_000);
+    expect(recordsActualForecast.forecast.earnings).toBe(1_000);
   });
 
   it("distinguishes a future shift today from the following shift", () => {
@@ -471,5 +511,18 @@ describe("iOS native rule bundle", () => {
     })));
     expect(shanghai.startAtMs).toBe(Date.parse("2026-08-25T01:00:00.000Z"));
     expect(losAngeles.startAtMs).toBe(Date.parse("2026-08-24T16:00:00.000Z"));
+  });
+
+  it("converts a daily salary to a monthly life-profile seed inside the bundle", () => {
+    const context = { console };
+    vm.createContext(context);
+    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const result = JSON.parse(context.OWCNative.salaryMonthlyEquivalent(JSON.stringify({
+      salaryAmount: "500",
+      salaryType: "daily",
+      monthlyWorkingDays: 20,
+      annualBonusMonths: 2,
+    })));
+    expect(result.amount).toBeCloseTo(500 * 20 * (14 / 12));
   });
 });

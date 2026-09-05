@@ -30,6 +30,7 @@ struct RecordsDesignView: View {
     @State private var loadedSignature: RecordsLoadSignature?
     @State private var showsCompactRootBar = false
     @State private var canvasWidth: CGFloat = 0
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -151,28 +152,34 @@ struct RecordsDesignView: View {
 
     private var regularCanvas: some View {
         Group {
-            if canvasWidth >= Self.twoColumnMinimum {
+            if canvasWidth >= Self.twoColumnMinimum && !dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 14) {
-                    if let banner = store.records.archiveBanner {
-                        archiveBannerCard(banner)
+                    if usesPhonePortraitHeader {
+                        recordsRootHeader
                     }
-                    RecordsScalePicker(store: store, scale: scaleBinding)
-                    HStack(alignment: .top, spacing: 14) {
-                        ScrollView {
-                            visualization(expandedPresentation: false)
-                                .padding(.bottom, OWCDesign.detailBottomInset)
+
+                    VStack(alignment: .leading, spacing: 14) {
+                        if let banner = store.records.archiveBanner {
+                            archiveBannerCard(banner)
                         }
-                        .accessibilityIdentifier("records.visualizationScroll")
-                        ScrollView {
-                            conclusionColumn
-                                .padding(.bottom, OWCDesign.detailBottomInset)
+                        RecordsScalePicker(store: store, scale: scaleBinding)
+                        HStack(alignment: .top, spacing: 14) {
+                            ScrollView {
+                                visualization(expandedPresentation: false)
+                                    .padding(.bottom, OWCDesign.detailBottomInset)
+                            }
+                            .accessibilityIdentifier("records.visualizationScroll")
+                            ScrollView {
+                                conclusionColumn
+                                    .padding(.bottom, OWCDesign.detailBottomInset)
+                            }
+                            .frame(maxWidth: Self.conclusionColumnWidth)
+                            .accessibilityIdentifier("records.conclusionScroll")
                         }
-                        .frame(maxWidth: Self.conclusionColumnWidth)
-                        .accessibilityIdentifier("records.conclusionScroll")
                     }
+                    .padding(.horizontal, OWCDesign.pageInset)
                 }
-                .padding(.horizontal, OWCDesign.pageInset)
-                .padding(.top, 12)
+                .padding(.top, usesPhonePortraitHeader ? 0 : 12)
             } else {
                 singleColumnCanvas
             }
@@ -240,7 +247,7 @@ struct RecordsDesignView: View {
             if shouldOfferLifeSetup {
                 lifeSetupCard
             }
-            if scale != .life, hasActualRecords, !selectedIsLocked {
+            if scale != .life, summary != nil, !selectedIsLocked {
                 RecordsHeadlineView(
                     store: store,
                     title: scale == .year
@@ -447,6 +454,10 @@ struct RecordsDesignView: View {
                 .id(scale)
                 .transition(.opacity)
                 .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsExpansion, value: expandedPresentation)
+                // Scope scale motion to the chart. In the split layout the
+                // conclusion is a separate reading surface and should not
+                // inherit this cross-fade.
+                .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange, value: scale)
         }
     }
 
@@ -537,7 +548,11 @@ struct RecordsDesignView: View {
     private func lifeCanvas(expandedPresentation: Bool) -> some View {
         if let profile = store.records.state.lifeProfile {
             let now = Date.now
-            let profileStages = LifeStageCalculator.stages(profile: profile, calendar: store.recordsCalendar)
+            let profileStages = LifeStageCalculator.stages(
+                profile: profile,
+                calendar: store.recordsCalendar,
+                now: now
+            )
             let stages = LifeStageCalculator.canvasStages(profileStages, now: now)
             if let bounds = LifeStageCalculator.timelineBounds(stages: profileStages, now: now) {
                 RecordsLifeCanvas(
@@ -651,14 +666,14 @@ struct RecordsDesignView: View {
 
     private func switchScale(to nextScale: RecordsScale) {
         guard nextScale != scale else { return }
-        // One cross-fade of the whole canvas. The reset underneath is what the
-        // animation used to be suppressed for — thirty calendar cells
-        // dismissing one by one is not a transition — but suppressing it left
-        // the picker's knob sliding over a canvas that simply blinked. The
-        // visualization now carries the scale's identity, so the outgoing and
-        // incoming charts are two views and the emptied arrays are never
-        // something the user watches happen.
-        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange) {
+        let changesDailyScale = (scale == .week || scale == .month)
+            && (nextScale == .week || nextScale == .month)
+        // Week and month are frequent ways to inspect the same daily data.
+        // The chart bridges the replacement itself; its conclusion updates in
+        // place. Year and life change the question and keep the page transition.
+        withAnimation(
+            changesDailyScale ? nil : (reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange)
+        ) {
             loadGeneration += 1
             scale = nextScale
             days = []
@@ -707,10 +722,6 @@ struct RecordsDesignView: View {
             && scale == .month
     }
 
-    private var hasActualRecords: Bool {
-        cells.contains { $0.appearance == .recorded || $0.appearance == .corrected }
-    }
-
     private var showsTodayButton: Bool {
         guard scale != .life else { return false }
         let window = store.recordsWindow(for: scale, anchor: anchor)
@@ -746,7 +757,7 @@ struct RecordsDesignView: View {
             return
         }
         let stages = LifeStageCalculator.canvasStages(
-            LifeStageCalculator.stages(profile: profile, calendar: store.recordsCalendar), now: now
+            LifeStageCalculator.stages(profile: profile, calendar: store.recordsCalendar, now: now), now: now
         )
         let current = LifeStageCalculator.stage(at: now.addingTimeInterval(-0.001), stages: stages)
         selectedLifeStageID = current?.kind == .retirement ? nil : current?.id

@@ -5,9 +5,11 @@ import {
   countScheduledWorkdays,
   countWorkdays,
   earningsForRatio,
+  projectLifetimeGrossIncome,
   startOfWeek,
   startOfYear,
   summarize,
+  summarizeRecordsActualAndForecast,
 } from "./summary";
 
 // 2026-07-03 是周五，2026-07-04 周六，2026-07-05 周日
@@ -87,6 +89,323 @@ describe("earnings", () => {
     expect(completedWorkdayIncome(2, 1_000)).toBe(2_000);
     expect(completedWorkdayIncome(2.9, 1_000)).toBe(2_000);
     expect(completedWorkdayIncome(2, null)).toBeNull();
+  });
+});
+
+describe("lifetime gross income", () => {
+  it("uses supplied salaries, leaves gaps at zero, and carries the current salary to retirement", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2020-01-01",
+      retirementOn: "2030-01-01",
+      periods: [
+        {
+          startsOn: "2010-01-01",
+          endsOn: "2015-01-01",
+          salaryAmount: 60_000,
+          salaryCadence: "yearly",
+        },
+      ],
+      // 2015-2020 is intentionally absent: an employment gap earns zero.
+      currentSalary: { salaryAmount: 10_000, salaryCadence: "monthly" },
+    });
+    expect(result.historicalGross).toBe(300_000);
+    expect(result.projectedGross).toBe(1_200_000);
+    expect(result.totalGross).toBe(1_500_000);
+  });
+
+  it("does not start current salary before a future rough work year", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2026-01-01",
+      retirementOn: "2040-01-01",
+      periods: [],
+      currentSalary: {
+        startsOn: "2030-01-01",
+        salaryAmount: 120_000,
+        salaryCadence: "yearly",
+      },
+    });
+    expect(result.historicalGross).toBe(0);
+    expect(result.projectedGross).toBe(1_200_000);
+  });
+
+  it("splits an employment interval at today and clips it at retirement", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2026-07-01",
+      retirementOn: "2027-01-01",
+      periods: [{
+        startsOn: "2026-01-01",
+        endsOn: "2035-01-01",
+        salaryAmount: 120_000,
+        salaryCadence: "yearly",
+      }],
+    });
+    expect(result.historicalGross).toBe(60_000);
+    expect(result.projectedGross).toBe(60_000);
+    expect(result.totalGross).toBe(120_000);
+  });
+
+  it("ignores invalid dates, reversed ranges, and non-positive salaries", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2026-01-01",
+      retirementOn: "2030-01-01",
+      periods: [
+        { startsOn: "2026-02-30", endsOn: null, salaryAmount: 10_000, salaryCadence: "monthly" },
+        { startsOn: "2029-01-01", endsOn: "2028-01-01", salaryAmount: 10_000, salaryCadence: "monthly" },
+        { startsOn: "2026-01-01", endsOn: null, salaryAmount: 0, salaryCadence: "yearly" },
+      ],
+    });
+    expect(result).toEqual({ historicalGross: 0, projectedGross: 0, totalGross: 0 });
+  });
+
+  it("keeps the lifetime total stable when today splits a short calendar month", () => {
+    const input = {
+      retirementOn: "2026-03-31",
+      periods: [{
+        startsOn: "2026-01-31",
+        endsOn: "2026-03-31",
+        salaryAmount: 10_000,
+        salaryCadence: "monthly" as const,
+      }],
+    };
+    const february = projectLifetimeGrossIncome({ ...input, asOf: "2026-02-15" });
+    const march = projectLifetimeGrossIncome({ ...input, asOf: "2026-03-15" });
+    expect(february.totalGross).toBe(20_000);
+    expect(march.totalGross).toBe(february.totalGross);
+    expect(february.historicalGross + february.projectedGross).toBe(february.totalGross);
+    expect(march.historicalGross + march.projectedGross).toBe(march.totalGross);
+  });
+
+  it("keeps a continued current salary additive across the as-of boundary", () => {
+    const calculate = (asOf: string) => projectLifetimeGrossIncome({
+      asOf,
+      retirementOn: "2026-03-31",
+      periods: [{
+        startsOn: "2026-01-31",
+        endsOn: asOf,
+        salaryAmount: 10_000,
+        salaryCadence: "monthly",
+      }],
+      currentSalary: { salaryAmount: 10_000, salaryCadence: "monthly" },
+    });
+    const february = calculate("2026-02-15");
+    const march = calculate("2026-03-15");
+    expect(february.totalGross).toBeCloseTo(20_000, 8);
+    expect(march.totalGross).toBeCloseTo(february.totalGross, 8);
+  });
+
+  it("rejects overlapping employment periods instead of double-paying them", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2026-01-01",
+      retirementOn: "2030-01-01",
+      periods: [
+        { startsOn: "2020-01-01", endsOn: "2025-01-01", salaryAmount: 60_000, salaryCadence: "yearly" },
+        { startsOn: "2024-01-01", endsOn: "2026-01-01", salaryAmount: 80_000, salaryCadence: "yearly" },
+      ],
+    });
+    expect(result).toEqual({ historicalGross: 0, projectedGross: 0, totalGross: 0 });
+  });
+});
+
+describe("records actual and forecast", () => {
+  it("keeps recorded work separate and never forecasts the same day twice", () => {
+    const hour = 3_600_000;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      asOfMs: 20 * hour,
+      days: [
+        {
+          actualKind: "observed",
+          resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+          plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+          overtimeSegments: [{ startAtMs: 17 * hour, endAtMs: 19 * hour }],
+          observations: [
+            { kind: "started", occurredAtMs: 9 * hour },
+            { kind: "stopped", occurredAtMs: 17 * hour },
+          ],
+          isActiveAnchor: false,
+        },
+        {
+          actualKind: null,
+          resolvedSegments: [{ startAtMs: 33 * hour, endAtMs: 41 * hour }],
+          plannedSegments: [{ startAtMs: 33 * hour, endAtMs: 41 * hour }],
+          overtimeSegments: [],
+          observations: [],
+          isActiveAnchor: false,
+        },
+      ],
+    });
+    expect(result.actual).toEqual({ days: 1, hours: 10, earnings: 1_000 });
+    expect(result.forecast).toEqual({ days: 1, hours: 8, earnings: 800 });
+    expect(result.total).toEqual({ days: 2, hours: 18, earnings: 1_800 });
+  });
+
+  it("uses zero for invalid durations and preserves a missing salary", () => {
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: null,
+      asOfMs: Number.NaN,
+      days: [
+        {
+          actualKind: "observed",
+          resolvedSegments: [],
+          plannedSegments: [],
+          overtimeSegments: [{ startAtMs: Number.NaN, endAtMs: -1 }],
+          observations: [{ kind: "started", occurredAtMs: Number.NaN }],
+          isActiveAnchor: false,
+        },
+        {
+          actualKind: null,
+          resolvedSegments: [{ startAtMs: 99, endAtMs: Number.NaN }],
+          plannedSegments: [],
+          overtimeSegments: [],
+          observations: [],
+          isActiveAnchor: false,
+        },
+      ],
+    });
+    expect(result.actual).toEqual({ days: 0, hours: 0, earnings: null });
+    expect(result.forecast).toEqual({ days: 0, hours: 0, earnings: null });
+    expect(result.total).toEqual({ days: 0, hours: 0, earnings: null });
+  });
+
+  it("treats an omitted native optional actual kind as forecast", () => {
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      asOfMs: 0,
+      days: [{
+        resolvedSegments: [{ startAtMs: 1, endAtMs: 8 * 3_600_000 + 1 }],
+        plannedSegments: [{ startAtMs: 1, endAtMs: 8 * 3_600_000 + 1 }],
+        overtimeSegments: [],
+        observations: [],
+        isActiveAnchor: false,
+      }],
+    });
+    expect(result.forecast).toEqual({ days: 1, hours: 8, earnings: 800 });
+  });
+
+  it("uses observed start and stop times instead of presenting the plan as actual", () => {
+    const hour = 3_600_000;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 900,
+      asOfMs: 20 * hour,
+      days: [{
+        actualKind: "observed",
+        resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 18 * hour }],
+        plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 18 * hour }],
+        overtimeSegments: [],
+        observations: [
+          { kind: "started", occurredAtMs: 10 * hour },
+          { kind: "stopped", occurredAtMs: 16 * hour },
+        ],
+        isActiveAnchor: false,
+      }],
+    });
+    expect(result.actual).toEqual({ days: 1, hours: 6, earnings: 600 });
+    expect(result.forecast.days).toBe(0);
+  });
+
+  it("excludes the effective schedule lunch gap from observed actual time", () => {
+    const hour = 3_600_000;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 700,
+      asOfMs: 20 * hour,
+      days: [{
+        actualKind: "observed",
+        resolvedSegments: [
+          { startAtMs: 9 * hour, endAtMs: 12 * hour },
+          { startAtMs: 13 * hour, endAtMs: 17 * hour },
+        ],
+        plannedSegments: [
+          { startAtMs: 9 * hour, endAtMs: 12 * hour },
+          { startAtMs: 13 * hour, endAtMs: 17 * hour },
+        ],
+        overtimeSegments: [],
+        observations: [
+          { kind: "started", occurredAtMs: 10 * hour },
+          { kind: "stopped", occurredAtMs: 16 * hour },
+        ],
+        isActiveAnchor: false,
+      }],
+    });
+    expect(result.actual).toEqual({ days: 1, hours: 5, earnings: 500 });
+  });
+
+  it("uses the original planned duration as the corrected pay denominator", () => {
+    const hour = 3_600_000;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      asOfMs: 20 * hour,
+      days: [{
+        actualKind: "corrected",
+        resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 13 * hour }],
+        plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+        overtimeSegments: [],
+        observations: [],
+        isActiveAnchor: false,
+      }],
+    });
+    expect(result.actual).toEqual({ days: 1, hours: 4, earnings: 400 });
+  });
+
+  it("unions repeated overtime declarations instead of summing their overlap", () => {
+    const hour = 3_600_000;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      asOfMs: 22 * hour,
+      days: [{
+        actualKind: "corrected",
+        resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 18 * hour }],
+        plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 18 * hour }],
+        overtimeSegments: [
+          { startAtMs: 18 * hour, endAtMs: 20 * hour },
+          { startAtMs: 18 * hour, endAtMs: 21 * hour },
+        ],
+        observations: [],
+        isActiveAnchor: false,
+      }],
+    });
+    expect(result.actual.hours).toBe(12);
+    expect(result.actual.earnings).toBeCloseTo(800 * 12 / 9, 8);
+  });
+
+  it("does not count the unelapsed end of a current overtime declaration", () => {
+    const hour = 3_600_000;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      asOfMs: 19 * hour,
+      days: [{
+        actualKind: "observed",
+        resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 18 * hour }],
+        plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 18 * hour }],
+        overtimeSegments: [{ startAtMs: 18 * hour, endAtMs: 21 * hour }],
+        observations: [{ kind: "started", occurredAtMs: 9 * hour }],
+        isActiveAnchor: true,
+      }],
+    });
+    expect(result.actual.hours).toBe(10);
+    expect(result.actual.earnings).toBeCloseTo(800 * 10 / 9, 8);
+    expect(result.forecast.days).toBe(0);
+    expect(result.forecast.hours).toBe(2);
+    expect(result.forecast.earnings).toBeCloseTo(800 * 2 / 9, 8);
+    expect(result.total.days).toBe(1);
+    expect(result.total.hours).toBe(12);
+  });
+
+  it("does not carry an old unmatched start into the month being viewed", () => {
+    const hour = 3_600_000;
+    const monthLater = 35 * 24 * hour;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      asOfMs: monthLater,
+      days: [{
+        actualKind: "observed",
+        resolvedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+        plannedSegments: [{ startAtMs: 9 * hour, endAtMs: 17 * hour }],
+        overtimeSegments: [],
+        observations: [{ kind: "started", occurredAtMs: 9 * hour }],
+        isActiveAnchor: false,
+      }],
+    });
+    expect(result.actual).toEqual({ days: 0, hours: 0, earnings: 0 });
   });
 });
 

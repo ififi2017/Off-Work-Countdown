@@ -74,6 +74,14 @@ struct OnboardingView: View {
                             systemSurfaces
                         case OnboardingPages.adaptiveLayouts:
                             adaptiveLayouts
+                        case OnboardingPages.plusRecords:
+                            OnboardingPlusRecordsPage(store: store) {
+                                showPage(OnboardingPages.plusFocus)
+                            }
+                        case OnboardingPages.plusFocus:
+                            OnboardingPlusFocusPage(store: store) {
+                                showPage(OnboardingPages.finale)
+                            }
                         default:
                             OnboardingFinalePage(
                                 store: store,
@@ -260,7 +268,7 @@ struct OnboardingView: View {
         ) {
             fullScreenClockPreview(showsSidebarHint: isPad)
         } action: {
-            showPage(OnboardingPages.finale)
+            showPage(OnboardingPages.plusRecords)
         }
     }
 
@@ -716,17 +724,19 @@ enum OnboardingPages {
     static let privacy = 4
     static let systemSurfaces = 5
     static let adaptiveLayouts = 6
-    static let finale = 7
+    static let plusRecords = 7
+    static let plusFocus = 8
+    static let finale = 9
     /// Highest page index plus one. The visible path can be shorter when
     /// there is no schedule: confirmation is skipped, but the remaining
     /// pages keep these indices so a QA jump still lands on the same screen.
-    static let count = 8
+    static let count = 10
 
     static func sequence(includesAllSet: Bool) -> [Int] {
         if includesAllSet {
-            [landing, schedule, reminders, allSet, privacy, systemSurfaces, adaptiveLayouts, finale]
+            [landing, schedule, reminders, allSet, privacy, systemSurfaces, adaptiveLayouts, plusRecords, plusFocus, finale]
         } else {
-            [landing, schedule, reminders, privacy, systemSurfaces, adaptiveLayouts, finale]
+            [landing, schedule, reminders, privacy, systemSurfaces, adaptiveLayouts, plusRecords, plusFocus, finale]
         }
     }
 

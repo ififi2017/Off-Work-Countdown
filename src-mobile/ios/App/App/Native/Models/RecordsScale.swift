@@ -94,6 +94,7 @@ struct RecordsHeadlineSummary: Equatable, Sendable {
     var allocationDays: Int
     var allocation: TimeAllocationShare
     var sleepSourceKey: String
+    var actualForecast: NativeRecordsActualForecastSummary? = nil
 }
 
 enum RecordsLockedKind: String, Equatable, Sendable {
@@ -213,7 +214,14 @@ enum LifeStageKind: String, Equatable, Sendable {
 }
 
 struct LifeStageSpan: Equatable, Sendable, Identifiable {
-    var id: String { kind.rawValue + (workPeriod.map { "." + $0.rawValue } ?? "") }
+    var id: String {
+        [
+            kind.rawValue,
+            workPeriod?.rawValue ?? "all",
+            start.map { String($0.timeIntervalSinceReferenceDate) } ?? "open",
+            end.map { String($0.timeIntervalSinceReferenceDate) } ?? "open",
+        ].joined(separator: ".")
+    }
     var kind: LifeStageKind
     var start: Date?
     var end: Date?
@@ -279,7 +287,7 @@ enum LifeStageCalculator {
         }
     }
 
-    static func stages(profile: LifeProfile, calendar: Calendar) -> [LifeStageSpan] {
+    static func stages(profile: LifeProfile, calendar: Calendar, now: Date = .now) -> [LifeStageSpan] {
         var next = profile
         next.migrateLegacyFields(calendar: calendar)
         let born = next.bornOn?.calculationAnchor(in: calendar)
@@ -287,13 +295,13 @@ enum LifeStageCalculator {
         let work = next.workStartedPartial?.calculationAnchor(in: calendar) ?? next.workStartedOn
         let retire = next.retirementOn?.calculationAnchor(in: calendar)
 
-        return [
+        let earlyStages = [
             LifeStageSpan(
                 kind: .childhood,
                 start: born,
-                end: school,
+                end: school ?? work,
                 startPrecision: next.bornOn?.precision,
-                endPrecision: next.schoolStartedOn?.precision
+                endPrecision: next.schoolStartedOn?.precision ?? next.workStartedPartial?.precision
             ),
             LifeStageSpan(
                 kind: .study,
@@ -302,13 +310,20 @@ enum LifeStageCalculator {
                 startPrecision: next.schoolStartedOn?.precision,
                 endPrecision: next.workStartedPartial?.precision
             ),
-            LifeStageSpan(
+        ]
+        let workStages: [LifeStageSpan]
+        if next.workHistoryMode == .detailed {
+            workStages = detailedWorkStages(profile: next, retirement: retire, now: now, calendar: calendar)
+        } else {
+            workStages = [LifeStageSpan(
                 kind: .work,
                 start: work,
                 end: retire,
                 startPrecision: next.workStartedPartial?.precision,
                 endPrecision: next.retirementOn?.precision
-            ),
+            )]
+        }
+        return earlyStages + workStages + [
             LifeStageSpan(
                 kind: .retirement,
                 start: retire,
@@ -317,6 +332,40 @@ enum LifeStageCalculator {
                 endPrecision: nil
             ),
         ]
+    }
+
+    private static func detailedWorkStages(
+        profile: LifeProfile,
+        retirement: Date?,
+        now: Date,
+        calendar: Calendar
+    ) -> [LifeStageSpan] {
+        var stages = profile.employmentPeriods.compactMap { period -> LifeStageSpan? in
+            guard let start = period.startsOn.calculationAnchor(in: calendar) else { return nil }
+            let end = period.endsOn?.calculationAnchor(in: calendar) ?? retirement
+            guard end.map({ $0 > start }) ?? true else { return nil }
+            return LifeStageSpan(
+                kind: .work,
+                start: start,
+                end: end,
+                startPrecision: period.startsOn.precision,
+                endPrecision: period.endsOn?.precision ?? profile.retirementOn?.precision
+            )
+        }
+        if !profile.employmentPeriods.contains(where: { $0.endsOn == nil }),
+           profile.roughCurrentSalary?.isValid == true {
+            let start = calendar.startOfDay(for: now)
+            if retirement.map({ $0 > start }) ?? true {
+                stages.append(LifeStageSpan(
+                    kind: .work,
+                    start: start,
+                    end: retirement,
+                    startPrecision: .day,
+                    endPrecision: profile.retirementOn?.precision
+                ))
+            }
+        }
+        return stages.sorted { ($0.start ?? .distantPast) < ($1.start ?? .distantPast) }
     }
 
     static func timelineBounds(stages: [LifeStageSpan], now: Date) -> (Date, Date)? {

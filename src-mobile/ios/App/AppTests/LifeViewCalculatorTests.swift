@@ -106,6 +106,76 @@ func lifeViewKeepsCareerPeriodGapsEmpty() {
 }
 
 @MainActor
+@Test("Detailed employment dates remove scheduled work from career gaps")
+func detailedEmploymentHistoryShapesLifeTimeAndStages() {
+    let calendar = lifeTestCalendar()
+    let now = lifeTestDate(year: 2026, month: 1, day: 25, calendar: calendar)
+    let salary = LifeSalary(amount: 10_000, cadence: .monthly)
+    var profile = LifeProfile(
+        averageSleepHours: 8,
+        bornOn: .exact(year: 2026, month: 1, day: 1),
+        workStartedPartial: .exact(year: 2026, month: 1, day: 1),
+        retirementOn: .exact(year: 2026, month: 1, day: 29),
+        editedAt: Date(timeIntervalSince1970: 0),
+        editCount: 1,
+        editTieBreaker: UUID()
+    )
+    profile.workHistoryMode = .detailed
+    profile.roughCurrentSalary = salary
+    profile.employmentPeriods = [
+        LifeEmploymentPeriod(
+            id: UUID(),
+            startsOn: .exact(year: 2026, month: 1, day: 1)!,
+            endsOn: .exact(year: 2026, month: 1, day: 8),
+            salary: salary
+        ),
+        LifeEmploymentPeriod(
+            id: UUID(),
+            startsOn: .exact(year: 2026, month: 1, day: 15)!,
+            endsOn: .exact(year: 2026, month: 1, day: 22),
+            salary: salary
+        ),
+    ]
+    let scheduledDays = [2, 10, 16, 23, 26].map { day in
+        lifeScheduleDay(
+            periodID: UUID(),
+            date: lifeTestDate(year: 2026, month: 1, day: day, calendar: calendar),
+            startHour: 9,
+            durationHours: 8,
+            calendar: calendar
+        )
+    }
+
+    let model = LifeViewCalculator.build(
+        profile: profile,
+        scheduleDays: scheduledDays,
+        outsideZoneDays: [],
+        now: now,
+        calendar: calendar
+    )
+    #expect(model.cells.map(\.kind) == [.workEstimated, .none, .workEstimated, .workProjected])
+    #expect(model.allocation.workMs == 3 * 8 * 3_600_000)
+
+    let stages = LifeStageCalculator.stages(profile: profile, calendar: calendar, now: now)
+    #expect(LifeStageCalculator.kind(
+        at: lifeTestDate(year: 2026, month: 1, day: 10, calendar: calendar),
+        stages: stages
+    ) == .unset)
+    #expect(LifeStageCalculator.kind(
+        at: lifeTestDate(year: 2026, month: 1, day: 16, calendar: calendar),
+        stages: stages
+    ) == .work)
+    #expect(LifeStageCalculator.kind(
+        at: lifeTestDate(year: 2026, month: 1, day: 23, calendar: calendar),
+        stages: stages
+    ) == .unset)
+    #expect(LifeStageCalculator.kind(
+        at: lifeTestDate(year: 2026, month: 1, day: 26, calendar: calendar),
+        stages: stages
+    ) == .work)
+}
+
+@MainActor
 @Test("Different effective segment lengths produce different life work shares")
 func lifeViewUsesEffectiveSegmentDuration() {
     let calendar = lifeTestCalendar()
@@ -356,6 +426,33 @@ func lifeProgressIsClamped() {
     #expect(LifeStageCalculator.progress(from: start, to: end, at: Date(timeIntervalSince1970: 0)) == 0)
     #expect(LifeStageCalculator.progress(from: start, to: end, at: Date(timeIntervalSince1970: 1_500)) == 0.5)
     #expect(LifeStageCalculator.progress(from: start, to: end, at: Date(timeIntervalSince1970: 3_000)) == 1)
+}
+
+@MainActor
+@Test("A future rough work year delays current salary income until work begins")
+func futureRoughWorkYearDelaysIncome() async throws {
+    let defaults = UserDefaults(suiteName: "owc.futureincome.\(UUID().uuidString)")!
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    var profile = LifeProfile(
+        bornOn: .yearOnly(2008),
+        workStartedPartial: .yearOnly(2030),
+        retirementOn: .yearOnly(2068),
+        workHistoryMode: .rough,
+        roughCurrentSalary: LifeSalary(amount: 120_000, cadence: .yearly),
+        editedAt: .now,
+        editCount: 1,
+        editTieBreaker: UUID()
+    )
+    profile.birthYear = 2008
+    records.updateLifeProfile(profile)
+
+    let model = try #require(await store.prepareLifeViewModel(
+        now: lifeTestDate(year: 2026, month: 1, day: 1, calendar: lifeTestCalendar())
+    ))
+    let income = try #require(model.income)
+    #expect(income.historicalGross == 0)
+    #expect(abs(income.projectedGross - 4_560_000) < 0.001)
 }
 
 /// The life model is now cached, because rebuilding it expands a career's

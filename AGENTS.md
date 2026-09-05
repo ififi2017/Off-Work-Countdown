@@ -16,8 +16,10 @@ Desktop share the React tree; iOS reimplements the surface natively and
 consumes the same rules through a generated bundle (see below).
 
 The product is local-first. Work hours, salary and preferences stay on the
-user's device. Do not add accounts, upload salary data, or place salary values
-in URLs, analytics payloads or share metadata.
+user's device by default. The user-approved 2026-09-05 expansion permits these
+preferences and career salary history in opt-in private CloudKit sync and
+user-triggered backup exports (plan 015). Do not add a product account system,
+or place salary values in widgets, URLs, analytics payloads or share metadata.
 
 ## Important architecture boundaries
 

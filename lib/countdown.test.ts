@@ -20,6 +20,7 @@ import {
   resolveOvertimeEndAtMs,
   suggestOvertimeEndAtMs,
   getDailySalary,
+  getMonthlySalaryEquivalent,
   getShiftLengthHours,
   DEFAULT_MONTHLY_WORKING_DAYS,
   DEFAULT_WORKDAYS,
@@ -360,6 +361,20 @@ describe("getDailySalary", () => {
     expect(getDailySalary("10000", "monthly", 20, -1)).toBeNull();
     expect(getDailySalary("10000", "monthly", 20, 25)).toBeCloseTo(
       (10000 / 20) * (37 / 12)
+    );
+  });
+});
+
+describe("getMonthlySalaryEquivalent", () => {
+  it("converts daily pay with the same working-day and bonus settings", () => {
+    expect(getMonthlySalaryEquivalent("500", "daily", 20, 2)).toBeCloseTo(
+      500 * 20 * (1 + 2 / 12)
+    );
+  });
+
+  it("keeps monthly pay while applying the configured annual bonus", () => {
+    expect(getMonthlySalaryEquivalent("10000", "monthly", 20, 2)).toBeCloseTo(
+      10000 * (1 + 2 / 12)
     );
   });
 });

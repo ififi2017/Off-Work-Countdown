@@ -14,6 +14,8 @@ struct OffWorkCountdownRootView: View {
     /// when the app leaves the foreground, or immediately when the countdown
     /// itself starts or stops.
     @State private var pendingReschedule = false
+    @State private var paywallPresentationActive = false
+    @State private var lifeSetupPresentationActive = false
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.scenePhase) private var scenePhase
@@ -56,7 +58,10 @@ struct OffWorkCountdownRootView: View {
         // Here rather than in each shell: a gated tap can come from the Records
         // stack, the Settings stack or the iPad detail pane, and the paywall
         // belongs over whichever one is on screen.
-        .sheet(item: $store.paywallSheet, onDismiss: store.settlePaywallDismissal) { reason in
+        .sheet(item: $store.paywallSheet, onDismiss: {
+            store.settlePaywallDismissal()
+            paywallPresentationActive = false
+        }) { reason in
             NavigationStack {
                 PaywallView(store: store, reason: reason, showsDismissButton: false) {
                     store.paywallSheet = nil
@@ -70,7 +75,15 @@ struct OffWorkCountdownRootView: View {
                 }
             }
         }
-        .modifier(AppReviewPromptModifier(store: store))
+        .onChange(of: store.paywallSheet != nil, initial: true) { _, presented in
+            if presented { paywallPresentationActive = true }
+        }
+        .modifier(RecordsLifeSetupPromptModifier(
+            store: store,
+            paywallPresentationActive: paywallPresentationActive,
+            presentationActive: $lifeSetupPresentationActive
+        ))
+        .modifier(AppReviewPromptModifier(store: store, isBlocked: lifeSetupPresentationActive))
         .task {
             // First frame first. StoreKit, CloudKit, the rules bundle and
             // notification scheduling all used to start in the same turn as
@@ -409,6 +422,7 @@ struct OffWorkCountdownRootView: View {
 
 private struct AppReviewPromptModifier: ViewModifier {
     @Bindable var store: OffWorkStore
+    let isBlocked: Bool
     @Environment(\.requestReview) private var requestReview
 
     func body(content: Content) -> some View {
@@ -436,7 +450,7 @@ private struct AppReviewPromptModifier: ViewModifier {
     }
 
     private var presentationGate: Bool {
-        store.onboardingComplete && store.plus.hasSeenIntro
+        store.onboardingComplete && store.plus.hasSeenIntro && !isBlocked
     }
 }
 

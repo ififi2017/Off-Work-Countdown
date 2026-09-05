@@ -122,7 +122,7 @@ func lowGenerationIsDropped() {
 
 @MainActor
 @Test("Life profile merges field-by-field against the last known baseline")
-func lifeProfileMergesByField() {
+func lifeProfileMergesByField() throws {
     let baseline = LifeProfile(
         birthYear: 1990,
         retirementAge: 60,
@@ -133,13 +133,26 @@ func lifeProfileMergesByField() {
     )
     var local = baseline
     local.retirementAge = 62
+    local.workHistoryMode = .detailed
+    local.employmentPeriods = [
+        LifeEmploymentPeriod(
+            id: syncTestID(100),
+            startsOn: try #require(.exact(year: 2020, month: 1, day: 1)),
+            endsOn: nil,
+            salary: LifeSalary(amount: 120_000, cadence: .yearly)
+        )
+    ]
     local.editCount = 2
     var server = baseline
     server.averageSleepHours = 7
+    server.roughCurrentSalary = LifeSalary(amount: 9_000, cadence: .monthly)
     server.editCount = 2
     let merged = RecordsSyncConflict.mergeLifeProfile(local: local, server: server, baseline: baseline)
     #expect(merged.retirementAge == 62)
     #expect(merged.averageSleepHours == 7)
+    #expect(merged.workHistoryMode == .detailed)
+    #expect(merged.employmentPeriods == local.employmentPeriods)
+    #expect(merged.roughCurrentSalary == server.roughCurrentSalary)
 }
 
 @MainActor

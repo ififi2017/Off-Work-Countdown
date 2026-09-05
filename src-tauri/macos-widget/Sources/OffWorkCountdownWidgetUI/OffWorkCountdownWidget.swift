@@ -10,11 +10,7 @@ import WidgetSnapshotContract
 public let offWorkCountdownWidgetKind = "com.rainif.offworkcountdown.macappstore.widget"
 
 private func widgetProductName(locale: String) -> String {
-    #if os(iOS)
     "DoneAt"
-    #else
-    WidgetCopy.text("appShortName", locale: locale)
-    #endif
 }
 
 func widgetUpcomingDateShowsWeekday(

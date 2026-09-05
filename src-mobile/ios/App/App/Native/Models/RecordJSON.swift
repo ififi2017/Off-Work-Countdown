@@ -11,6 +11,7 @@ enum RecordEntityType: String, Codable, Sendable, CaseIterable {
     case focusTask
     case focusSession
     case focusPlanningConfiguration
+    case syncedPreferences
 }
 
 /// Local tombstone so a later import cannot resurrect a permanently deleted
@@ -57,6 +58,7 @@ enum RecordIncomingValue: Equatable, Sendable {
     case focusTask(FocusTask)
     case focusSession(FocusSession)
     case focusPlanningConfiguration(FocusPlanningConfiguration)
+    case syncedPreferences(SyncedPreferences)
 }
 
 struct RecordImportConflict: Equatable, Sendable {
@@ -109,6 +111,7 @@ struct RecordState: Equatable, Sendable {
     var focusTasks: [FocusTask] = []
     var focusSessions: [FocusSession] = []
     var focusPlanningConfiguration: FocusPlanningConfiguration?
+    var syncedPreferences: SyncedPreferences? = nil
     var recordsStartedOn: Date?
     var erased: [ErasedID] = []
     var sync = SyncLocalState.empty
@@ -171,6 +174,8 @@ struct RecordState: Equatable, Sendable {
             focusSessions.removeAll { $0.id.uuidString.caseInsensitiveCompare(key) == .orderedSame }
         case .focusPlanningConfiguration:
             focusPlanningConfiguration = nil
+        case .syncedPreferences:
+            syncedPreferences = nil
         }
         if let index = erased.firstIndex(where: {
             $0.entityType == type && $0.logicalKey == key
@@ -195,10 +200,10 @@ struct RecordState: Equatable, Sendable {
 
 /// Versioned JSON import / export. Civil dates are `YYYY-MM-DD` in the file's
 /// calendar; instants are Unix milliseconds so a timezone shift cannot move a
-/// day. Salary never appears.
+/// day. Exports are user-triggered backups and include their synced settings.
 enum RecordJSON {
-    static let schemaVersion = 4
-    static let acceptedSchemaVersions = 1...4
+    static let schemaVersion = 5
+    static let acceptedSchemaVersions = 1...5
 
     static func export(
         _ state: RecordState,
@@ -237,6 +242,7 @@ enum RecordJSON {
             focusTasks: state.focusTasks.map { FocusTaskDTO($0, calendar: fileCalendar) },
             focusSessions: state.focusSessions.map { FocusSessionDTO($0, calendar: fileCalendar) },
             focusPlanningConfiguration: state.focusPlanningConfiguration.map(FocusPlanningConfigurationDTO.init),
+            syncedPreferences: state.syncedPreferences,
             recordsStartedOn: state.recordsStartedOn.map { RecordJSON.dayKey($0, calendar: fileCalendar) }
         )
         let encoder = JSONEncoder()
@@ -605,6 +611,34 @@ enum RecordJSON {
             )
         }
 
+        if let incoming = document.syncedPreferences, incoming.isValid {
+            merge(
+                incoming,
+                type: .syncedPreferences,
+                key: SyncedPreferences.logicalKey,
+                mode: mode,
+                state: &state,
+                report: &report,
+                existing: { $0.syncedPreferences },
+                incomingValue: { .syncedPreferences($0) },
+                insert: { archive, value in
+                    archive.syncedPreferences = value
+                    return value
+                },
+                replace: { archive, value in
+                    archive.syncedPreferences = value
+                    return value
+                }
+            )
+        } else if document.syncedPreferences != nil {
+            report.rejected.append(
+                RecordImportRejection(
+                    entityType: .syncedPreferences,
+                    logicalKey: SyncedPreferences.logicalKey
+                )
+            )
+        }
+
         for index in state.snapshots.indices {
             if let mapped = periodIDMap[state.snapshots[index].periodID] {
                 state.snapshots[index].periodID = mapped
@@ -682,6 +716,8 @@ enum RecordJSON {
             }
         case .focusPlanningConfiguration(let configuration):
             state.focusPlanningConfiguration = configuration
+        case .syncedPreferences(let preferences):
+            state.syncedPreferences = preferences
         }
     }
 
@@ -778,6 +814,7 @@ enum RecordJSON {
         case let session as FocusSession: session.id.uuidString
         case is FocusPlanningConfiguration: FocusPlanningConfiguration.logicalKey
         case is LifeProfile: LifeProfile.profileID.uuidString
+        case is SyncedPreferences: SyncedPreferences.logicalKey
         default: nil
         }
     }
@@ -794,6 +831,7 @@ enum RecordJSON {
         case let task as FocusTask: task.editCount
         case let session as FocusSession: session.editCount
         case let configuration as FocusPlanningConfiguration: configuration.editCount
+        case let preferences as SyncedPreferences: preferences.editCount
         default: 0
         }
     }
@@ -812,6 +850,7 @@ enum RecordJSON {
         case let task as FocusTask: task.editTieBreaker
         case let session as FocusSession: session.editTieBreaker
         case let configuration as FocusPlanningConfiguration: configuration.editTieBreaker
+        case let preferences as SyncedPreferences: preferences.editTieBreaker
         default: DayOverride.unsetTieBreaker
         }
     }
@@ -946,6 +985,7 @@ struct RecordJSONDocument: Codable, Equatable {
     var focusTasks: [FocusTaskDTO]?
     var focusSessions: [FocusSessionDTO]?
     var focusPlanningConfiguration: FocusPlanningConfigurationDTO?
+    var syncedPreferences: SyncedPreferences? = nil
     var recordsStartedOn: String?
 }
 
@@ -1207,6 +1247,11 @@ struct LifeProfileDTO: Codable, Equatable {
     var averageSleepMinutes: Int?
     var sleepSource: SleepSource?
     var sleepSourceUpdatedAtMs: Double?
+    /// Optional in the transfer object so v1/v2 profile payloads remain
+    /// readable; `value(calendar:)` supplies the v3 defaults.
+    var workHistoryMode: LifeWorkHistoryMode?
+    var roughCurrentSalary: LifeSalary?
+    var employmentPeriods: [LifeEmploymentPeriod]?
     var editedAtMs: Double
     var editCount: Int
     var editTieBreaker: String
@@ -1225,6 +1270,9 @@ struct LifeProfileDTO: Codable, Equatable {
         averageSleepMinutes = value.averageSleepMinutes
         sleepSource = value.sleepSource
         sleepSourceUpdatedAtMs = value.sleepSourceUpdatedAt.map { $0.timeIntervalSince1970 * 1_000 }
+        workHistoryMode = value.workHistoryMode
+        roughCurrentSalary = value.roughCurrentSalary
+        employmentPeriods = value.employmentPeriods
         editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
         editCount = value.editCount
         editTieBreaker = value.editTieBreaker.uuidString
@@ -1241,6 +1289,12 @@ struct LifeProfileDTO: Codable, Equatable {
         } else {
             parsedWorkStartedOn = nil
         }
+        let workHistoryMode = workHistoryMode ?? .rough
+        let employmentPeriods = employmentPeriods ?? []
+        guard roughCurrentSalary?.isValid != false,
+              employmentPeriods.allSatisfy({ $0.isValid(in: calendar) }),
+              Set(employmentPeriods.map(\.id)).count == employmentPeriods.count
+        else { return nil }
         var profile = LifeProfile(
             profileID: profileID,
             birthYear: birthYear,
@@ -1255,6 +1309,9 @@ struct LifeProfileDTO: Codable, Equatable {
             averageSleepMinutes: averageSleepMinutes,
             sleepSource: sleepSource,
             sleepSourceUpdatedAt: sleepSourceUpdatedAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) },
+            workHistoryMode: workHistoryMode,
+            roughCurrentSalary: roughCurrentSalary,
+            employmentPeriods: employmentPeriods,
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,
             editTieBreaker: editTieBreaker
