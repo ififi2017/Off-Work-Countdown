@@ -369,46 +369,16 @@ accessoryInline 可作为 W3 的低成本增强，但不是首个验收门槛。
 
 ## 7. iPad 与 iPhone 数据同步决策
 
-### 当前决定：继续独立运行
+### 当前决定：用户选择开启私有 CloudKit 同步
 
-iPad 不能作为 Apple Watch 的 WatchConnectivity companion，因此 iPad 与 Watch 没有直接联动。
-iPhone 和 iPad 虽然运行同一个 Universal App，但各自拥有独立沙盒；UserDefaults 和 App Group
-不会自动跨设备同步。
+2026-09-05 的真机反馈与用户确认更新了早期独立运行决定，详见
+[计划 015](../plans/015-device-feedback-life-income-settings-sync.md)。iOS 已有记录、人生档案、专注任务与配置的 CloudKit 通路，本轮复用它同步排班、当前及职业阶段薪资、提醒偏好、主题与语言；不另建账号或 KVS 协议。
 
-首版继续让 iPad 独立运行，理由是：
+数据默认留在本机，只有用户开启同步后才进入其 Apple Account 的私有数据库。通知授权、生物识别、实时活动开关、运行中的倒计时与引导状态留在各设备。App Group、Widget、Live Activity 与分享仍不含薪资。用户主动导出的备份包含薪资与职业经历。
 
-- 当前产品承诺完全离线、无账号、无服务器；
-- 排班和倒计时设置体量很小，但薪资属于敏感数据；
-- 引入云同步会新增冲突处理、iCloud capability、失败状态、隐私说明和审核验证；
-- Watch 项目本身已经带来一套新的同步与生命周期矩阵，不宜同时叠加第二套跨设备协议。
+iPad 仍不能作为 Apple Watch 的 WatchConnectivity companion；设置同步不改变 Watch 的设备连接边界。
 
-### 未来可选方案：NSUbiquitousKeyValueStore
-
-如果用户明确需要 iPhone/iPad 同步，优先评估 Apple 的 iCloud key-value store，而不是自建账号
-或服务器。它适合小型设置与配置，但不能保存敏感信息。
-
-候选同步范围：
-
-- 上下班时间、排班模式、工作日、午休时段；
-- 通知和显示偏好；
-- 是否开始计时及必要的绝对状态 revision。
-
-默认排除：
-
-- 薪资金额、时薪、累计收入；
-- Widget/Live Activity 临时 payload；
-- 可由共享规则重新生成的历史 timeline。
-
-启用前必须完成：
-
-- 明确的用户开关，不静默开启；
-- versioned envelope、字段级 revision 和冲突规则；
-- 离线修改、两台设备同时修改、初次 iCloud 下载和退出 iCloud 的测试；
-- 更新欢迎页、隐私页和商店隐私说明，不能再笼统宣称“所有设置只在这一台设备”；
-- 保证 iCloud 不可用时 iPhone/iPad 仍能独立工作。
-
-CloudKit/SwiftData CloudKit 只在未来需要历史记录、复杂对象或更强查询时考虑；当前设置规模不值得
-引入。此决策在 Watch W3 完成前不启动。
+验收需覆盖旧档案迁移、备份往返、字段冲突、离线修改、首次下载、退出 iCloud、停用与删除。模拟器模型测试不替代双真机 Production 验收；商店隐私说明和官网隐私文案需与新增范围一致。
 
 ## 8. 可回流到 Windows / macOS 的设计
 

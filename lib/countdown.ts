@@ -585,6 +585,22 @@ export function getDailySalary(
   return (parsed / monthlyWorkingDays) * annualizedMultiplier;
 }
 
+/** Monthly gross equivalent used when a daily setting seeds the life profile. */
+export function getMonthlySalaryEquivalent(
+  amount: string,
+  type: "monthly" | "daily",
+  monthlyWorkingDays: number = DEFAULT_MONTHLY_WORKING_DAYS,
+  annualBonusMonths: number = 0
+): number | null {
+  if (
+    !Number.isFinite(monthlyWorkingDays) ||
+    monthlyWorkingDays <= 0 ||
+    monthlyWorkingDays > 31
+  ) return null;
+  const daily = getDailySalary(amount, type, monthlyWorkingDays, annualBonusMonths);
+  return daily === null ? null : daily * monthlyWorkingDays;
+}
+
 export interface ScheduleDayExpansion {
   dayKey: string;
   shiftAnchorStartAtMs: number;

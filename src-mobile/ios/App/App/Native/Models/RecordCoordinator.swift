@@ -418,6 +418,22 @@ final class RecordCoordinator {
         persist()
     }
 
+    func upsertSyncedPreferences(_ draft: SyncedPreferences, at date: Date = .now) {
+        guard !blocksWrites, draft.isValid else { return }
+        var next = draft
+        next.editCount = (state.syncedPreferences?.editCount ?? max(next.editCount, 0)) + 1
+        next.editTieBreaker = UUID()
+        next.editedAt = date
+        state.syncedPreferences = next
+        markDirty(
+            .syncedPreferences,
+            key: SyncedPreferences.logicalKey,
+            editCount: next.editCount,
+            tie: next.editTieBreaker
+        )
+        persist()
+    }
+
     @discardableResult
     func replaceSyncState(_ sync: SyncLocalState) -> Bool {
         guard !blocksWrites else { return false }
@@ -719,6 +735,13 @@ final class RecordCoordinator {
             configuration.editedAt = date
             target.focusPlanningConfiguration = configuration
             return (configuration.editCount, configuration.editTieBreaker)
+        case .syncedPreferences:
+            guard var preferences = target.syncedPreferences else { return nil }
+            preferences.editCount = max(preferences.editCount + 1, atLeastEditCount)
+            preferences.editTieBreaker = UUID()
+            preferences.editedAt = date
+            target.syncedPreferences = preferences
+            return (preferences.editCount, preferences.editTieBreaker)
         }
     }
 
@@ -735,6 +758,8 @@ final class RecordCoordinator {
         case .focusSession(let session): return (.focusSession, session.id.uuidString, session.editCount)
         case .focusPlanningConfiguration(let configuration):
             return (.focusPlanningConfiguration, FocusPlanningConfiguration.logicalKey, configuration.editCount)
+        case .syncedPreferences(let preferences):
+            return (.syncedPreferences, SyncedPreferences.logicalKey, preferences.editCount)
         }
     }
 
@@ -1000,6 +1025,39 @@ final class RecordCoordinator {
                 RecordJSON.applyIncoming(incoming, to: &state)
                 RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
             }
+        case .mergeSyncedPreferences:
+            if case .syncedPreferences(let server) = incoming,
+               let localPreferences = state.syncedPreferences {
+                if hasSameBusinessContent {
+                    removeCloudConflict(type: type, key: key)
+                    if !RecordsSyncConflict.localWins(
+                        localCount: localPreferences.editCount,
+                        localTie: localPreferences.editTieBreaker.uuidString,
+                        serverCount: server.editCount,
+                        serverTie: server.editTieBreaker.uuidString
+                    ) {
+                        state.syncedPreferences = server
+                        RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
+                    }
+                } else {
+                    let merged = RecordsSyncConflict.mergeSyncedPreferences(
+                        local: localPreferences,
+                        server: server,
+                        baseline: lastKnownSyncedPreferences()
+                    )
+                    state.syncedPreferences = merged
+                    RecordsSyncOutbox.markDirty(
+                        &state.sync,
+                        type: .syncedPreferences,
+                        key: SyncedPreferences.logicalKey,
+                        editCount: merged.editCount,
+                        editTieBreaker: merged.editTieBreaker
+                    )
+                }
+            } else {
+                RecordJSON.applyIncoming(incoming, to: &state)
+                RecordsSyncOutbox.clearDirty(&state.sync, recordName: name)
+            }
         case .reassertErase:
             assertionFailure("Reasserted erasures return before payload application")
         }
@@ -1007,7 +1065,10 @@ final class RecordCoordinator {
             entityType: type,
             logicalKey: key,
             recordName: name,
-            dirty: action == .keepLocalAndCopyServer || action == .mergeLife || action == .mergeFocusPlanning,
+            dirty: action == .keepLocalAndCopyServer
+                || action == .mergeLife
+                || action == .mergeFocusPlanning
+                || action == .mergeSyncedPreferences,
             generation: generation,
             lastKnownRecord: systemFields,
             lastKnownPayload: payload,
@@ -1067,6 +1128,21 @@ final class RecordCoordinator {
               )
         else { return nil }
         return configuration
+    }
+
+    private func lastKnownSyncedPreferences() -> SyncedPreferences? {
+        let name = RecordsSyncIdentity.recordName(
+            type: .syncedPreferences,
+            key: SyncedPreferences.logicalKey
+        )
+        guard let data = state.sync.rows[name]?.lastKnownPayload,
+              case .syncedPreferences(let preferences) = RecordsSyncPayload.incoming(
+                  from: data,
+                  type: .syncedPreferences,
+                  calendar: RecordsSyncPayload.fileCalendar(for: state)
+              )
+        else { return nil }
+        return preferences
     }
 
     /// One logical identity has at most one pending review. Repeated engine

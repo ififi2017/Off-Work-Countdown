@@ -4,6 +4,7 @@ struct LifeView: View {
     let store: OffWorkStore
 
     @State private var model: LifeViewModel?
+    @State private var income: NativeLifetimeIncomeSummary?
     @State private var loaded = false
     @State private var editing = false
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
@@ -16,6 +17,7 @@ struct LifeView: View {
                         .frame(maxWidth: .infinity, minHeight: 180)
                 } else if let model, !model.cells.isEmpty {
                     summaryCard(model)
+                    if let income { incomeCard(income) }
                     gridCard(model)
                     footnotes(model)
                 } else {
@@ -41,6 +43,7 @@ struct LifeView: View {
         let next = await store.prepareLifeViewModel()
         guard !Task.isCancelled else { return }
         model = next
+        income = next?.income
         loaded = true
     }
 
@@ -88,6 +91,26 @@ struct LifeView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(title)
         .accessibilityValue(value)
+    }
+
+    private func incomeCard(_ income: NativeLifetimeIncomeSummary) -> some View {
+        OWCGroupCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(store.t("lifeIncomeTitle"))
+                    .font(.headline)
+                    .foregroundStyle(OWCDesign.primary)
+                summaryItem(store.t("lifeIncomeHistory"), store.moneyText(income.historicalGross))
+                Divider()
+                summaryItem(store.t("lifeIncomeFuture"), store.moneyText(income.projectedGross))
+                Divider()
+                summaryItem(store.t("lifeIncomeTotal"), store.moneyText(income.totalGross))
+                Text(store.t("lifeIncomeMethod"))
+                    .font(.caption)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(16)
+        }
     }
 
     private func weeksLabel(_ count: Int) -> String {
@@ -302,6 +325,10 @@ struct LifeProfileEditView: View {
     @State private var workYear = ""
     @State private var retirementAge = ""
     @State private var sleepHours = ""
+    @State private var workHistoryMode: LifeWorkHistoryMode = .rough
+    @State private var roughSalaryAmount = ""
+    @State private var roughSalaryCadence: LifeSalaryCadence = .monthly
+    @State private var employmentDrafts: [EmploymentDraft] = []
     @State private var savedFeedback = 0
     @Environment(\.dismiss) private var dismiss
 
@@ -311,8 +338,12 @@ struct LifeProfileEditView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     OWCGroupCard {
                         numberRow(store.t("lifeBirthYear"), text: $bornYear, placeholder: "1990", maxDigits: 4)
-                        numberRow(store.t("lifeSchoolStarted"), text: $schoolYear, placeholder: "1996", maxDigits: 4)
-                        numberRow(store.t("lifeWorkStarted"), text: $workYear, placeholder: "2012", maxDigits: 4)
+                        numberRow(
+                            store.t("lifeSchoolStarted"),
+                            text: $schoolYear,
+                            placeholder: suggestedSchoolYear,
+                            maxDigits: 4
+                        )
                         numberRow(store.t("lifeRetirementAge"), text: $retirementAge, placeholder: "60", maxDigits: 3)
                         numberRow(
                             store.t("lifeSleepHours"),
@@ -323,6 +354,8 @@ struct LifeProfileEditView: View {
                             isLast: true
                         )
                     }
+
+                    workHistoryEditor
 
                     Text(store.t("lifeProfileFooter"))
                         .font(.footnote)
@@ -344,11 +377,71 @@ struct LifeProfileEditView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(store.t("saveAction"), action: save)
                         .fontWeight(.semibold)
-                        .disabled(Double(sleepHours) == nil)
+                        .disabled(!canSave)
                 }
             }
             .sensoryFeedback(.success, trigger: savedFeedback)
             .onAppear(perform: load)
+        }
+    }
+
+    @ViewBuilder
+    private var workHistoryEditor: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Picker(store.t("lifeWorkHistoryMode"), selection: $workHistoryMode) {
+                Text(store.t("lifeWorkHistoryRough")).tag(LifeWorkHistoryMode.rough)
+                Text(store.t("lifeWorkHistoryDetailed")).tag(LifeWorkHistoryMode.detailed)
+            }
+            .pickerStyle(.segmented)
+            .accessibilityLabel(store.t("lifeWorkHistoryMode"))
+
+            if workHistoryMode == .rough {
+                OWCGroupCard {
+                    numberRow(
+                        store.t("lifeWorkStarted"),
+                        text: $workYear,
+                        placeholder: suggestedWorkYear,
+                        maxDigits: 4
+                    )
+                    salaryRow(
+                        title: store.t("lifeCurrentSalary"),
+                        amount: $roughSalaryAmount,
+                        cadence: $roughSalaryCadence,
+                        isLast: true
+                    )
+                }
+                Text(store.t("lifeRoughIncomeHelp"))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20)
+            } else {
+                OWCGroupCard {
+                    salaryRow(
+                        title: store.t("lifeCurrentSalary"),
+                        amount: $roughSalaryAmount,
+                        cadence: $roughSalaryCadence,
+                        isLast: true
+                    )
+                }
+                Text(store.t("lifeDetailedIncomeHelp"))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20)
+                ForEach($employmentDrafts) { $draft in
+                    employmentCard($draft)
+                }
+                Button {
+                    employmentDrafts.append(EmploymentDraft(
+                        startDate: store.recordsCalendar.date(byAdding: .year, value: -1, to: .now) ?? .now,
+                        endDate: .now
+                    ))
+                } label: {
+                    Label(store.t("lifeAddEmployment"), systemImage: "plus")
+                }
+                .buttonStyle(OWCSecondaryButtonStyle())
+            }
         }
     }
 
@@ -372,9 +465,68 @@ struct LifeProfileEditView: View {
         }
     }
 
+    private func salaryRow(
+        title: String,
+        amount: Binding<String>,
+        cadence: Binding<LifeSalaryCadence>,
+        isLast: Bool
+    ) -> some View {
+        OWCRow(title: title, isLast: isLast) {
+            HStack(spacing: 8) {
+                OWCNumberField(
+                    placeholder: "0",
+                    text: amount,
+                    decimal: true,
+                    maxDigits: 12,
+                    width: 104,
+                    onCommit: {}
+                )
+                Picker("", selection: cadence) {
+                    Text(store.t("lifeSalaryMonthly")).tag(LifeSalaryCadence.monthly)
+                    Text(store.t("lifeSalaryYearly")).tag(LifeSalaryCadence.yearly)
+                }
+                .labelsHidden()
+                .fixedSize()
+                .accessibilityLabel(store.t("lifeSalaryCadence"))
+            }
+        }
+    }
+
+    private func employmentCard(_ draft: Binding<EmploymentDraft>) -> some View {
+        OWCGroupCard {
+            VStack(spacing: 0) {
+                OWCRow(title: store.t("lifeEmploymentStart")) {
+                    DatePicker("", selection: draft.startDate, displayedComponents: .date)
+                        .labelsHidden()
+                        .accessibilityLabel(store.t("lifeEmploymentStart"))
+                }
+                OWCRow(title: store.t("lifeEmploymentEnd")) {
+                    DatePicker("", selection: draft.endDate, displayedComponents: .date)
+                        .labelsHidden()
+                        .accessibilityLabel(store.t("lifeEmploymentEnd"))
+                }
+                salaryRow(
+                    title: store.t("lifeEmploymentSalary"),
+                    amount: draft.salaryAmount,
+                    cadence: draft.salaryCadence,
+                    isLast: false
+                )
+                Button(role: .destructive) {
+                    employmentDrafts.removeAll { $0.id == draft.wrappedValue.id }
+                } label: {
+                    OWCRow(icon: "trash", title: store.t("lifeRemoveEmployment"), isLast: true) {
+                        EmptyView()
+                    }
+                }
+                .buttonStyle(OWCRowButtonStyle())
+            }
+        }
+    }
+
     private func load() {
         var profile = store.records.state.lifeProfile
         profile?.migrateLegacyFields(calendar: store.recordsCalendar)
+        workHistoryMode = profile?.workHistoryMode ?? .rough
         if let year = profile?.bornOn?.year ?? profile?.birthYear { bornYear = Self.plain(year) }
         if let year = profile?.schoolStartedOn?.year { schoolYear = Self.plain(year) }
         if let year = profile?.workStartedPartial?.year
@@ -386,8 +538,26 @@ struct LifeProfileEditView: View {
             retirementAge = Self.plain(retirementYear - bornYear)
         } else if let age = profile?.retirementAge {
             retirementAge = Self.plain(age)
+        } else {
+            retirementAge = "60"
         }
-        if let sleep = profile?.averageSleepHours { sleepHours = Self.plain(sleep) }
+        sleepHours = profile?.averageSleepHours.map(Self.plain) ?? "8"
+        if let salary = profile?.roughCurrentSalary
+            ?? profile?.employmentPeriods.first(where: { $0.endsOn == nil })?.salary {
+            roughSalaryAmount = Self.plain(salary.amount)
+            roughSalaryCadence = salary.cadence
+        } else if store.salaryEnabled,
+                  let equivalent = try? CountdownRules.shared.salaryMonthlyEquivalent(
+                    input: store.rulesInput(at: .now)
+                  ),
+                  let amount = equivalent.amount,
+                  amount > 0 {
+            roughSalaryAmount = Self.plain(amount)
+            roughSalaryCadence = .monthly
+        }
+        employmentDrafts = (profile?.employmentPeriods ?? []).compactMap {
+            EmploymentDraft($0, calendar: store.recordsCalendar)
+        }
     }
 
     private func save() {
@@ -399,16 +569,87 @@ struct LifeProfileEditView: View {
                       let age = Int(retirementAge) else { return nil as PartialCivilDate? }
                 return .yearOnly(birthYear + age)
             }()
-            store.saveLifeProfileV2(
-                bornOn: bornOn,
-                schoolStartedOn: Int(schoolYear).map { .yearOnly($0) },
-                workStartedOn: Int(workYear).map { .yearOnly($0) },
-                retirementOn: retirementOn,
-                sleepHours: Double(sleepHours)
+            let employmentPeriods = employmentDrafts.compactMap {
+                $0.period(calendar: store.recordsCalendar)
+            }
+            var profile = store.records.state.lifeProfile ?? LifeProfile(
+                editedAt: .now,
+                editCount: 0,
+                editTieBreaker: UUID()
             )
+            profile.bornOn = bornOn
+            profile.schoolStartedOn = (Int(schoolYear) ?? bornOn.map { $0.year + 6 })
+                .map { .yearOnly($0) }
+            profile.workStartedPartial = workHistoryMode == .rough
+                ? (Int(workYear) ?? bornOn.map { $0.year + 22 }).map { .yearOnly($0) }
+                : earliestStart(in: employmentPeriods)
+            profile.retirementOn = retirementOn
+            profile.birthYear = bornOn?.year
+            profile.workStartedOn = profile.workStartedPartial?.calculationAnchor(in: store.recordsCalendar)
+            profile.retirementAge = Int(retirementAge)
+            profile.averageSleepHours = Double(sleepHours)
+            profile.averageSleepMinutes = Double(sleepHours).map { Int(($0 * 60).rounded()) }
+            if profile.averageSleepMinutes != nil {
+                profile.sleepSource = .manual
+                profile.sleepSourceUpdatedAt = .now
+            }
+            profile.workHistoryMode = workHistoryMode
+            profile.roughCurrentSalary = salary(amount: roughSalaryAmount, cadence: roughSalaryCadence)
+            profile.employmentPeriods = employmentPeriods
+            store.records.updateLifeProfile(profile)
             savedFeedback += 1
             dismiss()
         }
+    }
+
+    private var suggestedSchoolYear: String {
+        Int(bornYear).map { Self.plain($0 + 6) } ?? store.t("lifeSuggestedYear")
+    }
+
+    private var suggestedWorkYear: String {
+        Int(bornYear).map { Self.plain($0 + 22) } ?? store.t("lifeSuggestedYear")
+    }
+
+    private var canSave: Bool {
+        guard Double(sleepHours) != nil,
+              validOptionalYear(bornYear),
+              validOptionalYear(schoolYear),
+              validOptionalYear(workYear),
+              Int(retirementAge).map({ (1...120).contains($0) }) == true
+        else { return false }
+        if !roughSalaryAmount.isEmpty,
+           salary(amount: roughSalaryAmount, cadence: roughSalaryCadence) == nil {
+            return false
+        }
+        let periods = employmentDrafts.compactMap { $0.period(calendar: store.recordsCalendar) }
+            .sorted {
+                ($0.startsOn.calculationAnchor(in: store.recordsCalendar) ?? .distantFuture)
+                    < ($1.startsOn.calculationAnchor(in: store.recordsCalendar) ?? .distantFuture)
+            }
+        guard periods.count == employmentDrafts.count else { return false }
+        return !zip(periods, periods.dropFirst()).contains { current, next in
+            guard let end = current.endsOn?.calculationAnchor(in: store.recordsCalendar),
+                  let nextStart = next.startsOn.calculationAnchor(in: store.recordsCalendar)
+            else { return true }
+            return end > nextStart
+        }
+    }
+
+    private func validOptionalYear(_ value: String) -> Bool {
+        value.isEmpty || Int(value).map { (1_000...9_999).contains($0) } == true
+    }
+
+    private func salary(amount: String, cadence: LifeSalaryCadence) -> LifeSalary? {
+        guard let value = Double(amount), value.isFinite, value > 0 else { return nil }
+        return LifeSalary(amount: value, cadence: cadence)
+    }
+
+    private func earliestStart(in periods: [LifeEmploymentPeriod]) -> PartialCivilDate? {
+        periods.min {
+            guard let left = $0.startsOn.calculationAnchor(in: store.recordsCalendar) else { return false }
+            guard let right = $1.startsOn.calculationAnchor(in: store.recordsCalendar) else { return true }
+            return left < right
+        }?.startsOn
     }
 
     /// `OWCNumberField` holds ASCII digits with "." as the separator, whatever
@@ -426,5 +667,47 @@ struct LifeProfileEditView: View {
                 .grouping(.never)
                 .locale(Locale(identifier: "en_US_POSIX"))
         )
+    }
+
+    private struct EmploymentDraft: Identifiable, Equatable {
+        var id = UUID()
+        var startDate: Date
+        var endDate: Date
+        var salaryAmount = ""
+        var salaryCadence: LifeSalaryCadence = .monthly
+
+        init(startDate: Date, endDate: Date) {
+            self.startDate = startDate
+            self.endDate = endDate
+        }
+
+        init?(_ period: LifeEmploymentPeriod, calendar: Calendar) {
+            guard let startDate = period.startsOn.calculationAnchor(in: calendar) else { return nil }
+            id = period.id
+            self.startDate = startDate
+            endDate = period.endsOn?.calculationAnchor(in: calendar) ?? .now
+            salaryAmount = LifeProfileEditView.plain(period.salary.amount)
+            salaryCadence = period.salary.cadence
+        }
+
+        func period(calendar: Calendar) -> LifeEmploymentPeriod? {
+            let starts = calendar.dateComponents([.year, .month, .day], from: startDate)
+            guard let year = starts.year, let month = starts.month, let day = starts.day,
+                  let startsOn = PartialCivilDate.exact(year: year, month: month, day: day),
+                  let amount = Double(salaryAmount), amount.isFinite, amount > 0
+            else { return nil }
+            guard endDate > startDate,
+                  endDate <= .now else { return nil }
+            let ends = calendar.dateComponents([.year, .month, .day], from: endDate)
+            guard let endYear = ends.year, let endMonth = ends.month, let endDay = ends.day,
+                  let endsOn = PartialCivilDate.exact(year: endYear, month: endMonth, day: endDay)
+            else { return nil }
+            return LifeEmploymentPeriod(
+                id: id,
+                startsOn: startsOn,
+                endsOn: endsOn,
+                salary: LifeSalary(amount: amount, cadence: salaryCadence)
+            )
+        }
     }
 }

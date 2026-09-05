@@ -273,9 +273,9 @@ if (
   !widgetInfo.includes("<key>CFBundleDisplayName</key>\n\t<string>DoneAt</string>") ||
   !widgetInfo.includes("<key>CFBundleName</key>\n\t<string>DoneAt</string>") ||
   !iosBrandSource.includes('static let shortName = "DoneAt"') ||
-  !sharedWidgetSource.includes('#if os(iOS)\n    "DoneAt"')
+  !sharedWidgetSource.includes('private func widgetProductName(locale: String) -> String {\n    "DoneAt"')
 ) {
-  fail("Every iOS outer surface must use the DoneAt short name without renaming the macOS product.");
+  fail("Every iOS outer surface and the shared widget must use the DoneAt short name.");
 }
 if (
   !sharedWidgetSource.includes("systemExtraLargePortraitRawValue") ||

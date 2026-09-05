@@ -39,6 +39,13 @@ struct RecordsSyncSettingsView: View {
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 14)
 
+                Text(store.t("syncPrivacyDetail"))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, OWCDesign.pageInset + 20)
+                    .padding(.top, 10)
+
                 statusFooter
                     .padding(.horizontal, OWCDesign.pageInset + 20)
                     .padding(.top, 10)

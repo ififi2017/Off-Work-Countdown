@@ -419,6 +419,26 @@ export function createIOSNativeRulesBundle() {
       });
     },
 
+    salaryMonthlyEquivalent(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({
+        amount: countdown.getMonthlySalaryEquivalent(
+          String(input.salaryAmount ?? ""),
+          input.salaryType,
+          input.monthlyWorkingDays,
+          input.annualBonusMonths || 0
+        ),
+      });
+    },
+
+    lifetimeIncome(inputJSON) {
+      return JSON.stringify(summary.projectLifetimeGrossIncome(JSON.parse(inputJSON)));
+    },
+
+    recordsActualForecast(inputJSON) {
+      return JSON.stringify(summary.summarizeRecordsActualAndForecast(JSON.parse(inputJSON)));
+    },
+
     reminders(inputJSON) {
       const input = JSON.parse(inputJSON);
       const shift = resolveCurrentShift(input);

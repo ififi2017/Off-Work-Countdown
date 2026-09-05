@@ -3443,6 +3443,83 @@ func recordsHeadlineCivilDayCoverage(endHour: Double) throws {
 }
 
 @MainActor
+@Test("Records actual forecast uses observed time and unions repeated overtime declarations")
+func recordsActualForecastNormalizesObservedIntervals() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.onboardingComplete = true
+    store.plus.debugSetAuthorized(true)
+    store.recordsTimeZoneIdentifier = "UTC"
+    let first = utcDay(2026, 9, 1)
+    let second = utcDay(2026, 9, 2)
+    let now = utcDay(2026, 9, 3)
+    let snapshotID = UUID()
+    func observe(_ kind: WorkObservationKind, day: Date, hour: Double, valueData: Data? = nil) {
+        records.recordObservation(
+            kind: kind,
+            eventID: UUID(),
+            shiftAnchorDate: day,
+            occurredAt: day.addingTimeInterval(hour * 3_600),
+            snapshotID: snapshotID,
+            valueData: valueData,
+            timeZoneIdentifier: "UTC"
+        )
+    }
+    observe(.countdownStarted, day: first, hour: 10)
+    observe(.countdownStopped, day: first, hour: 16)
+    observe(.countdownStarted, day: second, hour: 9)
+    observe(.countdownStopped, day: second, hour: 18)
+    for (endHour, declaredAtHour) in [(21.0, 18.1), (20.0, 18.2)] {
+        let payload = try JSONEncoder().encode(OvertimeDeclarationPayload(
+            overtimeEndAtMs: second.addingTimeInterval(endHour * 3_600).timeIntervalSince1970 * 1_000,
+            plannedEndAtMs: second.addingTimeInterval(18 * 3_600).timeIntervalSince1970 * 1_000
+        ))
+        observe(.overtimeDeclared, day: second, hour: declaredAtHour, valueData: payload)
+    }
+    let days = [first, second].map { date in
+        let segment = NativeShiftSegment(
+            startAtMs: date.addingTimeInterval(9 * 3_600).timeIntervalSince1970 * 1_000,
+            endAtMs: date.addingTimeInterval(18 * 3_600).timeIntervalSince1970 * 1_000
+        )
+        return DayResolution(
+            dayKey: RecordJSON.dayKey(date, calendar: store.recordsCalendar),
+            shiftAnchorDate: date,
+            layer: .schedule,
+            periodID: nil,
+            snapshotID: snapshotID,
+            isScheduledWorkday: true,
+            segments: [segment],
+            baseScheduleIsWorkday: true,
+            baseScheduleSegments: [segment]
+        )
+    }
+    let cells = days.map { day in
+        RecordsDayCell(
+            dayKey: day.dayKey,
+            date: day.shiftAnchorDate,
+            appearance: .recorded,
+            workMs: 0,
+            overtimeMs: 0,
+            breakMs: 0,
+            freeMs: 0,
+            observationCount: 2,
+            isToday: false,
+            isFuture: false,
+            isProjection: false,
+            hasConflict: false
+        )
+    }
+
+    let actual = try #require(store.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.actual)
+    // 10:00–16:00 is six hours. The later declaration shortens overtime from
+    // 21:00 to 20:00, so the second day is nine regular plus two overtime hours.
+    #expect(actual.days == 2)
+    #expect(actual.hours == 17)
+}
+
+@MainActor
 @Test("Saved schedules count after a week without opening the app; life backfill and future dates remain projections")
 func recordsScheduleContinuesWithoutAppVisits() async throws {
     let (defaults, suite) = try isolatedDefaults()
@@ -3486,6 +3563,8 @@ func recordsScheduleContinuesWithoutAppVisits() async throws {
     ))
     #expect(summary.workdays == 5)
     #expect(summary.regularWorkMs == 35 * 3_600_000)
+    #expect(summary.actualForecast?.actual.days == 0)
+    #expect((summary.actualForecast?.forecast.hours ?? 0) >= 35)
     #expect(records.state.observations.isEmpty)
     #expect(records.state.overrides.isEmpty)
     #expect(records.state.periods.count == 1)

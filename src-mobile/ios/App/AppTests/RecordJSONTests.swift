@@ -5,8 +5,8 @@ import Testing
 @MainActor
 @Test("Unknown JSON schema versions are rejected")
 func recordJSONRejectsUnknownVersion() throws {
-    let data = Data(#"{"schemaVersion":5,"exportedAtMs":0,"timeZoneIdentifier":"UTC","calendarIdentifier":"gregorian","careerPeriods":[],"scheduleSnapshots":[],"calendarExceptions":[],"dayOverrides":[],"workObservations":[]}"#.utf8)
-    #expect(throws: RecordJSONError.unknownSchemaVersion(5)) {
+    let data = Data(#"{"schemaVersion":6,"exportedAtMs":0,"timeZoneIdentifier":"UTC","calendarIdentifier":"gregorian","careerPeriods":[],"scheduleSnapshots":[],"calendarExceptions":[],"dayOverrides":[],"workObservations":[]}"#.utf8)
+    #expect(throws: RecordJSONError.unknownSchemaVersion(6)) {
         _ = try RecordJSON.decode(data)
     }
 }
@@ -34,7 +34,7 @@ func workObservationSyncStampMigration() throws {
 
     let exported = try export(state)
     let current = try RecordJSON.decode(exported)
-    #expect(current.schemaVersion == 4)
+    #expect(current.schemaVersion == 5)
     #expect(current.workObservations[0].editCount == 4)
     #expect(current.workObservations[0].editTieBreaker == id(74).uuidString)
     var roundTripped = RecordState()
@@ -114,7 +114,7 @@ func recordJSONPreservesFocusPlanningConfiguration() throws {
     )
 
     let document = try RecordJSON.decode(try export(state))
-    #expect(document.schemaVersion == 4)
+    #expect(document.schemaVersion == 5)
     var restored = RecordState()
     _ = try RecordJSON.apply(document, to: &restored, mode: .skipErased)
 
@@ -125,17 +125,58 @@ func recordJSONPreservesFocusPlanningConfiguration() throws {
 }
 
 @MainActor
-@Test("Export then import is idempotent and never includes salary")
+@Test("Life income history round-trips and older profiles receive safe defaults")
+func recordJSONPreservesLifeIncomeHistory() throws {
+    let editedAt = Date(timeIntervalSince1970: 1_788_000_000)
+    let period = LifeEmploymentPeriod(
+        id: id(84),
+        startsOn: try #require(.exact(year: 2020, month: 1, day: 2)),
+        endsOn: nil,
+        salary: LifeSalary(amount: 125_000, cadence: .yearly)
+    )
+    var state = RecordState()
+    state.lifeProfile = LifeProfile(
+        workHistoryMode: .detailed,
+        roughCurrentSalary: LifeSalary(amount: 10_000, cadence: .monthly),
+        employmentPeriods: [period],
+        editedAt: editedAt,
+        editCount: 3,
+        editTieBreaker: id(85)
+    )
+
+    let data = try export(state)
+    #expect(String(decoding: data, as: UTF8.self).contains("125000"))
+    let document = try RecordJSON.decode(data)
+    var restored = RecordState()
+    _ = try RecordJSON.apply(document, to: &restored, mode: .skipErased)
+    #expect(restored.lifeProfile?.workHistoryMode == .detailed)
+    #expect(restored.lifeProfile?.roughCurrentSalary?.amount == 10_000)
+    #expect(restored.lifeProfile?.employmentPeriods == [period])
+
+    var legacyObject = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    var legacyProfile = try #require(legacyObject["lifeProfile"] as? [String: Any])
+    legacyProfile.removeValue(forKey: "workHistoryMode")
+    legacyProfile.removeValue(forKey: "roughCurrentSalary")
+    legacyProfile.removeValue(forKey: "employmentPeriods")
+    legacyObject["lifeProfile"] = legacyProfile
+    legacyObject["schemaVersion"] = 4
+    let legacyData = try JSONSerialization.data(withJSONObject: legacyObject)
+    let legacyDocument = try RecordJSON.decode(legacyData)
+    var migrated = RecordState()
+    _ = try RecordJSON.apply(legacyDocument, to: &migrated, mode: .skipErased)
+    #expect(migrated.lifeProfile?.workHistoryMode == .rough)
+    #expect(migrated.lifeProfile?.roughCurrentSalary == nil)
+    #expect(migrated.lifeProfile?.employmentPeriods.isEmpty == true)
+}
+
+@MainActor
+@Test("Export then import is idempotent")
 func recordJSONRoundTripIsIdempotent() throws {
     let state = sampleState()
     let timeZone = TimeZone(secondsFromGMT: 8 * 3600)!
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = timeZone
     let data = try RecordJSON.export(state, exportedAt: Date(timeIntervalSince1970: 1_777_000_000), timeZone: timeZone, calendar: calendar)
-    let text = String(data: data, encoding: .utf8) ?? ""
-    #expect(!text.contains("salary"))
-    #expect(!text.contains("dailySalary"))
-
     let document = try RecordJSON.decode(data)
     var imported = RecordState()
     let first = try RecordJSON.apply(document, to: &imported, mode: .skipErased)

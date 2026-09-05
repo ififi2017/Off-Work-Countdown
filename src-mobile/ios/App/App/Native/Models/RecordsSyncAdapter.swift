@@ -79,7 +79,8 @@ struct SyncConflictCopy: Equatable, Codable, Sendable {
     /// fields (for example shift segments) stay atomic by construction.
     var supportsFieldMerge: Bool {
         switch entityType {
-        case .workObservation, .focusSession, .scheduleSnapshot, .focusPlanningConfiguration:
+        case .workObservation, .focusSession, .scheduleSnapshot, .focusPlanningConfiguration,
+             .syncedPreferences:
             return false
         default:
             return localPayload != nil && incomingPayload != nil
@@ -182,6 +183,7 @@ enum RecordsSyncIdentity {
         case .focusTask: return "task.\(key.lowercased())"
         case .focusSession: return "session.\(key.lowercased())"
         case .focusPlanningConfiguration: return FocusPlanningConfiguration.logicalKey
+        case .syncedPreferences: return SyncedPreferences.logicalKey
         }
     }
 
@@ -274,6 +276,9 @@ enum RecordsSyncConflict {
         merged.averageSleepMinutes = take(local.averageSleepMinutes, server.averageSleepMinutes, baseline?.averageSleepMinutes)
         merged.sleepSource = take(local.sleepSource, server.sleepSource, baseline?.sleepSource)
         merged.sleepSourceUpdatedAt = take(local.sleepSourceUpdatedAt, server.sleepSourceUpdatedAt, baseline?.sleepSourceUpdatedAt)
+        merged.workHistoryMode = take(local.workHistoryMode, server.workHistoryMode, baseline?.workHistoryMode)
+        merged.roughCurrentSalary = take(local.roughCurrentSalary, server.roughCurrentSalary, baseline?.roughCurrentSalary)
+        merged.employmentPeriods = take(local.employmentPeriods, server.employmentPeriods, baseline?.employmentPeriods)
         merged.editCount = max(local.editCount, server.editCount) + (conflicted ? 1 : 0)
         merged.editTieBreaker = conflicted
             ? UUID()
@@ -389,7 +394,95 @@ enum RecordsSyncConflict {
         )
     }
 
-    private static let syncMetadataKeys = Set(["editCount", "editTieBreaker", "editedAtMs"])
+    static func mergeSyncedPreferences(
+        local: SyncedPreferences,
+        server: SyncedPreferences,
+        baseline: SyncedPreferences?
+    ) -> SyncedPreferences {
+        let automaticWinner = automaticallyPreferredWinner(
+            localCount: local.editCount,
+            localEditedAtMs: local.editedAt.timeIntervalSince1970 * 1_000,
+            incomingCount: server.editCount,
+            incomingEditedAtMs: server.editedAt.timeIntervalSince1970 * 1_000
+        )
+        let localWinsOverall = automaticWinner == .local || (
+            automaticWinner == nil
+            && localWins(
+                localCount: local.editCount,
+                localTie: local.editTieBreaker.uuidString,
+                serverCount: server.editCount,
+                serverTie: server.editTieBreaker.uuidString
+            )
+        )
+        func take<T: Equatable>(_ localValue: T, _ serverValue: T, _ baselineValue: T?) -> T {
+            let localChanged = baselineValue.map { localValue != $0 } ?? true
+            let serverChanged = baselineValue.map { serverValue != $0 } ?? true
+            switch (localChanged, serverChanged) {
+            case (true, false): return localValue
+            case (false, true): return serverValue
+            case (true, true) where localValue != serverValue:
+                return localWinsOverall ? localValue : serverValue
+            default: return serverValue
+            }
+        }
+        func takeOptional<T: Equatable>(
+            _ localValue: T?,
+            _ serverValue: T?,
+            _ baselineValue: T??
+        ) -> T? {
+            let baselineExists = baselineValue != nil
+            let baselineValue = baselineValue ?? nil
+            let localChanged = !baselineExists || localValue != baselineValue
+            let serverChanged = !baselineExists || serverValue != baselineValue
+            switch (localChanged, serverChanged) {
+            case (true, false): return localValue
+            case (false, true): return serverValue
+            case (true, true) where localValue != serverValue:
+                return localWinsOverall ? localValue : serverValue
+            default: return serverValue
+            }
+        }
+
+        return SyncedPreferences(
+            startMinutes: take(local.startMinutes, server.startMinutes, baseline?.startMinutes),
+            endMinutes: take(local.endMinutes, server.endMinutes, baseline?.endMinutes),
+            workdays: take(local.workdays, server.workdays, baseline?.workdays),
+            scheduleMode: take(local.scheduleMode, server.scheduleMode, baseline?.scheduleMode),
+            alternatingWeekType: take(local.alternatingWeekType, server.alternatingWeekType, baseline?.alternatingWeekType),
+            alternatingWeekendWorkday: take(local.alternatingWeekendWorkday, server.alternatingWeekendWorkday, baseline?.alternatingWeekendWorkday),
+            alternatingReferenceWeekStartMs: take(local.alternatingReferenceWeekStartMs, server.alternatingReferenceWeekStartMs, baseline?.alternatingReferenceWeekStartMs),
+            rotationWorkDays: take(local.rotationWorkDays, server.rotationWorkDays, baseline?.rotationWorkDays),
+            rotationRestDays: take(local.rotationRestDays, server.rotationRestDays, baseline?.rotationRestDays),
+            rotationAnchorMs: take(local.rotationAnchorMs, server.rotationAnchorMs, baseline?.rotationAnchorMs),
+            lunchEnabled: take(local.lunchEnabled, server.lunchEnabled, baseline?.lunchEnabled),
+            lunchStartMinutes: take(local.lunchStartMinutes, server.lunchStartMinutes, baseline?.lunchStartMinutes),
+            lunchDurationMinutes: take(local.lunchDurationMinutes, server.lunchDurationMinutes, baseline?.lunchDurationMinutes),
+            recordsTimeZoneIdentifier: take(local.recordsTimeZoneIdentifier, server.recordsTimeZoneIdentifier, baseline?.recordsTimeZoneIdentifier),
+            salaryAmount: take(local.salaryAmount, server.salaryAmount, baseline?.salaryAmount),
+            salaryEnabled: take(local.salaryEnabled, server.salaryEnabled, baseline?.salaryEnabled),
+            salaryType: take(local.salaryType, server.salaryType, baseline?.salaryType),
+            monthlyWorkingDays: take(local.monthlyWorkingDays, server.monthlyWorkingDays, baseline?.monthlyWorkingDays),
+            annualBonusEnabled: take(local.annualBonusEnabled, server.annualBonusEnabled, baseline?.annualBonusEnabled),
+            annualBonusMonths: take(local.annualBonusMonths, server.annualBonusMonths, baseline?.annualBonusMonths),
+            notificationMode: take(local.notificationMode, server.notificationMode, baseline?.notificationMode),
+            cycleEndSummaryNotificationEnabled: take(local.cycleEndSummaryNotificationEnabled, server.cycleEndSummaryNotificationEnabled, baseline?.cycleEndSummaryNotificationEnabled),
+            lunchStartReminderEnabled: take(local.lunchStartReminderEnabled, server.lunchStartReminderEnabled, baseline?.lunchStartReminderEnabled),
+            lunchEndReminderEnabled: take(local.lunchEndReminderEnabled, server.lunchEndReminderEnabled, baseline?.lunchEndReminderEnabled),
+            microBreakEnabled: take(local.microBreakEnabled, server.microBreakEnabled, baseline?.microBreakEnabled),
+            microBreakIntervalMinutes: take(local.microBreakIntervalMinutes, server.microBreakIntervalMinutes, baseline?.microBreakIntervalMinutes),
+            theme: take(local.theme, server.theme, baseline?.theme),
+            languageOverride: takeOptional(
+                local.languageOverride,
+                server.languageOverride,
+                baseline.map(\.languageOverride)
+            ),
+            editedAtMs: max(local.editedAtMs, server.editedAtMs),
+            editCount: max(local.editCount, server.editCount) + 1,
+            editTieBreaker: UUID()
+        )
+    }
+
+    private static let syncMetadataKeys = Set(["editCount", "editTieBreaker", "editedAt", "editedAtMs"])
 
     /// JSON encoders may emit different byte order for equivalent objects.
     /// Compare the decoded business dictionary and deliberately ignore only
@@ -621,6 +714,7 @@ enum RecordsSyncApplyAction: Equatable, Sendable {
     case takeServerAndCopyLocal
     case mergeLife
     case mergeFocusPlanning
+    case mergeSyncedPreferences
 }
 
 enum RecordsSyncApply {
@@ -645,6 +739,7 @@ enum RecordsSyncApply {
         guard let localCount, let localTie else { return .insert }
         if type == .lifeProfile { return .mergeLife }
         if type == .focusPlanningConfiguration { return .mergeFocusPlanning }
+        if type == .syncedPreferences { return .mergeSyncedPreferences }
         if RecordsSyncConflict.localWins(
             localCount: localCount,
             localTie: localTie,
@@ -678,6 +773,8 @@ enum RecordsSyncPayload {
             return try? JSONEncoder().encode(FocusSessionDTO(session, calendar: calendar))
         case .focusPlanningConfiguration(let configuration):
             return try? JSONEncoder().encode(FocusPlanningConfigurationDTO(configuration))
+        case .syncedPreferences(let preferences):
+            return try? JSONEncoder().encode(preferences)
         }
     }
 
@@ -714,6 +811,8 @@ enum RecordsSyncPayload {
         case .focusPlanningConfiguration:
             return state.focusPlanningConfiguration
                 .flatMap { try? JSONEncoder().encode(FocusPlanningConfigurationDTO($0)) }
+        case .syncedPreferences:
+            return state.syncedPreferences.flatMap { try? JSONEncoder().encode($0) }
         }
     }
 
@@ -755,6 +854,9 @@ enum RecordsSyncPayload {
             return (try? JSONDecoder().decode(FocusPlanningConfigurationDTO.self, from: data))
                 .flatMap { $0.value() }
                 .map { .focusPlanningConfiguration($0) }
+        case .syncedPreferences:
+            return (try? JSONDecoder().decode(SyncedPreferences.self, from: data))
+                .flatMap { $0.isValid ? .syncedPreferences($0) : nil }
         }
     }
 
@@ -772,6 +874,7 @@ enum RecordsSyncPayload {
         case .focusTask(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         case .focusSession(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         case .focusPlanningConfiguration(let value): return value.editedAt.timeIntervalSince1970 * 1_000
+        case .syncedPreferences(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         }
     }
 
@@ -806,6 +909,8 @@ enum RecordsSyncPayload {
                 .map { ($0.editCount, $0.editTieBreaker.uuidString) }
         case .focusPlanningConfiguration:
             return state.focusPlanningConfiguration.map { ($0.editCount, $0.editTieBreaker.uuidString) }
+        case .syncedPreferences:
+            return state.syncedPreferences.map { ($0.editCount, $0.editTieBreaker.uuidString) }
         }
     }
 
@@ -823,6 +928,7 @@ enum RecordsSyncPayload {
         case .focusTask(let value): return (value.editCount, value.editTieBreaker.uuidString)
         case .focusSession(let value): return (value.editCount, value.editTieBreaker.uuidString)
         case .focusPlanningConfiguration(let value): return (value.editCount, value.editTieBreaker.uuidString)
+        case .syncedPreferences(let value): return (value.editCount, value.editTieBreaker.uuidString)
         }
     }
 
@@ -834,6 +940,30 @@ enum RecordsSyncPayload {
 }
 
 enum RecordsSyncOutbox {
+    /// A missing server row needs a create, not another update with a stale
+    /// change tag. Keep the local revision, payload and erase/revival intent.
+    static func forgetMissingRecord(
+        _ state: inout SyncLocalState,
+        name: String,
+        generation: Int,
+        expectedSystemFields: Data
+    ) -> Bool {
+        guard state.generation == generation else { return false }
+        for (key, var row) in state.rows where row.generation == generation {
+            if row.recordName == name, row.lastKnownRecord == expectedSystemFields {
+                row.lastKnownRecord = nil
+            } else if RecordsSyncIdentity.erasedName(type: row.entityType, key: row.logicalKey) == name,
+                      row.lastKnownErasedRecord == expectedSystemFields {
+                row.lastKnownErasedRecord = nil
+            } else {
+                continue
+            }
+            state.rows[key] = row
+            return true
+        }
+        return false
+    }
+
     static func markDirty(
         _ state: inout SyncLocalState,
         type: RecordEntityType,

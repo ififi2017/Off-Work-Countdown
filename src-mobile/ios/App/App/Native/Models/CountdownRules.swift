@@ -134,6 +134,28 @@ struct NativeRecordsIncome: Codable, Hashable {
     let earnings: Double?
 }
 
+struct NativeLifetimeIncomeSummary: Codable, Hashable, Sendable {
+    let historicalGross: Double
+    let projectedGross: Double
+    let totalGross: Double
+}
+
+struct NativeRecordsActualForecastPart: Codable, Hashable, Sendable {
+    let days: Double
+    let hours: Double
+    let earnings: Double?
+}
+
+struct NativeRecordsActualForecastSummary: Codable, Hashable, Sendable {
+    let actual: NativeRecordsActualForecastPart
+    let forecast: NativeRecordsActualForecastPart
+    let total: NativeRecordsActualForecastPart
+}
+
+struct NativeMonthlySalaryEquivalent: Codable, Hashable, Sendable {
+    let amount: Double?
+}
+
 nonisolated enum CountdownRulesError: LocalizedError, Sendable {
     case missingResource
     case unavailableRuntime(String)
@@ -398,6 +420,23 @@ final class CountdownRules {
         return try callRule(context, "recordsIncome", input)
     }
 
+    func lifetimeIncome(input: NativeLifetimeIncomeInput) throws -> NativeLifetimeIncomeSummary {
+        if let loadError { throw loadError }
+        return try callRule(context, "lifetimeIncome", input)
+    }
+
+    func recordsActualForecast(
+        input: NativeRecordsActualForecastInput
+    ) throws -> NativeRecordsActualForecastSummary {
+        if let loadError { throw loadError }
+        return try callRule(context, "recordsActualForecast", input)
+    }
+
+    func salaryMonthlyEquivalent(input: NativeRulesInput) throws -> NativeMonthlySalaryEquivalent {
+        if let loadError { throw loadError }
+        return try callRule(context, "salaryMonthlyEquivalent", input)
+    }
+
     func validateBreak(input: NativeRulesInput) -> Bool {
         askRule(context, "validateBreak", input, fallback: false)
     }
@@ -529,6 +568,46 @@ struct NativeRecordsIncomeInput: Codable {
         monthlyWorkingDays = rules.monthlyWorkingDays
         annualBonusMonths = rules.annualBonusMonths
     }
+}
+
+struct NativeLifetimeIncomePeriod: Codable {
+    let startsOn: String
+    let endsOn: String?
+    let salaryAmount: Double
+    let salaryCadence: String
+}
+
+struct NativeLifetimeIncomeSalary: Codable {
+    let salaryAmount: Double
+    let salaryCadence: String
+    let startsOn: String?
+}
+
+struct NativeLifetimeIncomeInput: Codable {
+    let periods: [NativeLifetimeIncomePeriod]
+    let currentSalary: NativeLifetimeIncomeSalary?
+    let asOf: String
+    let retirementOn: String
+}
+
+struct NativeRecordsActualForecastDay: Codable {
+    let actualKind: String?
+    let resolvedSegments: [NativeShiftSegment]
+    let plannedSegments: [NativeShiftSegment]
+    let overtimeSegments: [NativeShiftSegment]
+    let observations: [NativeRecordsSummaryObservation]
+    let isActiveAnchor: Bool
+}
+
+struct NativeRecordsSummaryObservation: Codable {
+    let kind: String
+    let occurredAtMs: Double
+}
+
+struct NativeRecordsActualForecastInput: Codable {
+    let days: [NativeRecordsActualForecastDay]
+    let dailySalary: Double?
+    let asOfMs: Double
 }
 
 struct NativeReminder: Codable, Hashable {

@@ -9,7 +9,7 @@ struct TabletShellView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: sidebarVisible ? OWCDesign.pageInset : 0) {
             if sidebarVisible {
                 TabletSidebar(store: store) {
                     withAnimation(shellAnimation) { sidebarVisible = false }
@@ -43,6 +43,12 @@ struct TabletShellView: View {
                         .accessibilityHidden(store.selectedTab != .settings)
                         .zIndex(store.selectedTab == .settings ? 1 : 0)
                 }
+                // The real gaps belong outside the NavigationStack so UIKit
+                // sees its final frame throughout a push. Root pages already
+                // own a page inset, so their canvas draws back into both gaps;
+                // destinations keep the symmetric frame for their native bar
+                // and content.
+                .padding(.horizontal, sidebarVisible ? -OWCDesign.pageInset : 0)
                 .animation(shellAnimation, value: store.selectedTab)
                 // Hidden for every root, not just the timer's. All three roots
                 // stay mounted and cross-fade, so a bar that appeared for
@@ -56,14 +62,8 @@ struct TabletShellView: View {
                     AppRouteDestination(route: route, store: store)
                 }
             }
-            // A NavigationStack sitting in an HStack begins 290 pt from the
-            // screen edge, and UIKit reads that as "already inset": a pushed
-            // page's large title got no leading margin at all and sat against
-            // the sidebar divider, left of both the back button and its own
-            // content. The bar's margins are not reachable from SwiftUI, so
-            // the gap is real: the detail pane starts inside it, bar included.
-            .padding(.leading, OWCDesign.pageInset)
         }
+        .padding(.trailing, sidebarVisible ? OWCDesign.pageInset : 0)
         .onChange(of: store.presentedRoute) { _, route in
             guard let route else { return }
             path.append(route)
@@ -228,6 +228,8 @@ private struct TabletSidebar: View {
                         VStack(alignment: .leading, spacing: 0) {
                             Text(store.formatDuration(remaining))
                                 .font(.title.bold().monospacedDigit())
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.5)
                                 .tracking(-0.8)
                                 .owcCountdownTextTransition(milliseconds: remaining)
                             Text(sidebarMiniCaption(snapshot, phase: phase, at: date))

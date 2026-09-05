@@ -152,6 +152,8 @@ private struct ConflictReviewCard: View {
             return store.t("focusHistory")
         case .focusPlanningConfiguration:
             return store.t("focusPlanTitle")
+        case .syncedPreferences:
+            return store.t("settings")
         case .lifeProfile:
             return store.t("recordsLifeProfileRow")
         }
@@ -465,6 +467,7 @@ private enum ConflictPayloadPresenter {
             "birthYear", "workStartedOn", "retirementAge", "averageSleepHours",
             "hidesExactAges", "bornOn", "schoolStartedOn", "workStartedPartial",
             "retirementOn", "averageSleepMinutes", "sleepSource",
+            "workHistoryMode", "roughCurrentSalary", "employmentPeriods",
         ]
         case .focusTask: [
             "plannedForDate", "scheduledStartAtMs", "title", "estimatedPomodoros",
@@ -475,6 +478,7 @@ private enum ConflictPayloadPresenter {
             "endReason", "kind", "actualDurationSeconds", "plannedEndReason",
         ]
         case .focusPlanningConfiguration: []
+        case .syncedPreferences: []
         }
     }
 

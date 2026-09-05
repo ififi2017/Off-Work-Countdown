@@ -1274,18 +1274,23 @@ struct HealthReminderSettingsView: View {
                 .padding(.top, 22)
 
                 if takenOverByFocus {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(store.t("microBreakTakenOverNote"))
-                            .font(.footnote)
-                            .foregroundStyle(OWCDesign.secondary)
-                        Button(store.t("microBreakOpenFocus")) {
-                            store.selectedTab = .timer
-                            store.timerPath.append(.focus)
+                    OWCGroupCard {
+                        NavigationLink(value: AppRoute.focus) {
+                            OWCRow(
+                                icon: "timer",
+                                title: store.t("microBreakOpenFocus"),
+                                subtitle: store.t("microBreakTakenOverNote"),
+                                isLast: true
+                            ) {
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(OWCDesign.tertiary)
+                                    .accessibilityHidden(true)
+                            }
                         }
-                        .buttonStyle(OWCSecondaryButtonStyle())
-                        .frame(maxWidth: 220)
+                        .buttonStyle(OWCRowButtonStyle())
                     }
-                    .padding(.horizontal, OWCDesign.pageInset + 4)
+                    .padding(.horizontal, OWCDesign.pageInset)
                     .padding(.top, 16)
                 }
 

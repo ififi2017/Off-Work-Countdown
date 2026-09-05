@@ -39,6 +39,7 @@ struct LifeViewModel: Equatable, Sendable {
     var cells: [LifeWeekCell]
     var workShare: Double
     var ownAwakeShare: Double
+    var income: NativeLifetimeIncomeSummary? = nil
     /// Birth to retirement, divided into the same six categories every other
     /// records surface uses. Entirely a projection: it is read from the life
     /// profile and the expanded schedule, and never written anywhere.
@@ -130,15 +131,28 @@ enum LifeViewCalculator {
             ?? resolvedProfile.workStartedOn
             ?? calendar.date(byAdding: .year, value: 22, to: lifeStart)
             ?? now
-        let workIntervals = mergedIntervals(
-            scheduleDays.flatMap(\.segments),
-            clippedFrom: lifeStart,
-            through: lifeEnd
+        let employmentCoverage = detailedEmploymentCoverage(
+            profile: resolvedProfile,
+            now: now,
+            lifeStart: lifeStart,
+            lifeEnd: lifeEnd,
+            calendar: calendar
         )
-        let overrideIntervals = mergedIntervals(
-            scheduleDays.filter(\.isOverride).flatMap(\.segments),
-            clippedFrom: lifeStart,
-            through: lifeEnd
+        let workIntervals = limitedToEmployment(
+            mergedIntervals(
+                scheduleDays.flatMap(\.segments),
+                clippedFrom: lifeStart,
+                through: lifeEnd
+            ),
+            coverage: employmentCoverage
+        )
+        let overrideIntervals = limitedToEmployment(
+            mergedIntervals(
+                scheduleDays.filter(\.isOverride).flatMap(\.segments),
+                clippedFrom: lifeStart,
+                through: lifeEnd
+            ),
+            coverage: employmentCoverage
         )
         let outsideZoneAnchors = scheduleDays.compactMap { day in
             outsideZoneDays.contains(day.dayKey) ? day.shiftAnchorDate : nil
@@ -163,16 +177,18 @@ enum LifeViewCalculator {
                 startingAt: &workIntervalIndex
             )
             if cellHasWork {
+                let firstWorkStartsInFuture = workIntervalIndex < workIntervals.count
+                    && workIntervals[workIntervalIndex].startMs >= now.timeIntervalSince1970 * 1_000
                 let cellHasOverride = intersects(
                     overrideIntervals,
                     from: cursor,
                     through: cellEnd,
                     startingAt: &overrideIntervalIndex
                 )
-                if cellHasOverride, cursor <= now {
-                    kind = .workOverride
-                } else if cursor > now {
+                if firstWorkStartsInFuture {
                     kind = .workProjected
+                } else if cellHasOverride, cursor <= now {
+                    kind = .workOverride
                 } else {
                     kind = .workEstimated
                 }
@@ -204,10 +220,13 @@ enum LifeViewCalculator {
         let totalMs = lifeEnd.timeIntervalSince(lifeStart) * 1_000
         let workMs = workIntervals.reduce(0) { $0 + ($1.endMs - $1.startMs) }
         let overtimeMs = subtracting(
-            mergedIntervals(
-                scheduleDays.flatMap(\.overtimeSegments),
-                clippedFrom: lifeStart,
-                through: lifeEnd
+            limitedToEmployment(
+                mergedIntervals(
+                    scheduleDays.flatMap(\.overtimeSegments),
+                    clippedFrom: lifeStart,
+                    through: lifeEnd
+                ),
+                coverage: employmentCoverage
             ),
             from: workIntervals
         )
@@ -230,10 +249,13 @@ enum LifeViewCalculator {
                 totalMs: totalMs,
                 workMs: workMs,
                 overtimeMs: overtimeMs,
-                breakMs: mergedIntervals(
-                    scheduleDays.flatMap { TimeAllocationCalculator.gaps(in: $0.segments) },
-                    clippedFrom: lifeStart,
-                    through: lifeEnd
+                breakMs: limitedToEmployment(
+                    mergedIntervals(
+                        scheduleDays.flatMap { TimeAllocationCalculator.gaps(in: $0.segments) },
+                        clippedFrom: lifeStart,
+                        through: lifeEnd
+                    ),
+                    coverage: employmentCoverage
                 ).reduce(0) { $0 + ($1.endMs - $1.startMs) },
                 sleepHours: sleepHours
             )
@@ -292,6 +314,85 @@ enum LifeViewCalculator {
         var endMs: Double
     }
 
+    /// Rough profiles retain the continuous schedule projection. Detailed
+    /// profiles only count schedule time that falls inside a supplied job;
+    /// the spaces between jobs remain the user's own time.
+    private static func detailedEmploymentCoverage(
+        profile: LifeProfile,
+        now: Date,
+        lifeStart: Date,
+        lifeEnd: Date,
+        calendar: Calendar
+    ) -> [WorkInterval]? {
+        guard profile.workHistoryMode == .detailed else { return nil }
+        var intervals = profile.employmentPeriods.compactMap { period -> WorkInterval? in
+            guard let start = period.startsOn.calculationAnchor(in: calendar) else { return nil }
+            let end = period.endsOn?.calculationAnchor(in: calendar) ?? lifeEnd
+            return clippedInterval(from: start, through: end, lifeStart: lifeStart, lifeEnd: lifeEnd)
+        }
+        if !profile.employmentPeriods.contains(where: { $0.endsOn == nil }),
+           profile.roughCurrentSalary?.isValid == true {
+            let currentStart = calendar.startOfDay(for: now)
+            if let current = clippedInterval(
+                from: currentStart,
+                through: lifeEnd,
+                lifeStart: lifeStart,
+                lifeEnd: lifeEnd
+            ) {
+                intervals.append(current)
+            }
+        }
+        return merge(intervals)
+    }
+
+    private static func clippedInterval(
+        from start: Date,
+        through end: Date,
+        lifeStart: Date,
+        lifeEnd: Date
+    ) -> WorkInterval? {
+        let lower = max(start, lifeStart).timeIntervalSince1970 * 1_000
+        let upper = min(end, lifeEnd).timeIntervalSince1970 * 1_000
+        guard upper > lower else { return nil }
+        return WorkInterval(startMs: lower, endMs: upper)
+    }
+
+    private static func limitedToEmployment(
+        _ intervals: [WorkInterval],
+        coverage: [WorkInterval]?
+    ) -> [WorkInterval] {
+        guard let coverage else { return intervals }
+        return merge(intervals.flatMap { interval in
+            coverage.compactMap { job -> WorkInterval? in
+                let start = max(interval.startMs, job.startMs)
+                let end = min(interval.endMs, job.endMs)
+                return end > start ? WorkInterval(startMs: start, endMs: end) : nil
+            }
+        })
+    }
+
+    private static func merge(_ sortedOrUnsorted: [WorkInterval]) -> [WorkInterval] {
+        let sorted = sortedOrUnsorted.sorted { lhs, rhs in
+            if lhs.startMs != rhs.startMs { return lhs.startMs < rhs.startMs }
+            return lhs.endMs < rhs.endMs
+        }
+        var merged: [WorkInterval] = []
+        for interval in sorted {
+            guard var previous = merged.popLast() else {
+                merged.append(interval)
+                continue
+            }
+            if interval.startMs <= previous.endMs {
+                previous.endMs = max(previous.endMs, interval.endMs)
+                merged.append(previous)
+            } else {
+                merged.append(previous)
+                merged.append(interval)
+            }
+        }
+        return merged
+    }
+
     /// Unioning is necessary because an overnight segment and a correction can
     /// otherwise make the same absolute time count twice in a life percentage.
     private static func mergedIntervals(
@@ -311,21 +412,7 @@ enum LifeViewCalculator {
             return lhs.endMs < rhs.endMs
         }
 
-        var merged: [WorkInterval] = []
-        for interval in sorted {
-            guard var previous = merged.popLast() else {
-                merged.append(interval)
-                continue
-            }
-            if interval.startMs <= previous.endMs {
-                previous.endMs = max(previous.endMs, interval.endMs)
-                merged.append(previous)
-            } else {
-                merged.append(previous)
-                merged.append(interval)
-            }
-        }
-        return merged
+        return merge(sorted)
     }
 
     private static func intersects(

@@ -476,7 +476,8 @@ final class WidgetSnapshotPublisher {
             expiresAtMs: expiresAtMs,
             locale: store.languageCode,
             shift: nil,
-            entries: [idleEntry(nowMs: nowMs, expiresAtMs: expiresAtMs)]
+            entries: [idleEntry(nowMs: nowMs, expiresAtMs: expiresAtMs)],
+            upcoming: upcomingItems(store: store, shift: nil, nowMs: nowMs, expiresAtMs: expiresAtMs)
         )
     }
 
@@ -523,6 +524,19 @@ final class WidgetSnapshotPublisher {
 
         if let shift, shift.isWorkday || store.isForcedWorkday(shift) {
             appendEvents(from: shift, at: now)
+        }
+
+        // Focus tasks can be scheduled on a rest day or without a running
+        // manual shift. Reuse the app's projection; IDs remove workday duplicates.
+        for event in store.focusUpcomingTimelineEvents(for: shift, at: now) {
+            appendItem(WidgetUpcomingItem(
+                id: event.id,
+                kind: event.kind.rawValue,
+                title: event.title,
+                detail: event.detail,
+                dateMs: Int64(event.date.timeIntervalSince1970 * 1_000),
+                symbolName: event.symbolName
+            ))
         }
 
         if futureShifts.isEmpty {
