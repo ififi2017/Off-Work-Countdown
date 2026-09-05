@@ -24,15 +24,24 @@ struct OffWorkLiveActivityWidget: Widget {
                     HStack(spacing: 8) {
                         // The bare mark, not the plated app icon: the Dynamic
                         // Island is already a container, and a second rounded
-                        // plate inside it reads as a sticker.
-                        AlwaysDarkBrandMark(size: 25)
+                        // plate inside it reads as a sticker. Focus and break
+                        // activities show their own glyph instead — two
+                        // activities wearing the same mark are two the user
+                        // cannot tell apart.
+                        if let symbol = activitySymbol(context) {
+                            Image(systemName: symbol)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(activityTint(context))
+                                .frame(width: 25, height: 25)
+                        } else {
+                            AlwaysDarkBrandMark(size: 25)
+                        }
 
-                        Text(activityTitle(context))
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.8))
+                        Text(context.state.timerLabel ?? context.state.appTitle)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.9))
                             .lineLimit(1)
-                            .minimumScaleFactor(0.62)
-                            .allowsTightening(true)
+                            .minimumScaleFactor(0.85)
                     }
                     .frame(maxWidth: 150, alignment: .leading)
                     .padding(.leading, 8)
@@ -42,28 +51,52 @@ struct OffWorkLiveActivityWidget: Widget {
                     // the trailing content is pulled in far enough that its last
                     // glyph is not clipped by the curve.
                     Text(endDate(context), style: .time)
-                        .font(.system(size: 13).monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.6))
+                        .font(.system(size: 14).monospacedDigit())
+                        .foregroundStyle(.white.opacity(0.8))
                         .environment(\.locale, activityLocale(context))
                         .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                        .frame(width: 54, alignment: .trailing)
+                        .fixedSize(horizontal: true, vertical: false)
                         .padding(.trailing, 8)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    ActivityCountdownPanel(context: context, size: 40)
-                        .padding(.horizontal, 10)
-                        .padding(.bottom, 4)
+                    VStack(alignment: .leading, spacing: 4) {
+                        // A task name needs the width below the camera, not
+                        // the narrow leading slot and an unreadable shrink.
+                        if let title = context.state.taskTitle {
+                            Text(title)
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .lineLimit(1)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        ActivityCountdownPanel(context: context, size: activitySymbol(context) == nil ? 40 : 48)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 2)
                 }
             } compactLeading: {
-                AlwaysDarkBrandMark(size: 20)
+                if let symbol = activitySymbol(context) {
+                    Image(systemName: symbol)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(activityTint(context))
+                } else {
+                    AlwaysDarkBrandMark(size: 20)
+                }
             } compactTrailing: {
                 ActivityCompactCountdown(context: context)
             } minimal: {
-                AlwaysDarkBrandMark(size: 18)
+                // The one slot another app's activity can squeeze this into.
+                // A single glyph has to say which of ours it is.
+                if let symbol = activitySymbol(context) {
+                    Image(systemName: symbol)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(activityTint(context))
+                } else {
+                    AlwaysDarkBrandMark(size: 18)
+                }
             }
             .widgetURL(activityDestination(context))
-            .keylineTint(activityOrange)
+            .keylineTint(activityTint(context))
         }
     }
 
@@ -84,6 +117,8 @@ private struct LockScreenActivityView: View {
                 // Dynamic Island remains on the lighter transparent mark.
                 ActivityAppIcon(size: 24)
                 Text(activityTitle(context))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                     .font(.system(size: 13, weight: .semibold))
                     .tracking(0.25)
                     .foregroundStyle(.white.opacity(0.8))
@@ -100,8 +135,30 @@ private struct LockScreenActivityView: View {
                     .foregroundStyle(.white.opacity(0.7))
             }
             .padding(.top, 12)
-            activityProgress(activityProgressValue(context, at: timeline.date))
+            activityProgress(context, at: timeline.date)
                 .padding(.top, 14)
+            // Only one activity may be live, so a focus block ends the work
+            // countdown. These two lines put the shift back: the block above,
+            // the shift below — the canvas's first two scales in one card.
+            if context.state.nextLabel != nil || context.state.shiftEndAtMs != nil {
+                HStack(spacing: 8) {
+                    if let next = context.state.nextLabel {
+                        Text(next).lineLimit(1)
+                    }
+                    Spacer(minLength: 4)
+                    if let endAtMs = context.state.shiftEndAtMs, let label = context.state.shiftEndLabel {
+                        HStack(spacing: 4) {
+                            Text(label)
+                            Text(Date(timeIntervalSince1970: Double(endAtMs) / 1_000), style: .time)
+                                .environment(\.locale, activityLocale(context))
+                        }
+                        .lineLimit(1)
+                    }
+                }
+                .font(.system(size: 12))
+                .foregroundStyle(.white.opacity(0.8))
+                .padding(.top, 10)
+            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 16)
@@ -115,15 +172,40 @@ private struct ActivityCountdownPanel: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
-            VStack(spacing: 14) {
+            VStack(spacing: activitySymbol(context) == nil ? 14 : 6) {
                 HStack {
-                    activityCountdownText(context, now: timeline.date, size: size)
-                    Spacer()
-                    Text(String(format: "%.1f%%", activityProgressValue(context, at: timeline.date)))
-                        .font(.system(size: 15, weight: .semibold).monospacedDigit())
-                        .foregroundStyle(activityOrange)
+                    if activitySymbol(context) != nil, !activityComplete(context, at: timeline.date) {
+                        let end = Date(timeIntervalSince1970: Double(context.state.endAtMs) / 1_000)
+                        // The interval timer fills the available width without
+                        // the .timer style's oversized ideal width shrinking it.
+                        Text(timerInterval: timeline.date...max(timeline.date, end), countsDown: true)
+                            .font(.system(size: size, weight: .bold).monospacedDigit())
+                            .foregroundStyle(.white)
+                            .environment(\.locale, activityLocale(context))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        activityCountdownText(context, now: timeline.date, size: size)
+                        Spacer()
+                    }
+                    if activitySymbol(context) != nil, let next = context.state.nextLabel {
+                        // Keep the next phase beside the timer so the expanded
+                        // region can fit it above the rounded bottom edge.
+                        Text(next)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.white.opacity(0.8))
+                            .multilineTextAlignment(.trailing)
+                            .lineLimit(2)
+                            .frame(maxWidth: 120, alignment: .trailing)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else if activitySymbol(context) == nil {
+                        Text(String(format: "%.1f%%", activityProgressValue(context, at: timeline.date)))
+                            .font(.system(size: 15, weight: .semibold).monospacedDigit())
+                            .foregroundStyle(activityOrange)
+                    }
                 }
-                activityProgress(activityProgressValue(context, at: timeline.date))
+                activityProgress(context, at: timeline.date)
             }
         }
     }
@@ -245,7 +327,28 @@ private func activityDestination(_ context: ActivityViewContext<OffWorkActivityA
 }
 
 private func activityTitle(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> String {
-    context.state.timerLabel ?? context.state.appTitle
+    // The task wins over the phase: "Spec review" says more than "Focus", and
+    // the countdown beside it already establishes that this is a timer.
+    context.state.taskTitle ?? context.state.timerLabel ?? context.state.appTitle
+}
+
+/// Focus indigo, break teal, work orange — the canvas palette, where orange
+/// means "now" and "selected" rather than a kind of time.
+private let activityFocusTint = Color(red: 0.368, green: 0.360, blue: 0.902)
+private let activityBreakTint = Color(red: 0.251, green: 0.784, blue: 0.878)
+
+private func activityTint(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> Color {
+    switch context.state.surface {
+    case "focus": activityFocusTint
+    case "shortBreak", "longBreak": activityBreakTint
+    default: activityOrange
+    }
+}
+
+/// nil for the work countdown, which keeps the brand mark.
+private func activitySymbol(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> String? {
+    guard let surface = context.state.surface, surface != "work" else { return nil }
+    return context.state.taskIcon ?? "timer"
 }
 
 @ViewBuilder
@@ -284,7 +387,7 @@ private func activityProgressValue(_ context: ActivityViewContext<OffWorkActivit
     if activityComplete(context, at: date) { return 100 }
     // Focus/break payloads carry one absolute segment. Unlike work progress,
     // their progress should simply advance from the session start to its end.
-    if context.state.surface != nil {
+    if activitySymbol(context) != nil {
         let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
         guard let segment = context.state.segments.first else { return context.state.progress }
         let total = max(1, segment.endAtMs - segment.startAtMs)
@@ -293,6 +396,23 @@ private func activityProgressValue(_ context: ActivityViewContext<OffWorkActivit
     return context.state.projectedProgress(
         atMs: Int64(date.timeIntervalSince1970 * 1_000)
     )
+}
+
+@ViewBuilder
+private func activityProgress(_ context: ActivityViewContext<OffWorkActivityAttributes>, at date: Date) -> some View {
+    if activitySymbol(context) != nil, let segment = context.state.segments.first {
+        let start = Date(timeIntervalSince1970: Double(segment.startAtMs) / 1_000)
+        let end = Date(timeIntervalSince1970: Double(segment.endAtMs) / 1_000)
+        // System interpolation keeps this moving without waking the extension.
+        ProgressView(timerInterval: start...max(start, end), countsDown: false) {
+            EmptyView()
+        } currentValueLabel: { EmptyView() }
+        .tint(activityTint(context))
+        .labelsHidden()
+        .frame(height: 6)
+    } else {
+        activityProgress(activityProgressValue(context, at: date))
+    }
 }
 
 private func activityProgress(_ progress: Double) -> some View {

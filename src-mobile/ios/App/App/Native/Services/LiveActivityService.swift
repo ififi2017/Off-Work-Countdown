@@ -196,6 +196,50 @@ final class LiveActivityService {
         self.focusPriorityTransition = .init(clock: schedulingClock)
     }
 
+    /// The task, not the phase. `timerLabel` says "Focus"; this says what you
+    /// are focusing on, which is what the canvas made the subject.
+    static func focusTaskTitle(
+        session: FocusSession,
+        surface: LiveActivitySurface,
+        store: OffWorkStore
+    ) -> String? {
+        guard surface == .focus else { return nil }
+        return session.taskID
+            .flatMap { id in store.records.state.focusTasks.first(where: { $0.id == id }) }?
+            .title
+    }
+
+    static func focusTaskIcon(
+        session: FocusSession,
+        surface: LiveActivitySurface,
+        store: OffWorkStore
+    ) -> String {
+        guard surface == .focus else { return "cup.and.saucer.fill" }
+        let icon = session.taskID
+            .flatMap { id in store.records.state.focusTasks.first(where: { $0.id == id }) }?
+            .icon
+        return (icon ?? .focus).systemName
+    }
+
+    /// Describe the next timer phase, not an unrelated future planning tile.
+    static func focusNextLabel(session: FocusSession, store: OffWorkStore, now: Date) -> String? {
+        guard session.kind == .focus else { return store.t("focusStartNextFocus") }
+        guard session.plannedEndReason == .completed else { return nil }
+        let kind = store.nextFocusBreakKind(after: session)
+        guard store.hasFocusRoom(at: session.plannedEndAt) else { return nil }
+        let settings = store.focusTimerSettings.normalized
+        return store.t("focusActivityThenBreak", values: [
+            "count": "\(kind == .longBreak ? settings.longBreakMinutes : settings.shortBreakMinutes)"
+        ])
+    }
+
+    /// A fixed clock-off time stays truthful while the app is suspended,
+    /// including across lunch. Never format a ticking duration into a payload.
+    static func shiftEndAtMs(store: OffWorkStore, at now: Date) -> Int64? {
+        guard let snapshot = store.snapshot(at: now), snapshot.remainingMs > 0 else { return nil }
+        return Int64(snapshot.endAtMs)
+    }
+
     private func focusCopy(for surface: LiveActivitySurface, store: OffWorkStore) -> (
         title: String, caption: String, completedCaption: String, completedNote: String
     ) {
@@ -444,7 +488,12 @@ final class LiveActivityService {
             completedNote: copy.completedNote,
             surface: decision.surface.rawValue,
             timerLabel: copy.title,
-            destination: "offworkcountdown://focus"
+            destination: "offworkcountdown://focus",
+            taskTitle: Self.focusTaskTitle(session: session, surface: decision.surface, store: store),
+            taskIcon: Self.focusTaskIcon(session: session, surface: decision.surface, store: store),
+            nextLabel: Self.focusNextLabel(session: session, store: store, now: now),
+            shiftEndAtMs: Self.shiftEndAtMs(store: store, at: now),
+            shiftEndLabel: store.t("endTime")
         )
         let content = ActivityContent(state: state, staleDate: session.plannedEndAt, relevanceScore: 90)
         let desired = LiveActivityIdentity(

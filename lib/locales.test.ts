@@ -96,6 +96,12 @@ const SAME_AS_ENGLISH_ON_PURPOSE: Record<string, "*" | readonly string[]> = {
   menuEdit: ["id"],
   menuZoom: ["es", "fr", "id", "it", "pt"],
   menuServices: ["fr"],
+  // "OK" 是这些语言里系统弹窗的标准肯定按钮，Apple 自己的本地化也用它
+  okAction: ["de", "es", "fr", "id", "it", "ja", "pt", "vi"],
+  // "3 × 25 min" 这种数字格式，这些语言的分钟缩写与英文相同
+  focusEstimateDetail: ["es", "fr", "it", "pt"],
+  // 德语的 Name 就是 Name
+  focusUsualDayName: ["de"],
 };
 
 const mayMatchEnglish = (key: string, locale: string): boolean => {

@@ -152,35 +152,52 @@ func configuredFocusDurationIsUsedEverywhere() {
 }
 
 @MainActor
-@Test("A shared micro-break boundary truncates a focus phase")
-func microBreakBoundaryTruncatesFocus() {
+@Test("Only the shift itself truncates a focus phase, never a health reminder")
+func onlyShiftBoundariesTruncateFocus() {
+    // A micro-break used to be handed in as an extra boundary and cut the
+    // block short. The pomodoro now owns the break cadence for a planned
+    // shift, so the only things that stop a block early are lunch, clock-off
+    // and the end of declared overtime.
     let start = Date(timeIntervalSince1970: 1_787_557_200)
-    let microBreak = start.addingTimeInterval(8 * 60)
     let segments = [NativeShiftSegment(startAtMs: 1_787_557_200_000, endAtMs: 1_787_560_800_000)]
     let end = FocusPlanner.plannedEnd(
         from: start,
         segments: segments,
         overtimeEndAtMs: nil,
-        durationMinutes: 25,
-        extraBoundaries: [microBreak]
+        durationMinutes: 25
     )
-    #expect(end == microBreak)
-    #expect(FocusPlanner.endReason(startedAt: start, plannedEndAt: end) == .stoppedAtBoundary)
+    #expect(end == start.addingTimeInterval(25 * 60))
+    #expect(FocusPlanner.endReason(startedAt: start, plannedEndAt: end, expectedDurationMinutes: 25) == .completed)
 }
 
 @MainActor
 @Test("A boundary less than one minute away leaves no startable focus room")
-func microBreakBoundaryRejectsSubMinuteStart() {
+func boundaryRejectsSubMinuteStart() {
     let start = Date(timeIntervalSince1970: 1_787_557_200)
-    let boundary = start.addingTimeInterval(59)
-    let segments = [NativeShiftSegment(startAtMs: 1_787_557_200_000, endAtMs: 1_787_560_800_000)]
-    let end = FocusPlanner.plannedEnd(
-        from: start,
-        segments: segments,
-        overtimeEndAtMs: nil,
-        extraBoundaries: [boundary]
-    )
+    let segments = [
+        NativeShiftSegment(startAtMs: 1_787_557_200_000, endAtMs: 1_787_557_259_000)
+    ]
+    let end = FocusPlanner.plannedEnd(from: start, segments: segments, overtimeEndAtMs: nil)
     #expect(end.timeIntervalSince(start) < 60)
+}
+
+@MainActor
+@Test("The grid is a pure function of the segments and the cadence")
+func workBlocksDoNotDependOnTheClock() {
+    // F6: the grid used to take micro-break times as hard cuts, filtered to
+    // "later than now". Blocks are keyed by `startAtMs`, so the morning's
+    // assignments stopped matching their blocks as the day went on.
+    let segments = [
+        NativeShiftSegment(startAtMs: 1_787_557_200_000, endAtMs: 1_787_568_000_000)
+    ]
+    let blocks = FocusPlanner.workBlocks(segments: segments)
+    let again = FocusPlanner.workBlocks(segments: segments)
+    #expect(blocks.map(\.startAtMs) == again.map(\.startAtMs))
+    // Three hours of 25/5 with a long break after the fourth round: five
+    // focus blocks, and the last 20 minutes cannot hold a sixth.
+    let focus = blocks.filter { $0.kind == .task }
+    let origin: Int64 = 1_787_557_200_000
+    #expect(focus.map(\.startAtMs) == [0, 30, 60, 90, 130].map { origin + Int64($0) * 60_000 })
 }
 
 @MainActor

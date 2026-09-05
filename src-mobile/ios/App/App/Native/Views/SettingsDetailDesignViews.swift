@@ -1222,6 +1222,10 @@ struct HealthReminderSettingsView: View {
     @FocusState private var intervalFocused: Bool
     @State private var intervalText = ""
 
+    /// The pomodoro's breaks stand in for the fixed interval on a shift that
+    /// has a plan, so the two do not fire on separate clocks.
+    private var takenOverByFocus: Bool { store.microBreakEnabled && store.focusOwnsBreaks() }
+
     var body: some View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -1238,16 +1242,26 @@ struct HealthReminderSettingsView: View {
                         HStack {
                             Text(store.t("microBreakInterval")).font(.body)
                             Spacer()
-                            OWCNumberField(
-                                placeholder: "60",
-                                text: $intervalText,
-                                width: 72,
-                                onCommit: clampInterval
-                            )
-                            .focused($intervalFocused)
-                            Text(store.t("minutesUnit"))
-                                .font(.callout)
-                                .foregroundStyle(OWCDesign.secondary)
+                            if takenOverByFocus {
+                                // Not disabled and not switched off: the
+                                // reminder still fires, on the plan's rhythm
+                                // instead of a fixed interval. Saying so is
+                                // more use than greying the field out.
+                                Text(store.t("microBreakFollowsFocus"))
+                                    .font(.callout)
+                                    .foregroundStyle(OWCDesign.secondary)
+                            } else {
+                                OWCNumberField(
+                                    placeholder: "60",
+                                    text: $intervalText,
+                                    width: 72,
+                                    onCommit: clampInterval
+                                )
+                                .focused($intervalFocused)
+                                Text(store.t("minutesUnit"))
+                                    .font(.callout)
+                                    .foregroundStyle(OWCDesign.secondary)
+                            }
                         }
                         .padding(.horizontal, 16)
                         .frame(height: 56)
@@ -1258,6 +1272,22 @@ struct HealthReminderSettingsView: View {
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 22)
+
+                if takenOverByFocus {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(store.t("microBreakTakenOverNote"))
+                            .font(.footnote)
+                            .foregroundStyle(OWCDesign.secondary)
+                        Button(store.t("microBreakOpenFocus")) {
+                            store.selectedTab = .timer
+                            store.timerPath.append(.focus)
+                        }
+                        .buttonStyle(OWCSecondaryButtonStyle())
+                        .frame(maxWidth: 220)
+                    }
+                    .padding(.horizontal, OWCDesign.pageInset + 4)
+                    .padding(.top, 16)
+                }
 
                 settingsDetailFooter(store.t("microBreakEffectiveTimeNote"))
             }
