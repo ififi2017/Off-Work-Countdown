@@ -64,6 +64,19 @@ struct LifeSalary: Codable, Equatable, Sendable {
     var isValid: Bool { amount.isFinite && amount > 0 }
 }
 
+/// Nil on `LifeProfile` means the current salary stays unchanged. Keeping the
+/// optional as the mode makes older backups and profiles preserve that choice.
+struct LifeIncomeDecline: Codable, Equatable, Sendable {
+    var startsAtAge: Int
+    var retirementRatio: Double
+
+    var isValid: Bool {
+        (0...120).contains(startsAtAge)
+            && retirementRatio.isFinite
+            && (0...1).contains(retirementRatio)
+    }
+}
+
 struct LifeEmploymentPeriod: Codable, Equatable, Sendable, Identifiable {
     var id: UUID
     var startsOn: PartialCivilDate
@@ -84,7 +97,7 @@ struct LifeEmploymentPeriod: Codable, Equatable, Sendable, Identifiable {
 /// One life-view archive per store. The id is a constant so two offline
 /// devices first-write the same row. Matches 002 §6 and 010 LifeProfile v2.
 struct LifeProfile: Equatable, Sendable {
-    static let schemaVersion = 3
+    static let schemaVersion = 4
     static let profileID = UUID(uuidString: "00000000-0000-0000-0000-00574F524B01")!
 
     var profileID: UUID = LifeProfile.profileID
@@ -103,6 +116,7 @@ struct LifeProfile: Equatable, Sendable {
     var workHistoryMode: LifeWorkHistoryMode = .rough
     var roughCurrentSalary: LifeSalary?
     var employmentPeriods: [LifeEmploymentPeriod] = []
+    var futureIncomeDecline: LifeIncomeDecline?
     var editedAt: Date
     var editCount: Int
     var editTieBreaker: UUID

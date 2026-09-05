@@ -7,6 +7,7 @@ import Testing
 func existingPreferencesSeedSyncRow() throws {
     let suite = "SyncedPreferences.\(UUID())"
     let defaults = try #require(UserDefaults(suiteName: suite))
+    defaults.set(true, forKey: "ios.native.onboardingComplete")
     defaults.set(8 * 60 + 30, forKey: "ios.native.startMinutes")
     defaults.set("52000", forKey: "ios.native.salaryAmount")
     defaults.set(true, forKey: "ios.native.salaryEnabled")
@@ -43,6 +44,7 @@ func existingPreferencesSeedSyncRow() throws {
 func remotePreferencesApplyToStore() throws {
     let suite = "SyncedPreferences.\(UUID())"
     let defaults = try #require(UserDefaults(suiteName: suite))
+    defaults.set(true, forKey: "ios.native.onboardingComplete")
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
     let store = OffWorkStore(defaults: defaults, records: records)

@@ -455,6 +455,35 @@ func futureRoughWorkYearDelaysIncome() async throws {
     #expect(abs(income.projectedGross - 4_560_000) < 0.001)
 }
 
+@MainActor
+@Test("A passed decline age anchors the current salary today and leaves history unchanged")
+func passedIncomeDeclineAgeAnchorsToday() async throws {
+    let defaults = UserDefaults(suiteName: "owc.decliningincome.\(UUID().uuidString)")!
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    let now = lifeTestDate(year: 2036, month: 1, day: 1, calendar: lifeTestCalendar())
+    var profile = LifeProfile(
+        bornOn: .yearOnly(1990),
+        workStartedPartial: .yearOnly(2020),
+        retirementOn: .yearOnly(2050),
+        workHistoryMode: .rough,
+        roughCurrentSalary: LifeSalary(amount: 10_000, cadence: .monthly),
+        editedAt: .now,
+        editCount: 1,
+        editTieBreaker: UUID()
+    )
+    records.updateLifeProfile(profile)
+    let level = try #require(await store.prepareLifeViewModel(now: now).flatMap(\.income))
+
+    profile.futureIncomeDecline = LifeIncomeDecline(startsAtAge: 45, retirementRatio: 0.6)
+    records.updateLifeProfile(profile)
+    let declining = try #require(await store.prepareLifeViewModel(now: now).flatMap(\.income))
+
+    #expect(declining.historicalGross == level.historicalGross)
+    #expect(declining.projectedGross < level.projectedGross)
+    #expect(abs(declining.projectedGross / level.projectedGross - 0.8) < 0.001)
+}
+
 /// The life model is now cached, because rebuilding it expands a career's
 /// worth of schedule and that was happening on every visit to the Records tab.
 /// A cache that misses an edit is worse than no cache: the grid would keep

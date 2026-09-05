@@ -104,7 +104,7 @@ struct LifeView: View {
                 summaryItem(store.t("lifeIncomeFuture"), store.moneyText(income.projectedGross))
                 Divider()
                 summaryItem(store.t("lifeIncomeTotal"), store.moneyText(income.totalGross))
-                Text(store.t("lifeIncomeMethod"))
+                Text(store.lifeIncomeMethodText())
                     .font(.caption)
                     .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -320,6 +320,13 @@ extension LifeWeekKind {
 struct LifeProfileEditView: View {
     let store: OffWorkStore
 
+    private enum FutureIncomeMode: String, CaseIterable, Identifiable {
+        case keepCurrent
+        case decline
+
+        var id: String { rawValue }
+    }
+
     @State private var bornYear = ""
     @State private var schoolYear = ""
     @State private var workYear = ""
@@ -329,6 +336,9 @@ struct LifeProfileEditView: View {
     @State private var roughSalaryAmount = ""
     @State private var roughSalaryCadence: LifeSalaryCadence = .monthly
     @State private var employmentDrafts: [EmploymentDraft] = []
+    @State private var futureIncomeMode: FutureIncomeMode = .keepCurrent
+    @State private var declineStartAge = "45"
+    @State private var retirementIncomePercent = "60"
     @State private var savedFeedback = 0
     @Environment(\.dismiss) private var dismiss
 
@@ -357,6 +367,8 @@ struct LifeProfileEditView: View {
 
                     workHistoryEditor
 
+                    futureIncomeEditor
+
                     Text(store.t("lifeProfileFooter"))
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
@@ -382,6 +394,46 @@ struct LifeProfileEditView: View {
             }
             .sensoryFeedback(.success, trigger: savedFeedback)
             .onAppear(perform: load)
+        }
+    }
+
+    @ViewBuilder
+    private var futureIncomeEditor: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Picker(store.t("lifeFutureIncomeMode"), selection: $futureIncomeMode) {
+                Text(store.t("lifeFutureIncomeKeep")).tag(FutureIncomeMode.keepCurrent)
+                Text(store.t("lifeFutureIncomeDecline")).tag(FutureIncomeMode.decline)
+            }
+            .pickerStyle(.segmented)
+            .accessibilityLabel(store.t("lifeFutureIncomeMode"))
+
+            if futureIncomeMode == .decline {
+                OWCGroupCard {
+                    numberRow(
+                        store.t("lifeIncomeDeclineStartAge"),
+                        text: $declineStartAge,
+                        placeholder: "45",
+                        maxDigits: 3
+                    )
+                    numberRow(
+                        store.t("lifeIncomeRetirementRatio"),
+                        text: $retirementIncomePercent,
+                        placeholder: "60",
+                        maxDigits: 3,
+                        isLast: true
+                    )
+                }
+                if let decline = incomeDecline {
+                    Text(store.t("lifeIncomeDeclinePreview", values: [
+                        "age": store.formatCount(decline.startsAtAge),
+                        "percent": store.formatPercent(decline.retirementRatio * 100, fractionDigits: 0),
+                    ]))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20)
+                }
+            }
         }
     }
 
@@ -558,6 +610,11 @@ struct LifeProfileEditView: View {
         employmentDrafts = (profile?.employmentPeriods ?? []).compactMap {
             EmploymentDraft($0, calendar: store.recordsCalendar)
         }
+        if let decline = profile?.futureIncomeDecline {
+            futureIncomeMode = .decline
+            declineStartAge = Self.plain(decline.startsAtAge)
+            retirementIncomePercent = Self.plain(decline.retirementRatio * 100)
+        }
     }
 
     private func save() {
@@ -596,6 +653,7 @@ struct LifeProfileEditView: View {
             profile.workHistoryMode = workHistoryMode
             profile.roughCurrentSalary = salary(amount: roughSalaryAmount, cadence: roughSalaryCadence)
             profile.employmentPeriods = employmentPeriods
+            profile.futureIncomeDecline = futureIncomeMode == .decline ? incomeDecline : nil
             store.records.updateLifeProfile(profile)
             savedFeedback += 1
             dismiss()
@@ -621,6 +679,12 @@ struct LifeProfileEditView: View {
            salary(amount: roughSalaryAmount, cadence: roughSalaryCadence) == nil {
             return false
         }
+        if futureIncomeMode == .decline {
+            guard let decline = incomeDecline,
+                  Int(bornYear) != nil,
+                  Int(retirementAge).map({ decline.startsAtAge < $0 }) == true
+            else { return false }
+        }
         let periods = employmentDrafts.compactMap { $0.period(calendar: store.recordsCalendar) }
             .sorted {
                 ($0.startsOn.calculationAnchor(in: store.recordsCalendar) ?? .distantFuture)
@@ -642,6 +706,14 @@ struct LifeProfileEditView: View {
     private func salary(amount: String, cadence: LifeSalaryCadence) -> LifeSalary? {
         guard let value = Double(amount), value.isFinite, value > 0 else { return nil }
         return LifeSalary(amount: value, cadence: cadence)
+    }
+
+    private var incomeDecline: LifeIncomeDecline? {
+        guard let age = Int(declineStartAge),
+              let percent = Double(retirementIncomePercent)
+        else { return nil }
+        let value = LifeIncomeDecline(startsAtAge: age, retirementRatio: percent / 100)
+        return value.isValid ? value : nil
     }
 
     private func earliestStart(in periods: [LifeEmploymentPeriod]) -> PartialCivilDate? {
@@ -709,5 +781,17 @@ struct LifeProfileEditView: View {
                 salary: LifeSalary(amount: amount, cadence: salaryCadence)
             )
         }
+    }
+}
+
+extension OffWorkStore {
+    func lifeIncomeMethodText() -> String {
+        guard let decline = records.state.lifeProfile?.futureIncomeDecline else {
+            return t("lifeIncomeMethod")
+        }
+        return t("lifeIncomeMethodDecline", values: [
+            "age": formatCount(decline.startsAtAge),
+            "percent": formatPercent(decline.retirementRatio * 100, fractionDigits: 0),
+        ])
     }
 }

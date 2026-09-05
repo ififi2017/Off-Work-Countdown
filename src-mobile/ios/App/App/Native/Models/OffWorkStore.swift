@@ -194,6 +194,9 @@ enum ShareMood: String, CaseIterable, Identifiable {
 @Observable
 final class OffWorkStore {
     private enum Key {
+        static let resumeCloudSyncWhenAuthorized = "ios.native.resumeCloudSyncWhenAuthorized"
+        static let firstRunRecoveryResolved = "ios.native.firstRunRecoveryResolved"
+        static let localSetupNeedsCloudChoice = "ios.native.localSetupNeedsCloudChoice"
         static let onboardingComplete = "ios.native.onboardingComplete"
 #if DEBUG
         static let debugAlwaysOnboarding = "ios.native.debugAlwaysOnboarding"
@@ -353,6 +356,10 @@ final class OffWorkStore {
             }
         }
     }
+    var resumeCloudSyncWhenAuthorized = false
+    var firstRunRecoveryResolved = false
+    var showsFirstRunCloudChoice = false
+    var localSetupNeedsCloudChoice = false
     var onboardingPage = 0
     /// In-memory: the reminders page applies lunch-on and simple clock-off
     /// once per launch. Persisting it would rewrite a user who turned those
@@ -839,6 +846,9 @@ final class OffWorkStore {
         // Carryover is lifecycle work, never a rendering side effect. The
         // Focus page may be evaluated repeatedly by SwiftUI without mutating
         // the archive or producing a cloud write.
+        resumeCloudSyncWhenAuthorized = defaults.bool(forKey: Key.resumeCloudSyncWhenAuthorized)
+        firstRunRecoveryResolved = defaults.bool(forKey: Key.firstRunRecoveryResolved)
+        localSetupNeedsCloudChoice = defaults.bool(forKey: Key.localSetupNeedsCloudChoice)
         if let configuration = self.records.state.focusPlanningConfiguration {
             focusPlanning = configuration.planning
             focusTimerSettings = configuration.timerSettings.normalized
@@ -857,7 +867,7 @@ final class OffWorkStore {
         }
         if let preferences = self.records.state.syncedPreferences {
             applySyncedPreferences(preferences)
-        } else {
+        } else if onboardingComplete {
             // Legacy UserDefaults have no trustworthy edit timestamp. A fixed
             // old stamp lets an established cloud row beat a device that only
             // just upgraded, instead of making the last upgraded device win.
@@ -2938,6 +2948,7 @@ final class OffWorkStore {
 
     func completeOnboarding(enableNotifications: Bool) {
         onboardingComplete = true
+        syncPreferencesAfterLocalChange()
         // Deliberately does NOT reset onboardingPage. The welcome view is still
         // on screen for the length of the cross-fade, and resetting the page
         // snapped it back to the first slide mid-transition. `onboardingPage` is
@@ -4946,7 +4957,7 @@ final class OffWorkStore {
         case .enableCycleEndSummaryNotifications:
             cycleEndSummaryNotificationEnabled = true
         case .enableSync:
-            Task { await cloudSync.enable(authorized: plus.isAuthorized) }
+            Task { await enableCloudSyncFromSettings() }
         }
     }
 
@@ -5406,6 +5417,18 @@ final class OffWorkStore {
                     startsOn: currentSalaryStartsOn
                 )
             },
+            futureIncomeDecline: profile.futureIncomeDecline.flatMap { decline in
+                guard let birthYear = profile.bornOn?.year ?? profile.birthYear,
+                      let startsOn = lifeCivilDay(
+                        .yearOnly(birthYear + decline.startsAtAge),
+                        calendar: calendar
+                      )
+                else { return nil }
+                return NativeLifetimeIncomeDecline(
+                    startsOn: startsOn,
+                    retirementRatio: decline.retirementRatio
+                )
+            },
             asOf: asOf,
             retirementOn: RecordJSON.dayKey(retirement, calendar: calendar)
         ))
@@ -5605,8 +5628,72 @@ final class OffWorkStore {
         focusRuntimeRevision &+= 1
     }
 
+    func continueFirstRunLocally(cloudCheckWasEmpty: Bool) {
+        firstRunRecoveryResolved = true
+        // An empty probe is a momentary answer: an older device can upload
+        // later. Every unpaired local setup gets checked again at first sync.
+        localSetupNeedsCloudChoice = true
+        defaults.set(true, forKey: Key.firstRunRecoveryResolved)
+        defaults.set(localSetupNeedsCloudChoice, forKey: Key.localSetupNeedsCloudChoice)
+    }
+
+    func finishFirstRunCloudRestore(hasPreferences: Bool) {
+        localSetupNeedsCloudChoice = false
+        defaults.set(false, forKey: Key.localSetupNeedsCloudChoice)
+        resumeCloudSyncWhenAuthorized = !plus.isAuthorized
+        defaults.set(resumeCloudSyncWhenAuthorized, forKey: Key.resumeCloudSyncWhenAuthorized)
+        if hasPreferences {
+            onboardingComplete = true
+            // This is a returning owner with restored data, not a first-time
+            // product introduction. Access remains governed by StoreKit.
+            plus.markIntroSeen()
+        }
+        // Last marker: interruption cannot expose the setup form after a
+        // successful cloud preference restore but before completion persists.
+        firstRunRecoveryResolved = true
+        defaults.set(true, forKey: Key.firstRunRecoveryResolved)
+        showsFirstRunCloudChoice = false
+    }
+
+    func confirmEmptyCloudAndEnableSync() async {
+        localSetupNeedsCloudChoice = false
+        defaults.set(false, forKey: Key.localSetupNeedsCloudChoice)
+        await enableCloudSyncFromSettings()
+    }
+
+    func resumeRestoredSyncIfNeeded() async {
+        guard resumeCloudSyncWhenAuthorized, plus.isAuthorized else { return }
+        await cloudSync.enable(authorized: true)
+        if records.state.sync.syncEnabled {
+            resumeCloudSyncWhenAuthorized = false
+            defaults.set(false, forKey: Key.resumeCloudSyncWhenAuthorized)
+        }
+    }
+
+    /// An offline setup is a local draft until the owner sees what iCloud has.
+    func restoreCloudSyncFromSettings() async {
+        if localSetupNeedsCloudChoice || records.state.sync.accountID == nil {
+            showsFirstRunCloudChoice = true
+            return
+        }
+        await cloudSync.restore()
+    }
+
+    func enableCloudSyncFromSettings() async {
+        if localSetupNeedsCloudChoice {
+            showsFirstRunCloudChoice = true
+            return
+        }
+        await cloudSync.enable(authorized: plus.isAuthorized)
+        if cloudSync.existingDataRequiresChoice {
+            localSetupNeedsCloudChoice = true
+            defaults.set(true, forKey: Key.localSetupNeedsCloudChoice)
+            showsFirstRunCloudChoice = true
+        }
+    }
+
     private func syncPreferencesAfterLocalChange() {
-        guard !isApplyingSyncedPreferences else { return }
+        guard onboardingComplete, !isApplyingSyncedPreferences else { return }
         records.upsertSyncedPreferences(currentSyncedPreferences())
     }
 

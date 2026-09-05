@@ -450,3 +450,7 @@ Android 原生 App 继续暂时搁置：
 
 Apple 的 watchOS、WidgetKit、WatchConnectivity、Xcode Cloud 和 App Store 规则会变化。开始
 W0、X1 或 Android 立项时必须重新阅读官方文档，不把本计划中的摘要当成永久 API 契约。
+
+### 2026-09-06：首次恢复与原生 iPad 导航
+
+计划 016 将首次启动改为先检查并恢复 CloudKit，再允许欢迎页修改共享设置；失败或离线不自动上传默认值。持续同步先拉取后上传，既有数据恢复与 Plus 权益查询分别处理。iPad 导航改用系统 `NavigationSplitView(.balanced)`，侧栏沿左侧进出；独立顶部玻璃 Tab 沿顶部进出，各入口保留独立导航路径。侧栏恢复 Logo、标题与班次倒计时，移除负边距修补。人生收入支持经用户确认的起始年龄 / 退休收入比例线性递减，旧档案保持原口径。实现与真机验收范围见 [计划 016](../plans/016-life-projection-first-run-native-ipad.md)。

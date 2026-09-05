@@ -82,6 +82,28 @@ final class RecordCoordinator {
         if fileURL != nil { load() }
     }
 
+    /// Restore candidates are built away from the live store. Validate and
+    /// persist once, then notify observers only after the entire download.
+    func commitRestoredState(_ candidate: RecordState) throws {
+        guard !blocksWrites else { throw persistenceError ?? RecordPersistenceError.invalidArchive }
+        let zone = TimeZone(identifier: candidate.syncedPreferences?.recordsTimeZoneIdentifier ?? "UTC") ?? .gmt
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        let data = try RecordJSON.export(candidate, exportedAt: .now, timeZone: zone, calendar: calendar)
+        _ = try RecordJSON.decode(data)
+        try writeArchive(candidate)
+        state = candidate
+        revision &+= 1
+        persistenceError = nil
+        onExternalStateApplied?()
+    }
+
+    static func restoreCandidate(from state: RecordState) -> RecordCoordinator {
+        let candidate = RecordCoordinator.inMemory()
+        candidate.state = state
+        return candidate
+    }
+
     @discardableResult
     func deleteAllLocalData() -> Bool {
         guard !blocksWrites else { return false }
