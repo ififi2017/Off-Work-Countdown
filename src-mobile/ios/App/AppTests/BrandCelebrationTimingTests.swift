@@ -19,7 +19,7 @@ struct BrandCelebrationTimingTests {
             previousTime = time
             previousInterval = interval
         }
-        #expect(times.first! > 0.06)
+        #expect(OWCMotion.brandCelebrationDuration <= 3)
         #expect(OWCMotion.brandCelebrationDuration - times[times.count - 2] > 0.3)
     }
 }
