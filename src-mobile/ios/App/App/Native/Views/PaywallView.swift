@@ -592,7 +592,7 @@ private struct PlusSubscriberThankYouView: View {
                 accessibilityTitle: store.t("plusReplayCelebration"),
                 isActive: store.plus.isAuthorized
             )
-                .frame(width: 144, height: 144)
+                .frame(width: 260, height: 260)
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 24)
 
