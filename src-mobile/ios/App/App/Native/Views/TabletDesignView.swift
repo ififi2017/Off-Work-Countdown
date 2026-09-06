@@ -176,7 +176,6 @@ private struct TabletSidebarFooter: View {
 
     var body: some View {
         compactShiftCountdown
-            .padding(.horizontal, 14)
             .padding(.bottom, 16)
     }
 
