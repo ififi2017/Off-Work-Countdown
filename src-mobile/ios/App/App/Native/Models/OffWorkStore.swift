@@ -3798,6 +3798,7 @@ final class OffWorkStore {
         let actualForecast = recordsActualForecast(cells: cells, days: days, now: now)
         guard !recordedKeys.isEmpty
             || actualForecast.map({ $0.forecast.days > 0 || $0.forecast.hours > 0 }) == true
+            || (salaryType == .monthly && actualForecast?.total.earnings != nil)
         else { return nil }
         // Observed, corrected and elapsed saved-schedule days count. Life's
         // synthetic history remains an estimate. A day that merely *receives* those
@@ -3855,8 +3856,9 @@ final class OffWorkStore {
 
     /// One shift-anchor row per visible date. A corrected or explicitly
     /// observed row is actual; every other schedule-backed row is forecast.
-    /// The TypeScript rule applies salary ratios and makes actual win, so the
-    /// same logical date can never be paid on both sides of the card.
+    /// The TypeScript rule keeps worked hours on these rows. Fixed monthly pay
+    /// is allocated separately across every visible civil date, so absence or
+    /// shorter recorded time does not turn this summary into a payslip.
     private func recordsActualForecast(
         cells: [RecordsDayCell],
         days: [DayResolution],
@@ -3908,9 +3910,10 @@ final class OffWorkStore {
                 isActiveAnchor: activeAnchorDayKey == day.dayKey
             )
         }
-        guard !inputs.isEmpty else { return nil }
+        guard !inputs.isEmpty || (presentationSalaryEnabled && salaryType == .monthly) else { return nil }
         return try? CountdownRules.shared.recordsActualForecast(input: .init(
             days: inputs,
+            periodDayKeys: cells.map(\.dayKey),
             dailySalary: currentSnapshot?.dailySalary,
             asOfMs: now.timeIntervalSince1970 * 1_000,
             salaryRules: rulesInput(at: now, using: .base)

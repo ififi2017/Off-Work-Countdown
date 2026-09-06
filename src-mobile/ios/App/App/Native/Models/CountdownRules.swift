@@ -613,6 +613,7 @@ struct NativeRecordsSummaryObservation: Codable {
 
 struct NativeRecordsActualForecastInput: Codable {
     let days: [NativeRecordsActualForecastDay]
+    let periodDayKeys: [String]
     let dailySalary: Double?
     let asOfMs: Double
     var salaryRules: NativeRulesInput? = nil

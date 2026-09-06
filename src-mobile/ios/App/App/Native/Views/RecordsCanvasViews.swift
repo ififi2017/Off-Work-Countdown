@@ -420,7 +420,7 @@ struct RecordsHeadlineView: View {
             )
             metric("recordsActualDays", store.formatDays(split.actual.days))
             if let earnings = split.actual.earnings {
-                metric("recordsActualIncome", store.moneyText(earnings))
+                metric(store.salaryType == .monthly ? "recordsMonthlyActualIncome" : "recordsActualIncome", store.moneyText(earnings))
             }
 
             Divider()
@@ -430,7 +430,7 @@ struct RecordsHeadlineView: View {
             metric("recordsForecastHours", store.formatRelativeDuration(split.forecast.hours * 3_600_000))
             metric("recordsForecastDays", store.formatDays(split.forecast.days))
             if let earnings = split.forecast.earnings {
-                metric("recordsForecastIncome", store.moneyText(earnings))
+                metric(store.salaryType == .monthly ? "recordsMonthlyForecastIncome" : "recordsForecastIncome", store.moneyText(earnings))
             }
 
             Divider()
@@ -438,7 +438,7 @@ struct RecordsHeadlineView: View {
             if let earnings = split.total.earnings {
                 metric("recordsCombinedIncome", store.moneyText(earnings))
             }
-            Text(store.t("recordsForecastMethod"))
+            Text(store.t(store.salaryType == .monthly ? "recordsMonthlyForecastMethod" : "recordsForecastMethod"))
                 .font(.caption)
                 .foregroundStyle(OWCDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
