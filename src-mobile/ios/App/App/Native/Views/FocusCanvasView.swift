@@ -102,17 +102,18 @@ struct FocusCanvasView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { quickCreateLanding = .nextBlock } label: {
-                    Label(store.t("focusQuickCreate"), systemImage: "plus")
-                }
-                .disabled(store.focusDayCanvasIsLocked)
+                quickCreateButton
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showsTimerSettings = true } label: {
-                    Label(store.t("focusTimerSettings"), systemImage: "gearshape")
-                }
-                .accessibilityHint(store.t("focusTimerSettingsHint"))
+                timerSettingsButton
             }
+        }
+        .owcTabletDetailNavigation(
+            backTitle: store.t("timerTab"),
+            pageTitle: store.t("focusTitle")
+        ) {
+            quickCreateButton
+            timerSettingsButton
         }
         .sheet(item: $editingBlock) { block in
             FocusBlockSheet(store: store, block: block) { result in
@@ -162,6 +163,20 @@ struct FocusCanvasView: View {
         .sensoryFeedback(.selection, trigger: selectionFeedback)
         .sensoryFeedback(.success, trigger: placedFeedback)
         .sensoryFeedback(.warning, trigger: warningFeedback)
+    }
+
+    private var quickCreateButton: some View {
+        Button { quickCreateLanding = .nextBlock } label: {
+            Label(store.t("focusQuickCreate"), systemImage: "plus")
+        }
+        .disabled(store.focusDayCanvasIsLocked)
+    }
+
+    private var timerSettingsButton: some View {
+        Button { showsTimerSettings = true } label: {
+            Label(store.t("focusTimerSettings"), systemImage: "gearshape")
+        }
+        .accessibilityHint(store.t("focusTimerSettingsHint"))
     }
 
     // MARK: - today

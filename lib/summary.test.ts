@@ -204,6 +204,106 @@ describe("lifetime gross income", () => {
     });
     expect(result).toEqual({ historicalGross: 0, projectedGross: 0, totalGross: 0 });
   });
+
+  it("keeps older profiles at the current salary when no decline is saved", () => {
+    const input = {
+      asOf: "2030-01-01",
+      retirementOn: "2040-01-01",
+      periods: [],
+      currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" as const },
+    };
+    expect(projectLifetimeGrossIncome(input).projectedGross).toBe(1_200_000);
+    expect(projectLifetimeGrossIncome({ ...input, futureIncomeDecline: null }).projectedGross)
+      .toBe(1_200_000);
+    expect(projectLifetimeGrossIncome({
+      ...input,
+      futureIncomeDecline: { startsOn: "2035-06-15", retirementRatio: 1 },
+    }).projectedGross).toBeCloseTo(1_200_000, 8);
+  });
+
+  it("declines linearly from the chosen age to the retirement ratio", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2030-01-01",
+      retirementOn: "2040-01-01",
+      periods: [],
+      currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" },
+      futureIncomeDecline: { startsOn: "2035-01-01", retirementRatio: 0.6 },
+    });
+    // Five years at 100%, then five years averaging 80%.
+    expect(Math.abs(result.projectedGross - 1_080_000)).toBeLessThan(100);
+  });
+
+  it("anchors an already-passed decline age at today's current income", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2035-01-01",
+      retirementOn: "2040-01-01",
+      periods: [{
+        startsOn: "2030-01-01",
+        endsOn: "2035-01-01",
+        salaryAmount: 120_000,
+        salaryCadence: "yearly",
+      }],
+      currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" },
+      futureIncomeDecline: { startsOn: "2032-01-01", retirementRatio: 0.6 },
+    });
+    expect(result.historicalGross).toBe(600_000);
+    expect(Math.abs(result.projectedGross - 480_000)).toBeLessThan(100);
+  });
+
+  it("keeps gaps and history untouched and reaches zero at retirement", () => {
+    const result = projectLifetimeGrossIncome({
+      asOf: "2030-01-01",
+      retirementOn: "2040-01-01",
+      periods: [{
+        startsOn: "2020-01-01",
+        endsOn: "2025-01-01",
+        salaryAmount: 60_000,
+        salaryCadence: "yearly",
+      }],
+      currentSalary: {
+        startsOn: "2035-01-01",
+        salaryAmount: 120_000,
+        salaryCadence: "yearly",
+      },
+      futureIncomeDecline: { startsOn: "2030-01-01", retirementRatio: 0 },
+    });
+    expect(result.historicalGross).toBe(300_000);
+    expect(Math.abs(result.projectedGross - 300_000)).toBeLessThan(200);
+    expect(Math.abs(result.totalGross - 600_000)).toBeLessThan(200);
+
+    const retired = projectLifetimeGrossIncome({
+      asOf: "2040-01-01",
+      retirementOn: "2040-01-01",
+      periods: [],
+      currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" },
+      futureIncomeDecline: { startsOn: "2030-01-01", retirementRatio: 0 },
+    });
+    expect(retired.projectedGross).toBe(0);
+  });
+
+  it("uses the same curve for equivalent monthly and yearly salaries", () => {
+    const calculate = (salaryAmount: number, salaryCadence: "monthly" | "yearly") =>
+      projectLifetimeGrossIncome({
+        asOf: "2030-04-15",
+        retirementOn: "2040-07-01",
+        periods: [],
+        currentSalary: { salaryAmount, salaryCadence },
+        futureIncomeDecline: { startsOn: "2032-07-01", retirementRatio: 0.55 },
+      }).projectedGross;
+    expect(calculate(10_000, "monthly")).toBeCloseTo(calculate(120_000, "yearly"), 8);
+  });
+
+  it("updates the forecast when the saved decline choices change", () => {
+    const calculate = (startsOn: string, retirementRatio: number) =>
+      projectLifetimeGrossIncome({
+        asOf: "2030-01-01",
+        retirementOn: "2040-01-01",
+        periods: [],
+        currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" },
+        futureIncomeDecline: { startsOn, retirementRatio },
+      }).projectedGross;
+    expect(calculate("2037-01-01", 0.8)).toBeGreaterThan(calculate("2035-01-01", 0.6));
+  });
 });
 
 describe("records actual and forecast", () => {
@@ -664,34 +764,70 @@ describe("Records calendar-month salary", () => {
       };
     }).filter(value => value !== null);
   }
-  it.each([2, 4, 7, 9])("pays 10000 for full attendance in month %i, independent of average daily pay", month => {
+  function monthDayKeys(year: number, month: number) {
+    return Array.from(
+      { length: new Date(Date.UTC(year, month, 0)).getUTCDate() },
+      (_, index) => `${year}-${String(month).padStart(2, "0")}-${String(index + 1).padStart(2, "0")}`,
+    );
+  }
+  it.each([2, 4, 7, 9])("pays 10000 for a full month independent of attendance and average daily pay", month => {
     const result = summarizeRecordsActualAndForecast({
-      days: monthDays(2026, month), dailySalary: 10000 / 22,
+      days: monthDays(2026, month).slice(0, 1),
+      periodDayKeys: monthDayKeys(2026, month), dailySalary: 10000 / 22,
       asOfMs: Date.UTC(2026, 0, 1), salaryRules: monthlyRules,
     });
     expect(result.forecast.earnings).toBeCloseTo(10000, 8);
   });
-  it("adds actual and remaining forecast to one full monthly salary", () => {
-    const days = monthDays(2026, 9);
-    const split = 4;
+  it("keeps the existing annual-bonus smoothing in fixed monthly income", () => {
     const result = summarizeRecordsActualAndForecast({
-      days: days.map((day, index) => index < split ? { ...day, actualKind: "corrected" as const } : day),
+      days: [], periodDayKeys: monthDayKeys(2026, 2), dailySalary: 10000 / 22,
+      asOfMs: Date.UTC(2026, 0, 1),
+      salaryRules: { ...monthlyRules, annualBonusMonths: 2 },
+    });
+    expect(result.total.earnings).toBeCloseTo(10000 * 14 / 12, 8);
+  });
+  it("splits elapsed monthly pay on the records time-zone date", () => {
+    const result = summarizeRecordsActualAndForecast({
+      days: [], periodDayKeys: monthDayKeys(2026, 9), dailySalary: 10000 / 22,
+      asOfMs: Date.parse("2026-09-05T00:00:00Z"),
+      salaryRules: { ...monthlyRules, timeZoneIdentifier: "America/Los_Angeles" },
+    });
+    expect(result.actual.earnings).toBeCloseTo(10000 * 4 / 30, 8);
+    expect(result.forecast.earnings).toBeCloseTo(10000 * 26 / 30, 8);
+  });
+  it("splits monthly pay by elapsed calendar dates while keeping worked hours real", () => {
+    const days = monthDays(2026, 9);
+    const shortened = {
+      ...days[0],
+      actualKind: "corrected" as const,
+      resolvedSegments: [{
+        startAtMs: days[0].resolvedSegments[0].startAtMs,
+        endAtMs: days[0].resolvedSegments[0].startAtMs + 7 * 3_600_000,
+      }],
+    };
+    const result = summarizeRecordsActualAndForecast({
+      days: [shortened, ...days.slice(1)],
+      periodDayKeys: monthDayKeys(2026, 9),
       dailySalary: 10000 / 22, asOfMs: Date.UTC(2026, 8, 5), salaryRules: monthlyRules,
     });
-    expect(result.actual.earnings).toBeCloseTo(10000 * split / days.length, 8);
+    expect(result.actual.hours).toBe(7);
+    expect(result.actual.earnings).toBeCloseTo(10000 * 5 / 30, 8);
+    expect(result.forecast.earnings).toBeCloseTo(10000 * 25 / 30, 8);
     expect(result.total.earnings).toBeCloseTo(10000, 8);
   });
-  it("allocates a cross-month week using each month's own scheduled days", () => {
+  it("allocates a cross-month week by calendar days so adjacent periods add up", () => {
     const feb = monthDays(2026, 2), mar = monthDays(2026, 3);
     const result = summarizeRecordsActualAndForecast({
       days: [...feb.slice(-2), ...mar.slice(0, 3)], dailySalary: 10000 / 22,
+      periodDayKeys: ["2026-02-27", "2026-02-28", "2026-03-01", "2026-03-02", "2026-03-03"],
       asOfMs: Date.UTC(2026, 0, 1), salaryRules: monthlyRules,
     });
-    expect(result.total.earnings).toBeCloseTo(10000 * (2 / feb.length + 3 / mar.length), 8);
+    expect(result.total.earnings).toBeCloseTo(10000 * (2 / 28 + 3 / 31), 8);
   });
   it("pays twelve full monthly salaries over a full year", () => {
     const result = summarizeRecordsActualAndForecast({
       days: Array.from({ length: 12 }, (_, index) => monthDays(2026, index + 1)).flat(),
+      periodDayKeys: Array.from({ length: 12 }, (_, index) => monthDayKeys(2026, index + 1)).flat(),
       dailySalary: 10000 / 22, asOfMs: Date.UTC(2025, 0, 1), salaryRules: monthlyRules,
     });
     expect(result.total.earnings).toBeCloseTo(120000, 7);

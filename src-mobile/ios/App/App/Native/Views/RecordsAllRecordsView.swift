@@ -103,6 +103,10 @@ struct RecordsAllRecordsView: View {
         .background(OWCDesign.page)
         .navigationTitle(store.t("recordsAllRecords"))
         .navigationBarTitleDisplayMode(.inline)
+        .owcTabletDetailNavigation(
+            backTitle: store.t("recordsTitle"),
+            pageTitle: store.t("recordsAllRecords")
+        )
     }
 
 }
@@ -132,11 +136,17 @@ struct RecordsYearRecordsView: View {
     }
 
     var body: some View {
-        if canReadYear {
-            yearContent
-        } else {
-            RecordsLockedHistoryPlaceholder(store: store)
+        Group {
+            if canReadYear {
+                yearContent
+            } else {
+                RecordsLockedHistoryPlaceholder(store: store)
+            }
         }
+        .owcTabletDetailNavigation(
+            backTitle: store.t("recordsAllRecords"),
+            pageTitle: canReadYear ? "\(year)" : store.t("recordsAllRecords")
+        )
     }
 
     private var canReadYear: Bool {
@@ -188,11 +198,17 @@ struct RecordsMonthRecordsView: View {
     }
 
     var body: some View {
-        if canReadMonth {
-            monthContent
-        } else {
-            RecordsLockedHistoryPlaceholder(store: store)
+        Group {
+            if canReadMonth {
+                monthContent
+            } else {
+                RecordsLockedHistoryPlaceholder(store: store)
+            }
         }
+        .owcTabletDetailNavigation(
+            backTitle: "\(year)",
+            pageTitle: canReadMonth ? monthTitle : store.t("recordsAllRecords")
+        )
     }
 
     private var canReadMonth: Bool {

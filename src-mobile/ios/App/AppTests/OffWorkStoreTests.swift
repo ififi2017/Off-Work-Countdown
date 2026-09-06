@@ -3597,24 +3597,26 @@ func recordsMonthlySalaryUsesCalendarMonth() throws {
     store.annualBonusEnabled = false
     store.workdays = [1, 2, 3, 4, 5]
     let now = utcDay(2026, 1, 1)
-    let days = (1...28).compactMap { number -> DayResolution? in
+    let days = (1...28).map { number -> DayResolution in
         let date = utcDay(2026, 2, number)
-        guard (2...6).contains(store.recordsCalendar.component(.weekday, from: date)) else { return nil }
-        let segments = [NativeShiftSegment(
-            startAtMs: date.addingTimeInterval(9 * 3_600).timeIntervalSince1970 * 1_000,
-            endAtMs: date.addingTimeInterval(17 * 3_600).timeIntervalSince1970 * 1_000
-        )]
+        let isWorkday = (2...6).contains(store.recordsCalendar.component(.weekday, from: date))
+        let segments = isWorkday ? [NativeShiftSegment(
+                startAtMs: date.addingTimeInterval(9 * 3_600).timeIntervalSince1970 * 1_000,
+                endAtMs: date.addingTimeInterval(17 * 3_600).timeIntervalSince1970 * 1_000
+            )] : []
         return DayResolution(
             dayKey: RecordJSON.dayKey(date, calendar: store.recordsCalendar),
             shiftAnchorDate: date, layer: .schedule, periodID: nil, snapshotID: nil,
-            isScheduledWorkday: true, segments: segments,
-            baseScheduleIsWorkday: true, baseScheduleSegments: segments
+            isScheduledWorkday: isWorkday, segments: segments,
+            baseScheduleIsWorkday: isWorkday, baseScheduleSegments: segments
         )
     }
     let cells = days.map { day in
         RecordsDayCell(
-            dayKey: day.dayKey, date: day.shiftAnchorDate, appearance: .planned,
-            workMs: 28_800_000, overtimeMs: 0, breakMs: 0, freeMs: 0,
+            dayKey: day.dayKey, date: day.shiftAnchorDate,
+            appearance: day.isScheduledWorkday ? .planned : .rest,
+            workMs: day.isScheduledWorkday ? 28_800_000 : 0,
+            overtimeMs: 0, breakMs: 0, freeMs: 0,
             observationCount: 0, isToday: false, isFuture: true,
             isProjection: false, hasConflict: false
         )

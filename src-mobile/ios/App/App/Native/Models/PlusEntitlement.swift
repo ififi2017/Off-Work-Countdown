@@ -267,6 +267,9 @@ final class PlusEntitlement {
     private(set) var lastProductError: String?
     private(set) var purchaseInFlight = false
     private(set) var restoreInFlight = false
+    private var currentRefreshTask: Task<Void, Never>?
+    private(set) var hasCheckedCurrentEntitlements = false
+    private(set) var entitlementCheckUnavailable = false
     private(set) var hasActiveSubscription = false
     var hasSeenIntro: Bool {
         didSet { defaults.set(hasSeenIntro, forKey: Key.hasSeenIntro) }
@@ -476,7 +479,21 @@ final class PlusEntitlement {
     }
 #endif
 
+    /// Reads StoreKit's current entitlements; unlike explicit restore, this
+    /// never invokes AppStore.sync or presents an authentication prompt.
+    func checkCurrentEntitlements() async {
+        await refreshFromStore()
+    }
+
     private func refreshFromStore() async {
+        if let currentRefreshTask { await currentRefreshTask.value; return }
+        let task = Task { await performRefreshFromStore() }
+        currentRefreshTask = task
+        await task.value
+        currentRefreshTask = nil
+    }
+
+    private func performRefreshFromStore() async {
         let fetched = await LaunchTrace.interval("storeKitRefresh") {
             await fetchStoreKitEvidence()
         }
@@ -494,6 +511,8 @@ final class PlusEntitlement {
                 )
             )
         }
+        hasCheckedCurrentEntitlements = true
+        entitlementCheckUnavailable = fetched.unavailable || fetched.unverified
         let applied = PlusEntitlementDecision.applyRefresh(
             now: .now,
             cached: cachedSnapshot,
@@ -517,6 +536,7 @@ final class PlusEntitlement {
         }
 #endif
         authorization = applied.authorization
+        if isAuthorized { markIntroSeen() }
     }
 
     private func rank(_ product: Product) -> Int {

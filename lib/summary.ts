@@ -1,6 +1,6 @@
 import {
   addCivilDaysMs,
-  getDailySalary,
+  getMonthlySalaryEquivalent,
   isScheduledWorkday,
   isScheduledWorkdayInZone,
   startOfCivilDayMs,
@@ -39,6 +39,13 @@ export interface LifeIncomeSalary {
   salaryCadence: LifeSalaryCadence;
   /** Defaults to asOf; rough profiles may start at a future work year. */
   startsOn?: string;
+}
+
+export interface LifeIncomeDecline {
+  /** Gregorian civil date derived from the user's chosen starting age. */
+  startsOn: string;
+  /** Share of today's current salary at retirement, from 0 through 1. */
+  retirementRatio: number;
 }
 
 export interface LifetimeIncomeSummary {
@@ -166,6 +173,8 @@ function civilMonthsBetween(start: CivilDay, end: CivilDay): number {
 export function projectLifetimeGrossIncome(params: {
   periods: LifeIncomePeriod[];
   currentSalary?: LifeIncomeSalary | null;
+  /** Missing keeps the current salary unchanged, preserving older profiles. */
+  futureIncomeDecline?: LifeIncomeDecline | null;
   asOf: string;
   retirementOn: string;
 }): LifetimeIncomeSummary {
@@ -188,8 +197,9 @@ export function projectLifetimeGrossIncome(params: {
     period: LifeIncomePeriod;
     start: CivilDay;
     end: CivilDay;
+    isCurrentSalary: boolean;
   }> = [];
-  for (const period of periods) {
+  for (const [index, period] of periods.entries()) {
     const start = civilDay(period.startsOn);
     const explicitEnd = period.endsOn ? civilDay(period.endsOn) : retirement;
     if (
@@ -198,7 +208,12 @@ export function projectLifetimeGrossIncome(params: {
     ) continue;
     const end = explicitEnd.dayNumber <= retirement.dayNumber ? explicitEnd : retirement;
     if (end.dayNumber <= start.dayNumber) continue;
-    validPeriods.push({ period, start, end });
+    validPeriods.push({
+      period,
+      start,
+      end,
+      isCurrentSalary: params.currentSalary != null && index === periods.length - 1,
+    });
   }
   validPeriods.sort((left, right) => left.start.dayNumber - right.start.dayNumber);
 
@@ -212,7 +227,16 @@ export function projectLifetimeGrossIncome(params: {
 
   let historicalGross = 0;
   let projectedGross = 0;
-  for (const { period, start, end } of validPeriods) {
+  const declineStart = params.futureIncomeDecline
+    ? civilDay(params.futureIncomeDecline.startsOn)
+    : null;
+  const retirementRatio = params.futureIncomeDecline?.retirementRatio;
+  const validDecline = declineStart !== null
+    && retirementRatio !== undefined
+    && Number.isFinite(retirementRatio)
+    && retirementRatio >= 0
+    && retirementRatio <= 1;
+  for (const { period, start, end, isCurrentSalary } of validPeriods) {
     const monthlySalary = period.salaryCadence === "monthly"
       ? period.salaryAmount
       : period.salaryAmount / 12;
@@ -220,7 +244,26 @@ export function projectLifetimeGrossIncome(params: {
     const totalForPeriod = monthlySalary * civilMonthsBetween(start, end);
     const historicalForPeriod = monthlySalary * civilMonthsBetween(start, historicalEnd);
     historicalGross += historicalForPeriod;
-    projectedGross += totalForPeriod - historicalForPeriod;
+    const projectedStart = start.dayNumber >= asOf.dayNumber ? start : asOf;
+    if (!isCurrentSalary || !validDecline || projectedStart.dayNumber >= end.dayNumber) {
+      projectedGross += totalForPeriod - historicalForPeriod;
+      continue;
+    }
+    const anchorDay = Math.max(projectedStart.dayNumber, declineStart.dayNumber);
+    projectedGross += monthlySalary * civilMonthsBetween(projectedStart, {
+      ...projectedStart,
+      dayNumber: Math.min(anchorDay, end.dayNumber),
+    });
+    if (anchorDay < end.dayNumber) {
+      projectedGross += proratedDecliningIncome(
+        monthlySalary,
+        { ...projectedStart, dayNumber: anchorDay },
+        end,
+        anchorDay,
+        retirement.dayNumber,
+        retirementRatio,
+      );
+    }
   }
   return {
     historicalGross,
@@ -229,17 +272,49 @@ export function projectLifetimeGrossIncome(params: {
   };
 }
 
+function proratedDecliningIncome(
+  monthlySalary: number,
+  start: CivilDay,
+  end: CivilDay,
+  declineStartDay: number,
+  retirementDay: number,
+  retirementRatio: number,
+): number {
+  const ratioAt = (dayNumber: number) => {
+    if (retirementDay <= declineStartDay) return 1;
+    const progress = Math.max(0, Math.min(1,
+      (dayNumber - declineStartDay) / (retirementDay - declineStartDay)
+    ));
+    return 1 - (1 - retirementRatio) * progress;
+  };
+  let cursor = start.dayNumber;
+  let total = 0;
+  while (cursor < end.dayNumber) {
+    const date = new Date(cursor * DAY_MS);
+    const monthStart = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1) / DAY_MS;
+    const nextMonth = Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1) / DAY_MS;
+    const segmentEnd = Math.min(end.dayNumber, nextMonth);
+    const monthShare = (segmentEnd - cursor) / (nextMonth - monthStart);
+    total += monthlySalary * monthShare * (ratioAt(cursor) + ratioAt(segmentEnd)) / 2;
+    cursor = segmentEnd;
+  }
+  return total;
+}
+
 /**
  * Split recorded/corrected work from schedule estimates for one visible
  * period. One logical day can enter only one side; actual always wins.
  */
 export function summarizeRecordsActualAndForecast(params: {
   days: RecordsActualForecastDay[];
+  /** Every civil date in the visible period, including rest and absent days. */
+  periodDayKeys?: string[];
   dailySalary: number | null;
   asOfMs: number;
   salaryRules?: {
     salaryAmount: string;
     salaryType: "monthly" | "daily";
+    monthlyWorkingDays?: number;
     workdays: number[];
     schedule?: WorkScheduleConfig | null;
     timeZoneIdentifier?: string | null;
@@ -253,37 +328,21 @@ export function summarizeRecordsActualAndForecast(params: {
   let forecastMs = 0;
   let forecastPay = 0;
 
-  const monthRates = new Map<string, number | null>();
-  const dailyRate = (day: RecordsActualForecastDay): number | null => {
-    const rules = params.salaryRules;
-    if (!rules || rules.salaryType === "daily") return params.dailySalary;
-    const anchor = day.plannedSegments[0] ?? day.resolvedSegments[0];
-    const civil = day.dayKey ? civilDay(day.dayKey) : null;
-    if (!anchor || !civil) return null;
-    const monthKey = day.dayKey!.slice(0, 7);
-    if (!monthRates.has(monthKey)) {
-      const zone = rules.timeZoneIdentifier || undefined;
-      const start = addCivilDaysMs(
-        startOfCivilDayMs(anchor.startAtMs, zone), 1 - civil.day, zone,
-      );
-      const daysInMonth = new Date(Date.UTC(civil.year, civil.month, 0)).getUTCDate();
-      const end = addCivilDaysMs(start, daysInMonth, zone);
-      const scheduledDays = countScheduledWorkdays(
-        new Date(start), new Date(end), rules.workdays, rules.schedule, zone,
-      );
-      // Monthly pay is allocated across this calendar month's scheduled days,
-      // never across the average-day setting used by the live timer.
-      monthRates.set(monthKey, scheduledDays > 0
-        ? getDailySalary(rules.salaryAmount, "monthly", scheduledDays, rules.annualBonusMonths)
-        : null);
-    }
-    return monthRates.get(monthKey) ?? null;
-  };
-  let hasSalary = params.dailySalary !== null;
+  const fixedMonthlyPay = params.salaryRules?.salaryType === "monthly"
+    ? allocateFixedMonthlyPay(
+        params.periodDayKeys ?? params.days.flatMap(day => day.dayKey ? [day.dayKey] : []),
+        params.asOfMs,
+        params.salaryRules,
+      )
+    : null;
+  const usesFixedMonthlyPay = params.salaryRules?.salaryType === "monthly";
+  let hasSalary = usesFixedMonthlyPay
+    ? fixedMonthlyPay !== null
+    : params.dailySalary !== null;
   for (const day of params.days) {
     if (day.resolvedSegments.length === 0 && day.overtimeSegments.length === 0) continue;
-    const rate = dailyRate(day);
-    if (rate === null) hasSalary = false;
+    const rate = params.dailySalary;
+    if (!usesFixedMonthlyPay && rate === null) hasSalary = false;
     const plannedMs = mergedSegmentDuration(day.plannedSegments);
     const isActual = day.actualKind === "corrected" || day.actualKind === "observed";
     if (isActual) {
@@ -305,7 +364,9 @@ export function summarizeRecordsActualAndForecast(params: {
       if (workedMs > 0) {
         actualDays += 1;
         actualMs += workedMs;
-        actualPay += (rate ?? 0) * (plannedMs > 0 ? workedMs / plannedMs : 1);
+        if (!usesFixedMonthlyPay) {
+          actualPay += (rate ?? 0) * (plannedMs > 0 ? workedMs / plannedMs : 1);
+        }
       }
       if (day.isActiveAnchor) {
         const futureMs = mergedSegmentDuration(
@@ -317,7 +378,9 @@ export function summarizeRecordsActualAndForecast(params: {
         if (futureMs > 0) {
           if (workedMs <= 0) forecastDays += 1;
           forecastMs += futureMs;
-          forecastPay += (rate ?? 0) * (plannedMs > 0 ? futureMs / plannedMs : (workedMs <= 0 ? 1 : 0));
+          if (!usesFixedMonthlyPay) {
+            forecastPay += (rate ?? 0) * (plannedMs > 0 ? futureMs / plannedMs : (workedMs <= 0 ? 1 : 0));
+          }
         }
       }
       continue;
@@ -326,7 +389,12 @@ export function summarizeRecordsActualAndForecast(params: {
     if (forecastWorkMs <= 0) continue;
     forecastDays += 1;
     forecastMs += forecastWorkMs;
-    forecastPay += rate ?? 0;
+    if (!usesFixedMonthlyPay) forecastPay += rate ?? 0;
+  }
+
+  if (fixedMonthlyPay) {
+    actualPay = fixedMonthlyPay.actual;
+    forecastPay = fixedMonthlyPay.forecast;
   }
 
   const actualEarnings = hasSalary ? actualPay : null;
@@ -350,6 +418,56 @@ export function summarizeRecordsActualAndForecast(params: {
         : actualEarnings + forecastEarnings,
     },
   };
+}
+
+function allocateFixedMonthlyPay(
+  dayKeys: string[],
+  asOfMs: number,
+  rules: NonNullable<Parameters<typeof summarizeRecordsActualAndForecast>[0]["salaryRules"]>,
+): { actual: number; forecast: number } | null {
+  const monthlySalary = getMonthlySalaryEquivalent(
+    rules.salaryAmount,
+    "monthly",
+    rules.monthlyWorkingDays,
+    rules.annualBonusMonths,
+  );
+  const asOf = civilDayAt(asOfMs, rules.timeZoneIdentifier);
+  if (monthlySalary === null || asOf === null) return null;
+  let actual = 0;
+  let forecast = 0;
+  for (const key of new Set(dayKeys)) {
+    const day = civilDay(key);
+    if (day === null) continue;
+    const daysInMonth = new Date(Date.UTC(day.year, day.month, 0)).getUTCDate();
+    if (day.dayNumber <= asOf.dayNumber) actual += monthlySalary / daysInMonth;
+    else forecast += monthlySalary / daysInMonth;
+  }
+  return { actual, forecast };
+}
+
+function civilDayAt(ms: number, timeZone?: string | null): CivilDay | null {
+  if (!Number.isFinite(ms)) return null;
+  const date = new Date(ms);
+  if (!timeZone?.trim()) {
+    return civilDay([
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-"));
+  }
+  try {
+    const parts = new Intl.DateTimeFormat("en-US-u-ca-gregory-nu-latn", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(date);
+    const value = (type: "year" | "month" | "day") =>
+      parts.find(part => part.type === type)?.value;
+    return civilDay(`${value("year")}-${value("month")}-${value("day")}`);
+  } catch {
+    return null;
+  }
 }
 
 function mergedSegmentDuration(segments: RecordsSummarySegment[]): number {

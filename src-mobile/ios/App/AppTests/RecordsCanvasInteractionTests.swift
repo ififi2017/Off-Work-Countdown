@@ -63,3 +63,70 @@ func recordsLifeWorkPeriods() throws {
     #expect(known.first?.end == Date(timeIntervalSince1970: 2_000))
     #expect(work.end == end)
 }
+
+@MainActor
+@Test("Career presentation keeps selection identity while the live split advances")
+func recordsLifeWorkPeriodIdentityIsStable() {
+    let start = Date(timeIntervalSince1970: 1_000)
+    let end = Date(timeIntervalSince1970: 4_000)
+    let work = LifeStageSpan(
+        kind: .work,
+        start: start,
+        end: end,
+        startPrecision: .day,
+        endPrecision: .day
+    )
+
+    let first = LifeStageCalculator.canvasStages(
+        [work],
+        now: Date(timeIntervalSince1970: 2_000)
+    )
+    let second = LifeStageCalculator.canvasStages(
+        [work],
+        now: Date(timeIntervalSince1970: 2_001)
+    )
+
+    #expect(first.map(\.id) == second.map(\.id))
+    #expect(first.map(\.end) != second.map(\.end))
+    #expect(first.map(\.start) != second.map(\.start))
+}
+
+@MainActor
+@Test("Detailed career periods keep distinct selection identities")
+func recordsLifeDetailedWorkPeriodIdentityIsDistinct() throws {
+    let calendar = Calendar(identifier: .gregorian)
+    let salary = LifeSalary(amount: 10_000, cadence: .monthly)
+    var profile = LifeProfile(
+        averageSleepHours: 8,
+        bornOn: .exact(year: 1990, month: 1, day: 1),
+        workStartedPartial: .exact(year: 2020, month: 1, day: 1),
+        retirementOn: .exact(year: 2060, month: 1, day: 1),
+        editedAt: Date(timeIntervalSince1970: 0),
+        editCount: 1,
+        editTieBreaker: UUID()
+    )
+    profile.workHistoryMode = .detailed
+    profile.employmentPeriods = [
+        LifeEmploymentPeriod(
+            id: UUID(),
+            startsOn: try #require(.exact(year: 2020, month: 1, day: 1)),
+            endsOn: .exact(year: 2022, month: 1, day: 1),
+            salary: salary
+        ),
+        LifeEmploymentPeriod(
+            id: UUID(),
+            startsOn: try #require(.exact(year: 2023, month: 1, day: 1)),
+            endsOn: nil,
+            salary: salary
+        ),
+    ]
+    let now = try #require(calendar.date(from: DateComponents(year: 2026, month: 1, day: 1)))
+
+    let stages = LifeStageCalculator.canvasStages(
+        LifeStageCalculator.stages(profile: profile, calendar: calendar, now: now),
+        now: now
+    ).filter { $0.kind == .work }
+
+    #expect(Set(stages.map(\.id)).count == stages.count)
+    #expect(stages.count == 3)
+}

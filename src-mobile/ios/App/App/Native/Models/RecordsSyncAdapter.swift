@@ -279,6 +279,11 @@ enum RecordsSyncConflict {
         merged.workHistoryMode = take(local.workHistoryMode, server.workHistoryMode, baseline?.workHistoryMode)
         merged.roughCurrentSalary = take(local.roughCurrentSalary, server.roughCurrentSalary, baseline?.roughCurrentSalary)
         merged.employmentPeriods = take(local.employmentPeriods, server.employmentPeriods, baseline?.employmentPeriods)
+        merged.futureIncomeDecline = take(
+            local.futureIncomeDecline,
+            server.futureIncomeDecline,
+            baseline?.futureIncomeDecline
+        )
         merged.editCount = max(local.editCount, server.editCount) + (conflicted ? 1 : 0)
         merged.editTieBreaker = conflicted
             ? UUID()

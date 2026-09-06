@@ -1,6 +1,11 @@
 import SwiftUI
 import UIKit
 
+extension EnvironmentValues {
+    /// The iPad split shell keeps its navigation controls outside pushed pages.
+    @Entry var usesTabletNavigationShell = false
+}
+
 enum OWCBrand {
     static let shortName = "DoneAt"
 }
@@ -1140,6 +1145,7 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
     let discardChangesTitle: String
     let onDiscardChanges: () -> Void
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.usesTabletNavigationShell) private var usesTabletNavigationShell
     @State private var showDiscardPrompt = false
     @State private var promptFeedback = 0
     @State private var discardFeedback = 0
@@ -1166,43 +1172,60 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
         self.onDiscardChanges = onDiscardChanges
     }
 
+    @ViewBuilder
     func body(content: Content) -> some View {
-        content
-            // Detail lists use a collapsing large title. Pages with their own
-            // content headline can keep the navigation title compact.
-            .navigationTitle(pageTitle)
-            .navigationBarTitleDisplayMode(titleDisplayMode)
-            .navigationBarBackButtonHidden(true)
-            .toolbar(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: requestDismiss) {
-                        Image(systemName: "chevron.left")
-                            .font(.body.weight(.semibold))
-                    }
-                    .accessibilityLabel(backTitle)
-                    .confirmationDialog(
-                        unsavedChangesTitle,
-                        isPresented: $showDiscardPrompt,
-                        titleVisibility: .visible
-                    ) {
-                        Button(discardChangesTitle, role: .destructive, action: discardAndDismiss)
-                        Button(keepEditingTitle, role: .cancel) {}
-                    }
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
+        Group {
+            if usesTabletNavigationShell {
+                OWCTabletDetailChrome(
+                    backTitle: backTitle,
+                    pageTitle: pageTitle,
+                    titleDisplayMode: titleDisplayMode,
+                    onBack: requestDismiss
+                ) {
                     trailing
+                } content: {
+                    content
                 }
+                .toolbar(.hidden, for: .navigationBar)
+            } else {
+                content
+                    // Detail lists use a collapsing large title. Pages with
+                    // their own content headline can keep it compact.
+                    .navigationTitle(pageTitle)
+                    .navigationBarTitleDisplayMode(titleDisplayMode)
+                    .navigationBarBackButtonHidden(true)
+                    .toolbar(.visible, for: .navigationBar)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button(action: requestDismiss) {
+                                Image(systemName: "chevron.left")
+                                    .font(.body.weight(.semibold))
+                            }
+                            .accessibilityLabel(backTitle)
+                        }
+
+                        ToolbarItem(placement: .topBarTrailing) {
+                            trailing
+                        }
+                    }
             }
-            .background(
-                OWCSystemBackSwipeBridge(
-                    blocksBackSwipe: hasUnsavedChanges,
-                    onBlockedBackSwipe: requestDismiss
-                )
+        }
+        .background(
+            OWCSystemBackSwipeBridge(
+                blocksBackSwipe: hasUnsavedChanges,
+                onBlockedBackSwipe: requestDismiss
             )
-            .sensoryFeedback(.warning, trigger: promptFeedback)
-            .sensoryFeedback(.impact(weight: .medium), trigger: discardFeedback)
+        )
+        .confirmationDialog(
+            unsavedChangesTitle,
+            isPresented: $showDiscardPrompt,
+            titleVisibility: .visible
+        ) {
+            Button(discardChangesTitle, role: .destructive, action: discardAndDismiss)
+            Button(keepEditingTitle, role: .cancel) {}
+        }
+        .sensoryFeedback(.warning, trigger: promptFeedback)
+        .sensoryFeedback(.impact(weight: .medium), trigger: discardFeedback)
     }
 
     private func requestDismiss() {
@@ -1222,6 +1245,114 @@ struct OWCDetailBackModifier<Trailing: View>: ViewModifier {
 
     private func performDismiss() {
         dismiss()
+    }
+}
+
+private struct OWCTabletDetailChrome<Content: View, Trailing: View>: View {
+    let backTitle: String
+    let pageTitle: String
+    let subtitle: String?
+    let titleDisplayMode: NavigationBarItem.TitleDisplayMode
+    let onBack: () -> Void
+    @ViewBuilder let trailing: Trailing
+    @ViewBuilder let content: Content
+
+    init(
+        backTitle: String,
+        pageTitle: String,
+        subtitle: String? = nil,
+        titleDisplayMode: NavigationBarItem.TitleDisplayMode,
+        onBack: @escaping () -> Void,
+        @ViewBuilder trailing: () -> Trailing,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.backTitle = backTitle
+        self.pageTitle = pageTitle
+        self.subtitle = subtitle
+        self.titleDisplayMode = titleDisplayMode
+        self.onBack = onBack
+        self.trailing = trailing()
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Button(action: onBack) {
+                    OWCGlassCircleLabel {
+                        Image(systemName: "chevron.left")
+                            .font(.body.weight(.semibold))
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(backTitle)
+
+                Spacer(minLength: 8)
+
+                HStack(spacing: 8) { trailing }
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.glass)
+            }
+            .frame(height: OWCDesign.rootHeaderHeight)
+            .padding(.horizontal, OWCDesign.rootControlInset)
+            .padding(.top, OWCDesign.rootHeaderTopInset)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(pageTitle)
+                    .font(titleDisplayMode == .large ? .largeTitle.bold() : .headline)
+                    .tracking(titleDisplayMode == .large ? -0.85 : 0)
+                    .foregroundStyle(OWCDesign.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.top, titleDisplayMode == .large ? 4 : 0)
+            .padding(.bottom, titleDisplayMode == .large ? 12 : 8)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
+
+            content
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background(OWCDesign.page)
+    }
+}
+
+private struct OWCTabletDetailNavigationModifier<Trailing: View>: ViewModifier {
+    let backTitle: String
+    let pageTitle: String
+    let subtitle: String?
+    let titleDisplayMode: NavigationBarItem.TitleDisplayMode
+    @ViewBuilder let trailing: Trailing
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.usesTabletNavigationShell) private var usesTabletNavigationShell
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if usesTabletNavigationShell {
+            OWCTabletDetailChrome(
+                backTitle: backTitle,
+                pageTitle: pageTitle,
+                subtitle: subtitle,
+                titleDisplayMode: titleDisplayMode,
+                onBack: { dismiss() }
+            ) {
+                trailing
+            } content: {
+                content
+            }
+            .toolbar(.hidden, for: .navigationBar)
+        } else {
+            content
+        }
     }
 }
 
@@ -1292,6 +1423,39 @@ extension View {
                 trailing: trailing
             )
         )
+    }
+
+    /// Keeps the phone's native navigation chrome and replaces it only inside
+    /// the iPad split shell, where the centered shell controls stay fixed.
+    func owcTabletDetailNavigation(
+        backTitle: String,
+        pageTitle: String,
+        subtitle: String? = nil,
+        titleDisplayMode: NavigationBarItem.TitleDisplayMode = .inline
+    ) -> some View {
+        modifier(OWCTabletDetailNavigationModifier(
+            backTitle: backTitle,
+            pageTitle: pageTitle,
+            subtitle: subtitle,
+            titleDisplayMode: titleDisplayMode,
+            trailing: { EmptyView() }
+        ))
+    }
+
+    func owcTabletDetailNavigation<Trailing: View>(
+        backTitle: String,
+        pageTitle: String,
+        subtitle: String? = nil,
+        titleDisplayMode: NavigationBarItem.TitleDisplayMode = .inline,
+        @ViewBuilder trailing: () -> Trailing
+    ) -> some View {
+        modifier(OWCTabletDetailNavigationModifier(
+            backTitle: backTitle,
+            pageTitle: pageTitle,
+            subtitle: subtitle,
+            titleDisplayMode: titleDisplayMode,
+            trailing: trailing
+        ))
     }
 }
 

@@ -1252,6 +1252,8 @@ struct LifeProfileDTO: Codable, Equatable {
     var workHistoryMode: LifeWorkHistoryMode?
     var roughCurrentSalary: LifeSalary?
     var employmentPeriods: [LifeEmploymentPeriod]?
+    /// Missing in v1-v3 profile payloads and therefore means keep current income.
+    var futureIncomeDecline: LifeIncomeDecline?
     var editedAtMs: Double
     var editCount: Int
     var editTieBreaker: String
@@ -1273,6 +1275,7 @@ struct LifeProfileDTO: Codable, Equatable {
         workHistoryMode = value.workHistoryMode
         roughCurrentSalary = value.roughCurrentSalary
         employmentPeriods = value.employmentPeriods
+        futureIncomeDecline = value.futureIncomeDecline
         editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
         editCount = value.editCount
         editTieBreaker = value.editTieBreaker.uuidString
@@ -1293,7 +1296,8 @@ struct LifeProfileDTO: Codable, Equatable {
         let employmentPeriods = employmentPeriods ?? []
         guard roughCurrentSalary?.isValid != false,
               employmentPeriods.allSatisfy({ $0.isValid(in: calendar) }),
-              Set(employmentPeriods.map(\.id)).count == employmentPeriods.count
+              Set(employmentPeriods.map(\.id)).count == employmentPeriods.count,
+              futureIncomeDecline?.isValid != false
         else { return nil }
         var profile = LifeProfile(
             profileID: profileID,
@@ -1312,6 +1316,7 @@ struct LifeProfileDTO: Codable, Equatable {
             workHistoryMode: workHistoryMode,
             roughCurrentSalary: roughCurrentSalary,
             employmentPeriods: employmentPeriods,
+            futureIncomeDecline: futureIncomeDecline,
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,
             editTieBreaker: editTieBreaker

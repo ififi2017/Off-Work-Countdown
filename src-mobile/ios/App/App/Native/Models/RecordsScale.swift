@@ -214,13 +214,13 @@ enum LifeStageKind: String, Equatable, Sendable {
 }
 
 struct LifeStageSpan: Equatable, Sendable, Identifiable {
+    /// A stage keeps its configured identity while `canvasStages` moves the
+    /// live elapsed/future boundary forward.
+    private let sourceID: String
+
     var id: String {
-        [
-            kind.rawValue,
-            workPeriod?.rawValue ?? "all",
-            start.map { String($0.timeIntervalSinceReferenceDate) } ?? "open",
-            end.map { String($0.timeIntervalSinceReferenceDate) } ?? "open",
-        ].joined(separator: ".")
+        guard let workPeriod else { return sourceID }
+        return "\(sourceID).\(workPeriod.rawValue)"
     }
     var kind: LifeStageKind
     var start: Date?
@@ -228,6 +228,28 @@ struct LifeStageSpan: Equatable, Sendable, Identifiable {
     var startPrecision: CivilDatePrecision?
     var endPrecision: CivilDatePrecision?
     var workPeriod: LifeWorkPeriod? = nil
+
+    init(
+        kind: LifeStageKind,
+        start: Date?,
+        end: Date?,
+        startPrecision: CivilDatePrecision?,
+        endPrecision: CivilDatePrecision?,
+        workPeriod: LifeWorkPeriod? = nil,
+        sourceID: String? = nil
+    ) {
+        self.sourceID = sourceID ?? [
+            kind.rawValue,
+            start.map { String($0.timeIntervalSinceReferenceDate) } ?? "open",
+            end.map { String($0.timeIntervalSinceReferenceDate) } ?? "open",
+        ].joined(separator: ".")
+        self.kind = kind
+        self.start = start
+        self.end = end
+        self.startPrecision = startPrecision
+        self.endPrecision = endPrecision
+        self.workPeriod = workPeriod
+    }
 
     var titleKey: String {
         switch workPeriod {
@@ -349,7 +371,8 @@ enum LifeStageCalculator {
                 start: start,
                 end: end,
                 startPrecision: period.startsOn.precision,
-                endPrecision: period.endsOn?.precision ?? profile.retirementOn?.precision
+                endPrecision: period.endsOn?.precision ?? profile.retirementOn?.precision,
+                sourceID: "employment.\(period.id.uuidString.lowercased())"
             )
         }
         if !profile.employmentPeriods.contains(where: { $0.endsOn == nil }),
@@ -361,7 +384,8 @@ enum LifeStageCalculator {
                     start: start,
                     end: retirement,
                     startPrecision: .day,
-                    endPrecision: profile.retirementOn?.precision
+                    endPrecision: profile.retirementOn?.precision,
+                    sourceID: "employment.current-salary"
                 ))
             }
         }
