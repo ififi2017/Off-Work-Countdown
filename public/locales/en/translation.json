@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Checking your Plus access…",
   "firstRunLocalDataNeedsReview": "iCloud has a newer data reset, and this device has unsynced records. Export a full backup here first. You can then choose to replace this device’s records with iCloud.",
   "firstRunReplaceWithCloud": "Use iCloud after backup",
-  "firstRunReplaceConfirm": "Replace this device’s records with iCloud? Keep the exported backup if you want to recover local records later."
+  "firstRunReplaceConfirm": "Replace this device’s records with iCloud? Keep the exported backup if you want to recover local records later.",
+  "whatsNewTitle": "What’s new",
+  "whatsNewRecordsTitle": "Your time, at a glance",
+  "whatsNewRecordsBody": "Explore weekly, monthly and yearly summaries. Tap a time segment for details, or double-tap a day to take a closer look.",
+  "whatsNewLifeTitle": "A wider view of life",
+  "whatsNewLifeBody": "Add your life milestones to see work in context. Past estimates and your current work stage are now easier to explore.",
+  "whatsNewFocusTitle": "Make room for focus",
+  "whatsNewFocusBody": "Plan tasks and use the focus timer. Returning on a new device? Quick setup helps you recover your iCloud records.",
+  "whatsNewPlusTitle": "Meet DoneAt Plus",
+  "whatsNewPlusBody": "The countdown stays free. Plus adds full records, life views and focus tools, with subscription or lifetime options. Existing iCloud sync continues even after a subscription expires.",
+  "whatsNewContinue": "Continue",
+  "recordsOpenSelectedMonth": "View {{month}}",
+  "firstRunQuickSetup": "Returning user? Set up from iCloud",
+  "firstRunReturningTitle": "Welcome back",
+  "firstRunBackToWelcome": "Back to welcome",
+  "firstRunContinueSetup": "Set up this device",
+  "firstRunCloudNeedsSetup": "Your records are back. We did not find saved schedule settings, so you can finish setting up this device without losing what was restored."
 }

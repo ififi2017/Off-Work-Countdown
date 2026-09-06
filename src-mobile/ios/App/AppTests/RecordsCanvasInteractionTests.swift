@@ -61,6 +61,30 @@ func recordsLifeWorkPeriods() throws {
     #expect(known.count == 1)
     #expect(known.first?.workPeriod == .elapsed)
     #expect(known.first?.end == Date(timeIntervalSince1970: 2_000))
+    let presentBucket = try #require(
+        LifeStageCalculator.buckets(
+            stages: known,
+            from: start,
+            to: Date(timeIntervalSince1970: 2_000),
+            count: 10,
+            now: Date(timeIntervalSince1970: 2_000)
+        ).last
+    )
+    #expect(presentBucket.isCurrent)
+    #expect(presentBucket.stageID == known.first?.id)
+
+    let split = LifeStageCalculator.canvasStages([work], now: Date(timeIntervalSince1970: 2_000))
+    let splitBuckets = LifeStageCalculator.buckets(
+        stages: split,
+        from: start,
+        to: end,
+        count: 10,
+        now: Date(timeIntervalSince1970: 2_000)
+    )
+    let currentBucket = splitBuckets.first { $0.isCurrent }
+    let splitPresentBucket = try #require(currentBucket)
+    #expect(splitPresentBucket.stageID == split.first?.id)
+    #expect(!splitPresentBucket.isFuture)
     #expect(work.end == end)
 }
 

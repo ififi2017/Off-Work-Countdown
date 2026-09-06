@@ -82,6 +82,8 @@ func firstRunCloudCommitIsAtomic() throws {
     #expect(target.onboardingComplete)
     #expect(target.plus.hasSeenIntro)
     #expect(!target.localSetupNeedsCloudChoice)
+    #expect(target.records.state.sync.syncEnabled)
+    #expect(!target.resumeCloudSyncWhenAuthorized)
 }
 
 @MainActor
@@ -153,7 +155,7 @@ func cloudResetProtectsLocalMetadata() throws {
     )
     #expect(confirmed.sync.generation == 2)
     #expect(confirmed.recordsStartedOn == nil)
-    #expect(!confirmed.sync.syncEnabled)
+    #expect(confirmed.sync.syncEnabled)
 }
 
 @MainActor
@@ -167,4 +169,11 @@ func restoredSyncIntentSurvivesUnavailableEntitlement() throws {
     #expect(store.onboardingComplete)
     #expect(store.firstRunRecoveryResolved)
     #expect(!store.countdownStarted)
+}
+
+@Test("First-run CloudKit retries only transient transport failures")
+@MainActor
+func firstRunRetryPolicy() {
+    #expect(FirstRunRecoveryRetryPolicy.delay(for: CKError(.networkUnavailable)) == 2)
+    #expect(FirstRunRecoveryRetryPolicy.delay(for: CKError(.notAuthenticated)) == nil)
 }

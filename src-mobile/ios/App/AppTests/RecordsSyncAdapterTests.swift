@@ -158,6 +158,98 @@ func lifeProfileMergesByField() throws {
 }
 
 @MainActor
+@Test("Cloud payload round-trips and merges every LifeProfile field")
+func cloudPayloadPreservesLifeProfileFields() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    let employment = LifeEmploymentPeriod(
+        id: syncTestID(83),
+        startsOn: try #require(PartialCivilDate.exact(year: 2012, month: 7, day: 1)),
+        endsOn: try #require(PartialCivilDate.exact(year: 2018, month: 6, day: 30)),
+        salary: LifeSalary(amount: 120_000, cadence: .yearly)
+    )
+    let baseline = LifeProfile(
+        birthYear: 1990,
+        workStartedOn: Date(timeIntervalSince1970: 1_341_100_800),
+        retirementAge: 60,
+        averageSleepHours: 7.5,
+        hidesExactAges: true,
+        bornOn: try #require(PartialCivilDate.exact(year: 1990, month: 2, day: 3)),
+        schoolStartedOn: try #require(PartialCivilDate.exact(year: 1996, month: 9, day: 1)),
+        workStartedPartial: try #require(PartialCivilDate.exact(year: 2012, month: 7, day: 1)),
+        retirementOn: try #require(PartialCivilDate.exact(year: 2050, month: 7, day: 1)),
+        averageSleepMinutes: 450,
+        sleepSource: .healthSuggested,
+        sleepSourceUpdatedAt: Date(timeIntervalSince1970: 1_000),
+        workHistoryMode: .rough,
+        roughCurrentSalary: LifeSalary(amount: 8_000, cadence: .monthly),
+        employmentPeriods: [employment],
+        futureIncomeDecline: LifeIncomeDecline(startsAtAge: 50, retirementRatio: 0.6),
+        editedAt: Date(timeIntervalSince1970: 1_000),
+        editCount: 1,
+        editTieBreaker: syncTestID(80)
+    )
+    var state = RecordState()
+    state.lifeProfile = baseline
+    let payload = try #require(
+        RecordsSyncPayload.encode(
+            type: .lifeProfile,
+            key: LifeProfile.profileID.uuidString,
+            from: state
+        )
+    )
+    let incoming = try #require(
+        RecordsSyncPayload.incoming(from: payload, type: .lifeProfile, calendar: calendar)
+    )
+    guard case let .lifeProfile(roundTrip) = incoming else {
+        Issue.record("Life profile payload decoded as another entity")
+        return
+    }
+    #expect(roundTrip == baseline)
+
+    var local = roundTrip
+    local.schoolStartedOn = try #require(PartialCivilDate.exact(year: 1997, month: 9, day: 1))
+    local.workStartedPartial = try #require(PartialCivilDate.exact(year: 2013, month: 7, day: 1))
+    local.sleepSource = .manual
+    local.workHistoryMode = .detailed
+    local.employmentPeriods = [
+        LifeEmploymentPeriod(
+            id: employment.id,
+            startsOn: employment.startsOn,
+            endsOn: nil,
+            salary: LifeSalary(amount: 10_000, cadence: .monthly)
+        )
+    ]
+    local.editCount = 2
+    local.editedAt = Date(timeIntervalSince1970: 2_000)
+    local.editTieBreaker = syncTestID(81)
+
+    var server = roundTrip
+    server.bornOn = try #require(PartialCivilDate.exact(year: 1990, month: 2, day: 4))
+    server.retirementOn = try #require(PartialCivilDate.exact(year: 2051, month: 7, day: 1))
+    server.averageSleepMinutes = 420
+    server.sleepSourceUpdatedAt = Date(timeIntervalSince1970: 3_000)
+    server.roughCurrentSalary = LifeSalary(amount: 9_000, cadence: .monthly)
+    server.futureIncomeDecline = LifeIncomeDecline(startsAtAge: 45, retirementRatio: 0.5)
+    server.editCount = 2
+    server.editedAt = Date(timeIntervalSince1970: 3_000)
+    server.editTieBreaker = syncTestID(82)
+
+    let merged = RecordsSyncConflict.mergeLifeProfile(local: local, server: server, baseline: roundTrip)
+    #expect(merged.bornOn == server.bornOn)
+    #expect(merged.schoolStartedOn == local.schoolStartedOn)
+    #expect(merged.workStartedPartial == local.workStartedPartial)
+    #expect(merged.retirementOn == server.retirementOn)
+    #expect(merged.averageSleepMinutes == server.averageSleepMinutes)
+    #expect(merged.sleepSource == local.sleepSource)
+    #expect(merged.sleepSourceUpdatedAt == server.sleepSourceUpdatedAt)
+    #expect(merged.workHistoryMode == local.workHistoryMode)
+    #expect(merged.roughCurrentSalary == server.roughCurrentSalary)
+    #expect(merged.employmentPeriods == local.employmentPeriods)
+    #expect(merged.futureIncomeDecline == server.futureIncomeDecline)
+}
+
+@MainActor
 @Test("Revision-only payload differences are not user-visible conflicts")
 func syncConflictIgnoresRevisionOnlyPayloadDifferences() {
     let local = Data(#"{"calendarIdentifier":"gregorian","createdAtMs":1788245646901.092,"editCount":2,"editTieBreaker":"local","editedAtMs":1788245646901.092,"startsOn":"2026-09-01","timeZoneIdentifier":"Asia/Shanghai"}"#.utf8)

@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Stiamo controllando il tuo accesso Plus…",
   "firstRunLocalDataNeedsReview": "iCloud contiene un ripristino dei dati più recente e questo dispositivo ha registri non sincronizzati. Esporta qui prima un backup completo. Potrai poi scegliere se sostituire i registri di questo dispositivo con quelli di iCloud.",
   "firstRunReplaceWithCloud": "Usa iCloud dopo il backup",
-  "firstRunReplaceConfirm": "Sostituire i registri di questo dispositivo con quelli di iCloud? Conserva il backup esportato se vorrai recuperare i registri locali in seguito."
+  "firstRunReplaceConfirm": "Sostituire i registri di questo dispositivo con quelli di iCloud? Conserva il backup esportato se vorrai recuperare i registri locali in seguito.",
+  "whatsNewTitle": "Novità",
+  "whatsNewRecordsTitle": "Il tuo tempo, a colpo d’occhio",
+  "whatsNewRecordsBody": "Esplora riepiloghi settimanali, mensili e annuali. Tocca un intervallo di tempo per i dettagli oppure tocca due volte un giorno per osservarlo più da vicino.",
+  "whatsNewLifeTitle": "Uno sguardo più ampio sulla vita",
+  "whatsNewLifeBody": "Aggiungi le tappe della tua vita per vedere il lavoro nel suo contesto. Ora è più facile esplorare le stime passate e la tua attuale fase lavorativa.",
+  "whatsNewFocusTitle": "Fai spazio alla concentrazione",
+  "whatsNewFocusBody": "Pianifica le attività e usa il timer di concentrazione. Torni su un nuovo dispositivo? La configurazione rapida ti aiuta a recuperare i tuoi dati iCloud.",
+  "whatsNewPlusTitle": "Scopri DoneAt Plus",
+  "whatsNewPlusBody": "Il conto alla rovescia per la fine del lavoro resta gratuito. Plus aggiunge registri completi, viste della vita e strumenti per la concentrazione, con abbonamento o acquisto a vita. La sincronizzazione iCloud già attiva continua anche dopo la scadenza dell’abbonamento.",
+  "whatsNewContinue": "Continua",
+  "recordsOpenSelectedMonth": "Visualizza {{month}}",
+  "firstRunQuickSetup": "Usavi già DoneAt? Configurazione rapida da iCloud",
+  "firstRunReturningTitle": "Bentornato",
+  "firstRunBackToWelcome": "Torna alla schermata di benvenuto",
+  "firstRunContinueSetup": "Configura questo dispositivo",
+  "firstRunCloudNeedsSetup": "I tuoi dati sono stati ripristinati, ma non abbiamo trovato impostazioni di pianificazione salvate. Puoi completare la configurazione di questo dispositivo senza perdere i dati ripristinati."
 }

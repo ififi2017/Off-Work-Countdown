@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Vérification de votre accès Plus…",
   "firstRunLocalDataNeedsReview": "iCloud contient une réinitialisation de données plus récente, et cet appareil a des enregistrements non synchronisés. Exportez d’abord une sauvegarde complète ici. Vous pourrez ensuite choisir de remplacer les enregistrements de cet appareil par ceux d’iCloud.",
   "firstRunReplaceWithCloud": "Utiliser iCloud après la sauvegarde",
-  "firstRunReplaceConfirm": "Remplacer les enregistrements de cet appareil par ceux d’iCloud ? Conservez la sauvegarde exportée si vous souhaitez récupérer les enregistrements locaux plus tard."
+  "firstRunReplaceConfirm": "Remplacer les enregistrements de cet appareil par ceux d’iCloud ? Conservez la sauvegarde exportée si vous souhaitez récupérer les enregistrements locaux plus tard.",
+  "whatsNewTitle": "Nouveautés",
+  "whatsNewRecordsTitle": "Votre temps en un coup d’œil",
+  "whatsNewRecordsBody": "Explorez les bilans hebdomadaires, mensuels et annuels. Touchez une période pour les détails, ou touchez deux fois un jour pour le regarder de plus près.",
+  "whatsNewLifeTitle": "Une vision plus large de la vie",
+  "whatsNewLifeBody": "Ajoutez les étapes de votre vie pour replacer le travail dans son contexte. Les estimations passées et votre étape professionnelle actuelle sont désormais plus faciles à explorer.",
+  "whatsNewFocusTitle": "Faites place à la concentration",
+  "whatsNewFocusBody": "Planifiez vos tâches et utilisez le minuteur de concentration. Vous revenez sur un nouvel appareil ? La configuration rapide vous aide à retrouver vos données iCloud.",
+  "whatsNewPlusTitle": "Découvrez DoneAt Plus",
+  "whatsNewPlusBody": "Le compte à rebours de fin de journée reste gratuit. Plus ajoute l’historique complet, les vues de vie et les outils de concentration, avec abonnement ou achat à vie. La synchronisation iCloud déjà activée continue même après l’expiration d’un abonnement.",
+  "whatsNewContinue": "Continuer",
+  "recordsOpenSelectedMonth": "Voir {{month}}",
+  "firstRunQuickSetup": "Vous utilisez déjà DoneAt ? Configuration rapide avec iCloud",
+  "firstRunReturningTitle": "Ravi de vous revoir",
+  "firstRunBackToWelcome": "Retour à l’accueil",
+  "firstRunContinueSetup": "Configurer cet appareil",
+  "firstRunCloudNeedsSetup": "Vos données sont restaurées. Aucun planning enregistré n’a été trouvé. Vous pouvez terminer la configuration de cet appareil sans perdre les données restaurées."
 }

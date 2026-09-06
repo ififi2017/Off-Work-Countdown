@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Memeriksa akses Plus Anda…",
   "firstRunLocalDataNeedsReview": "iCloud memiliki pengaturan ulang data yang lebih baru, dan perangkat ini memiliki catatan yang belum disinkronkan. Ekspor cadangan lengkap di sini terlebih dahulu. Setelah itu, Anda dapat memilih untuk mengganti catatan perangkat ini dengan data dari iCloud.",
   "firstRunReplaceWithCloud": "Gunakan iCloud setelah mencadangkan",
-  "firstRunReplaceConfirm": "Ganti catatan perangkat ini dengan iCloud? Simpan cadangan yang diekspor jika Anda ingin memulihkan catatan lokal nanti."
+  "firstRunReplaceConfirm": "Ganti catatan perangkat ini dengan iCloud? Simpan cadangan yang diekspor jika Anda ingin memulihkan catatan lokal nanti.",
+  "whatsNewTitle": "Yang baru",
+  "whatsNewRecordsTitle": "Waktumu, sekilas pandang",
+  "whatsNewRecordsBody": "Jelajahi ringkasan mingguan, bulanan, dan tahunan. Ketuk bagian waktu untuk melihat detail, atau ketuk dua kali sebuah hari untuk melihatnya lebih dekat.",
+  "whatsNewLifeTitle": "Pandangan hidup yang lebih luas",
+  "whatsNewLifeBody": "Tambahkan tonggak hidup untuk melihat pekerjaan dalam konteksnya. Perkiraan masa lalu dan tahap pekerjaanmu saat ini kini lebih mudah dijelajahi.",
+  "whatsNewFocusTitle": "Beri ruang untuk fokus",
+  "whatsNewFocusBody": "Rencanakan tugas dan gunakan timer fokus. Kembali di perangkat baru? Pengaturan cepat membantu memulihkan catatan iCloud-mu.",
+  "whatsNewPlusTitle": "Kenalkan DoneAt Plus",
+  "whatsNewPlusBody": "Hitung mundur pulang kerja tetap gratis. Plus menambahkan catatan lengkap, tampilan kehidupan, dan alat fokus, dengan pilihan langganan atau seumur hidup. Sinkronisasi iCloud yang sudah aktif tetap berlanjut setelah langganan berakhir.",
+  "whatsNewContinue": "Lanjutkan",
+  "recordsOpenSelectedMonth": "Lihat {{month}}",
+  "firstRunQuickSetup": "Sudah pernah memakai DoneAt? Siapkan cepat dari iCloud",
+  "firstRunReturningTitle": "Selamat datang kembali",
+  "firstRunBackToWelcome": "Kembali ke halaman sambutan",
+  "firstRunContinueSetup": "Siapkan perangkat ini",
+  "firstRunCloudNeedsSetup": "Catatan Anda sudah dipulihkan, tetapi pengaturan jadwal tersimpan tidak ditemukan. Anda dapat menyelesaikan penyiapan perangkat ini tanpa kehilangan data yang dipulihkan."
 }

@@ -46,7 +46,7 @@ struct OnboardingPlusRecordsPage: View {
     private var lifeCard: some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 12) {
-                Label(store.t("lifeProfileTitle"), systemImage: "figure.timeline.selection")
+                Label(store.t("lifeProfileTitle"), systemImage: "person.crop.circle")
                     .font(.headline)
                 Text(store.t("onboardingPlusLifeBody"))
                     .font(.footnote)
@@ -172,7 +172,7 @@ struct OnboardingPlusFocusPage: View {
                                 .transition(previewTransition)
                         }
                     }
-                    .frame(minHeight: 166, alignment: .top)
+                    .frame(minHeight: 138, alignment: .top)
                     .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter, value: phase)
                 }
                 .padding(16)

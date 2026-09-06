@@ -23,16 +23,14 @@ struct OffWorkCountdownRootView: View {
 
     var body: some View {
         Group {
-            if !store.onboardingComplete && !store.firstRunRecoveryResolved {
-                FirstRunRecoveryView(store: store)
-            } else if !store.onboardingComplete {
+            if !store.onboardingComplete {
                 OnboardingView(store: store)
                     // Only the outgoing side scales. Scaling the incoming app
                     // meant its layout settled at a different size than it
                     // animated at, so everything nudged down once the
                     // transition finished — a cross-fade cannot do that.
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 1.04)))
-            } else if !store.plus.hasSeenIntro {
+            } else if !store.plus.hasSeenIntro && !store.showsReleaseNotes {
                 PlusIntroView(store: store).transition(introPaywallTransition)
             } else if verticalSizeClass == .compact {
                 // Compact height is a phone on its side — including Plus/Max,
@@ -82,10 +80,17 @@ struct OffWorkCountdownRootView: View {
         }
         .modifier(RecordsLifeSetupPromptModifier(
             store: store,
-            paywallPresentationActive: paywallPresentationActive,
+            paywallPresentationActive: paywallPresentationActive || store.showsReleaseNotes,
             presentationActive: $lifeSetupPresentationActive
         ))
-        .modifier(AppReviewPromptModifier(store: store, isBlocked: lifeSetupPresentationActive))
+        .modifier(AppReviewPromptModifier(store: store, isBlocked: lifeSetupPresentationActive || store.showsReleaseNotes))
+        .fullScreenCover(isPresented: Binding(
+            get: { store.onboardingComplete && store.showsReleaseNotes },
+            set: { if !$0 { store.dismissReleaseNotes() } }
+        )) {
+            WhatsNewView(store: store)
+                .presentationBackground(.clear)
+        }
         .task {
             // First frame first. StoreKit, CloudKit, the rules bundle and
             // notification scheduling all used to start in the same turn as
@@ -97,8 +102,8 @@ struct OffWorkCountdownRootView: View {
             try? await Task.sleep(for: .milliseconds(16))
             LaunchTrace.endAppInit()
             CountdownRules.warmUp()
-            store.plus.start()
             guard store.onboardingComplete else { return }
+            store.plus.start()
             store.reconcileCountdownSession()
             _ = store.reconcileRecordSchedule()
             if store.onboardingComplete, store.selectedTab == .timer {
@@ -107,7 +112,6 @@ struct OffWorkCountdownRootView: View {
             _ = store.applyDefaultFocusTemplateIfNeeded()
             store.cloudSync.startIfEnabled()
             await store.resumeRestoredSyncIfNeeded()
-            guard store.onboardingComplete else { return }
             try? await Task.sleep(for: .milliseconds(650))
             guard !Task.isCancelled, store.onboardingComplete else { return }
             scheduleServices()
@@ -115,6 +119,8 @@ struct OffWorkCountdownRootView: View {
         .onChange(of: store.onboardingComplete) {
             AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
             if store.onboardingComplete {
+                store.plus.start()
+                store.cloudSync.startIfEnabled()
                 // Let Plus intro paint first. Starting the countdown and
                 // publishing the widget on this turn is why the paywall took
                 // one to three seconds to appear after the welcome page.

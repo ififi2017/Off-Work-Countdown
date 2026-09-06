@@ -10,6 +10,7 @@ struct RecordsDesignView: View {
     @State private var scale: RecordsScale
     @State private var anchor = Date()
     @State private var selectedDayKey: String?
+    @State private var quickDay: RecordsDayIdentified?
     @State private var selectedYearMonth: Int?
     @State private var selectedLifeStageID: String?
     @State private var yearCalloutMonth: Int?
@@ -18,7 +19,6 @@ struct RecordsDesignView: View {
     @State private var days: [DayResolution] = []
     @State private var cells: [RecordsDayCell] = []
     @State private var summary: RecordsHeadlineSummary?
-    @State private var detail: RecordsDayDetail?
     @State private var lifeModel: LifeViewModel?
     @State private var expanded: [RecordsScale: Bool]
     @State private var pinch: CGFloat = 1
@@ -95,6 +95,10 @@ struct RecordsDesignView: View {
         .navigationDestination(for: RecordsRoute.self) { route in
             recordsDestination(route)
         }
+        .navigationDestination(item: $quickDay) { item in
+            RecordsDayCanvasView(store: store, dayKey: item.dayKey)
+                .onAppear { store.writeQASurfaceMarker("records.day") }
+        }
         .sheet(item: Binding(
             get: { store.editingDayKey.map(RecordsDayIdentified.init) },
             set: { store.editingDayKey = $0?.dayKey }
@@ -122,7 +126,7 @@ struct RecordsDesignView: View {
             // from Home refreshes immediately, without resetting the selection.
             while !Task.isCancelled {
                 if loadedSignature != currentLoadSignature {
-                    await load(selectingToday: loadedSignature == nil)
+                    await load()
                 }
                 do { try await Task.sleep(for: .seconds(60)) }
                 catch { return }
@@ -223,21 +227,6 @@ struct RecordsDesignView: View {
     @ViewBuilder
     private var conclusionColumn: some View {
         VStack(alignment: .leading, spacing: 14) {
-            if scale == .week || scale == .month {
-                RecordsDaySummaryCard(
-                    store: store,
-                    detail: detail,
-                    locked: selectedIsLocked,
-                    onUnlock: { store.paywallSheet = .charts }
-                )
-            } else if scale == .year, let selectedYearMonth {
-                RecordsHeadlineView(
-                    store: store,
-                    title: selectedMonthTitle(selectedYearMonth),
-                    summary: yearSelectionSummary,
-                    onUnlock: { store.paywallSheet = .charts }
-                )
-            }
             // The life scale is behind Plus, so this conclusion is too. A
             // locked life view must not print a projected number under a
             // locked canvas.
@@ -247,16 +236,33 @@ struct RecordsDesignView: View {
             if shouldOfferLifeSetup {
                 lifeSetupCard
             }
-            if scale != .life, summary != nil, !selectedIsLocked {
+            if scale != .life, summary != nil {
                 RecordsHeadlineView(
                     store: store,
                     title: scale == .year
                         ? store.t("recordsAnnualSummary", values: ["year": store.formatYear(store.recordsCalendar.component(.year, from: anchor))])
                         : periodTitle,
                     summary: summary,
-                    isCollapsible: scale == .year,
                     onUnlock: { store.paywallSheet = .charts }
                 )
+            }
+            if scale == .year, let selectedYearMonth {
+                Button(action: openSelectedMonth) {
+                    HStack(spacing: 6) {
+                        Text(
+                            store.t(
+                                "recordsOpenSelectedMonth",
+                                values: ["month": selectedMonthTitle(selectedYearMonth)]
+                            )
+                        )
+                        Image(systemName: "chevron.forward")
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(OWCDesign.accent)
             }
         }
     }
@@ -482,14 +488,24 @@ struct RecordsDesignView: View {
             } else {
                 switch scale {
                 case .month:
-                    RecordsMonthGrid(store: store, cells: cells, selectedDayKey: selectedDayKey) { cell in
-                        selectFromTap(cell)
-                    }
+                    RecordsMonthGrid(
+                        store: store,
+                        cells: cells,
+                        selectedDayKey: selectedDayKey,
+                        onSelect: selectFromTap,
+                        onOpen: openDay,
+                        onDismissSelection: clearDaySelection
+                    )
                     markLegend
                 case .week:
-                    RecordsWeekStrips(store: store, cells: cells, selectedDayKey: selectedDayKey) { cell in
-                        selectFromTap(cell)
-                    }
+                    RecordsWeekStrips(
+                        store: store,
+                        cells: cells,
+                        selectedDayKey: selectedDayKey,
+                        onSelect: selectFromTap,
+                        onOpen: openDay,
+                        onDismissSelection: clearDaySelection
+                    )
                     markLegend
                 case .year:
                     // The year changes form when it is given the whole screen:
@@ -528,10 +544,20 @@ struct RecordsDesignView: View {
         .scaleEffect(reduceMotion || pinch == 1 ? 1 : max(0.96, min(1.04, pinch)))
         .gesture(
             MagnifyGesture()
-                .onChanged { pinch = $0.magnification }
+                .onChanged { value in
+                    if scale != .life { pinch = value.magnification }
+                }
                 .onEnded { value in
+                    guard scale != .life else {
+                        pinch = 1
+                        return
+                    }
                     if value.magnification > 1.22 {
-                        switchScale(to: scale.zoomedIn)
+                        if scale == .year {
+                            openSelectedMonth()
+                        } else {
+                            switchScale(to: scale.zoomedIn)
+                        }
                     } else if value.magnification < 0.82 {
                         switchScale(to: scale.zoomedOut)
                     }
@@ -652,16 +678,18 @@ struct RecordsDesignView: View {
         }
     }
 
-    private var yearSelectionCells: [RecordsDayCell] {
-        guard let selectedYearMonth else { return [] }
-        return cells.filter { store.recordsCalendar.component(.month, from: $0.date) == selectedYearMonth }
-    }
-
     private var scaleBinding: Binding<RecordsScale> {
         Binding(
             get: { scale },
             set: { switchScale(to: $0) }
         )
+    }
+
+    private func selectedMonthTitle(_ month: Int) -> String {
+        var parts = store.recordsCalendar.dateComponents([.year], from: anchor)
+        parts.month = month
+        parts.day = 1
+        return store.formatRecordsMonthYear(store.recordsCalendar.date(from: parts) ?? anchor)
     }
 
     private func switchScale(to nextScale: RecordsScale) {
@@ -679,7 +707,6 @@ struct RecordsDesignView: View {
             days = []
             cells = []
             summary = nil
-            detail = nil
             selectedDayKey = nil
             selectedYearMonth = nextScale == .year
                 ? store.recordsCalendar.component(.month, from: .now)
@@ -693,26 +720,7 @@ struct RecordsDesignView: View {
             if nextScale == .life { selectCurrentLifeStage() }
         }
         scaleFeedback += 1
-        Task { await load(selectingToday: nextScale == .week || nextScale == .month) }
-    }
-
-    private func selectedMonthTitle(_ month: Int) -> String {
-        var parts = store.recordsCalendar.dateComponents([.year], from: anchor)
-        parts.month = month
-        parts.day = 1
-        return store.formatRecordsMonthYear(store.recordsCalendar.date(from: parts) ?? anchor)
-    }
-
-    private var yearSelectionSummary: RecordsHeadlineSummary? {
-        // The whole year is handed over on purpose: the month's own totals are
-        // taken from its cells, and the day before the first needs to be
-        // reachable so an overnight shift is not cut at the month boundary.
-        store.recordsHeadline(cells: yearSelectionCells, days: days)
-    }
-
-    private var selectedIsLocked: Bool {
-        guard let selectedDayKey else { return false }
-        return cells.first(where: { $0.dayKey == selectedDayKey })?.appearance == .locked
+        Task { await load() }
     }
 
     private var shouldOfferLifeSetup: Bool {
@@ -740,7 +748,7 @@ struct RecordsDesignView: View {
             }
         }
         selectionFeedback += 1
-        Task { await load(selectingToday: scale == .week || scale == .month) }
+        Task { await load() }
     }
 
     private func openLifeProfile() {
@@ -765,20 +773,28 @@ struct RecordsDesignView: View {
 
     private func selectFromTap(_ cell: RecordsDayCell) {
         if selectedDayKey != cell.dayKey { selectionFeedback += 1 }
-        select(cell)
+        selectedDayKey = cell.dayKey
     }
 
-    private func select(_ cell: RecordsDayCell) {
-        selectedDayKey = cell.dayKey
-        guard let index = days.firstIndex(where: { $0.dayKey == cell.dayKey }) else {
-            detail = nil
+    private func clearDaySelection() {
+        selectedDayKey = nil
+    }
+
+    private func openDay(_ cell: RecordsDayCell) {
+        guard cell.appearance != .locked else {
+            store.paywallSheet = .charts
             return
         }
-        detail = store.recordsDayDetail(
-            for: days[index],
-            previous: index > 0 ? days[index - 1] : nil,
-            includesLifeProjection: true
-        )
+        quickDay = RecordsDayIdentified(dayKey: cell.dayKey)
+    }
+
+    private func openSelectedMonth() {
+        guard let selectedYearMonth else { return }
+        var parts = store.recordsCalendar.dateComponents([.year], from: anchor)
+        parts.month = selectedYearMonth
+        parts.day = 1
+        anchor = store.recordsCalendar.date(from: parts) ?? anchor
+        switchScale(to: .month)
     }
 
     @ViewBuilder
@@ -843,7 +859,7 @@ struct RecordsDesignView: View {
         )
     }
 
-    private func load(selectingToday: Bool = false) async {
+    private func load() async {
         loadGeneration += 1
         let generation = loadGeneration
         let requestedScale = scale
@@ -889,21 +905,8 @@ struct RecordsDesignView: View {
         }
         cells = built
         summary = store.recordsHeadline(cells: cells, days: resolved)
-        if selectingToday || (loadedSignature == nil && (scale == .week || scale == .month)) {
-            let todayKey = RecordJSON.dayKey(.now, calendar: store.recordsCalendar)
-            if let today = cells.first(where: { $0.dayKey == todayKey }) {
-                select(today)
-            } else if let latest = cells.last(where: { $0.appearance == .recorded || $0.appearance == .corrected }) {
-                select(latest)
-            } else {
-                selectedDayKey = nil
-                detail = nil
-            }
-        } else if let selectedDayKey, let cell = cells.first(where: { $0.dayKey == selectedDayKey }) {
-            select(cell)
-        } else {
-            selectedDayKey = nil
-            detail = nil
+        if let selectedDayKey, !cells.contains(where: { $0.dayKey == selectedDayKey }) {
+            self.selectedDayKey = nil
         }
         loadedSignature = signature
     }

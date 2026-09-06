@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "正在檢查 Plus 權益…",
   "firstRunLocalDataNeedsReview": "iCloud 中有較新的資料重設，而這台裝置還有未同步的記錄。請先在這裡匯出完整備份，再選擇是否以 iCloud 資料取代本機記錄。",
   "firstRunReplaceWithCloud": "已備份，使用 iCloud 資料",
-  "firstRunReplaceConfirm": "以 iCloud 資料取代這台裝置的記錄？請保留已匯出的備份，日後若要還原本機記錄可以使用它。"
+  "firstRunReplaceConfirm": "以 iCloud 資料取代這台裝置的記錄？請保留已匯出的備份，日後若要還原本機記錄可以使用它。",
+  "whatsNewTitle": "這次更新了什麼",
+  "whatsNewRecordsTitle": "時間去向，一眼看清",
+  "whatsNewRecordsBody": "查看週、月、年摘要，點按時間區段查看詳情，也可以雙擊日期，細看這一天。",
+  "whatsNewLifeTitle": "用更寬廣的視角看人生",
+  "whatsNewLifeBody": "加入人生里程碑，將工作放回生活脈絡中查看。現在更容易探索過去的推估和目前的工作階段。",
+  "whatsNewFocusTitle": "為專注留一點空間",
+  "whatsNewFocusBody": "安排待辦並使用專注計時器。換了新裝置回來嗎？快速設定可協助你找回 iCloud 記錄。",
+  "whatsNewPlusTitle": "認識 DoneAt Plus",
+  "whatsNewPlusBody": "下班倒數繼續免費。Plus 提供完整記錄、人生檢視和專注工具，可選擇訂閱或終身買斷。已啟用的 iCloud 同步在訂閱到期後仍會繼續。",
+  "whatsNewContinue": "繼續使用",
+  "recordsOpenSelectedMonth": "查看{{month}}",
+  "firstRunQuickSetup": "舊使用者快速設定",
+  "firstRunReturningTitle": "歡迎回來",
+  "firstRunBackToWelcome": "返回歡迎頁",
+  "firstRunContinueSetup": "返回設定頁",
+  "firstRunCloudNeedsSetup": "記錄已經回復，但沒有找到已儲存的班表設定。你可以繼續設定這台裝置，剛剛回復的內容都會保留。"
 }

@@ -13,7 +13,6 @@ struct RecordsDayCanvasView: View {
     @State private var isLoading = true
     @State private var choosesShift = false
     @State private var nowTick = Date()
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -98,7 +97,7 @@ struct RecordsDayCanvasView: View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 8) {
                 RecordsDayBand(store: store, model: model)
-                    .frame(height: bandHeight)
+                    .frame(height: 44)
                 axis(model)
                 if model.projectionStartsAtMs != nil {
                     Text(store.t("recordsSourceAfterNow"))
@@ -109,13 +108,6 @@ struct RecordsDayCanvasView: View {
             }
             .padding(16)
         }
-    }
-
-    /// Deliberately close to the 20pt allocation bar elsewhere in Records.
-    /// At forty points of full-strength categorical colour the band became the
-    /// loudest thing on a page whose conclusion is a number.
-    private var bandHeight: CGFloat {
-        dynamicTypeSize.isAccessibilitySize ? 22 : 26
     }
 
     /// Midnight, six, noon, six, midnight — read in the records time zone, and
@@ -310,47 +302,118 @@ struct RecordsDayCanvasView: View {
 struct RecordsDayBand: View {
     let store: OffWorkStore
     let model: RecordsDayCanvasModel
+    @State private var selectedInterval: RecordsDayInterval?
     @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         let total = model.dayEnd.timeIntervalSince(model.dayStart) * 1_000
         GeometryReader { proxy in
-            HStack(spacing: 0) {
-                ForEach(model.intervals) { interval in
-                    Rectangle()
-                        .fill(OWCDesign.recordsColor(interval.kind))
-                        .owcEstimated(
-                            interval.source.isEstimated,
-                            tint: .white,
-                            spacing: 4
+            ZStack {
+                HStack(spacing: 0) {
+                    ForEach(Array(model.intervals.enumerated()), id: \.element.id) { index, interval in
+                        let shape = UnevenRoundedRectangle(
+                            cornerRadii: RectangleCornerRadii(
+                                topLeading: index == 0 ? 10 : 0,
+                                bottomLeading: index == 0 ? 10 : 0,
+                                bottomTrailing: index == model.intervals.count - 1 ? 10 : 0,
+                                topTrailing: index == model.intervals.count - 1 ? 10 : 0
+                            ),
+                            style: .continuous
                         )
-                        .frame(width: width(of: interval, total: total, in: proxy.size.width))
+                        shape
+                            .fill(OWCDesign.recordsColor(interval.kind))
+                            .owcEstimated(
+                                interval.source.isEstimated,
+                                tint: .white,
+                                spacing: 4
+                            )
+                            .clipShape(shape)
+                            .frame(width: width(of: interval, total: total, in: proxy.size.width), height: barHeight)
+                            .overlay {
+                                if selectedInterval?.id == interval.id {
+                                    shape.strokeBorder(OWCDesign.primary, lineWidth: 2)
+                                }
+                            }
+                    }
                 }
-            }
-            .overlay(alignment: .leading) {
+                .frame(maxHeight: .infinity)
+                .environment(\.layoutDirection, .leftToRight)
+
                 if let nowAtMs = model.nowAtMs, total > 0 {
                     let offset = (nowAtMs - model.dayStart.timeIntervalSince1970 * 1_000) / total
                     Rectangle()
                         .fill(OWCDesign.accent)
-                        .frame(width: 2)
-                        .offset(x: min(proxy.size.width - 2, max(0, proxy.size.width * offset)))
+                        .frame(width: 2, height: barHeight)
+                        .position(
+                            x: min(proxy.size.width - 1, max(1, proxy.size.width * offset)),
+                            y: proxy.size.height / 2
+                        )
                 }
             }
+            .contentShape(Rectangle())
+            .gesture(
+                SpatialTapGesture().onEnded { value in
+                    selectInterval(at: value.location.x, width: proxy.size.width, total: total)
+                }
+            )
         }
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background {
+            Capsule()
+                .fill(OWCDesign.control)
+                .frame(height: barHeight)
+        }
         .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
+            Capsule()
                 .stroke(OWCDesign.separator, lineWidth: withoutColor ? 1 : 0.5)
+                .frame(height: barHeight)
+        }
+        .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedInterval?.id)
+        .popover(item: $selectedInterval, arrowEdge: .top) { interval in
+            RecordsTimeSegmentPopover(
+                color: OWCDesign.recordsColor(interval.kind),
+                title: store.t(interval.kind.titleKey),
+                range: range(of: interval),
+                duration: store.formatRelativeDuration(Double(interval.durationMs)),
+                percent: store.formatPercent(percent(of: interval)),
+                source: store.t(interval.sourceKey)
+            )
         }
         // The picture is for the eye; VoiceOver gets the ordered intervals as
         // words, never a list of pixels or sampling buckets.
         .accessibilityRepresentation {
             VStack {
                 ForEach(model.intervals) { interval in
-                    Text(RecordsDayIntervalRow.spokenLabel(interval, store: store))
+                    Button(RecordsDayIntervalRow.spokenLabel(interval, store: store)) {
+                        selectedInterval = interval
+                    }
+                    .accessibilityAddTraits(selectedInterval?.id == interval.id ? .isSelected : [])
                 }
             }
         }
+    }
+
+    private var barHeight: CGFloat { 26 }
+
+    private func selectInterval(at x: CGFloat, width: CGFloat, total: Double) {
+        guard width > 0, total > 0 else { return }
+        let lower = model.dayStart.timeIntervalSince1970 * 1_000
+        let moment = lower + Double(min(width, max(0, x)) / width) * total
+        selectedInterval = model.intervals.first {
+            $0.startAtMs <= moment && moment < $0.endAtMs
+        } ?? model.intervals.last
+    }
+
+    private func range(of interval: RecordsDayInterval) -> String {
+        OWCText.ltrRange(
+            store.formatRecordsTime(Date(timeIntervalSince1970: interval.startAtMs / 1_000)),
+            store.formatRecordsTime(Date(timeIntervalSince1970: interval.endAtMs / 1_000))
+        )
+    }
+
+    private func percent(of interval: RecordsDayInterval) -> Double {
+        guard model.allocation.dayLengthMs > 0 else { return 0 }
+        return Double(interval.durationMs) / Double(model.allocation.dayLengthMs) * 100
     }
 
     private func width(

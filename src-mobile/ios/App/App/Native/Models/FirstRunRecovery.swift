@@ -14,10 +14,23 @@ enum FirstRunRecoveryError: Error {
     case localDataNeedsReview
 }
 
+enum FirstRunRecoveryRetryPolicy {
+    static func delay(for error: any Error) -> TimeInterval? {
+        guard let error = error as? CKError else { return nil }
+        switch error.code {
+        case .networkFailure, .networkUnavailable, .requestRateLimited,
+             .serviceUnavailable, .zoneBusy:
+            return max(0.5, error.retryAfterSeconds ?? 2)
+        default:
+            return nil
+        }
+    }
+}
+
 enum FirstRunRecoveryPhase: Equatable {
     case checking
-    case found
     case empty
+    case needsSetup
     case failed
     case localDataNeedsReview
     case restoring

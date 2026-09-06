@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Plus 이용 권한을 확인하는 중…",
   "firstRunLocalDataNeedsReview": "iCloud에 더 새로운 데이터 초기화가 있고 이 기기에는 동기화되지 않은 기록이 있습니다. 먼저 여기서 전체 백업을 내보내세요. 그런 다음 이 기기의 기록을 iCloud 기록으로 교체할지 선택할 수 있습니다.",
   "firstRunReplaceWithCloud": "백업 후 iCloud 사용",
-  "firstRunReplaceConfirm": "이 기기의 기록을 iCloud 기록으로 교체할까요? 나중에 로컬 기록을 복원하려면 내보낸 백업을 보관하세요."
+  "firstRunReplaceConfirm": "이 기기의 기록을 iCloud 기록으로 교체할까요? 나중에 로컬 기록을 복원하려면 내보낸 백업을 보관하세요.",
+  "whatsNewTitle": "새로운 소식",
+  "whatsNewRecordsTitle": "내 시간을 한눈에",
+  "whatsNewRecordsBody": "주간, 월간, 연간 요약을 살펴보세요. 시간 구간을 탭하면 세부 정보를 볼 수 있고, 날짜를 두 번 탭하면 그날을 자세히 볼 수 있습니다.",
+  "whatsNewLifeTitle": "삶을 더 넓게 바라보기",
+  "whatsNewLifeBody": "삶의 이정표를 추가해 일의 맥락을 살펴보세요. 과거 추정치와 현재 업무 단계를 이제 더 쉽게 확인할 수 있습니다.",
+  "whatsNewFocusTitle": "집중할 여유 만들기",
+  "whatsNewFocusBody": "할 일을 계획하고 집중 타이머를 사용하세요. 새 기기에서 다시 시작하시나요? 빠른 설정으로 iCloud 기록을 복구할 수 있습니다.",
+  "whatsNewPlusTitle": "DoneAt Plus를 만나보세요",
+  "whatsNewPlusBody": "퇴근 카운트다운은 계속 무료입니다. Plus에서는 전체 기록, 인생 보기, 집중 도구를 구독 또는 평생 이용 옵션으로 사용할 수 있습니다. 이미 켜 둔 iCloud 동기화는 구독이 끝난 뒤에도 계속됩니다.",
+  "whatsNewContinue": "계속",
+  "recordsOpenSelectedMonth": "{{month}} 보기",
+  "firstRunQuickSetup": "기존 사용자이신가요? iCloud에서 빠르게 설정",
+  "firstRunReturningTitle": "다시 만나 반가워요",
+  "firstRunBackToWelcome": "환영 화면으로 돌아가기",
+  "firstRunContinueSetup": "이 기기 설정하기",
+  "firstRunCloudNeedsSetup": "기록은 복원되었지만 저장된 일정 설정을 찾지 못했습니다. 복원된 내용을 그대로 유지하면서 이 기기 설정을 마칠 수 있습니다."
 }

@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Comprobando tu acceso a Plus…",
   "firstRunLocalDataNeedsReview": "iCloud tiene un restablecimiento de datos más reciente y este dispositivo tiene registros sin sincronizar. Exporta primero aquí una copia de seguridad completa. Después podrás elegir si reemplazas los registros de este dispositivo con los de iCloud.",
   "firstRunReplaceWithCloud": "Usar iCloud después de la copia",
-  "firstRunReplaceConfirm": "¿Reemplazar los registros de este dispositivo con los de iCloud? Conserva la copia exportada por si quieres recuperar los registros locales más adelante."
+  "firstRunReplaceConfirm": "¿Reemplazar los registros de este dispositivo con los de iCloud? Conserva la copia exportada por si quieres recuperar los registros locales más adelante.",
+  "whatsNewTitle": "Novedades",
+  "whatsNewRecordsTitle": "Tu tiempo, de un vistazo",
+  "whatsNewRecordsBody": "Explora resúmenes semanales, mensuales y anuales. Toca un tramo de tiempo para ver detalles o toca dos veces un día para verlo más de cerca.",
+  "whatsNewLifeTitle": "Una mirada más amplia a la vida",
+  "whatsNewLifeBody": "Añade los hitos de tu vida para ver el trabajo en contexto. Ahora es más fácil explorar las estimaciones pasadas y tu etapa laboral actual.",
+  "whatsNewFocusTitle": "Haz espacio para concentrarte",
+  "whatsNewFocusBody": "Planifica tareas y usa el temporizador de enfoque. ¿Vuelves desde un dispositivo nuevo? La configuración rápida te ayuda a recuperar tus registros de iCloud.",
+  "whatsNewPlusTitle": "Conoce DoneAt Plus",
+  "whatsNewPlusBody": "La cuenta atrás para salir del trabajo sigue siendo gratuita. Plus añade registros completos, vistas de vida y herramientas de enfoque, con suscripción o compra de por vida. La sincronización de iCloud ya activada continúa incluso cuando termina una suscripción.",
+  "whatsNewContinue": "Continuar",
+  "recordsOpenSelectedMonth": "Ver {{month}}",
+  "firstRunQuickSetup": "¿Ya usabas DoneAt? Configuración rápida con iCloud",
+  "firstRunReturningTitle": "Te damos la bienvenida de nuevo",
+  "firstRunBackToWelcome": "Volver a la bienvenida",
+  "firstRunContinueSetup": "Configurar este dispositivo",
+  "firstRunCloudNeedsSetup": "Tus registros ya están restaurados. No encontramos un horario guardado, así que puedes terminar de configurar este dispositivo sin perder lo restaurado."
 }
