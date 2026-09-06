@@ -213,8 +213,13 @@ struct RecordsDesignView: View {
                 .padding(.horizontal, OWCDesign.pageInset)
             }
             .padding(.top, usesPhonePortraitHeader ? 0 : 12)
-            .padding(.bottom, 104)
+            .padding(.bottom, OWCDesign.detailBottomInset)
         }
+#if DEBUG
+        .defaultScrollAnchor(
+            UserDefaults.standard.bool(forKey: "ios.native.qaRecordsBottom") ? .bottom : .top
+        )
+#endif
     }
 
     /// Measured, not guessed from the device: the same iPad is wide with the
@@ -493,8 +498,7 @@ struct RecordsDesignView: View {
                         cells: cells,
                         selectedDayKey: selectedDayKey,
                         onSelect: selectFromTap,
-                        onOpen: openDay,
-                        onDismissSelection: clearDaySelection
+                        onOpen: openDay
                     )
                     markLegend
                 case .week:
@@ -503,8 +507,7 @@ struct RecordsDesignView: View {
                         cells: cells,
                         selectedDayKey: selectedDayKey,
                         onSelect: selectFromTap,
-                        onOpen: openDay,
-                        onDismissSelection: clearDaySelection
+                        onOpen: openDay
                     )
                     markLegend
                 case .year:
@@ -772,12 +775,12 @@ struct RecordsDesignView: View {
     }
 
     private func selectFromTap(_ cell: RecordsDayCell) {
-        if selectedDayKey != cell.dayKey { selectionFeedback += 1 }
-        selectedDayKey = cell.dayKey
-    }
-
-    private func clearDaySelection() {
-        selectedDayKey = nil
+        if selectedDayKey == cell.dayKey {
+            openDay(cell)
+        } else {
+            selectionFeedback += 1
+            selectedDayKey = cell.dayKey
+        }
     }
 
     private func openDay(_ cell: RecordsDayCell) {
@@ -785,7 +788,9 @@ struct RecordsDesignView: View {
             store.paywallSheet = .charts
             return
         }
-        quickDay = RecordsDayIdentified(dayKey: cell.dayKey)
+        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) {
+            quickDay = RecordsDayIdentified(dayKey: cell.dayKey)
+        }
     }
 
     private func openSelectedMonth() {

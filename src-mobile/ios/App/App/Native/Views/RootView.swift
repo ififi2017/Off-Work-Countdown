@@ -87,6 +87,8 @@ struct OffWorkCountdownRootView: View {
                     }
                 }
             }
+            .presentationSizing(.page)
+            .presentationDetents([.large])
         }
         .onChange(of: store.paywallSheet != nil, initial: true) { _, presented in
             if presented { paywallPresentationActive = true }
