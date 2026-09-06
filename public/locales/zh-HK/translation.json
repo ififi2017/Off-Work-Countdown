@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "歡迎回來",
   "firstRunBackToWelcome": "返回歡迎頁",
   "firstRunContinueSetup": "返回設定頁",
-  "firstRunCloudNeedsSetup": "記錄已經還原，但沒有找到已儲存的工作時間設定。你可以繼續設定這部裝置，剛剛還原的內容都會保留。"
+  "firstRunCloudNeedsSetup": "記錄已經還原，但沒有找到已儲存的工作時間設定。你可以繼續設定這部裝置，剛剛還原的內容都會保留。",
+  "recordsSeeThisMonth": "查看這個月"
 }

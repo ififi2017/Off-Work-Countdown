@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "Tekrar hoş geldiniz",
   "firstRunBackToWelcome": "Karşılama ekranına dön",
   "firstRunContinueSetup": "Bu cihazı ayarla",
-  "firstRunCloudNeedsSetup": "Kayıtlarınız geri yüklendi ancak kaydedilmiş çalışma düzeni ayarları bulunamadı. Geri yüklenenleri kaybetmeden bu cihazın kurulumunu tamamlayabilirsiniz."
+  "firstRunCloudNeedsSetup": "Kayıtlarınız geri yüklendi ancak kaydedilmiş çalışma düzeni ayarları bulunamadı. Geri yüklenenleri kaybetmeden bu cihazın kurulumunu tamamlayabilirsiniz.",
+  "recordsSeeThisMonth": "Bu ayı görüntüle"
 }

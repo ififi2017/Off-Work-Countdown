@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "다시 만나 반가워요",
   "firstRunBackToWelcome": "환영 화면으로 돌아가기",
   "firstRunContinueSetup": "이 기기 설정하기",
-  "firstRunCloudNeedsSetup": "기록은 복원되었지만 저장된 일정 설정을 찾지 못했습니다. 복원된 내용을 그대로 유지하면서 이 기기 설정을 마칠 수 있습니다."
+  "firstRunCloudNeedsSetup": "기록은 복원되었지만 저장된 일정 설정을 찾지 못했습니다. 복원된 내용을 그대로 유지하면서 이 기기 설정을 마칠 수 있습니다.",
+  "recordsSeeThisMonth": "이번 달 보기"
 }

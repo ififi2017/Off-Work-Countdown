@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "Chào mừng bạn trở lại",
   "firstRunBackToWelcome": "Quay lại trang chào mừng",
   "firstRunContinueSetup": "Thiết lập thiết bị này",
-  "firstRunCloudNeedsSetup": "Dữ liệu của bạn đã được khôi phục, nhưng không tìm thấy lịch làm việc đã lưu. Bạn có thể hoàn tất thiết lập thiết bị này mà không mất nội dung vừa khôi phục."
+  "firstRunCloudNeedsSetup": "Dữ liệu của bạn đã được khôi phục, nhưng không tìm thấy lịch làm việc đã lưu. Bạn có thể hoàn tất thiết lập thiết bị này mà không mất nội dung vừa khôi phục.",
+  "recordsSeeThisMonth": "Xem tháng này"
 }

@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "欢迎回来",
   "firstRunBackToWelcome": "返回欢迎页",
   "firstRunContinueSetup": "回到配置页",
-  "firstRunCloudNeedsSetup": "记录已经恢复，但没有找到已保存的排班设置。你可以继续配置这台设备，刚刚恢复的内容都会保留。"
+  "firstRunCloudNeedsSetup": "记录已经恢复，但没有找到已保存的排班设置。你可以继续配置这台设备，刚刚恢复的内容都会保留。",
+  "recordsSeeThisMonth": "查看这个月"
 }

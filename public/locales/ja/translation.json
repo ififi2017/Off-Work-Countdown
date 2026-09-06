@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "おかえりなさい",
   "firstRunBackToWelcome": "ようこそ画面に戻る",
   "firstRunContinueSetup": "このデバイスを設定",
-  "firstRunCloudNeedsSetup": "記録を復元しましたが、保存済みの勤務予定は見つかりませんでした。復元した内容を残したまま、このデバイスの設定を完了できます。"
+  "firstRunCloudNeedsSetup": "記録を復元しましたが、保存済みの勤務予定は見つかりませんでした。復元した内容を残したまま、このデバイスの設定を完了できます。",
+  "recordsSeeThisMonth": "この月を見る"
 }

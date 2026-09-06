@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "Selamat datang kembali",
   "firstRunBackToWelcome": "Kembali ke halaman sambutan",
   "firstRunContinueSetup": "Siapkan perangkat ini",
-  "firstRunCloudNeedsSetup": "Catatan Anda sudah dipulihkan, tetapi pengaturan jadwal tersimpan tidak ditemukan. Anda dapat menyelesaikan penyiapan perangkat ini tanpa kehilangan data yang dipulihkan."
+  "firstRunCloudNeedsSetup": "Catatan Anda sudah dipulihkan, tetapi pengaturan jadwal tersimpan tidak ditemukan. Anda dapat menyelesaikan penyiapan perangkat ini tanpa kehilangan data yang dipulihkan.",
+  "recordsSeeThisMonth": "Lihat bulan ini"
 }

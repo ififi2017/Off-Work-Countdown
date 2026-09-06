@@ -7,6 +7,7 @@ struct RecordsDesignView: View {
     let showsSidebarButton: Bool
     let usesOwnHeader: Bool
     let showSidebar: () -> Void
+    let onExpansionChanged: (Bool) -> Void
     @State private var scale: RecordsScale
     @State private var anchor = Date()
     @State private var selectedDayKey: String?
@@ -33,29 +34,25 @@ struct RecordsDesignView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     private var isExpanded: Bool { expanded[scale] == true }
     private var canExpand: Bool { scale == .year || scale == .life }
-    /// Draw the title and its controls inside the page instead of borrowing a
-    /// navigation bar. True in phone portrait, and on iPad, where the shell
-    /// keeps its bar hidden for every root so switching tabs cannot resize the
-    /// safe area under a cross-fade.
-    private var usesPhonePortraitHeader: Bool {
-        usesOwnHeader || (horizontalSizeClass == .compact && verticalSizeClass != .compact)
-    }
+    /// iPad keeps its custom root chrome so switching split-view tabs cannot
+    /// resize the detail pane under a cross-fade. Phones use the system bar.
+    private var usesCustomRootHeader: Bool { usesOwnHeader }
 
     init(
         store: OffWorkStore,
         showsSidebarButton: Bool = false,
         usesOwnHeader: Bool = false,
-        showSidebar: @escaping () -> Void = {}
+        showSidebar: @escaping () -> Void = {},
+        onExpansionChanged: @escaping (Bool) -> Void = { _ in }
     ) {
         self.store = store
         self.showsSidebarButton = showsSidebarButton
         self.usesOwnHeader = usesOwnHeader
         self.showSidebar = showSidebar
+        self.onExpansionChanged = onExpansionChanged
 #if DEBUG
         let requested = RecordsScale(
             rawValue: UserDefaults.standard.string(forKey: "ios.native.qaRecordsScale") ?? ""
@@ -84,13 +81,13 @@ struct RecordsDesignView: View {
         .owcNavigationTitle(
             store.t("recordsTitle"),
             displayMode: .large,
-            isActive: store.selectedTab == .records && !isExpanded && !usesPhonePortraitHeader
+            isActive: store.selectedTab == .records && !isExpanded && !usesCustomRootHeader
         )
         // Expansion is a contained browsing mode. The calendar remains inside
         // the same navigation stack, but the surrounding tab and navigation
         // chrome must get out of the way so the canvas can use the available
         // width and height on both phones and iPad split panes.
-        .toolbar(isExpanded || usesPhonePortraitHeader ? .hidden : .visible, for: .navigationBar)
+        .toolbar(isExpanded || usesCustomRootHeader ? .hidden : .visible, for: .navigationBar)
         .toolbar(isExpanded ? .hidden : .visible, for: .tabBar)
         .navigationDestination(for: RecordsRoute.self) { route in
             recordsDestination(route)
@@ -114,7 +111,7 @@ struct RecordsDesignView: View {
         }
         .toolbar { recordsToolbar }
         .overlay(alignment: .top) {
-            if usesPhonePortraitHeader, showsCompactRootBar, !isExpanded {
+            if usesCustomRootHeader, showsCompactRootBar, !isExpanded {
                 compactRecordsBar
                     .transition(.opacity)
                     .zIndex(10)
@@ -131,6 +128,12 @@ struct RecordsDesignView: View {
                 do { try await Task.sleep(for: .seconds(60)) }
                 catch { return }
             }
+        }
+        .onChange(of: isExpanded, initial: true) { _, expanded in
+            onExpansionChanged(expanded)
+        }
+        .onDisappear {
+            onExpansionChanged(false)
         }
         .onChange(of: store.records.revision) { _, _ in
             guard scenePhase == .active, store.selectedTab == .records else { return }
@@ -158,7 +161,7 @@ struct RecordsDesignView: View {
         Group {
             if canvasWidth >= Self.twoColumnMinimum && !dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 14) {
-                    if usesPhonePortraitHeader {
+                    if usesCustomRootHeader {
                         recordsRootHeader
                     }
 
@@ -183,7 +186,7 @@ struct RecordsDesignView: View {
                     }
                     .padding(.horizontal, OWCDesign.pageInset)
                 }
-                .padding(.top, usesPhonePortraitHeader ? 0 : 12)
+                .padding(.top, usesCustomRootHeader ? 0 : 12)
             } else {
                 singleColumnCanvas
             }
@@ -196,7 +199,7 @@ struct RecordsDesignView: View {
     private var singleColumnCanvas: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                if usesPhonePortraitHeader {
+                if usesCustomRootHeader {
                     recordsRootHeader
                 }
 
@@ -212,7 +215,7 @@ struct RecordsDesignView: View {
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
             }
-            .padding(.top, usesPhonePortraitHeader ? 0 : 12)
+            .padding(.top, usesCustomRootHeader ? 0 : 12)
             .padding(.bottom, OWCDesign.detailBottomInset)
         }
 #if DEBUG
@@ -306,25 +309,22 @@ struct RecordsDesignView: View {
 
     @ToolbarContentBuilder
     private var recordsToolbar: some ToolbarContent {
-        if !isExpanded, !usesPhonePortraitHeader, store.selectedTab == .records {
+        if !isExpanded, !usesCustomRootHeader, store.selectedTab == .records {
             if showsSidebarButton {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: showSidebar) {
-                        OWCGlassCircleLabel {
-                            Image(systemName: "sidebar.left")
-                                .foregroundStyle(OWCDesign.primary)
-                        }
+                        Label(store.t("showSidebar"), systemImage: "sidebar.left")
                     }
-                    .buttonStyle(.plain)
                     .accessibilityLabel(store.t("showSidebar"))
                 }
-                .sharedBackgroundVisibility(.hidden)
             }
 
             ToolbarItem(placement: .topBarTrailing) {
-                recordsTrailingControls
+                NavigationLink(value: RecordsRoute.allRecords) {
+                    Label(store.t("recordsAllRecords"), systemImage: "list.bullet.rectangle")
+                }
+                .accessibilityLabel(store.t("recordsAllRecords"))
             }
-            .sharedBackgroundVisibility(.hidden)
         }
     }
 
@@ -353,24 +353,20 @@ struct RecordsDesignView: View {
     private var recordsLeadingControl: some View {
         if showsSidebarButton {
             Button(action: showSidebar) {
-                OWCGlassCircleLabel {
-                    Image(systemName: "sidebar.left")
-                        .foregroundStyle(OWCDesign.primary)
-                }
+                Label(store.t("showSidebar"), systemImage: "sidebar.left")
             }
-            .buttonStyle(.plain)
+            .labelStyle(.iconOnly)
+            .owcTabletGlassAction()
             .accessibilityLabel(store.t("showSidebar"))
         }
     }
 
     private var recordsTrailingControls: some View {
         NavigationLink(value: RecordsRoute.allRecords) {
-            OWCGlassCircleLabel {
-                Image(systemName: "list.bullet.rectangle")
-                    .foregroundStyle(OWCDesign.secondary)
-            }
+            Label(store.t("recordsAllRecords"), systemImage: "list.bullet.rectangle")
         }
-        .buttonStyle(.plain)
+        .labelStyle(.iconOnly)
+        .owcTabletGlassAction()
         .accessibilityLabel(store.t("recordsAllRecords"))
     }
 
@@ -519,7 +515,8 @@ struct RecordsDesignView: View {
                         RecordsYearMonthBars(
                             store: store,
                             cells: cells,
-                            selectedMonth: selectedYearMonth
+                            selectedMonth: selectedYearMonth,
+                            onOpenMonth: openMonth
                         ) { month in
                             if selectedYearMonth != month { selectionFeedback += 1 }
                             selectedYearMonth = month
@@ -532,7 +529,8 @@ struct RecordsDesignView: View {
                             cells: cells,
                             selectedMonth: selectedYearMonth,
                             calloutMonth: $yearCalloutMonth,
-                            selectedDate: $yearSelectionDate
+                            selectedDate: $yearSelectionDate,
+                            onOpenMonth: openMonth
                         ) { month in
                             if selectedYearMonth != month { selectionFeedback += 1 }
                             selectedYearMonth = month
@@ -795,8 +793,14 @@ struct RecordsDesignView: View {
 
     private func openSelectedMonth() {
         guard let selectedYearMonth else { return }
+        openMonth(selectedYearMonth)
+    }
+
+    private func openMonth(_ month: Int) {
+        yearCalloutMonth = nil
+        yearSelectionDate = nil
         var parts = store.recordsCalendar.dateComponents([.year], from: anchor)
-        parts.month = selectedYearMonth
+        parts.month = month
         parts.day = 1
         anchor = store.recordsCalendar.date(from: parts) ?? anchor
         switchScale(to: .month)

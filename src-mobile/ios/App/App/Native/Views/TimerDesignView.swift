@@ -11,10 +11,14 @@ struct TimerDesignView: View {
     let timelineDate: Date?
     let timelineActive: Bool
     let animatesPhaseChanges: Bool
+    let usesExternalRootToolbar: Bool
 
     @State private var showShare = false
     @State private var showOvertime = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.usesTabletNavigationShell) private var usesTabletNavigationShell
 
     init(
         store: OffWorkStore,
@@ -23,7 +27,8 @@ struct TimerDesignView: View {
         onOpenSettings: ((AppRoute?) -> Void)? = nil,
         timelineDate: Date? = nil,
         timelineActive: Bool = true,
-        animatesPhaseChanges: Bool = true
+        animatesPhaseChanges: Bool = true,
+        usesExternalRootToolbar: Bool = false
     ) {
         self.store = store
         self.wide = wide
@@ -32,6 +37,7 @@ struct TimerDesignView: View {
         self.timelineDate = timelineDate
         self.timelineActive = timelineActive
         self.animatesPhaseChanges = animatesPhaseChanges
+        self.usesExternalRootToolbar = usesExternalRootToolbar
     }
 
 
@@ -50,7 +56,32 @@ struct TimerDesignView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(usesSystemRootToolbar || usesExternalRootToolbar ? .visible : .hidden, for: .navigationBar)
+        .toolbar {
+            if usesSystemRootToolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink(value: AppRoute.focus) {
+                        Label(store.t("focusTitle"), systemImage: FocusTaskIcon.focus.systemName)
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) {
+                            store.toggleQuickTheme()
+                        }
+                    } label: {
+                        if store.quickThemeIsAuto {
+                            Text(verbatim: "A")
+                                .font(.body.weight(.semibold))
+                        } else {
+                            Image(systemName: store.quickThemeIcon)
+                        }
+                    }
+                    .accessibilityLabel(store.t("theme"))
+                }
+            }
+        }
         .sheet(isPresented: $showShare) {
             ShareComposerView(store: store)
                 // One detent, fitted. The composer is a mood row, a card and
@@ -96,7 +127,9 @@ struct TimerDesignView: View {
         let phase = store.visualPhase(snapshot: snapshot, at: date)
 
         VStack(spacing: 0) {
-            OWCAppHeader(store: store, showsFocus: true, onShowSidebar: onShowSidebar)
+            if !usesSystemRootToolbar, !usesExternalRootToolbar {
+                OWCAppHeader(store: store, showsFocus: true, onShowSidebar: onShowSidebar)
+            }
             Group {
                 switch phase {
                 case .unscheduled:
@@ -142,6 +175,13 @@ struct TimerDesignView: View {
         }
         .background(OWCDesign.page)
         .animation(phaseAnimation, value: phase)
+    }
+
+    private var usesSystemRootToolbar: Bool {
+        !usesExternalRootToolbar
+            && !usesTabletNavigationShell
+            && horizontalSizeClass == .compact
+            && verticalSizeClass != .compact
     }
 
     private var phaseAnimation: Animation? {

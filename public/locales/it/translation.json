@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "Bentornato",
   "firstRunBackToWelcome": "Torna alla schermata di benvenuto",
   "firstRunContinueSetup": "Configura questo dispositivo",
-  "firstRunCloudNeedsSetup": "I tuoi dati sono stati ripristinati, ma non abbiamo trovato impostazioni di pianificazione salvate. Puoi completare la configurazione di questo dispositivo senza perdere i dati ripristinati."
+  "firstRunCloudNeedsSetup": "I tuoi dati sono stati ripristinati, ma non abbiamo trovato impostazioni di pianificazione salvate. Puoi completare la configurazione di questo dispositivo senza perdere i dati ripristinati.",
+  "recordsSeeThisMonth": "Vedi questo mese"
 }

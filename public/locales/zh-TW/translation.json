@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "歡迎回來",
   "firstRunBackToWelcome": "返回歡迎頁",
   "firstRunContinueSetup": "返回設定頁",
-  "firstRunCloudNeedsSetup": "記錄已經回復，但沒有找到已儲存的班表設定。你可以繼續設定這台裝置，剛剛回復的內容都會保留。"
+  "firstRunCloudNeedsSetup": "記錄已經回復，但沒有找到已儲存的班表設定。你可以繼續設定這台裝置，剛剛回復的內容都會保留。",
+  "recordsSeeThisMonth": "查看這個月"
 }

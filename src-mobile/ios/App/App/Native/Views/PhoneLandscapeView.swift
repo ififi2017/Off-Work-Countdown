@@ -386,9 +386,8 @@ private struct LandscapeSettingsView: View {
         .toolbar {
             if store.selectedTab == .settings {
                 ToolbarItem(placement: .topBarTrailing) {
-                    SettingsPlusStarButton(store: store)
+                    SettingsPlusStarToolbarButton(store: store)
                 }
-                .sharedBackgroundVisibility(.hidden)
             }
         }
     }

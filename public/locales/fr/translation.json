@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "Ravi de vous revoir",
   "firstRunBackToWelcome": "Retour à l’accueil",
   "firstRunContinueSetup": "Configurer cet appareil",
-  "firstRunCloudNeedsSetup": "Vos données sont restaurées. Aucun planning enregistré n’a été trouvé. Vous pouvez terminer la configuration de cet appareil sans perdre les données restaurées."
+  "firstRunCloudNeedsSetup": "Vos données sont restaurées. Aucun planning enregistré n’a été trouvé. Vous pouvez terminer la configuration de cet appareil sans perdre les données restaurées.",
+  "recordsSeeThisMonth": "Voir ce mois"
 }
