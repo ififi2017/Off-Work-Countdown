@@ -366,6 +366,8 @@ struct LifeProfileEditView: View {
                     }
 
                     workHistoryEditor
+                        .environment(\.calendar, store.recordsCalendar)
+                        .environment(\.timeZone, store.recordsCalendar.timeZone)
 
                     futureIncomeEditor
 
@@ -468,26 +470,26 @@ struct LifeProfileEditView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 20)
             } else {
-                OWCGroupCard {
-                    salaryRow(
-                        title: store.t("lifeCurrentSalary"),
-                        amount: $roughSalaryAmount,
-                        cadence: $roughSalaryCadence,
-                        isLast: true
-                    )
-                }
                 Text(store.t("lifeDetailedIncomeHelp"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 20)
                 ForEach($employmentDrafts) { $draft in
-                    employmentCard($draft)
+                    employmentCard(
+                        $draft,
+                        isCurrent: draft.id == employmentDrafts.first?.id,
+                        endDate: employmentEndDate(for: draft.id)
+                    )
                 }
                 Button {
+                    let previousStart = employmentDrafts.last?.startDate ?? .now
                     employmentDrafts.append(EmploymentDraft(
-                        startDate: store.recordsCalendar.date(byAdding: .year, value: -1, to: .now) ?? .now,
-                        endDate: .now
+                        startDate: store.recordsCalendar.date(
+                            byAdding: .year,
+                            value: -1,
+                            to: previousStart
+                        ) ?? previousStart
                     ))
                 } label: {
                     Label(store.t("lifeAddEmployment"), systemImage: "plus")
@@ -544,35 +546,89 @@ struct LifeProfileEditView: View {
         }
     }
 
-    private func employmentCard(_ draft: Binding<EmploymentDraft>) -> some View {
-        OWCGroupCard {
-            VStack(spacing: 0) {
-                OWCRow(title: store.t("lifeEmploymentStart")) {
-                    DatePicker("", selection: draft.startDate, displayedComponents: .date)
-                        .labelsHidden()
-                        .accessibilityLabel(store.t("lifeEmploymentStart"))
-                }
-                OWCRow(title: store.t("lifeEmploymentEnd")) {
-                    DatePicker("", selection: draft.endDate, displayedComponents: .date)
-                        .labelsHidden()
-                        .accessibilityLabel(store.t("lifeEmploymentEnd"))
-                }
-                salaryRow(
-                    title: store.t("lifeEmploymentSalary"),
-                    amount: draft.salaryAmount,
-                    cadence: draft.salaryCadence,
-                    isLast: false
-                )
-                Button(role: .destructive) {
-                    employmentDrafts.removeAll { $0.id == draft.wrappedValue.id }
-                } label: {
-                    OWCRow(icon: "trash", title: store.t("lifeRemoveEmployment"), isLast: true) {
-                        EmptyView()
+    private func employmentCard(
+        _ draft: Binding<EmploymentDraft>,
+        isCurrent: Bool,
+        endDate: Date?
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if isCurrent {
+                Text(store.t("lifeEmploymentCurrent"))
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(OWCDesign.secondary)
+                    .padding(.horizontal, 20)
+            }
+            OWCGroupCard {
+                VStack(spacing: 0) {
+                    OWCRow(title: store.t("lifeEmploymentStart")) {
+                        DatePicker(
+                            "",
+                            selection: draft.startDate,
+                            in: employmentStartRange(for: draft.wrappedValue.id),
+                            displayedComponents: .date
+                        )
+                            .labelsHidden()
+                            .accessibilityLabel(store.t("lifeEmploymentStart"))
+                    }
+                    OWCRow(title: store.t("lifeEmploymentEnd")) {
+                        if isCurrent {
+                            Text(store.t("lifeStagePresent"))
+                                .foregroundStyle(OWCDesign.secondary)
+                        } else if let endDate {
+                            Text(endDate, format: Date.FormatStyle(
+                                date: .abbreviated, time: .omitted,
+                                locale: store.locale, calendar: store.recordsCalendar,
+                                timeZone: store.recordsCalendar.timeZone
+                            ))
+                            .foregroundStyle(OWCDesign.secondary)
+                        }
+                    }
+                    salaryRow(
+                        title: store.t("lifeEmploymentSalary"),
+                        amount: isCurrent ? $roughSalaryAmount : draft.salaryAmount,
+                        cadence: isCurrent ? $roughSalaryCadence : draft.salaryCadence,
+                        isLast: isCurrent
+                    )
+                    if !isCurrent {
+                        Button(role: .destructive) {
+                            employmentDrafts.removeAll { $0.id == draft.wrappedValue.id }
+                        } label: {
+                            OWCRow(icon: "trash", title: store.t("lifeRemoveEmployment"), isLast: true) {
+                                EmptyView()
+                            }
+                        }
+                        .buttonStyle(OWCRowButtonStyle())
                     }
                 }
-                .buttonStyle(OWCRowButtonStyle())
             }
         }
+    }
+
+    private func employmentEndDate(for id: UUID) -> Date? {
+        guard let index = employmentDrafts.firstIndex(where: { $0.id == id }), index > 0 else { return nil }
+        return employmentDrafts[index - 1].startDate
+    }
+
+    private func employmentStartRange(for id: UUID) -> ClosedRange<Date> {
+        guard let index = employmentDrafts.firstIndex(where: { $0.id == id }) else {
+            return .distantPast ... store.recordsCalendar.startOfDay(for: .now)
+        }
+        let upper = index == 0
+            ? store.recordsCalendar.startOfDay(for: .now)
+            : store.recordsCalendar.date(
+                byAdding: .day,
+                value: -1,
+                to: employmentDrafts[index - 1].startDate
+            ) ?? employmentDrafts[index - 1].startDate
+        guard index + 1 < employmentDrafts.count,
+              let lower = store.recordsCalendar.date(
+                byAdding: .day,
+                value: 1,
+                to: employmentDrafts[index + 1].startDate
+              ),
+              lower <= upper
+        else { return .distantPast ... upper }
+        return lower ... upper
     }
 
     private func load() {
@@ -610,6 +666,16 @@ struct LifeProfileEditView: View {
         employmentDrafts = (profile?.employmentPeriods ?? []).compactMap {
             EmploymentDraft($0, calendar: store.recordsCalendar)
         }
+        if !employmentDrafts.contains(where: { $0.wasCurrent }) {
+            employmentDrafts.append(EmploymentDraft(
+                startDate: LifeEmploymentTimeline.inferredCurrentStart(
+                    profile: profile,
+                    calendar: store.recordsCalendar
+                ),
+                salary: profile?.roughCurrentSalary
+            ))
+        }
+        employmentDrafts.sort { $0.startDate > $1.startDate }
         if let decline = profile?.futureIncomeDecline {
             futureIncomeMode = .decline
             declineStartAge = Self.plain(decline.startsAtAge)
@@ -626,9 +692,8 @@ struct LifeProfileEditView: View {
                       let age = Int(retirementAge) else { return nil as PartialCivilDate? }
                 return .yearOnly(birthYear + age)
             }()
-            let employmentPeriods = employmentDrafts.compactMap {
-                $0.period(calendar: store.recordsCalendar)
-            }
+            let detailedPeriods = linkedEmploymentPeriods
+            guard workHistoryMode == .rough || detailedPeriods != nil else { return }
             var profile = store.records.state.lifeProfile ?? LifeProfile(
                 editedAt: .now,
                 editCount: 0,
@@ -639,7 +704,7 @@ struct LifeProfileEditView: View {
                 .map { .yearOnly($0) }
             profile.workStartedPartial = workHistoryMode == .rough
                 ? (Int(workYear) ?? bornOn.map { $0.year + 22 }).map { .yearOnly($0) }
-                : earliestStart(in: employmentPeriods)
+                : earliestStart(in: detailedPeriods ?? [])
             profile.retirementOn = retirementOn
             profile.birthYear = bornOn?.year
             profile.workStartedOn = profile.workStartedPartial?.calculationAnchor(in: store.recordsCalendar)
@@ -652,7 +717,9 @@ struct LifeProfileEditView: View {
             }
             profile.workHistoryMode = workHistoryMode
             profile.roughCurrentSalary = salary(amount: roughSalaryAmount, cadence: roughSalaryCadence)
-            profile.employmentPeriods = employmentPeriods
+            if workHistoryMode == .detailed, let detailedPeriods {
+                profile.employmentPeriods = detailedPeriods
+            }
             profile.futureIncomeDecline = futureIncomeMode == .decline ? incomeDecline : nil
             store.records.updateLifeProfile(profile)
             savedFeedback += 1
@@ -685,18 +752,7 @@ struct LifeProfileEditView: View {
                   Int(retirementAge).map({ decline.startsAtAge < $0 }) == true
             else { return false }
         }
-        let periods = employmentDrafts.compactMap { $0.period(calendar: store.recordsCalendar) }
-            .sorted {
-                ($0.startsOn.calculationAnchor(in: store.recordsCalendar) ?? .distantFuture)
-                    < ($1.startsOn.calculationAnchor(in: store.recordsCalendar) ?? .distantFuture)
-            }
-        guard periods.count == employmentDrafts.count else { return false }
-        return !zip(periods, periods.dropFirst()).contains { current, next in
-            guard let end = current.endsOn?.calculationAnchor(in: store.recordsCalendar),
-                  let nextStart = next.startsOn.calculationAnchor(in: store.recordsCalendar)
-            else { return true }
-            return end > nextStart
-        }
+        return workHistoryMode == .rough || linkedEmploymentPeriods?.count == employmentDrafts.count
     }
 
     private func validOptionalYear(_ value: String) -> Bool {
@@ -724,6 +780,20 @@ struct LifeProfileEditView: View {
         }?.startsOn
     }
 
+    private var linkedEmploymentPeriods: [LifeEmploymentPeriod]? {
+        guard let currentSalary = salary(amount: roughSalaryAmount, cadence: roughSalaryCadence),
+              !employmentDrafts.isEmpty
+        else { return nil }
+        let periods = employmentDrafts.enumerated().compactMap { index, draft in
+            draft.period(
+                calendar: store.recordsCalendar,
+                salary: index == 0 ? currentSalary : nil
+            )
+        }
+        guard periods.count == employmentDrafts.count else { return nil }
+        return LifeEmploymentTimeline.linkedPeriods(periods, calendar: store.recordsCalendar)
+    }
+
     /// `OWCNumberField` holds ASCII digits with "." as the separator, whatever
     /// the keyboard produced — that is what makes `Int(_:)` and `Double(_:)`
     /// safe above. Loading through the user's locale broke the contract from the
@@ -744,41 +814,44 @@ struct LifeProfileEditView: View {
     private struct EmploymentDraft: Identifiable, Equatable {
         var id = UUID()
         var startDate: Date
-        var endDate: Date
         var salaryAmount = ""
         var salaryCadence: LifeSalaryCadence = .monthly
+        var wasCurrent = false
 
-        init(startDate: Date, endDate: Date) {
+        init(startDate: Date, salary: LifeSalary? = nil) {
             self.startDate = startDate
-            self.endDate = endDate
+            if let salary {
+                salaryAmount = LifeProfileEditView.plain(salary.amount)
+                salaryCadence = salary.cadence
+            }
         }
 
         init?(_ period: LifeEmploymentPeriod, calendar: Calendar) {
             guard let startDate = period.startsOn.calculationAnchor(in: calendar) else { return nil }
             id = period.id
             self.startDate = startDate
-            endDate = period.endsOn?.calculationAnchor(in: calendar) ?? .now
             salaryAmount = LifeProfileEditView.plain(period.salary.amount)
             salaryCadence = period.salary.cadence
+            wasCurrent = period.endsOn == nil
         }
 
-        func period(calendar: Calendar) -> LifeEmploymentPeriod? {
+        func period(calendar: Calendar, salary: LifeSalary? = nil) -> LifeEmploymentPeriod? {
             let starts = calendar.dateComponents([.year, .month, .day], from: startDate)
             guard let year = starts.year, let month = starts.month, let day = starts.day,
-                  let startsOn = PartialCivilDate.exact(year: year, month: month, day: day),
-                  let amount = Double(salaryAmount), amount.isFinite, amount > 0
+                  let startsOn = PartialCivilDate.exact(year: year, month: month, day: day)
             else { return nil }
-            guard endDate > startDate,
-                  endDate <= .now else { return nil }
-            let ends = calendar.dateComponents([.year, .month, .day], from: endDate)
-            guard let endYear = ends.year, let endMonth = ends.month, let endDay = ends.day,
-                  let endsOn = PartialCivilDate.exact(year: endYear, month: endMonth, day: endDay)
-            else { return nil }
+            let resolvedSalary: LifeSalary
+            if let salary {
+                resolvedSalary = salary
+            } else {
+                guard let amount = Double(salaryAmount), amount.isFinite, amount > 0 else { return nil }
+                resolvedSalary = LifeSalary(amount: amount, cadence: salaryCadence)
+            }
             return LifeEmploymentPeriod(
                 id: id,
                 startsOn: startsOn,
-                endsOn: endsOn,
-                salary: LifeSalary(amount: amount, cadence: salaryCadence)
+                endsOn: nil,
+                salary: resolvedSalary
             )
         }
     }

@@ -1277,7 +1277,7 @@ struct HealthReminderSettingsView: View {
                     OWCGroupCard {
                         NavigationLink(value: AppRoute.focus) {
                             OWCRow(
-                                icon: "timer",
+                                icon: FocusTaskIcon.focus.systemName,
                                 title: store.t("microBreakOpenFocus"),
                                 subtitle: store.t("microBreakTakenOverNote"),
                                 isLast: true

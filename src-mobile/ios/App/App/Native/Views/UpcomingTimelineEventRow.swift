@@ -57,7 +57,7 @@ struct UpcomingTimelineEventRow: View {
         case .lunchStart: "cup.and.saucer.fill"
         case .lunchEnd: "arrow.right.circle.fill"
         case .health: "figure.walk"
-        case .focus: "timer"
+        case .focus: "stopwatch"
         case .focusBreak: "cup.and.saucer.fill"
         case .milestone: "bell.badge.fill"
         case .shiftEnd: "flag.checkered"

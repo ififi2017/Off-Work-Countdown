@@ -38,7 +38,7 @@ struct WhatsNewView: View {
                 .padding(.trailing, 36)
                 feature("calendar", "whatsNewRecordsTitle", "whatsNewRecordsBody")
                 feature("circle.grid.3x3", "whatsNewLifeTitle", "whatsNewLifeBody")
-                feature("timer", "whatsNewFocusTitle", "whatsNewFocusBody")
+                feature(FocusTaskIcon.focus.systemName, "whatsNewFocusTitle", "whatsNewFocusBody")
                 feature("sparkles", "whatsNewPlusTitle", "whatsNewPlusBody")
                 Button(store.t("whatsNewContinue"), action: store.dismissReleaseNotes)
                     .buttonStyle(.borderedProminent)
