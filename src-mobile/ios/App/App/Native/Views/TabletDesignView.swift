@@ -139,7 +139,8 @@ private struct TabletTimerRoot: View {
                 }
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                OWCEarningsVisibilityButton(store: store)
                 Button {
                     withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) {
                         store.toggleQuickTheme()
@@ -568,7 +569,6 @@ private struct TabletRunningView: View {
                     .minimumScaleFactor(0.7)
             }
             Spacer(minLength: 8)
-            OWCEarningsVisibilityButton(store: store)
         }
         .padding(18)
         .background(OWCDesign.card)

@@ -304,20 +304,25 @@ struct OWCAppHeader: View {
             }
             .labelStyle(.iconOnly)
         } trailing: {
-            Button { withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) { store.toggleQuickTheme() } } label: {
-                Group {
-                    if store.quickThemeIsAuto {
-                        Text(verbatim: "A")
-                            .font(.body.weight(.semibold))
-                    } else {
-                        Image(systemName: store.quickThemeIcon)
-                            .font(.body)
+            HStack(spacing: 8) {
+                OWCEarningsVisibilityButton(store: store)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .owcTabletGlassAction()
+                Button { withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) { store.toggleQuickTheme() } } label: {
+                    Group {
+                        if store.quickThemeIsAuto {
+                            Text(verbatim: "A")
+                                .font(.body.weight(.semibold))
+                        } else {
+                            Image(systemName: store.quickThemeIcon)
+                                .font(.body)
+                        }
                     }
+                    .foregroundStyle(OWCDesign.secondary)
                 }
-                .foregroundStyle(OWCDesign.secondary)
+                .owcTabletGlassAction()
+                .accessibilityLabel(store.t("theme"))
             }
-            .owcTabletGlassAction()
-            .accessibilityLabel(store.t("theme"))
         }
     }
 

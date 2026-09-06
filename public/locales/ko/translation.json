@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "매일 사용 중지",
   "focusCadenceNote": "블록 길이는 오른쪽 위 톱니바퀴에 있습니다.",
   "focusLockedTitle": "집중은 Plus 기능입니다",
-  "focusLockedBody": "어느 쪽이든 근무 일정과 기록은 이 기기에 남습니다.",
-  "focusLockedBand": "이번 근무의 블록이 여기에 표시됩니다",
+  "focusLockedBody": "근무 일정에 맞춰 집중할 시간과 휴식을 계획하세요.",
+  "focusLockedBand": "일정 예시",
   "focusTimerSettingsLockedTemplate": "자주 쓰는 하루가 저장되어 있으면 블록 길이가 고정됩니다. 슬롯이 그 길이로 번호가 매겨져 있기 때문입니다.",
   "moreActions": "더 보기",
   "okAction": "확인",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "환영 화면으로 돌아가기",
   "firstRunContinueSetup": "이 기기 설정하기",
   "firstRunCloudNeedsSetup": "기록은 복원되었지만 저장된 일정 설정을 찾지 못했습니다. 복원된 내용을 그대로 유지하면서 이 기기 설정을 마칠 수 있습니다.",
-  "recordsSeeThisMonth": "이번 달 보기"
+  "recordsSeeThisMonth": "이번 달 보기",
+  "focusDemoWriting": "제안서 작성",
+  "focusDemoMessages": "메시지 답장",
+  "focusDemoLearning": "새로운 지식 배우기"
 }

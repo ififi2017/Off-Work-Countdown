@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "Her gün kullanmayı bırak",
   "focusCadenceNote": "Blok süresi sağ üstteki dişli simgesinde.",
   "focusLockedTitle": "Odak bir Plus özelliğidir",
-  "focusLockedBody": "Vardiyanız ve kayıtlarınız her hâlükârda bu cihazda kalır.",
-  "focusLockedBand": "Bu vardiyadaki bloklarınız burada görünür",
+  "focusLockedBody": "Odaklanma ve mola zamanlarını vardiyanıza göre planlayın.",
+  "focusLockedBand": "Örnek program",
   "focusTimerSettingsLockedTemplate": "Kayıtlı bir “her zamanki gün” varken blok süresi sabittir; yuvaları ona göre numaralanmıştır.",
   "moreActions": "Daha fazla",
   "okAction": "Tamam",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "Karşılama ekranına dön",
   "firstRunContinueSetup": "Bu cihazı ayarla",
   "firstRunCloudNeedsSetup": "Kayıtlarınız geri yüklendi ancak kaydedilmiş çalışma düzeni ayarları bulunamadı. Geri yüklenenleri kaybetmeden bu cihazın kurulumunu tamamlayabilirsiniz.",
-  "recordsSeeThisMonth": "Bu ayı görüntüle"
+  "recordsSeeThisMonth": "Bu ayı görüntüle",
+  "focusDemoWriting": "Bir teklif hazırlayın",
+  "focusDemoMessages": "Mesajları yanıtlayın",
+  "focusDemoLearning": "Yeni bir şey öğrenin"
 }

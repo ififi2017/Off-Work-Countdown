@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "毎日使うのをやめる",
   "focusCadenceNote": "ブロックの長さは右上の歯車にあります。",
   "focusLockedTitle": "集中は Plus の機能です",
-  "focusLockedBody": "いずれの場合も、シフトと記録はこの端末に保存されます。",
-  "focusLockedBand": "このシフトのブロックがここに表示されます",
+  "focusLockedBody": "勤務時間に合わせて、集中する時間と休憩を組み立てましょう。",
+  "focusLockedBand": "スケジュール例",
   "focusTimerSettingsLockedTemplate": "いつもの一日を保存している間、ブロックの長さは固定されます。枠がその長さで番号付けされているためです。",
   "moreActions": "その他",
   "okAction": "OK",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "ようこそ画面に戻る",
   "firstRunContinueSetup": "このデバイスを設定",
   "firstRunCloudNeedsSetup": "記録を復元しましたが、保存済みの勤務予定は見つかりませんでした。復元した内容を残したまま、このデバイスの設定を完了できます。",
-  "recordsSeeThisMonth": "この月を見る"
+  "recordsSeeThisMonth": "この月を見る",
+  "focusDemoWriting": "企画書を書く",
+  "focusDemoMessages": "メッセージに返信",
+  "focusDemoLearning": "新しいことを学ぶ"
 }

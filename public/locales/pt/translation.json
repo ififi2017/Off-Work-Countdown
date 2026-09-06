@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "Deixar de usar todos os dias",
   "focusCadenceNote": "A duração dos blocos está na engrenagem no canto superior direito.",
   "focusLockedTitle": "Foco é uma funcionalidade Plus",
-  "focusLockedBody": "O teu horário e registos ficam neste dispositivo de qualquer forma.",
-  "focusLockedBand": "Aqui aparecem os teus blocos deste turno",
+  "focusLockedBody": "Planeje momentos de concentração e pausas de acordo com seu turno.",
+  "focusLockedBand": "Exemplo de agenda",
   "focusTimerSettingsLockedTemplate": "Enquanto houver um dia habitual guardado, a duração do bloco fica fixa — as vagas são numeradas por ela.",
   "moreActions": "Mais",
   "okAction": "OK",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "Voltar às boas-vindas",
   "firstRunContinueSetup": "Configurar este dispositivo",
   "firstRunCloudNeedsSetup": "Seus registros foram restaurados, mas não encontramos uma jornada salva. Você pode concluir a configuração deste dispositivo sem perder o que foi restaurado.",
-  "recordsSeeThisMonth": "Ver este mês"
+  "recordsSeeThisMonth": "Ver este mês",
+  "focusDemoWriting": "Escrever uma proposta",
+  "focusDemoMessages": "Responder a mensagens",
+  "focusDemoLearning": "Aprender algo novo"
 }

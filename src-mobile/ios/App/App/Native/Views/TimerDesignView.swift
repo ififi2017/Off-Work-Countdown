@@ -65,7 +65,8 @@ struct TimerDesignView: View {
                     }
                 }
 
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    OWCEarningsVisibilityButton(store: store)
                     Button {
                         withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) {
                             store.toggleQuickTheme()
@@ -387,11 +388,8 @@ private struct RunningTimerDesignView: View {
             }
             if store.presentationSalaryEnabled {
             OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: !store.followsSchedule(at: now)) {
-                HStack(spacing: 8) {
-                    Text(store.moneyText(earned))
-                        .font(.body.weight(.semibold).monospacedDigit())
-                    OWCEarningsVisibilityButton(store: store)
-                }
+                Text(store.moneyText(earned))
+                    .font(.body.weight(.semibold).monospacedDigit())
             }
             }
             if store.followsSchedule(at: now) {

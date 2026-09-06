@@ -14,6 +14,7 @@ struct FocusBandView: View {
     let store: OffWorkStore
     let model: FocusDayCanvasModel
     @Binding var selectedBlock: Int64?
+    var isPreview = false
     var onPick: (FocusDayCanvasModel.Block) -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -25,7 +26,7 @@ struct FocusBandView: View {
         // differences that the text itself then eats. The list keeps the same
         // order, the same states and the same actions.
         if dynamicTypeSize.isAccessibilitySize {
-            FocusBandList(store: store, model: model, onPick: onPick)
+            FocusBandList(store: store, model: model, isPreview: isPreview, onPick: onPick)
         } else {
             band
         }
@@ -52,7 +53,7 @@ struct FocusBandView: View {
         }
         .frame(height: model.totalHeight, alignment: .top)
         .accessibilityRepresentation {
-            FocusBandList(store: store, model: model, onPick: onPick)
+            FocusBandList(store: store, model: model, isPreview: isPreview, onPick: onPick)
         }
     }
 
@@ -200,7 +201,7 @@ struct FocusBandView: View {
             .buttonStyle(.plain)
             .disabled(!block.isEditable)
             .accessibilityLabel(spokenLabel(block))
-            .accessibilityHint(block.isEditable ? store.t("focusBandBlockHint") : "")
+            .accessibilityHint(block.isEditable ? store.t(isPreview ? "plusSeePlans" : "focusBandBlockHint") : "")
         }
     }
 
@@ -333,6 +334,7 @@ struct FocusBandView: View {
 struct FocusBandList: View {
     let store: OffWorkStore
     let model: FocusDayCanvasModel
+    var isPreview = false
     var onPick: (FocusDayCanvasModel.Block) -> Void
 
     var body: some View {
@@ -350,6 +352,7 @@ struct FocusBandList: View {
                 .buttonStyle(OWCRowButtonStyle())
                 .id(block.startAtMs)
                 .disabled(!block.isEditable)
+                .accessibilityHint(isPreview && block.isEditable ? store.t("plusSeePlans") : "")
             }
         }
     }

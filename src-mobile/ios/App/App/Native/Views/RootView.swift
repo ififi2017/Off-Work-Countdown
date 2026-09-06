@@ -17,7 +17,6 @@ struct OffWorkCountdownRootView: View {
     @State private var paywallPresentationActive = false
     @State private var lifeSetupPresentationActive = false
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -45,14 +44,15 @@ struct OffWorkCountdownRootView: View {
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 1.04)))
             } else if !store.plus.hasSeenIntro && !store.showsReleaseNotes {
                 PlusIntroView(store: store).transition(introPaywallTransition)
-            } else if verticalSizeClass == .compact {
-                // Compact height is a phone on its side — including Plus/Max,
-                // whose regular width would otherwise take the iPad shell.
-                PhoneLandscapeShellView(store: store).transition(.opacity)
-            } else if horizontalSizeClass == .regular {
+            } else if UIDevice.current.userInterfaceIdiom == .pad, horizontalSizeClass == .regular {
                 tabletLayout.transition(.opacity)
             } else {
                 phoneLayout.transition(.opacity)
+            }
+        }
+        .background {
+            if UIDevice.current.userInterfaceIdiom == .phone {
+                PhoneLandscapePresentation(store: store)
             }
         }
         .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.paywallPresentation, value: store.onboardingComplete)
@@ -317,8 +317,8 @@ struct OffWorkCountdownRootView: View {
         // of the TabView and NavigationStacks underneath it — the pushed screen
         // was rebuilt mid-edit, which is what dropped the keyboard and replayed
         // the push animation. Size classes do not move when the keyboard does.
-        // Compact-height (landscape phone, including Plus/Max) is selected
-        // above, so this is portrait only.
+        // Keep this tree mounted while the landscape timer covers the scene.
+        // Rotation must not discard a sheet's draft or change the selected tab.
         TabView(selection: $store.selectedTab) {
             NavigationStack(path: $store.timerPath) {
                 TimerDesignView(

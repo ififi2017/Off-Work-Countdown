@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "أوقف الاستخدام اليومي",
   "focusCadenceNote": "طول الفترة موجود في رمز الترس أعلى اليمين.",
   "focusLockedTitle": "التركيز ميزة في Plus",
-  "focusLockedBody": "يبقى جدولك وسجلاتك على هذا الجهاز في كل الأحوال.",
-  "focusLockedBand": "ستظهر هنا فترات هذه الوردية",
+  "focusLockedBody": "نظّم أوقات التركيز والاستراحة بما يناسب ورديتك.",
+  "focusLockedBand": "جدول توضيحي",
   "focusTimerSettingsLockedTemplate": "ما دام هناك يوم معتاد محفوظ، يبقى طول الفترة ثابتًا — فخاناته مرقّمة وفقًا له.",
   "moreActions": "المزيد",
   "okAction": "حسنًا",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "العودة إلى صفحة الترحيب",
   "firstRunContinueSetup": "إعداد هذا الجهاز",
   "firstRunCloudNeedsSetup": "تمت استعادة سجلاتك، لكننا لم نعثر على إعدادات جدول محفوظة. يمكنك إكمال إعداد هذا الجهاز دون فقدان ما تمت استعادته.",
-  "recordsSeeThisMonth": "عرض هذا الشهر"
+  "recordsSeeThisMonth": "عرض هذا الشهر",
+  "focusDemoWriting": "كتابة مقترح",
+  "focusDemoMessages": "الرد على الرسائل",
+  "focusDemoLearning": "تعلّم شيء جديد"
 }

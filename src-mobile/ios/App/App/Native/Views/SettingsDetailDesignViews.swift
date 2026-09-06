@@ -543,15 +543,20 @@ struct SalaryDesignView: View {
                     Text(store.t("amount"))
                         .font(.body)
                     Spacer()
-                    OWCNumberField(
-                        placeholder: "0",
-                        text: $amountText,
-                        decimal: true,
-                        maxDigits: 9,
-                        emphasized: true,
-                        onCommit: commitAmount
-                    )
-                    .focused($focusedField, equals: .amount)
+                    if store.hideEarnings {
+                        Text("••••")
+                        OWCEarningsVisibilityButton(store: store)
+                    } else {
+                        OWCNumberField(
+                            placeholder: "0",
+                            text: $amountText,
+                            decimal: true,
+                            maxDigits: 9,
+                            emphasized: true,
+                            onCommit: commitAmount
+                        )
+                        .focused($focusedField, equals: .amount)
+                    }
                 }
                 .padding(.horizontal, 16)
                 .frame(height: 56)

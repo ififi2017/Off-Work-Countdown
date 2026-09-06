@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "Nicht mehr täglich verwenden",
   "focusCadenceNote": "Die Blocklänge findest du oben rechts im Zahnrad.",
   "focusLockedTitle": "Fokus ist eine Plus-Funktion",
-  "focusLockedBody": "Dein Dienstplan und deine Aufzeichnungen bleiben so oder so auf diesem Gerät.",
-  "focusLockedBand": "Hier erscheinen deine Blöcke für diese Schicht",
+  "focusLockedBody": "Plane konzentrierte Arbeit und Pausen passend zu deiner Schicht.",
+  "focusLockedBand": "Beispielplan",
   "focusTimerSettingsLockedTemplate": "Solange ein üblicher Tag gesichert ist, bleibt die Blocklänge fest — dessen Plätze sind danach nummeriert.",
   "moreActions": "Mehr",
   "okAction": "OK",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "Zurück zur Begrüßung",
   "firstRunContinueSetup": "Dieses Gerät einrichten",
   "firstRunCloudNeedsSetup": "Deine Aufzeichnungen sind wieder da. Gespeicherte Zeitplaneinstellungen wurden nicht gefunden. Du kannst dieses Gerät jetzt fertig einrichten; die wiederhergestellten Daten bleiben erhalten.",
-  "recordsSeeThisMonth": "Diesen Monat ansehen"
+  "recordsSeeThisMonth": "Diesen Monat ansehen",
+  "focusDemoWriting": "Einen Vorschlag ausarbeiten",
+  "focusDemoMessages": "Nachrichten beantworten",
+  "focusDemoLearning": "Etwas Neues lernen"
 }

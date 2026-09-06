@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "Non usare più ogni giorno",
   "focusCadenceNote": "La durata dei blocchi è nell'ingranaggio in alto a destra.",
   "focusLockedTitle": "Concentrazione è una funzione Plus",
-  "focusLockedBody": "I tuoi turni e i tuoi dati restano comunque su questo dispositivo.",
-  "focusLockedBand": "Qui compaiono i tuoi blocchi per questo turno",
+  "focusLockedBody": "Pianifica il lavoro concentrato e le pause in base al tuo turno.",
+  "focusLockedBand": "Programma di esempio",
   "focusTimerSettingsLockedTemplate": "Finché è salvata una giornata abituale, la durata del blocco resta fissa: le sue posizioni sono numerate su di essa.",
   "moreActions": "Altro",
   "okAction": "OK",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "Torna alla schermata di benvenuto",
   "firstRunContinueSetup": "Configura questo dispositivo",
   "firstRunCloudNeedsSetup": "I tuoi dati sono stati ripristinati, ma non abbiamo trovato impostazioni di pianificazione salvate. Puoi completare la configurazione di questo dispositivo senza perdere i dati ripristinati.",
-  "recordsSeeThisMonth": "Vedi questo mese"
+  "recordsSeeThisMonth": "Vedi questo mese",
+  "focusDemoWriting": "Scrivere una proposta",
+  "focusDemoMessages": "Rispondere ai messaggi",
+  "focusDemoLearning": "Imparare qualcosa di nuovo"
 }

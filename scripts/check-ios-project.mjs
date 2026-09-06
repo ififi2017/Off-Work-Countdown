@@ -213,7 +213,7 @@ if (
 }
 if (
   !rootView.includes("TabletShellView") ||
-  !rootView.includes("PhoneLandscapeShellView") ||
+  !rootView.includes("PhoneLandscapePresentation") ||
   !rootView.includes("WidgetSnapshotPublisher") ||
   !widgetInfo.includes("com.apple.widgetkit-extension") ||
   !widgetSource.includes("ActivityConfiguration") ||

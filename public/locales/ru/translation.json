@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "Не применять каждый день",
   "focusCadenceNote": "Длина блока — в шестерёнке справа вверху.",
   "focusLockedTitle": "Фокус — функция Plus",
-  "focusLockedBody": "Ваш график и записи в любом случае остаются на этом устройстве.",
-  "focusLockedBand": "Здесь появятся ваши блоки для этой смены",
+  "focusLockedBody": "Планируйте сосредоточенную работу и перерывы с учётом своей смены.",
+  "focusLockedBand": "Пример расписания",
   "focusTimerSettingsLockedTemplate": "Пока сохранён обычный день, длина блока зафиксирована — его слоты пронумерованы по ней.",
   "moreActions": "Ещё",
   "okAction": "ОК",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "Вернуться к экрану приветствия",
   "firstRunContinueSetup": "Настроить это устройство",
   "firstRunCloudNeedsSetup": "Ваши записи восстановлены, но сохранённые настройки расписания не найдены. Можно завершить настройку этого устройства — восстановленные данные останутся на месте.",
-  "recordsSeeThisMonth": "Посмотреть этот месяц"
+  "recordsSeeThisMonth": "Посмотреть этот месяц",
+  "focusDemoWriting": "Подготовить предложение",
+  "focusDemoMessages": "Ответить на сообщения",
+  "focusDemoLearning": "Узнать что-то новое"
 }

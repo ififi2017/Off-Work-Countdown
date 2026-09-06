@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "เลิกใช้ทุกวัน",
   "focusCadenceNote": "ความยาวช่วงอยู่ที่ไอคอนเฟืองมุมขวาบน",
   "focusLockedTitle": "โฟกัสเป็นฟีเจอร์ Plus",
-  "focusLockedBody": "ตารางกะและบันทึกของคุณยังอยู่ในเครื่องนี้เช่นเดิม",
-  "focusLockedBand": "ช่วงของกะนี้จะแสดงตรงนี้",
+  "focusLockedBody": "วางแผนช่วงทำงานอย่างมีสมาธิและช่วงพักให้เข้ากับกะของคุณ",
+  "focusLockedBand": "ตัวอย่างตาราง",
   "focusTimerSettingsLockedTemplate": "ขณะที่มีวันที่ใช้บ่อยบันทึกไว้ ความยาวช่วงจะคงที่ เพราะช่องถูกนับตามความยาวนั้น",
   "moreActions": "เพิ่มเติม",
   "okAction": "ตกลง",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "กลับไปหน้าต้อนรับ",
   "firstRunContinueSetup": "ตั้งค่าอุปกรณ์นี้",
   "firstRunCloudNeedsSetup": "กู้คืนบันทึกของคุณแล้ว แต่ไม่พบการตั้งค่าตารางเวลาที่บันทึกไว้ คุณตั้งค่าอุปกรณ์นี้ต่อได้โดยข้อมูลที่กู้คืนไว้จะไม่สูญหาย",
-  "recordsSeeThisMonth": "ดูเดือนนี้"
+  "recordsSeeThisMonth": "ดูเดือนนี้",
+  "focusDemoWriting": "เขียนข้อเสนอ",
+  "focusDemoMessages": "ตอบข้อความ",
+  "focusDemoLearning": "เรียนรู้สิ่งใหม่"
 }

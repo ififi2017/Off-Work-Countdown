@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "不再每天使用",
   "focusCadenceNote": "番茄鐘時長在右上角的齒輪裡。",
   "focusLockedTitle": "番茄鐘是 Plus 功能",
-  "focusLockedBody": "無論如何，你的排班和記錄都保存在這台裝置上。",
-  "focusLockedBand": "這裡會顯示你這個班次的格子",
+  "focusLockedBody": "把專注任務與休息安排進你的工作日。",
+  "focusLockedBand": "範例行程",
   "focusTimerSettingsLockedTemplate": "存了常用的一天之後，專注時長會固定——它的格子是按這個時長編號的。",
   "moreActions": "更多",
   "okAction": "好",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "返回歡迎頁",
   "firstRunContinueSetup": "返回設定頁",
   "firstRunCloudNeedsSetup": "記錄已經回復，但沒有找到已儲存的班表設定。你可以繼續設定這台裝置，剛剛回復的內容都會保留。",
-  "recordsSeeThisMonth": "查看這個月"
+  "recordsSeeThisMonth": "查看這個月",
+  "focusDemoWriting": "撰寫提案",
+  "focusDemoMessages": "回覆訊息",
+  "focusDemoLearning": "學習新知"
 }

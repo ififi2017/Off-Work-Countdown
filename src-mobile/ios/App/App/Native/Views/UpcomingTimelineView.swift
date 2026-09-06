@@ -40,12 +40,7 @@ struct OWCEarningsVisibilityButton: View {
             }
         } label: {
             Image(systemName: store.hideEarnings ? "eye" : "eye.slash")
-                .font(.body)
-                .foregroundStyle(OWCDesign.tertiary)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
         .accessibilityLabel(store.t(store.hideEarnings ? "unlockSalary" : "salaryLocked"))
         .sensoryFeedback(.selection, trigger: store.hideEarnings)
     }

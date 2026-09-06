@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "Ngừng dùng mỗi ngày",
   "focusCadenceNote": "Độ dài ô nằm ở biểu tượng bánh răng góc trên bên phải.",
   "focusLockedTitle": "Tập trung là tính năng Plus",
-  "focusLockedBody": "Lịch làm và bản ghi của bạn vẫn nằm trên thiết bị này.",
-  "focusLockedBand": "Các ô của ca này sẽ hiện ở đây",
+  "focusLockedBody": "Sắp xếp thời gian tập trung và nghỉ ngơi theo ca làm của bạn.",
+  "focusLockedBand": "Lịch trình mẫu",
   "focusTimerSettingsLockedTemplate": "Khi đã lưu một ngày thường dùng, độ dài ô sẽ cố định — các vị trí được đánh số theo nó.",
   "moreActions": "Thêm",
   "okAction": "OK",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "Quay lại trang chào mừng",
   "firstRunContinueSetup": "Thiết lập thiết bị này",
   "firstRunCloudNeedsSetup": "Dữ liệu của bạn đã được khôi phục, nhưng không tìm thấy lịch làm việc đã lưu. Bạn có thể hoàn tất thiết lập thiết bị này mà không mất nội dung vừa khôi phục.",
-  "recordsSeeThisMonth": "Xem tháng này"
+  "recordsSeeThisMonth": "Xem tháng này",
+  "focusDemoWriting": "Viết đề xuất",
+  "focusDemoMessages": "Trả lời tin nhắn",
+  "focusDemoLearning": "Học điều mới"
 }

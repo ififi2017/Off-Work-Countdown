@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "दररोज वापरणे थांबवा",
   "focusCadenceNote": "ब्लॉकची लांबी वरच्या उजव्या कोपऱ्यातील गिअरमध्ये आहे.",
   "focusLockedTitle": "फोकस हे Plus वैशिष्ट्य आहे",
-  "focusLockedBody": "तुमचे वेळापत्रक आणि नोंदी या उपकरणावरच राहतात.",
-  "focusLockedBand": "या शिफ्टचे तुमचे ब्लॉक इथे दिसतील",
+  "focusLockedBody": "तुमच्या शिफ्टनुसार एकाग्र काम आणि विश्रांतीचे नियोजन करा.",
+  "focusLockedBand": "नमुना वेळापत्रक",
   "focusTimerSettingsLockedTemplate": "नेहमीचा दिवस जतन असताना ब्लॉकची लांबी निश्चित राहते — त्याच्या जागा त्यानुसार क्रमांकित असतात.",
   "moreActions": "अधिक",
   "okAction": "ठीक आहे",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "स्वागत पृष्ठावर परत जा",
   "firstRunContinueSetup": "हे उपकरण सेट अप करा",
   "firstRunCloudNeedsSetup": "तुमच्या नोंदी पुनर्स्थापित झाल्या, पण जतन केलेली वेळापत्रक सेटिंग सापडली नाही. पुनर्स्थापित केलेला डेटा न गमावता या उपकरणाचे सेटअप पूर्ण करता येईल.",
-  "recordsSeeThisMonth": "हा महिना पहा"
+  "recordsSeeThisMonth": "हा महिना पहा",
+  "focusDemoWriting": "प्रस्ताव लिहा",
+  "focusDemoMessages": "संदेशांना उत्तर द्या",
+  "focusDemoLearning": "काहीतरी नवीन शिका"
 }
