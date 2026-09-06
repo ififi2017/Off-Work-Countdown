@@ -1,35 +1,27 @@
 import SwiftUI
 
-/// iPad keeps the sidebar and compact top selector as independent surfaces so
-/// each one enters and exits from its own edge.
+/// The system tab container coordinates the top bar, sidebar and navigation
+/// titles, including when a small iPad collapses a large title on scroll.
 struct TabletShellView: View {
     @Bindable var store: OffWorkStore
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
-    @State private var recordsExpanded = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            TabletSidebar(store: store, hide: hideSidebar)
-                .navigationSplitViewColumnWidth(min: 250, ideal: 290, max: 320)
-                .toolbar(.hidden, for: .navigationBar)
-                .toolbar(removing: .sidebarToggle)
-        } detail: {
-            selectedDetailStack
-                .background(OWCDesign.page)
-        }
-        .navigationSplitViewStyle(.balanced)
-        .toolbar(removing: .sidebarToggle)
-        .overlay(alignment: .top) {
-            if showsTopTabBar {
-                TabletTopTabBar(store: store, showSidebar: showSidebar)
-                    .frame(height: OWCDesign.rootHeaderHeight)
-                    .padding(.top, OWCDesign.rootHeaderTopInset)
-                    .transition(topBarTransition)
+        TabView(selection: $store.selectedTab) {
+            Tab(store.t("timerTab"), systemImage: "timer", value: AppTab.timer) {
+                timerStack
+            }
+            Tab(store.t("recordsTab"), systemImage: "calendar", value: AppTab.records) {
+                recordsStack
+            }
+            Tab(store.t("settings"), systemImage: "slider.horizontal.3", value: AppTab.settings) {
+                settingsStack
             }
         }
-        .animation(shellAnimation, value: columnVisibility)
-        .animation(shellAnimation, value: showsTopTabBar)
+        .tabViewStyle(.sidebarAdaptable)
+        .defaultAdaptableTabBarPlacement(.sidebar)
+        .tabViewSidebarFooter {
+            TabletSidebarFooter(store: store)
+        }
         .onChange(of: store.presentedRoute) { _, route in
             guard let route else { return }
             if store.selectedTab == .timer {
@@ -48,39 +40,9 @@ struct TabletShellView: View {
         .background(OWCDesign.page)
     }
 
-    private var sidebarVisible: Bool {
-        columnVisibility != .detailOnly
-    }
-
-    private var showsTopTabBar: Bool {
-        !sidebarVisible
-            && selectedPathIsEmpty
-            && !(store.selectedTab == .records && recordsExpanded)
-    }
-
-    private var selectedPathIsEmpty: Bool {
-        switch store.selectedTab {
-        case .timer: store.timerPath.isEmpty
-        case .records: store.recordsPath.isEmpty
-        case .settings: store.settingsPath.isEmpty
-        }
-    }
-
-    @ViewBuilder
-    private var selectedDetailStack: some View {
-        switch store.selectedTab {
-        case .timer:
-            timerStack
-        case .records:
-            recordsStack
-        case .settings:
-            settingsStack
-        }
-    }
-
     private var timerStack: some View {
         NavigationStack(path: $store.timerPath) {
-            TabletTimerRoot(store: store, sidebarVisible: sidebarVisible)
+            TabletTimerRoot(store: store)
                 .navigationDestination(for: AppRoute.self) { route in
                     AppRouteDestination(route: route, store: store)
                 }
@@ -105,8 +67,7 @@ struct TabletShellView: View {
     private var tabletRecordsRoot: some View {
         RecordsDesignView(
             store: store,
-            showsSidebarButton: false,
-            onExpansionChanged: { recordsExpanded = $0 }
+            showsSidebarButton: false
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
@@ -115,26 +76,11 @@ struct TabletShellView: View {
         TabletSettingsView(store: store)
     }
 
-    private func hideSidebar() {
-        withAnimation(shellAnimation) { columnVisibility = .detailOnly }
-    }
-
-    private func showSidebar() {
-        withAnimation(shellAnimation) { columnVisibility = .all }
-    }
-
-    private var shellAnimation: Animation {
-        reduceMotion ? OWCMotion.reduced : OWCMotion.navigation
-    }
-
-    private var topBarTransition: AnyTransition {
-        reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity)
-    }
 }
 
 private struct TabletTimerRoot: View {
     let store: OffWorkStore
-    let sidebarVisible: Bool
+    @Environment(\.tabBarPlacement) private var tabBarPlacement
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -178,7 +124,7 @@ private struct TabletTimerRoot: View {
                 .accessibilityLabel(store.t("focusTitle"))
             }
 
-            if sidebarVisible {
+            if tabBarPlacement == .sidebar {
                 ToolbarItem(placement: .principal) {
                     TimelineView(.periodic(from: .now, by: 60)) { timeline in
                         Text(
@@ -222,126 +168,6 @@ private struct TabletTimerRoot: View {
             store.settingsPath.removeAll()
             store.selectedTab = .settings
         }
-    }
-}
-
-private struct TabletTopTabBar: View {
-    @Bindable var store: OffWorkStore
-    let showSidebar: () -> Void
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Button(action: showSidebar) {
-                OWCGlassCircleLabel {
-                    Image(systemName: "sidebar.left")
-                        .foregroundStyle(OWCDesign.primary)
-                }
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(store.t("showSidebar"))
-
-            Picker(selection: $store.selectedTab) {
-                ForEach(AppTab.allCases) { tab in
-                    Label(store.t(titleKey(for: tab)), systemImage: icon(for: tab))
-                        .tag(tab)
-                }
-            } label: {
-                EmptyView()
-            }
-            .labelsHidden()
-            .pickerStyle(.segmented)
-            .fixedSize(horizontal: true, vertical: false)
-        }
-        .fixedSize(horizontal: true, vertical: false)
-    }
-
-    private func titleKey(for tab: AppTab) -> String {
-        switch tab {
-        case .timer: "timerTab"
-        case .records: "recordsTab"
-        case .settings: "settings"
-        }
-    }
-
-    private func icon(for tab: AppTab) -> String {
-        switch tab {
-        case .timer: "timer"
-        case .records: "calendar"
-        case .settings: "slider.horizontal.3"
-        }
-    }
-}
-
-private struct TabletSidebar: View {
-    let store: OffWorkStore
-    let hide: () -> Void
-
-    var body: some View {
-        VStack(spacing: 0) {
-            TabletSidebarHeader(store: store, hide: hide)
-
-            VStack(spacing: 4) {
-                tabButton(.timer, icon: "timer", title: store.t("timerTab"))
-                tabButton(.records, icon: "calendar", title: store.t("recordsTab"))
-                tabButton(.settings, icon: "slider.horizontal.3", title: store.t("settings"))
-            }
-            .padding(.horizontal, 14)
-
-            TabletSidebarFooter(store: store)
-            Spacer(minLength: 0)
-        }
-        .background(.regularMaterial)
-    }
-
-    private func tabButton(_ tab: AppTab, icon: String, title: String) -> some View {
-        Button {
-            store.selectedTab = tab
-        } label: {
-            Label(title, systemImage: icon)
-                .font(.body.weight(store.selectedTab == tab ? .semibold : .regular))
-                .foregroundStyle(store.selectedTab == tab ? OWCDesign.accent : OWCDesign.primary)
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                .padding(.horizontal, 12)
-                .background(
-                    store.selectedTab == tab ? OWCDesign.accent.opacity(0.14) : Color.clear,
-                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-                )
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(store.selectedTab == tab ? .isSelected : [])
-    }
-}
-
-private struct TabletSidebarHeader: View {
-    let store: OffWorkStore
-    let hide: () -> Void
-
-    var body: some View {
-        HStack(spacing: 9) {
-            Button(action: hide) {
-                OWCGlassCircleLabel {
-                    Image(systemName: "sidebar.left")
-                        .foregroundStyle(OWCDesign.primary)
-                }
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(store.t("onboardingSidebarTitle"))
-
-            OWCBrandMark()
-                .frame(width: 30, height: 30)
-
-            Text(verbatim: OWCBrand.shortName)
-                .font(.body.bold())
-                .tracking(-0.34)
-                .lineLimit(1)
-                .minimumScaleFactor(0.82)
-
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 14)
-        .padding(.top, 18)
-        .padding(.bottom, 18)
     }
 }
 
@@ -827,10 +653,9 @@ private struct TabletSettingsView: View {
     let store: OffWorkStore
 
     var body: some View {
-        // Scrolls for the same reason portrait does: once the stacked
-        // single-column fallback kicks in on an iPad mini, five sections are
-        // taller than the pane.
-        OWCContentSizedScrollView {
+        // Let the system navigation container track the root scroll view so
+        // large titles and the tab bar share the correct scroll/safe-area layout.
+        ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 // Two columns only when they actually fit. With the sidebar open an
                 // 11-inch iPad leaves ~544 pt here, and splitting that in two left
@@ -853,8 +678,10 @@ private struct TabletSettingsView: View {
                 }
                 .padding(.top, 14)
                 .padding(.horizontal, OWCDesign.pageInset)
+                .padding(.bottom, OWCDesign.detailBottomInset)
             }
         }
+        .scrollBounceBehavior(.basedOnSize)
         .background(OWCDesign.page)
         .navigationTitle(store.t("settings"))
         .navigationBarTitleDisplayMode(.large)
