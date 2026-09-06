@@ -5314,7 +5314,7 @@ final class OffWorkStore {
     func lifeViewModel(now: Date = .now) -> LifeViewModel? {
         let cacheKey = lifeViewModelCacheKey(now: now)
         if let cached = lifeViewModelCache, cached.key == cacheKey { return cached.model }
-        let model = buildLifeViewModel(now: now)
+        let model = LaunchTrace.interval("lifeBuildModel") { buildLifeViewModel(now: now) }
         lifeViewModelCache = (cacheKey, model)
         return model
     }
@@ -5347,25 +5347,32 @@ final class OffWorkStore {
         let archive = lifeScheduleArchive(workStart: workStart, now: now)
         let finalDay = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: lifeEnd))
             ?? lifeEnd
-        let scheduleDays = resolveDays(
-            from: workStart,
-            through: finalDay,
-            periods: archive.periods,
-            snapshots: archive.snapshots,
-            usesSharedCache: false
-        ).compactMap { resolution in
-            LifeScheduleDay(
-                resolution: resolution,
-                overtimeSegments: overtimeSegments(on: resolution)
+        let resolved = LaunchTrace.interval("lifeResolveDays") {
+            resolveDays(
+                from: workStart,
+                through: finalDay,
+                periods: archive.periods,
+                snapshots: archive.snapshots,
+                usesSharedCache: false
             )
         }
-        var model = LifeViewCalculator.build(
-            profile: profile,
-            scheduleDays: scheduleDays,
-            outsideZoneDays: Set(daysRecordedOutsidePeriodTimeZone()),
-            now: now,
-            calendar: calendar
-        )
+        let scheduleDays = LaunchTrace.interval("lifeProjectOvertime") {
+            resolved.compactMap { resolution in
+                LifeScheduleDay(
+                    resolution: resolution,
+                    overtimeSegments: overtimeSegments(on: resolution)
+                )
+            }
+        }
+        var model = LaunchTrace.interval("lifeBuildWeeks") {
+            LifeViewCalculator.build(
+                profile: profile,
+                scheduleDays: scheduleDays,
+                outsideZoneDays: Set(daysRecordedOutsidePeriodTimeZone()),
+                now: now,
+                calendar: calendar
+            )
+        }
         model.income = lifeIncomeSummary(profile: profile, now: now, calendar: calendar)
         return model
     }
@@ -5468,6 +5475,7 @@ final class OffWorkStore {
             ?? lifeEnd
         let archive = lifeScheduleArchive(workStart: workStart, now: now)
 
+        let prefetch = LaunchTrace.signposter.beginInterval("lifePrefetch")
         for snapshot in archive.snapshots {
             guard let period = archive.periods.first(where: { $0.id == snapshot.periodID }),
                   period.startsOn <= finalDay,
@@ -5486,6 +5494,7 @@ final class OffWorkStore {
                 timeZone: period.timeZone
             )
         }
+        LaunchTrace.signposter.endInterval("lifePrefetch", prefetch)
         // The life canvas only needs the profile's stage dates, so it can be on
         // screen before the career is walked. Yielding lets the scale change
         // that asked for this commit its own frame first.

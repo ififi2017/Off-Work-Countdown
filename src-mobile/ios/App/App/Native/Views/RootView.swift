@@ -4,7 +4,7 @@ import SwiftUI
 import UIKit
 
 struct OffWorkCountdownRootView: View {
-    @State private var store = OffWorkStore(records: .persisted())
+    @State private var store = Self.makeStore()
     @State private var notifications = NotificationService()
     @State private var liveActivities = LiveActivityService()
     @State private var serviceTask: Task<Void, Never>?
@@ -20,6 +20,19 @@ struct OffWorkCountdownRootView: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private static func makeStore() -> OffWorkStore {
+#if DEBUG
+        // Profiling uses synthetic records and separate preferences, including
+        // on a device that already has the user's installed app and archive.
+        if ProcessInfo.processInfo.arguments.contains("-owcPerformanceFixture"),
+           let defaults = UserDefaults(suiteName: "owc.performance.fixture") {
+            defaults.removePersistentDomain(forName: "owc.performance.fixture")
+            return OffWorkStore(defaults: defaults, records: .inMemory())
+        }
+#endif
+        return OffWorkStore(records: .persisted())
+    }
 
     var body: some View {
         Group {

@@ -6,7 +6,7 @@ import os
 nonisolated enum LaunchTrace {
     static let signposter = OSSignposter(
         subsystem: "com.rainif.offworkcountdown.macappstore",
-        category: "launch"
+        category: .pointsOfInterest
     )
 
     @MainActor

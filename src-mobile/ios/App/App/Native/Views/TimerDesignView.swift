@@ -91,6 +91,7 @@ struct TimerDesignView: View {
 
     @ViewBuilder
     private func timerContent(at date: Date) -> some View {
+        let _ = LaunchTrace.signposter.emitEvent("timerContentUpdate")
         let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
         let phase = store.visualPhase(snapshot: snapshot, at: date)
 

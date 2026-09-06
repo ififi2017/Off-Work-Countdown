@@ -121,12 +121,13 @@ final class LiveActivityPriorityTransitionService {
         self.clock = clock
     }
 
-    func schedule(at date: Date, action: @escaping () async -> Void) {
+    @discardableResult
+    func schedule(at date: Date, action: @escaping () async -> Void) -> Task<Void, Never> {
         cancel()
         generation &+= 1
         let scheduledGeneration = generation
         scheduledAt = date
-        task = Task { @MainActor [weak self] in
+        let task = Task { @MainActor [weak self] in
             guard let self else { return }
             let delay = max(0, date.timeIntervalSince(self.clock.now()))
             guard await self.clock.sleep(delay), !Task.isCancelled,
@@ -136,6 +137,8 @@ final class LiveActivityPriorityTransitionService {
             self.scheduledAt = nil
             await action()
         }
+        self.task = task
+        return task
     }
 
     func cancel() {

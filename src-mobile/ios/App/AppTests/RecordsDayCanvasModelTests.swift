@@ -118,7 +118,7 @@ struct RecordsDayCanvasModelTests {
     }
 
     @Test("Two shifts touching one day are both drawn and both editable")
-    func twoShiftsOnOneDayKeepTheirOwnAnchors() {
+    func twoShiftsOnOneDayKeepTheirOwnAnchors() throws {
         let day = utcDay(2026, 8, 24)
         let previous = RecordsDayShift(
             anchorDayKey: "2026-08-23",
@@ -137,7 +137,7 @@ struct RecordsDayCanvasModelTests {
         #expect(canvas.allocation.workMs == Int64(10 * hour))
         #expect(canvas.editableShifts.map(\.anchorDayKey) == ["2026-08-23", "2026-08-24"])
         // The label is the shift's own hours, not the sliver inside this day.
-        let earlier = canvas.editableShifts[0]
+        let earlier = try #require(canvas.editableShifts.first)
         #expect(earlier.endAtMs - earlier.startAtMs == 10 * hour)
         #expect(earlier.hasHours)
         #expect(canvas.workIntervals.first?.anchorDayKey == "2026-08-23")
@@ -226,7 +226,7 @@ struct RecordsDayCanvasModelTests {
     }
 
     @Test("Sleep is drawn in the longest stretch of non-work time and never on top of work")
-    func sleepIsPlacedInFreeSpaceOnly() {
+    func sleepIsPlacedInFreeSpaceOnly() throws {
         let day = utcDay(2026, 8, 24)
         let night = RecordsDayShift(
             anchorDayKey: "2026-08-24",
@@ -237,7 +237,7 @@ struct RecordsDayCanvasModelTests {
         let sleep = canvas.intervals.filter { $0.kind == .sleep }
 
         #expect(canvas.allocation.sleepMs == Int64(8 * hour))
-        #expect(sleep.count == 1)
+        try #require(sleep.count == 1)
         // The night worker sleeps after the shift, not through it.
         #expect(sleep[0].startAtMs == day.timeIntervalSince1970 * 1_000 + 6 * hour)
         #expect(sleep[0].source == .sleepEstimate)
@@ -245,7 +245,7 @@ struct RecordsDayCanvasModelTests {
     }
 
     @Test("The now line only exists today, and it lands on a whole minute")
-    func nowLineExistsOnlyOnToday() {
+    func nowLineExistsOnlyOnToday() throws {
         let day = utcDay(2026, 8, 24)
         let now = day.addingTimeInterval(14 * 3_600 + 32 * 60 + 47)
         let shift = RecordsDayShift(
@@ -262,7 +262,7 @@ struct RecordsDayCanvasModelTests {
         let expected = day.timeIntervalSince1970 * 1_000 + (14 * 60 + 32) * 60_000
         #expect(today.nowAtMs == expected)
         #expect(today.projectionStartsAtMs == expected)
-        #expect(today.workIntervals.count == 2)
+        try #require(today.workIntervals.count == 2)
         #expect(today.workIntervals[0].endAtMs == expected)
         #expect(today.workIntervals[0].source == .recorded)
         #expect(today.workIntervals[1].startAtMs == expected)
@@ -288,7 +288,7 @@ struct RecordsDayCanvasModelTests {
     }
 
     @Test("A rest day is still editable, and is named by its date rather than by hours")
-    func restDaysStayEditable() {
+    func restDaysStayEditable() throws {
         let day = utcDay(2026, 8, 24)
         let empty = RecordsDayShift(
             anchorDayKey: "2026-08-24",
@@ -299,7 +299,7 @@ struct RecordsDayCanvasModelTests {
         let canvas = model(dayStart: day, shifts: [empty], source: .rest)
 
         #expect(canvas.editableShifts.map(\.anchorDayKey) == ["2026-08-24"])
-        #expect(canvas.editableShifts[0].hasHours == false)
+        #expect(try #require(canvas.editableShifts.first).hasHours == false)
         #expect(canvas.allocation.workMs == 0)
     }
 
