@@ -44,6 +44,7 @@ struct RecordsAllRecordsPresentation {
 struct RecordsAllRecordsView: View {
     let store: OffWorkStore
     var focusedYear: Int?
+    @Environment(\.usesTabletNavigationShell) private var usesTabletNavigationShell
 
     private var presentation: RecordsAllRecordsPresentation {
         RecordsAllRecordsPresentation(
@@ -106,10 +107,19 @@ struct RecordsAllRecordsView: View {
         .background(OWCDesign.page)
         .navigationTitle(store.t("recordsAllRecords"))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if !usesTabletNavigationShell {
+                ToolbarItem(placement: .topBarTrailing) {
+                    OWCEarningsVisibilityButton(store: store)
+                }
+            }
+        }
         .owcTabletDetailNavigation(
             backTitle: store.t("recordsTitle"),
             pageTitle: store.t("recordsAllRecords")
-        )
+        ) {
+            OWCEarningsVisibilityButton(store: store)
+        }
     }
 
 }

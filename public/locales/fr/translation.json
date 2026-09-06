@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "Ne plus utiliser chaque jour",
   "focusCadenceNote": "La durée des blocs se règle via l’engrenage en haut à droite.",
   "focusLockedTitle": "La concentration est une fonction Plus",
-  "focusLockedBody": "Vos horaires et vos relevés restent sur cet appareil dans tous les cas.",
-  "focusLockedBand": "Vos blocs pour ce service s’affichent ici",
+  "focusLockedBody": "Organisez vos tâches et vos pauses selon vos horaires de travail.",
+  "focusLockedBand": "Exemple de planning",
   "focusTimerSettingsLockedTemplate": "Tant qu’une journée habituelle est enregistrée, la durée des blocs est figée : ses emplacements y sont numérotés.",
   "moreActions": "Plus",
   "okAction": "OK",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "Retour à l’accueil",
   "firstRunContinueSetup": "Configurer cet appareil",
   "firstRunCloudNeedsSetup": "Vos données sont restaurées. Aucun planning enregistré n’a été trouvé. Vous pouvez terminer la configuration de cet appareil sans perdre les données restaurées.",
-  "recordsSeeThisMonth": "Voir ce mois"
+  "recordsSeeThisMonth": "Voir ce mois",
+  "focusDemoWriting": "Rédiger une proposition",
+  "focusDemoMessages": "Répondre aux messages",
+  "focusDemoLearning": "Apprendre quelque chose"
 }

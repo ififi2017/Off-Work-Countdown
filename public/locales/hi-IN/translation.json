@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "हर दिन इस्तेमाल बंद करें",
   "focusCadenceNote": "ब्लॉक की लंबाई ऊपर दाईं ओर गियर में है।",
   "focusLockedTitle": "फ़ोकस एक Plus सुविधा है",
-  "focusLockedBody": "आपका शेड्यूल और रिकॉर्ड इस डिवाइस पर ही रहते हैं।",
-  "focusLockedBand": "इस शिफ़्ट के आपके ब्लॉक यहाँ दिखेंगे",
+  "focusLockedBody": "अपनी शिफ़्ट के हिसाब से एकाग्र काम और ब्रेक की योजना बनाएँ।",
+  "focusLockedBand": "उदाहरण समय-सारणी",
   "focusTimerSettingsLockedTemplate": "जब कोई सामान्य दिन सहेजा हो, ब्लॉक की लंबाई तय रहती है — उसके स्लॉट उसी से गिने जाते हैं।",
   "moreActions": "और",
   "okAction": "ठीक है",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "स्वागत पेज पर वापस जाएँ",
   "firstRunContinueSetup": "इस डिवाइस को सेट करें",
   "firstRunCloudNeedsSetup": "आपके रिकॉर्ड वापस आ गए हैं, लेकिन सहेजी हुई शेड्यूल सेटिंग नहीं मिली। बहाल किए गए डेटा को खोए बिना इस डिवाइस का सेटअप पूरा किया जा सकता है।",
-  "recordsSeeThisMonth": "यह महीना देखें"
+  "recordsSeeThisMonth": "यह महीना देखें",
+  "focusDemoWriting": "प्रस्ताव लिखें",
+  "focusDemoMessages": "संदेशों का जवाब दें",
+  "focusDemoLearning": "कुछ नया सीखें"
 }

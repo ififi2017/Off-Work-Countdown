@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "不再每天使用",
   "focusCadenceNote": "番茄钟时长在右上角的齿轮里。",
   "focusLockedTitle": "番茄钟是 Plus 功能",
-  "focusLockedBody": "无论如何，你的排班和记录都保存在这台设备上。",
-  "focusLockedBand": "这里会显示你这个班次的格子",
+  "focusLockedBody": "把专注任务与休息安排进你的工作日。",
+  "focusLockedBand": "示例日程",
   "focusTimerSettingsLockedTemplate": "存了常用的一天之后，专注时长会固定——它的格子是按这个时长编号的。",
   "moreActions": "更多",
   "okAction": "好",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "返回欢迎页",
   "firstRunContinueSetup": "回到配置页",
   "firstRunCloudNeedsSetup": "记录已经恢复，但没有找到已保存的排班设置。你可以继续配置这台设备，刚刚恢复的内容都会保留。",
-  "recordsSeeThisMonth": "查看这个月"
+  "recordsSeeThisMonth": "查看这个月",
+  "focusDemoWriting": "撰写方案",
+  "focusDemoMessages": "回复消息",
+  "focusDemoLearning": "学习新知识"
 }

@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "Stop using every day",
   "focusCadenceNote": "Block length is in the gear at the top right.",
   "focusLockedTitle": "Focus is a Plus feature",
-  "focusLockedBody": "Your schedule and records stay on this device either way.",
-  "focusLockedBand": "Your blocks for this shift appear here",
+  "focusLockedBody": "Plan focused work and breaks around your shift.",
+  "focusLockedBand": "Example schedule",
   "focusTimerSettingsLockedTemplate": "Block length is fixed while a usual day is saved — its slots are numbered against it.",
   "moreActions": "More",
   "okAction": "OK",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "Back to welcome",
   "firstRunContinueSetup": "Set up this device",
   "firstRunCloudNeedsSetup": "Your records are back. We did not find saved schedule settings, so you can finish setting up this device without losing what was restored.",
-  "recordsSeeThisMonth": "See this month"
+  "recordsSeeThisMonth": "See this month",
+  "focusDemoWriting": "Draft a proposal",
+  "focusDemoMessages": "Reply to messages",
+  "focusDemoLearning": "Learn something new"
 }

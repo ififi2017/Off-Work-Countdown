@@ -2,9 +2,21 @@ import SwiftUI
 
 struct PhoneLandscapeShellView: View {
     @Bindable var store: OffWorkStore
+    var immersive = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        if immersive {
+            LandscapeTimerView(store: store, isActive: true, immersive: true)
+                .frame(maxWidth: 760, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.black, ignoresSafeAreaEdges: .all)
+                .preferredColorScheme(.dark)
+                .environment(\.locale, store.locale)
+                .environment(\.layoutDirection, store.layoutDirection)
+                .statusBarHidden()
+                .persistentSystemOverlays(.hidden)
+        } else {
         NavigationStack(path: $store.activePath) {
             ZStack(alignment: .leading) {
                 OWCDesign.page.ignoresSafeArea()
@@ -66,6 +78,7 @@ struct PhoneLandscapeShellView: View {
             store.presentedRoute = nil
         }
         .background(OWCDesign.page)
+        }
     }
 
     private var landscapeRail: some View {
@@ -111,6 +124,7 @@ private struct LandscapeTimerView: View {
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 76
     let store: OffWorkStore
     let isActive: Bool
+    var immersive = false
     @State private var showShare = false
     @State private var showOvertime = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -145,15 +159,15 @@ private struct LandscapeTimerView: View {
         let phase = store.visualPhase(snapshot: snapshot, at: date)
 
         ZStack {
-            if phase.showsActiveTimer, let snapshot {
-                let beforeStart = phase == .clockIn
+            if phase.showsActiveTimer || immersive, let snapshot {
+                let beforeStart = phase == .clockIn || phase == .rest || phase == .completed
                 let onBreak = phase == .lunch
                 let overtime = phase == .overtime
                 let remaining = beforeStart
                     ? store.countdownToClockInMs(snapshot: snapshot, at: date)
                     : snapshot.heroRemainingMs(at: date)
                 VStack(spacing: 0) {
-                    if !store.isForcedWorkday(snapshot),
+                    if !immersive, !store.isForcedWorkday(snapshot),
                        !beforeStart,
                        let note = store.earlyClockInNote(at: date) {
                         EarlyClockInBanner(store: store, note: note)
@@ -162,7 +176,7 @@ private struct LandscapeTimerView: View {
 
                     if store.isForcedWorkday(snapshot) || onBreak || overtime {
                         HStack(spacing: 8) {
-                            if store.isForcedWorkday(snapshot) {
+                            if store.isForcedWorkday(snapshot), !immersive {
                                 ManualTimingBanner(store: store, compact: true)
                             }
                             if onBreak {
@@ -192,8 +206,10 @@ private struct LandscapeTimerView: View {
                         .padding(.bottom, 4)
                     Text(store.formatDuration(remaining))
                         .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
-                        .tracking(-3)
+                        .tracking(-1.4)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.62)
+                        .environment(\.layoutDirection, .leftToRight)
                         .owcCountdownTextTransition(milliseconds: remaining)
                     landscapeCaption(snapshot, phase: phase)
                         .font(.subheadline)
@@ -249,6 +265,7 @@ private struct LandscapeTimerView: View {
                     }
                     .padding(.top, 20)
 
+                    if !immersive {
                     HStack(spacing: 10) {
                         if beforeStart {
                             Button {
@@ -271,10 +288,13 @@ private struct LandscapeTimerView: View {
                     }
                     .buttonStyle(LandscapeButtonStyle())
                     .padding(.top, 20)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
+            } else if immersive {
+                Text("—").font(.system(size: countdownSize, weight: .bold).monospacedDigit())
             } else {
                 TimerDesignView(
                     store: store,
@@ -294,7 +314,7 @@ private struct LandscapeTimerView: View {
         _ snapshot: NativeShiftSnapshot,
         phase: TimerVisualPhase
     ) -> some View {
-        if phase == .clockIn {
+        if phase == .clockIn || phase == .rest || phase == .completed {
             Text(store.t("nextShiftLabelShort"))
         } else if phase == .lunch, let breakEnd = snapshot.activeBreakEndDate {
             Label(

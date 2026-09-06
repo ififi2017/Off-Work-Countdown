@@ -885,8 +885,8 @@
   "focusUnsetDefaultTemplate": "Dejar de usar cada día",
   "focusCadenceNote": "La duración de los bloques está en el engranaje de arriba a la derecha.",
   "focusLockedTitle": "Concentración es una función Plus",
-  "focusLockedBody": "Tu horario y tus registros siguen en este dispositivo igualmente.",
-  "focusLockedBand": "Aquí aparecen tus bloques de este turno",
+  "focusLockedBody": "Organiza el trabajo concentrado y los descansos según tu turno.",
+  "focusLockedBand": "Horario de ejemplo",
   "focusTimerSettingsLockedTemplate": "Mientras haya un día habitual guardado, la duración del bloque queda fija: sus ranuras se numeran según ella.",
   "moreActions": "Más",
   "okAction": "OK",
@@ -991,5 +991,8 @@
   "firstRunBackToWelcome": "Volver a la bienvenida",
   "firstRunContinueSetup": "Configurar este dispositivo",
   "firstRunCloudNeedsSetup": "Tus registros ya están restaurados. No encontramos un horario guardado, así que puedes terminar de configurar este dispositivo sin perder lo restaurado.",
-  "recordsSeeThisMonth": "Ver este mes"
+  "recordsSeeThisMonth": "Ver este mes",
+  "focusDemoWriting": "Redactar una propuesta",
+  "focusDemoMessages": "Responder mensajes",
+  "focusDemoLearning": "Aprender algo nuevo"
 }

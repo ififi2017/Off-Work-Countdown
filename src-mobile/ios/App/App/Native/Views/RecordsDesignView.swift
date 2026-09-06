@@ -319,7 +319,8 @@ struct RecordsDesignView: View {
                 }
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                OWCEarningsVisibilityButton(store: store)
                 NavigationLink(value: RecordsRoute.allRecords) {
                     Label(store.t("recordsAllRecords"), systemImage: "list.bullet.rectangle")
                 }
@@ -362,12 +363,16 @@ struct RecordsDesignView: View {
     }
 
     private var recordsTrailingControls: some View {
-        NavigationLink(value: RecordsRoute.allRecords) {
-            Label(store.t("recordsAllRecords"), systemImage: "list.bullet.rectangle")
+        HStack(spacing: 8) {
+            OWCEarningsVisibilityButton(store: store)
+                .owcTabletGlassAction()
+            NavigationLink(value: RecordsRoute.allRecords) {
+                Label(store.t("recordsAllRecords"), systemImage: "list.bullet.rectangle")
+            }
+            .labelStyle(.iconOnly)
+            .owcTabletGlassAction()
+            .accessibilityLabel(store.t("recordsAllRecords"))
         }
-        .labelStyle(.iconOnly)
-        .owcTabletGlassAction()
-        .accessibilityLabel(store.t("recordsAllRecords"))
     }
 
     private func updateCompactRootBar(_ shouldShow: Bool) {

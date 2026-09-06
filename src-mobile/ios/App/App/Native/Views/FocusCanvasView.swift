@@ -505,24 +505,52 @@ struct FocusTaskLedger: View {
     }
 }
 
-/// Locked users get a shape and a sentence, never a blurred copy of the real
-/// thing: the model hands this view no assignment to leak.
+/// A fixed, synthetic plan previews the real canvas without reading or saving
+/// any of the user's locked assignments.
 struct FocusLockedCanvas: View {
     let store: OffWorkStore
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            ForEach(0..<6, id: \.self) { index in
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(OWCDesign.control)
-                    .frame(height: index.isMultiple(of: 3) ? 26 : 44)
-            }
+        VStack(alignment: .leading, spacing: 16) {
             Text(store.t("focusLockedBand"))
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
-                .padding(.top, 4)
+            FocusBandView(store: store, model: demoModel, selectedBlock: .constant(nil), isPreview: true) { _ in
+                store.presentedRoute = .plus
+            }
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(store.t("focusLockedBand"))
+    }
+
+    private var demoModel: FocusDayCanvasModel {
+        let start = Calendar.current.startOfDay(for: Date(timeIntervalSince1970: 0))
+            .addingTimeInterval(9 * 3_600)
+        let startMs = Int64(start.timeIntervalSince1970 * 1_000)
+        // Fixed sample times, not a second implementation of the shift planner.
+        let samples: [(Int, Int, String?, FocusTaskIcon?)] = [
+            (0, 25, "focusDemoWriting", .writing),
+            (25, 30, nil, nil),
+            (30, 55, "focusDemoWriting", .writing),
+            (55, 60, nil, nil),
+            (60, 85, "focusDemoMessages", .communication),
+            (85, 90, nil, nil),
+            (90, 115, "focusDemoLearning", .study),
+            (115, 130, nil, nil)
+        ]
+        var model = FocusDayCanvasModel.empty
+        model.shiftStartAtMs = startMs
+        model.shiftEndAtMs = startMs + 130 * 60_000
+        model.blocks = samples.enumerated().map { index, sample in
+            FocusDayCanvasModel.Block(
+                index: index,
+                startAtMs: startMs + Int64(sample.0) * 60_000,
+                endAtMs: startMs + Int64(sample.1) * 60_000,
+                kind: sample.2 == nil ? .breakTime : .task,
+                state: .future,
+                taskID: sample.2 == nil ? nil : UUID(uuidString: "00000000-0000-0000-0000-000000000001"),
+                taskTitle: sample.2.map { store.t($0) },
+                taskIcon: sample.3
+            )
+        }
+        return model
     }
 }

@@ -527,14 +527,19 @@ struct LifeProfileEditView: View {
     ) -> some View {
         OWCRow(title: title, isLast: isLast) {
             HStack(spacing: 8) {
-                OWCNumberField(
-                    placeholder: "0",
-                    text: amount,
-                    decimal: true,
-                    maxDigits: 12,
-                    width: 104,
-                    onCommit: {}
-                )
+                if store.hideEarnings {
+                    Text("••••")
+                    OWCEarningsVisibilityButton(store: store)
+                } else {
+                    OWCNumberField(
+                        placeholder: "0",
+                        text: amount,
+                        decimal: true,
+                        maxDigits: 12,
+                        width: 104,
+                        onCommit: {}
+                    )
+                }
                 Picker("", selection: cadence) {
                     Text(store.t("lifeSalaryMonthly")).tag(LifeSalaryCadence.monthly)
                     Text(store.t("lifeSalaryYearly")).tag(LifeSalaryCadence.yearly)
