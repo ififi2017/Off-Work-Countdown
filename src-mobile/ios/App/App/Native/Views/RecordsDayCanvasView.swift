@@ -51,6 +51,11 @@ struct RecordsDayCanvasView: View {
         .navigationTitle(store.formatRecordsDayTitle(dayKey: dayKey))
         .navigationSubtitle(subtitle)
         .navigationBarTitleDisplayMode(.inline)
+        .owcTabletDetailNavigation(
+            backTitle: store.t("recordsTitle"),
+            pageTitle: store.formatRecordsDayTitle(dayKey: dayKey),
+            subtitle: subtitle
+        )
         .task(id: store.records.revision) { await load() }
         .onChange(of: store.plus.isAuthorized) { _, _ in Task { await load() } }
         // A retrospective page is not a countdown. The now line advances on the

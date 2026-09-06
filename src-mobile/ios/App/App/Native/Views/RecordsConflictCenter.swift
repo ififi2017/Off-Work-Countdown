@@ -44,6 +44,10 @@ struct RecordsConflictCenter: View {
         .background(OWCDesign.page)
         .navigationTitle(store.t("recordsConflictCenter"))
         .navigationBarTitleDisplayMode(.inline)
+        .owcTabletDetailNavigation(
+            backTitle: store.t("recordsTitle"),
+            pageTitle: store.t("recordsConflictCenter")
+        )
         .alert(store.t("recordsArchiveSaveFailedTitle"), isPresented: $showsResolutionError) {
             Button(store.t("retryAction")) { retryFailedAction() }
             Button(store.t("close"), role: .cancel) { failedAction = nil }

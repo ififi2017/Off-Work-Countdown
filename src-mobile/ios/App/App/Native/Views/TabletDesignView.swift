@@ -10,30 +10,31 @@ struct TabletShellView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(spacing: 0) {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
+            TabletSidebar(store: store, hide: hideSidebar)
+                .navigationSplitViewColumnWidth(min: 250, ideal: 290, max: 320)
+                // NavigationSplitView wraps its sidebar in a navigation
+                // container. Suppress that column's default bar here, at
+                // the scope that owns it, so the system toggle cannot
+                // reserve a separate row above the app's header.
+                .toolbar(.hidden, for: .navigationBar)
+                .toolbar(removing: .sidebarToggle)
+        } detail: {
+            selectedDetailStack
+                .background(OWCDesign.page)
+        }
+        .navigationSplitViewStyle(.balanced)
+        .toolbar(removing: .sidebarToggle)
+        .overlay(alignment: .top) {
             if !sidebarVisible {
                 TabletTopTabBar(store: store, showSidebar: showSidebar)
+                    .frame(height: OWCDesign.rootHeaderHeight)
+                    .padding(.top, OWCDesign.rootHeaderTopInset)
                     .transition(topBarTransition)
-                    .zIndex(1)
             }
-
-            NavigationSplitView(columnVisibility: $columnVisibility) {
-                TabletSidebar(store: store, hide: hideSidebar)
-                    .navigationSplitViewColumnWidth(min: 250, ideal: 290, max: 320)
-                    // NavigationSplitView wraps its sidebar in a navigation
-                    // container. Suppress that column's default bar here, at
-                    // the scope that owns it, so the system toggle cannot
-                    // reserve a separate row above the app's header.
-                    .toolbar(.hidden, for: .navigationBar)
-                    .toolbar(removing: .sidebarToggle)
-            } detail: {
-                selectedDetailStack
-                    .background(OWCDesign.page)
-            }
-            .navigationSplitViewStyle(.balanced)
-            .toolbar(removing: .sidebarToggle)
         }
         .animation(shellAnimation, value: columnVisibility)
+        .environment(\.usesTabletNavigationShell, true)
         .onChange(of: store.presentedRoute) { _, route in
             guard let route else { return }
             if store.selectedTab == .timer {
@@ -110,22 +111,31 @@ struct TabletShellView: View {
 
     private var tabletTimerRoot: some View {
         NarrowPaneFallback { isNarrow in
-            if isNarrow {
-                // Push into this stack rather than take the default, which
-                // switches to the settings tab. The sidebar selection should
-                // not move because a row on the timer page was tapped.
-                TimerDesignView(
-                    store: store,
-                    wide: false,
-                    onOpenSettings: openTimerSettings,
-                    timelineActive: store.selectedTab == .timer
-                )
-            } else {
-                TabletTimerView(
-                    store: store,
-                    isActive: store.selectedTab == .timer
-                )
+            // Only expansion of the detail pane replaces the compact timer
+            // with the wide layout. Crossfade that replacement; preserve the
+            // existing sidebar-opening transition in the opposite direction.
+            ZStack {
+                if isNarrow {
+                    // Push into this stack rather than take the default, which
+                    // switches to the settings tab. The sidebar selection should
+                    // not move because a row on the timer page was tapped.
+                    TimerDesignView(
+                        store: store,
+                        wide: false,
+                        onOpenSettings: openTimerSettings,
+                        timelineActive: store.selectedTab == .timer
+                    )
+                    .transition(.asymmetric(insertion: .identity, removal: .opacity))
+                } else {
+                    TabletTimerView(
+                        store: store,
+                        isActive: store.selectedTab == .timer,
+                        showsHeaderDate: sidebarVisible
+                    )
+                    .transition(.asymmetric(insertion: .opacity, removal: .identity))
+                }
             }
+            .animation(shellAnimation, value: isNarrow)
         }
     }
 
@@ -157,32 +167,23 @@ private struct TabletTopTabBar: View {
     let showSidebar: () -> Void
 
     var body: some View {
-        ZStack {
-            HStack {
-                Button(action: showSidebar) {
-                    OWCGlassCircleLabel {
-                        Image(systemName: "sidebar.left")
-                            .foregroundStyle(OWCDesign.primary)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(store.t("showSidebar"))
-
-                Spacer(minLength: 0)
+        HStack(spacing: 2) {
+            Button(action: showSidebar) {
+                Image(systemName: "sidebar.left")
+                    .foregroundStyle(OWCDesign.primary)
+                    .frame(width: 38, height: 34)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel(store.t("showSidebar"))
 
-            HStack(spacing: 2) {
-                tabButton(.timer, icon: "timer", title: store.t("timerTab"))
-                tabButton(.records, icon: "calendar", title: store.t("recordsTab"))
-                tabButton(.settings, icon: "slider.horizontal.3", title: store.t("settings"))
-            }
-            .padding(5)
-            .glassEffect(.regular, in: Capsule())
+            tabButton(.timer, icon: "timer", title: store.t("timerTab"))
+            tabButton(.records, icon: "calendar", title: store.t("recordsTab"))
+            tabButton(.settings, icon: "slider.horizontal.3", title: store.t("settings"))
         }
-        .frame(minHeight: 48)
-        .padding(.horizontal, OWCDesign.rootControlInset)
-        .padding(.top, 4)
-        .padding(.bottom, 6)
+        .padding(5)
+        .glassEffect(.regular, in: Capsule())
+        .fixedSize(horizontal: true, vertical: false)
     }
 
     private func tabButton(_ tab: AppTab, icon: String, title: String) -> some View {
@@ -190,7 +191,8 @@ private struct TabletTopTabBar: View {
             store.selectedTab = tab
         } label: {
             Label(title, systemImage: icon)
-                .font(.subheadline.weight(store.selectedTab == tab ? .semibold : .regular))
+                .labelStyle(.titleAndIcon)
+                .font(.subheadline.weight(.medium))
                 .lineLimit(1)
                 .foregroundStyle(store.selectedTab == tab ? Color.white : OWCDesign.primary)
                 .padding(.horizontal, 13)
@@ -360,6 +362,7 @@ private struct TabletSidebar: View {
 private struct TabletTimerView: View {
     let store: OffWorkStore
     let isActive: Bool
+    let showsHeaderDate: Bool
     @State private var showShare = false
     @State private var showOvertime = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -403,6 +406,7 @@ private struct TabletTimerView: View {
                     store: store,
                     snapshot: snapshot,
                     now: date,
+                    showsHeaderDate: showsHeaderDate,
                     showShare: $showShare,
                     showOvertime: $showOvertime
                 )
@@ -434,6 +438,7 @@ private struct TabletRunningView: View {
     let store: OffWorkStore
     let snapshot: NativeShiftSnapshot
     let now: Date
+    let showsHeaderDate: Bool
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
     /// The countdown, the meter and the stats — everything whose height the
@@ -462,7 +467,7 @@ private struct TabletRunningView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            tabletHeader(store: store, now: now)
+            tabletHeader(store: store, now: now, showsDate: showsHeaderDate)
 
             if store.isForcedWorkday(snapshot) {
                 ManualTimingBanner(store: store)
@@ -798,7 +803,8 @@ private struct TabletSettingsView: View {
 @MainActor
 private func tabletHeader(
     store: OffWorkStore,
-    now: Date
+    now: Date,
+    showsDate: Bool
 ) -> some View {
     HStack {
         HStack {
@@ -814,7 +820,7 @@ private func tabletHeader(
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 
-        Text(now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(store.locale)).uppercased())
+        Text(showsDate ? now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(store.locale)).uppercased() : "")
             .font(.footnote.weight(.semibold))
             .tracking(0.78)
             .foregroundStyle(OWCDesign.secondary)
