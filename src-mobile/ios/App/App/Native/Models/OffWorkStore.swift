@@ -361,6 +361,7 @@ final class OffWorkStore {
     var showsFirstRunCloudChoice = false
     var localSetupNeedsCloudChoice = false
     var onboardingPage = 0
+    private(set) var showsReleaseNotes: Bool
     /// In-memory: the reminders page applies lunch-on and simple clock-off
     /// once per launch. Persisting it would rewrite a user who turned those
     /// off, went back, and came in again.
@@ -747,10 +748,18 @@ final class OffWorkStore {
         debugAlwaysShowOnboarding = replayOnboarding
         // Same effect as a fresh install, without uninstalling: the flow runs
         // and completing it still works normally for the rest of the session.
-        onboardingComplete = replayOnboarding ? false : defaults.bool(forKey: Key.onboardingComplete)
+        let initialOnboardingComplete = replayOnboarding ? false : defaults.bool(forKey: Key.onboardingComplete)
 #else
-        onboardingComplete = defaults.bool(forKey: Key.onboardingComplete)
+        let initialOnboardingComplete = defaults.bool(forKey: Key.onboardingComplete)
 #endif
+        onboardingComplete = initialOnboardingComplete
+        showsReleaseNotes = ReleaseNotes.shouldPresent(
+            onboardingComplete: initialOnboardingComplete,
+            seenRelease: defaults.string(forKey: ReleaseNotes.seenKey)
+        )
+        if !initialOnboardingComplete {
+            defaults.set(ReleaseNotes.current, forKey: ReleaseNotes.seenKey)
+        }
         countdownStarted = defaults.bool(forKey: Key.countdownStarted)
         let initialRecordsTimeZoneIdentifier = defaults.string(forKey: Key.recordsTimeZone)
             ?? self.records.state.periods.first?.timeZoneIdentifier
@@ -2944,6 +2953,13 @@ final class OffWorkStore {
         if notificationMode == .off {
             notificationMode = .simple
         }
+    }
+
+    func dismissReleaseNotes() {
+        defaults.set(ReleaseNotes.current, forKey: ReleaseNotes.seenKey)
+        // Returning users learn about Plus here, without a second introduction.
+        plus.markIntroSeen()
+        showsReleaseNotes = false
     }
 
     func completeOnboarding(enableNotifications: Bool) {
@@ -5652,7 +5668,7 @@ final class OffWorkStore {
     func finishFirstRunCloudRestore(hasPreferences: Bool) {
         localSetupNeedsCloudChoice = false
         defaults.set(false, forKey: Key.localSetupNeedsCloudChoice)
-        resumeCloudSyncWhenAuthorized = !plus.isAuthorized
+        resumeCloudSyncWhenAuthorized = !records.state.sync.syncEnabled
         defaults.set(resumeCloudSyncWhenAuthorized, forKey: Key.resumeCloudSyncWhenAuthorized)
         if hasPreferences {
             onboardingComplete = true
@@ -5674,8 +5690,10 @@ final class OffWorkStore {
     }
 
     func resumeRestoredSyncIfNeeded() async {
-        guard resumeCloudSyncWhenAuthorized, plus.isAuthorized else { return }
-        await cloudSync.enable(authorized: true)
+        // Older builds paused an already-restored archive until Plus renewed.
+        // This marker never represents a user's decision to turn sync off.
+        guard resumeCloudSyncWhenAuthorized else { return }
+        await cloudSync.restore()
         if records.state.sync.syncEnabled {
             resumeCloudSyncWhenAuthorized = false
             defaults.set(false, forKey: Key.resumeCloudSyncWhenAuthorized)

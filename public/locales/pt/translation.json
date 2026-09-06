@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Verificando seu acesso ao Plus…",
   "firstRunLocalDataNeedsReview": "O iCloud tem uma redefinição de dados mais recente, e este dispositivo tem registros não sincronizados. Exporte primeiro um backup completo aqui. Depois, você poderá escolher substituir os registros deste dispositivo pelos do iCloud.",
   "firstRunReplaceWithCloud": "Usar o iCloud após o backup",
-  "firstRunReplaceConfirm": "Substituir os registros deste dispositivo pelos do iCloud? Guarde o backup exportado caso queira recuperar os registros locais depois."
+  "firstRunReplaceConfirm": "Substituir os registros deste dispositivo pelos do iCloud? Guarde o backup exportado caso queira recuperar os registros locais depois.",
+  "whatsNewTitle": "Novidades",
+  "whatsNewRecordsTitle": "Seu tempo, de relance",
+  "whatsNewRecordsBody": "Explore resumos semanais, mensais e anuais. Toque em um período para ver detalhes ou toque duas vezes em um dia para observá-lo mais de perto.",
+  "whatsNewLifeTitle": "Uma visão mais ampla da vida",
+  "whatsNewLifeBody": "Adicione os marcos da sua vida para ver o trabalho em contexto. Agora é mais fácil explorar estimativas passadas e sua fase atual de trabalho.",
+  "whatsNewFocusTitle": "Abra espaço para o foco",
+  "whatsNewFocusBody": "Planeje tarefas e use o timer de foco. Voltando em um novo dispositivo? A configuração rápida ajuda você a recuperar seus registros do iCloud.",
+  "whatsNewPlusTitle": "Conheça o DoneAt Plus",
+  "whatsNewPlusBody": "A contagem regressiva para sair do trabalho continua gratuita. O Plus adiciona registros completos, visões da vida e ferramentas de foco, com opções de assinatura ou vitalícia. A sincronização do iCloud já ativada continua mesmo depois que uma assinatura expira.",
+  "whatsNewContinue": "Continuar",
+  "recordsOpenSelectedMonth": "Ver {{month}}",
+  "firstRunQuickSetup": "Já usava o DoneAt? Configuração rápida pelo iCloud",
+  "firstRunReturningTitle": "Que bom ter você de volta",
+  "firstRunBackToWelcome": "Voltar às boas-vindas",
+  "firstRunContinueSetup": "Configurar este dispositivo",
+  "firstRunCloudNeedsSetup": "Seus registros foram restaurados, mas não encontramos uma jornada salva. Você pode concluir a configuração deste dispositivo sem perder o que foi restaurado."
 }

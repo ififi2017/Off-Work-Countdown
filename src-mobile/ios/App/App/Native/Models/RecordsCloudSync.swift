@@ -36,7 +36,9 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
         firstRunDownload = nil
         let container = CKContainer(identifier: Self.containerID)
         let account = try await container.userRecordID().recordName
+        try Task.checkCancellation()
         let fence = try await fetchFence(container: container)
+        try Task.checkCancellation()
         guard fence > 0 else { return false }
         let database = container.privateCloudDatabase
         let zoneID = CKRecordZone.ID(zoneName: RecordsSyncIdentity.dataZone(generation: fence))
@@ -59,6 +61,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
               try await container.userRecordID().recordName == account else {
             throw FirstRunRecoveryError.cloudChanged
         }
+        try Task.checkCancellation()
         let rows = Array(downloaded.values)
         // A surviving empty zone or erasure marker is not a recoverable setup.
         let hasData = rows.contains { row in
@@ -72,7 +75,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
 
     /// Explicitly choosing the cloud copy makes it authoritative for setup
     /// preferences; locally created records remain available to the merge.
-    func restoreFirstRunData(authorized: Bool, allowReplacingLocalData: Bool = false) async throws -> Bool {
+    func restoreFirstRunData(allowReplacingLocalData: Bool = false) async throws -> Bool {
         guard let snapshot = firstRunDownload, let records else {
             throw FirstRunRecoveryError.noDownload
         }
@@ -81,11 +84,17 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
               try await fetchFence(container: container) == snapshot.generation else {
             throw FirstRunRecoveryError.cloudChanged
         }
+        try Task.checkCancellation()
         guard RecordsSyncCloudPrerequisites.acceptsAccount(
             storedAccountID: records.state.sync.accountID,
             currentAccountID: snapshot.accountID, mayAdoptCurrentAccount: true
         ) else { throw FirstRunRecoveryError.cloudChanged }
-        let restored = try prepareFirstRunRestore(snapshot, initialState: records.state, authorized: authorized, allowReplacingLocalData: allowReplacingLocalData)
+        let restored = try prepareFirstRunRestore(
+            snapshot,
+            initialState: records.state,
+            allowReplacingLocalData: allowReplacingLocalData
+        )
+        try Task.checkCancellation()
         try records.commitRestoredState(restored)
         firstRunDownload = nil
         existingDataRequiresChoice = false
@@ -95,7 +104,11 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     }
 
     /// Pure staging boundary, also exercised without an iCloud account.
-    func prepareFirstRunRestore(_ snapshot: FirstRunCloudSnapshot, initialState: RecordState, authorized: Bool = false, allowReplacingLocalData: Bool = false) throws -> RecordState {
+    func prepareFirstRunRestore(
+        _ snapshot: FirstRunCloudSnapshot,
+        initialState: RecordState,
+        allowReplacingLocalData: Bool = false
+    ) throws -> RecordState {
         var initial = initialState
         let localPreferences = RecordsSyncPayload.encode(type: .syncedPreferences, key: SyncedPreferences.logicalKey, from: initial)
         if snapshot.generation > initial.sync.generation {
@@ -145,7 +158,10 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
         restored.sync.accountID = snapshot.accountID
         restored.sync.generation = snapshot.generation
         restored.sync.engineState = nil
-        restored.sync.syncEnabled = authorized
+        // Existing cloud data is already an established sync relationship.
+        // Plus controls starting a new one; expiry must not strand a returning
+        // owner's restored archive as a one-time download.
+        restored.sync.syncEnabled = true
         return restored
     }
 

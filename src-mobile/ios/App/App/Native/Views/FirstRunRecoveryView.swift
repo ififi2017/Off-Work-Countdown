@@ -4,37 +4,61 @@ import SwiftUI
 struct FirstRunRecoveryView: View {
     let store: OffWorkStore
     var isExistingLocalSetup = false
+    var onConfigure: (() -> Void)?
     @State private var phase: FirstRunRecoveryPhase = .checking
     @State private var backupURL: URL?
     @State private var backupFailed = false
     @State private var backupWasExported = false
     @State private var confirmsReplacement = false
     @State private var checkTask: Task<Void, Never>?
+    @State private var purchaseCheckTask: Task<Void, Never>?
+    @State private var cloudRequestSucceeded = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(spacing: 20) {
-                    Spacer(minLength: 24)
+                    HStack {
+                        Button {
+                            leaveRecovery()
+                        } label: {
+                            Label(
+                                store.t(isExistingLocalSetup ? "cancel" : "firstRunBackToWelcome"),
+                                systemImage: "chevron.backward"
+                            )
+                        }
+                        .font(.body.weight(.medium))
+                        Spacer()
+                    }
+
+                    Spacer(minLength: 8)
                     CelebratingBrandMark()
                         .frame(width: 112, height: 112)
-                    Text(store.t("firstRunRestoreTitle"))
+                    Text(store.t(isExistingLocalSetup ? "firstRunRestoreTitle" : "firstRunReturningTitle"))
                         .font(.title.bold())
                         .multilineTextAlignment(.center)
                     Text(store.t(bodyKey))
                         .foregroundStyle(OWCDesign.secondary)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
-                    if phase == .checking || phase == .restoring { ProgressView() }
-                    if store.plus.isAuthorized {
-                        Label(store.t("firstRunPlusRestored"), systemImage: "checkmark.circle")
-                            .font(.footnote)
-                            .foregroundStyle(OWCDesign.secondary)
-                    } else if !store.plus.hasCheckedCurrentEntitlements {
-                        Text(store.t("firstRunCheckingPurchase"))
-                            .font(.footnote)
-                            .foregroundStyle(OWCDesign.secondary)
+                        .id(bodyKey)
+                        .transition(recoveryTransition)
+                    if phase == .checking || phase == .restoring {
+                        ProgressView()
+                            .transition(.opacity)
+                    }
+                    if cloudRequestSucceeded {
+                        if store.plus.isAuthorized {
+                            Label(store.t("firstRunPlusRestored"), systemImage: "checkmark.circle")
+                                .font(.footnote)
+                                .foregroundStyle(OWCDesign.secondary)
+                        } else if !store.plus.hasCheckedCurrentEntitlements {
+                            Text(store.t("firstRunCheckingPurchase"))
+                                .font(.footnote)
+                                .foregroundStyle(OWCDesign.secondary)
+                        }
                     }
                     Spacer(minLength: 24)
                     actions
@@ -46,8 +70,12 @@ struct FirstRunRecoveryView: View {
             }
         }
         .background(OWCDesign.page)
-        .task { startCheck() }
-        .onDisappear { checkTask?.cancel() }
+        .task { startRecovery() }
+        .onDisappear {
+            checkTask?.cancel()
+            purchaseCheckTask?.cancel()
+        }
+        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter, value: phase)
         .sheet(item: Binding(
             get: { backupURL.map(RecordsExportItem.init) },
             set: { backupURL = $0?.url }
@@ -71,8 +99,8 @@ struct FirstRunRecoveryView: View {
     private var bodyKey: String {
         switch phase {
         case .checking: "firstRunCheckingCloud"
-        case .found: "firstRunCloudFound"
         case .empty: "firstRunCloudEmpty"
+        case .needsSetup: "firstRunCloudNeedsSetup"
         case .failed: "firstRunCloudUnavailable"
         case .localDataNeedsReview: "firstRunLocalDataNeedsReview"
         case .restoring: "firstRunCloudRestoring"
@@ -81,12 +109,13 @@ struct FirstRunRecoveryView: View {
 
     @ViewBuilder private var actions: some View {
         VStack(spacing: 14) {
-            if phase == .found {
-                Button(store.t("syncRestore")) { restore() }
+            if phase == .empty || phase == .needsSetup {
+                Button(store.t("retryAction")) { startRecovery() }
                     .buttonStyle(OWCPrimaryButtonStyle())
-            } else if phase == .empty {
-                Button(store.t("continue")) { continueLocally(checkedEmpty: true) }
-                    .buttonStyle(OWCPrimaryButtonStyle())
+                Button(store.t(isExistingLocalSetup ? "continue" : "firstRunContinueSetup")) {
+                    continueLocally(checkedEmpty: phase == .empty)
+                }
+                .font(.body.weight(.medium))
             } else if phase == .localDataNeedsReview {
                 Button(store.t("recordsExportFull")) {
                     do { backupURL = try store.exportRecordsFile() }
@@ -98,17 +127,20 @@ struct FirstRunRecoveryView: View {
                         .font(.body.weight(.medium))
                 }
             } else if phase == .failed {
-                Button(store.t("retryAction")) { startCheck() }
+                Button(store.t("retryAction")) { startRecovery() }
                     .buttonStyle(OWCPrimaryButtonStyle())
-            }
-            if phase != .restoring && phase != .empty {
-                Button(store.t(isExistingLocalSetup ? "cancel" : "firstRunContinueOffline")) {
-                    if isExistingLocalSetup { dismiss() }
-                    else { continueLocally(checkedEmpty: false) }
+                if !isExistingLocalSetup {
+                    Button(store.t("firstRunContinueSetup")) {
+                        continueLocally(checkedEmpty: false)
+                    }
+                    .font(.body.weight(.medium))
                 }
+            }
+            if isExistingLocalSetup, phase != .restoring, phase != .empty, phase != .needsSetup {
+                Button(store.t("cancel"), action: leaveRecovery)
                 .font(.body.weight(.medium))
             }
-            if !store.plus.isAuthorized && phase != .restoring {
+            if cloudRequestSucceeded, !store.plus.isAuthorized, phase != .restoring {
                 Button(store.t("plusRestore")) {
                     Task { await store.plus.restore() }
                 }
@@ -118,17 +150,41 @@ struct FirstRunRecoveryView: View {
         }
     }
 
-    private func startCheck() {
+    private func startRecovery() {
         checkTask?.cancel()
+        purchaseCheckTask?.cancel()
+        cloudRequestSucceeded = false
         phase = .checking
         checkTask = Task {
-            do {
-                let found = try await store.cloudSync.checkForExistingData()
-                guard !Task.isCancelled else { return }
-                phase = found ? .found : .empty
-            } catch {
-                guard !Task.isCancelled else { return }
-                phase = .failed
+            let retryUntil = Date.now.addingTimeInterval(30)
+            while !Task.isCancelled {
+                do {
+                    let found = try await store.cloudSync.checkForExistingData()
+                    guard !Task.isCancelled else { return }
+                    cloudRequestSucceeded = true
+                    purchaseCheckTask = Task { await store.plus.checkCurrentEntitlements() }
+                    guard found else {
+                        phase = .empty
+                        return
+                    }
+                    phase = .restoring
+                    try await restoreDownloadedData()
+                    return
+                } catch FirstRunRecoveryError.localDataNeedsReview {
+                    guard !Task.isCancelled else { return }
+                    phase = .localDataNeedsReview
+                    return
+                } catch {
+                    guard !Task.isCancelled else { return }
+                    guard let delay = FirstRunRecoveryRetryPolicy.delay(for: error),
+                          Date.now.addingTimeInterval(delay) <= retryUntil
+                    else {
+                        phase = .failed
+                        return
+                    }
+                    do { try await Task.sleep(for: .seconds(delay)) }
+                    catch { return }
+                }
             }
         }
     }
@@ -137,11 +193,7 @@ struct FirstRunRecoveryView: View {
         phase = .restoring
         checkTask = Task {
             do {
-                await store.plus.checkCurrentEntitlements()
-                let hasPreferences = try await store.cloudSync.restoreFirstRunData(authorized: store.plus.isAuthorized, allowReplacingLocalData: allowReplacingLocalData)
-                guard !Task.isCancelled else { return }
-                store.finishFirstRunCloudRestore(hasPreferences: hasPreferences)
-                if isExistingLocalSetup { dismiss() }
+                try await restoreDownloadedData(allowReplacingLocalData: allowReplacingLocalData)
             } catch FirstRunRecoveryError.localDataNeedsReview {
                 guard !Task.isCancelled else { return }
                 phase = .localDataNeedsReview
@@ -149,6 +201,19 @@ struct FirstRunRecoveryView: View {
                 guard !Task.isCancelled else { return }
                 phase = .failed
             }
+        }
+    }
+
+    private func restoreDownloadedData(allowReplacingLocalData: Bool = false) async throws {
+        let hasPreferences = try await store.cloudSync.restoreFirstRunData(
+            allowReplacingLocalData: allowReplacingLocalData
+        )
+        try Task.checkCancellation()
+        store.finishFirstRunCloudRestore(hasPreferences: hasPreferences)
+        if isExistingLocalSetup {
+            dismiss()
+        } else if !hasPreferences {
+            phase = .needsSetup
         }
     }
 
@@ -161,6 +226,21 @@ struct FirstRunRecoveryView: View {
                 Task { await store.confirmEmptyCloudAndEnableSync() }
             }
             dismiss()
+        } else {
+            dismiss()
+            onConfigure?()
         }
+    }
+
+    private func leaveRecovery() {
+        checkTask?.cancel()
+        purchaseCheckTask?.cancel()
+        dismiss()
+    }
+
+    private var recoveryTransition: AnyTransition {
+        reduceMotion
+            ? .opacity
+            : .opacity.combined(with: .move(edge: .bottom))
     }
 }

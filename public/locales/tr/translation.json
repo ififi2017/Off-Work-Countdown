@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Plus erişiminiz kontrol ediliyor…",
   "firstRunLocalDataNeedsReview": "iCloud’da daha yeni bir veri sıfırlaması var ve bu cihazda eşzamanlanmamış kayıtlar bulunuyor. Önce burada tam bir yerel yedek dışa aktarın. Ardından bu cihazdaki kayıtları iCloud’dakilerle değiştirip değiştirmeyeceğinizi seçebilirsiniz.",
   "firstRunReplaceWithCloud": "Yedekten sonra iCloud’u kullan",
-  "firstRunReplaceConfirm": "Bu cihazdaki kayıtlar iCloud’dakilerle değiştirilsin mi? Yerel kayıtları daha sonra kurtarmak isterseniz dışa aktarılan yedeği saklayın."
+  "firstRunReplaceConfirm": "Bu cihazdaki kayıtlar iCloud’dakilerle değiştirilsin mi? Yerel kayıtları daha sonra kurtarmak isterseniz dışa aktarılan yedeği saklayın.",
+  "whatsNewTitle": "Yenilikler",
+  "whatsNewRecordsTitle": "Zamanın, bir bakışta",
+  "whatsNewRecordsBody": "Haftalık, aylık ve yıllık özetleri inceleyin. Ayrıntılar için bir zaman bölümüne dokunun veya yakından bakmak için bir güne çift dokunun.",
+  "whatsNewLifeTitle": "Hayata daha geniş bir bakış",
+  "whatsNewLifeBody": "İşi bağlamında görmek için yaşam dönüm noktalarınızı ekleyin. Geçmiş tahminleri ve mevcut çalışma döneminizi keşfetmek artık daha kolay.",
+  "whatsNewFocusTitle": "Odaklanmaya yer açın",
+  "whatsNewFocusBody": "Görevleri planlayın ve odak zamanlayıcısını kullanın. Yeni bir cihazda geri mi döndünüz? Hızlı kurulum, iCloud kayıtlarınızı geri getirmenize yardımcı olur.",
+  "whatsNewPlusTitle": "DoneAt Plus ile tanışın",
+  "whatsNewPlusBody": "Mesai bitişi geri sayımı ücretsiz kalır. Plus; tam kayıtlar, yaşam görünümleri ve odak araçları ekler; abonelik veya ömür boyu seçenekleri sunar. Etkin iCloud eşzamanlaması, abonelik sona erdikten sonra da devam eder.",
+  "whatsNewContinue": "Devam",
+  "recordsOpenSelectedMonth": "{{month}} görünümünü aç",
+  "firstRunQuickSetup": "DoneAt’i daha önce kullandınız mı? iCloud’dan hızlı kurulum",
+  "firstRunReturningTitle": "Tekrar hoş geldiniz",
+  "firstRunBackToWelcome": "Karşılama ekranına dön",
+  "firstRunContinueSetup": "Bu cihazı ayarla",
+  "firstRunCloudNeedsSetup": "Kayıtlarınız geri yüklendi ancak kaydedilmiş çalışma düzeni ayarları bulunamadı. Geri yüklenenleri kaybetmeden bu cihazın kurulumunu tamamlayabilirsiniz."
 }

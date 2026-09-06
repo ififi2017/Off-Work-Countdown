@@ -418,15 +418,25 @@ enum LifeStageCalculator {
             let start = from.addingTimeInterval(span * Double(index) / Double(count))
             let end = from.addingTimeInterval(span * Double(index + 1) / Double(count))
             let mid = start.addingTimeInterval(end.timeIntervalSince(start) / 2)
-            let stage = stage(at: mid, stages: stages)
+            // The canvas splits a current career at now. Its current bucket
+            // may extend into the projected half, so sampling its midpoint
+            // would make the highlighted, tappable present cell select the
+            // future stage. Match the initial selection by sampling just
+            // before now instead.
+            let isCurrent = now >= start && (now < end || (index == count - 1 && now == end))
+            let sample = isCurrent && now > from ? now.addingTimeInterval(-0.001) : mid
+            let stage = stage(at: sample, stages: stages)
             return LifeCanvasBucket(
                 index: index,
                 start: start,
                 end: end,
                 kind: stage?.kind ?? .unset,
                 stageID: stage?.id ?? LifeStageKind.unset.rawValue,
-                isCurrent: now >= start && now < end,
-                isFuture: mid > now
+                // A profile without a retirement date ends its canvas at now.
+                // Keep that final work bucket selectable and visibly current;
+                // all other buckets remain half-open to avoid two highlights.
+                isCurrent: isCurrent,
+                isFuture: !isCurrent && mid > now
             )
         }
     }
@@ -476,6 +486,14 @@ enum RecordsYearSampler {
                 appearance = .corrected
             } else if inside.contains(where: { $0.appearance == .recorded }) {
                 appearance = .recorded
+            } else if inside.contains(where: {
+                $0.isProjection && $0.workMs + $0.overtimeMs > 0
+            }) {
+                // Historical life projections keep the day's honest
+                // `.unrecorded` appearance. The year heat map still needs to
+                // draw their estimated hours; otherwise only future
+                // projections, whose appearance is `.planned`, are visible.
+                appearance = .planned
             } else if inside.contains(where: { $0.appearance == .planned }) {
                 appearance = .planned
             } else if inside.contains(where: { $0.appearance == .locked }) {

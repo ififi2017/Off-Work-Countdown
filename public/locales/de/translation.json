@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Dein Plus-Zugang wird geprüft…",
   "firstRunLocalDataNeedsReview": "iCloud enthält eine neuere Datenrücksetzung, und auf diesem Gerät gibt es noch nicht synchronisierte Aufzeichnungen. Exportiere hier zuerst eine vollständige Sicherung. Danach kannst du wählen, ob die Aufzeichnungen auf diesem Gerät durch die aus iCloud ersetzt werden sollen.",
   "firstRunReplaceWithCloud": "Nach der Sicherung iCloud verwenden",
-  "firstRunReplaceConfirm": "Die Aufzeichnungen auf diesem Gerät durch iCloud ersetzen? Bewahre die exportierte Sicherung auf, falls du lokale Aufzeichnungen später wiederherstellen möchtest."
+  "firstRunReplaceConfirm": "Die Aufzeichnungen auf diesem Gerät durch iCloud ersetzen? Bewahre die exportierte Sicherung auf, falls du lokale Aufzeichnungen später wiederherstellen möchtest.",
+  "whatsNewTitle": "Neuigkeiten",
+  "whatsNewRecordsTitle": "Deine Zeit auf einen Blick",
+  "whatsNewRecordsBody": "Entdecke Wochen-, Monats- und Jahresübersichten. Tippe auf einen Zeitabschnitt für Details oder doppeltippe auf einen Tag, um ihn genauer anzusehen.",
+  "whatsNewLifeTitle": "Ein weiter Blick aufs Leben",
+  "whatsNewLifeBody": "Füge Lebensstationen hinzu, um Arbeit im Zusammenhang zu sehen. Vergangene Schätzungen und deine aktuelle Arbeitsphase lassen sich jetzt leichter erkunden.",
+  "whatsNewFocusTitle": "Raum für Konzentration",
+  "whatsNewFocusBody": "Plane Aufgaben und nutze den Fokustimer. Du bist auf einem neuen Gerät? Die Schnelleinrichtung hilft dir, deine iCloud-Aufzeichnungen wiederherzustellen.",
+  "whatsNewPlusTitle": "DoneAt Plus kennenlernen",
+  "whatsNewPlusBody": "Der Feierabend-Countdown bleibt kostenlos. Plus bietet vollständige Aufzeichnungen, Lebensansichten und Fokuswerkzeuge – als Abo oder Einmalkauf. Bereits aktivierte iCloud-Synchronisierung läuft auch nach Ablauf eines Abos weiter.",
+  "whatsNewContinue": "Weiter",
+  "recordsOpenSelectedMonth": "{{month}} anzeigen",
+  "firstRunQuickSetup": "Schon einmal verwendet? Schnell mit iCloud einrichten",
+  "firstRunReturningTitle": "Willkommen zurück",
+  "firstRunBackToWelcome": "Zurück zur Begrüßung",
+  "firstRunContinueSetup": "Dieses Gerät einrichten",
+  "firstRunCloudNeedsSetup": "Deine Aufzeichnungen sind wieder da. Gespeicherte Zeitplaneinstellungen wurden nicht gefunden. Du kannst dieses Gerät jetzt fertig einrichten; die wiederhergestellten Daten bleiben erhalten."
 }

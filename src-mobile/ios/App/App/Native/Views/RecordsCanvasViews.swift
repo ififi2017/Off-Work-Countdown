@@ -161,31 +161,18 @@ struct RecordsAllocationBar: View {
     let store: OffWorkStore
     let share: TimeAllocationShare
     @State private var selectedKind: TimeAllocationKind?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             bar
             legend
-            if let selectedKind, let item = slice(selectedKind) {
-                Text(
-                    store.t(
-                        "recordsAllocationTap",
-                        values: [
-                            "label": store.t(selectedKind.titleKey),
-                            "duration": store.formatRelativeDuration(Double(item.ms)),
-                            "percent": store.formatPercent(item.percent),
-                        ]
-                    )
-                )
-                .font(.footnote)
-                .foregroundStyle(OWCDesign.secondary)
-                .contentTransition(.numericText())
-            }
         }
+        .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedKind)
     }
 
     private var bar: some View {
-        let visible = slices.filter { $0.ms > 0 }
+        let visible = visibleSlices
         let total = max(1, share.dayLengthMs)
         return GeometryReader { proxy in
             HStack(spacing: 0) {
@@ -223,6 +210,18 @@ struct RecordsAllocationBar: View {
                     .contentShape(Rectangle())
                     .frame(height: 44)
                     .accessibilityLabel(store.t(item.kind.titleKey))
+                    .accessibilityValue(accessibilityValue(item))
+                    .accessibilityAddTraits(selectedKind == item.kind ? .isSelected : [])
+                    .popover(isPresented: selectionBinding(for: item.kind), arrowEdge: .top) {
+                        RecordsTimeSegmentPopover(
+                            color: item.color,
+                            title: store.t(item.kind.titleKey),
+                            range: nil,
+                            duration: store.formatRelativeDuration(Double(item.ms)),
+                            percent: store.formatPercent(Double(item.ms) / Double(total) * 100),
+                            source: nil
+                        )
+                    }
                 }
             }
             .frame(maxHeight: .infinity)
@@ -241,8 +240,12 @@ struct RecordsAllocationBar: View {
     }
 
     private var legend: some View {
-        LazyVStack(alignment: .leading, spacing: 4) {
-            ForEach(slices.filter { $0.kind != .unclassified || $0.ms > 0 }) { item in
+        LazyVGrid(
+            columns: [GridItem(.adaptive(minimum: 104), alignment: .leading)],
+            alignment: .leading,
+            spacing: 4
+        ) {
+            ForEach(visibleSlices) { item in
                 Button {
                     selectedKind = item.kind
                 } label: {
@@ -255,20 +258,25 @@ struct RecordsAllocationBar: View {
                             .foregroundStyle(OWCDesign.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.78)
-                        Spacer(minLength: 12)
-                        Text(store.formatRelativeDuration(Double(item.ms)))
-                            .font(.callout.weight(.semibold).monospacedDigit())
-                            .foregroundStyle(OWCDesign.primary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.68)
-                            .allowsTightening(true)
                     }
+                    .padding(.horizontal, 8)
                     .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .background(
+                        selectedKind == item.kind ? OWCDesign.control : Color.clear,
+                        in: Capsule()
+                    )
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(store.t(item.kind.titleKey))
+                .accessibilityValue(accessibilityValue(item))
+                .accessibilityAddTraits(selectedKind == item.kind ? .isSelected : [])
             }
         }
+    }
+
+    private var visibleSlices: [AllocationSlice] {
+        slices.filter { $0.ms > 0 }
     }
 
     private var slices: [AllocationSlice] {
@@ -277,10 +285,21 @@ struct RecordsAllocationBar: View {
         }
     }
 
-    private func slice(_ kind: TimeAllocationKind) -> (titleKey: String, ms: Int64, percent: Double)? {
-        guard share.dayLengthMs > 0 else { return nil }
-        let ms = duration(kind)
-        return (kind.titleKey, ms, Double(ms) / Double(share.dayLengthMs) * 100)
+    private func selectionBinding(for kind: TimeAllocationKind) -> Binding<Bool> {
+        Binding(
+            get: { selectedKind == kind },
+            set: { isPresented in
+                if !isPresented, selectedKind == kind { selectedKind = nil }
+            }
+        )
+    }
+
+    private func accessibilityValue(_ item: AllocationSlice) -> String {
+        let total = max(1, share.dayLengthMs)
+        return [
+            store.formatRelativeDuration(Double(item.ms)),
+            store.formatPercent(Double(item.ms) / Double(total) * 100),
+        ].joined(separator: ", ")
     }
 
     private func duration(_ kind: TimeAllocationKind) -> Int64 {
@@ -302,49 +321,83 @@ struct RecordsAllocationBar: View {
     }
 }
 
+/// One compact explanation for both an aggregate allocation slice and one
+/// exact interval in the day band. The selected segment remains visible under
+/// the popover, so colour, words and position all point to the same fact.
+struct RecordsTimeSegmentPopover: View {
+    let color: Color
+    let title: String
+    let range: String?
+    let duration: String
+    let percent: String
+    let source: String?
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                ScrollView { content.padding(18) }
+                    .frame(idealWidth: 480)
+                    .presentationDragIndicator(.visible)
+            } else {
+                content
+                    .frame(idealWidth: 280, alignment: .leading)
+                    .padding(18)
+            }
+        }
+        .presentationCompactAdaptation(dynamicTypeSize.isAccessibilitySize ? .sheet : .popover)
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Circle().fill(color).frame(width: 10, height: 10)
+                Text(title).font(.headline)
+            }
+            if let range {
+                Text(range)
+                    .font(.body.monospacedDigit())
+                    .foregroundStyle(OWCDesign.primary)
+            }
+            Text([duration, percent].joined(separator: " · "))
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(OWCDesign.secondary)
+            if let source {
+                Text(source)
+                    .font(.caption)
+                    .foregroundStyle(OWCDesign.tertiary)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
 struct RecordsHeadlineView: View {
     let store: OffWorkStore
     let title: String
     let summary: RecordsHeadlineSummary?
-    var isCollapsible = false
     var onUnlock: () -> Void
-    @State private var isExpanded = false
-    @State private var showsAllocation = false
     @State private var selectedHelp: RecordsMetricHelp?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         if let summary {
             OWCGroupCard {
-                Group {
-                    if isCollapsible {
-                        DisclosureGroup(isExpanded: $isExpanded) {
-                            content(summary).padding(.top, 12)
-                        } label: {
-                            Text(title)
-                                .font(.subheadline.weight(.medium))
-                                .multilineTextAlignment(.leading)
-                                .foregroundStyle(OWCDesign.secondary)
-                                .frame(minHeight: 44, alignment: .leading)
-                        }
-                    } else {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Text(title)
-                                    .font(.headline)
-                                    .foregroundStyle(OWCDesign.primary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                Spacer(minLength: 0)
-                                RecordsMetricHelpButton(
-                                    title: title,
-                                    message: store.t("recordsMetricWorkHelp") + "\n\n"
-                                        + store.t("recordsMetricOvertimeHelp"),
-                                    selection: $selectedHelp
-                                )
-                            }
-                            content(summary)
-                        }
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(title)
+                            .font(.headline)
+                            .foregroundStyle(OWCDesign.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                        RecordsMetricHelpButton(
+                            title: title,
+                            message: headerHelp(for: summary),
+                            selection: $selectedHelp
+                        )
                     }
+                    content(summary)
                 }
                 .padding(16)
             }
@@ -384,28 +437,42 @@ struct RecordsHeadlineView: View {
 
             if summary.allocationDays > 0 {
                 Divider()
-                DisclosureGroup(isExpanded: $showsAllocation) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(store.t("recordsAllocationBasis", values: ["count": store.formatCount(summary.allocationDays)]))
-                            .font(.caption)
-                            .foregroundStyle(OWCDesign.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        metric("recordsFreeAwake", store.formatRelativeDuration(Double(summary.wakingFreeMs)))
-                        RecordsAllocationBar(store: store, share: summary.allocation)
-                        Text(store.t(summary.sleepSourceKey))
-                            .font(.caption)
-                            .foregroundStyle(OWCDesign.secondary)
-                    }
-                    .padding(.top, 10)
-                } label: {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(store.t("recordsTimeBreakdown"))
-                        .font(.subheadline)
+                        .font(.subheadline.weight(.semibold))
                         .multilineTextAlignment(.leading)
-                        .foregroundStyle(OWCDesign.secondary)
+                        .foregroundStyle(OWCDesign.primary)
                         .frame(minHeight: 44, alignment: .leading)
+                    Spacer(minLength: 0)
+                    RecordsMetricHelpButton(
+                        title: store.t("recordsTimeBreakdown"),
+                        message: allocationHelp(for: summary),
+                        selection: $selectedHelp
+                    )
                 }
+                RecordsAllocationBar(store: store, share: summary.allocation)
             }
         }
+    }
+
+    private func headerHelp(for summary: RecordsHeadlineSummary) -> String {
+        var paragraphs = [
+            store.t("recordsMetricWorkHelp"),
+            store.t("recordsMetricOvertimeHelp"),
+        ]
+        if summary.actualForecast != nil {
+            paragraphs.append(
+                store.t(store.salaryType == .monthly ? "recordsMonthlyForecastMethod" : "recordsForecastMethod")
+            )
+        }
+        return paragraphs.joined(separator: "\n\n")
+    }
+
+    private func allocationHelp(for summary: RecordsHeadlineSummary) -> String {
+        [
+            store.t("recordsAllocationBasis", values: ["count": store.formatCount(summary.allocationDays)]),
+            store.t(summary.sleepSourceKey),
+        ].joined(separator: "\n\n")
     }
 
     private func actualForecastContent(_ split: NativeRecordsActualForecastSummary) -> some View {
@@ -438,10 +505,6 @@ struct RecordsHeadlineView: View {
             if let earnings = split.total.earnings {
                 metric("recordsCombinedIncome", store.moneyText(earnings))
             }
-            Text(store.t(store.salaryType == .monthly ? "recordsMonthlyForecastMethod" : "recordsForecastMethod"))
-                .font(.caption)
-                .foregroundStyle(OWCDesign.secondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -471,6 +534,8 @@ struct RecordsMonthGrid: View {
     let cells: [RecordsDayCell]
     let selectedDayKey: String?
     var onSelect: (RecordsDayCell) -> Void
+    var onOpen: (RecordsDayCell) -> Void
+    var onDismissSelection: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
@@ -539,7 +604,23 @@ struct RecordsMonthGrid: View {
                     // cell and the layout are untouched.
                     .padding(-3)
                     .buttonStyle(.plain)
+                    .highPriorityGesture(
+                        TapGesture(count: 2)
+                            .exclusively(before: TapGesture(count: 1))
+                            .onEnded { result in
+                                switch result {
+                                case .first: onOpen(cell)
+                                case .second: onSelect(cell)
+                                }
+                            }
+                    )
                     .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
+                    .accessibilityAction(named: Text(store.t("recordsSeeThisDay"))) {
+                        onOpen(cell)
+                    }
+                    .popover(isPresented: selectionBinding(for: cell), arrowEdge: .top) {
+                        RecordsDayCellPopover(store: store, cell: cell)
+                    }
                 }
             }
         }
@@ -557,6 +638,15 @@ struct RecordsMonthGrid: View {
     }
 
     private var showsStateMarker: Bool { dynamicTypeSize < .accessibility1 }
+
+    private func selectionBinding(for cell: RecordsDayCell) -> Binding<Bool> {
+        Binding(
+            get: { selectedDayKey == cell.dayKey },
+            set: { isPresented in
+                if !isPresented, selectedDayKey == cell.dayKey { onDismissSelection() }
+            }
+        )
+    }
 
     /// Brand orange means selection and today. Nothing here encodes hours: the
     /// bar does that, in the shared category colours. Selection is a ring
@@ -682,6 +772,8 @@ struct RecordsWeekStrips: View {
     let cells: [RecordsDayCell]
     let selectedDayKey: String?
     var onSelect: (RecordsDayCell) -> Void
+    var onOpen: (RecordsDayCell) -> Void
+    var onDismissSelection: () -> Void
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 7) {
@@ -708,13 +800,38 @@ struct RecordsWeekStrips: View {
                 }
                 .padding(.horizontal, -3)
                 .buttonStyle(.plain)
+                .highPriorityGesture(
+                    TapGesture(count: 2)
+                        .exclusively(before: TapGesture(count: 1))
+                        .onEnded { result in
+                            switch result {
+                            case .first: onOpen(cell)
+                            case .second: onSelect(cell)
+                            }
+                        }
+                )
                 .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
+                .accessibilityAction(named: Text(store.t("recordsSeeThisDay"))) {
+                    onOpen(cell)
+                }
+                .popover(isPresented: selectionBinding(for: cell), arrowEdge: .top) {
+                    RecordsDayCellPopover(store: store, cell: cell)
+                }
             }
         }
         .frame(height: 188)
         // Dense chart labels have a bounded scale; the full day description
         // remains available to VoiceOver and in the selected-day summary.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+    }
+
+    private func selectionBinding(for cell: RecordsDayCell) -> Binding<Bool> {
+        Binding(
+            get: { selectedDayKey == cell.dayKey },
+            set: { isPresented in
+                if !isPresented, selectedDayKey == cell.dayKey { onDismissSelection() }
+            }
+        )
     }
 
     private func weekStack(_ cell: RecordsDayCell) -> some View {
@@ -787,6 +904,57 @@ struct RecordsWeekStrips: View {
         .overlay { Capsule().stroke(OWCDesign.separator, lineWidth: 0.5) }
     }
 
+}
+
+private struct RecordsDayCellPopover: View {
+    let store: OffWorkStore
+    let cell: RecordsDayCell
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                ScrollView { content.padding(18) }
+                    .frame(idealWidth: 480)
+                    .presentationDragIndicator(.visible)
+            } else {
+                content
+                    .frame(idealWidth: 280, alignment: .leading)
+                    .padding(18)
+            }
+        }
+        .presentationCompactAdaptation(dynamicTypeSize.isAccessibilitySize ? .sheet : .popover)
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(store.formatRecordsDayTitle(cell.date))
+                .font(.headline)
+            Text(store.t(RecordsDayMarks.sourceKey(cell)))
+                .font(.caption)
+                .foregroundStyle(OWCDesign.secondary)
+            if cell.appearance != .locked, cell.workMs + cell.overtimeMs > 0 {
+                metric("recordsWorkRegular", milliseconds: cell.workMs)
+                if cell.overtimeMs > 0 {
+                    metric("recordsOvertime", milliseconds: cell.overtimeMs)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func metric(_ titleKey: String, milliseconds: Int64) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(store.t(titleKey))
+                .foregroundStyle(OWCDesign.secondary)
+            Spacer(minLength: 8)
+            Text(store.formatRelativeDuration(Double(milliseconds)))
+                .fontWeight(.semibold)
+                .monospacedDigit()
+        }
+        .font(.subheadline)
+    }
 }
 
 struct RecordsYearCanvas: View {
@@ -1438,6 +1606,13 @@ struct RecordsLifeCanvas: View {
                         }
 
                         if bucket.isCurrent {
+                            // The outline alone disappears into the work fill
+                            // on a compact canvas. A light overlay identifies
+                            // the present bucket while preserving its category.
+                            context.fill(
+                                path,
+                                with: .color(OWCDesign.orangeDeep.opacity(contrast == .increased ? 0.28 : 0.18))
+                            )
                             context.stroke(
                                 Path(roundedRect: rect.insetBy(dx: -1, dy: -1), cornerRadius: corner + 1),
                                 with: .color(OWCDesign.primary),

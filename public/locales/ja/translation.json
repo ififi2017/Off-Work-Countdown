@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Plusの利用権を確認中…",
   "firstRunLocalDataNeedsReview": "iCloudにはより新しいデータのリセットがあり、このデバイスには未同期の記録があります。まずここで完全なバックアップを書き出してください。その後、このデバイスの記録をiCloudのものに置き換えるか選べます。",
   "firstRunReplaceWithCloud": "バックアップ後にiCloudを使う",
-  "firstRunReplaceConfirm": "このデバイスの記録をiCloudのものに置き換えますか？後でローカルの記録を復元したい場合に備え、書き出したバックアップを保管してください。"
+  "firstRunReplaceConfirm": "このデバイスの記録をiCloudのものに置き換えますか？後でローカルの記録を復元したい場合に備え、書き出したバックアップを保管してください。",
+  "whatsNewTitle": "新着情報",
+  "whatsNewRecordsTitle": "時間の使い方をひと目で",
+  "whatsNewRecordsBody": "週・月・年ごとの概要を確認できます。時間の区間をタップすると詳細を表示し、日付をダブルタップするとその日を詳しく見られます。",
+  "whatsNewLifeTitle": "人生をもっと広い視点で",
+  "whatsNewLifeBody": "人生の節目を追加して、仕事を生活全体の中で見てみましょう。過去の見積もりや現在の仕事の段階を、より簡単に確認できるようになりました。",
+  "whatsNewFocusTitle": "集中のための余白をつくる",
+  "whatsNewFocusBody": "タスクを計画し、集中タイマーを使えます。新しいデバイスに戻ってきましたか？ クイック設定で iCloud の記録を復元できます。",
+  "whatsNewPlusTitle": "DoneAt Plus のご紹介",
+  "whatsNewPlusBody": "退勤カウントダウンはこれからも無料です。Plus では完全な記録、人生ビュー、集中ツールをサブスクリプションまたは買い切りで利用できます。すでに有効な iCloud 同期は、サブスクリプション終了後も続きます。",
+  "whatsNewContinue": "続ける",
+  "recordsOpenSelectedMonth": "{{month}}を表示",
+  "firstRunQuickSetup": "以前からお使いですか？iCloudからかんたん設定",
+  "firstRunReturningTitle": "おかえりなさい",
+  "firstRunBackToWelcome": "ようこそ画面に戻る",
+  "firstRunContinueSetup": "このデバイスを設定",
+  "firstRunCloudNeedsSetup": "記録を復元しましたが、保存済みの勤務予定は見つかりませんでした。復元した内容を残したまま、このデバイスの設定を完了できます。"
 }

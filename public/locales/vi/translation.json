@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "Đang kiểm tra quyền truy cập Plus của bạn…",
   "firstRunLocalDataNeedsReview": "iCloud có một lần đặt lại dữ liệu mới hơn và thiết bị này có các bản ghi chưa được đồng bộ. Hãy xuất bản sao lưu đầy đủ tại đây trước. Sau đó, bạn có thể chọn thay thế các bản ghi của thiết bị này bằng dữ liệu từ iCloud.",
   "firstRunReplaceWithCloud": "Dùng iCloud sau khi sao lưu",
-  "firstRunReplaceConfirm": "Thay thế các bản ghi của thiết bị này bằng iCloud? Hãy giữ bản sao lưu đã xuất nếu sau này bạn muốn khôi phục các bản ghi cục bộ."
+  "firstRunReplaceConfirm": "Thay thế các bản ghi của thiết bị này bằng iCloud? Hãy giữ bản sao lưu đã xuất nếu sau này bạn muốn khôi phục các bản ghi cục bộ.",
+  "whatsNewTitle": "Có gì mới",
+  "whatsNewRecordsTitle": "Thời gian của bạn, trong nháy mắt",
+  "whatsNewRecordsBody": "Khám phá tổng kết theo tuần, tháng và năm. Chạm vào một khoảng thời gian để xem chi tiết, hoặc chạm hai lần vào một ngày để xem kỹ hơn.",
+  "whatsNewLifeTitle": "Góc nhìn rộng hơn về cuộc sống",
+  "whatsNewLifeBody": "Thêm các cột mốc cuộc đời để đặt công việc vào đúng bối cảnh. Giờ đây bạn có thể dễ dàng xem lại các ước tính trước đây và giai đoạn công việc hiện tại.",
+  "whatsNewFocusTitle": "Dành chỗ cho sự tập trung",
+  "whatsNewFocusBody": "Lập kế hoạch công việc và dùng bộ đếm giờ tập trung. Trở lại trên một thiết bị mới? Thiết lập nhanh giúp bạn khôi phục các bản ghi iCloud.",
+  "whatsNewPlusTitle": "Làm quen với DoneAt Plus",
+  "whatsNewPlusBody": "Đếm ngược tan làm vẫn miễn phí. Plus bổ sung hồ sơ đầy đủ, chế độ xem cuộc sống và công cụ tập trung, với lựa chọn thuê bao hoặc trọn đời. Đồng bộ iCloud đang bật vẫn tiếp tục sau khi thuê bao hết hạn.",
+  "whatsNewContinue": "Tiếp tục",
+  "recordsOpenSelectedMonth": "Xem {{month}}",
+  "firstRunQuickSetup": "Đã từng dùng DoneAt? Thiết lập nhanh từ iCloud",
+  "firstRunReturningTitle": "Chào mừng bạn trở lại",
+  "firstRunBackToWelcome": "Quay lại trang chào mừng",
+  "firstRunContinueSetup": "Thiết lập thiết bị này",
+  "firstRunCloudNeedsSetup": "Dữ liệu của bạn đã được khôi phục, nhưng không tìm thấy lịch làm việc đã lưu. Bạn có thể hoàn tất thiết lập thiết bị này mà không mất nội dung vừa khôi phục."
 }

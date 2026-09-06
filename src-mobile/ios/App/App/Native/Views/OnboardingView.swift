@@ -19,6 +19,7 @@ struct OnboardingView: View {
     /// Read by the page transition. Set before `onboardingPage` changes so
     /// insertion and removal agree on direction for this hop.
     @State private var goingBack = false
+    @State private var showsReturningUserSetup = false
 
     private static let pageAnimation = Animation.snappy(duration: 0.32)
     /// A pure slide, deliberately without a cross-fade.
@@ -163,6 +164,12 @@ struct OnboardingView: View {
         .environment(\.locale, store.locale)
         .sensoryFeedback(.impact(weight: .light), trigger: navigationFeedback)
         .task { biometry = BiometricGate.status().biometry }
+        .fullScreenCover(isPresented: $showsReturningUserSetup) {
+            FirstRunRecoveryView(store: store) {
+                showsReturningUserSetup = false
+                showPage(OnboardingPages.schedule)
+            }
+        }
         .onAppear {
 #if DEBUG
             let defaults = UserDefaults.standard
@@ -217,6 +224,16 @@ struct OnboardingView: View {
             .padding(.top, 34)
             .frame(maxWidth: 420)
             Spacer()
+
+            Button(store.t("firstRunQuickSetup")) {
+                navigationFeedback += 1
+                showsReturningUserSetup = true
+            }
+            .font(.body.weight(.semibold))
+            .foregroundStyle(OWCDesign.accent)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 8)
 
             pageDots
             Button(store.t("continue")) {

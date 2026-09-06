@@ -216,6 +216,37 @@ func yearMonthBarsSeparateRecordsFromProjection() throws {
 }
 
 @MainActor
+@Test("Collapsed year draws historical projections as estimated work")
+func yearBucketsKeepHistoricalProjectionVisible() throws {
+    let calendar = utcCalendar()
+    let start = try date(2026, 3, 1, calendar: calendar)
+    let end = try date(2026, 4, 1, calendar: calendar)
+    let cells = [
+        yearCell(
+            "2026-03-02",
+            try date(2026, 3, 2, calendar: calendar),
+            .unrecorded,
+            workHours: 8,
+            isProjection: true
+        )
+    ]
+
+    let bucket = try #require(
+        RecordsYearSampler.buckets(
+            from: start,
+            to: end,
+            count: 1,
+            cells: cells,
+            calendar: calendar
+        ).first
+    )
+
+    #expect(bucket.kind == .planned)
+    #expect(bucket.isProjection)
+    #expect(bucket.workMs == Int64(8 * hourMs))
+}
+
+@MainActor
 @Test("A locked month contributes no numbers to the expanded year")
 func yearMonthBarsRevealNothingForLockedDays() throws {
     let calendar = utcCalendar()

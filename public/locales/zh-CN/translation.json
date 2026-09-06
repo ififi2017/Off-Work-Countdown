@@ -974,5 +974,21 @@
   "firstRunCheckingPurchase": "正在检查 Plus 权益…",
   "firstRunLocalDataNeedsReview": "iCloud 中有更新的数据重置，而这台设备还有未同步的记录。请先在这里导出完整备份，再选择是否用 iCloud 数据替换本机记录。",
   "firstRunReplaceWithCloud": "已备份，使用 iCloud 数据",
-  "firstRunReplaceConfirm": "用 iCloud 数据替换本机记录？请保留已导出的备份，之后可用它恢复本机记录。"
+  "firstRunReplaceConfirm": "用 iCloud 数据替换本机记录？请保留已导出的备份，之后可用它恢复本机记录。",
+  "whatsNewTitle": "这次更新了什么",
+  "whatsNewRecordsTitle": "时间去向，一眼看清",
+  "whatsNewRecordsBody": "查看周、月、年汇总，点按进度条了解时间组成，也可以双击日期，细看这一天。",
+  "whatsNewLifeTitle": "把工作放回人生里",
+  "whatsNewLifeBody": "补充人生节点，看看工作与生活的全貌。历史推算和当前工作阶段的展示与点按体验也已改善。",
+  "whatsNewFocusTitle": "给专注留一点空间",
+  "whatsNewFocusBody": "安排待办，用番茄钟开始专注。换了设备，也可以通过老用户快速设置找回 iCloud 记录。",
+  "whatsNewPlusTitle": "认识 DoneAt Plus",
+  "whatsNewPlusBody": "下班倒计时继续免费。Plus 提供完整记录、人生视图和专注工具，可选择订阅或终身买断。已开启的 iCloud 同步在订阅到期后仍会继续。",
+  "whatsNewContinue": "继续使用",
+  "recordsOpenSelectedMonth": "查看{{month}}",
+  "firstRunQuickSetup": "老用户快速设置",
+  "firstRunReturningTitle": "欢迎回来",
+  "firstRunBackToWelcome": "返回欢迎页",
+  "firstRunContinueSetup": "回到配置页",
+  "firstRunCloudNeedsSetup": "记录已经恢复，但没有找到已保存的排班设置。你可以继续配置这台设备，刚刚恢复的内容都会保留。"
 }
