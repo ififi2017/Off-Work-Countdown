@@ -264,7 +264,7 @@ func focusLiveActivityWakePlanCoversBothBoundaryOrders() {
 }
 
 @MainActor
-@Test("Focus Live Activity service re-arbitrates at the work display boundary")
+@Test("Focus Live Activity service re-arbitrates at the work display boundary", .timeLimit(.minutes(1)))
 func focusLiveActivityPriorityTransitionRunsAtWorkBoundary() async {
     let start = Date(timeIntervalSince1970: 1_787_557_200)
     let boundary = start.addingTimeInterval(30 * 60)
@@ -275,25 +275,24 @@ func focusLiveActivityPriorityTransitionRunsAtWorkBoundary() async {
     ))
     var fired: [Date] = []
 
-    transition.schedule(at: boundary) {
+    let scheduled = transition.schedule(at: boundary) {
         fired.append(clock.now)
     }
-    await Task.yield()
+    await clock.waitForSleep()
 
     #expect(transition.scheduledAt == boundary)
     #expect(clock.pendingSleepCount == 1)
     #expect(fired.isEmpty)
 
     clock.advance(to: boundary)
-    await Task.yield()
-    await Task.yield()
+    await scheduled.value
 
     #expect(fired == [boundary])
     #expect(transition.scheduledAt == nil)
 }
 
 @MainActor
-@Test("Replacing a focus-to-work handoff rejects the stale scheduled action")
+@Test("Replacing a focus-to-work handoff rejects the stale scheduled action", .timeLimit(.minutes(1)))
 func staleFocusLiveActivityPriorityTransitionIsRejected() async {
     let start = Date(timeIntervalSince1970: 1_787_557_200)
     let firstBoundary = start.addingTimeInterval(10 * 60)
@@ -305,23 +304,22 @@ func staleFocusLiveActivityPriorityTransitionIsRejected() async {
     ))
     var fired: [String] = []
 
-    transition.schedule(at: firstBoundary) {
+    let first = transition.schedule(at: firstBoundary) {
         fired.append("stale")
     }
-    await Task.yield()
-    transition.schedule(at: replacementBoundary) {
+    await clock.waitForSleep()
+    let replacement = transition.schedule(at: replacementBoundary) {
         fired.append("replacement")
     }
-    await Task.yield()
+    await clock.waitForSleep()
 
     clock.advance(to: firstBoundary)
-    await Task.yield()
+    await first.value
     #expect(fired.isEmpty)
     #expect(transition.scheduledAt == replacementBoundary)
 
     clock.advance(to: replacementBoundary)
-    await Task.yield()
-    await Task.yield()
+    await replacement.value
     #expect(fired == ["replacement"])
 }
 
@@ -342,6 +340,12 @@ private final class LiveActivityManualClock {
 
     var now: Date
     private var sleepers: [Sleeper] = []
+    private let registrations = AsyncStream<Void>.makeStream()
+
+    func waitForSleep() async {
+        var iterator = registrations.stream.makeAsyncIterator()
+        _ = await iterator.next()
+    }
 
     init(now: Date) {
         self.now = now
@@ -353,6 +357,7 @@ private final class LiveActivityManualClock {
         let deadline = now.addingTimeInterval(max(0, interval))
         return await withCheckedContinuation { continuation in
             sleepers.append(.init(deadline: deadline, continuation: continuation))
+            registrations.continuation.yield(())
         }
     }
 

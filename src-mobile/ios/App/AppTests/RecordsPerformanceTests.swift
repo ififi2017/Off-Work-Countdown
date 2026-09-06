@@ -11,12 +11,11 @@ import Testing
 @Suite("Records surface cost")
 struct RecordsPerformanceTests {
     /// Roughly two years of a normal shift: clock-in and clock-out every day.
-    private func seededStore(days: Int) throws -> OffWorkStore {
-        let defaults = UserDefaults(suiteName: "owc.perf.\(UUID().uuidString)")!
+    private func seededStore(days: Int, defaults: UserDefaults, now: Date = .now) throws -> OffWorkStore {
         let zone = TimeZone(identifier: "Asia/Shanghai")!
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = zone
-        let today = calendar.startOfDay(for: .now)
+        let today = calendar.startOfDay(for: now)
 
         let records = RecordCoordinator.inMemory()
         let firstDay = try #require(calendar.date(byAdding: .day, value: -(days - 1), to: today))
@@ -59,10 +58,11 @@ struct RecordsPerformanceTests {
     /// `print` from a test bundle running in the simulator does not reach
     /// `xcodebuild`'s stdout, so the numbers went nowhere. Report them where
     /// they can actually be read back.
-    private func milliseconds(_ label: String, _ body: () -> Void) -> Double {
-        let started = Date()
-        body()
-        let elapsed = Date().timeIntervalSince(started) * 1_000
+    private func milliseconds(_ label: String, _ body: () throws -> Void) rethrows -> Double {
+        let started = ContinuousClock.now
+        try body()
+        let duration = started.duration(to: .now).components
+        let elapsed = Double(duration.seconds) * 1_000 + Double(duration.attoseconds) / 1e15
         let line = "[perf] \(label): \(String(format: "%.1f", elapsed)) ms"
         print(line)
         Self.report(line)
@@ -70,9 +70,10 @@ struct RecordsPerformanceTests {
     }
 
     private func milliseconds(_ label: String, _ body: () async -> Void) async -> Double {
-        let started = Date()
+        let started = ContinuousClock.now
         await body()
-        let elapsed = Date().timeIntervalSince(started) * 1_000
+        let duration = started.duration(to: .now).components
+        let elapsed = Double(duration.seconds) * 1_000 + Double(duration.attoseconds) / 1e15
         let line = "[perf] \(label): \(String(format: "%.1f", elapsed)) ms"
         print(line)
         Self.report(line)
@@ -82,6 +83,7 @@ struct RecordsPerformanceTests {
     private static let reportURL = URL(fileURLWithPath: "/tmp/owc-records-perf.txt")
 
     private static func report(_ line: String) {
+        Attachment.record(line, named: "Records performance")
         let text = line + "\n"
         guard let data = text.data(using: .utf8) else { return }
         if let handle = try? FileHandle(forWritingTo: reportURL) {
@@ -93,9 +95,67 @@ struct RecordsPerformanceTests {
         }
     }
 
+    @Test("Measures durable import, edit, remote batch and reopen", arguments: [520, 2_600])
+    func diskCost(days: Int) throws {
+        let suite = "owc.diskperf.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        let directory = FileManager.default.temporaryDirectory.appending(path: suite)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer {
+            defaults.removePersistentDomain(forName: suite)
+            try? FileManager.default.removeItem(at: directory)
+        }
+        let now = Date(timeIntervalSince1970: 1_788_739_200)
+        let seeded = try seededStore(days: days, defaults: defaults, now: now)
+        let data = try seeded.records.exportJSON(exportedAt: now)
+        let url = directory.appending(path: "archive.json")
+        let records = RecordCoordinator(fileURL: url)
+        let label = "disk \(days) days"
+        _ = try milliseconds("\(label): import") { _ = try records.import(data) }
+        try #require(records.persistenceError == nil)
+        try #require(records.state.observations.count == days * 2)
+
+        let eventID = UUID()
+        let snapshotID = try #require(records.state.snapshots.first?.id)
+        _ = milliseconds("\(label): one observation edit") {
+            records.recordObservation(
+                kind: .countdownStarted, eventID: eventID,
+                shiftAnchorDate: now, occurredAt: now, snapshotID: snapshotID,
+                timeZoneIdentifier: "Asia/Shanghai"
+            )
+        }
+        try #require(records.persistenceError == nil)
+        // Exercise the real remote ingestion path, with one durable batch save.
+        let observations = Array(records.state.observations.prefix(20))
+        _ = try milliseconds("\(label): 20-row remote batch") {
+            for observation in observations {
+                let key = observation.eventID.uuidString
+                let payload = try #require(RecordsSyncPayload.encode(type: .workObservation, key: key, from: records.state))
+                records.applyRemotePayload(
+                    type: .workObservation, key: key, payload: payload,
+                    editCount: 2, editTieBreaker: UUID().uuidString,
+                    systemFields: nil, generation: records.state.sync.generation,
+                    persistImmediately: false
+                )
+            }
+            records.persistRemoteBatch()
+        }
+        try #require(records.persistenceError == nil)
+        var reopened: RecordCoordinator?
+        _ = milliseconds("\(label): reopen") { reopened = RecordCoordinator(fileURL: url) }
+        let loaded = try #require(reopened)
+        #expect(loaded.persistenceError == nil)
+        #expect(loaded.state.observations.count == days * 2 + 1)
+        #expect(loaded.state.observations.contains { $0.eventID == eventID })
+        #expect(loaded.state.sync == records.state.sync)
+    }
+
     @Test("reports what one pass over the Records surfaces costs")
     func surfaceCost() async throws {
-        let store = try seededStore(days: 520)
+        let suite = "owc.perf.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = try seededStore(days: 520, defaults: defaults)
         // Warm the JavaScriptCore bundle and any lazily-built caches so the
         // numbers describe the steady state a user actually pays.
         let window = store.recordsWindow(for: .year, anchor: .now)

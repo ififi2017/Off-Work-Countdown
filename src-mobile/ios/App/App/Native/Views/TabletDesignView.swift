@@ -257,6 +257,7 @@ private struct TabletSidebar: View {
 
     private var compactShiftCountdown: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            let _ = LaunchTrace.signposter.emitEvent("sidebarTimerUpdate")
             let date = store.timerDate(from: timeline.date)
             if store.shouldQuerySnapshot(at: date), let snapshot = store.snapshot(at: date) {
                 let phase = store.visualPhase(snapshot: snapshot, at: date)
@@ -397,6 +398,7 @@ private struct TabletTimerView: View {
 
     @ViewBuilder
     private func tabletTimerContent(at date: Date) -> some View {
+        let _ = LaunchTrace.signposter.emitEvent("tabletTimerContentUpdate")
         let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
         let phase = store.visualPhase(snapshot: snapshot, at: date)
 

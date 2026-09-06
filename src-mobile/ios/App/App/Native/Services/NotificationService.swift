@@ -71,16 +71,60 @@ final class NotificationService {
             .filter { $0.hasPrefix("owc.focus.") }
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
     }
+    /// Only the shift channel uses this adapter; focus owns its separate IDs.
+    struct ShiftCenter {
+        var authorization: () async -> Status
+        var pendingIDs: () async -> [String]
+        var deliveredIDs: () async -> [String]
+        var add: (UNNotificationRequest) async throws -> Void
+        var removePending: ([String]) -> Void
+        var removeDelivered: ([String]) -> Void
+
+        static let system = Self(
+            authorization: {
+                let settings = await UNUserNotificationCenter.current().notificationSettings()
+                switch settings.authorizationStatus {
+                case .notDetermined: return .notDetermined
+                case .denied: return .denied
+                case .authorized, .provisional, .ephemeral: return .allowed
+                @unknown default: return .unknown
+                }
+            },
+            pendingIDs: { await UNUserNotificationCenter.current().pendingNotificationRequests().map(\.identifier) },
+            deliveredIDs: { await UNUserNotificationCenter.current().deliveredNotifications().map(\.request.identifier) },
+            add: { try await UNUserNotificationCenter.current().add($0) },
+            removePending: { UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: $0) },
+            removeDelivered: { UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: $0) }
+        )
+    }
+
+    private let shiftCenter: ShiftCenter
     private var scheduleGeneration = 0
+    private var pendingShiftOperation: Task<Void, Never>?
+
+    init(shiftCenter: ShiftCenter = .system) {
+        self.shiftCenter = shiftCenter
+    }
 
     func refresh() async {
-        let settings = await UNUserNotificationCenter.current().notificationSettings()
-        switch settings.authorizationStatus {
-        case .notDetermined: status = .notDetermined
-        case .denied: status = .denied
-        case .authorized, .provisional, .ephemeral: status = .allowed
-        @unknown default: status = .unknown
+        status = await shiftCenter.authorization()
+    }
+
+    /// A submitted system add must finish before a later clear reads its IDs.
+    /// Keep queued cleanup alive even if its view task is cancelled; a newer
+    /// intent supersedes it through the generation instead.
+    private func enqueueShiftOperation(_ work: @escaping (Int) async -> Void) async {
+        scheduleGeneration += 1
+        let generation = scheduleGeneration
+        let previous = pendingShiftOperation
+        let task = Task { @MainActor in
+            await previous?.value
+            guard generation == self.scheduleGeneration else { return }
+            await work(generation)
         }
+        pendingShiftOperation = task
+        await task.value
+        if generation == scheduleGeneration { pendingShiftOperation = nil }
     }
 
     func request() async -> Bool {
@@ -175,18 +219,23 @@ final class NotificationService {
         "owc.focus.\(id.uuidString)"
     }
 
-    func reschedule(store: OffWorkStore, now: Date = .now) async {
-        scheduleGeneration += 1
-        let generation = scheduleGeneration
+    func reschedule(store: OffWorkStore, now: Date? = nil) async {
+        await enqueueShiftOperation { generation in
+            await self.performReschedule(store: store, now: now ?? .now, generation: generation)
+        }
+    }
+
+    private func performReschedule(store: OffWorkStore, now: Date, generation: Int) async {
         await refresh()
-        let center = UNUserNotificationCenter.current()
-        let pending = await center.pendingNotificationRequests()
+        let center = shiftCenter
+        let pending = await center.pendingIDs()
         let existingIdentifiers = Set(
-            pending.map(\.identifier).filter { $0.hasPrefix("owc.shift.") }
+            pending.filter { $0.hasPrefix("owc.shift.") }
         )
 
+        guard generation == scheduleGeneration else { return }
         guard status == .allowed, store.publishesLiveSurfaces else {
-            center.removePendingNotificationRequests(withIdentifiers: Array(existingIdentifiers))
+            center.removePending(Array(existingIdentifiers))
             return
         }
         guard let reminders = try? store.shiftReminders(at: now) else { return }
@@ -265,33 +314,19 @@ final class NotificationService {
 
         if allSucceeded, generation == scheduleGeneration, store.publishesLiveSurfaces {
             let stale = existingIdentifiers.subtracting(desiredIdentifiers)
-            center.removePendingNotificationRequests(withIdentifiers: Array(stale))
+            center.removePending(Array(stale))
         }
     }
 
-    /// Removes this app's shift notifications.
-    ///
-    /// Guarded by the same generation the scheduling path uses, and for the same
-    /// reason. Two `await`s separate reading the identifiers from deleting
-    /// them, and a countdown stopped and restarted across that gap left this
-    /// call holding a list captured before the restart — so it deleted the
-    /// notifications the restart had just written. The identifiers are stable,
-    /// which is what made the collision silent: same ids, so nothing looked
-    /// wrong until the reminders never arrived.
+    /// Clears after any in-flight add has completed, so stopping cannot leave
+    /// behind a notification that arrives after the clear's initial read.
     func clearShiftNotifications() async {
-        scheduleGeneration += 1
-        let generation = scheduleGeneration
-        let center = UNUserNotificationCenter.current()
-        let pendingIdentifiers = await center.pendingNotificationRequests()
-            .map(\.identifier)
-            .filter { $0.hasPrefix("owc.shift.") }
-        let deliveredIdentifiers = await center.deliveredNotifications()
-            .map(\.request.identifier)
-            .filter { $0.hasPrefix("owc.shift.") }
-        // Somebody rescheduled while we were reading. That work is newer than
-        // this one, so it wins; the notifications it wrote are not ours to drop.
-        guard generation == scheduleGeneration else { return }
-        center.removePendingNotificationRequests(withIdentifiers: pendingIdentifiers)
-        center.removeDeliveredNotifications(withIdentifiers: deliveredIdentifiers)
+        await enqueueShiftOperation { generation in
+            let pending = await self.shiftCenter.pendingIDs().filter { $0.hasPrefix("owc.shift.") }
+            let delivered = await self.shiftCenter.deliveredIDs().filter { $0.hasPrefix("owc.shift.") }
+            guard generation == self.scheduleGeneration else { return }
+            self.shiftCenter.removePending(pending)
+            self.shiftCenter.removeDelivered(delivered)
+        }
     }
 }

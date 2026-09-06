@@ -15,6 +15,8 @@ struct RecordsAllRecordsPresentation {
         today: Date,
         calendar: Calendar
     ) {
+        let interval = LaunchTrace.signposter.beginInterval("recordsPresentation")
+        defer { LaunchTrace.signposter.endInterval("recordsPresentation", interval) }
         if isAuthorized {
             visibleEntries = entries
             hasLockedHistory = false
@@ -53,6 +55,7 @@ struct RecordsAllRecordsView: View {
     }
 
     var body: some View {
+        let presentation = presentation
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 if presentation.years.isEmpty && !presentation.hasLockedHistory {
@@ -136,9 +139,11 @@ struct RecordsYearRecordsView: View {
     }
 
     var body: some View {
+        let months = months
+        let canReadYear = store.plus.isAuthorized || !months.isEmpty
         Group {
             if canReadYear {
-                yearContent
+                yearContent(months: months)
             } else {
                 RecordsLockedHistoryPlaceholder(store: store)
             }
@@ -149,11 +154,7 @@ struct RecordsYearRecordsView: View {
         )
     }
 
-    private var canReadYear: Bool {
-        store.plus.isAuthorized || !months.isEmpty
-    }
-
-    private var yearContent: some View {
+    private func yearContent(months: [Int]) -> some View {
         OWCContentSizedScrollView {
             OWCGroupCard {
                 ForEach(Array(months.enumerated()), id: \.element) { index, month in
@@ -198,9 +199,11 @@ struct RecordsMonthRecordsView: View {
     }
 
     var body: some View {
+        let days = days
+        let canReadMonth = store.plus.isAuthorized || !days.isEmpty
         Group {
             if canReadMonth {
-                monthContent
+                monthContent(days: days)
             } else {
                 RecordsLockedHistoryPlaceholder(store: store)
             }
@@ -211,11 +214,7 @@ struct RecordsMonthRecordsView: View {
         )
     }
 
-    private var canReadMonth: Bool {
-        store.plus.isAuthorized || !days.isEmpty
-    }
-
-    private var monthContent: some View {
+    private func monthContent(days: [RecordDayIndexEntry]) -> some View {
         OWCContentSizedScrollView {
             OWCGroupCard {
                 ForEach(Array(days.enumerated()), id: \.element.dayKey) { index, day in

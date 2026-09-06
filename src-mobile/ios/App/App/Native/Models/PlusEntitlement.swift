@@ -282,6 +282,8 @@ final class PlusEntitlement {
     var localize: (String) -> String = { $0 }
     private var updatesTask: Task<Void, Never>?
     private var statusTask: Task<Void, Never>?
+    private var refreshGeneration: UInt64 = 0
+    private let fetchEvidence: () async -> StoreKitEvidence
     private var cachedSnapshot = PlusEntitlementSnapshot(askToBuyPendingSince: nil)
 
     var isAuthorized: Bool {
@@ -320,7 +322,11 @@ final class PlusEntitlement {
         )
     }
 
-    init(defaults: UserDefaults = .standard) {
+    init(
+        defaults: UserDefaults = .standard,
+        fetchEvidence: @escaping () async -> StoreKitEvidence = { await fetchStoreKitEvidence() }
+    ) {
+        self.fetchEvidence = fetchEvidence
         self.defaults = defaults
         hasSeenIntro = defaults.bool(forKey: Key.hasSeenIntro)
         if let data = defaults.data(forKey: Key.cachedSnapshot),
@@ -356,6 +362,8 @@ final class PlusEntitlement {
     }
 
     func stop() {
+        refreshGeneration &+= 1
+        currentRefreshTask?.cancel()
         updatesTask?.cancel()
         statusTask?.cancel()
         updatesTask = nil
@@ -479,24 +487,25 @@ final class PlusEntitlement {
     }
 #endif
 
-    /// Reads StoreKit's current entitlements; unlike explicit restore, this
-    /// never invokes AppStore.sync or presents an authentication prompt.
+    /// Polling the returning-user setup shares an in-flight entitlement check.
+    /// Purchase and StoreKit updates still request fresh evidence independently.
     func checkCurrentEntitlements() async {
-        await refreshFromStore()
-    }
-
-    private func refreshFromStore() async {
         if let currentRefreshTask { await currentRefreshTask.value; return }
-        let task = Task { await performRefreshFromStore() }
+        let task = Task { await refreshFromStore() }
         currentRefreshTask = task
         await task.value
         currentRefreshTask = nil
     }
 
-    private func performRefreshFromStore() async {
+    /// A slower old fetch must not overwrite a newer grant or revocation.
+    func refreshFromStore() async {
+        guard !Task.isCancelled else { return }
+        refreshGeneration &+= 1
+        let generation = refreshGeneration
         let fetched = await LaunchTrace.interval("storeKitRefresh") {
-            await fetchStoreKitEvidence()
+            await fetchEvidence()
         }
+        guard generation == refreshGeneration, !Task.isCancelled else { return }
         let outcome: PlusRefreshOutcome
         if fetched.unverified {
             outcome = .unverified
@@ -551,7 +560,7 @@ final class PlusEntitlement {
 
 /// StoreKit's entitlement walk is the 20-second sandbox stall. Keep it off
 /// the main actor so the first frame is not waiting on the network.
-nonisolated private struct StoreKitEvidence: Sendable {
+nonisolated struct StoreKitEvidence: Sendable {
     var lifetime: PlusLifetimeEvidence?
     var subscription: PlusSubscriptionEvidence?
     var sawActiveSubscription = false
