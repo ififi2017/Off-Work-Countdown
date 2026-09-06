@@ -161,14 +161,21 @@ struct RecordsAllocationBar: View {
     let store: OffWorkStore
     let share: TimeAllocationShare
     @State private var selectedKind: TimeAllocationKind?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             bar
             legend
         }
-        .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedKind)
+        .modifier(RecordsSelectionCallout(selectedID: selectedKind?.rawValue) {
+            if let item = visibleSlices.first(where: { $0.kind == selectedKind }) {
+                RecordsCanvasCallout(
+                    icon: "clock",
+                    title: store.t(item.kind.titleKey),
+                    subtitle: accessibilityValue(item)
+                )
+            }
+        })
     }
 
     private var bar: some View {
@@ -181,21 +188,21 @@ struct RecordsAllocationBar: View {
                     let isLast = index == visible.index(before: visible.endIndex)
                     let shape = UnevenRoundedRectangle(
                         cornerRadii: RectangleCornerRadii(
-                            topLeading: isFirst ? 10 : 0,
-                            bottomLeading: isFirst ? 10 : 0,
-                            bottomTrailing: isLast ? 10 : 0,
-                            topTrailing: isLast ? 10 : 0
+                            topLeading: isFirst ? 5 : 0,
+                            bottomLeading: isFirst ? 5 : 0,
+                            bottomTrailing: isLast ? 5 : 0,
+                            topTrailing: isLast ? 5 : 0
                         ),
                         style: .continuous
                     )
                     Button {
-                        selectedKind = item.kind
+                        selectedKind = selectedKind == item.kind ? nil : item.kind
                     } label: {
                         shape
                             .fill(item.color)
                             .frame(
                                 width: max(1, proxy.size.width * CGFloat(item.ms) / CGFloat(total)),
-                                height: 20
+                                height: 10
                             )
                             .overlay {
                                 if selectedKind == item.kind {
@@ -212,15 +219,8 @@ struct RecordsAllocationBar: View {
                     .accessibilityLabel(store.t(item.kind.titleKey))
                     .accessibilityValue(accessibilityValue(item))
                     .accessibilityAddTraits(selectedKind == item.kind ? .isSelected : [])
-                    .popover(isPresented: selectionBinding(for: item.kind), arrowEdge: .top) {
-                        RecordsTimeSegmentPopover(
-                            color: item.color,
-                            title: store.t(item.kind.titleKey),
-                            range: nil,
-                            duration: store.formatRelativeDuration(Double(item.ms)),
-                            percent: store.formatPercent(Double(item.ms) / Double(total) * 100),
-                            source: nil
-                        )
+                    .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
+                        [item.kind.rawValue: $0]
                     }
                 }
             }
@@ -230,48 +230,46 @@ struct RecordsAllocationBar: View {
         .background {
             Capsule()
                 .fill(OWCDesign.control)
-                .frame(height: 20)
+                .frame(height: 10)
         }
         .overlay {
             Capsule()
                 .stroke(OWCDesign.separator, lineWidth: 0.5)
-                .frame(height: 20)
+                .frame(height: 10)
         }
     }
 
     private var legend: some View {
-        LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 104), alignment: .leading)],
-            alignment: .leading,
-            spacing: 4
-        ) {
-            ForEach(visibleSlices) { item in
-                Button {
-                    selectedKind = item.kind
-                } label: {
-                    HStack(spacing: 8) {
-                        Circle()
-                            .fill(item.color)
-                            .frame(width: 10, height: 10)
-                        Text(store.t(item.kind.titleKey))
-                            .font(.callout)
-                            .foregroundStyle(OWCDesign.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.78)
-                    }
-                    .padding(.horizontal, 8)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                    .background(
-                        selectedKind == item.kind ? OWCDesign.control : Color.clear,
-                        in: Capsule()
-                    )
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(store.t(item.kind.titleKey))
-                .accessibilityValue(accessibilityValue(item))
-                .accessibilityAddTraits(selectedKind == item.kind ? .isSelected : [])
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 10) {
+                legendItems
             }
+            .fixedSize(horizontal: true, vertical: false)
+            VStack(alignment: .leading, spacing: 0) {
+                legendItems
+            }
+        }
+    }
+
+    private var legendItems: some View {
+        ForEach(visibleSlices) { item in
+            Button {
+                selectedKind = selectedKind == item.kind ? nil : item.kind
+            } label: {
+                HStack(spacing: 4) {
+                    Circle().fill(item.color).frame(width: 6, height: 6)
+                    Text(store.t(item.kind.titleKey))
+                        .font(.caption)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(store.t(item.kind.titleKey))
+            .accessibilityValue(accessibilityValue(item))
+            .accessibilityAddTraits(selectedKind == item.kind ? .isSelected : [])
         }
     }
 
@@ -283,15 +281,6 @@ struct RecordsAllocationBar: View {
         TimeAllocationKind.allCases.map { kind in
             AllocationSlice(kind: kind, ms: duration(kind), color: OWCDesign.recordsColor(kind))
         }
-    }
-
-    private func selectionBinding(for kind: TimeAllocationKind) -> Binding<Bool> {
-        Binding(
-            get: { selectedKind == kind },
-            set: { isPresented in
-                if !isPresented, selectedKind == kind { selectedKind = nil }
-            }
-        )
     }
 
     private func accessibilityValue(_ item: AllocationSlice) -> String {
@@ -535,7 +524,6 @@ struct RecordsMonthGrid: View {
     let selectedDayKey: String?
     var onSelect: (RecordsDayCell) -> Void
     var onOpen: (RecordsDayCell) -> Void
-    var onDismissSelection: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
@@ -604,22 +592,12 @@ struct RecordsMonthGrid: View {
                     // cell and the layout are untouched.
                     .padding(-3)
                     .buttonStyle(.plain)
-                    .highPriorityGesture(
-                        TapGesture(count: 2)
-                            .exclusively(before: TapGesture(count: 1))
-                            .onEnded { result in
-                                switch result {
-                                case .first: onOpen(cell)
-                                case .second: onSelect(cell)
-                                }
-                            }
-                    )
                     .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
                     .accessibilityAction(named: Text(store.t("recordsSeeThisDay"))) {
                         onOpen(cell)
                     }
-                    .popover(isPresented: selectionBinding(for: cell), arrowEdge: .top) {
-                        RecordsDayCellPopover(store: store, cell: cell)
+                    .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
+                        [cell.dayKey: $0]
                     }
                 }
             }
@@ -628,6 +606,11 @@ struct RecordsMonthGrid: View {
         // calendar. Cap only its dense labels while VoiceOver retains the full
         // localized date and status for every 44-point button.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+        .modifier(RecordsSelectionCallout(selectedID: selectedDayKey) {
+            if let cell = cells.first(where: { $0.dayKey == selectedDayKey }) {
+                RecordsDayCellCallout(store: store, cell: cell) { onOpen(cell) }
+            }
+        })
     }
 
     /// 48 points cannot hold a readable date, a bar and a status glyph at the
@@ -638,15 +621,6 @@ struct RecordsMonthGrid: View {
     }
 
     private var showsStateMarker: Bool { dynamicTypeSize < .accessibility1 }
-
-    private func selectionBinding(for cell: RecordsDayCell) -> Binding<Bool> {
-        Binding(
-            get: { selectedDayKey == cell.dayKey },
-            set: { isPresented in
-                if !isPresented, selectedDayKey == cell.dayKey { onDismissSelection() }
-            }
-        )
-    }
 
     /// Brand orange means selection and today. Nothing here encodes hours: the
     /// bar does that, in the shared category colours. Selection is a ring
@@ -773,7 +747,6 @@ struct RecordsWeekStrips: View {
     let selectedDayKey: String?
     var onSelect: (RecordsDayCell) -> Void
     var onOpen: (RecordsDayCell) -> Void
-    var onDismissSelection: () -> Void
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 7) {
@@ -800,22 +773,12 @@ struct RecordsWeekStrips: View {
                 }
                 .padding(.horizontal, -3)
                 .buttonStyle(.plain)
-                .highPriorityGesture(
-                    TapGesture(count: 2)
-                        .exclusively(before: TapGesture(count: 1))
-                        .onEnded { result in
-                            switch result {
-                            case .first: onOpen(cell)
-                            case .second: onSelect(cell)
-                            }
-                        }
-                )
                 .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
                 .accessibilityAction(named: Text(store.t("recordsSeeThisDay"))) {
                     onOpen(cell)
                 }
-                .popover(isPresented: selectionBinding(for: cell), arrowEdge: .top) {
-                    RecordsDayCellPopover(store: store, cell: cell)
+                .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
+                    [cell.dayKey: $0]
                 }
             }
         }
@@ -823,15 +786,11 @@ struct RecordsWeekStrips: View {
         // Dense chart labels have a bounded scale; the full day description
         // remains available to VoiceOver and in the selected-day summary.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-    }
-
-    private func selectionBinding(for cell: RecordsDayCell) -> Binding<Bool> {
-        Binding(
-            get: { selectedDayKey == cell.dayKey },
-            set: { isPresented in
-                if !isPresented, selectedDayKey == cell.dayKey { onDismissSelection() }
+        .modifier(RecordsSelectionCallout(selectedID: selectedDayKey) {
+            if let cell = cells.first(where: { $0.dayKey == selectedDayKey }) {
+                RecordsDayCellCallout(store: store, cell: cell) { onOpen(cell) }
             }
-        )
+        })
     }
 
     private func weekStack(_ cell: RecordsDayCell) -> some View {
@@ -906,54 +865,24 @@ struct RecordsWeekStrips: View {
 
 }
 
-private struct RecordsDayCellPopover: View {
+private struct RecordsDayCellCallout: View {
     let store: OffWorkStore
     let cell: RecordsDayCell
-
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    let onOpen: () -> Void
 
     var body: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                ScrollView { content.padding(18) }
-                    .frame(idealWidth: 480)
-                    .presentationDragIndicator(.visible)
-            } else {
-                content
-                    .frame(idealWidth: 280, alignment: .leading)
-                    .padding(18)
-            }
+        Button(action: onOpen) {
+            RecordsCanvasCallout(
+                icon: cell.appearance == .locked ? "lock" : "calendar",
+                title: store.formatRecordsDayTitle(cell.date),
+                subtitle: cell.appearance == .locked
+                    ? store.t("recordsLockedDay")
+                    : [store.t(RecordsDayMarks.sourceKey(cell)),
+                       store.formatRelativeDuration(Double(cell.workMs + cell.overtimeMs))].joined(separator: " · "),
+                actionTitle: store.t(cell.appearance == .locked ? "plusSeePlans" : "recordsSeeThisDay")
+            )
         }
-        .presentationCompactAdaptation(dynamicTypeSize.isAccessibilitySize ? .sheet : .popover)
-    }
-
-    private var content: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(store.formatRecordsDayTitle(cell.date))
-                .font(.headline)
-            Text(store.t(RecordsDayMarks.sourceKey(cell)))
-                .font(.caption)
-                .foregroundStyle(OWCDesign.secondary)
-            if cell.appearance != .locked, cell.workMs + cell.overtimeMs > 0 {
-                metric("recordsWorkRegular", milliseconds: cell.workMs)
-                if cell.overtimeMs > 0 {
-                    metric("recordsOvertime", milliseconds: cell.overtimeMs)
-                }
-            }
-        }
-        .accessibilityElement(children: .combine)
-    }
-
-    private func metric(_ titleKey: String, milliseconds: Int64) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text(store.t(titleKey))
-                .foregroundStyle(OWCDesign.secondary)
-            Spacer(minLength: 8)
-            Text(store.formatRelativeDuration(Double(milliseconds)))
-                .fontWeight(.semibold)
-                .monospacedDigit()
-        }
-        .font(.subheadline)
+        .buttonStyle(.plain)
     }
 }
 
@@ -1789,6 +1718,7 @@ private struct RecordsCanvasCallout: View {
     let icon: String
     let title: String
     let subtitle: String
+    var actionTitle: String? = nil
 
     var body: some View {
         HStack(spacing: 6) {
@@ -1800,6 +1730,11 @@ private struct RecordsCanvasCallout: View {
                 Text(subtitle)
                     .font(.caption2)
                     .foregroundStyle(OWCDesign.secondary)
+                if let actionTitle {
+                    Label(actionTitle, systemImage: "chevron.forward")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(OWCDesign.accent)
+                }
             }
         }
         // The anchor may move, but the label must immediately describe the
@@ -1810,7 +1745,7 @@ private struct RecordsCanvasCallout: View {
         .background(OWCDesign.card, in: Capsule())
         .overlay { Capsule().stroke(OWCDesign.separator, lineWidth: 0.8) }
         .fixedSize(horizontal: false, vertical: true)
-        .allowsHitTesting(false)
+        .allowsHitTesting(actionTitle != nil)
         .accessibilityElement(children: .combine)
     }
 }

@@ -1,5 +1,38 @@
 import SwiftUI
 
+struct RecordsSelectionAnchorKey: PreferenceKey {
+    static var defaultValue: [String: Anchor<CGRect>] { [:] }
+
+    static func reduce(value: inout [String: Anchor<CGRect>], nextValue: () -> [String: Anchor<CGRect>]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
+/// An in-chart label keeps other dates tappable while the selection is visible.
+struct RecordsSelectionCallout<Label: View>: ViewModifier {
+    let selectedID: String?
+    @ViewBuilder let label: () -> Label
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content
+            .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selectedID)
+            .overlayPreferenceValue(RecordsSelectionAnchorKey.self) { anchors in
+                GeometryReader { proxy in
+                    ZStack {
+                        if let selectedID, let anchor = anchors[selectedID] {
+                            RecordsCanvasCalloutLayout(anchor: proxy[anchor]) {
+                                label()
+                            }
+                            .transition(.opacity)
+                        }
+                    }
+                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: selectedID)
+                }
+            }
+    }
+}
+
 /// Measures the label before placing it, so long locales and large text use
 /// the same edge avoidance as a short month name. No geometry-to-state loop.
 struct RecordsCanvasCalloutLayout: Layout {

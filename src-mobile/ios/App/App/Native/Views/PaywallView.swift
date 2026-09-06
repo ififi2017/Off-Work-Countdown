@@ -17,8 +17,8 @@ struct PaywallView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        OWCContentSizedScrollView {
-            VStack(alignment: .leading, spacing: 22) {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
                 if !store.plus.isAuthorized {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(store.t(reason.lockedTitleKey))
@@ -47,12 +47,15 @@ struct PaywallView: View {
             }
             .frame(maxWidth: 560, alignment: .leading)
             .padding(.horizontal, OWCDesign.contentInset)
-            .padding(.top, 24)
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity)
             .animation(
                 reduceMotion ? OWCMotion.reduced : OWCMotion.paywallPresentation,
                 value: store.plus.isAuthorized
             )
         }
+        .defaultScrollAnchor(.center, for: .alignment)
+        .scrollBounceBehavior(.basedOnSize)
         .background(OWCDesign.page)
     }
 
@@ -120,7 +123,7 @@ struct PaywallContent: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: 16) {
             if plus.isAuthorized {
                 PlusSubscriberThankYouView(
                     store: store,
@@ -133,7 +136,7 @@ struct PaywallContent: View {
                         : .opacity.combined(with: .offset(y: 10))
                 )
             } else {
-                VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: 16) {
                     if showsIntro {
                         Text(store.t("plusIntroBody"))
                             .font(.callout)
@@ -211,7 +214,7 @@ struct PaywallContent: View {
                     Spacer(minLength: 0)
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 9)
+                .padding(.vertical, 5)
                 .accessibilityElement(children: .combine)
                 if index < PlusBenefit.all.count - 1 {
                     Divider().overlay(OWCDesign.separator).padding(.leading, 62)
