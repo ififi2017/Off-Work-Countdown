@@ -94,6 +94,58 @@ struct LifeEmploymentPeriod: Codable, Equatable, Sendable, Identifiable {
     }
 }
 
+enum LifeEmploymentTimeline {
+    static func linkedPeriods(
+        _ periods: [LifeEmploymentPeriod],
+        calendar: Calendar,
+        now: Date = .now
+    ) -> [LifeEmploymentPeriod]? {
+        let dated = periods.compactMap { period in
+            period.startsOn.calculationAnchor(in: calendar).map { (period: period, start: $0) }
+        }
+        guard !dated.isEmpty,
+              dated.count == periods.count,
+              Set(periods.map(\.id)).count == periods.count,
+              periods.allSatisfy({ $0.startsOn.precision == .day && $0.salary.isValid })
+        else { return nil }
+
+        let sorted = dated.sorted { $0.start > $1.start }
+        guard sorted[0].start <= calendar.startOfDay(for: now),
+              !zip(sorted, sorted.dropFirst()).contains(where: { newer, older in
+                  newer.start <= older.start
+              })
+        else { return nil }
+
+        return sorted.enumerated().map { index, item in
+            var linked = item.period
+            linked.endsOn = index == 0 ? nil : sorted[index - 1].period.startsOn
+            return linked
+        }
+    }
+
+    static func inferredCurrentStart(
+        profile: LifeProfile?,
+        calendar: Calendar,
+        now: Date = .now
+    ) -> Date {
+        let today = calendar.startOfDay(for: now)
+        let candidates = profile?.employmentPeriods.compactMap { period in
+            period.endsOn?.calculationAnchor(in: calendar)
+        } ?? []
+        if let latestEnd = candidates.filter({ $0 <= today }).max() {
+            return latestEnd
+        }
+        if let workStart = profile?.workStartedPartial?.calculationAnchor(in: calendar),
+           workStart <= today {
+            return workStart
+        }
+        if let workStart = profile?.workStartedOn, workStart <= today {
+            return calendar.startOfDay(for: workStart)
+        }
+        return today
+    }
+}
+
 /// One life-view archive per store. The id is a constant so two offline
 /// devices first-write the same row. Matches 002 §6 and 010 LifeProfile v2.
 struct LifeProfile: Equatable, Sendable {

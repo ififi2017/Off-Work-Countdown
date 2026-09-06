@@ -348,7 +348,7 @@ private func activityTint(_ context: ActivityViewContext<OffWorkActivityAttribut
 /// nil for the work countdown, which keeps the brand mark.
 private func activitySymbol(_ context: ActivityViewContext<OffWorkActivityAttributes>) -> String? {
     guard let surface = context.state.surface, surface != "work" else { return nil }
-    return context.state.taskIcon ?? "timer"
+    return context.state.taskIcon ?? "stopwatch"
 }
 
 @ViewBuilder

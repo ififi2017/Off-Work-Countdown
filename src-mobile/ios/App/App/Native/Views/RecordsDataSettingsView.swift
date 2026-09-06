@@ -198,11 +198,8 @@ struct RecordsDataSettingsView: View {
         }
         .background(OWCDesign.page)
         .navigationTitle(store.t("recordsDataTitle"))
-        .navigationBarTitleDisplayMode(.inline)
-        .owcTabletDetailNavigation(
-            backTitle: store.t("settings"),
-            pageTitle: store.t("recordsDataTitle")
-        )
+        .navigationBarTitleDisplayMode(.large)
+        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("recordsDataTitle"))
         .sheet(isPresented: $showsLifeEditor) {
             LifeProfileEditView(store: store)
         }

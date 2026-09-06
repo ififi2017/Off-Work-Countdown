@@ -529,7 +529,7 @@ struct RecordsFocusHistoryCard: View {
         if !sessions.isEmpty {
             OWCGroupCard {
                 VStack(alignment: .leading, spacing: 10) {
-                    Label(store.t("focusHistory"), systemImage: "timer")
+                    Label(store.t("focusHistory"), systemImage: FocusTaskIcon.focus.systemName)
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(OWCDesign.secondary)
                     ForEach(sessions) { session in
@@ -548,7 +548,7 @@ struct RecordsFocusHistoryCard: View {
         }
         let end = session.endedAt ?? min(.now, session.plannedEndAt)
         return HStack(spacing: 10) {
-            Image(systemName: task?.icon.systemName ?? "timer")
+            Image(systemName: task?.icon.systemName ?? FocusTaskIcon.focus.systemName)
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(OWCDesign.secondary)
                 .frame(width: 30, height: 30)

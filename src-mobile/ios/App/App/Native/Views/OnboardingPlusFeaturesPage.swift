@@ -183,7 +183,7 @@ struct OnboardingPlusFocusPage: View {
 
     private var focusPreview: some View {
         preview(
-            icon: "timer",
+            icon: FocusTaskIcon.focus.systemName,
             title: store.t("onboardingPlusFocusTask"),
             duration: "09:00",
             progress: 0.64,

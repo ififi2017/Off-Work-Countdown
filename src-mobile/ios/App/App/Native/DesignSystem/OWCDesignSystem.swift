@@ -288,7 +288,7 @@ struct OWCAppHeader: View {
                 if showsFocus {
                     NavigationLink(value: AppRoute.focus) {
                         OWCGlassCircleLabel {
-                            Image(systemName: "timer")
+                            Image(systemName: FocusTaskIcon.focus.systemName)
                                 .font(.body.weight(.semibold))
                                 .foregroundStyle(OWCDesign.secondary)
                         }

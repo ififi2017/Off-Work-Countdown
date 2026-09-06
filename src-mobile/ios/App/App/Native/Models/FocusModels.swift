@@ -72,7 +72,7 @@ enum FocusTaskIcon: String, CaseIterable, Codable, Identifiable, Sendable {
 
     var systemName: String {
         switch self {
-        case .focus: "timer"
+        case .focus: "stopwatch"
         case .work: "briefcase.fill"
         case .code: "chevron.left.forwardslash.chevron.right"
         case .study: "book.fill"
