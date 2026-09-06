@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "Que bom ter você de volta",
   "firstRunBackToWelcome": "Voltar às boas-vindas",
   "firstRunContinueSetup": "Configurar este dispositivo",
-  "firstRunCloudNeedsSetup": "Seus registros foram restaurados, mas não encontramos uma jornada salva. Você pode concluir a configuração deste dispositivo sem perder o que foi restaurado."
+  "firstRunCloudNeedsSetup": "Seus registros foram restaurados, mas não encontramos uma jornada salva. Você pode concluir a configuração deste dispositivo sem perder o que foi restaurado.",
+  "recordsSeeThisMonth": "Ver este mês"
 }

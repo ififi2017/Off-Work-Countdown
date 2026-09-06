@@ -243,7 +243,25 @@ func yearBucketsKeepHistoricalProjectionVisible() throws {
 
     #expect(bucket.kind == .planned)
     #expect(bucket.isProjection)
+    #expect(bucket.hasEstimatedWork)
     #expect(bucket.workMs == Int64(8 * hourMs))
+}
+
+@MainActor
+@Test("Year hatching distinguishes estimated work from recorded work and projected rest")
+func yearBucketsHatchOnlyEstimatedWork() throws {
+    let calendar = utcCalendar()
+    let start = try date(2026, 3, 1, calendar: calendar)
+    let end = try date(2026, 3, 6, calendar: calendar)
+    let cells = [
+        yearCell("2026-03-01", start, .recorded, workHours: 8),
+        yearCell("2026-03-02", try date(2026, 3, 2, calendar: calendar), .planned, workHours: 8),
+        yearCell("2026-03-03", try date(2026, 3, 3, calendar: calendar), .unrecorded, isProjection: true),
+        yearCell("2026-03-04", try date(2026, 3, 4, calendar: calendar), .unrecorded, overtimeHours: 2, isProjection: true),
+        yearCell("2026-03-05", try date(2026, 3, 5, calendar: calendar), .planned)
+    ]
+    let buckets = RecordsYearSampler.buckets(from: start, to: end, count: 5, cells: cells, calendar: calendar)
+    #expect(buckets.map(\.hasEstimatedWork) == [false, true, false, true, false])
 }
 
 @MainActor

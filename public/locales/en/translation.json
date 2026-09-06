@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "Welcome back",
   "firstRunBackToWelcome": "Back to welcome",
   "firstRunContinueSetup": "Set up this device",
-  "firstRunCloudNeedsSetup": "Your records are back. We did not find saved schedule settings, so you can finish setting up this device without losing what was restored."
+  "firstRunCloudNeedsSetup": "Your records are back. We did not find saved schedule settings, so you can finish setting up this device without losing what was restored.",
+  "recordsSeeThisMonth": "See this month"
 }

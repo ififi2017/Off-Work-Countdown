@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "Te damos la bienvenida de nuevo",
   "firstRunBackToWelcome": "Volver a la bienvenida",
   "firstRunContinueSetup": "Configurar este dispositivo",
-  "firstRunCloudNeedsSetup": "Tus registros ya están restaurados. No encontramos un horario guardado, así que puedes terminar de configurar este dispositivo sin perder lo restaurado."
+  "firstRunCloudNeedsSetup": "Tus registros ya están restaurados. No encontramos un horario guardado, así que puedes terminar de configurar este dispositivo sin perder lo restaurado.",
+  "recordsSeeThisMonth": "Ver este mes"
 }

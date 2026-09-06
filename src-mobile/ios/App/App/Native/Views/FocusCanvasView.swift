@@ -112,8 +112,8 @@ struct FocusCanvasView: View {
             backTitle: store.t("timerTab"),
             pageTitle: store.t("focusTitle")
         ) {
-            quickCreateButton
-            timerSettingsButton
+            quickCreateButton.owcTabletGlassAction()
+            timerSettingsButton.owcTabletGlassAction()
         }
         .sheet(item: $editingBlock) { block in
             FocusBlockSheet(store: store, block: block) { result in

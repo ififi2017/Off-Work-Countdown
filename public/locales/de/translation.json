@@ -990,5 +990,6 @@
   "firstRunReturningTitle": "Willkommen zurück",
   "firstRunBackToWelcome": "Zurück zur Begrüßung",
   "firstRunContinueSetup": "Dieses Gerät einrichten",
-  "firstRunCloudNeedsSetup": "Deine Aufzeichnungen sind wieder da. Gespeicherte Zeitplaneinstellungen wurden nicht gefunden. Du kannst dieses Gerät jetzt fertig einrichten; die wiederhergestellten Daten bleiben erhalten."
+  "firstRunCloudNeedsSetup": "Deine Aufzeichnungen sind wieder da. Gespeicherte Zeitplaneinstellungen wurden nicht gefunden. Du kannst dieses Gerät jetzt fertig einrichten; die wiederhergestellten Daten bleiben erhalten.",
+  "recordsSeeThisMonth": "Diesen Monat ansehen"
 }

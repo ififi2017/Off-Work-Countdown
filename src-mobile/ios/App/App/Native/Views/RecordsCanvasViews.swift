@@ -892,6 +892,7 @@ struct RecordsYearCanvas: View {
     let selectedMonth: Int?
     @Binding var calloutMonth: Int?
     @Binding var selectedDate: Date?
+    var onOpenMonth: (Int) -> Void
     var onSelectMonth: (Int) -> Void
     @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
     @Environment(\.colorSchemeContrast) private var contrast
@@ -922,6 +923,15 @@ struct RecordsYearCanvas: View {
                             let rect = grid.rect(at: bucket.index)
                             let path = Path(roundedRect: rect, cornerRadius: min(3, grid.cell / 3))
                             context.fill(path, with: .color(color(bucket)))
+                            if bucket.hasEstimatedWork {
+                                var hatchContext = context
+                                hatchContext.clip(to: path)
+                                hatchContext.stroke(
+                                    OWCHatchPattern(spacing: 4).path(in: rect),
+                                    with: .color(OWCDesign.recordsWork.opacity(0.55)),
+                                    lineWidth: contrast == .increased ? 1.5 : 1
+                                )
+                            }
                             if bucket.kind == .corrected || withoutColor && bucket.kind == .recorded {
                                 context.stroke(
                                     Path(roundedRect: rect.insetBy(dx: 0.5, dy: 0.5), cornerRadius: min(3, grid.cell / 3)),
@@ -940,22 +950,44 @@ struct RecordsYearCanvas: View {
                         }
                     }
                     .contentShape(Rectangle())
-                    .gesture(SpatialTapGesture().onEnded { value in
-                        guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
-                        let bucket = buckets[index]
-                        select(month: bucket.month, date: bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2))
-                    })
+                    .gesture(
+                        SpatialTapGesture(count: 2)
+                            .exclusively(before: SpatialTapGesture())
+                            .onEnded { result in
+                                let location: CGPoint
+                                let opensMonth: Bool
+                                switch result {
+                                case .first(let value):
+                                    location = value.location
+                                    opensMonth = true
+                                case .second(let value):
+                                    location = value.location
+                                    opensMonth = false
+                                }
+                                guard let index = grid.index(at: location), buckets.indices.contains(index) else { return }
+                                let bucket = buckets[index]
+                                if opensMonth {
+                                    onOpenMonth(bucket.month)
+                                } else {
+                                    select(month: bucket.month, date: bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2))
+                                }
+                            }
+                    )
                     .overlay {
                         ZStack {
                             if let calloutMonth,
                                let bucket = calloutBucket(for: calloutMonth, in: buckets) {
                                 let rect = grid.rect(at: bucket.index)
                                 RecordsCanvasCalloutLayout(anchor: rect) {
-                                    RecordsCanvasCallout(
-                                        icon: "calendar",
-                                        title: monthLabel(calloutMonth),
-                                        subtitle: yearLabel
-                                    )
+                                    Button { onOpenMonth(calloutMonth) } label: {
+                                        RecordsCanvasCallout(
+                                            icon: "calendar",
+                                            title: monthLabel(calloutMonth),
+                                            subtitle: yearLabel,
+                                            actionTitle: store.t("recordsSeeThisMonth")
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                                 .transition(.opacity)
                             }
@@ -972,6 +1004,9 @@ struct RecordsYearCanvas: View {
                                     Text(monthLabel(month))
                                 }
                                 .accessibilityAddTraits(selectedMonth == month ? .isSelected : [])
+                                .accessibilityAction(named: Text(store.t("recordsSeeThisMonth"))) {
+                                    onOpenMonth(month)
+                                }
                             }
                         }
                     }
@@ -1006,6 +1041,18 @@ struct RecordsYearCanvas: View {
                             }
                     }
                     .buttonStyle(.plain)
+                    .highPriorityGesture(
+                        TapGesture(count: 2).exclusively(before: TapGesture())
+                            .onEnded { result in
+                                switch result {
+                                case .first: onOpenMonth(month)
+                                case .second: select(month: month, date: nil)
+                                }
+                            }
+                    )
+                    .accessibilityAction(named: Text(store.t("recordsSeeThisMonth"))) {
+                        onOpenMonth(month)
+                    }
                 }
             }
 
@@ -1082,6 +1129,7 @@ struct RecordsYearMonthBars: View {
     let store: OffWorkStore
     let cells: [RecordsDayCell]
     let selectedMonth: Int?
+    var onOpenMonth: (Int) -> Void
     var onSelectMonth: (Int) -> Void
 
     @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
@@ -1198,6 +1246,18 @@ struct RecordsYearMonthBars: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .highPriorityGesture(
+            TapGesture(count: 2).exclusively(before: TapGesture())
+                .onEnded { result in
+                    switch result {
+                    case .first: onOpenMonth(month.month)
+                    case .second: onSelectMonth(month.month)
+                    }
+                }
+        )
+        .accessibilityAction(named: Text(store.t("recordsSeeThisMonth"))) {
+            onOpenMonth(month.month)
+        }
         .accessibilityLabel(monthLabel(month.month))
         .accessibilityValue(accessibilityValue(month))
         .accessibilityAddTraits(isSelected ? .isSelected : [])

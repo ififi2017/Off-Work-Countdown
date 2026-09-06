@@ -112,6 +112,7 @@ struct RecordsYearBucket: Equatable, Sendable, Identifiable {
     var kind: RecordsDayAppearance
     var workMs: Int64
     var isProjection: Bool
+    var hasEstimatedWork: Bool = false
 }
 
 /// One month of the expanded year chart.
@@ -508,7 +509,10 @@ enum RecordsYearSampler {
                 month: calendar.component(.month, from: start),
                 kind: appearance,
                 workMs: workMs,
-                isProjection: isProjection
+                isProjection: isProjection,
+                hasEstimatedWork: inside.contains {
+                    ($0.isProjection || $0.appearance == .planned) && $0.workMs + $0.overtimeMs > 0
+                }
             )
         }
     }

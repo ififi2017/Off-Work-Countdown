@@ -89,11 +89,13 @@ enum OWCDesign {
     static let rowHeight: CGFloat = 52
     static let pageInset: CGFloat = 16
     static let contentInset: CGFloat = 20
-    // Visible 34pt circles align with the cards; their 44pt hit targets extend
-    // five points beyond that edge. Every root header owns this spacing.
+    // Custom iPad root and detail chrome share this inset; each native glass
+    // action owns its 44pt hit area inside the row.
     static let rootControlInset: CGFloat = pageInset - 5
-    static let rootHeaderHeight: CGFloat = 52
-    static let rootHeaderTopInset: CGFloat = 8
+    // Match the system navigation toolbar used by pushed pages such as Focus,
+    // so root controls keep the same vertical position across navigation.
+    static let rootHeaderHeight: CGFloat = 44
+    static let rootHeaderTopInset: CGFloat = 0
 
     /// Fixed vertical rhythm for the setup screen. These used to be `Spacer`s,
     /// which split the leftover height evenly and left the layout drifting with
@@ -174,6 +176,16 @@ struct OWCGlassCircleLabel<Content: View>: View {
             .glassEffect(.regular.interactive(), in: Circle())
             .contentShape(Circle())
             .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
+    }
+}
+
+extension View {
+    /// Native Liquid Glass for controls hosted by the app's custom iPad chrome.
+    /// The frame belongs to each action so adjacent buttons keep separate hit areas.
+    func owcTabletGlassAction() -> some View {
+        buttonStyle(.glass)
+            .frame(minWidth: 44, minHeight: 44)
             .contentShape(Rectangle())
     }
 }
@@ -277,42 +289,34 @@ struct OWCAppHeader: View {
             HStack(spacing: 8) {
                 if let onShowSidebar {
                     Button(action: onShowSidebar) {
-                        OWCGlassCircleLabel {
-                            Image(systemName: "sidebar.left")
-                                .foregroundStyle(OWCDesign.secondary)
-                        }
+                        Label(store.t("showSidebar"), systemImage: "sidebar.left")
                     }
-                    .buttonStyle(.plain)
+                    .owcTabletGlassAction()
                     .accessibilityLabel(store.t("showSidebar"))
                 }
                 if showsFocus {
                     NavigationLink(value: AppRoute.focus) {
-                        OWCGlassCircleLabel {
-                            Image(systemName: FocusTaskIcon.focus.systemName)
-                                .font(.body.weight(.semibold))
-                                .foregroundStyle(OWCDesign.secondary)
-                        }
+                        Label(store.t("focusTitle"), systemImage: FocusTaskIcon.focus.systemName)
                     }
-                    .buttonStyle(.plain)
+                    .owcTabletGlassAction()
                     .accessibilityLabel(store.t("focusTitle"))
                 }
             }
+            .labelStyle(.iconOnly)
         } trailing: {
             Button { withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) { store.toggleQuickTheme() } } label: {
-                OWCGlassCircleLabel {
-                    Group {
-                        if store.quickThemeIsAuto {
-                            Text(verbatim: "A")
-                                .font(.body.weight(.semibold))
-                        } else {
-                            Image(systemName: store.quickThemeIcon)
-                                .font(.body)
-                        }
+                Group {
+                    if store.quickThemeIsAuto {
+                        Text(verbatim: "A")
+                            .font(.body.weight(.semibold))
+                    } else {
+                        Image(systemName: store.quickThemeIcon)
+                            .font(.body)
                     }
-                    .foregroundStyle(OWCDesign.secondary)
                 }
+                .foregroundStyle(OWCDesign.secondary)
             }
-            .buttonStyle(.plain)
+            .owcTabletGlassAction()
             .accessibilityLabel(store.t("theme"))
         }
     }
@@ -1279,12 +1283,10 @@ private struct OWCTabletDetailChrome<Content: View, Trailing: View>: View {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
                 Button(action: onBack) {
-                    OWCGlassCircleLabel {
-                        Image(systemName: "chevron.left")
-                            .font(.body.weight(.semibold))
-                    }
+                    Label(backTitle, systemImage: "chevron.left")
                 }
-                .buttonStyle(.plain)
+                .labelStyle(.iconOnly)
+                .owcTabletGlassAction()
                 .accessibilityLabel(backTitle)
 
                 Spacer(minLength: 8)
