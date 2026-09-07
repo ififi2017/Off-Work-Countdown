@@ -49,6 +49,7 @@ struct FocusCanvasView: View {
             FocusNowBand(
                 store: store,
                 model: model,
+                onExtend: extend,
                 onStop: { confirmsStop = true },
                 onStart: { start($0) },
                 onAdd: {
@@ -204,7 +205,7 @@ struct FocusCanvasView: View {
                 selectedBlock = block.startAtMs
                 editingBlock = block
             }
-            FocusTaskLedger(store: store, model: model)
+            FocusTaskLedger(store: store, model: model, onExtend: extend)
         }
     }
 
@@ -237,6 +238,20 @@ struct FocusCanvasView: View {
 
     // MARK: - actions
 
+    private func extend(_ taskID: UUID) {
+        switch store.addOneFocusBlock(taskID: taskID) {
+        case .success(let start):
+            scale = .today
+            apply(.placed(taskID: taskID, blockStartAtMs: start))
+            notice = store.t("focusExtendScheduled", values: [
+                "time": store.formatTime(Date(timeIntervalSince1970: Double(start) / 1_000))
+            ])
+        case .failure(let error):
+            notice = store.t(error == .conflict ? "focusExtendConflict" : "focusExtendNoRoom")
+            warningFeedback &+= 1
+        }
+    }
+
     private func start(_ block: FocusDayCanvasModel.Block) {
         guard let task = store.records.state.focusTasks.first(where: { $0.id == block.taskID }),
               store.startFocus(task: task, inBlockStartingAt: block.startAtMs)
@@ -268,6 +283,7 @@ struct FocusCanvasView: View {
 struct FocusNowBand: View {
     let store: OffWorkStore
     let model: FocusDayCanvasModel
+    var onExtend: (UUID) -> Void
     var onStop: () -> Void
     var onStart: (FocusDayCanvasModel.Block) -> Void
     var onAdd: () -> Void
@@ -286,6 +302,16 @@ struct FocusNowBand: View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 0) {
                 content.padding(18)
+                if let taskID = store.focusContinuationTaskID() {
+                    Button { onExtend(taskID) } label: {
+                        Text(store.t("focusExtendOne"))
+                            .font(.footnote.weight(.medium))
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .contentShape(.rect)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 6)
+                }
                 if session != nil, let issue = store.focusNotificationIssue {
                     notificationIssue(issue).padding(.horizontal, 18).padding(.bottom, 12)
                 }
@@ -440,6 +466,7 @@ struct FocusNowBand: View {
 struct FocusTaskLedger: View {
     let store: OffWorkStore
     let model: FocusDayCanvasModel
+    var onExtend: (UUID) -> Void
 
     var body: some View {
         if !model.tasks.isEmpty {
@@ -459,6 +486,9 @@ struct FocusTaskLedger: View {
                                         _ = store.startFocus(task: task)
                                     }
                                     .disabled(store.focusStartAvailability(task) != .ready)
+                                    Button(store.t("focusExtendOne"), systemImage: "plus") {
+                                        onExtend(task.id)
+                                    }
                                     Button(store.t(task.isFavorite ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: "star") {
                                         store.toggleFocusFavorite(task)
                                     }

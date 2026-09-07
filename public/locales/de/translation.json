@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "Diesen Monat ansehen",
   "focusDemoWriting": "Einen Vorschlag ausarbeiten",
   "focusDemoMessages": "Nachrichten beantworten",
-  "focusDemoLearning": "Etwas Neues lernen"
+  "focusDemoLearning": "Etwas Neues lernen",
+  "focusExtendOne": "Ein weiterer Pomodoro",
+  "focusExtendConflict": "Der nächste Block ist bereits belegt. Wähle unter Heute einen freien Block.",
+  "focusExtendNoRoom": "Vor der Pause oder dem Feierabend passt kein voller Pomodoro mehr. Wähle unter Heute einen späteren Block.",
+  "focusExtendScheduled": "Ein weiterer Pomodoro ist für {{time}} geplant."
 }

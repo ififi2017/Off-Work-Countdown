@@ -127,6 +127,9 @@ struct FocusReviewRegressionTests {
         let session = try #require(store.activeFocusSession())
         #expect(store.nextFocusBreakKind(after: session) == .longBreak)
         #expect(LiveActivityService.focusNextLabel(session: session, store: store, now: at) == store.t("focusActivityThenBreak", values: ["count": "15"]))
+        var unassigned = session
+        unassigned.taskID = nil
+        #expect(LiveActivityService.focusNextLabel(session: unassigned, store: store, now: at) == nil)
         #expect(store.finishElapsedFocusSession(at: session.plannedEndAt))
         #expect(store.focusLastNextAction == .startLongBreak)
     }

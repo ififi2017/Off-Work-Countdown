@@ -227,7 +227,7 @@ final class LiveActivityService {
     /// Describe the next timer phase, not an unrelated future planning tile.
     static func focusNextLabel(session: FocusSession, store: OffWorkStore, now: Date) -> String? {
         guard session.kind == .focus else { return store.t("focusStartNextFocus") }
-        guard session.plannedEndReason == .completed else { return nil }
+        guard session.taskID != nil, session.plannedEndReason == .completed else { return nil }
         let kind = store.nextFocusBreakKind(after: session)
         guard store.hasFocusRoom(at: session.plannedEndAt) else { return nil }
         let settings = store.focusTimerSettings.normalized
