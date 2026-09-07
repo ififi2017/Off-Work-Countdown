@@ -4605,28 +4605,39 @@ final class OffWorkStore {
     ) -> [(block: FocusWorkBlock, assignment: FocusPlanAssignment)] {
         let blocks = focusPlanningBlocks(for: snapshot)
         let key = RecordJSON.dayKey(snapshot.startDate, calendar: recordsCalendar)
+        let assignments: [FocusPlanAssignment]
         if let plan = focusPlanning.plans[key], !plan.assignments.isEmpty {
-            return blocks.compactMap { block in
-                if block.kind == .breakTime {
-                    return (block, FocusPlanAssignment(blockStartAtMs: block.startAtMs, kind: .breakTime, taskID: nil, taskTitle: nil, taskIcon: nil))
-                }
-                return plan.assignments.first(where: { $0.blockStartAtMs == block.startAtMs }).map { (block, $0) }
+            assignments = plan.assignments
+        } else if let id = focusPlanning.defaultTemplateID,
+                  let template = focusPlanning.templates.first(where: { $0.id == id }) {
+            assignments = template.slots.compactMap { slot in
+                guard blocks.indices.contains(slot.blockIndex) else { return nil }
+                let block = blocks[slot.blockIndex]
+                guard block.kind == .task else { return nil }
+                return FocusPlanAssignment(
+                    blockStartAtMs: block.startAtMs, kind: slot.kind,
+                    taskID: nil, taskTitle: slot.taskTitle, taskIcon: slot.taskIcon
+                )
             }
+        } else {
+            return []
         }
-        guard let id = focusPlanning.defaultTemplateID,
-              let template = focusPlanning.templates.first(where: { $0.id == id })
-        else { return [] }
-        return template.slots.compactMap { slot in
-            guard blocks.indices.contains(slot.blockIndex) else { return nil }
-            let block = blocks[slot.blockIndex]
-            guard slot.kind == .breakTime || block.kind == .task else { return nil }
-            return (block, FocusPlanAssignment(
-                blockStartAtMs: block.startAtMs,
-                kind: slot.kind,
-                taskID: nil,
-                taskTitle: slot.taskTitle,
-                taskIcon: slot.taskIcon
-            ))
+        return blocks.enumerated().compactMap { index, block in
+            if block.kind == .breakTime {
+                guard index > 0 else { return nil }
+                let previous = blocks[index - 1]
+                guard previous.kind == .task, previous.end == block.start,
+                      assignments.contains(where: {
+                          $0.blockStartAtMs == previous.startAtMs && $0.kind == .task
+                              && ($0.taskID != nil || $0.taskTitle?.isEmpty == false)
+                      })
+                else { return nil }
+                return (block, FocusPlanAssignment(
+                    blockStartAtMs: block.startAtMs, kind: .breakTime,
+                    taskID: nil, taskTitle: nil, taskIcon: nil
+                ))
+            }
+            return assignments.first(where: { $0.blockStartAtMs == block.startAtMs }).map { (block, $0) }
         }
     }
 

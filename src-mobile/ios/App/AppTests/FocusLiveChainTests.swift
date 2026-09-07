@@ -109,19 +109,26 @@ func projectionSkipsBlocksOwnedByAnotherTask() {
 }
 
 @MainActor
-@Test("A shift whose remaining blocks all belong to others cannot take one more")
-func addableBlockIsNilWhenTheShiftIsFull() {
-    let full = [
-        chainBlock(0, start: 0, end: 100, taskID: UUID()),
-        chainBlock(1, start: 100, end: 200, taskID: UUID()),
-    ]
-    #expect(FocusLiveChain.addableBlock(blocks: full, fromMs: 0) == nil)
+@Test("A block already promised to another task is not somewhere to continue")
+func continuationRefusesAConflictingBlock() throws {
+    let store = try chainStore()
+    let at = try #require(chainDay(store, hour: 9, minute: 0))
+    let blocks = store.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
+    let first = try #require(blocks.first)
+    let second = try #require(blocks.dropFirst().first)
 
-    let withRoom = full + [chainBlock(2, start: 200, end: 300, taskID: nil)]
-    #expect(FocusLiveChain.addableBlock(blocks: withRoom, fromMs: 0)?.startAtMs == 200)
-    // An empty block already behind the running one is not somewhere to put
-    // the next pomodoro.
-    #expect(FocusLiveChain.addableBlock(blocks: withRoom, fromMs: 300) == nil)
+    let running = chainTask(store, title: "Spec review", pomodoros: 1, at: at)
+    let other = chainTask(store, title: "Inbox", pomodoros: 1, at: at)
+    _ = store.assign(running, toBlockStartingAt: first.startAtMs, at: at)
+    _ = store.assign(other, toBlockStartingAt: second.startAtMs, at: at)
+    #expect(store.startFocus(task: running, inBlockStartingAt: first.startAtMs, at: at))
+
+    // The next block belongs to Inbox. The plus greys out rather than taking
+    // it, and the write refuses for exactly the same reason — one resolver
+    // answers both.
+    #expect(!store.canAddFocusPomodoro(at: at))
+    #expect(!store.addFocusPomodoroToRunningTask(at: at))
+    #expect(store.records.state.focusTasks.first { $0.id == running.id }?.estimatedPomodoros == 1)
 }
 
 @MainActor
@@ -222,16 +229,34 @@ func focusAlertsDescribeTheWholePhase() throws {
 @Test("A block cut short by a boundary owes only its own alert")
 func boundaryBlockHasNoBreakAlert() throws {
     let store = try chainStore()
-    // 12:20 leaves five minutes before the lunch gap, so the block is cut.
-    let at = try #require(chainDay(store, hour: 12, minute: 20))
+    let at = try #require(chainDay(store, hour: 11, minute: 45))
+    let end = try #require(chainDay(store, hour: 12, minute: 0))
     let task = chainTask(store, title: "Spec review", pomodoros: 1, at: at)
-    #expect(store.startFocus(task: task))
+    // Written directly rather than started: `startFocus(task:)` reads the wall
+    // clock, so driving it made this assert nothing outside shift hours.
+    store.records.upsertFocusSession(FocusSession(
+        id: UUID(),
+        taskID: task.id,
+        shiftAnchorDate: store.recordsCalendar.startOfDay(for: at),
+        startedAt: at,
+        plannedEndAt: end,
+        endedAt: nil,
+        endReason: nil,
+        editedAt: at,
+        editCount: 0,
+        editTieBreaker: UUID(),
+        kind: .focus,
+        plannedEndReason: .stoppedAtBoundary
+    ))
 
     let session = try #require(store.activeFocusSession())
-    guard session.plannedEndReason != .completed else { return }
+    // It stopped at lunch instead of finishing, so it earned no break and has
+    // nothing to say about one.
     let alerts = store.focusAlerts(for: session)
     #expect(alerts.count == 1)
     #expect(alerts[0].slot == .end)
+    #expect(alerts[0].title == "Spec review")
+    #expect(store.focusChain(for: session, at: at).count == 1)
 }
 
 // MARK: - Fixtures

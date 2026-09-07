@@ -138,6 +138,13 @@ struct FocusReviewRegressionTests {
             "focusActivityThenBreak",
             values: ["count": store.formatCount(15)]
         ))
+        // A block with nothing behind it earns no break, so the chain must not
+        // promise one either.
+        var unassigned = session
+        unassigned.taskID = nil
+        let unassignedChain = store.focusChain(for: unassigned, at: at)
+        #expect(unassignedChain.count == 1)
+        #expect(LiveActivityService.focusLegs(unassignedChain, store: store).first?.nextNote == nil)
         #expect(store.finishElapsedFocusSession(at: session.plannedEndAt))
         #expect(store.activeFocusSession()?.kind == .longBreak)
     }

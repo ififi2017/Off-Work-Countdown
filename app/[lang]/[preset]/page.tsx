@@ -10,10 +10,14 @@ import { encodeShift } from "@/lib/share";
 import { localizedSocialMetadata } from "@/lib/server/metadata";
 import {
   contentLocales,
-  defaultContentLocale,
   type ContentLocale,
 } from "@/lib/content-locales";
-import { isContentSlug } from "@/lib/site-urls";
+import {
+  isContentSlug,
+  officialPageUrl,
+  webAppAlternates,
+  webAppPageUrl,
+} from "@/lib/site-urls";
 
 // 五页长文已迁到官网，本仓不再保留同名页面。Web 上旧 URL 由 next.config 301；
 // 若落到这一段（例如桌面静态导出），直接 404，不要当成预设班次。
@@ -26,12 +30,7 @@ export function generateStaticParams() {
 }
 
 function alternatesFor(slug: string) {
-  return {
-    ...Object.fromEntries(
-      contentLocales.map((l) => [l, `${siteConfig.webAppUrl}/${l}/${slug}`])
-    ),
-    "x-default": `${siteConfig.webAppUrl}/${defaultContentLocale}/${slug}`,
-  };
+  return webAppAlternates(contentLocales, slug);
 }
 
 export async function generateMetadata({
@@ -50,7 +49,7 @@ export async function generateMetadata({
     title: item.metaTitle,
     description: item.metaDescription,
     alternates: {
-      canonical: `${siteConfig.webAppUrl}/${lang}/${preset}`,
+      canonical: webAppPageUrl(lang, preset),
       languages: alternatesFor(preset),
     },
     ...localizedSocialMetadata({
@@ -104,6 +103,7 @@ export default async function PresetPage({
   // 带上班次直接开始倒计时。不加 from=share —— 那是访问者自己选的作息，
   // 不该显示「有人分享给你」，也理应写入本地设置。
   const startHref = `/${lang}?s=${encodeShift(definition.shift)}`;
+  const iosHref = officialPageUrl(lang, "download");
 
   return (
     <ContentPage
@@ -113,6 +113,10 @@ export default async function PresetPage({
       heading={item.name}
       intro={item.intro}
     >
+      <p className="mb-8 text-base leading-7 text-gray-600 dark:text-gray-300">
+        {copy.webBoundary}
+      </p>
+
       <dl className="grid grid-cols-3 gap-3">
         {facts.map((f) => (
           <div
@@ -140,12 +144,20 @@ export default async function PresetPage({
         ))}
       </div>
 
-      <Link
-        href={startHref}
-        className="mt-8 inline-flex rounded-xl bg-gray-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
-      >
-        {copy.startCta}
-      </Link>
+      <div className="mt-8 flex flex-col items-start gap-3">
+        <Link
+          href={startHref}
+          className="inline-flex rounded-xl bg-gray-900 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+        >
+          {copy.startCta}
+        </Link>
+        <a
+          href={iosHref}
+          className="text-sm text-gray-600 underline-offset-4 transition-colors hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-white"
+        >
+          {copy.iosCta}
+        </a>
+      </div>
 
       {/* 预设页之间互链，爬虫才走得到。 */}
       <section className="mt-12 border-t border-gray-200 pt-6 dark:border-gray-700">

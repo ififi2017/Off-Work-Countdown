@@ -1,7 +1,7 @@
 {
-  "title": "DoneAt — Đếm ngược giờ tan ca",
-  "description": "Xem còn bao lâu đến giờ tan làm với bộ đếm miễn phí, tiến độ theo thời gian thực, nhắc nhở và hỗ trợ nhiều ca làm linh hoạt.",
-  "keywords": "đếm giờ tan ca, giờ tan làm, đếm ngược giờ tan ca, đồng hồ tan ca, quản lý thời gian, DoneAt",
+  "title": "DoneAt — Đếm ngược tan ca trong trình duyệt",
+  "description": "Đếm ngược giờ làm trong trình duyệt. Đặt giờ bắt đầu và kết thúc — kể cả qua nửa đêm — rồi xem thời gian còn lại. Dữ liệu ở máy này, không cần tài khoản. Thu nhập tùy chọn. Xếp ca nằm trên iOS.",
+  "keywords": "đếm giờ tan ca,đồng hồ trình duyệt,tan làm,ca đêm,DoneAt",
   "siteName": "DoneAt",
   "imageAlt": "DoneAt"
 }

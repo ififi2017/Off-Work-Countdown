@@ -73,13 +73,34 @@ const COPY = {
         title: "Lunch pauses the clock",
         sub: "Breaks don’t count as work. The remaining time stays honest.",
       },
+      {
+        shot: "records",
+        file: "en-4.png",
+        plus: true,
+        title: "See the shape of your year",
+        sub: "Your workdays, time, and trends in one place.",
+      },
+      {
+        shot: "life",
+        file: "en-5.png",
+        plus: true,
+        title: "Put work in the bigger picture",
+        sub: "See your life and work in one view.",
+      },
+      {
+        shot: "focus",
+        file: "en-6.png",
+        plus: true,
+        title: "Make room for focused work",
+        sub: "Tasks, focus blocks, and breaks fit into your day.",
+      },
     ],
     ipad: [
       {
         shot: "timer",
         file: "en-ipad-1.png",
         title: "Built for the bigger screen",
-        sub: "Sidebar and the day’s details, side by side.",
+        sub: "Your countdown and today’s details, together.",
       },
       {
         shot: "widgets",
@@ -91,7 +112,28 @@ const COPY = {
         shot: "lunch",
         file: "en-ipad-3.png",
         title: "Lunch, at iPad scale",
-        sub: "The same pause. More room to see the day.",
+        sub: "Pause the countdown for lunch. Keep work and breaks clear.",
+      },
+      {
+        shot: "records",
+        file: "en-ipad-4.png",
+        plus: true,
+        title: "Your year, side by side",
+        sub: "Workdays, time, and trends have room to tell the story.",
+      },
+      {
+        shot: "life",
+        file: "en-ipad-5.png",
+        plus: true,
+        title: "Your working life, in view",
+        sub: "Life and work have room to share the same picture.",
+      },
+      {
+        shot: "focus",
+        file: "en-ipad-6.png",
+        plus: true,
+        title: "A clearer place to focus",
+        sub: "Tasks and focus blocks stay close to the rest of your day.",
       },
     ],
   },
@@ -115,13 +157,34 @@ const COPY = {
         title: "午休时，倒计时会停",
         sub: "午饭不算工时，剩下的时间是准的。",
       },
+      {
+        shot: "records",
+        file: "zh-4.png",
+        plus: true,
+        title: "把这一年看得更清楚",
+        sub: "工作日、工时和趋势，都能回头看。",
+      },
+      {
+        shot: "life",
+        file: "zh-5.png",
+        plus: true,
+        title: "把工作放进人生里看",
+        sub: "从出生到退休，看看时间花在哪里。",
+      },
+      {
+        shot: "focus",
+        file: "zh-6.png",
+        plus: true,
+        title: "在上班时间，留一段专注",
+        sub: "任务、专注时段和休息，都排在今天。",
+      },
     ],
     ipad: [
       {
         shot: "timer",
         file: "zh-ipad-1.png",
         title: "为 iPad 大屏做的",
-        sub: "侧边栏和今天的细节，并排展开。",
+        sub: "倒计时和今天的细节，都在同一屏。",
       },
       {
         shot: "widgets",
@@ -133,7 +196,112 @@ const COPY = {
         shot: "lunch",
         file: "zh-ipad-3.png",
         title: "午休，大屏上也停",
-        sub: "同一套算法，只是看得更清楚。",
+        sub: "午休暂停进度，工作和休息分得清楚。",
+      },
+      {
+        shot: "records",
+        file: "zh-ipad-4.png",
+        plus: true,
+        title: "把这一年展开来看",
+        sub: "工作日、工时和趋势，一起放进更大的画面。",
+      },
+      {
+        shot: "life",
+        file: "zh-ipad-5.png",
+        plus: true,
+        title: "把工作放回人生里看",
+        sub: "从第一份工作到退休，前后的时间都看得见。",
+      },
+      {
+        shot: "focus",
+        file: "zh-ipad-6.png",
+        plus: true,
+        title: "给专注留一块清楚的地方",
+        sub: "任务和专注时段，和今天的其他安排放在一起。",
+      },
+    ],
+  },
+  "zh-TW": {
+    iphone: [
+      {
+        shot: "timer",
+        file: "zh-tw-1.png",
+        title: "一眼看清幾點下班",
+        sub: "還剩多久、走了多遠、接下來做什麼，都在這一屏。",
+      },
+      {
+        shot: "widgets",
+        file: "zh-tw-2.png",
+        title: "不用打開，也能看到",
+        sub: "中型、大型和動態島，倒數一直在走。",
+      },
+      {
+        shot: "lunch",
+        file: "zh-tw-3.png",
+        title: "午休時，倒數會停",
+        sub: "午飯不算工時，剩下的時間是準的。",
+      },
+      {
+        shot: "records",
+        file: "zh-tw-4.png",
+        plus: true,
+        title: "把這一年看得更清楚",
+        sub: "工作日、工時和趨勢，都能回頭看。",
+      },
+      {
+        shot: "life",
+        file: "zh-tw-5.png",
+        plus: true,
+        title: "把工作放進人生裡看",
+        sub: "從出生到退休，看看時間花在哪裡。",
+      },
+      {
+        shot: "focus",
+        file: "zh-tw-6.png",
+        plus: true,
+        title: "在上班時間，留一段專注",
+        sub: "任務、專注時段和休息，都排在今天。",
+      },
+    ],
+    ipad: [
+      {
+        shot: "timer",
+        file: "zh-tw-ipad-1.png",
+        title: "為 iPad 大螢幕做的",
+        sub: "倒數和今天的細節，都在同一屏。",
+      },
+      {
+        shot: "widgets",
+        file: "zh-tw-ipad-2.png",
+        title: "倒數鋪在主畫面上",
+        sub: "四種大小，應用程式關著也在走。",
+      },
+      {
+        shot: "lunch",
+        file: "zh-tw-ipad-3.png",
+        title: "午休，大螢幕上也停",
+        sub: "午休暫停進度，工作和休息分得清楚。",
+      },
+      {
+        shot: "records",
+        file: "zh-tw-ipad-4.png",
+        plus: true,
+        title: "把這一年展開來看",
+        sub: "工作日、工時和趨勢，一起放進更大的畫面。",
+      },
+      {
+        shot: "life",
+        file: "zh-tw-ipad-5.png",
+        plus: true,
+        title: "把工作放回人生裡看",
+        sub: "從第一份工作到退休，前後的時間都看得見。",
+      },
+      {
+        shot: "focus",
+        file: "zh-tw-ipad-6.png",
+        plus: true,
+        title: "給專注留一塊清楚的地方",
+        sub: "任務和專注時段，和今天的其他安排放在一起。",
       },
     ],
   },
@@ -166,6 +334,10 @@ function page(card, language, platform, frameUri, sourceUri) {
     .brand {
       display: inline-flex; align-items: center; gap: 8px;
       color: ${BRAND.orange}; font-size: ${isPhone ? 17 : 18}px; font-weight: 700;
+    }
+    .plus {
+      padding: 2px 6px; border: 1px solid color-mix(in srgb, ${BRAND.orange} 60%, ${BRAND.cream});
+      border-radius: 999px; font-size: .68em; font-weight: 700; letter-spacing: .02em;
     }
     .mark { width: ${isPhone ? 36 : 40}px; height: ${isPhone ? 36 : 40}px; display: block; }
     h1 {
@@ -207,7 +379,7 @@ function page(card, language, platform, frameUri, sourceUri) {
     }
   </style></head><body>
     <div class="copy">
-      <div class="brand">${brandMark(BRAND.plum)}<span>${BRAND.name}</span></div>
+      <div class="brand">${brandMark(BRAND.plum)}<span>${BRAND.name}</span>${card.plus ? '<span class="plus">Plus</span>' : ""}</div>
       <h1>${escapeHTML(card.title)}</h1>
       <p>${escapeHTML(card.sub)}</p>
     </div>

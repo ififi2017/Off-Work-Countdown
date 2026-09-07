@@ -16,4 +16,20 @@ describe("web sitemap", () => {
       expect(urls.some((url) => url.endsWith(`/${slug}`))).toBe(false);
     }
   });
+
+  it("points every x-default alternate at /en, not the bare host", () => {
+    const defaults = new Set(
+      sitemap().flatMap((entry) => {
+        const languages = entry.alternates?.languages ?? {};
+        return languages["x-default"] ? [languages["x-default"]] : [];
+      })
+    );
+
+    expect([...defaults].every((url) => url.startsWith("https://off.rainif.com/en"))).toBe(
+      true
+    );
+    expect(defaults.has("https://off.rainif.com")).toBe(false);
+    expect(defaults.has("https://off.rainif.com/en")).toBe(true);
+    expect(defaults.has("https://off.rainif.com/en/996")).toBe(true);
+  });
 });

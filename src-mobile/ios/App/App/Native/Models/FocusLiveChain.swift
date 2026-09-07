@@ -49,16 +49,6 @@ enum FocusLiveChain {
         return result
     }
 
-    /// Where one more pomodoro would go, or `nil` when everything left in the
-    /// shift already belongs to something else. That second case is what greys
-    /// the Live Activity's add button out instead of letting a tap fail.
-    static func addableBlock(
-        blocks: [FocusDayCanvasModel.Block],
-        fromMs: Int64
-    ) -> FocusDayCanvasModel.Block? {
-        blocks.first { $0.kind == .task && !$0.hasAssignment && $0.startAtMs >= fromMs }
-    }
-
     /// The next block the plan has a real task in, after the phase running now.
     static func nextPlannedBlock(
         blocks: [FocusDayCanvasModel.Block],
@@ -85,7 +75,7 @@ extension OffWorkStore {
         var cursor = session.plannedEndAt
         var legs = [runningLeg(session, task: task, blocks: canvas.blocks)]
 
-        if session.kind == .focus, session.plannedEndReason == .completed {
+        if session.kind == .focus, session.taskID != nil, session.plannedEndReason == .completed {
             let breakKind = nextFocusBreakKind(after: session)
             if let breakEnd = plannedFocusBreakEnd(kind: breakKind, at: session.plannedEndAt) {
                 legs.append(FocusChainLeg(
@@ -123,40 +113,38 @@ extension OffWorkStore {
         return legs
     }
 
-    /// Whether one more focus block still fits after the running phase.
+    /// Whether the Lock Screen's plus may act right now.
+    ///
+    /// Where an extra block *goes* is the planner's answer, not a second one:
+    /// this asks `focusContinuationTarget`, the same resolver the in-app
+    /// continuation writes through. Two rules would let the greyed-out state
+    /// and the write disagree about the same tap.
     func canAddFocusPomodoro(at date: Date = .now) -> Bool {
-        addableFocusBlock(at: date) != nil
-    }
-
-    /// The block a Live Activity tap would claim. Deliberately measured from
-    /// the running block's planned end, not from now: the block the user is
-    /// sitting in is not somewhere to put another one.
-    func addableFocusBlock(at date: Date = .now) -> FocusDayCanvasModel.Block? {
-        guard plus.isAuthorized, let session = activeFocusSession(), session.kind == .focus,
-              session.taskID != nil, session.startedAt <= date, date < session.plannedEndAt
-        else { return nil }
-        return FocusLiveChain.addableBlock(
-            blocks: focusDayCanvas(at: date).blocks,
-            fromMs: Int64(session.plannedEndAt.timeIntervalSince1970 * 1_000)
-        )
+        guard let taskID = lockScreenContinuationTaskID(at: date) else { return false }
+        guard case .success = focusContinuationTarget(taskID: taskID, at: date) else { return false }
+        return true
     }
 
     /// Gives the running task one more block in today's plan.
-    ///
-    /// Raises the estimate and places it, in one step, because an estimate the
-    /// plan has no room for is the number that made the canvas and the ledger
-    /// disagree in the first place.
     @discardableResult
     func addFocusPomodoroToRunningTask(at date: Date = .now) -> Bool {
-        guard let session = activeFocusSession(), session.kind == .focus,
-              let taskID = session.taskID,
-              var task = records.state.focusTasks.first(where: { $0.id == taskID }),
-              let block = addableFocusBlock(at: date)
-        else { return false }
-        task.estimatedPomodoros = max(1, task.estimatedPomodoros) + 1
-        records.upsertFocusTask(task, at: date)
-        guard case .placed = assign(task, toBlockStartingAt: block.startAtMs, at: date) else { return false }
+        guard let taskID = lockScreenContinuationTaskID(at: date) else { return false }
+        guard case .success = addOneFocusBlock(taskID: taskID, at: date) else { return false }
         return true
+    }
+
+    /// The task the Lock Screen button is offered for.
+    ///
+    /// Narrower than `focusContinuationTaskID`, which the in-app control uses
+    /// and which deliberately stays available through the break. A card is a
+    /// cached image: it can still show a focus block minutes after that block
+    /// ended, and a button that acts from a picture of a finished block is the
+    /// one the review caught adding a pomodoro to an expired session.
+    private func lockScreenContinuationTaskID(at date: Date) -> UUID? {
+        guard plus.isAuthorized, let session = activeFocusSession(), session.kind == .focus,
+              session.startedAt <= date, date < session.plannedEndAt
+        else { return nil }
+        return session.taskID
     }
 
     private func runningLeg(

@@ -2776,15 +2776,25 @@ export function OffWorkCountdown({
               )}
               </div>
               {!showCountdown && IS_WEB_BUILD && (
-                <a
-                  href={siteConfig.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
-                  title={t("githubRepository")}
-                >
-                  <Github size={24} />
-                </a>
+                <>
+                  <a
+                    href={officialHomeUrl(lang)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hidden text-sm font-medium text-gray-500 transition-colors hover:text-gray-800 sm:inline dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    doneat.app
+                  </a>
+                  <a
+                    href={siteConfig.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
+                    title={t("githubRepository")}
+                  >
+                    <Github size={24} />
+                  </a>
+                </>
               )}
             </div>
             <div
@@ -4079,7 +4089,11 @@ export function OffWorkCountdown({
             {[1, 2, 3].map((n) => (
               <li key={n}>
                 <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                  {t(`landingFeature${n}Title`)}
+                  {t(
+                    n === 1
+                      ? "webLandingFeature1Title"
+                      : `landingFeature${n}Title`
+                  )}
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-400">
                   {t(`landingFeature${n}Body`)}
@@ -4119,10 +4133,19 @@ export function OffWorkCountdown({
             rel="noopener noreferrer"
             className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
           >
-            {t("visitOfficialWebsite")}
+            {siteConfig.brandName}
+          </a>
+          <a
+            href={officialPageUrl(lang, "download")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+          >
+            {t("getApp")}
           </a>
           {(
             [
+              ["download", t("getApp")],
               ["faq", t("faq")],
               ["how-it-works", t("howItWorks")],
               ["about", t("aboutProject")],
