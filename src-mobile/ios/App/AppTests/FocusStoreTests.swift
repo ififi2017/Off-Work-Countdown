@@ -37,6 +37,9 @@ func twoPomodoroTaskCompletesOnSecondBlock() throws {
     let task = insertTask(on: store, pomodoros: 2, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
     #expect(store.finishElapsedFocusSession(at: start.addingTimeInterval(25 * 60)))
+    // The first block rolls into its break; the user cuts it short and starts
+    // the second block by hand.
+    store.stopFocus(reason: .stoppedByUser, at: start.addingTimeInterval(26 * 60))
 
     let secondStart = start.addingTimeInterval(26 * 60)
     insertOpenSession(on: store, task: task, startedAt: secondStart, plannedMinutes: 25)
@@ -277,7 +280,7 @@ func multipleOpenSessionsConverge() throws {
 }
 
 @MainActor
-@Test("Natural focus phases recommend a short break until the fourth round")
+@Test("Natural focus phases roll into a short break until the fourth round")
 func focusRoundSelectsConfiguredBreak() throws {
     let store = try focusStore()
     // Keep all four focus-and-break pairs comfortably inside one shift. This
@@ -288,25 +291,30 @@ func focusRoundSelectsConfiguredBreak() throws {
     ))
     let task = insertTask(on: store, pomodoros: 6, at: start)
     for round in 1...4 {
-        insertOpenSession(on: store, task: task, startedAt: start.addingTimeInterval(Double(round * 30 * 60)), plannedMinutes: 25)
-        #expect(store.finishElapsedFocusSession(at: start.addingTimeInterval(Double(round * 30 * 60 + 25 * 60))))
-        #expect(store.focusLastNextAction == (round == 4 ? .startLongBreak : .startShortBreak))
+        let phaseStart = start.addingTimeInterval(Double(round * 30 * 60))
+        insertOpenSession(on: store, task: task, startedAt: phaseStart, plannedMinutes: 25)
+        #expect(store.finishElapsedFocusSession(at: phaseStart.addingTimeInterval(25 * 60)))
+        let recovery = try #require(store.activeFocusSession())
+        #expect(recovery.kind == (round == 4 ? .longBreak : .shortBreak))
+        #expect(store.focusLastNextAction == .none)
+        store.stopFocus(reason: .stoppedByUser, at: phaseStart.addingTimeInterval(26 * 60))
     }
 }
 
 @MainActor
-@Test("A completed 25-minute focus can manually start a five-minute short break")
-func focusThenManualShortBreakUsesConfiguredDuration() throws {
+@Test("A completed 25-minute focus rolls straight into its five-minute short break")
+func focusThenShortBreakUsesConfiguredDuration() throws {
     let store = try focusStore()
     let now = Date(timeIntervalSince1970: 1_787_557_200) // 09:00 inside the configured shift
     let task = insertTask(on: store, pomodoros: 2, at: now)
     insertOpenSession(on: store, task: task, startedAt: now.addingTimeInterval(-25 * 60), plannedMinutes: 25)
     #expect(store.finishElapsedFocusSession(at: now))
-    #expect(store.focusLastNextAction == .startShortBreak)
-    #expect(store.startBreak(kind: .shortBreak, at: now))
     let rest = try #require(store.activeFocusSession())
     #expect(rest.kind == .shortBreak)
+    #expect(rest.startedAt == now)
     #expect(abs(rest.plannedEndAt.timeIntervalSince(now) - 5 * 60) < 1)
+    // Nothing is being offered, because nothing is waiting to be accepted.
+    #expect(store.focusLastNextAction == .none)
     store.skipFocusPhase()
 }
 
@@ -330,13 +338,16 @@ func boundaryEndDoesNotOfferDeadBreakAction() throws {
 }
 
 @MainActor
-@Test("Skipping a suggested break advances without manufacturing a break session")
+@Test("Skipping a break offered after its own window advances without a session")
 func skipSuggestedBreakAdvancesDirectlyToFocus() throws {
     let store = try focusStore()
     let start = Date(timeIntervalSince1970: 1_787_557_200)
     let task = insertTask(on: store, pomodoros: 2, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
-    #expect(store.finishElapsedFocusSession(at: start.addingTimeInterval(25 * 60)))
+    // Half an hour after the block ended: the recovery it earned is over, so
+    // nothing is backfilled and the offer is all that remains.
+    #expect(store.finishElapsedFocusSession(at: start.addingTimeInterval(55 * 60)))
+    #expect(store.activeFocusSession() == nil)
     #expect(store.focusLastNextAction == .startShortBreak)
 
     #expect(store.skipSuggestedFocusBreak())
@@ -585,7 +596,10 @@ func sessionHistoryRestoresNextAction() throws {
     for round in 0..<4 {
         let phaseStart = start.addingTimeInterval(Double(round * 30 * 60))
         insertOpenSession(on: store, task: task, startedAt: phaseStart, plannedMinutes: 25)
-        #expect(store.finishElapsedFocusSession(at: phaseStart.addingTimeInterval(25 * 60)))
+        // Closed after each break window had passed, so history holds four
+        // focus blocks and no recovery — which is the state a cold launch has
+        // to read the cadence back out of.
+        #expect(store.finishElapsedFocusSession(at: phaseStart.addingTimeInterval(31 * 60)))
     }
     // This models a cold launch after the durable history was restored.
     store.reconcileOpenFocusSessions(at: start.addingTimeInterval(4 * 30 * 60))

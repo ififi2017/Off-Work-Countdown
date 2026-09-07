@@ -778,7 +778,7 @@
   "focusSkipBreak": "Lewati istirahat",
   "focusStartNextFocus": "Mulai fokus berikutnya",
   "focusNoNextTask": "Tambahkan tugas lain untuk memulai blok fokus berikutnya.",
-  "focusNextBreakBody": "Lanjutkan saat siap. Istirahat tidak dimulai otomatis.",
+  "focusNextBreakBody": "Lanjutkan saat siap. Waktu istirahat blok ini sudah lewat.",
   "focusNextFocusBody": "Istirahat selesai. Pilih tugas untuk memulai putaran berikutnya.",
   "focusNotificationIssue": "Notifikasi timer perlu diperhatikan",
   "focusNotificationPermissionDenied": "Notifikasi mati, jadi Anda mungkin melewatkan akhir timer. Anda dapat menyalakannya di pengaturan sistem.",
@@ -999,5 +999,12 @@
   "focusExtendOne": "Satu Pomodoro lagi",
   "focusExtendConflict": "Blok berikutnya sudah terisi. Pilih blok kosong lain di Hari ini.",
   "focusExtendNoRoom": "Tidak cukup waktu sebelum istirahat atau pulang. Pilih blok berikutnya di Hari ini.",
-  "focusExtendScheduled": "Satu Pomodoro lagi dijadwalkan pukul {{time}}."
+  "focusExtendScheduled": "Satu Pomodoro lagi dijadwalkan pukul {{time}}.",
+  "focusActivityPomodoro": "Pomodoro {{index}} dari {{total}}",
+  "focusActivityTaskDone": "Selesai pukul {{time}}",
+  "focusActivityNextUp": "Berikutnya: {{task}} pukul {{time}}",
+  "focusActivityChainDone": "Semua selesai untuk saat ini",
+  "focusActivityAddPomodoro": "Tambah pomodoro",
+  "focusBreakUntil": "Istirahat {{count}} mnt sampai {{time}}",
+  "focusBreakOver": "Istirahat selesai"
 }

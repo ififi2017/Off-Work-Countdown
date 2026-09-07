@@ -14,6 +14,25 @@ extension Notification.Name {
 
 @MainActor
 final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate {
+    /// Registered here rather than in `RootView`, because a Live Activity
+    /// button can launch this process in the background with no scene: the
+    /// delegate runs, the view tree does not. The closure only reaches the
+    /// store when a tap actually arrives, so a normal launch pays nothing.
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        FocusActivityActions.addPomodoro = {
+            let store = OffWorkStore.shared
+            // Reconcile even a stale button: its old payload can outlive the block.
+            _ = store.finishElapsedFocusSession()
+            _ = store.addFocusPomodoroToRunningTask()
+            await store.refreshFocusNotifications()
+            await LiveActivityService.shared.reschedule(store: store)
+        }
+        return true
+    }
+
     func application(
         _ application: UIApplication,
         supportedInterfaceOrientationsFor window: UIWindow?

@@ -778,7 +778,7 @@
   "focusSkipBreak": "تخطي الاستراحة",
   "focusStartNextFocus": "بدء جلسة التركيز التالية",
   "focusNoNextTask": "أضف مهمة أخرى لبدء جلسة التركيز التالية.",
-  "focusNextBreakBody": "خذ الخطوة التالية عندما تكون مستعدًا. لن تبدأ الاستراحة تلقائيًا.",
+  "focusNextBreakBody": "خذ الخطوة التالية عندما تكون مستعدًا. لقد فات وقت استراحة هذه الجلسة.",
   "focusNextFocusBody": "انتهت الاستراحة. اختر مهمة لبدء الجولة التالية.",
   "focusNotificationIssue": "تحتاج إشعارات المؤقت إلى الانتباه",
   "focusNotificationPermissionDenied": "الإشعارات متوقفة، وقد تفوّت نهاية المؤقت. يمكنك تشغيلها من إعدادات النظام.",
@@ -999,5 +999,12 @@
   "focusExtendOne": "بومودورو إضافي",
   "focusExtendConflict": "الفترة التالية محجوزة. اختر فترة فارغة أخرى في اليوم.",
   "focusExtendNoRoom": "لا يوجد وقت لجلسة كاملة قبل الاستراحة أو نهاية العمل. اختر فترة لاحقة في اليوم.",
-  "focusExtendScheduled": "تمت جدولة بومودورو إضافي في {{time}}."
+  "focusExtendScheduled": "تمت جدولة بومودورو إضافي في {{time}}.",
+  "focusActivityPomodoro": "بومودورو {{index}} من {{total}}",
+  "focusActivityTaskDone": "ينتهي عند {{time}}",
+  "focusActivityNextUp": "التالي: {{task}} في {{time}}",
+  "focusActivityChainDone": "انتهى كل شيء الآن",
+  "focusActivityAddPomodoro": "إضافة بومودورو",
+  "focusBreakUntil": "استراحة {{count}} دقيقة حتى {{time}}",
+  "focusBreakOver": "انتهت الاستراحة"
 }

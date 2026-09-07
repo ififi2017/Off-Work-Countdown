@@ -71,7 +71,7 @@ final class NotificationService {
             .filter { $0.hasPrefix("owc.focus.") }
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
     }
-    /// Only the shift channel uses this adapter; focus owns its separate IDs.
+    /// Notification-center operations shared by both channels; each owns separate IDs.
     struct ShiftCenter {
         var authorization: () async -> Status
         var pendingIDs: () async -> [String]
@@ -143,80 +143,121 @@ final class NotificationService {
         UIApplication.shared.open(url)
     }
 
+    /// Which alert of a phase this is. A pomodoro owes the user two of them —
+    /// the block ending and the break that follows it ending — and a suspended
+    /// phone cannot be asked to compose the second one when it comes due, so
+    /// both are written at the same time. Fixed slots keep cancellation a
+    /// synchronous, exact-identifier operation.
+    enum FocusAlertSlot: String, CaseIterable, Sendable {
+        case end
+        case breakEnd
+    }
+
+    struct FocusAlert: Equatable, Sendable {
+        var slot: FocusAlertSlot
+        var at: Date
+        var title: String
+        var body: String
+    }
+
     /// Owns the focus/break notification lifecycle. It intentionally has no
     /// dependency on `OffWorkStore`, so timer model tests can inject a pure
     /// decision while production still uses the system notification center.
-    static func scheduleFocusTimer(
+    static func scheduleFocusTimers(
         id: UUID,
-        endAt: Date,
-        title: String,
-        body: String,
+        alerts: [FocusAlert],
+        center: ShiftCenter = .system,
         isCurrent: @escaping @MainActor () -> Bool
     ) async -> FocusScheduleResult {
-        let center = UNUserNotificationCenter.current()
+        let previous = pendingFocusOperation
+        let task = Task { @MainActor in
+            await previous?.value
+            guard isCurrent() else { return FocusScheduleResult.superseded }
+            return await writeFocusTimers(id: id, alerts: alerts, center: center, isCurrent: isCurrent)
+        }
+        pendingFocusOperation = task
+        return await task.value
+    }
+
+    // Reusing a session's fixed notification IDs requires serial writes: an
+    // older in-flight add must clean up before the refreshed plan writes them.
+    private static var pendingFocusOperation: Task<FocusScheduleResult, Never>?
+
+    private static func writeFocusTimers(
+        id: UUID,
+        alerts: [FocusAlert],
+        center: ShiftCenter,
+        isCurrent: @escaping @MainActor () -> Bool
+    ) async -> FocusScheduleResult {
         // A phase start owns this channel even when authorization later turns
         // out to be denied. Clear a predecessor first so it cannot become a
         // stale alert if the user re-enables notifications in Settings.
-        let previous = await center.pendingNotificationRequests()
-            .map(\.identifier)
+        let previous = await center.pendingIDs()
             .filter { $0.hasPrefix("owc.focus.") }
         // `pendingNotificationRequests()` suspends. A stopped/replaced phase
         // can therefore finish and schedule its successor before this old
         // request resumes. Check ownership before it clears the shared focus
         // channel, not only after it has attempted to add its own request.
         guard isCurrent() else { return .superseded }
-        center.removePendingNotificationRequests(withIdentifiers: previous)
-        let settings = await center.notificationSettings()
-        if settings.authorizationStatus == .notDetermined {
+        center.removePending(previous)
+        let settings = await center.authorization()
+        if settings == .notDetermined {
             do {
-                _ = try await center.requestAuthorization(options: [.alert, .badge, .sound])
+                _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])
             } catch {
                 return .failed
             }
         }
-        let refreshed = await center.notificationSettings()
-        guard refreshed.authorizationStatus == .authorized || refreshed.authorizationStatus == .provisional || refreshed.authorizationStatus == .ephemeral else {
+        let refreshed = await center.authorization()
+        guard refreshed == .allowed else {
             return .permissionDenied
         }
         // Permission prompts add another suspension point. Do not let an old
         // phase write after a newly started phase has claimed the channel.
         guard isCurrent() else { return .superseded }
-        let identifier = focusTimerIdentifier(id)
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = .default
-        let request = UNNotificationRequest(
-            identifier: identifier,
-            content: content,
-            trigger: UNTimeIntervalNotificationTrigger(
-                timeInterval: max(1, endAt.timeIntervalSinceNow),
-                repeats: false
+        var written: [String] = []
+        for alert in alerts {
+            // Permission and queue waits must not backfill an alert that passed.
+            guard alert.at > .now else { continue }
+            let identifier = focusTimerIdentifier(id, slot: alert.slot)
+            let content = UNMutableNotificationContent()
+            content.title = alert.title
+            content.body = alert.body
+            content.sound = .default
+            let request = UNNotificationRequest(
+                identifier: identifier,
+                content: content,
+                trigger: UNTimeIntervalNotificationTrigger(
+                    timeInterval: max(1, alert.at.timeIntervalSinceNow),
+                    repeats: false
+                )
             )
-        )
-        do {
-            try await center.add(request)
+            do {
+                try await center.add(request)
+            } catch {
+                center.removePending(written)
+                return .failed
+            }
+            written.append(identifier)
             // A replacement can win while `add` is in flight. Removing only
-            // this request is safe; removing all focus notifications here
-            // would reintroduce the race this guard closes.
+            // what this phase wrote is safe; removing all focus notifications
+            // here would reintroduce the race this guard closes.
             guard isCurrent() else {
-                center.removePendingNotificationRequests(withIdentifiers: [identifier])
+                center.removePending(written)
                 return .superseded
             }
-            return .scheduled
-        } catch {
-            return .failed
         }
+        return .scheduled
     }
 
     static func cancelFocusTimer(id: UUID) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: [focusTimerIdentifier(id)]
+            withIdentifiers: FocusAlertSlot.allCases.map { focusTimerIdentifier(id, slot: $0) }
         )
     }
 
-    private static func focusTimerIdentifier(_ id: UUID) -> String {
-        "owc.focus.\(id.uuidString)"
+    private static func focusTimerIdentifier(_ id: UUID, slot: FocusAlertSlot) -> String {
+        "owc.focus.\(id.uuidString).\(slot.rawValue)"
     }
 
     func reschedule(store: OffWorkStore, now: Date? = nil) async {

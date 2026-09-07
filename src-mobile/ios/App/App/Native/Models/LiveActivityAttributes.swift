@@ -9,6 +9,34 @@ struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
             let endAtMs: Int64
         }
 
+        /// One stretch of the chain the activity walks on its own.
+        ///
+        /// A phone is asleep for almost all of a pomodoro, so nothing can tell
+        /// the activity that the block ended at the moment it ends. The whole
+        /// chain therefore travels with the payload as absolute times and
+        /// finished text, and the extension picks the leg the clock is in.
+        struct Leg: Codable, Hashable, Sendable {
+            let startAtMs: Int64
+            let endAtMs: Int64
+            /// `LiveActivitySurface` raw value, so the leg carries its own tint
+            /// and glyph rather than inheriting the one the payload opened with.
+            let surface: String
+            /// Concise phase name: "Focus", "Short break", "Up next".
+            let label: String
+            let title: String?
+            let icon: String
+            /// "Pomodoro 2 of 4", already localized and pluralized.
+            let detail: String?
+            /// "Done by 11:30" — when this task's last block is expected to end.
+            let finishNote: String?
+            /// What follows this leg. Written per leg because the extension
+            /// cannot compose a sentence in the user's language.
+            let nextNote: String?
+            /// A block the plan holds that nobody has started. Shown as a
+            /// heading and a start time, never as a running countdown.
+            let isPreview: Bool
+        }
+
         let endAtMs: Int64
         let progress: Double
         /// Absolute effective-work intervals prepared by CountdownRules. The
@@ -49,6 +77,36 @@ struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
         /// Absolute clock-off from the shared rules snapshot, with no salary.
         var shiftEndAtMs: Int64? = nil
         var shiftEndLabel: String? = nil
+        /// The running phase and everything the plan already knows follows it.
+        /// `nil` means a payload written before the chain existed; the views
+        /// fall back to the single `endAtMs` countdown those carry.
+        var legs: [Leg]? = nil
+        /// Shown once the last leg has passed, in place of the countdown.
+        var chainDoneCaption: String? = nil
+        /// Accessibility label for the add-a-pomodoro button. `nil` hides it,
+        /// which is every activity that is not a running focus block.
+        var addPomodoroLabel: String? = nil
+        /// False when every block left in the shift already belongs to another
+        /// task, so the button is offered but visibly cannot act.
+        var addPomodoroEnabled = false
+
+        /// End of the chain, which is what "this activity is finished" means
+        /// once a focus block is followed by its break and the next block.
+        var chainEndAtMs: Int64 { legs?.last?.endAtMs ?? endAtMs }
+
+        /// The leg the clock is in, or `nil` past the end of the chain.
+        func leg(atMs nowMs: Int64) -> Leg? {
+            legs?.first { nowMs < $0.endAtMs }
+        }
+
+        /// A cached focus payload may redraw as a break or an unstarted preview.
+        func showsAddPomodoro(atMs nowMs: Int64) -> Bool {
+            guard addPomodoroLabel != nil, phase != "complete", nowMs < endAtMs else { return false }
+            if let leg = leg(atMs: nowMs) {
+                return leg.surface == "focus" && !leg.isPreview && nowMs >= leg.startAtMs
+            }
+            return surface == "focus"
+        }
 
         func projectedProgress(atMs nowMs: Int64) -> Double {
             let duration = segments.reduce(Int64(0)) { total, segment in

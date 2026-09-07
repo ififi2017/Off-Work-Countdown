@@ -778,7 +778,7 @@
   "focusSkipBreak": "विश्रांती वगळा",
   "focusStartNextFocus": "पुढील फोकस सुरू करा",
   "focusNoNextTask": "पुढील फोकस ब्लॉक सुरू करण्यासाठी आणखी एक काम जोडा.",
-  "focusNextBreakBody": "तयार असाल तेव्हा पुढे जा. विश्रांती आपोआप सुरू होणार नाही.",
+  "focusNextBreakBody": "तयार असाल तेव्हा पुढे जा. या ब्लॉकची विश्रांतीची वेळ निघून गेली आहे.",
   "focusNextFocusBody": "विश्रांती पूर्ण झाली. पुढील फेरीसाठी एखादे काम निवडा.",
   "focusNotificationIssue": "टायमर सूचना तपासण्याची गरज आहे",
   "focusNotificationPermissionDenied": "सूचना बंद आहेत, त्यामुळे टायमर संपल्याचे तुमच्या लक्षात येणार नाही. त्या सिस्टम सेटिंग्जमध्ये सुरू करू शकता.",
@@ -999,5 +999,12 @@
   "focusExtendOne": "आणखी एक पोमोडोरो",
   "focusExtendConflict": "पुढील ब्लॉक आधीच ठरलेला आहे. आजमध्ये दुसरा रिकामा ब्लॉक निवडा.",
   "focusExtendNoRoom": "विश्रांती किंवा काम संपण्यापूर्वी पूर्ण पोमोडोरोसाठी वेळ नाही. आजमध्ये नंतरचा ब्लॉक निवडा.",
-  "focusExtendScheduled": "{{time}} साठी आणखी एक पोमोडोरो जोडला."
+  "focusExtendScheduled": "{{time}} साठी आणखी एक पोमोडोरो जोडला.",
+  "focusActivityPomodoro": "पोमोडोरो {{index}} / {{total}}",
+  "focusActivityTaskDone": "{{time}} पर्यंत पूर्ण",
+  "focusActivityNextUp": "पुढे: {{time}} वाजता {{task}}",
+  "focusActivityChainDone": "सध्या सर्व पूर्ण",
+  "focusActivityAddPomodoro": "एक पोमोडोरो जोडा",
+  "focusBreakUntil": "{{count}} मिनिटांचा ब्रेक, {{time}} पर्यंत",
+  "focusBreakOver": "ब्रेक संपला"
 }

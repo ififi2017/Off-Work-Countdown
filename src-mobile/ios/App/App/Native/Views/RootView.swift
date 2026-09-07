@@ -6,7 +6,7 @@ import UIKit
 struct OffWorkCountdownRootView: View {
     @State private var store = Self.makeStore()
     @State private var notifications = NotificationService()
-    @State private var liveActivities = LiveActivityService()
+    @State private var liveActivities = LiveActivityService.shared
     @State private var serviceTask: Task<Void, Never>?
     @State private var clockInCommitFeedback = 0
     @State private var clockOffCommitFeedback = 0
@@ -30,7 +30,7 @@ struct OffWorkCountdownRootView: View {
             return OffWorkStore(defaults: defaults, records: .inMemory())
         }
 #endif
-        return OffWorkStore(records: .persisted())
+        return .shared
     }
 
     var body: some View {
@@ -426,6 +426,14 @@ struct OffWorkCountdownRootView: View {
             } else {
                 await notifications.reschedule(store: store)
             }
+            // A focus phase's own alerts are composed once, when it starts,
+            // because a suspended phone cannot compose them when they fire.
+            // Every later edit to the plan therefore has to rewrite them, and
+            // this is where that belongs: `pendingReschedule` has already
+            // coalesced the edits, so it does not touch the notification
+            // centre on every keystroke.
+            guard !Task.isCancelled else { return }
+            await store.refreshFocusNotifications()
             // The app owns one Live Activity slot. Work uses it only inside
             // its configured display window; otherwise an active focus or
             // break session may keep it. Ending everything merely because the

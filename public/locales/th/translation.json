@@ -778,7 +778,7 @@
   "focusSkipBreak": "ข้ามช่วงพัก",
   "focusStartNextFocus": "เริ่มโฟกัสรอบถัดไป",
   "focusNoNextTask": "เพิ่มงานอีกอย่างเพื่อเริ่มช่วงโฟกัสถัดไป",
-  "focusNextBreakBody": "ไปต่อเมื่อพร้อม ช่วงพักจะไม่เริ่มเอง",
+  "focusNextBreakBody": "ไปต่อเมื่อพร้อม ช่วงพักของบล็อกนี้ผ่านไปแล้ว",
   "focusNextFocusBody": "พักเสร็จแล้ว เลือกงานเพื่อเริ่มรอบถัดไป",
   "focusNotificationIssue": "การแจ้งเตือนตัวจับเวลาต้องตรวจสอบ",
   "focusNotificationPermissionDenied": "การแจ้งเตือนปิดอยู่ คุณอาจพลาดเวลาสิ้นสุดตัวจับเวลา เปิดได้ในการตั้งค่าระบบ",
@@ -999,5 +999,12 @@
   "focusExtendOne": "เพิ่มอีกหนึ่งโพโมโดโร",
   "focusExtendConflict": "บล็อกถัดไปมีแผนแล้ว เลือกบล็อกว่างอื่นในวันนี้",
   "focusExtendNoRoom": "เวลาไม่พอสำหรับหนึ่งรอบก่อนพักหรือเลิกงาน เลือกบล็อกที่ช้ากว่าในวันนี้",
-  "focusExtendScheduled": "เพิ่มโพโมโดโรอีกหนึ่งรอบเวลา {{time}} แล้ว"
+  "focusExtendScheduled": "เพิ่มโพโมโดโรอีกหนึ่งรอบเวลา {{time}} แล้ว",
+  "focusActivityPomodoro": "โพโมโดโร {{index}} จาก {{total}}",
+  "focusActivityTaskDone": "เสร็จตอน {{time}}",
+  "focusActivityNextUp": "ถัดไป: {{task}} เวลา {{time}}",
+  "focusActivityChainDone": "ตอนนี้เสร็จหมดแล้ว",
+  "focusActivityAddPomodoro": "เพิ่มโพโมโดโร",
+  "focusBreakUntil": "พัก {{count}} นาที ถึง {{time}}",
+  "focusBreakOver": "หมดเวลาพัก"
 }

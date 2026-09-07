@@ -778,7 +778,7 @@
   "focusSkipBreak": "Pause überspringen",
   "focusStartNextFocus": "Nächsten Fokus starten",
   "focusNoNextTask": "Füge eine weitere Aufgabe hinzu, um den nächsten Fokusblock zu starten.",
-  "focusNextBreakBody": "Mach weiter, wenn du bereit bist. Die Pause beginnt nicht automatisch.",
+  "focusNextBreakBody": "Mach weiter, wenn du bereit bist. Die Pause für diesen Block ist bereits vorbei.",
   "focusNextFocusBody": "Die Pause ist vorbei. Wähle eine Aufgabe für die nächste Runde.",
   "focusNotificationIssue": "Timer-Benachrichtigungen benötigen Aufmerksamkeit",
   "focusNotificationPermissionDenied": "Benachrichtigungen sind deaktiviert; du könntest das Timerende verpassen. Du kannst sie in den Systemeinstellungen aktivieren.",
@@ -999,5 +999,12 @@
   "focusExtendOne": "Ein weiterer Pomodoro",
   "focusExtendConflict": "Der nächste Block ist bereits belegt. Wähle unter Heute einen freien Block.",
   "focusExtendNoRoom": "Vor der Pause oder dem Feierabend passt kein voller Pomodoro mehr. Wähle unter Heute einen späteren Block.",
-  "focusExtendScheduled": "Ein weiterer Pomodoro ist für {{time}} geplant."
+  "focusExtendScheduled": "Ein weiterer Pomodoro ist für {{time}} geplant.",
+  "focusActivityPomodoro": "Pomodoro {{index}} von {{total}}",
+  "focusActivityTaskDone": "Fertig um {{time}}",
+  "focusActivityNextUp": "Als Nächstes: {{task}} um {{time}}",
+  "focusActivityChainDone": "Erst mal alles erledigt",
+  "focusActivityAddPomodoro": "Pomodoro hinzufügen",
+  "focusBreakUntil": "{{count}} Min. Pause bis {{time}}",
+  "focusBreakOver": "Pause vorbei"
 }

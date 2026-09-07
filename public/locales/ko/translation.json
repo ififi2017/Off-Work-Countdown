@@ -778,7 +778,7 @@
   "focusSkipBreak": "휴식 건너뛰기",
   "focusStartNextFocus": "다음 집중 시작",
   "focusNoNextTask": "다음 집중 블록을 시작하려면 작업을 추가하세요.",
-  "focusNextBreakBody": "준비가 되면 다음 단계로 진행하세요. 휴식은 자동으로 시작되지 않습니다.",
+  "focusNextBreakBody": "준비가 되면 다음 단계로 진행하세요. 이 블록의 휴식 시간은 이미 지났습니다.",
   "focusNextFocusBody": "휴식이 끝났습니다. 작업을 선택해 다음 라운드를 시작하세요.",
   "focusNotificationIssue": "타이머 알림을 확인해 주세요",
   "focusNotificationPermissionDenied": "알림이 꺼져 있어 타이머 종료를 놓칠 수 있습니다. 시스템 설정에서 켤 수 있습니다.",
@@ -999,5 +999,12 @@
   "focusExtendOne": "뽀모도로 하나 더",
   "focusExtendConflict": "다음 블록에 일정이 있습니다. 오늘에서 다른 빈 블록을 선택하세요.",
   "focusExtendNoRoom": "휴식이나 퇴근 전 시간이 부족합니다. 오늘에서 나중 블록을 선택하세요.",
-  "focusExtendScheduled": "{{time}}에 뽀모도로를 추가했습니다."
+  "focusExtendScheduled": "{{time}}에 뽀모도로를 추가했습니다.",
+  "focusActivityPomodoro": "포모도로 {{index}} / {{total}}",
+  "focusActivityTaskDone": "{{time}} 완료 예정",
+  "focusActivityNextUp": "다음: {{time}} {{task}}",
+  "focusActivityChainDone": "일단 모두 완료",
+  "focusActivityAddPomodoro": "포모도로 추가",
+  "focusBreakUntil": "{{count}}분 휴식, {{time}}까지",
+  "focusBreakOver": "휴식 종료"
 }

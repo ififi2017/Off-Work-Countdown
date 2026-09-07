@@ -778,7 +778,7 @@
   "focusSkipBreak": "休憩をスキップ",
   "focusStartNextFocus": "次の集中を始める",
   "focusNoNextTask": "次の集中ブロックを始めるにはタスクを追加してください。",
-  "focusNextBreakBody": "準備ができたら次へ進めます。休憩は自動では始まりません。",
+  "focusNextBreakBody": "準備ができたら次へ進めます。このブロックの休憩時間はすでに過ぎています。",
   "focusNextFocusBody": "休憩が終わりました。タスクを選んで次のラウンドを始めます。",
   "focusNotificationIssue": "タイマー通知の確認が必要です",
   "focusNotificationPermissionDenied": "通知がオフのため、タイマー終了を見逃す可能性があります。システム設定でオンにできます。",
@@ -999,5 +999,12 @@
   "focusExtendOne": "ポモドーロを1回追加",
   "focusExtendConflict": "次のブロックには予定があります。「今日」で別の空きブロックを選んでください。",
   "focusExtendNoRoom": "休憩または退勤までに1回分の時間がありません。「今日」で後のブロックを選んでください。",
-  "focusExtendScheduled": "{{time}} にポモドーロを追加しました。"
+  "focusExtendScheduled": "{{time}} にポモドーロを追加しました。",
+  "focusActivityPomodoro": "ポモドーロ {{index}} / {{total}}",
+  "focusActivityTaskDone": "{{time}} に完了予定",
+  "focusActivityNextUp": "次は {{time}} に「{{task}}」",
+  "focusActivityChainDone": "ひとまず完了",
+  "focusActivityAddPomodoro": "ポモドーロを追加",
+  "focusBreakUntil": "{{count}} 分休憩、{{time}} まで",
+  "focusBreakOver": "休憩終了"
 }

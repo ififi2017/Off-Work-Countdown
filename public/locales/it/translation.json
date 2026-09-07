@@ -778,7 +778,7 @@
   "focusSkipBreak": "Salta pausa",
   "focusStartNextFocus": "Inizia il prossimo focus",
   "focusNoNextTask": "Aggiungi un’attività per iniziare il prossimo blocco di focus.",
-  "focusNextBreakBody": "Prosegui quando vuoi. La pausa non inizia da sola.",
+  "focusNextBreakBody": "Prosegui quando vuoi. La pausa di questo blocco è già passata.",
   "focusNextFocusBody": "La pausa è terminata. Scegli un’attività per iniziare il prossimo giro.",
   "focusNotificationIssue": "Le notifiche del timer richiedono attenzione",
   "focusNotificationPermissionDenied": "Le notifiche sono disattivate: potresti non accorgerti della fine del timer. Puoi attivarle nelle impostazioni di sistema.",
@@ -999,5 +999,12 @@
   "focusExtendOne": "Un altro Pomodoro",
   "focusExtendConflict": "Il prossimo blocco è già occupato. Scegli un blocco libero in Oggi.",
   "focusExtendNoRoom": "Non c’è tempo per un Pomodoro prima della pausa o di fine lavoro. Scegli un blocco successivo in Oggi.",
-  "focusExtendScheduled": "Un altro Pomodoro è previsto alle {{time}}."
+  "focusExtendScheduled": "Un altro Pomodoro è previsto alle {{time}}.",
+  "focusActivityPomodoro": "Pomodoro {{index}} di {{total}}",
+  "focusActivityTaskDone": "Finito alle {{time}}",
+  "focusActivityNextUp": "Poi: {{task}} alle {{time}}",
+  "focusActivityChainDone": "Per ora è tutto fatto",
+  "focusActivityAddPomodoro": "Aggiungi un pomodoro",
+  "focusBreakUntil": "{{count}} min di pausa fino alle {{time}}",
+  "focusBreakOver": "Pausa finita"
 }

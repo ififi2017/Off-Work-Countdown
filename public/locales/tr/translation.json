@@ -778,7 +778,7 @@
   "focusSkipBreak": "Molayı atla",
   "focusStartNextFocus": "Sonraki odağı başlat",
   "focusNoNextTask": "Sonraki odak bloğunu başlatmak için başka bir görev ekleyin.",
-  "focusNextBreakBody": "Hazır olduğunuzda devam edin. Mola kendiliğinden başlamaz.",
+  "focusNextBreakBody": "Hazır olduğunuzda devam edin. Bu bloğun mola zamanı çoktan geçti.",
   "focusNextFocusBody": "Mola bitti. Sonraki turu başlatmak için bir görev seçin.",
   "focusNotificationIssue": "Zamanlayıcı bildirimleriyle ilgilenmeniz gerekiyor",
   "focusNotificationPermissionDenied": "Bildirimler kapalı; zamanlayıcının bitişini kaçırabilirsiniz. Sistem ayarlarından açabilirsiniz.",
@@ -999,5 +999,12 @@
   "focusExtendOne": "Bir Pomodoro daha",
   "focusExtendConflict": "Sonraki blok zaten planlı. Bugün bölümünde boş bir blok seçin.",
   "focusExtendNoRoom": "Mola veya mesai bitiminden önce yeterli süre yok. Bugün bölümünde daha sonraki bir blok seçin.",
-  "focusExtendScheduled": "{{time}} için bir Pomodoro daha planlandı."
+  "focusExtendScheduled": "{{time}} için bir Pomodoro daha planlandı.",
+  "focusActivityPomodoro": "Pomodoro {{index}} / {{total}}",
+  "focusActivityTaskDone": "{{time}} itibarıyla biter",
+  "focusActivityNextUp": "Sırada: {{time}} · {{task}}",
+  "focusActivityChainDone": "Şimdilik hepsi bitti",
+  "focusActivityAddPomodoro": "Pomodoro ekle",
+  "focusBreakUntil": "{{time}} saatine kadar {{count}} dk mola",
+  "focusBreakOver": "Mola bitti"
 }

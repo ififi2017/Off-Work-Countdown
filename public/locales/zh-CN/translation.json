@@ -778,7 +778,7 @@
   "focusSkipBreak": "跳过休息",
   "focusStartNextFocus": "开始下一轮专注",
   "focusNoNextTask": "添加任务后开始下一段专注。",
-  "focusNextBreakBody": "准备好后再继续。休息不会自动开始。",
+  "focusNextBreakBody": "准备好后再继续。这一段的休息时间已经过去了。",
   "focusNextFocusBody": "休息已结束。选择一个任务开始下一轮。",
   "focusNotificationIssue": "计时通知需要处理",
   "focusNotificationPermissionDenied": "通知已关闭，你可能错过计时结束提醒。可在系统设置中开启。",
@@ -999,5 +999,12 @@
   "focusExtendOne": "再加一个番茄",
   "focusExtendConflict": "下一个番茄块已有安排，请在「今天」中选择其他空白块。",
   "focusExtendNoRoom": "午休或下班前放不下一个完整番茄，请在「今天」中选择稍后的块。",
-  "focusExtendScheduled": "已添加一个番茄，将于 {{time}} 开始。"
+  "focusExtendScheduled": "已添加一个番茄，将于 {{time}} 开始。",
+  "focusActivityPomodoro": "第 {{index}} 个番茄 / 共 {{total}} 个",
+  "focusActivityTaskDone": "预计 {{time}} 完成",
+  "focusActivityNextUp": "接下来：{{time}} {{task}}",
+  "focusActivityChainDone": "暂时都完成了",
+  "focusActivityAddPomodoro": "再加一个番茄",
+  "focusBreakUntil": "休息 {{count}} 分钟，到 {{time}}",
+  "focusBreakOver": "休息结束"
 }

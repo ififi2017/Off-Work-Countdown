@@ -152,6 +152,12 @@ final class LiveActivityPriorityTransitionService {
 @MainActor
 @Observable
 final class LiveActivityService {
+    /// Shared for the same reason the store is: an intent performed from the
+    /// Lock Screen has to reach the same lifecycle generation and the same
+    /// serialised ActivityKit queue as the foreground UI, or the two race for
+    /// the one system slot.
+    static let shared = LiveActivityService()
+
     private(set) var lastError: String?
     private var completionTask: Task<Void, Never>?
     private let schedulingClock: LiveActivitySchedulingClock
@@ -224,16 +230,65 @@ final class LiveActivityService {
         return (icon ?? .focus).systemName
     }
 
-    /// Describe the next timer phase, not an unrelated future planning tile.
-    static func focusNextLabel(session: FocusSession, store: OffWorkStore, now: Date) -> String? {
-        guard session.kind == .focus else { return store.t("focusStartNextFocus") }
-        guard session.taskID != nil, session.plannedEndReason == .completed else { return nil }
-        let kind = store.nextFocusBreakKind(after: session)
-        guard store.hasFocusRoom(at: session.plannedEndAt) else { return nil }
-        let settings = store.focusTimerSettings.normalized
-        return store.t("focusActivityThenBreak", values: [
-            "count": "\(kind == .longBreak ? settings.longBreakMinutes : settings.shortBreakMinutes)"
+    /// Turns the chain into the wire form the extension walks on its own.
+    ///
+    /// Every string is finished here. The extension renders whichever leg the
+    /// clock is in, hours after the app last ran, and it cannot compose a
+    /// sentence in the user's language at that point.
+    static func focusLegs(
+        _ chain: [FocusChainLeg],
+        store: OffWorkStore
+    ) -> [OffWorkActivityAttributes.ContentState.Leg] {
+        chain.indices.map { index in
+            let leg = chain[index]
+            let following = index + 1 < chain.count ? chain[index + 1] : nil
+            return .init(
+                startAtMs: Int64(leg.start.timeIntervalSince1970 * 1_000),
+                endAtMs: Int64(leg.end.timeIntervalSince1970 * 1_000),
+                surface: LiveActivitySurface(sessionKind: leg.kind).rawValue,
+                label: legLabel(leg, store: store),
+                title: leg.taskTitle,
+                icon: leg.icon?.systemName ?? "cup.and.saucer.fill",
+                detail: legDetail(leg, store: store),
+                finishNote: leg.taskFinishAt.map { finish in
+                    store.t("focusActivityTaskDone", values: ["time": store.formatTime(finish)])
+                },
+                nextNote: following.map { legNextNote($0, store: store) },
+                isPreview: leg.role == .upNext
+            )
+        }
+    }
+
+    private static func legLabel(_ leg: FocusChainLeg, store: OffWorkStore) -> String {
+        if leg.role == .upNext { return store.t("focusNextBlock") }
+        switch leg.kind {
+        case .focus: return store.t("focusTitle")
+        case .shortBreak: return store.t("focusShortBreak")
+        case .longBreak: return store.t("focusLongBreak")
+        }
+    }
+
+    private static func legDetail(_ leg: FocusChainLeg, store: OffWorkStore) -> String? {
+        guard let index = leg.pomodoroIndex, let total = leg.pomodoroTotal else { return nil }
+        return store.t("focusActivityPomodoro", values: [
+            "index": store.formatCount(index),
+            "total": store.formatCount(total),
         ])
+    }
+
+    /// Read from the leg that follows, so a phase always says what it hands
+    /// over to — the one thing the cadence knows and the user does not.
+    private static func legNextNote(_ next: FocusChainLeg, store: OffWorkStore) -> String {
+        switch next.kind {
+        case .shortBreak, .longBreak:
+            let minutes = max(1, Int(next.end.timeIntervalSince(next.start) / 60))
+            return store.t("focusActivityThenBreak", values: ["count": store.formatCount(minutes)])
+        case .focus:
+            return store.t("focusActivityNextUp", values: [
+                "task": next.taskTitle ?? store.t("focusTitle"),
+                "time": store.formatTime(next.start),
+            ])
+        }
     }
 
     /// A fixed clock-off time stays truthful while the app is suspended,
@@ -472,6 +527,10 @@ final class LiveActivityService {
         generation: Int
     ) async {
         let copy = focusCopy(for: decision.surface, store: store)
+        let chain = store.focusChain(for: session, at: now)
+        let legs = Self.focusLegs(chain, store: store)
+        let chainEnd = chain.last?.end ?? session.plannedEndAt
+        let canAdd = store.canAddFocusPomodoro(at: now)
         let attributes = OffWorkActivityAttributes(
             shiftStartAtMs: Int64(session.startedAt.timeIntervalSince1970 * 1_000),
             plannedEndAtMs: Int64(session.plannedEndAt.timeIntervalSince1970 * 1_000)
@@ -494,10 +553,20 @@ final class LiveActivityService {
             destination: "offworkcountdown://focus",
             taskTitle: Self.focusTaskTitle(session: session, surface: decision.surface, store: store),
             taskIcon: Self.focusTaskIcon(session: session, surface: decision.surface, store: store),
-            nextLabel: Self.focusNextLabel(session: session, store: store, now: now),
+            nextLabel: legs.first?.nextNote,
             shiftEndAtMs: Self.shiftEndAtMs(store: store, at: now),
-            shiftEndLabel: store.t("endTime")
+            shiftEndLabel: store.t("endTime"),
+            legs: legs,
+            chainDoneCaption: store.t("focusActivityChainDone"),
+            // Offered only where it means something: a running focus block
+            // with a task behind it. A break has no estimate to raise.
+            addPomodoroLabel: decision.surface == .focus && session.taskID != nil
+                ? store.t("focusActivityAddPomodoro")
+                : nil,
+            addPomodoroEnabled: canAdd
         )
+        // The first boundary already needs a new layout. Do not advertise the
+        // frozen current phase as fresh until the entire chain has ended.
         let content = ActivityContent(state: state, staleDate: session.plannedEndAt, relevanceScore: 90)
         let desired = LiveActivityIdentity(
             plannedEndAtMs: attributes.plannedEndAtMs,
@@ -532,7 +601,7 @@ final class LiveActivityService {
             recordDebugStatus("updated:\(decision.surface.rawValue)")
             scheduleFocusWake(
                 store: store,
-                session: session,
+                chainEnd: chainEnd,
                 workDisplayStartsAt: workDisplayStartsAt,
                 now: now,
                 generation: generation
@@ -555,7 +624,7 @@ final class LiveActivityService {
             recordDebugStatus("requested:\(decision.surface.rawValue)")
             scheduleFocusWake(
                 store: store,
-                session: session,
+                chainEnd: chainEnd,
                 workDisplayStartsAt: workDisplayStartsAt,
                 now: now,
                 generation: generation
@@ -566,25 +635,29 @@ final class LiveActivityService {
         }
     }
 
-    /// The next event for a focus surface is either its own completion or the
-    /// instant work gains priority. Scheduling only the earlier event ensures
-    /// that a focus completion from an older generation cannot end the work
-    /// activity selected at the handoff.
+    /// The next event for a focus surface is either the end of its chain or
+    /// the instant work gains priority. Scheduling only the earlier event
+    /// ensures that a focus completion from an older generation cannot end the
+    /// work activity selected at the handoff.
+    ///
+    /// The chain end, not the running block's end: the payload already carries
+    /// the break and the block queued behind it, and retiring the activity at
+    /// the first boundary would take the rest of it off the Lock Screen.
     private func scheduleFocusWake(
         store: OffWorkStore,
-        session: FocusSession,
+        chainEnd: Date,
         workDisplayStartsAt: Date?,
         now: Date,
         generation: Int
     ) {
         switch FocusLiveActivityWakePlan.make(
-            focusEndsAt: session.plannedEndAt,
+            focusEndsAt: chainEnd,
             workDisplayStartsAt: workDisplayStartsAt,
             now: now
         ) {
         case .completionOnly:
             focusPriorityTransition.cancel()
-            scheduleFocusCompletion(at: session.plannedEndAt, generation: generation)
+            scheduleFocusCompletion(at: chainEnd, generation: generation)
         case .workHandoffBeforeCompletion:
             guard let workDisplayStartsAt else { return }
             completionTask?.cancel()
@@ -604,7 +677,7 @@ final class LiveActivityService {
                 generation: generation
             )
             scheduleFocusCompletion(
-                at: session.plannedEndAt,
+                at: chainEnd,
                 generation: generation,
                 preservingPriorityTransition: true
             )

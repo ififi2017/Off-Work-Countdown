@@ -98,6 +98,7 @@
 		FA0000030000000000000003 /* Exceptions for "Native" folder in "OffWorkCountdownWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Models/FocusActivityIntents.swift,
 				Models/LiveActivityAttributes.swift,
 			);
 			target = 740000011234567890ABCDEF /* OffWorkCountdownWidgetsExtension */;

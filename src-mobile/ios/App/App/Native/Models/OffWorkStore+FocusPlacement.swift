@@ -164,10 +164,19 @@ extension OffWorkStore {
         case noRoom
     }
 
-    /// Continue the same task without moving another task or changing the saved template.
-    func addOneFocusBlock(taskID: UUID, at date: Date = .now) -> Result<Int64, FocusExtensionError> {
+    /// Where one more block for a task would go, deciding nothing else.
+    ///
+    /// Split out of `addOneFocusBlock` so a caller that only needs to know
+    /// whether the control should be offered — the Lock Screen's plus, which
+    /// greys out rather than failing a tap — asks exactly the question the
+    /// write will ask. Answering it twice is how a disabled button and a
+    /// refused write end up disagreeing.
+    func focusContinuationTarget(
+        taskID: UUID,
+        at date: Date = .now
+    ) -> Result<(block: FocusWorkBlock, shift: NativeShiftSnapshot), FocusExtensionError> {
         guard plus.isAuthorized,
-              var task = records.state.focusTasks.first(where: { $0.id == taskID && $0.deletedAt == nil }),
+              records.state.focusTasks.contains(where: { $0.id == taskID && $0.deletedAt == nil }),
               let shift = snapshot(at: date), date < shift.endDate
         else { return .failure(.noRoom) }
         let blocks = focusPlanningBlocks(for: shift)
@@ -191,14 +200,26 @@ extension OffWorkStore {
                       && $0.scheduledStartAt.map { $0 >= target.start && $0 < target.end } == true
               })
         else { return .failure(.conflict) }
-        let estimate = max(task.estimatedPomodoros, completedFocusBlocks(for: task)) + 1
-        task.completedAt = nil
-        assignFocusBlock(target, to: task, in: shift, at: date)
-        if var updated = records.state.focusTasks.first(where: { $0.id == taskID }) {
-            updated.estimatedPomodoros = estimate
-            records.upsertFocusTask(updated, at: date)
+        return .success((target, shift))
+    }
+
+    /// Continue the same task without moving another task or changing the saved template.
+    func addOneFocusBlock(taskID: UUID, at date: Date = .now) -> Result<Int64, FocusExtensionError> {
+        switch focusContinuationTarget(taskID: taskID, at: date) {
+        case .failure(let error):
+            return .failure(error)
+        case .success(let found):
+            guard var task = records.state.focusTasks.first(where: { $0.id == taskID })
+            else { return .failure(.noRoom) }
+            let estimate = max(task.estimatedPomodoros, completedFocusBlocks(for: task)) + 1
+            task.completedAt = nil
+            assignFocusBlock(found.block, to: task, in: found.shift, at: date)
+            if var updated = records.state.focusTasks.first(where: { $0.id == taskID }) {
+                updated.estimatedPomodoros = estimate
+                records.upsertFocusTask(updated, at: date)
+            }
+            return .success(found.block.startAtMs)
         }
-        return .success(target.startAtMs)
     }
 
     /// Keep continuation available during the break and after the last planned round.
