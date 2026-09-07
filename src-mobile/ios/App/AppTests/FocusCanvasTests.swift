@@ -507,3 +507,37 @@ func templatePreviewBreaksRequireTasks() throws {
     #expect(items.filter { $0.assignment.kind == .task }.count == 1)
     #expect(items.filter { $0.assignment.kind == .breakTime }.count == 1)
 }
+
+@MainActor
+@Test("Usual-day estimates resize one task without changing its identity")
+func usualDayTaskEstimateCanBeEdited() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 9, minute: 0))
+    let blocks = store.focusWorkBlocks(at: at)
+    let work = blocks.filter { $0.kind == .task }
+    let first = try #require(work.first)
+    var draft = FocusTemplateDraft(template: nil, name: "Usual", slots: [])
+    draft.setTask(at: first.index, count: 3, title: "Writing", icon: .focus, blocks: blocks)
+    #expect(draft.slots.count == 3)
+    let key = try #require(draft.slots.first?.taskKey)
+    #expect(draft.slots.allSatisfy { $0.taskKey == key })
+    draft.setTask(at: work[1].index, count: 2, title: "Edited", icon: .focus, blocks: blocks)
+    #expect(draft.slots.map(\.blockIndex) == Array(work.prefix(2).map(\.index)))
+    #expect(draft.slots.allSatisfy { $0.taskKey == key && $0.taskTitle == "Edited" })
+}
+
+@MainActor
+@Test(arguments: [FocusPlanBlockKind.task, .breakTime])
+func usualDayEstimateDoesNotOverwriteOccupiedSlots(kind: FocusPlanBlockKind) throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 9, minute: 0))
+    let blocks = store.focusWorkBlocks(at: at)
+    let work = blocks.filter { $0.kind == .task }
+    let occupied = FocusTemplateSlot(blockIndex: work[2].index, kind: kind,
+        taskKey: kind == .task ? UUID() : nil, taskTitle: kind == .task ? "Other" : nil, taskIcon: nil)
+    var draft = FocusTemplateDraft(template: nil, name: "Usual", slots: [occupied])
+    #expect(draft.availableTaskIndices(at: work[0].index, blocks: blocks).count == 2)
+    draft.setTask(at: work[0].index, count: 3, title: "Writing", icon: .focus, blocks: blocks)
+    #expect(draft.slots.count == 1)
+    #expect(draft.slots.first?.blockIndex == occupied.blockIndex)
+}

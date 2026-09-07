@@ -1174,6 +1174,12 @@ final class OffWorkStore {
         }
 
         switch raw {
+        case "dayComplete":
+            for var completedTask in focusTasksForToday(at: now) {
+                completedTask.completedAt = now
+                records.upsertFocusTask(completedTask, at: now)
+            }
+            seedCompletedSession(kind: .focus, index: 0, endedAt: now.addingTimeInterval(-60))
         case "shortBreakOffer":
             seedCompletedSession(kind: .focus, index: 0, endedAt: now.addingTimeInterval(-60))
             focusLastNextAction = .startShortBreak

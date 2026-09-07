@@ -19,7 +19,13 @@ struct FocusCanvasView: View {
         var id: String { rawValue }
     }
 
-    @State private var scale: Scale = .today
+    @State private var scale: Scale = {
+#if DEBUG
+        Scale(rawValue: UserDefaults.standard.string(forKey: "ios.native.qaFocusScale") ?? "") ?? .today
+#else
+        .today
+#endif
+    }()
     @State private var selectedBlock: Int64?
     @State private var editingBlock: FocusDayCanvasModel.Block?
     @State private var quickCreateLanding: FocusQuickCreateSheet.Landing?
@@ -301,7 +307,9 @@ struct FocusNowBand: View {
     var body: some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 0) {
-                content.padding(18)
+                content
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(18)
                 if let taskID = store.focusContinuationTaskID() {
                     Button { onExtend(taskID) } label: {
                         Text(store.t("focusExtendOne"))
@@ -343,8 +351,9 @@ struct FocusNowBand: View {
             runningContent(session)
         } else if store.focusDayComplete() {
             Label(store.t("focusActivityDayDone"), systemImage: "checkmark.circle")
-                .font(.headline)
-                .foregroundStyle(OWCDesign.secondary)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(OWCDesign.primary)
+                .fixedSize(horizontal: false, vertical: true)
         } else if store.focusLastNextAction == .startShortBreak || store.focusLastNextAction == .startLongBreak {
             breakOffer
         } else if let block = model.currentBlock, block.kind == .task, !block.isUserBreak {
