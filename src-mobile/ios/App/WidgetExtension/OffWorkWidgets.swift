@@ -177,7 +177,7 @@ private struct LockScreenActivityView: View {
                     }
                     Spacer(minLength: 8)
                     if !activityComplete(context, at: timeline.date) {
-                        AddPomodoroButton(state: context.state)
+                        AddPomodoroButton(state: context.state, now: timeline.date)
                     }
                 }
                 .padding(.top, 12)
@@ -224,22 +224,26 @@ private struct LockScreenActivityView: View {
 /// be tapped and does nothing is worse than one that says it cannot act.
 private struct AddPomodoroButton: View {
     let state: OffWorkActivityAttributes.ContentState
+    let now: Date
 
     var body: some View {
-        if let label = state.addPomodoroLabel {
+        if state.showsAddPomodoro(atMs: Int64(now.timeIntervalSince1970 * 1_000)),
+           let label = state.addPomodoroLabel {
             Button(intent: AddFocusPomodoroIntent()) {
                 Image(systemName: "plus")
                     .font(.system(size: 15, weight: .semibold))
                     .frame(width: 34, height: 34)
+                    .background(.white.opacity(state.addPomodoroEnabled ? 0.18 : 0.08), in: .circle)
+                    .frame(width: 44, height: 44)
+                    .contentShape(.rect)
             }
             .buttonStyle(.plain)
-            .background(.white.opacity(state.addPomodoroEnabled ? 0.18 : 0.08), in: .circle)
             .foregroundStyle(.white.opacity(state.addPomodoroEnabled ? 0.95 : 0.35))
             .disabled(!state.addPomodoroEnabled)
             .accessibilityLabel(label)
-            // `Text(_:style:.timer)` beside it reports an ideal width far
-            // wider than the digits it draws, and would otherwise squeeze the
-            // button out of the row entirely.
+            // The timer text beside it reports an ideal width far wider than
+            // the digits it draws, and would otherwise squeeze the button out
+            // of the row entirely.
             .fixedSize()
             .layoutPriority(1)
         }
@@ -274,7 +278,7 @@ private struct ActivityCountdownPanel: View {
                 }
                 if activityIsFocus(context) {
                     if !activityComplete(context, at: now) {
-                        AddPomodoroButton(state: context.state)
+                        AddPomodoroButton(state: context.state, now: now)
                     }
                 } else {
                     Text(String(format: "%.1f%%", activityProgressValue(context, at: now)))
@@ -334,23 +338,16 @@ private struct ActivityCompactCountdown: View {
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
             } else {
-                // `Text(_:style:.timer)` is required here, not a convenience:
-                // Live Activities have no timeline of their own — the widget
-                // extension is suspended almost all the time, and only a real
-                // `Activity.update()` push re-renders it. `.timer`-style Text
-                // is one of the few primitives iOS interpolates frame-by-frame
-                // outside the extension process, so it's the only thing that
-                // visibly ticks without one (confirmed the hard way: an
-                // earlier attempt to render this from a plain TimelineView
-                // string looked right for one frame, then froze).
+                // The render server interpolates this bounded timer while the
+                // extension sleeps. It stops at zero even if the next leg has
+                // not received a redraw; a date-style timer would count up again.
                 //
-                // Its cost is a long-standing, still-unfixed ActivityKit bug
-                // (https://developer.apple.com/forums/thread/723316): inside
-                // Dynamic Island's compact regions it reports a broken,
-                // oversized ideal width, so `.fixedSize` blows the island out
-                // to its expanded shape with the countdown rendered blank.
-                // Hence the explicit width below.
-                Text(activityEnd(context, at: timeline.date), style: .timer)
+                // The explicit width below is still required. Timer text in
+                // Dynamic Island's compact regions reports a broken, oversized
+                // ideal width (https://developer.apple.com/forums/thread/723316),
+                // and unbounded it blows the island out to its expanded shape
+                // with the countdown rendered blank.
+                Text(timerInterval: timeline.date...max(timeline.date, activityEnd(context, at: timeline.date)), countsDown: true)
                     .font(.system(size: 14, weight: .bold).monospacedDigit())
                     .foregroundStyle(.white)
                     .environment(\.locale, activityLocale(context))
@@ -432,12 +429,9 @@ private struct AlwaysDarkBrandMark: View {
 /// the instant a block becomes its break, and the break becomes the block
 /// queued behind it — because that swaps the whole card.
 ///
-/// Asking per second gets that instant budgeted away: on a locked screen the
-/// extension can go many minutes without a render, and the card sat on a
-/// finished block while its break was already running underneath. So a chain
-/// payload asks for nothing but its own boundaries, which is a request small
-/// enough for the system to grant. The work countdown keeps the per-second
-/// tick, because it draws its own progress bar and completion caption.
+/// These boundaries are best-effort redraw requests, not scheduled ActivityKit
+/// updates. iOS can suspend the extension across all of them. Bounded timer
+/// text remains safe then; notifications deliver the transitions independently.
 private struct ActivityUpdateSchedule: TimelineSchedule {
     var boundaries: [Date]
     var interval: TimeInterval?
@@ -605,7 +599,7 @@ private func activityCountdownText(
 ) -> some View {
     if activityComplete(context, at: now) {
         Text(context.state.chainDoneCaption ?? context.state.completedCaption)
-            .font(.system(size: size, weight: .bold))
+            .font(.system(size: activityIsFocus(context) ? min(size, 22) : size, weight: activityIsFocus(context) ? .semibold : .bold))
             .foregroundStyle(.white)
             .lineLimit(1)
             .minimumScaleFactor(0.58)
@@ -619,7 +613,7 @@ private func activityCountdownText(
             .lineLimit(1)
             .minimumScaleFactor(0.58)
     } else {
-        Text(activityEnd(context, at: now), style: .timer)
+        Text(timerInterval: now...max(now, activityEnd(context, at: now)), countsDown: true)
             .font(.system(size: size, weight: .bold).monospacedDigit())
             .foregroundStyle(.white)
             // Live Activities run in the Widget extension, whose process

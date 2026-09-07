@@ -565,7 +565,9 @@ final class LiveActivityService {
                 : nil,
             addPomodoroEnabled: canAdd
         )
-        let content = ActivityContent(state: state, staleDate: chainEnd, relevanceScore: 90)
+        // The first boundary already needs a new layout. Do not advertise the
+        // frozen current phase as fresh until the entire chain has ended.
+        let content = ActivityContent(state: state, staleDate: session.plannedEndAt, relevanceScore: 90)
         let desired = LiveActivityIdentity(
             plannedEndAtMs: attributes.plannedEndAtMs,
             surface: decision.surface

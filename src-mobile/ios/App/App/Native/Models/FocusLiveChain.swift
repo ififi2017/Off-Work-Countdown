@@ -133,7 +133,7 @@ extension OffWorkStore {
     /// sitting in is not somewhere to put another one.
     func addableFocusBlock(at date: Date = .now) -> FocusDayCanvasModel.Block? {
         guard plus.isAuthorized, let session = activeFocusSession(), session.kind == .focus,
-              session.taskID != nil
+              session.taskID != nil, session.startedAt <= date, date < session.plannedEndAt
         else { return nil }
         return FocusLiveChain.addableBlock(
             blocks: focusDayCanvas(at: date).blocks,

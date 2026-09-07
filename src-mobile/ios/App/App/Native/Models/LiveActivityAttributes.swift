@@ -99,6 +99,15 @@ struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
             legs?.first { nowMs < $0.endAtMs }
         }
 
+        /// A cached focus payload may redraw as a break or an unstarted preview.
+        func showsAddPomodoro(atMs nowMs: Int64) -> Bool {
+            guard addPomodoroLabel != nil, phase != "complete", nowMs < endAtMs else { return false }
+            if let leg = leg(atMs: nowMs) {
+                return leg.surface == "focus" && !leg.isPreview && nowMs >= leg.startAtMs
+            }
+            return surface == "focus"
+        }
+
         func projectedProgress(atMs nowMs: Int64) -> Double {
             let duration = segments.reduce(Int64(0)) { total, segment in
                 total + max(0, segment.endAtMs - segment.startAtMs)

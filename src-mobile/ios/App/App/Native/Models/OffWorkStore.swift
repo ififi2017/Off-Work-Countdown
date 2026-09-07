@@ -1208,7 +1208,7 @@ final class OffWorkStore {
         case "notificationFailed":
             activateDebugFocusScenario("runningFocus", at: now)
             focusNotificationIssue = .schedulingFailed
-        case "runningShortBreak", "runningLongBreak", "runningFocus":
+        case "runningShortBreak", "runningLongBreak", "runningFocus", "runningFocusEndingSoon":
             let kind: FocusSessionKind = switch raw {
             case "runningShortBreak": .shortBreak
             case "runningLongBreak": .longBreak
@@ -1219,12 +1219,15 @@ final class OffWorkStore {
             case .shortBreak: focusTimerSettings.shortBreakMinutes
             case .longBreak: focusTimerSettings.longBreakMinutes
             }
+            // Exercise the lock-screen boundary without waiting a whole block.
+            let startedAt = raw == "runningFocusEndingSoon"
+                ? now.addingTimeInterval(15 - Double(minutes * 60)) : now
             records.upsertFocusSession(FocusSession(
                 id: Self.debugSeedID(raw == "runningShortBreak" ? 810 : raw == "runningLongBreak" ? 811 : 812),
                 taskID: task.id,
                 shiftAnchorDate: recordsCalendar.startOfDay(for: now),
-                startedAt: now,
-                plannedEndAt: now.addingTimeInterval(Double(minutes * 60)),
+                startedAt: startedAt,
+                plannedEndAt: startedAt.addingTimeInterval(Double(minutes * 60)),
                 endedAt: nil,
                 endReason: nil,
                 editedAt: now,
@@ -6276,11 +6279,12 @@ final class OffWorkStore {
         return .init(slot: .breakEnd, at: end, title: t("focusBreakOver"), body: body)
     }
 
-    private func scheduleFocusTimerNotification(for session: FocusSession) {
+    @discardableResult
+    private func scheduleFocusTimerNotification(for session: FocusSession) -> Task<Void, Never> {
         let alerts = focusAlerts(for: session)
         focusNotificationGeneration &+= 1
         let generation = focusNotificationGeneration
-        Task { @MainActor [weak self] in
+        return Task { @MainActor [weak self] in
             let result = await NotificationService.scheduleFocusTimers(
                 id: session.id,
                 alerts: alerts,
@@ -6301,7 +6305,6 @@ final class OffWorkStore {
                 requestID: session.id,
                 activeSessionID: self.activeFocusSession()?.id
             ) else {
-                NotificationService.cancelFocusTimer(id: session.id)
                 return
             }
             self.applyFocusNotificationResult(result, for: session.id)
@@ -6332,6 +6335,12 @@ final class OffWorkStore {
         scheduleFocusTimerNotification(for: session)
     }
 
+    /// An intent must finish publishing before iOS suspends its background run.
+    func refreshFocusNotifications() async {
+        guard let session = activeFocusSession() else { return }
+        await scheduleFocusTimerNotification(for: session).value
+    }
+
     func scheduleFocusExpiry(for session: FocusSession) {
         focusExpiryTask?.cancel()
         let end = session.plannedEndAt
@@ -6347,7 +6356,7 @@ final class OffWorkStore {
         }
     }
 
-    func stopFocus(reason: FocusEndReason, at date: Date = .now) {
+    func stopFocus(reason: FocusEndReason, at date: Date = .now, observedAt: Date? = nil) {
         guard var session = activeFocusSession() else { return }
         focusExpiryTask?.cancel()
         focusExpiryTask = nil
@@ -6380,28 +6389,29 @@ final class OffWorkStore {
             ? .startLongBreak : .startShortBreak
         // Do not surface a break CTA that cannot start because this block just
         // reached lunch or clock-off. There is no phase to skip in that case.
-        focusLastNextAction = plannedFocusBreakEnd(kind: suggestedKind, at: date) == nil
+        focusLastNextAction = plannedFocusBreakEnd(kind: suggestedKind, at: observedAt ?? date) == nil
             ? .none
             : suggestedAction
-        autoStartFocusBreak(kind: suggestedKind, after: session, at: date)
+        autoStartFocusBreak(kind: suggestedKind, after: session, at: observedAt ?? date)
     }
 
     /// The recovery a finished block earned starts with it.
     ///
-    /// A block ends while the phone is locked, so the Lock Screen has already
-    /// been counting this break down — from the block's own end, which is the
-    /// only start that makes the two agree. Returning long afterwards must not
-    /// backfill a break nobody took, so it only becomes a session while the
-    /// clock is still inside it.
+    /// Two clocks are in play here and collapsing them into one is what wrote
+    /// overlapping records. The break *starts* at the block's own planned end,
+    /// because the Lock Screen has already been counting it down from there
+    /// and the two must agree. Whether it may start at all is judged against
+    /// `date`, the real moment the app came back: returning after the window
+    /// has closed backfills nothing.
     private func autoStartFocusBreak(
         kind: FocusSessionKind,
         after session: FocusSession,
         at date: Date
     ) {
-        guard focusLastNextAction == (kind == .longBreak ? .startLongBreak : .startShortBreak),
-              let end = plannedFocusBreakEnd(kind: kind, at: session.plannedEndAt),
+        guard let end = plannedFocusBreakEnd(kind: kind, at: session.plannedEndAt),
               end > date
         else { return }
+        focusLastNextAction = kind == .longBreak ? .startLongBreak : .startShortBreak
         _ = startBreak(kind: kind, at: session.plannedEndAt)
     }
 
@@ -6424,7 +6434,8 @@ final class OffWorkStore {
             // intentionally local and must not rewrite historical outcomes.
             expectedDurationMinutes: FocusPlanner.pomodoroMinutes
         )
-        stopFocus(reason: reason, at: date)
+        // The session ended at its boundary; waking later is only an observation.
+        stopFocus(reason: reason, at: session.plannedEndAt, observedAt: date)
         return true
     }
 
