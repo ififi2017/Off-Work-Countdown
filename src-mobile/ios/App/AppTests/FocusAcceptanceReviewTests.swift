@@ -83,6 +83,21 @@ struct FocusAcceptanceReviewTests {
         #expect(refreshed[1].body != original[1].body)
     }
 
+    @Test func elapsedAlertsDoNotRequestPermission() async {
+        var checkedPermission = false
+        let center = NotificationService.ShiftCenter(
+            authorization: { checkedPermission = true; return .notDetermined },
+            pendingIDs: { [] }, deliveredIDs: { [] }, add: { _ in },
+            removePending: { _ in }, removeDelivered: { _ in }
+        )
+        let result = await NotificationService.scheduleFocusTimers(
+            id: UUID(), alerts: [.init(slot: .end, at: .now.addingTimeInterval(-60), title: "", body: "")],
+            center: center, isCurrent: { true }
+        )
+        #expect(result == .scheduled)
+        #expect(!checkedPermission)
+    }
+
     @Test func refreshSkipsPastAlertsAndSerializesSameSessionWrites() async throws {
         let id = UUID()
         var pending: [String: UNNotificationRequest] = [:]

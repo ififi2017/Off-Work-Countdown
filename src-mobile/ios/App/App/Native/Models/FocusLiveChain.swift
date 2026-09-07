@@ -75,7 +75,8 @@ extension OffWorkStore {
         var cursor = session.plannedEndAt
         var legs = [runningLeg(session, task: task, blocks: canvas.blocks)]
 
-        if session.kind == .focus, session.taskID != nil, session.plannedEndReason == .completed {
+        if session.kind == .focus, session.taskID != nil, session.plannedEndReason == .completed,
+           !completesFocusDay(after: session, at: date) {
             let breakKind = nextFocusBreakKind(after: session)
             if let breakEnd = plannedFocusBreakEnd(kind: breakKind, at: session.plannedEndAt) {
                 legs.append(FocusChainLeg(
@@ -161,6 +162,7 @@ extension OffWorkStore {
             )
         }
         let completed = completedFocusBlocks(for: task)
+            + scheduledFocusCount(taskID: task.id, before: session.startedAt)
         let index = completed + 1
         let total = max(index, max(1, task.estimatedPomodoros))
         let remaining = total - index

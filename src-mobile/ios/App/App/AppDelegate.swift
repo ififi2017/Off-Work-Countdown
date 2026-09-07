@@ -25,9 +25,15 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
         FocusActivityActions.addPomodoro = {
             let store = OffWorkStore.shared
             // Reconcile even a stale button: its old payload can outlive the block.
+            store.restoreScheduledFocus()
             _ = store.finishElapsedFocusSession()
             _ = store.addFocusPomodoroToRunningTask()
             await store.refreshFocusNotifications()
+            await LiveActivityService.shared.reschedule(store: store)
+        }
+        FocusActivityActions.stopFocus = { startAtMs in
+            let store = OffWorkStore.shared
+            _ = store.stopFocusFromActivity(startAtMs: startAtMs)
             await LiveActivityService.shared.reschedule(store: store)
         }
         return true

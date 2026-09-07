@@ -200,6 +200,9 @@ final class NotificationService {
         // channel, not only after it has attempted to add its own request.
         guard isCurrent() else { return .superseded }
         center.removePending(previous)
+        // Restoring elapsed blocks must not open a permission prompt for
+        // reminders that can no longer fire (or hold up the next phase).
+        guard alerts.contains(where: { $0.at > .now }) else { return .scheduled }
         let settings = await center.authorization()
         if settings == .notDetermined {
             do {

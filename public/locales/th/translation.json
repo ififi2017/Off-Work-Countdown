@@ -1006,5 +1006,6 @@
   "focusActivityChainDone": "ตอนนี้เสร็จหมดแล้ว",
   "focusActivityAddPomodoro": "เพิ่มโพโมโดโร",
   "focusBreakUntil": "พัก {{count}} นาที ถึง {{time}}",
-  "focusBreakOver": "หมดเวลาพัก"
+  "focusBreakOver": "หมดเวลาพัก",
+  "focusActivityDayDone": "งานทั้งหมดของวันนี้เสร็จแล้ว"
 }

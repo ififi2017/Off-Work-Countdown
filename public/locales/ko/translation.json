@@ -1006,5 +1006,6 @@
   "focusActivityChainDone": "일단 모두 완료",
   "focusActivityAddPomodoro": "포모도로 추가",
   "focusBreakUntil": "{{count}}분 휴식, {{time}}까지",
-  "focusBreakOver": "휴식 종료"
+  "focusBreakOver": "휴식 종료",
+  "focusActivityDayDone": "오늘의 모든 할 일을 완료했어요"
 }

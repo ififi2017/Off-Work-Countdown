@@ -10,6 +10,7 @@ import Foundation
 /// this stays `nil` and the intent is never performed there.
 @MainActor
 enum FocusActivityActions {
+    static var stopFocus: (@MainActor (Int64) async -> Void)?
     static var addPomodoro: (@MainActor () async -> Void)?
 }
 
@@ -31,6 +32,23 @@ struct AddFocusPomodoroIntent: LiveActivityIntent {
     @MainActor
     func perform() async throws -> some IntentResult {
         await FocusActivityActions.addPomodoro?()
+        return .result()
+    }
+}
+
+/// The start timestamp prevents a stale card from stopping a later block.
+struct StopFocusActivityIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Stop focus"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Block start") var startAtMs: Int
+
+    init() {}
+    init(startAtMs: Int64) { self.startAtMs = Int(startAtMs) }
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        await FocusActivityActions.stopFocus?(Int64(startAtMs))
         return .result()
     }
 }

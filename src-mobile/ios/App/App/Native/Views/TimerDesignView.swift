@@ -72,12 +72,7 @@ struct TimerDesignView: View {
                             store.toggleQuickTheme()
                         }
                     } label: {
-                        if store.quickThemeIsAuto {
-                            Text(verbatim: "A")
-                                .font(.body.weight(.semibold))
-                        } else {
-                            Image(systemName: store.quickThemeIcon)
-                        }
+                        Image(systemName: store.quickThemeIcon)
                     }
                     .accessibilityLabel(store.t("theme"))
                 }
