@@ -79,6 +79,7 @@ extension OffWorkStore {
     func createFocusTask(
         title: String,
         icon: FocusTaskIcon = .focus,
+        pomodoros: Int = 1,
         inBlockStartingAt blockStartAtMs: Int64,
         at date: Date = .now
     ) -> FocusPlacementResult {
@@ -87,7 +88,7 @@ extension OffWorkStore {
         guard !trimmed.isEmpty, let shift = focusCanvasShift(at: date)?.snapshot else { return .noShift }
         let task = addFocusTaskAuthorized(
             title: trimmed,
-            pomodoros: 1,
+            pomodoros: pomodoros,
             plannedFor: shift.startDate,
             icon: icon
         )

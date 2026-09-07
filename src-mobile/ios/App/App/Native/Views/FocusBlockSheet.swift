@@ -13,6 +13,8 @@ struct FocusBlockSheet: View {
 
     @State private var title = ""
     @State private var icon = FocusTaskIcon.focus
+    @State private var isFavorite = false
+    @State private var pomodoros = 1
     @FocusState private var titleFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
@@ -34,8 +36,15 @@ struct FocusBlockSheet: View {
                         )
                         .onSubmit(create)
                     }
+                    FocusFavoritePicker(store: store) { favorite in
+                        title = favorite.title
+                        icon = favorite.icon
+                        pomodoros = favorite.estimatedPomodoros
+                        isFavorite = true
+                    }
                     if titleFocused || canCreate {
                         FocusTaskIconPicker(store: store, selection: $icon)
+                        FocusFavoriteToggle(store: store, isFavorite: $isFavorite)
                         Button(store.t("focusBlockCreateHere"), action: create)
                             .buttonStyle(OWCPrimaryButtonStyle())
                             .disabled(!canCreate)
@@ -49,7 +58,7 @@ struct FocusBlockSheet: View {
                                     finish(store.assign(task, toBlockStartingAt: block.startAtMs))
                                 } label: {
                                     OWCRow(
-                                        icon: task.icon.systemName,
+                                        icon: store.savedFocusFavorite(title: task.title, icon: task.icon) != nil ? "star.fill" : task.icon.systemName,
                                         title: task.title,
                                         subtitle: subtitle(task),
                                         isLast: index == tasks.count - 1
@@ -136,7 +145,13 @@ struct FocusBlockSheet: View {
 
     private func create() {
         guard canCreate else { return }
-        finish(store.createFocusTask(title: title, icon: icon, inBlockStartingAt: block.startAtMs))
+        let result = store.createFocusTask(title: title, icon: icon, pomodoros: pomodoros, inBlockStartingAt: block.startAtMs)
+        if case .placed(let id, _) = result, isFavorite,
+           let task = store.records.state.focusTasks.first(where: { $0.id == id }),
+           store.savedFocusFavorite(title: task.title, icon: task.icon) == nil {
+            store.toggleFocusFavorite(task)
+        }
+        finish(result)
     }
 
     private func finish(_ result: FocusPlacementResult) {
@@ -190,6 +205,12 @@ struct FocusQuickCreateSheet: View {
                         focused: $titleFocused,
                         placeholder: store.t("focusTaskPlaceholder")
                     )
+                    FocusFavoritePicker(store: store) { favorite in
+                        title = favorite.title
+                        icon = favorite.icon
+                        pomodoros = favorite.estimatedPomodoros
+                        isFavorite = true
+                    }
                     OWCSectionHeader(title: store.t("focusLanding"))
                     OWCGroupCard {
                         landingRow(.nextBlock, icon: "calendar.badge.plus", title: nextBlockTitle)
@@ -222,18 +243,7 @@ struct FocusQuickCreateSheet: View {
                                 }
                             }
 
-                            Button {
-                                isFavorite.toggle()
-                            } label: {
-                                Label(
-                                    store.t(isFavorite ? "focusFavoriteOn" : "focusMakeFavorite"),
-                                    systemImage: isFavorite ? "star.fill" : "star"
-                                )
-                                .font(.callout.weight(.medium))
-                                .foregroundStyle(isFavorite ? OWCDesign.orangeDeep : OWCDesign.secondary)
-                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                            }
-                            .buttonStyle(.plain)
+                            FocusFavoriteToggle(store: store, isFavorite: $isFavorite)
                         }.padding(.top, 12)
                     }
                 }
@@ -275,17 +285,18 @@ struct FocusQuickCreateSheet: View {
 
     private func save() {
         guard canSave else { return }
+        let saveFavorite = isFavorite && store.savedFocusFavorite(title: title.trimmingCharacters(in: .whitespacesAndNewlines), icon: icon) == nil
         switch landing {
         case .nextBlock:
             onResult(store.createFocusTaskInNextEmptyBlock(
                 title: title,
                 pomodoros: pomodoros,
                 icon: icon,
-                isFavorite: isFavorite
+                isFavorite: saveFavorite
             ))
         case .startNow:
             guard canStart else { return }
-            store.addAndStartFocusTask(title: title, pomodoros: pomodoros, icon: icon, isFavorite: isFavorite)
+            store.addAndStartFocusTask(title: title, pomodoros: pomodoros, icon: icon, isFavorite: saveFavorite)
         }
         dismiss()
     }

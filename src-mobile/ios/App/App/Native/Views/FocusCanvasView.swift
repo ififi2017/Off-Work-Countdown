@@ -489,7 +489,7 @@ struct FocusTaskLedger: View {
                 OWCGroupCard {
                     ForEach(Array(model.tasks.enumerated()), id: \.element.id) { index, row in
                         OWCRow(
-                            icon: row.icon.systemName,
+                            icon: store.savedFocusFavorite(title: row.title, icon: row.icon) != nil ? "star.fill" : row.icon.systemName,
                             title: row.title,
                             subtitle: subtitle(row),
                             isLast: index == model.tasks.count - 1,
@@ -506,6 +506,7 @@ struct FocusTaskLedger: View {
                                         .foregroundStyle(OWCDesign.secondary)
                                 }
                                 if let task = store.records.state.focusTasks.first(where: { $0.id == row.id }) {
+                                    let favorite = store.savedFocusFavorite(title: task.title, icon: task.icon)
                                     Menu {
                                         Button(store.t("focusStartNow"), systemImage: "play.fill") {
                                             _ = store.startFocus(task: task)
@@ -514,8 +515,8 @@ struct FocusTaskLedger: View {
                                         Button(store.t("focusExtendOne"), systemImage: "plus") {
                                             onExtend(task.id)
                                         }
-                                        Button(store.t(task.isFavorite ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: "star") {
-                                            store.toggleFocusFavorite(task)
+                                        Button(store.t(favorite != nil ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: favorite != nil ? "star.fill" : "star") {
+                                            store.toggleFocusFavorite(favorite ?? task)
                                         }
                                         Button(store.t("focusDeleteTask"), systemImage: "trash", role: .destructive) {
                                             _ = store.deleteFocusTask(task)

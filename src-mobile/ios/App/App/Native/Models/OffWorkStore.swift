@@ -5896,7 +5896,7 @@ final class OffWorkStore {
     func focusTasksForToday(at date: Date = .now) -> [FocusTask] {
         let today = recordsCalendar.startOfDay(for: date)
         return FocusTaskOrder.sorted(records.state.focusTasks.filter { task in
-            guard task.deletedAt == nil else { return false }
+            guard task.deletedAt == nil, !(task.isFavorite && task.plannedForDate == nil) else { return false }
             guard let planned = task.plannedForDate else { return true }
             return recordsCalendar.isDate(planned, inSameDayAs: today)
         })
@@ -5908,7 +5908,7 @@ final class OffWorkStore {
     func focusTasksForFocusPage(at date: Date = .now) -> [FocusTask] {
         let today = recordsCalendar.startOfDay(for: date)
         return records.state.focusTasks.filter { task in
-            guard task.deletedAt == nil else { return false }
+            guard task.deletedAt == nil, !(task.isFavorite && task.plannedForDate == nil) else { return false }
             if task.completedAt == nil {
                 return task.plannedForDate.map { $0 >= today } ?? true
             }
@@ -5945,10 +5945,33 @@ final class OffWorkStore {
         FocusTaskOrder.sorted(records.state.focusTasks.filter { $0.deletedAt == nil && $0.isFavorite })
     }
 
+    func savedFocusFavorite(title: String, icon: FocusTaskIcon) -> FocusTask? {
+        favoriteFocusTasks().first { $0.title == title && $0.icon == icon }
+    }
+
+    /// A library-only task has no planned day. It appears in the picker, not
+    /// today's work or completion calculation, until the user places a copy.
+    func saveFocusFavorite(title: String, pomodoros: Int, icon: FocusTaskIcon) {
+        guard plus.isAuthorized else { return }
+        if var existing = savedFocusFavorite(title: title, icon: icon) {
+            existing.estimatedPomodoros = max(1, pomodoros)
+            records.upsertFocusTask(existing)
+            return
+        }
+        let task = FocusTask(id: UUID(), createdAt: .now, plannedForDate: nil,
+            scheduledStartAt: nil, title: title, estimatedPomodoros: max(1, pomodoros),
+            icon: icon, isFavorite: true, completedAt: nil, sortIndex: 0,
+            editedAt: .now, editCount: 0, editTieBreaker: UUID())
+        records.upsertFocusTask(task)
+    }
+
     func toggleFocusFavorite(_ task: FocusTask) {
         guard task.deletedAt == nil else { return }
         var next = task
         next.isFavorite.toggle()
+        if !next.isFavorite, next.plannedForDate == nil {
+            next.deletedAt = .now
+        }
         records.upsertFocusTask(next)
     }
 
