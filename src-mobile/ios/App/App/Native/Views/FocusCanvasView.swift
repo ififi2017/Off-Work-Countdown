@@ -19,7 +19,13 @@ struct FocusCanvasView: View {
         var id: String { rawValue }
     }
 
-    @State private var scale: Scale = .today
+    @State private var scale: Scale = {
+#if DEBUG
+        Scale(rawValue: UserDefaults.standard.string(forKey: "ios.native.qaFocusScale") ?? "") ?? .today
+#else
+        .today
+#endif
+    }()
     @State private var selectedBlock: Int64?
     @State private var editingBlock: FocusDayCanvasModel.Block?
     @State private var quickCreateLanding: FocusQuickCreateSheet.Landing?
@@ -301,7 +307,9 @@ struct FocusNowBand: View {
     var body: some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 0) {
-                content.padding(18)
+                content
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(18)
                 if let taskID = store.focusContinuationTaskID() {
                     Button { onExtend(taskID) } label: {
                         Text(store.t("focusExtendOne"))
@@ -343,8 +351,9 @@ struct FocusNowBand: View {
             runningContent(session)
         } else if store.focusDayComplete() {
             Label(store.t("focusActivityDayDone"), systemImage: "checkmark.circle")
-                .font(.headline)
-                .foregroundStyle(OWCDesign.secondary)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(OWCDesign.primary)
+                .fixedSize(horizontal: false, vertical: true)
         } else if store.focusLastNextAction == .startShortBreak || store.focusLastNextAction == .startLongBreak {
             breakOffer
         } else if let block = model.currentBlock, block.kind == .task, !block.isUserBreak {
@@ -480,7 +489,7 @@ struct FocusTaskLedger: View {
                 OWCGroupCard {
                     ForEach(Array(model.tasks.enumerated()), id: \.element.id) { index, row in
                         OWCRow(
-                            icon: row.icon.systemName,
+                            icon: store.savedFocusFavorite(title: row.title, icon: row.icon) != nil ? "star.fill" : row.icon.systemName,
                             title: row.title,
                             subtitle: subtitle(row),
                             isLast: index == model.tasks.count - 1,
@@ -497,6 +506,7 @@ struct FocusTaskLedger: View {
                                         .foregroundStyle(OWCDesign.secondary)
                                 }
                                 if let task = store.records.state.focusTasks.first(where: { $0.id == row.id }) {
+                                    let favorite = store.savedFocusFavorite(title: task.title, icon: task.icon)
                                     Menu {
                                         Button(store.t("focusStartNow"), systemImage: "play.fill") {
                                             _ = store.startFocus(task: task)
@@ -505,8 +515,8 @@ struct FocusTaskLedger: View {
                                         Button(store.t("focusExtendOne"), systemImage: "plus") {
                                             onExtend(task.id)
                                         }
-                                        Button(store.t(task.isFavorite ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: "star") {
-                                            store.toggleFocusFavorite(task)
+                                        Button(store.t(favorite != nil ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: favorite != nil ? "star.fill" : "star") {
+                                            store.toggleFocusFavorite(favorite ?? task)
                                         }
                                         Button(store.t("focusDeleteTask"), systemImage: "trash", role: .destructive) {
                                             _ = store.deleteFocusTask(task)

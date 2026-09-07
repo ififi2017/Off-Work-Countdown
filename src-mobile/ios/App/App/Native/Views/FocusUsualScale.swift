@@ -8,6 +8,31 @@ struct FocusTemplateDraft: Identifiable {
     var newID = UUID()
     var name: String
     var slots: [FocusTemplateSlot]
+
+    func taskIndices(at index: Int) -> [Int] {
+        guard let key = slots.first(where: { $0.blockIndex == index })?.taskKey else { return [index] }
+        return slots.filter { $0.kind == .task && $0.taskKey == key }.map(\.blockIndex).sorted()
+    }
+
+    func availableTaskIndices(at index: Int, blocks: [FocusWorkBlock]) -> [Int] {
+        var indices = taskIndices(at: index)
+        for block in blocks where block.kind == .task && block.index > (indices.last ?? index) {
+            guard !slots.contains(where: { $0.blockIndex == block.index }) else { break }
+            indices.append(block.index)
+        }
+        return indices
+    }
+
+    mutating func setTask(at index: Int, count: Int, title: String, icon: FocusTaskIcon, blocks: [FocusWorkBlock]) {
+        let oldIndices = taskIndices(at: index)
+        let indices = availableTaskIndices(at: index, blocks: blocks)
+        guard count > 0, count <= indices.count else { return }
+        let key = slots.first(where: { $0.blockIndex == index })?.taskKey ?? UUID()
+        slots.removeAll { oldIndices.contains($0.blockIndex) }
+        slots.append(contentsOf: indices.prefix(count).map {
+            FocusTemplateSlot(blockIndex: $0, kind: .task, taskKey: key, taskTitle: title, taskIcon: icon)
+        })
+    }
 }
 
 /// The third scale. Favourites and usual days finally sit together — a usual
@@ -42,7 +67,7 @@ struct FocusUsualScale: View {
                     HStack(spacing: 10) {
                         ForEach(favorites) { task in
                             Button { onPlaceFavorite(task) } label: {
-                                Label(task.title, systemImage: task.icon.systemName)
+                                Label(task.title, systemImage: "star.fill")
                                     .font(.callout.weight(.medium))
                                     .foregroundStyle(OWCDesign.primary)
                                     .padding(.horizontal, 16)
@@ -88,7 +113,8 @@ struct FocusUsualScale: View {
                         icon: "square.and.arrow.down",
                         title: store.t("focusSaveTodayAsUsual"),
                         subtitle: store.t("focusSaveTodayAsUsualDetail"),
-                        isLast: templates.isEmpty
+                        isLast: templates.isEmpty,
+                        centersVertically: true
                     ) {
                         Image(systemName: "chevron.right")
                             .font(.footnote.weight(.semibold))
@@ -109,7 +135,8 @@ struct FocusUsualScale: View {
                             icon: store.focusPlanning.defaultTemplateID == template.id ? "star.fill" : "square.grid.2x2",
                             title: template.name,
                             subtitle: templateSubtitle(template),
-                            isLast: index == templates.count - 1
+                            isLast: index == templates.count - 1,
+                            centersVertically: true
                         ) {
                             Menu {
                                 Button(store.t("focusApplyTemplate")) {
@@ -168,6 +195,9 @@ struct FocusTemplateEditorView: View {
     @State private var editingIndex: Int?
     @State private var newTitle = ""
     @State private var newIcon = FocusTaskIcon.focus
+    @State private var pomodoros = 1
+    @State private var isFavorite = false
+    @State private var favoriteChanges: [UUID: Bool] = [:]
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -223,8 +253,12 @@ struct FocusTemplateEditorView: View {
                         selectedBlock: .constant(nil)
                     ) { block in
                         editingIndex = block.index
+                        pomodoros = draft.taskIndices(at: block.index).count
                         newTitle = draft.slots.first { $0.blockIndex == block.index }?.taskTitle ?? ""
                         newIcon = draft.slots.first { $0.blockIndex == block.index }?.taskIcon ?? .focus
+                        let key = draft.slots.first { $0.blockIndex == block.index }?.taskKey
+                        isFavorite = key.flatMap { favoriteChanges[$0] }
+                            ?? (store.savedFocusFavorite(title: newTitle, icon: newIcon) != nil)
                     }
 
                     if emptyWorkBlocks > 0 {
@@ -288,13 +322,43 @@ struct FocusTemplateEditorView: View {
                             OWCDesign.control,
                             in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous)
                         )
+                    OWCGroupCard {
+                        OWCRow(
+                            icon: "number",
+                            title: store.t("focusEstimate"),
+                            subtitle: store.t("focusEstimateDetail", values: [
+                                "count": "\(pomodoros)",
+                                "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
+                            ]),
+                            isLast: true
+                        ) {
+                            Stepper("", value: $pomodoros,
+                                    in: 1...max(pomodoros, draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count))
+                                .labelsHidden()
+                                .accessibilityLabel(store.t("focusEstimate"))
+                                .accessibilityValue(store.formatCount(pomodoros))
+                        }
+                    }
+                    if pomodoros > draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count {
+                        Text(store.t("focusNoRoomThisShift"))
+                            .font(.footnote)
+                            .foregroundStyle(OWCDesign.secondary)
+                    }
+                    FocusFavoritePicker(store: store) { favorite in
+                        newTitle = favorite.title
+                        newIcon = favorite.icon
+                        pomodoros = favorite.estimatedPomodoros
+                        isFavorite = true
+                    }
                     FocusTaskIconPicker(store: store, selection: $newIcon)
+                    FocusFavoriteToggle(store: store, isFavorite: $isFavorite)
                     Button(store.t("saveAction")) {
                         setSlot(blockIndex, title: newTitle, icon: newIcon)
                         editingIndex = nil
                     }
                     .buttonStyle(OWCPrimaryButtonStyle())
-                    .disabled(newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                              || pomodoros > draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count)
                     Button(store.t("focusBlockMakeBreak")) {
                         draft.slots.removeAll { $0.blockIndex == blockIndex }
                         draft.slots.append(FocusTemplateSlot(
@@ -317,20 +381,17 @@ struct FocusTemplateEditorView: View {
             .navigationTitle(store.t("focusBlockWhat"))
             .navigationBarTitleDisplayMode(.inline)
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 
     private func setSlot(_ blockIndex: Int, title: String, icon: FocusTaskIcon) {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        draft.slots.removeAll { $0.blockIndex == blockIndex }
-        draft.slots.append(FocusTemplateSlot(
-            blockIndex: blockIndex,
-            kind: .task,
-            taskKey: UUID(),
-            taskTitle: trimmed,
-            taskIcon: icon
-        ))
+        let previousKey = draft.slots.first(where: { $0.blockIndex == blockIndex })?.taskKey
+        draft.setTask(at: blockIndex, count: pomodoros, title: trimmed, icon: icon, blocks: store.focusTemplateBlocks())
+        if let key = previousKey ?? draft.slots.first(where: { $0.blockIndex == blockIndex })?.taskKey {
+            favoriteChanges[key] = isFavorite
+        }
     }
 
     private func save() {
@@ -340,6 +401,16 @@ struct FocusTemplateEditorView: View {
         slots.append(contentsOf: blocks.filter { $0.kind == .breakTime }.map {
             FocusTemplateSlot(blockIndex: $0.index, kind: .breakTime, taskKey: nil, taskTitle: nil, taskIcon: nil)
         })
+        for (key, favorite) in favoriteChanges {
+            let taskSlots = slots.filter { $0.kind == .task && $0.taskKey == key }
+            guard let slot = taskSlots.first, let title = slot.taskTitle else { continue }
+            let icon = slot.taskIcon ?? .focus
+            if favorite {
+                store.saveFocusFavorite(title: title, pomodoros: taskSlots.count, icon: icon)
+            } else if let saved = store.savedFocusFavorite(title: title, icon: icon) {
+                store.toggleFocusFavorite(saved)
+            }
+        }
         if let template = draft.template {
             _ = store.updateFocusTemplate(template, name: draft.name, slots: slots)
         } else {

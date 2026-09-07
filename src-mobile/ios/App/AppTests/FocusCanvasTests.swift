@@ -507,3 +507,79 @@ func templatePreviewBreaksRequireTasks() throws {
     #expect(items.filter { $0.assignment.kind == .task }.count == 1)
     #expect(items.filter { $0.assignment.kind == .breakTime }.count == 1)
 }
+
+@MainActor
+@Test("Usual-day estimates resize one task without changing its identity")
+func usualDayTaskEstimateCanBeEdited() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 9, minute: 0))
+    let blocks = store.focusWorkBlocks(at: at)
+    let work = blocks.filter { $0.kind == .task }
+    let first = try #require(work.first)
+    var draft = FocusTemplateDraft(template: nil, name: "Usual", slots: [])
+    draft.setTask(at: first.index, count: 3, title: "Writing", icon: .focus, blocks: blocks)
+    #expect(draft.slots.count == 3)
+    let key = try #require(draft.slots.first?.taskKey)
+    #expect(draft.slots.allSatisfy { $0.taskKey == key })
+    draft.setTask(at: work[1].index, count: 2, title: "Edited", icon: .focus, blocks: blocks)
+    #expect(draft.slots.map(\.blockIndex) == Array(work.prefix(2).map(\.index)))
+    #expect(draft.slots.allSatisfy { $0.taskKey == key && $0.taskTitle == "Edited" })
+}
+
+@MainActor
+@Test(arguments: [FocusPlanBlockKind.task, .breakTime])
+func usualDayEstimateDoesNotOverwriteOccupiedSlots(kind: FocusPlanBlockKind) throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 9, minute: 0))
+    let blocks = store.focusWorkBlocks(at: at)
+    let work = blocks.filter { $0.kind == .task }
+    let occupied = FocusTemplateSlot(blockIndex: work[2].index, kind: kind,
+        taskKey: kind == .task ? UUID() : nil, taskTitle: kind == .task ? "Other" : nil, taskIcon: nil)
+    var draft = FocusTemplateDraft(template: nil, name: "Usual", slots: [occupied])
+    #expect(draft.availableTaskIndices(at: work[0].index, blocks: blocks).count == 2)
+    draft.setTask(at: work[0].index, count: 3, title: "Writing", icon: .focus, blocks: blocks)
+    #expect(draft.slots.count == 1)
+    #expect(draft.slots.first?.blockIndex == occupied.blockIndex)
+}
+
+@MainActor
+@Test("Saving a usual-day favorite does not add unfinished work to today")
+func usualDayFavoriteStaysInLibraryUntilPlaced() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 9, minute: 0))
+    store.saveFocusFavorite(title: "Reusable writing", pomodoros: 3, icon: .focus)
+    let favorite = try #require(store.favoriteFocusTasks().first)
+    #expect(favorite.estimatedPomodoros == 3)
+    #expect(favorite.plannedForDate == nil)
+    #expect(!store.focusTasksForToday(at: at).contains { $0.id == favorite.id })
+    #expect(!store.focusTasksForCanvas(at: at).contains { $0.id == favorite.id })
+    guard case .placed(let id, _) = store.placeFavoriteInNextEmptyBlock(favorite, at: at) else {
+        Issue.record("Expected favorite placement"); return
+    }
+    let copy = try #require(store.records.state.focusTasks.first { $0.id == id })
+    #expect(copy.id != favorite.id)
+    #expect(copy.estimatedPomodoros == 3)
+    #expect(store.savedFocusFavorite(title: copy.title, icon: copy.icon)?.id == favorite.id)
+    let block = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
+    guard case .placed(let selectedID, _) = store.createFocusTask(
+        title: favorite.title, icon: favorite.icon, pomodoros: favorite.estimatedPomodoros,
+        inBlockStartingAt: block.startAtMs, at: at
+    ) else { Issue.record("Expected selected-block placement"); return }
+    #expect(store.records.state.focusTasks.first { $0.id == selectedID }?.estimatedPomodoros == 3)
+
+}
+
+@MainActor
+@Test("Saving a favorite again updates its estimate without duplicating the library")
+func usualDayFavoriteUpdatesAndCanBeRemoved() throws {
+    let store = try canvasStore()
+    store.saveFocusFavorite(title: "Reusable writing", pomodoros: 2, icon: .focus)
+    let original = try #require(store.favoriteFocusTasks().first)
+    store.saveFocusFavorite(title: "Reusable writing", pomodoros: 4, icon: .focus)
+    #expect(store.favoriteFocusTasks().count == 1)
+    #expect(store.favoriteFocusTasks().first?.id == original.id)
+    #expect(store.favoriteFocusTasks().first?.estimatedPomodoros == 4)
+    store.toggleFocusFavorite(try #require(store.favoriteFocusTasks().first))
+    #expect(store.favoriteFocusTasks().isEmpty)
+    #expect(!store.focusTasksForToday().contains { $0.id == original.id })
+}
