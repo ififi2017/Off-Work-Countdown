@@ -1,8 +1,8 @@
 import { OffWorkCountdown } from '@/components/off-work-countdown';
 import { DesktopDownloadInvite } from '@/components/DesktopDownloadInvite';
 import { I18nProvider } from '@/components/I18nProvider';
-import { siteConfig } from '@/config/site';
 import { getTranslations } from '@/lib/server/i18n';
+import { buildWebAppJsonLd } from '@/lib/server/metadata';
 import { IS_WEB_BUILD } from '@/lib/build-target';
 
 type Props = {
@@ -15,32 +15,10 @@ export default async function Home({ params }: Props) {
     getTranslations(lang, 'translation'),
     getTranslations(lang, 'seo'),
   ]);
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'WebSite',
-        name: siteConfig.brandName,
-        alternateName: 'Off Work Countdown',
-        url: siteConfig.webAppUrl,
-      },
-      {
-        '@type': 'WebApplication',
-        name: siteConfig.brandName,
-        alternateName: seo.siteName !== siteConfig.brandName ? seo.siteName : undefined,
-        description: seo.description,
-        url: `${siteConfig.webAppUrl}/${lang}`,
-        inLanguage: lang,
-        applicationCategory: 'UtilitiesApplication',
-        operatingSystem: 'Any',
-        browserRequirements: 'Requires JavaScript',
-        isAccessibleForFree: true,
-        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-        license: 'https://opensource.org/licenses/MIT',
-        codeRepository: siteConfig.github,
-      },
-    ],
-  };
+  const jsonLd = buildWebAppJsonLd({
+    lang,
+    description: seo.description,
+  });
 
   return (
     <I18nProvider lang={lang} resources={{ translation, seo }}>

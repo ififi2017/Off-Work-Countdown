@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { siteConfig } from "@/config/site";
+import { locales } from "@/i18n-config";
+import { contentLocales } from "@/lib/content-locales";
 import {
   officialContentAlternates,
   officialHomeUrl,
   officialPageUrl,
+  webAppAlternates,
   webAppPageUrl,
 } from "./site-urls";
 
@@ -33,5 +36,16 @@ describe("site URLs", () => {
 
   it("does not invent official URLs for hall languages without long-form pages", () => {
     expect(officialPageUrl("ko", "how-it-works")).not.toContain("/ko/");
+  });
+
+  it("points hreflang x-default at /en, not the bare host", () => {
+    const hall = webAppAlternates(locales);
+    expect(hall.en).toBe("https://off.rainif.com/en");
+    expect(hall.ja).toBe("https://off.rainif.com/ja");
+    expect(hall["x-default"]).toBe("https://off.rainif.com/en");
+
+    const preset = webAppAlternates(contentLocales, "996");
+    expect(preset["zh-CN"]).toBe("https://off.rainif.com/zh-CN/996");
+    expect(preset["x-default"]).toBe("https://off.rainif.com/en/996");
   });
 });

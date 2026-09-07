@@ -56,6 +56,7 @@ export function middleware(request: NextRequest) {
     pathname.match(/^\/icon-[\w-]+\.png$/) ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
+    pathname === "/llms.txt" ||
     // 兜底：任何带扩展名的路径都是文件，不是页面。此前这里是一份白名单，
     // 每加一类静态资源就得补一行，漏了就会被当成「语言前缀写错」补上
     // 前缀、变成 404——图标、hreflang-sitemap、演示视频都栽过一次。
@@ -106,6 +107,6 @@ export const config = {
      * - sitemap.xml
      * - baidu_verify_codeva-SXZydSeYe0.html
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|emoji|robots.txt|sitemap.xml|baidu_verify_codeva-SXZydSeYe0.html).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-[^/]+|locales|emoji|robots.txt|sitemap.xml|llms.txt|baidu_verify_codeva-SXZydSeYe0.html).*)",
   ],
 };

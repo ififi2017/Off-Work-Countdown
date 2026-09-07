@@ -284,7 +284,9 @@ export const languageNames = {
 Long-form FAQ, how-it-works, about, download and privacy live on
 [doneat.app](https://doneat.app). Old URLs on this site permanently redirect
 there. The Web App still publishes schedule presets (`/en/996` and the rest)
-in English and Simplified Chinese only (`lib/content-locales.ts`).
+in English and Simplified Chinese only (`lib/content-locales.ts`). For Search
+Console, submit `https://off.rainif.com/sitemap.xml` only — see
+[docs/seo.md](docs/seo.md).
 
 ## Usage
 

@@ -217,7 +217,8 @@ export const languageNames = {
 
 FAQ、原理、关于、下载和隐私的长文在 [doneat.app](https://doneat.app)。本站旧 URL
 会永久跳转到那里。Web App 仍只以英文和简体中文发布作息预设页（`/zh-CN/996` 等，见
-`lib/content-locales.ts`）。
+`lib/content-locales.ts`）。Search Console 只提交
+`https://off.rainif.com/sitemap.xml`，见 [docs/seo.md](docs/seo.md)。
 
 ## 使用说明
 

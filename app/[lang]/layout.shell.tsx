@@ -7,6 +7,7 @@ import { locales, getTextDirection } from '@/i18n-config';
 import { Metadata, Viewport } from 'next';
 import { siteConfig } from '@/config/site';
 import { getTranslations } from '@/lib/server/i18n';
+import { webAppAlternates, webAppPageUrl } from '@/lib/site-urls';
 import { ThemeRouteSync } from '@/components/ThemeRouteSync';
 import {
   IS_DESKTOP_BUILD,
@@ -59,7 +60,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       description: seo.description,
       type: "website",
       locale: lang,
-      url: `${siteConfig.webAppUrl}/${lang}`,
+      url: webAppPageUrl(lang),
       siteName: seo.siteName,
       // og:image / twitter:image 由 opengraph-image.tsx 自动注入，托管在自有
       // 域名下。不再指向 GitHub raw：那是外部依赖，且原图是 894x1092 的竖图，
@@ -71,15 +72,10 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       description: seo.description,
     },
     alternates: {
-      canonical: `${siteConfig.webAppUrl}/${lang}`,
+      canonical: webAppPageUrl(lang),
       // Next.js 会据此渲染 hreflang link 标签，无需再手写一份（此前 root
       // layout 手动输出过，导致每个 hreflang 重复两次）。
-      languages: {
-        ...Object.fromEntries(
-          locales.map(l => [l, `${siteConfig.webAppUrl}/${l}`])
-        ),
-        'x-default': siteConfig.webAppUrl,
-      }
+      languages: webAppAlternates(locales),
     },
     robots: {
       index: true,
