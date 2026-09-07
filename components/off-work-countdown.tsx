@@ -2707,7 +2707,7 @@ export function OffWorkCountdown({
         <div
           className={
             IS_DESKTOP_BUILD
-              ? "flex min-h-0 w-[200%] flex-1 will-change-transform motion-safe:transition-transform motion-safe:duration-[340ms] motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
+              ? "flex min-h-0 w-[200%] flex-1 will-change-transform motion-safe:transition-transform motion-safe:[transition-duration:340ms] motion-safe:[transition-timing-function:cubic-bezier(0.32,0.72,0,1)]"
               : IS_MOBILE_BUILD
                 ? "relative flex min-h-0 flex-1"
                 : "contents"
@@ -3413,7 +3413,7 @@ export function OffWorkCountdown({
               <div
                 className={
                   IS_DESKTOP_BUILD
-                    ? "flex h-full min-h-0 w-[200%] will-change-transform motion-safe:transition-transform motion-safe:duration-[340ms] motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
+                    ? "flex h-full min-h-0 w-[200%] will-change-transform motion-safe:transition-transform motion-safe:[transition-duration:340ms] motion-safe:[transition-timing-function:cubic-bezier(0.32,0.72,0,1)]"
                     : "contents"
                 }
                 style={
