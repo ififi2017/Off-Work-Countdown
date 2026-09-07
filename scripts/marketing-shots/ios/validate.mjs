@@ -9,9 +9,18 @@ const expected = {
   iphone: "1320x2868",
   ipad: "2064x2752",
 };
+const locales = ["en", "zh-CN", "zh-TW"];
+const scenes = ["timer", "widgets", "lunch", "records", "life", "focus"];
+const expectedFiles = new Set(
+  locales.flatMap((locale) => ["iphone", "ipad"].flatMap((platform) =>
+    scenes.map((scene, index) => `${locale}-${platform}-${String(index + 1).padStart(2, "0")}-${scene}.png`),
+  )),
+);
 
-if (files.length !== 12) {
-  throw new Error(`Expected 12 localized screenshots (3 per language per device), found ${files.length}`);
+if (files.length !== expectedFiles.size || files.some((file) => !expectedFiles.has(file))) {
+  const unexpected = files.filter((file) => !expectedFiles.has(file));
+  const missing = [...expectedFiles].filter((file) => !files.includes(file));
+  throw new Error(`Expected the 36 App Store screenshots; missing: ${missing.join(", ") || "none"}; unexpected: ${unexpected.join(", ") || "none"}`);
 }
 
 for (const file of files) {

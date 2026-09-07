@@ -26,7 +26,7 @@ export function escapeHTML(value) {
 }
 
 export function fontStack(language) {
-  const cjk = language === "zh-CN" || language === "zh" ? '"PingFang SC", ' : "";
+  const cjk = language === "zh-TW" ? '"PingFang TC", ' : language === "zh-CN" || language === "zh" ? '"PingFang SC", ' : "";
   return `${cjk}-apple-system, "SF Pro Display", "Helvetica Neue", sans-serif`;
 }
 
