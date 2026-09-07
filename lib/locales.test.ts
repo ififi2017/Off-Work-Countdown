@@ -254,18 +254,33 @@ describe("UI locale resources", () => {
 });
 
 describe("SEO locale resources", () => {
-  it("uses DoneAt as the site name and keeps old keywords", () => {
+  it("uses DoneAt and describes the browser timer, not a full shift planner", () => {
     for (const locale of locales) {
       const seo = loadSeo(locale);
-      const translation = loadTranslation(locale);
       expect(seo.siteName, locale).toBe("DoneAt");
-      expect(seo.title, locale).toBe(
-        `DoneAt — ${String(translation.offWorkCountdown)}`
-      );
+      expect(seo.title, locale).toMatch(/^DoneAt — /);
       expect(seo.keywords.toLowerCase(), locale).toContain("doneat");
     }
 
+    expect(loadSeo("en").title).toMatch(/browser/i);
+    expect(loadSeo("zh-CN").title).toContain("浏览器");
     expect(loadSeo("en").keywords).toContain("off work countdown");
     expect(loadSeo("zh-CN").keywords).toContain("下班倒计时");
+  });
+
+  it("drops empty productivity slogans from home meta", () => {
+    const banned = [
+      /workplace productivity/i,
+      /work-life balance/i,
+      /提升职场效率/,
+      /平衡工作与生活/,
+    ];
+
+    for (const locale of locales) {
+      const text = `${loadSeo(locale).title}\n${loadSeo(locale).description}`;
+      for (const pattern of banned) {
+        expect(text, locale).not.toMatch(pattern);
+      }
+    }
   });
 });

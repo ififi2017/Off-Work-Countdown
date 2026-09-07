@@ -19,6 +19,8 @@ export interface PresetCopy {
 export interface PresetBundle {
   backToApp: string;
   startCta: string;
+  iosCta: string;
+  webBoundary: string;
   scheduleLabel: string;
   perDayLabel: string;
   perWeekLabel: string;

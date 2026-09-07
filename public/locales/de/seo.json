@@ -1,7 +1,7 @@
 {
-  "title": "DoneAt — Feierabend-Countdown",
-  "description": "Wie lange noch bis Feierabend? Kostenloser Feierabend Timer mit Live-Countdown, Fortschritt, Erinnerungen und Unterstützung für flexible Schichten.",
-  "keywords": "Feierabend Countdown,Feierabend Timer,Feierabend Uhr Countdown,Arbeitszeit Countdown,Countdown Feierabend,DoneAt",
+  "title": "DoneAt — Feierabend-Countdown im Browser",
+  "description": "Feierabend-Countdown im Browser. Start und Ende festlegen — auch über Mitternacht — und Restzeit sowie Fortschritt sehen. Bleibt auf diesem Gerät, kein Konto. Verdienst optional. Schichtplanung ist in der iOS-App.",
+  "keywords": "Feierabend Countdown,Feierabend Timer,Browser,Nachtschicht,DoneAt",
   "siteName": "DoneAt",
   "imageAlt": "DoneAt"
 }
