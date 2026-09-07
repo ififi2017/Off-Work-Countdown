@@ -1,0 +1,233 @@
+{
+  "verifiedAt": "2026-09-07T01:13:46.658Z",
+  "versionId": "a698e5d5-e9b0-451b-a61b-f5ec8e9bc93a",
+  "version": "3.1.9",
+  "state": "PREPARE_FOR_SUBMISSION",
+  "localeCount": 17,
+  "screenshotCount": 36,
+  "reviewNotesMatch": true,
+  "sets": [
+    {
+      "locale": "en-US",
+      "type": "APP_IPAD_PRO_3GEN_129",
+      "screenshots": [
+        {
+          "file": "en-ipad-01-timer.png",
+          "checksum": "8e3b6f1783ffe12d1bbf1e12ed72df01",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-ipad-02-widgets.png",
+          "checksum": "ca82533430bb9ea0f75ec28bdeefb3d2",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-ipad-03-lunch.png",
+          "checksum": "58e56449f053e00a8724267cdddb21ac",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-ipad-04-records.png",
+          "checksum": "0c463e5885066b322393bf8bac82c343",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-ipad-05-life.png",
+          "checksum": "eb3c3e92c85c1c32d146d2afec28867f",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-ipad-06-focus.png",
+          "checksum": "e65e253108a14e3d4ac11607964a1711",
+          "state": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "locale": "en-US",
+      "type": "APP_IPHONE_67",
+      "screenshots": [
+        {
+          "file": "en-iphone-01-timer.png",
+          "checksum": "aff0f85a2831873f68b8ad97449f5f04",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-iphone-02-widgets.png",
+          "checksum": "af500d8bce01cafeacbb6ba76c6b331d",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-iphone-03-lunch.png",
+          "checksum": "5b69021edde35395e01d612e646d041a",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-iphone-04-records.png",
+          "checksum": "8f4a30f0854726b7b60b437fe22e414c",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-iphone-05-life.png",
+          "checksum": "df5f8c8b89218eb64dc8f2fb28cc040b",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "en-iphone-06-focus.png",
+          "checksum": "a826a8eb5c8731a860cf0b3474204f31",
+          "state": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "locale": "zh-Hans",
+      "type": "APP_IPHONE_67",
+      "screenshots": [
+        {
+          "file": "zh-CN-iphone-01-timer.png",
+          "checksum": "9fcb682a8ba49bd7fe9f3dfbab962405",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-iphone-02-widgets.png",
+          "checksum": "3636546eef3ba468ec0ad28caa9f5620",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-iphone-03-lunch.png",
+          "checksum": "5e3a17b6a6226d984779f739f93513b3",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-iphone-04-records.png",
+          "checksum": "b22498751b68584c0ee57abedd2707ab",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-iphone-05-life.png",
+          "checksum": "6995524d9e6e150e9c40bbe11c15fc95",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-iphone-06-focus.png",
+          "checksum": "f044f66dd4227ea9cb714ee0365240a9",
+          "state": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "locale": "zh-Hans",
+      "type": "APP_IPAD_PRO_3GEN_129",
+      "screenshots": [
+        {
+          "file": "zh-CN-ipad-01-timer.png",
+          "checksum": "2d142398353d71cc63ef9837ae09e846",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-ipad-02-widgets.png",
+          "checksum": "000127eff551830c07ea7196fbd5878e",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-ipad-03-lunch.png",
+          "checksum": "6e56dc33362110d41fe9712c04ce148c",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-ipad-04-records.png",
+          "checksum": "90834001c7fc79e37628db10aa33e59e",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-ipad-05-life.png",
+          "checksum": "e2d11e82259267e3030003a36f91ac47",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-CN-ipad-06-focus.png",
+          "checksum": "20eb533d53071a49a764a592b625e94c",
+          "state": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "locale": "zh-Hant",
+      "type": "APP_IPAD_PRO_3GEN_129",
+      "screenshots": [
+        {
+          "file": "zh-TW-ipad-01-timer.png",
+          "checksum": "9fb70986ec9b506c5084d19486f766d9",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-ipad-02-widgets.png",
+          "checksum": "7244e5693737570bc3224f5c71f786e7",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-ipad-03-lunch.png",
+          "checksum": "c68adcf15ffd25a4896c2f7cc4c9d18b",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-ipad-04-records.png",
+          "checksum": "d2d24049f65a5b64cc7194b594036104",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-ipad-05-life.png",
+          "checksum": "8c23eb03830737e4c810c979bb4e1790",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-ipad-06-focus.png",
+          "checksum": "511d7d6c475c4b85329271527983f056",
+          "state": "COMPLETE"
+        }
+      ]
+    },
+    {
+      "locale": "zh-Hant",
+      "type": "APP_IPHONE_67",
+      "screenshots": [
+        {
+          "file": "zh-TW-iphone-01-timer.png",
+          "checksum": "ebd2cb9d2e4c1e52aff653560c364601",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-iphone-02-widgets.png",
+          "checksum": "763d5c4e0d7066433db8b4e7f89a25cc",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-iphone-03-lunch.png",
+          "checksum": "92add500d694f8a6815ab71701ef98e3",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-iphone-04-records.png",
+          "checksum": "98d2557d0571ad8062dc1bd62edbc3a3",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-iphone-05-life.png",
+          "checksum": "4dcaaa935d0528ec842728bbfbad863c",
+          "state": "COMPLETE"
+        },
+        {
+          "file": "zh-TW-iphone-06-focus.png",
+          "checksum": "1c884df3230b611bef1e2f4b0a16e61b",
+          "state": "COMPLETE"
+        }
+      ]
+    }
+  ],
+  "unexpectedScreenshotSets": [],
+  "submittedForReview": false,
+  "iapReviewNotesVerified": 3,
+  "iapReviewScreenshotsVerified": 3,
+  "postUploadPlanChanges": 0,
+  "existingPreviewsModified": false
+}

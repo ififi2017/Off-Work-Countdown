@@ -1,0 +1,23 @@
+{
+  "verifiedAt": "2026-09-06T16:28:34.184708+00:00",
+  "action": "replace review screenshots only",
+  "source": "app-store-connect/iap/review-paywall.png",
+  "checksumAlgorithm": "MD5",
+  "checksum": "b459beea940f1c7ed3ccd5679a4b1e71",
+  "products": [
+    {
+      "productId": "com.rainif.offworkcountdown.plus.monthly",
+      "assetDeliveryState": "COMPLETE"
+    },
+    {
+      "productId": "com.rainif.offworkcountdown.plus.yearly",
+      "assetDeliveryState": "COMPLETE"
+    },
+    {
+      "productId": "com.rainif.offworkcountdown.plus.lifetime",
+      "assetDeliveryState": "COMPLETE"
+    }
+  ],
+  "productAttributesChanged": false,
+  "submittedForReview": false
+}

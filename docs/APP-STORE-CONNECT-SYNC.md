@@ -41,7 +41,7 @@ export ASC_PRIVATE_KEY_PATH='/安全位置/AuthKey_XXXXXXXXXX.p8'
 
 ```bash
 mkdir -p app-store-connect/ios
-cp app-store-connect/ios.example.json app-store-connect/ios/3.1.8.json
+cp app-store-connect/ios.example.json app-store-connect/ios/3.1.9.json
 ```
 
 然后填写所有占位文本、法定版权名称和目标版本号。脚本会拒绝包含 `YOUR …`、
@@ -56,7 +56,7 @@ cp app-store-connect/ios.example.json app-store-connect/ios/3.1.8.json
   "app": {
     "bundleId": "com.rainif.offworkcountdown.macappstore",
     "platform": "IOS",
-    "versionString": "3.1.8",
+    "versionString": "3.1.9",
     "createVersionIfMissing": true,
     "releaseType": "MANUAL",
     "copyright": "© 2026 法定版权名称",
@@ -113,13 +113,13 @@ npm run shots:ios:validate
 
 ```bash
 # 1. 纯本地检查：不需要 API 凭据
-npm run asc:check -- --config app-store-connect/ios/3.1.8.json
+npm run asc:check -- --config app-store-connect/ios/3.1.9.json
 
 # 2. 读取远端并显示字段级差异；仍然不会写入
-npm run asc:plan -- --config app-store-connect/ios/3.1.8.json --include-screenshots --include-previews
+npm run asc:plan -- --config app-store-connect/ios/3.1.9.json --include-screenshots --include-previews
 
-# 3. 确认预览后同步。交互式输入 "IOS 3.1.8" 才会继续
-npm run asc:sync -- --config app-store-connect/ios/3.1.8.json --include-screenshots --include-previews
+# 3. 确认预览后同步。交互式输入 "IOS 3.1.9" 才会继续
+npm run asc:sync -- --config app-store-connect/ios/3.1.9.json --include-screenshots --include-previews
 ```
 
 自动化或已经人工确认过输出时可以加 `--yes` 跳过交互确认。`--apply` 会在配置允许时创建
@@ -208,7 +208,7 @@ npm run asc:iap:sync -- --yes
 `reviewSubmissionItems` 或旧的 `appStoreVersionSubmissions` 端点，因此 `asc:sync` 完成后
 版本仍然留在 App Store Connect，必须人工完成当前的两步流程：
 
-1. 选择正确的 build，点击 **Add for Review**，把当前 iOS 草稿（现为 3.1.8）加入审核提交。
+1. 选择正确的 build，点击 **Add for Review**，把当前 iOS 草稿（现为 3.1.9）加入审核提交。
 2. 在 Draft Submission 中重新检查所有项目，再点击 **Submit for Review**。
 
 Apple 明确说明第一步不会把内容送进审核队列，只有第二步才会真正送审。导出、plan 和 check

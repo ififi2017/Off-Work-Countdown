@@ -3,7 +3,7 @@
 生成上架用的商店截图，以及发小红书用的笔记图：
 
 - `macos/` 产出 Mac App Store 需要的 2880×1800，中英各五张。左文右图，右边舞台居中，主窗 / 迷你窗 / 小组件尺寸不同也能对齐。
-- `ios/` 产出 iPhone 6.9 英寸 1320×2868 与 iPad 13 英寸 2064×2752，中英各三张，共十二张。官方 Apple 机框叠在屏洞上。
+- `ios/` 产出 iPhone 6.9 英寸 1320×2868 与 iPad 13 英寸 2064×2752，英文、简体中文、繁体中文各六张，共三十六张。官方 Apple 机框叠在屏洞上。
 - `xiaohongshu/` 产出小红书笔记图 1080×1440（3:4 竖版），中文三张。
   这是信息流展示面积最大的比例；1:1 和 4:3 都会被压小或裁切。
 
@@ -119,14 +119,17 @@ npm run shots:ios
 
 `ios/capture.mjs` 会先生成原生规则包，再把 Debug App 构建到系统临时目录。它只把
 已有的 DEBUG QA 值作为当前 App 进程的启动参数；不会写入用户持久设置，也不会把
-截图入口编进 Release。三张竖图是：
+截图入口编进 Release。六张竖图是：
 
 1. 计时中（`qaDebugScenario=working`）
 2. 主屏幕小组件（欢迎页第 5 屏的系统表面）
 3. 午休（`qaDebugScenario=lunch`）
 
-原片按 `en-1.png` / `zh-1.png`、`en-ipad-1.png` / `zh-ipad-1.png` 落在 `ios/raw/`。
-截图固定使用浅色外观、14:22 状态栏、满格网络和 100% 电量。
+4. 年度记录（`qaRecordsScale=year`）
+5. 人生画布（`qaRecordsScale=life`）
+6. 专注（`qaRoute=focus`、`qaFocusScenario=runningFocus`）
+
+原片按 `en-1.png` / `zh-1.png` / `zh-tw-1.png`、`en-ipad-1.png` / `zh-ipad-1.png` / `zh-tw-ipad-1.png` 落在 `ios/raw/`。截图固定使用浅色外观、14:22 状态栏、满格网络和 100% 电量。
 
 只改宣传文案或画面排版时，无需重跑 Xcode：
 
@@ -144,7 +147,7 @@ IOS_SHOTS_OUT_DIR='/path/to/output' npm run shots:ios:validate
 ```
 
 成品在 `ios/out/`。`zh-CN-iphone-01-timer.png` 这样的序号就是各语言、各设备上传到
-App Store Connect 的顺序。`ios/validate.mjs` 会确认十二张图尺寸正确且没有 alpha
+App Store Connect 的顺序。`ios/validate.mjs` 会确认三十六张图尺寸正确且没有 alpha
 通道。
 
 当前尺寸来自 Apple 的 Screenshot specifications：竖版 iPhone 使用 6.9 英寸
