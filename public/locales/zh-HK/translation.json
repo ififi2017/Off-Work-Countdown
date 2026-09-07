@@ -777,7 +777,7 @@
   "focusSkipBreak": "跳過休息",
   "focusStartNextFocus": "開始下一輪專注",
   "focusNoNextTask": "新增工作後就可以開始下一段專注。",
-  "focusNextBreakBody": "準備好後再繼續。休息唔會自動開始。",
+  "focusNextBreakBody": "準備好後再繼續。呢一段嘅休息時間已經過咗。",
   "focusNextFocusBody": "休息完咗。揀一項工作開始下一輪。",
   "focusNotificationIssue": "計時通知需要處理",
   "focusNotificationPermissionDenied": "通知已關閉，你可能會錯過計時結束提醒。可以喺系統設定開啟。",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "查看這個月",
   "focusDemoWriting": "撰寫方案",
   "focusDemoMessages": "回覆訊息",
-  "focusDemoLearning": "學習新知"
+  "focusDemoLearning": "學習新知",
+  "focusActivityPomodoro": "第 {{index}} 個番茄 / 共 {{total}} 個",
+  "focusActivityTaskDone": "預計 {{time}} 完成",
+  "focusActivityNextUp": "接下來：{{time}} {{task}}",
+  "focusActivityChainDone": "暫時都完成了",
+  "focusActivityAddPomodoro": "再加一個番茄",
+  "focusBreakUntil": "休息 {{count}} 分鐘，到 {{time}}",
+  "focusBreakOver": "休息結束"
 }

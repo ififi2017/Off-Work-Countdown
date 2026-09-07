@@ -777,7 +777,7 @@
   "focusSkipBreak": "Пропустить перерыв",
   "focusStartNextFocus": "Начать следующий фокус",
   "focusNoNextTask": "Добавьте задачу, чтобы начать следующий блок фокуса.",
-  "focusNextBreakBody": "Продолжите, когда будете готовы. Перерыв не начнётся сам.",
+  "focusNextBreakBody": "Продолжите, когда будете готовы. Перерыв этого блока уже прошёл.",
   "focusNextFocusBody": "Перерыв закончился. Выберите задачу для следующего раунда.",
   "focusNotificationIssue": "Уведомления таймера требуют внимания",
   "focusNotificationPermissionDenied": "Уведомления отключены, поэтому вы можете пропустить конец таймера. Их можно включить в системных настройках.",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "Посмотреть этот месяц",
   "focusDemoWriting": "Подготовить предложение",
   "focusDemoMessages": "Ответить на сообщения",
-  "focusDemoLearning": "Узнать что-то новое"
+  "focusDemoLearning": "Узнать что-то новое",
+  "focusActivityPomodoro": "Помидор {{index}} из {{total}}",
+  "focusActivityTaskDone": "Завершение в {{time}}",
+  "focusActivityNextUp": "Далее: {{task}} в {{time}}",
+  "focusActivityChainDone": "Пока всё сделано",
+  "focusActivityAddPomodoro": "Добавить помидор",
+  "focusBreakUntil": "Перерыв {{count}} мин до {{time}}",
+  "focusBreakOver": "Перерыв окончен"
 }

@@ -777,7 +777,7 @@
   "focusSkipBreak": "Passer la pause",
   "focusStartNextFocus": "Commencer la prochaine concentration",
   "focusNoNextTask": "Ajoutez une tâche pour commencer le prochain bloc de concentration.",
-  "focusNextBreakBody": "Passez à la suite quand vous êtes prêt. La pause ne démarre pas automatiquement.",
+  "focusNextBreakBody": "Passez à la suite quand vous êtes prêt. La pause de ce bloc est déjà passée.",
   "focusNextFocusBody": "La pause est terminée. Choisissez une tâche pour commencer la prochaine série.",
   "focusNotificationIssue": "Les notifications du minuteur nécessitent votre attention",
   "focusNotificationPermissionDenied": "Les notifications sont désactivées : vous pourriez manquer la fin du minuteur. Vous pouvez les activer dans les réglages système.",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "Voir ce mois",
   "focusDemoWriting": "Rédiger une proposition",
   "focusDemoMessages": "Répondre aux messages",
-  "focusDemoLearning": "Apprendre quelque chose"
+  "focusDemoLearning": "Apprendre quelque chose",
+  "focusActivityPomodoro": "Pomodoro {{index}} sur {{total}}",
+  "focusActivityTaskDone": "Terminé à {{time}}",
+  "focusActivityNextUp": "Ensuite : {{task}} à {{time}}",
+  "focusActivityChainDone": "Tout est fait pour l'instant",
+  "focusActivityAddPomodoro": "Ajouter un pomodoro",
+  "focusBreakUntil": "{{count}} min de pause jusqu'à {{time}}",
+  "focusBreakOver": "Fin de la pause"
 }

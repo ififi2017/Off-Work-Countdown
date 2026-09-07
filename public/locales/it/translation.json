@@ -777,7 +777,7 @@
   "focusSkipBreak": "Salta pausa",
   "focusStartNextFocus": "Inizia il prossimo focus",
   "focusNoNextTask": "Aggiungi un’attività per iniziare il prossimo blocco di focus.",
-  "focusNextBreakBody": "Prosegui quando vuoi. La pausa non inizia da sola.",
+  "focusNextBreakBody": "Prosegui quando vuoi. La pausa di questo blocco è già passata.",
   "focusNextFocusBody": "La pausa è terminata. Scegli un’attività per iniziare il prossimo giro.",
   "focusNotificationIssue": "Le notifiche del timer richiedono attenzione",
   "focusNotificationPermissionDenied": "Le notifiche sono disattivate: potresti non accorgerti della fine del timer. Puoi attivarle nelle impostazioni di sistema.",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "Vedi questo mese",
   "focusDemoWriting": "Scrivere una proposta",
   "focusDemoMessages": "Rispondere ai messaggi",
-  "focusDemoLearning": "Imparare qualcosa di nuovo"
+  "focusDemoLearning": "Imparare qualcosa di nuovo",
+  "focusActivityPomodoro": "Pomodoro {{index}} di {{total}}",
+  "focusActivityTaskDone": "Finito alle {{time}}",
+  "focusActivityNextUp": "Poi: {{task}} alle {{time}}",
+  "focusActivityChainDone": "Per ora è tutto fatto",
+  "focusActivityAddPomodoro": "Aggiungi un pomodoro",
+  "focusBreakUntil": "{{count}} min di pausa fino alle {{time}}",
+  "focusBreakOver": "Pausa finita"
 }

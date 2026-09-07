@@ -777,7 +777,7 @@
   "focusSkipBreak": "Skip break",
   "focusStartNextFocus": "Start next focus",
   "focusNoNextTask": "Add another task to start the next focus block.",
-  "focusNextBreakBody": "Take the next step when you are ready. The break will not start by itself.",
+  "focusNextBreakBody": "Take the next step when you are ready. This block's break has already passed.",
   "focusNextFocusBody": "Your break is complete. Choose a task to begin the next round.",
   "focusNotificationIssue": "Timer notifications need attention",
   "focusNotificationPermissionDenied": "Notifications are off, so you may miss the end of this timer. You can turn them on in system settings.",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "See this month",
   "focusDemoWriting": "Draft a proposal",
   "focusDemoMessages": "Reply to messages",
-  "focusDemoLearning": "Learn something new"
+  "focusDemoLearning": "Learn something new",
+  "focusActivityPomodoro": "Pomodoro {{index}} of {{total}}",
+  "focusActivityTaskDone": "Done by {{time}}",
+  "focusActivityNextUp": "Next: {{task}} at {{time}}",
+  "focusActivityChainDone": "All done for now",
+  "focusActivityAddPomodoro": "Add a pomodoro",
+  "focusBreakUntil": "{{count}} min break until {{time}}",
+  "focusBreakOver": "Break over"
 }

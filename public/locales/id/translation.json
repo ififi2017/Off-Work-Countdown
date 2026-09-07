@@ -777,7 +777,7 @@
   "focusSkipBreak": "Lewati istirahat",
   "focusStartNextFocus": "Mulai fokus berikutnya",
   "focusNoNextTask": "Tambahkan tugas lain untuk memulai blok fokus berikutnya.",
-  "focusNextBreakBody": "Lanjutkan saat siap. Istirahat tidak dimulai otomatis.",
+  "focusNextBreakBody": "Lanjutkan saat siap. Waktu istirahat blok ini sudah lewat.",
   "focusNextFocusBody": "Istirahat selesai. Pilih tugas untuk memulai putaran berikutnya.",
   "focusNotificationIssue": "Notifikasi timer perlu diperhatikan",
   "focusNotificationPermissionDenied": "Notifikasi mati, jadi Anda mungkin melewatkan akhir timer. Anda dapat menyalakannya di pengaturan sistem.",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "Lihat bulan ini",
   "focusDemoWriting": "Menulis proposal",
   "focusDemoMessages": "Membalas pesan",
-  "focusDemoLearning": "Belajar hal baru"
+  "focusDemoLearning": "Belajar hal baru",
+  "focusActivityPomodoro": "Pomodoro {{index}} dari {{total}}",
+  "focusActivityTaskDone": "Selesai pukul {{time}}",
+  "focusActivityNextUp": "Berikutnya: {{task}} pukul {{time}}",
+  "focusActivityChainDone": "Semua selesai untuk saat ini",
+  "focusActivityAddPomodoro": "Tambah pomodoro",
+  "focusBreakUntil": "Istirahat {{count}} mnt sampai {{time}}",
+  "focusBreakOver": "Istirahat selesai"
 }

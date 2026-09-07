@@ -193,6 +193,16 @@ enum ShareMood: String, CaseIterable, Identifiable {
 @MainActor
 @Observable
 final class OffWorkStore {
+    /// The one persisted store this process uses.
+    ///
+    /// A Live Activity button performs its intent inside the app process,
+    /// which iOS may have launched in the background with no scene and no
+    /// `RootView` at all — so the store cannot be something a view owns. Both
+    /// entry points resolve to this instead, which is also what keeps a
+    /// Lock Screen tap and the foreground UI from writing the same archive
+    /// through two separate copies of it.
+    static let shared = OffWorkStore(records: .persisted())
+
     private enum Key {
         static let resumeCloudSyncWhenAuthorized = "ios.native.resumeCloudSyncWhenAuthorized"
         static let firstRunRecoveryResolved = "ios.native.firstRunRecoveryResolved"
@@ -6014,7 +6024,7 @@ final class OffWorkStore {
         return nil
     }
 
-    private func breakDurationMinutes(_ kind: FocusSessionKind) -> Int {
+    func breakDurationMinutes(_ kind: FocusSessionKind) -> Int {
         kind == .shortBreak
             ? focusTimerSettings.normalized.shortBreakMinutes
             : focusTimerSettings.normalized.longBreakMinutes
@@ -6023,7 +6033,7 @@ final class OffWorkStore {
     /// Uses exactly the same segment and micro-break constraints as an actual
     /// break start. Keeping this separate lets the completed-focus state avoid
     /// advertising a recovery phase that cannot be entered.
-    private func plannedFocusBreakEnd(kind: FocusSessionKind, at date: Date) -> Date? {
+    func plannedFocusBreakEnd(kind: FocusSessionKind, at date: Date) -> Date? {
         guard kind == .shortBreak || kind == .longBreak else { return nil }
         let current = snapshot(at: date)
         guard FocusPlanner.isInsideWork(
@@ -6192,16 +6202,88 @@ final class OffWorkStore {
         return true
     }
 
+    /// Every alert this phase owes the user, written when it starts.
+    ///
+    /// A pomodoro is not one event. The block ends, and then the break that
+    /// follows it ends, and the phone is asleep for both — it cannot be woken
+    /// at the first to compose the second. So the whole phase is described up
+    /// front, and each alert names the task and what happens next instead of
+    /// the bare "this focus block finished" that told the user nothing they
+    /// could act on.
+    func focusAlerts(for session: FocusSession) -> [NotificationService.FocusAlert] {
+        switch session.kind {
+        case .focus:
+            var alerts = [focusBlockEndAlert(for: session)]
+            if session.plannedEndReason == .completed {
+                let kind = nextFocusBreakKind(after: session)
+                if let end = plannedFocusBreakEnd(kind: kind, at: session.plannedEndAt) {
+                    alerts.append(focusBreakEndAlert(endingAt: end))
+                }
+            }
+            return alerts
+        case .shortBreak, .longBreak:
+            return [focusBreakEndAlert(endingAt: session.plannedEndAt)]
+        }
+    }
+
+    private func focusBlockEndAlert(for session: FocusSession) -> NotificationService.FocusAlert {
+        let task = session.taskID.flatMap { id in records.state.focusTasks.first(where: { $0.id == id }) }
+        var parts: [String] = []
+        if let task {
+            let index = completedFocusBlocks(for: task) + 1
+            let total = max(index, max(1, task.estimatedPomodoros))
+            parts.append(t("focusActivityPomodoro", values: [
+                "index": formatCount(index),
+                "total": formatCount(total),
+            ]))
+        }
+        if session.plannedEndReason == .completed {
+            let kind = nextFocusBreakKind(after: session)
+            if let end = plannedFocusBreakEnd(kind: kind, at: session.plannedEndAt) {
+                let minutes = breakDurationMinutes(kind)
+                parts.append(t("focusBreakUntil", values: [
+                    "count": formatCount(minutes),
+                    "time": formatTime(end),
+                ]))
+            } else {
+                parts.append(t("focusEndedNaturally"))
+            }
+        } else {
+            parts.append(t("focusEndedAtBoundary"))
+        }
+        return .init(
+            slot: .end,
+            at: session.plannedEndAt,
+            title: task?.title ?? t("focusTitle"),
+            body: parts.joined(separator: " · ")
+        )
+    }
+
+    private func focusBreakEndAlert(endingAt end: Date) -> NotificationService.FocusAlert {
+        let next = FocusLiveChain.nextPlannedBlock(
+            blocks: focusDayCanvas(at: end).blocks,
+            fromMs: Int64(end.timeIntervalSince1970 * 1_000)
+        )
+        let body: String
+        if let next, let title = next.taskTitle {
+            body = t("focusActivityNextUp", values: [
+                "task": title,
+                "time": formatTime(Date(timeIntervalSince1970: Double(next.startAtMs) / 1_000)),
+            ])
+        } else {
+            body = t("focusNextFocusBody")
+        }
+        return .init(slot: .breakEnd, at: end, title: t("focusBreakOver"), body: body)
+    }
+
     private func scheduleFocusTimerNotification(for session: FocusSession) {
-        let reason = session.plannedEndReason ?? .stoppedAtBoundary
+        let alerts = focusAlerts(for: session)
         focusNotificationGeneration &+= 1
         let generation = focusNotificationGeneration
         Task { @MainActor [weak self] in
-            let result = await NotificationService.scheduleFocusTimer(
+            let result = await NotificationService.scheduleFocusTimers(
                 id: session.id,
-                endAt: session.plannedEndAt,
-                title: self?.t("focusTitle") ?? "Focus",
-                body: self?.t(reason == .completed ? "focusEndedNaturally" : "focusEndedAtBoundary") ?? "",
+                alerts: alerts,
                 isCurrent: { [weak self] in
                     guard let self else { return false }
                     return NotificationService.mayMutateFocusNotificationChannel(
@@ -6301,6 +6383,26 @@ final class OffWorkStore {
         focusLastNextAction = plannedFocusBreakEnd(kind: suggestedKind, at: date) == nil
             ? .none
             : suggestedAction
+        autoStartFocusBreak(kind: suggestedKind, after: session, at: date)
+    }
+
+    /// The recovery a finished block earned starts with it.
+    ///
+    /// A block ends while the phone is locked, so the Lock Screen has already
+    /// been counting this break down — from the block's own end, which is the
+    /// only start that makes the two agree. Returning long afterwards must not
+    /// backfill a break nobody took, so it only becomes a session while the
+    /// clock is still inside it.
+    private func autoStartFocusBreak(
+        kind: FocusSessionKind,
+        after session: FocusSession,
+        at date: Date
+    ) {
+        guard focusLastNextAction == (kind == .longBreak ? .startLongBreak : .startShortBreak),
+              let end = plannedFocusBreakEnd(kind: kind, at: session.plannedEndAt),
+              end > date
+        else { return }
+        _ = startBreak(kind: kind, at: session.plannedEndAt)
     }
 
     /// Ends a block whose planned end has already passed, with the reason that

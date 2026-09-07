@@ -777,7 +777,7 @@
   "focusSkipBreak": "ข้ามช่วงพัก",
   "focusStartNextFocus": "เริ่มโฟกัสรอบถัดไป",
   "focusNoNextTask": "เพิ่มงานอีกอย่างเพื่อเริ่มช่วงโฟกัสถัดไป",
-  "focusNextBreakBody": "ไปต่อเมื่อพร้อม ช่วงพักจะไม่เริ่มเอง",
+  "focusNextBreakBody": "ไปต่อเมื่อพร้อม ช่วงพักของบล็อกนี้ผ่านไปแล้ว",
   "focusNextFocusBody": "พักเสร็จแล้ว เลือกงานเพื่อเริ่มรอบถัดไป",
   "focusNotificationIssue": "การแจ้งเตือนตัวจับเวลาต้องตรวจสอบ",
   "focusNotificationPermissionDenied": "การแจ้งเตือนปิดอยู่ คุณอาจพลาดเวลาสิ้นสุดตัวจับเวลา เปิดได้ในการตั้งค่าระบบ",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "ดูเดือนนี้",
   "focusDemoWriting": "เขียนข้อเสนอ",
   "focusDemoMessages": "ตอบข้อความ",
-  "focusDemoLearning": "เรียนรู้สิ่งใหม่"
+  "focusDemoLearning": "เรียนรู้สิ่งใหม่",
+  "focusActivityPomodoro": "โพโมโดโร {{index}} จาก {{total}}",
+  "focusActivityTaskDone": "เสร็จตอน {{time}}",
+  "focusActivityNextUp": "ถัดไป: {{task}} เวลา {{time}}",
+  "focusActivityChainDone": "ตอนนี้เสร็จหมดแล้ว",
+  "focusActivityAddPomodoro": "เพิ่มโพโมโดโร",
+  "focusBreakUntil": "พัก {{count}} นาที ถึง {{time}}",
+  "focusBreakOver": "หมดเวลาพัก"
 }

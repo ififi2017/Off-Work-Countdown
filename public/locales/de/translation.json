@@ -777,7 +777,7 @@
   "focusSkipBreak": "Pause überspringen",
   "focusStartNextFocus": "Nächsten Fokus starten",
   "focusNoNextTask": "Füge eine weitere Aufgabe hinzu, um den nächsten Fokusblock zu starten.",
-  "focusNextBreakBody": "Mach weiter, wenn du bereit bist. Die Pause beginnt nicht automatisch.",
+  "focusNextBreakBody": "Mach weiter, wenn du bereit bist. Die Pause für diesen Block ist bereits vorbei.",
   "focusNextFocusBody": "Die Pause ist vorbei. Wähle eine Aufgabe für die nächste Runde.",
   "focusNotificationIssue": "Timer-Benachrichtigungen benötigen Aufmerksamkeit",
   "focusNotificationPermissionDenied": "Benachrichtigungen sind deaktiviert; du könntest das Timerende verpassen. Du kannst sie in den Systemeinstellungen aktivieren.",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "Diesen Monat ansehen",
   "focusDemoWriting": "Einen Vorschlag ausarbeiten",
   "focusDemoMessages": "Nachrichten beantworten",
-  "focusDemoLearning": "Etwas Neues lernen"
+  "focusDemoLearning": "Etwas Neues lernen",
+  "focusActivityPomodoro": "Pomodoro {{index}} von {{total}}",
+  "focusActivityTaskDone": "Fertig um {{time}}",
+  "focusActivityNextUp": "Als Nächstes: {{task}} um {{time}}",
+  "focusActivityChainDone": "Erst mal alles erledigt",
+  "focusActivityAddPomodoro": "Pomodoro hinzufügen",
+  "focusBreakUntil": "{{count}} Min. Pause bis {{time}}",
+  "focusBreakOver": "Pause vorbei"
 }

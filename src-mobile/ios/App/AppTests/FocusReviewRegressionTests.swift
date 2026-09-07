@@ -77,7 +77,7 @@ struct FocusReviewRegressionTests {
         #expect(store.focusDayCanvas(at: afterWork).blocks.first?.isUserBreak == true)
     }
 
-    @Test func lateStartKeepsSlotEndAndOffersItsBreak() throws {
+    @Test func lateStartKeepsSlotEndAndRollsIntoItsBreak() throws {
         let store = try makeStore()
         store.countdownStarted = true
         let at = try date(store, hour: 9)
@@ -91,11 +91,18 @@ struct FocusReviewRegressionTests {
         #expect(session.plannedEndAt.timeIntervalSince(at) == 20 * 60)
         #expect(session.plannedEndReason == .completed)
         #expect(store.finishElapsedFocusSession(at: block.end))
-        #expect(store.focusLastNextAction == .startShortBreak)
-        #expect(store.startBreak(kind: .shortBreak, at: block.end.addingTimeInterval(60)))
+        // The break the block earned starts from the block's own end, so the
+        // Lock Screen countdown and the recorded session say the same thing.
         let recovery = try #require(store.activeFocusSession())
+        #expect(recovery.kind == .shortBreak)
+        #expect(recovery.startedAt == block.end)
         #expect(recovery.plannedEndAt == block.end.addingTimeInterval(5 * 60))
-        #expect(LiveActivityService.focusNextLabel(session: recovery, store: store, now: recovery.startedAt) == store.t("focusStartNextFocus"))
+        #expect(store.focusLastNextAction == .none)
+        let legs = LiveActivityService.focusLegs(
+            store.focusChain(for: recovery, at: recovery.startedAt),
+            store: store
+        )
+        #expect(legs.first?.label == store.t("focusShortBreak"))
         store.stopFocus(reason: .stoppedByUser, at: recovery.startedAt.addingTimeInterval(60))
         #expect(store.focusLastNextAction == .startNextFocus)
     }
@@ -126,9 +133,13 @@ struct FocusReviewRegressionTests {
         #expect(store.startFocus(task: task, inBlockStartingAt: focus.startAtMs, at: at))
         let session = try #require(store.activeFocusSession())
         #expect(store.nextFocusBreakKind(after: session) == .longBreak)
-        #expect(LiveActivityService.focusNextLabel(session: session, store: store, now: at) == store.t("focusActivityThenBreak", values: ["count": "15"]))
+        let legs = LiveActivityService.focusLegs(store.focusChain(for: session, at: at), store: store)
+        #expect(legs.first?.nextNote == store.t(
+            "focusActivityThenBreak",
+            values: ["count": store.formatCount(15)]
+        ))
         #expect(store.finishElapsedFocusSession(at: session.plannedEndAt))
-        #expect(store.focusLastNextAction == .startLongBreak)
+        #expect(store.activeFocusSession()?.kind == .longBreak)
     }
 
     @Test func immediateCreationPreservesEstimateAndFavorite() throws {

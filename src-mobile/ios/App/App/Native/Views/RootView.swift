@@ -6,7 +6,7 @@ import UIKit
 struct OffWorkCountdownRootView: View {
     @State private var store = Self.makeStore()
     @State private var notifications = NotificationService()
-    @State private var liveActivities = LiveActivityService()
+    @State private var liveActivities = LiveActivityService.shared
     @State private var serviceTask: Task<Void, Never>?
     @State private var clockInCommitFeedback = 0
     @State private var clockOffCommitFeedback = 0
@@ -30,7 +30,7 @@ struct OffWorkCountdownRootView: View {
             return OffWorkStore(defaults: defaults, records: .inMemory())
         }
 #endif
-        return OffWorkStore(records: .persisted())
+        return .shared
     }
 
     var body: some View {

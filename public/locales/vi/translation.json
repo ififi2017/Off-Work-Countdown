@@ -777,7 +777,7 @@
   "focusSkipBreak": "Bỏ qua giờ nghỉ",
   "focusStartNextFocus": "Bắt đầu phiên tập trung tiếp theo",
   "focusNoNextTask": "Thêm một việc để bắt đầu khối tập trung tiếp theo.",
-  "focusNextBreakBody": "Tiếp tục khi bạn sẵn sàng. Giờ nghỉ sẽ không tự bắt đầu.",
+  "focusNextBreakBody": "Tiếp tục khi bạn sẵn sàng. Giờ nghỉ của khối này đã trôi qua.",
   "focusNextFocusBody": "Giờ nghỉ đã xong. Chọn một việc để bắt đầu vòng tiếp theo.",
   "focusNotificationIssue": "Thông báo hẹn giờ cần được xử lý",
   "focusNotificationPermissionDenied": "Thông báo đang tắt nên bạn có thể bỏ lỡ lúc hẹn giờ kết thúc. Bạn có thể bật trong cài đặt hệ thống.",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "Xem tháng này",
   "focusDemoWriting": "Viết đề xuất",
   "focusDemoMessages": "Trả lời tin nhắn",
-  "focusDemoLearning": "Học điều mới"
+  "focusDemoLearning": "Học điều mới",
+  "focusActivityPomodoro": "Pomodoro {{index}} trên {{total}}",
+  "focusActivityTaskDone": "Xong lúc {{time}}",
+  "focusActivityNextUp": "Tiếp theo: {{task}} lúc {{time}}",
+  "focusActivityChainDone": "Tạm thời xong hết",
+  "focusActivityAddPomodoro": "Thêm một pomodoro",
+  "focusBreakUntil": "Nghỉ {{count}} phút đến {{time}}",
+  "focusBreakOver": "Hết giờ nghỉ"
 }

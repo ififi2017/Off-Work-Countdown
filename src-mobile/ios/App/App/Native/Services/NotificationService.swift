@@ -143,14 +143,29 @@ final class NotificationService {
         UIApplication.shared.open(url)
     }
 
+    /// Which alert of a phase this is. A pomodoro owes the user two of them —
+    /// the block ending and the break that follows it ending — and a suspended
+    /// phone cannot be asked to compose the second one when it comes due, so
+    /// both are written at the same time. Fixed slots keep cancellation a
+    /// synchronous, exact-identifier operation.
+    enum FocusAlertSlot: String, CaseIterable, Sendable {
+        case end
+        case breakEnd
+    }
+
+    struct FocusAlert: Equatable, Sendable {
+        var slot: FocusAlertSlot
+        var at: Date
+        var title: String
+        var body: String
+    }
+
     /// Owns the focus/break notification lifecycle. It intentionally has no
     /// dependency on `OffWorkStore`, so timer model tests can inject a pure
     /// decision while production still uses the system notification center.
-    static func scheduleFocusTimer(
+    static func scheduleFocusTimers(
         id: UUID,
-        endAt: Date,
-        title: String,
-        body: String,
+        alerts: [FocusAlert],
         isCurrent: @escaping @MainActor () -> Bool
     ) async -> FocusScheduleResult {
         let center = UNUserNotificationCenter.current()
@@ -181,42 +196,47 @@ final class NotificationService {
         // Permission prompts add another suspension point. Do not let an old
         // phase write after a newly started phase has claimed the channel.
         guard isCurrent() else { return .superseded }
-        let identifier = focusTimerIdentifier(id)
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = .default
-        let request = UNNotificationRequest(
-            identifier: identifier,
-            content: content,
-            trigger: UNTimeIntervalNotificationTrigger(
-                timeInterval: max(1, endAt.timeIntervalSinceNow),
-                repeats: false
+        var written: [String] = []
+        for alert in alerts {
+            let identifier = focusTimerIdentifier(id, slot: alert.slot)
+            let content = UNMutableNotificationContent()
+            content.title = alert.title
+            content.body = alert.body
+            content.sound = .default
+            let request = UNNotificationRequest(
+                identifier: identifier,
+                content: content,
+                trigger: UNTimeIntervalNotificationTrigger(
+                    timeInterval: max(1, alert.at.timeIntervalSinceNow),
+                    repeats: false
+                )
             )
-        )
-        do {
-            try await center.add(request)
+            do {
+                try await center.add(request)
+            } catch {
+                center.removePendingNotificationRequests(withIdentifiers: written)
+                return .failed
+            }
+            written.append(identifier)
             // A replacement can win while `add` is in flight. Removing only
-            // this request is safe; removing all focus notifications here
-            // would reintroduce the race this guard closes.
+            // what this phase wrote is safe; removing all focus notifications
+            // here would reintroduce the race this guard closes.
             guard isCurrent() else {
-                center.removePendingNotificationRequests(withIdentifiers: [identifier])
+                center.removePendingNotificationRequests(withIdentifiers: written)
                 return .superseded
             }
-            return .scheduled
-        } catch {
-            return .failed
         }
+        return .scheduled
     }
 
     static func cancelFocusTimer(id: UUID) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: [focusTimerIdentifier(id)]
+            withIdentifiers: FocusAlertSlot.allCases.map { focusTimerIdentifier(id, slot: $0) }
         )
     }
 
-    private static func focusTimerIdentifier(_ id: UUID) -> String {
-        "owc.focus.\(id.uuidString)"
+    private static func focusTimerIdentifier(_ id: UUID, slot: FocusAlertSlot) -> String {
+        "owc.focus.\(id.uuidString).\(slot.rawValue)"
     }
 
     func reschedule(store: OffWorkStore, now: Date? = nil) async {

@@ -777,7 +777,7 @@
   "focusSkipBreak": "Saltar descanso",
   "focusStartNextFocus": "Iniciar el siguiente enfoque",
   "focusNoNextTask": "Añade otra tarea para iniciar el siguiente bloque de enfoque.",
-  "focusNextBreakBody": "Continúa cuando estés listo. El descanso no empieza automáticamente.",
+  "focusNextBreakBody": "Continúa cuando estés listo. El descanso de este bloque ya ha pasado.",
   "focusNextFocusBody": "El descanso ha terminado. Elige una tarea para iniciar la siguiente ronda.",
   "focusNotificationIssue": "Las notificaciones del temporizador necesitan atención",
   "focusNotificationPermissionDenied": "Las notificaciones están desactivadas, así que podrías perderte el final del temporizador. Puedes activarlas en los ajustes del sistema.",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "Ver este mes",
   "focusDemoWriting": "Redactar una propuesta",
   "focusDemoMessages": "Responder mensajes",
-  "focusDemoLearning": "Aprender algo nuevo"
+  "focusDemoLearning": "Aprender algo nuevo",
+  "focusActivityPomodoro": "Pomodoro {{index}} de {{total}}",
+  "focusActivityTaskDone": "Listo a las {{time}}",
+  "focusActivityNextUp": "Después: {{task}} a las {{time}}",
+  "focusActivityChainDone": "Todo hecho por ahora",
+  "focusActivityAddPomodoro": "Añadir un pomodoro",
+  "focusBreakUntil": "{{count}} min de descanso hasta las {{time}}",
+  "focusBreakOver": "Fin del descanso"
 }

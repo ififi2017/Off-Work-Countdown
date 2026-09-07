@@ -777,7 +777,7 @@
   "focusSkipBreak": "विश्राम छोड़ें",
   "focusStartNextFocus": "अगला फोकस शुरू करें",
   "focusNoNextTask": "अगला फोकस ब्लॉक शुरू करने के लिए एक और काम जोड़ें।",
-  "focusNextBreakBody": "तैयार होने पर आगे बढ़ें। विश्राम अपने आप शुरू नहीं होगा।",
+  "focusNextBreakBody": "तैयार होने पर आगे बढ़ें। इस ब्लॉक का विश्राम समय बीत चुका है।",
   "focusNextFocusBody": "विश्राम पूरा हो गया। अगला दौर शुरू करने के लिए कोई काम चुनें।",
   "focusNotificationIssue": "टाइमर सूचनाओं पर ध्यान देना ज़रूरी है",
   "focusNotificationPermissionDenied": "सूचनाएँ बंद हैं, इसलिए आप टाइमर का अंत भूल सकते हैं। इन्हें सिस्टम सेटिंग में चालू किया जा सकता है।",
@@ -994,5 +994,12 @@
   "recordsSeeThisMonth": "यह महीना देखें",
   "focusDemoWriting": "प्रस्ताव लिखें",
   "focusDemoMessages": "संदेशों का जवाब दें",
-  "focusDemoLearning": "कुछ नया सीखें"
+  "focusDemoLearning": "कुछ नया सीखें",
+  "focusActivityPomodoro": "पोमोडोरो {{index}} / {{total}}",
+  "focusActivityTaskDone": "{{time}} तक पूरा",
+  "focusActivityNextUp": "आगे: {{time}} पर {{task}}",
+  "focusActivityChainDone": "फ़िलहाल सब पूरा",
+  "focusActivityAddPomodoro": "एक पोमोडोरो जोड़ें",
+  "focusBreakUntil": "{{count}} मिनट का ब्रेक, {{time}} तक",
+  "focusBreakOver": "ब्रेक ख़त्म"
 }
