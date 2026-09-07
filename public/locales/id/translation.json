@@ -694,7 +694,7 @@
   "recordsLifeProfileReady": "Sudah diatur",
   "recordsDiscardEdits": "Buang perubahan ini?",
   "syncStatusOff": "Mati",
-  "syncStatusReady": "Terbaru",
+  "syncStatusReady": "Aktif",
   "lifeSchoolStarted": "Tahun masuk sekolah",
   "lifeRetirementDate": "Tahun pensiun",
   "lifeYearApproximate": "Sekitar {{year}}",
@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "Lihat bulan ini",
   "focusDemoWriting": "Menulis proposal",
   "focusDemoMessages": "Membalas pesan",
-  "focusDemoLearning": "Belajar hal baru"
+  "focusDemoLearning": "Belajar hal baru",
+  "focusExtendOne": "Satu Pomodoro lagi",
+  "focusExtendConflict": "Blok berikutnya sudah terisi. Pilih blok kosong lain di Hari ini.",
+  "focusExtendNoRoom": "Tidak cukup waktu sebelum istirahat atau pulang. Pilih blok berikutnya di Hari ini.",
+  "focusExtendScheduled": "Satu Pomodoro lagi dijadwalkan pukul {{time}}."
 }

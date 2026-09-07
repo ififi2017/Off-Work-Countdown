@@ -694,7 +694,7 @@
   "recordsLifeProfileReady": "已設定",
   "recordsDiscardEdits": "放棄這些變更？",
   "syncStatusOff": "已關閉",
-  "syncStatusReady": "已同步",
+  "syncStatusReady": "已開啟",
   "lifeSchoolStarted": "入學年份",
   "lifeRetirementDate": "退休年份",
   "lifeYearApproximate": "约 {{year}} 年",
@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "查看這個月",
   "focusDemoWriting": "撰寫提案",
   "focusDemoMessages": "回覆訊息",
-  "focusDemoLearning": "學習新知"
+  "focusDemoLearning": "學習新知",
+  "focusExtendOne": "再加一個番茄",
+  "focusExtendConflict": "下一個番茄區塊已有安排，請在「今天」中選擇其他空白區塊。",
+  "focusExtendNoRoom": "午休或下班前放不下一個完整番茄，請在「今天」中選擇稍後的區塊。",
+  "focusExtendScheduled": "已新增一個番茄，將於 {{time}} 開始。"
 }

@@ -694,7 +694,7 @@
   "recordsLifeProfileReady": "Đã đặt",
   "recordsDiscardEdits": "Bỏ những thay đổi này?",
   "syncStatusOff": "Tắt",
-  "syncStatusReady": "Đã cập nhật",
+  "syncStatusReady": "Bật",
   "lifeSchoolStarted": "Năm vào học",
   "lifeRetirementDate": "Năm nghỉ hưu",
   "lifeYearApproximate": "Khoảng {{year}}",
@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "Xem tháng này",
   "focusDemoWriting": "Viết đề xuất",
   "focusDemoMessages": "Trả lời tin nhắn",
-  "focusDemoLearning": "Học điều mới"
+  "focusDemoLearning": "Học điều mới",
+  "focusExtendOne": "Thêm một Pomodoro",
+  "focusExtendConflict": "Khung tiếp theo đã có lịch. Chọn khung trống khác trong Hôm nay.",
+  "focusExtendNoRoom": "Không đủ thời gian trước giờ nghỉ hoặc tan làm. Chọn khung muộn hơn trong Hôm nay.",
+  "focusExtendScheduled": "Đã thêm một Pomodoro lúc {{time}}."
 }

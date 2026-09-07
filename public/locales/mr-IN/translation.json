@@ -694,7 +694,7 @@
   "recordsLifeProfileReady": "सेट आहे",
   "recordsDiscardEdits": "हे बदल टाकून द्यायचे?",
   "syncStatusOff": "बंद",
-  "syncStatusReady": "अद्ययावत",
+  "syncStatusReady": "चालू",
   "lifeSchoolStarted": "शाळेचे पहिले वर्ष",
   "lifeRetirementDate": "निवृत्तीचे वर्ष",
   "lifeYearApproximate": "सुमारे {{year}}",
@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "हा महिना पहा",
   "focusDemoWriting": "प्रस्ताव लिहा",
   "focusDemoMessages": "संदेशांना उत्तर द्या",
-  "focusDemoLearning": "काहीतरी नवीन शिका"
+  "focusDemoLearning": "काहीतरी नवीन शिका",
+  "focusExtendOne": "आणखी एक पोमोडोरो",
+  "focusExtendConflict": "पुढील ब्लॉक आधीच ठरलेला आहे. आजमध्ये दुसरा रिकामा ब्लॉक निवडा.",
+  "focusExtendNoRoom": "विश्रांती किंवा काम संपण्यापूर्वी पूर्ण पोमोडोरोसाठी वेळ नाही. आजमध्ये नंतरचा ब्लॉक निवडा.",
+  "focusExtendScheduled": "{{time}} साठी आणखी एक पोमोडोरो जोडला."
 }

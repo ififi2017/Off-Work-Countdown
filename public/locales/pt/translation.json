@@ -694,7 +694,7 @@
   "recordsLifeProfileReady": "Configurado",
   "recordsDiscardEdits": "Descartar estas alterações?",
   "syncStatusOff": "Desligado",
-  "syncStatusReady": "Atualizado",
+  "syncStatusReady": "Ligado",
   "lifeSchoolStarted": "Primeiro ano de escola",
   "lifeRetirementDate": "Ano da aposentadoria",
   "lifeYearApproximate": "Por volta de {{year}}",
@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "Ver este mês",
   "focusDemoWriting": "Escrever uma proposta",
   "focusDemoMessages": "Responder a mensagens",
-  "focusDemoLearning": "Aprender algo novo"
+  "focusDemoLearning": "Aprender algo novo",
+  "focusExtendOne": "Mais um Pomodoro",
+  "focusExtendConflict": "O próximo bloco já está ocupado. Escolha outro bloco livre em Hoje.",
+  "focusExtendNoRoom": "Não cabe um Pomodoro completo antes da pausa ou do fim do trabalho. Escolha um bloco posterior em Hoje.",
+  "focusExtendScheduled": "Mais um Pomodoro está marcado para {{time}}."
 }

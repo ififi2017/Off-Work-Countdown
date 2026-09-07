@@ -412,3 +412,98 @@ func convertedBreakIsVisibleAndReversible() throws {
     #expect(!cleared.hasAssignment)
     #expect(store.focusDayCanvas(at: at).nextEmptyBlock?.startAtMs == target.startAtMs)
 }
+
+@MainActor
+@Test("Only assigned focus blocks contribute automatic upcoming breaks")
+func upcomingBreaksRequireThePrecedingTask() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 8, minute: 55))
+    let shift = try #require(store.snapshot(at: at))
+    #expect(store.focusPlanAssignments(for: shift).isEmpty)
+    let blocks = store.focusPlanningBlocks(for: shift)
+    let task = makeTask(store, title: "One task", at: at)
+    _ = store.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at)
+    let breaks = store.focusUpcomingTimelineEvents(for: shift, at: at).filter { $0.kind == .focusBreak }
+    #expect(breaks.count == 1)
+    #expect(breaks.first?.date == blocks[1].start)
+    let explicit = try #require(blocks.last(where: { $0.kind == .task }))
+    store.markBlockAsBreak(startingAt: explicit.startAtMs, at: at)
+    #expect(store.focusPlanAssignments(for: shift).contains {
+        $0.block.startAtMs == explicit.startAtMs && $0.assignment.kind == .breakTime
+    })
+}
+
+@MainActor
+@Test("One more round reopens the same task and preserves existing sessions")
+func oneMoreRoundKeepsTaskIdentity() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 9, minute: 5))
+    var task = makeTask(store, title: "Continue", at: at)
+    let blocks = store.focusWorkBlocks(at: at).filter { $0.kind == .task }
+    _ = store.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at)
+    task = try #require(store.records.state.focusTasks.first { $0.id == task.id })
+    task.completedAt = at
+    store.records.upsertFocusTask(task, at: at)
+    let sessions = store.records.state.focusSessions
+    let added = try store.addOneFocusBlock(taskID: task.id, at: at).get()
+    #expect(added == blocks[1].startAtMs)
+    let updated = try #require(store.records.state.focusTasks.first { $0.id == task.id })
+    #expect(updated.completedAt == nil)
+    #expect(updated.estimatedPomodoros == 2)
+    #expect(store.records.state.focusSessions == sessions)
+}
+
+@MainActor
+@Test("One more round cannot overwrite another task or a user break")
+func oneMoreRoundReportsConflicts() throws {
+    for userBreak in [false, true] {
+        let store = try canvasStore()
+        let at = try #require(day(store, hour: 9, minute: 5))
+        let task = makeTask(store, title: "Continue", at: at)
+        let blocks = store.focusWorkBlocks(at: at).filter { $0.kind == .task }
+        _ = store.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at)
+        if userBreak {
+            store.markBlockAsBreak(startingAt: blocks[1].startAtMs, at: at)
+        } else {
+            _ = store.assign(makeTask(store, title: "Next task", at: at), toBlockStartingAt: blocks[1].startAtMs, at: at)
+        }
+        let before = store.focusPlanning
+        guard case .failure(.conflict) = store.addOneFocusBlock(taskID: task.id, at: at) else {
+            Issue.record("Expected a conflict")
+            return
+        }
+        #expect(store.focusPlanning == before)
+        #expect(store.records.state.focusTasks.first { $0.id == task.id }?.estimatedPomodoros == 1)
+    }
+}
+
+@MainActor
+@Test("One more round cannot jump across lunch")
+func oneMoreRoundStopsAtLunch() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 11, minute: 35))
+    let task = makeTask(store, title: "Before lunch", at: at)
+    let block = try #require(store.focusWorkBlocks(at: at).last {
+        $0.kind == .task && $0.start <= at
+    })
+    _ = store.assign(task, toBlockStartingAt: block.startAtMs, at: at)
+    guard case .failure(.noRoom) = store.addOneFocusBlock(taskID: task.id, at: at) else {
+        Issue.record("Expected lunch to block continuation")
+        return
+    }
+}
+
+@MainActor
+@Test("Default template previews use the same task-dependent break rule")
+func templatePreviewBreaksRequireTasks() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 8, minute: 55))
+    let template = try #require(store.saveFocusTemplate(name: "Sparse", slots: [
+        FocusTemplateSlot(blockIndex: 0, kind: .task, taskKey: UUID(), taskTitle: "First task", taskIcon: .focus)
+    ]))
+    store.setDefaultFocusTemplate(template)
+    let shift = try #require(store.snapshot(at: at))
+    let items = store.focusPlanAssignments(for: shift)
+    #expect(items.filter { $0.assignment.kind == .task }.count == 1)
+    #expect(items.filter { $0.assignment.kind == .breakTime }.count == 1)
+}

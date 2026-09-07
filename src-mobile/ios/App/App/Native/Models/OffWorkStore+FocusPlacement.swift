@@ -157,3 +157,57 @@ extension OffWorkStore {
         case hasTemplates
     }
 }
+
+extension OffWorkStore {
+    enum FocusExtensionError: Error {
+        case conflict
+        case noRoom
+    }
+
+    /// Continue the same task without moving another task or changing the saved template.
+    func addOneFocusBlock(taskID: UUID, at date: Date = .now) -> Result<Int64, FocusExtensionError> {
+        guard plus.isAuthorized,
+              var task = records.state.focusTasks.first(where: { $0.id == taskID && $0.deletedAt == nil }),
+              let shift = snapshot(at: date), date < shift.endDate
+        else { return .failure(.noRoom) }
+        let blocks = focusPlanningBlocks(for: shift)
+        let key = RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
+        let assignments = focusPlanning.plans[key]?.assignments ?? []
+        let lastAssignedEnd = blocks.filter { block in
+            assignments.contains { $0.taskID == taskID && $0.blockStartAtMs == block.startAtMs }
+        }.map(\.end).max()
+        let runningEnd = activeFocusSession().flatMap { $0.taskID == taskID ? $0.plannedEndAt : nil }
+        let boundary = max(date, max(lastAssignedEnd ?? date, runningEnd ?? date))
+        guard let target = blocks.first(where: { $0.kind == .task && $0.start >= boundary }),
+              target.durationMinutes >= focusTimerSettings.normalized.focusMinutes,
+              shift.segments.contains(where: {
+                  $0.startAtMs <= boundary.timeIntervalSince1970 * 1_000
+                      && target.end.timeIntervalSince1970 * 1_000 <= $0.endAtMs
+              })
+        else { return .failure(.noRoom) }
+        guard !assignments.contains(where: { $0.blockStartAtMs == target.startAtMs }),
+              !records.state.focusTasks.contains(where: {
+                  $0.id != taskID && $0.deletedAt == nil && $0.completedAt == nil
+                      && $0.scheduledStartAt.map { $0 >= target.start && $0 < target.end } == true
+              })
+        else { return .failure(.conflict) }
+        let estimate = max(task.estimatedPomodoros, completedFocusBlocks(for: task)) + 1
+        task.completedAt = nil
+        assignFocusBlock(target, to: task, in: shift, at: date)
+        if var updated = records.state.focusTasks.first(where: { $0.id == taskID }) {
+            updated.estimatedPomodoros = estimate
+            records.upsertFocusTask(updated, at: date)
+        }
+        return .success(target.startAtMs)
+    }
+
+    /// Keep continuation available during the break and after the last planned round.
+    func focusContinuationTaskID(at date: Date = .now) -> UUID? {
+        guard plus.isAuthorized else { return nil }
+        if let session = activeFocusSession(), session.kind == .focus { return session.taskID }
+        guard let shift = snapshot(at: date), date < shift.endDate else { return nil }
+        return records.state.focusSessions
+            .filter { $0.kind == .focus && $0.startedAt >= shift.startDate && $0.startedAt <= date }
+            .max(by: { $0.startedAt < $1.startedAt })?.taskID
+    }
+}

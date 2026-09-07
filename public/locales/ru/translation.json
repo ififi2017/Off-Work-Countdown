@@ -694,7 +694,7 @@
   "recordsLifeProfileReady": "Настроено",
   "recordsDiscardEdits": "Отменить эти изменения?",
   "syncStatusOff": "Выкл.",
-  "syncStatusReady": "Актуально",
+  "syncStatusReady": "Вкл.",
   "lifeSchoolStarted": "Первый учебный год",
   "lifeRetirementDate": "Год выхода на пенсию",
   "lifeYearApproximate": "Около {{year}}",
@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "Посмотреть этот месяц",
   "focusDemoWriting": "Подготовить предложение",
   "focusDemoMessages": "Ответить на сообщения",
-  "focusDemoLearning": "Узнать что-то новое"
+  "focusDemoLearning": "Узнать что-то новое",
+  "focusExtendOne": "Ещё одно помодоро",
+  "focusExtendConflict": "Следующий блок уже занят. Выберите свободный блок в разделе «Сегодня».",
+  "focusExtendNoRoom": "До перерыва или конца работы не хватит времени. Выберите более поздний блок в разделе «Сегодня».",
+  "focusExtendScheduled": "Ещё одно помодоро запланировано на {{time}}."
 }

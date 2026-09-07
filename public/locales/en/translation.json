@@ -694,7 +694,7 @@
   "recordsLifeProfileReady": "Set up",
   "recordsDiscardEdits": "Discard these changes?",
   "syncStatusOff": "Off",
-  "syncStatusReady": "Up to date",
+  "syncStatusReady": "On",
   "lifeSchoolStarted": "First year of school",
   "lifeRetirementDate": "Retirement year",
   "lifeYearApproximate": "About {{year}}",
@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "See this month",
   "focusDemoWriting": "Draft a proposal",
   "focusDemoMessages": "Reply to messages",
-  "focusDemoLearning": "Learn something new"
+  "focusDemoLearning": "Learn something new",
+  "focusExtendOne": "One more Pomodoro",
+  "focusExtendConflict": "The next block is already planned. Choose another empty block in Today.",
+  "focusExtendNoRoom": "There is no full Pomodoro before the next break or clock-off. Choose a later block in Today.",
+  "focusExtendScheduled": "Another Pomodoro is scheduled for {{time}}."
 }

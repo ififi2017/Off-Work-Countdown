@@ -694,7 +694,7 @@
   "recordsLifeProfileReady": "مضبوط",
   "recordsDiscardEdits": "هل تتجاهل هذه التغييرات؟",
   "syncStatusOff": "إيقاف",
-  "syncStatusReady": "محدَّث",
+  "syncStatusReady": "مفعّل",
   "lifeSchoolStarted": "أول سنة دراسة",
   "lifeRetirementDate": "سنة التقاعد",
   "lifeYearApproximate": "حوالي {{year}}",
@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "عرض هذا الشهر",
   "focusDemoWriting": "كتابة مقترح",
   "focusDemoMessages": "الرد على الرسائل",
-  "focusDemoLearning": "تعلّم شيء جديد"
+  "focusDemoLearning": "تعلّم شيء جديد",
+  "focusExtendOne": "بومودورو إضافي",
+  "focusExtendConflict": "الفترة التالية محجوزة. اختر فترة فارغة أخرى في اليوم.",
+  "focusExtendNoRoom": "لا يوجد وقت لجلسة كاملة قبل الاستراحة أو نهاية العمل. اختر فترة لاحقة في اليوم.",
+  "focusExtendScheduled": "تمت جدولة بومودورو إضافي في {{time}}."
 }

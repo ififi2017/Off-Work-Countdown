@@ -694,7 +694,7 @@
   "recordsLifeProfileReady": "ตั้งแล้ว",
   "recordsDiscardEdits": "ทิ้งการเปลี่ยนแปลงเหล่านี้?",
   "syncStatusOff": "ปิด",
-  "syncStatusReady": "เป็นปัจจุบัน",
+  "syncStatusReady": "เปิด",
   "lifeSchoolStarted": "ปีที่เริ่มเรียน",
   "lifeRetirementDate": "ปีที่เกษียณ",
   "lifeYearApproximate": "ราวปี {{year}}",
@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "ดูเดือนนี้",
   "focusDemoWriting": "เขียนข้อเสนอ",
   "focusDemoMessages": "ตอบข้อความ",
-  "focusDemoLearning": "เรียนรู้สิ่งใหม่"
+  "focusDemoLearning": "เรียนรู้สิ่งใหม่",
+  "focusExtendOne": "เพิ่มอีกหนึ่งโพโมโดโร",
+  "focusExtendConflict": "บล็อกถัดไปมีแผนแล้ว เลือกบล็อกว่างอื่นในวันนี้",
+  "focusExtendNoRoom": "เวลาไม่พอสำหรับหนึ่งรอบก่อนพักหรือเลิกงาน เลือกบล็อกที่ช้ากว่าในวันนี้",
+  "focusExtendScheduled": "เพิ่มโพโมโดโรอีกหนึ่งรอบเวลา {{time}} แล้ว"
 }
