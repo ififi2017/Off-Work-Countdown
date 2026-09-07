@@ -12,11 +12,13 @@ export function isContentSlug(slug: string): slug is ContentSlug {
 }
 
 export function officialHomeUrl(lang: string): string {
-  return `${siteConfig.officialSiteUrl}/${resolveContentLocale(lang)}`;
+  // Hall pages exist for every UI locale (`/ja`, `/zh-TW`, …).
+  return `${siteConfig.officialSiteUrl}/${lang}`;
 }
 
 export function officialPageUrl(lang: string, slug: ContentSlug): string {
-  return `${officialHomeUrl(lang)}/${slug}`;
+  // Support pages are en / zh-CN only.
+  return `${siteConfig.officialSiteUrl}/${resolveContentLocale(lang)}/${slug}`;
 }
 
 export function officialContentAlternates(
