@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "यह महीना देखें",
   "focusDemoWriting": "प्रस्ताव लिखें",
   "focusDemoMessages": "संदेशों का जवाब दें",
-  "focusDemoLearning": "कुछ नया सीखें"
+  "focusDemoLearning": "कुछ नया सीखें",
+  "focusExtendOne": "एक और पोमोडोरो",
+  "focusExtendConflict": "अगला ब्लॉक पहले से तय है। आज में कोई खाली ब्लॉक चुनें।",
+  "focusExtendNoRoom": "ब्रेक या काम खत्म होने से पहले पूरा पोमोडोरो नहीं होगा। आज में बाद का ब्लॉक चुनें।",
+  "focusExtendScheduled": "{{time}} के लिए एक और पोमोडोरो जोड़ा गया।"
 }

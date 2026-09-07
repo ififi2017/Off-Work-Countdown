@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "Bu ayı görüntüle",
   "focusDemoWriting": "Bir teklif hazırlayın",
   "focusDemoMessages": "Mesajları yanıtlayın",
-  "focusDemoLearning": "Yeni bir şey öğrenin"
+  "focusDemoLearning": "Yeni bir şey öğrenin",
+  "focusExtendOne": "Bir Pomodoro daha",
+  "focusExtendConflict": "Sonraki blok zaten planlı. Bugün bölümünde boş bir blok seçin.",
+  "focusExtendNoRoom": "Mola veya mesai bitiminden önce yeterli süre yok. Bugün bölümünde daha sonraki bir blok seçin.",
+  "focusExtendScheduled": "{{time}} için bir Pomodoro daha planlandı."
 }

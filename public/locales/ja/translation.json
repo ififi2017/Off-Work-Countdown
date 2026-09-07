@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "この月を見る",
   "focusDemoWriting": "企画書を書く",
   "focusDemoMessages": "メッセージに返信",
-  "focusDemoLearning": "新しいことを学ぶ"
+  "focusDemoLearning": "新しいことを学ぶ",
+  "focusExtendOne": "ポモドーロを1回追加",
+  "focusExtendConflict": "次のブロックには予定があります。「今日」で別の空きブロックを選んでください。",
+  "focusExtendNoRoom": "休憩または退勤までに1回分の時間がありません。「今日」で後のブロックを選んでください。",
+  "focusExtendScheduled": "{{time}} にポモドーロを追加しました。"
 }

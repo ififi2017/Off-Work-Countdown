@@ -994,5 +994,9 @@
   "recordsSeeThisMonth": "Voir ce mois",
   "focusDemoWriting": "Rédiger une proposition",
   "focusDemoMessages": "Répondre aux messages",
-  "focusDemoLearning": "Apprendre quelque chose"
+  "focusDemoLearning": "Apprendre quelque chose",
+  "focusExtendOne": "Un Pomodoro de plus",
+  "focusExtendConflict": "Le prochain créneau est déjà prévu. Choisissez un créneau libre dans Aujourd’hui.",
+  "focusExtendNoRoom": "Il ne reste pas assez de temps avant la pause ou la fin du travail. Choisissez un créneau plus tard dans Aujourd’hui.",
+  "focusExtendScheduled": "Un Pomodoro est prévu à {{time}}."
 }
