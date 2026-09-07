@@ -4119,10 +4119,11 @@ export function OffWorkCountdown({
             rel="noopener noreferrer"
             className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
           >
-            {t("visitOfficialWebsite")}
+            {siteConfig.brandName}
           </a>
           {(
             [
+              ["download", t("getApp")],
               ["faq", t("faq")],
               ["how-it-works", t("howItWorks")],
               ["about", t("aboutProject")],

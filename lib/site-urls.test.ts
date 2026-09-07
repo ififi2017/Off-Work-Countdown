@@ -14,9 +14,12 @@ describe("site URLs", () => {
     expect(webAppPageUrl("en", "996")).toBe("https://off.rainif.com/en/996");
   });
 
+  it("maps hall home links onto the matching doneat.app locale", () => {
+    expect(officialHomeUrl("zh-TW")).toBe("https://doneat.app/zh-TW");
+    expect(officialHomeUrl("ja")).toBe("https://doneat.app/ja");
+  });
+
   it("maps content links onto the official site's en / zh-CN pages", () => {
-    expect(officialHomeUrl("zh-TW")).toBe("https://doneat.app/zh-CN");
-    expect(officialHomeUrl("ja")).toBe("https://doneat.app/en");
     expect(officialPageUrl("en", "download")).toBe(
       "https://doneat.app/en/download"
     );
