@@ -309,15 +309,8 @@ struct OWCAppHeader: View {
                     .foregroundStyle(OWCDesign.secondary)
                     .owcTabletGlassAction()
                 Button { withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) { store.toggleQuickTheme() } } label: {
-                    Group {
-                        if store.quickThemeIsAuto {
-                            Text(verbatim: "A")
-                                .font(.body.weight(.semibold))
-                        } else {
-                            Image(systemName: store.quickThemeIcon)
-                                .font(.body)
-                        }
-                    }
+                    Image(systemName: store.quickThemeIcon)
+                        .font(.body)
                     .foregroundStyle(OWCDesign.secondary)
                 }
                 .owcTabletGlassAction()

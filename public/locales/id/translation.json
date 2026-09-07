@@ -1006,5 +1006,6 @@
   "focusActivityChainDone": "Semua selesai untuk saat ini",
   "focusActivityAddPomodoro": "Tambah pomodoro",
   "focusBreakUntil": "Istirahat {{count}} mnt sampai {{time}}",
-  "focusBreakOver": "Istirahat selesai"
+  "focusBreakOver": "Istirahat selesai",
+  "focusActivityDayDone": "Semua tugas hari ini selesai"
 }

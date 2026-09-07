@@ -1912,18 +1912,13 @@ final class OffWorkStore {
         guard let forcedWorkdayDate else { return false }
         return forcedWorkdayDate == Self.dayKey(for: shift.startDate, timeZone: countdownTimeZone)
     }
-    /// SF Symbol for the two explicit themes. `auto` deliberately has none:
-    /// the symbol named "a" is one of the localized symbols and renders as 字
-    /// in Chinese, so Auto draws a literal "A" instead. See quickThemeIsAuto.
     var quickThemeIcon: String {
         switch theme {
-        case .auto: ""
+        case .auto: "circle.lefthalf.filled"
         case .light: "sun.max"
         case .dark: "moon"
         }
     }
-
-    var quickThemeIsAuto: Bool { theme == .auto }
 
     func refreshSystemLanguage() {
         let systemLanguage = NativeLocalizer.systemLanguage()
@@ -2844,6 +2839,7 @@ final class OffWorkStore {
     func reconcileCountdownSession(at date: Date = .now) -> Bool {
         var changed = false
         carryIncompleteFocusTasks(at: date)
+        restoreScheduledFocus(at: date)
         reconcileOpenFocusSessions(at: date)
         if !finishElapsedFocusSession(at: date), let session = activeFocusSession() {
             scheduleFocusExpiry(for: session)
@@ -5676,6 +5672,7 @@ final class OffWorkStore {
             focusPlanningRevision &+= 1
         }
         carryIncompleteFocusTasks(at: date)
+        restoreScheduledFocus(at: date)
         reconcileOpenFocusSessions(at: date)
         focusRuntimeRevision &+= 1
     }
@@ -5988,6 +5985,152 @@ final class OffWorkStore {
     /// Deterministic even before reconciliation completes. CloudKit can
     /// briefly deliver two open rows; selecting by stable keys avoids each
     /// device showing a different timer.
+    // Local launch commitments, separate from completed/synced history. Merely
+    // opening the app after an unarmed block passed must never invent a session.
+    private var scheduledFocusSessions: [FocusSession] {
+        get {
+            guard let data = defaults.data(forKey: "ios.native.scheduledFocusSessions"),
+                  let values = try? JSONDecoder().decode([FocusSessionDTO].self, from: data)
+            else { return [] }
+            return values.compactMap { $0.value(calendar: recordsCalendar) }
+        }
+        set {
+            let values = newValue.map { FocusSessionDTO($0, calendar: recordsCalendar) }
+            defaults.set(try? JSONEncoder().encode(values), forKey: "ios.native.scheduledFocusSessions")
+        }
+    }
+    @ObservationIgnored private var scheduledFocusWake: Task<Void, Never>?
+
+    /// Completion copy must not claim that an unassigned or unfinished task
+    /// was done. Only committed blocks and the current block count ahead.
+    func completesFocusDay(after session: FocusSession, at date: Date) -> Bool {
+        let pending = scheduledFocusSessions
+        let tasks = focusTasksForToday(at: date)
+        return tasks.allSatisfy { task in
+            if task.completedAt != nil { return true }
+            let committed = pending.filter { $0.taskID == task.id && $0.plannedEndAt <= session.plannedEndAt }.count
+            let current = session.endedAt == nil && session.kind == .focus && session.taskID == task.id
+                && session.plannedEndReason == .completed && !pending.contains(where: { $0.id == session.id }) ? 1 : 0
+            let running = records.state.focusSessions.filter { recorded in
+                recorded.id != session.id && recorded.taskID == task.id && recorded.kind == .focus
+                    && recorded.endedAt == nil && recorded.plannedEndReason == .completed
+                    && recorded.plannedEndAt <= session.plannedEndAt
+                    && !pending.contains(where: { $0.id == recorded.id })
+            }.count
+            return completedFocusBlocks(for: task) + committed + current + running >= max(1, task.estimatedPomodoros)
+        }
+    }
+
+    func focusDayComplete(at date: Date = .now) -> Bool {
+        guard activeFocusSession() == nil,
+              let last = focusSessions(forDayKey: RecordJSON.dayKey(date, calendar: recordsCalendar))
+                .filter({ $0.endedAt != nil }).max(by: { $0.startedAt < $1.startedAt })
+        else { return false }
+        return completesFocusDay(after: last, at: date)
+    }
+
+    func scheduledFocusCount(taskID: UUID, before date: Date) -> Int {
+        scheduledFocusSessions.filter { $0.taskID == taskID && $0.plannedEndAt <= date }.count
+            + records.state.focusSessions.filter {
+                $0.taskID == taskID && $0.endedAt == nil && $0.plannedEndAt <= date
+            }.count
+    }
+
+    @discardableResult
+    func stopFocusFromActivity(startAtMs: Int64, at date: Date = .now) -> Bool {
+        restoreScheduledFocus(at: date)
+        _ = finishElapsedFocusSession(at: date)
+        guard let session = activeFocusSession(), session.kind == .focus,
+              Int64(session.startedAt.timeIntervalSince1970 * 1_000) == startAtMs
+        else { return false }
+        stopFocus(reason: .stoppedByUser, at: date)
+        return true
+    }
+
+    /// Consume only starts that were committed before suspension. Record their
+    /// absolute intervals, so waking late cannot restart a 25-minute block.
+    func restoreScheduledFocus(at date: Date = .now) {
+        let queued = scheduledFocusSessions
+        scheduledFocusSessions = queued.filter { $0.startedAt > date }
+        for session in queued where session.startedAt <= date {
+            guard plus.isAuthorized,
+                  let task = records.state.focusTasks.first(where: { $0.id == session.taskID }),
+                  task.deletedAt == nil, task.completedAt == nil,
+                  !records.state.focusSessions.contains(where: { $0.id == session.id }),
+                  focusDayCanvas(at: session.startedAt).blocks.contains(where: {
+                      $0.taskID == session.taskID && !$0.isUserBreak
+                          && $0.startAtMs <= Int64(session.startedAt.timeIntervalSince1970 * 1_000)
+                          && $0.endAtMs == Int64(session.plannedEndAt.timeIntervalSince1970 * 1_000)
+                  })
+            else { continue }
+            while let running = activeFocusSession(), running.plannedEndAt <= session.startedAt {
+                _ = finishElapsedFocusSession(at: session.startedAt)
+            }
+            // A manually started block already owns this time. Recovery may
+            // yield to a task the user explicitly placed in the schedule.
+            if let running = activeFocusSession() {
+                guard running.kind != .focus else { continue }
+                stopFocus(reason: .stoppedAtBoundary, at: session.startedAt)
+            }
+            records.upsertFocusSession(session, at: session.startedAt)
+            focusLastNextAction = .none
+            if session.plannedEndAt <= date {
+                _ = finishElapsedFocusSession(at: date)
+            } else {
+                scheduleFocusExpiry(for: session)
+                scheduleFocusTimerNotification(for: session)
+            }
+        }
+    }
+
+    /// Assignment is authorization. Prepare today's remaining assigned blocks
+    /// while the app can run; ActivityKit receives the same absolute sessions.
+    @discardableResult
+    func refreshScheduledFocus(at date: Date = .now) -> [FocusSession] {
+        restoreScheduledFocus(at: date)
+        let previous = scheduledFocusSessions
+        let canvas = focusDayCanvas(at: date)
+        let sessions: [FocusSession] = plus.isAuthorized ? canvas.blocks.compactMap { block in
+            guard block.kind == .task, !block.isUserBreak,
+                  block.endAtMs > Int64(date.timeIntervalSince1970 * 1_000),
+                  let taskID = block.taskID,
+                  let task = records.state.focusTasks.first(where: { $0.id == taskID }),
+                  task.completedAt == nil, task.deletedAt == nil
+            else { return nil }
+            let start = Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)
+            let end = Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000)
+            guard !records.state.focusSessions.contains(where: {
+                $0.kind == .focus && $0.startedAt < end && $0.plannedEndAt > start
+            }) else { return nil }
+            if let existing = previous.first(where: {
+                $0.taskID == taskID && $0.startedAt == start && $0.plannedEndAt == end
+            }) { return existing }
+            let actualStart = max(start, date)
+            guard end.timeIntervalSince(actualStart) >= 60 else { return nil }
+            return FocusSession(
+                id: UUID(), taskID: taskID,
+                shiftAnchorDate: recordsCalendar.startOfDay(for: actualStart),
+                startedAt: actualStart, plannedEndAt: end,
+                endedAt: nil, endReason: nil, editedAt: date,
+                editCount: 0, editTieBreaker: UUID(), kind: .focus,
+                timeZoneIdentifier: recordsCalendar.timeZone.identifier,
+                plannedEndReason: .completed
+            )
+        } : []
+        scheduledFocusSessions = sessions
+        restoreScheduledFocus(at: date)
+        scheduledFocusWake?.cancel()
+        if let next = scheduledFocusSessions.first {
+            scheduledFocusWake = Task { @MainActor [weak self] in
+                do { try await Task.sleep(for: .seconds(max(0, next.startedAt.timeIntervalSinceNow))) }
+                catch { return }
+                guard let self, !Task.isCancelled else { return }
+                self.refreshScheduledFocus()
+            }
+        }
+        return scheduledFocusSessions
+    }
+
     func activeFocusSession() -> FocusSession? {
         records.state.focusSessions.filter { $0.endedAt == nil }.min {
             if $0.startedAt != $1.startedAt { return $0.startedAt < $1.startedAt }
@@ -6228,7 +6371,7 @@ final class OffWorkStore {
         switch session.kind {
         case .focus:
             var alerts = [focusBlockEndAlert(for: session)]
-            if session.plannedEndReason == .completed {
+            if session.plannedEndReason == .completed, !completesFocusDay(after: session, at: session.startedAt) {
                 let kind = nextFocusBreakKind(after: session)
                 if let end = plannedFocusBreakEnd(kind: kind, at: session.plannedEndAt) {
                     alerts.append(focusBreakEndAlert(endingAt: end))
@@ -6251,7 +6394,9 @@ final class OffWorkStore {
                 "total": formatCount(total),
             ]))
         }
-        if session.plannedEndReason == .completed {
+        if completesFocusDay(after: session, at: session.startedAt) {
+            parts.append(t("focusActivityDayDone"))
+        } else if session.plannedEndReason == .completed {
             let kind = nextFocusBreakKind(after: session)
             if let end = plannedFocusBreakEnd(kind: kind, at: session.plannedEndAt) {
                 let minutes = breakDurationMinutes(kind)
@@ -6285,7 +6430,8 @@ final class OffWorkStore {
                 "time": formatTime(Date(timeIntervalSince1970: Double(next.startAtMs) / 1_000)),
             ])
         } else {
-            body = t("focusNextFocusBody")
+            let done = activeFocusSession().map { completesFocusDay(after: $0, at: end) } ?? focusDayComplete(at: end)
+            body = t(done ? "focusActivityDayDone" : "focusNextFocusBody")
         }
         return .init(slot: .breakEnd, at: end, title: t("focusBreakOver"), body: body)
     }
@@ -6361,9 +6507,9 @@ final class OffWorkStore {
                 try? await Task.sleep(for: .seconds(delay))
             }
             guard !Task.isCancelled else { return }
-            await MainActor.run {
-                _ = self?.finishElapsedFocusSession()
-            }
+            guard let self else { return }
+            self.restoreScheduledFocus()
+            _ = self.finishElapsedFocusSession()
         }
     }
 
@@ -6395,6 +6541,7 @@ final class OffWorkStore {
             task.completedAt = date
             records.upsertFocusTask(task)
         }
+        if completesFocusDay(after: session, at: date) { return }
         let suggestedKind = nextFocusBreakKind(after: session)
         let suggestedAction: FocusNextAction = suggestedKind == .longBreak
             ? .startLongBreak : .startShortBreak

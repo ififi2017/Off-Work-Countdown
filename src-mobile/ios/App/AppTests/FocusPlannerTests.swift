@@ -201,7 +201,7 @@ func workBlocksDoNotDependOnTheClock() {
 }
 
 @MainActor
-@Test("Live Activity gives work the one slot only in its configured window")
+@Test("Focus and recovery keep priority inside the clock-off window")
 func liveActivityPriorityIsDeterministic() {
     let now = Date(timeIntervalSince1970: 1_787_557_200)
     let focus = FocusSession(
@@ -218,7 +218,7 @@ func liveActivityPriorityIsDeterministic() {
         workEndAt: now.addingTimeInterval(60 * 60),
         workDisplayStartsAt: now.addingTimeInterval(-1),
         focusSession: focus, now: now
-    )?.surface == .work)
+    )?.surface == .shortBreak)
 }
 
 @MainActor
@@ -250,7 +250,7 @@ func focusLiveActivityWakePlanCoversBothBoundaryOrders() {
         focusEndsAt: focusEnd,
         workDisplayStartsAt: now.addingTimeInterval(5 * 60),
         now: now
-    ) == .workHandoffBeforeCompletion)
+    ) == .workHandoffAtCompletion)
     #expect(FocusLiveActivityWakePlan.make(
         focusEndsAt: focusEnd,
         workDisplayStartsAt: now.addingTimeInterval(30 * 60),

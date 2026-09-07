@@ -89,6 +89,8 @@ struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
         /// False when every block left in the shift already belongs to another
         /// task, so the button is offered but visibly cannot act.
         var addPomodoroEnabled = false
+        var stopFocusLabel: String? = nil
+        var scheduledSessionID: String? = nil
 
         /// End of the chain, which is what "this activity is finished" means
         /// once a focus block is followed by its break and the next block.

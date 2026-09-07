@@ -1006,5 +1006,6 @@
   "focusActivityChainDone": "Todo hecho por ahora",
   "focusActivityAddPomodoro": "Añadir un pomodoro",
   "focusBreakUntil": "{{count}} min de descanso hasta las {{time}}",
-  "focusBreakOver": "Fin del descanso"
+  "focusBreakOver": "Fin del descanso",
+  "focusActivityDayDone": "Todas las tareas de hoy están completadas"
 }

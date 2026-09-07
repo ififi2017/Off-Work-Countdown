@@ -1006,5 +1006,6 @@
   "focusActivityChainDone": "सध्या सर्व पूर्ण",
   "focusActivityAddPomodoro": "एक पोमोडोरो जोडा",
   "focusBreakUntil": "{{count}} मिनिटांचा ब्रेक, {{time}} पर्यंत",
-  "focusBreakOver": "ब्रेक संपला"
+  "focusBreakOver": "ब्रेक संपला",
+  "focusActivityDayDone": "आजची सर्व कामे पूर्ण झाली आहेत"
 }

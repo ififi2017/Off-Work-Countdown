@@ -321,8 +321,9 @@ struct FocusNowBand: View {
                     } currentValueLabel: { EmptyView() }
                     .progressViewStyle(.linear)
                     .tint(session.kind == .focus ? Color.indigo : Color.teal)
-                    .frame(height: 3)
                     .labelsHidden()
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 16)
                 }
             }
         }
@@ -340,6 +341,10 @@ struct FocusNowBand: View {
             }
         } else if let session {
             runningContent(session)
+        } else if store.focusDayComplete() {
+            Label(store.t("focusActivityDayDone"), systemImage: "checkmark.circle")
+                .font(.headline)
+                .foregroundStyle(OWCDesign.secondary)
         } else if store.focusLastNextAction == .startShortBreak || store.focusLastNextAction == .startLongBreak {
             breakOffer
         } else if let block = model.currentBlock, block.kind == .task, !block.isUserBreak {
@@ -478,37 +483,40 @@ struct FocusTaskLedger: View {
                             icon: row.icon.systemName,
                             title: row.title,
                             subtitle: subtitle(row),
-                            isLast: index == model.tasks.count - 1
+                            isLast: index == model.tasks.count - 1,
+                            centersVertically: true
                         ) {
-                            if let task = store.records.state.focusTasks.first(where: { $0.id == row.id }) {
-                                Menu {
-                                    Button(store.t("focusStartNow"), systemImage: "play.fill") {
-                                        _ = store.startFocus(task: task)
-                                    }
-                                    .disabled(store.focusStartAvailability(task) != .ready)
-                                    Button(store.t("focusExtendOne"), systemImage: "plus") {
-                                        onExtend(task.id)
-                                    }
-                                    Button(store.t(task.isFavorite ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: "star") {
-                                        store.toggleFocusFavorite(task)
-                                    }
-                                    Button(store.t("focusDeleteTask"), systemImage: "trash", role: .destructive) {
-                                        _ = store.deleteFocusTask(task)
-                                    }
-                                    .disabled(row.isRunning)
-                                } label: {
-                                    Image(systemName: "ellipsis").frame(minWidth: 44, minHeight: 44)
+                            HStack(spacing: 8) {
+                                if row.isRunning {
+                                    Text(store.t("focusRunning"))
+                                        .font(.caption)
+                                        .foregroundStyle(OWCDesign.accent)
+                                } else if row.isDone {
+                                    Image(systemName: "checkmark")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(OWCDesign.secondary)
                                 }
-                                .accessibilityLabel(store.t("moreActions") + " · " + row.title)
-                            }
-                            if row.isRunning {
-                                Text(store.t("focusRunning"))
-                                    .font(.caption)
-                                    .foregroundStyle(OWCDesign.accent)
-                            } else if row.isDone {
-                                Image(systemName: "checkmark")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(OWCDesign.secondary)
+                                if let task = store.records.state.focusTasks.first(where: { $0.id == row.id }) {
+                                    Menu {
+                                        Button(store.t("focusStartNow"), systemImage: "play.fill") {
+                                            _ = store.startFocus(task: task)
+                                        }
+                                        .disabled(store.focusStartAvailability(task) != .ready)
+                                        Button(store.t("focusExtendOne"), systemImage: "plus") {
+                                            onExtend(task.id)
+                                        }
+                                        Button(store.t(task.isFavorite ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: "star") {
+                                            store.toggleFocusFavorite(task)
+                                        }
+                                        Button(store.t("focusDeleteTask"), systemImage: "trash", role: .destructive) {
+                                            _ = store.deleteFocusTask(task)
+                                        }
+                                        .disabled(row.isRunning)
+                                    } label: {
+                                        Image(systemName: "ellipsis").frame(minWidth: 44, minHeight: 44)
+                                    }
+                                    .accessibilityLabel(store.t("moreActions") + " · " + row.title)
+                                }
                             }
                         }
                     }

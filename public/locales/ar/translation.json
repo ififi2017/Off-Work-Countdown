@@ -1006,5 +1006,6 @@
   "focusActivityChainDone": "انتهى كل شيء الآن",
   "focusActivityAddPomodoro": "إضافة بومودورو",
   "focusBreakUntil": "استراحة {{count}} دقيقة حتى {{time}}",
-  "focusBreakOver": "انتهت الاستراحة"
+  "focusBreakOver": "انتهت الاستراحة",
+  "focusActivityDayDone": "اكتملت جميع مهام اليوم"
 }

@@ -1006,5 +1006,6 @@
   "focusActivityChainDone": "Şimdilik hepsi bitti",
   "focusActivityAddPomodoro": "Pomodoro ekle",
   "focusBreakUntil": "{{time}} saatine kadar {{count}} dk mola",
-  "focusBreakOver": "Mola bitti"
+  "focusBreakOver": "Mola bitti",
+  "focusActivityDayDone": "Bugünkü tüm görevler tamamlandı"
 }

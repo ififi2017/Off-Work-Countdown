@@ -168,7 +168,8 @@ struct OffWorkCountdownRootView: View {
             if newValue != nil, newValue != oldValue { clockOffCommitFeedback += 1 }
         }
         .onChange(of: serviceScheduleSignal) { oldSignal, newSignal in
-            if oldSignal.focusRuntimeRevision != newSignal.focusRuntimeRevision {
+            if oldSignal.focusRuntimeRevision != newSignal.focusRuntimeRevision
+                || oldSignal.focusPlanningRevision != newSignal.focusPlanningRevision {
                 // Import, CloudKit and conflict resolution can replace the
                 // active session while the app is foregrounded. This cannot
                 // wait for a later background transition: the Lock Screen and
@@ -278,6 +279,7 @@ struct OffWorkCountdownRootView: View {
 
     private var serviceScheduleSignal: ServiceScheduleSignal {
         .init(
+            focusPlanningRevision: store.focusPlanningRevision,
             scheduleSignature: scheduleSignature,
             focusRuntimeRevision: store.focusRuntimeRevision
         )
@@ -415,6 +417,7 @@ struct OffWorkCountdownRootView: View {
             // take long enough that a replacement task cancels us before the
             // snapshot lands — debug captures were losing that race, so the
             // Home Screen kept the real-clock rest-day snapshot.
+            store.refreshScheduledFocus()
             WidgetSnapshotPublisher.shared.publish(store: store)
             guard !Task.isCancelled else { return }
             // Foreground edits are coalesced by `pendingReschedule`. Once the
@@ -480,6 +483,7 @@ private struct AppReviewPromptModifier: ViewModifier {
 }
 
 private struct ServiceScheduleSignal: Equatable {
+    let focusPlanningRevision: UInt64
     var scheduleSignature: String
     var focusRuntimeRevision: UInt64
 }

@@ -1400,7 +1400,7 @@ struct ThemeSettingsView: View {
     var body: some View {
         OWCContentSizedScrollView {
             OWCGroupCard {
-                themeRow(.auto, title: store.t("auto"), icon: nil, textIcon: "A")
+                themeRow(.auto, title: store.t("auto"), icon: "circle.lefthalf.filled")
                 themeRow(.light, title: store.t("light"), icon: "sun.max")
                 themeRow(.dark, title: store.t("dark"), icon: "moon", isLast: true)
             }

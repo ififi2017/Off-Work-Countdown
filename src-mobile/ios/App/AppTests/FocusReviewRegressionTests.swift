@@ -83,7 +83,9 @@ struct FocusReviewRegressionTests {
         let at = try date(store, hour: 9)
         let result = store.createFocusTaskInNextEmptyBlock(title: "Scheduled work", at: at)
         guard case .placed(let taskID, let blockStart) = result else { Issue.record("Expected placement"); return }
-        let task = try #require(store.records.state.focusTasks.first { $0.id == taskID })
+        var task = try #require(store.records.state.focusTasks.first { $0.id == taskID })
+        task.estimatedPomodoros = 2
+        store.records.upsertFocusTask(task)
         let block = try #require(store.focusWorkBlocks(at: at).first { $0.startAtMs == blockStart })
         #expect(store.startFocus(task: task, inBlockStartingAt: blockStart, at: at))
         let session = try #require(store.activeFocusSession())
@@ -129,7 +131,9 @@ struct FocusReviewRegressionTests {
         let at = focus.start.addingTimeInterval(300)
         let result = store.createFocusTask(title: "Fourth slot", inBlockStartingAt: focus.startAtMs, at: at)
         guard case .placed(let taskID, _) = result else { Issue.record("Expected placement"); return }
-        let task = try #require(store.records.state.focusTasks.first { $0.id == taskID })
+        var task = try #require(store.records.state.focusTasks.first { $0.id == taskID })
+        task.estimatedPomodoros = 2
+        store.records.upsertFocusTask(task)
         #expect(store.startFocus(task: task, inBlockStartingAt: focus.startAtMs, at: at))
         let session = try #require(store.activeFocusSession())
         #expect(store.nextFocusBreakKind(after: session) == .longBreak)

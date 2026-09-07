@@ -1006,5 +1006,6 @@
   "focusActivityChainDone": "Tạm thời xong hết",
   "focusActivityAddPomodoro": "Thêm một pomodoro",
   "focusBreakUntil": "Nghỉ {{count}} phút đến {{time}}",
-  "focusBreakOver": "Hết giờ nghỉ"
+  "focusBreakOver": "Hết giờ nghỉ",
+  "focusActivityDayDone": "Đã hoàn thành mọi công việc hôm nay"
 }
