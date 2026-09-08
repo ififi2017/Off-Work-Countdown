@@ -1391,23 +1391,155 @@ final class OffWorkStore {
         let start = calendar.startOfDay(for: from)
         let end = calendar.startOfDay(for: through)
         guard start <= end else { return [] }
-        if usesSharedCache,
-           let cached = resolvedDaysCache,
-           cached.revision == records.revision,
-           cached.from == start,
-           cached.through == end {
-            return cached.days
+        if usesSharedCache, let cached = cachedResolvedDays(from: start, through: end) {
+            return cached
         }
+        let result = Self.walkResolutions(
+            from: start,
+            through: end,
+            calendar: calendar,
+            periods: periods,
+            snapshots: snapshots,
+            exceptions: records.state.exceptions,
+            overrides: records.state.overrides,
+            expansions: gatherScheduleExpansions(
+                from: from,
+                through: through,
+                periods: periods,
+                snapshots: snapshots
+            )
+        )
+        if usesSharedCache {
+            storeResolvedDays(result, from: start, through: end, revision: records.revision)
+        }
+        return result
+    }
 
+    /// The same answer as `resolveDays`, with the per-day walk off the main
+    /// actor. Only the expansion gather has to stay here: `CountdownRules`
+    /// owns the JavaScriptCore context and its cache, and
+    /// `prefetchScheduleExpansions` has normally already filled it on
+    /// `ScheduleRangeEngine`.
+    private func resolveDaysOffMainActor(
+        from: Date,
+        through: Date,
+        periods: [CareerPeriod],
+        snapshots: [ScheduleSnapshot],
+        usesSharedCache: Bool
+    ) async -> [DayResolution] {
+        let calendar = recordsCalendar
+        let start = calendar.startOfDay(for: from)
+        let end = calendar.startOfDay(for: through)
+        guard start <= end else { return [] }
+        if usesSharedCache, let cached = cachedResolvedDays(from: start, through: end) {
+            return cached
+        }
+        let revision = records.revision
+        let result = await Self.walkResolutionsOffMainActor(
+            from: start,
+            through: end,
+            calendar: calendar,
+            periods: periods,
+            snapshots: snapshots,
+            exceptions: records.state.exceptions,
+            overrides: records.state.overrides,
+            expansions: gatherScheduleExpansions(
+                from: from,
+                through: through,
+                periods: periods,
+                snapshots: snapshots
+            )
+        )
+        // The archive can be edited while the walk runs. Caching a result built
+        // from the older revision would outlive the edit that invalidated it.
+        if usesSharedCache, records.revision == revision {
+            storeResolvedDays(result, from: start, through: end, revision: revision)
+        }
+        return result
+    }
+
+    private func cachedResolvedDays(from start: Date, through end: Date) -> [DayResolution]? {
+        guard let cached = resolvedDaysCache,
+              cached.revision == records.revision,
+              cached.from == start,
+              cached.through == end
+        else { return nil }
+        return cached.days
+    }
+
+    private func storeResolvedDays(
+        _ days: [DayResolution],
+        from start: Date,
+        through end: Date,
+        revision: UInt64
+    ) {
+        guard !days.contains(where: \.expansionFailed) else { return }
+        resolvedDaysCache = (revision, start, end, days)
+    }
+
+    /// Every schedule expansion the day walk will ask for, keyed by snapshot.
+    /// This is the half that cannot leave the main actor, so it is deliberately
+    /// the small half: one JavaScriptCore range per snapshot, not per day.
+    private func gatherScheduleExpansions(
+        from: Date,
+        through: Date,
+        periods: [CareerPeriod],
+        snapshots: [ScheduleSnapshot]
+    ) -> ScheduleExpansionTable {
+        let calendar = recordsCalendar
+        let start = calendar.startOfDay(for: from)
+        let end = calendar.startOfDay(for: through)
+        guard start <= end else { return ScheduleExpansionTable() }
+
+        var table = ScheduleExpansionTable()
+        for snapshot in snapshots {
+            guard let period = periods.first(where: { $0.id == snapshot.periodID }),
+                  period.startsOn <= end,
+                  period.endsBefore.map({ $0 > start }) ?? true,
+                  snapshot.effectiveFrom <= end,
+                  table.bySnapshot[snapshot.id] == nil,
+                  !table.failures.contains(snapshot.id)
+            else { continue }
+            let dayCalendar = period.civilCalendar()
+            if let configuration = try? JSONDecoder().decode(
+                ScheduleHoursConfiguration.self,
+                from: snapshot.configurationData
+            ), let days = try? CountdownRules.shared.expandScheduleRange(
+                configuration: configuration,
+                from: dayCalendar.startOfDay(for: from),
+                through: dayCalendar.startOfDay(for: through),
+                timeZone: period.timeZone
+            ) {
+                // Date-line changes can produce duplicate civil day keys.
+                table.bySnapshot[snapshot.id] = Dictionary(
+                    days.map { ($0.dayKey, ScheduleExpansion(isWorkday: $0.isWorkday, segments: $0.segments)) },
+                    uniquingKeysWith: { first, _ in first }
+                )
+            } else {
+                table.failures.insert(snapshot.id)
+                lastRulesError = "scheduleExpandFailed"
+            }
+        }
+        return table
+    }
+
+    /// The day walk, over value types and already-expanded schedules: no store
+    /// access and no JavaScriptCore, which is what lets it leave the main
+    /// actor. A career is roughly 15,700 days of it.
+    nonisolated private static func walkResolutions(
+        from start: Date,
+        through end: Date,
+        calendar: Calendar,
+        periods: [CareerPeriod],
+        snapshots: [ScheduleSnapshot],
+        exceptions: [CalendarException],
+        overrides: [DayOverride],
+        expansions: ScheduleExpansionTable
+    ) -> [DayResolution] {
         // Exceptions and overrides are keyed by day, so their winners do not
         // depend on which day is being resolved. Deciding them once is what
         // keeps a career-length walk from re-filtering the archive per day.
-        let lookup = DayRecordLookup(
-            exceptions: records.state.exceptions,
-            overrides: records.state.overrides
-        )
-        var expansions: [UUID: [String: ScheduleExpansion]] = [:]
-        var expansionFailures: Set<UUID> = []
+        let lookup = DayRecordLookup(exceptions: exceptions, overrides: overrides)
         var periodCalendars: [UUID: Calendar] = [:]
         var cursor = start
         var result: [DayResolution] = []
@@ -1430,38 +1562,11 @@ final class OffWorkStore {
             let snapshot = covering.flatMap {
                 DayRecordResolver.snapshot(on: cursor, in: $0, from: snapshots)
             }
-            if let snapshot, expansions[snapshot.id] == nil, !expansionFailures.contains(snapshot.id) {
-                let expansionFrom = dayCalendar.startOfDay(for: from)
-                let expansionThrough = dayCalendar.startOfDay(for: through)
-                if let configuration = try? JSONDecoder().decode(
-                    ScheduleHoursConfiguration.self,
-                    from: snapshot.configurationData
-                ),
-                   let days = try? CountdownRules.shared.expandScheduleRange(
-                    configuration: configuration,
-                    from: expansionFrom,
-                    through: expansionThrough,
-                    timeZone: covering?.timeZone
-                   ) {
-                    // First day wins. A civil calendar that skips a date (a
-                    // zone crossing the date line) can hand back two rows under
-                    // one dayKey, and `uniqueKeysWithValues` would trap on it.
-                    expansions[snapshot.id] = Dictionary(
-                        days.map {
-                            ($0.dayKey, ScheduleExpansion(isWorkday: $0.isWorkday, segments: $0.segments))
-                        },
-                        uniquingKeysWith: { first, _ in first }
-                    )
-                } else {
-                    expansionFailures.insert(snapshot.id)
-                    lastRulesError = "scheduleExpandFailed"
-                }
-            }
             let expansion: ScheduleExpansion
-            if let snapshot, expansionFailures.contains(snapshot.id) {
+            if let snapshot, expansions.failures.contains(snapshot.id) {
                 expansion = .failed
             } else {
-                expansion = snapshot.flatMap { expansions[$0.id]?[dayKey] }
+                expansion = snapshot.flatMap { expansions.bySnapshot[$0.id]?[dayKey] }
                     ?? ScheduleExpansion(isWorkday: false, segments: [])
             }
             // `cursor` is already the start of its day in `calendar`, so the
@@ -1497,10 +1602,33 @@ final class OffWorkStore {
             guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
             cursor = next
         }
-        if usesSharedCache, !result.contains(where: \.expansionFailed) {
-            resolvedDaysCache = (records.revision, start, end, result)
-        }
         return result
+    }
+
+    /// `@concurrent` is required: with approachable concurrency a plain
+    /// `nonisolated async` function still runs on its caller, so without it
+    /// this would stay on the main actor and move nothing.
+    @concurrent
+    nonisolated private static func walkResolutionsOffMainActor(
+        from start: Date,
+        through end: Date,
+        calendar: Calendar,
+        periods: [CareerPeriod],
+        snapshots: [ScheduleSnapshot],
+        exceptions: [CalendarException],
+        overrides: [DayOverride],
+        expansions: ScheduleExpansionTable
+    ) async -> [DayResolution] {
+        walkResolutions(
+            from: start,
+            through: end,
+            calendar: calendar,
+            periods: periods,
+            snapshots: snapshots,
+            exceptions: exceptions,
+            overrides: overrides,
+            expansions: expansions
+        )
     }
 
     /// Same result as `resolvedDays`, but the JavaScriptCore walk runs off the
@@ -1514,13 +1642,31 @@ final class OffWorkStore {
         let end = calendar.startOfDay(for: through)
         guard start <= end else { return [] }
 
+        guard !Task.isCancelled else { return [] }
+        let revision = records.revision
+        let timeZone = recordsTimeZone.identifier
         await prefetchScheduleExpansions(
             from: start,
             through: end,
             periods: records.state.periods,
             snapshots: records.state.snapshots
         )
-        return resolvedDays(from: from, through: through, now: now)
+        guard !Task.isCancelled else { return [] }
+        guard records.revision == revision, recordsTimeZone.identifier == timeZone else {
+            return await prepareResolvedDays(from: from, through: through, now: now)
+        }
+        let result = await resolveDaysOffMainActor(
+            from: from,
+            through: through,
+            periods: records.state.periods,
+            snapshots: records.state.snapshots,
+            usesSharedCache: true
+        )
+        guard !Task.isCancelled else { return [] }
+        guard records.revision == revision, recordsTimeZone.identifier == timeZone else {
+            return await prepareResolvedDays(from: from, through: through, now: now)
+        }
+        return result
     }
 
     /// Records month/year projection. This reuses the generated TypeScript
@@ -1538,19 +1684,31 @@ final class OffWorkStore {
             return await prepareResolvedDays(from: from, through: through, now: now)
         }
         let archive = lifeScheduleArchive(workStart: bounds.start, now: now)
+        guard !Task.isCancelled else { return [] }
+        let revision = records.revision
+        let timeZone = recordsTimeZone.identifier
         await prefetchScheduleExpansions(
             from: from,
             through: through,
             periods: archive.periods,
             snapshots: archive.snapshots
         )
-        return resolveDays(
+        guard !Task.isCancelled else { return [] }
+        guard records.revision == revision, recordsTimeZone.identifier == timeZone else {
+            return await prepareRecordsDisplayDays(from: from, through: through, now: now)
+        }
+        let result = await resolveDaysOffMainActor(
             from: from,
             through: through,
             periods: archive.periods,
             snapshots: archive.snapshots,
             usesSharedCache: false
         )
+        guard !Task.isCancelled else { return [] }
+        guard records.revision == revision, recordsTimeZone.identifier == timeZone else {
+            return await prepareRecordsDisplayDays(from: from, through: through, now: now)
+        }
+        return result
     }
 
     private func prefetchScheduleExpansions(
@@ -1564,28 +1722,24 @@ final class OffWorkStore {
         let end = calendar.startOfDay(for: through)
         guard start <= end else { return }
 
-        var seen: Set<UUID> = []
-        var cursor = start
-        while cursor <= end {
-            let covering = DayRecordResolver.period(on: cursor, from: periods)
-            let snapshot = covering.flatMap {
-                DayRecordResolver.snapshot(on: cursor, in: $0, from: snapshots)
-            }
-            if let snapshot, seen.insert(snapshot.id).inserted,
-               let configuration = try? JSONDecoder().decode(
-                ScheduleHoursConfiguration.self,
-                from: snapshot.configurationData
-               ) {
-                let dayCalendar = covering?.civilCalendar() ?? calendar
-                try? await CountdownRules.shared.prefetchExpansion(
-                    configuration: configuration,
-                    from: dayCalendar.startOfDay(for: from),
-                    through: dayCalendar.startOfDay(for: through),
-                    timeZone: covering?.timeZone
-                )
-            }
-            guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
-            cursor = next
+        for snapshot in snapshots {
+            guard !Task.isCancelled else { return }
+            guard let period = periods.first(where: { $0.id == snapshot.periodID }),
+                  period.startsOn <= end,
+                  period.endsBefore.map({ $0 > start }) ?? true,
+                  snapshot.effectiveFrom <= end,
+                  let configuration = try? JSONDecoder().decode(
+                    ScheduleHoursConfiguration.self,
+                    from: snapshot.configurationData
+                  )
+            else { continue }
+            let dayCalendar = period.civilCalendar()
+            try? await CountdownRules.shared.prefetchExpansion(
+                configuration: configuration,
+                from: dayCalendar.startOfDay(for: from),
+                through: dayCalendar.startOfDay(for: through),
+                timeZone: period.timeZone
+            )
         }
     }
 
@@ -5370,62 +5524,162 @@ final class OffWorkStore {
         return model
     }
 
-    private func buildLifeViewModel(now: Date) -> LifeViewModel? {
-        guard var profile = records.state.lifeProfile else { return nil }
+    /// What a Life build needs once the main actor has done its half: the
+    /// profile, the in-memory career archive, and every schedule expansion the
+    /// day walk will ask for. Nothing in here reads the store, so the rest of
+    /// the build does not have to run on the main actor.
+    nonisolated private struct LifeBuildInputs: Sendable {
+        var profile: LifeProfile
+        var calendar: Calendar
+        var outsideZoneDays: Set<String>
+        var workStart: Date
+        var finalDay: Date
+        var periods: [CareerPeriod]
+        var snapshots: [ScheduleSnapshot]
+        var exceptions: [CalendarException]
+        var overrides: [DayOverride]
+        var expansions: ScheduleExpansionTable
+        var observationsByDay: [String: [WorkObservation]]
+    }
+
+    /// A life with no career to walk — retirement is not after the work start —
+    /// is built from the profile's stage dates alone, and is cheap enough to
+    /// stay wherever it is asked for.
+    nonisolated private enum LifeBuildPlan: Sendable {
+        case noProfile
+        case stagesOnly(profile: LifeProfile, calendar: Calendar, outsideZoneDays: Set<String>)
+        case career(LifeBuildInputs)
+    }
+
+    /// The main-actor half of a Life build, in one place so the synchronous and
+    /// off-main-actor builders cannot drift on the guards or the archive.
+    private func lifeBuildPlan(now: Date) -> LifeBuildPlan {
+        guard var profile = records.state.lifeProfile else { return .noProfile }
         let calendar = recordsCalendar
         profile.migrateLegacyFields(calendar: calendar)
+        let outsideZoneDays = Set(daysRecordedOutsidePeriodTimeZone())
         guard let lifeStart = profile.bornOn?.calculationAnchor(in: calendar),
               let lifeEnd = profile.retirementOn?.calculationAnchor(in: calendar),
               lifeEnd > lifeStart
-        else { return nil }
+        else { return .noProfile }
         let configuredWorkStart = profile.workStartedPartial?.calculationAnchor(in: calendar)
             ?? profile.workStartedOn
             ?? calendar.date(byAdding: .year, value: 22, to: lifeStart)
             ?? now
         let workStart = max(lifeStart, configuredWorkStart)
         guard workStart < lifeEnd else {
-            var model = LifeViewCalculator.build(
+            return .stagesOnly(
                 profile: profile,
-                scheduleDays: [],
-                outsideZoneDays: Set(daysRecordedOutsidePeriodTimeZone()),
-                now: now,
-                calendar: calendar
+                calendar: calendar,
+                outsideZoneDays: outsideZoneDays
             )
-            model.income = lifeIncomeSummary(profile: profile, now: now, calendar: calendar)
-            return model
         }
-
         let archive = lifeScheduleArchive(workStart: workStart, now: now)
         let finalDay = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: lifeEnd))
             ?? lifeEnd
-        let resolved = LaunchTrace.interval("lifeResolveDays") {
-            resolveDays(
-                from: workStart,
-                through: finalDay,
+        return .career(
+            LifeBuildInputs(
+                profile: profile,
+                calendar: calendar,
+                outsideZoneDays: outsideZoneDays,
+                workStart: workStart,
+                finalDay: finalDay,
                 periods: archive.periods,
                 snapshots: archive.snapshots,
-                usesSharedCache: false
+                exceptions: records.state.exceptions,
+                overrides: records.state.overrides,
+                expansions: gatherScheduleExpansions(
+                    from: workStart,
+                    through: finalDay,
+                    periods: archive.periods,
+                    snapshots: archive.snapshots
+                ),
+                observationsByDay: observationIndex()
             )
+        )
+    }
+
+    private func buildLifeViewModel(now: Date) -> LifeViewModel? {
+        var model = Self.assembleLifePlan(lifeBuildPlan(now: now), now: now)
+        if var profile = records.state.lifeProfile {
+            profile.migrateLegacyFields(calendar: recordsCalendar)
+            model?.income = lifeIncomeSummary(profile: profile, now: now, calendar: recordsCalendar)
         }
-        let scheduleDays = LaunchTrace.interval("lifeProjectOvertime") {
-            resolved.compactMap { resolution in
-                LifeScheduleDay(
-                    resolution: resolution,
-                    overtimeSegments: overtimeSegments(on: resolution)
-                )
-            }
-        }
-        var model = LaunchTrace.interval("lifeBuildWeeks") {
-            LifeViewCalculator.build(
-                profile: profile,
-                scheduleDays: scheduleDays,
-                outsideZoneDays: Set(daysRecordedOutsidePeriodTimeZone()),
-                now: now,
-                calendar: calendar
-            )
-        }
-        model.income = lifeIncomeSummary(profile: profile, now: now, calendar: calendar)
         return model
+    }
+
+    nonisolated private static func assembleLifePlan(_ plan: LifeBuildPlan, now: Date) -> LifeViewModel? {
+        switch plan {
+        case .noProfile:
+            return nil
+        case let .stagesOnly(profile, calendar, outsideZoneDays):
+            return Self.assembleStagesOnly(
+                profile: profile,
+                calendar: calendar,
+                outsideZoneDays: outsideZoneDays,
+                now: now
+            )
+        case let .career(inputs):
+            return Self.assembleLifeViewModel(inputs, now: now)
+        }
+    }
+
+    nonisolated private static func assembleStagesOnly(
+        profile: LifeProfile,
+        calendar: Calendar,
+        outsideZoneDays: Set<String>,
+        now: Date
+    ) -> LifeViewModel {
+        LifeViewCalculator.build(
+            profile: profile,
+            scheduleDays: [],
+            outsideZoneDays: outsideZoneDays,
+            now: now,
+            calendar: calendar
+        )
+    }
+
+    /// The career walk and the week-cell assembly, with no store access left in
+    /// either. This is the ~15,700-day half.
+    nonisolated private static func assembleLifeViewModel(
+        _ inputs: LifeBuildInputs,
+        now: Date
+    ) -> LifeViewModel {
+        let scheduleDays = walkResolutions(
+            from: inputs.calendar.startOfDay(for: inputs.workStart),
+            through: inputs.calendar.startOfDay(for: inputs.finalDay),
+            calendar: inputs.calendar,
+            periods: inputs.periods,
+            snapshots: inputs.snapshots,
+            exceptions: inputs.exceptions,
+            overrides: inputs.overrides,
+            expansions: inputs.expansions
+        ).compactMap { resolution in
+            LifeScheduleDay(
+                resolution: resolution,
+                overtimeSegments: (inputs.observationsByDay[resolution.dayKey] ?? []).compactMap {
+                    RecordsMetrics.declaredOvertimeSegment(
+                        observation: $0,
+                        day: resolution,
+                        avoidingRegularWork: true
+                    )
+                }
+            )
+        }
+        return LifeViewCalculator.build(
+            profile: inputs.profile,
+            scheduleDays: scheduleDays,
+            outsideZoneDays: inputs.outsideZoneDays,
+            now: now,
+            calendar: inputs.calendar
+        )
+    }
+
+    @concurrent
+    nonisolated private static func assembleLifePlanOffMainActor(
+        _ plan: LifeBuildPlan, now: Date
+    ) async -> LifeViewModel? {
+        assembleLifePlan(plan, now: now)
     }
 
     private func lifeIncomeSummary(
@@ -5500,8 +5754,7 @@ final class OffWorkStore {
     }
 
     /// Warms every shared-rule expansion needed by Life on the background
-    /// ScheduleRangeEngine. The synchronous builder then only walks cached
-    /// results and assembles week cells on the main actor.
+    /// ScheduleRangeEngine, then builds the model off the main actor too.
     func prepareLifeViewModel(now: Date = .now) async -> LifeViewModel? {
         // Before the prefetch, not only inside the builder: decoding a
         // configuration and hopping to the range engine once per snapshot is
@@ -5549,16 +5802,25 @@ final class OffWorkStore {
         // The life canvas only needs the profile's stage dates, so it can be on
         // screen before the career is walked. Yielding lets the scale change
         // that asked for this commit its own frame first.
-        //
-        // This is ordering, not a fix: `lifeViewModel` below still resolves
-        // roughly fifteen thousand days on the main actor, which is why its
-        // result is cached — a visit to the tab pays it once rather than every
-        // time. Moving that walk off the main actor needs `DayRecordResolver`,
-        // the archive value types and `LifeViewCalculator` to be `nonisolated`,
-        // which this project's main-actor-by-default isolation makes a change
-        // across every one of those files rather than a local one.
         await Task.yield()
-        return lifeViewModel(now: now)
+        // Re-check after the awaits: another task can have built and cached the
+        // same model while the prefetch was running.
+        if let cached = lifeViewModelCache, cached.key == lifeViewModelCacheKey(now: now) {
+            return cached.model
+        }
+        guard !Task.isCancelled else { return nil }
+        let key = lifeViewModelCacheKey(now: now)
+        var model = await Self.assembleLifePlanOffMainActor(lifeBuildPlan(now: now), now: now)
+        guard !Task.isCancelled else { return nil }
+        guard key == lifeViewModelCacheKey(now: now) else {
+            return await prepareLifeViewModel(now: now)
+        }
+        if var profile = records.state.lifeProfile {
+            profile.migrateLegacyFields(calendar: recordsCalendar)
+            model?.income = lifeIncomeSummary(profile: profile, now: now, calendar: recordsCalendar)
+        }
+        lifeViewModelCache = (key, model)
+        return model
     }
 
     private func lifeScheduleArchive(

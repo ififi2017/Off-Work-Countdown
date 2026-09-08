@@ -1,7 +1,7 @@
 import Foundation
 
 /// Which layer produced a day's conclusion. Matches 002 §7 `resolvedFrom`.
-enum DayResolutionLayer: String, Codable, Sendable {
+nonisolated enum DayResolutionLayer: String, Codable, Sendable {
     case override
     case calendarException
     case schedule
@@ -10,7 +10,7 @@ enum DayResolutionLayer: String, Codable, Sendable {
 
 /// Hours the winning schedule snapshot already expanded through the shared
 /// rules. The resolver does not run a second schedule algorithm.
-struct ScheduleExpansion: Equatable, Sendable {
+nonisolated struct ScheduleExpansion: Equatable, Sendable {
     var isWorkday: Bool
     var segments: [NativeShiftSegment]
     var failed: Bool = false
@@ -19,7 +19,7 @@ struct ScheduleExpansion: Equatable, Sendable {
 }
 
 /// One day's conclusion after the three-layer chain.
-struct DayResolution: Equatable, Sendable {
+nonisolated struct DayResolution: Equatable, Sendable {
     var dayKey: String
     var shiftAnchorDate: Date
     var layer: DayResolutionLayer
@@ -47,7 +47,7 @@ struct DayResolution: Equatable, Sendable {
 /// It deliberately does not restate the chooser rules: it buckets the archive
 /// by day and asks `DayRecordResolver` itself, in the original array order, so
 /// there is still exactly one definition of which exception wins.
-struct DayRecordLookup {
+nonisolated struct DayRecordLookup: Sendable {
     private let exceptions: [String: CalendarException]
     private let overrides: [String: DayOverride]
 
@@ -98,7 +98,7 @@ struct DayRecordLookup {
 /// the winning schedule snapshot. `.cleared` on either override or exception
 /// is a fall-through, not a leftover "cleared" layer. Observations are not
 /// consulted.
-enum DayRecordResolver {
+nonisolated enum DayRecordResolver {
     static func period(on day: Date, from periods: [CareerPeriod]) -> CareerPeriod? {
         periods
             .filter { $0.covers(day) }
@@ -348,4 +348,15 @@ enum DayRecordResolver {
             expansionFailed: expansion.failed
         )
     }
+}
+
+/// Every schedule expansion a day walk needs, keyed by the snapshot that
+/// produced it. Gathering it runs the shared rules through `CountdownRules`
+/// and is main-actor by construction; walking the days with it is not, so it
+/// has to cross an isolation boundary intact.
+nonisolated struct ScheduleExpansionTable: Sendable {
+    var bySnapshot: [UUID: [String: ScheduleExpansion]] = [:]
+    /// Snapshots whose expansion failed. Every day they cover resolves as
+    /// `.failed`, which is what keeps a bad range out of the shared cache.
+    var failures: Set<UUID> = []
 }

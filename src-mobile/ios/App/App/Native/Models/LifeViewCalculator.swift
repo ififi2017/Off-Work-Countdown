@@ -1,6 +1,6 @@
 import Foundation
 
-enum LifeWeekKind: String, Sendable {
+nonisolated enum LifeWeekKind: String, Sendable {
     case childhood
     case study
     case workEstimated
@@ -26,7 +26,7 @@ enum LifeWeekKind: String, Sendable {
     }
 }
 
-struct LifeWeekCell: Equatable, Sendable, Identifiable {
+nonisolated struct LifeWeekCell: Equatable, Sendable, Identifiable {
     var id: String { "\(year)-\(weekIndex)" }
     var year: Int
     var weekIndex: Int
@@ -35,7 +35,7 @@ struct LifeWeekCell: Equatable, Sendable, Identifiable {
     var outsidePeriodTimeZone: Bool
 }
 
-struct LifeViewModel: Equatable, Sendable {
+nonisolated struct LifeViewModel: Equatable, Sendable {
     var cells: [LifeWeekCell]
     var workShare: Double
     var ownAwakeShare: Double
@@ -68,7 +68,7 @@ struct LifeViewModel: Equatable, Sendable {
 /// override / calendar-exception / schedule chain have already been applied.
 /// An absent day is an uncovered career gap; a present day with no segments is
 /// a covered rest or leave day. Life calculations never interpret schedules.
-struct LifeScheduleDay: Equatable, Sendable {
+nonisolated struct LifeScheduleDay: Equatable, Sendable {
     let periodID: UUID
     let dayKey: String
     let shiftAnchorDate: Date
@@ -108,7 +108,7 @@ struct LifeScheduleDay: Equatable, Sendable {
     }
 }
 
-enum LifeViewCalculator {
+nonisolated enum LifeViewCalculator {
     static func build(
         profile: LifeProfile,
         scheduleDays: [LifeScheduleDay],
@@ -430,7 +430,7 @@ enum LifeViewCalculator {
     }
 }
 
-enum TimeAllocationKind: String, Equatable, Hashable, Sendable, CaseIterable {
+nonisolated enum TimeAllocationKind: String, Equatable, Hashable, Sendable, CaseIterable {
     case work
     case overtime
     case workBreak
@@ -455,7 +455,7 @@ extension TimeAllocationKind {
     }
 }
 
-struct TimeAllocationShare: Equatable, Sendable {
+nonisolated struct TimeAllocationShare: Equatable, Sendable {
     var workMs: Int64
     var overtimeMs: Int64
     var breakMs: Int64 = 0
@@ -468,7 +468,7 @@ struct TimeAllocationShare: Equatable, Sendable {
     var wakingFreeMs: Int64 { breakMs + freeMs }
 }
 
-enum TimeAllocationCalculator {
+nonisolated enum TimeAllocationCalculator {
     /// Gaps inside one shift. A lunch break is the space the schedule left
     /// between two work segments, so it is derived here rather than stored.
     static func gaps(in segments: [NativeShiftSegment]) -> [NativeShiftSegment] {

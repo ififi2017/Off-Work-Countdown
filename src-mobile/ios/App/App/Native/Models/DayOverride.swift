@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Timer marks only ever produce `customSegments` or no override. Confirm,
 /// leave, and clear are records-tab actions and are not invented here.
-enum DayOverrideKind: String, Codable, Sendable {
+nonisolated enum DayOverrideKind: String, Codable, Sendable {
     /// User checked the day and it matches the schedule.
     case confirmedAsScheduled
     /// The day ran on these segments instead of the schedule default.
@@ -21,7 +21,7 @@ enum DayOverrideKind: String, Codable, Sendable {
 /// Saturday 06:00 still keys as Friday, even if the clock-off is Saturday.
 /// Persist stamps travel with the row from day one so P0B does not rewrite
 /// the identity. Timer projection leaves them unset.
-struct DayOverride: Equatable, Sendable {
+nonisolated struct DayOverride: Equatable, Sendable {
     static let schemaVersion = 1
     static let unsetTieBreaker = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
 

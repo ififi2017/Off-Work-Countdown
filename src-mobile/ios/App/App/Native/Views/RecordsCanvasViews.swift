@@ -951,27 +951,17 @@ struct RecordsYearCanvas: View {
                     }
                     .contentShape(Rectangle())
                     .gesture(
-                        SpatialTapGesture(count: 2)
-                            .exclusively(before: SpatialTapGesture())
-                            .onEnded { result in
-                                let location: CGPoint
-                                let opensMonth: Bool
-                                switch result {
-                                case .first(let value):
-                                    location = value.location
-                                    opensMonth = true
-                                case .second(let value):
-                                    location = value.location
-                                    opensMonth = false
-                                }
-                                guard let index = grid.index(at: location), buckets.indices.contains(index) else { return }
-                                let bucket = buckets[index]
-                                if opensMonth {
-                                    onOpenMonth(bucket.month)
-                                } else {
-                                    select(month: bucket.month, date: bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2))
-                                }
-                            }
+                        SpatialTapGesture().onEnded { value in
+                            guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
+                            let bucket = buckets[index]
+                            select(month: bucket.month, date: bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2))
+                        }
+                    )
+                    .simultaneousGesture(
+                        SpatialTapGesture(count: 2).onEnded { value in
+                            guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
+                            onOpenMonth(buckets[index].month)
+                        }
                     )
                     .overlay {
                         ZStack {
