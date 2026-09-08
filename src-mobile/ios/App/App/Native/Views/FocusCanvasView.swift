@@ -51,9 +51,7 @@ struct FocusCanvasView: View {
         return ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    Picker(store.t("focusScale"), selection: $scale.animation(
-                        reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter
-                    )) {
+                    Picker(store.t("focusScale"), selection: $scale) {
                         ForEach(Scale.allCases) { value in
                             Text(store.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
                                 .tag(value)
@@ -73,15 +71,23 @@ struct FocusCanvasView: View {
                         }
                     )
 
-                    switch scale {
-                    case .today: todayScale(model)
-                    case .usual: usualScale(model)
+                    VStack(alignment: .leading, spacing: 14) {
+                        switch scale {
+                        case .today: todayScale(model)
+                        case .usual: usualScale(model)
+                        }
                     }
+                    // Match Records: only the selected canvas cross-fades.
+                    // The status card and picker keep their position and identity.
+                    .id(scale)
+                    .transition(.opacity)
+                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange, value: scale)
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
-                .padding(.top, 14)
+                .padding(.top, 12)
                 .padding(.bottom, OWCDesign.detailBottomInset)
             }
+            .scrollIndicators(.hidden)
             .onChange(of: selectedBlock) { _, value in
                 guard let value else { return }
                 if reduceMotion {
@@ -219,9 +225,7 @@ struct FocusCanvasView: View {
                     // the band and select the block that took it, rather than
                     // quietly adding a row further down the page.
                     if case .placed = result {
-                        withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter) {
-                            scale = .today
-                        }
+                        scale = .today
                     }
                     apply(result)
                 },
@@ -372,7 +376,7 @@ struct FocusNowBand: View {
                     Text(store.t("focusNoShift")).font(.footnote).foregroundStyle(OWCDesign.secondary)
                 }
                 Button(store.t(store.hasFocusRoom() ? "focusAddAndStart" : "focusQuickCreate"), action: onAdd)
-                    .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
+                    .buttonStyle(OWCPrimaryButtonStyle(filled: false, minimumHeight: 44))
             }
         }
     }
