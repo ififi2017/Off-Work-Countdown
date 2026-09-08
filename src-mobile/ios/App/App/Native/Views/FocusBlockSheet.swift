@@ -46,7 +46,13 @@ struct FocusTaskEditorShell<Content: View>: View {
                     Button(store.t("cancel"), action: onCancel)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(saveTitle, action: onSave).disabled(!canSave)
+                    Button(saveTitle) {
+                        // Finish any active composition before reading the draft.
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+                        )
+                        onSave()
+                    }.disabled(!canSave)
                 }
             }
         }
@@ -62,7 +68,7 @@ struct FocusTaskEditorFields: View {
     let finish: Date?
     var referenceDate = Date.now
     var showsDate = true
-    @FocusState private var titleFocused: Bool
+    @State private var titleFocused = false
 
     var body: some View {
         Label(destination, systemImage: "calendar.badge.plus")
@@ -292,7 +298,7 @@ struct FocusTitleField: View {
     let store: OffWorkStore
     @Binding var title: String
     let icon: FocusTaskIcon
-    @FocusState.Binding var focused: Bool
+    @Binding var focused: Bool
     let placeholder: String
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -301,13 +307,11 @@ struct FocusTitleField: View {
             Image(systemName: icon.systemName)
                 .foregroundStyle(focused ? OWCDesign.accent : OWCDesign.secondary)
                 .accessibilityHidden(true)
-            TextField(placeholder, text: $title)
-                .textFieldStyle(.plain)
-                .font(.body)
-                .accessibilityLabel(store.t("focusTaskTitle"))
-                .focused($focused)
-                .textInputAutocapitalization(.sentences)
-                .submitLabel(.done)
+            FocusTaskTitleInput(
+                text: $title, placeholder: placeholder,
+                accessibilityTitle: store.t("focusTaskTitle"),
+                onFocusChange: { focused = $0 }
+            )
         }
         .padding(.horizontal, 14)
         .frame(minHeight: 56)
