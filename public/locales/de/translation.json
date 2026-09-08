@@ -861,6 +861,7 @@
   "focusBlockExisting": "Heutige Aufgaben",
   "focusBlockMakeBreak": "Als Pause festlegen",
   "focusBlockClear": "Block leeren",
+  "focusEstimatedFinish": "Voraussichtliches Ende: {{time}}",
   "focusEstimate": "Schätzung",
   "focusEstimateDetail": "{{count}} × {{minutes}} Min.",
   "focusLanding": "Wohin damit",

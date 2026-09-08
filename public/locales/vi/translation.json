@@ -861,6 +861,7 @@
   "focusBlockExisting": "Việc hôm nay",
   "focusBlockMakeBreak": "Đổi thành giờ nghỉ",
   "focusBlockClear": "Xoá ô này",
+  "focusEstimatedFinish": "Dự kiến kết thúc: {{time}}",
   "focusEstimate": "Ước tính",
   "focusEstimateDetail": "{{count}} × {{minutes}} phút",
   "focusLanding": "Đặt vào đâu",

@@ -861,6 +861,7 @@
   "focusBlockExisting": "مهام اليوم",
   "focusBlockMakeBreak": "اجعلها استراحة",
   "focusBlockClear": "أفرغ هذه الفترة",
+  "focusEstimatedFinish": "الانتهاء المتوقع: {{time}}",
   "focusEstimate": "التقدير",
   "focusEstimateDetail": "{{count}} × {{minutes}} دقيقة",
   "focusLanding": "أين توضع",

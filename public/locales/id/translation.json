@@ -861,6 +861,7 @@
   "focusBlockExisting": "Tugas hari ini",
   "focusBlockMakeBreak": "Jadikan istirahat",
   "focusBlockClear": "Kosongkan blok ini",
+  "focusEstimatedFinish": "Perkiraan selesai: {{time}}",
   "focusEstimate": "Perkiraan",
   "focusEstimateDetail": "{{count}} × {{minutes}} mnt",
   "focusLanding": "Mau ditaruh di mana",

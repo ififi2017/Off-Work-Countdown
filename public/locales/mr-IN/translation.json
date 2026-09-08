@@ -861,6 +861,7 @@
   "focusBlockExisting": "आजची कार्ये",
   "focusBlockMakeBreak": "हा विश्रांतीचा करा",
   "focusBlockClear": "हा ब्लॉक रिकामा करा",
+  "focusEstimatedFinish": "अंदाजे {{time}} वाजता पूर्ण होईल",
   "focusEstimate": "अंदाज",
   "focusEstimateDetail": "{{count}} × {{minutes}} मिनिटे",
   "focusLanding": "कुठे ठेवायचे",

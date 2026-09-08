@@ -861,6 +861,7 @@
   "focusBlockExisting": "งานวันนี้",
   "focusBlockMakeBreak": "ตั้งเป็นเวลาพัก",
   "focusBlockClear": "ล้างช่วงนี้",
+  "focusEstimatedFinish": "คาดว่าจะเสร็จเวลา {{time}}",
   "focusEstimate": "ประมาณ",
   "focusEstimateDetail": "{{count}} × {{minutes}} นาที",
   "focusLanding": "จะใส่ตรงไหน",

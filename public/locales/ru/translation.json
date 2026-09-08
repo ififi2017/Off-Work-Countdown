@@ -861,6 +861,7 @@
   "focusBlockExisting": "Задачи на сегодня",
   "focusBlockMakeBreak": "Сделать перерывом",
   "focusBlockClear": "Очистить блок",
+  "focusEstimatedFinish": "Окончание примерно в {{time}}",
   "focusEstimate": "Оценка",
   "focusEstimateDetail": "{{count}} × {{minutes}} мин",
   "focusLanding": "Куда поставить",

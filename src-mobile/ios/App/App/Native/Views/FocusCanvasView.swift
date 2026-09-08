@@ -28,6 +28,7 @@ struct FocusCanvasView: View {
     }()
     @State private var selectedBlock: Int64?
     @State private var editingBlock: FocusDayCanvasModel.Block?
+    @State private var favoriteToCreate: FocusTask?
     @State private var quickCreateLanding: FocusQuickCreateSheet.Landing?
     @State private var now = Date.now
     @State private var scrollPosition = ScrollPosition()
@@ -159,6 +160,12 @@ struct FocusCanvasView: View {
         .sheet(item: $quickCreateLanding) { landing in
             FocusQuickCreateSheet(store: store, initialLanding: landing) { result in apply(result) }
         }
+        .sheet(item: $favoriteToCreate) { favorite in
+            FocusQuickCreateSheet(store: store, initialLanding: .currentOrNextBlock, favorite: favorite) { result in
+                if case .placed = result { scale = .today }
+                apply(result)
+            }
+        }
         .sheet(isPresented: $showsTimerSettings) {
             FocusTimerSettingsSheet(store: store)
         }
@@ -285,16 +292,7 @@ struct FocusCanvasView: View {
             FocusUsualScale(
                 store: store,
                 model: model,
-                onPlaceFavorite: { favorite in
-                    let result = store.placeFavoriteInNextEmptyBlock(favorite)
-                    // The effect belongs where the change happened: switch to
-                    // the band and select the block that took it, rather than
-                    // quietly adding a row further down the page.
-                    if case .placed = result {
-                        scale = .today
-                    }
-                    apply(result)
-                },
+                onPlaceFavorite: { favoriteToCreate = $0 },
                 onEditTemplate: { editingTemplate = $0 }
             )
         }

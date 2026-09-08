@@ -861,6 +861,7 @@
   "focusBlockExisting": "오늘의 작업에서",
   "focusBlockMakeBreak": "이 블록을 휴식으로",
   "focusBlockClear": "이 블록 비우기",
+  "focusEstimatedFinish": "예상 종료: {{time}}",
   "focusEstimate": "예상",
   "focusEstimateDetail": "{{count}} × {{minutes}}분",
   "focusLanding": "어디에 넣을지",

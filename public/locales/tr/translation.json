@@ -861,6 +861,7 @@
   "focusBlockExisting": "Bugünün görevleri",
   "focusBlockMakeBreak": "Mola yap",
   "focusBlockClear": "Bu bloğu boşalt",
+  "focusEstimatedFinish": "Tahmini bitiş: {{time}}",
   "focusEstimate": "Tahmin",
   "focusEstimateDetail": "{{count}} × {{minutes}} dk",
   "focusLanding": "Nereye gitsin",

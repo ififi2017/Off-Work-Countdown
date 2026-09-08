@@ -614,3 +614,45 @@ func quickAddSchedulesCurrentOrNextBlock(duringBreak: Bool) throws {
         #expect(target.state == .current)
     }
 }
+
+@MainActor
+@Test("Creation finish matches the saved plan across occupied blocks and lunch", arguments: [1, 3, 12])
+func creationFinishMatchesPlacement(count: Int) throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 11, minute: 5))
+    let before = store.focusDayCanvas(at: at)
+    let target = try #require(before.nextEmptyBlock)
+    let future = before.blocks.filter { $0.kind == .task && $0.startAtMs > target.startAtMs }
+    let busy = try #require(future.first)
+    let other = makeTask(store, title: "Keep this task", at: at)
+    _ = store.assign(other, toBlockStartingAt: busy.startAtMs, at: at)
+    let preview = store.focusCreationFinish(pomodoros: count, startingAt: target.startAtMs, at: at)
+    let result = store.createFocusTask(title: "Finish preview", pomodoros: count,
+                                     inBlockStartingAt: target.startAtMs, scheduleAllPomodoros: true, at: at)
+    let id = placedID(result)
+    let after = store.focusDayCanvas(at: at)
+    let assigned = after.blocks.filter { $0.taskID == id }
+    #expect(assigned.first?.startAtMs == target.startAtMs)
+    #expect(after.blocks.first { $0.startAtMs == busy.startAtMs }?.taskID == other.id)
+    if assigned.count == count {
+        #expect(preview == assigned.last.map { Date(timeIntervalSince1970: Double($0.endAtMs) / 1_000) })
+    } else {
+        #expect(preview == nil)
+    }
+    #expect(store.records.state.focusTasks.first { $0.id == id }?.estimatedPomodoros == count)
+}
+
+@MainActor
+@Test("Start-now finish includes recovery and refuses an incomplete final round")
+func immediateCreationFinishUsesActualBoundaries() throws {
+    let store = try canvasStore()
+    store.countdownStarted = true
+    let at = try #require(day(store, hour: 10, minute: 5))
+    #expect(store.hasFocusRoom(at: at))
+    let firstEnd = try #require(store.focusCreationFinish(pomodoros: 1, startingAt: nil, startNow: true, at: at))
+    #expect(firstEnd == at.addingTimeInterval(TimeInterval(store.focusTimerSettings.normalized.focusMinutes * 60)))
+    let twoEnd = try #require(store.focusCreationFinish(pomodoros: 2, startingAt: nil, startNow: true, at: at))
+    #expect(twoEnd > firstEnd.addingTimeInterval(TimeInterval(store.focusTimerSettings.normalized.focusMinutes * 60)))
+    let late = try #require(day(store, hour: 17, minute: 59))
+    #expect(store.focusCreationFinish(pomodoros: 12, startingAt: nil, startNow: true, at: late) == nil)
+}

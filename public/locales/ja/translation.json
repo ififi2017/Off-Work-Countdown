@@ -861,6 +861,7 @@
   "focusBlockExisting": "今日のタスクから",
   "focusBlockMakeBreak": "このブロックを休憩にする",
   "focusBlockClear": "このブロックを空にする",
+  "focusEstimatedFinish": "終了予定 {{time}}",
   "focusEstimate": "見積もり",
   "focusEstimateDetail": "{{count}} × {{minutes}} 分",
   "focusLanding": "どこに入れる",

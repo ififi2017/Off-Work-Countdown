@@ -861,6 +861,7 @@
   "focusBlockExisting": "今天已有的任务",
   "focusBlockMakeBreak": "把这一格设为休息",
   "focusBlockClear": "清空这一格",
+  "focusEstimatedFinish": "预计 {{time}} 结束",
   "focusEstimate": "估算",
   "focusEstimateDetail": "{{count}} × {{minutes}} 分钟",
   "focusLanding": "放在哪里",

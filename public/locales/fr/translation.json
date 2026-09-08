@@ -861,6 +861,7 @@
   "focusBlockExisting": "Tâches du jour",
   "focusBlockMakeBreak": "En faire une pause",
   "focusBlockClear": "Vider ce bloc",
+  "focusEstimatedFinish": "Fin prévue : {{time}}",
   "focusEstimate": "Estimation",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Où la placer",

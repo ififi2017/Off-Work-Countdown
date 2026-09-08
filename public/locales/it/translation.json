@@ -861,6 +861,7 @@
   "focusBlockExisting": "Attività di oggi",
   "focusBlockMakeBreak": "Rendila una pausa",
   "focusBlockClear": "Svuota questo blocco",
+  "focusEstimatedFinish": "Fine prevista: {{time}}",
   "focusEstimate": "Stima",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Dove va",
