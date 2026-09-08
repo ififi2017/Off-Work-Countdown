@@ -256,7 +256,8 @@ struct FocusUsualScale: View {
 struct FocusTemplateEditorView: View {
     let store: OffWorkStore
     @State var draft: FocusTemplateDraft
-    @State private var editingIndex: Int?
+    @State private var editingBlock: FocusDayCanvasModel.Block?
+    @FocusState private var titleFocused: Bool
     @State private var selectedFavoriteID: UUID?
     @State private var newTitle = ""
     @State private var newIcon = FocusTaskIcon.focus
@@ -293,7 +294,6 @@ struct FocusTemplateEditorView: View {
         let canvas = templateCanvas(from: store.focusDayCanvas())
         let emptyWorkBlocks = canvas.blocks.count { $0.kind == .task && !$0.isUserBreak && $0.taskTitle == nil }
         return NavigationStack {
-            ScrollViewReader { proxy in
             OWCContentSizedScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     OWCGroupCard {
@@ -319,17 +319,13 @@ struct FocusTemplateEditorView: View {
                         selectedBlock: .constant(nil)
                     ) { block in
                         selectedFavoriteID = nil
-                        editingIndex = editingIndex == block.index ? nil : block.index
+                        editingBlock = block
+                        pomodoros = 1
                         newTitle = draft.slots.first { $0.blockIndex == block.index }?.taskTitle ?? ""
                         newIcon = draft.slots.first { $0.blockIndex == block.index }?.taskIcon ?? .focus
                         let key = draft.slots.first { $0.blockIndex == block.index }?.taskKey
                         isFavorite = key.flatMap { favoriteChanges[$0] }
                             ?? (store.savedFocusFavorite(title: newTitle, icon: newIcon) != nil)
-                    }
-
-                    if let editingIndex {
-                        slotEditor(editingIndex)
-                            .id("slotEditor")
                     }
 
                     if emptyWorkBlocks > 0 {
@@ -347,10 +343,6 @@ struct FocusTemplateEditorView: View {
                 .padding(.top, 14)
                 .padding(.bottom, OWCDesign.detailBottomInset)
             }
-            .onChange(of: editingIndex) {
-                if editingIndex != nil { proxy.scrollTo("slotEditor", anchor: .center) }
-            }
-            }
             .background(OWCDesign.page)
             .navigationTitle(store.t("focusUsualDay"))
             .navigationBarTitleDisplayMode(.inline)
@@ -365,6 +357,27 @@ struct FocusTemplateEditorView: View {
                 }
             }
 
+        }
+        .sheet(item: $editingBlock) { block in
+            NavigationStack {
+                OWCContentSizedScrollView {
+                    slotEditor(block.index)
+                        .padding(.horizontal, OWCDesign.pageInset)
+                        .padding(.bottom, OWCDesign.detailBottomInset)
+                }
+                .background(OWCDesign.page)
+                .navigationTitle(
+                    "\(store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000))) – \(store.formatTime(Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000)))"
+                )
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(store.t("close")) { editingBlock = nil }
+                    }
+                }
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 
@@ -390,18 +403,18 @@ struct FocusTemplateEditorView: View {
                 .font(.headline)
                 Button(store.t("focusBlockClear"), role: .destructive) {
                     draft.slots.removeAll { $0.blockIndex == blockIndex }
-                    editingIndex = nil
+                    editingBlock = nil
                 }
                 .buttonStyle(OWCSecondaryButtonStyle())
             } else {
-                TextField(store.t("focusBlockNewPlaceholder"), text: $newTitle)
-                    .textFieldStyle(.plain)
-                    .padding(.horizontal, 14)
-                    .frame(minHeight: 56)
-                    .background(
-                        OWCDesign.control,
-                        in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous)
-                    )
+                OWCSectionHeader(title: store.t("focusBlockWhat"))
+                FocusTitleField(
+                    store: store,
+                    title: $newTitle,
+                    icon: newIcon,
+                    focused: $titleFocused,
+                    placeholder: store.t("focusBlockNewPlaceholder")
+                )
                 Stepper(store.t("focusEstimate") + " · \(pomodoros)", value: $pomodoros,
                         in: 1...max(pomodoros, draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count))
                 FocusFavoritePicker(store: store, title: $newTitle, icon: $newIcon, selectedID: $selectedFavoriteID) { favorite in
@@ -412,7 +425,7 @@ struct FocusTemplateEditorView: View {
                 FocusTaskIconPicker(store: store, selection: $newIcon)
                 Button(store.t("saveAction")) {
                     setSlot(blockIndex, title: newTitle, icon: newIcon)
-                    editingIndex = nil
+                    editingBlock = nil
                 }
                 .buttonStyle(OWCPrimaryButtonStyle())
                 .disabled(newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -423,7 +436,7 @@ struct FocusTemplateEditorView: View {
                         blockIndex: blockIndex, kind: .breakTime,
                         taskKey: nil, taskTitle: nil, taskIcon: nil
                     ))
-                    editingIndex = nil
+                    editingBlock = nil
                 }
                 .buttonStyle(OWCSecondaryButtonStyle())
             }
