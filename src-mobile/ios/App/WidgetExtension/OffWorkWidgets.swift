@@ -16,10 +16,8 @@ struct OffWorkLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: OffWorkActivityAttributes.self) { context in
             LockScreenActivityView(context: context)
-                // White type needs a stable dark backing when this presentation
-                // is mirrored over a light Mac desktop or document.
-                .activityBackgroundTint(Color.black.opacity(0.82))
-                .activitySystemActionForegroundColor(.white)
+                .activityBackgroundTint(nil)
+                .activitySystemActionForegroundColor(.primary)
                 .widgetURL(activityDestination(context))
         } dynamicIsland: { context in
             DynamicIsland {
@@ -156,7 +154,7 @@ private struct LockScreenActivityView: View {
                         .minimumScaleFactor(0.8)
                         .font(.system(size: 13, weight: .semibold))
                         .tracking(0.25)
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundStyle(.secondary)
                     Spacer()
                     // A block nobody has started has no end worth printing —
                     // its hero already shows the hour it begins.
@@ -171,7 +169,7 @@ private struct LockScreenActivityView: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                             .font(.system(size: 13).monospacedDigit())
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(.secondary)
                             .environment(\.locale, activityLocale(context))
                     }
                 }
@@ -179,28 +177,28 @@ private struct LockScreenActivityView: View {
                     // The button has no text baseline of its own, so only the
                     // countdown and its caption share one.
                     HStack(alignment: .lastTextBaseline, spacing: 10) {
-                        activityCountdownText(context, now: timeline.date, size: 44, minutesOnly: isLuminanceReduced)
+                        activityCountdownText(context, now: timeline.date, size: 44, minutesOnly: isLuminanceReduced, foreground: .primary)
                         if !activityIsFocus(context), let caption = activityCaption(context, at: timeline.date) {
                             Text(caption)
                                 .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(.secondary)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.7)
                         }
                     }
                     Spacer(minLength: 8)
                     if !activityComplete(context, at: timeline.date) {
-                        AddPomodoroButton(state: context.state, now: timeline.date)
+                        AddPomodoroButton(state: context.state, now: timeline.date, startAtMs: leg?.startAtMs ?? context.attributes.shiftStartAtMs)
                         if let label = context.state.stopFocusLabel,
                            leg?.surface == "focus", leg?.isPreview != true {
-                            Button(intent: StopFocusActivityIntent(startAtMs: leg?.startAtMs ?? context.attributes.shiftStartAtMs)) {
+                            Link(destination: focusActionURL(.stop, startAtMs: leg?.startAtMs ?? context.attributes.shiftStartAtMs)) {
                                 Image(systemName: "stop.fill")
                                     .font(.system(size: 15, weight: .semibold))
                                     .frame(width: 44, height: 44)
-                                    .background(.white.opacity(0.22), in: .circle)
+                                    .background(.primary.opacity(0.12), in: .circle)
                             }
                             .buttonStyle(.plain)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                             .fixedSize()
                             .accessibilityLabel(label)
                         }
@@ -231,7 +229,7 @@ private struct LockScreenActivityView: View {
                         }
                     }
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(.secondary)
                     .padding(.top, 10)
                 }
             }
@@ -241,7 +239,7 @@ private struct LockScreenActivityView: View {
     }
 }
 
-/// One more block for the running task, without unlocking the phone.
+/// Opens the running task in the app to choose and confirm additional blocks.
 ///
 /// The trailing edge of the hero row is where the system's own timer puts its
 /// controls, so this is the ordinary place for it rather than an invention.
@@ -251,20 +249,20 @@ private struct LockScreenActivityView: View {
 private struct AddPomodoroButton: View {
     let state: OffWorkActivityAttributes.ContentState
     let now: Date
+    let startAtMs: Int64
 
     var body: some View {
         if state.showsAddPomodoro(atMs: Int64(now.timeIntervalSince1970 * 1_000)),
            let label = state.addPomodoroLabel {
-            Button(intent: AddFocusPomodoroIntent()) {
+            Link(destination: focusActionURL(.addPomodoros, startAtMs: startAtMs)) {
                 Image(systemName: "plus")
                     .font(.system(size: 15, weight: .semibold))
-                    .frame(width: 34, height: 34)
-                    .background(.white.opacity(state.addPomodoroEnabled ? 0.28 : 0.14), in: .circle)
                     .frame(width: 44, height: 44)
+                    .background(.primary.opacity(0.12), in: .circle)
                     .contentShape(.rect)
             }
             .buttonStyle(.plain)
-            .foregroundStyle(.white.opacity(state.addPomodoroEnabled ? 1 : 0.55))
+            .foregroundStyle(.primary)
             .disabled(!state.addPomodoroEnabled)
             .accessibilityLabel(label)
             // The timer text beside it reports an ideal width far wider than
@@ -617,12 +615,13 @@ private func activityCountdownText(
     _ context: ActivityViewContext<OffWorkActivityAttributes>,
     now: Date,
     size: CGFloat,
-    minutesOnly: Bool = false
+    minutesOnly: Bool = false,
+    foreground: Color = .white
 ) -> some View {
     if activityComplete(context, at: now) {
         Text(context.state.chainDoneCaption ?? context.state.completedCaption)
             .font(.system(size: activityIsFocus(context) ? min(size, 22) : size, weight: activityIsFocus(context) ? .semibold : .bold))
-            .foregroundStyle(.white)
+            .foregroundStyle(foreground)
             .lineLimit(1)
             .minimumScaleFactor(0.58)
     } else if let leg = activityLeg(context, at: now), leg.isPreview {
@@ -630,7 +629,7 @@ private func activityCountdownText(
         // a running countdown here would be a claim that it began.
         Text(Date(timeIntervalSince1970: Double(leg.startAtMs) / 1_000), style: .time)
             .font(.system(size: size, weight: .bold).monospacedDigit())
-            .foregroundStyle(.white)
+            .foregroundStyle(foreground)
             .environment(\.locale, activityLocale(context))
             .lineLimit(1)
             .minimumScaleFactor(0.58)
@@ -638,13 +637,13 @@ private func activityCountdownText(
         let minutes = max(0, Int(ceil(activityEnd(context, at: now).timeIntervalSince(now) / 60)))
         Text(Duration.seconds(minutes * 60).formatted(.units(allowed: [.minutes], width: .wide).locale(activityLocale(context))))
             .font(.system(size: min(size, 34), weight: .bold).monospacedDigit())
-            .foregroundStyle(.white)
+            .foregroundStyle(foreground)
             .lineLimit(1)
             .minimumScaleFactor(0.7)
     } else {
         Text(timerInterval: now...max(now, activityEnd(context, at: now)), countsDown: true)
             .font(.system(size: size, weight: .bold).monospacedDigit())
-            .foregroundStyle(.white)
+            .foregroundStyle(foreground)
             // Live Activities run in the Widget extension, whose process
             // locale can differ from the language selected inside the app.
             // Always-On Display may replace the seconds timer with a coarse
@@ -704,11 +703,16 @@ private func activityProgress(_ context: ActivityViewContext<OffWorkActivityAttr
 
 private func activityProgress(_ progress: Double) -> some View {
     GeometryReader { proxy in
-        Capsule().fill(.white.opacity(0.22))
+        Capsule().fill(.primary.opacity(0.16))
             .overlay(alignment: .leading) {
                 Capsule().fill(activityOrange)
                     .frame(width: proxy.size.width * min(1, max(0, progress / 100)))
             }
     }
     .frame(height: 6)
+}
+
+private func focusActionURL(_ action: FocusActivityRequest.Action, startAtMs: Int64) -> URL {
+    // Only a fixed action and an integer enter this URL; no task title or salary.
+    URL(string: "offworkcountdown://focus?action=\(action.rawValue)&start=\(startAtMs)")!
 }

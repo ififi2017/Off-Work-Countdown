@@ -397,6 +397,7 @@ struct CompletedShiftDesignView: View {
     let now: Date
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var celebrationBurst = 0
     @State private var celebrationHaptics: Task<Void, Never>?
     var body: some View {
@@ -405,7 +406,7 @@ struct CompletedShiftDesignView: View {
             // portrait stack does not fit in it — the actions fell off the
             // bottom. Two columns instead: the instrument on the left, the
             // figures and actions on the right.
-            if proxy.size.width > proxy.size.height {
+            if verticalSizeClass == .compact {
                 HStack(spacing: 20) {
                     hero
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -429,18 +430,24 @@ struct CompletedShiftDesignView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
             } else {
-                VStack(spacing: 0) {
-                    hero
-                    if let note = store.earlyClockOffNote(for: snapshot) {
-                        EarlyClockOffBanner(store: store, note: note)
-                            .padding(.horizontal, OWCDesign.pageInset)
-                            .padding(.top, 16)
+                ScrollView {
+                    VStack(spacing: 0) {
+                        hero
+                        if let note = store.earlyClockOffNote(for: snapshot) {
+                            EarlyClockOffBanner(store: store, note: note)
+                                .padding(.horizontal, OWCDesign.pageInset)
+                                .padding(.top, 16)
+                        }
+                        todayInFullSection.padding(.top, 30)
+                        earningsCard.padding(.top, 16)
+                        actions.padding(.top, 24)
                     }
-                    todayInFullSection.padding(.top, 26)
-                    earningsCard.padding(.top, 16)
-                    Spacer(minLength: 8)
-                    actions
+                    .frame(maxWidth: 560)
+                    .padding(.vertical, 16)
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
                 }
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollIndicators(.hidden)
             }
         }
         .overlay { OWCConfettiOverlay(burst: celebrationBurst) }
@@ -467,17 +474,13 @@ struct CompletedShiftDesignView: View {
                 Text(store.t("nextShiftIn", values: [
                     "time": store.formatRelativeDuration(nextDate.timeIntervalSince(now) * 1_000),
                 ]))
-                    .font(.title2.weight(.semibold).monospacedDigit())
+                    .font(.body.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.72)
+                    .multilineTextAlignment(.center)
                     .padding(.horizontal, OWCDesign.contentInset)
                     .padding(.top, 12)
             }
 
-            OWCProgressMeter(progress: completedProgress, label: store.t("progress"))
-                .padding(.horizontal, OWCDesign.contentInset)
-                .padding(.top, 3)
         }
     }
 
@@ -620,7 +623,6 @@ struct CompletedShiftDesignView: View {
     }
     private var finishedSnapshot: NativeShiftSnapshot { store.clockOffSnapshot(for: snapshot) }
     private var workedDurationMs: Double { endedEarly ? finishedSnapshot.elapsedMs : snapshot.durationMs }
-    private var completedProgress: Double { endedEarly ? finishedSnapshot.progress : 100 }
     private var earned: Double? { finishedSnapshot.earnedSoFar }
     private var nextShiftRange: String {
         guard let start = snapshot.nextShiftStartDate, let end = snapshot.nextShiftEndDate else { return "—" }

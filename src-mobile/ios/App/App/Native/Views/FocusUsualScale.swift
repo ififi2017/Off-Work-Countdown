@@ -1,5 +1,64 @@
 import SwiftUI
 
+/// Synthetic examples only; previewing Plus never reads or edits saved tasks.
+struct FocusLockedUsualScale: View {
+    let store: OffWorkStore
+
+    private let samples: [(key: String, icon: FocusTaskIcon)] = [
+        ("focusDemoWriting", .writing),
+        ("focusDemoMessages", .communication),
+        ("focusDemoLearning", .study)
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 8) {
+                OWCSectionHeader(title: store.t("focusFavoritesPlace"))
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
+                        ForEach(samples, id: \.key) { sample in
+                            Button { store.presentedRoute = .plus } label: {
+                                Label(store.t(sample.key), systemImage: sample.icon.systemName)
+                                    .font(.callout.weight(.medium))
+                                    .foregroundStyle(OWCDesign.primary)
+                                    .lineLimit(2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 10)
+                                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                                    .background(OWCDesign.card, in: RoundedRectangle(cornerRadius: 14))
+                                    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(OWCDesign.separator, lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                }
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                OWCSectionHeader(title: store.t("focusUsualDays"))
+                OWCGroupCard {
+                    Button { store.presentedRoute = .plus } label: {
+                        OWCRow(
+                            icon: "star.fill",
+                            title: store.t("focusUsualDayDefaultName"),
+                            subtitle: store.t("focusTemplateSlots", values: ["count": "4"])
+                                + " · " + store.t("focusTemplateAuto"),
+                            isLast: true
+                        ) {
+                            Image(systemName: "chevron.right")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(OWCDesign.tertiary)
+                        }
+                    }
+                    .buttonStyle(OWCRowButtonStyle())
+                }
+            }
+            Text(store.t("focusCadenceNote"))
+                .font(.caption)
+                .foregroundStyle(OWCDesign.secondary)
+                .padding(.horizontal, 6)
+        }
+    }
+}
+
 /// What the editor was opened for.
 struct FocusTemplateDraft: Identifiable {
     var id: UUID { template?.id ?? newID }
@@ -63,26 +122,31 @@ struct FocusUsualScale: View {
         if !favorites.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 OWCSectionHeader(title: store.t("focusFavoritesPlace"))
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                         ForEach(favorites) { task in
                             Button { onPlaceFavorite(task) } label: {
                                 Label(task.title, systemImage: "star.fill")
                                     .font(.callout.weight(.medium))
                                     .foregroundStyle(OWCDesign.primary)
-                                    .padding(.horizontal, 16)
-                                    .frame(minHeight: 44)
-                                    .background(OWCDesign.card, in: Capsule())
-                                    .overlay(Capsule().strokeBorder(OWCDesign.separator, lineWidth: 1))
+                                    .lineLimit(2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 10)
+                                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                                    .background(OWCDesign.card, in: RoundedRectangle(cornerRadius: 14))
+                                    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(OWCDesign.separator, lineWidth: 1))
                             }
                             .buttonStyle(.plain)
                             // Says where it will land, so the tap is not a
                             // guess. The old chip copied the task into a list
                             // further down the page and looked inert.
                             .accessibilityHint(landingHint)
+                            .contextMenu {
+                                Button(store.t("focusRemoveFavorite"), systemImage: "trash", role: .destructive) {
+                                    store.toggleFocusFavorite(task)
+                                }
+                            }
                         }
-                    }
-                    .padding(.horizontal, 2)
                 }
                 Text(landingHint)
                     .font(.caption)
@@ -193,6 +257,7 @@ struct FocusTemplateEditorView: View {
     let store: OffWorkStore
     @State var draft: FocusTemplateDraft
     @State private var editingIndex: Int?
+    @State private var selectedFavoriteID: UUID?
     @State private var newTitle = ""
     @State private var newIcon = FocusTaskIcon.focus
     @State private var pomodoros = 1
@@ -228,6 +293,7 @@ struct FocusTemplateEditorView: View {
         let canvas = templateCanvas(from: store.focusDayCanvas())
         let emptyWorkBlocks = canvas.blocks.count { $0.kind == .task && !$0.isUserBreak && $0.taskTitle == nil }
         return NavigationStack {
+            ScrollViewReader { proxy in
             OWCContentSizedScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     OWCGroupCard {
@@ -252,13 +318,18 @@ struct FocusTemplateEditorView: View {
                         model: canvas,
                         selectedBlock: .constant(nil)
                     ) { block in
-                        editingIndex = block.index
-                        pomodoros = draft.taskIndices(at: block.index).count
+                        selectedFavoriteID = nil
+                        editingIndex = editingIndex == block.index ? nil : block.index
                         newTitle = draft.slots.first { $0.blockIndex == block.index }?.taskTitle ?? ""
                         newIcon = draft.slots.first { $0.blockIndex == block.index }?.taskIcon ?? .focus
                         let key = draft.slots.first { $0.blockIndex == block.index }?.taskKey
                         isFavorite = key.flatMap { favoriteChanges[$0] }
                             ?? (store.savedFocusFavorite(title: newTitle, icon: newIcon) != nil)
+                    }
+
+                    if let editingIndex {
+                        slotEditor(editingIndex)
+                            .id("slotEditor")
                     }
 
                     if emptyWorkBlocks > 0 {
@@ -276,6 +347,10 @@ struct FocusTemplateEditorView: View {
                 .padding(.top, 14)
                 .padding(.bottom, OWCDesign.detailBottomInset)
             }
+            .onChange(of: editingIndex) {
+                if editingIndex != nil { proxy.scrollTo("slotEditor", anchor: .center) }
+            }
+            }
             .background(OWCDesign.page)
             .navigationTitle(store.t("focusUsualDay"))
             .navigationBarTitleDisplayMode(.inline)
@@ -289,12 +364,7 @@ struct FocusTemplateEditorView: View {
                                   || draft.slots.isEmpty)
                 }
             }
-            .sheet(item: Binding(
-                get: { editingIndex.map { FocusEditableSlot(blockIndex: $0) } },
-                set: { if $0 == nil { editingIndex = nil } }
-            )) { slot in
-                slotSheet(slot.blockIndex)
-            }
+
         }
     }
 
@@ -310,78 +380,55 @@ struct FocusTemplateEditorView: View {
         ])
     }
 
-    private func slotSheet(_ blockIndex: Int) -> some View {
-        NavigationStack {
-            OWCContentSizedScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    TextField(store.t("focusBlockNewPlaceholder"), text: $newTitle)
-                        .textFieldStyle(.plain)
-                        .padding(.horizontal, 14)
-                        .frame(minHeight: 56)
-                        .background(
-                            OWCDesign.control,
-                            in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous)
-                        )
-                    OWCGroupCard {
-                        OWCRow(
-                            icon: "number",
-                            title: store.t("focusEstimate"),
-                            subtitle: store.t("focusEstimateDetail", values: [
-                                "count": "\(pomodoros)",
-                                "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
-                            ]),
-                            isLast: true
-                        ) {
-                            Stepper("", value: $pomodoros,
-                                    in: 1...max(pomodoros, draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count))
-                                .labelsHidden()
-                                .accessibilityLabel(store.t("focusEstimate"))
-                                .accessibilityValue(store.formatCount(pomodoros))
-                        }
-                    }
-                    if pomodoros > draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count {
-                        Text(store.t("focusNoRoomThisShift"))
-                            .font(.footnote)
-                            .foregroundStyle(OWCDesign.secondary)
-                    }
-                    FocusFavoritePicker(store: store) { favorite in
-                        newTitle = favorite.title
-                        newIcon = favorite.icon
-                        pomodoros = favorite.estimatedPomodoros
-                        isFavorite = true
-                    }
-                    FocusTaskIconPicker(store: store, selection: $newIcon)
-                    FocusFavoriteToggle(store: store, isFavorite: $isFavorite)
-                    Button(store.t("saveAction")) {
-                        setSlot(blockIndex, title: newTitle, icon: newIcon)
-                        editingIndex = nil
-                    }
-                    .buttonStyle(OWCPrimaryButtonStyle())
-                    .disabled(newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                              || pomodoros > draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count)
-                    Button(store.t("focusBlockMakeBreak")) {
-                        draft.slots.removeAll { $0.blockIndex == blockIndex }
-                        draft.slots.append(FocusTemplateSlot(
-                            blockIndex: blockIndex, kind: .breakTime,
-                            taskKey: nil, taskTitle: nil, taskIcon: nil
-                        ))
-                        editingIndex = nil
-                    }
-                    .buttonStyle(OWCSecondaryButtonStyle())
-                    Button(store.t("focusBlockClear"), role: .destructive) {
-                        draft.slots.removeAll { $0.blockIndex == blockIndex }
-                        editingIndex = nil
-                    }
-                    .buttonStyle(OWCSecondaryButtonStyle())
+    private func slotEditor(_ blockIndex: Int) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if let slot = draft.slots.first(where: { $0.blockIndex == blockIndex }) {
+                Label(
+                    slot.kind == .breakTime ? store.t("focusBreak") : (slot.taskTitle ?? store.t("focusTaskTitle")),
+                    systemImage: slot.kind == .breakTime ? "cup.and.saucer.fill" : (slot.taskIcon ?? .focus).systemName
+                )
+                .font(.headline)
+                Button(store.t("focusBlockClear"), role: .destructive) {
+                    draft.slots.removeAll { $0.blockIndex == blockIndex }
+                    editingIndex = nil
                 }
-                .padding(.horizontal, OWCDesign.pageInset)
-                .padding(.top, 14)
+                .buttonStyle(OWCSecondaryButtonStyle())
+            } else {
+                TextField(store.t("focusBlockNewPlaceholder"), text: $newTitle)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 56)
+                    .background(
+                        OWCDesign.control,
+                        in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous)
+                    )
+                Stepper(store.t("focusEstimate") + " · \(pomodoros)", value: $pomodoros,
+                        in: 1...max(pomodoros, draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count))
+                FocusFavoritePicker(store: store, title: $newTitle, icon: $newIcon, selectedID: $selectedFavoriteID) { favorite in
+                    pomodoros = favorite.estimatedPomodoros
+                    isFavorite = true
+                }
+                FocusFavoriteToggle(store: store, isFavorite: $isFavorite)
+                FocusTaskIconPicker(store: store, selection: $newIcon)
+                Button(store.t("saveAction")) {
+                    setSlot(blockIndex, title: newTitle, icon: newIcon)
+                    editingIndex = nil
+                }
+                .buttonStyle(OWCPrimaryButtonStyle())
+                .disabled(newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                          || pomodoros > draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count)
+                Button(store.t("focusBlockMakeBreak")) {
+                    draft.slots.removeAll { $0.blockIndex == blockIndex }
+                    draft.slots.append(FocusTemplateSlot(
+                        blockIndex: blockIndex, kind: .breakTime,
+                        taskKey: nil, taskTitle: nil, taskIcon: nil
+                    ))
+                    editingIndex = nil
+                }
+                .buttonStyle(OWCSecondaryButtonStyle())
             }
-            .background(OWCDesign.page)
-            .navigationTitle(store.t("focusBlockWhat"))
-            .navigationBarTitleDisplayMode(.inline)
         }
-        .presentationDetents([.medium, .large])
+        .padding(.vertical, 14)
     }
 
     private func setSlot(_ blockIndex: Int, title: String, icon: FocusTaskIcon) {
@@ -418,9 +465,4 @@ struct FocusTemplateEditorView: View {
         }
         dismiss()
     }
-}
-
-private struct FocusEditableSlot: Identifiable {
-    let blockIndex: Int
-    var id: Int { blockIndex }
 }

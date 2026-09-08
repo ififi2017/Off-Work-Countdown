@@ -1007,5 +1007,7 @@
   "focusActivityAddPomodoro": "Pomodoro ekle",
   "focusBreakUntil": "{{time}} saatine kadar {{count}} dk mola",
   "focusBreakOver": "Mola bitti",
-  "focusActivityDayDone": "Bugünkü tüm görevler tamamlandı"
+  "focusActivityDayDone": "Bugünkü tüm görevler tamamlandı",
+  "focusAddPomodoroCapacity": "Sonraki görev veya vardiya bitiminden önce en fazla {{count}} pomodoro ekleyebilirsin.",
+  "focusAddPomodoroCount": "Eklenecek sayı"
 }

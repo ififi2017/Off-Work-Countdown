@@ -19,6 +19,7 @@ struct RecordDayIndexEntry: Equatable, Sendable, Identifiable {
 
 enum AppTab: String, CaseIterable, Hashable, Identifiable {
     case timer
+    case focus
     case records
     case settings
 
@@ -333,6 +334,7 @@ final class OffWorkStore {
     /// pushed page survives a rotation — portrait and landscape are separate
     /// view trees, and each used to own its own path. Not persisted.
     var timerPath: [AppRoute] = []
+    var focusPath: [AppRoute] = []
     var recordsPath: [RecordsRoute] = []
     var settingsPath: [AppRoute] = []
     /// The paywall a gated action asked for, presented as a sheet by the root
@@ -354,12 +356,14 @@ final class OffWorkStore {
         get {
             switch selectedTab {
             case .timer: timerPath
+            case .focus: focusPath
             case .records: []
             case .settings: settingsPath
             }
         }
         set {
             switch selectedTab {
+            case .focus: focusPath = newValue
             case .timer: timerPath = newValue
             case .records: break
             case .settings: settingsPath = newValue
@@ -903,6 +907,10 @@ final class OffWorkStore {
            let requestedTheme = AppTheme(rawValue: requestedTheme) {
             theme = requestedTheme
         }
+        if let requestedLanguage = launchPreferences[Key.languageOverride] as? String,
+           NativeLocalizer.supportedLanguages.contains(where: { $0.id == requestedLanguage }) {
+            languageOverride = requestedLanguage
+        }
 #endif
         cloudSync.attach(records: self.records)
         carryIncompleteFocusTasks(at: .now)
@@ -913,10 +921,11 @@ final class OffWorkStore {
                 // Keep this behind DEBUG so release launches never synthesize
                 // user tasks or history.
                 _ = debugSeedSampleRecords()
-                selectedTab = .settings
+                openFocusTab()
+            } else {
+                settingsPath = [debugRoute]
             }
             defaults.removeObject(forKey: Key.qaRoute)
-            settingsPath = [debugRoute]
         }
         if let debugRecordsRoute {
             defaults.removeObject(forKey: Key.qaRecordsRoute)
@@ -4998,7 +5007,7 @@ final class OffWorkStore {
         case .presentAddFocus:
             presentAddFocus = true
         case .openFocus:
-            presentedRoute = .focus
+            openFocusTab()
         case .enableCycleEndSummaryNotifications:
             cycleEndSummaryNotificationEnabled = true
         case .enableSync:
@@ -6168,6 +6177,7 @@ final class OffWorkStore {
     }
 
     var focusRejectedNoRoom = false
+    var focusActivityRequest: FocusActivityRequest?
     private(set) var focusLastNextAction: FocusNextAction = .none
     private(set) var focusNotificationIssue: FocusNotificationIssue?
     @ObservationIgnored private var focusNotificationGeneration: UInt64 = 0
@@ -6626,11 +6636,19 @@ final class OffWorkStore {
         return true
     }
 
-    private func restoreFocusNextActionFromHistory() {
+    private func restoreFocusNextActionFromHistory(at date: Date) {
         guard activeFocusSession() == nil else { return }
         guard let latest = records.state.focusSessions
             .filter({ $0.endedAt != nil })
             .max(by: { ($0.endedAt ?? $0.startedAt) < ($1.endedAt ?? $1.startedAt) })
+        else {
+            focusLastNextAction = .none
+            return
+        }
+        // A prior shift's recovery prompt is history, not today's next action.
+        guard let shift = snapshot(at: date),
+              RecordJSON.dayKey(latest.shiftAnchorDate, calendar: recordsCalendar)
+                == RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
         else {
             focusLastNextAction = .none
             return
@@ -6662,7 +6680,7 @@ final class OffWorkStore {
             focusExpiryTask = nil
             focusNotificationGeneration &+= 1
             Task { await NotificationService.cancelAllFocusTimers() }
-            restoreFocusNextActionFromHistory()
+            restoreFocusNextActionFromHistory(at: date)
             return
         }
         for var losing in open.dropFirst() {
@@ -6673,7 +6691,7 @@ final class OffWorkStore {
         }
         if winner.plannedEndAt <= date {
             _ = finishElapsedFocusSession(at: date)
-            restoreFocusNextActionFromHistory()
+            restoreFocusNextActionFromHistory(at: date)
         } else {
             focusLastNextAction = .none
             scheduleFocusExpiry(for: winner)

@@ -11,27 +11,26 @@ import Foundation
 @MainActor
 enum FocusActivityActions {
     static var stopFocus: (@MainActor (Int64) async -> Void)?
-    static var addPomodoro: (@MainActor () async -> Void)?
+    static var addPomodoro: (@MainActor (Int64) async -> Void)?
 }
 
-/// The one-tap "this is taking longer than I planned" control.
-///
-/// A pomodoro that overruns is the ordinary case, and the alternative is
-/// unlocking the phone, opening the app, finding the task and editing its
-/// estimate — by which time the block has ended. `openAppWhenRun` stays false:
-/// the point is that the plan changes without leaving the Lock Screen.
+/// Opens the app to choose and confirm an extension to this block.
 struct AddFocusPomodoroIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Add a pomodoro"
     static let description = IntentDescription(
         "Gives the running task one more focus block in today's plan."
     )
     static let isDiscoverable = false
+    static let openAppWhenRun = true
+
+    @Parameter(title: "Block start") var startAtMs: Int
 
     init() {}
+    init(startAtMs: Int64) { self.startAtMs = Int(startAtMs) }
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        await FocusActivityActions.addPomodoro?()
+        await FocusActivityActions.addPomodoro?(Int64(startAtMs))
         return .result()
     }
 }
@@ -40,6 +39,7 @@ struct AddFocusPomodoroIntent: LiveActivityIntent {
 struct StopFocusActivityIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Stop focus"
     static let isDiscoverable = false
+    static let openAppWhenRun = true
 
     @Parameter(title: "Block start") var startAtMs: Int
 
@@ -51,4 +51,11 @@ struct StopFocusActivityIntent: LiveActivityIntent {
         await FocusActivityActions.stopFocus?(Int64(startAtMs))
         return .result()
     }
+}
+
+struct FocusActivityRequest: Identifiable, Equatable {
+    enum Action: String { case addPomodoros, stop }
+    let action: Action
+    let startAtMs: Int64
+    var id: String { "\(action.rawValue):\(startAtMs)" }
 }

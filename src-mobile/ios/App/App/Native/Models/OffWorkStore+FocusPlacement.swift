@@ -174,7 +174,8 @@ extension OffWorkStore {
     /// refused write end up disagreeing.
     func focusContinuationTarget(
         taskID: UUID,
-        at date: Date = .now
+        at date: Date = .now,
+        after: Date? = nil
     ) -> Result<(block: FocusWorkBlock, shift: NativeShiftSnapshot), FocusExtensionError> {
         guard plus.isAuthorized,
               records.state.focusTasks.contains(where: { $0.id == taskID && $0.deletedAt == nil }),
@@ -187,7 +188,7 @@ extension OffWorkStore {
             assignments.contains { $0.taskID == taskID && $0.blockStartAtMs == block.startAtMs }
         }.map(\.end).max()
         let runningEnd = activeFocusSession().flatMap { $0.taskID == taskID ? $0.plannedEndAt : nil }
-        let boundary = max(date, max(lastAssignedEnd ?? date, runningEnd ?? date))
+        let boundary = max(after ?? date, max(date, max(lastAssignedEnd ?? date, runningEnd ?? date)))
         guard let target = blocks.first(where: { $0.kind == .task && $0.start >= boundary }),
               target.durationMinutes >= focusTimerSettings.normalized.focusMinutes,
               shift.segments.contains(where: {

@@ -1007,5 +1007,7 @@
   "focusActivityAddPomodoro": "เพิ่มโพโมโดโร",
   "focusBreakUntil": "พัก {{count}} นาที ถึง {{time}}",
   "focusBreakOver": "หมดเวลาพัก",
-  "focusActivityDayDone": "งานทั้งหมดของวันนี้เสร็จแล้ว"
+  "focusActivityDayDone": "งานทั้งหมดของวันนี้เสร็จแล้ว",
+  "focusAddPomodoroCapacity": "คุณเพิ่มโพโมโดโรได้อีกสูงสุด {{count}} รอบ ก่อนงานถัดไปหรือสิ้นสุดกะนี้",
+  "focusAddPomodoroCount": "จำนวนที่ต้องการเพิ่ม"
 }

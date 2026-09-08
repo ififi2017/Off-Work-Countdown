@@ -458,3 +458,70 @@ func finalQueuedBlockCompletesRunningTask() throws {
     let last = try #require(queued.last)
     #expect(store.completesFocusDay(after: last, at: at))
 }
+
+@MainActor
+@Test("Activity actions open confirmation without changing the running task")
+func activityActionsRequireConfirmation() throws {
+    let store = try chainStore()
+    let at = try #require(chainDay(store, hour: 9, minute: 0))
+    let first = try #require(store.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
+    let task = chainTask(store, title: "Review", pomodoros: 1, at: at)
+    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
+    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
+    let session = try #require(store.activeFocusSession())
+    let start = Int64(session.startedAt.timeIntervalSince1970 * 1_000)
+
+    for action in [FocusActivityRequest.Action.addPomodoros, .stop] {
+        store.requestFocusActivityConfirmation(action, startAtMs: start)
+        let request = try #require(store.focusActivityRequest)
+        #expect(request.action == action)
+        #expect(store.selectedTab == .focus)
+        #expect(store.focusPath.isEmpty)
+        #expect(store.matchesFocusActivity(request, at: at))
+        #expect(!store.matchesFocusActivity(request, at: session.plannedEndAt))
+        #expect(store.activeFocusSession()?.id == session.id)
+        #expect(store.records.state.focusTasks.first { $0.id == task.id }?.estimatedPomodoros == 1)
+    }
+    #expect(!store.matchesFocusActivity(.init(action: .stop, startAtMs: start - 1), at: at))
+}
+
+@MainActor
+@Test("Adding several pomodoros stops before the next task and rejects excess without edits")
+func extraPomodorosRespectNextTask() throws {
+    let store = try chainStore()
+    let at = try #require(chainDay(store, hour: 9, minute: 0))
+    let blocks = store.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
+    try #require(blocks.count >= 4)
+    let task = chainTask(store, title: "Review", pomodoros: 1, at: at)
+    let next = chainTask(store, title: "Next task", pomodoros: 1, at: at)
+    _ = store.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at)
+    _ = store.assign(next, toBlockStartingAt: blocks[3].startAtMs, at: at)
+    #expect(store.startFocus(task: task, inBlockStartingAt: blocks[0].startAtMs, at: at))
+    #expect(store.addableFocusBlocks(at: at).count == 2)
+    #expect(!store.addFocusPomodoroToRunningTask(count: 3, at: at))
+    #expect(store.records.state.focusTasks.first { $0.id == task.id }?.estimatedPomodoros == 1)
+    #expect(store.addFocusPomodoroToRunningTask(count: 2, at: at))
+    #expect(store.addableFocusBlocks(at: at).isEmpty)
+    #expect(store.records.state.focusTasks.first { $0.id == task.id }?.estimatedPomodoros == 3)
+    #expect(store.focusDayCanvas(at: at).blocks.first { $0.startAtMs == blocks[3].startAtMs }?.taskID == next.id)
+}
+
+@MainActor
+@Test("Focus tab navigation preserves the other tabs and never requests a paywall")
+func focusTabNavigationPreservesOtherTabs() throws {
+    let store = try chainStore()
+    store.timerPath = [.about]
+    store.settingsPath = [.language]
+    store.focusPath = [.plus]
+    store.presentedRoute = .focus
+    store.openFocusTab()
+    #expect(store.selectedTab == .focus)
+    #expect(store.focusPath.isEmpty)
+    #expect(store.timerPath == [.about])
+    #expect(store.settingsPath == [.language])
+    #expect(store.presentedRoute == nil)
+    #expect(store.paywallSheet == nil)
+    store.activePath = [.plus]
+    #expect(store.focusPath == [.plus])
+    #expect(store.timerPath == [.about])
+}

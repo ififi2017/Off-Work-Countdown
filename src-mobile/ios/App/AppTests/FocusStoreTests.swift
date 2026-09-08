@@ -752,3 +752,20 @@ private func completedFocusSession(for task: FocusTask, at date: Date) -> FocusS
 private func reload(_ task: FocusTask, on store: OffWorkStore) -> FocusTask {
     store.records.state.focusTasks.first { $0.id == task.id } ?? task
 }
+
+@MainActor
+@Test("A new shift does not restore yesterday's completed-block recovery prompt")
+func newShiftDiscardsPreviousRecoveryPrompt() throws {
+    let store = try focusStore()
+    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let task = insertTask(on: store, pomodoros: 8, at: start)
+    insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
+    #expect(store.finishElapsedFocusSession(at: start.addingTimeInterval(31 * 60)))
+    store.reconcileOpenFocusSessions(at: start.addingTimeInterval(32 * 60))
+    #expect(store.focusLastNextAction == .startShortBreak)
+
+    let nextMorning = start.addingTimeInterval(23 * 60 * 60)
+    store.reconcileOpenFocusSessions(at: nextMorning)
+    #expect(store.focusLastNextAction == .none)
+    #expect(!store.focusDayComplete(at: nextMorning))
+}

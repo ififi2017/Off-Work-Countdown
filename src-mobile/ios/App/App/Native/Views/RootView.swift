@@ -186,6 +186,7 @@ struct OffWorkCountdownRootView: View {
             // notifications only fire when it is not.
             pendingReschedule = true
         }
+        .modifier(FocusActivityConfirmationModifier(store: store))
         .onOpenURL(perform: handleOpenURL)
         .onReceive(NotificationCenter.default.publisher(for: .owcOpenURL)) { output in
             guard let url = output.object as? URL else { return }
@@ -337,6 +338,17 @@ struct OffWorkCountdownRootView: View {
             }
             .tag(AppTab.timer)
 
+            NavigationStack(path: $store.focusPath) {
+                FocusCanvasView(store: store)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        AppRouteDestination(route: route, store: store)
+                    }
+            }
+            .tabItem {
+                Label(store.t("focusTitle"), systemImage: "stopwatch")
+            }
+            .tag(AppTab.focus)
+
             NavigationStack(path: $store.recordsPath) {
                 RecordsDesignView(store: store)
             }
@@ -353,7 +365,15 @@ struct OffWorkCountdownRootView: View {
             }
             .onChange(of: store.presentedRoute) { _, route in
                 guard let route else { return }
-                store.settingsPath.append(route)
+                if route == .focus || route == .focusPlan {
+                    store.openFocusTab()
+                    return
+                }
+                if store.selectedTab == .focus {
+                    store.focusPath.append(route)
+                } else {
+                    store.settingsPath.append(route)
+                }
                 store.presentedRoute = nil
             }
             .tabItem {
@@ -398,10 +418,13 @@ struct OffWorkCountdownRootView: View {
         }
         guard let route = AppRoute(rawValue: url.host ?? "") else { return }
         if route == .focus || route == .focusPlan {
-            store.settingsPath.removeAll()
-            store.presentedRoute = nil
-            store.timerPath = [route]
-            store.selectedTab = .timer
+            let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            if let action = items.first(where: { $0.name == "action" })?.value.flatMap(FocusActivityRequest.Action.init(rawValue:)),
+               let start = items.first(where: { $0.name == "start" })?.value.flatMap(Int64.init) {
+                store.requestFocusActivityConfirmation(action, startAtMs: start)
+                return
+            }
+            store.openFocusTab()
             return
         }
         store.settingsPath.removeAll()
