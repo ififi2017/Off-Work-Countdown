@@ -1004,8 +1004,10 @@
   "focusActivityTaskDone": "Fertig um {{time}}",
   "focusActivityNextUp": "Als Nächstes: {{task}} um {{time}}",
   "focusActivityChainDone": "Erst mal alles erledigt",
-  "focusActivityAddPomodoro": "Pomodoro hinzufügen",
+  "focusActivityAddPomodoro": "Pomodoros hinzufügen",
   "focusBreakUntil": "{{count}} Min. Pause bis {{time}}",
   "focusBreakOver": "Pause vorbei",
-  "focusActivityDayDone": "Alle Aufgaben für heute sind erledigt"
+  "focusActivityDayDone": "Alle Aufgaben für heute sind erledigt",
+  "focusAddPomodoroCapacity": "Bis zur nächsten Aufgabe oder zum Schichtende kannst du noch bis zu {{count}} Pomodoros hinzufügen.",
+  "focusAddPomodoroCount": "Zusätzliche Pomodoros"
 }

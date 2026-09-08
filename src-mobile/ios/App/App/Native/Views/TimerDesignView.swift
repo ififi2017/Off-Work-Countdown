@@ -59,12 +59,6 @@ struct TimerDesignView: View {
         .toolbar(usesSystemRootToolbar || usesExternalRootToolbar ? .visible : .hidden, for: .navigationBar)
         .toolbar {
             if usesSystemRootToolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink(value: AppRoute.focus) {
-                        Label(store.t("focusTitle"), systemImage: FocusTaskIcon.focus.systemName)
-                    }
-                }
-
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     OWCEarningsVisibilityButton(store: store)
                     Button {
@@ -101,7 +95,7 @@ struct TimerDesignView: View {
                 Task { @MainActor in
                     await Task.yield()
                     guard store.plus.isAuthorized else { return }
-                    store.timerPath.append(.focus)
+                    store.openFocusTab()
                 }
             }
         }

@@ -44,7 +44,8 @@ final class LandscapeAnchorView: UIView {
     }
 
     func updatePresentation() {
-        guard UIDevice.current.userInterfaceIdiom == .phone,
+        guard store.selectedTab == .timer,
+              UIDevice.current.userInterfaceIdiom == .phone,
               let sourceWindow = window,
               let scene = sourceWindow.windowScene,
               sourceWindow.bounds.width > sourceWindow.bounds.height else {

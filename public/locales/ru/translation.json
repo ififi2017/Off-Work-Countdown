@@ -1004,8 +1004,10 @@
   "focusActivityTaskDone": "Завершение в {{time}}",
   "focusActivityNextUp": "Далее: {{task}} в {{time}}",
   "focusActivityChainDone": "Пока всё сделано",
-  "focusActivityAddPomodoro": "Добавить помидор",
+  "focusActivityAddPomodoro": "Добавить помодоро",
   "focusBreakUntil": "Перерыв {{count}} мин до {{time}}",
   "focusBreakOver": "Перерыв окончен",
-  "focusActivityDayDone": "Все задачи на сегодня выполнены"
+  "focusActivityDayDone": "Все задачи на сегодня выполнены",
+  "focusAddPomodoroCapacity": "До следующей задачи или конца смены можно добавить до {{count}} помодоро.",
+  "focusAddPomodoroCount": "Количество"
 }

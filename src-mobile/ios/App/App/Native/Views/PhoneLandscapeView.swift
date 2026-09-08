@@ -35,6 +35,12 @@ struct PhoneLandscapeShellView: View {
                     .accessibilityHidden(store.selectedTab != .timer)
                     .zIndex(store.selectedTab == .timer ? 1 : 0)
 
+                    FocusCanvasView(store: store)
+                        .opacity(store.selectedTab == .focus ? 1 : 0)
+                        .allowsHitTesting(store.selectedTab == .focus)
+                        .accessibilityHidden(store.selectedTab != .focus)
+                        .zIndex(store.selectedTab == .focus ? 1 : 0)
+
                     NavigationStack(path: $store.recordsPath) {
                         RecordsDesignView(store: store)
                     }
@@ -74,6 +80,10 @@ struct PhoneLandscapeShellView: View {
         }
         .onChange(of: store.presentedRoute) { _, route in
             guard let route else { return }
+            if route == .focus || route == .focusPlan {
+                store.openFocusTab()
+                return
+            }
             store.activePath.append(route)
             store.presentedRoute = nil
         }
@@ -85,6 +95,7 @@ struct PhoneLandscapeShellView: View {
         VStack(spacing: 8) {
             Spacer()
             railButton(.timer, icon: "timer", title: store.t("timerTab"))
+            railButton(.focus, icon: "stopwatch", title: store.t("focusTitle"))
             railButton(.records, icon: "calendar", title: store.t("recordsTab"))
             railButton(.settings, icon: "slider.horizontal.3", title: store.t("settings"))
             Spacer()

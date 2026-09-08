@@ -48,65 +48,52 @@ struct FocusCanvasView: View {
         // needs two of them plus a scan of today's sessions — as a computed
         // property this ran six times for one render.
         let model = store.focusDayCanvas(at: now)
-        return VStack(spacing: 0) {
-            // Pinned, so "what am I in" survives scrolling to the far end of
-            // the shift. Only this band is pinned: the scale picker costs
-            // another 46 pt of the band's height and is not worth it.
-            FocusNowBand(
-                store: store,
-                model: model,
-                onExtend: extend,
-                onStop: { confirmsStop = true },
-                onStart: { start($0) },
-                onAdd: {
-                    quickCreateLanding = store.hasFocusRoom() ? .startNow : .nextBlock
+        return ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    Picker(store.t("focusScale"), selection: $scale.animation(
+                        reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter
+                    )) {
+                        ForEach(Scale.allCases) { value in
+                            Text(store.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
+                                .tag(value)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    FocusNowBand(
+                        store: store,
+                        model: model,
+                        now: now,
+                        onExtend: extend,
+                        onStop: { confirmsStop = true },
+                        onStart: { start($0) },
+                        onAdd: {
+                            quickCreateLanding = store.hasFocusRoom() ? .startNow : .nextBlock
+                        }
+                    )
+
+                    switch scale {
+                    case .today: todayScale(model)
+                    case .usual: usualScale(model)
+                    }
                 }
-            )
-            .padding(.horizontal, OWCDesign.pageInset)
-            .padding(.top, 14)
-            .padding(.bottom, 12)
-            Divider()
-
-            OWCContentSizedScrollView {
-                ScrollViewReader { proxy in
-                    VStack(alignment: .leading, spacing: 14) {
-                        Picker(store.t("focusScale"), selection: $scale.animation(
-                            reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter
-                        )) {
-                            ForEach(Scale.allCases) { value in
-                                Text(store.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
-                                    .tag(value)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-
-                        switch scale {
-                        case .today: todayScale(model)
-                        case .usual: usualScale(model)
-                        }
-                    }
-                    .padding(.horizontal, OWCDesign.pageInset)
-                    .padding(.top, 14)
-                    .padding(.bottom, OWCDesign.detailBottomInset)
-                    .onAppear {
-                        if let block = model.currentBlock {
-                            proxy.scrollTo(block.startAtMs, anchor: .top)
-                        }
-                    }
-                    .onChange(of: selectedBlock) { _, value in
-                        guard let value else { return }
-                        if reduceMotion {
-                            proxy.scrollTo(value, anchor: .center)
-                        } else {
-                            withAnimation(OWCMotion.stateEnter) { proxy.scrollTo(value, anchor: .center) }
-                        }
-                    }
+                .padding(.horizontal, OWCDesign.pageInset)
+                .padding(.top, 14)
+                .padding(.bottom, OWCDesign.detailBottomInset)
+            }
+            .onChange(of: selectedBlock) { _, value in
+                guard let value else { return }
+                if reduceMotion {
+                    proxy.scrollTo(value, anchor: .center)
+                } else {
+                    withAnimation(OWCMotion.stateEnter) { proxy.scrollTo(value, anchor: .center) }
                 }
             }
         }
         .background(OWCDesign.page)
         .navigationTitle(store.t("focusTitle"))
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 quickCreateButton
@@ -150,8 +137,9 @@ struct FocusCanvasView: View {
         ) {
             Button(store.t("okAction"), role: .cancel) { notice = nil }
         }
-        .task(id: scenePhase) {
-            guard scenePhase == .active else { return }
+        .task(id: scenePhase == .active && store.selectedTab == .focus) {
+            guard scenePhase == .active, store.selectedTab == .focus else { return }
+            store.writeQASurfaceMarker("route.focus")
             while !Task.isCancelled {
                 now = .now
                 _ = store.finishElapsedFocusSession(at: now)
@@ -220,7 +208,7 @@ struct FocusCanvasView: View {
     @ViewBuilder
     private func usualScale(_ model: FocusDayCanvasModel) -> some View {
         if model.isLocked {
-            FocusLockedCanvas(store: store)
+            FocusLockedUsualScale(store: store)
         } else {
             FocusUsualScale(
                 store: store,
@@ -289,6 +277,7 @@ struct FocusCanvasView: View {
 struct FocusNowBand: View {
     let store: OffWorkStore
     let model: FocusDayCanvasModel
+    let now: Date
     var onExtend: (UUID) -> Void
     var onStop: () -> Void
     var onStart: (FocusDayCanvasModel.Block) -> Void
@@ -349,11 +338,25 @@ struct FocusNowBand: View {
             }
         } else if let session {
             runningContent(session)
-        } else if store.focusDayComplete() {
+        } else if store.focusDayComplete(at: now) {
             Label(store.t("focusActivityDayDone"), systemImage: "checkmark.circle")
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(OWCDesign.primary)
-                .fixedSize(horizontal: false, vertical: true)
+                .font(.headline)
+                .foregroundStyle(OWCDesign.secondary)
+        } else if now.timeIntervalSince1970 * 1_000 < Double(model.shiftStartAtMs) {
+            VStack(alignment: .leading, spacing: 8) {
+                if let first = model.blocks.first(where: { $0.isAssigned && !$0.isUserBreak }) {
+                    Text(first.taskTitle ?? store.t("focusTitle"))
+                        .font(.headline)
+                    let start = Date(timeIntervalSince1970: Double(first.startAtMs) / 1_000)
+                    Text(timerInterval: now...max(now, start), countsDown: true)
+                        .font(.title.monospacedDigit().weight(.semibold))
+                    Label(range(first), systemImage: "clock")
+                        .font(.footnote).foregroundStyle(OWCDesign.secondary)
+                } else {
+                    Text(store.t("focusBandEmptyBlock"))
+                        .font(.headline).foregroundStyle(OWCDesign.secondary)
+                }
+            }
         } else if store.focusLastNextAction == .startShortBreak || store.focusLastNextAction == .startLongBreak {
             breakOffer
         } else if let block = model.currentBlock, block.kind == .task, !block.isUserBreak {

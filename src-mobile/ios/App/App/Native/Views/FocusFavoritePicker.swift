@@ -1,32 +1,51 @@
 import SwiftUI
 
-/// Shared by today's creation sheets and the usual-day editor.
 struct FocusFavoritePicker: View {
     let store: OffWorkStore
-    var onSelect: (FocusTask) -> Void
+    @Binding var title: String
+    @Binding var icon: FocusTaskIcon
+    @Binding var selectedID: UUID?
+    var onSelect: (FocusTask) -> Void = { _ in }
 
     var body: some View {
         let favorites = store.favoriteFocusTasks()
-        Menu {
-            ForEach(favorites) { task in
-                Button { onSelect(task) } label: {
-                    Label(task.title, systemImage: "star.fill")
+        if !favorites.isEmpty {
+            DisclosureGroup(store.t("focusFavorites")) {
+                OWCGroupCard {
+                    ForEach(Array(favorites.enumerated()), id: \.element.id) { index, task in
+                        Button {
+                            title = task.title
+                            icon = task.icon
+                            selectedID = task.id
+                            onSelect(task)
+                        } label: {
+                            OWCRow(icon: task.icon.systemName, title: task.title, isLast: index == favorites.count - 1) {
+                                if selectedID == task.id {
+                                    Image(systemName: "checkmark").foregroundStyle(OWCDesign.accent)
+                                }
+                            }
+                        }
+                        .buttonStyle(OWCRowButtonStyle())
+                        .accessibilityAddTraits(selectedID == task.id ? .isSelected : [])
+                        .contextMenu {
+                            Button(store.t("focusRemoveFavorite"), systemImage: "trash", role: .destructive) {
+                                store.toggleFocusFavorite(task)
+                                if selectedID == task.id { selectedID = nil }
+                            }
+                        }
+                    }
+                }
+                .padding(.top, 8)
+            }
+            .onChange(of: title) {
+                if let selected = favorites.first(where: { $0.id == selectedID }), title != selected.title {
+                    selectedID = nil
                 }
             }
-        } label: {
-            HStack {
-                Label(store.t("focusFavorites"), systemImage: favorites.isEmpty ? "star" : "star.fill")
-                Spacer()
-                Text(store.formatCount(favorites.count))
-                Image(systemName: "chevron.down").font(.caption)
-            }
-            .font(.callout)
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .contentShape(.rect)
         }
-        .disabled(favorites.isEmpty)
     }
 }
+
 
 struct FocusFavoriteToggle: View {
     let store: OffWorkStore

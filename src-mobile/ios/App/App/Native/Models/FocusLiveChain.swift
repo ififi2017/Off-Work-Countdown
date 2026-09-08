@@ -126,11 +126,45 @@ extension OffWorkStore {
         return true
     }
 
-    /// Gives the running task one more block in today's plan.
+    func openFocusTab() {
+        focusPath.removeAll()
+        presentedRoute = nil
+        selectedTab = .focus
+    }
+
+    func requestFocusActivityConfirmation(_ action: FocusActivityRequest.Action, startAtMs: Int64) {
+        openFocusTab()
+        focusActivityRequest = FocusActivityRequest(action: action, startAtMs: startAtMs)
+    }
+
+    func matchesFocusActivity(_ request: FocusActivityRequest, at date: Date = .now) -> Bool {
+        guard let session = activeFocusSession(), session.kind == .focus,
+              session.startedAt <= date, date < session.plannedEndAt
+        else { return false }
+        return Int64(session.startedAt.timeIntervalSince1970 * 1_000) == request.startAtMs
+    }
+
+    /// Counts only generated work blocks before another task; no schedule math is duplicated here.
+    func addableFocusBlocks(at date: Date = .now) -> [FocusDayCanvasModel.Block] {
+        guard let taskID = lockScreenContinuationTaskID(at: date) else { return [] }
+        let canvas = focusDayCanvas(at: date)
+        var after: Date?
+        var result: [FocusDayCanvasModel.Block] = []
+        while case .success(let target) = focusContinuationTarget(taskID: taskID, at: date, after: after),
+              let block = canvas.blocks.first(where: { $0.startAtMs == target.block.startAtMs }) {
+            result.append(block)
+            after = target.block.end
+        }
+        return result
+    }
+
     @discardableResult
-    func addFocusPomodoroToRunningTask(at date: Date = .now) -> Bool {
-        guard let taskID = lockScreenContinuationTaskID(at: date) else { return false }
-        guard case .success = addOneFocusBlock(taskID: taskID, at: date) else { return false }
+    func addFocusPomodoroToRunningTask(count: Int = 1, at date: Date = .now) -> Bool {
+        guard count > 0, count <= addableFocusBlocks(at: date).count,
+              let taskID = lockScreenContinuationTaskID(at: date) else { return false }
+        for _ in 0..<count {
+            guard case .success = addOneFocusBlock(taskID: taskID, at: date) else { return false }
+        }
         return true
     }
 

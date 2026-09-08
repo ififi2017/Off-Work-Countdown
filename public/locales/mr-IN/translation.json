@@ -1004,8 +1004,10 @@
   "focusActivityTaskDone": "{{time}} पर्यंत पूर्ण",
   "focusActivityNextUp": "पुढे: {{time}} वाजता {{task}}",
   "focusActivityChainDone": "सध्या सर्व पूर्ण",
-  "focusActivityAddPomodoro": "एक पोमोडोरो जोडा",
+  "focusActivityAddPomodoro": "पोमोडोरो जोडा",
   "focusBreakUntil": "{{count}} मिनिटांचा ब्रेक, {{time}} पर्यंत",
   "focusBreakOver": "ब्रेक संपला",
-  "focusActivityDayDone": "आजची सर्व कामे पूर्ण झाली आहेत"
+  "focusActivityDayDone": "आजची सर्व कामे पूर्ण झाली आहेत",
+  "focusAddPomodoroCapacity": "पुढील काम किंवा शिफ्ट संपेपर्यंत तुम्ही जास्तीत जास्त {{count}} पोमोडोरो जोडू शकता.",
+  "focusAddPomodoroCount": "जोडायची संख्या"
 }

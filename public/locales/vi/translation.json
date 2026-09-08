@@ -1004,8 +1004,10 @@
   "focusActivityTaskDone": "Xong lúc {{time}}",
   "focusActivityNextUp": "Tiếp theo: {{task}} lúc {{time}}",
   "focusActivityChainDone": "Tạm thời xong hết",
-  "focusActivityAddPomodoro": "Thêm một pomodoro",
+  "focusActivityAddPomodoro": "Thêm pomodoro",
   "focusBreakUntil": "Nghỉ {{count}} phút đến {{time}}",
   "focusBreakOver": "Hết giờ nghỉ",
-  "focusActivityDayDone": "Đã hoàn thành mọi công việc hôm nay"
+  "focusActivityDayDone": "Đã hoàn thành mọi công việc hôm nay",
+  "focusAddPomodoroCapacity": "Bạn có thể thêm tối đa {{count}} pomodoro trước công việc tiếp theo hoặc khi ca làm kết thúc.",
+  "focusAddPomodoroCount": "Số lượng thêm"
 }

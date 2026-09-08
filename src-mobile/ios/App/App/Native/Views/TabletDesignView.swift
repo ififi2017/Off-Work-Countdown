@@ -6,38 +6,57 @@ struct TabletShellView: View {
     @Bindable var store: OffWorkStore
 
     var body: some View {
-        TabView(selection: $store.selectedTab) {
-            Tab(store.t("timerTab"), systemImage: "timer", value: AppTab.timer) {
-                timerStack
+        GeometryReader { proxy in
+            TabView(selection: $store.selectedTab) {
+                Tab(store.t("timerTab"), systemImage: "timer", value: AppTab.timer) {
+                    timerStack
+                }
+                Tab(store.t("focusTitle"), systemImage: "stopwatch", value: AppTab.focus) {
+                    NavigationStack(path: $store.focusPath) {
+                        FocusCanvasView(store: store)
+                            .navigationDestination(for: AppRoute.self) { route in
+                                AppRouteDestination(route: route, store: store)
+                            }
+                    }
+                }
+                Tab(store.t("recordsTab"), systemImage: "calendar", value: AppTab.records) {
+                    recordsStack
+                }
+                Tab(store.t("settings"), systemImage: "slider.horizontal.3", value: AppTab.settings) {
+                    settingsStack
+                }
             }
-            Tab(store.t("recordsTab"), systemImage: "calendar", value: AppTab.records) {
-                recordsStack
+            .tabViewStyle(.sidebarAdaptable)
+            // A portrait sidebar floats over the page. Start with the system tab
+            // bar there; the sidebar toggle remains available when requested.
+            .defaultAdaptableTabBarPlacement(proxy.size.width > proxy.size.height ? .sidebar : .tabBar)
+            .tabViewSidebarFooter {
+                TabletSidebarFooter(store: store)
             }
-            Tab(store.t("settings"), systemImage: "slider.horizontal.3", value: AppTab.settings) {
-                settingsStack
+            .onChange(of: store.presentedRoute) { _, route in
+                guard let route else { return }
+                if route == .focus || route == .focusPlan {
+                    store.openFocusTab()
+                    return
+                }
+                if store.selectedTab == .timer {
+                    store.timerPath.append(route)
+                } else if store.selectedTab == .focus {
+                    store.focusPath.append(route)
+                } else {
+                    if store.selectedTab == .records { store.selectedTab = .settings }
+                    store.settingsPath.append(route)
+                }
+                store.presentedRoute = nil
             }
-        }
-        .tabViewStyle(.sidebarAdaptable)
-        .defaultAdaptableTabBarPlacement(.sidebar)
-        .tabViewSidebarFooter {
-            TabletSidebarFooter(store: store)
-        }
-        .onChange(of: store.presentedRoute) { _, route in
-            guard let route else { return }
-            if store.selectedTab == .timer {
-                store.timerPath.append(route)
-            } else {
-                if store.selectedTab == .records { store.selectedTab = .settings }
-                store.settingsPath.append(route)
+            .onChange(of: store.debugPresentationToken) {
+                store.timerPath.removeAll()
+                store.focusPath.removeAll()
+                store.recordsPath.removeAll()
+                store.settingsPath.removeAll()
             }
-            store.presentedRoute = nil
+            .background(OWCDesign.page)
         }
-        .onChange(of: store.debugPresentationToken) {
-            store.timerPath.removeAll()
-            store.recordsPath.removeAll()
-            store.settingsPath.removeAll()
-        }
-        .background(OWCDesign.page)
     }
 
     private var timerStack: some View {
@@ -115,15 +134,6 @@ private struct TabletTimerRoot: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    store.openPaidOrRun(.focus, action: .openFocus)
-                } label: {
-                    Label(store.t("focusTitle"), systemImage: FocusTaskIcon.focus.systemName)
-                }
-                .accessibilityLabel(store.t("focusTitle"))
-            }
-
             if tabBarPlacement == .sidebar {
                 ToolbarItem(placement: .principal) {
                     TimelineView(.periodic(from: .now, by: 60)) { timeline in

@@ -1007,5 +1007,7 @@
   "focusActivityAddPomodoro": "ポモドーロを追加",
   "focusBreakUntil": "{{count}} 分休憩、{{time}} まで",
   "focusBreakOver": "休憩終了",
-  "focusActivityDayDone": "今日のタスクはすべて完了しました"
+  "focusActivityDayDone": "今日のタスクはすべて完了しました",
+  "focusAddPomodoroCapacity": "次のタスクまたは退勤までに、最大 {{count}} ポモドーロを追加できます。",
+  "focusAddPomodoroCount": "追加する数"
 }

@@ -11,9 +11,11 @@ struct FocusBlockSheet: View {
     let block: FocusDayCanvasModel.Block
     var onResult: (FocusPlacementResult) -> Void
 
+    @State private var selectedFavoriteID: UUID?
     @State private var title = ""
     @State private var icon = FocusTaskIcon.focus
     @State private var isFavorite = false
+    @ScaledMetric(relativeTo: .body) private var assignedSheetHeight: CGFloat = 240
     @State private var pomodoros = 1
     @FocusState private var titleFocused: Bool
     @Environment(\.dismiss) private var dismiss
@@ -25,6 +27,22 @@ struct FocusBlockSheet: View {
         NavigationStack {
             OWCContentSizedScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    if block.hasAssignment {
+                        OWCGroupCard {
+                            OWCRow(
+                                icon: block.isUserBreak ? "cup.and.saucer.fill" : (block.taskIcon ?? .focus).systemName,
+                                title: block.isUserBreak ? store.t("focusBreak") : (block.taskTitle ?? store.t("focusTaskTitle")),
+                                isLast: true
+                            ) {
+                                Image(systemName: "checkmark").foregroundStyle(OWCDesign.accent)
+                            }
+                        }
+                        Button(store.t("focusBlockClear"), role: .destructive) {
+                            store.clearBlock(startingAt: block.startAtMs)
+                            dismiss()
+                        }
+                        .buttonStyle(OWCSecondaryButtonStyle())
+                    } else {
                     VStack(alignment: .leading, spacing: 7) {
                         OWCSectionHeader(title: store.t("focusBlockWhat"))
                         FocusTitleField(
@@ -36,7 +54,7 @@ struct FocusBlockSheet: View {
                         )
                         .onSubmit(create)
                     }
-                    FocusFavoritePicker(store: store) { favorite in
+                    FocusFavoritePicker(store: store, title: $title, icon: $icon, selectedID: $selectedFavoriteID) { favorite in
                         title = favorite.title
                         icon = favorite.icon
                         pomodoros = favorite.estimatedPomodoros
@@ -98,20 +116,7 @@ struct FocusBlockSheet: View {
                             }
                         }
                         .buttonStyle(OWCRowButtonStyle())
-                        if block.hasAssignment {
-                            Button {
-                                store.clearBlock(startingAt: block.startAtMs)
-                                dismiss()
-                            } label: {
-                                OWCRow(
-                                    icon: "xmark.circle",
-                                    title: store.t("focusBlockClear"),
-                                    isLast: true,
-                                    isDestructive: true
-                                ) { EmptyView() }
-                            }
-                            .buttonStyle(OWCRowButtonStyle())
-                        }
+                    }
                     }
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
@@ -127,7 +132,7 @@ struct FocusBlockSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents(block.hasAssignment ? [.height(assignedSheetHeight)] : [.medium, .large])
         .presentationDragIndicator(.visible)
     }
 
@@ -182,6 +187,7 @@ struct FocusQuickCreateSheet: View {
         var id: String { rawValue }
     }
 
+    @State private var selectedFavoriteID: UUID?
     @State private var title = ""
     @State private var icon = FocusTaskIcon.focus
     @State private var pomodoros = 1
@@ -205,7 +211,7 @@ struct FocusQuickCreateSheet: View {
                         focused: $titleFocused,
                         placeholder: store.t("focusTaskPlaceholder")
                     )
-                    FocusFavoritePicker(store: store) { favorite in
+                    FocusFavoritePicker(store: store, title: $title, icon: $icon, selectedID: $selectedFavoriteID) { favorite in
                         title = favorite.title
                         icon = favorite.icon
                         pomodoros = favorite.estimatedPomodoros

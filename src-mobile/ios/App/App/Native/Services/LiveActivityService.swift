@@ -544,13 +544,7 @@ final class LiveActivityService {
         let copy = focusCopy(for: surface, store: store)
         let chain = store.focusChain(for: session, at: now)
         let legs = Self.focusLegs(chain, store: store)
-        let canAdd: Bool
-        if surface == .focus, let taskID = session.taskID,
-           case .success = store.focusContinuationTarget(taskID: taskID, at: now) {
-            canAdd = true
-        } else {
-            canAdd = false
-        }
+        let canAdd = surface == .focus && store.canAddFocusPomodoro(at: now)
         return OffWorkActivityAttributes.ContentState(
             endAtMs: Int64(session.plannedEndAt.timeIntervalSince1970 * 1_000),
             progress: 0,

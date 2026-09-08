@@ -50,6 +50,8 @@ const todayKey = [
 /// to the Timer — so every Records scene that used it silently photographed
 /// the timer instead. The shift is set up with plain hours instead.
 const SCENES = [
+  { name: "focus", args: ["-ios.native.qaRoute", "focus"], expect: "route.focus" },
+  { name: "focus-unsubscribed", args: ["-ios.native.qaRoute", "focus", "-ios.native.debugPlusAuthorized", "NO"], expect: "route.focus" },
   { name: "timer", args: ["-ios.native.qaDebugScenario", "working"], expect: "timer" },
   { name: "timer-unscheduled", args: ["-ios.native.qaDebugScenario", "manualSchedule"], expect: "timer" },
   { name: "records-week", args: ["-ios.native.qaRecordsScale", "week"], expect: "records" },

@@ -1004,8 +1004,10 @@
   "focusActivityTaskDone": "預計 {{time}} 完成",
   "focusActivityNextUp": "接下來：{{time}} {{task}}",
   "focusActivityChainDone": "暫時都完成了",
-  "focusActivityAddPomodoro": "再加一個番茄",
+  "focusActivityAddPomodoro": "追加番茄",
   "focusBreakUntil": "休息 {{count}} 分鐘，到 {{time}}",
   "focusBreakOver": "休息結束",
-  "focusActivityDayDone": "今日任務已完成"
+  "focusActivityDayDone": "今日任務已完成",
+  "focusAddPomodoroCapacity": "到下一個任務或今次下班前，最多還可以加 {{count}} 個番茄。",
+  "focusAddPomodoroCount": "追加數量"
 }
