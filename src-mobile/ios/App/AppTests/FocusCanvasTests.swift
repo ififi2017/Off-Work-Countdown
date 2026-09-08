@@ -583,3 +583,34 @@ func usualDayFavoriteUpdatesAndCanBeRemoved() throws {
     #expect(store.favoriteFocusTasks().isEmpty)
     #expect(!store.focusTasksForToday().contains { $0.id == original.id })
 }
+
+@MainActor
+@Test("Quick add schedules the requested count from the current or next work block", arguments: [false, true])
+func quickAddSchedulesCurrentOrNextBlock(duringBreak: Bool) throws {
+    let store = try canvasStore()
+    let morning = try #require(day(store, hour: 9, minute: 5))
+    let initial = store.focusDayCanvas(at: morning)
+    let breakBlock = try #require(initial.blocks.first { $0.kind == .breakTime })
+    let at = duringBreak ? Date(timeIntervalSince1970: Double(breakBlock.startAtMs) / 1_000 + 1) : morning
+    let canvas = store.focusDayCanvas(at: at)
+    let target = try #require(canvas.nextEmptyBlock)
+    let occupied = try #require(canvas.blocks.first { $0.kind == .task && $0.startAtMs > target.startAtMs })
+    _ = store.createFocusTask(title: "Keep this task", inBlockStartingAt: occupied.startAtMs, at: at)
+
+    let result = store.createFocusTaskInNextEmptyBlock(
+        title: "Three pomodoros", pomodoros: 3, scheduleAllPomodoros: true, at: at
+    )
+    let updated = store.focusDayCanvas(at: at)
+    let id = placedID(result)
+    #expect(result == .placed(taskID: id, blockStartAtMs: target.startAtMs))
+    #expect(updated.blocks.filter { $0.taskID == id }.count == 3)
+    #expect(updated.blocks.first { $0.startAtMs == occupied.startAtMs }?.taskTitle == "Keep this task")
+    #expect(updated.blocks.filter { $0.kind == .breakTime }.allSatisfy { $0.taskID == nil })
+    #expect(store.records.state.focusTasks.first { $0.id == id }?.estimatedPomodoros == 3)
+    #expect(store.activeFocusSession() == nil)
+    if duringBreak {
+        #expect(target.startAtMs >= breakBlock.endAtMs)
+    } else {
+        #expect(target.state == .current)
+    }
+}

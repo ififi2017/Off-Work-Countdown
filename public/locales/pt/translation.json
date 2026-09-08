@@ -1009,5 +1009,7 @@
   "focusBreakOver": "Fim da pausa",
   "focusActivityDayDone": "Todas as tarefas de hoje estão concluídas",
   "focusAddPomodoroCapacity": "Você pode adicionar até {{count}} pomodoros antes da próxima tarefa ou do fim do turno.",
-  "focusAddPomodoroCount": "Quantidade a adicionar"
+  "focusAddPomodoroCount": "Quantidade a adicionar",
+  "focusCompletedTasksTitle": "As tarefas de foco de hoje estão concluídas",
+  "focusQuickAddTask": "Adicionar tarefa de foco rapidamente"
 }

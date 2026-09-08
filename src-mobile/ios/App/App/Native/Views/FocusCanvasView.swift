@@ -71,7 +71,7 @@ struct FocusCanvasView: View {
                     onStop: { confirmsStop = true },
                     onStart: { start($0) },
                     onAdd: {
-                        quickCreateLanding = store.hasFocusRoom() ? .startNow : .nextBlock
+                        quickCreateLanding = .currentOrNextBlock
                     }
                 )
             }
@@ -121,11 +121,15 @@ struct FocusCanvasView: View {
                 .onChange(of: selectedBlock) { _, value in
                     guard let value else { return }
                     needsCurrentPosition = false
-                    if reduceMotion {
-                        proxy.scrollTo(value, anchor: .center)
-                    } else {
-                        withAnimation(OWCMotion.stateEnter) { proxy.scrollTo(value, anchor: .center) }
+                    let position = {
+                        if dynamicTypeSize.isAccessibilitySize {
+                            proxy.scrollTo(value, anchor: .center)
+                        } else if let bandTop {
+                            scrollPosition.scrollTo(y: max(0, bandTop + model.offset(ofMs: value) - 8))
+                        }
                     }
+                    if reduceMotion { position() }
+                    else { withAnimation(OWCMotion.stateEnter, position) }
                 }
             }
         }
@@ -377,16 +381,6 @@ struct FocusNowBand: View {
                 content
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(18)
-                if session == nil, let taskID = store.focusContinuationTaskID() {
-                    Button { onExtend(taskID) } label: {
-                        Text(store.t("focusExtendOne"))
-                            .font(.footnote.weight(.medium))
-                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                            .contentShape(.rect)
-                    }
-                    .padding(.horizontal, 18)
-                    .padding(.bottom, 6)
-                }
                 if session != nil, let issue = store.focusNotificationIssue {
                     notificationIssue(issue).padding(.horizontal, 18).padding(.bottom, 12)
                 }
@@ -417,9 +411,7 @@ struct FocusNowBand: View {
         } else if let session {
             runningContent(session)
         } else if store.focusDayComplete(at: now) {
-            Label(store.t("focusActivityDayDone"), systemImage: "checkmark.circle")
-                .font(.headline)
-                .foregroundStyle(OWCDesign.secondary)
+            completedContent
         } else if now.timeIntervalSince1970 * 1_000 < Double(model.shiftStartAtMs) {
             VStack(alignment: .leading, spacing: 8) {
                 if let first = model.blocks.first(where: { $0.isAssigned && !$0.isUserBreak }) {
@@ -449,7 +441,7 @@ struct FocusNowBand: View {
                 } else {
                     Text(store.t("focusNoShift")).font(.footnote).foregroundStyle(OWCDesign.secondary)
                 }
-                Button(store.t(store.hasFocusRoom() ? "focusAddAndStart" : "focusQuickCreate"), action: onAdd)
+                Button(store.t("focusQuickAddTask"), action: onAdd)
                     .buttonStyle(OWCPrimaryButtonStyle(filled: false, minimumHeight: 44))
             }
         }
@@ -487,21 +479,24 @@ struct FocusNowBand: View {
         }
     }
 
-    private var breakOffer: some View {
-        let kind: FocusSessionKind = store.focusLastNextAction == .startLongBreak ? .longBreak : .shortBreak
-        return VStack(alignment: .leading, spacing: 8) {
-            Text(store.t("focusPhaseComplete")).font(.headline)
-            Text(store.t("focusNextBreakBody")).font(.footnote).foregroundStyle(OWCDesign.secondary)
-            layout {
-                Button(store.t(kind == .longBreak ? "focusStartLongBreak" : "focusStartShortBreak")) {
-                    _ = store.startBreak(kind: kind)
-                }
-                .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
-                .disabled(!store.canStartFocusBreak(kind: kind))
-                Button(store.t("focusSkipBreak")) { _ = store.skipSuggestedFocusBreak() }
-                    .buttonStyle(OWCSecondaryButtonStyle())
-            }
+    private var completedContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(store.t("focusCompletedTasksTitle")).font(.headline)
+            quickAddButton
         }
+    }
+
+    private var breakOffer: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Unfinished tasks must not be described as a completed day.
+            Text(store.t("focusTitle")).font(.headline)
+            quickAddButton
+        }
+    }
+
+    private var quickAddButton: some View {
+        Button(store.t("focusQuickAddTask"), action: onAdd)
+            .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
     }
 
     private func notificationIssue(_ issue: FocusNotificationIssue) -> some View {
@@ -550,7 +545,7 @@ struct FocusNowBand: View {
                     .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
                     .disabled(store.focusStartAvailability(task) != .ready || Double(block.endAtMs) / 1_000 - Date.now.timeIntervalSince1970 < 60)
             } else {
-                Button(store.t("focusAddAndStart"), action: onAdd)
+                Button(store.t("focusQuickAddTask"), action: onAdd)
                     .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
                     .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : 112)
                     .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)

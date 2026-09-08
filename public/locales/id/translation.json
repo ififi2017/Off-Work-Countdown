@@ -1009,5 +1009,7 @@
   "focusBreakOver": "Istirahat selesai",
   "focusActivityDayDone": "Semua tugas hari ini selesai",
   "focusAddPomodoroCapacity": "Kamu bisa menambahkan hingga {{count}} pomodoro sebelum tugas berikutnya atau akhir sif.",
-  "focusAddPomodoroCount": "Jumlah tambahan"
+  "focusAddPomodoroCount": "Jumlah tambahan",
+  "focusCompletedTasksTitle": "Tugas fokus hari ini selesai",
+  "focusQuickAddTask": "Tambah tugas fokus dengan cepat"
 }

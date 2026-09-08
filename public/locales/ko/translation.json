@@ -1009,5 +1009,7 @@
   "focusBreakOver": "휴식 종료",
   "focusActivityDayDone": "오늘의 모든 할 일을 완료했어요",
   "focusAddPomodoroCapacity": "다음 작업 시작 또는 퇴근 전까지 포모도로를 최대 {{count}}개 추가할 수 있어요.",
-  "focusAddPomodoroCount": "추가할 개수"
+  "focusAddPomodoroCount": "추가할 개수",
+  "focusCompletedTasksTitle": "오늘의 집중 작업을 완료했어요",
+  "focusQuickAddTask": "집중 작업 빠르게 추가"
 }

@@ -1009,5 +1009,7 @@
   "focusBreakOver": "Перерыв окончен",
   "focusActivityDayDone": "Все задачи на сегодня выполнены",
   "focusAddPomodoroCapacity": "До следующей задачи или конца смены можно добавить до {{count}} помодоро.",
-  "focusAddPomodoroCount": "Количество"
+  "focusAddPomodoroCount": "Количество",
+  "focusCompletedTasksTitle": "Все задачи на концентрацию на сегодня выполнены",
+  "focusQuickAddTask": "Быстро добавить задачу"
 }

@@ -1009,5 +1009,7 @@
   "focusBreakOver": "Break over",
   "focusActivityDayDone": "All tasks for today are complete",
   "focusAddPomodoroCapacity": "You can add up to {{count}} pomodoros before the next task or the end of this shift.",
-  "focusAddPomodoroCount": "Pomodoros to add"
+  "focusAddPomodoroCount": "Pomodoros to add",
+  "focusCompletedTasksTitle": "Today’s focus tasks are complete",
+  "focusQuickAddTask": "Quick add focus task"
 }

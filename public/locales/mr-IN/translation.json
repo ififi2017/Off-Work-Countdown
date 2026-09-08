@@ -1009,5 +1009,7 @@
   "focusBreakOver": "ब्रेक संपला",
   "focusActivityDayDone": "आजची सर्व कामे पूर्ण झाली आहेत",
   "focusAddPomodoroCapacity": "पुढील काम किंवा शिफ्ट संपेपर्यंत तुम्ही जास्तीत जास्त {{count}} पोमोडोरो जोडू शकता.",
-  "focusAddPomodoroCount": "जोडायची संख्या"
+  "focusAddPomodoroCount": "जोडायची संख्या",
+  "focusCompletedTasksTitle": "आजची एकाग्रतेची कामे पूर्ण झाली",
+  "focusQuickAddTask": "एकाग्रतेचे काम पटकन जोडा"
 }

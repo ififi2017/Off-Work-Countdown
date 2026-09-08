@@ -1009,5 +1009,7 @@
   "focusBreakOver": "Mola bitti",
   "focusActivityDayDone": "Bugünkü tüm görevler tamamlandı",
   "focusAddPomodoroCapacity": "Sonraki görev veya vardiya bitiminden önce en fazla {{count}} pomodoro ekleyebilirsin.",
-  "focusAddPomodoroCount": "Eklenecek sayı"
+  "focusAddPomodoroCount": "Eklenecek sayı",
+  "focusCompletedTasksTitle": "Bugünün odak görevleri tamamlandı",
+  "focusQuickAddTask": "Hızlıca odak görevi ekle"
 }

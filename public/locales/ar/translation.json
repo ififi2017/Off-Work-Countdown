@@ -1009,5 +1009,7 @@
   "focusBreakOver": "انتهت الاستراحة",
   "focusActivityDayDone": "اكتملت جميع مهام اليوم",
   "focusAddPomodoroCapacity": "يمكنك إضافة ما يصل إلى {{count}} جلسات بومودورو قبل المهمة التالية أو نهاية فترة العمل.",
-  "focusAddPomodoroCount": "عدد الجلسات الإضافية"
+  "focusAddPomodoroCount": "عدد الجلسات الإضافية",
+  "focusCompletedTasksTitle": "اكتملت مهام التركيز لهذا اليوم",
+  "focusQuickAddTask": "إضافة مهمة تركيز بسرعة"
 }

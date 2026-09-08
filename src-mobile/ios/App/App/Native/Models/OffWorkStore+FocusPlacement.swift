@@ -42,6 +42,7 @@ extension OffWorkStore {
         pomodoros: Int = 1,
         icon: FocusTaskIcon = .focus,
         isFavorite: Bool = false,
+        scheduleAllPomodoros: Bool = false,
         at date: Date = .now
     ) -> FocusPlacementResult {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -69,7 +70,16 @@ extension OffWorkStore {
             icon: icon,
             isFavorite: isFavorite
         )
-        return assign(task, toBlockStartingAt: target.startAtMs, at: date)
+        let result = assign(task, toBlockStartingAt: target.startAtMs, at: date)
+        if scheduleAllPomodoros {
+            let remaining = canvas.blocks.filter {
+                $0.kind == .task && $0.startAtMs > target.startAtMs && !$0.hasAssignment
+            }
+            for block in remaining.prefix(max(0, task.estimatedPomodoros - 1)) {
+                _ = assign(task, toBlockStartingAt: block.startAtMs, at: date)
+            }
+        }
+        return result
     }
 
     /// Block-first creation: the block is already chosen, the task is made
