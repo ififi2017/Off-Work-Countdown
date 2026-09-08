@@ -1,11 +1,11 @@
 import Foundation
 
-enum CivilDatePrecision: String, Codable, Sendable {
+nonisolated enum CivilDatePrecision: String, Codable, Sendable {
     case year
     case day
 }
 
-struct PartialCivilDate: Codable, Equatable, Sendable {
+nonisolated struct PartialCivilDate: Codable, Equatable, Sendable {
     var year: Int
     var month: Int?
     var day: Int?
@@ -38,26 +38,26 @@ struct PartialCivilDate: Codable, Equatable, Sendable {
     }
 }
 
-enum SleepSource: String, Codable, Sendable {
+nonisolated enum SleepSource: String, Codable, Sendable {
     case manual
     case healthSuggested
 }
 
-enum LifeWorkHistoryMode: String, Codable, CaseIterable, Identifiable, Sendable {
+nonisolated enum LifeWorkHistoryMode: String, Codable, CaseIterable, Identifiable, Sendable {
     case rough
     case detailed
 
     var id: String { rawValue }
 }
 
-enum LifeSalaryCadence: String, Codable, CaseIterable, Identifiable, Sendable {
+nonisolated enum LifeSalaryCadence: String, Codable, CaseIterable, Identifiable, Sendable {
     case monthly
     case yearly
 
     var id: String { rawValue }
 }
 
-struct LifeSalary: Codable, Equatable, Sendable {
+nonisolated struct LifeSalary: Codable, Equatable, Sendable {
     var amount: Double
     var cadence: LifeSalaryCadence
 
@@ -66,7 +66,7 @@ struct LifeSalary: Codable, Equatable, Sendable {
 
 /// Nil on `LifeProfile` means the current salary stays unchanged. Keeping the
 /// optional as the mode makes older backups and profiles preserve that choice.
-struct LifeIncomeDecline: Codable, Equatable, Sendable {
+nonisolated struct LifeIncomeDecline: Codable, Equatable, Sendable {
     var startsAtAge: Int
     var retirementRatio: Double
 
@@ -77,7 +77,7 @@ struct LifeIncomeDecline: Codable, Equatable, Sendable {
     }
 }
 
-struct LifeEmploymentPeriod: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct LifeEmploymentPeriod: Codable, Equatable, Sendable, Identifiable {
     var id: UUID
     var startsOn: PartialCivilDate
     var endsOn: PartialCivilDate?
@@ -94,7 +94,7 @@ struct LifeEmploymentPeriod: Codable, Equatable, Sendable, Identifiable {
     }
 }
 
-enum LifeEmploymentTimeline {
+nonisolated enum LifeEmploymentTimeline {
     static func linkedPeriods(
         _ periods: [LifeEmploymentPeriod],
         calendar: Calendar,
@@ -148,7 +148,7 @@ enum LifeEmploymentTimeline {
 
 /// One life-view archive per store. The id is a constant so two offline
 /// devices first-write the same row. Matches 002 §6 and 010 LifeProfile v2.
-struct LifeProfile: Equatable, Sendable {
+nonisolated struct LifeProfile: Equatable, Sendable {
     static let schemaVersion = 4
     static let profileID = UUID(uuidString: "00000000-0000-0000-0000-00574F524B01")!
 

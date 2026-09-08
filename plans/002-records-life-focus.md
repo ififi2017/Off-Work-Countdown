@@ -261,11 +261,12 @@ Pro 模拟器，Debug，`RecordsPerformanceTests`）**：人生视图一次冷�
 走查 132.9 → 71.7ms），并缓存 `lifeViewModel`——**重复进入该 Tab 现在是 0.0ms**，
 过去每一次都要付上面那个冷构建。
 
-**仍未做**：那次冷构建依然阻塞主线程。要搬到后台，需要 `DayRecordResolver`、
-`DayResolution`、`CareerPeriod`／`ScheduleSnapshot`／`CalendarException`／`DayOverride`、
-`LifeProfile` 与 `LifeViewCalculator` 全部标 `nonisolated`——工程默认
-`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`，所以这是一次跨这些文件的隔离重构，不是
-局部改动。在做之前，扳机的正确说法是：**冷构建一次可感知，重复进入不再有代价。**
+**已整合（2026-09-08）**：记录逐日解析和人生周格组装改为 `@concurrent` 后台计算，
+输入为 `Sendable` 值快照；主线程按日程快照准备已预取的共享规则结果，不再逐日搜寻快照。
+日程与收入规则仍使用生成的 TypeScript bundle。后台返回后校验档案版本／时区，人生缓存
+也校验完整 key；期间编辑会重新计算，不将旧结果记到新版本。同步与异步共用解析函数，
+一致性测试覆盖日记录、人生模型及加载期间编辑。年图单击选择不再等待双击超时，双击进入
+月份仍保留。这里只改变执行位置与输入响应，不宣称总计算耗时按相同比例缩短。
 
 最小事件已挂上 `OffWorkStore`：计时页首次看见、开始 / 停止、登记加班。跨日
 `reconcile` 只重连，不另写一条开始。观察按 `eventID` 幂等；已擦除的 id 不会被同一

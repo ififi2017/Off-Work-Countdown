@@ -213,6 +213,10 @@ struct RecordsPerformanceTests {
         // edit or on the first visit; the second is what returning to the tab
         // costs now that the model is cached, and used to cost the first line
         // every single time.
+        // The cold number is what a first visit or an archive edit costs. It
+        // is no longer time the main actor is blocked: the expansion and the
+        // ~15,700-day walk both run off it, so a caller only waits for the
+        // hop. The warm number reads the cache the cold build filled.
         let lifePrepareMs = await milliseconds("prepareLifeViewModel (cold, whole career)") {
             _ = await store.prepareLifeViewModel()
         }
