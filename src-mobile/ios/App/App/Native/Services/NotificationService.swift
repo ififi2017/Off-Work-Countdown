@@ -118,7 +118,7 @@ final class NotificationService {
         let generation = scheduleGeneration
         let previous = pendingShiftOperation
         let task = Task { @MainActor in
-            await previous?.value
+            _ = await previous?.value
             guard generation == self.scheduleGeneration else { return }
             await work(generation)
         }
@@ -171,7 +171,7 @@ final class NotificationService {
     ) async -> FocusScheduleResult {
         let previous = pendingFocusOperation
         let task = Task { @MainActor in
-            await previous?.value
+            _ = await previous?.value
             guard isCurrent() else { return FocusScheduleResult.superseded }
             return await writeFocusTimers(id: id, alerts: alerts, center: center, isCurrent: isCurrent)
         }
