@@ -134,7 +134,7 @@ struct NativeRecordsIncome: Codable, Hashable {
     let earnings: Double?
 }
 
-struct NativeLifetimeIncomeSummary: Codable, Hashable, Sendable {
+nonisolated struct NativeLifetimeIncomeSummary: Codable, Hashable, Sendable {
     let historicalGross: Double
     let projectedGross: Double
     let totalGross: Double

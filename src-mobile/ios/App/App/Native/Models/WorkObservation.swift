@@ -2,7 +2,7 @@ import Foundation
 
 /// Application observations that annotate a day. They never enter the
 /// three-layer conclusion chain. Matches 002 §3.
-enum WorkObservationKind: String, Codable, Sendable {
+nonisolated enum WorkObservationKind: String, Codable, Sendable {
     case timerSurfaceFirstSeen
     case countdownStarted
     case countdownStopped
@@ -33,7 +33,7 @@ struct RecordedWorkDay: Equatable, Sendable, Identifiable {
 }
 
 /// An immutable use event. Writes never edit; a retry reuses `eventID`.
-struct WorkObservation: Equatable, Sendable, Identifiable {
+nonisolated struct WorkObservation: Equatable, Sendable, Identifiable {
     static let schemaVersion = 2
     static let unsetTieBreaker = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
 

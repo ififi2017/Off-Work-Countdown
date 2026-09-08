@@ -892,7 +892,7 @@ enum RecordJSON {
         calendar.identifier == .iso8601 ? "iso8601" : "gregorian"
     }
 
-    static func dayKey(_ date: Date, calendar: Calendar) -> String {
+    nonisolated static func dayKey(_ date: Date, calendar: Calendar) -> String {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
         return dayKey(year: parts.year ?? 0, month: parts.month ?? 0, day: parts.day ?? 0)
     }
@@ -903,11 +903,11 @@ enum RecordJSON {
     /// life-sized day walk spent resolving days — a third of the walk in one
     /// line. Padding by hand is about forty times cheaper for the same output.
     /// `RecordJSONTests` holds the two implementations to the same result.
-    static func dayKey(year: Int, month: Int, day: Int) -> String {
+    nonisolated static func dayKey(year: Int, month: Int, day: Int) -> String {
         "\(padded(year, width: 4))-\(padded(month, width: 2))-\(padded(day, width: 2))"
     }
 
-    private static func padded(_ value: Int, width: Int) -> String {
+    nonisolated private static func padded(_ value: Int, width: Int) -> String {
         // Records dates are civil dates in a proleptic Gregorian or ISO 8601
         // calendar, so a negative component cannot occur; it is handled only so
         // the function is total.
@@ -921,7 +921,7 @@ enum RecordJSON {
         }
     }
 
-    static func date(fromDayKey key: String, calendar: Calendar) -> Date? {
+    nonisolated static func date(fromDayKey key: String, calendar: Calendar) -> Date? {
         let parts = key.split(separator: "-", omittingEmptySubsequences: false)
         guard parts.count == 3,
               parts[0].count == 4,

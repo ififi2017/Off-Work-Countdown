@@ -1,6 +1,6 @@
 import Foundation
 
-struct RecordsPeriodMetrics: Equatable, Sendable {
+nonisolated struct RecordsPeriodMetrics: Equatable, Sendable {
     var workdayCount: Int
     var workDurationMs: Int64
     var declaredOvertimeMs: Int64
@@ -14,12 +14,12 @@ struct RecordsPeriodMetrics: Equatable, Sendable {
 /// after the first 002 build; decoding keeps it optional so existing archives
 /// remain readable. Legacy observations fall back to the base schedule
 /// expansion for their civil day and are ignored if that fact is unavailable.
-struct OvertimeDeclarationPayload: Codable, Equatable, Sendable {
+nonisolated struct OvertimeDeclarationPayload: Codable, Equatable, Sendable {
     var overtimeEndAtMs: Double
     var plannedEndAtMs: Double?
 }
 
-enum RecordsMetrics {
+nonisolated enum RecordsMetrics {
     static func summarize(
         days: [DayResolution],
         observations: [WorkObservation],

@@ -951,27 +951,17 @@ struct RecordsYearCanvas: View {
                     }
                     .contentShape(Rectangle())
                     .gesture(
-                        SpatialTapGesture(count: 2)
-                            .exclusively(before: SpatialTapGesture())
-                            .onEnded { result in
-                                let location: CGPoint
-                                let opensMonth: Bool
-                                switch result {
-                                case .first(let value):
-                                    location = value.location
-                                    opensMonth = true
-                                case .second(let value):
-                                    location = value.location
-                                    opensMonth = false
-                                }
-                                guard let index = grid.index(at: location), buckets.indices.contains(index) else { return }
-                                let bucket = buckets[index]
-                                if opensMonth {
-                                    onOpenMonth(bucket.month)
-                                } else {
-                                    select(month: bucket.month, date: bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2))
-                                }
-                            }
+                        SpatialTapGesture().onEnded { value in
+                            guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
+                            let bucket = buckets[index]
+                            select(month: bucket.month, date: bucket.start.addingTimeInterval(bucket.end.timeIntervalSince(bucket.start) / 2))
+                        }
+                    )
+                    .simultaneousGesture(
+                        SpatialTapGesture(count: 2).onEnded { value in
+                            guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
+                            onOpenMonth(buckets[index].month)
+                        }
                     )
                     .overlay {
                         ZStack {
@@ -1041,14 +1031,8 @@ struct RecordsYearCanvas: View {
                             }
                     }
                     .buttonStyle(.plain)
-                    .highPriorityGesture(
-                        TapGesture(count: 2).exclusively(before: TapGesture())
-                            .onEnded { result in
-                                switch result {
-                                case .first: onOpenMonth(month)
-                                case .second: select(month: month, date: nil)
-                                }
-                            }
+                    .simultaneousGesture(
+                        TapGesture(count: 2).onEnded { onOpenMonth(month) }
                     )
                     .accessibilityAction(named: Text(store.t("recordsSeeThisMonth"))) {
                         onOpenMonth(month)
@@ -1149,16 +1133,10 @@ struct RecordsYearMonthBars: View {
         let axisMs = RecordsYearMonthSampler.axisCeiling(for: months)
         VStack(alignment: .leading, spacing: 10) {
             axisRow(axisMs)
-            // Expanding is a request for height, so the rows spend it: they
-            // stretch to fill the canvas rather than leaving a screen of empty
-            // card under twelve compact lines. Where twelve 44pt rows genuinely
-            // do not fit — a small phone, an accessibility text size — the
-            // second branch scrolls instead of compressing below the minimum
-            // hit target.
-            ViewThatFits(in: .vertical) {
-                rows(months, axisMs: axisMs, stretches: true)
+            GeometryReader { proxy in
                 ScrollView {
-                    rows(months, axisMs: axisMs, stretches: false)
+                    rows(months, axisMs: axisMs)
+                        .frame(minHeight: proxy.size.height)
                 }
                 .scrollBounceBehavior(.basedOnSize)
             }
@@ -1168,11 +1146,11 @@ struct RecordsYearMonthBars: View {
         .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedMonth)
     }
 
-    private func rows(_ months: [RecordsYearMonthBar], axisMs: Int64, stretches: Bool) -> some View {
+    private func rows(_ months: [RecordsYearMonthBar], axisMs: Int64) -> some View {
         VStack(spacing: 2) {
             ForEach(months) { month in
                 row(month, axisMs: axisMs)
-                    .frame(maxHeight: stretches ? .infinity : nil)
+                    .frame(maxHeight: .infinity)
             }
         }
     }
@@ -1246,14 +1224,8 @@ struct RecordsYearMonthBars: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .highPriorityGesture(
-            TapGesture(count: 2).exclusively(before: TapGesture())
-                .onEnded { result in
-                    switch result {
-                    case .first: onOpenMonth(month.month)
-                    case .second: onSelectMonth(month.month)
-                    }
-                }
+        .simultaneousGesture(
+            TapGesture(count: 2).onEnded { onOpenMonth(month.month) }
         )
         .accessibilityAction(named: Text(store.t("recordsSeeThisMonth"))) {
             onOpenMonth(month.month)
