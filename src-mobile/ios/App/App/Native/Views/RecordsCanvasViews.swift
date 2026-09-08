@@ -124,15 +124,16 @@ private struct RecordsMetricHelpButton: View {
 
 private struct RecordsMetricHelpPopover: View {
     let help: RecordsMetricHelp
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var contentHeight: CGFloat = 200
 
     var body: some View {
         ScrollView {
             content.padding(18)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
         }
-        .frame(idealWidth: 340, idealHeight: 300)
+        .frame(idealWidth: 340, idealHeight: min(420, contentHeight))
         .presentationCompactAdaptation(.sheet)
-        .presentationDetents([.medium])
+        .presentationDetents([.height(min(420, max(120, contentHeight)))])
         .presentationDragIndicator(.visible)
     }
 
