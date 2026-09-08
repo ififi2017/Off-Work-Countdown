@@ -128,7 +128,10 @@ private struct RecordsMetricHelpPopover: View {
 
     var body: some View {
         ScrollView {
-            content.padding(18)
+            content
+                .padding(.horizontal, 18)
+                .padding(.top, 32)
+                .padding(.bottom, 18)
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
         }
         .frame(idealWidth: 340, idealHeight: min(420, contentHeight))
@@ -138,9 +141,9 @@ private struct RecordsMetricHelpPopover: View {
     }
 
     private var content: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             Text(help.title)
-                .font(.headline)
+                .font(.title3.weight(.semibold))
             Text(help.body)
                 .font(.body)
                 .foregroundStyle(OWCDesign.secondary)
@@ -158,18 +161,26 @@ struct RecordsAllocationBar: View {
     let store: OffWorkStore
     let share: TimeAllocationShare
     @State private var selectedKind: TimeAllocationKind?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if let item = visibleSlices.first(where: { $0.kind == selectedKind }) {
-                HStack(spacing: 6) {
-                    Text(store.t(item.kind.titleKey)).fontWeight(.medium)
-                    Text(accessibilityValue(item)).foregroundStyle(OWCDesign.secondary)
+            // Reserve the tallest localized description so selection never
+            // moves the bar, including when a label wraps at larger text sizes.
+            ZStack(alignment: .leading) {
+                ForEach(visibleSlices) { item in
+                    HStack(spacing: 6) {
+                        Text(store.t(item.kind.titleKey)).fontWeight(.medium)
+                        Text(accessibilityValue(item)).foregroundStyle(OWCDesign.secondary)
+                    }
+                    .font(.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .opacity(selectedKind == item.kind ? 1 : 0)
+                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press, value: selectedKind)
+                    .accessibilityHidden(selectedKind != item.kind)
                 }
-                .font(.caption)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.bottom, 4)
             }
+            .padding(.bottom, 4)
             bar
             legend
         }
@@ -202,12 +213,9 @@ struct RecordsAllocationBar: View {
                                 height: 10
                             )
                             .overlay {
-                                if selectedKind == item.kind {
-                                    // `strokeBorder` stays inside the segment.
-                                    // A centered stroke was clipped by the
-                                    // outer capsule at both bar edges.
-                                    shape.strokeBorder(OWCDesign.primary, lineWidth: 2)
-                                }
+                                shape.strokeBorder(OWCDesign.primary, lineWidth: 2)
+                                    .opacity(selectedKind == item.kind ? 1 : 0)
+                                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press, value: selectedKind)
                             }
                     }
                     .buttonStyle(.plain)
@@ -237,15 +245,10 @@ struct RecordsAllocationBar: View {
     }
 
     private var legend: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 10) {
-                legendItems
-            }
-            .fixedSize(horizontal: true, vertical: false)
-            VStack(alignment: .leading, spacing: 0) {
-                legendItems
-            }
+        RecordsLegendLayout(layoutDirection: store.layoutDirection) {
+            legendItems
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var legendItems: some View {
@@ -304,6 +307,79 @@ struct RecordsAllocationBar: View {
         let kind: TimeAllocationKind
         let ms: Int64
         let color: Color
+    }
+}
+
+/// Sizes columns to their labels, balances rows, and centers the group.
+private struct RecordsLegendLayout: Layout {
+    let layoutDirection: LayoutDirection
+    private let spacing: CGFloat = 10
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let rows = rows(width: proposal.width ?? .infinity, subviews: subviews)
+        return CGSize(
+            width: proposal.width ?? rows.map(\.width).max() ?? 0,
+            height: rows.reduce(0) { $0 + $1.height }
+        )
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for row in rows(width: bounds.width, subviews: subviews) {
+            var x = (bounds.width - row.width) / 2
+            for (index, size) in row.items {
+                let originX = layoutDirection == .rightToLeft ? bounds.width - x - size.width : x
+                subviews[index].place(
+                    at: CGPoint(x: bounds.minX + originX + size.width / 2, y: y + row.height / 2),
+                    anchor: .center,
+                    proposal: ProposedViewSize(size)
+                )
+                x += size.width + spacing
+            }
+            y += row.height
+        }
+    }
+
+    private struct Row {
+        var items: [(Int, CGSize)] = []
+        var width: CGFloat = 0
+        var height: CGFloat = 0
+    }
+
+    private func rows(width: CGFloat, subviews: Subviews) -> [Row] {
+        guard !subviews.isEmpty else { return [] }
+        let idealWidths = subviews.map { $0.sizeThatFits(.unspecified).width }
+        let available = width.isFinite ? width : idealWidths.reduce(0, +) + spacing * CGFloat(subviews.count - 1)
+        var result: [Row] = []
+        var row = Row()
+        for index in subviews.indices {
+            let size = subviews[index].sizeThatFits(ProposedViewSize(width: min(available, idealWidths[index]), height: nil))
+            if !row.items.isEmpty && row.width + spacing + size.width > available {
+                result.append(row)
+                row = Row()
+            }
+            row.width += (row.items.isEmpty ? 0 : spacing) + size.width
+            row.height = max(row.height, size.height)
+            row.items.append((index, size))
+        }
+        if !row.items.isEmpty { result.append(row) }
+        // Avoid a crowded first row followed by a lone label when the last
+        // label of the previous row fits comfortably beside it.
+        if result.count > 1 {
+            for index in (1..<result.count).reversed() {
+                while result[index - 1].items.count > result[index].items.count + 1,
+                      let item = result[index - 1].items.last,
+                      result[index].width + spacing + item.1.width <= available {
+                    result[index - 1].items.removeLast()
+                    result[index - 1].width -= item.1.width + spacing
+                    result[index - 1].height = result[index - 1].items.map { $0.1.height }.max() ?? 0
+                    result[index].items.insert(item, at: 0)
+                    result[index].width += item.1.width + spacing
+                    result[index].height = max(result[index].height, item.1.height)
+                }
+            }
+        }
+        return result
     }
 }
 
