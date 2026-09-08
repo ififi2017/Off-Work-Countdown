@@ -1452,7 +1452,7 @@ final class OffWorkStore {
         )
         // The archive can be edited while the walk runs. Caching a result built
         // from the older revision would outlive the edit that invalidated it.
-        if usesSharedCache, records.revision == revision {
+        if usesSharedCache, records.revision == revision, recordsCalendar == calendar, !Task.isCancelled {
             storeResolvedDays(result, from: start, through: end, revision: revision)
         }
         return result
