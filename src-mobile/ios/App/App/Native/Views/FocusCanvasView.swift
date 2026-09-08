@@ -299,6 +299,14 @@ struct FocusCanvasView: View {
     // MARK: - actions
 
     private func extend(_ taskID: UUID) {
+        if let session = store.activeFocusSession(),
+           session.kind == .focus, session.taskID == taskID {
+            store.requestFocusActivityConfirmation(
+                .addPomodoros,
+                startAtMs: Int64(session.startedAt.timeIntervalSince1970 * 1_000)
+            )
+            return
+        }
         taskToExtend = taskID
     }
 
