@@ -1133,16 +1133,10 @@ struct RecordsYearMonthBars: View {
         let axisMs = RecordsYearMonthSampler.axisCeiling(for: months)
         VStack(alignment: .leading, spacing: 10) {
             axisRow(axisMs)
-            // Expanding is a request for height, so the rows spend it: they
-            // stretch to fill the canvas rather than leaving a screen of empty
-            // card under twelve compact lines. Where twelve 44pt rows genuinely
-            // do not fit — a small phone, an accessibility text size — the
-            // second branch scrolls instead of compressing below the minimum
-            // hit target.
-            ViewThatFits(in: .vertical) {
-                rows(months, axisMs: axisMs, stretches: true)
+            GeometryReader { proxy in
                 ScrollView {
-                    rows(months, axisMs: axisMs, stretches: false)
+                    rows(months, axisMs: axisMs)
+                        .frame(minHeight: proxy.size.height)
                 }
                 .scrollBounceBehavior(.basedOnSize)
             }
@@ -1152,11 +1146,11 @@ struct RecordsYearMonthBars: View {
         .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedMonth)
     }
 
-    private func rows(_ months: [RecordsYearMonthBar], axisMs: Int64, stretches: Bool) -> some View {
+    private func rows(_ months: [RecordsYearMonthBar], axisMs: Int64) -> some View {
         VStack(spacing: 2) {
             ForEach(months) { month in
                 row(month, axisMs: axisMs)
-                    .frame(maxHeight: stretches ? .infinity : nil)
+                    .frame(maxHeight: .infinity)
             }
         }
     }
