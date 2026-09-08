@@ -545,7 +545,14 @@ struct SalaryDesignView: View {
                     Spacer()
                     if store.hideEarnings {
                         Text("••••")
-                        OWCEarningsVisibilityButton(store: store)
+                        // This page has already authenticated the owner. A
+                        // second prompt resigns active and re-locks the page,
+                        // while the generic eye only restores hideEarnings.
+                        // Match the visibility toggle inside this same gate.
+                        Button { store.hideEarnings = false } label: {
+                            Image(systemName: "eye")
+                        }
+                        .accessibilityLabel(store.t("unlockSalary"))
                     } else {
                         OWCNumberField(
                             placeholder: "0",

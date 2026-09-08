@@ -20,9 +20,6 @@ struct RecordsDesignView: View {
     @State private var days: [DayResolution] = []
     @State private var cells: [RecordsDayCell] = []
     @State private var summary: RecordsHeadlineSummary?
-    @State private var lifeModel: LifeViewModel?
-    @State private var lifeAllocationVisible = false
-    @State private var lifeProjectionSignature: RecordsLoadSignature?
     @State private var expanded: [RecordsScale: Bool]
     @State private var pinch: CGFloat = 1
     @State private var scaleFeedback = 0
@@ -58,13 +55,13 @@ struct RecordsDesignView: View {
 #if DEBUG
         let requested = RecordsScale(
             rawValue: UserDefaults.standard.string(forKey: "ios.native.qaRecordsScale") ?? ""
-        ) ?? .month
+        ) ?? store.preferredRecordsScale
         let startsExpanded = UserDefaults.standard.bool(forKey: "ios.native.qaRecordsExpanded")
             && (requested == .year || requested == .life)
         _scale = State(initialValue: requested)
         _expanded = State(initialValue: startsExpanded ? [requested: true] : [:])
 #else
-        _scale = State(initialValue: .month)
+        _scale = State(initialValue: store.preferredRecordsScale)
         _expanded = State(initialValue: [:])
 #endif
     }
@@ -242,19 +239,9 @@ struct RecordsDesignView: View {
             // locked canvas.
             if scale == .life, store.plus.isAuthorized, store.records.state.lifeProfile != nil {
                 RecordsLifeAllocationCard(
-                    store: store, model: lifeModel,
-                    isLoading: lifeProjectionSignature != currentLoadSignature
+                    store: store, model: store.cachedLifeViewModel,
+                    isLoading: store.cachedLifeViewModel == nil
                 )
-                .onScrollVisibilityChange(threshold: 0.1) { lifeAllocationVisible = $0 }
-                .task(id: lifeAllocationVisible && scenePhase == .active && store.selectedTab == .records
-                    ? currentLoadSignature : nil) {
-                    guard lifeAllocationVisible, scenePhase == .active, store.selectedTab == .records else { return }
-                    let signature = currentLoadSignature
-                    let projection = await store.prepareLifeViewModel()
-                    guard !Task.isCancelled, signature == currentLoadSignature else { return }
-                    lifeModel = projection
-                    lifeProjectionSignature = signature
-                }
             }
             if shouldOfferLifeSetup {
                 lifeSetupCard
@@ -475,7 +462,9 @@ struct RecordsDesignView: View {
         }
     }
 
-    private var chartIsLoading: Bool { loadedSignature != currentLoadSignature }
+    // Reconciliation and CloudKit can change the revision several times at
+    // launch. Keep the last calendar visible while its replacement is prepared.
+    private var chartIsLoading: Bool { cells.isEmpty && loadedSignature != currentLoadSignature }
 
     private var placeholderCells: [RecordsDayCell] {
         let window = store.recordsWindow(for: scale, anchor: anchor)
@@ -748,6 +737,7 @@ struct RecordsDesignView: View {
         ) {
             loadGeneration += 1
             scale = nextScale
+            store.preferredRecordsScale = nextScale
             days = []
             cells = []
             summary = nil
@@ -923,7 +913,7 @@ struct RecordsDesignView: View {
             summary = nil
             if selectedLifeStageID == nil { selectCurrentLifeStage() }
             // The stage grid is immediate. The expensive allocation is requested
-            // only when its card becomes visible, and cancelled when it leaves.
+            // once its card becomes visible; later refreshes retain the result.
             loadedSignature = signature
             return
         }

@@ -926,6 +926,7 @@ struct OWCConfettiOverlay: View {
         .task(id: burst) {
             guard burst > 0 else { return }
             try? await Task.sleep(for: .seconds(Self.life + 0.2))
+            guard !Task.isCancelled else { return }
             flakes = []
         }
     }
@@ -965,28 +966,29 @@ struct OWCConfettiOverlay: View {
         let flip = cos(spin)
         let width = flake.size.width * max(0.16, abs(flip))
 
-        context.opacity = fade
-        context.drawLayer { layer in
-            layer.translateBy(x: x, y: y)
-            layer.rotate(by: .radians(flake.tilt + t * flake.spin * 0.35))
-            let rect = CGRect(
-                x: -width / 2,
-                y: -flake.size.height / 2,
-                width: width,
-                height: flake.size.height
+        // Each flake has one fill: a copied graphics state preserves its
+        // transform and opacity without allocating a compositing layer.
+        var layer = context
+        layer.opacity = fade
+        layer.translateBy(x: x, y: y)
+        layer.rotate(by: .radians(flake.tilt + t * flake.spin * 0.35))
+        let rect = CGRect(
+            x: -width / 2,
+            y: -flake.size.height / 2,
+            width: width,
+            height: flake.size.height
+        )
+        let color = flip < 0 ? flake.color.opacity(0.55) : flake.color
+        switch flake.shape {
+        case .strip:
+            layer.fill(Path(roundedRect: rect, cornerRadius: 1), with: .color(color))
+        case .dot:
+            layer.fill(Path(ellipseIn: rect), with: .color(color))
+        case .ribbon:
+            layer.fill(
+                Path(roundedRect: rect, cornerRadius: rect.width / 2),
+                with: .color(color)
             )
-            let color = flip < 0 ? flake.color.opacity(0.55) : flake.color
-            switch flake.shape {
-            case .strip:
-                layer.fill(Path(roundedRect: rect, cornerRadius: 1), with: .color(color))
-            case .dot:
-                layer.fill(Path(ellipseIn: rect), with: .color(color))
-            case .ribbon:
-                layer.fill(
-                    Path(roundedRect: rect, cornerRadius: rect.width / 2),
-                    with: .color(color)
-                )
-            }
         }
     }
 

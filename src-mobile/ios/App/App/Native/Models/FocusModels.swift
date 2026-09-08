@@ -165,6 +165,78 @@ struct FocusTemplate: Codable, Equatable, Sendable, Identifiable {
     var updatedAt: Date
 }
 
+/// A template is an ordered task list. The existing slot archive remains
+/// readable; recovery slots from older editors are not tasks in that list.
+struct FocusTemplateTask: Identifiable, Equatable {
+    var taskKey: UUID?
+    var legacyIndex: Int
+    var title: String
+    var icon: FocusTaskIcon
+    var pomodoros: Int
+    var id: String { taskKey?.uuidString ?? "legacy-\(legacyIndex)" }
+}
+
+extension FocusTemplate {
+    var tasks: [FocusTemplateTask] { Self.tasks(from: slots) }
+
+    static func tasks(from slots: [FocusTemplateSlot]) -> [FocusTemplateTask] {
+        var result: [FocusTemplateTask] = []
+        for slot in slots.sorted(by: { $0.blockIndex < $1.blockIndex }) where slot.kind == .task {
+            if let key = slot.taskKey, let index = result.firstIndex(where: { $0.taskKey == key }) {
+                result[index].pomodoros += 1
+            } else {
+                result.append(FocusTemplateTask(taskKey: slot.taskKey, legacyIndex: slot.blockIndex,
+                    title: slot.taskTitle ?? "", icon: slot.taskIcon ?? .focus, pomodoros: 1))
+            }
+        }
+        return result
+    }
+
+    static func slots(from tasks: [FocusTemplateTask]) -> [FocusTemplateSlot] {
+        var result: [FocusTemplateSlot] = []
+        for task in tasks {
+            let key = task.taskKey ?? UUID()
+            for _ in 0..<max(1, task.pomodoros) {
+                result.append(FocusTemplateSlot(blockIndex: result.count, kind: .task,
+                    taskKey: key, taskTitle: task.title, taskIcon: task.icon))
+            }
+        }
+        return result
+    }
+
+    /// Only a complete prefix fits: never start a task whose requested rounds
+    /// cannot finish, and never mutate the template when a short shift drops its tail.
+    static func remainingPomodoros(_ tasks: [FocusTemplateTask], in blocks: [FocusWorkBlock], excluding taskID: String? = nil) -> Int {
+        max(0, blocks.count { $0.kind == .task }
+            - tasks.filter { $0.id != taskID }.reduce(0) { $0 + $1.pomodoros })
+    }
+
+    static func fittingTaskCount(_ tasks: [FocusTemplateTask], in blocks: [FocusWorkBlock]) -> Int {
+        var remaining = blocks.count { $0.kind == .task }
+        var count = 0
+        for task in tasks {
+            guard task.pomodoros <= remaining else { break }
+            remaining -= task.pomodoros
+            count += 1
+        }
+        return count
+    }
+
+    func placedSlots(in blocks: [FocusWorkBlock]) -> [FocusTemplateSlot] {
+        let work = blocks.filter { $0.kind == .task }
+        var result: [FocusTemplateSlot] = []
+        var cursor = 0
+        for task in tasks.prefix(Self.fittingTaskCount(tasks, in: blocks)) {
+            for block in work[cursor..<(cursor + task.pomodoros)] {
+                result.append(FocusTemplateSlot(blockIndex: block.index, kind: .task,
+                    taskKey: task.taskKey, taskTitle: task.title, taskIcon: task.icon))
+            }
+            cursor += task.pomodoros
+        }
+        return result
+    }
+}
+
 struct FocusPlanningState: Codable, Equatable, Sendable {
     var plans: [String: FocusDayPlan] = [:]
     var templates: [FocusTemplate] = []

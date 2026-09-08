@@ -68,30 +68,7 @@ struct FocusTemplateDraft: Identifiable {
     var name: String
     var slots: [FocusTemplateSlot]
 
-    func taskIndices(at index: Int) -> [Int] {
-        guard let key = slots.first(where: { $0.blockIndex == index })?.taskKey else { return [index] }
-        return slots.filter { $0.kind == .task && $0.taskKey == key }.map(\.blockIndex).sorted()
-    }
 
-    func availableTaskIndices(at index: Int, blocks: [FocusWorkBlock]) -> [Int] {
-        var indices = taskIndices(at: index)
-        for block in blocks where block.kind == .task && block.index > (indices.last ?? index) {
-            guard !slots.contains(where: { $0.blockIndex == block.index }) else { break }
-            indices.append(block.index)
-        }
-        return indices
-    }
-
-    mutating func setTask(at index: Int, count: Int, title: String, icon: FocusTaskIcon, blocks: [FocusWorkBlock]) {
-        let oldIndices = taskIndices(at: index)
-        let indices = availableTaskIndices(at: index, blocks: blocks)
-        guard count > 0, count <= indices.count else { return }
-        let key = slots.first(where: { $0.blockIndex == index })?.taskKey ?? UUID()
-        slots.removeAll { oldIndices.contains($0.blockIndex) }
-        slots.append(contentsOf: indices.prefix(count).map {
-            FocusTemplateSlot(blockIndex: $0, kind: .task, taskKey: key, taskTitle: title, taskIcon: icon)
-        })
-    }
 }
 
 /// The third scale. Favourites and usual days finally sit together — a usual
@@ -102,6 +79,8 @@ struct FocusUsualScale: View {
     let model: FocusDayCanvasModel
     var onPlaceFavorite: (FocusTask) -> Void
     var onEditTemplate: (FocusTemplateDraft) -> Void
+
+    @State private var showsCapacityWarning = false
 
     private var favorites: [FocusTask] { store.favoriteFocusTasks() }
     private var templates: [FocusTemplate] { store.focusPlanning.templates }
@@ -202,34 +181,50 @@ struct FocusUsualScale: View {
                             isLast: index == templates.count - 1,
                             centersVertically: true
                         ) {
-                            Menu {
-                                Button(store.t("focusApplyTemplate")) {
-                                    _ = store.applyFocusTemplate(template)
+                            HStack(spacing: 0) {
+                                if store.focusTemplateFit(template).dropped > 0 {
+                                    Button { showsCapacityWarning = true } label: {
+                                        Image(systemName: "exclamationmark.triangle")
+                                            .foregroundStyle(.orange)
+                                            .frame(width: 44, height: 44)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(store.t("focusTemplateCapacityWarning"))
                                 }
-                                Button(store.t(
-                                    store.focusPlanning.defaultTemplateID == template.id
-                                        ? "focusUnsetDefaultTemplate"
-                                        : "focusSetDefaultTemplate"
-                                )) {
-                                    store.setDefaultFocusTemplate(
-                                        store.focusPlanning.defaultTemplateID == template.id ? nil : template
-                                    )
+                                Menu {
+                                    Button(store.t("focusApplyTemplate")) {
+                                        _ = store.applyFocusTemplate(template)
+                                    }
+                                    Button(store.t(
+                                        store.focusPlanning.defaultTemplateID == template.id
+                                            ? "focusUnsetDefaultTemplate"
+                                            : "focusSetDefaultTemplate"
+                                    )) {
+                                        store.setDefaultFocusTemplate(
+                                            store.focusPlanning.defaultTemplateID == template.id ? nil : template
+                                        )
+                                    }
+                                    Button(store.t("focusTemplateDelete"), role: .destructive) {
+                                        store.deleteFocusTemplate(template)
+                                    }
+                                } label: {
+                                    Image(systemName: "ellipsis")
+                                        .foregroundStyle(OWCDesign.secondary)
+                                        .frame(width: 44, height: 44)
+                                        .contentShape(Rectangle())
                                 }
-                                Button(store.t("focusTemplateDelete"), role: .destructive) {
-                                    store.deleteFocusTemplate(template)
-                                }
-                            } label: {
-                                Image(systemName: "ellipsis")
-                                    .foregroundStyle(OWCDesign.secondary)
-                                    .frame(width: 44, height: 44)
-                                    .contentShape(Rectangle())
+                                .accessibilityLabel(store.t("moreActions"))
                             }
-                            .accessibilityLabel(store.t("moreActions"))
                         }
                     }
                     .buttonStyle(OWCRowButtonStyle())
                 }
             }
+        }
+        .alert(store.t("focusTemplateCapacityWarning"), isPresented: $showsCapacityWarning) {
+            Button(store.t("close"), role: .cancel) { }
+        } message: {
+            Text(store.t("focusTemplateSequenceNote"))
         }
     }
 
@@ -247,186 +242,143 @@ struct FocusUsualScale: View {
     }
 }
 
-/// A usual day gets its own canvas, drawn against a whole shift with no
-/// "now" on it.
-///
-/// Editing today cannot produce a whole day once today is half over: the
-/// planner refuses elapsed blocks. Using today as the mould was the source of
-/// the problem, so the mould here is the shift shape alone.
+/// Templates edit task order and estimates; actual times belong to the day
+/// where that list is applied, so a shift edit cannot turn a task into a break.
 struct FocusTemplateEditorView: View {
     let store: OffWorkStore
-    @State var draft: FocusTemplateDraft
-    @State private var editingBlock: FocusDayCanvasModel.Block?
+    @State private var draft: FocusTemplateDraft
+    @State private var tasks: [FocusTemplateTask]
+    @State private var editingTask: FocusTemplateTask?
     @State private var taskDraft = FocusTaskEditorDraft()
-    @State private var favoriteChanges: [UUID: Bool] = [:]
+    @State private var favoriteChanges: [String: Bool] = [:]
     @Environment(\.dismiss) private var dismiss
 
-    private func templateCanvas(from base: FocusDayCanvasModel) -> FocusDayCanvasModel {
-        var model = base
-        model.nowAtMs = nil
-        model.tasks = []
-        model.overflow = []
-        model.blocks = model.blocks.map { block in
-            var next = block
-            // No elapsed state and no current block: a usual day has no clock,
-            // which is exactly what makes the morning reachable.
-            next.state = .future
-            let slot = draft.slots.first { $0.blockIndex == block.index }
-            next.taskID = nil
-            next.taskTitle = slot?.taskTitle
-            next.taskIcon = slot?.taskIcon
-            next.isUserBreak = block.kind == .task && slot?.kind == .breakTime
-            return next
-        }
-        return model
+    init(store: OffWorkStore, draft: FocusTemplateDraft) {
+        self.store = store
+        _draft = State(initialValue: draft)
+        _tasks = State(initialValue: FocusTemplate.tasks(from: draft.slots))
+    }
+
+    private var omittedTaskIDs: Set<String> {
+        let count = FocusTemplate.fittingTaskCount(tasks, in: store.focusTemplateBlocks())
+        return Set(tasks.dropFirst(count).map(\.id))
     }
 
     var body: some View {
-        // Same reason as the canvas page: each of these is a rule-bundle round
-        // trip, so they are resolved once and passed down.
-        let blocks = store.focusTemplateBlocks()
-        let canvas = templateCanvas(from: store.focusDayCanvas())
-        let emptyWorkBlocks = canvas.blocks.count { $0.kind == .task && !$0.isUserBreak && $0.taskTitle == nil }
-        return NavigationStack {
-            OWCContentSizedScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    OWCGroupCard {
-                        OWCRow(
-                            icon: "textformat",
-                            title: store.t("focusUsualDayName"),
-                            isLast: true
-                        ) {
-                            TextField(store.t("focusUsualDayDefaultName"), text: $draft.name)
-                                .multilineTextAlignment(.trailing)
-                                .frame(maxWidth: 180)
-                        }
-                    }
-
-                    Text(shapeNote(blocks))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.secondary)
-                        .padding(.horizontal, 6)
-
-                    FocusBandView(
-                        store: store,
-                        model: canvas,
-                        selectedBlock: .constant(nil)
-                    ) { block in
-                        taskDraft = FocusTaskEditorDraft()
-                        editingBlock = block
-
-                    }
-
-                    if emptyWorkBlocks > 0 {
-                        Text(store.t("focusUsualDayEmptyNote", values: ["count": "\(emptyWorkBlocks)"]))
-                            .font(.caption)
-                            .foregroundStyle(OWCDesign.secondary)
-                            .padding(.horizontal, 6)
-                    }
-                    Text(store.t("focusUsualDayCadenceLock"))
-                        .font(.caption)
-                        .foregroundStyle(OWCDesign.secondary)
-                        .padding(.horizontal, 6)
+        let omittedTaskIDs = omittedTaskIDs
+        let remaining = FocusTemplate.remainingPomodoros(tasks, in: store.focusTemplateBlocks())
+        NavigationStack {
+            List {
+                Section {
+                    TextField(store.t("focusUsualDayName"), text: $draft.name)
                 }
-                .padding(.horizontal, OWCDesign.pageInset)
-                .padding(.top, 14)
-                .padding(.bottom, OWCDesign.detailBottomInset)
+                Section {
+                    ForEach(tasks) { task in
+                        Button { edit(task) } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: task.icon.systemName)
+                                    .foregroundStyle(OWCDesign.accent)
+                                    .frame(width: 24)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(task.title).foregroundStyle(OWCDesign.primary)
+                                    Text(store.t("focusEstimateDetail", values: [
+                                        "count": "\(task.pomodoros)",
+                                        "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
+                                    ]))
+                                    .font(.footnote).foregroundStyle(OWCDesign.secondary)
+                                    if omittedTaskIDs.contains(task.id) {
+                                        Label {
+                                            Text(store.t("focusTemplateTaskDoesNotFit"))
+                                                .foregroundStyle(OWCDesign.secondary)
+                                        } icon: {
+                                            Image(systemName: "exclamationmark.triangle")
+                                                .foregroundStyle(OWCDesign.accent)
+                                        }
+                                        .font(.caption)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }.buttonStyle(.plain)
+                    }
+                    .onMove { tasks.move(fromOffsets: $0, toOffset: $1) }
+                    .onDelete { tasks.remove(atOffsets: $0) }
+                    Button {
+                        edit(FocusTemplateTask(taskKey: UUID(), legacyIndex: tasks.count,
+                                               title: "", icon: .focus, pomodoros: 1))
+                    } label: {
+                        Label(store.t("focusNewTask"), systemImage: "plus")
+                    }
+                    .disabled(remaining == 0)
+                    .deleteDisabled(true)
+                    .moveDisabled(true)
+                    Text(store.t("focusTemplateRemainingPomodoros", values: ["count": "\(remaining)"]))
+                        .font(.footnote)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .deleteDisabled(true)
+                        .moveDisabled(true)
+                } footer: {
+                    Text(store.t("focusTemplateSequenceNote"))
+                }
             }
-            .background(OWCDesign.page)
+            .environment(\.editMode, .constant(.active))
             .navigationTitle(store.t("focusUsualDay"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button(store.t("cancel")) { dismiss() }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button(store.t("saveAction"), action: save)
-                        .disabled(draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                                  || draft.slots.isEmpty)
+                        .disabled(draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || tasks.isEmpty)
                 }
             }
-
         }
-        .sheet(item: $editingBlock) { block in
-            let occupied = draft.slots.contains { $0.blockIndex == block.index }
-            if occupied {
-                NavigationStack {
-                    VStack(spacing: 14) {
-                        Text(block.taskTitle ?? store.t("focusBreak")).font(.headline)
-                        Button(store.t("focusBlockClear"), role: .destructive) {
-                            draft.slots.removeAll { $0.blockIndex == block.index }
-                            editingBlock = nil
-                        }.buttonStyle(OWCSecondaryButtonStyle())
-                    }.padding(OWCDesign.pageInset)
-                    .toolbar { ToolbarItem(placement: .topBarLeading) {
-                        Button(store.t("close")) { editingBlock = nil }
-                    } }
-                }
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
-            } else {
-                let available = draft.availableTaskIndices(at: block.index, blocks: blocks)
-                let finalIndex = available.prefix(taskDraft.pomodoros).last
-                let finish = available.count >= taskDraft.pomodoros
-                    ? blocks.first { $0.index == finalIndex }?.end : nil
-                FocusTaskEditorShell(store: store, saveTitle: store.t("saveAction"),
-                                     canSave: taskDraft.canSave && finish != nil,
-                                     onCancel: { editingBlock = nil }, onSave: {
-                    setSlot(block.index, title: taskDraft.title, icon: taskDraft.icon)
-                    editingBlock = nil
+        .sheet(item: $editingTask) { task in
+            let editingCapacity = FocusTemplate.remainingPomodoros(
+                tasks, in: store.focusTemplateBlocks(), excluding: task.id
+            )
+            FocusTaskEditorShell(store: store, saveTitle: store.t("saveAction"),
+                titleKey: tasks.contains(where: { $0.id == task.id }) ? "focusEditTask" : "focusNewTask",
+                canSave: taskDraft.canSave, onCancel: { editingTask = nil }, onSave: {
+                    var updated = task
+                    updated.title = taskDraft.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                    updated.icon = taskDraft.icon
+                    updated.pomodoros = taskDraft.pomodoros
+                    if let index = tasks.firstIndex(where: { $0.id == task.id }) { tasks[index] = updated }
+                    else { tasks.append(updated) }
+                    favoriteChanges[task.id] = taskDraft.isFavorite
+                    editingTask = nil
                 }) {
                     FocusTaskEditorFields(store: store, draft: $taskDraft,
-                        destination: store.t("focusUsualDay") + " · " + store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)),
-                        finish: finish, showsDate: false)
-                    Button(store.t("focusBlockMakeBreak")) {
-                        draft.slots.append(FocusTemplateSlot(blockIndex: block.index, kind: .breakTime,
-                                                            taskKey: nil, taskTitle: nil, taskIcon: nil))
-                        editingBlock = nil
-                    }.buttonStyle(OWCSecondaryButtonStyle())
+                        destination: store.t("focusUsualDay"), finish: nil, showsDate: false, showsFinish: false,
+                        maximumPomodoros: editingCapacity,
+                        capacityNote: store.t("focusTemplateRemainingPomodoros", values: ["count": "\(editingCapacity)"]))
                 }
-            }
         }
     }
 
-    private func shapeNote(_ blocks: [FocusWorkBlock]) -> String {
-        let workBlocks = blocks.count { $0.kind == .task }
-        guard let first = blocks.first, let last = blocks.last else {
-            return store.t("focusNoShift")
-        }
-        return store.t("focusUsualDayShape", values: [
-            "start": store.formatTime(first.start),
-            "end": store.formatTime(last.end),
-            "count": "\(workBlocks)"
-        ])
-    }
-
-    private func setSlot(_ blockIndex: Int, title: String, icon: FocusTaskIcon) {
-        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        let previousKey = draft.slots.first(where: { $0.blockIndex == blockIndex })?.taskKey
-        draft.setTask(at: blockIndex, count: taskDraft.pomodoros, title: trimmed, icon: icon, blocks: store.focusTemplateBlocks())
-        if let key = previousKey ?? draft.slots.first(where: { $0.blockIndex == blockIndex })?.taskKey {
-            favoriteChanges[key] = taskDraft.isFavorite
-        }
+    private func edit(_ task: FocusTemplateTask) {
+        taskDraft = FocusTaskEditorDraft()
+        taskDraft.title = task.title
+        taskDraft.icon = task.icon
+        taskDraft.pomodoros = task.pomodoros
+        taskDraft.isFavorite = favoriteChanges[task.id]
+            ?? (store.savedFocusFavorite(title: task.title, icon: task.icon) != nil)
+        editingTask = task
     }
 
     private func save() {
-        let blocks = store.focusTemplateBlocks()
-        // Keep recovery slots the user drew inside task blocks as well.
-        var slots = draft.slots.filter { slot in blocks.contains { $0.index == slot.blockIndex && $0.kind == .task } }
-        slots.append(contentsOf: blocks.filter { $0.kind == .breakTime }.map {
-            FocusTemplateSlot(blockIndex: $0.index, kind: .breakTime, taskKey: nil, taskTitle: nil, taskIcon: nil)
-        })
-        for (key, favorite) in favoriteChanges {
-            let taskSlots = slots.filter { $0.kind == .task && $0.taskKey == key }
-            guard let slot = taskSlots.first, let title = slot.taskTitle else { continue }
-            let icon = slot.taskIcon ?? .focus
+        for task in tasks {
+            guard let favorite = favoriteChanges[task.id] else { continue }
             if favorite {
-                store.saveFocusFavorite(title: title, pomodoros: taskSlots.count, icon: icon)
-            } else if let saved = store.savedFocusFavorite(title: title, icon: icon) {
+                store.saveFocusFavorite(title: task.title, pomodoros: task.pomodoros, icon: task.icon)
+            } else if let saved = store.savedFocusFavorite(title: task.title, icon: task.icon) {
                 store.toggleFocusFavorite(saved)
             }
         }
+        let slots = FocusTemplate.slots(from: tasks)
         if let template = draft.template {
             _ = store.updateFocusTemplate(template, name: draft.name, slots: slots)
         } else {

@@ -54,7 +54,11 @@ final class RecordCoordinator {
     var blocksWrites: Bool {
         persistenceError == .invalidArchive || persistenceError == .unreadableArchive
     }
+    @ObservationIgnored private var writeBatchDepth = 0
+    @ObservationIgnored private var hasPendingWrite = false
+    @ObservationIgnored private var hasPendingDirtyNotification = false
     private let fileURL: URL?
+    var lifeSummaryCacheURL: URL? { fileURL?.deletingLastPathComponent().appending(path: "life-summary-cache.json") }
     var captureEnabled = true
     /// CKSyncEngine must hear about every dirty row, not only the first enable.
     var onDirty: (() -> Void)?
@@ -993,11 +997,57 @@ final class RecordCoordinator {
         case .mergeLife:
             if case .lifeProfile(let server) = incoming, let localProfile = state.lifeProfile {
                 let baseline = lastKnownLifeProfile()
+                var compatibleServer = server
+                // Older clients omit career fields they cannot represent. An
+                // absent field is not a request to erase this device's history.
+                if let fields = try? JSONSerialization.jsonObject(with: payload) as? [String: Any],
+                   fields["employmentPeriods"] == nil {
+                    compatibleServer.employmentPeriods = localProfile.employmentPeriods
+                    compatibleServer.workHistoryMode = localProfile.workHistoryMode
+                    compatibleServer.roughCurrentSalary = localProfile.roughCurrentSalary
+                    compatibleServer.futureIncomeDecline = localProfile.futureIncomeDecline
+                }
+                // With no shared baseline, an empty list on another device
+                // is not evidence that the user deleted this device's history.
+                let ambiguousHistoryClear = baseline == nil
+                    && !localProfile.employmentPeriods.isEmpty
+                    && compatibleServer.employmentPeriods.isEmpty
+                if ambiguousHistoryClear {
+                    compatibleServer.employmentPeriods = localProfile.employmentPeriods
+                    compatibleServer.workHistoryMode = localProfile.workHistoryMode
+                    compatibleServer.roughCurrentSalary = localProfile.roughCurrentSalary
+                    parkCloudConflict(SyncConflictCopy(
+                        entityType: .lifeProfile, logicalKey: key, payload: payload,
+                        lostAtMs: Date.now.timeIntervalSince1970 * 1_000,
+                        localPayload: localPayload, incomingPayload: payload,
+                        localEditedAtMs: localEditedAtMs, incomingEditedAtMs: incomingEditedAtMs,
+                        currentWinner: .local
+                    ))
+                }
                 let merged = RecordsSyncConflict.mergeLifeProfile(
                     local: localProfile,
-                    server: server,
+                    server: compatibleServer,
                     baseline: baseline
                 )
+                // Life uses a field merge rather than the normal conflict-copy
+                // branch. Retain overwritten career data there as well, so a
+                // second device cannot silently make the only copy disappear.
+                if !localProfile.employmentPeriods.isEmpty,
+                   merged.employmentPeriods != localProfile.employmentPeriods,
+                   let localPayload {
+                    parkCloudConflict(SyncConflictCopy(
+                        entityType: .lifeProfile,
+                        logicalKey: key,
+                        payload: localPayload,
+                        lostAtMs: Date.now.timeIntervalSince1970 * 1_000,
+                        localPayload: localPayload,
+                        incomingPayload: payload,
+                        baselinePayload: baselinePayload,
+                        localEditedAtMs: localEditedAtMs,
+                        incomingEditedAtMs: incomingEditedAtMs,
+                        currentWinner: .incoming
+                    ))
+                }
                 state.lifeProfile = merged
                 RecordsSyncOutbox.markDirty(
                     &state.sync,
@@ -1584,7 +1634,8 @@ final class RecordCoordinator {
             erase: erase,
             revokeErase: revokeErase
         )
-        onDirty?()
+        if writeBatchDepth > 0 { hasPendingDirtyNotification = true }
+        else { onDirty?() }
     }
 
     private func load() {
@@ -1626,7 +1677,29 @@ final class RecordCoordinator {
         }
     }
 
+    /// Synchronous planning changes keep all row revisions and outbox entries,
+    /// but encode and atomically save the archive just once for the operation.
+    func withBatchedWrites<T>(_ changes: () -> T) -> T {
+        writeBatchDepth += 1
+        defer {
+            writeBatchDepth -= 1
+            if writeBatchDepth == 0 {
+                let shouldWrite = hasPendingWrite
+                let shouldNotify = hasPendingDirtyNotification
+                hasPendingWrite = false
+                hasPendingDirtyNotification = false
+                if shouldWrite { persist() }
+                if shouldNotify { onDirty?() }
+            }
+        }
+        return changes()
+    }
+
     private func persist() {
+        if writeBatchDepth > 0 {
+            hasPendingWrite = true
+            return
+        }
         revision &+= 1
         do {
             try writeArchive(state)

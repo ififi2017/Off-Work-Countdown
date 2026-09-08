@@ -509,37 +509,17 @@ func templatePreviewBreaksRequireTasks() throws {
 }
 
 @MainActor
-@Test("Usual-day estimates resize one task without changing its identity")
+@Test("Template estimates retain identity and order independently of grid indices")
 func usualDayTaskEstimateCanBeEdited() throws {
-    let store = try canvasStore()
-    let at = try #require(day(store, hour: 9, minute: 0))
-    let blocks = store.focusWorkBlocks(at: at)
-    let work = blocks.filter { $0.kind == .task }
-    let first = try #require(work.first)
-    var draft = FocusTemplateDraft(template: nil, name: "Usual", slots: [])
-    draft.setTask(at: first.index, count: 3, title: "Writing", icon: .focus, blocks: blocks)
-    #expect(draft.slots.count == 3)
-    let key = try #require(draft.slots.first?.taskKey)
-    #expect(draft.slots.allSatisfy { $0.taskKey == key })
-    draft.setTask(at: work[1].index, count: 2, title: "Edited", icon: .focus, blocks: blocks)
-    #expect(draft.slots.map(\.blockIndex) == Array(work.prefix(2).map(\.index)))
-    #expect(draft.slots.allSatisfy { $0.taskKey == key && $0.taskTitle == "Edited" })
-}
-
-@MainActor
-@Test(arguments: [FocusPlanBlockKind.task, .breakTime])
-func usualDayEstimateDoesNotOverwriteOccupiedSlots(kind: FocusPlanBlockKind) throws {
-    let store = try canvasStore()
-    let at = try #require(day(store, hour: 9, minute: 0))
-    let blocks = store.focusWorkBlocks(at: at)
-    let work = blocks.filter { $0.kind == .task }
-    let occupied = FocusTemplateSlot(blockIndex: work[2].index, kind: kind,
-        taskKey: kind == .task ? UUID() : nil, taskTitle: kind == .task ? "Other" : nil, taskIcon: nil)
-    var draft = FocusTemplateDraft(template: nil, name: "Usual", slots: [occupied])
-    #expect(draft.availableTaskIndices(at: work[0].index, blocks: blocks).count == 2)
-    draft.setTask(at: work[0].index, count: 3, title: "Writing", icon: .focus, blocks: blocks)
-    #expect(draft.slots.count == 1)
-    #expect(draft.slots.first?.blockIndex == occupied.blockIndex)
+    let key = UUID()
+    var tasks = [FocusTemplateTask(taskKey: key, legacyIndex: 0, title: "Writing", icon: .focus, pomodoros: 3)]
+    #expect(FocusTemplate.slots(from: tasks).count == 3)
+    tasks[0].pomodoros = 2
+    tasks[0].title = "Edited"
+    let saved = FocusTemplate.slots(from: tasks)
+    #expect(saved.count == 2)
+    #expect(saved.allSatisfy { $0.taskKey == key && $0.taskTitle == "Edited" })
+    #expect(FocusTemplate.tasks(from: saved).first?.pomodoros == 2)
 }
 
 @MainActor

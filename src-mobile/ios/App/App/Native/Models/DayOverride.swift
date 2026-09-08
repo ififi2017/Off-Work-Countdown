@@ -21,7 +21,7 @@ nonisolated enum DayOverrideKind: String, Codable, Sendable {
 /// Saturday 06:00 still keys as Friday, even if the clock-off is Saturday.
 /// Persist stamps travel with the row from day one so P0B does not rewrite
 /// the identity. Timer projection leaves them unset.
-nonisolated struct DayOverride: Equatable, Sendable {
+nonisolated struct DayOverride: Codable, Equatable, Sendable {
     static let schemaVersion = 1
     static let unsetTieBreaker = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
 

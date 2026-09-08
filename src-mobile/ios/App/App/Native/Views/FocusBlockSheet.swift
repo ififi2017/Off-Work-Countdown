@@ -24,6 +24,7 @@ struct FocusTaskEditorDraft {
 struct FocusTaskEditorShell<Content: View>: View {
     let store: OffWorkStore
     var saveTitle: String
+    var titleKey = "focusNewTask"
     var canSave: Bool
     var onCancel: () -> Void
     var onSave: () -> Void
@@ -39,14 +40,20 @@ struct FocusTaskEditorShell<Content: View>: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .background(OWCDesign.page)
-            .navigationTitle(store.t("focusNewTask"))
+            .navigationTitle(store.t(titleKey))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(store.t("cancel"), action: onCancel)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(saveTitle, action: onSave).disabled(!canSave)
+                    Button(saveTitle) {
+                        // Finish any active composition before reading the draft.
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+                        )
+                        onSave()
+                    }.disabled(!canSave)
                 }
             }
         }
@@ -62,12 +69,23 @@ struct FocusTaskEditorFields: View {
     let finish: Date?
     var referenceDate = Date.now
     var showsDate = true
-    @FocusState private var titleFocused: Bool
+    var showsFinish = true
+    var minimumPomodoros = 1
+    var maximumPomodoros: Int?
+    var capacityNote: String?
+    @State private var titleFocused = false
 
     var body: some View {
         Label(destination, systemImage: "calendar.badge.plus")
+            .fixedSize(horizontal: false, vertical: true)
             .font(.footnote)
             .foregroundStyle(OWCDesign.secondary)
+        if let capacityNote {
+            Text(capacityNote)
+                .font(.footnote)
+                .foregroundStyle(OWCDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
         FocusTitleField(store: store, title: $draft.title, icon: draft.icon,
                         focused: $titleFocused, placeholder: store.t("focusTaskPlaceholder"))
         OWCGroupCard {
@@ -77,7 +95,7 @@ struct FocusTaskEditorFields: View {
                         "count": "\(draft.pomodoros)",
                         "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
                        ]), isLast: true) {
-                    Stepper(value: $draft.pomodoros, in: 1...max(12, draft.pomodoros)) {
+                    Stepper(value: $draft.pomodoros, in: minimumPomodoros...max(maximumPomodoros ?? 12, draft.pomodoros, minimumPomodoros)) {
                         Text("\(draft.pomodoros)")
                     }
                     .labelsHidden()
@@ -85,6 +103,7 @@ struct FocusTaskEditorFields: View {
                     .accessibilityValue("\(draft.pomodoros)")
                     .fixedSize()
                 }
+                if showsFinish {
                 Text(finish.map { date in
                     let time = showsDate && !store.recordsCalendar.isDate(date, inSameDayAs: referenceDate)
                         ? store.formatDate(date) + " · " + store.formatTime(date)
@@ -96,12 +115,14 @@ struct FocusTaskEditorFields: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
                 .accessibilityIdentifier("focus.estimatedFinish")
+                }
             }
         }
         FocusTaskIconPicker(store: store, selection: $draft.icon)
         FocusFavoriteToggle(store: store, isFavorite: $draft.isFavorite)
         FocusFavoritePicker(store: store, title: $draft.title, icon: $draft.icon, selectedID: $draft.favoriteID) {
             draft.select($0, favorite: true)
+            draft.pomodoros = max(minimumPomodoros, min(draft.pomodoros, maximumPomodoros ?? draft.pomodoros))
         }
     }
 }
@@ -115,7 +136,10 @@ struct FocusBlockSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        if block.hasAssignment {
+        if let taskID = block.taskID,
+           let task = store.records.state.focusTasks.first(where: { $0.id == taskID && $0.deletedAt == nil }) {
+            FocusTaskEditSheet(store: store, task: task)
+        } else if block.hasAssignment {
             NavigationStack {
                 VStack(spacing: 14) {
                     OWCGroupCard {
@@ -165,7 +189,7 @@ struct FocusQuickCreateSheet: View {
     }
 
     enum Landing: String, Identifiable {
-        case nextBlock, currentOrNextBlock, startNow
+        case nextBlock, currentOrNextBlock, startNow, unscheduled
         var id: String { rawValue }
     }
 
@@ -186,16 +210,20 @@ struct FocusQuickCreateSheet: View {
             FocusTaskEditorShell(store: store,
                 saveTitle: store.t(landing == .startNow ? "focusAddAndStart" : "focusSaveTask"),
                 canSave: draft.canSave && (landing != .startNow || canStart)
-                    && (draft.existingTaskID == nil || landing == .startNow || target != nil),
+                    && (landing != .unscheduled || draft.isFavorite)
+                    && (draft.existingTaskID == nil || landing == .startNow || landing == .unscheduled || target != nil),
                 onCancel: { dismiss() }, onSave: save) {
                 FocusTaskEditorFields(store: store, draft: $draft,
-                                      destination: landing == .startNow ? store.t("focusStartNow") : destination(target),
-                                      finish: finish, referenceDate: context.date)
-                if blockStartAtMs == nil && landing != .currentOrNextBlock {
+                                      destination: landing == .unscheduled ? store.t("focusLeaveUnscheduled") : (landing == .startNow ? store.t("focusStartNow") : destination(target)),
+                                      finish: finish, referenceDate: context.date, showsFinish: landing != .unscheduled)
+                if (blockStartAtMs == nil && landing != .currentOrNextBlock) || draft.isFavorite {
                     OWCSectionHeader(title: store.t("focusLanding"))
                     OWCGroupCard {
                         landingRow(.nextBlock, icon: "calendar.badge.plus", title: destination(target))
-                        landingRow(.startNow, icon: "play.fill", title: store.t("focusStartNow"), isLast: true)
+                        landingRow(.startNow, icon: "play.fill", title: store.t("focusStartNow"), isLast: !draft.isFavorite)
+                        if draft.isFavorite {
+                            landingRow(.unscheduled, icon: "tray", title: store.t("focusLeaveUnscheduled"), isLast: true)
+                        }
                     }
                 }
                 if !tasks.isEmpty {
@@ -229,6 +257,9 @@ struct FocusQuickCreateSheet: View {
                 }
             }
         }
+        .onChange(of: draft.isFavorite) {
+            if !draft.isFavorite, landing == .unscheduled { landing = .nextBlock }
+        }
         .onChange(of: draft.title) {
             if let existingTask, existingTask.title != draft.title { draft.existingTaskID = nil }
         }
@@ -245,18 +276,51 @@ struct FocusQuickCreateSheet: View {
         return store.t(blockStartAtMs == nil ? "focusLandingNextBlock" : "focusFavoriteLands", values: ["time": time])
     }
 
-    private func landingRow(_ value: Landing, icon: String, title: String, isLast: Bool = false) -> some View {
-        Button { landing = value } label: {
-            OWCRow(icon: icon, title: title, isLast: isLast) {
-                if landing == value { Image(systemName: "checkmark").foregroundStyle(OWCDesign.accent) }
-            }
+    private var startDisabledReason: String? {
+        guard !canStart else { return nil }
+        if store.activeFocusSession() != nil { return store.t("focusStartAlreadyRunning") }
+        if !store.isWithinFocusWorkTime() { return store.t("focusOutsideWorkHours") }
+        if let existingTask, case .notYetAvailable(let date) = store.focusStartAvailability(existingTask) {
+            return store.t("focusStartAfter", values: ["time": store.formatDate(date) + " · " + store.formatTime(date)])
         }
-        .buttonStyle(OWCRowButtonStyle())
-        .disabled(value == .startNow && !canStart)
+        return store.t("focusNoRoom")
+    }
+
+    private func landingRow(_ value: Landing, icon: String, title: String, isLast: Bool = false) -> some View {
+        let unavailable = value == .startNow && !canStart
+        return VStack(spacing: 0) {
+            Button { landing = value } label: {
+                HStack(alignment: .center, spacing: 12) {
+                    Image(systemName: icon).frame(width: 24).foregroundStyle(OWCDesign.secondary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title).fixedSize(horizontal: false, vertical: true)
+                            .foregroundStyle(unavailable ? OWCDesign.tertiary : OWCDesign.primary)
+                        if unavailable, let reason = startDisabledReason {
+                            Text(reason).font(.footnote).foregroundStyle(OWCDesign.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }.frame(maxWidth: .infinity, alignment: .leading)
+                    if landing == value || (value == .nextBlock && landing == .currentOrNextBlock) {
+                        Image(systemName: "checkmark").foregroundStyle(OWCDesign.accent)
+                    }
+                }
+                .padding(16)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(OWCRowButtonStyle())
+            .disabled(unavailable)
+            if !isLast { Divider().padding(.leading, 52) }
+        }
     }
 
     private func save() {
         guard draft.canSave else { return }
+        if landing == .unscheduled {
+            guard draft.isFavorite else { return }
+            store.saveFocusFavorite(title: draft.title, pomodoros: draft.pomodoros, icon: draft.icon)
+            dismiss()
+            return
+        }
         if landing == .startNow {
             guard canStart else { return }
             if var existingTask {
@@ -292,7 +356,7 @@ struct FocusTitleField: View {
     let store: OffWorkStore
     @Binding var title: String
     let icon: FocusTaskIcon
-    @FocusState.Binding var focused: Bool
+    @Binding var focused: Bool
     let placeholder: String
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -301,13 +365,12 @@ struct FocusTitleField: View {
             Image(systemName: icon.systemName)
                 .foregroundStyle(focused ? OWCDesign.accent : OWCDesign.secondary)
                 .accessibilityHidden(true)
-            TextField(placeholder, text: $title)
-                .textFieldStyle(.plain)
-                .font(.body)
-                .accessibilityLabel(store.t("focusTaskTitle"))
-                .focused($focused)
-                .textInputAutocapitalization(.sentences)
-                .submitLabel(.done)
+            FocusTaskTitleInput(
+                text: $title, placeholder: placeholder,
+                accessibilityTitle: store.t("focusTaskTitle"),
+                onFocusChange: { focused = $0 }
+            )
+            .transaction { $0.animation = nil }
         }
         .padding(.horizontal, 14)
         .frame(minHeight: 56)

@@ -79,6 +79,45 @@ struct OffMainActorResolveTests {
         #expect(offMainActor.workShare > 0)
     }
 
+    @Test("Adding an annual bonus reuses the life projection, while profile edits invalidate it")
+    func annualBonusKeepsLifeProjection() async throws {
+        let suite = "OffMainActorResolveTests.bonus.\(UUID().uuidString)"
+        let (store, defaults, calendar) = try seededStore(suite: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+        store.saveLifeProfile(
+            birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
+            sleepHours: 8, hidesExactAges: false
+        )
+        let now = try #require(calendar.date(from: DateComponents(
+            year: 2026, month: 9, day: 8, hour: 12
+        )))
+        let clock = ContinuousClock()
+        let started = clock.now
+        let original = try #require(await store.prepareLifeViewModel(now: now))
+        let coldDuration = started.duration(to: clock.now)
+        let key = store.lifeViewModelCacheKey(now: now)
+        let revision = store.records.revision
+        let salary = store.salaryAmount
+        store.annualBonusEnabled = true
+        store.annualBonusMonths = 2
+        #expect(store.records.revision > revision)
+        #expect(store.salaryAmount == salary)
+        #expect(store.lifeViewModelCacheKey(now: now).hasSameSchedule(as: key))
+        let updatedRevision = store.records.revision
+        let refreshStarted = clock.now
+        let refreshed = await store.prepareLifeViewModel(now: now)
+        print("Life projection: cold=\(coldDuration), bonus refresh=\(refreshStarted.duration(to: clock.now))")
+        #expect(refreshed == original)
+        #expect(store.records.revision == updatedRevision)
+        store.saveLifeProfile(
+            birthYear: 1990, workStartedYear: 2012, retirementAge: 65,
+            sleepHours: 7, hidesExactAges: false
+        )
+        #expect(store.lifeViewModelCacheKey(now: now) != key)
+        let changed = try #require(await store.prepareLifeViewModel(now: now))
+        #expect(changed != original)
+    }
+
     @Test("The async day walk matches the inline walk day for day")
     func projectedDaysSurviveTheActorHop() async throws {
         let suite = "OffMainActorResolveTests.days.\(UUID().uuidString)"

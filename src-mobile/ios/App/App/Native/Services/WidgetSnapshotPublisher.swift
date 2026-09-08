@@ -11,12 +11,34 @@ final class WidgetSnapshotPublisher {
     private let recurringHorizonDays = 370
     private let maximumRecurringShifts = 400
 
-    func publish(store: OffWorkStore, now: Date = .now) {
+    func publish(store: OffWorkStore, now: Date = .now) async {
         guard let container = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: Self.appGroupIdentifier
         ) else { return }
 
-        let payload = publishedSnapshot(store: store, now: now)
+        let logicalNow = store.timerDate(from: now)
+        let input = store.rulesInput(at: logicalNow, using: .base)
+        let effectiveInput = store.rulesInput(at: logicalNow)
+        let recurring = store.followsSchedule
+        let futureShifts: [NativeWidgetShiftSnapshot]
+        if recurring {
+            futureShifts = (try? await ScheduleRangeEngine.shared.widgetShifts(
+                input: input,
+                throughMs: recurringHorizon(from: logicalNow).timeIntervalSince1970 * 1_000,
+                maximumCount: maximumRecurringShifts
+            )) ?? []
+        } else {
+            futureShifts = []
+        }
+        // The settings may change while the actor expands the year. Never
+        // combine old future shifts with the newly edited current shift.
+        guard !Task.isCancelled,
+              recurring == store.followsSchedule,
+              input == store.rulesInput(at: logicalNow, using: .base),
+              effectiveInput == store.rulesInput(at: logicalNow) else { return }
+        let payload = LaunchTrace.interval("widgetCompose") {
+            publishedSnapshot(store: store, now: now, recurringShifts: futureShifts)
+        }
         guard let data = try? JSONEncoder().encode(payload) else { return }
 
         let destination = container.appending(path: snapshotFileName)
@@ -47,7 +69,7 @@ final class WidgetSnapshotPublisher {
     /// Builds the on-disk payload, including a debug capture's virtual clock.
     /// Internal so tests can assert the widget sees the same phase as the app
     /// without writing an App Group.
-    func publishedSnapshot(store: OffWorkStore, now: Date = .now) -> WidgetSnapshot {
+    func publishedSnapshot(store: OffWorkStore, now: Date = .now, recurringShifts: [NativeWidgetShiftSnapshot]? = nil) -> WidgetSnapshot {
         let logicalNow = store.timerDate(from: now)
         let logicalNowMs = Int64(logicalNow.timeIntervalSince1970 * 1_000)
         let realNowMs = Int64(now.timeIntervalSince1970 * 1_000)
@@ -55,7 +77,8 @@ final class WidgetSnapshotPublisher {
             store: store,
             shift: store.snapshot(at: logicalNow),
             active: store.shouldQuerySnapshot(at: logicalNow),
-            nowMs: logicalNowMs
+            nowMs: logicalNowMs,
+            recurringShifts: recurringShifts
         )
         let offset = realNowMs - logicalNowMs
         return offset == 0 ? payload : payload.withClockOffset(offset)
@@ -68,7 +91,8 @@ final class WidgetSnapshotPublisher {
         store: OffWorkStore,
         shift: NativeShiftSnapshot?,
         active: Bool,
-        nowMs: Int64
+        nowMs: Int64,
+        recurringShifts: [NativeWidgetShiftSnapshot]? = nil
     ) -> WidgetSnapshot {
         // On a schedule the schedule is the authority, not a flag. `active` only
         // decides anything for manual mode, which genuinely has sessions.
@@ -78,7 +102,7 @@ final class WidgetSnapshotPublisher {
         // day afterwards. The user's ask was the opposite: set it up once and
         // never think about it again.
         if store.followsSchedule, let shift {
-            return makeRecurringSnapshot(store: store, initialShift: shift, nowMs: nowMs)
+            return makeRecurringSnapshot(store: store, initialShift: shift, nowMs: nowMs, recurringShifts: recurringShifts)
         }
         guard active else {
             return makeInactiveSnapshot(store: store, shift: shift, nowMs: nowMs)
@@ -118,23 +142,25 @@ final class WidgetSnapshotPublisher {
         return idleSnapshot(store: store, nowMs: nowMs)
     }
 
+    private func recurringHorizon(from now: Date) -> Date {
+        Calendar.current.date(byAdding: .day, value: recurringHorizonDays, to: now)
+            ?? now.addingTimeInterval(Double(recurringHorizonDays) * 86_400)
+    }
+
     private func makeRecurringSnapshot(
         store: OffWorkStore,
         initialShift: NativeShiftSnapshot,
-        nowMs: Int64
+        nowMs: Int64,
+        recurringShifts: [NativeWidgetShiftSnapshot]?
     ) -> WidgetSnapshot {
         let now = Date(timeIntervalSince1970: Double(nowMs) / 1_000)
-        let horizon = Calendar.current.date(
-            byAdding: .day,
-            value: recurringHorizonDays,
-            to: now
-        ) ?? now.addingTimeInterval(Double(recurringHorizonDays) * 86_400)
+        let horizon = recurringHorizon(from: now)
         let expiresAtMs = Int64(horizon.timeIntervalSince1970 * 1_000)
         let forcedCurrentShift = store.isForcedWorkday(initialShift)
         var entries: [WidgetTimelineEntry] = []
         var cursor = nowMs
         var diagnosticShift: WidgetShiftTimeline?
-        let futureShifts = (try? CountdownRules.shared.widgetShifts(
+        let futureShifts = recurringShifts ?? (try? CountdownRules.shared.widgetShifts(
             input: store.rulesInput(at: now, using: .base),
             throughMs: Double(expiresAtMs),
             maximumCount: maximumRecurringShifts
@@ -597,7 +623,7 @@ final class WidgetSnapshotPublisher {
            let templateID = store.focusPlanning.defaultTemplateID,
            let template = store.focusPlanning.templates.first(where: { $0.id == templateID }) {
             let blocks = store.focusPlanningBlocks(for: shift)
-            for slot in template.slots where blocks.indices.contains(slot.blockIndex) {
+            for slot in template.placedSlots(in: blocks) where blocks.indices.contains(slot.blockIndex) {
                 let block = blocks[slot.blockIndex]
                 let startMs = block.startAtMs
                 let isBreak = slot.kind == .breakTime

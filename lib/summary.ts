@@ -44,7 +44,7 @@ export interface LifeIncomeSalary {
 export interface LifeIncomeDecline {
   /** Gregorian civil date derived from the user's chosen starting age. */
   startsOn: string;
-  /** Share of today's current salary at retirement, from 0 through 1. */
+  /** Fixed share of current salary from startsOn until retirement, from 0 through 1. The field name is retained for saved-data compatibility. */
   retirementRatio: number;
 }
 
@@ -255,13 +255,8 @@ export function projectLifetimeGrossIncome(params: {
       dayNumber: Math.min(anchorDay, end.dayNumber),
     });
     if (anchorDay < end.dayNumber) {
-      projectedGross += proratedDecliningIncome(
-        monthlySalary,
-        { ...projectedStart, dayNumber: anchorDay },
-        end,
-        anchorDay,
-        retirement.dayNumber,
-        retirementRatio,
+      projectedGross += monthlySalary * retirementRatio * civilMonthsBetween(
+        { ...projectedStart, dayNumber: anchorDay }, end,
       );
     }
   }
@@ -270,35 +265,6 @@ export function projectLifetimeGrossIncome(params: {
     projectedGross,
     totalGross: historicalGross + projectedGross,
   };
-}
-
-function proratedDecliningIncome(
-  monthlySalary: number,
-  start: CivilDay,
-  end: CivilDay,
-  declineStartDay: number,
-  retirementDay: number,
-  retirementRatio: number,
-): number {
-  const ratioAt = (dayNumber: number) => {
-    if (retirementDay <= declineStartDay) return 1;
-    const progress = Math.max(0, Math.min(1,
-      (dayNumber - declineStartDay) / (retirementDay - declineStartDay)
-    ));
-    return 1 - (1 - retirementRatio) * progress;
-  };
-  let cursor = start.dayNumber;
-  let total = 0;
-  while (cursor < end.dayNumber) {
-    const date = new Date(cursor * DAY_MS);
-    const monthStart = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1) / DAY_MS;
-    const nextMonth = Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1) / DAY_MS;
-    const segmentEnd = Math.min(end.dayNumber, nextMonth);
-    const monthShare = (segmentEnd - cursor) / (nextMonth - monthStart);
-    total += monthlySalary * monthShare * (ratioAt(cursor) + ratioAt(segmentEnd)) / 2;
-    cursor = segmentEnd;
-  }
-  return total;
 }
 
 /**

@@ -4,9 +4,10 @@ import SwiftUI
 import UIKit
 
 struct OffWorkCountdownRootView: View {
-    @State private var store = Self.makeStore()
+    @State private var store = LaunchTrace.interval("storeInit") { Self.makeStore() }
     @State private var notifications = NotificationService()
     @State private var liveActivities = LiveActivityService.shared
+    @State private var isLaunching = true
     @State private var serviceTask: Task<Void, Never>?
     @State private var clockInCommitFeedback = 0
     @State private var clockOffCommitFeedback = 0
@@ -107,6 +108,7 @@ struct OffWorkCountdownRootView: View {
                 .presentationBackground(.clear)
         }
         .task {
+            defer { isLaunching = false }
             // First frame first. StoreKit, CloudKit, the rules bundle and
             // notification scheduling all used to start in the same turn as
             // `@State store = …`, which left the launch screen up for the
@@ -119,18 +121,20 @@ struct OffWorkCountdownRootView: View {
             CountdownRules.warmUp()
             guard store.onboardingComplete else { return }
             store.plus.start()
-            store.reconcileCountdownSession()
-            _ = store.reconcileRecordSchedule()
+            _ = LaunchTrace.interval("launchReconcile") { store.reconcileCountdownSession() }
+            _ = LaunchTrace.interval("launchRecordSchedule") { store.reconcileRecordSchedule() }
             if store.onboardingComplete, store.selectedTab == .timer {
                 store.noteTimerSurfaceVisible()
             }
-            _ = store.applyDefaultFocusTemplateIfNeeded()
+            _ = LaunchTrace.interval("launchFocusTemplate") { store.applyDefaultFocusTemplateIfNeeded() }
             store.cloudSync.startIfEnabled()
             await store.resumeRestoredSyncIfNeeded()
             try? await Task.sleep(for: .milliseconds(650))
             guard !Task.isCancelled, store.onboardingComplete else { return }
+            isLaunching = false
             scheduleServices()
         }
+        .modifier(LifeSummaryRefreshModifier(store: store, isLaunching: isLaunching))
         .onChange(of: store.onboardingComplete) {
             AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
             if store.onboardingComplete {
@@ -194,10 +198,12 @@ struct OffWorkCountdownRootView: View {
         }
         .onChange(of: scenePhase) {
             if scenePhase == .active {
+                // Initial activation is already handled by the launch task.
+                guard !isLaunching else { return }
                 AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
-                store.reconcileCountdownSession()
-                _ = store.reconcileRecordSchedule()
-                _ = store.applyDefaultFocusTemplateIfNeeded()
+                _ = LaunchTrace.interval("launchReconcile") { store.reconcileCountdownSession() }
+                _ = LaunchTrace.interval("launchRecordSchedule") { store.reconcileRecordSchedule() }
+                _ = LaunchTrace.interval("launchFocusTemplate") { store.applyDefaultFocusTemplateIfNeeded() }
                 store.refreshSystemLanguage()
                 store.refreshSystemTimeZone()
                 Task { @MainActor in
@@ -275,6 +281,7 @@ struct OffWorkCountdownRootView: View {
             "\(store.annualBonusEnabled)-\(store.annualBonusMonths)",
             "\(store.salaryEnabled)-\(store.salaryAmount)-\(store.salaryType.rawValue)",
             "\(store.liveActivityEnabled)-\(store.liveActivityLeadMinutes)",
+            "\(store.focusLiveActivityEnabled)-\(store.focusNotificationsEnabled)",
         ].joined(separator: "|")
     }
 
@@ -433,6 +440,9 @@ struct OffWorkCountdownRootView: View {
     }
 
     private func scheduleServices() {
+        // Reconciliation can change observed flags during launch; the launch
+        // task publishes their settled state once, after those changes finish.
+        guard !isLaunching else { return }
         serviceTask?.cancel()
         guard store.onboardingComplete else { return }
         serviceTask = Task { @MainActor in
@@ -440,8 +450,8 @@ struct OffWorkCountdownRootView: View {
             // take long enough that a replacement task cancels us before the
             // snapshot lands — debug captures were losing that race, so the
             // Home Screen kept the real-clock rest-day snapshot.
-            store.refreshScheduledFocus()
-            WidgetSnapshotPublisher.shared.publish(store: store)
+            _ = LaunchTrace.interval("launchFocusSchedule") { store.refreshScheduledFocus() }
+            await LaunchTrace.interval("widgetPublish") { await WidgetSnapshotPublisher.shared.publish(store: store) }
             guard !Task.isCancelled else { return }
             // Foreground edits are coalesced by `pendingReschedule`. Once the
             // app is leaving the foreground there must be no additional sleep:
@@ -450,7 +460,7 @@ struct OffWorkCountdownRootView: View {
             if !store.publishesLiveSurfaces {
                 await notifications.clearShiftNotifications()
             } else {
-                await notifications.reschedule(store: store)
+                await LaunchTrace.interval("shiftNotifications") { await notifications.reschedule(store: store) }
             }
             // A focus phase's own alerts are composed once, when it starts,
             // because a suspended phone cannot compose them when they fire.
@@ -459,13 +469,13 @@ struct OffWorkCountdownRootView: View {
             // coalesced the edits, so it does not touch the notification
             // centre on every keystroke.
             guard !Task.isCancelled else { return }
-            await store.refreshFocusNotifications()
+            await LaunchTrace.interval("focusNotifications") { await store.refreshFocusNotifications() }
             // The app owns one Live Activity slot. Work uses it only inside
             // its configured display window; otherwise an active focus or
             // break session may keep it. Ending everything merely because the
             // shift countdown is not publishing erased that focus activity.
             guard !Task.isCancelled else { return }
-            await liveActivities.reschedule(store: store)
+            await LaunchTrace.interval("liveActivities") { await liveActivities.reschedule(store: store) }
         }
     }
 

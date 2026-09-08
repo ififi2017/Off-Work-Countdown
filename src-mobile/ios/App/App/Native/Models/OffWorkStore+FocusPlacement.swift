@@ -50,6 +50,7 @@ extension OffWorkStore {
         guard !trimmed.isEmpty else { return .noShift }
         guard let shift = focusCanvasShift(at: date)?.snapshot else { return .noShift }
 
+        detachFocusTemplate(at: date)
         let canvas = focusDayCanvas(at: date)
         guard let target = canvas.nextEmptyBlock else {
             // Not a no-op and not an error: the task is real, it just has no
@@ -89,6 +90,7 @@ extension OffWorkStore {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard plus.isAuthorized else { return .locked }
         guard !trimmed.isEmpty, let shift = focusCanvasShift(at: date)?.snapshot else { return .noShift }
+        detachFocusTemplate(at: date)
         let task = addFocusTaskAuthorized(
             title: trimmed,
             pomodoros: pomodoros,

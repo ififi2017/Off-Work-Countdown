@@ -1,6 +1,6 @@
 import Foundation
 
-nonisolated enum LifeWeekKind: String, Sendable {
+nonisolated enum LifeWeekKind: String, Codable, Sendable {
     case childhood
     case study
     case workEstimated
@@ -26,7 +26,7 @@ nonisolated enum LifeWeekKind: String, Sendable {
     }
 }
 
-nonisolated struct LifeWeekCell: Equatable, Sendable, Identifiable {
+nonisolated struct LifeWeekCell: Codable, Equatable, Sendable, Identifiable {
     var id: String { "\(year)-\(weekIndex)" }
     var year: Int
     var weekIndex: Int
@@ -35,7 +35,7 @@ nonisolated struct LifeWeekCell: Equatable, Sendable, Identifiable {
     var outsidePeriodTimeZone: Bool
 }
 
-nonisolated struct LifeViewModel: Equatable, Sendable {
+nonisolated struct LifeViewModel: Codable, Equatable, Sendable {
     var cells: [LifeWeekCell]
     var workShare: Double
     var ownAwakeShare: Double
@@ -455,7 +455,7 @@ extension TimeAllocationKind {
     }
 }
 
-nonisolated struct TimeAllocationShare: Equatable, Sendable {
+nonisolated struct TimeAllocationShare: Codable, Equatable, Sendable {
     var workMs: Int64
     var overtimeMs: Int64
     var breakMs: Int64 = 0

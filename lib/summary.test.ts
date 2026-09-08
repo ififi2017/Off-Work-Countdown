@@ -221,7 +221,7 @@ describe("lifetime gross income", () => {
     }).projectedGross).toBeCloseTo(1_200_000, 8);
   });
 
-  it("declines linearly from the chosen age to the retirement ratio", () => {
+  it("applies a fixed income ratio from the chosen age", () => {
     const result = projectLifetimeGrossIncome({
       asOf: "2030-01-01",
       retirementOn: "2040-01-01",
@@ -229,11 +229,11 @@ describe("lifetime gross income", () => {
       currentSalary: { salaryAmount: 120_000, salaryCadence: "yearly" },
       futureIncomeDecline: { startsOn: "2035-01-01", retirementRatio: 0.6 },
     });
-    // Five years at 100%, then five years averaging 80%.
-    expect(Math.abs(result.projectedGross - 1_080_000)).toBeLessThan(100);
+    // Five years at 100%, then five years at 60%.
+    expect(Math.abs(result.projectedGross - 960_000)).toBeLessThan(100);
   });
 
-  it("anchors an already-passed decline age at today's current income", () => {
+  it("applies the fixed ratio immediately when the start age has passed", () => {
     const result = projectLifetimeGrossIncome({
       asOf: "2035-01-01",
       retirementOn: "2040-01-01",
@@ -247,10 +247,10 @@ describe("lifetime gross income", () => {
       futureIncomeDecline: { startsOn: "2032-01-01", retirementRatio: 0.6 },
     });
     expect(result.historicalGross).toBe(600_000);
-    expect(Math.abs(result.projectedGross - 480_000)).toBeLessThan(100);
+    expect(Math.abs(result.projectedGross - 360_000)).toBeLessThan(100);
   });
 
-  it("keeps gaps and history untouched and reaches zero at retirement", () => {
+  it("keeps gaps and history untouched when future income is zero", () => {
     const result = projectLifetimeGrossIncome({
       asOf: "2030-01-01",
       retirementOn: "2040-01-01",
@@ -268,8 +268,8 @@ describe("lifetime gross income", () => {
       futureIncomeDecline: { startsOn: "2030-01-01", retirementRatio: 0 },
     });
     expect(result.historicalGross).toBe(300_000);
-    expect(Math.abs(result.projectedGross - 300_000)).toBeLessThan(200);
-    expect(Math.abs(result.totalGross - 600_000)).toBeLessThan(200);
+    expect(result.projectedGross).toBe(0);
+    expect(result.totalGross).toBe(300_000);
 
     const retired = projectLifetimeGrossIncome({
       asOf: "2040-01-01",
@@ -281,7 +281,7 @@ describe("lifetime gross income", () => {
     expect(retired.projectedGross).toBe(0);
   });
 
-  it("uses the same curve for equivalent monthly and yearly salaries", () => {
+  it("uses the same ratio for equivalent monthly and yearly salaries", () => {
     const calculate = (salaryAmount: number, salaryCadence: "monthly" | "yearly") =>
       projectLifetimeGrossIncome({
         asOf: "2030-04-15",

@@ -114,7 +114,7 @@ nonisolated struct NativeScheduleDayExpansion: Codable, Hashable, Sendable {
     let segments: [NativeShiftSegment]
 }
 
-struct NativeWidgetShiftSnapshot: Codable, Hashable {
+nonisolated struct NativeWidgetShiftSnapshot: Codable, Hashable, Sendable {
     let segments: [NativeShiftSegment]
     let startAtMs: Double
     let endAtMs: Double
@@ -492,7 +492,7 @@ nonisolated struct NativeWorkSchedule: Codable, Equatable, Hashable, Sendable {
     let rotationRestDays: Int?
 }
 
-struct NativeRulesInput: Codable {
+nonisolated struct NativeRulesInput: Codable, Equatable, Sendable {
     let startTime: String
     let endTime: String
     let nowMs: Double
@@ -509,7 +509,7 @@ struct NativeRulesInput: Codable {
     var timeZoneIdentifier: String? = nil
 }
 
-private struct NativeWidgetTimelineRequest: Codable {
+nonisolated private struct NativeWidgetTimelineRequest: Codable, Sendable {
     let rules: NativeRulesInput
     let throughMs: Double
     let maximumCount: Int
@@ -709,6 +709,14 @@ actor ScheduleRangeEngine {
 
     func warmUp() {
         ensureReady()
+    }
+
+    func widgetShifts(input: NativeRulesInput, throughMs: Double, maximumCount: Int) throws -> [NativeWidgetShiftSnapshot] {
+        ensureReady()
+        if let loadError { throw loadError }
+        return try callRule(context, "widgetShifts", NativeWidgetTimelineRequest(
+            rules: input, throughMs: throughMs, maximumCount: maximumCount
+        ))
     }
 
     func expand(

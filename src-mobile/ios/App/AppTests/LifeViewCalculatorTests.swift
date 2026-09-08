@@ -456,7 +456,7 @@ func futureRoughWorkYearDelaysIncome() async throws {
 }
 
 @MainActor
-@Test("A passed decline age anchors the current salary today and leaves history unchanged")
+@Test("A passed adjustment age applies the fixed ratio and leaves history unchanged")
 func passedIncomeDeclineAgeAnchorsToday() async throws {
     let defaults = UserDefaults(suiteName: "owc.decliningincome.\(UUID().uuidString)")!
     let records = RecordCoordinator.inMemory()
@@ -481,7 +481,7 @@ func passedIncomeDeclineAgeAnchorsToday() async throws {
 
     #expect(declining.historicalGross == level.historicalGross)
     #expect(declining.projectedGross < level.projectedGross)
-    #expect(abs(declining.projectedGross / level.projectedGross - 0.8) < 0.001)
+    #expect(abs(declining.projectedGross / level.projectedGross - 0.6) < 0.001)
 }
 
 /// The life model is now cached, because rebuilding it expands a career's

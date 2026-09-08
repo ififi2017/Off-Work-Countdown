@@ -214,9 +214,9 @@ struct FocusBandView: View {
                 }
             }
             .buttonStyle(.plain)
-            .disabled(!block.isEditable)
+            .disabled(!block.isEditable && !block.isAssigned)
             .accessibilityLabel(spokenLabel(block))
-            .accessibilityHint(block.isEditable ? store.t(isPreview ? "plusSeePlans" : "focusBandBlockHint") : "")
+            .accessibilityHint((block.isEditable || block.isAssigned) ? store.t(isPreview ? "plusSeePlans" : "focusBandBlockHint") : "")
         }
     }
 
@@ -366,7 +366,7 @@ struct FocusBandList: View {
                 }
                 .buttonStyle(OWCRowButtonStyle())
                 .id(block.startAtMs)
-                .disabled(!block.isEditable)
+                .disabled(!block.isEditable && !block.isAssigned)
                 .accessibilityHint(isPreview && block.isEditable ? store.t("plusSeePlans") : "")
             }
         }
