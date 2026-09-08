@@ -1385,7 +1385,8 @@ final class OffWorkStore {
         through: Date,
         periods: [CareerPeriod],
         snapshots: [ScheduleSnapshot],
-        usesSharedCache: Bool
+        usesSharedCache: Bool,
+        preparedExpansions: (days: [UUID: [String: ScheduleExpansion]], failed: Set<UUID>)? = nil
     ) -> [DayResolution] {
         let calendar = recordsCalendar
         let start = calendar.startOfDay(for: from)
@@ -1406,8 +1407,8 @@ final class OffWorkStore {
             exceptions: records.state.exceptions,
             overrides: records.state.overrides
         )
-        var expansions: [UUID: [String: ScheduleExpansion]] = [:]
-        var expansionFailures: Set<UUID> = []
+        var expansions: [UUID: [String: ScheduleExpansion]] = preparedExpansions?.days ?? [:]
+        var expansionFailures: Set<UUID> = preparedExpansions?.failed ?? []
         var periodCalendars: [UUID: Calendar] = [:]
         var cursor = start
         var result: [DayResolution] = []
@@ -3601,6 +3602,10 @@ final class OffWorkStore {
         RelativeDurationFormatter.string(milliseconds: milliseconds, languageCode: languageCode)
     }
 
+    func formatRecordsDuration(_ milliseconds: Double) -> String {
+        RelativeDurationFormatter.string(milliseconds: milliseconds, languageCode: languageCode, includesDays: true)
+    }
+
     func formatHours(_ value: Double) -> String {
         let formatter = MeasurementFormatter()
         formatter.locale = locale
@@ -3866,6 +3871,19 @@ final class OffWorkStore {
             return allocation
         }
         let combined = TimeAllocationCalculator.combining(shares)
+        // Allocation describes the whole visible period, including scheduled
+        // forecasts and rest days. Actual metrics above keep their own basis.
+        let periodShares = cells.compactMap { cell -> TimeAllocationShare? in
+            guard let day = byKey[cell.dayKey] else { return nil }
+            return dayAllocation(
+                day,
+                contributedBy: contributingShifts(
+                    for: day, previous: previousDay(before: day, in: byKey),
+                    now: now, includesLifeProjection: true
+                ),
+                now: now
+            )
+        }
         let today = recordsCalendar.startOfDay(for: now)
         let visibleKeys = Set(cells.map(\.dayKey))
         let completedScheduledWorkdays = days.filter { day in
@@ -3887,8 +3905,8 @@ final class OffWorkStore {
                 at: now
             ),
             completedScheduledWorkdays: completedScheduledWorkdays,
-            allocationDays: shares.count,
-            allocation: combined,
+            allocationDays: periodShares.count,
+            allocation: TimeAllocationCalculator.combining(periodShares),
             sleepSourceKey: sleepKey,
             actualForecast: actualForecast
         )
@@ -5370,7 +5388,7 @@ final class OffWorkStore {
         return model
     }
 
-    private func buildLifeViewModel(now: Date) -> LifeViewModel? {
+    private func buildLifeViewModel(now: Date, preparedDays: [LifeScheduleDay]? = nil) -> LifeViewModel? {
         guard var profile = records.state.lifeProfile else { return nil }
         let calendar = recordsCalendar
         profile.migrateLegacyFields(calendar: calendar)
@@ -5398,21 +5416,26 @@ final class OffWorkStore {
         let archive = lifeScheduleArchive(workStart: workStart, now: now)
         let finalDay = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: lifeEnd))
             ?? lifeEnd
-        let resolved = LaunchTrace.interval("lifeResolveDays") {
-            resolveDays(
-                from: workStart,
-                through: finalDay,
-                periods: archive.periods,
-                snapshots: archive.snapshots,
-                usesSharedCache: false
-            )
-        }
-        let scheduleDays = LaunchTrace.interval("lifeProjectOvertime") {
-            resolved.compactMap { resolution in
-                LifeScheduleDay(
-                    resolution: resolution,
-                    overtimeSegments: overtimeSegments(on: resolution)
+        let scheduleDays: [LifeScheduleDay]
+        if let preparedDays {
+            scheduleDays = preparedDays
+        } else {
+            let resolved = LaunchTrace.interval("lifeResolveDays") {
+                resolveDays(
+                    from: workStart,
+                    through: finalDay,
+                    periods: archive.periods,
+                    snapshots: archive.snapshots,
+                    usesSharedCache: false
                 )
+            }
+            scheduleDays = LaunchTrace.interval("lifeProjectOvertime") {
+                resolved.compactMap { resolution in
+                    LifeScheduleDay(
+                        resolution: resolution,
+                        overtimeSegments: overtimeSegments(on: resolution)
+                    )
+                }
             }
         }
         var model = LaunchTrace.interval("lifeBuildWeeks") {
@@ -5503,12 +5526,9 @@ final class OffWorkStore {
     /// ScheduleRangeEngine. The synchronous builder then only walks cached
     /// results and assembles week cells on the main actor.
     func prepareLifeViewModel(now: Date = .now) async -> LifeViewModel? {
-        // Before the prefetch, not only inside the builder: decoding a
-        // configuration and hopping to the range engine once per snapshot is
-        // itself worth skipping when the answer is already known.
-        if let cached = lifeViewModelCache, cached.key == lifeViewModelCacheKey(now: now) {
-            return cached.model
-        }
+        let key = lifeViewModelCacheKey(now: now)
+        guard !Task.isCancelled else { return nil }
+        if let cached = lifeViewModelCache, cached.key == key { return cached.model }
         guard var profile = records.state.lifeProfile else { return nil }
         let calendar = recordsCalendar
         profile.migrateLegacyFields(calendar: calendar)
@@ -5527,7 +5547,10 @@ final class OffWorkStore {
         let archive = lifeScheduleArchive(workStart: workStart, now: now)
 
         let prefetch = LaunchTrace.signposter.beginInterval("lifePrefetch")
+        var expansions: [UUID: [String: ScheduleExpansion]] = [:]
+        var failures: Set<UUID> = []
         for snapshot in archive.snapshots {
+            guard !Task.isCancelled, key == lifeViewModelCacheKey(now: now) else { return nil }
             guard let period = archive.periods.first(where: { $0.id == snapshot.periodID }),
                   period.startsOn <= finalDay,
                   period.endsBefore.map({ $0 > workStart }) ?? true,
@@ -5538,27 +5561,50 @@ final class OffWorkStore {
                   )
             else { continue }
             let periodCalendar = period.civilCalendar()
-            try? await CountdownRules.shared.prefetchExpansion(
-                configuration: configuration,
-                from: periodCalendar.startOfDay(for: workStart),
-                through: periodCalendar.startOfDay(for: finalDay),
-                timeZone: period.timeZone
-            )
+            do {
+                try await CountdownRules.shared.prefetchExpansion(
+                    configuration: configuration,
+                    from: periodCalendar.startOfDay(for: workStart),
+                    through: periodCalendar.startOfDay(for: finalDay),
+                    timeZone: period.timeZone
+                )
+                guard !Task.isCancelled, key == lifeViewModelCacheKey(now: now) else { return nil }
+                let days = try CountdownRules.shared.expandScheduleRange(
+                    configuration: configuration,
+                    from: periodCalendar.startOfDay(for: workStart),
+                    through: periodCalendar.startOfDay(for: finalDay),
+                    timeZone: period.timeZone
+                )
+                expansions[snapshot.id] = Dictionary(days.map {
+                    ($0.dayKey, ScheduleExpansion(isWorkday: $0.isWorkday, segments: $0.segments))
+                }, uniquingKeysWith: { first, _ in first })
+            } catch {
+                failures.insert(snapshot.id)
+            }
         }
         LaunchTrace.signposter.endInterval("lifePrefetch", prefetch)
-        // The life canvas only needs the profile's stage dates, so it can be on
-        // screen before the career is walked. Yielding lets the scale change
-        // that asked for this commit its own frame first.
-        //
-        // This is ordering, not a fix: `lifeViewModel` below still resolves
-        // roughly fifteen thousand days on the main actor, which is why its
-        // result is cached — a visit to the tab pays it once rather than every
-        // time. Moving that walk off the main actor needs `DayRecordResolver`,
-        // the archive value types and `LifeViewCalculator` to be `nonisolated`,
-        // which this project's main-actor-by-default isolation makes a change
-        // across every one of those files rather than a local one.
-        await Task.yield()
-        return lifeViewModel(now: now)
+        // Resolve bounded batches from the already expanded shared rules.
+        // Yield between them so scrolling/cancellation never waits for decades.
+        var cursor = calendar.startOfDay(for: workStart)
+        var scheduleDays: [LifeScheduleDay] = []
+        while cursor <= finalDay {
+            guard !Task.isCancelled, key == lifeViewModelCacheKey(now: now) else { return nil }
+            let end = min(calendar.date(byAdding: .day, value: 30, to: cursor) ?? finalDay, finalDay)
+            let resolved = resolveDays(
+                from: cursor, through: end, periods: archive.periods, snapshots: archive.snapshots,
+                usesSharedCache: false, preparedExpansions: (expansions, failures)
+            )
+            scheduleDays.append(contentsOf: resolved.compactMap {
+                LifeScheduleDay(resolution: $0, overtimeSegments: overtimeSegments(on: $0))
+            })
+            guard let next = calendar.date(byAdding: .day, value: 1, to: end) else { break }
+            cursor = next
+            await Task.yield()
+        }
+        guard !Task.isCancelled, key == lifeViewModelCacheKey(now: now) else { return nil }
+        let model = buildLifeViewModel(now: now, preparedDays: scheduleDays)
+        if failures.isEmpty { lifeViewModelCache = (key, model) }
+        return model
     }
 
     private func lifeScheduleArchive(

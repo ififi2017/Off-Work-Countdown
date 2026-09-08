@@ -100,11 +100,11 @@ private struct RecordsMetricHelp: Identifiable {
 private struct RecordsMetricHelpButton: View {
     let title: String
     let message: String
-    @Binding var selection: RecordsMetricHelp?
+    @State private var showsHelp = false
 
     var bodyView: some View {
         Button {
-            selection = RecordsMetricHelp(title: title, body: message)
+            showsHelp = true
         } label: {
             Image(systemName: "questionmark.circle")
                 .font(.footnote.weight(.semibold))
@@ -114,6 +114,9 @@ private struct RecordsMetricHelpButton: View {
         .buttonStyle(.plain)
         .foregroundStyle(OWCDesign.tertiary)
         .accessibilityLabel(title)
+        .popover(isPresented: $showsHelp, attachmentAnchor: .rect(.bounds), arrowEdge: .top) {
+            RecordsMetricHelpPopover(help: RecordsMetricHelp(title: title, body: message))
+        }
     }
 
     var body: some View { bodyView }
@@ -124,20 +127,13 @@ private struct RecordsMetricHelpPopover: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                ScrollView {
-                    content.padding(18)
-                }
-                .frame(idealWidth: 480)
-                .presentationDragIndicator(.visible)
-            } else {
-                content
-                    .frame(idealWidth: 300, alignment: .leading)
-                    .padding(18)
-            }
+        ScrollView {
+            content.padding(18)
         }
-        .presentationCompactAdaptation(dynamicTypeSize.isAccessibilitySize ? .sheet : .popover)
+        .frame(idealWidth: 340, idealHeight: 300)
+        .presentationCompactAdaptation(.sheet)
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 
     private var content: some View {
@@ -163,19 +159,19 @@ struct RecordsAllocationBar: View {
     @State private var selectedKind: TimeAllocationKind?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
+            if let item = visibleSlices.first(where: { $0.kind == selectedKind }) {
+                HStack(spacing: 6) {
+                    Text(store.t(item.kind.titleKey)).fontWeight(.medium)
+                    Text(accessibilityValue(item)).foregroundStyle(OWCDesign.secondary)
+                }
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.bottom, 4)
+            }
             bar
             legend
         }
-        .modifier(RecordsSelectionCallout(selectedID: selectedKind?.rawValue) {
-            if let item = visibleSlices.first(where: { $0.kind == selectedKind }) {
-                RecordsCanvasCallout(
-                    icon: "clock",
-                    title: store.t(item.kind.titleKey),
-                    subtitle: accessibilityValue(item)
-                )
-            }
-        })
     }
 
     private var bar: some View {
@@ -286,7 +282,7 @@ struct RecordsAllocationBar: View {
     private func accessibilityValue(_ item: AllocationSlice) -> String {
         let total = max(1, share.dayLengthMs)
         return [
-            store.formatRelativeDuration(Double(item.ms)),
+            store.formatRecordsDuration(Double(item.ms)),
             store.formatPercent(Double(item.ms) / Double(total) * 100),
         ].joined(separator: ", ")
     }
@@ -367,7 +363,6 @@ struct RecordsHeadlineView: View {
     let title: String
     let summary: RecordsHeadlineSummary?
     var onUnlock: () -> Void
-    @State private var selectedHelp: RecordsMetricHelp?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
@@ -382,16 +377,12 @@ struct RecordsHeadlineView: View {
                         Spacer(minLength: 0)
                         RecordsMetricHelpButton(
                             title: title,
-                            message: headerHelp(for: summary),
-                            selection: $selectedHelp
+                            message: headerHelp(for: summary)
                         )
                     }
                     content(summary)
                 }
                 .padding(16)
-            }
-            .popover(item: $selectedHelp) { help in
-                RecordsMetricHelpPopover(help: help)
             }
         } else if store.plus.isAuthorized {
             OWCGroupCard {
@@ -414,9 +405,9 @@ struct RecordsHeadlineView: View {
             if let split = summary.actualForecast {
                 actualForecastContent(split)
             } else {
-                metric("recordsWorkRegular", store.formatRelativeDuration(Double(summary.regularWorkMs)), prominent: true)
+                metric("recordsWorkRegular", store.formatRecordsDuration(Double(summary.regularWorkMs)), prominent: true)
                 metric("recordsRecordedDays", store.formatDays(Double(summary.workdays)))
-                metric("recordsOvertime", store.formatRelativeDuration(Double(summary.overtimeMs)))
+                metric("recordsOvertime", store.formatRecordsDuration(Double(summary.overtimeMs)))
 
                 if let income = summary.estimatedIncome {
                     Divider()
@@ -435,8 +426,7 @@ struct RecordsHeadlineView: View {
                     Spacer(minLength: 0)
                     RecordsMetricHelpButton(
                         title: store.t("recordsTimeBreakdown"),
-                        message: allocationHelp(for: summary),
-                        selection: $selectedHelp
+                        message: allocationHelp(for: summary)
                     )
                 }
                 RecordsAllocationBar(store: store, share: summary.allocation)
@@ -471,7 +461,7 @@ struct RecordsHeadlineView: View {
                 .foregroundStyle(OWCDesign.primary)
             metric(
                 "recordsActualHours",
-                store.formatRelativeDuration(split.actual.hours * 3_600_000),
+                store.formatRecordsDuration(split.actual.hours * 3_600_000),
                 prominent: true
             )
             metric("recordsActualDays", store.formatDays(split.actual.days))
@@ -483,14 +473,14 @@ struct RecordsHeadlineView: View {
             Text(store.t("recordsForecastTitle"))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(OWCDesign.primary)
-            metric("recordsForecastHours", store.formatRelativeDuration(split.forecast.hours * 3_600_000))
+            metric("recordsForecastHours", store.formatRecordsDuration(split.forecast.hours * 3_600_000))
             metric("recordsForecastDays", store.formatDays(split.forecast.days))
             if let earnings = split.forecast.earnings {
                 metric(store.salaryType == .monthly ? "recordsMonthlyForecastIncome" : "recordsForecastIncome", store.moneyText(earnings))
             }
 
             Divider()
-            metric("recordsCombinedHours", store.formatRelativeDuration(split.total.hours * 3_600_000))
+            metric("recordsCombinedHours", store.formatRecordsDuration(split.total.hours * 3_600_000))
             if let earnings = split.total.earnings {
                 metric("recordsCombinedIncome", store.moneyText(earnings))
             }
@@ -731,10 +721,10 @@ enum RecordsDayMarks {
         if cell.appearance == .locked { return store.t("recordsLockedDay") }
         var parts = [store.formatRecordsDayTitle(cell.date), store.t(sourceKey(cell))]
         if cell.workMs > 0 {
-            parts.append(store.formatRelativeDuration(Double(cell.workMs)))
+            parts.append(store.formatRecordsDuration(Double(cell.workMs)))
         }
         if cell.overtimeMs > 0 {
-            parts.append("\(store.t("recordsOvertime")) \(store.formatRelativeDuration(Double(cell.overtimeMs)))")
+            parts.append("\(store.t("recordsOvertime")) \(store.formatRecordsDuration(Double(cell.overtimeMs)))")
         }
         if cell.hasConflict { parts.append(store.t("recordsConflictCopy")) }
         return parts.joined(separator: ", ")
@@ -878,7 +868,7 @@ private struct RecordsDayCellCallout: View {
                 subtitle: cell.appearance == .locked
                     ? store.t("recordsLockedDay")
                     : [store.t(RecordsDayMarks.sourceKey(cell)),
-                       store.formatRelativeDuration(Double(cell.workMs + cell.overtimeMs))].joined(separator: " · "),
+                       store.formatRecordsDuration(Double(cell.workMs + cell.overtimeMs))].joined(separator: " · "),
                 actionTitle: store.t(cell.appearance == .locked ? "plusSeePlans" : "recordsSeeThisDay")
             )
         }
@@ -1185,7 +1175,7 @@ struct RecordsYearMonthBars: View {
                 Color.clear.frame(width: labelWidth, height: 1)
             }
             VStack(alignment: .trailing, spacing: 3) {
-                Text(store.formatRelativeDuration(Double(axisMs)))
+                Text(store.formatRecordsDuration(Double(axisMs)))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(OWCDesign.tertiary)
                 Rectangle()
@@ -1349,7 +1339,7 @@ struct RecordsYearMonthBars: View {
     }
 
     private func duration(_ ms: Int64, style: Color) -> some View {
-        Text(store.formatRelativeDuration(Double(ms)))
+        Text(store.formatRecordsDuration(Double(ms)))
             .font(.footnote.monospacedDigit())
             .foregroundStyle(style)
             .lineLimit(1)
@@ -1401,10 +1391,10 @@ struct RecordsYearMonthBars: View {
     private func breakdown(_ month: RecordsYearMonthBar) -> String {
         var parts = [
             store.t("recordsMonthWorkdays", values: ["count": store.formatCount(month.workdays)]),
-            "\(store.t("recordsWorkRegular")) \(store.formatRelativeDuration(Double(month.workMs)))"
+            "\(store.t("recordsWorkRegular")) \(store.formatRecordsDuration(Double(month.workMs)))"
         ]
         if month.overtimeMs > 0 {
-            parts.append("\(store.t("recordsOvertime")) \(store.formatRelativeDuration(Double(month.overtimeMs)))")
+            parts.append("\(store.t("recordsOvertime")) \(store.formatRecordsDuration(Double(month.overtimeMs)))")
         }
         return parts.joined(separator: " · ")
     }
@@ -1412,7 +1402,7 @@ struct RecordsYearMonthBars: View {
     private func accessibilityValue(_ month: RecordsYearMonthBar) -> String {
         if month.hasRecords { return breakdown(month) }
         if month.projectedMs > 0 {
-            return "\(store.t("recordsSourceProjection")) \(store.formatRelativeDuration(Double(month.projectedMs)))"
+            return "\(store.t("recordsSourceProjection")) \(store.formatRecordsDuration(Double(month.projectedMs)))"
         }
         // Never name the month's real numbers here; a locked month has none
         // loaded to name.
@@ -2005,7 +1995,7 @@ struct RecordsDaySummaryCard: View {
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 8)
-                        Text(store.formatRelativeDuration(Double(detail.breakMs + detail.freeMs)))
+                        Text(store.formatRecordsDuration(Double(detail.breakMs + detail.freeMs)))
                             .font(.callout.weight(.semibold).monospacedDigit())
                             .foregroundStyle(OWCDesign.primary)
                             .lineLimit(1)
@@ -2073,7 +2063,7 @@ struct RecordsDaySummaryCard: View {
                     .foregroundStyle(OWCDesign.secondary)
                     .lineLimit(1)
             }
-            Text(store.formatRelativeDuration(Double(milliseconds)))
+            Text(store.formatRecordsDuration(Double(milliseconds)))
                 .font(.title3.weight(.semibold).monospacedDigit())
                 .foregroundStyle(OWCDesign.primary)
                 .lineLimit(1)
@@ -2111,6 +2101,7 @@ struct RecordsDaySummaryCard: View {
 struct RecordsLifeAllocationCard: View {
     let store: OffWorkStore
     let model: LifeViewModel?
+    var isLoading = false
 
     var body: some View {
         OWCGroupCard {
@@ -2125,12 +2116,21 @@ struct RecordsLifeAllocationCard: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                if let allocation = usableAllocation {
+                if isLoading {
+                    VStack(alignment: .leading, spacing: 14) {
+                        RoundedRectangle(cornerRadius: 4).frame(height: 18)
+                        RoundedRectangle(cornerRadius: 4).frame(height: 10)
+                        RoundedRectangle(cornerRadius: 4).frame(width: 180, height: 14)
+                    }
+                    .foregroundStyle(OWCDesign.control)
+                    .frame(minHeight: 100)
+                    .accessibilityHidden(true)
+                } else if let allocation = usableAllocation {
                     Text(
                         store.t(
                             "lifeAllocationEstimate",
                             values: [
-                                "duration": store.formatRelativeDuration(
+                                "duration": store.formatRecordsDuration(
                                     Double(allocation.workMs + allocation.overtimeMs)
                                 )
                             ]
@@ -2151,7 +2151,7 @@ struct RecordsLifeAllocationCard: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                if let income = model?.income {
+                if !isLoading, let income = model?.income {
                     Divider()
                     Text(store.t("lifeIncomeTitle"))
                         .font(.subheadline.weight(.semibold))
