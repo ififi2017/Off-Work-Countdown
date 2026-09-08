@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "Você pode adicionar até {{count}} pomodoros antes da próxima tarefa ou do fim do turno.",
   "focusAddPomodoroCount": "Quantidade a adicionar",
   "focusCompletedTasksTitle": "As tarefas de foco de hoje estão concluídas",
-  "focusQuickAddTask": "Adicionar tarefa de foco rapidamente"
+  "focusQuickAddTask": "Adicionar tarefa de foco rapidamente",
+  "focusEditTask": "Editar tarefa",
+  "focusLeaveUnscheduled": "Não agendar agora",
+  "focusStartAlreadyRunning": "Já existe um temporizador em curso.",
+  "focusOutsideWorkHours": "Está fora do horário de trabalho.",
+  "focusStartAfter": "Disponível a partir de {{time}}",
+  "focusClearDayTasks": "Limpar tarefas deste dia",
+  "focusClearDayTasksBody": "Remove as tarefas e o plano deste dia e para o temporizador em curso. Os registos de foco concluídos serão mantidos.",
+  "focusSaveDayAsTemplate": "Guardar este dia como modelo",
+  "focusAppliedTemplateNote": "Este plano usa o modelo «{{name}}»."
 }

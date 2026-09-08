@@ -61,13 +61,14 @@ extension OffWorkStore {
     }
 
     @discardableResult
-    func updateFocusTemplate(_ template: FocusTemplate, name: String, slots: [FocusTemplateSlot]) -> Bool {
+    func updateFocusTemplate(_ template: FocusTemplate, name: String, slots: [FocusTemplateSlot], at date: Date = .now) -> Bool {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard plus.isAuthorized, !trimmed.isEmpty else { return false }
         return replaceFocusTemplate(
             id: template.id,
             name: trimmed,
-            slots: slots.sorted { $0.blockIndex < $1.blockIndex }
+            slots: slots.sorted { $0.blockIndex < $1.blockIndex },
+            at: date
         )
     }
 

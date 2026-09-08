@@ -313,6 +313,13 @@ struct FocusTemplateEditorView: View {
                         selectedBlock: .constant(nil)
                     ) { block in
                         taskDraft = FocusTaskEditorDraft()
+                        if let slot = draft.slots.first(where: { $0.blockIndex == block.index && $0.kind == .task }) {
+                            taskDraft.title = slot.taskTitle ?? ""
+                            taskDraft.icon = slot.taskIcon ?? .focus
+                            taskDraft.pomodoros = draft.taskIndices(at: block.index).count
+                            taskDraft.isFavorite = slot.taskKey.flatMap { favoriteChanges[$0] }
+                                ?? (store.savedFocusFavorite(title: taskDraft.title, icon: taskDraft.icon) != nil)
+                        }
                         editingBlock = block
 
                     }
@@ -348,8 +355,8 @@ struct FocusTemplateEditorView: View {
 
         }
         .sheet(item: $editingBlock) { block in
-            let occupied = draft.slots.contains { $0.blockIndex == block.index }
-            if occupied {
+            let occupied = draft.slots.contains { $0.blockIndex == block.index && $0.kind == .task }
+            if block.isUserBreak {
                 NavigationStack {
                     VStack(spacing: 14) {
                         Text(block.taskTitle ?? store.t("focusBreak")).font(.headline)
@@ -370,6 +377,7 @@ struct FocusTemplateEditorView: View {
                 let finish = available.count >= taskDraft.pomodoros
                     ? blocks.first { $0.index == finalIndex }?.end : nil
                 FocusTaskEditorShell(store: store, saveTitle: store.t("saveAction"),
+                                     titleKey: occupied ? "focusEditTask" : "focusNewTask",
                                      canSave: taskDraft.canSave && finish != nil,
                                      onCancel: { editingBlock = nil }, onSave: {
                     setSlot(block.index, title: taskDraft.title, icon: taskDraft.icon)
@@ -378,7 +386,15 @@ struct FocusTemplateEditorView: View {
                     FocusTaskEditorFields(store: store, draft: $taskDraft,
                         destination: store.t("focusUsualDay") + " · " + store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)),
                         finish: finish, showsDate: false)
+                    if occupied {
+                        Button(store.t("focusDeleteTask"), role: .destructive) {
+                            let indices = draft.taskIndices(at: block.index)
+                            draft.slots.removeAll { indices.contains($0.blockIndex) }
+                            editingBlock = nil
+                        }.buttonStyle(OWCSecondaryButtonStyle())
+                    }
                     Button(store.t("focusBlockMakeBreak")) {
+                        draft.slots.removeAll { $0.blockIndex == block.index }
                         draft.slots.append(FocusTemplateSlot(blockIndex: block.index, kind: .breakTime,
                                                             taskKey: nil, taskTitle: nil, taskIcon: nil))
                         editingBlock = nil

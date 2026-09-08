@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "คุณเพิ่มโพโมโดโรได้อีกสูงสุด {{count}} รอบ ก่อนงานถัดไปหรือสิ้นสุดกะนี้",
   "focusAddPomodoroCount": "จำนวนที่ต้องการเพิ่ม",
   "focusCompletedTasksTitle": "งานโฟกัสของวันนี้เสร็จแล้ว",
-  "focusQuickAddTask": "เพิ่มงานโฟกัสอย่างรวดเร็ว"
+  "focusQuickAddTask": "เพิ่มงานโฟกัสอย่างรวดเร็ว",
+  "focusEditTask": "แก้ไขงาน",
+  "focusLeaveUnscheduled": "ยังไม่จัดตาราง",
+  "focusStartAlreadyRunning": "มีตัวจับเวลาทำงานอยู่แล้ว",
+  "focusOutsideWorkHours": "ขณะนี้อยู่นอกเวลาทำงาน",
+  "focusStartAfter": "เริ่มได้ตั้งแต่ {{time}}",
+  "focusClearDayTasks": "ล้างงานของวันนี้",
+  "focusClearDayTasksBody": "ลบงานและตารางของวันนี้ แล้วหยุดตัวจับเวลาที่กำลังทำงาน บันทึกการโฟกัสที่เสร็จแล้วจะยังคงอยู่",
+  "focusSaveDayAsTemplate": "บันทึกวันนี้เป็นแม่แบบ",
+  "focusAppliedTemplateNote": "ตารางนี้ใช้แม่แบบ “{{name}}”"
 }

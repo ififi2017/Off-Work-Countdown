@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "到下一個任務或今次下班前，最多還可以加 {{count}} 個番茄。",
   "focusAddPomodoroCount": "追加數量",
   "focusCompletedTasksTitle": "今日專注任務已完成",
-  "focusQuickAddTask": "快速新增專注任務"
+  "focusQuickAddTask": "快速新增專注任務",
+  "focusEditTask": "編輯任務",
+  "focusLeaveUnscheduled": "暫不安排",
+  "focusStartAlreadyRunning": "已有計時正在進行。",
+  "focusOutsideWorkHours": "目前不在工作時間內。",
+  "focusStartAfter": "{{time}} 後可開始",
+  "focusClearDayTasks": "清空此日任務",
+  "focusClearDayTasksBody": "將清空此日的任務與安排，並停止當日正在進行的計時。已完成的專注記錄會保留。",
+  "focusSaveDayAsTemplate": "將此日安排存為範本",
+  "focusAppliedTemplateNote": "目前日程使用「{{name}}」範本。"
 }

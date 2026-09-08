@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "Vous pouvez ajouter jusqu’à {{count}} pomodoros avant la prochaine tâche ou la fin de votre journée de travail.",
   "focusAddPomodoroCount": "Nombre à ajouter",
   "focusCompletedTasksTitle": "Les tâches de concentration du jour sont terminées",
-  "focusQuickAddTask": "Ajouter rapidement une tâche"
+  "focusQuickAddTask": "Ajouter rapidement une tâche",
+  "focusEditTask": "Modifier la tâche",
+  "focusLeaveUnscheduled": "Ne pas planifier maintenant",
+  "focusStartAlreadyRunning": "Un minuteur est déjà en cours.",
+  "focusOutsideWorkHours": "Vous êtes en dehors des heures de travail.",
+  "focusStartAfter": "Disponible à partir de {{time}}",
+  "focusClearDayTasks": "Effacer les tâches de ce jour",
+  "focusClearDayTasksBody": "Supprime les tâches et le planning de ce jour et arrête son minuteur en cours. Les sessions de concentration terminées sont conservées.",
+  "focusSaveDayAsTemplate": "Enregistrer ce jour comme modèle",
+  "focusAppliedTemplateNote": "Ce planning utilise le modèle « {{name}} »."
 }

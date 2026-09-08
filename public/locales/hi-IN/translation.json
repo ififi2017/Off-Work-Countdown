@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "अगले कार्य या शिफ्ट के अंत तक आप अधिकतम {{count}} पोमोडोरो जोड़ सकते हैं।",
   "focusAddPomodoroCount": "जोड़ने की संख्या",
   "focusCompletedTasksTitle": "आज के फ़ोकस कार्य पूरे हो गए",
-  "focusQuickAddTask": "फ़ोकस कार्य तुरंत जोड़ें"
+  "focusQuickAddTask": "फ़ोकस कार्य तुरंत जोड़ें",
+  "focusEditTask": "कार्य संपादित करें",
+  "focusLeaveUnscheduled": "अभी शेड्यूल न करें",
+  "focusStartAlreadyRunning": "एक टाइमर पहले से चल रहा है।",
+  "focusOutsideWorkHours": "अभी काम का समय नहीं है।",
+  "focusStartAfter": "{{time}} से उपलब्ध",
+  "focusClearDayTasks": "इस दिन के कार्य हटाएँ",
+  "focusClearDayTasksBody": "इस दिन के कार्य और योजना हटाएँ और चल रहा टाइमर रोकें। पूरे किए गए फ़ोकस रिकॉर्ड बने रहेंगे।",
+  "focusSaveDayAsTemplate": "इस दिन को टेम्पलेट के रूप में सहेजें",
+  "focusAppliedTemplateNote": "इस शेड्यूल में “{{name}}” टेम्पलेट लागू है।"
 }

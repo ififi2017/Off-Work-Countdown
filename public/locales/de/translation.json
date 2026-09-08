@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "Bis zur nächsten Aufgabe oder zum Schichtende kannst du noch bis zu {{count}} Pomodoros hinzufügen.",
   "focusAddPomodoroCount": "Zusätzliche Pomodoros",
   "focusCompletedTasksTitle": "Die Fokusaufgaben für heute sind erledigt",
-  "focusQuickAddTask": "Fokusaufgabe schnell hinzufügen"
+  "focusQuickAddTask": "Fokusaufgabe schnell hinzufügen",
+  "focusEditTask": "Aufgabe bearbeiten",
+  "focusLeaveUnscheduled": "Noch nicht einplanen",
+  "focusStartAlreadyRunning": "Es läuft bereits ein Timer.",
+  "focusOutsideWorkHours": "Du bist außerhalb deiner Arbeitszeit.",
+  "focusStartAfter": "Ab {{time}} verfügbar",
+  "focusClearDayTasks": "Aufgaben dieses Tages löschen",
+  "focusClearDayTasksBody": "Aufgaben und Planung dieses Tages löschen und den laufenden Timer stoppen. Abgeschlossene Fokusaufzeichnungen bleiben erhalten.",
+  "focusSaveDayAsTemplate": "Tag als Vorlage speichern",
+  "focusAppliedTemplateNote": "Dieser Zeitplan nutzt die Vorlage „{{name}}“."
 }

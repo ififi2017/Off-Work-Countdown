@@ -4656,17 +4656,21 @@ final class OffWorkStore {
     }
 
     @discardableResult
-    func replaceFocusTemplate(id: UUID, name: String, slots: [FocusTemplateSlot]) -> Bool {
+    func replaceFocusTemplate(id: UUID, name: String, slots: [FocusTemplateSlot], at date: Date = .now) -> Bool {
         guard let index = focusPlanning.templates.firstIndex(where: { $0.id == id }) else { return false }
         focusPlanning.templates[index].name = name
         focusPlanning.templates[index].slots = slots
-        focusPlanning.templates[index].updatedAt = .now
+        focusPlanning.templates[index].updatedAt = date
+        let updated = focusPlanning.templates[index]
+        if appliedFocusTemplate(at: date)?.id == id {
+            _ = applyFocusTemplate(updated, at: date, preservingStartedBlocks: true)
+        }
         persistFocusPlanning()
         return true
     }
 
     @discardableResult
-    func applyFocusTemplate(_ template: FocusTemplate, at date: Date = .now) -> Bool {
+    func applyFocusTemplate(_ template: FocusTemplate, at date: Date = .now, preservingStartedBlocks: Bool = false) -> Bool {
         guard plus.isAuthorized, let current = focusCanvasShift(at: date)?.snapshot else { return false }
         let blocks = focusPlanningBlocks(for: current)
         guard !blocks.isEmpty else { return false }
@@ -4678,13 +4682,19 @@ final class OffWorkStore {
         if focusTemplatePlanMatches(template, blocks: blocks, dayKey: key, anchor: current.startDate) {
             return true
         }
-        let previousTaskIDs = Set(focusPlanning.plans[key]?.assignments.compactMap(\.taskID) ?? [])
+        let previousAssignments = focusPlanning.plans[key]?.assignments ?? []
+        let previousTaskIDs = Set(previousAssignments.compactMap(\.taskID))
+        let activeEnd = activeFocusSession().map { Int64($0.plannedEndAt.timeIntervalSince1970 * 1_000) }
+        let protectedStarts = Set(blocks.filter { block in
+            preservingStartedBlocks && (block.end <= date || activeEnd.map { block.startAtMs < $0 } == true)
+        }.map(\.startAtMs))
         var materializedTasks: [String: FocusTask] = [:]
-        var assignments: [FocusPlanAssignment] = []
+        var assignments = previousAssignments.filter { protectedStarts.contains($0.blockStartAtMs) }
 
         for slot in template.slots.sorted(by: { $0.blockIndex < $1.blockIndex }) {
             guard blocks.indices.contains(slot.blockIndex) else { continue }
             let block = blocks[slot.blockIndex]
+            guard !protectedStarts.contains(block.startAtMs) else { continue }
             // Tasks cannot replace automatic recovery. A user-drawn break
             // may occupy either a task slot or an automatic recovery slot.
             guard slot.kind == .breakTime || block.kind == .task else { continue }
@@ -4714,16 +4724,21 @@ final class OffWorkStore {
                     template,
                     slot: slot,
                     anchor: current.startDate,
-                    block: block
+                    block: block,
+                    includingCompleted: preservingStartedBlocks
                 ) {
+                    reusable.title = slot.taskTitle ?? t("focusTitle")
+                    reusable.icon = slot.taskIcon ?? .focus
                     reusable.deletedAt = nil
                     reusable.plannedForDate = recordsCalendar.startOfDay(for: current.startDate)
                     reusable.scheduledStartAt = block.start
-                    reusable.estimatedPomodoros = max(
-                        1,
-                        matching,
-                        completedFocusBlocks(for: reusable)
-                    )
+                    let upcomingCount = slot.taskKey == nil ? 1 : template.slots.count { candidate in
+                        candidate.kind == .task && candidate.taskKey == slot.taskKey
+                            && blocks.indices.contains(candidate.blockIndex)
+                            && !protectedStarts.contains(blocks[candidate.blockIndex].startAtMs)
+                    }
+                    reusable.estimatedPomodoros = max(1, matching, completedFocusBlocks(for: reusable) + (preservingStartedBlocks ? upcomingCount : 0))
+                    if preservingStartedBlocks { reusable.completedAt = nil }
                     records.upsertFocusTask(reusable)
                     materializedTasks[groupID] = reusable
                     task = reusable
@@ -4960,12 +4975,13 @@ final class OffWorkStore {
         _ template: FocusTemplate,
         slot: FocusTemplateSlot,
         anchor: Date,
-        block: FocusWorkBlock
+        block: FocusWorkBlock,
+        includingCompleted: Bool = false
     ) -> FocusTask? {
         records.state.focusTasks
             .filter { task in
                 guard task.templateID == template.id,
-                      task.completedAt == nil,
+                      (includingCompleted || task.completedAt == nil),
                       let plannedForDate = task.plannedForDate,
                       recordsCalendar.isDate(plannedForDate, inSameDayAs: anchor)
                 else { return false }
@@ -6303,6 +6319,135 @@ final class OffWorkStore {
         )
     }
 
+    func detachFocusTemplate(at date: Date = .now) {
+        guard let shift = focusCanvasShift(at: date)?.snapshot else { return }
+        let key = RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
+        guard focusPlanning.plans[key]?.appliedTemplateID != nil else { return }
+        focusPlanning.plans[key]?.appliedTemplateID = nil
+        focusPlanning.autoAppliedDayKeys.insert(key)
+        persistFocusPlanning()
+    }
+
+    func appliedFocusTemplate(at date: Date = .now) -> FocusTemplate? {
+        guard let shift = focusCanvasShift(at: date)?.snapshot else { return nil }
+        let key = RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
+        guard let id = focusPlanning.plans[key]?.appliedTemplateID else { return nil }
+        return focusPlanning.templates.first { $0.id == id }
+    }
+
+    /// Completed and running rounds cannot be removed by changing an estimate.
+    func protectedFocusPomodoros(_ task: FocusTask, at date: Date = .now) -> Int {
+        let running = activeFocusSession().flatMap { $0.taskID == task.id && $0.kind == .focus ? $0 : nil }
+        let runningEnd = activeFocusSession().map { Int64($0.plannedEndAt.timeIntervalSince1970 * 1_000) }
+        let fixed = focusDayCanvas(at: date).blocks.filter { block in
+            block.taskID == task.id && (block.state == .past || runningEnd.map { block.startAtMs < $0 } == true)
+        }
+        return max(fixed.count, completedFocusBlocks(for: task) + (running == nil ? 0 : 1))
+    }
+
+    func editedFocusTaskBlocks(_ task: FocusTask, pomodoros: Int, at date: Date = .now) -> [FocusDayCanvasModel.Block]? {
+        let canvas = focusDayCanvas(at: date)
+        let owned = canvas.blocks.filter { $0.taskID == task.id }
+        let consumed = protectedFocusPomodoros(task, at: date)
+        guard pomodoros >= max(1, consumed) else { return nil }
+        guard !owned.isEmpty else { return [] }
+        let runningEnd = activeFocusSession().map { Int64($0.plannedEndAt.timeIntervalSince1970 * 1_000) }
+        let fixed = owned.filter { block in block.state == .past || runningEnd.map { block.startAtMs < $0 } == true }
+        let editable = canvas.blocks.filter { block in
+            block.isEditable && (runningEnd.map { block.startAtMs >= $0 } ?? true)
+        }
+        let start = editable.first(where: { $0.taskID == task.id })?.startAtMs
+            ?? editable.first(where: { !$0.hasAssignment })?.startAtMs
+        let remaining = pomodoros - consumed
+        let next = start.map {
+            FocusLiveChain.projectedBlocks(taskID: task.id, remaining: remaining, blocks: editable, fromMs: $0)
+        } ?? []
+        guard next.count == remaining else { return nil }
+        return fixed + next
+    }
+
+    @discardableResult
+    func editFocusTask(_ task: FocusTask, title: String, icon: FocusTaskIcon, pomodoros: Int,
+                       isFavorite: Bool, at date: Date = .now) -> Bool {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard plus.isAuthorized, !title.isEmpty,
+              var next = records.state.focusTasks.first(where: { $0.id == task.id && $0.deletedAt == nil })
+        else { return false }
+        let oldFavorite = savedFocusFavorite(title: next.title, icon: next.icon)
+        let changed = next.title != title || next.icon != icon || next.estimatedPomodoros != pomodoros
+        if next.estimatedPomodoros != pomodoros {
+            guard let blocks = editedFocusTaskBlocks(next, pomodoros: pomodoros, at: date),
+                  let shift = focusCanvasShift(at: date)?.snapshot else { return false }
+            let key = RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
+            if focusPlanning.plans[key]?.assignments.contains(where: { $0.taskID == next.id }) == true {
+                focusPlanning.plans[key]?.assignments.removeAll { $0.taskID == next.id }
+                focusPlanning.plans[key]?.assignments.append(contentsOf: blocks.map {
+                    FocusPlanAssignment(blockStartAtMs: $0.startAtMs, kind: .task, taskID: next.id,
+                                        taskTitle: title, taskIcon: icon)
+                })
+            }
+            if pomodoros > completedFocusBlocks(for: next) { next.completedAt = nil }
+        }
+        next.title = title
+        next.icon = icon
+        next.estimatedPomodoros = pomodoros
+        if next.isFavorite { next.isFavorite = isFavorite }
+        records.upsertFocusTask(next, at: date)
+        if changed {
+            for key in focusPlanning.plans.keys {
+                guard var plan = focusPlanning.plans[key], plan.assignments.contains(where: { $0.taskID == next.id }) else { continue }
+                plan.appliedTemplateID = nil
+                focusPlanning.autoAppliedDayKeys.insert(key)
+                for index in plan.assignments.indices where plan.assignments[index].taskID == next.id {
+                    plan.assignments[index].taskTitle = title
+                    plan.assignments[index].taskIcon = icon
+                }
+                plan.assignments.sort { $0.blockStartAtMs < $1.blockStartAtMs }
+                focusPlanning.plans[key] = plan
+            }
+            refreshFocusTaskSchedule(for: next.id)
+            persistFocusPlanning()
+        }
+        if isFavorite {
+            if var favorite = oldFavorite, favorite.id != next.id {
+                favorite.title = title
+                favorite.icon = icon
+                favorite.estimatedPomodoros = pomodoros
+                records.upsertFocusTask(favorite, at: date)
+            } else if oldFavorite == nil {
+                saveFocusFavorite(title: title, pomodoros: pomodoros, icon: icon)
+            }
+        } else if let favorite = oldFavorite, favorite.id != next.id {
+            toggleFocusFavorite(favorite)
+        }
+        return true
+    }
+
+    func clearFocusDay(at date: Date = .now) {
+        guard plus.isAuthorized, let shift = focusCanvasShift(at: date)?.snapshot else { return }
+        let key = RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
+        let assigned = Set(focusPlanning.plans[key]?.assignments.compactMap(\.taskID) ?? [])
+        let tasks = records.state.focusTasks.filter { task in
+            task.deletedAt == nil && (assigned.contains(task.id) || task.plannedForDate.map {
+                recordsCalendar.isDate($0, inSameDayAs: shift.startDate)
+            } == true)
+        }
+        if let session = activeFocusSession(), recordsCalendar.isDate(session.shiftAnchorDate, inSameDayAs: shift.startDate) {
+            stopFocus(reason: .stoppedByUser, at: date)
+        }
+        focusPlanning.plans[key] = FocusDayPlan(dayKey: key, shiftStartAtMs: Int64(shift.startAtMs),
+                                               assignments: [], appliedTemplateID: nil)
+        focusPlanning.autoAppliedDayKeys.insert(key)
+        for var task in tasks {
+            if task.isFavorite {
+                task.plannedForDate = nil
+                task.scheduledStartAt = nil
+            } else { task.deletedAt = date }
+            records.upsertFocusTask(task, at: date)
+        }
+        persistFocusPlanning()
+    }
+
     @discardableResult
     func deleteFocusTask(_ task: FocusTask, at date: Date = .now) -> Bool {
         guard task.deletedAt == nil,
@@ -6311,8 +6456,10 @@ final class OffWorkStore {
         var next = task
         next.deletedAt = date
         records.upsertFocusTask(next, at: date)
-        for key in focusPlanning.plans.keys {
+        for key in focusPlanning.plans.keys where focusPlanning.plans[key]?.assignments.contains(where: { $0.taskID == task.id }) == true {
             focusPlanning.plans[key]?.assignments.removeAll { $0.taskID == task.id }
+            focusPlanning.plans[key]?.appliedTemplateID = nil
+            focusPlanning.autoAppliedDayKeys.insert(key)
         }
         persistFocusPlanning()
         return true
@@ -6490,6 +6637,11 @@ final class OffWorkStore {
     private(set) var focusNotificationIssue: FocusNotificationIssue?
     @ObservationIgnored private var focusNotificationGeneration: UInt64 = 0
     @ObservationIgnored private var isReconcilingFocusSessions = false
+
+    func isWithinFocusWorkTime(at date: Date = .now) -> Bool {
+        guard shouldQuerySnapshot(at: date), let shift = snapshot(at: date) else { return false }
+        return FocusPlanner.isInsideWork(at: date, segments: shift.segments, overtimeEndAtMs: overtimeEndAtMs)
+    }
 
     /// Same room check `startFocus` uses, so the button can disable before
     /// a tap that would only be rejected.

@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "Puoi aggiungere fino a {{count}} pomodori prima della prossima attività o della fine del turno.",
   "focusAddPomodoroCount": "Pomodori da aggiungere",
   "focusCompletedTasksTitle": "Le attività di concentrazione di oggi sono completate",
-  "focusQuickAddTask": "Aggiungi rapidamente un’attività"
+  "focusQuickAddTask": "Aggiungi rapidamente un’attività",
+  "focusEditTask": "Modifica attività",
+  "focusLeaveUnscheduled": "Non pianificare ora",
+  "focusStartAlreadyRunning": "Un timer è già in esecuzione.",
+  "focusOutsideWorkHours": "Sei fuori dall’orario di lavoro.",
+  "focusStartAfter": "Disponibile da {{time}}",
+  "focusClearDayTasks": "Cancella le attività di questo giorno",
+  "focusClearDayTasksBody": "Rimuove le attività e il programma del giorno e arresta il timer in corso. I registri di concentrazione completati vengono conservati.",
+  "focusSaveDayAsTemplate": "Salva il giorno come modello",
+  "focusAppliedTemplateNote": "Questo programma usa il modello “{{name}}”."
 }

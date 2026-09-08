@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "Puedes añadir hasta {{count}} pomodoros antes de la siguiente tarea o del final del turno.",
   "focusAddPomodoroCount": "Cantidad a añadir",
   "focusCompletedTasksTitle": "Las tareas de concentración de hoy están completadas",
-  "focusQuickAddTask": "Añadir tarea de concentración rápidamente"
+  "focusQuickAddTask": "Añadir tarea de concentración rápidamente",
+  "focusEditTask": "Editar tarea",
+  "focusLeaveUnscheduled": "Dejar sin programar",
+  "focusStartAlreadyRunning": "Ya hay un temporizador en marcha.",
+  "focusOutsideWorkHours": "Estás fuera del horario laboral.",
+  "focusStartAfter": "Disponible a partir de {{time}}",
+  "focusClearDayTasks": "Borrar las tareas de este día",
+  "focusClearDayTasksBody": "Elimina las tareas y la planificación de este día y detiene su temporizador activo. Se conservan los registros de concentración completados.",
+  "focusSaveDayAsTemplate": "Guardar este día como plantilla",
+  "focusAppliedTemplateNote": "Este horario utiliza la plantilla «{{name}}»."
 }

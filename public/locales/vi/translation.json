@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "Bạn có thể thêm tối đa {{count}} pomodoro trước công việc tiếp theo hoặc khi ca làm kết thúc.",
   "focusAddPomodoroCount": "Số lượng thêm",
   "focusCompletedTasksTitle": "Đã hoàn thành các nhiệm vụ tập trung hôm nay",
-  "focusQuickAddTask": "Thêm nhanh nhiệm vụ tập trung"
+  "focusQuickAddTask": "Thêm nhanh nhiệm vụ tập trung",
+  "focusEditTask": "Sửa công việc",
+  "focusLeaveUnscheduled": "Chưa lên lịch",
+  "focusStartAlreadyRunning": "Đã có bộ hẹn giờ đang chạy.",
+  "focusOutsideWorkHours": "Hiện không trong giờ làm việc.",
+  "focusStartAfter": "Có thể bắt đầu từ {{time}}",
+  "focusClearDayTasks": "Xóa công việc của ngày này",
+  "focusClearDayTasksBody": "Xóa công việc và lịch của ngày này, đồng thời dừng bộ hẹn giờ đang chạy. Các bản ghi tập trung đã hoàn thành sẽ được giữ lại.",
+  "focusSaveDayAsTemplate": "Lưu ngày này thành mẫu",
+  "focusAppliedTemplateNote": "Lịch này đang dùng mẫu “{{name}}”."
 }

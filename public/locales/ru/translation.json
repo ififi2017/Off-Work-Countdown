@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "До следующей задачи или конца смены можно добавить до {{count}} помодоро.",
   "focusAddPomodoroCount": "Количество",
   "focusCompletedTasksTitle": "Все задачи на концентрацию на сегодня выполнены",
-  "focusQuickAddTask": "Быстро добавить задачу"
+  "focusQuickAddTask": "Быстро добавить задачу",
+  "focusEditTask": "Изменить задачу",
+  "focusLeaveUnscheduled": "Пока не планировать",
+  "focusStartAlreadyRunning": "Таймер уже запущен.",
+  "focusOutsideWorkHours": "Сейчас нерабочее время.",
+  "focusStartAfter": "Доступно с {{time}}",
+  "focusClearDayTasks": "Очистить задачи этого дня",
+  "focusClearDayTasksBody": "Удалить задачи и план этого дня и остановить текущий таймер. Завершённые записи о фокусировке сохранятся.",
+  "focusSaveDayAsTemplate": "Сохранить день как шаблон",
+  "focusAppliedTemplateNote": "Расписание использует шаблон «{{name}}»."
 }

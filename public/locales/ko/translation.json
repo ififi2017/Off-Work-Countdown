@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "다음 작업 시작 또는 퇴근 전까지 포모도로를 최대 {{count}}개 추가할 수 있어요.",
   "focusAddPomodoroCount": "추가할 개수",
   "focusCompletedTasksTitle": "오늘의 집중 작업을 완료했어요",
-  "focusQuickAddTask": "집중 작업 빠르게 추가"
+  "focusQuickAddTask": "집중 작업 빠르게 추가",
+  "focusEditTask": "작업 편집",
+  "focusLeaveUnscheduled": "나중에 배치",
+  "focusStartAlreadyRunning": "이미 타이머가 실행 중입니다.",
+  "focusOutsideWorkHours": "현재 근무 시간이 아닙니다.",
+  "focusStartAfter": "{{time}}부터 시작 가능",
+  "focusClearDayTasks": "이 날짜의 작업 지우기",
+  "focusClearDayTasksBody": "이 날짜의 작업과 일정을 지우고 실행 중인 타이머를 중지합니다. 완료한 집중 기록은 유지됩니다.",
+  "focusSaveDayAsTemplate": "이 날짜를 템플릿으로 저장",
+  "focusAppliedTemplateNote": "현재 일정에 “{{name}}” 템플릿을 사용 중입니다."
 }

@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "Kamu bisa menambahkan hingga {{count}} pomodoro sebelum tugas berikutnya atau akhir sif.",
   "focusAddPomodoroCount": "Jumlah tambahan",
   "focusCompletedTasksTitle": "Tugas fokus hari ini selesai",
-  "focusQuickAddTask": "Tambah tugas fokus dengan cepat"
+  "focusQuickAddTask": "Tambah tugas fokus dengan cepat",
+  "focusEditTask": "Edit tugas",
+  "focusLeaveUnscheduled": "Jangan jadwalkan dulu",
+  "focusStartAlreadyRunning": "Timer sudah berjalan.",
+  "focusOutsideWorkHours": "Saat ini di luar jam kerja.",
+  "focusStartAfter": "Tersedia mulai {{time}}",
+  "focusClearDayTasks": "Hapus tugas hari ini",
+  "focusClearDayTasksBody": "Hapus tugas dan jadwal hari ini serta hentikan timer yang sedang berjalan. Catatan fokus yang selesai tetap disimpan.",
+  "focusSaveDayAsTemplate": "Simpan hari ini sebagai templat",
+  "focusAppliedTemplateNote": "Jadwal ini menggunakan templat “{{name}}”."
 }

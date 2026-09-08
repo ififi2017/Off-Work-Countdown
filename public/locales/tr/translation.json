@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "Sonraki görev veya vardiya bitiminden önce en fazla {{count}} pomodoro ekleyebilirsin.",
   "focusAddPomodoroCount": "Eklenecek sayı",
   "focusCompletedTasksTitle": "Bugünün odak görevleri tamamlandı",
-  "focusQuickAddTask": "Hızlıca odak görevi ekle"
+  "focusQuickAddTask": "Hızlıca odak görevi ekle",
+  "focusEditTask": "Görevi düzenle",
+  "focusLeaveUnscheduled": "Şimdilik planlama",
+  "focusStartAlreadyRunning": "Bir zamanlayıcı zaten çalışıyor.",
+  "focusOutsideWorkHours": "Şu anda çalışma saatleri dışındasınız.",
+  "focusStartAfter": "{{time}} itibarıyla kullanılabilir",
+  "focusClearDayTasks": "Bu günün görevlerini temizle",
+  "focusClearDayTasksBody": "Bu günün görevlerini ve planını kaldırır, çalışan zamanlayıcısını durdurur. Tamamlanan odak kayıtları korunur.",
+  "focusSaveDayAsTemplate": "Bu günü şablon olarak kaydet",
+  "focusAppliedTemplateNote": "Bu program “{{name}}” şablonunu kullanıyor."
 }

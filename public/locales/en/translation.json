@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "You can add up to {{count}} pomodoros before the next task or the end of this shift.",
   "focusAddPomodoroCount": "Pomodoros to add",
   "focusCompletedTasksTitle": "Today’s focus tasks are complete",
-  "focusQuickAddTask": "Quick add focus task"
+  "focusQuickAddTask": "Quick add focus task",
+  "focusEditTask": "Edit task",
+  "focusLeaveUnscheduled": "Leave unscheduled",
+  "focusStartAlreadyRunning": "A timer is already running.",
+  "focusOutsideWorkHours": "You are outside working hours.",
+  "focusStartAfter": "Available from {{time}}",
+  "focusClearDayTasks": "Clear this day’s tasks",
+  "focusClearDayTasksBody": "Remove this day’s tasks and plan, and stop its running timer. Completed focus records will be kept.",
+  "focusSaveDayAsTemplate": "Save this day as a template",
+  "focusAppliedTemplateNote": "This schedule uses the “{{name}}” template."
 }

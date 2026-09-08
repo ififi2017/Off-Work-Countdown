@@ -28,6 +28,10 @@ struct FocusCanvasView: View {
     }()
     @State private var selectedBlock: Int64?
     @State private var editingBlock: FocusDayCanvasModel.Block?
+    @State private var editingTask: FocusTask?
+    @State private var confirmsClearDay = false
+    @State private var namesDayTemplate = false
+    @State private var dayTemplateName = ""
     @State private var favoriteToCreate: FocusTask?
     @State private var quickCreateLanding: FocusQuickCreateSheet.Landing?
     @State private var now = Date.now
@@ -157,6 +161,22 @@ struct FocusCanvasView: View {
                 apply(result)
             }
         }
+        .sheet(item: $editingTask) { task in
+            FocusTaskEditSheet(store: store, task: task)
+        }
+        .alert(store.t("focusClearDayTasks"), isPresented: $confirmsClearDay) {
+            Button(store.t("focusClearDayTasks"), role: .destructive) { store.clearFocusDay(at: now) }
+            Button(store.t("cancel"), role: .cancel) {}
+        } message: {
+            Text(store.t("focusClearDayTasksBody"))
+        }
+        .alert(store.t("focusSaveDayAsTemplate"), isPresented: $namesDayTemplate) {
+            TextField(store.t("focusUsualDayName"), text: $dayTemplateName)
+            Button(store.t("saveAction")) {
+                _ = store.saveFocusTemplate(name: dayTemplateName, slots: store.focusTemplateDraftFromToday(at: now))
+            }.disabled(dayTemplateName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            Button(store.t("cancel"), role: .cancel) {}
+        }
         .sheet(item: $quickCreateLanding) { landing in
             FocusQuickCreateSheet(store: store, initialLanding: landing) { result in apply(result) }
         }
@@ -271,14 +291,27 @@ struct FocusCanvasView: View {
                 .foregroundStyle(OWCDesign.secondary)
             }
             FocusBandView(store: store, model: model, selectedBlock: $selectedBlock) { block in
-                guard block.isEditable else { return }
+                guard block.isEditable || block.isAssigned else { return }
                 selectedBlock = block.startAtMs
                 editingBlock = block
             }
             .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named("focus-content")).minY } action: {
                 bandTop = $0
             }
-            FocusTaskLedger(store: store, model: model, onExtend: extend)
+            FocusTaskLedger(store: store, model: model, onExtend: extend, onEdit: { editingTask = $0 })
+            if !model.tasks.isEmpty || model.blocks.contains(where: \.hasAssignment) {
+                VStack(spacing: 10) {
+                    if store.appliedFocusTemplate(at: now) == nil, model.blocks.contains(where: \.hasAssignment) {
+                        Button(store.t("focusSaveDayAsTemplate")) {
+                            dayTemplateName = store.t("focusUsualDayDefaultName")
+                            namesDayTemplate = true
+                        }.buttonStyle(OWCSecondaryButtonStyle())
+                    }
+                    Button(store.t("focusClearDayTasks"), role: .destructive) { confirmsClearDay = true }
+                        .buttonStyle(OWCSecondaryButtonStyle())
+                }
+                .padding(.top, 8)
+            }
         }
     }
 
@@ -379,6 +412,14 @@ struct FocusNowBand: View {
                 content
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(18)
+                if let template = store.appliedFocusTemplate(at: now), !model.isLocked {
+                    Text(store.t("focusAppliedTemplateNote", values: ["name": template.name]))
+                        .font(.footnote)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 18)
+                        .padding(.bottom, 12)
+                }
                 if session != nil, let issue = store.focusNotificationIssue {
                     notificationIssue(issue).padding(.horizontal, 18).padding(.bottom, 12)
                 }
@@ -565,6 +606,7 @@ struct FocusTaskLedger: View {
     let store: OffWorkStore
     let model: FocusDayCanvasModel
     var onExtend: (UUID) -> Void
+    var onEdit: (FocusTask) -> Void
 
     var body: some View {
         if !model.tasks.isEmpty {
@@ -592,6 +634,7 @@ struct FocusTaskLedger: View {
                                 if let task = store.records.state.focusTasks.first(where: { $0.id == row.id }) {
                                     let favorite = store.savedFocusFavorite(title: task.title, icon: task.icon)
                                     Menu {
+                                        Button(store.t("focusEditTask"), systemImage: "pencil") { onEdit(task) }
                                         Button(store.t("focusStartNow"), systemImage: "play.fill") {
                                             _ = store.startFocus(task: task)
                                         }

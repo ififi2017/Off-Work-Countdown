@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "يمكنك إضافة ما يصل إلى {{count}} جلسات بومودورو قبل المهمة التالية أو نهاية فترة العمل.",
   "focusAddPomodoroCount": "عدد الجلسات الإضافية",
   "focusCompletedTasksTitle": "اكتملت مهام التركيز لهذا اليوم",
-  "focusQuickAddTask": "إضافة مهمة تركيز بسرعة"
+  "focusQuickAddTask": "إضافة مهمة تركيز بسرعة",
+  "focusEditTask": "تعديل المهمة",
+  "focusLeaveUnscheduled": "عدم الجدولة الآن",
+  "focusStartAlreadyRunning": "يوجد مؤقت قيد التشغيل بالفعل.",
+  "focusOutsideWorkHours": "أنت خارج ساعات العمل حاليًا.",
+  "focusStartAfter": "متاح بدءًا من {{time}}",
+  "focusClearDayTasks": "مسح مهام هذا اليوم",
+  "focusClearDayTasksBody": "إزالة مهام هذا اليوم وجدوله وإيقاف مؤقته الجاري. ستبقى سجلات التركيز المكتملة محفوظة.",
+  "focusSaveDayAsTemplate": "حفظ هذا اليوم كقالب",
+  "focusAppliedTemplateNote": "يستخدم هذا الجدول قالب «{{name}}»."
 }

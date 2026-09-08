@@ -1012,5 +1012,14 @@
   "focusAddPomodoroCapacity": "次のタスクまたは退勤までに、最大 {{count}} ポモドーロを追加できます。",
   "focusAddPomodoroCount": "追加する数",
   "focusCompletedTasksTitle": "今日の集中タスクは完了しました",
-  "focusQuickAddTask": "集中タスクをすぐに追加"
+  "focusQuickAddTask": "集中タスクをすぐに追加",
+  "focusEditTask": "タスクを編集",
+  "focusLeaveUnscheduled": "今は予定に入れない",
+  "focusStartAlreadyRunning": "タイマーがすでに動作中です。",
+  "focusOutsideWorkHours": "現在は勤務時間外です。",
+  "focusStartAfter": "{{time}}から開始できます",
+  "focusClearDayTasks": "この日のタスクを消去",
+  "focusClearDayTasksBody": "この日のタスクと予定を削除し、実行中のタイマーを停止します。完了した集中の記録は残ります。",
+  "focusSaveDayAsTemplate": "この日の予定をテンプレートに保存",
+  "focusAppliedTemplateNote": "「{{name}}」テンプレートを使用中です。"
 }
