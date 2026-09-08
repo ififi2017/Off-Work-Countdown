@@ -38,6 +38,7 @@ struct FocusCanvasView: View {
     @State private var editingTemplate: FocusTemplateDraft?
     @State private var notice: String?
     @State private var confirmsStop = false
+    @State private var taskToExtend: UUID?
     @State private var selectionFeedback = 0
     @State private var placedFeedback = 0
     @State private var warningFeedback = 0
@@ -168,6 +169,15 @@ struct FocusCanvasView: View {
         } message: {
             Text(store.t(session?.kind == .focus ? "focusStopConfirm" : "focusEndBreakBody"))
         }
+        .alert(store.t("focusExtendOne"), isPresented: Binding(
+            get: { taskToExtend != nil },
+            set: { if !$0 { taskToExtend = nil } }
+        ), presenting: taskToExtend) { taskID in
+            Button(store.t("focusSaveTask")) { confirmExtension(taskID) }
+            Button(store.t("cancel"), role: .cancel) {}
+        } message: { taskID in
+            Text(store.records.state.focusTasks.first(where: { $0.id == taskID })?.title ?? store.t("focusTaskTitle"))
+        }
         .alert(
             notice ?? "",
             isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })
@@ -289,6 +299,10 @@ struct FocusCanvasView: View {
     // MARK: - actions
 
     private func extend(_ taskID: UUID) {
+        taskToExtend = taskID
+    }
+
+    private func confirmExtension(_ taskID: UUID) {
         switch store.addOneFocusBlock(taskID: taskID) {
         case .success(let start):
             scale = .today
@@ -355,7 +369,7 @@ struct FocusNowBand: View {
                 content
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(18)
-                if let taskID = store.focusContinuationTaskID() {
+                if session == nil, let taskID = store.focusContinuationTaskID() {
                     Button { onExtend(taskID) } label: {
                         Text(store.t("focusExtendOne"))
                             .font(.footnote.weight(.medium))
@@ -448,10 +462,20 @@ struct FocusNowBand: View {
                     .font(.caption).foregroundStyle(OWCDesign.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            Button(store.t("focusStop"), action: onStop)
-                .buttonStyle(OWCSecondaryButtonStyle())
-                .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : 76)
-                .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
+            HStack(spacing: 8) {
+                if let taskID = store.focusContinuationTaskID() {
+                    Button(store.t("focusExtendOne"), systemImage: "plus") { onExtend(taskID) }
+                        .labelStyle(.iconOnly)
+                        .buttonStyle(OWCSecondaryButtonStyle())
+                        .frame(width: 50)
+                        .help(store.t("focusExtendOne"))
+                }
+                Button(store.t("focusStop"), systemImage: "stop.fill", action: onStop)
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(OWCSecondaryButtonStyle())
+                    .frame(width: 50)
+                    .help(store.t("focusStop"))
+            }
         }
     }
 
