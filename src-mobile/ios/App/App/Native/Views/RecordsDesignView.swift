@@ -21,6 +21,8 @@ struct RecordsDesignView: View {
     @State private var cells: [RecordsDayCell] = []
     @State private var summary: RecordsHeadlineSummary?
     @State private var lifeModel: LifeViewModel?
+    @State private var lifeAllocationVisible = false
+    @State private var lifeProjectionSignature: RecordsLoadSignature?
     @State private var expanded: [RecordsScale: Bool]
     @State private var pinch: CGFloat = 1
     @State private var scaleFeedback = 0
@@ -239,7 +241,20 @@ struct RecordsDesignView: View {
             // locked life view must not print a projected number under a
             // locked canvas.
             if scale == .life, store.plus.isAuthorized, store.records.state.lifeProfile != nil {
-                RecordsLifeAllocationCard(store: store, model: lifeModel)
+                RecordsLifeAllocationCard(
+                    store: store, model: lifeModel,
+                    isLoading: lifeProjectionSignature != currentLoadSignature
+                )
+                .onScrollVisibilityChange(threshold: 0.1) { lifeAllocationVisible = $0 }
+                .task(id: lifeAllocationVisible && scenePhase == .active && store.selectedTab == .records
+                    ? currentLoadSignature : nil) {
+                    guard lifeAllocationVisible, scenePhase == .active, store.selectedTab == .records else { return }
+                    let signature = currentLoadSignature
+                    let projection = await store.prepareLifeViewModel()
+                    guard !Task.isCancelled, signature == currentLoadSignature else { return }
+                    lifeModel = projection
+                    lifeProjectionSignature = signature
+                }
             }
             if shouldOfferLifeSetup {
                 lifeSetupCard
@@ -289,20 +304,7 @@ struct RecordsDesignView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
 
-            Button {
-                setExpanded(false)
-            } label: {
-                Label(store.t("recordsCollapseChart"), systemImage: "arrow.down.right.and.arrow.up.left")
-                    .labelStyle(.iconOnly)
-                    .font(.body.weight(.semibold))
-                    .frame(minWidth: 44, minHeight: 44)
-                    .background(OWCDesign.control, in: Circle())
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(OWCDesign.primary)
-            .accessibilityLabel(store.t("recordsCollapseChart"))
-            .padding(.top, 8)
-            .padding(.trailing, 8)
+
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -473,15 +475,45 @@ struct RecordsDesignView: View {
         }
     }
 
+    private var chartIsLoading: Bool { loadedSignature != currentLoadSignature }
+
+    private var placeholderCells: [RecordsDayCell] {
+        let window = store.recordsWindow(for: scale, anchor: anchor)
+        let calendar = store.recordsCalendar
+        var date = calendar.startOfDay(for: window.0)
+        var result: [RecordsDayCell] = []
+        while date <= window.1 {
+            result.append(RecordsDayCell(
+                dayKey: RecordJSON.dayKey(date, calendar: calendar), date: date,
+                appearance: .unrecorded, workMs: 0, overtimeMs: 0, breakMs: 0, freeMs: 0,
+                observationCount: 0, isToday: false, isFuture: false,
+                isProjection: false, hasConflict: false
+            ))
+            guard let next = calendar.date(byAdding: .day, value: 1, to: date) else { break }
+            date = next
+        }
+        return result
+    }
+
     @ViewBuilder
     private func visualizationContent(lockedScale: Bool, expandedPresentation: Bool) -> some View {
+        let renderedCells = chartIsLoading && scale != .life ? placeholderCells : cells
         VStack(alignment: .leading, spacing: 14) {
             if expandedPresentation {
-                Text(periodTitle)
-                    .font(.headline)
+                HStack {
+                    Text(periodTitle)
+                        .font(.headline)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityAddTraits(.isHeader)
+                    Button { setExpanded(false) } label: {
+                        Image(systemName: "arrow.down.right.and.arrow.up.left")
+                            .frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.plain)
                     .foregroundStyle(OWCDesign.secondary)
-                    .padding(.trailing, 44)
-                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityLabel(store.t("recordsCollapseChart"))
+                }
             } else {
                 periodHeader
                 Divider()
@@ -492,11 +524,12 @@ struct RecordsDesignView: View {
                     store.paywallSheet = scale == .life ? .life : .charts
                 }
             } else {
+                Group {
                 switch scale {
                 case .month:
                     RecordsMonthGrid(
                         store: store,
-                        cells: cells,
+                        cells: renderedCells,
                         selectedDayKey: selectedDayKey,
                         onSelect: selectFromTap,
                         onOpen: openDay
@@ -505,7 +538,7 @@ struct RecordsDesignView: View {
                 case .week:
                     RecordsWeekStrips(
                         store: store,
-                        cells: cells,
+                        cells: renderedCells,
                         selectedDayKey: selectedDayKey,
                         onSelect: selectFromTap,
                         onOpen: openDay
@@ -519,7 +552,7 @@ struct RecordsDesignView: View {
                     if expandedPresentation {
                         RecordsYearMonthBars(
                             store: store,
-                            cells: cells,
+                            cells: renderedCells,
                             selectedMonth: selectedYearMonth,
                             onOpenMonth: openMonth
                         ) { month in
@@ -531,7 +564,7 @@ struct RecordsDesignView: View {
                     } else {
                         RecordsYearCanvas(
                             store: store,
-                            cells: cells,
+                            cells: renderedCells,
                             selectedMonth: selectedYearMonth,
                             calloutMonth: $yearCalloutMonth,
                             selectedDate: $yearSelectionDate,
@@ -544,6 +577,11 @@ struct RecordsDesignView: View {
                 case .life:
                     lifeCanvas(expandedPresentation: expandedPresentation)
                 }
+                }
+                .redacted(reason: chartIsLoading ? .placeholder : [])
+                .opacity(chartIsLoading ? 0.35 : 1)
+                .allowsHitTesting(!chartIsLoading)
+                .accessibilityHidden(chartIsLoading)
             }
         }
         .frame(maxWidth: .infinity, alignment: .top)
@@ -884,11 +922,8 @@ struct RecordsDesignView: View {
             cells = []
             summary = nil
             if selectedLifeStageID == nil { selectCurrentLifeStage() }
-            // Expanding a career's worth of schedule runs off the main actor;
-            // the life canvas itself only needs the profile's stage dates.
-            let projection = store.plus.isAuthorized ? await store.prepareLifeViewModel() : nil
-            guard generation == loadGeneration, requestedScale == scale else { return }
-            lifeModel = projection
+            // The stage grid is immediate. The expensive allocation is requested
+            // only when its card becomes visible, and cancelled when it leaves.
             loadedSignature = signature
             return
         }

@@ -3755,6 +3755,10 @@ final class OffWorkStore {
         RelativeDurationFormatter.string(milliseconds: milliseconds, languageCode: languageCode)
     }
 
+    func formatRecordsDuration(_ milliseconds: Double) -> String {
+        RelativeDurationFormatter.string(milliseconds: milliseconds, languageCode: languageCode, includesDays: true)
+    }
+
     func formatHours(_ value: Double) -> String {
         let formatter = MeasurementFormatter()
         formatter.locale = locale
@@ -4020,6 +4024,19 @@ final class OffWorkStore {
             return allocation
         }
         let combined = TimeAllocationCalculator.combining(shares)
+        // Allocation describes the whole visible period, including scheduled
+        // forecasts and rest days. Actual metrics above keep their own basis.
+        let periodShares = cells.compactMap { cell -> TimeAllocationShare? in
+            guard let day = byKey[cell.dayKey] else { return nil }
+            return dayAllocation(
+                day,
+                contributedBy: contributingShifts(
+                    for: day, previous: previousDay(before: day, in: byKey),
+                    now: now, includesLifeProjection: true
+                ),
+                now: now
+            )
+        }
         let today = recordsCalendar.startOfDay(for: now)
         let visibleKeys = Set(cells.map(\.dayKey))
         let completedScheduledWorkdays = days.filter { day in
@@ -4041,8 +4058,8 @@ final class OffWorkStore {
                 at: now
             ),
             completedScheduledWorkdays: completedScheduledWorkdays,
-            allocationDays: shares.count,
-            allocation: combined,
+            allocationDays: periodShares.count,
+            allocation: TimeAllocationCalculator.combining(periodShares),
             sleepSourceKey: sleepKey,
             actualForecast: actualForecast
         )
