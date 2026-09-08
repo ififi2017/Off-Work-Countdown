@@ -42,6 +42,7 @@ extension OffWorkStore {
         pomodoros: Int = 1,
         icon: FocusTaskIcon = .focus,
         isFavorite: Bool = false,
+        scheduleAllPomodoros: Bool = false,
         at date: Date = .now
     ) -> FocusPlacementResult {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -69,7 +70,8 @@ extension OffWorkStore {
             icon: icon,
             isFavorite: isFavorite
         )
-        return assign(task, toBlockStartingAt: target.startAtMs, at: date)
+        return placeFocusTask(task, pomodoros: scheduleAllPomodoros ? task.estimatedPomodoros : 1,
+                              startingAt: target.startAtMs, at: date)
     }
 
     /// Block-first creation: the block is already chosen, the task is made
@@ -81,6 +83,7 @@ extension OffWorkStore {
         icon: FocusTaskIcon = .focus,
         pomodoros: Int = 1,
         inBlockStartingAt blockStartAtMs: Int64,
+        scheduleAllPomodoros: Bool = false,
         at date: Date = .now
     ) -> FocusPlacementResult {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -92,7 +95,55 @@ extension OffWorkStore {
             plannedFor: shift.startDate,
             icon: icon
         )
-        return assign(task, toBlockStartingAt: blockStartAtMs, at: date)
+        return placeFocusTask(task, pomodoros: scheduleAllPomodoros ? task.estimatedPomodoros : 1,
+                              startingAt: blockStartAtMs, at: date)
+    }
+
+    /// Preview and save use the same projection over the existing plan.
+    func focusCreationBlocks(pomodoros: Int, startingAt: Int64, taskID: UUID? = nil,
+                             at date: Date = .now) -> [FocusDayCanvasModel.Block] {
+        let canvas = focusDayCanvas(at: date)
+        guard canvas.blocks.contains(where: { $0.startAtMs == startingAt && $0.isEditable }) else { return [] }
+        return FocusLiveChain.projectedBlocks(taskID: taskID ?? UUID(), remaining: pomodoros,
+                                              blocks: canvas.blocks, fromMs: startingAt)
+    }
+
+    @discardableResult
+    func placeFocusTask(_ task: FocusTask, pomodoros: Int, startingAt: Int64,
+                        at date: Date = .now) -> FocusPlacementResult {
+        guard plus.isAuthorized else { return .locked }
+        let blocks = focusCreationBlocks(pomodoros: pomodoros, startingAt: startingAt, taskID: task.id, at: date)
+        guard let first = blocks.first else { return .addedUnscheduled(taskID: task.id) }
+        for block in blocks { _ = assign(task, toBlockStartingAt: block.startAtMs, at: date) }
+        return .placed(taskID: task.id, blockStartAtMs: first.startAtMs)
+    }
+
+    /// The finish of the last requested block, never a partial plan's early end.
+    func focusCreationFinish(pomodoros: Int, startingAt: Int64?, startNow: Bool = false,
+                             taskID: UUID? = nil, at date: Date = .now) -> Date? {
+        guard pomodoros > 0 else { return nil }
+        if startNow {
+            guard activeFocusSession() == nil, hasFocusRoom(at: date), let shift = snapshot(at: date) else { return nil }
+            let end = FocusPlanner.plannedEnd(from: date, segments: shift.segments,
+                                              overtimeEndAtMs: overtimeEndAtMs,
+                                              durationMinutes: focusTimerSettings.normalized.focusMinutes)
+            guard FocusPlanner.endReason(startedAt: date, plannedEndAt: end,
+                                          expectedDurationMinutes: focusTimerSettings.normalized.focusMinutes) == .completed
+            else { return nil }
+            if pomodoros == 1 { return end }
+            let session = FocusSession(id: UUID(), taskID: taskID, shiftAnchorDate: shift.startDate,
+                                       startedAt: date, plannedEndAt: end, endedAt: nil, endReason: nil,
+                                       editedAt: date, editCount: 0, editTieBreaker: UUID())
+            guard let breakEnd = plannedFocusBreakEnd(kind: nextFocusBreakKind(after: session), at: end) else { return nil }
+            let projected = FocusLiveChain.projectedBlocks(taskID: taskID ?? UUID(), remaining: pomodoros - 1,
+                blocks: focusDayCanvas(at: date).blocks, fromMs: Int64(breakEnd.timeIntervalSince1970 * 1_000))
+            guard projected.count == pomodoros - 1 else { return nil }
+            return projected.last.map { Date(timeIntervalSince1970: Double($0.endAtMs) / 1_000) }
+        }
+        guard let startingAt else { return nil }
+        let blocks = focusCreationBlocks(pomodoros: pomodoros, startingAt: startingAt, taskID: taskID, at: date)
+        guard blocks.count == pomodoros else { return nil }
+        return blocks.last.map { Date(timeIntervalSince1970: Double($0.endAtMs) / 1_000) }
     }
 
     /// Resolves a block key against the shift the canvas is actually drawing.

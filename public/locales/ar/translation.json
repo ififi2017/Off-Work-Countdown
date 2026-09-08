@@ -861,6 +861,7 @@
   "focusBlockExisting": "مهام اليوم",
   "focusBlockMakeBreak": "اجعلها استراحة",
   "focusBlockClear": "أفرغ هذه الفترة",
+  "focusEstimatedFinish": "الانتهاء المتوقع: {{time}}",
   "focusEstimate": "التقدير",
   "focusEstimateDetail": "{{count}} × {{minutes}} دقيقة",
   "focusLanding": "أين توضع",
@@ -873,8 +874,8 @@
   "focusUsualDay": "اليوم المعتاد",
   "focusUsualDayName": "الاسم",
   "focusUsualDayDefaultName": "يوم عملي",
-  "focusSaveTodayAsUsual": "احفظ اليوم كيوم معتاد",
-  "focusSaveTodayAsUsualDetail": "يفتح محررًا لإكمال الباقي",
+  "focusSaveTodayAsUsual": "إنشاء قالب ليوم من التركيز",
+  "focusSaveTodayAsUsualDetail": "رتّب مهام التركيز ليوم كامل لاستخدامها مجددًا.",
   "focusUsualDayShape": "مُعدّ لـ {{start}} – {{end}} · {{count}} فترات",
   "focusUsualDayEmptyNote": "ما زالت {{count}} فترات فارغة، وستبقى فارغة عند استخدام هذا اليوم.",
   "focusUsualDayCadenceLock": "حفظ يوم معتاد يثبّت طول الفترة، لأن الخانات مرقّمة وفقًا له.",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "انتهت الاستراحة",
   "focusActivityDayDone": "اكتملت جميع مهام اليوم",
   "focusAddPomodoroCapacity": "يمكنك إضافة ما يصل إلى {{count}} جلسات بومودورو قبل المهمة التالية أو نهاية فترة العمل.",
-  "focusAddPomodoroCount": "عدد الجلسات الإضافية"
+  "focusAddPomodoroCount": "عدد الجلسات الإضافية",
+  "focusCompletedTasksTitle": "اكتملت مهام التركيز لهذا اليوم",
+  "focusQuickAddTask": "إضافة مهمة تركيز بسرعة"
 }

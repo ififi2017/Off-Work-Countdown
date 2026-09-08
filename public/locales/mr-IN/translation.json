@@ -861,6 +861,7 @@
   "focusBlockExisting": "आजची कार्ये",
   "focusBlockMakeBreak": "हा विश्रांतीचा करा",
   "focusBlockClear": "हा ब्लॉक रिकामा करा",
+  "focusEstimatedFinish": "अंदाजे {{time}} वाजता पूर्ण होईल",
   "focusEstimate": "अंदाज",
   "focusEstimateDetail": "{{count}} × {{minutes}} मिनिटे",
   "focusLanding": "कुठे ठेवायचे",
@@ -873,8 +874,8 @@
   "focusUsualDay": "नेहमीचा दिवस",
   "focusUsualDayName": "नाव",
   "focusUsualDayDefaultName": "माझा कामाचा दिवस",
-  "focusSaveTodayAsUsual": "आजचा दिवस नेहमीचा म्हणून जतन करा",
-  "focusSaveTodayAsUsualDetail": "उरलेले भरण्यासाठी संपादक उघडतो",
+  "focusSaveTodayAsUsual": "दिवसभराच्या एकाग्रतेचा साचा तयार करा",
+  "focusSaveTodayAsUsualDetail": "एका दिवसाच्या एकाग्रतेच्या कामांचे नियोजन करा आणि ते पुन्हा वापरा.",
   "focusUsualDayShape": "{{start}} – {{end}} साठी · {{count}} ब्लॉक",
   "focusUsualDayEmptyNote": "{{count}} ब्लॉक अजून रिकामे आहेत. हा दिवस वापरताना ते रिकामेच राहतील.",
   "focusUsualDayCadenceLock": "नेहमीचा दिवस जतन केल्यावर ब्लॉकची लांबी निश्चित होते, कारण जागा त्यानुसार क्रमांकित असतात.",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "ब्रेक संपला",
   "focusActivityDayDone": "आजची सर्व कामे पूर्ण झाली आहेत",
   "focusAddPomodoroCapacity": "पुढील काम किंवा शिफ्ट संपेपर्यंत तुम्ही जास्तीत जास्त {{count}} पोमोडोरो जोडू शकता.",
-  "focusAddPomodoroCount": "जोडायची संख्या"
+  "focusAddPomodoroCount": "जोडायची संख्या",
+  "focusCompletedTasksTitle": "आजची एकाग्रतेची कामे पूर्ण झाली",
+  "focusQuickAddTask": "एकाग्रतेचे काम पटकन जोडा"
 }

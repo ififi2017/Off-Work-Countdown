@@ -13,7 +13,7 @@ struct FocusLockedUsualScale: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 8) {
-                OWCSectionHeader(title: store.t("focusFavoritesPlace"))
+                OWCSectionHeader(title: store.t("focusFavorites"))
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                         ForEach(samples, id: \.key) { sample in
                             Button { store.presentedRoute = .plus } label: {
@@ -121,7 +121,7 @@ struct FocusUsualScale: View {
     private var favoritesSection: some View {
         if !favorites.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
-                OWCSectionHeader(title: store.t("focusFavoritesPlace"))
+                OWCSectionHeader(title: store.t("focusFavorites"))
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                         ForEach(favorites) { task in
                             Button { onPlaceFavorite(task) } label: {
@@ -257,15 +257,9 @@ struct FocusTemplateEditorView: View {
     let store: OffWorkStore
     @State var draft: FocusTemplateDraft
     @State private var editingBlock: FocusDayCanvasModel.Block?
-    @FocusState private var titleFocused: Bool
-    @State private var selectedFavoriteID: UUID?
-    @State private var newTitle = ""
-    @State private var newIcon = FocusTaskIcon.focus
-    @State private var pomodoros = 1
-    @State private var isFavorite = false
+    @State private var taskDraft = FocusTaskEditorDraft()
     @State private var favoriteChanges: [UUID: Bool] = [:]
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private func templateCanvas(from base: FocusDayCanvasModel) -> FocusDayCanvasModel {
         var model = base
@@ -318,14 +312,9 @@ struct FocusTemplateEditorView: View {
                         model: canvas,
                         selectedBlock: .constant(nil)
                     ) { block in
-                        selectedFavoriteID = nil
+                        taskDraft = FocusTaskEditorDraft()
                         editingBlock = block
-                        pomodoros = 1
-                        newTitle = draft.slots.first { $0.blockIndex == block.index }?.taskTitle ?? ""
-                        newIcon = draft.slots.first { $0.blockIndex == block.index }?.taskIcon ?? .focus
-                        let key = draft.slots.first { $0.blockIndex == block.index }?.taskKey
-                        isFavorite = key.flatMap { favoriteChanges[$0] }
-                            ?? (store.savedFocusFavorite(title: newTitle, icon: newIcon) != nil)
+
                     }
 
                     if emptyWorkBlocks > 0 {
@@ -359,25 +348,43 @@ struct FocusTemplateEditorView: View {
 
         }
         .sheet(item: $editingBlock) { block in
-            NavigationStack {
-                OWCContentSizedScrollView {
-                    slotEditor(block.index)
-                        .padding(.horizontal, OWCDesign.pageInset)
-                        .padding(.bottom, OWCDesign.detailBottomInset)
-                }
-                .background(OWCDesign.page)
-                .navigationTitle(
-                    "\(store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000))) – \(store.formatTime(Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000)))"
-                )
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
+            let occupied = draft.slots.contains { $0.blockIndex == block.index }
+            if occupied {
+                NavigationStack {
+                    VStack(spacing: 14) {
+                        Text(block.taskTitle ?? store.t("focusBreak")).font(.headline)
+                        Button(store.t("focusBlockClear"), role: .destructive) {
+                            draft.slots.removeAll { $0.blockIndex == block.index }
+                            editingBlock = nil
+                        }.buttonStyle(OWCSecondaryButtonStyle())
+                    }.padding(OWCDesign.pageInset)
+                    .toolbar { ToolbarItem(placement: .topBarLeading) {
                         Button(store.t("close")) { editingBlock = nil }
-                    }
+                    } }
+                }
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+            } else {
+                let available = draft.availableTaskIndices(at: block.index, blocks: blocks)
+                let finalIndex = available.prefix(taskDraft.pomodoros).last
+                let finish = available.count >= taskDraft.pomodoros
+                    ? blocks.first { $0.index == finalIndex }?.end : nil
+                FocusTaskEditorShell(store: store, saveTitle: store.t("saveAction"),
+                                     canSave: taskDraft.canSave && finish != nil,
+                                     onCancel: { editingBlock = nil }, onSave: {
+                    setSlot(block.index, title: taskDraft.title, icon: taskDraft.icon)
+                    editingBlock = nil
+                }) {
+                    FocusTaskEditorFields(store: store, draft: $taskDraft,
+                        destination: store.t("focusUsualDay") + " · " + store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)),
+                        finish: finish, showsDate: false)
+                    Button(store.t("focusBlockMakeBreak")) {
+                        draft.slots.append(FocusTemplateSlot(blockIndex: block.index, kind: .breakTime,
+                                                            taskKey: nil, taskTitle: nil, taskIcon: nil))
+                        editingBlock = nil
+                    }.buttonStyle(OWCSecondaryButtonStyle())
                 }
             }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
         }
     }
 
@@ -393,64 +400,13 @@ struct FocusTemplateEditorView: View {
         ])
     }
 
-    private func slotEditor(_ blockIndex: Int) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            if let slot = draft.slots.first(where: { $0.blockIndex == blockIndex }) {
-                Label(
-                    slot.kind == .breakTime ? store.t("focusBreak") : (slot.taskTitle ?? store.t("focusTaskTitle")),
-                    systemImage: slot.kind == .breakTime ? "cup.and.saucer.fill" : (slot.taskIcon ?? .focus).systemName
-                )
-                .font(.headline)
-                Button(store.t("focusBlockClear"), role: .destructive) {
-                    draft.slots.removeAll { $0.blockIndex == blockIndex }
-                    editingBlock = nil
-                }
-                .buttonStyle(OWCSecondaryButtonStyle())
-            } else {
-                OWCSectionHeader(title: store.t("focusBlockWhat"))
-                FocusTitleField(
-                    store: store,
-                    title: $newTitle,
-                    icon: newIcon,
-                    focused: $titleFocused,
-                    placeholder: store.t("focusBlockNewPlaceholder")
-                )
-                Stepper(store.t("focusEstimate") + " · \(pomodoros)", value: $pomodoros,
-                        in: 1...max(pomodoros, draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count))
-                FocusFavoritePicker(store: store, title: $newTitle, icon: $newIcon, selectedID: $selectedFavoriteID) { favorite in
-                    pomodoros = favorite.estimatedPomodoros
-                    isFavorite = true
-                }
-                FocusFavoriteToggle(store: store, isFavorite: $isFavorite)
-                FocusTaskIconPicker(store: store, selection: $newIcon)
-                Button(store.t("saveAction")) {
-                    setSlot(blockIndex, title: newTitle, icon: newIcon)
-                    editingBlock = nil
-                }
-                .buttonStyle(OWCPrimaryButtonStyle())
-                .disabled(newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                          || pomodoros > draft.availableTaskIndices(at: blockIndex, blocks: store.focusTemplateBlocks()).count)
-                Button(store.t("focusBlockMakeBreak")) {
-                    draft.slots.removeAll { $0.blockIndex == blockIndex }
-                    draft.slots.append(FocusTemplateSlot(
-                        blockIndex: blockIndex, kind: .breakTime,
-                        taskKey: nil, taskTitle: nil, taskIcon: nil
-                    ))
-                    editingBlock = nil
-                }
-                .buttonStyle(OWCSecondaryButtonStyle())
-            }
-        }
-        .padding(.vertical, 14)
-    }
-
     private func setSlot(_ blockIndex: Int, title: String, icon: FocusTaskIcon) {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         let previousKey = draft.slots.first(where: { $0.blockIndex == blockIndex })?.taskKey
-        draft.setTask(at: blockIndex, count: pomodoros, title: trimmed, icon: icon, blocks: store.focusTemplateBlocks())
+        draft.setTask(at: blockIndex, count: taskDraft.pomodoros, title: trimmed, icon: icon, blocks: store.focusTemplateBlocks())
         if let key = previousKey ?? draft.slots.first(where: { $0.blockIndex == blockIndex })?.taskKey {
-            favoriteChanges[key] = isFavorite
+            favoriteChanges[key] = taskDraft.isFavorite
         }
     }
 

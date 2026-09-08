@@ -10,7 +10,8 @@ struct FocusFavoritePicker: View {
     var body: some View {
         let favorites = store.favoriteFocusTasks()
         if !favorites.isEmpty {
-            DisclosureGroup {
+            VStack(alignment: .leading, spacing: 8) {
+                OWCSectionHeader(title: store.t("focusFavorites"))
                 OWCGroupCard {
                     ForEach(Array(favorites.enumerated()), id: \.element.id) { index, task in
                         Button {
@@ -19,7 +20,8 @@ struct FocusFavoritePicker: View {
                             selectedID = task.id
                             onSelect(task)
                         } label: {
-                            OWCRow(icon: task.icon.systemName, title: task.title, isLast: index == favorites.count - 1) {
+                            OWCRow(icon: task.icon.systemName, title: task.title,
+                                   subtitle: store.t("focusEstimateDetail", values: ["count": "\(task.estimatedPomodoros)", "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"]), isLast: index == favorites.count - 1) {
                                 if selectedID == task.id {
                                     Image(systemName: "checkmark").foregroundStyle(OWCDesign.accent)
                                 }
@@ -35,10 +37,12 @@ struct FocusFavoritePicker: View {
                         }
                     }
                 }
-            } label: {
-                OWCSectionHeader(title: store.t("focusFavorites"))
             }
-            .tint(OWCDesign.secondary)
+            .onChange(of: icon) {
+                if let selected = favorites.first(where: { $0.id == selectedID }), icon != selected.icon {
+                    selectedID = nil
+                }
+            }
             .onChange(of: title) {
                 if let selected = favorites.first(where: { $0.id == selectedID }), title != selected.title {
                     selectedID = nil
@@ -54,13 +58,11 @@ struct FocusFavoriteToggle: View {
     @Binding var isFavorite: Bool
 
     var body: some View {
-        Button { isFavorite.toggle() } label: {
-            Label(store.t(isFavorite ? "focusFavoriteOn" : "focusMakeFavorite"),
-                  systemImage: isFavorite ? "star.fill" : "star")
-                .font(.callout.weight(.medium))
-                .foregroundStyle(isFavorite ? OWCDesign.orangeDeep : OWCDesign.secondary)
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        Toggle(isOn: $isFavorite) {
+            Label(store.t("focusMakeFavorite"), systemImage: "star")
+                .font(.callout)
         }
-        .buttonStyle(.plain)
+        .tint(OWCDesign.accent)
+        .frame(minHeight: 44)
     }
 }

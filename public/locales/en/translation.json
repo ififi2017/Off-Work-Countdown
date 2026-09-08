@@ -861,6 +861,7 @@
   "focusBlockExisting": "Today's tasks",
   "focusBlockMakeBreak": "Make this a break",
   "focusBlockClear": "Clear this block",
+  "focusEstimatedFinish": "Estimated finish: {{time}}",
   "focusEstimate": "Estimate",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Where it goes",
@@ -873,8 +874,8 @@
   "focusUsualDay": "Usual day",
   "focusUsualDayName": "Name",
   "focusUsualDayDefaultName": "My workday",
-  "focusSaveTodayAsUsual": "Save today as a usual day",
-  "focusSaveTodayAsUsualDetail": "Opens an editor so you can fill in the rest",
+  "focusSaveTodayAsUsual": "Create a focus day template",
+  "focusSaveTodayAsUsualDetail": "Plan a day of focus tasks to use again.",
   "focusUsualDayShape": "Laid out for {{start}} – {{end}} · {{count}} blocks",
   "focusUsualDayEmptyNote": "{{count}} blocks are still empty. They stay empty when you use this day.",
   "focusUsualDayCadenceLock": "Saving a usual day fixes the block length, because slots are numbered against it.",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "Break over",
   "focusActivityDayDone": "All tasks for today are complete",
   "focusAddPomodoroCapacity": "You can add up to {{count}} pomodoros before the next task or the end of this shift.",
-  "focusAddPomodoroCount": "Pomodoros to add"
+  "focusAddPomodoroCount": "Pomodoros to add",
+  "focusCompletedTasksTitle": "Today’s focus tasks are complete",
+  "focusQuickAddTask": "Quick add focus task"
 }

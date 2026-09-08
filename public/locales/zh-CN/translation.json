@@ -861,6 +861,7 @@
   "focusBlockExisting": "今天已有的任务",
   "focusBlockMakeBreak": "把这一格设为休息",
   "focusBlockClear": "清空这一格",
+  "focusEstimatedFinish": "预计 {{time}} 结束",
   "focusEstimate": "估算",
   "focusEstimateDetail": "{{count}} × {{minutes}} 分钟",
   "focusLanding": "放在哪里",
@@ -873,8 +874,8 @@
   "focusUsualDay": "常用的一天",
   "focusUsualDayName": "名称",
   "focusUsualDayDefaultName": "我的工作日",
-  "focusSaveTodayAsUsual": "把今天存成常用的一天",
-  "focusSaveTodayAsUsualDetail": "打开编辑器，把剩下的格子补齐",
+  "focusSaveTodayAsUsual": "创建专注日程模板",
+  "focusSaveTodayAsUsualDetail": "安排一天的专注任务，之后可重复使用。",
   "focusUsualDayShape": "按 {{start}} – {{end}} 排 · {{count}} 个专注格",
   "focusUsualDayEmptyNote": "还有 {{count}} 格是空的。用到别的日子时，它们也会是空的。",
   "focusUsualDayCadenceLock": "存了常用的一天之后，专注时长会固定下来——格子是按它编号的。",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "休息结束",
   "focusActivityDayDone": "今日任务已完成",
   "focusAddPomodoroCapacity": "到下一个任务或本次下班前，最多还可以加 {{count}} 个番茄。",
-  "focusAddPomodoroCount": "追加数量"
+  "focusAddPomodoroCount": "追加数量",
+  "focusCompletedTasksTitle": "今日专注任务已完成",
+  "focusQuickAddTask": "快速添加专注任务"
 }

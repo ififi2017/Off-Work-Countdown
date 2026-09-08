@@ -861,6 +861,7 @@
   "focusBlockExisting": "Attività di oggi",
   "focusBlockMakeBreak": "Rendila una pausa",
   "focusBlockClear": "Svuota questo blocco",
+  "focusEstimatedFinish": "Fine prevista: {{time}}",
   "focusEstimate": "Stima",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Dove va",
@@ -873,8 +874,8 @@
   "focusUsualDay": "Giornata abituale",
   "focusUsualDayName": "Nome",
   "focusUsualDayDefaultName": "La mia giornata",
-  "focusSaveTodayAsUsual": "Salva oggi come giornata abituale",
-  "focusSaveTodayAsUsualDetail": "Apre un editor per completare il resto",
+  "focusSaveTodayAsUsual": "Crea un modello di giornata",
+  "focusSaveTodayAsUsualDetail": "Organizza le attività di concentrazione di un giorno da riutilizzare.",
   "focusUsualDayShape": "Impostato per {{start}} – {{end}} · {{count}} blocchi",
   "focusUsualDayEmptyNote": "{{count}} blocchi sono ancora vuoti. Resteranno vuoti quando userai questa giornata.",
   "focusUsualDayCadenceLock": "Salvare una giornata abituale fissa la durata dei blocchi: le posizioni sono numerate su di essa.",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "Pausa finita",
   "focusActivityDayDone": "Tutte le attività di oggi sono completate",
   "focusAddPomodoroCapacity": "Puoi aggiungere fino a {{count}} pomodori prima della prossima attività o della fine del turno.",
-  "focusAddPomodoroCount": "Pomodori da aggiungere"
+  "focusAddPomodoroCount": "Pomodori da aggiungere",
+  "focusCompletedTasksTitle": "Le attività di concentrazione di oggi sono completate",
+  "focusQuickAddTask": "Aggiungi rapidamente un’attività"
 }

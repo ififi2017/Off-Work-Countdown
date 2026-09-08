@@ -861,6 +861,7 @@
   "focusBlockExisting": "आज के कार्य",
   "focusBlockMakeBreak": "इसे विराम बनाएँ",
   "focusBlockClear": "यह ब्लॉक खाली करें",
+  "focusEstimatedFinish": "अनुमानित समाप्ति: {{time}}",
   "focusEstimate": "अनुमान",
   "focusEstimateDetail": "{{count}} × {{minutes}} मिनट",
   "focusLanding": "कहाँ रखें",
@@ -873,8 +874,8 @@
   "focusUsualDay": "सामान्य दिन",
   "focusUsualDayName": "नाम",
   "focusUsualDayDefaultName": "मेरा कार्यदिवस",
-  "focusSaveTodayAsUsual": "आज को सामान्य दिन के रूप में सहेजें",
-  "focusSaveTodayAsUsualDetail": "बाक़ी भरने के लिए संपादक खोलता है",
+  "focusSaveTodayAsUsual": "दैनिक फ़ोकस टेम्पलेट बनाएँ",
+  "focusSaveTodayAsUsualDetail": "एक दिन के फ़ोकस कार्यों की योजना बनाएँ और उसे दोबारा उपयोग करें।",
   "focusUsualDayShape": "{{start}} – {{end}} के लिए · {{count}} ब्लॉक",
   "focusUsualDayEmptyNote": "{{count}} ब्लॉक अभी खाली हैं। इस दिन को इस्तेमाल करने पर वे खाली ही रहेंगे।",
   "focusUsualDayCadenceLock": "सामान्य दिन सहेजने पर ब्लॉक की लंबाई तय हो जाती है, क्योंकि स्लॉट उसी के हिसाब से गिने जाते हैं।",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "ब्रेक ख़त्म",
   "focusActivityDayDone": "आज के सभी कार्य पूरे हो गए हैं",
   "focusAddPomodoroCapacity": "अगले कार्य या शिफ्ट के अंत तक आप अधिकतम {{count}} पोमोडोरो जोड़ सकते हैं।",
-  "focusAddPomodoroCount": "जोड़ने की संख्या"
+  "focusAddPomodoroCount": "जोड़ने की संख्या",
+  "focusCompletedTasksTitle": "आज के फ़ोकस कार्य पूरे हो गए",
+  "focusQuickAddTask": "फ़ोकस कार्य तुरंत जोड़ें"
 }

@@ -861,6 +861,7 @@
   "focusBlockExisting": "Tâches du jour",
   "focusBlockMakeBreak": "En faire une pause",
   "focusBlockClear": "Vider ce bloc",
+  "focusEstimatedFinish": "Fin prévue : {{time}}",
   "focusEstimate": "Estimation",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Où la placer",
@@ -873,8 +874,8 @@
   "focusUsualDay": "Journée habituelle",
   "focusUsualDayName": "Nom",
   "focusUsualDayDefaultName": "Ma journée de travail",
-  "focusSaveTodayAsUsual": "Enregistrer aujourd’hui comme journée habituelle",
-  "focusSaveTodayAsUsualDetail": "Ouvre un éditeur pour compléter le reste",
+  "focusSaveTodayAsUsual": "Créer un modèle de journée",
+  "focusSaveTodayAsUsualDetail": "Organisez les tâches de concentration d’une journée pour les réutiliser.",
   "focusUsualDayShape": "Prévu pour {{start}} – {{end}} · {{count}} blocs",
   "focusUsualDayEmptyNote": "{{count}} blocs sont encore vides. Ils le resteront quand vous utiliserez cette journée.",
   "focusUsualDayCadenceLock": "Enregistrer une journée habituelle fige la durée des blocs : les emplacements y sont numérotés.",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "Fin de la pause",
   "focusActivityDayDone": "Toutes les tâches du jour sont terminées",
   "focusAddPomodoroCapacity": "Vous pouvez ajouter jusqu’à {{count}} pomodoros avant la prochaine tâche ou la fin de votre journée de travail.",
-  "focusAddPomodoroCount": "Nombre à ajouter"
+  "focusAddPomodoroCount": "Nombre à ajouter",
+  "focusCompletedTasksTitle": "Les tâches de concentration du jour sont terminées",
+  "focusQuickAddTask": "Ajouter rapidement une tâche"
 }

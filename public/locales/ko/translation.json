@@ -861,6 +861,7 @@
   "focusBlockExisting": "오늘의 작업에서",
   "focusBlockMakeBreak": "이 블록을 휴식으로",
   "focusBlockClear": "이 블록 비우기",
+  "focusEstimatedFinish": "예상 종료: {{time}}",
   "focusEstimate": "예상",
   "focusEstimateDetail": "{{count}} × {{minutes}}분",
   "focusLanding": "어디에 넣을지",
@@ -873,8 +874,8 @@
   "focusUsualDay": "자주 쓰는 하루",
   "focusUsualDayName": "이름",
   "focusUsualDayDefaultName": "내 근무일",
-  "focusSaveTodayAsUsual": "오늘을 자주 쓰는 하루로 저장",
-  "focusSaveTodayAsUsualDetail": "편집기를 열어 나머지를 채웁니다",
+  "focusSaveTodayAsUsual": "하루 집중 일정 템플릿 만들기",
+  "focusSaveTodayAsUsualDetail": "하루의 집중 작업을 계획하고 다시 사용하세요.",
   "focusUsualDayShape": "{{start}} – {{end}} 기준 · 블록 {{count}}개",
   "focusUsualDayEmptyNote": "{{count}}개 블록이 비어 있습니다. 이 하루를 쓸 때도 비어 있게 됩니다.",
   "focusUsualDayCadenceLock": "자주 쓰는 하루를 저장하면 블록 길이가 고정됩니다. 슬롯이 그 길이를 기준으로 번호가 매겨지기 때문입니다.",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "휴식 종료",
   "focusActivityDayDone": "오늘의 모든 할 일을 완료했어요",
   "focusAddPomodoroCapacity": "다음 작업 시작 또는 퇴근 전까지 포모도로를 최대 {{count}}개 추가할 수 있어요.",
-  "focusAddPomodoroCount": "추가할 개수"
+  "focusAddPomodoroCount": "추가할 개수",
+  "focusCompletedTasksTitle": "오늘의 집중 작업을 완료했어요",
+  "focusQuickAddTask": "집중 작업 빠르게 추가"
 }

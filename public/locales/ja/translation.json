@@ -861,6 +861,7 @@
   "focusBlockExisting": "今日のタスクから",
   "focusBlockMakeBreak": "このブロックを休憩にする",
   "focusBlockClear": "このブロックを空にする",
+  "focusEstimatedFinish": "終了予定 {{time}}",
   "focusEstimate": "見積もり",
   "focusEstimateDetail": "{{count}} × {{minutes}} 分",
   "focusLanding": "どこに入れる",
@@ -873,8 +874,8 @@
   "focusUsualDay": "いつもの一日",
   "focusUsualDayName": "名前",
   "focusUsualDayDefaultName": "わたしの平日",
-  "focusSaveTodayAsUsual": "今日をいつもの一日として保存",
-  "focusSaveTodayAsUsualDetail": "エディタが開き、残りを埋められます",
+  "focusSaveTodayAsUsual": "集中スケジュールのテンプレートを作成",
+  "focusSaveTodayAsUsualDetail": "1日分の集中タスクを組み、繰り返し使えます。",
   "focusUsualDayShape": "{{start}} – {{end}} 用 · {{count}} ブロック",
   "focusUsualDayEmptyNote": "{{count}} ブロックが空のままです。この一日を使う日も空のままになります。",
   "focusUsualDayCadenceLock": "いつもの一日を保存すると、ブロックの長さは固定されます。枠がその長さで番号付けされるためです。",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "休憩終了",
   "focusActivityDayDone": "今日のタスクはすべて完了しました",
   "focusAddPomodoroCapacity": "次のタスクまたは退勤までに、最大 {{count}} ポモドーロを追加できます。",
-  "focusAddPomodoroCount": "追加する数"
+  "focusAddPomodoroCount": "追加する数",
+  "focusCompletedTasksTitle": "今日の集中タスクは完了しました",
+  "focusQuickAddTask": "集中タスクをすぐに追加"
 }

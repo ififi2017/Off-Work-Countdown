@@ -861,6 +861,7 @@
   "focusBlockExisting": "Задачи на сегодня",
   "focusBlockMakeBreak": "Сделать перерывом",
   "focusBlockClear": "Очистить блок",
+  "focusEstimatedFinish": "Окончание примерно в {{time}}",
   "focusEstimate": "Оценка",
   "focusEstimateDetail": "{{count}} × {{minutes}} мин",
   "focusLanding": "Куда поставить",
@@ -873,8 +874,8 @@
   "focusUsualDay": "Обычный день",
   "focusUsualDayName": "Название",
   "focusUsualDayDefaultName": "Мой рабочий день",
-  "focusSaveTodayAsUsual": "Сохранить сегодня как обычный день",
-  "focusSaveTodayAsUsualDetail": "Откроется редактор — дополните остальное",
+  "focusSaveTodayAsUsual": "Создать шаблон дня",
+  "focusSaveTodayAsUsualDetail": "Запланируйте задачи на день, чтобы использовать этот план снова.",
   "focusUsualDayShape": "Рассчитано на {{start}} – {{end}} · блоков: {{count}}",
   "focusUsualDayEmptyNote": "{{count}} блоков пусты. Они останутся пустыми, когда вы примените этот день.",
   "focusUsualDayCadenceLock": "Сохранённый обычный день фиксирует длину блока — слоты нумеруются по ней.",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "Перерыв окончен",
   "focusActivityDayDone": "Все задачи на сегодня выполнены",
   "focusAddPomodoroCapacity": "До следующей задачи или конца смены можно добавить до {{count}} помодоро.",
-  "focusAddPomodoroCount": "Количество"
+  "focusAddPomodoroCount": "Количество",
+  "focusCompletedTasksTitle": "Все задачи на концентрацию на сегодня выполнены",
+  "focusQuickAddTask": "Быстро добавить задачу"
 }

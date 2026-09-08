@@ -861,6 +861,7 @@
   "focusBlockExisting": "Bugünün görevleri",
   "focusBlockMakeBreak": "Mola yap",
   "focusBlockClear": "Bu bloğu boşalt",
+  "focusEstimatedFinish": "Tahmini bitiş: {{time}}",
   "focusEstimate": "Tahmin",
   "focusEstimateDetail": "{{count}} × {{minutes}} dk",
   "focusLanding": "Nereye gitsin",
@@ -873,8 +874,8 @@
   "focusUsualDay": "Her zamanki gün",
   "focusUsualDayName": "Ad",
   "focusUsualDayDefaultName": "İş günüm",
-  "focusSaveTodayAsUsual": "Bugünü her zamanki gün olarak kaydet",
-  "focusSaveTodayAsUsualDetail": "Kalanı doldurabilmeniz için bir düzenleyici açar",
+  "focusSaveTodayAsUsual": "Odak günü şablonu oluştur",
+  "focusSaveTodayAsUsualDetail": "Bir günlük odak görevlerini tekrar kullanmak üzere planla.",
   "focusUsualDayShape": "{{start}} – {{end}} için · {{count}} blok",
   "focusUsualDayEmptyNote": "{{count}} blok hâlâ boş. Bu günü kullandığınızda da boş kalır.",
   "focusUsualDayCadenceLock": "Her zamanki bir günü kaydetmek blok süresini sabitler; yuvalar ona göre numaralanır.",
@@ -1009,5 +1010,7 @@
   "focusBreakOver": "Mola bitti",
   "focusActivityDayDone": "Bugünkü tüm görevler tamamlandı",
   "focusAddPomodoroCapacity": "Sonraki görev veya vardiya bitiminden önce en fazla {{count}} pomodoro ekleyebilirsin.",
-  "focusAddPomodoroCount": "Eklenecek sayı"
+  "focusAddPomodoroCount": "Eklenecek sayı",
+  "focusCompletedTasksTitle": "Bugünün odak görevleri tamamlandı",
+  "focusQuickAddTask": "Hızlıca odak görevi ekle"
 }
