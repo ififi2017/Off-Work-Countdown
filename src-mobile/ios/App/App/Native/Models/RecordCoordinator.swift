@@ -54,6 +54,9 @@ final class RecordCoordinator {
     var blocksWrites: Bool {
         persistenceError == .invalidArchive || persistenceError == .unreadableArchive
     }
+    @ObservationIgnored private var writeBatchDepth = 0
+    @ObservationIgnored private var hasPendingWrite = false
+    @ObservationIgnored private var hasPendingDirtyNotification = false
     private let fileURL: URL?
     var captureEnabled = true
     /// CKSyncEngine must hear about every dirty row, not only the first enable.
@@ -1584,7 +1587,8 @@ final class RecordCoordinator {
             erase: erase,
             revokeErase: revokeErase
         )
-        onDirty?()
+        if writeBatchDepth > 0 { hasPendingDirtyNotification = true }
+        else { onDirty?() }
     }
 
     private func load() {
@@ -1626,7 +1630,29 @@ final class RecordCoordinator {
         }
     }
 
+    /// Synchronous planning changes keep all row revisions and outbox entries,
+    /// but encode and atomically save the archive just once for the operation.
+    func withBatchedWrites<T>(_ changes: () -> T) -> T {
+        writeBatchDepth += 1
+        defer {
+            writeBatchDepth -= 1
+            if writeBatchDepth == 0 {
+                let shouldWrite = hasPendingWrite
+                let shouldNotify = hasPendingDirtyNotification
+                hasPendingWrite = false
+                hasPendingDirtyNotification = false
+                if shouldWrite { persist() }
+                if shouldNotify { onDirty?() }
+            }
+        }
+        return changes()
+    }
+
     private func persist() {
+        if writeBatchDepth > 0 {
+            hasPendingWrite = true
+            return
+        }
         revision &+= 1
         do {
             try writeArchive(state)

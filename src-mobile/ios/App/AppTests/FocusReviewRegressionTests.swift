@@ -61,20 +61,20 @@ struct FocusReviewRegressionTests {
         }
     }
 
-    @Test func manualBreakSurvivesTemplateRoundTrip() throws {
+    @Test func manualBreakStaysOnDayInsteadOfBecomingATemplateTask() throws {
         let store = try makeStore()
         let at = try date(store, hour: 9)
-        let blocks = store.focusTemplateBlocks(at: at)
-        let target = try #require(blocks.first { $0.kind == .task })
+        let target = try #require(store.focusTemplateBlocks(at: at).first { $0.kind == .task })
         store.markBlockAsBreak(startingAt: target.startAtMs, at: at)
-        let slots = store.focusTemplateDraftFromToday(at: at)
-        #expect(slots.contains { $0.blockIndex == target.index && $0.kind == .breakTime })
-        let template = try #require(store.saveFocusTemplate(name: "Recovery morning", slots: slots))
+        #expect(store.saveFocusTemplate(name: "Only a break", slots: store.focusTemplateDraftFromToday(at: at)) == nil)
+        _ = store.createFocusTaskInNextEmptyBlock(title: "Writing", at: at)
+        let template = try #require(store.saveFocusTemplate(name: "Tasks", slots: store.focusTemplateDraftFromToday(at: at)))
+        #expect(template.tasks.map(\.title) == ["Writing"])
         let afterWork = try date(store, hour: 21)
         #expect(store.applyFocusTemplate(template, at: afterWork))
-        #expect(store.focusDayCanvas(at: afterWork).blocks.first?.isUserBreak == true)
-        #expect(store.applyFocusTemplate(template, at: afterWork))
-        #expect(store.focusDayCanvas(at: afterWork).blocks.first?.isUserBreak == true)
+        #expect(store.focusDayCanvas(at: afterWork).blocks.first?.taskTitle == "Writing")
+        #expect(store.focusDayCanvas(at: afterWork).blocks.first?.isUserBreak == false)
+        #expect(store.focusDayCanvas(at: at).blocks.first?.isUserBreak == true)
     }
 
     @Test func lateStartKeepsSlotEndAndRollsIntoItsBreak() throws {

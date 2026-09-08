@@ -1203,6 +1203,19 @@ final class OffWorkStore {
         }
 
         switch raw {
+        case "templateCapacity":
+            let tasks = [
+                FocusTemplateTask(taskKey: Self.debugSeedID(880), legacyIndex: 0,
+                    title: t("focusDemoWriting"), icon: .writing, pomodoros: 1),
+                FocusTemplateTask(taskKey: Self.debugSeedID(881), legacyIndex: 1,
+                    title: t("focusDemoLearning"), icon: .study, pomodoros: 99),
+                FocusTemplateTask(taskKey: Self.debugSeedID(882), legacyIndex: 2,
+                    title: t("focusDemoMessages"), icon: .communication, pomodoros: 1)
+            ]
+            let template = FocusTemplate(id: Self.debugSeedID(883), name: t("focusUsualDayDefaultName"),
+                slots: FocusTemplate.slots(from: tasks), createdAt: now, updatedAt: now)
+            focusPlanning.templates = [template]
+            persistFocusPlanning()
         case "dayComplete":
             for var completedTask in focusTasksForToday(at: now) {
                 completedTask.completedAt = now
@@ -3301,6 +3314,7 @@ final class OffWorkStore {
         // whose end is the current device time.
         lastCelebratedEndAtMs = 0
         writeObservation(.overtimeDeclared, at: declaredAt, eventID: UUID())
+        reflowLinkedFocusPlans(at: declaredAt)
     }
 
     func applyScheduleChange(
@@ -3385,6 +3399,7 @@ final class OffWorkStore {
         if decision == .applyToToday {
             replaceProjectedDayOverride(replacing: replacedTimerProjection, at: date)
         }
+        reflowLinkedFocusPlans(at: date)
     }
 
     private func clearTodayAdjustments() {
@@ -4661,20 +4676,19 @@ final class OffWorkStore {
         focusPlanning.templates[index].name = name
         focusPlanning.templates[index].slots = slots
         focusPlanning.templates[index].updatedAt = date
-        let updated = focusPlanning.templates[index]
-        if appliedFocusTemplate(at: date)?.id == id {
-            _ = applyFocusTemplate(updated, at: date, preservingStartedBlocks: true)
-        }
+        reflowLinkedFocusPlans(templateID: id, at: date)
         persistFocusPlanning()
         return true
     }
 
     @discardableResult
-    func applyFocusTemplate(_ template: FocusTemplate, at date: Date = .now, preservingStartedBlocks: Bool = false) -> Bool {
-        guard plus.isAuthorized, let current = focusCanvasShift(at: date)?.snapshot else { return false }
+    func applyFocusTemplate(_ template: FocusTemplate, in shift: NativeShiftSnapshot? = nil, at date: Date = .now, preservingStartedBlocks: Bool = false) -> Bool {
+        let started = ContinuousClock.now
+        defer { LaunchTrace.report("applyFocusTemplate", since: started) }
+        guard plus.isAuthorized, let current = shift ?? focusCanvasShift(at: date)?.snapshot else { return false }
         let blocks = focusPlanningBlocks(for: current)
-        guard !blocks.isEmpty else { return false }
         let key = RecordJSON.dayKey(current.startDate, calendar: recordsCalendar)
+        let placedSlots = template.placedSlots(in: blocks)
         // The template identifier alone is insufficient: a user can clear or
         // replace a slot while the old plan still points at that template.  A
         // genuine repeat application is a no-op only when every rendered
@@ -4682,108 +4696,135 @@ final class OffWorkStore {
         if focusTemplatePlanMatches(template, blocks: blocks, dayKey: key, anchor: current.startDate) {
             return true
         }
-        let previousAssignments = focusPlanning.plans[key]?.assignments ?? []
-        let previousTaskIDs = Set(previousAssignments.compactMap(\.taskID))
-        let activeEnd = activeFocusSession().map { Int64($0.plannedEndAt.timeIntervalSince1970 * 1_000) }
-        let protectedStarts = Set(blocks.filter { block in
-            preservingStartedBlocks && (block.end <= date || activeEnd.map { block.startAtMs < $0 } == true)
-        }.map(\.startAtMs))
-        var materializedTasks: [String: FocusTask] = [:]
-        var assignments = previousAssignments.filter { protectedStarts.contains($0.blockStartAtMs) }
+        return records.withBatchedWrites {
+            let previousAssignments = focusPlanning.plans[key]?.assignments ?? []
+            let previousTaskIDs = Set(previousAssignments.compactMap(\.taskID))
+            let activeEnd = activeFocusSession().map { Int64($0.plannedEndAt.timeIntervalSince1970 * 1_000) }
+            let protectedStarts = Set(blocks.filter { block in
+                preservingStartedBlocks && (block.end <= date || activeEnd.map { block.startAtMs < $0 } == true)
+            }.map(\.startAtMs))
+            var materializedTasks: [String: FocusTask] = [:]
+            var assignments = previousAssignments.filter { protectedStarts.contains($0.blockStartAtMs) }
 
-        for slot in template.slots.sorted(by: { $0.blockIndex < $1.blockIndex }) {
-            guard blocks.indices.contains(slot.blockIndex) else { continue }
-            let block = blocks[slot.blockIndex]
-            guard !protectedStarts.contains(block.startAtMs) else { continue }
-            // Tasks cannot replace automatic recovery. A user-drawn break
-            // may occupy either a task slot or an automatic recovery slot.
-            guard slot.kind == .breakTime || block.kind == .task else { continue }
-            if slot.kind == .breakTime {
+            for slot in placedSlots {
+                guard blocks.indices.contains(slot.blockIndex) else { continue }
+                let block = blocks[slot.blockIndex]
+                guard !protectedStarts.contains(block.startAtMs) else { continue }
+                // Tasks cannot replace automatic recovery. A user-drawn break
+                // may occupy either a task slot or an automatic recovery slot.
+                guard slot.kind == .breakTime || block.kind == .task else { continue }
+                if slot.kind == .breakTime {
+                    assignments.append(FocusPlanAssignment(
+                        blockStartAtMs: block.startAtMs,
+                        kind: .breakTime,
+                        taskID: nil,
+                        taskTitle: nil,
+                        taskIcon: nil
+                    ))
+                    continue
+                }
+
+                // Current templates persist a task key.  The slot-index fallback
+                // keeps old key-less templates from collapsing multiple task slots
+                // into one task during migration.
+                let groupID = slot.taskKey?.uuidString ?? "legacy-slot-\(slot.blockIndex)"
+                let task: FocusTask
+                if let existing = materializedTasks[groupID] {
+                    task = existing
+                } else {
+                    let matching = slot.taskKey.map { taskKey in
+                        placedSlots.count { $0.kind == .task && $0.taskKey == taskKey }
+                    } ?? 1
+                    if var reusable = reusableTemplateTask(
+                        template,
+                        slot: slot,
+                        anchor: current.startDate,
+                        block: block,
+                        includingCompleted: preservingStartedBlocks
+                    ) {
+                        reusable.title = slot.taskTitle ?? t("focusTitle")
+                        reusable.icon = slot.taskIcon ?? .focus
+                        reusable.deletedAt = nil
+                        reusable.plannedForDate = recordsCalendar.startOfDay(for: current.startDate)
+                        reusable.scheduledStartAt = block.start
+                        let upcomingCount = slot.taskKey == nil ? 1 : placedSlots.count { candidate in
+                            candidate.kind == .task && candidate.taskKey == slot.taskKey
+                                && blocks.indices.contains(candidate.blockIndex)
+                                && !protectedStarts.contains(blocks[candidate.blockIndex].startAtMs)
+                        }
+                        reusable.estimatedPomodoros = max(1, matching, completedFocusBlocks(for: reusable) + (preservingStartedBlocks ? upcomingCount : 0))
+                        if preservingStartedBlocks { reusable.completedAt = nil }
+                        records.upsertFocusTask(reusable)
+                        materializedTasks[groupID] = reusable
+                        task = reusable
+                    } else {
+                        var created = addFocusTaskAuthorized(
+                            title: slot.taskTitle ?? t("focusTitle"),
+                            pomodoros: max(1, matching),
+                            plannedFor: current.startDate,
+                            scheduledStartAt: block.start,
+                            icon: slot.taskIcon ?? .focus
+                        )
+                        created.templateID = template.id
+                        created.templateTaskKey = slot.taskKey
+                        records.upsertFocusTask(created)
+                        materializedTasks[groupID] = created
+                        task = created
+                    }
+                }
                 assignments.append(FocusPlanAssignment(
                     blockStartAtMs: block.startAtMs,
-                    kind: .breakTime,
-                    taskID: nil,
-                    taskTitle: nil,
-                    taskIcon: nil
+                    kind: .task,
+                    taskID: task.id,
+                    taskTitle: task.title,
+                    taskIcon: task.icon
                 ))
-                continue
             }
+            focusPlanning.plans[key] = FocusDayPlan(
+                dayKey: key,
+                shiftStartAtMs: Int64(current.startAtMs),
+                assignments: assignments.sorted { $0.blockStartAtMs < $1.blockStartAtMs },
+                appliedTemplateID: template.id
+            )
+            focusPlanning.autoAppliedDayKeys.insert(key)
+            let materializedTaskIDs = Set(assignments.compactMap(\.taskID))
+            releaseTemplateTasks(
+                previousTaskIDs,
+                preserving: materializedTaskIDs,
+                at: date
+            )
+            for taskID in previousTaskIDs.union(materializedTaskIDs) where records.state.focusTasks
+                .first(where: { $0.id == taskID })?.deletedAt == nil {
+                refreshFocusTaskSchedule(for: taskID)
+            }
+            persistFocusPlanning()
+            return !assignments.isEmpty
+        }
+    }
 
-            // Current templates persist a task key.  The slot-index fallback
-            // keeps old key-less templates from collapsing multiple task slots
-            // into one task during migration.
-            let groupID = slot.taskKey?.uuidString ?? "legacy-slot-\(slot.blockIndex)"
-            let task: FocusTask
-            if let existing = materializedTasks[groupID] {
-                task = existing
+    /// Refill only attached plans. Completed history is untouched, and a
+    /// manual day edit remains detached even when the template or hours change.
+    func reflowLinkedFocusPlans(templateID: UUID? = nil, at date: Date = .now) {
+        let activeShift = snapshot(at: date)
+        let firstDay = activeShift.map { RecordJSON.dayKey($0.startDate, calendar: recordsCalendar) }
+            ?? RecordJSON.dayKey(date, calendar: recordsCalendar)
+        let linked = focusPlanning.plans.values.filter {
+            $0.dayKey >= firstDay && $0.appliedTemplateID != nil
+                && (templateID == nil || $0.appliedTemplateID == templateID)
+        }
+        for plan in linked {
+            guard let template = focusPlanning.templates.first(where: { $0.id == plan.appliedTemplateID }),
+                  let day = RecordJSON.date(fromDayKey: plan.dayKey, calendar: recordsCalendar) else { continue }
+            let shift: NativeShiftSnapshot?
+            if let activeShift, RecordJSON.dayKey(activeShift.startDate, calendar: recordsCalendar) == plan.dayKey {
+                shift = activeShift
             } else {
-                let matching = slot.taskKey.map { taskKey in
-                    template.slots.count { $0.kind == .task && $0.taskKey == taskKey }
-                } ?? 1
-                if var reusable = reusableTemplateTask(
-                    template,
-                    slot: slot,
-                    anchor: current.startDate,
-                    block: block,
-                    includingCompleted: preservingStartedBlocks
-                ) {
-                    reusable.title = slot.taskTitle ?? t("focusTitle")
-                    reusable.icon = slot.taskIcon ?? .focus
-                    reusable.deletedAt = nil
-                    reusable.plannedForDate = recordsCalendar.startOfDay(for: current.startDate)
-                    reusable.scheduledStartAt = block.start
-                    let upcomingCount = slot.taskKey == nil ? 1 : template.slots.count { candidate in
-                        candidate.kind == .task && candidate.taskKey == slot.taskKey
-                            && blocks.indices.contains(candidate.blockIndex)
-                            && !protectedStarts.contains(blocks[candidate.blockIndex].startAtMs)
-                    }
-                    reusable.estimatedPomodoros = max(1, matching, completedFocusBlocks(for: reusable) + (preservingStartedBlocks ? upcomingCount : 0))
-                    if preservingStartedBlocks { reusable.completedAt = nil }
-                    records.upsertFocusTask(reusable)
-                    materializedTasks[groupID] = reusable
-                    task = reusable
-                } else {
-                    var created = addFocusTaskAuthorized(
-                        title: slot.taskTitle ?? t("focusTitle"),
-                        pomodoros: max(1, matching),
-                        plannedFor: current.startDate,
-                        scheduledStartAt: block.start,
-                        icon: slot.taskIcon ?? .focus
-                    )
-                    created.templateID = template.id
-                    created.templateTaskKey = slot.taskKey
-                    records.upsertFocusTask(created)
-                    materializedTasks[groupID] = created
-                    task = created
-                }
+                let probe = recordsCalendar.date(bySettingHour: 23, minute: 59, second: 0, of: day) ?? day
+                shift = snapshot(at: probe)
             }
-            assignments.append(FocusPlanAssignment(
-                blockStartAtMs: block.startAtMs,
-                kind: .task,
-                taskID: task.id,
-                taskTitle: task.title,
-                taskIcon: task.icon
-            ))
+            guard let shift, RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar) == plan.dayKey else { continue }
+            _ = applyFocusTemplate(template, in: shift, at: date, preservingStartedBlocks: true)
         }
-        focusPlanning.plans[key] = FocusDayPlan(
-            dayKey: key,
-            shiftStartAtMs: Int64(current.startAtMs),
-            assignments: assignments.sorted { $0.blockStartAtMs < $1.blockStartAtMs },
-            appliedTemplateID: template.id
-        )
-        focusPlanning.autoAppliedDayKeys.insert(key)
-        let materializedTaskIDs = Set(assignments.compactMap(\.taskID))
-        releaseTemplateTasks(
-            previousTaskIDs,
-            preserving: materializedTaskIDs,
-            at: date
-        )
-        for taskID in previousTaskIDs.union(materializedTaskIDs) where records.state.focusTasks
-            .first(where: { $0.id == taskID })?.deletedAt == nil {
-            refreshFocusTaskSchedule(for: taskID)
-        }
-        persistFocusPlanning()
-        return !assignments.isEmpty
     }
 
     func setDefaultFocusTemplate(_ template: FocusTemplate?) {
@@ -4823,11 +4864,11 @@ final class OffWorkStore {
         let blocks = focusPlanningBlocks(for: snapshot)
         let key = RecordJSON.dayKey(snapshot.startDate, calendar: recordsCalendar)
         let assignments: [FocusPlanAssignment]
-        if let plan = focusPlanning.plans[key], !plan.assignments.isEmpty {
+        if let plan = focusPlanning.plans[key] {
             assignments = plan.assignments
         } else if let id = focusPlanning.defaultTemplateID,
                   let template = focusPlanning.templates.first(where: { $0.id == id }) {
-            assignments = template.slots.compactMap { slot in
+            assignments = template.placedSlots(in: blocks).compactMap { slot in
                 guard blocks.indices.contains(slot.blockIndex) else { return nil }
                 let block = blocks[slot.blockIndex]
                 guard block.kind == .task else { return nil }
@@ -4935,12 +4976,12 @@ final class OffWorkStore {
         guard let plan = focusPlanning.plans[dayKey], plan.appliedTemplateID == template.id else {
             return false
         }
-        let expected = template.slots.sorted(by: { $0.blockIndex < $1.blockIndex }).compactMap { slot -> (FocusTemplateSlot, FocusWorkBlock)? in
+        let expected = template.placedSlots(in: blocks).compactMap { slot -> (FocusTemplateSlot, FocusWorkBlock)? in
             guard blocks.indices.contains(slot.blockIndex) else { return nil }
             let block = blocks[slot.blockIndex]
             return slot.kind == .breakTime || block.kind == .task ? (slot, block) : nil
         }
-        guard !expected.isEmpty, plan.assignments.count == expected.count else { return false }
+        guard plan.assignments.count == expected.count else { return false }
 
         for (slot, block) in expected {
             guard let assignment = plan.assignments.first(where: { $0.blockStartAtMs == block.startAtMs }),
