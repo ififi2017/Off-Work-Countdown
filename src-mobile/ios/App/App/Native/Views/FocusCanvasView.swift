@@ -30,6 +30,9 @@ struct FocusCanvasView: View {
     @State private var editingBlock: FocusDayCanvasModel.Block?
     @State private var quickCreateLanding: FocusQuickCreateSheet.Landing?
     @State private var now = Date.now
+    @State private var scrollPosition = ScrollPosition()
+    @State private var bandTop: CGFloat?
+    @State private var needsCurrentPosition = true
     @Environment(\.scenePhase) private var scenePhase
     @State private var showsTimerSettings = false
     @State private var editingTemplate: FocusTemplateDraft?
@@ -39,6 +42,7 @@ struct FocusCanvasView: View {
     @State private var placedFeedback = 0
     @State private var warningFeedback = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var session: FocusSession? { store.activeFocusSession() }
 
@@ -48,58 +52,85 @@ struct FocusCanvasView: View {
         // needs two of them plus a scan of today's sessions — as a computed
         // property this ran six times for one render.
         let model = store.focusDayCanvas(at: now)
-        return ScrollViewReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Picker(store.t("focusScale"), selection: $scale) {
-                        ForEach(Scale.allCases) { value in
-                            Text(store.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
-                                .tag(value)
-                        }
+        return VStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 14) {
+                Picker(store.t("focusScale"), selection: $scale) {
+                    ForEach(Scale.allCases) { value in
+                        Text(store.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
+                            .tag(value)
                     }
-                    .pickerStyle(.segmented)
-
-                    FocusNowBand(
-                        store: store,
-                        model: model,
-                        now: now,
-                        onExtend: extend,
-                        onStop: { confirmsStop = true },
-                        onStart: { start($0) },
-                        onAdd: {
-                            quickCreateLanding = store.hasFocusRoom() ? .startNow : .nextBlock
-                        }
-                    )
-
-                    VStack(alignment: .leading, spacing: 14) {
-                        switch scale {
-                        case .today: todayScale(model)
-                        case .usual: usualScale(model)
-                        }
-                    }
-                    // Match Records: only the selected canvas cross-fades.
-                    // The status card and picker keep their position and identity.
-                    .id(scale)
-                    .transition(.opacity)
-                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange, value: scale)
                 }
-                .padding(.horizontal, OWCDesign.pageInset)
-                .padding(.top, 12)
-                .padding(.bottom, OWCDesign.detailBottomInset)
+                .pickerStyle(.segmented)
+
+                FocusNowBand(
+                    store: store,
+                    model: model,
+                    now: now,
+                    onExtend: extend,
+                    onStop: { confirmsStop = true },
+                    onStart: { start($0) },
+                    onAdd: {
+                        quickCreateLanding = store.hasFocusRoom() ? .startNow : .nextBlock
+                    }
+                )
             }
-            .scrollIndicators(.hidden)
-            .onChange(of: selectedBlock) { _, value in
-                guard let value else { return }
-                if reduceMotion {
-                    proxy.scrollTo(value, anchor: .center)
-                } else {
-                    withAnimation(OWCMotion.stateEnter) { proxy.scrollTo(value, anchor: .center) }
+            .padding(.horizontal, OWCDesign.pageInset)
+            .padding(.top, 12)
+
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            switch scale {
+                            case .today: todayScale(model)
+                            case .usual: usualScale(model)
+                            }
+                        }
+                        // Match Records: only the selected canvas cross-fades.
+                        // The status card and picker keep their position and identity.
+                        .id(scale)
+                        .transition(.opacity)
+                        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange, value: scale)
+                    }
+                    .padding(.horizontal, OWCDesign.pageInset)
+                    .padding(.top, 8)
+                    .padding(.bottom, OWCDesign.detailBottomInset)
+                    .coordinateSpace(.named("focus-content"))
+                }
+                .scrollPosition($scrollPosition)
+                .scrollIndicators(.hidden)
+                .onChange(of: store.selectedTab, initial: true) { _, tab in
+                    if tab == .focus {
+                        needsCurrentPosition = true
+                        scrollToNow(model, proxy: proxy)
+                    }
+                }
+                .onChange(of: scale) {
+                    needsCurrentPosition = true
+                    scrollToNow(model, proxy: proxy)
+                }
+                .onChange(of: bandTop) { scrollToNow(model, proxy: proxy) }
+                .onChange(of: now) { scrollToNow(model, proxy: proxy) }
+                .onChange(of: scenePhase) {
+                    if scenePhase == .active, store.selectedTab == .focus {
+                        needsCurrentPosition = true
+                        scrollToNow(store.focusDayCanvas(), proxy: proxy)
+                    }
+                }
+                .onChange(of: selectedBlock) { _, value in
+                    guard let value else { return }
+                    needsCurrentPosition = false
+                    if reduceMotion {
+                        proxy.scrollTo(value, anchor: .center)
+                    } else {
+                        withAnimation(OWCMotion.stateEnter) { proxy.scrollTo(value, anchor: .center) }
+                    }
                 }
             }
         }
         .background(OWCDesign.page)
         .navigationTitle(store.t("focusTitle"))
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 quickCreateButton
@@ -173,6 +204,24 @@ struct FocusCanvasView: View {
         .disabled(store.focusDayCanvasIsLocked)
     }
 
+    private func scrollToNow(_ model: FocusDayCanvasModel, proxy: ScrollViewProxy) {
+        guard needsCurrentPosition, scale == .today, !model.isLocked,
+              let nowAtMs = model.nowAtMs, let bandTop else { return }
+        // Start at the current block's top so its title and full interval remain visible.
+        // Only entry repositions the page;
+        // clock ticks must never pull it away from a task the user is reading.
+        if dynamicTypeSize.isAccessibilitySize {
+            if let block = model.blocks.first(where: { $0.endAtMs > nowAtMs }) {
+                proxy.scrollTo(block.startAtMs, anchor: .top)
+            }
+        } else {
+            let block = model.blocks.first { $0.startAtMs <= nowAtMs && nowAtMs < $0.endAtMs }
+            let start = block?.startAtMs ?? nowAtMs
+            scrollPosition.scrollTo(y: max(0, bandTop + model.offset(ofMs: start) - 8))
+        }
+        needsCurrentPosition = false
+    }
+
     private var timerSettingsButton: some View {
         Button { showsTimerSettings = true } label: {
             Label(store.t("focusTimerSettings"), systemImage: "gearshape")
@@ -204,6 +253,9 @@ struct FocusCanvasView: View {
                 guard block.isEditable else { return }
                 selectedBlock = block.startAtMs
                 editingBlock = block
+            }
+            .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named("focus-content")).minY } action: {
+                bandTop = $0
             }
             FocusTaskLedger(store: store, model: model, onExtend: extend)
         }
