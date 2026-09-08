@@ -21,7 +21,7 @@ struct RecordsDesignView: View {
     @State private var cells: [RecordsDayCell] = []
     @State private var summary: RecordsHeadlineSummary?
     @State private var lifeModel: LifeViewModel?
-    @State private var lifeAllocationVisible = false
+    @State private var lifeAllocationRequested = false
     @State private var lifeProjectionSignature: RecordsLoadSignature?
     @State private var expanded: [RecordsScale: Bool]
     @State private var pinch: CGFloat = 1
@@ -243,12 +243,15 @@ struct RecordsDesignView: View {
             if scale == .life, store.plus.isAuthorized, store.records.state.lifeProfile != nil {
                 RecordsLifeAllocationCard(
                     store: store, model: lifeModel,
-                    isLoading: lifeProjectionSignature != currentLoadSignature
+                    isLoading: lifeModel == nil && lifeProjectionSignature != currentLoadSignature
                 )
-                .onScrollVisibilityChange(threshold: 0.1) { lifeAllocationVisible = $0 }
-                .task(id: lifeAllocationVisible && scenePhase == .active && store.selectedTab == .records
+                .onScrollVisibilityChange(threshold: 0.1) { visible in
+                    // Visibility starts loading once; layout changes must not cancel it.
+                    if visible { lifeAllocationRequested = true }
+                }
+                .task(id: lifeAllocationRequested && scenePhase == .active && store.selectedTab == .records
                     ? currentLoadSignature : nil) {
-                    guard lifeAllocationVisible, scenePhase == .active, store.selectedTab == .records else { return }
+                    guard lifeAllocationRequested, scenePhase == .active, store.selectedTab == .records else { return }
                     let signature = currentLoadSignature
                     let projection = await store.prepareLifeViewModel()
                     guard !Task.isCancelled, signature == currentLoadSignature else { return }
@@ -923,7 +926,7 @@ struct RecordsDesignView: View {
             summary = nil
             if selectedLifeStageID == nil { selectCurrentLifeStage() }
             // The stage grid is immediate. The expensive allocation is requested
-            // only when its card becomes visible, and cancelled when it leaves.
+            // once its card becomes visible; later refreshes retain the result.
             loadedSignature = signature
             return
         }

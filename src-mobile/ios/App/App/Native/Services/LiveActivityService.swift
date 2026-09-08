@@ -339,7 +339,8 @@ final class LiveActivityService {
         let previous = pendingOperation
         let task = Task { @MainActor in
             await previous?.value
-            self.queuedFocus = store.refreshScheduledFocus(at: now)
+            let scheduled = store.refreshScheduledFocus(at: now)
+            self.queuedFocus = store.focusLiveActivityEnabled ? scheduled : []
             await self.performReschedule(store: store, now: now)
             await self.reconcileScheduledActivities(store: store, now: now)
         }
@@ -367,13 +368,13 @@ final class LiveActivityService {
         // previous shift or focus session.
         focusPriorityTransition.cancel()
         _ = store.finishElapsedFocusSession(at: now)
-        let focusSession = store.activeFocusSession()
+        let focusSession = store.focusLiveActivityEnabled ? store.activeFocusSession() : nil
         guard store.publishesLiveSurfaces || focusSession != nil else {
             recordDebugStatus("countdown-not-started")
             await performEndAll()
             return
         }
-        guard store.liveActivityEnabled else {
+        guard store.liveActivityEnabled || focusSession != nil else {
             recordDebugStatus("disabled-in-app")
             await performEndAll()
             return
@@ -405,7 +406,7 @@ final class LiveActivityService {
             return
         }
         let scheduledStart = snapshot.plannedEndDate.addingTimeInterval(Double(-store.liveActivityLeadMinutes * 60))
-        let workEligible = store.publishesLiveSurfaces
+        let workEligible = store.liveActivityEnabled && store.publishesLiveSurfaces
             && !store.isEndedEarly(snapshot)
             && (snapshot.isWorkday || store.isForcedWorkday(snapshot))
             && !snapshot.isBeforeStart(at: now)
@@ -425,6 +426,10 @@ final class LiveActivityService {
                 now: now,
                 generation: generation
             )
+            return
+        }
+        guard store.liveActivityEnabled else {
+            await performEndAll()
             return
         }
         // An assigned focus day owns upcoming system presentations. Do not
@@ -579,7 +584,7 @@ final class LiveActivityService {
     }
 
     private func reconcileScheduledActivities(store: OffWorkStore, now: Date) async {
-        let enabled = store.liveActivityEnabled && ActivityAuthorizationInfo().areActivitiesEnabled
+        let enabled = store.focusLiveActivityEnabled && ActivityAuthorizationInfo().areActivitiesEnabled
         var requests: [(key: String, start: Date, state: OffWorkActivityAttributes.ContentState)] = []
         if enabled {
             for session in queuedFocus {

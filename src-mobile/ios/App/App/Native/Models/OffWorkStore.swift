@@ -250,6 +250,8 @@ final class OffWorkStore {
         static let languageOverride = "ios.native.languageOverride"
         static let notificationMode = "ios.native.notificationMode"
         static let cycleEndSummaryNotificationEnabled = "ios.native.cycleEndSummaryNotificationEnabled"
+        static let focusLiveActivityEnabled = "ios.native.focusLiveActivityEnabled"
+        static let focusNotificationsEnabled = "ios.native.focusNotificationsEnabled"
         static let liveActivityEnabled = "ios.native.liveActivityEnabled"
         static let liveActivityLead = "ios.native.liveActivityLead"
         static let legacyLunchEdgesEnabled = "ios.native.lunchEdgesEnabled"
@@ -630,6 +632,22 @@ final class OffWorkStore {
             syncPreferencesAfterLocalChange()
         }
     }
+    var focusLiveActivityEnabled: Bool {
+        didSet { defaults.set(focusLiveActivityEnabled, forKey: Key.focusLiveActivityEnabled) }
+    }
+    var focusNotificationsEnabled: Bool {
+        didSet {
+            guard oldValue != focusNotificationsEnabled else { return }
+            defaults.set(focusNotificationsEnabled, forKey: Key.focusNotificationsEnabled)
+            focusNotificationGeneration &+= 1
+            if !focusNotificationsEnabled {
+                focusNotificationIssue = nil
+                if let session = activeFocusSession() {
+                    NotificationService.cancelFocusTimer(id: session.id)
+                }
+            }
+        }
+    }
     var liveActivityEnabled: Bool { didSet { defaults.set(liveActivityEnabled, forKey: Key.liveActivityEnabled) } }
     var liveActivityLeadMinutes: Int { didSet { defaults.set(liveActivityLeadMinutes, forKey: Key.liveActivityLead) } }
     var lunchStartReminderEnabled: Bool {
@@ -821,6 +839,8 @@ final class OffWorkStore {
         }
         notificationMode = OffWorkNotificationMode(rawValue: defaults.string(forKey: Key.notificationMode) ?? "off") ?? .off
         cycleEndSummaryNotificationEnabled = defaults.bool(forKey: Key.cycleEndSummaryNotificationEnabled)
+        focusLiveActivityEnabled = defaults.object(forKey: Key.focusLiveActivityEnabled) as? Bool ?? true
+        focusNotificationsEnabled = defaults.object(forKey: Key.focusNotificationsEnabled) as? Bool ?? true
         liveActivityEnabled = defaults.bool(forKey: Key.liveActivityEnabled)
         let storedLead = defaults.object(forKey: Key.liveActivityLead) == nil ? 15 : defaults.integer(forKey: Key.liveActivityLead)
         liveActivityLeadMinutes = Self.allowedLiveActivityLeadMinutes.contains(storedLead) ? storedLead : 15
@@ -5512,21 +5532,30 @@ final class OffWorkStore {
         return day >= bounds.start && day < bounds.end
     }
 
-    /// Everything `lifeViewModel` reads that is not covered by the archive
-    /// revision. The civil day is in here because Life divides the timeline
-    /// into what has been lived and what is projected, and the hours
-    /// configuration because an empty or short archive is backfilled from the
-    /// current schedule rather than from anything the revision counts.
-    private struct LifeViewModelCacheKey: Equatable {
-        var revision: UInt64
+    /// Only projection inputs invalidate the decades-long schedule walk.
+    /// Settings and focus edits also bump the general archive revision, but
+    /// do not change Life. The civil day separates lived and projected time;
+    /// current hours backfill an empty or short archive.
+    struct LifeViewModelCacheKey: Equatable {
+        var profile: LifeProfile?
+        var periods: [CareerPeriod]
+        var snapshots: [ScheduleSnapshot]
+        var exceptions: [CalendarException]
+        var overrides: [DayOverride]
+        var observations: [WorkObservation]
         var dayKey: String
         var timeZoneIdentifier: String
         var hours: ScheduleHoursConfiguration?
     }
 
-    private func lifeViewModelCacheKey(now: Date) -> LifeViewModelCacheKey {
+    func lifeViewModelCacheKey(now: Date) -> LifeViewModelCacheKey {
         LifeViewModelCacheKey(
-            revision: records.revision,
+            profile: records.state.lifeProfile,
+            periods: records.state.periods,
+            snapshots: records.state.snapshots,
+            exceptions: records.state.exceptions,
+            overrides: records.state.overrides,
+            observations: records.state.observations,
             dayKey: RecordJSON.dayKey(now, calendar: recordsCalendar),
             timeZoneIdentifier: recordsTimeZone.identifier,
             hours: hoursConfiguration(at: now)
@@ -6756,6 +6785,10 @@ final class OffWorkStore {
 
     @discardableResult
     private func scheduleFocusTimerNotification(for session: FocusSession) -> Task<Void, Never> {
+        guard focusNotificationsEnabled else {
+            NotificationService.cancelFocusTimer(id: session.id)
+            return Task {}
+        }
         let alerts = focusAlerts(for: session)
         focusNotificationGeneration &+= 1
         let generation = focusNotificationGeneration
@@ -6794,7 +6827,7 @@ final class OffWorkStore {
         _ result: NotificationService.FocusScheduleResult,
         for sessionID: UUID
     ) {
-        guard activeFocusSession()?.id == sessionID else { return }
+        guard focusNotificationsEnabled, activeFocusSession()?.id == sessionID else { return }
         switch result {
         case .scheduled: focusNotificationIssue = nil
         case .permissionDenied: focusNotificationIssue = .permissionDenied

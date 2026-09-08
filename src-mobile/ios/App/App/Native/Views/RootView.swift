@@ -275,6 +275,7 @@ struct OffWorkCountdownRootView: View {
             "\(store.annualBonusEnabled)-\(store.annualBonusMonths)",
             "\(store.salaryEnabled)-\(store.salaryAmount)-\(store.salaryType.rawValue)",
             "\(store.liveActivityEnabled)-\(store.liveActivityLeadMinutes)",
+            "\(store.focusLiveActivityEnabled)-\(store.focusNotificationsEnabled)",
         ].joined(separator: "|")
     }
 

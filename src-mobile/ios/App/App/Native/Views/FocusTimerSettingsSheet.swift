@@ -39,6 +39,8 @@ struct FocusTimerSettingsSheet: View {
     let store: OffWorkStore
 
     @Environment(\.dismiss) private var dismiss
+    @State private var liveActivityEnabled: Bool
+    @State private var notificationsEnabled: Bool
     @State private var focusMinutes: Int
     @State private var shortBreakMinutes: Int
     @State private var longBreakMinutes: Int
@@ -46,6 +48,8 @@ struct FocusTimerSettingsSheet: View {
 
     init(store: OffWorkStore) {
         self.store = store
+        _liveActivityEnabled = State(initialValue: store.focusLiveActivityEnabled)
+        _notificationsEnabled = State(initialValue: store.focusNotificationsEnabled)
         let settings = store.focusTimerSettings.normalized
         _focusMinutes = State(initialValue: settings.focusMinutes)
         _shortBreakMinutes = State(initialValue: settings.shortBreakMinutes)
@@ -114,6 +118,11 @@ struct FocusTimerSettingsSheet: View {
                 }
                 .disabled(isLocked)
 
+                Section {
+                    Toggle(store.t("liveActivity"), isOn: $liveActivityEnabled)
+                    Toggle(store.t("notificationLocal"), isOn: $notificationsEnabled)
+                }
+
                 if let lockMessage {
                     Section {
                         Label(lockMessage, systemImage: "lock.fill")
@@ -131,7 +140,6 @@ struct FocusTimerSettingsSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(store.t("saveAction"), action: save)
-                        .disabled(isLocked)
                 }
             }
         }
@@ -159,7 +167,11 @@ struct FocusTimerSettingsSheet: View {
     }
 
     private func save() {
-        guard !isLocked else { return }
+        if isLocked {
+            saveDeliverySettings()
+            dismiss()
+            return
+        }
         // The return value is the point: a rejected write used to dismiss the
         // sheet as if it had succeeded.
         guard store.updateFocusTimerSettings(
@@ -170,6 +182,12 @@ struct FocusTimerSettingsSheet: View {
                 longBreakEvery: longBreakEvery
             )
         ) else { return }
+        saveDeliverySettings()
         dismiss()
+    }
+
+    private func saveDeliverySettings() {
+        store.focusLiveActivityEnabled = liveActivityEnabled
+        store.focusNotificationsEnabled = notificationsEnabled
     }
 }

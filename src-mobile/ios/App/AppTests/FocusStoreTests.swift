@@ -671,6 +671,37 @@ func focusNotificationFailuresAreVisibleAndRecoverable() throws {
 }
 
 @MainActor
+@Test("Focus delivery switches default on, persist independently, and suppress disabled notification errors")
+func focusDeliveryPreferencesAreIndependent() throws {
+    let suite = "FocusStoreTests.delivery.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    #expect(store.focusLiveActivityEnabled)
+    #expect(store.focusNotificationsEnabled)
+    store.liveActivityEnabled = false
+    #expect(store.focusLiveActivityEnabled)
+    store.focusNotificationsEnabled = false
+    #expect(store.focusLiveActivityEnabled)
+    store.focusLiveActivityEnabled = false
+    let restored = OffWorkStore(defaults: defaults, records: .inMemory())
+    #expect(!restored.focusNotificationsEnabled)
+    #expect(!restored.focusLiveActivityEnabled)
+    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let task = insertTask(on: store, pomodoros: 1, at: start)
+    insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
+    let sessionID = try #require(store.activeFocusSession()?.id)
+    store.applyFocusNotificationResult(.permissionDenied, for: sessionID)
+    #expect(store.focusNotificationIssue == nil)
+    store.focusNotificationsEnabled = true
+    store.applyFocusNotificationResult(.permissionDenied, for: sessionID)
+    #expect(store.focusNotificationIssue == .permissionDenied)
+    store.focusNotificationsEnabled = false
+    #expect(store.focusNotificationIssue == nil)
+    #expect(store.activeFocusSession()?.id == sessionID)
+}
+
+@MainActor
 private func focusStore() throws -> OffWorkStore {
     let suite = "FocusStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
