@@ -9,7 +9,8 @@ struct FocusTaskIconPicker: View {
             Text(store.t("focusChooseIcon"))
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 8)], spacing: 8) {
+            ScrollView(.horizontal) {
+                HStack(spacing: 8) {
                     ForEach(FocusTaskIcon.allCases) { option in
                         Button {
                             selection = option
@@ -27,7 +28,9 @@ struct FocusTaskIconPicker: View {
                         .accessibilityLabel(store.t(option.titleKey))
                         .accessibilityAddTraits(selection == option ? .isSelected : [])
                     }
+                }
             }
+            .scrollIndicators(.hidden)
         }
     }
 }
