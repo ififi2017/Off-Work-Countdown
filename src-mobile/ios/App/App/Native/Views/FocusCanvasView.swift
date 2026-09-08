@@ -26,11 +26,11 @@ struct FocusCanvasView: View {
         .today
 #endif
     }()
-    @State private var statusExpanded = true
+    @State private var cardPresentation = FocusCardPresentation()
+    @State private var dragStartCollapse: CGFloat?
+    @State private var statusBodyHeight: CGFloat = 0
     @State private var followsTime = true
     @State private var userIsScrolling = false
-    @State private var canExpandAtTop = false
-    @State private var headerHeight: CGFloat = 0
     @State private var viewportHeight: CGFloat = 1
     @State private var quickAddBlocks: [FocusDayCanvasModel.Block] = []
     @State private var selectedBlock: Int64?
@@ -69,7 +69,8 @@ struct FocusCanvasView: View {
                                             proxy: proxy,
                                             followsTime: followsTime && !userIsScrolling
                                                 && scenePhase == .active && store.selectedTab == .focus,
-                                            anchor: UnitPoint(x: 0, y: min(0.85, (headerHeight + 12) / max(1, viewportHeight)))
+                                            header: cardPresentation,
+                                            viewportHeight: viewportHeight
                                         )
                                     }
                                 }
@@ -85,24 +86,26 @@ struct FocusCanvasView: View {
                             }
                             .pickerStyle(.segmented)
 
-                            DisclosureGroup(isExpanded: $statusExpanded) {
-                                FocusNowBand(
-                                    store: store, model: model, now: now,
-                                    onExtend: extend,
-                                    onStop: { confirmsStop = true },
-                                    onStart: { start($0) },
-                                    onAdd: quickAdd
-                                )
-                                .padding(.top, 6)
-                            } label: {
-                                Text(store.t("focusStatus"))
-                                    .font(.subheadline)
-                                    .foregroundStyle(OWCDesign.secondary)
-                            }
+                            FocusNowBand(
+                                store: store, model: model, now: now,
+                                presentation: cardPresentation,
+                                expandedHeight: $statusBodyHeight,
+                                onToggle: {
+                                    withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter) {
+                                        cardPresentation.collapse = cardPresentation.collapse < 0.5 ? 1 : 0
+                                    }
+                                },
+                                onExtend: extend,
+                                onStop: { confirmsStop = true },
+                                onStart: { start($0) },
+                                onAdd: quickAdd
+                            )
                         }
                         .padding(.vertical, 10)
                         .background(OWCDesign.page)
-                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { headerHeight = $0 }
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+                            cardPresentation.headerHeight = $0
+                        }
                     }
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
@@ -111,27 +114,34 @@ struct FocusCanvasView: View {
             .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.height } action: { _, height in
                 viewportHeight = height
             }
-            .onScrollGeometryChange(for: CGFloat.self) {
-                $0.contentOffset.y + $0.contentInsets.top
-            } action: { previous, offset in
-                guard userIsScrolling else { return }
-                if offset <= 1 && canExpandAtTop {
-                    statusExpanded = true
-                } else if offset > 24 && offset > previous + 0.5 {
-                    statusExpanded = false
-                    // Removing the card can itself shift the scroll offset.
-                    // Only a subsequent browsing gesture may reopen it.
-                    canExpandAtTop = false
-                }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 10, coordinateSpace: .global)
+                    .onChanged { value in
+                        guard abs(value.translation.height) > abs(value.translation.width) else { return }
+                        if dragStartCollapse == nil { dragStartCollapse = cardPresentation.collapse }
+                        // Finger travel is independent of the card's changing
+                        // height; using contentOffset here creates a feedback loop.
+                        cardPresentation.collapse = min(1, max(0,
+                            (dragStartCollapse ?? 0) - value.translation.height / max(1, statusBodyHeight)
+                        ))
+                        followsTime = false
+                    }
+                    .onEnded { _ in dragStartCollapse = nil }
+            )
+            .onScrollGeometryChange(for: FocusScrollSample.self) {
+                FocusScrollSample(offset: $0.contentOffset.y + $0.contentInsets.top, height: $0.contentSize.height)
+            } action: { old, new in
+                // Momentum and pointer scrolling have no finger translation.
+                // Ignore geometry changes caused by resizing the card itself.
+                guard userIsScrolling, dragStartCollapse == nil, abs(new.height - old.height) < 0.5 else { return }
+                cardPresentation.collapse = new.offset <= 0 ? 0 : min(1, max(0,
+                    cardPresentation.collapse + (new.offset - old.offset) / max(1, statusBodyHeight)
+                ))
             }
             .onScrollPhaseChange { _, phase in
                 userIsScrolling = phase == .tracking || phase == .interacting || phase == .decelerating
-                if phase == .tracking {
-                    canExpandAtTop = !statusExpanded
-                    followsTime = false
-                } else if phase == .interacting {
-                    followsTime = false
-                }
+                if phase == .tracking || phase == .interacting { followsTime = false }
+                if phase == .idle { dragStartCollapse = nil }
             }
             .onChange(of: selectedBlock) { _, value in
                 guard let value else { return }
@@ -352,6 +362,10 @@ struct FocusNowBand: View {
     let store: OffWorkStore
     let model: FocusDayCanvasModel
     let now: Date
+    let presentation: FocusCardPresentation
+    private var collapse: CGFloat { presentation.collapse }
+    @Binding var expandedHeight: CGFloat
+    var onToggle: () -> Void
     var onExtend: (UUID) -> Void
     var onStop: () -> Void
     var onStart: (FocusDayCanvasModel.Block) -> Void
@@ -369,6 +383,65 @@ struct FocusNowBand: View {
 
     var body: some View {
         OWCGroupCard {
+            VStack(spacing: 0) {
+                Button(action: onToggle) {
+                    HStack(spacing: 8) {
+                        ZStack(alignment: .leading) {
+                            Text(store.t("focusStatus"))
+                                .foregroundStyle(OWCDesign.secondary)
+                                .opacity(1 - collapse)
+                            compactSummary.opacity(collapse)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Image(systemName: "chevron.up")
+                            .font(.caption.weight(.semibold))
+                            .rotationEffect(.degrees(Double(collapse) * 180))
+                    }
+                    .font(.subheadline)
+                    .padding(.horizontal, 16)
+                    .frame(minHeight: 44)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(store.t("focusStatus"))
+
+                details
+                    .fixedSize(horizontal: false, vertical: true)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { expandedHeight = $0 }
+                    .opacity(1 - collapse)
+                    .frame(height: expandedHeight > 0 ? expandedHeight * (1 - collapse) : nil, alignment: .top)
+                    .clipped()
+                    .allowsHitTesting(collapse < 0.05)
+                    .accessibilityHidden(collapse > 0.5)
+            }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    @ViewBuilder
+    private var compactSummary: some View {
+        HStack(spacing: 8) {
+            if model.isLocked {
+                Label(store.t("focusLockedTitle"), systemImage: "lock")
+            } else if let session, session.kind == .focus || model.hasUpcomingTasks(at: now) {
+                Text(runningTitle(session)).lineLimit(1)
+                Spacer(minLength: 0)
+                Text(timerInterval: session.startedAt...max(session.startedAt, session.plannedEndAt), countsDown: true)
+                    .monospacedDigit().fixedSize()
+            } else if !model.isNextShift, let next = model.blocks.first(where: {
+                $0.isAssigned && $0.endAtMs > Int64(now.timeIntervalSince1970 * 1_000)
+            }), model.hasUpcomingTasks(at: now) {
+                Text(next.taskTitle ?? store.t("focusTitle")).lineLimit(1)
+                Spacer(minLength: 0)
+                Text(store.formatTime(Date(timeIntervalSince1970: Double(next.startAtMs) / 1_000)))
+                    .monospacedDigit().fixedSize()
+            } else {
+                Text(store.t("focusNoUpcomingTasks")).lineLimit(1)
+            }
+        }
+    }
+
+    private var details: some View {
             VStack(alignment: .leading, spacing: 0) {
                 content
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -397,8 +470,6 @@ struct FocusNowBand: View {
                     .padding(.bottom, 16)
                 }
             }
-        }
-        .fixedSize(horizontal: false, vertical: true)
     }
 
     @ViewBuilder
@@ -690,7 +761,11 @@ private struct FocusTimelineCursor: View {
     let model: FocusDayCanvasModel
     let proxy: ScrollViewProxy
     let followsTime: Bool
-    let anchor: UnitPoint
+    let header: FocusCardPresentation
+    let viewportHeight: CGFloat
+    private var anchor: UnitPoint {
+        UnitPoint(x: 0, y: min(0.85, (header.headerHeight + 12) / max(1, viewportHeight)))
+    }
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 
@@ -721,4 +796,19 @@ private struct FocusTimelineCursor: View {
             proxy.scrollTo("focus.currentTime", anchor: anchor)
         }
     }
+}
+
+
+/// Observed by the card, not the canvas builder: a drag must not rebuild the
+/// shared-rule snapshot on every animation frame.
+@Observable
+final class FocusCardPresentation {
+    var collapse: CGFloat = 0
+    var headerHeight: CGFloat = 0
+}
+
+
+private struct FocusScrollSample: Equatable {
+    var offset: CGFloat
+    var height: CGFloat
 }
