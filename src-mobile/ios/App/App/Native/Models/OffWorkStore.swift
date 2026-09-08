@@ -6144,7 +6144,7 @@ final class OffWorkStore {
                 $0.taskID == taskID && $0.startedAt == start && $0.plannedEndAt == end
             }) { return existing }
             let actualStart = max(start, date)
-            guard end.timeIntervalSince(actualStart) >= 60 else { return nil }
+            guard end > actualStart else { return nil }
             return FocusSession(
                 id: UUID(), taskID: taskID,
                 shiftAnchorDate: recordsCalendar.startOfDay(for: actualStart),

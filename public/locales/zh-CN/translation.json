@@ -1009,5 +1009,9 @@
   "focusBreakOver": "休息结束",
   "focusActivityDayDone": "今日任务已完成",
   "focusAddPomodoroCapacity": "到下一个任务或本次下班前，最多还可以加 {{count}} 个番茄。",
-  "focusAddPomodoroCount": "追加数量"
+  "focusAddPomodoroCount": "追加数量",
+  "focusStatus": "专注状态",
+  "focusReturnToNow": "回到现在",
+  "focusNoUpcomingTasks": "接下来没有专注任务安排",
+  "focusQuickAddTask": "快速添加任务"
 }

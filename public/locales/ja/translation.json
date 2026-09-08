@@ -1009,5 +1009,9 @@
   "focusBreakOver": "休憩終了",
   "focusActivityDayDone": "今日のタスクはすべて完了しました",
   "focusAddPomodoroCapacity": "次のタスクまたは退勤までに、最大 {{count}} ポモドーロを追加できます。",
-  "focusAddPomodoroCount": "追加する数"
+  "focusAddPomodoroCount": "追加する数",
+  "focusStatus": "集中の状況",
+  "focusReturnToNow": "現在に戻る",
+  "focusNoUpcomingTasks": "この後の集中タスクはありません",
+  "focusQuickAddTask": "タスクをすぐに追加"
 }

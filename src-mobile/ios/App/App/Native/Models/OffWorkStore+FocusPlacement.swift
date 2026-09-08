@@ -13,6 +13,7 @@ enum FocusPlacementResult: Equatable, Sendable {
     /// The shift had no empty block left, so the task exists but is unplaced.
     case addedUnscheduled(taskID: UUID)
     case noShift
+    case unavailable
     case locked
 }
 
@@ -93,6 +94,41 @@ extension OffWorkStore {
             icon: icon
         )
         return assign(task, toBlockStartingAt: blockStartAtMs, at: date)
+    }
+
+    /// Validate every displayed block before writing anything: the editor may
+    /// have stayed open across a boundary or an incoming sync update.
+    func placeQuickFocusTask(
+        title: String,
+        icon: FocusTaskIcon = .focus,
+        existingTask: FocusTask? = nil,
+        blocks: [FocusDayCanvasModel.Block],
+        at date: Date = .now
+    ) -> FocusPlacementResult {
+        guard plus.isAuthorized else { return .locked }
+        let canvas = focusDayCanvas(at: date)
+        guard !blocks.isEmpty, canvas.quickAddBlocks(at: date).map(\.id) == blocks.map(\.id),
+              let shift = focusCanvasShift(at: date)?.snapshot
+        else { return .unavailable }
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return .unavailable }
+        let task: FocusTask
+        if let existingTask {
+            guard let current = records.state.focusTasks.first(where: {
+                $0.id == existingTask.id && $0.deletedAt == nil && $0.completedAt == nil
+            }) else { return .unavailable }
+            task = current
+        } else {
+            task = addFocusTaskAuthorized(
+                title: trimmed, pomodoros: blocks.count,
+                plannedFor: shift.startDate, icon: icon
+            )
+        }
+        for block in blocks {
+            _ = assign(task, toBlockStartingAt: block.startAtMs, at: date)
+        }
+        _ = refreshScheduledFocus(at: date)
+        return .placed(taskID: task.id, blockStartAtMs: blocks[0].startAtMs)
     }
 
     /// Resolves a block key against the shift the canvas is actually drawing.

@@ -583,3 +583,102 @@ func usualDayFavoriteUpdatesAndCanBeRemoved() throws {
     #expect(store.favoriteFocusTasks().isEmpty)
     #expect(!store.focusTasksForToday().contains { $0.id == original.id })
 }
+
+@MainActor
+@Test("Quick add includes the current remainder and next full work block")
+func quickAddUsesRemainderAndNextBlock() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 10, minute: 5))
+    let canvas = store.focusDayCanvas(at: at)
+    let targets = canvas.quickAddBlocks(at: at)
+    #expect(targets.count == 2)
+    #expect(targets.first?.id == canvas.currentBlock?.id)
+    #expect(targets[1].startAtMs > targets[0].endAtMs) // Keep the intervening break.
+    let result = store.placeQuickFocusTask(title: "Write", blocks: targets, at: at)
+    guard case .placed(let id, _) = result else { Issue.record("Expected quick placement"); return }
+    let updated = store.focusDayCanvas(at: at)
+    #expect(updated.blocks.filter { $0.taskID == id }.map(\.id) == targets.map(\.id))
+    #expect(store.activeFocusSession()?.startedAt == at)
+    #expect(store.activeFocusSession()?.plannedEndAt == Date(timeIntervalSince1970: Double(targets[0].endAtMs) / 1_000))
+    #expect(updated.blocks.filter { $0.kind == .breakTime }.allSatisfy { !$0.hasAssignment })
+}
+
+@MainActor
+@Test("Quick add during lunch or a break starts at the next work block")
+func quickAddSkipsRest() throws {
+    let store = try canvasStore()
+    let morning = try #require(day(store, hour: 9, minute: 0))
+    let canvas = store.focusDayCanvas(at: morning)
+    let pause = try #require(canvas.blocks.first { $0.kind == .breakTime })
+    let lunch = try #require(canvas.gaps.first { $0.kind == .betweenSegments })
+    for ms in [pause.startAtMs + 1_000, lunch.startAtMs + 1_000] {
+        let at = Date(timeIntervalSince1970: Double(ms) / 1_000)
+        let targets = store.focusDayCanvas(at: at).quickAddBlocks(at: at)
+        #expect(targets.count == 1)
+        #expect(try #require(targets.first).startAtMs > ms)
+    }
+}
+
+@MainActor
+@Test("Quick add at a block boundary needs just one full block")
+func quickAddAtBoundary() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 9, minute: 0))
+    #expect(store.focusDayCanvas(at: at).quickAddBlocks(at: at).count == 1)
+}
+
+@MainActor
+@Test("Quick add rejects stale editors without creating or overwriting a task")
+func quickAddRevalidatesBeforeWriting() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 10, minute: 5))
+    let targets = store.focusDayCanvas(at: at).quickAddBlocks(at: at)
+    let second = try #require(targets.last)
+    _ = store.createFocusTask(title: "Arrived via sync", inBlockStartingAt: second.id, at: at)
+    let before = store.records.state.focusTasks
+    #expect(store.placeQuickFocusTask(title: "Stale", blocks: targets, at: at) == .unavailable)
+    #expect(store.records.state.focusTasks == before)
+    #expect(store.focusDayCanvas(at: at).blocks.first { $0.id == second.id }?.taskTitle == "Arrived via sync")
+    let later = Date(timeIntervalSince1970: Double(targets[0].endAtMs) / 1_000)
+    #expect(store.placeQuickFocusTask(title: "Late", blocks: targets, at: later) == .unavailable)
+}
+
+@MainActor
+@Test("Quick add keeps even subminute remainders before the next full block")
+func quickAddKeepsLastSeconds() throws {
+    let store = try canvasStore()
+    let morning = try #require(day(store, hour: 9, minute: 0))
+    let first = try #require(store.focusDayCanvas(at: morning).blocks.first)
+    let at = Date(timeIntervalSince1970: Double(first.endAtMs) / 1_000 - 20)
+    let targets = store.focusDayCanvas(at: at).quickAddBlocks(at: at)
+    #expect(targets.count == 2)
+    _ = store.placeQuickFocusTask(title: "Start now", blocks: targets, at: at)
+    let session = try #require(store.activeFocusSession())
+    #expect(session.plannedEndAt.timeIntervalSince(session.startedAt) == 20)
+}
+
+@MainActor
+@Test("The final partial block cannot borrow a block from the next shift")
+func quickAddDoesNotBorrowTomorrow() throws {
+    let store = try canvasStore()
+    let morning = try #require(day(store, hour: 9, minute: 0))
+    let final = try #require(store.focusDayCanvas(at: morning).blocks.last { $0.kind == .task })
+    let at = Date(timeIntervalSince1970: Double(final.startAtMs) / 1_000 + 60)
+    #expect(store.focusDayCanvas(at: at).quickAddBlocks(at: at).isEmpty)
+    let evening = try #require(day(store, hour: 20, minute: 0))
+    #expect(store.focusDayCanvas(at: evening).quickAddBlocks(at: evening).isEmpty)
+}
+
+@MainActor
+@Test("Upcoming status ignores past assignments and unfinished unscheduled tasks")
+func upcomingStatusUsesRemainingAssignments() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 10, minute: 5))
+    let canvas = store.focusDayCanvas(at: at)
+    let past = try #require(canvas.blocks.first { $0.kind == .task && $0.state == .past })
+    _ = store.createFocusTask(title: "Past", inBlockStartingAt: past.id, at: at)
+    #expect(!store.focusDayCanvas(at: at).hasUpcomingTasks(at: at))
+    let future = try #require(canvas.blocks.first { $0.kind == .task && $0.state == .future })
+    _ = store.createFocusTask(title: "Later", inBlockStartingAt: future.id, at: at)
+    #expect(store.focusDayCanvas(at: at).hasUpcomingTasks(at: at))
+}

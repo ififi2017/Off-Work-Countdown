@@ -26,6 +26,13 @@ struct FocusCanvasView: View {
         .today
 #endif
     }()
+    @State private var statusExpanded = true
+    @State private var followsTime = true
+    @State private var userIsScrolling = false
+    @State private var canExpandAtTop = false
+    @State private var headerHeight: CGFloat = 0
+    @State private var viewportHeight: CGFloat = 1
+    @State private var quickAddBlocks: [FocusDayCanvasModel.Block] = []
     @State private var selectedBlock: Int64?
     @State private var editingBlock: FocusDayCanvasModel.Block?
     @State private var quickCreateLanding: FocusQuickCreateSheet.Landing?
@@ -50,40 +57,85 @@ struct FocusCanvasView: View {
         let model = store.focusDayCanvas(at: now)
         return ScrollViewReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Picker(store.t("focusScale"), selection: $scale.animation(
-                        reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter
-                    )) {
-                        ForEach(Scale.allCases) { value in
-                            Text(store.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
-                                .tag(value)
+                LazyVStack(alignment: .leading, spacing: 14, pinnedViews: [.sectionHeaders]) {
+                    Section {
+                        switch scale {
+                        case .today:
+                            VStack(alignment: .leading, spacing: 14) { todayScale(model) }
+                                .overlay(alignment: .top) {
+                                    if !model.isLocked, !model.isEmpty {
+                                        FocusTimelineCursor(
+                                            model: model,
+                                            proxy: proxy,
+                                            followsTime: followsTime && !userIsScrolling
+                                                && scenePhase == .active && store.selectedTab == .focus,
+                                            anchor: UnitPoint(x: 0, y: min(0.85, (headerHeight + 12) / max(1, viewportHeight)))
+                                        )
+                                    }
+                                }
+                        case .usual: usualScale(model)
                         }
-                    }
-                    .pickerStyle(.segmented)
+                    } header: {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Picker(store.t("focusScale"), selection: $scale) {
+                                ForEach(Scale.allCases) { value in
+                                    Text(store.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
+                                        .tag(value)
+                                }
+                            }
+                            .pickerStyle(.segmented)
 
-                    FocusNowBand(
-                        store: store,
-                        model: model,
-                        now: now,
-                        onExtend: extend,
-                        onStop: { confirmsStop = true },
-                        onStart: { start($0) },
-                        onAdd: {
-                            quickCreateLanding = store.hasFocusRoom() ? .startNow : .nextBlock
+                            DisclosureGroup(isExpanded: $statusExpanded) {
+                                FocusNowBand(
+                                    store: store, model: model, now: now,
+                                    onExtend: extend,
+                                    onStop: { confirmsStop = true },
+                                    onStart: { start($0) },
+                                    onAdd: quickAdd
+                                )
+                                .padding(.top, 6)
+                            } label: {
+                                Text(store.t("focusStatus"))
+                                    .font(.subheadline)
+                                    .foregroundStyle(OWCDesign.secondary)
+                            }
                         }
-                    )
-
-                    switch scale {
-                    case .today: todayScale(model)
-                    case .usual: usualScale(model)
+                        .padding(.vertical, 10)
+                        .background(OWCDesign.page)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { headerHeight = $0 }
                     }
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
-                .padding(.top, 14)
                 .padding(.bottom, OWCDesign.detailBottomInset)
+            }
+            .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.height } action: { _, height in
+                viewportHeight = height
+            }
+            .onScrollGeometryChange(for: CGFloat.self) {
+                $0.contentOffset.y + $0.contentInsets.top
+            } action: { previous, offset in
+                guard userIsScrolling else { return }
+                if offset <= 1 && canExpandAtTop {
+                    statusExpanded = true
+                } else if offset > 24 && offset > previous + 0.5 {
+                    statusExpanded = false
+                    // Removing the card can itself shift the scroll offset.
+                    // Only a subsequent browsing gesture may reopen it.
+                    canExpandAtTop = false
+                }
+            }
+            .onScrollPhaseChange { _, phase in
+                userIsScrolling = phase == .tracking || phase == .interacting || phase == .decelerating
+                if phase == .tracking {
+                    canExpandAtTop = !statusExpanded
+                    followsTime = false
+                } else if phase == .interacting {
+                    followsTime = false
+                }
             }
             .onChange(of: selectedBlock) { _, value in
                 guard let value else { return }
+                followsTime = false
                 if reduceMotion {
                     proxy.scrollTo(value, anchor: .center)
                 } else {
@@ -95,6 +147,13 @@ struct FocusCanvasView: View {
         .navigationTitle(store.t("focusTitle"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
+            if scale == .today && !followsTime {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(store.t("focusReturnToNow"), systemImage: "clock.arrow.circlepath") {
+                        followsTime = true
+                    }
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 quickCreateButton
             }
@@ -110,7 +169,7 @@ struct FocusCanvasView: View {
             timerSettingsButton.owcTabletGlassAction()
         }
         .sheet(item: $editingBlock) { block in
-            FocusBlockSheet(store: store, block: block) { result in
+            FocusBlockSheet(store: store, block: block, quickAddBlocks: quickAddBlocks) { result in
                 apply(result)
             }
         }
@@ -139,6 +198,7 @@ struct FocusCanvasView: View {
         }
         .task(id: scenePhase == .active && store.selectedTab == .focus) {
             guard scenePhase == .active, store.selectedTab == .focus else { return }
+            followsTime = true
             store.writeQASurfaceMarker("route.focus")
             while !Task.isCancelled {
                 now = .now
@@ -196,6 +256,7 @@ struct FocusCanvasView: View {
             }
             FocusBandView(store: store, model: model, selectedBlock: $selectedBlock) { block in
                 guard block.isEditable else { return }
+                quickAddBlocks = []
                 selectedBlock = block.startAtMs
                 editingBlock = block
             }
@@ -232,6 +293,16 @@ struct FocusCanvasView: View {
 
     // MARK: - actions
 
+    private func quickAdd() {
+        let blocks = store.focusDayCanvas().quickAddBlocks(at: .now)
+        guard let first = blocks.first else {
+            notice = store.t("focusNoEmptyBlock")
+            return
+        }
+        quickAddBlocks = blocks
+        editingBlock = first
+    }
+
     private func extend(_ taskID: UUID) {
         switch store.addOneFocusBlock(taskID: taskID) {
         case .success(let start):
@@ -261,6 +332,9 @@ struct FocusCanvasView: View {
         case .addedUnscheduled:
             // Not a failure and not a silent drop: the task exists, this shift
             // just has no room for it.
+            notice = store.t("focusNoEmptyBlock")
+            warningFeedback &+= 1
+        case .unavailable:
             notice = store.t("focusNoEmptyBlock")
             warningFeedback &+= 1
         case .noShift:
@@ -299,7 +373,7 @@ struct FocusNowBand: View {
                 content
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(18)
-                if let taskID = store.focusContinuationTaskID() {
+                if model.hasUpcomingTasks(at: now), let taskID = store.focusContinuationTaskID() {
                     Button { onExtend(taskID) } label: {
                         Text(store.t("focusExtendOne"))
                             .font(.footnote.weight(.medium))
@@ -312,7 +386,7 @@ struct FocusNowBand: View {
                 if session != nil, let issue = store.focusNotificationIssue {
                     notificationIssue(issue).padding(.horizontal, 18).padding(.bottom, 12)
                 }
-                if let session, session.plannedEndAt > .now {
+                if let session, session.plannedEndAt > .now, session.kind == .focus || model.hasUpcomingTasks(at: now) {
                     ProgressView(timerInterval: session.startedAt...session.plannedEndAt, countsDown: false) {
                         EmptyView()
                     } currentValueLabel: { EmptyView() }
@@ -336,13 +410,9 @@ struct FocusNowBand: View {
                 Button(store.t("plusSeePlans")) { store.presentedRoute = .plus }
                     .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 36))
             }
-        } else if let session {
+        } else if let session, session.kind == .focus || model.hasUpcomingTasks(at: now) {
             runningContent(session)
-        } else if store.focusDayComplete(at: now) {
-            Label(store.t("focusActivityDayDone"), systemImage: "checkmark.circle")
-                .font(.headline)
-                .foregroundStyle(OWCDesign.secondary)
-        } else if now.timeIntervalSince1970 * 1_000 < Double(model.shiftStartAtMs) {
+        } else if !model.isNextShift && model.hasUpcomingTasks(at: now) && now.timeIntervalSince1970 * 1_000 < Double(model.shiftStartAtMs) {
             VStack(alignment: .leading, spacing: 8) {
                 if let first = model.blocks.first(where: { $0.isAssigned && !$0.isUserBreak }) {
                     Text(first.taskTitle ?? store.t("focusTitle"))
@@ -356,6 +426,13 @@ struct FocusNowBand: View {
                     Text(store.t("focusBandEmptyBlock"))
                         .font(.headline).foregroundStyle(OWCDesign.secondary)
                 }
+            }
+        } else if model.isNextShift || !model.hasUpcomingTasks(at: now) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(store.t("focusNoUpcomingTasks")).font(.headline)
+                Button(store.t("focusQuickAddTask"), action: onAdd)
+                    .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
+                    .disabled(model.quickAddBlocks(at: now).isEmpty)
             }
         } else if store.focusLastNextAction == .startShortBreak || store.focusLastNextAction == .startLongBreak {
             breakOffer
@@ -603,5 +680,45 @@ struct FocusLockedCanvas: View {
             )
         }
         return model
+    }
+}
+
+
+/// Only this invisible scroll target ticks every second. The page's expensive
+/// shift snapshot still refreshes at minute/block boundaries.
+private struct FocusTimelineCursor: View {
+    let model: FocusDayCanvasModel
+    let proxy: ScrollViewProxy
+    let followsTime: Bool
+    let anchor: UnitPoint
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { context in
+            let ms = min(model.shiftEndAtMs, max(model.shiftStartAtMs, Int64(context.date.timeIntervalSince1970 * 1_000)))
+            Color.clear
+                .frame(height: 1)
+                .id("focus.currentTime")
+                .padding(.top, model.offset(ofMs: ms))
+                .onChange(of: context.date) { _, _ in follow() }
+                .onChange(of: followsTime) { _, _ in follow() }
+                .onChange(of: anchor) { _, _ in follow() }
+                .task { follow() }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func follow() {
+        guard followsTime, !voiceOverEnabled else { return }
+        if dynamicTypeSize.isAccessibilitySize {
+            let ms = Int64(Date.now.timeIntervalSince1970 * 1_000)
+            if let block = model.blocks.first(where: { $0.endAtMs > ms }) {
+                proxy.scrollTo(block.id, anchor: anchor)
+            }
+        } else {
+            proxy.scrollTo("focus.currentTime", anchor: anchor)
+        }
     }
 }

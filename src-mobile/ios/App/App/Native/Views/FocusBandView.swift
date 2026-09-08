@@ -45,8 +45,13 @@ struct FocusBandView: View {
                         .id(block.startAtMs)
                         .padding(.top, model.offset(ofMs: block.startAtMs))
                 }
-                if let nowAtMs = model.nowAtMs {
-                    nowLine.offset(y: model.offset(ofMs: nowAtMs) - 1)
+                if model.nowAtMs != nil {
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        let ms = Int64(context.date.timeIntervalSince1970 * 1_000)
+                        if ms >= model.shiftStartAtMs && ms < model.shiftEndAtMs {
+                            nowLine.offset(y: model.offset(ofMs: ms) - 1)
+                        }
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .topLeading)

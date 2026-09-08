@@ -1009,5 +1009,9 @@
   "focusBreakOver": "Hết giờ nghỉ",
   "focusActivityDayDone": "Đã hoàn thành mọi công việc hôm nay",
   "focusAddPomodoroCapacity": "Bạn có thể thêm tối đa {{count}} pomodoro trước công việc tiếp theo hoặc khi ca làm kết thúc.",
-  "focusAddPomodoroCount": "Số lượng thêm"
+  "focusAddPomodoroCount": "Số lượng thêm",
+  "focusStatus": "Trạng thái tập trung",
+  "focusReturnToNow": "Về thời điểm hiện tại",
+  "focusNoUpcomingTasks": "Không còn nhiệm vụ tập trung nào được lên lịch",
+  "focusQuickAddTask": "Thêm nhanh nhiệm vụ"
 }

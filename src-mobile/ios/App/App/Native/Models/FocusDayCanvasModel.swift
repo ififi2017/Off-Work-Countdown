@@ -168,3 +168,28 @@ struct FocusDayCanvasModel: Equatable, Sendable {
         blocks.first { $0.state == .current }
     }
 }
+
+
+extension FocusDayCanvasModel {
+    /// Reuse the planner's blocks, including its breaks and lunch gaps.
+    /// A partly elapsed block is a bonus before the next full focus block.
+    func quickAddBlocks(at date: Date) -> [Block] {
+        guard !isLocked, !isNextShift else { return [] }
+        let ms = Int64(date.timeIntervalSince1970 * 1_000)
+        let remaining = blocks.filter { $0.kind == .task && $0.endAtMs > ms && !$0.isUserBreak }
+        guard let first = remaining.first, !first.hasAssignment else { return [] }
+        if first.startAtMs < ms {
+            guard remaining.count > 1, !remaining[1].hasAssignment else { return [] }
+            return [first, remaining[1]]
+        }
+        return [first]
+    }
+
+    func hasUpcomingTasks(at date: Date) -> Bool {
+        let ms = Int64(date.timeIntervalSince1970 * 1_000)
+        return blocks.contains { block in
+            block.endAtMs > ms && block.isAssigned && !block.isUserBreak
+                && !tasks.contains(where: { $0.id == block.taskID && $0.isDone })
+        }
+    }
+}

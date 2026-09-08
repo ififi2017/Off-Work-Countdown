@@ -9,6 +9,7 @@ import SwiftUI
 struct FocusBlockSheet: View {
     let store: OffWorkStore
     let block: FocusDayCanvasModel.Block
+    var quickAddBlocks: [FocusDayCanvasModel.Block] = []
     var onResult: (FocusPlacementResult) -> Void
 
     @State private var selectedFavoriteID: UUID?
@@ -73,7 +74,9 @@ struct FocusBlockSheet: View {
                         OWCGroupCard {
                             ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
                                 Button {
-                                    finish(store.assign(task, toBlockStartingAt: block.startAtMs))
+                                    finish(quickAddBlocks.isEmpty
+                                        ? store.assign(task, toBlockStartingAt: block.startAtMs)
+                                        : store.placeQuickFocusTask(title: task.title, existingTask: task, blocks: quickAddBlocks))
                                 } label: {
                                     OWCRow(
                                         icon: store.savedFocusFavorite(title: task.title, icon: task.icon) != nil ? "star.fill" : task.icon.systemName,
@@ -138,7 +141,7 @@ struct FocusBlockSheet: View {
 
     private var range: String {
         let start = Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)
-        let end = Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000)
+        let end = Date(timeIntervalSince1970: Double(quickAddBlocks.last?.endAtMs ?? block.endAtMs) / 1_000)
         return "\(store.formatTime(start)) – \(store.formatTime(end))"
     }
 
@@ -150,7 +153,9 @@ struct FocusBlockSheet: View {
 
     private func create() {
         guard canCreate else { return }
-        let result = store.createFocusTask(title: title, icon: icon, pomodoros: pomodoros, inBlockStartingAt: block.startAtMs)
+        let result = quickAddBlocks.isEmpty
+            ? store.createFocusTask(title: title, icon: icon, pomodoros: pomodoros, inBlockStartingAt: block.startAtMs)
+            : store.placeQuickFocusTask(title: title, icon: icon, blocks: quickAddBlocks)
         if case .placed(let id, _) = result, isFavorite,
            let task = store.records.state.focusTasks.first(where: { $0.id == id }),
            store.savedFocusFavorite(title: task.title, icon: task.icon) == nil {

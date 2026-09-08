@@ -1009,5 +1009,9 @@
   "focusBreakOver": "Pause vorbei",
   "focusActivityDayDone": "Alle Aufgaben für heute sind erledigt",
   "focusAddPomodoroCapacity": "Bis zur nächsten Aufgabe oder zum Schichtende kannst du noch bis zu {{count}} Pomodoros hinzufügen.",
-  "focusAddPomodoroCount": "Zusätzliche Pomodoros"
+  "focusAddPomodoroCount": "Zusätzliche Pomodoros",
+  "focusStatus": "Fokusstatus",
+  "focusReturnToNow": "Zurück zu jetzt",
+  "focusNoUpcomingTasks": "Keine weiteren Fokusaufgaben geplant",
+  "focusQuickAddTask": "Aufgabe schnell hinzufügen"
 }
