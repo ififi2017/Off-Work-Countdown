@@ -10,7 +10,7 @@ struct FocusFavoritePicker: View {
     var body: some View {
         let favorites = store.favoriteFocusTasks()
         if !favorites.isEmpty {
-            DisclosureGroup(store.t("focusFavorites")) {
+            DisclosureGroup {
                 OWCGroupCard {
                     ForEach(Array(favorites.enumerated()), id: \.element.id) { index, task in
                         Button {
@@ -35,8 +35,10 @@ struct FocusFavoritePicker: View {
                         }
                     }
                 }
-                .padding(.top, 8)
+            } label: {
+                OWCSectionHeader(title: store.t("focusFavorites"))
             }
+            .tint(OWCDesign.secondary)
             .onChange(of: title) {
                 if let selected = favorites.first(where: { $0.id == selectedID }), title != selected.title {
                     selectedID = nil

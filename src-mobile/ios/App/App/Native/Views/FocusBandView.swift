@@ -45,8 +45,23 @@ struct FocusBandView: View {
                         .id(block.startAtMs)
                         .padding(.top, model.offset(ofMs: block.startAtMs))
                 }
-                if let nowAtMs = model.nowAtMs {
-                    nowLine.offset(y: model.offset(ofMs: nowAtMs) - 1)
+                if model.nowAtMs != nil, !isPreview {
+                    TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                        let ms = min(model.shiftEndAtMs, max(model.shiftStartAtMs,
+                            Int64(timeline.date.timeIntervalSince1970 * 1_000)))
+                        nowLine
+                            .overlay(alignment: .leading) {
+                                Text(store.formatTime(timeline.date))
+                                    .font(.caption2.monospacedDigit().weight(.semibold))
+                                    .foregroundStyle(OWCDesign.accent)
+                                    .padding(.horizontal, 3)
+                                    .background(OWCDesign.page)
+                                    .offset(x: -rulerWidth - 8)
+                            }
+                            .offset(y: model.offset(ofMs: ms) - 1)
+                    }
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .topLeading)
