@@ -373,11 +373,11 @@ private struct ActivityCompactCountdown: View {
                     .environment(\.locale, activityLocale(context))
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
-                    // Leading, not trailing: the phantom width `.timer`
-                    // reserves sits on the text's own trailing edge, so
-                    // anchoring the glyphs left lets the frame clip that tail
-                    // instead of printing it as a gap before the capsule.
-                    .frame(width: compactTimerWidth(context, now: timeline.date), alignment: .leading)
+                    // Align the timer's glyphs inside its reserved width, not
+                    // just the outer frame. Seconds stay against the capsule
+                    // edge even when the timer loses a minute or hour digit.
+                    .multilineTextAlignment(.trailing)
+                    .frame(width: compactTimerWidth(context, now: timeline.date), alignment: .trailing)
             }
         }
     }
