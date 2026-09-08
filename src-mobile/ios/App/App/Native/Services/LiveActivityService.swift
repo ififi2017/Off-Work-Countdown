@@ -1,6 +1,30 @@
 @preconcurrency import ActivityKit
 import Foundation
 
+/// ActivityKit request is synchronous IPC. On device, scheduling a template’s
+/// future rounds blocked MainActor for 3.17 s. Keep the existing serial lifecycle
+/// queue, but await this blocking system call on the concurrent executor.
+nonisolated enum LiveActivityRequestWorker {
+    @concurrent
+    static func request(
+        attributes: OffWorkActivityAttributes,
+        content: ActivityContent<OffWorkActivityAttributes.ContentState>,
+        alertConfiguration: AlertConfiguration? = nil,
+        start: Date? = nil
+    ) async throws -> String {
+        try LaunchTrace.interval("activityRequest") {
+            let activity: Activity<OffWorkActivityAttributes>
+            if let alertConfiguration, let start {
+                activity = try Activity.request(attributes: attributes, content: content, pushType: nil,
+                    style: .standard, alertConfiguration: alertConfiguration, start: start)
+            } else {
+                activity = try Activity.request(attributes: attributes, content: content, pushType: nil, style: .standard)
+            }
+            return String(describing: activity.activityState)
+        }
+    }
+}
+
 enum LiveActivitySurface: String, Codable, Equatable, Sendable {
     case work
     case focus
@@ -518,23 +542,19 @@ final class LiveActivityService {
             if scheduledStart > now {
                 let title = LocalizedStringResource(String.LocalizationValue(store.t("offWorkReminder")), locale: store.locale)
                 let body = LocalizedStringResource(String.LocalizationValue(store.t("liveActivityScheduleNote")), locale: store.locale)
-                let activity = try Activity<OffWorkActivityAttributes>.request(
+                let activity = try await LiveActivityRequestWorker.request(
                     attributes: attributes,
                     content: content,
-                    pushType: nil,
-                    style: .standard,
                     alertConfiguration: AlertConfiguration(title: title, body: body, sound: .default),
                     start: scheduledStart
                 )
-                recordDebugStatus("scheduled:\(activity.activityState)")
+                recordDebugStatus("scheduled:\(activity)")
             } else {
-                let activity = try Activity<OffWorkActivityAttributes>.request(
+                let activity = try await LiveActivityRequestWorker.request(
                     attributes: attributes,
-                    content: content,
-                    pushType: nil,
-                    style: .standard
+                    content: content
                 )
-                recordDebugStatus("requested:\(activity.activityState)")
+                recordDebugStatus("requested:\(activity)")
             }
             lastError = nil
             scheduleCompletion(store: store, snapshot: snapshot, generation: generation)
@@ -628,10 +648,10 @@ final class LiveActivityService {
                 continue
             }
             do {
-                _ = try Activity<OffWorkActivityAttributes>.request(
+                _ = try await LiveActivityRequestWorker.request(
                     attributes: .init(shiftStartAtMs: Int64(request.start.timeIntervalSince1970 * 1_000),
                                       plannedEndAtMs: request.state.endAtMs),
-                    content: content, pushType: nil, style: .standard,
+                    content: content,
                     alertConfiguration: .init(
                         title: LocalizedStringResource(String.LocalizationValue(request.state.taskTitle ?? request.state.appTitle), locale: store.locale),
                         body: LocalizedStringResource(String.LocalizationValue(request.state.phase == "complete"
@@ -712,11 +732,9 @@ final class LiveActivityService {
         }
         guard generation == lifecycleGeneration else { return }
         do {
-            _ = try Activity<OffWorkActivityAttributes>.request(
+            _ = try await LiveActivityRequestWorker.request(
                 attributes: attributes,
-                content: content,
-                pushType: nil,
-                style: .standard
+                content: content
             )
             lastError = nil
             recordDebugStatus("requested:\(decision.surface.rawValue)")

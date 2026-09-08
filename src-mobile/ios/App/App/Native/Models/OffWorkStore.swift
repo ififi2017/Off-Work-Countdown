@@ -5593,7 +5593,7 @@ final class OffWorkStore {
     /// Settings and focus edits also bump the general archive revision, but
     /// do not change Life. The civil day separates lived and projected time;
     /// current hours backfill an empty or short archive.
-    struct LifeViewModelCacheKey: Equatable {
+    nonisolated struct LifeViewModelCacheKey: Codable, Equatable, Sendable {
         var profile: LifeProfile?
         var periods: [CareerPeriod]
         var snapshots: [ScheduleSnapshot]
@@ -5603,19 +5603,92 @@ final class OffWorkStore {
         var dayKey: String
         var timeZoneIdentifier: String
         var hours: ScheduleHoursConfiguration?
+        var salary: LifeSalaryPreferences
+
+        func hasSameSchedule(as other: Self) -> Bool {
+            var copy = self
+            copy.salary = other.salary
+            return copy == other
+        }
+    }
+
+    nonisolated struct LifeSalaryPreferences: Codable, Equatable, Sendable {
+        var amount: String
+        var enabled: Bool
+        var type: String
+        var workingDays: Double
+        var bonusMonths: Double
+    }
+
+    var preferredRecordsScale: RecordsScale {
+        get { RecordsScale(rawValue: defaults.string(forKey: "ios.native.recordsScale") ?? "") ?? .month }
+        set { defaults.set(newValue.rawValue, forKey: "ios.native.recordsScale") }
+    }
+
+    // Publish only from the background refresh flow. The internal cache stays
+    // observation-ignored because legacy synchronous getters also populate it.
+    private(set) var cachedLifeViewModel: LifeViewModel?
+    private var restoredLifeCache = false
+
+    func refreshLifeSummary(now: Date = .now) async {
+        guard records.state.lifeProfile != nil else {
+            lifeViewModelCache = nil
+            cachedLifeViewModel = nil
+            if let url = records.lifeSummaryCacheURL { await LifeSummaryCache.remove(at: url) }
+            return
+        }
+        if !restoredLifeCache {
+            restoredLifeCache = true
+            if let url = records.lifeSummaryCacheURL,
+               let cached = await LifeSummaryCache.read(from: url),
+               lifeViewModelCache == nil {
+                lifeViewModelCache = (cached.key, cached.model)
+                cachedLifeViewModel = cached.model
+            }
+        }
+        guard !Task.isCancelled else { return }
+        let model = await prepareLifeViewModel(now: now)
+        guard !Task.isCancelled else { return }
+        cachedLifeViewModel = model
     }
 
     func lifeViewModelCacheKey(now: Date) -> LifeViewModelCacheKey {
-        LifeViewModelCacheKey(
-            profile: records.state.lifeProfile,
-            periods: records.state.periods,
-            snapshots: records.state.snapshots,
-            exceptions: records.state.exceptions,
-            overrides: records.state.overrides,
-            observations: records.state.observations,
+        // The archive transports timestamps in milliseconds. Normalize their
+        // sub-millisecond floating-point noise so a cold reload hits the cache.
+        func stable(_ date: Date) -> Date {
+            Date(timeIntervalSince1970: (date.timeIntervalSince1970 * 1_000).rounded() / 1_000)
+        }
+        var profile = records.state.lifeProfile
+        if var value = profile {
+            value.editedAt = stable(value.editedAt)
+            value.sleepSourceUpdatedAt = value.sleepSourceUpdatedAt.map(stable)
+            profile = value
+        }
+        return LifeViewModelCacheKey(
+            profile: profile,
+            periods: records.state.periods.map { value in
+                var copy = value; copy.editedAt = stable(value.editedAt); copy.createdAt = stable(value.createdAt)
+                return copy
+            },
+            snapshots: records.state.snapshots.map { value in
+                var copy = value; copy.editedAt = stable(value.editedAt); return copy
+            },
+            exceptions: records.state.exceptions.map { value in
+                var copy = value; copy.editedAt = stable(value.editedAt); return copy
+            },
+            overrides: records.state.overrides.map { value in
+                var copy = value; copy.editedAt = stable(value.editedAt); return copy
+            },
+            observations: records.state.observations.map { value in
+                var copy = value; copy.editedAt = stable(value.editedAt); copy.occurredAt = stable(value.occurredAt)
+                return copy
+            },
             dayKey: RecordJSON.dayKey(now, calendar: recordsCalendar),
             timeZoneIdentifier: recordsTimeZone.identifier,
-            hours: hoursConfiguration(at: now)
+            hours: hoursConfiguration(at: now),
+            salary: LifeSalaryPreferences(amount: salaryAmount, enabled: salaryEnabled,
+                type: salaryType.rawValue, workingDays: monthlyWorkingDays,
+                bonusMonths: annualBonusEnabled ? annualBonusMonths : 0)
         )
     }
 
@@ -5794,6 +5867,14 @@ final class OffWorkStore {
         let asOf = RecordJSON.dayKey(now, calendar: calendar)
         let salary = profile.roughCurrentSalary
             ?? profile.employmentPeriods.first(where: { $0.endsOn == nil })?.salary
+        // Current preferences only project forward. Prior employment salaries
+        // stay exactly as entered in the life archive.
+        let configuredMonthly = salaryEnabled
+            ? (try? CountdownRules.shared.salaryMonthlyEquivalent(input: rulesInput(at: now)))?.amount
+            : nil
+        let projectedSalary = configuredMonthly.flatMap { amount in
+            amount > 0 ? LifeSalary(amount: amount, cadence: .monthly) : nil
+        } ?? salary
         var currentSalaryStartsOn = asOf
         let periods: [NativeLifetimeIncomePeriod]
         switch profile.workHistoryMode {
@@ -5828,7 +5909,7 @@ final class OffWorkStore {
         }
         return try? CountdownRules.shared.lifetimeIncome(input: .init(
             periods: periods,
-            currentSalary: salary.map {
+            currentSalary: projectedSalary.map {
                 NativeLifetimeIncomeSalary(
                     salaryAmount: $0.amount,
                     salaryCadence: $0.cadence.rawValue,
@@ -5868,6 +5949,16 @@ final class OffWorkStore {
         guard var profile = records.state.lifeProfile else { return nil }
         let calendar = recordsCalendar
         profile.migrateLegacyFields(calendar: calendar)
+        let currentKey = lifeViewModelCacheKey(now: now)
+        if let cached = lifeViewModelCache, cached.key.hasSameSchedule(as: currentKey) {
+            var model = cached.model
+            model?.income = lifeIncomeSummary(profile: profile, now: now, calendar: calendar)
+            lifeViewModelCache = (currentKey, model)
+            if let model, let url = records.lifeSummaryCacheURL {
+                await LifeSummaryCache.write(.init(key: currentKey, model: model), to: url)
+            }
+            return model
+        }
         guard let lifeStart = profile.bornOn?.calculationAnchor(in: calendar),
               let lifeEnd = profile.retirementOn?.calculationAnchor(in: calendar),
               lifeEnd > lifeStart
@@ -5923,6 +6014,9 @@ final class OffWorkStore {
             model?.income = lifeIncomeSummary(profile: profile, now: now, calendar: recordsCalendar)
         }
         lifeViewModelCache = (key, model)
+        if let model, let url = records.lifeSummaryCacheURL {
+            await LifeSummaryCache.write(.init(key: key, model: model), to: url)
+        }
         return model
     }
 

@@ -71,6 +71,8 @@ struct FocusTaskEditorFields: View {
     var showsDate = true
     var showsFinish = true
     var minimumPomodoros = 1
+    var maximumPomodoros: Int?
+    var capacityNote: String?
     @State private var titleFocused = false
 
     var body: some View {
@@ -78,6 +80,12 @@ struct FocusTaskEditorFields: View {
             .fixedSize(horizontal: false, vertical: true)
             .font(.footnote)
             .foregroundStyle(OWCDesign.secondary)
+        if let capacityNote {
+            Text(capacityNote)
+                .font(.footnote)
+                .foregroundStyle(OWCDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
         FocusTitleField(store: store, title: $draft.title, icon: draft.icon,
                         focused: $titleFocused, placeholder: store.t("focusTaskPlaceholder"))
         OWCGroupCard {
@@ -87,7 +95,7 @@ struct FocusTaskEditorFields: View {
                         "count": "\(draft.pomodoros)",
                         "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
                        ]), isLast: true) {
-                    Stepper(value: $draft.pomodoros, in: minimumPomodoros...max(12, draft.pomodoros, minimumPomodoros)) {
+                    Stepper(value: $draft.pomodoros, in: minimumPomodoros...max(maximumPomodoros ?? 12, draft.pomodoros, minimumPomodoros)) {
                         Text("\(draft.pomodoros)")
                     }
                     .labelsHidden()
@@ -114,7 +122,7 @@ struct FocusTaskEditorFields: View {
         FocusFavoriteToggle(store: store, isFavorite: $draft.isFavorite)
         FocusFavoritePicker(store: store, title: $draft.title, icon: $draft.icon, selectedID: $draft.favoriteID) {
             draft.select($0, favorite: true)
-            draft.pomodoros = max(minimumPomodoros, draft.pomodoros)
+            draft.pomodoros = max(minimumPomodoros, min(draft.pomodoros, maximumPomodoros ?? draft.pomodoros))
         }
     }
 }
@@ -362,6 +370,7 @@ struct FocusTitleField: View {
                 accessibilityTitle: store.t("focusTaskTitle"),
                 onFocusChange: { focused = $0 }
             )
+            .transaction { $0.animation = nil }
         }
         .padding(.horizontal, 14)
         .frame(minHeight: 56)

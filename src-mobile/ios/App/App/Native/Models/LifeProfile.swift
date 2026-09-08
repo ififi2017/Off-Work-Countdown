@@ -148,7 +148,7 @@ nonisolated enum LifeEmploymentTimeline {
 
 /// One life-view archive per store. The id is a constant so two offline
 /// devices first-write the same row. Matches 002 §6 and 010 LifeProfile v2.
-nonisolated struct LifeProfile: Equatable, Sendable {
+nonisolated struct LifeProfile: Codable, Equatable, Sendable {
     static let schemaVersion = 4
     static let profileID = UUID(uuidString: "00000000-0000-0000-0000-00574F524B01")!
 

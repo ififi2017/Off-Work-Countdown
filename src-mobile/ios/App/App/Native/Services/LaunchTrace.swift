@@ -62,14 +62,14 @@ nonisolated enum LaunchTrace {
 #endif
     }
 
-    static func interval<T>(_ name: StaticString, _ work: () -> T) -> T {
+    static func interval<T>(_ name: StaticString, _ work: () throws -> T) rethrows -> T {
         let started = ContinuousClock.now
         let state = signposter.beginInterval(name)
         defer {
             signposter.endInterval(name, state)
             report(name, since: started)
         }
-        return work()
+        return try work()
     }
 
     static func interval<T>(_ name: StaticString, _ work: () async throws -> T) async rethrows -> T {

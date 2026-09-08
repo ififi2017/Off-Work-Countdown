@@ -266,6 +266,7 @@ struct FocusTemplateEditorView: View {
 
     var body: some View {
         let omittedTaskIDs = omittedTaskIDs
+        let remaining = FocusTemplate.remainingPomodoros(tasks, in: store.focusTemplateBlocks())
         NavigationStack {
             List {
                 Section {
@@ -309,8 +310,14 @@ struct FocusTemplateEditorView: View {
                     } label: {
                         Label(store.t("focusNewTask"), systemImage: "plus")
                     }
+                    .disabled(remaining == 0)
                     .deleteDisabled(true)
                     .moveDisabled(true)
+                    Text(store.t("focusTemplateRemainingPomodoros", values: ["count": "\(remaining)"]))
+                        .font(.footnote)
+                        .foregroundStyle(OWCDesign.secondary)
+                        .deleteDisabled(true)
+                        .moveDisabled(true)
                 } footer: {
                     Text(store.t("focusTemplateSequenceNote"))
                 }
@@ -329,6 +336,9 @@ struct FocusTemplateEditorView: View {
             }
         }
         .sheet(item: $editingTask) { task in
+            let editingCapacity = FocusTemplate.remainingPomodoros(
+                tasks, in: store.focusTemplateBlocks(), excluding: task.id
+            )
             FocusTaskEditorShell(store: store, saveTitle: store.t("saveAction"),
                 titleKey: tasks.contains(where: { $0.id == task.id }) ? "focusEditTask" : "focusNewTask",
                 canSave: taskDraft.canSave, onCancel: { editingTask = nil }, onSave: {
@@ -342,7 +352,9 @@ struct FocusTemplateEditorView: View {
                     editingTask = nil
                 }) {
                     FocusTaskEditorFields(store: store, draft: $taskDraft,
-                        destination: store.t("focusUsualDay"), finish: nil, showsDate: false, showsFinish: false)
+                        destination: store.t("focusUsualDay"), finish: nil, showsDate: false, showsFinish: false,
+                        maximumPomodoros: editingCapacity,
+                        capacityNote: store.t("focusTemplateRemainingPomodoros", values: ["count": "\(editingCapacity)"]))
                 }
         }
     }

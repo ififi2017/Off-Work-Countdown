@@ -206,6 +206,11 @@ extension FocusTemplate {
 
     /// Only a complete prefix fits: never start a task whose requested rounds
     /// cannot finish, and never mutate the template when a short shift drops its tail.
+    static func remainingPomodoros(_ tasks: [FocusTemplateTask], in blocks: [FocusWorkBlock], excluding taskID: String? = nil) -> Int {
+        max(0, blocks.count { $0.kind == .task }
+            - tasks.filter { $0.id != taskID }.reduce(0) { $0 + $1.pomodoros })
+    }
+
     static func fittingTaskCount(_ tasks: [FocusTemplateTask], in blocks: [FocusWorkBlock]) -> Int {
         var remaining = blocks.count { $0.kind == .task }
         var count = 0

@@ -54,4 +54,24 @@ struct FocusTaskTitleInputTests {
         coordinator.editingChanged(field)
         #expect(draft == "常用任务")
     }
+    @Test("Composition cannot reveal a placeholder while the title is being edited")
+    func placeholderStaysHiddenThroughComposition() {
+        var draft = ""
+        let coordinator = FocusTaskTitleInput.Coordinator(
+            text: Binding(get: { draft }, set: { draft = $0 }),
+            onFocusChange: { _ in }, placeholder: "Task title"
+        )
+        let field = UITextField()
+        field.placeholder = coordinator.placeholder
+        coordinator.textFieldDidBeginEditing(field)
+        for value in ["b", "", "bao", "", "报告"] {
+            field.text = value
+            coordinator.editingChanged(field)
+            #expect(field.placeholder == nil)
+        }
+        coordinator.textFieldDidEndEditing(field)
+        #expect(field.placeholder == "Task title")
+        #expect(field.text == "报告")
+    }
+
 }

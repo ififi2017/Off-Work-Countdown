@@ -102,7 +102,7 @@ struct OffMainActorResolveTests {
         store.annualBonusMonths = 2
         #expect(store.records.revision > revision)
         #expect(store.salaryAmount == salary)
-        #expect(store.lifeViewModelCacheKey(now: now) == key)
+        #expect(store.lifeViewModelCacheKey(now: now).hasSameSchedule(as: key))
         let updatedRevision = store.records.revision
         let refreshStarted = clock.now
         let refreshed = await store.prepareLifeViewModel(now: now)

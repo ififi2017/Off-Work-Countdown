@@ -10,7 +10,7 @@ struct FocusTaskTitleInput: UIViewRepresentable {
     var onFocusChange: (Bool) -> Void
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, onFocusChange: onFocusChange)
+        Coordinator(text: $text, onFocusChange: onFocusChange, placeholder: placeholder)
     }
 
     func makeUIView(context: Context) -> UITextField {
@@ -29,19 +29,24 @@ struct FocusTaskTitleInput: UIViewRepresentable {
     func updateUIView(_ field: UITextField, context: Context) {
         context.coordinator.text = $text
         context.coordinator.onFocusChange = onFocusChange
-        field.placeholder = placeholder
-        field.accessibilityLabel = accessibilityTitle
+        context.coordinator.placeholder = placeholder
+        let visiblePlaceholder = context.coordinator.isEditing ? nil : placeholder
+        if field.placeholder != visiblePlaceholder { field.placeholder = visiblePlaceholder }
+        if field.accessibilityLabel != accessibilityTitle { field.accessibilityLabel = accessibilityTitle }
         context.coordinator.updateText(field, value: text)
     }
 
     final class Coordinator: NSObject, UITextFieldDelegate {
         var text: Binding<String>
         var onFocusChange: (Bool) -> Void
+        var placeholder: String
         private var lastValue: String
+        private(set) var isEditing = false
 
-        init(text: Binding<String>, onFocusChange: @escaping (Bool) -> Void) {
+        init(text: Binding<String>, onFocusChange: @escaping (Bool) -> Void, placeholder: String = "") {
             self.text = text
             self.onFocusChange = onFocusChange
+            self.placeholder = placeholder
             lastValue = text.wrappedValue
         }
 
@@ -62,10 +67,18 @@ struct FocusTaskTitleInput: UIViewRepresentable {
             if text.wrappedValue != value { text.wrappedValue = value }
         }
 
-        func textFieldDidBeginEditing(_ textField: UITextField) { onFocusChange(true) }
+        func textFieldDidBeginEditing(_ textField: UITextField) {
+            // IMEs may briefly expose empty text while replacing a composition.
+            // Keep the hint out of the active editor for the whole session.
+            isEditing = true
+            textField.placeholder = nil
+            onFocusChange(true)
+        }
 
         func textFieldDidEndEditing(_ textField: UITextField) {
             editingChanged(textField)
+            isEditing = false
+            textField.placeholder = placeholder
             onFocusChange(false)
         }
 

@@ -319,4 +319,20 @@ struct FocusTaskEditingTests {
         #expect(store.focusPlanning.templates.first { $0.id == original.id } == original)
     }
 
+    @Test("Remaining template capacity counts all tasks and excludes the task being edited")
+    func remainingCapacity() throws {
+        let (store, at) = try fixture()
+        let blocks = Array(store.focusTemplateBlocks(at: at).prefix(6))
+        let first = FocusTemplateTask(taskKey: UUID(), legacyIndex: 0, title: "First", icon: .work, pomodoros: 2)
+        let second = FocusTemplateTask(taskKey: UUID(), legacyIndex: 1, title: "Second", icon: .study, pomodoros: 1)
+        #expect(FocusTemplate.remainingPomodoros([first], in: blocks) == 1)
+        #expect(FocusTemplate.remainingPomodoros([first, second], in: blocks) == 0)
+        #expect(FocusTemplate.remainingPomodoros([first, second], in: blocks, excluding: first.id) == 2)
+        var oversized = first
+        oversized.pomodoros = 10
+        #expect(FocusTemplate.remainingPomodoros([oversized, second], in: blocks) == 0)
+        #expect(FocusTemplate.remainingPomodoros([oversized, second], in: blocks, excluding: oversized.id) == 2)
+        #expect(oversized.pomodoros == 10)
+    }
+
 }

@@ -33,7 +33,7 @@ struct RecordedWorkDay: Equatable, Sendable, Identifiable {
 }
 
 /// An immutable use event. Writes never edit; a retry reuses `eventID`.
-nonisolated struct WorkObservation: Equatable, Sendable, Identifiable {
+nonisolated struct WorkObservation: Codable, Equatable, Sendable, Identifiable {
     static let schemaVersion = 2
     static let unsetTieBreaker = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
 

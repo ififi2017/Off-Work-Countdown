@@ -2,7 +2,7 @@ import ActivityKit
 import Foundation
 
 /// Salary-free payload shared verbatim by the app and Widget extension.
-struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
+nonisolated struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
     struct ContentState: Codable, Hashable, Sendable {
         struct Segment: Codable, Hashable, Sendable {
             let startAtMs: Int64

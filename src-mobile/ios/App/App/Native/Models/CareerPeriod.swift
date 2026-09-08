@@ -15,7 +15,7 @@ nonisolated struct ScheduleHoursConfiguration: Codable, Equatable, Sendable {
 
 /// A stretch of working life. Overlaps are allowed; the winner is chosen
 /// at read time. Value type only — SwiftData lands later.
-nonisolated struct CareerPeriod: Equatable, Sendable, Identifiable {
+nonisolated struct CareerPeriod: Codable, Equatable, Sendable, Identifiable {
     static let schemaVersion = 1
 
     var id: UUID
@@ -47,7 +47,7 @@ nonisolated struct CareerPeriod: Equatable, Sendable, Identifiable {
 }
 
 /// One revision of hours inside a career period. Salary is not stored here.
-nonisolated struct ScheduleSnapshot: Equatable, Sendable, Identifiable {
+nonisolated struct ScheduleSnapshot: Codable, Equatable, Sendable, Identifiable {
     static let schemaVersion = 1
 
     var id: UUID

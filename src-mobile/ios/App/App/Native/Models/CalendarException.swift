@@ -13,7 +13,7 @@ nonisolated enum CalendarExceptionOrigin: String, Codable, Sendable {
 
 /// A holiday or makeup day. Answers "does this day count as a workday?"
 /// — not how the hours look. Value type only — SwiftData lands later.
-nonisolated struct CalendarException: Equatable, Sendable {
+nonisolated struct CalendarException: Codable, Equatable, Sendable {
     static let schemaVersion = 1
 
     /// Logical identity: `"<date>#<origin>"`, e.g. `2026-08-26#user`.

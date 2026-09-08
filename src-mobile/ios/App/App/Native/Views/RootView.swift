@@ -134,6 +134,7 @@ struct OffWorkCountdownRootView: View {
             isLaunching = false
             scheduleServices()
         }
+        .modifier(LifeSummaryRefreshModifier(store: store, isLaunching: isLaunching))
         .onChange(of: store.onboardingComplete) {
             AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
             if store.onboardingComplete {

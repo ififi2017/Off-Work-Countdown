@@ -623,7 +623,7 @@ final class WidgetSnapshotPublisher {
            let templateID = store.focusPlanning.defaultTemplateID,
            let template = store.focusPlanning.templates.first(where: { $0.id == templateID }) {
             let blocks = store.focusPlanningBlocks(for: shift)
-            for slot in template.slots where blocks.indices.contains(slot.blockIndex) {
+            for slot in template.placedSlots(in: blocks) where blocks.indices.contains(slot.blockIndex) {
                 let block = blocks[slot.blockIndex]
                 let startMs = block.startAtMs
                 let isBreak = slot.kind == .breakTime
