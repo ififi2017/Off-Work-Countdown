@@ -1031,14 +1031,8 @@ struct RecordsYearCanvas: View {
                             }
                     }
                     .buttonStyle(.plain)
-                    .highPriorityGesture(
-                        TapGesture(count: 2).exclusively(before: TapGesture())
-                            .onEnded { result in
-                                switch result {
-                                case .first: onOpenMonth(month)
-                                case .second: select(month: month, date: nil)
-                                }
-                            }
+                    .simultaneousGesture(
+                        TapGesture(count: 2).onEnded { onOpenMonth(month) }
                     )
                     .accessibilityAction(named: Text(store.t("recordsSeeThisMonth"))) {
                         onOpenMonth(month)
@@ -1236,14 +1230,8 @@ struct RecordsYearMonthBars: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .highPriorityGesture(
-            TapGesture(count: 2).exclusively(before: TapGesture())
-                .onEnded { result in
-                    switch result {
-                    case .first: onOpenMonth(month.month)
-                    case .second: onSelectMonth(month.month)
-                    }
-                }
+        .simultaneousGesture(
+            TapGesture(count: 2).onEnded { onOpenMonth(month.month) }
         )
         .accessibilityAction(named: Text(store.t("recordsSeeThisMonth"))) {
             onOpenMonth(month.month)
