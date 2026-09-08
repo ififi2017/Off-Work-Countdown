@@ -7,8 +7,19 @@ import Foundation
 /// the system bundle and exposes it `private(set)`, which left the formatting
 /// untestable at any language but the simulator's.
 nonisolated enum RelativeDurationFormatter {
-    static func string(milliseconds: Double, languageCode: String) -> String {
+    static func string(milliseconds: Double, languageCode: String, includesDays: Bool = false) -> String {
         let total = max(0, Int(milliseconds / 1_000))
+        if includesDays, total >= 86_400 {
+            let formatter = DateComponentsFormatter()
+            formatter.allowedUnits = [.day, .hour, .minute]
+            formatter.unitsStyle = .abbreviated
+            formatter.zeroFormattingBehavior = [.dropLeading, .dropTrailing]
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.locale = Locale(identifier: languageCode)
+            formatter.calendar = calendar
+            // Fixed duration days, not dates whose length can change with DST.
+            return formatter.string(from: DateComponents(day: total / 86_400, hour: total % 86_400 / 3_600, minute: total % 3_600 / 60)) ?? "—"
+        }
         let hours = total / 3_600
         let minutes = (total % 3_600) / 60
 

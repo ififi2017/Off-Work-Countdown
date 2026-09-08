@@ -522,3 +522,35 @@ func lifeViewModelCacheFollowsTheArchive() async {
     #expect(afterEdit != first)
     #expect((afterEdit?.cells.count ?? 0) > (first?.cells.count ?? 0))
 }
+
+
+@MainActor
+@Test("Batched life preparation preserves the synchronous projection")
+func batchedLifeProjectionMatches() async throws {
+    func makeStore() throws -> OffWorkStore {
+        let defaults = try #require(UserDefaults(suiteName: "owc.lifebatch.\(UUID())"))
+        let store = OffWorkStore(defaults: defaults, records: .inMemory())
+        store.recordsTimeZoneIdentifier = "UTC"
+        store.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
+                              sleepHours: 8, hidesExactAges: false)
+        return store
+    }
+    let now = Date(timeIntervalSince1970: 1_788_739_200)
+    let synchronous = try makeStore().lifeViewModel(now: now)
+    let asynchronous = try await makeStore().prepareLifeViewModel(now: now)
+    #expect(synchronous != nil)
+    #expect(asynchronous == synchronous)
+}
+
+@MainActor
+@Test("Cancelled life preparation cannot publish a partial projection")
+func cancelledLifeProjectionIsDiscarded() async throws {
+    let defaults = try #require(UserDefaults(suiteName: "owc.lifecancel.\(UUID())"))
+    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    store.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
+                          sleepHours: 8, hidesExactAges: false)
+    let task = Task { await store.prepareLifeViewModel() }
+    await Task.yield()
+    task.cancel()
+    #expect(await task.value == nil)
+}

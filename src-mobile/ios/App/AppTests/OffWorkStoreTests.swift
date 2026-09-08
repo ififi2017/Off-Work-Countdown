@@ -3437,7 +3437,7 @@ func recordsHeadlineCivilDayCoverage(endHour: Double) throws {
     let summary = try #require(store.recordsHeadline(cells: cells, days: days, now: now))
     #expect(summary.workdays == 1)
     #expect(summary.completedScheduledWorkdays == 2)
-    #expect(summary.allocationDays == (endHour > 24 ? 2 : 1))
+    #expect(summary.allocationDays == 2) // The full visible period includes its rest day.
     #expect(summary.allocation.dayLengthMs == Int64(summary.allocationDays) * 86_400_000)
     #expect(summary.regularWorkMs == Int64((endHour - startHour) * 3_600_000))
 }
@@ -3623,4 +3623,50 @@ func recordsMonthlySalaryUsesCalendarMonth() throws {
     }
     let total = try #require(store.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.total.earnings)
     #expect(abs(total - 10_000) < 0.001)
+}
+
+
+@MainActor
+@Test("Period allocation includes forecast work and every visible rest day", arguments: [7, 31, 365])
+func recordsAllocationIncludesForecast(count: Int) async throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.plus.debugSetAuthorized(true)
+    store.recordsTimeZoneIdentifier = "UTC"
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 9 * 60
+    store.endMinutes = 17 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 60
+    let start = utcDay(2026, 9, 1)
+    let now = start.addingTimeInterval(12 * 3_600)
+    records.ensureSeeded(hours: store.hoursConfiguration(at: start), at: start, timeZone: store.recordsTimeZone)
+    let end = start.addingTimeInterval(Double(count - 1) * 86_400)
+    let days = await store.prepareRecordsDisplayDays(from: start, through: end, now: now)
+    let cells = days.enumerated().map { index, day in
+        store.recordsDayCell(for: day, previous: index > 0 ? days[index - 1] : nil,
+                             now: now, includesLifeProjection: true)
+    }
+    let summary = try #require(store.recordsHeadline(cells: cells, days: days, now: now))
+    #expect(summary.allocationDays == count)
+    #expect(summary.allocation.dayLengthMs == Int64(count) * 86_400_000)
+    #expect(summary.allocation.totalMs == summary.allocation.dayLengthMs)
+    let hours = try #require(summary.actualForecast?.total.hours)
+    #expect(summary.allocation.workMs == Int64(hours * 3_600_000))
+    #expect(summary.allocation.workMs > summary.regularWorkMs)
+    #expect(records.state.observations.isEmpty)
+}
+
+@Test("Record durations use fixed 24-hour days without losing remaining minutes")
+func recordDurationsUseDays() {
+    let formatted = RelativeDurationFormatter.string(milliseconds: 37.5 * 3_600_000, languageCode: "en", includesDays: true)
+    #expect(formatted.contains("1d") || formatted.contains("1 d"))
+    #expect(formatted.contains("13h") || formatted.contains("13 h") || formatted.contains("13 hr"))
+    #expect(formatted.contains("30"))
+    let short = RelativeDurationFormatter.string(milliseconds: 90 * 60_000, languageCode: "en", includesDays: true)
+    #expect(short == "1 h 30 m")
 }
