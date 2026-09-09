@@ -1029,5 +1029,6 @@
   "recordsWorkedTime": "Çalışılan süre",
   "recordsWorkdayCount": "{{count}} iş günü",
   "lifeApproxYears": "Yaklaşık {{years}} yıl",
-  "recordsSummaryHelp": "Çalışılan süre, kayıtlı vardiyaların geçen kısmını ve fazla mesaiyi içerir; zamanlayıcı kayıtları ve düzeltmeler önceliklidir. Gelir, maaş ayarlarına göre seçilen dönemin tamamı için tahmin edilir. Kaydedilen saatler sabit aylık maaşı değiştirmez."
+  "recordsSummaryHelp": "Çalışılan süre, kayıtlı vardiyaların geçen kısmını ve fazla mesaiyi içerir; zamanlayıcı kayıtları ve düzeltmeler önceliklidir. Gelir, maaş ayarlarına göre seçilen dönemin tamamı için tahmin edilir. Kaydedilen saatler sabit aylık maaşı değiştirmez.",
+  "recordsIncomeProgress": "Kazanılan {{amount}} · {{percent}}"
 }

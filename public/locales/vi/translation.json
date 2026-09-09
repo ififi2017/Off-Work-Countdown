@@ -1029,5 +1029,6 @@
   "recordsWorkedTime": "Thời gian đã làm việc",
   "recordsWorkdayCount": "{{count}} ngày làm việc",
   "lifeApproxYears": "Khoảng {{years}} năm",
-  "recordsSummaryHelp": "Thời gian làm việc gồm phần ca đã lưu đã trôi qua và làm thêm giờ; bản ghi hẹn giờ và chỉnh sửa được ưu tiên. Thu nhập được ước tính cho toàn bộ kỳ đã chọn theo cài đặt lương. Số giờ ghi nhận không làm thay đổi lương tháng cố định."
+  "recordsSummaryHelp": "Thời gian làm việc gồm phần ca đã lưu đã trôi qua và làm thêm giờ; bản ghi hẹn giờ và chỉnh sửa được ưu tiên. Thu nhập được ước tính cho toàn bộ kỳ đã chọn theo cài đặt lương. Số giờ ghi nhận không làm thay đổi lương tháng cố định.",
+  "recordsIncomeProgress": "Đã kiếm được {{amount}} · {{percent}}"
 }

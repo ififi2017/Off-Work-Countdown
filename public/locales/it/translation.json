@@ -1029,5 +1029,6 @@
   "recordsWorkedTime": "Tempo lavorato",
   "recordsWorkdayCount": "{{count}} giorni lavorativi",
   "lifeApproxYears": "Circa {{years}} anni",
-  "recordsSummaryHelp": "Il tempo lavorato include i turni salvati già trascorsi e gli straordinari; registrazioni e correzioni hanno priorità. Il reddito è stimato per tutto il periodo selezionato in base alle impostazioni salariali. Le ore registrate non modificano uno stipendio mensile fisso."
+  "recordsSummaryHelp": "Il tempo lavorato include i turni salvati già trascorsi e gli straordinari; registrazioni e correzioni hanno priorità. Il reddito è stimato per tutto il periodo selezionato in base alle impostazioni salariali. Le ore registrate non modificano uno stipendio mensile fisso.",
+  "recordsIncomeProgress": "Già guadagnato: {{amount}} · {{percent}}"
 }

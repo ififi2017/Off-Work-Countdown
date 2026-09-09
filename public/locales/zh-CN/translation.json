@@ -1029,5 +1029,6 @@
   "recordsWorkedTime": "已工作",
   "recordsWorkdayCount": "{{count}} 个工作日",
   "lifeApproxYears": "约 {{years}} 年",
-  "recordsSummaryHelp": "已工作时长包含已生效排班的经过时间和加班，计时记录及手动修正优先。收入按所选整段期间及薪资设置估算；固定月薪不会因记录工时多少而增减。"
+  "recordsSummaryHelp": "已工作时长包含已生效排班的经过时间和加班，计时记录及手动修正优先。收入按所选整段期间及薪资设置估算；固定月薪不会因记录工时多少而增减。",
+  "recordsIncomeProgress": "已赚 {{amount}} · {{percent}}"
 }

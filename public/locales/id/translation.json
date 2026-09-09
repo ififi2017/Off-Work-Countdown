@@ -1029,5 +1029,6 @@
   "recordsWorkedTime": "Waktu bekerja",
   "recordsWorkdayCount": "{{count}} hari kerja",
   "lifeApproxYears": "Sekitar {{years}} tahun",
-  "recordsSummaryHelp": "Waktu bekerja mencakup jadwal tersimpan yang telah berlalu dan lembur; catatan timer serta koreksi diprioritaskan. Pendapatan diperkirakan untuk seluruh periode terpilih berdasarkan pengaturan gaji. Jam tercatat tidak mengubah gaji bulanan tetap."
+  "recordsSummaryHelp": "Waktu bekerja mencakup jadwal tersimpan yang telah berlalu dan lembur; catatan timer serta koreksi diprioritaskan. Pendapatan diperkirakan untuk seluruh periode terpilih berdasarkan pengaturan gaji. Jam tercatat tidak mengubah gaji bulanan tetap.",
+  "recordsIncomeProgress": "Sudah diperoleh {{amount}} · {{percent}}"
 }

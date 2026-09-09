@@ -1029,5 +1029,6 @@
   "recordsWorkedTime": "Bisher gearbeitet",
   "recordsWorkdayCount": "{{count}} Arbeitstage",
   "lifeApproxYears": "Etwa {{years}} Jahre",
-  "recordsSummaryHelp": "Die Arbeitszeit umfasst verstrichene gespeicherte Schichten und Überstunden; Zeiterfassungen und Korrekturen haben Vorrang. Das Einkommen wird für den gesamten gewählten Zeitraum anhand deiner Gehaltseinstellungen geschätzt. Ein festes Monatsgehalt hängt nicht von den erfassten Stunden ab."
+  "recordsSummaryHelp": "Die Arbeitszeit umfasst verstrichene gespeicherte Schichten und Überstunden; Zeiterfassungen und Korrekturen haben Vorrang. Das Einkommen wird für den gesamten gewählten Zeitraum anhand deiner Gehaltseinstellungen geschätzt. Ein festes Monatsgehalt hängt nicht von den erfassten Stunden ab.",
+  "recordsIncomeProgress": "Bisher verdient: {{amount}} · {{percent}}"
 }

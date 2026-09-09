@@ -1029,5 +1029,6 @@
   "recordsWorkedTime": "Temps travaillé",
   "recordsWorkdayCount": "{{count}} jours de travail",
   "lifeApproxYears": "Environ {{years}} ans",
-  "recordsSummaryHelp": "Le temps travaillé inclut les horaires enregistrés déjà écoulés et les heures supplémentaires ; les relevés et corrections sont prioritaires. Le revenu est estimé pour toute la période sélectionnée selon vos paramètres de salaire. Les heures enregistrées ne modifient pas un salaire mensuel fixe."
+  "recordsSummaryHelp": "Le temps travaillé inclut les horaires enregistrés déjà écoulés et les heures supplémentaires ; les relevés et corrections sont prioritaires. Le revenu est estimé pour toute la période sélectionnée selon vos paramètres de salaire. Les heures enregistrées ne modifient pas un salaire mensuel fixe.",
+  "recordsIncomeProgress": "Déjà gagné : {{amount}} · {{percent}}"
 }

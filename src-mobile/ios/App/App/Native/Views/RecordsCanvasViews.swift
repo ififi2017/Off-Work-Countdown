@@ -508,6 +508,15 @@ struct RecordsHeadlineView: View {
             if let income {
                 Divider()
                 metric("recordsForecastIncome", store.moneyText(income))
+                if income > 0, let earned = summary.actualForecast?.actual.earnings {
+                    Text(store.t("recordsIncomeProgress", values: [
+                        "amount": store.moneyText(earned),
+                        "percent": store.formatPercent(min(100, max(0, earned / income * 100))),
+                    ]))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
     }
