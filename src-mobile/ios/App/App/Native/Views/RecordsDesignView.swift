@@ -539,14 +539,13 @@ struct RecordsDesignView: View {
                     )
                     markLegend
                 case .year:
-                    // The year changes form when it is given the whole screen:
-                    // the collapsed density canvas answers "when was it heavy",
-                    // and the expanded rows answer "how do the months compare",
-                    // which is a question a 12pt bucket cannot hold.
+                    // Expansion reads a selected month with the same metrics
+                    // and allocation as the month screen, without another axis.
                     if expandedPresentation {
-                        RecordsYearMonthBars(
+                        RecordsYearMonthsView(
                             store: store,
                             cells: renderedCells,
+                            days: days,
                             selectedMonth: selectedYearMonth,
                             onOpenMonth: openMonth
                         ) { month in
