@@ -161,7 +161,7 @@ struct RecordsAllocationBar: View {
     let store: OffWorkStore
     let share: TimeAllocationShare
     var showsApproximateYears = false
-    @State private var selectedKind: TimeAllocationKind?
+    @State private var selectedKind: TimeAllocationKind? = .work
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -181,9 +181,9 @@ struct RecordsAllocationBar: View {
                     }
                     .font(.caption)
                     .fixedSize(horizontal: false, vertical: true)
-                    .opacity(selectedKind == item.kind ? 1 : 0)
-                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press, value: selectedKind)
-                    .accessibilityHidden(selectedKind != item.kind)
+                    .opacity(activeKind == item.kind ? 1 : 0)
+                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press, value: activeKind)
+                    .accessibilityHidden(activeKind != item.kind)
                 }
             }
             .padding(.bottom, 4)
@@ -210,7 +210,7 @@ struct RecordsAllocationBar: View {
                         style: .continuous
                     )
                     Button {
-                        selectedKind = selectedKind == item.kind ? nil : item.kind
+                        selectedKind = item.kind
                     } label: {
                         shape
                             .fill(item.color)
@@ -220,8 +220,8 @@ struct RecordsAllocationBar: View {
                             )
                             .overlay {
                                 shape.strokeBorder(OWCDesign.primary, lineWidth: 2)
-                                    .opacity(selectedKind == item.kind ? 1 : 0)
-                                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press, value: selectedKind)
+                                    .opacity(activeKind == item.kind ? 1 : 0)
+                                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.press, value: activeKind)
                             }
                     }
                     .buttonStyle(.plain)
@@ -229,7 +229,7 @@ struct RecordsAllocationBar: View {
                     .frame(height: 44)
                     .accessibilityLabel(store.t(item.kind.titleKey))
                     .accessibilityValue(accessibilityValue(item))
-                    .accessibilityAddTraits(selectedKind == item.kind ? .isSelected : [])
+                    .accessibilityAddTraits(activeKind == item.kind ? .isSelected : [])
                     .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
                         [item.kind.rawValue: $0]
                     }
@@ -260,7 +260,7 @@ struct RecordsAllocationBar: View {
     private var legendItems: some View {
         ForEach(visibleSlices) { item in
             Button {
-                selectedKind = selectedKind == item.kind ? nil : item.kind
+                selectedKind = item.kind
             } label: {
                 HStack(spacing: 4) {
                     Circle().fill(item.color).frame(width: 6, height: 6)
@@ -275,8 +275,12 @@ struct RecordsAllocationBar: View {
             .buttonStyle(.plain)
             .accessibilityLabel(store.t(item.kind.titleKey))
             .accessibilityValue(accessibilityValue(item))
-            .accessibilityAddTraits(selectedKind == item.kind ? .isSelected : [])
+            .accessibilityAddTraits(activeKind == item.kind ? .isSelected : [])
         }
+    }
+
+    private var activeKind: TimeAllocationKind? {
+        visibleSlices.first(where: { $0.kind == selectedKind })?.kind ?? visibleSlices.first?.kind
     }
 
     private var visibleSlices: [AllocationSlice] {
@@ -496,41 +500,51 @@ struct RecordsHeadlineView: View {
         let overtimeMs = summary.actualForecast.map { $0.actualOvertimeHours * 3_600_000 }
             ?? Double(summary.overtimeMs)
         return VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                metric("recordsWorkedTime", store.formatRelativeDuration(workedMs), prominent: true)
-                Text(store.t("recordsWorkdayCount", values: ["count": store.formatCount(Int(workdays))]))
-                    .font(.footnote)
-                    .foregroundStyle(OWCDesign.secondary)
-            }
+            metric("recordsWorkedTime", store.formatRelativeDuration(workedMs), prominent: true,
+                   subtitle: store.t("recordsWorkdayCount", values: ["count": store.formatCount(Int(workdays))]))
             if overtimeMs > 0 {
                 metric("recordsOvertime", store.formatRelativeDuration(overtimeMs))
             }
             if let income {
                 Divider()
-                metric("recordsForecastIncome", store.moneyText(income))
-                if income > 0, let earned = summary.actualForecast?.actual.earnings {
-                    Text(store.t("recordsIncomeProgress", values: [
+                let progress = income > 0 ? summary.actualForecast?.actual.earnings.map { earned in
+                    store.t("recordsIncomeProgress", values: [
                         "amount": store.moneyText(earned),
                         "percent": store.formatPercent(min(100, max(0, earned / income * 100))),
-                    ]))
-                    .font(.footnote)
-                    .foregroundStyle(OWCDesign.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    ])
+                } : nil
+                metric("recordsForecastIncome", store.moneyText(income), subtitle: progress)
+            }
+            if summary.allocationDays > 0 {
+                Divider()
+                HStack {
+                    Text(store.t("recordsTimeBreakdown"))
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    RecordsMetricHelpButton(title: store.t("recordsTimeBreakdown"), message: [
+                        store.t("recordsAllocationBasis", values: ["count": store.formatCount(summary.allocationDays)]),
+                        store.t(summary.sleepSourceKey),
+                    ].joined(separator: "\n\n"))
                 }
+                RecordsAllocationBar(store: store, share: summary.allocation)
             }
         }
     }
 
-    private func metric(_ titleKey: String, _ value: String, prominent: Bool = false) -> some View {
+    private func metric(_ titleKey: String, _ value: String, prominent: Bool = false, subtitle: String? = nil) -> some View {
         let layout = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
-            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 12))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
         return layout {
-            Text(store.t(titleKey))
-                .font(.subheadline)
-                .foregroundStyle(OWCDesign.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(store.t(titleKey)).font(.subheadline)
+                if let subtitle {
+                    Text(subtitle).font(.footnote)
+                }
+            }
+            .foregroundStyle(OWCDesign.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
             Text(value)
                 .font(prominent ? .title2.weight(.semibold).monospacedDigit() : .body.weight(.medium).monospacedDigit())
                 .foregroundStyle(OWCDesign.primary)
@@ -2143,20 +2157,6 @@ struct RecordsLifeAllocationCard: View {
                     .frame(minHeight: 100)
                     .accessibilityHidden(true)
                 } else if let allocation = usableAllocation {
-                    Text(
-                        store.t(
-                            "lifeAllocationEstimate",
-                            values: [
-                                "duration": store.formatRecordsDuration(
-                                    Double(allocation.workMs + allocation.overtimeMs)
-                                )
-                            ]
-                        )
-                    )
-                    .font(.body)
-                    .foregroundStyle(OWCDesign.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-
                     RecordsAllocationBar(store: store, share: allocation, showsApproximateYears: true)
                 } else {
                     // No retirement boundary, no career, or a schedule the
