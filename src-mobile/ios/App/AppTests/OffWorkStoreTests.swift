@@ -3563,8 +3563,18 @@ func recordsScheduleContinuesWithoutAppVisits() async throws {
     ))
     #expect(summary.workdays == 5)
     #expect(summary.regularWorkMs == 35 * 3_600_000)
-    #expect(summary.actualForecast?.actual.days == 0)
-    #expect((summary.actualForecast?.forecast.hours ?? 0) >= 35)
+    #expect(summary.actualForecast?.actual.days == 5)
+    #expect(summary.actualForecast?.actual.hours == 35)
+    // All three scopes must consume the same classification as their cells.
+    for scale in [RecordsScale.week, .month, .year] {
+        let window = store.recordsWindow(for: scale, anchor: now)
+        let visible = cells.filter { $0.date >= window.0 && $0.date <= window.1 }
+        let split = try #require(store.recordsHeadline(cells: visible, days: days, now: now)?.actualForecast)
+        let elapsed = visible.filter { $0.appearance == .recorded && $0.workMs > 0 }
+        #expect(split.actual.days == Double(elapsed.count))
+        #expect(split.actual.hours > 0)
+        #expect(split.forecast.hours > 0) // Future dates and the remainder of today.
+    }
     #expect(records.state.observations.isEmpty)
     #expect(records.state.overrides.isEmpty)
     #expect(records.state.periods.count == 1)

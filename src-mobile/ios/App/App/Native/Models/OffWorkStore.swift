@@ -4101,7 +4101,8 @@ final class OffWorkStore {
     }
 
     /// One shift-anchor row per visible date. A corrected or explicitly
-    /// observed row is actual; every other schedule-backed row is forecast.
+    /// observed row is actual, as is elapsed saved scheduling. Synthetic life
+    /// history and future schedule rows remain forecasts.
     /// The TypeScript rule keeps worked hours on these rows. Fixed monthly pay
     /// is allocated separately across every visible civil date, so absence or
     /// shorter recorded time does not turn this summary into a payslip.
@@ -4124,6 +4125,8 @@ final class OffWorkStore {
                 "corrected"
             } else if cell.appearance == .recorded && hasActualObservation {
                 "observed"
+            } else if !cell.isFuture && hasSavedSchedule(day) {
+                "scheduled"
             } else {
                 nil
             }
