@@ -648,10 +648,9 @@ struct RecordsMonthGrid: View {
 
     private var showsStateMarker: Bool { dynamicTypeSize < .accessibility1 }
 
-    /// Brand orange means selection and today. Nothing here encodes hours: the
-    /// bar does that, in the shared category colours. Selection is a ring
-    /// rather than a solid block precisely so the bar inside keeps its own
-    /// colour instead of sitting on orange.
+    /// Blue depth expresses overtime; the small bar retains total duration
+    /// and category proportions. Orange selection stays on the ring so it
+    /// cannot hide the workload colour.
     private func fill(_ cell: RecordsDayCell) -> Color {
         return switch cell.appearance {
         case .locked: OWCDesign.control.opacity(0.45)
