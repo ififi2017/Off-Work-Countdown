@@ -593,6 +593,8 @@ struct RecordsMonthGrid: View {
                                     maxWidth: 24,
                                     height: barHeight
                                 )
+                                .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
+                                    estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
                                 .padding(.bottom, 4)
                             }
                             .overlay(alignment: .topTrailing) {
@@ -651,12 +653,13 @@ struct RecordsMonthGrid: View {
     /// rather than a solid block precisely so the bar inside keeps its own
     /// colour instead of sitting on orange.
     private func fill(_ cell: RecordsDayCell) -> Color {
-        if cell.dayKey == selectedDayKey { return OWCDesign.accent.opacity(0.12) }
         return switch cell.appearance {
         case .locked: OWCDesign.control.opacity(0.45)
         case .unrecorded, .planned: Color.clear
         case .rest: OWCDesign.control.opacity(0.36)
-        case .recorded, .corrected: OWCDesign.control.opacity(0.5)
+        case .recorded, .corrected:
+            OWCDesign.recordsWork.opacity(0.4 * RecordsWorkIntensity.opacity(
+                overtimeMs: cell.overtimeMs, estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
         }
     }
 
@@ -732,7 +735,7 @@ enum RecordsDayMarks {
     /// projection has no hours at all, so hatching it would claim an estimated
     /// day of work where the honest answer is simply "not a workday".
     static func isEstimated(_ cell: RecordsDayCell) -> Bool {
-        (cell.isProjection || cell.appearance == .planned)
+        (cell.isFuture || cell.isProjection || cell.appearance == .planned)
             && cell.workMs + cell.overtimeMs > 0
     }
 
@@ -881,6 +884,8 @@ struct RecordsWeekStrips: View {
             // Over the whole column an empty rest day read as a full day of
             // estimated work.
             .owcEstimated(RecordsDayMarks.isEstimated(cell), tint: .white, spacing: 4)
+            .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
+                estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
             .clipShape(Capsule())
         }
         .frame(width: 18, height: 116)
@@ -952,7 +957,7 @@ struct RecordsYearCanvas: View {
                                 hatchContext.clip(to: path)
                                 hatchContext.stroke(
                                     OWCHatchPattern(spacing: 4).path(in: rect),
-                                    with: .color(OWCDesign.recordsWork.opacity(0.55)),
+                                    with: .color(OWCDesign.recordsWork.opacity(0.28)),
                                     lineWidth: contrast == .increased ? 1.5 : 1
                                 )
                             }
@@ -1075,19 +1080,17 @@ struct RecordsYearCanvas: View {
 
     }
 
-    /// Depth of the work colour is how much; brand orange stays out of it
-    /// entirely, because on this canvas it already means "this is the month
-    /// you picked".
+    /// Overtime controls depth; planned work stays pale. Month selection uses
+    /// its outline only, so browsing cannot change the workload comparison.
     private func color(_ bucket: RecordsYearBucket) -> Color {
-        let base = switch bucket.kind {
+        switch bucket.kind {
         case .locked: OWCDesign.control.opacity(0.86)
         case .unrecorded, .rest: OWCDesign.control.opacity(0.65)
-        case .planned: OWCDesign.recordsWork.opacity(withoutColor ? 0.84 : 0.46)
-        case .recorded: OWCDesign.recordsWork.opacity(withoutColor ? 0.96 : min(0.96, 0.54 + Double(bucket.workMs) / 57_600_000))
-        case .corrected: OWCDesign.recordsWork.opacity(0.96)
+        case .planned: OWCDesign.recordsWork.opacity(RecordsWorkIntensity.opacity(overtimeMs: 0, estimated: true))
+        case .recorded, .corrected:
+            OWCDesign.recordsWork.opacity(RecordsWorkIntensity.opacity(
+                overtimeMs: bucket.peakOvertimeMs, estimated: bucket.isFuture))
         }
-        guard let selectedMonth, bucket.month != selectedMonth else { return base }
-        return base.opacity(0.76)
     }
 
     private func monthLabel(_ month: Int) -> String {

@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} trong {{total}} phiên",
   "recordsHeatLess": "Ít",
   "recordsHeatMore": "Nhiều",
-  "recordsHeatScale": "Màu càng đậm thì ngày đó làm càng nhiều giờ.",
+  "recordsHeatScale": "Làm thêm càng nhiều, màu càng đậm. Ước tính có màu nhạt và vạch chéo.",
   "recordsHeatWithoutColor": "Những ngày bạn đã sửa có viền, và danh sách bên dưới ghi lại đúng số giờ đó bằng chữ.",
   "recordsByMonth": "Theo tháng",
   "recordsMonthWorkdays": "{{count}} ngày làm việc",

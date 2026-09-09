@@ -103,6 +103,15 @@ enum RecordsLockedKind: String, Equatable, Sendable {
     case summary
 }
 
+/// Presentation strength uses a fixed overtime scale, never normal shift
+/// length or the busiest day currently visible. Eight extra hours saturate it.
+enum RecordsWorkIntensity {
+    static func opacity(overtimeMs: Int64, estimated: Bool) -> Double {
+        if estimated { return 0.18 }
+        return 0.45 + min(1, Double(max(0, overtimeMs)) / 28_800_000) * 0.5
+    }
+}
+
 struct RecordsYearBucket: Equatable, Sendable, Identifiable {
     var id: Int { index }
     var index: Int
@@ -113,6 +122,8 @@ struct RecordsYearBucket: Equatable, Sendable, Identifiable {
     var workMs: Int64
     var isProjection: Bool
     var hasEstimatedWork: Bool = false
+    var peakOvertimeMs: Int64 = 0
+    var isFuture: Bool = false
 }
 
 /// One month of the expanded year chart.
@@ -126,9 +137,8 @@ struct RecordsYearMonthBar: Equatable, Sendable, Identifiable {
     var month: Int
     var workMs: Int64
     var overtimeMs: Int64
-    /// Future days a life projection can actually price. A merely scheduled
-    /// future day carries no numbers, and inventing them here would be the
-    /// fabricated history 010 removed.
+    /// Future saved schedules and synthetic life history remain visually
+    /// separate from elapsed records, even when both have resolved hours.
     var projectedMs: Int64
     var workdays: Int
     var hasLockedDays: Bool
@@ -156,6 +166,11 @@ enum RecordsYearMonthSampler {
                 workdays: 0,
                 hasLockedDays: false
             )
+            if cell.isFuture, cell.appearance != .locked {
+                bar.projectedMs += cell.workMs + cell.overtimeMs
+                byMonth[month] = bar
+                continue
+            }
             switch cell.appearance {
             case .recorded, .corrected:
                 bar.workMs += cell.workMs
@@ -167,7 +182,7 @@ enum RecordsYearMonthSampler {
                 // was empty.
                 bar.hasLockedDays = true
             case .planned, .unrecorded, .rest:
-                if cell.isProjection { bar.projectedMs += cell.workMs + cell.overtimeMs }
+                if cell.isProjection || cell.appearance == .planned { bar.projectedMs += cell.workMs + cell.overtimeMs }
             }
             byMonth[month] = bar
         }
@@ -511,8 +526,11 @@ enum RecordsYearSampler {
                 workMs: workMs,
                 isProjection: isProjection,
                 hasEstimatedWork: inside.contains {
-                    ($0.isProjection || $0.appearance == .planned) && $0.workMs + $0.overtimeMs > 0
-                }
+                    ($0.isFuture || $0.isProjection || $0.appearance == .planned) && $0.workMs + $0.overtimeMs > 0
+                },
+                peakOvertimeMs: inside.filter { !$0.isFuture && !$0.isProjection && ($0.appearance == .recorded || $0.appearance == .corrected) }
+                    .map(\.overtimeMs).max() ?? 0,
+                isFuture: !inside.isEmpty && inside.allSatisfy(\.isFuture)
             )
         }
     }

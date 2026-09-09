@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} de {{total}} blocos",
   "recordsHeatLess": "Menos",
   "recordsHeatMore": "Mais",
-  "recordsHeatScale": "Quanto mais intensa a cor, mais horas de trabalho.",
+  "recordsHeatScale": "Mais horas extra, cor mais intensa. As estimativas são claras e tracejadas.",
   "recordsHeatWithoutColor": "Os dias que alterou têm contorno, e a lista abaixo dá as mesmas horas em texto.",
   "recordsByMonth": "Por mês",
   "recordsMonthWorkdays": "{{count}} dias trabalhados",

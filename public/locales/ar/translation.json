@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} من {{total}} فترة",
   "recordsHeatLess": "أقل",
   "recordsHeatMore": "أكثر",
-  "recordsHeatScale": "كلما زاد عمق اللون طالت ساعات العمل في ذلك اليوم.",
+  "recordsHeatScale": "كلما زاد العمل الإضافي زادت قوة اللون؛ التقديرات باهتة ومخططة.",
   "recordsHeatWithoutColor": "الأيام التي عدّلتها لها إطار، والقائمة أدناه تعطي الساعات نفسها كنص.",
   "recordsByMonth": "حسب الشهر",
   "recordsMonthWorkdays": "{{count}} يوم عمل",

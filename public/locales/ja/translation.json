@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{total}} ブロック中 {{count}}",
   "recordsHeatLess": "少ない",
   "recordsHeatMore": "多い",
-  "recordsHeatScale": "色が濃いほど、その日の勤務時間が長いことを表します。",
+  "recordsHeatScale": "残業が多いほど色が濃くなります。推定は淡い色と斜線で表示します。",
   "recordsHeatWithoutColor": "自分で直した日には枠線が付き、下のリストにも同じ時間が文字で出ます。",
   "recordsByMonth": "月ごと",
   "recordsMonthWorkdays": "{{count}} 勤務日",

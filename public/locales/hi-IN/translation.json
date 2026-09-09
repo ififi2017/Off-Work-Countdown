@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{total}} में से {{count}} ब्लॉक",
   "recordsHeatLess": "कम",
   "recordsHeatMore": "ज़्यादा",
-  "recordsHeatScale": "रंग जितना गहरा, उस दिन काम के घंटे उतने ज़्यादा।",
+  "recordsHeatScale": "अधिक ओवरटाइम, गहरा रंग। अनुमान हल्के रंग और तिरछी रेखाओं में हैं।",
   "recordsHeatWithoutColor": "जिन दिनों को आपने बदला है उनके किनारे पर रेखा है, और नीचे की सूची वही घंटे शब्दों में देती है।",
   "recordsByMonth": "महीने के हिसाब से",
   "recordsMonthWorkdays": "{{count}} काम के दिन",

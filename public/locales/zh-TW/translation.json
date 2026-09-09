@@ -602,7 +602,7 @@
   "focusTaskProgress": "已完成 {{count}} / {{total}} 段",
   "recordsHeatLess": "少",
   "recordsHeatMore": "多",
-  "recordsHeatScale": "顏色越深代表當天工時越長。",
+  "recordsHeatScale": "加班越多，顏色越深；預計時間以淡色斜紋顯示。",
   "recordsHeatWithoutColor": "你改過的日子有外框，下面的清單也用文字給出同樣的工時。",
   "recordsByMonth": "按月看",
   "recordsMonthWorkdays": "{{count}} 個工作日",

@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{total}} 블록 중 {{count}}",
   "recordsHeatLess": "적음",
   "recordsHeatMore": "많음",
-  "recordsHeatScale": "색이 진할수록 그날 일한 시간이 깁니다.",
+  "recordsHeatScale": "초과근무가 많을수록 색이 진해집니다. 예상 시간은 옅은 색과 빗금으로 표시합니다.",
   "recordsHeatWithoutColor": "직접 고친 날에는 테두리가 있고, 아래 목록에도 같은 시간이 글로 나옵니다.",
   "recordsByMonth": "월별",
   "recordsMonthWorkdays": "근무일 {{count}}일",

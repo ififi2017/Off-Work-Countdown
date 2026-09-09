@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} séances sur {{total}}",
   "recordsHeatLess": "Moins",
   "recordsHeatMore": "Plus",
-  "recordsHeatScale": "Plus la couleur est dense, plus la journée a été longue.",
+  "recordsHeatScale": "Plus d’heures supplémentaires, couleur plus intense. Les estimations sont pâles et hachurées.",
   "recordsHeatWithoutColor": "Les jours que vous avez modifiés ont un contour, et la liste ci-dessous donne les mêmes heures en texte.",
   "recordsByMonth": "Par mois",
   "recordsMonthWorkdays": "{{count}} jours travaillés",

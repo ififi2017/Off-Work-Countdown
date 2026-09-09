@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} of {{total}} blocks",
   "recordsHeatLess": "Less",
   "recordsHeatMore": "More",
-  "recordsHeatScale": "Color depth shows hours worked, from less to more.",
+  "recordsHeatScale": "More overtime, stronger color. Estimates are pale and hatched.",
   "recordsHeatWithoutColor": "Days you changed carry an outline, and the list below gives the same hours as text.",
   "recordsByMonth": "By month",
   "recordsMonthWorkdays": "{{count}} workdays",

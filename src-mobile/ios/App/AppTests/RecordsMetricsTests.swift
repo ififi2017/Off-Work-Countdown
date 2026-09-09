@@ -207,12 +207,12 @@ func yearMonthBarsSeparateRecordsFromProjection() throws {
     #expect(march.overtimeMs == Int64(hourMs))
     #expect(march.projectedMs == 0)
 
-    // A scheduled future day carries no numbers; only a life projection does,
-    // and it never joins the recorded totals.
+    // Both saved future schedules and life projections stay separate from
+    // recorded totals and remain visible as the pale projected segment.
     let april = try #require(months.last)
     #expect(april.workdays == 0)
     #expect(april.totalMs == 0)
-    #expect(april.projectedMs == Int64(8 * hourMs))
+    #expect(april.projectedMs == Int64(16 * hourMs))
 }
 
 @MainActor
@@ -369,4 +369,40 @@ private func segment(
 
 private func ms(_ date: Date) -> Double {
     date.timeIntervalSince1970 * 1_000
+}
+
+
+@MainActor
+@Test("Overtime color uses a stable daily scale and never darkens future work")
+func overtimeHeatUsesDailyLoad() throws {
+    let strengths = [0, 1, 2, 4, 8].map {
+        RecordsWorkIntensity.opacity(overtimeMs: Int64($0) * 3_600_000, estimated: false)
+    }
+    #expect(zip(strengths, strengths.dropFirst()).allSatisfy { $0 < $1 })
+    #expect(RecordsWorkIntensity.opacity(overtimeMs: 12 * 3_600_000, estimated: false) == strengths.last)
+    #expect(RecordsWorkIntensity.opacity(overtimeMs: 8 * 3_600_000, estimated: true) < strengths[0])
+    let calendar = utcCalendar()
+    let start = try date(2026, 3, 1, calendar: calendar)
+    let end = try date(2026, 3, 4, calendar: calendar)
+    let cells = [
+        yearCell("2026-03-01", start, .recorded, workHours: 12, overtimeHours: 0),
+        yearCell("2026-03-02", try date(2026, 3, 2, calendar: calendar), .recorded, workHours: 8, overtimeHours: 2),
+        yearCell("2026-03-03", try date(2026, 3, 3, calendar: calendar), .corrected, workHours: 8, overtimeHours: 1)
+    ]
+    let individual = RecordsYearSampler.buckets(from: start, to: end, count: 3, cells: cells, calendar: calendar)
+    let combined = try #require(RecordsYearSampler.buckets(from: start, to: end, count: 1, cells: cells, calendar: calendar).first)
+    #expect(individual.map(\.peakOvertimeMs) == [0, 2 * 3_600_000, 3_600_000])
+    #expect(combined.peakOvertimeMs == 2 * 3_600_000)
+    var future = cells[1]
+    future.isFuture = true
+    future.appearance = .corrected
+    let futureBucket = try #require(RecordsYearSampler.buckets(from: start, to: end, count: 1, cells: [future], calendar: calendar).first)
+    #expect(futureBucket.isFuture)
+    #expect(futureBucket.hasEstimatedWork)
+    #expect(futureBucket.peakOvertimeMs == 0)
+    #expect(RecordsDayMarks.isEstimated(future))
+    let futureMonth = try #require(RecordsYearMonthSampler.months(cells: [future], calendar: calendar).first)
+    #expect(futureMonth.totalMs == 0)
+    #expect(futureMonth.projectedMs == 10 * 3_600_000)
+
 }

@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} dari {{total}} blok",
   "recordsHeatLess": "Sedikit",
   "recordsHeatMore": "Banyak",
-  "recordsHeatScale": "Makin pekat warnanya, makin panjang jam kerja hari itu.",
+  "recordsHeatScale": "Makin banyak lembur, makin pekat warnanya. Perkiraan berwarna pucat dan bergaris.",
   "recordsHeatWithoutColor": "Hari yang kamu ubah punya garis tepi, dan daftar di bawah menuliskan jam yang sama.",
   "recordsByMonth": "Per bulan",
   "recordsMonthWorkdays": "{{count}} hari kerja",

@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} из {{total}} блоков",
   "recordsHeatLess": "Меньше",
   "recordsHeatMore": "Больше",
-  "recordsHeatScale": "Чем насыщеннее цвет, тем дольше рабочий день.",
+  "recordsHeatScale": "Больше переработок — насыщеннее цвет. Оценки бледные и заштрихованы.",
   "recordsHeatWithoutColor": "У дней, которые вы изменили, есть обводка, а список ниже повторяет те же часы текстом.",
   "recordsByMonth": "По месяцам",
   "recordsMonthWorkdays": "{{count}} рабочих дней",

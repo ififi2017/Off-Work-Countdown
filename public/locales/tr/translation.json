@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{total}} bloktan {{count}}",
   "recordsHeatLess": "Az",
   "recordsHeatMore": "Çok",
-  "recordsHeatScale": "Renk koyulaştıkça o günün çalışma süresi artar.",
+  "recordsHeatScale": "Fazla mesai arttıkça renk koyulaşır. Tahminler soluk ve taralıdır.",
   "recordsHeatWithoutColor": "Değiştirdiğin günlerin çerçevesi vardır, aşağıdaki liste de aynı saatleri yazıyla verir.",
   "recordsByMonth": "Aya göre",
   "recordsMonthWorkdays": "{{count}} çalışma günü",

@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} จาก {{total}} ช่วง",
   "recordsHeatLess": "น้อย",
   "recordsHeatMore": "มาก",
-  "recordsHeatScale": "สีเข้มขึ้นหมายถึงวันนั้นทำงานนานขึ้น",
+  "recordsHeatScale": "ยิ่งทำงานล่วงเวลามาก สียิ่งเข้ม ค่าประมาณใช้สีอ่อนและลายเฉียง",
   "recordsHeatWithoutColor": "วันที่คุณแก้เองจะมีเส้นขอบ และรายการด้านล่างก็บอกจำนวนชั่วโมงเดียวกันเป็นตัวอักษร",
   "recordsByMonth": "แยกตามเดือน",
   "recordsMonthWorkdays": "{{count}} วันทำงาน",
