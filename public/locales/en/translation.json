@@ -865,7 +865,7 @@
   "focusEstimate": "Estimate",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Where it goes",
-  "focusLandingNextBlock": "Next empty block · {{time}}",
+  "focusLandingNextBlock": "Next available time slot",
   "focusNoEmptyBlock": "This shift has no empty block left. The task is on today's list.",
   "focusNoEmptyBlockShort": "No empty block left",
   "focusFavoritesPlace": "Quick tasks · tap to place",

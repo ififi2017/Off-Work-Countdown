@@ -865,7 +865,7 @@
   "focusEstimate": "ประมาณ",
   "focusEstimateDetail": "{{count}} × {{minutes}} นาที",
   "focusLanding": "จะใส่ตรงไหน",
-  "focusLandingNextBlock": "ช่วงว่างถัดไป · {{time}}",
+  "focusLandingNextBlock": "ช่วงเวลาว่างถัดไป",
   "focusNoEmptyBlock": "กะนี้ไม่มีช่วงว่างแล้ว งานถูกเพิ่มไว้ในรายการวันนี้",
   "focusNoEmptyBlockShort": "ไม่มีช่วงว่าง",
   "focusFavoritesPlace": "งานที่ใช้บ่อย · แตะเพื่อวาง",

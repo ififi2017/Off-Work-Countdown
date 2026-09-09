@@ -865,7 +865,7 @@
   "focusEstimate": "अंदाज",
   "focusEstimateDetail": "{{count}} × {{minutes}} मिनिटे",
   "focusLanding": "कुठे ठेवायचे",
-  "focusLandingNextBlock": "पुढील रिकामा ब्लॉक · {{time}}",
+  "focusLandingNextBlock": "पुढील मोकळी वेळ",
   "focusNoEmptyBlock": "या शिफ्टमध्ये रिकामा ब्लॉक उरला नाही. कार्य आजच्या यादीत जोडले आहे.",
   "focusNoEmptyBlockShort": "रिकामा ब्लॉक नाही",
   "focusFavoritesPlace": "जलद कार्ये · ठेवण्यासाठी टॅप करा",

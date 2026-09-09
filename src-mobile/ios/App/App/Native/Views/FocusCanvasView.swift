@@ -123,19 +123,6 @@ struct FocusCanvasView: View {
                         scrollToNow(store.focusDayCanvas(), proxy: proxy)
                     }
                 }
-                .onChange(of: selectedBlock) { _, value in
-                    guard let value else { return }
-                    needsCurrentPosition = false
-                    let position = {
-                        if dynamicTypeSize.isAccessibilitySize {
-                            proxy.scrollTo(value, anchor: .center)
-                        } else if let bandTop {
-                            scrollPosition.scrollTo(y: max(0, bandTop + model.offset(ofMs: value) - 8))
-                        }
-                    }
-                    if reduceMotion { position() }
-                    else { withAnimation(OWCMotion.stateEnter, position) }
-                }
             }
         }
         .background(OWCDesign.page)
@@ -369,6 +356,8 @@ struct FocusCanvasView: View {
     private func apply(_ result: FocusPlacementResult) {
         switch result {
         case .placed(_, let blockStartAtMs):
+            // Placement highlights the task without moving the reader’s viewport.
+            needsCurrentPosition = false
             selectedBlock = blockStartAtMs
             placedFeedback &+= 1
         case .addedUnscheduled:

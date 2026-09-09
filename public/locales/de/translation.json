@@ -865,7 +865,7 @@
   "focusEstimate": "Schätzung",
   "focusEstimateDetail": "{{count}} × {{minutes}} Min.",
   "focusLanding": "Wohin damit",
-  "focusLandingNextBlock": "Nächster freier Block · {{time}}",
+  "focusLandingNextBlock": "Nächster freier Zeitraum",
   "focusNoEmptyBlock": "In dieser Schicht ist kein Block mehr frei. Die Aufgabe steht auf der heutigen Liste.",
   "focusNoEmptyBlockShort": "Kein freier Block",
   "focusFavoritesPlace": "Schnellaufgaben · tippen zum Einsetzen",

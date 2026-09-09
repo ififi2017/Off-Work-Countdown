@@ -865,7 +865,7 @@
   "focusEstimate": "التقدير",
   "focusEstimateDetail": "{{count}} × {{minutes}} دقيقة",
   "focusLanding": "أين توضع",
-  "focusLandingNextBlock": "الفترة الفارغة التالية · {{time}}",
+  "focusLandingNextBlock": "الفترة الفارغة التالية",
   "focusNoEmptyBlock": "لم تعد هناك فترة فارغة في هذه الوردية. أُضيفت المهمة إلى قائمة اليوم.",
   "focusNoEmptyBlockShort": "لا توجد فترة فارغة",
   "focusFavoritesPlace": "مهام سريعة · انقر لوضعها",

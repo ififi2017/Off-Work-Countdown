@@ -865,7 +865,7 @@
   "focusEstimate": "Estimación",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Dónde va",
-  "focusLandingNextBlock": "Siguiente bloque libre · {{time}}",
+  "focusLandingNextBlock": "Siguiente espacio libre",
   "focusNoEmptyBlock": "Este turno ya no tiene bloques libres. La tarea está en la lista de hoy.",
   "focusNoEmptyBlockShort": "Sin bloques libres",
   "focusFavoritesPlace": "Tareas rápidas · toca para colocar",

@@ -865,7 +865,7 @@
   "focusEstimate": "अनुमान",
   "focusEstimateDetail": "{{count}} × {{minutes}} मिनट",
   "focusLanding": "कहाँ रखें",
-  "focusLandingNextBlock": "अगला खाली ब्लॉक · {{time}}",
+  "focusLandingNextBlock": "अगला खाली समय",
   "focusNoEmptyBlock": "इस शिफ़्ट में कोई खाली ब्लॉक नहीं बचा। कार्य आज की सूची में जोड़ दिया गया।",
   "focusNoEmptyBlockShort": "कोई खाली ब्लॉक नहीं",
   "focusFavoritesPlace": "त्वरित कार्य · रखने के लिए टैप करें",

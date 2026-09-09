@@ -865,7 +865,7 @@
   "focusEstimate": "Estimation",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Où la placer",
-  "focusLandingNextBlock": "Prochain bloc libre · {{time}}",
+  "focusLandingNextBlock": "Prochain créneau libre",
   "focusNoEmptyBlock": "Ce service n’a plus de bloc libre. La tâche est dans la liste du jour.",
   "focusNoEmptyBlockShort": "Plus de bloc libre",
   "focusFavoritesPlace": "Tâches rapides · touchez pour placer",

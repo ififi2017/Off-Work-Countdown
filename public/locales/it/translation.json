@@ -865,7 +865,7 @@
   "focusEstimate": "Stima",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Dove va",
-  "focusLandingNextBlock": "Prossimo blocco libero · {{time}}",
+  "focusLandingNextBlock": "Prossimo intervallo libero",
   "focusNoEmptyBlock": "Questo turno non ha più blocchi liberi. L'attività è nell'elenco di oggi.",
   "focusNoEmptyBlockShort": "Nessun blocco libero",
   "focusFavoritesPlace": "Attività rapide · tocca per inserire",

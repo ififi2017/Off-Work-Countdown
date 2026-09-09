@@ -865,7 +865,7 @@
   "focusEstimate": "估算",
   "focusEstimateDetail": "{{count}} × {{minutes}} 分钟",
   "focusLanding": "放在哪里",
-  "focusLandingNextBlock": "放进下一个空格 · {{time}}",
+  "focusLandingNextBlock": "下一个空闲时段",
   "focusNoEmptyBlock": "这个班次没有空格了，任务已经加到今天的列表里。",
   "focusNoEmptyBlockShort": "没有空格了",
   "focusFavoritesPlace": "常用任务 · 点一下放进下一个空格",

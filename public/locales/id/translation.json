@@ -865,7 +865,7 @@
   "focusEstimate": "Perkiraan",
   "focusEstimateDetail": "{{count}} × {{minutes}} mnt",
   "focusLanding": "Mau ditaruh di mana",
-  "focusLandingNextBlock": "Blok kosong berikutnya · {{time}}",
+  "focusLandingNextBlock": "Slot kosong berikutnya",
   "focusNoEmptyBlock": "Sif ini tidak punya blok kosong lagi. Tugasnya masuk ke daftar hari ini.",
   "focusNoEmptyBlockShort": "Tidak ada blok kosong",
   "focusFavoritesPlace": "Tugas cepat · ketuk untuk menaruh",
