@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} из {{total}} блоков",
   "recordsHeatLess": "Меньше",
   "recordsHeatMore": "Больше",
-  "recordsHeatScale": "Чем насыщеннее цвет, тем дольше рабочий день.",
+  "recordsHeatScale": "Больше переработок — насыщеннее цвет. Оценки бледные и заштрихованы.",
   "recordsHeatWithoutColor": "У дней, которые вы изменили, есть обводка, а список ниже повторяет те же часы текстом.",
   "recordsByMonth": "По месяцам",
   "recordsMonthWorkdays": "{{count}} рабочих дней",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "Очистить задачи этого дня",
   "focusClearDayTasksBody": "Удалить задачи и план этого дня и остановить текущий таймер. Завершённые записи о фокусировке сохранятся.",
   "focusSaveDayAsTemplate": "Сохранить день как шаблон",
-  "focusAppliedTemplateNote": "Расписание использует шаблон «{{name}}»."
+  "focusAppliedTemplateNote": "Расписание использует шаблон «{{name}}».",
+  "recordsWorkedTime": "Отработано",
+  "recordsWorkdayCount": "Рабочих дней: {{count}}",
+  "lifeApproxYears": "Около {{years}} лет",
+  "recordsSummaryHelp": "Отработанное время включает прошедшие сохранённые смены и переработку; записи таймера и исправления имеют приоритет. Доход оценивается за весь выбранный период по настройкам зарплаты. Записанные часы не меняют фиксированный месячный оклад.",
+  "recordsIncomeProgress": "Заработано {{amount}} · {{percent}}"
 }

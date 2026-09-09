@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} trong {{total}} phiên",
   "recordsHeatLess": "Ít",
   "recordsHeatMore": "Nhiều",
-  "recordsHeatScale": "Màu càng đậm thì ngày đó làm càng nhiều giờ.",
+  "recordsHeatScale": "Làm thêm càng nhiều, màu càng đậm. Ước tính có màu nhạt và vạch chéo.",
   "recordsHeatWithoutColor": "Những ngày bạn đã sửa có viền, và danh sách bên dưới ghi lại đúng số giờ đó bằng chữ.",
   "recordsByMonth": "Theo tháng",
   "recordsMonthWorkdays": "{{count}} ngày làm việc",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "Xóa công việc của ngày này",
   "focusClearDayTasksBody": "Xóa công việc và lịch của ngày này, đồng thời dừng bộ hẹn giờ đang chạy. Các bản ghi tập trung đã hoàn thành sẽ được giữ lại.",
   "focusSaveDayAsTemplate": "Lưu ngày này thành mẫu",
-  "focusAppliedTemplateNote": "Lịch này đang dùng mẫu “{{name}}”."
+  "focusAppliedTemplateNote": "Lịch này đang dùng mẫu “{{name}}”.",
+  "recordsWorkedTime": "Thời gian đã làm việc",
+  "recordsWorkdayCount": "{{count}} ngày làm việc",
+  "lifeApproxYears": "Khoảng {{years}} năm",
+  "recordsSummaryHelp": "Thời gian làm việc gồm phần ca đã lưu đã trôi qua và làm thêm giờ; bản ghi hẹn giờ và chỉnh sửa được ưu tiên. Thu nhập được ước tính cho toàn bộ kỳ đã chọn theo cài đặt lương. Số giờ ghi nhận không làm thay đổi lương tháng cố định.",
+  "recordsIncomeProgress": "Đã kiếm được {{amount}} · {{percent}}"
 }

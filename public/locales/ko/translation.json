@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{total}} 블록 중 {{count}}",
   "recordsHeatLess": "적음",
   "recordsHeatMore": "많음",
-  "recordsHeatScale": "색이 진할수록 그날 일한 시간이 깁니다.",
+  "recordsHeatScale": "초과근무가 많을수록 색이 진해집니다. 예상 시간은 옅은 색과 빗금으로 표시합니다.",
   "recordsHeatWithoutColor": "직접 고친 날에는 테두리가 있고, 아래 목록에도 같은 시간이 글로 나옵니다.",
   "recordsByMonth": "월별",
   "recordsMonthWorkdays": "근무일 {{count}}일",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "이 날짜의 작업 지우기",
   "focusClearDayTasksBody": "이 날짜의 작업과 일정을 지우고 실행 중인 타이머를 중지합니다. 완료한 집중 기록은 유지됩니다.",
   "focusSaveDayAsTemplate": "이 날짜를 템플릿으로 저장",
-  "focusAppliedTemplateNote": "현재 일정에 “{{name}}” 템플릿을 사용 중입니다."
+  "focusAppliedTemplateNote": "현재 일정에 “{{name}}” 템플릿을 사용 중입니다.",
+  "recordsWorkedTime": "일한 시간",
+  "recordsWorkdayCount": "{{count}}일 근무",
+  "lifeApproxYears": "약 {{years}}년",
+  "recordsSummaryHelp": "근무 시간에는 저장된 근무 일정의 경과 시간과 초과근무가 포함되며, 타이머 기록과 수정 사항이 우선합니다. 수입은 급여 설정을 기준으로 선택한 전체 기간에 대해 추정합니다. 기록된 시간은 고정 월급을 바꾸지 않습니다.",
+  "recordsIncomeProgress": "지금까지 번 금액 {{amount}} · {{percent}}"
 }

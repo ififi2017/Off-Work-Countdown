@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} من {{total}} فترة",
   "recordsHeatLess": "أقل",
   "recordsHeatMore": "أكثر",
-  "recordsHeatScale": "كلما زاد عمق اللون طالت ساعات العمل في ذلك اليوم.",
+  "recordsHeatScale": "كلما زاد العمل الإضافي زادت قوة اللون؛ التقديرات باهتة ومخططة.",
   "recordsHeatWithoutColor": "الأيام التي عدّلتها لها إطار، والقائمة أدناه تعطي الساعات نفسها كنص.",
   "recordsByMonth": "حسب الشهر",
   "recordsMonthWorkdays": "{{count}} يوم عمل",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "مسح مهام هذا اليوم",
   "focusClearDayTasksBody": "إزالة مهام هذا اليوم وجدوله وإيقاف مؤقته الجاري. ستبقى سجلات التركيز المكتملة محفوظة.",
   "focusSaveDayAsTemplate": "حفظ هذا اليوم كقالب",
-  "focusAppliedTemplateNote": "يستخدم هذا الجدول قالب «{{name}}»."
+  "focusAppliedTemplateNote": "يستخدم هذا الجدول قالب «{{name}}».",
+  "recordsWorkedTime": "وقت العمل المنقضي",
+  "recordsWorkdayCount": "{{count}} أيام عمل",
+  "lifeApproxYears": "حوالي {{years}} سنة",
+  "recordsSummaryHelp": "يشمل وقت العمل الوقت المنقضي من الجدول المحفوظ والعمل الإضافي، مع أولوية السجلات والتعديلات اليدوية. يُقدّر الدخل للفترة المحددة كاملة وفق إعدادات راتبك؛ ولا يتغير الراتب الشهري الثابت بتغير الساعات المسجلة.",
+  "recordsIncomeProgress": "تم كسب {{amount}} · {{percent}}"
 }

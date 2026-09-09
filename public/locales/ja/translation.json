@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{total}} ブロック中 {{count}}",
   "recordsHeatLess": "少ない",
   "recordsHeatMore": "多い",
-  "recordsHeatScale": "色が濃いほど、その日の勤務時間が長いことを表します。",
+  "recordsHeatScale": "残業が多いほど色が濃くなります。推定は淡い色と斜線で表示します。",
   "recordsHeatWithoutColor": "自分で直した日には枠線が付き、下のリストにも同じ時間が文字で出ます。",
   "recordsByMonth": "月ごと",
   "recordsMonthWorkdays": "{{count}} 勤務日",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "この日のタスクを消去",
   "focusClearDayTasksBody": "この日のタスクと予定を削除し、実行中のタイマーを停止します。完了した集中の記録は残ります。",
   "focusSaveDayAsTemplate": "この日の予定をテンプレートに保存",
-  "focusAppliedTemplateNote": "「{{name}}」テンプレートを使用中です。"
+  "focusAppliedTemplateNote": "「{{name}}」テンプレートを使用中です。",
+  "recordsWorkedTime": "働いた時間",
+  "recordsWorkdayCount": "{{count}}勤務日",
+  "lifeApproxYears": "約{{years}}年",
+  "recordsSummaryHelp": "勤務時間には保存済みシフトの経過分と残業を含み、タイマー記録と修正を優先します。収入は選択期間全体について給与設定から推定します。固定月給は記録時間の多少で変わりません。",
+  "recordsIncomeProgress": "獲得済み {{amount}} · {{percent}}"
 }

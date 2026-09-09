@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} จาก {{total}} ช่วง",
   "recordsHeatLess": "น้อย",
   "recordsHeatMore": "มาก",
-  "recordsHeatScale": "สีเข้มขึ้นหมายถึงวันนั้นทำงานนานขึ้น",
+  "recordsHeatScale": "ยิ่งทำงานล่วงเวลามาก สียิ่งเข้ม ค่าประมาณใช้สีอ่อนและลายเฉียง",
   "recordsHeatWithoutColor": "วันที่คุณแก้เองจะมีเส้นขอบ และรายการด้านล่างก็บอกจำนวนชั่วโมงเดียวกันเป็นตัวอักษร",
   "recordsByMonth": "แยกตามเดือน",
   "recordsMonthWorkdays": "{{count}} วันทำงาน",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "ล้างงานของวันนี้",
   "focusClearDayTasksBody": "ลบงานและตารางของวันนี้ แล้วหยุดตัวจับเวลาที่กำลังทำงาน บันทึกการโฟกัสที่เสร็จแล้วจะยังคงอยู่",
   "focusSaveDayAsTemplate": "บันทึกวันนี้เป็นแม่แบบ",
-  "focusAppliedTemplateNote": "ตารางนี้ใช้แม่แบบ “{{name}}”"
+  "focusAppliedTemplateNote": "ตารางนี้ใช้แม่แบบ “{{name}}”",
+  "recordsWorkedTime": "เวลาที่ทำงานแล้ว",
+  "recordsWorkdayCount": "{{count}} วันทำงาน",
+  "lifeApproxYears": "ประมาณ {{years}} ปี",
+  "recordsSummaryHelp": "เวลาทำงานรวมช่วงกะที่บันทึกไว้ซึ่งผ่านไปแล้วและล่วงเวลา โดยยึดบันทึกตัวจับเวลาและการแก้ไขก่อน รายได้ประมาณจากการตั้งค่าเงินเดือนตลอดช่วงที่เลือก ชั่วโมงที่บันทึกไม่เปลี่ยนเงินเดือนประจำ",
+  "recordsIncomeProgress": "ได้รับแล้ว {{amount}} · {{percent}}"
 }

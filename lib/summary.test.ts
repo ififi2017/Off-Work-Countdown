@@ -307,6 +307,26 @@ describe("lifetime gross income", () => {
 });
 
 describe("records actual and forecast", () => {
+  it("counts elapsed saved shifts without visits and keeps only remaining time forecast", () => {
+    const hour = 3_600_000;
+    const result = summarizeRecordsActualAndForecast({
+      dailySalary: 800,
+      asOfMs: 36 * hour,
+      days: [0, 24, 48].map(offset => ({
+        actualKind: offset < 48 ? "scheduled" as const : null,
+        resolvedSegments: [
+          { startAtMs: (offset + 9) * hour, endAtMs: (offset + 12) * hour },
+          { startAtMs: (offset + 13) * hour, endAtMs: (offset + 18) * hour },
+        ],
+        plannedSegments: [{ startAtMs: (offset + 9) * hour, endAtMs: (offset + 17) * hour }],
+        overtimeSegments: [], observations: [], isActiveAnchor: false,
+      })),
+    });
+    expect(result.actual).toEqual({ days: 2, hours: 11, earnings: 1100 });
+    expect(result.forecast).toEqual({ days: 1, hours: 13, earnings: 1300 });
+    expect(result.total).toEqual({ days: 3, hours: 24, earnings: 2400 });
+  });
+
   it("keeps recorded work separate and never forecasts the same day twice", () => {
     const hour = 3_600_000;
     const result = summarizeRecordsActualAndForecast({
@@ -335,6 +355,7 @@ describe("records actual and forecast", () => {
       ],
     });
     expect(result.actual).toEqual({ days: 1, hours: 10, earnings: 1_000 });
+    expect(result.actualOvertimeHours).toBe(2);
     expect(result.forecast).toEqual({ days: 1, hours: 8, earnings: 800 });
     expect(result.total).toEqual({ days: 2, hours: 18, earnings: 1_800 });
   });

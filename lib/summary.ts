@@ -70,7 +70,7 @@ export interface RecordsActualForecastDay {
   /** Shift anchor civil date, including for overnight shifts. */
   dayKey?: string;
   /** Null is a forecast row; an actual row always wins for its civil date. */
-  actualKind?: "corrected" | "observed" | null;
+  actualKind?: "corrected" | "observed" | "scheduled" | null;
   /** The final override/calendar/schedule-chain answer for this date. */
   resolvedSegments: RecordsSummarySegment[];
   /** Base schedule duration is the pay denominator for corrected work. */
@@ -89,6 +89,7 @@ export interface RecordsActualForecastPart {
 }
 
 export interface RecordsActualForecastSummary {
+  actualOvertimeHours: number;
   actual: RecordsActualForecastPart;
   forecast: RecordsActualForecastPart;
   total: RecordsActualForecastPart;
@@ -289,6 +290,7 @@ export function summarizeRecordsActualAndForecast(params: {
 }): RecordsActualForecastSummary {
   let actualDays = 0;
   let actualMs = 0;
+  let actualOvertimeMs = 0;
   let actualPay = 0;
   let forecastDays = 0;
   let forecastMs = 0;
@@ -310,9 +312,9 @@ export function summarizeRecordsActualAndForecast(params: {
     const rate = params.dailySalary;
     if (!usesFixedMonthlyPay && rate === null) hasSalary = false;
     const plannedMs = mergedSegmentDuration(day.plannedSegments);
-    const isActual = day.actualKind === "corrected" || day.actualKind === "observed";
+    const isActual = day.actualKind === "corrected" || day.actualKind === "observed" || day.actualKind === "scheduled";
     if (isActual) {
-      const regularSegments = day.actualKind === "corrected"
+      const regularSegments = day.actualKind !== "observed"
         ? day.resolvedSegments
         : intersectSegments(
             observedWorkSegments(day.observations, params.asOfMs, day.isActiveAnchor),
@@ -327,6 +329,7 @@ export function summarizeRecordsActualAndForecast(params: {
         endAtMs: Math.min(segment.endAtMs, params.asOfMs),
       }));
       const workedMs = mergedSegmentDuration([...elapsedRegular, ...elapsedOvertime]);
+      actualOvertimeMs += Math.max(0, workedMs - mergedSegmentDuration(elapsedRegular));
       if (workedMs > 0) {
         actualDays += 1;
         actualMs += workedMs;
@@ -334,7 +337,7 @@ export function summarizeRecordsActualAndForecast(params: {
           actualPay += (rate ?? 0) * (plannedMs > 0 ? workedMs / plannedMs : 1);
         }
       }
-      if (day.isActiveAnchor) {
+      if (day.isActiveAnchor || day.actualKind === "scheduled") {
         const futureMs = mergedSegmentDuration(
           [...day.resolvedSegments, ...day.overtimeSegments].map(segment => ({
             ...segment,
@@ -366,6 +369,7 @@ export function summarizeRecordsActualAndForecast(params: {
   const actualEarnings = hasSalary ? actualPay : null;
   const forecastEarnings = hasSalary ? forecastPay : null;
   return {
+    actualOvertimeHours: actualOvertimeMs / 3_600_000,
     actual: {
       days: actualDays,
       hours: actualMs / 3_600_000,

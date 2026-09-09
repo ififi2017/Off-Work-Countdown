@@ -602,7 +602,7 @@
   "focusTaskProgress": "已完成 {{count}} / {{total}} 段",
   "recordsHeatLess": "少",
   "recordsHeatMore": "多",
-  "recordsHeatScale": "颜色越深代表当天工时越长。",
+  "recordsHeatScale": "加班越多，颜色越深；预计时间以淡色斜纹显示。",
   "recordsHeatWithoutColor": "你改过的日子带描边，下面的列表也用文字给出同样的工时。",
   "recordsByMonth": "按月看",
   "recordsMonthWorkdays": "{{count}} 个工作日",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "清空此天任务",
   "focusClearDayTasksBody": "将清空此天的任务和安排，并停止本日正在运行的计时。已完成的专注记录会保留。",
   "focusSaveDayAsTemplate": "将此天安排存为模板",
-  "focusAppliedTemplateNote": "当前日程来自「{{name}}」模板。"
+  "focusAppliedTemplateNote": "当前日程来自「{{name}}」模板。",
+  "recordsWorkedTime": "已工作",
+  "recordsWorkdayCount": "{{count}} 个工作日",
+  "lifeApproxYears": "约 {{years}} 年",
+  "recordsSummaryHelp": "已工作时长包含已生效排班的经过时间和加班，计时记录及手动修正优先。收入按所选整段期间及薪资设置估算；固定月薪不会因记录工时多少而增减。",
+  "recordsIncomeProgress": "已赚 {{amount}} · {{percent}}"
 }

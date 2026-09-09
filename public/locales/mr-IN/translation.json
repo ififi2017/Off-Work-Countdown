@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{total}} पैकी {{count}} टप्पे",
   "recordsHeatLess": "कमी",
   "recordsHeatMore": "जास्त",
-  "recordsHeatScale": "रंग जितका गडद, त्या दिवशी काम तितके जास्त.",
+  "recordsHeatScale": "जास्त ओव्हरटाइम, गडद रंग. अंदाज फिकट रंग आणि तिरक्या रेषांत आहेत.",
   "recordsHeatWithoutColor": "तुम्ही बदललेल्या दिवसांना कडा आहे, आणि खालची यादी तेच तास शब्दांत देते.",
   "recordsByMonth": "महिन्यानुसार",
   "recordsMonthWorkdays": "{{count}} कामाचे दिवस",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "या दिवसाची कार्ये हटवा",
   "focusClearDayTasksBody": "या दिवसाची कार्ये आणि नियोजन हटवा व सुरू असलेला टाइमर थांबवा. पूर्ण झालेले फोकस रेकॉर्ड जतन केले जातील.",
   "focusSaveDayAsTemplate": "हा दिवस टेम्पलेट म्हणून जतन करा",
-  "focusAppliedTemplateNote": "या वेळापत्रकात “{{name}}” टेम्पलेट वापरले आहे."
+  "focusAppliedTemplateNote": "या वेळापत्रकात “{{name}}” टेम्पलेट वापरले आहे.",
+  "recordsWorkedTime": "काम केलेला वेळ",
+  "recordsWorkdayCount": "{{count}} कामाचे दिवस",
+  "lifeApproxYears": "सुमारे {{years}} वर्षे",
+  "recordsSummaryHelp": "कामाच्या वेळेत जतन केलेल्या पाळीचा गेलेला वेळ आणि ओव्हरटाइम समाविष्ट आहे; टाइमर नोंदी आणि दुरुस्तींना प्राधान्य आहे. उत्पन्नाचा अंदाज निवडलेल्या संपूर्ण कालावधीसाठी पगार सेटिंगनुसार आहे. नोंदवलेल्या तासांमुळे ठरलेला मासिक पगार बदलत नाही.",
+  "recordsIncomeProgress": "आतापर्यंत कमावले {{amount}} · {{percent}}"
 }

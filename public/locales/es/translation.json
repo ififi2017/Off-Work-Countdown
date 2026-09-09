@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{count}} de {{total}} bloques",
   "recordsHeatLess": "Menos",
   "recordsHeatMore": "Más",
-  "recordsHeatScale": "Cuanto más intenso el color, más horas trabajadas.",
+  "recordsHeatScale": "Más horas extra, color más intenso. Las estimaciones son claras y rayadas.",
   "recordsHeatWithoutColor": "Los días que has cambiado llevan un contorno, y la lista de abajo da las mismas horas en texto.",
   "recordsByMonth": "Por meses",
   "recordsMonthWorkdays": "{{count}} días trabajados",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "Borrar las tareas de este día",
   "focusClearDayTasksBody": "Elimina las tareas y la planificación de este día y detiene su temporizador activo. Se conservan los registros de concentración completados.",
   "focusSaveDayAsTemplate": "Guardar este día como plantilla",
-  "focusAppliedTemplateNote": "Este horario utiliza la plantilla «{{name}}»."
+  "focusAppliedTemplateNote": "Este horario utiliza la plantilla «{{name}}».",
+  "recordsWorkedTime": "Tiempo trabajado",
+  "recordsWorkdayCount": "{{count}} días de trabajo",
+  "lifeApproxYears": "Unos {{years}} años",
+  "recordsSummaryHelp": "El tiempo trabajado incluye los turnos guardados ya transcurridos y las horas extra; los registros y correcciones tienen prioridad. Los ingresos se estiman para todo el período seleccionado según tu configuración salarial. Las horas registradas no cambian un sueldo mensual fijo.",
+  "recordsIncomeProgress": "Ganado: {{amount}} · {{percent}}"
 }

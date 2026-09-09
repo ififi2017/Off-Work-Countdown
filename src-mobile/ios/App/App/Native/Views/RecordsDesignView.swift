@@ -605,7 +605,13 @@ struct RecordsDesignView: View {
     }
 
     private var markLegend: some View {
-        RecordsMarkLegend(store: store, includesLock: !store.plus.isAuthorized)
+        VStack(alignment: .leading, spacing: 4) {
+            RecordsMarkLegend(store: store, includesLock: !store.plus.isAuthorized)
+            Text(store.t("recordsHeatScale"))
+                .font(.caption2)
+                .foregroundStyle(OWCDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     @ViewBuilder

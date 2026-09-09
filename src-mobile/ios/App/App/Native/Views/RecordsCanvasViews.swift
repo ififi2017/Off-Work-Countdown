@@ -160,6 +160,7 @@ private struct RecordsMetricHelpPopover: View {
 struct RecordsAllocationBar: View {
     let store: OffWorkStore
     let share: TimeAllocationShare
+    var showsApproximateYears = false
     @State private var selectedKind: TimeAllocationKind?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -169,9 +170,14 @@ struct RecordsAllocationBar: View {
             // moves the bar, including when a label wraps at larger text sizes.
             ZStack(alignment: .leading) {
                 ForEach(visibleSlices) { item in
-                    HStack(spacing: 6) {
-                        Text(store.t(item.kind.titleKey)).fontWeight(.medium)
-                        Text(accessibilityValue(item)).foregroundStyle(OWCDesign.secondary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        if showsApproximateYears, let years = store.formatApproximateLifeYears(Double(item.ms)) {
+                            Text("\(store.t(item.kind.titleKey)) · \(years)")
+                                .font(.callout.weight(.medium))
+                        } else {
+                            Text(store.t(item.kind.titleKey)).fontWeight(.medium)
+                        }
+                        Text(exactValue(item)).foregroundStyle(OWCDesign.secondary)
                     }
                     .font(.caption)
                     .fixedSize(horizontal: false, vertical: true)
@@ -284,6 +290,11 @@ struct RecordsAllocationBar: View {
     }
 
     private func accessibilityValue(_ item: AllocationSlice) -> String {
+        [showsApproximateYears ? store.formatApproximateLifeYears(Double(item.ms)) : nil,
+         exactValue(item)].compactMap { $0 }.joined(separator: ", ")
+    }
+
+    private func exactValue(_ item: AllocationSlice) -> String {
         let total = max(1, share.dayLengthMs)
         return [
             store.formatRecordsDuration(Double(item.ms)),
@@ -454,7 +465,7 @@ struct RecordsHeadlineView: View {
                         Spacer(minLength: 0)
                         RecordsMetricHelpButton(
                             title: title,
-                            message: headerHelp(for: summary)
+                            message: store.t("recordsSummaryHelp")
                         )
                     }
                     content(summary)
@@ -478,88 +489,34 @@ struct RecordsHeadlineView: View {
     }
 
     private func content(_ summary: RecordsHeadlineSummary) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            if let split = summary.actualForecast {
-                actualForecastContent(split)
-            } else {
-                metric("recordsWorkRegular", store.formatRecordsDuration(Double(summary.regularWorkMs)), prominent: true)
-                metric("recordsRecordedDays", store.formatDays(Double(summary.workdays)))
-                metric("recordsOvertime", store.formatRecordsDuration(Double(summary.overtimeMs)))
-
-                if let income = summary.estimatedIncome {
-                    Divider()
-                    metric("recordsIncomeCurrentSalary", store.moneyText(income))
-                }
+        let workedMs = summary.actualForecast.map { $0.actual.hours * 3_600_000 }
+            ?? Double(summary.regularWorkMs + summary.overtimeMs)
+        let workdays = summary.actualForecast?.actual.days ?? Double(summary.workdays)
+        let income = summary.actualForecast?.total.earnings ?? summary.estimatedIncome
+        let overtimeMs = summary.actualForecast.map { $0.actualOvertimeHours * 3_600_000 }
+            ?? Double(summary.overtimeMs)
+        return VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                metric("recordsWorkedTime", store.formatRelativeDuration(workedMs), prominent: true)
+                Text(store.t("recordsWorkdayCount", values: ["count": store.formatCount(Int(workdays))]))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
             }
-
-            if summary.allocationDays > 0 {
+            if overtimeMs > 0 {
+                metric("recordsOvertime", store.formatRelativeDuration(overtimeMs))
+            }
+            if let income {
                 Divider()
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(store.t("recordsTimeBreakdown"))
-                        .font(.subheadline.weight(.semibold))
-                        .multilineTextAlignment(.leading)
-                        .foregroundStyle(OWCDesign.primary)
-                        .frame(minHeight: 44, alignment: .leading)
-                    Spacer(minLength: 0)
-                    RecordsMetricHelpButton(
-                        title: store.t("recordsTimeBreakdown"),
-                        message: allocationHelp(for: summary)
-                    )
+                metric("recordsForecastIncome", store.moneyText(income))
+                if income > 0, let earned = summary.actualForecast?.actual.earnings {
+                    Text(store.t("recordsIncomeProgress", values: [
+                        "amount": store.moneyText(earned),
+                        "percent": store.formatPercent(min(100, max(0, earned / income * 100))),
+                    ]))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 }
-                RecordsAllocationBar(store: store, share: summary.allocation)
-            }
-        }
-    }
-
-    private func headerHelp(for summary: RecordsHeadlineSummary) -> String {
-        var paragraphs = [
-            store.t("recordsMetricWorkHelp"),
-            store.t("recordsMetricOvertimeHelp"),
-        ]
-        if summary.actualForecast != nil {
-            paragraphs.append(
-                store.t(store.salaryType == .monthly ? "recordsMonthlyForecastMethod" : "recordsForecastMethod")
-            )
-        }
-        return paragraphs.joined(separator: "\n\n")
-    }
-
-    private func allocationHelp(for summary: RecordsHeadlineSummary) -> String {
-        [
-            store.t("recordsAllocationBasis", values: ["count": store.formatCount(summary.allocationDays)]),
-            store.t(summary.sleepSourceKey),
-        ].joined(separator: "\n\n")
-    }
-
-    private func actualForecastContent(_ split: NativeRecordsActualForecastSummary) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(store.t("recordsActualTitle"))
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(OWCDesign.primary)
-            metric(
-                "recordsActualHours",
-                store.formatRecordsDuration(split.actual.hours * 3_600_000),
-                prominent: true
-            )
-            metric("recordsActualDays", store.formatDays(split.actual.days))
-            if let earnings = split.actual.earnings {
-                metric(store.salaryType == .monthly ? "recordsMonthlyActualIncome" : "recordsActualIncome", store.moneyText(earnings))
-            }
-
-            Divider()
-            Text(store.t("recordsForecastTitle"))
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(OWCDesign.primary)
-            metric("recordsForecastHours", store.formatRecordsDuration(split.forecast.hours * 3_600_000))
-            metric("recordsForecastDays", store.formatDays(split.forecast.days))
-            if let earnings = split.forecast.earnings {
-                metric(store.salaryType == .monthly ? "recordsMonthlyForecastIncome" : "recordsForecastIncome", store.moneyText(earnings))
-            }
-
-            Divider()
-            metric("recordsCombinedHours", store.formatRecordsDuration(split.total.hours * 3_600_000))
-            if let earnings = split.total.earnings {
-                metric("recordsCombinedIncome", store.moneyText(earnings))
             }
         }
     }
@@ -636,6 +593,8 @@ struct RecordsMonthGrid: View {
                                     maxWidth: 24,
                                     height: barHeight
                                 )
+                                .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
+                                    estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
                                 .padding(.bottom, 4)
                             }
                             .overlay(alignment: .topTrailing) {
@@ -689,17 +648,17 @@ struct RecordsMonthGrid: View {
 
     private var showsStateMarker: Bool { dynamicTypeSize < .accessibility1 }
 
-    /// Brand orange means selection and today. Nothing here encodes hours: the
-    /// bar does that, in the shared category colours. Selection is a ring
-    /// rather than a solid block precisely so the bar inside keeps its own
-    /// colour instead of sitting on orange.
+    /// Blue depth expresses overtime; the small bar retains total duration
+    /// and category proportions. Orange selection stays on the ring so it
+    /// cannot hide the workload colour.
     private func fill(_ cell: RecordsDayCell) -> Color {
-        if cell.dayKey == selectedDayKey { return OWCDesign.accent.opacity(0.12) }
         return switch cell.appearance {
         case .locked: OWCDesign.control.opacity(0.45)
         case .unrecorded, .planned: Color.clear
         case .rest: OWCDesign.control.opacity(0.36)
-        case .recorded, .corrected: OWCDesign.control.opacity(0.5)
+        case .recorded, .corrected:
+            OWCDesign.recordsWork.opacity(0.4 * RecordsWorkIntensity.opacity(
+                overtimeMs: cell.overtimeMs, estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
         }
     }
 
@@ -775,7 +734,7 @@ enum RecordsDayMarks {
     /// projection has no hours at all, so hatching it would claim an estimated
     /// day of work where the honest answer is simply "not a workday".
     static func isEstimated(_ cell: RecordsDayCell) -> Bool {
-        (cell.isProjection || cell.appearance == .planned)
+        (cell.isFuture || cell.isProjection || cell.appearance == .planned)
             && cell.workMs + cell.overtimeMs > 0
     }
 
@@ -924,6 +883,8 @@ struct RecordsWeekStrips: View {
             // Over the whole column an empty rest day read as a full day of
             // estimated work.
             .owcEstimated(RecordsDayMarks.isEstimated(cell), tint: .white, spacing: 4)
+            .opacity(RecordsWorkIntensity.opacity(overtimeMs: cell.overtimeMs,
+                estimated: cell.isFuture || RecordsDayMarks.isEstimated(cell)))
             .clipShape(Capsule())
         }
         .frame(width: 18, height: 116)
@@ -995,7 +956,7 @@ struct RecordsYearCanvas: View {
                                 hatchContext.clip(to: path)
                                 hatchContext.stroke(
                                     OWCHatchPattern(spacing: 4).path(in: rect),
-                                    with: .color(OWCDesign.recordsWork.opacity(0.55)),
+                                    with: .color(OWCDesign.recordsWork.opacity(0.28)),
                                     lineWidth: contrast == .increased ? 1.5 : 1
                                 )
                             }
@@ -1118,19 +1079,17 @@ struct RecordsYearCanvas: View {
 
     }
 
-    /// Depth of the work colour is how much; brand orange stays out of it
-    /// entirely, because on this canvas it already means "this is the month
-    /// you picked".
+    /// Overtime controls depth; planned work stays pale. Month selection uses
+    /// its outline only, so browsing cannot change the workload comparison.
     private func color(_ bucket: RecordsYearBucket) -> Color {
-        let base = switch bucket.kind {
+        switch bucket.kind {
         case .locked: OWCDesign.control.opacity(0.86)
         case .unrecorded, .rest: OWCDesign.control.opacity(0.65)
-        case .planned: OWCDesign.recordsWork.opacity(withoutColor ? 0.84 : 0.46)
-        case .recorded: OWCDesign.recordsWork.opacity(withoutColor ? 0.96 : min(0.96, 0.54 + Double(bucket.workMs) / 57_600_000))
-        case .corrected: OWCDesign.recordsWork.opacity(0.96)
+        case .planned: OWCDesign.recordsWork.opacity(RecordsWorkIntensity.opacity(overtimeMs: 0, estimated: true))
+        case .recorded, .corrected:
+            OWCDesign.recordsWork.opacity(RecordsWorkIntensity.opacity(
+                overtimeMs: bucket.peakOvertimeMs, estimated: bucket.isFuture))
         }
-        guard let selectedMonth, bucket.month != selectedMonth else { return base }
-        return base.opacity(0.76)
     }
 
     private func monthLabel(_ month: Int) -> String {
@@ -2198,7 +2157,7 @@ struct RecordsLifeAllocationCard: View {
                     .foregroundStyle(OWCDesign.primary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                    RecordsAllocationBar(store: store, share: allocation)
+                    RecordsAllocationBar(store: store, share: allocation, showsApproximateYears: true)
                 } else {
                     // No retirement boundary, no career, or a schedule the
                     // rules could not expand: say what is missing instead of

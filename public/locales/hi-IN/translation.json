@@ -602,7 +602,7 @@
   "focusTaskProgress": "{{total}} में से {{count}} ब्लॉक",
   "recordsHeatLess": "कम",
   "recordsHeatMore": "ज़्यादा",
-  "recordsHeatScale": "रंग जितना गहरा, उस दिन काम के घंटे उतने ज़्यादा।",
+  "recordsHeatScale": "अधिक ओवरटाइम, गहरा रंग। अनुमान हल्के रंग और तिरछी रेखाओं में हैं।",
   "recordsHeatWithoutColor": "जिन दिनों को आपने बदला है उनके किनारे पर रेखा है, और नीचे की सूची वही घंटे शब्दों में देती है।",
   "recordsByMonth": "महीने के हिसाब से",
   "recordsMonthWorkdays": "{{count}} काम के दिन",
@@ -1025,5 +1025,10 @@
   "focusClearDayTasks": "इस दिन के कार्य हटाएँ",
   "focusClearDayTasksBody": "इस दिन के कार्य और योजना हटाएँ और चल रहा टाइमर रोकें। पूरे किए गए फ़ोकस रिकॉर्ड बने रहेंगे।",
   "focusSaveDayAsTemplate": "इस दिन को टेम्पलेट के रूप में सहेजें",
-  "focusAppliedTemplateNote": "इस शेड्यूल में “{{name}}” टेम्पलेट लागू है।"
+  "focusAppliedTemplateNote": "इस शेड्यूल में “{{name}}” टेम्पलेट लागू है।",
+  "recordsWorkedTime": "किया गया काम",
+  "recordsWorkdayCount": "{{count}} कार्यदिवस",
+  "lifeApproxYears": "लगभग {{years}} वर्ष",
+  "recordsSummaryHelp": "काम के समय में सहेजी गई पाली का बीता समय और ओवरटाइम शामिल हैं; टाइमर रिकॉर्ड और सुधार को प्राथमिकता मिलती है। आय का अनुमान चुनी गई पूरी अवधि और वेतन सेटिंग से लगाया जाता है। दर्ज घंटों से निश्चित मासिक वेतन नहीं बदलता।",
+  "recordsIncomeProgress": "अब तक कमाए {{amount}} · {{percent}}"
 }
