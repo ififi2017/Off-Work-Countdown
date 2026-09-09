@@ -464,7 +464,12 @@ struct RecordsDesignView: View {
 
     // Reconciliation and CloudKit can change the revision several times at
     // launch. Keep the last calendar visible while its replacement is prepared.
-    private var chartIsLoading: Bool { cells.isEmpty && loadedSignature != currentLoadSignature }
+    // Life renders directly from the profile and deliberately keeps cells empty.
+    // Applying calendar loading to it would dim/redact the whole grid on every
+    // archive revision, then restore it when load() acknowledges that revision.
+    private var chartIsLoading: Bool {
+        scale != .life && cells.isEmpty && loadedSignature != currentLoadSignature
+    }
 
     private var placeholderCells: [RecordsDayCell] {
         let window = store.recordsWindow(for: scale, anchor: anchor)
@@ -486,7 +491,7 @@ struct RecordsDesignView: View {
 
     @ViewBuilder
     private func visualizationContent(lockedScale: Bool, expandedPresentation: Bool) -> some View {
-        let renderedCells = chartIsLoading && scale != .life ? placeholderCells : cells
+        let renderedCells = chartIsLoading ? placeholderCells : cells
         VStack(alignment: .leading, spacing: 14) {
             if expandedPresentation {
                 HStack {
