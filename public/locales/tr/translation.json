@@ -710,7 +710,7 @@
   "lifeStageUnset": "Ayarlanmadı",
   "lifeStageDuration": "{{years}} yıl, {{days}} gün",
   "lifeStageShare": "Doğumdan emekliliğe {{percent}}",
-  "lifeProgressTitle": "Geçen yaşam",
+  "lifeProgressTitle": "Emekliliğe ilerleme",
   "lifeStageDurationTitle": "Süre",
   "lifeStageAgeRange": "Yaş aralığı",
   "lifeStageElapsed": "Geçen",

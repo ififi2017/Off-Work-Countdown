@@ -710,7 +710,7 @@
   "lifeStageUnset": "Not set",
   "lifeStageDuration": "{{years}} years, {{days}} days",
   "lifeStageShare": "{{percent}} of birth to retirement",
-  "lifeProgressTitle": "Life elapsed",
+  "lifeProgressTitle": "Progress to retirement",
   "lifeStageDurationTitle": "Duration",
   "lifeStageAgeRange": "Age range",
   "lifeStageElapsed": "Elapsed",

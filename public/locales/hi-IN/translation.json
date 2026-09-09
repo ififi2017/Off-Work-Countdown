@@ -710,7 +710,7 @@
   "lifeStageUnset": "सेट नहीं",
   "lifeStageDuration": "{{years}} वर्ष, {{days}} दिन",
   "lifeStageShare": "जन्म से सेवानिवृत्ति तक {{percent}}",
-  "lifeProgressTitle": "बीता हुआ जीवन",
+  "lifeProgressTitle": "सेवानिवृत्ति की ओर प्रगति",
   "lifeStageDurationTitle": "अवधि",
   "lifeStageAgeRange": "आयु सीमा",
   "lifeStageElapsed": "बीत चुका",

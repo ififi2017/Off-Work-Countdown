@@ -710,7 +710,7 @@
   "lifeStageUnset": "Chưa đặt",
   "lifeStageDuration": "{{years}} năm, {{days}} ngày",
   "lifeStageShare": "{{percent}} từ sinh đến nghỉ hưu",
-  "lifeProgressTitle": "Cuộc đời đã qua",
+  "lifeProgressTitle": "Tiến độ đến khi nghỉ hưu",
   "lifeStageDurationTitle": "Thời lượng",
   "lifeStageAgeRange": "Khoảng tuổi",
   "lifeStageElapsed": "Đã qua",

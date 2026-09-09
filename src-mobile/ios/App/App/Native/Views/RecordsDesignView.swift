@@ -606,7 +606,9 @@ struct RecordsDesignView: View {
     @ViewBuilder
     private func lifeCanvas(expandedPresentation: Bool) -> some View {
         if let profile = store.records.state.lifeProfile {
-            let now = Date.now
+            // Stage selection and foreground refresh must use the same civil
+            // day, rather than moving the career split on every body update.
+            let now = store.recordsCalendar.startOfDay(for: .now)
             let profileStages = LifeStageCalculator.stages(
                 profile: profile,
                 calendar: store.recordsCalendar,

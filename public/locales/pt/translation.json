@@ -710,7 +710,7 @@
   "lifeStageUnset": "Não definido",
   "lifeStageDuration": "{{years}} anos, {{days}} dias",
   "lifeStageShare": "{{percent}} do nascimento à aposentadoria",
-  "lifeProgressTitle": "Vida decorrida",
+  "lifeProgressTitle": "Progresso até à reforma",
   "lifeStageDurationTitle": "Duração",
   "lifeStageAgeRange": "Faixa etária",
   "lifeStageElapsed": "Decorrido",

@@ -34,7 +34,9 @@ struct FocusBandView: View {
 
     private var band: some View {
         HStack(alignment: .top, spacing: 0) {
-            ruler
+            TimelineView(.periodic(from: .now, by: 60)) { timeline in
+                ruler(at: timeline.date)
+            }
             ZStack(alignment: .topLeading) {
                 ForEach(model.gaps) { gap in
                     gapTile(gap)
@@ -53,9 +55,14 @@ struct FocusBandView: View {
                             .overlay(alignment: .leading) {
                                 Text(store.formatTime(timeline.date))
                                     .font(.caption2.monospacedDigit().weight(.semibold))
-                                    .foregroundStyle(OWCDesign.accent)
-                                    .padding(.horizontal, 3)
-                                    .background(OWCDesign.page)
+                                    .foregroundStyle(OWCDesign.primary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 3)
+                                    .background(OWCDesign.accent.opacity(0.16), in: .capsule)
+                                    .background(OWCDesign.page, in: .capsule)
+                                    .frame(width: rulerWidth, alignment: .trailing)
                                     .offset(x: -rulerWidth - 8)
                             }
                             .offset(y: model.offset(ofMs: ms) - 1)
@@ -72,7 +79,7 @@ struct FocusBandView: View {
         }
     }
 
-    private var ruler: some View {
+    private func ruler(at date: Date) -> some View {
         ZStack(alignment: .topTrailing) {
             ForEach(hourMarks, id: \.self) { ms in
                 Text(store.formatTime(Date(timeIntervalSince1970: Double(ms) / 1_000)))
@@ -80,6 +87,8 @@ struct FocusBandView: View {
                     .foregroundStyle(OWCDesign.tertiary)
                     .lineLimit(1)
                     .fixedSize()
+                    .opacity(!isPreview && model.nowAtMs != nil
+                        && abs(model.offset(ofMs: ms) - model.offset(ofMs: Int64(date.timeIntervalSince1970 * 1_000))) < 20 ? 0 : 1)
                     .offset(y: model.offset(ofMs: ms) - 7)
             }
         }
@@ -265,10 +274,10 @@ struct FocusBandView: View {
     private func workTile(_ block: FocusDayCanvasModel.Block, height: CGFloat) -> some View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(block.isAssigned ? OWCDesign.recordsWork.opacity(0.14) : Color.clear)
+                .fill(block.isAssigned ? OWCDesign.accent.opacity(0.12) : Color.clear)
             if block.isAssigned {
                 RoundedRectangle(cornerRadius: 1.75, style: .continuous)
-                    .fill(OWCDesign.recordsWork)
+                    .fill(OWCDesign.accent)
                     .frame(width: 3.5)
                     .frame(maxHeight: .infinity)
             } else {

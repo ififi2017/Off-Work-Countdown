@@ -710,7 +710,7 @@
   "lifeStageUnset": "Nicht festgelegt",
   "lifeStageDuration": "{{years}} Jahre, {{days}} Tage",
   "lifeStageShare": "{{percent}} von Geburt bis Ruhestand",
-  "lifeProgressTitle": "Vergangenes Leben",
+  "lifeProgressTitle": "Fortschritt bis zur Rente",
   "lifeStageDurationTitle": "Dauer",
   "lifeStageAgeRange": "Altersspanne",
   "lifeStageElapsed": "Vergangen",

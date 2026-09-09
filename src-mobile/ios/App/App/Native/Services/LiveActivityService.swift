@@ -65,11 +65,15 @@ struct LiveActivityDecision: Equatable, Sendable {
 }
 
 /// ActivityKit-facing identity reduced to values we can exercise in ordinary
-/// unit tests. Matching identity updates in place; a changed session/surface
-/// replaces the single system activity.
+/// unit tests. Focus and recovery are phases of one ongoing activity, so a
+/// phase/end-time change must update its content rather than request another.
 struct LiveActivityIdentity: Equatable, Sendable {
     var plannedEndAtMs: Int64
     var surface: LiveActivitySurface
+
+    func canUpdate(to desired: Self) -> Bool {
+        self == desired || (surface != .work && desired.surface != .work)
+    }
 }
 
 enum LiveActivityReconcileAction: Equatable, Sendable {
@@ -82,7 +86,7 @@ enum LiveActivityReconciler {
         existing: [LiveActivityIdentity],
         desired: LiveActivityIdentity
     ) -> LiveActivityReconcileAction {
-        let matching = existing.filter { $0 == desired }
+        let matching = existing.filter { $0.canUpdate(to: desired) }
         return matching.isEmpty ? .replace : .updateExisting(duplicates: matching.count - 1)
     }
 
@@ -692,7 +696,7 @@ final class LiveActivityService {
         )
         let active = currentActivities.filter {
             $0.activityState != .ended && $0.activityState != .dismissed
-        }
+        }.sorted { $0.attributes.shiftStartAtMs > $1.attributes.shiftStartAtMs }
         let existing = active.map {
             LiveActivityIdentity(
                 plannedEndAtMs: $0.attributes.plannedEndAtMs,
@@ -701,8 +705,10 @@ final class LiveActivityService {
         }
         let action = LiveActivityReconciler.action(existing: existing, desired: desired)
         let matching = active.filter {
-            $0.attributes.plannedEndAtMs == desired.plannedEndAtMs
-                && LiveActivitySurface(rawValue: $0.content.state.surface ?? "work") == desired.surface
+            LiveActivityIdentity(
+                plannedEndAtMs: $0.attributes.plannedEndAtMs,
+                surface: LiveActivitySurface(rawValue: $0.content.state.surface ?? "work") ?? .work
+            ).canUpdate(to: desired)
         }
         if case .updateExisting = action, let activity = matching.first {
             await activity.update(content)

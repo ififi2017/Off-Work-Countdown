@@ -428,7 +428,7 @@ struct FocusNowBand: View {
                         EmptyView()
                     } currentValueLabel: { EmptyView() }
                     .progressViewStyle(.linear)
-                    .tint(session.kind == .focus ? Color.indigo : Color.teal)
+                    .tint(session.kind == .focus ? OWCDesign.accent : OWCDesign.recordsBreak)
                     .labelsHidden()
                     .padding(.horizontal, 18)
                     .padding(.bottom, 16)
@@ -480,7 +480,7 @@ struct FocusNowBand: View {
                 } else {
                     Text(store.t("focusNoShift")).font(.footnote).foregroundStyle(OWCDesign.secondary)
                 }
-                Button(store.t("focusQuickAddTask"), action: onAdd)
+                Button(store.t("focusQuickCreate"), action: onAdd)
                     .buttonStyle(OWCPrimaryButtonStyle(filled: false, minimumHeight: 44))
             }
         }
@@ -493,7 +493,7 @@ struct FocusNowBand: View {
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
                     .fixedSize(horizontal: false, vertical: true)
                     .font(.footnote.weight(.semibold))
-                    .foregroundStyle(session.kind == .focus ? Color.indigo : Color.teal)
+                    .foregroundStyle(session.kind == .focus ? OWCDesign.accent : OWCDesign.recordsBreak)
                 Text(timerInterval: session.startedAt...max(session.startedAt, session.plannedEndAt), countsDown: true)
                     .font(.title.monospacedDigit().weight(.semibold))
                     .foregroundStyle(OWCDesign.primary)
@@ -534,7 +534,7 @@ struct FocusNowBand: View {
     }
 
     private var quickAddButton: some View {
-        Button(store.t("focusQuickAddTask"), action: onAdd)
+        Button(store.t("focusQuickCreate"), action: onAdd)
             .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
     }
 
@@ -584,7 +584,7 @@ struct FocusNowBand: View {
                     .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
                     .disabled(store.focusStartAvailability(task) != .ready || Double(block.endAtMs) / 1_000 - Date.now.timeIntervalSince1970 < 60)
             } else {
-                Button(store.t("focusQuickAddTask"), action: onAdd)
+                Button(store.t("focusQuickCreate"), action: onAdd)
                     .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
                     .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : 112)
                     .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)

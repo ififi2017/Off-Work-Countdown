@@ -710,7 +710,7 @@
   "lifeStageUnset": "Non impostato",
   "lifeStageDuration": "{{years}} anni, {{days}} giorni",
   "lifeStageShare": "{{percent}} dalla nascita alla pensione",
-  "lifeProgressTitle": "Vita trascorsa",
+  "lifeProgressTitle": "Progresso verso la pensione",
   "lifeStageDurationTitle": "Durata",
   "lifeStageAgeRange": "Fascia d’età",
   "lifeStageElapsed": "Trascorso",
