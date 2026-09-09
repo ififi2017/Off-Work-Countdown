@@ -710,7 +710,7 @@
   "lifeStageUnset": "Sin definir",
   "lifeStageDuration": "{{years}} años, {{days}} días",
   "lifeStageShare": "{{percent}} del nacimiento a la jubilación",
-  "lifeProgressTitle": "Vida transcurrida",
+  "lifeProgressTitle": "Progreso hacia la jubilación",
   "lifeStageDurationTitle": "Duración",
   "lifeStageAgeRange": "Rango de edad",
   "lifeStageElapsed": "Transcurrido",

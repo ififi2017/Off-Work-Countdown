@@ -636,3 +636,95 @@ func immediateCreationFinishUsesActualBoundaries() throws {
     let late = try #require(day(store, hour: 17, minute: 59))
     #expect(store.focusCreationFinish(pomodoros: 12, startingAt: nil, startNow: true, at: late) == nil)
 }
+
+@MainActor
+@Test("Alternating Saturdays agree between Records and Focus", arguments: [5, 12])
+func alternatingSaturdayRecordsAndFocus(dayOfMonth: Int) throws {
+    let store = try canvasStore()
+    store.onboardingComplete = true
+    store.recordsTimeZoneIdentifier = "UTC"
+    store.scheduleMode = .alternating
+    store.alternatingWeekType = .single
+    store.alternatingWeekendWorkday = 6
+    let monday = try #require(day(store, hour: 0, minute: 0))
+    store.alternatingReferenceWeekStartMs = monday.timeIntervalSince1970 * 1_000
+    let date = try #require(store.recordsCalendar.date(from: DateComponents(
+        year: 2026, month: 9, day: dayOfMonth, hour: 10)))
+    let isWorkday = dayOfMonth == 5
+    let resolution = try #require(store.resolvedDays(from: date, through: date, now: date).first)
+    #expect(resolution.isScheduledWorkday == isWorkday)
+    #expect(store.hasFocusRoom(at: date) == isWorkday)
+    let canvas = store.focusDayCanvas(at: date)
+    #expect(!canvas.blocks.isEmpty)
+    #expect(canvas.isNextShift == !isWorkday)
+    #expect((canvas.currentBlock != nil) == isWorkday)
+    if !isWorkday {
+        #expect(store.plannedFocusBreakEnd(kind: .shortBreak, at: date) == nil)
+    }
+}
+
+@MainActor
+@Test("Rotating night shifts keep the start-day plan after midnight and split Records by civil day")
+func rotatingNightShiftRecordsAndFocus() async throws {
+    let store = try canvasStore()
+    store.onboardingComplete = true
+    store.recordsTimeZoneIdentifier = "UTC"
+    store.scheduleMode = .rotation
+    store.rotationWorkDays = 2
+    store.rotationRestDays = 2
+    store.lunchEnabled = false
+    store.startMinutes = 22 * 60
+    store.endMinutes = 6 * 60
+    let monday = try #require(day(store, hour: 0, minute: 0))
+    store.rotationAnchorMs = monday.timeIntervalSince1970 * 1_000
+    let beforeMidnight = monday.addingTimeInterval(23 * 3_600)
+    let afterMidnight = monday.addingTimeInterval(26 * 3_600)
+    let canvas = store.focusDayCanvas(at: beforeMidnight)
+    #expect(canvas.dayKey == "2026-08-31")
+    #expect(store.focusDayCanvas(at: afterMidnight).dayKey == canvas.dayKey)
+    #expect(store.focusDayCanvas(at: afterMidnight).blocks.map(\.startAtMs) == canvas.blocks.map(\.startAtMs))
+    #expect(store.hasFocusRoom(at: afterMidnight))
+    let task = makeTask(store, title: "Night shift", pomodoros: 3, at: beforeMidnight)
+    #expect(store.focusTasksForCanvas(at: afterMidnight).contains { $0.id == task.id })
+    #expect(store.focusTasksForToday(at: afterMidnight).contains { $0.id == task.id })
+    let completed = FocusSession(
+        id: UUID(), taskID: task.id,
+        shiftAnchorDate: store.recordsCalendar.startOfDay(for: afterMidnight),
+        startedAt: afterMidnight.addingTimeInterval(-30 * 60),
+        plannedEndAt: afterMidnight.addingTimeInterval(-5 * 60),
+        endedAt: afterMidnight.addingTimeInterval(-5 * 60), endReason: .completed,
+        editedAt: afterMidnight, editCount: 0, editTieBreaker: UUID(), kind: .focus
+    )
+    store.records.upsertFocusSession(completed, at: afterMidnight)
+    #expect(store.focusDayCanvas(at: afterMidnight).tasks.first { $0.id == task.id }?.completedBlocks == 1)
+    var finishedTask = task
+    finishedTask.completedAt = afterMidnight
+    store.records.upsertFocusTask(finishedTask, at: afterMidnight)
+    #expect(store.focusTasksForCanvas(at: afterMidnight).contains { $0.id == task.id })
+    _ = store.resolvedDays(from: monday, through: monday, now: beforeMidnight)
+    let record = try #require(await store.recordsDayCanvas(dayKey: "2026-08-31", now: afterMidnight))
+    #expect(record.allocation.workMs == 2 * 3_600_000)
+    let rest = monday.addingTimeInterval(2 * 86_400 + 23 * 3_600)
+    #expect(!store.hasFocusRoom(at: rest))
+    #expect(store.focusDayCanvas(at: rest).isNextShift)
+}
+
+@MainActor
+@Test("No schedule makes no phantom plan or records; manually starting enables focus")
+func unscheduledRecordsAndFocus() async throws {
+    let store = try canvasStore()
+    store.onboardingComplete = true
+    // A newly started manual session intentionally adopts the device zone.
+    store.recordsTimeZoneIdentifier = TimeZone.current.identifier
+    store.scheduleMode = .off
+    store.lunchEnabled = false
+    let date = try #require(day(store, hour: 10, minute: 0))
+    #expect(store.focusDayCanvas(at: date).blocks.isEmpty)
+    #expect(store.refreshScheduledFocus(at: date).isEmpty)
+    #expect(!store.hasFocusRoom(at: date))
+    let record = try #require(await store.recordsDayCanvas(dayKey: "2026-08-31", now: date))
+    #expect(record.allocation.workMs == 0)
+    store.startCountdown(at: date)
+    #expect(!store.focusDayCanvas(at: date).blocks.isEmpty)
+    #expect(store.hasFocusRoom(at: date))
+}

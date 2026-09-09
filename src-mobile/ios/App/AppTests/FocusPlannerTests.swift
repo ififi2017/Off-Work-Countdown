@@ -222,7 +222,7 @@ func liveActivityPriorityIsDeterministic() {
 }
 
 @MainActor
-@Test("A matching focus activity updates in place while identity changes replace it")
+@Test("Focus and break transitions update one activity; work remains a separate activity")
 func focusLiveActivityReconciliationIsPure() {
     let focus = LiveActivityIdentity(plannedEndAtMs: 100, surface: .focus)
     #expect(LiveActivityReconciler.action(existing: [focus], desired: focus) == .updateExisting(duplicates: 0))
@@ -230,6 +230,13 @@ func focusLiveActivityReconciliationIsPure() {
     #expect(LiveActivityReconciler.action(
         existing: [focus],
         desired: .init(plannedEndAtMs: 100, surface: .shortBreak)
+    ) == .updateExisting(duplicates: 0))
+    #expect(LiveActivityReconciler.action(
+        existing: [.init(plannedEndAtMs: 100, surface: .shortBreak)],
+        desired: .init(plannedEndAtMs: 200, surface: .focus)
+    ) == .updateExisting(duplicates: 0))
+    #expect(LiveActivityReconciler.action(
+        existing: [focus], desired: .init(plannedEndAtMs: 100, surface: .work)
     ) == .replace)
 }
 

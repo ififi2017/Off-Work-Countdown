@@ -6362,7 +6362,7 @@ final class OffWorkStore {
     }
 
     func focusTasksForToday(at date: Date = .now) -> [FocusTask] {
-        let today = recordsCalendar.startOfDay(for: date)
+        let today = focusTaskDay(at: date)
         return FocusTaskOrder.sorted(records.state.focusTasks.filter { task in
             guard task.deletedAt == nil, !(task.isFavorite && task.plannedForDate == nil) else { return false }
             guard let planned = task.plannedForDate else { return true }
@@ -6374,13 +6374,14 @@ final class OffWorkStore {
     /// work. A task created for tomorrow used to disappear immediately after
     /// the add sheet pushed this page, because the page only queried today.
     func focusTasksForFocusPage(at date: Date = .now) -> [FocusTask] {
-        let today = recordsCalendar.startOfDay(for: date)
+        let today = focusTaskDay(at: date)
+        let tomorrow = recordsCalendar.date(byAdding: .day, value: 1, to: recordsCalendar.startOfDay(for: date)) ?? date
         return records.state.focusTasks.filter { task in
             guard task.deletedAt == nil, !(task.isFavorite && task.plannedForDate == nil) else { return false }
             if task.completedAt == nil {
                 return task.plannedForDate.map { $0 >= today } ?? true
             }
-            return task.completedAt.map { recordsCalendar.isDate($0, inSameDayAs: today) } ?? false
+            return task.completedAt.map { $0 >= today && $0 < tomorrow } ?? false
         }.sorted { lhs, rhs in
             let lhsDate = lhs.scheduledStartAt ?? lhs.plannedForDate ?? lhs.createdAt
             let rhsDate = rhs.scheduledStartAt ?? rhs.plannedForDate ?? rhs.createdAt
@@ -6388,6 +6389,13 @@ final class OffWorkStore {
             if lhs.sortIndex != rhs.sortIndex { return lhs.sortIndex < rhs.sortIndex }
             return lhs.id.uuidString < rhs.id.uuidString
         }
+    }
+
+    /// A night shift's task list stays on its start day across midnight.
+    /// Future planning must still include unfinished tasks from today.
+    private func focusTaskDay(at date: Date) -> Date {
+        let shiftStart = focusCanvasShift(at: date)?.snapshot.startDate ?? date
+        return recordsCalendar.startOfDay(for: min(date, shiftStart))
     }
 
     /// Blocks finished for a task, so the estimate the user typed has something
@@ -6783,13 +6791,14 @@ final class OffWorkStore {
     func hasFocusRoom(at date: Date = .now) -> Bool {
         guard shouldQuerySnapshot(at: date) else { return false }
         let current = snapshot(at: date)
-        let segments = current?.segments ?? []
+        guard let current, isFocusWorkday(current, at: date) else { return false }
+        let segments = current.segments
         guard FocusPlanner.isInsideWork(
             at: date,
             segments: segments,
             overtimeEndAtMs: overtimeEndAtMs
         ) else { return false }
-        if (current?.remainingMs ?? 0) < 60_000 { return false }
+        if current.remainingMs < 60_000 { return false }
         let planned = FocusPlanner.plannedEnd(
             from: date,
             segments: segments,
@@ -6826,15 +6835,17 @@ final class OffWorkStore {
     /// advertising a recovery phase that cannot be entered.
     func plannedFocusBreakEnd(kind: FocusSessionKind, at date: Date) -> Date? {
         guard kind == .shortBreak || kind == .longBreak else { return nil }
+        guard effectiveScheduleMode(at: date) != .off || countdownStarted else { return nil }
         let current = snapshot(at: date)
+        guard let current, isFocusWorkday(current, at: date) else { return nil }
         guard FocusPlanner.isInsideWork(
             at: date,
-            segments: current?.segments ?? [],
+            segments: current.segments,
             overtimeEndAtMs: overtimeEndAtMs
         ) else { return nil }
         let planned = FocusPlanner.plannedEnd(
             from: date,
-            segments: current?.segments ?? [],
+            segments: current.segments,
             overtimeEndAtMs: overtimeEndAtMs,
             durationMinutes: breakDurationMinutes(kind)
         )

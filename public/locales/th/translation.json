@@ -710,7 +710,7 @@
   "lifeStageUnset": "ยังไม่ตั้ง",
   "lifeStageDuration": "{{years}} ปี {{days}} วัน",
   "lifeStageShare": "{{percent}} จากเกิดถึงเกษียณ",
-  "lifeProgressTitle": "ชีวิตที่ผ่านไป",
+  "lifeProgressTitle": "ความคืบหน้าสู่การเกษียณ",
   "lifeStageDurationTitle": "ระยะเวลา",
   "lifeStageAgeRange": "ช่วงอายุ",
   "lifeStageElapsed": "ผ่านไปแล้ว",

@@ -403,13 +403,23 @@ well, through the single `PBXFileSystemSynchronizedBuildFileExceptionSet` in
 the project. Anything else that needs to be shared with the widget goes in
 that same exception set.
 
-`npm run qa:ios-shots` walks every shell instead of every model. The app has
+**iOS simulator visual testing is user-requested only.** Do not proactively
+open or boot a simulator, launch the app for visual inspection, or capture
+screenshots unless the user explicitly requests that testing. This includes
+`npm run qa:ios-shots` and other screenshot or visual QA scripts. A general
+request to implement or fix iOS UI does not authorize simulator visual testing.
+Headless simulator builds and automated XCTest / Swift Testing runs may proceed
+without a separate request, including simulator startup required by those tests.
+Do not extend an automated test run into screenshot or manual visual testing.
+
+When the user requests it, `npm run qa:ios-shots` walks every shell instead of
+every model. The app has
 three navigation shells — phone portrait, phone landscape and the iPad sidebar
 — sharing most of their views, so a change aimed at one lands in all three and
 no test notices: every test in `AppTests` is model-layer. The sweep launches
 eight surfaces on an iPhone and an iPad, both orientations, through the
 DEBUG-only launch arguments the app already reads, and writes
-`scripts/ios-qa-shots/index.html` — a contact sheet to scan before hand-off. It
+`scripts/ios-qa-shots/index.html` — a contact sheet to scan for that requested QA. It
 verifies what it asked for rather than that a file appeared: a launch that
 fails, an app that is not running, or a shot that came back in the wrong
 orientation is reported as a miss with the reason, because a screenshot of the
@@ -436,8 +446,9 @@ xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
-`xcrun simctl list devices available` lists the installed simulators. Install
-and launch a built `.app` with `xcrun simctl install <udid> <path>` and
+`xcrun simctl list devices available` lists the installed simulators. For
+user-requested visual testing, install and launch a built `.app` with
+`xcrun simctl install <udid> <path>` and
 `xcrun simctl launch <udid> com.rainif.offworkcountdown.macappstore`.
 
 TestFlight and App Store builds are archived, not `build`. Bump
@@ -476,7 +487,11 @@ Before handing off a code change, run checks proportional to its scope. Any
 change touching shared rendering, routes, locales or build configuration must
 pass lint, unit tests, Web build validation and Desktop export validation.
 Desktop Rust changes must also pass `cargo fmt --check`, `cargo test` and a
-release build. UI changes require real visual inspection on the affected OS.
+release build. UI changes require real visual inspection on the affected OS,
+except that iOS simulator visual inspection runs only when explicitly requested
+by the user. Without that request, complete the applicable build and automated
+test checks and note that visual inspection was not performed; do not block
+hand-off or ask for permission solely to satisfy visual QA.
 
 A change to `lib/countdown.ts`, `lib/reminders.ts` or `lib/summary.ts` reaches
 all three targets. It must pass `npm test`, and it must be rebuilt into the iOS

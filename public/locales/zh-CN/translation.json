@@ -710,7 +710,7 @@
   "lifeStageUnset": "未设置",
   "lifeStageDuration": "{{years}} 年 {{days}} 天",
   "lifeStageShare": "占出生到退休的 {{percent}}",
-  "lifeProgressTitle": "人生已走过",
+  "lifeProgressTitle": "距退休进度",
   "lifeStageDurationTitle": "持续时间",
   "lifeStageAgeRange": "年龄区间",
   "lifeStageElapsed": "已经历",

@@ -710,7 +710,7 @@
   "lifeStageUnset": "غير مضبوط",
   "lifeStageDuration": "{{years}} سنة، {{days}} يومًا",
   "lifeStageShare": "{{percent}} من الميلاد إلى التقاعد",
-  "lifeProgressTitle": "ما مضى من الحياة",
+  "lifeProgressTitle": "التقدم نحو التقاعد",
   "lifeStageDurationTitle": "المدة",
   "lifeStageAgeRange": "نطاق العمر",
   "lifeStageElapsed": "المنقضي",

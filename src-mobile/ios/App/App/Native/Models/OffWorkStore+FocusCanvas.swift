@@ -19,12 +19,18 @@ extension OffWorkStore {
     /// what you want to do, so once the current one has ended the canvas moves
     /// to the next one and says so, rather than going blank.
     func focusCanvasShift(at date: Date = .now) -> (snapshot: NativeShiftSnapshot, isNext: Bool)? {
+        guard effectiveScheduleMode(at: date) != .off || countdownStarted else { return nil }
         guard let current = snapshot(at: date) else { return nil }
-        if date < current.endDate { return (current, false) }
+        if date < current.endDate, isFocusWorkday(current, at: date) { return (current, false) }
         guard let nextStart = current.nextShiftStartDate,
               let next = snapshot(at: nextStart.addingTimeInterval(1))
         else { return nil }
         return (next, true)
+    }
+
+    func isFocusWorkday(_ shift: NativeShiftSnapshot, at date: Date) -> Bool {
+        !isEndedEarly(shift) && (shift.isWorkday || isForcedWorkday(shift)
+            || (effectiveScheduleMode(at: date) == .off && countdownStarted))
     }
 
     /// The lock state on its own, for callers that only need to know whether
@@ -109,7 +115,9 @@ extension OffWorkStore {
             guard let taskID = assignment.taskID else { return }
             counts[taskID, default: 0] += 1
         }
-        let completedToday = focusSessions(forDayKey: dayKey).reduce(into: [UUID: Int]()) { counts, session in
+        let completedToday = records.state.focusSessions.filter {
+            $0.startedAt >= shift.startDate && $0.startedAt < shift.endDate
+        }.reduce(into: [UUID: Int]()) { counts, session in
             guard session.kind == .focus, session.endReason == .completed, let taskID = session.taskID
             else { return }
             counts[taskID, default: 0] += 1

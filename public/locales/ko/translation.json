@@ -710,7 +710,7 @@
   "lifeStageUnset": "설정 안 함",
   "lifeStageDuration": "{{years}}년 {{days}}일",
   "lifeStageShare": "출생부터 퇴직까지 {{percent}}",
-  "lifeProgressTitle": "지나온 인생",
+  "lifeProgressTitle": "은퇴까지의 진행률",
   "lifeStageDurationTitle": "기간",
   "lifeStageAgeRange": "나이 범위",
   "lifeStageElapsed": "경과",

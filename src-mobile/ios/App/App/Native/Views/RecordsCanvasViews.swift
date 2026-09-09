@@ -1562,8 +1562,8 @@ struct RecordsLifeCanvas: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            TimelineView(.periodic(from: .now, by: 60)) { context in
-                let progress = LifeStageCalculator.progress(from: bounds.0, to: bounds.1, at: context.date)
+            if let retirement = stages.first(where: { $0.kind == .retirement })?.start {
+                let progress = LifeStageCalculator.progress(from: bounds.0, to: retirement, at: referenceDate)
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .firstTextBaseline) {
                         Text(store.t("lifeProgressTitle"))
@@ -1654,6 +1654,12 @@ struct RecordsLifeCanvas: View {
                         }
                     }
                 }
+                .transaction { transaction in
+                    // The bitmap changes as a whole. Only its callout should
+                    // animate; interpolating a redraw can flash the full grid.
+                    transaction.animation = nil
+                    transaction.disablesAnimations = true
+                }
                 .contentShape(Rectangle())
                 .gesture(SpatialTapGesture().onEnded { value in
                     guard let index = grid.index(at: value.location), buckets.indices.contains(index) else { return }
@@ -1699,6 +1705,9 @@ struct RecordsLifeCanvas: View {
                     }
                 }
             }
+            // A selection changes the legend/callout, not the number of dots.
+            // Only the expanded canvas should track available screen height.
+            .frame(height: showsStageLegend ? 240 : nil)
             .frame(minHeight: 196, idealHeight: 240, maxHeight: .infinity)
 
             if showsStageLegend {

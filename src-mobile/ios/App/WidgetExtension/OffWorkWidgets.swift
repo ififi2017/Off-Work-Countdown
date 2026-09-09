@@ -16,8 +16,9 @@ struct OffWorkLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: OffWorkActivityAttributes.self) { context in
             LockScreenActivityView(context: context)
-                .activityBackgroundTint(nil)
-                .activitySystemActionForegroundColor(.primary)
+                .environment(\.colorScheme, .dark)
+                .activityBackgroundTint(.black.opacity(0.38))
+                .activitySystemActionForegroundColor(.white)
                 .widgetURL(activityDestination(context))
         } dynamicIsland: { context in
             DynamicIsland {

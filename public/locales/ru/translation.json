@@ -710,7 +710,7 @@
   "lifeStageUnset": "Не задано",
   "lifeStageDuration": "{{years}} лет, {{days}} дней",
   "lifeStageShare": "{{percent}} от рождения до пенсии",
-  "lifeProgressTitle": "Пройденная жизнь",
+  "lifeProgressTitle": "Прогресс до пенсии",
   "lifeStageDurationTitle": "Длительность",
   "lifeStageAgeRange": "Возраст",
   "lifeStageElapsed": "Прошло",
