@@ -97,7 +97,6 @@ struct RecordsDayCanvasView: View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 8) {
                 RecordsDayBand(store: store, model: model)
-                    .frame(height: 44)
                 axis(model)
                 if model.projectionStartsAtMs != nil {
                     Text(store.t("recordsSourceAfterNow"))
@@ -302,13 +301,44 @@ struct RecordsDayCanvasView: View {
 struct RecordsDayBand: View {
     let store: OffWorkStore
     let model: RecordsDayCanvasModel
-    @State private var selectedInterval: RecordsDayInterval?
+    @State private var selectedIntervalID: String?
+    private var selectedInterval: RecordsDayInterval? {
+        model.intervals.first { $0.id == selectedIntervalID }
+            ?? model.intervals.first { $0.kind == .work }
+            ?? model.intervals.first
+    }
     @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            // Reserve the tallest description so changing intervals never moves the strip.
+            ZStack(alignment: .leading) {
+                ForEach(model.intervals) { interval in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(store.t(interval.kind.titleKey)) · \(range(of: interval))")
+                            .fontWeight(.medium)
+                        Text([
+                            store.formatRelativeDuration(Double(interval.durationMs)),
+                            store.formatPercent(percent(of: interval)),
+                            store.t(interval.sourceKey),
+                        ].joined(separator: " · "))
+                        .foregroundStyle(OWCDesign.secondary)
+                    }
+                    .font(.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .opacity(selectedInterval?.id == interval.id ? 1 : 0)
+                    .accessibilityHidden(selectedInterval?.id != interval.id)
+                }
+            }
+            strip.frame(height: 44)
+        }
+        .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedInterval?.id)
+    }
+
+    private var strip: some View {
         let total = model.dayEnd.timeIntervalSince(model.dayStart) * 1_000
-        GeometryReader { proxy in
+        return GeometryReader { proxy in
             ZStack {
                 HStack(spacing: 0) {
                     ForEach(Array(model.intervals.enumerated()), id: \.element.id) { index, interval in
@@ -369,23 +399,13 @@ struct RecordsDayBand: View {
                 .frame(height: barHeight)
         }
         .animation(reduceMotion ? nil : OWCMotion.selection, value: selectedInterval?.id)
-        .popover(item: $selectedInterval, arrowEdge: .top) { interval in
-            RecordsTimeSegmentPopover(
-                color: OWCDesign.recordsColor(interval.kind),
-                title: store.t(interval.kind.titleKey),
-                range: range(of: interval),
-                duration: store.formatRelativeDuration(Double(interval.durationMs)),
-                percent: store.formatPercent(percent(of: interval)),
-                source: store.t(interval.sourceKey)
-            )
-        }
         // The picture is for the eye; VoiceOver gets the ordered intervals as
         // words, never a list of pixels or sampling buckets.
         .accessibilityRepresentation {
             VStack {
                 ForEach(model.intervals) { interval in
                     Button(RecordsDayIntervalRow.spokenLabel(interval, store: store)) {
-                        selectedInterval = interval
+                        selectedIntervalID = interval.id
                     }
                     .accessibilityAddTraits(selectedInterval?.id == interval.id ? .isSelected : [])
                 }
@@ -399,9 +419,9 @@ struct RecordsDayBand: View {
         guard width > 0, total > 0 else { return }
         let lower = model.dayStart.timeIntervalSince1970 * 1_000
         let moment = lower + Double(min(width, max(0, x)) / width) * total
-        selectedInterval = model.intervals.first {
+        selectedIntervalID = (model.intervals.first {
             $0.startAtMs <= moment && moment < $0.endAtMs
-        } ?? model.intervals.last
+        } ?? model.intervals.last)?.id
     }
 
     private func range(of interval: RecordsDayInterval) -> String {

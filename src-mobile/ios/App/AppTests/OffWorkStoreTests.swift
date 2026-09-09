@@ -3695,3 +3695,45 @@ func lifeDurationYearEquivalents() throws {
     #expect(store.formatApproximateLifeYears(.nan) == nil)
     #expect(store.formatApproximateLifeYears(.infinity) == nil)
 }
+
+@MainActor
+@Test("Expanded year month summaries match the month screen for 10–19 shifts with 90-minute lunch")
+func expandedYearUsesMonthSummary() async throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = OffWorkStore(defaults: defaults, records: records)
+    store.onboardingComplete = true
+    store.plus.debugSetAuthorized(true)
+    store.recordsTimeZoneIdentifier = "UTC"
+    store.scheduleMode = .classic
+    store.workdays = [1, 2, 3, 4, 5]
+    store.startMinutes = 10 * 60
+    store.endMinutes = 19 * 60
+    store.lunchEnabled = true
+    store.lunchStartMinutes = 12 * 60
+    store.lunchDurationMinutes = 90
+    let setup = utcDay(2026, 1, 1)
+    let now = utcDay(2026, 9, 10)
+    records.ensureSeeded(hours: store.hoursConfiguration(at: setup), at: setup, timeZone: store.recordsTimeZone)
+    let yearDays = await store.prepareRecordsDisplayDays(from: utcDay(2025, 12, 31), through: utcDay(2026, 12, 31), now: now)
+    for month in [8, 10] {
+        let anchor = utcDay(2026, month, 1)
+        let window = store.recordsWindow(for: .month, anchor: anchor)
+        let leadIn = window.0.addingTimeInterval(-86_400)
+        let monthDays = await store.prepareRecordsDisplayDays(from: leadIn, through: window.1, now: now)
+        let cells = monthDays.enumerated().compactMap { index, day -> RecordsDayCell? in
+            guard day.shiftAnchorDate >= window.0 else { return nil }
+            return store.recordsDayCell(for: day, previous: index > 0 ? monthDays[index - 1] : nil,
+                                        now: now, includesLifeProjection: true)
+        }
+        let regular = try #require(store.recordsHeadline(cells: cells, days: monthDays, now: now))
+        let expanded = try #require(store.recordsHeadline(cells: cells, days: yearDays, now: now))
+        #expect(expanded == regular)
+        let split = try #require(expanded.actualForecast)
+        let part = month < 9 ? split.actual : split.forecast
+        #expect(part.days > 0)
+        #expect(part.hours == part.days * 7.5)
+        #expect(expanded.allocation.workMs == Int64(part.hours * 3_600_000))
+    }
+}
