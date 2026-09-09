@@ -865,7 +865,7 @@
   "focusEstimate": "Estimativa",
   "focusEstimateDetail": "{{count}} × {{minutes}} min",
   "focusLanding": "Onde vai",
-  "focusLandingNextBlock": "Próximo bloco livre · {{time}}",
+  "focusLandingNextBlock": "Próximo horário livre",
   "focusNoEmptyBlock": "Este turno já não tem blocos livres. A tarefa ficou na lista de hoje.",
   "focusNoEmptyBlockShort": "Sem blocos livres",
   "focusFavoritesPlace": "Tarefas rápidas · toque para colocar",

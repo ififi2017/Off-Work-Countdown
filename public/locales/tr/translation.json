@@ -865,7 +865,7 @@
   "focusEstimate": "Tahmin",
   "focusEstimateDetail": "{{count}} × {{minutes}} dk",
   "focusLanding": "Nereye gitsin",
-  "focusLandingNextBlock": "Sonraki boş blok · {{time}}",
+  "focusLandingNextBlock": "Sonraki boş zaman aralığı",
   "focusNoEmptyBlock": "Bu vardiyada boş blok kalmadı. Görev bugünün listesinde.",
   "focusNoEmptyBlockShort": "Boş blok yok",
   "focusFavoritesPlace": "Hızlı görevler · yerleştirmek için dokunun",

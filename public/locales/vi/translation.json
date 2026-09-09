@@ -865,7 +865,7 @@
   "focusEstimate": "Ước tính",
   "focusEstimateDetail": "{{count}} × {{minutes}} phút",
   "focusLanding": "Đặt vào đâu",
-  "focusLandingNextBlock": "Ô trống kế tiếp · {{time}}",
+  "focusLandingNextBlock": "Khoảng thời gian trống tiếp theo",
   "focusNoEmptyBlock": "Ca này không còn ô trống. Việc đã được thêm vào danh sách hôm nay.",
   "focusNoEmptyBlockShort": "Hết ô trống",
   "focusFavoritesPlace": "Việc hay dùng · chạm để đặt",

@@ -865,7 +865,7 @@
   "focusEstimate": "Оценка",
   "focusEstimateDetail": "{{count}} × {{minutes}} мин",
   "focusLanding": "Куда поставить",
-  "focusLandingNextBlock": "Следующий свободный блок · {{time}}",
+  "focusLandingNextBlock": "Следующий свободный интервал",
   "focusNoEmptyBlock": "В этой смене не осталось свободных блоков. Задача добавлена в список на сегодня.",
   "focusNoEmptyBlockShort": "Свободных блоков нет",
   "focusFavoritesPlace": "Быстрые задачи · нажмите, чтобы поставить",

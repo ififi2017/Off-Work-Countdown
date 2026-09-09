@@ -65,21 +65,24 @@ struct FocusTaskEditorShell<Content: View>: View {
 struct FocusTaskEditorFields: View {
     let store: OffWorkStore
     @Binding var draft: FocusTaskEditorDraft
-    let destination: String
+    let destination: String?
     let finish: Date?
     var referenceDate = Date.now
     var showsDate = true
     var showsFinish = true
+    var showsOptions = true
     var minimumPomodoros = 1
     var maximumPomodoros: Int?
     var capacityNote: String?
     @State private var titleFocused = false
 
     var body: some View {
-        Label(destination, systemImage: "calendar.badge.plus")
-            .fixedSize(horizontal: false, vertical: true)
-            .font(.footnote)
-            .foregroundStyle(OWCDesign.secondary)
+        if let destination {
+            Label(destination, systemImage: "calendar.badge.plus")
+                .fixedSize(horizontal: false, vertical: true)
+                .font(.footnote)
+                .foregroundStyle(OWCDesign.secondary)
+        }
         if let capacityNote {
             Text(capacityNote)
                 .font(.footnote)
@@ -118,6 +121,20 @@ struct FocusTaskEditorFields: View {
                 }
             }
         }
+        if showsOptions {
+            FocusTaskEditorOptions(store: store, draft: $draft,
+                                   minimumPomodoros: minimumPomodoros, maximumPomodoros: maximumPomodoros)
+        }
+    }
+}
+
+private struct FocusTaskEditorOptions: View {
+    let store: OffWorkStore
+    @Binding var draft: FocusTaskEditorDraft
+    var minimumPomodoros = 1
+    var maximumPomodoros: Int?
+
+    var body: some View {
         FocusTaskIconPicker(store: store, selection: $draft.icon)
         FocusFavoriteToggle(store: store, isFavorite: $draft.isFavorite)
         FocusFavoritePicker(store: store, title: $draft.title, icon: $draft.icon, selectedID: $draft.favoriteID) {
@@ -213,19 +230,27 @@ struct FocusQuickCreateSheet: View {
                     && (landing != .unscheduled || draft.isFavorite)
                     && (draft.existingTaskID == nil || landing == .startNow || landing == .unscheduled || target != nil),
                 onCancel: { dismiss() }, onSave: save) {
-                FocusTaskEditorFields(store: store, draft: $draft,
-                                      destination: landing == .unscheduled ? store.t("focusLeaveUnscheduled") : (landing == .startNow ? store.t("focusStartNow") : destination(target)),
-                                      finish: finish, referenceDate: context.date, showsFinish: landing != .unscheduled)
-                if (blockStartAtMs == nil && landing != .currentOrNextBlock) || draft.isFavorite {
-                    OWCSectionHeader(title: store.t("focusLanding"))
-                    OWCGroupCard {
-                        landingRow(.nextBlock, icon: "calendar.badge.plus", title: destination(target))
+                FocusTaskEditorFields(store: store, draft: $draft, destination: nil,
+                                      finish: finish,
+                                      referenceDate: landing == .startNow ? context.date : target.map { Date(timeIntervalSince1970: Double($0) / 1_000) } ?? context.date,
+                                      showsFinish: landing != .unscheduled, showsOptions: false)
+                OWCSectionHeader(title: store.t("focusLanding"))
+                OWCGroupCard {
+                    if (blockStartAtMs == nil && landing != .currentOrNextBlock) || draft.isFavorite {
+                        landingRow(.nextBlock, icon: "calendar.badge.plus", title: store.t("focusLandingNextBlock"),
+                                   subtitle: destinationTime(target, relativeTo: context.date))
                         landingRow(.startNow, icon: "play.fill", title: store.t("focusStartNow"), isLast: !draft.isFavorite)
                         if draft.isFavorite {
                             landingRow(.unscheduled, icon: "tray", title: store.t("focusLeaveUnscheduled"), isLast: true)
                         }
+                    } else {
+                        OWCRow(icon: "calendar.badge.plus", title: store.t(blockStartAtMs == nil ? "focusLandingNextBlock" : "focusThisBlock"),
+                               subtitle: destinationTime(target, relativeTo: context.date), isLast: true) {
+                            EmptyView()
+                        }
                     }
                 }
+                FocusTaskEditorOptions(store: store, draft: $draft)
                 if !tasks.isEmpty {
                     OWCSectionHeader(title: store.t("focusBlockExisting"))
                     OWCGroupCard {
@@ -268,12 +293,20 @@ struct FocusQuickCreateSheet: View {
         }
     }
 
-    private func destination(_ target: Int64?) -> String {
+    private func destinationTime(_ target: Int64?, relativeTo reference: Date) -> String {
         guard let target else { return store.t("focusNoEmptyBlockShort") }
         let date = Date(timeIntervalSince1970: Double(target) / 1_000)
-        let time = store.recordsCalendar.isDateInToday(date)
-            ? store.formatTime(date) : store.formatDate(date) + " · " + store.formatTime(date)
-        return store.t(blockStartAtMs == nil ? "focusLandingNextBlock" : "focusFavoriteLands", values: ["time": time])
+        let calendar = store.recordsCalendar
+        let day: String
+        if calendar.isDate(date, inSameDayAs: reference) {
+            day = store.t("focusToday")
+        } else if let tomorrow = calendar.date(byAdding: .day, value: 1, to: reference),
+                  calendar.isDate(date, inSameDayAs: tomorrow) {
+            day = store.t("tomorrow")
+        } else {
+            day = store.formatDate(date)
+        }
+        return day + " · " + store.formatTime(date)
     }
 
     private var startDisabledReason: String? {
@@ -286,7 +319,7 @@ struct FocusQuickCreateSheet: View {
         return store.t("focusNoRoom")
     }
 
-    private func landingRow(_ value: Landing, icon: String, title: String, isLast: Bool = false) -> some View {
+    private func landingRow(_ value: Landing, icon: String, title: String, subtitle: String? = nil, isLast: Bool = false) -> some View {
         let unavailable = value == .startNow && !canStart
         return VStack(spacing: 0) {
             Button { landing = value } label: {
@@ -295,6 +328,10 @@ struct FocusQuickCreateSheet: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(title).fixedSize(horizontal: false, vertical: true)
                             .foregroundStyle(unavailable ? OWCDesign.tertiary : OWCDesign.primary)
+                        if let subtitle {
+                            Text(subtitle).font(.footnote).foregroundStyle(OWCDesign.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                         if unavailable, let reason = startDisabledReason {
                             Text(reason).font(.footnote).foregroundStyle(OWCDesign.secondary)
                                 .fixedSize(horizontal: false, vertical: true)

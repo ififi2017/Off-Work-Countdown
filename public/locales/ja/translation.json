@@ -865,7 +865,7 @@
   "focusEstimate": "見積もり",
   "focusEstimateDetail": "{{count}} × {{minutes}} 分",
   "focusLanding": "どこに入れる",
-  "focusLandingNextBlock": "次の空きブロック · {{time}}",
+  "focusLandingNextBlock": "次の空き時間",
   "focusNoEmptyBlock": "このシフトに空きブロックがありません。タスクは今日のリストに入れました。",
   "focusNoEmptyBlockShort": "空きブロックなし",
   "focusFavoritesPlace": "よく使うタスク · タップで空きブロックへ",

@@ -865,7 +865,7 @@
   "focusEstimate": "예상",
   "focusEstimateDetail": "{{count}} × {{minutes}}분",
   "focusLanding": "어디에 넣을지",
-  "focusLandingNextBlock": "다음 빈 블록 · {{time}}",
+  "focusLandingNextBlock": "다음 빈 시간대",
   "focusNoEmptyBlock": "이번 근무에 빈 블록이 없습니다. 작업은 오늘 목록에 담았습니다.",
   "focusNoEmptyBlockShort": "빈 블록 없음",
   "focusFavoritesPlace": "자주 쓰는 작업 · 탭하면 빈 블록으로",
