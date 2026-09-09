@@ -147,6 +147,7 @@ struct NativeRecordsActualForecastPart: Codable, Hashable, Sendable {
 }
 
 struct NativeRecordsActualForecastSummary: Codable, Hashable, Sendable {
+    let actualOvertimeHours: Double
     let actual: NativeRecordsActualForecastPart
     let forecast: NativeRecordsActualForecastPart
     let total: NativeRecordsActualForecastPart

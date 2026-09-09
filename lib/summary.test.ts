@@ -355,6 +355,7 @@ describe("records actual and forecast", () => {
       ],
     });
     expect(result.actual).toEqual({ days: 1, hours: 10, earnings: 1_000 });
+    expect(result.actualOvertimeHours).toBe(2);
     expect(result.forecast).toEqual({ days: 1, hours: 8, earnings: 800 });
     expect(result.total).toEqual({ days: 2, hours: 18, earnings: 1_800 });
   });

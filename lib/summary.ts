@@ -89,6 +89,7 @@ export interface RecordsActualForecastPart {
 }
 
 export interface RecordsActualForecastSummary {
+  actualOvertimeHours: number;
   actual: RecordsActualForecastPart;
   forecast: RecordsActualForecastPart;
   total: RecordsActualForecastPart;
@@ -289,6 +290,7 @@ export function summarizeRecordsActualAndForecast(params: {
 }): RecordsActualForecastSummary {
   let actualDays = 0;
   let actualMs = 0;
+  let actualOvertimeMs = 0;
   let actualPay = 0;
   let forecastDays = 0;
   let forecastMs = 0;
@@ -327,6 +329,7 @@ export function summarizeRecordsActualAndForecast(params: {
         endAtMs: Math.min(segment.endAtMs, params.asOfMs),
       }));
       const workedMs = mergedSegmentDuration([...elapsedRegular, ...elapsedOvertime]);
+      actualOvertimeMs += Math.max(0, workedMs - mergedSegmentDuration(elapsedRegular));
       if (workedMs > 0) {
         actualDays += 1;
         actualMs += workedMs;
@@ -366,6 +369,7 @@ export function summarizeRecordsActualAndForecast(params: {
   const actualEarnings = hasSalary ? actualPay : null;
   const forecastEarnings = hasSalary ? forecastPay : null;
   return {
+    actualOvertimeHours: actualOvertimeMs / 3_600_000,
     actual: {
       days: actualDays,
       hours: actualMs / 3_600_000,

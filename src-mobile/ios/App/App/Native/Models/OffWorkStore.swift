@@ -3794,6 +3794,16 @@ final class OffWorkStore {
         RelativeDurationFormatter.string(milliseconds: milliseconds, languageCode: languageCode, includesDays: true)
     }
 
+    /// A duration equivalent, not a calendar age or a schedule calculation.
+    func formatApproximateLifeYears(_ milliseconds: Double) -> String? {
+        let yearMs = 365.2425 * 86_400_000
+        guard milliseconds.isFinite, milliseconds >= yearMs else { return nil }
+        let years = (milliseconds / yearMs).formatted(
+            .number.precision(.fractionLength(0...2)).locale(locale)
+        )
+        return t("lifeApproxYears", values: ["years": years])
+    }
+
     func formatHours(_ value: Double) -> String {
         let formatter = MeasurementFormatter()
         formatter.locale = locale

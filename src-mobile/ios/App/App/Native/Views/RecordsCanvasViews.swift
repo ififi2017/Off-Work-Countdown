@@ -160,6 +160,7 @@ private struct RecordsMetricHelpPopover: View {
 struct RecordsAllocationBar: View {
     let store: OffWorkStore
     let share: TimeAllocationShare
+    var showsApproximateYears = false
     @State private var selectedKind: TimeAllocationKind?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -169,9 +170,14 @@ struct RecordsAllocationBar: View {
             // moves the bar, including when a label wraps at larger text sizes.
             ZStack(alignment: .leading) {
                 ForEach(visibleSlices) { item in
-                    HStack(spacing: 6) {
-                        Text(store.t(item.kind.titleKey)).fontWeight(.medium)
-                        Text(accessibilityValue(item)).foregroundStyle(OWCDesign.secondary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        if showsApproximateYears, let years = store.formatApproximateLifeYears(Double(item.ms)) {
+                            Text("\(store.t(item.kind.titleKey)) · \(years)")
+                                .font(.callout.weight(.medium))
+                        } else {
+                            Text(store.t(item.kind.titleKey)).fontWeight(.medium)
+                        }
+                        Text(exactValue(item)).foregroundStyle(OWCDesign.secondary)
                     }
                     .font(.caption)
                     .fixedSize(horizontal: false, vertical: true)
@@ -284,6 +290,11 @@ struct RecordsAllocationBar: View {
     }
 
     private func accessibilityValue(_ item: AllocationSlice) -> String {
+        [showsApproximateYears ? store.formatApproximateLifeYears(Double(item.ms)) : nil,
+         exactValue(item)].compactMap { $0 }.joined(separator: ", ")
+    }
+
+    private func exactValue(_ item: AllocationSlice) -> String {
         let total = max(1, share.dayLengthMs)
         return [
             store.formatRecordsDuration(Double(item.ms)),
@@ -454,7 +465,7 @@ struct RecordsHeadlineView: View {
                         Spacer(minLength: 0)
                         RecordsMetricHelpButton(
                             title: title,
-                            message: headerHelp(for: summary)
+                            message: store.t("recordsSummaryHelp")
                         )
                     }
                     content(summary)
@@ -478,88 +489,25 @@ struct RecordsHeadlineView: View {
     }
 
     private func content(_ summary: RecordsHeadlineSummary) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            if let split = summary.actualForecast {
-                actualForecastContent(split)
-            } else {
-                metric("recordsWorkRegular", store.formatRecordsDuration(Double(summary.regularWorkMs)), prominent: true)
-                metric("recordsRecordedDays", store.formatDays(Double(summary.workdays)))
-                metric("recordsOvertime", store.formatRecordsDuration(Double(summary.overtimeMs)))
-
-                if let income = summary.estimatedIncome {
-                    Divider()
-                    metric("recordsIncomeCurrentSalary", store.moneyText(income))
-                }
+        let workedMs = summary.actualForecast.map { $0.actual.hours * 3_600_000 }
+            ?? Double(summary.regularWorkMs + summary.overtimeMs)
+        let workdays = summary.actualForecast?.actual.days ?? Double(summary.workdays)
+        let income = summary.actualForecast?.total.earnings ?? summary.estimatedIncome
+        let overtimeMs = summary.actualForecast.map { $0.actualOvertimeHours * 3_600_000 }
+            ?? Double(summary.overtimeMs)
+        return VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                metric("recordsWorkedTime", store.formatRelativeDuration(workedMs), prominent: true)
+                Text(store.t("recordsWorkdayCount", values: ["count": store.formatCount(Int(workdays))]))
+                    .font(.footnote)
+                    .foregroundStyle(OWCDesign.secondary)
             }
-
-            if summary.allocationDays > 0 {
+            if overtimeMs > 0 {
+                metric("recordsOvertime", store.formatRelativeDuration(overtimeMs))
+            }
+            if let income {
                 Divider()
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(store.t("recordsTimeBreakdown"))
-                        .font(.subheadline.weight(.semibold))
-                        .multilineTextAlignment(.leading)
-                        .foregroundStyle(OWCDesign.primary)
-                        .frame(minHeight: 44, alignment: .leading)
-                    Spacer(minLength: 0)
-                    RecordsMetricHelpButton(
-                        title: store.t("recordsTimeBreakdown"),
-                        message: allocationHelp(for: summary)
-                    )
-                }
-                RecordsAllocationBar(store: store, share: summary.allocation)
-            }
-        }
-    }
-
-    private func headerHelp(for summary: RecordsHeadlineSummary) -> String {
-        var paragraphs = [
-            store.t("recordsMetricWorkHelp"),
-            store.t("recordsMetricOvertimeHelp"),
-        ]
-        if summary.actualForecast != nil {
-            paragraphs.append(
-                store.t(store.salaryType == .monthly ? "recordsMonthlyForecastMethod" : "recordsForecastMethod")
-            )
-        }
-        return paragraphs.joined(separator: "\n\n")
-    }
-
-    private func allocationHelp(for summary: RecordsHeadlineSummary) -> String {
-        [
-            store.t("recordsAllocationBasis", values: ["count": store.formatCount(summary.allocationDays)]),
-            store.t(summary.sleepSourceKey),
-        ].joined(separator: "\n\n")
-    }
-
-    private func actualForecastContent(_ split: NativeRecordsActualForecastSummary) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(store.t("recordsActualTitle"))
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(OWCDesign.primary)
-            metric(
-                "recordsActualHours",
-                store.formatRecordsDuration(split.actual.hours * 3_600_000),
-                prominent: true
-            )
-            metric("recordsActualDays", store.formatDays(split.actual.days))
-            if let earnings = split.actual.earnings {
-                metric(store.salaryType == .monthly ? "recordsMonthlyActualIncome" : "recordsActualIncome", store.moneyText(earnings))
-            }
-
-            Divider()
-            Text(store.t("recordsForecastTitle"))
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(OWCDesign.primary)
-            metric("recordsForecastHours", store.formatRecordsDuration(split.forecast.hours * 3_600_000))
-            metric("recordsForecastDays", store.formatDays(split.forecast.days))
-            if let earnings = split.forecast.earnings {
-                metric(store.salaryType == .monthly ? "recordsMonthlyForecastIncome" : "recordsForecastIncome", store.moneyText(earnings))
-            }
-
-            Divider()
-            metric("recordsCombinedHours", store.formatRecordsDuration(split.total.hours * 3_600_000))
-            if let earnings = split.total.earnings {
-                metric("recordsCombinedIncome", store.moneyText(earnings))
+                metric("recordsForecastIncome", store.moneyText(income))
             }
         }
     }
@@ -2198,7 +2146,7 @@ struct RecordsLifeAllocationCard: View {
                     .foregroundStyle(OWCDesign.primary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                    RecordsAllocationBar(store: store, share: allocation)
+                    RecordsAllocationBar(store: store, share: allocation, showsApproximateYears: true)
                 } else {
                     // No retirement boundary, no career, or a schedule the
                     // rules could not expand: say what is missing instead of

@@ -1025,5 +1025,9 @@
   "focusClearDayTasks": "Limpar tarefas deste dia",
   "focusClearDayTasksBody": "Remove as tarefas e o plano deste dia e para o temporizador em curso. Os registos de foco concluídos serão mantidos.",
   "focusSaveDayAsTemplate": "Guardar este dia como modelo",
-  "focusAppliedTemplateNote": "Este plano usa o modelo «{{name}}»."
+  "focusAppliedTemplateNote": "Este plano usa o modelo «{{name}}».",
+  "recordsWorkedTime": "Tempo trabalhado",
+  "recordsWorkdayCount": "{{count}} dias de trabalho",
+  "lifeApproxYears": "Cerca de {{years}} anos",
+  "recordsSummaryHelp": "O tempo trabalhado inclui turnos guardados já decorridos e horas extra; registos e correções têm prioridade. O rendimento é estimado para todo o período selecionado segundo as definições salariais. As horas registadas não alteram um salário mensal fixo."
 }

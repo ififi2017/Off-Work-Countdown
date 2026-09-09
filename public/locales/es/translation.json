@@ -1025,5 +1025,9 @@
   "focusClearDayTasks": "Borrar las tareas de este día",
   "focusClearDayTasksBody": "Elimina las tareas y la planificación de este día y detiene su temporizador activo. Se conservan los registros de concentración completados.",
   "focusSaveDayAsTemplate": "Guardar este día como plantilla",
-  "focusAppliedTemplateNote": "Este horario utiliza la plantilla «{{name}}»."
+  "focusAppliedTemplateNote": "Este horario utiliza la plantilla «{{name}}».",
+  "recordsWorkedTime": "Tiempo trabajado",
+  "recordsWorkdayCount": "{{count}} días de trabajo",
+  "lifeApproxYears": "Unos {{years}} años",
+  "recordsSummaryHelp": "El tiempo trabajado incluye los turnos guardados ya transcurridos y las horas extra; los registros y correcciones tienen prioridad. Los ingresos se estiman para todo el período seleccionado según tu configuración salarial. Las horas registradas no cambian un sueldo mensual fijo."
 }

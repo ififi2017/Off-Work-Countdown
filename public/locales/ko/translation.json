@@ -1025,5 +1025,9 @@
   "focusClearDayTasks": "이 날짜의 작업 지우기",
   "focusClearDayTasksBody": "이 날짜의 작업과 일정을 지우고 실행 중인 타이머를 중지합니다. 완료한 집중 기록은 유지됩니다.",
   "focusSaveDayAsTemplate": "이 날짜를 템플릿으로 저장",
-  "focusAppliedTemplateNote": "현재 일정에 “{{name}}” 템플릿을 사용 중입니다."
+  "focusAppliedTemplateNote": "현재 일정에 “{{name}}” 템플릿을 사용 중입니다.",
+  "recordsWorkedTime": "일한 시간",
+  "recordsWorkdayCount": "{{count}}일 근무",
+  "lifeApproxYears": "약 {{years}}년",
+  "recordsSummaryHelp": "근무 시간에는 저장된 근무 일정의 경과 시간과 초과근무가 포함되며, 타이머 기록과 수정 사항이 우선합니다. 수입은 급여 설정을 기준으로 선택한 전체 기간에 대해 추정합니다. 기록된 시간은 고정 월급을 바꾸지 않습니다."
 }

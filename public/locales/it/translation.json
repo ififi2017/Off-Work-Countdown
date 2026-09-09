@@ -1025,5 +1025,9 @@
   "focusClearDayTasks": "Cancella le attività di questo giorno",
   "focusClearDayTasksBody": "Rimuove le attività e il programma del giorno e arresta il timer in corso. I registri di concentrazione completati vengono conservati.",
   "focusSaveDayAsTemplate": "Salva il giorno come modello",
-  "focusAppliedTemplateNote": "Questo programma usa il modello “{{name}}”."
+  "focusAppliedTemplateNote": "Questo programma usa il modello “{{name}}”.",
+  "recordsWorkedTime": "Tempo lavorato",
+  "recordsWorkdayCount": "{{count}} giorni lavorativi",
+  "lifeApproxYears": "Circa {{years}} anni",
+  "recordsSummaryHelp": "Il tempo lavorato include i turni salvati già trascorsi e gli straordinari; registrazioni e correzioni hanno priorità. Il reddito è stimato per tutto il periodo selezionato in base alle impostazioni salariali. Le ore registrate non modificano uno stipendio mensile fisso."
 }

@@ -1025,5 +1025,9 @@
   "focusClearDayTasks": "清空此日任務",
   "focusClearDayTasksBody": "將清空此日的任務與安排，並停止當日正在進行的計時。已完成的專注記錄會保留。",
   "focusSaveDayAsTemplate": "將此日安排存為範本",
-  "focusAppliedTemplateNote": "目前日程使用「{{name}}」範本。"
+  "focusAppliedTemplateNote": "目前日程使用「{{name}}」範本。",
+  "recordsWorkedTime": "已工作",
+  "recordsWorkdayCount": "{{count}} 個工作日",
+  "lifeApproxYears": "約 {{years}} 年",
+  "recordsSummaryHelp": "已工作時長包含已生效排班的經過時間和加班，計時記錄及手動修正優先。收入按所選整段期間及薪資設定估算；固定月薪不會因記錄工時多少而增減。"
 }

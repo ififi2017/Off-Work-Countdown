@@ -1025,5 +1025,9 @@
   "focusClearDayTasks": "この日のタスクを消去",
   "focusClearDayTasksBody": "この日のタスクと予定を削除し、実行中のタイマーを停止します。完了した集中の記録は残ります。",
   "focusSaveDayAsTemplate": "この日の予定をテンプレートに保存",
-  "focusAppliedTemplateNote": "「{{name}}」テンプレートを使用中です。"
+  "focusAppliedTemplateNote": "「{{name}}」テンプレートを使用中です。",
+  "recordsWorkedTime": "働いた時間",
+  "recordsWorkdayCount": "{{count}}勤務日",
+  "lifeApproxYears": "約{{years}}年",
+  "recordsSummaryHelp": "勤務時間には保存済みシフトの経過分と残業を含み、タイマー記録と修正を優先します。収入は選択期間全体について給与設定から推定します。固定月給は記録時間の多少で変わりません。"
 }

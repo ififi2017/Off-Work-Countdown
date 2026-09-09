@@ -1025,5 +1025,9 @@
   "focusClearDayTasks": "Aufgaben dieses Tages löschen",
   "focusClearDayTasksBody": "Aufgaben und Planung dieses Tages löschen und den laufenden Timer stoppen. Abgeschlossene Fokusaufzeichnungen bleiben erhalten.",
   "focusSaveDayAsTemplate": "Tag als Vorlage speichern",
-  "focusAppliedTemplateNote": "Dieser Zeitplan nutzt die Vorlage „{{name}}“."
+  "focusAppliedTemplateNote": "Dieser Zeitplan nutzt die Vorlage „{{name}}“.",
+  "recordsWorkedTime": "Bisher gearbeitet",
+  "recordsWorkdayCount": "{{count}} Arbeitstage",
+  "lifeApproxYears": "Etwa {{years}} Jahre",
+  "recordsSummaryHelp": "Die Arbeitszeit umfasst verstrichene gespeicherte Schichten und Überstunden; Zeiterfassungen und Korrekturen haben Vorrang. Das Einkommen wird für den gesamten gewählten Zeitraum anhand deiner Gehaltseinstellungen geschätzt. Ein festes Monatsgehalt hängt nicht von den erfassten Stunden ab."
 }

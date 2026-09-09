@@ -1025,5 +1025,9 @@
   "focusClearDayTasks": "Clear this day’s tasks",
   "focusClearDayTasksBody": "Remove this day’s tasks and plan, and stop its running timer. Completed focus records will be kept.",
   "focusSaveDayAsTemplate": "Save this day as a template",
-  "focusAppliedTemplateNote": "This schedule uses the “{{name}}” template."
+  "focusAppliedTemplateNote": "This schedule uses the “{{name}}” template.",
+  "recordsWorkedTime": "Time worked",
+  "recordsWorkdayCount": "{{count}} workdays",
+  "lifeApproxYears": "About {{years}} years",
+  "recordsSummaryHelp": "Time worked includes elapsed saved shifts and overtime; timer records and corrections take priority. Income is estimated for the full selected period using your salary settings. Recorded hours do not change a fixed monthly salary."
 }

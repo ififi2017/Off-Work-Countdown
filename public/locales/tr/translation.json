@@ -1025,5 +1025,9 @@
   "focusClearDayTasks": "Bu günün görevlerini temizle",
   "focusClearDayTasksBody": "Bu günün görevlerini ve planını kaldırır, çalışan zamanlayıcısını durdurur. Tamamlanan odak kayıtları korunur.",
   "focusSaveDayAsTemplate": "Bu günü şablon olarak kaydet",
-  "focusAppliedTemplateNote": "Bu program “{{name}}” şablonunu kullanıyor."
+  "focusAppliedTemplateNote": "Bu program “{{name}}” şablonunu kullanıyor.",
+  "recordsWorkedTime": "Çalışılan süre",
+  "recordsWorkdayCount": "{{count}} iş günü",
+  "lifeApproxYears": "Yaklaşık {{years}} yıl",
+  "recordsSummaryHelp": "Çalışılan süre, kayıtlı vardiyaların geçen kısmını ve fazla mesaiyi içerir; zamanlayıcı kayıtları ve düzeltmeler önceliklidir. Gelir, maaş ayarlarına göre seçilen dönemin tamamı için tahmin edilir. Kaydedilen saatler sabit aylık maaşı değiştirmez."
 }

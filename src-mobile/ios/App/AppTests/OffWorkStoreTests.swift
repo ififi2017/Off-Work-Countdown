@@ -3517,6 +3517,7 @@ func recordsActualForecastNormalizesObservedIntervals() throws {
     // 21:00 to 20:00, so the second day is nine regular plus two overtime hours.
     #expect(actual.days == 2)
     #expect(actual.hours == 17)
+    #expect(store.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.actualOvertimeHours == 2)
 }
 
 @MainActor
@@ -3679,4 +3680,18 @@ func recordDurationsUseDays() {
     #expect(formatted.contains("30"))
     let short = RelativeDurationFormatter.string(milliseconds: 90 * 60_000, languageCode: "en", includesDays: true)
     #expect(short == "1 h 30 m")
+}
+
+@MainActor
+@Test("Life duration equivalents use approximate years without changing precise durations")
+func lifeDurationYearEquivalents() throws {
+    let (defaults, suite) = try isolatedDefaults()
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    let span = (3451.0 * 24 + 13) * 3_600_000
+    let expectedYears = 9.45.formatted(.number.locale(store.locale))
+    #expect(store.formatApproximateLifeYears(span) == store.t("lifeApproxYears", values: ["years": expectedYears]))
+    #expect(store.formatApproximateLifeYears(30 * 86_400_000) == nil)
+    #expect(store.formatApproximateLifeYears(.nan) == nil)
+    #expect(store.formatApproximateLifeYears(.infinity) == nil)
 }
