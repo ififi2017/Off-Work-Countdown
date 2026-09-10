@@ -282,6 +282,9 @@ final class PlusEntitlement {
     var localize: (String) -> String = { $0 }
     private var updatesTask: Task<Void, Never>?
     private var statusTask: Task<Void, Never>?
+    /// Separate from `updatesTask` so the launch entitlement walk cannot delay
+    /// the `Transaction.updates` observer being registered.
+    private var launchRefreshTask: Task<Void, Never>?
     private var refreshGeneration: UInt64 = 0
     private let fetchEvidence: () async -> StoreKitEvidence
     private var cachedSnapshot = PlusEntitlementSnapshot(askToBuyPendingSince: nil)
@@ -343,9 +346,14 @@ final class PlusEntitlement {
 
     func start() {
         guard updatesTask == nil, statusTask == nil else { return }
+        // The observer behind `Transaction.updates` is registered when
+        // iteration begins, so nothing may be awaited before the loop. The
+        // entitlement walk used to sit here, and it is the 20-second sandbox
+        // stall — for that long the process was running with nobody listening,
+        // and an Ask to Buy approval, a redelivered interrupted purchase or an
+        // App Store-initiated purchase landing in the window was not seen until
+        // the next launch. The initial refresh now runs beside the loop.
         updatesTask = Task { [weak self] in
-            await Task.yield()
-            await self?.refreshFromStore()
             for await update in Transaction.updates {
                 if let transaction = try? checkVerified(update) {
                     await transaction.finish()
@@ -359,13 +367,19 @@ final class PlusEntitlement {
                 await self?.refreshFromStore()
             }
         }
+        launchRefreshTask = Task { [weak self] in
+            await Task.yield()
+            await self?.refreshFromStore()
+        }
     }
 
     func stop() {
         refreshGeneration &+= 1
         currentRefreshTask?.cancel()
+        launchRefreshTask?.cancel()
         updatesTask?.cancel()
         statusTask?.cancel()
+        launchRefreshTask = nil
         updatesTask = nil
         statusTask = nil
     }

@@ -17,6 +17,7 @@ struct RecordsSyncSettingsView: View {
     @State private var confirmsDisable = false
     @State private var confirmsDeleteCloud = false
     @State private var confirmsDeleteDevice = false
+    @State private var confirmsCloudReset = false
     @State private var warningFeedback = 0
     @State private var successFeedback = 0
     @State private var errorFeedback = 0
@@ -91,6 +92,27 @@ struct RecordsSyncSettingsView: View {
             set: { store.showsFirstRunCloudChoice = $0 }
         )) {
             FirstRunRecoveryView(store: store, isExistingLocalSetup: true)
+        }
+        // Another device deleted the cloud copy while this one still held work
+        // CloudKit never received. The wipe follows the contract, but not
+        // before the user has had the chance to export what only lives here.
+        .onChange(of: store.cloudSync.higherFenceNeedsReview, initial: true) { _, needsReview in
+            if needsReview {
+                warningFeedback += 1
+                confirmsCloudReset = true
+            }
+        }
+        .confirmationDialog(
+            store.t("firstRunLocalDataNeedsReview"),
+            isPresented: $confirmsCloudReset,
+            titleVisibility: .visible
+        ) {
+            Button(store.t("firstRunReplaceWithCloud"), role: .destructive) {
+                run(.toggle) { await store.cloudSync.adoptPendingHigherFence() }
+            }
+            Button(store.t("cancel"), role: .cancel) {
+                run(.toggle) { await store.cloudSync.keepLocalWorkAfterCloudReset() }
+            }
         }
         .navigationTitle(store.t("syncTitle"))
         .navigationBarTitleDisplayMode(.large)
@@ -275,7 +297,7 @@ struct RecordsSyncSettingsView: View {
             case .accountChanged: return store.t("syncAccountChanged")
             case .needsNetwork: return store.t("syncNeedNetwork")
             case .noCloudRecords: return store.t("syncNoCloudRecords")
-            case .failed(let reason): return store.t(reason == "plus" ? "syncNeedsPlus" : "syncFailed")
+            case .failed(let reason): return store.t(syncFailureKey(reason))
             case .deleted: return store.t("syncDeleted")
             default: return store.t("syncOff")
             }
@@ -291,7 +313,15 @@ struct RecordsSyncSettingsView: View {
         case .accountChanged: store.t("syncAccountChanged")
         // `enable` reports "plus" when the purchase is missing. Everything else
         // is a CloudKit failure, and `lastError` carries the specifics.
-        case .failed(let reason): store.t(reason == "plus" ? "syncNeedsPlus" : "syncFailed")
+        case .failed(let reason): store.t(syncFailureKey(reason))
+        }
+    }
+
+    private func syncFailureKey(_ reason: String) -> String {
+        switch reason {
+        case "plus": "syncNeedsPlus"
+        case RecordsCloudSync.localDataNeedsReviewReason: "firstRunLocalDataNeedsReview"
+        default: "syncFailed"
         }
     }
 }

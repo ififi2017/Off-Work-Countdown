@@ -47,4 +47,21 @@ extension RecordState {
             || !erased.isEmpty
             || sync.rows.values.contains { $0.entityType != .syncedPreferences && ($0.dirty || $0.pendingErase) }
     }
+
+    /// Work this device did that the cloud copy never received.
+    ///
+    /// Deliberately not `hasUnpairedRecords`, which asks whether the archive
+    /// holds anything at all. That is the right question during first-run
+    /// setup and the wrong one for a fence bump: there, every already-synced
+    /// row is still present and would answer yes, so nothing would ever adopt
+    /// a cloud reset. A row counts here only when CloudKit has not
+    /// acknowledged its current contents — never uploaded, edited since the
+    /// last upload, or carrying an erasure that has not shipped.
+    var hasUnsyncedLocalWork: Bool {
+        sync.rows.values.contains { row in
+            row.entityType != .syncedPreferences
+                && row.generation == sync.generation
+                && (row.dirty || row.pendingErase || row.lastKnownRecord == nil)
+        }
+    }
 }
