@@ -2007,6 +2007,14 @@ final class OffWorkStore {
         if !records.state.sync.conflicts.isEmpty {
             return t("recordsConflictCount", values: ["count": "\(records.state.sync.conflicts.count)"])
         }
+        // A cloud reset waiting on the user leaves the opt-in switched on while
+        // nothing is actually running, so the enabled branch below would answer
+        // "Up to date" — which is the one thing that is certainly not true.
+        // This is also the only place the wait is visible to someone who never
+        // opens the sync page; the page itself carries the full explanation.
+        if cloudSync.higherFenceNeedsReview {
+            return t("syncStatusPaused")
+        }
         if records.state.sync.syncEnabled {
             return t("syncStatusReady")
         }

@@ -695,6 +695,7 @@
   "recordsLifeProfileReady": "ตั้งแล้ว",
   "recordsDiscardEdits": "ทิ้งการเปลี่ยนแปลงเหล่านี้?",
   "syncStatusOff": "ปิด",
+  "syncStatusPaused": "หยุดชั่วคราว",
   "syncStatusReady": "เป็นปัจจุบัน",
   "lifeSchoolStarted": "ปีที่เริ่มเรียน",
   "lifeRetirementDate": "ปีที่เกษียณ",

@@ -695,6 +695,7 @@
   "recordsLifeProfileReady": "Настроено",
   "recordsDiscardEdits": "Отменить эти изменения?",
   "syncStatusOff": "Выкл.",
+  "syncStatusPaused": "Приостановлено",
   "syncStatusReady": "Актуально",
   "lifeSchoolStarted": "Первый учебный год",
   "lifeRetirementDate": "Год выхода на пенсию",

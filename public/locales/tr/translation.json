@@ -695,6 +695,7 @@
   "recordsLifeProfileReady": "Kuruldu",
   "recordsDiscardEdits": "Bu değişiklikler atılsın mı?",
   "syncStatusOff": "Kapalı",
+  "syncStatusPaused": "Duraklatıldı",
   "syncStatusReady": "Güncel",
   "lifeSchoolStarted": "İlk okul yılı",
   "lifeRetirementDate": "Emeklilik yılı",
