@@ -141,6 +141,7 @@ struct ServiceConcurrencyTests {
     }
 
     private func makeStore(defaults: UserDefaults, fallback: Bool) -> OffWorkStore {
+        TestTimeZone.pin(defaults)
         let store = OffWorkStore(defaults: defaults, records: .inMemory())
         store.onboardingComplete = true
         store.scheduleMode = .off

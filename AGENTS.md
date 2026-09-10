@@ -457,6 +457,57 @@ user-requested visual testing, install and launch a built `.app` with
 `xcrun simctl install <udid> <path>` and
 `xcrun simctl launch <udid> com.rainif.offworkcountdown.macappstore`.
 
+Three things about this runner will hand you a confident wrong answer if you
+do not know them. All three have already cost a wrong claim in a merged pull
+request.
+
+**`-only-testing` reports success when it matches nothing.** The identifier
+shape differs by how the test is declared, and the file name is never part of
+it:
+
+| Declared as | Identifier |
+|---|---|
+| a method inside a `@Suite` type (`RecordsPerformanceTests`) | `AppTests/RecordsPerformanceTests/surfaceCost()` |
+| a top-level `@Test` function (most of `FocusStoreTests.swift`) | `AppTests/newShiftDiscardsPreviousRecoveryPrompt()` |
+
+The parentheses are required, and `AppTests/FocusStoreTests` matches nothing
+because no such type exists — that is a file name. A miss is not an error:
+`xcodebuild` exits 0 and prints `** TEST SUCCEEDED **` having run zero tests.
+**Never read the exit code or that banner as "the test passed."** Count what
+actually ran:
+
+```bash
+grep -cE '✔ Test .* passed|✘ Test .* failed' test.log
+grep -oE 'Test run with [0-9]+ tests.*' test.log
+```
+
+**The simulator's time zone follows the Mac's, and `TZ=` does not reach it.**
+Setting `TZ` on the `xcodebuild` process changes nothing, so a time-zone
+problem cannot be reproduced or worked around from the environment — it has to
+be pinned inside the test, through `store.recordsTimeZoneIdentifier`. This
+matters because the store's default falls through to `TimeZone.current`, while
+everything it schedules against is civil time — the default shift is
+09:00–17:00, and day keys come from `recordsCalendar`. A test that injects an
+absolute instant therefore lands at a different hour, and sometimes a different
+day, on every machine: the same `Date(timeIntervalSince1970:)` that reads 15:40
+in UTC+8 reads 00:40 in UTC-7. Several tests that had passed for as long as
+everyone ran them in one zone failed the first time Xcode Cloud ran them in
+another. Prefer building instants from `DateComponents` through
+`store.recordsCalendar` over a raw epoch; when a raw epoch is unavoidable, pin
+`store.recordsTimeZoneIdentifier` in the same test.
+
+**Wall-clock assertions are meaningless under parallel testing.** Swift Testing
+runs tests in parallel *within one process*, so everything contends for the
+main actor — and `CountdownRules` owns the JavaScriptCore context on it, which
+`recordsDayCanvas` must reach. Measured on one machine, one commit:
+`RecordsPerformanceTests.surfaceCost` reads `canvasMs` as 1.7 ms serially and
+5764 ms in the parallel suite. The assertion and the code are both fine; the
+parallel measurement is not. Work that stays off the main actor is unaffected,
+which is why `lifePrepareMs` carries 2543 ms of real computation and never
+trips. Run the suite with `-parallel-testing-enabled NO` when a perf assertion
+is in scope, and never "fix" one of these by raising its ceiling before
+measuring it serially.
+
 TestFlight and App Store builds are archived, not `build`. Bump
 `CURRENT_PROJECT_VERSION` (the build number) for every upload — App Store
 Connect rejects a repeated build number for the same `MARKETING_VERSION`:

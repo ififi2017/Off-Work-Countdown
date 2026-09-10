@@ -706,6 +706,7 @@ private func focusStore() throws -> OffWorkStore {
     let suite = "FocusStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
+    TestTimeZone.pin(defaults)
     let store = OffWorkStore(defaults: defaults, records: .inMemory())
     store.plus.debugSetAuthorized(true)
     return store

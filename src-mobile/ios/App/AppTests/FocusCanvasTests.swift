@@ -231,6 +231,7 @@ private func canvasStore() throws -> OffWorkStore {
     let suite = "FocusCanvasTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
+    TestTimeZone.pin(defaults)
     let store = OffWorkStore(defaults: defaults, records: .inMemory())
     store.plus.debugSetAuthorized(true)
     store.startMinutes = 9 * 60
