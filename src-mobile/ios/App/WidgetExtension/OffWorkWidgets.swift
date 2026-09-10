@@ -139,7 +139,6 @@ private struct ActivityIslandBody: View {
 
 private struct LockScreenActivityView: View {
     let context: ActivityViewContext<OffWorkActivityAttributes>
-    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
     var body: some View {
         TimelineView(activitySchedule(context)) { timeline in
@@ -178,7 +177,7 @@ private struct LockScreenActivityView: View {
                     // The button has no text baseline of its own, so only the
                     // countdown and its caption share one.
                     HStack(alignment: .lastTextBaseline, spacing: 10) {
-                        activityCountdownText(context, now: timeline.date, size: 44, minutesOnly: isLuminanceReduced, foreground: .primary)
+                        activityCountdownText(context, now: timeline.date, size: 44, foreground: .primary)
                         if !activityIsFocus(context), let caption = activityCaption(context, at: timeline.date) {
                             Text(caption)
                                 .font(.system(size: 15, weight: .semibold))
@@ -616,7 +615,6 @@ private func activityCountdownText(
     _ context: ActivityViewContext<OffWorkActivityAttributes>,
     now: Date,
     size: CGFloat,
-    minutesOnly: Bool = false,
     foreground: Color = .white
 ) -> some View {
     if activityComplete(context, at: now) {
@@ -634,14 +632,13 @@ private func activityCountdownText(
             .environment(\.locale, activityLocale(context))
             .lineLimit(1)
             .minimumScaleFactor(0.58)
-    } else if minutesOnly {
-        let minutes = max(0, Int(ceil(activityEnd(context, at: now).timeIntervalSince(now) / 60)))
-        Text(Duration.seconds(minutes * 60).formatted(.units(allowed: [.minutes], width: .wide).locale(activityLocale(context))))
-            .font(.system(size: min(size, 34), weight: .bold).monospacedDigit())
-            .foregroundStyle(foreground)
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
     } else {
+        // The render server owns this text and keeps counting while the
+        // extension is suspended, which is the whole of Always-On Display: a
+        // duration computed here from `now` freezes at whatever minute the
+        // screen dimmed on, because nothing wakes us to draw the next one.
+        // Coarsening to minutes on the dimmed screen is the system's call to
+        // make, not ours.
         Text(timerInterval: now...max(now, activityEnd(context, at: now)), countsDown: true)
             .font(.system(size: size, weight: .bold).monospacedDigit())
             .foregroundStyle(foreground)
@@ -697,9 +694,42 @@ private func activityProgress(_ context: ActivityViewContext<OffWorkActivityAttr
         .tint(activityTint(context, at: date))
         .labelsHidden()
         .frame(height: 6)
+    } else if !activityComplete(context, at: date), !context.state.segments.isEmpty {
+        activitySegmentedProgress(context.state.segments)
     } else {
         activityProgress(activityProgressValue(context, at: date))
     }
+}
+
+/// The shift's effective segments, side by side, each filling over its own
+/// interval so the render server can animate them with the extension asleep.
+///
+/// A width computed here from `now` needs a wake-up per frame, which is what
+/// Always-On Display does not give — the bar froze while the countdown above
+/// it kept moving. One `ProgressView(timerInterval:)` stretched across the
+/// whole shift would draw itself, but it would also count the lunch gap as
+/// worked time. Per segment, the gap simply has no bar to advance, which is
+/// the same arithmetic `projectedProgress` does.
+private func activitySegmentedProgress(
+    _ segments: [OffWorkActivityAttributes.ContentState.Segment]
+) -> some View {
+    let durations = segments.map { max(0, $0.endAtMs - $0.startAtMs) }
+    let total = durations.reduce(Int64(0), +)
+    return GeometryReader { proxy in
+        HStack(spacing: 0) {
+            ForEach(Array(zip(segments, durations)), id: \.0.startAtMs) { segment, duration in
+                let start = Date(timeIntervalSince1970: Double(segment.startAtMs) / 1_000)
+                let end = Date(timeIntervalSince1970: Double(segment.endAtMs) / 1_000)
+                ProgressView(timerInterval: start...max(start, end), countsDown: false) {
+                    EmptyView()
+                } currentValueLabel: { EmptyView() }
+                    .tint(activityOrange)
+                    .labelsHidden()
+                    .frame(width: proxy.size.width * Double(duration) / Double(max(1, total)))
+            }
+        }
+    }
+    .frame(height: 6)
 }
 
 private func activityProgress(_ progress: Double) -> some View {
