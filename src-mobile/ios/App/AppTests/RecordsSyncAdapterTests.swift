@@ -138,7 +138,7 @@ func lifeProfileMergesByField() throws {
     local.employmentPeriods = [
         LifeEmploymentPeriod(
             id: syncTestID(100),
-            startsOn: try #require(.exact(year: 2020, month: 1, day: 1)),
+            startsOn: .exact(year: 2020, month: 1, day: 1)!,
             endsOn: nil,
             salary: LifeSalary(amount: 120_000, cadence: .yearly)
         )
@@ -168,8 +168,8 @@ func cloudPayloadPreservesLifeProfileFields() throws {
     calendar.timeZone = TimeZone(secondsFromGMT: 0)!
     let employment = LifeEmploymentPeriod(
         id: syncTestID(83),
-        startsOn: try #require(PartialCivilDate.exact(year: 2012, month: 7, day: 1)),
-        endsOn: try #require(PartialCivilDate.exact(year: 2018, month: 6, day: 30)),
+        startsOn: PartialCivilDate.exact(year: 2012, month: 7, day: 1)!,
+        endsOn: PartialCivilDate.exact(year: 2018, month: 6, day: 30)!,
         salary: LifeSalary(amount: 120_000, cadence: .yearly)
     )
     let baseline = LifeProfile(
@@ -178,10 +178,10 @@ func cloudPayloadPreservesLifeProfileFields() throws {
         retirementAge: 60,
         averageSleepHours: 7.5,
         hidesExactAges: true,
-        bornOn: try #require(PartialCivilDate.exact(year: 1990, month: 2, day: 3)),
-        schoolStartedOn: try #require(PartialCivilDate.exact(year: 1996, month: 9, day: 1)),
-        workStartedPartial: try #require(PartialCivilDate.exact(year: 2012, month: 7, day: 1)),
-        retirementOn: try #require(PartialCivilDate.exact(year: 2050, month: 7, day: 1)),
+        bornOn: PartialCivilDate.exact(year: 1990, month: 2, day: 3)!,
+        schoolStartedOn: PartialCivilDate.exact(year: 1996, month: 9, day: 1)!,
+        workStartedPartial: PartialCivilDate.exact(year: 2012, month: 7, day: 1)!,
+        retirementOn: PartialCivilDate.exact(year: 2050, month: 7, day: 1)!,
         averageSleepMinutes: 450,
         sleepSource: .healthSuggested,
         sleepSourceUpdatedAt: Date(timeIntervalSince1970: 1_000),
@@ -208,8 +208,8 @@ func cloudPayloadPreservesLifeProfileFields() throws {
     #expect(roundTrip == baseline)
 
     var local = roundTrip
-    local.schoolStartedOn = try #require(PartialCivilDate.exact(year: 1997, month: 9, day: 1))
-    local.workStartedPartial = try #require(PartialCivilDate.exact(year: 2013, month: 7, day: 1))
+    local.schoolStartedOn = PartialCivilDate.exact(year: 1997, month: 9, day: 1)!
+    local.workStartedPartial = PartialCivilDate.exact(year: 2013, month: 7, day: 1)!
     local.sleepSource = .manual
     local.workHistoryMode = .detailed
     local.employmentPeriods = [
@@ -225,8 +225,8 @@ func cloudPayloadPreservesLifeProfileFields() throws {
     local.editTieBreaker = syncTestID(81)
 
     var server = roundTrip
-    server.bornOn = try #require(PartialCivilDate.exact(year: 1990, month: 2, day: 4))
-    server.retirementOn = try #require(PartialCivilDate.exact(year: 2051, month: 7, day: 1))
+    server.bornOn = PartialCivilDate.exact(year: 1990, month: 2, day: 4)!
+    server.retirementOn = PartialCivilDate.exact(year: 2051, month: 7, day: 1)!
     server.averageSleepMinutes = 420
     server.sleepSourceUpdatedAt = Date(timeIntervalSince1970: 3_000)
     server.roughCurrentSalary = LifeSalary(amount: 9_000, cadence: .monthly)
