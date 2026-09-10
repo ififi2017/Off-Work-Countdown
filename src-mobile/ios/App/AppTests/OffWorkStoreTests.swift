@@ -1129,6 +1129,7 @@ func widgetRestCopyMatchesRestDays() throws {
 /// the break, so an order assertion reads as the order and nothing else.
 @MainActor
 private func previewStore(_ defaults: UserDefaults) -> OffWorkStore {
+    TestTimeZone.pin(defaults)
     let store = OffWorkStore(defaults: defaults)
     // Not `.off`: that mode reports no `nextShiftStartAtMs` at all, because
     // without a schedule the rules have no way to say which day comes next.
@@ -3137,6 +3138,7 @@ private func isolatedDefaults() throws -> (UserDefaults, String) {
     let suite = "OffWorkStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
+    TestTimeZone.pin(defaults)
     return (defaults, suite)
 }
 

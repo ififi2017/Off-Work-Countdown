@@ -6,6 +6,7 @@ import Testing
 struct FocusReviewRegressionTests {
     private func makeStore() throws -> OffWorkStore {
         let defaults = try #require(UserDefaults(suiteName: "FocusReview.\(UUID())"))
+        TestTimeZone.pin(defaults)
         let store = OffWorkStore(defaults: defaults, records: .inMemory())
         store.plus.debugSetAuthorized(true)
         store.startMinutes = 540

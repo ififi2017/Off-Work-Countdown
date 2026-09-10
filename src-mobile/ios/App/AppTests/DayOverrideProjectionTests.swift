@@ -435,6 +435,7 @@ func storeForcedWorkdayThenClockOffComposes() throws {
 
 @MainActor
 private func scheduledStore(defaults: UserDefaults) -> OffWorkStore {
+    TestTimeZone.pin(defaults)
     let store = OffWorkStore(defaults: defaults)
     store.onboardingComplete = true
     store.scheduleMode = .classic
