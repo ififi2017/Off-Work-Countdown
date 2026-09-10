@@ -695,6 +695,7 @@
   "recordsLifeProfileReady": "已设置",
   "recordsDiscardEdits": "放弃这些更改？",
   "syncStatusOff": "已关闭",
+  "syncStatusPaused": "已暂停",
   "syncStatusReady": "已同步",
   "lifeSchoolStarted": "入学年份",
   "lifeRetirementDate": "退休年份",

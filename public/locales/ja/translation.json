@@ -695,6 +695,7 @@
   "recordsLifeProfileReady": "設定済み",
   "recordsDiscardEdits": "この変更を破棄しますか？",
   "syncStatusOff": "オフ",
+  "syncStatusPaused": "一時停止中",
   "syncStatusReady": "同期済み",
   "lifeSchoolStarted": "入学した年",
   "lifeRetirementDate": "退職する年",

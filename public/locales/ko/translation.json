@@ -695,6 +695,7 @@
   "recordsLifeProfileReady": "설정됨",
   "recordsDiscardEdits": "이 변경을 버릴까요?",
   "syncStatusOff": "꺼짐",
+  "syncStatusPaused": "일시 중지됨",
   "syncStatusReady": "최신 상태",
   "lifeSchoolStarted": "입학 연도",
   "lifeRetirementDate": "퇴직 연도",

@@ -695,6 +695,7 @@
   "recordsLifeProfileReady": "Sudah diatur",
   "recordsDiscardEdits": "Buang perubahan ini?",
   "syncStatusOff": "Mati",
+  "syncStatusPaused": "Dijeda",
   "syncStatusReady": "Terbaru",
   "lifeSchoolStarted": "Tahun masuk sekolah",
   "lifeRetirementDate": "Tahun pensiun",

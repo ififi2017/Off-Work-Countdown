@@ -695,6 +695,7 @@
   "recordsLifeProfileReady": "Configuré",
   "recordsDiscardEdits": "Abandonner ces modifications ?",
   "syncStatusOff": "Désactivé",
+  "syncStatusPaused": "En pause",
   "syncStatusReady": "À jour",
   "lifeSchoolStarted": "Première année d’école",
   "lifeRetirementDate": "Année de retraite",

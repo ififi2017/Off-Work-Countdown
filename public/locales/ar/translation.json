@@ -695,6 +695,7 @@
   "recordsLifeProfileReady": "مضبوط",
   "recordsDiscardEdits": "هل تتجاهل هذه التغييرات؟",
   "syncStatusOff": "إيقاف",
+  "syncStatusPaused": "متوقّف مؤقتًا",
   "syncStatusReady": "محدَّث",
   "lifeSchoolStarted": "أول سنة دراسة",
   "lifeRetirementDate": "سنة التقاعد",
