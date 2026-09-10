@@ -1,6 +1,6 @@
 import Foundation
 
-/// One time zone for the whole test process.
+/// One time zone for every test store.
 ///
 /// The store's zone falls through to `TimeZone.current` when nothing has been
 /// stored, and everything it schedules against is civil time — the default
@@ -14,27 +14,22 @@ import Foundation
 /// behaviour — a shift belongs to the wall clock the person works against —
 /// so the fix belongs here rather than in `OffWorkStore`.
 ///
-/// `NSTimeZone.default` is the lever rather than the stored preference key,
-/// because 140-odd assertions read `TimeZone.current` or `Calendar.current`
-/// directly and never see a store at all.
+/// **This writes only the stored preference, never `NSTimeZone.default`.**
+/// Setting the process default looked like the wider fix, because assertions
+/// that read `TimeZone.current` directly never see a store. It also took main
+/// from five failures to 465 crashes: Swift Testing runs tests in parallel in
+/// one process, `NSTimeZone.default` is process-global, and mutating it while
+/// other tests read it trips Foundation. The window is narrow enough that a
+/// single idle simulator never hit it and four contending ones always did.
+/// A per-suite `UserDefaults` write shares nothing and cannot race.
 enum TestTimeZone {
     /// The zone the fixed instants throughout the suite were chosen for.
     /// Changing it will fail tests whose epochs were picked to sit inside a
     /// working day here; convert those to `DateComponents` first.
     static let identifier = "Asia/Shanghai"
 
-    /// Idempotent, and safe to call from anything that builds a test store.
-    static func pin() {
-        guard let zone = TimeZone(identifier: identifier) else { return }
-        if NSTimeZone.default.identifier != identifier {
-            NSTimeZone.default = zone
-        }
-    }
-
-    /// Also writes the stored preference, so a store reads the pin directly
-    /// instead of relying on the process default still being in place.
+    /// Pins the store built from these defaults, before it reads them.
     static func pin(_ defaults: UserDefaults) {
-        pin()
         defaults.set(identifier, forKey: "ios.native.recordsTimeZone")
     }
 }
