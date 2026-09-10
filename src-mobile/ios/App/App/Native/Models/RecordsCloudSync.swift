@@ -30,6 +30,10 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     private var operation: Task<Void, Never>?
     private var acceptRemote = true
     private var recoveringMissingRows: Set<String> = []
+    /// A cloud reset arrived while this device still held work CloudKit never
+    /// received. The wipe waits for the user to say so.
+    private(set) var higherFenceNeedsReview = false
+    private var pendingHigherFence: Int?
 
     /// Read only: no zone creation, preference seed, or outgoing sync engine.
     func checkForExistingData() async throws -> Bool {
@@ -219,6 +223,63 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
         }
     }
 
+    /// Follows a cloud reset, unless this device would lose work by doing so.
+    ///
+    /// A higher fence means another device ran "delete everywhere", and every
+    /// device is meant to follow — `deleteAllCloudUnsynchronized` wipes the
+    /// initiating device's own archive too, so following is the contract
+    /// working, not a bug. The exception is work that only ever existed here:
+    /// the user decided about the cloud copy they could see, and these rows
+    /// were never in it. Stop and let them export before the wipe.
+    ///
+    /// `deleteAllCloudUnsynchronized` deliberately does not come through here.
+    /// That path *is* the user asking, and it has its own confirmation.
+    private func adoptHigherFence(_ fence: Int) -> Bool {
+        guard let records else { return false }
+        guard !records.state.hasUnsyncedLocalWork else {
+            pendingHigherFence = fence
+            higherFenceNeedsReview = true
+            stopAndInvalidate()
+            status = .failed(Self.localDataNeedsReviewReason)
+            return false
+        }
+        return records.discardForHigherFence(fence)
+    }
+
+    /// The user has seen the warning and chosen the cloud reset.
+    func adoptPendingHigherFence() async {
+        await runExclusive {
+            guard let records = self.records, let fence = self.pendingHigherFence else { return }
+            guard records.discardForHigherFence(fence) else {
+                self.failPersistence()
+                return
+            }
+            self.pendingHigherFence = nil
+            self.higherFenceNeedsReview = false
+            self.lastError = nil
+            await self.resumeUnsynchronized()
+        }
+    }
+
+    /// Leaves this device's archive alone and stops syncing, so the user can
+    /// export before deciding. Re-enabling sync asks again.
+    func keepLocalWorkAfterCloudReset() async {
+        await runExclusive {
+            guard let records = self.records else { return }
+            self.pendingHigherFence = nil
+            self.higherFenceNeedsReview = false
+            var sync = records.state.sync
+            sync.syncEnabled = false
+            guard records.replaceSyncState(sync) else {
+                self.failPersistence()
+                return
+            }
+            self.status = .off
+        }
+    }
+
+    static let localDataNeedsReviewReason = "localDataNeedsReview"
+
     private func runExclusive(_ work: @escaping () async -> Void) async {
         let previous = operation
         let task = Task { @MainActor in
@@ -352,9 +413,8 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 }
                 return
             }
-            if remoteFence > records.state.sync.generation,
-               !records.discardForHigherFence(remoteFence) {
-                failPersistence()
+            if remoteFence > records.state.sync.generation, !adoptHigherFence(remoteFence) {
+                if !higherFenceNeedsReview { failPersistence() }
                 return
             }
             status = .syncing
@@ -405,8 +465,8 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 return
             }
             if remoteFence > records.state.sync.generation {
-                guard records.discardForHigherFence(remoteFence) else {
-                    failPersistence()
+                guard adoptHigherFence(remoteFence) else {
+                    if !higherFenceNeedsReview { failPersistence() }
                     return
                 }
             }
@@ -451,8 +511,8 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 return
             }
             if fence > records.state.sync.generation {
-                guard records.discardForHigherFence(fence) else {
-                    failPersistence()
+                guard adoptHigherFence(fence) else {
+                    if !higherFenceNeedsReview { failPersistence() }
                     return
                 }
             } else if fence < records.state.sync.generation {
@@ -832,7 +892,10 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
                       records.state.sync.generation == generation else { return }
                 if fence > generation {
                     stopAndInvalidate()
-                    guard records.discardForHigherFence(fence) else { failPersistence(); return }
+                    guard adoptHigherFence(fence) else {
+                        if !higherFenceNeedsReview { failPersistence() }
+                        return
+                    }
                     startIfEnabled()
                     return
                 }
@@ -1017,8 +1080,8 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
                 let fence = record["generation"] as? Int ?? 0
                 if fence > records.state.sync.generation {
                     stopAndInvalidate()
-                    guard records.discardForHigherFence(fence) else {
-                        failPersistence()
+                    guard adoptHigherFence(fence) else {
+                        if !higherFenceNeedsReview { failPersistence() }
                         return
                     }
                     discarded = true

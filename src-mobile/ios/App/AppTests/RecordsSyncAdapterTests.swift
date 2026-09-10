@@ -596,6 +596,63 @@ func higherFenceDiscardsLocalArchive() {
 }
 
 @MainActor
+@Test("A cloud reset is only adopted silently when nothing here is unsynced")
+func unsyncedLocalWorkGuardsACloudReset() {
+    // `hasUnpairedRecords` answers "is there anything at all", which is the
+    // right question for first-run setup and the wrong one here: after a fence
+    // bump every already-synced row is still present, so it would always say
+    // yes and no device would ever follow a cloud reset.
+    var archive = RecordState()
+    archive.sync.generation = 3
+    // A record that is already in the cloud copy, exactly as a follower device
+    // holds it after a normal sync.
+    archive.overrides = [
+        DayOverride(
+            dayKey: "2026-08-26",
+            shiftAnchorDate: Date(timeIntervalSince1970: 0),
+            kind: .customSegments,
+            segments: []
+        )
+    ]
+    #expect(!archive.hasUnsyncedLocalWork)
+
+    // A row CloudKit has acknowledged and nothing has touched since.
+    RecordsSyncOutbox.markDirty(
+        &archive.sync, type: .dayOverride, key: "2026-08-26",
+        editCount: 1, editTieBreaker: UUID()
+    )
+    let name = RecordsSyncIdentity.recordName(type: .dayOverride, key: "2026-08-26")
+    archive.sync.rows[name]?.lastKnownRecord = Data("fields".utf8)
+    RecordsSyncOutbox.clearDirty(&archive.sync, recordName: name)
+    #expect(!archive.hasUnsyncedLocalWork)
+    #expect(archive.hasUnpairedRecords)
+
+    // Edited since that upload: the cloud copy never saw this version.
+    archive.sync.rows[name]?.dirty = true
+    #expect(archive.hasUnsyncedLocalWork)
+
+    // Never uploaded at all.
+    archive.sync.rows[name]?.dirty = false
+    archive.sync.rows[name]?.lastKnownRecord = nil
+    #expect(archive.hasUnsyncedLocalWork)
+
+    // An erasure that has not shipped is unsynced work too.
+    archive.sync.rows[name]?.lastKnownRecord = Data("fields".utf8)
+    archive.sync.rows[name]?.pendingErase = true
+    #expect(archive.hasUnsyncedLocalWork)
+
+    // Preferences are explicitly replaceable, and a row left behind by an
+    // older generation is not this generation's work.
+    archive.sync.rows[name]?.pendingErase = false
+    archive.sync.rows[name]?.entityType = .syncedPreferences
+    #expect(!archive.hasUnsyncedLocalWork)
+    archive.sync.rows[name]?.entityType = .dayOverride
+    archive.sync.rows[name]?.generation = 2
+    archive.sync.rows[name]?.dirty = true
+    #expect(!archive.hasUnsyncedLocalWork)
+}
+
+@MainActor
 @Test("Rest and clear writes neutralize a leftover hours override")
 func dayLayersClearOverrideWhenWritingException() {
     #expect(DayRecordLayers.plan(for: .customHours) == .overrideOnly(.customSegments))
