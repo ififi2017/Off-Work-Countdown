@@ -529,7 +529,6 @@ func lifeViewModelCacheFollowsTheArchive() async {
 func batchedLifeProjectionMatches() async throws {
     func makeStore() throws -> OffWorkStore {
         let defaults = try #require(UserDefaults(suiteName: "owc.lifebatch.\(UUID())"))
-        TestTimeZone.pin(defaults)
         let store = OffWorkStore(defaults: defaults, records: .inMemory())
         store.recordsTimeZoneIdentifier = "UTC"
         store.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,

@@ -267,7 +267,6 @@ private func chainStore() throws -> OffWorkStore {
     let suite = "FocusLiveChainTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
-    TestTimeZone.pin(defaults)
     let store = OffWorkStore(defaults: defaults, records: .inMemory())
     store.plus.debugSetAuthorized(true)
     store.countdownStarted = true

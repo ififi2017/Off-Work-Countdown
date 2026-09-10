@@ -412,6 +412,10 @@ func calendarExceptionConflictUsesDatePortionOfLogicalKey() throws {
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
     let store = OffWorkStore(defaults: defaults, records: records)
+    // The day and the seed below are both UTC, so the store has to read them
+    // in UTC too. Left on the device zone it resolved a different civil day
+    // and the conflict landed on 2026-08-23 when Xcode Cloud ran in UTC-7.
+    store.recordsTimeZoneIdentifier = "UTC"
     let day = utcDay(2026, 8, 24)
     records.ensureSeeded(
         hours: store.hoursConfiguration(at: day),
@@ -1129,7 +1133,6 @@ func widgetRestCopyMatchesRestDays() throws {
 /// the break, so an order assertion reads as the order and nothing else.
 @MainActor
 private func previewStore(_ defaults: UserDefaults) -> OffWorkStore {
-    TestTimeZone.pin(defaults)
     let store = OffWorkStore(defaults: defaults)
     // Not `.off`: that mode reports no `nextShiftStartAtMs` at all, because
     // without a schedule the rules have no way to say which day comes next.
@@ -3138,7 +3141,6 @@ private func isolatedDefaults() throws -> (UserDefaults, String) {
     let suite = "OffWorkStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
-    TestTimeZone.pin(defaults)
     return (defaults, suite)
 }
 
