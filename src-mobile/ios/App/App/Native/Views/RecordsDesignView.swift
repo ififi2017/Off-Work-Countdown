@@ -604,13 +604,15 @@ struct RecordsDesignView: View {
     }
 
     private var markLegend: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .center, spacing: 4) {
             RecordsMarkLegend(store: store, includesLock: !store.plus.isAuthorized)
             Text(store.t("recordsHeatScale"))
                 .font(.caption2)
                 .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
+        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder

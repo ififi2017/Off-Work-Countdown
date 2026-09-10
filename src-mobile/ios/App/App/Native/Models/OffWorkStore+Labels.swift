@@ -97,10 +97,16 @@ extension OffWorkStore {
         return "\(timeString(effectiveLunchStartMinutes(at: date))) · \(formatRelativeDuration(Double(effectiveLunchDurationMinutes(at: date)) * 60_000))"
     }
 
-    var healthLabel: String {
-        microBreakEnabled
-            ? t("minutesShort", values: ["count": "\(microBreakIntervalMinutes)"])
-            : t("disabledShort")
+    var healthLabel: String { healthLabel(at: .now) }
+
+    func healthLabel(at date: Date) -> String {
+        guard microBreakEnabled else { return t("disabledShort") }
+        // The pomodoro's long breaks stand in for the fixed interval on a
+        // planned shift, so nothing is counting to 60 minutes any more. The
+        // row advertised the interval regardless, and the detail page it opens
+        // then said the opposite. Same wording as that page, so the two agree.
+        guard !focusOwnsBreaks(at: date) else { return t("microBreakFollowsFocus") }
+        return t("minutesShort", values: ["count": "\(microBreakIntervalMinutes)"])
     }
 
     var salaryTypeLabel: String {
