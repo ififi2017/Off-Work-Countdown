@@ -14,20 +14,20 @@ func employmentTimelineLinksEndsWithoutReplacingRows() throws {
     let periods = [
         LifeEmploymentPeriod(
             id: middleID,
-            startsOn: try #require(.exact(year: 2022, month: 2, day: 1)),
-            endsOn: try #require(.exact(year: 2024, month: 4, day: 1)),
+            startsOn: .exact(year: 2022, month: 2, day: 1)!,
+            endsOn: .exact(year: 2024, month: 4, day: 1)!,
             salary: LifeSalary(amount: 8_000, cadence: .monthly)
         ),
         LifeEmploymentPeriod(
             id: currentID,
-            startsOn: try #require(.exact(year: 2024, month: 5, day: 1)),
-            endsOn: try #require(.exact(year: 2025, month: 1, day: 1)),
+            startsOn: .exact(year: 2024, month: 5, day: 1)!,
+            endsOn: .exact(year: 2025, month: 1, day: 1)!,
             salary: salary
         ),
         LifeEmploymentPeriod(
             id: olderID,
-            startsOn: try #require(.exact(year: 2019, month: 3, day: 1)),
-            endsOn: try #require(.exact(year: 2020, month: 1, day: 1)),
+            startsOn: .exact(year: 2019, month: 3, day: 1)!,
+            endsOn: .exact(year: 2020, month: 1, day: 1)!,
             salary: LifeSalary(amount: 6_000, cadence: .monthly)
         ),
     ]
@@ -54,7 +54,7 @@ func employmentTimelineInfersLegacyCurrentStart() throws {
     let expected = try #require(calendar.date(from: DateComponents(year: 2024, month: 5, day: 1)))
     let salary = LifeSalary(amount: 10_000, cadence: .monthly)
     var profile = LifeProfile(
-        workStartedPartial: try #require(.exact(year: 2018, month: 1, day: 1)),
+        workStartedPartial: .exact(year: 2018, month: 1, day: 1)!,
         editedAt: .distantPast,
         editCount: 1,
         editTieBreaker: UUID()
@@ -62,14 +62,14 @@ func employmentTimelineInfersLegacyCurrentStart() throws {
     profile.employmentPeriods = [
         LifeEmploymentPeriod(
             id: UUID(),
-            startsOn: try #require(.exact(year: 2020, month: 1, day: 1)),
-            endsOn: try #require(.exact(year: 2022, month: 1, day: 1)),
+            startsOn: .exact(year: 2020, month: 1, day: 1)!,
+            endsOn: .exact(year: 2022, month: 1, day: 1)!,
             salary: salary
         ),
         LifeEmploymentPeriod(
             id: UUID(),
-            startsOn: try #require(.exact(year: 2022, month: 1, day: 1)),
-            endsOn: try #require(.exact(year: 2024, month: 5, day: 1)),
+            startsOn: .exact(year: 2022, month: 1, day: 1)!,
+            endsOn: .exact(year: 2024, month: 5, day: 1)!,
             salary: salary
         ),
     ]
@@ -88,7 +88,7 @@ func employmentTimelineRejectsFutureCurrentStart() throws {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))
     let salary = LifeSalary(amount: 10_000, cadence: .monthly)
-    let start = try #require(PartialCivilDate.exact(year: 2027, month: 1, day: 1))
+    let start = PartialCivilDate.exact(year: 2027, month: 1, day: 1)!
     let periods = [LifeEmploymentPeriod(id: UUID(), startsOn: start, endsOn: nil, salary: salary)]
     let now = try #require(calendar.date(from: DateComponents(year: 2026, month: 9, day: 6)))
 
@@ -101,7 +101,7 @@ func employmentTimelineRejectsDuplicateStarts() throws {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))
     let salary = LifeSalary(amount: 10_000, cadence: .monthly)
-    let start = try #require(PartialCivilDate.exact(year: 2025, month: 1, day: 1))
+    let start = PartialCivilDate.exact(year: 2025, month: 1, day: 1)!
     let periods = [
         LifeEmploymentPeriod(id: UUID(), startsOn: start, endsOn: nil, salary: salary),
         LifeEmploymentPeriod(id: UUID(), startsOn: start, endsOn: nil, salary: salary),

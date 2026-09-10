@@ -133,13 +133,13 @@ func recordsLifeDetailedWorkPeriodIdentityIsDistinct() throws {
     profile.employmentPeriods = [
         LifeEmploymentPeriod(
             id: UUID(),
-            startsOn: try #require(.exact(year: 2020, month: 1, day: 1)),
+            startsOn: .exact(year: 2020, month: 1, day: 1)!,
             endsOn: .exact(year: 2022, month: 1, day: 1),
             salary: salary
         ),
         LifeEmploymentPeriod(
             id: UUID(),
-            startsOn: try #require(.exact(year: 2023, month: 1, day: 1)),
+            startsOn: .exact(year: 2023, month: 1, day: 1)!,
             endsOn: nil,
             salary: salary
         ),

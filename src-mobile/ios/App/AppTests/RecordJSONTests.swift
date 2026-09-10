@@ -130,7 +130,7 @@ func recordJSONPreservesLifeIncomeHistory() throws {
     let editedAt = Date(timeIntervalSince1970: 1_788_000_000)
     let period = LifeEmploymentPeriod(
         id: id(84),
-        startsOn: try #require(.exact(year: 2020, month: 1, day: 2)),
+        startsOn: .exact(year: 2020, month: 1, day: 2)!,
         endsOn: nil,
         salary: LifeSalary(amount: 125_000, cadence: .yearly)
     )
