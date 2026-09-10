@@ -377,8 +377,8 @@ private struct ActivityMinimalRing: View {
                 segments: [.init(startAtMs: span.start, endAtMs: span.end)],
                 tint: tint
             )
-        } else if !context.state.segments.isEmpty {
-            ActivitySegmentedRing(segments: context.state.segments, tint: tint)
+        } else if !context.state.windowSegments.isEmpty {
+            ActivitySegmentedRing(segments: context.state.windowSegments, tint: tint)
         }
     }
 }
@@ -811,7 +811,7 @@ private func activityProgressValue(_ context: ActivityViewContext<OffWorkActivit
         let total = max(1, span.end - span.start)
         return min(100, max(0, Double(nowMs - span.start) / Double(total) * 100))
     }
-    return context.state.projectedProgress(
+    return context.state.windowProgress(
         atMs: Int64(date.timeIntervalSince1970 * 1_000)
     )
 }
@@ -837,8 +837,8 @@ private func activityProgress(_ context: ActivityViewContext<OffWorkActivityAttr
         .tint(activityTint(context, at: date))
         .labelsHidden()
         .frame(height: 6)
-    } else if !activityComplete(context, at: date), !context.state.segments.isEmpty {
-        activitySegmentedProgress(context.state.segments)
+    } else if !activityComplete(context, at: date), !context.state.windowSegments.isEmpty {
+        activitySegmentedProgress(context.state.windowSegments)
     } else {
         activityProgress(activityProgressValue(context, at: date))
     }
