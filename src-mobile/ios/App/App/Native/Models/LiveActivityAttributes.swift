@@ -91,6 +91,13 @@ nonisolated struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
         var addPomodoroEnabled = false
         var stopFocusLabel: String? = nil
         var scheduledSessionID: String? = nil
+        /// When this activity was scheduled to appear. The work countdown is
+        /// published only for the last 5, 15 or 30 minutes of a shift, so its
+        /// meters measure that stretch rather than the whole day — see
+        /// `activityWindowSegments`. `nil` on a focus payload, which is
+        /// already its own block, and on payloads written before the field
+        /// existed, which keep measuring the whole shift.
+        var displayStartAtMs: Int64? = nil
 
         /// End of the chain, which is what "this activity is finished" means
         /// once a focus block is followed by its break and the next block.
@@ -108,6 +115,50 @@ nonisolated struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
                 return leg.surface == "focus" && !leg.isPreview && nowMs >= leg.startAtMs
             }
             return surface == "focus"
+        }
+
+        /// The stretch this activity is actually on screen for.
+        ///
+        /// The work countdown is published only for the last 5, 15 or 30
+        /// minutes of a shift, so a meter measured against the whole day
+        /// arrives 97% full and crawls the last three points. It looks broken,
+        /// and it spends the card's only bar saying something the digits above
+        /// it already said better. The meters therefore span the activity's
+        /// own life: from the moment it was scheduled to appear to the end it
+        /// is counting to. Overtime needs no special case — the rules bundle
+        /// already extends the last segment when it is added.
+        ///
+        /// Lunch still does not count, because these are the same effective
+        /// segments, only clipped. A payload with no window keeps the whole
+        /// shift, which is what focus legs and older payloads want.
+        var windowSegments: [Segment] {
+            guard let displayStartAtMs else { return segments }
+            let clipped = segments.compactMap { segment -> Segment? in
+                let start = max(segment.startAtMs, displayStartAtMs)
+                guard start < segment.endAtMs else { return nil }
+                return Segment(startAtMs: start, endAtMs: segment.endAtMs)
+            }
+            return clipped.isEmpty ? segments : clipped
+        }
+
+        /// Elapsed effective time across `windowSegments`, as a percentage.
+        ///
+        /// Unlike `projectedProgress` this does not take the payload's own
+        /// `progress` as a floor: that number is the whole shift's, and inside
+        /// a fifteen-minute window it would pin the bar at full from the first
+        /// frame. Without a window the two agree, so the floor is kept there.
+        func windowProgress(atMs nowMs: Int64) -> Double {
+            guard displayStartAtMs != nil else { return projectedProgress(atMs: nowMs) }
+            let window = windowSegments
+            let duration = window.reduce(Int64(0)) { $0 + max(0, $1.endAtMs - $1.startAtMs) }
+            guard duration > 0 else { return min(100, max(0, progress)) }
+            let elapsed = window.reduce(Int64(0)) { total, segment in
+                total + min(
+                    max(0, segment.endAtMs - segment.startAtMs),
+                    max(0, nowMs - segment.startAtMs)
+                )
+            }
+            return min(100, max(0, Double(elapsed) / Double(duration) * 100))
         }
 
         func projectedProgress(atMs nowMs: Int64) -> Double {

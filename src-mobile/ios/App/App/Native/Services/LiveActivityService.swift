@@ -505,7 +505,8 @@ final class LiveActivityService {
             completedNote: store.t("offWorkWellDone"),
             surface: LiveActivitySurface.work.rawValue,
             timerLabel: nil,
-            destination: "offworkcountdown://timer"
+            destination: "offworkcountdown://timer",
+            displayStartAtMs: Int64(scheduledStart.timeIntervalSince1970 * 1_000)
         )
         let content = ActivityContent(
             state: state,
