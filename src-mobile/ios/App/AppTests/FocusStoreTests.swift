@@ -6,7 +6,7 @@ import Testing
 @Test("A one-block task completes after a natural 25-minute end")
 func onePomodoroTaskCompletesOnNaturalEnd() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200) // 09:00
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 1, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
 
@@ -19,7 +19,7 @@ func onePomodoroTaskCompletesOnNaturalEnd() throws {
 @Test("The first block of a two-pomodoro task stays open at 1 / 2")
 func twoPomodoroTaskStaysOpenAfterFirstBlock() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 2, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
 
@@ -33,7 +33,7 @@ func twoPomodoroTaskStaysOpenAfterFirstBlock() throws {
 @Test("A two-pomodoro task completes on the second natural end")
 func twoPomodoroTaskCompletesOnSecondBlock() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 2, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
     #expect(store.finishElapsedFocusSession(at: start.addingTimeInterval(25 * 60)))
@@ -54,7 +54,7 @@ func twoPomodoroTaskCompletesOnSecondBlock() throws {
 @Test("A twelve-pomodoro task does not complete on the first block")
 func twelvePomodoroTaskStaysOpenAfterFirstBlock() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 12, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
 
@@ -68,7 +68,7 @@ func twelvePomodoroTaskStaysOpenAfterFirstBlock() throws {
 @Test("A natural end after the app was backgrounded still counts one block")
 func backgroundNaturalEndCountsOneBlock() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 2, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
 
@@ -83,7 +83,7 @@ func backgroundNaturalEndCountsOneBlock() throws {
 @Test("A boundary cut and a user stop do not count")
 func incompleteEndsDoNotCountTowardTheTask() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 2, at: start)
 
     insertOpenSession(
@@ -191,7 +191,7 @@ func importedPastTaskCarriesAtExternalStateBoundary() throws {
 @Test("Future scheduled focus task cannot start early")
 func futureScheduledTaskIsNotYetAvailable() throws {
     let store = try focusStore()
-    let now = Date(timeIntervalSince1970: 1_787_557_200)
+    let now = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 1, at: now)
     var future = task
     future.scheduledStartAt = now.addingTimeInterval(60)
@@ -257,7 +257,7 @@ func futurePlannedTaskWithoutSlotIsNotYetAvailable() throws {
 @Test("Expired cross-midnight session is resolved from its persisted outcome")
 func crossMidnightRecoveryDoesNotBecomeAbandoned() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 1, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25,
                       shiftAnchor: store.recordsCalendar.date(byAdding: .day, value: -1, to: start))
@@ -269,7 +269,7 @@ func crossMidnightRecoveryDoesNotBecomeAbandoned() throws {
 @Test("Multiple open sessions converge deterministically and losers do not count")
 func multipleOpenSessionsConverge() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 2, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
     insertOpenSession(on: store, task: task, startedAt: start.addingTimeInterval(1), plannedMinutes: 25)
@@ -305,7 +305,7 @@ func focusRoundSelectsConfiguredBreak() throws {
 @Test("A completed 25-minute focus rolls straight into its five-minute short break")
 func focusThenShortBreakUsesConfiguredDuration() throws {
     let store = try focusStore()
-    let now = Date(timeIntervalSince1970: 1_787_557_200) // 09:00 inside the configured shift
+    let now = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 2, at: now)
     insertOpenSession(on: store, task: task, startedAt: now.addingTimeInterval(-25 * 60), plannedMinutes: 25)
     #expect(store.finishElapsedFocusSession(at: now))
@@ -341,7 +341,7 @@ func boundaryEndDoesNotOfferDeadBreakAction() throws {
 @Test("Skipping a break offered after its own window advances without a session")
 func skipSuggestedBreakAdvancesDirectlyToFocus() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 2, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
     // Half an hour after the block ended: the recovery it earned is over, so
@@ -359,7 +359,7 @@ func skipSuggestedBreakAdvancesDirectlyToFocus() throws {
 @Test("Completed and skipped breaks do not increment the task and return to focus")
 func breakCompletionAndSkipDoNotCountTask() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 2, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 5, kind: .shortBreak)
     #expect(store.finishElapsedFocusSession(at: start.addingTimeInterval(5 * 60)))
@@ -590,7 +590,7 @@ func templateAndManualTaskEstimatesRemainSemanticallyDistinct() throws {
 @Test("Session history restores global break cadence and skipped break next focus")
 func sessionHistoryRestoresNextAction() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 8, at: start)
 
     for round in 0..<4 {
@@ -651,7 +651,7 @@ func staleFocusNotificationRequestIsRejected() {
 @Test("Notification permission and scheduling failures reach the active timer state")
 func focusNotificationFailuresAreVisibleAndRecoverable() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 1, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
     let sessionID = try #require(store.activeFocusSession()?.id)
@@ -687,7 +687,7 @@ func focusDeliveryPreferencesAreIndependent() throws {
     let restored = OffWorkStore(defaults: defaults, records: .inMemory())
     #expect(!restored.focusNotificationsEnabled)
     #expect(!restored.focusLiveActivityEnabled)
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 1, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
     let sessionID = try #require(store.activeFocusSession()?.id)
@@ -701,12 +701,24 @@ func focusDeliveryPreferencesAreIndependent() throws {
     #expect(store.activeFocusSession()?.id == sessionID)
 }
 
+/// Monday 2026-08-24, mid-afternoon, inside the default 09:00–17:00 shift.
+///
+/// Built from the store's calendar rather than a fixed epoch. An absolute
+/// instant is a different civil hour in every zone: the epoch this replaced
+/// read 15:40 on the machine it was written on and 00:40 — the middle of the
+/// night, outside any shift — when Xcode Cloud ran the suite in UTC-7.
+@MainActor
+private func shiftAfternoon(_ store: OffWorkStore) throws -> Date {
+    try #require(store.recordsCalendar.date(
+        from: DateComponents(year: 2026, month: 8, day: 24, hour: 15, minute: 40)
+    ))
+}
+
 @MainActor
 private func focusStore() throws -> OffWorkStore {
     let suite = "FocusStoreTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
-    TestTimeZone.pin(defaults)
     let store = OffWorkStore(defaults: defaults, records: .inMemory())
     store.plus.debugSetAuthorized(true)
     return store
@@ -789,7 +801,7 @@ private func reload(_ task: FocusTask, on store: OffWorkStore) -> FocusTask {
 @Test("A new shift does not restore yesterday's completed-block recovery prompt")
 func newShiftDiscardsPreviousRecoveryPrompt() throws {
     let store = try focusStore()
-    let start = Date(timeIntervalSince1970: 1_787_557_200)
+    let start = try shiftAfternoon(store)
     let task = insertTask(on: store, pomodoros: 8, at: start)
     insertOpenSession(on: store, task: task, startedAt: start, plannedMinutes: 25)
     #expect(store.finishElapsedFocusSession(at: start.addingTimeInterval(31 * 60)))

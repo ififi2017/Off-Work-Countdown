@@ -493,8 +493,16 @@ day, on every machine: the same `Date(timeIntervalSince1970:)` that reads 15:40
 in UTC+8 reads 00:40 in UTC-7. Several tests that had passed for as long as
 everyone ran them in one zone failed the first time Xcode Cloud ran them in
 another. Prefer building instants from `DateComponents` through
-`store.recordsCalendar` over a raw epoch; when a raw epoch is unavoidable, pin
-`store.recordsTimeZoneIdentifier` in the same test.
+`store.recordsCalendar` over a raw epoch. Two shortcuts were tried and both
+made things worse, so neither is a way out. Setting `NSTimeZone.default` from
+the test helpers covers the store and the assertions together, and it crashed
+465 tests: it is process-global and Swift Testing runs tests in parallel in one
+process. Pinning only `store.recordsTimeZoneIdentifier` shares nothing and
+cannot crash, but it splits the run — the store then reads one zone while
+assertions building expected dates from `Calendar.current` read another, which
+turned five failures into about twenty-five. A suite-wide pin has to move both
+halves at once or neither; until someone does that, fix the affected tests
+individually by building their instants from civil dates.
 
 **Wall-clock assertions are meaningless under parallel testing.** Swift Testing
 runs tests in parallel *within one process*, so everything contends for the

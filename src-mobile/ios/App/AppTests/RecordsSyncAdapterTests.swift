@@ -160,6 +160,10 @@ func lifeProfileMergesByField() throws {
 @MainActor
 @Test("Cloud payload round-trips and merges every LifeProfile field")
 func cloudPayloadPreservesLifeProfileFields() throws {
+    // Both halves of the round-trip use this one calendar. UTC specifically,
+    // not merely the same on both sides: the fixed dates below are midnight
+    // UTC, and a civil-date round-trip only returns the exact instant when the
+    // calendar is the one that midnight belongs to.
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(secondsFromGMT: 0)!
     let employment = LifeEmploymentPeriod(
@@ -192,11 +196,7 @@ func cloudPayloadPreservesLifeProfileFields() throws {
     var state = RecordState()
     state.lifeProfile = baseline
     let payload = try #require(
-        RecordsSyncPayload.encode(
-            type: .lifeProfile,
-            key: LifeProfile.profileID.uuidString,
-            from: state
-        )
+        RecordsSyncPayload.encode(.lifeProfile(baseline), calendar: calendar)
     )
     let incoming = try #require(
         RecordsSyncPayload.incoming(from: payload, type: .lifeProfile, calendar: calendar)
