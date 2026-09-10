@@ -337,18 +337,34 @@ private struct ActivityCompactGlyph: View {
 /// The minimal presentation: a progress ring with the activity's glyph inside.
 ///
 /// The circle is too small for digits, so progress is the only thing it can
-/// add — and a ring is what iOS itself puts there. The glyph stays because the
-/// work countdown and a focus block are otherwise the same circle.
+/// add — and a ring is what iOS itself puts there. The work countdown wears no
+/// glyph inside it: the brand mark is a ring already, and two concentric ones
+/// say the same thing twice. Focus and break keep their symbol, which is the
+/// only thing that tells those two apart from the countdown.
 private struct ActivityMinimalRing: View {
     let context: ActivityViewContext<OffWorkActivityAttributes>
 
     var body: some View {
         TimelineView(activitySchedule(context)) { timeline in
+            let tint = activityTint(context, at: timeline.date)
             ZStack {
+                // Our own track, drawn under the system's ring. It closes the
+                // wedge gaps the mask leaves, and it is a plain shape: if the
+                // minimal slot ever refuses to draw the progress ring, the
+                // circle still reads as ours rather than as nothing.
+                Circle().strokeBorder(tint.opacity(0.28), lineWidth: 2.5)
                 ring(at: timeline.date)
-                ActivityCompactGlyph(context: context, size: 9, brandSize: 12)
+                // The brand mark is itself a ring, so drawing it inside this
+                // one gives two concentric circles and says nothing twice.
+                // The work countdown is the ring; focus and break keep their
+                // symbol, which is a shape the ring does not repeat.
+                if let symbol = activitySymbol(context, at: timeline.date) {
+                    Image(systemName: symbol)
+                        .font(.system(size: 8, weight: .semibold))
+                        .foregroundStyle(tint)
+                }
             }
-            .frame(width: 22, height: 22)
+            .frame(width: 20, height: 20)
         }
     }
 
@@ -364,8 +380,6 @@ private struct ActivityMinimalRing: View {
             )
         } else if !context.state.segments.isEmpty {
             ActivitySegmentedRing(segments: context.state.segments, tint: tint)
-        } else {
-            Circle().strokeBorder(tint.opacity(0.3), lineWidth: 2.5)
         }
     }
 }
