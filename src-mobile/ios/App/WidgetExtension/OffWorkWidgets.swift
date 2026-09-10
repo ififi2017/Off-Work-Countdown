@@ -139,6 +139,7 @@ private struct ActivityIslandBody: View {
 
 private struct LockScreenActivityView: View {
     let context: ActivityViewContext<OffWorkActivityAttributes>
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
     var body: some View {
         TimelineView(activitySchedule(context)) { timeline in
@@ -177,7 +178,7 @@ private struct LockScreenActivityView: View {
                     // The button has no text baseline of its own, so only the
                     // countdown and its caption share one.
                     HStack(alignment: .lastTextBaseline, spacing: 10) {
-                        activityCountdownText(context, now: timeline.date, size: 44, foreground: .primary)
+                        activityCountdownText(context, now: timeline.date, size: 44, dimmed: isLuminanceReduced, foreground: .primary)
                         if !activityIsFocus(context), let caption = activityCaption(context, at: timeline.date) {
                             Text(caption)
                                 .font(.system(size: 15, weight: .semibold))
@@ -615,6 +616,7 @@ private func activityCountdownText(
     _ context: ActivityViewContext<OffWorkActivityAttributes>,
     now: Date,
     size: CGFloat,
+    dimmed: Bool = false,
     foreground: Color = .white
 ) -> some View {
     if activityComplete(context, at: now) {
@@ -632,22 +634,32 @@ private func activityCountdownText(
             .environment(\.locale, activityLocale(context))
             .lineLimit(1)
             .minimumScaleFactor(0.58)
+    } else if dimmed {
+        // The dimmed screen coarsens a timer to whole minutes, but only for
+        // the date style: `Text(timerInterval:)` comes back as "8:--" with its
+        // seconds struck through, while `Text(_:style: .timer)` becomes
+        // "8 minutes" — which is what the rectangular complication has always
+        // shown there, and it is the better read at a glance.
+        //
+        // The render server owns this text too, so unlike the duration this
+        // branch used to compute from `now`, it does not freeze at whatever
+        // minute the screen dimmed on. What it gives up is the bounded end:
+        // a date timer counts back up from zero, so a shift that ends while
+        // the screen is dimmed and the extension is never woken shows a small
+        // rising number until something redraws the card.
+        Text(activityEnd(context, at: now), style: .timer)
+            .font(.system(size: min(size, 38), weight: .bold).monospacedDigit())
+            .foregroundStyle(foreground)
+            .environment(\.locale, activityLocale(context))
+            .lineLimit(1)
+            .minimumScaleFactor(0.58)
     } else {
-        // The render server owns this text and keeps counting while the
-        // extension is suspended, which is the whole of Always-On Display: a
-        // duration computed here from `now` freezes at whatever minute the
-        // screen dimmed on, because nothing wakes us to draw the next one.
-        // Coarsening to minutes on the dimmed screen is the system's call to
-        // make, not ours.
         Text(timerInterval: now...max(now, activityEnd(context, at: now)), countsDown: true)
             .font(.system(size: size, weight: .bold).monospacedDigit())
             .foregroundStyle(foreground)
             // Live Activities run in the Widget extension, whose process
-            // locale can differ from the language selected inside the app.
-            // Always-On Display may replace the seconds timer with a coarse
-            // localized duration (for example "10 minutes"), so the locale
-            // must travel with the activity content instead of falling back
-            // to the extension or system language.
+            // locale can differ from the language selected inside the app, and
+            // the dimmed branch above prints a localized duration.
             .environment(\.locale, activityLocale(context))
             .lineLimit(1)
             .minimumScaleFactor(0.58)
