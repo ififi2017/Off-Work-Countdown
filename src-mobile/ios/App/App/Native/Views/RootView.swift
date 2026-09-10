@@ -301,11 +301,11 @@ struct OffWorkCountdownRootView: View {
         defaults.removeObject(forKey: "ios.native.qaOrientationError")
         let orientations: UIInterfaceOrientationMask = requested == "landscape" ? .landscape : .portrait
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            guard let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first else { return }
-            scene.windows.first?.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
-            scene.requestGeometryUpdate(.iOS(interfaceOrientations: orientations)) { error in
-                UserDefaults.standard.set(error.localizedDescription, forKey: "ios.native.qaOrientationError")
-            }
+            // The policy owns every window of every connected scene. Reaching
+            // for `connectedScenes.first` here turned whichever scene the
+            // system happened to hand back first, which on an iPad running
+            // Stage Manager is not necessarily the one being photographed.
+            AppOrientationPolicy.shared.pinOrientationsForQA(orientations)
         }
 #endif
     }

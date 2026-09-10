@@ -50,11 +50,15 @@ enum SystemShare {
     /// sidesteps that entirely.
     @MainActor
     static func present(items: [Any]) {
+        // `connectedScenes` is unordered, so falling straight back to `.first`
+        // could hand the sheet a backgrounded iPad window and put it up where
+        // the user is not looking. Same ordering as `manageSubscriptions`:
+        // on screen and active, then on screen, then anything at all.
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
         guard
-            let scene = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
-                .first(where: { $0.activationState == .foregroundActive })
-                ?? UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first,
+            let scene = scenes.first(where: { $0.activationState == .foregroundActive })
+                ?? scenes.first(where: { $0.activationState == .foregroundInactive })
+                ?? scenes.first,
             let root = scene.windows.first(where: \.isKeyWindow)?.rootViewController
         else { return }
 

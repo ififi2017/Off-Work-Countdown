@@ -74,13 +74,51 @@ final class AppOrientationPolicy {
         }
     }
 
+    /// The mask the policy should be reporting, given first-run state and any
+    /// orientation a QA screenshot run has pinned.
+    ///
+    /// A pin outranks the ordinary policy for the life of the process. Without
+    /// that, the next `.active` transition would hand the policy back and turn
+    /// the window away from the orientation the sweep asked for.
+    static func resolvedMask(
+        onboardingComplete: Bool,
+        qaPinned: UIInterfaceOrientationMask?
+    ) -> UIInterfaceOrientationMask {
+        qaPinned ?? mask(onboardingComplete: onboardingComplete)
+    }
+
     func update(onboardingComplete: Bool) {
-        let requested = Self.mask(onboardingComplete: onboardingComplete)
+        let requested = Self.resolvedMask(
+            onboardingComplete: onboardingComplete,
+            qaPinned: qaPinnedOrientations
+        )
         let changed = supportedOrientations != requested
         supportedOrientations = requested
         RootOrientationSwizzle.installOnKeyWindow()
         applyToWindows(forceGeometryUpdate: changed)
     }
+
+#if DEBUG
+    private var qaPinnedOrientations: UIInterfaceOrientationMask?
+
+    /// Turns the window for a QA screenshot run and keeps it turned.
+    ///
+    /// `requestGeometryUpdate` on its own does not hold. iOS re-reads the root
+    /// controller's `supportedInterfaceOrientations` the moment the request
+    /// lands, and while that still answers `.allButUpsideDown` the physically
+    /// portrait simulator wins and the window turns straight back — which is
+    /// why every landscape column of the sweep came back "still portrait".
+    /// Narrowing the policy to the requested orientation first is what makes
+    /// the turn stick.
+    func pinOrientationsForQA(_ mask: UIInterfaceOrientationMask) {
+        qaPinnedOrientations = mask
+        supportedOrientations = mask
+        RootOrientationSwizzle.installOnKeyWindow()
+        applyToWindows(forceGeometryUpdate: true)
+    }
+#else
+    private var qaPinnedOrientations: UIInterfaceOrientationMask? { nil }
+#endif
 
     private func applyToWindows(forceGeometryUpdate: Bool) {
         let mask = supportedOrientations
@@ -98,6 +136,13 @@ final class AppOrientationPolicy {
                     orientationLog.error(
                         "Geometry update failed: \(error.localizedDescription, privacy: .public)"
                     )
+#if DEBUG
+                    // The screenshot sweep reads this key to explain a miss.
+                    UserDefaults.standard.set(
+                        error.localizedDescription,
+                        forKey: "ios.native.qaOrientationError"
+                    )
+#endif
                 }
             }
         }
