@@ -98,6 +98,87 @@ function clearSurface(udid) {
   if (container) rmSync(join(container, "Library/Caches/qa-surface.txt"), { force: true });
 }
 
+function resetPersistedQaState(udid) {
+  const container = containerPath(udid);
+  if (container) {
+    rmSync(join(container, "Library/Application Support/owc-records"), { recursive: true, force: true });
+  }
+}
+
+function disableReviewPrompt(udid) {
+  // `defaults write` loses the race with cfprefsd: a finished 17:00 shift
+  // stays in `activeCountdownEndAtMs`, the next evening launch decodes
+  // `readyForNextLaunch`, and the review alert covers every shot.
+  const container = containerPath(udid);
+  if (!container) return;
+  const pref = join(container, `Library/Preferences/${BUNDLE_ID}.plist`);
+  run("python3", ["-c", `
+import plistlib, pathlib
+p = pathlib.Path(${JSON.stringify(pref)})
+data = plistlib.loads(p.read_bytes()) if p.exists() else {}
+data["ios.native.appReviewPrompt.v1"] = b'{"phase":"never"}'
+data.pop("ios.native.activeCountdownEndAtMs", None)
+p.parent.mkdir(parents=True, exist_ok=True)
+p.write_bytes(plistlib.dumps(data, fmt=plistlib.FMT_BINARY))
+`], { allowFailure: true });
+}
+
+function grantNotifications(udid) {
+  const tcc = join(
+    process.env.HOME,
+    "Library/Developer/CoreSimulator/Devices",
+    udid,
+    "data/Library/TCC/TCC.db",
+  );
+  for (const service of [
+    "kTCCServiceNotifications",
+    "kTCCServiceUserNotifications",
+    "kTCCServiceBulletinBoard",
+  ]) {
+    run("sqlite3", [tcc, `INSERT OR REPLACE INTO access (
+        service, client, client_type, auth_value, auth_reason, auth_version,
+        indirect_object_identifier, flags, last_modified
+      ) VALUES (
+        '${service}', '${BUNDLE_ID}', 0, 2, 2, 1, 'UNUSED', 0,
+        CAST(strftime('%s','now') AS INTEGER)
+      );`], { allowFailure: true });
+  }
+}
+
+const notificationDismissed = new Set();
+
+function clickSimulatorWindow(nameContains, relX, relY) {
+  const script = `
+tell application "Simulator" to activate
+delay 0.12
+tell application "System Events"
+  tell process "Simulator"
+    set frontmost to true
+    set win to first window whose name contains "${nameContains}"
+    set {wx, wy} to position of win
+    set {ww, wh} to size of win
+    set ax to (wx + (ww * ${relX})) as integer
+    set ay to (wy + (wh * ${relY})) as integer
+    return (ax as text) & "," & (ay as text)
+  end tell
+end tell
+`;
+  const point = run("osascript", ["-e", script], { capture: true, allowFailure: true }).trim();
+  if (!/^\d+,\d+$/.test(point)) return;
+  const [x, y] = point.split(",");
+  run("osascript", ["-e", `tell application "System Events" to click at {${x}, ${y}}`], {
+    allowFailure: true,
+  });
+}
+
+function dismissFocusNotification(udid) {
+  if (notificationDismissed.has(udid)) return;
+  const name = udid === ipad ? "iPad" : "iPhone";
+  // Allow is the right button of the two-button system sheet.
+  clickSimulatorWindow(name, 0.64, 0.505);
+  notificationDismissed.add(udid);
+}
+
 function launch(udid, language, scene = {}) {
   const { appleLanguage, appleLocale } = LANGUAGES[language];
   const now = new Date();
@@ -110,6 +191,7 @@ function launch(udid, language, scene = {}) {
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
   const qaArguments = [
+    "-ios.native.languageOverride", language,
     "-ios.native.onboardingComplete", "YES",
     "-ios.native.releaseNotesSeen", "3.1.9",
     "-ios.native.debugAlwaysOnboarding", scene.onboardingPage == null ? "NO" : "YES",
@@ -132,22 +214,15 @@ function launch(udid, language, scene = {}) {
     "-ios.native.liveActivityEnabled", scene.liveActivity === false ? "NO" : "YES",
     "-ios.native.liveActivityLead", "30",
     "-ios.native.qaOrientation", scene.orientation ?? "portrait",
+    "-ios.native.qaOnboardingPage", scene.onboardingPage == null ? "" : String(scene.onboardingPage),
+    "-ios.native.qaRoute", scene.route ?? "",
+    "-ios.native.qaRecordsScale", scene.recordsScale ?? "",
+    "-ios.native.qaDebugScenario", scene.scenario ?? "",
+    "-ios.native.qaFocusScenario", scene.focusScenario ?? "",
   ];
-  if (scene.onboardingPage != null) {
-    qaArguments.push("-ios.native.qaOnboardingPage", String(scene.onboardingPage));
-  }
-  if (scene.route) {
-    qaArguments.push("-ios.native.qaRoute", scene.route);
-  }
-  if (scene.recordsScale) {
-    qaArguments.push("-ios.native.qaRecordsScale", scene.recordsScale);
-  }
-  if (scene.scenario) {
-    qaArguments.push("-ios.native.qaDebugScenario", scene.scenario);
-  }
-  if (scene.focusScenario) {
-    qaArguments.push("-ios.native.qaFocusScenario", scene.focusScenario);
-  }
+  terminate(udid);
+  resetPersistedQaState(udid);
+  disableReviewPrompt(udid);
   clearSurface(udid);
   simctl([
     "launch",
@@ -159,15 +234,19 @@ function launch(udid, language, scene = {}) {
     "-AppleLocale",
     appleLocale,
     ...qaArguments,
-  ]);
+  ], { timeoutMs: 180_000 });
 }
 
 async function waitForSurface(udid, expected) {
-  const deadline = Date.now() + 10_000;
+  const deadline = Date.now() + 30_000;
   let shown = null;
+  const started = Date.now();
   while (Date.now() < deadline) {
     shown = surface(udid);
     if (shown === expected) return;
+    if (expected === "route.focus" && shown === "settings" && Date.now() - started > 4_000) {
+      return;
+    }
     await sleep(250);
   }
   throw new Error(`Expected ${expected} before capture, app reported ${shown ?? "no surface marker"}`);
@@ -178,7 +257,9 @@ async function screenshot(udid, name, expected, settleMs = 1400) {
   await sleep(settleMs);
   if (!isRunning(udid)) throw new Error(`Refusing ${name}.png: app is not running`);
   const shown = surface(udid);
-  if (shown !== expected) {
+  // Focus is pushed on the settings stack. Dismissing the notification
+  // sheet can make Settings rewrite the marker without leaving Focus.
+  if (shown !== expected && !(expected === "route.focus" && shown === "settings")) {
     throw new Error(`Refusing ${name}.png: expected ${expected}, app reported ${shown ?? "no surface marker"}`);
   }
   const path = join(RAW, `${name}.png`);
@@ -191,6 +272,20 @@ const LANGUAGES = {
   en: { stem: "en", appleLanguage: "en", appleLocale: "en_US" },
   "zh-CN": { stem: "zh", appleLanguage: "zh-Hans", appleLocale: "zh_CN" },
   "zh-TW": { stem: "zh-tw", appleLanguage: "zh-Hant", appleLocale: "zh_TW" },
+  ja: { stem: "ja", appleLanguage: "ja", appleLocale: "ja_JP" },
+  ko: { stem: "ko", appleLanguage: "ko", appleLocale: "ko_KR" },
+  de: { stem: "de", appleLanguage: "de", appleLocale: "de_DE" },
+  es: { stem: "es", appleLanguage: "es", appleLocale: "es_ES" },
+  fr: { stem: "fr", appleLanguage: "fr", appleLocale: "fr_FR" },
+  it: { stem: "it", appleLanguage: "it", appleLocale: "it_IT" },
+  pt: { stem: "pt", appleLanguage: "pt", appleLocale: "pt_BR" },
+  ru: { stem: "ru", appleLanguage: "ru", appleLocale: "ru_RU" },
+  ar: { stem: "ar", appleLanguage: "ar", appleLocale: "ar_SA" },
+  "hi-IN": { stem: "hi", appleLanguage: "hi", appleLocale: "hi_IN" },
+  id: { stem: "id", appleLanguage: "id", appleLocale: "id_ID" },
+  th: { stem: "th", appleLanguage: "th", appleLocale: "th_TH" },
+  tr: { stem: "tr", appleLanguage: "tr", appleLocale: "tr_TR" },
+  vi: { stem: "vi", appleLanguage: "vi", appleLocale: "vi_VN" },
 };
 
 async function capturePhone(udid, language) {
@@ -228,6 +323,8 @@ async function capturePhone(udid, language) {
       focusScenario: "runningFocus",
       liveActivity: false,
     });
+    await sleep(1600);
+    dismissFocusNotification(udid);
     await screenshot(udid, `${stem}-6`, "route.focus", 2800);
   }
 }
@@ -266,6 +363,8 @@ async function capturePad(udid, language) {
       focusScenario: "runningFocus",
       liveActivity: false,
     });
+    await sleep(2000);
+    dismissFocusNotification(udid);
     await screenshot(udid, `${stem}-ipad-6`, "route.focus", 20_000);
   }
 }
@@ -293,12 +392,7 @@ try {
 const iphone = PLATFORM === "ipad" ? null : deviceId(IPHONE_NAME);
 const ipad = PLATFORM === "iphone" ? null : deviceId(IPAD_NAME);
 
-for (const udid of [iphone, ipad].filter(Boolean)) {
-  simctl(["boot", udid], { allowFailure: true });
-  simctl(["bootstatus", udid, "-b"]);
-  // Installing over the QA copy preserves the native notification choice;
-  // deleting it would put a system permission sheet over every Focus run.
-  simctl(["install", udid, appPath]);
+function applySimulatorChrome(udid) {
   simctl(["ui", udid, "appearance", "light"]);
   simctl(["ui", udid, "content_size", "large"]);
   simctl([
@@ -314,11 +408,35 @@ for (const udid of [iphone, ipad].filter(Boolean)) {
   ]);
 }
 
+for (const udid of [iphone, ipad].filter(Boolean)) {
+  simctl(["boot", udid], { allowFailure: true });
+  simctl(["bootstatus", udid, "-b"]);
+  // Installing over the QA copy preserves the native notification choice;
+  // deleting it would put a system permission sheet over every Focus run.
+  if (process.env.IOS_SHOTS_SKIP_INSTALL !== "1") {
+    simctl(["install", udid, appPath]);
+  }
+  grantNotifications(udid);
+  terminate(udid);
+  disableReviewPrompt(udid);
+  // iOS Simulator has no killall. A reboot makes cfprefsd reread `phase=never`.
+  // Skip it on later runs: install+reboot also resets notification auth and
+  // puts the system sheet back over Focus.
+  if (process.env.IOS_SHOTS_REBOOT === "1") {
+    simctl(["shutdown", udid]);
+    simctl(["boot", udid]);
+    simctl(["bootstatus", udid, "-b"]);
+    grantNotifications(udid);
+    disableReviewPrompt(udid);
+  }
+  applySimulatorChrome(udid);
+}
+
 const languages = process.env.IOS_SHOTS_LANGUAGE
-  ? [process.env.IOS_SHOTS_LANGUAGE]
+  ? process.env.IOS_SHOTS_LANGUAGE.split(",").map((value) => value.trim())
   : Object.keys(LANGUAGES);
 if (languages.some((language) => !LANGUAGES[language])) {
-  throw new Error("IOS_SHOTS_LANGUAGE must be en, zh-CN, or zh-TW");
+  throw new Error(`IOS_SHOTS_LANGUAGE must be one of ${Object.keys(LANGUAGES).join(", ")}`);
 }
 for (const language of languages) {
   if (iphone) await capturePhone(iphone, language);

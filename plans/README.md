@@ -26,6 +26,7 @@
 | 014 | [番茄钟画布重排：现在 / 今天 / 常用](014-ios-focus-canvas-redesign.md) | 2026-09-04 | IMPLEMENTED | 已随 PR #118 合入，二轮 CR 与模拟器回归完成；011 的真机行为门禁仍待签收 |
 
 | 015 | [真机反馈、人生收入与设置同步](015-device-feedback-life-income-settings-sync.md) | 2026-09-05 | IN PROGRESS | iPad 导航与记录布局、实际＋推算总结、职业经历、Plus 引导、私有 CloudKit 设置同步与小组件补齐 |
+| 017 | [Apple Watch：Plus 抬腕倒计时与表盘组件](017-apple-watch-plus.md) | 2026-09-08 | TODO | 产品边界已确认；整套 Watch 体验需有效 Plus（含试用和终身），W0–W3 尚未开工 |
 
 ## 仍在 `docs/` 的活计划
 

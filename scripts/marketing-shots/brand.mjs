@@ -26,8 +26,18 @@ export function escapeHTML(value) {
 }
 
 export function fontStack(language) {
-  const cjk = language === "zh-TW" ? '"PingFang TC", ' : language === "zh-CN" || language === "zh" ? '"PingFang SC", ' : "";
-  return `${cjk}-apple-system, "SF Pro Display", "Helvetica Neue", sans-serif`;
+  const extras = {
+    "zh-CN": '"PingFang SC", ',
+    zh: '"PingFang SC", ',
+    "zh-TW": '"PingFang TC", ',
+    "zh-HK": '"PingFang HK", ',
+    ja: '"Hiragino Sans", "Hiragino Kaku Gothic ProN", ',
+    ko: '"Apple SD Gothic Neo", ',
+    ar: '"SF Arabic", "Geeza Pro", ',
+    "hi-IN": '"Kohinoor Devanagari", "Devanagari Sangam MN", ',
+    th: '"Thonburi", "Sukhumad", ',
+  };
+  return `${extras[language] ?? ""}-apple-system, "SF Pro Display", "Helvetica Neue", sans-serif`;
 }
 
 /** Official Open Day mark from assets/brand. Only the hands swap for dark canvases. */

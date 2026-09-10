@@ -3,7 +3,7 @@
 生成上架用的商店截图，以及发小红书用的笔记图：
 
 - `macos/` 产出 Mac App Store 需要的 2880×1800，中英各五张。左文右图，右边舞台居中，主窗 / 迷你窗 / 小组件尺寸不同也能对齐。
-- `ios/` 产出 iPhone 6.9 英寸 1320×2868 与 iPad 13 英寸 2064×2752，英文、简体中文、繁体中文各六张，共三十六张。官方 Apple 机框叠在屏洞上。
+- `ios/` 产出 iPhone 6.9 英寸 1320×2868 与 iPad 13 英寸 2064×2752，17 种商店语言各六张，共两百零四张。官方 Apple 机框叠在屏洞上。
 - `xiaohongshu/` 产出小红书笔记图 1080×1440（3:4 竖版），中文三张。
   这是信息流展示面积最大的比例；1:1 和 4:3 都会被压小或裁切。
 
@@ -129,7 +129,14 @@ npm run shots:ios
 5. 人生画布（`qaRecordsScale=life`）
 6. 专注（`qaRoute=focus`、`qaFocusScenario=runningFocus`）
 
-原片按 `en-1.png` / `zh-1.png` / `zh-tw-1.png`、`en-ipad-1.png` / `zh-ipad-1.png` / `zh-tw-ipad-1.png` 落在 `ios/raw/`。截图固定使用浅色外观、14:22 状态栏、满格网络和 100% 电量。
+原片按 `<语言词干>-1.png` 与 `<语言词干>-ipad-1.png` 落在 `ios/raw/`，词干见
+`capture.mjs` 的 `LANGUAGES`（`en` / `zh` / `zh-tw` / `ja` / `ko` / `de` / `es` /
+`fr` / `it` / `pt` / `ru` / `ar` / `hi` / `id` / `th` / `tr` / `vi`）。截图固定使用
+浅色外观、14:22 状态栏、满格网络和 100% 电量。
+
+`IOS_SHOTS_LANGUAGE` 收逗号分隔的列表，只重拍其中几种语言；`IOS_SHOTS_SKIP_INSTALL=1`
+沿用模拟器上已装的 QA 包，`IOS_SHOTS_REBOOT=1` 在需要 cfprefsd 重读偏好时重启模拟器
+（代价是通知授权被重置，专注页会重新弹权限弹窗）。
 
 只改宣传文案或画面排版时，无需重跑 Xcode：
 
@@ -147,8 +154,12 @@ IOS_SHOTS_OUT_DIR='/path/to/output' npm run shots:ios:validate
 ```
 
 成品在 `ios/out/`。`zh-CN-iphone-01-timer.png` 这样的序号就是各语言、各设备上传到
-App Store Connect 的顺序。`ios/validate.mjs` 会确认三十六张图尺寸正确且没有 alpha
-通道。
+App Store Connect 的顺序。`ios/validate.mjs` 会确认两百零四张图尺寸正确且没有 alpha
+通道。`IOS_SHOTS_LAYOUT_PREVIEW=1` 允许缺原片的语言借用英文原片占位，用来在没拍全之前
+先看长文案在文案带里的排版；这种产物不能上传。
+
+`compose.mjs` 不再清空 `ios/out/`，好让你单独重排某几种语言。残留的旧文件由
+`validate.mjs` 当作 unexpected 报出来。
 
 当前尺寸来自 Apple 的 Screenshot specifications：竖版 iPhone 使用 6.9 英寸
 1320×2868（API 槽位仍是 `APP_IPHONE_67`），iPad 使用 13 英寸 2064×2752。

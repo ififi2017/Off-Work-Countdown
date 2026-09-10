@@ -9,7 +9,10 @@ const expected = {
   iphone: "1320x2868",
   ipad: "2064x2752",
 };
-const locales = ["en", "zh-CN", "zh-TW"];
+const locales = [
+  "en", "zh-CN", "zh-TW", "ja", "ko", "de", "es", "fr", "it", "pt",
+  "ru", "ar", "hi-IN", "id", "th", "tr", "vi",
+];
 const scenes = ["timer", "widgets", "lunch", "records", "life", "focus"];
 const expectedFiles = new Set(
   locales.flatMap((locale) => ["iphone", "ipad"].flatMap((platform) =>
@@ -20,7 +23,7 @@ const expectedFiles = new Set(
 if (files.length !== expectedFiles.size || files.some((file) => !expectedFiles.has(file))) {
   const unexpected = files.filter((file) => !expectedFiles.has(file));
   const missing = [...expectedFiles].filter((file) => !files.includes(file));
-  throw new Error(`Expected the 36 App Store screenshots; missing: ${missing.join(", ") || "none"}; unexpected: ${unexpected.join(", ") || "none"}`);
+  throw new Error(`Expected ${expectedFiles.size} App Store screenshots; missing: ${missing.join(", ") || "none"}; unexpected: ${unexpected.join(", ") || "none"}`);
 }
 
 for (const file of files) {
