@@ -315,6 +315,27 @@ func plannedShiftTakesOverTheHealthReminder() throws {
 }
 
 @MainActor
+@Test("The settings row stops advertising an interval nothing counts to")
+func healthLabelSaysWhoOwnsTheBreaks() throws {
+    let store = try canvasStore()
+    let at = try #require(day(store, hour: 9, minute: 5))
+    store.microBreakEnabled = true
+    store.microBreakIntervalMinutes = 60
+    #expect(store.healthLabel(at: at) == store.t("minutesShort", values: ["count": "60"]))
+
+    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
+    _ = store.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at)
+    #expect(store.healthLabel(at: at) == store.t("microBreakFollowsFocus"))
+
+    // Clearing the plan hands the interval back, and switching the reminder
+    // off outranks both — an off reminder is not "following" anything.
+    store.clearBlock(startingAt: target.startAtMs, at: at)
+    #expect(store.healthLabel(at: at) == store.t("minutesShort", values: ["count": "60"]))
+    store.microBreakEnabled = false
+    #expect(store.healthLabel(at: at) == store.t("disabledShort"))
+}
+
+@MainActor
 @Test("Clearing the plan gives the fixed interval back")
 func clearingThePlanRestoresTheInterval() throws {
     let store = try canvasStore()

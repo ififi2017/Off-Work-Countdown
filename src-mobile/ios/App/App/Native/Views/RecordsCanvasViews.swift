@@ -1096,7 +1096,9 @@ struct RecordsYearCanvas: View {
             Text(store.t(withoutColor ? "recordsHeatWithoutColor" : "recordsHeatScale"))
                 .font(.caption2)
                 .foregroundStyle(OWCDesign.secondary)
+                .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
         }
 
     }
@@ -1727,11 +1729,10 @@ struct RecordsMarkLegend: View {
                     ForEach(items, id: \.key) { item in
                         row(item).fixedSize()
                     }
-                    Spacer(minLength: 0)
                 }
                 LazyVGrid(
-                    columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
-                    alignment: .leading,
+                    columns: [GridItem(.flexible(), alignment: .center), GridItem(.flexible(), alignment: .center)],
+                    alignment: .center,
                     spacing: 4
                 ) {
                     ForEach(items, id: \.key) { item in
@@ -1739,7 +1740,7 @@ struct RecordsMarkLegend: View {
                     }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .center)
             .accessibilityElement(children: .combine)
             .accessibilityLabel(store.t("recordsLegendTitle"))
         }
