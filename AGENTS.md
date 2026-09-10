@@ -426,9 +426,15 @@ orientation is reported as a miss with the reason, because a screenshot of the
 Home Screen is a perfectly valid PNG. `IOS_QA_SCENES`, `IOS_QA_THEME=both`,
 `IOS_QA_LANGUAGE`, `IOS_QA_IPHONE` / `IOS_QA_IPAD` and `IOS_QA_SKIP_BUILD=1`
 narrow or redirect it; it builds into its own DerivedData so it never fights
-Xcode. Known gap: the `qaOrientation` landscape hook does not currently rotate,
-so those columns report "still portrait" until it is fixed — the app writes the
-reason to `ios.native.qaOrientationError`.
+Xcode. The `qaOrientation` hook goes through `AppOrientationPolicy`, which pins
+the requested mask before asking for the geometry update: requesting landscape
+on its own does not hold, because iOS re-reads the root controller's
+`supportedInterfaceOrientations`, still sees portrait allowed, and turns a
+physically portrait simulator straight back — that is what made those columns
+report "still portrait". A pin lasts the life of the process, so it belongs
+only in the DEBUG build. The app writes any geometry error to
+`ios.native.qaOrientationError`. The fix has not yet been confirmed by a full
+sweep; re-run one before trusting the landscape columns.
 
 `npm run check:ios` guards the shipping configuration of that project — bundle
 ids against Universal Purchase, the SwiftUI entry point, iPhone/iPad

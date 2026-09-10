@@ -2759,6 +2759,37 @@ func orientationPolicyUnlocksAfterOnboarding() {
 }
 
 @MainActor
+@Test("A QA orientation pin outranks the ordinary policy")
+func qaOrientationPinOutranksPolicy() {
+    // The screenshot sweep asks for landscape and then the app becomes active,
+    // which re-runs `update(onboardingComplete:)`. While that handed back
+    // `.allButUpsideDown`, iOS re-read it, saw the simulator was physically
+    // portrait, and turned the window back — every landscape column of the
+    // sweep came out "still portrait".
+    let pinned = AppOrientationPolicy.resolvedMask(
+        onboardingComplete: true,
+        qaPinned: .landscape
+    )
+    #expect(pinned == .landscape)
+    #expect(!pinned.contains(.portrait))
+
+    // A pin also holds through first-run, where the policy wants portrait only.
+    #expect(
+        AppOrientationPolicy.resolvedMask(onboardingComplete: false, qaPinned: .landscape)
+            == .landscape
+    )
+
+    // With nothing pinned the policy is unchanged.
+    #expect(
+        AppOrientationPolicy.resolvedMask(onboardingComplete: false, qaPinned: nil) == .portrait
+    )
+    #expect(
+        AppOrientationPolicy.resolvedMask(onboardingComplete: true, qaPinned: nil)
+            == AppOrientationPolicy.mask(onboardingComplete: true)
+    )
+}
+
+@MainActor
 @Test("A warm session remembers the shift-end celebration")
 func celebrationSurvivesWarmSession() throws {
     let (defaults, suite) = try isolatedDefaults()
