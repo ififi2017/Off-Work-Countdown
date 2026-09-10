@@ -37,8 +37,10 @@ struct OffWorkLiveActivityWidget: Widget {
                 ActivityCompactCountdown(context: context)
             } minimal: {
                 // The one slot another app's activity can squeeze this into.
-                // A single glyph has to say which of ours it is.
-                ActivityCompactGlyph(context: context, size: 13, brandSize: 18)
+                // The ring is the system's own idiom for something running, and
+                // the glyph stays inside it because it is still all that says
+                // which of ours this is.
+                ActivityMinimalRing(context: context)
             }
             .widgetURL(activityDestination(context))
             .keylineTint(activityTint(context, at: .now))
@@ -329,6 +331,147 @@ private struct ActivityCompactGlyph: View {
                 AlwaysDarkBrandMark(size: brandSize)
             }
         }
+    }
+}
+
+/// The minimal presentation: a progress ring with the activity's glyph inside.
+///
+/// The circle is too small for digits, so progress is the only thing it can
+/// add — and a ring is what iOS itself puts there. The work countdown wears no
+/// glyph inside it: the brand mark is a ring already, and two concentric ones
+/// say the same thing twice. Focus and break keep their symbol, which is the
+/// only thing that tells those two apart from the countdown.
+private struct ActivityMinimalRing: View {
+    let context: ActivityViewContext<OffWorkActivityAttributes>
+
+    var body: some View {
+        TimelineView(activitySchedule(context)) { timeline in
+            let tint = activityTint(context, at: timeline.date)
+            ZStack {
+                // Our own track, drawn under the system's ring. It closes the
+                // wedge gaps the mask leaves, and it is a plain shape: if the
+                // minimal slot ever refuses to draw the progress ring, the
+                // circle still reads as ours rather than as nothing.
+                Circle().strokeBorder(tint.opacity(0.28), lineWidth: 2.5)
+                ring(at: timeline.date)
+                // The brand mark is itself a ring, so drawing it inside this
+                // one gives two concentric circles and says nothing twice.
+                // The work countdown is the ring; focus and break keep their
+                // symbol, which is a shape the ring does not repeat.
+                if let symbol = activitySymbol(context, at: timeline.date) {
+                    Image(systemName: symbol)
+                        .font(.system(size: 8, weight: .semibold))
+                        .foregroundStyle(tint)
+                }
+            }
+            .frame(width: 20, height: 20)
+        }
+    }
+
+    @ViewBuilder
+    private func ring(at date: Date) -> some View {
+        let tint = activityTint(context, at: date)
+        if activityComplete(context, at: date) {
+            Circle().strokeBorder(tint, lineWidth: 2.5)
+        } else if activityIsFocus(context), let span = activitySpan(context, at: date) {
+            ActivitySegmentedRing(
+                segments: [.init(startAtMs: span.start, endAtMs: span.end)],
+                tint: tint
+            )
+        } else if !context.state.segments.isEmpty {
+            ActivitySegmentedRing(segments: context.state.segments, tint: tint)
+        }
+    }
+}
+
+/// One ring per effective segment, each masked to its own wedge of the circle.
+///
+/// Same reasoning as the lock-screen bar: only `ProgressView(timerInterval:)`
+/// keeps moving while the extension is suspended, and a single ring stretched
+/// across the shift would count the lunch gap as worked time. Each ring is
+/// given the whole effective duration as its interval and started early by the
+/// effective time before it, so its sweep crosses its own wedge exactly while
+/// that segment is being worked, and is masked away everywhere else. Over the
+/// gap nothing advances, which is the arithmetic `projectedProgress` does.
+private struct ActivitySegmentedRing: View {
+    let segments: [OffWorkActivityAttributes.ContentState.Segment]
+    let tint: Color
+
+    private struct Arc: Identifiable {
+        let id: Int64
+        let interval: ClosedRange<Date>
+        let from: Double
+        let to: Double
+    }
+
+    private var arcs: [Arc] {
+        let durations = segments.map { max(0, $0.endAtMs - $0.startAtMs) }
+        let total = durations.reduce(Int64(0), +)
+        guard total > 0 else { return [] }
+        var prior = Int64(0)
+        return zip(segments, durations).map { segment, duration in
+            let start = Date(timeIntervalSince1970: Double(segment.startAtMs - prior) / 1_000)
+            let from = Double(prior) / Double(total)
+            prior += duration
+            return Arc(
+                id: segment.startAtMs,
+                interval: start...start.addingTimeInterval(Double(total) / 1_000),
+                from: from,
+                to: Double(prior) / Double(total)
+            )
+        }
+    }
+
+    var body: some View {
+        let arcs = arcs
+        ZStack {
+            ForEach(arcs) { arc in
+                ring(arc, masked: arcs.count > 1)
+            }
+        }
+    }
+
+    /// A shift with no lunch owns the whole circle, and takes the plain ring
+    /// the system draws for every other timer — the wedge mask is only reached
+    /// when there is a gap that has to be held back.
+    @ViewBuilder
+    private func ring(_ arc: Arc, masked: Bool) -> some View {
+        let ring = ProgressView(timerInterval: arc.interval, countsDown: false) {
+            EmptyView()
+        } currentValueLabel: { EmptyView() }
+            .progressViewStyle(.circular)
+            .tint(tint)
+            .labelsHidden()
+        if masked {
+            ring.mask(ActivityRingWedge(from: arc.from, to: arc.to))
+        } else {
+            ring
+        }
+    }
+}
+
+/// The slice of the ring one segment owns. A single segment owns all of it,
+/// which is returned as the plain rect so no arc has to close a full turn.
+private struct ActivityRingWedge: Shape {
+    let from: Double
+    let to: Double
+
+    func path(in rect: CGRect) -> Path {
+        guard to - from < 1 else { return Path(rect) }
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        var path = Path()
+        path.move(to: center)
+        // The ring starts at twelve o'clock; `Path` angles start at three.
+        // The radius overshoots so a thick stroke is never clipped short.
+        path.addArc(
+            center: center,
+            radius: rect.width + rect.height,
+            startAngle: .degrees(from * 360 - 90),
+            endAngle: .degrees(to * 360 - 90),
+            clockwise: false
+        )
+        path.closeSubpath()
+        return path
     }
 }
 
