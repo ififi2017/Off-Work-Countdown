@@ -8,7 +8,9 @@
 //
 // 规则来自 import-and-export-store-listings：
 // - 文件夹里只能有一个 CSV，图片放同目录或子目录；
-// - 图片字段要写「根文件夹名/子路径」的相对路径，导入后会变成 Partner Center 的 URL；
+// - 图片字段写相对路径，导入后会变成 Partner Center 的 URL。默认写成相对 CSV 的
+//   `images/x.png`——上传的是整个文件夹，CSV 就在里面。文档给的例子带根文件夹名
+//   （`my_folder/images/x.png`），真被拒了就 MSSTORE_LISTING_ROOT_PREFIX=1 切回去；
 // - 某语言字段留空会回退到 default 列（这里是空的），所以要填的都显式写上；
 // - 图片字段留空不会删除旧图，所以五个截图槽位全部重写；
 // - 表头加一列语言代码就能新开该语言的商品页。Field / ID / Type 三列不能动。
@@ -62,7 +64,7 @@ if (!sourceCsv || !outRoot) {
 }
 
 const rootPath = resolve(outRoot);
-const rootName = basename(rootPath);
+const pathPrefix = process.env.MSSTORE_LISTING_ROOT_PREFIX ? `${basename(rootPath)}/images` : "images";
 const shotsDir = new URL("out/", import.meta.url).pathname;
 
 const rows = parseCsv(readFileSync(resolve(sourceCsv), "utf8").replace(/^﻿/, ""));
@@ -98,7 +100,7 @@ for (const [locale, listing] of Object.entries(LISTINGS)) {
     const name = `${locale}-${order}-${shot}.png`;
     copyFileSync(source, join(imagesDir, name));
     copied += 1;
-    set(`DesktopScreenshot${index + 1}`, locale, `${rootName}/images/${name}`);
+    set(`DesktopScreenshot${index + 1}`, locale, `${pathPrefix}/${name}`);
     set(`DesktopScreenshotCaption${index + 1}`, locale, listing.captions[index]);
   });
 
