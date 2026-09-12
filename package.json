@@ -38,6 +38,7 @@
     "shots:windows": "npm run shots:windows:capture && npm run shots:windows:compose",
     "shots:windows:capture": "node scripts/marketing-shots/windows/capture.mjs",
     "shots:windows:compose": "node scripts/marketing-shots/windows/compose.mjs",
+    "msstore:listing": "node scripts/marketing-shots/windows/listing-import.mjs",
     "shots:ios": "npm run shots:ios:capture && npm run shots:ios:compose && npm run shots:ios:validate",
     "shots:ios:capture": "node scripts/marketing-shots/ios/capture.mjs",
     "shots:ios:compose": "node scripts/marketing-shots/ios/compose.mjs",
