@@ -74,6 +74,9 @@ npm run msstore:listing -- ~/Downloads/listingData-<id>.csv ~/Downloads/doneat-m
 
 几个会安静出错的地方：
 
+- **生成的 CSV 不带 BOM。** Partner Center 导出的是 UTF-8 with BOM，而它自己的导入端
+  处理不了：带 BOM 的文件——哪怕是刚导出、一个字没改的那份——只会报一句没有任何细节
+  的错误。用别的编辑器改完再存时，注意别把 BOM 加回去。
 - **图片字段填的是相对 CSV 的 `images/xxx.png`**，不是绝对路径，也不是只写文件名。
   上传的是整个文件夹、CSV 就在里面，所以不要带根文件夹名——文档给的例子
   （`my_folder/images/x.png`）会让路径深一层。真被拒了用

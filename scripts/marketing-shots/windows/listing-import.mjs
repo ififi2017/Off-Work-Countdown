@@ -17,12 +17,14 @@
 //
 // 包里声明了全部 19 个语言（src-tauri/msstore/Package.appxmanifest），所以新语言
 // 不需要指定 Title —— 只有「包里没有的语言」才必须从保留名称里挑一个。
+//
+// ⚠️ 写出来的 CSV 不带 BOM。Partner Center 导出的文件是 UTF-8 with BOM，而它自己的
+// 导入端处理不了：带 BOM 的文件——哪怕是刚导出、一个字没改的那份——只会报一句没有
+// 任何细节的错误。去掉 BOM 才能导入。
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { LISTINGS, SHOTS } from "./listing-copy.mjs";
-
-const BOM = "﻿";
 
 /** RFC 4180：字段可以带引号，引号内允许逗号、换行和成对的双引号。 */
 function parseCsv(text) {
@@ -51,9 +53,9 @@ function parseCsv(text) {
   return rows;
 }
 
-/** 与 Partner Center 导出的文件同款：BOM、CRLF、仅在必要时加引号。 */
+/** CRLF、仅在必要时加引号，且不写 BOM（见文件开头）。 */
 function serializeCsv(rows) {
-  return BOM + rows.map((row) => row.map((value) => (
+  return rows.map((row) => row.map((value) => (
     /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value
   )).join(",")).join("\r\n") + "\r\n";
 }
