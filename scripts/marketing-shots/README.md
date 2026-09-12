@@ -2,7 +2,8 @@
 
 生成上架用的商店截图，以及发小红书用的笔记图：
 
-- `macos/` 产出 Mac App Store 需要的 2880×1800，中英各五张。左文右图，右边舞台居中，主窗 / 迷你窗 / 小组件尺寸不同也能对齐。
+- `macos/` 产出 Mac App Store 需要的 2880×1800，中英各六张。左文右图，右边舞台居中，主窗 / 迷你窗 / 小组件尺寸不同也能对齐。
+- `windows/` 产出微软商店用的 3840×2160（16:9，商店接受的最大档），中英各五张。版式与 macOS 同源，没有小组件那张。
 - `ios/` 产出 iPhone 6.9 英寸 1320×2868 与 iPad 13 英寸 2064×2752，17 种商店语言各六张，共两百零四张。官方 Apple 机框叠在屏洞上。
 - `xiaohongshu/` 产出小红书笔记图 1080×1440（3:4 竖版），中文三张。
   这是信息流展示面积最大的比例；1:1 和 4:3 都会被压小或裁切。
@@ -32,20 +33,40 @@ App Store Connect 时的顺序。
 界面——而脚本不会报错，它只管截。
 
 `shots:macos` 是 `capture` 加 `compose` 两步。只改文案不用重截界面，单跑
-`npm run shots:macos:compose` 即可。
+`npm run shots:macos:compose` 即可。Windows 那套同理：`npm run shots:windows`，
+产物在 `windows/out/`。两套共用 CDP 端口，别同时跑两个 capture。
+
+## Windows
+
+`windows/capture.mjs` 与 macOS 共用 `desktop-capture.mjs`，只把 platform 换成
+windows：主窗带上应用自绘的最小化 / 关闭按钮（Windows 上系统标题栏是关掉的），
+所以 compose 不补任何窗口装饰，圆角按 Windows 11 的 8px。五张依次是倒计时、迷你窗、
+统计、班次、设置。
+
+图是在 macOS 上截的，应用界面里的字是 SF Pro / PingFang，不是 Windows 上实际的
+Segoe UI / 微软雅黑。要换成真机字体，只能在 Windows 上跑 dev server 重截 raw。
+
+微软商店的截图在 Partner Center 手工上传，仓库里没有同步脚本。商店语言只有
+`en-us` 与 `zh-hans`（见 `docs/msstore-listing-titles.csv`）。
 
 ## 两步分别做什么
 
-**`macos/capture.mjs`** —— 截裸界面，存进 `macos/raw/`。
+**`macos/capture.mjs`** —— 截裸界面，存进 `macos/raw/`。截法在
+`desktop-capture.mjs`，Windows 那套共用。
 
 用 headless Chrome 打开 `localhost:3001`（`npm run dev:desktop` 的固定端口），
 注入一份 `__TAURI_INTERNALS__` 的假实现，让 Web 版本以为自己跑在 Tauri 里：
-把 `get_mini_window_settings` 报成 macos、开机自启报成已开启、语言报成对应
-locale。同时把时钟钉死在 14:22:08，班次设成 09:00–18:00、月薪 12000 —— 否则
-每次跑出来的数字都不一样，同一套图里对不上。
+把 `get_mini_window_settings` 报成对应平台、开机自启报成已开启、语言报成对应
+locale。同时把时钟钉死在 2026-09-24（周四）14:22:08，班次设成 09:00–18:00、
+月薪 12000 —— 否则每次跑出来的数字都不一样，同一套图里对不上。钉日期是为了统计页：
+Store 里预置了九月的出勤和木鱼数，月份、「今天」和迷你窗上的木鱼数（64）都靠这一天
+对上。统计页入口按 `desktopStats` 的译文去点，找不到按钮会直接报错，而不是截下上一屏。
 
-窗口按 430×430 以 3 倍渲染；Mini Timer 按 248×100 且背景透明，好让 compose
-那步把它叠在渐变上。
+窗口按 430×430 以 3 倍渲染；Mini Timer 按 248×100、5 倍渲染且背景透明（成品里放得
+比 1:1 大），好让 compose 那步把它叠在渐变上。
+
+中文标题没有空格，`text-wrap: balance` 会从词中间折开。长标题在 `COPY` 里用 `\n`
+标出断点。
 
 **`macos/compose.mjs`** —— 把裸图排成成品，存进 `macos/out/`。
 
@@ -168,6 +189,31 @@ App Store Connect 的顺序。`ios/validate.mjs` 会确认两百零四张图尺�
 `zh-Hant` 配截图和 Preview，其余商店语言继承英文。先读
 `docs/APP-STORE-CONNECT-SYNC.md`；默认命令只显示差异，替换已有截图集还需要
 `--replace-screenshots`。App Preview 竖版是 `886×1920`，必须带音轨。
+
+### App Preview 素材（`IOS_SHOTS_MODE=previews`）
+
+```bash
+IOS_SHOTS_MODE=previews IOS_SHOTS_PLATFORM=iphone \
+  IOS_SHOTS_LANGUAGE=en,zh-CN node scripts/marketing-shots/ios/capture.mjs
+```
+
+原片落在 `ios/previews/raw/`（不进版本库），成品 `886×1920` 仍然是手工剪出来的那两
+个 `*-review-886x1920.mov`。`IOS_SHOTS_BEAT=1..6` 只录其中一拍，`IOS_SHOTS_SKIP_BUILD=1`
+沿用上一次的构建。种子和截图共用 `launch()`，所以片子和商店图描述的是同一个虚构的
+一天，薪资也永远是种子里那个 12000。
+
+默认只录四拍——计时、午休、记录周视图、专注。另外两拍是 `optIn`，要 `IOS_SHOTS_BEAT`
+点名才会跑，原因写在 `PREVIEW_BEATS` 里：
+
+- **人生视图（5）** 屏幕不动。`simctl io recordVideo` 按画面变化编码，同样按住八秒，
+  三次分别只录到 7.7s、2.75s、0.07s。它是一张图，用 `ios/raw/` 里的那张静帧在剪辑里
+  推镜头。
+- **锁屏（2）** 录不稳，而且模拟器把锁屏当作 luminance-reduced，实时活动画的是常亮
+  变体（"21 分钟"）而不是亮屏时跳秒的样子。
+
+录像时长是"画面动了多久"，不是"按住了多久"——脚本用它当校验，录不到东西会直接报错，
+而不是留下一个能播零点几秒的文件。
+
 
 ## 小红书
 

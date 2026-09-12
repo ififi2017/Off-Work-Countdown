@@ -6,8 +6,8 @@
 // orientation. This script uses those hooks instead of adding screenshot code
 // to the shipping build. Raw simulator frames stay in raw/ and are ignored.
 
-import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync } from "node:fs";
+import { spawn, spawnSync } from "node:child_process";
+import { mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
@@ -15,6 +15,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 const DIR = new URL(".", import.meta.url).pathname;
 const ROOT = new URL("../../../", import.meta.url).pathname;
 const RAW = join(DIR, "raw");
+const PREVIEW_RAW = join(DIR, "previews/raw");
 const DERIVED_DATA = join(tmpdir(), "off-work-countdown-ios-shots-derived-data");
 const PROJECT = join(ROOT, "src-mobile/ios/App/App.xcodeproj");
 const BUNDLE_ID = "com.rainif.offworkcountdown.macappstore";
@@ -22,6 +23,8 @@ const IPHONE_NAME = process.env.IOS_SHOTS_IPHONE || "iPhone 17 Pro Max";
 const IPAD_NAME = process.env.IOS_SHOTS_IPAD || "iPad Pro 13-inch (M5)";
 const PLATFORM = process.env.IOS_SHOTS_PLATFORM || "all";
 const SCENE = process.env.IOS_SHOTS_SCENE;
+const MODE = process.env.IOS_SHOTS_MODE || "screenshots";
+const BEAT = process.env.IOS_SHOTS_BEAT;
 
 if (!["all", "iphone", "ipad"].includes(PLATFORM)) {
   throw new Error("IOS_SHOTS_PLATFORM must be all, iphone, or ipad");
@@ -29,8 +32,12 @@ if (!["all", "iphone", "ipad"].includes(PLATFORM)) {
 if (SCENE && !["1", "2", "3", "4", "5", "6"].includes(SCENE)) {
   throw new Error("IOS_SHOTS_SCENE must be 1 through 6");
 }
+if (!["screenshots", "previews"].includes(MODE)) {
+  throw new Error("IOS_SHOTS_MODE must be screenshots or previews");
+}
 
 mkdirSync(RAW, { recursive: true });
+mkdirSync(PREVIEW_RAW, { recursive: true });
 
 function run(command, args, {
   capture = false,
@@ -268,6 +275,212 @@ async function screenshot(udid, name, expected, settleMs = 1400) {
   console.log(`captured ${name}.png`);
 }
 
+// MARK: - App Preview clips
+//
+// The store preview is a different job from the six stills: it has to show the
+// things a frame cannot — digits moving, a bar filling, a card that keeps
+// counting on the Lock Screen. It reuses the same seeds so the footage and the
+// screenshots describe the same fictional day, salary included.
+
+function pressSimulatorKeys(keystroke, modifiers) {
+  // Home and Lock have no simctl verb. The Simulator's own menu keys do, and
+  // System Events is already how this script dismisses the notification sheet.
+  const using = modifiers.map((name) => `${name} down`).join(", ");
+  run("osascript", ["-e", `
+tell application "Simulator" to activate
+delay 0.2
+tell application "System Events" to keystroke "${keystroke}" using {${using}}
+`], { allowFailure: true });
+}
+
+async function recordClip(udid, name, expected, {
+  holdMs = 6_000,
+  settleMs = 1_200,
+  before = null,
+  during = null,
+  fromLaunch = false,
+} = {}) {
+  // Records and Life are still pictures once they have settled: an ambient
+  // clip of them is a screenshot that costs a megabyte. Their motion is the
+  // entry animation — bars growing, the life grid filling — so those beats
+  // start the recorder before the view has assembled and check the surface
+  // afterwards instead.
+  if (expected && !fromLaunch) await waitForSurface(udid, expected);
+  await sleep(settleMs);
+  if (!isRunning(udid)) throw new Error(`Refusing ${name}.mov: app is not running`);
+  const path = join(PREVIEW_RAW, `${name}.mov`);
+  rmSync(path, { force: true });
+  if (before) await before(udid);
+  const recorder = spawn("xcrun", [
+    "simctl", "io", udid, "recordVideo",
+    "--codec", "h264", "--mask", "ignored", "--force", path,
+  ], { stdio: "ignore" });
+  const exited = new Promise((resolve) => recorder.once("exit", resolve));
+  // recordVideo writes its header lazily; stopping too early yields no file.
+  await sleep(900);
+  if (during) await during();
+  await sleep(holdMs);
+  recorder.kill("SIGINT");
+  await exited;
+  if (expected && fromLaunch) {
+    const shown = surface(udid);
+    if (shown !== expected && !(expected === "route.focus" && shown === "settings")) {
+      throw new Error(`Refusing ${name}.mov: expected ${expected}, app reported ${shown ?? "no surface marker"}`);
+    }
+  }
+  // Bytes are the wrong measure: a locked screen barely changes, so a perfectly
+  // good eight-second clip of it compresses to less than a second of the timer
+  // page. Duration is the better one, but read it for what it is: the recorder
+  // encodes on display change, so this is how long the screen *moved*, not how
+  // long it was held. That is the check worth having — a beat that fails it is
+  // a beat with nothing to film, and belongs in the stills instead.
+  const bytes = statSync(path, { throwIfNoEntry: false })?.size ?? 0;
+  if (bytes === 0) throw new Error(`Refusing ${name}.mov: the recorder wrote no file`);
+  const probed = run("ffprobe", [
+    "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", path,
+  ], { capture: true, allowFailure: true }).trim();
+  const seconds = Number.parseFloat(probed);
+  const wanted = (holdMs + 900) / 1000;
+  if (Number.isFinite(seconds)) {
+    if (seconds < wanted * 0.6) {
+      throw new Error(
+        `Refusing ${name}.mov: ${seconds.toFixed(2)}s captured of ${wanted.toFixed(1)}s held`,
+      );
+    }
+    console.log(`recorded ${name}.mov (${seconds.toFixed(1)}s, ${(bytes / 1_048_576).toFixed(1)} MB)`);
+    return;
+  }
+  // No ffprobe on this machine: fall back to the crude floor rather than
+  // silently accepting whatever landed.
+  if (bytes < 50_000) {
+    throw new Error(`Refusing ${name}.mov: only ${bytes} bytes and no ffprobe to check duration`);
+  }
+  console.log(`recorded ${name}.mov (${(bytes / 1_048_576).toFixed(1)} MB, duration unchecked)`);
+}
+
+// Each beat is one shot of the script: what to seed, what has to be on screen
+// before the recorder starts, and how long the editor needs.
+const PREVIEW_BEATS = [
+  {
+    id: "1",
+    slug: "timer",
+    scene: { orientation: "portrait", scenario: "working" },
+    expects: "timer",
+    holdMs: 6_000,
+  },
+  {
+    id: "2",
+    slug: "lockscreen",
+    // Opt-in only, and probably not worth using. Two things are wrong with it
+    // and neither is fixable from here: `simctl io recordVideo` keeps
+    // returning well under a second once the device is locked, and the
+    // simulator reports the locked screen as luminance-reduced, so the card
+    // draws the always-on variant ("21 minutes") rather than the ticking one
+    // a lit screen shows. A store preview cannot show a Lock Screen honestly
+    // this way; the widgets and the island are the stills' job instead.
+    optIn: true,
+    // The one surface that keeps moving with the app closed. This beat is
+    // deliberately the only one without a debug scenario: those pin a 09:00
+    // to 17:00 day on the virtual clock, which leaves hours to go and no
+    // activity at all. The plain seed ends the shift 29 minutes out, inside
+    // the 30 minute lead, so the card is published before the screen locks.
+    scene: { orientation: "portrait" },
+    expects: "timer",
+    holdMs: 7_000,
+    // The card and the Lock Screen widgets are both drawn by the extension,
+    // and the extension is never woken again once the screen is locked. So
+    // everything has to be published *before* the lock: ActivityKit needs a
+    // moment after launch, and so does the widget timeline reload.
+    settleMs: 8_000,
+    before: async () => {
+      pressSimulatorKeys("h", ["command", "shift"]);
+      await sleep(3_000);
+      pressSimulatorKeys("l", ["command"]);
+      await sleep(3_000);
+    },
+  },
+  {
+    id: "3",
+    slug: "lunch",
+    scene: { orientation: "portrait", scenario: "lunch", liveActivity: false },
+    expects: "timer",
+    holdMs: 5_000,
+  },
+  {
+    id: "4",
+    slug: "records-week",
+    scene: { orientation: "portrait", recordsScale: "week", liveActivity: false },
+    expects: "records",
+    holdMs: 9_000,
+    settleMs: 0,
+    fromLaunch: true,
+  },
+  {
+    id: "5",
+    slug: "life",
+    // Opt-in, and the answer is usually the still. `simctl io recordVideo`
+    // encodes on display change, so a screen that does not move yields a
+    // near-empty file however long the recorder is held — this beat returned
+    // 7.7s, then 2.75s, then 0.07s of the same eight second hold, purely on
+    // how much happened to redraw. Life is a picture: use `en-5-life.png`
+    // from the stills and give it a slow push in the edit.
+    optIn: true,
+    scene: { orientation: "portrait", recordsScale: "life", liveActivity: false },
+    expects: "records",
+    holdMs: 7_000,
+    // No `fromLaunch` here, unlike the week view. Life does seconds of real
+    // work as it comes up, and recording through that starved the recorder:
+    // it returned 2.75s of a held 7.9s. It has no entry animation worth
+    // catching anyway — this beat is a still, and the push belongs to the edit.
+    settleMs: 2_500,
+  },
+  {
+    id: "6",
+    slug: "focus",
+    scene: {
+      orientation: "portrait",
+      route: "focus",
+      focusScenario: "runningFocus",
+      liveActivity: false,
+    },
+    expects: "route.focus",
+    holdMs: 7_000,
+    settleMs: 2_400,
+    before: async (udid) => dismissFocusNotification(udid),
+  },
+];
+
+async function capturePreviews(udid, language) {
+  const { stem } = LANGUAGES[language];
+  for (const beat of PREVIEW_BEATS) {
+    if (BEAT ? BEAT !== beat.id : beat.optIn) continue;
+    launch(udid, language, beat.scene);
+    const locks = beat.slug === "lockscreen";
+    if (locks) {
+      // Locking hides the surface marker's view, so read it before the keys.
+      await waitForSurface(udid, beat.expects);
+    }
+    try {
+      await recordClip(udid, `${stem}-${beat.id}-${beat.slug}`, locks ? null : beat.expects, {
+        holdMs: beat.holdMs,
+        settleMs: beat.settleMs ?? 1_200,
+        before: beat.before,
+        during: beat.during,
+        fromLaunch: beat.fromLaunch === true,
+      });
+    } finally {
+      // The Simulator has no unlock verb, only a Lock key that toggles, so the
+      // beat is only repeatable if it always leaves the device the way it found
+      // it. A throw between the lock and the unlock is what made the next run
+      // record a dark screen for six seconds.
+      if (locks) {
+        pressSimulatorKeys("l", ["command"]);
+        await sleep(1_500);
+      }
+    }
+  }
+}
+
 const LANGUAGES = {
   en: { stem: "en", appleLanguage: "en", appleLocale: "en_US" },
   "zh-CN": { stem: "zh", appleLanguage: "zh-Hans", appleLocale: "zh_CN" },
@@ -439,10 +652,16 @@ if (languages.some((language) => !LANGUAGES[language])) {
   throw new Error(`IOS_SHOTS_LANGUAGE must be one of ${Object.keys(LANGUAGES).join(", ")}`);
 }
 for (const language of languages) {
+  if (MODE === "previews") {
+    // App Previews exist only as IPHONE_67, so the iPad never records one.
+    if (!iphone) throw new Error("IOS_SHOTS_MODE=previews needs the iPhone; set IOS_SHOTS_PLATFORM=iphone");
+    await capturePreviews(iphone, language);
+    continue;
+  }
   if (iphone) await capturePhone(iphone, language);
   if (ipad) await capturePad(ipad, language);
 }
 
 if (iphone) terminate(iphone);
 if (ipad) terminate(ipad);
-console.log(`done: raw simulator captures are in ${RAW}`);
+console.log(`done: raw simulator captures are in ${MODE === "previews" ? PREVIEW_RAW : RAW}`);

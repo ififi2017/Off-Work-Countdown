@@ -29,9 +29,18 @@ function waitForFile(path, timeoutMs) {
   });
 }
 
-/** Render an HTML file to a PNG via Chrome --screenshot. */
-export async function captureHtml({ html, htmlPath, width, height, scale, outFile }) {
+/**
+ * Render an HTML file to a PNG via Chrome --screenshot.
+ *
+ * `transparent` keeps the page background clear, so the PNG can be overlaid on
+ * video. Store images must stay opaque — see flattenPng — so this is off by
+ * default and only the App Preview captions ask for it.
+ */
+export async function captureHtml({ html, htmlPath, width, height, scale, outFile, transparent = false }) {
   writeFileSync(htmlPath, html);
+  // waitForFile 只看文件在不在、大小稳不稳。重跑时上一轮的成品已经在那儿，
+  // 不先删掉就会立刻判定完成、杀掉 Chrome，旧图原样留下，脚本照样报 composed。
+  rmSync(outFile, { force: true });
   const profile = mkdtempSync(join(tmpdir(), "off-work-shots-"));
   const chrome = spawn(
     CHROME,
@@ -46,6 +55,7 @@ export async function captureHtml({ html, htmlPath, width, height, scale, outFil
       "--no-default-browser-check",
       "--hide-scrollbars",
       "--force-color-profile=srgb",
+      ...(transparent ? ["--default-background-color=00000000"] : []),
       "--font-render-hinting=none",
       `--force-device-scale-factor=${scale}`,
       `--window-size=${width},${height}`,

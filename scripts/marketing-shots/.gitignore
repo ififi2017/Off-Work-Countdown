@@ -3,3 +3,7 @@
 */raw/
 */out/
 */p-*.html
+# preview clips: raw simulator recordings, cut into the committed 886x1920 file
+*/previews/raw/
+# intermediate exports from the editor; only the 886x1920 .mov is the deliverable
+*/previews/*.mp4
