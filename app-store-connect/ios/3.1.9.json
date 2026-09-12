@@ -38,6 +38,11 @@
           "ar-ipad-05-life.png",
           "ar-ipad-06-focus.png"
         ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
+        ]
       }
     },
     "de-DE": {
@@ -67,6 +72,11 @@
           "de-ipad-04-records.png",
           "de-ipad-05-life.png",
           "de-ipad-06-focus.png"
+        ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
         ]
       }
     },
@@ -133,6 +143,11 @@
           "es-ipad-05-life.png",
           "es-ipad-06-focus.png"
         ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
+        ]
       }
     },
     "fr-FR": {
@@ -162,6 +177,11 @@
           "fr-ipad-04-records.png",
           "fr-ipad-05-life.png",
           "fr-ipad-06-focus.png"
+        ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
         ]
       }
     },
@@ -193,6 +213,11 @@
           "hi-IN-ipad-05-life.png",
           "hi-IN-ipad-06-focus.png"
         ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
+        ]
       }
     },
     "id": {
@@ -222,6 +247,11 @@
           "id-ipad-04-records.png",
           "id-ipad-05-life.png",
           "id-ipad-06-focus.png"
+        ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
         ]
       }
     },
@@ -253,6 +283,11 @@
           "it-ipad-05-life.png",
           "it-ipad-06-focus.png"
         ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
+        ]
       }
     },
     "ja": {
@@ -282,6 +317,11 @@
           "ja-ipad-04-records.png",
           "ja-ipad-05-life.png",
           "ja-ipad-06-focus.png"
+        ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
         ]
       }
     },
@@ -313,6 +353,11 @@
           "ko-ipad-05-life.png",
           "ko-ipad-06-focus.png"
         ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
+        ]
       }
     },
     "pt-BR": {
@@ -342,6 +387,11 @@
           "pt-ipad-04-records.png",
           "pt-ipad-05-life.png",
           "pt-ipad-06-focus.png"
+        ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
         ]
       }
     },
@@ -373,6 +423,11 @@
           "ru-ipad-05-life.png",
           "ru-ipad-06-focus.png"
         ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
+        ]
       }
     },
     "th": {
@@ -402,6 +457,11 @@
           "th-ipad-04-records.png",
           "th-ipad-05-life.png",
           "th-ipad-06-focus.png"
+        ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
         ]
       }
     },
@@ -433,6 +493,11 @@
           "tr-ipad-05-life.png",
           "tr-ipad-06-focus.png"
         ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
+        ]
       }
     },
     "vi": {
@@ -462,6 +527,11 @@
           "vi-ipad-04-records.png",
           "vi-ipad-05-life.png",
           "vi-ipad-06-focus.png"
+        ]
+      },
+      "previews": {
+        "IPHONE_67": [
+          "en-review-886x1920.mov"
         ]
       }
     },
