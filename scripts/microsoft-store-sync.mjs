@@ -10,6 +10,11 @@
 // 而且图片要靠浏览器逐张传。API 这边语言直接写在提交 JSON 里，图片打成一个 ZIP
 // 一次传完。踩过的坑见 scripts/marketing-shots/README.md。
 //
+// ⚠️ 标题不能在这里改。API 接受带 title 的 PUT 并返回 200，但读回来仍是主名称——
+// 每个语言用哪个保留名，只能在合作伙伴中心网页端的「产品名称」下拉框里选。
+// 选好标题再用 API 写这个提交可能会被 409 拒掉（见下），所以顺序是：
+// 先跑 --apply，再去网页端选标题，最后在网页端提交。
+//
 // ⚠️ --commit 不是「保存草稿」。它把提交推进到 CommitStarted → PreProcessing →
 // Certification，等于把这一版交上去。所以它是独立的一步，--apply 不会代劳。
 //
@@ -27,6 +32,8 @@ const STORE_ID = "9PM0HJ2PP2LJ";
 const API = "https://manage.devcenter.microsoft.com/v1.0/my";
 const IMAGES_DIR = new URL("marketing-shots/windows/out/", import.meta.url).pathname;
 
+// 截图没变时加 --text-only：那一百兆的 ZIP 不必重传一遍。
+const textOnly = process.argv.includes("--text-only");
 const mode = process.argv.includes("--apply") ? "apply"
   : process.argv.includes("--commit") ? "commit"
   : "plan";
@@ -206,6 +213,11 @@ await api(`/applications/${STORE_ID}/submissions/${submissionId}`, accessToken, 
   body: JSON.stringify(submission),
 });
 console.log("\n提交数据已写入（文案 + 截图清单）。");
+
+if (textOnly) {
+  console.log("--text-only：跳过截图上传（沿用这次提交里已上传的那批）。");
+  process.exit(0);
+}
 
 const staging = mkdtempSync(join(tmpdir(), "msstore-upload-"));
 let packed = 0;
