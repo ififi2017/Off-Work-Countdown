@@ -61,9 +61,16 @@ Segoe UI / 微软雅黑。要换成真机字体，只能在 Windows 上跑 dev s
 npm run msstore:listing -- ~/Downloads/listingData-<id>.csv ~/Downloads/doneat-msstore-3.1.9
 ```
 
-产物是一个根文件夹：一份 CSV 加一个 `images/`（九十五张，约 314 MB）。在 Partner
-Center 选「导入列表 → 导入文件夹」上传整个文件夹。文案在 `listing-copy.mjs`，
-一个语言一段。
+产物是一个根文件夹：一份 CSV 加一个 `images/`（九十五张）。在 Partner Center 选
+「导入列表 → 导入文件夹」上传整个文件夹。文案在 `listing-copy.mjs`，一个语言一段。
+
+**九十五张 3840×2160 合计约 314 MB，Partner Center 的文件夹上传会卡住。** 实测要先
+重排成 1920×1080（约 95 MB，仍高于商店 1366×768 的下限）再生成导入包：
+
+```bash
+WINDOWS_SHOTS_SCALE=1 npm run shots:windows:compose
+npm run msstore:listing -- ~/Downloads/listingData-<id>.csv ~/Downloads/doneat-msstore-3.1.9
+```
 
 几个会安静出错的地方：
 

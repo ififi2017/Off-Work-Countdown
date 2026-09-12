@@ -566,6 +566,10 @@ function dataUri(path) {
 
 // DESKTOP_SHOTS_LANGUAGE=ja,ko 只重排其中几种语言。
 const only = process.env.DESKTOP_SHOTS_LANGUAGE?.split(",").map((value) => value.trim());
+// 默认 2 倍即 3840×2160，商店接受的最大档。整套 19 个语言九十五张约 314 MB，
+// Partner Center 的文件夹上传会卡住；WINDOWS_SHOTS_SCALE=1 出 1920×1080，约 95 MB，
+// 仍高于商店 1366×768 的下限。
+const SCALE = Number(process.env.WINDOWS_SHOTS_SCALE ?? 2);
 
 function page(card, language) {
   const kind = card.mini ? "mini" : "window";
@@ -645,7 +649,7 @@ for (const [language, cards] of Object.entries(COPY)) {
       htmlPath: join(HTML_DIR, `p-windows-${name}.html`),
       width: 1920,
       height: 1080,
-      scale: 2,
+      scale: SCALE,
       outFile,
     });
     // 商店拒收带透明通道的 PNG 这一条，微软与 Apple 一样稳妥起见都压实。
