@@ -18,6 +18,11 @@
 // 包里声明了全部 19 个语言（src-tauri/msstore/Package.appxmanifest），所以新语言
 // 不需要指定 Title —— 只有「包里没有的语言」才必须从保留名称里挑一个。
 //
+// 十九个语言九十五张图（约 100 MB）一次传会卡住，要分批：
+//   MSSTORE_LISTING_SHOTS=en-us,zh,ja,ko node …/listing-import.mjs <csv> <folder-1>
+// 只有点名的语言带图片，其余语言的截图字段留空——留空不会删除已经传上去的图，
+// 所以分几批导入是安全的。文字每批都写全，重复导入同样的文字没有副作用。
+//
 // ⚠️ 写出来的 CSV 不带 BOM。Partner Center 导出的文件是 UTF-8 with BOM，而它自己的
 // 导入端处理不了：带 BOM 的文件——哪怕是刚导出、一个字没改的那份——只会报一句没有
 // 任何细节的错误。去掉 BOM 才能导入。
@@ -91,9 +96,12 @@ if (existsSync(rootPath)) rmSync(rootPath, { recursive: true });
 const imagesDir = join(rootPath, "images");
 mkdirSync(imagesDir, { recursive: true });
 
+// MSSTORE_LISTING_SHOTS=en-us,zh 只让这几个语言带图片。
+const shotLocales = process.env.MSSTORE_LISTING_SHOTS?.split(",").map((value) => value.trim());
+
 let copied = 0;
 for (const [locale, listing] of Object.entries(LISTINGS)) {
-  SHOTS.forEach((shot, index) => {
+  if (!shotLocales || shotLocales.includes(locale)) SHOTS.forEach((shot, index) => {
     const order = String(index + 1).padStart(2, "0");
     const source = join(shotsDir, `${listing.appLanguage}-${order}-${shot}.png`);
     if (!existsSync(source)) {

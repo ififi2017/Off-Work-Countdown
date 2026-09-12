@@ -64,13 +64,20 @@ npm run msstore:listing -- ~/Downloads/listingData-<id>.csv ~/Downloads/doneat-m
 产物是一个根文件夹：一份 CSV 加一个 `images/`（九十五张）。在 Partner Center 选
 「导入列表 → 导入文件夹」上传整个文件夹。文案在 `listing-copy.mjs`，一个语言一段。
 
-**九十五张 3840×2160 合计约 314 MB，Partner Center 的文件夹上传会卡住。** 实测要先
-重排成 1920×1080（约 95 MB，仍高于商店 1366×768 的下限）再生成导入包：
+**九十五张图一次传不上去。** 3840×2160 合计约 314 MB 会卡死；就算重排成 1920×1080
+（约 100 MB，仍高于商店 1366×768 的下限）也失败：浏览器同时推近百个 blob，控制台里
+是一片 `comp=blocklist` 的 404（分块没传上去就去提交块列表）和 `files/updatestatus`
+的 403。所以要降尺寸**并且**分批：
 
 ```bash
 WINDOWS_SHOTS_SCALE=1 npm run shots:windows:compose
-npm run msstore:listing -- ~/Downloads/listingData-<id>.csv ~/Downloads/doneat-msstore-3.1.9
+
+# 每批四个语言、二十张图、约 25 MB；没点名的语言截图字段留空，不会删除已传的图
+MSSTORE_LISTING_SHOTS=en-us,zh,ko-kr,de \
+  npm run msstore:listing -- ~/Downloads/listingData-<id>.csv ~/Downloads/batch-1
 ```
+
+文字每批都写全，重复导入同样的文字没有副作用，所以分批只是把图片摊开传。
 
 几个会安静出错的地方：
 
