@@ -101,6 +101,11 @@ const shotLocales = process.env.MSSTORE_LISTING_SHOTS?.split(",").map((value) =>
 
 let copied = 0;
 for (const [locale, listing] of Object.entries(LISTINGS)) {
+  // 导出的截图字段里是 Partner Center 的资源 URL。原样回填会被判「您提供的值无效」
+  // ——语言被移除又加回之后那些 URL 就失效了。留空不会删除已经传上去的图，所以
+  // 这里一律先清空，只有本批点名的语言再写本地路径。
+  SHOTS.forEach((_, index) => set(`DesktopScreenshot${index + 1}`, locale, ""));
+
   if (!shotLocales || shotLocales.includes(locale)) SHOTS.forEach((shot, index) => {
     const order = String(index + 1).padStart(2, "0");
     const source = join(shotsDir, `${listing.appLanguage}-${order}-${shot}.png`);

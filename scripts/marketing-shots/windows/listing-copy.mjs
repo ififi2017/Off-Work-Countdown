@@ -6,7 +6,10 @@
 // 已经在商店里，本轮只改描述、更新说明、统计那条功能和截图。
 //
 // 术语跟随应用内译文（木鱼 / 목탁 / mõ gỗ / Woodfish），称呼跟随该语言商品页
-// 描述已有的口吻（德语用 Sie，印尼语用 Anda）。改文案前先读 add-and-edit-store-
+// 描述已有的口吻（德语用 Sie，印尼语用 Anda）。
+//
+// ⚠️ 印尼语用 id-id，不能用同样合法的 id：CSV 第二列就叫 ID，加一列叫 id 的语言列
+// 会让导入在处理到它时失败——报错依旧没有任何内容。改文案前先读 add-and-edit-store-
 // listing-info 的字段上限：描述 10000、更新说明 1500、功能每条 200、简介建议 270 内。
 
 export const SHOTS = ["countdown", "mini-woodfish", "stats", "setup", "settings"];
@@ -490,7 +493,7 @@ export const LISTINGS = {
       "การตั้งค่า"
     ]
   },
-  "id": {
+  "id-id": {
     "appLanguage": "id",
     "isNewLanguage": true,
     "shortDescription": "Lihat persis berapa sisa hari kerja Anda. Hitung mundur yang tenang di area notifikasi, dengan total penghasilan hari ini bila diinginkan. Cocok untuk semua sif, termasuk sif malam. Semuanya tetap di perangkat Anda: tanpa akun, tanpa unggahan.",
