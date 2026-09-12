@@ -77,10 +77,10 @@ npm run msstore:listing -- ~/Downloads/listingData-<id>.csv ~/Downloads/doneat-m
 - **生成的 CSV 不带 BOM。** Partner Center 导出的是 UTF-8 with BOM，而它自己的导入端
   处理不了：带 BOM 的文件——哪怕是刚导出、一个字没改的那份——只会报一句没有任何细节
   的错误。用别的编辑器改完再存时，注意别把 BOM 加回去。
-- **图片字段填的是相对 CSV 的 `images/xxx.png`**，不是绝对路径，也不是只写文件名。
-  上传的是整个文件夹、CSV 就在里面，所以不要带根文件夹名——文档给的例子
-  （`my_folder/images/x.png`）会让路径深一层。真被拒了用
-  `MSSTORE_LISTING_ROOT_PREFIX=1` 切回文档那种写法。
+- **图片字段要带根文件夹名**：`doneat-msstore-3.1.9/images/xxx.png`，正斜杠。虽然上传
+  的就是那个根文件夹、CSV 也在里面，路径却是从它的上一级算起。实测只写
+  `images/xxx.png` 会被拒，报的又是那句没有细节的错误；带上根文件夹名才通过。
+  改文件夹名就要重新生成，脚本按实际目录名写。
 - **图片字段留空不会删图**，只会保留上一版；所以五个槽位每次都全写一遍。
 - **文字字段留空会回退到 default 列**（这里是空的），等于该语言什么都不显示。
 - **表头加一列语言代码就能新开一个语言的商品页**，代码见微软的 supported languages

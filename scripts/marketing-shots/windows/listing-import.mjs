@@ -8,9 +8,9 @@
 //
 // 规则来自 import-and-export-store-listings：
 // - 文件夹里只能有一个 CSV，图片放同目录或子目录；
-// - 图片字段写相对路径，导入后会变成 Partner Center 的 URL。默认写成相对 CSV 的
-//   `images/x.png`——上传的是整个文件夹，CSV 就在里面。文档给的例子带根文件夹名
-//   （`my_folder/images/x.png`），真被拒了就 MSSTORE_LISTING_ROOT_PREFIX=1 切回去；
+// - 图片字段写「根文件夹名/子路径」，导入后会变成 Partner Center 的 URL。路径是相对
+//   根文件夹的**上一级**算的，尽管上传的就是那个根文件夹、CSV 也在里面：实测
+//   `images/x.png` 会被拒（同样是一句没有细节的错误），`<根文件夹>/images/x.png` 才通过；
 // - 某语言字段留空会回退到 default 列（这里是空的），所以要填的都显式写上；
 // - 图片字段留空不会删除旧图，所以五个截图槽位全部重写；
 // - 表头加一列语言代码就能新开该语言的商品页。Field / ID / Type 三列不能动。
@@ -57,7 +57,7 @@ function parseCsv(text) {
 function serializeCsv(rows) {
   return rows.map((row) => row.map((value) => (
     /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value
-  )).join(",")).join("\r\n") + "\r\n";
+  )).join(",")).join("\r\n");
 }
 
 const [sourceCsv, outRoot] = process.argv.slice(2);
@@ -66,7 +66,7 @@ if (!sourceCsv || !outRoot) {
 }
 
 const rootPath = resolve(outRoot);
-const pathPrefix = process.env.MSSTORE_LISTING_ROOT_PREFIX ? `${basename(rootPath)}/images` : "images";
+const pathPrefix = `${basename(rootPath)}/images`;
 const shotsDir = new URL("out/", import.meta.url).pathname;
 
 const rows = parseCsv(readFileSync(resolve(sourceCsv), "utf8").replace(/^﻿/, ""));
