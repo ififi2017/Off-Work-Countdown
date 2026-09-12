@@ -50,52 +50,44 @@ windows：主窗带上应用自绘的最小化 / 关闭按钮（Windows 上系�
 图是在 macOS 上截的，应用界面里的字是 SF Pro / PingFang，不是 Windows 上实际的
 Segoe UI / 微软雅黑。要换成真机字体，只能在 Windows 上跑 dev server 重截 raw。
 
-### 商品页导入包
+### 商品页同步（提交 API）
 
-微软商店没有能上传本地截图的 CLI：`msstore` 能用 `submission get` / `update`
-改商品页文字，但截图只认「文件名是网址、由它下载」的那条路，读不了本地文件。
-所以走 Partner Center 的导入导出：
-
-```bash
-# 先在 Partner Center 点「导出列表」，把 CSV 下载下来
-npm run msstore:listing -- ~/Downloads/listingData-<id>.csv ~/Downloads/doneat-msstore-3.1.9
-```
-
-产物是一个根文件夹：一份 CSV 加一个 `images/`（九十五张）。在 Partner Center 选
-「导入列表 → 导入文件夹」上传整个文件夹。文案在 `listing-copy.mjs`，一个语言一段。
-
-**九十五张图一次传不上去。** 3840×2160 合计约 314 MB 会卡死；就算重排成 1920×1080
-（约 100 MB，仍高于商店 1366×768 的下限）也失败：浏览器同时推近百个 blob，控制台里
-是一片 `comp=blocklist` 的 404（分块没传上去就去提交块列表）和 `files/updatestatus`
-的 403。所以要降尺寸**并且**分批：
+商品页文案和截图用 `scripts/microsoft-store-sync.mjs` 走微软的提交 API，不走网页端的
+「导入列表」：
 
 ```bash
-WINDOWS_SHOTS_SCALE=1 npm run shots:windows:compose
-
-# 每批四个语言、二十张图、约 25 MB；没点名的语言截图字段留空，不会删除已传的图
-MSSTORE_LISTING_SHOTS=en-us,zh,ko-kr,de \
-  npm run msstore:listing -- ~/Downloads/listingData-<id>.csv ~/Downloads/batch-1
+npm run msstore:plan     # 只读，打印当前提交、语言清单与将要发生的改动
+npm run msstore:sync     # 新建提交、写入 19 个语言的文案、把 95 张截图打成一个 ZIP 上传
+npm run msstore:commit   # 真正提交，进入预处理与认证
 ```
 
-文字每批都写全，重复导入同样的文字没有副作用，所以分批只是把图片摊开传。
+凭据放仓库之外，默认读 `~/.config/doneat/msstore.env`（`MSSTORE_TENANT_ID` /
+`MSSTORE_CLIENT_ID` / `MSSTORE_CLIENT_SECRET`），与 CI 用的是同一套 Entra 应用。
+文案在 `windows/listing-copy.mjs`，一个语言一段。
 
-几个会安静出错的地方：
+商品页可以脱离包体单独更新：新建的提交是上一个已发布提交的克隆，安装包原样带过来
+（`fileStatus` 仍是 `Uploaded`），不必重传。
 
-- **生成的 CSV 不带 BOM。** Partner Center 导出的是 UTF-8 with BOM，而它自己的导入端
-  处理不了：带 BOM 的文件——哪怕是刚导出、一个字没改的那份——只会报一句没有任何细节
-  的错误。用别的编辑器改完再存时，注意别把 BOM 加回去。
-- **图片字段要带根文件夹名**：`doneat-msstore-3.1.9/images/xxx.png`，正斜杠。虽然上传
-  的就是那个根文件夹、CSV 也在里面，路径却是从它的上一级算起。实测只写
-  `images/xxx.png` 会被拒，报的又是那句没有细节的错误；带上根文件夹名才通过。
-  改文件夹名就要重新生成，脚本按实际目录名写。
-- **图片字段留空不会删图**，只会保留上一版；所以五个槽位每次都全写一遍。
-- **文字字段留空会回退到 default 列**（这里是空的），等于该语言什么都不显示。
-- **表头加一列语言代码就能新开一个语言的商品页**，代码见微软的 supported languages
-  表。`Field` / `ID` / `Type` 三列不能动，改了整份文件都不会被处理。
-- **新语言不用填 Title。** `Package.appxmanifest` 声明了全部 19 个语言，只有「包里
-  没有的语言」才必须从已保留的名称里挑一个。
-- 字段上限见 add-and-edit-store-listing-info：描述 10000、更新说明 1500、功能每条
-  200、简介建议 270 以内（上限 1000，但超过 270 会被折叠）。
+**为什么不用网页端的「导入列表」。** 那条路试通过一次单张图的导入，但整轮九十五张
+始终失败，而且失败信息是空的——弹一句「出错了」，没有字段、没有原因。逐项二分之后
+确认的坑有这些，全部记在这里免得再摸一遍：
+
+- CSV 必须**不带 BOM**。Partner Center 导出的是 UTF-8 with BOM，而它自己的导入端读
+  不了：刚导出、一个字没改的文件传回去也失败。
+- 图片路径要写成 `<根文件夹名>/images/x.png`。只写 `images/x.png` 会被拒——尽管上传
+  的就是那个根文件夹、CSV 也在里面。
+- 语言必须**已经在商品页语言集里**，导入不能凭空建语言。往一个「已删除」状态的语言
+  写内容，整份导入失败。
+- 列名不能叫 `id`：CSV 第二列就叫 `ID`，导入处理到它时会失败。印尼语得写 `id-id`。
+- 导出的截图字段里是 Partner Center 的资源 URL。原样回填会被判「您提供的值无效」——
+  语言被移除又加回之后那些 URL 就失效了。留空表示保留现有图。
+
+API 那边这些问题都不存在，而且报错是具体的（比如 `KeywordsTotalCount must be 21 or
+less`）。唯一要留意的是：**在合作伙伴中心里建出来的待处理提交，API 往往整份不可写**，
+原样 PUT 回去也会 409 `InvalidState`。遇到就把它删掉，让脚本自己新建。
+
+搜索词有个容易踩的限制：一个语言的**所有词条加起来**不超过 21 个词，不是每条 21 个。
+脚本在写入前会自检。
 
 ## 两步分别做什么
 

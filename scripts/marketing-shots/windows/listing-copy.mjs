@@ -9,7 +9,10 @@
 // 描述已有的口吻（德语用 Sie，印尼语用 Anda）。
 //
 // ⚠️ 印尼语用 id-id，不能用同样合法的 id：CSV 第二列就叫 ID，加一列叫 id 的语言列
-// 会让导入在处理到它时失败——报错依旧没有任何内容。改文案前先读 add-and-edit-store-
+// 会让导入在处理到它时失败——报错依旧没有任何内容。走 API 时会换回 id。
+//
+// ⚠️ searchTerms 的限制是**所有词条加起来不超过 21 个词**，不是每条 21 个词。
+// 超了 API 会明确报 KeywordsTotalCount；网页端导入则又是一句没有内容的错误。改文案前先读 add-and-edit-store-
 // listing-info 的字段上限：描述 10000、更新说明 1500、功能每条 200、简介建议 270 内。
 
 export const SHOTS = ["countdown", "mini-woodfish", "stats", "setup", "settings"];
@@ -118,12 +121,11 @@ export const LISTINGS = {
     "feature15": "Journal mensuel : jours travaillés, heures et frappes du Woodfish",
     "searchTerms": [
       "compte à rebours travail",
-      "minuteur journée de travail",
-      "compte à rebours de poste",
-      "suivi des heures de travail",
-      "minuteur zone de notification",
-      "minuteur de shift",
-      "suivi des gains salaire"
+      "minuteur journée travail",
+      "fin de journée",
+      "heures de travail",
+      "minuteur barre des tâches",
+      "suivi salaire"
     ],
     "captions": [
       "Compte à rebours",
@@ -157,13 +159,13 @@ export const LISTINGS = {
     ],
     "feature15": "Registro mensual: días trabajados, horas y toques del Woodfish",
     "searchTerms": [
-      "cuenta atrás salida del trabajo",
+      "cuenta atrás trabajo",
       "temporizador jornada laboral",
-      "cuenta atrás de turno",
-      "control de horas de trabajo",
-      "temporizador bandeja del sistema",
-      "temporizador de turno",
-      "seguimiento de ingresos"
+      "fin de jornada",
+      "horas de trabajo",
+      "temporizador bandeja sistema",
+      "seguimiento salario",
+      "contador turno"
     ],
     "captions": [
       "Cuenta atrás",
@@ -197,13 +199,13 @@ export const LISTINGS = {
     ],
     "feature15": "Registro mensile: giorni lavorati, ore e colpi di Woodfish",
     "searchTerms": [
-      "conto alla rovescia fine turno",
+      "conto alla rovescia lavoro",
       "timer giornata lavorativa",
-      "conto alla rovescia turno",
-      "monitoraggio ore di lavoro",
-      "timer area di notifica",
-      "timer turno di lavoro",
-      "monitoraggio guadagni stipendio"
+      "fine turno",
+      "ore di lavoro",
+      "timer barra applicazioni",
+      "monitoraggio stipendio",
+      "timer turno"
     ],
     "captions": [
       "Conto alla rovescia",
@@ -237,13 +239,13 @@ export const LISTINGS = {
     ],
     "feature15": "Registo mensal: dias trabalhados, horas e toques no Woodfish",
     "searchTerms": [
-      "contagem decrescente saída do trabalho",
-      "temporizador dia de trabalho",
-      "contagem decrescente de turno",
-      "registo de horas de trabalho",
-      "temporizador área de notificação",
-      "temporizador de turno",
-      "registo de ganhos salário"
+      "contagem decrescente trabalho",
+      "temporizador dia trabalho",
+      "fim do turno",
+      "horas de trabalho",
+      "temporizador barra tarefas",
+      "registo salário",
+      "contador turno"
     ],
     "captions": [
       "Contagem decrescente",
@@ -277,13 +279,12 @@ export const LISTINGS = {
     ],
     "feature15": "Статистика по месяцам: рабочие дни, часы и удары по Woodfish",
     "searchTerms": [
-      "таймер до конца рабочего дня",
-      "обратный отсчёт до конца смены",
+      "таймер до конца работы",
+      "обратный отсчёт смены",
       "счётчик рабочего времени",
       "таймер в трее",
-      "таймер смены",
-      "учёт рабочих часов",
-      "подсчёт заработка"
+      "учёт зарплаты",
+      "конец рабочего дня"
     ],
     "captions": [
       "Обратный отсчёт",
@@ -397,13 +398,13 @@ export const LISTINGS = {
     ],
     "feature15": "Aylık kayıt: çalışılan günler, saatler ve Woodfish vuruşları",
     "searchTerms": [
-      "mesai bitiş geri sayım",
+      "mesai geri sayım",
       "iş günü sayacı",
-      "vardiya geri sayım sayacı",
+      "vardiya sayacı",
       "çalışma saati takibi",
       "bildirim alanı sayacı",
-      "vardiya sayacı",
-      "maaş kazanç takibi"
+      "maaş takibi",
+      "mesai bitiş"
     ],
     "captions": [
       "Geri sayım",
@@ -517,13 +518,13 @@ export const LISTINGS = {
     ],
     "feature15": "Catatan bulanan: hari kerja, jam kerja, dan ketukan Woodfish",
     "searchTerms": [
-      "hitung mundur pulang kerja",
+      "hitung mundur kerja",
       "timer hari kerja",
       "hitung mundur sif",
       "pelacak jam kerja",
-      "timer area notifikasi",
-      "timer sif kerja",
-      "pelacak penghasilan gaji"
+      "timer baki sistem",
+      "pelacak gaji",
+      "jam pulang"
     ],
     "captions": [
       "Hitung mundur",
@@ -558,12 +559,11 @@ export const LISTINGS = {
     "feature15": "Nhật ký hằng tháng: số ngày làm, giờ làm và số lần gõ mõ",
     "searchTerms": [
       "đếm ngược tan làm",
-      "hẹn giờ ngày làm việc",
-      "đếm ngược ca làm",
+      "hẹn giờ làm việc",
+      "đếm ngược ca",
       "theo dõi giờ làm",
-      "hẹn giờ khay hệ thống",
-      "hẹn giờ ca làm việc",
-      "theo dõi thu nhập lương"
+      "hẹn giờ khay",
+      "theo dõi lương"
     ],
     "captions": [
       "Đếm ngược",
