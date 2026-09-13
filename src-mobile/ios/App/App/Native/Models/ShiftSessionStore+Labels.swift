@@ -86,16 +86,6 @@ extension ShiftSessionStore {
         return (best[0], best[best.count - 1])
     }
 
-    var lunchLabel: String {
-        guard preferences.lunchEnabled else { return text.t("disabledShort") }
-        return "\(self.session.timeString(preferences.lunchStartMinutes)) · \(text.formatRelativeDuration(Double(preferences.lunchDurationMinutes) * 60_000))"
-    }
-
-    func lunchLabel(at date: Date) -> String {
-        guard self.session.effectiveLunchEnabled(at: date) else { return text.t("disabledShort") }
-        return "\(self.session.timeString(self.session.effectiveLunchStartMinutes(at: date))) · \(text.formatRelativeDuration(Double(self.session.effectiveLunchDurationMinutes(at: date)) * 60_000))"
-    }
-
     var healthLabel: String { healthLabel(at: .now) }
 
     func healthLabel(at date: Date) -> String {

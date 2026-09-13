@@ -69,40 +69,31 @@ struct SceneCommandAdmissionTests {
 
         let scene = SceneState()
         let timeA = 8 * 60
-        let scheduleA = ScheduleFieldChange(endMinutes: 18 * 60)
-        let lunchA = ScheduleFieldChange(lunchEnabled: true, lunchDurationMinutes: 45)
+        // Hours and lunch share one page and one draft.
+        let scheduleA = ScheduleFieldChange(endMinutes: 18 * 60, lunchEnabled: true, lunchDurationMinutes: 45)
         scene.setDisplayedStartMinutes(timeA, using: store.preferences)
         scene.scheduleSettingsDraft = scheduleA
-        scene.lunchSettingsDraft = lunchA
         let timeCommand = scene.commitDisplayedHours(using: store.shifts)
         let scheduleCommand = scene.commitScheduleDraft(
-            .schedule, decision: .nextShiftOnly, using: store.shifts
-        )
-        let lunchCommand = scene.commitScheduleDraft(
-            .lunch, decision: .nextShiftOnly, using: store.shifts
+            decision: .nextShiftOnly, using: store.shifts
         )
         #expect(timeCommand.immediateResult == nil)
         #expect(scheduleCommand.immediateResult == nil)
-        #expect(lunchCommand.immediateResult == nil)
         #expect(store.preferences.startMinutes != timeA)
 
         scene.setDisplayedStartMinutes(10 * 60, using: store.preferences)
         scene.setDisplayedStartMinutes(timeA, using: store.preferences)
-        scene.scheduleSettingsDraft = ScheduleFieldChange(endMinutes: 19 * 60)
+        scene.scheduleSettingsDraft = ScheduleFieldChange(endMinutes: 19 * 60, lunchDurationMinutes: 30)
         scene.scheduleSettingsDraft = scheduleA
-        scene.lunchSettingsDraft = ScheduleFieldChange(lunchDurationMinutes: 30)
-        scene.lunchSettingsDraft = lunchA
 
         await gate.release()
         try await replacement.value
         #expect(await timeCommand.value)
         #expect(await scheduleCommand.value)
-        #expect(await lunchCommand.value)
         try await records.flush()
 
         #expect(scene.draftStartMinutes == timeA)
         #expect(scene.scheduleSettingsDraft == scheduleA)
-        #expect(scene.lunchSettingsDraft == lunchA)
         #expect(store.preferences.startMinutes == timeA)
         #expect(store.preferences.endMinutes == 18 * 60)
         #expect(store.preferences.lunchEnabled)
@@ -127,14 +118,15 @@ struct SceneCommandAdmissionTests {
 
         scene.scheduleSettingsDraft = ScheduleFieldChange(endMinutes: 18 * 60)
         #expect(scene.commitScheduleDraft(
-            .schedule, decision: .nextShiftOnly, using: store.shifts
+            decision: .nextShiftOnly, using: store.shifts
         ).synchronousResult)
         #expect(scene.scheduleSettingsDraft.isEmpty)
 
-        scene.lunchSettingsDraft = ScheduleFieldChange(lunchEnabled: true, lunchDurationMinutes: 45)
+        scene.scheduleSettingsDraft = ScheduleFieldChange(lunchEnabled: true, lunchDurationMinutes: 45)
         #expect(scene.commitScheduleDraft(
-            .lunch, decision: .nextShiftOnly, using: store.shifts
+            decision: .nextShiftOnly, using: store.shifts
         ).synchronousResult)
-        #expect(scene.lunchSettingsDraft.isEmpty)
+        #expect(scene.scheduleSettingsDraft.isEmpty)
+        #expect(store.preferences.lunchDurationMinutes == 45)
     }
 }

@@ -21,13 +21,13 @@ struct SettingsSectionCard: View {
     private var rows: some View {
         switch section {
         case .shift:
+            // Lunch is part of the schedule page; reminders live under Reminders.
             link(.schedule, icon: "calendar.badge.clock", title: shifts.text.t("workSchedule"), value: shifts.scheduleLabel)
-            link(.lunch, icon: "cup.and.saucer", title: shifts.text.t("lunchBreak"), value: shifts.lunchLabel)
-            link(.health, icon: "figure.walk", title: shifts.text.t("microBreakReminder"), value: shifts.healthLabel)
             link(.salary, icon: "banknote", title: shifts.text.t("salarySettings"), value: shifts.text.salaryTypeLabel, isLast: true)
 
         case .reminders:
-            link(.notifications, icon: "bell.badge", title: shifts.text.t("offWorkReminder"), value: shifts.text.notificationModeLabel, isLast: true)
+            link(.notifications, icon: "bell.badge", title: shifts.text.t("shiftReminders"), value: shifts.text.notificationModeLabel)
+            link(.health, icon: "figure.walk", title: shifts.text.t("microBreakReminder"), value: shifts.healthLabel, isLast: true)
 
         case .appearance:
             link(.theme, icon: "display", title: shifts.text.t("theme"), value: shifts.text.themeLabel)
