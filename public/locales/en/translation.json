@@ -219,6 +219,7 @@
   "adjustOvertime": "Adjust overtime",
   "overtime": "Overtime",
   "microBreakReminder": "Health reminder",
+  "breakReminder": "Break reminder",
   "microBreakInterval": "Remind me every",
   "microBreakEffectiveTimeNote": "Only effective work time counts; lunch and off-hours never trigger reminders.",
   "microBreakMessages": [

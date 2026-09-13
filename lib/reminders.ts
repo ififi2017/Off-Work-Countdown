@@ -112,8 +112,13 @@ export interface ShiftReminder {
 
 export interface ShiftReminderInputs {
   mode: ReminderNotificationMode;
-  /** 通用标题；档位标题缺失时的兜底，午休与健康提醒也用它。 */
+  /** 通用标题；档位标题缺失时的兜底，也是休息与健康提醒标题缺省时的兜底。 */
   fallbackTitle: string;
+  /**
+   * 休息开始／结束提醒的标题。缺省时退回 `fallbackTitle`——那是下班提醒的
+   * 标题，午休推送因此显示过“下班提醒”，调用方应显式传入。
+   */
+  breakTitle?: string;
   milestoneTitles: ReminderMilestoneTitles;
   milestoneMessages: ReminderMilestoneMessages;
   lunchStartEnabled: boolean;
@@ -271,7 +276,7 @@ export function buildShiftReminders(
     });
   }
 
-  const breakTitle = inputs.fallbackTitle || DEFAULT_TITLE;
+  const breakTitle = inputs.breakTitle || inputs.fallbackTitle || DEFAULT_TITLE;
   for (let index = 0; index < shift.segments.length - 1; index += 1) {
     const breakStartAtMs = shift.segments[index].endAtMs;
     const breakEndAtMs = shift.segments[index + 1].startAtMs;

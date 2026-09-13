@@ -219,6 +219,7 @@
   "adjustOvertime": "Ajuster les heures sup.",
   "overtime": "Heures sup.",
   "microBreakReminder": "Rappel santé",
+  "breakReminder": "Rappel de pause",
   "microBreakInterval": "Me rappeler toutes les",
   "microBreakEffectiveTimeNote": "Seul le travail effectif compte ; aucun rappel au déjeuner ni après le travail.",
   "microBreakMessages": [

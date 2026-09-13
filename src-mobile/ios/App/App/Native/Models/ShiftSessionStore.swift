@@ -201,6 +201,7 @@ final class ShiftSessionStore {
         return .init(
             mode: self.session.presentationNotificationMode.rawValue,
             fallbackTitle: text.t("offWorkReminder"),
+            breakTitle: text.t("breakReminder"),
             milestoneTitles: .init(
                 milestone50: title(50),
                 milestone75: title(25),

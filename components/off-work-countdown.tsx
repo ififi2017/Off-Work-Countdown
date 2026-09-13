@@ -1248,6 +1248,7 @@ export function OffWorkCountdown({
             }),
             notificationMode: desktopNotificationMode,
             notificationTitle: t("offWorkReminder"),
+            breakNotificationTitle: t("breakReminder"),
             // 标题带剩余百分比：进度走到 90% 和 95% 时，正文那两句
             // 「只剩最后一小段」和「马上就能合上电脑了」是同一个意思的
             // 两种说法，不给数字就分不出自己走到哪儿了。

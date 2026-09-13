@@ -219,6 +219,7 @@
   "adjustOvertime": "Điều chỉnh làm thêm",
   "overtime": "Làm thêm",
   "microBreakReminder": "Nhắc nhở sức khỏe",
+  "breakReminder": "Nhắc nhở nghỉ giải lao",
   "microBreakInterval": "Nhắc mỗi",
   "microBreakEffectiveTimeNote": "Chỉ tính thời gian làm việc hiệu quả; không nhắc lúc nghỉ trưa hay ngoài giờ.",
   "microBreakMessages": [

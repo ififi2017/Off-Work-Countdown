@@ -219,6 +219,7 @@
   "adjustOvertime": "Überstunden anpassen",
   "overtime": "Überstunden",
   "microBreakReminder": "Gesundheitserinnerung",
+  "breakReminder": "Pausen-Erinnerung",
   "microBreakInterval": "Erinnern alle",
   "microBreakEffectiveTimeNote": "Nur effektive Arbeitszeit zählt; in Pausen und nach Feierabend gibt es keine Erinnerung.",
   "microBreakMessages": [

@@ -219,6 +219,7 @@
   "adjustOvertime": "Изменить переработку",
   "overtime": "Переработка",
   "microBreakReminder": "Напоминание о здоровье",
+  "breakReminder": "Напоминание о перерыве",
   "microBreakInterval": "Напоминать каждые",
   "microBreakEffectiveTimeNote": "Учитывается только активная работа; на обеде и после работы уведомлений нет.",
   "microBreakMessages": [
