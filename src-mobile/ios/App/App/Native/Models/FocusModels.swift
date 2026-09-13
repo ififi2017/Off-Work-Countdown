@@ -1,4 +1,35 @@
+import CryptoKit
 import Foundation
+
+/// Identity for a session the app starts by itself.
+///
+/// A planned block reaching its start and a break following a finished block
+/// are started by every awake device signed in to the same account. Random
+/// identities made each device's copy a separate open session, and
+/// reconciliation then ended all but one as `supersededBySync` — the
+/// duplicated rows the day history showed. Deriving the identity from what
+/// caused the session gives every device the same record, which sync merges.
+nonisolated enum FocusSessionIdentity {
+    static func block(taskID: UUID, startAtMs: Int64, endAtMs: Int64) -> UUID {
+        derive("owc.focus.block.v1|\(taskID.uuidString.lowercased())|\(startAtMs)|\(endAtMs)")
+    }
+
+    static func recovery(after sessionID: UUID, kind: FocusSessionKind) -> UUID {
+        derive("owc.focus.recovery.v1|\(sessionID.uuidString.lowercased())|\(kind.rawValue)")
+    }
+
+    private static func derive(_ input: String) -> UUID {
+        var bytes = Array(SHA256.hash(data: Data(input.utf8)).prefix(16))
+        bytes[6] = (bytes[6] & 0x0F) | 0x50
+        bytes[8] = (bytes[8] & 0x3F) | 0x80
+        return UUID(uuid: (
+            bytes[0], bytes[1], bytes[2], bytes[3],
+            bytes[4], bytes[5], bytes[6], bytes[7],
+            bytes[8], bytes[9], bytes[10], bytes[11],
+            bytes[12], bytes[13], bytes[14], bytes[15]
+        ))
+    }
+}
 
 enum FocusEndReason: String, Codable, Sendable {
     case completed

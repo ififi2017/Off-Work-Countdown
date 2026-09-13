@@ -8,60 +8,34 @@ struct WhatsNewView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var revealed = false
-    @State private var contentHeight: CGFloat = 0
 
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 Color.black.opacity(0.18).ignoresSafeArea()
-                card
+                ReleaseNotesCard(isRevealed: revealed, reduceMotion: reduceMotion) { card }
                     .frame(maxWidth: 460)
                     .frame(maxHeight: max(160, geometry.size.height - 40))
                     .padding(.horizontal, 20)
-                    .opacity(revealed ? 1 : 0)
-                    .scaleEffect(revealed || reduceMotion ? 1 : 0.97)
-                    .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter, value: revealed)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .onAppear { revealed = true }
+        .onAppear {
+            withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.stateEnter) { revealed = true }
+        }
         .tint(OWCDesign.accent)
         .accessibilityAction(.escape, onDismiss)
     }
 
     private var card: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(text.t("whatsNewTitle")).font(.title2.bold())
-                        .accessibilityAddTraits(.isHeader)
-                    Text("DoneAt \(ReleaseNotes.current)")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                }
-                .padding(.trailing, 36)
-                VStack(alignment: .leading, spacing: 6) {
-                    feature("applewatch", "whatsNewWatchTitle", "whatsNewWatchBody")
-                    if let onLearnAboutWatch, UIDevice.current.userInterfaceIdiom == .phone {
-                        Button(text.t("appleWatchLearnMore"), action: onLearnAboutWatch)
-                            .font(.subheadline.weight(.semibold))
-                            // Aligned with the feature text, past the 26 pt glyph and 14 pt gap.
-                            .padding(.leading, dynamicTypeSize.isAccessibilitySize ? 0 : 40)
-                    }
-                }
-                feature("square.stack", "whatsNewSmartStackTitle", "whatsNewSmartStackBody")
-                Button(text.t("whatsNewContinue"), action: onDismiss)
-                    .buttonStyle(.borderedProminent)
-                    .frame(maxWidth: .infinity)
-            }
-            .padding(24)
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
-                contentHeight = $0
-            }
+        // The card takes its height from the text on the first pass. Measuring
+        // the text after layout opened it at one height and settled at another.
+        ViewThatFits(in: .vertical) {
+            content
+            ScrollView { content }
+                .scrollBounceBehavior(.basedOnSize)
         }
-        .scrollBounceBehavior(.basedOnSize)
-        .frame(idealHeight: contentHeight > 0 ? contentHeight : nil, maxHeight: contentHeight > 0 ? contentHeight : nil)
         .clipShape(.rect(cornerRadius: OWCDesign.cardRadius))
-        .modifier(ReleaseNotesGlass())
         .overlay(alignment: .topTrailing) {
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
@@ -73,6 +47,32 @@ struct WhatsNewView: View {
             .accessibilityLabel(text.t("close"))
             .padding(12)
         }
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(text.t("whatsNewTitle")).font(.title2.bold())
+                    .accessibilityAddTraits(.isHeader)
+                Text("DoneAt \(ReleaseNotes.current)")
+                    .font(.subheadline).foregroundStyle(.secondary)
+            }
+            .padding(.trailing, 36)
+            VStack(alignment: .leading, spacing: 6) {
+                feature("applewatch", "whatsNewWatchTitle", "whatsNewWatchBody")
+                if let onLearnAboutWatch, UIDevice.current.userInterfaceIdiom == .phone {
+                    Button(text.t("appleWatchLearnMore"), action: onLearnAboutWatch)
+                        .font(.subheadline.weight(.semibold))
+                        // Aligned with the feature text, past the 26 pt glyph and 14 pt gap.
+                        .padding(.leading, dynamicTypeSize.isAccessibilitySize ? 0 : 40)
+                }
+            }
+            feature("square.stack", "whatsNewSmartStackTitle", "whatsNewSmartStackBody")
+            Button(text.t("whatsNewContinue"), action: onDismiss)
+                .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(24)
     }
 
     private func feature(_ symbol: String, _ title: String, _ body: String) -> some View {
@@ -93,12 +93,31 @@ struct WhatsNewView: View {
     }
 }
 
-private struct ReleaseNotesGlass: ViewModifier {
-    func body(content: Content) -> some View {
+/// Inserts the card whole, glass and text in one transition. Fading an
+/// already-inserted glass card with `.opacity` drew the glass before the text.
+private struct ReleaseNotesCard<Content: View>: View {
+    let isRevealed: Bool
+    let reduceMotion: Bool
+    @ViewBuilder let content: Content
+
+    var body: some View {
         if #available(iOS 26, *) {
-            content.glassEffect(.regular, in: .rect(cornerRadius: OWCDesign.cardRadius))
-        } else {
-            content.background(.regularMaterial, in: .rect(cornerRadius: OWCDesign.cardRadius))
+            GlassEffectContainer {
+                if isRevealed {
+                    content
+                        .glassEffect(.regular, in: .rect(cornerRadius: OWCDesign.cardRadius))
+                        .glassEffectTransition(.materialize)
+                        .transition(transition)
+                }
+            }
+        } else if isRevealed {
+            content
+                .background(.regularMaterial, in: .rect(cornerRadius: OWCDesign.cardRadius))
+                .transition(transition)
         }
+    }
+
+    private var transition: AnyTransition {
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.97))
     }
 }

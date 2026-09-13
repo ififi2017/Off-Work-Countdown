@@ -529,3 +529,28 @@ func focusTabNavigationPreservesOtherTabs() {
     #expect(scene.focusPath == [.plus])
     #expect(scene.timerPath == [.about])
 }
+
+@MainActor
+@Test("Two devices queue the same planned block under one identity")
+func devicesShareScheduledBlockIdentity() throws {
+    let phone = try chainStore()
+    let tablet = try chainStore()
+    let planning = try #require(chainDay(phone, hour: 8, minute: 30))
+    let block = try #require(phone.focus.focusDayCanvas(at: planning).blocks.first { $0.kind == .task })
+    let task = chainTask(phone, title: "One", pomodoros: 1, at: planning)
+    _ = phone.focus.assign(task, toBlockStartingAt: block.startAtMs, at: planning).synchronousResult
+    for synced in phone.records.state.focusTasks { tablet.records.upsertFocusTask(synced) }
+    if let configuration = phone.records.state.focusPlanningConfiguration {
+        tablet.records.upsertFocusPlanningConfiguration(configuration)
+    }
+    // The same path a CloudKit import takes into the store's planning state.
+    tablet.focus.reconcileExternalState(at: planning).synchronousResult
+
+    let phoneQueue = phone.focus.refreshScheduledFocus(at: planning).synchronousResult
+    let tabletQueue = tablet.focus.refreshScheduledFocus(at: planning.addingTimeInterval(120)).synchronousResult
+    #expect(phoneQueue.count == 1)
+    #expect(phoneQueue.map(\.id) == tabletQueue.map(\.id))
+    #expect(phoneQueue.first?.id == FocusSessionIdentity.block(
+        taskID: task.id, startAtMs: block.startAtMs, endAtMs: block.endAtMs
+    ))
+}

@@ -1496,7 +1496,9 @@ final class FocusStore {
           let actualStart = max(start, date)
           guard end.timeIntervalSince(actualStart) >= 60 else { return nil }
           return FocusSession(
-            id: UUID(), taskID: taskID,
+            id: FocusSessionIdentity.block(
+              taskID: taskID, startAtMs: block.startAtMs, endAtMs: block.endAtMs),
+            taskID: taskID,
             shiftAnchorDate: recordsCalendar.startOfDay(for: actualStart),
             startedAt: actualStart, plannedEndAt: end,
             endedAt: nil, endReason: nil, editedAt: date,
@@ -1743,7 +1745,7 @@ final class FocusStore {
   }
 
   @discardableResult
-  func startBreak(kind: FocusSessionKind, at start: Date = .now) -> RecordCommand<Bool> {
+  func startBreak(kind: FocusSessionKind, at start: Date = .now, id: UUID? = nil) -> RecordCommand<Bool> {
     records.submitCommand { [self] in
       let requiredAction: FocusNextAction = kind == .shortBreak ? .startShortBreak : .startLongBreak
       guard kind == .shortBreak || kind == .longBreak,
@@ -1754,7 +1756,7 @@ final class FocusStore {
       let duration = breakDurationMinutes(kind)
       focusLastNextAction = .none
       let session = FocusSession(
-        id: UUID(), taskID: nil,
+        id: id ?? UUID(), taskID: nil,
         shiftAnchorDate: recordsCalendar.startOfDay(for: start),
         startedAt: start, plannedEndAt: planned, endedAt: nil, endReason: nil,
         editedAt: start, editCount: 0, editTieBreaker: UUID(), kind: kind,
@@ -2053,7 +2055,10 @@ final class FocusStore {
       end > date
     else { return }
     focusLastNextAction = kind == .longBreak ? .startLongBreak : .startShortBreak
-    _ = startBreak(kind: kind, at: session.plannedEndAt).synchronousResult
+    _ = startBreak(
+      kind: kind, at: session.plannedEndAt,
+      id: FocusSessionIdentity.recovery(after: session.id, kind: kind)
+    ).synchronousResult
   }
 
   /// Ends a block whose planned end has already passed, with the reason that
