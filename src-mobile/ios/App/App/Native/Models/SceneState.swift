@@ -117,11 +117,7 @@ final class SceneState {
     var scheduleSettingsDraft = ScheduleFieldChange() {
         didSet { if oldValue != scheduleSettingsDraft { scheduleDraftGeneration &+= 1 } }
     }
-    var lunchSettingsDraft = ScheduleFieldChange() {
-        didSet { if oldValue != lunchSettingsDraft { lunchDraftGeneration &+= 1 } }
-    }
     private var scheduleDraftGeneration: UInt64 = 0
-    private var lunchDraftGeneration: UInt64 = 0
     var focusActivityRequest: FocusActivityRequest?
     private(set) var focusActivityPresentationReady = false
     private var queuedFocusActivityRequest: FocusActivityRequest?
@@ -177,21 +173,17 @@ final class SceneState {
     }
 
     @discardableResult
+    /// Hours, pattern and lunch are one page and one draft: lunch used to have
+    /// its own page and draft, which let the two saves race each other.
     func commitScheduleDraft(
-        _ scope: ScheduleChangeScope,
         decision: ScheduleChangeDecision,
         using shifts: ShiftSessionStore
     ) -> RecordCommand<Bool> {
-        let submitted = scope == .schedule ? scheduleSettingsDraft : lunchSettingsDraft
-        let generation = scope == .schedule ? scheduleDraftGeneration : lunchDraftGeneration
+        let submitted = scheduleSettingsDraft
+        let generation = scheduleDraftGeneration
         return shifts.records.submitCommand { [self] in
             guard shifts.applyScheduleChange(submitted, decision: decision).synchronousResult else { return false }
-            switch scope {
-            case .schedule:
-                if generation == scheduleDraftGeneration { scheduleSettingsDraft = ScheduleFieldChange() }
-            case .lunch:
-                if generation == lunchDraftGeneration { lunchSettingsDraft = ScheduleFieldChange() }
-            }
+            if generation == scheduleDraftGeneration { scheduleSettingsDraft = ScheduleFieldChange() }
             return true
         }
     }

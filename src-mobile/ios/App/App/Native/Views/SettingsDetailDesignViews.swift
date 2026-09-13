@@ -13,6 +13,10 @@ struct ScheduleSettingsView: View {
     @State private var showSavePrompt = false
     @State private var savePromptFeedback = 0
     @State private var saveCommitFeedback = 0
+    @FocusState private var lunchDurationFocused: Bool
+    @State private var lunchDurationText = ""
+    @State private var showLunchStartPicker = false
+    @State private var pendingLunchStartMinutes = 0
 
     private var draft: ScheduleFieldChange {
         get { scene.scheduleSettingsDraft }
@@ -47,24 +51,48 @@ struct ScheduleSettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 36)
                     .padding(.top, 9)
+
+                // Lunch is part of the shift's shape, so it is edited and saved
+                // with the hours rather than on a page of its own.
+                OWCSectionHeader(title: shifts.text.t("lunchBreak"))
+                    .padding(.top, 20)
+                lunchCard
+                    .padding(.horizontal, OWCDesign.pageInset)
+                settingsDetailFooter(
+                    shifts.preferences.salaryEnabled
+                        ? shifts.text.t("lunchPauseNote")
+                        : shifts.text.t("lunchPauseNoteNoSalary")
+                )
             }
             .padding(.bottom, 24)
         }
+        .scrollDismissesKeyboard(.interactively)
         .background(OWCDesign.page)
         .navigationTitle(shifts.text.t("workSchedule"))
         .navigationBarTitleDisplayMode(.large)
         .owcDetailBack(
             title: shifts.text.t("settings"),
             pageTitle: shifts.text.t("workSchedule"),
-            hasUnsavedChanges: !draft.isEmpty,
+            hasUnsavedChanges: hasUnsavedChanges,
             unsavedChangesTitle: shifts.text.t("unsavedChangesTitle"),
             keepEditingTitle: shifts.text.t("keepEditing"),
             discardChangesTitle: shifts.text.t("discardChanges"),
-            onDiscardChanges: { draft = ScheduleFieldChange() }
+            onDiscardChanges: discardDraft
         ) {
-            ScheduleSaveButton(text: shifts.text, enabled: !draft.isEmpty, action: requestSave)
+            ScheduleSaveButton(text: shifts.text, enabled: hasUnsavedChanges, action: requestSave)
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(shifts.text.t("done")) { lunchDurationFocused = false; clampLunchDuration() }
+            }
+        }
+        .onAppear { lunchDurationText = "\(draftLunchDurationMinutes)" }
+        .onChange(of: lunchDurationFocused) { _, focused in
+            if !focused { clampLunchDuration() }
         }
         .sensoryFeedback(.selection, trigger: draftMode)
+        .sensoryFeedback(.selection, trigger: draftLunchEnabled)
         .sensoryFeedback(.warning, trigger: savePromptFeedback)
         .sensoryFeedback(.success, trigger: saveCommitFeedback)
         .sheet(item: $timeField) { field in
@@ -120,7 +148,83 @@ struct ScheduleSettingsView: View {
         }
     }
 
+    private var lunchCard: some View {
+        OWCGroupCard {
+            OWCRow(title: shifts.text.t("lunchBreak"), isLast: !draftLunchEnabled) {
+                Toggle(shifts.text.t("lunchBreak"), isOn: binding(\.lunchEnabled, committed: shifts.preferences.lunchEnabled))
+                    .labelsHidden()
+                    .tint(OWCDesign.accent)
+            }
+
+            if draftLunchEnabled {
+                OWCRow(title: shifts.text.t("lunchStartTime")) {
+                    Button {
+                        pendingLunchStartMinutes = draftLunchStartMinutes
+                        showLunchStartPicker = true
+                    } label: {
+                        OWCDetailAccessory(text: shifts.session.timeString(draftLunchStartMinutes))
+                            .environment(\.layoutDirection, .leftToRight)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                HStack {
+                    Text(shifts.text.t("lunchDuration")).font(.body)
+                    Spacer()
+                    OWCNumberField(
+                        placeholder: "60",
+                        text: $lunchDurationText,
+                        width: 72,
+                        onCommit: clampLunchDuration
+                    )
+                    .focused($lunchDurationFocused)
+                    Text(shifts.text.t("minutesUnit"))
+                        .font(.callout)
+                        .foregroundStyle(OWCDesign.secondary)
+                }
+                .padding(.horizontal, 16)
+                .frame(height: 56)
+            }
+        }
+        // Its own sheet, so it does not share the hours picker's item binding.
+        .sheet(isPresented: $showLunchStartPicker) {
+            OWCSetupTimePickerSheet(
+                session: shifts.session,
+                text: shifts.text,
+                title: shifts.text.t("lunchStartTime"),
+                minutes: $pendingLunchStartMinutes
+            )
+            .presentationDetents([.medium])
+            .onDisappear { edit { $0.lunchStartMinutes = pendingLunchStartMinutes } }
+        }
+    }
+
     // MARK: - Draft
+
+    private var draftLunchEnabled: Bool { draft.lunchEnabled ?? shifts.preferences.lunchEnabled }
+    private var draftLunchStartMinutes: Int { draft.lunchStartMinutes ?? shifts.preferences.lunchStartMinutes }
+    private var draftLunchDurationMinutes: Int { draft.lunchDurationMinutes ?? shifts.preferences.lunchDurationMinutes }
+
+    /// A duration still being typed has not reached the draft; leaving or
+    /// saving must count it all the same.
+    private var hasUnsavedChanges: Bool {
+        var leaving = draft
+        let typed = Int(lunchDurationText) ?? draftLunchDurationMinutes
+        leaving.lunchDurationMinutes = min(180, max(10, typed))
+        return !leaving.settled(against: shifts.preferences).isEmpty
+    }
+
+    private func discardDraft() {
+        draft = ScheduleFieldChange()
+        lunchDurationText = "\(shifts.preferences.lunchDurationMinutes)"
+    }
+
+    private func clampLunchDuration() {
+        let typed = Int(lunchDurationText) ?? draftLunchDurationMinutes
+        let clamped = min(180, max(10, typed))
+        lunchDurationText = "\(clamped)"
+        edit { $0.lunchDurationMinutes = clamped }
+    }
 
     private var draftStart: Int { draft.startMinutes ?? shifts.preferences.startMinutes }
     private var draftEnd: Int { draft.endMinutes ?? shifts.preferences.endMinutes }
@@ -151,14 +255,21 @@ struct ScheduleSettingsView: View {
     }
 
     private func commit(_ decision: ScheduleChangeDecision) {
-        let command = scene.commitScheduleDraft(.schedule, decision: decision, using: shifts)
+        let command = scene.commitScheduleDraft(decision: decision, using: shifts)
         Task {
-            if await command.value { saveCommitFeedback += 1 }
+            guard await command.value else { return }
+            if draft.isEmpty { lunchDurationText = "\(shifts.preferences.lunchDurationMinutes)" }
+            saveCommitFeedback += 1
         }
     }
 
     private func requestSave() {
+        // The field commits on blur, so settle a value still being typed first.
+        lunchDurationFocused = false
+        clampLunchDuration()
         guard !draft.isEmpty else { return }
+        // The shared rules give hours and lunch the same answer about today,
+        // so one question covers the whole page.
         if shifts.session.shouldPromptApplyingToToday(draft, scope: .schedule) {
             savePromptFeedback += 1
             showSavePrompt = true
@@ -791,15 +902,17 @@ struct NotificationDesignView: View {
             guard phase == .active else { return }
             activitiesEnabled = ActivityAuthorizationInfo().areActivitiesEnabled
         }
-        .navigationTitle(shifts.text.t("offWorkReminder"))
+        .navigationTitle(shifts.text.t("shiftReminders"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar(.visible, for: .navigationBar)
-        .owcDetailBack(title: shifts.text.t("settings"), pageTitle: shifts.text.t("offWorkReminder"))
+        .owcDetailBack(title: shifts.text.t("settings"), pageTitle: shifts.text.t("shiftReminders"))
         .task { await notifications.refresh() }
         .sensoryFeedback(.selection, trigger: shifts.preferences.notificationMode)
         .sensoryFeedback(.selection, trigger: shifts.preferences.liveActivityEnabled)
         .sensoryFeedback(.selection, trigger: shifts.preferences.liveActivityLeadMinutes)
         .sensoryFeedback(.selection, trigger: shifts.preferences.cycleEndSummaryNotificationEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.lunchStartReminderEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.lunchEndReminderEnabled)
         .onChange(of: shifts.preferences.cycleEndSummaryNotificationEnabled) { _, enabled in
             guard enabled, notifications.status == .notDetermined else { return }
             Task { @MainActor in
@@ -823,6 +936,12 @@ struct NotificationDesignView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 26)
 
+            // Moved here from the lunch page: these decide whether something
+            // is announced, not what shape the shift is.
+            if shifts.preferences.lunchEnabled {
+                lunchReminderSection
+            }
+
             liveActivitySection
 
             cycleEndSummarySection
@@ -833,6 +952,32 @@ struct NotificationDesignView: View {
             detailFooter(shifts.text.t("notificationPrivacyNote"))
             Spacer(minLength: 8)
         }
+    }
+
+    private var lunchReminderSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            OWCSectionHeader(title: shifts.text.t("lunchBreak"))
+            OWCGroupCard {
+                HStack {
+                    Text(shifts.text.t("lunchStartReminder")).font(.body)
+                    Spacer()
+                    Toggle(shifts.text.t("lunchStartReminder"), isOn: shifts.preferences.preferenceBinding(\.lunchStartReminderEnabled)).labelsHidden()
+                }
+                .padding(.horizontal, 16)
+                .frame(height: 56)
+                .owcDivider()
+
+                HStack {
+                    Text(shifts.text.t("lunchEndReminder")).font(.body)
+                    Spacer()
+                    Toggle(shifts.text.t("lunchEndReminder"), isOn: shifts.preferences.preferenceBinding(\.lunchEndReminderEnabled)).labelsHidden()
+                }
+                .padding(.horizontal, 16)
+                .frame(height: 56)
+            }
+        }
+        .padding(.horizontal, OWCDesign.pageInset)
+        .padding(.top, 16)
     }
 
     private var cycleEndSummarySection: some View {
@@ -1054,207 +1199,6 @@ private extension View {
                 .frame(height: 0.5)
                 .padding(.leading, 16)
         }
-    }
-}
-
-struct LunchSettingsView: View {
-    @Environment(SceneState.self) private var scene
-    @Bindable var shifts: ShiftSessionStore
-    @FocusState private var durationFocused: Bool
-    @State private var durationText = ""
-    @State private var showStartPicker = false
-    @State private var pendingStartMinutes = 0
-    /// The lunch window the user has changed and not yet saved. The two
-    /// reminder switches below deliberately stay out of it: they decide whether
-    /// a notification fires, not what shape the shift is, so there is no "does
-    /// today count" question to ask about them.
-    @State private var showSavePrompt = false
-    @State private var savePromptFeedback = 0
-    @State private var saveCommitFeedback = 0
-
-    private var draft: ScheduleFieldChange {
-        get { scene.lunchSettingsDraft }
-        nonmutating set { scene.lunchSettingsDraft = newValue }
-    }
-
-    private var draftEnabled: Bool { draft.lunchEnabled ?? shifts.preferences.lunchEnabled }
-    private var draftStartMinutes: Int { draft.lunchStartMinutes ?? shifts.preferences.lunchStartMinutes }
-    private var draftDurationMinutes: Int { draft.lunchDurationMinutes ?? shifts.preferences.lunchDurationMinutes }
-
-    private var lunchEnabledBinding: Binding<Bool> {
-        Binding(
-            get: { draftEnabled },
-            set: { newValue in edit { $0.lunchEnabled = newValue } }
-        )
-    }
-
-    var body: some View {
-        OWCContentSizedScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                OWCGroupCard {
-                    OWCRow(title: shifts.text.t("lunchBreak"), isLast: !draftEnabled) {
-                        Toggle(shifts.text.t("lunchBreak"), isOn: lunchEnabledBinding)
-                            .labelsHidden()
-                            .tint(OWCDesign.accent)
-                    }
-
-                    if draftEnabled {
-                        OWCRow(title: shifts.text.t("lunchStartTime")) {
-                            Button {
-                                pendingStartMinutes = draftStartMinutes
-                                showStartPicker = true
-                            } label: {
-                                OWCDetailAccessory(text: shifts.session.timeString(draftStartMinutes))
-                                    .environment(\.layoutDirection, .leftToRight)
-                            }
-                            .buttonStyle(.plain)
-                        }
-
-                        HStack {
-                            Text(shifts.text.t("lunchDuration")).font(.body)
-                            Spacer()
-                            OWCNumberField(
-                                placeholder: "60",
-                                text: $durationText,
-                                width: 72,
-                                onCommit: clampDuration
-                            )
-                            .focused($durationFocused)
-                            Text(shifts.text.t("minutesUnit"))
-                                .font(.callout)
-                                .foregroundStyle(OWCDesign.secondary)
-                        }
-                        .padding(.horizontal, 16)
-                        .frame(height: 56)
-                    }
-                }
-                .padding(.horizontal, OWCDesign.pageInset)
-                .padding(.top, 22)
-
-                OWCSectionHeader(title: shifts.text.t("remindersSection"))
-                    .padding(.top, 20)
-                OWCGroupCard {
-                    HStack {
-                        Text(shifts.text.t("lunchStartReminder")).font(.body)
-                        Spacer()
-                        Toggle(shifts.text.t("lunchStartReminder"), isOn: shifts.preferences.preferenceBinding(\.lunchStartReminderEnabled)).labelsHidden()
-                    }
-                    .padding(.horizontal, 16)
-                    .frame(height: 56)
-                    .owcDivider()
-
-                    HStack {
-                        Text(shifts.text.t("lunchEndReminder")).font(.body)
-                        Spacer()
-                        Toggle(shifts.text.t("lunchEndReminder"), isOn: shifts.preferences.preferenceBinding(\.lunchEndReminderEnabled)).labelsHidden()
-                    }
-                    .padding(.horizontal, 16)
-                    .frame(height: 56)
-                }
-                .padding(.horizontal, OWCDesign.pageInset)
-
-                settingsDetailFooter(
-                    shifts.preferences.salaryEnabled
-                        ? shifts.text.t("lunchPauseNote")
-                        : shifts.text.t("lunchPauseNoteNoSalary")
-                )
-            }
-        }
-        .scrollDismissesKeyboard(.interactively)
-        .background(OWCDesign.page)
-        .navigationTitle(shifts.text.t("lunchBreak"))
-        .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(
-            title: shifts.text.t("settings"),
-            pageTitle: shifts.text.t("lunchBreak"),
-            hasUnsavedChanges: hasUnsavedChanges,
-            unsavedChangesTitle: shifts.text.t("unsavedChangesTitle"),
-            keepEditingTitle: shifts.text.t("keepEditing"),
-            discardChangesTitle: shifts.text.t("discardChanges"),
-            onDiscardChanges: discardDraft
-        ) {
-            ScheduleSaveButton(text: shifts.text, enabled: hasUnsavedChanges, action: requestSave)
-        }
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button(shifts.text.t("done")) { durationFocused = false; clampDuration() }
-            }
-        }
-        .onAppear { durationText = "\(draftDurationMinutes)" }
-        .onChange(of: durationFocused) { _, focused in
-            if !focused { clampDuration() }
-        }
-        .sensoryFeedback(.selection, trigger: draftEnabled)
-        .sensoryFeedback(.selection, trigger: shifts.preferences.lunchStartReminderEnabled)
-        .sensoryFeedback(.selection, trigger: shifts.preferences.lunchEndReminderEnabled)
-        .sensoryFeedback(.warning, trigger: savePromptFeedback)
-        .sensoryFeedback(.success, trigger: saveCommitFeedback)
-        .sheet(isPresented: $showStartPicker) {
-            OWCSetupTimePickerSheet(
-                session: shifts.session,
-                text: shifts.text,
-                title: shifts.text.t("lunchStartTime"),
-                minutes: $pendingStartMinutes
-            )
-            .presentationDetents([.medium])
-            .onDisappear { edit { $0.lunchStartMinutes = pendingStartMinutes } }
-        }
-        .alert(shifts.text.t("applyScheduleTitle"), isPresented: $showSavePrompt) {
-            Button(shifts.text.t("applyFromNextShift")) { commit(.nextShiftOnly) }
-            Button(shifts.text.t("applyToToday")) { commit(.applyToToday) }
-            Button(shifts.text.t("cancelAction"), role: .cancel) {}
-        } message: {
-            Text(shifts.text.t("applyScheduleMessage"))
-        }
-    }
-
-    private func edit(_ change: (inout ScheduleFieldChange) -> Void) {
-        var next = draft
-        change(&next)
-        draft = next.settled(against: shifts.preferences)
-    }
-
-    private func commit(_ decision: ScheduleChangeDecision) {
-        let command = scene.commitScheduleDraft(.lunch, decision: decision, using: shifts)
-        Task {
-            guard await command.value else { return }
-            if draft.isEmpty { durationText = "\(shifts.preferences.lunchDurationMinutes)" }
-            saveCommitFeedback += 1
-        }
-    }
-
-    private func requestSave() {
-        // The field commits on blur, so a value still being typed has not
-        // reached the draft yet. Save is the last chance to settle it first.
-        durationFocused = false
-        clampDuration()
-        guard !draft.isEmpty else { return }
-        if shifts.session.shouldPromptApplyingToToday(draft, scope: .lunch) {
-            savePromptFeedback += 1
-            showSavePrompt = true
-        } else {
-            commit(.nextShiftOnly)
-        }
-    }
-
-    private var hasUnsavedChanges: Bool {
-        var leaving = draft
-        let typed = Int(durationText) ?? draftDurationMinutes
-        leaving.lunchDurationMinutes = min(180, max(10, typed))
-        return !leaving.settled(against: shifts.preferences).isEmpty
-    }
-
-    private func discardDraft() {
-        draft = ScheduleFieldChange()
-        durationText = "\(shifts.preferences.lunchDurationMinutes)"
-    }
-
-    private func clampDuration() {
-        let typed = Int(durationText) ?? draftDurationMinutes
-        let clamped = min(180, max(10, typed))
-        durationText = "\(clamped)"
-        edit { $0.lunchDurationMinutes = clamped }
     }
 }
 

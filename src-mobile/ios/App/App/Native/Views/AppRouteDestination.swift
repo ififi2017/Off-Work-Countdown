@@ -21,8 +21,10 @@ struct AppRouteDestination: View {
                 SalaryDesignView(shifts: runtime.shifts)
             case .notifications:
                 NotificationDesignView(shifts: runtime.shifts)
+            // Lunch is edited with the hours now. The route stays so upcoming
+            // rows, the start button and deep links still land on it.
             case .lunch:
-                LunchSettingsView(shifts: runtime.shifts)
+                ScheduleSettingsView(shifts: runtime.shifts)
             case .health:
                 HealthReminderSettingsView(shifts: runtime.shifts)
             case .theme:

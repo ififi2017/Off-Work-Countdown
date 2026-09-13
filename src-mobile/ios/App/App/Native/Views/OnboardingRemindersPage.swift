@@ -153,8 +153,8 @@ struct OnboardingRemindersPage: View {
 
     private var remindersCard: some View {
         OWCGroupCard {
-            OWCRow(title: text.t("offWorkReminder")) {
-                Toggle(text.t("offWorkReminder"), isOn: offWorkReminderBinding)
+            OWCRow(title: text.t("shiftReminders")) {
+                Toggle(text.t("shiftReminders"), isOn: offWorkReminderBinding)
                     .labelsHidden()
                     .tint(OWCDesign.accent)
             }

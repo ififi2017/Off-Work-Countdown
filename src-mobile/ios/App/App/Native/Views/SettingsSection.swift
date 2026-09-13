@@ -29,10 +29,12 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     ///
     /// Splitting `allCases` here means a new section appears in every layout
     /// at once. Plus is a shared title action rather than a list section.
-    /// `shift` is alone on the left because it is by far the tallest.
+    /// The shift and reminder sections share the left column: with lunch and
+    /// the health reminder moved out of `shift`, neither is tall enough to
+    /// stand alone against the rest.
     static var twoColumns: [[SettingsSection]] {
         let all = allCases
-        guard let tallest = all.first else { return [] }
-        return [[tallest], Array(all.dropFirst())]
+        let left = Array(all.prefix(2))
+        return [left, Array(all.dropFirst(left.count))]
     }
 }

@@ -160,7 +160,7 @@ extension ShiftSessionStore {
             disabled.append(.init(
                 id: "off-work-reminder-off",
                 kind: .offWorkReminder,
-                title: text.t("offWorkReminder"),
+                title: text.t("shiftReminders"),
                 detail: text.t("disabledShort"),
                 date: nil,
                 route: .notifications
