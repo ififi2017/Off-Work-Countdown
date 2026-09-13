@@ -64,7 +64,7 @@ nonisolated struct LifeViewModel: Codable, Equatable, Sendable {
     }
 }
 
-/// One career-period day after the shared TypeScript rules and the complete
+/// One career-period day after the schedule rules and the complete
 /// override / calendar-exception / schedule chain have already been applied.
 /// An absent day is an uncovered career gap; a present day with no segments is
 /// a covered rest or leave day. Life calculations never interpret schedules.

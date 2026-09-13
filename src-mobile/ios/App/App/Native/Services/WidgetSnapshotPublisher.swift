@@ -54,15 +54,15 @@ final class WidgetSnapshotComposer {
         let recurring = shifts.session.followsSchedule
         let futureShifts: [NativeWidgetShiftSnapshot]
         if recurring {
-            futureShifts = (try? await ScheduleRangeEngine.shared.widgetShifts(
+            futureShifts = await ScheduleRules.widgetShiftsInBackground(
                 input: input,
                 throughMs: recurringHorizon(from: logicalNow).timeIntervalSince1970 * 1_000,
                 maximumCount: maximumRecurringShifts
-            )) ?? []
+            )
         } else {
             futureShifts = []
         }
-        // The settings may change while the actor expands the year. Never
+        // The settings may change while the year expands off the main actor. Never
         // combine old future shifts with the newly edited current shift.
         guard !Task.isCancelled,
               shifts.records.durableRevision == shifts.records.revision,
@@ -94,8 +94,8 @@ final class WidgetSnapshotComposer {
     }
 
     /// Internal so phase coverage can be unit-tested without an App Group.
-    /// Swift never resolves a workday or constructs a shift here: every future
-    /// shift is obtained from the shared TypeScript rules through `shifts.session.snapshot`.
+    /// This never resolves a workday or constructs a shift: every shift comes
+    /// from `ScheduleRules`, through `shifts.session.snapshot` or `widgetShifts`.
     func makeSnapshot(
         shifts: ShiftSessionStore,
         shift: NativeShiftSnapshot?,
@@ -169,11 +169,11 @@ final class WidgetSnapshotComposer {
         var entries: [WidgetTimelineEntry] = []
         var cursor = nowMs
         var diagnosticShift: WidgetShiftTimeline?
-        let futureShifts = recurringShifts ?? (try? CountdownRules.shared.widgetShifts(
+        let futureShifts = recurringShifts ?? ScheduleRules.widgetShifts(
             input: shifts.session.rulesInput(at: now, using: .base),
             throughMs: Double(expiresAtMs),
             maximumCount: maximumRecurringShifts
-        )) ?? []
+        )
 
         // An early clock-off ends the shift it happened in and nothing else.
         // The rest of that workday is still "done for today"; rest-day copy
@@ -517,7 +517,7 @@ final class WidgetSnapshotComposer {
     }
 
     /// Salary-free projection of the in-app "coming up" list. The extension
-    /// cannot run the rules bundle, so the producer walks every remaining
+    /// does not run the schedule rules, so the producer walks every remaining
     /// shift in the snapshot. Recurring snapshots stay valid for about a
     /// year and WidgetKit only rereads them every 12 hours, so capping this
     /// list at the 36-hour presentation window left large widgets empty

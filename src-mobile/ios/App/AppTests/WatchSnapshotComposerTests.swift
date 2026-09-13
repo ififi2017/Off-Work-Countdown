@@ -11,7 +11,7 @@ struct WatchSnapshotComposerTests {
         defer { fixture.defaults.removePersistentDomain(forName: fixture.suite) }
         fixture.session.countdownStarted = true
 
-        let rules = try fixture.session.watchProjection(at: fixture.date)
+        let rules = fixture.session.watchProjection(at: fixture.date)
         #expect(rules.scheduleState == "scheduled")
         #expect(rules.shift?.isRunning == true)
     }
@@ -27,7 +27,7 @@ struct WatchSnapshotComposerTests {
         fixture.session.earlyOffSnapshot = shift
         _ = fixture.preferences.applyPreferences { $0.endMinutes = 18 * 60 }.synchronousResult
 
-        let rules = try fixture.session.watchProjection(at: fixture.date.addingTimeInterval(60))
+        let rules = fixture.session.watchProjection(at: fixture.date.addingTimeInterval(60))
         #expect(rules.shift?.plannedEndAtMs == shift.plannedEndAtMs)
         #expect(rules.shift?.finishedAtMs == fixture.session.earlyOffAtMs)
         #expect(rules.shift?.transitions.last?.state == "finished")
@@ -42,7 +42,7 @@ struct WatchSnapshotComposerTests {
         _ = fixture.preferences.applyPreferences { $0.workdays = [] }.synchronousResult
         fixture.session.countdownStarted = true
 
-        let rules = try fixture.session.watchProjection(at: fixture.date)
+        let rules = fixture.session.watchProjection(at: fixture.date)
         #expect(rules.scheduleState == "scheduled")
         #expect(rules.shift == nil)
         #expect(rules.nextShift == nil)

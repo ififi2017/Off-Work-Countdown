@@ -7,8 +7,21 @@ import {
   createIOSNativeRulesBundle,
   writeIOSNativeRulesBundle,
 } from "./build-ios-native-rules.mjs";
+import { loadScheduleRuleOracle } from "./ios-schedule-rule-oracle.mjs";
 
 const temporaryDirectories = [];
+
+// The shipped bundle plus the R1 oracle, so one `OWCNative` answers both the
+// entries iOS still bridges and the ones Swift now implements.
+function loadRules() {
+  const context = { console };
+  vm.createContext(context);
+  vm.runInContext(createIOSNativeRulesBundle(), context);
+  const bundled = { ...context.OWCNative };
+  Object.assign(context.OWCNative, loadScheduleRuleOracle());
+  context.bundled = bundled;
+  return context;
+}
 
 afterEach(() => {
   for (const directory of temporaryDirectories.splice(0)) {
@@ -18,9 +31,7 @@ afterEach(() => {
 
 describe("iOS native rule bundle", () => {
   it("projects salary-free Watch boundaries and keeps a weekend valid through the next shift", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
     const rules = {
       startTime: "09:00", endTime: "18:00",
       nowMs: new Date("2026-08-22T10:00:00+08:00").getTime(),
@@ -61,9 +72,17 @@ describe("iOS native rule bundle", () => {
     expect(bundle).toContain('require("./countdown")');
     expect(bundle).toContain('require("./reminders")');
     expect(bundle).toContain('require("./summary")');
-    expect(bundle).toContain('require("./watch-projection")');
     expect(bundle).toContain("countdown.buildShiftTimeline");
     expect(bundle).toContain(".buildShiftReminders");
+    // Plan 019 R1 moved these to ScheduleRules.swift; the bundle must not
+    // keep a second, unused copy.
+    expect(bundle).not.toContain('require("./watch-projection")');
+    const context = { console };
+    vm.createContext(context);
+    vm.runInContext(bundle, context);
+    for (const moved of ["snapshot", "watchProjection", "widgetShifts", "expandScheduleRange", "validateBreak"]) {
+      expect(context.OWCNative[moved]).toBeUndefined();
+    }
     expect(bundle).not.toContain("eval(");
     expect(
       readFileSync(outputPath, "utf8")
@@ -71,9 +90,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("executes snapshots and current-plus-next reminder projections", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
     const input = {
       startTime: "09:00",
       endTime: "18:00",
@@ -185,9 +202,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("distinguishes a future shift today from the following shift", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
 
     const mondayBeforeWork = new Date(2026, 7, 24, 1, 0);
     const mondayStart = new Date(2026, 7, 24, 9, 0);
@@ -228,9 +243,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("expands every calendar day including rest-day planned hours", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
     const days = JSON.parse(context.OWCNative.expandScheduleRange(JSON.stringify({
       startTime: "09:00",
       endTime: "17:00",
@@ -248,9 +261,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("advances clock-in progress from zero and keeps the weekend anchor stable", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
     const rules = {
       startTime: "09:00",
       endTime: "17:00",
@@ -289,9 +300,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("asks about today whenever a schedule change can alter today's record", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
     const base = {
       startTime: "09:00",
       endTime: "17:00",
@@ -337,9 +346,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("asks about today when lunch changes its record even after the break", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
     const base = {
       startTime: "09:00",
       endTime: "17:00",
@@ -382,9 +389,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("keeps Friday night's overnight shift as Saturday morning settlement", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
 
     const fridayStart = new Date(2026, 6, 3, 22, 0);
     const saturdayEnd = new Date(2026, 6, 4, 6, 0);
@@ -411,9 +416,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("does not replace a running overnight window with last night's settlement", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
 
     const fridayNight = new Date(2026, 6, 3, 23, 0);
     const saturdayStart = new Date(2026, 6, 3, 22, 0);
@@ -449,9 +452,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("keeps a forced Saturday overnight as Sunday morning settlement", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
 
     const saturdayStart = new Date(2026, 6, 4, 22, 0);
     const sundayEnd = new Date(2026, 6, 5, 6, 0);
@@ -479,9 +480,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("keeps a day shift that overtime'd past midnight as Tuesday morning settlement", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
 
     const mondayStart = new Date(2026, 6, 6, 9, 0);
     const overtimeEnd = new Date(2026, 6, 7, 1, 0);
@@ -519,9 +518,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("locks a live snapshot to the requested timezone", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
     const nowMs = Date.parse("2026-08-24T17:00:00.000Z");
     const rules = {
       startTime: "09:00",
@@ -550,9 +547,7 @@ describe("iOS native rule bundle", () => {
   });
 
   it("converts a daily salary to a monthly life-profile seed inside the bundle", () => {
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const context = loadRules();
     const result = JSON.parse(context.OWCNative.salaryMonthlyEquivalent(JSON.stringify({
       salaryAmount: "500",
       salaryType: "daily",

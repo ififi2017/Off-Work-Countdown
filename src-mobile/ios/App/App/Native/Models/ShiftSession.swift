@@ -138,9 +138,9 @@ final class ShiftSession {
         calendar.timeZone = countdownTimeZone
         return calendar
     }
-    /// Always make the civil schedule zone explicit. JavaScriptCore's default
-    /// zone is not guaranteed to match Foundation's `TimeZone.current`, even
-    /// when the records zone is the device zone.
+    /// Always make the civil schedule zone explicit. The rules fall back to
+    /// `TimeZone.current` without one, and a session can be locked to a zone
+    /// the device has since left.
     var rulesTimeZoneIdentifier: String? {
         countdownTimeZoneIdentifier
     }
@@ -417,24 +417,16 @@ final class ShiftSession {
         startMinutes: Int? = nil,
         endMinutes: Int? = nil
     ) -> NativeShiftSnapshot? {
-        do {
-            var result = try CountdownRules.shared.snapshot(input: rulesInput(
-                at: date,
-                startMinutes: startMinutes,
-                endMinutes: endMinutes
-            ))
-            if startMinutes == nil, endMinutes == nil, projectsFutureFromBase(at: date),
-               let projected = try? CountdownRules.shared.snapshot(
-                input: rulesInput(at: date, using: .base)
-               ) {
-                result = result.withProjectedFuture(from: projected)
-            }
-            if lastRulesError != nil { lastRulesError = nil }
-            return result
-        } catch {
-            lastRulesError = error.localizedDescription
-            return nil
+        var result = ScheduleRules.snapshot(input: rulesInput(
+            at: date,
+            startMinutes: startMinutes,
+            endMinutes: endMinutes
+        ))
+        if startMinutes == nil, endMinutes == nil, projectsFutureFromBase(at: date) {
+            result = result.withProjectedFuture(from: ScheduleRules.snapshot(input: rulesInput(at: date, using: .base)))
         }
+        if lastRulesError != nil { lastRulesError = nil }
+        return result
     }
     func rulesInput(
         at date: Date = .now,
@@ -491,7 +483,7 @@ final class ShiftSession {
         )
     }
     /// Salary-free Watch input using the session's frozen early-finish snapshot.
-    func watchProjection(at date: Date = .now) throws -> NativeWatchRulesProjection {
+    func watchProjection(at date: Date = .now) -> NativeWatchRulesProjection {
         let source = rulesInput(at: date)
         let input = NativeRulesInput(
             startTime: source.startTime, endTime: source.endTime, nowMs: source.nowMs,
@@ -513,7 +505,7 @@ final class ShiftSession {
                 overtimeEndAtMs: $0.overtimeEndAtMs
             )
         }
-        return try CountdownRules.shared.watchProjection(
+        return ScheduleRules.watchProjection(
             input: input,
             scheduleConfigured: preferences.onboardingComplete,
             isRunning: countdownStarted,
@@ -745,7 +737,7 @@ final class ShiftSession {
         return reminder.atMs >= nextStart
     }
     func isLunchInsideShift(startMinutes: Int? = nil, endMinutes: Int? = nil) -> Bool {
-        !preferences.lunchEnabled || CountdownRules.shared.validateBreak(input: rulesInput(
+        !preferences.lunchEnabled || ScheduleRules.validateBreak(input: rulesInput(
             startMinutes: startMinutes,
             endMinutes: endMinutes
         ))
@@ -876,8 +868,8 @@ final class ShiftSession {
         }
         return snapshot.heroRemainingMs(at: date)
     }
-    /// Elapsed progress toward the next clock-in, supplied by the generated
-    /// rules bundle so every iOS timer surface uses the same stable anchor.
+    /// Elapsed progress toward the next clock-in, supplied by the schedule
+    /// rules so every iOS timer surface uses the same stable anchor.
     func countdownToClockInProgress(snapshot: NativeShiftSnapshot) -> Double {
         min(100, max(0, snapshot.countdownProgress))
     }

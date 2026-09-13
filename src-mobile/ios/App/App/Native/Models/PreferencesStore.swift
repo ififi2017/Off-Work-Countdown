@@ -166,7 +166,7 @@ final class PreferencesStore {
     }
     /// Returns today's one-based position in the existing shared rotation
     /// schedule. Choosing another position only moves the schedule anchor; the
-    /// TypeScript rules remain responsible for deciding work and rest days.
+    /// schedule rules remain responsible for deciding work and rest days.
     var rotationCycleDay: Int {
         rotationCycleDay(at: .now)
     }

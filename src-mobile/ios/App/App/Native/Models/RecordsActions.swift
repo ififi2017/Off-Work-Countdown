@@ -154,14 +154,13 @@ final class RecordsActions {
                    let configuration = try? JSONDecoder().decode(
                     ScheduleHoursConfiguration.self,
                     from: snapshot.configurationData
-                   ),
-                   let days = try? CountdownRules.shared.expandScheduleRange(
-                    configuration: configuration,
-                    from: date,
-                    through: date,
-                    timeZone: period?.timeZone
                    ) {
-                    planned = days.first?.segments ?? []
+                    planned = ScheduleRules.expandScheduleRange(
+                        configuration: configuration,
+                        from: date,
+                        through: date,
+                        timeZone: period?.timeZone
+                    ).first?.segments ?? []
                 }
                 if planned.isEmpty {
                     planned = [

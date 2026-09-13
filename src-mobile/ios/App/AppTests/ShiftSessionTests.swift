@@ -19,7 +19,7 @@ struct ShiftSessionTests {
             DateComponents(year: 2026, month: 9, day: 7, hour: 10)))
         let initial = records.state
         let shift = try #require(session.snapshot(at: date))
-        let expected = try CountdownRules.shared.snapshot(input: session.rulesInput(at: date))
+        let expected = ScheduleRules.snapshot(input: session.rulesInput(at: date))
         #expect(shift.segments == expected.segments)
         #expect(shift.isWorkday)
         session.earlyOffAtMs = date.timeIntervalSince1970 * 1_000

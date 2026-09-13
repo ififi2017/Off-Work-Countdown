@@ -601,10 +601,9 @@ struct SalaryDesignView: View {
     }
 
     private var content: some View {
-        // Focus changes rebuild this view while the keyboard is animating. A
-        // snapshot crosses the JavaScriptCore bridge, so take it once and
-        // derive every salary value from that same result instead of invoking
-        // the rules separately for each row.
+        // Focus changes rebuild this view while the keyboard is animating, so
+        // take one snapshot and derive every salary value from that same
+        // result instead of resolving the shift separately for each row.
         let preview = salaryPreview(from: shifts.session.snapshot())
 
         return OWCContentSizedScrollView {

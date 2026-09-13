@@ -35,10 +35,9 @@ struct FocusCanvasView: View {
     private var session: FocusSession? { focus.activeFocusSession() }
 
     var body: some View {
-        // Built once per pass and threaded down. Every shift snapshot is a
-        // JavaScriptCore round trip through the shared rules, and the canvas
-        // needs two of them plus a scan of today's sessions — as a computed
-        // property this ran six times for one render.
+        // Built once per pass and threaded down. The canvas needs two shift
+        // snapshots plus a scan of today's sessions — as a computed property
+        // this ran six times for one render.
         let model = focus.focusDayCanvas(at: now)
         return VStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 14) {

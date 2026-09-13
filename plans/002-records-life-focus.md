@@ -409,6 +409,12 @@ reminders 29 / second-tick 3）编码的正是 [004](004-shift-model-3.1.0.md) �
 依赖」降级为「规格与预言机」，两个实现一旦分歧，CI 先于用户发现。可以按入口增量迁移，
 先迁 `snapshot`，`reminders` 与 `summarize` 留在桥上，不要求一次搬完。
 
+**2026-09-13 结论更新（[019](019-ios-native-rules-and-localization.md) R1）。** 扳机最终不是展开
+实测，而是 019 记录的产品分化：iOS 将提供 Web／Desktop 没有的扩展排班。R1 把 `snapshot`、
+`expandScheduleRange`、`widgetShifts`、`watchProjection`、`validateBreak` 迁到
+`ScheduleRules.swift`，以 TS 生成的差分 fixture 为契约，并同版修改 AGENTS.md；提醒、汇总与
+收入仍在桥上，按 019 R2–R4 继续。
+
 ### 3. 应用观察日志
 
 ~~~swift

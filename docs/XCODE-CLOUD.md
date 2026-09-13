@@ -2,18 +2,19 @@
 
 仓库已经提供 `src-mobile/ios/App/ci_scripts/ci_post_clone.sh`。Xcode Cloud
 克隆仓库后会安装项目要求的 Node.js 24、执行 `npm ci`、生成未提交的
-`CountdownRules.js`，并运行 `npm run check:watch-fixtures` 和 `npm run check:ios`。
+`CountdownRules.js`，并运行 `npm run check:watch-fixtures`、`npm run check:ios-rule-fixtures` 和 `npm run check:ios`。
 不要把生成的规则 bundle 提交进 Git，也不要在 Xcode Cloud 中跳过这个脚本。
-Watch 的 Swift 差分 fixture 是需提交的测试输入；规则变化后运行
-`node scripts/generate-watch-shift-fixtures.mjs` 更新，检查模式发现过期或缺失会失败，不会自动改写验收值。
+Watch 与排班规则（019 R1）的 Swift 差分 fixture 是需提交的测试输入；规则变化后运行
+`node scripts/generate-watch-shift-fixtures.mjs` 和 `npm run generate:ios-rule-fixtures` 更新，检查模式发现过期或缺失会失败，不会自动改写验收值。
 
 ## App Store Connect 中的一次性配置
 
 1. 选择 `src-mobile/ios/App/App.xcodeproj`、共享的 `App` scheme 和 iOS 平台。
 2. Start Condition 选择 Branch Changes，分支设为 `main`。
 3. 文件过滤至少包括 `src-mobile/ios/**`、`lib/countdown.ts`、
-   `lib/reminders.ts`、`lib/summary.ts`、`public/locales/**`、
-   `scripts/build-ios-native-rules.mjs`、`scripts/generate-watch-shift-fixtures.mjs`、
+   `lib/reminders.ts`、`lib/summary.ts`、`lib/watch-projection.ts`、`public/locales/**`、
+   `scripts/build-ios-native-rules.mjs`、`scripts/ios-schedule-rule-oracle.mjs`、
+   `scripts/generate-ios-schedule-rule-fixtures.mjs`、`scripts/generate-watch-shift-fixtures.mjs`、
    `scripts/generate-watch-localizations.mjs`、`scripts/check-ios-project.mjs`、`scripts/check-version.mjs`、
    `scripts/xcode-product-versions.mjs`、`package.json` 和 `package-lock.json`。这些路径都会改变 iOS
    包体、它使用的规则或本地检查结果。`src-mobile/ios/**` 已覆盖 `WatchApp`、`WatchWidgets`、

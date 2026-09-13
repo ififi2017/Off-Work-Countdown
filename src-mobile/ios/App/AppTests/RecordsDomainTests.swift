@@ -54,7 +54,7 @@ struct RecordsDomainTests {
         #expect(queries.recordDayIndex().isEmpty)
         #expect(queries.resolvedDays(from: date, through: date, now: date).first?.segments.isEmpty == true)
         let projected = await queries.prepareRecordsDisplayDays(from: date, through: date, now: date)
-        let expected = try CountdownRules.shared.expandScheduleRange(configuration: hours,
+        let expected = ScheduleRules.expandScheduleRange(configuration: hours,
             from: calendar.startOfDay(for: date), through: calendar.startOfDay(for: date), timeZone: calendar.timeZone)
         #expect(projected.first?.segments == expected.first?.segments)
         let summary = try #require(await life.prepareLifeViewModel(now: date))
@@ -82,7 +82,7 @@ struct RecordsDomainTests {
         }
         currentHours.endTime = "19:00"
         let projected = await loading.value
-        let expected = try CountdownRules.shared.expandScheduleRange(configuration: currentHours,
+        let expected = ScheduleRules.expandScheduleRange(configuration: currentHours,
             from: calendar.startOfDay(for: date), through: calendar.startOfDay(for: date), timeZone: calendar.timeZone)
         #expect(projected.first?.segments == expected.first?.segments)
         #expect(records.state == before)

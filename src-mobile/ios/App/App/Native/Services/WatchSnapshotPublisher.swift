@@ -114,7 +114,7 @@ final class WatchSnapshotPublisher: NSObject {
       guard !Task.isCancelled else { return nil }
       let text = shifts.text
       return Payload(
-        rules: try? shifts.session.watchProjection(), evidence: shifts.plus.watchEvidence,
+        rules: shifts.session.watchProjection(), evidence: shifts.plus.watchEvidence,
         presentation: .init(
           localeIdentifier: shifts.preferences.languageCode,
           timeZoneIdentifier: shifts.preferences.recordsTimeZoneIdentifier,

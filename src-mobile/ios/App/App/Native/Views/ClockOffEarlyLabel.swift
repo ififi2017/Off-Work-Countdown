@@ -85,8 +85,8 @@ struct ClockInEarlyLabel: View {
 
 /// The way back from an early clock-off. Shared by setup and the completed
 /// screen so undoing is the same action in the same words, not two banners
-/// that drift apart. Callers pass `note` so the banner does not ask
-/// JavaScriptCore again after they already decided to show it.
+/// that drift apart. Callers pass `note` so the banner does not resolve the
+/// shift again after they already decided to show it.
 struct EarlyClockOffBanner: View {
     let shifts: ShiftSessionStore
     let note: String

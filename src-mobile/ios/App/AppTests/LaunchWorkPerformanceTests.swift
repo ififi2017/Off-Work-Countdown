@@ -35,7 +35,7 @@ func launchWorkCost() async throws {
     }
     let input = store.session.rulesInput(at: now, using: .base)
     let horizon = try #require(Calendar.current.date(byAdding: .day, value: 370, to: now))
-    let expanded = try await ScheduleRangeEngine.shared.widgetShifts(
+    let expanded = await ScheduleRules.widgetShiftsInBackground(
         input: input, throughMs: horizon.timeIntervalSince1970 * 1_000, maximumCount: 400
     )
     let expected = WidgetSnapshotComposer.shared.publishedSnapshot(shifts: store.shifts, now: now)

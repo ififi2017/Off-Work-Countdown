@@ -1,8 +1,8 @@
 import Foundation
 
-/// Maps the salary-free TypeScript Watch projection into the transport contract.
-/// The caller owns revision persistence; TypeScript owns every shift boundary
-/// and the content-validity boundary.
+/// Maps the salary-free Watch projection from `ScheduleRules` into the
+/// transport contract. The caller owns revision persistence; the rules own
+/// every shift boundary and the content-validity boundary.
 enum WatchSnapshotComposer {
     struct Metadata: Sendable {
         let sourceGeneration: String

@@ -29,7 +29,7 @@ final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate
     /// nothing needs. Give it back rather than being the reason a background
     /// app is killed; the next read rebuilds it.
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
-        CountdownRules.shared.purgeExpansionCache()
+        ScheduleExpansionCache.shared.purge()
     }
 }
 
