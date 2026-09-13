@@ -39,7 +39,7 @@ or place salary values in widgets, URLs, analytics payloads or share metadata.
   the specification for everything iOS shares with Web and Desktop:
   `scripts/ios-schedule-rule-oracle.mjs` keeps those entry points in TypeScript,
   `npm run generate:ios-rule-fixtures` turns them into
-  `AppTests/ScheduleRuleFixtures.generated.json`, and
+  `AppTests/ScheduleRuleFixtures.generated.swift`, and
   `AppTests/ScheduleRuleFixtureTests.swift` holds the Swift port to it. A change
   to shared shift behaviour therefore lands in `lib/` and `ScheduleRules.swift`
   in the same change, with regenerated fixtures — `npm test` fails while they

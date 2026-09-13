@@ -5,7 +5,7 @@ import Testing
 
 /// Holds `ScheduleRules.swift` to the TypeScript oracle (plan 019 R1).
 ///
-/// `ScheduleRuleFixtures.generated.json` comes from
+/// `ScheduleRuleFixtures.generated.swift` comes from
 /// `scripts/generate-ios-schedule-rule-fixtures.mjs`. A failure means the Swift
 /// port and `lib/` disagree about behaviour both platforms share: decide which
 /// one is right before regenerating, never regenerate to make this pass.
@@ -147,10 +147,7 @@ struct ScheduleRuleFixtureTests {
     // MARK: - Fixture file
 
     private static func fixtures() throws -> ScheduleRuleFixtureFile {
-        let name = "ScheduleRuleFixtures.generated"
-        let url = Bundle(for: FixtureBundleToken.self).url(forResource: name, withExtension: "json")
-            ?? URL(filePath: #filePath).deletingLastPathComponent().appending(path: "\(name).json")
-        let file = try JSONDecoder().decode(ScheduleRuleFixtureFile.self, from: Data(contentsOf: url))
+        let file = try JSONDecoder().decode(ScheduleRuleFixtureFile.self, from: Data(ScheduleRuleFixtureData.json.utf8))
         try #require(file.version == 1)
         return file
     }
@@ -195,8 +192,6 @@ struct ScheduleRuleFixtureTests {
         return "\(segments)|\(start)|\(end)|\(planned)|\(overtime)|\(duration)|\(anchor)\n"
     }
 }
-
-private final class FixtureBundleToken {}
 
 struct ScheduleRuleFixtureFile: Decodable {
     struct Profile: Decodable {
