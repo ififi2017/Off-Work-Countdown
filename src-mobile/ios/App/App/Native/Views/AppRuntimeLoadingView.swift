@@ -22,7 +22,7 @@ struct AppRuntimeLoadingView: View {
                         .buttonStyle(.borderedProminent)
                 }
             } else {
-                ProgressView()
+                LaunchPlaceholder()
             }
         }
         .task { await load() }
@@ -43,5 +43,25 @@ struct AppRuntimeLoadingView: View {
 
     private func text(_ key: String) -> String {
         localizer.string(key, locale: NativeLocalizer.systemLanguage())
+    }
+}
+
+/// Continues `LaunchScreen.storyboard` while the archive loads. A spinner here
+/// cut the launch image short and read as a second, slower launch.
+/// Keep the mark, gap, type and bottom inset in step with the storyboard.
+private struct LaunchPlaceholder: View {
+    var body: some View {
+        HStack(spacing: 14) {
+            Image("BrandMark")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 44, height: 44)
+            Text(verbatim: "DoneAt")
+                .font(.system(size: 34, weight: .semibold))
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 88)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .background(Color(.systemBackground))
     }
 }

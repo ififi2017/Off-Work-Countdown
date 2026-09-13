@@ -566,7 +566,7 @@ struct RecordsFocusHistoryCard: View {
     let dayKey: String
 
     var body: some View {
-        let sessions = focus.focusSessions(forDayKey: dayKey)
+        let sessions = Self.withoutSyncCopies(focus.focusSessions(forDayKey: dayKey))
         if !sessions.isEmpty {
             OWCGroupCard {
                 VStack(alignment: .leading, spacing: 10) {
@@ -579,6 +579,21 @@ struct RecordsFocusHistoryCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(16)
+            }
+        }
+    }
+
+    /// Before sessions had derived identities, two devices each started the
+    /// same planned block or break, and sync ended one copy as superseded. That
+    /// copy is not something the user did, so it stays in the archive but not
+    /// on the day. A superseded session with no surviving twin is still shown.
+    static func withoutSyncCopies(_ sessions: [FocusSession]) -> [FocusSession] {
+        sessions.filter { session in
+            guard session.endReason == .supersededBySync else { return true }
+            return !sessions.contains { other in
+                other.id != session.id && other.endReason != .supersededBySync
+                    && other.kind == session.kind && other.taskID == session.taskID
+                    && abs(other.startedAt.timeIntervalSince(session.startedAt)) < 60
             }
         }
     }

@@ -813,3 +813,61 @@ func newShiftDiscardsPreviousRecoveryPrompt() throws {
     #expect(store.focus.focusLastNextAction == .none)
     #expect(!store.focus.focusDayComplete(at: nextMorning))
 }
+
+@MainActor
+@Test("Two devices finishing the same block start one shared break, not two")
+func devicesShareAutomaticBreakIdentity() throws {
+    let phone = try focusStore()
+    let tablet = try focusStore()
+    let now = try shiftAfternoon(phone)
+    let task = insertTask(on: phone, pomodoros: 2, at: now)
+    tablet.records.upsertFocusTask(task)
+    let startedAt = now.addingTimeInterval(-25 * 60)
+    let block = FocusSession(
+        id: UUID(), taskID: task.id,
+        shiftAnchorDate: phone.preferences.recordsCalendar.startOfDay(for: startedAt),
+        startedAt: startedAt, plannedEndAt: now, endedAt: nil, endReason: nil,
+        editedAt: startedAt, editCount: 0, editTieBreaker: UUID(), kind: .focus,
+        plannedEndReason: .completed
+    )
+    phone.records.upsertFocusSession(block)
+    tablet.records.upsertFocusSession(block)
+
+    #expect(phone.focus.finishElapsedFocusSession(at: now.addingTimeInterval(10)).synchronousResult)
+    #expect(tablet.focus.finishElapsedFocusSession(at: now.addingTimeInterval(90)).synchronousResult)
+    let phoneBreak = try #require(phone.focus.activeFocusSession())
+    let tabletBreak = try #require(tablet.focus.activeFocusSession())
+    #expect(phoneBreak.kind == .shortBreak)
+    #expect(phoneBreak.id == tabletBreak.id)
+    #expect(phoneBreak.id == FocusSessionIdentity.recovery(after: block.id, kind: .shortBreak))
+    #expect(phoneBreak.startedAt == tabletBreak.startedAt)
+    #expect(phoneBreak.plannedEndAt == tabletBreak.plannedEndAt)
+    #expect(FocusSessionIdentity.recovery(after: block.id, kind: .longBreak) != phoneBreak.id)
+    phone.focus.skipFocusPhase().synchronousResult
+    tablet.focus.skipFocusPhase().synchronousResult
+}
+
+@MainActor
+@Test("Day history hides a superseded sync copy but keeps one with no surviving twin")
+func dayHistoryHidesSyncCopies() throws {
+    let store = try focusStore()
+    let start = try shiftAfternoon(store)
+    let task = insertTask(on: store, pomodoros: 2, at: start)
+    func session(_ offset: TimeInterval, _ reason: FocusEndReason, taskID: UUID?) -> FocusSession {
+        let startedAt = start.addingTimeInterval(offset)
+        return FocusSession(
+            id: UUID(), taskID: taskID, shiftAnchorDate: start,
+            startedAt: startedAt, plannedEndAt: startedAt.addingTimeInterval(25 * 60),
+            endedAt: startedAt.addingTimeInterval(6 * 60), endReason: reason,
+            editedAt: startedAt, editCount: 0, editTieBreaker: UUID(), kind: .focus,
+            plannedEndReason: .completed
+        )
+    }
+    let kept = session(0, .completed, taskID: task.id)
+    let copy = session(20, .supersededBySync, taskID: task.id)
+    let lone = session(3 * 60 * 60, .supersededBySync, taskID: task.id)
+    let otherTask = session(0, .supersededBySync, taskID: UUID())
+
+    let visible = RecordsFocusHistoryCard.withoutSyncCopies([kept, copy, lone, otherTask]).map(\.id)
+    #expect(visible == [kept.id, lone.id, otherTask.id])
+}
