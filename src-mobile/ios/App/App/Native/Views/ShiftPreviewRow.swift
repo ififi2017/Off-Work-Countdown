@@ -8,7 +8,7 @@ import SwiftUI
 /// trying to protect. What separates this from a settings row is the time
 /// column, not colour.
 struct ShiftPreviewRow: View {
-    let store: OffWorkStore
+    let locale: Locale
     let entry: ShiftPreviewEntry
     let now: Date
     let showsSeparator: Bool
@@ -53,9 +53,9 @@ struct ShiftPreviewRow: View {
                 // happens today.
                 Group {
                     if Calendar.current.isDate(date, inSameDayAs: now) {
-                        Text(date, format: .dateTime.hour().minute().locale(store.locale))
+                        Text(date, format: .dateTime.hour().minute().locale(locale))
                     } else {
-                        Text(date, format: .dateTime.weekday(.abbreviated).hour().minute().locale(store.locale))
+                        Text(date, format: .dateTime.weekday(.abbreviated).hour().minute().locale(locale))
                     }
                 }
                 .font(.body.monospacedDigit())

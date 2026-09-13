@@ -200,7 +200,7 @@ function launch(udid, language, scene = {}) {
   const qaArguments = [
     "-ios.native.languageOverride", language,
     "-ios.native.onboardingComplete", "YES",
-    "-ios.native.releaseNotesSeen", "3.1.9",
+    "-ios.native.releaseNotesSeen", "3.2.0",
     "-ios.native.debugAlwaysOnboarding", scene.onboardingPage == null ? "NO" : "YES",
     "-ios.native.debugPlusAuthorized", "YES",
     "-ios.native.plusHasSeenIntro", "YES",

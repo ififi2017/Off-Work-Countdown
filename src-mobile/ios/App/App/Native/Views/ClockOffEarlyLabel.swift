@@ -4,18 +4,21 @@ import SwiftUI
 ///
 /// Shared across the active timer layouts because this is the second thing
 /// about the action that has to stay identical everywhere. The first was the
-/// confirmation state itself, which is why that lives on the store.
+/// confirmation state itself, which is why each scene owns one shared value.
 ///
 /// The armed appearance deliberately copies `ShiftStartButton`: the same deep
 /// orange, the same warning glyph. That button already teaches "this one needs
 /// a second press", and teaching it twice with two different vocabularies would
 /// be worse than not teaching it at all.
 struct ClockOffEarlyLabel: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
+    let now: Date
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var warningPulse = 0
 
-    private var armed: Bool { store.clockOffConfirmPending }
+    private var confirmationID: UUID? { scene.clockOffConfirmationID(at: now, using: shifts) }
+    private var armed: Bool { confirmationID != nil }
 
     var titleKey: String {
         return armed ? "clockOffEarlyConfirm" : "clockOffEarly"
@@ -23,7 +26,7 @@ struct ClockOffEarlyLabel: View {
 
     var body: some View {
         Label(
-            store.t(titleKey),
+            shifts.text.t(titleKey),
             systemImage: armed ? "exclamationmark.triangle.fill" : "arrow.left"
         )
         // Tint rather than a button style: three of the five call sites apply
@@ -38,26 +41,29 @@ struct ClockOffEarlyLabel: View {
         // Disarms itself, like the start button does. A confirmation left
         // standing is one the user meets again much later, having forgotten it,
         // and fires with a press they meant as their first.
-        .task(id: armed) {
-            guard armed else { return }
+        .task(id: confirmationID) {
+            guard let confirmationID else { return }
             try? await Task.sleep(for: .seconds(5))
             guard !Task.isCancelled else { return }
-            store.cancelClockOffConfirmation()
+            scene.cancelTimerConfirmation(id: confirmationID)
         }
     }
 }
 
 struct ClockInEarlyLabel: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
+    let now: Date
     var tinted = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var warningPulse = 0
 
-    private var armed: Bool { store.clockInConfirmPending }
+    private var confirmationID: UUID? { scene.clockInConfirmationID(at: now, using: shifts) }
+    private var armed: Bool { confirmationID != nil }
 
     var body: some View {
         Label(
-            store.t(armed ? "clockInEarlyConfirm" : "clockInEarly"),
+            shifts.text.t(armed ? "clockInEarlyConfirm" : "clockInEarly"),
             systemImage: armed ? "exclamationmark.triangle.fill" : "arrow.right"
         )
         .lineLimit(1)
@@ -68,11 +74,11 @@ struct ClockInEarlyLabel: View {
         .onChange(of: armed) { _, armed in
             if armed { warningPulse += 1 }
         }
-        .task(id: armed) {
-            guard armed else { return }
+        .task(id: confirmationID) {
+            guard let confirmationID else { return }
             try? await Task.sleep(for: .seconds(5))
             guard !Task.isCancelled else { return }
-            store.cancelClockOffConfirmation()
+            scene.cancelTimerConfirmation(id: confirmationID)
         }
     }
 }
@@ -82,7 +88,7 @@ struct ClockInEarlyLabel: View {
 /// that drift apart. Callers pass `note` so the banner does not ask
 /// JavaScriptCore again after they already decided to show it.
 struct EarlyClockOffBanner: View {
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
     let note: String
 
     var body: some View {
@@ -94,7 +100,7 @@ struct EarlyClockOffBanner: View {
                 .font(.subheadline)
                 .foregroundStyle(OWCDesign.secondary)
             Spacer(minLength: 8)
-            Button(store.t("undoClockOffEarly")) { store.undoEarlyClockOff() }
+            Button(shifts.text.t("undoClockOffEarly")) { shifts.undoEarlyClockOff() }
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(OWCDesign.accent)
                 .buttonStyle(.plain)
@@ -106,7 +112,7 @@ struct EarlyClockOffBanner: View {
 }
 
 struct EarlyClockInBanner: View {
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
     let note: String
 
     var body: some View {
@@ -118,7 +124,7 @@ struct EarlyClockInBanner: View {
                 .font(.subheadline)
                 .foregroundStyle(OWCDesign.secondary)
             Spacer(minLength: 8)
-            Button(store.t("undoClockInEarly")) { store.undoEarlyClockIn() }
+            Button(shifts.text.t("undoClockInEarly")) { shifts.undoEarlyClockIn() }
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(OWCDesign.accent)
                 .buttonStyle(.plain)
@@ -130,29 +136,41 @@ struct EarlyClockInBanner: View {
 }
 
 struct ManualTimingBanner: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
+    let now: Date
     var compact = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var warningPulse = 0
     @State private var commitPulse = 0
 
-    private var armed: Bool { store.cancelManualTimingConfirmPending }
+    private var confirmationID: UUID? {
+        scene.cancelManualTimingConfirmationID(at: now, using: shifts)
+    }
+    private var armed: Bool { confirmationID != nil }
 
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "hand.tap")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(OWCDesign.secondary)
-            Text(store.t("manualTimingBanner"))
+            Text(shifts.text.t("manualTimingBanner"))
                 .font(compact ? .footnote : .subheadline)
                 .foregroundStyle(OWCDesign.secondary)
             if !compact { Spacer(minLength: 8) }
             Button {
                 let commits = armed
-                if commits { commitPulse += 1 } else { warningPulse += 1 }
-                store.requestCancelManualTiming()
+                if !commits { warningPulse += 1 }
+                let command = scene.requestCancelManualTiming(at: now, using: shifts)
+                if let accepted = command.immediateResult {
+                    if accepted { commitPulse += 1 }
+                } else {
+                    Task {
+                        if await command.value { commitPulse += 1 }
+                    }
+                }
             } label: {
-                Text(store.t(armed ? "cancelManualTimingConfirm" : "cancelManualTiming"))
+                Text(shifts.text.t(armed ? "cancelManualTimingConfirm" : "cancelManualTiming"))
                     .font((compact ? Font.footnote : .subheadline).weight(.semibold))
                     .foregroundStyle(armed ? OWCDesign.orangeDeep : OWCDesign.accent)
             }
@@ -170,11 +188,11 @@ struct ManualTimingBanner: View {
         .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.selection, value: armed)
         .sensoryFeedback(.warning, trigger: warningPulse)
         .sensoryFeedback(.impact(weight: .medium), trigger: commitPulse)
-        .task(id: armed) {
-            guard armed else { return }
+        .task(id: confirmationID) {
+            guard let confirmationID else { return }
             try? await Task.sleep(for: .seconds(5))
             guard !Task.isCancelled else { return }
-            store.cancelClockOffConfirmation()
+            scene.cancelTimerConfirmation(id: confirmationID)
         }
     }
 }

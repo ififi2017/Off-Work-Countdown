@@ -1,14 +1,39 @@
 import SwiftUI
 
+extension TimeAllocationKind {
+    var owcColor: Color {
+        switch self {
+        case .work: OWCDesign.recordsWork
+        case .overtime: OWCDesign.recordsOvertime
+        case .workBreak: OWCDesign.recordsBreak
+        case .sleep: OWCDesign.recordsSleep
+        case .free: OWCDesign.recordsFree
+        case .unclassified: OWCDesign.recordsUnclassified
+        }
+    }
+}
+
+extension LifeStageKind {
+    var owcColor: Color {
+        switch self {
+        case .childhood: OWCDesign.lifeChildhood
+        case .study: OWCDesign.lifeStudy
+        case .work: OWCDesign.lifeWork
+        case .retirement: OWCDesign.lifeRetirement
+        case .unset: OWCDesign.lifeUnset
+        }
+    }
+}
+
 struct RecordsScalePicker: View {
-    let store: OffWorkStore
+    let text: AppText
     @Binding var scale: RecordsScale
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
             Picker("", selection: $scale) {
                 ForEach(RecordsScale.allCases) { option in
-                    Text(store.t(option.titleKey)).tag(option)
+                    Text(text.t(option.titleKey)).tag(option)
                 }
             }
             .pickerStyle(.segmented)
@@ -16,11 +41,11 @@ struct RecordsScalePicker: View {
 
             Menu {
                 ForEach(RecordsScale.allCases) { option in
-                    Button(store.t(option.titleKey)) { scale = option }
+                    Button(text.t(option.titleKey)) { scale = option }
                 }
             } label: {
                 HStack {
-                    Text(store.t(scale.titleKey))
+                    Text(text.t(scale.titleKey))
                         .font(.body.weight(.semibold))
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.footnote.weight(.semibold))
@@ -29,7 +54,7 @@ struct RecordsScalePicker: View {
                 .frame(minHeight: 44)
                 .background(OWCDesign.control, in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius, style: .continuous))
             }
-            .accessibilityLabel(store.t(scale.titleKey))
+            .accessibilityLabel(text.t(scale.titleKey))
         }
         // Dense chart navigation has to keep all four destinations visible.
         // Descriptive cards below continue to honor the user's full Dynamic
@@ -39,7 +64,7 @@ struct RecordsScalePicker: View {
 }
 
 struct RecordsLockedPlaceholder: View {
-    let store: OffWorkStore
+    let text: AppText
     let kind: RecordsLockedKind
     var onUnlock: () -> Void
 
@@ -61,13 +86,13 @@ struct RecordsLockedPlaceholder: View {
                 // hits a lock should learn that nothing is being lost before
                 // they are shown a price.
                 VStack(spacing: 6) {
-                    Text(store.t(titleKey))
+                    Text(text.t(titleKey))
                         .font(.body.weight(.semibold))
                         .foregroundStyle(OWCDesign.primary)
-                    Text(store.t("recordsLockedKeepsSaving"))
+                    Text(text.t("recordsLockedKeepsSaving"))
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
-                    Text(store.t("plusSeePlans"))
+                    Text(text.t("plusSeePlans"))
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(OWCDesign.accent)
                 }
@@ -86,8 +111,8 @@ struct RecordsLockedPlaceholder: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(store.t(titleKey)). \(store.t("recordsLockedKeepsSaving"))")
-        .accessibilityHint(store.t("plusSeePlans"))
+        .accessibilityLabel("\(text.t(titleKey)). \(text.t("recordsLockedKeepsSaving"))")
+        .accessibilityHint(text.t("plusSeePlans"))
     }
 }
 
@@ -158,7 +183,8 @@ private struct RecordsMetricHelpPopover: View {
 /// to divide a span into the same six categories with the same colours — two
 /// bars drawn twice would eventually disagree about what "free" means.
 struct RecordsAllocationBar: View {
-    let store: OffWorkStore
+    let text: AppText
+    let preferences: PreferencesStore
     let share: TimeAllocationShare
     var showsApproximateYears = false
     @State private var selectedKind: TimeAllocationKind? = .work
@@ -171,11 +197,11 @@ struct RecordsAllocationBar: View {
             ZStack(alignment: .leading) {
                 ForEach(visibleSlices) { item in
                     VStack(alignment: .leading, spacing: 4) {
-                        if showsApproximateYears, let years = store.formatApproximateLifeYears(Double(item.ms)) {
-                            Text("\(store.t(item.kind.titleKey)) · \(years)")
+                        if showsApproximateYears, let years = text.formatApproximateLifeYears(Double(item.ms)) {
+                            Text("\(text.t(item.kind.titleKey)) · \(years)")
                                 .font(.callout.weight(.medium))
                         } else {
-                            Text(store.t(item.kind.titleKey)).fontWeight(.medium)
+                            Text(text.t(item.kind.titleKey)).fontWeight(.medium)
                         }
                         Text(exactValue(item)).foregroundStyle(OWCDesign.secondary)
                     }
@@ -227,7 +253,7 @@ struct RecordsAllocationBar: View {
                     .buttonStyle(.plain)
                     .contentShape(Rectangle())
                     .frame(height: 44)
-                    .accessibilityLabel(store.t(item.kind.titleKey))
+                    .accessibilityLabel(text.t(item.kind.titleKey))
                     .accessibilityValue(accessibilityValue(item))
                     .accessibilityAddTraits(activeKind == item.kind ? .isSelected : [])
                     .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
@@ -251,7 +277,7 @@ struct RecordsAllocationBar: View {
     }
 
     private var legend: some View {
-        RecordsLegendLayout(layoutDirection: store.layoutDirection) {
+        RecordsLegendLayout(layoutDirection: preferences.layoutDirection) {
             legendItems
         }
         .frame(maxWidth: .infinity)
@@ -264,7 +290,7 @@ struct RecordsAllocationBar: View {
             } label: {
                 HStack(spacing: 4) {
                     Circle().fill(item.color).frame(width: 6, height: 6)
-                    Text(store.t(item.kind.titleKey))
+                    Text(text.t(item.kind.titleKey))
                         .font(.caption)
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -273,7 +299,7 @@ struct RecordsAllocationBar: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(store.t(item.kind.titleKey))
+            .accessibilityLabel(text.t(item.kind.titleKey))
             .accessibilityValue(accessibilityValue(item))
             .accessibilityAddTraits(activeKind == item.kind ? .isSelected : [])
         }
@@ -289,20 +315,20 @@ struct RecordsAllocationBar: View {
 
     private var slices: [AllocationSlice] {
         TimeAllocationKind.allCases.map { kind in
-            AllocationSlice(kind: kind, ms: duration(kind), color: OWCDesign.recordsColor(kind))
+            AllocationSlice(kind: kind, ms: duration(kind), color: kind.owcColor)
         }
     }
 
     private func accessibilityValue(_ item: AllocationSlice) -> String {
-        [showsApproximateYears ? store.formatApproximateLifeYears(Double(item.ms)) : nil,
+        [showsApproximateYears ? text.formatApproximateLifeYears(Double(item.ms)) : nil,
          exactValue(item)].compactMap { $0 }.joined(separator: ", ")
     }
 
     private func exactValue(_ item: AllocationSlice) -> String {
         let total = max(1, share.dayLengthMs)
         return [
-            store.formatRecordsDuration(Double(item.ms)),
-            store.formatPercent(Double(item.ms) / Double(total) * 100),
+            text.formatRecordsDuration(Double(item.ms)),
+            text.formatPercent(Double(item.ms) / Double(total) * 100),
         ].joined(separator: ", ")
     }
 
@@ -451,7 +477,9 @@ struct RecordsTimeSegmentPopover: View {
 }
 
 struct RecordsHeadlineView: View {
-    let store: OffWorkStore
+    let text: AppText
+    let preferences: PreferencesStore
+    let isAuthorized: Bool
     let title: String
     let summary: RecordsHeadlineSummary?
     var isEmbedded = false
@@ -465,11 +493,11 @@ struct RecordsHeadlineView: View {
             } else {
                 OWCGroupCard { summaryBody(summary).padding(16) }
             }
-        } else if store.plus.isAuthorized {
+        } else if isAuthorized {
             OWCGroupCard {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(title).font(.headline)
-                    Text(store.t("recordsUnrecorded"))
+                    Text(text.t("recordsUnrecorded"))
                         .font(.subheadline)
                         .foregroundStyle(OWCDesign.secondary)
                 }
@@ -477,7 +505,7 @@ struct RecordsHeadlineView: View {
                 .padding(16)
             }
         } else {
-            RecordsLockedPlaceholder(store: store, kind: .summary, onUnlock: onUnlock)
+            RecordsLockedPlaceholder(text: text, kind: .summary, onUnlock: onUnlock)
         }
     }
 
@@ -491,7 +519,7 @@ struct RecordsHeadlineView: View {
                 Spacer(minLength: 0)
                 RecordsMetricHelpButton(
                     title: title,
-                    message: store.t("recordsSummaryHelp")
+                    message: text.t("recordsSummaryHelp")
                 )
             }
             content(summary)
@@ -508,33 +536,33 @@ struct RecordsHeadlineView: View {
         let overtimeMs = summary.actualForecast.map { $0.actualOvertimeHours * 3_600_000 }
             ?? Double(summary.overtimeMs)
         return VStack(alignment: .leading, spacing: 12) {
-            metric(forecastOnly ? "recordsForecastHours" : "recordsWorkedTime", store.formatRelativeDuration(workedMs), prominent: true,
-                   subtitle: store.t("recordsWorkdayCount", values: ["count": store.formatCount(Int(workdays))]))
+            metric(forecastOnly ? "recordsForecastHours" : "recordsWorkedTime", text.formatRelativeDuration(workedMs), prominent: true,
+                   subtitle: text.t("recordsWorkdayCount", values: ["count": text.formatCount(Int(workdays))]))
             if overtimeMs > 0 {
-                metric("recordsOvertime", store.formatRelativeDuration(overtimeMs))
+                metric("recordsOvertime", text.formatRelativeDuration(overtimeMs))
             }
             if let income {
                 Divider()
                 let progress = income > 0 ? summary.actualForecast?.actual.earnings.map { earned in
-                    store.t("recordsIncomeProgress", values: [
-                        "amount": store.moneyText(earned),
-                        "percent": store.formatPercent(min(100, max(0, earned / income * 100))),
+                    text.t("recordsIncomeProgress", values: [
+                        "amount": text.moneyText(earned),
+                        "percent": text.formatPercent(min(100, max(0, earned / income * 100))),
                     ])
                 } : nil
-                metric("recordsForecastIncome", store.moneyText(income), subtitle: progress)
+                metric("recordsForecastIncome", text.moneyText(income), subtitle: progress)
             }
             if summary.allocationDays > 0 {
                 Divider()
                 HStack {
-                    Text(store.t("recordsTimeBreakdown"))
+                    Text(text.t("recordsTimeBreakdown"))
                         .font(.subheadline.weight(.semibold))
                     Spacer()
-                    RecordsMetricHelpButton(title: store.t("recordsTimeBreakdown"), message: [
-                        store.t("recordsAllocationBasis", values: ["count": store.formatCount(summary.allocationDays)]),
-                        store.t(summary.sleepSourceKey),
+                    RecordsMetricHelpButton(title: text.t("recordsTimeBreakdown"), message: [
+                        text.t("recordsAllocationBasis", values: ["count": text.formatCount(summary.allocationDays)]),
+                        text.t(summary.sleepSourceKey),
                     ].joined(separator: "\n\n"))
                 }
-                RecordsAllocationBar(store: store, share: summary.allocation)
+                RecordsAllocationBar(text: text, preferences: preferences, share: summary.allocation)
             }
         }
     }
@@ -545,7 +573,7 @@ struct RecordsHeadlineView: View {
             : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
         return layout {
             VStack(alignment: .leading, spacing: 4) {
-                Text(store.t(titleKey)).font(.subheadline)
+                Text(text.t(titleKey)).font(.subheadline)
                 if let subtitle {
                     Text(subtitle).font(.footnote)
                 }
@@ -565,7 +593,9 @@ struct RecordsHeadlineView: View {
 }
 
 struct RecordsMonthGrid: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     let cells: [RecordsDayCell]
     let selectedDayKey: String?
     var onSelect: (RecordsDayCell) -> Void
@@ -574,10 +604,10 @@ struct RecordsMonthGrid: View {
 
     var body: some View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 5), count: 7)
-        let blanks = cells.first.map { store.recordsGridLeadingBlanks(before: $0.date) } ?? 0
+        let blanks = cells.first.map { queries.recordsGridLeadingBlanks(before: $0.date) } ?? 0
         VStack(spacing: 8) {
             HStack(spacing: 5) {
-                ForEach(Array(store.recordsWeekdayGridSymbols().enumerated()), id: \.offset) { _, symbol in
+                ForEach(Array(queries.recordsWeekdayGridSymbols().enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
                         .font(.caption.weight(.medium))
                         .foregroundStyle(OWCDesign.tertiary)
@@ -604,7 +634,7 @@ struct RecordsMonthGrid: View {
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .overlay {
-                                Text(store.formatCount(store.recordsCalendar.component(.day, from: cell.date)))
+                                Text(text.formatCount(preferences.recordsCalendar.component(.day, from: cell.date)))
                                     .font(.callout.weight(cell.isToday || cell.dayKey == selectedDayKey ? .semibold : .regular).monospacedDigit())
                                     .foregroundStyle(label(cell))
                             }
@@ -640,8 +670,8 @@ struct RecordsMonthGrid: View {
                     // cell and the layout are untouched.
                     .padding(-3)
                     .buttonStyle(.plain)
-                    .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
-                    .accessibilityAction(named: Text(store.t("recordsSeeThisDay"))) {
+                    .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, queries: queries, text: text))
+                    .accessibilityAction(named: Text(text.t("recordsSeeThisDay"))) {
                         onOpen(cell)
                     }
                     .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
@@ -656,7 +686,7 @@ struct RecordsMonthGrid: View {
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .modifier(RecordsSelectionCallout(selectedID: selectedDayKey) {
             if let cell = cells.first(where: { $0.dayKey == selectedDayKey }) {
-                RecordsDayCellCallout(store: store, cell: cell) { onOpen(cell) }
+                RecordsDayCellCallout(queries: queries, text: text, cell: cell) { onOpen(cell) }
             }
         })
     }
@@ -775,22 +805,24 @@ enum RecordsDayMarks {
 
     /// A locked day says only that it is locked — no date arithmetic, no
     /// hours, nothing a screen reader could read out from behind the lock.
-    static func accessibilityLabel(_ cell: RecordsDayCell, store: OffWorkStore) -> String {
-        if cell.appearance == .locked { return store.t("recordsLockedDay") }
-        var parts = [store.formatRecordsDayTitle(cell.date), store.t(sourceKey(cell))]
+    static func accessibilityLabel(_ cell: RecordsDayCell, queries: RecordsQueries, text: AppText) -> String {
+        if cell.appearance == .locked { return text.t("recordsLockedDay") }
+        var parts = [queries.formatRecordsDayTitle(cell.date), text.t(sourceKey(cell))]
         if cell.workMs > 0 {
-            parts.append(store.formatRecordsDuration(Double(cell.workMs)))
+            parts.append(text.formatRecordsDuration(Double(cell.workMs)))
         }
         if cell.overtimeMs > 0 {
-            parts.append("\(store.t("recordsOvertime")) \(store.formatRecordsDuration(Double(cell.overtimeMs)))")
+            parts.append("\(text.t("recordsOvertime")) \(text.formatRecordsDuration(Double(cell.overtimeMs)))")
         }
-        if cell.hasConflict { parts.append(store.t("recordsConflictCopy")) }
+        if cell.hasConflict { parts.append(text.t("recordsConflictCopy")) }
         return parts.joined(separator: ", ")
     }
 }
 
 struct RecordsWeekStrips: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     let cells: [RecordsDayCell]
     let selectedDayKey: String?
     var onSelect: (RecordsDayCell) -> Void
@@ -806,9 +838,9 @@ struct RecordsWeekStrips: View {
                         weekStack(cell)
                             .frame(maxWidth: .infinity, minHeight: 124, alignment: .bottom)
                         VStack(spacing: 2) {
-                            Text(store.formatCount(store.recordsCalendar.component(.day, from: cell.date)))
+                            Text(text.formatCount(preferences.recordsCalendar.component(.day, from: cell.date)))
                                 .font(.callout.weight(cell.dayKey == selectedDayKey || cell.isToday ? .semibold : .regular).monospacedDigit())
-                            Text(store.formatRecordsWeekdayNarrow(cell.date))
+                            Text(queries.formatRecordsWeekdayNarrow(cell.date))
                                 .font(.caption2.weight(.medium))
                         }
                         .foregroundStyle(cell.dayKey == selectedDayKey ? .white : cell.isToday ? OWCDesign.accent : OWCDesign.secondary)
@@ -821,8 +853,8 @@ struct RecordsWeekStrips: View {
                 }
                 .padding(.horizontal, -3)
                 .buttonStyle(.plain)
-                .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, store: store))
-                .accessibilityAction(named: Text(store.t("recordsSeeThisDay"))) {
+                .accessibilityLabel(RecordsDayMarks.accessibilityLabel(cell, queries: queries, text: text))
+                .accessibilityAction(named: Text(text.t("recordsSeeThisDay"))) {
                     onOpen(cell)
                 }
                 .anchorPreference(key: RecordsSelectionAnchorKey.self, value: .bounds) {
@@ -836,7 +868,7 @@ struct RecordsWeekStrips: View {
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .modifier(RecordsSelectionCallout(selectedID: selectedDayKey) {
             if let cell = cells.first(where: { $0.dayKey == selectedDayKey }) {
-                RecordsDayCellCallout(store: store, cell: cell) { onOpen(cell) }
+                RecordsDayCellCallout(queries: queries, text: text, cell: cell) { onOpen(cell) }
             }
         })
     }
@@ -916,7 +948,8 @@ struct RecordsWeekStrips: View {
 }
 
 private struct RecordsDayCellCallout: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let text: AppText
     let cell: RecordsDayCell
     let onOpen: () -> Void
 
@@ -924,12 +957,12 @@ private struct RecordsDayCellCallout: View {
         Button(action: onOpen) {
             RecordsCanvasCallout(
                 icon: cell.appearance == .locked ? "lock" : "calendar",
-                title: store.formatRecordsDayTitle(cell.date),
+                title: queries.formatRecordsDayTitle(cell.date),
                 subtitle: cell.appearance == .locked
-                    ? store.t("recordsLockedDay")
-                    : [store.t(RecordsDayMarks.sourceKey(cell)),
-                       store.formatRecordsDuration(Double(cell.workMs + cell.overtimeMs))].joined(separator: " · "),
-                actionTitle: store.t(cell.appearance == .locked ? "plusSeePlans" : "recordsSeeThisDay")
+                    ? text.t("recordsLockedDay")
+                    : [text.t(RecordsDayMarks.sourceKey(cell)),
+                       text.formatRecordsDuration(Double(cell.workMs + cell.overtimeMs))].joined(separator: " · "),
+                actionTitle: text.t(cell.appearance == .locked ? "plusSeePlans" : "recordsSeeThisDay")
             )
         }
         .buttonStyle(.plain)
@@ -937,7 +970,9 @@ private struct RecordsDayCellCallout: View {
 }
 
 struct RecordsYearCanvas: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     let cells: [RecordsDayCell]
     let selectedMonth: Int?
     @Binding var calloutMonth: Int?
@@ -953,7 +988,7 @@ struct RecordsYearCanvas: View {
             GeometryReader { proxy in
                 if let start = cells.first?.date,
                    let last = cells.last?.date,
-                   let end = store.recordsCalendar.date(byAdding: .day, value: 1, to: last) {
+                   let end = preferences.recordsCalendar.date(byAdding: .day, value: 1, to: last) {
                     let grid = RecordsCanvasGrid(
                         size: proxy.size,
                         targetCell: 12,
@@ -966,7 +1001,7 @@ struct RecordsYearCanvas: View {
                         to: end,
                         count: grid.count,
                         cells: cells,
-                        calendar: store.recordsCalendar
+                        calendar: preferences.recordsCalendar
                     )
                     Canvas { context, _ in
                         for bucket in buckets {
@@ -1024,7 +1059,7 @@ struct RecordsYearCanvas: View {
                                             icon: "calendar",
                                             title: monthLabel(calloutMonth),
                                             subtitle: yearLabel,
-                                            actionTitle: store.t("recordsSeeThisMonth")
+                                            actionTitle: text.t("recordsSeeThisMonth")
                                         )
                                     }
                                     .buttonStyle(.plain)
@@ -1044,7 +1079,7 @@ struct RecordsYearCanvas: View {
                                     Text(monthLabel(month))
                                 }
                                 .accessibilityAddTraits(selectedMonth == month ? .isSelected : [])
-                                .accessibilityAction(named: Text(store.t("recordsSeeThisMonth"))) {
+                                .accessibilityAction(named: Text(text.t("recordsSeeThisMonth"))) {
                                     onOpenMonth(month)
                                 }
                             }
@@ -1084,7 +1119,7 @@ struct RecordsYearCanvas: View {
                     .simultaneousGesture(
                         TapGesture(count: 2).onEnded { onOpenMonth(month) }
                     )
-                    .accessibilityAction(named: Text(store.t("recordsSeeThisMonth"))) {
+                    .accessibilityAction(named: Text(text.t("recordsSeeThisMonth"))) {
                         onOpenMonth(month)
                     }
                 }
@@ -1093,7 +1128,7 @@ struct RecordsYearCanvas: View {
             // The collapsed year answers "when was it heavy" with depth alone,
             // so it has to say so — and say what carries that information when
             // colour is not available.
-            Text(store.t(withoutColor ? "recordsHeatWithoutColor" : "recordsHeatScale"))
+            Text(text.t(withoutColor ? "recordsHeatWithoutColor" : "recordsHeatScale"))
                 .font(.caption2)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
@@ -1117,16 +1152,16 @@ struct RecordsYearCanvas: View {
     }
 
     private func monthLabel(_ month: Int) -> String {
-        var parts = store.recordsCalendar.dateComponents([.year], from: cells.first?.date ?? .now)
+        var parts = preferences.recordsCalendar.dateComponents([.year], from: cells.first?.date ?? .now)
         parts.month = month
         parts.day = 1
-        let date = store.recordsCalendar.date(from: parts) ?? .now
-        return store.formatRecordsMonth(date)
+        let date = preferences.recordsCalendar.date(from: parts) ?? .now
+        return queries.formatRecordsMonth(date)
     }
 
     private var yearLabel: String {
-        let year = store.recordsCalendar.component(.year, from: cells.first?.date ?? .now)
-        return store.formatYear(year)
+        let year = preferences.recordsCalendar.component(.year, from: cells.first?.date ?? .now)
+        return text.formatYear(year)
     }
 
     private func select(month: Int, date: Date?) {
@@ -1150,7 +1185,11 @@ struct RecordsYearCanvas: View {
 /// Expansion reads one month using the exact summary and allocation used by
 /// the month screen. Month selection never introduces a second unit or axis.
 struct RecordsYearMonthsView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
+    let recordsRevision: UInt64
     let cells: [RecordsDayCell]
     let days: [DayResolution]
     let selectedMonth: Int?
@@ -1167,7 +1206,7 @@ struct RecordsYearMonthsView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        let calendar = store.recordsCalendar
+        let calendar = preferences.recordsCalendar
         let year = calendar.component(.year, from: cells.first?.date ?? .now)
         let month = selectedMonth ?? calendar.component(.month, from: .now)
         let monthDate = calendar.date(from: DateComponents(year: year, month: month, day: 1)) ?? .now
@@ -1179,7 +1218,7 @@ struct RecordsYearMonthsView: View {
                     ForEach(1...12, id: \.self) { value in
                         let date = calendar.date(from: DateComponents(year: year, month: value, day: 1)) ?? monthDate
                         Button { onSelectMonth(value) } label: {
-                            Text(store.formatRecordsMonthShort(date))
+                            Text(queries.formatRecordsMonthShort(date))
                                 .font(.subheadline.weight(value == month ? .semibold : .regular))
                                 .foregroundStyle(value == month ? OWCDesign.orangeDeep : OWCDesign.secondary)
                                 .frame(maxWidth: .infinity, minHeight: 44)
@@ -1187,20 +1226,22 @@ struct RecordsYearMonthsView: View {
                                             in: RoundedRectangle(cornerRadius: OWCDesign.controlRadius))
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(store.formatRecordsMonthYear(date))
+                        .accessibilityLabel(queries.formatRecordsMonthYear(date))
                         .accessibilityAddTraits(value == month ? .isSelected : [])
                     }
                 }
                 Divider()
                 if loadedMonth == month {
-                    RecordsHeadlineView(store: store, title: store.formatRecordsMonthYear(monthDate),
+                    RecordsHeadlineView(text: text, preferences: preferences,
+                                        isAuthorized: queries.plus.isAuthorized,
+                                        title: queries.formatRecordsMonthYear(monthDate),
                                         summary: monthSummary, isEmbedded: true,
-                                        onUnlock: { store.paywallSheet = .charts })
+                                        onUnlock: { scene.paywallSheet = .charts })
                         .id(month)
                 } else {
                     ProgressView().frame(maxWidth: .infinity, minHeight: 120)
                 }
-                Button(store.t("recordsOpenSelectedMonth", values: ["month": store.formatRecordsMonth(monthDate)])) {
+                Button(text.t("recordsOpenSelectedMonth", values: ["month": queries.formatRecordsMonth(monthDate)])) {
                     onOpenMonth(month)
                 }
                 .buttonStyle(OWCSecondaryButtonStyle())
@@ -1208,10 +1249,10 @@ struct RecordsYearMonthsView: View {
             .padding(.bottom, 12)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .task(id: LoadID(month: month, cells: monthCells, days: days, revision: store.records.revision)) {
+        .task(id: LoadID(month: month, cells: monthCells, days: days, revision: recordsRevision)) {
             await Task.yield()
             guard !Task.isCancelled else { return }
-            monthSummary = store.recordsHeadline(cells: monthCells, days: days)
+            monthSummary = queries.recordsHeadline(cells: monthCells, days: days)
             loadedMonth = month
         }
     }
@@ -1297,7 +1338,8 @@ struct RecordsCanvasGrid {
 }
 
 struct RecordsLifeCanvas: View {
-    let store: OffWorkStore
+    let preferences: PreferencesStore
+    let text: AppText
     let stages: [LifeStageSpan]
     let bounds: (Date, Date)
     let selectedStageID: String?
@@ -1315,11 +1357,11 @@ struct RecordsLifeCanvas: View {
                 let progress = LifeStageCalculator.progress(from: bounds.0, to: retirement, at: referenceDate)
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .firstTextBaseline) {
-                        Text(store.t("lifeProgressTitle"))
+                        Text(text.t("lifeProgressTitle"))
                             .font(.footnote.weight(.semibold))
                             .foregroundStyle(OWCDesign.secondary)
                         Spacer()
-                        Text(store.formatPercent(progress * 100))
+                        Text(text.formatPercent(progress * 100))
                             .font(.callout.weight(.semibold).monospacedDigit())
                             .foregroundStyle(OWCDesign.orangeDeep)
                             .contentTransition(.numericText())
@@ -1350,7 +1392,7 @@ struct RecordsLifeCanvas: View {
                         let rect = grid.rect(at: bucket.index)
                         let corner = min(3, grid.cell / 3)
                         let path = Path(roundedRect: rect, cornerRadius: corner)
-                        let base = OWCDesign.lifeColor(bucket.kind)
+                        let base = bucket.kind.owcColor
                         let isDimmed = selectedStageID != nil && bucket.stageID != selectedStageID
                         let isFutureWork = bucket.kind == .work && bucket.isFuture
                         let fill = base.opacity(
@@ -1427,7 +1469,7 @@ struct RecordsLifeCanvas: View {
                             RecordsCanvasCalloutLayout(anchor: rect) {
                                 RecordsCanvasCallout(
                                     icon: stage.kind.iconName,
-                                    title: store.t(stage.titleKey),
+                                    title: text.t(stage.titleKey),
                                     subtitle: stageRange(stage)
                                 )
                             }
@@ -1441,12 +1483,12 @@ struct RecordsLifeCanvas: View {
                     VStack {
                         ForEach(stages) { stage in
                             if stage.kind == .retirement {
-                                Text("\(store.t(stage.titleKey)), \(stageRange(stage))")
+                                Text("\(text.t(stage.titleKey)), \(stageRange(stage))")
                             } else {
                                 Button {
                                     select(stage, date: nil)
                                 } label: {
-                                    Text("\(store.t(stage.titleKey)), \(stageRange(stage))")
+                                    Text("\(text.t(stage.titleKey)), \(stageRange(stage))")
                                 }
                                 .accessibilityAddTraits(selectedStageID == stage.id ? .isSelected : [])
                             }
@@ -1465,7 +1507,7 @@ struct RecordsLifeCanvas: View {
                         if stage.kind == .retirement {
                             OWCRow(
                                 icon: stage.kind.iconName,
-                                title: store.t(stage.titleKey),
+                                title: text.t(stage.titleKey),
                                 subtitle: stageRange(stage),
                                 isLast: index == stages.count - 1,
                                 centersVertically: true
@@ -1473,7 +1515,7 @@ struct RecordsLifeCanvas: View {
                                 EmptyView()
                             }
                             .opacity(0.58)
-                            .accessibilityLabel(store.t(stage.titleKey))
+                            .accessibilityLabel(text.t(stage.titleKey))
                         } else {
                             Button {
                                 // A legend is not a specific point on the
@@ -1484,7 +1526,7 @@ struct RecordsLifeCanvas: View {
                             } label: {
                                 OWCRow(
                                     icon: stage.kind.iconName,
-                                    title: store.t(stage.titleKey),
+                                    title: text.t(stage.titleKey),
                                     subtitle: stageRange(stage),
                                     isLast: index == stages.count - 1,
                                     centersVertically: true
@@ -1493,7 +1535,7 @@ struct RecordsLifeCanvas: View {
                                         .foregroundStyle(
                                             selectedStageID == stage.id
                                                 ? OWCDesign.orangeDeep
-                                                : OWCDesign.lifeColor(stage.kind)
+                                                : stage.kind.owcColor
                                         )
                                         .frame(width: 24, alignment: .center)
                                 }
@@ -1503,13 +1545,13 @@ struct RecordsLifeCanvas: View {
                                 )
                             }
                             .buttonStyle(OWCRowButtonStyle())
-                            .accessibilityLabel(store.t(stage.titleKey))
+                            .accessibilityLabel(text.t(stage.titleKey))
                         }
                     }
                 }
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
                 if stages.contains(where: { $0.workPeriod != nil }) {
-                    Text(store.t("lifeWorkPeriodBasis"))
+                    Text(text.t("lifeWorkPeriodBasis"))
                         .font(.caption)
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -1532,12 +1574,12 @@ struct RecordsLifeCanvas: View {
     private func stageRange(_ stage: LifeStageSpan) -> String {
         switch (stage.start, stage.end) {
         case (nil, nil):
-            return store.t("lifeUnset")
+            return text.t("lifeUnset")
         case (let start?, let end?):
             let startLabel = stage.workPeriod == .future && start == referenceDate
-                ? store.t("lifeStagePresent") : yearLabel(start, stage.startPrecision)
+                ? text.t("lifeStagePresent") : yearLabel(start, stage.startPrecision)
             let endLabel = stage.workPeriod == .elapsed && end == referenceDate
-                ? store.t("lifeStagePresent") : yearLabel(end, stage.endPrecision)
+                ? text.t("lifeStagePresent") : yearLabel(end, stage.endPrecision)
             return "\(startLabel) – \(endLabel)"
         case (let start?, nil):
             return yearLabel(start, stage.startPrecision)
@@ -1563,9 +1605,9 @@ struct RecordsLifeCanvas: View {
     }
 
     private func yearLabel(_ date: Date, _ precision: CivilDatePrecision?) -> String {
-        let year = store.recordsCalendar.component(.year, from: date)
+        let year = preferences.recordsCalendar.component(.year, from: date)
         if precision == .year {
-            return store.t("lifeYearApproximate", values: ["year": "\(year)"])
+            return text.t("lifeYearApproximate", values: ["year": "\(year)"])
         }
         return "\(year)"
     }
@@ -1681,7 +1723,7 @@ private struct RecordsDayDetailHeader: View {
 /// It stays reachable: a wrapping row while it fits, an info button and a
 /// popover once the text or the type size no longer allows the row.
 struct RecordsMarkLegend: View {
-    let store: OffWorkStore
+    let text: AppText
     var includesLock: Bool
     @State private var showsPopover = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -1708,10 +1750,10 @@ struct RecordsMarkLegend: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(OWCDesign.tertiary)
-            .accessibilityLabel(store.t("recordsLegendTitle"))
+            .accessibilityLabel(text.t("recordsLegendTitle"))
             .popover(isPresented: $showsPopover) {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(store.t("recordsLegendTitle"))
+                    Text(text.t("recordsLegendTitle"))
                         .font(.headline)
                     ForEach(items, id: \.key) { item in
                         row(item)
@@ -1742,7 +1784,7 @@ struct RecordsMarkLegend: View {
             }
             .frame(maxWidth: .infinity, alignment: .center)
             .accessibilityElement(children: .combine)
-            .accessibilityLabel(store.t("recordsLegendTitle"))
+            .accessibilityLabel(text.t("recordsLegendTitle"))
         }
     }
 
@@ -1750,7 +1792,7 @@ struct RecordsMarkLegend: View {
         HStack(spacing: 5) {
             Image(systemName: item.symbol)
                 .font(.system(size: 9, weight: .semibold))
-            Text(store.t(item.key))
+            Text(text.t(item.key))
                 .font(.caption2)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -1765,20 +1807,23 @@ struct RecordsMarkLegend: View {
 /// account of a day belongs on the day's own page, not stacked as a second
 /// dense chart directly beneath the month grid.
 struct RecordsDaySummaryCard: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let queries: RecordsQueries
+    let text: AppText
+    let isAuthorized: Bool
     let detail: RecordsDayDetail?
     var locked: Bool
     var onUnlock: () -> Void
 
     var body: some View {
-        if locked || detail == nil && !store.plus.isAuthorized {
-            RecordsLockedPlaceholder(store: store, kind: .day, onUnlock: onUnlock)
+        if locked || detail == nil && !isAuthorized {
+            RecordsLockedPlaceholder(text: text, kind: .day, onUnlock: onUnlock)
         } else if let detail {
             OWCGroupCard {
                 VStack(alignment: .leading, spacing: 12) {
                     RecordsDayDetailHeader(
-                        dateTitle: store.formatRecordsDayTitle(detail.date),
-                        sourceTitle: store.t(detail.sourceKey),
+                        dateTitle: queries.formatRecordsDayTitle(detail.date),
+                        sourceTitle: text.t(detail.sourceKey),
                         sourceTint: detail.isPlanned ? OWCDesign.accent : OWCDesign.secondary
                     )
 
@@ -1795,13 +1840,13 @@ struct RecordsDaySummaryCard: View {
                     Divider()
 
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Text(store.t("recordsFreeAwake"))
+                        Text(text.t("recordsFreeAwake"))
                             .font(.callout)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 8)
-                        Text(store.formatRecordsDuration(Double(detail.breakMs + detail.freeMs)))
+                        Text(text.formatRecordsDuration(Double(detail.breakMs + detail.freeMs)))
                             .font(.callout.weight(.semibold).monospacedDigit())
                             .foregroundStyle(OWCDesign.primary)
                             .lineLimit(1)
@@ -1814,11 +1859,11 @@ struct RecordsDaySummaryCard: View {
 
                     // A link, not a programmatic push: this card is hosted by
                     // three different navigation stacks and only the phone's is
-                    // bound to `store.recordsPath`. Appending there did nothing
+                    // bound to `scene.recordsPath`. Appending there did nothing
                     // at all on iPad, where the shell owns its own path.
                     NavigationLink(value: RecordsRoute.day(detail.dayKey)) {
                         HStack(spacing: 6) {
-                            Text(store.t("recordsSeeThisDay"))
+                            Text(text.t("recordsSeeThisDay"))
                                 .font(.body.weight(.semibold))
                             Image(systemName: "chevron.forward")
                                 .font(.footnote.weight(.semibold))
@@ -1840,7 +1885,7 @@ struct RecordsDaySummaryCard: View {
     @ViewBuilder
     private func workSummary(_ detail: RecordsDayDetail) -> some View {
         if detail.regularWorkMs == 0 && detail.overtimeMs == 0 {
-            Text(store.t(emptyKey(detail)))
+            Text(text.t(emptyKey(detail)))
                 .font(.body)
                 .foregroundStyle(OWCDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -1864,12 +1909,12 @@ struct RecordsDaySummaryCard: View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 6) {
                 Circle().fill(color).frame(width: 8, height: 8)
-                Text(store.t(titleKey))
+                Text(text.t(titleKey))
                     .font(.caption)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineLimit(1)
             }
-            Text(store.formatRecordsDuration(Double(milliseconds)))
+            Text(text.formatRecordsDuration(Double(milliseconds)))
                 .font(.title3.weight(.semibold).monospacedDigit())
                 .foregroundStyle(OWCDesign.primary)
                 .lineLimit(1)
@@ -1884,11 +1929,11 @@ struct RecordsDaySummaryCard: View {
         HStack(spacing: 10) {
             if !detail.observations.isEmpty {
                 Label(
-                    store.formatCount(detail.observations.count),
+                    text.formatCount(detail.observations.count),
                     systemImage: "circle.dotted"
                 )
             }
-            Label(store.t(detail.sleepSourceKey), systemImage: "moon.zzz")
+            Label(text.t(detail.sleepSourceKey), systemImage: "moon.zzz")
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             Spacer(minLength: 0)
@@ -1905,7 +1950,9 @@ struct RecordsDaySummaryCard: View {
 /// projection held in memory and writes nothing: no override, no summary, no
 /// observation, no record of any kind is created by looking at it.
 struct RecordsLifeAllocationCard: View {
-    let store: OffWorkStore
+    let text: AppText
+    let preferences: PreferencesStore
+    let incomeDecline: LifeIncomeDecline?
     let model: LifeViewModel?
     var isLoading = false
 
@@ -1913,10 +1960,10 @@ struct RecordsLifeAllocationCard: View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(store.t("lifeWhereTimeGoes"))
+                    Text(text.t("lifeWhereTimeGoes"))
                         .font(.title3.weight(.semibold))
                         .fixedSize(horizontal: false, vertical: true)
-                    Text(store.t("recordsSourceProjection"))
+                    Text(text.t("recordsSourceProjection"))
                         .font(.caption.weight(.medium))
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -1932,12 +1979,17 @@ struct RecordsLifeAllocationCard: View {
                     .frame(minHeight: 100)
                     .accessibilityHidden(true)
                 } else if let allocation = usableAllocation {
-                    RecordsAllocationBar(store: store, share: allocation, showsApproximateYears: true)
+                    RecordsAllocationBar(
+                        text: text,
+                        preferences: preferences,
+                        share: allocation,
+                        showsApproximateYears: true
+                    )
                 } else {
                     // No retirement boundary, no career, or a schedule the
                     // rules could not expand: say what is missing instead of
                     // inventing a percentage out of the parts that do exist.
-                    Text(store.t("lifeAllocationMissing"))
+                    Text(text.t("lifeAllocationMissing"))
                         .font(.body)
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -1945,12 +1997,12 @@ struct RecordsLifeAllocationCard: View {
 
                 if !isLoading, let income = model?.income {
                     Divider()
-                    Text(store.t("lifeIncomeTitle"))
+                    Text(text.t("lifeIncomeTitle"))
                         .font(.subheadline.weight(.semibold))
                     incomeRow("lifeIncomeHistory", value: income.historicalGross)
                     incomeRow("lifeIncomeFuture", value: income.projectedGross)
                     incomeRow("lifeIncomeTotal", value: income.totalGross)
-                    Text(store.lifeIncomeMethodText())
+                    Text(text.lifeIncomeMethodText(decline: incomeDecline))
                         .font(.caption)
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -1971,11 +2023,11 @@ struct RecordsLifeAllocationCard: View {
 
     private func incomeRow(_ titleKey: String, value: Double) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text(store.t(titleKey))
+            Text(text.t(titleKey))
                 .font(.subheadline)
                 .foregroundStyle(OWCDesign.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Text(store.moneyText(value))
+            Text(text.moneyText(value))
                 .font(.body.weight(.medium).monospacedDigit())
                 .multilineTextAlignment(.trailing)
         }

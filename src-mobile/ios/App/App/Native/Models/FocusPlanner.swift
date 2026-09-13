@@ -6,7 +6,7 @@ struct FocusBoundary: Equatable, Sendable {
 }
 
 enum FocusPlanner {
-    static let pomodoroMinutes = 25 // legacy display compatibility
+    nonisolated static let pomodoroMinutes = 25 // legacy display compatibility
 
     /// Builds a real focus/recovery cycle from effective segments supplied by
     /// the shared rules bundle. The first boundary that cannot fit the next
@@ -159,7 +159,7 @@ enum FocusPlanner {
     ///
     /// Everything used to report `.stoppedAtBoundary`, including a block that
     /// simply finished, so a completed pomodoro never marked its task done.
-    static func endReason(
+    nonisolated static func endReason(
         startedAt: Date,
         plannedEndAt: Date,
         expectedDurationMinutes: Int = pomodoroMinutes

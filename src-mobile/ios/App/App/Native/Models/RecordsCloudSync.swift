@@ -13,9 +13,51 @@ enum RecordsCloudSyncStatus: Equatable, Sendable {
     case failed(String)
 }
 
+/// Serializes user-requested CloudKit transitions and shares only an adjacent
+/// identical enable or restore. A different request remains a fence, so an
+/// enable after disable cannot join the earlier enable.
+@MainActor
+final class CloudSyncOperations {
+    enum Request: Equatable {
+        case enable(authorized: Bool)
+        case restore
+    }
+
+    private struct Pending {
+        let id: UUID
+        let request: Request?
+        let task: Task<Void, Never>
+    }
+
+    private var tail: Pending?
+
+    func enqueue(
+        _ request: Request? = nil,
+        work: @escaping @MainActor () async -> Void
+    ) -> Task<Void, Never> {
+        if let request, tail?.request == request, let task = tail?.task {
+            return task
+        }
+
+        let previous = tail?.task
+        let id = UUID()
+        let task = Task { @MainActor in
+            await previous?.value
+            await work()
+            if self.tail?.id == id { self.tail = nil }
+        }
+        tail = Pending(id: id, request: request, task: task)
+        return task
+    }
+}
+
 @MainActor
 @Observable
 final class RecordsCloudSync: NSObject, @unchecked Sendable {
+    private struct FirstRunRestoreCommit: Sendable {
+        let hasPreferences: Bool
+    }
+
     static let containerID = "iCloud.com.rainif.offworkcountdown.macappstore"
 
     private(set) var status: RecordsCloudSyncStatus = .off
@@ -27,8 +69,10 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     private var firstRunDownload: FirstRunCloudSnapshot?
     private var uploadsReady = false
     private var starting = false
-    private var operation: Task<Void, Never>?
+    private let operations = CloudSyncOperations()
+    private var eventOperation: Task<Void, Never>?
     private var acceptRemote = true
+    private var engineInvalidation: UInt64 = 0
     private var recoveringMissingRows: Set<String> = []
     /// A cloud reset arrived while this device still held work CloudKit never
     /// received. The wipe waits for the user to say so.
@@ -89,22 +133,28 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             throw FirstRunRecoveryError.cloudChanged
         }
         try Task.checkCancellation()
-        guard RecordsSyncCloudPrerequisites.acceptsAccount(
-            storedAccountID: records.state.sync.accountID,
-            currentAccountID: snapshot.accountID, mayAdoptCurrentAccount: true
-        ) else { throw FirstRunRecoveryError.cloudChanged }
-        let restored = try prepareFirstRunRestore(
-            snapshot,
-            initialState: records.state,
-            allowReplacingLocalData: allowReplacingLocalData
-        )
         try Task.checkCancellation()
-        try records.commitRestoredState(restored)
+        let committed = try await records.commitRestoredState { [self] latest in
+            guard RecordsSyncCloudPrerequisites.acceptsAccount(
+                storedAccountID: latest.sync.accountID,
+                currentAccountID: snapshot.accountID,
+                mayAdoptCurrentAccount: true
+            ) else { throw FirstRunRecoveryError.cloudChanged }
+            let restored = try prepareFirstRunRestore(
+                snapshot,
+                initialState: latest,
+                allowReplacingLocalData: allowReplacingLocalData
+            )
+            return (
+                restored,
+                FirstRunRestoreCommit(hasPreferences: restored.syncedPreferences != nil)
+            )
+        }
         firstRunDownload = nil
         existingDataRequiresChoice = false
-        status = restored.sync.syncEnabled ? .syncing : .off
-        if restored.sync.syncEnabled { startIfEnabled() }
-        return restored.syncedPreferences != nil
+        status = records.state.sync.syncEnabled ? .syncing : .off
+        if records.state.sync.syncEnabled { startIfEnabled() }
+        return committed.hasPreferences
     }
 
     /// Pure staging boundary, also exercised without an iCloud account.
@@ -196,11 +246,13 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     }
 
     func enable(authorized: Bool) async {
-        await runExclusive { await self.enableUnsynchronized(authorized: authorized) }
+        await runExclusive(.enable(authorized: authorized)) {
+            await self.enableUnsynchronized(authorized: authorized)
+        }
     }
 
     func restore() async {
-        await runExclusive { await self.restoreUnsynchronized() }
+        await runExclusive(.restore) { await self.restoreUnsynchronized() }
     }
 
     func disable(deleteCloud: Bool) async {
@@ -214,7 +266,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     func wipeLocalRecords() async {
         await runExclusive {
             self.stopAndInvalidate()
-            guard let records = self.records, records.deleteAllLocalData() else {
+            guard let records = self.records, await records.deleteAllLocalData() else {
                 self.failPersistence()
                 return
             }
@@ -234,23 +286,27 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     ///
     /// `deleteAllCloudUnsynchronized` deliberately does not come through here.
     /// That path *is* the user asking, and it has its own confirmation.
-    private func adoptHigherFence(_ fence: Int) -> Bool {
+    private func adoptHigherFence(_ fence: Int) async -> Bool {
         guard let records else { return false }
-        guard !records.state.hasUnsyncedLocalWork else {
+        switch await records.adoptHigherFenceIfSafe(fence) {
+        case .adopted:
+            return true
+        case .needsLocalReview:
             pendingHigherFence = fence
             higherFenceNeedsReview = true
             stopAndInvalidate()
             status = .failed(Self.localDataNeedsReviewReason)
             return false
+        case .failed:
+            return false
         }
-        return records.discardForHigherFence(fence)
     }
 
     /// The user has seen the warning and chosen the cloud reset.
     func adoptPendingHigherFence() async {
         await runExclusive {
             guard let records = self.records, let fence = self.pendingHigherFence else { return }
-            guard records.discardForHigherFence(fence) else {
+            guard await records.discardForHigherFence(fence) else {
                 self.failPersistence()
                 return
             }
@@ -268,9 +324,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             guard let records = self.records else { return }
             self.pendingHigherFence = nil
             self.higherFenceNeedsReview = false
-            var sync = records.state.sync
-            sync.syncEnabled = false
-            guard records.replaceSyncState(sync) else {
+            guard await records.commitSyncState({ sync, _ in sync.syncEnabled = false }) else {
                 self.failPersistence()
                 return
             }
@@ -280,17 +334,15 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
 
     static let localDataNeedsReviewReason = "localDataNeedsReview"
 
-    private func runExclusive(_ work: @escaping () async -> Void) async {
-        let previous = operation
-        let task = Task { @MainActor in
-            await previous?.value
-            await work()
-        }
-        operation = task
-        await task.value
+    private func runExclusive(
+        _ request: CloudSyncOperations.Request? = nil,
+        work: @escaping @MainActor () async -> Void
+    ) async {
+        await operations.enqueue(request, work: work).value
     }
 
     private func stopAndInvalidate() {
+        engineInvalidation &+= 1
         acceptRemote = false
         uploadsReady = false
         recoveringMissingRows.removeAll()
@@ -299,13 +351,13 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
         Task { await invalidatedEngine?.cancelOperations() }
     }
 
-    private func pauseForAccountChange() {
+    private func pauseForAccountChange() async {
         stopAndInvalidate()
         if let records {
-            var sync = records.state.sync
-            sync.syncEnabled = false
-            sync.engineState = nil
-            if !records.replaceSyncState(sync) {
+            if await !records.commitSyncState({ sync, _ in
+                sync.syncEnabled = false
+                sync.engineState = nil
+            }) {
                 lastError = RecordPersistenceError.writeFailed.localizedDescription
             }
         }
@@ -331,11 +383,11 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 currentAccountID: currentAccountID,
                 mayAdoptCurrentAccount: false
             ) else {
-                pauseForAccountChange()
+                await pauseForAccountChange()
                 return
             }
         } catch let error as CKError where error.code == .notAuthenticated {
-            pauseForAccountChange()
+            await pauseForAccountChange()
         } catch {
             noteNetworkFailure(error)
         }
@@ -345,7 +397,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
     /// to the exact account we persisted moments earlier. That is a healthy
     /// bootstrap event, not an account replacement. Sign-out and a genuinely
     /// different account still fail closed.
-    private func handleAccountChange(_ change: CKSyncEngine.Event.AccountChange) {
+    private func handleAccountChange(_ change: CKSyncEngine.Event.AccountChange) async {
         let currentAccountID: String?
         switch change.changeType {
         case .signIn(let currentUser):
@@ -366,7 +418,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
            ) {
             return
         }
-        pauseForAccountChange()
+        await pauseForAccountChange()
     }
 
     private func failPersistence() {
@@ -397,7 +449,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 currentAccountID: accountID,
                 mayAdoptCurrentAccount: false
             ) else {
-                pauseForAccountChange()
+                await pauseForAccountChange()
                 return
             }
             let remoteFence = try await fetchFence(container: container)
@@ -413,7 +465,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 }
                 return
             }
-            if remoteFence > records.state.sync.generation, !adoptHigherFence(remoteFence) {
+            if remoteFence > records.state.sync.generation, await !adoptHigherFence(remoteFence) {
                 if !higherFenceNeedsReview { failPersistence() }
                 return
             }
@@ -440,7 +492,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 currentAccountID: accountID,
                 mayAdoptCurrentAccount: true
             ) else {
-                pauseForAccountChange()
+                await pauseForAccountChange()
                 return
             }
             if records.state.sync.accountID == nil, try await checkForExistingData() {
@@ -465,17 +517,17 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 return
             }
             if remoteFence > records.state.sync.generation {
-                guard adoptHigherFence(remoteFence) else {
+                guard await adoptHigherFence(remoteFence) else {
                     if !higherFenceNeedsReview { failPersistence() }
                     return
                 }
             }
-            var sync = records.state.sync
-            if sync.accountID == nil { sync.engineState = nil }
-            sync.accountID = accountID
-            sync.syncEnabled = true
-            sync.generation = remoteFence
-            guard records.replaceSyncState(sync) else {
+            guard await records.commitSyncState({ sync, _ in
+                if sync.accountID == nil { sync.engineState = nil }
+                sync.accountID = accountID
+                sync.syncEnabled = true
+                sync.generation = remoteFence
+            }) else {
                 failPersistence()
                 return
             }
@@ -497,7 +549,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 currentAccountID: accountID,
                 mayAdoptCurrentAccount: true
             ) else {
-                pauseForAccountChange()
+                await pauseForAccountChange()
                 return
             }
             let fence = try await fetchFence(container: container)
@@ -511,7 +563,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 return
             }
             if fence > records.state.sync.generation {
-                guard adoptHigherFence(fence) else {
+                guard await adoptHigherFence(fence) else {
                     if !higherFenceNeedsReview { failPersistence() }
                     return
                 }
@@ -519,12 +571,12 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 failClosed("The iCloud fence is older than this device's local generation.")
                 return
             }
-            var sync = records.state.sync
-            if sync.accountID == nil { sync.engineState = nil }
-            sync.accountID = accountID
-            sync.generation = fence
-            sync.syncEnabled = true
-            guard records.replaceSyncState(sync) else {
+            guard await records.commitSyncState({ sync, _ in
+                if sync.accountID == nil { sync.engineState = nil }
+                sync.accountID = accountID
+                sync.generation = fence
+                sync.syncEnabled = true
+            }) else {
                 failPersistence()
                 return
             }
@@ -548,9 +600,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             // flag flips — otherwise the next local edit uploads through it.
             stopAndInvalidate()
         }
-        var sync = records.state.sync
-        sync.syncEnabled = false
-        guard records.replaceSyncState(sync) else {
+        guard await records.commitSyncState({ sync, _ in sync.syncEnabled = false }) else {
             failPersistence()
             return
         }
@@ -565,7 +615,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
             let database = container.privateCloudDatabase
             let next = try await saveFenceCAS(database: database, atLeast: records.state.sync.generation + 1)
             stopAndInvalidate()
-            guard records.discardForHigherFence(next) else {
+            guard await records.discardForHigherFence(next) else {
                 failPersistence()
                 return
             }
@@ -585,8 +635,8 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
         }
     }
 
-    func handleAccountChange() {
-        pauseForAccountChange()
+    func handleAccountChange() async {
+        await pauseForAccountChange()
     }
 
     private func createEngine(container: CKContainer) async {
@@ -596,9 +646,11 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
         guard let records, records.state.sync.syncEnabled else { return }
         uploadsReady = false
         let previous = engine
+        engineInvalidation &+= 1
+        let invalidation = engineInvalidation
         engine = nil
         await previous?.cancelOperations()
-        guard records.state.sync.syncEnabled else { return }
+        guard engineInvalidation == invalidation, records.state.sync.syncEnabled else { return }
         let database = container.privateCloudDatabase
         acceptRemote = true
         var configuration = CKSyncEngine.Configuration(
@@ -728,39 +780,58 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
 
 extension RecordsCloudSync: CKSyncEngineDelegate {
     nonisolated func handleEvent(_ event: CKSyncEngine.Event, syncEngine: CKSyncEngine) async {
-        await MainActor.run {
-            guard self.engine === syncEngine, self.acceptRemote else { return }
-            self.applyEvent(event)
-        }
+        await receive(event, from: syncEngine)
     }
 
     nonisolated func nextRecordZoneChangeBatch(
         _ context: CKSyncEngine.SendChangesContext,
         syncEngine: CKSyncEngine
     ) async -> CKSyncEngine.RecordZoneChangeBatch? {
-        await MainActor.run {
-            guard self.engine === syncEngine, self.acceptRemote else { return nil }
-            return self.makeNextBatch()
-        }
+        await nextBatch(from: syncEngine)
     }
 
-    private func applyEvent(_ event: CKSyncEngine.Event) {
-        guard acceptRemote, let records else { return }
+    private func receive(_ event: CKSyncEngine.Event, from syncEngine: CKSyncEngine) async {
+        // Engine fetch/send can await its delegate while a user operation is
+        // active. Keep the delegate queue separate to avoid a dependency cycle.
+        let previous = eventOperation
+        let task = Task { @MainActor in
+            await previous?.value
+            guard self.engine === syncEngine, self.acceptRemote else { return }
+            await self.applyEvent(event, from: syncEngine)
+        }
+        eventOperation = task
+        await task.value
+    }
+
+    private func nextBatch(from syncEngine: CKSyncEngine) async -> CKSyncEngine.RecordZoneChangeBatch? {
+        guard let records, self.engine === syncEngine, acceptRemote else { return nil }
+        do { try await records.flush() }
+        catch {
+            if self.engine === syncEngine, acceptRemote { failPersistence() }
+            return nil
+        }
+        guard self.engine === syncEngine, acceptRemote else { return nil }
+        return makeNextBatch()
+    }
+
+    private func applyEvent(_ event: CKSyncEngine.Event, from sourceEngine: CKSyncEngine) async {
+        guard engine === sourceEngine, acceptRemote, let records else { return }
         switch event {
         case .stateUpdate(let update):
-            var sync = records.state.sync
-            sync.engineState = try? JSONEncoder().encode(update.stateSerialization)
-            if !records.replaceSyncState(sync) {
-                failPersistence()
+            let serialized = try? JSONEncoder().encode(update.stateSerialization)
+            let saved = await records.commitSyncState { sync, _ in
+                sync.engineState = serialized
             }
+            guard engine === sourceEngine, acceptRemote else { return }
+            if !saved { failPersistence() }
         case .accountChange(let change):
-            handleAccountChange(change)
+            await handleAccountChange(change)
         case .fetchedRecordZoneChanges(let changes):
-            applyFetched(changes.modifications.map(\.record), deletions: changes.deletions.map(\.recordID))
+            await applyFetched(changes.modifications.map(\.record), deletions: changes.deletions.map(\.recordID))
         case .sentDatabaseChanges(let sent):
             applySentDatabaseChanges(sent)
         case .sentRecordZoneChanges(let sent):
-            applySent(sent)
+            await applySent(sent)
         default:
             break
         }
@@ -775,9 +846,8 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
         }
     }
 
-    private func applySent(_ sent: CKSyncEngine.Event.SentRecordZoneChanges) {
-        guard let records else { return }
-        var sync = records.state.sync
+    private func applySent(_ sent: CKSyncEngine.Event.SentRecordZoneChanges) async {
+        guard let records, let sourceEngine = engine, acceptRemote else { return }
         let savedNames = Set(sent.savedRecords.map(\.recordID.recordName))
         // A tombstone CloudKit says was never there is a tombstone that is
         // gone, which is all a revocation wanted. Counting it as deleted keeps
@@ -788,63 +858,56 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
                     .filter { $0.value.code == .unknownItem }
                     .map(\.key.recordName)
             )
-        // A later revival must create a new record. Keeping the deleted
-        // record's change tag here turns that revival into an invalid update.
-        for row in sync.rows.values {
-            if deletedNames.contains(row.recordName), let fields = row.lastKnownRecord {
-                _ = RecordsSyncOutbox.forgetMissingRecord(
-                    &sync, name: row.recordName, generation: row.generation, expectedSystemFields: fields
-                )
-            }
-            let erasedName = RecordsSyncIdentity.erasedName(type: row.entityType, key: row.logicalKey)
-            if deletedNames.contains(erasedName), let fields = row.lastKnownErasedRecord {
-                _ = RecordsSyncOutbox.forgetMissingRecord(
-                    &sync, name: erasedName, generation: row.generation, expectedSystemFields: fields
-                )
-            }
-        }
-        for saved in sent.savedRecords {
-            let name = saved.recordID.recordName
-            guard let row = sync.rows[name] ?? sync.rows.first(where: { _, value in
-                RecordsSyncIdentity.erasedName(type: value.entityType, key: value.logicalKey) == name
-            })?.value else {
-                continue
-            }
-            let count = saved["editCount"] as? Int ?? row.editCount
-            let tie = saved["editTieBreaker"] as? String ?? row.editTieBreaker
-            if RecordsSyncSent.shouldClearSave(
-                row: row,
-                savedCount: count,
-                savedTie: tie,
-                deletedNames: deletedNames
-            ) {
-                RecordsSyncOutbox.clearDirty(&sync, recordName: row.recordName)
-            }
-            if var current = sync.rows[row.recordName] {
-                if name == row.recordName {
-                    current.lastKnownRecord = encodeSystemFields(saved)
-                    // The baseline must describe the version CloudKit just
-                    // acknowledged. Re-encoding current local state here can
-                    // accidentally store an N+1 edit while this receipt is
-                    // only for N, breaking the next three-way merge.
-                    current.lastKnownPayload = saved["payload"] as? Data
-                } else {
-                    current.lastKnownErasedRecord = encodeSystemFields(saved)
+        let saved = await records.commitSyncState { [self] sync, _ in
+            // A later revival must create a new record. Keeping the deleted
+            // record's change tag here turns that revival into an invalid update.
+            for row in sync.rows.values {
+                if deletedNames.contains(row.recordName), let fields = row.lastKnownRecord {
+                    _ = RecordsSyncOutbox.forgetMissingRecord(
+                        &sync, name: row.recordName, generation: row.generation, expectedSystemFields: fields
+                    )
                 }
-                sync.rows[row.recordName] = current
+                let erasedName = RecordsSyncIdentity.erasedName(type: row.entityType, key: row.logicalKey)
+                if deletedNames.contains(erasedName), let fields = row.lastKnownErasedRecord {
+                    _ = RecordsSyncOutbox.forgetMissingRecord(
+                        &sync, name: erasedName, generation: row.generation, expectedSystemFields: fields
+                    )
+                }
             }
-        }
-        for (name, row) in sync.rows where row.pendingErase {
-            if RecordsSyncSent.shouldClearErase(row: row, savedNames: savedNames, deletedNames: deletedNames) {
+            for saved in sent.savedRecords {
+                let name = saved.recordID.recordName
+                guard let row = sync.rows[name] ?? sync.rows.first(where: { _, value in
+                    RecordsSyncIdentity.erasedName(type: value.entityType, key: value.logicalKey) == name
+                })?.value else { continue }
+                let count = saved["editCount"] as? Int ?? row.editCount
+                let tie = saved["editTieBreaker"] as? String ?? row.editTieBreaker
+                if RecordsSyncSent.shouldClearSave(
+                    row: row, savedCount: count, savedTie: tie, deletedNames: deletedNames
+                ) {
+                    RecordsSyncOutbox.clearDirty(&sync, recordName: row.recordName)
+                }
+                if var current = sync.rows[row.recordName] {
+                    if name == row.recordName {
+                        current.lastKnownRecord = encodeSystemFields(saved)
+                        current.lastKnownPayload = saved["payload"] as? Data
+                    } else {
+                        current.lastKnownErasedRecord = encodeSystemFields(saved)
+                    }
+                    sync.rows[row.recordName] = current
+                }
+            }
+            for (name, row) in sync.rows where row.pendingErase
+                && RecordsSyncSent.shouldClearErase(
+                    row: row, savedNames: savedNames, deletedNames: deletedNames
+                ) {
                 RecordsSyncOutbox.clearDirty(&sync, recordName: name)
             }
         }
-        guard records.replaceSyncState(sync) else {
-            failPersistence()
-            return
-        }
+        guard engine === sourceEngine, acceptRemote else { return }
+        guard saved else { failPersistence(); return }
         for failure in sent.failedRecordSaves {
-            handleFailedSave(failure)
+            await handleFailedSave(failure)
+            guard engine === sourceEngine, acceptRemote else { return }
         }
         for (_, error) in sent.failedRecordDeletes {
             if error.code == .zoneNotFound {
@@ -857,10 +920,10 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
 
     private func handleFailedSave(
         _ failure: CKSyncEngine.Event.SentRecordZoneChanges.FailedRecordSave
-    ) {
+    ) async {
         let error = failure.error
         if error.code == .serverRecordChanged, let server = error.serverRecord {
-            applyFetched([server], deletions: [])
+            await applyFetched([server], deletions: [])
         } else if error.code == .zoneNotFound {
             recoverMissingDataZone()
         } else if error.code == .unknownItem {
@@ -892,7 +955,7 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
                       records.state.sync.generation == generation else { return }
                 if fence > generation {
                     stopAndInvalidate()
-                    guard adoptHigherFence(fence) else {
+                    guard await adoptHigherFence(fence) else {
                         if !higherFenceNeedsReview { failPersistence() }
                         return
                     }
@@ -914,21 +977,23 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
                         let erased = try await container.privateCloudDatabase.record(for: erasedID)
                         guard self.engine === engine, acceptRemote,
                               records.state.sync.generation == generation else { return }
-                        applyFetched([erased], deletions: [])
+                        await applyFetched([erased], deletions: [])
                     } catch let error as CKError where error.code == .unknownItem {
                         // No deletion marker: preserve the local edit and retry a create.
                     }
                 }
                 guard self.engine === engine, acceptRemote,
                       records.state.sync.generation == generation else { return }
-                var sync = records.state.sync
-                if RecordsSyncOutbox.forgetMissingRecord(
-                    &sync, name: name, generation: generation, expectedSystemFields: fields
-                ) {
-                    guard records.replaceSyncState(sync) else { failPersistence(); return }
+                let saved = await records.commitSyncState { sync, _ in
+                    _ = RecordsSyncOutbox.forgetMissingRecord(
+                        &sync, name: name, generation: generation, expectedSystemFields: fields
+                    )
                 }
+                guard self.engine === engine, acceptRemote else { return }
+                guard saved else { failPersistence(); return }
                 recoveringMissingRows.remove(rowName)
                 await enqueueLocalRecords()
+                guard self.engine === engine, acceptRemote else { return }
                 lastError = nil
                 status = .syncing
             } catch {
@@ -1064,31 +1129,34 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
         return (type, parts[2])
     }
 
-    private func applyFetched(_ recordsFetched: [CKRecord], deletions: [CKRecord.ID]) {
-        guard let records else { return }
-        // Tombstone revocations first. A revival ships the record save and the
-        // `erased.*` delete in one atomic batch, and applying the save while the
-        // local tombstone still stood would reassert the erase and delete the
-        // row the user just recorded again.
-        for deletion in deletions {
-            guard let (type, key) = erasedIdentity(deletion.recordName) else { continue }
-            records.applyRemoteEraseRevocation(type: type, key: key)
+    private func applyFetched(_ recordsFetched: [CKRecord], deletions: [CKRecord.ID]) async {
+        guard let records, let sourceEngine = engine, acceptRemote else { return }
+        var invalidation = engineInvalidation
+        func batchIsCurrent() -> Bool {
+            engineInvalidation == invalidation && engine === sourceEngine && acceptRemote
         }
-        var discarded = false
-        for record in recordsFetched {
-            if record.recordType == "Fence" || record.recordID.recordName == RecordsSyncIdentity.fenceRecord {
-                let fence = record["generation"] as? Int ?? 0
-                if fence > records.state.sync.generation {
-                    stopAndInvalidate()
-                    guard adoptHigherFence(fence) else {
-                        if !higherFenceNeedsReview { failPersistence() }
-                        return
-                    }
-                    discarded = true
-                }
-                continue
+        let fence = recordsFetched
+            .filter { $0.recordType == "Fence" || $0.recordID.recordName == RecordsSyncIdentity.fenceRecord }
+            .map { $0["generation"] as? Int ?? 0 }
+            .max() ?? 0
+        if fence > records.state.sync.generation {
+            stopAndInvalidate()
+            invalidation = engineInvalidation
+            let adopted = await adoptHigherFence(fence)
+            guard engineInvalidation == invalidation else { return }
+            guard adopted else {
+                if !higherFenceNeedsReview { failPersistence() }
+                return
             }
-            if discarded { continue }
+            startIfEnabled()
+            return
+        }
+
+        var raw: [RemoteRecordChange] = deletions.compactMap { deletion in
+            erasedIdentity(deletion.recordName).map { .eraseRevocation(type: $0.0, key: $0.1) }
+        }
+        for record in recordsFetched where record.recordType != "Fence"
+            && record.recordID.recordName != RecordsSyncIdentity.fenceRecord {
             let generation = record["generation"] as? Int ?? 0
             if RecordsSyncGeneration.shouldDiscard(
                 recordGeneration: generation,
@@ -1097,46 +1165,42 @@ extension RecordsCloudSync: CKSyncEngineDelegate {
                 continue
             }
             if let (type, key) = erasedIdentity(record.recordID.recordName) {
-                records.applyRemoteErase(
+                raw.append(.erase(
                     type: type,
                     key: key,
                     erasedEditCount: record["editCount"] as? Int,
                     systemFields: encodeSystemFields(record),
                     generation: generation
-                )
+                ))
                 continue
             }
             guard let type = RecordEntityType(rawValue: record["entityType"] as? String ?? ""),
                   let key = record["logicalKey"] as? String,
                   let payload = record["payload"] as? Data
             else { continue }
-            records.applyRemotePayload(
+            raw.append(.payload(
                 type: type,
                 key: key,
                 payload: payload,
                 editCount: record["editCount"] as? Int ?? 0,
                 editTieBreaker: record["editTieBreaker"] as? String ?? "",
                 systemFields: encodeSystemFields(record),
-                generation: generation,
-                persistImmediately: false
-            )
+                generation: generation
+            ))
         }
-        if !deletions.isEmpty {
-            var sync = records.state.sync
-            for deletion in deletions {
-                sync.rows[deletion.recordName] = nil
+        if !raw.isEmpty || !deletions.isEmpty {
+            do {
+                try await records.persistRemoteBatch(
+                    raw,
+                    deletedRecordNames: deletions.map(\.recordName)
+                )
             }
-            guard records.replaceSyncState(sync) else {
-                failPersistence()
+            catch {
+                if batchIsCurrent() { failPersistence() }
                 return
             }
         }
-        if !recordsFetched.isEmpty || !deletions.isEmpty {
-            records.persistRemoteBatch()
-        }
-        if discarded {
-            startIfEnabled()
-        }
+        guard batchIsCurrent() else { return }
     }
 
     private func encodeSystemFields(_ record: CKRecord) -> Data {

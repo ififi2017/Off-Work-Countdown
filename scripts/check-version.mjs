@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { xcodeProductVersionErrors } from "./xcode-product-versions.mjs";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const packageLock = JSON.parse(readFileSync("package-lock.json", "utf8"));
@@ -66,7 +67,7 @@ if (
   process.exit(1);
 }
 
-// The Capacitor project is checked in from P1 onward. Its Universal Purchase
+// The native SwiftUI project uses Universal Purchase. Every shipping
 // target shares the product version with Web, Desktop and the Widget so local
 // archives cannot drift from the existing App Store record.
 const mobileProject = readFileSync(
@@ -84,6 +85,17 @@ if (
   console.error(
     `iOS MARKETING_VERSION values (${mobileVersions.join(", ") || "not found"}) must all be ${expected}.`
   );
+  process.exit(1);
+}
+
+const configurationErrors = xcodeProductVersionErrors(mobileProject, expected, [
+  "com.rainif.offworkcountdown.macappstore",
+  "com.rainif.offworkcountdown.macappstore.widget",
+  "com.rainif.offworkcountdown.macappstore.watchkitapp",
+  "com.rainif.offworkcountdown.macappstore.watchkitapp.widgets",
+]);
+if (configurationErrors.length) {
+  console.error(configurationErrors.join("\n"));
   process.exit(1);
 }
 

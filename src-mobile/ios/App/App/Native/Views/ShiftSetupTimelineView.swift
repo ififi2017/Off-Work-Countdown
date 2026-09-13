@@ -9,7 +9,8 @@ import SwiftUI
 /// dropping them entirely hides features a new user has never seen. When
 /// nothing is switched off, the second card does not appear at all.
 struct ShiftSetupTimelineView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
     let onSelect: (AppRoute) -> Void
     let onEditTime: (SetupTimeField) -> Void
 
@@ -17,24 +18,24 @@ struct ShiftSetupTimelineView: View {
         // Touch every setting the preview displays so a change invalidates
         // this view. TimelineView only ticks once a minute; putting those
         // same fields on `.id` rebuilt the whole tree on every wheel tick.
-        let _ = store.displayedStartMinutes
-        let _ = store.displayedEndMinutes
-        let _ = store.lunchEnabled
-        let _ = store.lunchStartMinutes
-        let _ = store.lunchDurationMinutes
-        let _ = store.microBreakEnabled
-        let _ = store.microBreakIntervalMinutes
-        let _ = store.liveActivityEnabled
-        let _ = store.liveActivityLeadMinutes
-        let _ = store.notificationMode
-        let _ = store.scheduleMode
-        let _ = store.workdays
-        let _ = store.alternatingWeekType
-        let _ = store.alternatingWeekendWorkday
-        let _ = store.alternatingReferenceWeekStartMs
-        let _ = store.rotationWorkDays
-        let _ = store.rotationRestDays
-        let _ = store.rotationAnchorMs
+        let _ = scene.displayedStartMinutes(using: shifts.preferences)
+        let _ = scene.displayedEndMinutes(using: shifts.preferences)
+        let _ = shifts.preferences.lunchEnabled
+        let _ = shifts.preferences.lunchStartMinutes
+        let _ = shifts.preferences.lunchDurationMinutes
+        let _ = shifts.preferences.microBreakEnabled
+        let _ = shifts.preferences.microBreakIntervalMinutes
+        let _ = shifts.preferences.liveActivityEnabled
+        let _ = shifts.preferences.liveActivityLeadMinutes
+        let _ = shifts.preferences.notificationMode
+        let _ = shifts.preferences.scheduleMode
+        let _ = shifts.preferences.workdays
+        let _ = shifts.preferences.alternatingWeekType
+        let _ = shifts.preferences.alternatingWeekendWorkday
+        let _ = shifts.preferences.alternatingReferenceWeekStartMs
+        let _ = shifts.preferences.rotationWorkDays
+        let _ = shifts.preferences.rotationRestDays
+        let _ = shifts.preferences.rotationAnchorMs
 
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
             content(at: timeline.date)
@@ -43,12 +44,12 @@ struct ShiftSetupTimelineView: View {
 
     @ViewBuilder
     private func content(at now: Date) -> some View {
-        let preview = store.setupSnapshot(at: now).map { store.shiftPreview(for: $0, at: now) }
+        let preview = scene.setupSnapshot(at: now, using: shifts).map { shifts.shiftPreview(for: $0, at: now) }
 
         VStack(alignment: .leading, spacing: OWCDesign.sectionGap) {
             if let upcoming = preview?.upcoming, !upcoming.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
-                    OWCSectionHeader(title: store.t("comingUp"))
+                    OWCSectionHeader(title: shifts.text.t("comingUp"))
                     OWCGroupCard {
                         ForEach(upcoming) { entry in
                             row(entry, now: now, isLast: entry.id == upcoming.last?.id)
@@ -70,7 +71,7 @@ struct ShiftSetupTimelineView: View {
     @ViewBuilder
     private func row(_ entry: ShiftPreviewEntry, now: Date, isLast: Bool) -> some View {
         let label = ShiftPreviewRow(
-            store: store,
+            locale: shifts.preferences.locale,
             entry: entry,
             now: now,
             showsSeparator: !isLast,

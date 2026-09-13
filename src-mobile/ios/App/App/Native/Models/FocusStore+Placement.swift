@@ -1,0 +1,390 @@
+import Foundation
+
+/// What happened when the canvas tried to put something in a block.
+///
+/// Every one of these used to be a silent `return`: the favourite chip
+/// duplicated a task somewhere off-screen, and assigning without Plus did
+/// nothing at all while still playing a selection haptic. A caller that can
+/// tell the cases apart can say which one it is.
+enum FocusPlacementResult: Equatable, Sendable {
+  /// Landed in a block. Carries the key so the canvas can scroll to it and
+  /// select it — the change should appear where it happened.
+  case placed(taskID: UUID, blockStartAtMs: Int64)
+  /// The shift had no empty block left, so the task exists but is unplaced.
+  case addedUnscheduled(taskID: UUID)
+  case noShift
+  case locked
+}
+
+extension FocusStore {
+  /// One tap on a favourite: make today's task from it and put it in the
+  /// next empty block.
+  ///
+  /// Deliberately one action and one undo unit. Splitting it into "add" and
+  /// "assign" is what made the old chip feel inert — it copied a task into a
+  /// list further down the screen and stopped there.
+  @discardableResult
+  func placeFavoriteInNextEmptyBlock(_ favorite: FocusTask, at date: Date = .now) -> RecordCommand<
+    FocusPlacementResult
+  > {
+    let favoriteID = favorite.id
+    return records.submitCommand { [self] in
+      guard plus.isAuthorized else { return .locked }
+      guard
+        let favorite = records.state.focusTasks.first(where: {
+          $0.id == favoriteID && $0.deletedAt == nil
+        })
+      else { return .noShift }
+      return createFocusTaskInNextEmptyBlock(
+        title: favorite.title,
+        pomodoros: favorite.estimatedPomodoros,
+        icon: favorite.icon,
+        at: date
+      ).synchronousResult
+    }
+  }
+
+  /// The quick-create landing, and the one a purchase resumes into.
+  @discardableResult
+  func createFocusTaskInNextEmptyBlock(
+    title: String,
+    pomodoros: Int = 1,
+    icon: FocusTaskIcon = .focus,
+    isFavorite: Bool = false,
+    scheduleAllPomodoros: Bool = false,
+    at date: Date = .now
+  ) -> RecordCommand<FocusPlacementResult> {
+    records.submitCommand { [self] in
+      records.withBatchedWrites {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard plus.isAuthorized else { return .locked }
+        guard !trimmed.isEmpty else { return .noShift }
+        guard let shift = focusCanvasShift(at: date)?.snapshot else { return .noShift }
+
+        detachFocusTemplate(at: date).synchronousResult
+        let canvas = focusDayCanvas(at: date)
+        guard let target = canvas.nextEmptyBlock else {
+          // Not a no-op and not an error: the task is real, it just has no
+          // room in this shift. The canvas lists it as unscheduled.
+          let task = addFocusTaskAuthorized(
+            title: trimmed,
+            pomodoros: pomodoros,
+            plannedFor: shift.startDate,
+            icon: icon,
+            isFavorite: isFavorite
+          ).synchronousResult
+          return .addedUnscheduled(taskID: task.id)
+        }
+        let task = addFocusTaskAuthorized(
+          title: trimmed,
+          pomodoros: pomodoros,
+          plannedFor: shift.startDate,
+          icon: icon,
+          isFavorite: isFavorite
+        ).synchronousResult
+        return placeFocusTask(
+          task, pomodoros: scheduleAllPomodoros ? task.estimatedPomodoros : 1,
+          startingAt: target.startAtMs, at: date
+        ).synchronousResult
+      }
+    }
+  }
+
+  /// Block-first creation: the block is already chosen, the task is made
+  /// inside it. This is the path that removes the old dead end, where the
+  /// fourth screen told you to go back two levels and create the task first.
+  @discardableResult
+  func createFocusTask(
+    title: String,
+    icon: FocusTaskIcon = .focus,
+    pomodoros: Int = 1,
+    isFavorite: Bool = false,
+    inBlockStartingAt blockStartAtMs: Int64,
+    scheduleAllPomodoros: Bool = false,
+    at date: Date = .now
+  ) -> RecordCommand<FocusPlacementResult> {
+    records.submitCommand { [self] in
+      records.withBatchedWrites {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard plus.isAuthorized else { return .locked }
+        guard !trimmed.isEmpty, let shift = focusCanvasShift(at: date)?.snapshot else {
+          return .noShift
+        }
+        detachFocusTemplate(at: date).synchronousResult
+        let task = addFocusTaskAuthorized(
+          title: trimmed,
+          pomodoros: pomodoros,
+          plannedFor: shift.startDate,
+          icon: icon,
+          isFavorite: isFavorite
+        ).synchronousResult
+        return placeFocusTask(
+          task, pomodoros: scheduleAllPomodoros ? task.estimatedPomodoros : 1,
+          startingAt: blockStartAtMs, at: date
+        ).synchronousResult
+      }
+    }
+  }
+
+  /// Preview and save use the same projection over the existing plan.
+  func focusCreationBlocks(
+    pomodoros: Int, startingAt: Int64, taskID: UUID? = nil,
+    at date: Date = .now
+  ) -> [FocusDayCanvasModel.Block] {
+    let canvas = focusDayCanvas(at: date)
+    guard canvas.blocks.contains(where: { $0.startAtMs == startingAt && $0.isEditable }) else {
+      return []
+    }
+    return FocusLiveChain.projectedBlocks(
+      taskID: taskID ?? UUID(), remaining: pomodoros,
+      blocks: canvas.blocks, fromMs: startingAt)
+  }
+
+  @discardableResult
+  func placeFocusTask(
+    _ task: FocusTask, pomodoros: Int, startingAt: Int64,
+    updatingEstimateBy additionalPomodoros: Int? = nil, makeFavorite: Bool = false,
+    at date: Date = .now
+  ) -> RecordCommand<FocusPlacementResult> {
+    let taskID = task.id
+    return records.submitCommand { [self] in
+      records.withBatchedWrites {
+        guard plus.isAuthorized else { return .locked }
+        guard
+          var task = records.state.focusTasks.first(where: {
+            $0.id == taskID && $0.deletedAt == nil
+          })
+        else { return .noShift }
+        if let additionalPomodoros {
+          task.estimatedPomodoros = completedFocusBlocks(for: task) + max(1, additionalPomodoros)
+        }
+        if makeFavorite { task.isFavorite = true }
+        records.upsertFocusTask(task, at: date)
+        let blocks = focusCreationBlocks(
+          pomodoros: pomodoros, startingAt: startingAt, taskID: task.id, at: date)
+        guard let first = blocks.first else { return .addedUnscheduled(taskID: task.id) }
+        for block in blocks {
+          _ = assign(task, toBlockStartingAt: block.startAtMs, at: date).synchronousResult
+        }
+        return .placed(taskID: task.id, blockStartAtMs: first.startAtMs)
+      }
+    }
+  }
+
+  @discardableResult
+  func updateAndStartFocusTaskAuthorized(
+    taskID: UUID,
+    pomodoros: Int,
+    at date: Date = .now
+  ) -> RecordCommand<Bool> {
+    records.submitCommand { [self] in
+      records.withBatchedWrites {
+        guard plus.isAuthorized,
+          var task = records.state.focusTasks.first(where: {
+            $0.id == taskID && $0.deletedAt == nil
+          })
+        else { return false }
+        task.estimatedPomodoros = completedFocusBlocks(for: task) + max(1, pomodoros)
+        records.upsertFocusTask(task, at: date)
+        return startFocusAuthorized(task, at: date).synchronousResult
+      }
+    }
+  }
+
+  /// The finish of the last requested block, never a partial plan's early end.
+  func focusCreationFinish(
+    pomodoros: Int, startingAt: Int64?, startNow: Bool = false,
+    taskID: UUID? = nil, at date: Date = .now
+  ) -> Date? {
+    guard pomodoros > 0 else { return nil }
+    if startNow {
+      guard activeFocusSession() == nil, hasFocusRoom(at: date), let shift = snapshot(at: date)
+      else { return nil }
+      let end = FocusPlanner.plannedEnd(
+        from: date, segments: shift.segments,
+        overtimeEndAtMs: overtimeEndAtMs,
+        durationMinutes: focusTimerSettings.normalized.focusMinutes)
+      guard
+        FocusPlanner.endReason(
+          startedAt: date, plannedEndAt: end,
+          expectedDurationMinutes: focusTimerSettings.normalized.focusMinutes) == .completed
+      else { return nil }
+      if pomodoros == 1 { return end }
+      let session = FocusSession(
+        id: UUID(), taskID: taskID, shiftAnchorDate: shift.startDate,
+        startedAt: date, plannedEndAt: end, endedAt: nil, endReason: nil,
+        editedAt: date, editCount: 0, editTieBreaker: UUID())
+      guard let breakEnd = plannedFocusBreakEnd(kind: nextFocusBreakKind(after: session), at: end)
+      else { return nil }
+      let projected = FocusLiveChain.projectedBlocks(
+        taskID: taskID ?? UUID(), remaining: pomodoros - 1,
+        blocks: focusDayCanvas(at: date).blocks,
+        fromMs: Int64(breakEnd.timeIntervalSince1970 * 1_000))
+      guard projected.count == pomodoros - 1 else { return nil }
+      return projected.last.map { Date(timeIntervalSince1970: Double($0.endAtMs) / 1_000) }
+    }
+    guard let startingAt else { return nil }
+    let blocks = focusCreationBlocks(
+      pomodoros: pomodoros, startingAt: startingAt, taskID: taskID, at: date)
+    guard blocks.count == pomodoros else { return nil }
+    return blocks.last.map { Date(timeIntervalSince1970: Double($0.endAtMs) / 1_000) }
+  }
+
+  /// Resolves a block key against the shift the canvas is actually drawing.
+  ///
+  /// `focusWorkBlocks(at:)` reads `snapshot(at:)`, which is always today's
+  /// shift. After clock-off the canvas draws the *next* one, so its blocks
+  /// were invisible to every write and each edit came back as "no shift" —
+  /// a band you could see and could not touch.
+  private func canvasBlock(
+    startingAt blockStartAtMs: Int64,
+    at date: Date
+  ) -> (block: FocusWorkBlock, shift: NativeShiftSnapshot)? {
+    guard let shift = focusCanvasShift(at: date)?.snapshot else { return nil }
+    let blocks = FocusPlanner.workBlocks(segments: shift.segments, settings: focusTimerSettings)
+    guard let block = blocks.first(where: { $0.startAtMs == blockStartAtMs }), block.kind == .task
+    else { return nil }
+    return (block, shift)
+  }
+
+  /// Assigns by block key rather than by `FocusWorkBlock`, so a view can act
+  /// on what the canvas model gave it without rebuilding the grid.
+  @discardableResult
+  func assign(
+    _ task: FocusTask,
+    toBlockStartingAt blockStartAtMs: Int64,
+    at date: Date = .now
+  ) -> RecordCommand<FocusPlacementResult> {
+    let taskID = task.id
+    return records.submitCommand { [self] in
+      guard plus.isAuthorized else { return .locked }
+      guard
+        let task = records.state.focusTasks.first(where: { $0.id == taskID && $0.deletedAt == nil })
+      else { return .noShift }
+      guard let found = canvasBlock(startingAt: blockStartAtMs, at: date) else { return .noShift }
+      assignFocusBlock(found.block, to: task, in: found.shift, at: date).synchronousResult
+      return .placed(taskID: task.id, blockStartAtMs: blockStartAtMs)
+    }
+  }
+
+  /// Turns a work block into a break. The only way to get one: the cadence's
+  /// own break blocks are not editable.
+  func markBlockAsBreak(startingAt blockStartAtMs: Int64, at date: Date = .now) -> RecordCommand<
+    Void
+  > {
+    records.submitCommand { [self] in
+      guard plus.isAuthorized,
+        let found = canvasBlock(startingAt: blockStartAtMs, at: date)
+      else { return }
+      assignFocusBreak(found.block, in: found.shift, at: date).synchronousResult
+    }
+  }
+
+  func clearBlock(startingAt blockStartAtMs: Int64, at date: Date = .now) -> RecordCommand<Void> {
+    records.submitCommand { [self] in
+      guard plus.isAuthorized,
+        let found = canvasBlock(startingAt: blockStartAtMs, at: date)
+      else { return }
+      clearFocusBlock(found.block, in: found.shift, at: date).synchronousResult
+    }
+  }
+
+  /// Why the cadence cannot be changed right now, or nil when it can.
+  ///
+  /// The settings sheet used to lock on "this day has a saved plan" while
+  /// `updateFocusTimerSettings` rejects on "any template exists". With a
+  /// template saved and no plan yet, every field was editable, Save was
+  /// enabled, and the write was dropped without a word.
+  var focusTimerSettingsLockReason: FocusTimerLockReason? {
+    focusPlanning.templates.isEmpty ? nil : .hasTemplates
+  }
+
+  enum FocusTimerLockReason: Equatable, Sendable {
+    /// Template slots are numbered against the current cadence, so
+    /// changing it would silently re-point saved task slots.
+    case hasTemplates
+  }
+}
+
+extension FocusStore {
+  enum FocusExtensionError: Error, Sendable {
+    case conflict
+    case noRoom
+  }
+
+  /// Where one more block for a task would go, deciding nothing else.
+  ///
+  /// Split out of `addOneFocusBlock` so a caller that only needs to know
+  /// whether the control should be offered — the Lock Screen's plus, which
+  /// greys out rather than failing a tap — asks exactly the question the
+  /// write will ask. Answering it twice is how a disabled button and a
+  /// refused write end up disagreeing.
+  func focusContinuationTarget(
+    taskID: UUID,
+    at date: Date = .now,
+    after: Date? = nil
+  ) -> Result<(block: FocusWorkBlock, shift: NativeShiftSnapshot), FocusExtensionError> {
+    guard plus.isAuthorized,
+      records.state.focusTasks.contains(where: { $0.id == taskID && $0.deletedAt == nil }),
+      let shift = snapshot(at: date), date < shift.endDate
+    else { return .failure(.noRoom) }
+    let blocks = focusPlanningBlocks(for: shift)
+    let key = RecordJSON.dayKey(shift.startDate, calendar: recordsCalendar)
+    let assignments = focusPlanning.plans[key]?.assignments ?? []
+    let lastAssignedEnd = blocks.filter { block in
+      assignments.contains { $0.taskID == taskID && $0.blockStartAtMs == block.startAtMs }
+    }.map(\.end).max()
+    let runningEnd = activeFocusSession().flatMap { $0.taskID == taskID ? $0.plannedEndAt : nil }
+    let boundary = max(after ?? date, max(date, max(lastAssignedEnd ?? date, runningEnd ?? date)))
+    guard let target = blocks.first(where: { $0.kind == .task && $0.start >= boundary }),
+      target.durationMinutes >= focusTimerSettings.normalized.focusMinutes,
+      shift.segments.contains(where: {
+        $0.startAtMs <= boundary.timeIntervalSince1970 * 1_000
+          && target.end.timeIntervalSince1970 * 1_000 <= $0.endAtMs
+      })
+    else { return .failure(.noRoom) }
+    guard !assignments.contains(where: { $0.blockStartAtMs == target.startAtMs }),
+      !records.state.focusTasks.contains(where: {
+        $0.id != taskID && $0.deletedAt == nil && $0.completedAt == nil
+          && $0.scheduledStartAt.map { $0 >= target.start && $0 < target.end } == true
+      })
+    else { return .failure(.conflict) }
+    return .success((target, shift))
+  }
+
+  /// Continue the same task without moving another task or changing the saved template.
+  func addOneFocusBlock(taskID: UUID, at date: Date = .now) -> RecordCommand<
+    Result<Int64, FocusExtensionError>
+  > {
+    records.submitCommand { [self] in
+      records.withBatchedWrites {
+        switch focusContinuationTarget(taskID: taskID, at: date) {
+        case .failure(let error):
+          return .failure(error)
+        case .success(let found):
+          guard var task = records.state.focusTasks.first(where: { $0.id == taskID })
+          else { return .failure(.noRoom) }
+          let estimate = max(task.estimatedPomodoros, completedFocusBlocks(for: task)) + 1
+          task.completedAt = nil
+          assignFocusBlock(found.block, to: task, in: found.shift, at: date).synchronousResult
+          if var updated = records.state.focusTasks.first(where: { $0.id == taskID }) {
+            updated.estimatedPomodoros = estimate
+            updated.completedAt = nil
+            records.upsertFocusTask(updated, at: date)
+          }
+          return .success(found.block.startAtMs)
+        }
+      }
+    }
+  }
+
+  /// Keep continuation available during the break and after the last planned round.
+  func focusContinuationTaskID(at date: Date = .now) -> UUID? {
+    guard plus.isAuthorized else { return nil }
+    if let session = activeFocusSession(), session.kind == .focus { return session.taskID }
+    guard let shift = snapshot(at: date), date < shift.endDate else { return nil }
+    return records.state.focusSessions
+      .filter { $0.kind == .focus && $0.startedAt >= shift.startDate && $0.startedAt <= date }
+      .max(by: { $0.startedAt < $1.startedAt })?.taskID
+  }
+}

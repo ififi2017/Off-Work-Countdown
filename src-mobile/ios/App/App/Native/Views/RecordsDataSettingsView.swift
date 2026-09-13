@@ -78,7 +78,10 @@ enum RecordsOperationError: Identifiable, Equatable {
 }
 
 struct RecordsDataSettingsView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let actions: RecordsActions
+    let recovery: RecoveryStore
+    let life: LifeSummaryModel
     @State private var showsLifeEditor = false
     @State private var importing = false
     @State private var importPreview: RecordImportReport?
@@ -87,26 +90,29 @@ struct RecordsDataSettingsView: View {
     @State private var confirmsDeleteDevice = false
     @State private var importReport: String?
     @State private var operationError: RecordsOperationError?
+    @State private var importPreviewInProgress = false
+    @State private var importPreviewID: UUID?
+    @State private var importPreviewTask: Task<Void, Never>?
 
     var body: some View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("recordsDataTitle"))
+                OWCSectionHeader(title: actions.text.t("recordsDataTitle"))
                     .padding(.top, 14)
                 OWCGroupCard {
                     Button {
-                        if store.plus.isAuthorized {
+                        if actions.plus.isAuthorized {
                             showsLifeEditor = true
                         } else {
-                            store.paywallSheet = .life
+                            scene.paywallSheet = .life
                         }
                     } label: {
                         OWCRow(
                             icon: "person.crop.circle",
-                            title: store.t("recordsLifeProfileRow"),
-                            subtitle: store.records.state.lifeProfile == nil
-                                ? store.t("recordsLifeProfileUnset")
-                                : store.t("recordsLifeProfileReady"),
+                            title: actions.text.t("recordsLifeProfileRow"),
+                            subtitle: actions.records.state.lifeProfile == nil
+                                ? actions.text.t("recordsLifeProfileUnset")
+                                : actions.text.t("recordsLifeProfileReady"),
                             centersVertically: true
                         ) {
                             OWCDetailAccessory(text: nil)
@@ -117,8 +123,8 @@ struct RecordsDataSettingsView: View {
                     NavigationLink(value: AppRoute.iCloudSync) {
                         OWCRow(
                             icon: "icloud",
-                            title: store.t("syncTitle"),
-                            subtitle: store.recordsDataStatusLabel,
+                            title: actions.text.t("syncTitle"),
+                            subtitle: recovery.recordsDataStatusLabel(using: actions.text),
                             centersVertically: true
                         ) {
                             OWCDetailAccessory(text: nil)
@@ -126,13 +132,13 @@ struct RecordsDataSettingsView: View {
                     }
                     .buttonStyle(OWCRowButtonStyle())
 
-                    if !store.records.state.sync.conflicts.isEmpty {
+                    if !actions.records.state.sync.conflicts.isEmpty {
                         NavigationLink(value: AppRoute.recordsConflicts) {
-                            OWCRow(icon: "exclamationmark.arrow.triangle.2.circlepath", title: store.t("recordsConflictCenter")) {
+                            OWCRow(icon: "exclamationmark.arrow.triangle.2.circlepath", title: actions.text.t("recordsConflictCenter")) {
                                 OWCDetailAccessory(
-                                    text: store.t(
+                                    text: actions.text.t(
                                         "recordsConflictCount",
-                                        values: ["count": "\(store.records.state.sync.conflicts.count)"]
+                                        values: ["count": "\(actions.records.state.sync.conflicts.count)"]
                                     )
                                 )
                             }
@@ -143,35 +149,39 @@ struct RecordsDataSettingsView: View {
                     NavigationLink(value: AppRoute.recordsTimeZone) {
                         OWCRow(
                             icon: "clock",
-                            title: store.t("recordsTimeZone"),
+                            title: actions.text.t("recordsTimeZone"),
                             isLast: true
                         ) {
-                            OWCDetailAccessory(text: store.recordsTimeZoneLabel)
+                            OWCDetailAccessory(text: actions.preferences.recordsTimeZoneLabel)
                         }
                     }
                     .buttonStyle(OWCRowButtonStyle())
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
 
-                OWCSectionHeader(title: store.t("recordsExport"))
+                OWCSectionHeader(title: actions.text.t("recordsExport"))
                     .padding(.top, 22)
                 OWCGroupCard {
                     Button { importFile() } label: {
-                        OWCRow(icon: "square.and.arrow.down", title: store.t("recordsImport")) {
-                            OWCDetailAccessory(text: nil)
+                        OWCRow(icon: "square.and.arrow.down", title: actions.text.t("recordsImport")) {
+                            if importPreviewInProgress {
+                                ProgressView().accessibilityLabel(actions.text.t("recordsImport"))
+                            } else {
+                                OWCDetailAccessory(text: nil)
+                            }
                         }
                     }
                     .buttonStyle(OWCRowButtonStyle())
 
                     Button { export(includeLife: true) } label: {
-                        OWCRow(icon: "square.and.arrow.up", title: store.t("recordsExportFull")) {
+                        OWCRow(icon: "square.and.arrow.up", title: actions.text.t("recordsExportFull")) {
                             OWCDetailAccessory(text: nil)
                         }
                     }
                     .buttonStyle(OWCRowButtonStyle())
 
                     Button { export(includeLife: false) } label: {
-                        OWCRow(icon: "square.and.arrow.up", title: store.t("recordsExportWithoutLife"), isLast: true) {
+                        OWCRow(icon: "square.and.arrow.up", title: actions.text.t("recordsExportWithoutLife"), isLast: true) {
                             OWCDetailAccessory(text: nil)
                         }
                     }
@@ -179,13 +189,13 @@ struct RecordsDataSettingsView: View {
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
 
-                OWCSectionHeader(title: store.t("syncDangerZone"))
+                OWCSectionHeader(title: actions.text.t("syncDangerZone"))
                     .padding(.top, 22)
                 OWCGroupCard {
                     Button { confirmsDeleteDevice = true } label: {
                         OWCRow(
                             icon: "trash",
-                            title: store.t("recordsDeleteAll"),
+                            title: actions.text.t("recordsDeleteAll"),
                             isLast: true,
                             isDestructive: true
                         )
@@ -197,11 +207,11 @@ struct RecordsDataSettingsView: View {
             }
         }
         .background(OWCDesign.page)
-        .navigationTitle(store.t("recordsDataTitle"))
+        .navigationTitle(actions.text.t("recordsDataTitle"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("recordsDataTitle"))
+        .owcDetailBack(title: actions.text.t("settings"), pageTitle: actions.text.t("recordsDataTitle"))
         .sheet(isPresented: $showsLifeEditor) {
-            LifeProfileEditView(store: store)
+            LifeProfileEditView(life: life, actions: actions, preferences: actions.preferences, text: actions.text)
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
             handleImport(result)
@@ -220,28 +230,28 @@ struct RecordsDataSettingsView: View {
             }
         }
         .confirmationDialog(
-            store.t("recordsDeleteAllConfirm"),
+            actions.text.t("recordsDeleteAllConfirm"),
             isPresented: $confirmsDeleteDevice,
             titleVisibility: .visible
         ) {
-            Button(store.t("recordsDeleteAll"), role: .destructive) {
+            Button(actions.text.t("recordsDeleteAll"), role: .destructive) {
                 Task { await wipeDevice() }
             }
-            Button(store.t("cancel"), role: .cancel) {}
+            Button(actions.text.t("cancel"), role: .cancel) {}
         }
-        .alert(store.t("recordsImportPreviewTitle"), isPresented: Binding(
+        .alert(actions.text.t("recordsImportPreviewTitle"), isPresented: Binding(
             get: { importPreview != nil },
             set: { if !$0 { importPreview = nil; pendingImportData = nil } }
         )) {
-            Button(store.t("recordsImportApplyNew")) {
+            Button(actions.text.t("recordsImportApplyNew")) {
                 Task { await applyImport() }
             }
             if importPreview?.conflicts.isEmpty == false {
-                Button(store.t("recordsConflictCenter")) {
+                Button(actions.text.t("recordsConflictCenter")) {
                     Task { await applyImport(openConflicts: true) }
                 }
             }
-            Button(store.t("cancel"), role: .cancel) {
+            Button(actions.text.t("cancel"), role: .cancel) {
                 importPreview = nil
                 pendingImportData = nil
             }
@@ -250,21 +260,21 @@ struct RecordsDataSettingsView: View {
                 Text(previewMessage(importPreview))
             }
         }
-        .alert(store.t("recordsImport"), isPresented: Binding(
+        .alert(actions.text.t("recordsImport"), isPresented: Binding(
             get: { importReport != nil },
             set: { if !$0 { importReport = nil } }
         )) {
-            Button(store.t("close"), role: .cancel) { importReport = nil }
+            Button(actions.text.t("close"), role: .cancel) { importReport = nil }
         } message: {
             Text(importReport ?? "")
         }
-        .alert(store.t("recordsDataTitle"), isPresented: Binding(
+        .alert(actions.text.t("recordsDataTitle"), isPresented: Binding(
             get: { operationError != nil },
             set: { if !$0 { operationError = nil } }
         )) {
-            Button(store.t("close"), role: .cancel) { operationError = nil }
+            Button(actions.text.t("close"), role: .cancel) { operationError = nil }
         } message: {
-            Text(operationError.map { store.t($0.messageKey) } ?? "")
+            Text(operationError.map { actions.text.t($0.messageKey) } ?? "")
         }
         .onAppear {
 #if DEBUG
@@ -275,32 +285,66 @@ struct RecordsDataSettingsView: View {
             }
 #endif
         }
+        .onDisappear { cancelImportPreview() }
     }
 
     private func importFile() {
+        cancelImportPreview()
         importing = true
     }
 
     private func handleImport(_ result: Result<URL, Error>) {
+        cancelImportPreview()
         guard case .success(let url) = result else {
             if case .failure(let error) = result {
                 operationError = RecordsOperationError.fileImporterFailure(error)
             }
             return
         }
-        let access = url.startAccessingSecurityScopedResource()
-        defer { if access { url.stopAccessingSecurityScopedResource() } }
-        do {
-            let data = try Data(contentsOf: url)
-            let report = try store.previewRecordsImport(data)
-            pendingImportData = data
-            importPreview = report
-        } catch {
-            operationError = RecordsOperationError.from(
-                error,
-                fallback: access ? .previewFailed : .securityScopedFileUnavailable
-            )
+        let previewID = UUID()
+        importPreviewID = previewID
+        importPreviewInProgress = true
+        importPreviewTask = Task {
+            do {
+                let data = try await RecordArchive.readSecurityScopedFile(url)
+                try Task.checkCancellation()
+                guard importPreviewID == previewID else { return }
+                let report = try await actions.previewRecordsImport(data)
+                try Task.checkCancellation()
+                guard importPreviewID == previewID else { return }
+                pendingImportData = data
+                importPreview = report
+                importPreviewInProgress = false
+                importPreviewID = nil
+                importPreviewTask = nil
+            } catch is CancellationError {
+            } catch RecordArchiveReadError.securityScopedFileUnavailable {
+                guard importPreviewID == previewID else { return }
+                finishImportPreview(with: .securityScopedFileUnavailable)
+            } catch RecordArchiveReadError.readFailed {
+                guard importPreviewID == previewID else { return }
+                finishImportPreview(with: .readFailed)
+            } catch {
+                guard importPreviewID == previewID else { return }
+                finishImportPreview(with: RecordsOperationError.from(error, fallback: .previewFailed))
+            }
         }
+    }
+
+    private func cancelImportPreview() {
+        importPreviewTask?.cancel()
+        importPreviewTask = nil
+        importPreviewID = nil
+        importPreviewInProgress = false
+        pendingImportData = nil
+        importPreview = nil
+    }
+
+    private func finishImportPreview(with error: RecordsOperationError) {
+        importPreviewInProgress = false
+        importPreviewID = nil
+        importPreviewTask = nil
+        operationError = error
     }
 
     private func applyImport(openConflicts: Bool = false) async {
@@ -308,17 +352,17 @@ struct RecordsDataSettingsView: View {
             operationError = .previewFailed
             return
         }
-        guard await store.confirmRecordsOwnerIfNeeded(reasonKey: "recordsOwnerAuthReason") else {
+        guard await actions.confirmRecordsOwnerIfNeeded(reasonKey: "recordsOwnerAuthReason") else {
             operationError = .ownerAuthenticationFailed
             return
         }
         do {
-            let report = try store.records.import(pendingImportData)
-            importReport = store.t("recordsImportReport", values: ["skipped": "\(report.skippedErasedTotal)"])
+            let report = try await actions.records.import(pendingImportData)
+            importReport = actions.text.t("recordsImportReport", values: ["skipped": "\(report.skippedErasedTotal)"])
             importPreview = nil
             self.pendingImportData = nil
-            if openConflicts, !store.settingsPath.contains(.recordsConflicts) {
-                store.settingsPath.append(.recordsConflicts)
+            if openConflicts, !scene.settingsPath.contains(.recordsConflicts) {
+                scene.settingsPath.append(.recordsConflicts)
             }
         } catch {
             operationError = RecordsOperationError.from(error, fallback: .importFailed)
@@ -327,12 +371,12 @@ struct RecordsDataSettingsView: View {
 
     private func export(includeLife: Bool) {
         Task {
-            guard await store.confirmRecordsOwnerIfNeeded(reasonKey: "recordsOwnerAuthReason") else {
+            guard await actions.confirmRecordsOwnerIfNeeded(reasonKey: "recordsOwnerAuthReason") else {
                 operationError = .ownerAuthenticationFailed
                 return
             }
             do {
-                exportURL = try store.exportRecordsFile(includeLifeProfile: includeLife)
+                exportURL = try await actions.exportRecordsFile(includeLifeProfile: includeLife)
             } catch {
                 operationError = RecordsOperationError.from(error, fallback: .exportFailed)
             }
@@ -340,21 +384,21 @@ struct RecordsDataSettingsView: View {
     }
 
     private func wipeDevice() async {
-        guard await store.confirmRecordsOwnerIfNeeded(reasonKey: "recordsOwnerAuthReason") else {
+        guard await actions.confirmRecordsOwnerIfNeeded(reasonKey: "recordsOwnerAuthReason") else {
             operationError = .ownerAuthenticationFailed
             return
         }
-        await store.cloudSync.wipeLocalRecords()
+        await recovery.cloudSync.wipeLocalRecords()
     }
 
     private func previewMessage(_ report: RecordImportReport) -> String {
         let added = report.inserted.values.reduce(0, +) + report.adopted.count
         let same = report.unchanged.values.reduce(0, +)
         return [
-            store.t("recordsImportAdded", values: ["count": "\(added)"]),
-            store.t("recordsImportSame", values: ["count": "\(same)"]),
-            store.t("recordsImportConflicts", values: ["count": "\(report.conflicts.count)"]),
-            store.t("recordsImportSkipped", values: ["count": "\(report.skippedErasedTotal)"]),
+            actions.text.t("recordsImportAdded", values: ["count": "\(added)"]),
+            actions.text.t("recordsImportSame", values: ["count": "\(same)"]),
+            actions.text.t("recordsImportConflicts", values: ["count": "\(report.conflicts.count)"]),
+            actions.text.t("recordsImportSkipped", values: ["count": "\(report.skippedErasedTotal)"]),
         ].joined(separator: "\n")
     }
 }

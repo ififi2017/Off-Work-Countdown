@@ -433,7 +433,7 @@ func lifeProgressIsClamped() {
 func futureRoughWorkYearDelaysIncome() async throws {
     let defaults = UserDefaults(suiteName: "owc.futureincome.\(UUID().uuidString)")!
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
+    let store = AppRuntime(defaults: defaults, records: records)
     var profile = LifeProfile(
         bornOn: .yearOnly(2008),
         workStartedPartial: .yearOnly(2030),
@@ -447,7 +447,7 @@ func futureRoughWorkYearDelaysIncome() async throws {
     profile.birthYear = 2008
     records.updateLifeProfile(profile)
 
-    let model = try #require(await store.prepareLifeViewModel(
+    let model = try #require(await store.life.prepareLifeViewModel(
         now: lifeTestDate(year: 2026, month: 1, day: 1, calendar: lifeTestCalendar())
     ))
     let income = try #require(model.income)
@@ -460,7 +460,7 @@ func futureRoughWorkYearDelaysIncome() async throws {
 func passedIncomeDeclineAgeAnchorsToday() async throws {
     let defaults = UserDefaults(suiteName: "owc.decliningincome.\(UUID().uuidString)")!
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
+    let store = AppRuntime(defaults: defaults, records: records)
     let now = lifeTestDate(year: 2036, month: 1, day: 1, calendar: lifeTestCalendar())
     var profile = LifeProfile(
         bornOn: .yearOnly(1990),
@@ -473,11 +473,11 @@ func passedIncomeDeclineAgeAnchorsToday() async throws {
         editTieBreaker: UUID()
     )
     records.updateLifeProfile(profile)
-    let level = try #require(await store.prepareLifeViewModel(now: now).flatMap(\.income))
+    let level = try #require(await store.life.prepareLifeViewModel(now: now).flatMap(\.income))
 
     profile.futureIncomeDecline = LifeIncomeDecline(startsAtAge: 45, retirementRatio: 0.6)
     records.updateLifeProfile(profile)
-    let declining = try #require(await store.prepareLifeViewModel(now: now).flatMap(\.income))
+    let declining = try #require(await store.life.prepareLifeViewModel(now: now).flatMap(\.income))
 
     #expect(declining.historicalGross == level.historicalGross)
     #expect(declining.projectedGross < level.projectedGross)
@@ -492,8 +492,8 @@ func passedIncomeDeclineAgeAnchorsToday() async throws {
 @Test("The cached life model is rebuilt when the archive changes")
 func lifeViewModelCacheFollowsTheArchive() async {
     let defaults = UserDefaults(suiteName: "owc.lifecache.\(UUID().uuidString)")!
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
-    store.saveLifeProfile(
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
+    store.life.saveLifeProfile(
         birthYear: 1992,
         workStartedYear: 2014,
         retirementAge: 60,
@@ -503,21 +503,21 @@ func lifeViewModelCacheFollowsTheArchive() async {
 
     // Asking twice for the same archive on the same day has to give the same
     // answer, whether or not the second one came out of the cache.
-    let first = await store.prepareLifeViewModel()
-    let repeated = await store.prepareLifeViewModel()
+    let first = await store.life.prepareLifeViewModel()
+    let repeated = await store.life.prepareLifeViewModel()
     #expect(first != nil)
     #expect(first == repeated)
 
     // Retiring five years later is more weeks of life, so the cache must not
     // hand back the shorter timeline.
-    store.saveLifeProfile(
+    store.life.saveLifeProfile(
         birthYear: 1992,
         workStartedYear: 2014,
         retirementAge: 65,
         sleepHours: 8,
         hidesExactAges: false
     )
-    let afterEdit = await store.prepareLifeViewModel()
+    let afterEdit = await store.life.prepareLifeViewModel()
     #expect(afterEdit != nil)
     #expect(afterEdit != first)
     #expect((afterEdit?.cells.count ?? 0) > (first?.cells.count ?? 0))
@@ -527,17 +527,19 @@ func lifeViewModelCacheFollowsTheArchive() async {
 @MainActor
 @Test("Batched life preparation preserves the synchronous projection")
 func batchedLifeProjectionMatches() async throws {
-    func makeStore() throws -> OffWorkStore {
+    func makeStore() throws -> AppRuntime {
         let defaults = try #require(UserDefaults(suiteName: "owc.lifebatch.\(UUID())"))
-        let store = OffWorkStore(defaults: defaults, records: .inMemory())
-        store.recordsTimeZoneIdentifier = "UTC"
-        store.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
+        let store = AppRuntime(defaults: defaults, records: .inMemory())
+        store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+        store.life.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
                               sleepHours: 8, hidesExactAges: false)
         return store
     }
     let now = Date(timeIntervalSince1970: 1_788_739_200)
-    let synchronous = try makeStore().lifeViewModel(now: now)
-    let asynchronous = try await makeStore().prepareLifeViewModel(now: now)
+    let synchronousStore = try makeStore()
+    let asynchronousStore = try makeStore()
+    let synchronous = synchronousStore.life.lifeViewModel(now: now)
+    let asynchronous = await asynchronousStore.life.prepareLifeViewModel(now: now)
     #expect(synchronous != nil)
     #expect(asynchronous == synchronous)
 }
@@ -546,10 +548,10 @@ func batchedLifeProjectionMatches() async throws {
 @Test("Cancelled life preparation cannot publish a partial projection")
 func cancelledLifeProjectionIsDiscarded() async throws {
     let defaults = try #require(UserDefaults(suiteName: "owc.lifecancel.\(UUID())"))
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
-    store.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
+    store.life.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
                           sleepHours: 8, hidesExactAges: false)
-    let task = Task { await store.prepareLifeViewModel() }
+    let task = Task { await store.life.prepareLifeViewModel() }
     await Task.yield()
     task.cancel()
     #expect(await task.value == nil)

@@ -1,4 +1,5 @@
 import LocalAuthentication
+import UIKit
 
 /// Face ID / Touch ID in front of the salary figures, falling back to the
 /// device passcode.
@@ -10,6 +11,7 @@ import LocalAuthentication
 /// a home-made four-digit code stored by the app is weaker than the one the
 /// Secure Enclave already guards.
 enum BiometricGate {
+    static let applicationSettingsURL = URL(string: UIApplication.openSettingsURLString)!
     /// Why biometry is or is not usable on this device.
     ///
     /// The `biometryType` check is what keeps a device that never had biometric

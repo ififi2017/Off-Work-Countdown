@@ -1,89 +1,94 @@
-import Combine
 import StoreKit
 import SwiftUI
 import UIKit
 
 struct OffWorkCountdownRootView: View {
-    @State private var store = LaunchTrace.interval("storeInit") { Self.makeStore() }
-    @State private var notifications = NotificationService()
-    @State private var liveActivities = LiveActivityService.shared
-    @State private var isLaunching = true
-    @State private var serviceTask: Task<Void, Never>?
+    @State private var scene: SceneState
+    private let runtime: AppRuntime
     @State private var clockInCommitFeedback = 0
     @State private var clockOffCommitFeedback = 0
-    /// Settings changed but the reminders have not been rebuilt yet. Flushed
-    /// when the app leaves the foreground, or immediately when the countdown
-    /// itself starts or stops.
-    @State private var pendingReschedule = false
     @State private var paywallPresentationActive = false
     @State private var lifeSetupPresentationActive = false
+    @State private var isLandscapePhone = false
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private static func makeStore() -> OffWorkStore {
-#if DEBUG
-        // Profiling uses synthetic records and separate preferences, including
-        // on a device that already has the user's installed app and archive.
-        if ProcessInfo.processInfo.arguments.contains("-owcPerformanceFixture"),
-           let defaults = UserDefaults(suiteName: "owc.performance.fixture") {
-            defaults.removePersistentDomain(forName: "owc.performance.fixture")
-            return OffWorkStore(defaults: defaults, records: .inMemory())
-        }
-#endif
-        return .shared
+    init(runtime: AppRuntime) {
+        self.runtime = runtime
+        _scene = State(initialValue: SceneState(defaults: runtime.defaults, recordsScale: runtime.preferences.preferredRecordsScale, showsReleaseNotes: runtime.preferences.shouldOfferReleaseNotes))
     }
 
     var body: some View {
         Group {
-            if !store.onboardingComplete {
-                OnboardingView(store: store)
+            if !runtime.preferences.onboardingComplete {
+                OnboardingView(
+                    preferences: runtime.preferences,
+                    shifts: runtime.shifts,
+                    recovery: runtime.recovery,
+                    actions: runtime.recordActions,
+                    text: runtime.text
+                )
                     // Only the outgoing side scales. Scaling the incoming app
                     // meant its layout settled at a different size than it
                     // animated at, so everything nudged down once the
                     // transition finished — a cross-fade cannot do that.
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 1.04)))
-            } else if !store.plus.hasSeenIntro && !store.showsReleaseNotes {
-                PlusIntroView(store: store).transition(introPaywallTransition)
-            } else if UIDevice.current.userInterfaceIdiom == .pad, horizontalSizeClass == .regular {
-                tabletLayout.transition(.opacity)
+            } else if !runtime.plus.hasSeenIntro && !scene.showsReleaseNotes {
+                PlusIntroView(plus: runtime.plus, text: runtime.text).transition(introPaywallTransition)
             } else {
-                phoneLayout.transition(.opacity)
+                adaptiveLayout.transition(.opacity)
+            }
+        }
+        .accessibilityHidden(showsLandscapeTimer)
+        .overlay {
+            if showsLandscapeTimer {
+                PhoneLandscapeTimerOverlay(shifts: runtime.shifts)
+                    .transition(.opacity)
             }
         }
         .background {
-            if UIDevice.current.userInterfaceIdiom == .phone {
-                PhoneLandscapePresentation(store: store)
-            }
+            PhoneLandscapePresentation(isLandscapePhone: $isLandscapePhone)
         }
-        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.paywallPresentation, value: store.onboardingComplete)
-        .animation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.28), value: store.plus.hasSeenIntro)
-        .preferredColorScheme(store.preferredColorScheme)
-        .environment(\.layoutDirection, store.layoutDirection)
-        .environment(\.locale, store.locale)
-        .environment(notifications)
-        .environment(liveActivities)
+        .statusBarHidden(showsLandscapeTimer)
+        .persistentSystemOverlays(showsLandscapeTimer ? .hidden : .automatic)
+        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.paywallPresentation, value: runtime.preferences.onboardingComplete)
+        .animation(reduceMotion ? .easeOut(duration: 0.16) : .smooth(duration: 0.28), value: runtime.plus.hasSeenIntro)
+        .preferredColorScheme(runtime.preferences.preferredColorScheme)
+        .environment(\.layoutDirection, runtime.preferences.layoutDirection)
+        .environment(\.locale, runtime.preferences.locale)
+        .environment(runtime.notifications)
+        .environment(runtime.liveActivities)
+        .modifier(RecordSaveStatus(
+            records: runtime.records,
+            title: runtime.text.t("recordsArchiveSaveFailedTitle"),
+            message: runtime.text.t("recordsArchiveSaveFailedBody"),
+            retryTitle: runtime.text.t("retryAction")
+        ))
         .tint(OWCDesign.accent)
-        .sensoryFeedback(.selection, trigger: store.selectedTab) { oldTab, newTab in
-            store.onboardingComplete && oldTab != newTab
+        .sensoryFeedback(.selection, trigger: scene.selectedTab) { oldTab, newTab in
+            runtime.preferences.onboardingComplete && oldTab != newTab
         }
         .sensoryFeedback(.success, trigger: clockInCommitFeedback)
         .sensoryFeedback(.impact(weight: .medium), trigger: clockOffCommitFeedback)
         // Here rather than in each shell: a gated tap can come from the Records
         // stack, the Settings stack or the iPad detail pane, and the paywall
         // belongs over whichever one is on screen.
-        .sheet(item: $store.paywallSheet, onDismiss: {
-            store.settlePaywallDismissal()
+        .sheet(item: Bindable(scene).paywallSheet, onDismiss: {
+            if let action = scene.settlePaywallDismissal(plus: runtime.plus) {
+                scene.performPendingPlusAction(action, focus: runtime.focus, actions: runtime.recordActions,
+                    queries: runtime.queries, recovery: runtime.recovery)
+            }
             paywallPresentationActive = false
         }) { reason in
             NavigationStack {
-                PaywallView(store: store, reason: reason, showsDismissButton: false) {
-                    store.paywallSheet = nil
+                PaywallView(plus: runtime.plus, text: runtime.text, reason: reason, showsDismissButton: false) {
+                    scene.paywallSheet = nil
                 }
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button(store.t("close")) {
-                            store.paywallSheet = nil
+                        Button(runtime.text.t("close")) {
+                            scene.paywallSheet = nil
                         }
                     }
                 }
@@ -91,156 +96,125 @@ struct OffWorkCountdownRootView: View {
             .presentationSizing(.page)
             .presentationDetents([.large])
         }
-        .onChange(of: store.paywallSheet != nil, initial: true) { _, presented in
+        .onChange(of: scene.paywallSheet != nil, initial: true) { _, presented in
             if presented { paywallPresentationActive = true }
+            scene.writeQASurfaceMarker(onboardingComplete: runtime.preferences.onboardingComplete, hasSeenPlusIntro: runtime.plus.hasSeenIntro)
         }
-        .modifier(RecordsLifeSetupPromptModifier(
-            store: store,
-            paywallPresentationActive: paywallPresentationActive || store.showsReleaseNotes,
-            presentationActive: $lifeSetupPresentationActive
-        ))
-        .modifier(AppReviewPromptModifier(store: store, isBlocked: lifeSetupPresentationActive || store.showsReleaseNotes))
-        .fullScreenCover(isPresented: Binding(
-            get: { store.onboardingComplete && store.showsReleaseNotes },
-            set: { if !$0 { store.dismissReleaseNotes() } }
-        )) {
-            WhatsNewView(store: store)
-                .presentationBackground(.clear)
-        }
-        .task {
-            defer { isLaunching = false }
-            // First frame first. StoreKit, CloudKit, the rules bundle and
-            // notification scheduling all used to start in the same turn as
-            // `@State store = …`, which left the launch screen up for the
-            // sandbox round-trip. Two yields plus a frame of sleep so SwiftUI
-            // can commit RootView before any of that work starts.
-            await Task.yield()
-            await Task.yield()
-            try? await Task.sleep(for: .milliseconds(16))
-            LaunchTrace.endAppInit()
-            CountdownRules.warmUp()
-            guard store.onboardingComplete else { return }
-            store.plus.start()
-            _ = LaunchTrace.interval("launchReconcile") { store.reconcileCountdownSession() }
-            _ = LaunchTrace.interval("launchRecordSchedule") { store.reconcileRecordSchedule() }
-            if store.onboardingComplete, store.selectedTab == .timer {
-                store.noteTimerSurfaceVisible()
+        .sheet(item: Bindable(scene).dayEditor) { draft in
+            NavigationStack {
+                RecordDayEditView(draft: draft, actions: runtime.recordActions)
             }
-            _ = LaunchTrace.interval("launchFocusTemplate") { store.applyDefaultFocusTemplateIfNeeded() }
-            store.cloudSync.startIfEnabled()
-            await store.resumeRestoredSyncIfNeeded()
-            try? await Task.sleep(for: .milliseconds(650))
-            guard !Task.isCancelled, store.onboardingComplete else { return }
-            isLaunching = false
-            scheduleServices()
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
-        .modifier(LifeSummaryRefreshModifier(store: store, isLaunching: isLaunching))
-        .onChange(of: store.onboardingComplete) {
-            AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
-            if store.onboardingComplete {
-                store.plus.start()
-                store.cloudSync.startIfEnabled()
-                // Let Plus intro paint first. Starting the countdown and
-                // publishing the widget on this turn is why the paywall took
-                // one to three seconds to appear after the welcome page.
+        .sheet(item: Bindable(scene).timerSheet) { sheet in
+            switch sheet {
+            case .share:
+                ShareComposerView(shifts: runtime.shifts)
+                    .presentationSizing(AdaptivePresentationSizing(
+                        wide: .page, compact: .automatic,
+                        usesWideSizing: usesWideSheetSizing
+                    ))
+                    .presentationDetents(usesWideSheetSizing ? [.large] : [.fraction(0.78)])
+                    .presentationCornerRadius(26)
+                    .presentationDragIndicator(.visible)
+            case .overtime:
+                OvertimeSheet(shifts: runtime.shifts)
+                    .presentationSizing(AdaptivePresentationSizing(
+                        wide: .form, compact: .automatic,
+                        usesWideSizing: usesWideSheetSizing
+                    ))
+                    .presentationDetents(usesWideSheetSizing ? [.large] : [.medium])
+                    .presentationCornerRadius(26)
+                    .presentationDragIndicator(.visible)
+            }
+        }
+        .sheet(isPresented: Bindable(scene).presentAddFocus) {
+            FocusQuickCreateSheet(focus: runtime.focus, text: runtime.text) { _ in
                 Task { @MainActor in
                     await Task.yield()
-                    store.finishOnboardingLaunch()
-                    try? await Task.sleep(for: .milliseconds(400))
-                    guard !Task.isCancelled, store.onboardingComplete else { return }
-                    scheduleServices()
+                    guard runtime.plus.isAuthorized else { return }
+                    scene.openFocusTab()
                 }
             }
         }
-        .onChange(of: store.countdownStarted) {
-            pendingReschedule = false
-            scheduleServices()
+        .modifier(RecordsLifeSetupPromptModifier(
+            life: runtime.life, actions: runtime.recordActions, reviewPromptPresented: scene.reviewPromptPresented,
+            paywallPresentationActive: paywallPresentationActive || scene.showsReleaseNotes,
+            hasBlockingPresentation: hasRootPresentation(excludingLifeSetup: true),
+            presentationActive: $lifeSetupPresentationActive
+        ))
+        .modifier(AppReviewPromptModifier(
+            shifts: runtime.shifts, isBlocked: hasRootPresentation(excludingReview: true)
+                || lifeSetupPresentationActive || scenePhase != .active
+        ))
+        .fullScreenCover(isPresented: Binding(
+            get: { runtime.preferences.onboardingComplete && scene.showsReleaseNotes },
+            set: { if !$0 { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) } }
+        )) {
+            WhatsNewView(
+                text: runtime.text,
+                onDismiss: { scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus) },
+                onLearnAboutWatch: {
+                    scene.dismissReleaseNotes(preferences: runtime.preferences, plus: runtime.plus)
+                    scene.presentedRoute = .appleWatch
+                }
+            )
+                .presentationBackground(.clear)
         }
-        .onChange(of: store.plus.isAuthorized) { _, authorized in
-            guard authorized, store.onboardingComplete else { return }
-            if store.applyDefaultFocusTemplateIfNeeded() { scheduleServices() }
-            Task { await store.resumeRestoredSyncIfNeeded() }
+        .onChange(of: runtime.preferences.seenRelease) { _, seenRelease in
+            if seenRelease == ReleaseNotes.current { scene.showsReleaseNotes = false }
         }
-        .onChange(of: store.debugPresentationToken) {
-            pendingReschedule = false
-            scheduleServices()
+        .modifier(LifeSummaryRefreshModifier(life: runtime.life, isLaunching: runtime.services.isLaunching,
+            onboardingComplete: runtime.preferences.onboardingComplete, authorized: runtime.plus.isAuthorized))
+        .onChange(of: runtime.preferences.onboardingComplete) {
+            AppOrientationPolicy.shared.update(onboardingComplete: runtime.preferences.onboardingComplete)
+            if runtime.preferences.onboardingComplete, scene.selectedTab == .timer { runtime.shifts.noteTimerSurfaceVisible() }
         }
-        .onChange(of: store.earlyStartAtMs) { oldValue, newValue in
+        .onChange(of: runtime.session.earlyStartAtMs) { oldValue, newValue in
             if newValue != nil, newValue != oldValue { clockInCommitFeedback += 1 }
         }
-        .onChange(of: store.earlyOffAtMs) { oldValue, newValue in
+        .onChange(of: runtime.session.earlyOffAtMs) { oldValue, newValue in
             if newValue != nil, newValue != oldValue { clockOffCommitFeedback += 1 }
         }
-        .onChange(of: serviceScheduleSignal) { oldSignal, newSignal in
-            if oldSignal.focusRuntimeRevision != newSignal.focusRuntimeRevision
-                || oldSignal.focusPlanningRevision != newSignal.focusPlanningRevision {
-                // Import, CloudKit and conflict resolution can replace the
-                // active session while the app is foregrounded. This cannot
-                // wait for a later background transition: the Lock Screen and
-                // pending end notification must match the durable winner now.
-                pendingReschedule = false
-                scheduleServices()
-                return
-            }
-            // Only remember that it changed. Rescheduling touches
-            // UNUserNotificationCenter, ActivityKit and WidgetKit — cross-process
-            // work that stalls the main runloop and tears down an active text
-            // input session, which is what made the keyboard unusable after the
-            // first edit. None of it is urgent while the app is in front: local
-            // notifications only fire when it is not.
-            pendingReschedule = true
+        .modifier(FocusActivityConfirmationModifier(focus: runtime.focus))
+        .onChange(of: focusActivityCanPresent, initial: true) { _, canPresent in
+            if canPresent { scene.activateFocusActivityPresentationIfPossible(isBlocked: false) }
         }
-        .modifier(FocusActivityConfirmationModifier(store: store))
-        .onOpenURL(perform: handleOpenURL)
-        .onReceive(NotificationCenter.default.publisher(for: .owcOpenURL)) { output in
-            guard let url = output.object as? URL else { return }
-            handleOpenURL(url)
-        }
+        .onOpenURL(perform: scene.handleOpenURL)
         .onChange(of: scenePhase) {
+            reportScenePhase()
             if scenePhase == .active {
-                // Initial activation is already handled by the launch task.
-                guard !isLaunching else { return }
-                AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
-                _ = LaunchTrace.interval("launchReconcile") { store.reconcileCountdownSession() }
-                _ = LaunchTrace.interval("launchRecordSchedule") { store.reconcileRecordSchedule() }
-                _ = LaunchTrace.interval("launchFocusTemplate") { store.applyDefaultFocusTemplateIfNeeded() }
-                store.refreshSystemLanguage()
-                store.refreshSystemTimeZone()
-                Task { @MainActor in
-                    // Notification authorization can change while the user is
-                    // in Settings. Refresh the shared status and rebuild the
-                    // pending schedule as soon as the app becomes active.
-                    await notifications.refresh()
-                    guard store.onboardingComplete else { return }
-                    pendingReschedule = false
-                    scheduleServices()
-                }
-            } else if pendingReschedule {
-                pendingReschedule = false
-                scheduleServices()
+                AppOrientationPolicy.shared.update(onboardingComplete: runtime.preferences.onboardingComplete)
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
-            if store.reconcileCountdownSession() {
-                pendingReschedule = false
-                scheduleServices()
-            }
-        }
+        .onDisappear { runtime.services.sceneDisconnected(scene.id) }
         .onAppear {
-            AppOrientationPolicy.shared.update(onboardingComplete: store.onboardingComplete)
-            store.refreshSystemLanguage()
-            store.refreshSystemTimeZone()
+            AppOrientationPolicy.shared.update(onboardingComplete: runtime.preferences.onboardingComplete)
+            reportScenePhase()
             applyQAGeometryIfRequested()
-            clearDebugServicesAfterResetIfNeeded()
+            if scene.selectedTab == .timer, runtime.preferences.onboardingComplete { runtime.shifts.noteTimerSurfaceVisible() }
+#if DEBUG
+            let defaults = UserDefaults.standard
+            if runtime.preferences.onboardingComplete,
+               runtime.plus.hasSeenIntro,
+               !scene.showsReleaseNotes,
+               defaults.bool(forKey: "ios.native.qaShareComposer") {
+                defaults.removeObject(forKey: "ios.native.qaShareComposer")
+                scene.timerSheet = .share
+            }
+#endif
             // The launch arguments are applied during init, before any `didSet`
             // observer exists, so the opening surface needs saying once here.
-            store.writeQASurfaceMarker()
+            scene.writeQASurfaceMarker(onboardingComplete: runtime.preferences.onboardingComplete, hasSeenPlusIntro: runtime.plus.hasSeenIntro)
         }
-        .onChange(of: store.selectedTab) { _, tab in
-            if tab == .timer, store.onboardingComplete {
-                store.noteTimerSurfaceVisible()
+        .onChange(of: scene.selectedTab) { _, tab in
+            scene.writeQASurfaceMarker(onboardingComplete: runtime.preferences.onboardingComplete, hasSeenPlusIntro: runtime.plus.hasSeenIntro)
+            if tab == .timer, runtime.preferences.onboardingComplete {
+                runtime.shifts.noteTimerSurfaceVisible()
             }
         }
+        .environment(scene)
     }
 
     private var introPaywallTransition: AnyTransition {
@@ -252,45 +226,48 @@ struct OffWorkCountdownRootView: View {
             )
     }
 
-    private var scheduleSignature: String {
-        let scheduleFields = [
-            "\(store.startMinutes)-\(store.endMinutes)",
-            store.workdays.sorted().map(String.init).joined(separator: ","),
-            "\(store.scheduleMode.rawValue)-\(store.alternatingWeekType.rawValue)-\(store.alternatingWeekendWorkday)-\(store.alternatingReferenceWeekStartMs)",
-            "\(store.rotationWorkDays)-\(store.rotationRestDays)-\(store.rotationAnchorMs)",
-            store.languageCode,
-            // Focus tasks live in the records archive; graphical plans and
-            // templates live in their own small local value. Either changing
-            // must republish "Coming up" before iOS suspends us on Home.
-            "focus-\(store.records.revision)-\(store.focusPlanningRevision)",
-        ]
-        guard store.publishesLiveSurfaces else {
-            return (["false"] + scheduleFields).joined(separator: "|")
-        }
-        return [
-            "true",
-            scheduleFields.joined(separator: "|"),
-            "\(store.lunchEnabled)-\(store.lunchStartMinutes)-\(store.lunchDurationMinutes)",
-            store.notificationMode.rawValue,
-            "\(store.lunchStartReminderEnabled)-\(store.lunchEndReminderEnabled)-\(store.microBreakEnabled)-\(store.microBreakIntervalMinutes)",
-            "\(store.cycleEndSummaryNotificationEnabled)-\(store.plus.isAuthorized)",
-            "\(store.overtimeEndAtMs ?? 0)",
-            "\(store.earlyOffAtMs ?? 0)-\(store.earlyOffShiftEndAtMs ?? 0)",
-            "\(store.earlyStartAtMs ?? 0)",
-            store.forcedWorkdayKey ?? "",
-            "\(store.annualBonusEnabled)-\(store.annualBonusMonths)",
-            "\(store.salaryEnabled)-\(store.salaryAmount)-\(store.salaryType.rawValue)",
-            "\(store.liveActivityEnabled)-\(store.liveActivityLeadMinutes)",
-            "\(store.focusLiveActivityEnabled)-\(store.focusNotificationsEnabled)",
-        ].joined(separator: "|")
+    private var showsLandscapeTimer: Bool {
+        PhoneLandscapePresentationPolicy.shouldPresent(
+            isLandscapePhone: isLandscapePhone,
+            selectedTab: scene.selectedTab,
+            onboardingComplete: runtime.preferences.onboardingComplete,
+            hasSeenPlusIntro: runtime.plus.hasSeenIntro,
+            timerIsAtRoot: scene.timerPath.isEmpty,
+            hasBlockingPresentation: hasRootPresentation() || lifeSetupPresentationActive
+        )
     }
 
-    private var serviceScheduleSignal: ServiceScheduleSignal {
-        .init(
-            focusPlanningRevision: store.focusPlanningRevision,
-            scheduleSignature: scheduleSignature,
-            focusRuntimeRevision: store.focusRuntimeRevision
-        )
+    private var usesWideSheetSizing: Bool { horizontalSizeClass == .regular }
+
+    private var focusActivityCanPresent: Bool {
+        scene.focusActivityRequest != nil
+            && !scene.focusActivityPresentationReady
+            && !hasRootPresentation(excludingFocusActivity: true)
+    }
+
+    private func hasRootPresentation(
+        excludingLifeSetup: Bool = false, excludingFocusActivity: Bool = false, excludingReview: Bool = false
+    ) -> Bool {
+        scene.paywallSheet != nil
+            || paywallPresentationActive
+            || scene.pendingPlusAction != nil
+            || scene.dayEditor != nil
+            || scene.timerSheet != nil
+            || scene.presentAddFocus
+            || scene.showsReleaseNotes
+            || (!excludingFocusActivity && scene.hasFocusActivityPresentation)
+            || (!excludingLifeSetup && (scene.lifeSetupOfferPresented || scene.lifeSetupEditorPresented))
+            || (!excludingReview && scene.reviewPromptPresented)
+    }
+
+    private func reportScenePhase() {
+        let phase: ServiceCoordinator.Phase = switch scenePhase {
+        case .active: .active
+        case .inactive: .inactive
+        case .background: .background
+        @unknown default: .inactive
+        }
+        runtime.services.sceneChanged(scene.id, phase: phase)
     }
 
     private func applyQAGeometryIfRequested() {
@@ -310,213 +287,57 @@ struct OffWorkCountdownRootView: View {
 #endif
     }
 
-    private func clearDebugServicesAfterResetIfNeeded() {
-#if DEBUG
-        guard store.debugDidResetOnLaunch else { return }
-        WidgetSnapshotPublisher.shared.clear()
-        Task { @MainActor in
-            await notifications.clearShiftNotifications()
-            await liveActivities.endAll()
-        }
-#endif
+    private var adaptiveLayout: some View {
+        AdaptiveAppShellView(runtime: runtime)
     }
 
-    private var phoneLayout: some View {
-        // Size class, not GeometryReader. The keyboard changes the available
-        // height, which re-ran the GeometryReader body and churned the identity
-        // of the TabView and NavigationStacks underneath it — the pushed screen
-        // was rebuilt mid-edit, which is what dropped the keyboard and replayed
-        // the push animation. Size classes do not move when the keyboard does.
-        // Keep this tree mounted while the landscape timer covers the scene.
-        // Rotation must not discard a sheet's draft or change the selected tab.
-        TabView(selection: $store.selectedTab) {
-            NavigationStack(path: $store.timerPath) {
-                TimerDesignView(
-                    store: store,
-                    wide: false,
-                    onOpenSettings: openPhoneSettings
-                )
-                .navigationDestination(for: AppRoute.self) { route in
-                    AppRouteDestination(route: route, store: store)
-                }
-            }
-            .tabItem {
-                Label(store.t("timerTab"), systemImage: "timer")
-            }
-            .tag(AppTab.timer)
 
-            NavigationStack(path: $store.focusPath) {
-                FocusCanvasView(store: store)
-                    .navigationDestination(for: AppRoute.self) { route in
-                        AppRouteDestination(route: route, store: store)
-                    }
-            }
-            .tabItem {
-                Label(store.t("focusTitle"), systemImage: "stopwatch")
-            }
-            .tag(AppTab.focus)
-
-            NavigationStack(path: $store.recordsPath) {
-                RecordsDesignView(store: store)
-            }
-            .tabItem {
-                Label(store.t("recordsTab"), systemImage: "calendar")
-            }
-            .tag(AppTab.records)
-
-            NavigationStack(path: $store.settingsPath) {
-                SettingsDesignView(store: store)
-                    .navigationDestination(for: AppRoute.self) { route in
-                        AppRouteDestination(route: route, store: store)
-                    }
-            }
-            .onChange(of: store.presentedRoute) { _, route in
-                guard let route else { return }
-                if route == .focus || route == .focusPlan {
-                    store.openFocusTab()
-                    return
-                }
-                if store.selectedTab == .focus {
-                    store.focusPath.append(route)
-                } else {
-                    store.settingsPath.append(route)
-                }
-                store.presentedRoute = nil
-            }
-            .tabItem {
-                Label(store.t("settings"), systemImage: "slider.horizontal.3")
-            }
-            .tag(AppTab.settings)
-        }
-        .background(OWCDesign.page)
-    }
-
-    private var tabletLayout: some View {
-        TabletShellView(store: store)
-    }
-
-    private func openPhoneSettings(_ route: AppRoute?) {
-        store.presentedRoute = nil
-        if let route {
-            withAnimation(tabAnimation) {
-                store.timerPath = [route]
-                store.selectedTab = .timer
-            }
-        } else {
-            store.settingsPath.removeAll()
-            withAnimation(tabAnimation) {
-                store.selectedTab = .settings
-            }
-        }
-    }
-
-    private var tabAnimation: Animation {
-        reduceMotion ? OWCMotion.reduced : OWCMotion.navigation
-    }
-
-    private func handleOpenURL(_ url: URL) {
-        guard url.scheme == "offworkcountdown" else { return }
-        if url.host == "timer" {
-            store.settingsPath.removeAll()
-            store.timerPath.removeAll()
-            store.selectedTab = .timer
-            store.presentedRoute = nil
-            return
-        }
-        guard let route = AppRoute(rawValue: url.host ?? "") else { return }
-        if route == .focus || route == .focusPlan {
-            let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
-            if let action = items.first(where: { $0.name == "action" })?.value.flatMap(FocusActivityRequest.Action.init(rawValue:)),
-               let start = items.first(where: { $0.name == "start" })?.value.flatMap(Int64.init) {
-                store.requestFocusActivityConfirmation(action, startAtMs: start)
-                return
-            }
-            store.openFocusTab()
-            return
-        }
-        store.settingsPath.removeAll()
-        store.selectedTab = .settings
-        store.presentedRoute = route
-    }
-
-    private func scheduleServices() {
-        // Reconciliation can change observed flags during launch; the launch
-        // task publishes their settled state once, after those changes finish.
-        guard !isLaunching else { return }
-        serviceTask?.cancel()
-        guard store.onboardingComplete else { return }
-        serviceTask = Task { @MainActor in
-            // Write the widget first. Notification and Live Activity work can
-            // take long enough that a replacement task cancels us before the
-            // snapshot lands — debug captures were losing that race, so the
-            // Home Screen kept the real-clock rest-day snapshot.
-            _ = LaunchTrace.interval("launchFocusSchedule") { store.refreshScheduledFocus() }
-            await LaunchTrace.interval("widgetPublish") { await WidgetSnapshotPublisher.shared.publish(store: store) }
-            guard !Task.isCancelled else { return }
-            // Foreground edits are coalesced by `pendingReschedule`. Once the
-            // app is leaving the foreground there must be no additional sleep:
-            // iOS may suspend the process before a delayed task gets to rebuild
-            // notifications, Live Activities and the widget timeline.
-            if !store.publishesLiveSurfaces {
-                await notifications.clearShiftNotifications()
-            } else {
-                await LaunchTrace.interval("shiftNotifications") { await notifications.reschedule(store: store) }
-            }
-            // A focus phase's own alerts are composed once, when it starts,
-            // because a suspended phone cannot compose them when they fire.
-            // Every later edit to the plan therefore has to rewrite them, and
-            // this is where that belongs: `pendingReschedule` has already
-            // coalesced the edits, so it does not touch the notification
-            // centre on every keystroke.
-            guard !Task.isCancelled else { return }
-            await LaunchTrace.interval("focusNotifications") { await store.refreshFocusNotifications() }
-            // The app owns one Live Activity slot. Work uses it only inside
-            // its configured display window; otherwise an active focus or
-            // break session may keep it. Ending everything merely because the
-            // shift countdown is not publishing erased that focus activity.
-            guard !Task.isCancelled else { return }
-            await LaunchTrace.interval("liveActivities") { await liveActivities.reschedule(store: store) }
-        }
-    }
 
 }
 
+private struct AdaptivePresentationSizing<Wide: PresentationSizing, Compact: PresentationSizing>: PresentationSizing {
+    let wide: Wide
+    let compact: Compact
+    let usesWideSizing: Bool
+
+    func proposedSize(for root: PresentationSizingRoot, context: PresentationSizingContext) -> ProposedViewSize {
+        usesWideSizing
+            ? wide.proposedSize(for: root, context: context)
+            : compact.proposedSize(for: root, context: context)
+    }
+}
+
 private struct AppReviewPromptModifier: ViewModifier {
-    @Bindable var store: OffWorkStore
+    let shifts: ShiftSessionStore
     let isBlocked: Bool
+    @Environment(SceneState.self) private var scene
     @Environment(\.requestReview) private var requestReview
 
     func body(content: Content) -> some View {
         content
-        .alert(store.t("reviewPromptTitle"), isPresented: $store.reviewPromptPresented) {
-            Button(store.t("reviewPromptRateNow")) {
-                store.acceptReviewPrompt()
+        .alert(shifts.text.t("reviewPromptTitle"), isPresented: Bindable(scene).reviewPromptPresented) {
+            Button(shifts.text.t("reviewPromptRateNow")) {
+                shifts.acceptReviewPrompt()
                 requestReview()
             }
-            Button(store.t("reviewPromptLater"), role: .cancel) {
-                store.deferReviewPrompt()
+            Button(shifts.text.t("reviewPromptLater"), role: .cancel) {
+                shifts.deferReviewPrompt()
             }
-            Button(store.t("reviewPromptNever"), role: .destructive) {
-                store.disableAutomaticReviewPrompt()
+            Button(shifts.text.t("reviewPromptNever"), role: .destructive) {
+                shifts.disableAutomaticReviewPrompt()
             }
         } message: {
-            Text(store.t("reviewPromptBody"))
+            Text(shifts.text.t("reviewPromptBody"))
         }
         .task(id: presentationGate) {
             guard presentationGate else { return }
             try? await Task.sleep(for: .milliseconds(650))
             guard !Task.isCancelled, presentationGate else { return }
-            store.presentReviewPromptIfEligible()
+            scene.presentReviewPromptIfEligible(using: shifts, isBlocked: !presentationGate)
         }
     }
 
     private var presentationGate: Bool {
-        store.onboardingComplete && store.plus.hasSeenIntro && !isBlocked
+        shifts.preferences.onboardingComplete && shifts.plus.hasSeenIntro && !isBlocked
     }
-}
-
-private struct ServiceScheduleSignal: Equatable {
-    let focusPlanningRevision: UInt64
-    var scheduleSignature: String
-    var focusRuntimeRevision: UInt64
 }

@@ -38,6 +38,11 @@ enum PlusAuthorization: Equatable, Sendable {
     case pendingAskToBuy
 }
 
+struct PlusWatchEvidence: Equatable, Sendable {
+    let authorization: PlusAuthorization?
+    let verifiedAt: Date?
+}
+
 nonisolated struct PlusLifetimeEvidence: Equatable, Sendable {
     var revoked: Bool
 }
@@ -194,7 +199,7 @@ enum PlusEntitlementDecision {
 
 enum PlusPendingAction: Equatable, Sendable {
     case historyEdit(dayKey: String)
-    case startFocus(taskID: UUID)
+    case startFocus(taskID: UUID, pomodoros: Int? = nil)
     case addFocusTask(title: String, pomodoros: Int, icon: FocusTaskIcon, isFavorite: Bool)
     /// Carries the landing, not a timestamp. A task picked up after a purchase
     /// used to lose the slot it was headed for and arrive as a loose task.
@@ -257,6 +262,7 @@ final class PlusEntitlement {
         static let productsEverRequested = "ios.native.plusProductsRequested"
 #if DEBUG
         static let debugAuthorized = "ios.native.debugPlusAuthorized"
+        static let debugWatchEntitlement = "ios.native.debugWatchEntitlement"
 #endif
     }
 
@@ -276,7 +282,7 @@ final class PlusEntitlement {
     }
 
     private let defaults: UserDefaults
-    /// Supplied by `OffWorkStore`, which owns the language choice. StoreKit's
+    /// Supplied by the app assembly from committed preferences. StoreKit's
     /// own failures already arrive as display strings, so the one message this
     /// layer writes itself has to be a display string too.
     var localize: (String) -> String = { $0 }
@@ -288,6 +294,19 @@ final class PlusEntitlement {
     private var refreshGeneration: UInt64 = 0
     private let fetchEvidence: () async -> StoreKitEvidence
     private var cachedSnapshot = PlusEntitlementSnapshot(askToBuyPendingSince: nil)
+    private var watchVerifiedAt: Date?
+
+    var watchEvidence: PlusWatchEvidence {
+        let projected: PlusAuthorization?
+        if watchVerifiedAt == nil {
+            projected = nil
+        } else if case .pendingAskToBuy = authorization, !cachedSnapshot.askToBuyPending(now: .now) {
+            projected = .unauthorized
+        } else {
+            projected = authorization
+        }
+        return PlusWatchEvidence(authorization: projected, verifiedAt: watchVerifiedAt)
+    }
 
     var isAuthorized: Bool {
         if case .authorized = authorization { return true }
@@ -335,14 +354,46 @@ final class PlusEntitlement {
         if let data = defaults.data(forKey: Key.cachedSnapshot),
            let cached = try? JSONDecoder().decode(CodableSnapshot.self, from: data) {
             cachedSnapshot = cached.snapshot
+            watchVerifiedAt = cached.verifiedAt
         }
         authorization = PlusEntitlementDecision.offlineAccess(now: .now, cached: cachedSnapshot)
 #if DEBUG
         if defaults.bool(forKey: Key.debugAuthorized) {
             authorization = .authorized(.lifetime)
         }
+        _ = applyDebugWatchEntitlement()
 #endif
     }
+
+#if DEBUG
+    /// Paired-simulator verification only. A simulator app launched outside
+    /// Xcode has no StoreKit subscriptions, so an active, grace, expired or
+    /// never-verified state cannot otherwise reach the Watch publisher.
+    private func applyDebugWatchEntitlement() -> Bool {
+        guard let value = defaults.string(forKey: Key.debugWatchEntitlement) else { return false }
+        let now = Date.now
+        switch value {
+        case "free", "expired":
+            authorization = .unauthorized
+            watchVerifiedAt = now
+        case "active":
+            authorization = .authorized(.subscribed(expiresAt: now.addingTimeInterval(30 * 86_400)))
+            watchVerifiedAt = now
+        case "grace":
+            authorization = .authorized(.inGracePeriod(graceExpiresAt: now.addingTimeInterval(3 * 86_400)))
+            watchVerifiedAt = now
+        case "lifetime":
+            authorization = .authorized(.lifetime)
+            watchVerifiedAt = now
+        case "unknown":
+            authorization = .unauthorized
+            watchVerifiedAt = nil
+        default:
+            return false
+        }
+        return true
+    }
+#endif
 
     func start() {
         guard updatesTask == nil, statusTask == nil else { return }
@@ -391,6 +442,7 @@ final class PlusEntitlement {
     /// Called when the paywall appears, so the three plans are on screen
     /// instead of hiding behind a second tap.
     func loadProducts() async {
+        guard !isBusy else { return }
         isLoadingProducts = true
         lastProductError = nil
         defaults.set(true, forKey: Key.productsEverRequested)
@@ -409,11 +461,20 @@ final class PlusEntitlement {
     }
 
     func purchase(_ product: Product) async {
+        await purchase { try await product.purchase() }
+    }
+
+    /// Internal operation seam keeps cross-scene admission testable without
+    /// manufacturing a StoreKit Product.
+    func purchase(
+        operation: @escaping () async throws -> Product.PurchaseResult
+    ) async {
+        guard !isBusy else { return }
         purchaseInFlight = true
         lastProductError = nil
         defer { purchaseInFlight = false }
         do {
-            let result = try await product.purchase()
+            let result = try await operation()
             switch result {
             case .success(let verification):
                 // Not `try?`: the App Store took the money and handed back a
@@ -434,7 +495,8 @@ final class PlusEntitlement {
                 var pending = cachedSnapshot
                 pending.askToBuyPendingSince = .now
                 cachedSnapshot = pending
-                if let data = try? JSONEncoder().encode(CodableSnapshot(snapshot: pending)) {
+                watchVerifiedAt = .now
+                if let data = try? JSONEncoder().encode(CodableSnapshot(snapshot: pending, verifiedAt: watchVerifiedAt)) {
                     defaults.set(data, forKey: Key.cachedSnapshot)
                 }
                 authorization = PlusEntitlementDecision.resolve(now: .now, snapshot: pending)
@@ -449,11 +511,16 @@ final class PlusEntitlement {
     }
 
     func restore() async {
+        await restore { try await AppStore.sync() }
+    }
+
+    func restore(operation: @escaping () async throws -> Void) async {
+        guard !isBusy else { return }
         restoreInFlight = true
         defer { restoreInFlight = false }
         lastProductError = nil
         do {
-            try await AppStore.sync()
+            try await operation()
             await refreshFromStore()
         } catch {
             lastProductError = error.localizedDescription
@@ -493,6 +560,7 @@ final class PlusEntitlement {
 #if DEBUG
     func debugSetAuthorized(_ granted: Bool) {
         defaults.set(granted, forKey: Key.debugAuthorized)
+        watchVerifiedAt = .now
         if granted {
             authorization = .authorized(.lifetime)
         } else {
@@ -548,11 +616,13 @@ final class PlusEntitlement {
         }
         if applied.persist {
             cachedSnapshot = applied.snapshot
-            if let data = try? JSONEncoder().encode(CodableSnapshot(snapshot: applied.snapshot)) {
+            watchVerifiedAt = .now
+            if let data = try? JSONEncoder().encode(CodableSnapshot(snapshot: applied.snapshot, verifiedAt: watchVerifiedAt)) {
                 defaults.set(data, forKey: Key.cachedSnapshot)
             }
         }
 #if DEBUG
+        if applyDebugWatchEntitlement() { return }
         if defaults.bool(forKey: Key.debugAuthorized) {
             authorization = .authorized(.lifetime)
             return
@@ -755,6 +825,9 @@ private struct CodableSnapshot: Codable {
     /// still open; it is re-encoded as a date.
     var askToBuyPending: Bool
     var askToBuyPendingSinceMs: Double?
+    var verifiedAtMs: Double?
+
+    var verifiedAt: Date? { verifiedAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) } }
 
     var snapshot: PlusEntitlementSnapshot {
         var lifetime: PlusLifetimeEvidence?
@@ -791,12 +864,13 @@ private struct CodableSnapshot: Codable {
         )
     }
 
-    init(snapshot: PlusEntitlementSnapshot) {
+    init(snapshot: PlusEntitlementSnapshot, verifiedAt: Date? = nil) {
         hasLifetime = snapshot.lifetime != nil
         lifetimeRevoked = snapshot.lifetime?.revoked
         askToBuyPending = false
         askToBuyPendingSinceMs = snapshot.askToBuyPendingSince
             .map { $0.timeIntervalSince1970 * 1_000 }
+        verifiedAtMs = verifiedAt.map { $0.timeIntervalSince1970 * 1_000 }
         isTrial = snapshot.subscription?.isTrial ?? false
         expirationMs = snapshot.subscription?.expirationDate.map { $0.timeIntervalSince1970 * 1_000 }
         graceMs = snapshot.subscription?.gracePeriodExpirationDate.map { $0.timeIntervalSince1970 * 1_000 }

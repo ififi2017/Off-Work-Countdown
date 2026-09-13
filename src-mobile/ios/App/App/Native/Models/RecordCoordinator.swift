@@ -36,11 +36,63 @@ enum RecordsArchiveBanner: Equatable {
     }
 }
 
+private struct RecordChangeDomains: OptionSet {
+    let rawValue: Int
+    static let history = Self(rawValue: 1 << 0)
+    static let focus = Self(rawValue: 1 << 1)
+    static let life = Self(rawValue: 1 << 2)
+    static let preferences = Self(rawValue: 1 << 3)
+    static let sync = Self(rawValue: 1 << 4)
+    static let all: Self = [.history, .focus, .life, .preferences, .sync]
+
+    init(rawValue: Int) { self.rawValue = rawValue }
+
+    init(_ type: RecordEntityType) {
+        switch type {
+        case .careerPeriod, .scheduleSnapshot, .calendarException, .dayOverride, .workObservation:
+            self = .history
+        case .focusTask, .focusSession, .focusPlanningConfiguration:
+            self = .focus
+        case .lifeProfile:
+            self = .life
+        case .syncedPreferences:
+            self = .preferences
+        }
+    }
+}
+
+enum RemoteRecordChange: Sendable {
+    case eraseRevocation(type: RecordEntityType, key: String)
+    case erase(
+        type: RecordEntityType, key: String, erasedEditCount: Int?,
+        systemFields: Data?, generation: Int
+    )
+    case payload(
+        type: RecordEntityType, key: String, payload: Data,
+        editCount: Int, editTieBreaker: String, systemFields: Data?, generation: Int
+    )
+}
+
+enum HigherFenceAdmission: Sendable {
+    case adopted
+    case needsLocalReview
+    case failed
+}
+
 /// Serializes every records write. The archive is a local JSON file in
 /// Application Support — not the App Group, and not SwiftData yet.
 @MainActor
 @Observable
 final class RecordCoordinator {
+    @ObservationIgnored private let commands = RecordCommandQueue()
+
+    @discardableResult
+    func submitCommand<Value: Sendable>(
+        _ work: @escaping @MainActor () -> Value
+    ) -> RecordCommand<Value> {
+        commands.submit(work)
+    }
+
     private(set) var state = RecordState()
     /// A damaged archive is never treated as an empty first launch. Once set
     /// to `.invalidArchive` or `.unreadableArchive`, writes are blocked until
@@ -50,6 +102,14 @@ final class RecordCoordinator {
     /// walk of the whole archive, which is what made switching to the Records
     /// tab hitch even when the list was empty.
     private(set) var revision: UInt64 = 0
+    /// Derived surfaces do not consume CloudKit bookkeeping or appearance.
+    private(set) var contentRevision: UInt64 = 0
+    private(set) var projectionRevision: UInt64 = 0
+    private(set) var historyRevision: UInt64 = 0
+    private(set) var focusRevision: UInt64 = 0
+    private(set) var lifeRevision: UInt64 = 0
+    private(set) var durableRevision: UInt64 = 0
+    private(set) var isSaving = false
     var archiveBanner: RecordsArchiveBanner? { RecordsArchiveBanner(error: persistenceError) }
     var blocksWrites: Bool {
         persistenceError == .invalidArchive || persistenceError == .unreadableArchive
@@ -57,7 +117,26 @@ final class RecordCoordinator {
     @ObservationIgnored private var writeBatchDepth = 0
     @ObservationIgnored private var hasPendingWrite = false
     @ObservationIgnored private var hasPendingDirtyNotification = false
+    @ObservationIgnored private var hasPendingRemoteReconciliation = false
+    @ObservationIgnored private var pendingBatchChanges: RecordChangeDomains = []
+    @ObservationIgnored private var pendingRemoteChanges: RecordChangeDomains = []
+    /// Revisions publish once per batch. Queries made by the remaining edits
+    /// must nevertheless read the rows already changed inside that batch.
+    var hasUncommittedHistoryChanges: Bool {
+        pendingBatchChanges.contains(.history) || pendingRemoteChanges.contains(.history)
+    }
+    var hasUncommittedLifeChanges: Bool {
+        pendingBatchChanges.contains(.life) || pendingRemoteChanges.contains(.life)
+    }
+    var hasUncommittedProjectionChanges: Bool {
+        hasUncommittedHistoryChanges || hasUncommittedLifeChanges
+    }
+    @ObservationIgnored private var archiveWrite: Task<Bool, Never>?
+    @ObservationIgnored private var archiveWriteSequence: UInt64 = 0
     private let fileURL: URL?
+    @ObservationIgnored private let prepareArchive: @Sendable (RecordState, URL) async throws -> URL
+    @ObservationIgnored private let publishArchive: @Sendable (URL, URL) async throws -> Void
+    @ObservationIgnored private(set) var archiveWriteCount = 0
     var lifeSummaryCacheURL: URL? { fileURL?.deletingLastPathComponent().appending(path: "life-summary-cache.json") }
     var captureEnabled = true
     /// CKSyncEngine must hear about every dirty row, not only the first enable.
@@ -74,32 +153,51 @@ final class RecordCoordinator {
         RecordCoordinator(fileURL: nil)
     }
 
-    static func persisted() -> RecordCoordinator {
-        let root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    nonisolated static var persistedArchiveURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appending(path: "owc-records", directoryHint: .isDirectory)
-        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-        return RecordCoordinator(fileURL: root.appending(path: "archive.json"))
+            .appending(path: "archive.json")
     }
 
-    init(fileURL: URL?) {
+    static func persisted() -> RecordCoordinator {
+        let root = persistedArchiveURL.deletingLastPathComponent()
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        return RecordCoordinator(fileURL: persistedArchiveURL)
+    }
+
+    init(
+        fileURL: URL?,
+        prepareArchive: @escaping @Sendable (RecordState, URL) async throws -> URL = RecordArchive.prepare,
+        publishArchive: @escaping @Sendable (URL, URL) async throws -> Void = RecordArchive.publishPrepared,
+        loadedArchive: RecordArchiveLoadResult? = nil
+    ) {
         self.fileURL = fileURL
-        if fileURL != nil { load() }
+        self.prepareArchive = prepareArchive
+        self.publishArchive = publishArchive
+        if let loadedArchive {
+            applyLoadedArchive(loadedArchive)
+        } else if let fileURL {
+            applyLoadedArchive(RecordArchive.loadSynchronously(from: fileURL))
+        }
     }
 
     /// Restore candidates are built away from the live store. Validate and
     /// persist once, then notify observers only after the entire download.
-    func commitRestoredState(_ candidate: RecordState) throws {
-        guard !blocksWrites else { throw persistenceError ?? RecordPersistenceError.invalidArchive }
-        let zone = TimeZone(identifier: candidate.syncedPreferences?.recordsTimeZoneIdentifier ?? "UTC") ?? .gmt
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = zone
-        let data = try RecordJSON.export(candidate, exportedAt: .now, timeZone: zone, calendar: calendar)
-        _ = try RecordJSON.decode(data)
-        try writeArchive(candidate)
-        state = candidate
-        revision &+= 1
-        persistenceError = nil
-        onExternalStateApplied?()
+    func commitRestoredState(_ candidate: RecordState) async throws {
+        try await commitRestoredState { _ in (candidate, ()) }
+    }
+
+    func commitRestoredState<Result: Sendable>(
+        _ build: @escaping @MainActor (RecordState) throws -> (candidate: RecordState, result: Result)
+    ) async throws -> Result {
+        try await replaceAfterPendingWrites { [self] in
+            guard !blocksWrites else { throw persistenceError ?? RecordPersistenceError.invalidArchive }
+            let built = try build(state)
+            try await commitCandidate(built.candidate) { [self] in
+                onExternalStateApplied?()
+            }
+            return built.result
+        }
     }
 
     static func restoreCandidate(from state: RecordState) -> RecordCoordinator {
@@ -109,34 +207,57 @@ final class RecordCoordinator {
     }
 
     @discardableResult
-    func deleteAllLocalData() -> Bool {
-        guard !blocksWrites else { return false }
-        let next = RecordState()
+    func deleteAllLocalData() async -> Bool {
         do {
-            try writeArchive(next)
-            state = next
-            revision &+= 1
-            persistenceError = nil
-            onExternalStateApplied?()
-            return true
+            return try await replaceAfterPendingWrites { [self] in
+                guard !blocksWrites else { return false }
+                let next = RecordState()
+                do {
+                    try await commitCandidate(next, changes: .all) { [self] in
+                        onExternalStateApplied?()
+                    }
+                    return true
+                } catch {
+                    return false
+                }
+            }
         } catch {
-            persistenceError = .writeFailed
             return false
         }
     }
 
-    func discardForHigherFence(_ fence: Int) -> Bool {
-        var next = state
-        guard RecordsSyncOutbox.discardLocalArchive(&next, fence: fence) else { return false }
+    func discardForHigherFence(_ fence: Int) async -> Bool {
         do {
-            try writeArchive(next)
-            state = next
-            revision &+= 1
-            persistenceError = nil
-            return true
+            return try await replaceAfterPendingWrites { [self] in
+                var next = state
+                guard RecordsSyncOutbox.discardLocalArchive(&next, fence: fence) else { return false }
+                do {
+                    try await commitCandidate(next, changes: .all)
+                    return true
+                } catch {
+                    return false
+                }
+            }
         } catch {
-            persistenceError = .writeFailed
             return false
+        }
+    }
+
+    func adoptHigherFenceIfSafe(_ fence: Int) async -> HigherFenceAdmission {
+        do {
+            return try await replaceAfterPendingWrites { [self] in
+                guard !state.hasUnsyncedLocalWork else { return .needsLocalReview }
+                var next = state
+                guard RecordsSyncOutbox.discardLocalArchive(&next, fence: fence) else { return .failed }
+                do {
+                    try await commitCandidate(next, changes: .all)
+                    return .adopted
+                } catch {
+                    return .failed
+                }
+            }
+        } catch {
+            return .failed
         }
     }
 
@@ -144,23 +265,22 @@ final class RecordCoordinator {
     /// This does not restore old rows. `.writeFailed` is a no-op — it must not
     /// enter the quarantine path.
     @discardableResult
-    func quarantineCorruptedArchive(at date: Date = .now) throws -> URL? {
-        guard blocksWrites else { return nil }
-        var backupURL: URL?
-        if let fileURL, FileManager.default.fileExists(atPath: fileURL.path) {
-            let backup = Self.corruptBackupURL(for: fileURL, at: date)
-            do {
-                try FileManager.default.moveItem(at: fileURL, to: backup)
-                backupURL = backup
-            } catch {
-                throw RecordPersistenceError.writeFailed
+    func quarantineCorruptedArchive(at date: Date = .now) async throws -> URL? {
+        return try await replaceAfterPendingWrites { [self] in
+            guard blocksWrites else { return nil }
+            var backupURL: URL?
+            if let fileURL {
+                let backup = Self.corruptBackupURL(for: fileURL, at: date)
+                do {
+                    backupURL = try await RecordArchive.quarantineFile(at: fileURL, backupURL: backup)
+                } catch {
+                    throw RecordPersistenceError.writeFailed
+                }
             }
+            persistenceError = nil
+            try await commitCandidate(RecordState())
+            return backupURL
         }
-        state = RecordState()
-        persistenceError = nil
-        persist()
-        if let persistenceError { throw persistenceError }
-        return backupURL
     }
 
     static func corruptBackupURL(for fileURL: URL, at date: Date = .now) -> URL {
@@ -171,50 +291,53 @@ final class RecordCoordinator {
     }
 
     func erase(_ type: RecordEntityType, key: String, at date: Date = .now) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         state.erase(type, key: key, at: date)
-        RecordsSyncOutbox.markDirty(
-            &state.sync,
-            type: type,
+        markDirty(
+            type,
             key: key,
             editCount: 0,
-            editTieBreaker: UUID(),
+            tie: UUID(),
             erase: true
         )
-        persist()
+        persist(changes: RecordChangeDomains(type))
     }
 
     func exportJSON(
         exportedAt: Date = .now,
         timeZone: TimeZone = .current,
         includeLifeProfile: Bool = true
-    ) throws -> Data {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
+    ) async throws -> Data {
+        try await flush()
         var archive = state
         if !includeLifeProfile { archive.lifeProfile = nil }
-        return try RecordJSON.export(archive, exportedAt: exportedAt, timeZone: timeZone, calendar: calendar)
+        return try await RecordArchive.exportBackup(archive, exportedAt: exportedAt, timeZone: timeZone)
     }
 
-    func `import`(_ data: Data, mode: RecordImportMode = .skipErased) throws -> RecordImportReport {
-        if let persistenceError, blocksWrites { throw persistenceError }
-        let document = try RecordJSON.decode(data)
-        var candidate = state
-        let report = try RecordJSON.apply(document, to: &candidate, mode: mode)
-        RecordsSyncOutbox.markAdopted(&candidate.sync, report: report, state: candidate)
-        parkUnresolvedImportConflicts(into: &candidate, report.conflicts)
-        do {
-            try writeArchive(candidate)
-            state = candidate
-            revision &+= 1
-            persistenceError = nil
-            onExternalStateApplied?()
-            if !report.adopted.isEmpty { onDirty?() }
-        } catch {
-            persistenceError = .writeFailed
-            throw RecordPersistenceError.writeFailed
+    func `import`(_ data: Data, mode: RecordImportMode = .skipErased) async throws -> RecordImportReport {
+        return try await replaceAfterPendingWrites { [self] in
+            if let persistenceError, blocksWrites { throw persistenceError }
+            let expectedRevision = revision
+            let expectedSequence = archiveWriteSequence
+            let prepared = try await RecordArchive.prepareImport(data, into: state, mode: mode)
+            guard revision == expectedRevision, archiveWriteSequence == expectedSequence else {
+                throw RecordPersistenceError.writeFailed
+            }
+            var candidate = prepared.state
+            let report = prepared.report
+            RecordsSyncOutbox.markAdopted(&candidate.sync, report: report, state: candidate)
+            parkUnresolvedImportConflicts(into: &candidate, report.conflicts)
+            do {
+                try await commitCandidate(candidate, changes: .all) { [self] in
+                    onExternalStateApplied?()
+                    if !report.adopted.isEmpty { notifyDirtyWhenDurable() }
+                }
+            } catch {
+                throw RecordPersistenceError.writeFailed
+            }
+            return report
         }
-        return report
     }
 
     func ensureSeeded(
@@ -222,6 +345,7 @@ final class RecordCoordinator {
         at date: Date,
         timeZone: TimeZone = .current
     ) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         if !state.periods.isEmpty { return }
         LaunchTrace.interval("recordsSeed") {
@@ -255,7 +379,7 @@ final class RecordCoordinator {
         state.periods.append(period)
         appendSnapshot(hours, periodID: period.id, effectiveFrom: startsOn, at: date)
         markDirty(.careerPeriod, key: period.id.uuidString, editCount: period.editCount, tie: period.editTieBreaker)
-        persist()
+        persist(changes: .history)
     }
 
     @discardableResult
@@ -265,6 +389,7 @@ final class RecordCoordinator {
         at date: Date,
         timeZone: TimeZone = .current
     ) -> Bool {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return false }
         ensureSeeded(hours: hours, at: date, timeZone: timeZone)
         return commitHoursToExistingPeriod(hours, effectiveFrom: effectiveFrom, at: date)
@@ -281,6 +406,7 @@ final class RecordCoordinator {
         effectiveFrom: Date,
         at date: Date
     ) -> Bool {
+        preconditionRawWriteAdmission()
         guard !blocksWrites, !state.periods.isEmpty else { return false }
         return commitHoursToExistingPeriod(hours, effectiveFrom: effectiveFrom, at: date)
     }
@@ -305,12 +431,16 @@ final class RecordCoordinator {
             effectiveFrom: effectiveFrom,
             at: date
         )
-        persist()
+        persist(changes: .history)
         return persistenceError == nil
     }
 
-    func upsertOverride(_ draft: DayOverride, at date: Date = .now, persist persistAfter: Bool = true) {
+    func upsertOverride(_ draft: DayOverride, at date: Date = .now) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
+        if !state.isErased(.dayOverride, key: draft.dayKey),
+           let current = state.overrides.first(where: { $0.dayKey == draft.dayKey }),
+           RecordIncomingValue.override(current).hasSameBusinessContent(as: .override(draft)) { return }
         let revokedErase = state.clearErased(.dayOverride, key: draft.dayKey)
         if let index = state.overrides.firstIndex(where: { $0.dayKey == draft.dayKey }) {
             var next = draft
@@ -336,11 +466,15 @@ final class RecordCoordinator {
                 revokeErase: revokedErase != nil
             )
         }
-        if persistAfter { persist() }
+        persist(changes: .history)
     }
 
-    func upsertException(_ draft: CalendarException, at date: Date = .now, persist persistAfter: Bool = true) {
+    func upsertException(_ draft: CalendarException, at date: Date = .now) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
+        if !state.isErased(.calendarException, key: draft.dayKey),
+           let current = state.exceptions.first(where: { $0.dayKey == draft.dayKey }),
+           RecordIncomingValue.exception(current).hasSameBusinessContent(as: .exception(draft)) { return }
         let revokedErase = state.clearErased(.calendarException, key: draft.dayKey)
         if let index = state.exceptions.firstIndex(where: { $0.dayKey == draft.dayKey }) {
             var next = draft
@@ -366,14 +500,17 @@ final class RecordCoordinator {
                 revokeErase: revokedErase != nil
             )
         }
-        if persistAfter { persist() }
+        persist(changes: .history)
     }
 
     func updateLifeProfile(_ profile: LifeProfile) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         var next = profile
         next.migrateLegacyFields(calendar: defaultCalendar(timeZone: TimeZone(identifier: state.periods.first?.timeZoneIdentifier ?? "") ?? .current))
         if let current = state.lifeProfile {
+            guard !RecordIncomingValue.lifeProfile(current)
+                .hasSameBusinessContent(as: .lifeProfile(next)) else { return }
             next.editCount = current.editCount + 1
         } else {
             next.editCount = max(next.editCount, 0) + 1
@@ -382,13 +519,16 @@ final class RecordCoordinator {
         next.editedAt = .now
         state.lifeProfile = next
         markDirty(.lifeProfile, key: LifeProfile.profileID.uuidString, editCount: next.editCount, tie: next.editTieBreaker)
-        persist()
+        persist(changes: .life)
     }
 
     func upsertFocusTask(_ draft: FocusTask, at date: Date = .now) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         var next = draft
         if let index = state.focusTasks.firstIndex(where: { $0.id == draft.id }) {
+            guard !RecordIncomingValue.focusTask(state.focusTasks[index])
+                .hasSameBusinessContent(as: .focusTask(draft)) else { return }
             next.editCount = state.focusTasks[index].editCount + 1
             next.editTieBreaker = UUID()
             next.editedAt = date
@@ -400,13 +540,16 @@ final class RecordCoordinator {
             state.focusTasks.append(next)
         }
         markDirty(.focusTask, key: next.id.uuidString, editCount: next.editCount, tie: next.editTieBreaker)
-        persist()
+        persist(changes: .focus)
     }
 
     func upsertFocusSession(_ draft: FocusSession, at date: Date = .now) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         var next = draft
         if let index = state.focusSessions.firstIndex(where: { $0.id == draft.id }) {
+            guard !RecordIncomingValue.focusSession(state.focusSessions[index])
+                .hasSameBusinessContent(as: .focusSession(draft)) else { return }
             next.editCount = state.focusSessions[index].editCount + 1
             next.editTieBreaker = UUID()
             next.editedAt = date
@@ -418,16 +561,19 @@ final class RecordCoordinator {
             state.focusSessions.append(next)
         }
         markDirty(.focusSession, key: next.id.uuidString, editCount: next.editCount, tie: next.editTieBreaker)
-        persist()
+        persist(changes: .focus)
     }
 
     func upsertFocusPlanningConfiguration(
         _ draft: FocusPlanningConfiguration,
         at date: Date = .now
     ) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         var next = draft
         if let current = state.focusPlanningConfiguration {
+            guard !RecordIncomingValue.focusPlanningConfiguration(current)
+                .hasSameBusinessContent(as: .focusPlanningConfiguration(next)) else { return }
             next.editCount = current.editCount + 1
         } else {
             next.editCount = max(next.editCount, 0) + 1
@@ -441,11 +587,13 @@ final class RecordCoordinator {
             editCount: next.editCount,
             tie: next.editTieBreaker
         )
-        persist()
+        persist(changes: .focus)
     }
 
     func upsertSyncedPreferences(_ draft: SyncedPreferences, at date: Date = .now) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites, draft.isValid else { return }
+        guard state.syncedPreferences?.hasSameSettings(as: draft) != true else { return }
         var next = draft
         next.editCount = (state.syncedPreferences?.editCount ?? max(next.editCount, 0)) + 1
         next.editTieBreaker = UUID()
@@ -457,91 +605,121 @@ final class RecordCoordinator {
             editCount: next.editCount,
             tie: next.editTieBreaker
         )
-        persist()
+        persist(changes: .preferences)
     }
 
     @discardableResult
-    func replaceSyncState(_ sync: SyncLocalState) -> Bool {
-        guard !blocksWrites else { return false }
-        var next = state
-        next.sync = sync
+    func commitSyncState(
+        _ update: @escaping @MainActor (inout SyncLocalState, RecordState) -> Void
+    ) async -> Bool {
         do {
-            try writeArchive(next)
-            state = next
-            revision &+= 1
-            persistenceError = nil
-            return true
+            return try await replaceAfterPendingWrites { [self] in
+                guard !blocksWrites else { return false }
+                do {
+                    let previous = state.sync
+                    var sync = previous
+                    update(&sync, state)
+                    if sync.accountID != state.sync.accountID
+                        || sync.generation != state.sync.generation
+                        || sync.syncEnabled != state.sync.syncEnabled
+                        || sync.deletingCloud != state.sync.deletingCloud {
+                        // A failed account/permission/fence transition must retain
+                        // the previous relationship, just like a failed restore.
+                        var candidate = state
+                        candidate.sync = sync
+                        try await commitCandidate(candidate, changes: .sync)
+                    } else {
+                        // A receipt is an ordinary edit. Replacing the whole archive
+                        // after saving it would race a local edit made during the save.
+                        if sync != previous {
+                            state.sync = sync
+                            persist(changes: .sync)
+                        }
+                        try await flushArchiveWrites()
+                    }
+                    return true
+                } catch {
+                    return false
+                }
+            }
         } catch {
-            persistenceError = .writeFailed
             return false
         }
     }
 
     func applyIncomingValue(_ value: RecordIncomingValue) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         RecordJSON.applyIncoming(value, to: &state)
-        if let stamp = incomingStamp(value),
-           let bumped = bumpEntityStamp(in: &state, type: stamp.type, key: stamp.key) {
+        let stamp = incomingStamp(value)
+        if let bumped = bumpEntityStamp(in: &state, type: stamp.type, key: stamp.key) {
             markDirty(stamp.type, key: stamp.key, editCount: bumped.0, tie: bumped.1)
         }
-        persist()
+        persist(changes: RecordChangeDomains(stamp.type))
     }
 
     @discardableResult
-    func restoreConflict(_ copy: SyncConflictCopy) -> Bool {
-        guard !blocksWrites else { return false }
-        let calendar = RecordsSyncPayload.fileCalendar(for: state)
-        guard let incoming = RecordsSyncPayload.incoming(
-            from: copy.effectiveAlternatePayload,
-            type: copy.entityType,
-            calendar: calendar
-        ) else { return false }
-
-        var candidate = state
-        RecordJSON.applyIncoming(incoming, to: &candidate)
-        let conflictMaximum = [copy.localPayload, copy.incomingPayload, copy.payload]
-            .compactMap { $0 }
-            .compactMap { RecordsSyncPayload.editStamp(from: $0, type: copy.entityType, calendar: calendar)?.0 }
-            .max() ?? 0
-        if let bumped = bumpEntityStamp(
-            in: &candidate,
-            type: copy.entityType,
-            key: copy.logicalKey,
-            atLeastEditCount: conflictMaximum + 1
-        ) {
-            RecordsSyncOutbox.markDirty(
-                &candidate.sync,
-                type: copy.entityType,
-                key: copy.logicalKey,
-                editCount: bumped.0,
-                editTieBreaker: bumped.1
-            )
-        }
-        candidate.sync.conflicts.removeAll { $0.id == copy.id }
+    func restoreConflict(_ copy: SyncConflictCopy) async -> Bool {
         do {
-            try writeArchive(candidate)
-            state = candidate
-            revision &+= 1
-            persistenceError = nil
-            onExternalStateApplied?()
-            onDirty?()
-            return true
+            return try await replaceAfterPendingWrites { [self] in
+                guard let copy = state.sync.conflicts.first(where: { $0.id == copy.id }) else { return true }
+                guard !blocksWrites else { return false }
+                let calendar = RecordsSyncPayload.fileCalendar(for: state)
+                guard let incoming = RecordsSyncPayload.incoming(
+                    from: copy.effectiveAlternatePayload,
+                    type: copy.entityType,
+                    calendar: calendar
+                ) else { return false }
+
+                var candidate = state
+                RecordJSON.applyIncoming(incoming, to: &candidate)
+                let conflictMaximum = [copy.localPayload, copy.incomingPayload, copy.payload]
+                    .compactMap { $0 }
+                    .compactMap { RecordsSyncPayload.editStamp(from: $0, type: copy.entityType, calendar: calendar)?.0 }
+                    .max() ?? 0
+                if let bumped = bumpEntityStamp(
+                    in: &candidate,
+                    type: copy.entityType,
+                    key: copy.logicalKey,
+                    atLeastEditCount: conflictMaximum + 1
+                ) {
+                    RecordsSyncOutbox.markDirty(
+                        &candidate.sync,
+                        type: copy.entityType,
+                        key: copy.logicalKey,
+                        editCount: bumped.0,
+                        editTieBreaker: bumped.1
+                    )
+                }
+                candidate.sync.conflicts.removeAll { $0.id == copy.id }
+                do {
+                    try await commitCandidate(candidate, changes: .all) { [self] in
+                        onExternalStateApplied?()
+                        notifyDirtyWhenDurable()
+                    }
+                    return true
+                } catch {
+                    return false
+                }
+            }
         } catch {
-            persistenceError = .writeFailed
             return false
         }
     }
 
-    func consumeConflict(_ copy: SyncConflictCopy) {
-        var candidate = state
-        candidate.sync.conflicts.removeAll { $0.id == copy.id }
+    func consumeConflict(_ copy: SyncConflictCopy) async {
         do {
-            try writeArchive(candidate)
-            state = candidate
-            revision &+= 1
-            persistenceError = nil
+            return try await replaceAfterPendingWrites { [self] in
+                guard let copy = state.sync.conflicts.first(where: { $0.id == copy.id }) else { return }
+                var candidate = state
+                candidate.sync.conflicts.removeAll { $0.id == copy.id }
+                do {
+                    try await commitCandidate(candidate, changes: .sync)
+                } catch {
+                }
+            }
         } catch {
-            persistenceError = .writeFailed
+
         }
     }
 
@@ -549,38 +727,42 @@ final class RecordCoordinator {
     /// not housekeeping. Re-stamping it above both candidates prevents the
     /// rejected version from winning again on the next CloudKit fetch.
     @discardableResult
-    func keepCurrentConflict(_ copy: SyncConflictCopy) -> Bool {
-        guard !blocksWrites else { return false }
-        let calendar = RecordsSyncPayload.fileCalendar(for: state)
-        var candidate = state
-        let conflictMaximum = [copy.localPayload, copy.incomingPayload, copy.payload]
-            .compactMap { $0 }
-            .compactMap { RecordsSyncPayload.editStamp(from: $0, type: copy.entityType, calendar: calendar)?.0 }
-            .max() ?? 0
-        guard let bumped = bumpEntityStamp(
-            in: &candidate,
-            type: copy.entityType,
-            key: copy.logicalKey,
-            atLeastEditCount: conflictMaximum + 1
-        ) else { return false }
-        RecordsSyncOutbox.markDirty(
-            &candidate.sync,
-            type: copy.entityType,
-            key: copy.logicalKey,
-            editCount: bumped.0,
-            editTieBreaker: bumped.1
-        )
-        candidate.sync.conflicts.removeAll { $0.id == copy.id }
+    func keepCurrentConflict(_ copy: SyncConflictCopy) async -> Bool {
         do {
-            try writeArchive(candidate)
-            state = candidate
-            revision &+= 1
-            persistenceError = nil
-            onExternalStateApplied?()
-            onDirty?()
-            return true
+            return try await replaceAfterPendingWrites { [self] in
+                guard let copy = state.sync.conflicts.first(where: { $0.id == copy.id }) else { return true }
+                guard !blocksWrites else { return false }
+                let calendar = RecordsSyncPayload.fileCalendar(for: state)
+                var candidate = state
+                let conflictMaximum = [copy.localPayload, copy.incomingPayload, copy.payload]
+                    .compactMap { $0 }
+                    .compactMap { RecordsSyncPayload.editStamp(from: $0, type: copy.entityType, calendar: calendar)?.0 }
+                    .max() ?? 0
+                guard let bumped = bumpEntityStamp(
+                    in: &candidate,
+                    type: copy.entityType,
+                    key: copy.logicalKey,
+                    atLeastEditCount: conflictMaximum + 1
+                ) else { return false }
+                RecordsSyncOutbox.markDirty(
+                    &candidate.sync,
+                    type: copy.entityType,
+                    key: copy.logicalKey,
+                    editCount: bumped.0,
+                    editTieBreaker: bumped.1
+                )
+                candidate.sync.conflicts.removeAll { $0.id == copy.id }
+                do {
+                    try await commitCandidate(candidate, changes: RecordChangeDomains(copy.entityType)) { [self] in
+                        onExternalStateApplied?()
+                        notifyDirtyWhenDurable()
+                    }
+                    return true
+                } catch {
+                    return false
+                }
+            }
         } catch {
-            persistenceError = .writeFailed
             return false
         }
     }
@@ -590,61 +772,65 @@ final class RecordCoordinator {
     /// objects are copied as one value, so paired schedule segments and other
     /// composite fields cannot be split into an invalid half-state.
     @discardableResult
-    func resolveConflict(_ copy: SyncConflictCopy, fieldsFromAlternate: Set<String>) -> Bool {
-        guard !blocksWrites, copy.supportsFieldMerge else { return false }
-        guard var current = try? JSONSerialization.jsonObject(with: copy.effectiveCurrentPayload) as? [String: Any],
-              let alternate = try? JSONSerialization.jsonObject(with: copy.effectiveAlternatePayload) as? [String: Any]
-        else { return false }
-        let expandedFields = RecordsConflictFieldSelection.expanded(
-            fieldsFromAlternate,
-            for: copy.entityType
-        )
-        for field in expandedFields {
-            if let value = alternate[field] {
-                current[field] = value
-            } else {
-                current.removeValue(forKey: field)
-            }
-        }
-        guard let mergedPayload = try? JSONSerialization.data(withJSONObject: current),
-              let incoming = RecordsSyncPayload.incoming(
-                from: mergedPayload,
-                type: copy.entityType,
-                calendar: RecordsSyncPayload.fileCalendar(for: state)
-              )
-        else { return false }
-
-        let calendar = RecordsSyncPayload.fileCalendar(for: state)
-        var candidate = state
-        RecordJSON.applyIncoming(incoming, to: &candidate)
-        let conflictMaximum = [copy.localPayload, copy.incomingPayload, copy.payload]
-            .compactMap { $0 }
-            .compactMap { RecordsSyncPayload.editStamp(from: $0, type: copy.entityType, calendar: calendar)?.0 }
-            .max() ?? 0
-        guard let bumped = bumpEntityStamp(
-            in: &candidate,
-            type: copy.entityType,
-            key: copy.logicalKey,
-            atLeastEditCount: conflictMaximum + 1
-        ) else { return false }
-        RecordsSyncOutbox.markDirty(
-            &candidate.sync,
-            type: copy.entityType,
-            key: copy.logicalKey,
-            editCount: bumped.0,
-            editTieBreaker: bumped.1
-        )
-        candidate.sync.conflicts.removeAll { $0.id == copy.id }
+    func resolveConflict(_ copy: SyncConflictCopy, fieldsFromAlternate: Set<String>) async -> Bool {
         do {
-            try writeArchive(candidate)
-            state = candidate
-            revision &+= 1
-            persistenceError = nil
-            onExternalStateApplied?()
-            onDirty?()
-            return true
+            return try await replaceAfterPendingWrites { [self] in
+                guard let copy = state.sync.conflicts.first(where: { $0.id == copy.id }) else { return true }
+                guard !blocksWrites, copy.supportsFieldMerge else { return false }
+                guard var current = try? JSONSerialization.jsonObject(with: copy.effectiveCurrentPayload) as? [String: Any],
+                      let alternate = try? JSONSerialization.jsonObject(with: copy.effectiveAlternatePayload) as? [String: Any]
+                else { return false }
+                let expandedFields = RecordsConflictFieldSelection.expanded(
+                    fieldsFromAlternate,
+                    for: copy.entityType
+                )
+                for field in expandedFields {
+                    if let value = alternate[field] {
+                        current[field] = value
+                    } else {
+                        current.removeValue(forKey: field)
+                    }
+                }
+                guard let mergedPayload = try? JSONSerialization.data(withJSONObject: current),
+                      let incoming = RecordsSyncPayload.incoming(
+                        from: mergedPayload,
+                        type: copy.entityType,
+                        calendar: RecordsSyncPayload.fileCalendar(for: state)
+                      )
+                else { return false }
+
+                let calendar = RecordsSyncPayload.fileCalendar(for: state)
+                var candidate = state
+                RecordJSON.applyIncoming(incoming, to: &candidate)
+                let conflictMaximum = [copy.localPayload, copy.incomingPayload, copy.payload]
+                    .compactMap { $0 }
+                    .compactMap { RecordsSyncPayload.editStamp(from: $0, type: copy.entityType, calendar: calendar)?.0 }
+                    .max() ?? 0
+                guard let bumped = bumpEntityStamp(
+                    in: &candidate,
+                    type: copy.entityType,
+                    key: copy.logicalKey,
+                    atLeastEditCount: conflictMaximum + 1
+                ) else { return false }
+                RecordsSyncOutbox.markDirty(
+                    &candidate.sync,
+                    type: copy.entityType,
+                    key: copy.logicalKey,
+                    editCount: bumped.0,
+                    editTieBreaker: bumped.1
+                )
+                candidate.sync.conflicts.removeAll { $0.id == copy.id }
+                do {
+                    try await commitCandidate(candidate, changes: RecordChangeDomains(copy.entityType)) { [self] in
+                        onExternalStateApplied?()
+                        notifyDirtyWhenDurable()
+                    }
+                    return true
+                } catch {
+                    return false
+                }
+            }
         } catch {
-            persistenceError = .writeFailed
             return false
         }
     }
@@ -771,7 +957,7 @@ final class RecordCoordinator {
         }
     }
 
-    private func incomingStamp(_ value: RecordIncomingValue) -> (type: RecordEntityType, key: String, editCount: Int)? {
+    private func incomingStamp(_ value: RecordIncomingValue) -> (type: RecordEntityType, key: String, editCount: Int) {
         switch value {
         case .period(let period): return (.careerPeriod, period.id.uuidString, period.editCount)
         case .snapshot(let snapshot): return (.scheduleSnapshot, snapshot.id.uuidString, snapshot.editCount)
@@ -793,9 +979,10 @@ final class RecordCoordinator {
     /// again. Forget it locally without marking the row dirty — the revival
     /// itself arrives as an ordinary record in the same atomic batch.
     func applyRemoteEraseRevocation(type: RecordEntityType, key: String) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         guard state.clearErased(type, key: key) != nil else { return }
-        persist()
+        persist(changes: .sync)
     }
 
     /// `erasedEditCount` is the version the sender buried. Nil means the
@@ -809,6 +996,7 @@ final class RecordCoordinator {
         generation: Int? = nil,
         at date: Date = .now
     ) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         // A live row that already out-ranks this tombstone is a revival we
         // have and the sender had not seen. Keep it; our own revocation push
@@ -833,8 +1021,8 @@ final class RecordCoordinator {
             if let generation { row.generation = generation }
             state.sync.rows[name] = row
         }
-        persist()
-        if persistenceError == nil { onDirty?() }
+        persist(changes: RecordChangeDomains(type))
+        if persistenceError == nil { notifyDirtyWhenDurable() }
     }
 
     /// Applies a CloudKit row without treating it as a local edit.
@@ -848,6 +1036,7 @@ final class RecordCoordinator {
         generation: Int,
         persistImmediately: Bool = true
     ) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         let local = RecordsSyncPayload.editStamp(type: type, key: key, in: state)
         var action = RecordsSyncApply.action(
@@ -868,7 +1057,7 @@ final class RecordCoordinator {
                 editTieBreaker: UUID(),
                 erase: true
             )
-            if persistImmediately { persist() }
+            finishRemoteChange(.sync, persistImmediately: persistImmediately)
             return
         }
         let calendar = RecordsSyncPayload.fileCalendar(for: state)
@@ -1152,28 +1341,77 @@ final class RecordCoordinator {
         row.lastKnownPayload = payload
         row.generation = generation
         state.sync.rows[name] = row
-        if persistImmediately { persist() }
+        finishRemoteChange(
+            hasSameBusinessContent ? .sync : RecordChangeDomains(type),
+            persistImmediately: persistImmediately
+        )
     }
 
-    func persistRemoteBatch() {
-        persist()
-        guard persistenceError == nil else { return }
-        onRemoteBatchApplied?()
-        onExternalStateApplied?()
-        if !RecordsSyncOutbox.pending(state.sync).isEmpty {
-            onDirty?()
+    func persistRemoteBatch(
+        _ remoteChanges: [RemoteRecordChange],
+        deletedRecordNames: [String]
+    ) async throws {
+        let command = submitCommand { [self] in
+            guard !blocksWrites else { return false }
+            withBatchedWrites {
+                for change in remoteChanges {
+                    switch change {
+                    case .eraseRevocation(let type, let key):
+                        applyRemoteEraseRevocation(type: type, key: key)
+                    case .erase(let type, let key, let count, let fields, let generation):
+                        guard !RecordsSyncGeneration.shouldDiscard(
+                            recordGeneration: generation,
+                            fence: state.sync.generation
+                        ) else { continue }
+                        applyRemoteErase(
+                            type: type, key: key, erasedEditCount: count,
+                            systemFields: fields, generation: generation
+                        )
+                    case .payload(let type, let key, let payload, let count, let tie, let fields, let generation):
+                        guard !RecordsSyncGeneration.shouldDiscard(
+                            recordGeneration: generation,
+                            fence: state.sync.generation
+                        ) else { continue }
+                        applyRemotePayload(
+                            type: type, key: key, payload: payload,
+                            editCount: count, editTieBreaker: tie,
+                            systemFields: fields, generation: generation,
+                            persistImmediately: false
+                        )
+                    }
+                }
+                for name in deletedRecordNames where state.sync.rows[name]?.dirty != true {
+                    state.sync.rows[name] = nil
+                }
+                let changes = pendingRemoteChanges.union(.sync)
+                pendingRemoteChanges = []
+                hasPendingRemoteReconciliation = true
+                persist(changes: changes)
+            }
+            return true
         }
+        guard await command.value else { throw persistenceError ?? RecordPersistenceError.writeFailed }
+        try await flush()
+    }
+
+    /// Low-level test/debug completion for callers that synchronously applied
+    /// remote values without crossing an archive replacement boundary.
+    func persistRemoteBatch() async throws {
+        preconditionRawWriteAdmission()
+        let changes = pendingRemoteChanges.union(.sync)
+        pendingRemoteChanges = []
+        hasPendingRemoteReconciliation = true
+        persist(changes: changes)
+        try await flush()
     }
 
     func applyDayLayers(override: DayOverride?, exception: CalendarException?, at date: Date = .now) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
-        if let override {
-            upsertOverride(override, at: date, persist: false)
+        withBatchedWrites {
+            if let override { upsertOverride(override, at: date) }
+            if let exception { upsertException(exception, at: date) }
         }
-        if let exception {
-            upsertException(exception, at: date, persist: false)
-        }
-        persist()
     }
 
     private func lastKnownLifeProfile() -> LifeProfile? {
@@ -1270,6 +1508,7 @@ final class RecordCoordinator {
     }
 
     func migrateCalendarTimeZone(to identifier: String, at date: Date = .now) {
+        preconditionRawWriteAdmission()
         guard !blocksWrites else { return }
         guard let targetTimeZone = TimeZone(identifier: identifier) else { return }
         let oldPeriods = Dictionary(uniqueKeysWithValues: state.periods.map { ($0.id, $0) })
@@ -1484,6 +1723,7 @@ final class RecordCoordinator {
         valueData: Data? = nil,
         timeZoneIdentifier: String = TimeZone.current.identifier
     ) {
+        preconditionRawWriteAdmission()
         guard captureEnabled, !blocksWrites else { return }
         if state.isErased(.workObservation, key: eventID.uuidString) { return }
         if state.observations.contains(where: { $0.eventID == eventID }) { return }
@@ -1512,7 +1752,7 @@ final class RecordCoordinator {
             )
         )
         markDirty(.workObservation, key: eventID.uuidString, editCount: 1, tie: eventID)
-        persist()
+        persist(changes: .history)
     }
 
     private func appendSnapshot(
@@ -1595,21 +1835,6 @@ final class RecordCoordinator {
         )
     }
 
-    private func migrateLegacyAutomaticPeriod(in archive: inout RecordState, at date: Date) {
-        guard archive.periods.count == 1, archive.periods[0].label == nil else { return }
-        let calendar = archive.periods[0].civilCalendar()
-        guard RecordJSON.dayKey(archive.periods[0].startsOn, calendar: calendar) == "2000-01-01" else {
-            return
-        }
-        let candidates = archive.observations.map(\.shiftAnchorDate)
-            + archive.overrides.map(\.shiftAnchorDate)
-            + archive.exceptions.map(\.date)
-            + [date]
-        guard let earliest = candidates.min() else { return }
-        archive.periods[0].startsOn = calendar.startOfDay(for: earliest)
-        archive.recordsStartedOn = archive.recordsStartedOn ?? archive.periods[0].startsOn
-    }
-
     /// A revived natural key has to out-rank the tombstone it replaces, so a
     /// device that has not fetched the revocation yet still keeps the new row.
     private func reviveAboveTombstone(_ editCount: inout Int, over erasedEditCount: Int?) {
@@ -1634,183 +1859,220 @@ final class RecordCoordinator {
             erase: erase,
             revokeErase: revokeErase
         )
-        if writeBatchDepth > 0 { hasPendingDirtyNotification = true }
-        else { onDirty?() }
+        hasPendingDirtyNotification = true
     }
 
-    private func load() {
-        guard let fileURL else { return }
-        guard FileManager.default.fileExists(atPath: fileURL.path) else { return }
-        LaunchTrace.interval("recordsSeed") { loadArchive(from: fileURL) }
-    }
-
-    private func loadArchive(from fileURL: URL) {
-        do {
-            let data = try Data(contentsOf: fileURL)
-            let file = try JSONDecoder().decode(RecordLocalFile.self, from: data)
-            let document = try RecordJSON.decode(file.document)
-            var archive = RecordState()
-            let report = try RecordJSON.apply(document, to: &archive, mode: .skipErased)
-            guard report.rejected.isEmpty else { throw RecordJSONError.invalidDocument }
-            archive.erased = file.erased.map {
-                ErasedID(
-                    entityType: $0.entityType,
-                    logicalKey: $0.logicalKey,
-                    erasedAt: Date(timeIntervalSince1970: $0.erasedAtMs / 1_000),
-                    editCount: $0.editCount ?? 0
-                )
-            }
-            archive.sync = file.sync ?? .empty
-            migrateLegacyAutomaticPeriod(in: &archive, at: .now)
-            if var profile = archive.lifeProfile {
-                profile.migrateLegacyFields(calendar: RecordsSyncPayload.fileCalendar(for: archive))
-                archive.lifeProfile = profile
-            }
-            let normalizedConflicts = normalizeStoredConflicts(in: &archive)
+    private func applyLoadedArchive(_ result: RecordArchiveLoadResult) {
+        switch result {
+        case .missing:
+            break
+        case .loaded(let archive, let normalizedConflicts):
             state = archive
-            revision &+= 1
-            if normalizedConflicts { try writeArchive(archive) }
-        } catch let error as CocoaError where error.code == .fileReadNoPermission {
-            persistenceError = .unreadableArchive
-        } catch {
-            persistenceError = .invalidArchive
+            advanceRevision(.all)
+            durableRevision = revision
+            if normalizedConflicts { persist(changes: .sync) }
+        case .failed(let error):
+            persistenceError = error
         }
     }
 
     /// Synchronous planning changes keep all row revisions and outbox entries,
     /// but encode and atomically save the archive just once for the operation.
     func withBatchedWrites<T>(_ changes: () -> T) -> T {
+        preconditionRawWriteAdmission()
         writeBatchDepth += 1
         defer {
             writeBatchDepth -= 1
             if writeBatchDepth == 0 {
                 let shouldWrite = hasPendingWrite
-                let shouldNotify = hasPendingDirtyNotification
+                let changes = pendingBatchChanges
                 hasPendingWrite = false
-                hasPendingDirtyNotification = false
-                if shouldWrite { persist() }
-                if shouldNotify { onDirty?() }
+                pendingBatchChanges = []
+                if shouldWrite { persist(changes: changes) }
             }
         }
         return changes()
     }
 
-    private func persist() {
-        if writeBatchDepth > 0 {
-            hasPendingWrite = true
+    /// Wait for the latest complete archive, including writes queued while
+    /// this caller was suspended. A subsequent flush retries a failed save.
+    func flush() async throws {
+        await commands.waitForPending()
+        try await flushArchiveWrites()
+    }
+
+    private func flushArchiveWrites() async throws {
+        guard !blocksWrites else { throw persistenceError ?? RecordPersistenceError.invalidArchive }
+        precondition(writeBatchDepth == 0, "Flush must follow the synchronous edit batch")
+        if persistenceError == .writeFailed, !isSaving { persist(changes: .sync) }
+        while let write = archiveWrite {
+            let sequence = archiveWriteSequence
+            let saved = await write.value
+            if sequence != archiveWriteSequence { continue }
+            guard saved else { throw persistenceError ?? RecordPersistenceError.writeFailed }
             return
         }
+    }
+
+    private func enqueueArchiveWrite(
+        _ archive: RecordState,
+        expectedRevision: UInt64? = nil,
+        onCommit: @escaping @MainActor () -> Void
+    ) -> Task<Bool, Never> {
+        let previous = archiveWrite
+        archiveWriteSequence &+= 1
+        let sequence = archiveWriteSequence
+        isSaving = true
+        let write = Task { @MainActor in
+            _ = await previous?.value
+            var prepared: URL?
+            do {
+                guard !self.blocksWrites else {
+                    throw self.persistenceError ?? RecordPersistenceError.invalidArchive
+                }
+                if let fileURL = self.fileURL {
+                    prepared = try await self.prepareArchive(archive, fileURL)
+                } else {
+                    try await RecordArchive.validate(archive)
+                    prepared = nil
+                }
+                // Candidate admission holds subsequent semantic edits until
+                // publication and memory reconciliation have both completed.
+                // Keep the version check as a guard against a bypassed writer.
+                if let expectedRevision {
+                    guard self.revision == expectedRevision,
+                          self.archiveWriteSequence == sequence else {
+                        throw RecordPersistenceError.writeFailed
+                    }
+                }
+                if let prepared, let fileURL = self.fileURL {
+                    try await self.publishArchive(prepared, fileURL)
+                    self.archiveWriteCount += 1
+                }
+                prepared = nil
+                onCommit()
+                if self.archiveWriteSequence == sequence {
+                    self.persistenceError = nil
+                    self.isSaving = false
+                }
+                return true
+            } catch {
+                if let prepared { await RecordArchive.discardPrepared(prepared) }
+                if self.archiveWriteSequence == sequence {
+                    if !self.blocksWrites { self.persistenceError = .writeFailed }
+                    self.isSaving = false
+                }
+                return false
+            }
+        }
+        archiveWrite = write
+        return write
+    }
+
+    /// Finish the preceding durable batch and its reconciliation before a
+    /// replacement reads the state it will supersede. Subsequent commands are
+    /// already held by admission while that prior write settles.
+    private func replaceAfterPendingWrites<Value: Sendable>(
+        _ work: @escaping @MainActor () async throws -> Value
+    ) async throws -> Value {
+        try await commands.replace { [self] in
+            while let write = archiveWrite {
+                let sequence = archiveWriteSequence
+                _ = await write.value
+                if sequence == archiveWriteSequence { break }
+            }
+            return try await work()
+        }
+    }
+
+    private func commitCandidate(
+        _ candidate: RecordState,
+        changes: RecordChangeDomains = .all,
+        onCommit: @escaping @MainActor () -> Void = {}
+    ) async throws {
+        guard !blocksWrites else { throw persistenceError ?? RecordPersistenceError.invalidArchive }
+        let expectedRevision = revision
+        let write = enqueueArchiveWrite(candidate, expectedRevision: expectedRevision) {
+            self.commands.runSynchronous {
+                self.state = candidate
+                self.advanceRevision(changes)
+                self.durableRevision = self.revision
+                self.persistenceError = nil
+                // A full replacement supersedes the remote batch it was built
+                // after; its own callback reconciles the replacement once.
+                if changes == .all { self.hasPendingRemoteReconciliation = false }
+                onCommit()
+                self.notifyDurableConsumers()
+            }
+        }
+        guard await write.value else { throw RecordPersistenceError.writeFailed }
+        try await flushArchiveWrites()
+    }
+
+    private func notifyDirtyWhenDurable() {
+        guard durableRevision == revision else {
+            hasPendingDirtyNotification = true
+            return
+        }
+        hasPendingDirtyNotification = false
+        onDirty?()
+    }
+
+    private func notifyDurableConsumers() {
+        guard durableRevision == revision else { return }
+        if hasPendingRemoteReconciliation {
+            hasPendingRemoteReconciliation = false
+            commands.runSynchronous {
+                onRemoteBatchApplied?()
+                onExternalStateApplied?()
+            }
+            if !RecordsSyncOutbox.pending(state.sync).isEmpty {
+                hasPendingDirtyNotification = true
+            }
+        }
+        if hasPendingDirtyNotification { notifyDirtyWhenDurable() }
+    }
+
+    private func advanceRevision(_ changes: RecordChangeDomains) {
         revision &+= 1
-        do {
-            try writeArchive(state)
-            persistenceError = nil
-        } catch {
-            persistenceError = .writeFailed
+        if !changes.intersection([.history, .focus, .life]).isEmpty { contentRevision &+= 1 }
+        if !changes.intersection([.history, .life]).isEmpty { projectionRevision &+= 1 }
+        if changes.contains(.history) { historyRevision &+= 1 }
+        if changes.contains(.focus) { focusRevision &+= 1 }
+        if changes.contains(.life) { lifeRevision &+= 1 }
+    }
+
+    private func finishRemoteChange(_ changes: RecordChangeDomains, persistImmediately: Bool) {
+        pendingRemoteChanges.formUnion(changes)
+        if persistImmediately {
+            let accumulated = pendingRemoteChanges
+            pendingRemoteChanges = []
+            persist(changes: accumulated)
         }
     }
 
-    /// Archives written by earlier builds may contain metadata-only copies,
-    /// an already-selected newer CloudKit revision, or repeated deliveries for
-    /// the same logical identity. None represents a decision a person can make,
-    /// so remove them during archive migration before the badge is rendered.
-    @discardableResult
-    private func normalizeStoredConflicts(in archive: inout RecordState) -> Bool {
-        let original = archive.sync.conflicts
-        var latestByIdentity: [String: SyncConflictCopy] = [:]
-        let calendar = RecordsSyncPayload.fileCalendar(for: archive)
-        for conflict in original {
-            if let local = conflict.localPayload,
-               let incoming = conflict.incomingPayload,
-               RecordsSyncConflict.payloadsHaveSameBusinessContent(local, incoming) {
-                continue
-            }
-            if conflict.source != "import",
-               let local = conflict.localPayload,
-               let incoming = conflict.incomingPayload,
-               let localStamp = RecordsSyncPayload.editStamp(
-                   from: local,
-                   type: conflict.entityType,
-                   calendar: calendar
-               ),
-               let incomingStamp = RecordsSyncPayload.editStamp(
-                   from: incoming,
-                   type: conflict.entityType,
-                   calendar: calendar
-               ),
-               let preferred = RecordsSyncConflict.automaticallyPreferredWinner(
-                   localCount: localStamp.0,
-                   localEditedAtMs: conflict.localEditedAtMs ?? RecordsSyncPayload.editedAtMs(
-                       from: local,
-                       type: conflict.entityType,
-                       calendar: calendar
-                   ),
-                   incomingCount: incomingStamp.0,
-                   incomingEditedAtMs: conflict.incomingEditedAtMs ?? RecordsSyncPayload.editedAtMs(
-                       from: incoming,
-                       type: conflict.entityType,
-                       calendar: calendar
-                   )
-               ),
-               preferred == conflict.currentWinner {
-                continue
-            }
-            let identity = "\(conflict.entityType.rawValue).\(conflict.logicalKey)"
-            if let previous = latestByIdentity[identity], previous.lostAtMs > conflict.lostAtMs {
-                continue
-            }
-            latestByIdentity[identity] = conflict
-        }
-        archive.sync.conflicts = latestByIdentity.values.sorted {
-            if $0.lostAtMs != $1.lostAtMs { return $0.lostAtMs < $1.lostAtMs }
-            return $0.id.uuidString < $1.id.uuidString
-        }
-        return archive.sync.conflicts != original
+    private func preconditionRawWriteAdmission() {
+        commands.preconditionWriteAdmission()
     }
 
-    private func writeArchive(_ archive: RecordState) throws {
-        guard let fileURL else { return }
-        guard persistenceError != .invalidArchive, persistenceError != .unreadableArchive else {
-            throw persistenceError ?? RecordPersistenceError.writeFailed
+    private func persist(changes: RecordChangeDomains = .all) {
+        if writeBatchDepth > 0 {
+            hasPendingWrite = true
+            pendingBatchChanges.formUnion(changes)
+            return
         }
-        let timeZone = TimeZone(identifier: archive.periods.first?.timeZoneIdentifier ?? "") ?? .current
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        let documentData = try RecordJSON.export(
-            archive,
-            exportedAt: .now,
-            timeZone: timeZone,
-            calendar: calendar
-        )
-        _ = try RecordJSON.decode(documentData)
-        let file = RecordLocalFile(
-            schemaVersion: RecordJSON.schemaVersion,
-            document: documentData,
-            erased: archive.erased.map {
-                ErasedDTO(
-                    entityType: $0.entityType,
-                    logicalKey: $0.logicalKey,
-                    erasedAtMs: $0.erasedAt.timeIntervalSince1970 * 1_000,
-                    editCount: $0.editCount
-                )
-            },
-            sync: archive.sync
-        )
-        let data = try JSONEncoder().encode(file)
-        try data.write(to: fileURL, options: .atomic)
+        advanceRevision(changes)
+        let requestedRevision = revision
+        let committed: @MainActor () -> Void = { [self] in
+            durableRevision = requestedRevision
+            if revision == requestedRevision { persistenceError = nil }
+            notifyDurableConsumers()
+        }
+        if fileURL == nil, !isSaving {
+            committed()
+        } else {
+            _ = enqueueArchiveWrite(state, onCommit: committed)
+        }
     }
-}
 
-private struct RecordLocalFile: Codable {
-    var schemaVersion: Int
-    var document: Data
-    var erased: [ErasedDTO]
-    var sync: SyncLocalState?
-}
-
-private struct ErasedDTO: Codable {
-    var entityType: RecordEntityType
-    var logicalKey: String
-    var erasedAtMs: Double
-    /// Optional so an archive written before versioned tombstones still decodes.
-    var editCount: Int?
 }

@@ -179,12 +179,6 @@ final class LiveActivityPriorityTransitionService {
 @MainActor
 @Observable
 final class LiveActivityService {
-    /// Shared for the same reason the store is: an intent performed from the
-    /// Lock Screen has to reach the same lifecycle generation and the same
-    /// serialised ActivityKit queue as the foreground UI, or the two race for
-    /// the one system slot.
-    static let shared = LiveActivityService()
-
     private(set) var lastError: String?
     private var completionTask: Task<Void, Never>?
     private let schedulingClock: LiveActivitySchedulingClock
@@ -237,22 +231,22 @@ final class LiveActivityService {
     static func focusTaskTitle(
         session: FocusSession,
         surface: LiveActivitySurface,
-        store: OffWorkStore
+        shifts: ShiftSessionStore
     ) -> String? {
         guard surface == .focus else { return nil }
         return session.taskID
-            .flatMap { id in store.records.state.focusTasks.first(where: { $0.id == id }) }?
+            .flatMap { id in shifts.records.state.focusTasks.first(where: { $0.id == id }) }?
             .title
     }
 
     static func focusTaskIcon(
         session: FocusSession,
         surface: LiveActivitySurface,
-        store: OffWorkStore
+        shifts: ShiftSessionStore
     ) -> String {
         guard surface == .focus else { return "cup.and.saucer.fill" }
         let icon = session.taskID
-            .flatMap { id in store.records.state.focusTasks.first(where: { $0.id == id }) }?
+            .flatMap { id in shifts.records.state.focusTasks.first(where: { $0.id == id }) }?
             .icon
         return (icon ?? .focus).systemName
     }
@@ -264,7 +258,7 @@ final class LiveActivityService {
     /// sentence in the user's language at that point.
     static func focusLegs(
         _ chain: [FocusChainLeg],
-        store: OffWorkStore
+        shifts: ShiftSessionStore
     ) -> [OffWorkActivityAttributes.ContentState.Leg] {
         chain.indices.map { index in
             let leg = chain[index]
@@ -273,81 +267,81 @@ final class LiveActivityService {
                 startAtMs: Int64(leg.start.timeIntervalSince1970 * 1_000),
                 endAtMs: Int64(leg.end.timeIntervalSince1970 * 1_000),
                 surface: LiveActivitySurface(sessionKind: leg.kind).rawValue,
-                label: legLabel(leg, store: store),
+                label: legLabel(leg, shifts: shifts),
                 title: leg.taskTitle,
                 icon: leg.icon?.systemName ?? "cup.and.saucer.fill",
-                detail: legDetail(leg, store: store),
+                detail: legDetail(leg, shifts: shifts),
                 finishNote: leg.taskFinishAt.map { finish in
-                    store.t("focusActivityTaskDone", values: ["time": store.formatTime(finish)])
+                    shifts.text.t("focusActivityTaskDone", values: ["time": shifts.text.formatTime(finish)])
                 },
-                nextNote: following.map { legNextNote($0, store: store) },
+                nextNote: following.map { legNextNote($0, shifts: shifts) },
                 isPreview: leg.role == .upNext
             )
         }
     }
 
-    private static func legLabel(_ leg: FocusChainLeg, store: OffWorkStore) -> String {
-        if leg.role == .upNext { return store.t("focusNextBlock") }
+    private static func legLabel(_ leg: FocusChainLeg, shifts: ShiftSessionStore) -> String {
+        if leg.role == .upNext { return shifts.text.t("focusNextBlock") }
         switch leg.kind {
-        case .focus: return store.t("focusTitle")
-        case .shortBreak: return store.t("focusShortBreak")
-        case .longBreak: return store.t("focusLongBreak")
+        case .focus: return shifts.text.t("focusTitle")
+        case .shortBreak: return shifts.text.t("focusShortBreak")
+        case .longBreak: return shifts.text.t("focusLongBreak")
         }
     }
 
-    private static func legDetail(_ leg: FocusChainLeg, store: OffWorkStore) -> String? {
+    private static func legDetail(_ leg: FocusChainLeg, shifts: ShiftSessionStore) -> String? {
         guard let index = leg.pomodoroIndex, let total = leg.pomodoroTotal else { return nil }
-        return store.t("focusActivityPomodoro", values: [
-            "index": store.formatCount(index),
-            "total": store.formatCount(total),
+        return shifts.text.t("focusActivityPomodoro", values: [
+            "index": shifts.text.formatCount(index),
+            "total": shifts.text.formatCount(total),
         ])
     }
 
     /// Read from the leg that follows, so a phase always says what it hands
     /// over to — the one thing the cadence knows and the user does not.
-    private static func legNextNote(_ next: FocusChainLeg, store: OffWorkStore) -> String {
+    private static func legNextNote(_ next: FocusChainLeg, shifts: ShiftSessionStore) -> String {
         switch next.kind {
         case .shortBreak, .longBreak:
             let minutes = max(1, Int(next.end.timeIntervalSince(next.start) / 60))
-            return store.t("focusActivityThenBreak", values: ["count": store.formatCount(minutes)])
+            return shifts.text.t("focusActivityThenBreak", values: ["count": shifts.text.formatCount(minutes)])
         case .focus:
-            return store.t("focusActivityNextUp", values: [
-                "task": next.taskTitle ?? store.t("focusTitle"),
-                "time": store.formatTime(next.start),
+            return shifts.text.t("focusActivityNextUp", values: [
+                "task": next.taskTitle ?? shifts.text.t("focusTitle"),
+                "time": shifts.text.formatTime(next.start),
             ])
         }
     }
 
     /// A fixed clock-off time stays truthful while the app is suspended,
     /// including across lunch. Never format a ticking duration into a payload.
-    static func shiftEndAtMs(store: OffWorkStore, at now: Date) -> Int64? {
-        guard let snapshot = store.snapshot(at: now), snapshot.remainingMs > 0 else { return nil }
+    static func shiftEndAtMs(shifts: ShiftSessionStore, at now: Date) -> Int64? {
+        guard let snapshot = shifts.session.snapshot(at: now), snapshot.remainingMs > 0 else { return nil }
         return Int64(snapshot.endAtMs)
     }
 
-    private func focusCopy(for surface: LiveActivitySurface, store: OffWorkStore) -> (
+    private func focusCopy(for surface: LiveActivitySurface, shifts: ShiftSessionStore) -> (
         title: String, caption: String, completedCaption: String, completedNote: String
     ) {
         switch surface {
         case .focus:
             return (
-                store.t("focusTitle"), store.t("focusTitle"),
-                store.t("focusPhaseComplete"), store.t("focusEndedNaturally")
+                shifts.text.t("focusTitle"), shifts.text.t("focusTitle"),
+                shifts.text.t("focusPhaseComplete"), shifts.text.t("focusEndedNaturally")
             )
         case .shortBreak:
             return (
-                store.t("focusShortBreak"), store.t("focusShortBreak"),
-                store.t("focusPhaseComplete"), store.t("focusNextFocusBody")
+                shifts.text.t("focusShortBreak"), shifts.text.t("focusShortBreak"),
+                shifts.text.t("focusPhaseComplete"), shifts.text.t("focusNextFocusBody")
             )
         case .longBreak:
             return (
-                store.t("focusLongBreak"), store.t("focusLongBreak"),
-                store.t("focusPhaseComplete"), store.t("focusNextFocusBody")
+                shifts.text.t("focusLongBreak"), shifts.text.t("focusLongBreak"),
+                shifts.text.t("focusPhaseComplete"), shifts.text.t("focusNextFocusBody")
             )
         case .work:
             return (
-                OWCBrand.shortName, store.t("timeLeftCaption"),
-                store.t("offWorkTime"), store.t("offWorkWellDone")
+                OWCBrand.shortName, shifts.text.t("timeLeftCaption"),
+                shifts.text.t("offWorkTime"), shifts.text.t("offWorkWellDone")
             )
         }
     }
@@ -363,14 +357,16 @@ final class LiveActivityService {
 
     /// Runs after everything already queued, and is itself awaited, so callers
     /// keep the straight-line semantics they had before.
-    func reschedule(store: OffWorkStore, now: Date = .now) async {
+    func reschedule(shifts: ShiftSessionStore, now: Date = .now) async {
         let previous = pendingOperation
         let task = Task { @MainActor in
             await previous?.value
-            let scheduled = store.refreshScheduledFocus(at: now)
-            self.queuedFocus = store.focusLiveActivityEnabled ? scheduled : []
-            await self.performReschedule(store: store, now: now)
-            await self.reconcileScheduledActivities(store: store, now: now)
+            let scheduled = await shifts.focus.refreshScheduledFocus(at: now).value
+            self.queuedFocus = shifts.preferences.focusLiveActivityEnabled ? scheduled : []
+            await self.performReschedule(shifts: shifts, now: now)
+            guard shifts.records.persistenceError == nil,
+                  shifts.records.durableRevision == shifts.records.revision else { return }
+            await self.reconcileScheduledActivities(shifts: shifts, now: now)
         }
         pendingOperation = task
         await task.value
@@ -389,20 +385,23 @@ final class LiveActivityService {
         await task.value
     }
 
-    private func performReschedule(store: OffWorkStore, now: Date = .now) async {
+    private func performReschedule(shifts: ShiftSessionStore, now: Date = .now) async {
         lifecycleGeneration += 1
         let generation = lifecycleGeneration
         // A foreground reschedule supersedes any delayed handoff based on the
         // previous shift or focus session.
         focusPriorityTransition.cancel()
-        _ = store.finishElapsedFocusSession(at: now)
-        let focusSession = store.focusLiveActivityEnabled ? store.activeFocusSession() : nil
-        guard store.publishesLiveSurfaces || focusSession != nil else {
+        _ = await shifts.focus.finishElapsedFocusSession(at: now).value
+        do { try await shifts.records.flush() }
+        catch { return }
+        guard generation == lifecycleGeneration else { return }
+        let focusSession = shifts.preferences.focusLiveActivityEnabled ? shifts.focus.activeFocusSession() : nil
+        guard shifts.session.publishesLiveSurfaces || focusSession != nil else {
             recordDebugStatus("countdown-not-started")
             await performEndAll()
             return
         }
-        guard store.liveActivityEnabled || focusSession != nil else {
+        guard shifts.preferences.liveActivityEnabled || focusSession != nil else {
             recordDebugStatus("disabled-in-app")
             await performEndAll()
             return
@@ -412,7 +411,7 @@ final class LiveActivityService {
             await performEndAll()
             return
         }
-        guard let snapshot = store.snapshot(at: now) else {
+        guard let snapshot = shifts.session.snapshot(at: now) else {
             if let decision = LiveActivityDecision.choose(
                 workEndAt: nil,
                 workDisplayStartsAt: nil,
@@ -420,7 +419,7 @@ final class LiveActivityService {
                 now: now
             ) {
                 await performFocusReschedule(
-                    store: store,
+                    shifts: shifts,
                     session: focusSession!,
                     decision: decision,
                     workDisplayStartsAt: nil,
@@ -433,10 +432,10 @@ final class LiveActivityService {
             await performEndAll()
             return
         }
-        let scheduledStart = snapshot.plannedEndDate.addingTimeInterval(Double(-store.liveActivityLeadMinutes * 60))
-        let workEligible = store.liveActivityEnabled && store.publishesLiveSurfaces
-            && !store.isEndedEarly(snapshot)
-            && (snapshot.isWorkday || store.isForcedWorkday(snapshot))
+        let scheduledStart = snapshot.plannedEndDate.addingTimeInterval(Double(-shifts.preferences.liveActivityLeadMinutes * 60))
+        let workEligible = shifts.preferences.liveActivityEnabled && shifts.session.publishesLiveSurfaces
+            && !shifts.session.isEndedEarly(snapshot)
+            && (snapshot.isWorkday || shifts.session.isForcedWorkday(snapshot))
             && !snapshot.isBeforeStart(at: now)
             && snapshot.remainingMs > 0
         let decision = LiveActivityDecision.choose(
@@ -447,7 +446,7 @@ final class LiveActivityService {
         )
         if let decision, decision.surface != .work, let focusSession {
             await performFocusReschedule(
-                store: store,
+                shifts: shifts,
                 session: focusSession,
                 decision: decision,
                 workDisplayStartsAt: workEligible ? scheduledStart : nil,
@@ -456,7 +455,7 @@ final class LiveActivityService {
             )
             return
         }
-        guard store.liveActivityEnabled else {
+        guard shifts.preferences.liveActivityEnabled else {
             await performEndAll()
             return
         }
@@ -467,11 +466,11 @@ final class LiveActivityService {
             await performEndAll()
             return
         }
-        if store.isEndedEarly(snapshot) {
-            await finishAll(store: store, snapshot: snapshot, now: now, generation: generation)
+        if shifts.session.isEndedEarly(snapshot) {
+            await finishAll(shifts: shifts, snapshot: snapshot, now: now, generation: generation)
             return
         }
-        if !snapshot.isWorkday, !store.isForcedWorkday(snapshot) {
+        if !snapshot.isWorkday, !shifts.session.isForcedWorkday(snapshot) {
             recordDebugStatus("rest-day")
             await performEndAll()
             return
@@ -482,11 +481,11 @@ final class LiveActivityService {
             return
         }
         guard snapshot.remainingMs > 0 else {
-            await finishAll(store: store, snapshot: snapshot, now: now, generation: generation)
+            await finishAll(shifts: shifts, snapshot: snapshot, now: now, generation: generation)
             return
         }
 
-        let displaySnapshot = scheduledStart > now ? (store.snapshot(at: scheduledStart) ?? snapshot) : snapshot
+        let displaySnapshot = scheduledStart > now ? (shifts.session.snapshot(at: scheduledStart) ?? snapshot) : snapshot
         let attributes = OffWorkActivityAttributes(
             shiftStartAtMs: Int64(snapshot.startAtMs),
             plannedEndAtMs: Int64(snapshot.plannedEndAtMs)
@@ -498,11 +497,11 @@ final class LiveActivityService {
                 .init(startAtMs: Int64($0.startAtMs), endAtMs: Int64($0.endAtMs))
             },
             phase: snapshot.overtimeEndAtMs == nil ? "working" : "overtime",
-            locale: store.languageCode,
+            locale: shifts.preferences.languageCode,
             appTitle: OWCBrand.shortName,
-            caption: store.t("timeLeftCaption"),
-            completedCaption: store.t("offWorkTime"),
-            completedNote: store.t("offWorkWellDone"),
+            caption: shifts.text.t("timeLeftCaption"),
+            completedCaption: shifts.text.t("offWorkTime"),
+            completedNote: shifts.text.t("offWorkWellDone"),
             surface: LiveActivitySurface.work.rawValue,
             timerLabel: nil,
             destination: "offworkcountdown://timer",
@@ -532,7 +531,7 @@ final class LiveActivityService {
             // reasons still gets replaced instead of handed on.
             if existing.activityState != .ended, existing.activityState != .dismissed {
                 recordDebugStatus("updated:\(existing.activityState)")
-                scheduleCompletion(store: store, snapshot: snapshot, generation: generation)
+                scheduleCompletion(shifts: shifts, snapshot: snapshot, generation: generation)
                 return
             }
         }
@@ -545,8 +544,8 @@ final class LiveActivityService {
 
         do {
             if scheduledStart > now {
-                let title = LocalizedStringResource(String.LocalizationValue(store.t("offWorkReminder")), locale: store.locale)
-                let body = LocalizedStringResource(String.LocalizationValue(store.t("liveActivityScheduleNote")), locale: store.locale)
+                let title = LocalizedStringResource(String.LocalizationValue(shifts.text.t("offWorkReminder")), locale: shifts.preferences.locale)
+                let body = LocalizedStringResource(String.LocalizationValue(shifts.text.t("liveActivityScheduleNote")), locale: shifts.preferences.locale)
                 let activity = try await LiveActivityRequestWorker.request(
                     attributes: attributes,
                     content: content,
@@ -562,19 +561,19 @@ final class LiveActivityService {
                 recordDebugStatus("requested:\(activity)")
             }
             lastError = nil
-            scheduleCompletion(store: store, snapshot: snapshot, generation: generation)
+            scheduleCompletion(shifts: shifts, snapshot: snapshot, generation: generation)
         } catch {
             lastError = error.localizedDescription
             recordDebugStatus("error:\(error.localizedDescription)")
         }
     }
 
-    private func focusState(store: OffWorkStore, session: FocusSession, now: Date) -> OffWorkActivityAttributes.ContentState {
+    private func focusState(shifts: ShiftSessionStore, session: FocusSession, now: Date) -> OffWorkActivityAttributes.ContentState {
         let surface = LiveActivitySurface(sessionKind: session.kind)
-        let copy = focusCopy(for: surface, store: store)
-        let chain = store.focusChain(for: session, at: now)
-        let legs = Self.focusLegs(chain, store: store)
-        let canAdd = surface == .focus && store.canAddFocusPomodoro(at: now)
+        let copy = focusCopy(for: surface, shifts: shifts)
+        let chain = shifts.focus.focusChain(for: session, at: now)
+        let legs = Self.focusLegs(chain, shifts: shifts)
+        let canAdd = surface == .focus && shifts.focus.canAddFocusPomodoro(at: now)
         return OffWorkActivityAttributes.ContentState(
             endAtMs: Int64(session.plannedEndAt.timeIntervalSince1970 * 1_000),
             progress: 0,
@@ -583,7 +582,7 @@ final class LiveActivityService {
                 endAtMs: Int64(session.plannedEndAt.timeIntervalSince1970 * 1_000)
             )],
             phase: surface.rawValue,
-            locale: store.languageCode,
+            locale: shifts.preferences.languageCode,
             appTitle: OWCBrand.shortName,
             caption: copy.caption,
             completedCaption: copy.completedCaption,
@@ -591,44 +590,44 @@ final class LiveActivityService {
             surface: surface.rawValue,
             timerLabel: copy.title,
             destination: "offworkcountdown://focus",
-            taskTitle: Self.focusTaskTitle(session: session, surface: surface, store: store),
-            taskIcon: Self.focusTaskIcon(session: session, surface: surface, store: store),
+            taskTitle: Self.focusTaskTitle(session: session, surface: surface, shifts: shifts),
+            taskIcon: Self.focusTaskIcon(session: session, surface: surface, shifts: shifts),
             nextLabel: legs.first?.nextNote,
-            shiftEndAtMs: Self.shiftEndAtMs(store: store, at: now),
-            shiftEndLabel: store.t("endTime"),
+            shiftEndAtMs: Self.shiftEndAtMs(shifts: shifts, at: now),
+            shiftEndLabel: shifts.text.t("endTime"),
             legs: legs,
-            chainDoneCaption: store.t(store.completesFocusDay(after: session, at: now) ? "focusActivityDayDone" : "focusActivityChainDone"),
+            chainDoneCaption: shifts.text.t(shifts.focus.completesFocusDay(after: session, at: now) ? "focusActivityDayDone" : "focusActivityChainDone"),
             // Offered only where it means something: a running focus block
             // with a task behind it. A break has no estimate to raise.
             addPomodoroLabel: surface == .focus && session.taskID != nil
-                ? store.t("focusActivityAddPomodoro")
+                ? shifts.text.t("focusActivityAddPomodoro")
                 : nil,
             addPomodoroEnabled: canAdd,
-            stopFocusLabel: store.t("focusStop")
+            stopFocusLabel: shifts.text.t("focusStop")
         )
     }
 
-    private func reconcileScheduledActivities(store: OffWorkStore, now: Date) async {
-        let enabled = store.focusLiveActivityEnabled && ActivityAuthorizationInfo().areActivitiesEnabled
+    private func reconcileScheduledActivities(shifts: ShiftSessionStore, now: Date) async {
+        let enabled = shifts.preferences.focusLiveActivityEnabled && ActivityAuthorizationInfo().areActivitiesEnabled
         var requests: [(key: String, start: Date, state: OffWorkActivityAttributes.ContentState)] = []
         if enabled {
             for session in queuedFocus {
-                var state = focusState(store: store, session: session, now: session.startedAt)
+                var state = focusState(shifts: shifts, session: session, now: session.startedAt)
                 state.scheduledSessionID = session.id.uuidString
                 requests.append((session.id.uuidString, session.startedAt, state))
             }
             // A timer reaching zero does not wake the extension to replace its
             // text. Schedule the final message through ActivityKit as well.
-            if let last = queuedFocus.last ?? store.activeFocusSession(),
-               store.completesFocusDay(after: last, at: now) {
-                let chain = store.focusChain(for: last, at: last.startedAt)
+            if let last = queuedFocus.last ?? shifts.focus.activeFocusSession(),
+               shifts.focus.completesFocusDay(after: last, at: now) {
+                let chain = shifts.focus.focusChain(for: last, at: last.startedAt)
                 let end = chain.last?.end ?? last.plannedEndAt
                 if end > now {
                     let key = "done:" + last.id.uuidString
-                    let copy = store.t("focusActivityDayDone")
+                    let copy = shifts.text.t("focusActivityDayDone")
                     let state = OffWorkActivityAttributes.ContentState(
                         endAtMs: Int64(end.timeIntervalSince1970 * 1_000), progress: 100,
-                        segments: [], phase: "complete", locale: store.languageCode,
+                        segments: [], phase: "complete", locale: shifts.preferences.languageCode,
                         appTitle: OWCBrand.shortName, caption: "", completedCaption: copy,
                         completedNote: "", surface: "focus", destination: "offworkcountdown://focus",
                         chainDoneCaption: copy, scheduledSessionID: key
@@ -658,10 +657,10 @@ final class LiveActivityService {
                                       plannedEndAtMs: request.state.endAtMs),
                     content: content,
                     alertConfiguration: .init(
-                        title: LocalizedStringResource(String.LocalizationValue(request.state.taskTitle ?? request.state.appTitle), locale: store.locale),
+                        title: LocalizedStringResource(String.LocalizationValue(request.state.taskTitle ?? request.state.appTitle), locale: shifts.preferences.locale),
                         body: LocalizedStringResource(String.LocalizationValue(request.state.phase == "complete"
                             ? request.state.completedCaption
-                            : store.t("focusEndsAt", values: ["time": store.formatTime(Date(timeIntervalSince1970: Double(request.state.endAtMs) / 1_000))])), locale: store.locale),
+                            : shifts.text.t("focusEndsAt", values: ["time": shifts.text.formatTime(Date(timeIntervalSince1970: Double(request.state.endAtMs) / 1_000))])), locale: shifts.preferences.locale),
                         sound: .default
                     ),
                     start: request.start
@@ -674,20 +673,20 @@ final class LiveActivityService {
     }
 
     private func performFocusReschedule(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         session: FocusSession,
         decision: LiveActivityDecision,
         workDisplayStartsAt: Date?,
         now: Date,
         generation: Int
     ) async {
-        let chain = store.focusChain(for: session, at: now)
+        let chain = shifts.focus.focusChain(for: session, at: now)
         let chainEnd = chain.last?.end ?? session.plannedEndAt
         let attributes = OffWorkActivityAttributes(
             shiftStartAtMs: Int64(session.startedAt.timeIntervalSince1970 * 1_000),
             plannedEndAtMs: Int64(session.plannedEndAt.timeIntervalSince1970 * 1_000)
         )
-        let state = focusState(store: store, session: session, now: now)
+        let state = focusState(shifts: shifts, session: session, now: now)
         // The first boundary already needs a new layout. Do not advertise the
         // frozen current phase as fresh until the entire chain has ended.
         let content = ActivityContent(state: state, staleDate: session.plannedEndAt, relevanceScore: session.startedAt.timeIntervalSince1970)
@@ -725,7 +724,7 @@ final class LiveActivityService {
             lastError = nil
             recordDebugStatus("updated:\(decision.surface.rawValue)")
             scheduleFocusWake(
-                store: store,
+                shifts: shifts,
                 chainEnd: chainEnd,
                 workDisplayStartsAt: workDisplayStartsAt,
                 now: now,
@@ -746,7 +745,7 @@ final class LiveActivityService {
             lastError = nil
             recordDebugStatus("requested:\(decision.surface.rawValue)")
             scheduleFocusWake(
-                store: store,
+                shifts: shifts,
                 chainEnd: chainEnd,
                 workDisplayStartsAt: workDisplayStartsAt,
                 now: now,
@@ -767,7 +766,7 @@ final class LiveActivityService {
     /// the break and the block queued behind it, and retiring the activity at
     /// the first boundary would take the rest of it off the Lock Screen.
     private func scheduleFocusWake(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         chainEnd: Date,
         workDisplayStartsAt: Date?,
         now: Date,
@@ -785,7 +784,7 @@ final class LiveActivityService {
             completionTask?.cancel()
             scheduleWorkHandoff(
                 at: chainEnd,
-                store: store,
+                shifts: shifts,
                 generation: generation
             )
         case .completionThenWorkHandoff:
@@ -795,7 +794,7 @@ final class LiveActivityService {
             // does not foreground the app in between.
             scheduleWorkHandoff(
                 at: workDisplayStartsAt,
-                store: store,
+                shifts: shifts,
                 generation: generation
             )
             scheduleFocusCompletion(
@@ -806,15 +805,15 @@ final class LiveActivityService {
         }
     }
 
-    private func scheduleWorkHandoff(at date: Date, store: OffWorkStore, generation: Int) {
-        focusPriorityTransition.schedule(at: date) { [weak self, weak store] in
-            guard let self, let store,
+    private func scheduleWorkHandoff(at date: Date, shifts: ShiftSessionStore, generation: Int) {
+        focusPriorityTransition.schedule(at: date) { [weak self, weak shifts] in
+            guard let self, let shifts,
                   LiveActivityReconciler.completionMayRun(
                     scheduledGeneration: generation,
                     currentGeneration: self.lifecycleGeneration
                   )
             else { return }
-            await self.reschedule(store: store, now: self.schedulingClock.now())
+            await self.reschedule(shifts: shifts, now: self.schedulingClock.now())
         }
     }
 
@@ -882,15 +881,15 @@ final class LiveActivityService {
     /// finish an activity a restart or an added stretch of overtime had since
     /// handed to a newer session.
     private func scheduleCompletion(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         snapshot: NativeShiftSnapshot,
         generation: Int
     ) {
         completionTask?.cancel()
         let delay = max(0, snapshot.endDate.timeIntervalSinceNow)
-        completionTask = Task { @MainActor [weak self, weak store] in
+        completionTask = Task { @MainActor [weak self, weak shifts] in
             try? await Task.sleep(for: .seconds(delay))
-            guard !Task.isCancelled, let self, let store else { return }
+            guard !Task.isCancelled, let self, let shifts else { return }
             guard generation == self.lifecycleGeneration else { return }
             // Through the same queue as everything else, so it cannot land in
             // the middle of a reschedule.
@@ -899,7 +898,7 @@ final class LiveActivityService {
                 await previous?.value
                 guard generation == self.lifecycleGeneration else { return }
                 await self.finishAll(
-                    store: store,
+                    shifts: shifts,
                     snapshot: snapshot,
                     now: .now,
                     generation: generation
@@ -911,7 +910,7 @@ final class LiveActivityService {
     }
 
     private func finishAll(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         snapshot: NativeShiftSnapshot,
         now: Date,
         generation: Int
@@ -924,11 +923,11 @@ final class LiveActivityService {
                 .init(startAtMs: Int64($0.startAtMs), endAtMs: Int64($0.endAtMs))
             },
             phase: "complete",
-            locale: store.languageCode,
+            locale: shifts.preferences.languageCode,
             appTitle: OWCBrand.shortName,
-            caption: store.t("timeLeftCaption"),
-            completedCaption: store.t("offWorkTime"),
-            completedNote: store.t("offWorkWellDone")
+            caption: shifts.text.t("timeLeftCaption"),
+            completedCaption: shifts.text.t("offWorkTime"),
+            completedNote: shifts.text.t("offWorkWellDone")
         )
         let finalContent = ActivityContent(
             state: finalState,

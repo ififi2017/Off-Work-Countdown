@@ -6,6 +6,40 @@ import UserNotifications
 @MainActor
 @Suite("Service operation ordering", .timeLimit(.minutes(1)))
 struct ServiceConcurrencyTests {
+    @Test("A failed archive save retains existing notifications; retry publishes the committed shift")
+    func notificationsWaitForDurability() async throws {
+        let suite = "owc.notification.persistence.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        let root = FileManager.default.temporaryDirectory.appending(path: suite)
+        defer {
+            defaults.removePersistentDomain(forName: suite)
+            try? FileManager.default.removeItem(at: root)
+        }
+        let records = RecordCoordinator(fileURL: root.appending(path: "archive.json"))
+        let store = makeStore(defaults: defaults, fallback: false, records: records)
+        var added = 0
+        var removed: [String] = []
+        let service = NotificationService(shiftCenter: .init(
+            authorization: { .allowed },
+            pendingIDs: { ["owc.shift.existing"] },
+            deliveredIDs: { [] },
+            add: { _ in added += 1 },
+            removePending: { removed += $0 },
+            removeDelivered: { _ in }
+        ))
+        await service.reschedule(shifts: store.shifts, now: now)
+        #expect(records.persistenceError == .writeFailed)
+        #expect(added == 0)
+        #expect(removed.isEmpty)
+
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        await service.reschedule(shifts: store.shifts, now: now)
+        #expect(records.persistenceError == nil)
+        #expect(records.durableRevision == records.revision)
+        #expect(added > 0)
+        #expect(removed.contains("owc.shift.existing"))
+    }
+
     @Test("A stopped shift drains an in-flight add before clearing", arguments: [false, true])
     func stopWhileAdding(fallback: Bool) async throws {
         let suite = "owc.notification.\(UUID())"
@@ -14,7 +48,7 @@ struct ServiceConcurrencyTests {
         let store = makeStore(defaults: defaults, fallback: fallback)
         let center = SuspendedNotificationCenter()
         let service = NotificationService(shiftCenter: center.adapter)
-        let old = Task { await service.reschedule(store: store, now: now) }
+        let old = Task { await service.reschedule(shifts: store.shifts, now: now) }
         await center.entered.wait()
         // Immediate start ensures the stop is enqueued before releasing add.
         let stop = Task.immediate { await service.clearShiftNotifications() }
@@ -34,14 +68,14 @@ struct ServiceConcurrencyTests {
         let store = makeStore(defaults: defaults, fallback: false)
         let center = SuspendedNotificationCenter()
         let service = NotificationService(shiftCenter: center.adapter)
-        let old = Task { await service.reschedule(store: store, now: now) }
+        let old = Task { await service.reschedule(shifts: store.shifts, now: now) }
         await center.entered.wait()
-        store.languageOverride = "zh-CN"
-        let replacement = Task.immediate { await service.reschedule(store: store, now: now) }
+        store.preferences.applyPreferences { $0.languageOverride = "zh-CN" }
+        let replacement = Task.immediate { await service.reschedule(shifts: store.shifts, now: now) }
         center.release.signal()
         await old.value
         await replacement.value
-        let expected = try store.shiftReminders(at: now).filter {
+        let expected = try store.shifts.shiftReminders(at: now).filter {
             $0.atMs > now.timeIntervalSince1970 * 1_000 && $0.title != nil && $0.body != nil
         }
         #expect(!center.requests.isEmpty)
@@ -140,20 +174,20 @@ struct ServiceConcurrencyTests {
         return calendar.date(from: DateComponents(year: 2026, month: 9, day: 7, hour: 10))!
     }
 
-    private func makeStore(defaults: UserDefaults, fallback: Bool) -> OffWorkStore {
-        let store = OffWorkStore(defaults: defaults, records: .inMemory())
-        store.onboardingComplete = true
-        store.scheduleMode = .off
-        store.startMinutes = 9 * 60
-        store.endMinutes = 18 * 60
-        store.lunchEnabled = false
-        store.lunchStartReminderEnabled = false
-        store.lunchEndReminderEnabled = false
-        store.microBreakEnabled = false
-        store.notificationMode = fallback ? .off : .simple
-        store.liveActivityEnabled = fallback
-        store.languageOverride = "en"
-        store.startCountdown(at: now)
+    private func makeStore(defaults: UserDefaults, fallback: Bool, records: RecordCoordinator? = nil) -> AppRuntime {
+        let store = AppRuntime(defaults: defaults, records: records ?? .inMemory())
+        store.preferences.onboardingComplete = true
+        store.preferences.applyPreferences { $0.scheduleMode = .off }
+        store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+        store.preferences.applyPreferences { $0.endMinutes = 18 * 60 }
+        store.preferences.applyPreferences { $0.lunchEnabled = false }
+        store.preferences.applyPreferences { $0.lunchStartReminderEnabled = false }
+        store.preferences.applyPreferences { $0.lunchEndReminderEnabled = false }
+        store.preferences.applyPreferences { $0.microBreakEnabled = false }
+        store.preferences.applyPreferences { $0.notificationMode = fallback ? .off : .simple }
+        store.preferences.liveActivityEnabled = fallback
+        store.preferences.applyPreferences { $0.languageOverride = "en" }
+        store.shifts.startCountdown(at: now)
         return store
     }
 }

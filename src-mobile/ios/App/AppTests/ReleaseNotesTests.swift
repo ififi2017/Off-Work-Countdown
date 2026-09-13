@@ -4,34 +4,41 @@ import Testing
 
 @MainActor
 struct ReleaseNotesTests {
+    private func owners(_ defaults: UserDefaults) -> (PreferencesStore, PlusEntitlement) {
+        (PreferencesStore(defaults: defaults, records: .inMemory()), PlusEntitlement(defaults: defaults))
+    }
+
     @Test func returningUserSeesUpdateUntilDismissed() throws {
         let suite = "release-notes-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         defaults.set(true, forKey: "ios.native.onboardingComplete")
 
-        let firstLaunch = OffWorkStore(defaults: defaults, records: .inMemory())
-        #expect(firstLaunch.showsReleaseNotes)
-        let beforeDismissal = OffWorkStore(defaults: defaults, records: .inMemory())
-        #expect(beforeDismissal.showsReleaseNotes)
+        let (firstPreferences, plus) = owners(defaults)
+        let firstScene = SceneState(showsReleaseNotes: firstPreferences.shouldOfferReleaseNotes)
+        #expect(firstScene.showsReleaseNotes)
+        let (secondPreferences, _) = owners(defaults)
+        let secondScene = SceneState(showsReleaseNotes: secondPreferences.shouldOfferReleaseNotes)
+        #expect(secondScene.showsReleaseNotes)
 
-        firstLaunch.dismissReleaseNotes()
-        #expect(firstLaunch.showsReleaseNotes == false)
-        #expect(firstLaunch.plus.hasSeenIntro)
-        let nextLaunch = OffWorkStore(defaults: defaults, records: .inMemory())
-        #expect(nextLaunch.showsReleaseNotes == false)
+        firstScene.dismissReleaseNotes(preferences: firstPreferences, plus: plus)
+        #expect(!firstScene.showsReleaseNotes)
+        #expect(plus.hasSeenIntro)
+        let (nextPreferences, _) = owners(defaults)
+        #expect(!nextPreferences.shouldOfferReleaseNotes)
+        #expect(secondScene.showsReleaseNotes)
     }
 
     @Test func freshInstallDoesNotSeeAnUpgradeIntroduction() throws {
         let suite = "release-notes-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let store = OffWorkStore(defaults: defaults, records: .inMemory())
-        #expect(store.showsReleaseNotes == false)
-        store.completeOnboarding(enableNotifications: false)
-        let nextLaunch = OffWorkStore(defaults: defaults, records: .inMemory())
-        #expect(nextLaunch.showsReleaseNotes == false)
-        #expect(nextLaunch.plus.hasSeenIntro == false)
+        let (preferences, plus) = owners(defaults)
+        #expect(!preferences.shouldOfferReleaseNotes)
+        preferences.completeSetup(enableNotifications: false)
+        let (nextPreferences, _) = owners(defaults)
+        #expect(!nextPreferences.shouldOfferReleaseNotes)
+        #expect(!plus.hasSeenIntro)
         #expect(ReleaseNotes.shouldPresent(onboardingComplete: true, seenRelease: "3.1.8"))
     }
 }

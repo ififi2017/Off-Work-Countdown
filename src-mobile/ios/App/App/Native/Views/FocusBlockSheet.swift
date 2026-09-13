@@ -22,9 +22,9 @@ struct FocusTaskEditorDraft {
 }
 
 struct FocusTaskEditorShell<Content: View>: View {
-    let store: OffWorkStore
+    var title: String
+    var cancelTitle: String
     var saveTitle: String
-    var titleKey = "focusNewTask"
     var canSave: Bool
     var onCancel: () -> Void
     var onSave: () -> Void
@@ -40,11 +40,11 @@ struct FocusTaskEditorShell<Content: View>: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .background(OWCDesign.page)
-            .navigationTitle(store.t(titleKey))
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(store.t("cancel"), action: onCancel)
+                    Button(cancelTitle, action: onCancel)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(saveTitle) {
@@ -63,7 +63,8 @@ struct FocusTaskEditorShell<Content: View>: View {
 }
 
 struct FocusTaskEditorFields: View {
-    let store: OffWorkStore
+    let focus: FocusStore
+    let text: AppText
     @Binding var draft: FocusTaskEditorDraft
     let destination: String?
     let finish: Date?
@@ -89,30 +90,30 @@ struct FocusTaskEditorFields: View {
                 .foregroundStyle(OWCDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        FocusTitleField(store: store, title: $draft.title, icon: draft.icon,
-                        focused: $titleFocused, placeholder: store.t("focusTaskPlaceholder"))
+        FocusTitleField(focus: focus, title: $draft.title, icon: draft.icon,
+                        focused: $titleFocused, placeholder: focus.t("focusTaskPlaceholder"))
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 4) {
-                OWCRow(icon: "number", title: store.t("focusEstimate"),
-                       subtitle: store.t("focusEstimateDetail", values: [
+                OWCRow(icon: "number", title: focus.t("focusEstimate"),
+                       subtitle: focus.t("focusEstimateDetail", values: [
                         "count": "\(draft.pomodoros)",
-                        "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
+                        "minutes": "\(focus.focusTimerSettings.normalized.focusMinutes)"
                        ]), isLast: true) {
                     Stepper(value: $draft.pomodoros, in: minimumPomodoros...max(maximumPomodoros ?? 12, draft.pomodoros, minimumPomodoros)) {
                         Text("\(draft.pomodoros)")
                     }
                     .labelsHidden()
-                    .accessibilityLabel(store.t("focusEstimate"))
+                    .accessibilityLabel(focus.t("focusEstimate"))
                     .accessibilityValue("\(draft.pomodoros)")
                     .fixedSize()
                 }
                 if showsFinish {
                 Text(finish.map { date in
-                    let time = showsDate && !store.recordsCalendar.isDate(date, inSameDayAs: referenceDate)
-                        ? store.formatDate(date) + " · " + store.formatTime(date)
-                        : store.formatTime(date)
-                    return store.t("focusEstimatedFinish", values: ["time": time])
-                } ?? store.t("focusNoRoomThisShift"))
+                    let time = showsDate && !focus.recordsCalendar.isDate(date, inSameDayAs: referenceDate)
+                        ? text.formatDate(date) + " · " + focus.formatTime(date)
+                        : focus.formatTime(date)
+                    return focus.t("focusEstimatedFinish", values: ["time": time])
+                } ?? focus.t("focusNoRoomThisShift"))
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
                 .padding(.horizontal, 16)
@@ -122,22 +123,22 @@ struct FocusTaskEditorFields: View {
             }
         }
         if showsOptions {
-            FocusTaskEditorOptions(store: store, draft: $draft,
+            FocusTaskEditorOptions(focus: focus, draft: $draft,
                                    minimumPomodoros: minimumPomodoros, maximumPomodoros: maximumPomodoros)
         }
     }
 }
 
 private struct FocusTaskEditorOptions: View {
-    let store: OffWorkStore
+    let focus: FocusStore
     @Binding var draft: FocusTaskEditorDraft
     var minimumPomodoros = 1
     var maximumPomodoros: Int?
 
     var body: some View {
-        FocusTaskIconPicker(store: store, selection: $draft.icon)
-        FocusFavoriteToggle(store: store, isFavorite: $draft.isFavorite)
-        FocusFavoritePicker(store: store, title: $draft.title, icon: $draft.icon, selectedID: $draft.favoriteID) {
+        FocusTaskIconPicker(title: focus.t("focusChooseIcon"), label: { focus.t($0.titleKey) }, selection: $draft.icon)
+        FocusFavoriteToggle(title: focus.t("focusMakeFavorite"), isFavorite: $draft.isFavorite)
+        FocusFavoritePicker(focus: focus, title: $draft.title, icon: $draft.icon, selectedID: $draft.favoriteID) {
             draft.select($0, favorite: true)
             draft.pomodoros = max(minimumPomodoros, min(draft.pomodoros, maximumPomodoros ?? draft.pomodoros))
         }
@@ -146,7 +147,8 @@ private struct FocusTaskEditorOptions: View {
 
 /// The occupied-block actions stay small; empty blocks use the unified editor.
 struct FocusBlockSheet: View {
-    let store: OffWorkStore
+    let focus: FocusStore
+    let text: AppText
     let block: FocusDayCanvasModel.Block
     var onResult: (FocusPlacementResult) -> Void
     @ScaledMetric(relativeTo: .body) private var assignedSheetHeight: CGFloat = 240
@@ -154,49 +156,55 @@ struct FocusBlockSheet: View {
 
     var body: some View {
         if let taskID = block.taskID,
-           let task = store.records.state.focusTasks.first(where: { $0.id == taskID && $0.deletedAt == nil }) {
-            FocusTaskEditSheet(store: store, task: task)
+           let task = focus.records.state.focusTasks.first(where: { $0.id == taskID && $0.deletedAt == nil }) {
+            FocusTaskEditSheet(focus: focus, text: text, task: task)
         } else if block.hasAssignment {
             NavigationStack {
                 VStack(spacing: 14) {
                     OWCGroupCard {
                         OWCRow(icon: block.isUserBreak ? "cup.and.saucer.fill" : (block.taskIcon ?? .focus).systemName,
-                               title: block.isUserBreak ? store.t("focusBreak") : (block.taskTitle ?? store.t("focusTaskTitle")),
+                               title: block.isUserBreak ? focus.t("focusBreak") : (block.taskTitle ?? focus.t("focusTaskTitle")),
                                isLast: true) {
                             Image(systemName: "checkmark").foregroundStyle(OWCDesign.accent)
                         }
                     }
-                    Button(store.t("focusBlockClear"), role: .destructive) {
-                        store.clearBlock(startingAt: block.startAtMs)
-                        dismiss()
+                    Button(focus.t("focusBlockClear"), role: .destructive) {
+                        Task { @MainActor in
+                            await focus.clearBlock(startingAt: block.startAtMs).value
+                            dismiss()
+                        }
                     }.buttonStyle(OWCSecondaryButtonStyle())
                 }
                 .padding(OWCDesign.pageInset)
                 .background(OWCDesign.page)
                 .toolbar { ToolbarItem(placement: .topBarLeading) {
-                    Button(store.t("close")) { dismiss() }
+                    Button(focus.t("close")) { dismiss() }
                 } }
             }
             .presentationDetents([.height(assignedSheetHeight)])
             .presentationDragIndicator(.visible)
         } else {
-            FocusQuickCreateSheet(store: store, blockStartAtMs: block.startAtMs, onResult: onResult)
+            FocusQuickCreateSheet(focus: focus, text: text, blockStartAtMs: block.startAtMs, onResult: onResult)
         }
     }
 }
 
 struct FocusQuickCreateSheet: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let focus: FocusStore
+    let text: AppText
     var blockStartAtMs: Int64?
     var onResult: (FocusPlacementResult) -> Void
     @State private var draft: FocusTaskEditorDraft
-    @State private var landing: Landing
+    @State private var landing: FocusQuickCreateLanding
+    @State private var isSubmitting = false
     @Environment(\.dismiss) private var dismiss
 
-    init(store: OffWorkStore, initialLanding: Landing = .nextBlock,
+    init(focus: FocusStore, text: AppText, initialLanding: FocusQuickCreateLanding = .nextBlock,
          blockStartAtMs: Int64? = nil, favorite: FocusTask? = nil,
          onResult: @escaping (FocusPlacementResult) -> Void) {
-        self.store = store
+        self.focus = focus
+        self.text = text
         self.blockStartAtMs = blockStartAtMs
         self.onResult = onResult
         _landing = State(initialValue: initialLanding)
@@ -205,65 +213,61 @@ struct FocusQuickCreateSheet: View {
         _draft = State(initialValue: draft)
     }
 
-    enum Landing: String, Identifiable {
-        case nextBlock, currentOrNextBlock, startNow, unscheduled
-        var id: String { rawValue }
-    }
 
     private var canStart: Bool {
-        if let existingTask { return store.focusStartAvailability(existingTask) == .ready }
-        return store.activeFocusSession() == nil && store.hasFocusRoom()
+        if let existingTask { return focus.focusStartAvailability(existingTask) == .ready }
+        return focus.activeFocusSession() == nil && focus.hasFocusRoom()
     }
-    private var tasks: [FocusTask] { store.focusTasksForCanvas().filter { $0.completedAt == nil } }
+    private var tasks: [FocusTask] { focus.focusTasksForCanvas().filter { $0.completedAt == nil } }
     private var existingTask: FocusTask? { tasks.first { $0.id == draft.existingTaskID } }
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
-            let canvas = store.focusDayCanvas(at: context.date)
+            let canvas = focus.focusDayCanvas(at: context.date)
             let target = blockStartAtMs ?? canvas.nextEmptyBlock?.startAtMs
-            let finish = store.focusCreationFinish(pomodoros: draft.pomodoros, startingAt: target,
+            let finish = focus.focusCreationFinish(pomodoros: draft.pomodoros, startingAt: target,
                                                    startNow: landing == .startNow, taskID: draft.existingTaskID,
                                                    at: context.date)
-            FocusTaskEditorShell(store: store,
-                saveTitle: store.t(landing == .startNow ? "focusAddAndStart" : "focusSaveTask"),
+            FocusTaskEditorShell(title: focus.t("focusNewTask"), cancelTitle: focus.t("cancel"),
+                saveTitle: focus.t(landing == .startNow ? "focusAddAndStart" : "focusSaveTask"),
                 canSave: draft.canSave && (landing != .startNow || canStart)
                     && (landing != .unscheduled || draft.isFavorite)
                     && (draft.existingTaskID == nil || landing == .startNow || landing == .unscheduled || target != nil),
                 onCancel: { dismiss() }, onSave: save) {
-                FocusTaskEditorFields(store: store, draft: $draft, destination: nil,
+                FocusTaskEditorFields(focus: focus, text: text, draft: $draft, destination: nil,
                                       finish: finish,
                                       referenceDate: landing == .startNow ? context.date : target.map { Date(timeIntervalSince1970: Double($0) / 1_000) } ?? context.date,
                                       showsFinish: landing != .unscheduled, showsOptions: false)
-                OWCSectionHeader(title: store.t("focusLanding"))
+                OWCSectionHeader(title: focus.t("focusLanding"))
                 OWCGroupCard {
                     if (blockStartAtMs == nil && landing != .currentOrNextBlock) || draft.isFavorite {
-                        landingRow(.nextBlock, icon: "calendar.badge.plus", title: store.t("focusLandingNextBlock"),
+                        landingRow(.nextBlock, icon: "calendar.badge.plus", title: focus.t("focusLandingNextBlock"),
                                    subtitle: destinationTime(target, relativeTo: context.date))
-                        landingRow(.startNow, icon: "play.fill", title: store.t("focusStartNow"), isLast: !draft.isFavorite)
+                        landingRow(.startNow, icon: "play.fill", title: focus.t("focusStartNow"), isLast: !draft.isFavorite)
                         if draft.isFavorite {
-                            landingRow(.unscheduled, icon: "tray", title: store.t("focusLeaveUnscheduled"), isLast: true)
+                            landingRow(.unscheduled, icon: "tray", title: focus.t("focusLeaveUnscheduled"), isLast: true)
                         }
                     } else {
-                        OWCRow(icon: "calendar.badge.plus", title: store.t(blockStartAtMs == nil ? "focusLandingNextBlock" : "focusThisBlock"),
+                        OWCRow(icon: "calendar.badge.plus", title: focus.t(blockStartAtMs == nil ? "focusLandingNextBlock" : "focusThisBlock"),
                                subtitle: destinationTime(target, relativeTo: context.date), isLast: true) {
                             EmptyView()
                         }
                     }
                 }
-                FocusTaskEditorOptions(store: store, draft: $draft)
+                FocusTaskEditorOptions(focus: focus, draft: $draft)
                 if !tasks.isEmpty {
-                    OWCSectionHeader(title: store.t("focusBlockExisting"))
+                    OWCSectionHeader(title: focus.t("focusBlockExisting"))
                     OWCGroupCard {
                         ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
                             Button {
                                 draft.select(task, favorite: false,
-                                             remaining: max(1, task.estimatedPomodoros - store.completedFocusBlocks(for: task)))
-                                draft.isFavorite = store.savedFocusFavorite(title: task.title, icon: task.icon) != nil
+                                             remaining: max(1, task.estimatedPomodoros - focus.completedFocusBlocks(for: task)))
+                                draft.isFavorite = focus.savedFocusFavorite(title: task.title, icon: task.icon) != nil
                             } label: {
                                 OWCRow(icon: task.icon.systemName, title: task.title,
-                                       subtitle: store.t("focusEstimateDetail", values: [
-                                        "count": "\(max(1, task.estimatedPomodoros - store.completedFocusBlocks(for: task)))",
-                                        "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
+                                       subtitle: focus.t("focusEstimateDetail", values: [
+                                        "count": "\(max(1, task.estimatedPomodoros - focus.completedFocusBlocks(for: task)))",
+                                        "minutes": "\(focus.focusTimerSettings.normalized.focusMinutes)"
                                        ]), isLast: index == tasks.count - 1) {
                                     if draft.existingTaskID == task.id {
                                         Image(systemName: "checkmark").foregroundStyle(OWCDesign.accent)
@@ -274,13 +278,17 @@ struct FocusQuickCreateSheet: View {
                     }
                 }
                 if let blockStartAtMs {
-                    Button(store.t("focusBlockMakeBreak")) {
-                        store.markBlockAsBreak(startingAt: blockStartAtMs)
-                        onResult(.placed(taskID: UUID(), blockStartAtMs: blockStartAtMs))
-                        dismiss()
+                    Button(focus.t("focusBlockMakeBreak")) {
+                        Task { @MainActor in
+                            await focus.markBlockAsBreak(startingAt: blockStartAtMs).value
+                            onResult(.placed(taskID: UUID(), blockStartAtMs: blockStartAtMs))
+                            dismiss()
+                        }
                     }.buttonStyle(OWCSecondaryButtonStyle())
                 }
             }
+            .disabled(isSubmitting)
+            .interactiveDismissDisabled(isSubmitting)
         }
         .onChange(of: draft.isFavorite) {
             if !draft.isFavorite, landing == .unscheduled { landing = .nextBlock }
@@ -294,32 +302,32 @@ struct FocusQuickCreateSheet: View {
     }
 
     private func destinationTime(_ target: Int64?, relativeTo reference: Date) -> String {
-        guard let target else { return store.t("focusNoEmptyBlockShort") }
+        guard let target else { return focus.t("focusNoEmptyBlockShort") }
         let date = Date(timeIntervalSince1970: Double(target) / 1_000)
-        let calendar = store.recordsCalendar
+        let calendar = focus.recordsCalendar
         let day: String
         if calendar.isDate(date, inSameDayAs: reference) {
-            day = store.t("focusToday")
+            day = focus.t("focusToday")
         } else if let tomorrow = calendar.date(byAdding: .day, value: 1, to: reference),
                   calendar.isDate(date, inSameDayAs: tomorrow) {
-            day = store.t("tomorrow")
+            day = focus.t("tomorrow")
         } else {
-            day = store.formatDate(date)
+            day = text.formatDate(date)
         }
-        return day + " · " + store.formatTime(date)
+        return day + " · " + focus.formatTime(date)
     }
 
     private var startDisabledReason: String? {
         guard !canStart else { return nil }
-        if store.activeFocusSession() != nil { return store.t("focusStartAlreadyRunning") }
-        if !store.isWithinFocusWorkTime() { return store.t("focusOutsideWorkHours") }
-        if let existingTask, case .notYetAvailable(let date) = store.focusStartAvailability(existingTask) {
-            return store.t("focusStartAfter", values: ["time": store.formatDate(date) + " · " + store.formatTime(date)])
+        if focus.activeFocusSession() != nil { return focus.t("focusStartAlreadyRunning") }
+        if !focus.isWithinFocusWorkTime() { return focus.t("focusOutsideWorkHours") }
+        if let existingTask, case .notYetAvailable(let date) = focus.focusStartAvailability(existingTask) {
+            return focus.t("focusStartAfter", values: ["time": text.formatDate(date) + " · " + focus.formatTime(date)])
         }
-        return store.t("focusNoRoom")
+        return focus.t("focusNoRoom")
     }
 
-    private func landingRow(_ value: Landing, icon: String, title: String, subtitle: String? = nil, isLast: Bool = false) -> some View {
+    private func landingRow(_ value: FocusQuickCreateLanding, icon: String, title: String, subtitle: String? = nil, isLast: Bool = false) -> some View {
         let unavailable = value == .startNow && !canStart
         return VStack(spacing: 0) {
             Button { landing = value } label: {
@@ -352,45 +360,120 @@ struct FocusQuickCreateSheet: View {
 
     private func save() {
         guard draft.canSave else { return }
+        let submitted = draft
         if landing == .unscheduled {
             guard draft.isFavorite else { return }
-            store.saveFocusFavorite(title: draft.title, pomodoros: draft.pomodoros, icon: draft.icon)
-            dismiss()
+            let command = focus.saveFocusFavorite(title: submitted.title, pomodoros: submitted.pomodoros, icon: submitted.icon)
+            if command.immediateResult != nil { dismiss(); return }
+            isSubmitting = true
+            Task { @MainActor in
+                await command.value
+                isSubmitting = false
+                guard draftMatches(submitted) else { return }
+                dismiss()
+            }
             return
         }
         if landing == .startNow {
             guard canStart else { return }
-            if var existingTask {
-                existingTask.estimatedPomodoros = store.completedFocusBlocks(for: existingTask) + draft.pomodoros
-                store.records.upsertFocusTask(existingTask)
-                guard store.startFocus(task: existingTask) else { return }
+            if let existingTask {
+                let command = scene.startFocus(task: existingTask, pomodoros: submitted.pomodoros, using: focus)
+                if let started = command.immediateResult {
+                    if started {
+                        if submitted.isFavorite {
+                            _ = focus.saveFocusFavorite(title: submitted.title, pomodoros: submitted.pomodoros, icon: submitted.icon)
+                        }
+                        dismiss()
+                    }
+                    return
+                }
+                isSubmitting = true
+                Task { @MainActor in
+                    let started = await command.value
+                    isSubmitting = false
+                    guard started,
+                          draftMatches(submitted) else { return }
+                    if submitted.isFavorite {
+                        await focus.saveFocusFavorite(title: submitted.title, pomodoros: submitted.pomodoros, icon: submitted.icon).value
+                    }
+                    dismiss()
+                }
             } else {
-                store.addAndStartFocusTask(title: draft.title, pomodoros: draft.pomodoros,
-                                          icon: draft.icon, isFavorite: draft.isFavorite)
+                let command = scene.addAndStartFocusTask(title: submitted.title, pomodoros: submitted.pomodoros,
+                                                         icon: submitted.icon, isFavorite: submitted.isFavorite,
+                                                         using: focus)
+                if let started = command.immediateResult {
+                    if started { dismiss() }
+                    return
+                }
+                isSubmitting = true
+                Task { @MainActor in
+                    let started = await command.value
+                    isSubmitting = false
+                    guard started,
+                          draftMatches(submitted) else { return }
+                    dismiss()
+                }
             }
-        } else if var existingTask {
-            let target = blockStartAtMs ?? store.focusDayCanvas().nextEmptyBlock?.startAtMs
+            return
+        } else if let existingTask {
+            let target = blockStartAtMs ?? focus.focusDayCanvas().nextEmptyBlock?.startAtMs
             guard let target else { return }
-            existingTask.estimatedPomodoros = store.completedFocusBlocks(for: existingTask) + draft.pomodoros
-            store.records.upsertFocusTask(existingTask)
-            onResult(store.placeFocusTask(existingTask, pomodoros: draft.pomodoros, startingAt: target))
+            let command = focus.placeFocusTask(existingTask, pomodoros: submitted.pomodoros,
+                                               startingAt: target, updatingEstimateBy: submitted.pomodoros,
+                                               makeFavorite: submitted.isFavorite)
+            if let result = command.immediateResult { onResult(result); dismiss(); return }
+            isSubmitting = true
+            Task { @MainActor in
+                let result = await command.value
+                isSubmitting = false
+                guard draftMatches(submitted) else { return }
+                onResult(result)
+                dismiss()
+            }
+            return
         } else if let blockStartAtMs {
-            onResult(store.createFocusTask(title: draft.title, icon: draft.icon, pomodoros: draft.pomodoros,
-                                           inBlockStartingAt: blockStartAtMs, scheduleAllPomodoros: true))
+            let command = focus.createFocusTask(title: submitted.title, icon: submitted.icon,
+                                                pomodoros: submitted.pomodoros, isFavorite: submitted.isFavorite,
+                                                inBlockStartingAt: blockStartAtMs, scheduleAllPomodoros: true)
+            if let result = command.immediateResult { onResult(result); dismiss(); return }
+            isSubmitting = true
+            Task { @MainActor in
+                let result = await command.value
+                isSubmitting = false
+                guard draftMatches(submitted) else { return }
+                onResult(result)
+                dismiss()
+            }
+            return
         } else {
-            onResult(store.createFocusTaskInNextEmptyBlock(title: draft.title, pomodoros: draft.pomodoros,
-                                                          icon: draft.icon, scheduleAllPomodoros: true))
+            let command = focus.createFocusTaskInNextEmptyBlock(
+                title: submitted.title, pomodoros: submitted.pomodoros, icon: submitted.icon,
+                isFavorite: submitted.isFavorite, scheduleAllPomodoros: true
+            )
+            if let result = command.immediateResult { onResult(result); dismiss(); return }
+            isSubmitting = true
+            Task { @MainActor in
+                let result = await command.value
+                isSubmitting = false
+                guard draftMatches(submitted) else { return }
+                onResult(result)
+                dismiss()
+            }
+            return
         }
-        if draft.isFavorite {
-            store.saveFocusFavorite(title: draft.title, pomodoros: draft.pomodoros, icon: draft.icon)
-        }
-        dismiss()
+    }
+
+    private func draftMatches(_ submitted: FocusTaskEditorDraft) -> Bool {
+        draft.title == submitted.title && draft.icon == submitted.icon
+            && draft.pomodoros == submitted.pomodoros && draft.isFavorite == submitted.isFavorite
+            && draft.favoriteID == submitted.favoriteID && draft.existingTaskID == submitted.existingTaskID
     }
 }
 
 /// The title row both creation paths use, so they cannot drift apart again.
 struct FocusTitleField: View {
-    let store: OffWorkStore
+    let focus: FocusStore
     @Binding var title: String
     let icon: FocusTaskIcon
     @Binding var focused: Bool
@@ -404,7 +487,7 @@ struct FocusTitleField: View {
                 .accessibilityHidden(true)
             FocusTaskTitleInput(
                 text: $title, placeholder: placeholder,
-                accessibilityTitle: store.t("focusTaskTitle"),
+                accessibilityTitle: focus.t("focusTaskTitle"),
                 onFocusChange: { focused = $0 }
             )
             .transaction { $0.animation = nil }

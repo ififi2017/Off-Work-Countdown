@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Synthetic examples only; previewing Plus never reads or edits saved tasks.
 struct FocusLockedUsualScale: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let focus: FocusStore
 
     private let samples: [(key: String, icon: FocusTaskIcon)] = [
         ("focusDemoWriting", .writing),
@@ -13,11 +14,11 @@ struct FocusLockedUsualScale: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 8) {
-                OWCSectionHeader(title: store.t("focusFavorites"))
+                OWCSectionHeader(title: focus.t("focusFavorites"))
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                         ForEach(samples, id: \.key) { sample in
-                            Button { store.presentedRoute = .plus } label: {
-                                Label(store.t(sample.key), systemImage: sample.icon.systemName)
+                            Button { scene.presentedRoute = .plus } label: {
+                                Label(focus.t(sample.key), systemImage: sample.icon.systemName)
                                     .font(.callout.weight(.medium))
                                     .foregroundStyle(OWCDesign.primary)
                                     .lineLimit(2)
@@ -33,14 +34,14 @@ struct FocusLockedUsualScale: View {
                 }
             }
             VStack(alignment: .leading, spacing: 8) {
-                OWCSectionHeader(title: store.t("focusUsualDays"))
+                OWCSectionHeader(title: focus.t("focusUsualDays"))
                 OWCGroupCard {
-                    Button { store.presentedRoute = .plus } label: {
+                    Button { scene.presentedRoute = .plus } label: {
                         OWCRow(
                             icon: "star.fill",
-                            title: store.t("focusUsualDayDefaultName"),
-                            subtitle: store.t("focusTemplateSlots", values: ["count": "4"])
-                                + " · " + store.t("focusTemplateAuto"),
+                            title: focus.t("focusUsualDayDefaultName"),
+                            subtitle: focus.t("focusTemplateSlots", values: ["count": "4"])
+                                + " · " + focus.t("focusTemplateAuto"),
                             isLast: true
                         ) {
                             Image(systemName: "chevron.right")
@@ -51,7 +52,7 @@ struct FocusLockedUsualScale: View {
                     .buttonStyle(OWCRowButtonStyle())
                 }
             }
-            Text(store.t("focusCadenceNote"))
+            Text(focus.t("focusCadenceNote"))
                 .font(.caption)
                 .foregroundStyle(OWCDesign.secondary)
                 .padding(.horizontal, 6)
@@ -59,37 +60,25 @@ struct FocusLockedUsualScale: View {
     }
 }
 
-/// What the editor was opened for.
-struct FocusTemplateDraft: Identifiable {
-    var id: UUID { template?.id ?? newID }
-    /// nil when this is a new template being drawn from today.
-    var template: FocusTemplate?
-    var newID = UUID()
-    var name: String
-    var slots: [FocusTemplateSlot]
-
-
-}
-
 /// The third scale. Favourites and usual days finally sit together — a usual
 /// day used to be a section at the bottom of the *second* scale's page, which
 /// put a cross-day thing inside today.
 struct FocusUsualScale: View {
-    let store: OffWorkStore
+    let focus: FocusStore
     let model: FocusDayCanvasModel
     var onPlaceFavorite: (FocusTask) -> Void
     var onEditTemplate: (FocusTemplateDraft) -> Void
 
     @State private var showsCapacityWarning = false
 
-    private var favorites: [FocusTask] { store.favoriteFocusTasks() }
-    private var templates: [FocusTemplate] { store.focusPlanning.templates }
+    private var favorites: [FocusTask] { focus.favoriteFocusTasks() }
+    private var templates: [FocusTemplate] { focus.focusPlanning.templates }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             favoritesSection
             templatesSection
-            Text(store.t("focusCadenceNote"))
+            Text(focus.t("focusCadenceNote"))
                 .font(.caption)
                 .foregroundStyle(OWCDesign.secondary)
                 .padding(.horizontal, 6)
@@ -100,7 +89,7 @@ struct FocusUsualScale: View {
     private var favoritesSection: some View {
         if !favorites.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
-                OWCSectionHeader(title: store.t("focusFavorites"))
+                OWCSectionHeader(title: focus.t("focusFavorites"))
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
                         ForEach(favorites) { task in
                             Button { onPlaceFavorite(task) } label: {
@@ -121,8 +110,8 @@ struct FocusUsualScale: View {
                             // further down the page and looked inert.
                             .accessibilityHint(landingHint)
                             .contextMenu {
-                                Button(store.t("focusRemoveFavorite"), systemImage: "trash", role: .destructive) {
-                                    store.toggleFocusFavorite(task)
+                                Button(focus.t("focusRemoveFavorite"), systemImage: "trash", role: .destructive) {
+                                    _ = focus.toggleFocusFavorite(task)
                                 }
                             }
                         }
@@ -136,26 +125,26 @@ struct FocusUsualScale: View {
     }
 
     private var landingHint: String {
-        guard let next = model.nextEmptyBlock else { return store.t("focusNoEmptyBlockShort") }
+        guard let next = model.nextEmptyBlock else { return focus.t("focusNoEmptyBlockShort") }
         let start = Date(timeIntervalSince1970: Double(next.startAtMs) / 1_000)
-        return store.t("focusFavoriteLands", values: ["time": store.formatTime(start)])
+        return focus.t("focusFavoriteLands", values: ["time": focus.formatTime(start)])
     }
 
     private var templatesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            OWCSectionHeader(title: store.t("focusUsualDays"))
+            OWCSectionHeader(title: focus.t("focusUsualDays"))
             OWCGroupCard {
                 Button {
                     onEditTemplate(FocusTemplateDraft(
                         template: nil,
-                        name: store.t("focusUsualDayDefaultName"),
-                        slots: store.focusTemplateDraftFromToday()
+                        name: focus.t("focusUsualDayDefaultName"),
+                        slots: focus.focusTemplateDraftFromToday()
                     ))
                 } label: {
                     OWCRow(
                         icon: "square.and.arrow.down",
-                        title: store.t("focusSaveTodayAsUsual"),
-                        subtitle: store.t("focusSaveTodayAsUsualDetail"),
+                        title: focus.t("focusSaveTodayAsUsual"),
+                        subtitle: focus.t("focusSaveTodayAsUsualDetail"),
                         isLast: templates.isEmpty,
                         centersVertically: true
                     ) {
@@ -175,37 +164,37 @@ struct FocusUsualScale: View {
                         ))
                     } label: {
                         OWCRow(
-                            icon: store.focusPlanning.defaultTemplateID == template.id ? "star.fill" : "square.grid.2x2",
+                            icon: focus.focusPlanning.defaultTemplateID == template.id ? "star.fill" : "square.grid.2x2",
                             title: template.name,
                             subtitle: templateSubtitle(template),
                             isLast: index == templates.count - 1,
                             centersVertically: true
                         ) {
                             HStack(spacing: 0) {
-                                if store.focusTemplateFit(template).dropped > 0 {
+                                if focus.focusTemplateFit(template).dropped > 0 {
                                     Button { showsCapacityWarning = true } label: {
                                         Image(systemName: "exclamationmark.triangle")
-                                            .foregroundStyle(.orange)
+                                            .foregroundStyle(OWCDesign.warning)
                                             .frame(width: 44, height: 44)
                                     }
                                     .buttonStyle(.plain)
-                                    .accessibilityLabel(store.t("focusTemplateCapacityWarning"))
+                                    .accessibilityLabel(focus.t("focusTemplateCapacityWarning"))
                                 }
                                 Menu {
-                                    Button(store.t("focusApplyTemplate")) {
-                                        _ = store.applyFocusTemplate(template)
+                                    Button(focus.t("focusApplyTemplate")) {
+                                        _ = focus.applyFocusTemplate(template)
                                     }
-                                    Button(store.t(
-                                        store.focusPlanning.defaultTemplateID == template.id
+                                    Button(focus.t(
+                                        focus.focusPlanning.defaultTemplateID == template.id
                                             ? "focusUnsetDefaultTemplate"
                                             : "focusSetDefaultTemplate"
                                     )) {
-                                        store.setDefaultFocusTemplate(
-                                            store.focusPlanning.defaultTemplateID == template.id ? nil : template
+                                        _ = focus.setDefaultFocusTemplate(
+                                            focus.focusPlanning.defaultTemplateID == template.id ? nil : template
                                         )
                                     }
-                                    Button(store.t("focusTemplateDelete"), role: .destructive) {
-                                        store.deleteFocusTemplate(template)
+                                    Button(focus.t("focusTemplateDelete"), role: .destructive) {
+                                        _ = focus.deleteFocusTemplate(template)
                                     }
                                 } label: {
                                     Image(systemName: "ellipsis")
@@ -213,7 +202,7 @@ struct FocusUsualScale: View {
                                         .frame(width: 44, height: 44)
                                         .contentShape(Rectangle())
                                 }
-                                .accessibilityLabel(store.t("moreActions"))
+                                .accessibilityLabel(focus.t("moreActions"))
                             }
                         }
                     }
@@ -221,22 +210,22 @@ struct FocusUsualScale: View {
                 }
             }
         }
-        .alert(store.t("focusTemplateCapacityWarning"), isPresented: $showsCapacityWarning) {
-            Button(store.t("close"), role: .cancel) { }
+        .alert(focus.t("focusTemplateCapacityWarning"), isPresented: $showsCapacityWarning) {
+            Button(focus.t("close"), role: .cancel) { }
         } message: {
-            Text(store.t("focusTemplateSequenceNote"))
+            Text(focus.t("focusTemplateSequenceNote"))
         }
     }
 
     private func templateSubtitle(_ template: FocusTemplate) -> String {
         let filled = template.slots.count { $0.kind == .task && $0.taskTitle != nil }
-        var parts = [store.t("focusTemplateSlots", values: ["count": "\(filled)"])]
-        if store.focusPlanning.defaultTemplateID == template.id {
-            parts.append(store.t("focusTemplateAuto"))
+        var parts = [focus.t("focusTemplateSlots", values: ["count": "\(filled)"])]
+        if focus.focusPlanning.defaultTemplateID == template.id {
+            parts.append(focus.t("focusTemplateAuto"))
         }
-        let fit = store.focusTemplateFit(template)
+        let fit = focus.focusTemplateFit(template)
         if fit.dropped > 0 {
-            parts.append(store.t("focusTemplateDropped", values: ["count": "\(fit.dropped)"]))
+            parts.append(focus.t("focusTemplateDropped", values: ["count": "\(fit.dropped)"]))
         }
         return parts.joined(separator: " · ")
     }
@@ -245,32 +234,35 @@ struct FocusUsualScale: View {
 /// Templates edit task order and estimates; actual times belong to the day
 /// where that list is applied, so a shift edit cannot turn a task into a break.
 struct FocusTemplateEditorView: View {
-    let store: OffWorkStore
+    let focus: FocusStore
+    let text: AppText
     @State private var draft: FocusTemplateDraft
     @State private var tasks: [FocusTemplateTask]
     @State private var editingTask: FocusTemplateTask?
     @State private var taskDraft = FocusTaskEditorDraft()
     @State private var favoriteChanges: [String: Bool] = [:]
+    @State private var isSubmitting = false
     @Environment(\.dismiss) private var dismiss
 
-    init(store: OffWorkStore, draft: FocusTemplateDraft) {
-        self.store = store
+    init(focus: FocusStore, text: AppText, draft: FocusTemplateDraft) {
+        self.focus = focus
+        self.text = text
         _draft = State(initialValue: draft)
         _tasks = State(initialValue: FocusTemplate.tasks(from: draft.slots))
     }
 
     private var omittedTaskIDs: Set<String> {
-        let count = FocusTemplate.fittingTaskCount(tasks, in: store.focusTemplateBlocks())
+        let count = FocusTemplate.fittingTaskCount(tasks, in: focus.focusTemplateBlocks())
         return Set(tasks.dropFirst(count).map(\.id))
     }
 
     var body: some View {
         let omittedTaskIDs = omittedTaskIDs
-        let remaining = FocusTemplate.remainingPomodoros(tasks, in: store.focusTemplateBlocks())
+        let remaining = FocusTemplate.remainingPomodoros(tasks, in: focus.focusTemplateBlocks())
         NavigationStack {
             List {
                 Section {
-                    TextField(store.t("focusUsualDayName"), text: $draft.name)
+                    TextField(focus.t("focusUsualDayName"), text: $draft.name)
                 }
                 Section {
                     ForEach(tasks) { task in
@@ -281,14 +273,14 @@ struct FocusTemplateEditorView: View {
                                     .frame(width: 24)
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(task.title).foregroundStyle(OWCDesign.primary)
-                                    Text(store.t("focusEstimateDetail", values: [
+                                    Text(focus.t("focusEstimateDetail", values: [
                                         "count": "\(task.pomodoros)",
-                                        "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"
+                                        "minutes": "\(focus.focusTimerSettings.normalized.focusMinutes)"
                                     ]))
                                     .font(.footnote).foregroundStyle(OWCDesign.secondary)
                                     if omittedTaskIDs.contains(task.id) {
                                         Label {
-                                            Text(store.t("focusTemplateTaskDoesNotFit"))
+                                            Text(focus.t("focusTemplateTaskDoesNotFit"))
                                                 .foregroundStyle(OWCDesign.secondary)
                                         } icon: {
                                             Image(systemName: "exclamationmark.triangle")
@@ -308,39 +300,41 @@ struct FocusTemplateEditorView: View {
                         edit(FocusTemplateTask(taskKey: UUID(), legacyIndex: tasks.count,
                                                title: "", icon: .focus, pomodoros: 1))
                     } label: {
-                        Label(store.t("focusNewTask"), systemImage: "plus")
+                        Label(focus.t("focusNewTask"), systemImage: "plus")
                     }
                     .disabled(remaining == 0)
                     .deleteDisabled(true)
                     .moveDisabled(true)
-                    Text(store.t("focusTemplateRemainingPomodoros", values: ["count": "\(remaining)"]))
+                    Text(focus.t("focusTemplateRemainingPomodoros", values: ["count": "\(remaining)"]))
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
                         .deleteDisabled(true)
                         .moveDisabled(true)
                 } footer: {
-                    Text(store.t("focusTemplateSequenceNote"))
+                    Text(focus.t("focusTemplateSequenceNote"))
                 }
             }
             .environment(\.editMode, .constant(.active))
-            .navigationTitle(store.t("focusUsualDay"))
+            .navigationTitle(focus.t("focusUsualDay"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(store.t("cancel")) { dismiss() }
+                    Button(focus.t("cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(store.t("saveAction"), action: save)
+                    Button(focus.t("saveAction"), action: save)
                         .disabled(draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || tasks.isEmpty)
                 }
             }
         }
+        .disabled(isSubmitting)
+        .interactiveDismissDisabled(isSubmitting)
         .sheet(item: $editingTask) { task in
             let editingCapacity = FocusTemplate.remainingPomodoros(
-                tasks, in: store.focusTemplateBlocks(), excluding: task.id
+                tasks, in: focus.focusTemplateBlocks(), excluding: task.id
             )
-            FocusTaskEditorShell(store: store, saveTitle: store.t("saveAction"),
-                titleKey: tasks.contains(where: { $0.id == task.id }) ? "focusEditTask" : "focusNewTask",
+            FocusTaskEditorShell(title: focus.t(tasks.contains(where: { $0.id == task.id }) ? "focusEditTask" : "focusNewTask"),
+                cancelTitle: focus.t("cancel"), saveTitle: focus.t("saveAction"),
                 canSave: taskDraft.canSave, onCancel: { editingTask = nil }, onSave: {
                     var updated = task
                     updated.title = taskDraft.title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -351,10 +345,10 @@ struct FocusTemplateEditorView: View {
                     favoriteChanges[task.id] = taskDraft.isFavorite
                     editingTask = nil
                 }) {
-                    FocusTaskEditorFields(store: store, draft: $taskDraft,
-                        destination: store.t("focusUsualDay"), finish: nil, showsDate: false, showsFinish: false,
+                    FocusTaskEditorFields(focus: focus, text: text, draft: $taskDraft,
+                        destination: focus.t("focusUsualDay"), finish: nil, showsDate: false, showsFinish: false,
                         maximumPomodoros: editingCapacity,
-                        capacityNote: store.t("focusTemplateRemainingPomodoros", values: ["count": "\(editingCapacity)"]))
+                        capacityNote: focus.t("focusTemplateRemainingPomodoros", values: ["count": "\(editingCapacity)"]))
                 }
         }
     }
@@ -365,25 +359,36 @@ struct FocusTemplateEditorView: View {
         taskDraft.icon = task.icon
         taskDraft.pomodoros = task.pomodoros
         taskDraft.isFavorite = favoriteChanges[task.id]
-            ?? (store.savedFocusFavorite(title: task.title, icon: task.icon) != nil)
+            ?? (focus.savedFocusFavorite(title: task.title, icon: task.icon) != nil)
         editingTask = task
     }
 
     private func save() {
-        for task in tasks {
-            guard let favorite = favoriteChanges[task.id] else { continue }
-            if favorite {
-                store.saveFocusFavorite(title: task.title, pomodoros: task.pomodoros, icon: task.icon)
-            } else if let saved = store.savedFocusFavorite(title: task.title, icon: task.icon) {
-                store.toggleFocusFavorite(saved)
+        let submittedTasks = tasks
+        let submittedChanges = favoriteChanges
+        let submittedName = draft.name
+        let submittedTemplate = draft.template
+        isSubmitting = true
+        Task { @MainActor in
+            for task in submittedTasks {
+                guard let favorite = submittedChanges[task.id] else { continue }
+                if favorite {
+                    await focus.saveFocusFavorite(title: task.title, pomodoros: task.pomodoros, icon: task.icon).value
+                } else if let saved = focus.savedFocusFavorite(title: task.title, icon: task.icon) {
+                    await focus.toggleFocusFavorite(saved).value
+                }
             }
+            let slots = FocusTemplate.slots(from: submittedTasks)
+            let saved: Bool
+            if let template = submittedTemplate {
+                saved = await focus.updateFocusTemplate(template, name: submittedName, slots: slots).value
+            } else {
+                saved = await focus.saveFocusTemplate(name: submittedName, slots: slots).value != nil
+            }
+            isSubmitting = false
+            guard saved, tasks == submittedTasks, favoriteChanges == submittedChanges,
+                  draft.name == submittedName, draft.template?.id == submittedTemplate?.id else { return }
+            dismiss()
         }
-        let slots = FocusTemplate.slots(from: tasks)
-        if let template = draft.template {
-            _ = store.updateFocusTemplate(template, name: draft.name, slots: slots)
-        } else {
-            _ = store.saveFocusTemplate(name: draft.name, slots: slots)
-        }
-        dismiss()
     }
 }

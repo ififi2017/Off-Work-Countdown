@@ -313,7 +313,7 @@ private func resolve(
     let job = period(id: id(1), startsOn: startOf(2024, 1, 1), createdAt: startOf(2024, 1, 1))
     let weekday = snapshot(id: id(10), periodID: id(1), from: startOf(2024, 1, 1), fingerprint: "weekday")
     return DayRecordResolver.resolve(
-        dayKey: OffWorkStore.dayKey(for: day),
+        dayKey: ShiftSession.dayKey(for: day),
         shiftAnchorDate: day,
         periods: [job],
         snapshots: snapshots ?? [weekday],
@@ -340,7 +340,7 @@ private func holiday(
     origin: CalendarExceptionOrigin,
     version: String? = nil
 ) -> CalendarException {
-    let dateKey = OffWorkStore.dayKey(for: day)
+    let dateKey = ShiftSession.dayKey(for: day)
     return CalendarException(
         dayKey: CalendarException.dayKey(dateKey: dateKey, origin: origin),
         date: day,

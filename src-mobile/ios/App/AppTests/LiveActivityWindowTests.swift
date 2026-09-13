@@ -109,4 +109,28 @@ struct LiveActivityWindowTests {
 
         #expect(state.windowSegments == state.segments)
     }
+
+    @Test func effectiveRemainingFreezesAcrossLunchAndEndsAtZero() {
+        let state = Self.shift(displayStartAtMs: nil)
+        let lunchRemaining = 4 * 60 * Self.minute
+        #expect(state.effectiveRemainingMs(atMs: 12 * 60 * Self.minute) == lunchRemaining)
+        #expect(state.effectiveRemainingMs(atMs: (12 * 60 + 45) * Self.minute) == lunchRemaining)
+        #expect(state.effectiveRemainingMs(atMs: 13 * 60 * Self.minute) == lunchRemaining)
+        #expect(state.effectiveRemainingMs(atMs: (13 * 60 + 1) * Self.minute) == lunchRemaining - Self.minute)
+        #expect(state.effectiveRemainingMs(atMs: 17 * 60 * Self.minute) == 0)
+        #expect(state.effectiveRemainingMs(atMs: 18 * 60 * Self.minute) == 0)
+    }
+
+    @Test func effectiveRemainingRejectsMalformedSegmentsWithoutTrapping() {
+        var state = Self.shift(displayStartAtMs: nil)
+        state = .init(
+            endAtMs: state.endAtMs, progress: 0,
+            segments: [.init(startAtMs: 20, endAtMs: 30), .init(startAtMs: 10, endAtMs: 40)],
+            phase: state.phase, locale: state.locale, appTitle: state.appTitle,
+            caption: state.caption, completedCaption: state.completedCaption,
+            completedNote: state.completedNote
+        )
+        #expect(state.effectiveRemainingMs(atMs: 15) == nil)
+        #expect(state.effectiveRemainingMs(atMs: -1) == nil)
+    }
 }

@@ -2,10 +2,11 @@ import SwiftUI
 import UIKit
 
 struct OvertimeSheet: View {
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
     @Environment(\.dismiss) private var dismiss
     @State private var endDate = Date.now
     @State private var confirmed = false
+    @State private var saving = false
 
     var body: some View {
         NavigationStack {
@@ -18,11 +19,11 @@ struct OvertimeSheet: View {
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text(store.t("overtimeDescription"))
+                        Text(shifts.text.t("overtimeDescription"))
                             .font(.callout)
                             .foregroundStyle(OWCDesign.secondary)
                         DatePicker(
-                            store.t("overtimeEndTime"),
+                            shifts.text.t("overtimeEndTime"),
                             selection: $endDate,
                             in: minimumDate...,
                             displayedComponents: .hourAndMinute
@@ -30,31 +31,38 @@ struct OvertimeSheet: View {
                         .datePickerStyle(.wheel)
                         .labelsHidden()
                         .frame(maxWidth: .infinity)
-                        Label(store.t("overtimeNoMultiplier"), systemImage: "info.circle")
+                        Label(shifts.text.t("overtimeNoMultiplier"), systemImage: "info.circle")
                             .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
                 }
-                Button(store.t("confirmOvertime")) {
-                    store.applyOvertime(date: endDate)
-                    confirmed.toggle()
-                    dismiss()
+                Button(shifts.text.t("confirmOvertime")) {
+                    let command = shifts.applyOvertime(date: endDate)
+                    saving = true
+                    Task {
+                        defer { saving = false }
+                        guard await command.value else { return }
+                        confirmed.toggle()
+                        dismiss()
+                    }
                 }
                 .buttonStyle(OWCPrimaryButtonStyle())
                 .padding(20)
             }
-            .navigationTitle(store.t("overtimeTitle"))
+            .disabled(saving)
+            .interactiveDismissDisabled(saving)
+            .navigationTitle(shifts.text.t("overtimeTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: { Image(systemName: "xmark") }
-                        .accessibilityLabel(store.t("close"))
+                        .accessibilityLabel(shifts.text.t("close"))
                 }
             }
             .onAppear {
-                let existing = store.overtimeEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) }
+                let existing = shifts.session.overtimeEndAtMs.map { Date(timeIntervalSince1970: $0 / 1_000) }
                 // After clock-off this becomes a retrospective record and
                 // defaults to now, so someone who actually stayed late can
                 // save the time already worked without adding another forced
@@ -66,7 +74,7 @@ struct OvertimeSheet: View {
     }
 
     private var minimumDate: Date {
-        let planned = store.snapshot()?.plannedEndDate ?? .now
+        let planned = shifts.session.snapshot()?.plannedEndDate ?? .now
         // An overtime end cannot precede either the planned clock-off or the
         // device's current time. There is deliberately no minimum duration.
         return max(planned, .now)
@@ -74,7 +82,8 @@ struct OvertimeSheet: View {
 }
 
 struct ShareComposerView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -131,7 +140,7 @@ struct ShareComposerView: View {
                 }
             }
             .background(OWCDesign.page)
-            .navigationTitle(store.t("shareButton"))
+            .navigationTitle(shifts.text.t("shareButton"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -139,11 +148,11 @@ struct ShareComposerView: View {
                         Image(systemName: "xmark")
                             .font(.subheadline.weight(.semibold))
                     }
-                    .accessibilityLabel(store.t("close"))
+                    .accessibilityLabel(shifts.text.t("close"))
                 }
             }
         }
-        .sensoryFeedback(.selection, trigger: store.shareMood)
+        .sensoryFeedback(.selection, trigger: scene.shareMood)
     }
 
 
@@ -177,7 +186,7 @@ struct ShareComposerView: View {
 
     private var expandedShareControls: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(store.t("shareMoodLabel"))
+            Text(shifts.text.t("shareMoodLabel"))
                 .font(.title3.weight(.semibold))
             moodPicker
             shareDetailsCard
@@ -188,7 +197,7 @@ struct ShareComposerView: View {
 
     private var compactShareControls: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(store.t("shareMoodLabel"))
+            Text(shifts.text.t("shareMoodLabel"))
                 .font(.subheadline.weight(.semibold))
             moodPicker
             Text(shareCopy)
@@ -208,8 +217,8 @@ struct ShareComposerView: View {
         VStack(alignment: .leading, spacing: 14) {
             shareDetailRow("text.quote", text: shareCopy, emphasized: true)
             Divider()
-            shareDetailRow("square.and.arrow.up", text: store.t("shareComposerNote"))
-            shareDetailRow("lock", text: store.t("sharePrivacyNote"))
+            shareDetailRow("square.and.arrow.up", text: shifts.text.t("shareComposerNote"))
+            shareDetailRow("lock", text: shifts.text.t("sharePrivacyNote"))
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -233,7 +242,7 @@ struct ShareComposerView: View {
 
     private func sharePreview(maxWidth: CGFloat) -> some View {
         let safeWidth = (maxWidth.isFinite && maxWidth > 0) ? maxWidth : nil
-        return ShareCard(store: store)
+        return ShareCard(shifts: shifts)
             .frame(maxWidth: safeWidth)
             .aspectRatio(4 / 5, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
@@ -242,9 +251,9 @@ struct ShareComposerView: View {
 
     @ViewBuilder
     private func moodButton(_ mood: ShareMood) -> some View {
-        let selected = store.shareMood == mood
+        let selected = scene.shareMood == mood
         Button {
-            withAnimation(.snappy(duration: 0.2)) { store.shareMood = mood }
+            withAnimation(.snappy(duration: 0.2)) { scene.shareMood = mood }
         } label: {
             Text(verbatim: mood.emoji)
                 .font(.title)
@@ -256,7 +265,7 @@ struct ShareComposerView: View {
                 .accessibilityHidden(true)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(store.t(mood.labelKey))
+        .accessibilityLabel(shifts.text.t(mood.labelKey))
     }
 
     @ViewBuilder
@@ -268,7 +277,7 @@ struct ShareComposerView: View {
 
     private var shareButton: some View {
         Button { Task { await prepareShare() } } label: {
-            Label(store.t("shareNative"), systemImage: "square.and.arrow.up")
+            Label(shifts.text.t("shareNative"), systemImage: "square.and.arrow.up")
         }
         .buttonStyle(OWCPrimaryButtonStyle())
     }
@@ -276,7 +285,7 @@ struct ShareComposerView: View {
     @MainActor
     private func prepareShare() async {
         await Task.yield()
-        let card = ShareCard(store: store)
+        let card = ShareCard(shifts: shifts)
             .frame(width: 360, height: 450)
         let renderer = ImageRenderer(content: card)
         renderer.scale = 3
@@ -288,14 +297,14 @@ struct ShareComposerView: View {
         // string, so targets took one or the other and the image was dropped.
         let metadata = ShareMetadataItemSource(
             title: OWCBrand.shortName,
-            text: "\(shareCopy) \(store.shareURL().absoluteString)",
+            text: "\(shareCopy) \(shifts.session.shareURL().absoluteString)",
             icon: UIImage(named: "BrandIcon") ?? image
         )
         SystemShare.present(items: [image, metadata])
     }
 
     private var shareCopy: String {
-        store.shareCopy()
+        shifts.session.shareCopy()
     }
 }
 
@@ -305,7 +314,8 @@ struct ShareComposerView: View {
 /// this view is rasterised into a PNG that leaves the device, so its layout has
 /// to be identical for everyone. Do not "migrate" these to semantic fonts.
 private struct ShareCard: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
 
     var body: some View {
         ZStack {
@@ -330,7 +340,7 @@ private struct ShareCard: View {
                     Spacer(minLength: 8)
                 }
                 Spacer()
-                Text(verbatim: store.shareMood.emoji)
+                Text(verbatim: scene.shareMood.emoji)
                     .font(.system(size: 72))
                     .frame(width: 82, height: 82)
                     .accessibilityHidden(true)
@@ -355,13 +365,13 @@ private struct ShareCard: View {
                         .overlay(alignment: .leading) {
                             Capsule()
                                 .fill(.white)
-                                .frame(width: proxy.size.width * min(1, max(0, store.shareProgress() / 100)))
+                                .frame(width: proxy.size.width * min(1, max(0, shifts.session.shareProgress() / 100)))
                         }
                 }
                 .frame(height: 5)
 
                 HStack {
-                    Text(store.formatPercent(store.shareProgress()))
+                    Text(shifts.text.formatPercent(shifts.session.shareProgress()))
                     Spacer()
                     Text(verbatim: "DoneAt.app")
                 }
@@ -375,6 +385,6 @@ private struct ShareCard: View {
         }
     }
 
-    private var heroText: String { store.shareHeroText() }
-    private var messageText: String { store.shareCopy() }
+    private var heroText: String { shifts.session.shareHeroText() }
+    private var messageText: String { shifts.session.shareCopy() }
 }

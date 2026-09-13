@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Wheel picker for one end of the shift, presented from the hero.
 struct OWCSetupTimePickerSheet: View {
-    let store: OffWorkStore
+    let session: ShiftSession
+    let text: AppText
     let title: String
     @Binding var minutes: Int
     @Environment(\.dismiss) private var dismiss
@@ -12,8 +13,8 @@ struct OWCSetupTimePickerSheet: View {
             DatePicker(
                 title,
                 selection: Binding(
-                    get: { store.dateForMinutes(minutes) },
-                    set: { minutes = store.minutes(from: $0) }
+                    get: { session.dateForMinutes(minutes) },
+                    set: { minutes = session.minutes(from: $0) }
                 ),
                 displayedComponents: .hourAndMinute
             )
@@ -24,7 +25,7 @@ struct OWCSetupTimePickerSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(store.t("done")) { dismiss() }
+                    Button(text.t("done")) { dismiss() }
                 }
             }
         }

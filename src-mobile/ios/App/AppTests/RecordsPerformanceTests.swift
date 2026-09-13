@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 import Testing
 
 @testable import App
@@ -11,7 +12,7 @@ import Testing
 @Suite("Records surface cost")
 struct RecordsPerformanceTests {
     /// Roughly two years of a normal shift: clock-in and clock-out every day.
-    private func seededStore(days: Int, defaults: UserDefaults, now: Date = .now) throws -> OffWorkStore {
+    private func seededStore(days: Int, defaults: UserDefaults, now: Date = .now) throws -> AppRuntime {
         let zone = TimeZone(identifier: "Asia/Shanghai")!
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = zone
@@ -31,10 +32,10 @@ struct RecordsPerformanceTests {
             ),
             at: firstDay, timeZone: zone
         )
-        let store = OffWorkStore(defaults: defaults, records: records)
-        store.onboardingComplete = true
+        let store = AppRuntime(defaults: defaults, records: records)
+        store.preferences.onboardingComplete = true
         store.plus.debugSetAuthorized(true)
-        store.recordsTimeZoneIdentifier = zone.identifier
+        store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = zone.identifier }
         let snapshotID = try #require(records.state.snapshots.first?.id)
         for offset in 0..<days {
             guard let anchor = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
@@ -69,15 +70,47 @@ struct RecordsPerformanceTests {
         return elapsed
     }
 
-    private func milliseconds(_ label: String, _ body: () async -> Void) async -> Double {
+    private func milliseconds(
+        _ label: String,
+        measuresMainThreadCPU: Bool = false,
+        _ body: () async throws -> Void
+    ) async rethrows -> Double {
+        let cpuStarted = measuresMainThreadCPU ? mainThreadCPUTime() : nil
         let started = ContinuousClock.now
-        await body()
+        try await body()
         let duration = started.duration(to: .now).components
         let elapsed = Double(duration.seconds) * 1_000 + Double(duration.attoseconds) / 1e15
+        if let cpuStarted, let cpuFinished = mainThreadCPUTime() {
+            Self.report("[perf-cpu] \(label): \(String(format: "%.3f", cpuFinished - cpuStarted)) ms main thread; \(String(format: "%.3f", elapsed)) ms elapsed")
+        }
         let line = "[perf] \(label): \(String(format: "%.1f", elapsed)) ms"
         print(line)
         Self.report(line)
         return elapsed
+    }
+
+    /// These measurements run on MainActor before and after the awaited real
+    /// operation. Mach reports this thread's user + system CPU time, excluding
+    /// time spent waiting for the archive worker. This is a diagnostic, not a
+    /// CI duration threshold or a substitute for device UI profiling.
+    private func mainThreadCPUTime() -> Double? {
+        let thread = mach_thread_self()
+        defer { mach_port_deallocate(mach_task_self_, thread) }
+        var info = thread_basic_info_data_t()
+        var count = mach_msg_type_number_t(
+            MemoryLayout<thread_basic_info_data_t>.size / MemoryLayout<integer_t>.size
+        )
+        let result = withUnsafeMutablePointer(to: &info) { pointer in
+            pointer.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                thread_info(thread, thread_flavor_t(THREAD_BASIC_INFO), $0, &count)
+            }
+        }
+        guard result == KERN_SUCCESS else {
+            Issue.record("Unable to read main-thread CPU time: \(result)")
+            return nil
+        }
+        return Double(info.user_time.seconds + info.system_time.seconds) * 1_000
+            + Double(info.user_time.microseconds + info.system_time.microseconds) / 1_000
     }
 
     private static let reportURL = URL(fileURLWithPath: "/tmp/owc-records-perf.txt")
@@ -96,7 +129,7 @@ struct RecordsPerformanceTests {
     }
 
     @Test("Measures durable import, edit, remote batch and reopen", arguments: [520, 2_600])
-    func diskCost(days: Int) throws {
+    func diskCost(days: Int) async throws {
         let suite = "owc.diskperf.\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
         let directory = FileManager.default.temporaryDirectory.appending(path: suite)
@@ -107,47 +140,58 @@ struct RecordsPerformanceTests {
         }
         let now = Date(timeIntervalSince1970: 1_788_739_200)
         let seeded = try seededStore(days: days, defaults: defaults, now: now)
-        let data = try seeded.records.exportJSON(exportedAt: now)
+        let data = try await seeded.records.exportJSON(exportedAt: now)
         let url = directory.appending(path: "archive.json")
         let records = RecordCoordinator(fileURL: url)
         let label = "disk \(days) days"
-        _ = try milliseconds("\(label): import") { _ = try records.import(data) }
+        _ = try await milliseconds("\(label): import", measuresMainThreadCPU: true) { _ = try await records.import(data) }
         try #require(records.persistenceError == nil)
         try #require(records.state.observations.count == days * 2)
 
         let eventID = UUID()
         let snapshotID = try #require(records.state.snapshots.first?.id)
-        _ = milliseconds("\(label): one observation edit") {
-            records.recordObservation(
-                kind: .countdownStarted, eventID: eventID,
-                shiftAnchorDate: now, occurredAt: now, snapshotID: snapshotID,
-                timeZoneIdentifier: "Asia/Shanghai"
-            )
+        _ = try await milliseconds("\(label): one observation edit", measuresMainThreadCPU: true) {
+            _ = milliseconds("\(label): observation submit on main actor") {
+                _ = records.submitCommand {
+                    records.recordObservation(
+                        kind: .countdownStarted, eventID: eventID,
+                        shiftAnchorDate: now, occurredAt: now, snapshotID: snapshotID,
+                        timeZoneIdentifier: "Asia/Shanghai"
+                    )
+                }.synchronousResult
+            }
+            try await records.flush()
         }
         try #require(records.persistenceError == nil)
         // Exercise the real remote ingestion path, with one durable batch save.
         let observations = Array(records.state.observations.prefix(20))
-        _ = try milliseconds("\(label): 20-row remote batch") {
-            for observation in observations {
-                let key = observation.eventID.uuidString
-                let payload = try #require(RecordsSyncPayload.encode(type: .workObservation, key: key, from: records.state))
-                records.applyRemotePayload(
-                    type: .workObservation, key: key, payload: payload,
-                    editCount: 2, editTieBreaker: UUID().uuidString,
-                    systemFields: nil, generation: records.state.sync.generation,
-                    persistImmediately: false
-                )
-            }
-            records.persistRemoteBatch()
+        let remoteChanges = try observations.map { observation in
+            let key = observation.eventID.uuidString
+            let payload = try #require(RecordsSyncPayload.encode(
+                type: .workObservation, key: key, from: records.state
+            ))
+            return RemoteRecordChange.payload(
+                type: .workObservation, key: key, payload: payload,
+                editCount: 2, editTieBreaker: UUID().uuidString,
+                systemFields: nil, generation: records.state.sync.generation
+            )
+        }
+        _ = try await milliseconds("\(label): 20-row remote batch", measuresMainThreadCPU: true) {
+            try await records.persistRemoteBatch(remoteChanges, deletedRecordNames: [])
         }
         try #require(records.persistenceError == nil)
         var reopened: RecordCoordinator?
-        _ = milliseconds("\(label): reopen") { reopened = RecordCoordinator(fileURL: url) }
+        _ = await milliseconds("\(label): reopen", measuresMainThreadCPU: true) {
+            let loadedArchive = await RecordArchive.load(from: url)
+            reopened = RecordCoordinator(fileURL: url, loadedArchive: loadedArchive)
+        }
         let loaded = try #require(reopened)
         #expect(loaded.persistenceError == nil)
         #expect(loaded.state.observations.count == days * 2 + 1)
         #expect(loaded.state.observations.contains { $0.eventID == eventID })
         #expect(loaded.state.sync == records.state.sync)
+        #expect(records.archiveWriteCount == 3)
+        Self.report("[perf] \(label): archive writes = \(records.archiveWriteCount)")
     }
 
     @Test("reports what one pass over the Records surfaces costs")
@@ -158,33 +202,33 @@ struct RecordsPerformanceTests {
         let store = try seededStore(days: 520, defaults: defaults)
         // Warm the JavaScriptCore bundle and any lazily-built caches so the
         // numbers describe the steady state a user actually pays.
-        let window = store.recordsWindow(for: .year, anchor: .now)
-        _ = store.resolvedDays(from: window.0, through: window.1)
+        let window = store.queries.recordsWindow(for: .year, anchor: .now)
+        _ = store.queries.resolvedDays(from: window.0, through: window.1)
 
-        _ = milliseconds("recordedWorkDays (Records list)") { _ = store.recordedWorkDays() }
-        _ = milliseconds("exportRecordsFile (on demand)") { _ = try? store.exportRecordsFile() }
+        _ = milliseconds("recordedWorkDays (Records list)") { _ = store.queries.recordedWorkDays() }
+        _ = await milliseconds("exportRecordsFile (on demand)") { _ = try? await store.recordActions.exportRecordsFile() }
 
         var year: [DayResolution] = []
         let yearMs = milliseconds("resolvedDays, one year (cached)") {
-            year = store.resolvedDays(from: window.0, through: window.1)
+            year = store.queries.resolvedDays(from: window.0, through: window.1)
         }
-        _ = milliseconds("recordsMetrics, one year") { _ = store.recordsMetrics(for: year) }
+        _ = milliseconds("recordsMetrics, one year") { _ = store.queries.recordsMetrics(for: year) }
         _ = milliseconds("observations(on:) once per day for a year") {
-            for day in year { _ = store.observations(on: day.shiftAnchorDate) }
+            for day in year { _ = store.queries.observations(on: day.shiftAnchorDate) }
         }
 
         // A month of cells is what the calendar draws on every load, and each
         // one now also intersects the night before. This is the regression
         // gate for that: a screen recording cannot catch it getting slower.
-        let calendar = store.recordsCalendar
+        let calendar = store.preferences.recordsCalendar
         let today = calendar.startOfDay(for: .now)
         let end = try #require(calendar.date(byAdding: .day, value: -1, to: today))
         let start = try #require(calendar.date(byAdding: .day, value: -32, to: today))
-        let month = store.resolvedDays(from: start, through: end)
+        let month = store.queries.resolvedDays(from: start, through: end)
         var monthCells: [RecordsDayCell] = []
         let cellsMs = milliseconds("recordsDayCell with adjacent shifts, one month") {
             monthCells = month.enumerated().dropFirst().map { index, day in
-                store.recordsDayCell(
+                store.queries.recordsDayCell(
                     for: day,
                     previous: index > 0 ? month[index - 1] : nil,
                     includesLifeProjection: true
@@ -194,7 +238,7 @@ struct RecordsPerformanceTests {
         let dayKey = try #require(month.last?.dayKey)
         var canvas: RecordsDayCanvasModel?
         let canvasMs = await milliseconds("recordsDayCanvas (one day, both shifts)") {
-            canvas = await store.recordsDayCanvas(dayKey: dayKey)
+            canvas = await store.queries.recordsDayCanvas(dayKey: dayKey)
         }
         let rendered = try #require(canvas)
         #expect(!rendered.isLocked)
@@ -202,7 +246,7 @@ struct RecordsPerformanceTests {
         #expect(Set(rendered.intervals.compactMap(\.anchorDayKey)).count >= 2)
         #expect(monthCells.allSatisfy { $0.appearance != .locked && $0.workMs > 0 })
 
-        store.saveLifeProfile(
+        store.life.saveLifeProfile(
             birthYear: 1992,
             workStartedYear: 2014,
             retirementAge: 65,
@@ -218,13 +262,13 @@ struct RecordsPerformanceTests {
         // ~15,700-day walk both run off it, so a caller only waits for the
         // hop. The warm number reads the cache the cold build filled.
         let lifePrepareMs = await milliseconds("prepareLifeViewModel (cold, whole career)") {
-            _ = await store.prepareLifeViewModel()
+            _ = await store.life.prepareLifeViewModel()
         }
         let lifeMs = milliseconds("lifeViewModel (warm, cached)") {
-            _ = store.lifeViewModel()
+            _ = store.life.lifeViewModel()
         }
 
-        #expect(store.recordedWorkDays().count == 520)
+        #expect(store.queries.recordedWorkDays().count == 520)
         #expect(year.count >= 365)
         #expect(monthCells.count == 31)
         #expect(yearMs < 15_000)

@@ -5,7 +5,7 @@ enum SyncOutboxAction: String, Codable, Sendable {
     case erasePair
 }
 
-struct SyncAdapterRow: Equatable, Codable, Sendable {
+nonisolated struct SyncAdapterRow: Equatable, Codable, Sendable {
     var entityType: RecordEntityType
     var logicalKey: String
     var recordName: String
@@ -25,7 +25,7 @@ struct SyncAdapterRow: Equatable, Codable, Sendable {
     var revokesErase: Bool { pendingEraseRevocation == true }
 }
 
-struct SyncConflictCopy: Equatable, Codable, Sendable {
+nonisolated struct SyncConflictCopy: Equatable, Codable, Sendable {
     enum Winner: String, Codable, Sendable {
         case local
         case incoming
@@ -138,7 +138,7 @@ struct SyncConflictCopy: Equatable, Codable, Sendable {
     }
 }
 
-struct SyncLocalState: Equatable, Codable, Sendable {
+nonisolated struct SyncLocalState: Equatable, Codable, Sendable {
     var accountID: String?
     var generation: Int
     var syncEnabled: Bool
@@ -212,7 +212,7 @@ enum RecordsSyncConflict {
     /// exact count-and-time tie is ambiguous enough to require review; the
     /// random tie-breaker still keeps the currently applied copy deterministic
     /// while that review is pending, but is never presented as user intent.
-    static func automaticallyPreferredWinner(
+    nonisolated static func automaticallyPreferredWinner(
         localCount: Int,
         localEditedAtMs: Double?,
         incomingCount: Int,
@@ -487,12 +487,12 @@ enum RecordsSyncConflict {
         )
     }
 
-    private static let syncMetadataKeys = Set(["editCount", "editTieBreaker", "editedAt", "editedAtMs"])
+    nonisolated private static let syncMetadataKeys = Set(["editCount", "editTieBreaker", "editedAt", "editedAtMs"])
 
     /// JSON encoders may emit different byte order for equivalent objects.
     /// Compare the decoded business dictionary and deliberately ignore only
     /// revision metadata; structural fields remain part of identity safety.
-    static func payloadsHaveSameBusinessContent(_ lhs: Data, _ rhs: Data) -> Bool {
+    nonisolated static func payloadsHaveSameBusinessContent(_ lhs: Data, _ rhs: Data) -> Bool {
         guard var left = (try? JSONSerialization.jsonObject(with: lhs)) as? [String: Any],
               var right = (try? JSONSerialization.jsonObject(with: rhs)) as? [String: Any]
         else { return false }
@@ -821,7 +821,7 @@ enum RecordsSyncPayload {
         }
     }
 
-    static func incoming(from data: Data, type: RecordEntityType, calendar: Calendar) -> RecordIncomingValue? {
+    nonisolated static func incoming(from data: Data, type: RecordEntityType, calendar: Calendar) -> RecordIncomingValue? {
         switch type {
         case .careerPeriod:
             return (try? JSONDecoder().decode(CareerPeriodDTO.self, from: data))
@@ -865,7 +865,7 @@ enum RecordsSyncPayload {
         }
     }
 
-    static func editedAtMs(from data: Data, type: RecordEntityType, calendar: Calendar) -> Double? {
+    nonisolated static func editedAtMs(from data: Data, type: RecordEntityType, calendar: Calendar) -> Double? {
         guard let value = incoming(from: data, type: type, calendar: calendar) else { return nil }
         switch value {
         case .period(let value): return value.editedAt.timeIntervalSince1970 * 1_000
@@ -919,7 +919,7 @@ enum RecordsSyncPayload {
         }
     }
 
-    static func editStamp(from data: Data, type: RecordEntityType, calendar: Calendar) -> (Int, String)? {
+    nonisolated static func editStamp(from data: Data, type: RecordEntityType, calendar: Calendar) -> (Int, String)? {
         guard let value = incoming(from: data, type: type, calendar: calendar) else { return nil }
         switch value {
         case .period(let value): return (value.editCount, value.editTieBreaker.uuidString)
@@ -937,7 +937,7 @@ enum RecordsSyncPayload {
         }
     }
 
-    static func fileCalendar(for state: RecordState) -> Calendar {
+    nonisolated static func fileCalendar(for state: RecordState) -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: state.periods.first?.timeZoneIdentifier ?? "") ?? .current
         return calendar

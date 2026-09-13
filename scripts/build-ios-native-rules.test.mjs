@@ -17,6 +17,41 @@ afterEach(() => {
 });
 
 describe("iOS native rule bundle", () => {
+  it("projects salary-free Watch boundaries and keeps a weekend valid through the next shift", () => {
+    const context = { console };
+    vm.createContext(context);
+    vm.runInContext(createIOSNativeRulesBundle(), context);
+    const rules = {
+      startTime: "09:00", endTime: "18:00",
+      nowMs: new Date("2026-08-22T10:00:00+08:00").getTime(),
+      workdays: [1, 2, 3, 4, 5],
+      schedule: { mode: "classic" },
+      breakStartTime: "12:00", breakDurationMinutes: 60,
+      overtimeEndAtMs: null,
+      salaryAmount: "987654321.123456", salaryType: "monthly",
+      monthlyWorkingDays: 22, annualBonusMonths: 2,
+      timeZoneIdentifier: "Asia/Shanghai",
+    };
+    const rest = JSON.parse(context.OWCNative.watchProjection(JSON.stringify({
+      rules, scheduleConfigured: true, isRunning: true,
+    })));
+    expect(rest.scheduleState).toBe("scheduled");
+    expect(rest.shift).toBeNull();
+    expect(rest.nextShift.startAtMs).toBe(new Date("2026-08-24T09:00:00+08:00").getTime());
+    expect(rest.contentExpiresAtMs).toBe(rest.nextShift.startAtMs);
+    expect(rest.nextShift.validUntilMs).toBe(rest.nextShift.startAtMs);
+    expect(JSON.stringify(rest)).not.toContain("salary");
+    expect(JSON.stringify(rest)).not.toContain("987654321.123456");
+
+    const working = JSON.parse(context.OWCNative.watchProjection(JSON.stringify({
+      rules: { ...rules, nowMs: new Date("2026-08-21T10:00:00+08:00").getTime() },
+      scheduleConfigured: true, isRunning: true,
+    })));
+    expect(working.shift.transitions.map(({ state }) => state)).toEqual([
+      "working", "lunch", "working", "finished",
+    ]);
+  });
+
   it("keeps countdown, reminder and summary derivation behind the shared TypeScript modules", () => {
     const directory = mkdtempSync(join(tmpdir(), "owc-ios-rules-"));
     temporaryDirectories.push(directory);
@@ -26,6 +61,7 @@ describe("iOS native rule bundle", () => {
     expect(bundle).toContain('require("./countdown")');
     expect(bundle).toContain('require("./reminders")');
     expect(bundle).toContain('require("./summary")');
+    expect(bundle).toContain('require("./watch-projection")');
     expect(bundle).toContain("countdown.buildShiftTimeline");
     expect(bundle).toContain(".buildShiftReminders");
     expect(bundle).not.toContain("eval(");

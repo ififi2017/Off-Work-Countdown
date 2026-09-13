@@ -1,32 +1,32 @@
 import SwiftUI
 import UIKit
 
-/// A separate scene window covers sheets as well as navigation destinations.
-/// The underlying phone UI stays mounted so rotating back restores edits and paths.
+/// Reports this scene's actual phone-window orientation without creating a
+/// second window. SwiftUI keeps the navigation and editor tree mounted while
+/// the root overlays its landscape timer.
 struct PhoneLandscapePresentation: UIViewRepresentable {
-    let store: OffWorkStore
+    @Binding var isLandscapePhone: Bool
 
-    func makeUIView(context: Context) -> LandscapeAnchorView {
-        LandscapeAnchorView(store: store)
+    func makeUIView(context: Context) -> PhoneOrientationObserverView {
+        PhoneOrientationObserverView { isLandscapePhone = $0 }
     }
 
-    func updateUIView(_ uiView: LandscapeAnchorView, context: Context) {
-        uiView.updatePresentation()
+    func updateUIView(_ uiView: PhoneOrientationObserverView, context: Context) {
+        uiView.onChange = { isLandscapePhone = $0 }
+        uiView.reportOrientation()
     }
 
-    static func dismantleUIView(_ uiView: LandscapeAnchorView, coordinator: ()) {
-        uiView.hidePresentation()
+    static func dismantleUIView(_ uiView: PhoneOrientationObserverView, coordinator: ()) {
+        uiView.onChange = nil
     }
 }
 
-final class LandscapeAnchorView: UIView {
-    private let store: OffWorkStore
-    private var timerWindow: UIWindow?
-    private weak var coveredWindow: UIWindow?
-    private var coveredAccessibilityWasHidden = false
+final class PhoneOrientationObserverView: UIView {
+    var onChange: (@MainActor (Bool) -> Void)?
+    private var lastReportedValue: Bool?
 
-    init(store: OffWorkStore) {
-        self.store = store
+    init(onChange: @escaping @MainActor (Bool) -> Void) {
+        self.onChange = onChange
         super.init(frame: .zero)
         isUserInteractionEnabled = false
     }
@@ -35,47 +35,50 @@ final class LandscapeAnchorView: UIView {
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        updatePresentation()
+        reportOrientation()
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        updatePresentation()
+        reportOrientation()
     }
 
-    func updatePresentation() {
-        guard store.selectedTab == .timer,
-              UIDevice.current.userInterfaceIdiom == .phone,
-              let sourceWindow = window,
-              let scene = sourceWindow.windowScene,
-              sourceWindow.bounds.width > sourceWindow.bounds.height else {
-            hidePresentation()
-            return
+    func reportOrientation() {
+        guard let window else { return }
+        let value = PhoneLandscapePresentationPolicy.isLandscapePhone(
+            idiom: traitCollection.userInterfaceIdiom,
+            width: window.bounds.width,
+            height: window.bounds.height
+        )
+        guard value != lastReportedValue else { return }
+        lastReportedValue = value
+        // UIKit can call layout while SwiftUI is updating the representable.
+        // Publish on the next MainActor turn to avoid mutating view state there.
+        Task { @MainActor [weak self] in
+            guard let self, self.lastReportedValue == value else { return }
+            self.onChange?(value)
         }
-        guard timerWindow == nil else { return }
-        let overlay = UIWindow(windowScene: scene)
-        overlay.windowLevel = .alert + 1
-        overlay.backgroundColor = .black
-        overlay.rootViewController = LandscapeTimerHost(rootView: PhoneLandscapeShellView(store: store, immersive: true))
-        overlay.accessibilityViewIsModal = true
-        coveredWindow = sourceWindow
-        coveredAccessibilityWasHidden = sourceWindow.accessibilityElementsHidden
-        sourceWindow.accessibilityElementsHidden = true
-        // Do not take key-window ownership from a sheet or an active text field.
-        overlay.isHidden = false
-        timerWindow = overlay
-    }
-
-    func hidePresentation() {
-        coveredWindow?.accessibilityElementsHidden = coveredAccessibilityWasHidden
-        coveredWindow = nil
-        timerWindow?.isHidden = true
-        timerWindow = nil
     }
 }
 
-private final class LandscapeTimerHost: UIHostingController<PhoneLandscapeShellView> {
-    override var prefersStatusBarHidden: Bool { true }
-    override var prefersHomeIndicatorAutoHidden: Bool { true }
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .allButUpsideDown }
+enum PhoneLandscapePresentationPolicy {
+    static func isLandscapePhone(idiom: UIUserInterfaceIdiom, width: CGFloat, height: CGFloat) -> Bool {
+        idiom == .phone && width > height
+    }
+
+    static func shouldPresent(
+        isLandscapePhone: Bool,
+        selectedTab: AppTab,
+        onboardingComplete: Bool,
+        hasSeenPlusIntro: Bool,
+        timerIsAtRoot: Bool,
+        hasBlockingPresentation: Bool
+    ) -> Bool {
+        isLandscapePhone
+            && selectedTab == .timer
+            && onboardingComplete
+            && hasSeenPlusIntro
+            && timerIsAtRoot
+            && !hasBlockingPresentation
+    }
 }

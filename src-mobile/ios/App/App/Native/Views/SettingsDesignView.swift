@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Direction 1e: one consistent grouped-row vocabulary for every setting.
 struct SettingsDesignView: View {
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
+    let recovery: RecoveryStore
 
     var body: some View {
         // Scrolls, because the sections outgrow the window. Four of them
@@ -11,7 +12,7 @@ struct SettingsDesignView: View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(SettingsSection.allCases) { section in
-                    SettingsSectionCard(store: store, section: section)
+                    SettingsSectionCard(shifts: shifts, recovery: recovery, section: section)
                         .padding(.horizontal, OWCDesign.pageInset)
                         .padding(.top, 14)
                 }
@@ -24,24 +25,25 @@ struct SettingsDesignView: View {
         // `pageInset` is what sets the margin; nothing else should.
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(OWCDesign.page)
-        .navigationTitle(store.t("settings"))
+        .navigationTitle(shifts.text.t("settings"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                SettingsPlusStarToolbarButton(store: store)
+                SettingsPlusStarToolbarButton(plus: shifts.plus, text: shifts.text)
             }
         }
     }
 }
 
 struct SettingsPlusStarToolbarButton: View {
-    let store: OffWorkStore
+    let plus: PlusEntitlement
+    let text: AppText
 
     var body: some View {
         NavigationLink(value: AppRoute.plus) {
-            if store.plus.isAuthorized {
-                Label(store.t("plusSettings"), systemImage: "star.fill")
+            if plus.isAuthorized {
+                Label(text.t("plusSettings"), systemImage: "star.fill")
                     .foregroundStyle(OWCDesign.accent)
             } else {
                 HStack(spacing: 5) {
@@ -51,17 +53,18 @@ struct SettingsPlusStarToolbarButton: View {
                 .foregroundStyle(OWCDesign.accent)
             }
         }
-        .accessibilityLabel(store.t("plusSettings"))
-        .accessibilityValue(store.plusStatusLabel)
+        .accessibilityLabel(text.t("plusSettings"))
+        .accessibilityValue(text.plusStatusLabel(for: plus))
     }
 }
 
 struct SettingsPlusStarButton: View {
-    let store: OffWorkStore
+    let plus: PlusEntitlement
+    let text: AppText
 
     var body: some View {
         NavigationLink(value: AppRoute.plus) {
-            if store.plus.isAuthorized {
+            if plus.isAuthorized {
                 Image(systemName: "star.fill")
                     .font(.body.weight(.semibold))
             } else {
@@ -74,7 +77,7 @@ struct SettingsPlusStarButton: View {
         }
         .owcTabletGlassAction()
         .foregroundStyle(OWCDesign.accent)
-        .accessibilityLabel(store.t("plusSettings"))
-        .accessibilityValue(store.plusStatusLabel)
+        .accessibilityLabel(text.t("plusSettings"))
+        .accessibilityValue(text.plusStatusLabel(for: plus))
     }
 }

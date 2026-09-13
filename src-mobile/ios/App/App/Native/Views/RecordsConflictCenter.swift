@@ -1,13 +1,16 @@
 import SwiftUI
 
 struct RecordsConflictCenter: View {
-    let store: OffWorkStore
+    let records: RecordCoordinator
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     @State private var fieldsFromAlternate: [UUID: Set<String>] = [:]
     @State private var failedAction: ConflictResolutionAction?
     @State private var showsResolutionError = false
 
     private var conflicts: [SyncConflictCopy] {
-        store.records.state.sync.conflicts
+        records.state.sync.conflicts
     }
 
     var body: some View {
@@ -15,14 +18,16 @@ struct RecordsConflictCenter: View {
             LazyVStack(spacing: 16) {
                 if conflicts.isEmpty {
                     ContentUnavailableView(
-                        store.t("recordsConflictNone"),
+                        text.t("recordsConflictNone"),
                         systemImage: "checkmark.icloud"
                     )
                     .frame(maxWidth: .infinity, minHeight: 320)
                 } else {
                     ForEach(conflicts, id: \.id) { conflict in
                         ConflictReviewCard(
-                            store: store,
+                            queries: queries,
+                            preferences: preferences,
+                            text: text,
                             conflict: conflict,
                             selectedFields: selectionBinding(for: conflict),
                             currentActionTitle: currentActionTitle(conflict),
@@ -42,29 +47,29 @@ struct RecordsConflictCenter: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .background(OWCDesign.page)
-        .navigationTitle(store.t("recordsConflictCenter"))
+        .navigationTitle(text.t("recordsConflictCenter"))
         .navigationBarTitleDisplayMode(.inline)
-        .owcTabletDetailNavigation(
-            backTitle: store.t("recordsTitle"),
-            pageTitle: store.t("recordsConflictCenter")
-        )
-        .alert(store.t("recordsArchiveSaveFailedTitle"), isPresented: $showsResolutionError) {
-            Button(store.t("retryAction")) { retryFailedAction() }
-            Button(store.t("close"), role: .cancel) { failedAction = nil }
+        .alert(text.t("recordsArchiveSaveFailedTitle"), isPresented: $showsResolutionError) {
+            Button(text.t("retryAction")) { retryFailedAction() }
+            Button(text.t("close"), role: .cancel) { failedAction = nil }
         } message: {
-            Text(store.t("recordsArchiveSaveFailedBody"))
+            Text(text.t("recordsArchiveSaveFailedBody"))
         }
     }
 
     private func apply(_ action: ConflictResolutionAction) {
+        Task { await perform(action) }
+    }
+
+    private func perform(_ action: ConflictResolutionAction) async {
         let succeeded: Bool
         switch action {
         case .merge(let conflict, let fields):
-            succeeded = store.resolveConflict(conflict, fieldsFromAlternate: fields)
+            succeeded = await records.resolveConflict(conflict, fieldsFromAlternate: fields)
         case .keepCurrent(let conflict):
-            succeeded = store.keepCurrentConflict(conflict)
+            succeeded = await records.keepCurrentConflict(conflict)
         case .useAlternate(let conflict):
-            succeeded = store.restoreConflict(conflict)
+            succeeded = await records.restoreConflict(conflict)
         }
         if succeeded {
             fieldsFromAlternate[action.conflictID] = nil
@@ -88,19 +93,19 @@ struct RecordsConflictCenter: View {
 
     private func currentActionTitle(_ conflict: SyncConflictCopy) -> String {
         switch conflict.currentWinner {
-        case .local: return store.t("recordsConflictKeepLocal")
+        case .local: return text.t("recordsConflictKeepLocal")
         case .incoming:
-            return store.t(conflict.source == "import" ? "recordsConflictKeepIncoming" : "recordsConflictKeepCloud")
-        case .unknown: return store.t("recordsConflictKeepCurrent")
+            return text.t(conflict.source == "import" ? "recordsConflictKeepIncoming" : "recordsConflictKeepCloud")
+        case .unknown: return text.t("recordsConflictKeepCurrent")
         }
     }
 
     private func alternateActionTitle(_ conflict: SyncConflictCopy) -> String {
         switch conflict.currentWinner {
         case .local:
-            return store.t(conflict.source == "import" ? "recordsConflictKeepIncoming" : "recordsConflictKeepCloud")
-        case .incoming: return store.t("recordsConflictKeepLocal")
-        case .unknown: return store.t("recordsConflictUseOther")
+            return text.t(conflict.source == "import" ? "recordsConflictKeepIncoming" : "recordsConflictKeepCloud")
+        case .incoming: return text.t("recordsConflictKeepLocal")
+        case .unknown: return text.t("recordsConflictUseOther")
         }
     }
 
@@ -126,7 +131,9 @@ private enum ConflictResolutionAction {
 }
 
 private struct ConflictReviewCard: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     let conflict: SyncConflictCopy
     @Binding var selectedFields: Set<String>
     let currentActionTitle: String
@@ -137,29 +144,29 @@ private struct ConflictReviewCard: View {
 
     private var title: String {
         if conflict.entityType == .lifeProfile {
-            return store.t("recordsLifeProfileRow")
+            return text.t("recordsLifeProfileRow")
         }
         let dayKey = String(conflict.logicalKey.split(separator: "#", maxSplits: 1).first ?? "")
-        if RecordJSON.date(fromDayKey: dayKey, calendar: store.recordsCalendar) != nil {
-            return store.formatRecordsDayTitle(dayKey: dayKey)
+        if RecordJSON.date(fromDayKey: dayKey, calendar: preferences.recordsCalendar) != nil {
+            return queries.formatRecordsDayTitle(dayKey: dayKey)
         }
         switch conflict.entityType {
         case .careerPeriod, .scheduleSnapshot:
-            return store.t("workSchedule")
+            return text.t("workSchedule")
         case .calendarException, .dayOverride, .workObservation:
-            return store.t("recordsTitle")
+            return text.t("recordsTitle")
         case .focusTask:
             return ConflictPayloadPresenter.taskTitle(
                 in: conflict.localPayload ?? conflict.incomingPayload ?? conflict.payload
-            ) ?? store.t("focusTaskTitle")
+            ) ?? text.t("focusTaskTitle")
         case .focusSession:
-            return store.t("focusHistory")
+            return text.t("focusHistory")
         case .focusPlanningConfiguration:
-            return store.t("focusPlanTitle")
+            return text.t("focusPlanTitle")
         case .syncedPreferences:
-            return store.t("settings")
+            return text.t("settings")
         case .lifeProfile:
-            return store.t("recordsLifeProfileRow")
+            return text.t("recordsLifeProfileRow")
         }
     }
 
@@ -172,7 +179,7 @@ private struct ConflictReviewCard: View {
     }
 
     private var explanation: String {
-        store.t(
+        text.t(
             conflict.currentWinner == .unknown
                 ? "recordsConflictReviewLegacyVersions"
                 : "recordsConflictReviewVersions"
@@ -199,16 +206,21 @@ private struct ConflictReviewCard: View {
             }
             .labelStyle(ConflictHeaderLabelStyle())
 
-            ConflictVersionComparison(store: store, conflict: conflict)
+            ConflictVersionComparison(
+                queries: queries,
+                preferences: preferences,
+                text: text,
+                conflict: conflict
+            )
 
             if conflict.supportsFieldMerge, !selectableFields.isEmpty {
                 ConflictFieldChooser(
-                    store: store,
+                    text: text,
                     conflict: conflict,
                     selectedFields: $selectedFields
                 )
 
-                Button(store.t("recordsConflictApplySelectedFields"), action: applyMerge)
+                Button(text.t("recordsConflictApplySelectedFields"), action: applyMerge)
                     .buttonStyle(OWCPrimaryButtonStyle())
                     .disabled(selectedFields.isEmpty)
             }
@@ -259,7 +271,9 @@ private struct ConflictResolutionButtonStyle: ButtonStyle {
 }
 
 private struct ConflictVersionComparison: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     let conflict: SyncConflictCopy
 
     private var changedFields: [String] {
@@ -275,8 +289,10 @@ private struct ConflictVersionComparison: View {
             if let localPayload = conflict.localPayload,
                let incomingPayload = conflict.incomingPayload {
                 ConflictVersionCard(
-                    store: store,
-                    title: store.t("recordsTimeZoneThisDevice"),
+                    queries: queries,
+                    preferences: preferences,
+                    text: text,
+                    title: text.t("recordsTimeZoneThisDevice"),
                     payload: localPayload,
                     editedAtMs: conflict.localEditedAtMs,
                     emphasized: conflict.currentWinner == .local,
@@ -284,8 +300,10 @@ private struct ConflictVersionComparison: View {
                     fieldKeys: changedFields
                 )
                 ConflictVersionCard(
-                    store: store,
-                    title: store.t(conflict.source == "import" ? "recordsImport" : "syncTitle"),
+                    queries: queries,
+                    preferences: preferences,
+                    text: text,
+                    title: text.t(conflict.source == "import" ? "recordsImport" : "syncTitle"),
                     payload: incomingPayload,
                     editedAtMs: conflict.incomingEditedAtMs,
                     emphasized: conflict.currentWinner == .incoming,
@@ -294,8 +312,10 @@ private struct ConflictVersionComparison: View {
                 )
             } else {
                 ConflictVersionCard(
-                    store: store,
-                    title: store.t("recordsConflictCurrentVersion"),
+                    queries: queries,
+                    preferences: preferences,
+                    text: text,
+                    title: text.t("recordsConflictCurrentVersion"),
                     payload: conflict.effectiveCurrentPayload,
                     editedAtMs: nil,
                     emphasized: true,
@@ -303,8 +323,10 @@ private struct ConflictVersionComparison: View {
                     fieldKeys: changedFields
                 )
                 ConflictVersionCard(
-                    store: store,
-                    title: store.t("recordsConflictOtherVersion"),
+                    queries: queries,
+                    preferences: preferences,
+                    text: text,
+                    title: text.t("recordsConflictOtherVersion"),
                     payload: conflict.effectiveAlternatePayload,
                     editedAtMs: nil,
                     emphasized: false,
@@ -317,7 +339,9 @@ private struct ConflictVersionComparison: View {
 }
 
 private struct ConflictVersionCard: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     let title: String
     let payload: Data
     let editedAtMs: Double?
@@ -330,7 +354,9 @@ private struct ConflictVersionCard: View {
             in: payload,
             keys: fieldKeys,
             type: entityType,
-            store: store
+            queries: queries,
+            preferences: preferences,
+            text: text
         )
     }
 
@@ -354,7 +380,7 @@ private struct ConflictVersionCard: View {
             }
 
             if fields.isEmpty {
-                Text(store.t("recordsConflictDetailsUnreadable"))
+                Text(text.t("recordsConflictDetailsUnreadable"))
                     .font(.subheadline)
                     .foregroundStyle(OWCDesign.secondary)
             } else {
@@ -396,16 +422,16 @@ private struct ConflictVersionCard: View {
         let format = Date.FormatStyle(
             date: .abbreviated,
             time: .shortened,
-            locale: store.locale,
-            calendar: store.recordsCalendar,
-            timeZone: store.recordsCalendar.timeZone
+            locale: preferences.locale,
+            calendar: preferences.recordsCalendar,
+            timeZone: preferences.recordsCalendar.timeZone
         )
         return Date(timeIntervalSince1970: editedAtMs / 1_000).formatted(format)
     }
 }
 
 private struct ConflictFieldChooser: View {
-    let store: OffWorkStore
+    let text: AppText
     let conflict: SyncConflictCopy
     @Binding var selectedFields: Set<String>
 
@@ -419,7 +445,7 @@ private struct ConflictFieldChooser: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(store.t("recordsConflictChooseOtherFields"))
+            Text(text.t("recordsConflictChooseOtherFields"))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(OWCDesign.primary)
 
@@ -427,7 +453,7 @@ private struct ConflictFieldChooser: View {
                 ForEach(Array(fields.enumerated()), id: \.element) { index, field in
                     Button { toggle(field) } label: {
                         HStack(spacing: 12) {
-                            Text(ConflictPayloadPresenter.fieldLabel(field, type: conflict.entityType, store: store))
+                            Text(ConflictPayloadPresenter.fieldLabel(field, type: conflict.entityType, text: text))
                                 .font(.body)
                                 .foregroundStyle(OWCDesign.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -490,15 +516,17 @@ private enum ConflictPayloadPresenter {
         in data: Data,
         keys: [String],
         type: RecordEntityType,
-        store: OffWorkStore
+        queries: RecordsQueries,
+        preferences: PreferencesStore,
+        text: AppText
     ) -> [PresentedConflictField] {
         let values = dictionary(from: data)
         return keys.compactMap { key in
             guard let value = values[key] else { return nil }
             return PresentedConflictField(
                 id: key,
-                label: fieldLabel(key, type: type, store: store),
-                value: display(value, for: key, store: store)
+                label: fieldLabel(key, type: type, text: text),
+                value: display(value, for: key, queries: queries, preferences: preferences, text: text)
             )
         }
     }
@@ -507,31 +535,31 @@ private enum ConflictPayloadPresenter {
         (try? JSONDecoder().decode(FocusTaskDTO.self, from: data))?.title
     }
 
-    static func fieldLabel(_ key: String, type: RecordEntityType, store: OffWorkStore) -> String {
+    static func fieldLabel(_ key: String, type: RecordEntityType, text: AppText) -> String {
         switch key {
-        case "kind": store.t("recordsSectionKind")
-        case "segments": store.t("recordsSectionHours")
-        case "note", "label": store.t("recordsConflictFieldNote")
-        case "startsOn", "startedAtMs", "occurredAtMs": store.t("startTime")
-        case "endsBefore", "plannedEndAtMs", "endedAtMs": store.t("endTime")
-        case "effectiveFrom", "configurationData": store.t("workSchedule")
-        case "effect", "isCleared": store.t("recordsSectionKind")
-        case "shiftAnchorDate", "plannedForDate", "scheduledStartAtMs": store.t("focusSchedule")
-        case "birthDate", "birthYear", "bornOn": store.t("lifeBirthYear")
-        case "schoolStartDate", "schoolStartedOn": store.t("lifeSchoolStarted")
-        case "workStartDate", "workStartedOn", "workStartedPartial": store.t("lifeWorkStarted")
-        case "retirementDate", "retirementOn": store.t("lifeRetirementDate")
-        case "retirementAge": store.t("lifeRetirementAge")
-        case "averageSleepHours", "averageSleepMinutes": store.t("lifeSleepHours")
-        case "hidesExactAges": store.t("lifeHideAges")
-        case "sleepSource": store.t("recordsSleep")
-        case "title": store.t("focusTaskTitle")
-        case "estimatedPomodoros": store.t("focusPomodoros")
-        case "icon": store.t("focusChooseIcon")
-        case "isFavorite": store.t("focusFavorites")
-        case "completedAtMs", "deletedAtMs", "endReason", "plannedEndReason": store.t("plusStatus")
-        case "actualDurationSeconds": store.t("lifeStageDurationTitle")
-        default: store.t(type == .focusTask ? "focusTaskTitle" : "recordsSectionKind")
+        case "kind": text.t("recordsSectionKind")
+        case "segments": text.t("recordsSectionHours")
+        case "note", "label": text.t("recordsConflictFieldNote")
+        case "startsOn", "startedAtMs", "occurredAtMs": text.t("startTime")
+        case "endsBefore", "plannedEndAtMs", "endedAtMs": text.t("endTime")
+        case "effectiveFrom", "configurationData": text.t("workSchedule")
+        case "effect", "isCleared": text.t("recordsSectionKind")
+        case "shiftAnchorDate", "plannedForDate", "scheduledStartAtMs": text.t("focusSchedule")
+        case "birthDate", "birthYear", "bornOn": text.t("lifeBirthYear")
+        case "schoolStartDate", "schoolStartedOn": text.t("lifeSchoolStarted")
+        case "workStartDate", "workStartedOn", "workStartedPartial": text.t("lifeWorkStarted")
+        case "retirementDate", "retirementOn": text.t("lifeRetirementDate")
+        case "retirementAge": text.t("lifeRetirementAge")
+        case "averageSleepHours", "averageSleepMinutes": text.t("lifeSleepHours")
+        case "hidesExactAges": text.t("lifeHideAges")
+        case "sleepSource": text.t("recordsSleep")
+        case "title": text.t("focusTaskTitle")
+        case "estimatedPomodoros": text.t("focusPomodoros")
+        case "icon": text.t("focusChooseIcon")
+        case "isFavorite": text.t("focusFavorites")
+        case "completedAtMs", "deletedAtMs", "endReason", "plannedEndReason": text.t("plusStatus")
+        case "actualDurationSeconds": text.t("lifeStageDurationTitle")
+        default: text.t(type == .focusTask ? "focusTaskTitle" : "recordsSectionKind")
         }
     }
 
@@ -542,35 +570,41 @@ private enum ConflictPayloadPresenter {
         return dictionary
     }
 
-    private static func display(_ value: Any, for key: String, store: OffWorkStore) -> String {
+    private static func display(
+        _ value: Any,
+        for key: String,
+        queries: RecordsQueries,
+        preferences: PreferencesStore,
+        text: AppText
+    ) -> String {
         if key == "segments", let segments = value as? [[String: Any]] {
             let ranges = segments.compactMap { segment -> String? in
                 guard let startAtMs = segment["startAtMs"] as? Double,
                       let endAtMs = segment["endAtMs"] as? Double
                 else { return nil }
-                let start = store.formatRecordsTime(Date(timeIntervalSince1970: startAtMs / 1_000))
-                let end = store.formatRecordsTime(Date(timeIntervalSince1970: endAtMs / 1_000))
+                let start = queries.formatRecordsTime(Date(timeIntervalSince1970: startAtMs / 1_000))
+                let end = queries.formatRecordsTime(Date(timeIntervalSince1970: endAtMs / 1_000))
                 return OWCText.ltrRange(start, end)
             }
             return ranges.isEmpty
-                ? "0 \(store.t("recordsConflictItems"))"
+                ? "0 \(text.t("recordsConflictItems"))"
                 : ranges.joined(separator: ", ")
         }
         if let array = value as? [Any] {
-            return "\(array.count) \(store.t("recordsConflictItems"))"
+            return "\(array.count) \(text.t("recordsConflictItems"))"
         }
         if value is NSNull { return "—" }
         if let milliseconds = value as? Double,
            key.hasSuffix("AtMs") || key == "occurredAtMs" || key == "scheduledStartAtMs" {
-            return store.formatRecordsTime(Date(timeIntervalSince1970: milliseconds / 1_000))
+            return queries.formatRecordsTime(Date(timeIntervalSince1970: milliseconds / 1_000))
         }
         if key == "actualDurationSeconds", let seconds = value as? Int {
-            return store.formatDuration(Double(seconds) * 1_000, includeSeconds: false)
+            return text.formatDuration(Double(seconds) * 1_000, includeSeconds: false)
         }
         if let dateKey = value as? String,
            ["startsOn", "endsBefore", "effectiveFrom", "shiftAnchorDate", "plannedForDate"].contains(key),
-           RecordJSON.date(fromDayKey: dateKey, calendar: store.recordsCalendar) != nil {
-            return store.formatRecordsDayTitle(dayKey: dateKey)
+           RecordJSON.date(fromDayKey: dateKey, calendar: preferences.recordsCalendar) != nil {
+            return queries.formatRecordsDayTitle(dayKey: dateKey)
         }
         if key == "configurationData", let encoded = value as? String,
            let data = Data(base64Encoded: encoded),
@@ -580,7 +614,7 @@ private enum ConflictPayloadPresenter {
         if key == "valueData", let encoded = value as? String,
            let data = Data(base64Encoded: encoded),
            let overtime = try? JSONDecoder().decode(OvertimeDeclarationPayload.self, from: data) {
-            return store.formatRecordsTime(Date(timeIntervalSince1970: overtime.overtimeEndAtMs / 1_000))
+            return queries.formatRecordsTime(Date(timeIntervalSince1970: overtime.overtimeEndAtMs / 1_000))
         }
         if let partial = value as? [String: Any], let year = partial["year"] as? Int {
             let month = partial["month"] as? Int
@@ -592,30 +626,30 @@ private enum ConflictPayloadPresenter {
         }
         if key == "kind", let kind = value as? String {
             switch kind {
-            case "confirmedAsScheduled": return store.t("recordsConfirmScheduled")
-            case "customSegments": return store.t("recordsKindCustomHours")
-            case "notWorking": return store.t("recordsMarkLeave")
-            case "cleared": return store.t("recordsClearDay")
-            case "timerSurfaceFirstSeen": return store.t("recordsObservedFirstSeen")
-            case "countdownStarted": return store.t("recordsObservedStarted")
-            case "countdownStopped": return store.t("recordsObservedStopped")
-            case "overtimeDeclared": return store.t("recordsObservedOvertime")
-            case "focus": return store.t("focusTitle")
-            case "shortBreak": return store.t("focusShortBreak")
-            case "longBreak": return store.t("focusLongBreak")
+            case "confirmedAsScheduled": return text.t("recordsConfirmScheduled")
+            case "customSegments": return text.t("recordsKindCustomHours")
+            case "notWorking": return text.t("recordsMarkLeave")
+            case "cleared": return text.t("recordsClearDay")
+            case "timerSurfaceFirstSeen": return text.t("recordsObservedFirstSeen")
+            case "countdownStarted": return text.t("recordsObservedStarted")
+            case "countdownStopped": return text.t("recordsObservedStopped")
+            case "overtimeDeclared": return text.t("recordsObservedOvertime")
+            case "focus": return text.t("focusTitle")
+            case "shortBreak": return text.t("focusShortBreak")
+            case "longBreak": return text.t("focusLongBreak")
             default: break
             }
         }
         if key == "effect", let effect = value as? String {
-            return store.t(effect == "work" ? "recordsConfirmScheduled" : "recordsMarkLeave")
+            return text.t(effect == "work" ? "recordsConfirmScheduled" : "recordsMarkLeave")
         }
         if ["endReason", "plannedEndReason"].contains(key), let reason = value as? String {
             switch reason {
-            case "completed": return store.t("focusHistoryCompleted")
-            case "stoppedByUser": return store.t("focusHistoryStopped")
-            case "stoppedAtBoundary": return store.t("focusHistoryBoundary")
-            case "abandoned": return store.t("focusHistoryAbandoned")
-            case "supersededBySync": return store.t("focusHistorySupersededBySync")
+            case "completed": return text.t("focusHistoryCompleted")
+            case "stoppedByUser": return text.t("focusHistoryStopped")
+            case "stoppedAtBoundary": return text.t("focusHistoryBoundary")
+            case "abandoned": return text.t("focusHistoryAbandoned")
+            case "supersededBySync": return text.t("focusHistorySupersededBySync")
             default: break
             }
         }

@@ -1,6 +1,6 @@
 import Foundation
 
-extension OffWorkStore {
+extension FocusStore {
     /// Whether the pomodoro owns the break rhythm for the shift being drawn.
     ///
     /// The health reminder and the pomodoro both say "time to get up", on

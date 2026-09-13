@@ -1,9 +1,49 @@
 import Foundation
 
+enum WorkScheduleMode: String, CaseIterable, Codable, Identifiable, Sendable {
+    case classic
+    case alternating
+    case rotation
+    case off
+
+    var id: String { rawValue }
+}
+
+enum AlternatingWeekType: String, CaseIterable, Codable, Identifiable, Sendable {
+    case single
+    case double
+
+    var id: String { rawValue }
+}
+
+enum AppTheme: String, CaseIterable, Codable, Identifiable, Sendable {
+    case auto
+    case light
+    case dark
+
+    var id: String { rawValue }
+}
+
+enum SalaryType: String, CaseIterable, Codable, Identifiable, Sendable {
+    case monthly
+    case daily
+
+    var id: String { rawValue }
+}
+
+enum OffWorkNotificationMode: String, CaseIterable, Codable, Identifiable, Sendable {
+    case off
+    case simple
+    case milestones
+
+    var id: String { rawValue }
+}
+
+
 /// Preferences whose meaning follows the person across their devices.
 /// Runtime state and device capabilities (authorization, biometrics and Live
 /// Activities) stay in UserDefaults or the operating system.
-struct SyncedPreferences: Codable, Equatable, Sendable {
+nonisolated struct SyncedPreferences: Codable, Equatable, Sendable {
     static let logicalKey = "preferences"
 
     var startMinutes: Int
@@ -47,12 +87,23 @@ struct SyncedPreferences: Codable, Equatable, Sendable {
         set { editedAtMs = newValue.timeIntervalSince1970 * 1_000 }
     }
 
+    func hasSameSettings(as other: Self) -> Bool {
+        var value = self
+        value.editedAtMs = other.editedAtMs
+        value.editCount = other.editCount
+        value.editTieBreaker = other.editTieBreaker
+        return value == other
+    }
+
     var isValid: Bool {
         (0..<1_440).contains(startMinutes)
             && (0..<1_440).contains(endMinutes)
             && workdays == Array(Set(workdays)).sorted()
-            && workdays.allSatisfy { (1...7).contains($0) }
-            && (1...7).contains(alternatingWeekendWorkday)
+            // UI and the shared rules use Sunday = 0. Continue accepting 7
+            // from archives admitted by the previous validator; do not rewrite
+            // an imported schedule's meaning in a preferences validation pass.
+            && workdays.allSatisfy { (0...7).contains($0) }
+            && (0...7).contains(alternatingWeekendWorkday)
             && alternatingReferenceWeekStartMs.isFinite
             && rotationWorkDays > 0
             && rotationRestDays > 0
@@ -88,7 +139,7 @@ struct SyncedPreferences: Codable, Equatable, Sendable {
 }
 
 extension SyncedPreferences {
-    init(from decoder: any Decoder) throws {
+    nonisolated init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         startMinutes = try values.decode(Int.self, forKey: .startMinutes)
         endMinutes = try values.decode(Int.self, forKey: .endMinutes)
@@ -128,7 +179,7 @@ extension SyncedPreferences {
         editTieBreaker = try values.decode(UUID.self, forKey: .editTieBreaker)
     }
 
-    func encode(to encoder: any Encoder) throws {
+    nonisolated func encode(to encoder: any Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
         try values.encode(startMinutes, forKey: .startMinutes)
         try values.encode(endMinutes, forKey: .endMinutes)

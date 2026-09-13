@@ -8,7 +8,8 @@ import SwiftUI
 /// pushed Continue off the screen. Mode changes swap the panel while it is
 /// faded out, so the height change is not on screen.
 struct OnboardingScheduleDetailsView: View {
-    @Bindable var store: OffWorkStore
+    @Bindable var preferences: PreferencesStore
+    let text: AppText
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -16,10 +17,11 @@ struct OnboardingScheduleDetailsView: View {
     @State private var pendingMode: WorkScheduleMode
     @State private var detailsVisible = true
 
-    init(store: OffWorkStore) {
-        self.store = store
-        _displayedMode = State(initialValue: store.scheduleMode)
-        _pendingMode = State(initialValue: store.scheduleMode)
+    init(preferences: PreferencesStore, text: AppText) {
+        self.preferences = preferences
+        self.text = text
+        _displayedMode = State(initialValue: preferences.scheduleMode)
+        _pendingMode = State(initialValue: preferences.scheduleMode)
     }
 
     var body: some View {
@@ -29,7 +31,7 @@ struct OnboardingScheduleDetailsView: View {
             .offset(y: detailOffset)
             .allowsHitTesting(detailsVisible)
             .accessibilityHidden(!detailsVisible)
-            .onChange(of: store.scheduleMode) { _, mode in
+            .onChange(of: preferences.scheduleMode) { _, mode in
                 transition(to: mode)
             }
     }
@@ -39,12 +41,12 @@ struct OnboardingScheduleDetailsView: View {
         switch mode {
         case .classic:
             VStack(alignment: .leading, spacing: 0) {
-                Text(store.t("workdaysLabel"))
+                Text(text.t("workdaysLabel"))
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(OWCDesign.secondary)
                 weekdayGrid
                     .padding(.top, 8)
-                Text(store.t("keepAtLeastOneWorkday"))
+                Text(text.t("keepAtLeastOneWorkday"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .padding(.top, 8)
@@ -52,11 +54,14 @@ struct OnboardingScheduleDetailsView: View {
         case .alternating:
             OWCGroupCard {
                 VStack(alignment: .leading, spacing: 9) {
-                    Text(store.t("alternatingCurrentWeek"))
+                    Text(text.t("alternatingCurrentWeek"))
                         .font(.subheadline.weight(.semibold))
-                    Picker(store.t("alternatingCurrentWeek"), selection: $store.alternatingWeekType) {
-                        Text(store.t("singleRestWeek")).tag(AlternatingWeekType.single)
-                        Text(store.t("doubleRestWeek")).tag(AlternatingWeekType.double)
+                    Picker(text.t("alternatingCurrentWeek"), selection: Binding(
+                        get: { preferences.alternatingWeekType },
+                        set: { preferences.applySetupScheduleChange(ScheduleFieldChange(alternatingWeekType: $0)) }
+                    )) {
+                        Text(text.t("singleRestWeek")).tag(AlternatingWeekType.single)
+                        Text(text.t("doubleRestWeek")).tag(AlternatingWeekType.double)
                     }
                     .pickerStyle(.segmented)
                 }
@@ -68,22 +73,21 @@ struct OnboardingScheduleDetailsView: View {
                         .padding(.leading, 16)
                 }
                 VStack(alignment: .leading, spacing: 9) {
-                    Text(store.t("singleWeekWorkday"))
+                    Text(text.t("singleWeekWorkday"))
                         .font(.subheadline.weight(.semibold))
-                    Picker(store.t("singleWeekWorkday"), selection: $store.alternatingWeekendWorkday) {
-                        Text(store.t("workOnWeekday", values: ["day": store.weekdayLabels()[5]])).tag(6)
-                        Text(store.t("workOnWeekday", values: ["day": store.weekdayLabels()[6]])).tag(0)
+                    Picker(text.t("singleWeekWorkday"), selection: preferences.preferenceBinding(\.alternatingWeekendWorkday)) {
+                        Text(text.t("workOnWeekday", values: ["day": text.weekdayLabels()[5]])).tag(6)
+                        Text(text.t("workOnWeekday", values: ["day": text.weekdayLabels()[6]])).tag(0)
                     }
                     .pickerStyle(.segmented)
                 }
                 .padding(12)
             }
-            .onChange(of: store.alternatingWeekType) { store.anchorAlternatingWeekToToday() }
         case .rotation:
             OWCGroupCard {
-                Stepper(value: $store.rotationWorkDays, in: 1...30) {
-                    OWCRow(title: store.t("rotationWorkDays")) {
-                        Text("\(store.rotationWorkDays)")
+                Stepper(value: preferences.preferenceBinding(\.rotationWorkDays), in: 1...30) {
+                    OWCRow(title: text.t("rotationWorkDays")) {
+                        Text("\(preferences.rotationWorkDays)")
                             .monospacedDigit()
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -95,9 +99,9 @@ struct OnboardingScheduleDetailsView: View {
                         .frame(height: 0.5)
                         .padding(.leading, 16)
                 }
-                Stepper(value: $store.rotationRestDays, in: 1...30) {
-                    OWCRow(title: store.t("rotationRestDays")) {
-                        Text("\(store.rotationRestDays)")
+                Stepper(value: preferences.preferenceBinding(\.rotationRestDays), in: 1...30) {
+                    OWCRow(title: text.t("rotationRestDays")) {
+                        Text("\(preferences.rotationRestDays)")
                             .monospacedDigit()
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -110,23 +114,23 @@ struct OnboardingScheduleDetailsView: View {
                         .padding(.leading, 16)
                 }
                 Menu {
-                    ForEach(1...store.rotationCycleLength, id: \.self) { day in
+                    ForEach(1...preferences.rotationCycleLength, id: \.self) { day in
                         Button {
-                            store.setRotationCycleDay(day)
+                            preferences.applySetupScheduleChange(ScheduleFieldChange(rotationCycleDay: day))
                         } label: {
                             Label(
-                                store.t(
-                                    day <= store.rotationWorkDays ? "rotationWorkdayOption" : "rotationRestdayOption",
+                                text.t(
+                                    day <= preferences.rotationWorkDays ? "rotationWorkdayOption" : "rotationRestdayOption",
                                     values: ["day": "\(day)"]
                                 ),
-                                systemImage: day <= store.rotationWorkDays ? "briefcase" : "bed.double"
+                                systemImage: day <= preferences.rotationWorkDays ? "briefcase" : "bed.double"
                             )
                         }
                     }
                 } label: {
                     OWCRow(
                         icon: "repeat",
-                        title: store.t("rotationStartDay", values: ["day": "\(store.rotationCycleDay)"]),
+                        title: text.t("rotationStartDay", values: ["day": "\(preferences.rotationCycleDay)"]),
                         isLast: true
                     ) {
                         Image(systemName: "chevron.up.chevron.down")
@@ -140,7 +144,7 @@ struct OnboardingScheduleDetailsView: View {
             OWCGroupCard {
                 OWCRow(
                     icon: "calendar.badge.minus",
-                    title: store.t("scheduleOffManualStart"),
+                    title: text.t("scheduleOffManualStart"),
                     isLast: true
                 ) {
                     Image(systemName: "checkmark.circle.fill")
@@ -152,35 +156,14 @@ struct OnboardingScheduleDetailsView: View {
 
     private var weekdayGrid: some View {
         HStack(spacing: 6) {
-            ForEach(Array(zip([1, 2, 3, 4, 5, 6, 0], store.weekdayLabels())), id: \.0) { day, label in
-                let selected = store.workdays.contains(day)
-                let locked = selected && store.workdays.count == 1
-                Button {
-                    if locked { return }
-                    store.toggleWorkday(day)
-                } label: {
-                    ZStack(alignment: .topTrailing) {
-                        Text(label)
-                            .font(.footnote.weight(selected ? .semibold : .medium))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.62)
-                            .foregroundStyle(selected ? Color(uiColor: .systemBackground) : OWCDesign.secondary)
-                            .frame(maxWidth: .infinity, minHeight: 46)
-
-                        if differentiateWithoutColor, selected {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.caption2)
-                                .foregroundStyle(Color(uiColor: .systemBackground))
-                                .padding(4)
-                        }
-                    }
-                    .background(selected ? OWCDesign.accent : OWCDesign.control)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .opacity(locked ? 0.55 : 1)
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(selected ? .isSelected : [])
-                .accessibilityHint(locked ? store.t("keepAtLeastOneWorkday") : "")
+            ForEach(Array(zip([1, 2, 3, 4, 5, 6, 0], text.weekdayLabels())), id: \.0) { day, label in
+                let selected = preferences.workdays.contains(day)
+                let locked = selected && preferences.workdays.count == 1
+                OWCWeekdayButton(
+                    label: label, selected: selected, locked: locked,
+                    differentiateWithoutColor: differentiateWithoutColor,
+                    lockedHint: text.t("keepAtLeastOneWorkday")
+                ) { preferences.toggleWorkday(day) }
             }
         }
         .padding(12)

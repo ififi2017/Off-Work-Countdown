@@ -8,7 +8,7 @@ extension LiveActivityService {
     /// the content uses a fifteen-minute segment so the system timer can be
     /// recorded immediately.
     func startDebugLiveActivity(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         now: Date = .now
     ) async throws {
         await endAll()
@@ -41,11 +41,11 @@ extension LiveActivityService {
                 ),
             ],
             phase: "working",
-            locale: store.languageCode,
+            locale: shifts.preferences.languageCode,
             appTitle: OWCBrand.shortName,
-            caption: store.t("timeLeftCaption"),
-            completedCaption: store.t("offWorkTime"),
-            completedNote: store.t("offWorkWellDone")
+            caption: shifts.text.t("timeLeftCaption"),
+            completedCaption: shifts.text.t("offWorkTime"),
+            completedNote: shifts.text.t("offWorkWellDone")
         )
         let content = ActivityContent(
             state: state,

@@ -1,14 +1,15 @@
 import SwiftUI
 
 struct PlusSettingsView: View {
-    let store: OffWorkStore
+    let plus: PlusEntitlement
+    let text: AppText
 
     var body: some View {
         GeometryReader { viewport in
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    if !store.plus.isAuthorized {
-                        Text(store.t("plusIntroTitle"))
+                    if !plus.isAuthorized {
+                        Text(text.t("plusIntroTitle"))
                             .font(.title.bold())
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
@@ -17,16 +18,17 @@ struct PlusSettingsView: View {
                     // The content, not the whole page. Embedding `PaywallView` put
                     // a second vertical scroll view inside this one.
                     PaywallContent(
-                        store: store,
-                        showsBenefits: !store.plus.isAuthorized,
-                        showsIntro: !store.plus.isAuthorized
+                        plus: plus,
+                        text: text,
+                        showsBenefits: !plus.isAuthorized,
+                        showsIntro: !plus.isAuthorized
                     )
                 }
                 .frame(maxWidth: 560, alignment: .leading)
                 .padding(.horizontal, OWCDesign.contentInset)
                 .padding(.top, 24)
                 .frame(
-                    minHeight: store.plus.isAuthorized
+                    minHeight: plus.isAuthorized
                         ? max(0, viewport.size.height - OWCDesign.detailBottomInset) : 0
                 )
                 .padding(.bottom, OWCDesign.detailBottomInset)
@@ -36,8 +38,8 @@ struct PlusSettingsView: View {
         }
         .background(OWCDesign.page)
         .owcDetailBack(
-            title: store.t("settings"),
-            pageTitle: store.t("plusSettings"),
+            title: text.t("settings"),
+            pageTitle: text.t("plusSettings"),
             titleDisplayMode: .inline
         )
     }

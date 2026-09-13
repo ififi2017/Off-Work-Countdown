@@ -19,7 +19,7 @@ func existingPreferencesSeedSyncRow() throws {
     defer { defaults.removePersistentDomain(forName: suite) }
 
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
+    let store = AppRuntime(defaults: defaults, records: records)
     let preferences = try #require(records.state.syncedPreferences)
     #expect(preferences.startMinutes == 8 * 60 + 30)
     #expect(preferences.salaryAmount == "52000")
@@ -32,24 +32,24 @@ func existingPreferencesSeedSyncRow() throws {
     #expect(records.state.sync.rows[SyncedPreferences.logicalKey]?.dirty == true)
 
     let originalEditCount = preferences.editCount
-    store.hideEarnings = false
-    store.liveActivityEnabled = false
+    store.preferences.hideEarnings = false
+    store.preferences.liveActivityEnabled = false
     #expect(records.state.syncedPreferences?.editCount == originalEditCount)
-    store.theme = .light
+    store.preferences.applyPreferences { $0.theme = .light }
     #expect(records.state.syncedPreferences?.editCount == originalEditCount + 1)
 }
 
 @MainActor
 @Test("A remote preference row updates shared settings and preserves device-only choices")
-func remotePreferencesApplyToStore() throws {
+func remotePreferencesApplyToStore() async throws {
     let suite = "SyncedPreferences.\(UUID())"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.set(true, forKey: "ios.native.onboardingComplete")
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
-    store.hideEarnings = true
-    store.liveActivityEnabled = true
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.hideEarnings = true
+    store.preferences.liveActivityEnabled = true
 
     var remote = try #require(records.state.syncedPreferences)
     remote.salaryAmount = "88000"
@@ -71,15 +71,15 @@ func remotePreferencesApplyToStore() throws {
         systemFields: nil,
         generation: records.state.sync.generation
     )
-    records.persistRemoteBatch()
+    try await records.persistRemoteBatch()
 
-    #expect(store.salaryAmount == "88000")
-    #expect(store.salaryEnabled)
-    #expect(store.theme == .dark)
-    #expect(store.languageOverride == "ja")
-    #expect(store.notificationMode == .simple)
-    #expect(store.hideEarnings)
-    #expect(store.liveActivityEnabled)
+    #expect(store.preferences.salaryAmount == "88000")
+    #expect(store.preferences.salaryEnabled)
+    #expect(store.preferences.theme == .dark)
+    #expect(store.preferences.languageOverride == "ja")
+    #expect(store.preferences.notificationMode == .simple)
+    #expect(store.preferences.hideEarnings)
+    #expect(store.preferences.liveActivityEnabled)
 }
 
 @MainActor
@@ -186,6 +186,183 @@ func legacySyncedPreferencesDateStampMigrates() throws {
     #expect(rewrittenPreferences["editedAt"] == nil)
 }
 
+@MainActor
+@Test("Equivalent preferences do not create revisions, outbox changes or notifications")
+func unchangedPreferencesDoNotWrite() async throws {
+    let records = RecordCoordinator.inMemory()
+    records.upsertSyncedPreferences(sampleSyncedPreferences())
+    let original = records.state
+    let revision = records.revision
+    var notifications = 0
+    records.onDirty = { notifications += 1 }
+    var draft = try #require(original.syncedPreferences)
+    draft.editedAtMs += 10_000
+    draft.editCount += 100
+    draft.editTieBreaker = UUID()
+
+    records.upsertSyncedPreferences(draft)
+    #expect(records.state == original)
+    #expect(records.revision == revision)
+    #expect(notifications == 0)
+    #expect(await records.commitSyncState { sync, _ in sync = original.sync })
+    #expect(records.revision == revision)
+}
+
+@MainActor
+@Test("Committing both displayed hours publishes one final preference revision")
+func displayedHoursCommitOnePreferenceRow() throws {
+    let scene = SceneState()
+    let suite = "PreferencesBatch.\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    defaults.set(true, forKey: "ios.native.onboardingComplete")
+    let records = RecordCoordinator.inMemory()
+    let store = AppRuntime(defaults: defaults, records: records)
+    let original = try #require(records.state.syncedPreferences)
+    let revision = records.revision
+    var published: [SyncedPreferences] = []
+    records.onDirty = {
+        if let preferences = records.state.syncedPreferences { published.append(preferences) }
+    }
+
+    scene.setDisplayedStartMinutes(8 * 60, using: store.preferences)
+    scene.setDisplayedEndMinutes(18 * 60, using: store.preferences)
+    #expect(records.revision == revision)
+    scene.commitDisplayedHours(using: store.shifts)
+
+    #expect(records.revision == revision + 1)
+    #expect(published.count == 1)
+    let saved = try #require(published.first)
+    #expect(saved.startMinutes == 8 * 60)
+    #expect(saved.endMinutes == 18 * 60)
+    #expect(saved.editCount == original.editCount + 1)
+    scene.commitDisplayedHours(using: store.shifts)
+    #expect(records.revision == revision + 1)
+    #expect(published.count == 1)
+}
+
+@MainActor
+@Test("Preference dirty notifications wait for a successful archive write")
+func preferenceNotificationsFollowDurableSave() async throws {
+    let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let file = directory.appending(path: "archive.json")
+    let records = RecordCoordinator(fileURL: file)
+    var durableEditCounts: [Int] = []
+    records.onDirty = {
+        let reopened = RecordCoordinator(fileURL: file)
+        if let saved = reopened.state.syncedPreferences {
+            durableEditCounts.append(saved.editCount)
+        }
+    }
+
+    records.upsertSyncedPreferences(sampleSyncedPreferences())
+    await #expect(throws: RecordPersistenceError.writeFailed) { try await records.flush() }
+    #expect(records.persistenceError == .writeFailed)
+    #expect(durableEditCounts.isEmpty)
+    let failedEditCount = try #require(records.state.syncedPreferences?.editCount)
+
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    var revised = try #require(records.state.syncedPreferences)
+    revised.startMinutes += 30
+    records.upsertSyncedPreferences(revised)
+    try await records.flush()
+    #expect(records.persistenceError == nil)
+    #expect(durableEditCounts == [failedEditCount + 1])
+}
+
+@MainActor
+@Test("Theme, sync bookkeeping and focus edits preserve Life projection inputs")
+func unrelatedChangesPreserveLifeProjection() async throws {
+    let suite = "ProjectionInputs.\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    defaults.set(true, forKey: "ios.native.onboardingComplete")
+    let records = RecordCoordinator.inMemory()
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+    let now = try #require(store.preferences.recordsCalendar.date(from: DateComponents(year: 2026, month: 9, day: 12, hour: 10)))
+    let input = store.life.lifeSummaryRefreshInput(now: now)
+    let key = store.life.lifeViewModelCacheKey(now: now)
+    let contentRevision = records.contentRevision
+    let historyRevision = records.historyRevision
+
+    store.preferences.applyPreferences { $0.theme = .dark }
+    var sync = records.state.sync
+    sync.engineState = Data("test sync checkpoint".utf8)
+    #expect(await records.commitSyncState { current, _ in
+        current.engineState = sync.engineState
+    })
+    #expect(records.contentRevision == contentRevision)
+    #expect(records.historyRevision == historyRevision)
+    #expect(store.life.lifeSummaryRefreshInput(now: now) == input)
+    #expect(store.life.lifeViewModelCacheKey(now: now) == key)
+
+    records.upsertFocusPlanningConfiguration(.init(
+        planning: .init(), timerSettings: .default, editedAt: now,
+        editCount: 0, editTieBreaker: UUID()
+    ))
+    #expect(records.contentRevision == contentRevision + 1)
+    #expect(records.historyRevision == historyRevision)
+    #expect(store.life.lifeSummaryRefreshInput(now: now) == input)
+
+    store.preferences.applyPreferences { $0.salaryAmount = "12000" }
+    #expect(store.life.lifeSummaryRefreshInput(now: now) != input)
+    let salaryKey = store.life.lifeViewModelCacheKey(now: now)
+    #expect(salaryKey != key)
+    #expect(salaryKey.hasSameSchedule(as: key))
+}
+
+@MainActor
+@Test("A remote preference stamp update preserves projections and unsaved time drafts")
+func remotePreferenceMetadataPreservesProjectionRevision() async throws {
+    let scene = SceneState()
+    let suite = "RemotePreferenceStamp.\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    defaults.set(true, forKey: "ios.native.onboardingComplete")
+    let records = RecordCoordinator.inMemory()
+    let store = AppRuntime(defaults: defaults, records: records)
+    let draftStart = store.preferences.startMinutes + 15
+    scene.setDisplayedStartMinutes(draftStart, using: store.preferences)
+    let revision = records.contentRevision
+    var remote = try #require(records.state.syncedPreferences)
+    remote.editCount += 10
+    remote.editTieBreaker = UUID()
+    let payload = try JSONEncoder().encode(remote)
+    records.applyRemotePayload(
+        type: .syncedPreferences, key: SyncedPreferences.logicalKey, payload: payload,
+        editCount: remote.editCount, editTieBreaker: remote.editTieBreaker.uuidString,
+        systemFields: nil, generation: records.state.sync.generation,
+        persistImmediately: false
+    )
+    try await records.persistRemoteBatch()
+    #expect(records.state.syncedPreferences?.editCount == remote.editCount)
+    #expect(records.contentRevision == revision)
+    #expect(store.preferences.startMinutes == remote.startMinutes)
+    #expect(scene.displayedStartMinutes(using: store.preferences) == draftStart)
+}
+
+@MainActor
+@Test("One mixed record batch advances each affected domain once")
+func batchedRecordDomainsAdvanceOnce() {
+    let records = RecordCoordinator.inMemory()
+    records.withBatchedWrites {
+        records.upsertSyncedPreferences(sampleSyncedPreferences())
+        records.upsertFocusPlanningConfiguration(.init(
+            planning: .init(), timerSettings: .default, editedAt: .now,
+            editCount: 0, editTieBreaker: UUID()
+        ))
+        records.updateLifeProfile(.init(editedAt: .now, editCount: 0, editTieBreaker: UUID()))
+    }
+    #expect(records.revision == 1)
+    #expect(records.contentRevision == 1)
+    #expect(records.projectionRevision == 1)
+    #expect(records.lifeRevision == 1)
+    #expect(records.focusRevision == 1)
+    #expect(records.historyRevision == 0)
+}
+
 private func sampleSyncedPreferences() -> SyncedPreferences {
     SyncedPreferences(
         startMinutes: 9 * 60,
@@ -220,4 +397,31 @@ private func sampleSyncedPreferences() -> SyncedPreferences {
         editCount: 1,
         editTieBreaker: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
     )
+}
+
+@MainActor
+@Test("Service scheduling ignores theme and sync metadata but observes shift inputs")
+func serviceSchedulingUsesRelevantInputs() async throws {
+    let suite = "ServiceInputs.\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let records = RecordCoordinator.inMemory()
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.completeSetup(enableNotifications: false)
+    let original = ServiceScheduleSignal(shifts: store.shifts)
+    store.preferences.applyPreferences { $0.theme = .dark }
+    var sync = records.state.sync
+    sync.engineState = Data([1, 2, 3])
+    #expect(await records.commitSyncState { current, _ in
+        current.engineState = sync.engineState
+    })
+    #expect(ServiceScheduleSignal(shifts: store.shifts) == original)
+    store.preferences.applyPreferences { $0.startMinutes += 15 }
+    #expect(ServiceScheduleSignal(shifts: store.shifts) != original)
+    let afterHours = ServiceScheduleSignal(shifts: store.shifts)
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = store.preferences.recordsTimeZoneIdentifier == "UTC" ? "Asia/Shanghai" : "UTC" }
+    #expect(ServiceScheduleSignal(shifts: store.shifts) != afterHours)
+    let afterZone = ServiceScheduleSignal(shifts: store.shifts)
+    store.preferences.applyPreferences { $0.monthlyWorkingDays += 1 }
+    #expect(ServiceScheduleSignal(shifts: store.shifts) != afterZone)
 }

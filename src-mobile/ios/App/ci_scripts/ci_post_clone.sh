@@ -25,6 +25,7 @@ fi
 echo "Preparing generated iOS resources with Node.js $(node --version)."
 npm ci --ignore-scripts --no-audit --no-fund
 npm run build:ios-native-rules
+npm run check:watch-fixtures
 npm run check:ios
 
 test -s src-mobile/ios/App/App/Resources/CountdownRules.js

@@ -3,7 +3,7 @@ import Foundation
 /// Formats a span of time the way it reads in a sentence — "12 h", "1小时30分钟" —
 /// as opposed to the clock form `formatDuration` produces.
 ///
-/// This lives outside `OffWorkStore` because the store takes its language from
+/// This uses the system locale because app content takes its language from
 /// the system bundle and exposes it `private(set)`, which left the formatting
 /// untestable at any language but the simulator's.
 nonisolated enum RelativeDurationFormatter {

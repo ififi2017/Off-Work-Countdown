@@ -390,3 +390,83 @@ func unverifiedRefreshCannotCreateGrant() {
     #expect(empty.authorization == .unauthorized)
     #expect(expired.authorization == .unauthorized)
 }
+
+@MainActor
+@Test("Concurrent purchase requests enter StoreKit once and reopen after completion")
+func purchaseAdmissionIsProcessWide() async throws {
+    let suite = "PlusPurchaseAdmission.\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let entitlement = PlusEntitlement(defaults: defaults, fetchEvidence: { StoreKitEvidence() })
+    let probe = PlusOperationProbe()
+    let first = Task { @MainActor in
+        await entitlement.purchase {
+            await probe.suspendFirstCall()
+            return .userCancelled
+        }
+    }
+    await probe.waitForFirstCall()
+    await entitlement.purchase(operation: {
+        probe.recordCall()
+        return .userCancelled
+    })
+    await entitlement.restore(operation: { probe.recordCall() })
+    #expect(probe.calls == 1)
+    probe.releaseFirstCall()
+    await first.value
+    await entitlement.purchase(operation: {
+        probe.recordCall()
+        return .userCancelled
+    })
+    #expect(probe.calls == 2)
+}
+
+@MainActor
+@Test("Concurrent restore requests enter StoreKit once and reopen after completion")
+func restoreAdmissionIsProcessWide() async throws {
+    let suite = "PlusRestoreAdmission.\(UUID())"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let entitlement = PlusEntitlement(defaults: defaults, fetchEvidence: { StoreKitEvidence() })
+    let probe = PlusOperationProbe()
+    let first = Task { @MainActor in
+        await entitlement.restore { await probe.suspendFirstCall() }
+    }
+    await probe.waitForFirstCall()
+    await entitlement.restore(operation: { probe.recordCall() })
+    await entitlement.purchase(operation: {
+        probe.recordCall()
+        return .userCancelled
+    })
+    #expect(probe.calls == 1)
+    probe.releaseFirstCall()
+    await first.value
+    await entitlement.restore(operation: { probe.recordCall() })
+    #expect(probe.calls == 2)
+}
+
+@MainActor
+private final class PlusOperationProbe {
+    private(set) var calls = 0
+    private var entered: CheckedContinuation<Void, Never>?
+    private var release: CheckedContinuation<Void, Never>?
+
+    func suspendFirstCall() async {
+        calls += 1
+        entered?.resume()
+        entered = nil
+        await withCheckedContinuation { release = $0 }
+    }
+
+    func recordCall() { calls += 1 }
+
+    func waitForFirstCall() async {
+        guard calls == 0 else { return }
+        await withCheckedContinuation { entered = $0 }
+    }
+
+    func releaseFirstCall() {
+        release?.resume()
+        release = nil
+    }
+}

@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct TimerActionBar: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
     let snapshot: NativeShiftSnapshot
     let now: Date
     @Binding var showShare: Bool
@@ -26,15 +27,16 @@ struct TimerActionBar: View {
     private var beforeStartBar: some View {
         HStack(spacing: 10) {
             Button {
-                store.requestClockInEarly(at: now)
+                scene.requestClockInEarly(at: now, using: shifts)
             } label: {
-                ClockInEarlyLabel(store: store, tinted: false)
+                ClockInEarlyLabel(shifts: shifts, now: now, tinted: false)
             }
             .buttonStyle(OWCPrimaryButtonStyle(
-                color: store.clockInConfirmPending ? OWCDesign.orangeDeep : OWCDesign.accent
+                color: scene.isClockInConfirmationArmed(at: now, using: shifts)
+                    ? OWCDesign.orangeDeep : OWCDesign.accent
             ))
 
-            Button(store.t("shareButton"), systemImage: "square.and.arrow.up") {
+            Button(shifts.text.t("shareButton"), systemImage: "square.and.arrow.up") {
                 showShare = true
             }
             .labelStyle(.iconOnly)
@@ -50,20 +52,20 @@ struct TimerActionBar: View {
     private var runningBar: some View {
         HStack(spacing: 10) {
             Button {
-                store.requestClockOffEarly(at: now)
+                scene.requestClockOffEarly(at: now, using: shifts)
             } label: {
-                ClockOffEarlyLabel(store: store)
+                ClockOffEarlyLabel(shifts: shifts, now: now)
             }
             .buttonStyle(OWCSecondaryButtonStyle())
 
             Button {
                 showOvertime = true
             } label: {
-                Text(overtimeActive ? store.t("adjustOvertime") : store.t("overtime"))
+                Text(overtimeActive ? shifts.text.t("adjustOvertime") : shifts.text.t("overtime"))
             }
             .buttonStyle(OWCSecondaryButtonStyle())
 
-            Button(store.t("shareButton"), systemImage: "square.and.arrow.up") {
+            Button(shifts.text.t("shareButton"), systemImage: "square.and.arrow.up") {
                 showShare = true
             }
             .labelStyle(.iconOnly)

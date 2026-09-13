@@ -6,7 +6,14 @@ import SwiftUI
 /// single conclusion — the waking time that was yours — and everything under
 /// it is the account of where the rest went, never a second conclusion.
 struct RecordsDayCanvasView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let records: RecordCoordinator
+    let queries: RecordsQueries
+    let actions: RecordsActions
+    let preferences: PreferencesStore
+    let focus: FocusStore
+    let text: AppText
+    let hours: ScheduleHoursConfiguration
     let dayKey: String
 
     @State private var model: RecordsDayCanvasModel?
@@ -15,24 +22,39 @@ struct RecordsDayCanvasView: View {
     @State private var nowTick = Date()
     @Environment(\.scenePhase) private var scenePhase
 
+    private struct LoadRequest: Equatable {
+        var dayKey: String
+        var revision: UInt64
+        var hours: ScheduleHoursConfiguration
+        var timeZone: String
+        var authorized: Bool
+        var minute: Int
+    }
+
+    private var loadRequest: LoadRequest {
+        .init(dayKey: dayKey, revision: records.contentRevision,
+              hours: hours, timeZone: preferences.recordsTimeZone.identifier,
+              authorized: queries.plus.isAuthorized, minute: Int(nowTick.timeIntervalSince1970 / 60))
+    }
+
     var body: some View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 if let model {
                     if model.isLocked {
-                        RecordsLockedDayCard(store: store) { store.paywallSheet = .charts }
+                        RecordsLockedDayCard(text: text) { scene.paywallSheet = .charts }
                     } else {
                         band(model)
                         conclusion(model)
                         segments(model)
                         observations(model)
-                        RecordsFocusHistoryCard(store: store, dayKey: dayKey)
+                        RecordsFocusHistoryCard(focus: focus, text: text, dayKey: dayKey)
                         conflictCard
                         editEntry(model)
                     }
                 } else if !isLoading {
                     OWCGroupCard {
-                        Text(store.t("recordsNoObservations"))
+                        Text(text.t("recordsNoObservations"))
                             .font(.body)
                             .foregroundStyle(OWCDesign.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -47,16 +69,10 @@ struct RecordsDayCanvasView: View {
         .background(OWCDesign.page)
         // The two iPad and landscape shells decide their title from the tab,
         // so this page has to say its own name in all three navigation chromes.
-        .navigationTitle(store.formatRecordsDayTitle(dayKey: dayKey))
+        .navigationTitle(queries.formatRecordsDayTitle(dayKey: dayKey))
         .navigationSubtitle(subtitle)
         .navigationBarTitleDisplayMode(.inline)
-        .owcTabletDetailNavigation(
-            backTitle: store.t("recordsTitle"),
-            pageTitle: store.formatRecordsDayTitle(dayKey: dayKey),
-            subtitle: subtitle
-        )
-        .task(id: store.records.revision) { await load() }
-        .onChange(of: store.plus.isAuthorized) { _, _ in Task { await load() } }
+        .task(id: loadRequest) { await load() }
         // A retrospective page is not a countdown. The now line advances on the
         // minute, and only while the page can actually be seen.
         .onReceive(
@@ -65,29 +81,30 @@ struct RecordsDayCanvasView: View {
             guard scenePhase == .active, model?.isToday == true else { return }
             if Int(value.timeIntervalSince1970 / 60) != Int(nowTick.timeIntervalSince1970 / 60) {
                 nowTick = value
-                Task { await load() }
             }
         }
         .confirmationDialog(
-            store.t("recordsChooseShift"),
+            text.t("recordsChooseShift"),
             isPresented: $choosesShift,
             titleVisibility: .visible
         ) {
             ForEach(model?.editableShifts ?? []) { shift in
-                Button(shiftLabel(shift)) { store.openDayEditor(dayKey: shift.anchorDayKey) }
+                Button(shiftLabel(shift)) { scene.openDayEditor(dayKey: shift.anchorDayKey, actions: actions, queries: queries) }
             }
-            Button(store.t("cancel"), role: .cancel) {}
+            Button(text.t("cancel"), role: .cancel) {}
         }
     }
 
     private var subtitle: String {
         guard let model else { return "" }
-        return store.t(model.source.titleKey)
+        return text.t(model.source.titleKey)
     }
 
     private func load() async {
         isLoading = true
-        model = await store.recordsDayCanvas(dayKey: dayKey)
+        let next = await queries.recordsDayCanvas(dayKey: dayKey)
+        guard !Task.isCancelled else { return }
+        model = next
         isLoading = false
     }
 
@@ -96,10 +113,10 @@ struct RecordsDayCanvasView: View {
     private func band(_ model: RecordsDayCanvasModel) -> some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 8) {
-                RecordsDayBand(store: store, model: model)
+                RecordsDayBand(queries: queries, text: text, model: model)
                 axis(model)
                 if model.projectionStartsAtMs != nil {
-                    Text(store.t("recordsSourceAfterNow"))
+                    Text(text.t("recordsSourceAfterNow"))
                         .font(.caption)
                         .foregroundStyle(OWCDesign.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -114,7 +131,7 @@ struct RecordsDayCanvasView: View {
     /// back to 24.
     private func axis(_ model: RecordsDayCanvasModel) -> some View {
         let total = model.dayEnd.timeIntervalSince(model.dayStart)
-        let calendar = store.recordsCalendar
+        let calendar = preferences.recordsCalendar
         return GeometryReader { proxy in
             ForEach([0, 6, 12, 18, 24], id: \.self) { hour in
                 // Built from calendar components, not from elapsed seconds: on
@@ -128,7 +145,7 @@ struct RecordsDayCanvasView: View {
                 let offset = total > 0
                     ? min(1, max(0, moment.timeIntervalSince(model.dayStart) / total))
                     : 0
-                Text(store.formatRecordsTime(moment))
+                Text(queries.formatRecordsTime(moment))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
                     .fixedSize()
@@ -147,25 +164,25 @@ struct RecordsDayCanvasView: View {
     private func conclusion(_ model: RecordsDayCanvasModel) -> some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 6) {
-                Text(store.t("recordsFreeAwake"))
+                Text(text.t("recordsFreeAwake"))
                     .font(.subheadline)
                     .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Text(store.formatRelativeDuration(Double(model.wakingFreeMs)))
+                    Text(text.formatRelativeDuration(Double(model.wakingFreeMs)))
                         .font(.largeTitle.weight(.semibold).monospacedDigit())
                         .foregroundStyle(OWCDesign.primary)
                         .contentTransition(.numericText())
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
-                    Text(store.formatPercent(model.wakingFreeShare * 100))
+                    Text(text.formatPercent(model.wakingFreeShare * 100))
                         .font(.body.monospacedDigit())
                         .foregroundStyle(OWCDesign.secondary)
                         .contentTransition(.numericText())
-                        .accessibilityLabel(store.t("recordsShareOfDay"))
-                        .accessibilityValue(store.formatPercent(model.wakingFreeShare * 100))
+                        .accessibilityLabel(text.t("recordsShareOfDay"))
+                        .accessibilityValue(text.formatPercent(model.wakingFreeShare * 100))
                 }
-                Text(store.t("recordsFreeAwakeFootnote"))
+                Text(text.t("recordsFreeAwakeFootnote"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -181,12 +198,13 @@ struct RecordsDayCanvasView: View {
     private func segments(_ model: RecordsDayCanvasModel) -> some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 10) {
-                Text(store.t("recordsDaySegments"))
+                Text(text.t("recordsDaySegments"))
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(OWCDesign.secondary)
                 ForEach(model.intervals) { interval in
                     RecordsDayIntervalRow(
-                        store: store,
+                        queries: queries,
+                        text: text,
                         interval: interval,
                         daySource: model.source
                     )
@@ -199,14 +217,14 @@ struct RecordsDayCanvasView: View {
 
     @ViewBuilder
     private func observations(_ model: RecordsDayCanvasModel) -> some View {
-        let items = store.observations(on: model.dayStart)
+        let items = queries.observations(on: model.dayStart)
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 8) {
-                Text(store.t("recordsObservations"))
+                Text(text.t("recordsObservations"))
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(OWCDesign.secondary)
                 if items.isEmpty {
-                    Text(store.t("recordsNoObservations"))
+                    Text(text.t("recordsNoObservations"))
                         .font(.body)
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -224,26 +242,26 @@ struct RecordsDayCanvasView: View {
 
     private func observationLabel(_ item: WorkObservation) -> String {
         let kind = switch item.kind {
-        case .timerSurfaceFirstSeen: store.t("recordsObservedFirstSeen")
-        case .countdownStarted: store.t("recordsObservedStarted")
-        case .countdownStopped: store.t("recordsObservedStopped")
-        case .overtimeDeclared: store.t("recordsObservedOvertime")
+        case .timerSurfaceFirstSeen: text.t("recordsObservedFirstSeen")
+        case .countdownStarted: text.t("recordsObservedStarted")
+        case .countdownStopped: text.t("recordsObservedStopped")
+        case .overtimeDeclared: text.t("recordsObservedOvertime")
         }
-        return "\(store.formatRecordsTime(item.occurredAt)) · \(kind)"
+        return "\(queries.formatRecordsTime(item.occurredAt)) · \(kind)"
     }
 
     /// A data problem is explained on its own terms and gets its own way out.
     /// It is never folded into a Plus message.
     @ViewBuilder
     private var conflictCard: some View {
-        if let conflict = store.recordsConflict(forDayKey: dayKey) {
+        if let conflict = queries.recordsConflict(forDayKey: dayKey) {
             OWCGroupCard {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(store.t("recordsConflictCopy"))
+                    Text(text.t("recordsConflictCopy"))
                         .font(.body.weight(.medium))
                         .fixedSize(horizontal: false, vertical: true)
-                    Button(store.t("recordsRestoreConflict")) {
-                        store.restoreConflict(conflict)
+                    Button(text.t("recordsRestoreConflict")) {
+                        Task { await records.restoreConflict(conflict) }
                     }
                     .font(.body.weight(.semibold))
                     .frame(minHeight: 44)
@@ -258,8 +276,8 @@ struct RecordsDayCanvasView: View {
     /// it gets an honest sentence instead of a button that would fail on tap.
     @ViewBuilder
     private func editEntry(_ model: RecordsDayCanvasModel) -> some View {
-        if !store.plus.isAuthorized {
-            Text(store.t("recordsEditPlusHint"))
+        if !queries.plus.isAuthorized {
+            Text(text.t("recordsEditPlusHint"))
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -268,12 +286,12 @@ struct RecordsDayCanvasView: View {
             OWCGroupCard {
                 Button {
                     if model.editableShifts.count == 1 {
-                        store.openDayEditor(dayKey: model.editableShifts[0].anchorDayKey)
+                        scene.openDayEditor(dayKey: model.editableShifts[0].anchorDayKey, actions: actions, queries: queries)
                     } else {
                         choosesShift = true
                     }
                 } label: {
-                    OWCRow(icon: "pencil", title: store.t("recordsEditDay"), isLast: true) {
+                    OWCRow(icon: "pencil", title: text.t("recordsEditDay"), isLast: true) {
                         OWCDetailAccessory(text: nil)
                     }
                 }
@@ -284,11 +302,11 @@ struct RecordsDayCanvasView: View {
 
     private func shiftLabel(_ shift: RecordsDayEditableShift) -> String {
         guard shift.hasHours else {
-            return store.formatRecordsDayTitle(dayKey: shift.anchorDayKey)
+            return queries.formatRecordsDayTitle(dayKey: shift.anchorDayKey)
         }
         return OWCText.ltrRange(
-            store.formatRecordsTime(Date(timeIntervalSince1970: shift.startAtMs / 1_000)),
-            store.formatRecordsTime(Date(timeIntervalSince1970: shift.endAtMs / 1_000))
+            queries.formatRecordsTime(Date(timeIntervalSince1970: shift.startAtMs / 1_000)),
+            queries.formatRecordsTime(Date(timeIntervalSince1970: shift.endAtMs / 1_000))
         )
     }
 }
@@ -299,7 +317,8 @@ struct RecordsDayCanvasView: View {
 /// this only paints: the intervals tile the strip exactly, and their order is
 /// the order VoiceOver reads.
 struct RecordsDayBand: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let text: AppText
     let model: RecordsDayCanvasModel
     @State private var selectedIntervalID: String?
     private var selectedInterval: RecordsDayInterval? {
@@ -316,12 +335,12 @@ struct RecordsDayBand: View {
             ZStack(alignment: .leading) {
                 ForEach(model.intervals) { interval in
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("\(store.t(interval.kind.titleKey)) · \(range(of: interval))")
+                        Text("\(text.t(interval.kind.titleKey)) · \(range(of: interval))")
                             .fontWeight(.medium)
                         Text([
-                            store.formatRelativeDuration(Double(interval.durationMs)),
-                            store.formatPercent(percent(of: interval)),
-                            store.t(interval.sourceKey),
+                            text.formatRelativeDuration(Double(interval.durationMs)),
+                            text.formatPercent(percent(of: interval)),
+                            text.t(interval.sourceKey),
                         ].joined(separator: " · "))
                         .foregroundStyle(OWCDesign.secondary)
                     }
@@ -352,7 +371,7 @@ struct RecordsDayBand: View {
                             style: .continuous
                         )
                         shape
-                            .fill(OWCDesign.recordsColor(interval.kind))
+                            .fill(interval.kind.owcColor)
                             .owcEstimated(
                                 interval.source.isEstimated,
                                 tint: .white,
@@ -404,7 +423,7 @@ struct RecordsDayBand: View {
         .accessibilityRepresentation {
             VStack {
                 ForEach(model.intervals) { interval in
-                    Button(RecordsDayIntervalRow.spokenLabel(interval, store: store)) {
+                    Button(RecordsDayIntervalRow.spokenLabel(interval, queries: queries, text: text)) {
                         selectedIntervalID = interval.id
                     }
                     .accessibilityAddTraits(selectedInterval?.id == interval.id ? .isSelected : [])
@@ -426,8 +445,8 @@ struct RecordsDayBand: View {
 
     private func range(of interval: RecordsDayInterval) -> String {
         OWCText.ltrRange(
-            store.formatRecordsTime(Date(timeIntervalSince1970: interval.startAtMs / 1_000)),
-            store.formatRecordsTime(Date(timeIntervalSince1970: interval.endAtMs / 1_000))
+            queries.formatRecordsTime(Date(timeIntervalSince1970: interval.startAtMs / 1_000)),
+            queries.formatRecordsTime(Date(timeIntervalSince1970: interval.endAtMs / 1_000))
         )
     }
 
@@ -449,7 +468,8 @@ struct RecordsDayBand: View {
 /// One row of the account: when it ran, what it was, how long, and where the
 /// app got it. This is also the full text alternative to the band above.
 struct RecordsDayIntervalRow: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let text: AppText
     let interval: RecordsDayInterval
     /// What the whole day is. A row only names its own source when it differs
     /// — six rows all repeating "you recorded this" under a header that
@@ -459,7 +479,7 @@ struct RecordsDayIntervalRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Circle()
-                .fill(OWCDesign.recordsColor(interval.kind))
+                .fill(interval.kind.owcColor)
                 .owcEstimated(interval.source.isEstimated, tint: .white, spacing: 3, lineWidth: 0.8)
                 .clipShape(Circle())
                 .frame(width: 9, height: 9)
@@ -469,7 +489,7 @@ struct RecordsDayIntervalRow: View {
                     .font(.callout.monospacedDigit())
                     .foregroundStyle(OWCDesign.primary)
                 if interval.source != daySource {
-                    Text(store.t(interval.sourceKey))
+                    Text(text.t(interval.sourceKey))
                         .font(.caption)
                         .foregroundStyle(OWCDesign.secondary)
                         .lineLimit(2)
@@ -478,35 +498,35 @@ struct RecordsDayIntervalRow: View {
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
-                Text(store.t(interval.kind.titleKey))
+                Text(text.t(interval.kind.titleKey))
                     .font(.callout)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
-                Text(store.formatRelativeDuration(Double(interval.durationMs)))
+                Text(text.formatRelativeDuration(Double(interval.durationMs)))
                     .font(.caption.weight(.semibold).monospacedDigit())
                     .foregroundStyle(OWCDesign.primary)
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Self.spokenLabel(interval, store: store))
+        .accessibilityLabel(Self.spokenLabel(interval, queries: queries, text: text))
     }
 
     private var range: String {
         OWCText.ltrRange(
-            store.formatRecordsTime(Date(timeIntervalSince1970: interval.startAtMs / 1_000)),
-            store.formatRecordsTime(Date(timeIntervalSince1970: interval.endAtMs / 1_000))
+            queries.formatRecordsTime(Date(timeIntervalSince1970: interval.startAtMs / 1_000)),
+            queries.formatRecordsTime(Date(timeIntervalSince1970: interval.endAtMs / 1_000))
         )
     }
 
-    static func spokenLabel(_ interval: RecordsDayInterval, store: OffWorkStore) -> String {
-        let start = store.formatRecordsTime(Date(timeIntervalSince1970: interval.startAtMs / 1_000))
-        let end = store.formatRecordsTime(Date(timeIntervalSince1970: interval.endAtMs / 1_000))
+    static func spokenLabel(_ interval: RecordsDayInterval, queries: RecordsQueries, text: AppText) -> String {
+        let start = queries.formatRecordsTime(Date(timeIntervalSince1970: interval.startAtMs / 1_000))
+        let end = queries.formatRecordsTime(Date(timeIntervalSince1970: interval.endAtMs / 1_000))
         return [
             OWCText.ltrRange(start, end),
-            store.t(interval.kind.titleKey),
-            store.formatRelativeDuration(Double(interval.durationMs)),
-            store.t(interval.sourceKey),
+            text.t(interval.kind.titleKey),
+            text.formatRelativeDuration(Double(interval.durationMs)),
+            text.t(interval.sourceKey),
         ].joined(separator: ", ")
     }
 }
@@ -514,20 +534,20 @@ struct RecordsDayIntervalRow: View {
 /// The locked day, in the order 013 asks for: what it is, that nothing is
 /// being lost, and only then the way to unlock it.
 struct RecordsLockedDayCard: View {
-    let store: OffWorkStore
+    let text: AppText
     var onUnlock: () -> Void
 
     var body: some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 10) {
-                Label(store.t("recordsLockedDay"), systemImage: "lock.fill")
+                Label(text.t("recordsLockedDay"), systemImage: "lock.fill")
                     .font(.body.weight(.semibold))
                     .foregroundStyle(OWCDesign.primary)
-                Text(store.t("recordsLockedKeepsSaving"))
+                Text(text.t("recordsLockedKeepsSaving"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Button(store.t("plusSeePlans"), action: onUnlock)
+                Button(text.t("plusSeePlans"), action: onUnlock)
                     .font(.body.weight(.semibold))
                     .foregroundStyle(OWCDesign.accent)
                     .frame(minHeight: 44)
@@ -541,15 +561,16 @@ struct RecordsLockedDayCard: View {
 /// The focus sessions that ran on a day. Lifted out of the old day detail card
 /// unchanged, so the day canvas is the one place that shows them.
 struct RecordsFocusHistoryCard: View {
-    let store: OffWorkStore
+    let focus: FocusStore
+    let text: AppText
     let dayKey: String
 
     var body: some View {
-        let sessions = store.focusSessions(forDayKey: dayKey)
+        let sessions = focus.focusSessions(forDayKey: dayKey)
         if !sessions.isEmpty {
             OWCGroupCard {
                 VStack(alignment: .leading, spacing: 10) {
-                    Label(store.t("focusHistory"), systemImage: FocusTaskIcon.focus.systemName)
+                    Label(text.t("focusHistory"), systemImage: FocusTaskIcon.focus.systemName)
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(OWCDesign.secondary)
                     ForEach(sessions) { session in
@@ -564,7 +585,7 @@ struct RecordsFocusHistoryCard: View {
 
     private func row(_ session: FocusSession) -> some View {
         let task = session.taskID.flatMap { id in
-            store.records.state.focusTasks.first(where: { $0.id == id })
+            focus.records.state.focusTasks.first(where: { $0.id == id })
         }
         let end = session.endedAt ?? min(.now, session.plannedEndAt)
         return HStack(spacing: 10) {
@@ -574,20 +595,20 @@ struct RecordsFocusHistoryCard: View {
                 .frame(width: 30, height: 30)
                 .background(OWCDesign.control, in: Circle())
             VStack(alignment: .leading, spacing: 2) {
-                Text(task?.title ?? store.t("focusTitle"))
+                Text(task?.title ?? text.t("focusTitle"))
                     .font(.callout.weight(.medium))
                     .lineLimit(2)
-                Text(OWCText.ltrRange(store.formatTime(session.startedAt), store.formatTime(end)))
+                Text(OWCText.ltrRange(text.formatTime(session.startedAt), text.formatTime(end)))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
-                Text(store.formatRelativeDuration(max(0, end.timeIntervalSince(session.startedAt)) * 1_000))
+                Text(text.formatRelativeDuration(max(0, end.timeIntervalSince(session.startedAt)) * 1_000))
                     .font(.caption.weight(.semibold).monospacedDigit())
                     .lineLimit(1)
                 Label(
-                    store.t(Self.reasonKey(session.endReason)),
+                    text.t(Self.reasonKey(session.endReason)),
                     systemImage: Self.reasonSymbol(session.endReason)
                 )
                 .labelStyle(.titleAndIcon)

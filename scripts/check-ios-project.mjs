@@ -1,4 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 
 // Guards the native iOS project's shipping configuration.
 //
@@ -16,11 +18,26 @@ function fail(message) {
   process.exit(1);
 }
 
+try {
+  execFileSync(process.execPath, ["scripts/generate-watch-localizations.mjs", "--check"], { stdio: "pipe" });
+} catch {
+  fail("Watch localization output is stale; run node scripts/generate-watch-localizations.mjs.");
+}
+
 const universalBundleId = "com.rainif.offworkcountdown.macappstore";
+const digest = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+if (
+  digest("src-mobile/ios/WatchApp/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png") !==
+    digest("src-mobile/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png")
+) {
+  fail("The Watch App icon must reuse the approved 1024 px iOS brand asset.");
+}
 // Required-reason APIs used by local preferences and the widget snapshot cache.
 for (const [path, category, reason] of [
   ["App/Native/PrivacyInfo.xcprivacy", "UserDefaults", "CA92.1"],
   ["WidgetExtension/PrivacyInfo.xcprivacy", "FileTimestamp", "C617.1"],
+  ["../WatchApp/PrivacyInfo.xcprivacy", "FileTimestamp", "C617.1"],
+  ["../WatchWidgets/PrivacyInfo.xcprivacy", "FileTimestamp", "C617.1"],
 ]) {
   const manifestPath = `src-mobile/ios/App/${path}`;
   if (!existsSync(manifestPath)) fail(`Missing privacy manifest: ${manifestPath}`);
@@ -39,14 +56,19 @@ const appDelegate = readFileSync(
   "src-mobile/ios/App/App/AppDelegate.swift",
   "utf8"
 );
-const rootView = readFileSync(
-  "src-mobile/ios/App/App/Native/Views/RootView.swift",
-  "utf8"
-);
 const appScheme = readFileSync(
   "src-mobile/ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme",
   "utf8"
 );
+const watchScheme = readFileSync(
+  "src-mobile/ios/App/App.xcodeproj/xcshareddata/xcschemes/DoneAt Watch App.xcscheme",
+  "utf8"
+);
+const watchSource = readFileSync("src-mobile/ios/WatchApp/DoneAtWatchApp.swift", "utf8");
+const watchWidgetSource = readFileSync("src-mobile/ios/WatchWidgets/DoneAtWatchWidgets.swift", "utf8");
+const watchWidgetInfo = readFileSync("src-mobile/ios/WatchWidgets/Info.plist", "utf8");
+const watchEntitlements = readFileSync("src-mobile/ios/WatchApp/WatchApp.entitlements", "utf8");
+const watchWidgetEntitlements = readFileSync("src-mobile/ios/WatchWidgets/WatchWidgets.entitlements", "utf8");
 const plusEntitlementSource = readFileSync(
   "src-mobile/ios/App/App/Native/Models/PlusEntitlement.swift",
   "utf8"
@@ -89,20 +111,83 @@ const bundleIdAssignments = [
 ].map((match) => match[1].trim());
 const widgetBundleId = `${universalBundleId}.widget`;
 const testBundleId = `${universalBundleId}.tests`;
+const watchBundleId = `${universalBundleId}.watchkitapp`;
+const watchWidgetBundleId = `${watchBundleId}.widgets`;
+const watchTestBundleId = `${watchBundleId}.tests`;
+const allowedBundleIds = new Set([
+  universalBundleId, widgetBundleId, testBundleId,
+  watchBundleId, watchWidgetBundleId, watchTestBundleId,
+]);
 if (
   !bundleIdAssignments.includes(universalBundleId) ||
   !bundleIdAssignments.includes(widgetBundleId) ||
   !bundleIdAssignments.includes(testBundleId) ||
-  bundleIdAssignments.some(
-    (value) =>
-      value !== universalBundleId &&
-      value !== widgetBundleId &&
-      value !== testBundleId
-  )
+  !bundleIdAssignments.includes(watchBundleId) ||
+  !bundleIdAssignments.includes(watchWidgetBundleId) ||
+  !bundleIdAssignments.includes(watchTestBundleId) ||
+  bundleIdAssignments.some((value) => !allowedBundleIds.has(value))
 ) {
   fail(
-    `iOS bundle ids must use ${universalBundleId} for the App and ${widgetBundleId} for its Widget extension.`
+    "The iOS, Watch, Widget, and test targets must keep their assigned Universal Purchase bundle ids."
   );
+}
+const countProjectText = (needle) => iosProject.split(needle).length - 1;
+const watchGroup = `group.${universalBundleId}.watch`;
+if (
+  !iosProject.includes('name = "DoneAt Watch App"') ||
+  !/D10000000000000000000001 \/\* DoneAt Watch App \*\/[\s\S]*?productType = "com\.apple\.product-type\.application"/.test(iosProject) ||
+  !iosProject.includes('name = "DoneAt Watch Widgets"') ||
+  !iosProject.includes("name = WatchAppTests") ||
+  !iosProject.includes("SDKROOT = watchos") ||
+  !iosProject.includes("WATCHOS_DEPLOYMENT_TARGET = 26.0") ||
+  !iosProject.includes(`INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ${universalBundleId}`) ||
+  !/DoneAt Watch App\.app in Embed Watch Content/.test(iosProject) ||
+  !/DoneAt Watch Widgets\.appex in Embed Foundation Extensions/.test(iosProject) ||
+  countProjectText("WatchSnapshot.swift in Sources") !== 6 ||
+  countProjectText("WatchSnapshotCache.swift in Sources") !== 6 ||
+  countProjectText("WatchPairing.swift in Sources") !== 6 ||
+  countProjectText("WatchDisplayProjection.swift in Sources") !== 6 ||
+  countProjectText("WatchLocalizations.generated.swift in Sources") !== 4 ||
+  countProjectText("WatchShiftEvaluation.swift in Sources") !== 6 ||
+  // WatchAppTests is an explicit-reference target: a test file on disk but not
+  // in its Sources phase never runs, and the Watch test scheme stays green.
+  countProjectText("WatchDisplayProjectionTests.swift in Sources") !== 2 ||
+  countProjectText("WatchSnapshotReceiverTests.swift in Sources") !== 2
+) {
+  fail("The Watch app must keep its Xcode 26 companion, Widget, test, embed, and shared-contract target graph.");
+}
+if (
+  // Xcode rewrites shared schemes as `BlueprintName = "…"` when the project is
+  // opened, so match the attribute rather than one spelling of its whitespace.
+  !/BlueprintName\s*=\s*"DoneAt Watch App"/.test(watchScheme) ||
+  !/BlueprintName\s*=\s*"WatchAppTests"/.test(watchScheme) ||
+  !watchWidgetInfo.includes("com.apple.widgetkit-extension") ||
+  !watchWidgetInfo.includes("$(PRODUCT_BUNDLE_IDENTIFIER)") ||
+  !watchWidgetInfo.includes("$(EXECUTABLE_NAME)") ||
+  !watchWidgetInfo.includes("$(MARKETING_VERSION)") ||
+  !watchWidgetInfo.includes("$(CURRENT_PROJECT_VERSION)") ||
+  !watchWidgetInfo.includes("<string>XPC!</string>") ||
+  !iosProject.includes("ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon") ||
+  !watchSource.includes("WatchSnapshotReceiver") ||
+  !watchWidgetSource.includes(".accessoryCircular") ||
+  !watchWidgetSource.includes(".accessoryRectangular") ||
+  /ControlWidget|AppIntent|Button\s*\(/.test(watchWidgetSource) ||
+  !watchSource.includes("@main")
+) {
+  fail("The shared Watch scheme and read-only circular/rectangular Widget entry points must remain minimal.");
+}
+if (/\b(?:UIKit|CloudKit|JavaScriptCore)\b|\bsalary\b|\bcommandId\b|\bACK\b/.test(
+  `${watchSource}\n${watchWidgetSource}`
+)) {
+  fail("The W0 Watch targets must remain read-only and independent of iPhone stores, JSCore, salary, and control protocols.");
+}
+if (
+  !watchEntitlements.includes(watchGroup) ||
+  !watchWidgetEntitlements.includes(watchGroup) ||
+  watchEntitlements.includes(`<string>group.${universalBundleId}</string>`) ||
+  watchWidgetEntitlements.includes(`<string>group.${universalBundleId}</string>`)
+) {
+  fail(`The Watch app and its Widget must share only ${watchGroup}.`);
 }
 if (
   !appScheme.includes('<ArchiveAction\n      buildConfiguration = "Release"') ||
@@ -155,17 +240,31 @@ if (
     "The StoreKit configuration must stay synced with App Store Connect and out of shipping app resources."
   );
 }
+// Parse each Release XCBuildConfiguration by its settings, not its line layout:
+// Xcode rewrites hand-added one-line configurations as multi-line blocks when
+// the project is open, and both spellings must validate the same way.
 const releaseConfigurations = [
   ...iosProject.matchAll(
-    /\/\* Release \*\/ = \{[\s\S]*?buildSettings = \{([\s\S]*?)\n\s*\};\n\s*name = Release;/g
+    /isa = XCBuildConfiguration;\s*buildSettings = \{([^{}]*)\};\s*name = Release;/g
   ),
 ].map((match) => match[1]);
+const shippingReleaseConfigurations = releaseConfigurations.filter((settings) =>
+  /PRODUCT_BUNDLE_IDENTIFIER = com\.rainif\.offworkcountdown\.macappstore(?:\.widget|\.watchkitapp|\.watchkitapp\.widgets)?;/.test(
+    settings
+  )
+);
 if (
-  releaseConfigurations.length !== 4 ||
-  releaseConfigurations.some((settings) => settings.includes("-DDEBUG")) ||
-  releaseConfigurations.filter((settings) =>
-    settings.includes('SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";')
-  ).length !== 2
+  // The project itself plus App, Widget, AppTests, Watch App, Watch Widgets, WatchAppTests.
+  releaseConfigurations.length !== 7 ||
+  releaseConfigurations.some(
+    (settings) =>
+      settings.includes("-DDEBUG") ||
+      /SWIFT_ACTIVE_COMPILATION_CONDITIONS = [^;]*\bDEBUG\b/.test(settings)
+  ) ||
+  shippingReleaseConfigurations.length !== 4 ||
+  shippingReleaseConfigurations.some(
+    (settings) => !settings.includes('SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";')
+  )
 ) {
   fail("Every iOS Release configuration must compile without the DEBUG condition.");
 }
@@ -193,7 +292,8 @@ walkNative("src-mobile/ios/App/App/Native");
 
 if (
   !appDelegate.includes("import SwiftUI") ||
-  !appDelegate.includes("OffWorkCountdownRootView()") ||
+  !/@main\s+(?:@MainActor\s+)?struct\s+\w+\s*:\s*App\s*\{/.test(appDelegate) ||
+  !/WindowGroup\s*\{/.test(appDelegate) ||
   iosProject.includes("MobileBridgeViewController.swift in Sources") ||
   nativeSources.includes("MobileBridgeViewController.swift")
 ) {
@@ -212,9 +312,6 @@ if (
   fail("The native iOS target must declare iPhone/iPad orientations and Live Activity support.");
 }
 if (
-  !rootView.includes("TabletShellView") ||
-  !rootView.includes("PhoneLandscapePresentation") ||
-  !rootView.includes("WidgetSnapshotPublisher") ||
   !widgetInfo.includes("com.apple.widgetkit-extension") ||
   !widgetSource.includes("ActivityConfiguration") ||
   !widgetSource.includes("OffWorkCountdownWidget") ||
@@ -224,7 +321,7 @@ if (
   // either name rather than pinning the label Xcode happens to use today.
   !/OffWorkCountdownWidgetsExtension\.appex in Embed \w+ Extensions/.test(iosProject)
 ) {
-  fail("The native iOS target must keep its adaptive SwiftUI shell, embedded Widget and Live Activity surfaces.");
+  fail("The native iOS target must keep its embedded Widget and Live Activity surfaces.");
 }
 const appGroup = `group.${universalBundleId}`;
 if (
@@ -325,5 +422,5 @@ if (appAssetEntries.some((entry) => /^Mood-.*\.imageset$/.test(entry))) {
 }
 
 console.log(
-  "The production SwiftUI target supports iPhone/iPad, WidgetKit, ActivityKit and Universal Purchase."
+  "The production SwiftUI project keeps its iPhone/iPad, WidgetKit, ActivityKit, and read-only Watch target graph."
 );

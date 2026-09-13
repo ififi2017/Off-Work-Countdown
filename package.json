@@ -1,6 +1,6 @@
 {
   "name": "off-work-30",
-  "version": "3.1.9",
+  "version": "3.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,7 @@
     "build:desktop": "node scripts/build-desktop.mjs",
     "build:mobile": "node scripts/build-mobile.mjs",
     "build:ios-native-rules": "node scripts/build-ios-native-rules.mjs",
+    "check:watch-fixtures": "node scripts/generate-watch-shift-fixtures.mjs --check",
     "build:desktop:msstore": "node scripts/build-desktop.mjs --channel=msstore",
     "build:desktop:macappstore": "node scripts/build-desktop.mjs --channel=macappstore",
     "build:widget": "./scripts/build-macos-widget.sh",

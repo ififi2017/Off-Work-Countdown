@@ -9,32 +9,32 @@ func recordsScheduleReconcilesToDevicePreferences() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
     var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = store.recordsTimeZone
+    calendar.timeZone = store.preferences.recordsTimeZone
     let now = try #require(calendar.date(from: DateComponents(
         year: 2026, month: 8, day: 31, hour: 18
     )))
     let day = calendar.startOfDay(for: now)
-    records.ensureSeeded(hours: store.hoursConfiguration(at: now), at: now, timeZone: store.recordsTimeZone)
+    records.ensureSeeded(hours: store.session.hoursConfiguration(at: now), at: now, timeZone: store.preferences.recordsTimeZone)
 
     // Simulates an archive produced by an older build where the settings were
     // persisted but their matching schedule snapshot was never committed.
-    store.startMinutes = 10 * 60
-    store.endMinutes = 19 * 60
-    store.lunchStartMinutes = 12 * 60 + 30
-    store.lunchDurationMinutes = 90
+    store.preferences.applyPreferences { $0.startMinutes = 10 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 19 * 60 }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 + 30 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 90 }
 
-    #expect(store.reconcileRecordSchedule(at: now))
-    let resolution = try #require(store.resolvedDays(from: day, through: day, now: now).first)
+    #expect(store.shifts.reconcileRecordSchedule(at: now).synchronousResult)
+    let resolution = try #require(store.queries.resolvedDays(from: day, through: day, now: now).first)
     let workMs = resolution.segments.reduce(0.0) { partial, segment in
         partial + max(0, segment.endAtMs - segment.startAtMs)
     }
@@ -47,8 +47,8 @@ func recordsScheduleReconcilesToDevicePreferences() throws {
     let overtimeEnd = try #require(calendar.date(from: DateComponents(
         year: 2026, month: 8, day: 31, hour: 19, minute: 28
     )))
-    store.applyOvertime(date: overtimeEnd, declaredAt: overtimeEnd)
-    let allocation = store.dayAllocation(resolution, now: overtimeEnd)
+    store.shifts.applyOvertime(date: overtimeEnd, declaredAt: overtimeEnd)
+    let allocation = store.queries.dayAllocation(resolution, now: overtimeEnd)
     #expect(allocation.workMs == Int64(7.5 * 3_600_000))
     #expect(allocation.breakMs == Int64(1.5 * 3_600_000))
     #expect(allocation.overtimeMs == Int64(28 * 60_000))
@@ -60,18 +60,18 @@ func applyingScheduleToTodayRecalculatesRecordedWork() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
 
     var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = store.recordsTimeZone
+    calendar.timeZone = store.preferences.recordsTimeZone
     let earlyStart = try #require(calendar.date(from: DateComponents(
         year: 2026, month: 9, day: 1, hour: 8, minute: 30
     )))
@@ -80,15 +80,15 @@ func applyingScheduleToTodayRecalculatesRecordedWork() throws {
     )))
     let day = calendar.startOfDay(for: editTime)
     records.ensureSeeded(
-        hours: store.hoursConfiguration(at: earlyStart),
+        hours: store.session.hoursConfiguration(at: earlyStart),
         at: earlyStart,
-        timeZone: store.recordsTimeZone
+        timeZone: store.preferences.recordsTimeZone
     )
 
-    store.clockInEarly(at: earlyStart)
+    store.shifts.clockInEarly(at: earlyStart)
     #expect(records.state.overrides.contains { $0.dayKey == "2026-09-01" })
 
-    store.applyScheduleChange(
+    store.shifts.applyScheduleChange(
         ScheduleFieldChange(
             startMinutes: 10 * 60,
             endMinutes: 19 * 60,
@@ -101,7 +101,7 @@ func applyingScheduleToTodayRecalculatesRecordedWork() throws {
     )
 
     #expect(!records.state.overrides.contains { $0.dayKey == "2026-09-01" })
-    let resolution = try #require(store.resolvedDays(from: day, through: day, now: editTime).first)
+    let resolution = try #require(store.queries.resolvedDays(from: day, through: day, now: editTime).first)
     let regularWorkMs = resolution.segments.reduce(0.0) { partial, segment in
         partial + max(0, segment.endAtMs - segment.startAtMs)
     }
@@ -116,16 +116,16 @@ func applyingScheduleToTodayRecalculatesRecordedWork() throws {
 @MainActor
 @Test("Opening Life estimates an empty archive without backdating Records")
 func lifeViewDoesNotPersistSyntheticCareerHistory() throws {
-    let suite = "OffWorkStoreTests.life.\(UUID().uuidString)"
+    let suite = "AppRuntimeTests.life.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.saveLifeProfile(
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.life.saveLifeProfile(
         birthYear: 1990,
         workStartedYear: 2012,
         retirementAge: 60,
@@ -133,7 +133,7 @@ func lifeViewDoesNotPersistSyntheticCareerHistory() throws {
         hidesExactAges: false
     )
     var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = store.recordsTimeZone
+    calendar.timeZone = store.preferences.recordsTimeZone
     let now = try #require(calendar.date(from: DateComponents(
         year: 2026,
         month: 8,
@@ -142,7 +142,7 @@ func lifeViewDoesNotPersistSyntheticCareerHistory() throws {
     )))
 
     #expect(records.state.periods.isEmpty)
-    let model = try #require(store.lifeViewModel(now: now))
+    let model = try #require(store.life.lifeViewModel(now: now))
     #expect(model.workShare > 0)
     #expect(records.state.periods.isEmpty)
     #expect(records.state.snapshots.isEmpty)
@@ -151,20 +151,20 @@ func lifeViewDoesNotPersistSyntheticCareerHistory() throws {
 @MainActor
 @Test("Month and year projections stay in memory and use shared schedule rules")
 func recordsProjectionDoesNotBackdateArchive() async throws {
-    let suite = "OffWorkStoreTests.projection.\(UUID().uuidString)"
+    let suite = "AppRuntimeTests.projection.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
+    let store = AppRuntime(defaults: defaults, records: records)
     store.plus.debugSetAuthorized(true)
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
-    store.saveLifeProfile(
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
+    store.life.saveLifeProfile(
         birthYear: 1990,
         workStartedYear: 2012,
         retirementAge: 60,
@@ -172,7 +172,7 @@ func recordsProjectionDoesNotBackdateArchive() async throws {
         hidesExactAges: false
     )
     var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = store.recordsTimeZone
+    calendar.timeZone = store.preferences.recordsTimeZone
     let now = try #require(calendar.date(from: DateComponents(
         year: 2026, month: 8, day: 31, hour: 12
     )))
@@ -181,43 +181,48 @@ func recordsProjectionDoesNotBackdateArchive() async throws {
     )))
     let through = try #require(calendar.date(byAdding: .day, value: 6, to: from))
 
-    let days = await store.prepareRecordsDisplayDays(from: from, through: through, now: now)
+    // The fixture starts observing the schedule at `now`, before browsing a
+    // historical projection. Reading must not perform this lifecycle action.
+    store.preferences.onboardingComplete = true
+    store.shifts.reconcileRecordSchedule(at: now)
+    let days = await store.queries.prepareRecordsDisplayDays(from: from, through: through, now: now)
     let workday = try #require(days.first(where: { $0.isScheduledWorkday && !$0.segments.isEmpty }))
-    let cell = store.recordsDayCell(for: workday, now: now, includesLifeProjection: true)
+    let cell = store.queries.recordsDayCell(for: workday, now: now, includesLifeProjection: true)
     #expect(cell.isProjection)
     #expect(cell.workMs > 0)
     #expect(records.state.periods.count == 1)
-    #expect(records.state.periods[0].startsOn == calendar.startOfDay(for: now))
+    let period = try #require(records.state.periods.first)
+    #expect(period.startsOn == calendar.startOfDay(for: now))
     #expect(!records.state.periods.contains(where: { $0.startsOn < calendar.startOfDay(for: now) }))
 }
 
 @MainActor
 @Test("Life history backfill uses the currently configured 90-minute lunch")
 func lifeHistoryBackfillUsesCurrentLunchDuration() async throws {
-    let suite = "OffWorkStoreTests.life-current-lunch.\(UUID().uuidString)"
+    let suite = "AppRuntimeTests.life-current-lunch.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
+    let store = AppRuntime(defaults: defaults, records: records)
     store.plus.debugSetAuthorized(true)
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
 
     var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = store.recordsTimeZone
+    calendar.timeZone = store.preferences.recordsTimeZone
     let now = try #require(calendar.date(from: DateComponents(year: 2026, month: 8, day: 31, hour: 12)))
-    _ = await store.prepareResolvedDays(from: now, through: now, now: now)
+    _ = await store.queries.prepareResolvedDays(from: now, through: now, now: now)
 
-    store.startMinutes = 10 * 60
-    store.endMinutes = 19 * 60
-    store.lunchStartMinutes = 12 * 60 + 30
-    store.lunchDurationMinutes = 90
-    store.saveLifeProfile(
+    store.preferences.applyPreferences { $0.startMinutes = 10 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 19 * 60 }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 + 30 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 90 }
+    store.life.saveLifeProfile(
         birthYear: 1990,
         workStartedYear: 2012,
         retirementAge: 60,
@@ -225,9 +230,9 @@ func lifeHistoryBackfillUsesCurrentLunchDuration() async throws {
         hidesExactAges: false
     )
     let past = try #require(calendar.date(from: DateComponents(year: 2025, month: 9, day: 1)))
-    let days = await store.prepareRecordsDisplayDays(from: past, through: past, now: now)
+    let days = await store.queries.prepareRecordsDisplayDays(from: past, through: past, now: now)
     let day = try #require(days.first)
-    let share = store.dayAllocation(day, now: now)
+    let share = store.queries.dayAllocation(day, now: now)
 
     #expect(share.workMs == Int64(7.5 * 3_600_000))
     #expect(share.breakMs == 90 * 60 * 1_000)
@@ -238,7 +243,7 @@ func lifeHistoryBackfillUsesCurrentLunchDuration() async throws {
 func projectedOnlyRecordsHaveNoHeadline() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults)
+    let store = AppRuntime(defaults: defaults)
     store.plus.debugSetAuthorized(true)
     let cell = RecordsDayCell(
         dayKey: "2026-08-31",
@@ -254,7 +259,7 @@ func projectedOnlyRecordsHaveNoHeadline() throws {
         isProjection: true,
         hasConflict: false
     )
-    #expect(store.recordsHeadline(cells: [cell], days: []) == nil)
+    #expect(store.queries.recordsHeadline(cells: [cell], days: []) == nil)
 }
 
 @MainActor
@@ -263,7 +268,7 @@ func allRecordsDayIndexIncludesManualFactsAndExcludesSyntheticRows() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
+    let store = AppRuntime(defaults: defaults, records: records)
     let workDay = utcDay(2026, 8, 24)
     let leaveDay = utcDay(2026, 8, 25)
     let restDay = utcDay(2026, 8, 26)
@@ -355,7 +360,7 @@ func allRecordsDayIndexIncludesManualFactsAndExcludesSyntheticRows() throws {
         timeZoneIdentifier: "UTC"
     ))
 
-    let index = store.recordDayIndex()
+    let index = store.queries.recordDayIndex()
     #expect(Set(index.map(\.dayKey)) == Set([
         "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-29", "2026-08-30",
     ]))
@@ -364,7 +369,7 @@ func allRecordsDayIndexIncludesManualFactsAndExcludesSyntheticRows() throws {
     #expect(index.first(where: { $0.dayKey == "2026-08-26" })?.hasUserCalendarException == true)
     #expect(index.first(where: { $0.dayKey == "2026-08-29" })?.hasManualOverride == true)
     #expect(index.first(where: { $0.dayKey == "2026-08-30" })?.hasUserCalendarException == true)
-    #expect(store.recordedWorkDays().map(\.dayKey) == ["2026-08-24"])
+    #expect(store.queries.recordedWorkDays().map(\.dayKey) == ["2026-08-24"])
 }
 
 @MainActor
@@ -373,7 +378,7 @@ func observationsKeepOriginalCivilDayAcrossTimeZones() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
+    let store = AppRuntime(defaults: defaults, records: records)
     let tokyo = try #require(TimeZone(identifier: "Asia/Tokyo"))
     let losAngeles = try #require(TimeZone(identifier: "America/Los_Angeles"))
     var tokyoCalendar = Calendar(identifier: .gregorian)
@@ -392,7 +397,7 @@ func observationsKeepOriginalCivilDayAcrossTimeZones() throws {
         snapshotID: UUID(),
         timeZoneIdentifier: tokyo.identifier
     )
-    store.recordsTimeZoneIdentifier = losAngeles.identifier
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = losAngeles.identifier }
     var losAngelesCalendar = Calendar(identifier: .gregorian)
     losAngelesCalendar.timeZone = losAngeles
     let displayedDay = try #require(losAngelesCalendar.date(from: DateComponents(
@@ -401,24 +406,24 @@ func observationsKeepOriginalCivilDayAcrossTimeZones() throws {
         day: 24
     )))
 
-    #expect(store.recordDayIndex().map(\.dayKey) == ["2026-08-24"])
-    #expect(store.observations(on: displayedDay).count == 1)
+    #expect(store.queries.recordDayIndex().map(\.dayKey) == ["2026-08-24"])
+    #expect(store.queries.observations(on: displayedDay).count == 1)
 }
 
 @MainActor
 @Test("Calendar exception conflict keys mark their civil day in the calendar")
-func calendarExceptionConflictUsesDatePortionOfLogicalKey() throws {
+func calendarExceptionConflictUsesDatePortionOfLogicalKey() async throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
+    let store = AppRuntime(defaults: defaults, records: records)
     // The day and the seed below are both UTC, so the store has to read them
     // in UTC too. Left on the device zone it resolved a different civil day
     // and the conflict landed on 2026-08-23 when Xcode Cloud ran in UTC-7.
-    store.recordsTimeZoneIdentifier = "UTC"
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
     let day = utcDay(2026, 8, 24)
     records.ensureSeeded(
-        hours: store.hoursConfiguration(at: day),
+        hours: store.session.hoursConfiguration(at: day),
         at: day,
         timeZone: TimeZone(secondsFromGMT: 0)!
     )
@@ -429,10 +434,10 @@ func calendarExceptionConflictUsesDatePortionOfLogicalKey() throws {
         payload: Data(),
         lostAtMs: 0
     )]
-    #expect(records.replaceSyncState(sync))
+    #expect(await records.commitSyncState { value, _ in value = sync })
 
-    let resolution = try #require(store.resolvedDays(from: day, through: day, now: day).first)
-    #expect(store.recordsDayCell(for: resolution, now: day).hasConflict)
+    let resolution = try #require(store.queries.resolvedDays(from: day, through: day, now: day).first)
+    #expect(store.queries.recordsDayCell(for: resolution, now: day).hasConflict)
 }
 
 @MainActor
@@ -452,16 +457,16 @@ func freshInstallDefaults() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    #expect(store.onboardingComplete == false)
-    #expect(store.startMinutes == 9 * 60)
-    #expect(store.endMinutes == 17 * 60)
-    #expect(store.workdays == Set([1, 2, 3, 4, 5]))
-    #expect(store.lunchEnabled == false)
-    #expect(store.lunchStartMinutes == 12 * 60)
-    #expect(store.lunchDurationMinutes == 60)
-    #expect(store.notificationMode == .off)
-    #expect(store.salaryEnabled == false)
+    let store = AppRuntime(defaults: defaults)
+    #expect(store.preferences.onboardingComplete == false)
+    #expect(store.preferences.startMinutes == 9 * 60)
+    #expect(store.preferences.endMinutes == 17 * 60)
+    #expect(store.preferences.workdays == Set([1, 2, 3, 4, 5]))
+    #expect(store.preferences.lunchEnabled == false)
+    #expect(store.preferences.lunchStartMinutes == 12 * 60)
+    #expect(store.preferences.lunchDurationMinutes == 60)
+    #expect(store.preferences.notificationMode == .off)
+    #expect(store.preferences.salaryEnabled == false)
 }
 
 @MainActor
@@ -470,21 +475,21 @@ func persistedSettingsSurviveRelaunch() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let first = OffWorkStore(defaults: defaults)
-    first.onboardingComplete = true
-    first.startMinutes = 7 * 60 + 30
-    first.endMinutes = 16 * 60 + 45
-    first.lunchEnabled = true
-    first.lunchDurationMinutes = 45
-    first.notificationMode = .milestones
+    let first = AppRuntime(defaults: defaults)
+    first.preferences.onboardingComplete = true
+    first.preferences.applyPreferences { $0.startMinutes = 7 * 60 + 30 }
+    first.preferences.applyPreferences { $0.endMinutes = 16 * 60 + 45 }
+    first.preferences.applyPreferences { $0.lunchEnabled = true }
+    first.preferences.applyPreferences { $0.lunchDurationMinutes = 45 }
+    first.preferences.applyPreferences { $0.notificationMode = .milestones }
 
-    let reloaded = OffWorkStore(defaults: defaults)
-    #expect(reloaded.onboardingComplete)
-    #expect(reloaded.startMinutes == 7 * 60 + 30)
-    #expect(reloaded.endMinutes == 16 * 60 + 45)
-    #expect(reloaded.lunchEnabled)
-    #expect(reloaded.lunchDurationMinutes == 45)
-    #expect(reloaded.notificationMode == .milestones)
+    let reloaded = AppRuntime(defaults: defaults)
+    #expect(reloaded.preferences.onboardingComplete)
+    #expect(reloaded.preferences.startMinutes == 7 * 60 + 30)
+    #expect(reloaded.preferences.endMinutes == 16 * 60 + 45)
+    #expect(reloaded.preferences.lunchEnabled)
+    #expect(reloaded.preferences.lunchDurationMinutes == 45)
+    #expect(reloaded.preferences.notificationMode == .milestones)
 }
 
 @MainActor
@@ -503,18 +508,18 @@ func completedCountdownResetsAcrossDayBoundary() throws {
     let sameDayEvening = try #require(calendar.date(bySettingHour: 22, minute: 0, second: 0, of: start))
     let followingDay = try #require(calendar.date(byAdding: .day, value: 1, to: start))
 
-    let first = OffWorkStore(defaults: defaults)
-    first.scheduleMode = .off
-    first.startMinutes = 9 * 60
-    first.endMinutes = 17 * 60
-    first.startCountdown(at: start)
+    let first = AppRuntime(defaults: defaults)
+    first.preferences.applyPreferences { $0.scheduleMode = .off }
+    first.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    first.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    first.shifts.startCountdown(at: start)
 
-    #expect(first.reconcileCountdownSession(at: sameDayEvening) == false)
-    #expect(first.countdownStarted)
+    #expect(first.shifts.reconcileCountdownSession(at: sameDayEvening).synchronousResult == false)
+    #expect(first.session.countdownStarted)
 
-    let relaunched = OffWorkStore(defaults: defaults)
-    #expect(relaunched.reconcileCountdownSession(at: followingDay))
-    #expect(relaunched.countdownStarted == false)
+    let relaunched = AppRuntime(defaults: defaults)
+    #expect(relaunched.shifts.reconcileCountdownSession(at: followingDay).synchronousResult)
+    #expect(relaunched.session.countdownStarted == false)
 }
 
 @MainActor
@@ -523,17 +528,17 @@ func completingSetupArmsScheduledCountdowns() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.completeOnboarding(enableNotifications: false)
-    #expect(store.countdownStarted == false)
-    store.finishOnboardingLaunch()
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.completeSetup(enableNotifications: false)
+    #expect(store.session.countdownStarted == false)
+    store.shifts.finishOnboardingLaunch()
 
-    #expect(store.countdownStarted)
+    #expect(store.session.countdownStarted)
 
-    store.stopCountdown()
-    let relaunched = OffWorkStore(defaults: defaults)
-    #expect(relaunched.countdownStarted)
+    store.shifts.stopCountdown()
+    let relaunched = AppRuntime(defaults: defaults)
+    #expect(relaunched.session.countdownStarted)
 }
 
 @MainActor
@@ -546,12 +551,12 @@ func existingSchedulesMigrateToAutomaticCountdowns() throws {
     defaults.set("classic", forKey: "ios.native.scheduleMode")
     defaults.set(false, forKey: "ios.native.countdownStarted")
 
-    let migrated = OffWorkStore(defaults: defaults)
-    #expect(migrated.countdownStarted)
+    let migrated = AppRuntime(defaults: defaults)
+    #expect(migrated.session.countdownStarted)
 
-    migrated.stopCountdown()
-    let relaunched = OffWorkStore(defaults: defaults)
-    #expect(relaunched.countdownStarted)
+    migrated.shifts.stopCountdown()
+    let relaunched = AppRuntime(defaults: defaults)
+    #expect(relaunched.session.countdownStarted)
 }
 
 @MainActor
@@ -566,19 +571,19 @@ func scheduledCountdownStaysArmedAcrossWorkdays() throws {
     )))
     let tuesday = try #require(calendar.date(byAdding: .day, value: 1, to: monday))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: monday)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: monday)
 
-    #expect(store.reconcileCountdownSession(at: tuesday))
-    #expect(store.countdownStarted)
+    #expect(store.shifts.reconcileCountdownSession(at: tuesday).synchronousResult)
+    #expect(store.session.countdownStarted)
     // Compared with a tolerance: this value crosses the JavaScript bridge as a
     // Double, and an exact match on the way back is a coin toss.
-    let tuesdayRemaining = try #require(store.snapshot(at: tuesday)?.remainingMs)
+    let tuesdayRemaining = try #require(store.session.snapshot(at: tuesday)?.remainingMs)
     #expect(abs(tuesdayRemaining - 7 * 60 * 60 * 1_000) < 1)
 }
 
@@ -596,16 +601,16 @@ func upcomingTimelineIncludesShiftBoundaries() throws {
         hour: 8
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .off
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
 
-    let snapshot = try #require(store.snapshot(at: beforeShift))
-    let events = store.upcomingTimelineEvents(for: snapshot, at: beforeShift)
+    let snapshot = try #require(store.session.snapshot(at: beforeShift))
+    let events = store.shifts.upcomingTimelineEvents(for: snapshot, at: beforeShift)
 
     #expect(events.map(\.kind) == [.shiftStart, .lunchStart, .lunchEnd, .shiftEnd])
     #expect(events.last?.date == snapshot.endDate)
@@ -614,6 +619,7 @@ func upcomingTimelineIncludesShiftBoundaries() throws {
 @MainActor
 @Test("A scheduled focus task keeps its exact slot and appears in Coming Up")
 func scheduledFocusTaskAppearsInTimeline() throws {
+    let scene = SceneState()
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let calendar = Calendar.current
@@ -623,26 +629,25 @@ func scheduledFocusTaskAppearsInTimeline() throws {
     let start = try #require(calendar.date(byAdding: .hour, value: 2, to: now))
     let end = try #require(calendar.date(byAdding: .minute, value: 60, to: start))
 
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
     store.plus.debugSetAuthorized(true)
-    store.scheduleMode = .off
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.addScheduledFocusTask(
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    scene.addScheduledFocusTask(
         title: "Write proposal",
         slot: FocusScheduleSlot(
             start: start,
             end: end,
             shiftAnchor: calendar.startOfDay(for: now),
             isCurrentShift: true
-        )
-    )
+        ), using: store.focus)
 
     let task = try #require(store.records.state.focusTasks.first)
     #expect(task.scheduledStartAt == start)
-    let snapshot = try #require(store.snapshot(at: now))
+    let snapshot = try #require(store.session.snapshot(at: now))
     let focusEvent = try #require(
-        store.upcomingTimelineEvents(for: snapshot, at: now).first(where: { $0.kind == .focus })
+        store.shifts.upcomingTimelineEvents(for: snapshot, at: now).first(where: { $0.kind == .focus })
     )
     #expect(focusEvent.date == start)
     #expect(focusEvent.title == "Write proposal")
@@ -687,16 +692,16 @@ func overnightTimelineKeepsEventsAfterMidnight() throws {
         year: 2026, month: 8, day: 24, hour: 23, minute: 30
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .off
-    store.startMinutes = 23 * 60
-    store.endMinutes = 7 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 2 * 60
-    store.lunchDurationMinutes = 30
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.startMinutes = 23 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 7 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 2 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 30 }
 
-    let snapshot = try #require(store.snapshot(at: duringShift))
-    let events = store.upcomingTimelineEvents(for: snapshot, at: duringShift)
+    let snapshot = try #require(store.session.snapshot(at: duringShift))
+    let events = store.shifts.upcomingTimelineEvents(for: snapshot, at: duringShift)
 
     #expect(events.map(\.kind) == [.lunchStart, .lunchEnd, .shiftEnd])
 }
@@ -712,19 +717,19 @@ func widgetTimelineCoversLunchBreak() throws {
         year: 2026, month: 8, day: 24, hour: 12, minute: 45
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .off
-    store.startMinutes = 9 * 60
-    store.endMinutes = 18 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60 + 30
-    store.lunchDurationMinutes = 60
-    store.countdownStarted = true
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 18 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 + 30 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
+    store.session.countdownStarted = true
 
     let nowMs = Int64(duringLunch.timeIntervalSince1970 * 1_000)
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: duringLunch),
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: duringLunch),
         active: true,
         nowMs: nowMs
     )
@@ -756,19 +761,19 @@ func widgetTimelineSeparatesOvertimeFromRegularWork() throws {
         year: 2026, month: 8, day: 24, hour: 18
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: atWork)
-    store.applyOvertime(date: overtimeEnd)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: atWork)
+    store.shifts.applyOvertime(date: overtimeEnd)
 
-    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: atWork),
-        active: store.countdownStarted,
+    let widget = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: atWork),
+        active: store.session.countdownStarted,
         nowMs: Int64(atWork.timeIntervalSince1970 * 1_000)
     )
 
@@ -796,17 +801,17 @@ func widgetTimelineLabelsRestDaysDistinctly() throws {
         year: 2026, month: 8, day: 29, hour: 10
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
 
     let nowMs = Int64(saturday.timeIntervalSince1970 * 1_000)
-    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: saturday),
+    let widget = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: saturday),
         active: false,
         nowMs: nowMs
     )
@@ -826,19 +831,19 @@ func widgetSnapshotCarriesUpcomingEvents() throws {
         year: 2026, month: 8, day: 24, hour: 10
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .off
-    store.startMinutes = 9 * 60
-    store.endMinutes = 18 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60 + 30
-    store.lunchDurationMinutes = 60
-    store.countdownStarted = true
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 18 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 + 30 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
+    store.session.countdownStarted = true
 
     let nowMs = Int64(morning.timeIntervalSince1970 * 1_000)
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: morning),
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: morning),
         active: true,
         nowMs: nowMs
     )
@@ -865,20 +870,20 @@ func widgetSnapshotKeepsUpcomingPastPresentationWindow() throws {
         year: 2026, month: 8, day: 26, hour: 9
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
 
     let nowMs = Int64(monday.timeIntervalSince1970 * 1_000)
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: monday),
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: monday),
         active: true,
         nowMs: nowMs
     )
@@ -904,22 +909,22 @@ func widgetSnapshotOmitsRestDayShiftEvents() throws {
         year: 2026, month: 8, day: 24, hour: 9
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
 
-    let shift = try #require(store.snapshot(at: saturday))
+    let shift = try #require(store.session.snapshot(at: saturday))
     #expect(!shift.isWorkday)
 
     let nowMs = Int64(saturday.timeIntervalSince1970 * 1_000)
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
         shift: shift,
         active: true,
         nowMs: nowMs
@@ -953,19 +958,19 @@ func widgetWorkingTargetIsPlannedEndWhenLunchBreaksTheDay() throws {
         year: 2026, month: 8, day: 24, hour: 19
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .off
-    store.startMinutes = 9 * 60
-    store.endMinutes = 19 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60 + 30
-    store.lunchDurationMinutes = 90
-    store.countdownStarted = true
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 19 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 + 30 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 90 }
+    store.session.countdownStarted = true
 
     let nowMs = Int64(morning.timeIntervalSince1970 * 1_000)
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: morning),
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: morning),
         active: true,
         nowMs: nowMs
     )
@@ -991,17 +996,17 @@ func widgetTimelineFollowsOvertime() throws {
         year: 2026, month: 8, day: 24, hour: 18, minute: 0
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .off
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = false
-    store.applyOvertime(date: overtimeEnd)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = false }
+    store.shifts.applyOvertime(date: overtimeEnd)
 
     let nowMs = Int64(duringOvertime.timeIntervalSince1970 * 1_000)
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: duringOvertime),
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: duringOvertime),
         active: true,
         nowMs: nowMs
     )
@@ -1030,18 +1035,18 @@ func widgetTimelineStartsFutureShiftAutomatically() throws {
         year: 2026, month: 8, day: 25, hour: 10
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.countdownStarted = true
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.session.countdownStarted = true
 
     let publishedAtMs = Int64(mondayMorning.timeIntervalSince1970 * 1_000)
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: mondayMorning),
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: mondayMorning),
         active: true,
         nowMs: publishedAtMs
     )
@@ -1065,18 +1070,18 @@ func widgetTimelineAdvancesBetweenOvernightShifts() throws {
         year: 2026, month: 8, day: 25, hour: 23
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 23 * 60
-    store.endMinutes = 7 * 60
-    store.countdownStarted = true
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 23 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 7 * 60 }
+    store.session.countdownStarted = true
 
     let nowMs = Int64(mondayMorning.timeIntervalSince1970 * 1_000)
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: mondayMorning),
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: mondayMorning),
         active: true,
         nowMs: nowMs
     )
@@ -1103,18 +1108,18 @@ func widgetRestCopyMatchesRestDays() throws {
         year: 2026, month: 8, day: 31, hour: 8
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.countdownStarted = true
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.session.countdownStarted = true
 
     let nowMs = Int64(fridayEvening.timeIntervalSince1970 * 1_000)
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: fridayEvening),
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: fridayEvening),
         active: true,
         nowMs: nowMs
     )
@@ -1132,22 +1137,22 @@ func widgetRestCopyMatchesRestDays() throws {
 /// Builds a store whose only timed preview rows are the shift boundaries and
 /// the break, so an order assertion reads as the order and nothing else.
 @MainActor
-private func previewStore(_ defaults: UserDefaults) -> OffWorkStore {
-    let store = OffWorkStore(defaults: defaults)
+private func previewStore(_ defaults: UserDefaults) -> AppRuntime {
+    let store = AppRuntime(defaults: defaults)
     // Not `.off`: that mode reports no `nextShiftStartAtMs` at all, because
     // without a schedule the rules have no way to say which day comes next.
     // Rows that have already happened are then dropped rather than moved, for
     // the break exactly as for the start time.
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
-    store.microBreakEnabled = false
-    store.liveActivityEnabled = false
-    store.notificationMode = .off
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
+    store.preferences.applyPreferences { $0.microBreakEnabled = false }
+    store.preferences.liveActivityEnabled = false
+    store.preferences.applyPreferences { $0.notificationMode = .off }
     return store
 }
 
@@ -1166,8 +1171,8 @@ func shiftPreviewMovesFinishedBreakToTheNextShift() throws {
     )))
 
     let store = previewStore(defaults)
-    let snapshot = try #require(store.snapshot(at: afterLunch))
-    let preview = store.shiftPreview(for: snapshot, at: afterLunch)
+    let snapshot = try #require(store.session.snapshot(at: afterLunch))
+    let preview = store.shifts.shiftPreview(for: snapshot, at: afterLunch)
 
     // Clock-off is the only thing left today; everything else has rolled onto
     // tomorrow and lines up behind the next clock-in rather than heading a list
@@ -1198,8 +1203,8 @@ func shiftPreviewRollsBreakBoundariesIndependently() throws {
     )))
 
     let store = previewStore(defaults)
-    let snapshot = try #require(store.snapshot(at: duringLunch))
-    let preview = store.shiftPreview(for: snapshot, at: duringLunch)
+    let snapshot = try #require(store.session.snapshot(at: duringLunch))
+    let preview = store.shifts.shiftPreview(for: snapshot, at: duringLunch)
 
     // Merged into one window row, the break is keyed on when it opens — and
     // that has passed — so the whole window moves to the next shift. The
@@ -1226,11 +1231,11 @@ func shiftPreviewRollsEveryPastRowToTheNextShift() throws {
     )))
 
     let store = previewStore(defaults)
-    store.liveActivityEnabled = true
-    store.liveActivityLeadMinutes = 30
+    store.preferences.liveActivityEnabled = true
+    store.preferences.liveActivityLeadMinutes = 30
 
-    let snapshot = try #require(store.snapshot(at: afterClockOff))
-    let preview = store.shiftPreview(for: snapshot, at: afterClockOff)
+    let snapshot = try #require(store.session.snapshot(at: afterClockOff))
+    let preview = store.shifts.shiftPreview(for: snapshot, at: afterClockOff)
 
     // Everything is behind us, so everything belongs to tomorrow and the list
     // reads in one direction: in, break, warning, out. It used to open with the
@@ -1279,11 +1284,11 @@ func shiftPreviewReminderDisabledState(_ testCase: ReminderSwitchCase) throws {
     )))
 
     let store = previewStore(defaults)
-    store.liveActivityEnabled = testCase.liveActivity
-    store.notificationMode = testCase.mode
+    store.preferences.liveActivityEnabled = testCase.liveActivity
+    store.preferences.applyPreferences { $0.notificationMode = testCase.mode }
 
-    let snapshot = try #require(store.snapshot(at: beforeShift))
-    let preview = store.shiftPreview(for: snapshot, at: beforeShift)
+    let snapshot = try #require(store.session.snapshot(at: beforeShift))
+    let preview = store.shifts.shiftPreview(for: snapshot, at: beforeShift)
 
     let disabled = preview.disabled.contains { $0.id == "off-work-reminder-off" }
     #expect(disabled == testCase.showsDisabled)
@@ -1310,19 +1315,19 @@ func widgetKeepsCountingAfterAnExplicitStop() throws {
         year: 2026, month: 8, day: 25, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: mondayAtWork),
-        active: store.countdownStarted,
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: mondayAtWork),
+        active: store.session.countdownStarted,
         nowMs: Int64(mondayAtWork.timeIntervalSince1970 * 1_000)
     )
 
@@ -1346,30 +1351,30 @@ func editingTheScheduleDoesNotUndoAnEarlyClockOff() throws {
         year: 2026, month: 8, day: 24, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
     // Same shift, hours nudged. Still finished.
-    store.endMinutes = 18 * 60
-    let shift = try #require(store.snapshot(at: mondayAtWork))
-    #expect(store.isEndedEarly(shift))
+    store.preferences.applyPreferences { $0.endMinutes = 18 * 60 }
+    let shift = try #require(store.session.snapshot(at: mondayAtWork))
+    #expect(store.session.isEndedEarly(shift))
 
     // A shift that begins after the moment they stopped is a different shift,
     // and gets counted — no special case, it simply falls outside the window.
-    store.startMinutes = 20 * 60
-    store.endMinutes = 23 * 60
-    let nightShift = try #require(store.snapshot(at: mondayAtWork))
-    #expect(!store.isEndedEarly(nightShift))
+    store.preferences.applyPreferences { $0.startMinutes = 20 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 23 * 60 }
+    let nightShift = try #require(store.session.snapshot(at: mondayAtWork))
+    #expect(!store.session.isEndedEarly(nightShift))
 
     // And undoing is its own deliberate action.
-    store.undoEarlyClockOff()
-    #expect(store.earlyOffAtMs == nil)
+    store.shifts.undoEarlyClockOff()
+    #expect(store.session.earlyOffAtMs == nil)
 }
 
 @MainActor
@@ -1382,18 +1387,18 @@ func completedShiftStaysOnSettlement() throws {
         year: 2026, month: 8, day: 24, hour: 18
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: afterWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: afterWork)
 
-    let shift = try #require(store.snapshot(at: afterWork))
+    let shift = try #require(store.session.snapshot(at: afterWork))
     #expect(shift.remainingMs <= 0)
-    #expect(store.visualPhase(snapshot: shift, at: afterWork) == .completed)
-    #expect(store.countdownStarted)
+    #expect(store.session.visualPhase(snapshot: shift, at: afterWork) == .completed)
+    #expect(store.session.countdownStarted)
 }
 
 @MainActor
@@ -1406,23 +1411,23 @@ func nextShiftOnlyHourEditsLeaveTodayUnchanged() throws {
         year: 2026, month: 8, day: 24, hour: 16
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: afterWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: afterWork)
 
-    store.applyScheduleChange(
+    store.shifts.applyScheduleChange(
         ScheduleFieldChange(endMinutes: 18 * 60),
         decision: .nextShiftOnly,
         at: afterWork
     )
-    #expect(store.endMinutes == 18 * 60)
-    #expect(store.effectiveEndMinutes(at: afterWork) == 17 * 60)
-    let today = try #require(store.snapshot(at: afterWork))
-    #expect(store.visualPhase(snapshot: today, at: afterWork) == .running)
+    #expect(store.preferences.endMinutes == 18 * 60)
+    #expect(store.session.effectiveEndMinutes(at: afterWork) == 17 * 60)
+    let today = try #require(store.session.snapshot(at: afterWork))
+    #expect(store.session.visualPhase(snapshot: today, at: afterWork) == .running)
 
     let todayEnd = try #require(Calendar.current.date(from: DateComponents(
         year: 2026, month: 8, day: 24, hour: 17
@@ -1437,8 +1442,8 @@ func nextShiftOnlyHourEditsLeaveTodayUnchanged() throws {
     let tuesdayAtWork = try #require(Calendar.current.date(from: DateComponents(
         year: 2026, month: 8, day: 25, hour: 10
     )))
-    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
+    let widget = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
         shift: today,
         active: true,
         nowMs: Int64(afterWork.timeIntervalSince1970 * 1_000)
@@ -1462,10 +1467,10 @@ func shiftPreviewKeepsEnabledLunchWhenItDoesNotFit() throws {
     )))
 
     let store = previewStore(defaults)
-    store.endMinutes = 11 * 60
+    store.preferences.applyPreferences { $0.endMinutes = 11 * 60 }
 
-    let snapshot = try #require(store.snapshot(at: morning))
-    let preview = store.shiftPreview(for: snapshot, at: morning)
+    let snapshot = try #require(store.session.snapshot(at: morning))
+    let preview = store.shifts.shiftPreview(for: snapshot, at: morning)
     #expect(!preview.disabled.contains { $0.id == "lunch-off" })
     #expect(preview.upcoming.contains { $0.kind == .lunchStart })
 }
@@ -1481,10 +1486,10 @@ func shiftPreviewKeepsEnabledHealthAfterClockOff() throws {
     )))
 
     let store = previewStore(defaults)
-    store.microBreakEnabled = true
+    store.preferences.applyPreferences { $0.microBreakEnabled = true }
 
-    let snapshot = try #require(store.snapshot(at: afterClockOff))
-    let preview = store.shiftPreview(for: snapshot, at: afterClockOff)
+    let snapshot = try #require(store.session.snapshot(at: afterClockOff))
+    let preview = store.shifts.shiftPreview(for: snapshot, at: afterClockOff)
     #expect(!preview.disabled.contains { $0.kind == .health })
     #expect(preview.upcoming.contains { $0.kind == .health })
 }
@@ -1500,19 +1505,19 @@ func healthPreviewHasNoDateWhenRulesScheduleNone() throws {
     )))
 
     let store = previewStore(defaults)
-    store.endMinutes = 10 * 60
-    store.lunchEnabled = false
-    store.microBreakEnabled = true
-    store.microBreakIntervalMinutes = 60
+    store.preferences.applyPreferences { $0.endMinutes = 10 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = false }
+    store.preferences.applyPreferences { $0.microBreakEnabled = true }
+    store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 60 }
 
-    let snapshot = try #require(store.snapshot(at: beforeShift))
+    let snapshot = try #require(store.session.snapshot(at: beforeShift))
     let reminders = try CountdownRules.shared.reminders(
-        input: store.rulesInput(at: beforeShift),
-        reminderInputs: store.reminderInputs()
+        input: store.session.rulesInput(at: beforeShift),
+        reminderInputs: store.shifts.reminderInputs()
     )
     #expect(!reminders.contains { $0.kind == "microBreak" })
 
-    let preview = store.shiftPreview(for: snapshot, at: beforeShift)
+    let preview = store.shifts.shiftPreview(for: snapshot, at: beforeShift)
     let health = try #require(preview.upcoming.first { $0.kind == .health })
     #expect(health.date == nil)
 }
@@ -1528,16 +1533,16 @@ func healthPreviewDateMatchesSharedReminders() throws {
     )))
 
     let store = previewStore(defaults)
-    store.microBreakEnabled = true
-    store.microBreakIntervalMinutes = 60
+    store.preferences.applyPreferences { $0.microBreakEnabled = true }
+    store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 60 }
 
-    let snapshot = try #require(store.snapshot(at: beforeShift))
+    let snapshot = try #require(store.session.snapshot(at: beforeShift))
     let reminders = try CountdownRules.shared.reminders(
-        input: store.rulesInput(at: beforeShift),
-        reminderInputs: store.reminderInputs()
+        input: store.session.rulesInput(at: beforeShift),
+        reminderInputs: store.shifts.reminderInputs()
     )
     let earliest = try #require(reminders.filter { $0.kind == "microBreak" }.min(by: { $0.atMs < $1.atMs }))
-    let preview = store.shiftPreview(for: snapshot, at: beforeShift)
+    let preview = store.shifts.shiftPreview(for: snapshot, at: beforeShift)
     let health = try #require(preview.upcoming.first { $0.kind == .health })
     #expect(health.date == Date(timeIntervalSince1970: earliest.atMs / 1_000))
 }
@@ -1553,20 +1558,20 @@ func healthPreviewDoesNotUseShiftStartPlusIntervalAcrossLunch() throws {
     )))
 
     let store = previewStore(defaults)
-    store.microBreakEnabled = true
-    store.microBreakIntervalMinutes = 60
+    store.preferences.applyPreferences { $0.microBreakEnabled = true }
+    store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 60 }
 
-    let snapshot = try #require(store.snapshot(at: afterLunch))
+    let snapshot = try #require(store.session.snapshot(at: afterLunch))
     let reminders = try CountdownRules.shared.reminders(
-        input: store.rulesInput(at: afterLunch),
-        reminderInputs: store.reminderInputs()
+        input: store.session.rulesInput(at: afterLunch),
+        reminderInputs: store.shifts.reminderInputs()
     )
     let earliestRemaining = try #require(
         reminders
             .filter { $0.kind == "microBreak" && $0.atMs > afterLunch.timeIntervalSince1970 * 1_000 }
             .min(by: { $0.atMs < $1.atMs })
     )
-    let preview = store.shiftPreview(for: snapshot, at: afterLunch)
+    let preview = store.shifts.shiftPreview(for: snapshot, at: afterLunch)
     let health = try #require(preview.upcoming.first { $0.kind == .health })
     #expect(health.date == Date(timeIntervalSince1970: earliestRemaining.atMs / 1_000))
     #expect(health.date != snapshot.startDate.addingTimeInterval(60 * 60))
@@ -1588,19 +1593,19 @@ func widgetShowsDoneForTheRestOfAWorkdayAfterEarlyClockOff() throws {
         year: 2026, month: 8, day: 25, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: mondayAtWork),
-        active: store.countdownStarted,
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: mondayAtWork),
+        active: store.session.countdownStarted,
         nowMs: Int64(mondayAtWork.timeIntervalSince1970 * 1_000)
     )
     let stillToday = try #require(snapshot.entry(atMs: Int64(mondayAfternoon.timeIntervalSince1970 * 1_000)))
@@ -1627,16 +1632,16 @@ func earlyClockOffSuppressesRemainingRemindersForThatShift() throws {
         year: 2026, month: 8, day: 25, hour: 9
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
-    let shift = try #require(store.snapshot(at: mondayAtWork))
+    let shift = try #require(store.session.snapshot(at: mondayAtWork))
     let today = NativeReminder(
         id: "today-end",
         kind: "shiftEnd",
@@ -1657,8 +1662,8 @@ func earlyClockOffSuppressesRemainingRemindersForThatShift() throws {
         title: "start",
         body: "start"
     )
-    #expect(!store.shouldDeliverReminder(today, for: shift))
-    #expect(store.shouldDeliverReminder(tomorrow, for: shift))
+    #expect(!store.session.shouldDeliverReminder(today, for: shift))
+    #expect(store.session.shouldDeliverReminder(tomorrow, for: shift))
 }
 
 @MainActor
@@ -1671,13 +1676,13 @@ func heroRemainingCountsToClockInBeforeStart() throws {
         year: 2026, month: 8, day: 24, hour: 8
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
 
-    let shift = try #require(store.snapshot(at: beforeShift))
+    let shift = try #require(store.session.snapshot(at: beforeShift))
     #expect(shift.isBeforeStart(at: beforeShift))
     let remaining = shift.heroRemainingMs(at: beforeShift)
     #expect(abs(remaining - 60 * 60 * 1_000) < 1)
@@ -1693,23 +1698,23 @@ func clockingOffEarlyLandsOnCompleted() throws {
         year: 2026, month: 8, day: 24, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
-    let shift = try #require(store.snapshot(at: mondayAtWork))
-    #expect(store.isEndedEarly(shift))
-    #expect(store.isShiftComplete(shift))
-    #expect(store.visualPhase(snapshot: shift, at: mondayAtWork) == .completed)
-    #expect(store.countdownStarted)
+    let shift = try #require(store.session.snapshot(at: mondayAtWork))
+    #expect(store.session.isEndedEarly(shift))
+    #expect(store.session.isShiftComplete(shift))
+    #expect(store.session.visualPhase(snapshot: shift, at: mondayAtWork) == .completed)
+    #expect(store.session.countdownStarted)
 
-    store.undoEarlyClockOff()
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .running)
+    store.shifts.undoEarlyClockOff()
+    #expect(store.session.visualPhase(snapshot: store.session.snapshot(at: mondayAtWork), at: mondayAtWork) == .running)
 }
 
 @MainActor
@@ -1725,20 +1730,20 @@ func applyingOvertimeClearsAnEarlyClockOff() throws {
         year: 2026, month: 8, day: 24, hour: 20
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
-    store.applyOvertime(date: overtimeEnd)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
+    store.shifts.applyOvertime(date: overtimeEnd)
 
-    #expect(store.earlyOffAtMs == nil)
-    let shift = try #require(store.snapshot(at: mondayAtWork))
-    #expect(!store.isEndedEarly(shift))
-    #expect(store.visualPhase(snapshot: shift) == .running)
+    #expect(store.session.earlyOffAtMs == nil)
+    let shift = try #require(store.session.snapshot(at: mondayAtWork))
+    #expect(!store.session.isEndedEarly(shift))
+    #expect(store.session.visualPhase(snapshot: shift) == .running)
 }
 
 @MainActor
@@ -1751,24 +1756,24 @@ func applyingSettingsDoesNotUndoAnEarlyClockOff() throws {
         year: 2026, month: 8, day: 24, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .completed)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
+    #expect(store.session.visualPhase(snapshot: store.session.snapshot(at: mondayAtWork), at: mondayAtWork) == .completed)
 
-    store.applyScheduleChange(
+    store.shifts.applyScheduleChange(
         ScheduleFieldChange(endMinutes: 18 * 60),
         decision: .applyToToday,
         at: mondayAtWork
     )
-    #expect(store.endMinutes == 18 * 60)
-    #expect(store.earlyOffAtMs == nil)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: mondayAtWork), at: mondayAtWork) == .running)
+    #expect(store.preferences.endMinutes == 18 * 60)
+    #expect(store.session.earlyOffAtMs == nil)
+    #expect(store.session.visualPhase(snapshot: store.session.snapshot(at: mondayAtWork), at: mondayAtWork) == .running)
 }
 
 @MainActor
@@ -1784,22 +1789,22 @@ func nextWorkdayIsNotCoveredByYesterdaysEarlyClockOff() throws {
         year: 2026, month: 8, day: 25, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
-    let monday = try #require(store.snapshot(at: mondayAtWork))
-    let frozenMonday = store.clockOffSnapshot(for: monday)
-    let tuesday = try #require(store.snapshot(at: tuesdayAtWork))
-    #expect(!store.isEndedEarly(tuesday))
-    #expect(store.visualPhase(snapshot: tuesday) == .running)
+    let monday = try #require(store.session.snapshot(at: mondayAtWork))
+    let frozenMonday = store.session.clockOffSnapshot(for: monday)
+    let tuesday = try #require(store.session.snapshot(at: tuesdayAtWork))
+    #expect(!store.session.isEndedEarly(tuesday))
+    #expect(store.session.visualPhase(snapshot: tuesday) == .running)
     #expect(frozenMonday.startAtMs != tuesday.startAtMs)
-    #expect(store.clockOffSnapshot(for: tuesday).startAtMs == tuesday.startAtMs)
+    #expect(store.session.clockOffSnapshot(for: tuesday).startAtMs == tuesday.startAtMs)
 }
 
 @MainActor
@@ -1815,76 +1820,76 @@ func clockOffSnapshotDoesNotRebuildFromLaterSettings() throws {
         year: 2026, month: 8, day: 24, hour: 20
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
-    store.salaryEnabled = true
-    store.salaryType = .monthly
-    store.salaryAmount = "22000"
-    store.monthlyWorkingDays = 22
-    store.startCountdown(at: mondayAfternoon)
-    store.clockOffEarly(at: mondayAfternoon)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
+    store.preferences.applyPreferences { $0.salaryEnabled = true }
+    store.preferences.applyPreferences { $0.salaryType = .monthly }
+    store.preferences.applyPreferences { $0.salaryAmount = "22000" }
+    store.preferences.applyPreferences { $0.monthlyWorkingDays = 22 }
+    store.shifts.startCountdown(at: mondayAfternoon)
+    store.shifts.clockOffEarly(at: mondayAfternoon)
 
-    let original = try #require(store.snapshot(at: mondayAfternoon))
-    let frozen = store.clockOffSnapshot(for: original)
+    let original = try #require(store.session.snapshot(at: mondayAfternoon))
+    let frozen = store.session.clockOffSnapshot(for: original)
     #expect(abs(frozen.elapsedMs - 4 * 3_600_000) < 1)
     let originalSalary = try #require(frozen.dailySalary)
     let originalPayRatio = frozen.payRatio
     let originalProgress = frozen.progress
     let originalSegments = frozen.segments
-    #expect(store.takenLunchWindow(for: frozen, at: mondayAfternoon) != nil)
+    #expect(store.shifts.takenLunchWindow(for: frozen, at: mondayAfternoon) != nil)
 
-    store.lunchEnabled = false
-    let afterLunchOff = try #require(store.snapshot(at: mondayAfternoon))
-    let frozenAfterLunchOff = store.clockOffSnapshot(for: afterLunchOff)
+    store.preferences.applyPreferences { $0.lunchEnabled = false }
+    let afterLunchOff = try #require(store.session.snapshot(at: mondayAfternoon))
+    let frozenAfterLunchOff = store.session.clockOffSnapshot(for: afterLunchOff)
     #expect(frozenAfterLunchOff.segments == originalSegments)
     #expect(abs(frozenAfterLunchOff.elapsedMs - frozen.elapsedMs) < 0.001)
     #expect(abs(frozenAfterLunchOff.progress - originalProgress) < 0.001)
     #expect(abs(frozenAfterLunchOff.payRatio - originalPayRatio) < 0.001)
     #expect(afterLunchOff.elapsedMs != frozen.elapsedMs)
-    #expect(store.takenLunchWindow(for: frozenAfterLunchOff, at: mondayAfternoon) != nil)
+    #expect(store.shifts.takenLunchWindow(for: frozenAfterLunchOff, at: mondayAfternoon) != nil)
 
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 15 * 60
-    store.lunchDurationMinutes = 30
-    let afterLunchMoved = try #require(store.snapshot(at: mondayAfternoon))
-    let frozenAfterLunchMoved = store.clockOffSnapshot(for: afterLunchMoved)
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 15 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 30 }
+    let afterLunchMoved = try #require(store.session.snapshot(at: mondayAfternoon))
+    let frozenAfterLunchMoved = store.session.clockOffSnapshot(for: afterLunchMoved)
     #expect(frozenAfterLunchMoved.segments == originalSegments)
     #expect(abs(frozenAfterLunchMoved.elapsedMs - frozen.elapsedMs) < 0.001)
 
-    store.salaryAmount = "44000"
-    let afterSalary = try #require(store.snapshot(at: mondayAfternoon))
-    let frozenAfterSalary = store.clockOffSnapshot(for: afterSalary)
+    store.preferences.applyPreferences { $0.salaryAmount = "44000" }
+    let afterSalary = try #require(store.session.snapshot(at: mondayAfternoon))
+    let frozenAfterSalary = store.session.clockOffSnapshot(for: afterSalary)
     #expect(frozenAfterSalary.dailySalary == originalSalary)
     #expect(afterSalary.dailySalary != originalSalary)
 
-    let reloaded = OffWorkStore(defaults: defaults)
-    let reloadedShift = try #require(reloaded.snapshot(at: mondayAfternoon))
-    let reloadedFrozen = reloaded.clockOffSnapshot(for: reloadedShift)
+    let reloaded = AppRuntime(defaults: defaults)
+    let reloadedShift = try #require(reloaded.session.snapshot(at: mondayAfternoon))
+    let reloadedFrozen = reloaded.session.clockOffSnapshot(for: reloadedShift)
     #expect(reloadedFrozen.segments == originalSegments)
     #expect(abs(reloadedFrozen.elapsedMs - frozen.elapsedMs) < 0.001)
     #expect(abs(reloadedFrozen.progress - originalProgress) < 0.001)
     #expect(abs(reloadedFrozen.payRatio - originalPayRatio) < 0.001)
     #expect(reloadedFrozen.dailySalary == originalSalary)
 
-    store.undoEarlyClockOff()
-    #expect(store.earlyOffAtMs == nil)
-    let afterUndo = try #require(store.snapshot(at: mondayAfternoon))
-    #expect(store.clockOffSnapshot(for: afterUndo).elapsedMs == afterUndo.elapsedMs)
+    store.shifts.undoEarlyClockOff()
+    #expect(store.session.earlyOffAtMs == nil)
+    let afterUndo = try #require(store.session.snapshot(at: mondayAfternoon))
+    #expect(store.session.clockOffSnapshot(for: afterUndo).elapsedMs == afterUndo.elapsedMs)
 
-    store.clockOffEarly(at: mondayAfternoon)
-    store.applyOvertime(date: overtimeEnd)
-    #expect(store.earlyOffAtMs == nil)
-    let afterOvertime = try #require(store.snapshot(at: mondayAfternoon))
-    #expect(!store.isEndedEarly(afterOvertime))
-    #expect(store.clockOffSnapshot(for: afterOvertime).elapsedMs == afterOvertime.elapsedMs)
-    #expect(store.visualPhase(snapshot: afterOvertime) == .running)
+    store.shifts.clockOffEarly(at: mondayAfternoon)
+    store.shifts.applyOvertime(date: overtimeEnd)
+    #expect(store.session.earlyOffAtMs == nil)
+    let afterOvertime = try #require(store.session.snapshot(at: mondayAfternoon))
+    #expect(!store.session.isEndedEarly(afterOvertime))
+    #expect(store.session.clockOffSnapshot(for: afterOvertime).elapsedMs == afterOvertime.elapsedMs)
+    #expect(store.session.visualPhase(snapshot: afterOvertime) == .running)
 }
 
 @MainActor
@@ -1906,28 +1911,28 @@ func clockingOffDuringOvertimeKeepsTheExtendedShift() throws {
         year: 2026, month: 8, day: 24, hour: 18, minute: 30
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayMorning)
-    store.applyOvertime(date: overtimeEnd)
-    store.clockOffEarly(at: duringOvertime)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayMorning)
+    store.shifts.applyOvertime(date: overtimeEnd)
+    store.shifts.clockOffEarly(at: duringOvertime)
 
-    #expect(store.overtimeEndAtMs != nil)
-    let shift = try #require(store.snapshot(at: duringOvertime))
-    #expect(store.isEndedEarly(shift))
-    #expect(store.visualPhase(snapshot: shift) == .completed)
-    let frozen = store.clockOffSnapshot(for: shift)
+    #expect(store.session.overtimeEndAtMs != nil)
+    let shift = try #require(store.session.snapshot(at: duringOvertime))
+    #expect(store.session.isEndedEarly(shift))
+    #expect(store.session.visualPhase(snapshot: shift) == .completed)
+    let frozen = store.session.clockOffSnapshot(for: shift)
     #expect(frozen.elapsedMs > frozen.plannedDurationMs)
     #expect(frozen.elapsedMs < frozen.durationMs)
 
-    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: duringOvertime),
-        active: store.countdownStarted,
+    let widget = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: duringOvertime),
+        active: store.session.countdownStarted,
         nowMs: Int64(duringOvertime.timeIntervalSince1970 * 1_000)
     )
     let current = try #require(widget.entry(atMs: Int64(stillOvertime.timeIntervalSince1970 * 1_000)))
@@ -1947,21 +1952,21 @@ func weekSummaryDoesNotKeepGrowingAfterAnEarlyClockOff() throws {
         year: 2026, month: 8, day: 24, hour: 15
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
-    let laterShift = try #require(store.snapshot(at: mondayAfternoon))
-    #expect(store.isEndedEarly(laterShift))
-    let frozen = store.clockOffSnapshot(for: laterShift)
-    let weekFrozen = try #require(store.periodSummary("week", asOf: mondayAtWork, snapshot: frozen))
-    let weekLaterFrozen = try #require(store.periodSummary("week", asOf: mondayAfternoon, snapshot: frozen))
-    let weekLive = try #require(store.periodSummary("week", asOf: mondayAfternoon, snapshot: laterShift))
+    let laterShift = try #require(store.session.snapshot(at: mondayAfternoon))
+    #expect(store.session.isEndedEarly(laterShift))
+    let frozen = store.session.clockOffSnapshot(for: laterShift)
+    let weekFrozen = try #require(store.session.periodSummary("week", asOf: mondayAtWork, snapshot: frozen))
+    let weekLaterFrozen = try #require(store.session.periodSummary("week", asOf: mondayAfternoon, snapshot: frozen))
+    let weekLive = try #require(store.session.periodSummary("week", asOf: mondayAfternoon, snapshot: laterShift))
 
     #expect(abs(weekFrozen.hours - weekLaterFrozen.hours) < 0.0001)
     #expect(weekLive.hours > weekFrozen.hours)
@@ -1983,30 +1988,30 @@ func takenLunchWindowIgnoresABreakThatNeverFinished() throws {
         year: 2026, month: 8, day: 24, hour: 14
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
-    store.startCountdown(at: beforeLunch)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
+    store.shifts.startCountdown(at: beforeLunch)
 
-    store.clockOffEarly(at: beforeLunch)
-    let morning = try #require(store.snapshot(at: beforeLunch))
-    #expect(store.takenLunchWindow(for: store.clockOffSnapshot(for: morning), at: beforeLunch) == nil)
+    store.shifts.clockOffEarly(at: beforeLunch)
+    let morning = try #require(store.session.snapshot(at: beforeLunch))
+    #expect(store.shifts.takenLunchWindow(for: store.session.clockOffSnapshot(for: morning), at: beforeLunch) == nil)
 
-    store.undoEarlyClockOff()
-    store.clockOffEarly(at: duringLunch)
-    let midday = try #require(store.snapshot(at: duringLunch))
-    #expect(store.takenLunchWindow(for: store.clockOffSnapshot(for: midday), at: duringLunch) == nil)
+    store.shifts.undoEarlyClockOff()
+    store.shifts.clockOffEarly(at: duringLunch)
+    let midday = try #require(store.session.snapshot(at: duringLunch))
+    #expect(store.shifts.takenLunchWindow(for: store.session.clockOffSnapshot(for: midday), at: duringLunch) == nil)
 
-    store.undoEarlyClockOff()
-    store.clockOffEarly(at: afterLunch)
-    let afternoon = try #require(store.snapshot(at: afterLunch))
-    let taken = try #require(store.takenLunchWindow(for: store.clockOffSnapshot(for: afternoon), at: afterLunch))
+    store.shifts.undoEarlyClockOff()
+    store.shifts.clockOffEarly(at: afterLunch)
+    let afternoon = try #require(store.session.snapshot(at: afterLunch))
+    let taken = try #require(store.shifts.takenLunchWindow(for: store.session.clockOffSnapshot(for: afternoon), at: afterLunch))
     #expect(Calendar.current.component(.hour, from: taken.start) == 12)
     #expect(Calendar.current.component(.hour, from: taken.end) == 13)
 }
@@ -2014,6 +2019,7 @@ func takenLunchWindowIgnoresABreakThatNeverFinished() throws {
 @MainActor
 @Test("Draft overnight hours decide whether today is a rest day")
 func setupSnapshotUsesDraftHoursForTheWorkday() throws {
+    let scene = SceneState()
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
@@ -2023,17 +2029,17 @@ func setupSnapshotUsesDraftHoursForTheWorkday() throws {
         year: 2026, month: 8, day: 22, hour: 0, minute: 30
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.setDisplayedStartMinutes(22 * 60)
-    store.setDisplayedEndMinutes(6 * 60)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    scene.setDisplayedStartMinutes(22 * 60, using: store.preferences)
+    scene.setDisplayedEndMinutes(6 * 60, using: store.preferences)
 
-    #expect(store.snapshot(at: saturdayMorning)?.isWorkday == false)
-    #expect(store.setupSnapshot(at: saturdayMorning)?.isWorkday == true)
+    #expect(store.session.snapshot(at: saturdayMorning)?.isWorkday == false)
+    #expect(scene.setupSnapshot(at: saturdayMorning, using: store.shifts)?.isWorkday == true)
 }
 
 @MainActor
@@ -2046,16 +2052,16 @@ func heroRemainingCountsToBreakEndDuringLunch() throws {
         year: 2026, month: 8, day: 24, hour: 12, minute: 30
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
 
-    let shift = try #require(store.snapshot(at: duringLunch))
+    let shift = try #require(store.session.snapshot(at: duringLunch))
     #expect(shift.isOnBreak)
     let remaining = shift.heroRemainingMs(at: duringLunch)
     #expect(abs(remaining - 30 * 60 * 1_000) < 1)
@@ -2067,15 +2073,15 @@ func stoppingACountdownLeavesARulesError() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.countdownStarted = true
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.session.countdownStarted = true
 
-    #expect(store.visualPhase(snapshot: nil) == .rulesError)
-    store.stopCountdown()
-    #expect(store.countdownStarted)
-    #expect(store.visualPhase(snapshot: nil) == .rulesError)
+    #expect(store.session.visualPhase(snapshot: nil) == .rulesError)
+    store.shifts.stopCountdown()
+    #expect(store.session.countdownStarted)
+    #expect(store.session.visualPhase(snapshot: nil) == .rulesError)
 }
 
 @MainActor
@@ -2084,12 +2090,12 @@ func lastClassicWorkdayCannotBeRemoved() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1]
-    store.toggleWorkday(1)
-    #expect(store.workdays == Set([1]))
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1] }
+    store.preferences.toggleWorkday(1)
+    #expect(store.preferences.workdays == Set([1]))
 }
 
 @MainActor
@@ -2102,16 +2108,16 @@ func earlyClockOffWithoutNextShiftDropsEndReminder() throws {
         year: 2026, month: 8, day: 24, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = []
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(force: true, at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(force: true, at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
-    let shift = try #require(store.snapshot(at: mondayAtWork))
+    let shift = try #require(store.session.snapshot(at: mondayAtWork))
     #expect(shift.nextShiftStartAtMs == nil)
     let endMilestone = NativeReminder(
         id: "milestone:100",
@@ -2123,7 +2129,7 @@ func earlyClockOffWithoutNextShiftDropsEndReminder() throws {
         title: "end",
         body: "end"
     )
-    #expect(!store.shouldDeliverReminder(endMilestone, for: shift))
+    #expect(!store.session.shouldDeliverReminder(endMilestone, for: shift))
 }
 
 @MainActor
@@ -2136,22 +2142,22 @@ func manualStartClearsLeftoverEarlyClockOff() throws {
         year: 2026, month: 8, day: 24, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
-    store.scheduleMode = .off
-    store.startCountdown(at: mondayAtWork)
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.shifts.startCountdown(at: mondayAtWork)
 
-    #expect(store.earlyOffAtMs == nil)
-    let shift = try #require(store.snapshot(at: mondayAtWork))
-    #expect(!store.isEndedEarly(shift))
-    #expect(store.visualPhase(snapshot: shift) == .running)
+    #expect(store.session.earlyOffAtMs == nil)
+    let shift = try #require(store.session.snapshot(at: mondayAtWork))
+    #expect(!store.session.isEndedEarly(shift))
+    #expect(store.session.visualPhase(snapshot: shift) == .running)
 }
 
 @MainActor
@@ -2169,29 +2175,29 @@ func forcedOvernightShiftSurvivesMidnight() throws {
         year: 2026, month: 8, day: 30, hour: 3
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 22 * 60
-    store.endMinutes = 6 * 60
-    store.startCountdown(force: true, at: saturdayNight)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 22 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 6 * 60 }
+    store.shifts.startCountdown(force: true, at: saturdayNight)
 
-    let beforeMidnight = try #require(store.snapshot(at: saturdayNight))
+    let beforeMidnight = try #require(store.session.snapshot(at: saturdayNight))
     #expect(!beforeMidnight.isWorkday)
-    #expect(store.isForcedWorkday(beforeMidnight))
-    #expect(store.visualPhase(snapshot: beforeMidnight, at: saturdayNight) == .running)
+    #expect(store.session.isForcedWorkday(beforeMidnight))
+    #expect(store.session.visualPhase(snapshot: beforeMidnight, at: saturdayNight) == .running)
 
     // Same run, three hours later and one calendar day on. Keying the mark to
     // `.now` turned this into "today is off" with three hours still to work.
-    let afterMidnight = try #require(store.snapshot(at: sundayMorning))
+    let afterMidnight = try #require(store.session.snapshot(at: sundayMorning))
     #expect(afterMidnight.startAtMs == beforeMidnight.startAtMs)
-    #expect(store.isForcedWorkday(afterMidnight))
-    #expect(store.visualPhase(snapshot: afterMidnight, at: sundayMorning) == .running)
+    #expect(store.session.isForcedWorkday(afterMidnight))
+    #expect(store.session.visualPhase(snapshot: afterMidnight, at: sundayMorning) == .running)
 
     // And the day-change reconcile must not delete a mark that still matches.
-    #expect(store.reconcileCountdownSession(at: sundayMorning) == false)
-    #expect(store.isForcedWorkday(afterMidnight))
+    #expect(store.shifts.reconcileCountdownSession(at: sundayMorning).synchronousResult == false)
+    #expect(store.session.isForcedWorkday(afterMidnight))
 }
 
 @MainActor
@@ -2207,21 +2213,21 @@ func forcedOvernightShiftSettlesUntilEndCalendarMidnight() throws {
         year: 2026, month: 8, day: 30, hour: 6, minute: 30
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 22 * 60
-    store.endMinutes = 6 * 60
-    store.startCountdown(force: true, at: saturdayNight)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 22 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 6 * 60 }
+    store.shifts.startCountdown(force: true, at: saturdayNight)
 
-    let settled = try #require(store.snapshot(at: sundayAfterEnd))
-    #expect(store.isForcedWorkday(settled))
+    let settled = try #require(store.session.snapshot(at: sundayAfterEnd))
+    #expect(store.session.isForcedWorkday(settled))
     #expect(settled.remainingMs <= 0)
-    #expect(store.visualPhase(snapshot: settled, at: sundayAfterEnd) == .completed)
-    _ = store.reconcileCountdownSession(at: sundayAfterEnd)
-    #expect(store.isForcedWorkday(try #require(store.snapshot(at: sundayAfterEnd))))
-    #expect(store.visualPhase(at: sundayAfterEnd) == .completed)
+    #expect(store.session.visualPhase(snapshot: settled, at: sundayAfterEnd) == .completed)
+    _ = store.shifts.reconcileCountdownSession(at: sundayAfterEnd)
+    #expect(store.session.isForcedWorkday(try #require(store.session.snapshot(at: sundayAfterEnd))))
+    #expect(store.session.visualPhase(at: sundayAfterEnd) == .completed)
 }
 
 @MainActor
@@ -2237,24 +2243,24 @@ func nextShiftOnlyWorkdayEditsKeepTodaysRestDistance() throws {
         year: 2026, month: 8, day: 29
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAfternoon)
-    store.applyScheduleChange(
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAfternoon)
+    store.shifts.applyScheduleChange(
         ScheduleFieldChange(workdays: [2, 3, 4, 5]),
         decision: .nextShiftOnly,
         at: mondayAfternoon
     )
 
-    let today = try #require(store.snapshot(at: mondayAfternoon))
+    let today = try #require(store.session.snapshot(at: mondayAfternoon))
     let rest = try #require(today.nextRestAtMs)
     let saturdayStart = Calendar.current.startOfDay(for: saturday).timeIntervalSince1970 * 1_000
     #expect(abs(rest - saturdayStart) < 1)
-    #expect(store.visualPhase(snapshot: today, at: mondayAfternoon) == .running)
+    #expect(store.session.visualPhase(snapshot: today, at: mondayAfternoon) == .running)
 }
 
 @MainActor
@@ -2267,19 +2273,19 @@ func forcingAnOvernightShiftAfterMidnightMarksThatRun() throws {
         year: 2026, month: 8, day: 30, hour: 1
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 22 * 60
-    store.endMinutes = 6 * 60
-    store.startCountdown(force: true, at: sundayMorning)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 22 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 6 * 60 }
+    store.shifts.startCountdown(force: true, at: sundayMorning)
 
     // The shift began on Saturday. Stamping Sunday would mark a run nobody is
     // looking at, and the button would appear to do nothing.
-    let running = try #require(store.snapshot(at: sundayMorning))
-    #expect(store.isForcedWorkday(running))
-    #expect(store.visualPhase(snapshot: running, at: sundayMorning) == .running)
+    let running = try #require(store.session.snapshot(at: sundayMorning))
+    #expect(store.session.isForcedWorkday(running))
+    #expect(store.session.visualPhase(snapshot: running, at: sundayMorning) == .running)
 }
 
 @MainActor
@@ -2295,28 +2301,28 @@ func staleCompletionRecordsAreClearedOnTheNextShift() throws {
         year: 2026, month: 8, day: 25, hour: 0, minute: 30
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAtWork)
-    store.clockOffEarly(at: mondayAtWork)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAtWork)
+    store.shifts.clockOffEarly(at: mondayAtWork)
 
-    #expect(store.earlyOffAtMs != nil)
+    #expect(store.session.earlyOffAtMs != nil)
     #expect(defaults.data(forKey: "ios.native.earlyOffSnapshot") != nil)
 
     // Absolute timestamps: no later shift can ever match them again, so
     // nothing else would have removed them. Settlement is not dismissible,
     // so there is no `dismissedCompleted` mark to clear.
-    #expect(store.reconcileCountdownSession(at: tuesdayAfterMidnight))
-    #expect(store.earlyOffAtMs == nil)
-    #expect(store.earlyOffShiftEndAtMs == nil)
+    #expect(store.shifts.reconcileCountdownSession(at: tuesdayAfterMidnight).synchronousResult)
+    #expect(store.session.earlyOffAtMs == nil)
+    #expect(store.session.earlyOffShiftEndAtMs == nil)
     #expect(defaults.data(forKey: "ios.native.earlyOffSnapshot") == nil)
 
-    let tuesday = try #require(store.snapshot(at: tuesdayAfterMidnight))
-    #expect(store.visualPhase(snapshot: tuesday) == .running)
+    let tuesday = try #require(store.session.snapshot(at: tuesdayAfterMidnight))
+    #expect(store.session.visualPhase(snapshot: tuesday) == .running)
 }
 
 @MainActor
@@ -2329,21 +2335,21 @@ func forcedRunSurvivesARelaunch() throws {
         year: 2026, month: 8, day: 29, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(force: true, at: saturday)
-    #expect(store.forcedWorkdayKey != nil)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(force: true, at: saturday)
+    #expect(store.session.forcedWorkdayKey != nil)
 
     // The mark is persisted, so the run is still forced after a cold start —
     // it is no longer re-derived from whatever day it happens to be.
-    let relaunched = OffWorkStore(defaults: defaults)
-    #expect(relaunched.forcedWorkdayKey != nil)
-    let saturdayShift = try #require(relaunched.snapshot(at: saturday))
-    #expect(relaunched.isForcedWorkday(saturdayShift))
+    let relaunched = AppRuntime(defaults: defaults)
+    #expect(relaunched.session.forcedWorkdayKey != nil)
+    let saturdayShift = try #require(relaunched.session.snapshot(at: saturday))
+    #expect(relaunched.session.isForcedWorkday(saturdayShift))
 }
 
 @MainActor
@@ -2356,28 +2362,29 @@ func clockingInEarlyLengthensTodayWithoutMovingTheEnd() throws {
         year: 2026, month: 8, day: 24, hour: 8
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: beforeStart)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: beforeStart)
 
-    let waiting = try #require(store.snapshot(at: beforeStart))
+    let waiting = try #require(store.session.snapshot(at: beforeStart))
     #expect(waiting.isBeforeStart(at: beforeStart))
-    #expect(store.visualPhase(snapshot: waiting, at: beforeStart) == .clockIn)
+    #expect(store.session.visualPhase(snapshot: waiting, at: beforeStart) == .clockIn)
 
-    store.requestClockInEarly(at: beforeStart)
-    #expect(store.clockInConfirmPending)
-    #expect(store.snapshot(at: beforeStart)?.isBeforeStart(at: beforeStart) == true)
+    let scene = SceneState()
+    scene.requestClockInEarly(at: beforeStart, using: store.shifts)
+    #expect(scene.isClockInConfirmationArmed(at: beforeStart, using: store.shifts))
+    #expect(store.session.snapshot(at: beforeStart)?.isBeforeStart(at: beforeStart) == true)
 
-    store.clockInEarly(at: beforeStart)
-    let running = try #require(store.snapshot(at: beforeStart))
+    store.shifts.clockInEarly(at: beforeStart)
+    let running = try #require(store.session.snapshot(at: beforeStart))
     #expect(!running.isBeforeStart(at: beforeStart))
-    #expect(store.effectiveStartMinutes(at: beforeStart) == 8 * 60)
-    #expect(store.effectiveEndMinutes(at: beforeStart) == 17 * 60)
-    #expect(store.visualPhase(snapshot: running, at: beforeStart) == .running)
+    #expect(store.session.effectiveStartMinutes(at: beforeStart) == 8 * 60)
+    #expect(store.session.effectiveEndMinutes(at: beforeStart) == 17 * 60)
+    #expect(store.session.visualPhase(snapshot: running, at: beforeStart) == .running)
 
     let tuesdayStart = try #require(Calendar.current.date(from: DateComponents(
         year: 2026, month: 8, day: 25, hour: 9
@@ -2385,8 +2392,8 @@ func clockingInEarlyLengthensTodayWithoutMovingTheEnd() throws {
     let nextStart = try #require(running.nextShiftStartAtMs)
     #expect(abs(nextStart - tuesdayStart.timeIntervalSince1970 * 1_000) < 1)
 
-    store.undoEarlyClockIn()
-    let restored = try #require(store.snapshot(at: beforeStart))
+    store.shifts.undoEarlyClockIn()
+    let restored = try #require(store.session.snapshot(at: beforeStart))
     #expect(restored.isBeforeStart(at: beforeStart))
 }
 
@@ -2400,22 +2407,22 @@ func cancellingManualTimingReturnsToRest() throws {
         year: 2026, month: 8, day: 29, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(force: true, at: saturday)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(force: true, at: saturday)
 
-    let working = try #require(store.snapshot(at: saturday))
-    #expect(store.visualPhase(snapshot: working, at: saturday) == .running)
-    store.cancelManualTiming()
+    let working = try #require(store.session.snapshot(at: saturday))
+    #expect(store.session.visualPhase(snapshot: working, at: saturday) == .running)
+    store.shifts.cancelManualTiming()
 
-    let rest = try #require(store.snapshot(at: saturday))
-    #expect(!store.isForcedWorkday(rest))
-    #expect(store.earlyOffAtMs == nil)
-    #expect(store.visualPhase(snapshot: rest, at: saturday) == .rest)
+    let rest = try #require(store.session.snapshot(at: saturday))
+    #expect(!store.session.isForcedWorkday(rest))
+    #expect(store.session.earlyOffAtMs == nil)
+    #expect(store.session.visualPhase(snapshot: rest, at: saturday) == .rest)
 }
 
 @MainActor
@@ -2429,22 +2436,22 @@ func unscheduledSessionResetsAfterTheEndDay() throws {
     )))
     let nextDay = try #require(Calendar.current.date(byAdding: .day, value: 1, to: monday))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .off
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
 
-    #expect(store.visualPhase(at: monday) == .unscheduled)
-    store.startCountdown(at: monday)
-    let running = try #require(store.snapshot(at: monday))
-    #expect(store.visualPhase(snapshot: running, at: monday) == .running)
+    #expect(store.session.visualPhase(at: monday) == .unscheduled)
+    store.shifts.startCountdown(at: monday)
+    let running = try #require(store.session.snapshot(at: monday))
+    #expect(store.session.visualPhase(snapshot: running, at: monday) == .running)
 
-    store.clockOffEarly(at: monday)
-    #expect(store.visualPhase(snapshot: store.snapshot(at: monday), at: monday) == .completed)
+    store.shifts.clockOffEarly(at: monday)
+    #expect(store.session.visualPhase(snapshot: store.session.snapshot(at: monday), at: monday) == .completed)
 
-    #expect(store.reconcileCountdownSession(at: nextDay))
-    #expect(store.visualPhase(at: nextDay) == .unscheduled)
+    #expect(store.shifts.reconcileCountdownSession(at: nextDay).synchronousResult)
+    #expect(store.session.visualPhase(at: nextDay) == .unscheduled)
 }
 
 @MainActor
@@ -2457,16 +2464,16 @@ func shareCopyBeforeClockInCountsToStart() throws {
         year: 2026, month: 8, day: 24, hour: 8
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.languageOverride = "en"
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: beforeStart)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.languageOverride = "en" }
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: beforeStart)
 
-    let copy = store.shareCopy(at: beforeStart)
+    let copy = store.session.shareCopy(at: beforeStart)
     #expect(copy.contains("starts"))
     #expect(!copy.lowercased().contains("off work in"))
 }
@@ -2477,10 +2484,10 @@ func shareURLStaysOnWebApp() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.startMinutes = 9 * 60
-    store.endMinutes = 18 * 60
-    let url = store.shareURL()
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 18 * 60 }
+    let url = store.session.shareURL()
     #expect(url.host == "off.rainif.com")
     #expect(url.absoluteString.contains("s=0900-1800"))
     #expect(!url.absoluteString.contains("doneat.app"))
@@ -2502,22 +2509,22 @@ func overnightShiftSettlesUntilEndCalendarMidnight() throws {
         year: 2026, month: 7, day: 5, hour: 0, minute: 30
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 22 * 60
-    store.endMinutes = 6 * 60
-    store.startCountdown(at: fridayNight)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 22 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 6 * 60 }
+    store.shifts.startCountdown(at: fridayNight)
 
-    let saturday = try #require(store.snapshot(at: saturdayMorning))
+    let saturday = try #require(store.session.snapshot(at: saturdayMorning))
     #expect(saturday.isWorkday)
     #expect(saturday.remainingMs <= 0)
-    #expect(store.visualPhase(snapshot: saturday, at: saturdayMorning) == .completed)
+    #expect(store.session.visualPhase(snapshot: saturday, at: saturdayMorning) == .completed)
 
-    let fromFridayNight = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: fridayNight),
+    let fromFridayNight = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: fridayNight),
         active: true,
         nowMs: Int64(fridayNight.timeIntervalSince1970 * 1_000)
     )
@@ -2526,8 +2533,8 @@ func overnightShiftSettlesUntilEndCalendarMidnight() throws {
     ))
     #expect(fridaySeam.labelKey == "offWorkToday")
 
-    let fromSaturdayMorning = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
+    let fromSaturdayMorning = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
         shift: saturday,
         active: true,
         nowMs: Int64(saturdayMorning.timeIntervalSince1970 * 1_000)
@@ -2537,13 +2544,13 @@ func overnightShiftSettlesUntilEndCalendarMidnight() throws {
     ))
     #expect(saturdaySeam.labelKey == "offWorkToday")
 
-    store.clockOffEarly(at: fridayNight)
-    _ = store.reconcileCountdownSession(at: saturdayMorning)
-    #expect(store.isEndedEarly(try #require(store.snapshot(at: saturdayMorning))))
+    store.shifts.clockOffEarly(at: fridayNight)
+    _ = store.shifts.reconcileCountdownSession(at: saturdayMorning)
+    #expect(store.session.isEndedEarly(try #require(store.session.snapshot(at: saturdayMorning))))
 
-    _ = store.reconcileCountdownSession(at: sundayMorning)
-    #expect(store.earlyOffAtMs == nil)
-    #expect(store.visualPhase(at: sundayMorning) == .rest)
+    _ = store.shifts.reconcileCountdownSession(at: sundayMorning)
+    #expect(store.session.earlyOffAtMs == nil)
+    #expect(store.session.visualPhase(at: sundayMorning) == .rest)
 }
 
 @MainActor
@@ -2556,16 +2563,16 @@ func restDaysDoNotScheduleCurrentShiftReminders() throws {
         year: 2026, month: 8, day: 29, hour: 13
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.notificationMode = .milestones
-    store.startCountdown(at: saturdayAfternoon)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.notificationMode = .milestones }
+    store.shifts.startCountdown(at: saturdayAfternoon)
 
-    let reminders = try store.shiftReminders(at: saturdayAfternoon)
+    let reminders = try store.shifts.shiftReminders(at: saturdayAfternoon)
     #expect(!reminders.contains { $0.id.hasPrefix("current:") })
     #expect(reminders.contains { $0.id.hasPrefix("next:") })
 }
@@ -2589,22 +2596,22 @@ func dayShiftOvertimeSettlesUntilNextLiveWindow() throws {
         year: 2026, month: 8, day: 25, hour: 9, minute: 30
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: mondayAfternoon)
-    store.applyOvertime(date: overtimeEnd)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: mondayAfternoon)
+    store.shifts.applyOvertime(date: overtimeEnd)
 
-    let settled = try #require(store.snapshot(at: afterOvertime))
+    let settled = try #require(store.session.snapshot(at: afterOvertime))
     #expect(Calendar.current.component(.day, from: settled.startDate) == 24)
     #expect(settled.remainingMs <= 0)
-    #expect(store.visualPhase(snapshot: settled, at: afterOvertime) == .completed)
+    #expect(store.session.visualPhase(snapshot: settled, at: afterOvertime) == .completed)
 
-    let widget = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
+    let widget = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
         shift: settled,
         active: true,
         nowMs: Int64(afterOvertime.timeIntervalSince1970 * 1_000)
@@ -2614,10 +2621,10 @@ func dayShiftOvertimeSettlesUntilNextLiveWindow() throws {
     ))
     #expect(current.phase == .done)
 
-    let next = try #require(store.snapshot(at: nextOpen))
+    let next = try #require(store.session.snapshot(at: nextOpen))
     #expect(Calendar.current.component(.day, from: next.startDate) == 25)
     #expect(next.remainingMs > 0)
-    #expect(store.visualPhase(snapshot: next, at: nextOpen) == .running)
+    #expect(store.session.visualPhase(snapshot: next, at: nextOpen) == .running)
 }
 
 @MainActor
@@ -2630,23 +2637,23 @@ func nextShiftOnlyAddingTodayOnARestDayKeepsRest() throws {
         year: 2026, month: 8, day: 29, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: saturday)
-    store.applyScheduleChange(
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: saturday)
+    store.shifts.applyScheduleChange(
         ScheduleFieldChange(workdays: [1, 2, 3, 4, 5, 6]),
         decision: .nextShiftOnly,
         at: saturday
     )
 
-    #expect(store.workdays.contains(6))
-    #expect(!store.effectiveWorkdays(at: saturday).contains(6))
-    let shift = try #require(store.snapshot(at: saturday))
-    #expect(store.visualPhase(snapshot: shift, at: saturday) == .rest)
+    #expect(store.preferences.workdays.contains(6))
+    #expect(!store.session.effectiveWorkdays(at: saturday).contains(6))
+    let shift = try #require(store.session.snapshot(at: saturday))
+    #expect(store.session.visualPhase(snapshot: shift, at: saturday) == .rest)
 }
 
 @MainActor
@@ -2659,21 +2666,21 @@ func nextShiftOnlyLeavingOffKeepsTodayUnscheduled() throws {
         year: 2026, month: 8, day: 24, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .off
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.applyScheduleChange(
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.applyScheduleChange(
         ScheduleFieldChange(scheduleMode: .classic),
         decision: .nextShiftOnly,
         at: monday
     )
 
-    #expect(store.scheduleMode == .classic)
-    #expect(store.effectiveScheduleMode(at: monday) == .off)
-    #expect(store.visualPhase(at: monday) == .unscheduled)
+    #expect(store.preferences.scheduleMode == .classic)
+    #expect(store.session.effectiveScheduleMode(at: monday) == .off)
+    #expect(store.session.visualPhase(at: monday) == .unscheduled)
 }
 
 @MainActor
@@ -2686,23 +2693,23 @@ func applyToTodayHoursKeepForcedWorkday() throws {
         year: 2026, month: 8, day: 29, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(force: true, at: saturday)
-    store.applyScheduleChange(
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(force: true, at: saturday)
+    store.shifts.applyScheduleChange(
         ScheduleFieldChange(endMinutes: 18 * 60),
         decision: .applyToToday,
         at: saturday
     )
 
-    let shift = try #require(store.snapshot(at: saturday))
-    #expect(store.isForcedWorkday(shift))
-    #expect(store.visualPhase(snapshot: shift, at: saturday) == .running)
-    #expect(store.effectiveEndMinutes(at: saturday) == 18 * 60)
+    let shift = try #require(store.session.snapshot(at: saturday))
+    #expect(store.session.isForcedWorkday(shift))
+    #expect(store.session.visualPhase(snapshot: shift, at: saturday) == .running)
+    #expect(store.session.effectiveEndMinutes(at: saturday) == 18 * 60)
 }
 
 @MainActor
@@ -2718,22 +2725,22 @@ func liveActivityFallbackSkipsRestDayPhantomWindows() throws {
         year: 2026, month: 8, day: 24, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.liveActivityEnabled = true
-    store.notificationMode = .off
-    store.startCountdown(at: monday)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.liveActivityEnabled = true
+    store.preferences.applyPreferences { $0.notificationMode = .off }
+    store.shifts.startCountdown(at: monday)
 
-    #expect(!store.shouldScheduleLiveActivityEndFallback(
-        snapshot: store.snapshot(at: saturday),
+    #expect(!store.shifts.shouldScheduleLiveActivityEndFallback(
+        snapshot: store.session.snapshot(at: saturday),
         at: saturday
     ))
-    #expect(store.shouldScheduleLiveActivityEndFallback(
-        snapshot: store.snapshot(at: monday),
+    #expect(store.shifts.shouldScheduleLiveActivityEndFallback(
+        snapshot: store.session.snapshot(at: monday),
         at: monday
     ))
 }
@@ -2744,12 +2751,12 @@ func celebrationDoesNotSurviveRelaunch() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let first = OffWorkStore(defaults: defaults)
-    first.markCelebrated(endAtMs: 1_700_000_000_000)
-    #expect(first.lastCelebratedEndAtMs == 1_700_000_000_000)
+    let first = AppRuntime(defaults: defaults)
+    first.shifts.markCelebrated(endAtMs: 1_700_000_000_000)
+    #expect(first.shifts.lastCelebratedEndAtMs == 1_700_000_000_000)
 
-    let relaunched = OffWorkStore(defaults: defaults)
-    #expect(relaunched.lastCelebratedEndAtMs == 0)
+    let relaunched = AppRuntime(defaults: defaults)
+    #expect(relaunched.shifts.lastCelebratedEndAtMs == 0)
 }
 
 @MainActor
@@ -2799,9 +2806,9 @@ func celebrationSurvivesWarmSession() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.markCelebrated(endAtMs: 1_700_000_000_000)
-    #expect(store.lastCelebratedEndAtMs == 1_700_000_000_000)
+    let store = AppRuntime(defaults: defaults)
+    store.shifts.markCelebrated(endAtMs: 1_700_000_000_000)
+    #expect(store.shifts.lastCelebratedEndAtMs == 1_700_000_000_000)
 }
 
 @MainActor
@@ -2810,13 +2817,13 @@ func overtimeRearmsCelebration() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
-    store.markCelebrated(endAtMs: 1_700_000_000_000)
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
+    store.shifts.markCelebrated(endAtMs: 1_700_000_000_000)
     let overtimeEnd = Date(timeIntervalSince1970: 1_700_000_900)
-    store.applyOvertime(date: overtimeEnd, declaredAt: overtimeEnd)
+    store.shifts.applyOvertime(date: overtimeEnd, declaredAt: overtimeEnd)
 
-    #expect(store.lastCelebratedEndAtMs == 0)
-    #expect(store.overtimeEndAtMs == overtimeEnd.timeIntervalSince1970 * 1_000)
+    #expect(store.shifts.lastCelebratedEndAtMs == 0)
+    #expect(store.session.overtimeEndAtMs == overtimeEnd.timeIntervalSince1970 * 1_000)
 }
 
 @MainActor
@@ -2825,21 +2832,21 @@ func onboardingScheduleRecapClassic() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.workdays = [1, 3, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 3, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
 
-    let recap = store.onboardingScheduleRecap()
-    let labels = store.weekdayLabels()
+    let recap = store.shifts.onboardingScheduleRecap()
+    let labels = store.text.weekdayLabels()
     #expect(recap.contains(labels[0]))
     #expect(recap.contains(labels[2]))
     #expect(recap.contains(labels[4]))
     #expect(!recap.contains(labels[1]))
     #expect(recap.contains(" · "))
-    #expect(recap.contains(store.timeString(store.startMinutes)))
-    #expect(recap.contains(store.timeString(store.endMinutes)))
+    #expect(recap.contains(store.session.timeString(store.preferences.startMinutes)))
+    #expect(recap.contains(store.session.timeString(store.preferences.endMinutes)))
 }
 
 @MainActor
@@ -2848,15 +2855,15 @@ func onboardingScheduleRecapCollapsesWeekdayRange() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
 
-    let recap = store.onboardingScheduleRecap()
-    let labels = store.weekdayLabels()
-    let expected = store.t("weekdayRange", values: ["start": labels[0], "end": labels[4]])
+    let recap = store.shifts.onboardingScheduleRecap()
+    let labels = store.text.weekdayLabels()
+    let expected = store.text.t("weekdayRange", values: ["start": labels[0], "end": labels[4]])
     #expect(recap.hasPrefix(expected))
     #expect(!recap.contains(labels[1]))
     #expect(recap.contains(" · "))
@@ -2868,15 +2875,15 @@ func onboardingScheduleRecapAllWeekdays() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.workdays = [0, 1, 2, 3, 4, 5, 6]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [0, 1, 2, 3, 4, 5, 6] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
 
-    let recap = store.onboardingScheduleRecap()
-    let labels = store.weekdayLabels()
-    let expected = store.t("weekdayRange", values: ["start": labels[0], "end": labels[6]])
+    let recap = store.shifts.onboardingScheduleRecap()
+    let labels = store.text.weekdayLabels()
+    let expected = store.text.t("weekdayRange", values: ["start": labels[0], "end": labels[6]])
     #expect(recap.hasPrefix(expected))
     #expect(!recap.contains(labels[1]))
 }
@@ -2887,15 +2894,15 @@ func onboardingScheduleRecapWrappingWeekdays() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.workdays = [5, 6, 0]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [0, 5, 6] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
 
-    let recap = store.onboardingScheduleRecap()
-    let labels = store.weekdayLabels()
-    let expected = store.t("weekdayRange", values: ["start": labels[4], "end": labels[6]])
+    let recap = store.shifts.onboardingScheduleRecap()
+    let labels = store.text.weekdayLabels()
+    let expected = store.text.t("weekdayRange", values: ["start": labels[4], "end": labels[6]])
     #expect(recap.hasPrefix(expected))
     #expect(!recap.contains(labels[5]))
 }
@@ -2906,16 +2913,16 @@ func onboardingScheduleRecapNamedModes() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.startMinutes = 22 * 60
-    store.endMinutes = 6 * 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.startMinutes = 22 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 6 * 60 }
 
-    store.scheduleMode = .alternating
-    #expect(store.onboardingScheduleRecap().contains(store.t("scheduleAlternating")))
-    #expect(store.onboardingScheduleRecap().contains("22:00"))
+    store.preferences.applyPreferences { $0.scheduleMode = .alternating }
+    #expect(store.shifts.onboardingScheduleRecap().contains(store.text.t("scheduleAlternating")))
+    #expect(store.shifts.onboardingScheduleRecap().contains("22:00"))
 
-    store.scheduleMode = .rotation
-    #expect(store.onboardingScheduleRecap().contains(store.t("scheduleRotation")))
+    store.preferences.applyPreferences { $0.scheduleMode = .rotation }
+    #expect(store.shifts.onboardingScheduleRecap().contains(store.text.t("scheduleRotation")))
 }
 
 @MainActor
@@ -2924,10 +2931,10 @@ func completeOnboardingKeepsNotificationMode() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    store.notificationMode = .milestones
-    store.completeOnboarding(enableNotifications: false)
-    #expect(store.notificationMode == .milestones)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.notificationMode = .milestones }
+    store.preferences.completeSetup(enableNotifications: false)
+    #expect(store.preferences.notificationMode == .milestones)
 }
 
 @MainActor
@@ -2936,23 +2943,23 @@ func applyOnboardingReminderDefaultsOnce() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
 
-    let store = OffWorkStore(defaults: defaults)
-    #expect(store.lunchEnabled == false)
-    #expect(store.notificationMode == .off)
+    let store = AppRuntime(defaults: defaults)
+    #expect(store.preferences.lunchEnabled == false)
+    #expect(store.preferences.notificationMode == .off)
 
-    store.applyOnboardingReminderDefaultsIfNeeded()
-    #expect(store.lunchEnabled)
-    #expect(store.lunchStartReminderEnabled)
-    #expect(store.lunchEndReminderEnabled)
-    #expect(store.notificationMode == .simple)
+    store.preferences.applyOnboardingReminderDefaultsIfNeeded()
+    #expect(store.preferences.lunchEnabled)
+    #expect(store.preferences.lunchStartReminderEnabled)
+    #expect(store.preferences.lunchEndReminderEnabled)
+    #expect(store.preferences.notificationMode == .simple)
 
-    store.lunchEnabled = false
-    store.lunchStartReminderEnabled = false
-    store.lunchEndReminderEnabled = false
-    store.notificationMode = .off
-    store.applyOnboardingReminderDefaultsIfNeeded()
-    #expect(store.lunchEnabled == false)
-    #expect(store.notificationMode == .off)
+    store.preferences.applyPreferences { $0.lunchEnabled = false }
+    store.preferences.applyPreferences { $0.lunchStartReminderEnabled = false }
+    store.preferences.applyPreferences { $0.lunchEndReminderEnabled = false }
+    store.preferences.applyPreferences { $0.notificationMode = .off }
+    store.preferences.applyOnboardingReminderDefaultsIfNeeded()
+    #expect(store.preferences.lunchEnabled == false)
+    #expect(store.preferences.notificationMode == .off)
 }
 
 @MainActor
@@ -2986,15 +2993,15 @@ func clockInProgressUsesElapsedDirection() throws {
         year: 2026, month: 8, day: 24, hour: 0, minute: 8
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    let shift = try #require(store.snapshot(at: justAfterMidnight))
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    let shift = try #require(store.session.snapshot(at: justAfterMidnight))
 
-    #expect(store.countdownToClockInProgress(snapshot: shift) < 2)
-    #expect(store.countdownToClockInProgress(snapshot: shift) > 1)
+    #expect(store.session.countdownToClockInProgress(snapshot: shift) < 2)
+    #expect(store.session.countdownToClockInProgress(snapshot: shift) > 1)
 }
 
 @MainActor
@@ -3009,17 +3016,17 @@ func restDayWidgetProgressAdvances() throws {
         year: 2026, month: 8, day: 29, hour: 18
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.startCountdown(at: saturdayNoon)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.startCountdown(at: saturdayNoon)
 
-    let snapshot = WidgetSnapshotPublisher.shared.makeSnapshot(
-        store: store,
-        shift: store.snapshot(at: saturdayNoon),
+    let snapshot = WidgetSnapshotComposer.shared.makeSnapshot(
+        shifts: store.shifts,
+        shift: store.session.snapshot(at: saturdayNoon),
         active: true,
         nowMs: Int64(saturdayNoon.timeIntervalSince1970 * 1_000)
     )
@@ -3046,28 +3053,28 @@ func scheduleSavePromptTracksTodayRecordImpact() throws {
         year: 2026, month: 8, day: 29, hour: 11
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
 
-    #expect(store.shouldPromptApplyingToToday(
+    #expect(store.session.shouldPromptApplyingToToday(
         ScheduleFieldChange(startMinutes: 8 * 60, endMinutes: 16 * 60),
         scope: .schedule,
         at: mondayAfterWork
     ))
-    #expect(store.shouldPromptApplyingToToday(
+    #expect(store.session.shouldPromptApplyingToToday(
         ScheduleFieldChange(endMinutes: 19 * 60),
         scope: .schedule,
         at: mondayAfterWork
     ))
-    #expect(!store.shouldPromptApplyingToToday(
+    #expect(!store.session.shouldPromptApplyingToToday(
         ScheduleFieldChange(startMinutes: 8 * 60),
         scope: .schedule,
         at: saturday
     ))
-    #expect(store.shouldPromptApplyingToToday(
+    #expect(store.session.shouldPromptApplyingToToday(
         ScheduleFieldChange(workdays: [1, 2, 3, 4, 5, 6]),
         scope: .schedule,
         at: saturday
@@ -3086,26 +3093,26 @@ func lunchSavePromptTracksTodayRecordImpact() throws {
         year: 2026, month: 8, day: 24, hour: 14
     )))
 
-    let store = OffWorkStore(defaults: defaults)
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
 
-    #expect(store.shouldPromptApplyingToToday(
+    #expect(store.session.shouldPromptApplyingToToday(
         ScheduleFieldChange(lunchEnabled: false),
         scope: .lunch,
         at: afterLunch
     ))
-    #expect(store.shouldPromptApplyingToToday(
+    #expect(store.session.shouldPromptApplyingToToday(
         ScheduleFieldChange(lunchStartMinutes: 15 * 60),
         scope: .lunch,
         at: afterLunch
     ))
-    #expect(store.shouldPromptApplyingToToday(
+    #expect(store.session.shouldPromptApplyingToToday(
         ScheduleFieldChange(lunchEnabled: false),
         scope: .lunch,
         at: beforeLunch
@@ -3138,7 +3145,7 @@ func liveActivityProgressFreezesDuringLunch() {
 }
 
 private func isolatedDefaults() throws -> (UserDefaults, String) {
-    let suite = "OffWorkStoreTests.\(UUID().uuidString)"
+    let suite = "AppRuntimeTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
     return (defaults, suite)
@@ -3147,17 +3154,18 @@ private func isolatedDefaults() throws -> (UserDefaults, String) {
 @MainActor
 @Test("QA surface marker reports the visible gate before the requested destination")
 func qaSurfaceMarkerUsesVisibleSurface() throws {
+    let scene = SceneState()
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults)
+    let store = AppRuntime(defaults: defaults)
 
-    #expect(store.qaSurfaceName("records.day") == "onboarding")
-    store.onboardingComplete = true
-    #expect(store.qaSurfaceName("records.day") == "plus-intro")
+    #expect(scene.qaSurfaceName("records.day", onboardingComplete: store.preferences.onboardingComplete, hasSeenPlusIntro: store.plus.hasSeenIntro) == "onboarding")
+    store.preferences.onboardingComplete = true
+    #expect(scene.qaSurfaceName("records.day", onboardingComplete: store.preferences.onboardingComplete, hasSeenPlusIntro: store.plus.hasSeenIntro) == "plus-intro")
     store.plus.markIntroSeen()
-    #expect(store.qaSurfaceName("records.day") == "records.day")
-    store.paywallSheet = .charts
-    #expect(store.qaSurfaceName("records.day") == "paywall")
+    #expect(scene.qaSurfaceName("records.day", onboardingComplete: store.preferences.onboardingComplete, hasSeenPlusIntro: store.plus.hasSeenIntro) == "records.day")
+    scene.paywallSheet = .charts
+    #expect(scene.qaSurfaceName("records.day", onboardingComplete: store.preferences.onboardingComplete, hasSeenPlusIntro: store.plus.hasSeenIntro) == "paywall")
 }
 
 @MainActor
@@ -3165,8 +3173,8 @@ func qaSurfaceMarkerUsesVisibleSurface() throws {
 func unrecordedPastWorkdayKeepsEmptyEditAnchor() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults)
-    store.recordsTimeZoneIdentifier = "UTC"
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
     let day = utcDay(2026, 8, 24)
     let resolution = DayResolution(
         dayKey: "2026-08-24",
@@ -3183,7 +3191,7 @@ func unrecordedPastWorkdayKeepsEmptyEditAnchor() throws {
         ]
     )
 
-    let canvas = store.dayCanvasModel(
+    let canvas = store.queries.dayCanvasModel(
         for: resolution,
         contributedBy: [],
         source: .unrecorded,
@@ -3201,8 +3209,8 @@ func unrecordedPastWorkdayKeepsEmptyEditAnchor() throws {
 func failedCurrentExpansionRemainsUnclassified() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults)
-    store.recordsTimeZoneIdentifier = "UTC"
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
     let day = utcDay(2026, 8, 24)
     let resolution = DayResolution(
         dayKey: "2026-08-24",
@@ -3215,7 +3223,7 @@ func failedCurrentExpansionRemainsUnclassified() throws {
         expansionFailed: true
     )
 
-    let canvas = store.dayCanvasModel(
+    let canvas = store.queries.dayCanvasModel(
         for: resolution,
         contributedBy: [],
         source: .scheduleEstimate,
@@ -3238,26 +3246,26 @@ private func utcDay(_ year: Int, _ month: Int, _ day: Int) -> Date {
 func recordsIncomeUsesCompletedScheduledDays() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
     store.plus.debugSetAuthorized(true)
-    store.recordsTimeZoneIdentifier = "UTC"
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = false
-    store.salaryEnabled = true
-    store.salaryType = .monthly
-    store.salaryAmount = "22000"
-    store.monthlyWorkingDays = 22
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = false }
+    store.preferences.applyPreferences { $0.salaryEnabled = true }
+    store.preferences.applyPreferences { $0.salaryType = .monthly }
+    store.preferences.applyPreferences { $0.salaryAmount = "22000" }
+    store.preferences.applyPreferences { $0.monthlyWorkingDays = 22 }
 
-    let calendar = store.recordsCalendar
+    let calendar = store.preferences.recordsCalendar
     // Wednesday, halfway through the shift. Monday and Tuesday are done.
     let midShift = try #require(calendar.date(from: DateComponents(
         year: 2026, month: 9, day: 2, hour: 13
     )))
-    let shift = try #require(store.snapshot(at: midShift))
+    let shift = try #require(store.session.snapshot(at: midShift))
     let daily = try #require(shift.dailySalary)
     let monday = try #require(calendar.date(from: DateComponents(
         year: 2026, month: 8, day: 31
@@ -3324,17 +3332,17 @@ func recordsIncomeUsesCompletedScheduledDays() throws {
         cell.date = day.shiftAnchorDate
         return cell
     }
-    let headline = try #require(store.recordsHeadline(
+    let headline = try #require(store.queries.recordsHeadline(
         cells: visibleCells,
         days: days,
         now: midShift
     ))
     // The same resolver input includes adjacent shifts and can cover a year.
     // Each month must count only its own civil days, including paid leave.
-    let august = try #require(store.recordsHeadline(
+    let august = try #require(store.queries.recordsHeadline(
         cells: [recordedCell], days: days, now: midShift
     )?.estimatedIncome)
-    let september = try #require(store.recordsHeadline(
+    let september = try #require(store.queries.recordsHeadline(
         cells: Array(visibleCells.dropFirst()), days: days, now: midShift
     )?.estimatedIncome)
     #expect(abs(august - daily) < 0.001)
@@ -3343,11 +3351,11 @@ func recordsIncomeUsesCompletedScheduledDays() throws {
 
     #expect(headline.completedScheduledWorkdays == 2)
     #expect(abs(income - 2 * daily) < 0.001)
-    let timerRow = try #require(store.periodSummary("week", asOf: midShift, snapshot: shift))
+    let timerRow = try #require(store.session.periodSummary("week", asOf: midShift, snapshot: shift))
     #expect((timerRow.earnings ?? 0) > income)
 
-    store.hideEarnings = true
-    #expect(store.moneyText(headline.estimatedIncome) == "••••")
+    store.preferences.hideEarnings = true
+    #expect(store.text.moneyText(headline.estimatedIncome) == "••••")
 }
 
 @MainActor
@@ -3355,60 +3363,69 @@ func recordsIncomeUsesCompletedScheduledDays() throws {
 func recordsIncomeAbsentWithoutSalary() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.salaryEnabled = false
-    #expect(store.recordsIncome(completedWorkdays: 2) == nil)
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.salaryEnabled = false }
+    #expect(store.queries.recordsIncome(completedWorkdays: 2) == nil)
 }
 
 @MainActor
 @Test("Dismissing the paywall without buying forgets what was tapped")
 func declinedPaywallDropsThePendingAction() throws {
+    let scene = SceneState()
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
     store.plus.debugSetAuthorized(false)
     let yesterday = try #require(
-        store.recordsCalendar.date(byAdding: .day, value: -1, to: .now)
+        store.preferences.recordsCalendar.date(byAdding: .day, value: -1, to: .now)
     )
-    let dayKey = RecordJSON.dayKey(yesterday, calendar: store.recordsCalendar)
+    let dayKey = RecordJSON.dayKey(yesterday, calendar: store.preferences.recordsCalendar)
 
-    store.openDayEditor(dayKey: dayKey)
-    #expect(store.paywallSheet == .historyEdit)
-    #expect(store.pendingPlusAction == .historyEdit(dayKey: dayKey))
+    scene.openDayEditor(dayKey: dayKey, actions: store.recordActions, queries: store.queries)
+    #expect(scene.paywallSheet == .historyEdit)
+    #expect(scene.pendingPlusAction == .historyEdit(dayKey: dayKey))
 
     // The swipe the sheet allows by default: `paywallSheet` goes to nil and
     // SwiftUI calls onDismiss. Nothing was bought, so nothing may be replayed
     // at the next unrelated purchase.
-    store.paywallSheet = nil
-    store.settlePaywallDismissal()
+    scene.paywallSheet = nil
+    if let action = scene.settlePaywallDismissal(plus: store.plus) {
+        scene.performPendingPlusAction(action, focus: store.focus, actions: store.recordActions,
+            queries: store.queries, recovery: store.recovery)
+    }
 
-    #expect(store.pendingPlusAction == nil)
-    #expect(store.editingDayKey == nil)
+    #expect(scene.pendingPlusAction == nil)
+    #expect(scene.dayEditor?.dayKey == nil)
 }
 
 @MainActor
 @Test("Buying Plus and swiping the paywall away still opens the tapped day")
 func purchasedPaywallResumesOnSwipeDismiss() throws {
+    let scene = SceneState()
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
     store.plus.debugSetAuthorized(false)
     let yesterday = try #require(
-        store.recordsCalendar.date(byAdding: .day, value: -1, to: .now)
+        store.preferences.recordsCalendar.date(byAdding: .day, value: -1, to: .now)
     )
-    let dayKey = RecordJSON.dayKey(yesterday, calendar: store.recordsCalendar)
-    store.openDayEditor(dayKey: dayKey)
+    let dayKey = RecordJSON.dayKey(yesterday, calendar: store.preferences.recordsCalendar)
+    scene.openDayEditor(dayKey: dayKey, actions: store.recordActions, queries: store.queries)
 
     store.plus.debugSetAuthorized(true)
-    store.paywallSheet = nil
-    store.settlePaywallDismissal()
+    scene.paywallSheet = nil
+    if let action = scene.settlePaywallDismissal(plus: store.plus) {
+        scene.performPendingPlusAction(action, focus: store.focus, actions: store.recordActions,
+            queries: store.queries, recovery: store.recovery)
+    }
 
-    #expect(store.editingDayKey == dayKey)
-    #expect(store.pendingPlusAction == nil)
+    #expect(scene.dayEditor?.dayKey == dayKey)
+    #expect(scene.pendingPlusAction == nil)
     #expect(store.plus.hasSeenIntro)
+    #expect(scene.settlePaywallDismissal(plus: store.plus) == nil)
 }
 
 @MainActor
@@ -3440,10 +3457,10 @@ func recordsHeadlineCivilDayCoverage(endHour: Double) throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
-    store.onboardingComplete = true
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.onboardingComplete = true
     store.plus.debugSetAuthorized(true)
-    store.recordsTimeZoneIdentifier = "UTC"
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
     let first = utcDay(2026, 9, 1)
     let second = utcDay(2026, 9, 2)
     let now = utcDay(2026, 9, 3)
@@ -3467,9 +3484,9 @@ func recordsHeadlineCivilDayCoverage(endHour: Double) throws {
                       segments: [], baseScheduleIsWorkday: true),
     ]
     let cells = days.enumerated().map { index, day in
-        store.recordsDayCell(for: day, previous: index > 0 ? days[index - 1] : nil, now: now)
+        store.queries.recordsDayCell(for: day, previous: index > 0 ? days[index - 1] : nil, now: now)
     }
-    let summary = try #require(store.recordsHeadline(cells: cells, days: days, now: now))
+    let summary = try #require(store.queries.recordsHeadline(cells: cells, days: days, now: now))
     #expect(summary.workdays == 1)
     #expect(summary.completedScheduledWorkdays == 2)
     #expect(summary.allocationDays == 2) // The full visible period includes its rest day.
@@ -3483,10 +3500,10 @@ func recordsActualForecastNormalizesObservedIntervals() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
-    store.onboardingComplete = true
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.onboardingComplete = true
     store.plus.debugSetAuthorized(true)
-    store.recordsTimeZoneIdentifier = "UTC"
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
     let first = utcDay(2026, 9, 1)
     let second = utcDay(2026, 9, 2)
     let now = utcDay(2026, 9, 3)
@@ -3519,7 +3536,7 @@ func recordsActualForecastNormalizesObservedIntervals() throws {
             endAtMs: date.addingTimeInterval(18 * 3_600).timeIntervalSince1970 * 1_000
         )
         return DayResolution(
-            dayKey: RecordJSON.dayKey(date, calendar: store.recordsCalendar),
+            dayKey: RecordJSON.dayKey(date, calendar: store.preferences.recordsCalendar),
             shiftAnchorDate: date,
             layer: .schedule,
             periodID: nil,
@@ -3547,12 +3564,12 @@ func recordsActualForecastNormalizesObservedIntervals() throws {
         )
     }
 
-    let actual = try #require(store.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.actual)
+    let actual = try #require(store.queries.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.actual)
     // 10:00–16:00 is six hours. The later declaration shortens overtime from
     // 21:00 to 20:00, so the second day is nine regular plus two overtime hours.
     #expect(actual.days == 2)
     #expect(actual.hours == 17)
-    #expect(store.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.actualOvertimeHours == 2)
+    #expect(store.queries.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.actualOvertimeHours == 2)
 }
 
 @MainActor
@@ -3561,25 +3578,25 @@ func recordsScheduleContinuesWithoutAppVisits() async throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
-    store.onboardingComplete = true
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.onboardingComplete = true
     store.plus.debugSetAuthorized(true)
-    store.recordsTimeZoneIdentifier = "UTC"
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
-    store.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
+    store.life.saveLifeProfile(birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
                           sleepHours: 8, hidesExactAges: false)
     let setup = utcDay(2026, 9, 1)
     let now = utcDay(2026, 9, 8).addingTimeInterval(12 * 3_600)
-    records.ensureSeeded(hours: store.hoursConfiguration(at: setup), at: setup, timeZone: store.recordsTimeZone)
-    let days = await store.prepareRecordsDisplayDays(from: utcDay(2026, 8, 31), through: utcDay(2026, 9, 9), now: now)
+    records.ensureSeeded(hours: store.session.hoursConfiguration(at: setup), at: setup, timeZone: store.preferences.recordsTimeZone)
+    let days = await store.queries.prepareRecordsDisplayDays(from: utcDay(2026, 8, 31), through: utcDay(2026, 9, 9), now: now)
     let cells = days.enumerated().map { index, day in
-        store.recordsDayCell(for: day, previous: index > 0 ? days[index - 1] : nil,
+        store.queries.recordsDayCell(for: day, previous: index > 0 ? days[index - 1] : nil,
                              now: now, includesLifeProjection: true)
     }
     let yesterday = try #require(cells.first { $0.dayKey == "2026-09-07" })
@@ -3587,14 +3604,14 @@ func recordsScheduleContinuesWithoutAppVisits() async throws {
     #expect(yesterday.isFromSavedSchedule)
     #expect(!yesterday.isProjection)
     #expect(yesterday.workMs == 7 * 3_600_000)
-    let canvas = try #require(await store.recordsDayCanvas(dayKey: yesterday.dayKey, now: now))
+    let canvas = try #require(await store.queries.recordsDayCanvas(dayKey: yesterday.dayKey, now: now))
     #expect(canvas.source == .scheduled)
     #expect(!canvas.source.isEstimated)
     #expect(canvas.allocation.workMs == yesterday.workMs)
     #expect(canvas.editableShifts.contains { $0.anchorDayKey == yesterday.dayKey })
     #expect(cells.first { $0.dayKey == "2026-08-31" }?.isProjection == true)
     #expect(cells.first { $0.dayKey == "2026-09-09" }?.appearance == .planned)
-    let summary = try #require(store.recordsHeadline(
+    let summary = try #require(store.queries.recordsHeadline(
         cells: cells.filter { $0.date < utcDay(2026, 9, 8) }, days: days, now: now
     ))
     #expect(summary.workdays == 5)
@@ -3603,9 +3620,9 @@ func recordsScheduleContinuesWithoutAppVisits() async throws {
     #expect(summary.actualForecast?.actual.hours == 35)
     // All three scopes must consume the same classification as their cells.
     for scale in [RecordsScale.week, .month, .year] {
-        let window = store.recordsWindow(for: scale, anchor: now)
+        let window = store.queries.recordsWindow(for: scale, anchor: now)
         let visible = cells.filter { $0.date >= window.0 && $0.date <= window.1 }
-        let split = try #require(store.recordsHeadline(cells: visible, days: days, now: now)?.actualForecast)
+        let split = try #require(store.queries.recordsHeadline(cells: visible, days: days, now: now)?.actualForecast)
         let elapsed = visible.filter { $0.appearance == .recorded && $0.workMs > 0 }
         #expect(split.actual.days == Double(elapsed.count))
         #expect(split.actual.hours > 0)
@@ -3622,7 +3639,7 @@ func recordsScheduleContinuesWithoutAppVisits() async throws {
         segments: [], note: nil, editedAt: now,
         editCount: 1, editTieBreaker: UUID(), timeZoneIdentifier: "UTC"
     ), at: now)
-    let edited = try #require(await store.recordsDayCanvas(dayKey: yesterday.dayKey, now: now))
+    let edited = try #require(await store.queries.recordsDayCanvas(dayKey: yesterday.dayKey, now: now))
     #expect(edited.source == .corrected)
     #expect(edited.allocation.workMs == 0)
 }
@@ -3632,26 +3649,26 @@ func recordsScheduleContinuesWithoutAppVisits() async throws {
 func recordsMonthlySalaryUsesCalendarMonth() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
-    store.onboardingComplete = true
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
+    store.preferences.onboardingComplete = true
     store.plus.debugSetAuthorized(true)
-    store.recordsTimeZoneIdentifier = "UTC"
-    store.salaryEnabled = true
-    store.salaryAmount = "10000"
-    store.salaryType = .monthly
-    store.monthlyWorkingDays = 22
-    store.annualBonusEnabled = false
-    store.workdays = [1, 2, 3, 4, 5]
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+    store.preferences.applyPreferences { $0.salaryEnabled = true }
+    store.preferences.applyPreferences { $0.salaryAmount = "10000" }
+    store.preferences.applyPreferences { $0.salaryType = .monthly }
+    store.preferences.applyPreferences { $0.monthlyWorkingDays = 22 }
+    store.preferences.applyPreferences { $0.annualBonusEnabled = false }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
     let now = utcDay(2026, 1, 1)
     let days = (1...28).map { number -> DayResolution in
         let date = utcDay(2026, 2, number)
-        let isWorkday = (2...6).contains(store.recordsCalendar.component(.weekday, from: date))
+        let isWorkday = (2...6).contains(store.preferences.recordsCalendar.component(.weekday, from: date))
         let segments = isWorkday ? [NativeShiftSegment(
                 startAtMs: date.addingTimeInterval(9 * 3_600).timeIntervalSince1970 * 1_000,
                 endAtMs: date.addingTimeInterval(17 * 3_600).timeIntervalSince1970 * 1_000
             )] : []
         return DayResolution(
-            dayKey: RecordJSON.dayKey(date, calendar: store.recordsCalendar),
+            dayKey: RecordJSON.dayKey(date, calendar: store.preferences.recordsCalendar),
             shiftAnchorDate: date, layer: .schedule, periodID: nil, snapshotID: nil,
             isScheduledWorkday: isWorkday, segments: segments,
             baseScheduleIsWorkday: isWorkday, baseScheduleSegments: segments
@@ -3667,7 +3684,7 @@ func recordsMonthlySalaryUsesCalendarMonth() throws {
             isProjection: false, hasConflict: false
         )
     }
-    let total = try #require(store.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.total.earnings)
+    let total = try #require(store.queries.recordsHeadline(cells: cells, days: days, now: now)?.actualForecast?.total.earnings)
     #expect(abs(total - 10_000) < 0.001)
 }
 
@@ -3678,26 +3695,26 @@ func recordsAllocationIncludesForecast(count: Int) async throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
+    let store = AppRuntime(defaults: defaults, records: records)
     store.plus.debugSetAuthorized(true)
-    store.recordsTimeZoneIdentifier = "UTC"
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 60
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
     let start = utcDay(2026, 9, 1)
     let now = start.addingTimeInterval(12 * 3_600)
-    records.ensureSeeded(hours: store.hoursConfiguration(at: start), at: start, timeZone: store.recordsTimeZone)
+    records.ensureSeeded(hours: store.session.hoursConfiguration(at: start), at: start, timeZone: store.preferences.recordsTimeZone)
     let end = start.addingTimeInterval(Double(count - 1) * 86_400)
-    let days = await store.prepareRecordsDisplayDays(from: start, through: end, now: now)
+    let days = await store.queries.prepareRecordsDisplayDays(from: start, through: end, now: now)
     let cells = days.enumerated().map { index, day in
-        store.recordsDayCell(for: day, previous: index > 0 ? days[index - 1] : nil,
+        store.queries.recordsDayCell(for: day, previous: index > 0 ? days[index - 1] : nil,
                              now: now, includesLifeProjection: true)
     }
-    let summary = try #require(store.recordsHeadline(cells: cells, days: days, now: now))
+    let summary = try #require(store.queries.recordsHeadline(cells: cells, days: days, now: now))
     #expect(summary.allocationDays == count)
     #expect(summary.allocation.dayLengthMs == Int64(count) * 86_400_000)
     #expect(summary.allocation.totalMs == summary.allocation.dayLengthMs)
@@ -3722,13 +3739,13 @@ func recordDurationsUseDays() {
 func lifeDurationYearEquivalents() throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
     let span = (3451.0 * 24 + 13) * 3_600_000
-    let expectedYears = 9.45.formatted(.number.locale(store.locale))
-    #expect(store.formatApproximateLifeYears(span) == store.t("lifeApproxYears", values: ["years": expectedYears]))
-    #expect(store.formatApproximateLifeYears(30 * 86_400_000) == nil)
-    #expect(store.formatApproximateLifeYears(.nan) == nil)
-    #expect(store.formatApproximateLifeYears(.infinity) == nil)
+    let expectedYears = 9.45.formatted(.number.locale(store.preferences.locale))
+    #expect(store.text.formatApproximateLifeYears(span) == store.text.t("lifeApproxYears", values: ["years": expectedYears]))
+    #expect(store.text.formatApproximateLifeYears(30 * 86_400_000) == nil)
+    #expect(store.text.formatApproximateLifeYears(.nan) == nil)
+    #expect(store.text.formatApproximateLifeYears(.infinity) == nil)
 }
 
 @MainActor
@@ -3737,33 +3754,33 @@ func expandedYearUsesMonthSummary() async throws {
     let (defaults, suite) = try isolatedDefaults()
     defer { defaults.removePersistentDomain(forName: suite) }
     let records = RecordCoordinator.inMemory()
-    let store = OffWorkStore(defaults: defaults, records: records)
-    store.onboardingComplete = true
+    let store = AppRuntime(defaults: defaults, records: records)
+    store.preferences.onboardingComplete = true
     store.plus.debugSetAuthorized(true)
-    store.recordsTimeZoneIdentifier = "UTC"
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 10 * 60
-    store.endMinutes = 19 * 60
-    store.lunchEnabled = true
-    store.lunchStartMinutes = 12 * 60
-    store.lunchDurationMinutes = 90
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 10 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 19 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
+    store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+    store.preferences.applyPreferences { $0.lunchDurationMinutes = 90 }
     let setup = utcDay(2026, 1, 1)
     let now = utcDay(2026, 9, 10)
-    records.ensureSeeded(hours: store.hoursConfiguration(at: setup), at: setup, timeZone: store.recordsTimeZone)
-    let yearDays = await store.prepareRecordsDisplayDays(from: utcDay(2025, 12, 31), through: utcDay(2026, 12, 31), now: now)
+    records.ensureSeeded(hours: store.session.hoursConfiguration(at: setup), at: setup, timeZone: store.preferences.recordsTimeZone)
+    let yearDays = await store.queries.prepareRecordsDisplayDays(from: utcDay(2025, 12, 31), through: utcDay(2026, 12, 31), now: now)
     for month in [8, 10] {
         let anchor = utcDay(2026, month, 1)
-        let window = store.recordsWindow(for: .month, anchor: anchor)
+        let window = store.queries.recordsWindow(for: .month, anchor: anchor)
         let leadIn = window.0.addingTimeInterval(-86_400)
-        let monthDays = await store.prepareRecordsDisplayDays(from: leadIn, through: window.1, now: now)
+        let monthDays = await store.queries.prepareRecordsDisplayDays(from: leadIn, through: window.1, now: now)
         let cells = monthDays.enumerated().compactMap { index, day -> RecordsDayCell? in
             guard day.shiftAnchorDate >= window.0 else { return nil }
-            return store.recordsDayCell(for: day, previous: index > 0 ? monthDays[index - 1] : nil,
+            return store.queries.recordsDayCell(for: day, previous: index > 0 ? monthDays[index - 1] : nil,
                                         now: now, includesLifeProjection: true)
         }
-        let regular = try #require(store.recordsHeadline(cells: cells, days: monthDays, now: now))
-        let expanded = try #require(store.recordsHeadline(cells: cells, days: yearDays, now: now))
+        let regular = try #require(store.queries.recordsHeadline(cells: cells, days: monthDays, now: now))
+        let expanded = try #require(store.queries.recordsHeadline(cells: cells, days: yearDays, now: now))
         #expect(expanded == regular)
         let split = try #require(expanded.actualForecast)
         let part = month < 9 ? split.actual : split.forecast

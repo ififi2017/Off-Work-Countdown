@@ -1,7 +1,9 @@
 import SwiftUI
 
-struct AboutView: View {
-    let store: OffWorkStore
+struct AboutView<DebugMenu: View>: View {
+    @Environment(SceneState.self) private var scene
+    let text: AppText
+    @ViewBuilder var debugMenu: DebugMenu
 #if DEBUG
     @State private var debugUnlockCount = 0
     @State private var showsDebugMenu = false
@@ -12,7 +14,7 @@ struct AboutView: View {
             VStack(spacing: 22) {
                 OWCGroupCard {
                     VStack(spacing: 12) {
-                        CelebratingBrandMark(showsDepth: true, isActive: store.selectedTab == .settings)
+                        CelebratingBrandMark(showsDepth: true, isActive: scene.selectedTab == .settings)
                             .frame(width: 168, height: 168)
 #if DEBUG
                         Text(verbatim: OWCBrand.shortName)
@@ -23,7 +25,7 @@ struct AboutView: View {
                                 maximumDistance: 24,
                                 perform: registerDebugLongPress
                             )
-                            .accessibilityAction(named: Text(store.t("debugMenu"))) {
+                            .accessibilityAction(named: Text(text.t("debugMenu"))) {
                                 registerDebugLongPress()
                             }
 #else
@@ -33,7 +35,7 @@ struct AboutView: View {
                         Text("fi_niaR Studio")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(OWCDesign.secondary)
-                        Text("\(store.t("version")) \(version)")
+                        Text("\(text.t("version")) \(version)")
                             .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -44,22 +46,22 @@ struct AboutView: View {
 
                 OWCGroupCard {
                     aboutLink(
-                        store.t("privacyPolicy"),
+                        text.t("privacyPolicy"),
                         icon: "hand.raised",
                         destination: URL(string: "https://doneat.app/privacy")!
                     )
                     aboutLink(
-                        store.t("githubRepository"),
+                        text.t("githubRepository"),
                         icon: "chevron.left.forwardslash.chevron.right",
                         destination: URL(string: "https://github.com/ififi2017/Off-Work-Countdown")!
                     )
                     aboutLink(
-                        store.t("visitOfficialWebsite"),
+                        text.t("visitOfficialWebsite"),
                         icon: "safari",
                         destination: URL(string: "https://doneat.app/")!
                     )
                     aboutLink(
-                        store.t("downloadDesktopApp"),
+                        text.t("downloadDesktopApp"),
                         icon: "desktopcomputer",
                         destination: URL(string: "https://doneat.app/download")!,
                         isLast: true
@@ -71,14 +73,14 @@ struct AboutView: View {
             .padding(.bottom, 24)
         }
         .background(OWCDesign.page)
-        .navigationTitle(store.t("aboutProject"))
+        .navigationTitle(text.t("aboutProject"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("aboutProject"))
+        .owcDetailBack(title: text.t("settings"), pageTitle: text.t("aboutProject"))
 #if DEBUG
         .sensoryFeedback(.selection, trigger: debugUnlockCount)
         .sensoryFeedback(.success, trigger: showsDebugMenu)
         .sheet(isPresented: $showsDebugMenu) {
-            DebugMenuView(store: store)
+            debugMenu
         }
         .onAppear(perform: presentDebugMenuForQAIfRequested)
 #endif

@@ -5,54 +5,54 @@ import UserNotifications
 
 @MainActor
 struct FocusAcceptanceReviewTests {
-    private func fixture() throws -> (OffWorkStore, Date, FocusTask) {
+    private func fixture() throws -> (AppRuntime, Date, FocusTask) {
         let defaults = try #require(UserDefaults(suiteName: "FocusAcceptance.\(UUID())"))
-        let store = OffWorkStore(defaults: defaults, records: .inMemory())
+        let store = AppRuntime(defaults: defaults, records: .inMemory())
         store.plus.debugSetAuthorized(true)
-        store.countdownStarted = true
-        store.languageOverride = "en"
-        store.workdays = [1, 2, 3, 4, 5]
-        store.startMinutes = 540
-        store.endMinutes = 1020
-        store.lunchEnabled = true
-        let date = try #require(store.recordsCalendar.date(from: DateComponents(year: 2026, month: 8, day: 31, hour: 9)))
+        store.session.countdownStarted = true
+        store.preferences.applyPreferences { $0.languageOverride = "en" }
+        store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+        store.preferences.applyPreferences { $0.startMinutes = 540 }
+        store.preferences.applyPreferences { $0.endMinutes = 1020 }
+        store.preferences.applyPreferences { $0.lunchEnabled = true }
+        let date = try #require(store.preferences.recordsCalendar.date(from: DateComponents(year: 2026, month: 8, day: 31, hour: 9)))
         let task = FocusTask(id: UUID(), createdAt: date, plannedForDate: date, scheduledStartAt: nil,
             title: "Acceptance task", estimatedPomodoros: 2, completedAt: nil, sortIndex: 0,
             editedAt: date, editCount: 0, editTieBreaker: UUID())
         store.records.upsertFocusTask(task, at: date)
-        let block = try #require(store.focusDayCanvas(at: date).blocks.first { $0.kind == .task })
-        _ = store.assign(task, toBlockStartingAt: block.startAtMs, at: date)
-        #expect(store.startFocus(task: task, inBlockStartingAt: block.startAtMs, at: date))
+        let block = try #require(store.focus.focusDayCanvas(at: date).blocks.first { $0.kind == .task })
+        _ = store.focus.assign(task, toBlockStartingAt: block.startAtMs, at: date).synchronousResult
+        #expect(store.focus.startFocus(task: task, inBlockStartingAt: block.startAtMs, at: date).synchronousResult)
         return (store, date, task)
     }
 
     @Test(arguments: [30.0, 290.0])
     func returningDuringBreakMustNotOverlapFocusAndBreak(delay: TimeInterval) throws {
         let (store, _, _) = try fixture()
-        let session = try #require(store.activeFocusSession())
-        #expect(store.finishElapsedFocusSession(at: session.plannedEndAt.addingTimeInterval(delay)))
+        let session = try #require(store.focus.activeFocusSession())
+        #expect(store.focus.finishElapsedFocusSession(at: session.plannedEndAt.addingTimeInterval(delay)).synchronousResult)
         let ended = try #require(store.records.state.focusSessions.first { $0.id == session.id })
-        let recovery = try #require(store.activeFocusSession())
+        let recovery = try #require(store.focus.activeFocusSession())
         #expect(ended.endedAt == recovery.startedAt)
         #expect(ended.actualDurationSeconds == 25 * 60)
     }
 
     @Test func expiredFocusMustNotAcceptExtraPomodoro() throws {
         let (store, _, task) = try fixture()
-        let session = try #require(store.activeFocusSession())
+        let session = try #require(store.focus.activeFocusSession())
         let duringBreak = session.plannedEndAt.addingTimeInterval(30)
-        #expect(store.addFocusPomodoroToRunningTask(at: duringBreak) == false)
+        #expect(store.focus.addFocusPomodoroToRunningTask(at: duringBreak).synchronousResult == false)
         #expect(store.records.state.focusTasks.first { $0.id == task.id }?.estimatedPomodoros == 2)
     }
 
     @Test func manualStopKeepsItsActualTime() throws {
         let (store, start, _) = try fixture()
         let stop = start.addingTimeInterval(90)
-        store.stopFocus(reason: .stoppedByUser, at: stop)
+        store.focus.stopFocus(reason: .stoppedByUser, at: stop).synchronousResult
         let session = try #require(store.records.state.focusSessions.first)
         #expect(session.endedAt == stop)
         #expect(session.actualDurationSeconds == 90)
-        #expect(store.activeFocusSession() == nil)
+        #expect(store.focus.activeFocusSession() == nil)
     }
 
     @Test func cachedFocusButtonDisappearsAtTheFirstBoundary() {
@@ -74,10 +74,10 @@ struct FocusAcceptanceReviewTests {
 
     @Test func extraPomodoroChangesBothNotificationMessages() throws {
         let (store, at, _) = try fixture()
-        let session = try #require(store.activeFocusSession())
-        let original = store.focusAlerts(for: session)
-        #expect(store.addFocusPomodoroToRunningTask(at: at))
-        let refreshed = store.focusAlerts(for: session)
+        let session = try #require(store.focus.activeFocusSession())
+        let original = store.focus.focusAlerts(for: session)
+        #expect(store.focus.addFocusPomodoroToRunningTask(at: at).synchronousResult)
+        let refreshed = store.focus.focusAlerts(for: session)
         #expect(refreshed[0].body.contains("Pomodoro 1 of 3"))
         #expect(refreshed[1].body.contains("Acceptance task"))
         #expect(refreshed[1].body != original[1].body)

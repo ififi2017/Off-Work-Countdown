@@ -42,16 +42,17 @@ struct RecordsAllRecordsPresentation {
 }
 
 struct RecordsAllRecordsView: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     var focusedYear: Int?
-    @Environment(\.usesTabletNavigationShell) private var usesTabletNavigationShell
 
     private var presentation: RecordsAllRecordsPresentation {
         RecordsAllRecordsPresentation(
-            entries: store.recordDayIndex(),
-            isAuthorized: store.plus.isAuthorized,
+            entries: queries.recordDayIndex(),
+            isAuthorized: queries.plus.isAuthorized,
             today: .now,
-            calendar: store.recordsCalendar
+            calendar: preferences.recordsCalendar
         )
     }
 
@@ -62,9 +63,9 @@ struct RecordsAllRecordsView: View {
                 if presentation.years.isEmpty && !presentation.hasLockedHistory {
                     OWCGroupCard {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(store.t("recordsEmptyTitle"))
+                            Text(text.t("recordsEmptyTitle"))
                                 .font(.body.weight(.medium))
-                            Text(store.t("recordsEmptyBody"))
+                            Text(text.t("recordsEmptyBody"))
                                 .font(.footnote)
                                 .foregroundStyle(OWCDesign.secondary)
                         }
@@ -77,8 +78,8 @@ struct RecordsAllRecordsView: View {
                             NavigationLink(value: RecordsRoute.yearList(year)) {
                                 OWCDisclosureRow(
                                     title: "\(year)",
-                                    subtitle: store.plus.isAuthorized
-                                        ? store.t(
+                                    subtitle: queries.plus.isAuthorized
+                                        ? text.t(
                                             "recordsMonthWorkdays",
                                             count: presentation.count(in: year)
                                         )
@@ -92,12 +93,12 @@ struct RecordsAllRecordsView: View {
                 }
                 if presentation.hasLockedHistory {
                     OWCGroupCard {
-                        OWCRow(title: store.t("recordsLockedDay"), isLast: true) {
+                        OWCRow(title: text.t("recordsLockedDay"), isLast: true) {
                             Image(systemName: "lock.fill")
                                 .font(.footnote)
                                 .foregroundStyle(OWCDesign.tertiary)
                         }
-                        .accessibilityLabel(store.t("recordsLockedDay"))
+                        .accessibilityLabel(text.t("recordsLockedDay"))
                     }
                 }
             }
@@ -105,34 +106,28 @@ struct RecordsAllRecordsView: View {
             .padding(.top, 14)
         }
         .background(OWCDesign.page)
-        .navigationTitle(store.t("recordsAllRecords"))
+        .navigationTitle(text.t("recordsAllRecords"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if !usesTabletNavigationShell {
-                ToolbarItem(placement: .topBarTrailing) {
-                    OWCEarningsVisibilityButton(store: store)
-                }
+            ToolbarItem(placement: .topBarTrailing) {
+                OWCEarningsVisibilityButton(preferences: preferences, text: text)
             }
-        }
-        .owcTabletDetailNavigation(
-            backTitle: store.t("recordsTitle"),
-            pageTitle: store.t("recordsAllRecords")
-        ) {
-            OWCEarningsVisibilityButton(store: store)
         }
     }
 
 }
 
 struct RecordsYearRecordsView: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     let year: Int
 
     private var visibleEntries: [RecordDayIndexEntry] {
-        let entries = store.recordDayIndex()
-        guard !store.plus.isAuthorized else { return entries }
+        let entries = queries.recordDayIndex()
+        guard !queries.plus.isAuthorized else { return entries }
         return entries.filter {
-            RecordsAccess.freeWindowContains(dayKey: $0.dayKey, today: .now, calendar: store.recordsCalendar)
+            RecordsAccess.freeWindowContains(dayKey: $0.dayKey, today: .now, calendar: preferences.recordsCalendar)
         }
     }
 
@@ -150,18 +145,14 @@ struct RecordsYearRecordsView: View {
 
     var body: some View {
         let months = months
-        let canReadYear = store.plus.isAuthorized || !months.isEmpty
+        let canReadYear = queries.plus.isAuthorized || !months.isEmpty
         Group {
             if canReadYear {
                 yearContent(months: months)
             } else {
-                RecordsLockedHistoryPlaceholder(store: store)
+                RecordsLockedHistoryPlaceholder(text: text)
             }
         }
-        .owcTabletDetailNavigation(
-            backTitle: store.t("recordsAllRecords"),
-            pageTitle: canReadYear ? "\(year)" : store.t("recordsAllRecords")
-        )
     }
 
     private func yearContent(months: [Int]) -> some View {
@@ -190,38 +181,36 @@ struct RecordsYearRecordsView: View {
         parts.year = year
         parts.month = month
         parts.day = 1
-        return store.formatRecordsMonthYear(store.recordsCalendar.date(from: parts) ?? .now)
+        return queries.formatRecordsMonthYear(preferences.recordsCalendar.date(from: parts) ?? .now)
     }
 }
 
 struct RecordsMonthRecordsView: View {
-    let store: OffWorkStore
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let text: AppText
     let year: Int
     let month: Int
 
     private var days: [RecordDayIndexEntry] {
         let prefix = String(format: "%04d-%02d-", year, month)
-        let entries = store.recordDayIndex().filter { $0.dayKey.hasPrefix(prefix) }
-        guard !store.plus.isAuthorized else { return entries }
+        let entries = queries.recordDayIndex().filter { $0.dayKey.hasPrefix(prefix) }
+        guard !queries.plus.isAuthorized else { return entries }
         return entries.filter {
-            RecordsAccess.freeWindowContains(dayKey: $0.dayKey, today: .now, calendar: store.recordsCalendar)
+            RecordsAccess.freeWindowContains(dayKey: $0.dayKey, today: .now, calendar: preferences.recordsCalendar)
         }
     }
 
     var body: some View {
         let days = days
-        let canReadMonth = store.plus.isAuthorized || !days.isEmpty
+        let canReadMonth = queries.plus.isAuthorized || !days.isEmpty
         Group {
             if canReadMonth {
                 monthContent(days: days)
             } else {
-                RecordsLockedHistoryPlaceholder(store: store)
+                RecordsLockedHistoryPlaceholder(text: text)
             }
         }
-        .owcTabletDetailNavigation(
-            backTitle: "\(year)",
-            pageTitle: canReadMonth ? monthTitle : store.t("recordsAllRecords")
-        )
     }
 
     private func monthContent(days: [RecordDayIndexEntry]) -> some View {
@@ -230,7 +219,7 @@ struct RecordsMonthRecordsView: View {
                 ForEach(Array(days.enumerated()), id: \.element.dayKey) { index, day in
                     NavigationLink(value: RecordsRoute.day(day.dayKey)) {
                         OWCDisclosureRow(
-                            title: store.formatRecordsDayTitle(dayKey: day.dayKey),
+                            title: queries.formatRecordsDayTitle(dayKey: day.dayKey),
                             isLast: index == days.count - 1
                         )
                     }
@@ -250,6 +239,6 @@ struct RecordsMonthRecordsView: View {
         parts.year = year
         parts.month = month
         parts.day = 1
-        return store.formatRecordsMonthYear(store.recordsCalendar.date(from: parts) ?? .now)
+        return queries.formatRecordsMonthYear(preferences.recordsCalendar.date(from: parts) ?? .now)
     }
 }

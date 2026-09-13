@@ -2,7 +2,8 @@
 import SwiftUI
 
 struct DebugMenuView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let debug: DebugScenarioController
 
     @Environment(LiveActivityService.self) private var liveActivities
     @Environment(\.dismiss) private var dismiss
@@ -18,20 +19,20 @@ struct DebugMenuView: View {
             List {
                 Section {
                     Button(action: scheduleReset) {
-                        Label(store.t("debugResetNextLaunch"), systemImage: "arrow.counterclockwise")
+                        Label(debug.shifts.text.t("debugResetNextLaunch"), systemImage: "arrow.counterclockwise")
                     }
                     .foregroundStyle(.red)
                 } footer: {
-                    Text(store.t("debugResetNextLaunchDetail"))
+                    Text(debug.shifts.text.t("debugResetNextLaunchDetail"))
                 }
 
                 Section {
                     Button(action: seedSampleRecords) {
-                        Label(store.t("debugSeedRecords"), systemImage: "calendar.badge.plus")
+                        Label(debug.shifts.text.t("debugSeedRecords"), systemImage: "calendar.badge.plus")
                     }
                     .foregroundStyle(.primary)
                 } footer: {
-                    Text(store.t("debugSeedRecordsDetail"))
+                    Text(debug.shifts.text.t("debugSeedRecordsDetail"))
                 }
 
                 Section {
@@ -39,37 +40,37 @@ struct DebugMenuView: View {
                         Button {
                             open(scenario)
                         } label: {
-                            Label(store.t(scenario.titleKey), systemImage: scenario.symbol)
+                            Label(debug.shifts.text.t(scenario.titleKey), systemImage: scenario.symbol)
                         }
                         .foregroundStyle(.primary)
                     }
                 } header: {
-                    Text(store.t("debugCaptureScenarios"))
+                    Text(debug.shifts.text.t("debugCaptureScenarios"))
                 } footer: {
-                    Text(store.t("debugCaptureScenariosDetail"))
+                    Text(debug.shifts.text.t("debugCaptureScenariosDetail"))
                 }
 
                 Section {
                     Button {
-                        store.plus.debugSetAuthorized(!store.plus.isAuthorized)
+                        debug.shifts.plus.debugSetAuthorized(!debug.shifts.plus.isAuthorized)
                         actionFeedback += 1
                     } label: {
                         Label(
-                            store.plus.isAuthorized ? store.t("plusStatusLifetime") : store.t("plusStatusNone"),
+                            debug.shifts.plus.isAuthorized ? debug.shifts.text.t("plusStatusLifetime") : debug.shifts.text.t("plusStatusNone"),
                             systemImage: "star"
                         )
                     }
                     Button {
-                        store.plus.manageSubscriptions()
+                        debug.shifts.plus.manageSubscriptions()
                     } label: {
-                        Label(store.t("plusManage"), systemImage: "cart")
+                        Label(debug.shifts.text.t("plusManage"), systemImage: "cart")
                     }
                 }
 
                 Section {
                     Button(action: startLiveActivity) {
                         HStack {
-                            Label(store.t("debugLiveActivity"), systemImage: "platter.filled.bottom.and.arrow.down.iphone")
+                            Label(debug.shifts.text.t("debugLiveActivity"), systemImage: "platter.filled.bottom.and.arrow.down.iphone")
                             Spacer()
                             if isStartingLiveActivity {
                                 ProgressView()
@@ -80,14 +81,14 @@ struct DebugMenuView: View {
                     .foregroundStyle(.primary)
                     .disabled(isStartingLiveActivity)
                 } footer: {
-                    Text(store.t("debugLiveActivityDetail"))
+                    Text(debug.shifts.text.t("debugLiveActivityDetail"))
                 }
             }
-            .navigationTitle(store.t("debugMenu"))
+            .navigationTitle(debug.shifts.text.t("debugMenu"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(store.t("close"), action: dismiss.callAsFunction)
+                    Button(debug.shifts.text.t("close"), action: dismiss.callAsFunction)
                 }
             }
         }
@@ -100,19 +101,23 @@ struct DebugMenuView: View {
     }
 
     private func scheduleReset() {
-        store.scheduleDebugResetOnNextLaunch()
+        debug.scheduleDebugResetOnNextLaunch()
         actionFeedback += 1
-        resultTitle = store.t("debugResetNextLaunch")
-        resultMessage = store.t("debugResetNextLaunchDetail")
+        resultTitle = debug.shifts.text.t("debugResetNextLaunch")
+        resultMessage = debug.shifts.text.t("debugResetNextLaunchDetail")
         showsResult = true
     }
 
     private func seedSampleRecords() {
-        let wrote = store.debugSeedSampleRecords()
-        actionFeedback += 1
-        resultTitle = store.t("debugSeedRecords")
-        resultMessage = store.t(wrote ? "debugSeedRecordsDone" : "debugSeedRecordsAlready")
-        showsResult = true
+        let command = debug.debugSeedSampleRecords()
+        Task { @MainActor in
+            let wrote = await command.value
+            if wrote { scene.selectedTab = .records }
+            actionFeedback += 1
+            resultTitle = debug.shifts.text.t("debugSeedRecords")
+            resultMessage = debug.shifts.text.t(wrote ? "debugSeedRecordsDone" : "debugSeedRecordsAlready")
+            showsResult = true
+        }
     }
 
     private func open(_ scenario: DebugTimerScenario) {
@@ -124,7 +129,8 @@ struct DebugMenuView: View {
     private func activatePendingScenario() {
         guard let pendingScenario else { return }
         self.pendingScenario = nil
-        store.activateDebugTimerScenario(pendingScenario)
+        debug.activateDebugTimerScenario(pendingScenario)
+        scene.openTimer()
     }
 
     private func startLiveActivity() {
@@ -133,11 +139,11 @@ struct DebugMenuView: View {
         actionFeedback += 1
         Task {
             do {
-                try await liveActivities.startDebugLiveActivity(store: store)
-                resultTitle = store.t("debugLiveActivity")
-                resultMessage = store.t("done")
+                try await liveActivities.startDebugLiveActivity(shifts: debug.shifts)
+                resultTitle = debug.shifts.text.t("debugLiveActivity")
+                resultMessage = debug.shifts.text.t("done")
             } catch {
-                resultTitle = store.t("debugLiveActivity")
+                resultTitle = debug.shifts.text.t("debugLiveActivity")
                 resultMessage = error.localizedDescription
             }
             isStartingLiveActivity = false

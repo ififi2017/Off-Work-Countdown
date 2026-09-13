@@ -5,7 +5,8 @@ import SwiftUI
 /// Tapping arms the button instead of starting; a second tap within five
 /// seconds commits. `.task(id:)` owns the disarm timer.
 struct ShiftStartButton: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
     var minimumHeight: CGFloat = 46
     let onOpenLunchSettings: () -> Void
 
@@ -18,7 +19,7 @@ struct ShiftStartButton: View {
     var body: some View {
         Button(action: start) {
             Label(
-                store.t(armState == .armed ? "nonWorkdayTapAgain" : "manualTiming"),
+                shifts.text.t(armState == .armed ? "nonWorkdayTapAgain" : "manualTiming"),
                 systemImage: armState == .armed ? "exclamationmark.triangle.fill" : "play.fill"
             )
             .lineLimit(2)
@@ -43,20 +44,20 @@ struct ShiftStartButton: View {
                 armState = .idle
             }
         }
-        .alert(store.t("invalidLunchTitle"), isPresented: $showInvalidLunch) {
-            Button(store.t("return"), role: .cancel) {}
-            Button(store.t("goToLunchSettings"), action: onOpenLunchSettings)
+        .alert(shifts.text.t("invalidLunchTitle"), isPresented: $showInvalidLunch) {
+            Button(shifts.text.t("return"), role: .cancel) {}
+            Button(shifts.text.t("goToLunchSettings"), action: onOpenLunchSettings)
         } message: {
-            Text(store.t("invalidLunchMessage"))
+            Text(shifts.text.t("invalidLunchMessage"))
         }
     }
 
     private var isDisabled: Bool {
-        store.startMinutes == store.endMinutes
+        scene.displayedStartMinutes(using: shifts.preferences) == scene.displayedEndMinutes(using: shifts.preferences)
     }
 
     private func start() {
-        guard store.isLunchInsideShift else {
+        guard scene.isLunchInsideShift(using: shifts) else {
             showInvalidLunch = true
             return
         }
@@ -67,8 +68,10 @@ struct ShiftStartButton: View {
             }
             return
         }
-        let forceRestDay = store.followsSchedule
-        store.startCountdown(force: forceRestDay)
-        appliedPulse += 1
+        let forceRestDay = shifts.session.followsSchedule
+        let command = scene.startCountdown(force: forceRestDay, using: shifts)
+        Task {
+            if await command.value { appliedPulse += 1 }
+        }
     }
 }

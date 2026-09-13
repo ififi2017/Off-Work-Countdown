@@ -112,23 +112,6 @@ enum DebugTimerScenario: String, CaseIterable, Identifiable {
     }()
 }
 
-extension OffWorkStore {
-    func activateDebugTimerScenario(_ scenario: DebugTimerScenario, at date: Date = .now) {
-        debugTimerSession = .init(
-            scenario: scenario,
-            realAnchor: date,
-            virtualAnchor: DebugTimerScenario.virtualStartDate
-        )
-        timelineExpanded = false
-        presentedRoute = nil
-        timerPath.removeAll()
-        recordsPath.removeAll()
-        settingsPath.removeAll()
-        selectedTab = .timer
-        resetCelebratedSession()
-    }
-}
-
 private extension TimeInterval {
     var applyingMilliseconds: Double { self * 1_000 }
 }

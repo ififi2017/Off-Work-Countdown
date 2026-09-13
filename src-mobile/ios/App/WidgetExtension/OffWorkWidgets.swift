@@ -15,7 +15,7 @@ struct OffWorkWidgets: WidgetBundle {
 struct OffWorkLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: OffWorkActivityAttributes.self) { context in
-            LockScreenActivityView(context: context)
+            ActivityContentView(context: context)
                 .environment(\.colorScheme, .dark)
                 .activityBackgroundTint(.black.opacity(0.38))
                 .activitySystemActionForegroundColor(.white)
@@ -45,6 +45,7 @@ struct OffWorkLiveActivityWidget: Widget {
             .widgetURL(activityDestination(context))
             .keylineTint(activityTint(context, at: .now))
         }
+        .supplementalActivityFamilies([.small])
     }
 }
 
@@ -138,6 +139,100 @@ private struct ActivityIslandBody: View {
 }
 
 // MARK: - Lock Screen
+
+/// Selects the system-requested supplemental Apple Watch presentation while
+/// leaving the existing iPhone Lock Screen view unchanged.
+private struct ActivityContentView: View {
+    let context: ActivityViewContext<OffWorkActivityAttributes>
+    @Environment(\.activityFamily) private var activityFamily
+
+    @ViewBuilder
+    var body: some View {
+        if activityFamily == .small {
+            SupplementalSmallActivityView(context: context)
+        } else {
+            LockScreenActivityView(context: context)
+        }
+    }
+}
+
+/// Apple Watch Smart Stack's compact Live Activity. It reads the same current
+/// leg and effective-segment progress as the free iPhone surfaces, so lunch
+/// gaps remain frozen instead of being counted as work.
+private struct SupplementalSmallActivityView: View {
+    let context: ActivityViewContext<OffWorkActivityAttributes>
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
+
+    var body: some View {
+        TimelineView(supplementalActivitySchedule(context)) { timeline in
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 5) {
+                    ActivityCompactGlyph(context: context, size: 11, brandSize: 17)
+                    Text(activityPhaseLabel(context, at: timeline.date))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                }
+                supplementalCountdown(context, now: timeline.date, dimmed: isLuminanceReduced)
+                if activityLeg(context, at: timeline.date)?.isPreview != true {
+                    activityProgress(context, at: timeline.date)
+                }
+            }
+            .padding(10)
+        }
+    }
+}
+
+@ViewBuilder
+private func supplementalCountdown(
+    _ context: ActivityViewContext<OffWorkActivityAttributes>,
+    now: Date,
+    dimmed: Bool
+) -> some View {
+    if activityIsFocus(context) {
+        activityCountdownText(context, now: now, size: 24, dimmed: dimmed, foreground: .primary)
+    } else if activityComplete(context, at: now) {
+        Text(context.state.completedCaption)
+            .font(.system(size: 20, weight: .bold))
+            .lineLimit(1)
+            .minimumScaleFactor(0.58)
+    } else {
+        // A single system timer interval would subtract the lunch gap. This
+        // minute value sums only the absolute effective segments sent by the
+        // phone, so it stays frozen throughout lunch and needs no rule port.
+        Text(supplementalRemainingText(context.state, at: now))
+            .font(.system(size: 24, weight: .bold).monospacedDigit())
+            .lineLimit(1)
+            .minimumScaleFactor(0.58)
+    }
+}
+
+private func supplementalRemainingText(
+    _ state: OffWorkActivityAttributes.ContentState,
+    at date: Date
+) -> String {
+    let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
+    guard let remainingMs = state.effectiveRemainingMs(atMs: nowMs) else { return "—" }
+    let minutes = remainingMs / 60_000 + (remainingMs % 60_000 == 0 ? 0 : 1)
+    return Duration.seconds(minutes * 60).formatted(
+        .units(allowed: [.hours, .minutes], width: .abbreviated)
+            .locale(Locale(identifier: state.locale))
+    )
+}
+
+private func supplementalActivitySchedule(
+    _ context: ActivityViewContext<OffWorkActivityAttributes>
+) -> ActivityUpdateSchedule {
+    let segmentBoundaries = context.state.segments.flatMap {
+        [Date(timeIntervalSince1970: Double($0.startAtMs) / 1_000),
+         Date(timeIntervalSince1970: Double($0.endAtMs) / 1_000)]
+    }
+    let legBoundaries = (context.state.legs ?? []).map {
+        Date(timeIntervalSince1970: Double($0.endAtMs) / 1_000)
+    }
+    return .init(boundaries: segmentBoundaries + legBoundaries, interval: 60)
+}
 
 private struct LockScreenActivityView: View {
     let context: ActivityViewContext<OffWorkActivityAttributes>

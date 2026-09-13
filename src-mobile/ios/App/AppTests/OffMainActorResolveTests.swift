@@ -14,21 +14,21 @@ import Testing
 struct OffMainActorResolveTests {
     private func seededStore(
         suite: String
-    ) throws -> (store: OffWorkStore, defaults: UserDefaults, calendar: Calendar) {
+    ) throws -> (store: AppRuntime, defaults: UserDefaults, calendar: Calendar) {
         let defaults = try #require(UserDefaults(suiteName: suite))
         let records = RecordCoordinator.inMemory()
-        let store = OffWorkStore(defaults: defaults, records: records)
+        let store = AppRuntime(defaults: defaults, records: records)
         store.plus.debugSetAuthorized(true)
-        store.onboardingComplete = true
-        store.scheduleMode = .classic
-        store.workdays = [1, 2, 3, 4, 5]
-        store.startMinutes = 9 * 60
-        store.endMinutes = 17 * 60
-        store.lunchEnabled = true
-        store.lunchStartMinutes = 12 * 60
-        store.lunchDurationMinutes = 60
+        store.preferences.onboardingComplete = true
+        store.preferences.applyPreferences { $0.scheduleMode = .classic }
+        store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+        store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+        store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+        store.preferences.applyPreferences { $0.lunchEnabled = true }
+        store.preferences.applyPreferences { $0.lunchStartMinutes = 12 * 60 }
+        store.preferences.applyPreferences { $0.lunchDurationMinutes = 60 }
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = store.recordsTimeZone
+        calendar.timeZone = store.preferences.recordsTimeZone
         return (store, defaults, calendar)
     }
 
@@ -47,7 +47,7 @@ struct OffMainActorResolveTests {
             inlineDefaults.removePersistentDomain(forName: inlineSuite)
         }
         for store in [asyncStore, inlineStore] {
-            store.saveLifeProfile(
+            store.life.saveLifeProfile(
                 birthYear: 1990,
                 workStartedYear: 2012,
                 retirementAge: 60,
@@ -59,17 +59,17 @@ struct OffMainActorResolveTests {
             year: 2026, month: 8, day: 31, hour: 12
         )))
 
-        let loading = Task.immediate { await asyncStore.prepareLifeViewModel(now: now) }
+        let loading = Task.immediate { await asyncStore.life.prepareLifeViewModel(now: now) }
         if editsDuringLoad {
             for store in [asyncStore, inlineStore] {
-                store.saveLifeProfile(
+                store.life.saveLifeProfile(
                     birthYear: 1990, workStartedYear: 2012, retirementAge: 65,
                     sleepHours: 7, hidesExactAges: false
                 )
             }
         }
         let offMainActor = try #require(await loading.value)
-        let inline = try #require(inlineStore.lifeViewModel(now: now))
+        let inline = try #require(inlineStore.life.lifeViewModel(now: now))
 
         // Equality covers every week cell, both shares and the whole time
         // allocation, so a day walk that drifted across the hop would fail
@@ -84,7 +84,7 @@ struct OffMainActorResolveTests {
         let suite = "OffMainActorResolveTests.bonus.\(UUID().uuidString)"
         let (store, defaults, calendar) = try seededStore(suite: suite)
         defer { defaults.removePersistentDomain(forName: suite) }
-        store.saveLifeProfile(
+        store.life.saveLifeProfile(
             birthYear: 1990, workStartedYear: 2012, retirementAge: 60,
             sleepHours: 8, hidesExactAges: false
         )
@@ -93,28 +93,28 @@ struct OffMainActorResolveTests {
         )))
         let clock = ContinuousClock()
         let started = clock.now
-        let original = try #require(await store.prepareLifeViewModel(now: now))
+        let original = try #require(await store.life.prepareLifeViewModel(now: now))
         let coldDuration = started.duration(to: clock.now)
-        let key = store.lifeViewModelCacheKey(now: now)
+        let key = store.life.lifeViewModelCacheKey(now: now)
         let revision = store.records.revision
-        let salary = store.salaryAmount
-        store.annualBonusEnabled = true
-        store.annualBonusMonths = 2
+        let salary = store.preferences.salaryAmount
+        store.preferences.applyPreferences { $0.annualBonusEnabled = true }
+        store.preferences.applyPreferences { $0.annualBonusMonths = 2 }
         #expect(store.records.revision > revision)
-        #expect(store.salaryAmount == salary)
-        #expect(store.lifeViewModelCacheKey(now: now).hasSameSchedule(as: key))
+        #expect(store.preferences.salaryAmount == salary)
+        #expect(store.life.lifeViewModelCacheKey(now: now).hasSameSchedule(as: key))
         let updatedRevision = store.records.revision
         let refreshStarted = clock.now
-        let refreshed = await store.prepareLifeViewModel(now: now)
+        let refreshed = await store.life.prepareLifeViewModel(now: now)
         print("Life projection: cold=\(coldDuration), bonus refresh=\(refreshStarted.duration(to: clock.now))")
         #expect(refreshed == original)
         #expect(store.records.revision == updatedRevision)
-        store.saveLifeProfile(
+        store.life.saveLifeProfile(
             birthYear: 1990, workStartedYear: 2012, retirementAge: 65,
             sleepHours: 7, hidesExactAges: false
         )
-        #expect(store.lifeViewModelCacheKey(now: now) != key)
-        let changed = try #require(await store.prepareLifeViewModel(now: now))
+        #expect(store.life.lifeViewModelCacheKey(now: now) != key)
+        let changed = try #require(await store.life.prepareLifeViewModel(now: now))
         #expect(changed != original)
     }
 
@@ -132,7 +132,8 @@ struct OffMainActorResolveTests {
         let from = calendar.startOfDay(for: now)
         let through = try #require(calendar.date(byAdding: .day, value: 29, to: from))
 
-        let inline = store.resolvedDays(from: from, through: through, now: now)
+        store.shifts.reconcileRecordSchedule(at: now)
+        let inline = store.queries.resolvedDays(from: from, through: through, now: now)
         // One store, not two: `DayResolution` carries the period and snapshot
         // ids, which are freshly generated per store, so two separately seeded
         // stores never compare equal however identical their schedules. The
@@ -146,9 +147,9 @@ struct OffMainActorResolveTests {
             shiftAnchorDate: try #require(calendar.date(byAdding: .year, value: -1, to: now)),
             occurredAt: try #require(calendar.date(byAdding: .year, value: -1, to: now)),
             snapshotID: UUID(),
-            timeZoneIdentifier: store.recordsTimeZone.identifier
+            timeZoneIdentifier: store.preferences.recordsTimeZone.identifier
         )
-        let offMainActor = await store.prepareResolvedDays(from: from, through: through, now: now)
+        let offMainActor = await store.queries.prepareResolvedDays(from: from, through: through, now: now)
 
         #expect(offMainActor == inline)
         #expect(offMainActor.count == 30)
