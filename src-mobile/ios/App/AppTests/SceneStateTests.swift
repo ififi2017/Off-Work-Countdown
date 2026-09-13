@@ -108,7 +108,9 @@ struct SceneStateTests {
         let suite = "SceneRestDayRestart.\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        defaults.set("UTC", forKey: "ios.native.recordsTimeZone")
+        // A new manual session is written in the device zone, so pin records to it:
+        // a UTC pin puts 10:00 before the shift on runners west of UTC.
+        defaults.set(TimeZone.current.identifier, forKey: "ios.native.recordsTimeZone")
         let store = AppRuntime(defaults: defaults, records: .inMemory())
         let scene = SceneState()
         let date = try #require(store.preferences.recordsCalendar.date(from:
@@ -157,7 +159,9 @@ struct SceneStateTests {
         let suite = "SceneTimerExpiry.\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        defaults.set("UTC", forKey: "ios.native.recordsTimeZone")
+        // A new manual session is written in the device zone, so pin records to it:
+        // a UTC pin puts 10:00 before the shift on runners west of UTC.
+        defaults.set(TimeZone.current.identifier, forKey: "ios.native.recordsTimeZone")
         let store = AppRuntime(defaults: defaults, records: .inMemory())
         let scene = SceneState()
         let date = try #require(store.preferences.recordsCalendar.date(from:
@@ -202,7 +206,9 @@ struct SceneStateTests {
         defer { defaults.removePersistentDomain(forName: suite) }
         defaults.set(true, forKey: "ios.native.onboardingComplete")
         defaults.set(true, forKey: "ios.native.automaticCountdownMigrationCompleted")
-        defaults.set("UTC", forKey: "ios.native.recordsTimeZone")
+        // A new manual session is written in the device zone, so pin records to it:
+        // a UTC pin puts 10:00 before the shift on runners west of UTC.
+        defaults.set(TimeZone.current.identifier, forKey: "ios.native.recordsTimeZone")
         let store = AppRuntime(defaults: defaults, records: .inMemory())
         #expect(store.preferences.applyPreferences { $0.scheduleMode = .off }.synchronousResult)
         let scene = SceneState()
