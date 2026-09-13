@@ -219,6 +219,7 @@
   "adjustOvertime": "Modifica straordinario",
   "overtime": "Straordinario",
   "microBreakReminder": "Promemoria salute",
+  "breakReminder": "Promemoria pausa",
   "microBreakInterval": "Ricordamelo ogni",
   "microBreakEffectiveTimeNote": "Conta solo il lavoro effettivo; niente avvisi a pranzo o fuori orario.",
   "microBreakMessages": [

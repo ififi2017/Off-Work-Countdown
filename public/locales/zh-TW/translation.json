@@ -219,6 +219,7 @@
   "adjustOvertime": "調整加班",
   "overtime": "加班",
   "microBreakReminder": "健康提醒",
+  "breakReminder": "休息提醒",
   "microBreakInterval": "提醒間隔",
   "microBreakEffectiveTimeNote": "只計算有效工作時間；午休與下班後不會提醒。",
   "microBreakMessages": [

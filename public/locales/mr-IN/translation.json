@@ -219,6 +219,7 @@
   "adjustOvertime": "ओव्हरटाइम बदला",
   "overtime": "ओव्हरटाइम",
   "microBreakReminder": "आरोग्य स्मरण",
+  "breakReminder": "विश्रांतीची आठवण",
   "microBreakInterval": "किती वेळाने",
   "microBreakEffectiveTimeNote": "फक्त प्रभावी कामाचा वेळ मोजला जातो; दुपारच्या सुट्टीत किंवा कामानंतर सूचना नाही.",
   "microBreakMessages": [

@@ -219,6 +219,7 @@
   "adjustOvertime": "تعديل الوقت الإضافي",
   "overtime": "وقت إضافي",
   "microBreakReminder": "تذكير صحي",
+  "breakReminder": "تذكير بالاستراحة",
   "microBreakInterval": "تذكيري كل",
   "microBreakEffectiveTimeNote": "يُحسب وقت العمل الفعلي فقط؛ لا تنبيهات أثناء الغداء أو بعد العمل.",
   "microBreakMessages": [

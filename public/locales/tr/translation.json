@@ -219,6 +219,7 @@
   "adjustOvertime": "Fazla mesaiyi ayarla",
   "overtime": "Fazla mesai",
   "microBreakReminder": "Sağlık hatırlatıcısı",
+  "breakReminder": "Mola hatırlatıcısı",
   "microBreakInterval": "Hatırlatma aralığı",
   "microBreakEffectiveTimeNote": "Yalnızca etkin çalışma sayılır; öğle molasında ve mesai dışında bildirim yoktur.",
   "microBreakMessages": [

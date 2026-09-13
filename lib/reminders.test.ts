@@ -250,6 +250,18 @@ describe("buildShiftReminders 午休边界", () => {
     expect(byId(reminders, "breakEnd:4000").body).toBe("午休结束");
   });
 
+  it("休息提醒使用独立标题，缺省时才退回通用标题", () => {
+    const titled = buildShiftReminders(
+      lunchShift,
+      withoutMicroBreaks({ breakTitle: "休息提醒" })
+    );
+    expect(byId(titled, "breakStart:3000").title).toBe("休息提醒");
+    expect(byId(titled, "breakEnd:4000").title).toBe("休息提醒");
+    // 旧调用方没有传入时保持原样，不让通知标题变成空串。
+    const legacy = buildShiftReminders(lunchShift, withoutMicroBreaks());
+    expect(byId(legacy, "breakStart:3000").title).toBe("下班提醒");
+  });
+
   it("单段班次没有午休提醒", () => {
     const reminders = buildShiftReminders(simpleShift, withoutMicroBreaks());
     expect(

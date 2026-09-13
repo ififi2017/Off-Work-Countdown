@@ -219,6 +219,7 @@
   "adjustOvertime": "초과 근무 조정",
   "overtime": "초과 근무",
   "microBreakReminder": "건강 알림",
+  "breakReminder": "휴식 알림",
   "microBreakInterval": "알림 간격",
   "microBreakEffectiveTimeNote": "유효 근무 시간만 계산하며 점심시간과 퇴근 후에는 알리지 않습니다.",
   "microBreakMessages": [

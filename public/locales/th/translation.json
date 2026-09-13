@@ -219,6 +219,7 @@
   "adjustOvertime": "ปรับล่วงเวลา",
   "overtime": "ล่วงเวลา",
   "microBreakReminder": "เตือนเรื่องสุขภาพ",
+  "breakReminder": "แจ้งเตือนการพัก",
   "microBreakInterval": "เตือนทุก",
   "microBreakEffectiveTimeNote": "นับเฉพาะเวลาทำงานจริง ไม่เตือนช่วงพักกลางวันหรือหลังเลิกงาน",
   "microBreakMessages": [

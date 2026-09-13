@@ -219,6 +219,7 @@
   "adjustOvertime": "Ajustar hora extra",
   "overtime": "Hora extra",
   "microBreakReminder": "Lembrete de saúde",
+  "breakReminder": "Lembrete de intervalo",
   "microBreakInterval": "Lembrar a cada",
   "microBreakEffectiveTimeNote": "Só conta o trabalho efetivo; sem avisos no almoço ou fora do expediente.",
   "microBreakMessages": [

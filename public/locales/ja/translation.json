@@ -219,6 +219,7 @@
   "adjustOvertime": "残業を調整",
   "overtime": "残業",
   "microBreakReminder": "健康リマインダー",
+  "breakReminder": "休憩リマインダー",
   "microBreakInterval": "通知間隔",
   "microBreakEffectiveTimeNote": "実働時間のみを計測し、昼休みや勤務外には通知しません。",
   "microBreakMessages": [

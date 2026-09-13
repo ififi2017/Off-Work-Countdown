@@ -219,6 +219,7 @@
   "adjustOvertime": "Atur lembur",
   "overtime": "Lembur",
   "microBreakReminder": "Pengingat kesehatan",
+  "breakReminder": "Pengingat istirahat",
   "microBreakInterval": "Ingatkan setiap",
   "microBreakEffectiveTimeNote": "Hanya waktu kerja efektif yang dihitung; tidak ada pengingat saat makan siang atau setelah kerja.",
   "microBreakMessages": [

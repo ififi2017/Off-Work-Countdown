@@ -707,6 +707,9 @@ struct NativeMilestoneMessages: Codable {
 struct NativeReminderInputs: Codable {
     let mode: String
     let fallbackTitle: String
+    /// Title for lunch start and end. Without it the bundle falls back to the
+    /// off-work title, which is what made lunch pushes read "下班提醒".
+    let breakTitle: String
     let milestoneTitles: NativeMilestoneTitles
     let milestoneMessages: NativeMilestoneMessages
     let lunchStartEnabled: Bool

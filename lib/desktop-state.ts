@@ -78,6 +78,8 @@ export interface DesktopCountdownState extends ShiftTimeline {
   nextShift: ShiftTimeline | null;
   notificationMode: DesktopNotificationMode;
   notificationTitle: string;
+  /** 休息开始／结束提醒的标题；旧快照没有这个字段时由 EMPTY_STATE 补齐。 */
+  breakNotificationTitle: string;
   notificationTitles: DesktopNotificationTitles;
   notificationMessages: DesktopNotificationMessages;
   showSalary: boolean;
@@ -129,6 +131,7 @@ const EMPTY_STATE: DesktopCountdownState = {
   nextShift: null,
   notificationMode: "off",
   notificationTitle: "Off work reminder",
+  breakNotificationTitle: "Break reminder",
   notificationTitles: {
     milestone50: "50% left today",
     milestone75: "25% left today",
@@ -284,6 +287,7 @@ function projectReminders(state: DesktopCountdownState): PersistedWithReminders 
     reminders: buildShiftReminders(shift, {
       mode: state.notificationMode,
       fallbackTitle: state.notificationTitle,
+      breakTitle: state.breakNotificationTitle,
       milestoneTitles: state.notificationTitles,
       milestoneMessages: state.notificationMessages,
       lunchStartEnabled: state.lunchNotificationEnabled,
