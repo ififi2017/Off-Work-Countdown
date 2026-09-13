@@ -13,18 +13,18 @@ import Testing
 func chainRunsFocusThenBreakThenNext() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let blocks = store.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
+    let blocks = store.focus.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
     let first = try #require(blocks.first)
     let second = try #require(blocks.dropFirst().first)
 
     let running = chainTask(store, title: "Spec review", pomodoros: 1, at: at)
     let queued = chainTask(store, title: "Inbox", pomodoros: 1, at: at)
-    _ = store.assign(running, toBlockStartingAt: first.startAtMs, at: at)
-    _ = store.assign(queued, toBlockStartingAt: second.startAtMs, at: at)
-    #expect(store.startFocus(task: running, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(running, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    _ = store.focus.assign(queued, toBlockStartingAt: second.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: running, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
-    let session = try #require(store.activeFocusSession())
-    let chain = store.focusChain(for: session, at: at)
+    let session = try #require(store.focus.activeFocusSession())
+    let chain = store.focus.focusChain(for: session, at: at)
 
     #expect(chain.count == 3)
     #expect(chain[0].kind == .focus)
@@ -45,16 +45,16 @@ func chainRunsFocusThenBreakThenNext() throws {
 func chainStopsAfterTheBreakWhenNothingIsPlanned() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let first = try #require(store.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
+    let first = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
     let task = chainTask(store, title: "Spec review", pomodoros: 1, at: at)
-    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(task, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
-    let session = try #require(store.activeFocusSession())
-    let chain = store.focusChain(for: session, at: at)
+    let session = try #require(store.focus.activeFocusSession())
+    let chain = store.focus.focusChain(for: session, at: at)
     #expect(chain.count == 1)
     #expect(chain.last?.kind == .focus)
-    #expect(store.completesFocusDay(after: session, at: at))
+    #expect(store.focus.completesFocusDay(after: session, at: at))
 }
 
 @MainActor
@@ -62,17 +62,17 @@ func chainStopsAfterTheBreakWhenNothingIsPlanned() throws {
 func chainProjectsTheTaskFinishTime() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let blocks = store.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
+    let blocks = store.focus.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
     let first = try #require(blocks.first)
     let second = try #require(blocks.dropFirst().first)
 
     let task = chainTask(store, title: "Spec review", pomodoros: 2, at: at)
-    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
-    _ = store.assign(task, toBlockStartingAt: second.startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(task, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    _ = store.focus.assign(task, toBlockStartingAt: second.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
-    let session = try #require(store.activeFocusSession())
-    let chain = store.focusChain(for: session, at: at)
+    let session = try #require(store.focus.activeFocusSession())
+    let chain = store.focus.focusChain(for: session, at: at)
     #expect(chain[0].pomodoroIndex == 1)
     #expect(chain[0].pomodoroTotal == 2)
     #expect(chain[0].taskFinishAt == Date(timeIntervalSince1970: Double(second.endAtMs) / 1_000))
@@ -83,14 +83,14 @@ func chainProjectsTheTaskFinishTime() throws {
 func chainWithholdsAnImpossibleFinishTime() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let first = try #require(store.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
+    let first = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
     // More blocks than the whole shift holds, so no honest hour exists.
     let task = chainTask(store, title: "Spec review", pomodoros: 99, at: at)
-    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(task, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
-    let session = try #require(store.activeFocusSession())
-    #expect(store.focusChain(for: session, at: at)[0].taskFinishAt == nil)
+    let session = try #require(store.focus.activeFocusSession())
+    #expect(store.focus.focusChain(for: session, at: at)[0].taskFinishAt == nil)
 }
 
 @MainActor
@@ -114,21 +114,21 @@ func projectionSkipsBlocksOwnedByAnotherTask() {
 func continuationRefusesAConflictingBlock() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let blocks = store.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
+    let blocks = store.focus.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
     let first = try #require(blocks.first)
     let second = try #require(blocks.dropFirst().first)
 
     let running = chainTask(store, title: "Spec review", pomodoros: 1, at: at)
     let other = chainTask(store, title: "Inbox", pomodoros: 1, at: at)
-    _ = store.assign(running, toBlockStartingAt: first.startAtMs, at: at)
-    _ = store.assign(other, toBlockStartingAt: second.startAtMs, at: at)
-    #expect(store.startFocus(task: running, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(running, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    _ = store.focus.assign(other, toBlockStartingAt: second.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: running, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
     // The next block belongs to Inbox. The plus greys out rather than taking
     // it, and the write refuses for exactly the same reason — one resolver
     // answers both.
-    #expect(!store.canAddFocusPomodoro(at: at))
-    #expect(!store.addFocusPomodoroToRunningTask(at: at))
+    #expect(!store.focus.canAddFocusPomodoro(at: at))
+    #expect(!store.focus.addFocusPomodoroToRunningTask(at: at).synchronousResult)
     #expect(store.records.state.focusTasks.first { $0.id == running.id }?.estimatedPomodoros == 1)
 }
 
@@ -137,17 +137,17 @@ func continuationRefusesAConflictingBlock() throws {
 func addingAPomodoroPlacesTheBlock() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let first = try #require(store.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
+    let first = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
     let task = chainTask(store, title: "Spec review", pomodoros: 1, at: at)
-    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(task, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
-    #expect(store.canAddFocusPomodoro(at: at))
-    #expect(store.addFocusPomodoroToRunningTask(at: at))
+    #expect(store.focus.canAddFocusPomodoro(at: at))
+    #expect(store.focus.addFocusPomodoroToRunningTask(at: at).synchronousResult)
 
     let reloaded = try #require(store.records.state.focusTasks.first { $0.id == task.id })
     #expect(reloaded.estimatedPomodoros == 2)
-    let assigned = store.focusDayCanvas(at: at).blocks.filter { $0.taskID == task.id }
+    let assigned = store.focus.focusDayCanvas(at: at).blocks.filter { $0.taskID == task.id }
     #expect(assigned.count == 2)
 }
 
@@ -156,15 +156,15 @@ func addingAPomodoroPlacesTheBlock() throws {
 func breaksDoNotOfferAnExtraPomodoro() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let first = try #require(store.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
+    let first = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
     let task = chainTask(store, title: "Spec review", pomodoros: 1, at: at)
-    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(task, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
-    let end = try #require(store.activeFocusSession()).plannedEndAt
-    #expect(store.finishElapsedFocusSession(at: end))
-    #expect(store.activeFocusSession()?.kind != .focus)
-    #expect(!store.canAddFocusPomodoro(at: end))
+    let end = try #require(store.focus.activeFocusSession()).plannedEndAt
+    #expect(store.focus.finishElapsedFocusSession(at: end).synchronousResult)
+    #expect(store.focus.activeFocusSession()?.kind != .focus)
+    #expect(!store.focus.canAddFocusPomodoro(at: end))
 }
 
 @MainActor
@@ -172,18 +172,18 @@ func breaksDoNotOfferAnExtraPomodoro() throws {
 func completedBlockStartsItsBreakAutomatically() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let first = try #require(store.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
+    let first = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
     let task = chainTask(store, title: "Spec review", pomodoros: 2, at: at)
-    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(task, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
-    let end = try #require(store.activeFocusSession()).plannedEndAt
-    #expect(store.finishElapsedFocusSession(at: end.addingTimeInterval(30)))
+    let end = try #require(store.focus.activeFocusSession()).plannedEndAt
+    #expect(store.focus.finishElapsedFocusSession(at: end.addingTimeInterval(30)).synchronousResult)
 
-    let running = try #require(store.activeFocusSession())
+    let running = try #require(store.focus.activeFocusSession())
     #expect(running.kind == .shortBreak)
     #expect(running.startedAt == end)
-    #expect(store.focusLastNextAction == .none)
+    #expect(store.focus.focusLastNextAction == .none)
 }
 
 @MainActor
@@ -191,16 +191,16 @@ func completedBlockStartsItsBreakAutomatically() throws {
 func lateReturnDoesNotBackfillABreak() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let first = try #require(store.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
+    let first = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
     let task = chainTask(store, title: "Spec review", pomodoros: 2, at: at)
-    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(task, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
-    let end = try #require(store.activeFocusSession()).plannedEndAt
-    #expect(store.finishElapsedFocusSession(at: end.addingTimeInterval(45 * 60)))
+    let end = try #require(store.focus.activeFocusSession()).plannedEndAt
+    #expect(store.focus.finishElapsedFocusSession(at: end.addingTimeInterval(45 * 60)).synchronousResult)
 
-    #expect(store.activeFocusSession() == nil)
-    #expect(store.focusLastNextAction == .startShortBreak)
+    #expect(store.focus.activeFocusSession() == nil)
+    #expect(store.focus.focusLastNextAction == .startShortBreak)
 }
 
 @MainActor
@@ -208,13 +208,13 @@ func lateReturnDoesNotBackfillABreak() throws {
 func focusAlertsDescribeTheWholePhase() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let first = try #require(store.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
+    let first = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
     let task = chainTask(store, title: "Spec review", pomodoros: 2, at: at)
-    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
+    _ = store.focus.assign(task, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
 
-    let session = try #require(store.activeFocusSession())
-    let alerts = store.focusAlerts(for: session)
+    let session = try #require(store.focus.activeFocusSession())
+    let alerts = store.focus.focusAlerts(for: session)
     #expect(alerts.count == 2)
     #expect(alerts[0].slot == .end)
     #expect(alerts[0].title == "Spec review")
@@ -238,7 +238,7 @@ func boundaryBlockHasNoBreakAlert() throws {
     store.records.upsertFocusSession(FocusSession(
         id: UUID(),
         taskID: task.id,
-        shiftAnchorDate: store.recordsCalendar.startOfDay(for: at),
+        shiftAnchorDate: store.preferences.recordsCalendar.startOfDay(for: at),
         startedAt: at,
         plannedEndAt: end,
         endedAt: nil,
@@ -250,45 +250,45 @@ func boundaryBlockHasNoBreakAlert() throws {
         plannedEndReason: .stoppedAtBoundary
     ))
 
-    let session = try #require(store.activeFocusSession())
+    let session = try #require(store.focus.activeFocusSession())
     // It stopped at lunch instead of finishing, so it earned no break and has
     // nothing to say about one.
-    let alerts = store.focusAlerts(for: session)
+    let alerts = store.focus.focusAlerts(for: session)
     #expect(alerts.count == 1)
     #expect(alerts[0].slot == .end)
     #expect(alerts[0].title == "Spec review")
-    #expect(store.focusChain(for: session, at: at).count == 1)
+    #expect(store.focus.focusChain(for: session, at: at).count == 1)
 }
 
 // MARK: - Fixtures
 
 @MainActor
-private func chainStore() throws -> OffWorkStore {
+private func chainStore() throws -> AppRuntime {
     let suite = "FocusLiveChainTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
     store.plus.debugSetAuthorized(true)
-    store.countdownStarted = true
-    store.languageOverride = "en"
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
+    store.session.countdownStarted = true
+    store.preferences.applyPreferences { $0.languageOverride = "en" }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
     return store
 }
 
 /// A Monday, so the default recurring schedule is a workday.
 @MainActor
-private func chainDay(_ store: OffWorkStore, hour: Int, minute: Int) -> Date? {
-    store.recordsCalendar.date(
+private func chainDay(_ store: AppRuntime, hour: Int, minute: Int) -> Date? {
+    store.preferences.recordsCalendar.date(
         from: DateComponents(year: 2026, month: 8, day: 31, hour: hour, minute: minute)
     )
 }
 
 @MainActor
 private func chainTask(
-    _ store: OffWorkStore,
+    _ store: AppRuntime,
     title: String,
     pomodoros: Int,
     at date: Date
@@ -296,7 +296,7 @@ private func chainTask(
     let task = FocusTask(
         id: UUID(),
         createdAt: date,
-        plannedForDate: store.recordsCalendar.startOfDay(for: date),
+        plannedForDate: store.preferences.recordsCalendar.startOfDay(for: date),
         scheduledStartAt: nil,
         title: title,
         estimatedPomodoros: pomodoros,
@@ -333,26 +333,26 @@ private func chainBlock(
 func assignedDayStartsWithoutManualActivation() throws {
     let store = try chainStore()
     let planning = try #require(chainDay(store, hour: 8, minute: 30))
-    let blocks = store.focusDayCanvas(at: planning).blocks.filter { $0.kind == .task }
+    let blocks = store.focus.focusDayCanvas(at: planning).blocks.filter { $0.kind == .task }
     let first = try #require(blocks.first)
     let second = try #require(blocks.dropFirst().first)
     let one = chainTask(store, title: "One", pomodoros: 1, at: planning)
     let two = chainTask(store, title: "Two", pomodoros: 1, at: planning)
-    _ = store.assign(one, toBlockStartingAt: first.startAtMs, at: planning)
-    _ = store.assign(two, toBlockStartingAt: second.startAtMs, at: planning)
-    let queued = store.refreshScheduledFocus(at: planning)
+    _ = store.focus.assign(one, toBlockStartingAt: first.startAtMs, at: planning).synchronousResult
+    _ = store.focus.assign(two, toBlockStartingAt: second.startAtMs, at: planning).synchronousResult
+    let queued = store.focus.refreshScheduledFocus(at: planning).synchronousResult
     #expect(queued.count == 2)
-    #expect(store.activeFocusSession() == nil)
-    #expect(store.refreshScheduledFocus(at: planning).map(\.id) == queued.map(\.id))
+    #expect(store.focus.activeFocusSession() == nil)
+    #expect(store.focus.refreshScheduledFocus(at: planning).synchronousResult.map(\.id) == queued.map(\.id))
 
     let wake = Date(timeIntervalSince1970: Double(second.startAtMs) / 1_000 + 60)
-    store.restoreScheduledFocus(at: wake)
-    let running = try #require(store.activeFocusSession())
+    store.focus.restoreScheduledFocus(at: wake).synchronousResult
+    let running = try #require(store.focus.activeFocusSession())
     #expect(running.taskID == two.id)
     #expect(running.startedAt == queued[1].startedAt)
     #expect(running.plannedEndAt == queued[1].plannedEndAt)
-    #expect(store.completedFocusBlocks(for: one) == 1)
-    store.restoreScheduledFocus(at: wake)
+    #expect(store.focus.completedFocusBlocks(for: one) == 1)
+    store.focus.restoreScheduledFocus(at: wake).synchronousResult
     #expect(store.records.state.focusSessions.filter { $0.id == running.id }.count == 1)
 }
 
@@ -361,22 +361,22 @@ func assignedDayStartsWithoutManualActivation() throws {
 func taskAssignedDuringBreakStartsAutomatically() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let blocks = store.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
+    let blocks = store.focus.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
     let first = try #require(blocks.first)
     let second = try #require(blocks.dropFirst().first)
     let one = chainTask(store, title: "One", pomodoros: 2, at: at)
-    _ = store.assign(one, toBlockStartingAt: first.startAtMs, at: at)
-    #expect(store.startFocus(task: one, inBlockStartingAt: first.startAtMs, at: at))
-    let end = try #require(store.activeFocusSession()).plannedEndAt
-    #expect(store.finishElapsedFocusSession(at: end))
-    #expect(store.activeFocusSession()?.kind == .shortBreak)
+    _ = store.focus.assign(one, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: one, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
+    let end = try #require(store.focus.activeFocusSession()).plannedEndAt
+    #expect(store.focus.finishElapsedFocusSession(at: end).synchronousResult)
+    #expect(store.focus.activeFocusSession()?.kind == .shortBreak)
     let two = chainTask(store, title: "Added during break", pomodoros: 1, at: end)
-    _ = store.assign(two, toBlockStartingAt: second.startAtMs, at: end)
-    #expect(store.refreshScheduledFocus(at: end).count == 1)
+    _ = store.focus.assign(two, toBlockStartingAt: second.startAtMs, at: end).synchronousResult
+    #expect(store.focus.refreshScheduledFocus(at: end).synchronousResult.count == 1)
     let start = Date(timeIntervalSince1970: Double(second.startAtMs) / 1_000)
-    store.restoreScheduledFocus(at: start.addingTimeInterval(20))
-    #expect(store.activeFocusSession()?.taskID == two.id)
-    #expect(store.activeFocusSession()?.startedAt == start)
+    store.focus.restoreScheduledFocus(at: start.addingTimeInterval(20)).synchronousResult
+    #expect(store.focus.activeFocusSession()?.taskID == two.id)
+    #expect(store.focus.activeFocusSession()?.startedAt == start)
 }
 
 @MainActor
@@ -384,24 +384,24 @@ func taskAssignedDuringBreakStartsAutomatically() throws {
 func clearingOrStoppingDoesNotRestartScheduledFocus() throws {
     let store = try chainStore()
     let planning = try #require(chainDay(store, hour: 8, minute: 30))
-    let block = try #require(store.focusDayCanvas(at: planning).blocks.first { $0.kind == .task })
+    let block = try #require(store.focus.focusDayCanvas(at: planning).blocks.first { $0.kind == .task })
     let task = chainTask(store, title: "One", pomodoros: 1, at: planning)
-    _ = store.assign(task, toBlockStartingAt: block.startAtMs, at: planning)
-    #expect(store.refreshScheduledFocus(at: planning).count == 1)
-    let workBlock = try #require(store.focusWorkBlocks(at: planning).first { $0.startAtMs == block.startAtMs })
-    store.clearFocusBlock(workBlock, at: planning)
-    #expect(store.refreshScheduledFocus(at: planning).isEmpty)
+    _ = store.focus.assign(task, toBlockStartingAt: block.startAtMs, at: planning).synchronousResult
+    #expect(store.focus.refreshScheduledFocus(at: planning).synchronousResult.count == 1)
+    let workBlock = try #require(store.focus.focusWorkBlocks(at: planning).first { $0.startAtMs == block.startAtMs })
+    store.focus.clearFocusBlock(workBlock, at: planning).synchronousResult
+    #expect(store.focus.refreshScheduledFocus(at: planning).synchronousResult.isEmpty)
     let start = Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)
-    store.restoreScheduledFocus(at: start)
-    #expect(store.activeFocusSession() == nil)
+    store.focus.restoreScheduledFocus(at: start).synchronousResult
+    #expect(store.focus.activeFocusSession() == nil)
 
-    _ = store.assign(task, toBlockStartingAt: block.startAtMs, at: start)
-    store.refreshScheduledFocus(at: start)
-    let session = try #require(store.activeFocusSession())
-    #expect(!store.stopFocusFromActivity(startAtMs: block.startAtMs - 1, at: start.addingTimeInterval(60)))
-    #expect(store.stopFocusFromActivity(startAtMs: block.startAtMs, at: start.addingTimeInterval(60)))
-    #expect(store.refreshScheduledFocus(at: start.addingTimeInterval(90)).isEmpty)
-    #expect(store.activeFocusSession() == nil)
+    _ = store.focus.assign(task, toBlockStartingAt: block.startAtMs, at: start).synchronousResult
+    _ = store.focus.refreshScheduledFocus(at: start).synchronousResult
+    let session = try #require(store.focus.activeFocusSession())
+    #expect(!store.focus.stopFocusFromActivity(startAtMs: block.startAtMs - 1, at: start.addingTimeInterval(60)).synchronousResult)
+    #expect(store.focus.stopFocusFromActivity(startAtMs: block.startAtMs, at: start.addingTimeInterval(60)).synchronousResult)
+    #expect(store.focus.refreshScheduledFocus(at: start.addingTimeInterval(90)).synchronousResult.isEmpty)
+    #expect(store.focus.activeFocusSession() == nil)
     #expect(store.records.state.focusSessions.first { $0.id == session.id }?.endReason == .stoppedByUser)
 }
 
@@ -410,10 +410,10 @@ func clearingOrStoppingDoesNotRestartScheduledFocus() throws {
 func pastUnarmedAssignmentsDoNotCreateHistory() throws {
     let store = try chainStore()
     let planning = try #require(chainDay(store, hour: 8, minute: 30))
-    let block = try #require(store.focusDayCanvas(at: planning).blocks.first { $0.kind == .task })
+    let block = try #require(store.focus.focusDayCanvas(at: planning).blocks.first { $0.kind == .task })
     let task = chainTask(store, title: "Unarmed", pomodoros: 1, at: planning)
-    _ = store.assign(task, toBlockStartingAt: block.startAtMs, at: planning)
-    store.refreshScheduledFocus(at: Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000 + 60))
+    _ = store.focus.assign(task, toBlockStartingAt: block.startAtMs, at: planning).synchronousResult
+    _ = store.focus.refreshScheduledFocus(at: Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000 + 60)).synchronousResult
     #expect(store.records.state.focusSessions.isEmpty)
 }
 
@@ -429,17 +429,17 @@ func allFinalPhasesCompleteTheDay(kind: FocusSessionKind) throws {
     }
     let session = FocusSession(
         id: UUID(), taskID: kind == .focus ? task.id : nil,
-        shiftAnchorDate: store.recordsCalendar.startOfDay(for: at),
+        shiftAnchorDate: store.preferences.recordsCalendar.startOfDay(for: at),
         startedAt: at, plannedEndAt: at.addingTimeInterval(25 * 60),
         endedAt: nil, endReason: nil, editedAt: at, editCount: 0,
         editTieBreaker: UUID(), kind: kind, plannedEndReason: .completed
     )
     store.records.upsertFocusSession(session)
-    #expect(store.completesFocusDay(after: session, at: at))
-    #expect(store.focusChain(for: session, at: at).count == 1)
-    #expect(store.finishElapsedFocusSession(at: session.plannedEndAt))
-    #expect(store.activeFocusSession() == nil)
-    #expect(store.focusDayComplete(at: session.plannedEndAt))
+    #expect(store.focus.completesFocusDay(after: session, at: at))
+    #expect(store.focus.focusChain(for: session, at: at).count == 1)
+    #expect(store.focus.finishElapsedFocusSession(at: session.plannedEndAt).synchronousResult)
+    #expect(store.focus.activeFocusSession() == nil)
+    #expect(store.focus.focusDayComplete(at: session.plannedEndAt))
 }
 
 @MainActor
@@ -447,16 +447,16 @@ func allFinalPhasesCompleteTheDay(kind: FocusSessionKind) throws {
 func finalQueuedBlockCompletesRunningTask() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let blocks = store.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
+    let blocks = store.focus.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
     let task = chainTask(store, title: "Two blocks", pomodoros: 2, at: at)
     for block in blocks.prefix(2) {
-        _ = store.assign(task, toBlockStartingAt: block.startAtMs, at: at)
+        _ = store.focus.assign(task, toBlockStartingAt: block.startAtMs, at: at).synchronousResult
     }
-    let queued = store.refreshScheduledFocus(at: at)
-    let running = try #require(store.activeFocusSession())
-    #expect(!store.completesFocusDay(after: running, at: at))
+    let queued = store.focus.refreshScheduledFocus(at: at).synchronousResult
+    let running = try #require(store.focus.activeFocusSession())
+    #expect(!store.focus.completesFocusDay(after: running, at: at))
     let last = try #require(queued.last)
-    #expect(store.completesFocusDay(after: last, at: at))
+    #expect(store.focus.completesFocusDay(after: last, at: at))
 }
 
 @MainActor
@@ -464,25 +464,29 @@ func finalQueuedBlockCompletesRunningTask() throws {
 func activityActionsRequireConfirmation() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let first = try #require(store.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
+    let first = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.kind == .task })
     let task = chainTask(store, title: "Review", pomodoros: 1, at: at)
-    _ = store.assign(task, toBlockStartingAt: first.startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at))
-    let session = try #require(store.activeFocusSession())
+    _ = store.focus.assign(task, toBlockStartingAt: first.startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: first.startAtMs, at: at).synchronousResult)
+    let session = try #require(store.focus.activeFocusSession())
     let start = Int64(session.startedAt.timeIntervalSince1970 * 1_000)
 
     for action in [FocusActivityRequest.Action.addPomodoros, .stop] {
-        store.requestFocusActivityConfirmation(action, startAtMs: start)
-        let request = try #require(store.focusActivityRequest)
+        // One scene per action: a second request in the same scene queues behind
+        // the first, which SceneStateTests covers separately.
+        let scene = SceneState()
+        scene.requestFocusActivityConfirmation(action, startAtMs: start)
+        let request = try #require(scene.focusActivityRequest)
         #expect(request.action == action)
-        #expect(store.selectedTab == .focus)
-        #expect(store.focusPath.isEmpty)
-        #expect(store.matchesFocusActivity(request, at: at))
-        #expect(!store.matchesFocusActivity(request, at: session.plannedEndAt))
-        #expect(store.activeFocusSession()?.id == session.id)
+        scene.activateFocusActivityPresentationIfPossible(isBlocked: false)
+        #expect(scene.selectedTab == .focus)
+        #expect(scene.focusPath.isEmpty)
+        #expect(store.focus.matchesFocusActivity(request, at: at))
+        #expect(!store.focus.matchesFocusActivity(request, at: session.plannedEndAt))
+        #expect(store.focus.activeFocusSession()?.id == session.id)
         #expect(store.records.state.focusTasks.first { $0.id == task.id }?.estimatedPomodoros == 1)
     }
-    #expect(!store.matchesFocusActivity(.init(action: .stop, startAtMs: start - 1), at: at))
+    #expect(!store.focus.matchesFocusActivity(.init(action: .stop, startAtMs: start - 1), at: at))
 }
 
 @MainActor
@@ -490,38 +494,38 @@ func activityActionsRequireConfirmation() throws {
 func extraPomodorosRespectNextTask() throws {
     let store = try chainStore()
     let at = try #require(chainDay(store, hour: 9, minute: 0))
-    let blocks = store.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
+    let blocks = store.focus.focusDayCanvas(at: at).blocks.filter { $0.kind == .task }
     try #require(blocks.count >= 4)
     let task = chainTask(store, title: "Review", pomodoros: 1, at: at)
     let next = chainTask(store, title: "Next task", pomodoros: 1, at: at)
-    _ = store.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at)
-    _ = store.assign(next, toBlockStartingAt: blocks[3].startAtMs, at: at)
-    #expect(store.startFocus(task: task, inBlockStartingAt: blocks[0].startAtMs, at: at))
-    #expect(store.addableFocusBlocks(at: at).count == 2)
-    #expect(!store.addFocusPomodoroToRunningTask(count: 3, at: at))
+    _ = store.focus.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at).synchronousResult
+    _ = store.focus.assign(next, toBlockStartingAt: blocks[3].startAtMs, at: at).synchronousResult
+    #expect(store.focus.startFocus(task: task, inBlockStartingAt: blocks[0].startAtMs, at: at).synchronousResult)
+    #expect(store.focus.addableFocusBlocks(at: at).count == 2)
+    #expect(!store.focus.addFocusPomodoroToRunningTask(count: 3, at: at).synchronousResult)
     #expect(store.records.state.focusTasks.first { $0.id == task.id }?.estimatedPomodoros == 1)
-    #expect(store.addFocusPomodoroToRunningTask(count: 2, at: at))
-    #expect(store.addableFocusBlocks(at: at).isEmpty)
+    #expect(store.focus.addFocusPomodoroToRunningTask(count: 2, at: at).synchronousResult)
+    #expect(store.focus.addableFocusBlocks(at: at).isEmpty)
     #expect(store.records.state.focusTasks.first { $0.id == task.id }?.estimatedPomodoros == 3)
-    #expect(store.focusDayCanvas(at: at).blocks.first { $0.startAtMs == blocks[3].startAtMs }?.taskID == next.id)
+    #expect(store.focus.focusDayCanvas(at: at).blocks.first { $0.startAtMs == blocks[3].startAtMs }?.taskID == next.id)
 }
 
 @MainActor
 @Test("Focus tab navigation preserves the other tabs and never requests a paywall")
-func focusTabNavigationPreservesOtherTabs() throws {
-    let store = try chainStore()
-    store.timerPath = [.about]
-    store.settingsPath = [.language]
-    store.focusPath = [.plus]
-    store.presentedRoute = .focus
-    store.openFocusTab()
-    #expect(store.selectedTab == .focus)
-    #expect(store.focusPath.isEmpty)
-    #expect(store.timerPath == [.about])
-    #expect(store.settingsPath == [.language])
-    #expect(store.presentedRoute == nil)
-    #expect(store.paywallSheet == nil)
-    store.activePath = [.plus]
-    #expect(store.focusPath == [.plus])
-    #expect(store.timerPath == [.about])
+func focusTabNavigationPreservesOtherTabs() {
+    let scene = SceneState()
+    scene.timerPath = [.about]
+    scene.settingsPath = [.language]
+    scene.focusPath = [.plus]
+    scene.presentedRoute = .focus
+    scene.openFocusTab()
+    #expect(scene.selectedTab == .focus)
+    #expect(scene.focusPath.isEmpty)
+    #expect(scene.timerPath == [.about])
+    #expect(scene.settingsPath == [.language])
+    #expect(scene.presentedRoute == nil)
+    #expect(scene.paywallSheet == nil)
+    scene.activePath = [.plus]
+    #expect(scene.focusPath == [.plus])
+    #expect(scene.timerPath == [.about])
 }

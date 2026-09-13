@@ -1,17 +1,17 @@
 import SwiftUI
 
 struct FocusFavoritePicker: View {
-    let store: OffWorkStore
+    let focus: FocusStore
     @Binding var title: String
     @Binding var icon: FocusTaskIcon
     @Binding var selectedID: UUID?
     var onSelect: (FocusTask) -> Void = { _ in }
 
     var body: some View {
-        let favorites = store.favoriteFocusTasks()
+        let favorites = focus.favoriteFocusTasks()
         if !favorites.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
-                OWCSectionHeader(title: store.t("focusFavorites"))
+                OWCSectionHeader(title: focus.t("focusFavorites"))
                 OWCGroupCard {
                     ForEach(Array(favorites.enumerated()), id: \.element.id) { index, task in
                         Button {
@@ -21,7 +21,7 @@ struct FocusFavoritePicker: View {
                             onSelect(task)
                         } label: {
                             OWCRow(icon: task.icon.systemName, title: task.title,
-                                   subtitle: store.t("focusEstimateDetail", values: ["count": "\(task.estimatedPomodoros)", "minutes": "\(store.focusTimerSettings.normalized.focusMinutes)"]), isLast: index == favorites.count - 1) {
+                                   subtitle: focus.t("focusEstimateDetail", values: ["count": "\(task.estimatedPomodoros)", "minutes": "\(focus.focusTimerSettings.normalized.focusMinutes)"]), isLast: index == favorites.count - 1) {
                                 if selectedID == task.id {
                                     Image(systemName: "checkmark").foregroundStyle(OWCDesign.accent)
                                 }
@@ -30,9 +30,11 @@ struct FocusFavoritePicker: View {
                         .buttonStyle(OWCRowButtonStyle())
                         .accessibilityAddTraits(selectedID == task.id ? .isSelected : [])
                         .contextMenu {
-                            Button(store.t("focusRemoveFavorite"), systemImage: "trash", role: .destructive) {
-                                store.toggleFocusFavorite(task)
-                                if selectedID == task.id { selectedID = nil }
+                            Button(focus.t("focusRemoveFavorite"), systemImage: "trash", role: .destructive) {
+                                Task { @MainActor in
+                                    await focus.toggleFocusFavorite(task).value
+                                    if selectedID == task.id { selectedID = nil }
+                                }
                             }
                         }
                     }
@@ -54,12 +56,12 @@ struct FocusFavoritePicker: View {
 
 
 struct FocusFavoriteToggle: View {
-    let store: OffWorkStore
+    let title: String
     @Binding var isFavorite: Bool
 
     var body: some View {
         Toggle(isOn: $isFavorite) {
-            Label(store.t("focusMakeFavorite"), systemImage: "star")
+            Label(title, systemImage: "star")
                 .font(.callout)
         }
         .tint(OWCDesign.accent)

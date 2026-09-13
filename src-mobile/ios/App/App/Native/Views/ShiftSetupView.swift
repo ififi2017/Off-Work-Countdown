@@ -8,20 +8,21 @@ import SwiftUI
 /// fixed, the slack collects above the action button, and the content is short
 /// enough that the `GeometryReader` the old version needed is gone.
 struct ShiftSetupView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
     let onOpenSettings: (AppRoute?) -> Void
 
     @State private var timeField: SetupTimeField?
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store)
+            OWCAppHeader(preferences: shifts.preferences, text: shifts.text)
 
             // The hero stays put. It is the answer to the question this screen
             // asks — when does today start and end — and once the list below it
             // grew long enough to scroll, that answer was the first thing to
             // leave the screen. Only the list moves now.
-            ShiftHeroCard(store: store) { timeField = $0 }
+            ShiftHeroCard(shifts: shifts) { timeField = $0 }
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, OWCDesign.heroGap)
                 .padding(.bottom, OWCDesign.sectionGap)
@@ -29,15 +30,15 @@ struct ShiftSetupView: View {
             // The way back from an early clock-off, and the only way back.
             // Deliberately not a side effect of editing the schedule: changing
             // tomorrow's hours must never quietly resurrect today.
-            if let note = store.earlyClockOffNote() {
-                EarlyClockOffBanner(store: store, note: note)
+            if let note = shifts.session.earlyClockOffNote() {
+                EarlyClockOffBanner(shifts: shifts, note: note)
                     .padding(.horizontal, OWCDesign.pageInset)
                     .padding(.bottom, OWCDesign.sectionGap)
             }
 
             ScrollView {
                 ShiftSetupTimelineView(
-                    store: store,
+                    shifts: shifts,
                     onSelect: { onOpenSettings($0) },
                     onEditTime: { timeField = $0 }
                 )
@@ -48,7 +49,7 @@ struct ShiftSetupView: View {
             .scrollBounceBehavior(.basedOnSize)
         }
         .safeAreaInset(edge: .bottom) {
-            ShiftStartButton(store: store) { onOpenSettings(.lunch) }
+            ShiftStartButton(shifts: shifts) { onOpenSettings(.lunch) }
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 10)
                 .padding(.bottom, 14)
@@ -58,13 +59,14 @@ struct ShiftSetupView: View {
         }
         .sheet(item: $timeField) { field in
             OWCSetupTimePickerSheet(
-                store: store,
-                title: store.t(field == .start ? "startTime" : "endTime"),
+                session: shifts.session,
+                text: shifts.text,
+                title: shifts.text.t(field == .start ? "startTime" : "endTime"),
                 minutes: Binding(
-                    get: { field == .start ? store.displayedStartMinutes : store.displayedEndMinutes },
+                    get: { field == .start ? scene.displayedStartMinutes(using: shifts.preferences) : scene.displayedEndMinutes(using: shifts.preferences) },
                     set: { value in
-                        if field == .start { store.setDisplayedStartMinutes(value) }
-                        else { store.setDisplayedEndMinutes(value) }
+                        if field == .start { scene.setDisplayedStartMinutes(value, using: shifts.preferences) }
+                        else { scene.setDisplayedEndMinutes(value, using: shifts.preferences) }
                     }
                 )
             )

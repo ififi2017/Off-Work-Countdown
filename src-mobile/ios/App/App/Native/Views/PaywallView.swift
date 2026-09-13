@@ -7,7 +7,8 @@ import SwiftUI
 /// same view, so the settings page put one vertical `ScrollView` inside another
 /// and neither of them scrolled predictably.
 struct PaywallView: View {
-    let store: OffWorkStore
+    let plus: PlusEntitlement
+    let text: AppText
     var reason: PlusPaywallReason = .intro
     var showsSkip: Bool = false
     /// Off when the presenter already offers a way out — a sheet has Close in
@@ -19,14 +20,14 @@ struct PaywallView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                if !store.plus.isAuthorized {
+                if !plus.isAuthorized {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(store.t(reason.lockedTitleKey))
+                        Text(text.t(reason.lockedTitleKey))
                             .font(.title.bold())
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
 
-                        Text(store.t("plusIntroBody"))
+                        Text(text.t("plusIntroBody"))
                             .font(.callout)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineSpacing(3)
@@ -36,7 +37,8 @@ struct PaywallView: View {
                 }
 
                 PaywallContent(
-                    store: store,
+                    plus: plus,
+                    text: text,
                     showsBenefits: true,
                     showsIntro: false,
                     loadsProductsOnAppear: true,
@@ -51,7 +53,7 @@ struct PaywallView: View {
             .frame(maxWidth: .infinity)
             .animation(
                 reduceMotion ? OWCMotion.reduced : OWCMotion.paywallPresentation,
-                value: store.plus.isAuthorized
+                value: plus.isAuthorized
             )
         }
         .defaultScrollAnchor(.center, for: .alignment)
@@ -60,14 +62,13 @@ struct PaywallView: View {
     }
 
     private func finishAuthorizedFlow() {
-        store.plus.markIntroSeen()
-        store.resumePendingPlusActionIfAuthorized()
+        plus.markIntroSeen()
         onDismiss()
     }
 
     private var secondaryTitle: String? {
-        if reason != .intro, showsDismissButton { return store.t("plusContinueReadonly") }
-        if showsSkip { return store.t("plusSkip") }
+        if reason != .intro, showsDismissButton { return text.t("plusContinueReadonly") }
+        if showsSkip { return text.t("plusSkip") }
         return nil
     }
 
@@ -75,7 +76,7 @@ struct PaywallView: View {
         if reason != .intro, showsDismissButton { return onDismiss }
         if showsSkip {
             return {
-                store.plus.markIntroSeen()
+                plus.markIntroSeen()
                 onDismiss()
             }
         }
@@ -85,7 +86,8 @@ struct PaywallView: View {
 
 /// Everything below the title: what Plus adds, the plans, and the legal text.
 struct PaywallContent: View {
-    let store: OffWorkStore
+    let plus: PlusEntitlement
+    let text: AppText
     var showsBenefits = true
     var showsIntro = true
     var loadsProductsOnAppear = true
@@ -101,10 +103,9 @@ struct PaywallContent: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private var plus: PlusEntitlement { store.plus }
-
     init(
-        store: OffWorkStore,
+        plus: PlusEntitlement,
+        text: AppText,
         showsBenefits: Bool = true,
         showsIntro: Bool = true,
         loadsProductsOnAppear: Bool = true,
@@ -112,21 +113,23 @@ struct PaywallContent: View {
         secondaryAction: (() -> Void)? = nil,
         authorizedAction: (() -> Void)? = nil
     ) {
-        self.store = store
+        self.plus = plus
+        self.text = text
         self.showsBenefits = showsBenefits
         self.showsIntro = showsIntro
         self.loadsProductsOnAppear = loadsProductsOnAppear
         self.secondaryTitle = secondaryTitle
         self.secondaryAction = secondaryAction
         self.authorizedAction = authorizedAction
-        _authorizedAtPresentation = State(initialValue: store.plus.isAuthorized)
+        _authorizedAtPresentation = State(initialValue: plus.isAuthorized)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if plus.isAuthorized {
                 PlusSubscriberThankYouView(
-                    store: store,
+                    plus: plus,
+                    text: text,
                     playsOnAppear: !authorizedAtPresentation,
                     onContinue: authorizedAction
                 )
@@ -138,7 +141,7 @@ struct PaywallContent: View {
             } else {
                 VStack(alignment: .leading, spacing: 16) {
                     if showsIntro {
-                        Text(store.t("plusIntroBody"))
+                        Text(text.t("plusIntroBody"))
                             .font(.callout)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineSpacing(3)
@@ -183,15 +186,15 @@ struct PaywallContent: View {
             }
         }
         .confirmationDialog(
-            store.t("plusLifetimeWhileSubscribed"),
+            text.t("plusLifetimeWhileSubscribed"),
             isPresented: $confirmsLifetime,
             titleVisibility: .visible
         ) {
-            Button(store.t("plusBuyLifetime")) {
+            Button(text.t("plusBuyLifetime")) {
                 guard let product = plus.lifetimeProduct() else { return }
                 Task { await plus.purchase(product) }
             }
-            Button(store.t("cancel"), role: .cancel) {}
+            Button(text.t("cancel"), role: .cancel) {}
         }
     }
 
@@ -208,7 +211,7 @@ struct PaywallContent: View {
                         .frame(width: 34, height: 34)
                         .background(OWCDesign.accent.opacity(0.11), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                         .accessibilityHidden(true)
-                    Text(store.t(benefit.titleKey))
+                    Text(text.t(benefit.titleKey))
                         .font(.callout)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
@@ -232,7 +235,7 @@ struct PaywallContent: View {
                 planPickerPlaceholder
             } else if plus.products.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(store.t("plusUnavailable"))
+                    Text(text.t("plusUnavailable"))
                         .font(.callout)
                         .fixedSize(horizontal: false, vertical: true)
                     if let error = plus.lastProductError {
@@ -241,7 +244,7 @@ struct PaywallContent: View {
                             .foregroundStyle(OWCDesign.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    Button(store.t("retryAction")) {
+                    Button(text.t("retryAction")) {
                         Task { await plus.loadProducts() }
                     }
                     .buttonStyle(OWCPrimaryButtonStyle())
@@ -275,7 +278,7 @@ struct PaywallContent: View {
             .foregroundStyle(OWCDesign.secondary)
 
             if case .pendingAskToBuy = plus.authorization {
-                statusNote(store.t("plusWaitingApproval"))
+                statusNote(text.t("plusWaitingApproval"))
             }
             if let error = plus.lastProductError, !plus.products.isEmpty {
                 statusNote(error)
@@ -284,7 +287,7 @@ struct PaywallContent: View {
     }
 
     private var restoreButton: some View {
-        Button(store.t("plusRestore")) {
+        Button(text.t("plusRestore")) {
             Task { await plus.restore() }
         }
         .disabled(plus.isBusy)
@@ -361,7 +364,7 @@ struct PaywallContent: View {
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 4) {
-                    Text(store.t(plan.titleKey))
+                    Text(text.t(plan.titleKey))
                         .font(.callout.weight(.semibold))
                         .lineLimit(2)
                         .minimumScaleFactor(0.82)
@@ -415,7 +418,7 @@ struct PaywallContent: View {
         } label: {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(store.t(plan.titleKey))
+                    Text(text.t(plan.titleKey))
                         .font(.body.weight(.semibold))
                     if let badge = badge(for: plan) {
                         Text(badge)
@@ -468,11 +471,11 @@ struct PaywallContent: View {
     private var checkoutTitle: String {
         switch selected {
         case .yearly where plus.yearlyEligibleForTrial:
-            return store.t("plusStartTrialShort")
+            return text.t("plusStartTrialShort")
         case .lifetime:
-            return store.t("plusBuyLifetime")
+            return text.t("plusBuyLifetime")
         case .yearly, .monthly:
-            return store.t("plusSubscribe")
+            return text.t("plusSubscribe")
         }
     }
 
@@ -491,14 +494,14 @@ struct PaywallContent: View {
     private func badge(for plan: PlusPlanKind) -> String? {
         switch plan {
         case .yearly:
-            return plus.yearlyEligibleForTrial ? store.t("plusTrialBadge") : store.t("plusBestValue")
+            return plus.yearlyEligibleForTrial ? text.t("plusTrialBadge") : text.t("plusBestValue")
         case .monthly, .lifetime:
             return nil
         }
     }
 
     private func planAccessibilityLabel(_ plan: PlusPlanKind) -> String {
-        [store.t(plan.titleKey), price(for: plan), badge(for: plan)]
+        [text.t(plan.titleKey), price(for: plan), badge(for: plan)]
             .compactMap { $0 }
             .joined(separator: ", ")
     }
@@ -507,15 +510,15 @@ struct PaywallContent: View {
 
     private var ownedNotice: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(store.t("plusOwnedTitle"))
+            Text(text.t("plusOwnedTitle"))
                 .font(.body.weight(.medium))
-            Text(store.t("plusOwnedBody"))
+            Text(text.t("plusOwnedBody"))
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
             if plus.hasActiveSubscription {
-                Button(store.t("plusManage")) { plus.manageSubscriptions() }
+                Button(text.t("plusManage")) { plus.manageSubscriptions() }
                     .font(.body.weight(.semibold))
                     .frame(minHeight: 44)
             }
@@ -525,12 +528,12 @@ struct PaywallContent: View {
     @ViewBuilder
     private var subscribedFooter: some View {
         if case .pendingAskToBuy = plus.authorization {
-            statusNote(store.t("plusWaitingApproval"))
+            statusNote(text.t("plusWaitingApproval"))
         }
         if case .authorized(.inGracePeriod) = plus.authorization {
-            statusNote(store.t("plusGracePeriod"))
+            statusNote(text.t("plusGracePeriod"))
         }
-        Button(store.t("plusManage")) { plus.manageSubscriptions() }
+        Button(text.t("plusManage")) { plus.manageSubscriptions() }
             .buttonStyle(OWCPrimaryButtonStyle(filled: false))
     }
 
@@ -548,7 +551,7 @@ struct PaywallContent: View {
             // Lifetime already owns the app. Auto-renew and trial copy
             // belong on the purchase path, not next to "you have Plus for good".
             if !plus.isLifetime {
-                Text(store.t("plusAutoRenew"))
+                Text(text.t("plusAutoRenew"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineSpacing(2)
@@ -572,18 +575,19 @@ struct PaywallContent: View {
 
     private var termsLink: some View {
         Link(
-            store.t("plusTerms"),
+            text.t("plusTerms"),
             destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
         )
     }
 
     private var privacyLink: some View {
-        Link(store.t("plusPrivacy"), destination: URL(string: "https://doneat.app/privacy")!)
+        Link(text.t("plusPrivacy"), destination: URL(string: "https://doneat.app/privacy")!)
     }
 }
 
 private struct PlusSubscriberThankYouView: View {
-    let store: OffWorkStore
+    let plus: PlusEntitlement
+    let text: AppText
     let playsOnAppear: Bool
     let onContinue: (() -> Void)?
     var body: some View {
@@ -592,19 +596,19 @@ private struct PlusSubscriberThankYouView: View {
                 showsDepth: true,
                 replaysOnTap: true,
                 playsOnAppear: playsOnAppear,
-                accessibilityTitle: store.t("plusReplayCelebration"),
-                isActive: store.plus.isAuthorized
+                accessibilityTitle: text.t("plusReplayCelebration"),
+                isActive: plus.isAuthorized
             )
                 .frame(width: 260, height: 260)
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 24)
 
             VStack(alignment: .leading, spacing: 10) {
-                Text(store.t("plusThanksTitle"))
+                Text(text.t("plusThanksTitle"))
                     .font(.title.bold())
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
-                Text(store.t("plusThanksBody"))
+                Text(text.t("plusThanksBody"))
                     .font(.callout)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineSpacing(3)
@@ -614,17 +618,17 @@ private struct PlusSubscriberThankYouView: View {
 
             OWCGroupCard {
                 OWCRow(
-                    icon: store.plus.isLifetime ? "infinity" : "arrow.triangle.2.circlepath",
-                    title: store.t(store.plus.isLifetime ? "plusOwnedTitle" : "plusThanksCurrentPlan"),
-                    subtitle: store.plus.isLifetime
-                        ? store.t(store.plus.hasActiveSubscription ? "plusLifetimeWhileSubscribed" : "plusOwnedBody")
-                        : store.plusStatusLabel,
+                    icon: plus.isLifetime ? "infinity" : "arrow.triangle.2.circlepath",
+                    title: text.t(plus.isLifetime ? "plusOwnedTitle" : "plusThanksCurrentPlan"),
+                    subtitle: plus.isLifetime
+                        ? text.t(plus.hasActiveSubscription ? "plusLifetimeWhileSubscribed" : "plusOwnedBody")
+                        : text.plusStatusLabel(for: plus),
                     isLast: true,
                     centersVertically: true
                 ) {
-                    if store.plus.hasActiveSubscription {
-                        Button(store.t("plusThanksManagePlan")) {
-                            store.plus.manageSubscriptions()
+                    if plus.hasActiveSubscription {
+                        Button(text.t("plusThanksManagePlan")) {
+                            plus.manageSubscriptions()
                         }
                         .font(.callout.weight(.semibold))
                         .frame(minHeight: 44)
@@ -634,7 +638,7 @@ private struct PlusSubscriberThankYouView: View {
             .padding(.top, 22)
 
             if let onContinue {
-                Button(store.t("plusThanksContinue"), action: onContinue)
+                Button(text.t("plusThanksContinue"), action: onContinue)
                     .buttonStyle(OWCPrimaryButtonStyle())
                     .padding(.top, 22)
             }
@@ -681,6 +685,7 @@ struct PlusBenefit: Identifiable {
         PlusBenefit(id: "life", icon: "circle.grid.3x3", titleKey: "plusBenefitLife"),
         PlusBenefit(id: "edit", icon: "pencil", titleKey: "plusBenefitEdit"),
         PlusBenefit(id: "focus", icon: FocusTaskIcon.focus.systemName, titleKey: "plusBenefitFocus"),
+        PlusBenefit(id: "watch", icon: "applewatch", titleKey: "plusBenefitWatch"),
         PlusBenefit(id: "sync", icon: "icloud", titleKey: "plusBenefitSync"),
     ]
 }
@@ -701,11 +706,12 @@ extension PlusPaywallReason {
 }
 
 struct PlusIntroView: View {
-    let store: OffWorkStore
+    let plus: PlusEntitlement
+    let text: AppText
 
     var body: some View {
-        PaywallView(store: store, reason: .intro, showsSkip: true) {
-            store.plus.markIntroSeen()
+        PaywallView(plus: plus, text: text, reason: .intro, showsSkip: true) {
+            plus.markIntroSeen()
         }
     }
 }

@@ -177,6 +177,27 @@ nonisolated struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
             let projected = Double(elapsed) / Double(duration) * 100
             return min(100, max(progress, projected))
         }
+
+        /// Remaining effective work across the absolute segments supplied by
+        /// CountdownRules. Gaps never decrease this value.
+        func effectiveRemainingMs(atMs nowMs: Int64) -> Int64? {
+            guard nowMs >= 0 else { return nil }
+            var remaining: Int64 = 0
+            var previousEnd: Int64?
+            for segment in segments {
+                guard segment.startAtMs >= 0,
+                      segment.startAtMs < segment.endAtMs,
+                      previousEnd.map({ $0 <= segment.startAtMs }) ?? true else { return nil }
+                let duration = nowMs >= segment.endAtMs
+                    ? 0
+                    : segment.endAtMs - max(segment.startAtMs, nowMs)
+                let (sum, overflow) = remaining.addingReportingOverflow(duration)
+                guard !overflow else { return nil }
+                remaining = sum
+                previousEnd = segment.endAtMs
+            }
+            return remaining
+        }
     }
 
     let shiftStartAtMs: Int64

@@ -5,7 +5,9 @@ import SwiftUI
 /// The mark stays interactive here because this is the one point in
 /// onboarding where the user is invited to stop rather than read or configure.
 struct OnboardingFinalePage: View {
-    @Bindable var store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    @Bindable var preferences: PreferencesStore
+    let text: AppText
     let logoSize: CGFloat
     let onFinish: () -> Void
 
@@ -24,7 +26,7 @@ struct OnboardingFinalePage: View {
                 .multilineTextAlignment(.center)
                 .padding(.top, 22)
 
-            Text(store.t("onboardingFinaleMessage"))
+            Text(text.t("onboardingFinaleMessage"))
                 .font(.body)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
@@ -33,11 +35,11 @@ struct OnboardingFinalePage: View {
             Spacer(minLength: 24)
 
             OnboardingDots(
-                page: store.onboardingPage,
-                includesAllSet: store.scheduleMode != .off
+                page: scene.onboardingPage,
+                includesAllSet: preferences.scheduleMode != .off
             )
             Button(
-                store.t("onboardingStartExperience"),
+                text.t("onboardingStartExperience"),
                 action: finish
             )
             .buttonStyle(OWCPrimaryButtonStyle())

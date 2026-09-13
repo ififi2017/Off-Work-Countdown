@@ -25,37 +25,30 @@ nonisolated enum TimerContentSpace {
 /// anyone handed the device can blank the figure, only its owner can bring it
 /// back. A second implementation of that is a second chance to get it backwards.
 struct OWCEarningsVisibilityButton: View {
-    let store: OffWorkStore
+    let preferences: PreferencesStore
+    let text: AppText
 
     var body: some View {
         Button {
-            guard store.hideEarnings else {
-                store.hideEarnings = true
+            guard preferences.hideEarnings else {
+                preferences.hideEarnings = true
                 return
             }
             Task {
-                if await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason")) {
-                    store.hideEarnings = false
+                if await BiometricGate.confirmOwner(reason: text.t("unlockSalaryReason")) {
+                    preferences.hideEarnings = false
                 }
             }
         } label: {
-            Image(systemName: store.hideEarnings ? "eye" : "eye.slash")
+            Image(systemName: preferences.hideEarnings ? "eye" : "eye.slash")
         }
-        .accessibilityLabel(store.t(store.hideEarnings ? "unlockSalary" : "salaryLocked"))
-        .sensoryFeedback(.selection, trigger: store.hideEarnings)
-    }
-}
-
-extension OffWorkStore {
-    /// `timelineExpanded` as a `Binding`, so the timer views can hand it to the
-    /// list without each of them holding a copy that can drift out of step.
-    var timelineExpandedBinding: Binding<Bool> {
-        Binding(get: { self.timelineExpanded }, set: { self.timelineExpanded = $0 })
+        .accessibilityLabel(text.t(preferences.hideEarnings ? "unlockSalary" : "salaryLocked"))
+        .sensoryFeedback(.selection, trigger: preferences.hideEarnings)
     }
 }
 
 struct UpcomingTimelineView: View {
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
     let snapshot: NativeShiftSnapshot
     let now: Date
     @Binding var isExpanded: Bool
@@ -114,18 +107,18 @@ struct UpcomingTimelineView: View {
     }
 
     var body: some View {
-        let events = store.upcomingTimelineEvents(for: snapshot, at: now)
+        let events = shifts.upcomingTimelineEvents(for: snapshot, at: now)
         let collapsedEventLimit = collapsedLimit(eventCount: events.count)
         let visibleEvents = isExpanded ? events : Array(events.prefix(collapsedEventLimit))
         let hiddenCount = max(0, events.count - collapsedEventLimit)
 
         if !events.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("comingUp"))
+                OWCSectionHeader(title: shifts.text.t("comingUp"))
                 OWCGroupCard {
                     ForEach(visibleEvents) { event in
                         UpcomingTimelineEventRow(
-                            store: store,
+                            locale: shifts.preferences.locale,
                             event: event,
                             now: now,
                             showsSeparator: event.id != visibleEvents.last?.id || events.count > collapsedEventLimit
@@ -137,8 +130,8 @@ struct UpcomingTimelineView: View {
                         Button(action: toggleExpansion) {
                             HStack(spacing: 8) {
                                 Text(isExpanded
-                                     ? store.t("timelineCollapse")
-                                     : store.t("timelineExpand", values: ["count": "\(hiddenCount)"]))
+                                     ? shifts.text.t("timelineCollapse")
+                                     : shifts.text.t("timelineExpand", values: ["count": "\(hiddenCount)"]))
                                 Spacer()
                                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                                     .accessibilityHidden(true)

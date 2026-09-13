@@ -256,9 +256,9 @@ func storeWithoutMarksProjectsNothing() throws {
 
     let monday = date(2026, 8, 24, 11)
     let store = scheduledStore(defaults: defaults)
-    store.startCountdown(at: monday)
+    store.shifts.startCountdown(at: monday)
 
-    #expect(store.projectedDayOverride(at: monday) == nil)
+    #expect(store.session.projectedDayOverride(at: monday) == nil)
 }
 
 @MainActor
@@ -269,17 +269,17 @@ func storeEarlyStartProjectsCustomSegments() throws {
 
     let beforeStart = date(2026, 8, 24, 8)
     let store = scheduledStore(defaults: defaults)
-    store.startCountdown(at: beforeStart)
-    store.clockInEarly(at: beforeStart)
+    store.shifts.startCountdown(at: beforeStart)
+    store.shifts.clockInEarly(at: beforeStart)
 
-    let override = try #require(store.projectedDayOverride(at: beforeStart))
+    let override = try #require(store.session.projectedDayOverride(at: beforeStart))
     #expect(override.kind == .customSegments)
     #expect(override.dayKey == "2026-08-24")
     #expect(override.segments.first?.startAtMs == ms(beforeStart))
     #expect(override.segments.last?.endAtMs == ms(date(2026, 8, 24, 17)))
 
-    store.undoEarlyClockIn()
-    #expect(store.projectedDayOverride(at: beforeStart) == nil)
+    store.shifts.undoEarlyClockIn()
+    #expect(store.session.projectedDayOverride(at: beforeStart) == nil)
 }
 
 @MainActor
@@ -290,17 +290,17 @@ func storeEarlyOffProjectsCustomSegments() throws {
 
     let atWork = date(2026, 8, 24, 15)
     let store = scheduledStore(defaults: defaults)
-    store.startCountdown(at: atWork)
-    store.clockOffEarly(at: atWork)
+    store.shifts.startCountdown(at: atWork)
+    store.shifts.clockOffEarly(at: atWork)
 
-    let override = try #require(store.projectedDayOverride(at: atWork))
+    let override = try #require(store.session.projectedDayOverride(at: atWork))
     #expect(override.kind == .customSegments)
     #expect(override.kind != .notWorking)
     #expect(override.dayKey == "2026-08-24")
     #expect(override.segments.last?.endAtMs == ms(atWork))
 
-    store.undoEarlyClockOff()
-    #expect(store.projectedDayOverride(at: atWork) == nil)
+    store.shifts.undoEarlyClockOff()
+    #expect(store.session.projectedDayOverride(at: atWork) == nil)
 }
 
 @MainActor
@@ -311,16 +311,16 @@ func storeForcedWorkdayProjectsCustomSegments() throws {
 
     let saturday = date(2026, 8, 29, 11)
     let store = scheduledStore(defaults: defaults)
-    store.startCountdown(force: true, at: saturday)
+    store.shifts.startCountdown(force: true, at: saturday)
 
-    let override = try #require(store.projectedDayOverride(at: saturday))
+    let override = try #require(store.session.projectedDayOverride(at: saturday))
     #expect(override.kind == .customSegments)
-    #expect(override.dayKey == store.forcedWorkdayKey)
+    #expect(override.dayKey == store.session.forcedWorkdayKey)
     #expect(override.segments.first?.startAtMs == ms(date(2026, 8, 29, 9)))
     #expect(override.segments.last?.endAtMs == ms(date(2026, 8, 29, 17)))
 
-    store.cancelManualTiming()
-    #expect(store.projectedDayOverride(at: saturday) == nil)
+    store.shifts.cancelManualTiming()
+    #expect(store.session.projectedDayOverride(at: saturday) == nil)
 }
 
 @MainActor
@@ -331,11 +331,11 @@ func storeUnscheduledSessionProjectsCustomSegments() throws {
 
     let monday = date(2026, 8, 24, 11)
     let store = scheduledStore(defaults: defaults)
-    store.scheduleMode = .off
-    store.startCountdown(at: monday)
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.shifts.startCountdown(at: monday)
 
-    #expect(store.forcedWorkdayKey == nil)
-    let override = try #require(store.projectedDayOverride(at: monday))
+    #expect(store.session.forcedWorkdayKey == nil)
+    let override = try #require(store.session.projectedDayOverride(at: monday))
     #expect(override.kind == .customSegments)
     #expect(override.dayKey == "2026-08-24")
 }
@@ -348,16 +348,16 @@ func storeTodayOverlayProjectsCustomSegments() throws {
 
     let monday = date(2026, 8, 24, 11)
     let store = scheduledStore(defaults: defaults)
-    store.startCountdown(at: monday)
-    store.applyScheduleChange(
+    store.shifts.startCountdown(at: monday)
+    store.shifts.applyScheduleChange(
         ScheduleFieldChange(endMinutes: 18 * 60),
         decision: .nextShiftOnly,
         at: monday
     )
 
-    #expect(store.endMinutes == 18 * 60)
-    #expect(store.effectiveEndMinutes(at: monday) == 17 * 60)
-    let override = try #require(store.projectedDayOverride(at: monday))
+    #expect(store.preferences.endMinutes == 18 * 60)
+    #expect(store.session.effectiveEndMinutes(at: monday) == 17 * 60)
+    let override = try #require(store.session.projectedDayOverride(at: monday))
     #expect(override.kind == .customSegments)
     #expect(override.segments.last?.endAtMs == ms(date(2026, 8, 24, 17)))
 }
@@ -370,15 +370,15 @@ func storeApplyToTodayDoesNotProject() throws {
 
     let monday = date(2026, 8, 24, 11)
     let store = scheduledStore(defaults: defaults)
-    store.startCountdown(at: monday)
-    store.applyScheduleChange(
+    store.shifts.startCountdown(at: monday)
+    store.shifts.applyScheduleChange(
         ScheduleFieldChange(endMinutes: 18 * 60),
         decision: .applyToToday,
         at: monday
     )
 
-    #expect(store.endMinutes == 18 * 60)
-    #expect(store.projectedDayOverride(at: monday) == nil)
+    #expect(store.preferences.endMinutes == 18 * 60)
+    #expect(store.session.projectedDayOverride(at: monday) == nil)
 }
 
 @MainActor
@@ -390,10 +390,10 @@ func storeOvertimeAloneDoesNotProject() throws {
     let monday = date(2026, 8, 24, 16)
     let overtimeEnd = date(2026, 8, 24, 18)
     let store = scheduledStore(defaults: defaults)
-    store.startCountdown(at: monday)
-    store.applyOvertime(date: overtimeEnd)
+    store.shifts.startCountdown(at: monday)
+    store.shifts.applyOvertime(date: overtimeEnd)
 
-    #expect(store.projectedDayOverride(at: monday) == nil)
+    #expect(store.session.projectedDayOverride(at: monday) == nil)
 }
 
 @MainActor
@@ -405,13 +405,13 @@ func storeOvernightEarlyOffUsesStartDayKey() throws {
     let fridayNight = date(2026, 8, 21, 23)
     let saturdayMorning = date(2026, 8, 22, 1)
     let store = scheduledStore(defaults: defaults)
-    store.startMinutes = 22 * 60
-    store.endMinutes = 6 * 60
-    store.workdays = [5]
-    store.startCountdown(at: fridayNight)
-    store.clockOffEarly(at: saturdayMorning)
+    store.preferences.applyPreferences { $0.startMinutes = 22 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 6 * 60 }
+    store.preferences.applyPreferences { $0.workdays = [5] }
+    store.shifts.startCountdown(at: fridayNight)
+    store.shifts.clockOffEarly(at: saturdayMorning)
 
-    let override = try #require(store.projectedDayOverride(at: saturdayMorning))
+    let override = try #require(store.session.projectedDayOverride(at: saturdayMorning))
     #expect(override.dayKey == "2026-08-21")
     #expect(override.segments.last?.endAtMs == ms(saturdayMorning))
 }
@@ -424,23 +424,23 @@ func storeForcedWorkdayThenClockOffComposes() throws {
 
     let saturday = date(2026, 8, 29, 15)
     let store = scheduledStore(defaults: defaults)
-    store.startCountdown(force: true, at: saturday)
-    store.clockOffEarly(at: saturday)
+    store.shifts.startCountdown(force: true, at: saturday)
+    store.shifts.clockOffEarly(at: saturday)
 
-    let override = try #require(store.projectedDayOverride(at: saturday))
+    let override = try #require(store.session.projectedDayOverride(at: saturday))
     #expect(override.kind == .customSegments)
     #expect(override.dayKey == "2026-08-29")
     #expect(override.segments.last?.endAtMs == ms(saturday))
 }
 
 @MainActor
-private func scheduledStore(defaults: UserDefaults) -> OffWorkStore {
-    let store = OffWorkStore(defaults: defaults)
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
+private func scheduledStore(defaults: UserDefaults) -> AppRuntime {
+    let store = AppRuntime(defaults: defaults)
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
     return store
 }
 

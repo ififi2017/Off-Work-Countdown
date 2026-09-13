@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct RecordsSyncSettingsView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let recovery: RecoveryStore
+    let actions: RecordsActions
 
     /// One lock for the whole page. Every one of these actions talks to
     /// CloudKit, and two of them delete; letting a second tap start while the
@@ -27,7 +29,7 @@ struct RecordsSyncSettingsView: View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
-                    OWCRow(icon: "icloud", title: store.t("syncToggle"), isLast: true) {
+                    OWCRow(icon: "icloud", title: actions.text.t("syncToggle"), isLast: true) {
                         if running == .toggle {
                             ProgressView()
                         } else {
@@ -40,7 +42,7 @@ struct RecordsSyncSettingsView: View {
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 14)
 
-                Text(store.t("syncPrivacyDetail"))
+                Text(actions.text.t("syncPrivacyDetail"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -55,15 +57,17 @@ struct RecordsSyncSettingsView: View {
                     actionRow(
                         .restore,
                         icon: "arrow.clockwise.icloud",
-                        title: store.t("syncRestore"),
-                        subtitle: store.t("syncRestoreDetail"),
+                        title: actions.text.t("syncRestore"),
+                        subtitle: actions.text.t("syncRestoreDetail"),
                         isLast: true
-                    ) { await store.restoreCloudSyncFromSettings() }
+                    ) { if await recovery.restoreCloudSyncFromSettings() == .needsDataReview {
+                        scene.showsFirstRunCloudChoice = true
+                    } }
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 20)
 
-                OWCSectionHeader(title: store.t("syncDangerZone"))
+                OWCSectionHeader(title: actions.text.t("syncDangerZone"))
                     .padding(.horizontal, OWCDesign.pageInset)
                     .padding(.top, 22)
 
@@ -71,15 +75,15 @@ struct RecordsSyncSettingsView: View {
                     dangerRow(
                         .deleteCloud,
                         icon: "trash",
-                        title: store.t("syncDeleteiCloud"),
-                        subtitle: store.t("syncDeleteiCloudDetail")
+                        title: actions.text.t("syncDeleteiCloud"),
+                        subtitle: actions.text.t("syncDeleteiCloudDetail")
                     ) { confirmsDeleteCloud = true }
 
                     dangerRow(
                         .deleteDevice,
                         icon: "iphone.slash",
-                        title: store.t("syncRemoveDevice"),
-                        subtitle: store.t("syncRemoveDeviceDetail"),
+                        title: actions.text.t("syncRemoveDevice"),
+                        subtitle: actions.text.t("syncRemoveDeviceDetail"),
                         isLast: true
                     ) { confirmsDeleteDevice = true }
                 }
@@ -88,69 +92,69 @@ struct RecordsSyncSettingsView: View {
         }
         .background(OWCDesign.page)
         .sheet(isPresented: Binding(
-            get: { store.showsFirstRunCloudChoice },
-            set: { store.showsFirstRunCloudChoice = $0 }
+            get: { scene.showsFirstRunCloudChoice },
+            set: { scene.showsFirstRunCloudChoice = $0 }
         )) {
-            FirstRunRecoveryView(store: store, isExistingLocalSetup: true)
+            FirstRunRecoveryView(recovery: recovery, actions: actions, isExistingLocalSetup: true)
         }
         // Another device deleted the cloud copy while this one still held work
         // CloudKit never received. The wipe follows the contract, but not
         // before the user has had the chance to export what only lives here.
-        .onChange(of: store.cloudSync.higherFenceNeedsReview, initial: true) { _, needsReview in
+        .onChange(of: recovery.cloudSync.higherFenceNeedsReview, initial: true) { _, needsReview in
             if needsReview {
                 warningFeedback += 1
                 confirmsCloudReset = true
             }
         }
         .confirmationDialog(
-            store.t("firstRunLocalDataNeedsReview"),
+            actions.text.t("firstRunLocalDataNeedsReview"),
             isPresented: $confirmsCloudReset,
             titleVisibility: .visible
         ) {
-            Button(store.t("firstRunReplaceWithCloud"), role: .destructive) {
-                run(.toggle) { await store.cloudSync.adoptPendingHigherFence() }
+            Button(actions.text.t("firstRunReplaceWithCloud"), role: .destructive) {
+                run(.toggle) { await recovery.cloudSync.adoptPendingHigherFence() }
             }
-            Button(store.t("cancel"), role: .cancel) {
-                run(.toggle) { await store.cloudSync.keepLocalWorkAfterCloudReset() }
+            Button(actions.text.t("cancel"), role: .cancel) {
+                run(.toggle) { await recovery.cloudSync.keepLocalWorkAfterCloudReset() }
             }
         }
-        .navigationTitle(store.t("syncTitle"))
+        .navigationTitle(actions.text.t("syncTitle"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("syncTitle"))
+        .owcDetailBack(title: actions.text.t("settings"), pageTitle: actions.text.t("syncTitle"))
         .sensoryFeedback(.warning, trigger: warningFeedback)
         .sensoryFeedback(.success, trigger: successFeedback)
         .sensoryFeedback(.error, trigger: errorFeedback)
-        .alert(store.t("syncDisableTitle"), isPresented: $confirmsDisable) {
-            Button(store.t("syncDisable")) {
-                run(.toggle) { await store.cloudSync.disable(deleteCloud: false) }
+        .alert(actions.text.t("syncDisableTitle"), isPresented: $confirmsDisable) {
+            Button(actions.text.t("syncDisable")) {
+                run(.toggle) { await recovery.cloudSync.disable(deleteCloud: false) }
             }
-            Button(store.t("cancel"), role: .cancel) {}
+            Button(actions.text.t("cancel"), role: .cancel) {}
         } message: {
-            Text(store.t("syncDisableConfirm"))
+            Text(actions.text.t("syncDisableConfirm"))
         }
         .confirmationDialog(
-            store.t("syncDeleteiCloudTitle"),
+            actions.text.t("syncDeleteiCloudTitle"),
             isPresented: $confirmsDeleteCloud,
             titleVisibility: .visible
         ) {
-            Button(store.t("syncDeleteiCloud"), role: .destructive) {
-                runAuthorized(.deleteCloud) { await store.cloudSync.deleteAllCloud() }
+            Button(actions.text.t("syncDeleteiCloud"), role: .destructive) {
+                runAuthorized(.deleteCloud) { await recovery.cloudSync.deleteAllCloud() }
             }
-            Button(store.t("cancel"), role: .cancel) {}
+            Button(actions.text.t("cancel"), role: .cancel) {}
         } message: {
-            Text(store.t("syncDeleteiCloudConfirm"))
+            Text(actions.text.t("syncDeleteiCloudConfirm"))
         }
         .confirmationDialog(
-            store.t("syncRemoveDeviceTitle"),
+            actions.text.t("syncRemoveDeviceTitle"),
             isPresented: $confirmsDeleteDevice,
             titleVisibility: .visible
         ) {
-            Button(store.t("syncRemoveDevice"), role: .destructive) {
-                runAuthorized(.deleteDevice) { await store.cloudSync.wipeLocalRecords() }
+            Button(actions.text.t("syncRemoveDevice"), role: .destructive) {
+                runAuthorized(.deleteDevice) { await recovery.cloudSync.wipeLocalRecords() }
             }
-            Button(store.t("cancel"), role: .cancel) {}
+            Button(actions.text.t("cancel"), role: .cancel) {}
         } message: {
-            Text(store.t("syncRemoveDeviceConfirm"))
+            Text(actions.text.t("syncRemoveDeviceConfirm"))
         }
     }
 
@@ -159,13 +163,13 @@ struct RecordsSyncSettingsView: View {
     /// the switch sitting in a position the app never reached.
     private var syncBinding: Binding<Bool> {
         Binding(
-            get: { store.records.state.sync.syncEnabled },
+            get: { recovery.records.state.sync.syncEnabled },
             set: { wantsOn in
                 if wantsOn {
-                    if store.plus.isAuthorized {
-                        run(.toggle) { await store.enableCloudSyncFromSettings() }
+                    if recovery.plus.isAuthorized {
+                        run(.toggle) { await scene.enableCloudSync(using: recovery) }
                     } else {
-                        store.openPaidOrRun(.sync, action: .enableSync)
+                        scene.requestEnableCloudSync(using: recovery)
                     }
                 } else {
                     warningFeedback += 1
@@ -183,7 +187,7 @@ struct RecordsSyncSettingsView: View {
                 .foregroundStyle(OWCDesign.secondary)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
-            if let detail = store.cloudSync.lastError, isFailing {
+            if let detail = recovery.cloudSync.lastError, isFailing {
                 Text(detail)
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.tertiary)
@@ -264,7 +268,7 @@ struct RecordsSyncSettingsView: View {
         guard running == nil else { return }
         running = action
         Task {
-            guard await store.confirmRecordsOwnerIfNeeded(reasonKey: "recordsOwnerAuthReason") else {
+            guard await actions.confirmRecordsOwnerIfNeeded(reasonKey: "recordsOwnerAuthReason") else {
                 running = nil
                 return
             }
@@ -279,7 +283,7 @@ struct RecordsSyncSettingsView: View {
     }
 
     private var isFailing: Bool {
-        switch store.cloudSync.status {
+        switch recovery.cloudSync.status {
         case .needsNetwork, .accountChanged, .noCloudRecords, .failed:
             true
         default:
@@ -292,28 +296,28 @@ struct RecordsSyncSettingsView: View {
         // separately. Never claim syncing when the durable source of truth is
         // off, even if an interrupted CloudKit callback left a stale idle
         // status behind.
-        if !store.records.state.sync.syncEnabled {
-            switch store.cloudSync.status {
-            case .accountChanged: return store.t("syncAccountChanged")
-            case .needsNetwork: return store.t("syncNeedNetwork")
-            case .noCloudRecords: return store.t("syncNoCloudRecords")
-            case .failed(let reason): return store.t(syncFailureKey(reason))
-            case .deleted: return store.t("syncDeleted")
-            default: return store.t("syncOff")
+        if !recovery.records.state.sync.syncEnabled {
+            switch recovery.cloudSync.status {
+            case .accountChanged: return actions.text.t("syncAccountChanged")
+            case .needsNetwork: return actions.text.t("syncNeedNetwork")
+            case .noCloudRecords: return actions.text.t("syncNoCloudRecords")
+            case .failed(let reason): return actions.text.t(syncFailureKey(reason))
+            case .deleted: return actions.text.t("syncDeleted")
+            default: return actions.text.t("syncOff")
             }
         }
 
-        return switch store.cloudSync.status {
-        case .off: store.t("syncOff")
-        case .idle, .syncing: store.t("syncOn")
-        case .deleting: store.t("syncDeleting")
-        case .deleted: store.t("syncDeleted")
-        case .needsNetwork: store.t("syncNeedNetwork")
-        case .noCloudRecords: store.t("syncNoCloudRecords")
-        case .accountChanged: store.t("syncAccountChanged")
+        return switch recovery.cloudSync.status {
+        case .off: actions.text.t("syncOff")
+        case .idle, .syncing: actions.text.t("syncOn")
+        case .deleting: actions.text.t("syncDeleting")
+        case .deleted: actions.text.t("syncDeleted")
+        case .needsNetwork: actions.text.t("syncNeedNetwork")
+        case .noCloudRecords: actions.text.t("syncNoCloudRecords")
+        case .accountChanged: actions.text.t("syncAccountChanged")
         // `enable` reports "plus" when the purchase is missing. Everything else
         // is a CloudKit failure, and `lastError` carries the specifics.
-        case .failed(let reason): store.t(syncFailureKey(reason))
+        case .failed(let reason): actions.text.t(syncFailureKey(reason))
         }
     }
 

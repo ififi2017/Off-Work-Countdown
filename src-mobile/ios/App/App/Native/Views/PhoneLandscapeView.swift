@@ -1,173 +1,51 @@
 import SwiftUI
 
-struct PhoneLandscapeShellView: View {
-    @Bindable var store: OffWorkStore
-    var immersive = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+/// Scene-local immersive cover. Because this is an overlay rather than a new
+/// UIWindow, sheets remain above it and the phone navigation tree stays alive.
+struct PhoneLandscapeTimerOverlay: View {
+    let shifts: ShiftSessionStore
 
     var body: some View {
-        if immersive {
-            LandscapeTimerView(store: store, isActive: true, immersive: true)
-                .frame(maxWidth: 760, maxHeight: .infinity)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(.black, ignoresSafeAreaEdges: .all)
-                .preferredColorScheme(.dark)
-                .environment(\.locale, store.locale)
-                .environment(\.layoutDirection, store.layoutDirection)
-                .statusBarHidden()
-                .persistentSystemOverlays(.hidden)
-        } else {
-        NavigationStack(path: $store.activePath) {
-            ZStack(alignment: .leading) {
-                OWCDesign.page.ignoresSafeArea()
-
-                ZStack {
-                    // Keep both roots mounted, as the iPad shell does. Removing
-                    // a tree containing interactive glass while its replacement
-                    // was entering left one of the timer controls composited over
-                    // the Version row for roughly a second on iPhone landscape.
-                    LandscapeTimerView(
-                        store: store,
-                        isActive: store.selectedTab == .timer
-                    )
-                    .opacity(store.selectedTab == .timer ? 1 : 0)
-                    .allowsHitTesting(store.selectedTab == .timer)
-                    .accessibilityHidden(store.selectedTab != .timer)
-                    .zIndex(store.selectedTab == .timer ? 1 : 0)
-
-                    FocusCanvasView(store: store)
-                        .opacity(store.selectedTab == .focus ? 1 : 0)
-                        .allowsHitTesting(store.selectedTab == .focus)
-                        .accessibilityHidden(store.selectedTab != .focus)
-                        .zIndex(store.selectedTab == .focus ? 1 : 0)
-
-                    NavigationStack(path: $store.recordsPath) {
-                        RecordsDesignView(store: store)
-                    }
-                        .opacity(store.selectedTab == .records ? 1 : 0)
-                        .allowsHitTesting(store.selectedTab == .records)
-                        .accessibilityHidden(store.selectedTab != .records)
-                        .zIndex(store.selectedTab == .records ? 1 : 0)
-
-                    LandscapeSettingsView(store: store)
-                        .opacity(store.selectedTab == .settings ? 1 : 0)
-                        .allowsHitTesting(store.selectedTab == .settings)
-                        .accessibilityHidden(store.selectedTab != .settings)
-                        .zIndex(store.selectedTab == .settings ? 1 : 0)
-                }
-                // The system already supplies the landscape safe-area insets.
-                // Reserve only the rail's real footprint; mirroring that inset
-                // on the trailing side left a large, purposeless empty column.
-                .frame(maxWidth: 760, maxHeight: .infinity)
-                .padding(.leading, 72)
-                .padding(.trailing, 8)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .animation(pageAnimation, value: store.selectedTab)
-
-                landscapeRail
-            }
-            // RootView already records URL/QA routes in presentedRoute. The
-            // portrait settings stack observed it, but the dedicated landscape
-            // stack did not, so a route opened while compact-height was active
-            // silently stopped at the settings overview.
-            .navigationDestination(for: AppRoute.self) { route in
-                AppRouteDestination(route: route, store: store)
-            }
-            // Timer deliberately owns no navigation chrome. Put the visibility
-            // decision on the shared stack so an invisible Settings root cannot
-            // reserve another row after a tab switch.
-            .toolbar(store.selectedTab == .timer ? .hidden : .visible, for: .navigationBar)
-        }
-        .onChange(of: store.presentedRoute) { _, route in
-            guard let route else { return }
-            if route == .focus || route == .focusPlan {
-                store.openFocusTab()
-                return
-            }
-            store.activePath.append(route)
-            store.presentedRoute = nil
-        }
-        .background(OWCDesign.page)
-        }
+        LandscapeTimerView(shifts: shifts, isActive: true, immersive: true)
+            .frame(maxWidth: 760, maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.black, ignoresSafeAreaEdges: .all)
+            // This cover shares a hosting window with the user's themed app.
+            // Override only its subtree instead of changing the whole scene.
+            .environment(\.colorScheme, .dark)
+            .ignoresSafeArea()
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(.isModal)
     }
-
-    private var landscapeRail: some View {
-        VStack(spacing: 8) {
-            Spacer()
-            railButton(.timer, icon: "timer", title: store.t("timerTab"))
-            railButton(.focus, icon: "stopwatch", title: store.t("focusTitle"))
-            railButton(.records, icon: "calendar", title: store.t("recordsTab"))
-            railButton(.settings, icon: "slider.horizontal.3", title: store.t("settings"))
-            Spacer()
-        }
-        .frame(width: 62)
-        .padding(.leading, 8)
-    }
-
-    private func railButton(_ tab: AppTab, icon: String, title: String) -> some View {
-        Button {
-            store.selectedTab = tab
-        } label: {
-            VStack(spacing: 4) {
-                Image(systemName: icon).font(.title2)
-                Text(title).font(.caption2.weight(store.selectedTab == tab ? .semibold : .medium))
-            }
-            .foregroundStyle(store.selectedTab == tab ? OWCDesign.accent : OWCDesign.tertiary)
-            .frame(maxWidth: .infinity, minHeight: 64)
-            .glassEffect(
-                store.selectedTab == tab
-                    ? .regular.tint(OWCDesign.accent.opacity(0.18)).interactive()
-                    : .regular.interactive(),
-                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var pageAnimation: Animation {
-        reduceMotion ? OWCMotion.reduced : OWCMotion.navigation
-    }
-
 }
 
-private struct LandscapeTimerView: View {
+struct LandscapeTimerView: View {
+    @Environment(SceneState.self) private var scene
     // No semantic style goes this large; scale the display size instead.
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 76
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
     let isActive: Bool
     var immersive = false
-    @State private var showShare = false
-    @State private var showOvertime = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
 
     var body: some View {
         Group {
             if isActive,
-               store.visualPhase(at: store.timerDate(from: .now)).usesLiveTimeline {
+               shifts.session.visualPhase(at: shifts.session.timerDate(from: .now)).usesLiveTimeline {
                 TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                    landscapeContent(at: store.timerDate(from: timeline.date))
+                    landscapeContent(at: shifts.session.timerDate(from: timeline.date))
                 }
             } else {
-                landscapeContent(at: store.timerDate(from: .now))
+                landscapeContent(at: shifts.session.timerDate(from: .now))
             }
-        }
-        .sheet(isPresented: $showShare) {
-            ShareComposerView(store: store).presentationDetents([.large])
-        }
-        .sheet(isPresented: $showOvertime) {
-            // A time picker and one button. On iPad .large filled the display
-            // with a sheet that was mostly empty.
-            OvertimeSheet(store: store)
-                .presentationDetents([.height(340)])
-                .presentationCornerRadius(26)
         }
     }
 
     @ViewBuilder
     private func landscapeContent(at date: Date) -> some View {
-        let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
-        let phase = store.visualPhase(snapshot: snapshot, at: date)
+        let snapshot = shifts.session.shouldQuerySnapshot(at: date) ? shifts.session.snapshot(at: date) : nil
+        let phase = shifts.session.visualPhase(snapshot: snapshot, at: date)
 
         ZStack {
             if phase.showsActiveTimer || immersive, let snapshot {
@@ -175,23 +53,23 @@ private struct LandscapeTimerView: View {
                 let onBreak = phase == .lunch
                 let overtime = phase == .overtime
                 let remaining = beforeStart
-                    ? store.countdownToClockInMs(snapshot: snapshot, at: date)
+                    ? shifts.session.countdownToClockInMs(snapshot: snapshot, at: date)
                     : snapshot.heroRemainingMs(at: date)
                 VStack(spacing: 0) {
-                    if !immersive, !store.isForcedWorkday(snapshot),
+                    if !immersive, !shifts.session.isForcedWorkday(snapshot),
                        !beforeStart,
-                       let note = store.earlyClockInNote(at: date) {
-                        EarlyClockInBanner(store: store, note: note)
+                       let note = shifts.session.earlyClockInNote(at: date) {
+                        EarlyClockInBanner(shifts: shifts, note: note)
                             .padding(.bottom, 8)
                     }
 
-                    if store.isForcedWorkday(snapshot) || onBreak || overtime {
+                    if shifts.session.isForcedWorkday(snapshot) || onBreak || overtime {
                         HStack(spacing: 8) {
-                            if store.isForcedWorkday(snapshot), !immersive {
-                                ManualTimingBanner(store: store, compact: true)
+                            if shifts.session.isForcedWorkday(snapshot), !immersive {
+                                ManualTimingBanner(shifts: shifts, now: date, compact: true)
                             }
                             if onBreak {
-                                Label(store.t("lunchInProgress"), systemImage: "cup.and.saucer")
+                                Label(shifts.text.t("lunchInProgress"), systemImage: "cup.and.saucer")
                                     .font(.footnote.weight(.semibold))
                                     .foregroundStyle(OWCDesign.secondary)
                                     .padding(.horizontal, 12)
@@ -199,9 +77,9 @@ private struct LandscapeTimerView: View {
                                     .background(OWCDesign.control, in: Capsule())
                             } else if overtime {
                                 TimerPhasePill(
-                                    title: store.t(
+                                    title: shifts.text.t(
                                         "overtimeUntil",
-                                        values: ["time": store.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
+                                        values: ["time": shifts.text.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
                                     ),
                                     systemImage: "clock.fill",
                                     tint: OWCDesign.orangeDeep,
@@ -211,11 +89,11 @@ private struct LandscapeTimerView: View {
                         }
                         .padding(.bottom, 8)
                     }
-                    Text(date.formatted(.dateTime.month().day().weekday(.wide).locale(store.locale)))
+                    Text(date.formatted(.dateTime.month().day().weekday(.wide).locale(shifts.preferences.locale)))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(OWCDesign.secondary)
                         .padding(.bottom, 4)
-                    Text(store.formatDuration(remaining))
+                    Text(shifts.text.formatDuration(remaining))
                         .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
                         .tracking(-1.4)
                         .lineLimit(1)
@@ -230,7 +108,7 @@ private struct LandscapeTimerView: View {
                     VStack(spacing: 8) {
                         GeometryReader { proxy in
                             let fill = beforeStart
-                                ? store.countdownToClockInProgress(snapshot: snapshot)
+                                ? shifts.session.countdownToClockInProgress(snapshot: snapshot)
                                 : snapshot.progress
                             Capsule().fill(OWCDesign.control)
                                 .overlay(alignment: .leading) {
@@ -241,18 +119,18 @@ private struct LandscapeTimerView: View {
                         .frame(height: 10)
                         GeometryReader { proxy in
                             if beforeStart {
-                                Text(store.formatTime(countdownAnchor(snapshot, at: date)))
+                                Text(shifts.text.formatTime(countdownAnchor(snapshot, at: date)))
                                     .position(x: 24, y: 8)
-                                Text(store.formatTime(snapshot.startDate))
+                                Text(shifts.text.formatTime(snapshot.startDate))
                                     .position(x: proxy.size.width - 24, y: 8)
                             } else {
-                                Text(store.timeString(store.effectiveStartMinutes(at: date)))
+                                Text(shifts.session.timeString(shifts.session.effectiveStartMinutes(at: date)))
                                     .position(x: 24, y: 8)
-                                if store.effectiveLunchEnabled(at: date), snapshot.segments.count > 1 {
-                                    Text("\(store.timeString(store.effectiveLunchStartMinutes(at: date))) · \(store.t("lunchBreak"))")
+                                if shifts.session.effectiveLunchEnabled(at: date), snapshot.segments.count > 1 {
+                                    Text("\(shifts.session.timeString(shifts.session.effectiveLunchStartMinutes(at: date))) · \(shifts.text.t("lunchBreak"))")
                                         .position(x: max(110, min(proxy.size.width - 110, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
                                 }
-                                Text(store.timeString(store.effectiveEndMinutes(at: date)))
+                                Text(shifts.session.timeString(shifts.session.effectiveEndMinutes(at: date)))
                                     .position(x: proxy.size.width - 24, y: 8)
                             }
                         }
@@ -264,15 +142,15 @@ private struct LandscapeTimerView: View {
 
                     HStack(spacing: 52) {
                         landscapeStat(
-                            store.t("progress"),
-                            store.formatPercent(
+                            shifts.text.t("progress"),
+                            shifts.text.formatPercent(
                                 beforeStart
-                                    ? store.countdownToClockInProgress(snapshot: snapshot)
+                                    ? shifts.session.countdownToClockInProgress(snapshot: snapshot)
                                     : snapshot.progress
                             )
                         )
-                        if store.presentationSalaryEnabled { landscapeStat(store.t("moneyEarned"), store.moneyText(snapshot.earnedSoFar)) }
-                        if store.effectiveScheduleMode(at: date) != .off { landscapeStat(store.t("daysUntilRest"), daysUntilRest(snapshot, now: date)) }
+                        if shifts.session.presentationSalaryEnabled { landscapeStat(shifts.text.t("moneyEarned"), shifts.text.moneyText(snapshot.earnedSoFar)) }
+                        if shifts.session.effectiveScheduleMode(at: date) != .off { landscapeStat(shifts.text.t("daysUntilRest"), daysUntilRest(snapshot, now: date)) }
                     }
                     .padding(.top, 20)
 
@@ -280,21 +158,21 @@ private struct LandscapeTimerView: View {
                     HStack(spacing: 10) {
                         if beforeStart {
                             Button {
-                                store.requestClockInEarly(at: date)
+                                scene.requestClockInEarly(at: date, using: shifts)
                             } label: {
-                                ClockInEarlyLabel(store: store)
+                                ClockInEarlyLabel(shifts: shifts, now: date)
                             }
-                            Button { showShare = true } label: {
-                                Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
+                            Button { scene.timerSheet = .share } label: {
+                                Label(shifts.text.t("shareButton"), systemImage: "square.and.arrow.up")
                             }
                         } else {
                             Button {
-                                store.requestClockOffEarly(at: date)
-                            } label: { ClockOffEarlyLabel(store: store) }
-                            Button { showOvertime = true } label: {
-                                Text(store.t(snapshot.isOvertimeActive(at: date) ? "adjustOvertime" : "overtime"))
+                                scene.requestClockOffEarly(at: date, using: shifts)
+                            } label: { ClockOffEarlyLabel(shifts: shifts, now: date) }
+                            Button { scene.timerSheet = .overtime } label: {
+                                Text(shifts.text.t(snapshot.isOvertimeActive(at: date) ? "adjustOvertime" : "overtime"))
                             }
-                            Button { showShare = true } label: { Label(store.t("shareButton"), systemImage: "square.and.arrow.up") }
+                            Button { scene.timerSheet = .share } label: { Label(shifts.text.t("shareButton"), systemImage: "square.and.arrow.up") }
                         }
                     }
                     .buttonStyle(LandscapeButtonStyle())
@@ -308,7 +186,7 @@ private struct LandscapeTimerView: View {
                 Text("—").font(.system(size: countdownSize, weight: .bold).monospacedDigit())
             } else {
                 TimerDesignView(
-                    store: store,
+                    shifts: shifts,
                     wide: true,
                     timelineDate: date,
                     animatesPhaseChanges: false
@@ -326,17 +204,17 @@ private struct LandscapeTimerView: View {
         phase: TimerVisualPhase
     ) -> some View {
         if phase == .clockIn || phase == .rest || phase == .completed {
-            Text(store.t("nextShiftLabelShort"))
+            Text(shifts.text.t("nextShiftLabelShort"))
         } else if phase == .lunch, let breakEnd = snapshot.activeBreakEndDate {
             Label(
-                store.t("pausedUntil", values: ["time": store.formatTime(breakEnd)]),
+                shifts.text.t("pausedUntil", values: ["time": shifts.text.formatTime(breakEnd)]),
                 systemImage: "cup.and.saucer"
             )
         } else if phase == .overtime {
-            Label(store.t("overtimeTimeLeftCaption"), systemImage: "clock.fill")
+            Label(shifts.text.t("overtimeTimeLeftCaption"), systemImage: "clock.fill")
                 .symbolRenderingMode(.monochrome)
         } else {
-            Text(store.t("timeLeftCaption"))
+            Text(shifts.text.t("timeLeftCaption"))
         }
     }
 
@@ -361,8 +239,8 @@ private struct LandscapeTimerView: View {
     }
 
     private var weekSummary: NativePeriodSummary? {
-        guard let snapshot = store.snapshot() else { return nil }
-        return store.periodSummary("week", asOf: .now, snapshot: snapshot)
+        guard let snapshot = shifts.session.snapshot() else { return nil }
+        return shifts.session.periodSummary("week", asOf: .now, snapshot: snapshot)
     }
 
     private func lunchWallRatio(_ snapshot: NativeShiftSnapshot) -> Double {
@@ -377,50 +255,7 @@ private struct LandscapeTimerView: View {
             from: Calendar.current.startOfDay(for: now),
             to: Calendar.current.startOfDay(for: rest)
         ).day ?? 0
-        return store.formatDays(Double(max(0, days)))
-    }
-}
-
-private struct LandscapeSettingsView: View {
-    let store: OffWorkStore
-
-    /// Same sections as portrait, two columns instead of one — landscape has
-    /// the width and not the height. Both the contents and the split come from
-    /// shared code, so the two orientations cannot drift apart again.
-    private var columns: [[SettingsSection]] { SettingsSection.twoColumns }
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .top, spacing: 18) {
-                    ForEach(columns, id: \.self) { column in
-                        VStack(spacing: 14) {
-                            ForEach(column) { section in
-                                SettingsSectionCard(store: store, section: section)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .top)
-                    }
-                }
-                .padding(.top, 4)
-            }
-            .padding(.horizontal, 4)
-            .padding(.vertical, 10)
-        }
-        .scrollBounceBehavior(.basedOnSize)
-        .background(OWCDesign.page)
-        .owcNavigationTitle(
-            store.t("settings"),
-            displayMode: .inline,
-            isActive: store.selectedTab == .settings
-        )
-        .toolbar {
-            if store.selectedTab == .settings {
-                ToolbarItem(placement: .topBarTrailing) {
-                    SettingsPlusStarToolbarButton(store: store)
-                }
-            }
-        }
+        return shifts.text.formatDays(Double(max(0, days)))
     }
 }
 

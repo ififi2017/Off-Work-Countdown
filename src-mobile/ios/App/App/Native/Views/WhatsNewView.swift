@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct WhatsNewView: View {
-    let store: OffWorkStore
+    let text: AppText
+    let onDismiss: () -> Void
+    /// Closes the sheet and opens the Apple Watch explainer. iPhone only.
+    var onLearnAboutWatch: (() -> Void)? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var revealed = false
@@ -23,24 +26,30 @@ struct WhatsNewView: View {
         }
         .onAppear { revealed = true }
         .tint(OWCDesign.accent)
-        .accessibilityAction(.escape, store.dismissReleaseNotes)
+        .accessibilityAction(.escape, onDismiss)
     }
 
     private var card: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(store.t("whatsNewTitle")).font(.title2.bold())
+                    Text(text.t("whatsNewTitle")).font(.title2.bold())
                         .accessibilityAddTraits(.isHeader)
                     Text("DoneAt \(ReleaseNotes.current)")
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
                 .padding(.trailing, 36)
-                feature("calendar", "whatsNewRecordsTitle", "whatsNewRecordsBody")
-                feature("circle.grid.3x3", "whatsNewLifeTitle", "whatsNewLifeBody")
-                feature(FocusTaskIcon.focus.systemName, "whatsNewFocusTitle", "whatsNewFocusBody")
-                feature("sparkles", "whatsNewPlusTitle", "whatsNewPlusBody")
-                Button(store.t("whatsNewContinue"), action: store.dismissReleaseNotes)
+                VStack(alignment: .leading, spacing: 6) {
+                    feature("applewatch", "whatsNewWatchTitle", "whatsNewWatchBody")
+                    if let onLearnAboutWatch, UIDevice.current.userInterfaceIdiom == .phone {
+                        Button(text.t("appleWatchLearnMore"), action: onLearnAboutWatch)
+                            .font(.subheadline.weight(.semibold))
+                            // Aligned with the feature text, past the 26 pt glyph and 14 pt gap.
+                            .padding(.leading, dynamicTypeSize.isAccessibilitySize ? 0 : 40)
+                    }
+                }
+                feature("square.stack", "whatsNewSmartStackTitle", "whatsNewSmartStackBody")
+                Button(text.t("whatsNewContinue"), action: onDismiss)
                     .buttonStyle(.borderedProminent)
                     .frame(maxWidth: .infinity)
             }
@@ -54,14 +63,14 @@ struct WhatsNewView: View {
         .clipShape(.rect(cornerRadius: OWCDesign.cardRadius))
         .modifier(ReleaseNotesGlass())
         .overlay(alignment: .topTrailing) {
-            Button(action: store.dismissReleaseNotes) {
+            Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 17, weight: .medium))
                     .frame(width: 44, height: 44)
                     .background(.regularMaterial, in: .circle)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(store.t("close"))
+            .accessibilityLabel(text.t("close"))
             .padding(12)
         }
     }
@@ -75,8 +84,8 @@ struct WhatsNewView: View {
                     .accessibilityHidden(true)
             }
             VStack(alignment: .leading, spacing: 5) {
-                Text(store.t(title)).font(.headline)
-                Text(store.t(body)).font(.subheadline).foregroundStyle(.secondary)
+                Text(text.t(title)).font(.headline)
+                Text(text.t(body)).font(.subheadline).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

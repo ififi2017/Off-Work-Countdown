@@ -1,7 +1,7 @@
 import Foundation
 
 /// Which records-table a logical identity belongs to.
-enum RecordEntityType: String, Codable, Sendable, CaseIterable {
+nonisolated enum RecordEntityType: String, Codable, Sendable, CaseIterable {
     case careerPeriod
     case scheduleSnapshot
     case calendarException
@@ -19,7 +19,7 @@ enum RecordEntityType: String, Codable, Sendable, CaseIterable {
 /// are keyed by `dayKey`, not a UUID — the plan snippet used `logicalID: UUID`
 /// for CloudKit record names, but those names are already strings
 /// (`day.2026-08-26`, `calx.2026-08-26#user`).
-struct ErasedID: Equatable, Sendable, Hashable {
+nonisolated struct ErasedID: Equatable, Sendable, Hashable {
     var entityType: RecordEntityType
     var logicalKey: String
     var erasedAt: Date
@@ -35,7 +35,7 @@ struct ErasedID: Equatable, Sendable, Hashable {
     var identity: String { "\(entityType.rawValue).\(logicalKey)" }
 }
 
-enum RecordImportMode: Sendable {
+nonisolated enum RecordImportMode: Sendable {
     /// Skip identities listed in the local ErasedID table (default).
     /// Same-id conflicts keep the local row and include the incoming value
     /// so a caller can ask, then `applyIncoming`.
@@ -48,7 +48,7 @@ enum RecordImportMode: Sendable {
     case resolveByEditStamp
 }
 
-enum RecordIncomingValue: Equatable, Sendable {
+nonisolated enum RecordIncomingValue: Equatable, Sendable {
     case period(CareerPeriod)
     case snapshot(ScheduleSnapshot)
     case exception(CalendarException)
@@ -61,7 +61,7 @@ enum RecordIncomingValue: Equatable, Sendable {
     case syncedPreferences(SyncedPreferences)
 }
 
-struct RecordImportConflict: Equatable, Sendable {
+nonisolated struct RecordImportConflict: Equatable, Sendable {
     var entityType: RecordEntityType
     var logicalKey: String
     var incoming: RecordIncomingValue
@@ -70,19 +70,19 @@ struct RecordImportConflict: Equatable, Sendable {
     var appliedIncoming: Bool
 }
 
-struct RecordImportRejection: Equatable, Sendable {
+nonisolated struct RecordImportRejection: Equatable, Sendable {
     var entityType: RecordEntityType
     var logicalKey: String
 }
 
-struct RecordImportAdoption: Equatable, Sendable {
+nonisolated struct RecordImportAdoption: Equatable, Sendable {
     var entityType: RecordEntityType
     var logicalKey: String
     var editCount: Int
     var editTieBreaker: String
 }
 
-struct RecordImportReport: Equatable, Sendable {
+nonisolated struct RecordImportReport: Equatable, Sendable {
     var inserted: [RecordEntityType: Int] = [:]
     var unchanged: [RecordEntityType: Int] = [:]
     var skippedErased: [RecordEntityType: Int] = [:]
@@ -116,7 +116,9 @@ struct RecordState: Equatable, Sendable {
     var erased: [ErasedID] = []
     var sync = SyncLocalState.empty
 
-    func isErased(_ type: RecordEntityType, key: String) -> Bool {
+    nonisolated init() {}
+
+    nonisolated func isErased(_ type: RecordEntityType, key: String) -> Bool {
         erased.contains { $0.entityType == type && $0.logicalKey == key }
     }
 
@@ -201,11 +203,11 @@ struct RecordState: Equatable, Sendable {
 /// Versioned JSON import / export. Civil dates are `YYYY-MM-DD` in the file's
 /// calendar; instants are Unix milliseconds so a timezone shift cannot move a
 /// day. Exports are user-triggered backups and include their synced settings.
-enum RecordJSON {
-    static let schemaVersion = 5
-    static let acceptedSchemaVersions = 1...5
+nonisolated enum RecordJSON {
+    nonisolated static let schemaVersion = 5
+    nonisolated static let acceptedSchemaVersions = 1...5
 
-    static func export(
+    nonisolated static func export(
         _ state: RecordState,
         exportedAt: Date,
         timeZone: TimeZone,
@@ -250,7 +252,7 @@ enum RecordJSON {
         return try encoder.encode(document)
     }
 
-    static func decode(_ data: Data) throws -> RecordJSONDocument {
+    nonisolated static func decode(_ data: Data) throws -> RecordJSONDocument {
         let document: RecordJSONDocument
         do {
             document = try JSONDecoder().decode(RecordJSONDocument.self, from: data)
@@ -741,7 +743,7 @@ enum RecordJSON {
             case .restoreErased where existing(state) == nil:
                 let written = insert(&state, incoming)
                 report.restored[type, default: 0] += 1
-                report.adopted.append(adoption(of: written, type: type, fallbackKey: key))
+                report.adopted.append(adoption(of: incomingValue(written), type: type))
                 return
             case .restoreErased:
                 // A natural key (dayKey) keeps its identity across a restore, so
@@ -755,12 +757,14 @@ enum RecordJSON {
                 report.unchanged[type, default: 0] += 1
                 return
             }
-            let localCount = editCount(of: current)
-            let incomingCount = editCount(of: incoming)
-            let takeIncoming = mode == .resolveByEditStamp && incomingWins(incoming, over: current)
+            let localValue = incomingValue(current)
+            let incomingRecord = incomingValue(incoming)
+            let localCount = editCount(of: localValue)
+            let incomingCount = editCount(of: incomingRecord)
+            let takeIncoming = mode == .resolveByEditStamp && incomingWins(incomingRecord, over: localValue)
             if takeIncoming {
                 let written = replace(&state, incoming)
-                report.adopted.append(adoption(of: written, type: type, fallbackKey: key))
+                report.adopted.append(adoption(of: incomingValue(written), type: type))
             }
             report.conflicts.append(
                 RecordImportConflict(
@@ -776,7 +780,7 @@ enum RecordJSON {
         }
         let written = insert(&state, incoming)
         report.inserted[type, default: 0] += 1
-        report.adopted.append(adoption(of: written, type: type, fallbackKey: key))
+        report.adopted.append(adoption(of: incomingValue(written), type: type))
     }
 
     /// First occurrence wins, matching the `firstIndex(where:)` lookups the
@@ -791,71 +795,67 @@ enum RecordJSON {
     }
 
     private static func adoption(
-        of value: some Equatable,
-        type: RecordEntityType,
-        fallbackKey: String
+        of value: RecordIncomingValue,
+        type: RecordEntityType
     ) -> RecordImportAdoption {
         RecordImportAdoption(
             entityType: type,
-            logicalKey: identityKey(of: value) ?? fallbackKey,
+            logicalKey: identityKey(of: value),
             editCount: editCount(of: value),
             editTieBreaker: tieBreaker(of: value).uuidString
         )
     }
 
-    private static func identityKey(of value: some Equatable) -> String? {
+    private static func identityKey(of value: RecordIncomingValue) -> String {
         switch value {
-        case let period as CareerPeriod: period.id.uuidString
-        case let snapshot as ScheduleSnapshot: snapshot.id.uuidString
-        case let exception as CalendarException: exception.dayKey
-        case let override as DayOverride: override.dayKey
-        case let observation as WorkObservation: observation.eventID.uuidString
-        case let task as FocusTask: task.id.uuidString
-        case let session as FocusSession: session.id.uuidString
-        case is FocusPlanningConfiguration: FocusPlanningConfiguration.logicalKey
-        case is LifeProfile: LifeProfile.profileID.uuidString
-        case is SyncedPreferences: SyncedPreferences.logicalKey
-        default: nil
+        case .period(let period): period.id.uuidString
+        case .snapshot(let snapshot): snapshot.id.uuidString
+        case .exception(let exception): exception.dayKey
+        case .override(let override): override.dayKey
+        case .observation(let observation): observation.eventID.uuidString
+        case .focusTask(let task): task.id.uuidString
+        case .focusSession(let session): session.id.uuidString
+        case .focusPlanningConfiguration: FocusPlanningConfiguration.logicalKey
+        case .lifeProfile: LifeProfile.profileID.uuidString
+        case .syncedPreferences: SyncedPreferences.logicalKey
         }
     }
 
-    private static func editCount(of value: some Equatable) -> Int {
+    private static func editCount(of value: RecordIncomingValue) -> Int {
         switch value {
-        case let period as CareerPeriod: period.editCount
-        case let snapshot as ScheduleSnapshot: snapshot.editCount
-        case let exception as CalendarException: exception.editCount
-        case let override as DayOverride: override.editCount
-        case let observation as WorkObservation:
+        case .period(let period): period.editCount
+        case .snapshot(let snapshot): snapshot.editCount
+        case .exception(let exception): exception.editCount
+        case .override(let override): override.editCount
+        case .observation(let observation):
             observation.editCount > 0 ? observation.editCount : 1
-        case let profile as LifeProfile: profile.editCount
-        case let task as FocusTask: task.editCount
-        case let session as FocusSession: session.editCount
-        case let configuration as FocusPlanningConfiguration: configuration.editCount
-        case let preferences as SyncedPreferences: preferences.editCount
-        default: 0
+        case .lifeProfile(let profile): profile.editCount
+        case .focusTask(let task): task.editCount
+        case .focusSession(let session): session.editCount
+        case .focusPlanningConfiguration(let configuration): configuration.editCount
+        case .syncedPreferences(let preferences): preferences.editCount
         }
     }
 
-    private static func tieBreaker(of value: some Equatable) -> UUID {
+    private static func tieBreaker(of value: RecordIncomingValue) -> UUID {
         switch value {
-        case let period as CareerPeriod: period.editTieBreaker
-        case let snapshot as ScheduleSnapshot: snapshot.editTieBreaker
-        case let exception as CalendarException: exception.editTieBreaker
-        case let override as DayOverride: override.editTieBreaker
-        case let profile as LifeProfile: profile.editTieBreaker
-        case let observation as WorkObservation:
+        case .period(let period): period.editTieBreaker
+        case .snapshot(let snapshot): snapshot.editTieBreaker
+        case .exception(let exception): exception.editTieBreaker
+        case .override(let override): override.editTieBreaker
+        case .lifeProfile(let profile): profile.editTieBreaker
+        case .observation(let observation):
             observation.editTieBreaker == WorkObservation.unsetTieBreaker
                 ? observation.eventID
                 : observation.editTieBreaker
-        case let task as FocusTask: task.editTieBreaker
-        case let session as FocusSession: session.editTieBreaker
-        case let configuration as FocusPlanningConfiguration: configuration.editTieBreaker
-        case let preferences as SyncedPreferences: preferences.editTieBreaker
-        default: DayOverride.unsetTieBreaker
+        case .focusTask(let task): task.editTieBreaker
+        case .focusSession(let session): session.editTieBreaker
+        case .focusPlanningConfiguration(let configuration): configuration.editTieBreaker
+        case .syncedPreferences(let preferences): preferences.editTieBreaker
         }
     }
 
-    private static func incomingWins<T: Equatable>(_ incoming: T, over current: T) -> Bool {
+    private static func incomingWins(_ incoming: RecordIncomingValue, over current: RecordIncomingValue) -> Bool {
         let incomingCount = editCount(of: incoming)
         let localCount = editCount(of: current)
         if incomingCount != localCount { return incomingCount > localCount }
@@ -872,7 +872,7 @@ enum RecordJSON {
         )
     }
 
-    static func rowCalendar(
+    nonisolated static func rowCalendar(
         timeZoneIdentifier: String?,
         calendarIdentifier: String?,
         fallback: Calendar
@@ -888,7 +888,7 @@ enum RecordJSON {
         return calendar
     }
 
-    static func calendarIdentifier(_ calendar: Calendar) -> String {
+    nonisolated static func calendarIdentifier(_ calendar: Calendar) -> String {
         calendar.identifier == .iso8601 ? "iso8601" : "gregorian"
     }
 
@@ -949,7 +949,7 @@ enum RecordJSON {
         return date
     }
 
-    static func validOverrideSegments(
+    nonisolated static func validOverrideSegments(
         _ segments: [NativeShiftSegment],
         kind: DayOverrideKind
     ) -> Bool {
@@ -971,7 +971,7 @@ enum RecordJSON {
     }
 }
 
-struct RecordJSONDocument: Codable, Equatable {
+nonisolated struct RecordJSONDocument: Codable, Equatable, Sendable {
     var schemaVersion: Int
     var exportedAtMs: Double
     var timeZoneIdentifier: String
@@ -989,7 +989,7 @@ struct RecordJSONDocument: Codable, Equatable {
     var recordsStartedOn: String?
 }
 
-struct CareerPeriodDTO: Codable, Equatable {
+nonisolated struct CareerPeriodDTO: Codable, Equatable, Sendable {
     var id: String
     var startsOn: String
     var endsBefore: String?
@@ -1048,7 +1048,7 @@ struct CareerPeriodDTO: Codable, Equatable {
     }
 }
 
-struct ScheduleSnapshotDTO: Codable, Equatable {
+nonisolated struct ScheduleSnapshotDTO: Codable, Equatable, Sendable {
     var id: String
     var periodID: String
     var effectiveFrom: String
@@ -1088,7 +1088,7 @@ struct ScheduleSnapshotDTO: Codable, Equatable {
     }
 }
 
-struct CalendarExceptionDTO: Codable, Equatable {
+nonisolated struct CalendarExceptionDTO: Codable, Equatable, Sendable {
     var dayKey: String
     var date: String
     var effect: CalendarEffect
@@ -1138,7 +1138,7 @@ struct CalendarExceptionDTO: Codable, Equatable {
     }
 }
 
-struct DayOverrideDTO: Codable, Equatable {
+nonisolated struct DayOverrideDTO: Codable, Equatable, Sendable {
     var dayKey: String
     var kind: DayOverrideKind
     var segments: [NativeShiftSegment]
@@ -1179,7 +1179,7 @@ struct DayOverrideDTO: Codable, Equatable {
     }
 }
 
-struct WorkObservationDTO: Codable, Equatable {
+nonisolated struct WorkObservationDTO: Codable, Equatable, Sendable {
     var eventID: String
     var shiftAnchorDate: String
     var occurredAtMs: Double
@@ -1233,7 +1233,7 @@ struct WorkObservationDTO: Codable, Equatable {
     }
 }
 
-struct LifeProfileDTO: Codable, Equatable {
+nonisolated struct LifeProfileDTO: Codable, Equatable, Sendable {
     var profileID: String
     var birthYear: Int?
     var workStartedOn: String?
@@ -1247,12 +1247,12 @@ struct LifeProfileDTO: Codable, Equatable {
     var averageSleepMinutes: Int?
     var sleepSource: SleepSource?
     var sleepSourceUpdatedAtMs: Double?
-    /// Optional in the transfer object so v1/v2 profile payloads remain
-    /// readable; `value(calendar:)` supplies the v3 defaults.
+    /// Added with schema 5, so optional in the transfer object: v1–v4 profile
+    /// payloads remain readable and `value(calendar:)` supplies the defaults.
     var workHistoryMode: LifeWorkHistoryMode?
     var roughCurrentSalary: LifeSalary?
     var employmentPeriods: [LifeEmploymentPeriod]?
-    /// Missing in v1-v3 profile payloads and therefore means keep current income.
+    /// Missing in v1–v4 profile payloads and therefore means keep current income.
     var futureIncomeDecline: LifeIncomeDecline?
     var editedAtMs: Double
     var editCount: Int
@@ -1326,7 +1326,7 @@ struct LifeProfileDTO: Codable, Equatable {
     }
 }
 
-struct FocusTaskDTO: Codable, Equatable {
+nonisolated struct FocusTaskDTO: Codable, Equatable, Sendable {
     var id: String
     var createdAtMs: Double
     var plannedForDate: String?
@@ -1395,8 +1395,8 @@ struct FocusTaskDTO: Codable, Equatable {
     }
 }
 
-struct FocusPlanningConfigurationDTO: Codable, Equatable {
-    struct DayPlanDTO: Codable, Equatable {
+nonisolated struct FocusPlanningConfigurationDTO: Codable, Equatable, Sendable {
+    nonisolated struct DayPlanDTO: Codable, Equatable, Sendable {
         var dayKey: String
         var shiftStartAtMs: Int64
         var assignments: [FocusPlanAssignment]
@@ -1426,7 +1426,7 @@ struct FocusPlanningConfigurationDTO: Codable, Equatable {
         }
     }
 
-    struct TemplateDTO: Codable, Equatable {
+    nonisolated struct TemplateDTO: Codable, Equatable, Sendable {
         var id: String
         var name: String
         var slots: [FocusTemplateSlot]
@@ -1534,7 +1534,7 @@ struct FocusPlanningConfigurationDTO: Codable, Equatable {
     }
 }
 
-struct FocusSessionDTO: Codable, Equatable {
+nonisolated struct FocusSessionDTO: Codable, Equatable, Sendable {
     var id: String
     var taskID: String?
     var shiftAnchorDate: String

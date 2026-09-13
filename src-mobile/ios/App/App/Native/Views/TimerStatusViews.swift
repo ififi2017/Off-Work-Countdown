@@ -2,16 +2,19 @@ import SwiftUI
 import UIKit
 
 struct LunchBreakDesignView: View {
+    @Environment(SceneState.self) private var scene
     // No semantic style goes this large; scale the display size instead.
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 56
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
     let snapshot: NativeShiftSnapshot
     let now: Date
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var timelineExpanded: Bool { store.timelineExpanded }
+    private var timelineExpanded: Bool {
+        scene.timelineExpanded(for: snapshot, at: now, session: shifts.session)
+    }
 
     private var summaryTransition: AnyTransition {
         reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top))
@@ -21,13 +24,13 @@ struct LunchBreakDesignView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store, showsFocus: true)
+            OWCAppHeader(preferences: shifts.preferences, text: shifts.text, showsFocus: true)
 
             GeometryReader { proxy in
                 ScrollView {
                     VStack(spacing: 0) {
                         VStack(spacing: 0) {
-                            Label(store.t("lunchInProgress"), systemImage: "cup.and.saucer")
+                            Label(shifts.text.t("lunchInProgress"), systemImage: "cup.and.saucer")
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(OWCDesign.secondary)
                                 .padding(.horizontal, 12)
@@ -35,7 +38,7 @@ struct LunchBreakDesignView: View {
                                 .background(OWCDesign.control)
                                 .clipShape(Capsule())
 
-                            Text(store.formatDuration(breakRemainingMs))
+                            Text(shifts.text.formatDuration(breakRemainingMs))
                                 .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
                                 .tracking(-1.4)
                                 .foregroundStyle(OWCDesign.primary)
@@ -45,7 +48,7 @@ struct LunchBreakDesignView: View {
                                 .owcCountdownTextTransition(milliseconds: breakRemainingMs)
                                 .padding(.top, 16)
 
-                            Text(store.t("pausedUntil", values: ["time": store.formatTime(breakEnd)]))
+                            Text(shifts.text.t("pausedUntil", values: ["time": shifts.text.formatTime(breakEnd)]))
                                 .font(.subheadline)
                                 .foregroundStyle(OWCDesign.secondary)
                                 .padding(.top, 8)
@@ -53,7 +56,7 @@ struct LunchBreakDesignView: View {
                         .padding(.horizontal, OWCDesign.contentInset)
                         .padding(.top, 26)
 
-                        OWCProgressMeter(progress: snapshot.progress, label: store.t("progress"), paused: true)
+                        OWCProgressMeter(progress: snapshot.progress, label: shifts.text.t("progress"), paused: true)
                             .padding(.horizontal, OWCDesign.contentInset)
                             .padding(.top, 7)
 
@@ -65,13 +68,13 @@ struct LunchBreakDesignView: View {
                         if !timelineExpanded {
                             VStack(alignment: .leading, spacing: 0) {
                                 OWCGroupCard {
-                                    OWCRow(icon: "clock", title: store.t("lunchBackAt"), isLast: !store.presentationSalaryEnabled) {
-                                        Text(store.formatTime(breakEnd))
+                                    OWCRow(icon: "clock", title: shifts.text.t("lunchBackAt"), isLast: !shifts.session.presentationSalaryEnabled) {
+                                        Text(shifts.text.formatTime(breakEnd))
                                             .font(.body.weight(.semibold).monospacedDigit())
                                     }
-                                    if store.presentationSalaryEnabled {
-                                        OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: true) {
-                                            Text(store.moneyText(earned))
+                                    if shifts.session.presentationSalaryEnabled {
+                                        OWCRow(icon: "banknote", title: shifts.text.t("moneyEarned"), isLast: true) {
+                                            Text(shifts.text.moneyText(earned))
                                                 .font(.body.weight(.semibold).monospacedDigit())
                                         }
                                     }
@@ -79,16 +82,16 @@ struct LunchBreakDesignView: View {
                                 .padding(.horizontal, OWCDesign.pageInset)
                                 .padding(.top, 30)
 
-                                detailNote(store.t("lunchPauseNote"))
+                                detailNote(shifts.text.t("lunchPauseNote"))
                             }
                             .transition(summaryTransition)
                         }
 
                         UpcomingTimelineView(
-                            store: store,
+                            shifts: shifts,
                             snapshot: snapshot,
                             now: now,
-                            isExpanded: store.timelineExpandedBinding,
+                            isExpanded: scene.timelineExpandedBinding(for: snapshot, at: now, session: shifts.session),
                             availableHeight: proxy.size.height - timelineTop
                                 - TimerContentSpace.bottomSlack
                         )
@@ -114,7 +117,7 @@ struct LunchBreakDesignView: View {
             }
 
             TimerActionBar(
-                store: store,
+                shifts: shifts,
                 snapshot: snapshot,
                 now: now,
                 showShare: $showShare,
@@ -128,16 +131,19 @@ struct LunchBreakDesignView: View {
     private var earned: Double? { snapshot.earnedSoFar }
 }
 struct OvertimeDesignView: View {
+    @Environment(SceneState.self) private var scene
     // No semantic style goes this large; scale the display size instead.
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 56
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
     let snapshot: NativeShiftSnapshot
     let now: Date
     @Binding var showShare: Bool
     @Binding var showOvertime: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var timelineExpanded: Bool { store.timelineExpanded }
+    private var timelineExpanded: Bool {
+        scene.timelineExpanded(for: snapshot, at: now, session: shifts.session)
+    }
 
     private var summaryTransition: AnyTransition {
         reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top))
@@ -147,23 +153,23 @@ struct OvertimeDesignView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OWCAppHeader(store: store, showsFocus: true)
+            OWCAppHeader(preferences: shifts.preferences, text: shifts.text, showsFocus: true)
 
             GeometryReader { proxy in
                 ScrollView {
                     VStack(spacing: 0) {
                         VStack(spacing: 0) {
                             TimerPhasePill(
-                                title: store.t(
+                                title: shifts.text.t(
                                     "overtimeUntil",
-                                    values: ["time": store.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
+                                    values: ["time": shifts.text.formatTime(snapshot.overtimeEndDate ?? snapshot.endDate)]
                                 ),
                                 systemImage: "clock.fill",
                                 tint: OWCDesign.orangeDeep,
                                 fill: OWCDesign.orange.opacity(0.12)
                             )
 
-                            Text(store.formatDuration(snapshot.remainingMs))
+                            Text(shifts.text.formatDuration(snapshot.remainingMs))
                                 .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
                                 .tracking(-1.4)
                                 .lineLimit(1)
@@ -172,7 +178,7 @@ struct OvertimeDesignView: View {
                                 .owcCountdownTextTransition(milliseconds: snapshot.remainingMs)
                                 .padding(.top, 16)
 
-                            Text(store.t("overtimeTimeLeftCaption"))
+                            Text(shifts.text.t("overtimeTimeLeftCaption"))
                                 .font(.subheadline)
                                 .foregroundStyle(OWCDesign.secondary)
                                 .padding(.top, 8)
@@ -180,7 +186,7 @@ struct OvertimeDesignView: View {
                         .padding(.horizontal, OWCDesign.contentInset)
                         .padding(.top, 26)
 
-                        OWCProgressMeter(progress: snapshot.progress, label: store.t("progress"), overtime: true)
+                        OWCProgressMeter(progress: snapshot.progress, label: shifts.text.t("progress"), overtime: true)
                             .padding(.horizontal, OWCDesign.contentInset)
                             .padding(.top, 7)
                             .animation(.linear(duration: 0.9), value: snapshot.progress)
@@ -193,16 +199,16 @@ struct OvertimeDesignView: View {
                         if !timelineExpanded {
                             VStack(alignment: .leading, spacing: 0) {
                                 OWCGroupCard {
-                                    OWCRow(icon: "clock", title: store.t("shiftEnded"), isLast: !store.presentationSalaryEnabled) {
-                                        Text("\(store.formatTime(snapshot.plannedEndDate)) · \(store.t("timeAgo", values: ["time": store.formatRelativeDuration(now.timeIntervalSince(snapshot.plannedEndDate) * 1_000)]))")
+                                    OWCRow(icon: "clock", title: shifts.text.t("shiftEnded"), isLast: !shifts.session.presentationSalaryEnabled) {
+                                        Text("\(shifts.text.formatTime(snapshot.plannedEndDate)) · \(shifts.text.t("timeAgo", values: ["time": shifts.text.formatRelativeDuration(now.timeIntervalSince(snapshot.plannedEndDate) * 1_000)]))")
                                             .font(.subheadline.monospacedDigit())
                                             .foregroundStyle(OWCDesign.secondary)
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.72)
                                     }
-                                    if store.presentationSalaryEnabled {
-                                        OWCRow(icon: "banknote", title: store.t("moneyEarned"), isLast: true) {
-                                            Text(store.moneyText(earned))
+                                    if shifts.session.presentationSalaryEnabled {
+                                        OWCRow(icon: "banknote", title: shifts.text.t("moneyEarned"), isLast: true) {
+                                            Text(shifts.text.moneyText(earned))
                                                 .font(.body.weight(.semibold).monospacedDigit())
                                         }
                                     }
@@ -210,16 +216,16 @@ struct OvertimeDesignView: View {
                                 .padding(.horizontal, OWCDesign.pageInset)
                                 .padding(.top, 30)
 
-                                detailNote(store.t("overtimeNoMultiplier"))
+                                detailNote(shifts.text.t("overtimeNoMultiplier"))
                             }
                             .transition(summaryTransition)
                         }
 
                         UpcomingTimelineView(
-                            store: store,
+                            shifts: shifts,
                             snapshot: snapshot,
                             now: now,
-                            isExpanded: store.timelineExpandedBinding,
+                            isExpanded: scene.timelineExpandedBinding(for: snapshot, at: now, session: shifts.session),
                             availableHeight: proxy.size.height - timelineTop
                                 - TimerContentSpace.bottomSlack
                         )
@@ -245,7 +251,7 @@ struct OvertimeDesignView: View {
             }
 
             TimerActionBar(
-                store: store,
+                shifts: shifts,
                 snapshot: snapshot,
                 now: now,
                 showShare: $showShare,
@@ -268,37 +274,38 @@ private func detailNote(_ text: String) -> some View {
 }
 
 struct UnscheduledTimerView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
     let now: Date
     var onOpenLunchSettings: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
-            CelebratingBrandMark(showsDepth: true, isActive: store.selectedTab == .timer)
+            CelebratingBrandMark(showsDepth: true, isActive: scene.selectedTab == .timer)
                 .frame(width: 168, height: 168)
                 .padding(.bottom, 26)
-            Text(store.t("unscheduledTitle"))
+            Text(shifts.text.t("unscheduledTitle"))
                 .font(.largeTitle.bold())
                 .tracking(-0.85)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, OWCDesign.contentInset)
-            Text(store.t("unscheduledBody"))
+            Text(shifts.text.t("unscheduledBody"))
                 .font(.body)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 28)
                 .padding(.top, 12)
             Text(
-                "\(store.timeString(store.effectiveStartMinutes(at: now))) – "
-                    + "\(store.timeString(store.effectiveEndMinutes(at: now)))"
+                "\(shifts.session.timeString(shifts.session.effectiveStartMinutes(at: now))) – "
+                    + "\(shifts.session.timeString(shifts.session.effectiveEndMinutes(at: now)))"
             )
                 .font(.title3.monospacedDigit())
                 .foregroundStyle(OWCDesign.secondary)
                 .padding(.top, 18)
                 .environment(\.layoutDirection, .leftToRight)
             Spacer()
-            ShiftStartButton(store: store, onOpenLunchSettings: onOpenLunchSettings)
+            ShiftStartButton(shifts: shifts, onOpenLunchSettings: onOpenLunchSettings)
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.bottom, 14)
         }
@@ -307,7 +314,7 @@ struct UnscheduledTimerView: View {
 
 struct RestDayDesignView: View {
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 56
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
     let snapshot: NativeShiftSnapshot
     let now: Date
     var onOpenLunchSettings: () -> Void = {}
@@ -316,7 +323,7 @@ struct RestDayDesignView: View {
         VStack(spacing: 0) {
             OWCContentSizedScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    Label(store.t("widgetRestDay"), systemImage: "bed.double.fill")
+                    Label(shifts.text.t("widgetRestDay"), systemImage: "bed.double.fill")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(OWCDesign.secondary)
                         .padding(.horizontal, 12)
@@ -324,7 +331,7 @@ struct RestDayDesignView: View {
                         .background(OWCDesign.control, in: Capsule())
                         .padding(.top, 28)
 
-                    Text(store.formatDuration(remainingMs))
+                    Text(shifts.text.formatDuration(remainingMs))
                         .font(.system(size: countdownSize, weight: .bold).monospacedDigit())
                         .tracking(-1.4)
                         .foregroundStyle(OWCDesign.secondary)
@@ -335,24 +342,24 @@ struct RestDayDesignView: View {
                         .padding(.top, 16)
 
                     OWCProgressMeter(
-                        progress: store.countdownToClockInProgress(snapshot: snapshot),
-                        label: store.t("progress")
+                        progress: shifts.session.countdownToClockInProgress(snapshot: snapshot),
+                        label: shifts.text.t("progress")
                     )
                     .padding(.horizontal, OWCDesign.contentInset)
                     .padding(.top, 7)
                     .opacity(0.72)
 
                     VStack(alignment: .leading, spacing: 0) {
-                        OWCSectionHeader(title: store.t("summaryEstimateNote"))
+                        OWCSectionHeader(title: shifts.text.t("summaryEstimateNote"))
                         OWCGroupCard {
-                            OWCRow(icon: "calendar", title: store.t("summaryThisWeek")) {
+                            OWCRow(icon: "calendar", title: shifts.text.t("summaryThisWeek")) {
                                 Text(summaryText(weekSummary))
                                     .font(.subheadline.monospacedDigit())
                                     .foregroundStyle(OWCDesign.secondary)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.66)
                             }
-                            OWCRow(icon: "calendar.badge.clock", title: store.t("summaryThisYear"), isLast: true) {
+                            OWCRow(icon: "calendar.badge.clock", title: shifts.text.t("summaryThisYear"), isLast: true) {
                                 Text(summaryText(yearSummary))
                                     .font(.subheadline.monospacedDigit())
                                     .foregroundStyle(OWCDesign.secondary)
@@ -364,35 +371,35 @@ struct RestDayDesignView: View {
                     .padding(.horizontal, OWCDesign.pageInset)
                     .padding(.top, 22)
 
-                    RestDayUpcomingView(store: store, snapshot: snapshot, now: now)
+                    RestDayUpcomingView(shifts: shifts, snapshot: snapshot, now: now)
                         .padding(.horizontal, OWCDesign.pageInset)
                         .padding(.top, 22)
                 }
                 .padding(.bottom, 10)
             }
 
-            ShiftStartButton(store: store, onOpenLunchSettings: onOpenLunchSettings)
+            ShiftStartButton(shifts: shifts, onOpenLunchSettings: onOpenLunchSettings)
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.bottom, 14)
         }
     }
 
-    private var remainingMs: Double { store.countdownToClockInMs(snapshot: snapshot, at: now) }
-    private var weekSummary: NativePeriodSummary? { store.periodSummary("week", asOf: now, snapshot: snapshot) }
-    private var yearSummary: NativePeriodSummary? { store.periodSummary("year", asOf: now, snapshot: snapshot) }
+    private var remainingMs: Double { shifts.session.countdownToClockInMs(snapshot: snapshot, at: now) }
+    private var weekSummary: NativePeriodSummary? { shifts.session.periodSummary("week", asOf: now, snapshot: snapshot) }
+    private var yearSummary: NativePeriodSummary? { shifts.session.periodSummary("year", asOf: now, snapshot: snapshot) }
 
     private func summaryText(_ summary: NativePeriodSummary?) -> String {
         guard let summary else { return "—" }
-        guard store.presentationSalaryEnabled else {
-            return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
+        guard shifts.session.presentationSalaryEnabled else {
+            return "\(shifts.text.formatDays(summary.days)) · \(shifts.text.formatHours(summary.hours))"
         }
-        let money = store.moneyText(summary.earnings)
-        return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours)) · \(money)"
+        let money = shifts.text.moneyText(summary.earnings)
+        return "\(shifts.text.formatDays(summary.days)) · \(shifts.text.formatHours(summary.hours)) · \(money)"
     }
 }
 
 struct CompletedShiftDesignView: View {
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
     let snapshot: NativeShiftSnapshot
     let now: Date
     @Binding var showShare: Bool
@@ -413,8 +420,8 @@ struct CompletedShiftDesignView: View {
                     VStack(spacing: 0) {
                         ScrollView {
                             VStack(spacing: 0) {
-                                if let note = store.earlyClockOffNote(for: snapshot) {
-                                    EarlyClockOffBanner(store: store, note: note)
+                                if let note = shifts.session.earlyClockOffNote(for: snapshot) {
+                                    EarlyClockOffBanner(shifts: shifts, note: note)
                                         .padding(.bottom, 16)
                                 }
                                 todayInFullSection
@@ -433,8 +440,8 @@ struct CompletedShiftDesignView: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         hero
-                        if let note = store.earlyClockOffNote(for: snapshot) {
-                            EarlyClockOffBanner(store: store, note: note)
+                        if let note = shifts.session.earlyClockOffNote(for: snapshot) {
+                            EarlyClockOffBanner(shifts: shifts, note: note)
                                 .padding(.horizontal, OWCDesign.pageInset)
                                 .padding(.top, 16)
                         }
@@ -459,7 +466,7 @@ struct CompletedShiftDesignView: View {
     private var hero: some View {
         VStack(spacing: 0) {
             Button { celebrate() } label: {
-                Text(store.t("offWorkToday"))
+                Text(shifts.text.t("offWorkToday"))
                     .font(.largeTitle.bold())
                     .tracking(-0.85)
                     .foregroundStyle(OWCDesign.primary)
@@ -467,12 +474,12 @@ struct CompletedShiftDesignView: View {
                     .minimumScaleFactor(0.7)
             }
             .buttonStyle(.plain)
-            .accessibilityHint(store.t("replayCelebration"))
+            .accessibilityHint(shifts.text.t("replayCelebration"))
             .padding(.top, 34)
 
             if let nextDate = snapshot.nextShiftStartDate {
-                Text(store.t("nextShiftIn", values: [
-                    "time": store.formatRelativeDuration(nextDate.timeIntervalSince(now) * 1_000),
+                Text(shifts.text.t("nextShiftIn", values: [
+                    "time": shifts.text.formatRelativeDuration(nextDate.timeIntervalSince(now) * 1_000),
                 ]))
                     .font(.body.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
@@ -488,29 +495,29 @@ struct CompletedShiftDesignView: View {
     /// note reads as a condition on the section rather than a footnote nobody
     /// reaches.
     private var todayInFullSection: some View {
-        let lunch = store.takenLunchWindow(for: finishedSnapshot, at: now)
-        let showsWeek = store.followsSchedule(at: now)
+        let lunch = shifts.takenLunchWindow(for: finishedSnapshot, at: now)
+        let showsWeek = shifts.session.followsSchedule(at: now)
         return VStack(alignment: .leading, spacing: 0) {
-            OWCSectionHeader(title: store.t("todayInFull"))
+            OWCSectionHeader(title: shifts.text.t("todayInFull"))
             OWCGroupCard {
-                OWCRow(icon: "clock", title: store.t("worked"), isLast: lunch == nil && !showsWeek) {
-                    Text(store.formatDuration(workedDurationMs, includeSeconds: false))
+                OWCRow(icon: "clock", title: shifts.text.t("worked"), isLast: lunch == nil && !showsWeek) {
+                    Text(shifts.text.formatDuration(workedDurationMs, includeSeconds: false))
                         .font(.body.monospacedDigit())
                         .foregroundStyle(OWCDesign.secondary)
                 }
                 if let lunch {
                     OWCRow(
                         icon: "cup.and.saucer",
-                        title: store.t("lunchTaken"),
+                        title: shifts.text.t("lunchTaken"),
                         isLast: !showsWeek
                     ) {
-                        Text("\(store.formatTime(lunch.start)) – \(store.formatTime(lunch.end))")
+                        Text("\(shifts.text.formatTime(lunch.start)) – \(shifts.text.formatTime(lunch.end))")
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
                 }
                 if showsWeek {
-                    OWCRow(icon: "calendar", title: store.t("summaryThisWeek"), isLast: true) {
+                    OWCRow(icon: "calendar", title: shifts.text.t("summaryThisWeek"), isLast: true) {
                         Text(weekSummary)
                             .font(.subheadline.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
@@ -528,13 +535,13 @@ struct CompletedShiftDesignView: View {
     /// read off the shift itself.
     private var earningsCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-        if store.followsSchedule(at: now) {
-            OWCSectionHeader(title: store.t("summaryEstimateNote"))
+        if shifts.session.followsSchedule(at: now) {
+            OWCSectionHeader(title: shifts.text.t("summaryEstimateNote"))
         }
         OWCGroupCard {
-            if store.presentationSalaryEnabled {
-                OWCRow(icon: "banknote", title: store.t("moneyEarned")) {
-                    Text(store.moneyText(earned))
+            if shifts.session.presentationSalaryEnabled {
+                OWCRow(icon: "banknote", title: shifts.text.t("moneyEarned")) {
+                    Text(shifts.text.moneyText(earned))
                         .font(.body.weight(.semibold).monospacedDigit())
                 }
             }
@@ -551,14 +558,14 @@ struct CompletedShiftDesignView: View {
     private var actions: some View {
         HStack(spacing: 10) {
             Button { showOvertime = true } label: {
-                Text(store.t("overtime"))
+                Text(shifts.text.t("overtime"))
                     .lineLimit(1)
                     .minimumScaleFactor(0.72)
             }
             .buttonStyle(OWCSecondaryButtonStyle())
 
             Button { showShare = true } label: {
-                Label(store.t("shareButton"), systemImage: "square.and.arrow.up")
+                Label(shifts.text.t("shareButton"), systemImage: "square.and.arrow.up")
                     .lineLimit(1)
                     .minimumScaleFactor(0.72)
             }
@@ -574,13 +581,13 @@ struct CompletedShiftDesignView: View {
     }
 
     private func celebrateIfNeeded() {
-        store.noteCountdownCompleted(endAtMs: celebrationToken)
+        shifts.noteCountdownCompleted(endAtMs: celebrationToken)
         // Early clock-off is keyed on the moment they pressed, not the planned
         // end — otherwise undoing and finishing the shift later would skip the
         // real celebration, and clocking off early would never fire one.
         // Changing today's hours produces a new planned end, so it plays again.
-        guard store.lastCelebratedEndAtMs != celebrationToken else { return }
-        store.markCelebrated(endAtMs: celebrationToken)
+        guard shifts.lastCelebratedEndAtMs != celebrationToken else { return }
+        shifts.markCelebrated(endAtMs: celebrationToken)
         celebrate()
     }
 
@@ -617,31 +624,31 @@ struct CompletedShiftDesignView: View {
         }
     }
 
-    private var endedEarly: Bool { store.isEndedEarly(snapshot) }
+    private var endedEarly: Bool { shifts.session.isEndedEarly(snapshot) }
     private var celebrationToken: Double {
-        endedEarly ? (store.earlyOffAtMs ?? snapshot.plannedEndAtMs) : snapshot.endAtMs
+        endedEarly ? (shifts.session.earlyOffAtMs ?? snapshot.plannedEndAtMs) : snapshot.endAtMs
     }
-    private var finishedSnapshot: NativeShiftSnapshot { store.clockOffSnapshot(for: snapshot) }
+    private var finishedSnapshot: NativeShiftSnapshot { shifts.session.clockOffSnapshot(for: snapshot) }
     private var workedDurationMs: Double { endedEarly ? finishedSnapshot.elapsedMs : snapshot.durationMs }
     private var earned: Double? { finishedSnapshot.earnedSoFar }
     private var nextShiftRange: String {
         guard let start = snapshot.nextShiftStartDate, let end = snapshot.nextShiftEndDate else { return "—" }
-        return "\(store.formatTime(start)) – \(store.formatTime(end))"
+        return "\(shifts.text.formatTime(start)) – \(shifts.text.formatTime(end))"
     }
     private var nextShiftDayLabel: String {
-        guard let start = snapshot.nextShiftStartDate else { return store.t("nextShiftLabelShort") }
-        return store.relativeDayLabel(for: start, from: now)
+        guard let start = snapshot.nextShiftStartDate else { return shifts.text.t("nextShiftLabelShort") }
+        return shifts.text.relativeDayLabel(for: start, from: now)
     }
     private var weekSummary: String {
         let asOf: Date
-        if endedEarly, let earlyOffAtMs = store.earlyOffAtMs {
+        if endedEarly, let earlyOffAtMs = shifts.session.earlyOffAtMs {
             asOf = Date(timeIntervalSince1970: earlyOffAtMs / 1_000)
         } else { asOf = now }
-        guard let summary = store.periodSummary("week", asOf: asOf, snapshot: finishedSnapshot) else { return "—" }
-        guard store.presentationSalaryEnabled else {
-            return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
+        guard let summary = shifts.session.periodSummary("week", asOf: asOf, snapshot: finishedSnapshot) else { return "—" }
+        guard shifts.session.presentationSalaryEnabled else {
+            return "\(shifts.text.formatDays(summary.days)) · \(shifts.text.formatHours(summary.hours))"
         }
-        let money = store.moneyText(summary.earnings)
-        return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours)) · \(money)"
+        let money = shifts.text.moneyText(summary.earnings)
+        return "\(shifts.text.formatDays(summary.days)) · \(shifts.text.formatHours(summary.hours)) · \(money)"
     }
 }

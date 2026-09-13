@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct FocusTaskIconPicker: View {
-    let store: OffWorkStore
+    let title: String
+    var label: (FocusTaskIcon) -> String
     @Binding var selection: FocusTaskIcon
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(store.t("focusChooseIcon"))
+            Text(title)
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
             ScrollView(.horizontal) {
@@ -25,7 +26,7 @@ struct FocusTaskIconPicker: View {
                                 )
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(store.t(option.titleKey))
+                        .accessibilityLabel(label(option))
                         .accessibilityAddTraits(selection == option ? .isSelected : [])
                     }
                 }
@@ -36,7 +37,8 @@ struct FocusTaskIconPicker: View {
 }
 
 struct FocusTimerSettingsSheet: View {
-    let store: OffWorkStore
+    let focus: FocusStore
+    let preferences: PreferencesStore
 
     @Environment(\.dismiss) private var dismiss
     @State private var liveActivityEnabled: Bool
@@ -45,12 +47,14 @@ struct FocusTimerSettingsSheet: View {
     @State private var shortBreakMinutes: Int
     @State private var longBreakMinutes: Int
     @State private var longBreakEvery: Int
+    @State private var isSubmitting = false
 
-    init(store: OffWorkStore) {
-        self.store = store
-        _liveActivityEnabled = State(initialValue: store.focusLiveActivityEnabled)
-        _notificationsEnabled = State(initialValue: store.focusNotificationsEnabled)
-        let settings = store.focusTimerSettings.normalized
+    init(focus: FocusStore, preferences: PreferencesStore) {
+        self.focus = focus
+        self.preferences = preferences
+        _liveActivityEnabled = State(initialValue: preferences.focusLiveActivityEnabled)
+        _notificationsEnabled = State(initialValue: focus.focusNotificationsEnabled)
+        let settings = focus.focusTimerSettings.normalized
         _focusMinutes = State(initialValue: settings.focusMinutes)
         _shortBreakMinutes = State(initialValue: settings.shortBreakMinutes)
         _longBreakMinutes = State(initialValue: settings.longBreakMinutes)
@@ -63,15 +67,15 @@ struct FocusTimerSettingsSheet: View {
     /// `updateFocusTimerSettings` dropped the write without a word. The sheet
     /// now asks the store what it will actually refuse.
     private var isLocked: Bool {
-        store.activeFocusSession() != nil || store.focusTimerSettingsLockReason != nil
+        focus.activeFocusSession() != nil || focus.focusTimerSettingsLockReason != nil
     }
 
     private var lockMessage: String? {
-        if store.activeFocusSession() != nil {
-            return store.t("focusTimerSettingsLockedRunning")
+        if focus.activeFocusSession() != nil {
+            return focus.t("focusTimerSettingsLockedRunning")
         }
-        if store.focusTimerSettingsLockReason == .hasTemplates {
-            return store.t("focusTimerSettingsLockedTemplate")
+        if focus.focusTimerSettingsLockReason == .hasTemplates {
+            return focus.t("focusTimerSettingsLockedTemplate")
         }
         return nil
     }
@@ -80,13 +84,13 @@ struct FocusTimerSettingsSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    Text(store.t("focusTimerSettingsBody"))
+                    Text(focus.t("focusTimerSettingsBody"))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Section(store.t("focusTimerSettingsSection")) {
+                Section(focus.t("focusTimerSettingsSection")) {
                     durationStepper(
                         titleKey: "focusFocusDuration",
                         value: $focusMinutes,
@@ -105,22 +109,22 @@ struct FocusTimerSettingsSheet: View {
                     Stepper(value: $longBreakEvery, in: 2...6) {
                         LabeledContent {
                             Text(
-                                store.t(
+                                focus.t(
                                     "focusRoundsValue",
-                                    values: ["count": store.formatCount(longBreakEvery)]
+                                    values: ["count": focus.formatCount(longBreakEvery)]
                                 )
                             )
                             .monospacedDigit()
                         } label: {
-                            Text(store.t("focusLongBreakEvery"))
+                            Text(focus.t("focusLongBreakEvery"))
                         }
                     }
                 }
                 .disabled(isLocked)
 
                 Section {
-                    Toggle(store.t("liveActivity"), isOn: $liveActivityEnabled)
-                    Toggle(store.t("notificationLocal"), isOn: $notificationsEnabled)
+                    Toggle(focus.t("liveActivity"), isOn: $liveActivityEnabled)
+                    Toggle(focus.t("notificationLocal"), isOn: $notificationsEnabled)
                 }
 
                 if let lockMessage {
@@ -132,18 +136,20 @@ struct FocusTimerSettingsSheet: View {
                     }
                 }
             }
-            .navigationTitle(store.t("focusTimerSettings"))
+            .navigationTitle(focus.t("focusTimerSettings"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(store.t("cancel"), role: .cancel) { dismiss() }
+                    Button(focus.t("cancel"), role: .cancel) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(store.t("saveAction"), action: save)
+                    Button(focus.t("saveAction"), action: save)
                 }
             }
         }
         .presentationDragIndicator(.visible)
+        .disabled(isSubmitting)
+        .interactiveDismissDisabled(isSubmitting)
     }
 
     private func durationStepper(
@@ -154,40 +160,58 @@ struct FocusTimerSettingsSheet: View {
         Stepper(value: value, in: range) {
             LabeledContent {
                 Text(
-                    store.t(
+                    focus.t(
                         "minutesShort",
-                        values: ["count": store.formatCount(value.wrappedValue)]
+                        values: ["count": focus.formatCount(value.wrappedValue)]
                     )
                 )
                 .monospacedDigit()
             } label: {
-                Text(store.t(titleKey))
+                Text(focus.t(titleKey))
             }
         }
     }
 
     private func save() {
         if isLocked {
-            saveDeliverySettings()
+            preferences.focusLiveActivityEnabled = liveActivityEnabled
+            focus.focusNotificationsEnabled = notificationsEnabled
             dismiss()
             return
         }
         // The return value is the point: a rejected write used to dismiss the
         // sheet as if it had succeeded.
-        guard store.updateFocusTimerSettings(
-            FocusTimerSettings(
-                focusMinutes: focusMinutes,
-                shortBreakMinutes: shortBreakMinutes,
-                longBreakMinutes: longBreakMinutes,
-                longBreakEvery: longBreakEvery
-            )
-        ) else { return }
-        saveDeliverySettings()
-        dismiss()
-    }
-
-    private func saveDeliverySettings() {
-        store.focusLiveActivityEnabled = liveActivityEnabled
-        store.focusNotificationsEnabled = notificationsEnabled
+        let submitted = FocusTimerSettings(
+            focusMinutes: focusMinutes,
+            shortBreakMinutes: shortBreakMinutes,
+            longBreakMinutes: longBreakMinutes,
+            longBreakEvery: longBreakEvery
+        )
+        let submittedLiveActivity = liveActivityEnabled
+        let submittedNotifications = notificationsEnabled
+        let command = focus.updateFocusSettings(
+            submitted,
+            liveActivityEnabled: submittedLiveActivity,
+            notificationsEnabled: submittedNotifications,
+            preferences: preferences
+        )
+        if let saved = command.immediateResult {
+            if saved { dismiss() }
+            return
+        }
+        isSubmitting = true
+        Task { @MainActor in
+            let saved = await command.value
+            isSubmitting = false
+            guard saved,
+                  focusMinutes == submitted.focusMinutes,
+                  shortBreakMinutes == submitted.shortBreakMinutes,
+                  longBreakMinutes == submitted.longBreakMinutes,
+                  longBreakEvery == submitted.longBreakEvery,
+                  liveActivityEnabled == submittedLiveActivity,
+                  notificationsEnabled == submittedNotifications
+            else { return }
+            dismiss()
+        }
     }
 }

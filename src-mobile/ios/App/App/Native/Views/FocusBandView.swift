@@ -11,7 +11,8 @@ import SwiftUI
 /// minute break is a fifth of a focus block and a one minute break is a
 /// hairline, because that is what they are.
 struct FocusBandView: View {
-    let store: OffWorkStore
+    let focus: FocusStore
+    let text: AppText
     let model: FocusDayCanvasModel
     @Binding var selectedBlock: Int64?
     var isPreview = false
@@ -26,7 +27,7 @@ struct FocusBandView: View {
         // differences that the text itself then eats. The list keeps the same
         // order, the same states and the same actions.
         if dynamicTypeSize.isAccessibilitySize {
-            FocusBandList(store: store, model: model, isPreview: isPreview, onPick: onPick)
+            FocusBandList(focus: focus, model: model, isPreview: isPreview, onPick: onPick)
         } else {
             band
         }
@@ -53,7 +54,7 @@ struct FocusBandView: View {
                             Int64(timeline.date.timeIntervalSince1970 * 1_000)))
                         nowLine
                             .overlay(alignment: .leading) {
-                                Text(store.formatTime(timeline.date))
+                                Text(focus.formatTime(timeline.date))
                                     .font(.caption2.monospacedDigit().weight(.semibold))
                                     .foregroundStyle(OWCDesign.primary)
                                     .lineLimit(1)
@@ -75,14 +76,14 @@ struct FocusBandView: View {
         }
         .frame(height: model.totalHeight, alignment: .top)
         .accessibilityRepresentation {
-            FocusBandList(store: store, model: model, isPreview: isPreview, onPick: onPick)
+            FocusBandList(focus: focus, model: model, isPreview: isPreview, onPick: onPick)
         }
     }
 
     private func ruler(at date: Date) -> some View {
         ZStack(alignment: .topTrailing) {
             ForEach(hourMarks, id: \.self) { ms in
-                Text(store.formatTime(Date(timeIntervalSince1970: Double(ms) / 1_000)))
+                Text(focus.formatTime(Date(timeIntervalSince1970: Double(ms) / 1_000)))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(OWCDesign.tertiary)
                     .lineLimit(1)
@@ -157,7 +158,7 @@ struct FocusBandView: View {
                                 .font(.footnote)
                                 .foregroundStyle(OWCDesign.recordsBreak)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(store.t("lunchBreak"))
+                                Text(focus.t("lunchBreak"))
                                     .font(.subheadline)
                                     .foregroundStyle(OWCDesign.secondary)
                                 Text(gapDetail(gap))
@@ -166,7 +167,7 @@ struct FocusBandView: View {
                             }
                         }
                     } else if height >= 20 {
-                        Label(store.t("lunchBreak"), systemImage: "fork.knife")
+                        Label(focus.t("lunchBreak"), systemImage: "fork.knife")
                             .font(.caption2)
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -175,7 +176,7 @@ struct FocusBandView: View {
             }
             .frame(maxWidth: .infinity)
             .accessibilityElement()
-            .accessibilityLabel("\(store.t("lunchBreak")) · \(gapDetail(gap))")
+            .accessibilityLabel("\(focus.t("lunchBreak")) · \(gapDetail(gap))")
     }
 
     private func tailTile(_ gap: FocusDayCanvasModel.Gap, height: CGFloat) -> some View {
@@ -184,7 +185,7 @@ struct FocusBandView: View {
             .frame(height: height)
             .overlay(alignment: .leading) {
                 if height >= 20 {
-                    Text(store.t("focusBandGapTooShort", values: ["count": "\(gap.durationMinutes)"]))
+                    Text(focus.t("focusBandGapTooShort", values: ["count": "\(gap.durationMinutes)"]))
                         .font(.caption2)
                         .foregroundStyle(OWCDesign.tertiary)
                         .padding(.leading, 14)
@@ -197,11 +198,11 @@ struct FocusBandView: View {
     private func gapDetail(_ gap: FocusDayCanvasModel.Gap) -> String {
         let start = Date(timeIntervalSince1970: Double(gap.startAtMs) / 1_000)
         let end = Date(timeIntervalSince1970: Double(gap.endAtMs) / 1_000)
-        let window = store.t("lunchWindow", values: [
-            "start": store.formatTime(start),
-            "end": store.formatTime(end)
+        let window = focus.t("lunchWindow", values: [
+            "start": focus.formatTime(start),
+            "end": focus.formatTime(end)
         ])
-        return "\(window) · \(store.formatRelativeDuration(Double(gap.endAtMs - gap.startAtMs)))"
+        return "\(window) · \(text.formatRelativeDuration(Double(gap.endAtMs - gap.startAtMs)))"
     }
 
     @ViewBuilder
@@ -225,7 +226,7 @@ struct FocusBandView: View {
             .buttonStyle(.plain)
             .disabled(!block.isEditable && !block.isAssigned)
             .accessibilityLabel(spokenLabel(block))
-            .accessibilityHint((block.isEditable || block.isAssigned) ? store.t(isPreview ? "plusSeePlans" : "focusBandBlockHint") : "")
+            .accessibilityHint((block.isEditable || block.isAssigned) ? focus.t(isPreview ? "plusSeePlans" : "focusBandBlockHint") : "")
         }
     }
 
@@ -242,12 +243,12 @@ struct FocusBandView: View {
             if height >= 20 {
                 VStack(alignment: .leading, spacing: 1) {
                     if block.isUserBreak {
-                        Text(store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)))
+                        Text(focus.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)))
                             .font(.caption2.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
                     Label(
-                        store.t("focusBandBreakMinutes", values: ["count": "\(block.durationMs / 60_000)"]),
+                        focus.t("focusBandBreakMinutes", values: ["count": "\(block.durationMs / 60_000)"]),
                         systemImage: "cup.and.saucer.fill"
                     )
                     .font(.caption2)
@@ -288,7 +289,7 @@ struct FocusBandView: View {
                     )
             }
             VStack(alignment: .leading, spacing: 1) {
-                Text(store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)))
+                Text(focus.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
                 if let title = block.taskTitle {
@@ -300,7 +301,7 @@ struct FocusBandView: View {
                     .font(.subheadline)
                     .foregroundStyle(OWCDesign.primary)
                 } else {
-                    Label(store.t("focusBandEmptyBlock"), systemImage: "plus")
+                    Label(focus.t("focusBandEmptyBlock"), systemImage: "plus")
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
                 }
@@ -332,20 +333,20 @@ struct FocusBandView: View {
     }
 
     private func spokenLabel(_ block: FocusDayCanvasModel.Block) -> String {
-        let time = store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000))
+        let time = focus.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000))
         let minutes = "\(block.durationMs / 60_000)"
         if block.rendersAsBreak {
-            return "\(time) · " + store.t("focusBandBreakMinutes", values: ["count": minutes])
+            return "\(time) · " + focus.t("focusBandBreakMinutes", values: ["count": minutes])
         }
         switch block.kind {
         case .breakTime:
-            return "\(time) · " + store.t("focusBandBreakMinutes", values: ["count": minutes])
+            return "\(time) · " + focus.t("focusBandBreakMinutes", values: ["count": minutes])
         case .task:
-            let what = block.taskTitle ?? store.t("focusBandEmptyBlock")
+            let what = block.taskTitle ?? focus.t("focusBandEmptyBlock")
             let state: String
             switch block.state {
-            case .past: state = store.t("focusBandStatePast")
-            case .current: state = store.t("focusBandStateCurrent")
+            case .past: state = focus.t("focusBandStatePast")
+            case .current: state = focus.t("focusBandStateCurrent")
             case .future: state = ""
             }
             return [time, what, state].filter { !$0.isEmpty }.joined(separator: " · ")
@@ -356,7 +357,7 @@ struct FocusBandView: View {
 /// The band's text form: the accessibility-size layout, and the alternative
 /// VoiceOver reads instead of a picture.
 struct FocusBandList: View {
-    let store: OffWorkStore
+    let focus: FocusStore
     let model: FocusDayCanvasModel
     var isPreview = false
     var onPick: (FocusDayCanvasModel.Block) -> Void
@@ -368,7 +369,7 @@ struct FocusBandList: View {
                 Button { onPick(block) } label: {
                     OWCRow(
                         icon: rowIcon(block),
-                        title: store.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)),
+                        title: focus.formatTime(Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)),
                         subtitle: subtitle(block),
                         isLast: index == rows.count - 1
                     ) { EmptyView() }
@@ -376,7 +377,7 @@ struct FocusBandList: View {
                 .buttonStyle(OWCRowButtonStyle())
                 .id(block.startAtMs)
                 .disabled(!block.isEditable && !block.isAssigned)
-                .accessibilityHint(isPreview && block.isEditable ? store.t("plusSeePlans") : "")
+                .accessibilityHint(isPreview && block.isEditable ? focus.t("plusSeePlans") : "")
             }
         }
     }
@@ -389,12 +390,12 @@ struct FocusBandList: View {
     private func subtitle(_ block: FocusDayCanvasModel.Block) -> String {
         let minutes = "\(block.durationMs / 60_000)"
         if block.rendersAsBreak {
-            return store.t("focusBandBreakMinutes", values: ["count": minutes])
+            return focus.t("focusBandBreakMinutes", values: ["count": minutes])
         }
-        let what = block.taskTitle ?? store.t("focusBandEmptyBlock")
+        let what = block.taskTitle ?? focus.t("focusBandEmptyBlock")
         switch block.state {
-        case .past: return "\(what) · " + store.t("focusBandStatePast")
-        case .current: return "\(what) · " + store.t("focusBandStateCurrent")
+        case .past: return "\(what) · " + focus.t("focusBandStatePast")
+        case .current: return "\(what) · " + focus.t("focusBandStateCurrent")
         case .future: return what
         }
     }

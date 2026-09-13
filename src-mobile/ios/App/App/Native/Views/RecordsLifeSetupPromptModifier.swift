@@ -3,39 +3,50 @@ import SwiftUI
 /// A one-time explanation at the first useful entry point after unlocking Plus.
 /// Kept on the root so changing between phone and tablet shells cannot repeat it.
 struct RecordsLifeSetupPromptModifier: ViewModifier {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let life: LifeSummaryModel
+    let actions: RecordsActions
+    let reviewPromptPresented: Bool
     let paywallPresentationActive: Bool
+    let hasBlockingPresentation: Bool
     @Binding var presentationActive: Bool
-    @State private var showsOffer = false
-    @State private var showsEditor = false
 
     private var shouldOffer: Bool {
-        !store.lifeSetupPromptDismissed && store.onboardingComplete && store.plus.hasSeenIntro
-            && store.plus.isAuthorized && store.selectedTab == .records
-            && store.records.state.lifeProfile == nil
-            && store.recordsPath.isEmpty && store.editingDayKey == nil
-            && !store.reviewPromptPresented
-            && store.paywallSheet == nil && !paywallPresentationActive
+        !actions.preferences.lifeSetupPromptDismissed && actions.preferences.onboardingComplete && actions.plus.hasSeenIntro
+            && actions.plus.isAuthorized && scene.selectedTab == .records
+            && actions.records.state.lifeProfile == nil
+            && scene.recordsPath.isEmpty && scene.dayEditor?.dayKey == nil
+            && !reviewPromptPresented
+            && scene.paywallSheet == nil && !paywallPresentationActive
+            && !hasBlockingPresentation
     }
 
     func body(content: Content) -> some View {
         content
-            .onChange(of: showsOffer || showsEditor) { _, active in
+            .onChange(of: scene.lifeSetupOfferPresented || scene.lifeSetupEditorPresented) { _, active in
                 presentationActive = active
             }
             .onChange(of: shouldOffer, initial: true) { _, eligible in
                 guard eligible else { return }
-                store.lifeSetupPromptDismissed = true
-                showsOffer = true
+                scene.presentLifeSetupOffer()
             }
-            .alert(store.t("lifeSetupOfferTitle"), isPresented: $showsOffer) {
-                Button(store.t("lifeSetupOfferAction")) { showsEditor = true }
-                Button(store.t("notNow"), role: .cancel) {}
+            .alert(actions.text.t("lifeSetupOfferTitle"), isPresented: Bindable(scene).lifeSetupOfferPresented) {
+                Button(actions.text.t("lifeSetupOfferAction")) {
+                    scene.consumeLifeSetupOffer(preferences: actions.preferences, opensEditor: true)
+                }
+                Button(actions.text.t("notNow"), role: .cancel) {
+                    scene.consumeLifeSetupOffer(preferences: actions.preferences, opensEditor: false)
+                }
             } message: {
-                Text(store.t("lifeSetupOfferBody"))
+                Text(actions.text.t("lifeSetupOfferBody"))
             }
-            .sheet(isPresented: $showsEditor) {
-                LifeProfileEditView(store: store)
+            .sheet(isPresented: Bindable(scene).lifeSetupEditorPresented) {
+                LifeProfileEditView(
+                    life: life,
+                    actions: actions,
+                    preferences: actions.preferences,
+                    text: actions.text
+                )
             }
     }
 }

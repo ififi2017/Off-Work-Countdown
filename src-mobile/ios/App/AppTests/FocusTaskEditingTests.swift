@@ -5,46 +5,46 @@ import Testing
 @MainActor
 @Suite("Focus task editing and template linkage")
 struct FocusTaskEditingTests {
-    private func fixture() throws -> (OffWorkStore, Date) {
+    private func fixture() throws -> (AppRuntime, Date) {
         let defaults = try #require(UserDefaults(suiteName: "FocusEditing.\(UUID())"))
-        let store = OffWorkStore(defaults: defaults, records: .inMemory())
+        let store = AppRuntime(defaults: defaults, records: .inMemory())
         store.plus.debugSetAuthorized(true)
-        store.onboardingComplete = true
-        store.startMinutes = 540
-        store.endMinutes = 1020
-        store.lunchEnabled = true
-        let date = try #require(store.recordsCalendar.date(from: DateComponents(year: 2026, month: 8, day: 31, hour: 9, minute: 5)))
+        store.preferences.onboardingComplete = true
+        store.preferences.applyPreferences { $0.startMinutes = 540 }
+        store.preferences.applyPreferences { $0.endMinutes = 1020 }
+        store.preferences.applyPreferences { $0.lunchEnabled = true }
+        let date = try #require(store.preferences.recordsCalendar.date(from: DateComponents(year: 2026, month: 8, day: 31, hour: 9, minute: 5)))
         return (store, date)
     }
 
-    private func template(_ store: OffWorkStore, at date: Date) throws -> FocusTemplate {
-        let block = try #require(store.focusTemplateBlocks(at: date).first { $0.kind == .task })
-        return try #require(store.saveFocusTemplate(name: "Daily", slots: [
+    private func template(_ store: AppRuntime, at date: Date) throws -> FocusTemplate {
+        let block = try #require(store.focus.focusTemplateBlocks(at: date).first { $0.kind == .task })
+        return try #require(store.focus.saveFocusTemplate(name: "Daily", slots: [
             .init(blockIndex: block.index, kind: .task, taskKey: UUID(), taskTitle: "Original", taskIcon: .work)
-        ]))
+        ]).synchronousResult)
     }
 
     @Test("An attached plan follows template edits; a manually edited plan does not")
     func templateUpdatesStopAfterManualEdit() throws {
         let (store, at) = try fixture()
         let original = try template(store, at: at)
-        #expect(store.applyFocusTemplate(original, at: at))
-        let id = try #require(store.focusDayCanvas(at: at).blocks.first { $0.isAssigned }?.taskID)
+        #expect(store.focus.applyFocusTemplate(original, at: at).synchronousResult)
+        let id = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.isAssigned }?.taskID)
         var slots = original.slots
         slots[0].taskTitle = "Updated template"
         slots[0].taskIcon = .study
-        #expect(store.updateFocusTemplate(original, name: "Renamed", slots: slots, at: at))
-        #expect(store.appliedFocusTemplate(at: at)?.name == "Renamed")
+        #expect(store.focus.updateFocusTemplate(original, name: "Renamed", slots: slots, at: at).synchronousResult)
+        #expect(store.focus.appliedFocusTemplate(at: at)?.name == "Renamed")
         let task = try #require(store.records.state.focusTasks.first { $0.id == id })
         #expect(task.title == "Updated template")
         #expect(task.icon == .study)
-        #expect(store.editFocusTask(task, title: "Only today", icon: .code, pomodoros: 2, isFavorite: true, at: at))
-        #expect(store.appliedFocusTemplate(at: at) == nil)
-        #expect(store.focusDayCanvas(at: at).blocks.count { $0.taskID == id } == 2)
-        #expect(store.savedFocusFavorite(title: "Only today", icon: .code)?.estimatedPomodoros == 2)
+        #expect(store.focus.editFocusTask(task, title: "Only today", icon: .code, pomodoros: 2, isFavorite: true, at: at).synchronousResult)
+        #expect(store.focus.appliedFocusTemplate(at: at) == nil)
+        #expect(store.focus.focusDayCanvas(at: at).blocks.count { $0.taskID == id } == 2)
+        #expect(store.focus.savedFocusFavorite(title: "Only today", icon: .code)?.estimatedPomodoros == 2)
         slots[0].taskTitle = "Another template edit"
-        #expect(store.updateFocusTemplate(original, name: "Renamed again", slots: slots, at: at))
-        #expect(store.focusDayCanvas(at: at).blocks.filter { $0.taskID == id }.allSatisfy { $0.taskTitle == "Only today" })
+        #expect(store.focus.updateFocusTemplate(original, name: "Renamed again", slots: slots, at: at).synchronousResult)
+        #expect(store.focus.focusDayCanvas(at: at).blocks.filter { $0.taskID == id }.allSatisfy { $0.taskTitle == "Only today" })
     }
 
     @Test("Editing a usual-day template after clock-off preserves tomorrow's linked tasks")
@@ -52,57 +52,57 @@ struct FocusTaskEditingTests {
         let (store, morning) = try fixture()
         let at = morning.addingTimeInterval(14 * 3_600)
         let original = try template(store, at: at)
-        #expect(store.focusDayCanvas(at: at).isNextShift)
-        #expect(store.applyFocusTemplate(original, at: at))
-        let originalDay = store.focusDayCanvas(at: at).dayKey
-        let id = try #require(store.focusDayCanvas(at: at).blocks.first { $0.isAssigned }?.taskID)
+        #expect(store.focus.focusDayCanvas(at: at).isNextShift)
+        #expect(store.focus.applyFocusTemplate(original, at: at).synchronousResult)
+        let originalDay = store.focus.focusDayCanvas(at: at).dayKey
+        let id = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.isAssigned }?.taskID)
         var tasks = original.tasks
         tasks[0].pomodoros = 2
         tasks[0].title = "Updated tomorrow"
         tasks[0].icon = .study
-        #expect(store.updateFocusTemplate(original, name: "Tomorrow edited", slots: FocusTemplate.slots(from: tasks), at: at))
-        let canvas = store.focusDayCanvas(at: at)
+        #expect(store.focus.updateFocusTemplate(original, name: "Tomorrow edited", slots: FocusTemplate.slots(from: tasks), at: at).synchronousResult)
+        let canvas = store.focus.focusDayCanvas(at: at)
         #expect(canvas.dayKey == originalDay)
         #expect(canvas.blocks.count { $0.taskID == id } == 2)
         #expect(canvas.blocks.filter { $0.taskID == id }.allSatisfy { $0.taskTitle == "Updated tomorrow" })
-        #expect(store.appliedFocusTemplate(at: at)?.id == original.id)
-        #expect(store.applyDefaultFocusTemplateIfNeeded(at: at) == false)
-        #expect(store.focusDayCanvas(at: at).blocks.count { $0.taskID == id } == 2)
+        #expect(store.focus.appliedFocusTemplate(at: at)?.id == original.id)
+        #expect(store.focus.applyDefaultFocusTemplateIfNeeded(at: at).synchronousResult == false)
+        #expect(store.focus.focusDayCanvas(at: at).blocks.count { $0.taskID == id } == 2)
     }
 
     @Test("Deleting an assigned task detaches the day")
     func deletionDetachesTemplate() throws {
         let (store, at) = try fixture()
         let original = try template(store, at: at)
-        #expect(store.applyFocusTemplate(original, at: at))
-        let id = try #require(store.focusDayCanvas(at: at).blocks.first { $0.isAssigned }?.taskID)
+        #expect(store.focus.applyFocusTemplate(original, at: at).synchronousResult)
+        let id = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.isAssigned }?.taskID)
         let task = try #require(store.records.state.focusTasks.first { $0.id == id })
-        #expect(store.deleteFocusTask(task, at: at))
-        #expect(store.appliedFocusTemplate(at: at) == nil)
-        #expect(store.updateFocusTemplate(original, name: "Updated", slots: original.slots, at: at))
-        #expect(!store.focusDayCanvas(at: at).blocks.contains { $0.isAssigned })
+        #expect(store.focus.deleteFocusTask(task, at: at).synchronousResult)
+        #expect(store.focus.appliedFocusTemplate(at: at) == nil)
+        #expect(store.focus.updateFocusTemplate(original, name: "Updated", slots: original.slots, at: at).synchronousResult)
+        #expect(!store.focus.focusDayCanvas(at: at).blocks.contains { $0.isAssigned })
     }
 
     @Test("Adding a manual task detaches the day, while saving a library favorite does not")
     func manualCreationVersusFavoriteOnly() throws {
         let (store, at) = try fixture()
         let original = try template(store, at: at)
-        #expect(store.applyFocusTemplate(original, at: at))
-        store.saveFocusFavorite(title: "For later", pomodoros: 3, icon: .study)
-        #expect(store.appliedFocusTemplate(at: at)?.id == original.id)
-        let favorite = try #require(store.savedFocusFavorite(title: "For later", icon: .study))
+        #expect(store.focus.applyFocusTemplate(original, at: at).synchronousResult)
+        store.focus.saveFocusFavorite(title: "For later", pomodoros: 3, icon: .study).synchronousResult
+        #expect(store.focus.appliedFocusTemplate(at: at)?.id == original.id)
+        let favorite = try #require(store.focus.savedFocusFavorite(title: "For later", icon: .study))
         #expect(favorite.plannedForDate == nil)
-        _ = store.createFocusTaskInNextEmptyBlock(title: "Extra", at: at)
-        #expect(store.appliedFocusTemplate(at: at) == nil)
+        _ = store.focus.createFocusTaskInNextEmptyBlock(title: "Extra", at: at).synchronousResult
+        #expect(store.focus.appliedFocusTemplate(at: at) == nil)
     }
 
     @Test("Clearing a day preserves completed sessions and prevents automatic template reapplication")
     func clearPreservesHistory() throws {
         let (store, at) = try fixture()
         let original = try template(store, at: at)
-        store.setDefaultFocusTemplate(original)
-        #expect(store.applyFocusTemplate(original, at: at))
-        let block = try #require(store.focusDayCanvas(at: at).blocks.first { $0.isAssigned })
+        store.focus.setDefaultFocusTemplate(original).synchronousResult
+        #expect(store.focus.applyFocusTemplate(original, at: at).synchronousResult)
+        let block = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.isAssigned })
         let taskID = try #require(block.taskID)
         let start = Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)
         let end = Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000)
@@ -111,27 +111,27 @@ struct FocusTaskEditingTests {
             editedAt: end, editCount: 0, editTieBreaker: UUID())
         store.records.upsertFocusSession(session)
         let history = store.records.state.focusSessions
-        store.clearFocusDay(at: end)
+        store.focus.clearFocusDay(at: end).synchronousResult
         #expect(store.records.state.focusSessions == history)
-        #expect(!store.focusDayCanvas(at: end).blocks.contains { $0.isAssigned })
-        #expect(!store.applyDefaultFocusTemplateIfNeeded(at: end))
-        #expect(store.focusPlanAssignments(for: try #require(store.snapshot(at: end))).isEmpty)
-        #expect(store.focusPlanning.templates.contains { $0.id == original.id })
+        #expect(!store.focus.focusDayCanvas(at: end).blocks.contains { $0.isAssigned })
+        #expect(!store.focus.applyDefaultFocusTemplateIfNeeded(at: end).synchronousResult)
+        #expect(store.focus.focusPlanAssignments(for: try #require(store.session.snapshot(at: end))).isEmpty)
+        #expect(store.focus.focusPlanning.templates.contains { $0.id == original.id })
     }
 
     @Test("Template refresh preserves past assignments and updates future ones")
     func templateRefreshPreservesPast() throws {
         let (store, at) = try fixture()
         let original = try template(store, at: at)
-        #expect(store.applyFocusTemplate(original, at: at))
-        let before = try #require(store.focusDayCanvas(at: at).blocks.first { $0.isAssigned })
+        #expect(store.focus.applyFocusTemplate(original, at: at).synchronousResult)
+        let before = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.isAssigned })
         let later = at.addingTimeInterval(60 * 60)
-        let future = try #require(store.focusTemplateBlocks(at: later).first { $0.kind == .task && $0.start > later })
-        let slots = store.focusTemplateBlocks(at: later).filter { $0.kind == .task && $0.index <= future.index }.map {
+        let future = try #require(store.focus.focusTemplateBlocks(at: later).first { $0.kind == .task && $0.start > later })
+        let slots = store.focus.focusTemplateBlocks(at: later).filter { $0.kind == .task && $0.index <= future.index }.map {
             FocusTemplateSlot(blockIndex: $0.index, kind: .task, taskKey: UUID(), taskTitle: "Future", taskIcon: .code)
         }
-        #expect(store.updateFocusTemplate(original, name: "Future plan", slots: slots, at: later))
-        let canvas = store.focusDayCanvas(at: later)
+        #expect(store.focus.updateFocusTemplate(original, name: "Future plan", slots: slots, at: later).synchronousResult)
+        let canvas = store.focus.focusDayCanvas(at: later)
         #expect(canvas.blocks.first { $0.startAtMs == before.startAtMs }?.taskID == before.taskID)
         #expect(canvas.blocks.first { $0.startAtMs == future.startAtMs }?.taskTitle == "Future")
     }
@@ -139,26 +139,26 @@ struct FocusTaskEditingTests {
     @Test("Resizing skips another task and shrinking releases only this task’s extra slots")
     func resizingPreservesOtherTasks() throws {
         let (store, at) = try fixture()
-        let first = store.createFocusTaskInNextEmptyBlock(title: "First", at: at)
+        let first = store.focus.createFocusTaskInNextEmptyBlock(title: "First", at: at).synchronousResult
         guard case .placed(let id, _) = first else { Issue.record("Expected placement"); return }
-        let other = store.createFocusTaskInNextEmptyBlock(title: "Other", at: at)
+        let other = store.focus.createFocusTaskInNextEmptyBlock(title: "Other", at: at).synchronousResult
         guard case .placed(let otherID, let otherStart) = other else { Issue.record("Expected another placement"); return }
         let task = try #require(store.records.state.focusTasks.first { $0.id == id })
-        #expect(store.editFocusTask(task, title: "First", icon: .work, pomodoros: 2, isFavorite: false, at: at))
-        let expanded = store.focusDayCanvas(at: at)
+        #expect(store.focus.editFocusTask(task, title: "First", icon: .work, pomodoros: 2, isFavorite: false, at: at).synchronousResult)
+        let expanded = store.focus.focusDayCanvas(at: at)
         #expect(expanded.blocks.count { $0.taskID == id } == 2)
         #expect(expanded.blocks.first { $0.startAtMs == otherStart }?.taskID == otherID)
-        #expect(store.editFocusTask(task, title: "First", icon: .work, pomodoros: 1, isFavorite: false, at: at))
-        #expect(store.focusDayCanvas(at: at).blocks.count { $0.taskID == id } == 1)
-        #expect(store.focusDayCanvas(at: at).blocks.first { $0.startAtMs == otherStart }?.taskID == otherID)
+        #expect(store.focus.editFocusTask(task, title: "First", icon: .work, pomodoros: 1, isFavorite: false, at: at).synchronousResult)
+        #expect(store.focus.focusDayCanvas(at: at).blocks.count { $0.taskID == id } == 1)
+        #expect(store.focus.focusDayCanvas(at: at).blocks.first { $0.startAtMs == otherStart }?.taskID == otherID)
     }
 
     @Test("Template changes preserve the running round and clearing stops it without erasing history")
     func runningRoundSurvivesTemplateRefresh() throws {
         let (store, at) = try fixture()
         let original = try template(store, at: at)
-        #expect(store.applyFocusTemplate(original, at: at))
-        let block = try #require(store.focusDayCanvas(at: at).blocks.first { $0.isAssigned })
+        #expect(store.focus.applyFocusTemplate(original, at: at).synchronousResult)
+        let block = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.isAssigned })
         let taskID = try #require(block.taskID)
         let end = Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000)
         let session = FocusSession(id: UUID(), taskID: taskID,
@@ -166,38 +166,38 @@ struct FocusTaskEditingTests {
             startedAt: at, plannedEndAt: end, endedAt: nil, endReason: nil,
             editedAt: at, editCount: 0, editTieBreaker: UUID())
         store.records.upsertFocusSession(session)
-        let next = try #require(store.focusTemplateBlocks(at: at).first { $0.kind == .task && $0.start >= end })
+        let next = try #require(store.focus.focusTemplateBlocks(at: at).first { $0.kind == .task && $0.start >= end })
         var slots = original.slots
         slots.append(.init(blockIndex: next.index, kind: .task, taskKey: original.slots[0].taskKey,
                            taskTitle: "Updated", taskIcon: .code))
-        #expect(store.updateFocusTemplate(original, name: "Updated", slots: slots, at: at))
-        #expect(store.activeFocusSession()?.id == session.id)
-        #expect(store.focusDayCanvas(at: at).blocks.first { $0.startAtMs == block.startAtMs }?.taskID == taskID)
-        store.clearFocusDay(at: at.addingTimeInterval(60))
-        #expect(store.activeFocusSession() == nil)
+        #expect(store.focus.updateFocusTemplate(original, name: "Updated", slots: slots, at: at).synchronousResult)
+        #expect(store.focus.activeFocusSession()?.id == session.id)
+        #expect(store.focus.focusDayCanvas(at: at).blocks.first { $0.startAtMs == block.startAtMs }?.taskID == taskID)
+        store.focus.clearFocusDay(at: at.addingTimeInterval(60)).synchronousResult
+        #expect(store.focus.activeFocusSession() == nil)
         #expect(store.records.state.focusSessions.first { $0.id == session.id }?.endReason == .stoppedByUser)
-        #expect(!store.focusDayCanvas(at: at).blocks.contains { $0.isAssigned })
+        #expect(!store.focus.focusDayCanvas(at: at).blocks.contains { $0.isAssigned })
     }
 
     @Test("Clearing the displayed day keeps another day’s tasks")
     func clearingDoesNotTouchAnotherDay() throws {
         let (store, at) = try fixture()
-        _ = store.createFocusTaskInNextEmptyBlock(title: "Today", at: at)
+        _ = store.focus.createFocusTaskInNextEmptyBlock(title: "Today", at: at).synchronousResult
         let later = at.addingTimeInterval(12 * 3600)
-        let result = store.createFocusTaskInNextEmptyBlock(title: "Tomorrow", at: later)
+        let result = store.focus.createFocusTaskInNextEmptyBlock(title: "Tomorrow", at: later).synchronousResult
         guard case .placed(let nextID, _) = result else { Issue.record("Expected tomorrow placement"); return }
-        store.clearFocusDay(at: at)
+        store.focus.clearFocusDay(at: at).synchronousResult
         #expect(store.records.state.focusTasks.first { $0.id == nextID }?.deletedAt == nil)
-        #expect(store.focusDayCanvas(at: later).blocks.contains { $0.taskID == nextID })
+        #expect(store.focus.focusDayCanvas(at: later).blocks.contains { $0.taskID == nextID })
     }
 
     @Test("Work-time eligibility distinguishes working time from lunch and clock-off")
     func startEligibilityExplainsOutsideHours() throws {
         let (store, at) = try fixture()
-        #expect(store.isWithinFocusWorkTime(at: at))
-        #expect(!store.isWithinFocusWorkTime(at: at.addingTimeInterval(-2 * 3600)))
-        #expect(!store.isWithinFocusWorkTime(at: at.addingTimeInterval(12 * 3600)))
-        #expect(!store.isWithinFocusWorkTime(at: at.addingTimeInterval(3 * 3600)))
+        #expect(store.focus.isWithinFocusWorkTime(at: at))
+        #expect(!store.focus.isWithinFocusWorkTime(at: at.addingTimeInterval(-2 * 3600)))
+        #expect(!store.focus.isWithinFocusWorkTime(at: at.addingTimeInterval(12 * 3600)))
+        #expect(!store.focus.isWithinFocusWorkTime(at: at.addingTimeInterval(3 * 3600)))
     }
     @Test("Legacy task indices never become recovery blocks after a lunch-grid change")
     func legacySlotsFollowTaskOrder() throws {
@@ -208,7 +208,7 @@ struct FocusTaskEditingTests {
             .init(blockIndex: 1, kind: .breakTime),
             .init(blockIndex: 13, kind: .task, taskKey: UUID(), taskTitle: "Afternoon", taskIcon: .study)
         ], createdAt: at, updatedAt: at)
-        let blocks = store.focusTemplateBlocks(at: at)
+        let blocks = store.focus.focusTemplateBlocks(at: at)
         let placed = legacy.placedSlots(in: blocks)
         #expect(placed.map(\.taskTitle) == ["Morning", "Afternoon"])
         #expect(placed.allSatisfy { blocks[$0.blockIndex].kind == .task })
@@ -223,8 +223,8 @@ struct FocusTaskEditingTests {
             FocusTemplateTask(taskKey: UUID(), legacyIndex: 1, title: "Second", icon: .study, pomodoros: 2),
             FocusTemplateTask(taskKey: UUID(), legacyIndex: 2, title: "Third", icon: .code, pomodoros: 1)
         ]
-        let template = try #require(store.saveFocusTemplate(name: "Full day", slots: FocusTemplate.slots(from: tasks)))
-        let blocks = Array(store.focusTemplateBlocks(at: at).prefix(6))
+        let template = try #require(store.focus.saveFocusTemplate(name: "Full day", slots: FocusTemplate.slots(from: tasks)).synchronousResult)
+        let blocks = Array(store.focus.focusTemplateBlocks(at: at).prefix(6))
         #expect(blocks.count { $0.kind == .task } == 3)
         #expect(template.placedSlots(in: blocks).map(\.taskTitle) == ["First", "First"])
         #expect(template.tasks.map(\.pomodoros) == [2, 2, 1])
@@ -235,60 +235,64 @@ struct FocusTaskEditingTests {
         let (store, morning) = try fixture()
         let at = morning.addingTimeInterval(-2 * 3600)
         let original = try template(store, at: at)
-        #expect(store.applyFocusTemplate(original, at: at))
-        let oldStart = try #require(store.focusDayCanvas(at: at).blocks.first { $0.isAssigned }?.startAtMs)
-        store.applyScheduleChange(.init(startMinutes: 600, endMinutes: 1080), decision: .applyToToday, at: at)
-        let canvas = store.focusDayCanvas(at: at)
+        #expect(store.focus.applyFocusTemplate(original, at: at).synchronousResult)
+        let oldStart = try #require(store.focus.focusDayCanvas(at: at).blocks.first { $0.isAssigned }?.startAtMs)
+        store.shifts.applyScheduleChange(.init(startMinutes: 600, endMinutes: 1080), decision: .applyToToday, at: at)
+        let canvas = store.focus.focusDayCanvas(at: at)
         let assigned = try #require(canvas.blocks.first { $0.isAssigned })
         #expect(assigned.startAtMs == oldStart + 3_600_000)
         #expect(assigned.taskTitle == "Original")
         let task = try #require(store.records.state.focusTasks.first { $0.id == assigned.taskID })
-        #expect(store.editFocusTask(task, title: "Manual", icon: .code, pomodoros: 1, isFavorite: false, at: at))
-        let saved = store.focusPlanning.plans[canvas.dayKey]
-        store.applyScheduleChange(.init(endMinutes: 1140), decision: .applyToToday, at: at)
-        #expect(store.focusPlanning.plans[canvas.dayKey] == saved)
+        #expect(store.focus.editFocusTask(task, title: "Manual", icon: .code, pomodoros: 1, isFavorite: false, at: at).synchronousResult)
+        let saved = store.focus.focusPlanning.plans[canvas.dayKey]
+        store.shifts.applyScheduleChange(.init(endMinutes: 1140), decision: .applyToToday, at: at)
+        #expect(store.focus.focusPlanning.plans[canvas.dayKey] == saved)
     }
 
     @Test("Overtime restores omitted tail tasks from the unchanged linked template")
     func overtimeRestoresTail() throws {
         let (store, morning) = try fixture()
-        store.lunchEnabled = false
-        store.endMinutes = 600
+        store.preferences.applyPreferences { $0.lunchEnabled = false }
+        store.preferences.applyPreferences { $0.endMinutes = 600 }
         let at = morning.addingTimeInterval(-2 * 3600)
         let tasks = (0..<4).map {
             FocusTemplateTask(taskKey: UUID(), legacyIndex: $0, title: "Task \($0)", icon: .work, pomodoros: 1)
         }
-        let template = try #require(store.saveFocusTemplate(name: "Longer", slots: FocusTemplate.slots(from: tasks)))
-        #expect(store.applyFocusTemplate(template, at: at))
-        #expect(store.focusDayCanvas(at: at).blocks.count { $0.isAssigned } == 2)
-        let end = try #require(store.recordsCalendar.date(bySettingHour: 12, minute: 0, second: 0, of: morning))
-        store.applyOvertime(date: end, declaredAt: morning)
-        #expect(store.focusDayCanvas(at: morning).blocks.count { $0.isAssigned } == 4)
-        #expect(store.focusPlanning.templates.first { $0.id == template.id } == template)
+        let template = try #require(store.focus.saveFocusTemplate(name: "Longer", slots: FocusTemplate.slots(from: tasks)).synchronousResult)
+        #expect(store.focus.applyFocusTemplate(template, at: at).synchronousResult)
+        #expect(store.focus.focusDayCanvas(at: at).blocks.count { $0.isAssigned } == 2)
+        let end = try #require(store.preferences.recordsCalendar.date(bySettingHour: 12, minute: 0, second: 0, of: morning))
+        store.shifts.applyOvertime(date: end, declaredAt: morning)
+        #expect(store.focus.focusDayCanvas(at: morning).blocks.count { $0.isAssigned } == 4)
+        #expect(store.focus.focusPlanning.templates.first { $0.id == template.id } == template)
     }
 
     @Test("Applying a template persists all tasks and their sync outbox in one archive write")
-    func templateApplicationBatchesDurableWrites() throws {
+    func templateApplicationBatchesDurableWrites() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let file = root.appending(path: "archive.json")
         let records = RecordCoordinator(fileURL: file)
-        let store = OffWorkStore(defaults: try #require(UserDefaults(suiteName: "FocusBatch.\(UUID())")), records: records)
+        let store = AppRuntime(defaults: try #require(UserDefaults(suiteName: "FocusBatch.\(UUID())")), records: records)
         store.plus.debugSetAuthorized(true)
-        store.onboardingComplete = true
-        store.startMinutes = 540
-        store.endMinutes = 1080
-        let at = try #require(store.recordsCalendar.date(from: DateComponents(year: 2026, month: 8, day: 31, hour: 8)))
+        store.preferences.onboardingComplete = true
+        store.preferences.applyPreferences { $0.startMinutes = 540 }
+        store.preferences.applyPreferences { $0.endMinutes = 1080 }
+        let at = try #require(store.preferences.recordsCalendar.date(from: DateComponents(year: 2026, month: 8, day: 31, hour: 8)))
         let tasks = (0..<10).map {
             FocusTemplateTask(taskKey: UUID(), legacyIndex: $0, title: "Task \($0)", icon: .work, pomodoros: 1)
         }
-        let template = try #require(store.saveFocusTemplate(name: "Ten tasks", slots: FocusTemplate.slots(from: tasks)))
+        let template = try #require(store.focus.saveFocusTemplate(name: "Ten tasks", slots: FocusTemplate.slots(from: tasks)).synchronousResult)
+        try await records.flush()
         let before = records.revision
+        let writesBefore = records.archiveWriteCount
         var notifications = 0
         records.onDirty = { notifications += 1 }
-        #expect(store.applyFocusTemplate(template, at: at))
+        #expect(store.focus.applyFocusTemplate(template, at: at).synchronousResult)
         #expect(records.revision == before + 1)
+        try await records.flush()
+        #expect(records.archiveWriteCount == writesBefore + 1)
         #expect(notifications == 1)
         let restored = RecordCoordinator(fileURL: file)
         #expect(restored.persistenceError == nil)
@@ -311,18 +315,18 @@ struct FocusTaskEditingTests {
         let (store, morning) = try fixture()
         let at = morning.addingTimeInterval(-2 * 3600)
         let original = try template(store, at: at)
-        #expect(store.applyFocusTemplate(original, at: at))
-        let key = store.focusDayCanvas(at: at).dayKey
-        store.applyScheduleChange(.init(endMinutes: 550), decision: .applyToToday, at: at)
-        #expect(store.focusPlanning.plans[key]?.assignments.isEmpty == true)
-        #expect(store.focusPlanning.plans[key]?.appliedTemplateID == original.id)
-        #expect(store.focusPlanning.templates.first { $0.id == original.id } == original)
+        #expect(store.focus.applyFocusTemplate(original, at: at).synchronousResult)
+        let key = store.focus.focusDayCanvas(at: at).dayKey
+        store.shifts.applyScheduleChange(.init(endMinutes: 550), decision: .applyToToday, at: at)
+        #expect(store.focus.focusPlanning.plans[key]?.assignments.isEmpty == true)
+        #expect(store.focus.focusPlanning.plans[key]?.appliedTemplateID == original.id)
+        #expect(store.focus.focusPlanning.templates.first { $0.id == original.id } == original)
     }
 
     @Test("Remaining template capacity counts all tasks and excludes the task being edited")
     func remainingCapacity() throws {
         let (store, at) = try fixture()
-        let blocks = Array(store.focusTemplateBlocks(at: at).prefix(6))
+        let blocks = Array(store.focus.focusTemplateBlocks(at: at).prefix(6))
         let first = FocusTemplateTask(taskKey: UUID(), legacyIndex: 0, title: "First", icon: .work, pomodoros: 2)
         let second = FocusTemplateTask(taskKey: UUID(), legacyIndex: 1, title: "Second", icon: .study, pomodoros: 1)
         #expect(FocusTemplate.remainingPomodoros([first], in: blocks) == 1)

@@ -6,6 +6,7 @@ const modules = [
   ["./countdown", resolve("lib/countdown.ts")],
   ["./reminders", resolve("lib/reminders.ts")],
   ["./summary", resolve("lib/summary.ts")],
+  ["./watch-projection", resolve("lib/watch-projection.ts")],
 ];
 
 function compileModule(path) {
@@ -57,6 +58,7 @@ export function createIOSNativeRulesBundle() {
   const countdown = require("./countdown");
   const reminders = require("./reminders");
   const summary = require("./summary");
+  const watchProjection = require("./watch-projection");
 
   function shiftOptions(input) {
     return {
@@ -236,6 +238,36 @@ export function createIOSNativeRulesBundle() {
   }
 
   global.OWCNative = {
+    watchProjection(requestJSON) {
+      const request = JSON.parse(requestJSON);
+      const input = request.rules;
+      const shift = resolveCurrentShift(input);
+      const nextShift = countdown.findNextShiftTimeline({
+        startTime: input.startTime,
+        endTime: input.endTime,
+        workdays: input.workdays,
+        schedule: input.schedule || null,
+        afterMs: Math.max(input.nowMs, countdown.getShiftEndAtMs(shift)),
+        options: {
+          breakStartTime: input.breakStartTime || null,
+          breakDurationMinutes: input.breakDurationMinutes || 0,
+        },
+        timeZone: inputTimeZone(input),
+      });
+      const currentIsActual = isActualShift(input, shift);
+      return JSON.stringify(watchProjection.projectWatchSnapshot({
+        nowMs: input.nowMs,
+        scheduleConfigured: Boolean(request.scheduleConfigured),
+        isRunning: Boolean(request.isRunning),
+        currentShift: shift,
+        currentShiftOverride: request.currentShift || null,
+        finishedAtMs: request.finishedAtMs || null,
+        currentIsActual,
+        nextShift,
+        timeZone: inputTimeZone(input),
+      }));
+    },
+
     snapshot(inputJSON) {
       const input = JSON.parse(inputJSON);
       const shift = resolveCurrentShift(input);

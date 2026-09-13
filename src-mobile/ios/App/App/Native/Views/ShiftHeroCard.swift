@@ -7,15 +7,16 @@ import SwiftUI
 /// working time, which is the single value on this screen the user can't read
 /// off anything else.
 struct ShiftHeroCard: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
     let onEdit: (SetupTimeField) -> Void
 
     var body: some View {
         VStack(spacing: 14) {
             HStack(alignment: .timeChipCenter, spacing: 4) {
                 ShiftHeroTimeButton(
-                    title: store.t("startTime"),
-                    time: store.timeString(store.displayedStartMinutes)
+                    title: shifts.text.t("startTime"),
+                    time: shifts.session.timeString(scene.displayedStartMinutes(using: shifts.preferences))
                 ) { onEdit(.start) }
 
                 Text(verbatim: "—")
@@ -25,14 +26,14 @@ struct ShiftHeroCard: View {
                     .accessibilityHidden(true)
 
                 ShiftHeroTimeButton(
-                    title: store.t("endTime"),
-                    time: store.timeString(store.displayedEndMinutes)
+                    title: shifts.text.t("endTime"),
+                    time: shifts.session.timeString(scene.displayedEndMinutes(using: shifts.preferences))
                 ) { onEdit(.end) }
             }
             .environment(\.layoutDirection, .leftToRight)
 
             Label {
-                Text("\(store.t("totalWorkTime")) · \(store.plannedWorkLabel)")
+                Text("\(shifts.text.t("totalWorkTime")) · \(shifts.text.plannedWorkLabel(for: scene.setupSnapshot(using: shifts)))")
             } icon: {
                 Image(systemName: "hourglass")
             }

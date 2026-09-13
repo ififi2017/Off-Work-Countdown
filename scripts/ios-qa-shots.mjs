@@ -146,7 +146,7 @@ function launch(udid, scene, orientation, theme) {
     "-AppleLocale", LANGUAGE === "zh-CN" ? "zh_CN" : "en_US",
     "-theme", theme,
     "-ios.native.onboardingComplete", "YES",
-    "-ios.native.releaseNotesSeen", "3.1.9",
+    "-ios.native.releaseNotesSeen", "3.2.0",
     "-ios.native.debugAlwaysOnboarding", "NO",
     "-ios.native.selectedTab", "timer",
     "-ios.native.countdownStarted", "YES",

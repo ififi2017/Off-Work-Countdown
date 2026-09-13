@@ -86,9 +86,16 @@ public struct WidgetTimelineEntry: Codable, Equatable, Sendable {
     public func projected(atMs nowMs: Int64) -> WidgetTimelineEntry {
         #if os(iOS)
         let projectsProgress = phase == .working || phase == .before
-        #else
+        #elseif os(macOS)
         // The macOS product keeps its existing pre-shift presentation. DoneAt
         // countdown progress is an iOS-only surface change.
+        let projectsProgress = phase == .working
+        #elseif os(watchOS)
+        // Watch only advances effective work here. Its separate WatchSnapshot
+        // contract owns the companion's next-shift preview and expiry.
+        let projectsProgress = phase == .working
+        #else
+        // Foundation-only consumers use the effective-work projection.
         let projectsProgress = phase == .working
         #endif
         guard projectsProgress,

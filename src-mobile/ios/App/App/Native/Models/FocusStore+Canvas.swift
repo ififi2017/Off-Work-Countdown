@@ -1,6 +1,6 @@
 import Foundation
 
-extension OffWorkStore {
+extension FocusStore {
     /// The one query behind everything the canvas shows a task in.
     ///
     /// The page list and the block-assignment sheet used to ask two different
@@ -19,7 +19,7 @@ extension OffWorkStore {
     /// what you want to do, so once the current one has ended the canvas moves
     /// to the next one and says so, rather than going blank.
     func focusCanvasShift(at date: Date = .now) -> (snapshot: NativeShiftSnapshot, isNext: Bool)? {
-        guard effectiveScheduleMode(at: date) != .off || countdownStarted else { return nil }
+        guard sources.scheduleEnabled(date) else { return nil }
         guard let current = snapshot(at: date) else { return nil }
         if date < current.endDate, isFocusWorkday(current, at: date) { return (current, false) }
         guard let nextStart = current.nextShiftStartDate,
@@ -29,8 +29,7 @@ extension OffWorkStore {
     }
 
     func isFocusWorkday(_ shift: NativeShiftSnapshot, at date: Date) -> Bool {
-        !isEndedEarly(shift) && (shift.isWorkday || isForcedWorkday(shift)
-            || (effectiveScheduleMode(at: date) == .off && countdownStarted))
+        sources.isWorkday(shift, date)
     }
 
     /// The lock state on its own, for callers that only need to know whether

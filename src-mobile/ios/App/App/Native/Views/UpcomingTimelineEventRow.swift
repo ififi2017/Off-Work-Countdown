@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct UpcomingTimelineEventRow: View {
-    let store: OffWorkStore
+    let locale: Locale
     let event: UpcomingTimelineEvent
     let now: Date
     let showsSeparator: Bool
@@ -28,9 +28,9 @@ struct UpcomingTimelineEventRow: View {
 
             Group {
                 if Calendar.current.isDate(event.date, inSameDayAs: now) {
-                    Text(event.date, format: .dateTime.hour().minute().locale(store.locale))
+                    Text(event.date, format: .dateTime.hour().minute().locale(locale))
                 } else {
-                    Text(event.date, format: .dateTime.weekday(.abbreviated).hour().minute().locale(store.locale))
+                    Text(event.date, format: .dateTime.weekday(.abbreviated).hour().minute().locale(locale))
                 }
             }
             .font(.body.monospacedDigit())

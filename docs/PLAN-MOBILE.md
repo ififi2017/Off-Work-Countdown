@@ -249,145 +249,19 @@ App Group 不能用于 iPhone 和 iPad 跨设备同步，也不能让 iPad 与 A
 
 ## 4. 下一个目标：Apple Watch
 
-### 4.1 产品定位
+Watch 的产品边界、数据契约、权益与配对通信以 [017 Apple Watch 计划](../plans/017-apple-watch-plus.md)为唯一维护位置；工程实施顺序由 [018 架构整改](../plans/018-ios-3.2.0-architecture-remediation.md)约束。
 
-Apple Watch 是 iPhone App 的随身状态表面，不是第二套完整设置中心。用户抬腕时应能立即看到：
-
-- 当前是工作、午休、休息、加班还是已下班；
-- 距离下班还有多久；
-- 当前班次进度；
-- 计划下班时间；
-- 数据是否过期或仍在等待 iPhone 同步。
-
-Watch 首版不提供完整排班、午休、通知或薪资编辑。相关页面使用简短说明，引导用户回到
-iPhone App 配置。这样能避免在小屏幕上复制复杂设置，也能保持 iPhone 是唯一设置权威端。
-
-Watch App 可以分阶段实现，也可以在同一开发周期一次交付；即使一次开发完，仍按 W0–W3
-的验收门分层，不能跳过同步契约和断网状态。
-
-### 4.2 应用形态
-
-采用“带 iPhone companion 的 watchOS App”，而不是 watch-only 产品。首版允许依赖已安装的
-iPhone App，因为业务规则、设置入口和数据权威都在 iPhone。
-
-不在首版宣称 Watch 可完全独立配置。若未来改为独立 watchOS App，WatchConnectivity 不能再是
-唯一数据来源，届时必须另行决定 CloudKit/iCloud 或在 Watch 上提供完整的本地规则资源和配置
-流程；这会显著扩大范围和隐私说明。
-
-### 4.3 WatchSnapshotV1
-
-新增版本化、salary-free 的 WatchSnapshotV1，至少包含：
-
-- schemaVersion、revision、generatedAtMs、expiresAtMs；
-- locale、显示状态与必要的本地化短文案；
-- 当前绝对 segments、plannedEndAtMs、overtimeEndAtMs；
-- 当前状态、下一次状态边界和下一班简要投影；
-- 表盘组件渲染所需的进度、结束时间与保守空态；
-- countdownStarted 和必要的控制状态，但不含薪资字段。
-
-iPhone 每次修改班次、开始/停止计时、进入/退出午休、应用加班、切换语言或前后台恢复时更新
-snapshot。Watch 收到后原子写入自己的本地文件，再通知 WidgetCenter 刷新 Watch 组件。
-
-Watch App 与 Watch Widget Extension 需要共享 Watch 侧 App Group，但不得假设它们能直接读取
-iPhone 的 App Group 容器。iPhone → Watch 必须经过 WatchConnectivity 或未来明确批准的云同步。
-
-### 4.4 WatchConnectivity 策略
-
-按数据语义选择通道：
-
-1. updateApplicationContext：发送“只需要最新一份”的 WatchSnapshot，是主通道。
-2. sendMessage：两端都可达时发送即时命令和 ACK，例如开始/停止计时；不可达时不能假装成功。
-3. transferUserInfo：为确实需要排队的命令或事件提供后台兜底，必须带 commandId 防止重复执行。
-4. transferFile：仅在 snapshot 将来超过字典负担时使用；首版不传图片和大文件。
-
-WatchConnectivity 是系统尽力传输，不保证即时到达。因此：
-
-- Watch 必须使用本地最后一份 snapshot 离线显示；
-- UI 必须区分“已同步”“等待同步”“数据已过期”；
-- iPhone 是设置和冲突解决权威端；
-- 每份 snapshot 和命令都有单调 revision、commandId 与 ACK；
-- 旧 revision 不得覆盖新 revision；
-- Watch 重新配对、换表、恢复备份或 companion 未安装时显示明确空态。
-
-### 4.5 Watch 上的控制范围
-
-W1 先完成只读联动，保证抬腕显示可靠。W2 再加入少量高价值操作：
-
-- 开始计时；
-- 停止计时；
-- 非工作日的“今天也上班”二次确认；
-- 可选的加班延长快捷操作。
-
-这些操作发送命令给 iPhone，并等待 ACK。iPhone 不可达时，Watch 可以将命令标为待同步，但
-不能立即把未确认状态写成最终事实。复杂排班、午休时长、薪资、通知模式和语言继续在 iPhone
-配置。
-
-若实际体验证明“排队后才生效”比没有按钮更令人困惑，首版可只保留只读状态；这属于 W2
-产品验收决策，不影响 W1 和表盘组件交付。
+3.2.0 交付依赖配对 iPhone 的 **Plus 只读 Watch App**。规则在 iPhone 通过共享 TypeScript 生成，Watch 仅消费不含薪资的绝对班次投影和已验证权益。开始／停止控制明确延期，不实现命令接收器或 ACK。免费用户继续使用智能叠放里的实时活动。
 
 ## 5. Watch 表盘组件与小组件
 
-Watch Widget Extension 必须支持以下两种 family：
-
-### accessoryCircular（圆形）
-
-- 进度环为主视觉；
-- 中心显示整数百分比或紧凑剩余时间；
-- 工作、午休、休息和完成态均有可辨识的符号；
-- 在 AOD、accented/vibrant 和低亮度环境仍清晰；
-- 数据过期时不继续伪造进度，显示保守占位。
-
-### accessoryRectangular（长方形）
-
-- 第一行显示当前状态和计划下班时间；
-- 主区域显示剩余时间；
-- 下方显示线性进度条或短进度文案；
-- 长语言、窄表盘和 AOD 下不得截断关键信息。
-
-accessoryInline 可作为 W3 的低成本增强，但不是首个验收门槛。accessoryCorner 只有在圆形和
-长方形稳定后再评估。
-
-组件不得每秒运行自定义 Timer。使用绝对日期文本、系统 timer 样式和预先生成的 timeline，
-在午休开始/结束、下班、加班结束和 snapshot 过期等边界生成 entry。Watch App 收到新 snapshot
-后调用 WidgetCenter 刷新，但不能假设刷新即时发生。
-
-组件继续保持 salary-free，不显示工资、时薪、今日已赚或可反推薪资的数据。
+首版必需表面是 `accessoryCircular` 与 `accessoryRectangular`。尺寸、AOD、系统着色、过期占位、锁定与隐私要求统一见 [017 的表面范围及验收矩阵](../plans/017-apple-watch-plus.md)。Watch App 与组件使用 Watch 自己的共享容器；不能直接读取 iPhone App Group。
 
 ## 6. Apple Watch 阶段与完成标准
 
-### W0：工程与契约
+[017 的 W0–W3](../plans/017-apple-watch-plus.md)统一维护阶段清单及退出证据：W0 工程／契约、W1 只读联动及免费实时活动、W2 两种表盘组件、W3 真机／签名／发布。此处不再保留第二套清单，避免控制范围或发布要求漂移。
 
-- 在现有 Xcode project 中新增 watchOS App 与 Watch Widget Extension targets；
-- 确定 deployment target、bundle id、App Group、签名和嵌入关系；
-- 定义 WatchSnapshotV1 和 fixture；
-- TypeScript/iPhone 生产者与 Watch Swift 解码器使用同一 fixture；
-- 对最终 watch app、extension 和 snapshot 做 salary-free 负向检查；
-- 扩展 npm run check:ios 和 Xcode Cloud 构建检查。
-
-### W1：只读联动
-
-- iPhone 通过 updateApplicationContext 发布最新 snapshot；
-- Watch 原子保存并在离线状态继续显示；
-- Watch 主界面显示状态、剩余时间、进度与下班时间；
-- 配对、未安装 companion、首次同步、旧 revision、损坏 snapshot 和过期数据都有明确状态；
-- Watch 不复制 TypeScript 排班算法。
-
-### W2：表盘组件与轻量控制
-
-- accessoryCircular 和 accessoryRectangular 均完成；
-- light/dark、accented、vibrant、AOD、长英文、简中、繁中和 RTL 完成视觉检查；
-- 组件在工作、午休、休息、加班、完成和过期状态下都正确；
-- 根据 W1 实测决定是否启用开始/停止计时；启用时必须具备 commandId、ACK、重试和去重；
-- Watch 上所有复杂设置均引导回 iPhone。
-
-### W3：实机、发布与回归
-
-- 至少一块支持 AOD 的 Apple Watch 和一块较小屏幕型号完成实机测试；
-- 覆盖 iPhone 前台、后台、被系统终止、重启、蓝牙断开、Watch 仅 Wi-Fi、重新连接和换表；
-- 覆盖夏令时/时区变化、跨午夜班次、午休、加班、轮休和非工作日；
-- 验证 Watch App/组件的冷启动、耗电、刷新预算和 stale 状态；
-- Xcode Cloud Release Archive 同时包含正确签名的 iPhone、iPad、Watch 与全部 extensions；
-- TestFlight 完成 paired iPhone + Watch 回归后再进入 App Store 审核。
+当前状态（2026-09-13）：Watch App、Watch Widgets 与 WatchAppTests 已建为显式引用目标并嵌入 `App` scheme；iPhone 发布器与 Watch 接收器已实现，WatchAppTests 与 iPhone 契约／发布器测试通过，配对 iPhone／Watch 模拟器上的权益状态端到端通信已验证。W0–W3 仍未勾选：真机配对、时间准确性、AOD、耗电、签名归档、StoreKit 恢复购买与商店素材待验收，模拟器结论和 iPhone 模型测试都不能替代 017 的真机与发布验收。
 
 ## 7. iPad 与 iPhone 数据同步决策
 

@@ -4,14 +4,16 @@ import SwiftUI
 /// when the app opens on its free countdown. The values are illustrative and
 /// stay inside onboarding; neither page starts a timer or writes a record.
 struct OnboardingPlusRecordsPage: View {
-    let store: OffWorkStore
+    let preferences: PreferencesStore
+    let text: AppText
     let onContinue: () -> Void
 
     var body: some View {
         OnboardingPlusPage(
-            store: store,
-            title: store.t("onboardingPlusRecordsTitle"),
-            body: store.t("onboardingPlusRecordsBody"),
+            preferences: preferences,
+            text: text,
+            title: text.t("onboardingPlusRecordsTitle"),
+            body: text.t("onboardingPlusRecordsBody"),
             onContinue: onContinue
         ) {
             VStack(spacing: 14) {
@@ -24,16 +26,16 @@ struct OnboardingPlusRecordsPage: View {
     private var recordsCard: some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 14) {
-                Label(store.t("recordsTitle"), systemImage: "calendar")
+                Label(text.t("recordsTitle"), systemImage: "calendar")
                     .font(.headline)
 
                 timelineRow(
-                    title: store.t("recordsPlanned"),
+                    title: text.t("recordsPlanned"),
                     time: "09:00–18:00",
                     isPlanned: true
                 )
                 timelineRow(
-                    title: store.t("onboardingPlusRecordsActual"),
+                    title: text.t("onboardingPlusRecordsActual"),
                     time: "09:08–18:42",
                     isPlanned: false
                 )
@@ -46,9 +48,9 @@ struct OnboardingPlusRecordsPage: View {
     private var lifeCard: some View {
         OWCGroupCard {
             VStack(alignment: .leading, spacing: 12) {
-                Label(store.t("lifeProfileTitle"), systemImage: "person.crop.circle")
+                Label(text.t("lifeProfileTitle"), systemImage: "person.crop.circle")
                     .font(.headline)
-                Text(store.t("onboardingPlusLifeBody"))
+                Text(text.t("onboardingPlusLifeBody"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineSpacing(3)
@@ -73,11 +75,11 @@ struct OnboardingPlusRecordsPage: View {
                 .accessibilityHidden(true)
 
                 HStack {
-                    Text(store.t("lifeStageChildhood"))
+                    Text(text.t("lifeStageChildhood"))
                     Spacer()
-                    Text(store.t("lifeStagePresent"))
+                    Text(text.t("lifeStagePresent"))
                     Spacer()
-                    Text(store.t("lifeStageRetirement"))
+                    Text(text.t("lifeStageRetirement"))
                 }
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(OWCDesign.secondary)
@@ -136,7 +138,8 @@ struct OnboardingPlusRecordsPage: View {
 }
 
 struct OnboardingPlusFocusPage: View {
-    let store: OffWorkStore
+    let preferences: PreferencesStore
+    let text: AppText
     let onContinue: () -> Void
 
     @State private var phase = DemoPhase.focus
@@ -150,16 +153,17 @@ struct OnboardingPlusFocusPage: View {
 
     var body: some View {
         OnboardingPlusPage(
-            store: store,
-            title: store.t("onboardingPlusFocusTitle"),
-            body: store.t("onboardingPlusFocusBody"),
+            preferences: preferences,
+            text: text,
+            title: text.t("onboardingPlusFocusTitle"),
+            body: text.t("onboardingPlusFocusBody"),
             onContinue: onContinue
         ) {
             OWCGroupCard {
                 VStack(spacing: 16) {
-                    Picker(store.t("focusTitle"), selection: $phase) {
-                        Text(store.t("focusTitle")).tag(DemoPhase.focus)
-                        Text(store.t("focusShortBreak")).tag(DemoPhase.rest)
+                    Picker(text.t("focusTitle"), selection: $phase) {
+                        Text(text.t("focusTitle")).tag(DemoPhase.focus)
+                        Text(text.t("focusShortBreak")).tag(DemoPhase.rest)
                     }
                     .pickerStyle(.segmented)
 
@@ -184,20 +188,20 @@ struct OnboardingPlusFocusPage: View {
     private var focusPreview: some View {
         preview(
             icon: FocusTaskIcon.focus.systemName,
-            title: store.t("onboardingPlusFocusTask"),
+            title: text.t("onboardingPlusFocusTask"),
             duration: "09:00",
             progress: 0.64,
-            footnote: store.t("focusActivityThenBreak", values: ["count": "5"])
+            footnote: text.t("focusActivityThenBreak", values: ["count": "5"])
         )
     }
 
     private var breakPreview: some View {
         preview(
             icon: "cup.and.saucer.fill",
-            title: store.t("focusShortBreak"),
+            title: text.t("focusShortBreak"),
             duration: "05:00",
             progress: 0,
-            footnote: store.t("onboardingPlusFocusBreakBody")
+            footnote: text.t("onboardingPlusFocusBreakBody")
         )
     }
 
@@ -235,20 +239,24 @@ struct OnboardingPlusFocusPage: View {
 }
 
 private struct OnboardingPlusPage<Demo: View>: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let preferences: PreferencesStore
+    let text: AppText
     let title: String
     let bodyText: String
     let onContinue: () -> Void
     @ViewBuilder let demo: Demo
 
     init(
-        store: OffWorkStore,
+        preferences: PreferencesStore,
+        text: AppText,
         title: String,
         body: String,
         onContinue: @escaping () -> Void,
         @ViewBuilder demo: () -> Demo
     ) {
-        self.store = store
+        self.preferences = preferences
+        self.text = text
         self.title = title
         bodyText = body
         self.onContinue = onContinue
@@ -259,7 +267,7 @@ private struct OnboardingPlusPage<Demo: View>: View {
         VStack(spacing: 0) {
             Spacer(minLength: 18)
 
-            Label(store.t("plusSection"), systemImage: "star.fill")
+            Label(text.t("plusSection"), systemImage: "star.fill")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(OWCDesign.accent)
                 .padding(.horizontal, 11)
@@ -287,10 +295,10 @@ private struct OnboardingPlusPage<Demo: View>: View {
             Spacer(minLength: 16)
 
             OnboardingDots(
-                page: store.onboardingPage,
-                includesAllSet: store.scheduleMode != .off
+                page: scene.onboardingPage,
+                includesAllSet: preferences.scheduleMode != .off
             )
-            Button(store.t("continue"), action: onContinue)
+            Button(text.t("continue"), action: onContinue)
                 .buttonStyle(OWCPrimaryButtonStyle())
                 .padding(.top, 16)
                 .padding(.bottom, 24)

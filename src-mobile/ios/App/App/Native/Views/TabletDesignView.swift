@@ -1,104 +1,125 @@
 import SwiftUI
 
-/// The system tab container coordinates the top bar, sidebar and navigation
-/// titles, including when a small iPad collapses a large title on scroll.
-struct TabletShellView: View {
-    @Bindable var store: OffWorkStore
+/// One stable system tab and navigation tree for every scene size. The native
+/// sidebar-adaptable style supplies a tab bar in compact space and a sidebar
+/// when wider space allows it.
+struct AdaptiveAppShellView: View {
+    @Environment(SceneState.self) private var scene
+    let runtime: AppRuntime
 
     var body: some View {
-        GeometryReader { proxy in
-            TabView(selection: $store.selectedTab) {
-                Tab(store.t("timerTab"), systemImage: "timer", value: AppTab.timer) {
+        TabView(selection: Bindable(scene).selectedTab) {
+                Tab(runtime.text.t("timerTab"), systemImage: "timer", value: AppTab.timer) {
                     timerStack
                 }
-                Tab(store.t("focusTitle"), systemImage: "stopwatch", value: AppTab.focus) {
-                    NavigationStack(path: $store.focusPath) {
-                        FocusCanvasView(store: store)
+                Tab(runtime.text.t("focusTitle"), systemImage: "stopwatch", value: AppTab.focus) {
+                    NavigationStack(path: Bindable(scene).focusPath) {
+                        FocusCanvasView(
+                            focus: runtime.focus,
+                            text: runtime.text,
+                            queries: runtime.queries,
+                            preferences: runtime.preferences,
+                            onboardingComplete: runtime.preferences.onboardingComplete,
+                            hasSeenPlusIntro: runtime.plus.hasSeenIntro,
+                            browsing: scene.focus
+                        )
                             .navigationDestination(for: AppRoute.self) { route in
-                                AppRouteDestination(route: route, store: store)
+                                AppRouteDestination(route: route, runtime: runtime)
                             }
                     }
                 }
-                Tab(store.t("recordsTab"), systemImage: "calendar", value: AppTab.records) {
+                Tab(runtime.text.t("recordsTab"), systemImage: "calendar", value: AppTab.records) {
                     recordsStack
                 }
-                Tab(store.t("settings"), systemImage: "slider.horizontal.3", value: AppTab.settings) {
+                Tab(runtime.text.t("settings"), systemImage: "slider.horizontal.3", value: AppTab.settings) {
                     settingsStack
                 }
             }
             .tabViewStyle(.sidebarAdaptable)
-            // A portrait sidebar floats over the page. Start with the system tab
-            // bar there; the sidebar toggle remains available when requested.
-            .defaultAdaptableTabBarPlacement(proxy.size.width > proxy.size.height ? .sidebar : .tabBar)
             .tabViewSidebarFooter {
-                TabletSidebarFooter(store: store)
+                TabletSidebarFooter(shifts: runtime.shifts, text: runtime.text)
             }
-            .onChange(of: store.presentedRoute) { _, route in
+            .onChange(of: scene.presentedRoute) { _, route in
                 guard let route else { return }
                 if route == .focus || route == .focusPlan {
-                    store.openFocusTab()
+                    scene.openFocusTab()
                     return
                 }
-                if store.selectedTab == .timer {
-                    store.timerPath.append(route)
-                } else if store.selectedTab == .focus {
-                    store.focusPath.append(route)
+                if scene.selectedTab == .timer {
+                    scene.timerPath.append(route)
+                } else if scene.selectedTab == .focus {
+                    scene.focusPath.append(route)
                 } else {
-                    if store.selectedTab == .records { store.selectedTab = .settings }
-                    store.settingsPath.append(route)
+                    if scene.selectedTab == .records { scene.selectedTab = .settings }
+                    scene.settingsPath.append(route)
                 }
-                store.presentedRoute = nil
+                scene.presentedRoute = nil
             }
-            .onChange(of: store.debugPresentationToken) {
-                store.timerPath.removeAll()
-                store.focusPath.removeAll()
-                store.recordsPath.removeAll()
-                store.settingsPath.removeAll()
+            .onChange(of: runtime.session.debugPresentationToken) {
+                scene.timerPath.removeAll()
+                scene.focusPath.removeAll()
+                scene.recordsPath.removeAll()
+                scene.settingsPath.removeAll()
             }
             .background(OWCDesign.page)
-        }
     }
 
     private var timerStack: some View {
-        NavigationStack(path: $store.timerPath) {
-            TabletTimerRoot(store: store)
+        NavigationStack(path: Bindable(scene).timerPath) {
+            TabletTimerRoot(shifts: runtime.shifts, preferences: runtime.preferences, text: runtime.text)
                 .navigationDestination(for: AppRoute.self) { route in
-                    AppRouteDestination(route: route, store: store)
+                    AppRouteDestination(route: route, runtime: runtime)
                 }
         }
     }
 
     private var recordsStack: some View {
-        NavigationStack(path: $store.recordsPath) {
+        NavigationStack(path: Bindable(scene).recordsPath) {
             tabletRecordsRoot
         }
     }
 
     private var settingsStack: some View {
-        NavigationStack(path: $store.settingsPath) {
+        NavigationStack(path: Bindable(scene).settingsPath) {
             tabletSettingsRoot
                 .navigationDestination(for: AppRoute.self) { route in
-                    AppRouteDestination(route: route, store: store)
+                    AppRouteDestination(route: route, runtime: runtime)
                 }
         }
     }
 
     private var tabletRecordsRoot: some View {
         RecordsDesignView(
-            store: store,
+            records: runtime.records,
+            queries: runtime.queries,
+            actions: runtime.recordActions,
+            life: runtime.life,
+            preferences: runtime.preferences,
+            focus: runtime.focus,
+            text: runtime.text,
+            hours: runtime.session.hoursConfiguration(),
+            browsing: scene.records,
             showsSidebarButton: false
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var tabletSettingsRoot: some View {
-        TabletSettingsView(store: store)
+        TabletSettingsView(
+            shifts: runtime.shifts,
+            recovery: runtime.recovery,
+            plus: runtime.plus,
+            text: runtime.text
+        )
     }
 
 }
 
 private struct TabletTimerRoot: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
+    let preferences: PreferencesStore
+    let text: AppText
     @Environment(\.tabBarPlacement) private var tabBarPlacement
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -113,17 +134,18 @@ private struct TabletTimerRoot: View {
                     // switches to the settings tab. The sidebar selection should
                     // not move because a row on the timer page was tapped.
                     TimerDesignView(
-                        store: store,
+                        shifts: shifts,
                         wide: false,
                         onOpenSettings: openTimerSettings,
-                        timelineActive: store.selectedTab == .timer,
+                        timelineActive: scene.selectedTab == .timer,
                         usesExternalRootToolbar: true
                     )
                     .transition(.asymmetric(insertion: .identity, removal: .opacity))
                 } else {
                     TabletTimerView(
-                        store: store,
-                        isActive: store.selectedTab == .timer
+                        shifts: shifts,
+                        text: text,
+                        isActive: scene.selectedTab == .timer
                     )
                     .transition(.asymmetric(insertion: .opacity, removal: .identity))
                 }
@@ -138,8 +160,8 @@ private struct TabletTimerRoot: View {
                 ToolbarItem(placement: .principal) {
                     TimelineView(.periodic(from: .now, by: 60)) { timeline in
                         Text(
-                            store.timerDate(from: timeline.date)
-                                .formatted(.dateTime.weekday(.wide).day().month(.wide).locale(store.locale))
+                            shifts.session.timerDate(from: timeline.date)
+                                .formatted(.dateTime.weekday(.wide).day().month(.wide).locale(preferences.locale))
                                 .uppercased()
                         )
                         .font(.footnote.weight(.semibold))
@@ -150,15 +172,15 @@ private struct TabletTimerRoot: View {
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {
-                OWCEarningsVisibilityButton(store: store)
+                OWCEarningsVisibilityButton(preferences: preferences, text: text)
                 Button {
                     withAnimation(reduceMotion ? OWCMotion.reduced : OWCMotion.navigation) {
-                        store.toggleQuickTheme()
+                        _ = preferences.toggleQuickTheme()
                     }
                 } label: {
-                    Image(systemName: store.quickThemeIcon)
+                    Image(systemName: preferences.quickThemeIcon)
                 }
-                .accessibilityLabel(store.t("theme"))
+                .accessibilityLabel(text.t("theme"))
             }
         }
     }
@@ -169,16 +191,17 @@ private struct TabletTimerRoot: View {
 
     private func openTimerSettings(_ route: AppRoute?) {
         if let route {
-            store.timerPath.append(route)
+            scene.timerPath.append(route)
         } else {
-            store.settingsPath.removeAll()
-            store.selectedTab = .settings
+            scene.settingsPath.removeAll()
+            scene.selectedTab = .settings
         }
     }
 }
 
 private struct TabletSidebarFooter: View {
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
+    let text: AppText
 
     var body: some View {
         compactShiftCountdown
@@ -188,16 +211,16 @@ private struct TabletSidebarFooter: View {
     private var compactShiftCountdown: some View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
             let _ = LaunchTrace.signposter.emitEvent("sidebarTimerUpdate")
-            let date = store.timerDate(from: timeline.date)
-            if store.shouldQuerySnapshot(at: date), let snapshot = store.snapshot(at: date) {
-                let phase = store.visualPhase(snapshot: snapshot, at: date)
+            let date = shifts.session.timerDate(from: timeline.date)
+            if shifts.session.shouldQuerySnapshot(at: date), let snapshot = shifts.session.snapshot(at: date) {
+                let phase = shifts.session.visualPhase(snapshot: snapshot, at: date)
                 let remaining = miniRemaining(snapshot, phase: phase, at: date)
 
                 VStack(alignment: .leading, spacing: 0) {
-                    OWCSectionHeader(title: store.t("shiftSection"))
+                    OWCSectionHeader(title: text.t("shiftSection"))
 
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(store.formatDuration(remaining))
+                        Text(text.formatDuration(remaining))
                             .font(.title.bold().monospacedDigit())
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
@@ -229,14 +252,14 @@ private struct TabletSidebarFooter: View {
 
     private func miniCaption(_ snapshot: NativeShiftSnapshot, phase: TimerVisualPhase, at date: Date) -> String {
         switch phase {
-        case .rest: store.t("widgetRestDay")
-        case .completed: store.t("offWorkToday")
-        case .unscheduled: store.t("unscheduledTitle")
-        case .lunch: store.t("lunchInProgress")
-        case .overtime: store.t("overtimeTimeLeftCaption")
-        case .clockIn: store.t("nextShiftLabelShort")
+        case .rest: text.t("widgetRestDay")
+        case .completed: text.t("offWorkToday")
+        case .unscheduled: text.t("unscheduledTitle")
+        case .lunch: text.t("lunchInProgress")
+        case .overtime: text.t("overtimeTimeLeftCaption")
+        case .clockIn: text.t("nextShiftLabelShort")
         case .running, .rulesError:
-            snapshot.isBeforeStart(at: date) ? store.t("nextShiftLabelShort") : store.t("timeLeftCaption")
+            snapshot.isBeforeStart(at: date) ? text.t("nextShiftLabelShort") : text.t("timeLeftCaption")
         }
     }
 
@@ -247,9 +270,9 @@ private struct TabletSidebarFooter: View {
     ) -> Double {
         switch phase {
         case .completed: 0
-        case .rest: store.countdownToClockInMs(snapshot: snapshot, at: date)
+        case .rest: shifts.session.countdownToClockInMs(snapshot: snapshot, at: date)
         case .running where snapshot.isBeforeStart(at: date), .clockIn:
-            store.countdownToClockInMs(snapshot: snapshot, at: date)
+            shifts.session.countdownToClockInMs(snapshot: snapshot, at: date)
         default:
             snapshot.heroRemainingMs(at: date)
         }
@@ -262,9 +285,9 @@ private struct TabletSidebarFooter: View {
     ) -> Double {
         switch phase {
         case .completed: 100
-        case .rest: store.countdownToClockInProgress(snapshot: snapshot)
+        case .rest: shifts.session.countdownToClockInProgress(snapshot: snapshot)
         case .running where snapshot.isBeforeStart(at: date), .clockIn:
-            store.countdownToClockInProgress(snapshot: snapshot)
+            shifts.session.countdownToClockInProgress(snapshot: snapshot)
         default:
             snapshot.progress
         }
@@ -272,58 +295,45 @@ private struct TabletSidebarFooter: View {
 }
 
 private struct TabletTimerView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
+    let text: AppText
     let isActive: Bool
-    @State private var showShare = false
-    @State private var showOvertime = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
             if isActive,
-               store.visualPhase(at: store.timerDate(from: .now)).usesLiveTimeline {
+               shifts.session.visualPhase(at: shifts.session.timerDate(from: .now)).usesLiveTimeline {
                 TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                    tabletTimerContent(at: store.timerDate(from: timeline.date))
+                    tabletTimerContent(at: shifts.session.timerDate(from: timeline.date))
                 }
             } else {
-                tabletTimerContent(at: store.timerDate(from: .now))
+                tabletTimerContent(at: shifts.session.timerDate(from: .now))
             }
         }
         .background(OWCDesign.page)
-        .sheet(isPresented: $showShare) {
-            ShareComposerView(store: store)
-                .presentationSizing(.page)
-                .presentationCornerRadius(26)
-        }
-        .sheet(isPresented: $showOvertime) {
-            OvertimeSheet(store: store)
-                // Deliberately plain `.form`, not `.fitted`: fitted sizing
-                // measures the content without accounting for the sheet's
-                // NavigationStack title bar, which lays the description out
-                // underneath the title instead of below it. The sheet keeps
-                // its fixed standard size and the content scrolls inside it.
-                .presentationSizing(.form)
-        }
     }
 
     @ViewBuilder
     private func tabletTimerContent(at date: Date) -> some View {
         let _ = LaunchTrace.signposter.emitEvent("tabletTimerContentUpdate")
-        let snapshot = store.shouldQuerySnapshot(at: date) ? store.snapshot(at: date) : nil
-        let phase = store.visualPhase(snapshot: snapshot, at: date)
+        let snapshot = shifts.session.shouldQuerySnapshot(at: date) ? shifts.session.snapshot(at: date) : nil
+        let phase = shifts.session.visualPhase(snapshot: snapshot, at: date)
 
         ZStack {
             if phase.showsActiveTimer, let snapshot {
                 TabletRunningView(
-                    store: store,
+                    shifts: shifts,
+                    text: text,
                     snapshot: snapshot,
                     now: date,
-                    showShare: $showShare,
-                    showOvertime: $showOvertime
+                    showShare: scene.timerSheetBinding(.share),
+                    showOvertime: scene.timerSheetBinding(.overtime)
                 )
             } else {
                 TimerDesignView(
-                    store: store,
+                    shifts: shifts,
                     wide: true,
                     timelineDate: date,
                     animatesPhaseChanges: false,
@@ -346,8 +356,10 @@ private struct TabletTimerView: View {
 }
 
 private struct TabletRunningView: View {
+    @Environment(SceneState.self) private var scene
     @ScaledMetric(relativeTo: .largeTitle) private var compactCountdownSize: CGFloat = 88
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
+    let text: AppText
     let snapshot: NativeShiftSnapshot
     let now: Date
     @Binding var showShare: Bool
@@ -378,12 +390,12 @@ private struct TabletRunningView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if store.isForcedWorkday(snapshot) {
-                ManualTimingBanner(store: store)
+            if shifts.session.isForcedWorkday(snapshot) {
+                ManualTimingBanner(shifts: shifts, now: now)
                     .padding(.horizontal, 40)
                     .padding(.top, 8)
-            } else if !snapshot.isBeforeStart(at: now), let note = store.earlyClockInNote(at: now) {
-                EarlyClockInBanner(store: store, note: note)
+            } else if !snapshot.isBeforeStart(at: now), let note = shifts.session.earlyClockInNote(at: now) {
+                EarlyClockInBanner(shifts: shifts, note: note)
                     .padding(.horizontal, 40)
                     .padding(.top, 8)
             }
@@ -413,7 +425,7 @@ private struct TabletRunningView: View {
                     .padding(.bottom, 18)
                 }
 
-                Text(store.formatDuration(displayRemaining))
+                Text(text.formatDuration(displayRemaining))
                     .font(.system(size: compactCountdownSize, weight: .bold).monospacedDigit())
                     .tracking(-3)
                     .foregroundStyle(onBreak ? OWCDesign.secondary : OWCDesign.primary)
@@ -429,36 +441,36 @@ private struct TabletRunningView: View {
 
                 if snapshot.isBeforeStart(at: now) {
                     OWCProgressMeter(
-                        progress: store.countdownToClockInProgress(snapshot: snapshot),
-                        label: store.t("progress")
+                        progress: shifts.session.countdownToClockInProgress(snapshot: snapshot),
+                        label: text.t("progress")
                     )
                     .padding(.top, 17)
                 } else {
-                    OWCProgressMeter(progress: snapshot.progress, label: store.t("progress"), overtime: isOvertime, paused: onBreak)
+                    OWCProgressMeter(progress: snapshot.progress, label: text.t("progress"), overtime: isOvertime, paused: onBreak)
                         .padding(.top, 17)
                 }
 
-                if store.presentationSalaryEnabled {
+                if shifts.session.presentationSalaryEnabled {
                     earningsCard
                         .padding(.top, 44)
                 }
 
-                if store.followsSchedule(at: now) {
+                if shifts.session.followsSchedule(at: now) {
                     HStack(spacing: 14) {
-                        statCard(store.t("summaryThisWeek"), summaryLabel(weekSummary, includeMoney: false))
-                        statCard(store.t("summaryThisYear"), summaryLabel(yearSummary, includeMoney: store.presentationSalaryEnabled))
+                        statCard(text.t("summaryThisWeek"), summaryLabel(weekSummary, includeMoney: false))
+                        statCard(text.t("summaryThisYear"), summaryLabel(yearSummary, includeMoney: shifts.session.presentationSalaryEnabled))
                     }
-                    .padding(.top, store.presentationSalaryEnabled ? 14 : 44)
+                    .padding(.top, shifts.session.presentationSalaryEnabled ? 14 : 44)
                 }
 
                 }
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { headHeight = $0 }
 
                 UpcomingTimelineView(
-                    store: store,
+                    shifts: shifts,
                     snapshot: snapshot,
                     now: now,
-                    isExpanded: store.timelineExpandedBinding,
+                    isExpanded: scene.timelineExpandedBinding(for: snapshot, at: now, session: shifts.session),
                     availableHeight: timelineHeight
                 )
                 .padding(.top, 22)
@@ -470,7 +482,8 @@ private struct TabletRunningView: View {
                 Spacer(minLength: 24)
 
                 TabletTimerActionBar(
-                    store: store,
+                    shifts: shifts,
+                    text: text,
                     snapshot: snapshot,
                     now: now,
                     showShare: $showShare,
@@ -524,26 +537,26 @@ private struct TabletRunningView: View {
 
     private var displayRemaining: Double {
         snapshot.isBeforeStart(at: now)
-            ? store.countdownToClockInMs(snapshot: snapshot, at: now)
+            ? shifts.session.countdownToClockInMs(snapshot: snapshot, at: now)
             : snapshot.heroRemainingMs(at: now)
     }
 
     private var heroCaption: String {
-        if snapshot.isBeforeStart(at: now) { return store.t("nextShiftLabelShort") }
+        if snapshot.isBeforeStart(at: now) { return text.t("nextShiftLabelShort") }
         if onBreak, let breakEnd = snapshot.activeBreakEndDate {
-            return store.t("pausedUntil", values: ["time": store.formatTime(breakEnd)])
+            return text.t("pausedUntil", values: ["time": text.formatTime(breakEnd)])
         }
-        if isOvertime { return store.t("overtimeTimeLeftCaption") }
-        return store.t("timeLeftCaption")
+        if isOvertime { return text.t("overtimeTimeLeftCaption") }
+        return text.t("timeLeftCaption")
     }
 
     private var statusPill: (text: String, symbol: String, tint: Color)? {
         if onBreak {
-            return (store.t("lunchInProgress"), "cup.and.saucer", OWCDesign.secondary)
+            return (text.t("lunchInProgress"), "cup.and.saucer", OWCDesign.secondary)
         }
         if isOvertime, let overtimeEnd = snapshot.overtimeEndDate {
             return (
-                store.t("overtimeUntil", values: ["time": store.formatTime(overtimeEnd)]),
+                text.t("overtimeUntil", values: ["time": text.formatTime(overtimeEnd)]),
                 "clock.fill",
                 OWCDesign.accent
             )
@@ -565,10 +578,10 @@ private struct TabletRunningView: View {
     private var earningsCard: some View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(store.t("moneyEarned"))
+                Text(text.t("moneyEarned"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
-                Text(store.moneyText(snapshot.earnedSoFar))
+                Text(text.moneyText(snapshot.earnedSoFar))
                     .font(.title3.weight(.semibold).monospacedDigit())
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -580,16 +593,16 @@ private struct TabletRunningView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
-    private var weekSummary: NativePeriodSummary? { store.periodSummary("week", asOf: now, snapshot: snapshot) }
-    private var yearSummary: NativePeriodSummary? { store.periodSummary("year", asOf: now, snapshot: snapshot) }
+    private var weekSummary: NativePeriodSummary? { shifts.session.periodSummary("week", asOf: now, snapshot: snapshot) }
+    private var yearSummary: NativePeriodSummary? { shifts.session.periodSummary("year", asOf: now, snapshot: snapshot) }
 
     private func summaryLabel(_ summary: NativePeriodSummary?, includeMoney: Bool) -> String {
         guard let summary else { return "—" }
         if includeMoney {
-            let money = store.moneyText(summary.earnings)
-            return "\(store.formatDays(summary.days)) · \(money)"
+            let money = text.moneyText(summary.earnings)
+            return "\(text.formatDays(summary.days)) · \(money)"
         }
-        return "\(store.formatDays(summary.days)) · \(store.formatHours(summary.hours))"
+        return "\(text.formatDays(summary.days)) · \(text.formatHours(summary.hours))"
     }
 
 }
@@ -597,7 +610,9 @@ private struct TabletRunningView: View {
 /// The share affordance has a fixed circular footprint, leaving the two
 /// labelled actions enough horizontal room even with long localisations.
 private struct TabletTimerActionBar: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let shifts: ShiftSessionStore
+    let text: AppText
     let snapshot: NativeShiftSnapshot
     let now: Date
     @Binding var showShare: Bool
@@ -610,17 +625,17 @@ private struct TabletTimerActionBar: View {
         HStack(spacing: 12) {
             if beforeStart {
                 Button {
-                    store.requestClockInEarly(at: now)
+                    scene.requestClockInEarly(at: now, using: shifts)
                 } label: {
-                    ClockInEarlyLabel(store: store)
+                    ClockInEarlyLabel(shifts: shifts, now: now)
                 }
                 .buttonStyle(OWCSecondaryButtonStyle())
                 .layoutPriority(1)
             } else {
                 Button {
-                    store.requestClockOffEarly(at: now)
+                    scene.requestClockOffEarly(at: now, using: shifts)
                 } label: {
-                    ClockOffEarlyLabel(store: store)
+                    ClockOffEarlyLabel(shifts: shifts, now: now)
                 }
                 .buttonStyle(OWCSecondaryButtonStyle())
                 .layoutPriority(1)
@@ -628,7 +643,7 @@ private struct TabletTimerActionBar: View {
                 Button {
                     showOvertime = true
                 } label: {
-                    Text(store.t(overtimeActive ? "adjustOvertime" : "overtime"))
+                    Text(text.t(overtimeActive ? "adjustOvertime" : "overtime"))
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
                 }
@@ -647,14 +662,17 @@ private struct TabletTimerActionBar: View {
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(store.t("shareButton"))
+            .accessibilityLabel(text.t("shareButton"))
         }
         .frame(maxWidth: .infinity)
     }
 }
 
 private struct TabletSettingsView: View {
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
+    let recovery: RecoveryStore
+    let plus: PlusEntitlement
+    let text: AppText
 
     var body: some View {
         // Let the system navigation container track the root scroll view so
@@ -669,11 +687,11 @@ private struct TabletSettingsView: View {
                     ForEach(SettingsSection.twoColumns, id: \.self) { column in
                         VStack(spacing: 20) {
                             ForEach(column) { section in
-                                SettingsSectionCard(store: store, section: section)
+                                SettingsSectionCard(shifts: shifts, recovery: recovery, section: section)
                                 // The privacy note belongs to this section, so
                                 // it travels with it rather than with a column.
                                 if section == .reminders {
-                                    sectionNote(store.t("notificationPrivacyNote"))
+                                    sectionNote(text.t("notificationPrivacyNote"))
                                 }
                             }
                         }
@@ -687,12 +705,12 @@ private struct TabletSettingsView: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .background(OWCDesign.page)
-        .navigationTitle(store.t("settings"))
+        .navigationTitle(text.t("settings"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                SettingsPlusStarToolbarButton(store: store)
+                SettingsPlusStarToolbarButton(plus: plus, text: text)
             }
         }
     }
@@ -714,6 +732,7 @@ private struct TabletSettingsView: View {
 private struct AdaptiveSettingsColumns<Content: View>: View {
     let spacing: CGFloat
     @ViewBuilder let content: Content
+    @State private var availableWidth: CGFloat = 0
 
     // The iPad mini portrait content area is about 664 pt with the sidebar
     // hidden. Keep it in one column in both sidebar states so collapsing the
@@ -721,11 +740,14 @@ private struct AdaptiveSettingsColumns<Content: View>: View {
     private static var twoColumnMinimum: CGFloat { 720 }
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .top, spacing: spacing) { content }
-                .frame(minWidth: Self.twoColumnMinimum)
-            VStack(spacing: spacing) { content }
+        let layout = availableWidth >= Self.twoColumnMinimum
+            ? AnyLayout(HStackLayout(alignment: .top, spacing: spacing))
+            : AnyLayout(VStackLayout(spacing: spacing))
+        layout {
+            content
         }
+        .frame(maxWidth: .infinity, alignment: .top)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { availableWidth = $0 }
     }
 }
 

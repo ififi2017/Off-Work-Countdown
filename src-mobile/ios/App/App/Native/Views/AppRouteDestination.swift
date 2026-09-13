@@ -4,8 +4,9 @@ import SwiftUI
 /// stack. Links carry only `AppRoute` values so layout variants cannot drift
 /// into separate destination hierarchies.
 struct AppRouteDestination: View {
+    @Environment(SceneState.self) private var scene
     let route: AppRoute
-    let store: OffWorkStore
+    let runtime: AppRuntime
 
     // The tab bar deliberately stays up across a push, the way it does in the
     // App Store. Detail pages owe it clearance instead — see
@@ -15,39 +16,60 @@ struct AppRouteDestination: View {
         Group {
             switch route {
             case .schedule:
-                ScheduleSettingsView(store: store)
+                ScheduleSettingsView(shifts: runtime.shifts)
             case .salary:
-                SalaryDesignView(store: store)
+                SalaryDesignView(shifts: runtime.shifts)
             case .notifications:
-                NotificationDesignView(store: store)
+                NotificationDesignView(shifts: runtime.shifts)
             case .lunch:
-                LunchSettingsView(store: store)
+                LunchSettingsView(shifts: runtime.shifts)
             case .health:
-                HealthReminderSettingsView(store: store)
+                HealthReminderSettingsView(shifts: runtime.shifts)
             case .theme:
-                ThemeSettingsView(store: store)
+                ThemeSettingsView(preferences: runtime.preferences, text: runtime.text)
             case .language:
-                LanguageSettingsView(store: store)
+                LanguageSettingsView(preferences: runtime.preferences, text: runtime.text)
             case .recordsTimeZone:
-                RecordsTimeZoneSettingsView(store: store)
+                RecordsTimeZoneSettingsView(shifts: runtime.shifts)
             case .plus:
-                PlusSettingsView(store: store)
+                PlusSettingsView(plus: runtime.plus, text: runtime.text)
             case .iCloudSync:
-                RecordsSyncSettingsView(store: store)
+                RecordsSyncSettingsView(recovery: runtime.recovery, actions: runtime.recordActions)
             case .recordsData:
-                RecordsDataSettingsView(store: store)
+                RecordsDataSettingsView(actions: runtime.recordActions, recovery: runtime.recovery, life: runtime.life)
             case .recordsConflicts:
-                RecordsConflictCenter(store: store)
+                RecordsConflictCenter(
+                    records: runtime.records,
+                    queries: runtime.queries,
+                    preferences: runtime.preferences,
+                    text: runtime.text
+                )
             // One canvas, three scales. `focusPlan` used to be a second page
             // reached from the first; it stays as a route so existing links
             // and QA markers still land somewhere, and now lands on the same
             // canvas.
             case .focus, .focusPlan:
-                FocusCanvasView(store: store)
+                FocusCanvasView(
+                    focus: runtime.focus,
+                    text: runtime.text,
+                    queries: runtime.queries,
+                    preferences: runtime.preferences,
+                    onboardingComplete: runtime.preferences.onboardingComplete,
+                    hasSeenPlusIntro: runtime.plus.hasSeenIntro,
+                    browsing: scene.focus
+                )
+            case .appleWatch:
+                AppleWatchSettingsView(plus: runtime.plus, text: runtime.text)
             case .about:
-                AboutView(store: store)
+                AboutView(text: runtime.text) {
+#if DEBUG
+                    DebugMenuView(debug: runtime.debug)
+#else
+                    EmptyView()
+#endif
+                }
             }
         }
-        .onAppear { store.writeQASurfaceMarker("route.\(route.rawValue)") }
+        .onAppear { scene.writeQASurfaceMarker("route.\(route.rawValue)", onboardingComplete: runtime.preferences.onboardingComplete, hasSeenPlusIntro: runtime.plus.hasSeenIntro) }
     }
 }

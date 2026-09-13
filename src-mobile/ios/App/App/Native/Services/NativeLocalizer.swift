@@ -1,6 +1,6 @@
 import Foundation
 
-struct NativeLanguage: Identifiable, Hashable {
+nonisolated struct NativeLanguage: Identifiable, Hashable, Sendable {
     let id: String
     let name: String
 }
@@ -44,7 +44,7 @@ enum NativePluralCategory: String {
 }
 
 final class NativeLocalizer {
-    static let supportedLanguages: [NativeLanguage] = [
+    nonisolated static let supportedLanguages: [NativeLanguage] = [
         .init(id: "en", name: "English"),
         .init(id: "zh-CN", name: "简体中文"),
         .init(id: "zh-HK", name: "繁體中文（香港）"),

@@ -18,7 +18,7 @@ enum FocusSessionKind: String, Codable, Sendable {
 
 /// Timer preferences. Sessions persist their planned end, so a synced change
 /// only affects the next timer and never rewrites time already in flight.
-struct FocusTimerSettings: Codable, Equatable, Sendable {
+nonisolated struct FocusTimerSettings: Codable, Equatable, Sendable {
     var focusMinutes = 25
     var shortBreakMinutes = 5
     var longBreakMinutes = 15
@@ -86,7 +86,7 @@ enum FocusTaskIcon: String, CaseIterable, Codable, Identifiable, Sendable {
     var titleKey: String { "focusIcon\(rawValue.capitalized)" }
 }
 
-struct FocusTask: Equatable, Sendable, Identifiable {
+nonisolated struct FocusTask: Equatable, Sendable, Identifiable {
     static let schemaVersion = 2
 
     var id: UUID
@@ -131,7 +131,7 @@ struct FocusWorkBlock: Equatable, Sendable, Identifiable {
     var durationMinutes: Int { max(1, Int(end.timeIntervalSince(start) / 60)) }
 }
 
-struct FocusPlanAssignment: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct FocusPlanAssignment: Codable, Equatable, Sendable, Identifiable {
     var id: Int64 { blockStartAtMs }
     var blockStartAtMs: Int64
     var kind: FocusPlanBlockKind
@@ -140,14 +140,14 @@ struct FocusPlanAssignment: Codable, Equatable, Sendable, Identifiable {
     var taskIcon: FocusTaskIcon?
 }
 
-struct FocusDayPlan: Codable, Equatable, Sendable {
+nonisolated struct FocusDayPlan: Codable, Equatable, Sendable {
     var dayKey: String
     var shiftStartAtMs: Int64
     var assignments: [FocusPlanAssignment]
     var appliedTemplateID: UUID?
 }
 
-struct FocusTemplateSlot: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct FocusTemplateSlot: Codable, Equatable, Sendable, Identifiable {
     var id: Int { blockIndex }
     var blockIndex: Int
     var kind: FocusPlanBlockKind
@@ -157,7 +157,7 @@ struct FocusTemplateSlot: Codable, Equatable, Sendable, Identifiable {
     var taskIcon: FocusTaskIcon?
 }
 
-struct FocusTemplate: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct FocusTemplate: Codable, Equatable, Sendable, Identifiable {
     var id: UUID
     var name: String
     var slots: [FocusTemplateSlot]
@@ -237,7 +237,7 @@ extension FocusTemplate {
     }
 }
 
-struct FocusPlanningState: Codable, Equatable, Sendable {
+nonisolated struct FocusPlanningState: Codable, Equatable, Sendable {
     var plans: [String: FocusDayPlan] = [:]
     var templates: [FocusTemplate] = []
     var defaultTemplateID: UUID?
@@ -247,7 +247,7 @@ struct FocusPlanningState: Codable, Equatable, Sendable {
 /// The single durable identity for planning preferences. Keeping the complete
 /// planning graph atomic lets CloudKit merge templates by UUID and plans by
 /// civil day without ever exposing implementation rows to the user.
-struct FocusPlanningConfiguration: Equatable, Sendable {
+nonisolated struct FocusPlanningConfiguration: Equatable, Sendable {
     static let logicalKey = "focus-planning"
 
     var planning: FocusPlanningState
@@ -265,7 +265,7 @@ struct FocusPlanningConfiguration: Equatable, Sendable {
     }
 }
 
-struct FocusSession: Equatable, Sendable, Identifiable {
+nonisolated struct FocusSession: Equatable, Sendable, Identifiable {
     static let schemaVersion = 2
 
     var id: UUID

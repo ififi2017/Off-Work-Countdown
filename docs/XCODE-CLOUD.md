@@ -2,8 +2,10 @@
 
 仓库已经提供 `src-mobile/ios/App/ci_scripts/ci_post_clone.sh`。Xcode Cloud
 克隆仓库后会安装项目要求的 Node.js 24、执行 `npm ci`、生成未提交的
-`CountdownRules.js`，并运行 `npm run check:ios`。不要把生成文件提交进 Git，
-也不要在 Xcode Cloud 中跳过这个脚本。
+`CountdownRules.js`，并运行 `npm run check:watch-fixtures` 和 `npm run check:ios`。
+不要把生成的规则 bundle 提交进 Git，也不要在 Xcode Cloud 中跳过这个脚本。
+Watch 的 Swift 差分 fixture 是需提交的测试输入；规则变化后运行
+`node scripts/generate-watch-shift-fixtures.mjs` 更新，检查模式发现过期或缺失会失败，不会自动改写验收值。
 
 ## App Store Connect 中的一次性配置
 
@@ -11,8 +13,11 @@
 2. Start Condition 选择 Branch Changes，分支设为 `main`。
 3. 文件过滤至少包括 `src-mobile/ios/**`、`lib/countdown.ts`、
    `lib/reminders.ts`、`lib/summary.ts`、`public/locales/**`、
-   `scripts/build-ios-native-rules.mjs`、`scripts/check-ios-project.mjs`、
-   `package.json` 和 `package-lock.json`。这些路径都会改变 iOS 包体或它使用的规则。
+   `scripts/build-ios-native-rules.mjs`、`scripts/generate-watch-shift-fixtures.mjs`、
+   `scripts/generate-watch-localizations.mjs`、`scripts/check-ios-project.mjs`、`scripts/check-version.mjs`、
+   `scripts/xcode-product-versions.mjs`、`package.json` 和 `package-lock.json`。这些路径都会改变 iOS
+   包体、它使用的规则或本地检查结果。`src-mobile/ios/**` 已覆盖 `WatchApp`、`WatchWidgets`、
+   `WatchAppTests` 与 `Shared`。
 4. 添加 Archive action，scheme 选择 `App`，Deployment Preparation 选择
    **TestFlight and App Store**。共享 scheme 的 Archive configuration 已固定为 Release。
 5. 添加 TestFlight Internal Testing post-action，并选择内部测试组。Xcode Cloud 会为每次
@@ -28,3 +33,33 @@
 - 欢迎页强制重放、QA 路由、强制旋转和分享页自动弹出只允许放在 `#if DEBUG` 中。
 - 规则资源必须由当前 `lib/` 生成，禁止手工编辑或提交生成的 JavaScript 文件。
 - Xcode Cloud 归档前仍建议先在本机执行一次 Release 编译；动效和横竖屏体验最终以真机为准。
+
+## 3.2.0 整改的 PR 门禁（待在 App Store Connect 配置）
+
+018 要求保留上面的 main 归档分发工作流，另建 PR 验证工作流。以下是待配置与验收的要求；修改此文档不代表远端工作流或 GitHub 合并规则已经生效。
+
+- PR 工作流使用同一工程、共享 App scheme 和规则生成脚本，执行构建与自动化测试，不配置 TestFlight 分发。
+- 路径过滤覆盖 `src-mobile/ios/**`、`lib/**`、`public/locales/**`、iOS 规则／工程／版本检查脚本及 npm 依赖文件。
+- 保存实际执行的测试数量和结果包。测试选择器匹配零项不能作为通过；性能比较使用串行运行，不以并行任务的墙钟耗时设阈值。
+- 首次成功运行后，在仓库合并规则中选择该工作流实际产生的检查名称作为必需检查，不能预填猜测的名称。
+- Watch targets 已加入工程：`App` scheme 构建时依赖并嵌入 `DoneAt Watch App`（其 `PlugIns` 含 `DoneAt Watch Widgets`），所以 main 归档工作流无需另选 Watch scheme。PR 工作流除 `App` scheme 的 iOS 模拟器测试外，另加共享 `DoneAt Watch App` scheme 在 watchOS 模拟器上的 Test action（运行 `WatchAppTests`）。发布归档的签名、Watch App Group 与真机验收继续遵循 017。
+- 本机等价命令（2026-09-13 实测可用）：
+
+  ```bash
+  npm run build:ios-native-rules && npm run check:ios
+  xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -parallel-testing-enabled NO test
+  xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme "DoneAt Watch App" \
+    -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (42mm)' -parallel-testing-enabled NO test
+  ```
+
+- `WatchAppTests`、`WatchApp`、`WatchWidgets` 与 `Shared` 是**显式引用**，不是同步文件夹：磁盘上新增的测试文件若没登记进目标 Sources，Watch scheme 会照常显示成功却一项未跑。`npm run check:ios` 对已有 Watch 测试文件做 Sources 计数检查；新增文件时同时登记目标并扩展该检查，并核对实际执行的测试数量。
+
+| 工具链路径 | 本地状态 | 验收用途 |
+| --- | --- | --- |
+| Xcode 26.6／iOS 26.5 SDK | 已用于 018 当前实现的自动化测试 | 现有 iOS 26 路径与数据兼容 |
+| Xcode 26.6／watchOS 26.5 SDK＋Simulator runtime 23T570 | 已用于 shipping Watch 构建、WatchAppTests 与配对模拟器通信检查 | Watch 目标、嵌入与 WatchConnectivity 模拟验证（不代替真机） |
+| 含 iOS 27 SDK 的 Xcode | 本机尚未提供 | App Adaptability 的编译与回归 |
+| 含 iOS 27.1 SDK 的 Xcode | 本机尚未提供 | ArrangementView／Duo 分区的编译与回归 |
+
+新 SDK 路径必须使用对应工具链验证；`#available` 不能使旧 SDK 识别它没有声明的 API。Duo 的模拟验证和真机体验分别记录，不互相代替。

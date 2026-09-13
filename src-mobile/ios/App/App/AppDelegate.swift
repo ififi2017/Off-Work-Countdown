@@ -8,26 +8,13 @@ private let orientationLog = Logger(
     category: "orientation"
 )
 
-extension Notification.Name {
-    static let owcOpenURL = Notification.Name("owc.openURL")
-}
-
 @MainActor
 final class OffWorkCountdownApplicationDelegate: NSObject, UIApplicationDelegate {
-    /// Registered here rather than in `RootView`, because a Live Activity
-    /// button can launch this process in the background with no scene: the
-    /// delegate runs, the view tree does not. The closure only reaches the
-    /// store when a tap actually arrives, so a normal launch pays nothing.
     func application(
         _ application: UIApplication,
-        didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        FocusActivityActions.addPomodoro = { startAtMs in
-            OffWorkStore.shared.requestFocusActivityConfirmation(.addPomodoros, startAtMs: startAtMs)
-        }
-        FocusActivityActions.stopFocus = { startAtMs in
-            OffWorkStore.shared.requestFocusActivityConfirmation(.stop, startAtMs: startAtMs)
-        }
+        Task { _ = try? await AppRuntime.loadShared() }
         return true
     }
 
@@ -238,7 +225,7 @@ struct OffWorkCountdownApp: App {
 
     var body: some Scene {
         WindowGroup {
-            OffWorkCountdownRootView()
+            AppRuntimeLoadingView()
         }
     }
 }

@@ -11,72 +11,54 @@ import SwiftUI
 /// left, what happens after. Today: does this shift hold what I want to do.
 /// Usual: what does an ordinary day of mine look like.
 struct FocusCanvasView: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let focus: FocusStore
+    let text: AppText
+    let queries: RecordsQueries
+    let preferences: PreferencesStore
+    let onboardingComplete: Bool
+    let hasSeenPlusIntro: Bool
+    @Bindable var browsing: FocusSceneState
 
-    enum Scale: String, CaseIterable, Identifiable {
-        case today
-        case usual
-        var id: String { rawValue }
-    }
-
-    @State private var scale: Scale = {
-#if DEBUG
-        Scale(rawValue: UserDefaults.standard.string(forKey: "ios.native.qaFocusScale") ?? "") ?? .today
-#else
-        .today
-#endif
-    }()
-    @State private var selectedBlock: Int64?
-    @State private var editingBlock: FocusDayCanvasModel.Block?
-    @State private var editingTask: FocusTask?
-    @State private var confirmsClearDay = false
-    @State private var namesDayTemplate = false
-    @State private var dayTemplateName = ""
-    @State private var favoriteToCreate: FocusTask?
-    @State private var quickCreateLanding: FocusQuickCreateSheet.Landing?
     @State private var now = Date.now
     @State private var scrollPosition = ScrollPosition()
     @State private var bandTop: CGFloat?
     @State private var needsCurrentPosition = true
     @Environment(\.scenePhase) private var scenePhase
-    @State private var showsTimerSettings = false
-    @State private var editingTemplate: FocusTemplateDraft?
     @State private var notice: String?
-    @State private var confirmsStop = false
-    @State private var taskToExtend: UUID?
     @State private var selectionFeedback = 0
     @State private var placedFeedback = 0
     @State private var warningFeedback = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private var session: FocusSession? { store.activeFocusSession() }
+    private var session: FocusSession? { focus.activeFocusSession() }
 
     var body: some View {
         // Built once per pass and threaded down. Every shift snapshot is a
         // JavaScriptCore round trip through the shared rules, and the canvas
         // needs two of them plus a scan of today's sessions — as a computed
         // property this ran six times for one render.
-        let model = store.focusDayCanvas(at: now)
+        let model = focus.focusDayCanvas(at: now)
         return VStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 14) {
-                Picker(store.t("focusScale"), selection: $scale) {
-                    ForEach(Scale.allCases) { value in
-                        Text(store.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
+                Picker(focus.t("focusScale"), selection: $browsing.scale) {
+                    ForEach(FocusCanvasScale.allCases) { value in
+                        Text(focus.t(value == .today ? "focusScaleToday" : "focusScaleUsual"))
                             .tag(value)
                     }
                 }
                 .pickerStyle(.segmented)
 
                 FocusNowBand(
-                    store: store,
+                    focus: focus,
                     model: model,
                     now: now,
                     onExtend: extend,
-                    onStop: { confirmsStop = true },
+                    onStop: { browsing.confirmsStop = true },
                     onStart: { start($0) },
                     onAdd: {
-                        quickCreateLanding = .currentOrNextBlock
+                        browsing.quickCreateLanding = .currentOrNextBlock
                     }
                 )
             }
@@ -87,16 +69,16 @@ struct FocusCanvasView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         VStack(alignment: .leading, spacing: 14) {
-                            switch scale {
+                            switch browsing.scale {
                             case .today: todayScale(model)
                             case .usual: usualScale(model)
                             }
                         }
                         // Match Records: only the selected canvas cross-fades.
                         // The status card and picker keep their position and identity.
-                        .id(scale)
+                        .id(browsing.scale)
                         .transition(.opacity)
-                        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange, value: scale)
+                        .animation(reduceMotion ? OWCMotion.reduced : OWCMotion.recordsScaleChange, value: browsing.scale)
                     }
                     .padding(.horizontal, OWCDesign.pageInset)
                     .padding(.top, 8)
@@ -105,28 +87,28 @@ struct FocusCanvasView: View {
                 }
                 .scrollPosition($scrollPosition)
                 .scrollIndicators(.hidden)
-                .onChange(of: store.selectedTab, initial: true) { _, tab in
+                .onChange(of: scene.selectedTab, initial: true) { _, tab in
                     if tab == .focus {
                         needsCurrentPosition = true
                         scrollToNow(model, proxy: proxy)
                     }
                 }
-                .onChange(of: scale) {
+                .onChange(of: browsing.scale) {
                     needsCurrentPosition = true
                     scrollToNow(model, proxy: proxy)
                 }
                 .onChange(of: bandTop) { scrollToNow(model, proxy: proxy) }
                 .onChange(of: now) { scrollToNow(model, proxy: proxy) }
                 .onChange(of: scenePhase) {
-                    if scenePhase == .active, store.selectedTab == .focus {
+                    if scenePhase == .active, scene.selectedTab == .focus {
                         needsCurrentPosition = true
-                        scrollToNow(store.focusDayCanvas(), proxy: proxy)
+                        scrollToNow(focus.focusDayCanvas(), proxy: proxy)
                     }
                 }
             }
         }
         .background(OWCDesign.page)
-        .navigationTitle(store.t("focusTitle"))
+        .navigationTitle(focus.t("focusTitle"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -136,81 +118,78 @@ struct FocusCanvasView: View {
                 timerSettingsButton
             }
         }
-        .owcTabletDetailNavigation(
-            backTitle: store.t("timerTab"),
-            pageTitle: store.t("focusTitle")
-        ) {
-            quickCreateButton.owcTabletGlassAction()
-            timerSettingsButton.owcTabletGlassAction()
-        }
-        .sheet(item: $editingBlock) { block in
-            FocusBlockSheet(store: store, block: block) { result in
+        .sheet(item: $browsing.editingBlock) { block in
+            FocusBlockSheet(focus: focus, text: text, block: block) { result in
                 apply(result)
             }
         }
-        .sheet(item: $editingTask) { task in
-            FocusTaskEditSheet(store: store, task: task)
+        .sheet(item: $browsing.editingTask) { task in
+            FocusTaskEditSheet(focus: focus, text: text, task: task)
         }
-        .alert(store.t("focusClearDayTasks"), isPresented: $confirmsClearDay) {
-            Button(store.t("focusClearDayTasks"), role: .destructive) { store.clearFocusDay(at: now) }
-            Button(store.t("cancel"), role: .cancel) {}
+        .alert(focus.t("focusClearDayTasks"), isPresented: $browsing.confirmsClearDay) {
+            Button(focus.t("focusClearDayTasks"), role: .destructive) { _ = focus.clearFocusDay(at: now) }
+            Button(focus.t("cancel"), role: .cancel) {}
         } message: {
-            Text(store.t("focusClearDayTasksBody"))
+            Text(focus.t("focusClearDayTasksBody"))
         }
-        .alert(store.t("focusSaveDayAsTemplate"), isPresented: $namesDayTemplate) {
-            TextField(store.t("focusUsualDayName"), text: $dayTemplateName)
-            Button(store.t("saveAction")) {
-                _ = store.saveFocusTemplate(name: dayTemplateName, slots: store.focusTemplateDraftFromToday(at: now))
-            }.disabled(dayTemplateName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            Button(store.t("cancel"), role: .cancel) {}
+        .alert(focus.t("focusSaveDayAsTemplate"), isPresented: $browsing.namesDayTemplate) {
+            TextField(focus.t("focusUsualDayName"), text: $browsing.dayTemplateName)
+            Button(focus.t("saveAction")) {
+                _ = focus.saveFocusTemplate(name: browsing.dayTemplateName, slots: focus.focusTemplateDraftFromToday(at: now))
+            }.disabled(browsing.dayTemplateName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            Button(focus.t("cancel"), role: .cancel) {}
         }
-        .sheet(item: $quickCreateLanding) { landing in
-            FocusQuickCreateSheet(store: store, initialLanding: landing) { result in apply(result) }
+        .sheet(item: $browsing.quickCreateLanding) { landing in
+            FocusQuickCreateSheet(focus: focus, text: text, initialLanding: landing) { result in apply(result) }
         }
-        .sheet(item: $favoriteToCreate) { favorite in
-            FocusQuickCreateSheet(store: store, initialLanding: .currentOrNextBlock, favorite: favorite) { result in
-                if case .placed = result { scale = .today }
+        .sheet(item: $browsing.favoriteToCreate) { favorite in
+            FocusQuickCreateSheet(focus: focus, text: text, initialLanding: .currentOrNextBlock, favorite: favorite) { result in
+                if case .placed = result { browsing.scale = .today }
                 apply(result)
             }
         }
-        .sheet(isPresented: $showsTimerSettings) {
-            FocusTimerSettingsSheet(store: store)
+        .sheet(isPresented: $browsing.showsTimerSettings) {
+            FocusTimerSettingsSheet(focus: focus, preferences: preferences)
         }
-        .sheet(item: $editingTemplate) { draft in
-            FocusTemplateEditorView(store: store, draft: draft)
+        .sheet(item: $browsing.editingTemplate) { draft in
+            FocusTemplateEditorView(focus: focus, text: text, draft: draft)
         }
-        .alert(store.t(session?.kind == .focus ? "focusStopTitle" : "focusEndBreakTitle"), isPresented: $confirmsStop) {
-            Button(store.t("focusStop"), role: .destructive) {
-                store.stopFocus(reason: .stoppedByUser)
+        .alert(focus.t(session?.kind == .focus ? "focusStopTitle" : "focusEndBreakTitle"), isPresented: $browsing.confirmsStop) {
+            Button(focus.t("focusStop"), role: .destructive) {
+                _ = focus.stopFocus(reason: .stoppedByUser)
             }
-            Button(store.t("cancel"), role: .cancel) {}
+            Button(focus.t("cancel"), role: .cancel) {}
         } message: {
-            Text(store.t(session?.kind == .focus ? "focusStopConfirm" : "focusEndBreakBody"))
+            Text(focus.t(session?.kind == .focus ? "focusStopConfirm" : "focusEndBreakBody"))
         }
-        .alert(store.t("focusExtendOne"), isPresented: Binding(
-            get: { taskToExtend != nil },
-            set: { if !$0 { taskToExtend = nil } }
-        ), presenting: taskToExtend) { taskID in
-            Button(store.t("focusSaveTask")) { confirmExtension(taskID) }
-            Button(store.t("cancel"), role: .cancel) {}
+        .alert(focus.t("focusExtendOne"), isPresented: Binding(
+            get: { browsing.taskToExtend != nil },
+            set: { if !$0 { browsing.taskToExtend = nil } }
+        ), presenting: browsing.taskToExtend) { taskID in
+            Button(focus.t("focusSaveTask")) { confirmExtension(taskID) }
+            Button(focus.t("cancel"), role: .cancel) {}
         } message: { taskID in
-            Text(store.records.state.focusTasks.first(where: { $0.id == taskID })?.title ?? store.t("focusTaskTitle"))
+            Text(focus.records.state.focusTasks.first(where: { $0.id == taskID })?.title ?? focus.t("focusTaskTitle"))
         }
         .alert(
             notice ?? "",
             isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })
         ) {
-            Button(store.t("okAction"), role: .cancel) { notice = nil }
+            Button(focus.t("okAction"), role: .cancel) { notice = nil }
         }
-        .task(id: scenePhase == .active && store.selectedTab == .focus) {
-            guard scenePhase == .active, store.selectedTab == .focus else { return }
-            store.writeQASurfaceMarker("route.focus")
+        .task(id: scenePhase == .active && scene.selectedTab == .focus) {
+            guard scenePhase == .active, scene.selectedTab == .focus else { return }
+            scene.writeQASurfaceMarker(
+                "route.focus",
+                onboardingComplete: onboardingComplete,
+                hasSeenPlusIntro: hasSeenPlusIntro
+            )
             while !Task.isCancelled {
                 now = .now
-                _ = store.finishElapsedFocusSession(at: now)
+                _ = await focus.finishElapsedFocusSession(at: now).value
                 // Refresh the whole canvas only on a minute or a block boundary.
                 // Timer Text/ProgressView animate their own seconds independently.
-                let canvas = store.focusDayCanvas(at: now)
+                let canvas = focus.focusDayCanvas(at: now)
                 let nextMinute = Date(timeIntervalSince1970: (floor(now.timeIntervalSince1970 / 60) + 1) * 60)
                 let boundary = canvas.blocks.flatMap { [$0.startAtMs, $0.endAtMs] }
                     .map { Date(timeIntervalSince1970: Double($0) / 1_000) }
@@ -226,14 +205,14 @@ struct FocusCanvasView: View {
     }
 
     private var quickCreateButton: some View {
-        Button { quickCreateLanding = .nextBlock } label: {
-            Label(store.t("focusQuickCreate"), systemImage: "plus")
+        Button { browsing.quickCreateLanding = .nextBlock } label: {
+            Label(focus.t("focusQuickCreate"), systemImage: "plus")
         }
-        .disabled(store.focusDayCanvasIsLocked)
+        .disabled(focus.focusDayCanvasIsLocked)
     }
 
     private func scrollToNow(_ model: FocusDayCanvasModel, proxy: ScrollViewProxy) {
-        guard needsCurrentPosition, scale == .today, !model.isLocked,
+        guard needsCurrentPosition, browsing.scale == .today, !model.isLocked,
               let nowAtMs = model.nowAtMs, let bandTop else { return }
         // Start at the current block's top so its title and full interval remain visible.
         // Only entry repositions the page;
@@ -251,10 +230,10 @@ struct FocusCanvasView: View {
     }
 
     private var timerSettingsButton: some View {
-        Button { showsTimerSettings = true } label: {
-            Label(store.t("focusTimerSettings"), systemImage: "gearshape")
+        Button { browsing.showsTimerSettings = true } label: {
+            Label(focus.t("focusTimerSettings"), systemImage: "gearshape")
         }
-        .accessibilityHint(store.t("focusTimerSettingsHint"))
+        .accessibilityHint(focus.t("focusTimerSettingsHint"))
     }
 
     // MARK: - today
@@ -262,39 +241,39 @@ struct FocusCanvasView: View {
     @ViewBuilder
     private func todayScale(_ model: FocusDayCanvasModel) -> some View {
         if model.isLocked {
-            FocusLockedCanvas(store: store)
+            FocusLockedCanvas(focus: focus, text: text)
         } else if model.isEmpty {
-            Text(store.t("focusNoShift"))
+            Text(focus.t("focusNoShift"))
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 24)
         } else {
             if model.isNextShift {
-                Text(store.t("focusBandNextShift", values: [
-                    "day": store.formatRecordsDayTitle(Date(timeIntervalSince1970: Double(model.shiftStartAtMs) / 1_000))
+                Text(focus.t("focusBandNextShift", values: [
+                    "day": queries.formatRecordsDayTitle(Date(timeIntervalSince1970: Double(model.shiftStartAtMs) / 1_000))
                 ]))
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
             }
-            FocusBandView(store: store, model: model, selectedBlock: $selectedBlock) { block in
+            FocusBandView(focus: focus, text: text, model: model, selectedBlock: $browsing.selectedBlock) { block in
                 guard block.isEditable || block.isAssigned else { return }
-                selectedBlock = block.startAtMs
-                editingBlock = block
+                browsing.selectedBlock = block.startAtMs
+                browsing.editingBlock = block
             }
             .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named("focus-content")).minY } action: {
                 bandTop = $0
             }
-            FocusTaskLedger(store: store, model: model, onExtend: extend, onEdit: { editingTask = $0 })
+            FocusTaskLedger(focus: focus, model: model, onExtend: extend, onEdit: { browsing.editingTask = $0 })
             if !model.tasks.isEmpty || model.blocks.contains(where: \.hasAssignment) {
                 VStack(spacing: 10) {
-                    if store.appliedFocusTemplate(at: now) == nil, model.blocks.contains(where: \.hasAssignment) {
-                        Button(store.t("focusSaveDayAsTemplate")) {
-                            dayTemplateName = store.t("focusUsualDayDefaultName")
-                            namesDayTemplate = true
+                    if focus.appliedFocusTemplate(at: now) == nil, model.blocks.contains(where: \.hasAssignment) {
+                        Button(focus.t("focusSaveDayAsTemplate")) {
+                            browsing.dayTemplateName = focus.t("focusUsualDayDefaultName")
+                            browsing.namesDayTemplate = true
                         }.buttonStyle(OWCSecondaryButtonStyle())
                     }
-                    Button(store.t("focusClearDayTasks"), role: .destructive) { confirmsClearDay = true }
+                    Button(focus.t("focusClearDayTasks"), role: .destructive) { browsing.confirmsClearDay = true }
                         .buttonStyle(OWCSecondaryButtonStyle())
                 }
                 .padding(.top, 8)
@@ -307,13 +286,13 @@ struct FocusCanvasView: View {
     @ViewBuilder
     private func usualScale(_ model: FocusDayCanvasModel) -> some View {
         if model.isLocked {
-            FocusLockedUsualScale(store: store)
+            FocusLockedUsualScale(focus: focus)
         } else {
             FocusUsualScale(
-                store: store,
+                focus: focus,
                 model: model,
-                onPlaceFavorite: { favoriteToCreate = $0 },
-                onEditTemplate: { editingTemplate = $0 }
+                onPlaceFavorite: { browsing.favoriteToCreate = $0 },
+                onEditTemplate: { browsing.editingTemplate = $0 }
             )
         }
     }
@@ -321,36 +300,40 @@ struct FocusCanvasView: View {
     // MARK: - actions
 
     private func extend(_ taskID: UUID) {
-        if let session = store.activeFocusSession(),
+        if let session = focus.activeFocusSession(),
            session.kind == .focus, session.taskID == taskID {
-            store.requestFocusActivityConfirmation(
+            scene.requestFocusActivityConfirmation(
                 .addPomodoros,
                 startAtMs: Int64(session.startedAt.timeIntervalSince1970 * 1_000)
             )
             return
         }
-        taskToExtend = taskID
+        browsing.taskToExtend = taskID
     }
 
     private func confirmExtension(_ taskID: UUID) {
-        switch store.addOneFocusBlock(taskID: taskID) {
-        case .success(let start):
-            scale = .today
-            apply(.placed(taskID: taskID, blockStartAtMs: start))
-            notice = store.t("focusExtendScheduled", values: [
-                "time": store.formatTime(Date(timeIntervalSince1970: Double(start) / 1_000))
-            ])
-        case .failure(let error):
-            notice = store.t(error == .conflict ? "focusExtendConflict" : "focusExtendNoRoom")
-            warningFeedback &+= 1
+        Task { @MainActor in
+            switch await focus.addOneFocusBlock(taskID: taskID).value {
+            case .success(let start):
+                browsing.scale = .today
+                apply(.placed(taskID: taskID, blockStartAtMs: start))
+                notice = focus.t("focusExtendScheduled", values: [
+                    "time": focus.formatTime(Date(timeIntervalSince1970: Double(start) / 1_000))
+                ])
+            case .failure(let error):
+                notice = focus.t(error == .conflict ? "focusExtendConflict" : "focusExtendNoRoom")
+                warningFeedback &+= 1
+            }
         }
     }
 
     private func start(_ block: FocusDayCanvasModel.Block) {
-        guard let task = store.records.state.focusTasks.first(where: { $0.id == block.taskID }),
-              store.startFocus(task: task, inBlockStartingAt: block.startAtMs)
-        else { now = .now; return }
-        selectionFeedback &+= 1
+        guard let task = focus.records.state.focusTasks.first(where: { $0.id == block.taskID }) else { return }
+        Task { @MainActor in
+            guard await focus.startFocus(task: task, inBlockStartingAt: block.startAtMs).value
+            else { now = .now; return }
+            selectionFeedback &+= 1
+        }
     }
 
     private func apply(_ result: FocusPlacementResult) {
@@ -358,15 +341,15 @@ struct FocusCanvasView: View {
         case .placed(_, let blockStartAtMs):
             // Placement highlights the task without moving the reader’s viewport.
             needsCurrentPosition = false
-            selectedBlock = blockStartAtMs
+            browsing.selectedBlock = blockStartAtMs
             placedFeedback &+= 1
         case .addedUnscheduled:
             // Not a failure and not a silent drop: the task exists, this shift
             // just has no room for it.
-            notice = store.t("focusNoEmptyBlock")
+            notice = focus.t("focusNoEmptyBlock")
             warningFeedback &+= 1
         case .noShift:
-            notice = store.t("focusNoShift")
+            notice = focus.t("focusNoShift")
             warningFeedback &+= 1
         case .locked:
             break
@@ -377,7 +360,8 @@ struct FocusCanvasView: View {
 /// The one conclusion at the top of the page: running, just finished, or the
 /// block you are in.
 struct FocusNowBand: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let focus: FocusStore
     let model: FocusDayCanvasModel
     let now: Date
     var onExtend: (UUID) -> Void
@@ -388,7 +372,7 @@ struct FocusNowBand: View {
     @Environment(\.openURL) private var openURL
     @State private var showsNotificationIssue = false
 
-    private var session: FocusSession? { store.activeFocusSession() }
+    private var session: FocusSession? { focus.activeFocusSession() }
     private var layout: AnyLayout {
         dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
@@ -401,15 +385,15 @@ struct FocusNowBand: View {
                 content
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(18)
-                if let template = store.appliedFocusTemplate(at: now), !model.isLocked {
-                    Text(store.t("focusAppliedTemplateNote", values: ["name": template.name]))
+                if let template = focus.appliedFocusTemplate(at: now), !model.isLocked {
+                    Text(focus.t("focusAppliedTemplateNote", values: ["name": template.name]))
                         .font(.footnote)
                         .foregroundStyle(OWCDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 18)
                         .padding(.bottom, 12)
                 }
-                if session != nil, let issue = store.focusNotificationIssue {
+                if session != nil, let issue = focus.focusNotificationIssue {
                     notificationIssue(issue).padding(.horizontal, 18).padding(.bottom, 12)
                 }
                 if let session, session.plannedEndAt > .now {
@@ -431,19 +415,19 @@ struct FocusNowBand: View {
     private var content: some View {
         if model.isLocked {
             VStack(alignment: .leading, spacing: 8) {
-                Label(store.t("focusLockedTitle"), systemImage: "lock").font(.headline)
-                Text(store.t("focusLockedBody")).font(.footnote).foregroundStyle(OWCDesign.secondary)
-                Button(store.t("plusSeePlans")) { store.presentedRoute = .plus }
+                Label(focus.t("focusLockedTitle"), systemImage: "lock").font(.headline)
+                Text(focus.t("focusLockedBody")).font(.footnote).foregroundStyle(OWCDesign.secondary)
+                Button(focus.t("plusSeePlans")) { scene.presentedRoute = .plus }
                     .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 36))
             }
         } else if let session {
             runningContent(session)
-        } else if store.focusDayComplete(at: now) {
+        } else if focus.focusDayComplete(at: now) {
             completedContent
         } else if now.timeIntervalSince1970 * 1_000 < Double(model.shiftStartAtMs) {
             VStack(alignment: .leading, spacing: 8) {
                 if let first = model.blocks.first(where: { $0.isAssigned && !$0.isUserBreak }) {
-                    Text(first.taskTitle ?? store.t("focusTitle"))
+                    Text(first.taskTitle ?? focus.t("focusTitle"))
                         .font(.headline)
                     let start = Date(timeIntervalSince1970: Double(first.startAtMs) / 1_000)
                     Text(timerInterval: now...max(now, start), countsDown: true)
@@ -451,25 +435,25 @@ struct FocusNowBand: View {
                     Label(range(first), systemImage: "clock")
                         .font(.footnote).foregroundStyle(OWCDesign.secondary)
                 } else {
-                    Text(store.t("focusBandEmptyBlock"))
+                    Text(focus.t("focusBandEmptyBlock"))
                         .font(.headline).foregroundStyle(OWCDesign.secondary)
                 }
             }
-        } else if store.focusLastNextAction == .startShortBreak || store.focusLastNextAction == .startLongBreak {
+        } else if focus.focusLastNextAction == .startShortBreak || focus.focusLastNextAction == .startLongBreak {
             breakOffer
         } else if let block = model.currentBlock, block.kind == .task, !block.isUserBreak {
             idleContent(block)
         } else {
             VStack(alignment: .leading, spacing: 8) {
-                Text(store.t(store.focusLastNextAction == .startNextFocus ? "focusStartNextFocus" : "focusTitle"))
+                Text(focus.t(focus.focusLastNextAction == .startNextFocus ? "focusStartNextFocus" : "focusTitle"))
                     .font(.headline)
                 if let next = model.blocks.first(where: { $0.state == .future && $0.kind == .task && !$0.isUserBreak }) {
                     Text(next.taskTitle.map { "\($0) · \(range(next))" } ?? range(next))
                         .font(.footnote).foregroundStyle(OWCDesign.secondary)
                 } else {
-                    Text(store.t("focusNoShift")).font(.footnote).foregroundStyle(OWCDesign.secondary)
+                    Text(focus.t("focusNoShift")).font(.footnote).foregroundStyle(OWCDesign.secondary)
                 }
-                Button(store.t("focusQuickCreate"), action: onAdd)
+                Button(focus.t("focusQuickCreate"), action: onAdd)
                     .buttonStyle(OWCPrimaryButtonStyle(filled: false, minimumHeight: 44))
             }
         }
@@ -486,30 +470,30 @@ struct FocusNowBand: View {
                 Text(timerInterval: session.startedAt...max(session.startedAt, session.plannedEndAt), countsDown: true)
                     .font(.title.monospacedDigit().weight(.semibold))
                     .foregroundStyle(OWCDesign.primary)
-                Text(store.t("focusEndsAt", values: ["time": store.formatTime(session.plannedEndAt)]))
+                Text(focus.t("focusEndsAt", values: ["time": focus.formatTime(session.plannedEndAt)]))
                     .font(.caption).foregroundStyle(OWCDesign.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 8) {
-                if let taskID = store.focusContinuationTaskID() {
-                    Button(store.t("focusExtendOne"), systemImage: "plus") { onExtend(taskID) }
+                if let taskID = focus.focusContinuationTaskID() {
+                    Button(focus.t("focusExtendOne"), systemImage: "plus") { onExtend(taskID) }
                         .labelStyle(.iconOnly)
                         .buttonStyle(OWCSecondaryButtonStyle())
                         .frame(width: 50)
-                        .help(store.t("focusExtendOne"))
+                        .help(focus.t("focusExtendOne"))
                 }
-                Button(store.t("focusStop"), systemImage: "stop.fill", action: onStop)
+                Button(focus.t("focusStop"), systemImage: "stop.fill", action: onStop)
                     .labelStyle(.iconOnly)
                     .buttonStyle(OWCSecondaryButtonStyle())
                     .frame(width: 50)
-                    .help(store.t("focusStop"))
+                    .help(focus.t("focusStop"))
             }
         }
     }
 
     private var completedContent: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(store.t("focusCompletedTasksTitle")).font(.headline)
+            Text(focus.t("focusCompletedTasksTitle")).font(.headline)
             quickAddButton
         }
     }
@@ -517,67 +501,67 @@ struct FocusNowBand: View {
     private var breakOffer: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Unfinished tasks must not be described as a completed day.
-            Text(store.t("focusTitle")).font(.headline)
+            Text(focus.t("focusTitle")).font(.headline)
             quickAddButton
         }
     }
 
     private var quickAddButton: some View {
-        Button(store.t("focusQuickCreate"), action: onAdd)
+        Button(focus.t("focusQuickCreate"), action: onAdd)
             .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
     }
 
     private func notificationIssue(_ issue: FocusNotificationIssue) -> some View {
         Button { showsNotificationIssue = true } label: {
-            Label(store.t("focusNotificationIssue"), systemImage: "bell.badge")
+            Label(focus.t("focusNotificationIssue"), systemImage: "bell.badge")
                 .font(.caption)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .alert(store.t("focusTitle"), isPresented: $showsNotificationIssue) {
+        .alert(focus.t("focusTitle"), isPresented: $showsNotificationIssue) {
             if issue == .permissionDenied {
-                Button(store.t("focusNotificationOpenSettings")) {
+                Button(focus.t("focusNotificationOpenSettings")) {
                     if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 }
             } else {
-                Button(store.t("focusNotificationRetry")) { store.retryFocusNotification() }
+                Button(focus.t("focusNotificationRetry")) { _ = focus.retryFocusNotification() }
             }
-            Button(store.t("cancel"), role: .cancel) {}
+            Button(focus.t("cancel"), role: .cancel) {}
         } message: {
-            Text(store.t(issue == .permissionDenied ? "focusNotificationPermissionDenied" : "focusNotificationIssue"))
+            Text(focus.t(issue == .permissionDenied ? "focusNotificationPermissionDenied" : "focusNotificationIssue"))
         }
     }
 
     private func runningTitle(_ session: FocusSession) -> String {
-        if session.kind != .focus { return store.t(session.kind == .shortBreak ? "focusShortBreak" : "focusLongBreak") }
-        let title = session.taskID.flatMap { id in store.records.state.focusTasks.first(where: { $0.id == id }) }?.title
-        return title ?? store.t("focusRunning")
+        if session.kind != .focus { return focus.t(session.kind == .shortBreak ? "focusShortBreak" : "focusLongBreak") }
+        let title = session.taskID.flatMap { id in focus.records.state.focusTasks.first(where: { $0.id == id }) }?.title
+        return title ?? focus.t("focusRunning")
     }
 
     private func idleContent(_ block: FocusDayCanvasModel.Block) -> some View {
         layout {
             VStack(alignment: .leading, spacing: 2) {
-                Text(store.t(store.focusLastNextAction == .startNextFocus ? "focusStartNextFocus" : "focusThisBlock")).font(.footnote).foregroundStyle(OWCDesign.secondary)
+                Text(focus.t(focus.focusLastNextAction == .startNextFocus ? "focusStartNextFocus" : "focusThisBlock")).font(.footnote).foregroundStyle(OWCDesign.secondary)
                 Text(block.taskTitle ?? range(block))
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(OWCDesign.primary)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
                     .fixedSize(horizontal: false, vertical: true)
-                Text(block.taskTitle == nil ? store.t("focusBandEmptyBlock") : range(block))
+                Text(block.taskTitle == nil ? focus.t("focusBandEmptyBlock") : range(block))
                     .font(.caption).foregroundStyle(OWCDesign.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            if let task = store.records.state.focusTasks.first(where: { $0.id == block.taskID }) {
-                Button(store.t("focusStart"), systemImage: "play.fill") { onStart(block) }
+            if let task = focus.records.state.focusTasks.first(where: { $0.id == block.taskID }) {
+                Button(focus.t("focusStart"), systemImage: "play.fill") { onStart(block) }
                     .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
                     .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : 92)
                     .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
-                    .disabled(store.focusStartAvailability(task) != .ready || Double(block.endAtMs) / 1_000 - Date.now.timeIntervalSince1970 < 60)
+                    .disabled(focus.focusStartAvailability(task) != .ready || Double(block.endAtMs) / 1_000 - Date.now.timeIntervalSince1970 < 60)
             } else {
-                Button(store.t("focusQuickCreate"), action: onAdd)
+                Button(focus.t("focusQuickCreate"), action: onAdd)
                     .buttonStyle(OWCPrimaryButtonStyle(minimumHeight: 44))
                     .frame(minWidth: dynamicTypeSize.isAccessibilitySize ? nil : 112)
                     .fixedSize(horizontal: !dynamicTypeSize.isAccessibilitySize, vertical: false)
-                    .disabled(!store.hasFocusRoom())
+                    .disabled(!focus.hasFocusRoom())
             }
         }
     }
@@ -585,14 +569,15 @@ struct FocusNowBand: View {
     private func range(_ block: FocusDayCanvasModel.Block) -> String {
         let start = Date(timeIntervalSince1970: Double(block.startAtMs) / 1_000)
         let end = Date(timeIntervalSince1970: Double(block.endAtMs) / 1_000)
-        return "\(store.formatTime(start)) – \(store.formatTime(end))"
+        return "\(focus.formatTime(start)) – \(focus.formatTime(end))"
     }
 }
 
 /// The explanation under the band. Progress is "done of scheduled" — what you
 /// drew — while the estimate stays what you intended.
 struct FocusTaskLedger: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let focus: FocusStore
     let model: FocusDayCanvasModel
     var onExtend: (UUID) -> Void
     var onEdit: (FocusTask) -> Void
@@ -600,11 +585,11 @@ struct FocusTaskLedger: View {
     var body: some View {
         if !model.tasks.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
-                OWCSectionHeader(title: store.t("focusTodayTasks"))
+                OWCSectionHeader(title: focus.t("focusTodayTasks"))
                 OWCGroupCard {
                     ForEach(Array(model.tasks.enumerated()), id: \.element.id) { index, row in
                         OWCRow(
-                            icon: store.savedFocusFavorite(title: row.title, icon: row.icon) != nil ? "star.fill" : row.icon.systemName,
+                            icon: focus.savedFocusFavorite(title: row.title, icon: row.icon) != nil ? "star.fill" : row.icon.systemName,
                             title: row.title,
                             subtitle: subtitle(row),
                             isLast: index == model.tasks.count - 1,
@@ -612,7 +597,7 @@ struct FocusTaskLedger: View {
                         ) {
                             HStack(spacing: 8) {
                                 if row.isRunning {
-                                    Text(store.t("focusRunning"))
+                                    Text(focus.t("focusRunning"))
                                         .font(.caption)
                                         .foregroundStyle(OWCDesign.accent)
                                 } else if row.isDone {
@@ -620,35 +605,35 @@ struct FocusTaskLedger: View {
                                         .font(.caption.weight(.semibold))
                                         .foregroundStyle(OWCDesign.secondary)
                                 }
-                                if let task = store.records.state.focusTasks.first(where: { $0.id == row.id }) {
-                                    let favorite = store.savedFocusFavorite(title: task.title, icon: task.icon)
+                                if let task = focus.records.state.focusTasks.first(where: { $0.id == row.id }) {
+                                    let favorite = focus.savedFocusFavorite(title: task.title, icon: task.icon)
                                     Menu {
-                                        Button(store.t("focusEditTask"), systemImage: "pencil") { onEdit(task) }
-                                        Button(store.t("focusStartNow"), systemImage: "play.fill") {
-                                            _ = store.startFocus(task: task)
+                                        Button(focus.t("focusEditTask"), systemImage: "pencil") { onEdit(task) }
+                                        Button(focus.t("focusStartNow"), systemImage: "play.fill") {
+                                            _ = scene.startFocus(task: task, using: focus)
                                         }
-                                        .disabled(store.focusStartAvailability(task) != .ready)
-                                        Button(store.t("focusExtendOne"), systemImage: "plus") {
+                                        .disabled(focus.focusStartAvailability(task) != .ready)
+                                        Button(focus.t("focusExtendOne"), systemImage: "plus") {
                                             onExtend(task.id)
                                         }
-                                        Button(store.t(favorite != nil ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: favorite != nil ? "star.fill" : "star") {
-                                            store.toggleFocusFavorite(favorite ?? task)
+                                        Button(focus.t(favorite != nil ? "focusRemoveFavorite" : "focusMakeFavorite"), systemImage: favorite != nil ? "star.fill" : "star") {
+                                            _ = focus.toggleFocusFavorite(favorite ?? task)
                                         }
-                                        Button(store.t("focusDeleteTask"), systemImage: "trash", role: .destructive) {
-                                            _ = store.deleteFocusTask(task)
+                                        Button(focus.t("focusDeleteTask"), systemImage: "trash", role: .destructive) {
+                                            _ = focus.deleteFocusTask(task)
                                         }
                                         .disabled(row.isRunning)
                                     } label: {
                                         Image(systemName: "ellipsis").frame(minWidth: 44, minHeight: 44)
                                     }
-                                    .accessibilityLabel(store.t("moreActions") + " · " + row.title)
+                                    .accessibilityLabel(focus.t("moreActions") + " · " + row.title)
                                 }
                             }
                         }
                     }
                 }
                 if !model.overflow.isEmpty {
-                    Text(store.t("focusOverflowNote", values: [
+                    Text(focus.t("focusOverflowNote", values: [
                         "tasks": model.overflow.map(\.title).joined(separator: "、")
                     ]))
                     .font(.caption)
@@ -661,8 +646,8 @@ struct FocusTaskLedger: View {
     }
 
     private func subtitle(_ row: FocusDayCanvasModel.TaskRow) -> String {
-        guard row.isScheduled else { return store.t("focusUnscheduled") }
-        return store.t("focusBlocksDoneOfScheduled", values: [
+        guard row.isScheduled else { return focus.t("focusUnscheduled") }
+        return focus.t("focusBlocksDoneOfScheduled", values: [
             "done": "\(row.completedBlocks)",
             "total": "\(row.assignedBlocks)"
         ])
@@ -672,15 +657,17 @@ struct FocusTaskLedger: View {
 /// A fixed, synthetic plan previews the real canvas without reading or saving
 /// any of the user's locked assignments.
 struct FocusLockedCanvas: View {
-    let store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    let focus: FocusStore
+    let text: AppText
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(store.t("focusLockedBand"))
+            Text(focus.t("focusLockedBand"))
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
-            FocusBandView(store: store, model: demoModel, selectedBlock: .constant(nil), isPreview: true) { _ in
-                store.presentedRoute = .plus
+            FocusBandView(focus: focus, text: text, model: demoModel, selectedBlock: .constant(nil), isPreview: true) { _ in
+                scene.presentedRoute = .plus
             }
         }
     }
@@ -711,7 +698,7 @@ struct FocusLockedCanvas: View {
                 kind: sample.2 == nil ? .breakTime : .task,
                 state: .future,
                 taskID: sample.2 == nil ? nil : UUID(uuidString: "00000000-0000-0000-0000-000000000001"),
-                taskTitle: sample.2.map { store.t($0) },
+                taskTitle: sample.2.map { focus.t($0) },
                 taskIcon: sample.3
             )
         }

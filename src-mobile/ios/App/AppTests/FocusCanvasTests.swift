@@ -17,13 +17,13 @@ func microBreaksNoLongerCutTheGrid() throws {
     let morning = try #require(day(store, hour: 9, minute: 30))
     let afternoon = try #require(day(store, hour: 15, minute: 30))
 
-    store.microBreakEnabled = false
-    let quiet = store.focusWorkBlocks(at: morning).map(\.startAtMs)
+    store.preferences.applyPreferences { $0.microBreakEnabled = false }
+    let quiet = store.focus.focusWorkBlocks(at: morning).map(\.startAtMs)
 
-    store.microBreakEnabled = true
-    store.microBreakIntervalMinutes = 30
-    #expect(store.focusWorkBlocks(at: morning).map(\.startAtMs) == quiet)
-    #expect(store.focusWorkBlocks(at: afternoon).map(\.startAtMs) == quiet)
+    store.preferences.applyPreferences { $0.microBreakEnabled = true }
+    store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 30 }
+    #expect(store.focus.focusWorkBlocks(at: morning).map(\.startAtMs) == quiet)
+    #expect(store.focus.focusWorkBlocks(at: afternoon).map(\.startAtMs) == quiet)
 }
 
 @MainActor
@@ -31,7 +31,7 @@ func microBreaksNoLongerCutTheGrid() throws {
 func canvasBlockStatesFollowTheClock() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 10, minute: 5))
-    let canvas = store.focusDayCanvas(at: at)
+    let canvas = store.focus.focusDayCanvas(at: at)
 
     #expect(!canvas.blocks.isEmpty)
     let current = try #require(canvas.currentBlock)
@@ -52,7 +52,7 @@ func breakBlocksAreNotEditable() throws {
     // template.
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    let canvas = store.focusDayCanvas(at: at)
+    let canvas = store.focus.focusDayCanvas(at: at)
     let breaks = canvas.blocks.filter { $0.kind == .breakTime }
     #expect(!breaks.isEmpty)
     #expect(breaks.allSatisfy { !$0.isEditable })
@@ -64,7 +64,7 @@ func breakBlocksAreNotEditable() throws {
 func canvasReportsTheUnusableTail() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    let canvas = store.focusDayCanvas(at: at)
+    let canvas = store.focus.focusDayCanvas(at: at)
     #expect(canvas.gaps.contains { $0.kind == .betweenSegments })
     #expect(canvas.gaps.contains { $0.kind == .tail })
     // Nothing overlaps: gaps sit strictly between blocks.
@@ -78,13 +78,13 @@ func canvasReportsTheUnusableTail() throws {
 func favouriteLandsInTheNextEmptyBlock() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    let expected = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
+    let expected = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
 
     let favorite = makeTask(store, title: "Weekly report", favorite: true, at: at)
-    let result = store.placeFavoriteInNextEmptyBlock(favorite, at: at)
+    let result = store.focus.placeFavoriteInNextEmptyBlock(favorite, at: at).synchronousResult
     #expect(result == .placed(taskID: placedID(result), blockStartAtMs: expected.startAtMs))
 
-    let canvas = store.focusDayCanvas(at: at)
+    let canvas = store.focus.focusDayCanvas(at: at)
     let filled = try #require(canvas.blocks.first { $0.startAtMs == expected.startAtMs })
     #expect(filled.taskTitle == "Weekly report")
     #expect(canvas.nextEmptyBlock?.startAtMs != expected.startAtMs)
@@ -96,19 +96,19 @@ func favouriteWithoutRoomIsNotSilent() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
     var guard_ = 0
-    while store.focusDayCanvas(at: at).nextEmptyBlock != nil, guard_ < 40 {
-        _ = store.createFocusTaskInNextEmptyBlock(title: "Filler \(guard_)", at: at)
+    while store.focus.focusDayCanvas(at: at).nextEmptyBlock != nil, guard_ < 40 {
+        _ = store.focus.createFocusTaskInNextEmptyBlock(title: "Filler \(guard_)", at: at).synchronousResult
         guard_ += 1
     }
-    #expect(store.focusDayCanvas(at: at).nextEmptyBlock == nil)
+    #expect(store.focus.focusDayCanvas(at: at).nextEmptyBlock == nil)
 
     let favorite = makeTask(store, title: "Extra", favorite: true, at: at)
-    let result = store.placeFavoriteInNextEmptyBlock(favorite, at: at)
+    let result = store.focus.placeFavoriteInNextEmptyBlock(favorite, at: at).synchronousResult
     guard case .addedUnscheduled(let taskID) = result else {
         Issue.record("expected the task to be created without a block, got \(result)")
         return
     }
-    let canvas = store.focusDayCanvas(at: at)
+    let canvas = store.focus.focusDayCanvas(at: at)
     let row = try #require(canvas.tasks.first { $0.id == taskID })
     #expect(!row.isScheduled)
 }
@@ -118,11 +118,11 @@ func favouriteWithoutRoomIsNotSilent() throws {
 func blockFirstCreationNeedsNoExistingTask() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
+    let target = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
 
-    let result = store.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at)
+    let result = store.focus.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at).synchronousResult
     #expect(result == .placed(taskID: placedID(result), blockStartAtMs: target.startAtMs))
-    let canvas = store.focusDayCanvas(at: at)
+    let canvas = store.focus.focusDayCanvas(at: at)
     #expect(canvas.blocks.first { $0.startAtMs == target.startAtMs }?.taskTitle == "Spec review")
     #expect(canvas.tasks.contains { $0.title == "Spec review" && $0.assignedBlocks == 1 })
 }
@@ -136,12 +136,12 @@ func progressCountsScheduledBlocks() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
     let task = makeTask(store, title: "Deep work", pomodoros: 1, at: at)
-    let blocks = store.focusDayCanvas(at: at).blocks.filter { $0.isEditable && !$0.isAssigned }
+    let blocks = store.focus.focusDayCanvas(at: at).blocks.filter { $0.isEditable && !$0.isAssigned }
     #expect(blocks.count >= 2)
-    _ = store.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at)
-    _ = store.assign(task, toBlockStartingAt: blocks[1].startAtMs, at: at)
+    _ = store.focus.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at).synchronousResult
+    _ = store.focus.assign(task, toBlockStartingAt: blocks[1].startAtMs, at: at).synchronousResult
 
-    let row = try #require(store.focusDayCanvas(at: at).tasks.first { $0.id == task.id })
+    let row = try #require(store.focus.focusDayCanvas(at: at).tasks.first { $0.id == task.id })
     #expect(row.assignedBlocks == 2)
     #expect(row.estimatedBlocks == 1)
     #expect(row.completedBlocks == 0)
@@ -158,12 +158,12 @@ func assigningRepatriatesAFutureTask() throws {
     let tomorrow = at.addingTimeInterval(86_400)
     let task = makeTask(store, title: "Tomorrow's thing", at: tomorrow)
 
-    #expect(store.focusTasksForCanvas(at: at).contains { $0.id == task.id })
-    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
-    _ = store.assign(task, toBlockStartingAt: target.startAtMs, at: at)
+    #expect(store.focus.focusTasksForCanvas(at: at).contains { $0.id == task.id })
+    let target = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
+    _ = store.focus.assign(task, toBlockStartingAt: target.startAtMs, at: at).synchronousResult
 
     let moved = try #require(store.records.state.focusTasks.first { $0.id == task.id })
-    #expect(store.recordsCalendar.isDate(
+    #expect(store.preferences.recordsCalendar.isDate(
         try #require(moved.plannedForDate),
         inSameDayAs: at
     ))
@@ -177,15 +177,15 @@ func timerLockReasonMatchesTheStore() throws {
     // fields were editable, Save was enabled, and the write was dropped.
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    #expect(store.focusTimerSettingsLockReason == nil)
-    #expect(store.updateFocusTimerSettings(FocusTimerSettings(focusMinutes: 30)))
+    #expect(store.focus.focusTimerSettingsLockReason == nil)
+    #expect(store.focus.updateFocusTimerSettings(FocusTimerSettings(focusMinutes: 30)).synchronousResult)
 
-    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
-    _ = store.createFocusTask(title: "Anything", inBlockStartingAt: target.startAtMs, at: at)
-    _ = store.saveFocusTemplate(name: "Default", at: at)
+    let target = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
+    _ = store.focus.createFocusTask(title: "Anything", inBlockStartingAt: target.startAtMs, at: at).synchronousResult
+    _ = store.focus.saveFocusTemplate(name: "Default", at: at).synchronousResult
 
-    #expect(store.focusTimerSettingsLockReason == .hasTemplates)
-    #expect(!store.updateFocusTimerSettings(FocusTimerSettings(focusMinutes: 45)))
+    #expect(store.focus.focusTimerSettingsLockReason == .hasTemplates)
+    #expect(!store.focus.updateFocusTimerSettings(FocusTimerSettings(focusMinutes: 45)).synchronousResult)
 }
 
 @MainActor
@@ -193,18 +193,18 @@ func timerLockReasonMatchesTheStore() throws {
 func lockedCanvasCarriesNoData() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
-    _ = store.createFocusTask(title: "Private", inBlockStartingAt: target.startAtMs, at: at)
+    let target = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
+    _ = store.focus.createFocusTask(title: "Private", inBlockStartingAt: target.startAtMs, at: at).synchronousResult
 
     store.plus.debugSetAuthorized(false)
-    let locked = store.focusDayCanvas(at: at)
+    let locked = store.focus.focusDayCanvas(at: at)
     #expect(locked.isLocked)
     #expect(!locked.blocks.isEmpty)
     #expect(locked.blocks.allSatisfy { $0.taskTitle == nil && $0.taskID == nil })
     #expect(locked.tasks.isEmpty)
-    #expect(store.placeFavoriteInNextEmptyBlock(
+    #expect(store.focus.placeFavoriteInNextEmptyBlock(
         makeTask(store, title: "Nope", favorite: true, at: at), at: at
-    ) == .locked)
+    ).synchronousResult == .locked)
 }
 
 @MainActor
@@ -227,28 +227,28 @@ func bandDensityClearsTheHitTarget() {
 // MARK: - helpers
 
 @MainActor
-private func canvasStore() throws -> OffWorkStore {
+private func canvasStore() throws -> AppRuntime {
     let suite = "FocusCanvasTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defaults.removePersistentDomain(forName: suite)
-    let store = OffWorkStore(defaults: defaults, records: .inMemory())
+    let store = AppRuntime(defaults: defaults, records: .inMemory())
     store.plus.debugSetAuthorized(true)
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.lunchEnabled = true
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.preferences.applyPreferences { $0.lunchEnabled = true }
     return store
 }
 
 @MainActor
-private func day(_ store: OffWorkStore, hour: Int, minute: Int) -> Date? {
-    store.recordsCalendar.date(
+private func day(_ store: AppRuntime, hour: Int, minute: Int) -> Date? {
+    store.preferences.recordsCalendar.date(
         from: DateComponents(year: 2026, month: 8, day: 31, hour: hour, minute: minute)
     )
 }
 
 @MainActor
 private func makeTask(
-    _ store: OffWorkStore,
+    _ store: AppRuntime,
     title: String,
     pomodoros: Int = 1,
     favorite: Bool = false,
@@ -257,7 +257,7 @@ private func makeTask(
     let task = FocusTask(
         id: UUID(),
         createdAt: date,
-        plannedForDate: store.recordsCalendar.startOfDay(for: date),
+        plannedForDate: store.preferences.recordsCalendar.startOfDay(for: date),
         scheduledStartAt: nil,
         title: title,
         estimatedPomodoros: pomodoros,
@@ -287,17 +287,17 @@ func plannedShiftTakesOverTheHealthReminder() throws {
     // as hard cuts, so turning it on re-sliced the grid.
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    store.microBreakEnabled = true
-    store.microBreakIntervalMinutes = 60
-    #expect(!store.focusOwnsBreaks(at: at))
+    store.preferences.applyPreferences { $0.microBreakEnabled = true }
+    store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 60 }
+    #expect(!store.focus.focusOwnsBreaks(at: at))
 
-    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
-    _ = store.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at)
-    #expect(store.focusOwnsBreaks(at: at))
+    let target = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
+    _ = store.focus.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at).synchronousResult
+    #expect(store.focus.focusOwnsBreaks(at: at))
 
-    let reminders = try store.shiftReminders(at: at)
-    let shiftEnd = try #require(store.focusCanvasShift(at: at)?.snapshot.segments.map(\.endAtMs).max())
-    let shiftStart = try #require(store.focusCanvasShift(at: at)?.snapshot.startAtMs)
+    let reminders = try store.shifts.shiftReminders(at: at)
+    let shiftEnd = try #require(store.focus.focusCanvasShift(at: at)?.snapshot.segments.map(\.endAtMs).max())
+    let shiftStart = try #require(store.focus.focusCanvasShift(at: at)?.snapshot.startAtMs)
     let inShift = reminders.filter {
         $0.kind == "microBreak" && $0.atMs >= shiftStart && $0.atMs <= shiftEnd
     }
@@ -306,8 +306,8 @@ func plannedShiftTakesOverTheHealthReminder() throws {
     #expect(inShift.allSatisfy { $0.id.hasPrefix("focusBreak:") })
     // Long breaks only: notifying on every short break would roughly triple
     // the interruptions the fixed interval used to produce.
-    let longBreakMs = Int64(store.focusTimerSettings.normalized.longBreakMinutes) * 60_000
-    let blocks = store.focusWorkBlocks(at: at)
+    let longBreakMs = Int64(store.focus.focusTimerSettings.normalized.longBreakMinutes) * 60_000
+    let blocks = store.focus.focusWorkBlocks(at: at)
     for reminder in inShift {
         let block = try #require(blocks.first { Double($0.startAtMs) == reminder.atMs })
         #expect(Int64(block.end.timeIntervalSince(block.start) * 1_000) >= longBreakMs)
@@ -319,20 +319,20 @@ func plannedShiftTakesOverTheHealthReminder() throws {
 func healthLabelSaysWhoOwnsTheBreaks() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    store.microBreakEnabled = true
-    store.microBreakIntervalMinutes = 60
-    #expect(store.healthLabel(at: at) == store.t("minutesShort", values: ["count": "60"]))
+    store.preferences.applyPreferences { $0.microBreakEnabled = true }
+    store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 60 }
+    #expect(store.shifts.healthLabel(at: at) == store.text.t("minutesShort", values: ["count": "60"]))
 
-    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
-    _ = store.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at)
-    #expect(store.healthLabel(at: at) == store.t("microBreakFollowsFocus"))
+    let target = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
+    _ = store.focus.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at).synchronousResult
+    #expect(store.shifts.healthLabel(at: at) == store.text.t("microBreakFollowsFocus"))
 
     // Clearing the plan hands the interval back, and switching the reminder
     // off outranks both — an off reminder is not "following" anything.
-    store.clearBlock(startingAt: target.startAtMs, at: at)
-    #expect(store.healthLabel(at: at) == store.t("minutesShort", values: ["count": "60"]))
-    store.microBreakEnabled = false
-    #expect(store.healthLabel(at: at) == store.t("disabledShort"))
+    store.focus.clearBlock(startingAt: target.startAtMs, at: at).synchronousResult
+    #expect(store.shifts.healthLabel(at: at) == store.text.t("minutesShort", values: ["count": "60"]))
+    store.preferences.applyPreferences { $0.microBreakEnabled = false }
+    #expect(store.shifts.healthLabel(at: at) == store.text.t("disabledShort"))
 }
 
 @MainActor
@@ -340,16 +340,16 @@ func healthLabelSaysWhoOwnsTheBreaks() throws {
 func clearingThePlanRestoresTheInterval() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    store.microBreakEnabled = true
-    store.microBreakIntervalMinutes = 60
+    store.preferences.applyPreferences { $0.microBreakEnabled = true }
+    store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 60 }
 
-    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
-    _ = store.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at)
-    #expect(store.focusOwnsBreaks(at: at))
+    let target = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
+    _ = store.focus.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at).synchronousResult
+    #expect(store.focus.focusOwnsBreaks(at: at))
 
-    store.clearBlock(startingAt: target.startAtMs, at: at)
-    #expect(!store.focusOwnsBreaks(at: at))
-    let reminders = try store.shiftReminders(at: at)
+    store.focus.clearBlock(startingAt: target.startAtMs, at: at).synchronousResult
+    #expect(!store.focus.focusOwnsBreaks(at: at))
+    let reminders = try store.shifts.shiftReminders(at: at)
     #expect(reminders.contains { $0.kind == "microBreak" && !$0.id.hasPrefix("focusBreak:") })
     #expect(!reminders.contains { $0.id.hasPrefix("focusBreak:") })
 }
@@ -359,13 +359,13 @@ func clearingThePlanRestoresTheInterval() throws {
 func lockedUsersKeepTheFixedInterval() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    store.microBreakEnabled = true
-    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
-    _ = store.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at)
+    store.preferences.applyPreferences { $0.microBreakEnabled = true }
+    let target = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
+    _ = store.focus.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at).synchronousResult
 
     store.plus.debugSetAuthorized(false)
-    #expect(!store.focusOwnsBreaks(at: at))
-    #expect(store.focusBreakReminders(at: at).isEmpty)
+    #expect(!store.focus.focusOwnsBreaks(at: at))
+    #expect(store.focus.focusBreakReminders(at: at).isEmpty)
 }
 
 @MainActor
@@ -377,25 +377,25 @@ func writesFollowTheDrawnShift() throws {
     // and each edit returned "no shift".
     let store = try canvasStore()
     let afterWork = try #require(day(store, hour: 21, minute: 0))
-    let drawn = try #require(store.focusCanvasShift(at: afterWork))
+    let drawn = try #require(store.focus.focusCanvasShift(at: afterWork))
     #expect(drawn.isNext)
 
-    let canvas = store.focusDayCanvas(at: afterWork)
+    let canvas = store.focus.focusDayCanvas(at: afterWork)
     let target = try #require(canvas.nextEmptyBlock)
     let task = makeTask(store, title: "Tomorrow morning", at: drawn.snapshot.startDate)
 
-    let result = store.assign(task, toBlockStartingAt: target.startAtMs, at: afterWork)
+    let result = store.focus.assign(task, toBlockStartingAt: target.startAtMs, at: afterWork).synchronousResult
     #expect(result == .placed(taskID: task.id, blockStartAtMs: target.startAtMs))
 
-    let after = store.focusDayCanvas(at: afterWork)
+    let after = store.focus.focusDayCanvas(at: afterWork)
     #expect(after.blocks.first { $0.startAtMs == target.startAtMs }?.taskTitle == "Tomorrow morning")
 
     // And it is filed under the drawn shift's day, not today's.
-    let dayKey = RecordJSON.dayKey(drawn.snapshot.startDate, calendar: store.recordsCalendar)
-    #expect(store.focusPlanning.plans[dayKey]?.assignments.contains { $0.taskID == task.id } == true)
+    let dayKey = RecordJSON.dayKey(drawn.snapshot.startDate, calendar: store.preferences.recordsCalendar)
+    #expect(store.focus.focusPlanning.plans[dayKey]?.assignments.contains { $0.taskID == task.id } == true)
 
-    store.clearBlock(startingAt: target.startAtMs, at: afterWork)
-    #expect(store.focusDayCanvas(at: afterWork).blocks
+    store.focus.clearBlock(startingAt: target.startAtMs, at: afterWork).synchronousResult
+    #expect(store.focus.focusDayCanvas(at: afterWork).blocks
         .first { $0.startAtMs == target.startAtMs }?.taskTitle == nil)
 }
 
@@ -409,12 +409,12 @@ func convertedBreakIsVisibleAndReversible() throws {
     // never appeared for it.
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
-    let target = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
+    let target = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
     #expect(!target.rendersAsBreak)
     #expect(!target.hasAssignment)
 
-    store.markBlockAsBreak(startingAt: target.startAtMs, at: at)
-    let converted = try #require(store.focusDayCanvas(at: at).blocks
+    store.focus.markBlockAsBreak(startingAt: target.startAtMs, at: at).synchronousResult
+    let converted = try #require(store.focus.focusDayCanvas(at: at).blocks
         .first { $0.startAtMs == target.startAtMs })
     #expect(converted.isUserBreak)
     #expect(converted.rendersAsBreak)
@@ -424,14 +424,14 @@ func convertedBreakIsVisibleAndReversible() throws {
     #expect(converted.kind == .task)
     #expect(converted.isEditable)
     // And it is no longer free, so "put it in the next empty block" skips it.
-    #expect(store.focusDayCanvas(at: at).nextEmptyBlock?.startAtMs != target.startAtMs)
+    #expect(store.focus.focusDayCanvas(at: at).nextEmptyBlock?.startAtMs != target.startAtMs)
 
-    store.clearBlock(startingAt: target.startAtMs, at: at)
-    let cleared = try #require(store.focusDayCanvas(at: at).blocks
+    store.focus.clearBlock(startingAt: target.startAtMs, at: at).synchronousResult
+    let cleared = try #require(store.focus.focusDayCanvas(at: at).blocks
         .first { $0.startAtMs == target.startAtMs })
     #expect(!cleared.isUserBreak)
     #expect(!cleared.hasAssignment)
-    #expect(store.focusDayCanvas(at: at).nextEmptyBlock?.startAtMs == target.startAtMs)
+    #expect(store.focus.focusDayCanvas(at: at).nextEmptyBlock?.startAtMs == target.startAtMs)
 }
 
 @MainActor
@@ -439,17 +439,17 @@ func convertedBreakIsVisibleAndReversible() throws {
 func upcomingBreaksRequireThePrecedingTask() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 8, minute: 55))
-    let shift = try #require(store.snapshot(at: at))
-    #expect(store.focusPlanAssignments(for: shift).isEmpty)
-    let blocks = store.focusPlanningBlocks(for: shift)
+    let shift = try #require(store.session.snapshot(at: at))
+    #expect(store.focus.focusPlanAssignments(for: shift).isEmpty)
+    let blocks = store.focus.focusPlanningBlocks(for: shift)
     let task = makeTask(store, title: "One task", at: at)
-    _ = store.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at)
-    let breaks = store.focusUpcomingTimelineEvents(for: shift, at: at).filter { $0.kind == .focusBreak }
+    _ = store.focus.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at).synchronousResult
+    let breaks = store.focus.focusUpcomingTimelineEvents(for: shift, at: at).filter { $0.kind == .focusBreak }
     #expect(breaks.count == 1)
     #expect(breaks.first?.date == blocks[1].start)
     let explicit = try #require(blocks.last(where: { $0.kind == .task }))
-    store.markBlockAsBreak(startingAt: explicit.startAtMs, at: at)
-    #expect(store.focusPlanAssignments(for: shift).contains {
+    store.focus.markBlockAsBreak(startingAt: explicit.startAtMs, at: at).synchronousResult
+    #expect(store.focus.focusPlanAssignments(for: shift).contains {
         $0.block.startAtMs == explicit.startAtMs && $0.assignment.kind == .breakTime
     })
 }
@@ -460,13 +460,13 @@ func oneMoreRoundKeepsTaskIdentity() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 5))
     var task = makeTask(store, title: "Continue", at: at)
-    let blocks = store.focusWorkBlocks(at: at).filter { $0.kind == .task }
-    _ = store.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at)
+    let blocks = store.focus.focusWorkBlocks(at: at).filter { $0.kind == .task }
+    _ = store.focus.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at).synchronousResult
     task = try #require(store.records.state.focusTasks.first { $0.id == task.id })
     task.completedAt = at
     store.records.upsertFocusTask(task, at: at)
     let sessions = store.records.state.focusSessions
-    let added = try store.addOneFocusBlock(taskID: task.id, at: at).get()
+    let added = try store.focus.addOneFocusBlock(taskID: task.id, at: at).synchronousResult.get()
     #expect(added == blocks[1].startAtMs)
     let updated = try #require(store.records.state.focusTasks.first { $0.id == task.id })
     #expect(updated.completedAt == nil)
@@ -481,19 +481,19 @@ func oneMoreRoundReportsConflicts() throws {
         let store = try canvasStore()
         let at = try #require(day(store, hour: 9, minute: 5))
         let task = makeTask(store, title: "Continue", at: at)
-        let blocks = store.focusWorkBlocks(at: at).filter { $0.kind == .task }
-        _ = store.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at)
+        let blocks = store.focus.focusWorkBlocks(at: at).filter { $0.kind == .task }
+        _ = store.focus.assign(task, toBlockStartingAt: blocks[0].startAtMs, at: at).synchronousResult
         if userBreak {
-            store.markBlockAsBreak(startingAt: blocks[1].startAtMs, at: at)
+            store.focus.markBlockAsBreak(startingAt: blocks[1].startAtMs, at: at).synchronousResult
         } else {
-            _ = store.assign(makeTask(store, title: "Next task", at: at), toBlockStartingAt: blocks[1].startAtMs, at: at)
+            _ = store.focus.assign(makeTask(store, title: "Next task", at: at), toBlockStartingAt: blocks[1].startAtMs, at: at).synchronousResult
         }
-        let before = store.focusPlanning
-        guard case .failure(.conflict) = store.addOneFocusBlock(taskID: task.id, at: at) else {
+        let before = store.focus.focusPlanning
+        guard case .failure(.conflict) = store.focus.addOneFocusBlock(taskID: task.id, at: at).synchronousResult else {
             Issue.record("Expected a conflict")
             return
         }
-        #expect(store.focusPlanning == before)
+        #expect(store.focus.focusPlanning == before)
         #expect(store.records.state.focusTasks.first { $0.id == task.id }?.estimatedPomodoros == 1)
     }
 }
@@ -504,11 +504,11 @@ func oneMoreRoundStopsAtLunch() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 11, minute: 35))
     let task = makeTask(store, title: "Before lunch", at: at)
-    let block = try #require(store.focusWorkBlocks(at: at).last {
+    let block = try #require(store.focus.focusWorkBlocks(at: at).last {
         $0.kind == .task && $0.start <= at
     })
-    _ = store.assign(task, toBlockStartingAt: block.startAtMs, at: at)
-    guard case .failure(.noRoom) = store.addOneFocusBlock(taskID: task.id, at: at) else {
+    _ = store.focus.assign(task, toBlockStartingAt: block.startAtMs, at: at).synchronousResult
+    guard case .failure(.noRoom) = store.focus.addOneFocusBlock(taskID: task.id, at: at).synchronousResult else {
         Issue.record("Expected lunch to block continuation")
         return
     }
@@ -519,12 +519,12 @@ func oneMoreRoundStopsAtLunch() throws {
 func templatePreviewBreaksRequireTasks() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 8, minute: 55))
-    let template = try #require(store.saveFocusTemplate(name: "Sparse", slots: [
+    let template = try #require(store.focus.saveFocusTemplate(name: "Sparse", slots: [
         FocusTemplateSlot(blockIndex: 0, kind: .task, taskKey: UUID(), taskTitle: "First task", taskIcon: .focus)
-    ]))
-    store.setDefaultFocusTemplate(template)
-    let shift = try #require(store.snapshot(at: at))
-    let items = store.focusPlanAssignments(for: shift)
+    ]).synchronousResult)
+    store.focus.setDefaultFocusTemplate(template).synchronousResult
+    let shift = try #require(store.session.snapshot(at: at))
+    let items = store.focus.focusPlanAssignments(for: shift)
     #expect(items.filter { $0.assignment.kind == .task }.count == 1)
     #expect(items.filter { $0.assignment.kind == .breakTime }.count == 1)
 }
@@ -548,24 +548,24 @@ func usualDayTaskEstimateCanBeEdited() throws {
 func usualDayFavoriteStaysInLibraryUntilPlaced() throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 9, minute: 0))
-    store.saveFocusFavorite(title: "Reusable writing", pomodoros: 3, icon: .focus)
-    let favorite = try #require(store.favoriteFocusTasks().first)
+    store.focus.saveFocusFavorite(title: "Reusable writing", pomodoros: 3, icon: .focus).synchronousResult
+    let favorite = try #require(store.focus.favoriteFocusTasks().first)
     #expect(favorite.estimatedPomodoros == 3)
     #expect(favorite.plannedForDate == nil)
-    #expect(!store.focusTasksForToday(at: at).contains { $0.id == favorite.id })
-    #expect(!store.focusTasksForCanvas(at: at).contains { $0.id == favorite.id })
-    guard case .placed(let id, _) = store.placeFavoriteInNextEmptyBlock(favorite, at: at) else {
+    #expect(!store.focus.focusTasksForToday(at: at).contains { $0.id == favorite.id })
+    #expect(!store.focus.focusTasksForCanvas(at: at).contains { $0.id == favorite.id })
+    guard case .placed(let id, _) = store.focus.placeFavoriteInNextEmptyBlock(favorite, at: at).synchronousResult else {
         Issue.record("Expected favorite placement"); return
     }
     let copy = try #require(store.records.state.focusTasks.first { $0.id == id })
     #expect(copy.id != favorite.id)
     #expect(copy.estimatedPomodoros == 3)
-    #expect(store.savedFocusFavorite(title: copy.title, icon: copy.icon)?.id == favorite.id)
-    let block = try #require(store.focusDayCanvas(at: at).nextEmptyBlock)
-    guard case .placed(let selectedID, _) = store.createFocusTask(
+    #expect(store.focus.savedFocusFavorite(title: copy.title, icon: copy.icon)?.id == favorite.id)
+    let block = try #require(store.focus.focusDayCanvas(at: at).nextEmptyBlock)
+    guard case .placed(let selectedID, _) = store.focus.createFocusTask(
         title: favorite.title, icon: favorite.icon, pomodoros: favorite.estimatedPomodoros,
         inBlockStartingAt: block.startAtMs, at: at
-    ) else { Issue.record("Expected selected-block placement"); return }
+    ).synchronousResult else { Issue.record("Expected selected-block placement"); return }
     #expect(store.records.state.focusTasks.first { $0.id == selectedID }?.estimatedPomodoros == 3)
 
 }
@@ -574,15 +574,15 @@ func usualDayFavoriteStaysInLibraryUntilPlaced() throws {
 @Test("Saving a favorite again updates its estimate without duplicating the library")
 func usualDayFavoriteUpdatesAndCanBeRemoved() throws {
     let store = try canvasStore()
-    store.saveFocusFavorite(title: "Reusable writing", pomodoros: 2, icon: .focus)
-    let original = try #require(store.favoriteFocusTasks().first)
-    store.saveFocusFavorite(title: "Reusable writing", pomodoros: 4, icon: .focus)
-    #expect(store.favoriteFocusTasks().count == 1)
-    #expect(store.favoriteFocusTasks().first?.id == original.id)
-    #expect(store.favoriteFocusTasks().first?.estimatedPomodoros == 4)
-    store.toggleFocusFavorite(try #require(store.favoriteFocusTasks().first))
-    #expect(store.favoriteFocusTasks().isEmpty)
-    #expect(!store.focusTasksForToday().contains { $0.id == original.id })
+    store.focus.saveFocusFavorite(title: "Reusable writing", pomodoros: 2, icon: .focus).synchronousResult
+    let original = try #require(store.focus.favoriteFocusTasks().first)
+    store.focus.saveFocusFavorite(title: "Reusable writing", pomodoros: 4, icon: .focus).synchronousResult
+    #expect(store.focus.favoriteFocusTasks().count == 1)
+    #expect(store.focus.favoriteFocusTasks().first?.id == original.id)
+    #expect(store.focus.favoriteFocusTasks().first?.estimatedPomodoros == 4)
+    store.focus.toggleFocusFavorite(try #require(store.focus.favoriteFocusTasks().first)).synchronousResult
+    #expect(store.focus.favoriteFocusTasks().isEmpty)
+    #expect(!store.focus.focusTasksForToday().contains { $0.id == original.id })
 }
 
 @MainActor
@@ -590,25 +590,25 @@ func usualDayFavoriteUpdatesAndCanBeRemoved() throws {
 func quickAddSchedulesCurrentOrNextBlock(duringBreak: Bool) throws {
     let store = try canvasStore()
     let morning = try #require(day(store, hour: 9, minute: 5))
-    let initial = store.focusDayCanvas(at: morning)
+    let initial = store.focus.focusDayCanvas(at: morning)
     let breakBlock = try #require(initial.blocks.first { $0.kind == .breakTime })
     let at = duringBreak ? Date(timeIntervalSince1970: Double(breakBlock.startAtMs) / 1_000 + 1) : morning
-    let canvas = store.focusDayCanvas(at: at)
+    let canvas = store.focus.focusDayCanvas(at: at)
     let target = try #require(canvas.nextEmptyBlock)
     let occupied = try #require(canvas.blocks.first { $0.kind == .task && $0.startAtMs > target.startAtMs })
-    _ = store.createFocusTask(title: "Keep this task", inBlockStartingAt: occupied.startAtMs, at: at)
+    _ = store.focus.createFocusTask(title: "Keep this task", inBlockStartingAt: occupied.startAtMs, at: at).synchronousResult
 
-    let result = store.createFocusTaskInNextEmptyBlock(
+    let result = store.focus.createFocusTaskInNextEmptyBlock(
         title: "Three pomodoros", pomodoros: 3, scheduleAllPomodoros: true, at: at
-    )
-    let updated = store.focusDayCanvas(at: at)
+    ).synchronousResult
+    let updated = store.focus.focusDayCanvas(at: at)
     let id = placedID(result)
     #expect(result == .placed(taskID: id, blockStartAtMs: target.startAtMs))
     #expect(updated.blocks.filter { $0.taskID == id }.count == 3)
     #expect(updated.blocks.first { $0.startAtMs == occupied.startAtMs }?.taskTitle == "Keep this task")
     #expect(updated.blocks.filter { $0.kind == .breakTime }.allSatisfy { $0.taskID == nil })
     #expect(store.records.state.focusTasks.first { $0.id == id }?.estimatedPomodoros == 3)
-    #expect(store.activeFocusSession() == nil)
+    #expect(store.focus.activeFocusSession() == nil)
     if duringBreak {
         #expect(target.startAtMs >= breakBlock.endAtMs)
     } else {
@@ -621,17 +621,17 @@ func quickAddSchedulesCurrentOrNextBlock(duringBreak: Bool) throws {
 func creationFinishMatchesPlacement(count: Int) throws {
     let store = try canvasStore()
     let at = try #require(day(store, hour: 11, minute: 5))
-    let before = store.focusDayCanvas(at: at)
+    let before = store.focus.focusDayCanvas(at: at)
     let target = try #require(before.nextEmptyBlock)
     let future = before.blocks.filter { $0.kind == .task && $0.startAtMs > target.startAtMs }
     let busy = try #require(future.first)
     let other = makeTask(store, title: "Keep this task", at: at)
-    _ = store.assign(other, toBlockStartingAt: busy.startAtMs, at: at)
-    let preview = store.focusCreationFinish(pomodoros: count, startingAt: target.startAtMs, at: at)
-    let result = store.createFocusTask(title: "Finish preview", pomodoros: count,
-                                     inBlockStartingAt: target.startAtMs, scheduleAllPomodoros: true, at: at)
+    _ = store.focus.assign(other, toBlockStartingAt: busy.startAtMs, at: at).synchronousResult
+    let preview = store.focus.focusCreationFinish(pomodoros: count, startingAt: target.startAtMs, at: at)
+    let result = store.focus.createFocusTask(title: "Finish preview", pomodoros: count,
+                                     inBlockStartingAt: target.startAtMs, scheduleAllPomodoros: true, at: at).synchronousResult
     let id = placedID(result)
-    let after = store.focusDayCanvas(at: at)
+    let after = store.focus.focusDayCanvas(at: at)
     let assigned = after.blocks.filter { $0.taskID == id }
     #expect(assigned.first?.startAtMs == target.startAtMs)
     #expect(after.blocks.first { $0.startAtMs == busy.startAtMs }?.taskID == other.id)
@@ -647,40 +647,41 @@ func creationFinishMatchesPlacement(count: Int) throws {
 @Test("Start-now finish includes recovery and refuses an incomplete final round")
 func immediateCreationFinishUsesActualBoundaries() throws {
     let store = try canvasStore()
-    store.countdownStarted = true
+    store.session.countdownStarted = true
     let at = try #require(day(store, hour: 10, minute: 5))
-    #expect(store.hasFocusRoom(at: at))
-    let firstEnd = try #require(store.focusCreationFinish(pomodoros: 1, startingAt: nil, startNow: true, at: at))
-    #expect(firstEnd == at.addingTimeInterval(TimeInterval(store.focusTimerSettings.normalized.focusMinutes * 60)))
-    let twoEnd = try #require(store.focusCreationFinish(pomodoros: 2, startingAt: nil, startNow: true, at: at))
-    #expect(twoEnd > firstEnd.addingTimeInterval(TimeInterval(store.focusTimerSettings.normalized.focusMinutes * 60)))
+    #expect(store.focus.hasFocusRoom(at: at))
+    let firstEnd = try #require(store.focus.focusCreationFinish(pomodoros: 1, startingAt: nil, startNow: true, at: at))
+    #expect(firstEnd == at.addingTimeInterval(TimeInterval(store.focus.focusTimerSettings.normalized.focusMinutes * 60)))
+    let twoEnd = try #require(store.focus.focusCreationFinish(pomodoros: 2, startingAt: nil, startNow: true, at: at))
+    #expect(twoEnd > firstEnd.addingTimeInterval(TimeInterval(store.focus.focusTimerSettings.normalized.focusMinutes * 60)))
     let late = try #require(day(store, hour: 17, minute: 59))
-    #expect(store.focusCreationFinish(pomodoros: 12, startingAt: nil, startNow: true, at: late) == nil)
+    #expect(store.focus.focusCreationFinish(pomodoros: 12, startingAt: nil, startNow: true, at: late) == nil)
 }
 
 @MainActor
 @Test("Alternating Saturdays agree between Records and Focus", arguments: [5, 12])
 func alternatingSaturdayRecordsAndFocus(dayOfMonth: Int) throws {
     let store = try canvasStore()
-    store.onboardingComplete = true
-    store.recordsTimeZoneIdentifier = "UTC"
-    store.scheduleMode = .alternating
-    store.alternatingWeekType = .single
-    store.alternatingWeekendWorkday = 6
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+    store.preferences.applyPreferences { $0.scheduleMode = .alternating }
+    store.preferences.applyPreferences { $0.alternatingWeekType = .single }
+    store.preferences.applyPreferences { $0.alternatingWeekendWorkday = 6 }
     let monday = try #require(day(store, hour: 0, minute: 0))
-    store.alternatingReferenceWeekStartMs = monday.timeIntervalSince1970 * 1_000
-    let date = try #require(store.recordsCalendar.date(from: DateComponents(
+    store.preferences.applyPreferences { $0.alternatingReferenceWeekStartMs = monday.timeIntervalSince1970 * 1_000 }
+    let date = try #require(store.preferences.recordsCalendar.date(from: DateComponents(
         year: 2026, month: 9, day: dayOfMonth, hour: 10)))
     let isWorkday = dayOfMonth == 5
-    let resolution = try #require(store.resolvedDays(from: date, through: date, now: date).first)
+    store.shifts.reconcileRecordSchedule(at: date)
+    let resolution = try #require(store.queries.resolvedDays(from: date, through: date, now: date).first)
     #expect(resolution.isScheduledWorkday == isWorkday)
-    #expect(store.hasFocusRoom(at: date) == isWorkday)
-    let canvas = store.focusDayCanvas(at: date)
+    #expect(store.focus.hasFocusRoom(at: date) == isWorkday)
+    let canvas = store.focus.focusDayCanvas(at: date)
     #expect(!canvas.blocks.isEmpty)
     #expect(canvas.isNextShift == !isWorkday)
     #expect((canvas.currentBlock != nil) == isWorkday)
     if !isWorkday {
-        #expect(store.plannedFocusBreakEnd(kind: .shortBreak, at: date) == nil)
+        #expect(store.focus.plannedFocusBreakEnd(kind: .shortBreak, at: date) == nil)
     }
 }
 
@@ -688,64 +689,64 @@ func alternatingSaturdayRecordsAndFocus(dayOfMonth: Int) throws {
 @Test("Rotating night shifts keep the start-day plan after midnight and split Records by civil day")
 func rotatingNightShiftRecordsAndFocus() async throws {
     let store = try canvasStore()
-    store.onboardingComplete = true
-    store.recordsTimeZoneIdentifier = "UTC"
-    store.scheduleMode = .rotation
-    store.rotationWorkDays = 2
-    store.rotationRestDays = 2
-    store.lunchEnabled = false
-    store.startMinutes = 22 * 60
-    store.endMinutes = 6 * 60
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+    store.preferences.applyPreferences { $0.scheduleMode = .rotation }
+    store.preferences.applyPreferences { $0.rotationWorkDays = 2 }
+    store.preferences.applyPreferences { $0.rotationRestDays = 2 }
+    store.preferences.applyPreferences { $0.lunchEnabled = false }
+    store.preferences.applyPreferences { $0.startMinutes = 22 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 6 * 60 }
     let monday = try #require(day(store, hour: 0, minute: 0))
-    store.rotationAnchorMs = monday.timeIntervalSince1970 * 1_000
+    store.preferences.applyPreferences { $0.rotationAnchorMs = monday.timeIntervalSince1970 * 1_000 }
     let beforeMidnight = monday.addingTimeInterval(23 * 3_600)
     let afterMidnight = monday.addingTimeInterval(26 * 3_600)
-    let canvas = store.focusDayCanvas(at: beforeMidnight)
+    store.shifts.reconcileRecordSchedule(at: beforeMidnight)
+    let canvas = store.focus.focusDayCanvas(at: beforeMidnight)
     #expect(canvas.dayKey == "2026-08-31")
-    #expect(store.focusDayCanvas(at: afterMidnight).dayKey == canvas.dayKey)
-    #expect(store.focusDayCanvas(at: afterMidnight).blocks.map(\.startAtMs) == canvas.blocks.map(\.startAtMs))
-    #expect(store.hasFocusRoom(at: afterMidnight))
+    #expect(store.focus.focusDayCanvas(at: afterMidnight).dayKey == canvas.dayKey)
+    #expect(store.focus.focusDayCanvas(at: afterMidnight).blocks.map(\.startAtMs) == canvas.blocks.map(\.startAtMs))
+    #expect(store.focus.hasFocusRoom(at: afterMidnight))
     let task = makeTask(store, title: "Night shift", pomodoros: 3, at: beforeMidnight)
-    #expect(store.focusTasksForCanvas(at: afterMidnight).contains { $0.id == task.id })
-    #expect(store.focusTasksForToday(at: afterMidnight).contains { $0.id == task.id })
+    #expect(store.focus.focusTasksForCanvas(at: afterMidnight).contains { $0.id == task.id })
+    #expect(store.focus.focusTasksForToday(at: afterMidnight).contains { $0.id == task.id })
     let completed = FocusSession(
         id: UUID(), taskID: task.id,
-        shiftAnchorDate: store.recordsCalendar.startOfDay(for: afterMidnight),
+        shiftAnchorDate: store.preferences.recordsCalendar.startOfDay(for: afterMidnight),
         startedAt: afterMidnight.addingTimeInterval(-30 * 60),
         plannedEndAt: afterMidnight.addingTimeInterval(-5 * 60),
         endedAt: afterMidnight.addingTimeInterval(-5 * 60), endReason: .completed,
         editedAt: afterMidnight, editCount: 0, editTieBreaker: UUID(), kind: .focus
     )
     store.records.upsertFocusSession(completed, at: afterMidnight)
-    #expect(store.focusDayCanvas(at: afterMidnight).tasks.first { $0.id == task.id }?.completedBlocks == 1)
+    #expect(store.focus.focusDayCanvas(at: afterMidnight).tasks.first { $0.id == task.id }?.completedBlocks == 1)
     var finishedTask = task
     finishedTask.completedAt = afterMidnight
     store.records.upsertFocusTask(finishedTask, at: afterMidnight)
-    #expect(store.focusTasksForCanvas(at: afterMidnight).contains { $0.id == task.id })
-    _ = store.resolvedDays(from: monday, through: monday, now: beforeMidnight)
-    let record = try #require(await store.recordsDayCanvas(dayKey: "2026-08-31", now: afterMidnight))
+    #expect(store.focus.focusTasksForCanvas(at: afterMidnight).contains { $0.id == task.id })
+    let record = try #require(await store.queries.recordsDayCanvas(dayKey: "2026-08-31", now: afterMidnight))
     #expect(record.allocation.workMs == 2 * 3_600_000)
     let rest = monday.addingTimeInterval(2 * 86_400 + 23 * 3_600)
-    #expect(!store.hasFocusRoom(at: rest))
-    #expect(store.focusDayCanvas(at: rest).isNextShift)
+    #expect(!store.focus.hasFocusRoom(at: rest))
+    #expect(store.focus.focusDayCanvas(at: rest).isNextShift)
 }
 
 @MainActor
 @Test("No schedule makes no phantom plan or records; manually starting enables focus")
 func unscheduledRecordsAndFocus() async throws {
     let store = try canvasStore()
-    store.onboardingComplete = true
+    store.preferences.onboardingComplete = true
     // A newly started manual session intentionally adopts the device zone.
-    store.recordsTimeZoneIdentifier = TimeZone.current.identifier
-    store.scheduleMode = .off
-    store.lunchEnabled = false
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = TimeZone.current.identifier }
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
+    store.preferences.applyPreferences { $0.lunchEnabled = false }
     let date = try #require(day(store, hour: 10, minute: 0))
-    #expect(store.focusDayCanvas(at: date).blocks.isEmpty)
-    #expect(store.refreshScheduledFocus(at: date).isEmpty)
-    #expect(!store.hasFocusRoom(at: date))
-    let record = try #require(await store.recordsDayCanvas(dayKey: "2026-08-31", now: date))
+    #expect(store.focus.focusDayCanvas(at: date).blocks.isEmpty)
+    #expect(store.focus.refreshScheduledFocus(at: date).synchronousResult.isEmpty)
+    #expect(!store.focus.hasFocusRoom(at: date))
+    let record = try #require(await store.queries.recordsDayCanvas(dayKey: "2026-08-31", now: date))
     #expect(record.allocation.workMs == 0)
-    store.startCountdown(at: date)
-    #expect(!store.focusDayCanvas(at: date).blocks.isEmpty)
-    #expect(store.hasFocusRoom(at: date))
+    store.shifts.startCountdown(at: date)
+    #expect(!store.focus.focusDayCanvas(at: date).blocks.isEmpty)
+    #expect(store.focus.hasFocusRoom(at: date))
 }

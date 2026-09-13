@@ -5,13 +5,14 @@ import SwiftUI
 /// The single definition of what each section contains. Every shell renders
 /// these; only the arrangement is theirs.
 struct SettingsSectionCard: View {
-    let store: OffWorkStore
+    let shifts: ShiftSessionStore
+    let recovery: RecoveryStore
     let section: SettingsSection
     @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            OWCSectionHeader(title: store.t(section.titleKey))
+            OWCSectionHeader(title: shifts.text.t(section.titleKey))
             OWCGroupCard { rows }
         }
     }
@@ -20,28 +21,32 @@ struct SettingsSectionCard: View {
     private var rows: some View {
         switch section {
         case .shift:
-            link(.schedule, icon: "calendar.badge.clock", title: store.t("workSchedule"), value: store.scheduleLabel)
-            link(.lunch, icon: "cup.and.saucer", title: store.t("lunchBreak"), value: store.lunchLabel)
-            link(.health, icon: "figure.walk", title: store.t("microBreakReminder"), value: store.healthLabel)
-            link(.salary, icon: "banknote", title: store.t("salarySettings"), value: store.salaryTypeLabel, isLast: true)
+            link(.schedule, icon: "calendar.badge.clock", title: shifts.text.t("workSchedule"), value: shifts.scheduleLabel)
+            link(.lunch, icon: "cup.and.saucer", title: shifts.text.t("lunchBreak"), value: shifts.lunchLabel)
+            link(.health, icon: "figure.walk", title: shifts.text.t("microBreakReminder"), value: shifts.healthLabel)
+            link(.salary, icon: "banknote", title: shifts.text.t("salarySettings"), value: shifts.text.salaryTypeLabel, isLast: true)
 
         case .reminders:
-            link(.notifications, icon: "bell.badge", title: store.t("offWorkReminder"), value: store.notificationModeLabel, isLast: true)
+            link(.notifications, icon: "bell.badge", title: shifts.text.t("offWorkReminder"), value: shifts.text.notificationModeLabel, isLast: true)
 
         case .appearance:
-            link(.theme, icon: "display", title: store.t("theme"), value: store.themeLabel)
-            link(.language, icon: "globe", title: store.t("chooselanguage"), value: store.languageLabel, isLast: true)
+            link(.theme, icon: "display", title: shifts.text.t("theme"), value: shifts.text.themeLabel)
+            link(.language, icon: "globe", title: shifts.text.t("chooselanguage"), value: shifts.text.languageLabel, isLast: true)
 
         case .recordsData:
-            link(.recordsData, icon: "externaldrive", title: store.t("recordsDataTitle"), value: store.recordsDataStatusLabel, isLast: true)
+            link(.recordsData, icon: "externaldrive", title: shifts.text.t("recordsDataTitle"), value: recovery.recordsDataStatusLabel(using: shifts.text), isLast: true)
 
         case .about:
-            link(.about, icon: "info.circle", title: store.t("aboutProject"), value: nil)
+            // An iPad cannot pair an Apple Watch, so the explainer lives on iPhone only.
+            if UIDevice.current.userInterfaceIdiom == .phone {
+                link(.appleWatch, icon: "applewatch", title: "Apple Watch", value: nil)
+            }
+            link(.about, icon: "info.circle", title: shifts.text.t("aboutProject"), value: nil)
             Button {
-                store.disableAutomaticReviewPrompt()
+                shifts.disableAutomaticReviewPrompt()
                 openURL(URL(string: "https://apps.apple.com/app/id6802803318?action=write-review")!)
             } label: {
-                OWCRow(icon: "star.bubble", title: store.t("rateApp")) {
+                OWCRow(icon: "star.bubble", title: shifts.text.t("rateApp")) {
                     Image(systemName: "arrow.up.right")
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(OWCDesign.secondary)
@@ -49,12 +54,12 @@ struct SettingsSectionCard: View {
                 }
             }
             .buttonStyle(OWCRowButtonStyle())
-            OWCRow(icon: "tag", title: store.t("version"), isLast: true) {
+            OWCRow(icon: "tag", title: shifts.text.t("version"), isLast: true) {
                 // Version is informational, not a disclosure row. Keeping a
                 // value-only accessory lets the shared OWCRow template place
                 // it on the same trailing edge as other settings values,
                 // without reserving an empty chevron slot.
-                Text(store.appVersion)
+                Text(shifts.text.appVersion)
                     .font(.body.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
             }

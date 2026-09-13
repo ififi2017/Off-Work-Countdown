@@ -35,12 +35,81 @@ func observationEventIDIsIdempotentPerWrite() {
 
 @MainActor
 @Test("Remote batches notify the store only after their durable write")
-func remoteBatchInvokesReconciliationHook() {
+func remoteBatchInvokesReconciliationHook() async throws {
     let records = RecordCoordinator.inMemory()
     var calls = 0
     records.onRemoteBatchApplied = { calls += 1 }
-    records.persistRemoteBatch()
+    try await records.persistRemoteBatch()
     #expect(calls == 1)
+}
+
+@MainActor
+@Test("A raw remote batch filters stale generations and writes once")
+func rawRemoteBatchIsGenerationSafeAndAtomic() async throws {
+    let file = FileManager.default.temporaryDirectory
+        .appending(path: "remote-batch-\(UUID()).json")
+    defer { try? FileManager.default.removeItem(at: file) }
+    let records = RecordCoordinator(fileURL: file)
+    #expect(await records.commitSyncState { sync, _ in sync.generation = 2 })
+    try await records.flush()
+    let writes = records.archiveWriteCount
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = .gmt
+    func change(key: String, generation: Int) throws -> RemoteRecordChange {
+        let day = startOf(2026, 9, generation)
+        let override = DayOverride(
+            dayKey: key,
+            shiftAnchorDate: day,
+            kind: .notWorking,
+            segments: [],
+            note: key,
+            timeZoneIdentifier: "UTC"
+        )
+        let payload = try #require(RecordsSyncPayload.encode(.override(override), calendar: calendar))
+        return .payload(
+            type: .dayOverride, key: key, payload: payload,
+            editCount: override.editCount, editTieBreaker: override.editTieBreaker.uuidString,
+            systemFields: nil, generation: generation
+        )
+    }
+
+    try await records.persistRemoteBatch(
+        [try change(key: "2026-09-01", generation: 1), try change(key: "2026-09-02", generation: 2)],
+        deletedRecordNames: []
+    )
+
+    #expect(!records.state.overrides.contains { $0.dayKey == "2026-09-01" })
+    #expect(records.state.overrides.contains { $0.dayKey == "2026-09-02" })
+    #expect(records.archiveWriteCount == writes + 1)
+}
+
+@MainActor
+@Test("An old send receipt cannot clear a newer dirty row")
+func sendReceiptUsesLatestDirtyRow() async throws {
+    let records = RecordCoordinator.inMemory()
+    let key = "2026-09-08"
+    let day = startOf(2026, 9, 8)
+    records.upsertOverride(DayOverride(
+        dayKey: key, shiftAnchorDate: day, kind: .notWorking,
+        segments: [], note: "sent", timeZoneIdentifier: "UTC"
+    ))
+    let name = RecordsSyncIdentity.recordName(type: .dayOverride, key: key)
+    let sent = try #require(records.state.sync.rows[name])
+    var edited = try #require(records.state.overrides.first)
+    edited.note = "newer"
+    records.upsertOverride(edited)
+
+    #expect(await records.commitSyncState { sync, _ in
+        guard let latest = sync.rows[name],
+              RecordsSyncSent.shouldClearSave(
+                row: latest,
+                savedCount: sent.editCount,
+                savedTie: sent.editTieBreaker,
+                deletedNames: []
+              ) else { return }
+        RecordsSyncOutbox.clearDirty(&sync, recordName: name)
+    })
+    #expect(records.state.sync.rows[name]?.dirty == true)
 }
 
 @MainActor
@@ -60,16 +129,16 @@ func exportShareFailuresAreActionable() {
 @MainActor
 @Test("First-seen is once per shift day; start/stop/overtime stay distinct")
 func observationKindsStayDistinct() {
-    let store = OffWorkStore(defaults: isolatedRecordDefaults())
-    store.onboardingComplete = true
-    store.scheduleMode = .off
+    let store = AppRuntime(defaults: isolatedRecordDefaults())
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .off }
     let monday = date(2026, 8, 24, 9)
-    store.noteTimerSurfaceVisible(at: monday)
-    store.noteTimerSurfaceVisible(at: monday.addingTimeInterval(60))
-    store.startCountdown(at: monday)
-    store.stopCountdown(at: monday.addingTimeInterval(30))
-    store.startCountdown(at: monday.addingTimeInterval(45))
-    store.applyOvertime(date: monday.addingTimeInterval(90))
+    store.shifts.noteTimerSurfaceVisible(at: monday)
+    store.shifts.noteTimerSurfaceVisible(at: monday.addingTimeInterval(60))
+    store.shifts.startCountdown(at: monday)
+    store.shifts.stopCountdown(at: monday.addingTimeInterval(30))
+    store.shifts.startCountdown(at: monday.addingTimeInterval(45))
+    store.shifts.applyOvertime(date: monday.addingTimeInterval(90))
 
     let kinds = store.records.state.observations.map(\.kind)
     #expect(kinds.filter { $0 == .timerSurfaceFirstSeen }.count == 1)
@@ -81,14 +150,14 @@ func observationKindsStayDistinct() {
 @MainActor
 @Test("Reconcile reconnects without writing another start")
 func reconcileDoesNotRecordStart() {
-    let store = OffWorkStore(defaults: isolatedRecordDefaults())
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
+    let store = AppRuntime(defaults: isolatedRecordDefaults())
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
     let monday = date(2026, 8, 24, 10)
-    store.startCountdown(at: monday)
+    store.shifts.startCountdown(at: monday)
     let afterStart = store.records.state.observations.filter { $0.kind == .countdownStarted }.count
-    _ = store.reconcileCountdownSession(at: monday.addingTimeInterval(60))
+    _ = store.shifts.reconcileCountdownSession(at: monday.addingTimeInterval(60))
     let afterReconcile = store.records.state.observations.filter { $0.kind == .countdownStarted }.count
     #expect(afterStart == 1)
     #expect(afterReconcile == 1)
@@ -97,17 +166,17 @@ func reconcileDoesNotRecordStart() {
 @MainActor
 @Test("Overnight first-seen keys the shift start day")
 func overnightObservationKeysStartDay() {
-    let store = OffWorkStore(defaults: isolatedRecordDefaults())
-    store.onboardingComplete = true
-    store.startMinutes = 22 * 60
-    store.endMinutes = 6 * 60
-    store.workdays = [5]
-    store.scheduleMode = .classic
+    let store = AppRuntime(defaults: isolatedRecordDefaults())
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.startMinutes = 22 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 6 * 60 }
+    store.preferences.applyPreferences { $0.workdays = [5] }
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
     let saturdayMorning = date(2026, 8, 29, 1)
-    store.noteTimerSurfaceVisible(at: saturdayMorning)
+    store.shifts.noteTimerSurfaceVisible(at: saturdayMorning)
     let observation = store.records.state.observations.first { $0.kind == .timerSurfaceFirstSeen }
     #expect(observation != nil)
-    #expect(OffWorkStore.dayKey(for: observation!.shiftAnchorDate) == "2026-08-28")
+    #expect(ShiftSession.dayKey(for: observation!.shiftAnchorDate) == "2026-08-28")
 }
 
 @MainActor
@@ -137,13 +206,14 @@ func erasedObservationIsNotRecreated() {
 @MainActor
 @Test("A seeded store can resolve a week of schedule days")
 func resolvedDaysUseTheSeededSnapshot() {
-    let store = OffWorkStore(defaults: isolatedRecordDefaults())
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
+    let store = AppRuntime(defaults: isolatedRecordDefaults())
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
     let from = startOf(2026, 8, 24)
     let through = startOf(2026, 8, 30)
-    let days = store.resolvedDays(from: from, through: through, now: from)
+    store.shifts.reconcileRecordSchedule(at: from)
+    let days = store.queries.resolvedDays(from: from, through: through, now: from)
     #expect(days.count == 7)
     #expect(days.filter(\.isScheduledWorkday).count == 5)
     #expect(days[0].layer == .schedule)
@@ -199,7 +269,7 @@ func scheduleReconciliationDoesNotSeedAnEmptyArchive() {
 
 @MainActor
 @Test("Coordinator export then import after erase still skips")
-func coordinatorImportHonorsErasedIDs() throws {
+func coordinatorImportHonorsErasedIDs() async throws {
     let records = RecordCoordinator.inMemory()
     let hours = ScheduleHoursConfiguration(
         startTime: "09:00",
@@ -219,16 +289,16 @@ func coordinatorImportHonorsErasedIDs() throws {
     )
     records.ensureSeeded(hours: hours, at: startOf(2026, 8, 24))
     let periodID = records.state.periods[0].id
-    let data = try records.exportJSON(exportedAt: startOf(2026, 8, 24), timeZone: TimeZone(secondsFromGMT: 0)!)
+    let data = try await records.exportJSON(exportedAt: startOf(2026, 8, 24), timeZone: TimeZone(secondsFromGMT: 0)!)
     records.erase(.careerPeriod, key: periodID.uuidString, at: startOf(2026, 8, 25))
-    let report = try records.import(data, mode: .skipErased)
+    let report = try await records.import(data, mode: .skipErased)
     #expect(report.skippedErased[.careerPeriod] == 1)
     #expect(records.state.periods.isEmpty)
 }
 
 @MainActor
 @Test("Import parks unresolved same-id conflicts for later review")
-func coordinatorImportParksUnresolvedConflicts() throws {
+func coordinatorImportParksUnresolvedConflicts() async throws {
     let records = RecordCoordinator.inMemory()
     let day = startOf(2026, 8, 24)
     records.upsertOverride(
@@ -265,7 +335,7 @@ func coordinatorImportParksUnresolvedConflicts() throws {
         timeZone: calendar.timeZone,
         calendar: calendar
     )
-    let report = try records.import(data)
+    let report = try await records.import(data)
     #expect(report.conflicts.count == 1)
     #expect(records.state.overrides[0].note == "local")
     #expect(records.state.sync.conflicts.count == 1)
@@ -278,7 +348,7 @@ func coordinatorImportParksUnresolvedConflicts() throws {
 
 @MainActor
 @Test("Resolving a conflict writes a version above both candidates before consuming it")
-func conflictResolutionBumpsAboveBothCandidates() throws {
+func conflictResolutionBumpsAboveBothCandidates() async throws {
     let records = RecordCoordinator.inMemory()
     let day = startOf(2026, 8, 24)
     let local = DayOverride(
@@ -316,9 +386,9 @@ func conflictResolutionBumpsAboveBothCandidates() throws {
     )
     var sync = records.state.sync
     sync.conflicts = [conflict]
-    #expect(records.replaceSyncState(sync))
+    #expect(await records.commitSyncState { current, _ in current.conflicts = sync.conflicts })
 
-    records.restoreConflict(conflict)
+    await records.restoreConflict(conflict)
     let resolved = try #require(records.state.overrides.first)
     #expect(resolved.kind == .confirmedAsScheduled)
     #expect(resolved.editCount == 21)
@@ -327,7 +397,7 @@ func conflictResolutionBumpsAboveBothCandidates() throws {
 
 @MainActor
 @Test("Keeping the current conflict version also writes a newer sync stamp")
-func keepCurrentConflictWritesNewVersion() throws {
+func keepCurrentConflictWritesNewVersion() async throws {
     let records = RecordCoordinator.inMemory()
     let day = startOf(2026, 8, 24)
     let local = DayOverride(
@@ -363,9 +433,9 @@ func keepCurrentConflictWritesNewVersion() throws {
     )
     var sync = records.state.sync
     sync.conflicts = [conflict]
-    #expect(records.replaceSyncState(sync))
+    #expect(await records.commitSyncState { current, _ in current.conflicts = sync.conflicts })
 
-    records.keepCurrentConflict(conflict)
+    await records.keepCurrentConflict(conflict)
     let resolved = try #require(records.state.overrides.first)
     #expect(resolved.note == "local")
     #expect(resolved.editCount == 21)
@@ -377,7 +447,7 @@ func keepCurrentConflictWritesNewVersion() throws {
 
 @MainActor
 @Test("Choosing the other observation version replaces its payload and out-ranks the old server row")
-func restoringObservationConflictReplacesSameEventAndWinsLaterFetch() throws {
+func restoringObservationConflictReplacesSameEventAndWinsLaterFetch() async throws {
     let records = RecordCoordinator.inMemory()
     let day = startOf(2026, 8, 24)
     let eventID = recordID(84)
@@ -420,9 +490,9 @@ func restoringObservationConflictReplacesSameEventAndWinsLaterFetch() throws {
     )
     var sync = records.state.sync
     sync.conflicts = [conflict]
-    #expect(records.replaceSyncState(sync))
+    #expect(await records.commitSyncState { current, _ in current.conflicts = sync.conflicts })
 
-    records.restoreConflict(conflict)
+    await records.restoreConflict(conflict)
     let resolved = try #require(records.state.observations.first)
     #expect(records.state.observations.count == 1)
     #expect(resolved.eventID == eventID)
@@ -547,7 +617,7 @@ func migrateCalendarTimeZoneKeepsDayKeys() {
 
 @MainActor
 @Test("A fetched row for a locally erased identity re-enters the erase outbox")
-func remotePayloadReassertsPermanentErase() throws {
+func remotePayloadReassertsPermanentErase() async throws {
     let records = RecordCoordinator.inMemory()
     let key = "2026-08-24"
     let day = startOf(2026, 8, 24)
@@ -555,7 +625,9 @@ func remotePayloadReassertsPermanentErase() throws {
     var sync = records.state.sync
     let rowName = RecordsSyncIdentity.recordName(type: .dayOverride, key: key)
     RecordsSyncOutbox.clearDirty(&sync, recordName: rowName)
-    records.replaceSyncState(sync)
+    await records.commitSyncState { current, _ in
+        RecordsSyncOutbox.clearDirty(&current, recordName: rowName)
+    }
     #expect(RecordsSyncOutbox.pending(records.state.sync).isEmpty)
 
     var calendar = Calendar(identifier: .gregorian)
@@ -753,7 +825,7 @@ func trulyAmbiguousRemoteEditCreatesReview() throws {
 
 @MainActor
 @Test("A failed sync-state write leaves the last durable state active")
-func syncStateWriteFailureIsTransactional() {
+func syncStateWriteFailureIsTransactional() async {
     let missingParent = FileManager.default.temporaryDirectory
         .appending(path: UUID().uuidString, directoryHint: .isDirectory)
         .appending(path: "archive.json")
@@ -763,7 +835,7 @@ func syncStateWriteFailureIsTransactional() {
     changed.accountID = "account-a"
     changed.syncEnabled = true
 
-    #expect(!records.replaceSyncState(changed))
+    #expect(await !records.commitSyncState { current, _ in current = changed })
     #expect(records.state.sync == original)
     #expect(records.persistenceError == .writeFailed)
 }
@@ -839,19 +911,19 @@ func migrateCalendarTimeZoneMovesScheduleAnchors() throws {
 
 @MainActor
 @Test("Import adopted rows enter the outbox")
-func coordinatorImportMarksAdoptedDirty() throws {
+func coordinatorImportMarksAdoptedDirty() async throws {
     let source = RecordCoordinator.inMemory()
     source.ensureSeeded(hours: sampleHours(), at: startOf(2026, 8, 24))
-    let data = try source.exportJSON(exportedAt: startOf(2026, 8, 24), timeZone: TimeZone(secondsFromGMT: 0)!)
+    let data = try await source.exportJSON(exportedAt: startOf(2026, 8, 24), timeZone: TimeZone(secondsFromGMT: 0)!)
     let target = RecordCoordinator.inMemory()
-    let report = try target.import(data)
+    let report = try await target.import(data)
     #expect(!report.adopted.isEmpty)
     #expect(!RecordsSyncOutbox.pending(target.state.sync).isEmpty)
 }
 
 @MainActor
 @Test("Restoring a conflict copy stamps a new edit and consumes the copy")
-func restoreConflictStampsAndConsumes() {
+func restoreConflictStampsAndConsumes() async {
     let records = RecordCoordinator.inMemory()
     records.updateLifeProfile(
         LifeProfile(
@@ -877,10 +949,10 @@ func restoreConflictStampsAndConsumes() {
     )
     var sync = records.state.sync
     sync.conflicts.append(copy)
-    records.replaceSyncState(sync)
+    await records.commitSyncState { current, _ in current.conflicts = sync.conflicts }
     var externalApplications = 0
     records.onExternalStateApplied = { externalApplications += 1 }
-    #expect(records.restoreConflict(copy))
+    #expect(await records.restoreConflict(copy))
     #expect(records.state.sync.conflicts.isEmpty)
     #expect(records.state.lifeProfile!.retirementAge == 65)
     #expect(records.state.lifeProfile!.editCount > localCount)
@@ -890,7 +962,7 @@ func restoreConflictStampsAndConsumes() {
 
 @MainActor
 @Test("A failed conflict write reports failure and keeps the conflict retryable")
-func conflictWriteFailureIsRetryable() throws {
+func conflictWriteFailureIsRetryable() async throws {
     let root = FileManager.default.temporaryDirectory
         .appending(path: "RecordCoordinatorTests-\(UUID().uuidString)", directoryHint: .isDirectory)
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -917,10 +989,10 @@ func conflictWriteFailureIsRetryable() throws {
     )
     var sync = records.state.sync
     sync.conflicts.append(copy)
-    #expect(records.replaceSyncState(sync))
+    #expect(await records.commitSyncState { current, _ in current.conflicts = sync.conflicts })
     try FileManager.default.removeItem(at: root)
 
-    #expect(!records.restoreConflict(copy))
+    #expect(await !records.restoreConflict(copy))
     #expect(records.persistenceError == .writeFailed)
     #expect(records.state.sync.conflicts.contains { $0.id == copy.id })
     #expect(records.state.lifeProfile?.retirementAge == 60)
@@ -929,17 +1001,17 @@ func conflictWriteFailureIsRetryable() throws {
 @MainActor
 @Test("Records list is actual start and stop days, not the scheduled year")
 func recordedWorkDaysIgnoreScheduleAndFirstSeen() {
-    let store = OffWorkStore(defaults: isolatedRecordDefaults())
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.noteTimerSurfaceVisible(at: date(2026, 8, 24, 9))
-    #expect(store.recordedWorkDays().isEmpty)
+    let store = AppRuntime(defaults: isolatedRecordDefaults())
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.shifts.noteTimerSurfaceVisible(at: date(2026, 8, 24, 9))
+    #expect(store.queries.recordedWorkDays().isEmpty)
 
-    store.startCountdown(at: date(2026, 8, 24, 9))
-    store.noteTimerSurfaceVisible(at: date(2026, 8, 25, 9))
+    store.shifts.startCountdown(at: date(2026, 8, 24, 9))
+    store.shifts.noteTimerSurfaceVisible(at: date(2026, 8, 25, 9))
 
-    let days = store.recordedWorkDays()
+    let days = store.queries.recordedWorkDays()
     #expect(days.map(\.dayKey) == ["2026-08-24"])
     #expect(days[0].firstStart != nil)
 }
@@ -947,16 +1019,16 @@ func recordedWorkDaysIgnoreScheduleAndFirstSeen() {
 @MainActor
 @Test("Early clock in and off become work records")
 func earlyClockWritesWorkRecords() {
-    let store = OffWorkStore(defaults: isolatedRecordDefaults())
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.workdays = [1, 2, 3, 4, 5]
-    store.startMinutes = 9 * 60
-    store.endMinutes = 17 * 60
-    store.clockInEarly(at: date(2026, 8, 24, 8))
-    store.clockOffEarly(at: date(2026, 8, 24, 16))
+    let store = AppRuntime(defaults: isolatedRecordDefaults())
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.workdays = [1, 2, 3, 4, 5] }
+    store.preferences.applyPreferences { $0.startMinutes = 9 * 60 }
+    store.preferences.applyPreferences { $0.endMinutes = 17 * 60 }
+    store.shifts.clockInEarly(at: date(2026, 8, 24, 8))
+    store.shifts.clockOffEarly(at: date(2026, 8, 24, 16))
 
-    let days = store.recordedWorkDays()
+    let days = store.queries.recordedWorkDays()
     #expect(days.map(\.dayKey) == ["2026-08-24"])
     #expect(days[0].observations.contains { $0.kind == .countdownStarted })
     #expect(days[0].observations.contains { $0.kind == .countdownStopped })
@@ -973,7 +1045,7 @@ func archiveBannerDistinguishesDamageFromSaveFailure() {
 
 @MainActor
 @Test("Quarantining a damaged archive keeps a .corrupt copy and unlocks writes")
-func quarantineDamagedArchiveSucceedsAndAllowsWrites() throws {
+func quarantineDamagedArchiveSucceedsAndAllowsWrites() async throws {
     let (root, fileURL) = try makeArchiveRoot()
     defer { try? FileManager.default.removeItem(at: root) }
     let damaged = Data("not-json".utf8)
@@ -981,11 +1053,11 @@ func quarantineDamagedArchiveSucceedsAndAllowsWrites() throws {
     let records = RecordCoordinator(fileURL: fileURL)
     #expect(records.archiveBanner == .damaged)
     #expect(records.blocksWrites)
-    records.deleteAllLocalData()
+    await records.deleteAllLocalData()
     #expect(try Data(contentsOf: fileURL) == damaged)
 
     let now = Date(timeIntervalSince1970: 1_777_000_000)
-    let backup = try records.quarantineCorruptedArchive(at: now)
+    let backup = try await records.quarantineCorruptedArchive(at: now)
     #expect(backup == RecordCoordinator.corruptBackupURL(for: fileURL, at: now))
     #expect(backup?.lastPathComponent.contains("corrupt-") == true)
     #expect(try Data(contentsOf: backup!) == damaged)
@@ -1000,7 +1072,7 @@ func quarantineDamagedArchiveSucceedsAndAllowsWrites() throws {
 
 @MainActor
 @Test("A failed quarantine leaves the damaged archive in place")
-func quarantineDamagedArchiveFailureKeepsOriginal() throws {
+func quarantineDamagedArchiveFailureKeepsOriginal() async throws {
     let (root, fileURL) = try makeArchiveRoot()
     defer { try? FileManager.default.removeItem(at: root) }
     let damaged = Data("not-json".utf8)
@@ -1010,8 +1082,8 @@ func quarantineDamagedArchiveFailureKeepsOriginal() throws {
     let backup = RecordCoordinator.corruptBackupURL(for: fileURL, at: now)
     try FileManager.default.createDirectory(at: backup, withIntermediateDirectories: true)
 
-    #expect(throws: RecordPersistenceError.writeFailed) {
-        try records.quarantineCorruptedArchive(at: now)
+    await #expect(throws: RecordPersistenceError.writeFailed) {
+        try await records.quarantineCorruptedArchive(at: now)
     }
     #expect(records.persistenceError == .invalidArchive)
     #expect(records.archiveBanner == .damaged)
@@ -1021,11 +1093,12 @@ func quarantineDamagedArchiveFailureKeepsOriginal() throws {
 
 @MainActor
 @Test("A save failure is not a damaged archive and cannot be quarantined")
-func writeFailedDoesNotEnterQuarantine() throws {
+func writeFailedDoesNotEnterQuarantine() async throws {
     let (root, fileURL) = try makeArchiveRoot()
     defer { try? FileManager.default.removeItem(at: root) }
     let records = RecordCoordinator(fileURL: fileURL)
     records.ensureSeeded(hours: sampleHours(), at: startOf(2026, 8, 24))
+    try await records.flush()
     #expect(records.persistenceError == nil)
     try FileManager.default.removeItem(at: fileURL)
     try FileManager.default.createDirectory(at: fileURL, withIntermediateDirectories: true)
@@ -1037,11 +1110,12 @@ func writeFailedDoesNotEnterQuarantine() throws {
         occurredAt: startOf(2026, 8, 24),
         snapshotID: records.state.snapshots[0].id
     )
+    await #expect(throws: RecordPersistenceError.writeFailed) { try await records.flush() }
     #expect(records.persistenceError == .writeFailed)
     #expect(records.archiveBanner == .saveFailed)
     #expect(!records.blocksWrites)
 
-    let backup = try records.quarantineCorruptedArchive()
+    let backup = try await records.quarantineCorruptedArchive()
     #expect(backup == nil)
     #expect(records.persistenceError == .writeFailed)
     #expect(records.archiveBanner == .saveFailed)
@@ -1053,38 +1127,38 @@ func writeFailedDoesNotEnterQuarantine() throws {
 @MainActor
 @Test("Following the schedule writes observations in the locked records time zone")
 func scheduledFollowUsesLockedRecordsTimeZone() {
-    let store = OffWorkStore(defaults: isolatedRecordDefaults())
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.recordsTimeZoneIdentifier = "Asia/Shanghai"
-    store.noteTimerSurfaceVisible(at: date(2026, 8, 24, 9))
+    let store = AppRuntime(defaults: isolatedRecordDefaults())
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "Asia/Shanghai" }
+    store.shifts.noteTimerSurfaceVisible(at: date(2026, 8, 24, 9))
     let observation = store.records.state.observations.first { $0.kind == .timerSurfaceFirstSeen }
     #expect(observation?.timeZoneIdentifier == "Asia/Shanghai")
-    #expect(store.timeZoneIdentifierForWriting() == "Asia/Shanghai")
-    #expect(store.countdownTimeZoneIdentifier == "Asia/Shanghai")
+    #expect(store.session.timeZoneIdentifierForWriting() == "Asia/Shanghai")
+    #expect(store.session.countdownTimeZoneIdentifier == "Asia/Shanghai")
 }
 
 @MainActor
 @Test("Migrating while a countdown is running keeps the session time zone")
 func migrateWhileRunningKeepsSessionTimeZone() {
-    let store = OffWorkStore(defaults: isolatedRecordDefaults())
-    store.onboardingComplete = true
-    store.scheduleMode = .classic
-    store.recordsTimeZoneIdentifier = "Asia/Shanghai"
-    store.countdownStarted = true
-    store.migrateRecordsTimeZone(
+    let store = AppRuntime(defaults: isolatedRecordDefaults())
+    store.preferences.onboardingComplete = true
+    store.preferences.applyPreferences { $0.scheduleMode = .classic }
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "Asia/Shanghai" }
+    store.session.countdownStarted = true
+    store.shifts.migrateRecordsTimeZone(
         to: TimeZone(identifier: "America/Los_Angeles")!,
         at: date(2026, 8, 24, 10)
     )
-    #expect(store.recordsTimeZoneIdentifier == "America/Los_Angeles")
-    #expect(store.sessionTimeZoneIdentifier == "Asia/Shanghai")
-    #expect(store.countdownTimeZoneIdentifier == "Asia/Shanghai")
+    #expect(store.preferences.recordsTimeZoneIdentifier == "America/Los_Angeles")
+    #expect(store.session.sessionTimeZoneIdentifier == "Asia/Shanghai")
+    #expect(store.session.countdownTimeZoneIdentifier == "Asia/Shanghai")
 }
 
 @MainActor
 @Test("Days recorded in another time zone are listed for the life view")
 func daysRecordedOutsidePeriodTimeZoneFoundation() {
-    let store = OffWorkStore(defaults: isolatedRecordDefaults())
+    let store = AppRuntime(defaults: isolatedRecordDefaults())
     let shanghai = TimeZone(identifier: "Asia/Shanghai")!
     let hours = ScheduleHoursConfiguration(
         startTime: "09:00",
@@ -1102,7 +1176,7 @@ func daysRecordedOutsidePeriodTimeZoneFoundation() {
         breakStartTime: nil,
         breakDurationMinutes: 0
     )
-    store.recordsTimeZoneIdentifier = shanghai.identifier
+    store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = shanghai.identifier }
     store.records.ensureSeeded(hours: hours, at: startOf(2026, 8, 24), timeZone: shanghai)
     let anchor = ISO8601DateFormatter().date(from: "2026-08-24T12:00:00Z")!
     store.records.recordObservation(
@@ -1113,7 +1187,7 @@ func daysRecordedOutsidePeriodTimeZoneFoundation() {
         snapshotID: UUID(),
         timeZoneIdentifier: "America/Los_Angeles"
     )
-    #expect(store.daysRecordedOutsidePeriodTimeZone() == ["2026-08-24"])
+    #expect(store.queries.daysRecordedOutsidePeriodTimeZone() == ["2026-08-24"])
 }
 
 @MainActor

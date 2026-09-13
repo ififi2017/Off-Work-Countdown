@@ -2,35 +2,36 @@ import ActivityKit
 import SwiftUI
 
 struct ScheduleSettingsView: View {
-    @Bindable var store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    @Bindable var shifts: ShiftSessionStore
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @State private var timeField: SetupTimeField?
     @State private var pendingMinutes: Int = 0
     /// Everything the user has changed and not yet saved. The page renders from
-    /// this on top of the store, so an edit is visible immediately without
+    /// this on top of the shifts, so an edit is visible immediately without
     /// having decided yet whether today counts.
     @State private var showSavePrompt = false
     @State private var savePromptFeedback = 0
     @State private var saveCommitFeedback = 0
 
     private var draft: ScheduleFieldChange {
-        get { store.scheduleSettingsDraft }
-        nonmutating set { store.scheduleSettingsDraft = newValue }
+        get { scene.scheduleSettingsDraft }
+        nonmutating set { scene.scheduleSettingsDraft = newValue }
     }
 
     var body: some View {
         OWCContentSizedScrollView {
             VStack(spacing: 0) {
-                OWCSectionHeader(title: store.t("scheduleHours"))
+                OWCSectionHeader(title: shifts.text.t("scheduleHours"))
                     .padding(.top, 8)
                 hoursCard
                     .padding(.horizontal, OWCDesign.pageInset)
 
                 OWCGroupCard {
-                    modeRow(.classic, title: store.t("scheduleClassic"), subtitle: store.t("scheduleClassicDescription"))
-                    modeRow(.alternating, title: store.t("scheduleAlternating"), subtitle: store.t("scheduleAlternatingDescription"))
-                    modeRow(.rotation, title: store.t("scheduleRotation"), subtitle: store.t("scheduleRotationDescription"))
-                    modeRow(.off, title: store.t("scheduleOff"), subtitle: store.t("scheduleOffDescription"), isLast: true)
+                    modeRow(.classic, title: shifts.text.t("scheduleClassic"), subtitle: shifts.text.t("scheduleClassicDescription"))
+                    modeRow(.alternating, title: shifts.text.t("scheduleAlternating"), subtitle: shifts.text.t("scheduleAlternatingDescription"))
+                    modeRow(.rotation, title: shifts.text.t("scheduleRotation"), subtitle: shifts.text.t("scheduleRotationDescription"))
+                    modeRow(.off, title: shifts.text.t("scheduleOff"), subtitle: shifts.text.t("scheduleOffDescription"), isLast: true)
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 22)
@@ -39,7 +40,7 @@ struct ScheduleSettingsView: View {
                 scheduleDetails
                     .padding(.top, 22)
 
-                Text(draftMode == .off ? store.t("scheduleOffSummaryNote") : store.t("scheduleSharedRulesNote"))
+                Text(draftMode == .off ? shifts.text.t("scheduleOffSummaryNote") : shifts.text.t("scheduleSharedRulesNote"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineSpacing(2)
@@ -50,26 +51,27 @@ struct ScheduleSettingsView: View {
             .padding(.bottom, 24)
         }
         .background(OWCDesign.page)
-        .navigationTitle(store.t("workSchedule"))
+        .navigationTitle(shifts.text.t("workSchedule"))
         .navigationBarTitleDisplayMode(.large)
         .owcDetailBack(
-            title: store.t("settings"),
-            pageTitle: store.t("workSchedule"),
+            title: shifts.text.t("settings"),
+            pageTitle: shifts.text.t("workSchedule"),
             hasUnsavedChanges: !draft.isEmpty,
-            unsavedChangesTitle: store.t("unsavedChangesTitle"),
-            keepEditingTitle: store.t("keepEditing"),
-            discardChangesTitle: store.t("discardChanges"),
+            unsavedChangesTitle: shifts.text.t("unsavedChangesTitle"),
+            keepEditingTitle: shifts.text.t("keepEditing"),
+            discardChangesTitle: shifts.text.t("discardChanges"),
             onDiscardChanges: { draft = ScheduleFieldChange() }
         ) {
-            ScheduleSaveButton(store: store, enabled: !draft.isEmpty, action: requestSave)
+            ScheduleSaveButton(text: shifts.text, enabled: !draft.isEmpty, action: requestSave)
         }
         .sensoryFeedback(.selection, trigger: draftMode)
         .sensoryFeedback(.warning, trigger: savePromptFeedback)
         .sensoryFeedback(.success, trigger: saveCommitFeedback)
         .sheet(item: $timeField) { field in
             OWCSetupTimePickerSheet(
-                store: store,
-                title: store.t(field == .start ? "startTime" : "endTime"),
+                session: shifts.session,
+                text: shifts.text,
+                title: shifts.text.t(field == .start ? "startTime" : "endTime"),
                 minutes: $pendingMinutes
             )
             .presentationDetents([.medium])
@@ -78,14 +80,14 @@ struct ScheduleSettingsView: View {
                 else { edit { $0.endMinutes = pendingMinutes } }
             }
         }
-        .alert(store.t("applyScheduleTitle"), isPresented: $showSavePrompt) {
-            Button(store.t("applyFromNextShift")) { commit(.nextShiftOnly) }
-            Button(store.t("applyToToday")) { commit(.applyToToday) }
+        .alert(shifts.text.t("applyScheduleTitle"), isPresented: $showSavePrompt) {
+            Button(shifts.text.t("applyFromNextShift")) { commit(.nextShiftOnly) }
+            Button(shifts.text.t("applyToToday")) { commit(.applyToToday) }
             // Cancel keeps the edits and the page. The user asked to save and
             // then thought better of the timing, not of the change.
-            Button(store.t("cancelAction"), role: .cancel) {}
+            Button(shifts.text.t("cancelAction"), role: .cancel) {}
         } message: {
-            Text(store.t("applyScheduleMessage"))
+            Text(shifts.text.t("applyScheduleMessage"))
         }
     }
 
@@ -95,8 +97,8 @@ struct ScheduleSettingsView: View {
                 pendingMinutes = draftStart
                 timeField = .start
             } label: {
-                OWCRow(icon: "clock", title: store.t("startTime")) {
-                    Text(store.timeString(draftStart))
+                OWCRow(icon: "clock", title: shifts.text.t("startTime")) {
+                    Text(shifts.session.timeString(draftStart))
                         .font(.body.monospacedDigit())
                         .foregroundStyle(OWCDesign.secondary)
                         .environment(\.layoutDirection, .leftToRight)
@@ -107,8 +109,8 @@ struct ScheduleSettingsView: View {
                 pendingMinutes = draftEnd
                 timeField = .end
             } label: {
-                OWCRow(icon: "clock", title: store.t("endTime"), isLast: true) {
-                    Text(store.timeString(draftEnd))
+                OWCRow(icon: "clock", title: shifts.text.t("endTime"), isLast: true) {
+                    Text(shifts.session.timeString(draftEnd))
                         .font(.body.monospacedDigit())
                         .foregroundStyle(OWCDesign.secondary)
                         .environment(\.layoutDirection, .leftToRight)
@@ -120,13 +122,13 @@ struct ScheduleSettingsView: View {
 
     // MARK: - Draft
 
-    private var draftStart: Int { draft.startMinutes ?? store.startMinutes }
-    private var draftEnd: Int { draft.endMinutes ?? store.endMinutes }
-    private var draftWorkdays: Set<Int> { draft.workdays ?? store.workdays }
-    private var draftMode: WorkScheduleMode { draft.scheduleMode ?? store.scheduleMode }
-    private var draftRotationWorkDays: Int { draft.rotationWorkDays ?? store.rotationWorkDays }
-    private var draftRotationRestDays: Int { draft.rotationRestDays ?? store.rotationRestDays }
-    private var draftRotationCycleDay: Int { draft.rotationCycleDay ?? store.rotationCycleDay }
+    private var draftStart: Int { draft.startMinutes ?? shifts.preferences.startMinutes }
+    private var draftEnd: Int { draft.endMinutes ?? shifts.preferences.endMinutes }
+    private var draftWorkdays: Set<Int> { draft.workdays ?? shifts.preferences.workdays }
+    private var draftMode: WorkScheduleMode { draft.scheduleMode ?? shifts.preferences.scheduleMode }
+    private var draftRotationWorkDays: Int { draft.rotationWorkDays ?? shifts.preferences.rotationWorkDays }
+    private var draftRotationRestDays: Int { draft.rotationRestDays ?? shifts.preferences.rotationRestDays }
+    private var draftRotationCycleDay: Int { draft.rotationCycleDay ?? shifts.preferences.rotationCycleDay }
     private var draftRotationCycleLength: Int {
         max(2, draftRotationWorkDays + draftRotationRestDays)
     }
@@ -134,7 +136,7 @@ struct ScheduleSettingsView: View {
     private func edit(_ change: (inout ScheduleFieldChange) -> Void) {
         var next = draft
         change(&next)
-        draft = next.settled(against: store)
+        draft = next.settled(against: shifts.preferences)
     }
 
     /// A control's value, read through the draft and written back into it.
@@ -149,14 +151,15 @@ struct ScheduleSettingsView: View {
     }
 
     private func commit(_ decision: ScheduleChangeDecision) {
-        store.applyScheduleChange(draft, decision: decision)
-        draft = ScheduleFieldChange()
-        saveCommitFeedback += 1
+        let command = scene.commitScheduleDraft(.schedule, decision: decision, using: shifts)
+        Task {
+            if await command.value { saveCommitFeedback += 1 }
+        }
     }
 
     private func requestSave() {
         guard !draft.isEmpty else { return }
-        if store.shouldPromptApplyingToToday(draft, scope: .schedule) {
+        if shifts.session.shouldPromptApplyingToToday(draft, scope: .schedule) {
             savePromptFeedback += 1
             showSavePrompt = true
         } else {
@@ -170,26 +173,26 @@ struct ScheduleSettingsView: View {
         switch draftMode {
         case .classic:
             VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("workdaysLabel"))
+                OWCSectionHeader(title: shifts.text.t("workdaysLabel"))
                 weekdayGrid
             }
             .padding(.horizontal, OWCDesign.pageInset)
         case .alternating:
             VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("alternatingCurrentWeek"))
+                OWCSectionHeader(title: shifts.text.t("alternatingCurrentWeek"))
                 OWCGroupCard {
                     VStack(alignment: .leading, spacing: 9) {
-                        Text(store.t("alternatingCurrentWeek"))
+                        Text(shifts.text.t("alternatingCurrentWeek"))
                             .font(.subheadline.weight(.semibold))
                         Picker(
-                            store.t("alternatingCurrentWeek"),
-                            selection: binding(\.alternatingWeekType, committed: store.alternatingWeekType)
+                            shifts.text.t("alternatingCurrentWeek"),
+                            selection: binding(\.alternatingWeekType, committed: shifts.preferences.alternatingWeekType)
                         ) {
-                            Text(store.t("singleRestWeek")).tag(AlternatingWeekType.single)
-                            Text(store.t("doubleRestWeek")).tag(AlternatingWeekType.double)
+                            Text(shifts.text.t("singleRestWeek")).tag(AlternatingWeekType.single)
+                            Text(shifts.text.t("doubleRestWeek")).tag(AlternatingWeekType.double)
                         }
                         .pickerStyle(.segmented)
-                        Text(store.t("alternatingCurrentWeekDescription"))
+                        Text(shifts.text.t("alternatingCurrentWeekDescription"))
                             .font(.footnote)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineSpacing(2)
@@ -197,17 +200,17 @@ struct ScheduleSettingsView: View {
                     .padding(12)
                     .owcPlainDivider()
                     VStack(alignment: .leading, spacing: 9) {
-                        Text(store.t("singleWeekWorkday"))
+                        Text(shifts.text.t("singleWeekWorkday"))
                             .font(.subheadline.weight(.semibold))
                         Picker(
-                            store.t("singleWeekWorkday"),
-                            selection: binding(\.alternatingWeekendWorkday, committed: store.alternatingWeekendWorkday)
+                            shifts.text.t("singleWeekWorkday"),
+                            selection: binding(\.alternatingWeekendWorkday, committed: shifts.preferences.alternatingWeekendWorkday)
                         ) {
-                            Text(store.t("workOnWeekday", values: ["day": store.weekdayLabels()[5]])).tag(6)
-                            Text(store.t("workOnWeekday", values: ["day": store.weekdayLabels()[6]])).tag(0)
+                            Text(shifts.text.t("workOnWeekday", values: ["day": shifts.text.weekdayLabels()[5]])).tag(6)
+                            Text(shifts.text.t("workOnWeekday", values: ["day": shifts.text.weekdayLabels()[6]])).tag(0)
                         }
                         .pickerStyle(.segmented)
-                        Text(store.t("singleWeekWorkdayDescription"))
+                        Text(shifts.text.t("singleWeekWorkdayDescription"))
                             .font(.footnote)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineSpacing(2)
@@ -222,21 +225,21 @@ struct ScheduleSettingsView: View {
             // edit the user had not agreed to yet.
         case .rotation:
             VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("rotationPattern"))
+                OWCSectionHeader(title: shifts.text.t("rotationPattern"))
                 OWCGroupCard {
                     // Stepper puts its -/+ at the trailing edge of its own
                     // bounds, outside OWCRow's inset, so it needs the inset back
                     // or it sits flush against the card edge.
-                    Stepper(value: binding(\.rotationWorkDays, committed: store.rotationWorkDays), in: 1...30) {
-                        OWCRow(title: store.t("rotationWorkDays")) {
+                    Stepper(value: binding(\.rotationWorkDays, committed: shifts.preferences.rotationWorkDays), in: 1...30) {
+                        OWCRow(title: shifts.text.t("rotationWorkDays")) {
                             Text("\(draftRotationWorkDays)").monospacedDigit().foregroundStyle(OWCDesign.secondary)
                         }
                     }
                     .padding(.trailing, 16)
                     .buttonStyle(OWCRowButtonStyle())
                     .owcPlainDivider()
-                    Stepper(value: binding(\.rotationRestDays, committed: store.rotationRestDays), in: 1...30) {
-                        OWCRow(title: store.t("rotationRestDays")) {
+                    Stepper(value: binding(\.rotationRestDays, committed: shifts.preferences.rotationRestDays), in: 1...30) {
+                        OWCRow(title: shifts.text.t("rotationRestDays")) {
                             Text("\(draftRotationRestDays)").monospacedDigit().foregroundStyle(OWCDesign.secondary)
                         }
                     }
@@ -254,7 +257,7 @@ struct ScheduleSettingsView: View {
                                 edit { $0.rotationCycleDay = day }
                             } label: {
                                 Label(
-                                    store.t(
+                                    shifts.text.t(
                                         day <= draftRotationWorkDays ? "rotationWorkdayOption" : "rotationRestdayOption",
                                         values: ["day": "\(day)"]
                                     ),
@@ -265,7 +268,7 @@ struct ScheduleSettingsView: View {
                     } label: {
                         OWCRow(
                             icon: "repeat",
-                            title: store.t("rotationStartDay", values: ["day": "\(draftRotationCycleDay)"]),
+                            title: shifts.text.t("rotationStartDay", values: ["day": "\(draftRotationCycleDay)"]),
                             isLast: true
                         ) {
                             Image(systemName: "chevron.up.chevron.down")
@@ -279,7 +282,7 @@ struct ScheduleSettingsView: View {
             .padding(.horizontal, OWCDesign.pageInset)
         case .off:
             OWCGroupCard {
-                OWCRow(icon: "calendar.badge.minus", title: store.t("scheduleOffManualStart"), isLast: true) {
+                OWCRow(icon: "calendar.badge.minus", title: shifts.text.t("scheduleOffManualStart"), isLast: true) {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(OWCDesign.accent)
                 }
             }
@@ -289,37 +292,18 @@ struct ScheduleSettingsView: View {
 
     private var weekdayGrid: some View {
         HStack(spacing: 6) {
-            ForEach(Array(zip([1, 2, 3, 4, 5, 6, 0], store.weekdayLabels())), id: \.0) { day, label in
+            ForEach(Array(zip([1, 2, 3, 4, 5, 6, 0], shifts.text.weekdayLabels())), id: \.0) { day, label in
                 let selected = draftWorkdays.contains(day)
                 let locked = selected && draftWorkdays.count == 1
-                Button {
-                    if locked { return }
+                OWCWeekdayButton(
+                    label: label, selected: selected, locked: locked,
+                    differentiateWithoutColor: differentiateWithoutColor,
+                    lockedHint: shifts.text.t("keepAtLeastOneWorkday")
+                ) {
                     var next = draftWorkdays
                     if selected { next.remove(day) } else { next.insert(day) }
                     edit { $0.workdays = next }
-                } label: {
-                    ZStack(alignment: .topTrailing) {
-                        Text(label)
-                            .font(.footnote.weight(selected ? .semibold : .medium))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.62)
-                            .foregroundStyle(selected ? Color(uiColor: .systemBackground) : OWCDesign.secondary)
-                            .frame(maxWidth: .infinity, minHeight: 46)
-
-                        if differentiateWithoutColor, selected {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.caption2)
-                                .foregroundStyle(Color(uiColor: .systemBackground))
-                                .padding(4)
-                        }
-                    }
-                    .background(selected ? OWCDesign.accent : OWCDesign.control)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .opacity(locked ? 0.55 : 1)
                 }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(selected ? .isSelected : [])
-                .accessibilityHint(locked ? store.t("keepAtLeastOneWorkday") : "")
             }
         }
         .padding(12)
@@ -346,10 +330,11 @@ struct ScheduleSettingsView: View {
 }
 
 struct SalaryDesignView: View {
-    @Bindable var store: OffWorkStore
+    @Bindable var shifts: ShiftSessionStore
     private enum Field { case amount, bonus }
     @FocusState private var focusedField: Field?
-    @State private var amountText = ""
+    @State private var amountDraft = SettingsFieldDraft("")
+    @State private var bonusDraft = SettingsFieldDraft(0.0)
     /// Salary is the one thing in here worth shoulder-surfing, so the page does
     /// not render it until the device owner has confirmed it is them. Devices
     /// with no passcode pass straight through — see `BiometricGate`.
@@ -417,17 +402,17 @@ struct SalaryDesignView: View {
             Image(systemName: "lock.fill")
                 .font(.largeTitle)
                 .foregroundStyle(OWCDesign.secondary)
-            Text(store.t("salaryLocked"))
+            Text(shifts.text.t("salaryLocked"))
                 .font(.title3.weight(.semibold))
                 .padding(.top, 16)
-            Text(store.t("unlockSalaryReason"))
+            Text(shifts.text.t("unlockSalaryReason"))
                 .font(.subheadline)
                 .foregroundStyle(OWCDesign.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.top, 6)
             Spacer()
 
-            Button(store.t("unlockSalary")) {
+            Button(shifts.text.t("unlockSalary")) {
                 Task { await unlock() }
             }
             .buttonStyle(OWCPrimaryButtonStyle())
@@ -438,7 +423,7 @@ struct SalaryDesignView: View {
             // hint that Face ID could be switched back on, and nothing in the
             // app could ever bring the prompt back.
             if let obstacle = biometryStatus.obstacle {
-                Link(destination: OWCSystemSettings.applicationURL) {
+                Link(destination: BiometricGate.applicationSettingsURL) {
                     HStack(spacing: 5) {
                         // Names the app, because `app-settings:` cannot be
                         // trusted to land on its page: since iOS 18 reorganised
@@ -463,7 +448,7 @@ struct SalaryDesignView: View {
         .padding(.horizontal, OWCDesign.contentInset)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(OWCDesign.page)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("salarySettings"))
+        .owcDetailBack(title: shifts.text.t("settings"), pageTitle: shifts.text.t("salarySettings"))
     }
 
     /// Says which of the three obstacles it is, not just that there is one.
@@ -476,11 +461,11 @@ struct SalaryDesignView: View {
     /// once. Only the third is about permission, and only Face ID can reach it,
     /// because it is the only one that asks.
     private func hintText(for obstacle: BiometricGate.Obstacle) -> String {
-        let biometry = store.biometryName(biometryStatus.biometry)
+        let biometry = shifts.text.biometryName(biometryStatus.biometry)
         return switch obstacle {
-        case .notEnrolled: store.t("biometricsNotEnrolledHint", values: ["biometry": biometry])
-        case .lockedOut: store.t("biometricsLockoutHint", values: ["biometry": biometry])
-        case .notPermitted: store.t("biometricsUnavailableHint", values: ["app": OWCBrand.shortName])
+        case .notEnrolled: shifts.text.t("biometricsNotEnrolledHint", values: ["biometry": biometry])
+        case .lockedOut: shifts.text.t("biometricsLockoutHint", values: ["biometry": biometry])
+        case .notPermitted: shifts.text.t("biometricsUnavailableHint", values: ["app": OWCBrand.shortName])
         }
     }
 
@@ -488,7 +473,7 @@ struct SalaryDesignView: View {
         guard !unlocked else { return }
         biometryStatus = BiometricGate.status()
         let generation = lockGeneration
-        let confirmed = await BiometricGate.confirmOwner(reason: store.t("unlockSalaryReason"))
+        let confirmed = await BiometricGate.confirmOwner(reason: shifts.text.t("unlockSalaryReason"))
         // Anything that voided this attempt while it was suspended wins: the
         // app went to the background with the prompt up, so the result can no
         // longer be said to belong to whoever is holding the phone now.
@@ -509,18 +494,18 @@ struct SalaryDesignView: View {
         // snapshot crosses the JavaScriptCore bridge, so take it once and
         // derive every salary value from that same result instead of invoking
         // the rules separately for each row.
-        let preview = salaryPreview(from: store.snapshot())
+        let preview = salaryPreview(from: shifts.session.snapshot())
 
         return OWCContentSizedScrollView {
             VStack(spacing: 0) {
             OWCGroupCard {
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(store.t("enableSalary")).font(.body)
-                        Text(store.t("enableSalaryDescription")).font(.footnote).foregroundStyle(OWCDesign.secondary)
+                        Text(shifts.text.t("enableSalary")).font(.body)
+                        Text(shifts.text.t("enableSalaryDescription")).font(.footnote).foregroundStyle(OWCDesign.secondary)
                     }
                     Spacer()
-                    Toggle(store.t("enableSalary"), isOn: $store.salaryEnabled).labelsHidden()
+                    Toggle(shifts.text.t("enableSalary"), isOn: shifts.preferences.preferenceBinding(\.salaryEnabled)).labelsHidden()
                 }
                 .padding(.horizontal, 16)
                 .frame(minHeight: 64)
@@ -528,10 +513,10 @@ struct SalaryDesignView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 22)
 
-            if store.salaryEnabled {
-            Picker(store.t("salaryType"), selection: $store.salaryType) {
-                Text(store.t("monthly")).tag(SalaryType.monthly)
-                Text(store.t("daily")).tag(SalaryType.daily)
+            if shifts.preferences.salaryEnabled {
+            Picker(shifts.text.t("salaryType"), selection: shifts.preferences.preferenceBinding(\.salaryType)) {
+                Text(shifts.text.t("monthly")).tag(SalaryType.monthly)
+                Text(shifts.text.t("daily")).tag(SalaryType.daily)
             }
             .pickerStyle(.segmented)
             .frame(height: 44)
@@ -540,27 +525,27 @@ struct SalaryDesignView: View {
 
             OWCGroupCard {
                 HStack {
-                    Text(store.t("amount"))
+                    Text(shifts.text.t("amount"))
                         .font(.body)
                     Spacer()
-                    if store.hideEarnings {
+                    if shifts.preferences.hideEarnings {
                         Text("••••")
                         // This page has already authenticated the owner. A
                         // second prompt resigns active and re-locks the page,
                         // while the generic eye only restores hideEarnings.
                         // Match the visibility toggle inside this same gate.
-                        Button { store.hideEarnings = false } label: {
+                        Button { shifts.preferences.hideEarnings = false } label: {
                             Image(systemName: "eye")
                         }
-                        .accessibilityLabel(store.t("unlockSalary"))
+                        .accessibilityLabel(shifts.text.t("unlockSalary"))
                     } else {
                         OWCNumberField(
                             placeholder: "0",
-                            text: $amountText,
+                            text: $amountDraft.value,
                             decimal: true,
                             maxDigits: 9,
                             emphasized: true,
-                            onCommit: commitAmount
+                            onCommit: commitSalaryFields
                         )
                         .focused($focusedField, equals: .amount)
                     }
@@ -569,18 +554,18 @@ struct SalaryDesignView: View {
                 .frame(height: 56)
                 .owcPlainDivider()
 
-                if store.salaryType == .monthly {
+                if shifts.preferences.salaryType == .monthly {
                     Menu {
                         ForEach(15...31, id: \.self) { value in
-                            Button("\(value)") { store.monthlyWorkingDays = Double(value) }
+                            Button("\(value)") { shifts.preferences.applyPreferences { $0.monthlyWorkingDays = Double(value) } }
                         }
                     } label: {
                         HStack {
-                            Text(store.t("monthlyWorkingDays"))
+                            Text(shifts.text.t("monthlyWorkingDays"))
                                 .font(.body)
                                 .foregroundStyle(OWCDesign.primary)
                             Spacer()
-                            Text(Int(store.monthlyWorkingDays).formatted())
+                            Text(Int(shifts.preferences.monthlyWorkingDays).formatted())
                                 .font(.body.monospacedDigit())
                                 .foregroundStyle(OWCDesign.secondary)
                             Image(systemName: "chevron.right")
@@ -596,21 +581,21 @@ struct SalaryDesignView: View {
                 }
 
                 HStack {
-                    Text(store.t("annualBonus"))
+                    Text(shifts.text.t("annualBonus"))
                         .font(.body)
                     Spacer()
-                    Toggle(store.t("annualBonus"), isOn: $store.annualBonusEnabled)
+                    Toggle(shifts.text.t("annualBonus"), isOn: shifts.preferences.preferenceBinding(\.annualBonusEnabled))
                         .labelsHidden()
                 }
                 .padding(.horizontal, 16)
                 .frame(height: 56)
                 .owcPlainDivider()
 
-                if store.annualBonusEnabled {
+                if shifts.preferences.annualBonusEnabled {
                     HStack {
-                        Text(store.t("annualBonusMonths")).font(.body)
+                        Text(shifts.text.t("annualBonusMonths")).font(.body)
                         Spacer()
-                        TextField("0", value: $store.annualBonusMonths, format: .number.precision(.fractionLength(0...2)))
+                        TextField("0", value: $bonusDraft.value, format: .number.precision(.fractionLength(0...2)))
                             .font(.body.weight(.semibold).monospacedDigit())
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
@@ -623,10 +608,10 @@ struct SalaryDesignView: View {
                 }
 
                 HStack {
-                    Text(store.t("hideSalary"))
+                    Text(shifts.text.t("hideSalary"))
                         .font(.body)
                     Spacer()
-                    Toggle(store.t("hideSalary"), isOn: $store.hideEarnings)
+                    Toggle(shifts.text.t("hideSalary"), isOn: Binding(get: { shifts.preferences.hideEarnings }, set: { shifts.preferences.hideEarnings = $0 }))
                         .labelsHidden()
                 }
                 .padding(.horizontal, 16)
@@ -635,13 +620,13 @@ struct SalaryDesignView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 22)
 
-            detailFooter(store.t("salaryPrivacyNote"))
+            detailFooter(shifts.text.t("salaryPrivacyNote"))
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(store.t("moneyEarned"))
+                Text(shifts.text.t("moneyEarned"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
-                Text(store.moneyText(preview.earnedNow))
+                Text(shifts.text.moneyText(preview.earnedNow))
                     .font(.largeTitle.bold().monospacedDigit())
                     .tracking(-0.5)
             }
@@ -653,15 +638,15 @@ struct SalaryDesignView: View {
             .padding(.top, 26)
 
             VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("derivedFromThis"))
+                OWCSectionHeader(title: shifts.text.t("derivedFromThis"))
                 OWCGroupCard {
-                    OWCRow(title: store.t("perWorkday")) {
-                        Text(store.moneyText(preview.dailySalary))
+                    OWCRow(title: shifts.text.t("perWorkday")) {
+                        Text(shifts.text.moneyText(preview.dailySalary))
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
-                    OWCRow(title: store.t("perEffectiveHour"), isLast: true) {
-                        Text(store.moneyText(preview.hourlySalary))
+                    OWCRow(title: shifts.text.t("perEffectiveHour"), isLast: true) {
+                        Text(shifts.text.moneyText(preview.hourlySalary))
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -677,26 +662,33 @@ struct SalaryDesignView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .background(OWCDesign.page)
-        .navigationTitle(store.t("salarySettings"))
+        .navigationTitle(shifts.text.t("salarySettings"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar(.visible, for: .navigationBar)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("salarySettings"))
+        .owcDetailBack(title: shifts.text.t("settings"), pageTitle: shifts.text.t("salarySettings"))
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button(store.t("done")) {
-                    store.annualBonusMonths = max(0, store.annualBonusMonths)
-                    commitAmount()
+                Button(shifts.text.t("done")) {
+                    commitSalaryFields()
                     focusedField = nil
                 }
             }
         }
-        .onAppear { amountText = store.salaryAmount }
-        .onDisappear { commitAmount() }
-        .sensoryFeedback(.selection, trigger: store.salaryType)
-        .sensoryFeedback(.selection, trigger: store.salaryEnabled)
-        .sensoryFeedback(.selection, trigger: store.annualBonusEnabled)
-        .sensoryFeedback(.selection, trigger: store.hideEarnings)
+        .onAppear {
+            amountDraft.receive(shifts.preferences.salaryAmount)
+            bonusDraft.receive(shifts.preferences.annualBonusMonths)
+        }
+        .onChange(of: shifts.preferences.salaryAmount) { _, amount in amountDraft.receive(amount) }
+        .onChange(of: shifts.preferences.annualBonusMonths) { _, months in bonusDraft.receive(months) }
+        .onChange(of: focusedField) { old, _ in
+            if old != nil { commitSalaryFields() }
+        }
+        .onDisappear { commitSalaryFields() }
+        .sensoryFeedback(.selection, trigger: shifts.preferences.salaryType)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.salaryEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.annualBonusEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.hideEarnings)
     }
 
     private func salaryPreview(
@@ -721,14 +713,39 @@ struct SalaryDesignView: View {
             nil
         }
         let effectiveTimeNote = snapshot.map {
-            "\(store.formatDuration($0.plannedDurationMs, includeSeconds: false)) · \(store.t("lunchPauseNoteNoSalary"))"
-        } ?? store.t("lunchPauseNoteNoSalary")
+            "\(shifts.text.formatDuration($0.plannedDurationMs, includeSeconds: false)) · \(shifts.text.t("lunchPauseNoteNoSalary"))"
+        } ?? shifts.text.t("lunchPauseNoteNoSalary")
         return (dailySalary, earnedNow, hourlySalary, effectiveTimeNote)
     }
 
-    private func commitAmount() {
-        let trimmed = amountText.trimmingCharacters(in: .whitespaces)
-        if store.salaryAmount != trimmed { store.salaryAmount = trimmed }
+    private func commitSalaryFields() {
+        let amount = amountDraft.hasChanges
+            ? amountDraft.value.trimmingCharacters(in: .whitespaces) : nil
+        let months = bonusDraft.hasChanges ? max(0, bonusDraft.value) : nil
+        guard amount != nil || months != nil else { return }
+        let amountGeneration = amount.map { _ in amountDraft.editGeneration }
+        let bonusGeneration = months.map { _ in bonusDraft.editGeneration }
+        let command = shifts.preferences.applyPreferences {
+            if let amount { $0.salaryAmount = amount }
+            if let months { $0.annualBonusMonths = months }
+        }
+        if command.immediateResult == true {
+            acceptSalaryFields(amountGeneration: amountGeneration, bonusGeneration: bonusGeneration)
+        } else if command.immediateResult == nil {
+            Task {
+                guard await command.value else { return }
+                acceptSalaryFields(amountGeneration: amountGeneration, bonusGeneration: bonusGeneration)
+            }
+        }
+    }
+
+    private func acceptSalaryFields(amountGeneration: UInt64?, bonusGeneration: UInt64?) {
+        if let amountGeneration {
+            amountDraft.accept(shifts.preferences.salaryAmount, ifUnchangedSince: amountGeneration)
+        }
+        if let bonusGeneration {
+            bonusDraft.accept(shifts.preferences.annualBonusMonths, ifUnchangedSince: bonusGeneration)
+        }
     }
 
     private func detailFooter(_ text: String) -> some View {
@@ -743,7 +760,8 @@ struct SalaryDesignView: View {
 }
 
 struct NotificationDesignView: View {
-    @Bindable var store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    @Bindable var shifts: ShiftSessionStore
     @Environment(NotificationService.self) private var notifications
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -773,23 +791,23 @@ struct NotificationDesignView: View {
             guard phase == .active else { return }
             activitiesEnabled = ActivityAuthorizationInfo().areActivitiesEnabled
         }
-        .navigationTitle(store.t("offWorkReminder"))
+        .navigationTitle(shifts.text.t("offWorkReminder"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar(.visible, for: .navigationBar)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("offWorkReminder"))
+        .owcDetailBack(title: shifts.text.t("settings"), pageTitle: shifts.text.t("offWorkReminder"))
         .task { await notifications.refresh() }
-        .sensoryFeedback(.selection, trigger: store.notificationMode)
-        .sensoryFeedback(.selection, trigger: store.liveActivityEnabled)
-        .sensoryFeedback(.selection, trigger: store.liveActivityLeadMinutes)
-        .sensoryFeedback(.selection, trigger: store.cycleEndSummaryNotificationEnabled)
-        .onChange(of: store.cycleEndSummaryNotificationEnabled) { _, enabled in
+        .sensoryFeedback(.selection, trigger: shifts.preferences.notificationMode)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.liveActivityEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.liveActivityLeadMinutes)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.cycleEndSummaryNotificationEnabled)
+        .onChange(of: shifts.preferences.cycleEndSummaryNotificationEnabled) { _, enabled in
             guard enabled, notifications.status == .notDetermined else { return }
             Task { @MainActor in
                 let granted = await notifications.request()
                 if granted {
-                    await notifications.reschedule(store: store)
+                    await notifications.reschedule(shifts: shifts)
                 } else {
-                    store.cycleEndSummaryNotificationEnabled = false
+                    shifts.preferences.applyPreferences { $0.cycleEndSummaryNotificationEnabled = false }
                 }
             }
         }
@@ -798,9 +816,9 @@ struct NotificationDesignView: View {
     private var settingsContent: some View {
         VStack(spacing: 0) {
             OWCGroupCard {
-                modeRow(.off, title: store.t("notificationModeOff"))
-                modeRow(.simple, title: store.t("notificationModeSimple"))
-                modeRow(.milestones, title: store.t("notificationModeMilestones"), isLast: true)
+                modeRow(.off, title: shifts.text.t("notificationModeOff"))
+                modeRow(.simple, title: shifts.text.t("notificationModeSimple"))
+                modeRow(.milestones, title: shifts.text.t("notificationModeMilestones"), isLast: true)
             }
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 26)
@@ -809,35 +827,39 @@ struct NotificationDesignView: View {
 
             cycleEndSummarySection
 
-            detailFooter(store.t("cycleEndSummaryNotificationNote"))
-            detailFooter(store.t("liveActivityScheduleNote"))
+            detailFooter(shifts.text.t("cycleEndSummaryNotificationNote"))
+            detailFooter(shifts.text.t("liveActivityScheduleNote"))
 
-            detailFooter(store.t("notificationPrivacyNote"))
+            detailFooter(shifts.text.t("notificationPrivacyNote"))
             Spacer(minLength: 8)
         }
     }
 
     private var cycleEndSummarySection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            OWCSectionHeader(title: store.t("cycleEndSummaryNotificationTitle"))
+            OWCSectionHeader(title: shifts.text.t("cycleEndSummaryNotificationTitle"))
             OWCGroupCard {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(store.t("cycleEndSummaryNotificationTitle"))
+                        Text(shifts.text.t("cycleEndSummaryNotificationTitle"))
                             .font(.body)
-                        if !store.plus.isAuthorized {
-                            Text(store.t("plusStatusSubscribed"))
+                        if !shifts.plus.isAuthorized {
+                            Text(shifts.text.t("plusStatusSubscribed"))
                                 .font(.caption2.bold())
                                 .foregroundStyle(OWCDesign.accent)
                         }
                     }
                     Spacer()
                     Toggle(
-                        store.t("cycleEndSummaryNotificationTitle"),
+                        shifts.text.t("cycleEndSummaryNotificationTitle"),
                         isOn: Binding(
-                            get: { store.cycleEndSummaryNotificationsAreActive },
+                            get: { shifts.cycleEndSummaryNotificationsAreActive },
                             set: { enabled in
-                                store.setCycleEndSummaryNotifications(enabled)
+                                scene.setCycleEndSummaryNotifications(
+                                    enabled,
+                                    preferences: shifts.preferences,
+                                    plus: shifts.plus
+                                )
                             }
                         )
                     )
@@ -862,22 +884,22 @@ struct NotificationDesignView: View {
     /// same page told them, correctly, that Live Activities still worked.
     private var liveActivitySection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            OWCSectionHeader(title: store.t("liveActivity"))
+            OWCSectionHeader(title: shifts.text.t("liveActivity"))
             OWCGroupCard {
                 HStack {
-                    Text(store.t("lockScreenLiveActivity"))
+                    Text(shifts.text.t("lockScreenLiveActivity"))
                         .font(.body)
                     Spacer()
-                    Toggle(store.t("lockScreenLiveActivity"), isOn: $store.liveActivityEnabled)
+                    Toggle(shifts.text.t("lockScreenLiveActivity"), isOn: Binding(get: { shifts.preferences.liveActivityEnabled }, set: { shifts.preferences.liveActivityEnabled = $0 }))
                         .labelsHidden()
                 }
                 .padding(.horizontal, 16)
                 .frame(height: 52)
                 .owcPlainDivider()
 
-                Picker(store.t("liveActivityStartTime"), selection: $store.liveActivityLeadMinutes) {
-                    ForEach(OffWorkStore.allowedLiveActivityLeadMinutes, id: \.self) { minutes in
-                        Text(store.t("liveActivityLead", values: ["count": "\(minutes)"]))
+                Picker(shifts.text.t("liveActivityStartTime"), selection: Binding(get: { shifts.preferences.liveActivityLeadMinutes }, set: { shifts.preferences.liveActivityLeadMinutes = $0 })) {
+                    ForEach(PreferencesStore.allowedLiveActivityLeadMinutes, id: \.self) { minutes in
+                        Text(shifts.text.t("liveActivityLead", values: ["count": "\(minutes)"]))
                             .tag(minutes)
                     }
                 }
@@ -902,9 +924,9 @@ struct NotificationDesignView: View {
                         .background(OWCDesign.orange.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(store.t("notificationDeniedTitle"))
+                        Text(shifts.text.t("notificationDeniedTitle"))
                             .font(.body.weight(.semibold))
-                        Text(store.t("notificationDeniedBody"))
+                        Text(shifts.text.t("notificationDeniedBody"))
                             .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineSpacing(2)
@@ -912,7 +934,7 @@ struct NotificationDesignView: View {
                     Spacer(minLength: 0)
                 }
 
-                Button(store.t("notificationOpenSettings")) {
+                Button(shifts.text.t("notificationOpenSettings")) {
                     notifications.openSystemSettings()
                 }
                 .buttonStyle(OWCPrimaryButtonStyle())
@@ -927,21 +949,21 @@ struct NotificationDesignView: View {
             liveActivitySection
 
             VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("notificationCapability"))
+                OWCSectionHeader(title: shifts.text.t("notificationCapability"))
                 OWCGroupCard {
-                    OWCRow(title: store.t("notificationLocal")) {
-                        Text(store.t("notificationDeniedStatus"))
+                    OWCRow(title: shifts.text.t("notificationLocal")) {
+                        Text(shifts.text.t("notificationDeniedStatus"))
                             .font(.body)
                             .foregroundStyle(OWCDesign.orangeDeep)
                     }
-                    OWCRow(title: store.t("liveActivity")) {
-                        Text(store.t(activitiesEnabled
+                    OWCRow(title: shifts.text.t("liveActivity")) {
+                        Text(shifts.text.t(activitiesEnabled
                                      ? "notificationAllowedStatus"
                                      : "notificationDeniedStatus"))
                             .font(.body)
                             .foregroundStyle(activitiesEnabled ? OWCDesign.secondary : OWCDesign.orangeDeep)
                     }
-                    OWCRow(title: store.t("notificationScheduledForShift"), isLast: true) {
+                    OWCRow(title: shifts.text.t("notificationScheduledForShift"), isLast: true) {
                         Text("0 / 0")
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
@@ -951,17 +973,17 @@ struct NotificationDesignView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 24)
 
-            detailFooter(store.t("notificationCapabilityNote"))
+            detailFooter(shifts.text.t("notificationCapabilityNote"))
 
             VStack(alignment: .leading, spacing: 0) {
-                OWCSectionHeader(title: store.t("notificationStillWorks"))
+                OWCSectionHeader(title: shifts.text.t("notificationStillWorks"))
                 OWCGroupCard {
-                    OWCRow(icon: "rectangle.inset.filled", title: store.t("lockScreenLiveActivity")) {
+                    OWCRow(icon: "rectangle.inset.filled", title: shifts.text.t("lockScreenLiveActivity")) {
                         Image(systemName: activitiesEnabled ? "checkmark" : "xmark")
                             .font(.headline)
                             .foregroundStyle(activitiesEnabled ? OWCDesign.orange : OWCDesign.secondary)
                     }
-                    OWCRow(icon: "square.grid.2x2", title: store.t("notificationHomeWidget"), isLast: true) {
+                    OWCRow(icon: "square.grid.2x2", title: shifts.text.t("notificationHomeWidget"), isLast: true) {
                         Image(systemName: "checkmark")
                             .font(.headline)
                             .foregroundStyle(OWCDesign.orange)
@@ -977,20 +999,23 @@ struct NotificationDesignView: View {
 
     private func modeRow(_ mode: OffWorkNotificationMode, title: String, isLast: Bool = false) -> some View {
         Button {
-            store.notificationMode = mode
+            let command = shifts.preferences.applyPreferences { $0.notificationMode = mode }
             if mode != .off, notifications.status == .notDetermined {
                 Task { @MainActor in
+                    guard await command.value else { return }
                     let granted = await notifications.request()
                     if granted {
-                        await notifications.reschedule(store: store)
+                        await notifications.reschedule(shifts: shifts)
                     } else {
-                        store.notificationMode = .off
+                        _ = await shifts.preferences.applyPreferences {
+                            $0.notificationMode = .off
+                        }.value
                     }
                 }
             }
         } label: {
             OWCRow(title: title, isLast: isLast) {
-                if store.notificationMode == mode {
+                if shifts.preferences.notificationMode == mode {
                     Image(systemName: "checkmark")
                         .font(.headline)
                         .foregroundStyle(OWCDesign.orange)
@@ -999,7 +1024,7 @@ struct NotificationDesignView: View {
             }
         }
         .buttonStyle(OWCRowButtonStyle())
-        .animation(notificationModeAnimation, value: store.notificationMode)
+        .animation(notificationModeAnimation, value: shifts.preferences.notificationMode)
     }
 
     private var notificationModeAnimation: Animation {
@@ -1033,7 +1058,8 @@ private extension View {
 }
 
 struct LunchSettingsView: View {
-    @Bindable var store: OffWorkStore
+    @Environment(SceneState.self) private var scene
+    @Bindable var shifts: ShiftSessionStore
     @FocusState private var durationFocused: Bool
     @State private var durationText = ""
     @State private var showStartPicker = false
@@ -1047,13 +1073,13 @@ struct LunchSettingsView: View {
     @State private var saveCommitFeedback = 0
 
     private var draft: ScheduleFieldChange {
-        get { store.lunchSettingsDraft }
-        nonmutating set { store.lunchSettingsDraft = newValue }
+        get { scene.lunchSettingsDraft }
+        nonmutating set { scene.lunchSettingsDraft = newValue }
     }
 
-    private var draftEnabled: Bool { draft.lunchEnabled ?? store.lunchEnabled }
-    private var draftStartMinutes: Int { draft.lunchStartMinutes ?? store.lunchStartMinutes }
-    private var draftDurationMinutes: Int { draft.lunchDurationMinutes ?? store.lunchDurationMinutes }
+    private var draftEnabled: Bool { draft.lunchEnabled ?? shifts.preferences.lunchEnabled }
+    private var draftStartMinutes: Int { draft.lunchStartMinutes ?? shifts.preferences.lunchStartMinutes }
+    private var draftDurationMinutes: Int { draft.lunchDurationMinutes ?? shifts.preferences.lunchDurationMinutes }
 
     private var lunchEnabledBinding: Binding<Bool> {
         Binding(
@@ -1066,26 +1092,26 @@ struct LunchSettingsView: View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
-                    OWCRow(title: store.t("lunchBreak"), isLast: !draftEnabled) {
-                        Toggle(store.t("lunchBreak"), isOn: lunchEnabledBinding)
+                    OWCRow(title: shifts.text.t("lunchBreak"), isLast: !draftEnabled) {
+                        Toggle(shifts.text.t("lunchBreak"), isOn: lunchEnabledBinding)
                             .labelsHidden()
                             .tint(OWCDesign.accent)
                     }
 
                     if draftEnabled {
-                        OWCRow(title: store.t("lunchStartTime")) {
+                        OWCRow(title: shifts.text.t("lunchStartTime")) {
                             Button {
                                 pendingStartMinutes = draftStartMinutes
                                 showStartPicker = true
                             } label: {
-                                OWCDetailAccessory(text: store.timeString(draftStartMinutes))
+                                OWCDetailAccessory(text: shifts.session.timeString(draftStartMinutes))
                                     .environment(\.layoutDirection, .leftToRight)
                             }
                             .buttonStyle(.plain)
                         }
 
                         HStack {
-                            Text(store.t("lunchDuration")).font(.body)
+                            Text(shifts.text.t("lunchDuration")).font(.body)
                             Spacer()
                             OWCNumberField(
                                 placeholder: "60",
@@ -1094,7 +1120,7 @@ struct LunchSettingsView: View {
                                 onCommit: clampDuration
                             )
                             .focused($durationFocused)
-                            Text(store.t("minutesUnit"))
+                            Text(shifts.text.t("minutesUnit"))
                                 .font(.callout)
                                 .foregroundStyle(OWCDesign.secondary)
                         }
@@ -1105,22 +1131,22 @@ struct LunchSettingsView: View {
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 22)
 
-                OWCSectionHeader(title: store.t("remindersSection"))
+                OWCSectionHeader(title: shifts.text.t("remindersSection"))
                     .padding(.top, 20)
                 OWCGroupCard {
                     HStack {
-                        Text(store.t("lunchStartReminder")).font(.body)
+                        Text(shifts.text.t("lunchStartReminder")).font(.body)
                         Spacer()
-                        Toggle(store.t("lunchStartReminder"), isOn: $store.lunchStartReminderEnabled).labelsHidden()
+                        Toggle(shifts.text.t("lunchStartReminder"), isOn: shifts.preferences.preferenceBinding(\.lunchStartReminderEnabled)).labelsHidden()
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 56)
                     .owcDivider()
 
                     HStack {
-                        Text(store.t("lunchEndReminder")).font(.body)
+                        Text(shifts.text.t("lunchEndReminder")).font(.body)
                         Spacer()
-                        Toggle(store.t("lunchEndReminder"), isOn: $store.lunchEndReminderEnabled).labelsHidden()
+                        Toggle(shifts.text.t("lunchEndReminder"), isOn: shifts.preferences.preferenceBinding(\.lunchEndReminderEnabled)).labelsHidden()
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 56)
@@ -1128,31 +1154,31 @@ struct LunchSettingsView: View {
                 .padding(.horizontal, OWCDesign.pageInset)
 
                 settingsDetailFooter(
-                    store.salaryEnabled
-                        ? store.t("lunchPauseNote")
-                        : store.t("lunchPauseNoteNoSalary")
+                    shifts.preferences.salaryEnabled
+                        ? shifts.text.t("lunchPauseNote")
+                        : shifts.text.t("lunchPauseNoteNoSalary")
                 )
             }
         }
         .scrollDismissesKeyboard(.interactively)
         .background(OWCDesign.page)
-        .navigationTitle(store.t("lunchBreak"))
+        .navigationTitle(shifts.text.t("lunchBreak"))
         .navigationBarTitleDisplayMode(.large)
         .owcDetailBack(
-            title: store.t("settings"),
-            pageTitle: store.t("lunchBreak"),
+            title: shifts.text.t("settings"),
+            pageTitle: shifts.text.t("lunchBreak"),
             hasUnsavedChanges: hasUnsavedChanges,
-            unsavedChangesTitle: store.t("unsavedChangesTitle"),
-            keepEditingTitle: store.t("keepEditing"),
-            discardChangesTitle: store.t("discardChanges"),
+            unsavedChangesTitle: shifts.text.t("unsavedChangesTitle"),
+            keepEditingTitle: shifts.text.t("keepEditing"),
+            discardChangesTitle: shifts.text.t("discardChanges"),
             onDiscardChanges: discardDraft
         ) {
-            ScheduleSaveButton(store: store, enabled: hasUnsavedChanges, action: requestSave)
+            ScheduleSaveButton(text: shifts.text, enabled: hasUnsavedChanges, action: requestSave)
         }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button(store.t("done")) { durationFocused = false; clampDuration() }
+                Button(shifts.text.t("done")) { durationFocused = false; clampDuration() }
             }
         }
         .onAppear { durationText = "\(draftDurationMinutes)" }
@@ -1160,39 +1186,42 @@ struct LunchSettingsView: View {
             if !focused { clampDuration() }
         }
         .sensoryFeedback(.selection, trigger: draftEnabled)
-        .sensoryFeedback(.selection, trigger: store.lunchStartReminderEnabled)
-        .sensoryFeedback(.selection, trigger: store.lunchEndReminderEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.lunchStartReminderEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.lunchEndReminderEnabled)
         .sensoryFeedback(.warning, trigger: savePromptFeedback)
         .sensoryFeedback(.success, trigger: saveCommitFeedback)
         .sheet(isPresented: $showStartPicker) {
             OWCSetupTimePickerSheet(
-                store: store,
-                title: store.t("lunchStartTime"),
+                session: shifts.session,
+                text: shifts.text,
+                title: shifts.text.t("lunchStartTime"),
                 minutes: $pendingStartMinutes
             )
             .presentationDetents([.medium])
             .onDisappear { edit { $0.lunchStartMinutes = pendingStartMinutes } }
         }
-        .alert(store.t("applyScheduleTitle"), isPresented: $showSavePrompt) {
-            Button(store.t("applyFromNextShift")) { commit(.nextShiftOnly) }
-            Button(store.t("applyToToday")) { commit(.applyToToday) }
-            Button(store.t("cancelAction"), role: .cancel) {}
+        .alert(shifts.text.t("applyScheduleTitle"), isPresented: $showSavePrompt) {
+            Button(shifts.text.t("applyFromNextShift")) { commit(.nextShiftOnly) }
+            Button(shifts.text.t("applyToToday")) { commit(.applyToToday) }
+            Button(shifts.text.t("cancelAction"), role: .cancel) {}
         } message: {
-            Text(store.t("applyScheduleMessage"))
+            Text(shifts.text.t("applyScheduleMessage"))
         }
     }
 
     private func edit(_ change: (inout ScheduleFieldChange) -> Void) {
         var next = draft
         change(&next)
-        draft = next.settled(against: store)
+        draft = next.settled(against: shifts.preferences)
     }
 
     private func commit(_ decision: ScheduleChangeDecision) {
-        store.applyScheduleChange(draft, decision: decision)
-        draft = ScheduleFieldChange()
-        durationText = "\(store.lunchDurationMinutes)"
-        saveCommitFeedback += 1
+        let command = scene.commitScheduleDraft(.lunch, decision: decision, using: shifts)
+        Task {
+            guard await command.value else { return }
+            if draft.isEmpty { durationText = "\(shifts.preferences.lunchDurationMinutes)" }
+            saveCommitFeedback += 1
+        }
     }
 
     private func requestSave() {
@@ -1201,7 +1230,7 @@ struct LunchSettingsView: View {
         durationFocused = false
         clampDuration()
         guard !draft.isEmpty else { return }
-        if store.shouldPromptApplyingToToday(draft, scope: .lunch) {
+        if shifts.session.shouldPromptApplyingToToday(draft, scope: .lunch) {
             savePromptFeedback += 1
             showSavePrompt = true
         } else {
@@ -1213,12 +1242,12 @@ struct LunchSettingsView: View {
         var leaving = draft
         let typed = Int(durationText) ?? draftDurationMinutes
         leaving.lunchDurationMinutes = min(180, max(10, typed))
-        return !leaving.settled(against: store).isEmpty
+        return !leaving.settled(against: shifts.preferences).isEmpty
     }
 
     private func discardDraft() {
         draft = ScheduleFieldChange()
-        durationText = "\(store.lunchDurationMinutes)"
+        durationText = "\(shifts.preferences.lunchDurationMinutes)"
     }
 
     private func clampDuration() {
@@ -1230,47 +1259,47 @@ struct LunchSettingsView: View {
 }
 
 struct HealthReminderSettingsView: View {
-    @Bindable var store: OffWorkStore
+    @Bindable var shifts: ShiftSessionStore
     @FocusState private var intervalFocused: Bool
-    @State private var intervalText = ""
+    @State private var intervalDraft = SettingsFieldDraft("")
 
     /// The pomodoro's breaks stand in for the fixed interval on a shift that
     /// has a plan, so the two do not fire on separate clocks.
-    private var takenOverByFocus: Bool { store.microBreakEnabled && store.focusOwnsBreaks() }
+    private var takenOverByFocus: Bool { shifts.preferences.microBreakEnabled && shifts.focus.focusOwnsBreaks() }
 
     var body: some View {
         OWCContentSizedScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
                     HStack {
-                        Text(store.t("microBreakReminder")).font(.body)
+                        Text(shifts.text.t("microBreakReminder")).font(.body)
                         Spacer()
-                        Toggle(store.t("microBreakReminder"), isOn: $store.microBreakEnabled).labelsHidden()
+                        Toggle(shifts.text.t("microBreakReminder"), isOn: shifts.preferences.preferenceBinding(\.microBreakEnabled)).labelsHidden()
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 56)
 
-                    if store.microBreakEnabled {
+                    if shifts.preferences.microBreakEnabled {
                         HStack {
-                            Text(store.t("microBreakInterval")).font(.body)
+                            Text(shifts.text.t("microBreakInterval")).font(.body)
                             Spacer()
                             if takenOverByFocus {
                                 // Not disabled and not switched off: the
                                 // reminder still fires, on the plan's rhythm
                                 // instead of a fixed interval. Saying so is
                                 // more use than greying the field out.
-                                Text(store.t("microBreakFollowsFocus"))
+                                Text(shifts.text.t("microBreakFollowsFocus"))
                                     .font(.callout)
                                     .foregroundStyle(OWCDesign.secondary)
                             } else {
                                 OWCNumberField(
                                     placeholder: "60",
-                                    text: $intervalText,
+                                    text: $intervalDraft.value,
                                     width: 72,
                                     onCommit: clampInterval
                                 )
                                 .focused($intervalFocused)
-                                Text(store.t("minutesUnit"))
+                                Text(shifts.text.t("minutesUnit"))
                                     .font(.callout)
                                     .foregroundStyle(OWCDesign.secondary)
                             }
@@ -1290,8 +1319,8 @@ struct HealthReminderSettingsView: View {
                         NavigationLink(value: AppRoute.focus) {
                             OWCRow(
                                 icon: FocusTaskIcon.focus.systemName,
-                                title: store.t("microBreakOpenFocus"),
-                                subtitle: store.t("microBreakTakenOverNote"),
+                                title: shifts.text.t("microBreakOpenFocus"),
+                                subtitle: shifts.text.t("microBreakTakenOverNote"),
                                 isLast: true
                             ) {
                                 Image(systemName: "chevron.right")
@@ -1306,37 +1335,59 @@ struct HealthReminderSettingsView: View {
                     .padding(.top, 16)
                 }
 
-                settingsDetailFooter(store.t("microBreakEffectiveTimeNote"))
+                settingsDetailFooter(shifts.text.t("microBreakEffectiveTimeNote"))
             }
         }
         .scrollDismissesKeyboard(.never)
         .background(OWCDesign.page)
-        .navigationTitle(store.t("microBreakReminder"))
+        .navigationTitle(shifts.text.t("microBreakReminder"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("microBreakReminder"))
+        .owcDetailBack(title: shifts.text.t("settings"), pageTitle: shifts.text.t("microBreakReminder"))
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button(store.t("done")) { intervalFocused = false; clampInterval() }
+                Button(shifts.text.t("done")) { intervalFocused = false; clampInterval() }
             }
         }
-        .onAppear { intervalText = "\(store.microBreakIntervalMinutes)" }
+        .onAppear { intervalDraft.receive("\(shifts.preferences.microBreakIntervalMinutes)") }
+        .onChange(of: shifts.preferences.microBreakIntervalMinutes) { _, minutes in
+            intervalDraft.receive("\(minutes)")
+        }
         .onDisappear { clampInterval() }
-        .sensoryFeedback(.selection, trigger: store.microBreakEnabled)
+        .sensoryFeedback(.selection, trigger: shifts.preferences.microBreakEnabled)
     }
 
     private func clampInterval() {
-        let typed = Int(intervalText) ?? store.microBreakIntervalMinutes
+        guard intervalDraft.hasChanges else { return }
+        let typed = Int(intervalDraft.value) ?? shifts.preferences.microBreakIntervalMinutes
         let clamped = min(120, max(20, typed))
-        if store.microBreakIntervalMinutes != clamped {
-            store.microBreakIntervalMinutes = clamped
+        if shifts.preferences.microBreakIntervalMinutes != clamped {
+            let generation = intervalDraft.editGeneration
+            let command = shifts.preferences.applyPreferences {
+                $0.microBreakIntervalMinutes = clamped
+            }
+            if command.immediateResult == true {
+                intervalDraft.accept(
+                    "\(shifts.preferences.microBreakIntervalMinutes)",
+                    ifUnchangedSince: generation
+                )
+            } else if command.immediateResult == nil {
+                Task {
+                    guard await command.value else { return }
+                    intervalDraft.accept(
+                        "\(shifts.preferences.microBreakIntervalMinutes)",
+                        ifUnchangedSince: generation
+                    )
+                }
+            }
+        } else {
+            intervalDraft.accept("\(clamped)")
         }
-        intervalText = "\(clamped)"
     }
 }
 
 struct RecordsTimeZoneSettingsView: View {
-    @Bindable var store: OffWorkStore
+    @Bindable var shifts: ShiftSessionStore
     @State private var confirmsMigrate = false
 
     var body: some View {
@@ -1344,18 +1395,18 @@ struct RecordsTimeZoneSettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 OWCGroupCard {
                     OWCRow(
-                        title: store.t("recordsTimeZone"),
-                        isLast: !store.systemTimeZoneDiffersFromRecords
+                        title: shifts.text.t("recordsTimeZone"),
+                        isLast: !shifts.preferences.systemTimeZoneDiffersFromRecords
                     ) {
-                        Text(store.recordsTimeZoneLabel)
+                        Text(shifts.preferences.recordsTimeZoneLabel)
                             .font(.body)
                             .foregroundStyle(OWCDesign.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.72)
                     }
-                    if store.systemTimeZoneDiffersFromRecords {
-                        OWCRow(title: store.t("recordsTimeZoneThisDevice"), isLast: true) {
-                            Text(store.systemTimeZoneLabel)
+                    if shifts.preferences.systemTimeZoneDiffersFromRecords {
+                        OWCRow(title: shifts.text.t("recordsTimeZoneThisDevice"), isLast: true) {
+                            Text(shifts.preferences.systemTimeZoneLabel)
                                 .font(.body)
                                 .foregroundStyle(OWCDesign.secondary)
                                 .lineLimit(1)
@@ -1366,8 +1417,8 @@ struct RecordsTimeZoneSettingsView: View {
                 .padding(.horizontal, OWCDesign.pageInset)
                 .padding(.top, 22)
 
-                if store.systemTimeZoneDiffersFromRecords {
-                    Button(store.t("recordsTimeZoneMigrate")) {
+                if shifts.preferences.systemTimeZoneDiffersFromRecords {
+                    Button(shifts.text.t("recordsTimeZoneMigrate")) {
                         confirmsMigrate = true
                     }
                     .buttonStyle(OWCPrimaryButtonStyle())
@@ -1375,50 +1426,51 @@ struct RecordsTimeZoneSettingsView: View {
                     .padding(.top, 22)
                 }
 
-                settingsDetailFooter(store.t("recordsTimeZoneFooter"))
+                settingsDetailFooter(shifts.text.t("recordsTimeZoneFooter"))
             }
         }
         .background(OWCDesign.page)
-        .navigationTitle(store.t("recordsTimeZone"))
+        .navigationTitle(shifts.text.t("recordsTimeZone"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("recordsTimeZone"))
+        .owcDetailBack(title: shifts.text.t("settings"), pageTitle: shifts.text.t("recordsTimeZone"))
         .confirmationDialog(
-            store.t("recordsTimeZoneMigrateConfirm"),
+            shifts.text.t("recordsTimeZoneMigrateConfirm"),
             isPresented: $confirmsMigrate,
             titleVisibility: .visible
         ) {
-            Button(store.t("recordsTimeZoneMigrate")) {
-                store.migrateRecordsTimeZone()
+            Button(shifts.text.t("recordsTimeZoneMigrate")) {
+                shifts.migrateRecordsTimeZone()
             }
-            Button(store.t("cancel"), role: .cancel) {}
+            Button(shifts.text.t("cancel"), role: .cancel) {}
         } message: {
-            Text(store.t("recordsTimeZoneDevice", values: ["zone": store.systemTimeZoneLabel]))
+            Text(shifts.text.t("recordsTimeZoneDevice", values: ["zone": shifts.preferences.systemTimeZoneLabel]))
         }
-        .onAppear { store.refreshSystemTimeZone() }
+        .onAppear { shifts.preferences.refreshSystemTimeZone() }
         .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
-            store.refreshSystemTimeZone()
+            shifts.preferences.refreshSystemTimeZone()
         }
     }
 }
 
 struct ThemeSettingsView: View {
-    @Bindable var store: OffWorkStore
+    @Bindable var preferences: PreferencesStore
+    let text: AppText
 
     var body: some View {
         OWCContentSizedScrollView {
             OWCGroupCard {
-                themeRow(.auto, title: store.t("auto"), icon: "circle.lefthalf.filled")
-                themeRow(.light, title: store.t("light"), icon: "sun.max")
-                themeRow(.dark, title: store.t("dark"), icon: "moon", isLast: true)
+                themeRow(.auto, title: text.t("auto"), icon: "circle.lefthalf.filled")
+                themeRow(.light, title: text.t("light"), icon: "sun.max")
+                themeRow(.dark, title: text.t("dark"), icon: "moon", isLast: true)
             }
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 22)
         }
         .background(OWCDesign.page)
-        .navigationTitle(store.t("theme"))
+        .navigationTitle(text.t("theme"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("theme"))
-        .sensoryFeedback(.selection, trigger: store.theme)
+        .owcDetailBack(title: text.t("settings"), pageTitle: text.t("theme"))
+        .sensoryFeedback(.selection, trigger: preferences.theme)
     }
 
     private func themeRow(
@@ -1428,9 +1480,9 @@ struct ThemeSettingsView: View {
         textIcon: String? = nil,
         isLast: Bool = false
     ) -> some View {
-        Button { store.theme = theme } label: {
+        Button { preferences.applyPreferences { $0.theme = theme } } label: {
             OWCRow(icon: icon, textIcon: textIcon, title: title, isLast: isLast) {
-                if store.theme == theme {
+                if preferences.theme == theme {
                     Image(systemName: "checkmark")
                         .font(.headline)
                         .foregroundStyle(OWCDesign.accent)
@@ -1452,12 +1504,13 @@ struct ThemeSettingsView: View {
 /// language row. Nothing was wrong with the bundle: all nineteen localizations
 /// ship and iOS does offer the choice, on a page we could not navigate to.
 struct LanguageSettingsView: View {
-    @Bindable var store: OffWorkStore
+    @Bindable var preferences: PreferencesStore
+    let text: AppText
 
     var body: some View {
         OWCContentSizedScrollView {
             OWCGroupCard {
-                languageRow(nil, title: store.t("auto"))
+                languageRow(nil, title: text.t("auto"))
                 ForEach(Array(NativeLocalizer.supportedLanguages.enumerated()), id: \.element.id) { index, language in
                     languageRow(
                         language.id,
@@ -1471,19 +1524,19 @@ struct LanguageSettingsView: View {
             .padding(.horizontal, OWCDesign.pageInset)
             .padding(.top, 22)
 
-            settingsDetailFooter(store.t("languageFooter"))
+            settingsDetailFooter(text.t("languageFooter"))
         }
         .background(OWCDesign.page)
-        .navigationTitle(store.t("chooselanguage"))
+        .navigationTitle(text.t("chooselanguage"))
         .navigationBarTitleDisplayMode(.large)
-        .owcDetailBack(title: store.t("settings"), pageTitle: store.t("chooselanguage"))
-        .sensoryFeedback(.selection, trigger: store.languageOverride)
+        .owcDetailBack(title: text.t("settings"), pageTitle: text.t("chooselanguage"))
+        .sensoryFeedback(.selection, trigger: preferences.languageOverride)
     }
 
     private func languageRow(_ code: String?, title: String, isLast: Bool = false) -> some View {
-        Button { store.languageOverride = code } label: {
+        Button { preferences.applyPreferences { $0.languageOverride = code } } label: {
             OWCRow(icon: nil, title: title, isLast: isLast) {
-                if store.languageOverride == code {
+                if preferences.languageOverride == code {
                     Image(systemName: "checkmark")
                         .font(.headline)
                         .foregroundStyle(OWCDesign.accent)
@@ -1505,36 +1558,6 @@ private func settingsDetailFooter(_ text: String) -> some View {
         .padding(.top, 8)
 }
 
-// MARK: - Editing a schedule without committing on every keystroke
-
-extension ScheduleFieldChange {
-    var isEmpty: Bool { self == ScheduleFieldChange() }
-
-    /// Drops every field that already matches what the store holds.
-    ///
-    /// Without this, opening a picker and putting the value back would leave
-    /// the page "dirty": Save lit up over nothing, and leaving asked whether a
-    /// change that is not a change should include today.
-    func settled(against store: OffWorkStore) -> ScheduleFieldChange {
-        var next = self
-        if next.startMinutes == store.startMinutes { next.startMinutes = nil }
-        if next.endMinutes == store.endMinutes { next.endMinutes = nil }
-        if next.workdays == store.workdays { next.workdays = nil }
-        if next.scheduleMode == store.scheduleMode { next.scheduleMode = nil }
-        if next.lunchEnabled == store.lunchEnabled { next.lunchEnabled = nil }
-        if next.lunchStartMinutes == store.lunchStartMinutes { next.lunchStartMinutes = nil }
-        if next.lunchDurationMinutes == store.lunchDurationMinutes { next.lunchDurationMinutes = nil }
-        if next.alternatingWeekType == store.alternatingWeekType { next.alternatingWeekType = nil }
-        if next.alternatingWeekendWorkday == store.alternatingWeekendWorkday {
-            next.alternatingWeekendWorkday = nil
-        }
-        if next.rotationWorkDays == store.rotationWorkDays { next.rotationWorkDays = nil }
-        if next.rotationRestDays == store.rotationRestDays { next.rotationRestDays = nil }
-        if next.rotationCycleDay == store.rotationCycleDay { next.rotationCycleDay = nil }
-        return next
-    }
-}
-
 /// Trailing header control on a page that is saved rather than committed
 /// field by field.
 ///
@@ -1544,7 +1567,7 @@ extension ScheduleFieldChange {
 /// `Сохранить`, `जतन करा`) could crowd the compact header; the checkmark keeps
 /// the system hit target and the VoiceOver name.
 struct ScheduleSaveButton: View {
-    let store: OffWorkStore
+    let text: AppText
     let enabled: Bool
     let action: () -> Void
 
@@ -1556,7 +1579,7 @@ struct ScheduleSaveButton: View {
         .tint(enabled ? OWCDesign.accent : nil)
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.4)
-        .accessibilityLabel(store.t("saveAction"))
+        .accessibilityLabel(text.t("saveAction"))
     }
 }
 

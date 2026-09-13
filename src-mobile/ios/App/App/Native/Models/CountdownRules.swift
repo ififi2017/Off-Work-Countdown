@@ -102,6 +102,38 @@ struct NativeShiftSnapshot: Codable, Hashable {
     }
 }
 
+nonisolated struct NativeWatchRulesProjection: Codable, Equatable, Sendable {
+    struct Shift: Codable, Equatable, Sendable {
+        let segments: [NativeShiftSegment]
+        let plannedEndAtMs: Double
+        let overtimeEndAtMs: Double?
+        let finishedAtMs: Double?
+        let isRunning: Bool
+        let transitions: [Transition]
+    }
+
+    struct Transition: Codable, Equatable, Sendable {
+        let atMs: Double
+        let state: String
+    }
+
+    struct NextShift: Codable, Equatable, Sendable {
+        let startAtMs: Double
+        let validUntilMs: Double
+    }
+
+    let scheduleState: String
+    let shift: Shift?
+    let nextShift: NextShift?
+    let contentExpiresAtMs: Double
+}
+
+nonisolated struct NativeWatchCurrentShift: Codable, Sendable {
+    let segments: [NativeShiftSegment]
+    let plannedEndAtMs: Double
+    let overtimeEndAtMs: Double?
+}
+
 /// Salary-free absolute shift returned in one batch for WidgetKit. The shared
 /// TypeScript rules still decide every boundary; this narrower projection only
 /// avoids hundreds of Swift-to-JavaScriptCore calls while publishing a year.
@@ -292,6 +324,23 @@ final class CountdownRules {
     func snapshot(input: NativeRulesInput) throws -> NativeShiftSnapshot {
         if let loadError { throw loadError }
         return try callRule(context, "snapshot", input)
+    }
+
+    func watchProjection(
+        input: NativeRulesInput,
+        scheduleConfigured: Bool,
+        isRunning: Bool,
+        currentShift: NativeWatchCurrentShift? = nil,
+        finishedAtMs: Double? = nil
+    ) throws -> NativeWatchRulesProjection {
+        if let loadError { throw loadError }
+        return try callRule(context, "watchProjection", NativeWatchProjectionRequest(
+            rules: input,
+            scheduleConfigured: scheduleConfigured,
+            isRunning: isRunning,
+            currentShift: currentShift,
+            finishedAtMs: finishedAtMs
+        ))
     }
 
     func widgetShifts(
@@ -514,6 +563,14 @@ nonisolated private struct NativeWidgetTimelineRequest: Codable, Sendable {
     let rules: NativeRulesInput
     let throughMs: Double
     let maximumCount: Int
+}
+
+nonisolated private struct NativeWatchProjectionRequest: Codable, Sendable {
+    let rules: NativeRulesInput
+    let scheduleConfigured: Bool
+    let isRunning: Bool
+    let currentShift: NativeWatchCurrentShift?
+    let finishedAtMs: Double?
 }
 
 nonisolated private struct NativeScheduleRangeRequest: Codable, Sendable {

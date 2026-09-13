@@ -8,18 +8,50 @@ final class WidgetSnapshotPublisher {
 
     private let snapshotFileName = "widget-snapshot-v1.json"
     private let widgetKind = "com.rainif.offworkcountdown.macappstore.widget"
-    private let recurringHorizonDays = 370
-    private let maximumRecurringShifts = 400
 
-    func publish(store: OffWorkStore, now: Date = .now) async {
+    func publish(_ payload: WidgetSnapshot) {
+        guard let data = try? JSONEncoder().encode(payload) else { return }
         guard let container = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: Self.appGroupIdentifier
         ) else { return }
+        let destination = container.appending(path: snapshotFileName)
+        let temporary = container.appending(path: "\(snapshotFileName).tmp")
+        do {
+            try data.write(to: temporary, options: .atomic)
+            _ = try FileManager.default.replaceItemAt(destination, withItemAt: temporary)
+        } catch {
+            try? data.write(to: destination, options: .atomic)
+            try? FileManager.default.removeItem(at: temporary)
+        }
+        WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
+    }
 
-        let logicalNow = store.timerDate(from: now)
-        let input = store.rulesInput(at: logicalNow, using: .base)
-        let effectiveInput = store.rulesInput(at: logicalNow)
-        let recurring = store.followsSchedule
+    func clear() {
+        guard let container = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: Self.appGroupIdentifier
+        ) else { return }
+        try? FileManager.default.removeItem(at: container.appending(path: snapshotFileName))
+        WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
+    }
+}
+
+/// Composes the salary-free widget value on the main actor from the real
+/// schedule rules and Focus projection. It never writes across processes.
+@MainActor
+final class WidgetSnapshotComposer {
+    static let shared = WidgetSnapshotComposer()
+    private let recurringHorizonDays = 370
+    private let maximumRecurringShifts = 400
+
+    func prepare(shifts: ShiftSessionStore, now: Date = .now) async -> WidgetSnapshot? {
+        do { try await shifts.records.flush() }
+        catch { return nil }
+        guard !Task.isCancelled else { return nil }
+
+        let logicalNow = shifts.session.timerDate(from: now)
+        let input = shifts.session.rulesInput(at: logicalNow, using: .base)
+        let effectiveInput = shifts.session.rulesInput(at: logicalNow)
+        let recurring = shifts.session.followsSchedule
         let futureShifts: [NativeWidgetShiftSnapshot]
         if recurring {
             futureShifts = (try? await ScheduleRangeEngine.shared.widgetShifts(
@@ -33,50 +65,27 @@ final class WidgetSnapshotPublisher {
         // The settings may change while the actor expands the year. Never
         // combine old future shifts with the newly edited current shift.
         guard !Task.isCancelled,
-              recurring == store.followsSchedule,
-              input == store.rulesInput(at: logicalNow, using: .base),
-              effectiveInput == store.rulesInput(at: logicalNow) else { return }
+              shifts.records.durableRevision == shifts.records.revision,
+              recurring == shifts.session.followsSchedule,
+              input == shifts.session.rulesInput(at: logicalNow, using: .base),
+              effectiveInput == shifts.session.rulesInput(at: logicalNow) else { return nil }
         let payload = LaunchTrace.interval("widgetCompose") {
-            publishedSnapshot(store: store, now: now, recurringShifts: futureShifts)
+            publishedSnapshot(shifts: shifts, now: now, recurringShifts: futureShifts)
         }
-        guard let data = try? JSONEncoder().encode(payload) else { return }
-
-        let destination = container.appending(path: snapshotFileName)
-        let temporary = container.appending(path: "\(snapshotFileName).tmp")
-        do {
-            try data.write(to: temporary, options: .atomic)
-            _ = try FileManager.default.replaceItemAt(destination, withItemAt: temporary)
-        } catch {
-            try? data.write(to: destination, options: .atomic)
-            try? FileManager.default.removeItem(at: temporary)
-        }
-        WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
-    }
-
-    /// Removes the cross-process projection after a debug data reset. The file
-    /// contains no settings, but leaving it in place would let the widget keep
-    /// showing the previous schedule while the app is back on its welcome page.
-    func clear() {
-        guard let container = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: Self.appGroupIdentifier
-        ) else { return }
-        try? FileManager.default.removeItem(
-            at: container.appending(path: snapshotFileName)
-        )
-        WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
+        return payload
     }
 
     /// Builds the on-disk payload, including a debug capture's virtual clock.
     /// Internal so tests can assert the widget sees the same phase as the app
     /// without writing an App Group.
-    func publishedSnapshot(store: OffWorkStore, now: Date = .now, recurringShifts: [NativeWidgetShiftSnapshot]? = nil) -> WidgetSnapshot {
-        let logicalNow = store.timerDate(from: now)
+    func publishedSnapshot(shifts: ShiftSessionStore, now: Date = .now, recurringShifts: [NativeWidgetShiftSnapshot]? = nil) -> WidgetSnapshot {
+        let logicalNow = shifts.session.timerDate(from: now)
         let logicalNowMs = Int64(logicalNow.timeIntervalSince1970 * 1_000)
         let realNowMs = Int64(now.timeIntervalSince1970 * 1_000)
         let payload = makeSnapshot(
-            store: store,
-            shift: store.snapshot(at: logicalNow),
-            active: store.shouldQuerySnapshot(at: logicalNow),
+            shifts: shifts,
+            shift: shifts.session.snapshot(at: logicalNow),
+            active: shifts.session.shouldQuerySnapshot(at: logicalNow),
             nowMs: logicalNowMs,
             recurringShifts: recurringShifts
         )
@@ -86,9 +95,9 @@ final class WidgetSnapshotPublisher {
 
     /// Internal so phase coverage can be unit-tested without an App Group.
     /// Swift never resolves a workday or constructs a shift here: every future
-    /// shift is obtained from the shared TypeScript rules through `store.snapshot`.
+    /// shift is obtained from the shared TypeScript rules through `shifts.session.snapshot`.
     func makeSnapshot(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         shift: NativeShiftSnapshot?,
         active: Bool,
         nowMs: Int64,
@@ -101,31 +110,31 @@ final class WidgetSnapshotPublisher {
         // press of the stop button left the widget with nothing to say for every
         // day afterwards. The user's ask was the opposite: set it up once and
         // never think about it again.
-        if store.followsSchedule, let shift {
-            return makeRecurringSnapshot(store: store, initialShift: shift, nowMs: nowMs, recurringShifts: recurringShifts)
+        if shifts.session.followsSchedule, let shift {
+            return makeRecurringSnapshot(shifts: shifts, initialShift: shift, nowMs: nowMs, recurringShifts: recurringShifts)
         }
         guard active else {
-            return makeInactiveSnapshot(store: store, shift: shift, nowMs: nowMs)
+            return makeInactiveSnapshot(shifts: shifts, shift: shift, nowMs: nowMs)
         }
         guard let shift else {
-            return idleSnapshot(store: store, nowMs: nowMs)
+            return idleSnapshot(shifts: shifts, nowMs: nowMs)
         }
-        return makeSingleShiftSnapshot(store: store, shift: shift, nowMs: nowMs)
+        return makeSingleShiftSnapshot(shifts: shifts, shift: shift, nowMs: nowMs)
     }
 
     private func makeInactiveSnapshot(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         shift: NativeShiftSnapshot?,
         nowMs: Int64
     ) -> WidgetSnapshot {
-        guard store.followsSchedule, let shift else {
-            return idleSnapshot(store: store, nowMs: nowMs)
+        guard shifts.session.followsSchedule, let shift else {
+            return idleSnapshot(shifts: shifts, nowMs: nowMs)
         }
 
         let currentStart = Int64(shift.startAtMs)
         if shift.isWorkday, currentStart > nowMs {
             return countdownToNextShift(
-                store: store,
+                shifts: shifts,
                 target: currentStart,
                 anchor: Int64(shift.countdownAnchorAtMs ?? shift.startAtMs),
                 nowMs: nowMs
@@ -133,13 +142,13 @@ final class WidgetSnapshotPublisher {
         }
         if let nextStart = shift.nextShiftStartAtMs.map(Int64.init), nextStart > nowMs {
             return countdownToNextShift(
-                store: store,
+                shifts: shifts,
                 target: nextStart,
                 anchor: Int64(shift.countdownAnchorAtMs ?? shift.startAtMs),
                 nowMs: nowMs
             )
         }
-        return idleSnapshot(store: store, nowMs: nowMs)
+        return idleSnapshot(shifts: shifts, nowMs: nowMs)
     }
 
     private func recurringHorizon(from now: Date) -> Date {
@@ -148,7 +157,7 @@ final class WidgetSnapshotPublisher {
     }
 
     private func makeRecurringSnapshot(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         initialShift: NativeShiftSnapshot,
         nowMs: Int64,
         recurringShifts: [NativeWidgetShiftSnapshot]?
@@ -156,12 +165,12 @@ final class WidgetSnapshotPublisher {
         let now = Date(timeIntervalSince1970: Double(nowMs) / 1_000)
         let horizon = recurringHorizon(from: now)
         let expiresAtMs = Int64(horizon.timeIntervalSince1970 * 1_000)
-        let forcedCurrentShift = store.isForcedWorkday(initialShift)
+        let forcedCurrentShift = shifts.session.isForcedWorkday(initialShift)
         var entries: [WidgetTimelineEntry] = []
         var cursor = nowMs
         var diagnosticShift: WidgetShiftTimeline?
         let futureShifts = recurringShifts ?? (try? CountdownRules.shared.widgetShifts(
-            input: store.rulesInput(at: now, using: .base),
+            input: shifts.session.rulesInput(at: now, using: .base),
             throughMs: Double(expiresAtMs),
             maximumCount: maximumRecurringShifts
         )) ?? []
@@ -169,7 +178,7 @@ final class WidgetSnapshotPublisher {
         // An early clock-off ends the shift it happened in and nothing else.
         // The rest of that workday is still "done for today"; rest-day copy
         // starts at the following midnight, not at the clock-off moment.
-        if let endedEarlyAtMs = store.isEndedEarly(initialShift) ? store.earlyOffAtMs : nil {
+        if let endedEarlyAtMs = shifts.session.isEndedEarly(initialShift) ? shifts.session.earlyOffAtMs : nil {
             cursor = max(cursor, Int64(endedEarlyAtMs))
             appendDoneWindow(
                 startingAtMs: cursor,
@@ -223,11 +232,11 @@ final class WidgetSnapshotPublisher {
             schemaVersion: widgetSnapshotSchemaVersion,
             generatedAtMs: nowMs,
             expiresAtMs: expiresAtMs,
-            locale: store.languageCode,
+            locale: shifts.preferences.languageCode,
             shift: diagnosticShift,
             entries: entries.isEmpty ? [idleEntry(nowMs: nowMs, expiresAtMs: expiresAtMs)] : entries,
             upcoming: upcomingItems(
-                store: store,
+                shifts: shifts,
                 shift: initialShift,
                 nowMs: nowMs,
                 expiresAtMs: expiresAtMs,
@@ -237,7 +246,7 @@ final class WidgetSnapshotPublisher {
     }
 
     private func makeSingleShiftSnapshot(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         shift: NativeShiftSnapshot,
         nowMs: Int64
     ) -> WidgetSnapshot {
@@ -269,11 +278,11 @@ final class WidgetSnapshotPublisher {
             schemaVersion: widgetSnapshotSchemaVersion,
             generatedAtMs: nowMs,
             expiresAtMs: expiresAtMs,
-            locale: store.languageCode,
+            locale: shifts.preferences.languageCode,
             shift: widgetShift(from: projectedShift),
             entries: entries,
             upcoming: upcomingItems(
-                store: store,
+                shifts: shifts,
                 shift: shift,
                 nowMs: nowMs,
                 expiresAtMs: expiresAtMs
@@ -462,7 +471,7 @@ final class WidgetSnapshotPublisher {
     }
 
     private func countdownToNextShift(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         target: Int64,
         anchor: Int64,
         nowMs: Int64
@@ -481,12 +490,12 @@ final class WidgetSnapshotPublisher {
             schemaVersion: widgetSnapshotSchemaVersion,
             generatedAtMs: nowMs,
             expiresAtMs: endAtMs,
-            locale: store.languageCode,
+            locale: shifts.preferences.languageCode,
             shift: nil,
             entries: entries,
             upcoming: upcomingItems(
-                store: store,
-                shift: store.snapshot(
+                shifts: shifts,
+                shift: shifts.session.snapshot(
                     at: Date(timeIntervalSince1970: Double(nowMs) / 1_000)
                 ),
                 nowMs: nowMs
@@ -494,16 +503,16 @@ final class WidgetSnapshotPublisher {
         )
     }
 
-    private func idleSnapshot(store: OffWorkStore, nowMs: Int64) -> WidgetSnapshot {
+    private func idleSnapshot(shifts: ShiftSessionStore, nowMs: Int64) -> WidgetSnapshot {
         let expiresAtMs = nowMs + 24 * 60 * 60 * 1_000
         return WidgetSnapshot(
             schemaVersion: widgetSnapshotSchemaVersion,
             generatedAtMs: nowMs,
             expiresAtMs: expiresAtMs,
-            locale: store.languageCode,
+            locale: shifts.preferences.languageCode,
             shift: nil,
             entries: [idleEntry(nowMs: nowMs, expiresAtMs: expiresAtMs)],
-            upcoming: upcomingItems(store: store, shift: nil, nowMs: nowMs, expiresAtMs: expiresAtMs)
+            upcoming: upcomingItems(shifts: shifts, shift: nil, nowMs: nowMs, expiresAtMs: expiresAtMs)
         )
     }
 
@@ -518,7 +527,7 @@ final class WidgetSnapshotPublisher {
     /// 09:00–17:00 range. Those are not a shift the user is in — the same
     /// eligibility as reminders and the timer surface.
     private func upcomingItems(
-        store: OffWorkStore,
+        shifts: ShiftSessionStore,
         shift: NativeShiftSnapshot?,
         nowMs: Int64,
         expiresAtMs: Int64? = nil,
@@ -536,7 +545,7 @@ final class WidgetSnapshotPublisher {
         }
 
         func appendEvents(from snapshot: NativeShiftSnapshot, at date: Date) {
-            for event in store.upcomingTimelineEvents(for: snapshot, at: date) {
+            for event in shifts.upcomingTimelineEvents(for: snapshot, at: date) {
                 appendItem(WidgetUpcomingItem(
                     id: event.id,
                     kind: event.kind.rawValue,
@@ -548,13 +557,13 @@ final class WidgetSnapshotPublisher {
             }
         }
 
-        if let shift, shift.isWorkday || store.isForcedWorkday(shift) {
+        if let shift, shift.isWorkday || shifts.session.isForcedWorkday(shift) {
             appendEvents(from: shift, at: now)
         }
 
         // Focus tasks can be scheduled on a rest day or without a running
         // manual shift. Reuse the app's projection; IDs remove workday duplicates.
-        for event in store.focusUpcomingTimelineEvents(for: shift, at: now) {
+        for event in shifts.focus.focusUpcomingTimelineEvents(for: shift, at: now) {
             appendItem(WidgetUpcomingItem(
                 id: event.id,
                 kind: event.kind.rawValue,
@@ -568,13 +577,13 @@ final class WidgetSnapshotPublisher {
         if futureShifts.isEmpty {
             if let shift, let next = shift.nextShiftStartDate, next > now {
                 let previewAt = next.addingTimeInterval(-1)
-                if let nextSnapshot = store.snapshot(at: previewAt) {
+                if let nextSnapshot = shifts.session.snapshot(at: previewAt) {
                     appendEvents(from: nextSnapshot, at: previewAt)
                 }
             }
         } else {
             for nextShift in futureShifts {
-                for item in boundaryUpcomingItems(from: nextShift, store: store) {
+                for item in boundaryUpcomingItems(from: nextShift, shifts: shifts) {
                     appendItem(item)
                 }
             }
@@ -587,7 +596,7 @@ final class WidgetSnapshotPublisher {
     /// rules bundle can still name the next firing.
     private func boundaryUpcomingItems(
         from shift: NativeWidgetShiftSnapshot,
-        store: OffWorkStore
+        shifts: ShiftSessionStore
     ) -> [WidgetUpcomingItem] {
         var items: [WidgetUpcomingItem] = []
         let startMs = Int64(shift.startAtMs)
@@ -595,8 +604,8 @@ final class WidgetSnapshotPublisher {
         items.append(WidgetUpcomingItem(
             id: "shift-start-\(startMs)",
             kind: "shiftStart",
-            title: store.t("startTime"),
-            detail: store.t("todaysShift"),
+            title: shifts.text.t("startTime"),
+            detail: shifts.text.t("todaysShift"),
             dateMs: startMs
         ))
         for (index, segment) in shift.segments.dropLast().enumerated() {
@@ -607,22 +616,22 @@ final class WidgetSnapshotPublisher {
             items.append(WidgetUpcomingItem(
                 id: "lunch-start-\(lunchStartMs)",
                 kind: "lunchStart",
-                title: store.t("lunchBreak"),
-                detail: store.t("lunchStartTime"),
+                title: shifts.text.t("lunchBreak"),
+                detail: shifts.text.t("lunchStartTime"),
                 dateMs: lunchStartMs
             ))
             items.append(WidgetUpcomingItem(
                 id: "lunch-end-\(lunchEndMs)",
                 kind: "lunchEnd",
-                title: store.t("lunchBreak"),
-                detail: store.t("lunchBackAt"),
+                title: shifts.text.t("lunchBreak"),
+                detail: shifts.text.t("lunchBackAt"),
                 dateMs: lunchEndMs
             ))
         }
-        if store.plus.isAuthorized,
-           let templateID = store.focusPlanning.defaultTemplateID,
-           let template = store.focusPlanning.templates.first(where: { $0.id == templateID }) {
-            let blocks = store.focusPlanningBlocks(for: shift)
+        if shifts.plus.isAuthorized,
+           let templateID = shifts.focus.focusPlanning.defaultTemplateID,
+           let template = shifts.focus.focusPlanning.templates.first(where: { $0.id == templateID }) {
+            let blocks = shifts.focus.focusPlanningBlocks(for: shift)
             for slot in template.placedSlots(in: blocks) where blocks.indices.contains(slot.blockIndex) {
                 let block = blocks[slot.blockIndex]
                 let startMs = block.startAtMs
@@ -630,12 +639,12 @@ final class WidgetSnapshotPublisher {
                 items.append(WidgetUpcomingItem(
                     id: "focus-plan-\(startMs)",
                     kind: isBreak ? "focusBreak" : "focus",
-                    title: isBreak ? store.t("focusBreak") : (slot.taskTitle ?? store.t("focusTitle")),
-                    detail: store.t(
+                    title: isBreak ? shifts.text.t("focusBreak") : (slot.taskTitle ?? shifts.text.t("focusTitle")),
+                    detail: shifts.text.t(
                         "focusPomodoroSummary",
                         values: [
-                            "count": store.formatCount(1),
-                            "minutes": store.formatCount(block.durationMinutes),
+                            "count": shifts.text.formatCount(1),
+                            "minutes": shifts.text.formatCount(block.durationMinutes),
                         ]
                     ),
                     dateMs: startMs,
@@ -646,8 +655,8 @@ final class WidgetSnapshotPublisher {
         items.append(WidgetUpcomingItem(
             id: "shift-end-\(endMs)",
             kind: "shiftEnd",
-            title: store.t("endTime"),
-            detail: shift.overtimeEndAtMs == nil ? store.t("todaysShift") : store.t("overtime"),
+            title: shifts.text.t("endTime"),
+            detail: shift.overtimeEndAtMs == nil ? shifts.text.t("todaysShift") : shifts.text.t("overtime"),
             dateMs: endMs
         ))
         return items

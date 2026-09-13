@@ -9,7 +9,7 @@ struct ShiftPreview {
     let disabled: [ShiftPreviewEntry]
 }
 
-extension OffWorkStore {
+extension ShiftSessionStore {
     /// What today's shift will do, one row per kind of event.
     ///
     /// Everything that is switched on carries the time it will next happen and
@@ -21,10 +21,10 @@ extension OffWorkStore {
         var disabled: [ShiftPreviewEntry] = []
         let nowMs = now.timeIntervalSince1970 * 1_000
         let reminders = (try? CountdownRules.shared.reminders(
-            input: rulesInput(
+            input: self.session.rulesInput(
                 at: now,
-                startMinutes: minutes(from: snapshot.startDate),
-                endMinutes: minutes(from: snapshot.endDate)
+                startMinutes: self.session.minutes(from: snapshot.startDate, calendar: session.countdownCalendar),
+                endMinutes: self.session.minutes(from: snapshot.endDate, calendar: session.countdownCalendar)
             ),
             reminderInputs: reminderInputs()
         )) ?? []
@@ -33,7 +33,7 @@ extension OffWorkStore {
         // they are done with, so none of it is coming. Move the whole list past
         // it and read from the next shift instead — otherwise the page answers
         // "what happens next" with a lunch and a clock-off that will not.
-        let endedEarly = isEndedEarly(snapshot)
+        let endedEarly = self.session.isEndedEarly(snapshot)
         let floorMs = endedEarly ? snapshot.endAtMs : nowMs
 
         // Once the shift has begun, "start time" means the *next* one. Giving it
@@ -44,14 +44,14 @@ extension OffWorkStore {
             upcoming.append(.init(
                 id: "shift-start",
                 kind: .shiftStart,
-                title: t("startTime"),
-                detail: startHasPassed ? nil : t("todaysShift"),
+                title: text.t("startTime"),
+                detail: startHasPassed ? nil : text.t("todaysShift"),
                 date: start,
                 route: nil
             ))
         }
 
-        if effectiveLunchEnabled(at: now) {
+        if self.session.effectiveLunchEnabled(at: now) {
             // The setting is on whether or not this snapshot could place a
             // gap. Using "window missing" as "disabled" is what printed 未开启
             // after the hours were edited so the break no longer fitted.
@@ -72,10 +72,10 @@ extension OffWorkStore {
             upcoming.append(.init(
                 id: "lunch",
                 kind: .lunchStart,
-                title: t("lunchBreak"),
-                detail: t("lunchWindow", values: [
-                    "start": formatTime(windowStart),
-                    "end": formatTime(windowEnd)
+                title: text.t("lunchBreak"),
+                detail: text.t("lunchWindow", values: [
+                    "start": text.formatTime(windowStart),
+                    "end": text.formatTime(windowEnd)
                 ]),
                 date: windowStart,
                 route: .lunch
@@ -84,8 +84,8 @@ extension OffWorkStore {
             disabled.append(.init(
                 id: "lunch-off",
                 kind: .lunchStart,
-                title: t("lunchBreak"),
-                detail: t("disabledShort"),
+                title: text.t("lunchBreak"),
+                detail: text.t("disabledShort"),
                 date: nil,
                 route: .lunch
             ))
@@ -94,7 +94,7 @@ extension OffWorkStore {
         // One row, not one per firing: an hourly reminder across a nine-hour
         // shift is eight identical lines. The detail carries the interval so the
         // single row still says it repeats.
-        if presentationMicroBreakEnabled {
+        if self.session.presentationMicroBreakEnabled {
             // Only a time the shared rules actually scheduled. Inventing
             // nextShiftStart + interval produced a 10:00 on a 09:00–10:00
             // shift, which the engine never fires.
@@ -107,8 +107,8 @@ extension OffWorkStore {
             upcoming.append(.init(
                 id: "micro-break",
                 kind: .health,
-                title: t("microBreakReminder"),
-                detail: t("minutesShort", values: ["count": "\(presentationMicroBreakIntervalMinutes)"]),
+                title: text.t("microBreakReminder"),
+                detail: text.t("minutesShort", values: ["count": "\(self.session.presentationMicroBreakIntervalMinutes)"]),
                 date: date,
                 route: .health
             ))
@@ -116,19 +116,19 @@ extension OffWorkStore {
             disabled.append(.init(
                 id: "micro-break-off",
                 kind: .health,
-                title: t("microBreakReminder"),
-                detail: t("disabledShort"),
+                title: text.t("microBreakReminder"),
+                detail: text.t("disabledShort"),
                 date: nil,
                 route: .health
             ))
         }
 
 
-        if presentationLiveActivityEnabled {
+        if self.session.presentationLiveActivityEnabled {
             // Hangs off whichever shift end is still ahead. Opening the app
             // after clocking off otherwise put this at the top of the list,
             // announcing a lock-screen banner that came and went hours ago.
-            let lead = Double(-liveActivityLeadMinutes * 60)
+            let lead = Double(-preferences.liveActivityLeadMinutes * 60)
             let thisShift = snapshot.plannedEndDate.addingTimeInterval(lead)
             let at = (!endedEarly && thisShift > now)
                 ? thisShift
@@ -137,8 +137,8 @@ extension OffWorkStore {
                 upcoming.append(.init(
                     id: "live-activity",
                     kind: .liveActivity,
-                    title: t("liveActivity"),
-                    detail: t("liveActivityLead", values: ["count": "\(liveActivityLeadMinutes)"]),
+                    title: text.t("liveActivity"),
+                    detail: text.t("liveActivityLead", values: ["count": "\(preferences.liveActivityLeadMinutes)"]),
                     date: at,
                     route: .notifications
                 ))
@@ -156,12 +156,12 @@ extension OffWorkStore {
         // notifications off the list contradicted itself outright, showing the
         // timed Live Activity row directly above a row calling the same feature
         // disabled.
-        if !presentationLiveActivityEnabled && presentationNotificationMode == .off {
+        if !self.session.presentationLiveActivityEnabled && self.session.presentationNotificationMode == .off {
             disabled.append(.init(
                 id: "off-work-reminder-off",
                 kind: .offWorkReminder,
-                title: t("offWorkReminder"),
-                detail: t("disabledShort"),
+                title: text.t("offWorkReminder"),
+                detail: text.t("disabledShort"),
                 date: nil,
                 route: .notifications
             ))
@@ -182,10 +182,10 @@ extension OffWorkStore {
             upcoming.append(.init(
                 id: "shift-end",
                 kind: .shiftEnd,
-                title: t("endTime"),
+                title: text.t("endTime"),
                 // Same as the start row: "today's shift" is a lie once it is
                 // tomorrow's, and the weekday in the time column says which day.
-                detail: (!endedEarly && snapshot.endDate > now) ? t("todaysShift") : nil,
+                detail: (!endedEarly && snapshot.endDate > now) ? text.t("todaysShift") : nil,
                 date: endDate,
                 route: nil
             ))
@@ -198,7 +198,7 @@ extension OffWorkStore {
         disabled.append(.init(
             id: "schedule",
             kind: .schedule,
-            title: t("workSchedule"),
+            title: text.t("workSchedule"),
             detail: scheduleLabel,
             date: nil,
             route: .schedule
@@ -227,10 +227,10 @@ extension OffWorkStore {
         }
         guard let nextShiftStart, let nextShiftEnd else { return nil }
         let nextReminders = (try? CountdownRules.shared.reminders(
-            input: rulesInput(
+            input: self.session.rulesInput(
                 at: nextShiftStart,
-                startMinutes: minutes(from: nextShiftStart),
-                endMinutes: minutes(from: nextShiftEnd)
+                startMinutes: self.session.minutes(from: nextShiftStart, calendar: session.countdownCalendar),
+                endMinutes: self.session.minutes(from: nextShiftEnd, calendar: session.countdownCalendar)
             ),
             reminderInputs: reminderInputs()
         )) ?? []
@@ -249,8 +249,8 @@ extension OffWorkStore {
         at date: Date = .now
     ) -> (start: Date, end: Date)? {
         guard let window = lunchWindow(in: snapshot) else { return nil }
-        let cutoffMs = isEndedEarly(snapshot)
-            ? (earlyOffAtMs ?? date.timeIntervalSince1970 * 1_000)
+        let cutoffMs = self.session.isEndedEarly(snapshot)
+            ? (self.session.earlyOffAtMs ?? date.timeIntervalSince1970 * 1_000)
             : date.timeIntervalSince1970 * 1_000
         let lunchEndMs = window.end.timeIntervalSince1970 * 1_000
         guard cutoffMs >= lunchEndMs else { return nil }
@@ -258,7 +258,7 @@ extension OffWorkStore {
     }
 
     /// The break as the rules engine actually placed it — read off the gap
-    /// between two work segments rather than from `lunchStartMinutes`, so an
+    /// between two work segments rather than from `preferences.lunchStartMinutes`, so an
     /// overnight shift's after-midnight break lands on the right day.
     private func lunchWindow(in snapshot: NativeShiftSnapshot) -> (start: Date, end: Date)? {
         for (index, segment) in snapshot.segments.dropLast().enumerated() {
@@ -275,11 +275,11 @@ extension OffWorkStore {
     /// When the current hours cannot place a gap, still describe the setting
     /// the user turned on rather than pretending it is off.
     private func configuredLunchWindow(for snapshot: NativeShiftSnapshot) -> (start: Date, end: Date) {
-        var start = dateForMinutes(lunchStartMinutes, base: snapshot.startDate)
+        var start = self.session.dateForMinutes(preferences.lunchStartMinutes, base: snapshot.startDate, calendar: session.countdownCalendar)
         if start <= snapshot.startDate {
-            start = Calendar.current.date(byAdding: .day, value: 1, to: start) ?? start
+            start = session.countdownCalendar.date(byAdding: .day, value: 1, to: start) ?? start
         }
-        let end = start.addingTimeInterval(Double(max(lunchDurationMinutes, 0)) * 60)
+        let end = start.addingTimeInterval(Double(max(preferences.lunchDurationMinutes, 0)) * 60)
         return (start, end)
     }
 }

@@ -161,7 +161,7 @@ final class NotificationService {
     }
 
     /// Owns the focus/break notification lifecycle. It intentionally has no
-    /// dependency on `OffWorkStore`, so timer model tests can inject a pure
+    /// dependency on the application runtime, so timer model tests can inject a pure
     /// decision while production still uses the system notification center.
     static func scheduleFocusTimers(
         id: UUID,
@@ -263,13 +263,13 @@ final class NotificationService {
         "owc.focus.\(id.uuidString).\(slot.rawValue)"
     }
 
-    func reschedule(store: OffWorkStore, now: Date? = nil) async {
+    func reschedule(shifts: ShiftSessionStore, now: Date? = nil) async {
         await enqueueShiftOperation { generation in
-            await self.performReschedule(store: store, now: now ?? .now, generation: generation)
+            await self.performReschedule(shifts: shifts, now: now ?? .now, generation: generation)
         }
     }
 
-    private func performReschedule(store: OffWorkStore, now: Date, generation: Int) async {
+    private func performReschedule(shifts: ShiftSessionStore, now: Date, generation: Int) async {
         await refresh()
         let center = shiftCenter
         let pending = await center.pendingIDs()
@@ -277,26 +277,28 @@ final class NotificationService {
             pending.filter { $0.hasPrefix("owc.shift.") }
         )
 
+        do { try await shifts.records.flush() }
+        catch { return }
         guard generation == scheduleGeneration else { return }
-        guard status == .allowed, store.publishesLiveSurfaces else {
+        guard status == .allowed, shifts.session.publishesLiveSurfaces else {
             center.removePending(Array(existingIdentifiers))
             return
         }
-        guard let reminders = try? store.shiftReminders(at: now) else { return }
-        guard generation == scheduleGeneration, store.publishesLiveSurfaces else { return }
+        guard let reminders = try? shifts.shiftReminders(at: now) else { return }
+        guard generation == scheduleGeneration, shifts.session.publishesLiveSurfaces else { return }
 
-        let snapshot = store.snapshot(at: now)
+        let snapshot = shifts.session.snapshot(at: now)
         let future = reminders.filter { reminder in
             guard reminder.atMs > now.timeIntervalSince1970 * 1_000,
                   reminder.title != nil,
                   reminder.body != nil
             else { return false }
             guard let snapshot else { return true }
-            return store.shouldDeliverReminder(reminder, for: snapshot)
+            return shifts.session.shouldDeliverReminder(reminder, for: snapshot)
         }
         let essential = future.filter { $0.kind != "microBreak" }.sorted { $0.atMs < $1.atMs }
         let health = future.filter { $0.kind == "microBreak" }.sorted { $0.atMs < $1.atMs }
-        let schedulesLiveActivityFallback = store.shouldScheduleLiveActivityEndFallback(
+        let schedulesLiveActivityFallback = shifts.shouldScheduleLiveActivityEndFallback(
             snapshot: snapshot,
             at: now
         )
@@ -305,7 +307,7 @@ final class NotificationService {
         var allSucceeded = true
 
         for reminder in desired {
-            guard generation == scheduleGeneration, store.publishesLiveSurfaces else { return }
+            guard generation == scheduleGeneration, shifts.session.publishesLiveSurfaces else { return }
             guard let title = reminder.title, let body = reminder.body else { continue }
             let content = UNMutableNotificationContent()
             content.title = title
@@ -337,8 +339,8 @@ final class NotificationService {
            generation == scheduleGeneration {
             let identifier = "owc.shift.live.end.\(Int64(snapshot.endAtMs))"
             let content = UNMutableNotificationContent()
-            content.title = store.t("offWorkTime")
-            content.body = store.t("offWorkToday")
+            content.title = shifts.text.t("offWorkTime")
+            content.body = shifts.text.t("offWorkToday")
             content.sound = .default
             let components = Calendar.current.dateComponents(
                 [.year, .month, .day, .hour, .minute, .second],
@@ -356,7 +358,7 @@ final class NotificationService {
             }
         }
 
-        if allSucceeded, generation == scheduleGeneration, store.publishesLiveSurfaces {
+        if allSucceeded, generation == scheduleGeneration, shifts.session.publishesLiveSurfaces {
             let stale = existingIdentifiers.subtracting(desiredIdentifiers)
             center.removePending(Array(stale))
         }
