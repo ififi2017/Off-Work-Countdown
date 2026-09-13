@@ -3,6 +3,11 @@
   "bundle": {
     "resources": {
       "macos-lproj/": ""
+    },
+    "macOS": {
+      "files": {
+        "Resources/Assets.car": "./target/macos-icon/Assets.car"
+      }
     }
   }
 }

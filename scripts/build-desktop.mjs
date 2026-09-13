@@ -32,6 +32,17 @@ const lproj = spawnSync(
 if (lproj.error) throw lproj.error;
 if (lproj.status !== 0) process.exit(lproj.status ?? 1);
 
+// macOS 包的 Assets.car：由 assets/brand/AppIcon.icon 编译，tauri.macos.conf.json
+// 的 bundle.macOS.files 把它放进 Contents/Resources。非 macOS 上脚本自行跳过。
+const macosIcon = spawnSync(
+  process.execPath,
+  [resolve("scripts/generate-macos-icon.mjs")],
+  { stdio: "inherit" }
+);
+
+if (macosIcon.error) throw macosIcon.error;
+if (macosIcon.status !== 0) process.exit(macosIcon.status ?? 1);
+
 const result = spawnSync(
   process.execPath,
   [resolve("node_modules/next/dist/bin/next"), "build"],
