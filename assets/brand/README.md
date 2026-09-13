@@ -31,6 +31,19 @@ dot as separate foreground layers. Appearance color, translucency, specular
 highlights, refraction, and shadows belong in Icon Composer rather than in these
 source layers.
 
+The ring and the hands are filled outlines, not stroked paths. Icon Composer
+builds the glass shape from a path's fill region, and an open stroked arc fills
+across its own chord: the ring's opening became glass, with a highlight drawn
+from one end of the ring to the other. Keep every layer a closed, filled shape;
+the full composition and the UI mark may still use strokes.
+
+`AppIcon.icon` is the finished Icon Composer document and the app icon for
+iPhone, iPad and Apple Watch. The Xcode project references it here directly;
+there is no copy under `src-mobile`. Do not replace that reference with a
+symlink — `actool` cannot read an `.icon` through one and aborts the build.
+Save changes in place and rebuild; `npm run check:ios` verifies the document
+and both target references.
+
 Every path in this set was authored for this product; no stock icon, SF Symbol,
 or third-party artwork is embedded. That improves provenance, but it is not a
 substitute for a trademark clearance search before registration or a major

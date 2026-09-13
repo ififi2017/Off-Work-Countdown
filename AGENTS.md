@@ -439,7 +439,8 @@ sweep; re-run one before trusting the landscape columns.
 `npm run check:ios` guards the shipping configuration of that project — bundle
 ids against Universal Purchase, the SwiftUI entry point, iPhone/iPad
 orientations, the App Group both targets share, the embedded widget, Live
-Activity support, and the alpha-free 1024×1024 icon. It reads the working tree
+Activity support, and the Icon Composer app icon (`assets/brand/AppIcon.icon`,
+referenced by both the App and the Watch App, never symlinked). It reads the working tree
 directly, so it needs no build and runs on a clean clone. Run it after any
 change under `src-mobile/ios`.
 
