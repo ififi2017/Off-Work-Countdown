@@ -205,6 +205,54 @@ nonisolated enum WatchShiftEvaluationFixtures {
             )
         ),
         .init(
+            name: "dst-fall-back",
+            nowMs: 1793525400000,
+            shift: .init(
+                segments: [.init(startAtMs: 1793516400000, endAtMs: 1793548800000)],
+                plannedEndAtMs: 1793548800000,
+                overtimeEndAtMs: nil,
+                finishedAtMs: nil,
+                isRunning: true,
+                transitions: []
+            ),
+            expected: .init(
+                phase: .working, totalMs: 32400000, elapsedMs: 9000000,
+                remainingMs: 23400000, progress: 27.77777777777778, nextBoundaryAtMs: 1793548800000
+            )
+        ),
+        .init(
+            name: "other-time-zone",
+            nowMs: 1789394400000,
+            shift: .init(
+                segments: [.init(startAtMs: 1789390800000, endAtMs: 1789419600000)],
+                plannedEndAtMs: 1789419600000,
+                overtimeEndAtMs: nil,
+                finishedAtMs: nil,
+                isRunning: true,
+                transitions: []
+            ),
+            expected: .init(
+                phase: .working, totalMs: 28800000, elapsedMs: 3600000,
+                remainingMs: 25200000, progress: 12.5, nextBoundaryAtMs: 1789419600000
+            )
+        ),
+        .init(
+            name: "slept-through-to-next-shift",
+            nowMs: 1789432200000,
+            shift: .init(
+                segments: [.init(startAtMs: 1789434000000, endAtMs: 1789462800000)],
+                plannedEndAtMs: 1789462800000,
+                overtimeEndAtMs: nil,
+                finishedAtMs: nil,
+                isRunning: true,
+                transitions: []
+            ),
+            expected: .init(
+                phase: .before, totalMs: 28800000, elapsedMs: 0,
+                remainingMs: 28800000, progress: 0, nextBoundaryAtMs: 1789434000000
+            )
+        ),
+        .init(
             name: "final-boundary",
             nowMs: 1789376400000,
             shift: .init(

@@ -60,6 +60,28 @@ struct WatchDisplayProjectionTests {
         #expect(pendingDates.contains(700))
     }
 
+    @Test("Smart Stack relevance covers only a shift the Watch may show, clipped to both expiries")
+    func relevantIntervals() {
+        func ms(_ intervals: [DateInterval]) -> [[Int64]] {
+            intervals.map { [Int64(($0.start.timeIntervalSince1970 * 1_000).rounded()),
+                             Int64(($0.end.timeIntervalSince1970 * 1_000).rounded())] }
+        }
+        // Planned 200–800, clipped by the access expiry. A shift may not outlive its
+        // package (that package is invalid), so an expired package simply contributes nothing.
+        #expect(ms(WatchDisplayProjection.relevantIntervals(for: package(shift: shift(finishedAtMs: nil)), nowMs: 150)) == [[200, 800]])
+        #expect(WatchDisplayProjection.relevantIntervals(
+            for: package(expiresAtMs: 1_000, shift: shift(finishedAtMs: nil)), nowMs: 1_000).isEmpty)
+        #expect(ms(WatchDisplayProjection.relevantIntervals(
+            for: package(access: .active, accessUntilMs: 600, shift: shift(finishedAtMs: nil)), nowMs: 300)) == [[200, 600]])
+
+        #expect(WatchDisplayProjection.relevantIntervals(for: nil, nowMs: 300).isEmpty)
+        #expect(WatchDisplayProjection.relevantIntervals(for: package(access: .locked), nowMs: 300).isEmpty)
+        #expect(WatchDisplayProjection.relevantIntervals(for: package(access: .unknown), nowMs: 300).isEmpty)
+        #expect(WatchDisplayProjection.relevantIntervals(for: package(shift: shift(finishedAtMs: 650)), nowMs: 300).isEmpty)
+        #expect(WatchDisplayProjection.relevantIntervals(for: package(shift: nil), nowMs: 300).isEmpty)
+        #expect(WatchDisplayProjection.relevantIntervals(for: package(shift: shift(finishedAtMs: nil)), nowMs: 800).isEmpty)
+    }
+
     @Test("Formats in the package's language and time zone, with units and rounding that match a countdown")
     func formatting() throws {
         var utc = Calendar(identifier: .gregorian)
@@ -81,6 +103,11 @@ struct WatchDisplayProjectionTests {
         #expect(WatchDisplayFormat.shortDuration(3 * 3_600_000 + 17 * 60_000 + 1, newYork) == "3h 18m")
         #expect(WatchDisplayFormat.shortDuration(45 * 60_000, newYork) == "45m")
         #expect(WatchDisplayFormat.percent(59.6, newYork) == "60%")
+        // Layout direction follows the words' language, not the bundle's declared localizations.
+        #expect(WatchDisplayFormat.isRightToLeft(localeIdentifier: "ar"))
+        #expect(WatchDisplayFormat.isRightToLeft(localeIdentifier: "ar-SA"))
+        #expect(!WatchDisplayFormat.isRightToLeft(localeIdentifier: "en"))
+        #expect(!WatchDisplayFormat.isRightToLeft(localeIdentifier: "zh-CN"))
         #expect(WatchDisplayFormat.fill("剩余 {{duration}}", ["duration": "3小时"]) == "剩余 3小时")
     }
 

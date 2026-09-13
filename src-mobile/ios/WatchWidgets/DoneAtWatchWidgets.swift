@@ -1,3 +1,4 @@
+import RelevanceKit
 import SwiftUI
 import WidgetKit
 
@@ -33,6 +34,19 @@ private struct DoneAtWatchProvider: TimelineProvider {
         }
     }
 
+    /// A hint that the shift window is when this complication matters. watchOS
+    /// weighs it against everything else; it does not pin the widget in place.
+    func relevance() async -> WidgetRelevance<Void> {
+        guard let fileURL = WatchSnapshotCache.appGroupFileURL() else { return WidgetRelevance([]) }
+        let package = await WatchSnapshotCache.open(fileURL: fileURL).currentPackage()
+        let intervals = WatchDisplayProjection.relevantIntervals(
+            for: package, nowMs: Int64(Date.now.timeIntervalSince1970 * 1_000)
+        )
+        return WidgetRelevance(intervals.map {
+            WidgetRelevanceAttribute(context: RelevantContext.date(interval: $0, kind: .scheduled))
+        })
+    }
+
     private func entry(at date: Date) async -> DoneAtWatchEntry {
         guard let fileURL = WatchSnapshotCache.appGroupFileURL() else { return .init(date: date, display: .waiting) }
         let cache = await WatchSnapshotCache.open(fileURL: fileURL)
@@ -48,7 +62,11 @@ private struct DoneAtWatchWidgetView: View {
     let entry: DoneAtWatchEntry
 
     var body: some View {
+        // Placeholders speak the Watch's language; shift content overrides this with the iPhone app's.
         content
+            .environment(\.layoutDirection, WatchDisplayFormat.isRightToLeft(
+                localeIdentifier: WatchLocalizations.resolveLocale(Locale.preferredLanguages)
+            ) ? .rightToLeft : .leftToRight)
             .containerBackground(.fill.tertiary, for: .widget)
             .widgetURL(URL(string: "offworkcountdown://timer"))
     }
@@ -60,6 +78,9 @@ private struct DoneAtWatchWidgetView: View {
                 if family == .accessoryCircular { circular(value) } else { rectangular(value) }
             }
             .environment(\.locale, WatchDisplayFormat.locale(value.presentation))
+            .environment(\.layoutDirection, WatchDisplayFormat.isRightToLeft(
+                localeIdentifier: value.presentation.localeIdentifier
+            ) ? .rightToLeft : .leftToRight)
         case .waiting:
             unavailable(WatchLocalizations.text("watchWaitingForIPhone"), symbol: "iphone.and.arrow.forward")
         case .locked:
