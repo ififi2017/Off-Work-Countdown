@@ -113,7 +113,7 @@ final class ShiftSessionStore {
         records.submitCommand { [self] in
             guard plus.shouldCollectObservations else { return }
             // The first-seen row is one per civil day. Calling this on every tab
-            // switch used to rebuild a JavaScriptCore snapshot just to write nothing.
+            // switch used to rebuild a shift snapshot just to write nothing.
             let dayKey = RecordJSON.dayKey(date, calendar: preferences.recordsCalendar)
             if (queries.observationIndex()[dayKey] ?? []).contains(where: { $0.kind == .timerSurfaceFirstSeen }) {
                 return
@@ -228,8 +228,8 @@ final class ShiftSessionStore {
         )
     }
     /// Builds the body only for the last resolved workday before a rest day.
-    /// Work/rest classification has already come from the shared TypeScript
-    /// expansion and then passed through calendar exceptions and manual edits.
+    /// Work/rest classification has already come from the schedule expansion
+    /// and then passed through calendar exceptions and manual edits.
     func cycleEndSummaryNotificationBody(
         for snapshot: NativeShiftSnapshot,
         at date: Date = .now

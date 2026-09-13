@@ -9,7 +9,7 @@ enum FocusPlanner {
     nonisolated static let pomodoroMinutes = 25 // legacy display compatibility
 
     /// Builds a real focus/recovery cycle from effective segments supplied by
-    /// the shared rules bundle. The first boundary that cannot fit the next
+    /// the schedule rules. The first boundary that cannot fit the next
     /// phase ends the timeline instead of silently stretching a break to a
     /// 25-minute tile or crossing lunch/clock-off.
     /// The grid for a whole shift.

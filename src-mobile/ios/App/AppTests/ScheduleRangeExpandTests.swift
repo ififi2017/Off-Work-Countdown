@@ -23,7 +23,7 @@ func expandScheduleRangeCoversRestAndOvernight() throws {
     )
     let friday = Calendar.current.date(from: DateComponents(year: 2026, month: 8, day: 28))!
     let sunday = Calendar.current.date(from: DateComponents(year: 2026, month: 8, day: 30))!
-    let days = try CountdownRules.shared.expandScheduleRange(
+    let days = ScheduleRules.expandScheduleRange(
         configuration: configuration,
         from: friday,
         through: sunday
@@ -57,7 +57,7 @@ func expandScheduleRangeTenYearMeasurement() throws {
     let from = Calendar.current.date(from: DateComponents(year: 2016, month: 1, day: 1))!
     let through = Calendar.current.date(from: DateComponents(year: 2025, month: 12, day: 31))!
     let started = ContinuousClock.now
-    let days = try CountdownRules.shared.expandScheduleRange(
+    let days = ScheduleRules.expandScheduleRange(
         configuration: configuration,
         from: from,
         through: through
@@ -72,7 +72,7 @@ func expandScheduleRangeTenYearMeasurement() throws {
     let yearFrom = Calendar.current.date(from: DateComponents(year: 2026, month: 1, day: 1))!
     let yearThrough = Calendar.current.date(from: DateComponents(year: 2026, month: 12, day: 31))!
     let yearStarted = ContinuousClock.now
-    let yearDays = try CountdownRules.shared.expandScheduleRange(
+    let yearDays = ScheduleRules.expandScheduleRange(
         configuration: configuration,
         from: yearFrom,
         through: yearThrough
@@ -115,8 +115,8 @@ func snapshotHonorsLockedTimeZone() throws {
             timeZoneIdentifier: timeZone
         )
     }
-    let shanghai = try CountdownRules.shared.snapshot(input: input("Asia/Shanghai"))
-    let losAngeles = try CountdownRules.shared.snapshot(input: input("America/Los_Angeles"))
+    let shanghai = ScheduleRules.snapshot(input: input("Asia/Shanghai"))
+    let losAngeles = ScheduleRules.snapshot(input: input("America/Los_Angeles"))
     let shanghaiStart = ISO8601DateFormatter().date(from: "2026-08-25T01:00:00Z")!
     let losAngelesStart = ISO8601DateFormatter().date(from: "2026-08-24T16:00:00Z")!
     #expect(shanghai.startAtMs == shanghaiStart.timeIntervalSince1970 * 1_000)

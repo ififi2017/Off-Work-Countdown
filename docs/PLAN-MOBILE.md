@@ -4,9 +4,11 @@
 Android 暂时搁置，不进入当前排期。
 
 生产 iOS App 已经是纯 SwiftUI 原生实现，位于 src-mobile/ios；不嵌入 WebView，也不使用
-已经归档的 Capacitor spike。排班、提醒和汇总规则仍以 lib/countdown.ts、
-lib/reminders.ts 和 lib/summary.ts 为唯一实现，由构建脚本生成 CountdownRules.js，
-iPhone/iPad 通过 JavaScriptCore 消费结果。Swift 和未来的 watchOS 代码都不得复制这些规则。
+已经归档的 Capacitor spike。排班、提醒和汇总规则以 lib/countdown.ts、
+lib/reminders.ts 和 lib/summary.ts 为规格。自 019 R1 起，iOS 的班次解析、快照、Widget 班次、
+Watch 投影和区间展开由 ScheduleRules.swift 实现，并以 TS 生成的差分 fixture 校验；提醒、汇总与
+收入仍由构建脚本生成的 CountdownRules.js 在 JavaScriptCore 中计算，按 019 R2–R4 分批迁移。
+watchOS 代码不复制这些规则，只消费 iPhone 的投影。
 
 产品继续坚持本地优先：不增加账号、分析 SDK 或自有服务器，不上传排班与薪资。任何跨设备
 能力都必须明确写出同步范围、失败方式和隐私变化，不能把“Apple 平台自动同步”当成默认事实。
@@ -215,8 +217,12 @@ P4/P5 的真机验收状态不因此改为完成。
 - lib/countdown.ts：班次、有效 segments、计划结束、加班与下一班的唯一规则。
 - lib/reminders.ts：里程碑、下班、午休边界和健康提醒绝对触发时间的唯一规则。
 - lib/summary.ts：周/年汇总和计薪口径的唯一规则。
-- scripts/build-ios-native-rules.mjs：生成 iOS 使用的 CountdownRules.js。
-- Swift 只传入设置并渲染绝对结果，不重新实现“今天是否上班”“轮班第几天”或薪资计算。
+- scripts/build-ios-native-rules.mjs：生成 iOS 仍在使用的 CountdownRules.js（提醒、汇总与收入）。
+- ScheduleRules.swift（019 R1）：iOS 的班次解析、快照、Widget 班次、Watch 投影与区间展开。
+  scripts/ios-schedule-rule-oracle.mjs 保留对应的 TypeScript 入口，npm run generate:ios-rule-fixtures
+  生成差分 fixture，npm test 与 Xcode Cloud 检查它是否过期。
+- 其余 Swift 代码只传入设置并渲染绝对结果，不在 ScheduleRules 之外重新实现“今天是否上班”
+  “轮班第几天”或薪资计算。
 
 未来 Watch 不直接运行另一份 Swift 排班算法。iPhone 负责把当前规则结果投影为可离线渲染的
 WatchSnapshot；Watch 只根据绝对时间、segments 和过期时间显示状态。
@@ -241,7 +247,7 @@ App Group 不能用于 iPhone 和 iPad 跨设备同步，也不能让 iPad 与 A
   `asc:sync` 会跳过这些字段；可编辑的 iOS 版本仍可换截图和 Preview。
 - 当前发布路径是 Xcode Cloud 的 main 分支变更触发、Release Archive 和 TestFlight Internal
   Testing；不创建 ios-v tag 自动上传路径。
-- Xcode Cloud 必须在编译前生成未提交的 CountdownRules.js。
+- Xcode Cloud 必须在编译前生成未提交的 CountdownRules.js，并检查 Watch 与排班规则的差分 fixture 未过期。
 - CURRENT_PROJECT_VERSION 由 Xcode Cloud 或发布流程递增；MARKETING_VERSION 与产品版本保持
   一致。
 - npm run check:ios 必须随着 Watch targets 扩展，验证 bundle id、App Group、嵌入关系、

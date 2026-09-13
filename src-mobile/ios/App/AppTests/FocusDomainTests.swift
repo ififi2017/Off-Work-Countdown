@@ -33,9 +33,9 @@ struct FocusDomainTests {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(identifier: "UTC"))
         let date = try #require(calendar.date(from: DateComponents(year: 2026, month: 9, day: 7, hour: 10)))
-        // The production TypeScript bundle supplies the shift; this test only
+        // The production schedule rules supply the shift; this test only
         // exercises the Focus action and its archive boundary.
-        let shift = try CountdownRules.shared.snapshot(input: NativeRulesInput(
+        let shift = ScheduleRules.snapshot(input: NativeRulesInput(
             startTime: "09:00", endTime: "17:00", nowMs: date.timeIntervalSince1970 * 1_000,
             workdays: [1, 2, 3, 4, 5],
             schedule: NativeWorkSchedule(mode: "classic", referenceWeekStartMs: nil,

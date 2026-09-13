@@ -32,17 +32,31 @@ or place salary values in widgets, URLs, analytics payloads or share metadata.
   back into Rust — that is what the 3.1.6 refactor removed. iOS schedules the
   same list up front, because a phone cannot poll every second.
   `lib/reminders.test.ts` is the acceptance spec for every consumer.
-- iOS reaches those rules through `src-mobile/ios/App/App/Resources/CountdownRules.js`,
-  generated from `lib/countdown.ts`, `lib/reminders.ts` and `lib/summary.ts` by
-  `npm run build:ios-native-rules` and evaluated in JavaScriptCore. Swift only
-  feeds it inputs and renders what comes back. **Do not port a rule into Swift**
-  — a schedule, summary or salary calculation written twice is two answers, and
-  the "This week" row has already shipped disagreeing values that way. If Swift
-  needs a value the bundle does not expose, extend the bundle. A port is not
-  forbidden forever, but it is gated: `plans/002-records-life-focus.md` sets the
-  bar as a measurement, not an expectation, and any port must arrive with the
-  TS-generated differential fixtures and an update to this rule in the same
-  change. Until that measurement exists, extend the bundle.
+- iOS resolves shifts in Swift since plan 019 R1.
+  `src-mobile/ios/App/App/Native/Models/ScheduleRules.swift` owns the current
+  shift, snapshots, the next shift and rest day, Widget shifts, the Watch
+  projection, range expansion and break validation. The TypeScript above stays
+  the specification for everything iOS shares with Web and Desktop:
+  `scripts/ios-schedule-rule-oracle.mjs` keeps those entry points in TypeScript,
+  `npm run generate:ios-rule-fixtures` turns them into
+  `AppTests/ScheduleRuleFixtures.generated.json`, and
+  `AppTests/ScheduleRuleFixtureTests.swift` holds the Swift port to it. A change
+  to shared shift behaviour therefore lands in `lib/` and `ScheduleRules.swift`
+  in the same change, with regenerated fixtures — `npm test` fails while they
+  are stale. Never regenerate to make a Swift failure go away; decide which side
+  is right first. Behaviour only iOS has, such as plan 018 P8's extended
+  scheduling, is written and tested in Swift alone.
+- Reminders, summaries and income still reach iOS through
+  `src-mobile/ios/App/App/Resources/CountdownRules.js`, generated from
+  `lib/countdown.ts`, `lib/reminders.ts` and `lib/summary.ts` by
+  `npm run build:ios-native-rules` and evaluated in JavaScriptCore, until plan
+  019 R2 and R3 move them. For those, Swift only feeds inputs and renders what
+  comes back. **Do not port one of them into Swift outside that plan** — a
+  summary or salary calculation written twice is two answers, and the "This
+  week" row has already shipped disagreeing values that way. Each batch arrives
+  with TS-generated differential fixtures, deletes its JavaScriptCore path, and
+  updates this rule in the same change. Until then, if Swift needs a value the
+  bundle does not expose, extend the bundle.
 - The generated bundle is a build artifact, not source. It is regenerated from
   the TypeScript, so never hand-edit it, and never let a Swift change depend on
   a bundle that was not rebuilt from the current `lib/`.
@@ -363,7 +377,8 @@ npm run build:ios-native-rules
 ```
 
 Rerun it after any change to `lib/countdown.ts`, `lib/reminders.ts` or
-`lib/summary.ts`. Open the project directly — there is no Capacitor sync step
+`lib/summary.ts`. A change to shift rules also needs the matching change in
+`ScheduleRules.swift` and `npm run generate:ios-rule-fixtures`. Open the project directly — there is no Capacitor sync step
 any more:
 
 ```bash
@@ -507,8 +522,7 @@ individually by building their instants from civil dates.
 
 **Wall-clock assertions are meaningless under parallel testing.** Swift Testing
 runs tests in parallel *within one process*, so everything contends for the
-main actor — and `CountdownRules` owns the JavaScriptCore context on it, which
-`recordsDayCanvas` must reach. Measured on one machine, one commit:
+main actor — and `recordsDayCanvas` does part of its work there. Measured on one machine, one commit:
 `RecordsPerformanceTests.surfaceCost` reads `canvasMs` as 1.7 ms serially and
 5764 ms in the parallel suite. The assertion and the code are both fine; the
 parallel measurement is not. Work that stays off the main actor is unaffected,
@@ -563,7 +577,11 @@ A change to `lib/countdown.ts`, `lib/reminders.ts` or `lib/summary.ts` reaches
 all three targets. It must pass `npm test`, and it must be rebuilt into the iOS
 bundle (`npm run build:ios-native-rules`) and compiled for the simulator —
 otherwise iOS keeps running the previous rules and the divergence surfaces as a
-wrong number on a screen rather than as a build failure.
+wrong number on a screen rather than as a build failure. Shift resolution is
+Swift since plan 019 R1, so a change to it also needs the same change in
+`ScheduleRules.swift`, regenerated fixtures and a passing
+`ScheduleRuleFixtureTests` run; `npm test` reports the fixtures stale until
+then.
 
 ## Version and release rules
 

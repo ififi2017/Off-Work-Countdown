@@ -123,10 +123,9 @@ final class RecordsQueries {
     }
 
     /// The same answer as `resolveDays`, with the per-day walk off the main
-    /// actor. Only the expansion gather has to stay here: `CountdownRules`
-    /// owns the JavaScriptCore context and its cache, and
-    /// `prefetchScheduleExpansions` has normally already filled it on
-    /// `ScheduleRangeEngine`.
+    /// actor. Only the expansion gather has to stay here: it reads the
+    /// main-actor `ScheduleExpansionCache`, which `prefetchScheduleExpansions`
+    /// has normally already filled off the main actor.
     private func resolveDaysOffMainActor(
         from: Date,
         through: Date,
@@ -188,8 +187,8 @@ final class RecordsQueries {
     }
 
     /// Every schedule expansion the day walk will ask for, keyed by snapshot.
-    /// This is the half that cannot leave the main actor, so it is deliberately
-    /// the small half: one JavaScriptCore range per snapshot, not per day.
+    /// This is the half that reads the main-actor cache, so it is deliberately
+    /// the small half: one range per snapshot, not per day.
     func gatherScheduleExpansions(
         from: Date,
         through: Date,
@@ -214,12 +213,13 @@ final class RecordsQueries {
             if let configuration = try? JSONDecoder().decode(
                 ScheduleHoursConfiguration.self,
                 from: snapshot.configurationData
-            ), let days = try? CountdownRules.shared.expandScheduleRange(
-                configuration: configuration,
-                from: dayCalendar.startOfDay(for: from),
-                through: dayCalendar.startOfDay(for: through),
-                timeZone: period.timeZone
             ) {
+                let days = ScheduleExpansionCache.shared.days(
+                    configuration: configuration,
+                    from: dayCalendar.startOfDay(for: from),
+                    through: dayCalendar.startOfDay(for: through),
+                    timeZone: period.timeZone
+                )
                 // Date-line changes can produce duplicate civil day keys.
                 table.bySnapshot[snapshot.id] = Dictionary(
                     days.map { ($0.dayKey, ScheduleExpansion(isWorkday: $0.isWorkday, segments: $0.segments)) },
@@ -234,7 +234,7 @@ final class RecordsQueries {
     }
 
     /// The day walk, over value types and already-expanded schedules: no store
-    /// access and no JavaScriptCore, which is what lets it leave the main
+    /// access and no shared cache, which is what lets it leave the main
     /// actor. A career is roughly 15,700 days of it.
     nonisolated static func walkResolutions(
         from start: Date,
@@ -341,8 +341,8 @@ final class RecordsQueries {
         )
     }
 
-    /// Same result as `resolvedDays`, but the JavaScriptCore walk runs off the
-    /// main actor. Opening the year chart used to expand 365 days during the
+    /// Same result as `resolvedDays`, but the day walk runs off the main
+    /// actor. Opening the year chart used to expand 365 days during the
     /// navigation push and freeze the Records list.
     func prepareResolvedDays(from: Date, through: Date, now: Date = .now) async -> [DayResolution] {
         let calendar = recordsCalendar
@@ -377,8 +377,8 @@ final class RecordsQueries {
         return result
     }
 
-    /// Records month/year projection. This reuses the generated TypeScript
-    /// schedule rules and Life's in-memory history backfill; it never creates
+    /// Records month/year projection. This reuses the schedule rules and
+    /// Life's in-memory history backfill; it never creates
     /// durable observations, overrides, periods or snapshots for estimated
     /// days.
     func prepareRecordsDisplayDays(
@@ -468,7 +468,7 @@ final class RecordsQueries {
                   )
             else { continue }
             let dayCalendar = period.civilCalendar()
-            try? await CountdownRules.shared.prefetchExpansion(
+            await ScheduleExpansionCache.shared.prefetch(
                 configuration: configuration,
                 from: dayCalendar.startOfDay(for: from),
                 through: dayCalendar.startOfDay(for: through),

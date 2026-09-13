@@ -429,11 +429,11 @@ final class LifeSummaryModel {
         value.calculationAnchor(in: calendar).map { RecordJSON.dayKey($0, calendar: calendar) }
     }
 
-    /// Warms every shared-rule expansion needed by Life on the background
-    /// ScheduleRangeEngine, then builds the model off the main actor too.
+    /// Warms every schedule expansion needed by Life off the main actor, then
+    /// builds the model off the main actor too.
     func prepareLifeViewModel(now: Date = .now) async -> LifeViewModel? {
         // Before the prefetch, not only inside the builder: decoding a
-        // configuration and hopping to the range engine once per snapshot is
+        // configuration and expanding off the main actor once per snapshot is
         // itself worth skipping when the answer is already known.
         if let cached = lifeViewModelCache, cached.key == lifeViewModelCacheKey(now: now) {
             reconciledRefreshInput = lifeSummaryRefreshInput(now: now)
@@ -483,7 +483,7 @@ final class LifeSummaryModel {
                   )
             else { continue }
             let periodCalendar = period.civilCalendar()
-            try? await CountdownRules.shared.prefetchExpansion(
+            await ScheduleExpansionCache.shared.prefetch(
                 configuration: configuration,
                 from: periodCalendar.startOfDay(for: workStart),
                 through: periodCalendar.startOfDay(for: finalDay),

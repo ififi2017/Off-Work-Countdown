@@ -125,7 +125,7 @@ nonisolated struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
         /// and it spends the card's only bar saying something the digits above
         /// it already said better. The meters therefore span the activity's
         /// own life: from the moment it was scheduled to appear to the end it
-        /// is counting to. Overtime needs no special case — the rules bundle
+        /// is counting to. Overtime needs no special case — the schedule rules
         /// already extends the last segment when it is added.
         ///
         /// Lunch still does not count, because these are the same effective
