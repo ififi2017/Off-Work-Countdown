@@ -26,7 +26,7 @@
 
 ### 位图（全部由 `sharp` 从母版重出）
 
-- iOS：`AppIcon-512@2x.png`（1024，无 alpha）、`BrandIcon.imageset`（圆角，透明角）、新增 `BrandMark.imageset`（无底板，明/暗各 1x/2x/3x）
+- iOS：`AppIcon-512@2x.png`（1024，无 alpha；2026-09-13 起由 `AppIcon.icon` 取代并删除）、`BrandIcon.imageset`（圆角，透明角）、新增 `BrandMark.imageset`（无底板，明/暗各 1x/2x/3x）
 - Web：`icon-192` / `icon-512`（透明角）、`icon-maskable-512`（满幅不透明）
 - Tauri：17 个，用 `npx tauri icon` 从透明的 1024 源图生成；macOS 菜单栏另用 `macos-tray-mark.png` / `macos-tray-mark-dark.png`（不要写进 `bundle.icon`）
 
@@ -83,7 +83,9 @@
 
 ### P2 — 深色与着色外观变体 + Icon Composer
 
-`AppIcon.appiconset/Contents.json` 仍只有一张 universal 图，iOS 18+ 的 tinted 外观会按亮度自动推导，深底浅字推出来会很闷。`assets/brand/layers/` 已按 Icon Composer 备好四层，缺的是导入那一步和一个 `.icon` 文件（工程里目前没有）。不挡送审。
+**2026-09-13 已接入**：`assets/brand/AppIcon.icon` 由用户在 Icon Composer 中调好，iPhone/iPad App 与 Watch App 直接引用这一份（工程路径 `../../../assets/brand/AppIcon.icon`），两个 `AppIcon.appiconset` 已删除。不能用软链接：`actool` 读不到软链接里的 `icon.json` 并崩溃。圆环与指针图层已从描边改成闭合填充，否则开口圆弧的弦会被当成玻璃内部。模拟器编译确认浅色、深色、着色三种外观与 watchOS 图标都已生成；主屏、App Store 与真机观感未验。
+
+原记录：`AppIcon.appiconset/Contents.json` 仍只有一张 universal 图，iOS 18+ 的 tinted 外观会按亮度自动推导，深底浅字推出来会很闷。
 
 ### P3 — 真机复测清单
 

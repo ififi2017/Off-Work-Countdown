@@ -50,6 +50,8 @@
 		D110000000000000000000F2 /* WatchSnapshotReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D120000000000000000000F2 /* WatchSnapshotReceiverTests.swift */; };
 		E000000B000000000000000B /* CountdownRules.js in Resources */ = {isa = PBXBuildFile; fileRef = F000000B000000000000000B /* CountdownRules.js */; };
 		E000000C000000000000000C /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
+		F1C00000000000000000A002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
+		F1C00000000000000000B002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -186,6 +188,7 @@
 		D12100000000000000000003 /* WatchAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WatchAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F000000B000000000000000B /* CountdownRules.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = CountdownRules.js; path = Resources/CountdownRules.js; sourceTree = "<group>"; };
 		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
+		F1C00000000000000000A001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = ../../../assets/brand/AppIcon.icon; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -293,6 +296,7 @@
 				F000000B000000000000000B /* CountdownRules.js */,
 				F000000C000000000000000C /* locales */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
+				F1C00000000000000000A001 /* AppIcon.icon */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
 				C20000010000000000000001 /* InfoPlist.strings */,
 				504EC3131FED79650016851F /* Info.plist */,
@@ -564,6 +568,7 @@
 			files = (
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
+				F1C00000000000000000A002 /* AppIcon.icon in Resources */,
 				E000000B000000000000000B /* CountdownRules.js in Resources */,
 				E000000C000000000000000C /* locales in Resources */,
 				C30000010000000000000001 /* InfoPlist.strings in Resources */,
@@ -586,6 +591,7 @@
 			files = (
 				D1100000000000000000000C /* PrivacyInfo.xcprivacy in Resources */,
 				D11000000000000000000015 /* Assets.xcassets in Resources */,
+				F1C00000000000000000B002 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

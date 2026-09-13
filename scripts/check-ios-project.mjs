@@ -1,6 +1,5 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 
 // Guards the native iOS project's shipping configuration.
 //
@@ -25,12 +24,31 @@ try {
 }
 
 const universalBundleId = "com.rainif.offworkcountdown.macappstore";
-const digest = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+// One Icon Composer document is the app icon for iPhone, iPad and Watch. It
+// lives with the brand sources and is referenced, not copied or symlinked:
+// actool cannot read an .icon through a symlink.
+const appIconPath = "assets/brand/AppIcon.icon";
+let appIconDocument = null;
+try {
+  appIconDocument = JSON.parse(readFileSync(`${appIconPath}/icon.json`, "utf8"));
+} catch {
+  fail(`${appIconPath}/icon.json is missing or unreadable.`);
+}
+const appIconImages = (appIconDocument?.groups ?? [])
+  .flatMap((group) => group.layers ?? [])
+  .map((layer) => layer["image-name"])
+  .filter(Boolean);
 if (
-  digest("src-mobile/ios/WatchApp/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png") !==
-    digest("src-mobile/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png")
+  appIconImages.length === 0 ||
+  appIconImages.some((name) => !existsSync(`${appIconPath}/Assets/${name}`)) ||
+  !appIconDocument?.["supported-platforms"]?.circles?.includes("watchOS")
 ) {
-  fail("The Watch App icon must reuse the approved 1024 px iOS brand asset.");
+  fail(`${appIconPath} must list existing layer images and include the watchOS icon.`);
+}
+for (const catalog of ["src-mobile/ios/App/App/Assets.xcassets", "src-mobile/ios/WatchApp/Assets.xcassets"]) {
+  if (existsSync(`${catalog}/AppIcon.appiconset`)) {
+    fail(`${catalog}/AppIcon.appiconset is superseded by ${appIconPath}; remove it.`);
+  }
 }
 // Required-reason APIs used by local preferences and the widget snapshot cache.
 for (const [path, category, reason] of [
@@ -103,9 +121,6 @@ const widgetEntitlements = readFileSync(
 const xcodeCloudScriptPath =
   "src-mobile/ios/App/ci_scripts/ci_post_clone.sh";
 const xcodeCloudScript = readFileSync(xcodeCloudScriptPath, "utf8");
-const appIcon = readFileSync(
-  "src-mobile/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
-);
 const bundleIdAssignments = [
   ...iosProject.matchAll(/PRODUCT_BUNDLE_IDENTIFIER\s*=\s*([^;]+);/g),
 ].map((match) => match[1].trim());
@@ -330,16 +345,22 @@ if (
 ) {
   fail(`The App and Widget must share ${appGroup}.`);
 }
-const iconWidth = appIcon.readUInt32BE(16);
-const iconHeight = appIcon.readUInt32BE(20);
-const iconColorType = appIcon[25];
+// Xcode may re-quote or reorder attributes when it saves, so match the
+// reference by meaning: one AppIcon.icon file, built into both apps.
+const appIconReference = iosProject.match(
+  /(\w{24}) \/\* AppIcon\.icon \*\/ = \{isa = PBXFileReference;[^}]*\bpath = "?\.\.\/\.\.\/\.\.\/assets\/brand\/AppIcon\.icon"?;/
+);
+const appIconBuildFiles = appIconReference
+  ? [...iosProject.matchAll(new RegExp(`(\\w{24}) \\/\\* AppIcon\\.icon in Resources \\*\\/ = \\{isa = PBXBuildFile; fileRef = ${appIconReference[1]}\\b`, "g"))]
+      .map((match) => match[1])
+  : [];
+const resourcePhases = [...iosProject.matchAll(/isa = PBXResourcesBuildPhase;[^}]*files = \(([^)]*)\)/g)].map((match) => match[1]);
 if (
-  iconWidth !== 1024 ||
-  iconHeight !== 1024 ||
-  iconColorType === 4 ||
-  iconColorType === 6
+  !appIconReference ||
+  appIconBuildFiles.length !== 2 ||
+  appIconBuildFiles.some((id) => resourcePhases.filter((files) => files.includes(id)).length !== 1)
 ) {
-  fail("The Universal Purchase App Icon must be a 1024x1024 PNG without alpha.");
+  fail("AppIcon.icon must be referenced from assets/brand and copied into the App and Watch App resources.");
 }
 // The launch screen uses the same background-free mark as WidgetKit. Its
 // luminosity appearance keeps the clock hand legible on both system
