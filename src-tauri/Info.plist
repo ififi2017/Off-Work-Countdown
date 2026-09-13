@@ -28,6 +28,15 @@
 	<key>LSHasLocalizedDisplayName</key>
 	<true/>
 	<!--
+	  macOS 26 起 Finder / 程序坞 / 启动台按这个名字去 Contents/Resources/Assets.car
+	  里取 Icon Composer 图标（Liquid Glass）；更早的系统继续读 Tauri 生成的
+	  CFBundleIconFile（icon.icns）。Assets.car 由 scripts/generate-macos-icon.mjs
+	  在 beforeBuildCommand 里从 assets/brand/AppIcon.icon 编译，并经
+	  tauri.macos.conf.json 的 bundle.macOS.files 放入包内。两者必须同时存在。
+	-->
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+	<!--
 	  与 src-tauri/macos-lproj/ 下的目录一一对应，由
 	  scripts/generate-macos-lproj.mjs 按 UI 语言各写一份（显示名一律 DoneAt）；
 	  改语言列表要两边一起改。

@@ -44,6 +44,14 @@ symlink — `actool` cannot read an `.icon` through one and aborts the build.
 Save changes in place and rebuild; `npm run check:ios` verifies the document
 and both target references.
 
+The macOS desktop app (GitHub and Mac App Store channels) uses the same
+document. `scripts/generate-macos-icon.mjs` compiles it into
+`Contents/Resources/Assets.car` during `npm run build:desktop`, and
+`src-tauri/Info.plist` names it through `CFBundleIconName`. macOS 26 shows that
+icon; earlier systems keep `src-tauri/icons/icon.icns`. On an Xcode older than
+26 the script compiles the flat `icon.icns` instead and says so, so the bundle
+never names an icon it does not contain.
+
 Every path in this set was authored for this product; no stock icon, SF Symbol,
 or third-party artwork is embedded. That improves provenance, but it is not a
 substitute for a trademark clearance search before registration or a major
