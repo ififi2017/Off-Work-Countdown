@@ -94,6 +94,26 @@ nonisolated enum WatchDisplayProjection {
             .sorted()
             .map { Date(timeIntervalSince1970: Double($0) / 1_000) }
     }
+
+    /// When the complication is worth surfacing in the Smart Stack: the shift the
+    /// package describes, from its first segment to its effective end. Only what
+    /// the Watch may already show counts, so a locked, unconfirmed or expired
+    /// package, a finished or stopped shift, and anything past the package or
+    /// access expiry contribute nothing. The system decides whether to act on it.
+    static func relevantIntervals(for package: WatchSnapshotPackageV1?, nowMs: Int64) -> [DateInterval] {
+        guard let package,
+              case .content(let content) = WatchSnapshotAvailabilityEvaluator.evaluate(package, nowMs: nowMs),
+              let shift = content.shift, shift.isRunning, shift.finishedAtMs == nil,
+              let startAtMs = shift.segments.first?.startAtMs
+        else { return [] }
+        var endAtMs = min(shift.overtimeEndAtMs ?? shift.plannedEndAtMs, package.expiresAtMs)
+        if let accessEnd = package.access.validUntilMs { endAtMs = min(endAtMs, accessEnd) }
+        guard endAtMs > max(startAtMs, nowMs) else { return [] }
+        return [DateInterval(
+            start: Date(timeIntervalSince1970: Double(startAtMs) / 1_000),
+            end: Date(timeIntervalSince1970: Double(endAtMs) / 1_000)
+        )]
+    }
 }
 
 /// Watch surfaces format in the phone app's language and the shift's own time
@@ -102,6 +122,14 @@ nonisolated enum WatchDisplayProjection {
 nonisolated enum WatchDisplayFormat {
     static func locale(_ presentation: WatchPresentationV1) -> Locale {
         Locale(identifier: presentation.localeIdentifier)
+    }
+
+    /// Whether text in this language reads right to left. The Watch targets
+    /// declare no bundle localizations — their strings are generated — so the
+    /// system lays every language out left to right unless the view says
+    /// otherwise; the direction has to follow the language the words are in.
+    static func isRightToLeft(localeIdentifier: String) -> Bool {
+        Locale.Language(identifier: localeIdentifier).characterDirection == .rightToLeft
     }
 
     /// "17:00" or "5:00 PM".

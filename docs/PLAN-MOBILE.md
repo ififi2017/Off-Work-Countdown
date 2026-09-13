@@ -261,7 +261,7 @@ Watch 的产品边界、数据契约、权益与配对通信以 [017 Apple Watch
 
 [017 的 W0–W3](../plans/017-apple-watch-plus.md)统一维护阶段清单及退出证据：W0 工程／契约、W1 只读联动及免费实时活动、W2 两种表盘组件、W3 真机／签名／发布。此处不再保留第二套清单，避免控制范围或发布要求漂移。
 
-当前状态（2026-09-13）：Watch App、Watch Widgets 与 WatchAppTests 已建为显式引用目标并嵌入 `App` scheme；iPhone 发布器与 Watch 接收器已实现，WatchAppTests 与 iPhone 契约／发布器测试通过，配对 iPhone／Watch 模拟器上的权益状态端到端通信已验证。W0–W3 仍未勾选：真机配对、时间准确性、AOD、耗电、签名归档、StoreKit 恢复购买与商店素材待验收，模拟器结论和 iPhone 模型测试都不能替代 017 的真机与发布验收。
+当前状态（2026-09-13 本机收尾后）：Watch App、Watch Widgets 与 WatchAppTests 已建为显式引用目标并嵌入 `App` scheme；iPhone 发布器、Watch 接收器、主界面与两种组件已实现，组件为智能叠放提供班次时段相关性提示。配对模拟器权益端到端通过，用户确认 Apple Watch Ultra 2 真机运行良好、智能叠放实时活动正常；本机 Release 归档导出已核嵌入、签名与 App Group。017 的复选框已按证据更新：仍未完成的是真实 StoreKit 恢复／购买触发、逐项真机检查（时间准确性、离线、VoiceOver、小屏真机、着色）、耗电、Xcode Cloud 归档与 TestFlight、官网／App Store 文案与审核备注、Watch 商店截图。
 
 ## 7. iPad 与 iPhone 数据同步决策
 

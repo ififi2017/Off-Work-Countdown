@@ -18,6 +18,11 @@ const scenarios = [
   { name: "overtime-boundary", at: "2026-09-14T09:00:00Z", start: "09:00", end: "17:00", zone: "Asia/Shanghai", overtimeHours: 2, phase: "overtime", boundary: "overtimeEnd" },
   { name: "overtime", at: "2026-09-14T09:30:00Z", start: "09:00", end: "17:00", zone: "Asia/Shanghai", overtimeHours: 2, phase: "overtime", boundary: "overtimeEnd" },
   { name: "dst-spring-forward", at: "2026-03-08T10:30:00Z", start: "00:00", end: "08:00", zone: "America/Los_Angeles", phase: "working", boundary: "segment0End" },
+  // The clock repeats 01:00–02:00, so 00:00–08:00 lasts nine real hours.
+  { name: "dst-fall-back", at: "2026-11-01T09:30:00Z", start: "00:00", end: "08:00", zone: "America/Los_Angeles", phase: "working", boundary: "segment0End" },
+  { name: "other-time-zone", at: "2026-09-14T14:00:00Z", start: "09:00", end: "17:00", zone: "America/New_York", phase: "working", boundary: "segment0End" },
+  // Asleep through a whole shift: the projection rolls to the next one, never a backfilled finish.
+  { name: "slept-through-to-next-shift", at: "2026-09-15T00:30:00Z", start: "09:00", end: "17:00", zone: "Asia/Shanghai", phase: "before", boundary: "shiftStart" },
   { name: "final-boundary", at: "2026-09-14T09:00:00Z", start: "09:00", end: "17:00", zone: "Asia/Shanghai", phase: "finished", boundary: "none" },
   { name: "expired", at: "2026-09-14T10:00:00Z", start: "09:00", end: "17:00", zone: "Asia/Shanghai", phase: "finished", boundary: "none" },
   { name: "early-finish-working", at: "2026-09-14T08:00:00Z", finishedAt: "2026-09-14T06:00:00Z", start: "09:00", end: "17:00", zone: "Asia/Shanghai", lunch: "12:00", lunchMinutes: 60, phase: "finished", boundary: "none" },

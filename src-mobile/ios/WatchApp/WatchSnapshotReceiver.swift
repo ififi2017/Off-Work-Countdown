@@ -73,7 +73,11 @@ final class WatchSnapshotReceiver: NSObject {
                 // arrive `@Sendable`, so neither assumes main-actor isolation.
                 session.sendMessageData(data, replyHandler: reply, errorHandler: { @Sendable _ in failed() })
             },
-            reloadWidgets: { WidgetCenter.shared.reloadTimelines(ofKind: "DoneAtWatchWidget") }
+            reloadWidgets: {
+                WidgetCenter.shared.reloadTimelines(ofKind: "DoneAtWatchWidget")
+                // A new package can move the shift window the Smart Stack hint describes.
+                WidgetCenter.shared.invalidateRelevance(ofKind: "DoneAtWatchWidget")
+            }
         )
         super.init()
     }

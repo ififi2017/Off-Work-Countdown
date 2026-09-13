@@ -49,9 +49,13 @@ struct WatchRootView: View {
     var body: some View {
         // Seconds tick only while the screen is fully awake; Always On updates by the minute.
         TimelineView(.periodic(from: .now, by: isLuminanceReduced ? 60 : 1)) { timeline in
+            // Notices speak the Watch's language; shift content overrides this with the iPhone app's.
             let screen = content(at: timeline.date)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 4)
+                .environment(\.layoutDirection, WatchDisplayFormat.isRightToLeft(
+                    localeIdentifier: WatchLocalizations.resolveLocale(Locale.preferredLanguages)
+                ) ? .rightToLeft : .leftToRight)
             // Centred when it fits; larger text sizes scroll instead of clipping.
             ViewThatFits(in: .vertical) {
                 screen
@@ -77,6 +81,9 @@ struct WatchRootView: View {
         case .content(let value):
             shift(value)
                 .environment(\.locale, WatchDisplayFormat.locale(value.presentation))
+                .environment(\.layoutDirection, WatchDisplayFormat.isRightToLeft(
+                    localeIdentifier: value.presentation.localeIdentifier
+                ) ? .rightToLeft : .leftToRight)
         }
     }
 

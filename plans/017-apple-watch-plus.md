@@ -1,6 +1,6 @@
 # 017 · Apple Watch：Plus Watch App 与表盘组件
 
-- **状态**：IN PROGRESS — 2026-09-08 确认产品边界，2026-09-12 按实时活动的现状及 018 修订：3.2.0 交付只读 Watch App 与两种表盘组件，控制明确延期，腕上实时活动倒计时保持免费。已开始 W0 纯数据契约及测试准备；Watch targets、通信和界面尚未交付，所有阶段继续未验收。
+- **状态**：IN PROGRESS — 2026-09-08 确认产品边界，2026-09-12 按实时活动的现状及 018 修订：3.2.0 交付只读 Watch App 与两种表盘组件，控制明确延期，腕上实时活动倒计时保持免费。2026-09-13 本机收尾后：Watch targets、配对通信、只读 App、两种组件与智能叠放相关性提示已交付；用户确认 Ultra 2 真机运行良好、智能叠放正常。复选框按实际证据更新，剩余为真实 StoreKit 触发、逐项真机与耗电、Xcode Cloud／TestFlight、官网与商店文案、审核备注和 Watch 商店截图（见第 11 节）。
 - **目标**：Plus 用户抬腕即可看到准确的班次状态、剩余工作时间和进度，短暂离开 iPhone 后仍可使用有效快照。
 - **依赖**：[006 权益模型](006-free-trial-subscription.md)、[018 架构整改](018-ios-3.2.0-architecture-remediation.md)、[移动端架构与 W0–W3](../docs/PLAN-MOBILE.md)、当前 TypeScript 规则和原生 iOS App。W0 工程／契约准备可提前开展，Watch 生产者在 018 P1／P2 提交与生命周期边界建立后接入。
 - **权威口径**：`docs/PLAN-MOBILE.md` 的 W0–W3 章节与本计划重复，冲突时以本文为准；W0 应把那一节收敛成指向本文的指针，避免两处漂移。
@@ -110,13 +110,13 @@ Watch 保留最后有效快照，重启可读；iPhone 不可达仍可离线渲�
 
 ### W0 · 工程、权益与契约
 
-- [ ] 核实本机 Xcode／SDK、可用 Watch 型号，固定 watchOS 最低版本和支持矩阵；本计划不凭空填写未核实的版本。
-- [ ] 在现有工程建立 Watch App 和 Widget Extension，记录实际 scheme、bundle id、companion 标识、签名、Watch App Group、嵌入关系与源文件归属。
-- [ ] 明确 synchronized folder 与显式引用边界；不得将 iPhone 专用依赖或完整设置模型误编入 Watch。
-- [ ] Watch 专属源码放在 iPhone `App/Native` 同步目录之外。核查现有 `check-ios-project.mjs` 的配置数量假设以及共享 WidgetSnapshot 的 iOS／macOS 条件分支，不能让新增 Watch targets 误走 macOS 代码或被旧检查误拒绝。
-- [ ] 固定 WatchSnapshotV1、权益投影、来源世代重建、revision、到期、缓存与解码限制，提供 TS → Swift 共用 fixture。
-- [ ] 建立可演示的免费／有效／过期／未知状态，验证恢复购买到 Watch 的最小闭环；未通过前不继续堆 UI。
-- [ ] 扩展 `check:ios`、版本检查和 Xcode Cloud 检查范围；记录签名待办，更新 `docs/XCODE-CLOUD.md`。具体两条先做，否则第一次构建前就会红：
+- [x] 核实本机 Xcode／SDK、可用 Watch 型号，固定 watchOS 最低版本和支持矩阵；本计划不凭空填写未核实的版本。—— 2026-09-13：Xcode 26.6（17F113）、iOS／watchOS 26.5 SDK；工程最低 iOS 26.0、watchOS 26.0，即支持所有能运行 watchOS 26 的 Apple Watch。模拟器覆盖 Series 11 42mm 与 SE 3 40mm，真机为用户的 Apple Watch Ultra 2。
+- [x] 在现有工程建立 Watch App 和 Widget Extension，记录实际 scheme、bundle id、companion 标识、签名、Watch App Group、嵌入关系与源文件归属。—— scheme `DoneAt Watch App`；`…macappstore.watchkitapp` 与 `…watchkitapp.widgets`，companion 为 `…macappstore`；两者签入 `group.com.rainif.offworkcountdown.macappstore.watch`；Watch App 嵌入 `App.app/Watch/`，组件在其 `PlugIns/`；源码在 `WatchApp`、`WatchWidgets`、`WatchAppTests`、`Shared`（显式引用）。
+- [x] 明确 synchronized folder 与显式引用边界；不得将 iPhone 专用依赖或完整设置模型误编入 Watch。—— 见 `docs/XCODE-CLOUD.md`；`check:ios` 对 Watch 测试文件做 Sources 登记计数。
+- [x] Watch 专属源码放在 iPhone `App/Native` 同步目录之外。核查现有 `check-ios-project.mjs` 的配置数量假设以及共享 WidgetSnapshot 的 iOS／macOS 条件分支，不能让新增 Watch targets 误走 macOS 代码或被旧检查误拒绝。
+- [x] 固定 WatchSnapshotV1、权益投影、来源世代重建、revision、到期、缓存与解码限制，提供 TS → Swift 共用 fixture。—— 见第 10 节；fixture 20 组（2026-09-13 增至 20 组）。
+- [ ] 建立可演示的免费／有效／过期／未知状态，验证恢复购买到 Watch 的最小闭环；未通过前不继续堆 UI。—— 状态演示已完成：配对模拟器上 DEBUG 注入的 7 步端到端通过，用户 Ultra 2 真机运行良好。仍缺真实 StoreKit（沙盒）恢复购买到 Watch 的实测记录，用户预期无问题但未实测。
+- [x] 扩展 `check:ios`、版本检查和 Xcode Cloud 检查范围；记录签名待办，更新 `docs/XCODE-CLOUD.md`。具体两条先做，否则第一次构建前就会红：
   - `scripts/check-ios-project.mjs` 目前要求工程内**所有** `PRODUCT_BUNDLE_IDENTIFIER` 只能是 App、Widget、Tests 三者之一，多一个就 `fail`；新增 Watch App 与 Watch Widget 必然引入新 id，要先扩这份白名单。
   - `scripts/check-version.mjs` 已扫描工程内全部 `MARKETING_VERSION`，新增 targets 的显式版本值也会参与比对；需要补强的是每个预期 target／configuration 的覆盖完整性，避免漏配置或继承配置未被验证。
 
@@ -124,19 +124,19 @@ Watch 保留最后有效快照，重启可读；iPhone 不可达仍可离线渲�
 
 ### W1 · Plus 只读倒计时
 
-- [ ] 完成 iPhone 生产者、Watch 接收缓存与主界面，覆盖所有班次状态及同步／锁定状态。
-- [ ] 购买、恢复、续期和撤销独立触发权益同步；断连、重连、重启、旧包、坏包、未知版本和新世代有可复现行为。
-- [ ] 跨午夜、午休、加班、轮休、时区／夏令时与睡眠跨班 fixture 通过。
-- [ ] 在实际 Watch 检查时间准确性、短暂离线、字体、VoiceOver 和低亮度；记录系统计时渲染的选型与限制。
-- [ ] iOS 侧为实时活动加上 `.supplementalActivityFamilies` 的智能叠放呈现，并在真机确认免费用户抬腕所见；这一条不依赖 Watch App，可以独立发布。
+- [x] 完成 iPhone 生产者、Watch 接收缓存与主界面，覆盖所有班次状态及同步／锁定状态。—— 2026-09-13 用户确认在 Apple Watch Ultra 2 真机运行良好。
+- [ ] 购买、恢复、续期和撤销独立触发权益同步；断连、重连、重启、旧包、坏包、未知版本和新世代有可复现行为。—— 后半句由契约、缓存、接收器与发布器测试覆盖；权益独立发布有测试。真实购买、恢复、续期、撤销触发未实测。
+- [x] 跨午夜、午休、加班、轮休、时区／夏令时与睡眠跨班 fixture 通过。—— TS 生成的 20 组：午休冻结与边界、跨午夜、加班、春季与秋季夏令时、另一时区、整班睡过（转到下一班而不补记下班）、提前下班。休息日由 `WatchSnapshotComposerTests` 验证（不下发当天班次、保留下一班）；轮休是否为工作日由 TypeScript 规则及其测试决定，Watch 只消费绝对时段。
+- [ ] 在实际 Watch 检查时间准确性、短暂离线、字体、VoiceOver 和低亮度；记录系统计时渲染的选型与限制。—— 用户在 Ultra 2 上确认整体运行良好；以上各项未逐条记录。
+- [x] iOS 侧为实时活动加上 `.supplementalActivityFamilies` 的智能叠放呈现，并在真机确认免费用户抬腕所见；这一条不依赖 Watch App，可以独立发布。—— `.supplementalActivityFamilies([.small])` 已接入；2026-09-13 用户确认真机智能叠放显示正常。
 
 退出证据：有效 Plus 的抬腕只读闭环稳定，免费用户无真实班次泄露，差分结果与 iPhone 一致。
 
 ### W2 · 表盘组件
 
-- [ ] 圆形／长方形组件具备完整 timeline、锁定占位、权益与快照到期处理，深链接回正确状态。
-- [ ] 小尺寸、AOD、实际支持的系统着色模式、长英文、简中、繁中、RTL 和辅助字号完成视觉检查。
-- [ ] 确认 3.2.0 没有开始／停止命令接收器、ACK、操作入口或对应商店承诺；控制按 018 决定延期。
+- [x] 圆形／长方形组件具备完整 timeline、锁定占位、权益与快照到期处理，深链接回正确状态。—— 时间线含分钟条目、各规则边界及权益与快照两个截止点（`WatchDisplayProjectionTests`）；锁定、需确认、等待与过期有占位；`widgetURL` 打开 Watch App，由 App 按当前包重新判定锁定。2026-09-13 增加智能叠放相关性提示，见第 11 节。
+- [ ] 小尺寸、AOD、实际支持的系统着色模式、长英文、简中、繁中、RTL 和辅助字号完成视觉检查。—— 2026-09-13 模拟器部分已做（见第 11 节）：SE 3 40mm 上英文、德文长文案、繁中、午休、休息日、锁定页与最大辅助字号均完整显示或按设计转为可滚动；RTL 发现方向问题并已修复、截图确认；简中与常亮在 42mm 上已查。真机小屏、表盘着色（accented）与真机常亮未查，保持未勾选。
+- [x] 确认 3.2.0 没有开始／停止命令接收器、ACK、操作入口或对应商店承诺；控制按 018 决定延期。—— `check:ios` 拒绝组件中的 `ControlWidget`、`AppIntent` 与 `Button`。
 
 退出证据：组件准确呈现且不会自建高频后台刷新；控制明确延期，只读 App 与两种组件进入 W3。
 
@@ -145,9 +145,9 @@ Watch 保留最后有效快照，重启可读；iPhone 不可达仍可离线渲�
 - [ ] 至少覆盖一块支持 AOD 的 Watch 和一块较小屏幕 Watch，并由用户确认实际体验。
 - [ ] 完成下方权益／连接矩阵，分别记录设备、OS、构建号、步骤、期望和结果；模拟器不能替代 StoreKit／WatchConnectivity 真机结论。
 - [ ] 记录冷启动、前台／AOD 更新和代表性工作日耗电，与未运行 Watch 功能的同设备基线比较；不能仅凭模拟器宣称低功耗。
-- [ ] Release archive 验证 iPhone、Watch App、所有 extensions 的嵌入、签名、App Group 与版本；原 iPad／iOS Widget／Live Activity 回归通过。
-- [ ] 核查 Watch App／extension 的隐私清单与实际所用 API 声明，检查归档后的签名 entitlements 和 Watch 共享容器；不只检查工程配置文本。
-- [ ] Plus 页、欢迎介绍、官网和 App Store 文案明确 Watch App 与表盘组件需 Plus，同时不暗示免费用户在手表上看不到任何东西；审核备注说明 companion 依赖、购买／恢复入口和测试路径，不设置隐藏审核绕过。
+- [ ] Release archive 验证 iPhone、Watch App、所有 extensions 的嵌入、签名、App Group 与版本；原 iPad／iOS Widget／Live Activity 回归通过。—— 2026-09-13 本机 `App` scheme Release 归档并导出 App Store 包（未上传）：Watch App 与组件均嵌入，三者均为 Apple Distribution 签名、`get-task-allow` 为 false、App Group 正确。回归项与 Xcode Cloud 归档未完成。
+- [ ] 核查 Watch App／extension 的隐私清单与实际所用 API 声明，检查归档后的签名 entitlements 和 Watch 共享容器；不只检查工程配置文本。—— 隐私清单：两者声明 FileTimestamp C617.1，Watch 源码只读取缓存文件的大小与类型，未直接调用时间戳 API，声明偏保守但无害，保留。归档后 entitlements 已核（见上一条）。真机共享容器未核。
+- [ ] Plus 页、欢迎介绍、官网和 App Store 文案明确 Watch App 与表盘组件需 Plus，同时不暗示免费用户在手表上看不到任何东西；审核备注说明 companion 依赖、购买／恢复入口和测试路径，不设置隐藏审核绕过。—— App 内订阅页、欢迎页、What's New 与 Apple Watch 说明页已完成；官网、App Store 文案与审核备注未完成。
 - [ ] 产出并上传 Apple Watch 商店截图（App Store Connect 的 `APP_WATCH_*` 槽位）。`scripts/marketing-shots/` 目前没有 watch 这一套，需要新建；按 2026-09-08 那条「截图覆盖 17 个商店语言」的决定先估工作量，若决定缩小语言范围，在本计划里记下这个决定和理由。
 - [ ] Xcode Cloud archive 和 TestFlight 配对分发验证通过后再提交审核；沿用现有人工分发与签名约定，不新增未经确定的自动导出路径。
 
@@ -209,3 +209,19 @@ Apple 文档支持 companion App 的通用内购；本项目采用 iPhone 购买
 2026-09-13 界面打磨：按 Apple HIG 与官方文档重做 Watch App 主界面、Plus 锁定页及圆形／长方形组件——数值带说明与单位，时间按排班时区与 App 语言显示，常亮只到分钟并调暗次要内容，锁定页按第 3 节文案说明 Plus 并保留“智能叠放实时活动免费”；9 个新文案覆盖 19 个 locale。已在 watchOS 26.5 模拟器上截图检查 17 个夹具状态及实时表盘。W1／W2 的真机、小屏、着色模式、辅助字号、RTL、VoiceOver 与耗电验收仍未完成。详见 [018 界面打磨记录](018-ios-3.2.0-architecture-remediation.md)。
 
 2026-09-13 iPhone 端说明：设置新增 Apple Watch 说明页，明确区分免费的智能叠放实时活动（需打开锁定屏幕实时活动）与 Plus 包含的 Watch App 和表盘复杂功能，提供两步添加说明与隐私说明；订阅页权益、欢迎页正文和 3.2.0 What's New 同步体现 Watch，文案不暗示免费用户手表上看不到任何内容。W3 的官网与 App Store 文案、审核备注和 Watch 商店截图仍未完成。
+
+## 11. 本机收尾记录（2026-09-13，未整体验收）
+
+**用户真机确认**：Watch App 在用户的 Apple Watch Ultra 2 上运行良好；智能叠放里的实时活动显示正常。沙盒 StoreKit 购买用户预期无问题，尚未实测，因此 W0／W1 相关复选框保持未勾选。
+
+**智能叠放相关性**：Watch 组件的 `TimelineProvider.relevance()` 返回当前班次时段（第一段开始至实际结束，并截断到快照与权益到期），`RelevantContext.date(interval:kind: .scheduled)`；锁定、需确认、过期、已下班或已停止时不提供时段。Watch 收到新包时除 `reloadTimelines` 外调用 `invalidateRelevance(ofKind:)`。这只是提示，排序与展示次数由 watchOS 决定；未使用位置等需要权限的线索。纯函数 `WatchDisplayProjection.relevantIntervals` 由 `WatchDisplayProjectionTests` 覆盖（首轮测试曾用超出快照到期的班次构造数据，该包本身无效，已改为验证过期包不提供时段）。
+
+**班次 fixture**：由 17 组增至 20 组，新增夏令时秋季回拨（当天实际 9 小时）、另一时区（纽约）、整班睡过（转到下一班而不补记下班）。休息日与轮休的覆盖位置见 W1 第三条。
+
+**隐私**：Watch App 与组件构建产物（含组件扩展与调试动态库）中未搜到 salary、earned、hourly、wage 等薪资字段；同一扫描能找到已知字符串作为正对照。隐私清单结论见 W3。
+
+**小屏与视觉（Xcode 26.6／watchOS 26.5 模拟器）**：SE 3 40mm 上英文、德文长文案、繁中工作中、午休、休息日与锁定页截图检查，均无截断；锁定页在小屏超出高度时位于 `ViewThatFits` 的 `ScrollView` 分支内（该设备未授权交互，滚动由代码确认，42mm 上锁定页完整显示）。无内容时锁定页等提示按 Watch 系统语言显示，属设计行为。最大辅助字号通过模拟器系统设置验证：工作中与午休完整显示，锁定页转为滚动；`simctl ui content_size` 与启动参数在 watchOS 上不生效，截图后已恢复原设置。
+
+**RTL 问题与修复**：Watch 两个 target 不声明 bundle 本地化（文案由脚本生成），系统语言为阿拉伯语时界面仍从左到右（进度条自左填充）。现改为让方向跟随文字所用语言：班次内容跟随包内 iPhone App 语言，提示与占位跟随 `WatchLocalizations` 解析出的 Watch 系统语言；新增 `WatchDisplayFormat.isRightToLeft` 及测试。修复后在 SE 3 40mm、系统语言阿拉伯语下截图验证：阿拉伯语班次内容的状态图标位于文字右侧、进度条自右填充，锁定页与休息日按阿拉伯语排版；同一系统下英文班次内容保持从左到右。截图后已恢复模拟器原语言设置（zh-Hans、en／zh_CN）。组件在表盘上的 RTL 呈现未在模拟器表盘中截图，依赖同一方向逻辑。
+
+**仍未完成**：真实 StoreKit 恢复／购买／续期／撤销触发；真机时间准确性、短暂离线、VoiceOver、低亮度、小屏真机与表盘着色；耗电；Xcode Cloud 归档与 TestFlight；官网、App Store 文案与审核备注；Watch 商店截图。
