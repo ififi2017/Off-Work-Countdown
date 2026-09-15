@@ -673,10 +673,7 @@ struct LifeProfileEditView: View {
             roughSalaryCadence = salary.cadence
         } else if preferences.salaryEnabled,
                   let input = queries.rulesInput(at: .now),
-                  let equivalent = try? CountdownRules.shared.salaryMonthlyEquivalent(
-                    input: input
-                  ),
-                  let amount = equivalent.amount,
+                  let amount = SummaryRules.salaryMonthlyEquivalent(input: input),
                   amount > 0 {
             roughSalaryAmount = Self.plain(amount)
             roughSalaryCadence = .monthly

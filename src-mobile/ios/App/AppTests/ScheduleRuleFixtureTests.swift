@@ -3,7 +3,8 @@ import Foundation
 import Testing
 @testable import App
 
-/// Holds `ScheduleRules.swift` to the TypeScript oracle (plan 019 R1 and R2).
+/// Holds `ScheduleRules`, `ReminderRules` and `SummaryRules` to the TypeScript
+/// oracle (plan 019 R1–R3).
 ///
 /// `ScheduleRuleFixtures.generated.swift` comes from
 /// `scripts/generate-ios-schedule-rule-fixtures.mjs`. A failure means the Swift
@@ -168,6 +169,82 @@ struct ScheduleRuleFixtureTests {
         #expect(Set(file.applyToday.map(\.expected)) == [true, false])
     }
 
+    @Test("Period summaries, including the \"This week\" incident")
+    func summaries() throws {
+        let file = try Self.fixtures()
+        var mismatches = 0
+        for fixture in file.summaries {
+            let actual = SummaryRules.summarize(input: fixture.input)
+            if actual != fixture.expected {
+                mismatches += 1
+                if mismatches <= 5 {
+                    Issue.record("summary \(fixture.input.period) at \(fixture.input.asOfMs) in \(fixture.input.timeZoneIdentifier ?? "")\nexpected \(fixture.expected)\nactual   \(actual)")
+                }
+            }
+        }
+        #expect(file.summaries.count >= 300)
+        #expect(mismatches == 0)
+        // fa927fb: a Wednesday afternoon halfway through the shift is 2.5 days of
+        // pay, not the 2 a second formula once showed; manual mode counts today.
+        #expect(file.summaries[0].expected == NativePeriodSummary(days: 2.5, hours: 22.5, earnings: 2_500))
+        #expect(file.summaries[1].expected == NativePeriodSummary(days: 0.5, hours: 4.5, earnings: 500))
+    }
+
+    @Test("Records income and the monthly salary equivalent")
+    func salary() throws {
+        let file = try Self.fixtures()
+        let profile = file.profiles[0]
+        for fixture in file.recordsIncome {
+            let rules = file.input(profile, nowMs: 0, salary: file.salaries[fixture.s])
+            #expect(
+                SummaryRules.recordsIncome(completedWorkdays: fixture.n, rules: rules) == fixture.expected,
+                "records income, salary \(fixture.s), \(fixture.n) days"
+            )
+        }
+        for fixture in file.monthlyEquivalent {
+            let rules = file.input(profile, nowMs: 0, salary: file.salaries[fixture.s], salaryType: fixture.type)
+            #expect(
+                SummaryRules.salaryMonthlyEquivalent(input: rules) == fixture.expected,
+                "monthly equivalent, salary \(fixture.s) as \(fixture.type)"
+            )
+        }
+        #expect(file.recordsIncome.contains { $0.expected != nil } && file.recordsIncome.contains { $0.expected == nil })
+    }
+
+    @Test("Lifetime income")
+    func lifetimeIncome() throws {
+        let file = try Self.fixtures()
+        var mismatches = 0
+        for (index, fixture) in file.lifetimeIncome.enumerated() {
+            let actual = SummaryRules.lifetimeIncome(input: fixture.input)
+            if actual != fixture.expected {
+                mismatches += 1
+                if mismatches <= 5 {
+                    Issue.record("lifetime case \(index)\nexpected \(fixture.expected)\nactual   \(actual)")
+                }
+            }
+        }
+        #expect(file.lifetimeIncome.contains { $0.expected.totalGross > 0 })
+        #expect(mismatches == 0)
+    }
+
+    @Test("Records actual and forecast")
+    func actualForecast() throws {
+        let file = try Self.fixtures()
+        var mismatches = 0
+        for (index, fixture) in file.actualForecast.enumerated() {
+            let actual = SummaryRules.recordsActualForecast(input: fixture.input)
+            if actual != fixture.expected {
+                mismatches += 1
+                if mismatches <= 5 {
+                    Issue.record("actual/forecast case \(index) as of \(fixture.input.asOfMs)\nexpected \(fixture.expected)\nactual   \(actual)")
+                }
+            }
+        }
+        #expect(file.actualForecast.count >= 100)
+        #expect(mismatches == 0)
+    }
+
     @Test("An input without a zone resolves in the current zone")
     func missingZoneIsCurrentZone() throws {
         let file = try Self.fixtures()
@@ -191,7 +268,7 @@ struct ScheduleRuleFixtureTests {
 
     private static func fixtures() throws -> ScheduleRuleFixtureFile {
         let file = try JSONDecoder().decode(ScheduleRuleFixtureFile.self, from: Data(ScheduleRuleFixtureData.json.utf8))
-        try #require(file.version == 2)
+        try #require(file.version == 3)
         return file
     }
 
@@ -433,6 +510,33 @@ struct ScheduleRuleFixtureFile: Decodable {
         let expected: Bool
     }
 
+    struct SummaryCase: Decodable {
+        let input: NativeSummaryInput
+        let expected: NativePeriodSummary
+    }
+
+    struct RecordsIncomeCase: Decodable {
+        let s: Int
+        let n: Int
+        let expected: Double?
+    }
+
+    struct MonthlyEquivalentCase: Decodable {
+        let s: Int
+        let type: String
+        let expected: Double?
+    }
+
+    struct LifetimeIncomeCase: Decodable {
+        let input: NativeLifetimeIncomeInput
+        let expected: NativeLifetimeIncomeSummary
+    }
+
+    struct ActualForecastCase: Decodable {
+        let input: NativeRecordsActualForecastInput
+        let expected: NativeRecordsActualForecastSummary
+    }
+
     let version: Int
     let profiles: [Profile]
     let salaries: [Salary]
@@ -446,11 +550,17 @@ struct ScheduleRuleFixtureFile: Decodable {
     let expansions: [ExpansionCase]
     let expansionDigests: [ExpansionDigest]
     let validateBreak: [BreakCase]
+    let summaries: [SummaryCase]
+    let recordsIncome: [RecordsIncomeCase]
+    let monthlyEquivalent: [MonthlyEquivalentCase]
+    let lifetimeIncome: [LifetimeIncomeCase]
+    let actualForecast: [ActualForecastCase]
 
     func input(
         _ profile: Profile,
         nowMs: Double,
         salary: Salary? = nil,
+        salaryType: String? = nil,
         overtimeEndAtMs: Double? = nil,
         forcedWorkdayStartMs: Double? = nil
     ) -> NativeRulesInput {
@@ -465,7 +575,7 @@ struct ScheduleRuleFixtureFile: Decodable {
             breakDurationMinutes: profile.breakDurationMinutes,
             overtimeEndAtMs: overtimeEndAtMs,
             salaryAmount: salary.salaryAmount,
-            salaryType: salary.salaryType,
+            salaryType: salaryType ?? salary.salaryType,
             monthlyWorkingDays: salary.monthlyWorkingDays,
             annualBonusMonths: salary.annualBonusMonths,
             forcedWorkdayStartMs: forcedWorkdayStartMs,

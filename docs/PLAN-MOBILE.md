@@ -6,9 +6,9 @@ Android 暂时搁置，不进入当前排期。
 生产 iOS App 已经是纯 SwiftUI 原生实现，位于 src-mobile/ios；不嵌入 WebView，也不使用
 已经归档的 Capacitor spike。排班、提醒和汇总规则以 lib/countdown.ts、
 lib/reminders.ts 和 lib/summary.ts 为规格。自 019 R1 起，iOS 的班次解析、快照、Widget 班次、
-Watch 投影和区间展开由 ScheduleRules.swift 实现，R2 起提醒列表由 ReminderRules.swift 实现，均以
-TS 生成的差分 fixture 校验；汇总与收入仍由构建脚本生成的 CountdownRules.js 在 JavaScriptCore
-中计算，按 019 R3–R4 迁移。
+Watch 投影和区间展开由 ScheduleRules.swift 实现，R2 起提醒列表由 ReminderRules.swift 实现，R3 起
+汇总与收入由 SummaryRules.swift 实现，均以 TS 生成的差分 fixture 校验。CountdownRules.js 仍由构建
+脚本生成并打包，但已没有入口、不再被调用，按 019 R4 删除。
 watchOS 代码不复制这些规则，只消费 iPhone 的投影。
 
 产品继续坚持本地优先：不增加账号、分析 SDK 或自有服务器，不上传排班与薪资。任何跨设备

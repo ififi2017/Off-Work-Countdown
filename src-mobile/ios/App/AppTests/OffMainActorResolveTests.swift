@@ -4,8 +4,8 @@ import Testing
 @testable import App
 
 /// The Records and Life builds moved off the main actor by splitting the
-/// schedule expansion (which owns a JavaScriptCore context and has to stay on
-/// the main actor) from the day walk (which is pure Swift over value types).
+/// schedule expansion (whose shared cache lives on the main actor) from the
+/// day walk (which is pure Swift over value types).
 /// The split is only safe while both halves still agree, and no other test
 /// compares them: `lifeViewModel` and `prepareLifeViewModel` are separately
 /// asserted to be correct, never asserted to be the same answer.

@@ -379,12 +379,87 @@ const ORACLE_BODY = `
       return isScheduledShift(request.current, resolveCurrentShift(request.current)) ||
         isScheduledShift(request.candidate, resolveCurrentShift(request.candidate));
     },
+
+    summarize(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      const asOf = new Date(input.asOfMs);
+      const timeZone = typeof input.timeZoneIdentifier === "string" && input.timeZoneIdentifier.trim()
+        ? input.timeZoneIdentifier.trim()
+        : undefined;
+      // An explicit window start wins over the period name. The Records tab
+      // draws week and month grids with the locale's own first weekday, so the
+      // window it summarises is not always the ISO week the period name
+      // derives; it passes the boundary it already drew instead.
+      // Number(null) is 0, a valid epoch, so a null must not reach it.
+      const explicitStartMs = input.periodStartMs == null ? NaN : Number(input.periodStartMs);
+      const periodStart = Number.isFinite(explicitStartMs)
+        ? new Date(explicitStartMs)
+        : timeZone
+          ? new Date(
+            input.period === "year"
+              ? countdown.zonedYearStartMs(input.asOfMs, timeZone)
+              : countdown.zonedWeekStartMs(input.asOfMs, timeZone)
+          )
+          : input.period === "year"
+            ? summary.startOfYear(asOf)
+            : summary.startOfWeek(asOf);
+      return JSON.stringify(summary.summarize({
+        periodStart,
+        asOf,
+        workdays: input.workdays,
+        schedule: input.schedule || null,
+        currentShiftStart: new Date(input.currentShiftStartMs),
+        currentShiftEnd: new Date(input.currentShiftEndMs),
+        plannedDailyHours: input.plannedDailyHours,
+        todayProgress: input.todayProgress,
+        dailySalary: input.dailySalary,
+        todayEffectiveHours: input.todayEffectiveHours,
+        todayPayRatio: input.todayPayRatio,
+        timeZone,
+      }));
+    },
+
+    recordsIncome(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      const dailySalary = countdown.getDailySalary(
+        String(input.salaryAmount ?? ""),
+        input.salaryType,
+        input.monthlyWorkingDays,
+        input.annualBonusMonths || 0
+      );
+      return JSON.stringify({
+        earnings: summary.completedWorkdayIncome(
+          input.completedWorkdays,
+          dailySalary
+        ),
+      });
+    },
+
+    salaryMonthlyEquivalent(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      return JSON.stringify({
+        amount: countdown.getMonthlySalaryEquivalent(
+          String(input.salaryAmount ?? ""),
+          input.salaryType,
+          input.monthlyWorkingDays,
+          input.annualBonusMonths || 0
+        ),
+      });
+    },
+
+    lifetimeIncome(inputJSON) {
+      return JSON.stringify(summary.projectLifetimeGrossIncome(JSON.parse(inputJSON)));
+    },
+
+    recordsActualForecast(inputJSON) {
+      return JSON.stringify(summary.summarizeRecordsActualAndForecast(JSON.parse(inputJSON)));
+    },
   };
 `;
 
 export function createScheduleRuleOracleScript() {
   return createRulesScript({
-    header: "// Schedule-rule oracle for plan 019 R1 and R2 fixtures. Not shipped.",
+    header: "// Rule oracle for plan 019 R1–R3 fixtures. Not shipped.",
     moduleNames: ["./countdown", "./reminders", "./summary", "./watch-projection"],
     body: ORACLE_BODY,
   });
