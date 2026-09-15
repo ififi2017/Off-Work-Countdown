@@ -63,25 +63,24 @@ describe("iOS native rule bundle", () => {
     ]);
   });
 
-  it("keeps summary derivation behind the shared TypeScript modules", () => {
+  it("ships no rule entry points once every rule is Swift", () => {
     const directory = mkdtempSync(join(tmpdir(), "owc-ios-rules-"));
     temporaryDirectories.push(directory);
     const outputPath = join(directory, "fresh", "Resources", "CountdownRules.js");
     const bundle = writeIOSNativeRulesBundle(outputPath);
 
-    expect(bundle).toContain('require("./countdown")');
-    expect(bundle).toContain('require("./summary")');
-    expect(bundle).toContain("summary.summarize");
-    // Plan 019 R1 and R2 moved these to Swift; the bundle must not keep a
-    // second, unused copy.
+    // Plan 019 R1–R3 moved these to Swift; the bundle must not keep a second,
+    // unused copy. R4 deletes the bundle itself.
     expect(bundle).not.toContain('require("./watch-projection")');
     expect(bundle).not.toContain('require("./reminders")');
+    expect(bundle).not.toContain('require("./summary")');
     const context = { console };
     vm.createContext(context);
     vm.runInContext(bundle, context);
     for (const moved of [
       "snapshot", "watchProjection", "widgetShifts", "expandScheduleRange", "validateBreak",
       "reminders", "shouldPromptApplyToday",
+      "summarize", "recordsIncome", "salaryMonthlyEquivalent", "lifetimeIncome", "recordsActualForecast",
     ]) {
       expect(context.OWCNative[moved]).toBeUndefined();
     }

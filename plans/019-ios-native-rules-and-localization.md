@@ -1,6 +1,6 @@
 # 019 · iOS 规则与本地化回到 iOS 工程
 
-- **状态**：IN PROGRESS — R1（排班与快照）、R2（提醒）已实现并同版修改 `AGENTS.md`；R3–R4 与本地化迁移未开工。
+- **状态**：IN PROGRESS — R1（排班与快照）、R2（提醒）、R3（汇总与收入）已实现并同版修改 `AGENTS.md`；R4 与本地化迁移未开工。
 - **目标**：iOS 的排班、提醒、汇总与收入规则由 Swift 实现，iOS 文案由 iOS 工程按 Apple 规范存放。TypeScript 继续服务 Web 与 Desktop，并作为两端共有行为的规格与差分预言机。
 - **起因**：iOS 与 Web／Desktop 的功能越来越分化，直接触发点是 [018 P8 扩展排班](018-ios-3.2.0-architecture-remediation.md)（班次类型、预制规则、自由日历），这是只在 iOS 提供的功能。继续把 iOS 专属规则写进共享 TypeScript bundle，会让 Web 背负用不到的规则；把 iOS 专属文案放在 `public/locales`，也让两端的文案维护互相牵连。
 - **依赖**：[002 关于 JS 桥的迁移扳机与契约](002-records-life-focus.md)、[004 班次模型](004-shift-model-3.1.0.md)、[017](017-apple-watch-plus.md)、[018](018-ios-3.2.0-architecture-remediation.md)。
@@ -31,7 +31,7 @@ iOS 通过 `CountdownRules.js`（由 `lib/countdown.ts`、`lib/reminders.ts`、`
 
 - [x] **R1 排班与快照**：`snapshot`、`expandScheduleRange`、`widgetShifts`、`watchProjection`、`validateBreak`。这是 018 P8 的前置条件。
 - [x] **R2 提醒**：`reminders`、`shouldPromptApplyToday`；iOS 预排通知的触发时刻与文案参数逐条对齐。
-- [ ] **R3 汇总与收入**：`summarize`、`recordsIncome`、`recordsActualForecast`、`lifetimeIncome`、`salaryMonthlyEquivalent`。
+- [x] **R3 汇总与收入**：`summarize`、`recordsIncome`、`recordsActualForecast`、`lifetimeIncome`、`salaryMonthlyEquivalent`。
 - [ ] **R4 移除桥**：删除 `CountdownRules.js` 的生成、打包、`ci_post_clone.sh` 中的生成步骤、`check:ios` 的相关检查与 JavaScriptCore 依赖；更新 `docs/XCODE-CLOUD.md` 与 `docs/PLAN-MOBILE.md`。
 - [ ] 每批：完整串行 iOS 回归、`RecordsPerformanceTests` 串行测量（不得靠放宽阈值通过）、Widget／实时活动／Watch 输出回归。
 
@@ -84,3 +84,11 @@ iOS 在运行时通过 `NativeLocalizer` 读取 `public/locales/<locale>/transla
 - 两个入口不再抛错，`shiftReminders` 与各调用方去掉 `try`；JS bundle 只剩汇总与收入，公共胶水移入 oracle。
 - 差分契约：fixture 版本升到 2，新增 6 组提醒输入（空标题与空文案池、空模板、重复 `{{minutes}}`、修剪后为空的周期摘要、关闭／负数／1 分钟封顶／常规间隔）。320 个提醒用例逐条比对 SHA-256 摘要，其中 148 个带完整行（51 个为小数毫秒加班，16 个出现“有标题无正文”的里程碑）；400 个“是否询问今天”用例，true 343、false 57。
 - 验证：完整串行 iOS 回归 705 个测试、43 个 suite 通过（含新增 2 个 fixture 测试）；`npm test` 382 通过；lint、`check:ios`、`check:ios-rule-fixtures`、`check:watch-fixtures`、`git diff --check` 通过。串行性能测试断言全部通过（一年 `recordsMetrics` 5.1 ms）。未做模拟器视觉检查；通知实际投递待真机确认。
+
+### 2026-09-15 · R3 汇总与收入
+
+- `SummaryRules.swift` 移植五个入口：`summarize`（显式区间起点优先，否则按时区的周一或元旦；按民用日数已完成排班日，当前班次按进度折算；手动模式不数已完成日、今天仍计入）、`recordsIncome`（`completedWorkdayIncome`）、`salaryMonthlyEquivalent`、`lifetimeIncome`（`YYYY-MM-DD` 按 `Date.UTC` 往返校验，100 年以前的年份同样拒绝；按当月实际天数折算；区间重叠整体返回 0；收入递减）与 `recordsActualForecast`（区间合并、开始／结束观测配对、固定月薪按当月天数逐日摊分）。五个入口都不再抛错。
+- Swift 侧删除 JavaScriptCore 桥：`CountdownRules` 类、`CountdownRulesError`、启动时的预热、只为桥存在的 `NativeRecordsIncome`／`NativeRecordsIncomeInput`／`NativeMonthlySalaryEquivalent`，以及已无人写入也无人读取的 `ShiftSession.lastRulesError`。`CountdownRules.js` 仍生成并打包，但已无入口，由 R4 连同生成、打包与检查一起删除。
+- 已知差异：固定月薪摊分遇到无效时区标识时，TS 的 `Intl` 抛错导致整期收入为空；Swift 按 R1 的约定回落到当前时区。应用只传入系统提供的时区标识，fixture 不覆盖这一情况。
+- 差分契约：fixture 版本升到 3。322 个汇总用例，前两行是 fa927fb 的“本周”事件（周三下午班次过半应为 2.5 天、22.5 小时、2500，另一行为手动模式 0.5 天），其余由各 profile 的实时快照喂入，含过期两天的快照、年视图与显式起点；80 个记录收入与 32 个月薪等价（覆盖全部 16 种薪资字符串）；160 个终身收入（77 个非零，19 个经过收入递减，含非法日期、未补零日期与重叠区间）；120 个实际与推算区间（每种实际类型及未知类型、重叠加班、未配对观测、重复与不存在的日期键、小数毫秒 `asOf`，26 个为固定月薪）。原有的 `recordsIncomeUsesCompletedScheduledDays`、`recordsIncomeAbsentWithoutSalary` 与提前下班后的周汇总测试保留，现在直接跑 Swift 实现。
+- 验证：完整串行 iOS 回归 709 个测试、43 个 suite 通过（含新增 4 个 fixture 测试）；`npm test` 382 通过；lint、`check:ios`、`check:ios-rule-fixtures`、`check:watch-fixtures`、`git diff --check` 通过。串行性能：一年 `recordsMetrics` 4.9 ms、记录列表 3.1 ms。未做模拟器视觉检查。

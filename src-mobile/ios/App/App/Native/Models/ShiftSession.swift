@@ -190,7 +190,6 @@ final class ShiftSession {
             else { defaults.removeObject(forKey: Key.overtimeEndAtMs) }
         }
     }
-    var lastRulesError: String?
     var debugPresentationToken: String {
 #if DEBUG
         debugTimerSession?.scenario.rawValue ?? ""
@@ -415,7 +414,6 @@ final class ShiftSession {
         if startMinutes == nil, endMinutes == nil, projectsFutureFromBase(at: date) {
             result = result.withProjectedFuture(from: ScheduleRules.snapshot(input: rulesInput(at: date, using: .base)))
         }
-        if lastRulesError != nil { lastRulesError = nil }
         return result
     }
     func rulesInput(
@@ -962,7 +960,7 @@ final class ShiftSession {
     /// - Parameter periodStartMs: An explicit window start. Callers that drew
     ///   their own boundary — the Records tab, whose grids follow the preferences.locale's
     ///   first weekday — pass it so the summary covers the window on screen.
-    ///   Omit it and the rules bundle derives the window from `period`.
+    ///   Omit it and the window comes from `period`.
     func periodSummary(
         _ period: String,
         asOf: Date,
@@ -974,28 +972,21 @@ final class ShiftSession {
         if isForcedWorkday(snapshot) {
             summaryWorkdays.insert(Calendar.current.component(.weekday, from: snapshot.startDate) - 1)
         }
-        do {
-            let result = try CountdownRules.shared.summarize(input: .init(
-                period: period,
-                periodStartMs: periodStartMs,
-                asOfMs: asOf.timeIntervalSince1970 * 1_000,
-                workdays: summaryWorkdays.sorted(),
-                schedule: nativeSchedule(at: asOf),
-                currentShiftStartMs: snapshot.startAtMs,
-                currentShiftEndMs: snapshot.endAtMs,
-                plannedDailyHours: snapshot.plannedDurationMs / 3_600_000,
-                todayProgress: min(100, snapshot.progress),
-                dailySalary: snapshot.dailySalary,
-                todayEffectiveHours: snapshot.durationMs / 3_600_000,
-                todayPayRatio: snapshot.payRatio,
-                timeZoneIdentifier: preferences.recordsTimeZoneIdentifier
-            ))
-            if lastRulesError != nil { lastRulesError = nil }
-            return result
-        } catch {
-            lastRulesError = error.localizedDescription
-            return nil
-        }
+        return SummaryRules.summarize(input: .init(
+            period: period,
+            periodStartMs: periodStartMs,
+            asOfMs: asOf.timeIntervalSince1970 * 1_000,
+            workdays: summaryWorkdays.sorted(),
+            schedule: nativeSchedule(at: asOf),
+            currentShiftStartMs: snapshot.startAtMs,
+            currentShiftEndMs: snapshot.endAtMs,
+            plannedDailyHours: snapshot.plannedDurationMs / 3_600_000,
+            todayProgress: min(100, snapshot.progress),
+            dailySalary: snapshot.dailySalary,
+            todayEffectiveHours: snapshot.durationMs / 3_600_000,
+            todayPayRatio: snapshot.payRatio,
+            timeZoneIdentifier: preferences.recordsTimeZoneIdentifier
+        ))
     }
     static func dayKey(for date: Date, timeZone: TimeZone = .current) -> String {
         var calendar = Calendar(identifier: .gregorian)

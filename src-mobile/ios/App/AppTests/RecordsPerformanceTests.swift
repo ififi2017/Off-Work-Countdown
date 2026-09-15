@@ -200,7 +200,7 @@ struct RecordsPerformanceTests {
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         let store = try seededStore(days: 520, defaults: defaults)
-        // Warm the JavaScriptCore bundle and any lazily-built caches so the
+        // Warm the schedule expansion and any lazily-built caches so the
         // numbers describe the steady state a user actually pays.
         let window = store.queries.recordsWindow(for: .year, anchor: .now)
         _ = store.queries.resolvedDays(from: window.0, through: window.1)

@@ -925,7 +925,7 @@ final class RecordsQueries {
             )
         }
         guard !inputs.isEmpty || (presentationSalaryEnabled && salaryType == .monthly) else { return nil }
-        return try? CountdownRules.shared.recordsActualForecast(input: .init(
+        return SummaryRules.recordsActualForecast(input: .init(
             days: inputs,
             periodDayKeys: cells.map(\.dayKey),
             dailySalary: currentSnapshot?.dailySalary,
@@ -1260,21 +1260,11 @@ final class RecordsQueries {
     }
 
     /// Records and the timer intentionally answer different questions. Records
-    /// counts completed base-schedule workdays; the bundle applies the current
-    /// salary while excluding today's partial shift and declared overtime.
+    /// counts completed base-schedule workdays at the current salary, leaving
+    /// today's partial shift and declared overtime to the timer.
     func recordsIncome(completedWorkdays: Int, at date: Date = .now) -> Double? {
         guard presentationSalaryEnabled, let input = rulesInput(at: date) else { return nil }
-        do {
-            let result = try CountdownRules.shared.recordsIncome(input: .init(
-                completedWorkdays: completedWorkdays,
-                rules: input
-            ))
-            if lastRulesError != nil { lastRulesError = nil }
-            return result.earnings
-        } catch {
-            lastRulesError = error.localizedDescription
-            return nil
-        }
+        return SummaryRules.recordsIncome(completedWorkdays: completedWorkdays, rules: input)
     }
 
     /// The window is entirely a property of the life profile — `now` is not

@@ -39,7 +39,7 @@ nonisolated struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
 
         let endAtMs: Int64
         let progress: Double
-        /// Absolute effective-work intervals prepared by CountdownRules. The
+        /// Absolute effective-work intervals prepared by ScheduleRules. The
         /// extension may project inside them, but never reinterprets lunch or
         /// overtime rules.
         let segments: [Segment]
@@ -179,7 +179,7 @@ nonisolated struct OffWorkActivityAttributes: ActivityAttributes, Sendable {
         }
 
         /// Remaining effective work across the absolute segments supplied by
-        /// CountdownRules. Gaps never decrease this value.
+        /// ScheduleRules. Gaps never decrease this value.
         func effectiveRemainingMs(atMs nowMs: Int64) -> Int64? {
             guard nowMs >= 0 else { return nil }
             var remaining: Int64 = 0

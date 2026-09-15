@@ -362,7 +362,7 @@ final class LifeSummaryModel {
         // Current preferences only project forward. Prior employment salaries
         // stay exactly as entered in the life archive.
         let configuredMonthly = readPreferences(now).salary.enabled
-            ? queries.rulesInput(at: now).flatMap { try? CountdownRules.shared.salaryMonthlyEquivalent(input: $0).amount }
+            ? queries.rulesInput(at: now).flatMap { SummaryRules.salaryMonthlyEquivalent(input: $0) }
             : nil
         let projectedSalary = configuredMonthly.flatMap { amount in
             amount > 0 ? LifeSalary(amount: amount, cadence: .monthly) : nil
@@ -399,7 +399,7 @@ final class LifeSummaryModel {
             }
             guard !periods.isEmpty || salary?.isValid == true else { return nil }
         }
-        return try? CountdownRules.shared.lifetimeIncome(input: .init(
+        return SummaryRules.lifetimeIncome(input: .init(
             periods: periods,
             currentSalary: projectedSalary.map {
                 NativeLifetimeIncomeSalary(

@@ -23,13 +23,12 @@ extension ServiceCoordinator.Operations {
                 )
             },
             prepare: {
-                // Let SwiftUI commit its first frame before rules and system
-                // services start, even though their owner is process-scoped.
+                // Let SwiftUI commit its first frame before system services
+                // start, even though their owner is process-scoped.
                 await Task.yield()
                 try? await Task.sleep(for: .milliseconds(16))
                 guard !Task.isCancelled else { return }
                 LaunchTrace.endAppInit()
-                CountdownRules.warmUp()
 #if DEBUG
                 if debugDidResetOnLaunch {
                     WidgetSnapshotPublisher.shared.clear()

@@ -633,7 +633,8 @@ nonisolated final class CivilZone {
         return "\(reading.year)-\(pad(reading.month))-\(pad(reading.day))"
     }
 
-    private func weekStartMs(_ ms: Double) -> Double {
+    /// Civil midnight on the Monday of the week containing `ms` (`zonedWeekStartMs`).
+    func weekStartMs(_ ms: Double) -> Double {
         let reading = civil(ms)
         return utcMs(dayNumber: reading.dayNumber - (reading.weekday + 6) % 7, Clock(hour: 0, minute: 0))
     }

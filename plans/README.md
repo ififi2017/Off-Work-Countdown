@@ -28,7 +28,7 @@
 | 015 | [真机反馈、人生收入与设置同步](015-device-feedback-life-income-settings-sync.md) | 2026-09-05 | IN PROGRESS | iPad 导航与记录布局、实际＋推算总结、职业经历、Plus 引导、私有 CloudKit 设置同步与小组件补齐 |
 | 017 | [Apple Watch：Plus Watch App 与表盘组件](017-apple-watch-plus.md) | 2026-09-08 | IN PROGRESS | Watch App、两种组件、配对通信与智能叠放相关性提示已交付；用户确认 Ultra 2 真机运行良好、智能叠放正常；剩余真实 StoreKit 触发、逐项真机与耗电、Xcode Cloud／TestFlight、官网与商店文案、审核备注和 Watch 商店截图 |
 | 018 | [3.2.0：iOS 架构整改、Apple Watch 基础与原生适配](018-ios-3.2.0-architecture-remediation.md) | 2026-09-12 | IN PROGRESS | 产品版本已统一为 3.2.0（构建号未变）；shipping 工程 692 个 iOS 测试、7 个 WatchAppTests 通过，配对 iPhone／Watch 模拟器权益端到端 7 步通过，schema 1–5 兼容测试与五轮性能已记录；真机、签名归档、StoreKit 恢复购买、27／Duo 与远端 CI 未验收 |
-| 019 | [iOS 规则与本地化回到 iOS 工程](019-ios-native-rules-and-localization.md) | 2026-09-13 | IN PROGRESS | R1、R2 已实现：班次解析、快照、Widget 班次、Watch 投影、区间展开与提醒迁到 `ScheduleRules.swift`／`ReminderRules.swift`，以 TS 差分 fixture 为契约并同版修改 AGENTS.md；R3–R4 与本地化迁移未开工。018 P8 的前置条件已满足 |
+| 019 | [iOS 规则与本地化回到 iOS 工程](019-ios-native-rules-and-localization.md) | 2026-09-13 | IN PROGRESS | R1–R3 已实现：班次解析、快照、Widget 班次、Watch 投影、区间展开、提醒、汇总与收入迁到 `ScheduleRules.swift`／`ReminderRules.swift`／`SummaryRules.swift`，以 TS 差分 fixture 为契约并同版修改 AGENTS.md；R4（删除 JS 桥）与本地化迁移未开工。018 P8 的前置条件已满足 |
 
 ## 仍在 `docs/` 的活计划
 

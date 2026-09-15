@@ -4,9 +4,10 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadScheduleRuleOracle } from "./ios-schedule-rule-oracle.mjs";
 
-// Differential fixtures for plan 019 R1 and R2. The TypeScript oracle answers
-// every case; AppTests/ScheduleRuleFixtureTests.swift holds ScheduleRules.swift
-// to the same values. Cases are one per line so a rule change reads as a diff.
+// Differential fixtures for plan 019 R1–R3. The TypeScript oracle answers
+// every case; AppTests/ScheduleRuleFixtureTests.swift holds ScheduleRules,
+// ReminderRules and SummaryRules to the same values. Cases are one per line so
+// a rule change reads as a diff.
 
 const minute = 60_000;
 const hour = 3_600_000;
@@ -289,6 +290,46 @@ function reminderLine(reminder) {
   return `${parts.join("|")}\n`;
 }
 
+// A fixed-seed generator, so lifetime-income cases are varied yet reproducible.
+function seeded(seed) {
+  let state = seed >>> 0;
+  return () => (state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0) / 2 ** 32;
+}
+
+// Valid civil dates first; the tail is what `civilDay` must reject (a day that
+// does not exist, a year `Date.UTC` reads as 19xx, a month 13, blanks, and an
+// unpadded date).
+const validCivilDates = ["2010-03-15", "2012-01-01", "2015-02-28", "2016-02-29", "2018-07-31", "2020-12-31", "2023-06-10", "2026-09-15", "2026-09-16", "2031-01-01", "2040-05-20", "2058-12-31"];
+const civilDates = [...validCivilDates, "2026-02-30", "0099-06-01", "2026-13-01", "", "abc", "2026-9-1"];
+
+function lifetimeIncomeCases() {
+  const random = seeded(19);
+  const pick = (list) => list[Math.floor(random() * list.length)];
+  return Array.from({ length: 160 }, (_, i) => {
+    // Sequential intervals by construction, then a few broken on purpose.
+    const points = [...new Set(Array.from({ length: 1 + Math.floor(random() * 4) }, () => pick(validCivilDates)))].sort();
+    const periods = points.slice(0, -1).map((startsOn, j) => ({
+      startsOn,
+      endsOn: j === points.length - 2 && random() < 0.3 ? null : points[j + 1],
+      salaryAmount: pick([8000, 12500.5, 240000, 0, -10, 3333.33]),
+      salaryCadence: pick(["monthly", "yearly"]),
+    }));
+    if (periods.length > 0 && random() < 0.2) periods[0].startsOn = pick(civilDates);
+    if (periods.length > 1 && random() < 0.15) periods[1].endsOn = pick(civilDates);
+    return {
+      periods,
+      currentSalary: random() < 0.6
+        ? { salaryAmount: pick([15000, 180000, 9999.99, 0]), salaryCadence: pick(["monthly", "yearly"]), startsOn: random() < 0.5 ? null : pick(civilDates) }
+        : null,
+      futureIncomeDecline: random() < 0.45
+        ? { startsOn: pick(civilDates), retirementRatio: pick([0, 0.35, 0.5, 1, 1.2, -0.1]) }
+        : null,
+      asOf: i % 20 === 7 ? pick(civilDates) : "2026-09-15",
+      retirementOn: i % 25 === 3 ? pick(civilDates) : pick(["2046-09-15", "2058-12-31", "2031-01-01", "2020-01-01"]),
+    };
+  });
+}
+
 export function createScheduleRuleFixtures() {
   const snapshots = [];
   const watch = [];
@@ -299,6 +340,28 @@ export function createScheduleRuleFixtures() {
   const validateBreak = [];
   const reminders = [];
   const applyToday = [];
+  const actualForecast = [];
+
+  // The "This week" incident (fa927fb): on a Wednesday afternoon the timer
+  // credited 2.5 days of pay while a second, Swift-only formula counted 2.
+  // Rows 0 and 1, so ScheduleRuleFixtureTests can name them; manual mode must
+  // still count today even though it counts no finished days.
+  const weekIncident = {
+    period: "week",
+    asOfMs: Date.UTC(2026, 6, 1, 5),
+    workdays: [1, 2, 3, 4, 5],
+    schedule: { mode: "classic" },
+    currentShiftStartMs: Date.UTC(2026, 6, 1, 1),
+    currentShiftEndMs: Date.UTC(2026, 6, 1, 10),
+    plannedDailyHours: 9,
+    todayProgress: 50,
+    dailySalary: 1000,
+    todayEffectiveHours: 9,
+    todayPayRatio: 0.5,
+    timeZoneIdentifier: "Asia/Shanghai",
+  };
+  const summaries = [weekIncident, { ...weekIncident, schedule: { mode: "off" } }]
+    .map((input) => ({ input, expected: call("summarize", input) }));
 
   profiles.forEach((profile, p) => {
     const stride = strideInstants(p);
@@ -387,6 +450,34 @@ export function createScheduleRuleFixtures() {
       applyToday.push({ p, c, now: nowMs, forced, expected: oracle.shouldPromptApplyToday(JSON.stringify(request)) });
     });
 
+    // Summaries are fed from a live snapshot, exactly as ShiftSession.periodSummary
+    // feeds them, including a snapshot left stale two days later.
+    stride.slice(0, 8).forEach((nowMs, k) => {
+      const salary = (p + k * 5) % salaries.length;
+      const overtimeEndAtMs = k % 4 === 2 ? call("snapshot", rulesInput(profile, nowMs)).plannedEndAtMs + 70 * minute : null;
+      const snapshot = call("snapshot", rulesInput(profile, nowMs, { salary, overtimeEndAtMs }));
+      const asOfMs = k % 6 === 5 ? nowMs + 2 * day + 5 * hour : nowMs;
+      const workdays = k % 5 === 4
+        ? [...new Set([...profile.workdays, new Date(snapshot.startAtMs).getUTCDay()])].sort((a, b) => a - b)
+        : profile.workdays;
+      const input = {
+        period: k % 3 === 1 ? "year" : "week",
+        ...(k % 3 === 2 ? { periodStartMs: asOfMs - (3 + (k % 4)) * day - 7 * hour } : {}),
+        asOfMs,
+        workdays,
+        schedule: profile.schedule,
+        currentShiftStartMs: snapshot.startAtMs,
+        currentShiftEndMs: snapshot.endAtMs,
+        plannedDailyHours: snapshot.plannedDurationMs / hour,
+        todayProgress: Math.min(100, snapshot.progress),
+        dailySalary: snapshot.dailySalary,
+        todayEffectiveHours: snapshot.durationMs / hour,
+        todayPayRatio: snapshot.payRatio,
+        timeZoneIdentifier: profile.timeZoneIdentifier,
+      };
+      summaries.push({ input, expected: call("summarize", input) });
+    });
+
     {
       const nowMs = stride[5];
       const overtimeEndAtMs = p % 3 === 0 ? call("snapshot", rulesInput(profile, nowMs)).plannedEndAtMs + 90 * minute : null;
@@ -426,11 +517,75 @@ export function createScheduleRuleFixtures() {
       const days = call("expandScheduleRange", expansionRequest(from, through));
       expansionDigests.push({ p, from, through, count: days.length, sha256: digest(days.map(expansionLine)) });
     }
+
+    // Records periods: every actual kind (and an unknown one) against forecast
+    // rows, overlapping overtime, unpaired observations, and a day key that
+    // repeats or does not exist.
+    [0, 1, 2].forEach((c) => {
+      const asOfMs = stride[10 + c] + (c === 1 ? 0.5 : 0);
+      const kinds = [null, "corrected", "observed", "scheduled", null, "unknown"];
+      const expanded = call("expandScheduleRange", expansionRequest(asOfMs - 4 * day, asOfMs + 5 * day));
+      const days = expanded.map((entry, j) => {
+        const actualKind = kinds[(j + c + p) % kinds.length];
+        const planned = entry.segments;
+        const first = planned[0];
+        const last = planned[planned.length - 1];
+        const offset = (j + p) % 4 === 1 ? 30 * minute : 0;
+        const resolvedSegments = (!entry.isWorkday && actualKind === null) || (j + c) % 7 === 3
+          ? []
+          : planned.map((segment) => ({ startAtMs: segment.startAtMs + offset, endAtMs: segment.endAtMs + offset }));
+        const overtimeSegments = actualKind !== null && j % 3 === 0
+          ? [
+            { startAtMs: last.endAtMs - 20 * minute, endAtMs: last.endAtMs + 45 * minute },
+            { startAtMs: last.endAtMs + 30 * minute, endAtMs: last.endAtMs + 90 * minute },
+          ]
+          : [];
+        const observations = actualKind === "observed"
+          ? [
+            { kind: "started", occurredAtMs: first.startAtMs + 10 * minute },
+            { kind: "started", occurredAtMs: first.startAtMs + 20 * minute },
+            { kind: "stopped", occurredAtMs: last.endAtMs - (j % 2) * 3 * hour },
+            ...(j % 2 === 0 ? [{ kind: "started", occurredAtMs: last.endAtMs + 10 * minute }] : []),
+            { kind: "stopped", occurredAtMs: first.startAtMs - hour },
+          ]
+          : [];
+        return {
+          dayKey: entry.dayKey,
+          actualKind,
+          resolvedSegments,
+          plannedSegments: planned,
+          overtimeSegments,
+          observations,
+          isActiveAnchor: c !== 2 && first.startAtMs <= asOfMs && asOfMs < last.endAtMs + 2 * hour,
+        };
+      });
+      const salary = (p + c * 7) % salaries.length;
+      const input = {
+        days,
+        periodDayKeys: [...expanded.map((entry) => entry.dayKey), ...(p % 3 === 0 ? [expanded[0].dayKey, "2026-02-30"] : [])],
+        dailySalary: p % 5 === 0 ? null : call("snapshot", rulesInput(profile, asOfMs, { salary })).dailySalary,
+        asOfMs,
+        salaryRules: c === 2 && p % 2 === 0 ? null : rulesInput(profile, asOfMs, { salary }),
+      };
+      actualForecast.push({ input, expected: call("recordsActualForecast", input) });
+    });
   });
+
+  const recordsIncome = salaries.flatMap((_, s) => [0, 1, 2, 23, -3].map((n) => ({
+    s,
+    n,
+    expected: call("recordsIncome", { ...rulesInput(profiles[0], 0, { salary: s }), completedWorkdays: n }).earnings,
+  })));
+  const monthlyEquivalent = salaries.flatMap((_, s) => ["monthly", "daily"].map((type) => ({
+    s,
+    type,
+    expected: call("salaryMonthlyEquivalent", { ...rulesInput(profiles[0], 0, { salary: s }), salaryType: type }).amount,
+  })));
+  const lifetimeIncome = lifetimeIncomeCases().map((input) => ({ input, expected: call("lifetimeIncome", input) }));
 
   const section = (name, rows) =>
     `"${name}":[\n${rows.map((row) => JSON.stringify(row)).join(",\n")}\n]`;
-  const json = `{"version":2,
+  const json = `{"version":3,
 "generator":"scripts/generate-ios-schedule-rule-fixtures.mjs",
 ${section("profiles", profiles)},
 ${section("salaries", salaries)},
@@ -443,7 +598,12 @@ ${section("expansions", expansions)},
 ${section("expansionDigests", expansionDigests)},
 ${section("validateBreak", validateBreak)},
 ${section("reminders", reminders)},
-${section("applyToday", applyToday)}
+${section("applyToday", applyToday)},
+${section("summaries", summaries)},
+${section("recordsIncome", recordsIncome)},
+${section("monthlyEquivalent", monthlyEquivalent)},
+${section("lifetimeIncome", lifetimeIncome)},
+${section("actualForecast", actualForecast)}
 }`;
   // A Swift raw string ends at `"""#`, and `"#` would begin an escape inside it.
   if (json.includes('"#')) throw new Error("Fixture JSON cannot be embedded in a Swift raw string.");
