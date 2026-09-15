@@ -39,6 +39,29 @@ struct PreferencesCommitTests {
         #expect(notifications == 1)
     }
 
+    @Test("A chosen rotation day survives switching to rotation even when the old anchor already reads that day")
+    func rotationDayWithModeSwitch() throws {
+        let suite = "RotationDaySettle.\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = AppRuntime(defaults: defaults, records: .inMemory())
+        store.preferences.applyPreferences { $0.recordsTimeZoneIdentifier = "UTC" }
+        let date = try #require(store.preferences.recordsCalendar.date(from:
+            DateComponents(year: 2026, month: 9, day: 7, hour: 10)
+        ))
+        // Make the pre-switch anchor read day 2 on `date`, whatever today is.
+        _ = store.preferences.setRotationCycleDay(2, at: date).synchronousResult
+        #expect(store.preferences.scheduleMode != .rotation)
+        #expect(store.preferences.rotationCycleDay(at: date) == 2)
+
+        store.preferences.applySetupScheduleChange(
+            ScheduleFieldChange(scheduleMode: .rotation, rotationCycleDay: 2),
+            at: date
+        )
+        #expect(store.preferences.scheduleMode == .rotation)
+        #expect(store.preferences.rotationCycleDay(at: date) == 2)
+    }
+
     private func withStore(_ body: (AppRuntime) throws -> Void) throws {
         let suite = "PreferencesCommit.\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
