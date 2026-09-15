@@ -25,7 +25,14 @@ extension ScheduleFieldChange {
         }
         if next.rotationWorkDays == store.rotationWorkDays { next.rotationWorkDays = nil }
         if next.rotationRestDays == store.rotationRestDays { next.rotationRestDays = nil }
-        if next.rotationCycleDay == store.rotationCycleDay(at: date) { next.rotationCycleDay = nil }
+        // The cycle day is only "unchanged" against the anchor it will land on.
+        // Switching to rotation re-anchors to today, and a new work or rest
+        // length changes what day N means, so with either in the same edit the
+        // current day says nothing and the chosen one must survive.
+        if next.scheduleMode == nil, next.rotationWorkDays == nil, next.rotationRestDays == nil,
+           next.rotationCycleDay == store.rotationCycleDay(at: date) {
+            next.rotationCycleDay = nil
+        }
         return next
     }
 }
