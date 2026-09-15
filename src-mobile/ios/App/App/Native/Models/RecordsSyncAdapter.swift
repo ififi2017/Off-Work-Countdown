@@ -80,7 +80,7 @@ nonisolated struct SyncConflictCopy: Equatable, Codable, Sendable {
     var supportsFieldMerge: Bool {
         switch entityType {
         case .workObservation, .focusSession, .scheduleSnapshot, .focusPlanningConfiguration,
-             .syncedPreferences:
+             .syncedPreferences, .extendedSchedule:
             return false
         default:
             return localPayload != nil && incomingPayload != nil
@@ -146,6 +146,9 @@ nonisolated struct SyncLocalState: Equatable, Codable, Sendable {
     var rows: [String: SyncAdapterRow]
     var conflicts: [SyncConflictCopy]
     var deletingCloud: Bool
+    /// `RecordsSyncIdentity.entityTypeRevision` as of the last full fetch;
+    /// nil on archives written before the field existed.
+    var entityTypeRevision: Int? = nil
 
     static let empty = SyncLocalState(
         accountID: nil,
@@ -184,11 +187,24 @@ enum RecordsSyncIdentity {
         case .focusSession: return "session.\(key.lowercased())"
         case .focusPlanningConfiguration: return FocusPlanningConfiguration.logicalKey
         case .syncedPreferences: return SyncedPreferences.logicalKey
+        case .extendedSchedule: return ExtendedSchedule.logicalKey
+        case .rosterDay: return "roster.\(key)"
         }
     }
 
     static func erasedName(type: RecordEntityType, key: String) -> String {
         "erased.\(type.rawValue).\(key)"
+    }
+
+    /// Bumped whenever `RecordEntityType` gains a case. A build that predates a
+    /// type skips its rows while the CloudKit change token moves past them, so
+    /// a device whose stored revision is older fetches everything once.
+    /// 1: the types through `syncedPreferences` (3.2.0 and earlier).
+    /// 2: plan 018 P8's `extendedSchedule` and `rosterDay`.
+    static let entityTypeRevision = 2
+
+    static func needsFullRefetch(storedRevision: Int?) -> Bool {
+        (storedRevision ?? 1) < entityTypeRevision
     }
 }
 
@@ -780,6 +796,10 @@ enum RecordsSyncPayload {
             return try? JSONEncoder().encode(FocusPlanningConfigurationDTO(configuration))
         case .syncedPreferences(let preferences):
             return try? JSONEncoder().encode(preferences)
+        case .extendedSchedule(let schedule):
+            return try? JSONEncoder().encode(ExtendedScheduleDTO(schedule))
+        case .rosterDay(let day):
+            return try? JSONEncoder().encode(RosterDayDTO(day))
         }
     }
 
@@ -818,6 +838,11 @@ enum RecordsSyncPayload {
                 .flatMap { try? JSONEncoder().encode(FocusPlanningConfigurationDTO($0)) }
         case .syncedPreferences:
             return state.syncedPreferences.flatMap { try? JSONEncoder().encode($0) }
+        case .extendedSchedule:
+            return state.extendedSchedule.flatMap { try? JSONEncoder().encode(ExtendedScheduleDTO($0)) }
+        case .rosterDay:
+            return state.rosterDays.first(where: { $0.dayKey == key })
+                .flatMap { try? JSONEncoder().encode(RosterDayDTO($0)) }
         }
     }
 
@@ -862,6 +887,14 @@ enum RecordsSyncPayload {
         case .syncedPreferences:
             return (try? JSONDecoder().decode(SyncedPreferences.self, from: data))
                 .flatMap { $0.isValid ? .syncedPreferences($0) : nil }
+        case .extendedSchedule:
+            return (try? JSONDecoder().decode(ExtendedScheduleDTO.self, from: data))
+                .flatMap { $0.value() }
+                .map { .extendedSchedule($0) }
+        case .rosterDay:
+            return (try? JSONDecoder().decode(RosterDayDTO.self, from: data))
+                .flatMap { $0.value() }
+                .map { .rosterDay($0) }
         }
     }
 
@@ -880,6 +913,8 @@ enum RecordsSyncPayload {
         case .focusSession(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         case .focusPlanningConfiguration(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         case .syncedPreferences(let value): return value.editedAt.timeIntervalSince1970 * 1_000
+        case .extendedSchedule(let value): return value.editedAt.timeIntervalSince1970 * 1_000
+        case .rosterDay(let value): return value.editedAt.timeIntervalSince1970 * 1_000
         }
     }
 
@@ -916,6 +951,11 @@ enum RecordsSyncPayload {
             return state.focusPlanningConfiguration.map { ($0.editCount, $0.editTieBreaker.uuidString) }
         case .syncedPreferences:
             return state.syncedPreferences.map { ($0.editCount, $0.editTieBreaker.uuidString) }
+        case .extendedSchedule:
+            return state.extendedSchedule.map { ($0.editCount, $0.editTieBreaker.uuidString) }
+        case .rosterDay:
+            return state.rosterDays.first(where: { $0.dayKey == key })
+                .map { ($0.editCount, $0.editTieBreaker.uuidString) }
         }
     }
 
@@ -934,6 +974,8 @@ enum RecordsSyncPayload {
         case .focusSession(let value): return (value.editCount, value.editTieBreaker.uuidString)
         case .focusPlanningConfiguration(let value): return (value.editCount, value.editTieBreaker.uuidString)
         case .syncedPreferences(let value): return (value.editCount, value.editTieBreaker.uuidString)
+        case .extendedSchedule(let value): return (value.editCount, value.editTieBreaker.uuidString)
+        case .rosterDay(let value): return (value.editCount, value.editTieBreaker.uuidString)
         }
     }
 

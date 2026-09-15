@@ -59,6 +59,16 @@ extension RecordIncomingValue {
             value.editCount = 0
             value.editTieBreaker = WorkObservation.unsetTieBreaker
             return .syncedPreferences(value)
+        case .extendedSchedule(var value):
+            value.editedAt = .distantPast
+            value.editCount = 0
+            value.editTieBreaker = WorkObservation.unsetTieBreaker
+            return .extendedSchedule(value)
+        case .rosterDay(var value):
+            value.editedAt = .distantPast
+            value.editCount = 0
+            value.editTieBreaker = WorkObservation.unsetTieBreaker
+            return .rosterDay(value)
         }
     }
 }

@@ -31,6 +31,8 @@ import Testing
 //    LifeProfile gained `workHistoryMode`/`roughCurrentSalary`/
 //    `employmentPeriods`. `futureIncomeDecline` landed one commit later
 //    (85580f1), still under schemaVersion 5.
+//  - Plan 018 P8-a bumped schemaVersion 5 -> 6: added `extendedSchedule` and
+//    `rosterDays`.
 //
 // IMPORTANT — schema version 2 does not exist in this history. No commit
 // ever set `RecordJSON.schemaVersion` (or the export path) to 2; the number
@@ -289,6 +291,39 @@ private func fullState() -> RecordState {
         editTieBreaker: id(16)
     )
 
+    state.extendedSchedule = ExtendedSchedule(
+        isEnabled: true,
+        shiftTypes: [
+            ShiftType(
+                id: id(17), name: "Night", kind: .work,
+                startMinutes: 22 * 60, endMinutes: 6 * 60,
+                breakEnabled: true, breakStartMinutes: 2 * 60, breakDurationMinutes: 30,
+                colorHex: "#3A6EA5", isArchived: false
+            ),
+            ShiftType(
+                id: id(18), name: "Rest", kind: .rest,
+                startMinutes: 0, endMinutes: 0,
+                breakEnabled: false, breakStartMinutes: 0, breakDurationMinutes: 0,
+                colorHex: "#9E9E9E", isArchived: false
+            ),
+        ],
+        rule: ShiftCycleRule(preset: .rotation, anchorDayKey: "2026-08-24", days: [id(17), id(17), id(18)]),
+        timeZoneIdentifier: "UTC",
+        editedAt: day,
+        editCount: 2,
+        editTieBreaker: id(19)
+    )
+    state.rosterDays = [
+        RosterDay(
+            dayKey: "2026-08-25",
+            shiftTypeID: id(18),
+            timeZoneIdentifier: "UTC",
+            editedAt: day,
+            editCount: 1,
+            editTieBreaker: id(20)
+        )
+    ]
+
     return state
 }
 
@@ -372,6 +407,11 @@ private func downgraded(_ object: [String: Any], to version: Int) -> [String: An
             }
             result["lifeProfile"] = life
         }
+    }
+
+    if version < 6 {
+        result["extendedSchedule"] = nil
+        result["rosterDays"] = nil
     }
 
     return result
@@ -603,13 +643,26 @@ func schemaVersion5DocumentPreservesEverything() throws {
 
     let configuration = try #require(state.focusPlanningConfiguration)
     #expect(configuration == fullState().focusPlanningConfiguration)
+
+    #expect(state.extendedSchedule == nil)
+    #expect(state.rosterDays.isEmpty)
+}
+
+@MainActor
+@Test("Schema v6 documents preserve the extended schedule and hand-set days exactly")
+func schemaVersion6DocumentPreservesExtendedSchedule() throws {
+    let (state, report) = try importDowngraded(try baseDocumentObject(), version: 6)
+    #expect(report.rejected.isEmpty)
+    #expect(state.extendedSchedule == fullState().extendedSchedule)
+    #expect(state.rosterDays == fullState().rosterDays)
+    #expect(state.syncedPreferences == fullState().syncedPreferences)
 }
 
 // MARK: - Cross-version guarantees
 
 @MainActor
 @Test(
-    "Every accepted schema version (1-5) imports without dropping a row, and re-exports at the current schemaVersion idempotently"
+    "Every accepted schema version (1-6) imports without dropping a row, and re-exports at the current schemaVersion idempotently"
 )
 func everyAcceptedSchemaVersionReexportsIdempotentlyWithoutDroppingRows() throws {
     let baseObject = try baseDocumentObject()
@@ -632,6 +685,11 @@ func everyAcceptedSchemaVersionReexportsIdempotentlyWithoutDroppingRows() throws
             (imported.syncedPreferences != nil) == (version >= 5),
             "v\(version): syncedPreferences presence"
         )
+        #expect(
+            (imported.extendedSchedule != nil) == (version >= 6),
+            "v\(version): extendedSchedule presence"
+        )
+        #expect(imported.rosterDays.count == (version >= 6 ? 1 : 0), "v\(version): rosterDay count")
 
         // Re-export always writes the current schema version...
         var state = imported
@@ -676,11 +734,12 @@ func coldArchiveWithOlderSchemaReopens() throws {
     // v3 predates focusPlanningConfiguration (v4) and syncedPreferences (v5).
     #expect(state.focusPlanningConfiguration == nil)
     #expect(state.syncedPreferences == nil)
+    #expect(state.extendedSchedule == nil)
     #expect(state.lifeProfile?.workHistoryMode == .rough)
 }
 
 @MainActor
-@Test("Schema versions outside 1...5 are rejected without mutating existing state")
+@Test("Schema versions outside 1...6 are rejected without mutating existing state")
 func outOfRangeSchemaVersionsAreRejectedWithoutMutatingState() throws {
     var state = fullState()
     let before = state
@@ -697,14 +756,14 @@ func outOfRangeSchemaVersionsAreRejectedWithoutMutatingState() throws {
     }
     #expect(state == before)
 
-    document.schemaVersion = 6
+    document.schemaVersion = 7
     do {
         _ = try RecordJSON.apply(document, to: &state, mode: .skipErased)
-        Issue.record("Expected schemaVersion 6 to be rejected")
+        Issue.record("Expected schemaVersion 7 to be rejected")
     } catch RecordJSONError.unknownSchemaVersion(let version) {
-        #expect(version == 6)
+        #expect(version == 7)
     } catch {
-        Issue.record("Unexpected error for schemaVersion 6: \(error)")
+        Issue.record("Unexpected error for schemaVersion 7: \(error)")
     }
     #expect(state == before)
 
