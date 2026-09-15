@@ -376,7 +376,7 @@ private struct SeededGenerator: RandomNumberGenerator {
     mutating func bool() -> Bool { next() % 2 == 0 }
 }
 
-private struct OWCDownTriangle: Shape {
+private nonisolated struct OWCDownTriangle: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.minX, y: rect.minY))

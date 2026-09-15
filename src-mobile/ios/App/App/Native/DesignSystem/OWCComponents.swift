@@ -6,7 +6,7 @@ import SwiftUI
 /// *less important*, and an estimate is not less important than a fact, only
 /// less certain. Because it is a shape rather than a colour, it also survives
 /// Differentiate Without Color and a black-and-white screenshot.
-struct OWCHatchPattern: Shape {
+nonisolated struct OWCHatchPattern: Shape {
     var spacing: CGFloat = 5
 
     func path(in rect: CGRect) -> Path {

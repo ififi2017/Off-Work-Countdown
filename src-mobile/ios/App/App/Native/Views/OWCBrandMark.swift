@@ -90,7 +90,7 @@ struct OWCBrandMark: View {
     /// a 262° sweep that leaves the break at five o'clock. `addRelativeArc` with
     /// a positive delta always sweeps toward increasing angle, which avoids the
     /// flipped-y ambiguity of the `clockwise:` flag.
-    private struct OpenDayRing: Shape {
+    private nonisolated struct OpenDayRing: Shape {
         func path(in rect: CGRect) -> Path {
             let scale = min(rect.width, rect.height) / 1024
             let centre = CGPoint(x: rect.midX, y: rect.midY)
@@ -106,7 +106,7 @@ struct OWCBrandMark: View {
         }
     }
 
-    private struct OpenDayHands: Shape {
+    private nonisolated struct OpenDayHands: Shape {
         func path(in rect: CGRect) -> Path {
             let scale = min(rect.width, rect.height) / 1024
             let origin = CGPoint(
