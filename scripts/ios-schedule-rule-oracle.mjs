@@ -1,11 +1,70 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import vm from "node:vm";
-import { createRulesScript } from "./build-ios-native-rules.mjs";
+import ts from "typescript";
 
-// The TypeScript side of plan 019 R1 and R2. iOS resolves shifts, snapshots,
-// Widget shifts, Watch projections, range expansion and reminders in
-// ScheduleRules.swift; these entry points keep the exact TypeScript behaviour
-// those used to run through JavaScriptCore, so the generated fixtures can hold
-// the Swift port to it. Nothing here ships in the app.
+// The TypeScript side of plan 019. iOS runs every shared rule in Swift
+// (ScheduleRules, ReminderRules, SummaryRules); these entry points keep the
+// exact TypeScript behaviour iOS used to evaluate in JavaScriptCore, so the
+// generated fixtures can hold the Swift port to it. Nothing here ships in the
+// app.
+
+const moduleSources = {
+  "./countdown": resolve("lib/countdown.ts"),
+  "./reminders": resolve("lib/reminders.ts"),
+  "./summary": resolve("lib/summary.ts"),
+  "./watch-projection": resolve("lib/watch-projection.ts"),
+};
+
+/**
+ * A self-contained script evaluating the named `lib/` modules, then `body`,
+ * which assigns its entry points onto `global`.
+ */
+function createRulesScript({ header, moduleNames, body }) {
+  const compiled = moduleNames.map((name) => {
+    const path = moduleSources[name];
+    const result = ts.transpileModule(readFileSync(path, "utf8"), {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2020,
+        removeComments: false,
+      },
+      fileName: path,
+      reportDiagnostics: true,
+    });
+    const errors = (result.diagnostics ?? []).filter(
+      (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error
+    );
+    if (errors.length > 0) {
+      throw new Error(
+        `Could not compile ${path}: ${errors
+          .map((diagnostic) => diagnostic.messageText)
+          .join(", ")}`
+      );
+    }
+    return `${JSON.stringify(name)}: function(module, exports, require) {\n${result.outputText}\n}`;
+  });
+
+  return `${header}
+(function(global) {
+  "use strict";
+  const factories = {${compiled.join(",\n")}};
+  const cache = Object.create(null);
+  function require(name) {
+    if (cache[name]) return cache[name].exports;
+    const factory = factories[name];
+    if (!factory) throw new Error("Unknown bundled module: " + name);
+    const loadedModule = { exports: {} };
+    cache[name] = loadedModule;
+    factory(loadedModule, loadedModule.exports, require);
+    return loadedModule.exports;
+  }
+  const countdown = require("./countdown");
+${body}
+})(globalThis);
+`;
+}
+
 const ORACLE_BODY = `
   const reminders = require("./reminders");
   const summary = require("./summary");

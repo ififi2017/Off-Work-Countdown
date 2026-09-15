@@ -1,6 +1,6 @@
 # 019 · iOS 规则与本地化回到 iOS 工程
 
-- **状态**：IN PROGRESS — R1（排班与快照）、R2（提醒）、R3（汇总与收入）已实现并同版修改 `AGENTS.md`；R4 与本地化迁移未开工。
+- **状态**：IN PROGRESS — 规则迁移 R1–R4 已完成（iOS 不再包含 JavaScriptCore 规则包）并同版修改 `AGENTS.md`；本地化迁移未开工。
 - **目标**：iOS 的排班、提醒、汇总与收入规则由 Swift 实现，iOS 文案由 iOS 工程按 Apple 规范存放。TypeScript 继续服务 Web 与 Desktop，并作为两端共有行为的规格与差分预言机。
 - **起因**：iOS 与 Web／Desktop 的功能越来越分化，直接触发点是 [018 P8 扩展排班](018-ios-3.2.0-architecture-remediation.md)（班次类型、预制规则、自由日历），这是只在 iOS 提供的功能。继续把 iOS 专属规则写进共享 TypeScript bundle，会让 Web 背负用不到的规则；把 iOS 专属文案放在 `public/locales`，也让两端的文案维护互相牵连。
 - **依赖**：[002 关于 JS 桥的迁移扳机与契约](002-records-life-focus.md)、[004 班次模型](004-shift-model-3.1.0.md)、[017](017-apple-watch-plus.md)、[018](018-ios-3.2.0-architecture-remediation.md)。
@@ -32,7 +32,7 @@ iOS 通过 `CountdownRules.js`（由 `lib/countdown.ts`、`lib/reminders.ts`、`
 - [x] **R1 排班与快照**：`snapshot`、`expandScheduleRange`、`widgetShifts`、`watchProjection`、`validateBreak`。这是 018 P8 的前置条件。
 - [x] **R2 提醒**：`reminders`、`shouldPromptApplyToday`；iOS 预排通知的触发时刻与文案参数逐条对齐。
 - [x] **R3 汇总与收入**：`summarize`、`recordsIncome`、`recordsActualForecast`、`lifetimeIncome`、`salaryMonthlyEquivalent`。
-- [ ] **R4 移除桥**：删除 `CountdownRules.js` 的生成、打包、`ci_post_clone.sh` 中的生成步骤、`check:ios` 的相关检查与 JavaScriptCore 依赖；更新 `docs/XCODE-CLOUD.md` 与 `docs/PLAN-MOBILE.md`。
+- [x] **R4 移除桥**：删除 `CountdownRules.js` 的生成、打包、`ci_post_clone.sh` 中的生成步骤、`check:ios` 的相关检查与 JavaScriptCore 依赖；更新 `docs/XCODE-CLOUD.md` 与 `docs/PLAN-MOBILE.md`。
 - [ ] 每批：完整串行 iOS 回归、`RecordsPerformanceTests` 串行测量（不得靠放宽阈值通过）、Widget／实时活动／Watch 输出回归。
 
 ## 3. 本地化迁移
@@ -92,3 +92,11 @@ iOS 在运行时通过 `NativeLocalizer` 读取 `public/locales/<locale>/transla
 - 已知差异：固定月薪摊分遇到无效时区标识时，TS 的 `Intl` 抛错导致整期收入为空；Swift 按 R1 的约定回落到当前时区。应用只传入系统提供的时区标识，fixture 不覆盖这一情况。
 - 差分契约：fixture 版本升到 3。322 个汇总用例，前两行是 fa927fb 的“本周”事件（周三下午班次过半应为 2.5 天、22.5 小时、2500，另一行为手动模式 0.5 天），其余由各 profile 的实时快照喂入，含过期两天的快照、年视图与显式起点；80 个记录收入与 32 个月薪等价（覆盖全部 16 种薪资字符串）；160 个终身收入（77 个非零，19 个经过收入递减，含非法日期、未补零日期与重叠区间）；120 个实际与推算区间（每种实际类型及未知类型、重叠加班、未配对观测、重复与不存在的日期键、小数毫秒 `asOf`，26 个为固定月薪）。原有的 `recordsIncomeUsesCompletedScheduledDays`、`recordsIncomeAbsentWithoutSalary` 与提前下班后的周汇总测试保留，现在直接跑 Swift 实现。
 - 验证：完整串行 iOS 回归 709 个测试、43 个 suite 通过（含新增 4 个 fixture 测试）；`npm test` 382 通过；lint、`check:ios`、`check:ios-rule-fixtures`、`check:watch-fixtures`、`git diff --check` 通过。串行性能：一年 `recordsMetrics` 4.9 ms、记录列表 3.1 ms。未做模拟器视觉检查。
+
+### 2026-09-15 · R4 移除桥
+
+- 删除 `scripts/build-ios-native-rules.mjs` 与 `npm run build:ios-native-rules`；工程中 `CountdownRules.js` 的文件引用、构建文件与 Resources 阶段条目；`src-mobile/ios/.gitignore` 对应条目；`ci_post_clone.sh` 的生成步骤与存在性检查；`qa:ios-shots` 与 iOS 营销截图脚本的生成步骤。
+- `createRulesScript` 移入 `scripts/ios-schedule-rule-oracle.mjs`，只服务 fixture 生成与测试；`build-ios-native-rules.test.mjs` 改名为 `ios-schedule-rule-oracle.test.mjs`，删掉只检查空 bundle 的一项。
+- `check:ios` 改为要求 Xcode Cloud 脚本运行 `check:ios-rule-fixtures`，并在工程引用或磁盘上重新出现 `CountdownRules.js` 时失败（放入假文件实测会失败）。
+- 文档：`AGENTS.md`（概述、规则边界、iOS 构建、归档与 Xcode Cloud 段落）、`docs/PLAN-MOBILE.md`、`docs/XCODE-CLOUD.md`（含路径过滤与本机等价命令）、`docs/IOS-TIMER-SURFACES.md`、002，并在 `docs/ADR-MOBILE-D0.md` 加注已被本计划取代。评审、交接等历史记录保持原文。
+- 验证：完整串行 iOS 回归 709 个测试、43 个 suite 通过（全新 DerivedData），产物 `App.app` 中不含 `CountdownRules.js`；`npm test` 381 通过（少的一项即删除的 bundle 测试）；lint、`check:ios`、`check:ios-rule-fixtures`、`check:watch-fixtures`、`ci_post_clone.sh` 语法检查与 `git diff --check` 通过。串行性能：一年 `recordsMetrics` 4.9 ms。未做模拟器视觉检查；Xcode Cloud 上的实际运行以 PR 检查为准。

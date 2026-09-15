@@ -287,10 +287,15 @@ if (
   (statSync(xcodeCloudScriptPath).mode & 0o111) === 0 ||
   !xcodeCloudScript.startsWith("#!/bin/sh") ||
   !xcodeCloudScript.includes("npm ci") ||
-  !xcodeCloudScript.includes("npm run build:ios-native-rules") ||
+  !xcodeCloudScript.includes("npm run check:ios-rule-fixtures") ||
   !xcodeCloudScript.includes("npm run check:ios")
 ) {
-  fail("Xcode Cloud must install dependencies, generate native rules and validate iOS before building.");
+  fail("Xcode Cloud must install dependencies, check the rule fixtures and validate iOS before building.");
+}
+// Plan 019 R4 removed the JavaScriptCore rules bundle. The Swift port is the
+// only implementation; a resurrected bundle would be a second one.
+if (/CountdownRules\.js/.test(iosProject) || existsSync("src-mobile/ios/App/App/Resources/CountdownRules.js")) {
+  fail("CountdownRules.js was removed in plan 019 R4; iOS rules live in Swift.");
 }
 // App/Native is a synchronized folder, so a file that lands there is compiled
 // without ever appearing in project.pbxproj. Scanning the directory keeps this

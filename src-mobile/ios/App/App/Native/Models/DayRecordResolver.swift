@@ -351,8 +351,8 @@ nonisolated enum DayRecordResolver {
 }
 
 /// Every schedule expansion a day walk needs, keyed by the snapshot that
-/// produced it. Gathering it runs the shared rules through `CountdownRules`
-/// and is main-actor by construction; walking the days with it is not, so it
+/// produced it. Gathering it goes through the main-actor
+/// `ScheduleExpansionCache`; walking the days with it is not, so it
 /// has to cross an isolation boundary intact.
 nonisolated struct ScheduleExpansionTable: Sendable {
     var bySnapshot: [UUID: [String: ScheduleExpansion]] = [:]

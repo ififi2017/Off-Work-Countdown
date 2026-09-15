@@ -1,9 +1,9 @@
 # Xcode Cloud：iOS TestFlight 工作流
 
 仓库已经提供 `src-mobile/ios/App/ci_scripts/ci_post_clone.sh`。Xcode Cloud
-克隆仓库后会安装项目要求的 Node.js 24、执行 `npm ci`、生成未提交的
-`CountdownRules.js`，并运行 `npm run check:watch-fixtures`、`npm run check:ios-rule-fixtures` 和 `npm run check:ios`。
-不要把生成的规则 bundle 提交进 Git，也不要在 Xcode Cloud 中跳过这个脚本。
+克隆仓库后会安装项目要求的 Node.js 24、执行 `npm ci`，并运行 `npm run check:watch-fixtures`、
+`npm run check:ios-rule-fixtures` 和 `npm run check:ios`。不要在 Xcode Cloud 中跳过这个脚本。
+自 019 R4 起 iOS 不再生成或打包 JavaScriptCore 规则包。
 Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差分 fixture 是需提交的测试输入；规则变化后运行
 `node scripts/generate-watch-shift-fixtures.mjs` 和 `npm run generate:ios-rule-fixtures` 更新，检查模式发现过期或缺失会失败，不会自动改写验收值。
 
@@ -13,7 +13,7 @@ Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差�
 2. Start Condition 选择 Branch Changes，分支设为 `main`。
 3. 文件过滤至少包括 `src-mobile/ios/**`、`lib/countdown.ts`、
    `lib/reminders.ts`、`lib/summary.ts`、`lib/watch-projection.ts`、`public/locales/**`、
-   `scripts/build-ios-native-rules.mjs`、`scripts/ios-schedule-rule-oracle.mjs`、
+   `scripts/ios-schedule-rule-oracle.mjs`、
    `scripts/generate-ios-schedule-rule-fixtures.mjs`、`scripts/generate-watch-shift-fixtures.mjs`、
    `scripts/generate-watch-localizations.mjs`、`scripts/check-ios-project.mjs`、`scripts/check-version.mjs`、
    `scripts/xcode-product-versions.mjs`、`package.json` 和 `package-lock.json`。这些路径都会改变 iOS
@@ -32,14 +32,14 @@ Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差�
 - App 与 Widget 的 Release configuration 都不能定义 `DEBUG`；
   `npm run check:ios` 会阻止误配置。
 - 欢迎页强制重放、QA 路由、强制旋转和分享页自动弹出只允许放在 `#if DEBUG` 中。
-- 规则资源必须由当前 `lib/` 生成，禁止手工编辑或提交生成的 JavaScript 文件。
+- 规则的 Swift 差分 fixture 必须由当前 `lib/` 生成，禁止手工编辑。
 - Xcode Cloud 归档前仍建议先在本机执行一次 Release 编译；动效和横竖屏体验最终以真机为准。
 
 ## 3.2.0 整改的 PR 门禁（待在 App Store Connect 配置）
 
 018 要求保留上面的 main 归档分发工作流，另建 PR 验证工作流。以下是待配置与验收的要求；修改此文档不代表远端工作流或 GitHub 合并规则已经生效。
 
-- PR 工作流使用同一工程、共享 App scheme 和规则生成脚本，执行构建与自动化测试，不配置 TestFlight 分发。
+- PR 工作流使用同一工程、共享 App scheme 和 `ci_post_clone.sh`，执行构建与自动化测试，不配置 TestFlight 分发。
 - 路径过滤覆盖 `src-mobile/ios/**`、`lib/**`、`public/locales/**`、iOS 规则／工程／版本检查脚本及 npm 依赖文件。
 - 保存实际执行的测试数量和结果包。测试选择器匹配零项不能作为通过；性能比较使用串行运行，不以并行任务的墙钟耗时设阈值。
 - 首次成功运行后，在仓库合并规则中选择该工作流实际产生的检查名称作为必需检查，不能预填猜测的名称。
@@ -47,7 +47,7 @@ Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差�
 - 本机等价命令（2026-09-13 实测可用）：
 
   ```bash
-  npm run build:ios-native-rules && npm run check:ios
+  npm run check:ios
   xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
     -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -parallel-testing-enabled NO test
   xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme "DoneAt Watch App" \

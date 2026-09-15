@@ -271,7 +271,6 @@ ${rows.map((row) => `<section><h2>${row.name}</h2><div class="row">${cells(row)}
 }
 
 if (process.env.IOS_QA_SKIP_BUILD !== "1") {
-  run("npm", ["run", "build:ios-native-rules"]);
   run("xcodebuild", [
     "-project", PROJECT,
     "-scheme", "App",
