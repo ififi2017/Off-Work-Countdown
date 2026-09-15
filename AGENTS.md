@@ -32,10 +32,12 @@ or place salary values in widgets, URLs, analytics payloads or share metadata.
   back into Rust — that is what the 3.1.6 refactor removed. iOS schedules the
   same list up front, because a phone cannot poll every second.
   `lib/reminders.test.ts` is the acceptance spec for every consumer.
-- iOS resolves shifts in Swift since plan 019 R1.
+- iOS resolves shifts in Swift since plan 019 R1, and reminders since R2.
   `src-mobile/ios/App/App/Native/Models/ScheduleRules.swift` owns the current
   shift, snapshots, the next shift and rest day, Widget shifts, the Watch
-  projection, range expansion and break validation. The TypeScript above stays
+  projection, range expansion, break validation, the reminder list (built by
+  `ReminderRules.swift` beside it) and whether a schedule edit asks about
+  today. The TypeScript above stays
   the specification for everything iOS shares with Web and Desktop:
   `scripts/ios-schedule-rule-oracle.mjs` keeps those entry points in TypeScript,
   `npm run generate:ios-rule-fixtures` turns them into
@@ -46,12 +48,12 @@ or place salary values in widgets, URLs, analytics payloads or share metadata.
   are stale. Never regenerate to make a Swift failure go away; decide which side
   is right first. Behaviour only iOS has, such as plan 018 P8's extended
   scheduling, is written and tested in Swift alone.
-- Reminders, summaries and income still reach iOS through
+- Summaries and income still reach iOS through
   `src-mobile/ios/App/App/Resources/CountdownRules.js`, generated from
-  `lib/countdown.ts`, `lib/reminders.ts` and `lib/summary.ts` by
-  `npm run build:ios-native-rules` and evaluated in JavaScriptCore, until plan
-  019 R2 and R3 move them. For those, Swift only feeds inputs and renders what
-  comes back. **Do not port one of them into Swift outside that plan** — a
+  `lib/countdown.ts` and `lib/summary.ts` by `npm run build:ios-native-rules`
+  and evaluated in JavaScriptCore, until plan 019 R3 moves them. For those,
+  Swift only feeds inputs and renders what comes back. **Do not port one of
+  them into Swift outside that plan** — a
   summary or salary calculation written twice is two answers, and the "This
   week" row has already shipped disagreeing values that way. Each batch arrives
   with TS-generated differential fixtures, deletes its JavaScriptCore path, and
@@ -376,9 +378,10 @@ no `CountdownRules.js` and the app fails at runtime with `missingResource`:
 npm run build:ios-native-rules
 ```
 
-Rerun it after any change to `lib/countdown.ts`, `lib/reminders.ts` or
-`lib/summary.ts`. A change to shift rules also needs the matching change in
-`ScheduleRules.swift` and `npm run generate:ios-rule-fixtures`. Open the project directly — there is no Capacitor sync step
+Rerun it after any change to `lib/countdown.ts` or `lib/summary.ts`. A change
+to shift or reminder rules also needs the matching change in
+`ScheduleRules.swift` or `ReminderRules.swift` and
+`npm run generate:ios-rule-fixtures`. Open the project directly — there is no Capacitor sync step
 any more:
 
 ```bash
@@ -577,9 +580,10 @@ A change to `lib/countdown.ts`, `lib/reminders.ts` or `lib/summary.ts` reaches
 all three targets. It must pass `npm test`, and it must be rebuilt into the iOS
 bundle (`npm run build:ios-native-rules`) and compiled for the simulator —
 otherwise iOS keeps running the previous rules and the divergence surfaces as a
-wrong number on a screen rather than as a build failure. Shift resolution is
-Swift since plan 019 R1, so a change to it also needs the same change in
-`ScheduleRules.swift`, regenerated fixtures and a passing
+wrong number on a screen rather than as a build failure. Shift resolution and
+reminders are Swift since plan 019 R1 and R2, so a change to either also needs
+the same change in `ScheduleRules.swift` or `ReminderRules.swift`, regenerated
+fixtures and a passing
 `ScheduleRuleFixtureTests` run; `npm test` reports the fixtures stale until
 then.
 

@@ -155,14 +155,14 @@ final class ShiftSessionStore {
         }
     }
 
-    func shiftReminders(at date: Date = .now) throws -> [NativeReminder] {
+    func shiftReminders(at date: Date = .now) -> [NativeReminder] {
         let currentSnapshot = self.session.snapshot(at: date)
         let inputs = reminderInputs(
             cycleEndSummaryBody: currentSnapshot.flatMap {
                 cycleEndSummaryNotificationBody(for: $0, at: date)
             }
         )
-        let effective = try CountdownRules.shared.reminders(
+        let effective = ScheduleRules.reminders(
             input: self.session.rulesInput(at: date),
             reminderInputs: inputs
         )
@@ -175,7 +175,7 @@ final class ShiftSessionStore {
                 cycleEndSummaryNotificationBody(for: $0, at: $0.startDate)
             }
         )
-        let next = try CountdownRules.shared.reminders(
+        let next = ScheduleRules.reminders(
             input: self.session.rulesInput(
                 at: date,
                 using: self.session.projectsFutureFromBase(at: date) ? .base : .effective
@@ -372,11 +372,10 @@ final class ShiftSessionStore {
         // notification about this countdown rather than an event within it, and
         // by the time it fires the user is already looking at the screen.
         if self.session.presentationMicroBreakEnabled,
-           let reminders = try? CountdownRules.shared.reminders(
+           let next = ScheduleRules.reminders(
                input: self.session.rulesInput(at: now),
                reminderInputs: reminderInputs()
-           ),
-           let next = reminders
+           )
                .filter({ $0.kind == "microBreak" && isDuringShift($0.atMs) })
                .min(by: { $0.atMs < $1.atMs }) {
             events.append(.init(
@@ -400,18 +399,17 @@ final class ShiftSessionStore {
         // time only" from listing anything, since its one audible milestone is
         // the shift's end and the list already has a row for that.
         if self.session.presentationNotificationMode == .milestones {
-            events.append(contentsOf: (try? CountdownRules.shared.reminders(
+            events.append(contentsOf: ScheduleRules.reminders(
                 input: self.session.rulesInput(at: now),
                 reminderInputs: reminderInputs()
-            ))?
+            )
                 // The 100% milestone lands on the stroke of the shift's end,
                 // where the list already has a row saying exactly that. Two
                 // rows at 19:00 is not two events.
                 //
-                // Matched by suffix, not equality: the JS bridge re-keys every
-                // reminder as "<scope>:<shiftEnd>:<id>" before handing it back,
-                // so the rule engine's own "milestone:100" is only ever the tail
-                // of what arrives here.
+                // Matched by suffix, not equality: every reminder is keyed
+                // "<scope>:<shiftEnd>:<id>", so the per-shift "milestone:100"
+                // is only ever the tail of what arrives here.
                 .filter {
                     $0.kind == "milestone" && !$0.id.hasSuffix(":milestone:100")
                         && $0.title != nil && isDuringShift($0.atMs)
@@ -424,7 +422,7 @@ final class ShiftSessionStore {
                         title: text.t("offWorkReminder"),
                         detail: reminder.title ?? ""
                     )
-                } ?? [])
+                })
         }
 
         if snapshot.endAtMs > nowMs {

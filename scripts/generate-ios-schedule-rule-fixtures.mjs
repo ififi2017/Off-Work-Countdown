@@ -4,9 +4,9 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadScheduleRuleOracle } from "./ios-schedule-rule-oracle.mjs";
 
-// Differential fixtures for plan 019 R1. The TypeScript oracle answers every
-// case; AppTests/ScheduleRuleFixtureTests.swift holds ScheduleRules.swift to
-// the same values. Cases are one per line so a rule change reads as a diff.
+// Differential fixtures for plan 019 R1 and R2. The TypeScript oracle answers
+// every case; AppTests/ScheduleRuleFixtureTests.swift holds ScheduleRules.swift
+// to the same values. Cases are one per line so a rule change reads as a diff.
 
 const minute = 60_000;
 const hour = 3_600_000;
@@ -68,6 +68,64 @@ const salaries = [
   { salaryAmount: "1_000", salaryType: "monthly", monthlyWorkingDays: 22, annualBonusMonths: 0 },
   { salaryAmount: "\t3000\n", salaryType: "monthly", monthlyWorkingDays: 22, annualBonusMonths: 0 },
   { salaryAmount: "5.", salaryType: "daily", monthlyWorkingDays: 22, annualBonusMonths: 0 },
+];
+
+const milestoneKeys = ["milestone50", "milestone75", "milestone90", "milestone95", "milestone100"];
+const milestoneRecord = (values) => Object.fromEntries(milestoneKeys.map((key, index) => [key, values[index]]));
+
+// Copy is the caller's, so these probe the fallbacks rather than real wording:
+// empty titles and pools, a blank template, `{{minutes}}` twice, a cycle-end
+// summary that trims to nothing, and intervals that are off, negative, capped
+// at 240 per segment, or ordinary.
+const reminderInputs = [
+  {
+    mode: "milestones", fallbackTitle: "Reminder", breakTitle: "Break",
+    milestoneTitles: milestoneRecord(["50%", "25% left", "10% left", "5% left", "Done"]),
+    milestoneMessages: milestoneRecord([["Halfway", "半程了"], ["Three quarters"], ["Nearly", "快了", "Almost", "🚀 go"], [], ["Off", "收工"]]),
+    lunchStartEnabled: true, lunchStartBody: "Lunch", lunchEndEnabled: true, lunchEndBody: "Back to it",
+    microBreakEnabled: true, microBreakTitle: "Stretch", microBreakIntervalMinutes: 45,
+    microBreakMessages: ["{{minutes}} min in", "", "Up {{minutes}} / {{minutes}}"], cycleEndSummaryBody: null,
+  },
+  {
+    mode: "simple", fallbackTitle: "", breakTitle: "",
+    milestoneTitles: milestoneRecord(["", "", "", "", "Off work"]),
+    milestoneMessages: milestoneRecord([[], [], [], [], []]),
+    lunchStartEnabled: false, lunchStartBody: "Lunch", lunchEndEnabled: true, lunchEndBody: "",
+    microBreakEnabled: true, microBreakTitle: "", microBreakIntervalMinutes: 60,
+    microBreakMessages: ["Move"], cycleEndSummaryBody: "  Cycle done  ",
+  },
+  {
+    mode: "off", fallbackTitle: "Reminder", breakTitle: "Break",
+    milestoneTitles: milestoneRecord(["a", "b", "c", "d", "e"]),
+    milestoneMessages: milestoneRecord([["1"], ["2"], ["3"], ["4"], ["5"]]),
+    lunchStartEnabled: true, lunchStartBody: "Lunch", lunchEndEnabled: false, lunchEndBody: "Back",
+    microBreakEnabled: false, microBreakTitle: "Stretch", microBreakIntervalMinutes: 90,
+    microBreakMessages: ["Move"], cycleEndSummaryBody: "",
+  },
+  {
+    mode: "off", fallbackTitle: "", breakTitle: "休息",
+    milestoneTitles: milestoneRecord(["", "", "", "", ""]),
+    milestoneMessages: milestoneRecord([[], [], [], [], ["Done"]]),
+    lunchStartEnabled: true, lunchStartBody: "午休开始", lunchEndEnabled: true, lunchEndBody: "午休结束",
+    microBreakEnabled: true, microBreakTitle: "", microBreakIntervalMinutes: -5,
+    microBreakMessages: ["Move"], cycleEndSummaryBody: "\t周期结束\n",
+  },
+  {
+    mode: "milestones", fallbackTitle: "Reminder", breakTitle: "Break",
+    milestoneTitles: milestoneRecord(["50", "75", "90", "95", "100"]),
+    milestoneMessages: milestoneRecord([["x"], ["y", "z"], [""], ["w"], ["v", "u", "t"]]),
+    lunchStartEnabled: false, lunchStartBody: "", lunchEndEnabled: false, lunchEndBody: "",
+    microBreakEnabled: true, microBreakTitle: "Tick", microBreakIntervalMinutes: 1,
+    microBreakMessages: ["{{minutes}}", "{{minute}}"], cycleEndSummaryBody: " ",
+  },
+  {
+    mode: "simple", fallbackTitle: "Reminder", breakTitle: "Break",
+    milestoneTitles: milestoneRecord(["50", "75", "90", "95", ""]),
+    milestoneMessages: milestoneRecord([["x"], ["y"], ["z"], ["w"], ["Done", "Out"]]),
+    lunchStartEnabled: true, lunchStartBody: "Lunch", lunchEndEnabled: true, lunchEndBody: "Back",
+    microBreakEnabled: false, microBreakTitle: "Stretch", microBreakIntervalMinutes: 25,
+    microBreakMessages: [], cycleEndSummaryBody: null,
+  },
 ];
 
 // Windows around 2026 DST transitions of the zones above (US, EU, Chile,
@@ -211,6 +269,26 @@ function widgetLine(shift) {
   return `${segments}|${integer(shift.startAtMs, "start")}|${integer(shift.endAtMs, "end")}|${integer(shift.plannedEndAtMs, "planned")}|${overtime}|${integer(shift.durationMs, "duration")}|${integer(shift.countdownAnchorAtMs, "anchor")}\n`;
 }
 
+// Instants may be fractional here (overtime ending mid-millisecond), so they
+// are written as `String(number)`, which Swift's shortest form matches.
+function reminderLine(reminder) {
+  const number = (value) => (value == null ? "" : String(value));
+  const parts = [
+    reminder.id,
+    reminder.kind,
+    number(reminder.atMs),
+    number(reminder.expiresAtMs),
+    number(reminder.maxTickGapMs),
+    reminder.collapseGroup ?? "",
+    reminder.title ?? "∅",
+    reminder.body ?? "∅",
+  ];
+  if (parts.some((part) => /[|\n]/.test(part))) {
+    throw new Error(`Reminder digest field contains a separator: ${JSON.stringify(reminder)}`);
+  }
+  return `${parts.join("|")}\n`;
+}
+
 export function createScheduleRuleFixtures() {
   const snapshots = [];
   const watch = [];
@@ -219,6 +297,8 @@ export function createScheduleRuleFixtures() {
   const expansions = [];
   const expansionDigests = [];
   const validateBreak = [];
+  const reminders = [];
+  const applyToday = [];
 
   profiles.forEach((profile, p) => {
     const stride = strideInstants(p);
@@ -272,6 +352,41 @@ export function createScheduleRuleFixtures() {
       validateBreak.push({ p, now: nowMs, breakStartTime, breakDurationMinutes, ot: overtimeEndAtMs, expected: oracle.validateBreak(JSON.stringify(input)) });
     });
 
+    // Lists run long (a one-minute interval fills 240 per segment), so every
+    // case is compared by digest and the short ones also carry their rows.
+    stride.filter((_, k) => k % 5 === 0).forEach((nowMs, k) => {
+      const v = (p + k) % reminderInputs.length;
+      const plannedEndAtMs = call("snapshot", rulesInput(profile, nowMs)).plannedEndAtMs;
+      const ot = k % 4 === 1
+        ? plannedEndAtMs + 50 * minute
+        : k % 4 === 3
+          ? plannedEndAtMs + 83 * minute + 0.25
+          : null;
+      const forced = k % 3 === 2 ? nowMs : null;
+      const list = call("reminders", {
+        ...rulesInput(profile, nowMs, { overtimeEndAtMs: ot, forcedWorkdayStartMs: forced }),
+        reminderInputs: reminderInputs[v],
+      });
+      const row = { p, v, now: nowMs, ot, forced, count: list.length, sha256: digest(list.map(reminderLine)) };
+      if ((k % 2 === 0 || ot % 1 !== 0) && list.length <= 40) {
+        row.expected = list.map((r) => [r.id, r.kind, r.atMs, r.expiresAtMs, r.maxTickGapMs, r.collapseGroup, r.title, r.body]);
+      }
+      reminders.push(row);
+    });
+
+    stride.slice(0, 10).forEach((nowMs, k) => {
+      const c = (p * 11 + k * 7 + 1) % profiles.length;
+      const forced = k % 8 === 1 ? nowMs : k % 8 === 5 ? nowMs - day : null;
+      const current = rulesInput(profile, nowMs, { forcedWorkdayStartMs: forced });
+      // Another profile's hours and pattern, edited by the same user in the same zone.
+      const candidate = {
+        ...rulesInput(profiles[c], nowMs, { forcedWorkdayStartMs: forced }),
+        timeZoneIdentifier: profile.timeZoneIdentifier,
+      };
+      const request = { current, candidate, kind: k % 2 === 0 ? "schedule" : "lunch", schedulePatternChanged: k % 3 === 0 };
+      applyToday.push({ p, c, now: nowMs, forced, expected: oracle.shouldPromptApplyToday(JSON.stringify(request)) });
+    });
+
     {
       const nowMs = stride[5];
       const overtimeEndAtMs = p % 3 === 0 ? call("snapshot", rulesInput(profile, nowMs)).plannedEndAtMs + 90 * minute : null;
@@ -315,17 +430,20 @@ export function createScheduleRuleFixtures() {
 
   const section = (name, rows) =>
     `"${name}":[\n${rows.map((row) => JSON.stringify(row)).join(",\n")}\n]`;
-  const json = `{"version":1,
+  const json = `{"version":2,
 "generator":"scripts/generate-ios-schedule-rule-fixtures.mjs",
 ${section("profiles", profiles)},
 ${section("salaries", salaries)},
+${section("reminderInputs", reminderInputs)},
 ${section("snapshots", snapshots)},
 ${section("watch", watch)},
 ${section("widgetShifts", widgetShifts)},
 ${section("widgetDigests", widgetDigests)},
 ${section("expansions", expansions)},
 ${section("expansionDigests", expansionDigests)},
-${section("validateBreak", validateBreak)}
+${section("validateBreak", validateBreak)},
+${section("reminders", reminders)},
+${section("applyToday", applyToday)}
 }`;
   // A Swift raw string ends at `"""#`, and `"#` would begin an escape inside it.
   if (json.includes('"#')) throw new Error("Fixture JSON cannot be embedded in a Swift raw string.");

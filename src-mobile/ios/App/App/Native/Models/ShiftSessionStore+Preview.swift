@@ -20,14 +20,14 @@ extension ShiftSessionStore {
         var upcoming: [ShiftPreviewEntry] = []
         var disabled: [ShiftPreviewEntry] = []
         let nowMs = now.timeIntervalSince1970 * 1_000
-        let reminders = (try? CountdownRules.shared.reminders(
+        let reminders = ScheduleRules.reminders(
             input: self.session.rulesInput(
                 at: now,
                 startMinutes: self.session.minutes(from: snapshot.startDate, calendar: session.countdownCalendar),
                 endMinutes: self.session.minutes(from: snapshot.endDate, calendar: session.countdownCalendar)
             ),
             reminderInputs: reminderInputs()
-        )) ?? []
+        )
 
         // Everything still to come today belongs to a shift the user has said
         // they are done with, so none of it is coming. Move the whole list past
@@ -226,14 +226,14 @@ extension ShiftSessionStore {
             return Date(timeIntervalSince1970: next.atMs / 1_000)
         }
         guard let nextShiftStart, let nextShiftEnd else { return nil }
-        let nextReminders = (try? CountdownRules.shared.reminders(
+        let nextReminders = ScheduleRules.reminders(
             input: self.session.rulesInput(
                 at: nextShiftStart,
                 startMinutes: self.session.minutes(from: nextShiftStart, calendar: session.countdownCalendar),
                 endMinutes: self.session.minutes(from: nextShiftEnd, calendar: session.countdownCalendar)
             ),
             reminderInputs: reminderInputs()
-        )) ?? []
+        )
         return nextReminders
             .filter { $0.kind == "microBreak" }
             .min(by: { $0.atMs < $1.atMs })

@@ -33,16 +33,6 @@ struct ScheduleFieldChange: Equatable {
     var rotationWorkDays: Int?
     var rotationRestDays: Int?
     var rotationCycleDay: Int?
-
-    var changesSchedulePattern: Bool {
-        workdays != nil
-            || scheduleMode != nil
-            || alternatingWeekType != nil
-            || alternatingWeekendWorkday != nil
-            || rotationWorkDays != nil
-            || rotationRestDays != nil
-            || rotationCycleDay != nil
-    }
 }
 
 /// Hours and calendar in force until the current shift's settlement seam.
@@ -541,19 +531,17 @@ final class ShiftSession {
         )
     }
     /// Whether the explicit Save action needs the second choice about today.
-    /// Swift assembles the current and proposed inputs; the generated
-    /// TypeScript bundle decides whether either timeline still has a relevant
-    /// boundary today.
+    /// Swift assembles the current and proposed inputs; `ScheduleRules`
+    /// decides. `scope` does not narrow the answer: a lunch edit revises
+    /// today's row as much as an hours edit does.
     func shouldPromptApplyingToToday(
         _ change: ScheduleFieldChange,
         scope: ScheduleChangeScope,
         at date: Date = .now
     ) -> Bool {
-        CountdownRules.shared.shouldPromptApplyToday(
+        ScheduleRules.shouldPromptApplyToday(
             current: rulesInput(at: date),
-            candidate: rulesInput(applying: change, at: date),
-            kind: scope.rawValue,
-            schedulePatternChanged: change.changesSchedulePattern
+            candidate: rulesInput(applying: change, at: date)
         )
     }
     func nativeSchedule(

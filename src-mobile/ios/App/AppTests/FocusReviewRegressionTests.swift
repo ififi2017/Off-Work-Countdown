@@ -23,7 +23,7 @@ struct FocusReviewRegressionTests {
         let at = try date(store, hour: 9)
         store.preferences.applyPreferences { $0.microBreakEnabled = false }
         _ = store.focus.createFocusTaskInNextEmptyBlock(title: "Review fixture", at: at).synchronousResult
-        let reminders = try store.shifts.shiftReminders(at: at)
+        let reminders = store.shifts.shiftReminders(at: at)
         #expect(!reminders.contains { $0.id.hasPrefix("focusBreak:") })
     }
 

@@ -295,7 +295,7 @@ func plannedShiftTakesOverTheHealthReminder() throws {
     _ = store.focus.createFocusTask(title: "Spec review", inBlockStartingAt: target.startAtMs, at: at).synchronousResult
     #expect(store.focus.focusOwnsBreaks(at: at))
 
-    let reminders = try store.shifts.shiftReminders(at: at)
+    let reminders = store.shifts.shiftReminders(at: at)
     let shiftEnd = try #require(store.focus.focusCanvasShift(at: at)?.snapshot.segments.map(\.endAtMs).max())
     let shiftStart = try #require(store.focus.focusCanvasShift(at: at)?.snapshot.startAtMs)
     let inShift = reminders.filter {
@@ -349,7 +349,7 @@ func clearingThePlanRestoresTheInterval() throws {
 
     store.focus.clearBlock(startingAt: target.startAtMs, at: at).synchronousResult
     #expect(!store.focus.focusOwnsBreaks(at: at))
-    let reminders = try store.shifts.shiftReminders(at: at)
+    let reminders = store.shifts.shiftReminders(at: at)
     #expect(reminders.contains { $0.kind == "microBreak" && !$0.id.hasPrefix("focusBreak:") })
     #expect(!reminders.contains { $0.id.hasPrefix("focusBreak:") })
 }

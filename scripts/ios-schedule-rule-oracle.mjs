@@ -1,14 +1,82 @@
 import vm from "node:vm";
 import { createRulesScript } from "./build-ios-native-rules.mjs";
 
-// The TypeScript side of plan 019 R1. iOS resolves shifts, snapshots, Widget
-// shifts, Watch projections and range expansion in ScheduleRules.swift; these
-// entry points keep the exact TypeScript behaviour those used to run through
-// JavaScriptCore, so the generated fixtures can hold the Swift port to it.
-// Nothing here ships in the app.
+// The TypeScript side of plan 019 R1 and R2. iOS resolves shifts, snapshots,
+// Widget shifts, Watch projections, range expansion and reminders in
+// ScheduleRules.swift; these entry points keep the exact TypeScript behaviour
+// those used to run through JavaScriptCore, so the generated fixtures can hold
+// the Swift port to it. Nothing here ships in the app.
 const ORACLE_BODY = `
+  const reminders = require("./reminders");
   const summary = require("./summary");
   const watchProjection = require("./watch-projection");
+
+  function shiftOptions(input) {
+    return {
+      breakStartTime: input.breakStartTime || null,
+      breakDurationMinutes: input.breakDurationMinutes || 0,
+      overtimeEndAtMs: input.overtimeEndAtMs || null,
+    };
+  }
+
+  function inputTimeZone(input) {
+    return typeof input.timeZoneIdentifier === "string" && input.timeZoneIdentifier.trim()
+      ? input.timeZoneIdentifier.trim()
+      : null;
+  }
+
+  function resolveCurrentShift(input) {
+    const options = shiftOptions(input);
+    const timeZone = inputTimeZone(input);
+    const live = countdown.buildShiftTimeline(
+      input.startTime,
+      input.endTime,
+      new Date(input.nowMs),
+      options,
+      timeZone
+    );
+    const ended = countdown.findEndedShiftOnEndCalendarDay({
+      startTime: input.startTime,
+      endTime: input.endTime,
+      nowMs: input.nowMs,
+      workdays: input.workdays,
+      schedule: input.schedule || null,
+      options,
+      forcedWorkdayStartMs: input.forcedWorkdayStartMs || null,
+      timeZone,
+    });
+    const liveStart = countdown.getShiftStartAtMs(live);
+    const liveEnd = countdown.getShiftEndAtMs(live);
+    // Settlement of last night's overnight only applies until tonight's
+    // window actually starts. A rest-day 22:00–06:00 on Saturday would
+    // otherwise stay pinned to Friday's 06:00 end all evening, including a
+    // forced Saturday night run.
+    const liveIsOpen = input.nowMs >= liveStart && input.nowMs < liveEnd;
+    if (
+      ended &&
+      countdown.getShiftStartAtMs(ended) !== liveStart &&
+      !liveIsOpen
+    ) {
+      return ended;
+    }
+    return live;
+  }
+
+  function startOfLocalDayMs(date, timeZone) {
+    return countdown.startOfCivilDayMs(
+      date instanceof Date ? date.getTime() : Number(date),
+      timeZone || null
+    );
+  }
+
+  function isScheduledShift(input, shift) {
+    return countdown.isScheduledWorkday(
+      new Date(countdown.getShiftStartAtMs(shift)),
+      input.workdays,
+      input.schedule || null,
+      inputTimeZone(input)
+    );
+  }
 
   function isForcedShift(input, shift) {
     if (!(typeof input.forcedWorkdayStartMs === "number")) return false;
@@ -283,13 +351,41 @@ const ORACLE_BODY = `
         inputTimeZone(input)
       ).segments.length > 1;
     },
+
+    reminders(inputJSON) {
+      const input = JSON.parse(inputJSON);
+      const shift = resolveCurrentShift(input);
+      const nextShift = nextShiftAfter(input, shift);
+      const project = (timeline, scope) =>
+        reminders
+          .buildShiftReminders(timeline, input.reminderInputs)
+          .map((reminder) => ({
+            ...reminder,
+            id: scope + ":" + countdown.getShiftEndAtMs(timeline) + ":" + reminder.id,
+          }));
+      return JSON.stringify(
+        [
+          ...project(shift, "current"),
+          ...(nextShift ? project(nextShift, "next") : []),
+        ].sort((left, right) => left.atMs - right.atMs)
+      );
+    },
+
+    // A settled shift is still today's durable Records row, and even a
+    // finished lunch changes its allocation, so neither the kind of edit nor
+    // the clock narrows this: ask whenever either timeline is scheduled today.
+    shouldPromptApplyToday(requestJSON) {
+      const request = JSON.parse(requestJSON);
+      return isScheduledShift(request.current, resolveCurrentShift(request.current)) ||
+        isScheduledShift(request.candidate, resolveCurrentShift(request.candidate));
+    },
   };
 `;
 
 export function createScheduleRuleOracleScript() {
   return createRulesScript({
-    header: "// Schedule-rule oracle for plan 019 R1 fixtures. Not shipped.",
-    moduleNames: ["./countdown", "./summary", "./watch-projection"],
+    header: "// Schedule-rule oracle for plan 019 R1 and R2 fixtures. Not shipped.",
+    moduleNames: ["./countdown", "./reminders", "./summary", "./watch-projection"],
     body: ORACLE_BODY,
   });
 }

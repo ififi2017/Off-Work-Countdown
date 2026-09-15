@@ -1,7 +1,8 @@
 import Foundation
 
 /// Shift resolution, snapshots, Widget shifts, the Watch projection and range
-/// expansion for iOS (plan 019 R1).
+/// expansion for iOS (plan 019 R1), and the reminder list scheduled from them
+/// (R2, with `ReminderRules`).
 ///
 /// These used to run as TypeScript in JavaScriptCore. The TypeScript is still
 /// the specification for behaviour iOS shares with Web and Desktop:
@@ -200,6 +201,31 @@ nonisolated enum ScheduleRules {
         let zone = CivilZone(identifier: input.timeZoneIdentifier)
         return zone.shiftTimeline(input.startTime, input.endTime, nowMs: input.nowMs, options: .init(input))
             .segments.count > 1
+    }
+
+    /// Reminders for the current shift and the one after it, sorted by time.
+    /// Each id is prefixed `current:<end>:` or `next:<end>:`, so a caller can
+    /// take one shift's list and ids stay stable across rebuilds.
+    static func reminders(input: NativeRulesInput, reminderInputs: NativeReminderInputs) -> [NativeReminder] {
+        let zone = CivilZone(identifier: input.timeZoneIdentifier)
+        let shift = resolveCurrentShift(input, zone)
+        func project(_ timeline: ShiftTimeline, _ scope: String) -> [NativeReminder] {
+            let prefix = "\(scope):\(JavaScriptNumber.string(timeline.endAtMs)):"
+            return ReminderRules.buildShiftReminders(timeline, reminderInputs).map { $0.withID(prefix + $0.id) }
+        }
+        let next = nextShift(after: shift, input, zone).map { project($0, "next") } ?? []
+        return ReminderRules.sortedByTime(project(shift, "current") + next)
+    }
+
+    /// Whether a Save should ask about today: whenever today's shift under the
+    /// current or the edited settings is a scheduled one. A settled shift is
+    /// still today's Records row, and even a finished lunch changes how that
+    /// row splits, so neither the clock nor the kind of edit narrows it.
+    static func shouldPromptApplyToday(current: NativeRulesInput, candidate: NativeRulesInput) -> Bool {
+        [current, candidate].contains { input in
+            let zone = CivilZone(identifier: input.timeZoneIdentifier)
+            return zone.isScheduledWorkday(resolveCurrentShift(input, zone).startAtMs, input.workdays, input.schedule)
+        }
     }
 
     // MARK: - Glue that used to live in the JavaScriptCore bundle
