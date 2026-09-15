@@ -22,7 +22,7 @@
 | 010 | [记录 UI 迭代](010-records-ui-iteration.md) | 2026-08-30 | IN PROGRESS | 单画布与记录 IA 已落地；数据 P1、沉浸画布和真机验收由 011 收口 |
 | 011 | [iOS 记录与番茄钟发布阻断收口](011-ios-records-focus-release-remediation.md) | 2026-09-01 | READY FOR DEVICE VALIDATION | 双真机正常传播、普通删除同步已确认；离线冲突、双 open session、离线删除 fence、Production schema 与后台通知仍待验。Live Activity 初步正常，番茄钟排布已随 014 重做 |
 | 012 | [iOS 评价引导、周期总结通知与 iPad 入口修复](012-ios-retention-and-cycle-notifications.md) | 2026-09-01 | IMPLEMENTED | 模拟器与自动化验收已通过；订阅成功触感、系统评价弹窗和真实通知投递仍待真机 / TestFlight 终验 |
-| 013 | [记录日画布、视觉语法与单一结论](013-records-day-canvas-and-visual-language.md) | 2026-09-01 | IN PROGRESS | Phase 0–4 已随 [PR #111](https://github.com/ififi2017/Off-Work-Countdown/pull/111) / [#112](https://github.com/ififi2017/Off-Work-Countdown/pull/112) 合入 `main`（3.1.9）；自动化门禁与模拟器截图已过。仍缺无障碍分支、60fps 测量、流程录屏、人生文案复审与真机终验 |
+| 013 | [记录日画布、视觉语法与单一结论](013-records-day-canvas-and-visual-language.md) | 2026-09-01 | DONE | 实现随 [PR #111](https://github.com/ififi2017/Off-Work-Countdown/pull/111) / [#112](https://github.com/ififi2017/Off-Work-Countdown/pull/112) 合入 `main`（3.1.9）；无障碍分支、60fps 测量、流程录屏、人生文案复审与真机终验由用户于 2026-09-12 确认完成 |
 | 014 | [番茄钟画布重排：现在 / 今天 / 常用](014-ios-focus-canvas-redesign.md) | 2026-09-04 | IMPLEMENTED | 已随 PR #118 合入，二轮 CR 与模拟器回归完成；011 的真机行为门禁仍待签收 |
 
 | 015 | [真机反馈、人生收入与设置同步](015-device-feedback-life-income-settings-sync.md) | 2026-09-05 | IN PROGRESS | iPad 导航与记录布局、实际＋推算总结、职业经历、Plus 引导、私有 CloudKit 设置同步与小组件补齐 |
