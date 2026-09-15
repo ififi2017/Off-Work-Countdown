@@ -583,7 +583,6 @@ async function capturePad(udid, language) {
 }
 
 if (process.env.IOS_SHOTS_SKIP_BUILD !== "1") {
-  run("npm", ["run", "build:ios-native-rules"]);
   run("xcodebuild", [
     "-project", PROJECT,
     "-scheme", "App",

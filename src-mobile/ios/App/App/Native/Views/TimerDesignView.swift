@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 
 /// The timer surface follows Claude Design direction 1a literally. Business
-/// values still come from CountdownRules; this file only owns presentation.
+/// values still come from the shared rules; this file only owns presentation.
 struct TimerDesignView: View {
     @Environment(SceneState.self) private var scene
     @Bindable var shifts: ShiftSessionStore

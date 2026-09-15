@@ -141,7 +141,7 @@ now < startAtMs？                → 上班倒计时
 
 ### 3.6 规则错误
 
-快照为 `nil`（缺 `CountdownRules.js` 等）。横幅 + 说明，排班不停止。正常构建会生成规则包；新鲜 clone 需 `npm run build:ios-native-rules`。
+快照为 `nil`（例如排班配置无法解析）。横幅 + 说明，排班不停止。规则自 019 起由 Swift 实现，不再依赖生成的规则包。
 
 ---
 
@@ -340,4 +340,4 @@ horizontalSizeClass == .regular
 4. 分享文案必须跟当前钟，禁止上班前用整班 `remainingMs` 说「还有 X 下班」。
 5. 固定星期不允许空工作日集合。
 
-规则或状态判定有变：改 `lib/countdown.ts`（或计时状态机），`npm test`，`npm run build:ios-native-rules`，在 iPhone 竖屏、横屏、iPad 侧边栏开/关、iPad 横屏上看一遍。提前下班须重排通知、结束 Live Activity、刷新 Widget。
+规则或状态判定有变：改 `lib/countdown.ts` 与对应的 Swift 规则文件（或计时状态机），`npm run generate:ios-rule-fixtures`，`npm test`，在 iPhone 竖屏、横屏、iPad 侧边栏开/关、iPad 横屏上看一遍。提前下班须重排通知、结束 Live Activity、刷新 Widget。

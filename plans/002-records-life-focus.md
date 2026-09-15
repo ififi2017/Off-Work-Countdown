@@ -413,8 +413,8 @@ reminders 29 / second-tick 3）编码的正是 [004](004-shift-model-3.1.0.md) �
 实测，而是 019 记录的产品分化：iOS 将提供 Web／Desktop 没有的扩展排班。R1 把 `snapshot`、
 `expandScheduleRange`、`widgetShifts`、`watchProjection`、`validateBreak` 迁到
 `ScheduleRules.swift`，以 TS 生成的差分 fixture 为契约，并同版修改 AGENTS.md；R2 以同样方式迁出
-`reminders` 与 `shouldPromptApplyToday`，R3 迁出汇总与收入（`SummaryRules.swift`）。桥上已无入口，
-按 019 R4 删除。
+`reminders` 与 `shouldPromptApplyToday`，R3 迁出汇总与收入（`SummaryRules.swift`），R4 删除了
+JavaScriptCore 规则包及其生成、打包与检查。
 
 ### 3. 应用观察日志
 

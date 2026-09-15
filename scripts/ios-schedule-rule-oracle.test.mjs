@@ -1,35 +1,13 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import vm from "node:vm";
-import { afterEach, describe, expect, it } from "vitest";
-import {
-  createIOSNativeRulesBundle,
-  writeIOSNativeRulesBundle,
-} from "./build-ios-native-rules.mjs";
+import { describe, expect, it } from "vitest";
 import { loadScheduleRuleOracle } from "./ios-schedule-rule-oracle.mjs";
 
-const temporaryDirectories = [];
-
-// The shipped bundle plus the schedule-rule oracle, so one `OWCNative` answers
-// both the entries iOS still bridges and the ones Swift now implements.
+// The oracle's entry points take and return JSON strings, exactly as the Swift
+// port's fixtures were generated from them.
 function loadRules() {
-  const context = { console };
-  vm.createContext(context);
-  vm.runInContext(createIOSNativeRulesBundle(), context);
-  const bundled = { ...context.OWCNative };
-  Object.assign(context.OWCNative, loadScheduleRuleOracle());
-  context.bundled = bundled;
-  return context;
+  return { OWCNative: loadScheduleRuleOracle() };
 }
 
-afterEach(() => {
-  for (const directory of temporaryDirectories.splice(0)) {
-    rmSync(directory, { recursive: true, force: true });
-  }
-});
-
-describe("iOS native rule bundle", () => {
+describe("iOS rule oracle", () => {
   it("projects salary-free Watch boundaries and keeps a weekend valid through the next shift", () => {
     const context = loadRules();
     const rules = {
@@ -61,33 +39,6 @@ describe("iOS native rule bundle", () => {
     expect(working.shift.transitions.map(({ state }) => state)).toEqual([
       "working", "lunch", "working", "finished",
     ]);
-  });
-
-  it("ships no rule entry points once every rule is Swift", () => {
-    const directory = mkdtempSync(join(tmpdir(), "owc-ios-rules-"));
-    temporaryDirectories.push(directory);
-    const outputPath = join(directory, "fresh", "Resources", "CountdownRules.js");
-    const bundle = writeIOSNativeRulesBundle(outputPath);
-
-    // Plan 019 R1–R3 moved these to Swift; the bundle must not keep a second,
-    // unused copy. R4 deletes the bundle itself.
-    expect(bundle).not.toContain('require("./watch-projection")');
-    expect(bundle).not.toContain('require("./reminders")');
-    expect(bundle).not.toContain('require("./summary")');
-    const context = { console };
-    vm.createContext(context);
-    vm.runInContext(bundle, context);
-    for (const moved of [
-      "snapshot", "watchProjection", "widgetShifts", "expandScheduleRange", "validateBreak",
-      "reminders", "shouldPromptApplyToday",
-      "summarize", "recordsIncome", "salaryMonthlyEquivalent", "lifetimeIncome", "recordsActualForecast",
-    ]) {
-      expect(context.OWCNative[moved]).toBeUndefined();
-    }
-    expect(bundle).not.toContain("eval(");
-    expect(
-      readFileSync(outputPath, "utf8")
-    ).toBe(bundle);
   });
 
   it("executes snapshots and current-plus-next reminder projections", () => {
