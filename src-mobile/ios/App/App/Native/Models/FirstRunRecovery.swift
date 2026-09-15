@@ -44,6 +44,7 @@ extension RecordState {
             || !overrides.isEmpty || !observations.isEmpty || lifeProfile != nil
             || !focusTasks.isEmpty || !focusSessions.isEmpty
             || focusPlanningConfiguration != nil || recordsStartedOn != nil
+            || extendedSchedule != nil || !rosterDays.isEmpty
             || !erased.isEmpty
             || sync.rows.values.contains { $0.entityType != .syncedPreferences && ($0.dirty || $0.pendingErase) }
     }

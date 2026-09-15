@@ -49,7 +49,8 @@ private struct RecordChangeDomains: OptionSet {
 
     init(_ type: RecordEntityType) {
         switch type {
-        case .careerPeriod, .scheduleSnapshot, .calendarException, .dayOverride, .workObservation:
+        case .careerPeriod, .scheduleSnapshot, .calendarException, .dayOverride, .workObservation,
+             .extendedSchedule, .rosterDay:
             self = .history
         case .focusTask, .focusSession, .focusPlanningConfiguration:
             self = .focus
@@ -608,6 +609,65 @@ final class RecordCoordinator {
         persist(changes: .preferences)
     }
 
+    /// Plan 018 P8's shift types and cycle rule. An invalid draft is ignored,
+    /// as an invalid preferences draft is: it must never reach the archive or
+    /// iCloud.
+    func upsertExtendedSchedule(_ draft: ExtendedSchedule, at date: Date = .now) {
+        preconditionRawWriteAdmission()
+        guard !blocksWrites, draft.isValid else { return }
+        var next = draft
+        if let current = state.extendedSchedule {
+            guard !RecordIncomingValue.extendedSchedule(current)
+                .hasSameBusinessContent(as: .extendedSchedule(next)) else { return }
+            next.editCount = current.editCount + 1
+        } else {
+            next.editCount = max(next.editCount, 0) + 1
+        }
+        next.editTieBreaker = UUID()
+        next.editedAt = date
+        state.extendedSchedule = next
+        markDirty(
+            .extendedSchedule,
+            key: ExtendedSchedule.logicalKey,
+            editCount: next.editCount,
+            tie: next.editTieBreaker
+        )
+        persist(changes: .history)
+    }
+
+    /// A day the user assigned by hand. Putting the day back on the rule is
+    /// `erase(.rosterDay, key:)`, which leaves a tombstone other devices honour.
+    func upsertRosterDay(_ draft: RosterDay, at date: Date = .now) {
+        preconditionRawWriteAdmission()
+        guard !blocksWrites else { return }
+        if !state.isErased(.rosterDay, key: draft.dayKey),
+           let current = state.rosterDays.first(where: { $0.dayKey == draft.dayKey }),
+           RecordIncomingValue.rosterDay(current).hasSameBusinessContent(as: .rosterDay(draft)) { return }
+        let revokedErase = state.clearErased(.rosterDay, key: draft.dayKey)
+        var next = draft
+        next.editTieBreaker = UUID()
+        next.editedAt = date
+        if let index = state.rosterDays.firstIndex(where: { $0.dayKey == draft.dayKey }) {
+            next.editCount = state.rosterDays[index].editCount + 1
+            state.rosterDays[index] = next
+        } else {
+            next.editCount = max(next.editCount, 0) + 1
+            state.rosterDays.append(next)
+        }
+        if let index = state.rosterDays.firstIndex(where: { $0.dayKey == draft.dayKey }) {
+            reviveAboveTombstone(&state.rosterDays[index].editCount, over: revokedErase)
+            let row = state.rosterDays[index]
+            markDirty(
+                .rosterDay,
+                key: row.dayKey,
+                editCount: row.editCount,
+                tie: row.editTieBreaker,
+                revokeErase: revokedErase != nil
+            )
+        }
+        persist(changes: .history)
+    }
+
     @discardableResult
     func commitSyncState(
         _ update: @escaping @MainActor (inout SyncLocalState, RecordState) -> Void
@@ -954,6 +1014,19 @@ final class RecordCoordinator {
             preferences.editedAt = date
             target.syncedPreferences = preferences
             return (preferences.editCount, preferences.editTieBreaker)
+        case .extendedSchedule:
+            guard var schedule = target.extendedSchedule else { return nil }
+            schedule.editCount = max(schedule.editCount + 1, atLeastEditCount)
+            schedule.editTieBreaker = UUID()
+            schedule.editedAt = date
+            target.extendedSchedule = schedule
+            return (schedule.editCount, schedule.editTieBreaker)
+        case .rosterDay:
+            guard let index = target.rosterDays.firstIndex(where: { $0.dayKey == key }) else { return nil }
+            target.rosterDays[index].editCount = max(target.rosterDays[index].editCount + 1, atLeastEditCount)
+            target.rosterDays[index].editTieBreaker = UUID()
+            target.rosterDays[index].editedAt = date
+            return (target.rosterDays[index].editCount, target.rosterDays[index].editTieBreaker)
         }
     }
 
@@ -972,6 +1045,10 @@ final class RecordCoordinator {
             return (.focusPlanningConfiguration, FocusPlanningConfiguration.logicalKey, configuration.editCount)
         case .syncedPreferences(let preferences):
             return (.syncedPreferences, SyncedPreferences.logicalKey, preferences.editCount)
+        case .extendedSchedule(let schedule):
+            return (.extendedSchedule, ExtendedSchedule.logicalKey, schedule.editCount)
+        case .rosterDay(let day):
+            return (.rosterDay, day.dayKey, day.editCount)
         }
     }
 

@@ -12,6 +12,8 @@ nonisolated enum RecordEntityType: String, Codable, Sendable, CaseIterable {
     case focusSession
     case focusPlanningConfiguration
     case syncedPreferences
+    case extendedSchedule
+    case rosterDay
 }
 
 /// Local tombstone so a later import cannot resurrect a permanently deleted
@@ -59,6 +61,8 @@ nonisolated enum RecordIncomingValue: Equatable, Sendable {
     case focusSession(FocusSession)
     case focusPlanningConfiguration(FocusPlanningConfiguration)
     case syncedPreferences(SyncedPreferences)
+    case extendedSchedule(ExtendedSchedule)
+    case rosterDay(RosterDay)
 }
 
 nonisolated struct RecordImportConflict: Equatable, Sendable {
@@ -112,6 +116,8 @@ struct RecordState: Equatable, Sendable {
     var focusSessions: [FocusSession] = []
     var focusPlanningConfiguration: FocusPlanningConfiguration?
     var syncedPreferences: SyncedPreferences? = nil
+    var extendedSchedule: ExtendedSchedule? = nil
+    var rosterDays: [RosterDay] = []
     var recordsStartedOn: Date?
     var erased: [ErasedID] = []
     var sync = SyncLocalState.empty
@@ -178,6 +184,10 @@ struct RecordState: Equatable, Sendable {
             focusPlanningConfiguration = nil
         case .syncedPreferences:
             syncedPreferences = nil
+        case .extendedSchedule:
+            extendedSchedule = nil
+        case .rosterDay:
+            rosterDays.removeAll { $0.dayKey == key }
         }
         if let index = erased.firstIndex(where: {
             $0.entityType == type && $0.logicalKey == key
@@ -204,8 +214,8 @@ struct RecordState: Equatable, Sendable {
 /// calendar; instants are Unix milliseconds so a timezone shift cannot move a
 /// day. Exports are user-triggered backups and include their synced settings.
 nonisolated enum RecordJSON {
-    nonisolated static let schemaVersion = 5
-    nonisolated static let acceptedSchemaVersions = 1...5
+    nonisolated static let schemaVersion = 6
+    nonisolated static let acceptedSchemaVersions = 1...6
 
     nonisolated static func export(
         _ state: RecordState,
@@ -245,7 +255,9 @@ nonisolated enum RecordJSON {
             focusSessions: state.focusSessions.map { FocusSessionDTO($0, calendar: fileCalendar) },
             focusPlanningConfiguration: state.focusPlanningConfiguration.map(FocusPlanningConfigurationDTO.init),
             syncedPreferences: state.syncedPreferences,
-            recordsStartedOn: state.recordsStartedOn.map { RecordJSON.dayKey($0, calendar: fileCalendar) }
+            recordsStartedOn: state.recordsStartedOn.map { RecordJSON.dayKey($0, calendar: fileCalendar) },
+            extendedSchedule: state.extendedSchedule.map(ExtendedScheduleDTO.init),
+            rosterDays: state.rosterDays.map(RosterDayDTO.init)
         )
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
@@ -282,6 +294,7 @@ nonisolated enum RecordJSON {
         var snapshotsByID = index(state.snapshots, \.id)
         var exceptionsByKey = index(state.exceptions, \.dayKey)
         var overridesByKey = index(state.overrides, \.dayKey)
+        var rosterDaysByKey = index(state.rosterDays, \.dayKey)
         var observationsByID = index(state.observations, \.eventID)
         var tasksByID = index(state.focusTasks, \.id)
         var sessionsByID = index(state.focusSessions, \.id)
@@ -429,6 +442,34 @@ nonisolated enum RecordJSON {
                 replace: { archive, value in
                     if let index = overridesByKey[value.dayKey] {
                         archive.overrides[index] = value
+                    }
+                    return value
+                }
+            )
+        }
+
+        for dto in document.rosterDays ?? [] {
+            guard let incoming = dto.value() else {
+                report.rejected.append(RecordImportRejection(entityType: .rosterDay, logicalKey: dto.dayKey))
+                continue
+            }
+            merge(
+                incoming,
+                type: .rosterDay,
+                key: incoming.dayKey,
+                mode: mode,
+                state: &state,
+                report: &report,
+                existing: { archive in rosterDaysByKey[incoming.dayKey].map { archive.rosterDays[$0] } },
+                incomingValue: { .rosterDay($0) },
+                insert: { archive, value in
+                    rosterDaysByKey[value.dayKey] = archive.rosterDays.count
+                    archive.rosterDays.append(value)
+                    return value
+                },
+                replace: { archive, value in
+                    if let index = rosterDaysByKey[value.dayKey] {
+                        archive.rosterDays[index] = value
                     }
                     return value
                 }
@@ -583,6 +624,34 @@ nonisolated enum RecordJSON {
             )
         }
 
+        // Before the Focus planning block, whose rejection returns early.
+        if let dto = document.extendedSchedule {
+            if let incoming = dto.value() {
+                merge(
+                    incoming,
+                    type: .extendedSchedule,
+                    key: ExtendedSchedule.logicalKey,
+                    mode: mode,
+                    state: &state,
+                    report: &report,
+                    existing: { $0.extendedSchedule },
+                    incomingValue: { .extendedSchedule($0) },
+                    insert: { archive, value in
+                        archive.extendedSchedule = value
+                        return value
+                    },
+                    replace: { archive, value in
+                        archive.extendedSchedule = value
+                        return value
+                    }
+                )
+            } else {
+                report.rejected.append(
+                    RecordImportRejection(entityType: .extendedSchedule, logicalKey: ExtendedSchedule.logicalKey)
+                )
+            }
+        }
+
         if let dto = document.focusPlanningConfiguration {
             guard let incoming = dto.value() else {
                 report.rejected.append(
@@ -720,6 +789,14 @@ nonisolated enum RecordJSON {
             state.focusPlanningConfiguration = configuration
         case .syncedPreferences(let preferences):
             state.syncedPreferences = preferences
+        case .extendedSchedule(let schedule):
+            state.extendedSchedule = schedule
+        case .rosterDay(let day):
+            if let index = state.rosterDays.firstIndex(where: { $0.dayKey == day.dayKey }) {
+                state.rosterDays[index] = day
+            } else {
+                state.rosterDays.append(day)
+            }
         }
     }
 
@@ -818,6 +895,8 @@ nonisolated enum RecordJSON {
         case .focusPlanningConfiguration: FocusPlanningConfiguration.logicalKey
         case .lifeProfile: LifeProfile.profileID.uuidString
         case .syncedPreferences: SyncedPreferences.logicalKey
+        case .extendedSchedule: ExtendedSchedule.logicalKey
+        case .rosterDay(let day): day.dayKey
         }
     }
 
@@ -834,6 +913,8 @@ nonisolated enum RecordJSON {
         case .focusSession(let session): session.editCount
         case .focusPlanningConfiguration(let configuration): configuration.editCount
         case .syncedPreferences(let preferences): preferences.editCount
+        case .extendedSchedule(let schedule): schedule.editCount
+        case .rosterDay(let day): day.editCount
         }
     }
 
@@ -852,6 +933,8 @@ nonisolated enum RecordJSON {
         case .focusSession(let session): session.editTieBreaker
         case .focusPlanningConfiguration(let configuration): configuration.editTieBreaker
         case .syncedPreferences(let preferences): preferences.editTieBreaker
+        case .extendedSchedule(let schedule): schedule.editTieBreaker
+        case .rosterDay(let day): day.editTieBreaker
         }
     }
 
@@ -987,6 +1070,9 @@ nonisolated struct RecordJSONDocument: Codable, Equatable, Sendable {
     var focusPlanningConfiguration: FocusPlanningConfigurationDTO?
     var syncedPreferences: SyncedPreferences? = nil
     var recordsStartedOn: String?
+    /// Schema 6 (plan 018 P8). Absent from older documents.
+    var extendedSchedule: ExtendedScheduleDTO? = nil
+    var rosterDays: [RosterDayDTO]? = nil
 }
 
 nonisolated struct CareerPeriodDTO: Codable, Equatable, Sendable {
@@ -1175,6 +1261,78 @@ nonisolated struct DayOverrideDTO: Codable, Equatable, Sendable {
             editCount: editCount,
             editTieBreaker: editTieBreaker,
             timeZoneIdentifier: timeZoneIdentifier ?? calendar.timeZone.identifier
+        )
+    }
+}
+
+nonisolated struct ExtendedScheduleDTO: Codable, Equatable, Sendable {
+    var isEnabled: Bool
+    var shiftTypes: [ShiftType]
+    var rule: ShiftCycleRule?
+    var timeZoneIdentifier: String
+    var editedAtMs: Double
+    var editCount: Int
+    var editTieBreaker: String
+
+    init(_ value: ExtendedSchedule) {
+        isEnabled = value.isEnabled
+        shiftTypes = value.shiftTypes
+        rule = value.rule
+        timeZoneIdentifier = value.timeZoneIdentifier
+        editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
+        editCount = value.editCount
+        editTieBreaker = value.editTieBreaker.uuidString
+    }
+
+    func value() -> ExtendedSchedule? {
+        guard let editTieBreaker = UUID(uuidString: editTieBreaker), editedAtMs.isFinite else { return nil }
+        let schedule = ExtendedSchedule(
+            isEnabled: isEnabled,
+            shiftTypes: shiftTypes,
+            rule: rule,
+            timeZoneIdentifier: timeZoneIdentifier,
+            editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
+            editCount: editCount,
+            editTieBreaker: editTieBreaker
+        )
+        return schedule.isValid ? schedule : nil
+    }
+}
+
+nonisolated struct RosterDayDTO: Codable, Equatable, Sendable {
+    var dayKey: String
+    var shiftTypeID: String
+    var timeZoneIdentifier: String
+    var editedAtMs: Double
+    var editCount: Int
+    var editTieBreaker: String
+
+    init(_ value: RosterDay) {
+        dayKey = value.dayKey
+        shiftTypeID = value.shiftTypeID.uuidString
+        timeZoneIdentifier = value.timeZoneIdentifier
+        editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
+        editCount = value.editCount
+        editTieBreaker = value.editTieBreaker.uuidString
+    }
+
+    func value() -> RosterDay? {
+        guard let shiftTypeID = UUID(uuidString: shiftTypeID),
+              let editTieBreaker = UUID(uuidString: editTieBreaker),
+              let zone = TimeZone(identifier: timeZoneIdentifier),
+              editedAtMs.isFinite,
+              editCount >= 0
+        else { return nil }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        guard RecordJSON.date(fromDayKey: dayKey, calendar: calendar) != nil else { return nil }
+        return RosterDay(
+            dayKey: dayKey,
+            shiftTypeID: shiftTypeID,
+            timeZoneIdentifier: timeZoneIdentifier,
+            editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
+            editCount: editCount,
+            editTieBreaker: editTieBreaker
         )
     }
 }
