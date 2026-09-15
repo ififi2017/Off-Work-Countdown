@@ -688,11 +688,6 @@ private struct TabletSettingsView: View {
                         VStack(spacing: 20) {
                             ForEach(column) { section in
                                 SettingsSectionCard(shifts: shifts, recovery: recovery, section: section)
-                                // The privacy note belongs to this section, so
-                                // it travels with it rather than with a column.
-                                if section == .reminders {
-                                    sectionNote(text.t("notificationPrivacyNote"))
-                                }
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -713,15 +708,6 @@ private struct TabletSettingsView: View {
                 SettingsPlusStarToolbarButton(plus: plus, text: text)
             }
         }
-    }
-    private func sectionNote(_ text: String) -> some View {
-        Text(text)
-            .font(.footnote)
-            .foregroundStyle(OWCDesign.secondary)
-            .lineSpacing(2)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.top, -12)
     }
 }
 
