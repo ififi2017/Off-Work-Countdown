@@ -1,9 +1,10 @@
 # 013 — 记录日画布、视觉语法与单一结论
 
-- **状态**：IN PROGRESS — Phase 0–4 已合入 `main`，Phase 6 的自动化门禁已过；Phase 5 的无障碍分支、60fps 测量与录屏，以及真机验收未完成
+- **状态**：DONE — 2026-09-12 用户确认全部阶段验收完成；实现已随 3.1.9 提交 App Store 审核
 - **进度（2026-09-04）**：实现已随 [PR #111](https://github.com/ififi2017/Off-Work-Countdown/pull/111) 与 [PR #112](https://github.com/ififi2017/Off-Work-Countdown/pull/112) 合入 `main`，产品版本滚到 3.1.9。日画布、统一日期路由、月格与周日列分段、图例、紧凑摘要、人生时间分配结论、19 locale 文案与日模型测试已完成；`TimeAllocationCalculator.share` 已由 `RecordsDayCanvasModel.build` 取代，civil day 现在会读取前一夜的班次。合入前的一轮 review 关掉十项发现（iPad「看这一天」失效、三个界面对「一天」口径不一致、今天线之后仍按事实着色、人生结论吞掉已记录加班、纯投影日提供编辑、截图 sweep 给自己打假绿灯），偏差记录见「实现偏差」。
 - **已通过的自动验证**：`npm test`（27 个文件、322 项）、`npm run test:widget-contract`（12 项）、`npm run build:ios-native-rules`、`npm run check:ios`、`npm run check:version`、iPhone 17 Pro 模拟器 `xcodebuild test`（331 项、0 失败；#112 复跑同样 331 项）、iPhone 与 iPad 的浅色 / 深色截图 sweep。
-- **仍缺**：Phase 5 的四个无障碍分支、44pt 命中区核对、release 构建 60fps 测量与完整流程录屏；Phase 4 的人生文案复审；iPhone SE 级别与 Apple Silicon Mac 布局；iPhone / iPad 真机终验。
+- **收尾（2026-09-12）**：Phase 4 的人生文案复审、Phase 5 的四个无障碍分支与 44pt 命中区、release 构建 60fps 测量与流程录屏、iPhone SE 级别与 Apple Silicon Mac 布局、iPhone / iPad 真机终验，均由用户确认完成。这些是人工验收项，结论按用户确认记录，仓库内没有留下逐项测量数据或录屏。
+- **勾选框说明**：下方各验收矩阵（免费窗口、跨夜与 DST、视觉语法、本地化与主题等）的复选框未逐条回填，按 2026-09-12 的整体确认视为通过。要留逐条痕迹，就在对应条目后补上实际结论，别只把方框划掉。
 - **日期**：2026-09-01
 - **范围**：iOS / iPadOS 原生 SwiftUI 的记录主画布、周日列与月格视觉语法、日期详情、人生总结、Plus 锁定文案与 19 个 UI locale
 - **依赖**：[010](010-records-ui-iteration.md) 的单画布与记录 IA、[011](011-ios-records-focus-release-remediation.md) 的发布阻断修复、[006](006-free-trial-subscription.md) 的权益模型
@@ -330,16 +331,16 @@ iPad 与手机横屏不是同一套导航 chrome：`TabletDesignView` 与 `Phone
 - [x] 年视图只对齐颜色、纹理和选择语义，不改变双形态结构。
 - [x] 人生非沉浸态增加推算时间分配结论与输入不足状态。
 - [x] 确认人生总结不生成持久记录、不上传、不在锁定树中泄漏。
-- [ ] 审查所有人生文案，移除评判、宿命或把推算写成事实的句子。
+- [x] 审查所有人生文案，移除评判、宿命或把推算写成事实的句子 —— 2026-09-12 用户确认完成。
 
 ### Phase 5 — 无障碍、动效与性能
 
 - [x] 日时间带使用可读的 accessibility representation；VoiceOver 顺序与时间段列表一致。
-- [ ] Differentiate Without Color、Increase Contrast、Reduce Transparency 和 Reduce Motion 分支完成。
-- [ ] 所有交互对象至少 44pt；月格视觉可小，但按钮命中区和语义保持完整。
+- [x] Differentiate Without Color、Increase Contrast、Reduce Transparency 和 Reduce Motion 分支完成 —— 2026-09-12 用户确认完成。
+- [x] 所有交互对象至少 44pt；月格视觉可小，但按钮命中区和语义保持完整 —— 2026-09-12 用户确认完成。
 - [x] 把日画布模型构造（含相邻班次求交）加进既有的 `RecordsPerformanceTests.surfaceCost()`，做成能回归的门槛，而不是只靠一次人工录屏。
-- [ ] release 构建测量月格滚动、尺度切换和日画布进入，持续 60fps，无主线程长停顿。
-- [ ] 完整流程录屏：月选日 → 日画布 → 编辑 → 保存 → 返回；购买回流单独录制。
+- [x] release 构建测量月格滚动、尺度切换和日画布进入，持续 60fps，无主线程长停顿 —— 2026-09-12 用户确认完成。
+- [x] 完整流程录屏：月选日 → 日画布 → 编辑 → 保存 → 返回；购买回流单独录制 —— 2026-09-12 用户确认完成。
 
 ### Phase 6 — 构建与设备验收
 
@@ -347,8 +348,8 @@ iPad 与手机横屏不是同一套导航 chrome：`TabletDesignView` 与 `Phone
 - [x] `npm run check:ios`。
 - [x] 相关 Swift Testing 全量通过 —— iPhone 17 Pro 模拟器 331 项、0 失败（#111），#112 以 Release 全模块优化复跑同样 331 项。
 - [x] iPhone 模拟器 build 通过；若触及共享 `lib/`，额外通过 `npm test` —— `npm test` 27 个文件、322 项通过。
-- [ ] iPhone Pro、iPhone SE 级别、iPad 与 Apple Silicon Mac 完成布局检查 —— `npm run qa:ios-shots` 已扫过 iPhone 17 Pro 与 iPad Pro 13-inch (M5)；iPhone SE 级别与 Apple Silicon Mac 仍未看。
-- [ ] iPhone / iPad 真机完成手势、触感、60fps 与系统 sheet 终验。
+- [x] iPhone Pro、iPhone SE 级别、iPad 与 Apple Silicon Mac 完成布局检查 —— `npm run qa:ios-shots` 扫过 iPhone 17 Pro 与 iPad Pro 13-inch (M5)；iPhone SE 级别与 Apple Silicon Mac 由用户于 2026-09-12 确认看过。
+- [x] iPhone / iPad 真机完成手势、触感、60fps 与系统 sheet 终验 —— 2026-09-12 用户确认完成。
 
 ## 实现偏差
 
