@@ -284,7 +284,7 @@ final class NotificationService {
             center.removePending(Array(existingIdentifiers))
             return
         }
-        guard let reminders = try? shifts.shiftReminders(at: now) else { return }
+        let reminders = shifts.shiftReminders(at: now)
         guard generation == scheduleGeneration, shifts.session.publishesLiveSurfaces else { return }
 
         let snapshot = shifts.session.snapshot(at: now)

@@ -4,7 +4,7 @@
 克隆仓库后会安装项目要求的 Node.js 24、执行 `npm ci`、生成未提交的
 `CountdownRules.js`，并运行 `npm run check:watch-fixtures`、`npm run check:ios-rule-fixtures` 和 `npm run check:ios`。
 不要把生成的规则 bundle 提交进 Git，也不要在 Xcode Cloud 中跳过这个脚本。
-Watch 与排班规则（019 R1）的 Swift 差分 fixture 是需提交的测试输入；规则变化后运行
+Watch 与排班、提醒规则（019 R1、R2）的 Swift 差分 fixture 是需提交的测试输入；规则变化后运行
 `node scripts/generate-watch-shift-fixtures.mjs` 和 `npm run generate:ios-rule-fixtures` 更新，检查模式发现过期或缺失会失败，不会自动改写验收值。
 
 ## App Store Connect 中的一次性配置

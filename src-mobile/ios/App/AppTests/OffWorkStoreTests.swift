@@ -1511,7 +1511,7 @@ func healthPreviewHasNoDateWhenRulesScheduleNone() throws {
     store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 60 }
 
     let snapshot = try #require(store.session.snapshot(at: beforeShift))
-    let reminders = try CountdownRules.shared.reminders(
+    let reminders = ScheduleRules.reminders(
         input: store.session.rulesInput(at: beforeShift),
         reminderInputs: store.shifts.reminderInputs()
     )
@@ -1537,7 +1537,7 @@ func healthPreviewDateMatchesSharedReminders() throws {
     store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 60 }
 
     let snapshot = try #require(store.session.snapshot(at: beforeShift))
-    let reminders = try CountdownRules.shared.reminders(
+    let reminders = ScheduleRules.reminders(
         input: store.session.rulesInput(at: beforeShift),
         reminderInputs: store.shifts.reminderInputs()
     )
@@ -1562,7 +1562,7 @@ func healthPreviewDoesNotUseShiftStartPlusIntervalAcrossLunch() throws {
     store.preferences.applyPreferences { $0.microBreakIntervalMinutes = 60 }
 
     let snapshot = try #require(store.session.snapshot(at: afterLunch))
-    let reminders = try CountdownRules.shared.reminders(
+    let reminders = ScheduleRules.reminders(
         input: store.session.rulesInput(at: afterLunch),
         reminderInputs: store.shifts.reminderInputs()
     )
@@ -2572,7 +2572,7 @@ func restDaysDoNotScheduleCurrentShiftReminders() throws {
     store.preferences.applyPreferences { $0.notificationMode = .milestones }
     store.shifts.startCountdown(at: saturdayAfternoon)
 
-    let reminders = try store.shifts.shiftReminders(at: saturdayAfternoon)
+    let reminders = store.shifts.shiftReminders(at: saturdayAfternoon)
     #expect(!reminders.contains { $0.id.hasPrefix("current:") })
     #expect(reminders.contains { $0.id.hasPrefix("next:") })
 }

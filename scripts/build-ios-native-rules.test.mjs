@@ -11,8 +11,8 @@ import { loadScheduleRuleOracle } from "./ios-schedule-rule-oracle.mjs";
 
 const temporaryDirectories = [];
 
-// The shipped bundle plus the R1 oracle, so one `OWCNative` answers both the
-// entries iOS still bridges and the ones Swift now implements.
+// The shipped bundle plus the schedule-rule oracle, so one `OWCNative` answers
+// both the entries iOS still bridges and the ones Swift now implements.
 function loadRules() {
   const context = { console };
   vm.createContext(context);
@@ -63,24 +63,26 @@ describe("iOS native rule bundle", () => {
     ]);
   });
 
-  it("keeps countdown, reminder and summary derivation behind the shared TypeScript modules", () => {
+  it("keeps summary derivation behind the shared TypeScript modules", () => {
     const directory = mkdtempSync(join(tmpdir(), "owc-ios-rules-"));
     temporaryDirectories.push(directory);
     const outputPath = join(directory, "fresh", "Resources", "CountdownRules.js");
     const bundle = writeIOSNativeRulesBundle(outputPath);
 
     expect(bundle).toContain('require("./countdown")');
-    expect(bundle).toContain('require("./reminders")');
     expect(bundle).toContain('require("./summary")');
-    expect(bundle).toContain("countdown.buildShiftTimeline");
-    expect(bundle).toContain(".buildShiftReminders");
-    // Plan 019 R1 moved these to ScheduleRules.swift; the bundle must not
-    // keep a second, unused copy.
+    expect(bundle).toContain("summary.summarize");
+    // Plan 019 R1 and R2 moved these to Swift; the bundle must not keep a
+    // second, unused copy.
     expect(bundle).not.toContain('require("./watch-projection")');
+    expect(bundle).not.toContain('require("./reminders")');
     const context = { console };
     vm.createContext(context);
     vm.runInContext(bundle, context);
-    for (const moved of ["snapshot", "watchProjection", "widgetShifts", "expandScheduleRange", "validateBreak"]) {
+    for (const moved of [
+      "snapshot", "watchProjection", "widgetShifts", "expandScheduleRange", "validateBreak",
+      "reminders", "shouldPromptApplyToday",
+    ]) {
       expect(context.OWCNative[moved]).toBeUndefined();
     }
     expect(bundle).not.toContain("eval(");

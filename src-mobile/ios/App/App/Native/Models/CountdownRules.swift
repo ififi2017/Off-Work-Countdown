@@ -246,29 +246,16 @@ private func callRule<Request: Encodable, Response: Decodable>(
     return decoded
 }
 
-/// As `invokeRule`, for the rules that answer with a plain boolean. A rule
-/// that cannot be reached answers `fallback` rather than throwing, because
-/// the caller is asking a yes/no question about a settings edit.
-private func askRule<Request: Encodable>(
-    _ context: JSContext?,
-    _ rule: String,
-    _ request: Request,
-    fallback: Bool
-) -> Bool {
-    guard let result = try? invokeRule(context, rule, request) else { return fallback }
-    return result.toBool()
-}
-
 /// The JavaScriptCore bridge for the rules that have not moved to Swift yet:
-/// reminders, summaries and income (plan 019 R2 and R3). Shift resolution,
-/// snapshots and range expansion are `ScheduleRules`.
+/// summaries and income (plan 019 R3). Shift resolution, snapshots, range
+/// expansion and reminders are `ScheduleRules`.
 @MainActor
 final class CountdownRules {
     static let shared = CountdownRules()
 
     /// Builds the JSContext and evaluates the rules bundle off the first-frame
-    /// path, so the first reminder or summary request does not evaluate the
-    /// bundle synchronously in the middle of launch.
+    /// path, so the first summary request does not evaluate the bundle
+    /// synchronously in the middle of launch.
     static func warmUp() {
         Task { @MainActor in
             // Let the first SwiftUI frame commit before evaluating the generated
@@ -311,12 +298,6 @@ final class CountdownRules {
         return (context, capturedError)
     }
 
-    func reminders(input: NativeRulesInput, reminderInputs: NativeReminderInputs) throws -> [NativeReminder] {
-        if let loadError { throw loadError }
-        let request = NativeReminderRequest(rules: input, reminderInputs: reminderInputs)
-        return try callRule(context, "reminders", request)
-    }
-
     func summarize(input: NativeSummaryInput) throws -> NativePeriodSummary {
         if let loadError { throw loadError }
         return try callRule(context, "summarize", input)
@@ -342,22 +323,6 @@ final class CountdownRules {
     func salaryMonthlyEquivalent(input: NativeRulesInput) throws -> NativeMonthlySalaryEquivalent {
         if let loadError { throw loadError }
         return try callRule(context, "salaryMonthlyEquivalent", input)
-    }
-
-    func shouldPromptApplyToday(
-        current: NativeRulesInput,
-        candidate: NativeRulesInput,
-        kind: String,
-        schedulePatternChanged: Bool
-    ) -> Bool {
-        if loadError != nil { return true }
-        let request = NativeTodayImpactRequest(
-            current: current,
-            candidate: candidate,
-            kind: kind,
-            schedulePatternChanged: schedulePatternChanged
-        )
-        return askRule(context, "shouldPromptApplyToday", request, fallback: true)
     }
 }
 
@@ -386,13 +351,6 @@ nonisolated struct NativeRulesInput: Codable, Equatable, Sendable {
     let annualBonusMonths: Double
     let forcedWorkdayStartMs: Double?
     var timeZoneIdentifier: String? = nil
-}
-
-private struct NativeTodayImpactRequest: Codable {
-    let current: NativeRulesInput
-    let candidate: NativeRulesInput
-    let kind: String
-    let schedulePatternChanged: Bool
 }
 
 struct NativeSummaryInput: Codable {
@@ -478,86 +436,4 @@ struct NativeRecordsActualForecastInput: Codable {
     let dailySalary: Double?
     let asOfMs: Double
     var salaryRules: NativeRulesInput? = nil
-}
-
-struct NativeReminder: Codable, Hashable {
-    let id: String
-    let kind: String
-    let atMs: Double
-    let expiresAtMs: Double?
-    let maxTickGapMs: Double?
-    let collapseGroup: String?
-    let title: String?
-    let body: String?
-}
-
-struct NativeMilestoneTitles: Codable {
-    let milestone50: String
-    let milestone75: String
-    let milestone90: String
-    let milestone95: String
-    let milestone100: String
-}
-
-struct NativeMilestoneMessages: Codable {
-    let milestone50: [String]
-    let milestone75: [String]
-    let milestone90: [String]
-    let milestone95: [String]
-    let milestone100: [String]
-}
-
-struct NativeReminderInputs: Codable {
-    let mode: String
-    let fallbackTitle: String
-    /// Title for lunch start and end. Without it the bundle falls back to the
-    /// off-work title, which is what made lunch pushes read "下班提醒".
-    let breakTitle: String
-    let milestoneTitles: NativeMilestoneTitles
-    let milestoneMessages: NativeMilestoneMessages
-    let lunchStartEnabled: Bool
-    let lunchStartBody: String
-    let lunchEndEnabled: Bool
-    let lunchEndBody: String
-    let microBreakEnabled: Bool
-    let microBreakTitle: String
-    let microBreakIntervalMinutes: Int
-    let microBreakMessages: [String]
-    let cycleEndSummaryBody: String?
-}
-
-private struct NativeReminderRequest: Codable {
-    let startTime: String
-    let endTime: String
-    let nowMs: Double
-    let workdays: [Int]
-    let schedule: NativeWorkSchedule
-    let breakStartTime: String?
-    let breakDurationMinutes: Int
-    let overtimeEndAtMs: Double?
-    let salaryAmount: String
-    let salaryType: String
-    let monthlyWorkingDays: Double
-    let annualBonusMonths: Double
-    let forcedWorkdayStartMs: Double?
-    let timeZoneIdentifier: String?
-    let reminderInputs: NativeReminderInputs
-
-    init(rules: NativeRulesInput, reminderInputs: NativeReminderInputs) {
-        startTime = rules.startTime
-        endTime = rules.endTime
-        nowMs = rules.nowMs
-        workdays = rules.workdays
-        schedule = rules.schedule
-        breakStartTime = rules.breakStartTime
-        breakDurationMinutes = rules.breakDurationMinutes
-        overtimeEndAtMs = rules.overtimeEndAtMs
-        salaryAmount = rules.salaryAmount
-        salaryType = rules.salaryType
-        monthlyWorkingDays = rules.monthlyWorkingDays
-        annualBonusMonths = rules.annualBonusMonths
-        forcedWorkdayStartMs = rules.forcedWorkdayStartMs
-        timeZoneIdentifier = rules.timeZoneIdentifier
-        self.reminderInputs = reminderInputs
-    }
 }

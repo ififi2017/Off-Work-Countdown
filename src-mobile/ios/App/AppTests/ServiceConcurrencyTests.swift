@@ -75,7 +75,7 @@ struct ServiceConcurrencyTests {
         center.release.signal()
         await old.value
         await replacement.value
-        let expected = try store.shifts.shiftReminders(at: now).filter {
+        let expected = store.shifts.shiftReminders(at: now).filter {
             $0.atMs > now.timeIntervalSince1970 * 1_000 && $0.title != nil && $0.body != nil
         }
         #expect(!center.requests.isEmpty)
