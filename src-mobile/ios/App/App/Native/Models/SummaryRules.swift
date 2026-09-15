@@ -36,11 +36,14 @@ nonisolated enum SummaryRules {
         // `isScheduledWorkday`, not the in-zone helper: manual mode still counts
         // today. Splitting the two once made an iOS week disagree with the Web's.
         let todayCounts = coversAsOfDay && zone.isScheduledWorkday(shiftDayMs, input.workdays, input.schedule)
-        let todayFraction = todayCounts ? min(100, max(0, input.todayProgress)) / 100 : 0
+        let todayFraction: Double = todayCounts ? min(100, max(0, input.todayProgress)) / 100 : 0
+        let todayHours: Double = todayCounts ? input.todayEffectiveHours * todayFraction : 0
+        let todayPay: Double = todayCounts ? max(0, input.todayPayRatio) : 0
+        let hours: Double = completed * input.plannedDailyHours + todayHours
         return NativePeriodSummary(
             days: completed + todayFraction,
-            hours: completed * input.plannedDailyHours + (todayCounts ? input.todayEffectiveHours * todayFraction : 0),
-            earnings: earnings(input.dailySalary, ratio: completed + (todayCounts ? max(0, input.todayPayRatio) : 0))
+            hours: hours,
+            earnings: earnings(input.dailySalary, ratio: completed + todayPay)
         )
     }
 
@@ -229,9 +232,10 @@ nonisolated enum SummaryRules {
     static func recordsActualForecast(input: NativeRecordsActualForecastInput) -> NativeRecordsActualForecastSummary {
         let asOfMs = input.asOfMs
         let usesFixedMonthlyPay = input.salaryRules?.salaryType == "monthly"
-        let fixedMonthlyPay = usesFixedMonthlyPay
-            ? input.salaryRules.flatMap { fixedMonthlyPay(dayKeys: input.periodDayKeys, asOfMs: asOfMs, rules: $0) }
-            : nil
+        var fixedMonthlyPay: (actual: Double, forecast: Double)?
+        if usesFixedMonthlyPay, let rules = input.salaryRules {
+            fixedMonthlyPay = allocateFixedMonthlyPay(dayKeys: input.periodDayKeys, asOfMs: asOfMs, rules: rules)
+        }
         var hasSalary = usesFixedMonthlyPay ? fixedMonthlyPay != nil : input.dailySalary != nil
         var actualDays = 0.0
         var actualMs = 0.0
@@ -287,23 +291,30 @@ nonisolated enum SummaryRules {
             actualPay = fixedMonthlyPay.actual
             forecastPay = fixedMonthlyPay.forecast
         }
-        let actualEarnings = hasSalary ? actualPay : nil
-        let forecastEarnings = hasSalary ? forecastPay : nil
+        // Built in steps: as one expression, older Swift compilers give up on
+        // type-checking it in reasonable time.
+        let msPerHour = 3_600_000.0
+        let actualEarnings: Double? = hasSalary ? actualPay : nil
+        let forecastEarnings: Double? = hasSalary ? forecastPay : nil
+        var totalEarnings: Double?
+        if let actualEarnings, let forecastEarnings {
+            totalEarnings = actualEarnings + forecastEarnings
+        }
+        let actual = NativeRecordsActualForecastPart(days: actualDays, hours: actualMs / msPerHour, earnings: actualEarnings)
+        let forecast = NativeRecordsActualForecastPart(days: forecastDays, hours: forecastMs / msPerHour, earnings: forecastEarnings)
+        let totalMs: Double = actualMs + forecastMs
+        let total = NativeRecordsActualForecastPart(days: actualDays + forecastDays, hours: totalMs / msPerHour, earnings: totalEarnings)
         return NativeRecordsActualForecastSummary(
-            actualOvertimeHours: actualOvertimeMs / 3_600_000,
-            actual: .init(days: actualDays, hours: actualMs / 3_600_000, earnings: actualEarnings),
-            forecast: .init(days: forecastDays, hours: forecastMs / 3_600_000, earnings: forecastEarnings),
-            total: .init(
-                days: actualDays + forecastDays,
-                hours: (actualMs + forecastMs) / 3_600_000,
-                earnings: actualEarnings.flatMap { actual in forecastEarnings.map { actual + $0 } }
-            )
+            actualOvertimeHours: actualOvertimeMs / msPerHour,
+            actual: actual,
+            forecast: forecast,
+            total: total
         )
     }
 
     /// A monthly salary spread over the visible days, each day taking its own
     /// month's share, split at the civil day containing `asOfMs`.
-    private static func fixedMonthlyPay(
+    private static func allocateFixedMonthlyPay(
         dayKeys: [String],
         asOfMs: Double,
         rules: NativeRulesInput
