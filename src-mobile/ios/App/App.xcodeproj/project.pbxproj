@@ -9,13 +9,13 @@
 /* Begin PBXBuildFile section */
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
+		C40000010000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C50000010000000000000001 /* Localizable.xcstrings */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		710000041234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
 		710000061234567890ABCDEF /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000051234567890ABCDEF /* WidgetSnapshot.swift */; };
 		710000071234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */; };
 		710000081234567890ABCDEF /* OffWorkWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000071234567890ABCDEF /* OffWorkWidgets.swift */; };
 		710000091234567890ABCDEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
-		7100000A1234567890ABCDEF /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
 		7100000B1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B31900010000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B31900020000000000000002 /* PrivacyInfo.xcprivacy */; };
 		B32000010000000000000001 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000020000000000000002 /* WatchSnapshot.swift */; };
@@ -48,7 +48,6 @@
 		D11000000000000000000016 /* WatchLocalizations.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1200000000000000000000A /* WatchLocalizations.generated.swift */; };
 		D110000000000000000000F1 /* WatchDisplayProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D120000000000000000000F1 /* WatchDisplayProjectionTests.swift */; };
 		D110000000000000000000F2 /* WatchSnapshotReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D120000000000000000000F2 /* WatchSnapshotReceiverTests.swift */; };
-		E000000C000000000000000C /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
 		F1C00000000000000000A002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
 		F1C00000000000000000B002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
 /* End PBXBuildFile section */
@@ -131,6 +130,7 @@
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C50000010000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		720000041234567890ABCDEF /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
@@ -185,7 +185,6 @@
 		D12100000000000000000001 /* DoneAt Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DoneAt Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D12100000000000000000002 /* DoneAt Watch Widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DoneAt Watch Widgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D12100000000000000000003 /* WatchAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WatchAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
 		F1C00000000000000000A001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = ../../../assets/brand/AppIcon.icon; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -291,8 +290,8 @@
 			children = (
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				FA0000010000000000000001 /* Native */,
-				F000000C000000000000000C /* locales */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
+				C50000010000000000000001 /* Localizable.xcstrings */,
 				F1C00000000000000000A001 /* AppIcon.icon */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
 				C20000010000000000000001 /* InfoPlist.strings */,
@@ -565,8 +564,8 @@
 			files = (
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
+				C40000010000000000000001 /* Localizable.xcstrings in Resources */,
 				F1C00000000000000000A002 /* AppIcon.icon in Resources */,
-				E000000C000000000000000C /* locales in Resources */,
 				C30000010000000000000001 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -577,7 +576,6 @@
 			files = (
 				B31900010000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
 				710000091234567890ABCDEF /* Assets.xcassets in Resources */,
-				7100000A1234567890ABCDEF /* locales in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

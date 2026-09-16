@@ -5,44 +5,18 @@ nonisolated struct NativeLanguage: Identifiable, Hashable, Sendable {
     let name: String
 }
 
-/// CLDR plural categories, spelled the way i18next suffixes a key:
-/// `recordsMonthWorkdays_one` sits beside `recordsMonthWorkdays`, and the
-/// unsuffixed key stays the `other` form so untouched keys keep working.
+/// Reads the app's copy out of `Localizable.xcstrings` (plan 019 §3).
 ///
-/// Web reads these categories from `Intl.PluralRules`; iOS exposes no
-/// equivalent, so the cardinal rules for the 19 shipped locales are written
-/// out here. This is a rendering rule with no counterpart in `lib/` — it is
-/// not a schedule, summary or salary rule being ported into Swift.
-enum NativePluralCategory: String {
-    case zero, one, two, few, many, other
-
-    static func of(count: Int, locale: String) -> NativePluralCategory {
-        let n = abs(count)
-        switch locale {
-        // One nominal form for every count.
-        case "id", "ja", "ko", "th", "vi", "zh-CN", "zh-HK", "zh-TW":
-            return .other
-        // Zero takes the singular too: "0 jour travaillé", not "0 jours".
-        case "fr", "pt", "hi-IN", "mr-IN":
-            return n == 0 || n == 1 ? .one : .other
-        case "ru":
-            if n % 10 == 1, n % 100 != 11 { return .one }
-            if (2...4).contains(n % 10), !(12...14).contains(n % 100) { return .few }
-            return .many
-        case "ar":
-            if n == 0 { return .zero }
-            if n == 1 { return .one }
-            if n == 2 { return .two }
-            if (3...10).contains(n % 100) { return .few }
-            if (11...99).contains(n % 100) { return .many }
-            return .other
-        // de, en, es, it, tr, and any locale added without its own rule.
-        default:
-            return n == 1 ? .one : .other
-        }
-    }
-}
-
+/// iOS used to parse `public/locales/<lang>/translation.json` from the bundle.
+/// The catalog replaces that: Xcode compiles it into one `Localizable.strings`
+/// per `.lproj`, so the JSON no longer ships. `scripts/generate-ios-xcstrings.mjs`
+/// builds the catalog from those same files, which stay the source of truth,
+/// and `npm test` fails while the two disagree.
+///
+/// The language is looked up per call rather than through `Bundle.main`,
+/// because the app has its own language picker: `Bundle.main` follows the
+/// **system** language and would ignore a user who set the app to Japanese on
+/// an English phone.
 final class NativeLocalizer {
     nonisolated static let supportedLanguages: [NativeLanguage] = [
         .init(id: "en", name: "English"),
@@ -66,45 +40,47 @@ final class NativeLocalizer {
         .init(id: "vi", name: "Tiếng Việt"),
     ]
 
-    private var tables: [String: [String: Any]] = [:]
+    /// A sentinel no translation can equal, so a missing key is distinguishable
+    /// from one whose value happens to be its own name.
+    private static let missing = "\u{0}owc.missing"
+
+    private var bundles: [String: Bundle] = [:]
 
     /// `count` is the quantity the sentence is about, not the text that gets
-    /// interpolated: it only selects which variant of `key` to read. Pass nil
-    /// for keys that carry no quantity.
+    /// interpolated: it selects which plural variation of `key` to read, and
+    /// the caller still passes the displayed number in `values`.
     func string(
         _ key: String,
         locale: String,
         count: Int? = nil,
         values: [String: String] = [:]
     ) -> String {
-        let value = resolve(key, locale: locale, count: count)
-            ?? resolve(key, locale: "en", count: count)
-            ?? key
+        var value = lookup(key, locale: locale) ?? lookup(key, locale: "en") ?? key
+        if Self.takesACount(value) {
+            // A plural entry arrives as the catalog's format token — Foundation
+            // hands back `%#@value@`, not the chosen variation — so this call
+            // is what resolves it against the locale's CLDR rules.
+            //
+            // The number can also come in as `values["count"]` with no `count:`
+            // of its own, which is how the callers that format the figure
+            // themselves ask for it. Before the catalog those callers got the
+            // plural template with `{{count}}` substituted; without this they
+            // would get the raw format token on screen instead.
+            if let resolved = count ?? values["count"].flatMap({ Int($0) }) {
+                value = String(format: value, locale: Locale(identifier: locale), resolved)
+            }
+        }
         return values.reduce(value) { result, pair in
             result.replacingOccurrences(of: "{{\(pair.key)}}", with: pair.value)
         }
     }
 
-    /// i18next's lookup order, narrowed to what the shared JSON carries: the
-    /// category variant, then an explicit `_other`, then the bare key. Because
-    /// the bare key is already the `other` form, a locale only needs a
-    /// suffixed entry where its grammar actually differs — and the English
-    /// fallback re-picks the category, since English does not count like the
-    /// locale that missed the key.
-    private func resolve(_ key: String, locale: String, count: Int?) -> String? {
-        let table = table(for: locale)
-        if let count {
-            let category = NativePluralCategory.of(count: count, locale: locale)
-            if let variant = table["\(key)_\(category.rawValue)"] as? String { return variant }
-            if let other = table["\(key)_other"] as? String { return other }
-        }
-        return table[key] as? String
-    }
-
+    /// A message pool. The catalog has no array type, so the generator writes
+    /// `key.1`, `key.2`, … and they are collected back here. A locale with no
+    /// pool of its own falls back to English whole rather than line by line.
     func strings(_ key: String, locale: String) -> [String] {
-        table(for: locale)[key] as? [String]
-            ?? table(for: "en")[key] as? [String]
-            ?? []
+        let localized = pool(key, locale: locale)
+        return localized.isEmpty ? pool(key, locale: "en") : localized
     }
 
     func languageName(for locale: String) -> String {
@@ -131,20 +107,39 @@ final class NativeLocalizer {
         return "en"
     }
 
-    private func table(for locale: String) -> [String: Any] {
-        if let cached = tables[locale] { return cached }
-        guard let url = Bundle.main.url(
-            forResource: "translation",
-            withExtension: "json",
-            subdirectory: "locales/\(locale)"
-        ),
-        let data = try? Data(contentsOf: url),
-        let dictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-        else {
-            tables[locale] = [:]
-            return [:]
+    /// Whether this string is a format the count belongs to.
+    ///
+    /// Testing for a bare `%` is not good enough: 38 shipped strings end in a
+    /// literal "(%)" — "Income after adjustment (%)" — and handing one of those
+    /// to `String(format:)` reads the percent sign as a broken specifier. Only
+    /// the generator's own `%lld` and the plural token Foundation returns for a
+    /// variation entry count.
+    private static func takesACount(_ value: String) -> Bool {
+        value.contains("%lld") || value.contains("%#@")
+    }
+
+    private func pool(_ key: String, locale: String) -> [String] {
+        var result: [String] = []
+        while let value = lookup("\(key).\(result.count + 1)", locale: locale) {
+            result.append(value)
         }
-        tables[locale] = dictionary
-        return dictionary
+        return result
+    }
+
+    /// `nil` when this language does not define the key, so the caller can fall
+    /// back to English itself.
+    private func lookup(_ key: String, locale: String) -> String? {
+        guard let bundle = bundle(for: locale) else { return nil }
+        let value = bundle.localizedString(forKey: key, value: Self.missing, table: nil)
+        return value == Self.missing ? nil : value
+    }
+
+    private func bundle(for locale: String) -> Bundle? {
+        if let cached = bundles[locale] { return cached }
+        guard let path = Bundle.main.path(forResource: locale, ofType: "lproj"),
+              let bundle = Bundle(path: path)
+        else { return nil }
+        bundles[locale] = bundle
+        return bundle
     }
 }

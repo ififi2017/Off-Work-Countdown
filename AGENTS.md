@@ -167,8 +167,14 @@ and 14 pt control radii, and the shared orange accent are settled conventions.
   and permission states. A technically accurate sentence is not finished if it
   feels condescending, bureaucratic or written for maintainers instead of the
   person using the product.
-- The application UI supports all 19 locales in `public/locales/*`.
-  User-facing UI keys must be added to every locale.
+- The application UI supports all 19 locales, and a user-facing key must carry
+  all 19 wherever it lives. Since plan 019 §3 there are two homes: iOS reads
+  `src-mobile/ios/App/App/Localizable.xcstrings`, Web and Desktop read
+  `public/locales/*`. The catalog is generated from `public/locales` by
+  `npm run generate:ios-xcstrings`, so an iOS key still starts there for now
+  and `npm test` fails while the two disagree; never hand-edit the catalog.
+  A key both sides use is stored in both, deliberately — they are separate
+  products' copy, not a shared runtime.
 - Long-form content pages intentionally support only English and Simplified
   Chinese through `lib/content-locales.ts`. Do not create unreviewed copies for
   all 19 locales.
@@ -403,9 +409,10 @@ backup copy left beside real source will be compiled, not ignored.
 
 Everything else in the project is still an explicit reference, and must be
 registered by hand: `AppDelegate.swift`, the localized `InfoPlist.strings`,
-`Assets.xcassets`, the `public/locales` folder
-reference, `WidgetExtension/`, and the two widget sources shared from
-`src-tauri/macos-widget`. One file crosses targets —
+`Assets.xcassets`, `Localizable.xcstrings`, `WidgetExtension/`, and the two
+widget sources shared from `src-tauri/macos-widget`. The `public/locales`
+folder reference was removed in plan 019 §3 — the app's copy ships as the
+String Catalog, and `npm run check:ios` fails if the folder comes back. One file crosses targets —
 `Native/Models/LiveActivityAttributes.swift` is compiled into the widget as
 well, through the single `PBXFileSystemSynchronizedBuildFileExceptionSet` in
 the project. Anything else that needs to be shared with the widget goes in

@@ -54,9 +54,9 @@ iOS 在运行时通过 `NativeLocalizer` 读取 `public/locales/<locale>/transla
 3. Watch 文案生成器改为从 String Catalog 读取。
 
 - [x] 确认以上问题。
-- [ ] 迁移脚本：从 `public/locales` 生成 `.xcstrings`，逐键校验 19 个 locale 的值、占位符与复数一致；迁移后 `NativeLocalizer` 改为系统本地化或薄封装。
+- [x] 迁移脚本：从 `public/locales` 生成 `.xcstrings`，逐键校验 19 个 locale 的值、占位符与复数一致；迁移后 `NativeLocalizer` 改为系统本地化或薄封装。—— 2026-09-16 L1，见下方实施记录。
 - [ ] 19 个 locale 完整性检查改为读取 `.xcstrings`；Watch 文案生成器、营销截图与 ASC 同步脚本改接新来源。
-- [ ] 修改 `AGENTS.md` 中“UI 键必须加入 `public/locales/*` 的每个 locale”的规定：iOS 键进入 String Catalog，Web／Desktop 键进入 `public/locales`，两者都要求 19 个 locale 完整。
+- [x] 修改 `AGENTS.md` 中“UI 键必须加入 `public/locales/*` 的每个 locale”的规定：iOS 键进入 String Catalog，Web／Desktop 键进入 `public/locales`，两者都要求 19 个 locale 完整。—— 2026-09-16 L1。
 - [ ] 清理 `public/locales` 中只剩 iOS 使用的键，并确认 Web 与 Desktop 构建验证通过。
 
 ## 4. 验收
@@ -100,3 +100,20 @@ iOS 在运行时通过 `NativeLocalizer` 读取 `public/locales/<locale>/transla
 - `check:ios` 改为要求 Xcode Cloud 脚本运行 `check:ios-rule-fixtures`，并在工程引用或磁盘上重新出现 `CountdownRules.js` 时失败（放入假文件实测会失败）。
 - 文档：`AGENTS.md`（概述、规则边界、iOS 构建、归档与 Xcode Cloud 段落）、`docs/PLAN-MOBILE.md`、`docs/XCODE-CLOUD.md`（含路径过滤与本机等价命令）、`docs/IOS-TIMER-SURFACES.md`、002，并在 `docs/ADR-MOBILE-D0.md` 加注已被本计划取代。评审、交接等历史记录保持原文。
 - 验证：完整串行 iOS 回归 709 个测试、43 个 suite 通过（全新 DerivedData），产物 `App.app` 中不含 `CountdownRules.js`；`npm test` 381 通过（少的一项即删除的 bundle 测试）；lint、`check:ios`、`check:ios-rule-fixtures`、`check:watch-fixtures`、`ci_post_clone.sh` 语法检查与 `git diff --check` 通过。串行性能：一年 `recordsMetrics` 4.9 ms。未做模拟器视觉检查；Xcode Cloud 上的实际运行以 PR 检查为准。
+
+### 2026-09-16 · L1 String Catalog 迁移
+
+- **生成器**（`scripts/generate-ios-xcstrings.mjs`，`npm run generate:ios-xcstrings` 与 `check:ios-strings`）：由 `public/locales` 生成 `src-mobile/ios/App/App/Localizable.xcstrings`，773 条、19 个 locale 无一缺失。`public/locales` 仍是唯一来源，catalog 不得手工编辑；vitest 与 `ci_post_clone.sh` 各有一道过期检查。
+- **键的选法**：扫描 `src-mobile/ios/App/App` 的 Swift 字面量再与 en 的键取交集，而不是扫 `t("…")` 调用点——`legendKey`、`sourceKey`、`syncFailureKey` 这类键写在 `switch` 里、由别处交给 `t`，按调用点扫会整批漏掉。运行时拼出来的键静态发现不了，因此另设显式前缀白名单（目前只有 `focusIcon`，来自 `"focusIcon\(rawValue.capitalized)"`）。统计：App 用到 762 个键加 `focusIcon` 家族 8 个，其中 649 个 iOS 专属、134 个与 Web／Desktop 共用。Watch 专用键不入 catalog，Watch 生成器到 L3 之前继续读 JSON。
+- **复数**：全仓只有 `recordsMonthWorkdays` 一个复数键（19 个语言各一条 `_one`），调用点也只有一处。按 2026-09-13 的决定改用系统 CLDR 规则：复数条目把 `{{count}}` 写成 `%lld` 交给 Foundation 选形，其余占位符仍是 `{{name}}` 由封装替换；手写的 19 语言 `NativePluralCategory` 表随之删除。
+- **数组**：catalog 没有数组类型，`microBreakMessages` 展开成 `microBreakMessages.1…4` 再由封装收集回来；生成器强制各语言条数一致，不一致直接报错。`notificationToneMessages` 只有 Web 用，不进 catalog。
+- **封装**：`NativeLocalizer` 改为按语言取 `.lproj` bundle 后 `localizedString`。不能直接用 `String(localized:)` 或 `Bundle.main`——它们跟随**系统**语言，会无视应用内的语言选择。
+- **两个踩到的坑，都由保留下来的旧断言抓到**：
+  - 38 条普通文案带字面 `%`（例如「Income after adjustment (%)」）。最初以「值里含 `%`」判断是否需要格式化，会把它们当成畸形格式符交给 `String(format:)`；改为只认 `%lld` 与 stringsdict 的 `%#@` 标记。
+  - 复数键经 `localizedString` 返回的是 `%#@value@` 而不是选好的变体。不带 `count:` 的查询原样返回它，`{{count}}` 替换落空，格式符会直接显示在界面上；改为没有显式 `count:` 时从 `values["count"]` 取整数驱动选形，完全恢复旧行为。
+- **打包**：`public/locales` 文件夹引用从 App 与 Widget 两个 target 移除（Widget 根本不查文案，那份资源是历史遗留），19 份 JSON 不再进包。`check:ios` 新增三条断言：catalog 存在、被复制进 App 资源、且 `locales` 引用不得回归。
+- **验证**：iPhone 18 Pro / iOS 27 串行跑完整套件，45 个 suite 共 **734 个测试通过**。主干原为 732，本批把旧的 6 个复数测试换成 8 个，数目正好对上。新测试覆盖各语言单复数的具体译文、零的取形、无复数变化的语言逐数一致、每种语言都打进自己的 `.lproj`、字面百分号不被当格式符、消息池编号键能收集回来，以及应用内语言选择不受设备语言影响。
+- `npm test` 34 个文件 389 项通过（含差分 fixture 未过期与新增的 8 项 catalog 测试）；`npm run lint`、`check:ios`、`check:ios-strings`、`git diff --check` 均通过。
+- 串行性能与上一批持平：一年 `recordsMetrics` 4.7 ms（P8-b 为 4.8 ms）、记录列表 3.0 ms。
+- **打包产物实测**：`App.app` 中已无 `locales` 目录、也搜不到任何 `translation.json`；20 个 `.lproj`（19 语言加 Base）齐全，抽查的 en、de、ja、ar、zh-CN、mr-IN 均同时有 `Localizable.strings` 与 `Localizable.stringsdict`。**体积不是收益**：编译后的文案合计约 1.3 MB，与原先约 1.2 MB 的 JSON 基本持平；这一批换来的是单一来源、过期检查与系统复数规则，不是包体。
+- 本批没有界面改动，未做模拟器视觉检查。

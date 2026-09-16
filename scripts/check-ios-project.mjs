@@ -297,6 +297,18 @@ if (
 if (/CountdownRules\.js/.test(iosProject) || existsSync("src-mobile/ios/App/App/Resources/CountdownRules.js")) {
   fail("CountdownRules.js was removed in plan 019 R4; iOS rules live in Swift.");
 }
+// Plan 019 §3: the app's copy ships as a String Catalog. The public/locales
+// folder reference went with it — leaving it behind would put 19 JSON files
+// back in the bundle and make it ambiguous which one the app actually reads.
+if (!existsSync("src-mobile/ios/App/App/Localizable.xcstrings")) {
+  fail("Localizable.xcstrings is missing; run node scripts/generate-ios-xcstrings.mjs.");
+}
+if (!/Localizable\.xcstrings in Resources/.test(iosProject)) {
+  fail("Localizable.xcstrings must be copied into the App resources.");
+}
+if (/\/\* locales \*\//.test(iosProject)) {
+  fail("public/locales is no longer bundled into iOS; the app reads Localizable.xcstrings.");
+}
 // App/Native is a synchronized folder, so a file that lands there is compiled
 // without ever appearing in project.pbxproj. Scanning the directory keeps this
 // guard honest; the pbxproj check still covers an explicit reference elsewhere.
