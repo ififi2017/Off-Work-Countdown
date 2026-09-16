@@ -26,4 +26,5 @@ echo "Checking iOS rule fixtures and project with Node.js $(node --version)."
 npm ci --ignore-scripts --no-audit --no-fund
 npm run check:watch-fixtures
 npm run check:ios-rule-fixtures
+npm run check:ios-strings
 npm run check:ios
