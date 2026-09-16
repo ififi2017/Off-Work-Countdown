@@ -11,9 +11,18 @@ nonisolated struct ScheduleHoursConfiguration: Codable, Equatable, Sendable {
     var schedule: NativeWorkSchedule
     var breakStartTime: String?
     var breakDurationMinutes: Int
-    /// Plan 018 P8's extended schedule. Optional, so hours saved before it
-    /// existed encode and fingerprint exactly as they did.
+    /// Plan 018 P8: these hours follow the extended schedule. Only the marker
+    /// is stored — the roster keeps changing day by day, and a copy frozen
+    /// into a snapshot would go stale the moment one day was edited. `nil`
+    /// when unused, so hours saved without it encode and fingerprint as before.
+    var usesExtendedSchedule: Bool? = nil
+    /// The live plan, attached at read time (`RecordCoordinator.expandableHours`)
+    /// or by whoever builds the hours. Never encoded.
     var extendedSchedule: ExtendedSchedulePlan? = nil
+
+    private enum CodingKeys: String, CodingKey {
+        case startTime, endTime, workdays, schedule, breakStartTime, breakDurationMinutes, usesExtendedSchedule
+    }
 }
 
 /// A stretch of working life. Overlaps are allowed; the winner is chosen

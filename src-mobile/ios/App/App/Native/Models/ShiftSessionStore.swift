@@ -844,6 +844,18 @@ final class ShiftSessionStore {
         records.submitCommand { [self] in
             let change = change.settled(against: preferences, at: date)
             guard !change.isEmpty, !records.blocksWrites else { return false }
+            // The extended schedule is a record, not a synced preference, so
+            // it is switched separately — and only when there is one to switch.
+            var preferenceChange = change
+            preferenceChange.extendedScheduleEnabled = nil
+            if let enabled = change.extendedScheduleEnabled {
+                guard records.state.extendedSchedule != nil else { return false }
+                // "Schedule off" means "start by hand", and the countdown's own
+                // switches read it that way. A roster is a schedule.
+                if enabled, (preferenceChange.scheduleMode ?? preferences.scheduleMode) == .off {
+                    preferenceChange.scheduleMode = .classic
+                }
+            }
             return records.withBatchedWrites {
                 // Applying a change to today removes timer-only adjustments. Capture
                 // their projection before mutating the schedule so a matching durable
@@ -860,7 +872,12 @@ final class ShiftSessionStore {
                     preservedSchedule = nil
                 }
                 // Reject the entire action before touching the running session.
-                guard preferences.applySetupScheduleChange(change, at: date).synchronousResult else { return false }
+                if !preferenceChange.settled(against: preferences, at: date).isEmpty {
+                    guard preferences.applySetupScheduleChange(preferenceChange, at: date).synchronousResult else { return false }
+                }
+                if let enabled = change.extendedScheduleEnabled {
+                    guard records.setExtendedScheduleEnabled(enabled, at: date) else { return false }
+                }
                 self.session.todayOverride = preservedSchedule
 
                 if decision == .applyToToday {
