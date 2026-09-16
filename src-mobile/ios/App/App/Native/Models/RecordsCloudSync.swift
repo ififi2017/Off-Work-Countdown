@@ -185,8 +185,12 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
                 )
                 continue
             }
-            guard let type = RecordEntityType(rawValue: row["entityType"] as? String ?? ""),
-                  let key = row["logicalKey"] as? String,
+            guard let typeName = row["entityType"] as? String else { throw RecordPersistenceError.invalidArchive }
+            // A newer build wrote a type this one does not know. Skip it instead
+            // of refusing the whole restore; the refetch after an update brings
+            // it in (`RecordsSyncIdentity.entityTypeRevision`).
+            guard let type = RecordEntityType(rawValue: typeName) else { continue }
+            guard let key = row["logicalKey"] as? String,
                   let payload = row["payload"] as? Data,
                   RecordsSyncPayload.incoming(from: payload, type: type, calendar: RecordsSyncPayload.fileCalendar(for: candidate.state)) != nil
             else { throw RecordPersistenceError.invalidArchive }
@@ -212,6 +216,7 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
         restored.sync.accountID = snapshot.accountID
         restored.sync.generation = snapshot.generation
         restored.sync.engineState = nil
+        restored.sync.entityTypeRevision = RecordsSyncIdentity.entityTypeRevision
         // Existing cloud data is already an established sync relationship.
         // Plus controls starting a new one; expiry must not strand a returning
         // owner's restored archive as a one-time download.
@@ -651,6 +656,18 @@ final class RecordsCloudSync: NSObject, @unchecked Sendable {
         engine = nil
         await previous?.cancelOperations()
         guard engineInvalidation == invalidation, records.state.sync.syncEnabled else { return }
+        // An older build skipped rows of types it did not know while the change
+        // token moved past them. Fetch everything once so they arrive now.
+        if RecordsSyncIdentity.needsFullRefetch(storedRevision: records.state.sync.entityTypeRevision) {
+            guard await records.commitSyncState({ sync, _ in
+                sync.engineState = nil
+                sync.entityTypeRevision = RecordsSyncIdentity.entityTypeRevision
+            }) else {
+                lastError = RecordPersistenceError.writeFailed.localizedDescription
+                return
+            }
+            guard engineInvalidation == invalidation, records.state.sync.syncEnabled else { return }
+        }
         let database = container.privateCloudDatabase
         acceptRemote = true
         var configuration = CKSyncEngine.Configuration(

@@ -5,8 +5,11 @@ import Testing
 @MainActor
 @Test("Unknown JSON schema versions are rejected")
 func recordJSONRejectsUnknownVersion() throws {
-    let data = Data(#"{"schemaVersion":6,"exportedAtMs":0,"timeZoneIdentifier":"UTC","calendarIdentifier":"gregorian","careerPeriods":[],"scheduleSnapshots":[],"calendarExceptions":[],"dayOverrides":[],"workObservations":[]}"#.utf8)
-    #expect(throws: RecordJSONError.unknownSchemaVersion(6)) {
+    // The first version this build does not accept, so a schema bump cannot
+    // quietly turn this into a test of a valid document.
+    let unknown = RecordJSON.acceptedSchemaVersions.upperBound + 1
+    let data = Data(#"{"schemaVersion":\#(unknown),"exportedAtMs":0,"timeZoneIdentifier":"UTC","calendarIdentifier":"gregorian","careerPeriods":[],"scheduleSnapshots":[],"calendarExceptions":[],"dayOverrides":[],"workObservations":[]}"#.utf8)
+    #expect(throws: RecordJSONError.unknownSchemaVersion(unknown)) {
         _ = try RecordJSON.decode(data)
     }
 }
@@ -34,7 +37,7 @@ func workObservationSyncStampMigration() throws {
 
     let exported = try export(state)
     let current = try RecordJSON.decode(exported)
-    #expect(current.schemaVersion == 5)
+    #expect(current.schemaVersion == RecordJSON.schemaVersion)
     #expect(current.workObservations[0].editCount == 4)
     #expect(current.workObservations[0].editTieBreaker == id(74).uuidString)
     var roundTripped = RecordState()
@@ -114,7 +117,7 @@ func recordJSONPreservesFocusPlanningConfiguration() throws {
     )
 
     let document = try RecordJSON.decode(try export(state))
-    #expect(document.schemaVersion == 5)
+    #expect(document.schemaVersion == RecordJSON.schemaVersion)
     var restored = RecordState()
     _ = try RecordJSON.apply(document, to: &restored, mode: .skipErased)
 

@@ -179,7 +179,9 @@ func firstRunRejectsPartialCorruptDownload() throws {
     let snapshot = try recoverySnapshot(preferences)
     let bad = CKRecord(recordType: "RecordRow")
     bad["generation"] = 1
-    bad["entityType"] = "unknown-future-type"
+    bad["entityType"] = RecordEntityType.dayOverride.rawValue
+    bad["logicalKey"] = "2026-08-24"
+    bad["payload"] = Data("not a day override".utf8)
     let before = store.records.state
     #expect(throws: RecordPersistenceError.self) {
         _ = try store.recovery.cloudSync.prepareFirstRunRestore(
@@ -188,6 +190,28 @@ func firstRunRejectsPartialCorruptDownload() throws {
         )
     }
     #expect(store.records.state == before)
+}
+
+@MainActor
+@Test("Rows of a type from a newer build are skipped instead of failing the restore")
+func firstRunSkipsRowsFromNewerBuilds() throws {
+    let (store, defaults, suite) = try recoveryStore(completed: true)
+    defer { defaults.removePersistentDomain(forName: suite) }
+    var remote = try #require(store.records.state.syncedPreferences)
+    remote.salaryAmount = "12345"
+    remote.editCount += 1
+    let snapshot = try recoverySnapshot(remote)
+    let future = CKRecord(recordType: "RecordRow")
+    future["generation"] = 1
+    future["entityType"] = "aTypeFromANewerBuild"
+    future["logicalKey"] = "key"
+    future["payload"] = Data("{}".utf8)
+    let restored = try store.recovery.cloudSync.prepareFirstRunRestore(
+        FirstRunCloudSnapshot(accountID: snapshot.accountID, generation: 1, rows: snapshot.rows + [future]),
+        initialState: store.records.state
+    )
+    #expect(restored.syncedPreferences?.salaryAmount == "12345")
+    #expect(restored.sync.entityTypeRevision == RecordsSyncIdentity.entityTypeRevision)
 }
 
 @MainActor

@@ -151,7 +151,7 @@ private struct ConflictReviewCard: View {
             return queries.formatRecordsDayTitle(dayKey: dayKey)
         }
         switch conflict.entityType {
-        case .careerPeriod, .scheduleSnapshot:
+        case .careerPeriod, .scheduleSnapshot, .extendedSchedule, .rosterDay:
             return text.t("workSchedule")
         case .calendarException, .dayOverride, .workObservation:
             return text.t("recordsTitle")
@@ -509,6 +509,8 @@ private enum ConflictPayloadPresenter {
         ]
         case .focusPlanningConfiguration: []
         case .syncedPreferences: []
+        case .extendedSchedule: []
+        case .rosterDay: ["shiftTypeID"]
         }
     }
 
