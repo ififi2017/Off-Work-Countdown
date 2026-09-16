@@ -635,6 +635,53 @@ final class RecordCoordinator {
         persist(changes: .history)
     }
 
+    @ObservationIgnored private var planCache: (schedule: ExtendedSchedule?, rosterDays: [RosterDay], plan: ExtendedSchedulePlan?)?
+    @ObservationIgnored private var planRevision = 0
+
+    /// The extended schedule as the rules read it, switched on or not: days
+    /// worked under it keep resolving through it after it is switched off.
+    ///
+    /// Rebuilt only when the schedule or a roster day changed. Comparing arrays
+    /// that still share their storage is O(1), so the countdown can ask every
+    /// second without paying for a roster it has already indexed.
+    var extendedSchedulePlan: ExtendedSchedulePlan? {
+        let schedule = state.extendedSchedule
+        let rosterDays = state.rosterDays
+        if let cached = planCache, cached.schedule == schedule, cached.rosterDays == rosterDays {
+            return cached.plan
+        }
+        planRevision += 1
+        let plan = ExtendedSchedulePlan(
+            schedule: schedule,
+            rosterDays: rosterDays,
+            includeDisabled: true,
+            revision: planRevision
+        )
+        planCache = (schedule, rosterDays, plan)
+        return plan
+    }
+
+    /// Stored hours, with the live plan attached when they follow it. Every
+    /// reader that expands a schedule snapshot goes through here, so none of
+    /// them can fall back to the fixed hours by forgetting the roster.
+    func expandableHours(from data: Data) -> ScheduleHoursConfiguration? {
+        guard var hours = try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: data) else {
+            return nil
+        }
+        if hours.usesExtendedSchedule == true { hours.extendedSchedule = extendedSchedulePlan }
+        return hours
+    }
+
+    /// Switches the extended schedule on or off. `false` when there is no
+    /// schedule to switch — one has to be set up first.
+    func setExtendedScheduleEnabled(_ enabled: Bool, at date: Date = .now) -> Bool {
+        guard var schedule = state.extendedSchedule else { return false }
+        guard schedule.isEnabled != enabled else { return true }
+        schedule.isEnabled = enabled
+        upsertExtendedSchedule(schedule, at: date)
+        return state.extendedSchedule?.isEnabled == enabled
+    }
+
     /// A day the user assigned by hand. Putting the day back on the rule is
     /// `erase(.rosterDay, key:)`, which leaves a tombstone other devices honour.
     func upsertRosterDay(_ draft: RosterDay, at date: Date = .now) {

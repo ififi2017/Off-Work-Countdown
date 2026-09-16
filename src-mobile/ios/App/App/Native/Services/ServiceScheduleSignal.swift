@@ -33,6 +33,10 @@ struct ServiceScheduleSignal: Equatable, Sendable {
             // templates live in their own small local value. Either changing
             // must republish "Coming up" before iOS suspends us on Home.
             "records-\(shifts.records.historyRevision)-\(shifts.records.focusRevision)-\(shifts.focus.focusPlanningRevision)",
+            // The extended schedule and its days are history records, so the
+            // revision above already moves with them. Spelled out anyway: the
+            // countdown's hours depend on them, not only "Coming up".
+            "extended-\(shifts.preferences.isExtendedScheduleEnabled)",
         ]
         return [
             "\(shifts.session.publishesLiveSurfaces)",

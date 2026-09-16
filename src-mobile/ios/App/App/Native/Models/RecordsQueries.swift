@@ -210,10 +210,7 @@ final class RecordsQueries {
                   !table.failures.contains(snapshot.id)
             else { continue }
             let dayCalendar = period.civilCalendar()
-            if let configuration = try? JSONDecoder().decode(
-                ScheduleHoursConfiguration.self,
-                from: snapshot.configurationData
-            ) {
+            if let configuration = records.expandableHours(from: snapshot.configurationData) {
                 let days = ScheduleExpansionCache.shared.days(
                     configuration: configuration,
                     from: dayCalendar.startOfDay(for: from),
@@ -462,10 +459,7 @@ final class RecordsQueries {
                   period.startsOn <= end,
                   period.endsBefore.map({ $0 > start }) ?? true,
                   snapshot.effectiveFrom <= end,
-                  let configuration = try? JSONDecoder().decode(
-                    ScheduleHoursConfiguration.self,
-                    from: snapshot.configurationData
-                  )
+                  let configuration = records.expandableHours(from: snapshot.configurationData)
             else { continue }
             let dayCalendar = period.civilCalendar()
             await ScheduleExpansionCache.shared.prefetch(
@@ -475,6 +469,12 @@ final class RecordsQueries {
                 timeZone: period.timeZone
             )
         }
+    }
+
+    /// A stored snapshot's hours, with the extended schedule attached when
+    /// they follow it.
+    func expandableHours(from data: Data) -> ScheduleHoursConfiguration? {
+        records.expandableHours(from: data)
     }
 
     func observations(on day: Date) -> [WorkObservation] {

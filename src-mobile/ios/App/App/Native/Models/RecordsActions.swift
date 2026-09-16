@@ -151,10 +151,7 @@ final class RecordsActions {
                 }
                 var planned: [NativeShiftSegment] = []
                 if let snapshot,
-                   let configuration = try? JSONDecoder().decode(
-                    ScheduleHoursConfiguration.self,
-                    from: snapshot.configurationData
-                   ) {
+                   let configuration = records.expandableHours(from: snapshot.configurationData) {
                     planned = ScheduleRules.expandScheduleRange(
                         configuration: configuration,
                         from: date,

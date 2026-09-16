@@ -99,11 +99,15 @@ struct ExtendedScheduleRulesTests {
     /// follows the Mac's zone, so a literal instant lands on a different hour —
     /// and sometimes a different day — on another machine.
     private static func instant(_ key: String, hour: Int, minute: Int = 0) throws -> Double {
-        let parts = key.split(separator: "-").map { Int($0) }
+        // Unwrapped here rather than inside `DateComponents(year:…)`: its
+        // parameters are optional, so a `#require` there checks an `Int??`
+        // that can never be nil and lets a malformed key through.
+        let parts = try key.split(separator: "-").map { try #require(Int($0)) }
+        try #require(parts.count == 3)
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(identifier: zoneIdentifier))
         let date = try #require(calendar.date(from: DateComponents(
-            year: try #require(parts[0]), month: try #require(parts[1]), day: try #require(parts[2]),
+            year: parts[0], month: parts[1], day: parts[2],
             hour: hour, minute: minute
         )))
         return date.timeIntervalSince1970 * 1_000

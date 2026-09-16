@@ -161,6 +161,16 @@ final class PreferencesStore {
         case .dark: "moon"
         }
     }
+    /// Plan 018 P8. The extended schedule lives in the record archive, not in
+    /// the synced preferences, but the session reads it through here like the
+    /// rest of the schedule.
+    var isExtendedScheduleEnabled: Bool { records.state.extendedSchedule?.isEnabled == true }
+
+    /// The stored plan, switched on or not. Whether the countdown follows it
+    /// is the session's call: today can keep the setting it had before a
+    /// change saved "from the next shift only".
+    var extendedSchedulePlan: ExtendedSchedulePlan? { records.extendedSchedulePlan }
+
     var rotationCycleLength: Int {
         max(2, rotationWorkDays + rotationRestDays)
     }

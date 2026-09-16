@@ -33,6 +33,9 @@ struct ScheduleFieldChange: Equatable {
     var rotationWorkDays: Int?
     var rotationRestDays: Int?
     var rotationCycleDay: Int?
+    /// Plan 018 P8. Separate from `scheduleMode`, which is synced to builds
+    /// that would fail to decode a new mode.
+    var extendedScheduleEnabled: Bool?
 }
 
 /// Hours and calendar in force until the current shift's settlement seam.
@@ -52,6 +55,9 @@ struct TodayScheduleOverride: Codable, Equatable {
     var rotationRestDays: Int
     var rotationAnchorMs: Double
     var untilMs: Double
+    /// Whether today still runs on the extended schedule. `nil` in overrides
+    /// saved before it existed, which then follow the current setting.
+    var extendedScheduleEnabled: Bool? = nil
 }
 
 /// Current session state and rule-backed read projections. It owns no record
@@ -315,7 +321,9 @@ final class ShiftSession {
             workdays: input.workdays,
             schedule: input.schedule,
             breakStartTime: input.breakStartTime,
-            breakDurationMinutes: input.breakDurationMinutes
+            breakDurationMinutes: input.breakDurationMinutes,
+            usesExtendedSchedule: input.extendedSchedule == nil ? nil : true,
+            extendedSchedule: input.extendedSchedule
         )
     }
     func timeZoneIdentifierForWriting(startingNewSession: Bool = false) -> String {
@@ -380,6 +388,11 @@ final class ShiftSession {
     /// Hours without an early clock-in, so the projector can apply that bound
     /// itself instead of baking it into the rules snapshot twice.
     func scheduleStartMinutes(at date: Date) -> Int {
+        if usesExtendedSchedule(at: date) {
+            // The current shift's own start, not the fixed hours it replaces.
+            let planned = ScheduleRules.snapshot(input: rulesInput(at: date, pinsEarlyStart: false))
+            return minutes(from: planned.startDate, calendar: countdownCalendar)
+        }
         if usesTodayOverride(at: date), let todayOverride {
             return todayOverride.startMinutes
         }
@@ -416,11 +429,47 @@ final class ShiftSession {
         }
         return result
     }
+    /// Whether the rules follow the extended schedule at `date`. Today keeps
+    /// the setting it had when a change was saved "from the next shift only".
+    func usesExtendedSchedule(at date: Date = .now, using source: RulesScheduleSource = .effective) -> Bool {
+#if DEBUG
+        if debugTimerSession != nil { return false }
+#endif
+        if source == .effective, usesTodayOverride(at: date),
+           let captured = todayOverride?.extendedScheduleEnabled {
+            return captured
+        }
+        return preferences.isExtendedScheduleEnabled
+    }
+    func extendedSchedulePlan(at date: Date = .now, using source: RulesScheduleSource = .effective) -> ExtendedSchedulePlan? {
+        usesExtendedSchedule(at: date, using: source) ? preferences.extendedSchedulePlan : nil
+    }
+    /// Under an extended schedule an assigned day brings its own clock
+    /// readings, which would replace the ones a caller or an early clock-in
+    /// fixed for the current shift. Fix that shift's day instead; the rest of
+    /// the roster resolves as before, and nothing is stored.
+    private func pinningCurrentShift(
+        _ input: NativeRulesInput,
+        fixesStart: Bool,
+        fixesEnd: Bool
+    ) -> NativeRulesInput {
+        guard let plan = input.extendedSchedule, fixesStart || fixesEnd else { return input }
+        let planned = ScheduleRules.snapshot(input: input)
+        let dayKey = Self.dayKey(for: planned.startDate, timeZone: countdownTimeZone)
+        // A rest day already takes the fixed readings through its fallback hours.
+        guard var hours = plan.hours(onDayKey: dayKey) else { return input }
+        if fixesStart { hours.startTime = input.startTime }
+        if fixesEnd { hours.endTime = input.endTime }
+        var pinned = input
+        pinned.extendedSchedule = plan.pinning(dayKey: dayKey, to: hours)
+        return pinned
+    }
     func rulesInput(
         at date: Date = .now,
         startMinutes: Int? = nil,
         endMinutes: Int? = nil,
-        using source: RulesScheduleSource = .effective
+        using source: RulesScheduleSource = .effective,
+        pinsEarlyStart: Bool = true
     ) -> NativeRulesInput {
 #if DEBUG
         if let scenario = debugTimerSession?.scenario {
@@ -446,10 +495,11 @@ final class ShiftSession {
         }
 #endif
         let applyOverride = source == .effective
+        let earlyStart = pinsEarlyStart && applyOverride && startMinutes == nil && isStartedEarly(at: date)
         let start = startMinutes ?? (applyOverride ? effectiveStartMinutes(at: date) : self.preferences.startMinutes)
         let end = endMinutes ?? (applyOverride ? effectiveEndMinutes(at: date) : self.preferences.endMinutes)
         let lunchOn = applyOverride ? effectiveLunchEnabled(at: date) : preferences.lunchEnabled
-        return .init(
+        let input = NativeRulesInput(
             startTime: timeString(start),
             endTime: timeString(end),
             nowMs: date.timeIntervalSince1970 * 1_000,
@@ -467,7 +517,13 @@ final class ShiftSession {
             monthlyWorkingDays: preferences.monthlyWorkingDays,
             annualBonusMonths: preferences.annualBonusEnabled ? preferences.annualBonusMonths : 0,
             forcedWorkdayStartMs: applyOverride ? forcedWorkdayStartMs : nil,
-            timeZoneIdentifier: rulesTimeZoneIdentifier
+            timeZoneIdentifier: rulesTimeZoneIdentifier,
+            extendedSchedule: extendedSchedulePlan(at: date, using: source)
+        )
+        return pinningCurrentShift(
+            input,
+            fixesStart: startMinutes != nil || earlyStart,
+            fixesEnd: endMinutes != nil
         )
     }
     /// Salary-free Watch input using the session's frozen early-finish snapshot.
@@ -480,7 +536,8 @@ final class ShiftSession {
             overtimeEndAtMs: source.overtimeEndAtMs,
             salaryAmount: "", salaryType: "", monthlyWorkingDays: 0, annualBonusMonths: 0,
             forcedWorkdayStartMs: source.forcedWorkdayStartMs,
-            timeZoneIdentifier: source.timeZoneIdentifier
+            timeZoneIdentifier: source.timeZoneIdentifier,
+            extendedSchedule: source.extendedSchedule
         )
         let live = shouldQuerySnapshot(at: date) ? snapshot(at: date) : nil
         let finishedAtMs = live.flatMap { isEndedEarly($0) ? earlyOffAtMs : nil }
@@ -525,7 +582,10 @@ final class ShiftSession {
             monthlyWorkingDays: preferences.monthlyWorkingDays,
             annualBonusMonths: preferences.annualBonusEnabled ? preferences.annualBonusMonths : 0,
             forcedWorkdayStartMs: forcedWorkdayStartMs,
-            timeZoneIdentifier: rulesTimeZoneIdentifier
+            timeZoneIdentifier: rulesTimeZoneIdentifier,
+            extendedSchedule: (change.extendedScheduleEnabled ?? preferences.isExtendedScheduleEnabled)
+                ? preferences.extendedSchedulePlan
+                : nil
         )
     }
     /// Whether the explicit Save action needs the second choice about today.
@@ -723,7 +783,9 @@ final class ShiftSession {
         return reminder.atMs >= nextStart
     }
     func isLunchInsideShift(startMinutes: Int? = nil, endMinutes: Int? = nil) -> Bool {
-        !preferences.lunchEnabled || ScheduleRules.validateBreak(input: rulesInput(
+        // Each shift type carries its own break, validated where it is edited.
+        guard !usesExtendedSchedule() else { return true }
+        return !preferences.lunchEnabled || ScheduleRules.validateBreak(input: rulesInput(
             startMinutes: startMinutes,
             endMinutes: endMinutes
         ))
@@ -743,7 +805,8 @@ final class ShiftSession {
             rotationWorkDays: preferences.rotationWorkDays,
             rotationRestDays: preferences.rotationRestDays,
             rotationAnchorMs: preferences.rotationAnchorMs,
-            untilMs: untilMs
+            untilMs: untilMs,
+            extendedScheduleEnabled: preferences.isExtendedScheduleEnabled
         )
     }
     func overrideExpiry(at date: Date) -> Double? {
@@ -967,10 +1030,26 @@ final class ShiftSession {
         snapshot: NativeShiftSnapshot,
         periodStartMs: Double? = nil
     ) -> NativePeriodSummary? {
-        guard effectiveScheduleMode(at: asOf) != .off else { return nil }
+        let usesExtended = usesExtendedSchedule(at: asOf)
+        guard usesExtended || effectiveScheduleMode(at: asOf) != .off else { return nil }
         var summaryWorkdays = effectiveWorkdays(at: asOf)
+        var plan = usesExtended ? extendedSchedulePlan(at: asOf) : nil
         if isForcedWorkday(snapshot) {
             summaryWorkdays.insert(Calendar.current.component(.weekday, from: snapshot.startDate) - 1)
+            // A rest day worked anyway counts under the roster too, with the
+            // hours it was actually worked on.
+            if let current = plan {
+                let dayKey = Self.dayKey(for: snapshot.startDate, timeZone: countdownTimeZone)
+                if current.hours(onDayKey: dayKey) == nil {
+                    let input = rulesInput(at: asOf)
+                    plan = current.pinning(dayKey: dayKey, to: ExtendedScheduleDayHours(
+                        startTime: input.startTime,
+                        endTime: input.endTime,
+                        breakStartTime: input.breakStartTime,
+                        breakDurationMinutes: input.breakDurationMinutes
+                    ))
+                }
+            }
         }
         return SummaryRules.summarize(input: .init(
             period: period,
@@ -985,7 +1064,8 @@ final class ShiftSession {
             dailySalary: snapshot.dailySalary,
             todayEffectiveHours: snapshot.durationMs / 3_600_000,
             todayPayRatio: snapshot.payRatio,
-            timeZoneIdentifier: preferences.recordsTimeZoneIdentifier
+            timeZoneIdentifier: preferences.recordsTimeZoneIdentifier,
+            extendedSchedule: plan
         ))
     }
     static func dayKey(for date: Date, timeZone: TimeZone = .current) -> String {

@@ -99,6 +99,9 @@ final class ScheduleExpansionCache {
     ) -> String {
         let fingerprint = (try? ScheduleHoursCodec.encode(configuration).fingerprint) ?? "hours"
         let zone = timeZone?.identifier ?? "_"
-        return "\(fingerprint)|\(zone)|\(from.timeIntervalSince1970)|\(through.timeIntervalSince1970)"
+        // The fingerprint leaves the roster out on purpose (it is not stored),
+        // so the plan's own version tells two rosters apart.
+        let plan = configuration.extendedSchedule.map { "\($0.revision)" } ?? "_"
+        return "\(fingerprint)|\(zone)|\(from.timeIntervalSince1970)|\(through.timeIntervalSince1970)|\(plan)"
     }
 }

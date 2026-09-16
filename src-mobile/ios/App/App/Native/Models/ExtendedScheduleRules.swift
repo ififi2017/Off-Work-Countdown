@@ -57,66 +57,173 @@ nonisolated struct ExtendedScheduleDay: Equatable, Sendable {
 /// `init?` returns `nil` for a schedule that is absent or switched off, which is
 /// what every existing user has: a `nil` plan leaves every rule on exactly the
 /// path it took before plan 018 P8.
+///
+/// The fields are read-only because the plan carries its own index, built once
+/// here: the countdown resolves a shift every second, and re-parsing a roster
+/// of a thousand day keys on each call is what made that cost milliseconds.
 nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
-    var shiftTypes: [ShiftType]
-    var rule: ShiftCycleRule?
-    /// Civil day key to shift type, for the days the user set by hand.
-    var handSetDays: [String: UUID]
+    /// The type `pinning` adds for today's fixed clock readings. It never
+    /// reaches the archive, so a constant is enough to recognise it.
+    static let pinnedShiftTypeID = UUID(uuidString: "00000000-0000-0000-0000-00000000F1ED")!
 
-    init(shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID]) {
+    let shiftTypes: [ShiftType]
+    let rule: ShiftCycleRule?
+    /// Civil day key to shift type, for the days the user set by hand.
+    let handSetDays: [String: UUID]
+    /// Process-local version from `RecordCoordinator`, so caches keyed on a
+    /// plan can tell two plans apart without comparing every day.
+    let revision: Int
+    fileprivate let index: ExtendedScheduleIndex
+
+    init(shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID], revision: Int = 0) {
         self.shiftTypes = shiftTypes
         self.rule = rule
         self.handSetDays = handSetDays
+        self.revision = revision
+        index = ExtendedScheduleIndex(shiftTypes: shiftTypes, rule: rule, handSetDays: handSetDays)
     }
 
-    init?(schedule: ExtendedSchedule?, rosterDays: [RosterDay]) {
-        guard let schedule, schedule.isEnabled else { return nil }
+    /// `includeDisabled` is for history: days already worked under an extended
+    /// schedule keep resolving through it after the user switches it off.
+    init?(
+        schedule: ExtendedSchedule?,
+        rosterDays: [RosterDay],
+        includeDisabled: Bool = false,
+        revision: Int = 0
+    ) {
+        guard let schedule, schedule.isEnabled || includeDisabled else { return nil }
         var handSet: [String: UUID] = [:]
         handSet.reserveCapacity(rosterDays.count)
         for day in rosterDays {
             handSet[day.dayKey] = day.shiftTypeID
         }
-        self.init(shiftTypes: schedule.shiftTypes, rule: schedule.rule, handSetDays: handSet)
+        self.init(shiftTypes: schedule.shiftTypes, rule: schedule.rule, handSetDays: handSet, revision: revision)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case shiftTypes, rule, handSetDays, revision
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            shiftTypes: try container.decode([ShiftType].self, forKey: .shiftTypes),
+            rule: try container.decodeIfPresent(ShiftCycleRule.self, forKey: .rule),
+            handSetDays: try container.decode([String: UUID].self, forKey: .handSetDays),
+            revision: try container.decode(Int.self, forKey: .revision)
+        )
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.revision == rhs.revision
+            && lhs.shiftTypes == rhs.shiftTypes
+            && lhs.rule == rhs.rule
+            && lhs.handSetDays == rhs.handSetDays
+    }
+
+    /// The hours this plan gives one civil day, or `nil` when it is rest.
+    func hours(onDayKey dayKey: String) -> ExtendedScheduleDayHours? {
+        guard let dayNumber = ExtendedScheduleResolver.dayNumber(dayKey: dayKey) else { return nil }
+        return ExtendedScheduleResolver(plan: self).day(dayNumber: dayNumber).hours
+    }
+
+    /// The same plan with one day fixed to the given clock readings.
+    ///
+    /// An early clock-in, or a caller that fixes today's start and end, gives
+    /// the rules one pair of readings — which an assigned day would otherwise
+    /// replace with its own. Fixing the day keeps both: the rest of the roster
+    /// resolves as before, and today reads what the caller asked for. Nothing
+    /// here is stored or synced.
+    func pinning(dayKey: String, to hours: ExtendedScheduleDayHours) -> ExtendedSchedulePlan {
+        let start = Clock(hours.startTime)
+        let end = Clock(hours.endTime)
+        let breakStart = hours.breakStartTime.map { Clock($0).minutes }
+        var types = shiftTypes.filter { $0.id != Self.pinnedShiftTypeID }
+        types.append(ShiftType(
+            id: Self.pinnedShiftTypeID,
+            name: "pinned",
+            kind: .work,
+            startMinutes: start.minutes,
+            endMinutes: end.minutes,
+            breakEnabled: breakStart != nil && hours.breakDurationMinutes > 0,
+            breakStartMinutes: breakStart ?? 0,
+            breakDurationMinutes: breakStart == nil ? 0 : hours.breakDurationMinutes,
+            colorHex: "#000000",
+            isArchived: true
+        ))
+        var days = handSetDays
+        days[dayKey] = Self.pinnedShiftTypeID
+        return ExtendedSchedulePlan(shiftTypes: types, rule: rule, handSetDays: days, revision: revision)
+    }
+}
+
+/// Everything resolution needs from a plan, parsed once. Immutable, so plans
+/// that share it can cross actors.
+fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
+    /// What each defined type resolves to, before the source is known.
+    let dayByType: [UUID: (isWorkday: Bool, hours: ExtendedScheduleDayHours?)]
+    let rule: ShiftCycleRule?
+    let ruleAnchorDayNumber: Int?
+    let handSetByDayNumber: [Int: UUID]
+    /// Month key to that month's hand-set days, by day of the month.
+    let authoredMonths: [Int: [Int: UUID]]
+    let authoredMonthKeys: [Int]
+
+    init(shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID]) {
+        var dayByType: [UUID: (isWorkday: Bool, hours: ExtendedScheduleDayHours?)] = [:]
+        for type in shiftTypes where dayByType[type.id] == nil {
+            // An archived type still resolves, so a past day keeps the shift it
+            // was worked as; an invalid one resolves to nothing.
+            guard type.isValid else { continue }
+            switch type.kind {
+            case .rest:
+                dayByType[type.id] = (false, nil)
+            case .work:
+                dayByType[type.id] = (true, ExtendedScheduleDayHours(
+                    startTime: ExtendedScheduleResolver.timeString(type.startMinutes),
+                    endTime: ExtendedScheduleResolver.timeString(type.endMinutes),
+                    breakStartTime: type.breakEnabled && type.breakDurationMinutes > 0
+                        ? ExtendedScheduleResolver.timeString(type.breakStartMinutes)
+                        : nil,
+                    breakDurationMinutes: type.breakEnabled ? type.breakDurationMinutes : 0
+                ))
+            }
+        }
+        self.dayByType = dayByType
+        self.rule = rule
+        ruleAnchorDayNumber = rule.flatMap { ExtendedScheduleResolver.dayNumber(dayKey: $0.anchorDayKey) }
+
+        var byDayNumber: [Int: UUID] = [:]
+        byDayNumber.reserveCapacity(handSetDays.count)
+        var months: [Int: [Int: UUID]] = [:]
+        for (key, typeID) in handSetDays {
+            guard let parts = ExtendedScheduleResolver.parse(dayKey: key) else { continue }
+            byDayNumber[CivilZone.dayNumber(year: parts.year, month: parts.month, day: parts.day)] = typeID
+            months[ExtendedScheduleResolver.monthKey(year: parts.year, month: parts.month), default: [:]][parts.day] = typeID
+        }
+        handSetByDayNumber = byDayNumber
+        authoredMonths = months
+        authoredMonthKeys = months.keys.sorted()
     }
 }
 
 /// Resolution for one run of the rules.
 ///
-/// A class, and deliberately not `Sendable`: it indexes the plan once and
-/// memoises per day, because a next-shift search or a life-sized expansion asks
-/// about the same days repeatedly. `CivilZone` owns one for the length of a
-/// rule call, the same way it owns its civil-reading cache.
+/// A class, and deliberately not `Sendable`: it memoises per day, because a
+/// next-shift search or a life-sized expansion asks about the same days
+/// repeatedly. `CivilZone` owns one for the length of a rule call, the same way
+/// it owns its civil-reading cache. The index it reads belongs to the plan.
 nonisolated final class ExtendedScheduleResolver {
     /// How far back a month with no roster of its own will look for one to copy.
     /// Ten years is past any calendar the user can have filled in, and bounds
     /// the walk for a plan whose only roster is ancient.
     static let carryOverMonthLimit = 120
 
-    private let typesByID: [UUID: ShiftType]
-    private let rule: ShiftCycleRule?
-    private let ruleAnchorDayNumber: Int?
-    private let handSetByDayNumber: [Int: UUID]
-    /// Month key to that month's hand-set days, by day of the month.
-    private let authoredMonths: [Int: [Int: UUID]]
-    private let authoredMonthKeys: [Int]
+    private let index: ExtendedScheduleIndex
     private var cache: [Int: ExtendedScheduleDay] = [:]
 
     init(plan: ExtendedSchedulePlan) {
-        typesByID = Dictionary(plan.shiftTypes.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        rule = plan.rule
-        ruleAnchorDayNumber = plan.rule.flatMap { Self.dayNumber(dayKey: $0.anchorDayKey) }
-
-        var byDayNumber: [Int: UUID] = [:]
-        byDayNumber.reserveCapacity(plan.handSetDays.count)
-        var months: [Int: [Int: UUID]] = [:]
-        for (key, typeID) in plan.handSetDays {
-            guard let parts = Self.parse(dayKey: key) else { continue }
-            byDayNumber[CivilZone.dayNumber(year: parts.year, month: parts.month, day: parts.day)] = typeID
-            months[Self.monthKey(year: parts.year, month: parts.month), default: [:]][parts.day] = typeID
-        }
-        handSetByDayNumber = byDayNumber
-        authoredMonths = months
-        authoredMonthKeys = months.keys.sorted()
+        index = plan.index
     }
 
     convenience init?(plan: ExtendedSchedulePlan?) {
@@ -138,13 +245,13 @@ nonisolated final class ExtendedScheduleResolver {
     /// not here because the bundled holiday data it reads does not exist yet
     /// (018 P8 节假日数据); it lands with that data, not before.
     private func resolve(dayNumber: Int) -> ExtendedScheduleDay {
-        if let typeID = handSetByDayNumber[dayNumber] {
+        if let typeID = index.handSetByDayNumber[dayNumber] {
             return day(typeID: typeID, source: .handSet)
         }
-        if let rule, !rule.days.isEmpty, let anchor = ruleAnchorDayNumber {
+        if let rule = index.rule, !rule.days.isEmpty, let anchor = index.ruleAnchorDayNumber {
             let count = rule.days.count
-            let index = ((dayNumber - anchor) % count + count) % count
-            return day(typeID: rule.days[index], source: .rule)
+            let position = ((dayNumber - anchor) % count + count) % count
+            return day(typeID: rule.days[position], source: .rule)
         }
         return carriedOver(dayNumber: dayNumber)
     }
@@ -159,53 +266,41 @@ nonisolated final class ExtendedScheduleResolver {
     private func carriedOver(dayNumber: Int) -> ExtendedScheduleDay {
         let date = CivilZone.civilDate(dayNumber: dayNumber)
         let monthKey = Self.monthKey(year: date.year, month: date.month)
-        guard authoredMonths[monthKey] == nil,
+        guard index.authoredMonths[monthKey] == nil,
               let sourceKey = nearestAuthoredMonth(before: monthKey),
-              let typeID = authoredMonths[sourceKey]?[date.day]
+              let typeID = index.authoredMonths[sourceKey]?[date.day]
         else { return .unassigned }
         return day(typeID: typeID, source: .carriedOver)
     }
 
     private func nearestAuthoredMonth(before monthKey: Int) -> Int? {
+        let keys = index.authoredMonthKeys
         var low = 0
-        var high = authoredMonthKeys.count
+        var high = keys.count
         while low < high {
             let middle = (low + high) / 2
-            if authoredMonthKeys[middle] < monthKey { low = middle + 1 } else { high = middle }
+            if keys[middle] < monthKey { low = middle + 1 } else { high = middle }
         }
         guard low > 0 else { return nil }
-        let candidate = authoredMonthKeys[low - 1]
+        let candidate = keys[low - 1]
         return monthKey - candidate <= Self.carryOverMonthLimit ? candidate : nil
     }
 
-    /// An archived type still resolves, so a past day keeps the shift it was
-    /// worked as. A type the plan does not define is unassigned: sync can
-    /// deliver a day before the schedule that names its type.
+    /// A type the plan does not define is unassigned: sync can deliver a day
+    /// before the schedule that names its type.
     private func day(typeID: UUID, source: ExtendedScheduleDay.Source) -> ExtendedScheduleDay {
-        guard let type = typesByID[typeID], type.isValid else { return .unassigned }
-        switch type.kind {
-        case .rest:
-            return ExtendedScheduleDay(isWorkday: false, hours: nil, shiftTypeID: typeID, source: source)
-        case .work:
-            return ExtendedScheduleDay(
-                isWorkday: true,
-                hours: ExtendedScheduleDayHours(
-                    startTime: Self.timeString(type.startMinutes),
-                    endTime: Self.timeString(type.endMinutes),
-                    breakStartTime: type.breakEnabled && type.breakDurationMinutes > 0
-                        ? Self.timeString(type.breakStartMinutes)
-                        : nil,
-                    breakDurationMinutes: type.breakEnabled ? type.breakDurationMinutes : 0
-                ),
-                shiftTypeID: typeID,
-                source: source
-            )
-        }
+        guard let resolved = index.dayByType[typeID] else { return .unassigned }
+        return ExtendedScheduleDay(
+            isWorkday: resolved.isWorkday,
+            hours: resolved.hours,
+            shiftTypeID: typeID,
+            source: source
+        )
     }
 
-    private static func monthKey(year: Int, month: Int) -> Int { year * 12 + (month - 1) }
+    static func monthKey(year: Int, month: Int) -> Int { year * 12 + (month - 1) }
 
-    private static func parse(dayKey: String) -> (year: Int, month: Int, day: Int)? {
+    static func parse(dayKey: String) -> (year: Int, month: Int, day: Int)? {
         let parts = dayKey.split(separator: "-", omittingEmptySubsequences: false)
         guard parts.count == 3,
               parts[0].count == 4, parts[1].count == 2, parts[2].count == 2,
@@ -215,7 +310,7 @@ nonisolated final class ExtendedScheduleResolver {
         return (year, month, day)
     }
 
-    private static func dayNumber(dayKey: String) -> Int? {
+    static func dayNumber(dayKey: String) -> Int? {
         parse(dayKey: dayKey).map { CivilZone.dayNumber(year: $0.year, month: $0.month, day: $0.day) }
     }
 
