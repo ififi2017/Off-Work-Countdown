@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "Gunakan bidang yang dipilih",
   "recordsConflictCurrentVersion": "Versi saat ini",
   "recordsConflictOtherVersion": "Versi lain",
+  "recordsConflictKeepCurrent": "Pertahankan versi saat ini",
+  "recordsConflictUseOther": "Gunakan versi lain",
   "recordsConflictChangedFields": "Bidang yang berubah",
   "recordsConflictEditedAt": "Diedit",
   "recordsConflictDetailsUnreadable": "Detail tidak tersedia",

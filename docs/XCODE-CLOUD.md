@@ -13,7 +13,7 @@ Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差�
 2. Start Condition 选择 Branch Changes，分支设为 `main`。
 3. 文件过滤至少包括 `src-mobile/ios/**`、`lib/countdown.ts`、
    `lib/reminders.ts`、`lib/summary.ts`、`lib/watch-projection.ts`、`public/locales/**`、
-   `scripts/ios-schedule-rule-oracle.mjs`、`scripts/generate-ios-xcstrings.mjs`、
+   `scripts/ios-schedule-rule-oracle.mjs`、`scripts/generate-ios-xcstrings.mjs`、`scripts/check-ios-strings.mjs`、
    `scripts/generate-ios-schedule-rule-fixtures.mjs`、`scripts/generate-watch-shift-fixtures.mjs`、
    `scripts/generate-watch-localizations.mjs`、`scripts/check-ios-project.mjs`、`scripts/check-version.mjs`、
    `scripts/xcode-product-versions.mjs`、`package.json` 和 `package-lock.json`。这些路径都会改变 iOS
@@ -34,7 +34,8 @@ Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差�
 - 欢迎页强制重放、QA 路由、强制旋转和分享页自动弹出只允许放在 `#if DEBUG` 中。
 - 规则的 Swift 差分 fixture 必须由当前 `lib/` 生成，禁止手工编辑。
 - iOS 文案的 `Localizable.xcstrings` 同样由 `public/locales` 生成，禁止手工编辑；
-  `ci_post_clone.sh` 会跑 `npm run check:ios-strings`，过期即失败。
+  `ci_post_clone.sh` 会跑 `npm run check:ios-strings`：catalog 过期、某条缺少语言或占位符与英文不一致、
+  代码按名字引用了 catalog 里没有的键、或两端共用的键措辞不一致时都会失败。Watch 文案表同样由 catalog 生成。
 - Xcode Cloud 归档前仍建议先在本机执行一次 Release 编译；动效和横竖屏体验最终以真机为准。
 
 ## 3.2.0 整改的 PR 门禁（待在 App Store Connect 配置）

@@ -174,7 +174,13 @@ and 14 pt control radii, and the shared orange accent are settled conventions.
   `npm run generate:ios-xcstrings`, so an iOS key still starts there for now
   and `npm test` fails while the two disagree; never hand-edit the catalog.
   A key both sides use is stored in both, deliberately — they are separate
-  products' copy, not a shared runtime.
+  products' copy, not a shared runtime. `npm run check:ios-strings` also
+  requires every catalog entry to carry all 19 locales with English's
+  placeholders, every key the Swift code names with `t("…")`, `strings("…")`
+  or `WatchLocalizations.text("…")` to exist, and a shared key to read the same
+  on both sides unless `INTENTIONAL_DIVERGENCE` in
+  `scripts/check-ios-strings.mjs` says otherwise. The Watch's copy table is
+  generated from the catalog too, by `scripts/generate-watch-localizations.mjs`.
 - Long-form content pages intentionally support only English and Simplified
   Chinese through `lib/content-locales.ts`. Do not create unreviewed copies for
   all 19 locales.
@@ -547,8 +553,8 @@ not invent an automated path without agreeing on the signing setup first.
 
 GitHub Actions still has no iOS job. The repository is prepared for Xcode Cloud
 through `src-mobile/ios/App/ci_scripts/ci_post_clone.sh`, which installs the
-Node.js toolchain and checks the Watch and rule fixtures and `npm run check:ios`
-before Xcode builds. The App Store Connect workflow owns branch/path triggers,
+Node.js toolchain and checks the Watch and rule fixtures, the string catalog
+(`npm run check:ios-strings`) and `npm run check:ios` before Xcode builds. The App Store Connect workflow owns branch/path triggers,
 the Release archive action and TestFlight distribution; keep
 `docs/XCODE-CLOUD.md` aligned with that configuration. Any change touching
 `lib/`, `public/locales` or `src-mobile/` must still be built for the simulator

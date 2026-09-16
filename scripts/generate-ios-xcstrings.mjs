@@ -12,6 +12,7 @@
 
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { watchLocalizationKeys } from "./generate-watch-localizations.mjs";
 
 export const iosStringCatalogPath =
   "src-mobile/ios/App/App/Localizable.xcstrings";
@@ -19,9 +20,9 @@ export const iosStringCatalogPath =
 const LOCALES_DIRECTORY = "public/locales";
 const SOURCE_LANGUAGE = "en";
 
-/// Swift source scanned for the keys iOS actually asks for. The Watch app is
-/// deliberately out of scope: it carries its own generated table and still
-/// reads the JSON until plan 019 L3 moves it.
+/// Swift source scanned for the keys iOS actually asks for. The Watch is not
+/// scanned: its keys are listed in generate-watch-localizations.mjs, which
+/// reads them back out of this catalog.
 const SWIFT_ROOTS = ["src-mobile/ios/App/App"];
 
 /// Keys iOS builds at runtime instead of writing out, so no scan can see them.
@@ -45,7 +46,7 @@ export const localeDirectories = () =>
     .map((entry) => entry.name)
     .sort();
 
-const swiftFiles = (directory) =>
+export const swiftFiles = (directory) =>
   readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) return swiftFiles(path);
@@ -73,6 +74,13 @@ export const referencedKeys = (translation) => {
     if (INTERPOLATED_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) {
       found.add(key);
     }
+  }
+  // No App source names these, but the Watch table is generated from here.
+  for (const key of watchLocalizationKeys) {
+    if (!known.has(key)) {
+      throw new Error(`${key} is listed for the Watch but missing from ${LOCALES_DIRECTORY}.`);
+    }
+    found.add(key);
   }
   return [...found].sort();
 };

@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "使用選取嘅欄位",
   "recordsConflictCurrentVersion": "目前版本",
   "recordsConflictOtherVersion": "其他版本",
+  "recordsConflictKeepCurrent": "保留目前版本",
+  "recordsConflictUseOther": "使用其他版本",
   "recordsConflictChangedFields": "已改變欄位",
   "recordsConflictEditedAt": "修改時間",
   "recordsConflictDetailsUnreadable": "呢個舊副本無法顯示可讀嘅差異。",

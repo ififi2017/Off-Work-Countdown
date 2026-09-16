@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "使用选中的字段",
   "recordsConflictCurrentVersion": "当前版本",
   "recordsConflictOtherVersion": "其他版本",
+  "recordsConflictKeepCurrent": "保留当前版本",
+  "recordsConflictUseOther": "使用其他版本",
   "recordsConflictChangedFields": "变更字段",
   "recordsConflictEditedAt": "修改时间",
   "recordsConflictDetailsUnreadable": "这个旧副本无法显示可读的差异。",

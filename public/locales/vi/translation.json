@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "Dùng các trường đã chọn",
   "recordsConflictCurrentVersion": "Phiên bản hiện tại",
   "recordsConflictOtherVersion": "Phiên bản khác",
+  "recordsConflictKeepCurrent": "Giữ phiên bản hiện tại",
+  "recordsConflictUseOther": "Dùng phiên bản khác",
   "recordsConflictChangedFields": "Trường đã thay đổi",
   "recordsConflictEditedAt": "Đã sửa",
   "recordsConflictDetailsUnreadable": "Không có chi tiết",

@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "選択したフィールドを使用",
   "recordsConflictCurrentVersion": "現在のバージョン",
   "recordsConflictOtherVersion": "その他のバージョン",
+  "recordsConflictKeepCurrent": "現在のバージョンを残す",
+  "recordsConflictUseOther": "その他のバージョンを使用",
   "recordsConflictChangedFields": "変更されたフィールド",
   "recordsConflictEditedAt": "編集日時",
   "recordsConflictDetailsUnreadable": "詳細を利用できません",

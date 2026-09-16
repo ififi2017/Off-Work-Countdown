@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "Use selected fields",
   "recordsConflictCurrentVersion": "Current version",
   "recordsConflictOtherVersion": "Other version",
+  "recordsConflictKeepCurrent": "Keep current version",
+  "recordsConflictUseOther": "Use other version",
   "recordsConflictChangedFields": "Changed fields",
   "recordsConflictEditedAt": "Edited",
   "recordsConflictDetailsUnreadable": "This older copy cannot show a readable difference.",

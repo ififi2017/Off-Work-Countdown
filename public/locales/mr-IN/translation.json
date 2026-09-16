@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "निवडलेली फील्ड वापरा",
   "recordsConflictCurrentVersion": "सध्याची आवृत्ती",
   "recordsConflictOtherVersion": "दुसरी आवृत्ती",
+  "recordsConflictKeepCurrent": "सध्याची आवृत्ती ठेवा",
+  "recordsConflictUseOther": "दुसरी आवृत्ती वापरा",
   "recordsConflictChangedFields": "बदललेली फील्ड",
   "recordsConflictEditedAt": "संपादित",
   "recordsConflictDetailsUnreadable": "तपशील उपलब्ध नाहीत",
