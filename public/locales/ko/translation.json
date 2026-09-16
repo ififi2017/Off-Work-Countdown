@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "선택한 필드 사용",
   "recordsConflictCurrentVersion": "현재 버전",
   "recordsConflictOtherVersion": "다른 버전",
+  "recordsConflictKeepCurrent": "현재 버전 유지",
+  "recordsConflictUseOther": "다른 버전 사용",
   "recordsConflictChangedFields": "변경된 필드",
   "recordsConflictEditedAt": "편집 시간",
   "recordsConflictDetailsUnreadable": "세부 정보를 사용할 수 없음",

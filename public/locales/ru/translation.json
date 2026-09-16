@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "Использовать выбранные поля",
   "recordsConflictCurrentVersion": "Текущая версия",
   "recordsConflictOtherVersion": "Другая версия",
+  "recordsConflictKeepCurrent": "Оставить текущую версию",
+  "recordsConflictUseOther": "Использовать другую версию",
   "recordsConflictChangedFields": "Изменённые поля",
   "recordsConflictEditedAt": "Изменено",
   "recordsConflictDetailsUnreadable": "Подробности недоступны",

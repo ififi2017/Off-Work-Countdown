@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "चुने गए फ़ील्ड इस्तेमाल करें",
   "recordsConflictCurrentVersion": "वर्तमान संस्करण",
   "recordsConflictOtherVersion": "दूसरा संस्करण",
+  "recordsConflictKeepCurrent": "वर्तमान संस्करण रखें",
+  "recordsConflictUseOther": "दूसरा संस्करण इस्तेमाल करें",
   "recordsConflictChangedFields": "बदले गए फ़ील्ड",
   "recordsConflictEditedAt": "संपादित",
   "recordsConflictDetailsUnreadable": "विवरण उपलब्ध नहीं",

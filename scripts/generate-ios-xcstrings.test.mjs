@@ -6,6 +6,7 @@ import {
   localeDirectories,
   referencedKeys,
 } from "./generate-ios-xcstrings.mjs";
+import { watchLocalizationKeys } from "./generate-watch-localizations.mjs";
 import { readFileSync } from "node:fs";
 
 const english = JSON.parse(
@@ -84,6 +85,26 @@ describe("iOS string catalog", () => {
     // The other pool belongs to the Web timer alone, so it stays out: the
     // catalog carries what iOS asks for, not everything that is an array.
     expect(catalog.strings["notificationToneMessages.1"]).toBeUndefined();
+  });
+
+  // The Watch table is generated from the catalog, so its keys have to be in
+  // it even though no App source names them.
+  it("carries the keys the Watch reads", () => {
+    const catalog = createIOSStringCatalog();
+    for (const key of watchLocalizationKeys) {
+      expect(catalog.strings[key], key).toBeDefined();
+      expect(Object.keys(catalog.strings[key].localizations).sort()).toEqual(localeDirectories());
+    }
+  });
+
+  // Both used to render their own key names: Swift asked for them and the
+  // locale files never defined them.
+  it("carries the conflict-centre labels for a version of unknown origin", () => {
+    const catalog = createIOSStringCatalog();
+    expect(catalog.strings.recordsConflictKeepCurrent.localizations.en.stringUnit.value)
+      .toBe("Keep current version");
+    expect(catalog.strings.recordsConflictUseOther.localizations.de.stringUnit.value)
+      .toBe("Andere Version verwenden");
   });
 
   it("leaves Web-only copy out of the catalog", () => {

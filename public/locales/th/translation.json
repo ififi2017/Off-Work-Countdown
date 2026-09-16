@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "ใช้ฟิลด์ที่เลือก",
   "recordsConflictCurrentVersion": "เวอร์ชันปัจจุบัน",
   "recordsConflictOtherVersion": "เวอร์ชันอื่น",
+  "recordsConflictKeepCurrent": "เก็บเวอร์ชันปัจจุบัน",
+  "recordsConflictUseOther": "ใช้เวอร์ชันอื่น",
   "recordsConflictChangedFields": "ฟิลด์ที่เปลี่ยนแปลง",
   "recordsConflictEditedAt": "แก้ไขแล้ว",
   "recordsConflictDetailsUnreadable": "ไม่มีรายละเอียด",

@@ -88,7 +88,7 @@ struct FirstRunRecoveryView: View {
             }
         }
         .alert(actions.text.t("recordsOperationExportFailed"), isPresented: $backupFailed) {
-            Button(actions.text.t("ok"), role: .cancel) {}
+            Button(actions.text.t("okAction"), role: .cancel) {}
         }
         .confirmationDialog(actions.text.t("firstRunReplaceConfirm"), isPresented: $confirmsReplacement) {
             Button(actions.text.t("firstRunReplaceWithCloud"), role: .destructive) {

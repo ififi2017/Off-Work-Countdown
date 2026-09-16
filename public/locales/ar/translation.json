@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "استخدام الحقول المحددة",
   "recordsConflictCurrentVersion": "النسخة الحالية",
   "recordsConflictOtherVersion": "النسخة الأخرى",
+  "recordsConflictKeepCurrent": "أبقِ النسخة الحالية",
+  "recordsConflictUseOther": "استخدام النسخة الأخرى",
   "recordsConflictChangedFields": "الحقول المتغيرة",
   "recordsConflictEditedAt": "تم التعديل",
   "recordsConflictDetailsUnreadable": "التفاصيل غير متاحة",

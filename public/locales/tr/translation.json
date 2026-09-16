@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "Seçili alanları kullan",
   "recordsConflictCurrentVersion": "Geçerli sürüm",
   "recordsConflictOtherVersion": "Diğer sürüm",
+  "recordsConflictKeepCurrent": "Geçerli sürümü tut",
+  "recordsConflictUseOther": "Diğer sürümü kullan",
   "recordsConflictChangedFields": "Değişen alanlar",
   "recordsConflictEditedAt": "Düzenlendi",
   "recordsConflictDetailsUnreadable": "Ayrıntılar kullanılamıyor",

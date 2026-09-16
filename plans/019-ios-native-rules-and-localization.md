@@ -55,7 +55,7 @@ iOS 在运行时通过 `NativeLocalizer` 读取 `public/locales/<locale>/transla
 
 - [x] 确认以上问题。
 - [x] 迁移脚本：从 `public/locales` 生成 `.xcstrings`，逐键校验 19 个 locale 的值、占位符与复数一致；迁移后 `NativeLocalizer` 改为系统本地化或薄封装。—— 2026-09-16 L1，见下方实施记录。
-- [ ] 19 个 locale 完整性检查改为读取 `.xcstrings`；Watch 文案生成器、营销截图与 ASC 同步脚本改接新来源。
+- [x] 19 个 locale 完整性检查改为读取 `.xcstrings`；Watch 文案生成器、营销截图与 ASC 同步脚本改接新来源。—— 2026-09-16 L2a；营销截图与 ASC 脚本经核查不读 iOS 文案，无需改动，见下方实施记录。
 - [x] 修改 `AGENTS.md` 中“UI 键必须加入 `public/locales/*` 的每个 locale”的规定：iOS 键进入 String Catalog，Web／Desktop 键进入 `public/locales`，两者都要求 19 个 locale 完整。—— 2026-09-16 L1。
 - [ ] 清理 `public/locales` 中只剩 iOS 使用的键，并确认 Web 与 Desktop 构建验证通过。
 
@@ -117,3 +117,19 @@ iOS 在运行时通过 `NativeLocalizer` 读取 `public/locales/<locale>/transla
 - 串行性能与上一批持平：一年 `recordsMetrics` 4.7 ms（P8-b 为 4.8 ms）、记录列表 3.0 ms。
 - **打包产物实测**：`App.app` 中已无 `locales` 目录、也搜不到任何 `translation.json`；20 个 `.lproj`（19 语言加 Base）齐全，抽查的 en、de、ja、ar、zh-CN、mr-IN 均同时有 `Localizable.strings` 与 `Localizable.stringsdict`。**体积不是收益**：编译后的文案合计约 1.3 MB，与原先约 1.2 MB 的 JSON 基本持平；这一批换来的是单一来源、过期检查与系统复数规则，不是包体。
 - 本批没有界面改动，未做模拟器视觉检查。
+
+### 2026-09-16 · L2a 文案检查、Watch 改接 catalog 与三个坏键
+
+L2 拆成两批：L2a 先装好检查、把 Watch 接到 catalog，不删任何键；L2b 再让 catalog 成为 iOS 文案的来源，并从 `public/locales` 删除 iOS 专属键。
+
+- **三个坏键**：`ok`、`recordsConflictKeepCurrent`、`recordsConflictUseOther` 在 Swift 里被引用，但 locale 文件从未定义，界面上直接显示键名（首次恢复里导出失败提示的按钮；冲突中心来源未知时的两个按钮）。`ok` 改用已有、已翻译的 `okAction`；冲突中心的两个键新增到 19 个语言，译文用各语言已审过的词组合而成——动词取自 `recordsConflictKeepLocal`／`recordsConflictApplySelectedFields`，名词取自 `recordsConflictCurrentVersion`／`recordsConflictOtherVersion`。
+- **`npm run check:ios-strings`**（`scripts/check-ios-strings.mjs`，同时进 `npm test` 与 `ci_post_clone.sh`）在原有的过期检查之外新增三项：
+  1. catalog 每条都有 19 个语言、状态为 translated、值非空、占位符与英文一致；复数条目有 `other` 且每个形式带 `%lld`；消息池编号从 1 连续。这是 `lib/locales.test.ts` 在 catalog 一侧的对应检查。
+  2. 两端共用的键措辞一致；有意分化的键写进 `INTENTIONAL_DIVERGENCE`（按 2026-09-13 决定，差异一律报出、由人判断），名单中已不再分化的条目同样报错，防止名单腐烂。
+  3. Swift 以 `t("…")`、`.string("…")`、`strings("…")` 或 `WatchLocalizations.text("…")` 直接点名的键必须存在。L1 的生成器只收 locale 文件里有的键，缺失的键会被静默略过，上面三个坏键就是这样漏掉的。把这项检查用于本批之前的代码与 catalog，恰好报出这三个键及其行号。
+  - 目前 catalog 仍由 `public/locales` 生成，第 1、2 项在真实数据上必然成立；它们是为 L2b 准备的。「与英文逐字相同即视为漏翻」的哨兵仍只在 `lib/locales.test.ts`，其白名单要在 L2b 随键一起迁到 catalog 一侧。
+- **Watch**：`generate-watch-localizations.mjs` 改为可导入的模块，从 catalog 读取 13 个 Watch 键，不再读 `public/locales`；catalog 生成器从它导入这份键表并收入 catalog（773 → 788 条，含新增的 2 个冲突键）。生成的 `WatchLocalizations.generated.swift` 逐字节不变。
+- **营销截图与 ASC 同步**：核查后，`scripts/marketing-shots/desktop-capture.mjs` 读的是桌面文案，`scripts/app-store-connect/config.test.mjs` 只列 locale 目录，没有脚本从 `public/locales` 读 iOS 文案，因此无需改动。
+- **验证**：iPhone 18 Pro / iOS 27 串行跑完整套件，45 个 suite 共 734 个测试通过（本批未增删 Swift 测试）。`npm test` 35 个文件 403 项通过（新增 12 项检查测试、2 项生成器测试），其中「真实 catalog 通过全部检查」一项让 `npm test` 与 `check:ios-strings` 同步失败；`lib/locales.test.ts` 覆盖新加的两个键在 19 个语言中的占位符与非英文要求。`npm run lint`、`check:ios`、`check:ios-strings`、`git diff --check` 均通过。
+- **性能**：完整套件那一轮整体偏慢（124 s，此前约 20 s），读数为 `recordsMetrics` 5.0 ms、记录列表 3.4 ms。单独串行重跑 `RecordsPerformanceTests` 三次，得到 4.9／4.8／5.4 ms 与 3.3／3.1／3.4 ms，中位数 4.9 ms 与 3.3 ms，在以往批次的波动范围内。本批 Swift 只改了一个键名，不涉及这些路径。
+- 未做模拟器视觉检查。两个冲突按钮只在来源未知的冲突里出现，导出失败提示的按钮文字从 "ok" 变为各语言的「好／OK」，均未截图确认。

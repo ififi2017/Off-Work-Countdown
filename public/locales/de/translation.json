@@ -815,6 +815,8 @@
   "recordsConflictApplySelectedFields": "Ausgewählte Felder verwenden",
   "recordsConflictCurrentVersion": "Aktuelle Version",
   "recordsConflictOtherVersion": "Andere Version",
+  "recordsConflictKeepCurrent": "Aktuelle Version behalten",
+  "recordsConflictUseOther": "Andere Version verwenden",
   "recordsConflictChangedFields": "Geänderte Felder",
   "recordsConflictEditedAt": "Bearbeitet",
   "recordsConflictDetailsUnreadable": "Details nicht verfügbar",
