@@ -185,8 +185,8 @@ P4/P5 的真机验收状态不因此改为完成。
 
 - 每读一句文案就重新打开并解析一遍该语言约 45 KB、800 多个 key 的 `translation.json`，没有
   任何缓存。WidgetKit 会提前渲染时间线里的每一个条目，所以这份解析按条目计费。
-  （019 §3 之后这条路径已不存在：文案改由 `Localizable.xcstrings` 编译进各 `.lproj`，
-  `public/locales` 也不再打进 iOS 包；此处保留的是当时的开销分析。）
+  （019 §3 之后，App 本体的文案改由 `Localizable.xcstrings` 编译进各 `.lproj`；Widget
+  扩展仍打包 `public/locales`，由与 Mac 版共用的 `WidgetCopy` 按上述方式缓存读取。）
 - 一个进程服务所有已放置的 family，同一份约 574 KB 的快照被逐个 family 重复解码。
 - 工作区间按 5 分钟展开、窗口 36 小时，普通 9:00–18:00 排班在早晨可以产生约 200 个条目。
 - 约一千行的「接下来」列表挂在每一个条目上，而只有大号 / 超大号 / 竖向 XL 会显示它。

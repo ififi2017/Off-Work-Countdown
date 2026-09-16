@@ -297,17 +297,38 @@ if (
 if (/CountdownRules\.js/.test(iosProject) || existsSync("src-mobile/ios/App/App/Resources/CountdownRules.js")) {
   fail("CountdownRules.js was removed in plan 019 R4; iOS rules live in Swift.");
 }
-// Plan 019 §3: the app's copy ships as a String Catalog. The public/locales
-// folder reference went with it — leaving it behind would put 19 JSON files
-// back in the bundle and make it ambiguous which one the app actually reads.
+// Plan 019 §3: the App reads its copy from Localizable.xcstrings, so the 19
+// JSON files stay out of it. The widget extension is the exception: the widget
+// UI it shares with the Mac App Store build (src-tauri/macos-widget,
+// WidgetCopy) reads locales/<lang>/translation.json from its own bundle. Plan
+// 019 L1 removed the folder from both targets, and every widget string fell
+// back to its key name, so each target is pinned separately.
+const resourcesOf = (targetName) => {
+  const target = iosProject.match(new RegExp(
+    String.raw`\w{24} \/\* ${targetName} \*\/ = \{\s*isa = PBXNativeTarget;[\s\S]*?buildPhases = \(([\s\S]*?)\);`
+  ));
+  const phaseID = target?.[1].match(/(\w{24}) \/\* Resources \*\//)?.[1];
+  const phase = phaseID && iosProject.match(new RegExp(
+    String.raw`${phaseID} \/\* Resources \*\/ = \{\s*isa = PBXResourcesBuildPhase;[\s\S]*?files = \(([\s\S]*?)\);`
+  ));
+  return phase?.[1] ?? "";
+};
+const appResources = resourcesOf("App");
+const widgetResources = resourcesOf("OffWorkCountdownWidgetsExtension");
 if (!existsSync("src-mobile/ios/App/App/Localizable.xcstrings")) {
-  fail("Localizable.xcstrings is missing; run node scripts/generate-ios-xcstrings.mjs.");
+  fail("Localizable.xcstrings is missing; it holds the iOS app's copy.");
 }
-if (!/Localizable\.xcstrings in Resources/.test(iosProject)) {
+if (!appResources.includes("Localizable.xcstrings in Resources")) {
   fail("Localizable.xcstrings must be copied into the App resources.");
 }
-if (/\/\* locales \*\//.test(iosProject)) {
-  fail("public/locales is no longer bundled into iOS; the app reads Localizable.xcstrings.");
+if (appResources.includes("locales in Resources")) {
+  fail("The App reads Localizable.xcstrings; public/locales must not be copied into it.");
+}
+if (
+  !widgetResources.includes("locales in Resources") ||
+  !/\w{24} \/\* locales \*\/ = \{isa = PBXFileReference;[^}]*path = "?\.\.\/\.\.\/\.\.\/public\/locales"?;/.test(iosProject)
+) {
+  fail("The widget extension must bundle public/locales: WidgetCopy reads translation.json from the widget's own bundle.");
 }
 // App/Native is a synchronized folder, so a file that lands there is compiled
 // without ever appearing in project.pbxproj. Scanning the directory keeps this

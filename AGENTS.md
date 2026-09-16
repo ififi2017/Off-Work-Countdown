@@ -416,9 +416,12 @@ backup copy left beside real source will be compiled, not ignored.
 Everything else in the project is still an explicit reference, and must be
 registered by hand: `AppDelegate.swift`, the localized `InfoPlist.strings`,
 `Assets.xcassets`, `Localizable.xcstrings`, `WidgetExtension/`, and the two
-widget sources shared from `src-tauri/macos-widget`. The `public/locales`
-folder reference was removed in plan 019 §3 — the app's copy ships as the
-String Catalog, and `npm run check:ios` fails if the folder comes back. One file crosses targets —
+widget sources shared from `src-tauri/macos-widget`, and the `public/locales`
+folder reference, which is copied into the **widget extension only**: the App
+reads `Localizable.xcstrings`, while the widget UI shared with the Mac App
+Store build (`WidgetCopy`) reads `translation.json` from its own bundle.
+Plan 019 L1 removed the folder from both targets and every widget string fell
+back to its key name; `npm run check:ios` now pins each target. One file crosses targets —
 `Native/Models/LiveActivityAttributes.swift` is compiled into the widget as
 well, through the single `PBXFileSystemSynchronizedBuildFileExceptionSet` in
 the project. Anything else that needs to be shared with the widget goes in
