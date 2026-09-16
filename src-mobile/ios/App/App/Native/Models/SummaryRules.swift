@@ -15,7 +15,10 @@ nonisolated enum SummaryRules {
     /// current shift counts only when it starts on a scheduled day inside the
     /// period, by its progress, matching the timer's "earned today".
     static func summarize(input: NativeSummaryInput) -> NativePeriodSummary {
-        let zone = CivilZone(identifier: input.timeZoneIdentifier)
+        let zone = CivilZone(
+            identifier: input.timeZoneIdentifier,
+            extended: ExtendedScheduleResolver(plan: input.extendedSchedule)
+        )
         // An explicit window start wins over the period name: the Records grids
         // follow the locale's first weekday, not the ISO week the name derives.
         let periodStartMs = input.periodStartMs.flatMap { $0.isFinite ? $0 : nil }
@@ -28,18 +31,22 @@ nonisolated enum SummaryRules {
         // overnight one still belongs to its start day on its end day. Past the
         // end day the snapshot is stale and must not cut later workdays short.
         let coversAsOfDay = shiftDayMs >= periodDayMs && shiftDayMs <= asOfDayMs && shiftEndDayMs >= asOfDayMs
-        let completed = Double(countScheduledWorkdays(
+        let scheduled = scheduledWorkdays(
             fromMs: periodDayMs,
             toMs: coversAsOfDay ? shiftDayMs : asOfDayMs,
-            input.workdays, input.schedule, zone
-        ))
+            input, zone
+        )
+        let completed = Double(scheduled.count)
         // `isScheduledWorkday`, not the in-zone helper: manual mode still counts
         // today. Splitting the two once made an iOS week disagree with the Web's.
         let todayCounts = coversAsOfDay && zone.isScheduledWorkday(shiftDayMs, input.workdays, input.schedule)
         let todayFraction: Double = todayCounts ? min(100, max(0, input.todayProgress)) / 100 : 0
         let todayHours: Double = todayCounts ? input.todayEffectiveHours * todayFraction : 0
         let todayPay: Double = todayCounts ? max(0, input.todayPayRatio) : 0
-        let hours: Double = completed * input.plannedDailyHours + todayHours
+        // One planned daily figure cannot describe a roster of early, late and
+        // night shifts, so an extended schedule sums each day's own effective
+        // hours. Without one this is the same product it always was.
+        let hours: Double = (scheduled.hours ?? completed * input.plannedDailyHours) + todayHours
         return NativePeriodSummary(
             days: completed + todayFraction,
             hours: hours,
@@ -47,22 +54,33 @@ nonisolated enum SummaryRules {
         )
     }
 
-    private static func countScheduledWorkdays(
+    /// Completed scheduled days in `[fromMs, toMs)`, and their effective hours
+    /// when an extended schedule gives each day its own shift. `hours` is `nil`
+    /// without one, leaving the caller on its single planned daily figure.
+    private static func scheduledWorkdays(
         fromMs: Double,
         toMs: Double,
-        _ workdays: [Int],
-        _ schedule: NativeWorkSchedule,
+        _ input: NativeSummaryInput,
         _ zone: CivilZone
-    ) -> Int {
-        if schedule.mode == "off" { return 0 }
+    ) -> (count: Int, hours: Double?) {
+        // An extended schedule assigns rest as a shift type of its own, so the
+        // manual-mode shortcut is not its answer.
+        let usesExtended = input.extendedSchedule != nil
+        if !usesExtended, input.schedule.mode == "off" { return (0, nil) }
         var cursor = zone.startOfCivilDayMs(fromMs)
         let end = zone.startOfCivilDayMs(toMs)
         var count = 0
+        var hours = 0.0
         while cursor < end {
-            if zone.isScheduledWorkdayInZone(cursor, workdays, schedule) { count += 1 }
+            if zone.isScheduledWorkdayInZone(cursor, input.workdays, input.schedule) {
+                count += 1
+                if usesExtended {
+                    hours += zone.plannedHours(dayNumber: zone.civil(cursor).dayNumber) ?? 0
+                }
+            }
             cursor = zone.addCivilDaysMs(cursor, 1)
         }
-        return count
+        return (count, usesExtended ? hours : nil)
     }
 
     // MARK: - Salary
@@ -444,6 +462,9 @@ nonisolated struct NativeSummaryInput: Codable, Sendable {
     let todayEffectiveHours: Double
     let todayPayRatio: Double
     var timeZoneIdentifier: String? = nil
+    /// Plan 018 P8's extended schedule, when the user has one switched on. It
+    /// decides which days count and how long each of them is.
+    var extendedSchedule: ExtendedSchedulePlan? = nil
 }
 
 nonisolated struct NativeLifetimeIncomeSummary: Codable, Hashable, Sendable {
