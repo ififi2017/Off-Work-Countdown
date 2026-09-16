@@ -168,19 +168,30 @@ and 14 pt control radii, and the shared orange accent are settled conventions.
   feels condescending, bureaucratic or written for maintainers instead of the
   person using the product.
 - The application UI supports all 19 locales, and a user-facing key must carry
-  all 19 wherever it lives. Since plan 019 §3 there are two homes: iOS reads
-  `src-mobile/ios/App/App/Localizable.xcstrings`, Web and Desktop read
-  `public/locales/*`. The catalog is generated from `public/locales` by
-  `npm run generate:ios-xcstrings`, so an iOS key still starts there for now
-  and `npm test` fails while the two disagree; never hand-edit the catalog.
-  A key both sides use is stored in both, deliberately — they are separate
-  products' copy, not a shared runtime. `npm run check:ios-strings` also
-  requires every catalog entry to carry all 19 locales with English's
-  placeholders, every key the Swift code names with `t("…")`, `strings("…")`
-  or `WatchLocalizations.text("…")` to exist, and a shared key to read the same
-  on both sides unless `INTENTIONAL_DIVERGENCE` in
-  `scripts/check-ios-strings.mjs` says otherwise. The Watch's copy table is
-  generated from the catalog too, by `scripts/generate-watch-localizations.mjs`.
+  all 19 wherever it lives. Since plan 019 there are two homes:
+  - **iOS** copy lives in `src-mobile/ios/App/App/Localizable.xcstrings`,
+    edited directly (Xcode's String Catalog editor or the JSON). Nothing
+    generates it. The Watch's table is generated *from* it by
+    `scripts/generate-watch-localizations.mjs`.
+  - **Web and Desktop** copy lives in `public/locales/*`. Since L2b it holds
+    only the keys they use, plus the keys the iOS widget renders: the widget UI
+    shared with the Mac build (`WidgetCopy`) reads that folder from the widget
+    extension's bundle.
+  - A key both apps use is stored in both, deliberately — separate products'
+    copy, not a shared runtime.
+
+  `npm run check:ios-strings` (run by `npm test` and Xcode Cloud too) holds
+  the catalog to that: all 19 locales, translated, with English's
+  placeholders; no iOS-only copy left in English unless
+  `SAME_AS_ENGLISH_ON_PURPOSE` says so; shared keys worded the same on both
+  sides unless `INTENTIONAL_DIVERGENCE` says so; every key the Swift code asks
+  for present, and no catalog key that nothing asks for; every widget key
+  still in `public/locales`. It sees a key named in `t("…")`,
+  `.string("…")`, `strings("…")` or `localize("…")`; returned from a `…Key`
+  property or function; assigned to a `…Key` constant; passed as a `…Key:`
+  argument or to a same-file helper's `…Key` parameter; placed in a
+  key-labelled tuple; or built as `focusIcon<Case>`. Ask for new keys in one
+  of those shapes — anything else is reported as unused copy.
 - Long-form content pages intentionally support only English and Simplified
   Chinese through `lib/content-locales.ts`. Do not create unreviewed copies for
   all 19 locales.

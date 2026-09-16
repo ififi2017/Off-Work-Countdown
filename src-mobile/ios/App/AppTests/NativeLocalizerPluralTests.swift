@@ -82,9 +82,8 @@ func uninflectedLocalesAreUnchanged() {
 
 /// Parity, checked against the bundle rather than the repository: a language
 /// whose catalog entry never shipped would fall back to English and read
-/// "1 workday" inside a German screen. `lib/locales.test.ts` guards the same
-/// thing from the JSON side, and `scripts/generate-ios-xcstrings.test.mjs`
-/// guards the catalog the generator produces.
+/// "1 workday" inside a German screen. `scripts/check-ios-strings.mjs` guards
+/// the catalog itself, the singular included.
 @MainActor
 @Test("Every shipped language bundles its own copy")
 func everyLanguageBundlesItsOwnCopy() {

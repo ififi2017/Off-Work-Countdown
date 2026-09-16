@@ -75,7 +75,7 @@ struct WhatsNewView: View {
         .padding(24)
     }
 
-    private func feature(_ symbol: String, _ title: String, _ body: String) -> some View {
+    private func feature(_ symbol: String, _ titleKey: String, _ bodyKey: String) -> some View {
         HStack(alignment: .top, spacing: 14) {
             if !dynamicTypeSize.isAccessibilitySize {
                 Image(systemName: symbol)
@@ -84,8 +84,8 @@ struct WhatsNewView: View {
                     .accessibilityHidden(true)
             }
             VStack(alignment: .leading, spacing: 5) {
-                Text(text.t(title)).font(.headline)
-                Text(text.t(body)).font(.subheadline).foregroundStyle(.secondary)
+                Text(text.t(titleKey)).font(.headline)
+                Text(text.t(bodyKey)).font(.subheadline).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

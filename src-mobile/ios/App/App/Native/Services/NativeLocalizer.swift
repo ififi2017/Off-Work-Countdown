@@ -9,9 +9,9 @@ nonisolated struct NativeLanguage: Identifiable, Hashable, Sendable {
 ///
 /// iOS used to parse `public/locales/<lang>/translation.json` from the bundle.
 /// The catalog replaces that: Xcode compiles it into one `Localizable.strings`
-/// per `.lproj`, so the JSON no longer ships. `scripts/generate-ios-xcstrings.mjs`
-/// builds the catalog from those same files, which stay the source of truth,
-/// and `npm test` fails while the two disagree.
+/// per `.lproj`, so the JSON no longer ships in the app. Since plan 019 L2b the
+/// catalog is the source of the iOS copy, and `npm run check:ios-strings`
+/// keeps it complete and in step with the keys the code asks for.
 ///
 /// The language is looked up per call rather than through `Bundle.main`,
 /// because the app has its own language picker: `Bundle.main` follows the

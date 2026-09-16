@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { locales } from "../i18n-config";
 
@@ -25,13 +26,7 @@ const loadSeo = (locale: string): Record<string, string> =>
 // 3. 纯符号或数字排版模板（{{start}} – {{end}}）。
 const SAME_AS_ENGLISH_ON_PURPOSE: Record<string, "*" | readonly string[]> = {
   // 品牌、产品名与平台名
-  plusSection: "*",
-  plusSettings: "*",
-  plusStatusSubscribed: "*",
   getAppPlatforms: "*",
-  biometryFaceID: "*",
-  biometryTouchID: "*",
-  biometryOpticID: "*",
   liveActivity: ["id"],
   woodfishSkin: [
     "ar",
@@ -52,35 +47,12 @@ const SAME_AS_ENGLISH_ON_PURPOSE: Record<string, "*" | readonly string[]> = {
   meritGain: ["de", "es", "fr", "id", "it", "pt", "tr"],
   faq: ["de", "fr"],
   // 纯排版模板：只有分隔符和占位符
-  lunchWindow: "*",
   recordsAllocationTap: "*",
-  weekdayRange: [
-    "ar",
-    "de",
-    "es",
-    "fr",
-    "hi-IN",
-    "id",
-    "it",
-    "ko",
-    "mr-IN",
-    "pt",
-    "ru",
-    "th",
-    "tr",
-    "vi",
-  ],
   timeLeft: ["de", "es", "fr", "it", "pt"],
   minutesShort: ["es", "fr", "it", "pt"],
   minutesUnit: ["es", "fr", "it", "pt"],
-  daysShort: ["es", "pt"],
-  focusPomodoroSummary: ["es", "fr", "it", "pt"],
   // 目标语言里通用的英文借词
-  focusTitle: ["fr", "it"],
   recordsFocus: ["fr", "it"],
-  focusStart: ["de"],
-  plusStatus: ["de", "id"],
-  notificationCapability: ["de", "id", "pt"],
   timerTab: ["de", "id", "it"],
   version: ["de", "fr"],
   auto: ["de"],
@@ -96,12 +68,6 @@ const SAME_AS_ENGLISH_ON_PURPOSE: Record<string, "*" | readonly string[]> = {
   menuEdit: ["id"],
   menuZoom: ["es", "fr", "id", "it", "pt"],
   menuServices: ["fr"],
-  // "OK" 是这些语言里系统弹窗的标准肯定按钮，Apple 自己的本地化也用它
-  okAction: ["de", "es", "fr", "id", "it", "ja", "pt", "vi"],
-  // "3 × 25 min" 这种数字格式，这些语言的分钟缩写与英文相同
-  focusEstimateDetail: ["es", "fr", "it", "pt"],
-  // 德语的 Name 就是 Name
-  focusUsualDayName: ["de"],
 };
 
 const mayMatchEnglish = (key: string, locale: string): boolean => {
@@ -122,6 +88,34 @@ describe("UI locale resources", () => {
         referenceKeys
       );
     }
+  });
+
+  // 019 L2b 把只有 iOS 用的键移出了这些文件。代码点名的键缺了，界面上显示的
+  // 是键名本身，任何构建都不会报错，所以在这里逐个核对。只看字面量调用；
+  // `landingFeature${n}` 这类拼出来的键不在这条的覆盖范围内。
+  it("defines every key the Web and Desktop code names", () => {
+    const sources = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) return entry.name === "node_modules" ? [] : sources(path);
+        return /\.(ts|tsx)$/.test(entry.name) && !/\.test\./.test(entry.name) ? [path] : [];
+      });
+    const en = loadTranslation("en");
+    const missing = new Set<string>();
+    for (const file of ["app", "components", "lib"].flatMap(sources)) {
+      const code = readFileSync(file, "utf8");
+      for (const match of code.matchAll(/\bt\(\s*["'`]([A-Za-z][A-Za-z0-9_]*)["'`]/g)) {
+        if (!(match[1] in en)) missing.add(`${file}: ${match[1]}`);
+      }
+    }
+    expect([...missing]).toEqual([]);
+  });
+
+  it("only allows English copy for keys that still exist", () => {
+    const en = loadTranslation("en");
+    expect(
+      Object.keys(SAME_AS_ENGLISH_ON_PURPOSE).filter((key) => !(key in en))
+    ).toEqual([]);
   });
 
   it("does not leave English copy sitting in the other 18 locales", () => {
@@ -158,11 +152,13 @@ describe("UI locale resources", () => {
   });
 
   it("keeps the plural variants of a key in step with its base form", () => {
-    // recordsMonthWorkdays 是硬编码复数，一个月只记了一天时 iOS 渲染成
-    // "1 workdays"、"1 Arbeitstage"。i18next 的 `_one` 后缀补上单数，
-    // 不带后缀的 key 继续充当 other 形式。这条哨兵盯两件事：19 个语种都要
-    // 有变体（少一个就会回落到英文，德语界面里冒出 "1 workday"），
-    // 以及有屈折的语种必须真的换词，不能照抄复数。
+    // i18next 的 `_one` 后缀补单数，不带后缀的 key 充当 other 形式。这条哨兵
+    // 盯两件事：19 个语种都要有变体（少一个就会回落到英文），以及有屈折的
+    // 语种必须真的换词，不能照抄复数。
+    //
+    // 唯一用过它的 recordsMonthWorkdays 只在 iOS 上出现，019 L2b 起随 iOS
+    // 文案迁到 Localizable.xcstrings，由 scripts/check-ios-strings.mjs 按同样
+    // 的规则检查。这里暂时没有 `_one` 键，哨兵留给 Web 以后的复数。
     const INFLECTS_FOR_ONE = [
       "en",
       "de",
@@ -176,8 +172,6 @@ describe("UI locale resources", () => {
     ];
     const en = loadTranslation("en");
     const pluralKeys = Object.keys(en).filter((key) => key.endsWith("_one"));
-
-    expect(pluralKeys).toContain("recordsMonthWorkdays_one");
 
     for (const variantKey of pluralKeys) {
       const baseKey = variantKey.slice(0, -"_one".length);

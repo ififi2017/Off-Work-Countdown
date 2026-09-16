@@ -11,7 +11,6 @@
     "build:mobile": "node scripts/build-mobile.mjs",
     "check:watch-fixtures": "node scripts/generate-watch-shift-fixtures.mjs --check",
     "generate:ios-rule-fixtures": "node scripts/generate-ios-schedule-rule-fixtures.mjs",
-    "generate:ios-xcstrings": "node scripts/generate-ios-xcstrings.mjs",
     "check:ios-rule-fixtures": "node scripts/generate-ios-schedule-rule-fixtures.mjs --check",
     "build:desktop:msstore": "node scripts/build-desktop.mjs --channel=msstore",
     "build:desktop:macappstore": "node scripts/build-desktop.mjs --channel=macappstore",

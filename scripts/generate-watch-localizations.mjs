@@ -16,8 +16,8 @@ export const watchLocalizationKeys = [
   "watchPlusIncludes", "watchPlusOnIPhone", "watchWidgetDescription",
 ];
 export const watchLocalizationsPath = "src-mobile/ios/WatchApp/WatchLocalizations.generated.swift";
-// Spelled out rather than imported: generate-ios-xcstrings.mjs imports the key
-// list above, and the two modules should not import each other.
+// Spelled out rather than imported: check-ios-strings.mjs imports the key list
+// above, and the two modules should not import each other.
 const catalogPath = "src-mobile/ios/App/App/Localizable.xcstrings";
 
 const locales = ["en", "zh-CN", "zh-HK", "zh-TW", "ja", "ko", "de", "es", "fr", "it", "pt", "ru", "ar", "hi-IN", "mr-IN", "id", "th", "tr", "vi"];
