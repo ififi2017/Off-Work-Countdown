@@ -1,6 +1,6 @@
 # 019 · iOS 规则与本地化回到 iOS 工程
 
-- **状态**：IN PROGRESS — 规则迁移 R1–R4 已完成（iOS 不再包含 JavaScriptCore 规则包）并同版修改 `AGENTS.md`；本地化迁移未开工。
+- **状态**：IN PROGRESS — 规则迁移 R1–R4 已完成（iOS 不再包含 JavaScriptCore 规则包）并同版修改 `AGENTS.md`；本地化迁移 L1–L2b 已完成（iOS 文案以 `Localizable.xcstrings` 为准，`public/locales` 只留 Web／Desktop 与 iOS 小组件用到的键）。剩余 §4 验收，其中 Widget、实时活动、Watch 的真机输出与视觉检查待用户确认。
 - **目标**：iOS 的排班、提醒、汇总与收入规则由 Swift 实现，iOS 文案由 iOS 工程按 Apple 规范存放。TypeScript 继续服务 Web 与 Desktop，并作为两端共有行为的规格与差分预言机。
 - **起因**：iOS 与 Web／Desktop 的功能越来越分化，直接触发点是 [018 P8 扩展排班](018-ios-3.2.0-architecture-remediation.md)（班次类型、预制规则、自由日历），这是只在 iOS 提供的功能。继续把 iOS 专属规则写进共享 TypeScript bundle，会让 Web 背负用不到的规则；把 iOS 专属文案放在 `public/locales`，也让两端的文案维护互相牵连。
 - **依赖**：[002 关于 JS 桥的迁移扳机与契约](002-records-life-focus.md)、[004 班次模型](004-shift-model-3.1.0.md)、[017](017-apple-watch-plus.md)、[018](018-ios-3.2.0-architecture-remediation.md)。
@@ -57,7 +57,7 @@ iOS 在运行时通过 `NativeLocalizer` 读取 `public/locales/<locale>/transla
 - [x] 迁移脚本：从 `public/locales` 生成 `.xcstrings`，逐键校验 19 个 locale 的值、占位符与复数一致；迁移后 `NativeLocalizer` 改为系统本地化或薄封装。—— 2026-09-16 L1，见下方实施记录。
 - [x] 19 个 locale 完整性检查改为读取 `.xcstrings`；Watch 文案生成器、营销截图与 ASC 同步脚本改接新来源。—— 2026-09-16 L2a；营销截图与 ASC 脚本经核查不读 iOS 文案，无需改动，见下方实施记录。
 - [x] 修改 `AGENTS.md` 中“UI 键必须加入 `public/locales/*` 的每个 locale”的规定：iOS 键进入 String Catalog，Web／Desktop 键进入 `public/locales`，两者都要求 19 个 locale 完整。—— 2026-09-16 L1。
-- [ ] 清理 `public/locales` 中只剩 iOS 使用的键，并确认 Web 与 Desktop 构建验证通过。
+- [x] 清理 `public/locales` 中只剩 iOS 使用的键，并确认 Web 与 Desktop 构建验证通过。—— 2026-09-16 L2b，见下方实施记录。
 
 ## 4. 验收
 
@@ -134,3 +134,19 @@ L2 拆成两批：L2a 先装好检查、把 Watch 接到 catalog，不删任何�
 - **验证**：iPhone 18 Pro / iOS 27 串行跑完整套件，45 个 suite 共 734 个测试通过（本批未增删 Swift 测试）。`npm test` 35 个文件 403 项通过（新增 12 项检查测试、2 项生成器测试），其中「真实 catalog 通过全部检查」一项让 `npm test` 与 `check:ios-strings` 同步失败；`lib/locales.test.ts` 覆盖新加的两个键在 19 个语言中的占位符与非英文要求。`npm run lint`、`check:ios`、`check:ios-strings`、`git diff --check` 均通过。
 - **性能**：完整套件那一轮整体偏慢（124 s，此前约 20 s），读数为 `recordsMetrics` 5.0 ms、记录列表 3.4 ms。单独串行重跑 `RecordsPerformanceTests` 三次，得到 4.9／4.8／5.4 ms 与 3.3／3.1／3.4 ms，中位数 4.9 ms 与 3.3 ms，在以往批次的波动范围内。本批 Swift 只改了一个键名，不涉及这些路径。
 - 未做模拟器视觉检查。两个冲突按钮只在来源未知的冲突里出现，导出失败提示的按钮文字从 "ok" 变为各语言的「好／OK」，均未截图确认。
+
+### 2026-09-16 · L2b catalog 成为 iOS 文案的来源
+
+- **来源反转**：删除 `scripts/generate-ios-xcstrings.mjs`、它的测试与 `npm run generate:ios-xcstrings`。`Localizable.xcstrings` 从此直接编辑（Xcode 的 String Catalog 编辑器或 JSON），不再由任何东西生成。工程为 `SWIFT_EMIT_LOC_STRINGS = NO`、`LOCALIZATION_PREFERS_STRING_CATALOGS = NO`，Xcode 构建不会往 catalog 里自动抽取条目。文件目前是生成器留下的两空格 JSON，第一次在 Xcode 编辑器里保存时可能按 Xcode 的格式重排整份文件，属一次性的大 diff。
+- **删键**：从 19 个 `translation.json` 删除 654 个 iOS 专属键（每个 locale 655 条，多出的是 `recordsMonthWorkdays_one`），en 从 1060 个键降到 405 个。判定取保守：catalog 里的键只要在任何非 iOS 源码（`app`、`components`、`lib`、`config`、`src-tauri`、非 iOS 的脚本与根目录配置，不含测试与文档）里作为完整单词出现就保留，`landingFeature${n}` 一族另行保留。保留下来的 131 个即两端共用的键。
+  - Web 侧：`lib/locales.test.ts` 新增「Web／Desktop 代码以 `t("…")` 点名的键都存在」。另在 Web 构建与 Desktop 导出的 312 个产物文件（12.3 MB）里逐个查找被删的键：655 个无一以带引号的字符串出现；同一扫描能找到保留的 Web 键，扫描本身有效。
+  - `lib/locales.test.ts` 的「与英文相同」白名单有 17 条随键迁到 `check-ios-strings.mjs`，恰好对应 iOS 专属键里全部 17 条与英文逐字相同的条目；复数哨兵不再点名 `recordsMonthWorkdays_one`（它已只在 catalog 里）；新增「白名单里的键必须仍存在」。
+- **`check:ios-strings`**：去掉过期检查，新增——
+  - 「iOS 专属文案不得仍是英文」与「复数的单数形式须在有屈折的语言里真正换词」两条哨兵，由 JSON 一侧迁来，只管 iOS 专属键；
+  - 更多取键写法：`localize("…")`、赋给 `…Key` 常量的 `switch`／三元表达式、`…Key:` 参数后的整个表达式、按 `key`／`…Key` 标签定位的元组（含 getter 与 `append`）、同文件辅助函数的 `…Key` 参数。`static` 常量与 `var …Key: Type` 声明不计，前者是记录或 UserDefaults 的名字；
+  - 覆盖率规则：catalog 里没有代码以上述写法要的键直接报错（`UNSEEN_ON_PURPOSE` 初始为空）。提取器在真实代码上看得到全部 785 个 catalog 键；
+  - Widget 守护：iOS 小组件经 `WidgetCopy` 读取的键（`WidgetCopy.text` 字面量、`rectangularStatus` 的映射、发布器给条目的 `label`）必须仍在 `public/locales`。模拟删掉其中两个键，会按行号报出每一处。
+  - 为让检查看得见，`WhatsNewView.feature` 的参数 `title`／`body` 改名为 `titleKey`／`bodyKey`。
+  - catalog 删除 3 个 L1 按字面量扫描时撞名收进来、iOS 从不当文案用的键：`hideEarnings`（偏好属性与 UserDefaults 键名）、`sunset`（SF Symbol）、`countdownNotStarted`（只作为 Widget 标签，由 `WidgetCopy` 从 `public/locales` 读）。catalog 788 → 785 条。
+- **Widget**：做本批时发现 L1 误把 Widget 扩展的 `public/locales` 也摘掉了，小组件文案全部回落为键名，已由 #201 单独热修；本批的 Widget 守护保证之后删键不会再删到 Widget 要读的键。
+- **验证**：iPhone 18 Pro / iOS 27 串行跑完整套件，45 个 suite 共 734 个测试通过。`npm test` 34 个文件 411 项通过（删去生成器的 10 项测试，检查测试新增 16 项，Web 侧新增 2 项）。`npm run lint`、`check:ios`、`check:ios-strings`、`git diff --check`、`npm run build` + `check:build:web`、`npm run build:desktop` + `check:build:desktop` 均通过。串行性能：一年 `recordsMetrics` 4.6 ms、记录列表 3.0 ms。本批没有界面改动，未做模拟器视觉检查。
