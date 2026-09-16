@@ -16,6 +16,7 @@
 		710000071234567890ABCDEF /* OffWorkCountdownWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */; };
 		710000081234567890ABCDEF /* OffWorkWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720000071234567890ABCDEF /* OffWorkWidgets.swift */; };
 		710000091234567890ABCDEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
+		7100000A1234567890ABCDEF /* locales in Resources */ = {isa = PBXBuildFile; fileRef = F000000C000000000000000C /* locales */; };
 		7100000B1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7200000A1234567890ABCDEF /* OffWorkCountdownWidgetsExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B31900010000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B31900020000000000000002 /* PrivacyInfo.xcprivacy */; };
 		B32000010000000000000001 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32000020000000000000002 /* WatchSnapshot.swift */; };
@@ -185,6 +186,7 @@
 		D12100000000000000000001 /* DoneAt Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DoneAt Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D12100000000000000000002 /* DoneAt Watch Widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DoneAt Watch Widgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D12100000000000000000003 /* WatchAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WatchAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
 		F1C00000000000000000A001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = ../../../assets/brand/AppIcon.icon; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -290,6 +292,7 @@
 			children = (
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				FA0000010000000000000001 /* Native */,
+				F000000C000000000000000C /* locales */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				C50000010000000000000001 /* Localizable.xcstrings */,
 				F1C00000000000000000A001 /* AppIcon.icon */,
@@ -576,6 +579,7 @@
 			files = (
 				B31900010000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
 				710000091234567890ABCDEF /* Assets.xcassets in Resources */,
+				7100000A1234567890ABCDEF /* locales in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -111,7 +111,8 @@ iOS 在运行时通过 `NativeLocalizer` 读取 `public/locales/<locale>/transla
 - **两个踩到的坑，都由保留下来的旧断言抓到**：
   - 38 条普通文案带字面 `%`（例如「Income after adjustment (%)」）。最初以「值里含 `%`」判断是否需要格式化，会把它们当成畸形格式符交给 `String(format:)`；改为只认 `%lld` 与 stringsdict 的 `%#@` 标记。
   - 复数键经 `localizedString` 返回的是 `%#@value@` 而不是选好的变体。不带 `count:` 的查询原样返回它，`{{count}}` 替换落空，格式符会直接显示在界面上；改为没有显式 `count:` 时从 `values["count"]` 取整数驱动选形，完全恢复旧行为。
-- **打包**：`public/locales` 文件夹引用从 App 与 Widget 两个 target 移除（Widget 根本不查文案，那份资源是历史遗留），19 份 JSON 不再进包。`check:ios` 新增三条断言：catalog 存在、被复制进 App 资源、且 `locales` 引用不得回归。
+- **打包**：`public/locales` 文件夹引用从 App 与 Widget 两个 target 移除，19 份 JSON 不再进包。`check:ios` 新增三条断言：catalog 存在、被复制进 App 资源、且 `locales` 引用不得回归。
+  - **更正（2026-09-16）**：「Widget 不查文案」的判断是错的。Widget 扩展编译的 `OffWorkCountdownWidget.swift` 与 Mac 版共用，其中的 `WidgetCopy` 从扩展自己的 bundle 读 `locales/<lang>/translation.json`；当时只搜了 `.t(`、`NativeLocalizer` 与 `localizedString`，没有搜到它。移除后 iOS 小组件的文案全部回落成键名（`countdownNotStarted`、`offWorkToday`、`widgetWorking` 等）。热修把文件夹引用只加回 Widget 扩展，`check:ios` 改为分别要求 Widget 打包、App 不打包。
 - **验证**：iPhone 18 Pro / iOS 27 串行跑完整套件，45 个 suite 共 **734 个测试通过**。主干原为 732，本批把旧的 6 个复数测试换成 8 个，数目正好对上。新测试覆盖各语言单复数的具体译文、零的取形、无复数变化的语言逐数一致、每种语言都打进自己的 `.lproj`、字面百分号不被当格式符、消息池编号键能收集回来，以及应用内语言选择不受设备语言影响。
 - `npm test` 34 个文件 389 项通过（含差分 fixture 未过期与新增的 8 项 catalog 测试）；`npm run lint`、`check:ios`、`check:ios-strings`、`git diff --check` 均通过。
 - 串行性能与上一批持平：一年 `recordsMetrics` 4.7 ms（P8-b 为 4.8 ms）、记录列表 3.0 ms。
