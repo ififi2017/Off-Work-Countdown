@@ -178,4 +178,7 @@ nonisolated struct NativeRulesInput: Codable, Equatable, Sendable {
     let annualBonusMonths: Double
     let forcedWorkdayStartMs: Double?
     var timeZoneIdentifier: String? = nil
+    /// Plan 018 P8's extended schedule, when the user has one switched on.
+    /// `nil` keeps every rule on the fixed-hours path it took before.
+    var extendedSchedule: ExtendedSchedulePlan? = nil
 }

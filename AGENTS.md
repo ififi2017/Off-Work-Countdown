@@ -51,8 +51,12 @@ or place salary values in widgets, URLs, analytics payloads or share metadata.
   right first. **Never add a second formula for a figure the rules already
   produce**: a summary or salary calculation written twice is two answers, and
   the "This week" row has already shipped disagreeing values that way. Behaviour
-  only iOS has, such as plan 018 P8's extended scheduling, is written and tested
-  in Swift alone. iOS has no JavaScriptCore rules bundle since plan 019 R4; do
+  only iOS has, such as plan 018 P8's extended scheduling in
+  `ExtendedScheduleRules.swift`, is written and tested in Swift alone. That file
+  resolves each civil day to the same start/end/break/workday tuple the rules
+  already take and hands it to `CivilZone`, so extended scheduling stays one
+  schedule algorithm rather than a second one; a plan-free input keeps taking
+  exactly the path it took before. iOS has no JavaScriptCore rules bundle since plan 019 R4; do
   not bring one back to evaluate `lib/` at runtime — `npm run check:ios` fails
   if `CountdownRules.js` reappears.
 - Since 3.1, a running shift is `segments + plannedEndAtMs + overtimeEndAtMs`.

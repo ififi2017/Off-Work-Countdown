@@ -11,6 +11,9 @@ nonisolated struct ScheduleHoursConfiguration: Codable, Equatable, Sendable {
     var schedule: NativeWorkSchedule
     var breakStartTime: String?
     var breakDurationMinutes: Int
+    /// Plan 018 P8's extended schedule. Optional, so hours saved before it
+    /// existed encode and fingerprint exactly as they did.
+    var extendedSchedule: ExtendedSchedulePlan? = nil
 }
 
 /// A stretch of working life. Overlaps are allowed; the winner is chosen

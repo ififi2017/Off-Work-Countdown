@@ -8,7 +8,8 @@ Android 暂时搁置，不进入当前排期。
 lib/reminders.ts 和 lib/summary.ts 为规格。自 019 R1 起，iOS 的班次解析、快照、Widget 班次、
 Watch 投影和区间展开由 ScheduleRules.swift 实现，R2 起提醒列表由 ReminderRules.swift 实现，R3 起
 汇总与收入由 SummaryRules.swift 实现，均以 TS 生成的差分 fixture 校验。R4 起 iOS 不再包含
-JavaScriptCore 规则包（CountdownRules.js）及其生成步骤。
+JavaScriptCore 规则包（CountdownRules.js）及其生成步骤。只有 iOS 提供的扩展排班（018 P8）由
+ExtendedScheduleRules.swift 实现，只写 Swift 测试、不回写 TS。
 watchOS 代码不复制这些规则，只消费 iPhone 的投影。
 
 产品继续坚持本地优先：不增加账号、分析 SDK 或自有服务器，不上传排班与薪资。任何跨设备
@@ -222,7 +223,10 @@ P4/P5 的真机验收状态不因此改为完成。
   Widget 班次、Watch 投影、区间展开、提醒、汇总与收入。scripts/ios-schedule-rule-oracle.mjs 保留
   对应的 TypeScript 入口，npm run generate:ios-rule-fixtures 生成差分 fixture，npm test 与 Xcode Cloud
   检查它是否过期。
-- 其余 Swift 代码只传入设置并渲染绝对结果，不在这三个文件之外重新实现“今天是否上班”
+- ExtendedScheduleRules.swift（018 P8-b）：扩展排班逐日解析出的班次。只有 iOS 有这个功能，
+  没有对应的 TS 入口，也不生成差分 fixture，由 AppTests 的 Swift 测试单独覆盖。它把每一天解析成
+  与上面三个文件相同的「上班时段 + 中途休息 + 是否上班」，再交给 CivilZone，不构成第二套排班算法。
+- 其余 Swift 代码只传入设置并渲染绝对结果，不在这四个文件之外重新实现“今天是否上班”
   “轮班第几天”或薪资计算。
 
 未来 Watch 不直接运行另一份 Swift 排班算法。iPhone 负责把当前规则结果投影为可离线渲染的

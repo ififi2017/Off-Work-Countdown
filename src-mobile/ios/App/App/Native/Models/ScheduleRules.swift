@@ -20,7 +20,7 @@ import Foundation
 /// what the JavaScriptCore context used to require.
 nonisolated enum ScheduleRules {
     static func snapshot(input: NativeRulesInput) -> NativeShiftSnapshot {
-        let zone = CivilZone(identifier: input.timeZoneIdentifier)
+        let zone = CivilZone(identifier: input.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: input.extendedSchedule))
         let shift = resolveCurrentShift(input, zone)
         let nextShift = nextShift(after: shift, input, zone)
         let clockIn = countdownProjection(input, shift: shift, nextShift: nextShift, zone)
@@ -65,7 +65,7 @@ nonisolated enum ScheduleRules {
         currentShift: NativeWatchCurrentShift? = nil,
         finishedAtMs: Double? = nil
     ) -> NativeWatchRulesProjection {
-        let zone = CivilZone(identifier: input.timeZoneIdentifier)
+        let zone = CivilZone(identifier: input.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: input.extendedSchedule))
         let resolved = resolveCurrentShift(input, zone)
         let nextStartAtMs = nextShift(after: resolved, input, zone)?.startAtMs
         let currentIsActual = isActualShift(resolved, input, zone)
@@ -103,7 +103,7 @@ nonisolated enum ScheduleRules {
         throughMs: Double,
         maximumCount: Int
     ) -> [NativeWidgetShiftSnapshot] {
-        let zone = CivilZone(identifier: input.timeZoneIdentifier)
+        let zone = CivilZone(identifier: input.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: input.extendedSchedule))
         let current = zone.shiftTimeline(input.startTime, input.endTime, nowMs: input.nowMs, options: .init(input))
         var shifts: [NativeWidgetShiftSnapshot] = []
         var afterMs = max(input.nowMs, current.endAtMs)
@@ -148,19 +148,30 @@ nonisolated enum ScheduleRules {
         through: Date,
         timeZone: TimeZone? = nil
     ) -> [NativeScheduleDayExpansion] {
-        let zone = CivilZone(timeZone: timeZone ?? .current)
+        let zone = CivilZone(
+            timeZone: timeZone ?? .current,
+            extended: ExtendedScheduleResolver(plan: configuration.extendedSchedule)
+        )
         let fromDay = zone.civil(from.timeIntervalSince1970 * 1_000).dayNumber
         let throughDay = zone.civil(through.timeIntervalSince1970 * 1_000).dayNumber
         guard throughDay >= fromDay else { return [] }
 
-        let start = Clock(configuration.startTime)
-        let end = Clock(configuration.endTime)
-        let breakClock = configuration.breakStartTime.flatMap { $0.isEmpty ? nil : Clock($0) }
-        let breakDurationMs = Double(configuration.breakDurationMinutes) * 60_000
         var days: [NativeScheduleDayExpansion] = []
         days.reserveCapacity(throughDay - fromDay + 1)
 
         for dayNumber in fromDay...throughDay {
+            // Resolved per day: an extended schedule gives each day its own
+            // shift, and without one every day resolves to the configured pair.
+            let clocks = zone.dayClocks(dayNumber: dayNumber, configuration.startTime, configuration.endTime)
+            let start = clocks.start
+            let end = clocks.end
+            let dayBreak = zone.dayBreak(
+                dayNumber: dayNumber,
+                configuration.breakStartTime,
+                configuration.breakDurationMinutes
+            )
+            let breakClock = dayBreak.startTime.flatMap { $0.isEmpty ? nil : Clock($0) }
+            let breakDurationMs = Double(dayBreak.durationMinutes) * 60_000
             let startAtMs = zone.utcMs(dayNumber: dayNumber, start)
             var endAtMs = zone.utcMs(dayNumber: dayNumber, end)
             if endAtMs <= startAtMs {
@@ -198,7 +209,7 @@ nonisolated enum ScheduleRules {
         guard let breakStartTime = input.breakStartTime, !breakStartTime.isEmpty,
               input.breakDurationMinutes > 0
         else { return true }
-        let zone = CivilZone(identifier: input.timeZoneIdentifier)
+        let zone = CivilZone(identifier: input.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: input.extendedSchedule))
         return zone.shiftTimeline(input.startTime, input.endTime, nowMs: input.nowMs, options: .init(input))
             .segments.count > 1
     }
@@ -207,7 +218,7 @@ nonisolated enum ScheduleRules {
     /// Each id is prefixed `current:<end>:` or `next:<end>:`, so a caller can
     /// take one shift's list and ids stay stable across rebuilds.
     static func reminders(input: NativeRulesInput, reminderInputs: NativeReminderInputs) -> [NativeReminder] {
-        let zone = CivilZone(identifier: input.timeZoneIdentifier)
+        let zone = CivilZone(identifier: input.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: input.extendedSchedule))
         let shift = resolveCurrentShift(input, zone)
         func project(_ timeline: ShiftTimeline, _ scope: String) -> [NativeReminder] {
             let prefix = "\(scope):\(JavaScriptNumber.string(timeline.endAtMs)):"
@@ -223,7 +234,7 @@ nonisolated enum ScheduleRules {
     /// row splits, so neither the clock nor the kind of edit narrows it.
     static func shouldPromptApplyToday(current: NativeRulesInput, candidate: NativeRulesInput) -> Bool {
         [current, candidate].contains { input in
-            let zone = CivilZone(identifier: input.timeZoneIdentifier)
+            let zone = CivilZone(identifier: input.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: input.extendedSchedule))
             return zone.isScheduledWorkday(resolveCurrentShift(input, zone).startAtMs, input.workdays, input.schedule)
         }
     }
@@ -418,6 +429,12 @@ nonisolated struct ShiftOptions: Sendable {
     var breakDurationMinutes: Int
     var overtimeEndAtMs: Double?
 
+    init(breakStartTime: String?, breakDurationMinutes: Int, overtimeEndAtMs: Double? = nil) {
+        self.breakStartTime = breakStartTime?.isEmpty == false ? breakStartTime : nil
+        self.breakDurationMinutes = breakDurationMinutes
+        self.overtimeEndAtMs = overtimeEndAtMs
+    }
+
     init(_ input: NativeRulesInput) {
         breakStartTime = input.breakStartTime?.isEmpty == false ? input.breakStartTime : nil
         breakDurationMinutes = input.breakDurationMinutes
@@ -548,14 +565,22 @@ nonisolated final class CivilZone {
     private static let dayMs = 86_400_000.0
     let timeZone: TimeZone
     private var readingCache: [Reading: Double] = [:]
+    /// Plan 018 P8's per-day assignments. `nil` for every schedule that
+    /// predates extended scheduling, and then every path below is exactly the
+    /// one it took before.
+    private let extended: ExtendedScheduleResolver?
 
-    init(timeZone: TimeZone) {
+    init(timeZone: TimeZone, extended: ExtendedScheduleResolver? = nil) {
         self.timeZone = timeZone
+        self.extended = extended
     }
 
-    convenience init(identifier: String?) {
+    convenience init(identifier: String?, extended: ExtendedScheduleResolver? = nil) {
         let trimmed = identifier?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        self.init(timeZone: trimmed.isEmpty ? .current : TimeZone(identifier: trimmed) ?? .current)
+        self.init(
+            timeZone: trimmed.isEmpty ? .current : TimeZone(identifier: trimmed) ?? .current,
+            extended: extended
+        )
     }
 
     func civil(_ ms: Double) -> Civil {
@@ -643,16 +668,83 @@ nonisolated final class CivilZone {
         civil(toMs).dayNumber - civil(fromMs).dayNumber
     }
 
+    // MARK: Extended scheduling (plan 018 P8)
+
+    /// The clocks one civil day works: the extended schedule's, when it assigns
+    /// a shift to that day, otherwise the fixed pair the caller passed. A rest
+    /// or unassigned day keeps the caller's hours, exactly as a classic rest
+    /// day does, so a makeup day still has a shape to reuse.
+    func dayClocks(dayNumber: Int, _ startTime: String, _ endTime: String) -> (start: Clock, end: Clock) {
+        guard let hours = extended?.day(dayNumber: dayNumber).hours else {
+            return (Clock(startTime), Clock(endTime))
+        }
+        return (Clock(hours.startTime), Clock(hours.endTime))
+    }
+
+    /// The same for the in-shift break, which belongs to the day's shift type.
+    func dayBreak(
+        dayNumber: Int,
+        _ breakStartTime: String?,
+        _ breakDurationMinutes: Int
+    ) -> (startTime: String?, durationMinutes: Int) {
+        guard let hours = extended?.day(dayNumber: dayNumber).hours else {
+            return (breakStartTime, breakDurationMinutes)
+        }
+        return (hours.breakStartTime, hours.breakDurationMinutes)
+    }
+
+    /// `options` carrying the break of the day the shift starts on.
+    func dayOptions(startingAtMs: Double, _ options: ShiftOptions) -> ShiftOptions {
+        guard let hours = extended?.day(dayNumber: civil(startingAtMs).dayNumber).hours else { return options }
+        var copy = options
+        copy.breakStartTime = hours.breakStartTime
+        copy.breakDurationMinutes = hours.breakDurationMinutes
+        return copy
+    }
+
+    /// The effective hours one civil day is scheduled to work under an extended
+    /// schedule, break already taken out. `nil` when no extended schedule
+    /// assigns that day work, which leaves the caller on its own figure.
+    ///
+    /// It runs the same `timeline` the countdown runs on rather than measuring
+    /// the day a second way: a summary that computed its own durations is how
+    /// the "This week" row once shipped a number Records disagreed with.
+    func plannedHours(dayNumber: Int) -> Double? {
+        guard let hours = extended?.day(dayNumber: dayNumber).hours else { return nil }
+        let noonMs = utcMs(dayNumber: dayNumber, Clock(hour: 12, minute: 0))
+        let bounds = shiftBounds(hours.startTime, hours.endTime, nowMs: noonMs)
+        guard bounds.end > bounds.start else { return 0 }
+        let options = dayOptions(
+            startingAtMs: bounds.start,
+            ShiftOptions(breakStartTime: nil, breakDurationMinutes: 0)
+        )
+        return timeline(start: bounds.start, end: bounds.end, options: options).plannedDurationMs / 3_600_000
+    }
+
+    /// One day's bounds, when that day's assignment crosses midnight.
+    private func overnightBounds(dayNumber: Int, _ startTime: String, _ endTime: String) -> (start: Double, end: Double)? {
+        let clocks = dayClocks(dayNumber: dayNumber, startTime, endTime)
+        guard clocks.end.minutes <= clocks.start.minutes else { return nil }
+        let startAtMs = utcMs(dayNumber: dayNumber, clocks.start)
+        let endAtMs = utcMs(dayNumber: dayNumber + 1, clocks.end)
+        guard endAtMs > startAtMs else { return nil }
+        return (startAtMs, endAtMs)
+    }
+
     // MARK: Work patterns
 
-    /// Manual (`off`) mode has no rest pattern, so every shift counts.
+    /// Manual (`off`) mode has no rest pattern, so every shift counts. An
+    /// extended schedule answers for itself: it assigns rest days as a shift
+    /// type, so the weekday patterns below never run.
     func isScheduledWorkday(_ shiftStartMs: Double, _ workdays: [Int], _ schedule: NativeWorkSchedule) -> Bool {
-        schedule.mode == "off" || isScheduledWorkdayInZone(shiftStartMs, workdays, schedule)
+        if let extended { return extended.day(dayNumber: civil(shiftStartMs).dayNumber).isWorkday }
+        return schedule.mode == "off" || isScheduledWorkdayInZone(shiftStartMs, workdays, schedule)
     }
 
     /// As `isScheduledWorkday`, except manual days are rest: range expansion
     /// must not paint a seven-day week for a user who starts shifts by hand.
     func isScheduledWorkdayInZone(_ shiftStartMs: Double, _ workdays: [Int], _ schedule: NativeWorkSchedule) -> Bool {
+        if let extended { return extended.day(dayNumber: civil(shiftStartMs).dayNumber).isWorkday }
         if schedule.mode == "off" { return false }
         let weekday = civil(shiftStartMs).weekday
         if schedule.mode == "classic" { return workdays.contains(weekday) }
@@ -675,7 +767,7 @@ nonisolated final class CivilZone {
     }
 
     func nextRestDayStartMs(afterMs: Double, _ workdays: [Int], _ schedule: NativeWorkSchedule) -> Double? {
-        if schedule.mode == "off" { return nil }
+        if extended == nil, schedule.mode == "off" { return nil }
         let first = civil(afterMs).dayNumber
         for offset in 0...366 {
             let dayStartMs = utcMs(dayNumber: first + offset, Clock(hour: 0, minute: 0))
@@ -690,8 +782,18 @@ nonisolated final class CivilZone {
     /// overnight shift after midnight still belongs to the previous evening.
     func shiftBounds(_ startTime: String, _ endTime: String, nowMs: Double) -> (start: Double, end: Double) {
         let today = civil(nowMs).dayNumber
-        let start = Clock(startTime)
-        let end = Clock(endTime)
+        // With one fixed pair of clocks, a still-running overnight shift is
+        // always found by walking today's own bounds back a day. Per-day
+        // assignments break that: last night can be a night shift while today
+        // is an ordinary day shift, and today's bounds would never look back.
+        if extended != nil,
+           let overnight = overnightBounds(dayNumber: today - 1, startTime, endTime),
+           nowMs >= overnight.start, nowMs < overnight.end {
+            return overnight
+        }
+        let todayClocks = dayClocks(dayNumber: today, startTime, endTime)
+        let start = todayClocks.start
+        let end = todayClocks.end
         var startAtMs = utcMs(dayNumber: today, start)
         var endAtMs = utcMs(dayNumber: today, end)
         if endAtMs <= startAtMs {
@@ -699,7 +801,11 @@ nonisolated final class CivilZone {
             // instant. That is not an overnight shift.
             if end.minutes > start.minutes { return (startAtMs, startAtMs) }
             if nowMs < endAtMs {
-                startAtMs = utcMs(dayNumber: today - 1, start)
+                // Last night's shift is still running, so both of its ends
+                // belong to yesterday's assignment.
+                let yesterdayClocks = dayClocks(dayNumber: today - 1, startTime, endTime)
+                startAtMs = utcMs(dayNumber: today - 1, yesterdayClocks.start)
+                endAtMs = utcMs(dayNumber: today, yesterdayClocks.end)
             } else {
                 endAtMs = utcMs(dayNumber: today + 1, end)
             }
@@ -709,7 +815,7 @@ nonisolated final class CivilZone {
 
     func shiftTimeline(_ startTime: String, _ endTime: String, nowMs: Double, options: ShiftOptions) -> ShiftTimeline {
         let bounds = shiftBounds(startTime, endTime, nowMs: nowMs)
-        return timeline(start: bounds.start, end: bounds.end, options: options)
+        return timeline(start: bounds.start, end: bounds.end, options: dayOptions(startingAtMs: bounds.start, options))
     }
 
     func timeline(start: Double, end plannedEndAtMs: Double, options: ShiftOptions) -> ShiftTimeline {
@@ -759,7 +865,7 @@ nonisolated final class CivilZone {
             guard isScheduledWorkday(bounds.start, workdays, schedule)
                     || forcedDayMs.map({ startOfCivilDayMs(bounds.start) == $0 }) == true
             else { continue }
-            let shift = timeline(start: bounds.start, end: bounds.end, options: options)
+            let shift = timeline(start: bounds.start, end: bounds.end, options: dayOptions(startingAtMs: bounds.start, options))
             if nowMs >= shift.startAtMs, nowMs < shift.endAtMs { return shift }
             if nowMs >= shift.endAtMs, startOfCivilDayMs(shift.endAtMs) == todayMs { return shift }
         }
@@ -774,14 +880,16 @@ nonisolated final class CivilZone {
         afterMs: Double,
         options: ShiftOptions
     ) -> ShiftTimeline? {
-        if schedule.mode == "off" { return nil }
-        if schedule.mode == "classic", workdays.isEmpty { return nil }
+        if extended == nil {
+            if schedule.mode == "off" { return nil }
+            if schedule.mode == "classic", workdays.isEmpty { return nil }
+        }
         let cursorMs = startOfCivilDayMs(afterMs)
         for offset in 0...366 {
             let dayNumber = civil(addCivilDaysMs(cursorMs, offset)).dayNumber
             let bounds = shiftBounds(startTime, endTime, nowMs: utcMs(dayNumber: dayNumber, Clock(hour: 12, minute: 0)))
             guard isScheduledWorkdayInZone(bounds.start, workdays, schedule), bounds.start > afterMs else { continue }
-            return timeline(start: bounds.start, end: bounds.end, options: options)
+            return timeline(start: bounds.start, end: bounds.end, options: dayOptions(startingAtMs: bounds.start, options))
         }
         return nil
     }
