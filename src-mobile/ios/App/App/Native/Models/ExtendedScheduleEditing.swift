@@ -84,6 +84,70 @@ nonisolated enum ExtendedScheduleEditing {
         return next
     }
 
+    /// Stored hand-set days with a draft's calendar edits applied.
+    static func handSetDays(_ stored: [String: UUID], applying edits: [String: RosterDayEdit]?) -> [String: UUID] {
+        guard let edits else { return stored }
+        var days = stored
+        for (key, edit) in edits {
+            switch edit {
+            case .shift(let id): days[key] = id
+            case .followPattern: days[key] = nil
+            }
+        }
+        return days
+    }
+
+    /// Adds one calendar edit to a draft's, dropping it again when it only
+    /// restates what is stored.
+    static func editing(
+        _ edits: [String: RosterDayEdit]?,
+        dayKey: String,
+        to edit: RosterDayEdit,
+        stored: [String: UUID]
+    ) -> [String: RosterDayEdit]? {
+        var next = edits ?? [:]
+        let restates = switch edit {
+        case .shift(let id): stored[dayKey] == id
+        case .followPattern: stored[dayKey] == nil
+        }
+        next[dayKey] = restates ? nil : edit
+        return next.isEmpty ? nil : next
+    }
+
+    /// Calendar edits that write the pattern's answer into every day of the
+    /// given months that is not already set by hand, so dropping the pattern
+    /// leaves those months looking as they did. Later months then repeat the
+    /// last of them by date.
+    static func keepingPattern(
+        _ plan: ExtendedSchedulePlan,
+        months: [(year: Int, month: Int)],
+        edits: [String: RosterDayEdit]?
+    ) -> [String: RosterDayEdit]? {
+        var next = edits ?? [:]
+        let resolver = ExtendedScheduleResolver(plan: plan)
+        for (year, month) in months {
+            for day in 1...daysIn(year: year, month: month) {
+                let number = CivilZone.dayNumber(year: year, month: month, day: day)
+                let resolved = resolver.day(dayNumber: number)
+                guard resolved.source == .rule, let id = resolved.shiftTypeID else { continue }
+                next[dayKey(dayNumber: number)] = .shift(id)
+            }
+        }
+        return next.isEmpty ? nil : next
+    }
+
+    static func daysIn(year: Int, month: Int) -> Int {
+        let next = month == 12 ? (year + 1, 1) : (year, month + 1)
+        return CivilZone.dayNumber(year: next.0, month: next.1, day: 1) - CivilZone.dayNumber(year: year, month: month, day: 1)
+    }
+
+    /// The month `offset` months after the one containing `dayKey`.
+    static func month(of dayKey: String, plus offset: Int) -> (year: Int, month: Int)? {
+        guard let parts = ExtendedScheduleResolver.parse(dayKey: dayKey) else { return nil }
+        let index = parts.year * 12 + (parts.month - 1) + offset
+        return (index / 12, index % 12 + 1)
+    }
+
     /// Today's one-based place in the cycle.
     static func cycleDay(of rule: ShiftCycleRule, todayKey: String) -> Int? {
         guard !rule.days.isEmpty,

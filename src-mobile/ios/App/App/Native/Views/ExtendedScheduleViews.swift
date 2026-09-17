@@ -261,17 +261,253 @@ struct ShiftTypeEditorSheet: View {
     }
 }
 
+// MARK: - Calendar
+
+/// The month calendar the extended schedule opens on: this month and next are
+/// filled in day by day. Pick a shift below the grid, then tap days to give
+/// them that shift. Months after next repeat by date, so they are not shown.
+struct ExtendedCalendarSection: View {
+    let session: ShiftSession
+    let content: ExtendedScheduleContent
+    /// Stored hand-set days with the page's unsaved edits applied.
+    let handSetDays: [String: UUID]
+    let todayKey: String
+    let onSetDay: (String, RosterDayEdit) -> Void
+    @State private var monthOffset = 0
+    @State private var brush: RosterDayEdit?
+    @ScaledMetric(relativeTo: .callout) private var cellHeight: CGFloat = 50
+
+    /// This month and next. Filling in earlier months waits for Records to
+    /// count those days (plan 018 P8-c2): a month worked on fixed hours keeps
+    /// its fixed-hours snapshot, so a day set there would change nothing.
+    private static let offsets = 0...1
+
+    private var text: AppText { session.text }
+    private var activeTypes: [ShiftType] { ExtendedScheduleEditing.activeTypes(in: content) }
+    private var shownMonth: (year: Int, month: Int)? {
+        ExtendedScheduleEditing.month(of: todayKey, plus: monthOffset)
+    }
+
+    /// The chosen shift, or the first work shift while nothing valid is chosen.
+    private var currentBrush: RosterDayEdit? {
+        if let brush {
+            switch brush {
+            case .followPattern: return brush
+            case .shift(let id) where activeTypes.contains(where: { $0.id == id }): return brush
+            case .shift: break
+            }
+        }
+        return (activeTypes.first { $0.kind == .work } ?? activeTypes.first).map { .shift($0.id) }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            OWCSectionHeader(title: text.t("extendedCalendar"))
+            OWCGroupCard {
+                if let shownMonth {
+                    monthHeader(shownMonth)
+                    grid(shownMonth)
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 12)
+                        .owcPlainDivider()
+                }
+                palette
+            }
+            Text(text.t(content.rule == nil ? "extendedCalendarNoteNoPattern" : "extendedCalendarNote"))
+                .font(.footnote)
+                .foregroundStyle(OWCDesign.secondary)
+                .lineSpacing(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+        }
+        .padding(.horizontal, OWCDesign.pageInset)
+        .sensoryFeedback(.selection, trigger: monthOffset)
+    }
+
+    private func monthHeader(_ month: (year: Int, month: Int)) -> some View {
+        HStack {
+            Button { monthOffset -= 1 } label: {
+                Image(systemName: "chevron.backward")
+                    .font(.body.weight(.semibold))
+                    .frame(minWidth: 44, minHeight: 44)
+            }
+            .disabled(monthOffset <= Self.offsets.lowerBound)
+            .accessibilityLabel(text.t("extendedPreviousMonth"))
+            Spacer()
+            Text(text.formatCivilDate(year: month.year, month: month.month, template: "yMMMM"))
+                .font(.headline)
+            Spacer()
+            Button { monthOffset += 1 } label: {
+                Image(systemName: "chevron.forward")
+                    .font(.body.weight(.semibold))
+                    .frame(minWidth: 44, minHeight: 44)
+            }
+            .disabled(monthOffset >= Self.offsets.upperBound)
+            .accessibilityLabel(text.t("extendedNextMonth"))
+        }
+        .tint(OWCDesign.accent)
+        .padding(.horizontal, 6)
+        .padding(.top, 4)
+    }
+
+    private func grid(_ month: (year: Int, month: Int)) -> some View {
+        let plan = ExtendedSchedulePlan(shiftTypes: content.shiftTypes, rule: content.rule, handSetDays: handSetDays)
+        let resolver = ExtendedScheduleResolver(plan: plan)
+        let first = CivilZone.dayNumber(year: month.year, month: month.month, day: 1)
+        // Monday first, as the weekday labels are.
+        let leading = ((first + 4) % 7 + 7 + 6) % 7
+        let count = ExtendedScheduleEditing.daysIn(year: month.year, month: month.month)
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
+        return LazyVGrid(columns: columns, spacing: 4) {
+            ForEach(Array(text.weekdayLabels().enumerated()), id: \.offset) { _, label in
+                Text(label)
+                    .font(.caption)
+                    .foregroundStyle(OWCDesign.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .accessibilityHidden(true)
+            }
+            ForEach(0..<(leading + count), id: \.self) { slot in
+                if slot < leading {
+                    Color.clear.frame(height: cellHeight).accessibilityHidden(true)
+                } else {
+                    dayCell(month: month, day: slot - leading + 1, number: first + slot - leading, resolver: resolver)
+                }
+            }
+        }
+    }
+
+    private func dayCell(
+        month: (year: Int, month: Int),
+        day: Int,
+        number: Int,
+        resolver: ExtendedScheduleResolver
+    ) -> some View {
+        let key = ExtendedScheduleEditing.dayKey(dayNumber: number)
+        let resolved = resolver.day(dayNumber: number)
+        let type = resolved.shiftTypeID.flatMap { id in content.shiftTypes.first { $0.id == id } }
+        let isToday = key == todayKey
+        let isPast = number < (ExtendedScheduleResolver.dayNumber(dayKey: todayKey) ?? number)
+        let isWork = type?.kind == .work
+        let setByHand = resolved.source == .handSet
+        // Without a pattern every filled day is set by hand, so the mark would
+        // say nothing.
+        let marksHandSet = setByHand && content.rule != nil
+        return Button {
+            if let brush = currentBrush { onSetDay(key, brush) }
+        } label: {
+            VStack(spacing: 2) {
+                Text(text.formatCount(day))
+                    .font(.callout.monospacedDigit().weight(isToday ? .semibold : .regular))
+                    .foregroundStyle(isToday ? OWCDesign.accent : OWCDesign.primary)
+                Text(type?.name ?? " ")
+                    .font(.caption2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .foregroundStyle(isWork ? (type?.displayColor ?? OWCDesign.secondary) : OWCDesign.secondary)
+            }
+            .padding(.horizontal, 2)
+            .frame(maxWidth: .infinity, minHeight: cellHeight)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(isWork ? (type?.displayColor ?? .clear).opacity(0.13) : Color.clear)
+            )
+            .overlay {
+                if isToday {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(OWCDesign.accent, lineWidth: 1.5)
+                }
+            }
+            .opacity(isPast ? 0.5 : 1)
+            .overlay(alignment: .topTrailing) {
+                if marksHandSet {
+                    Circle()
+                        .fill(OWCDesign.secondary)
+                        .frame(width: 4, height: 4)
+                        .padding(5)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel([
+            text.formatCivilDate(year: month.year, month: month.month, day: day, template: "MMMMdEEEE"),
+            type?.name ?? text.t("extendedUnassigned"),
+            marksHandSet ? text.t("extendedSetByHand") : nil,
+            isToday ? text.t("extendedToday") : nil,
+        ].compactMap { $0 }.joined(separator: ", "))
+        .accessibilityHint(currentBrush.map { text.t("extendedFillDayHint", values: ["shift": brushName($0)]) } ?? "")
+        .accessibilityAddTraits(.isButton)
+    }
+
+    private func brushName(_ brush: RosterDayEdit) -> String {
+        switch brush {
+        case .shift(let id): content.shiftTypes.first { $0.id == id }?.name ?? ""
+        case .followPattern: text.t(content.rule == nil ? "extendedClearDay" : "extendedFollowPattern")
+        }
+    }
+
+    private var palette: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(activeTypes) { type in
+                    chip(.shift(type.id), title: type.name) {
+                        Circle().fill(type.displayColor).frame(width: 8, height: 8)
+                    }
+                }
+                chip(.followPattern, title: brushName(.followPattern)) {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(OWCDesign.secondary)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+        }
+    }
+
+    private func chip<Mark: View>(
+        _ value: RosterDayEdit,
+        title: String,
+        @ViewBuilder mark: () -> Mark
+    ) -> some View {
+        let selected = currentBrush == value
+        return Button { brush = value } label: {
+            HStack(spacing: 6) {
+                mark()
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundStyle(OWCDesign.primary)
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 12)
+            .frame(minHeight: 34)
+            .background(Capsule().fill(selected ? OWCDesign.accent.opacity(0.14) : OWCDesign.control))
+            .overlay(Capsule().strokeBorder(selected ? OWCDesign.accent : .clear, lineWidth: 1))
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .sensoryFeedback(.selection, trigger: selected)
+    }
+}
+
 // MARK: - Pattern
 
-/// The cycle rule: which pattern it started from, how long it is, where today
-/// sits in it, and the shift each of its days works.
+/// The optional pattern that fills the calendar: which kind it is, how long it
+/// is, where today sits in it, and the shift each of its days works.
 struct ExtendedPatternSection: View {
     let session: ShiftSession
     let content: ExtendedScheduleContent
     let todayKey: String
     let onChange: (ExtendedScheduleContent) -> Void
     let onApplyTemplate: (ShiftCycleRule.Preset) -> Void
+    /// Drops the pattern after writing it into this month and next.
+    let onRemovePattern: () -> Void
     @State private var pendingTemplate: ShiftCycleRule.Preset?
+    @State private var confirmsRemoval = false
 
     private var text: AppText { session.text }
     private var rule: ShiftCycleRule? { content.rule }
@@ -323,6 +559,16 @@ struct ExtendedPatternSection: View {
         } message: { preset in
             Text(text.t("extendedApplyTemplateMessage", values: ["pattern": templateName(preset)]))
         }
+        .confirmationDialog(
+            text.t("extendedRemovePatternTitle"),
+            isPresented: $confirmsRemoval,
+            titleVisibility: .visible
+        ) {
+            Button(text.t("extendedRemovePattern"), action: onRemovePattern)
+            Button(text.t("cancelAction"), role: .cancel) {}
+        } message: {
+            Text(text.t("extendedRemovePatternMessage"))
+        }
     }
 
     private func templateName(_ preset: ShiftCycleRule.Preset) -> String {
@@ -341,7 +587,11 @@ struct ExtendedPatternSection: View {
                 selection: Binding<ShiftCycleRule.Preset?>(
                     get: { rule?.preset },
                     set: { preset in
-                        guard let preset, preset != rule?.preset else { return }
+                        guard preset != rule?.preset else { return }
+                        guard let preset else {
+                            confirmsRemoval = true
+                            return
+                        }
                         // Nothing to overwrite yet: fill it straight away.
                         if rule == nil { onApplyTemplate(preset) } else { pendingTemplate = preset }
                     }
@@ -352,10 +602,11 @@ struct ExtendedPatternSection: View {
                 ForEach(Self.templates + (rule?.preset == .custom ? [.custom] : []), id: \.self) { preset in
                     Text(templateName(preset)).tag(Optional(preset))
                 }
+                Text(text.t("extendedPatternNone")).tag(ShiftCycleRule.Preset?.none)
             }
         } label: {
             OWCRow(title: text.t("extendedPatternKind"), isLast: rule == nil || rule?.preset == .weekly) {
-                menuValue(rule.map { templateName($0.preset) })
+                menuValue(rule.map { templateName($0.preset) } ?? text.t("extendedPatternNone"))
             }
         }
         .buttonStyle(OWCRowButtonStyle())

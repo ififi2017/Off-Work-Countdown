@@ -849,11 +849,22 @@ final class ShiftSessionStore {
             var preferenceChange = change
             preferenceChange.extendedScheduleEnabled = nil
             preferenceChange.extendedContent = nil
+            preferenceChange.rosterEdits = nil
             // Checked here as well as by the archive, which would drop an
             // invalid schedule silently after the hours had already been saved.
             if let content = change.extendedContent {
                 let zone = records.state.extendedSchedule.flatMap { TimeZone(identifier: $0.timeZoneIdentifier) }
                 guard content.isValid(in: zone ?? preferences.recordsTimeZone) else { return false }
+            }
+            if let edits = change.rosterEdits {
+                // A day can only name a type the schedule it is saved with knows.
+                guard let content = change.extendedContent ?? preferences.extendedScheduleContent else { return false }
+                let known = Set(content.shiftTypes.map(\.id))
+                guard edits.allSatisfy({ key, edit in
+                    guard ExtendedScheduleResolver.dayNumber(dayKey: key) != nil else { return false }
+                    if case .shift(let id) = edit { return known.contains(id) }
+                    return true
+                }) else { return false }
             }
             if let enabled = change.extendedScheduleEnabled {
                 guard records.state.extendedSchedule != nil || change.extendedContent != nil else { return false }
@@ -874,7 +885,7 @@ final class ShiftSessionStore {
 
                 let preservedSchedule: TodayScheduleOverride?
                 if decision == .nextShiftOnly, let until = self.session.overrideExpiry(at: date) {
-                    preservedSchedule = self.session.captureSchedule(untilMs: until)
+                    preservedSchedule = self.session.captureSchedule(untilMs: until, at: date)
                 } else {
                     preservedSchedule = nil
                 }
@@ -889,6 +900,9 @@ final class ShiftSessionStore {
                         timeZoneIdentifier: preferences.recordsTimeZone.identifier,
                         at: date
                     ) else { return false }
+                }
+                if let edits = change.rosterEdits {
+                    records.applyRosterEdits(edits, timeZoneIdentifier: preferences.recordsTimeZone.identifier, at: date)
                 }
                 self.session.todayOverride = preservedSchedule
 

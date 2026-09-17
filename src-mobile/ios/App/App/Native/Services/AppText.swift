@@ -148,6 +148,19 @@ final class AppText {
         return calendar.weekdaySymbols[((civilDayNumber + 4) % 7 + 7) % 7]
     }
 
+    /// A civil date read as a label, so the device's zone cannot move it to a
+    /// neighbouring day. `template` is a date format skeleton, e.g. "yMMMM".
+    func formatCivilDate(year: Int, month: Int, day: Int = 1, template: String) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .gmt
+        guard let date = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12)) else {
+            return "\(year)-\(month)-\(day)"
+        }
+        return RecordsDateFormatters.shared
+            .formatter(template: template, locale: preferences.locale, timeZone: .gmt)
+            .string(from: date)
+    }
+
 }
 
 extension AppText {

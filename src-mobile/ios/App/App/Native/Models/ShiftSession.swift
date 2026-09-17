@@ -38,6 +38,25 @@ struct ScheduleFieldChange: Equatable {
     var extendedScheduleEnabled: Bool?
     /// Plan 018 P8's shift types and rule, replaced as a whole.
     var extendedContent: ExtendedScheduleContent?
+    /// Plan 018 P8's calendar: days given a shift by hand, or put back on the
+    /// pattern, keyed by civil day.
+    var rosterEdits: [String: RosterDayEdit]?
+}
+
+/// One day changed in the extended schedule's calendar.
+nonisolated enum RosterDayEdit: Hashable, Sendable {
+    case shift(UUID)
+    /// Drops the hand-set shift, so the pattern or the carried-over month
+    /// decides the day again.
+    case followPattern
+}
+
+/// The hand-set shift one day had before a save, kept so "from the next shift
+/// only" leaves the shift in progress alone. `nil` when the day was not set by
+/// hand.
+nonisolated struct KeptRosterDay: Codable, Equatable, Sendable {
+    var dayKey: String
+    var shiftTypeID: UUID?
 }
 
 /// Hours and calendar in force until the current shift's settlement seam.
@@ -64,6 +83,8 @@ struct TodayScheduleOverride: Codable, Equatable {
     /// schedule, and in overrides saved before this existed, which then follow
     /// the stored ones.
     var extendedContent: ExtendedScheduleContent? = nil
+    /// The current shift's day as the calendar had it.
+    var extendedKeptDay: KeptRosterDay? = nil
 }
 
 /// Current session state and rule-backed read projections. It owns no record
@@ -449,10 +470,13 @@ final class ShiftSession {
     }
     func extendedSchedulePlan(at date: Date = .now, using source: RulesScheduleSource = .effective) -> ExtendedSchedulePlan? {
         guard usesExtendedSchedule(at: date, using: source) else { return nil }
-        if source == .effective, usesTodayOverride(at: date), let kept = todayOverride?.extendedContent {
-            return preferences.extendedSchedulePlan(for: kept)
+        guard source == .effective, usesTodayOverride(at: date), let todayOverride else {
+            return preferences.extendedSchedulePlan
         }
-        return preferences.extendedSchedulePlan
+        let plan = todayOverride.extendedContent.map(preferences.extendedSchedulePlan(for:))
+            ?? preferences.extendedSchedulePlan
+        guard let plan, let day = todayOverride.extendedKeptDay else { return plan }
+        return preferences.extendedSchedulePlan(plan, keeping: day)
     }
     /// Under an extended schedule an assigned day brings its own clock
     /// readings, which would replace the ones a caller or an early clock-in
@@ -594,7 +618,10 @@ final class ShiftSession {
             forcedWorkdayStartMs: forcedWorkdayStartMs,
             timeZoneIdentifier: rulesTimeZoneIdentifier,
             extendedSchedule: (change.extendedScheduleEnabled ?? preferences.isExtendedScheduleEnabled)
-                ? change.extendedContent.map(preferences.extendedSchedulePlan(for:)) ?? preferences.extendedSchedulePlan
+                ? preferences.extendedSchedulePlan(
+                    for: change.extendedContent ?? preferences.extendedScheduleContent,
+                    applying: change.rosterEdits
+                )
                 : nil
         )
     }
@@ -800,8 +827,14 @@ final class ShiftSession {
             endMinutes: endMinutes
         ))
     }
-    func captureSchedule(untilMs: Double) -> TodayScheduleOverride {
-        .init(
+    func captureSchedule(untilMs: Double, at date: Date = .now) -> TodayScheduleOverride {
+        var kept: KeptRosterDay?
+        if usesExtendedSchedule(at: date), let plan = preferences.extendedSchedulePlan {
+            let shift = ScheduleRules.snapshot(input: rulesInput(at: date, pinsEarlyStart: false))
+            let dayKey = Self.dayKey(for: shift.startDate, timeZone: countdownTimeZone)
+            kept = KeptRosterDay(dayKey: dayKey, shiftTypeID: plan.handSetDays[dayKey])
+        }
+        return .init(
             startMinutes: preferences.startMinutes,
             endMinutes: preferences.endMinutes,
             workdays: preferences.workdays.sorted(),
@@ -817,7 +850,8 @@ final class ShiftSession {
             rotationAnchorMs: preferences.rotationAnchorMs,
             untilMs: untilMs,
             extendedScheduleEnabled: preferences.isExtendedScheduleEnabled,
-            extendedContent: preferences.extendedScheduleContent
+            extendedContent: preferences.extendedScheduleContent,
+            extendedKeptDay: kept
         )
     }
     func overrideExpiry(at date: Date) -> Double? {

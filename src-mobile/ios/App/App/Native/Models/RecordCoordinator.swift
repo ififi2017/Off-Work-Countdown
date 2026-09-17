@@ -698,6 +698,71 @@ final class RecordCoordinator {
         return plan
     }
 
+    /// A draft's plan: `content` (or no plan without one) over the stored
+    /// hand-set days with `edits` applied. Not cached — only a save asks.
+    func extendedSchedulePlan(
+        for content: ExtendedScheduleContent?,
+        applying edits: [String: RosterDayEdit]?
+    ) -> ExtendedSchedulePlan? {
+        guard let content else { return nil }
+        let base = extendedSchedulePlan(for: content)
+        guard let edits, !edits.isEmpty else { return base }
+        planRevision += 1
+        return ExtendedSchedulePlan(
+            shiftTypes: base.shiftTypes,
+            rule: base.rule,
+            handSetDays: ExtendedScheduleEditing.handSetDays(base.handSetDays, applying: edits),
+            revision: planRevision
+        )
+    }
+
+    @ObservationIgnored private var keptDayPlanCache: (base: Int, day: KeptRosterDay, plan: ExtendedSchedulePlan)?
+
+    /// `plan` with one day as the calendar had it before a save "from the next
+    /// shift only". Kept until the plan or the day changes: the countdown asks
+    /// every second.
+    func extendedSchedulePlan(_ plan: ExtendedSchedulePlan, keeping day: KeptRosterDay) -> ExtendedSchedulePlan {
+        guard plan.handSetDays[day.dayKey] != day.shiftTypeID else { return plan }
+        if let cached = keptDayPlanCache, cached.base == plan.revision, cached.day == day {
+            return cached.plan
+        }
+        var days = plan.handSetDays
+        days[day.dayKey] = day.shiftTypeID
+        planRevision += 1
+        let kept = ExtendedSchedulePlan(
+            shiftTypes: plan.shiftTypes,
+            rule: plan.rule,
+            handSetDays: days,
+            pinnedDayKey: plan.pinnedDayKey,
+            revision: planRevision
+        )
+        keptDayPlanCache = (plan.revision, day, kept)
+        return kept
+    }
+
+    /// Writes the calendar's changed days: a shift sets the day by hand, and
+    /// following the pattern erases the row, leaving a tombstone other devices
+    /// honour.
+    func applyRosterEdits(_ edits: [String: RosterDayEdit], timeZoneIdentifier: String, at date: Date = .now) {
+        for (dayKey, edit) in edits.sorted(by: { $0.key < $1.key }) {
+            switch edit {
+            case .shift(let id):
+                upsertRosterDay(RosterDay(
+                    dayKey: dayKey,
+                    shiftTypeID: id,
+                    timeZoneIdentifier: timeZoneIdentifier,
+                    editedAt: date,
+                    editCount: 0,
+                    editTieBreaker: UUID()
+                ), at: date)
+            case .followPattern:
+                if state.rosterDays.contains(where: { $0.dayKey == dayKey }) {
+                    erase(.rosterDay, key: dayKey, at: date)
+                }
+            }
+        }
+    }
+
     /// Stored hours, with their plan attached when they follow the extended
     /// schedule. Every reader that expands a schedule snapshot goes through
     /// here, so none of them can fall back to the fixed hours by forgetting

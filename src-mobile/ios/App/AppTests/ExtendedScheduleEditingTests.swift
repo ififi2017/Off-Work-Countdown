@@ -3,9 +3,9 @@ import Testing
 @testable import App
 
 /// Plan 018 P8-c1b: what the schedule page does with an extended schedule —
-/// seeding one from the current schedule, saving shift types and a rule with
-/// the rest of the page, and keeping today and earlier days on what they were
-/// worked under.
+/// seeding one from the current schedule, saving shift types, a pattern and
+/// calendar days with the rest of the page, and keeping today and earlier days
+/// on what they were worked under.
 ///
 /// Instants are built from civil dates in one pinned zone, as in
 /// `ExtendedScheduleWiringTests`.
@@ -298,6 +298,123 @@ struct ExtendedScheduleEditingTests {
         let rebuilt = runtime.records.extendedSchedulePlan(for: other)
         #expect(rebuilt.revision > first.revision)
         #expect(rebuilt.handSetDays["2026-10-09"] == Self.rest)
+    }
+
+    // MARK: Calendar
+
+    private static func handSet(_ runtime: AppRuntime, _ day: Int) -> UUID? {
+        runtime.preferences.handSetDays[String(format: "2026-10-%02d", day)]
+    }
+
+    @Test("Days set on the calendar are saved with the page, and a restated day is no change")
+    func calendarEditsSave() throws {
+        let runtime = try Self.runtime()
+        let monday = try Self.at(runtime, 5, 10)
+        #expect(Self.save(runtime, .applyToToday, at: monday) {
+            $0.extendedScheduleEnabled = true
+            $0.extendedContent = Self.everyDayEarly
+            $0.rosterEdits = ["2026-10-08": .shift(Self.night), "2026-10-09": .shift(Self.rest)]
+        })
+        #expect(Self.handSet(runtime, 8) == Self.night)
+        #expect(Self.handSet(runtime, 9) == Self.rest)
+        let thursday = try #require(runtime.session.snapshot(at: try Self.at(runtime, 8, 21)))
+        #expect(thursday.startAtMs == Self.ms(try Self.at(runtime, 8, 20)))
+
+        var draft = ScheduleFieldChange()
+        draft.rosterEdits = ["2026-10-08": .shift(Self.night), "2026-10-12": .followPattern]
+        #expect(draft.settled(against: runtime.preferences).isEmpty)
+        #expect(ExtendedScheduleEditing.editing(nil, dayKey: "2026-10-08", to: .shift(Self.night), stored: runtime.preferences.handSetDays) == nil)
+
+        // Putting a day back on the pattern erases it.
+        #expect(Self.save(runtime, .applyToToday, at: monday) { $0.rosterEdits = ["2026-10-09": .followPattern] })
+        #expect(Self.handSet(runtime, 9) == nil)
+        #expect(runtime.records.state.isErased(.rosterDay, key: "2026-10-09"))
+    }
+
+    @Test("A day naming a shift the schedule does not have is refused")
+    func calendarEditNeedsAKnownType() throws {
+        let runtime = try Self.runtime()
+        let monday = try Self.at(runtime, 5, 10)
+        #expect(!Self.save(runtime, .applyToToday, at: monday) {
+            $0.extendedScheduleEnabled = true
+            $0.extendedContent = Self.everyDayEarly
+            $0.rosterEdits = ["2026-10-08": .shift(UUID())]
+            $0.startMinutes = 7 * 60
+        })
+        #expect(runtime.preferences.extendedScheduleContent == nil)
+        #expect(runtime.preferences.startMinutes == 9 * 60)
+    }
+
+    @Test("Changing today's day from the next shift leaves the shift in progress alone")
+    func nextShiftOnlyKeepsTodaysDay() throws {
+        let runtime = try Self.runtime()
+        let monday = try Self.at(runtime, 5, 10)
+        #expect(Self.save(runtime, .applyToToday, at: monday) {
+            $0.extendedScheduleEnabled = true
+            $0.extendedContent = Self.everyDayEarly
+        })
+        var draft = ScheduleFieldChange()
+        draft.rosterEdits = ["2026-10-05": .shift(Self.night)]
+        #expect(runtime.session.shouldPromptApplyingToToday(draft, scope: .schedule, at: monday))
+        #expect(runtime.shifts.applyScheduleChange(draft, decision: .nextShiftOnly, at: monday).synchronousResult == true)
+        #expect(Self.handSet(runtime, 5) == Self.night)
+
+        let today = try #require(runtime.session.snapshot(at: monday))
+        #expect(today.startAtMs == Self.ms(try Self.at(runtime, 5, 8)))
+        #expect(today.plannedEndAtMs == Self.ms(try Self.at(runtime, 5, 16)))
+        // The day itself now works nights; from tomorrow the kept day is gone.
+        let base = try #require(runtime.preferences.extendedSchedulePlan)
+        #expect(base.hours(onDayKey: "2026-10-05")?.startTime == "20:00")
+        #expect(runtime.session.todayOverride?.extendedKeptDay == KeptRosterDay(dayKey: "2026-10-05", shiftTypeID: nil))
+
+        // Asked again, the kept plan is the same one.
+        let kept = try #require(runtime.session.extendedSchedulePlan(at: monday))
+        #expect(runtime.session.extendedSchedulePlan(at: monday)?.revision == kept.revision)
+        #expect(kept.handSetDays["2026-10-05"] == nil)
+    }
+
+    @Test("Dropping the pattern writes it into this month and next")
+    func droppingThePatternKeepsTwoMonths() throws {
+        let plan = ExtendedSchedulePlan(
+            shiftTypes: Self.everyDayEarly.shiftTypes,
+            rule: Self.everyDayEarly.rule,
+            handSetDays: ["2026-10-10": Self.night]
+        )
+        let months = try [0, 1].map { try #require(ExtendedScheduleEditing.month(of: "2026-10-17", plus: $0)) }
+        let edits = try #require(ExtendedScheduleEditing.keepingPattern(plan, months: months, edits: nil))
+        #expect(edits.count == 31 - 1 + 30)
+        #expect(edits["2026-10-10"] == nil)
+        #expect(edits["2026-11-30"] == .shift(Self.early))
+
+        let unpatterned = ExtendedSchedulePlan(
+            shiftTypes: plan.shiftTypes,
+            rule: nil,
+            handSetDays: ExtendedScheduleEditing.handSetDays(plan.handSetDays, applying: edits)
+        )
+        let resolver = ExtendedScheduleResolver(plan: unpatterned)
+        func day(_ key: String) throws -> ExtendedScheduleDay {
+            resolver.day(dayNumber: try #require(ExtendedScheduleResolver.dayNumber(dayKey: key)))
+        }
+        #expect(try day("2026-10-10").shiftTypeID == Self.night)
+        #expect(try day("2026-10-11").shiftTypeID == Self.early)
+        // December repeats November by date.
+        #expect(try day("2026-12-31").source == .unassigned)
+        #expect(try day("2026-12-10").source == .carriedOver)
+        #expect(try day("2026-12-10").shiftTypeID == Self.early)
+    }
+
+    @Test("Month arithmetic for the calendar")
+    func calendarMonths() throws {
+        #expect(ExtendedScheduleEditing.daysIn(year: 2026, month: 2) == 28)
+        #expect(ExtendedScheduleEditing.daysIn(year: 2028, month: 2) == 29)
+        #expect(ExtendedScheduleEditing.daysIn(year: 2026, month: 12) == 31)
+        let next = try #require(ExtendedScheduleEditing.month(of: "2026-12-15", plus: 1))
+        #expect(next.year == 2027 && next.month == 1)
+        let back = try #require(ExtendedScheduleEditing.month(of: "2026-12-15", plus: -12))
+        #expect(back.year == 2025 && back.month == 12)
+        #expect(ExtendedScheduleEditing.editing(nil, dayKey: "2026-10-01", to: .followPattern, stored: [:]) == nil)
+        #expect(ExtendedScheduleEditing.editing(nil, dayKey: "2026-10-01", to: .shift(Self.night), stored: [:])
+            == ["2026-10-01": .shift(Self.night)])
     }
 
     // MARK: Pinning

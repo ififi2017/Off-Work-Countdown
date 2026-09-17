@@ -180,6 +180,24 @@ final class PreferencesStore {
         records.extendedSchedulePlan(for: content)
     }
 
+    /// A schedule page draft as the rules would read it once saved.
+    func extendedSchedulePlan(
+        for content: ExtendedScheduleContent?,
+        applying edits: [String: RosterDayEdit]?
+    ) -> ExtendedSchedulePlan? {
+        records.extendedSchedulePlan(for: content, applying: edits)
+    }
+
+    /// `plan` with one day as it was before a save.
+    func extendedSchedulePlan(_ plan: ExtendedSchedulePlan, keeping day: KeptRosterDay) -> ExtendedSchedulePlan {
+        records.extendedSchedulePlan(plan, keeping: day)
+    }
+
+    /// The days the user gave a shift by hand, by civil day key.
+    var handSetDays: [String: UUID] {
+        records.extendedSchedulePlan?.handSetDays ?? ExtendedSchedulePlan.handSetDays(from: records.state.rosterDays)
+    }
+
     var rotationCycleLength: Int {
         max(2, rotationWorkDays + rotationRestDays)
     }

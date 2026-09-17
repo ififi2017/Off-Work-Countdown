@@ -11068,6 +11068,482 @@
         }
       }
     },
+    "extendedCalendar": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقويم المناوبات"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schichtkalender"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Roster calendar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario de turnos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendrier des services"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ़्ट कैलेंडर"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalender sif"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario dei turni"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シフトカレンダー"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무 달력"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ्ट दिनदर्शिका"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendário de turnos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Календарь смен"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปฏิทินกะ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vardiya takvimi"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch xếp ca"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "排班日历"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "排班日曆"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "排班日曆"
+          }
+        }
+      }
+    },
+    "extendedCalendarNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختر مناوبة ثم اضغط على الأيام لتعبئتها. النقطة تميّز الأيام التي حددتها بنفسك، و«حسب النمط» يعيدها."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schicht wählen, dann Tage antippen. Ein Punkt markiert selbst gesetzte Tage; „Nach Muster“ setzt sie zurück."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a shift, then tap days to fill them in. A dot marks a day you set yourself; “Pattern” puts it back."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige un turno y toca los días para rellenarlos. Un punto marca los días que fijaste tú; «Según el ciclo» los restablece."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez un service, puis touchez les jours pour les remplir. Un point marque un jour réglé à la main ; « Selon le cycle » le rétablit."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कोई शिफ़्ट चुनें, फिर दिनों पर टैप करके भरें। बिंदु वाले दिन आपने ख़ुद तय किए हैं; “क्रम के अनुसार” से वे वापस आ जाते हैं।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilih sif, lalu ketuk tanggal untuk mengisinya. Titik menandai hari yang diatur sendiri; “Ikuti pola” mengembalikannya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli un turno, poi tocca i giorni per compilarli. Un punto indica i giorni impostati a mano; «Come il ciclo» li ripristina."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シフトを選んでから日付をタップすると入力できます。点の付いた日は個別に設定した日で、「パターン通り」で戻せます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무를 고른 뒤 날짜를 누르면 채워집니다. 점이 있는 날은 직접 정한 날이며 「패턴대로」로 되돌릴 수 있습니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ्ट निवडा, मग दिवसांवर टॅप करून भरा. ठिपका असलेले दिवस तुम्ही स्वतः ठरवलेले आहेत; “क्रमानुसार” ने ते परत येतात."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha um turno e toque nos dias para os preencher. Um ponto marca os dias definidos à mão; “Pelo ciclo” repõe-nos."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите смену и нажмите на дни, чтобы заполнить их. Точкой отмечены дни, заданные вручную; «По циклу» возвращает их."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลือกกะ แล้วแตะวันที่เพื่อเติม วันที่มีจุดคือวันที่ตั้งเอง เลือก “ตามรูปแบบ” เพื่อคืนค่า"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir vardiya seçin, sonra günlere dokunarak doldurun. Nokta, elle ayarladığınız günleri gösterir; “Düzene göre” geri alır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn một ca rồi chạm vào ngày để điền. Dấu chấm là ngày bạn tự đặt; “Theo chu kỳ” sẽ trả lại như cũ."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选一个班次，再点日期填入。带圆点的日子是你单独设置的，选「按规律」可以恢复。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "揀一個班次，再撳日期填入。有圓點嘅日子係你單獨設定嘅，揀「按規律」可以還原。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選一個班次，再點日期填入。帶圓點的日子是你單獨設定的，選「按規律」可以恢復。"
+          }
+        }
+      }
+    },
+    "extendedCalendarNoteNoPattern": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختر مناوبة ثم اضغط على الأيام لتعبئتها. الشهر الذي تتركه فارغًا يكرر آخر شهر عبّأته حسب التاريخ."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schicht wählen, dann Tage antippen. Ein leerer Monat übernimmt den zuletzt ausgefüllten Monat nach Datum."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a shift, then tap days to fill them in. A month you leave empty repeats the last month you filled in, by date."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige un turno y toca los días para rellenarlos. Un mes vacío repite, por fechas, el último mes que rellenaste."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez un service, puis touchez les jours pour les remplir. Un mois laissé vide reprend, date par date, le dernier mois rempli."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कोई शिफ़्ट चुनें, फिर दिनों पर टैप करके भरें। जो महीना खाली छोड़ेंगे, वह तारीख़ के हिसाब से पिछले भरे महीने जैसा रहेगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilih sif, lalu ketuk tanggal untuk mengisinya. Bulan yang dibiarkan kosong mengikuti bulan terakhir yang diisi, per tanggal."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli un turno, poi tocca i giorni per compilarli. Un mese lasciato vuoto ripete, data per data, l’ultimo mese compilato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シフトを選んでから日付をタップすると入力できます。入力していない月は、最後に入力した月を日付ごとに引き継ぎます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무를 고른 뒤 날짜를 누르면 채워집니다. 비워 둔 달은 마지막으로 채운 달을 날짜별로 따릅니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ्ट निवडा, मग दिवसांवर टॅप करून भरा. रिकामा ठेवलेला महिना तारखेनुसार शेवटच्या भरलेल्या महिन्यासारखा राहील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha um turno e toque nos dias para os preencher. Um mês deixado em branco repete, por data, o último mês preenchido."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите смену и нажмите на дни, чтобы заполнить их. Незаполненный месяц повторяет по датам последний заполненный."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลือกกะ แล้วแตะวันที่เพื่อเติม เดือนที่เว้นว่างจะใช้ตามเดือนล่าสุดที่เติมไว้ตามวันที่"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir vardiya seçin, sonra günlere dokunarak doldurun. Boş bıraktığınız ay, en son doldurduğunuz ayı tarih tarih tekrarlar."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn một ca rồi chạm vào ngày để điền. Tháng để trống sẽ lặp lại tháng đã điền gần nhất theo ngày."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选一个班次，再点日期填入。没有填写的月份，会按日期沿用上一个填过的月份。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "揀一個班次，再撳日期填入。未填寫嘅月份，會按日期沿用上一個填過嘅月份。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選一個班次，再點日期填入。沒有填寫的月份，會按日期沿用上一個填過的月份。"
+          }
+        }
+      }
+    },
+    "extendedClearDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسح"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leeren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हटाएँ"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancella"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリア"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지우기"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "काढा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล้าง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temizle"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除"
+          }
+        }
+      }
+    },
     "extendedColor": {
       "extractionState": "manual",
       "localizations": {
@@ -11312,115 +11788,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "كل يوم"
+            "value": "كل يوم في النمط"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jeder Tag"
+            "value": "Jeder Tag im Muster"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Each day"
+            "value": "Each day of the pattern"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cada día"
+            "value": "Cada día del ciclo"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chaque jour"
+            "value": "Chaque jour du cycle"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "हर दिन"
+            "value": "क्रम का हर दिन"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Setiap hari"
+            "value": "Setiap hari dalam pola"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ogni giorno"
+            "value": "Ogni giorno del ciclo"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "各日のシフト"
+            "value": "パターン内の各日"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "날짜별 근무"
+            "value": "패턴의 날짜별 근무"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "प्रत्येक दिवस"
+            "value": "क्रमातील प्रत्येक दिवस"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cada dia"
+            "value": "Cada dia do ciclo"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Каждый день"
+            "value": "Дни цикла"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "แต่ละวัน"
+            "value": "แต่ละวันในรูปแบบ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Her gün"
+            "value": "Düzendeki her gün"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Từng ngày"
+            "value": "Từng ngày trong chu kỳ"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "每天的班次"
+            "value": "规律里每天的班次"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "每日嘅班次"
+            "value": "規律入面每日嘅班次"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "每天的班次"
+            "value": "規律裡每天的班次"
           }
         }
       }
@@ -12020,6 +12496,244 @@
         }
       }
     },
+    "extendedFillDayHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يعبّئ {{shift}}"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setzt {{shift}}"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fills in {{shift}}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rellena con {{shift}}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remplit avec {{shift}}"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} भरता है"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mengisi {{shift}}"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compila con {{shift}}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}}を入力します"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}}(으)로 채웁니다"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} भरते"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preenche com {{shift}}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заполняет: {{shift}}"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เติม {{shift}}"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{{shift}} ile doldurur"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Điền {{shift}}"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填入{{shift}}"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填入{{shift}}"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填入{{shift}}"
+          }
+        }
+      }
+    },
+    "extendedFollowPattern": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حسب النمط"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach Muster"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pattern"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Según el ciclo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selon le cycle"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्रम के अनुसार"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ikuti pola"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Come il ciclo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パターン通り"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패턴대로"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्रमानुसार"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pelo ciclo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "По циклу"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตามรูปแบบ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düzene göre"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theo chu kỳ"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按规律"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按規律"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按規律"
+          }
+        }
+      }
+    },
     "extendedHoursOvernight": {
       "extractionState": "manual",
       "localizations": {
@@ -12492,6 +13206,125 @@
           "stringUnit": {
             "state": "translated",
             "value": "新的班次類型"
+          }
+        }
+      }
+    },
+    "extendedNextMonth": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الشهر التالي"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächster Monat"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next month"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mes siguiente"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mois suivant"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अगला महीना"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulan berikutnya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mese successivo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "次の月"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 달"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पुढील महिना"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximo mês"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следующий месяц"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เดือนถัดไป"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonraki ay"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tháng sau"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下个月"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下個月"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下個月"
           }
         }
       }
@@ -12972,6 +13805,601 @@
         }
       }
     },
+    "extendedPatternNone": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بلا نمط"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Muster"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pattern"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin ciclo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sans cycle"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कोई क्रम नहीं"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanpa pola"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun ciclo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パターンなし"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패턴 없음"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्रम नाही"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem ciclo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Без цикла"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่ใช้รูปแบบ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düzen yok"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không theo chu kỳ"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不用规律"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "唔用規律"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不用規律"
+          }
+        }
+      }
+    },
+    "extendedPreviousMonth": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الشهر السابق"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorheriger Monat"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous month"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mes anterior"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mois précédent"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पिछला महीना"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulan sebelumnya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mese precedente"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前の月"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이전 달"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मागील महिना"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mês anterior"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предыдущий месяц"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เดือนก่อน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Önceki ay"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tháng trước"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上个月"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上個月"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上個月"
+          }
+        }
+      }
+    },
+    "extendedRemovePattern": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التوقف عن الاستخدام"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht mehr verwenden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop using"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dejar de usar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ne plus utiliser"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बंद करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berhenti memakai"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non usare più"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "やめる"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그만 쓰기"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "थांबवा"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixar de usar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не использовать"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลิกใช้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanma"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không dùng nữa"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不再使用"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "唔再用"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不再使用"
+          }
+        }
+      }
+    },
+    "extendedRemovePatternMessage": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يحتفظ هذا الشهر والشهر التالي بالمناوبات التي يحددها النمط، ويمكنك تغيير أي يوم. الأشهر اللاحقة تكرر آخرها حسب التاريخ. لن يتغير شيء قبل الحفظ."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser und der nächste Monat behalten die Schichten aus dem Muster und lassen sich tageweise ändern. Spätere Monate übernehmen den letzten nach Datum. Übernommen wird erst beim Sichern."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This month and next keep the shifts the pattern gives them, and you can change any day. Later months repeat the last one by date. Nothing changes until you save."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este mes y el siguiente conservan los turnos del ciclo y puedes cambiar cualquier día. Los meses posteriores repiten el último por fechas. No cambia nada hasta que guardes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce mois-ci et le suivant gardent les services donnés par le cycle, et chaque jour reste modifiable. Les mois suivants reprennent le dernier, date par date. Rien ne change avant l’enregistrement."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इस महीने और अगले महीने में क्रम वाली शिफ़्ट बनी रहेंगी, और आप कोई भी दिन बदल सकते हैं। आगे के महीने तारीख़ के हिसाब से आख़िरी महीने जैसे रहेंगे। सहेजने तक कुछ नहीं बदलेगा।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulan ini dan bulan depan tetap memakai sif dari pola, dan setiap hari bisa diubah. Bulan setelahnya mengikuti bulan terakhir per tanggal. Tidak ada yang berubah sebelum disimpan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo mese e il prossimo mantengono i turni del ciclo e puoi cambiare ogni giorno. I mesi successivi ripetono l’ultimo, data per data. Non cambia nulla finché non salvi."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今月と来月は今のパターンで入力され、その後は1日ずつ変更できます。それ以降の月は日付ごとに引き継ぎます。保存するまでは反映されません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이번 달과 다음 달은 지금 패턴대로 채워지고, 이후 하루씩 바꿀 수 있습니다. 그 뒤의 달은 날짜별로 따릅니다. 저장해야 적용됩니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "या महिन्यात आणि पुढच्या महिन्यात क्रमातील शिफ्ट राहतील, आणि कोणताही दिवस बदलता येईल. पुढचे महिने तारखेनुसार शेवटच्या महिन्यासारखे राहतील. जतन करेपर्यंत काहीही बदलणार नाही."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este mês e o próximo mantêm os turnos do ciclo e pode alterar qualquer dia. Os meses seguintes repetem o último por data. Nada muda até guardar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этом и следующем месяце останутся смены из цикла, и любой день можно изменить. Дальше месяцы повторяют последний по датам. Изменения вступят в силу после сохранения."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เดือนนี้และเดือนหน้าจะคงกะตามรูปแบบไว้ และแก้ไขได้ทีละวัน เดือนถัดจากนั้นจะใช้ตามเดือนล่าสุดตามวันที่ และจะยังไม่เปลี่ยนจนกว่าจะบันทึก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu ay ve gelecek ay düzenin verdiği vardiyaları korur, her günü değiştirebilirsiniz. Sonraki aylar sonuncuyu tarih tarih tekrarlar. Kaydedene kadar hiçbir şey değişmez."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tháng này và tháng sau giữ các ca theo chu kỳ, bạn vẫn đổi được từng ngày. Các tháng sau lặp lại tháng cuối theo ngày. Chưa có gì thay đổi cho đến khi bạn lưu."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本月和下月会按现在的规律填好，之后可以逐天修改；再往后的月份按日期沿用。保存后才会生效。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今個月同下個月會按而家嘅規律填好，之後可以逐日改；再之後嘅月份按日期沿用。儲存後先會生效。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本月和下月會按現在的規律填好，之後可以逐天修改；再往後的月份按日期沿用。儲存後才會生效。"
+          }
+        }
+      }
+    },
+    "extendedRemovePatternTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التوقف عن استخدام النمط؟"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Muster mehr verwenden?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop using a pattern?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Dejar de usar un ciclo?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ne plus utiliser de cycle ?"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्रम का इस्तेमाल बंद करें?"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berhenti memakai pola?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non usare più un ciclo?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パターンをやめますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패턴을 그만 쓸까요?"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्रम वापरणे थांबवायचे?"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixar de usar um ciclo?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Больше не использовать цикл?"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลิกใช้รูปแบบไหม"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düzen kullanılmasın mı?"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không dùng chu kỳ nữa?"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不再使用规律？"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "唔再用規律？"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不再使用規律？"
+          }
+        }
+      }
+    },
     "extendedRestKindNote": {
       "extractionState": "manual",
       "localizations": {
@@ -13216,115 +14644,234 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "مناوبات صباحية ومسائية وليلية بنمط متكرر."
+            "value": "خطّط لكل يوم على تقويم شهري، أو عبّئه وفق نمط."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Früh-, Spät- und Nachtschichten im festen Rhythmus."
+            "value": "Jeden Tag im Monatskalender planen oder per Muster füllen."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mix early, late and night shifts in a repeating pattern."
+            "value": "Plan each day on a month calendar, or fill it from a pattern."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Turnos de mañana, tarde y noche en un ciclo que se repite."
+            "value": "Planifica cada día en un calendario mensual o rellénalo con un ciclo."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Services du matin, du soir et de nuit selon un cycle."
+            "value": "Planifiez chaque jour sur un calendrier mensuel, ou remplissez-le selon un cycle."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "सुबह, शाम और रात की शिफ़्ट एक तय क्रम में दोहराएँ।"
+            "value": "महीने के कैलेंडर पर हर दिन तय करें, या क्रम से भर दें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sif pagi, sore, dan malam dalam pola berulang."
+            "value": "Atur setiap hari di kalender bulanan, atau isi dengan pola."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Turni di mattina, pomeriggio e notte in un ciclo che si ripete."
+            "value": "Pianifica ogni giorno su un calendario mensile o compilalo con un ciclo."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "早番・遅番・夜勤などを、決まった周期で繰り返します。"
+            "value": "月のカレンダーで1日ずつ決めるか、パターンでまとめて入力します。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "주간·오후·야간 근무를 정해진 주기로 반복합니다."
+            "value": "월별 달력에서 하루씩 정하거나 패턴으로 한 번에 채웁니다."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "सकाळ, संध्याकाळ आणि रात्रीच्या शिफ्ट ठरलेल्या क्रमाने पुन्हा वापरा."
+            "value": "महिन्याच्या दिनदर्शिकेवर प्रत्येक दिवस ठरवा, किंवा क्रमाने भरा."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Turnos da manhã, da tarde e da noite num ciclo que se repete."
+            "value": "Planeie cada dia num calendário mensal ou preencha-o com um ciclo."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Утренние, вечерние и ночные смены по повторяющемуся циклу."
+            "value": "Планируйте каждый день в календаре или заполните его по циклу."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "กะเช้า กะบ่าย และกะดึก วนตามรูปแบบที่ตั้งไว้"
+            "value": "วางแผนทีละวันบนปฏิทินรายเดือน หรือเติมตามรูปแบบ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sabah, akşam ve gece vardiyalarını tekrar eden bir düzende planlayın."
+            "value": "Her günü aylık takvimde planlayın ya da bir düzenle doldurun."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ca sáng, ca chiều, ca đêm lặp lại theo chu kỳ."
+            "value": "Xếp ca từng ngày trên lịch tháng, hoặc điền theo chu kỳ."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "早班、晚班、夜班等多种班次，按规律循环。"
+            "value": "在月历上逐天排班，也可以按规律一键填好。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "早更、晚更、夜更等唔同班次，按規律循環。"
+            "value": "喺月曆逐日排班，亦可以按規律一次過填好。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "早班、晚班、夜班等多種班次，依規律循環。"
+            "value": "在月曆上逐天排班，也可以按規律一次填好。"
+          }
+        }
+      }
+    },
+    "extendedSetByHand": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "محدد يدويًا"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selbst gesetzt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set by hand"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fijado a mano"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réglé à la main"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ख़ुद तय किया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diatur sendiri"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impostato a mano"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "個別に設定"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "직접 설정"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्वतः ठरवलेले"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Definido à mão"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Задано вручную"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งเอง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elle ayarlandı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tự đặt"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "单独设置"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "單獨設定"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "單獨設定"
           }
         }
       }
@@ -13454,115 +15001,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "ما زال النمط يستخدم هذه المناوبة. عيّن لتلك الأيام مناوبة أخرى أولًا."
+            "value": "ما زالت بعض الأيام تستخدم هذه المناوبة. عيّن لها مناوبة أخرى أولًا."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Das Muster nutzt diese Schicht noch. Diesen Tagen zuerst eine andere Schicht geben."
+            "value": "Einige Tage nutzen diese Schicht noch. Diesen Tagen zuerst eine andere Schicht geben."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The pattern still uses this shift. Give those days another shift first."
+            "value": "Some days still use this shift. Give them another shift first."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El ciclo aún usa este turno. Asigna primero otro turno a esos días."
+            "value": "Algunos días aún usan este turno. Asígnales primero otro turno."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le cycle utilise encore ce service. Attribuez d’abord un autre service à ces jours."
+            "value": "Certains jours utilisent encore ce service. Attribuez-leur d’abord un autre service."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "क्रम में अभी भी यह शिफ़्ट इस्तेमाल हो रही है। पहले उन दिनों को कोई दूसरी शिफ़्ट दें।"
+            "value": "कुछ दिन अभी भी यह शिफ़्ट इस्तेमाल कर रहे हैं। पहले उन्हें कोई दूसरी शिफ़्ट दें।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pola masih memakai sif ini. Berikan sif lain untuk hari-hari itu terlebih dahulu."
+            "value": "Beberapa hari masih memakai sif ini. Berikan sif lain untuk hari-hari itu terlebih dahulu."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il ciclo usa ancora questo turno. Assegna prima un altro turno a quei giorni."
+            "value": "Alcuni giorni usano ancora questo turno. Assegna prima un altro turno."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "パターンの中にまだこのシフトの日があります。先にその日を別のシフトに変更してください。"
+            "value": "まだこのシフトを使っている日があります。先にその日を別のシフトに変更してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "아직 패턴에 이 근무를 쓰는 날이 있습니다. 먼저 그날들을 다른 근무로 바꿔 주세요."
+            "value": "아직 이 근무를 쓰는 날이 있습니다. 먼저 그날들을 다른 근무로 바꿔 주세요."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "क्रमात अजूनही ही शिफ्ट वापरली जात आहे. आधी त्या दिवसांना दुसरी शिफ्ट द्या."
+            "value": "काही दिवस अजूनही ही शिफ्ट वापरत आहेत. आधी त्यांना दुसरी शिफ्ट द्या."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "O ciclo ainda usa este turno. Atribua primeiro outro turno a esses dias."
+            "value": "Alguns dias ainda usam este turno. Atribua-lhes primeiro outro turno."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Цикл ещё использует эту смену. Сначала назначьте этим дням другую смену."
+            "value": "Эта смена ещё используется в некоторых днях. Сначала назначьте им другую смену."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "รูปแบบยังใช้กะนี้อยู่ โปรดเปลี่ยนวันเหล่านั้นเป็นกะอื่นก่อน"
+            "value": "ยังมีบางวันใช้กะนี้อยู่ โปรดเปลี่ยนวันเหล่านั้นเป็นกะอื่นก่อน"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Düzen bu vardiyayı hâlâ kullanıyor. Önce o günlere başka bir vardiya verin."
+            "value": "Bazı günler hâlâ bu vardiyayı kullanıyor. Önce o günlere başka bir vardiya verin."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chu kỳ vẫn đang dùng ca này. Hãy đổi những ngày đó sang ca khác trước."
+            "value": "Vẫn còn ngày dùng ca này. Hãy đổi những ngày đó sang ca khác trước."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "排班规律里还有日子用着这个班次，先把这些日子换成其他班次。"
+            "value": "还有日子在用这个班次，先把这些日子换成其他班次。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "排班規律入面仲有日子用緊呢個班次，請先將嗰啲日子換成其他班次。"
+            "value": "仲有日子用緊呢個班次，請先將嗰啲日子換成其他班次。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "排班規律裡還有日子使用這個班次，請先把這些日子換成其他班次。"
+            "value": "還有日子在用這個班次，請先把這些日子換成其他班次。"
           }
         }
       }
@@ -13920,6 +15467,125 @@
           "stringUnit": {
             "state": "translated",
             "value": "今天是"
+          }
+        }
+      }
+    },
+    "extendedUnassigned": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غير محدد"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht festgelegt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin asignar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non défini"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तय नहीं"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belum diatur"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non impostato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未設定"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "미정"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ठरलेले नाही"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não definido"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не задано"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่ได้ตั้ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlanmadı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa đặt"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未排班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未排班"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未排班"
           }
         }
       }

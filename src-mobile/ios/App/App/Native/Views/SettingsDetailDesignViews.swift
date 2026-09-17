@@ -26,17 +26,28 @@ struct ScheduleSettingsView: View {
 
     var body: some View {
         OWCContentSizedScrollView {
+            ScrollViewReader { scroller in
             VStack(spacing: 0) {
-                // The extended schedule's hours live in its shift types, so
-                // they take the place the fixed hours hold in every other mode.
+                // The extended schedule opens on its month calendar, and its
+                // hours live in its shift types, so both take the place the
+                // fixed hours hold in every other mode.
                 if draftExtended, let content = draftExtendedContent {
+                    ExtendedCalendarSection(
+                        session: shifts.session,
+                        content: content,
+                        handSetDays: draftHandSetDays,
+                        todayKey: shifts.session.extendedTodayKey(at: .now),
+                        onSetDay: setDay
+                    )
+                    .padding(.top, 8)
+                    .id(Self.extendedTop)
                     ExtendedShiftTypesSection(
                         session: shifts.session,
                         types: ExtendedScheduleEditing.activeTypes(in: content),
                         onEdit: { editShiftType($0, in: content) },
                         onAdd: { addShiftType(to: content) }
                     )
-                    .padding(.top, 8)
+                    .padding(.top, 22)
                 } else {
                     OWCSectionHeader(title: shifts.text.t("scheduleHours"))
                         .padding(.top, 8)
@@ -82,6 +93,13 @@ struct ScheduleSettingsView: View {
                 }
             }
             .padding(.bottom, 24)
+            // Choosing the mode builds the calendar above the list; bring it
+            // into view rather than leave it off the top of the screen.
+            .onChange(of: draftExtended) { _, extended in
+                guard extended else { return }
+                withAnimation(OWCMotion.navigation) { scroller.scrollTo(Self.extendedTop, anchor: .top) }
+            }
+            }
         }
         .scrollDismissesKeyboard(.interactively)
         .background(OWCDesign.page)
@@ -286,6 +304,31 @@ struct ScheduleSettingsView: View {
         draft.extendedContent ?? shifts.preferences.extendedScheduleContent
     }
 
+    private static let extendedTop = "extendedCalendar"
+
+    private func setDay(_ dayKey: String, _ change: RosterDayEdit) {
+        let stored = shifts.preferences.handSetDays
+        edit { $0.rosterEdits = ExtendedScheduleEditing.editing($0.rosterEdits, dayKey: dayKey, to: change, stored: stored) }
+    }
+
+    private var draftHandSetDays: [String: UUID] {
+        ExtendedScheduleEditing.handSetDays(shifts.preferences.handSetDays, applying: draft.rosterEdits)
+    }
+
+    /// Without a pattern, this month and next keep the shifts the pattern gave
+    /// them, written in as hand-set days; later months repeat the last by date.
+    private func removePattern(from content: ExtendedScheduleContent, todayKey: String) {
+        let plan = ExtendedSchedulePlan(shiftTypes: content.shiftTypes, rule: content.rule, handSetDays: draftHandSetDays)
+        let months = [0, 1].compactMap { ExtendedScheduleEditing.month(of: todayKey, plus: $0) }
+        let edits = ExtendedScheduleEditing.keepingPattern(plan, months: months, edits: draft.rosterEdits)
+        var next = content
+        next.rule = nil
+        edit {
+            $0.extendedContent = next
+            $0.rosterEdits = edits
+        }
+    }
+
     private func editExtendedContent(_ change: (ExtendedScheduleContent) -> ExtendedScheduleContent) {
         guard let content = draftExtendedContent else { return }
         let next = change(content)
@@ -297,6 +340,8 @@ struct ScheduleSettingsView: View {
             type: type,
             isNew: false,
             isInUse: ExtendedScheduleEditing.ruleUses(type.id, in: content)
+                || (shifts.preferences.extendedScheduleContent?.shiftTypes.contains { $0.id == type.id } != true
+                    && draft.rosterEdits?.values.contains(.shift(type.id)) == true)
         )
     }
 
@@ -384,14 +429,16 @@ struct ScheduleSettingsView: View {
     @ViewBuilder
     private var scheduleDetails: some View {
         if draftExtended, let content = draftExtendedContent {
+            let todayKey = shifts.session.extendedTodayKey(at: .now)
             ExtendedPatternSection(
                 session: shifts.session,
                 content: content,
-                todayKey: shifts.session.extendedTodayKey(at: .now),
+                todayKey: todayKey,
                 onChange: { next in edit { $0.extendedContent = next } },
                 onApplyTemplate: { preset in
                     editExtendedContent { shifts.session.applyingTemplate(preset, to: $0, at: .now) }
-                }
+                },
+                onRemovePattern: { removePattern(from: content, todayKey: todayKey) }
             )
         } else {
             fixedScheduleDetails
@@ -547,7 +594,9 @@ struct ScheduleSettingsView: View {
             edit {
                 $0.scheduleMode = mode
                 $0.extendedScheduleEnabled = false
-                // A schedule seeded on this visit and then left is not saved.
+                // Calendar edits belong to the extended schedule being left, and
+                // a schedule seeded on this visit is not saved at all.
+                $0.rosterEdits = nil
                 if shifts.preferences.extendedScheduleContent == nil { $0.extendedContent = nil }
             }
         } label: {
