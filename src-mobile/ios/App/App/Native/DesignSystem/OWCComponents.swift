@@ -212,6 +212,9 @@ struct OWCRow<Accessory: View>: View {
     /// confirmation is still the caller's job; this only stops a destructive
     /// row from reading like a neutral one.
     var isDestructive = false
+    /// Colours the glyph and draws it small, for a row whose icon is a colour
+    /// swatch rather than a symbol.
+    var iconTint: Color? = nil
     /// Whether an accessory is actually coming. Set by the initialisers, not by
     /// the caller: a row with nothing at its trailing edge must not reserve
     /// room for one, and must let its text claim the full width before the
@@ -238,6 +241,7 @@ struct OWCRow<Accessory: View>: View {
         isLast: Bool = false,
         centersVertically: Bool = false,
         isDestructive: Bool = false,
+        iconTint: Color? = nil,
         @ViewBuilder accessory: () -> Accessory
     ) {
         self.icon = icon
@@ -247,6 +251,7 @@ struct OWCRow<Accessory: View>: View {
         self.isLast = isLast
         self.centersVertically = centersVertically
         self.isDestructive = isDestructive
+        self.iconTint = iconTint
         self.accessory = accessory()
     }
 
@@ -271,7 +276,8 @@ struct OWCRow<Accessory: View>: View {
             } else if let icon {
                 Image(systemName: icon)
                     .font(.body)
-                    .foregroundStyle(isDestructive ? Color.red : OWCDesign.secondary)
+                    .imageScale(iconTint == nil ? .medium : .small)
+                    .foregroundStyle(isDestructive ? Color.red : (iconTint ?? OWCDesign.secondary))
                     .frame(width: iconWidth)
                     // Nudged down so the glyph sits on the title's optical
                     // centre rather than on the top of its line box.

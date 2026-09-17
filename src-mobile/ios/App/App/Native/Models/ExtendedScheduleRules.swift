@@ -70,17 +70,33 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
     let rule: ShiftCycleRule?
     /// Civil day key to shift type, for the days the user set by hand.
     let handSetDays: [String: UUID]
+    /// The day `pinning` fixed. It resolves to `pinnedShiftTypeID` without
+    /// counting as a day the user set: otherwise it would make a carried-over
+    /// month authored, and every other day of that month would read as rest.
+    let pinnedDayKey: String?
     /// Process-local version from `RecordCoordinator`, so caches keyed on a
     /// plan can tell two plans apart without comparing every day.
     let revision: Int
     fileprivate let index: ExtendedScheduleIndex
 
-    init(shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID], revision: Int = 0) {
+    init(
+        shiftTypes: [ShiftType],
+        rule: ShiftCycleRule?,
+        handSetDays: [String: UUID],
+        pinnedDayKey: String? = nil,
+        revision: Int = 0
+    ) {
         self.shiftTypes = shiftTypes
         self.rule = rule
         self.handSetDays = handSetDays
+        self.pinnedDayKey = pinnedDayKey
         self.revision = revision
-        index = ExtendedScheduleIndex(shiftTypes: shiftTypes, rule: rule, handSetDays: handSetDays)
+        index = ExtendedScheduleIndex(
+            shiftTypes: shiftTypes,
+            rule: rule,
+            handSetDays: handSetDays,
+            pinnedDayKey: pinnedDayKey
+        )
     }
 
     /// `includeDisabled` is for history: days already worked under an extended
@@ -92,16 +108,25 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
         revision: Int = 0
     ) {
         guard let schedule, schedule.isEnabled || includeDisabled else { return nil }
+        self.init(
+            shiftTypes: schedule.shiftTypes,
+            rule: schedule.rule,
+            handSetDays: Self.handSetDays(from: rosterDays),
+            revision: revision
+        )
+    }
+
+    static func handSetDays(from rosterDays: [RosterDay]) -> [String: UUID] {
         var handSet: [String: UUID] = [:]
         handSet.reserveCapacity(rosterDays.count)
         for day in rosterDays {
             handSet[day.dayKey] = day.shiftTypeID
         }
-        self.init(shiftTypes: schedule.shiftTypes, rule: schedule.rule, handSetDays: handSet, revision: revision)
+        return handSet
     }
 
     private enum CodingKeys: String, CodingKey {
-        case shiftTypes, rule, handSetDays, revision
+        case shiftTypes, rule, handSetDays, pinnedDayKey, revision
     }
 
     init(from decoder: any Decoder) throws {
@@ -110,6 +135,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             shiftTypes: try container.decode([ShiftType].self, forKey: .shiftTypes),
             rule: try container.decodeIfPresent(ShiftCycleRule.self, forKey: .rule),
             handSetDays: try container.decode([String: UUID].self, forKey: .handSetDays),
+            pinnedDayKey: try container.decodeIfPresent(String.self, forKey: .pinnedDayKey),
             revision: try container.decode(Int.self, forKey: .revision)
         )
     }
@@ -119,6 +145,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             && lhs.shiftTypes == rhs.shiftTypes
             && lhs.rule == rhs.rule
             && lhs.handSetDays == rhs.handSetDays
+            && lhs.pinnedDayKey == rhs.pinnedDayKey
     }
 
     /// The hours this plan gives one civil day, or `nil` when it is rest.
@@ -151,9 +178,13 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             colorHex: "#000000",
             isArchived: true
         ))
-        var days = handSetDays
-        days[dayKey] = Self.pinnedShiftTypeID
-        return ExtendedSchedulePlan(shiftTypes: types, rule: rule, handSetDays: days, revision: revision)
+        return ExtendedSchedulePlan(
+            shiftTypes: types,
+            rule: rule,
+            handSetDays: handSetDays,
+            pinnedDayKey: dayKey,
+            revision: revision
+        )
     }
 }
 
@@ -169,7 +200,7 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
     let authoredMonths: [Int: [Int: UUID]]
     let authoredMonthKeys: [Int]
 
-    init(shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID]) {
+    init(shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID], pinnedDayKey: String?) {
         var dayByType: [UUID: (isWorkday: Bool, hours: ExtendedScheduleDayHours?)] = [:]
         for type in shiftTypes where dayByType[type.id] == nil {
             // An archived type still resolves, so a past day keeps the shift it
@@ -200,6 +231,9 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
             guard let parts = ExtendedScheduleResolver.parse(dayKey: key) else { continue }
             byDayNumber[CivilZone.dayNumber(year: parts.year, month: parts.month, day: parts.day)] = typeID
             months[ExtendedScheduleResolver.monthKey(year: parts.year, month: parts.month), default: [:]][parts.day] = typeID
+        }
+        if let pinned = pinnedDayKey.flatMap(ExtendedScheduleResolver.dayNumber(dayKey:)) {
+            byDayNumber[pinned] = ExtendedSchedulePlan.pinnedShiftTypeID
         }
         handSetByDayNumber = byDayNumber
         authoredMonths = months

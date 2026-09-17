@@ -56,11 +56,12 @@ or place salary values in widgets, URLs, analytics payloads or share metadata.
   resolves each civil day to the same start/end/break/workday tuple the rules
   already take and hands it to `CivilZone`, so extended scheduling stays one
   schedule algorithm rather than a second one; a plan-free input keeps taking
-  exactly the path it took before. A stored schedule snapshot records only
-  that it follows the extended schedule, never the roster itself, so every
-  reader of `ScheduleSnapshot.configurationData` goes through
-  `RecordCoordinator.expandableHours`, which attaches the live plan — decoding
-  it directly silently falls back to the fixed hours. iOS has no JavaScriptCore rules bundle since plan 019 R4; do
+  exactly the path it took before. A stored schedule snapshot records the
+  shift types and rule it followed (`extendedContent`), never the hand-set
+  days, which stay live; so every reader of
+  `ScheduleSnapshot.configurationData` goes through
+  `RecordCoordinator.expandableHours`, which lays that content over the live
+  roster — decoding it directly silently falls back to the fixed hours. iOS has no JavaScriptCore rules bundle since plan 019 R4; do
   not bring one back to evaluate `lib/` at runtime — `npm run check:ios` fails
   if `CountdownRules.js` reappears.
 - Since 3.1, a running shift is `segments + plannedEndAtMs + overtimeEndAtMs`.

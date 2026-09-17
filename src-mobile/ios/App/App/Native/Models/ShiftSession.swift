@@ -36,6 +36,27 @@ struct ScheduleFieldChange: Equatable {
     /// Plan 018 P8. Separate from `scheduleMode`, which is synced to builds
     /// that would fail to decode a new mode.
     var extendedScheduleEnabled: Bool?
+    /// Plan 018 P8's shift types and rule, replaced as a whole.
+    var extendedContent: ExtendedScheduleContent?
+    /// Plan 018 P8's calendar: days given a shift by hand, or put back on the
+    /// pattern, keyed by civil day.
+    var rosterEdits: [String: RosterDayEdit]?
+}
+
+/// One day changed in the extended schedule's calendar.
+nonisolated enum RosterDayEdit: Hashable, Sendable {
+    case shift(UUID)
+    /// Drops the hand-set shift, so the pattern or the carried-over month
+    /// decides the day again.
+    case followPattern
+}
+
+/// The hand-set shift one day had before a save, kept so "from the next shift
+/// only" leaves the shift in progress alone. `nil` when the day was not set by
+/// hand.
+nonisolated struct KeptRosterDay: Codable, Equatable, Sendable {
+    var dayKey: String
+    var shiftTypeID: UUID?
 }
 
 /// Hours and calendar in force until the current shift's settlement seam.
@@ -58,6 +79,12 @@ struct TodayScheduleOverride: Codable, Equatable {
     /// Whether today still runs on the extended schedule. `nil` in overrides
     /// saved before it existed, which then follow the current setting.
     var extendedScheduleEnabled: Bool? = nil
+    /// The shift types and rule today keeps. `nil` without an extended
+    /// schedule, and in overrides saved before this existed, which then follow
+    /// the stored ones.
+    var extendedContent: ExtendedScheduleContent? = nil
+    /// The current shift's day as the calendar had it.
+    var extendedKeptDay: KeptRosterDay? = nil
 }
 
 /// Current session state and rule-backed read projections. It owns no record
@@ -322,7 +349,7 @@ final class ShiftSession {
             schedule: input.schedule,
             breakStartTime: input.breakStartTime,
             breakDurationMinutes: input.breakDurationMinutes,
-            usesExtendedSchedule: input.extendedSchedule == nil ? nil : true,
+            extendedContent: input.extendedSchedule == nil ? nil : preferences.extendedScheduleContent,
             extendedSchedule: input.extendedSchedule
         )
     }
@@ -442,7 +469,14 @@ final class ShiftSession {
         return preferences.isExtendedScheduleEnabled
     }
     func extendedSchedulePlan(at date: Date = .now, using source: RulesScheduleSource = .effective) -> ExtendedSchedulePlan? {
-        usesExtendedSchedule(at: date, using: source) ? preferences.extendedSchedulePlan : nil
+        guard usesExtendedSchedule(at: date, using: source) else { return nil }
+        guard source == .effective, usesTodayOverride(at: date), let todayOverride else {
+            return preferences.extendedSchedulePlan
+        }
+        let plan = todayOverride.extendedContent.map(preferences.extendedSchedulePlan(for:))
+            ?? preferences.extendedSchedulePlan
+        guard let plan, let day = todayOverride.extendedKeptDay else { return plan }
+        return preferences.extendedSchedulePlan(plan, keeping: day)
     }
     /// Under an extended schedule an assigned day brings its own clock
     /// readings, which would replace the ones a caller or an early clock-in
@@ -584,7 +618,10 @@ final class ShiftSession {
             forcedWorkdayStartMs: forcedWorkdayStartMs,
             timeZoneIdentifier: rulesTimeZoneIdentifier,
             extendedSchedule: (change.extendedScheduleEnabled ?? preferences.isExtendedScheduleEnabled)
-                ? preferences.extendedSchedulePlan
+                ? preferences.extendedSchedulePlan(
+                    for: change.extendedContent ?? preferences.extendedScheduleContent,
+                    applying: change.rosterEdits
+                )
                 : nil
         )
     }
@@ -790,8 +827,14 @@ final class ShiftSession {
             endMinutes: endMinutes
         ))
     }
-    func captureSchedule(untilMs: Double) -> TodayScheduleOverride {
-        .init(
+    func captureSchedule(untilMs: Double, at date: Date = .now) -> TodayScheduleOverride {
+        var kept: KeptRosterDay?
+        if usesExtendedSchedule(at: date), let plan = preferences.extendedSchedulePlan {
+            let shift = ScheduleRules.snapshot(input: rulesInput(at: date, pinsEarlyStart: false))
+            let dayKey = Self.dayKey(for: shift.startDate, timeZone: countdownTimeZone)
+            kept = KeptRosterDay(dayKey: dayKey, shiftTypeID: plan.handSetDays[dayKey])
+        }
+        return .init(
             startMinutes: preferences.startMinutes,
             endMinutes: preferences.endMinutes,
             workdays: preferences.workdays.sorted(),
@@ -806,7 +849,9 @@ final class ShiftSession {
             rotationRestDays: preferences.rotationRestDays,
             rotationAnchorMs: preferences.rotationAnchorMs,
             untilMs: untilMs,
-            extendedScheduleEnabled: preferences.isExtendedScheduleEnabled
+            extendedScheduleEnabled: preferences.isExtendedScheduleEnabled,
+            extendedContent: preferences.extendedScheduleContent,
+            extendedKeptDay: kept
         )
     }
     func overrideExpiry(at date: Date) -> Double? {

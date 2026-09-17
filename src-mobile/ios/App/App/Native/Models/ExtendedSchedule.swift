@@ -2,7 +2,7 @@ import Foundation
 
 /// A named kind of shift the extended schedule assigns to days (plan 018 P8).
 /// `rest` is a type as well: the day is assigned, but nothing counts down to it.
-nonisolated struct ShiftType: Codable, Equatable, Sendable, Identifiable {
+nonisolated struct ShiftType: Codable, Hashable, Sendable, Identifiable {
     nonisolated enum Kind: String, Codable, Sendable {
         case work
         case rest
@@ -43,11 +43,20 @@ nonisolated struct ShiftType: Codable, Equatable, Sendable, Identifiable {
 /// cycle, counted from `anchorDayKey`. Single and double weekends are a 14-day
 /// cycle and a rotation is N + M days, so both are the same data; `preset` only
 /// remembers which editor produced it.
-nonisolated struct ShiftCycleRule: Codable, Equatable, Sendable {
+nonisolated struct ShiftCycleRule: Codable, Hashable, Sendable {
     nonisolated enum Preset: String, Codable, Sendable {
+        /// Seven days from a Monday, labelled by weekday.
+        case weekly
         case alternatingWeeks
         case rotation
         case custom
+
+        /// Only a hint for the editor, so a preset a newer build added reads as
+        /// custom instead of rejecting the whole schedule.
+        init(from decoder: any Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = Preset(rawValue: raw) ?? .custom
+        }
     }
 
     static let maximumLength = 366
@@ -76,10 +85,30 @@ nonisolated struct ExtendedSchedule: Equatable, Sendable {
     var editCount: Int
     var editTieBreaker: UUID
 
+    var content: ExtendedScheduleContent {
+        get { ExtendedScheduleContent(shiftTypes: shiftTypes, rule: rule) }
+        set {
+            shiftTypes = newValue.shiftTypes
+            rule = newValue.rule
+        }
+    }
+
     var isValid: Bool {
-        guard let zone = TimeZone(identifier: timeZoneIdentifier),
-              editCount >= 0,
-              shiftTypes.allSatisfy(\.isValid),
+        guard let zone = TimeZone(identifier: timeZoneIdentifier), editCount >= 0 else { return false }
+        return content.isValid(in: zone)
+    }
+}
+
+/// What a schedule edit changes and what a Records snapshot keeps: the shift
+/// types and the rule. Hand-set days are left out on purpose — each is a fact
+/// about one day, so they stay live instead of being copied into every
+/// snapshot.
+nonisolated struct ExtendedScheduleContent: Codable, Hashable, Sendable {
+    var shiftTypes: [ShiftType]
+    var rule: ShiftCycleRule?
+
+    func isValid(in zone: TimeZone) -> Bool {
+        guard shiftTypes.allSatisfy(\.isValid),
               Set(shiftTypes.map(\.id)).count == shiftTypes.count
         else { return false }
         guard let rule else { return true }
