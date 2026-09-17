@@ -763,16 +763,76 @@ final class RecordCoordinator {
         }
     }
 
-    /// Stored hours, with their plan attached when they follow the extended
-    /// schedule. Every reader that expands a schedule snapshot goes through
-    /// here, so none of them can fall back to the fixed hours by forgetting
-    /// the roster.
-    func expandableHours(from data: Data) -> ScheduleHoursConfiguration? {
-        guard var hours = try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: data) else {
-            return nil
+    @ObservationIgnored private var extendedStartCache: (snapshots: [ScheduleSnapshot], start: Date?)?
+
+    /// When the extended schedule first took effect in Records: the earliest
+    /// snapshot that follows it. `nil` while none does.
+    var extendedScheduleStart: Date? {
+        let snapshots = state.snapshots
+        if let cached = extendedStartCache, cached.snapshots == snapshots { return cached.start }
+        let start = snapshots
+            .filter { Self.decodeHours($0.configurationData)?.extendedContent != nil }
+            .map(\.effectiveFrom)
+            .min()
+        extendedStartCache = (snapshots, start)
+        return start
+    }
+
+    @ObservationIgnored private var backfillPlanCache: (rosterDays: [RosterDay], types: [ShiftType], plan: ExtendedSchedulePlan?)?
+
+    /// The hand-set days alone, over whatever fixed schedule a snapshot had:
+    /// what a day filled in on the calendar means for a stretch worked before
+    /// the extended schedule existed. `nil` without any such day.
+    private var backfillPlan: ExtendedSchedulePlan? {
+        let rosterDays = state.rosterDays
+        let types = state.extendedSchedule?.shiftTypes ?? []
+        if let cached = backfillPlanCache, cached.rosterDays == rosterDays, cached.types == types {
+            return cached.plan
         }
-        if let content = hours.extendedContent { hours.extendedSchedule = extendedSchedulePlan(for: content) }
+        var plan: ExtendedSchedulePlan?
+        if !rosterDays.isEmpty {
+            planRevision += 1
+            plan = ExtendedSchedulePlan(
+                shiftTypes: types,
+                rule: nil,
+                handSetDays: extendedSchedulePlan?.handSetDays ?? ExtendedSchedulePlan.handSetDays(from: rosterDays),
+                overlaysFixedSchedule: true,
+                revision: planRevision
+            )
+        }
+        backfillPlanCache = (rosterDays, types, plan)
+        return plan
+    }
+
+    private nonisolated static func decodeHours(_ data: Data) -> ScheduleHoursConfiguration? {
+        try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: data)
+    }
+
+    /// A snapshot's hours as Records resolves them. Every reader that expands a
+    /// schedule snapshot goes through here, so none of them can fall back to
+    /// the fixed hours by forgetting the roster.
+    ///
+    /// - Hours that follow the extended schedule get their shift types and rule
+    ///   over the live hand-set days.
+    /// - Fixed hours from before the extended schedule began get the hand-set
+    ///   days on top, so days filled in afterwards count. Fixed hours from
+    ///   after it began — the user went back to fixed hours — do not: the
+    ///   countdown ignores the calendar then, and Records must agree with it.
+    func expandableHours(for snapshot: ScheduleSnapshot) -> ScheduleHoursConfiguration? {
+        guard var hours = Self.decodeHours(snapshot.configurationData) else { return nil }
+        if let content = hours.extendedContent {
+            hours.extendedSchedule = extendedSchedulePlan(for: content)
+        } else if let start = extendedScheduleStart, snapshot.effectiveFrom < start {
+            hours.extendedSchedule = backfillPlan
+        }
         return hours
+    }
+
+    /// A snapshot's own fixed hours, with no day set by hand: what the calendar
+    /// shows for a day filled in before the extended schedule, once it is
+    /// handed back.
+    nonisolated func fixedHours(for snapshot: ScheduleSnapshot) -> ScheduleHoursConfiguration? {
+        Self.decodeHours(snapshot.configurationData)
     }
 
     /// Saves a schedule edit — new shift types or rule, switching the schedule

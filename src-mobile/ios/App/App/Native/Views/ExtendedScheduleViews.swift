@@ -263,24 +263,31 @@ struct ShiftTypeEditorSheet: View {
 
 // MARK: - Calendar
 
-/// The month calendar the extended schedule opens on: this month and next are
-/// filled in day by day. Pick a shift below the grid, then tap days to give
-/// them that shift. Months after next repeat by date, so they are not shown.
+/// The month calendar the extended schedule opens on. This month and next are
+/// planned day by day, and earlier months back to when Records began can be
+/// filled in so Records counts what was really worked. Pick a shift below the
+/// grid, then tap days to give them that shift. Months after next repeat by
+/// date, so they are not shown.
 struct ExtendedCalendarSection: View {
     let session: ShiftSession
     let content: ExtendedScheduleContent
     /// Stored hand-set days with the page's unsaved edits applied.
     let handSetDays: [String: UUID]
     let todayKey: String
+    /// Days before this key predate the extended schedule: they show the fixed
+    /// schedule Records has for them, unless filled in by hand.
+    let backfillBefore: String
+    /// How many months back the calendar goes (zero or negative).
+    let earliestMonthOffset: Int
+    /// Planned workdays under the fixed schedule, for a range of day keys.
+    let fixedWorkdays: (_ from: String, _ through: String) -> [String: Bool]
     let onSetDay: (String, RosterDayEdit) -> Void
     @State private var monthOffset = 0
     @State private var brush: RosterDayEdit?
     @ScaledMetric(relativeTo: .callout) private var cellHeight: CGFloat = 50
 
-    /// This month and next. Filling in earlier months waits for Records to
-    /// count those days (plan 018 P8-c2): a month worked on fixed hours keeps
-    /// its fixed-hours snapshot, so a day set there would change nothing.
-    private static let offsets = 0...1
+    /// Back as far as Records goes, at most a year; ahead only to next month.
+    private var offsets: ClosedRange<Int> { max(-12, min(0, earliestMonthOffset))...1 }
 
     private var text: AppText { session.text }
     private var activeTypes: [ShiftType] { ExtendedScheduleEditing.activeTypes(in: content) }
@@ -313,7 +320,12 @@ struct ExtendedCalendarSection: View {
                 }
                 palette
             }
-            Text(text.t(content.rule == nil ? "extendedCalendarNoteNoPattern" : "extendedCalendarNote"))
+            Group {
+                Text(text.t(content.rule == nil ? "extendedCalendarNoteNoPattern" : "extendedCalendarNote"))
+                if let shownMonth, monthKey(shownMonth, day: 1) < backfillBefore {
+                    Text(text.t("extendedCalendarBackfillNote"))
+                }
+            }
                 .font(.footnote)
                 .foregroundStyle(OWCDesign.secondary)
                 .lineSpacing(2)
@@ -332,7 +344,7 @@ struct ExtendedCalendarSection: View {
                     .font(.body.weight(.semibold))
                     .frame(minWidth: 44, minHeight: 44)
             }
-            .disabled(monthOffset <= Self.offsets.lowerBound)
+            .disabled(monthOffset <= offsets.lowerBound)
             .accessibilityLabel(text.t("extendedPreviousMonth"))
             Spacer()
             Text(text.formatCivilDate(year: month.year, month: month.month, template: "yMMMM"))
@@ -343,12 +355,16 @@ struct ExtendedCalendarSection: View {
                     .font(.body.weight(.semibold))
                     .frame(minWidth: 44, minHeight: 44)
             }
-            .disabled(monthOffset >= Self.offsets.upperBound)
+            .disabled(monthOffset >= offsets.upperBound)
             .accessibilityLabel(text.t("extendedNextMonth"))
         }
         .tint(OWCDesign.accent)
         .padding(.horizontal, 6)
         .padding(.top, 4)
+    }
+
+    private func monthKey(_ month: (year: Int, month: Int), day: Int) -> String {
+        ExtendedScheduleEditing.dayKey(dayNumber: CivilZone.dayNumber(year: month.year, month: month.month, day: day))
     }
 
     private func grid(_ month: (year: Int, month: Int)) -> some View {
@@ -358,6 +374,8 @@ struct ExtendedCalendarSection: View {
         // Monday first, as the weekday labels are.
         let leading = ((first + 4) % 7 + 7 + 6) % 7
         let count = ExtendedScheduleEditing.daysIn(year: month.year, month: month.month)
+        let firstKey = monthKey(month, day: 1)
+        let fixed = firstKey < backfillBefore ? fixedWorkdays(firstKey, monthKey(month, day: count)) : [:]
         let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
         return LazyVGrid(columns: columns, spacing: 4) {
             ForEach(Array(text.weekdayLabels().enumerated()), id: \.offset) { _, label in
@@ -372,56 +390,88 @@ struct ExtendedCalendarSection: View {
                 if slot < leading {
                     Color.clear.frame(height: cellHeight).accessibilityHidden(true)
                 } else {
-                    dayCell(month: month, day: slot - leading + 1, number: first + slot - leading, resolver: resolver)
+                    let number = first + slot - leading
+                    dayCell(
+                        month: month,
+                        day: slot - leading + 1,
+                        key: ExtendedScheduleEditing.dayKey(dayNumber: number),
+                        look: look(dayNumber: number, resolver: resolver, fixed: fixed)
+                    )
                 }
             }
         }
     }
 
-    private func dayCell(
-        month: (year: Int, month: Int),
-        day: Int,
-        number: Int,
-        resolver: ExtendedScheduleResolver
-    ) -> some View {
-        let key = ExtendedScheduleEditing.dayKey(dayNumber: number)
-        let resolved = resolver.day(dayNumber: number)
-        let type = resolved.shiftTypeID.flatMap { id in content.shiftTypes.first { $0.id == id } }
-        let isToday = key == todayKey
-        let isPast = number < (ExtendedScheduleResolver.dayNumber(dayKey: todayKey) ?? number)
-        let isWork = type?.kind == .work
-        let setByHand = resolved.source == .handSet
+    /// What one day shows.
+    private struct DayLook {
+        var label: String?
+        var labelColor: Color = OWCDesign.secondary
+        var tint: Color = .clear
+        /// Set by hand where that is worth pointing out.
+        var marked = false
+        /// Days no Records period covers cannot be filled in.
+        var editable = true
+    }
+
+    private func look(dayNumber: Int, resolver: ExtendedScheduleResolver, fixed: [String: Bool]) -> DayLook {
+        let key = ExtendedScheduleEditing.dayKey(dayNumber: dayNumber)
+        if key < backfillBefore {
+            if let id = handSetDays[key], let type = content.shiftTypes.first(where: { $0.id == id }) {
+                return look(for: type, marked: true)
+            }
+            guard let isWork = fixed[key] else { return DayLook(editable: false) }
+            return DayLook(
+                label: text.t(isWork ? "extendedKindWork" : "extendedKindRest"),
+                tint: isWork ? OWCDesign.control : .clear
+            )
+        }
+        let resolved = resolver.day(dayNumber: dayNumber)
+        guard let type = resolved.shiftTypeID.flatMap({ id in content.shiftTypes.first { $0.id == id } }) else {
+            return DayLook()
+        }
         // Without a pattern every filled day is set by hand, so the mark would
         // say nothing.
-        let marksHandSet = setByHand && content.rule != nil
+        return look(for: type, marked: resolved.source == .handSet && content.rule != nil)
+    }
+
+    private func look(for type: ShiftType, marked: Bool) -> DayLook {
+        let isWork = type.kind == .work
+        return DayLook(
+            label: type.name,
+            labelColor: isWork ? type.displayColor : OWCDesign.secondary,
+            tint: isWork ? type.displayColor.opacity(0.13) : .clear,
+            marked: marked
+        )
+    }
+
+    private func dayCell(month: (year: Int, month: Int), day: Int, key: String, look: DayLook) -> some View {
+        let isToday = key == todayKey
         return Button {
             if let brush = currentBrush { onSetDay(key, brush) }
         } label: {
             VStack(spacing: 2) {
                 Text(text.formatCount(day))
                     .font(.callout.monospacedDigit().weight(isToday ? .semibold : .regular))
-                    .foregroundStyle(isToday ? OWCDesign.accent : OWCDesign.primary)
-                Text(type?.name ?? " ")
+                    .foregroundStyle(
+                        isToday ? OWCDesign.accent : (look.editable ? OWCDesign.primary : OWCDesign.tertiary)
+                    )
+                Text(look.label ?? " ")
                     .font(.caption2)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
-                    .foregroundStyle(isWork ? (type?.displayColor ?? OWCDesign.secondary) : OWCDesign.secondary)
+                    .foregroundStyle(look.labelColor)
             }
             .padding(.horizontal, 2)
             .frame(maxWidth: .infinity, minHeight: cellHeight)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isWork ? (type?.displayColor ?? .clear).opacity(0.13) : Color.clear)
-            )
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(look.tint))
             .overlay {
                 if isToday {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .strokeBorder(OWCDesign.accent, lineWidth: 1.5)
                 }
             }
-            .opacity(isPast ? 0.5 : 1)
             .overlay(alignment: .topTrailing) {
-                if marksHandSet {
+                if look.marked {
                     Circle()
                         .fill(OWCDesign.secondary)
                         .frame(width: 4, height: 4)
@@ -431,14 +481,19 @@ struct ExtendedCalendarSection: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(!look.editable)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel([
             text.formatCivilDate(year: month.year, month: month.month, day: day, template: "MMMMdEEEE"),
-            type?.name ?? text.t("extendedUnassigned"),
-            marksHandSet ? text.t("extendedSetByHand") : nil,
+            look.label ?? text.t("extendedUnassigned"),
+            look.marked ? text.t("extendedSetByHand") : nil,
             isToday ? text.t("extendedToday") : nil,
         ].compactMap { $0 }.joined(separator: ", "))
-        .accessibilityHint(currentBrush.map { text.t("extendedFillDayHint", values: ["shift": brushName($0)]) } ?? "")
+        .accessibilityHint(
+            look.editable
+                ? currentBrush.map { text.t("extendedFillDayHint", values: ["shift": brushName($0)]) } ?? ""
+                : ""
+        )
         .accessibilityAddTraits(.isButton)
     }
 

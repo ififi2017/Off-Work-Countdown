@@ -118,16 +118,23 @@ nonisolated enum ExtendedScheduleEditing {
     /// given months that is not already set by hand, so dropping the pattern
     /// leaves those months looking as they did. Later months then repeat the
     /// last of them by date.
+    ///
+    /// Days before `fromKey` are left alone: the pattern never governed them —
+    /// Records has them on the fixed hours of the time — and writing them in
+    /// would quietly change that history.
     static func keepingPattern(
         _ plan: ExtendedSchedulePlan,
         months: [(year: Int, month: Int)],
+        from fromKey: String,
         edits: [String: RosterDayEdit]?
     ) -> [String: RosterDayEdit]? {
         var next = edits ?? [:]
         let resolver = ExtendedScheduleResolver(plan: plan)
+        let first = ExtendedScheduleResolver.dayNumber(dayKey: fromKey) ?? .min
         for (year, month) in months {
             for day in 1...daysIn(year: year, month: month) {
                 let number = CivilZone.dayNumber(year: year, month: month, day: day)
+                guard number >= first else { continue }
                 let resolved = resolver.day(dayNumber: number)
                 guard resolved.source == .rule, let id = resolved.shiftTypeID else { continue }
                 next[dayKey(dayNumber: number)] = .shift(id)

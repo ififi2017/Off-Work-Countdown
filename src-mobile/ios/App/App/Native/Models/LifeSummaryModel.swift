@@ -477,7 +477,7 @@ final class LifeSummaryModel {
                   period.startsOn <= finalDay,
                   period.endsBefore.map({ $0 > workStart }) ?? true,
                   snapshot.effectiveFrom <= finalDay,
-                  let configuration = queries.expandableHours(from: snapshot.configurationData)
+                  let configuration = queries.expandableHours(for: snapshot)
             else { continue }
             let periodCalendar = period.civilCalendar()
             await ScheduleExpansionCache.shared.prefetch(
