@@ -848,8 +848,15 @@ final class ShiftSessionStore {
             // it is switched separately — and only when there is one to switch.
             var preferenceChange = change
             preferenceChange.extendedScheduleEnabled = nil
+            preferenceChange.extendedContent = nil
+            // Checked here as well as by the archive, which would drop an
+            // invalid schedule silently after the hours had already been saved.
+            if let content = change.extendedContent {
+                let zone = records.state.extendedSchedule.flatMap { TimeZone(identifier: $0.timeZoneIdentifier) }
+                guard content.isValid(in: zone ?? preferences.recordsTimeZone) else { return false }
+            }
             if let enabled = change.extendedScheduleEnabled {
-                guard records.state.extendedSchedule != nil else { return false }
+                guard records.state.extendedSchedule != nil || change.extendedContent != nil else { return false }
                 // "Schedule off" means "start by hand", and the countdown's own
                 // switches read it that way. A roster is a schedule.
                 if enabled, (preferenceChange.scheduleMode ?? preferences.scheduleMode) == .off {
@@ -875,8 +882,13 @@ final class ShiftSessionStore {
                 if !preferenceChange.settled(against: preferences, at: date).isEmpty {
                     guard preferences.applySetupScheduleChange(preferenceChange, at: date).synchronousResult else { return false }
                 }
-                if let enabled = change.extendedScheduleEnabled {
-                    guard records.setExtendedScheduleEnabled(enabled, at: date) else { return false }
+                if change.extendedScheduleEnabled != nil || change.extendedContent != nil {
+                    guard records.updateExtendedSchedule(
+                        content: change.extendedContent,
+                        enabled: change.extendedScheduleEnabled,
+                        timeZoneIdentifier: preferences.recordsTimeZone.identifier,
+                        at: date
+                    ) else { return false }
                 }
                 self.session.todayOverride = preservedSchedule
 

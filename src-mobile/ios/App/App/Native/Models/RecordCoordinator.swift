@@ -661,25 +661,91 @@ final class RecordCoordinator {
         return plan
     }
 
-    /// Stored hours, with the live plan attached when they follow it. Every
-    /// reader that expands a schedule snapshot goes through here, so none of
-    /// them can fall back to the fixed hours by forgetting the roster.
+    @ObservationIgnored private var contentPlanCache: (
+        rosterDays: [RosterDay],
+        liveTypes: [ShiftType],
+        plans: [ExtendedScheduleContent: ExtendedSchedulePlan]
+    ) = ([], [], [:])
+
+    /// The plan for shift types and a rule as they stood when something was
+    /// saved — a Records snapshot, or today's hours kept "from the next shift
+    /// only" — over the hand-set days as they are now.
+    ///
+    /// Types created since are added, so a day filled in later with a new type
+    /// still resolves; a type both know keeps the saved hours. Plans are kept
+    /// until a hand-set day or the live types change, because Records asks for
+    /// the same few snapshots over and over, and the countdown every second.
+    func extendedSchedulePlan(for content: ExtendedScheduleContent) -> ExtendedSchedulePlan {
+        let live = state.extendedSchedule
+        if let live, live.content == content, let plan = extendedSchedulePlan { return plan }
+        let rosterDays = state.rosterDays
+        let liveTypes = live?.shiftTypes ?? []
+        if contentPlanCache.rosterDays != rosterDays
+            || contentPlanCache.liveTypes != liveTypes
+            || contentPlanCache.plans.count >= 16 {
+            contentPlanCache = (rosterDays, liveTypes, [:])
+        }
+        if let cached = contentPlanCache.plans[content] { return cached }
+        let saved = Set(content.shiftTypes.map(\.id))
+        planRevision += 1
+        let plan = ExtendedSchedulePlan(
+            shiftTypes: content.shiftTypes + liveTypes.filter { !saved.contains($0.id) },
+            rule: content.rule,
+            handSetDays: extendedSchedulePlan?.handSetDays ?? ExtendedSchedulePlan.handSetDays(from: rosterDays),
+            revision: planRevision
+        )
+        contentPlanCache.plans[content] = plan
+        return plan
+    }
+
+    /// Stored hours, with their plan attached when they follow the extended
+    /// schedule. Every reader that expands a schedule snapshot goes through
+    /// here, so none of them can fall back to the fixed hours by forgetting
+    /// the roster.
     func expandableHours(from data: Data) -> ScheduleHoursConfiguration? {
         guard var hours = try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: data) else {
             return nil
         }
-        if hours.usesExtendedSchedule == true { hours.extendedSchedule = extendedSchedulePlan }
+        if let content = hours.extendedContent { hours.extendedSchedule = extendedSchedulePlan(for: content) }
         return hours
+    }
+
+    /// Saves a schedule edit — new shift types or rule, switching the schedule
+    /// on or off, or both — as one write. `false` when it could not be saved:
+    /// switching needs a schedule to exist, and an invalid one is refused.
+    /// `timeZoneIdentifier` names the zone of a schedule created here.
+    func updateExtendedSchedule(
+        content: ExtendedScheduleContent?,
+        enabled: Bool?,
+        timeZoneIdentifier: String,
+        at date: Date = .now
+    ) -> Bool {
+        var schedule: ExtendedSchedule
+        if let current = state.extendedSchedule {
+            schedule = current
+        } else {
+            guard let content else { return false }
+            schedule = ExtendedSchedule(
+                isEnabled: false,
+                shiftTypes: content.shiftTypes,
+                rule: content.rule,
+                timeZoneIdentifier: timeZoneIdentifier,
+                editedAt: date,
+                editCount: 0,
+                editTieBreaker: UUID()
+            )
+        }
+        if let content { schedule.content = content }
+        if let enabled { schedule.isEnabled = enabled }
+        if schedule != state.extendedSchedule { upsertExtendedSchedule(schedule, at: date) }
+        guard let saved = state.extendedSchedule else { return false }
+        return saved.content == schedule.content && saved.isEnabled == schedule.isEnabled
     }
 
     /// Switches the extended schedule on or off. `false` when there is no
     /// schedule to switch — one has to be set up first.
     func setExtendedScheduleEnabled(_ enabled: Bool, at date: Date = .now) -> Bool {
-        guard var schedule = state.extendedSchedule else { return false }
-        guard schedule.isEnabled != enabled else { return true }
-        schedule.isEnabled = enabled
-        upsertExtendedSchedule(schedule, at: date)
-        return state.extendedSchedule?.isEnabled == enabled
+        updateExtendedSchedule(content: nil, enabled: enabled, timeZoneIdentifier: "", at: date)
     }
 
     /// A day the user assigned by hand. Putting the day back on the rule is

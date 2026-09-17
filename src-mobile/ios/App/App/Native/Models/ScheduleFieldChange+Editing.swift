@@ -26,6 +26,7 @@ extension ScheduleFieldChange {
         if next.rotationWorkDays == store.rotationWorkDays { next.rotationWorkDays = nil }
         if next.rotationRestDays == store.rotationRestDays { next.rotationRestDays = nil }
         if next.extendedScheduleEnabled == store.isExtendedScheduleEnabled { next.extendedScheduleEnabled = nil }
+        if next.extendedContent == store.extendedScheduleContent { next.extendedContent = nil }
         // The cycle day is only "unchanged" against the anchor it will land on.
         // Switching to rotation re-anchors to today, and a new work or rest
         // length changes what day N means, so with either in the same edit the

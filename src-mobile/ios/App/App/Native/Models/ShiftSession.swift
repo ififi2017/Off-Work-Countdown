@@ -36,6 +36,8 @@ struct ScheduleFieldChange: Equatable {
     /// Plan 018 P8. Separate from `scheduleMode`, which is synced to builds
     /// that would fail to decode a new mode.
     var extendedScheduleEnabled: Bool?
+    /// Plan 018 P8's shift types and rule, replaced as a whole.
+    var extendedContent: ExtendedScheduleContent?
 }
 
 /// Hours and calendar in force until the current shift's settlement seam.
@@ -58,6 +60,10 @@ struct TodayScheduleOverride: Codable, Equatable {
     /// Whether today still runs on the extended schedule. `nil` in overrides
     /// saved before it existed, which then follow the current setting.
     var extendedScheduleEnabled: Bool? = nil
+    /// The shift types and rule today keeps. `nil` without an extended
+    /// schedule, and in overrides saved before this existed, which then follow
+    /// the stored ones.
+    var extendedContent: ExtendedScheduleContent? = nil
 }
 
 /// Current session state and rule-backed read projections. It owns no record
@@ -322,7 +328,7 @@ final class ShiftSession {
             schedule: input.schedule,
             breakStartTime: input.breakStartTime,
             breakDurationMinutes: input.breakDurationMinutes,
-            usesExtendedSchedule: input.extendedSchedule == nil ? nil : true,
+            extendedContent: input.extendedSchedule == nil ? nil : preferences.extendedScheduleContent,
             extendedSchedule: input.extendedSchedule
         )
     }
@@ -442,7 +448,11 @@ final class ShiftSession {
         return preferences.isExtendedScheduleEnabled
     }
     func extendedSchedulePlan(at date: Date = .now, using source: RulesScheduleSource = .effective) -> ExtendedSchedulePlan? {
-        usesExtendedSchedule(at: date, using: source) ? preferences.extendedSchedulePlan : nil
+        guard usesExtendedSchedule(at: date, using: source) else { return nil }
+        if source == .effective, usesTodayOverride(at: date), let kept = todayOverride?.extendedContent {
+            return preferences.extendedSchedulePlan(for: kept)
+        }
+        return preferences.extendedSchedulePlan
     }
     /// Under an extended schedule an assigned day brings its own clock
     /// readings, which would replace the ones a caller or an early clock-in
@@ -584,7 +594,7 @@ final class ShiftSession {
             forcedWorkdayStartMs: forcedWorkdayStartMs,
             timeZoneIdentifier: rulesTimeZoneIdentifier,
             extendedSchedule: (change.extendedScheduleEnabled ?? preferences.isExtendedScheduleEnabled)
-                ? preferences.extendedSchedulePlan
+                ? change.extendedContent.map(preferences.extendedSchedulePlan(for:)) ?? preferences.extendedSchedulePlan
                 : nil
         )
     }
@@ -806,7 +816,8 @@ final class ShiftSession {
             rotationRestDays: preferences.rotationRestDays,
             rotationAnchorMs: preferences.rotationAnchorMs,
             untilMs: untilMs,
-            extendedScheduleEnabled: preferences.isExtendedScheduleEnabled
+            extendedScheduleEnabled: preferences.isExtendedScheduleEnabled,
+            extendedContent: preferences.extendedScheduleContent
         )
     }
     func overrideExpiry(at date: Date) -> Double? {

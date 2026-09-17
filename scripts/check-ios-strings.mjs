@@ -65,6 +65,8 @@ export const SAME_AS_ENGLISH_ON_PURPOSE = {
   focusEstimateDetail: ["es", "fr", "it", "pt"],
   // In German a name is a Name
   focusUsualDayName: ["de"],
+  // Spanish spells colour the English way
+  extendedColor: ["es"],
 };
 
 /// Catalog keys that no code asks for in a shape `appKeyReferences` sees, each

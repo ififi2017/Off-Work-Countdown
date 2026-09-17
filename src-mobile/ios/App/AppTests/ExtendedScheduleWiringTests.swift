@@ -218,13 +218,14 @@ struct ExtendedScheduleWiringTests {
         Self.install(runtime, enabled: true)
         let monday = try Self.at(runtime, 5, 10)
         let hours = runtime.session.hoursConfiguration(at: monday)
-        #expect(hours.usesExtendedSchedule == true)
+        #expect(hours.extendedContent == runtime.preferences.extendedScheduleContent)
         runtime.records.ensureSeeded(hours: hours, at: monday, timeZone: runtime.preferences.recordsTimeZone)
 
         let snapshot = try #require(runtime.records.state.snapshots.last)
         let stored = try #require(String(data: snapshot.configurationData, encoding: .utf8))
-        #expect(stored.contains("\"usesExtendedSchedule\":true"))
-        #expect(!stored.contains("shiftTypes"))
+        #expect(stored.contains("\"extendedContent\""))
+        // The hand-set days stay out of the snapshot.
+        #expect(!stored.contains("2026-10-05"))
         let snapshotCount = runtime.records.state.snapshots.count
 
         func expansion() throws -> [NativeScheduleDayExpansion] {
@@ -243,16 +244,17 @@ struct ExtendedScheduleWiringTests {
         #expect(runtime.records.state.snapshots.count == snapshotCount)
     }
 
-    @Test("Hours carry the plan at run time but store only the marker")
-    func hoursStoreOnlyTheMarker() throws {
+    @Test("Hours store the shift types and rule, and carry the plan only at run time")
+    func hoursStoreTheContent() throws {
         let runtime = try Self.runtime()
         Self.install(runtime, enabled: true)
         let hours = runtime.session.hoursConfiguration(at: try Self.at(runtime, 5, 10))
         #expect(hours.extendedSchedule != nil)
         let encoded = try ScheduleHoursCodec.encode(hours)
         let decoded = try JSONDecoder().decode(ScheduleHoursConfiguration.self, from: encoded.data)
-        #expect(decoded.usesExtendedSchedule == true)
+        #expect(decoded.extendedContent == runtime.preferences.extendedScheduleContent)
         #expect(decoded.extendedSchedule == nil)
+        #expect(!String(decoding: encoded.data, as: UTF8.self).contains("handSetDays"))
     }
 
     @Test("The plan is rebuilt only when the schedule or a day changes")

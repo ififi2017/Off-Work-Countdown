@@ -171,6 +171,15 @@ final class PreferencesStore {
     /// change saved "from the next shift only".
     var extendedSchedulePlan: ExtendedSchedulePlan? { records.extendedSchedulePlan }
 
+    /// The stored shift types and rule, which the schedule page edits.
+    var extendedScheduleContent: ExtendedScheduleContent? { records.state.extendedSchedule?.content }
+
+    /// Shift types and a rule other than the stored ones, over the stored
+    /// hand-set days: a draft being weighed, or today's kept schedule.
+    func extendedSchedulePlan(for content: ExtendedScheduleContent) -> ExtendedSchedulePlan {
+        records.extendedSchedulePlan(for: content)
+    }
+
     var rotationCycleLength: Int {
         max(2, rotationWorkDays + rotationRestDays)
     }

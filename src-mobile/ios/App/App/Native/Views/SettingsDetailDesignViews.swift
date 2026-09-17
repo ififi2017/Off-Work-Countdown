@@ -17,6 +17,7 @@ struct ScheduleSettingsView: View {
     @State private var lunchDurationText = ""
     @State private var showLunchStartPicker = false
     @State private var pendingLunchStartMinutes = 0
+    @State private var editingShiftType: ShiftTypeEditing?
 
     private var draft: ScheduleFieldChange {
         get { scene.scheduleSettingsDraft }
@@ -26,15 +27,28 @@ struct ScheduleSettingsView: View {
     var body: some View {
         OWCContentSizedScrollView {
             VStack(spacing: 0) {
-                OWCSectionHeader(title: shifts.text.t("scheduleHours"))
+                // The extended schedule's hours live in its shift types, so
+                // they take the place the fixed hours hold in every other mode.
+                if draftExtended, let content = draftExtendedContent {
+                    ExtendedShiftTypesSection(
+                        session: shifts.session,
+                        types: ExtendedScheduleEditing.activeTypes(in: content),
+                        onEdit: { editShiftType($0, in: content) },
+                        onAdd: { addShiftType(to: content) }
+                    )
                     .padding(.top, 8)
-                hoursCard
-                    .padding(.horizontal, OWCDesign.pageInset)
+                } else {
+                    OWCSectionHeader(title: shifts.text.t("scheduleHours"))
+                        .padding(.top, 8)
+                    hoursCard
+                        .padding(.horizontal, OWCDesign.pageInset)
+                }
 
                 OWCGroupCard {
                     modeRow(.classic, title: shifts.text.t("scheduleClassic"), subtitle: shifts.text.t("scheduleClassicDescription"))
                     modeRow(.alternating, title: shifts.text.t("scheduleAlternating"), subtitle: shifts.text.t("scheduleAlternatingDescription"))
                     modeRow(.rotation, title: shifts.text.t("scheduleRotation"), subtitle: shifts.text.t("scheduleRotationDescription"))
+                    extendedModeRow
                     modeRow(.off, title: shifts.text.t("scheduleOff"), subtitle: shifts.text.t("scheduleOffDescription"), isLast: true)
                 }
                 .padding(.horizontal, OWCDesign.pageInset)
@@ -44,7 +58,7 @@ struct ScheduleSettingsView: View {
                 scheduleDetails
                     .padding(.top, 22)
 
-                Text(draftMode == .off ? shifts.text.t("scheduleOffSummaryNote") : shifts.text.t("scheduleSharedRulesNote"))
+                Text(draftMode == .off && !draftExtended ? shifts.text.t("scheduleOffSummaryNote") : shifts.text.t("scheduleSharedRulesNote"))
                     .font(.footnote)
                     .foregroundStyle(OWCDesign.secondary)
                     .lineSpacing(2)
@@ -53,16 +67,19 @@ struct ScheduleSettingsView: View {
                     .padding(.top, 9)
 
                 // Lunch is part of the shift's shape, so it is edited and saved
-                // with the hours rather than on a page of its own.
-                OWCSectionHeader(title: shifts.text.t("lunchBreak"))
-                    .padding(.top, 20)
-                lunchCard
-                    .padding(.horizontal, OWCDesign.pageInset)
-                settingsDetailFooter(
-                    shifts.preferences.salaryEnabled
-                        ? shifts.text.t("lunchPauseNote")
-                        : shifts.text.t("lunchPauseNoteNoSalary")
-                )
+                // with the hours rather than on a page of its own. Each shift
+                // type carries its own break instead.
+                if !draftExtended {
+                    OWCSectionHeader(title: shifts.text.t("lunchBreak"))
+                        .padding(.top, 20)
+                    lunchCard
+                        .padding(.horizontal, OWCDesign.pageInset)
+                    settingsDetailFooter(
+                        shifts.preferences.salaryEnabled
+                            ? shifts.text.t("lunchPauseNote")
+                            : shifts.text.t("lunchPauseNoteNoSalary")
+                    )
+                }
             }
             .padding(.bottom, 24)
         }
@@ -92,6 +109,7 @@ struct ScheduleSettingsView: View {
             if !focused { clampLunchDuration() }
         }
         .sensoryFeedback(.selection, trigger: draftMode)
+        .sensoryFeedback(.selection, trigger: draftExtended)
         .sensoryFeedback(.selection, trigger: draftLunchEnabled)
         .sensoryFeedback(.warning, trigger: savePromptFeedback)
         .sensoryFeedback(.success, trigger: saveCommitFeedback)
@@ -107,6 +125,24 @@ struct ScheduleSettingsView: View {
                 if field == .start { edit { $0.startMinutes = pendingMinutes } }
                 else { edit { $0.endMinutes = pendingMinutes } }
             }
+        }
+        .sheet(item: $editingShiftType) { editing in
+            ShiftTypeEditorSheet(
+                session: shifts.session,
+                editing: editing,
+                onSave: { type in
+                    editExtendedContent { ExtendedScheduleEditing.upserting(type, in: $0) }
+                },
+                onDelete: {
+                    editExtendedContent {
+                        ExtendedScheduleEditing.removing(
+                            editing.type.id,
+                            from: $0,
+                            saved: shifts.preferences.extendedScheduleContent
+                        )
+                    }
+                }
+            )
         }
         .alert(shifts.text.t("applyScheduleTitle"), isPresented: $showSavePrompt) {
             Button(shifts.text.t("applyFromNextShift")) { commit(.nextShiftOnly) }
@@ -243,6 +279,72 @@ struct ScheduleSettingsView: View {
         draft = next.settled(against: shifts.preferences)
     }
 
+    private var draftExtended: Bool {
+        draft.extendedScheduleEnabled ?? shifts.preferences.isExtendedScheduleEnabled
+    }
+    private var draftExtendedContent: ExtendedScheduleContent? {
+        draft.extendedContent ?? shifts.preferences.extendedScheduleContent
+    }
+
+    private func editExtendedContent(_ change: (ExtendedScheduleContent) -> ExtendedScheduleContent) {
+        guard let content = draftExtendedContent else { return }
+        let next = change(content)
+        edit { $0.extendedContent = next }
+    }
+
+    private func editShiftType(_ type: ShiftType, in content: ExtendedScheduleContent) {
+        editingShiftType = ShiftTypeEditing(
+            type: type,
+            isNew: false,
+            isInUse: ExtendedScheduleEditing.ruleUses(type.id, in: content)
+        )
+    }
+
+    private func addShiftType(to content: ExtendedScheduleContent) {
+        editingShiftType = ShiftTypeEditing(
+            type: ShiftType(
+                id: UUID(),
+                name: "",
+                kind: .work,
+                startMinutes: draftStart,
+                endMinutes: draftEnd,
+                breakEnabled: false,
+                breakStartMinutes: draftLunchStartMinutes,
+                breakDurationMinutes: 30,
+                colorHex: ExtendedScheduleEditing.nextColor(after: content.shiftTypes),
+                isArchived: false
+            ),
+            isNew: true,
+            isInUse: false
+        )
+    }
+
+    /// The fifth mode. It is not a `WorkScheduleMode`, which older builds
+    /// would fail to decode from synced preferences, so it has a row of its own.
+    private var extendedModeRow: some View {
+        Button {
+            guard !draftExtended else { return }
+            // A first visit copies the current schedule, so switching changes
+            // nothing until the user edits it.
+            let seed = draftExtendedContent == nil
+                ? shifts.session.seededExtendedContent(applying: draft, at: .now)
+                : nil
+            edit {
+                $0.extendedScheduleEnabled = true
+                if let seed { $0.extendedContent = seed }
+            }
+        } label: {
+            OWCRow(
+                title: shifts.text.t("extendedSchedule"),
+                subtitle: shifts.text.t("extendedScheduleDescription"),
+                centersVertically: true
+            ) {
+                ScheduleModeMark(selected: draftExtended)
+            }
+        }
+        .buttonStyle(OWCRowButtonStyle())
+    }
+
     /// A control's value, read through the draft and written back into it.
     private func binding<Value: Equatable>(
         _ field: WritableKeyPath<ScheduleFieldChange, Value?>,
@@ -281,6 +383,23 @@ struct ScheduleSettingsView: View {
 
     @ViewBuilder
     private var scheduleDetails: some View {
+        if draftExtended, let content = draftExtendedContent {
+            ExtendedPatternSection(
+                session: shifts.session,
+                content: content,
+                todayKey: shifts.session.extendedTodayKey(at: .now),
+                onChange: { next in edit { $0.extendedContent = next } },
+                onApplyTemplate: { preset in
+                    editExtendedContent { shifts.session.applyingTemplate(preset, to: $0, at: .now) }
+                }
+            )
+        } else {
+            fixedScheduleDetails
+        }
+    }
+
+    @ViewBuilder
+    private var fixedScheduleDetails: some View {
         switch draftMode {
         case .classic:
             VStack(alignment: .leading, spacing: 0) {
@@ -424,8 +543,13 @@ struct ScheduleSettingsView: View {
 
     private func modeRow(_ mode: WorkScheduleMode, title: String, subtitle: String, isLast: Bool = false) -> some View {
         Button {
-            guard draftMode != mode else { return }
-            edit { $0.scheduleMode = mode }
+            guard draftExtended || draftMode != mode else { return }
+            edit {
+                $0.scheduleMode = mode
+                $0.extendedScheduleEnabled = false
+                // A schedule seeded on this visit and then left is not saved.
+                if shifts.preferences.extendedScheduleContent == nil { $0.extendedContent = nil }
+            }
         } label: {
             OWCRow(
                 title: title,
@@ -433,7 +557,7 @@ struct ScheduleSettingsView: View {
                 isLast: isLast,
                 centersVertically: true
             ) {
-                ScheduleModeMark(selected: draftMode == mode)
+                ScheduleModeMark(selected: !draftExtended && draftMode == mode)
             }
         }
         .buttonStyle(OWCRowButtonStyle())
@@ -1190,7 +1314,7 @@ struct NotificationDesignView: View {
     }
 }
 
-private extension View {
+extension View {
     func owcPlainDivider() -> some View {
         overlay(alignment: .bottomTrailing) {
             Rectangle()

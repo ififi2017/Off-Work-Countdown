@@ -139,6 +139,15 @@ final class AppText {
         date.formatted(.dateTime.weekday(.wide).locale(preferences.locale))
     }
 
+    /// The full weekday name of a civil day number (days since 1970-01-01),
+    /// which names the same day whatever zone the device is in.
+    func weekdayName(civilDayNumber: Int) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = preferences.locale
+        // 1970-01-01 was a Thursday; `weekdaySymbols` starts on Sunday.
+        return calendar.weekdaySymbols[((civilDayNumber + 4) % 7 + 7) % 7]
+    }
+
 }
 
 extension AppText {
