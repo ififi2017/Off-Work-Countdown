@@ -242,7 +242,7 @@ struct ShareComposerView: View {
 
     private func sharePreview(maxWidth: CGFloat) -> some View {
         let safeWidth = (maxWidth.isFinite && maxWidth > 0) ? maxWidth : nil
-        return ShareCard(shifts: shifts)
+        return ShareCard(shifts: shifts, mood: scene.shareMood)
             .frame(maxWidth: safeWidth)
             .aspectRatio(4 / 5, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
@@ -285,7 +285,7 @@ struct ShareComposerView: View {
     @MainActor
     private func prepareShare() async {
         await Task.yield()
-        let card = ShareCard(shifts: shifts)
+        let card = ShareCard(shifts: shifts, mood: scene.shareMood)
             .frame(width: 360, height: 450)
         let renderer = ImageRenderer(content: card)
         renderer.scale = 3
@@ -313,9 +313,14 @@ struct ShareComposerView: View {
 /// Every size in here is deliberately fixed rather than a Dynamic Type style:
 /// this view is rasterised into a PNG that leaves the device, so its layout has
 /// to be identical for everyone. Do not "migrate" these to semantic fonts.
-private struct ShareCard: View {
-    @Environment(SceneState.self) private var scene
+///
+/// Everything it draws is passed in. `ImageRenderer` renders a view with no
+/// hierarchy above it, so an `@Environment` lookup here finds nothing and traps
+/// — which is what crashed the share button. `ShareCardRenderTests` renders it
+/// the same way the button does.
+struct ShareCard: View {
     let shifts: ShiftSessionStore
+    let mood: ShareMood
 
     var body: some View {
         ZStack {
@@ -340,7 +345,7 @@ private struct ShareCard: View {
                     Spacer(minLength: 8)
                 }
                 Spacer()
-                Text(verbatim: scene.shareMood.emoji)
+                Text(verbatim: mood.emoji)
                     .font(.system(size: 72))
                     .frame(width: 82, height: 82)
                     .accessibilityHidden(true)

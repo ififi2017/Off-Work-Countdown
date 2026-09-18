@@ -443,6 +443,16 @@ well, through the single `PBXFileSystemSynchronizedBuildFileExceptionSet` in
 the project. Anything else that needs to be shared with the widget goes in
 that same exception set.
 
+A view rasterised by `ImageRenderer` — the share card is the one today — is
+rendered with nothing above it, so it has no environment: an
+`@Environment(SomeObservable.self)` lookup inside it traps with "No Observable
+object of type … found" and takes the app down as the sheet opens. Pass such a
+view everything it draws, and cover it the way `ShareCardRenderTests` does, by
+rendering it exactly as the button does. Note what a crash looks like in that
+runner: the process restarts and the summary reads `Test run with 0 tests …
+passed` with exit code 0, so a crashing test is only visible if you count what
+actually ran.
+
 **iOS simulator visual testing is user-requested only.** Do not proactively
 open or boot a simulator, launch the app for visual inspection, or capture
 screenshots unless the user explicitly requests that testing. This includes
