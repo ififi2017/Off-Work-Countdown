@@ -74,6 +74,10 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
     /// counting as a day the user set: otherwise it would make a carried-over
     /// month authored, and every other day of that month would read as rest.
     let pinnedDayKey: String?
+    /// Only the hand-set days count; every other day keeps the fixed schedule
+    /// the caller passed. This is how days filled in on the calendar reach
+    /// Records for a stretch that was worked on fixed hours.
+    let overlaysFixedSchedule: Bool
     /// Process-local version from `RecordCoordinator`, so caches keyed on a
     /// plan can tell two plans apart without comparing every day.
     let revision: Int
@@ -84,18 +88,21 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
         rule: ShiftCycleRule?,
         handSetDays: [String: UUID],
         pinnedDayKey: String? = nil,
+        overlaysFixedSchedule: Bool = false,
         revision: Int = 0
     ) {
         self.shiftTypes = shiftTypes
         self.rule = rule
         self.handSetDays = handSetDays
         self.pinnedDayKey = pinnedDayKey
+        self.overlaysFixedSchedule = overlaysFixedSchedule
         self.revision = revision
         index = ExtendedScheduleIndex(
             shiftTypes: shiftTypes,
-            rule: rule,
+            rule: overlaysFixedSchedule ? nil : rule,
             handSetDays: handSetDays,
-            pinnedDayKey: pinnedDayKey
+            pinnedDayKey: pinnedDayKey,
+            overlaysFixedSchedule: overlaysFixedSchedule
         )
     }
 
@@ -126,7 +133,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case shiftTypes, rule, handSetDays, pinnedDayKey, revision
+        case shiftTypes, rule, handSetDays, pinnedDayKey, overlaysFixedSchedule, revision
     }
 
     init(from decoder: any Decoder) throws {
@@ -136,6 +143,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             rule: try container.decodeIfPresent(ShiftCycleRule.self, forKey: .rule),
             handSetDays: try container.decode([String: UUID].self, forKey: .handSetDays),
             pinnedDayKey: try container.decodeIfPresent(String.self, forKey: .pinnedDayKey),
+            overlaysFixedSchedule: try container.decodeIfPresent(Bool.self, forKey: .overlaysFixedSchedule) ?? false,
             revision: try container.decode(Int.self, forKey: .revision)
         )
     }
@@ -146,6 +154,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             && lhs.rule == rhs.rule
             && lhs.handSetDays == rhs.handSetDays
             && lhs.pinnedDayKey == rhs.pinnedDayKey
+            && lhs.overlaysFixedSchedule == rhs.overlaysFixedSchedule
     }
 
     /// The hours this plan gives one civil day, or `nil` when it is rest.
@@ -183,6 +192,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             rule: rule,
             handSetDays: handSetDays,
             pinnedDayKey: dayKey,
+            overlaysFixedSchedule: overlaysFixedSchedule,
             revision: revision
         )
     }
@@ -199,8 +209,16 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
     /// Month key to that month's hand-set days, by day of the month.
     let authoredMonths: [Int: [Int: UUID]]
     let authoredMonthKeys: [Int]
+    let overlaysFixedSchedule: Bool
 
-    init(shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID], pinnedDayKey: String?) {
+    init(
+        shiftTypes: [ShiftType],
+        rule: ShiftCycleRule?,
+        handSetDays: [String: UUID],
+        pinnedDayKey: String?,
+        overlaysFixedSchedule: Bool
+    ) {
+        self.overlaysFixedSchedule = overlaysFixedSchedule
         var dayByType: [UUID: (isWorkday: Bool, hours: ExtendedScheduleDayHours?)] = [:]
         for type in shiftTypes where dayByType[type.id] == nil {
             // An archived type still resolves, so a past day keeps the shift it
@@ -265,6 +283,13 @@ nonisolated final class ExtendedScheduleResolver {
         self.init(plan: plan)
     }
 
+    /// The day's conclusion, or `nil` when the plan only overlays a fixed
+    /// schedule and does not decide this day, so the fixed rules still do.
+    func assignedDay(dayNumber: Int) -> ExtendedScheduleDay? {
+        let resolved = day(dayNumber: dayNumber)
+        return index.overlaysFixedSchedule && resolved.source == .unassigned ? nil : resolved
+    }
+
     func day(dayNumber: Int) -> ExtendedScheduleDay {
         if let cached = cache[dayNumber] { return cached }
         let resolved = resolve(dayNumber: dayNumber)
@@ -282,6 +307,7 @@ nonisolated final class ExtendedScheduleResolver {
         if let typeID = index.handSetByDayNumber[dayNumber] {
             return day(typeID: typeID, source: .handSet)
         }
+        if index.overlaysFixedSchedule { return .unassigned }
         if let rule = index.rule, !rule.days.isEmpty, let anchor = index.ruleAnchorDayNumber {
             let count = rule.days.count
             let position = ((dayNumber - anchor) % count + count) % count

@@ -11187,6 +11187,125 @@
         }
       }
     },
+    "extendedCalendarBackfillNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعرض الأيام السابقة لجدول المناوبات الجدولَ الذي كان لديك حينها. عبّئ المناوبات التي عملتها فعلًا وستحتسبها السجلات."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tage vor dem Schichtplan zeigen den damaligen Arbeitsplan. Trag ein, was du tatsächlich gearbeitet hast – die Aufzeichnungen zählen es mit."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days before you started the shift roster show the schedule you had then. Fill in what you actually worked, and Records will count it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los días anteriores al cuadrante muestran el horario que tenías entonces. Rellena los turnos que hiciste y el historial los tendrá en cuenta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les jours antérieurs au planning de services affichent l’horaire de l’époque. Indiquez les services réellement faits : l’historique en tiendra compte."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ़्ट रोस्टर शुरू करने से पहले के दिन उस समय का शेड्यूल दिखाते हैं। असल में की गई शिफ़्ट भरें, रिकॉर्ड उन्हें गिनेंगे।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hari sebelum jadwal sif dipakai menampilkan jadwal saat itu. Isi sif yang benar-benar dijalani, dan catatan akan menghitungnya."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I giorni precedenti alla turnazione mostrano l’orario di allora. Inserisci i turni che hai fatto davvero e lo storico ne terrà conto."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シフト表を使い始める前の日は、当時の勤務予定を表示しています。実際のシフトを入力すると、記録と集計に反映されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근무표를 쓰기 전의 날에는 당시 일정이 표시됩니다. 실제로 일한 근무를 채우면 기록과 통계에 반영됩니다."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शिफ्ट वेळापत्रक सुरू करण्यापूर्वीचे दिवस तेव्हाचे वेळापत्रक दाखवतात. प्रत्यक्ष केलेल्या शिफ्ट भरा, नोंदी त्या मोजतील."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os dias anteriores à escala mostram o horário que tinha na altura. Preencha os turnos que fez de facto e o histórico passa a contá-los."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дни до начала графика смен показывают прежнее расписание. Укажите, какие смены были на самом деле, — записи их учтут."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันที่ก่อนเริ่มใช้ตารางกะจะแสดงตารางงานในตอนนั้น เติมกะที่ทำจริงลงไป แล้วบันทึกจะนับตามนั้น"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vardiya çizelgesinden önceki günler o zamanki programı gösterir. Gerçekte çalıştığınız vardiyaları girin, kayıtlar bunları hesaba katar."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Những ngày trước khi dùng lịch ca hiển thị lịch làm lúc đó. Điền ca bạn đã thực sự làm, bản ghi sẽ tính theo đó."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始使用扩展排班之前的日子，显示的是当时的排班。在这里填上实际的班次，记录和统计会按它计算。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始用擴展排班之前嘅日子，顯示嘅係當時嘅排班。喺度填返實際嘅班次，記錄同統計會按佢計。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始使用擴充排班之前的日子，顯示的是當時的排班。在這裡填上實際的班次，記錄和統計會依它計算。"
+          }
+        }
+      }
+    },
     "extendedCalendarNote": {
       "extractionState": "manual",
       "localizations": {

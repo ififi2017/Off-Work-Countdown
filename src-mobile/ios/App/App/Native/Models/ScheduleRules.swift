@@ -737,14 +737,14 @@ nonisolated final class CivilZone {
     /// extended schedule answers for itself: it assigns rest days as a shift
     /// type, so the weekday patterns below never run.
     func isScheduledWorkday(_ shiftStartMs: Double, _ workdays: [Int], _ schedule: NativeWorkSchedule) -> Bool {
-        if let extended { return extended.day(dayNumber: civil(shiftStartMs).dayNumber).isWorkday }
+        if let day = extended?.assignedDay(dayNumber: civil(shiftStartMs).dayNumber) { return day.isWorkday }
         return schedule.mode == "off" || isScheduledWorkdayInZone(shiftStartMs, workdays, schedule)
     }
 
     /// As `isScheduledWorkday`, except manual days are rest: range expansion
     /// must not paint a seven-day week for a user who starts shifts by hand.
     func isScheduledWorkdayInZone(_ shiftStartMs: Double, _ workdays: [Int], _ schedule: NativeWorkSchedule) -> Bool {
-        if let extended { return extended.day(dayNumber: civil(shiftStartMs).dayNumber).isWorkday }
+        if let day = extended?.assignedDay(dayNumber: civil(shiftStartMs).dayNumber) { return day.isWorkday }
         if schedule.mode == "off" { return false }
         let weekday = civil(shiftStartMs).weekday
         if schedule.mode == "classic" { return workdays.contains(weekday) }

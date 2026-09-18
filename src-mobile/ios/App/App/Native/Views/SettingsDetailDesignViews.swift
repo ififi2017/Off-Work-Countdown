@@ -32,11 +32,15 @@ struct ScheduleSettingsView: View {
                 // hours live in its shift types, so both take the place the
                 // fixed hours hold in every other mode.
                 if draftExtended, let content = draftExtendedContent {
+                    let todayKey = shifts.session.extendedTodayKey(at: .now)
                     ExtendedCalendarSection(
                         session: shifts.session,
                         content: content,
                         handSetDays: draftHandSetDays,
-                        todayKey: shifts.session.extendedTodayKey(at: .now),
+                        todayKey: todayKey,
+                        backfillBefore: backfillBoundary(todayKey: todayKey),
+                        earliestMonthOffset: earliestMonthOffset(todayKey: todayKey),
+                        fixedWorkdays: fixedWorkdays,
                         onSetDay: setDay
                     )
                     .padding(.top, 8)
@@ -306,6 +310,34 @@ struct ScheduleSettingsView: View {
 
     private static let extendedTop = "extendedCalendar"
 
+    /// Days before the extended schedule first took effect in Records; until
+    /// it has, before today, which is the earliest a save can reach.
+    private func backfillBoundary(todayKey: String) -> String {
+        shifts.records.extendedScheduleStart
+            .map { RecordJSON.dayKey($0, calendar: shifts.preferences.recordsCalendar) }
+            ?? todayKey
+    }
+
+    /// Months back to the one Records began in.
+    private func earliestMonthOffset(todayKey: String) -> Int {
+        let calendar = shifts.preferences.recordsCalendar
+        let started = shifts.records.state.recordsStartedOn
+            ?? shifts.records.state.periods.map(\.startsOn).min()
+        guard let started,
+              let first = ExtendedScheduleResolver.parse(dayKey: RecordJSON.dayKey(started, calendar: calendar)),
+              let today = ExtendedScheduleResolver.parse(dayKey: todayKey)
+        else { return 0 }
+        return (first.year * 12 + first.month) - (today.year * 12 + today.month)
+    }
+
+    private func fixedWorkdays(from: String, through: String) -> [String: Bool] {
+        let calendar = shifts.preferences.recordsCalendar
+        guard let start = RecordJSON.date(fromDayKey: from, calendar: calendar),
+              let end = RecordJSON.date(fromDayKey: through, calendar: calendar)
+        else { return [:] }
+        return shifts.queries.fixedPlannedWorkdays(from: start, through: end)
+    }
+
     private func setDay(_ dayKey: String, _ change: RosterDayEdit) {
         let stored = shifts.preferences.handSetDays
         edit { $0.rosterEdits = ExtendedScheduleEditing.editing($0.rosterEdits, dayKey: dayKey, to: change, stored: stored) }
@@ -320,7 +352,12 @@ struct ScheduleSettingsView: View {
     private func removePattern(from content: ExtendedScheduleContent, todayKey: String) {
         let plan = ExtendedSchedulePlan(shiftTypes: content.shiftTypes, rule: content.rule, handSetDays: draftHandSetDays)
         let months = [0, 1].compactMap { ExtendedScheduleEditing.month(of: todayKey, plus: $0) }
-        let edits = ExtendedScheduleEditing.keepingPattern(plan, months: months, edits: draft.rosterEdits)
+        let edits = ExtendedScheduleEditing.keepingPattern(
+            plan,
+            months: months,
+            from: backfillBoundary(todayKey: todayKey),
+            edits: draft.rosterEdits
+        )
         var next = content
         next.rule = nil
         edit {
