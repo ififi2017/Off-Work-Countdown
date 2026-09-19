@@ -1131,9 +1131,16 @@ extension ShiftSession {
             let month = String(today.prefix(7))
             let prior = plan.handSetDays.keys.map { String($0.prefix(7)) }.filter { $0 < month }.max()
             let days = plan.handSetDays.filter { key, _ in String(key.prefix(7)) >= month || String(key.prefix(7)) == prior }
-            let used = Set(days.values).union(plan.rule?.days ?? [])
+            let used = Set(days.values).union(plan.rule?.days ?? []).union(
+                plan.holidayRegionIdentifier?.isEmpty == false
+                    ? plan.shiftTypes.filter { !$0.isArchived }.map(\.id) : []
+            )
             return ExtendedSchedulePlan(shiftTypes: plan.shiftTypes.filter { used.contains($0.id) },
                                         rule: plan.rule, handSetDays: days,
+                                        holidayRegionIdentifier: plan.holidayRegionIdentifier,
+                                        holidayOverrides: plan.holidayRegionIdentifier.flatMap { region in
+                                            region.isEmpty ? nil : HolidayCalendar.shared.workdayOverrides(regionIdentifier: region)
+                                        },
                                         frozenShiftTypes: plan.frozenShiftTypes.filter { days[$0.key] == $0.value.id },
                                         fallsBackToBaseSchedule: plan.fallsBackToBaseSchedule,
                                         revision: plan.revision)

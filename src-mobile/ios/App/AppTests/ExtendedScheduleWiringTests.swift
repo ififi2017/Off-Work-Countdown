@@ -244,6 +244,51 @@ struct ExtendedScheduleWiringTests {
         #expect(runtime.records.state.snapshots.count == snapshotCount)
     }
 
+    @Test("Saving a holiday template updates Records and keeps earlier history unchanged")
+    func holidaysReachRecordsAfterSaving() throws {
+        let runtime = try Self.runtime()
+        let first = try Self.at(runtime, 1, 0)
+        runtime.records.ensureSeeded(
+            hours: runtime.session.hoursConfiguration(at: first),
+            at: first, timeZone: runtime.preferences.recordsTimeZone
+        )
+        let fifth = try Self.at(runtime, 5, 0)
+        let tenth = try Self.at(runtime, 10, 0)
+        func recorded(_ date: Date) throws -> DayResolution {
+            try #require(runtime.queries.resolvedDays(from: date, through: date).first)
+        }
+        // Populate the same cache the Records screen reads before saving.
+        #expect(try recorded(fifth).isScheduledWorkday)
+        #expect(try !recorded(tenth).isScheduledWorkday)
+        Self.install(runtime, enabled: false, days: [:])
+        var content = try #require(runtime.preferences.extendedScheduleContent)
+        content.rule = ShiftCycleRule(
+            preset: .weekly, anchorDayKey: "2026-10-05",
+            days: [Self.early, Self.early, Self.early, Self.early, Self.early, Self.rest, Self.rest]
+        )
+        content.holidayRegionIdentifier = "CN"
+        let change = ScheduleFieldChange(extendedScheduleEnabled: true, extendedContent: content)
+        #expect(runtime.shifts.applyScheduleChange(
+            change, decision: .applyToToday, at: try Self.at(runtime, 4, 12)
+        ).synchronousResult == true)
+        #expect(try !recorded(fifth).isScheduledWorkday)
+        #expect(try recorded(fifth).segments.isEmpty)
+        #expect(try recorded(tenth).isScheduledWorkday)
+        #expect(try recorded(tenth).segments.first?.startAtMs == Self.ms(Self.at(runtime, 10, 8)))
+        #expect(try recorded(first).isScheduledWorkday)
+
+        Self.setDay(runtime, "2026-10-05", Self.early)
+        #expect(try recorded(fifth).isScheduledWorkday)
+        #expect(try recorded(fifth).segments.first?.startAtMs == Self.ms(Self.at(runtime, 5, 8)))
+
+        content.holidayRegionIdentifier = ""
+        #expect(runtime.shifts.applyScheduleChange(
+            ScheduleFieldChange(extendedContent: content), decision: .applyToToday,
+            at: try Self.at(runtime, 8, 0)
+        ).synchronousResult == true)
+        #expect(try !recorded(tenth).isScheduledWorkday)
+    }
+
     @Test("Hours store the shift types and rule, and carry the plan only at run time")
     func hoursStoreTheContent() throws {
         let runtime = try Self.runtime()

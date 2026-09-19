@@ -2,6 +2,8 @@ import Foundation
 
 nonisolated enum WatchSnapshotContract {
     static let schemaVersion = 1
+    /// V3 requires the holiday-aware shared resolver; V1/V2 remain readable.
+    static let scheduleSchemaVersion = 3
     static let maximumEncodedBytes = 2 * 1_024 * 1_024
     static let maximumContextBytes = 48 * 1_024
     static let maximumJSONInteger: UInt64 = 9_007_199_254_740_991
@@ -31,7 +33,7 @@ nonisolated struct WatchSnapshotPackageV1: Codable, Equatable, Sendable {
         try container.encode(revision, forKey: .revision)
         try container.encode(generatedAtMs, forKey: .generatedAtMs)
         try container.encode(expiresAtMs, forKey: .expiresAtMs)
-        if schemaVersion == 2 {
+        if (2...3).contains(schemaVersion) {
             try container.encodeIfPresent(schedule, forKey: .schedule)
         } else {
             try container.encode(access, forKey: .access)
@@ -45,7 +47,7 @@ nonisolated struct WatchSnapshotPackageV1: Codable, Equatable, Sendable {
         revision = try values.decode(UInt64.self, forKey: .revision)
         generatedAtMs = try values.decode(Int64.self, forKey: .generatedAtMs)
         expiresAtMs = try values.decode(Int64.self, forKey: .expiresAtMs)
-        if schemaVersion == 2 {
+        if (2...3).contains(schemaVersion) {
             access = .init(schemaVersion: 1, revision: 0, verifiedAtMs: 0, status: .free, validUntilMs: nil)
             content = nil
             schedule = try values.decode(WatchScheduleV2.self, forKey: .schedule)
@@ -148,10 +150,14 @@ nonisolated enum WatchSnapshotDecodeError: Error, Equatable, Sendable {
 nonisolated enum WatchSnapshotDecoderV1 {
     static func decode(_ data: Data) throws -> WatchSnapshotPackageV1 {
         guard data.count <= WatchSnapshotContract.maximumEncodedBytes else { throw WatchSnapshotDecodeError.oversized }
+        if let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+           let schema = object["schemaVersion"] as? Int, ![1, 2, 3].contains(schema) {
+            throw WatchSnapshotDecodeError.unsupportedSchema
+        }
         guard let package = try? JSONDecoder().decode(WatchSnapshotPackageV1.self, from: data) else {
             throw WatchSnapshotDecodeError.malformed
         }
-        guard [1, 2].contains(package.schemaVersion),
+        guard [1, 2, 3].contains(package.schemaVersion),
               package.access.schemaVersion == WatchSnapshotContract.schemaVersion else {
             throw WatchSnapshotDecodeError.unsupportedSchema
         }
@@ -162,7 +168,7 @@ nonisolated enum WatchSnapshotDecoderV1 {
 
 nonisolated extension WatchSnapshotPackageV1 {
     var isValid: Bool {
-        guard [1, 2].contains(schemaVersion),
+        guard [1, 2, 3].contains(schemaVersion),
               access.schemaVersion == WatchSnapshotContract.schemaVersion,
               sourceGeneration.isValidWatchIdentifier,
               revision <= WatchSnapshotContract.maximumJSONInteger,
@@ -171,7 +177,10 @@ nonisolated extension WatchSnapshotPackageV1 {
               access.verifiedAtMs <= generatedAtMs,
               access.isValid else { return false }
 
-        if schemaVersion == 2 {
+        if (2...3).contains(schemaVersion) {
+            if schemaVersion == 2, schedule?.configuration.extendedSchedule?.holidayRegionIdentifier?.isEmpty == false {
+                return false
+            }
             return access.status == .free && content == nil && schedule?.isValid == true
                 && schedule?.presentation.isValid == true
         }
@@ -394,7 +403,7 @@ nonisolated enum WatchSnapshotOrderEvaluator {
         guard state.revision.map({ package.revision > $0 }) ?? false else {
             return .init(decision: .rejectStaleRevision, proposedState: nil)
         }
-        if package.schemaVersion == 2 {
+        if (2...3).contains(package.schemaVersion) {
             var proposed = state
             proposed.revision = package.revision
             proposed.acceptedAccess = package.access

@@ -277,7 +277,7 @@ final class WatchSnapshotPublisher: NSObject {
   }
   private func compose(_ payload: Payload, metadata: WatchSnapshotComposer.Metadata) -> WatchSnapshotPackageV1? {
     if let schedule = payload.schedule {
-      let value = WatchSnapshotPackageV1(schemaVersion: 2, sourceGeneration: metadata.sourceGeneration,
+      let value = WatchSnapshotPackageV1(schemaVersion: WatchSnapshotContract.scheduleSchemaVersion, sourceGeneration: metadata.sourceGeneration,
           revision: metadata.revision, generatedAtMs: Int64(metadata.generatedAt.timeIntervalSince1970 * 1_000),
           expiresAtMs: WatchSnapshotContract.maximumJSONTimestamp,
           access: .init(schemaVersion: 1, revision: 0, verifiedAtMs: 0, status: .free, validUntilMs: nil),

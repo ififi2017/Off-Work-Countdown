@@ -42,8 +42,12 @@ nonisolated struct WatchScheduleV2: Codable, Equatable, Sendable {
         guard resumeAtMs.map({ $0 >= currentUntilMs && $0 <= WatchSnapshotContract.maximumJSONTimestamp }) ?? true,
               currentShift != nil || resumeAtMs == nil else { return false }
         if let plan = input.extendedSchedule {
-            let content = ExtendedScheduleContent(shiftTypes: plan.shiftTypes, rule: plan.rule)
+            let content = ExtendedScheduleContent(shiftTypes: plan.shiftTypes, rule: plan.rule, holidayRegionIdentifier: plan.holidayRegionIdentifier)
             guard content.isValid(in: TimeZone(identifier: identifier)!), plan.pinnedDayKey == nil,
+                  plan.holidayRegionIdentifier?.isEmpty != false || plan.holidayOverrides != nil,
+                  plan.holidayOverrides.map({ values in
+                      values.count <= 20_000 && values.keys.allSatisfy(HolidayCalendar.isValidDateCode)
+                  }) ?? true,
                   plan.frozenShiftTypes.allSatisfy({ key, type in
                       ExtendedScheduleResolver.parse(dayKey: key) != nil && type.isValid
                           && plan.handSetDays[key] == type.id

@@ -58,6 +58,10 @@ struct WhatsNewView: View {
                     .font(.subheadline).foregroundStyle(.secondary)
             }
             .padding(.trailing, 36)
+            feature(
+                "calendar.badge.checkmark", "whatsNewHolidayTitle", "whatsNewHolidayBody",
+                bodyValues: ["schedule": text.t("workSchedule")]
+            )
             VStack(alignment: .leading, spacing: 6) {
                 feature("applewatch", "whatsNewWatchTitle", "whatsNewWatchBody")
                 if let onLearnAboutWatch, UIDevice.current.userInterfaceIdiom == .phone {
@@ -75,7 +79,12 @@ struct WhatsNewView: View {
         .padding(24)
     }
 
-    private func feature(_ symbol: String, _ titleKey: String, _ bodyKey: String) -> some View {
+    private func feature(
+        _ symbol: String,
+        _ titleKey: String,
+        _ bodyKey: String,
+        bodyValues: [String: String] = [:]
+    ) -> some View {
         HStack(alignment: .top, spacing: 14) {
             if !dynamicTypeSize.isAccessibilitySize {
                 Image(systemName: symbol)
@@ -85,7 +94,7 @@ struct WhatsNewView: View {
             }
             VStack(alignment: .leading, spacing: 5) {
                 Text(text.t(titleKey)).font(.headline)
-                Text(text.t(bodyKey)).font(.subheadline).foregroundStyle(.secondary)
+                Text(text.t(bodyKey, values: bodyValues)).font(.subheadline).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

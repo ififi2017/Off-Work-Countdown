@@ -145,6 +145,13 @@ struct UpcomingTimelineView: View {
                         .buttonStyle(.plain)
                     }
                 }
+                HolidayCoverageNoticeView(
+                    regionIdentifier: holidayRegionIdentifier,
+                    dates: events.map(\.date),
+                    timeZone: shifts.preferences.recordsTimeZone,
+                    text: shifts.text
+                )
+                .padding(.top, 6)
             }
             .sensoryFeedback(.selection, trigger: isExpanded)
             .onChange(of: events.count) { _, count in
@@ -152,6 +159,11 @@ struct UpcomingTimelineView: View {
                 withAnimation(expansionAnimation) { isExpanded = false }
             }
         }
+    }
+
+    private var holidayRegionIdentifier: String? {
+        guard shifts.preferences.isExtendedScheduleEnabled else { return nil }
+        return shifts.preferences.extendedScheduleContent?.holidayRegionIdentifier
     }
 
     private func toggleExpansion() {

@@ -1,0 +1,17 @@
+{
+  "datasetVersion": "holidays-0.83-public+holiday-cn-18c8f140",
+  "vacanzaHolidays": {
+    "version": "0.83",
+    "url": "https://pypi.org/project/holidays/0.83/",
+    "sha256": "e36a368227b5b62129871463697bfde7e5212f6f77e43640320b727b79a875a8",
+    "licenseSha256": "a9a45b34c5338850f987329f35102934ec96d2b3a44563998bccc01bd9c9e3e9"
+  },
+  "holidayCn": {
+    "repository": "https://github.com/NateScarlet/holiday-cn",
+    "commit": "18c8f140cd8574faf72c8bb5cd0a9bdf9d1c1b6c",
+    "dataFiles": "2007.json through 2027.json",
+    "dataSha256": "8f82836d0f605506ecdcba32bc2ddda8233bbe91e05f00670b616c4d8225d63b",
+    "licenseSha256": "234e246330285b6589ff2be2381d4ae71fac39b11b1882fd1f6bda6d6f46c4c6"
+  },
+  "outputSha256": "e5cff08060595995422c4c13572c70676ff39968a0e7530d4a5c389d2fd62501"
+}

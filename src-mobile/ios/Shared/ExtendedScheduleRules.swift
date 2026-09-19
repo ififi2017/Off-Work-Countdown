@@ -31,6 +31,8 @@ nonisolated struct ExtendedScheduleDay: Equatable, Sendable {
         case handSet
         /// The cycle rule, counted from its anchor.
         case rule
+        /// An enabled bundled national holiday or makeup workday.
+        case holiday
         /// Copied by day number from an earlier month the user filled in.
         case carriedOver
         /// Nothing assigns this day, so nothing counts down on it.
@@ -68,6 +70,8 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
 
     let shiftTypes: [ShiftType]
     let rule: ShiftCycleRule?
+    let holidayRegionIdentifier: String?
+    let holidayOverrides: [Int: Bool]?
     /// Civil day key to shift type, for the days the user set by hand.
     let handSetDays: [String: UUID]
     /// Past assignments carry their type with them so old schedule snapshots
@@ -89,6 +93,8 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
         shiftTypes: [ShiftType],
         rule: ShiftCycleRule?,
         handSetDays: [String: UUID],
+        holidayRegionIdentifier: String? = nil,
+        holidayOverrides: [Int: Bool]? = nil,
         frozenShiftTypes: [String: ShiftType] = [:],
         fallsBackToBaseSchedule: Bool = false,
         pinnedDayKey: String? = nil,
@@ -96,6 +102,8 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
     ) {
         self.shiftTypes = shiftTypes
         self.rule = rule
+        self.holidayRegionIdentifier = holidayRegionIdentifier
+        self.holidayOverrides = holidayOverrides
         self.handSetDays = handSetDays
         self.frozenShiftTypes = frozenShiftTypes
         self.fallsBackToBaseSchedule = fallsBackToBaseSchedule
@@ -105,6 +113,8 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             shiftTypes: shiftTypes,
             rule: rule,
             handSetDays: handSetDays,
+            holidayRegionIdentifier: holidayRegionIdentifier,
+            holidayOverrides: holidayOverrides,
             frozenShiftTypes: frozenShiftTypes,
             fallsBackToBaseSchedule: fallsBackToBaseSchedule,
             pinnedDayKey: pinnedDayKey
@@ -124,6 +134,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             shiftTypes: schedule.shiftTypes,
             rule: schedule.rule,
             handSetDays: Self.handSetDays(from: rosterDays),
+            holidayRegionIdentifier: schedule.holidayRegionIdentifier,
             frozenShiftTypes: Self.frozenShiftTypes(from: rosterDays),
             revision: revision
         )
@@ -170,7 +181,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case shiftTypes, rule, handSetDays, frozenShiftTypes, fallsBackToBaseSchedule, pinnedDayKey, revision
+        case shiftTypes, rule, handSetDays, holidayRegionIdentifier, holidayOverrides, frozenShiftTypes, fallsBackToBaseSchedule, pinnedDayKey, revision
     }
 
     init(from decoder: any Decoder) throws {
@@ -179,6 +190,8 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             shiftTypes: try container.decode([ShiftType].self, forKey: .shiftTypes),
             rule: try container.decodeIfPresent(ShiftCycleRule.self, forKey: .rule),
             handSetDays: try container.decode([String: UUID].self, forKey: .handSetDays),
+            holidayRegionIdentifier: try container.decodeIfPresent(String.self, forKey: .holidayRegionIdentifier),
+            holidayOverrides: try container.decodeIfPresent([Int: Bool].self, forKey: .holidayOverrides),
             frozenShiftTypes: try container.decodeIfPresent([String: ShiftType].self, forKey: .frozenShiftTypes) ?? [:],
             fallsBackToBaseSchedule: try container.decodeIfPresent(Bool.self, forKey: .fallsBackToBaseSchedule) ?? false,
             pinnedDayKey: try container.decodeIfPresent(String.self, forKey: .pinnedDayKey),
@@ -190,6 +203,8 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
         lhs.revision == rhs.revision
             && lhs.shiftTypes == rhs.shiftTypes
             && lhs.rule == rhs.rule
+            && lhs.holidayRegionIdentifier == rhs.holidayRegionIdentifier
+            && lhs.holidayOverrides == rhs.holidayOverrides
             && lhs.handSetDays == rhs.handSetDays
             && lhs.frozenShiftTypes == rhs.frozenShiftTypes
             && lhs.fallsBackToBaseSchedule == rhs.fallsBackToBaseSchedule
@@ -230,6 +245,8 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             shiftTypes: types,
             rule: rule,
             handSetDays: handSetDays,
+            holidayRegionIdentifier: holidayRegionIdentifier,
+            holidayOverrides: holidayOverrides,
             frozenShiftTypes: frozenShiftTypes,
             fallsBackToBaseSchedule: fallsBackToBaseSchedule,
             pinnedDayKey: dayKey,
@@ -244,6 +261,10 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
     /// What each defined type resolves to, before the source is known.
     let dayByType: [UUID: (isWorkday: Bool, hours: ExtendedScheduleDayHours?)]
     let rule: ShiftCycleRule?
+    let holidayRegionIdentifier: String?
+    let holidayOverrides: [Int: Bool]?
+    let defaultWorkTypeID: UUID?
+    let defaultRestTypeID: UUID?
     let ruleAnchorDayNumber: Int?
     let handSetByDayNumber: [Int: UUID]
     let frozenByDayNumber: [Int: ShiftType]
@@ -255,9 +276,15 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
 
     init(
         shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID],
+        holidayRegionIdentifier: String?,
+        holidayOverrides: [Int: Bool]?,
         frozenShiftTypes: [String: ShiftType], fallsBackToBaseSchedule: Bool,
         pinnedDayKey: String?
     ) {
+        self.holidayRegionIdentifier = holidayRegionIdentifier
+        self.holidayOverrides = holidayOverrides
+        defaultWorkTypeID = shiftTypes.first { $0.kind == .work && !$0.isArchived }?.id
+        defaultRestTypeID = shiftTypes.first { $0.kind == .rest && !$0.isArchived }?.id
         var dayByType: [UUID: (isWorkday: Bool, hours: ExtendedScheduleDayHours?)] = [:]
         for type in shiftTypes where dayByType[type.id] == nil {
             // An archived type still resolves, so a past day keeps the shift it
@@ -337,12 +364,7 @@ nonisolated final class ExtendedScheduleResolver {
         return resolved
     }
 
-    /// The priority chain: a day the user set by hand, then the cycle rule,
-    /// then the nearest earlier month copied by day number.
-    ///
-    /// The holiday template sits between the hand-set day and the rule. It is
-    /// not here because the bundled holiday data it reads does not exist yet
-    /// (018 P8 节假日数据); it lands with that data, not before.
+    /// Explicit assignments win over bundled holidays, then the saved pattern.
     private func resolve(dayNumber: Int) -> ExtendedScheduleDay {
         if let type = index.frozenByDayNumber[dayNumber] {
             return day(type: type, source: .handSet)
@@ -351,6 +373,30 @@ nonisolated final class ExtendedScheduleResolver {
             return day(typeID: typeID, source: .handSet)
         }
         if index.fallsBackToBaseSchedule { return .unassigned }
+        let base = patternDay(dayNumber: dayNumber)
+        guard let region = index.holidayRegionIdentifier, !region.isEmpty else { return base }
+        let isWorkday: Bool?
+        if let overrides = index.holidayOverrides {
+            let civil = CivilZone.civilDate(dayNumber: dayNumber)
+            isWorkday = overrides[civil.year * 10_000 + civil.month * 100 + civil.day]
+        } else {
+            isWorkday = HolidayCalendar.shared.day(dayNumber: dayNumber, regionIdentifier: region)?.isWorkday
+        }
+        guard let isWorkday else { return base }
+        if !isWorkday {
+            if let id = index.defaultRestTypeID { return day(typeID: id, source: .holiday) }
+            return ExtendedScheduleDay(isWorkday: false, hours: nil, shiftTypeID: nil, source: .holiday)
+        }
+        if base.isWorkday {
+            var result = base
+            result.source = .holiday
+            return result
+        }
+        guard let id = index.defaultWorkTypeID else { return base }
+        return day(typeID: id, source: .holiday)
+    }
+
+    private func patternDay(dayNumber: Int) -> ExtendedScheduleDay {
         if let rule = index.rule, !rule.days.isEmpty, let anchor = index.ruleAnchorDayNumber {
             let count = rule.days.count
             let position = ((dayNumber - anchor) % count + count) % count

@@ -40,9 +40,11 @@ Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差�
   Watch 文案表由 catalog 生成。
 - Xcode Cloud 归档前仍建议先在本机执行一次 Release 编译；动效和横竖屏体验最终以真机为准。
 
-## 3.2.0 整改的 PR 门禁（待在 App Store Connect 配置）
+## 3.2.0 整改的 PR 门禁
 
-018 要求保留上面的 main 归档分发工作流，另建 PR 验证工作流。以下是待配置与验收的要求；修改此文档不代表远端工作流或 GitHub 合并规则已经生效。
+2026-09-19 远端核对：PR #207 的 `App | PR Check`、`App | PR Check | Test - iOS` 和 `App | PR Check | Test - watchOS` 均为 SUCCESS，说明下面的 PR 验证流程已实际运行。main 的旧分支保护 API 返回 `Branch not protected`，生效 rulesets API 返回空列表，尚未设为强制合并门禁。新版本的归档和 TestFlight 验收仍独立进行。
+
+018 要求保留上面的 main 归档分发工作流，另建 PR 验证工作流。以下是工作流要求；修改此文档不代表 GitHub 合并规则已经生效。
 
 - PR 工作流使用同一工程、共享 App scheme 和 `ci_post_clone.sh`，执行构建与自动化测试，不配置 TestFlight 分发。
 - 路径过滤覆盖 `src-mobile/ios/**`、`lib/**`、`public/locales/**`、iOS 规则／工程／版本检查脚本及 npm 依赖文件。
@@ -65,7 +67,7 @@ Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差�
 | --- | --- | --- |
 | Xcode 26.6／iOS 26.5 SDK | 已用于 018 当前实现的自动化测试 | 现有 iOS 26 路径与数据兼容 |
 | Xcode 26.6／watchOS 26.5 SDK＋Simulator runtime 23T570 | 已用于 shipping Watch 构建、WatchAppTests 与配对模拟器通信检查 | Watch 目标、嵌入与 WatchConnectivity 模拟验证（不代替真机） |
-| 含 iOS 27 SDK 的 Xcode | 本机尚未提供 | App Adaptability 的编译与回归 |
+| 含 iOS 27 SDK 的 Xcode | 2026-09-19 已用于完整 802 项 iOS 测试及手机 UI 走查 | 证明当前实现可构建，不代表 P4 Duo 专属适配完成 |
 | 含 iOS 27.1 SDK 的 Xcode | 本机尚未提供 | ArrangementView／Duo 分区的编译与回归 |
 
 新 SDK 路径必须使用对应工具链验证；`#available` 不能使旧 SDK 识别它没有声明的 API。Duo 的模拟验证和真机体验分别记录，不互相代替。

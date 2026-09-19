@@ -25,6 +25,13 @@ struct RestDayUpcomingView: View {
                         )
                     }
                 }
+                HolidayCoverageNoticeView(
+                    regionIdentifier: holidayRegionIdentifier,
+                    dates: entries.compactMap(\.date),
+                    timeZone: shifts.preferences.recordsTimeZone,
+                    text: shifts.text
+                )
+                .padding(.top, 6)
             }
         }
     }
@@ -36,5 +43,10 @@ struct RestDayUpcomingView: View {
         }
 
         return Array(shifts.shiftPreview(for: nextSnapshot, at: now).upcoming.prefix(3))
+    }
+
+    private var holidayRegionIdentifier: String? {
+        guard shifts.preferences.isExtendedScheduleEnabled else { return nil }
+        return shifts.preferences.extendedScheduleContent?.holidayRegionIdentifier
     }
 }

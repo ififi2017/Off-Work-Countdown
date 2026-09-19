@@ -28,3 +28,4 @@ npm run check:watch-fixtures
 npm run check:ios-rule-fixtures
 npm run check:ios-strings
 npm run check:ios
+npm run check:holiday-templates

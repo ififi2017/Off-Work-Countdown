@@ -203,6 +203,10 @@ actor WatchSnapshotCache {
             return .rejected(.rejectInvalidPackage)
         }
 
+        if let package, candidate.sourceGeneration == package.sourceGeneration,
+           candidate.schemaVersion < package.schemaVersion {
+            return .rejected(.rejectInvalidPackage)
+        }
         if trustedBaseline == nil, let pendingRevision, candidate.revision != pendingRevision {
             return .rejected(candidate.revision < pendingRevision ? .rejectStaleRevision : .rejectBaseline)
         }
@@ -289,7 +293,7 @@ actor WatchSnapshotCache {
         if let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
            let package = object["package"] as? [String: Any],
            let schema = package["schemaVersion"] as? Int,
-           ![1, 2].contains(schema) {
+           ![1, 2, 3].contains(schema) {
             return (nil, .incompatible)
         }
         guard let envelope = try? JSONDecoder().decode(WatchSnapshotCacheEnvelope.self, from: data),

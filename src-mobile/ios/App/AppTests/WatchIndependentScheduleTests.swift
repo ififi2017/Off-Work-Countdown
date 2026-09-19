@@ -21,8 +21,8 @@ struct WatchIndependentScheduleTests {
               presentation: .init(localeIdentifier: "en", timeZoneIdentifier: zone, workingLabel: "Working",
                                   lunchLabel: "Break", restingLabel: "Rest", overtimeLabel: "Overtime", finishedLabel: "Finished"))
     }
-    private func package(_ schedule: WatchScheduleV2, revision: UInt64 = 1) -> WatchSnapshotPackageV1 {
-        .init(schemaVersion: 2, sourceGeneration: "phone", revision: revision,
+    private func package(_ schedule: WatchScheduleV2, revision: UInt64 = 1, schemaVersion: Int = 2) -> WatchSnapshotPackageV1 {
+        .init(schemaVersion: schemaVersion, sourceGeneration: "phone", revision: revision,
               generatedAtMs: date("2026-09-18T00:00:00Z"), expiresAtMs: WatchSnapshotContract.maximumJSONTimestamp,
               access: .init(schemaVersion: 1, revision: 0, verifiedAtMs: 0, status: .free, validUntilMs: nil),
               content: nil, schedule: schedule)
@@ -322,5 +322,39 @@ struct WatchIndependentScheduleTests {
         #expect(await cache.receiveApplicationContext(try JSONEncoder().encode(package(schedule(), revision: 2))) == .rejected(.rejectStaleRevision))
         let reopened = await WatchSnapshotCache.open(fileURL: url)
         #expect(await reopened.currentPackage() == newest)
+    }
+
+    @Test("V3 uses the phone's holiday effects offline and cannot be downgraded to V2")
+    func transportedHolidays() async throws {
+        let work = ShiftType(id: UUID(), name: "Day", kind: .work,
+            startMinutes: 540, endMinutes: 1_020, breakEnabled: false,
+            breakStartMinutes: 0, breakDurationMinutes: 0, colorHex: "#F28C28", isArchived: false)
+        let plan = ExtendedSchedulePlan(shiftTypes: [work],
+            rule: .init(preset: .weekly, anchorDayKey: "2026-09-14", days: Array(repeating: work.id, count: 7)),
+            handSetDays: [:], holidayRegionIdentifier: "CN",
+            holidayOverrides: [20260919: true, 20260921: false])
+        let newest = package(schedule(plan: plan), revision: 3, schemaVersion: 3)
+        let decoded = try WatchSnapshotDecoderV1.decode(JSONEncoder().encode(newest))
+        #expect(decoded == newest)
+        #expect(package(schedule(plan: plan)).isValid == false)
+        guard case .content(let saturday) = WatchDisplayProjection.project(decoded, nowMs: date("2026-09-19T02:00:00Z")),
+              case .content(let monday) = WatchDisplayProjection.project(decoded, nowMs: date("2026-09-21T02:00:00Z")) else {
+            Issue.record("Transported holidays must resolve on either device"); return
+        }
+        #expect(saturday.phase == .working)
+        #expect(monday.phase == nil)
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appending(path: "watch.json")
+        let cache = await WatchSnapshotCache.open(fileURL: url)
+        let hello = await cache.makePairingHello()
+        let reply = WatchPairingReplyV1(schemaVersion: 1, pairingSession: hello.pairingSession, nonce: hello.nonce,
+            baseline: .init(schemaVersion: 1, pairingSession: hello.pairingSession, sourceGeneration: "phone", replacesGeneration: nil),
+            packageData: try JSONEncoder().encode(package(schedule())))
+        #expect(await cache.receivePairingReply(try JSONEncoder().encode(reply)) == .accepted)
+        #expect(await cache.receiveApplicationContext(try JSONEncoder().encode(newest)) == .accepted)
+        #expect(await cache.receiveApplicationContext(try JSONEncoder().encode(package(schedule(), revision: 4))) == .rejected(.rejectInvalidPackage))
+        let restored = await WatchSnapshotCache.open(fileURL: url)
+        #expect(await restored.currentPackage() == newest)
     }
 }

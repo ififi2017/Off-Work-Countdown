@@ -1269,6 +1269,7 @@ nonisolated struct ExtendedScheduleDTO: Codable, Equatable, Sendable {
     var isEnabled: Bool
     var shiftTypes: [ShiftType]
     var rule: ShiftCycleRule?
+    var holidayRegionIdentifier: String? = nil
     var timeZoneIdentifier: String
     var editedAtMs: Double
     var editCount: Int
@@ -1278,6 +1279,7 @@ nonisolated struct ExtendedScheduleDTO: Codable, Equatable, Sendable {
         isEnabled = value.isEnabled
         shiftTypes = value.shiftTypes
         rule = value.rule
+        holidayRegionIdentifier = value.holidayRegionIdentifier
         timeZoneIdentifier = value.timeZoneIdentifier
         editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
         editCount = value.editCount
@@ -1290,6 +1292,7 @@ nonisolated struct ExtendedScheduleDTO: Codable, Equatable, Sendable {
             isEnabled: isEnabled,
             shiftTypes: shiftTypes,
             rule: rule,
+            holidayRegionIdentifier: holidayRegionIdentifier,
             timeZoneIdentifier: timeZoneIdentifier,
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,
