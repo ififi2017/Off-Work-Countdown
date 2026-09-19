@@ -30,7 +30,7 @@ struct LunchBreakDesignView: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         VStack(spacing: 0) {
-                            Label(shifts.text.t("lunchInProgress"), systemImage: "cup.and.saucer")
+                            Label(shifts.scheduledBreakInProgressTitle, systemImage: "cup.and.saucer")
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(OWCDesign.secondary)
                                 .padding(.horizontal, 12)

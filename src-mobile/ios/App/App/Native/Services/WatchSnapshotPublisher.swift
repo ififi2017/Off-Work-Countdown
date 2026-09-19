@@ -57,8 +57,9 @@ final class WatchSnapshotPublisher: NSObject {
     let rules: NativeWatchRulesProjection?
     let evidence: PlusWatchEvidence
     let presentation: WatchSnapshotComposer.Presentation
+    var schedule: WatchScheduleV2? = nil
   }
-  private static let maxBytes = WatchPairingContract.maximumEncodedBytes + 16 * 1_024
+  private static let maxBytes = WatchSnapshotContract.maximumEncodedBytes + 16 * 1_024
   /// JSON object key order is otherwise unspecified, so replaying the same
   /// package would send different bytes. The Watch decodes either way; stable
   /// bytes keep a replay a replay.
@@ -113,14 +114,14 @@ final class WatchSnapshotPublisher: NSObject {
       }
       guard !Task.isCancelled else { return nil }
       let text = shifts.text
-      return Payload(
-        rules: shifts.session.watchProjection(), evidence: shifts.plus.watchEvidence,
-        presentation: .init(
+      let presentation = WatchSnapshotComposer.Presentation(
           localeIdentifier: shifts.preferences.languageCode,
           timeZoneIdentifier: shifts.preferences.recordsTimeZoneIdentifier,
-          workingLabel: text.t("widgetWorking"), lunchLabel: text.t("lunchShort"),
+          workingLabel: text.t("widgetWorking"), lunchLabel: text.t(shifts.preferences.isExtendedScheduleEnabled ? "extendedBreak" : "lunchShort"),
           restingLabel: text.t("recordsRestDay"), overtimeLabel: text.t("overtime"),
-          finishedLabel: text.t("offWorkToday")))
+          finishedLabel: text.t("offWorkToday"))
+      return Payload(rules: nil, evidence: .init(authorization: nil, verifiedAt: nil), presentation: presentation,
+                     schedule: shifts.session.watchSchedule(presentation: presentation.projection))
     }
     await refresh(forceReplay: false)
   }
@@ -234,36 +235,24 @@ final class WatchSnapshotPublisher: NSObject {
   }
   private func package(_ payload: Payload, forceReplay: Bool) -> Data? {
     let evidence = Evidence(payload.evidence)
-    let nextAccess = evidence == state.evidence ? state.accessRevision : state.accessRevision + 1
+    let nextAccess: UInt64 = payload.schedule != nil ? 0 : (evidence == state.evidence ? state.accessRevision : state.accessRevision + 1)
     guard state.revision < WatchSnapshotContract.maximumJSONInteger,
       nextAccess <= WatchSnapshotContract.maximumJSONInteger
     else { return nil }
     let now = Date.now
     let verified = payload.evidence.verifiedAt ?? Date(timeIntervalSince1970: 0)
-    guard
-      let probe = WatchSnapshotComposer.compose(
-        metadata: .init(
-          sourceGeneration: state.generation,
-          revision: state.revision, accessRevision: nextAccess, generatedAt: now,
-          accessVerifiedAt: verified),
-        authorization: payload.evidence.authorization, rules: payload.rules,
-        presentation: payload.presentation)
-    else { return nil }
+    guard let probe = compose(payload, metadata: .init(
+        sourceGeneration: state.generation, revision: state.revision, accessRevision: nextAccess,
+        generatedAt: now, accessVerifiedAt: verified)) else { return nil }
     let changed =
       state.package.map { old in
-        old.content != probe.content || old.access != probe.access
+        old.schedule != probe.schedule || old.content != probe.content || old.access != probe.access
           || (old.content != nil && old.expiresAtMs != probe.expiresAtMs)
       } ?? true
     if changed {
-      guard
-        let value = WatchSnapshotComposer.compose(
-          metadata: .init(
-            sourceGeneration: state.generation,
-            revision: state.revision + 1, accessRevision: nextAccess, generatedAt: now,
-            accessVerifiedAt: verified),
-          authorization: payload.evidence.authorization, rules: payload.rules,
-          presentation: payload.presentation)
-      else { return nil }
+      guard let value = compose(payload, metadata: .init(
+          sourceGeneration: state.generation, revision: state.revision + 1, accessRevision: nextAccess,
+          generatedAt: now, accessVerifiedAt: verified)) else { return nil }
       var next = state
       next.revision += 1
       next.accessRevision = nextAccess
@@ -286,13 +275,45 @@ final class WatchSnapshotPublisher: NSObject {
     }
     return data
   }
+  private func compose(_ payload: Payload, metadata: WatchSnapshotComposer.Metadata) -> WatchSnapshotPackageV1? {
+    if let schedule = payload.schedule {
+      let value = WatchSnapshotPackageV1(schemaVersion: 2, sourceGeneration: metadata.sourceGeneration,
+          revision: metadata.revision, generatedAtMs: Int64(metadata.generatedAt.timeIntervalSince1970 * 1_000),
+          expiresAtMs: WatchSnapshotContract.maximumJSONTimestamp,
+          access: .init(schemaVersion: 1, revision: 0, verifiedAtMs: 0, status: .free, validUntilMs: nil),
+          content: nil, schedule: schedule)
+      return value.isValid ? value : nil
+    }
+    // Decoder/fixture compatibility for V1; production publishes only V2.
+    return WatchSnapshotComposer.compose(metadata: metadata, authorization: payload.evidence.authorization,
+                                          rules: payload.rules, presentation: payload.presentation)
+  }
+
   private func sendContext(_ data: Data) -> Bool {
     let link = connectivity()
     guard link.activated, link.paired, link.installed, link.sourceEpoch == state.epoch else {
       return false
     }
     do {
-      try send(["watchSnapshotV1": data])
+      if data.count <= WatchSnapshotContract.maximumContextBytes {
+        try send([WatchPairingContract.snapshotContextKey: data])
+      } else {
+        let revision = String(state.revision)
+        if session.outstandingFileTransfers.contains(where: {
+          $0.file.metadata?["watchScheduleV2"] as? Bool == true
+            && $0.file.metadata?["revision"] as? String == revision
+        }) { return true }
+        for transfer in session.outstandingFileTransfers
+        where transfer.file.metadata?["watchScheduleV2"] as? Bool == true {
+          transfer.cancel()
+        }
+        let directory = url.deletingLastPathComponent().appending(path: "Transfers")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let file = directory.appending(path: "\(state.generation)-\(state.revision).json")
+        try data.write(to: file, options: .atomic)
+        let metadata: [String: Any] = ["watchScheduleV2": true, "revision": revision]
+        session.transferFile(file, metadata: metadata)
+      }
       return true
     } catch { return false }
   }
@@ -329,7 +350,9 @@ final class WatchSnapshotPublisher: NSObject {
     return try? JSONEncoder().encode(
       WatchPairingReplyV1(
         schemaVersion: 1, pairingSession: hello.pairingSession,
-        nonce: hello.nonce, baseline: baseline, packageData: bytes))
+        nonce: hello.nonce, baseline: baseline,
+        packageData: bytes.count <= WatchSnapshotContract.maximumContextBytes ? bytes : Data(),
+        deferredRevision: bytes.count > WatchSnapshotContract.maximumContextBytes ? value.revision : nil))
   }
   private func persist(_ value: Envelope) -> Bool {
     guard value.valid, let data = try? JSONEncoder().encode(value), data.count <= Self.maxBytes
@@ -383,6 +406,20 @@ extension WatchSnapshotPublisher: WCSessionDelegate {
   }
   nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
     Task { @MainActor [weak self] in await self?.reconcileConnectivity() }
+  }
+  nonisolated func session(_ session: WCSession, didFinish fileTransfer: WCSessionFileTransfer, error: (any Error)?) {
+    guard fileTransfer.file.metadata?["watchScheduleV2"] as? Bool == true else { return }
+    let file = fileTransfer.file.fileURL
+    let revision = (fileTransfer.file.metadata?["revision"] as? String).flatMap(UInt64.init)
+    let failed = error != nil
+    Task { @MainActor [weak self] in
+      try? FileManager.default.removeItem(at: file)
+      guard let self, failed, revision == state.revision,
+            !state.pending else { return }
+      var next = state
+      next.pending = true
+      if persist(next) { state = next }
+    }
   }
   nonisolated func session(
     _ session: WCSession, didReceiveMessageData data: Data,

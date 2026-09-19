@@ -414,5 +414,6 @@
   "whatsNewPlusTitle": "Meet DoneAt Plus",
   "whatsNewPlusBody": "The countdown stays free. Plus adds full records, life views and focus tools, with subscription or lifetime options. Existing iCloud sync continues even after a subscription expires.",
   "focusQuickAddTask": "Quick add focus task",
-  "watchPlusRequired": "DoneAt Plus is required on Apple Watch."
+  "watchPlusRequired": "DoneAt Plus is required on Apple Watch.",
+  "extendedBreak": "Break during the shift"
 }

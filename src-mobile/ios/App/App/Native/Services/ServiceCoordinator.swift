@@ -29,6 +29,7 @@ final class ServiceCoordinator {
         var resumeSync: () async -> Void
         var flush: () async throws -> Void
         var publish: () async -> Void
+        var publishWatch: () async -> Void = {}
     }
 
     private(set) var isLaunching = true
@@ -151,6 +152,7 @@ final class ServiceCoordinator {
             // Editing in the foreground keeps immediate memory feedback. The
             // expensive system work is coalesced until the final scene leaves.
             pendingReschedule = true
+            await operations.publishWatch()
         }
     }
 

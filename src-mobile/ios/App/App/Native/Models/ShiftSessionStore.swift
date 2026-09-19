@@ -347,8 +347,8 @@ final class ShiftSessionStore {
                     id: "lunch-start-\(Int64(segment.endAtMs))",
                     kind: .lunchStart,
                     date: Date(timeIntervalSince1970: segment.endAtMs / 1_000),
-                    title: text.t("lunchBreak"),
-                    detail: text.t("lunchStartTime")
+                    title: scheduledBreakTitle,
+                    detail: scheduledBreakStartTitle
                 ))
             }
 
@@ -357,7 +357,7 @@ final class ShiftSessionStore {
                     id: "lunch-end-\(Int64(nextSegment.startAtMs))",
                     kind: .lunchEnd,
                     date: Date(timeIntervalSince1970: nextSegment.startAtMs / 1_000),
-                    title: text.t("lunchBreak"),
+                    title: scheduledBreakTitle,
                     detail: text.t("lunchBackAt")
                 ))
             }
@@ -860,8 +860,13 @@ final class ShiftSessionStore {
                 // A day can only name a type the schedule it is saved with knows.
                 guard let content = change.extendedContent ?? preferences.extendedScheduleContent else { return false }
                 let known = Set(content.shiftTypes.map(\.id))
+                let todayKey = RecordJSON.dayKey(date, calendar: preferences.recordsCalendar)
                 guard edits.allSatisfy({ key, edit in
                     guard ExtendedScheduleResolver.dayNumber(dayKey: key) != nil else { return false }
+                    if key < todayKey,
+                       !records.canEditRosterDay(key, timeZoneIdentifier: preferences.recordsTimeZone.identifier) {
+                        return false
+                    }
                     if case .shift(let id) = edit { return known.contains(id) }
                     return true
                 }) else { return false }

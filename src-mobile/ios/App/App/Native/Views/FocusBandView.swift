@@ -158,7 +158,7 @@ struct FocusBandView: View {
                                 .font(.footnote)
                                 .foregroundStyle(OWCDesign.recordsBreak)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(focus.t("lunchBreak"))
+                                Text(focus.t("extendedBreak"))
                                     .font(.subheadline)
                                     .foregroundStyle(OWCDesign.secondary)
                                 Text(gapDetail(gap))
@@ -167,7 +167,7 @@ struct FocusBandView: View {
                             }
                         }
                     } else if height >= 20 {
-                        Label(focus.t("lunchBreak"), systemImage: "fork.knife")
+                        Label(focus.t("extendedBreak"), systemImage: "pause.circle")
                             .font(.caption2)
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -176,7 +176,7 @@ struct FocusBandView: View {
             }
             .frame(maxWidth: .infinity)
             .accessibilityElement()
-            .accessibilityLabel("\(focus.t("lunchBreak")) · \(gapDetail(gap))")
+            .accessibilityLabel("\(focus.t("extendedBreak")) · \(gapDetail(gap))")
     }
 
     private func tailTile(_ gap: FocusDayCanvasModel.Gap, height: CGFloat) -> some View {

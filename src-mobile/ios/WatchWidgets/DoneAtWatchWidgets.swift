@@ -84,9 +84,9 @@ private struct DoneAtWatchWidgetView: View {
         case .waiting:
             unavailable(WatchLocalizations.text("watchWaitingForIPhone"), symbol: "iphone.and.arrow.forward")
         case .locked:
-            unavailable("DoneAt Plus", symbol: "lock")
+            unavailable(WatchLocalizations.text("watchWaitingForIPhone"), symbol: "iphone")
         case .confirmationRequired:
-            unavailable(WatchLocalizations.text("watchConfirmPlusOnIPhone"), symbol: "iphone")
+            unavailable(WatchLocalizations.text("watchWaitingForIPhone"), symbol: "iphone")
         case .pending:
             unavailable(WatchLocalizations.text("watchWaitingForIPhone"), symbol: "clock")
         case .contentExpired, .invalid:

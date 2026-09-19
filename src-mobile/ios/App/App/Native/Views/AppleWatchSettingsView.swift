@@ -1,9 +1,8 @@
 import SwiftUI
 
-/// What DoneAt does on Apple Watch, what stays free, what Plus adds, and how to
+/// What DoneAt does on Apple Watch, its free features, and how to
 /// add it. Informational only: nothing on this page changes a setting.
 struct AppleWatchSettingsView: View {
-    let plus: PlusEntitlement
     let text: AppText
 
     private let pageTitle = "Apple Watch"
@@ -20,11 +19,8 @@ struct AppleWatchSettingsView: View {
                         icon: "square.stack",
                         title: text.t("appleWatchSmartStackTitle"),
                         subtitle: text.t("appleWatchSmartStackBody"),
-                        isLast: true
+                        isLast: false
                     )
-                }
-
-                section(text.t("appleWatchPlusSection")) {
                     OWCRow(
                         icon: "applewatch",
                         title: text.t("appleWatchAppTitle"),
@@ -33,18 +29,9 @@ struct AppleWatchSettingsView: View {
                     OWCRow(
                         icon: "watchface.applewatch.case",
                         title: text.t("appleWatchComplicationsTitle"),
-                        subtitle: text.t("appleWatchComplicationsBody")
+                        subtitle: text.t("appleWatchComplicationsBody"), isLast: true
                     )
-                    if plus.isAuthorized {
-                        OWCRow(icon: "checkmark.seal", title: text.t("appleWatchIncludedInPlus"), isLast: true)
-                    } else {
-                        NavigationLink(value: AppRoute.plus) {
-                            OWCRow(icon: "star", title: text.t("plusSeePlans"), isLast: true) {
-                                OWCDetailAccessory(text: nil)
-                            }
-                        }
-                        .buttonStyle(OWCRowButtonStyle())
-                    }
+
                 }
 
                 section(text.t("appleWatchSetupSection")) {

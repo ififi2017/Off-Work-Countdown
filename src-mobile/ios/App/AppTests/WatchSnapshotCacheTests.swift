@@ -91,6 +91,46 @@ struct WatchSnapshotCacheTests {
         #expect(await cache.currentPackage() == package(revision: 6))
     }
 
+    @Test("A deferred baseline admits only the promised file revision and survives restart")
+    func deferredBaselineIsAtomic() async throws {
+        let file = temporaryFile()
+        defer { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
+        let cache = await WatchSnapshotCache.open(fileURL: file, newPairingSession: "pair")
+        #expect(await pair(package(generation: "old", revision: 4), cache: cache) == .accepted)
+        let hello = await cache.makePairingHello(nonce: "deferred")
+        let baseline = WatchSourceBaselineV1(
+            schemaVersion: 1, pairingSession: hello.pairingSession,
+            sourceGeneration: "new", replacesGeneration: "old")
+        let deferred = WatchPairingReplyV1(
+            schemaVersion: 1, pairingSession: hello.pairingSession, nonce: hello.nonce,
+            baseline: baseline, packageData: Data(), deferredRevision: 7)
+        #expect(await cache.receivePairingReply(encoded(deferred)) == .accepted)
+        #expect(await cache.currentPackage()?.sourceGeneration == "old")
+
+        let reopened = await WatchSnapshotCache.open(fileURL: file, newPairingSession: "ignored")
+        #expect(await reopened.receiveApplicationContext(encoded(package(generation: "new", revision: 6))) == .rejected(.rejectStaleRevision))
+        #expect(await reopened.receiveApplicationContext(encoded(package(generation: "new", revision: 8))) == .rejected(.rejectBaseline))
+        #expect(await reopened.currentPackage()?.sourceGeneration == "old")
+        #expect(await reopened.receiveApplicationContext(encoded(package(generation: "new", revision: 7))) == .accepted)
+        #expect(await reopened.currentPackage() == package(generation: "new", revision: 7))
+    }
+
+    @Test("A deferred reply for the revision already cached completes without waiting for a file")
+    func deferredDuplicateCompletes() async throws {
+        let file = temporaryFile()
+        defer { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
+        let cache = await WatchSnapshotCache.open(fileURL: file, newPairingSession: "pair")
+        #expect(await pair(package(revision: 4), cache: cache) == .accepted)
+        let hello = await cache.makePairingHello(nonce: "already-cached")
+        let reply = WatchPairingReplyV1(
+            schemaVersion: 1, pairingSession: hello.pairingSession, nonce: hello.nonce,
+            baseline: .init(schemaVersion: 1, pairingSession: hello.pairingSession,
+                            sourceGeneration: "a", replacesGeneration: nil),
+            packageData: Data(), deferredRevision: 4)
+        #expect(await cache.receivePairingReply(encoded(reply)) == .duplicate)
+        #expect(await cache.currentPackage() == package(revision: 4))
+    }
+
     @Test("A new phone install replaces the generation named by the Watch hello")
     func phoneReinstallReplacement() async throws {
         let file = temporaryFile()
@@ -150,8 +190,25 @@ struct WatchSnapshotCacheTests {
         try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data("bad".utf8).write(to: file)
         let cache = await WatchSnapshotCache.open(fileURL: file, newPairingSession: "fresh")
+        #expect(await cache.loadState() == .corrupt)
         #expect(await cache.receiveApplicationContext(encoded(package())) == .rejected(.rejectWrongGeneration))
         #expect(await pair(package(), cache: cache) == .accepted)
+    }
+
+    @Test("A future package schema is distinguished from damaged JSON")
+    func incompatibleRecovery() async throws {
+        let file = temporaryFile()
+        defer { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let object: [String: Any] = [
+            "pairingSession": "pair",
+            "package": ["schemaVersion": 99],
+            "order": ["retiredGenerations": []]
+        ]
+        try JSONSerialization.data(withJSONObject: object).write(to: file)
+        let cache = await WatchSnapshotCache.open(fileURL: file, newPairingSession: "fresh")
+        #expect(await cache.loadState() == .incompatible)
+        #expect(await cache.currentPackage() == nil)
     }
 
     @Test("Unknown salary fields never reach the persisted cache")

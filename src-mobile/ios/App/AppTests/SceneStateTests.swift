@@ -308,7 +308,7 @@ struct SceneStateTests {
         #expect(scene.selectedTab == .settings)
         #expect(scene.settingsPath.isEmpty)
         #expect(scene.presentedRoute == .appleWatch)
-        #expect(PlusBenefit.all.contains { $0.id == "watch" && $0.titleKey == "plusBenefitWatch" })
+        #expect(!PlusBenefit.all.contains { $0.id == "watch" })
     }
 
     @Test("A Focus activity request waits without replacing an existing presentation")

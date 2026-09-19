@@ -636,6 +636,10 @@ final class RecordCoordinator {
     }
 
     @ObservationIgnored private var planCache: (schedule: ExtendedSchedule?, rosterDays: [RosterDay], plan: ExtendedSchedulePlan?)?
+    @ObservationIgnored private var fixedPlanCache: (
+        rosterDays: [RosterDay], types: [ShiftType], plans: [Bool: ExtendedSchedulePlan]
+    ) = ([], [], [:])
+    @ObservationIgnored private var extendedStartCache: (snapshots: [ScheduleSnapshot], start: Date?)?
     @ObservationIgnored private var planRevision = 0
 
     /// The extended schedule as the rules read it, switched on or not: days
@@ -692,6 +696,7 @@ final class RecordCoordinator {
             shiftTypes: content.shiftTypes + liveTypes.filter { !saved.contains($0.id) },
             rule: content.rule,
             handSetDays: extendedSchedulePlan?.handSetDays ?? ExtendedSchedulePlan.handSetDays(from: rosterDays),
+            frozenShiftTypes: ExtendedSchedulePlan.frozenShiftTypes(from: rosterDays),
             revision: planRevision
         )
         contentPlanCache.plans[content] = plan
@@ -712,6 +717,7 @@ final class RecordCoordinator {
             shiftTypes: base.shiftTypes,
             rule: base.rule,
             handSetDays: ExtendedScheduleEditing.handSetDays(base.handSetDays, applying: edits),
+            frozenShiftTypes: base.frozenShiftTypes.filter { edits[$0.key] == nil },
             revision: planRevision
         )
     }
@@ -733,6 +739,8 @@ final class RecordCoordinator {
             shiftTypes: plan.shiftTypes,
             rule: plan.rule,
             handSetDays: days,
+            frozenShiftTypes: plan.frozenShiftTypes,
+            fallsBackToBaseSchedule: plan.fallsBackToBaseSchedule,
             pinnedDayKey: plan.pinnedDayKey,
             revision: planRevision
         )
@@ -744,12 +752,17 @@ final class RecordCoordinator {
     /// following the pattern erases the row, leaving a tombstone other devices
     /// honour.
     func applyRosterEdits(_ edits: [String: RosterDayEdit], timeZoneIdentifier: String, at date: Date = .now) {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: timeZoneIdentifier) ?? .current
+        let todayKey = RecordJSON.dayKey(date, calendar: calendar)
+        let types = Dictionary(uniqueKeysWithValues: (state.extendedSchedule?.shiftTypes ?? []).map { ($0.id, $0) })
         for (dayKey, edit) in edits.sorted(by: { $0.key < $1.key }) {
             switch edit {
             case .shift(let id):
                 upsertRosterDay(RosterDay(
                     dayKey: dayKey,
                     shiftTypeID: id,
+                    assignedShiftType: dayKey < todayKey ? types[id] : nil,
                     timeZoneIdentifier: timeZoneIdentifier,
                     editedAt: date,
                     editCount: 0,
@@ -763,10 +776,136 @@ final class RecordCoordinator {
         }
     }
 
-    @ObservationIgnored private var extendedStartCache: (snapshots: [ScheduleSnapshot], start: Date?)?
+    /// Past roster edits are admitted only inside an existing career period.
+    func canEditRosterDay(_ dayKey: String, timeZoneIdentifier: String) -> Bool {
+        guard let zone = TimeZone(identifier: timeZoneIdentifier) else { return false }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        guard let start = RecordJSON.date(fromDayKey: dayKey, calendar: calendar),
+              let noon = calendar.date(byAdding: .hour, value: 12, to: start)
+        else { return false }
+        return DayRecordResolver.period(on: noon, from: state.periods) != nil
+    }
 
-    /// When the extended schedule first took effect in Records: the earliest
-    /// snapshot that follows it. `nil` while none does.
+    var frozenRosterShiftTypes: [String: ShiftType] {
+        ExtendedSchedulePlan.frozenShiftTypes(from: state.rosterDays)
+    }
+
+    /// The plan originally stored for one historical day. This never reads
+    /// DayOverride or CalendarException: those actual/leave layers continue to
+    /// win in Records, while the roster editor shows the plan beneath them.
+    func plannedRosterPreview(
+        dayKey: String,
+        timeZoneIdentifier: String,
+        fallbackTypes: [ShiftType] = [],
+        ignoringRosterAssignment: Bool = false
+    ) -> PlannedRosterPreview {
+        if !ignoringRosterAssignment,
+           let frozen = state.rosterDays.first(where: { $0.dayKey == dayKey })?.assignedShiftType {
+            return frozen.kind == .rest ? .rest : .shift(frozen)
+        }
+        guard let zone = TimeZone(identifier: timeZoneIdentifier),
+              let parts = ExtendedScheduleResolver.parse(dayKey: dayKey)
+        else { return .noPlan }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        guard let start = calendar.date(from: DateComponents(
+            year: parts.year, month: parts.month, day: parts.day
+        )), let noon = calendar.date(byAdding: .hour, value: 12, to: start),
+        let period = DayRecordResolver.period(on: noon, from: state.periods),
+        let snapshot = DayRecordResolver.snapshot(on: noon, in: period, from: state.snapshots),
+        let configuration = previewHours(
+            for: snapshot,
+            ignoringRosterDayKey: ignoringRosterAssignment ? dayKey : nil
+        ),
+        let expansion = ScheduleRules.expandScheduleRange(
+            configuration: configuration, from: start, through: start, timeZone: period.timeZone
+        ).first
+        else { return .noPlan }
+        guard expansion.isWorkday else { return .rest }
+
+        if let plan = configuration.extendedSchedule,
+           let dayNumber = ExtendedScheduleResolver.dayNumber(dayKey: dayKey) {
+            let resolved = ExtendedScheduleResolver(plan: plan).day(dayNumber: dayNumber)
+            if let id = resolved.shiftTypeID,
+               let type = (plan.shiftTypes + fallbackTypes).first(where: { $0.id == id }) {
+                return type.kind == .rest ? .rest : .shift(type)
+            }
+        }
+
+        let startMinutes = Self.minutes(of: expansion.shiftAnchorStartAtMs, in: period.timeZone)
+        guard let endAtMs = expansion.segments.last?.endAtMs else { return .noPlan }
+        let endMinutes = Self.minutes(of: endAtMs, in: period.timeZone)
+        let breakWindow: (start: Int, duration: Int)? = if expansion.segments.count == 2 {
+            (
+                Self.minutes(of: expansion.segments[0].endAtMs, in: period.timeZone),
+                max(0, Int((expansion.segments[1].startAtMs - expansion.segments[0].endAtMs) / 60_000))
+            )
+        } else {
+            nil
+        }
+        if let matching = fallbackTypes.first(where: {
+            $0.kind == .work && $0.startMinutes == startMinutes && $0.endMinutes == endMinutes
+                && $0.breakEnabled == (breakWindow != nil)
+                && (breakWindow == nil || ($0.breakStartMinutes == breakWindow?.start
+                    && $0.breakDurationMinutes == breakWindow?.duration))
+        }) { return .shift(matching) }
+        let label = "\(ExtendedScheduleResolver.timeString(startMinutes))–\(ExtendedScheduleResolver.timeString(endMinutes))"
+        return .shift(ShiftType(
+            id: ExtendedSchedulePlan.pinnedShiftTypeID,
+            name: label,
+            kind: .work,
+            startMinutes: startMinutes,
+            endMinutes: endMinutes,
+            breakEnabled: breakWindow != nil,
+            breakStartMinutes: breakWindow?.start ?? 0,
+            breakDurationMinutes: breakWindow?.duration ?? 0,
+            colorHex: "#F28C28",
+            isArchived: true
+        ))
+    }
+
+    private func previewHours(
+        for snapshot: ScheduleSnapshot,
+        ignoringRosterDayKey: String?
+    ) -> ScheduleHoursConfiguration? {
+        guard var hours = Self.decodeHours(snapshot.configurationData) else {
+            return nil
+        }
+        let rosterDays = state.rosterDays.filter { $0.dayKey != ignoringRosterDayKey }
+        if let content = hours.extendedContent {
+            let liveTypes = state.extendedSchedule?.shiftTypes ?? []
+            let saved = Set(content.shiftTypes.map(\.id))
+            hours.extendedSchedule = ExtendedSchedulePlan(
+                shiftTypes: content.shiftTypes + liveTypes.filter { !saved.contains($0.id) },
+                rule: content.rule,
+                handSetDays: ExtendedSchedulePlan.handSetDays(from: rosterDays),
+                frozenShiftTypes: ExtendedSchedulePlan.frozenShiftTypes(from: rosterDays)
+            )
+        } else {
+            let includesLegacy = extendedScheduleStart.map { snapshot.effectiveFrom < $0 } ?? false
+            hours.extendedSchedule = ExtendedSchedulePlan(
+                historicalRosterDays: rosterDays,
+                legacyShiftTypes: state.extendedSchedule?.shiftTypes ?? [],
+                includesLegacyRows: includesLegacy
+            )
+        }
+        return hours
+    }
+
+    private static func minutes(of milliseconds: Double, in timeZone: TimeZone) -> Int {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let components = calendar.dateComponents(
+            [.hour, .minute], from: Date(timeIntervalSince1970: milliseconds / 1_000)
+        )
+        return (components.hour ?? 0) * 60 + (components.minute ?? 0)
+    }
+
+    private nonisolated static func decodeHours(_ data: Data) -> ScheduleHoursConfiguration? {
+        try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: data)
+    }
+
     var extendedScheduleStart: Date? {
         let snapshots = state.snapshots
         if let cached = extendedStartCache, cached.snapshots == snapshots { return cached.start }
@@ -778,59 +917,38 @@ final class RecordCoordinator {
         return start
     }
 
-    @ObservationIgnored private var backfillPlanCache: (rosterDays: [RosterDay], types: [ShiftType], plan: ExtendedSchedulePlan?)?
-
-    /// The hand-set days alone, over whatever fixed schedule a snapshot had:
-    /// what a day filled in on the calendar means for a stretch worked before
-    /// the extended schedule existed. `nil` without any such day.
-    private var backfillPlan: ExtendedSchedulePlan? {
+    private func fixedOverlayPlan(includesLegacyRows: Bool) -> ExtendedSchedulePlan? {
         let rosterDays = state.rosterDays
         let types = state.extendedSchedule?.shiftTypes ?? []
-        if let cached = backfillPlanCache, cached.rosterDays == rosterDays, cached.types == types {
-            return cached.plan
+        if fixedPlanCache.rosterDays != rosterDays || fixedPlanCache.types != types {
+            fixedPlanCache = (rosterDays, types, [:])
         }
-        var plan: ExtendedSchedulePlan?
-        if !rosterDays.isEmpty {
-            planRevision += 1
-            plan = ExtendedSchedulePlan(
-                shiftTypes: types,
-                rule: nil,
-                handSetDays: extendedSchedulePlan?.handSetDays ?? ExtendedSchedulePlan.handSetDays(from: rosterDays),
-                overlaysFixedSchedule: true,
-                revision: planRevision
-            )
-        }
-        backfillPlanCache = (rosterDays, types, plan)
+        if let cached = fixedPlanCache.plans[includesLegacyRows] { return cached }
+        planRevision += 1
+        let plan = ExtendedSchedulePlan(
+            historicalRosterDays: rosterDays,
+            legacyShiftTypes: types,
+            includesLegacyRows: includesLegacyRows,
+            revision: planRevision
+        )
+        if let plan { fixedPlanCache.plans[includesLegacyRows] = plan }
         return plan
     }
 
-    private nonisolated static func decodeHours(_ data: Data) -> ScheduleHoursConfiguration? {
-        try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: data)
-    }
-
-    /// A snapshot's hours as Records resolves them. Every reader that expands a
-    /// schedule snapshot goes through here, so none of them can fall back to
-    /// the fixed hours by forgetting the roster.
-    ///
-    /// - Hours that follow the extended schedule get their shift types and rule
-    ///   over the live hand-set days.
-    /// - Fixed hours from before the extended schedule began get the hand-set
-    ///   days on top, so days filled in afterwards count. Fixed hours from
-    ///   after it began — the user went back to fixed hours — do not: the
-    ///   countdown ignores the calendar then, and Records must agree with it.
+    /// Snapshot-aware expansion keeps legacy rows on the old compatibility
+    /// boundary while allowing newly frozen historical edits on any fixed
+    /// snapshot inside a career period.
     func expandableHours(for snapshot: ScheduleSnapshot) -> ScheduleHoursConfiguration? {
         guard var hours = Self.decodeHours(snapshot.configurationData) else { return nil }
         if let content = hours.extendedContent {
             hours.extendedSchedule = extendedSchedulePlan(for: content)
-        } else if let start = extendedScheduleStart, snapshot.effectiveFrom < start {
-            hours.extendedSchedule = backfillPlan
+        } else {
+            let includesLegacy = extendedScheduleStart.map { snapshot.effectiveFrom < $0 } ?? false
+            hours.extendedSchedule = fixedOverlayPlan(includesLegacyRows: includesLegacy)
         }
         return hours
     }
 
-    /// A snapshot's own fixed hours, with no day set by hand: what the calendar
-    /// shows for a day filled in before the extended schedule, once it is
-    /// handed back.
     nonisolated func fixedHours(for snapshot: ScheduleSnapshot) -> ScheduleHoursConfiguration? {
         Self.decodeHours(snapshot.configurationData)
     }

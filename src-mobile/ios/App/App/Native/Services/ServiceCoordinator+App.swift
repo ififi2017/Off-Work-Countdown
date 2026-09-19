@@ -15,7 +15,7 @@ extension ServiceCoordinator.Operations {
                 .init(
                     onboardingComplete: shifts.preferences.onboardingComplete,
                     authorized: shifts.plus.isAuthorized,
-                    watchEvidence: shifts.plus.watchEvidence,
+                    watchEvidence: .init(authorization: nil, verifiedAt: nil),
                     countdownStarted: shifts.session.countdownStarted,
                     debugToken: shifts.session.debugPresentationToken,
                     schedule: ServiceScheduleSignal(shifts: shifts),
@@ -80,7 +80,8 @@ extension ServiceCoordinator.Operations {
                 await LaunchTrace.interval("focusNotifications") { await shifts.focus.refreshFocusNotifications() }
                 guard !Task.isCancelled else { return }
                 await LaunchTrace.interval("liveActivities") { await liveActivities.reschedule(shifts: shifts) }
-            }
+            },
+            publishWatch: { await watchSnapshots.publish(shifts: shifts) }
         )
     }
 }

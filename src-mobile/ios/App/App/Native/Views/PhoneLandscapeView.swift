@@ -69,7 +69,7 @@ struct LandscapeTimerView: View {
                                 ManualTimingBanner(shifts: shifts, now: date, compact: true)
                             }
                             if onBreak {
-                                Label(shifts.text.t("lunchInProgress"), systemImage: "cup.and.saucer")
+                                Label(shifts.scheduledBreakInProgressTitle, systemImage: "cup.and.saucer")
                                     .font(.footnote.weight(.semibold))
                                     .foregroundStyle(OWCDesign.secondary)
                                     .padding(.horizontal, 12)
@@ -127,7 +127,7 @@ struct LandscapeTimerView: View {
                                 Text(shifts.session.timeString(shifts.session.effectiveStartMinutes(at: date)))
                                     .position(x: 24, y: 8)
                                 if shifts.session.effectiveLunchEnabled(at: date), snapshot.segments.count > 1 {
-                                    Text("\(shifts.session.timeString(shifts.session.effectiveLunchStartMinutes(at: date))) · \(shifts.text.t("lunchBreak"))")
+                                    Text("\(shifts.session.timeString(shifts.session.effectiveLunchStartMinutes(at: date))) · \(shifts.scheduledBreakTitle)")
                                         .position(x: max(110, min(proxy.size.width - 110, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
                                 }
                                 Text(shifts.session.timeString(shifts.session.effectiveEndMinutes(at: date)))

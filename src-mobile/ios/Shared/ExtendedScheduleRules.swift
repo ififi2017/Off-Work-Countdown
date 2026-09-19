@@ -70,14 +70,16 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
     let rule: ShiftCycleRule?
     /// Civil day key to shift type, for the days the user set by hand.
     let handSetDays: [String: UUID]
+    /// Past assignments carry their type with them so old schedule snapshots
+    /// can resolve the exact hours chosen later.
+    let frozenShiftTypes: [String: ShiftType]
+    /// Historical assignments can be laid over a classic snapshot. Days with
+    /// no exact assignment then keep that snapshot's normal schedule.
+    let fallsBackToBaseSchedule: Bool
     /// The day `pinning` fixed. It resolves to `pinnedShiftTypeID` without
     /// counting as a day the user set: otherwise it would make a carried-over
     /// month authored, and every other day of that month would read as rest.
     let pinnedDayKey: String?
-    /// Only the hand-set days count; every other day keeps the fixed schedule
-    /// the caller passed. This is how days filled in on the calendar reach
-    /// Records for a stretch that was worked on fixed hours.
-    let overlaysFixedSchedule: Bool
     /// Process-local version from `RecordCoordinator`, so caches keyed on a
     /// plan can tell two plans apart without comparing every day.
     let revision: Int
@@ -87,22 +89,25 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
         shiftTypes: [ShiftType],
         rule: ShiftCycleRule?,
         handSetDays: [String: UUID],
+        frozenShiftTypes: [String: ShiftType] = [:],
+        fallsBackToBaseSchedule: Bool = false,
         pinnedDayKey: String? = nil,
-        overlaysFixedSchedule: Bool = false,
         revision: Int = 0
     ) {
         self.shiftTypes = shiftTypes
         self.rule = rule
         self.handSetDays = handSetDays
+        self.frozenShiftTypes = frozenShiftTypes
+        self.fallsBackToBaseSchedule = fallsBackToBaseSchedule
         self.pinnedDayKey = pinnedDayKey
-        self.overlaysFixedSchedule = overlaysFixedSchedule
         self.revision = revision
         index = ExtendedScheduleIndex(
             shiftTypes: shiftTypes,
-            rule: overlaysFixedSchedule ? nil : rule,
+            rule: rule,
             handSetDays: handSetDays,
-            pinnedDayKey: pinnedDayKey,
-            overlaysFixedSchedule: overlaysFixedSchedule
+            frozenShiftTypes: frozenShiftTypes,
+            fallsBackToBaseSchedule: fallsBackToBaseSchedule,
+            pinnedDayKey: pinnedDayKey
         )
     }
 
@@ -119,6 +124,7 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             shiftTypes: schedule.shiftTypes,
             rule: schedule.rule,
             handSetDays: Self.handSetDays(from: rosterDays),
+            frozenShiftTypes: Self.frozenShiftTypes(from: rosterDays),
             revision: revision
         )
     }
@@ -132,8 +138,39 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
         return handSet
     }
 
+    static func frozenShiftTypes(from rosterDays: [RosterDay]) -> [String: ShiftType] {
+        Dictionary(rosterDays.compactMap { day in
+            day.assignedShiftType.map { (day.dayKey, $0) }
+        }, uniquingKeysWith: { _, latest in latest })
+    }
+
+    /// Historical assignments over an otherwise fixed snapshot. Frozen rows
+    /// always apply. Legacy rows can be included for fixed snapshots from
+    /// before extended scheduling began, using the live archived types older
+    /// builds left them pointing at.
+    init?(
+        historicalRosterDays rosterDays: [RosterDay],
+        legacyShiftTypes: [ShiftType] = [],
+        includesLegacyRows: Bool = false,
+        revision: Int = 0
+    ) {
+        let frozen = Self.frozenShiftTypes(from: rosterDays)
+        let handSet = Dictionary(uniqueKeysWithValues: rosterDays.compactMap { day in
+            if day.assignedShiftType != nil || includesLegacyRows { return (day.dayKey, day.shiftTypeID) }
+            return nil
+        })
+        guard !handSet.isEmpty else { return nil }
+        self.init(
+            shiftTypes: legacyShiftTypes, rule: nil,
+            handSetDays: handSet,
+            frozenShiftTypes: frozen,
+            fallsBackToBaseSchedule: true,
+            revision: revision
+        )
+    }
+
     private enum CodingKeys: String, CodingKey {
-        case shiftTypes, rule, handSetDays, pinnedDayKey, overlaysFixedSchedule, revision
+        case shiftTypes, rule, handSetDays, frozenShiftTypes, fallsBackToBaseSchedule, pinnedDayKey, revision
     }
 
     init(from decoder: any Decoder) throws {
@@ -142,8 +179,9 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             shiftTypes: try container.decode([ShiftType].self, forKey: .shiftTypes),
             rule: try container.decodeIfPresent(ShiftCycleRule.self, forKey: .rule),
             handSetDays: try container.decode([String: UUID].self, forKey: .handSetDays),
+            frozenShiftTypes: try container.decodeIfPresent([String: ShiftType].self, forKey: .frozenShiftTypes) ?? [:],
+            fallsBackToBaseSchedule: try container.decodeIfPresent(Bool.self, forKey: .fallsBackToBaseSchedule) ?? false,
             pinnedDayKey: try container.decodeIfPresent(String.self, forKey: .pinnedDayKey),
-            overlaysFixedSchedule: try container.decodeIfPresent(Bool.self, forKey: .overlaysFixedSchedule) ?? false,
             revision: try container.decode(Int.self, forKey: .revision)
         )
     }
@@ -153,8 +191,9 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             && lhs.shiftTypes == rhs.shiftTypes
             && lhs.rule == rhs.rule
             && lhs.handSetDays == rhs.handSetDays
+            && lhs.frozenShiftTypes == rhs.frozenShiftTypes
+            && lhs.fallsBackToBaseSchedule == rhs.fallsBackToBaseSchedule
             && lhs.pinnedDayKey == rhs.pinnedDayKey
-            && lhs.overlaysFixedSchedule == rhs.overlaysFixedSchedule
     }
 
     /// The hours this plan gives one civil day, or `nil` when it is rest.
@@ -191,8 +230,9 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
             shiftTypes: types,
             rule: rule,
             handSetDays: handSetDays,
+            frozenShiftTypes: frozenShiftTypes,
+            fallsBackToBaseSchedule: fallsBackToBaseSchedule,
             pinnedDayKey: dayKey,
-            overlaysFixedSchedule: overlaysFixedSchedule,
             revision: revision
         )
     }
@@ -206,19 +246,18 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
     let rule: ShiftCycleRule?
     let ruleAnchorDayNumber: Int?
     let handSetByDayNumber: [Int: UUID]
+    let frozenByDayNumber: [Int: ShiftType]
+    let fallsBackToBaseSchedule: Bool
     /// Month key to that month's hand-set days, by day of the month.
     let authoredMonths: [Int: [Int: UUID]]
+    let authoredFrozenMonths: [Int: [Int: ShiftType]]
     let authoredMonthKeys: [Int]
-    let overlaysFixedSchedule: Bool
 
     init(
-        shiftTypes: [ShiftType],
-        rule: ShiftCycleRule?,
-        handSetDays: [String: UUID],
-        pinnedDayKey: String?,
-        overlaysFixedSchedule: Bool
+        shiftTypes: [ShiftType], rule: ShiftCycleRule?, handSetDays: [String: UUID],
+        frozenShiftTypes: [String: ShiftType], fallsBackToBaseSchedule: Bool,
+        pinnedDayKey: String?
     ) {
-        self.overlaysFixedSchedule = overlaysFixedSchedule
         var dayByType: [UUID: (isWorkday: Bool, hours: ExtendedScheduleDayHours?)] = [:]
         for type in shiftTypes where dayByType[type.id] == nil {
             // An archived type still resolves, so a past day keeps the shift it
@@ -240,21 +279,34 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
         }
         self.dayByType = dayByType
         self.rule = rule
+        self.fallsBackToBaseSchedule = fallsBackToBaseSchedule
         ruleAnchorDayNumber = rule.flatMap { ExtendedScheduleResolver.dayNumber(dayKey: $0.anchorDayKey) }
 
         var byDayNumber: [Int: UUID] = [:]
         byDayNumber.reserveCapacity(handSetDays.count)
         var months: [Int: [Int: UUID]] = [:]
+        var frozen: [Int: ShiftType] = [:]
         for (key, typeID) in handSetDays {
             guard let parts = ExtendedScheduleResolver.parse(dayKey: key) else { continue }
             byDayNumber[CivilZone.dayNumber(year: parts.year, month: parts.month, day: parts.day)] = typeID
             months[ExtendedScheduleResolver.monthKey(year: parts.year, month: parts.month), default: [:]][parts.day] = typeID
         }
+        for (key, type) in frozenShiftTypes {
+            guard let parts = ExtendedScheduleResolver.parse(dayKey: key), type.isValid else { continue }
+            let dayNumber = CivilZone.dayNumber(year: parts.year, month: parts.month, day: parts.day)
+            frozen[dayNumber] = type
+        }
         if let pinned = pinnedDayKey.flatMap(ExtendedScheduleResolver.dayNumber(dayKey:)) {
             byDayNumber[pinned] = ExtendedSchedulePlan.pinnedShiftTypeID
         }
         handSetByDayNumber = byDayNumber
+        frozenByDayNumber = frozen
         authoredMonths = months
+        authoredFrozenMonths = Dictionary(grouping: frozenShiftTypes.compactMap { key, type in
+            ExtendedScheduleResolver.parse(dayKey: key).map {
+                (month: ExtendedScheduleResolver.monthKey(year: $0.year, month: $0.month), day: $0.day, type: type)
+            }
+        }, by: \.month).mapValues { Dictionary(uniqueKeysWithValues: $0.map { ($0.day, $0.type) }) }
         authoredMonthKeys = months.keys.sorted()
     }
 }
@@ -266,11 +318,6 @@ fileprivate nonisolated final class ExtendedScheduleIndex: Sendable {
 /// repeatedly. `CivilZone` owns one for the length of a rule call, the same way
 /// it owns its civil-reading cache. The index it reads belongs to the plan.
 nonisolated final class ExtendedScheduleResolver {
-    /// How far back a month with no roster of its own will look for one to copy.
-    /// Ten years is past any calendar the user can have filled in, and bounds
-    /// the walk for a plan whose only roster is ancient.
-    static let carryOverMonthLimit = 120
-
     private let index: ExtendedScheduleIndex
     private var cache: [Int: ExtendedScheduleDay] = [:]
 
@@ -281,13 +328,6 @@ nonisolated final class ExtendedScheduleResolver {
     convenience init?(plan: ExtendedSchedulePlan?) {
         guard let plan else { return nil }
         self.init(plan: plan)
-    }
-
-    /// The day's conclusion, or `nil` when the plan only overlays a fixed
-    /// schedule and does not decide this day, so the fixed rules still do.
-    func assignedDay(dayNumber: Int) -> ExtendedScheduleDay? {
-        let resolved = day(dayNumber: dayNumber)
-        return index.overlaysFixedSchedule && resolved.source == .unassigned ? nil : resolved
     }
 
     func day(dayNumber: Int) -> ExtendedScheduleDay {
@@ -304,10 +344,13 @@ nonisolated final class ExtendedScheduleResolver {
     /// not here because the bundled holiday data it reads does not exist yet
     /// (018 P8 节假日数据); it lands with that data, not before.
     private func resolve(dayNumber: Int) -> ExtendedScheduleDay {
+        if let type = index.frozenByDayNumber[dayNumber] {
+            return day(type: type, source: .handSet)
+        }
         if let typeID = index.handSetByDayNumber[dayNumber] {
             return day(typeID: typeID, source: .handSet)
         }
-        if index.overlaysFixedSchedule { return .unassigned }
+        if index.fallsBackToBaseSchedule { return .unassigned }
         if let rule = index.rule, !rule.days.isEmpty, let anchor = index.ruleAnchorDayNumber {
             let count = rule.days.count
             let position = ((dayNumber - anchor) % count + count) % count
@@ -330,6 +373,9 @@ nonisolated final class ExtendedScheduleResolver {
               let sourceKey = nearestAuthoredMonth(before: monthKey),
               let typeID = index.authoredMonths[sourceKey]?[date.day]
         else { return .unassigned }
+        if let frozen = index.authoredFrozenMonths[sourceKey]?[date.day] {
+            return day(type: frozen, source: .carriedOver)
+        }
         return day(typeID: typeID, source: .carriedOver)
     }
 
@@ -343,7 +389,7 @@ nonisolated final class ExtendedScheduleResolver {
         }
         guard low > 0 else { return nil }
         let candidate = keys[low - 1]
-        return monthKey - candidate <= Self.carryOverMonthLimit ? candidate : nil
+        return candidate
     }
 
     /// A type the plan does not define is unassigned: sync can deliver a day
@@ -358,15 +404,39 @@ nonisolated final class ExtendedScheduleResolver {
         )
     }
 
+    private func day(type: ShiftType, source: ExtendedScheduleDay.Source) -> ExtendedScheduleDay {
+        switch type.kind {
+        case .rest:
+            return ExtendedScheduleDay(isWorkday: false, hours: nil, shiftTypeID: type.id, source: source)
+        case .work:
+            return ExtendedScheduleDay(
+                isWorkday: true,
+                hours: ExtendedScheduleDayHours(
+                    startTime: Self.timeString(type.startMinutes),
+                    endTime: Self.timeString(type.endMinutes),
+                    breakStartTime: type.breakEnabled && type.breakDurationMinutes > 0
+                        ? Self.timeString(type.breakStartMinutes) : nil,
+                    breakDurationMinutes: type.breakEnabled ? type.breakDurationMinutes : 0
+                ),
+                shiftTypeID: type.id,
+                source: source
+            )
+        }
+    }
+
+    var fallsBackToBaseSchedule: Bool { index.fallsBackToBaseSchedule }
+
     static func monthKey(year: Int, month: Int) -> Int { year * 12 + (month - 1) }
 
     static func parse(dayKey: String) -> (year: Int, month: Int, day: Int)? {
         let parts = dayKey.split(separator: "-", omittingEmptySubsequences: false)
-        guard parts.count == 3,
-              parts[0].count == 4, parts[1].count == 2, parts[2].count == 2,
+        guard dayKey.wholeMatch(of: /[0-9]{4}-[0-9]{2}-[0-9]{2}/) != nil,
+              parts.count == 3,
               let year = Int(parts[0]), let month = Int(parts[1]), let day = Int(parts[2]),
-              (1...12).contains(month), (1...31).contains(day)
+              (1...9_999).contains(year), (1...12).contains(month), (1...31).contains(day)
         else { return nil }
+        let civil = CivilZone.civilDate(dayNumber: CivilZone.dayNumber(year: year, month: month, day: day))
+        guard civil.year == year, civil.month == month, civil.day == day else { return nil }
         return (year, month, day)
     }
 

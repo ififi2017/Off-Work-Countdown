@@ -486,20 +486,62 @@ struct ExtendedScheduleEditingTests {
         #expect(hours.extendedSchedule == nil)
     }
 
+    @Test("Legacy rows keep the old fixed boundary while frozen rows can repair later fixed history")
+    func legacyAndFrozenFixedHistory() throws {
+        let runtime = try Self.runtime()
+        #expect(runtime.shifts.reconcileRecordSchedule(
+            at: try Self.on(runtime, month: 8, 3, 10)
+        ).synchronousResult == true)
+        let extendedStart = try Self.at(runtime, 5, 10)
+        #expect(Self.save(runtime, .applyToToday, at: extendedStart) {
+            $0.extendedScheduleEnabled = true
+            $0.extendedContent = Self.everyDayEarly
+        })
+        let fixedAgain = try Self.at(runtime, 12, 10)
+        #expect(Self.save(runtime, .applyToToday, at: fixedAgain) { $0.extendedScheduleEnabled = false })
+
+        // Rows written by older builds have only the type id. Preserve their
+        // original compatibility boundary: pre-extended fixed history sees
+        // them, later fixed schedules do not.
+        runtime.records.upsertRosterDay(RosterDay(
+            dayKey: "2026-08-08", shiftTypeID: Self.early,
+            timeZoneIdentifier: Self.zoneIdentifier, editedAt: fixedAgain,
+            editCount: 0, editTieBreaker: UUID()
+        ))
+        runtime.records.upsertRosterDay(RosterDay(
+            dayKey: "2026-10-17", shiftTypeID: Self.early,
+            timeZoneIdentifier: Self.zoneIdentifier, editedAt: fixedAgain,
+            editCount: 0, editTieBreaker: UUID()
+        ))
+        #expect(try Self.recorded(runtime, month: 8, day: 8).isWorkday)
+        #expect(try Self.recorded(runtime, day: 17).isWorkday == false)
+
+        // Re-saving the later day as historical freezes the selected type and
+        // intentionally repairs that later fixed snapshot too.
+        #expect(Self.save(runtime, .applyToToday, at: try Self.at(runtime, 20, 10)) {
+            $0.rosterEdits = ["2026-10-17": .shift(Self.night)]
+        })
+        #expect(runtime.records.state.rosterDays.first(where: { $0.dayKey == "2026-10-17" })?.assignedShiftType
+            == Self.nightType)
+        let repaired = try Self.recorded(runtime, day: 17)
+        #expect(repaired.isWorkday)
+        #expect(repaired.shiftAnchorStartAtMs == Self.ms(try Self.at(runtime, 17, 20)))
+    }
+
     @Test("An overlay decides only the days set by hand")
     func overlayDecidesHandSetDaysOnly() throws {
         let overlay = ExtendedSchedulePlan(
             shiftTypes: Self.everyDayEarly.shiftTypes,
             rule: Self.everyDayEarly.rule,
             handSetDays: ["2026-08-08": Self.night],
-            overlaysFixedSchedule: true
+            fallsBackToBaseSchedule: true
         )
         let resolver = ExtendedScheduleResolver(plan: overlay)
         let saturday = try #require(ExtendedScheduleResolver.dayNumber(dayKey: "2026-08-08"))
-        #expect(resolver.assignedDay(dayNumber: saturday)?.shiftTypeID == Self.night)
+        #expect(resolver.day(dayNumber: saturday).shiftTypeID == Self.night)
         // Neither the rule nor the month being filled in decides another day.
-        #expect(resolver.assignedDay(dayNumber: saturday + 1) == nil)
-        #expect(resolver.assignedDay(dayNumber: saturday + 31) == nil)
+        #expect(resolver.day(dayNumber: saturday + 1).source == .unassigned)
+        #expect(resolver.day(dayNumber: saturday + 31).source == .unassigned)
 
         let classic = ScheduleHoursConfiguration(
             startTime: "09:00",

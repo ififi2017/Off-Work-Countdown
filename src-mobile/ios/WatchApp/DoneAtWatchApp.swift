@@ -21,6 +21,10 @@ struct DoneAtWatchApp: App {
         showsReviewFixture = false
         forcesReducedLuminance = false
 #endif
+        if !showsReviewFixture {
+            let receiver = receiver
+            Task { await receiver.start() }
+        }
     }
 
     var body: some Scene {
@@ -30,6 +34,9 @@ struct DoneAtWatchApp: App {
                 guard !showsReviewFixture else { return }
                 await receiver.start()
             }
+        }
+        .backgroundTask(.watchConnectivity) { [receiver] in
+            await receiver.handleBackgroundConnectivity()
         }
     }
 
@@ -66,14 +73,19 @@ struct WatchRootView: View {
 
     @ViewBuilder
     private func content(at date: Date) -> some View {
+        if model.package == nil, model.connectionState == .cacheCorrupt {
+            notice(WatchLocalizations.text("watchCacheCorrupt"), symbol: "exclamationmark.triangle")
+        } else if model.package == nil, model.connectionState == .cacheIncompatible {
+            notice(WatchLocalizations.text("watchUpdateRequired"), symbol: "arrow.down.app")
+        } else {
         let nowMs = Int64(date.timeIntervalSince1970 * 1_000)
         switch WatchDisplayProjection.project(model.package, nowMs: nowMs) {
         case .waiting:
             notice(WatchLocalizations.text("watchWaitingForIPhone"), symbol: "iphone.and.arrow.forward")
         case .locked:
-            plusNotice
+            notice(WatchLocalizations.text("watchWaitingForIPhone"), symbol: "iphone.and.arrow.forward")
         case .confirmationRequired, .pending:
-            notice(WatchLocalizations.text("watchConfirmPlusOnIPhone"), symbol: "iphone")
+            notice(WatchLocalizations.text("watchWaitingForIPhone"), symbol: "iphone")
         case .contentExpired:
             notice(WatchLocalizations.text("watchSyncExpired"), symbol: "arrow.clockwise")
         case .invalid:
@@ -84,6 +96,7 @@ struct WatchRootView: View {
                 .environment(\.layoutDirection, WatchDisplayFormat.isRightToLeft(
                     localeIdentifier: value.presentation.localeIdentifier
                 ) ? .rightToLeft : .leftToRight)
+        }
         }
     }
 
@@ -163,26 +176,6 @@ struct WatchRootView: View {
                 .foregroundStyle(.orange)
             Text(message)
                 .font(.footnote)
-                .multilineTextAlignment(.center)
-        }
-        .padding(.horizontal, 8)
-        .accessibilityElement(children: .combine)
-    }
-
-    /// Explains what Plus adds on the wrist without taking away what stays free.
-    private var plusNotice: some View {
-        VStack(spacing: 6) {
-            Image(systemName: "lock")
-                .font(.title3)
-                .foregroundStyle(.orange)
-            Text(verbatim: "DoneAt Plus")
-                .font(.headline)
-            Text(WatchLocalizations.text("watchPlusIncludes"))
-                .font(.footnote)
-                .multilineTextAlignment(.center)
-            Text(WatchLocalizations.text("watchPlusOnIPhone"))
-                .font(.caption2)
-                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 8)

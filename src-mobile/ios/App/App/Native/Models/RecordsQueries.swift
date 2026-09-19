@@ -227,6 +227,51 @@ final class RecordsQueries {
                 lastRulesError = "scheduleExpandFailed"
             }
         }
+        if let plan = ExtendedSchedulePlan(historicalRosterDays: records.state.rosterDays) {
+            let configuration = ScheduleHoursConfiguration(
+                startTime: "00:00", endTime: "00:01", workdays: [],
+                schedule: NativeWorkSchedule(
+                    mode: "off", referenceWeekStartMs: nil, referenceWeekType: nil,
+                    singleWeekendWorkday: nil, rotationAnchorMs: nil,
+                    rotationWorkDays: nil, rotationRestDays: nil
+                ),
+                breakStartTime: nil, breakDurationMinutes: 0,
+                extendedSchedule: plan
+            )
+            for dayKey in plan.frozenShiftTypes.keys {
+                guard let parts = ExtendedScheduleResolver.parse(dayKey: dayKey) else { continue }
+                // Locate this civil day in each candidate period's own zone;
+                // only the winning period is eligible, and only before its
+                // first applicable snapshot needs the fallback expansion.
+                guard let match = periods.compactMap({ period -> (period: CareerPeriod, start: Date, noon: Date)? in
+                    let dayCalendar = period.civilCalendar()
+                    guard let start = dayCalendar.date(from: DateComponents(
+                        year: parts.year, month: parts.month, day: parts.day
+                    )), let noon = dayCalendar.date(byAdding: .hour, value: 12, to: start),
+                    period.covers(noon)
+                    else { return nil }
+                    return (period, start, noon)
+                }).filter({ candidate in
+                    DayRecordResolver.period(on: candidate.noon, from: periods)?.id == candidate.period.id
+                }).first else { continue }
+                let period = match.period
+                let day = match.start
+                guard day >= start, day <= end,
+                      DayRecordResolver.snapshot(on: day, in: period, from: snapshots) == nil
+                else { continue }
+                guard let expansion = ScheduleRules.expandScheduleRange(
+                    configuration: configuration,
+                    from: day,
+                    through: day,
+                    timeZone: period.timeZone
+                ).first else { continue }
+                table.withoutSnapshot[dayKey] = ScheduleExpansion(
+                    isWorkday: expansion.isWorkday,
+                    segments: expansion.segments,
+                    hasPlannedRoster: true
+                )
+            }
+        }
         return table
     }
 
@@ -274,6 +319,7 @@ final class RecordsQueries {
                 expansion = .failed
             } else {
                 expansion = snapshot.flatMap { expansions.bySnapshot[$0.id]?[dayKey] }
+                    ?? expansions.withoutSnapshot[dayKey]
                     ?? ScheduleExpansion(isWorkday: false, segments: [])
             }
             // `cursor` is already the start of its day in `calendar`, so the

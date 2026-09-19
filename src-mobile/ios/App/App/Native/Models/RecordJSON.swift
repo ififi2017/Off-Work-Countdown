@@ -1302,6 +1302,7 @@ nonisolated struct ExtendedScheduleDTO: Codable, Equatable, Sendable {
 nonisolated struct RosterDayDTO: Codable, Equatable, Sendable {
     var dayKey: String
     var shiftTypeID: String
+    var assignedShiftType: ShiftType? = nil
     var timeZoneIdentifier: String
     var editedAtMs: Double
     var editCount: Int
@@ -1310,6 +1311,7 @@ nonisolated struct RosterDayDTO: Codable, Equatable, Sendable {
     init(_ value: RosterDay) {
         dayKey = value.dayKey
         shiftTypeID = value.shiftTypeID.uuidString
+        assignedShiftType = value.assignedShiftType
         timeZoneIdentifier = value.timeZoneIdentifier
         editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
         editCount = value.editCount
@@ -1321,7 +1323,8 @@ nonisolated struct RosterDayDTO: Codable, Equatable, Sendable {
               let editTieBreaker = UUID(uuidString: editTieBreaker),
               let zone = TimeZone(identifier: timeZoneIdentifier),
               editedAtMs.isFinite,
-              editCount >= 0
+              editCount >= 0,
+              assignedShiftType.map({ $0.id == shiftTypeID && $0.isValid }) ?? true
         else { return nil }
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = zone
@@ -1329,6 +1332,7 @@ nonisolated struct RosterDayDTO: Codable, Equatable, Sendable {
         return RosterDay(
             dayKey: dayKey,
             shiftTypeID: shiftTypeID,
+            assignedShiftType: assignedShiftType,
             timeZoneIdentifier: timeZoneIdentifier,
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,

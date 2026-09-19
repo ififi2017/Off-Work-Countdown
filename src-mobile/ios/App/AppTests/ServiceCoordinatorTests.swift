@@ -78,6 +78,19 @@ struct ServiceCoordinatorTests {
         #expect(fixture.publishedSignatures.count == 2)
     }
 
+    @Test("A committed foreground schedule change publishes to Watch immediately")
+    func foregroundWatchPublication() async {
+        let fixture = CoordinatorFixture()
+        let coordinator = fixture.makeCoordinator()
+        defer { coordinator.stop() }
+        coordinator.sceneChanged(UUID(), phase: .active)
+        await fixture.publications.next()
+        fixture.changeSchedule("foreground-edit")
+        await coordinator.flush()
+        #expect(fixture.watchPublishedSignatures == ["foreground-edit"])
+        #expect(fixture.publishedSignatures == ["initial"])
+    }
+
     @Test("An entitlement change publishes immediately, including revocation")
     func entitlementIsIndependent() async {
         let fixture = CoordinatorFixture()
@@ -160,6 +173,7 @@ private final class CoordinatorFixture {
     @ObservationIgnored var syncResumes = 0
     @ObservationIgnored var publishedSignatures: [String] = []
     @ObservationIgnored var publishedAuthorization: [Bool] = []
+    @ObservationIgnored var watchPublishedSignatures: [String] = []
     @ObservationIgnored var failFlush = false
     @ObservationIgnored var suspendFlush = false
     @ObservationIgnored var suspendActivation = false
@@ -202,7 +216,8 @@ private final class CoordinatorFixture {
                 self.publishedSignatures.append(self.input.schedule.scheduleSignature)
                 self.publishedAuthorization.append(self.input.authorized)
                 self.publications.send()
-            }
+            },
+            publishWatch: { self.watchPublishedSignatures.append(self.input.schedule.scheduleSignature) }
         ))
     }
 }

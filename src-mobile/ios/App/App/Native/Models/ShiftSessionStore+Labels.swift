@@ -7,6 +7,18 @@ import Foundation
 /// the "schedule off" case ended up worded two different ways. Portrait,
 /// landscape, iPad and the settings list all read them from here now.
 extension ShiftSessionStore {
+    var scheduledBreakTitle: String {
+        text.t(preferences.isExtendedScheduleEnabled ? "extendedBreak" : "lunchBreak")
+    }
+
+    var scheduledBreakInProgressTitle: String {
+        text.t(preferences.isExtendedScheduleEnabled ? "extendedBreak" : "lunchInProgress")
+    }
+
+    var scheduledBreakStartTitle: String {
+        text.t(preferences.isExtendedScheduleEnabled ? "extendedBreakStart" : "lunchStartTime")
+    }
+
     var scheduleLabel: String {
         return switch self.session.effectiveScheduleMode() {
         case .classic: text.t("scheduleClassic")
