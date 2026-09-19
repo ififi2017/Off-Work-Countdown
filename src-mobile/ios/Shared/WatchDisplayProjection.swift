@@ -69,6 +69,30 @@ nonisolated enum WatchDisplayProjection {
         let nowMs = Int64((now.timeIntervalSince1970 * 1_000).rounded(.towardZero))
         guard let package, package.isValid else { return [now] }
         var milliseconds: Set<Int64> = [nowMs]
+        if let schedule = package.schedule {
+            let end = min(nowMs + 48 * 3_600_000, WatchSnapshotContract.maximumJSONTimestamp)
+            for offset in 1...192 {
+                let instant = nowMs + Int64(offset) * 900_000
+                if instant <= end { milliseconds.insert(instant) }
+            }
+            if minuteCount > 0 {
+                for offset in 1...min(minuteCount, 120) { milliseconds.insert(nowMs + Int64(offset) * 60_000) }
+            }
+            var cursor = nowMs
+            // At most a handful of shifts fit in 48 hours. Keep a hard bound
+            // even for a malformed future rule, and include every exact edge.
+            for _ in 0..<64 {
+                let content = schedule.content(at: cursor)
+                var edges = content.shift?.segments.flatMap { [$0.startAtMs, $0.endAtMs] } ?? []
+                edges += content.shift?.transitions.map(\.atMs) ?? []
+                if let next = content.nextShift { edges.append(next.startAtMs) }
+                if schedule.currentUntilMs > cursor { edges.append(schedule.currentUntilMs) }
+                guard let next = edges.filter({ $0 > cursor && $0 <= end }).min() else { break }
+                milliseconds.insert(next)
+                cursor = next
+            }
+            return milliseconds.sorted().map { Date(timeIntervalSince1970: Double($0) / 1_000) }
+        }
 
         if minuteCount > 0 {
             for offset in 1...min(minuteCount, 120) {

@@ -6,9 +6,9 @@ import Foundation
 /// rest of the page, so every step here returns a new value and stores
 /// nothing.
 nonisolated enum ExtendedScheduleEditing {
-    /// Longest cycle the page offers. The data allows a year; a rotation longer
-    /// than eight weeks is not something people set up one day at a time.
-    static let maximumCycleLength = 60
+    /// Long cycles scroll in the editor; keep the full persisted range so an
+    /// imported cycle is never silently shortened by a one-day adjustment.
+    static let maximumCycleLength = ShiftCycleRule.maximumLength
     static let restColor = "#8E8E93"
     /// The system accent hues, which stay legible as small dots in both
     /// appearances. A new type takes the first one no active type uses.

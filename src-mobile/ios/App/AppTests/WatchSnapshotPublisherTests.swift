@@ -322,7 +322,7 @@ struct WatchSnapshotPublisherTests {
     #expect(recorder.replies.count == 1)
   }
 
-  @Test("Production shift input excludes salary and ignores salary and theme changes")
+  @Test("Production publishes free V2 without Plus, excludes salary, and commits foreground schedule changes")
   func productionInputPrivacyAndDeduplication() async throws {
     let suite = "WatchPublisherProduction.\(UUID())"
     let defaults = try #require(UserDefaults(suiteName: suite))
@@ -330,21 +330,33 @@ struct WatchSnapshotPublisherTests {
     defaults.set(true, forKey: "ios.native.onboardingComplete")
     defaults.set("UTC", forKey: "ios.native.recordsTimeZone")
     let runtime = AppRuntime(defaults: defaults, records: .inMemory())
-    runtime.plus.debugSetAuthorized(true)
     let file = temporaryFile()
     defer { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
     let writer = FailingWriter(failures: [])
     var contexts: [Data] = []
     let publisher = WatchSnapshotPublisher(
       fileURL: file, writer: writer.write, connectivity: connected,
-      contextSender: { contexts.append(try #require($0["watchSnapshotV1"] as? Data)) })
+      contextSender: { contexts.append(try #require($0[WatchPairingContract.snapshotContextKey] as? Data)) })
     await publisher.reconcileConnectivity()
+    let direct = runtime.session.watchSchedule(presentation: presentation().projection)
+    #expect(direct.isValid)
+    #expect(direct.currentShift == nil || direct.resumeAtMs != nil)
+    runtime.preferences.onboardingComplete = false
+    #expect(runtime.session.watchSchedule(presentation: presentation().projection).isValid)
+    runtime.preferences.onboardingComplete = true
+    #expect(runtime.preferences.applyPreferences { $0.scheduleMode = .off }.synchronousResult)
+    #expect(runtime.session.watchSchedule(presentation: presentation().projection).isValid)
+    #expect(runtime.preferences.applyPreferences { $0.scheduleMode = .classic }.synchronousResult)
     await publisher.publish(shifts: runtime.shifts)
     let hello = WatchPairingHelloV1(
       schemaVersion: 1, pairingSession: "watch-a", nonce: "n", acceptedGeneration: nil)
     _ = await publisher.handlePairingHello(try JSONEncoder().encode(hello))
-    // The privacy assertions below are only meaningful if real shift content left the phone.
-    #expect(publisher.currentPackage?.content != nil)
+    let initial = try #require(publisher.currentPackage)
+    #expect(runtime.plus.isAuthorized == false)
+    #expect(initial.schemaVersion == 2)
+    #expect(initial.access.status == .free)
+    #expect(initial.content == nil)
+    #expect(initial.schedule != nil)
     #expect(contexts.count == 1)
     let writes = writer.callCount
     let sends = contexts.count
@@ -362,6 +374,14 @@ struct WatchSnapshotPublisherTests {
     let raw = contexts.map { String(decoding: $0, as: UTF8.self) }.joined()
     #expect(!raw.contains("SALARY-SENTINEL-918273"))
     #expect(!raw.localizedCaseInsensitiveContains("salary"))
+
+    let changed = runtime.preferences.applyPreferences { $0.endMinutes = 18 * 60 }.synchronousResult
+    #expect(changed)
+    await publisher.publish(shifts: runtime.shifts)
+    let committed = try #require(publisher.currentPackage)
+    #expect(committed.revision == initial.revision + 1)
+    #expect(committed.schedule?.configuration.endTime == "18:00")
+    #expect(contexts.count == sends + 1)
   }
 
   private func evidence(_ authorization: PlusAuthorization, verifiedAt: TimeInterval = 100)

@@ -1,10 +1,5 @@
 import Foundation
 
-nonisolated struct NativeShiftSegment: Codable, Hashable, Sendable {
-    let startAtMs: Double
-    let endAtMs: Double
-}
-
 nonisolated struct NativeShiftSnapshot: Codable, Hashable, Sendable {
     let segments: [NativeShiftSegment]
     let startAtMs: Double
@@ -101,38 +96,6 @@ nonisolated struct NativeShiftSnapshot: Codable, Hashable, Sendable {
     }
 }
 
-nonisolated struct NativeWatchRulesProjection: Codable, Equatable, Sendable {
-    nonisolated struct Shift: Codable, Equatable, Sendable {
-        let segments: [NativeShiftSegment]
-        let plannedEndAtMs: Double
-        let overtimeEndAtMs: Double?
-        let finishedAtMs: Double?
-        let isRunning: Bool
-        let transitions: [Transition]
-    }
-
-    nonisolated struct Transition: Codable, Equatable, Sendable {
-        let atMs: Double
-        let state: String
-    }
-
-    nonisolated struct NextShift: Codable, Equatable, Sendable {
-        let startAtMs: Double
-        let validUntilMs: Double
-    }
-
-    let scheduleState: String
-    let shift: Shift?
-    let nextShift: NextShift?
-    let contentExpiresAtMs: Double
-}
-
-nonisolated struct NativeWatchCurrentShift: Codable, Sendable {
-    let segments: [NativeShiftSegment]
-    let plannedEndAtMs: Double
-    let overtimeEndAtMs: Double?
-}
-
 /// One calendar day's planned hours from `ScheduleRules.expandScheduleRange`.
 /// Rest days still carry segments so a makeup-day exception can reuse them.
 nonisolated struct NativeScheduleDayExpansion: Codable, Hashable, Sendable {
@@ -153,16 +116,6 @@ nonisolated struct NativeWidgetShiftSnapshot: Codable, Hashable, Sendable {
     let countdownAnchorAtMs: Double
 }
 
-nonisolated struct NativeWorkSchedule: Codable, Equatable, Hashable, Sendable {
-    let mode: String
-    let referenceWeekStartMs: Double?
-    let referenceWeekType: String?
-    let singleWeekendWorkday: Int?
-    let rotationAnchorMs: Double?
-    let rotationWorkDays: Int?
-    let rotationRestDays: Int?
-}
-
 nonisolated struct NativeRulesInput: Codable, Equatable, Sendable {
     let startTime: String
     let endTime: String
@@ -181,4 +134,14 @@ nonisolated struct NativeRulesInput: Codable, Equatable, Sendable {
     /// Plan 018 P8's extended schedule, when the user has one switched on.
     /// `nil` keeps every rule on the fixed-hours path it took before.
     var extendedSchedule: ExtendedSchedulePlan? = nil
+}
+
+nonisolated extension NativeRulesInput {
+    var scheduleInput: ScheduleRuleInput {
+        ScheduleRuleInput(startTime: startTime, endTime: endTime, nowMs: nowMs,
+                          workdays: workdays, schedule: schedule, breakStartTime: breakStartTime,
+                          breakDurationMinutes: breakDurationMinutes, overtimeEndAtMs: overtimeEndAtMs,
+                          forcedWorkdayStartMs: forcedWorkdayStartMs, timeZoneIdentifier: timeZoneIdentifier,
+                          extendedSchedule: extendedSchedule)
+    }
 }

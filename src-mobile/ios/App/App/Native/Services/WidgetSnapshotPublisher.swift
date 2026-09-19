@@ -193,6 +193,7 @@ final class WidgetSnapshotComposer {
             diagnosticShift = widgetShift(from: currentShift)
             appendShift(
                 currentShift,
+                breakLabel: shifts.preferences.isExtendedScheduleEnabled ? "extendedBreak" : "lunchInProgress",
                 nextShiftStartAtMs: futureShifts.first.map { Int64($0.startAtMs) },
                 cursor: &cursor,
                 expiresAtMs: expiresAtMs,
@@ -215,6 +216,7 @@ final class WidgetSnapshotComposer {
             guard resolvedStartAtMs < expiresAtMs else { break }
             appendShift(
                 nextShift,
+                breakLabel: shifts.preferences.isExtendedScheduleEnabled ? "extendedBreak" : "lunchInProgress",
                 nextShiftStartAtMs: futureShifts.index(after: index) < futureShifts.endIndex
                     ? Int64(futureShifts[futureShifts.index(after: index)].startAtMs)
                     : nil,
@@ -265,6 +267,7 @@ final class WidgetSnapshotComposer {
 
         appendShift(
             projectedShift,
+            breakLabel: shifts.preferences.isExtendedScheduleEnabled ? "extendedBreak" : "lunchInProgress",
             nextShiftStartAtMs: nil,
             cursor: &cursor,
             expiresAtMs: expiresAtMs,
@@ -336,6 +339,7 @@ final class WidgetSnapshotComposer {
 
     private func appendShift(
         _ shift: NativeWidgetShiftSnapshot,
+        breakLabel: String,
         nextShiftStartAtMs: Int64?,
         cursor: inout Int64,
         expiresAtMs: Int64,
@@ -374,7 +378,7 @@ final class WidgetSnapshotComposer {
                         date: breakStartAtMs,
                         end: breakEndAtMs,
                         phase: .break,
-                        label: "lunchInProgress",
+                        label: breakLabel,
                         kind: .breakEnds,
                         remaining: max(0, duration - completedBefore),
                         progress: Double(completedBefore) / Double(duration) * 100,
@@ -616,14 +620,14 @@ final class WidgetSnapshotComposer {
             items.append(WidgetUpcomingItem(
                 id: "lunch-start-\(lunchStartMs)",
                 kind: "lunchStart",
-                title: shifts.text.t("lunchBreak"),
-                detail: shifts.text.t("lunchStartTime"),
+                title: shifts.scheduledBreakTitle,
+                detail: shifts.scheduledBreakStartTitle,
                 dateMs: lunchStartMs
             ))
             items.append(WidgetUpcomingItem(
                 id: "lunch-end-\(lunchEndMs)",
                 kind: "lunchEnd",
-                title: shifts.text.t("lunchBreak"),
+                title: shifts.scheduledBreakTitle,
                 detail: shifts.text.t("lunchBackAt"),
                 dateMs: lunchEndMs
             ))

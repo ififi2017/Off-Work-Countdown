@@ -477,125 +477,6 @@
         }
       }
     },
-    "alternatingCurrentWeekDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "يحدد هذا الاختيار نقطة بدء التناوب بين أسبوع بيوم راحة وأسبوع بيومي راحة."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Diese Auswahl legt fest, mit welcher Woche der Wechsel zwischen einem und zwei freien Tagen beginnt."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This sets the starting point for the single-rest and double-rest week rotation."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Esta selección define desde qué semana empieza la alternancia entre uno y dos días libres."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ce choix définit le point de départ de l’alternance entre les semaines avec un ou deux jours de repos."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "यह चयन तय करता है कि एक और दो छुट्टी वाले सप्ताहों का क्रम किस सप्ताह से शुरू होगा।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pilihan ini menentukan titik awal pergantian minggu dengan satu dan dua hari libur."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Questa scelta stabilisce da quale settimana parte l’alternanza tra uno e due giorni di riposo."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "今週の選択が、週休1日と週休2日のローテーションの起点になります。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "이번 주 선택이 주 1일 휴무와 주 2일 휴무 순환의 시작점이 됩니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "हा पर्याय एक आणि दोन सुट्ट्यांच्या आठवड्यांचे चक्र कोणत्या आठवड्यापासून सुरू होईल ते ठरवतो."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Esta escolha define o início da alternância entre semanas com uma e duas folgas."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Этот выбор задаёт начальную точку чередования недель с одним и двумя выходными."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ตัวเลือกนี้กำหนดจุดเริ่มต้นของการสลับสัปดาห์ที่หยุดหนึ่งวันและสองวัน"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bu seçim, bir ve iki izin günlü haftaların hangi haftadan başlayarak dönüşeceğini belirler."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lựa chọn này xác định tuần bắt đầu chu kỳ luân phiên giữa một và hai ngày nghỉ."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "本周选择会确定单双休交替从哪一周开始。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "本週的選擇會決定大小週從哪一週開始交替。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "本週的選擇會決定大小週從哪一週開始交替。"
-          }
-        }
-      }
-    },
     "amount": {
       "extractionState": "manual",
       "localizations": {
@@ -1667,125 +1548,6 @@
         }
       }
     },
-    "appleWatchIncludedInPlus": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "متضمّن في اشتراكك في Plus"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "In deinem Plus enthalten"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Included with your Plus"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Incluido en tu Plus"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inclus dans votre Plus"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "आपके Plus में शामिल"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sudah termasuk dalam Plus Anda"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Incluso nel tuo Plus"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "お使いのPlusに含まれています"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "회원님의 Plus에 포함되어 있습니다"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "तुमच्या Plus मध्ये आधीच समाविष्ट"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Incluído no seu Plus"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Уже входит в ваш Plus"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "รวมอยู่ใน Plus ของคุณแล้ว"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus’ınıza dahil"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Đã có trong gói Plus của bạn"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "已包含在你的 Plus 中"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "已包含喺你嘅 Plus 入面"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "已包含在你的 Plus 中"
-          }
-        }
-      }
-    },
     "appleWatchIntro": {
       "extractionState": "manual",
       "localizations": {
@@ -2024,240 +1786,120 @@
         }
       }
     },
-    "appleWatchPlusSection": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "متضمّن في Plus"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enthalten in Plus"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Included in Plus"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Incluido en Plus"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inclus dans Plus"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus में शामिल"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Termasuk dalam Plus"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Incluso in Plus"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plusに含まれる"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus에 포함"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus मध्ये समाविष्ट"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Incluído no Plus"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Входит в Plus"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "รวมอยู่ใน Plus"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus’a dahil"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Có trong Plus"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "包含在 Plus 中"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "包含喺 Plus 入面"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "包含在 Plus 中"
-          }
-        }
-      }
-    },
     "appleWatchPrivacyNote": {
-      "extractionState": "manual",
       "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "يعرض Apple Watch فقط الوقت والحالة والتقدم من iPhone، ولا يعرض الراتب أبدًا. تصل التحديثات عبر iPhone المقترن، لذا قد تستغرق لحظة للوصول."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die Apple Watch zeigt nur Zeit, Status und Fortschritt von deinem iPhone – nie das Gehalt. Updates laufen über dein gekoppeltes iPhone und können einen Moment brauchen."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apple Watch shows only time, status and progress from your iPhone — never salary. Updates travel through your paired iPhone, so they can take a moment to arrive."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "El Apple Watch solo muestra la hora, el estado y el progreso de tu iPhone, nunca el salario. Las actualizaciones llegan a través de tu iPhone emparejado, así que pueden tardar un momento."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "L’Apple Watch n’affiche que l’heure, le statut et la progression depuis votre iPhone, jamais le salaire. Les mises à jour passent par votre iPhone couplé, donc elles peuvent prendre un instant."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch पर सिर्फ़ आपके iPhone से समय, स्थिति और प्रगति दिखती है, वेतन कभी नहीं। अपडेट आपकी पेयर की गई iPhone से होकर आते हैं, इसलिए पहुँचने में थोड़ा समय लग सकता है।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch hanya menampilkan waktu, status, dan kemajuan dari iPhone Anda, tidak pernah gaji. Pembaruan dikirim melalui iPhone Anda yang terhubung, jadi mungkin perlu waktu sesaat untuk sampai."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch mostra solo orario, stato e avanzamento dal tuo iPhone, mai lo stipendio. Gli aggiornamenti passano dal tuo iPhone abbinato, quindi possono richiedere un momento per arrivare."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple WatchにはiPhoneからの時刻、ステータス、進捗だけが表示され、給与は表示されません。更新はペアリングしたiPhone経由で届くため、反映まで少し時間がかかることがあります。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch에는 iPhone의 시간, 상태, 진행률만 표시되며 급여는 표시되지 않습니다. 업데이트는 페어링된 iPhone을 거쳐 전달되므로 반영까지 잠시 시간이 걸릴 수 있습니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch वर फक्त तुमच्या iPhone वरील वेळ, स्थिती आणि प्रगती दिसते, पगार कधीच नाही. अपडेट्स तुमच्या पेअर केलेल्या iPhone मार्फत येतात, त्यामुळे पोहोचायला थोडा वेळ लागू शकतो."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O Apple Watch mostra apenas hora, status e progresso vindos do seu iPhone, nunca o salário. As atualizações passam pelo seu iPhone pareado, então podem levar um instante para chegar."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch показывает только время, статус и прогресс с вашего iPhone — никогда зарплату. Обновления приходят через сопряжённый iPhone, поэтому могут появляться не сразу."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch แสดงเฉพาะเวลา สถานะ และความคืบหน้าจาก iPhone ของคุณ ไม่แสดงเงินเดือน การอัปเดตส่งผ่าน iPhone ที่จับคู่ไว้ จึงอาจใช้เวลาสักครู่กว่าจะแสดงผล"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch yalnızca iPhone’unuzdan gelen saati, durumu ve ilerlemeyi gösterir; maaşı asla göstermez. Güncellemeler eşlenen iPhone’unuz üzerinden gittiği için ulaşması biraz zaman alabilir."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch chỉ hiển thị thời gian, trạng thái và tiến độ từ iPhone của bạn, không bao giờ hiển thị lương. Các bản cập nhật truyền qua iPhone đã ghép nối, nên có thể mất một chút thời gian để đến nơi."
+            "value": "After syncing, your Watch follows your saved schedule, even offline. Salary and work records stay on your iPhone."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apple Watch 只显示来自 iPhone 的时间、状态和进度，不含薪资。更新经由已配对的 iPhone 送达，可能需要片刻。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch 只會顯示嚟自 iPhone 嘅時間、狀態同進度，唔包括薪資。更新會經已配對嘅 iPhone 送達，可能要等一陣。"
+            "value": "同步后，手表会按已保存的排班运行，离线时也能接续。薪资和工作记录保留在 iPhone 上。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apple Watch 只顯示來自 iPhone 的時間、狀態和進度，不含薪資。更新經由已配對的 iPhone 送達，可能需要片刻。"
+            "value": "同步後，手錶會按已儲存的排班運作，離線時也能接續。薪資和工作記錄保留在 iPhone 上。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同期後はオフラインでも、Watch が保存済みのシフトに従って動作します。給与と勤務記録は iPhone に保持されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "동기화 후 Watch는 오프라인에서도 저장된 근무 일정에 따라 작동합니다. 급여와 근무 기록은 iPhone에 보관됩니다."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach der Synchronisierung folgt deine Watch dem gespeicherten Dienstplan, auch offline. Gehalt und Arbeitsaufzeichnungen bleiben auf deinem iPhone."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras sincronizar, el Watch sigue tu horario guardado, incluso sin conexión. El salario y los registros laborales permanecen en tu iPhone."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Après synchronisation, votre Watch suit le planning enregistré, même hors ligne. Le salaire et les relevés de travail restent sur votre iPhone."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dopo la sincronizzazione, il Watch segue i turni salvati anche offline. Retribuzione e registri di lavoro restano sul tuo iPhone."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Após sincronizar, o Watch segue a escala salva, mesmo offline. O salário e os registros de trabalho permanecem no iPhone."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После синхронизации Watch следует сохранённому расписанию даже без сети. Зарплата и записи о работе остаются на iPhone."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بعد المزامنة، تتبع الساعة جدولك المحفوظ حتى دون اتصال. يبقى الراتب وسجل العمل على iPhone."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सिंक होने के बाद Watch ऑफ़लाइन भी आपके सेव किए शेड्यूल के अनुसार चलता है। वेतन और काम के रिकॉर्ड iPhone पर रहते हैं।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सिंक केल्यानंतर Watch ऑफलाइन असतानाही जतन केलेल्या वेळापत्रकानुसार चालते. पगार आणि कामाच्या नोंदी iPhone वर राहतात."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setelah sinkronisasi, Watch mengikuti jadwal tersimpan, bahkan saat offline. Gaji dan catatan kerja tetap di iPhone."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หลังซิงค์ Watch จะทำงานตามตารางที่บันทึกไว้แม้ออฟไลน์ เงินเดือนและบันทึกงานยังอยู่บน iPhone"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eşzamanlamadan sonra Watch, çevrimdışıyken bile kayıtlı programınızı izler. Maaş ve çalışma kayıtları iPhone’unuzda kalır."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sau khi đồng bộ, Watch chạy theo lịch đã lưu ngay cả khi ngoại tuyến. Lương và hồ sơ công việc vẫn ở trên iPhone."
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同步後，手錶會按已儲存的排班運作，離線時也能接續。薪資和工作記錄保留在 iPhone 上。"
           }
         }
       }
@@ -10235,125 +9877,6 @@
         }
       }
     },
-    "extendedApplyTemplate": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "إعادة التعبئة"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neu füllen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Refill"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Volver a rellenar"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remplir à nouveau"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "फिर से भरें"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Isi ulang"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ricompila"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "入れ直す"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "다시 채우기"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "पुन्हा भरा"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preencher de novo"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Заполнить заново"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เติมใหม่"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yeniden doldur"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Điền lại"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "重新填写"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "重新填寫"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "重新填寫"
-          }
-        }
-      }
-    },
     "extendedApplyTemplateMessage": {
       "extractionState": "manual",
       "localizations": {
@@ -11068,363 +10591,6 @@
         }
       }
     },
-    "extendedCalendar": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تقويم المناوبات"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schichtkalender"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Roster calendar"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendario de turnos"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendrier des services"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "शिफ़्ट कैलेंडर"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kalender sif"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendario dei turni"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "シフトカレンダー"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "근무 달력"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "शिफ्ट दिनदर्शिका"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendário de turnos"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Календарь смен"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ปฏิทินกะ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vardiya takvimi"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lịch xếp ca"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "排班日历"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "排班日曆"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "排班日曆"
-          }
-        }
-      }
-    },
-    "extendedCalendarNote": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اختر مناوبة ثم اضغط على الأيام لتعبئتها. النقطة تميّز الأيام التي حددتها بنفسك، و«حسب النمط» يعيدها."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schicht wählen, dann Tage antippen. Ein Punkt markiert selbst gesetzte Tage; „Nach Muster“ setzt sie zurück."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pick a shift, then tap days to fill them in. A dot marks a day you set yourself; “Pattern” puts it back."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elige un turno y toca los días para rellenarlos. Un punto marca los días que fijaste tú; «Según el ciclo» los restablece."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choisissez un service, puis touchez les jours pour les remplir. Un point marque un jour réglé à la main ; « Selon le cycle » le rétablit."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "कोई शिफ़्ट चुनें, फिर दिनों पर टैप करके भरें। बिंदु वाले दिन आपने ख़ुद तय किए हैं; “क्रम के अनुसार” से वे वापस आ जाते हैं।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pilih sif, lalu ketuk tanggal untuk mengisinya. Titik menandai hari yang diatur sendiri; “Ikuti pola” mengembalikannya."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scegli un turno, poi tocca i giorni per compilarli. Un punto indica i giorni impostati a mano; «Come il ciclo» li ripristina."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "シフトを選んでから日付をタップすると入力できます。点の付いた日は個別に設定した日で、「パターン通り」で戻せます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "근무를 고른 뒤 날짜를 누르면 채워집니다. 점이 있는 날은 직접 정한 날이며 「패턴대로」로 되돌릴 수 있습니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "शिफ्ट निवडा, मग दिवसांवर टॅप करून भरा. ठिपका असलेले दिवस तुम्ही स्वतः ठरवलेले आहेत; “क्रमानुसार” ने ते परत येतात."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolha um turno e toque nos dias para os preencher. Um ponto marca os dias definidos à mão; “Pelo ciclo” repõe-nos."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выберите смену и нажмите на дни, чтобы заполнить их. Точкой отмечены дни, заданные вручную; «По циклу» возвращает их."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เลือกกะ แล้วแตะวันที่เพื่อเติม วันที่มีจุดคือวันที่ตั้งเอง เลือก “ตามรูปแบบ” เพื่อคืนค่า"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bir vardiya seçin, sonra günlere dokunarak doldurun. Nokta, elle ayarladığınız günleri gösterir; “Düzene göre” geri alır."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chọn một ca rồi chạm vào ngày để điền. Dấu chấm là ngày bạn tự đặt; “Theo chu kỳ” sẽ trả lại như cũ."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "选一个班次，再点日期填入。带圆点的日子是你单独设置的，选「按规律」可以恢复。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "揀一個班次，再撳日期填入。有圓點嘅日子係你單獨設定嘅，揀「按規律」可以還原。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "選一個班次，再點日期填入。帶圓點的日子是你單獨設定的，選「按規律」可以恢復。"
-          }
-        }
-      }
-    },
-    "extendedCalendarNoteNoPattern": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اختر مناوبة ثم اضغط على الأيام لتعبئتها. الشهر الذي تتركه فارغًا يكرر آخر شهر عبّأته حسب التاريخ."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schicht wählen, dann Tage antippen. Ein leerer Monat übernimmt den zuletzt ausgefüllten Monat nach Datum."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pick a shift, then tap days to fill them in. A month you leave empty repeats the last month you filled in, by date."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elige un turno y toca los días para rellenarlos. Un mes vacío repite, por fechas, el último mes que rellenaste."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choisissez un service, puis touchez les jours pour les remplir. Un mois laissé vide reprend, date par date, le dernier mois rempli."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "कोई शिफ़्ट चुनें, फिर दिनों पर टैप करके भरें। जो महीना खाली छोड़ेंगे, वह तारीख़ के हिसाब से पिछले भरे महीने जैसा रहेगा।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pilih sif, lalu ketuk tanggal untuk mengisinya. Bulan yang dibiarkan kosong mengikuti bulan terakhir yang diisi, per tanggal."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scegli un turno, poi tocca i giorni per compilarli. Un mese lasciato vuoto ripete, data per data, l’ultimo mese compilato."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "シフトを選んでから日付をタップすると入力できます。入力していない月は、最後に入力した月を日付ごとに引き継ぎます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "근무를 고른 뒤 날짜를 누르면 채워집니다. 비워 둔 달은 마지막으로 채운 달을 날짜별로 따릅니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "शिफ्ट निवडा, मग दिवसांवर टॅप करून भरा. रिकामा ठेवलेला महिना तारखेनुसार शेवटच्या भरलेल्या महिन्यासारखा राहील."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolha um turno e toque nos dias para os preencher. Um mês deixado em branco repete, por data, o último mês preenchido."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выберите смену и нажмите на дни, чтобы заполнить их. Незаполненный месяц повторяет по датам последний заполненный."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เลือกกะ แล้วแตะวันที่เพื่อเติม เดือนที่เว้นว่างจะใช้ตามเดือนล่าสุดที่เติมไว้ตามวันที่"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bir vardiya seçin, sonra günlere dokunarak doldurun. Boş bıraktığınız ay, en son doldurduğunuz ayı tarih tarih tekrarlar."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chọn một ca rồi chạm vào ngày để điền. Tháng để trống sẽ lặp lại tháng đã điền gần nhất theo ngày."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "选一个班次，再点日期填入。没有填写的月份，会按日期沿用上一个填过的月份。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "揀一個班次，再撳日期填入。未填寫嘅月份，會按日期沿用上一個填過嘅月份。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "選一個班次，再點日期填入。沒有填寫的月份，會按日期沿用上一個填過的月份。"
-          }
-        }
-      }
-    },
     "extendedClearDay": {
       "extractionState": "manual",
       "localizations": {
@@ -11778,125 +10944,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "第 {{day}} 天"
-          }
-        }
-      }
-    },
-    "extendedCycleDays": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "كل يوم في النمط"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jeder Tag im Muster"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Each day of the pattern"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cada día del ciclo"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chaque jour du cycle"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "क्रम का हर दिन"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Setiap hari dalam pola"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ogni giorno del ciclo"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "パターン内の各日"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "패턴의 날짜별 근무"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "क्रमातील प्रत्येक दिवस"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cada dia do ciclo"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Дни цикла"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "แต่ละวันในรูปแบบ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Düzendeki her gün"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Từng ngày trong chu kỳ"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "规律里每天的班次"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "規律入面每日嘅班次"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "規律裡每天的班次"
           }
         }
       }
@@ -12492,125 +11539,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "編輯班次類型"
-          }
-        }
-      }
-    },
-    "extendedFillDayHint": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "يعبّئ {{shift}}"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Setzt {{shift}}"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fills in {{shift}}"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rellena con {{shift}}"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remplit avec {{shift}}"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "{{shift}} भरता है"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mengisi {{shift}}"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Compila con {{shift}}"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "{{shift}}を入力します"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "{{shift}}(으)로 채웁니다"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "{{shift}} भरते"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preenche com {{shift}}"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Заполняет: {{shift}}"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เติม {{shift}}"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "{{shift}} ile doldurur"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Điền {{shift}}"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "填入{{shift}}"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "填入{{shift}}"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "填入{{shift}}"
           }
         }
       }
@@ -13567,363 +12495,6 @@
         }
       }
     },
-    "extendedPatternCustom": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "دورة مخصصة"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eigener Zyklus"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Custom cycle"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ciclo personalizado"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cycle personnalisé"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अपना चक्र"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Siklus kustom"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ciclo personalizzato"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "カスタム周期"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "사용자 지정 주기"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "स्वतःचे चक्र"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ciclo personalizado"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Свой цикл"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "รอบกำหนดเอง"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Özel döngü"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chu kỳ tùy chỉnh"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "自定义周期"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "自訂週期"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "自訂週期"
-          }
-        }
-      }
-    },
-    "extendedPatternKind": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "يتكرر كـ"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wiederholt sich als"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repeats as"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se repite como"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se répète comme"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ऐसे दोहराएँ"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Berulang sebagai"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Si ripete come"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "繰り返し方"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "반복 방식"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "असे पुन्हा होते"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repete-se como"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Повторяется как"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "วนแบบ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tekrar biçimi"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lặp lại theo"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "循环方式"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "循環方式"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "循環方式"
-          }
-        }
-      }
-    },
-    "extendedPatternNone": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "بلا نمط"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kein Muster"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No pattern"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sin ciclo"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sans cycle"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "कोई क्रम नहीं"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tanpa pola"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nessun ciclo"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "パターンなし"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "패턴 없음"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "क्रम नाही"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sem ciclo"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Без цикла"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ไม่ใช้รูปแบบ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Düzen yok"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Không theo chu kỳ"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "不用规律"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "唔用規律"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "不用規律"
-          }
-        }
-      }
-    },
     "extendedPreviousMonth": {
       "extractionState": "manual",
       "localizations": {
@@ -14039,125 +12610,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "上個月"
-          }
-        }
-      }
-    },
-    "extendedRemovePattern": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "التوقف عن الاستخدام"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nicht mehr verwenden"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stop using"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dejar de usar"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ne plus utiliser"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "बंद करें"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Berhenti memakai"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Non usare più"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "やめる"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "그만 쓰기"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "थांबवा"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Deixar de usar"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не использовать"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เลิกใช้"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kullanma"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Không dùng nữa"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "不再使用"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "唔再用"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "不再使用"
           }
         }
       }
@@ -14515,244 +12967,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "排到這個班次的日子是休息日，不會開始上班倒數。"
-          }
-        }
-      }
-    },
-    "extendedSchedule": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "جدول المناوبات"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schichtplan"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shift roster"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cuadrante de turnos"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planning de services"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "शिफ़्ट रोस्टर"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jadwal sif"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Turnazione"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "シフト表"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "교대 근무표"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "शिफ्ट वेळापत्रक"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escala de turnos"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "График смен"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ตารางกะ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vardiya çizelgesi"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lịch ca"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "扩展排班"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "擴展排班"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "擴充排班"
-          }
-        }
-      }
-    },
-    "extendedScheduleDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "خطّط لكل يوم على تقويم شهري، أو عبّئه وفق نمط."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jeden Tag im Monatskalender planen oder per Muster füllen."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plan each day on a month calendar, or fill it from a pattern."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planifica cada día en un calendario mensual o rellénalo con un ciclo."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planifiez chaque jour sur un calendrier mensuel, ou remplissez-le selon un cycle."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "महीने के कैलेंडर पर हर दिन तय करें, या क्रम से भर दें।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Atur setiap hari di kalender bulanan, atau isi dengan pola."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pianifica ogni giorno su un calendario mensile o compilalo con un ciclo."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "月のカレンダーで1日ずつ決めるか、パターンでまとめて入力します。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "월별 달력에서 하루씩 정하거나 패턴으로 한 번에 채웁니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "महिन्याच्या दिनदर्शिकेवर प्रत्येक दिवस ठरवा, किंवा क्रमाने भरा."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planeie cada dia num calendário mensal ou preencha-o com um ciclo."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Планируйте каждый день в календаре или заполните его по циклу."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "วางแผนทีละวันบนปฏิทินรายเดือน หรือเติมตามรูปแบบ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Her günü aylık takvimde planlayın ya da bir düzenle doldurun."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xếp ca từng ngày trên lịch tháng, hoặc điền theo chu kỳ."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在月历上逐天排班，也可以按规律一键填好。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "喺月曆逐日排班，亦可以按規律一次過填好。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在月曆上逐天排班，也可以按規律一次填好。"
           }
         }
       }
@@ -60691,125 +58905,6 @@
         }
       }
     },
-    "plusBenefitWatch": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تطبيق Apple Watch وإضافات شاشة الساعة"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch-App und Komplikationen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch app and complications"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "App de Apple Watch y complicaciones"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "App Apple Watch et complications"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch ऐप और कॉम्प्लिकेशन"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aplikasi Apple Watch dan komplikasi"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "App Apple Watch e complicazioni"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watchアプリとコンプリケーション"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch 앱과 컴플리케이션"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch अॅप आणि कॉम्प्लिकेशन"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "App do Apple Watch e complicações"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Приложение Apple Watch и расширения"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "แอป Apple Watch และกลไกหน้าปัด"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch uygulaması ve komplikasyonlar"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ứng dụng Apple Watch và tổ hợp"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch App 和表盘复杂功能"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch App 同錶面複雜功能"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Watch App 和錶面複雜功能"
-          }
-        }
-      }
-    },
     "plusBestValue": {
       "extractionState": "manual",
       "localizations": {
@@ -84957,125 +83052,6 @@
         }
       }
     },
-    "rotationPattern": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "نمط الدورة"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rhythmus"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rotation pattern"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Patrón de rotación"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cycle de rotation"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "चक्र का ढाँचा"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pola rotasi"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schema di rotazione"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ローテーション"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "순환 패턴"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "चक्राचा नमुना"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Padrão de rotação"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Цикл"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "รูปแบบรอบ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Döngü düzeni"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chu kỳ"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "轮班周期"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "輪班週期"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "輪班週期"
-          }
-        }
-      }
-    },
     "rotationRestDays": {
       "extractionState": "manual",
       "localizations": {
@@ -86861,125 +84837,6 @@
         }
       }
     },
-    "scheduleHours": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ساعات الوردية"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arbeitszeiten"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shift hours"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Horario"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Horaires"
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "शिफ्ट समय"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jam shift"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Orari"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "出退勤時刻"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "출퇴근 시각"
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ये-जा वेळ"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Horário"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Часы смены"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เวลาเข้า-ออกงาน"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vardiya saatleri"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Giờ ca"
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "上下班时刻"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "返工放工時刻"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "上下班時刻"
-          }
-        }
-      }
-    },
     "scheduleOff": {
       "extractionState": "manual",
       "localizations": {
@@ -87337,125 +85194,6 @@
         }
       }
     },
-    "scheduleOffSummaryNote": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تُخفى إجماليات التقويم عند إيقاف الجدول؛ ويظل أجر اليوم متاحًا عند تفعيل الراتب."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bei ausgeschaltetem Zeitplan werden Kalendersummen ausgeblendet; der Tagesverdienst bleibt bei aktivierter Gehaltsanzeige verfügbar."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendar totals are hidden while scheduling is off; daily pay remains available when salary is enabled."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Los totales del calendario se ocultan al desactivar el horario; el salario diario sigue disponible si está activado."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les totaux du calendrier sont masqués lorsque le planning est désactivé ; le salaire du jour reste disponible si son affichage est activé."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "शेड्यूल बंद होने पर कैलेंडर योग छिपे रहते हैं; वेतन चालू होने पर दैनिक कमाई उपलब्ध रहती है।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total kalender disembunyikan saat jadwal nonaktif; pendapatan harian tetap tersedia jika gaji diaktifkan."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I totali del calendario sono nascosti quando l’orario è disattivato; il compenso giornaliero resta disponibile se lo stipendio è attivo."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "スケジュールがオフの間はカレンダー集計を非表示にします。給与を有効にすると当日の給与は表示されます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "일정이 꺼져 있으면 캘린더 합계가 숨겨집니다. 급여를 켜면 오늘의 급여는 계속 표시됩니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "वेळापत्रक बंद असताना दिनदर्शिकेतील बेरीज लपते; पगार सुरू असल्यास दिवसाची कमाई दिसते."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Os totais do calendário ficam ocultos com o horário desativado; o ganho diário continua disponível quando o salário está ativo."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "При выключенном графике итоги календаря скрыты; дневной заработок остаётся доступен, если включена зарплата."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ยอดรวมปฏิทินจะถูกซ่อนเมื่อปิดตาราง แต่รายได้รายวันยังแสดงได้เมื่อเปิดเงินเดือน"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Program kapalıyken takvim toplamları gizlenir; maaş açıksa günlük kazanç görünmeye devam eder."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tổng kết lịch sẽ bị ẩn khi tắt lịch; thu nhập trong ngày vẫn có nếu đã bật lương."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "关闭排班后不显示日历汇总；启用薪资后仍会显示当日收入。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "關閉排班後不顯示日曆摘要；啟用薪酬後仍會顯示當日收入。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "關閉排班後不顯示行事曆摘要；啟用薪資後仍會顯示當日收入。"
-          }
-        }
-      }
-    },
     "scheduleRotation": {
       "extractionState": "manual",
       "localizations": {
@@ -87690,125 +85428,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "依工作天數與休息天數循環。"
-          }
-        }
-      }
-    },
-    "scheduleSharedRulesNote": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "يتبع المؤقت والتذكيرات والأدوات هذا الجدول."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Timer, Erinnerungen und Widgets folgen diesem Arbeitsplan."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The timer, reminders and widgets all follow this schedule."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "El temporizador, los avisos y los widgets siguen este horario."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Le minuteur, les rappels et les widgets suivent tous ce planning."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "टाइमर, रिमाइंडर और विजेट सभी इसी शेड्यूल का पालन करते हैं।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Timer, pengingat, dan widget mengikuti jadwal ini."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Timer, promemoria e widget seguono tutti questo orario."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "タイマー、通知、ウィジェットはすべてこのスケジュールに従います。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "타이머, 알림, 위젯이 모두 이 일정을 따릅니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "टायमर, स्मरणपत्रे आणि विजेट हेच वेळापत्रक वापरतात."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O temporizador, os lembretes e os widgets seguem este horário."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Таймер, напоминания и виджеты следуют этому графику."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ตัวจับเวลา การเตือน และวิดเจ็ตทั้งหมดจะใช้ตารางนี้"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zamanlayıcı, anımsatıcılar ve araç takımları bu programı izler."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bộ đếm giờ, lời nhắc và tiện ích đều theo lịch này."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "计时、提醒和小组件都会遵循这份排班。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "計時、提醒和小工具都會依照這份排班。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "計時、提醒和小工具都會依照這份排班。"
           }
         }
       }
@@ -89832,125 +87451,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "單休週上班日"
-          }
-        }
-      }
-    },
-    "singleWeekWorkdayDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ينطبق فقط على أسبوع الراحة ليوم واحد. اليوم المحدد من عطلة الأسبوع هو يوم عمل، واليوم الآخر راحة. في أسبوع الراحة ليومين يكون السبت والأحد يومي راحة."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gilt nur für Wochen mit einem freien Tag. Der gewählte Wochenendtag ist ein Arbeitstag, der andere ist frei. In Wochen mit zwei freien Tagen sind Samstag und Sonntag frei."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Only applies to single-rest weeks. The selected day is the weekend day you work; the other weekend day is off. In double-rest weeks, both Saturday and Sunday are off."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Solo se aplica a las semanas con un día libre. El día elegido es el día de trabajo del fin de semana y el otro es libre. En las semanas con dos días libres, sábado y domingo son libres."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "S’applique uniquement aux semaines avec un jour de repos. Le jour choisi est travaillé et l’autre jour du week-end est libre. Les semaines avec deux jours de repos gardent le samedi et le dimanche libres."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "केवल एक छुट्टी वाले सप्ताह पर लागू होता है। चुना हुआ सप्ताहांत दिन काम का दिन है और दूसरा दिन छुट्टी है। दो छुट्टी वाले सप्ताह में शनिवार और रविवार दोनों छुट्टी हैं।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hanya berlaku untuk minggu dengan satu hari libur. Hari yang dipilih adalah hari kerja akhir pekan; hari lainnya libur. Pada minggu dengan dua hari libur, Sabtu dan Minggu sama-sama libur."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vale solo per le settimane con un giorno libero. Il giorno scelto è lavorativo e l’altro giorno del weekend è libero. Nelle settimane con due giorni liberi, sabato e domenica sono entrambi liberi."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "週休1日の週だけに適用されます。選んだ曜日が出勤日で、もう一方の週末は休日です。週休2日の週は土日とも休日です。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "주 1일 휴무 주에만 적용됩니다. 선택한 주말 요일에 근무하고 다른 날은 쉽니다. 주 2일 휴무 주에는 토요일과 일요일 모두 쉽니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "फक्त एक सुट्टीच्या आठवड्याला लागू. निवडलेला शनिवार किंवा रविवार कामाचा दिवस आहे आणि दुसरा दिवस सुट्टीचा. दोन सुट्ट्यांच्या आठवड्यात शनिवार आणि रविवार दोन्ही सुट्टीचे असतात."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aplica-se apenas às semanas com uma folga. O dia escolhido é o dia de trabalho no fim de semana; o outro é folga. Nas semanas com duas folgas, sábado e domingo são dias livres."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Действует только в неделю с одним выходным. Выбранный день — рабочий, а второй день выходных — свободный. В неделю с двумя выходными суббота и воскресенье свободны."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ใช้เฉพาะสัปดาห์ที่หยุดหนึ่งวัน วันที่เลือกคือวันทำงานช่วงสุดสัปดาห์ ส่วนอีกวันเป็นวันหยุด สำหรับสัปดาห์ที่หยุดสองวัน ทั้งวันเสาร์และวันอาทิตย์เป็นวันหยุด"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yalnızca bir izin günlü haftalarda geçerlidir. Seçtiğiniz hafta sonu günü çalışma günüdür, diğeri izindir. İki izin günlü haftalarda cumartesi ve pazar tatildir."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chỉ áp dụng cho tuần nghỉ một ngày. Ngày cuối tuần được chọn là ngày làm việc, ngày còn lại là ngày nghỉ. Trong tuần nghỉ hai ngày, cả thứ Bảy và Chủ nhật đều được nghỉ."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "仅在单休周生效：你选择的是需要上班的周末日，另一天休息；双休周的周六、周日都休息。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "只在單休週生效：你選擇的是需要上班的週末日，另一天休息；雙休週的星期六、星期日都休息。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "只在單休週生效：你選擇的是需要上班的週末日，另一天休息；雙休週的週六、週日都休息。"
           }
         }
       }
@@ -96262,125 +93762,6 @@
         }
       }
     },
-    "watchConfirmPlusOnIPhone": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أكّد حالة Plus على iPhone."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bestätige Plus auf deinem iPhone."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirm Plus on your iPhone."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirma Plus en tu iPhone."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirmez Plus sur votre iPhone."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अपने iPhone पर Plus की पुष्टि करें।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Konfirmasikan Plus di iPhone Anda."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Conferma Plus sul tuo iPhone."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "iPhoneでPlusの状態を確認してください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "iPhone에서 Plus 상태를 확인하세요."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "तुमच्या iPhone वर Plus ची पुष्टी करा."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirme o Plus no iPhone."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Подтвердите Plus на iPhone."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ยืนยัน Plus บน iPhone ของคุณ"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus durumunu iPhone’unuzda doğrulayın."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xác nhận Plus trên iPhone của bạn."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请在 iPhone 上确认 Plus 状态。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "請在 iPhone 上確認 Plus 狀態。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "請在 iPhone 上確認 Plus 狀態。"
-          }
-        }
-      }
-    },
     "watchNextShiftAt": {
       "extractionState": "manual",
       "localizations": {
@@ -96853,244 +94234,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "加班至 {{time}}"
-          }
-        }
-      }
-    },
-    "watchPlusIncludes": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "الإضافات وحالة الوردية الكاملة متضمّنة في DoneAt Plus."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Komplikationen und der vollständige Schichtstatus gehören zu DoneAt Plus."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Complications and full shift status are included in DoneAt Plus."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Las complicaciones y el estado completo del turno están incluidos en DoneAt Plus."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les complications et le statut complet du service sont inclus dans DoneAt Plus."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "कॉम्प्लिकेशन और पूरी शिफ़्ट स्थिति DoneAt Plus में शामिल हैं।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Komplikasi dan status sif lengkap sudah termasuk dalam DoneAt Plus."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Le complicazioni e lo stato completo del turno sono inclusi in DoneAt Plus."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "コンプリケーションと完全な勤務状況はDoneAt Plusに含まれます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "컴플리케이션과 전체 근무 상태는 DoneAt Plus에 포함됩니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "कॉम्प्लिकेशन आणि संपूर्ण शिफ्ट स्थिती DoneAt Plus मध्ये समाविष्ट आहेत."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "As complicações e o status completo do turno estão incluídos no DoneAt Plus."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Расширения и полный статус смены включены в DoneAt Plus."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "กลไกหน้าปัดและสถานะกะแบบเต็มรวมอยู่ใน DoneAt Plus"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Komplikasyonlar ve tam vardiya durumu DoneAt Plus’a dahildir."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tổ hợp và trạng thái ca đầy đủ được bao gồm trong DoneAt Plus."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "表盘复杂功能和完整班次状态包含在 DoneAt Plus 中。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "錶面複雜功能和完整班次狀態包含喺 DoneAt Plus 入面。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "錶面複雜功能和完整班次狀態包含在 DoneAt Plus 中。"
-          }
-        }
-      }
-    },
-    "watchPlusOnIPhone": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اطّلع على الخطط على iPhone. يبقى النشاط المباشر للعد التنازلي في الحزمة المكدسة الذكية مجانيًا."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sieh dir die Pläne auf deinem iPhone an. Die Live-Aktivität des Countdowns im Smart-Stapel bleibt kostenlos."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "See plans on your iPhone. The countdown Live Activity in the Smart Stack stays free."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Consulta los planes en tu iPhone. La actividad en vivo de la cuenta atrás en el grupo inteligente sigue siendo gratis."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Consultez les formules sur votre iPhone. L’activité en direct du compte à rebours dans le Défilement intelligent reste gratuite."
-          }
-        },
-        "hi-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "अपने iPhone पर प्लान देखें। स्मार्ट स्टैक में काउंटडाउन की लाइव ऐक्टिविटी मुफ़्त बनी रहती है।"
-          }
-        },
-        "id": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lihat paket di iPhone Anda. Live Activity hitung mundur di Smart Stack tetap gratis."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Consulta i piani sul tuo iPhone. L’attività in tempo reale del conto alla rovescia nella raccolta smart resta gratuita."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プランはiPhoneでご確認ください。スマートスタックでのカウントダウンのライブアクティビティは無料のままです。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "iPhone에서 요금제를 확인하세요. 스마트 스택의 카운트다운 실시간 액티비티는 계속 무료로 제공됩니다."
-          }
-        },
-        "mr-IN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "तुमच्या iPhone वर प्लॅन पाहा. स्मार्ट स्टॅकमधील काउंटडाउनची लाइव्ह ॲक्टिव्हिटी मोफतच राहते."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Veja os planos no seu iPhone. A Atividade ao Vivo da contagem regressiva no Conjunto Inteligente continua gratuita."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Смотрите тарифы на iPhone. Live-активность обратного отсчёта в смарт-стопке остаётся бесплатной."
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ดูแพ็กเกจได้ที่ iPhone ของคุณ กิจกรรมสดของตัวนับถอยหลังในวิดเจ็ตซ้อนอัจฉริยะยังคงใช้งานได้ฟรี"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planları iPhone’unuzda görün. Geri sayımın Canlı Etkinliği, Akıllı Gruplama içinde ücretsiz kalmaya devam ediyor."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Xem các gói trên iPhone của bạn. Hoạt động trực tiếp đếm ngược trong Ngăn xếp thông minh vẫn miễn phí."
-          }
-        },
-        "zh-CN": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请在 iPhone 上查看方案。智能叠放里的倒计时实时活动仍可免费使用。"
-          }
-        },
-        "zh-HK": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "請喺 iPhone 上查看方案。智慧型疊放中嘅倒數即時動態仍可免費使用。"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "請在 iPhone 上查看方案。智慧型疊放中的倒數即時動態仍可免費使用。"
           }
         }
       }
@@ -98291,115 +95434,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تحقّق من حالتك ووقت العمل المتبقي والتقدم بنظرة سريعة من معصمك، أو أضف إضافة دائرية أو مستطيلة. تطبيق Apple Watch والإضافات جزء من Plus."
+            "value": "مجاني — الحالة والوقت المتبقي والتقدم ووقت الانصراف في نظرة واحدة. حلقة تقدم دائرية، أو الوقت المتبقي ووقت الانصراف في إضافة مستطيلة."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sieh Status, verbleibende Arbeitszeit und Fortschritt auf einen Blick am Handgelenk, oder füge eine runde oder rechteckige Komplikation hinzu. Die Apple Watch-App und Komplikationen gehören zu Plus."
+            "value": "Kostenlos — Status, verbleibende Zeit, Fortschritt und dein Feierabend auf einen Blick. Ein runder Fortschrittsring oder verbleibende Zeit und dein Feierabend in einer rechteckigen Komplikation."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Check your status, remaining work time and progress at a glance on your wrist, or add a circular or rectangular complication. The Watch app and complications are part of Plus."
+            "value": "Free — Status, time left, progress and your off-work time in one glance. A circular progress ring, or time left and your off-work time in a rectangle."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Consulta tu estado, el tiempo de trabajo restante y el progreso de un vistazo en la muñeca, o añade una complicación circular o rectangular. La app de Apple Watch y las complicaciones forman parte de Plus."
+            "value": "Gratis — Estado, tiempo restante, progreso y tu hora de salida de un vistazo. Un anillo de progreso circular, o el tiempo restante y tu hora de salida en una complicación rectangular."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Consultez votre statut, le temps de travail restant et la progression en un coup d’œil au poignet, ou ajoutez une complication ronde ou rectangulaire. L’app Apple Watch et les complications font partie de Plus."
+            "value": "Gratuit — Statut, temps restant, progression et votre heure de départ en un coup d’œil. Un anneau de progression circulaire, ou le temps restant et votre heure de départ dans une complication rectangulaire."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "अपनी कलाई पर एक नज़र में स्थिति, बचा हुआ काम का समय और प्रगति देखें, या एक गोल या चौकोर कॉम्प्लिकेशन जोड़ें। Apple Watch ऐप और कॉम्प्लिकेशन Plus का हिस्सा हैं।"
+            "value": "मुफ़्त — एक नज़र में स्थिति, बचा हुआ समय, प्रगति और आपके छूटने का समय। एक गोल प्रगति रिंग, या एक आयताकार में बचा हुआ समय और आपके छूटने का समय।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lihat status, sisa waktu kerja, dan kemajuanmu sekilas di pergelangan tangan, atau tambahkan komplikasi bundar atau persegi panjang. Aplikasi Apple Watch dan komplikasi adalah bagian dari Plus."
+            "value": "Gratis — Status, sisa waktu, kemajuan, dan waktu pulang Anda sekilas. Cincin kemajuan bundar, atau sisa waktu dan waktu pulang Anda dalam bentuk persegi panjang."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Controlla stato, tempo di lavoro rimanente e avanzamento a colpo d’occhio dal polso, oppure aggiungi una complicazione rotonda o rettangolare. L’app Apple Watch e le complicazioni fanno parte di Plus."
+            "value": "Gratis — Stato, tempo rimanente, avanzamento e la tua uscita in un colpo d’occhio. Un anello di avanzamento circolare, oppure tempo rimanente e la tua uscita in una complicazione rettangolare."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ステータスや残りの勤務時間、進捗を手首でひと目で確認したり、丸型または長方形のコンプリケーションを追加したりできます。Apple Watchアプリとコンプリケーションは Plus に含まれます。"
+            "value": "無料 — ステータス、残り時間、進捗、退勤時刻をひと目で。 丸型の進捗リング、または長方形で残り時間と退勤時刻を表示します。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "손목에서 한눈에 상태, 남은 근무 시간, 진행률을 확인하거나 원형 또는 사각형 컴플리케이션을 추가하세요. Apple Watch 앱과 컴플리케이션은 Plus에 포함됩니다."
+            "value": "무료 — 상태, 남은 시간, 진행률, 퇴근 시간을 한눈에. 원형 진행률 링, 또는 사각형에 남은 시간과 퇴근 시간을 표시합니다."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "मनगटावरच एका नजरेत स्थिती, उरलेला कामाचा वेळ आणि प्रगती पाहा, किंवा गोल किंवा आयताकृती कॉम्प्लिकेशन जोडा. Apple Watch अॅप आणि कॉम्प्लिकेशन्स Plus चा भाग आहेत."
+            "value": "मोफत — स्थिती, उरलेला वेळ, प्रगती आणि तुमची सुट्टीची वेळ एका नजरेत. गोल प्रगती रिंग, किंवा आयताकृतीमध्ये उरलेला वेळ आणि तुमची सुट्टीची वेळ."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Veja o status, o tempo de trabalho restante e o progresso rapidamente no pulso, ou adicione uma complicação circular ou retangular. O app do Apple Watch e as complicações fazem parte do Plus."
+            "value": "Gratuito — Status, tempo restante, progresso e sua hora de saída em um único olhar. Um anel de progresso circular, ou o tempo restante e sua hora de saída em formato retangular."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Смотрите статус, оставшееся рабочее время и прогресс одним взглядом на запястье или добавьте круглое или прямоугольное расширение. Приложение Apple Watch и расширения входят в Plus."
+            "value": "Бесплатно — Статус, оставшееся время, прогресс и время окончания работы одним взглядом. Круглое кольцо прогресса или прямоугольное расширение с оставшимся временем и временем окончания работы."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ดูสถานะ เวลาทำงานที่เหลือ และความคืบหน้าได้ในพริบตาที่ข้อมือ หรือเพิ่มกลไกหน้าปัดทรงกลมหรือทรงสี่เหลี่ยม แอป Apple Watch และกลไกหน้าปัดเป็นส่วนหนึ่งของ Plus"
+            "value": "ฟรี — สถานะ เวลาที่เหลือ ความคืบหน้า และเวลาเลิกงานของคุณในที่เดียว วงแหวนความคืบหน้าทรงกลม หรือเวลาที่เหลือและเวลาเลิกงานของคุณในกลไกทรงสี่เหลี่ยม"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Durumunuzu, kalan çalışma sürenizi ve ilerlemenizi bileğinizden bir bakışta görün veya yuvarlak ya da dikdörtgen bir komplikasyon ekleyin. Apple Watch uygulaması ve komplikasyonlar Plus’a dahildir."
+            "value": "Ücretsiz — Durum, kalan süre, ilerleme ve iş çıkış saatiniz tek bakışta. Dairesel bir ilerleme halkası veya dikdörtgen bir komplikasyonda kalan süre ile iş çıkış saatiniz."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Xem trạng thái, thời gian làm việc còn lại và tiến độ trong nháy mắt ngay trên cổ tay, hoặc thêm một tổ hợp hình tròn hoặc hình chữ nhật. Ứng dụng Apple Watch và các tổ hợp là một phần của Plus."
+            "value": "Miễn phí — Trạng thái, thời gian còn lại, tiến độ và giờ tan ca của bạn, xem trong nháy mắt. Vòng tiến độ hình tròn, hoặc thời gian còn lại và giờ tan ca của bạn trong tổ hợp hình chữ nhật."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "抬腕即可查看当前状态、剩余工作时间和进度，也可以添加圆形或矩形复杂功能。Watch App 和复杂功能包含在 Plus 中。"
+            "value": "免费 — 一眼看到状态、剩余时间、进度和下班时间。 圆形显示进度环，长方形显示剩余时间和下班时间。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "抬起手腕即可查看目前狀態、剩餘工作時間和進度，亦可以加入圓形或矩形複雜功能。Watch App 和複雜功能包含在 Plus 中。"
+            "value": "免費 — 一眼睇到狀態、剩餘時間、進度同下班時間。 圓形顯示進度環，長方形顯示剩餘時間同下班時間。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "抬起手腕即可查看目前狀態、剩餘工作時間和進度，也可以加入圓形或矩形複雜功能。Watch App 和複雜功能包含在 Plus 中。"
+            "value": "免費 — 一眼看到狀態、剩餘時間、進度和下班時間。 圓形顯示進度環，長方形顯示剩餘時間和下班時間。"
           }
         }
       }
@@ -99233,6 +96376,950 @@
           "stringUnit": {
             "state": "translated",
             "value": "已工作"
+          }
+        }
+      }
+    },
+    "extendedCarriedOver": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "منقول من الشهر السابق"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vom Vormonat übernommen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied from the previous month"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiado del mes anterior"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repris du mois précédent"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पिछले महीने से लिया गया"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disalin dari bulan sebelumnya"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripreso dal mese precedente"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前月から引き継ぎ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이전 달에서 이어짐"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मागील महिन्यातून घेतलेले"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiado do mês anterior"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перенесено из прошлого месяца"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้ต่อจากเดือนก่อน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Önceki aydan kopyalandı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kế thừa từ tháng trước"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沿用上月"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沿用上月"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沿用上月"
+          }
+        }
+      }
+    },
+    "extendedHistoryNeedsCareer": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لإضافة جدول سابق، أضف أولاً فترة عمل تشمل هذا التاريخ."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Füge zuerst einen Beschäftigungszeitraum hinzu, der dieses Datum umfasst, um einen früheren Dienstplan einzutragen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To add a past schedule, first add a career period covering this date."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para añadir un horario pasado, añade primero un periodo laboral que incluya esta fecha."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour ajouter un planning passé, ajoutez d’abord une période de carrière couvrant cette date."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पुराना शेड्यूल जोड़ने के लिए पहले इस तारीख को शामिल करने वाली कार्य अवधि जोड़ें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untuk menambahkan jadwal sebelumnya, tambahkan dahulu periode karier yang mencakup tanggal ini."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per aggiungere un turno passato, aggiungi prima un periodo lavorativo che includa questa data."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "過去のシフトを追加するには、先にこの日を含む勤務期間を追加してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "과거 근무 일정을 추가하려면 먼저 이 날짜를 포함하는 경력 기간을 추가하세요."
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पूर्वीचे वेळापत्रक जोडण्यासाठी, प्रथम ही तारीख समाविष्ट असलेला नोकरीचा कालावधी जोडा."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para adicionar uma escala passada, adicione primeiro um período profissional que inclua esta data."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы добавить прошлое расписание, сначала добавьте период работы, включающий эту дату."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หากต้องการเพิ่มตารางงานย้อนหลัง ให้เพิ่มช่วงเวลาการทำงานที่ครอบคลุมวันที่นี้ก่อน"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geçmiş bir program eklemek için önce bu tarihi kapsayan bir çalışma dönemi ekleyin."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Để bổ sung lịch làm việc trước đây, trước tiên hãy thêm giai đoạn nghề nghiệp bao gồm ngày này."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "补填排班前，请先添加包含这一天的职业区间。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "補填排班前，請先新增包含這一天的職涯區間。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "補填排班前，請先新增包含這一天的職涯區間。"
+          }
+        }
+      }
+    },
+    "watchCacheCorrupt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The saved schedule couldn’t be read. Open DoneAt on your iPhone."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取已保存的排班。请在 iPhone 上打开 DoneAt。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取已儲存的排班。請在 iPhone 上開啟 DoneAt。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存されたシフトを読み込めませんでした。iPhone で DoneAt を開いてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장된 근무 일정을 읽을 수 없습니다. iPhone에서 DoneAt을 여세요."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der gespeicherte Dienstplan konnte nicht gelesen werden. Öffne DoneAt auf deinem iPhone."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo leer el horario guardado. Abre DoneAt en tu iPhone."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le planning enregistré est illisible. Ouvrez DoneAt sur votre iPhone."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile leggere i turni salvati. Apri DoneAt sul tuo iPhone."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível ler a escala salva. Abra o DoneAt no iPhone."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось прочитать сохранённое расписание. Откройте DoneAt на iPhone."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذّرت قراءة الجدول المحفوظ. افتح DoneAt على iPhone."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सेव किया गया शेड्यूल पढ़ा नहीं जा सका। अपने iPhone पर DoneAt खोलें।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जतन केलेले वेळापत्रक वाचता आले नाही. iPhone वर DoneAt उघडा."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jadwal tersimpan tidak dapat dibaca. Buka DoneAt di iPhone."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อ่านตารางงานที่บันทึกไว้ไม่ได้ โปรดเปิด DoneAt บน iPhone"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kayıtlı program okunamadı. iPhone’unuzda DoneAt’i açın."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không thể đọc lịch đã lưu. Hãy mở DoneAt trên iPhone."
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取已儲存的排班。請在 iPhone 上開啟 DoneAt。"
+          }
+        }
+      }
+    },
+    "watchUpdateRequired": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update DoneAt on your Apple Watch."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请更新 Apple Watch 上的 DoneAt。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請更新 Apple Watch 上的 DoneAt。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch の DoneAt を更新してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch의 DoneAt을 업데이트하세요."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualisiere DoneAt auf deiner Apple Watch."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualiza DoneAt en tu Apple Watch."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mettez à jour DoneAt sur votre Apple Watch."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiorna DoneAt sul tuo Apple Watch."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualize o DoneAt no Apple Watch."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновите DoneAt на Apple Watch."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حدّث DoneAt على Apple Watch."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अपने Apple Watch पर DoneAt अपडेट करें।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch वर DoneAt अपडेट करा."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perbarui DoneAt di Apple Watch."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โปรดอัปเดต DoneAt บน Apple Watch"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch’unuzda DoneAt’i güncelleyin."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hãy cập nhật DoneAt trên Apple Watch."
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請更新 Apple Watch 上的 DoneAt。"
+          }
+        }
+      }
+    },
+    "scheduleCurrentMonthActive": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This month · Active"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本月 · 已生效"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本月 · 已生效"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本月 · 已生效"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今月 · 適用中"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이번 달 · 적용 중"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diesen Monat · Aktiv"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este mes · Vigente"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce mois-ci · Actif"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo mese · Attivo"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este mês · Ativo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этот месяц · Действует"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هذا الشهر · سارٍ"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इस महीने · लागू"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "या महिन्यात · लागू"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulan ini · Aktif"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เดือนนี้ · มีผลแล้ว"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu ay · Etkin"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tháng này · Đã áp dụng"
+          }
+        }
+      }
+    },
+    "scheduleNextMonthPlanned": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next month · Planned"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下月 · 预定"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下月 · 預定"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下月 · 預定"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "来月 · 予定"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 달 · 예정"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächsten Monat · Geplant"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximo mes · Previsto"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mois prochain · Prévu"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prossimo mese · Pianificato"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximo mês · Planejado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следующий месяц · План"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الشهر القادم · مخطط"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अगले महीने · नियोजित"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पुढील महिन्यात · नियोजित"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulan depan · Direncanakan"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เดือนหน้า · วางแผนไว้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gelecek ay · Planlandı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tháng sau · Dự kiến"
+          }
+        }
+      }
+    },
+    "scheduleFreeCalendar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free roster"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自由排班"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自由排班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自由排班"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自由シフト"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자유 근무표"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Freier Dienstplan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horario libre"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planning libre"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turni liberi"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escala livre"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свободный график"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جدول حر"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्वतंत्र शेड्यूल"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मोकळे वेळापत्रक"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jadwal bebas"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จัดตารางอิสระ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serbest program"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lịch tự do"
+          }
+        }
+      }
+    },
+    "scheduleManualTimer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual timer"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动计时"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手動計時"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手動計時"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手動タイマー"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "수동 타이머"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manueller Timer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporizador manual"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minuteur manuel"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer manuale"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporizador manual"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ручной таймер"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مؤقت يدوي"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मैन्युअल टाइमर"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मॅन्युअल टाइमर"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer manual"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จับเวลาด้วยตนเอง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manuel zamanlayıcı"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bộ đếm thủ công"
           }
         }
       }

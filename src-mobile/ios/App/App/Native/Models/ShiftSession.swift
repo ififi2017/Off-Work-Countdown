@@ -1120,3 +1120,43 @@ final class ShiftSession {
         return String(format: "%04d-%02d-%02d", components.year ?? 0, components.month ?? 0, components.day ?? 0)
     }
 }
+
+extension ShiftSession {
+    /// Only current/future roster rows and the last authored prior month are
+    /// needed to reproduce forward carry-over. Salary and history stay here.
+    func watchSchedule(at date: Date = .now, presentation: WatchPresentationV1) -> WatchScheduleV2 {
+        let source = rulesInput(at: date, using: .base, pinsEarlyStart: false).scheduleInput
+        let plan = source.extendedSchedule.map { plan in
+            let today = extendedTodayKey(at: date)
+            let month = String(today.prefix(7))
+            let prior = plan.handSetDays.keys.map { String($0.prefix(7)) }.filter { $0 < month }.max()
+            let days = plan.handSetDays.filter { key, _ in String(key.prefix(7)) >= month || String(key.prefix(7)) == prior }
+            let used = Set(days.values).union(plan.rule?.days ?? [])
+            return ExtendedSchedulePlan(shiftTypes: plan.shiftTypes.filter { used.contains($0.id) },
+                                        rule: plan.rule, handSetDays: days,
+                                        frozenShiftTypes: plan.frozenShiftTypes.filter { days[$0.key] == $0.value.id },
+                                        fallsBackToBaseSchedule: plan.fallsBackToBaseSchedule,
+                                        revision: plan.revision)
+        }
+        let input = ScheduleRuleInput(startTime: source.startTime, endTime: source.endTime, nowMs: 0,
+                                      workdays: source.workdays, schedule: source.schedule,
+                                      breakStartTime: source.breakStartTime, breakDurationMinutes: source.breakDurationMinutes,
+                                      overtimeEndAtMs: nil, forcedWorkdayStartMs: nil,
+                                      timeZoneIdentifier: source.timeZoneIdentifier, extendedSchedule: plan)
+        let current = watchProjection(at: date).shift.map(WatchScheduleV2.shift)
+        let zone = CivilZone(identifier: source.timeZoneIdentifier)
+        let currentEnd = current.map { Double($0.overtimeEndAtMs ?? $0.plannedEndAtMs) } ?? source.nowMs
+        // A saved "next shift only" change must keep the current absolute
+        // shift, then resume the new base rule. Never carry today's override.
+        let nextZone = CivilZone(identifier: source.timeZoneIdentifier, extended: ExtendedScheduleResolver(plan: plan))
+        let next = nextZone.nextShiftTimeline(source.startTime, source.endTime, source.workdays, source.schedule,
+                                              afterMs: max(source.nowMs, currentEnd), options: ShiftOptions(input))
+        let until = min(zone.addCivilDaysMs(zone.startOfCivilDayMs(currentEnd), 1), next?.startAtMs ?? .infinity)
+        return WatchScheduleV2(configuration: input,
+                               automaticallyRuns: countdownStarted && source.schedule.mode != "off",
+                               isConfigured: preferences.onboardingComplete,
+                               currentShift: current, currentUntilMs: Int64(until),
+                               resumeAtMs: current.flatMap { _ in next.map { Int64($0.startAtMs) } },
+                               presentation: presentation)
+    }
+}

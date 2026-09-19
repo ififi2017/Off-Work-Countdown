@@ -310,7 +310,7 @@ private struct RunningTimerDesignView: View {
     /// user to press either way.
     private var caption: String {
         if beforeStart { return shifts.text.t("nextShiftLabelShort") }
-        if onBreak { return shifts.text.t("lunchInProgress") }
+        if onBreak { return shifts.scheduledBreakInProgressTitle }
         if overtime { return shifts.text.t("overtimeTimeLeftCaption") }
         return shifts.text.t("timeLeftCaption")
     }

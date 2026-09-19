@@ -61,7 +61,7 @@ struct AppRouteDestination: View {
                     browsing: scene.focus
                 )
             case .appleWatch:
-                AppleWatchSettingsView(plus: runtime.plus, text: runtime.text)
+                AppleWatchSettingsView(text: runtime.text)
             case .about:
                 AboutView(text: runtime.text) {
 #if DEBUG

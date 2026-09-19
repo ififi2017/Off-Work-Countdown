@@ -2,7 +2,8 @@ import Foundation
 
 nonisolated enum WatchSnapshotContract {
     static let schemaVersion = 1
-    static let maximumEncodedBytes = 64 * 1_024
+    static let maximumEncodedBytes = 2 * 1_024 * 1_024
+    static let maximumContextBytes = 48 * 1_024
     static let maximumJSONInteger: UInt64 = 9_007_199_254_740_991
     static let maximumJSONTimestamp = Int64(maximumJSONInteger)
     static let maximumIdentifierBytes = 128
@@ -17,9 +18,10 @@ nonisolated struct WatchSnapshotPackageV1: Codable, Equatable, Sendable {
     let expiresAtMs: Int64
     let access: WatchAccessProjectionV1
     let content: WatchShiftContentV1?
+    var schedule: WatchScheduleV2? = nil
 
     private enum CodingKeys: String, CodingKey {
-        case schemaVersion, sourceGeneration, revision, generatedAtMs, expiresAtMs, access, content
+        case schemaVersion, sourceGeneration, revision, generatedAtMs, expiresAtMs, access, content, schedule
     }
 
     func encode(to encoder: Encoder) throws {
@@ -29,13 +31,42 @@ nonisolated struct WatchSnapshotPackageV1: Codable, Equatable, Sendable {
         try container.encode(revision, forKey: .revision)
         try container.encode(generatedAtMs, forKey: .generatedAtMs)
         try container.encode(expiresAtMs, forKey: .expiresAtMs)
-        try container.encode(access, forKey: .access)
-        try container.encodeIfPresent(content, forKey: .content)
+        if schemaVersion == 2 {
+            try container.encodeIfPresent(schedule, forKey: .schedule)
+        } else {
+            try container.encode(access, forKey: .access)
+            try container.encodeIfPresent(content, forKey: .content)
+        }
     }
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try values.decode(Int.self, forKey: .schemaVersion)
+        sourceGeneration = try values.decode(String.self, forKey: .sourceGeneration)
+        revision = try values.decode(UInt64.self, forKey: .revision)
+        generatedAtMs = try values.decode(Int64.self, forKey: .generatedAtMs)
+        expiresAtMs = try values.decode(Int64.self, forKey: .expiresAtMs)
+        if schemaVersion == 2 {
+            access = .init(schemaVersion: 1, revision: 0, verifiedAtMs: 0, status: .free, validUntilMs: nil)
+            content = nil
+            schedule = try values.decode(WatchScheduleV2.self, forKey: .schedule)
+        } else {
+            access = try values.decode(WatchAccessProjectionV1.self, forKey: .access)
+            content = try values.decodeIfPresent(WatchShiftContentV1.self, forKey: .content)
+        }
+    }
+
+    init(schemaVersion: Int, sourceGeneration: String, revision: UInt64, generatedAtMs: Int64,
+         expiresAtMs: Int64, access: WatchAccessProjectionV1, content: WatchShiftContentV1?, schedule: WatchScheduleV2? = nil) {
+        self.schemaVersion = schemaVersion; self.sourceGeneration = sourceGeneration; self.revision = revision
+        self.generatedAtMs = generatedAtMs; self.expiresAtMs = expiresAtMs; self.access = access
+        self.content = content; self.schedule = schedule
+    }
+
 }
 
 nonisolated struct WatchAccessProjectionV1: Codable, Equatable, Sendable {
     enum Status: String, Codable, Sendable {
+        case free
         case active
         case lifetime
         case locked
@@ -120,7 +151,7 @@ nonisolated enum WatchSnapshotDecoderV1 {
         guard let package = try? JSONDecoder().decode(WatchSnapshotPackageV1.self, from: data) else {
             throw WatchSnapshotDecodeError.malformed
         }
-        guard package.schemaVersion == WatchSnapshotContract.schemaVersion,
+        guard [1, 2].contains(package.schemaVersion),
               package.access.schemaVersion == WatchSnapshotContract.schemaVersion else {
             throw WatchSnapshotDecodeError.unsupportedSchema
         }
@@ -131,7 +162,7 @@ nonisolated enum WatchSnapshotDecoderV1 {
 
 nonisolated extension WatchSnapshotPackageV1 {
     var isValid: Bool {
-        guard schemaVersion == WatchSnapshotContract.schemaVersion,
+        guard [1, 2].contains(schemaVersion),
               access.schemaVersion == WatchSnapshotContract.schemaVersion,
               sourceGeneration.isValidWatchIdentifier,
               revision <= WatchSnapshotContract.maximumJSONInteger,
@@ -140,6 +171,11 @@ nonisolated extension WatchSnapshotPackageV1 {
               access.verifiedAtMs <= generatedAtMs,
               access.isValid else { return false }
 
+        if schemaVersion == 2 {
+            return access.status == .free && content == nil && schedule?.isValid == true
+                && schedule?.presentation.isValid == true
+        }
+        guard schedule == nil, access.status != .free else { return false }
         let grantsAccess = access.status == .active || access.status == .lifetime
         guard grantsAccess == (content != nil),
               access.status != .lifetime || access.validUntilMs == nil,
@@ -159,7 +195,7 @@ private nonisolated extension WatchAccessProjectionV1 {
               validUntilMs.map({ $0 > verifiedAtMs }) ?? true else { return false }
         switch status {
         case .active: return validUntilMs != nil
-        case .lifetime: return validUntilMs == nil
+        case .free, .lifetime: return validUntilMs == nil
         case .locked, .unknown: return validUntilMs == nil
         // Older pending packages did not carry a deadline. Keep them decodable
         // so availability can fail closed to confirmationRequired.
@@ -358,6 +394,15 @@ nonisolated enum WatchSnapshotOrderEvaluator {
         guard state.revision.map({ package.revision > $0 }) ?? false else {
             return .init(decision: .rejectStaleRevision, proposedState: nil)
         }
+        if package.schemaVersion == 2 {
+            var proposed = state
+            proposed.revision = package.revision
+            proposed.acceptedAccess = package.access
+            return .init(decision: .accept, proposedState: proposed)
+        }
+        guard state.acceptedAccess?.status != .free else {
+            return .init(decision: .rejectStaleRevision, proposedState: nil)
+        }
         guard let acceptedAccess = state.acceptedAccess,
               package.access.revision >= acceptedAccess.revision else {
             return .init(decision: .rejectStaleAccessRevision, proposedState: nil)
@@ -395,7 +440,9 @@ nonisolated enum WatchSnapshotAvailabilityEvaluator {
     static func evaluate(_ package: WatchSnapshotPackageV1, nowMs: Int64) -> WatchSnapshotAvailability {
         guard nowMs >= 0, nowMs <= WatchSnapshotContract.maximumJSONTimestamp,
               package.isValid else { return .invalid }
+        if let schedule = package.schedule { return .content(schedule.content(at: nowMs)) }
         switch package.access.status {
+        case .free: return .invalid
         case .locked: return .locked
         case .unknown: return .confirmationRequired
         case .pending where package.access.validUntilMs.map({ nowMs >= $0 }) ?? true:

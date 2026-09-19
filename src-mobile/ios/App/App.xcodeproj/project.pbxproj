@@ -49,8 +49,24 @@
 		D11000000000000000000016 /* WatchLocalizations.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1200000000000000000000A /* WatchLocalizations.generated.swift */; };
 		D110000000000000000000F1 /* WatchDisplayProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D120000000000000000000F1 /* WatchDisplayProjectionTests.swift */; };
 		D110000000000000000000F2 /* WatchSnapshotReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D120000000000000000000F2 /* WatchSnapshotReceiverTests.swift */; };
+		E21900000000000000000401 /* WatchIndependentScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000400 /* WatchIndependentScheduleTests.swift */; };
 		F1C00000000000000000A002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
 		F1C00000000000000000B002 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = F1C00000000000000000A001 /* AppIcon.icon */; };
+		E21900000000000000000101 /* ShiftRuleCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000001 /* ShiftRuleCore.swift */; };
+		E21900000000000000000201 /* ShiftRuleCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000001 /* ShiftRuleCore.swift */; };
+		E21900000000000000000301 /* ShiftRuleCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000001 /* ShiftRuleCore.swift */; };
+		E21900000000000000000102 /* ScheduleRuleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000002 /* ScheduleRuleInput.swift */; };
+		E21900000000000000000202 /* ScheduleRuleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000002 /* ScheduleRuleInput.swift */; };
+		E21900000000000000000302 /* ScheduleRuleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000002 /* ScheduleRuleInput.swift */; };
+		E21900000000000000000103 /* ExtendedSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000003 /* ExtendedSchedule.swift */; };
+		E21900000000000000000203 /* ExtendedSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000003 /* ExtendedSchedule.swift */; };
+		E21900000000000000000303 /* ExtendedSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000003 /* ExtendedSchedule.swift */; };
+		E21900000000000000000104 /* ExtendedScheduleRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000004 /* ExtendedScheduleRules.swift */; };
+		E21900000000000000000204 /* ExtendedScheduleRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000004 /* ExtendedScheduleRules.swift */; };
+		E21900000000000000000304 /* ExtendedScheduleRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000004 /* ExtendedScheduleRules.swift */; };
+		E21900000000000000000105 /* WatchScheduleV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000005 /* WatchScheduleV2.swift */; };
+		E21900000000000000000205 /* WatchScheduleV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000005 /* WatchScheduleV2.swift */; };
+		E21900000000000000000305 /* WatchScheduleV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000005 /* WatchScheduleV2.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -183,11 +199,17 @@
 		D1200000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D120000000000000000000F1 /* WatchDisplayProjectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDisplayProjectionTests.swift; sourceTree = "<group>"; };
 		D120000000000000000000F2 /* WatchSnapshotReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSnapshotReceiverTests.swift; sourceTree = "<group>"; };
+		E21900000000000000000400 /* WatchIndependentScheduleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WatchIndependentScheduleTests.swift; path = ../App/AppTests/WatchIndependentScheduleTests.swift; sourceTree = "<group>"; };
 		D12100000000000000000001 /* DoneAt Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DoneAt Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D12100000000000000000002 /* DoneAt Watch Widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DoneAt Watch Widgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D12100000000000000000003 /* WatchAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WatchAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F000000C000000000000000C /* locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = locales; path = ../../../public/locales; sourceTree = SOURCE_ROOT; };
 		F1C00000000000000000A001 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = ../../../assets/brand/AppIcon.icon; sourceTree = SOURCE_ROOT; };
+		E21900000000000000000001 /* ShiftRuleCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShiftRuleCore.swift; path = ../Shared/ShiftRuleCore.swift; sourceTree = SOURCE_ROOT; };
+		E21900000000000000000002 /* ScheduleRuleInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScheduleRuleInput.swift; path = ../Shared/ScheduleRuleInput.swift; sourceTree = SOURCE_ROOT; };
+		E21900000000000000000003 /* ExtendedSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtendedSchedule.swift; path = ../Shared/ExtendedSchedule.swift; sourceTree = SOURCE_ROOT; };
+		E21900000000000000000004 /* ExtendedScheduleRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtendedScheduleRules.swift; path = ../Shared/ExtendedScheduleRules.swift; sourceTree = SOURCE_ROOT; };
+		E21900000000000000000005 /* WatchScheduleV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WatchScheduleV2.swift; path = ../Shared/WatchScheduleV2.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -267,6 +289,11 @@
 				B32000020000000000000002 /* WatchSnapshot.swift */,
 				B32000060000000000000006 /* WatchSnapshotCache.swift */,
 				B32000070000000000000007 /* WatchPairing.swift */,
+				E21900000000000000000001 /* ShiftRuleCore.swift */,
+				E21900000000000000000002 /* ScheduleRuleInput.swift */,
+				E21900000000000000000003 /* ExtendedSchedule.swift */,
+				E21900000000000000000004 /* ExtendedScheduleRules.swift */,
+				E21900000000000000000005 /* WatchScheduleV2.swift */,
 				B32000090000000000000009 /* WatchDisplayProjection.swift */,
 				B32000040000000000000004 /* WatchShiftEvaluation.swift */,
 				720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */,
@@ -346,6 +373,7 @@
 				D1200000000000000000000B /* WatchAppModelTests.swift */,
 				D120000000000000000000F1 /* WatchDisplayProjectionTests.swift */,
 				D120000000000000000000F2 /* WatchSnapshotReceiverTests.swift */,
+				E21900000000000000000400 /* WatchIndependentScheduleTests.swift */,
 			);
 			path = ../WatchAppTests;
 			sourceTree = SOURCE_ROOT;
@@ -613,6 +641,11 @@
 				B32000010000000000000001 /* WatchSnapshot.swift in Sources */,
 				B32000050000000000000005 /* WatchSnapshotCache.swift in Sources */,
 				B32000080000000000000008 /* WatchPairing.swift in Sources */,
+				E21900000000000000000101 /* ShiftRuleCore.swift in Sources */,
+				E21900000000000000000102 /* ScheduleRuleInput.swift in Sources */,
+				E21900000000000000000103 /* ExtendedSchedule.swift in Sources */,
+				E21900000000000000000104 /* ExtendedScheduleRules.swift in Sources */,
+				E21900000000000000000105 /* WatchScheduleV2.swift in Sources */,
 				B320000A000000000000000A /* WatchDisplayProjection.swift in Sources */,
 				B32000030000000000000003 /* WatchShiftEvaluation.swift in Sources */,
 			);
@@ -646,6 +679,11 @@
 				D11000000000000000000003 /* WatchSnapshotCache.swift in Sources */,
 				D11000000000000000000004 /* WatchShiftEvaluation.swift in Sources */,
 				D1100000000000000000000E /* WatchPairing.swift in Sources */,
+				E21900000000000000000201 /* ShiftRuleCore.swift in Sources */,
+				E21900000000000000000202 /* ScheduleRuleInput.swift in Sources */,
+				E21900000000000000000203 /* ExtendedSchedule.swift in Sources */,
+				E21900000000000000000204 /* ExtendedScheduleRules.swift in Sources */,
+				E21900000000000000000205 /* WatchScheduleV2.swift in Sources */,
 				D11000000000000000000012 /* WatchDisplayProjection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -659,6 +697,11 @@
 				D11000000000000000000007 /* WatchSnapshotCache.swift in Sources */,
 				D11000000000000000000008 /* WatchShiftEvaluation.swift in Sources */,
 				D1100000000000000000000F /* WatchPairing.swift in Sources */,
+				E21900000000000000000301 /* ShiftRuleCore.swift in Sources */,
+				E21900000000000000000302 /* ScheduleRuleInput.swift in Sources */,
+				E21900000000000000000303 /* ExtendedSchedule.swift in Sources */,
+				E21900000000000000000304 /* ExtendedScheduleRules.swift in Sources */,
+				E21900000000000000000305 /* WatchScheduleV2.swift in Sources */,
 				D11000000000000000000013 /* WatchDisplayProjection.swift in Sources */,
 				D11000000000000000000016 /* WatchLocalizations.generated.swift in Sources */,
 			);
@@ -672,6 +715,7 @@
 				D11000000000000000000014 /* WatchAppModelTests.swift in Sources */,
 				D110000000000000000000F1 /* WatchDisplayProjectionTests.swift in Sources */,
 				D110000000000000000000F2 /* WatchSnapshotReceiverTests.swift in Sources */,
+				E21900000000000000000401 /* WatchIndependentScheduleTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -43,10 +43,16 @@ struct ExtendedScheduleDataTests {
         )
     }
 
-    private static func rosterDay(_ dayKey: String, _ shiftTypeID: UUID, editCount: Int = 1) -> RosterDay {
+    private static func rosterDay(
+        _ dayKey: String,
+        _ shiftTypeID: UUID,
+        assignedShiftType: ShiftType? = nil,
+        editCount: Int = 1
+    ) -> RosterDay {
         RosterDay(
             dayKey: dayKey,
             shiftTypeID: shiftTypeID,
+            assignedShiftType: assignedShiftType,
             timeZoneIdentifier: "Asia/Shanghai",
             editedAt: Date(timeIntervalSince1970: 1_790_000_060),
             editCount: editCount,
@@ -69,7 +75,10 @@ struct ExtendedScheduleDataTests {
     func backupRoundTrip() throws {
         var state = RecordState()
         state.extendedSchedule = Self.schedule()
-        state.rosterDays = [Self.rosterDay("2026-10-03", Self.night), Self.rosterDay("2026-10-04", Self.rest)]
+        state.rosterDays = [
+            Self.rosterDay("2026-10-03", Self.night, assignedShiftType: Self.schedule().shiftTypes[1]),
+            Self.rosterDay("2026-10-04", Self.rest),
+        ]
         let document = try Self.exportedDocument(state)
         #expect(document.schemaVersion == 6)
 

@@ -14,6 +14,9 @@ nonisolated struct ScheduleExpansion: Equatable, Sendable {
     var isWorkday: Bool
     var segments: [NativeShiftSegment]
     var failed: Bool = false
+    /// A frozen roster assignment can supply planned history even when an
+    /// imported career period has no schedule snapshot for that date.
+    var hasPlannedRoster: Bool = false
 
     static let failed = ScheduleExpansion(isWorkday: false, segments: [], failed: true)
 }
@@ -206,7 +209,7 @@ nonisolated enum DayRecordResolver {
     ) -> DayResolution {
         // A day with no snapshot has no expansion to speak of, whatever the
         // caller passed.
-        let expansion = snapshot == nil
+        let expansion = snapshot == nil && !resolvedExpansion.hasPlannedRoster
             ? ScheduleExpansion(isWorkday: false, segments: [])
             : resolvedExpansion
         let empty = DayResolution(
@@ -296,7 +299,7 @@ nonisolated enum DayRecordResolver {
             )
         }
 
-        guard snapshot != nil else { return empty }
+        guard snapshot != nil || expansion.hasPlannedRoster else { return empty }
         return DayResolution(
             dayKey: dayKey,
             shiftAnchorDate: shiftAnchorDate,
@@ -356,6 +359,7 @@ nonisolated enum DayRecordResolver {
 /// has to cross an isolation boundary intact.
 nonisolated struct ScheduleExpansionTable: Sendable {
     var bySnapshot: [UUID: [String: ScheduleExpansion]] = [:]
+    var withoutSnapshot: [String: ScheduleExpansion] = [:]
     /// Snapshots whose expansion failed. Every day they cover resolves as
     /// `.failed`, which is what keeps a bad range out of the shared cache.
     var failures: Set<UUID> = []

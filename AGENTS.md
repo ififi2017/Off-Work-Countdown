@@ -64,6 +64,12 @@ or place salary values in widgets, URLs, analytics payloads or share metadata.
   roster — decoding it directly silently falls back to the fixed hours. iOS has no JavaScriptCore rules bundle since plan 019 R4; do
   not bring one back to evaluate `lib/` at runtime — `npm run check:ios` fails
   if `CountdownRules.js` reappears.
+- Watch V2 compiles the same salary-free Swift scheduling core from
+  `src-mobile/ios/Shared/` into iPhone, Watch App and Watch widgets. Cached
+  configuration resolves later shifts offline; do not implement another
+  recurrence algorithm or impose a rolling snapshot expiry. Transport never
+  includes salary, career income or the record archive. Watch App and both
+  complications are free; entitlement fields exist only for V1 cache reading.
 - Since 3.1, a running shift is `segments + plannedEndAtMs + overtimeEndAtMs`.
   Remaining time, progress and earnings must use effective segment duration;
   never reintroduce `end - now` or a standalone start/end range. Rust may only

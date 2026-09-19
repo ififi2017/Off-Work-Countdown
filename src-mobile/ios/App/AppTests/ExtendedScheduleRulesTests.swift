@@ -188,6 +188,37 @@ struct ExtendedScheduleRulesTests {
         // December is not adjacent to October and still copies it, because
         // November was never filled in either.
         #expect(try Self.resolved(resolver, "2026-12-02").shiftTypeID == Self.night)
+        // A roster repeats indefinitely, including for an offline Watch whose
+        // last authored month is more than ten years old.
+        #expect(try Self.resolved(resolver, "2040-12-02").shiftTypeID == Self.night)
+    }
+
+    @Test("A frozen assignment keeps its hours and a fixed schedule underneath it")
+    func frozenHistoricalAssignmentOverlaysFixedSchedule() throws {
+        var frozen = Self.earlyType
+        frozen.startMinutes = 7 * 60
+        frozen.endMinutes = 15 * 60
+        let plan = try #require(ExtendedSchedulePlan(historicalRosterDays: [RosterDay(
+            dayKey: "2026-10-06", shiftTypeID: frozen.id, assignedShiftType: frozen,
+            timeZoneIdentifier: Self.zoneIdentifier,
+            editedAt: .now, editCount: 1, editTieBreaker: UUID()
+        )]))
+        let configuration = ScheduleHoursConfiguration(
+            startTime: "09:00", endTime: "17:00", workdays: [1, 2, 3, 4, 5],
+            schedule: Self.classicSchedule, breakStartTime: nil, breakDurationMinutes: 0,
+            extendedSchedule: plan
+        )
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: Self.zoneIdentifier))
+        let from = try #require(calendar.date(from: DateComponents(year: 2026, month: 10, day: 5)))
+        let through = try #require(calendar.date(from: DateComponents(year: 2026, month: 10, day: 7)))
+        let days = ScheduleRules.expandScheduleRange(
+            configuration: configuration, from: from, through: through, timeZone: calendar.timeZone
+        )
+        #expect(days.map(\.isWorkday) == [true, true, true])
+        #expect(days[0].shiftAnchorStartAtMs == (try Self.instant("2026-10-05", hour: 9)))
+        #expect(days[1].shiftAnchorStartAtMs == (try Self.instant("2026-10-06", hour: 7)))
+        #expect(days[2].shiftAnchorStartAtMs == (try Self.instant("2026-10-07", hour: 9)))
     }
 
     @Test("Day numbers the source month does not have are rest")

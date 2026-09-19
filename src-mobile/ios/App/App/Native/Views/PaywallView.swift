@@ -685,7 +685,6 @@ struct PlusBenefit: Identifiable {
         PlusBenefit(id: "life", icon: "circle.grid.3x3", titleKey: "plusBenefitLife"),
         PlusBenefit(id: "edit", icon: "pencil", titleKey: "plusBenefitEdit"),
         PlusBenefit(id: "focus", icon: FocusTaskIcon.focus.systemName, titleKey: "plusBenefitFocus"),
-        PlusBenefit(id: "watch", icon: "applewatch", titleKey: "plusBenefitWatch"),
         PlusBenefit(id: "sync", icon: "icloud", titleKey: "plusBenefitSync"),
     ]
 }

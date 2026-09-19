@@ -26,6 +26,7 @@ nonisolated struct WatchPairingReplyV1: Codable, Equatable, Sendable {
     let nonce: String
     let baseline: WatchSourceBaselineV1
     let packageData: Data
+    var deferredRevision: UInt64? = nil
 
     var isValid: Bool {
         schemaVersion == WatchPairingContract.schemaVersion
@@ -34,6 +35,8 @@ nonisolated struct WatchPairingReplyV1: Codable, Equatable, Sendable {
             && baseline.schemaVersion == WatchSnapshotContract.schemaVersion
             && baseline.pairingSession == pairingSession
             && packageData.count <= WatchSnapshotContract.maximumEncodedBytes
+            && (packageData.isEmpty == (deferredRevision != nil))
+            && (deferredRevision.map { $0 <= WatchSnapshotContract.maximumJSONInteger } ?? true)
     }
 }
 

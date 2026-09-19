@@ -27,7 +27,7 @@ watchOS 代码不复制这些规则，只消费 iPhone 的投影。
 | P4 | iPhone/iPad Widget、锁屏与灵动岛 Live Activity | 🟡 进度时间线已重构，等待新一轮实机回归 |
 | P5 | iPhone/iPad 自适应 UI、设置导航、分享与欢迎页 | 🟡 首轮 CR 修复完成，继续做真机交互回归 |
 | P6 | Xcode Cloud、TestFlight、商店截图与审核材料 | 🟡 3.1.8 截图/Preview 已上传，官网隐私已切 doneat.app；正式送审仍待人工 |
-| W0–W3 | Apple Watch App、同步与表盘组件 | 🔵 下一个主要目标 |
+| W0–W3 | 免费 Apple Watch App、独立排班与表盘组件 | 🔵 V2 已实现，验收进行中 |
 | X1 | iPhone 与 iPad 的可选跨设备同步 | ⚪ 技术决策保留，当前不实施 |
 | A0 | Android 原生客户端 | ⏸ 暂时搁置 |
 
@@ -233,8 +233,7 @@ P4/P5 的真机验收状态不因此改为完成。
 - 其余 Swift 代码只传入设置并渲染绝对结果，不在这四个文件之外重新实现“今天是否上班”
   “轮班第几天”或薪资计算。
 
-未来 Watch 不直接运行另一份 Swift 排班算法。iPhone 负责把当前规则结果投影为可离线渲染的
-WatchSnapshot；Watch 只根据绝对时间、segments 和过期时间显示状态。
+Watch V2 与 iPhone 编译同一份 `Shared/` 无薪资排班核心，按持久化规则独立解析后续班次；不维护另一套算法。手机发送配置及有期限的当前班次覆盖，不发送薪资或完整记录库。
 
 ### 3.2 数据分层
 
@@ -262,11 +261,13 @@ App Group 不能用于 iPhone 和 iPad 跨设备同步，也不能让 iPad 与 A
 - npm run check:ios 必须随着 Watch targets 扩展，验证 bundle id、App Group、嵌入关系、
   Release 条件、支持 family 和 salary-free 契约。
 
-## 4. 下一个目标：Apple Watch
+## 4. Watch 当前范围与后续目标
 
 Watch 的产品边界、数据契约、权益与配对通信以 [017 Apple Watch 计划](../plans/017-apple-watch-plus.md)为唯一维护位置；工程实施顺序由 [018 架构整改](../plans/018-ios-3.2.0-architecture-remediation.md)约束。
 
-3.2.0 交付依赖配对 iPhone 的 **Plus 只读 Watch App**。规则在 iPhone 通过共享 TypeScript 生成，Watch 仅消费不含薪资的绝对班次投影和已验证权益。开始／停止控制明确延期，不实现命令接收器或 ACK。免费用户继续使用智能叠放里的实时活动。
+2026-09-19 更新：Watch App 与两种表盘组件全部免费。首次从配对 iPhone 同步后，Watch V2 通过共享 Swift 核心长期离线接续排班，后台接收后续手机修改。开始／停止控制和独立通知继续延期。V1 缓存保留读取，两端均升级后才能使用 V2 独立循环。实际后台投递与表盘验收见 [本轮记录](reviews/2026-09-19-watch-calendar-acceptance.md)。
+
+Watch V2、019 和 P8 本轮验收收口后，下一目标是 018 的节假日与调休模板；当前不接入数据、不发布。
 
 ## 5. Watch 表盘组件与小组件
 

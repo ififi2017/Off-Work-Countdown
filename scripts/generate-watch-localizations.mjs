@@ -11,9 +11,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 export const watchLocalizationKeys = [
-  "watchWaitingForIPhone", "watchConfirmPlusOnIPhone", "watchSyncExpired", "watchOpenIPhone",
+  "watchCacheCorrupt", "watchUpdateRequired", "watchWaitingForIPhone", "watchSyncExpired", "watchOpenIPhone",
   "watchTimeLeftTitle", "watchTimeLeft", "watchOffAt", "watchOvertimeUntil", "watchBackAt", "watchNextShiftAt",
-  "watchPlusIncludes", "watchPlusOnIPhone", "watchWidgetDescription",
+  "watchWidgetDescription",
 ];
 export const watchLocalizationsPath = "src-mobile/ios/WatchApp/WatchLocalizations.generated.swift";
 // Spelled out rather than imported: check-ios-strings.mjs imports the key list

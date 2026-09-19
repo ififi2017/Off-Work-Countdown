@@ -41,11 +41,20 @@ extension ShiftSessionStore {
         // on its own, and the row's weekday tells the user which day it is.
         let startHasPassed = endedEarly || nowMs >= snapshot.startAtMs
         if let start = startHasPassed ? snapshot.nextShiftStartDate : snapshot.startDate {
+            let detail: String? = if session.countdownCalendar.isDate(start, inSameDayAs: now) {
+                text.t("todaysShift")
+            } else if let key = Self.scheduleMonthStatusKey(
+                for: start, relativeTo: now, calendar: session.countdownCalendar
+            ) {
+                text.t(key)
+            } else {
+                nil
+            }
             upcoming.append(.init(
                 id: "shift-start",
                 kind: .shiftStart,
                 title: text.t("startTime"),
-                detail: startHasPassed ? nil : text.t("todaysShift"),
+                detail: detail,
                 date: start,
                 route: nil
             ))
@@ -72,7 +81,7 @@ extension ShiftSessionStore {
             upcoming.append(.init(
                 id: "lunch",
                 kind: .lunchStart,
-                title: text.t("lunchBreak"),
+                title: scheduledBreakTitle,
                 detail: text.t("lunchWindow", values: [
                     "start": text.formatTime(windowStart),
                     "end": text.formatTime(windowEnd)
@@ -84,7 +93,7 @@ extension ShiftSessionStore {
             disabled.append(.init(
                 id: "lunch-off",
                 kind: .lunchStart,
-                title: text.t("lunchBreak"),
+                title: scheduledBreakTitle,
                 detail: text.t("disabledShort"),
                 date: nil,
                 route: .lunch
@@ -208,6 +217,23 @@ extension ShiftSessionStore {
             upcoming: upcoming.sorted { ($0.date ?? .distantFuture) < ($1.date ?? .distantFuture) },
             disabled: disabled
         )
+    }
+
+    /// Upcoming copy distinguishes only the two planning horizons a user can
+    /// act on here. More distant shifts keep their date without a misleading
+    /// permanent status label.
+    nonisolated static func scheduleMonthStatusKey(
+        for shift: Date,
+        relativeTo now: Date,
+        calendar: Calendar
+    ) -> String? {
+        let current = calendar.dateComponents([.year, .month], from: now)
+        let target = calendar.dateComponents([.year, .month], from: shift)
+        if target == current { return "scheduleCurrentMonthActive" }
+        guard let nextDate = calendar.date(byAdding: .month, value: 1, to: now) else { return nil }
+        return target == calendar.dateComponents([.year, .month], from: nextDate)
+            ? "scheduleNextMonthPlanned"
+            : nil
     }
 
     /// Next health reminder the shared engine actually scheduled. Current-shift

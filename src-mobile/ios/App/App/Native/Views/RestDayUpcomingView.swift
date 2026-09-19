@@ -35,9 +35,6 @@ struct RestDayUpcomingView: View {
             return []
         }
 
-        // Ask immediately before that shift starts, so every returned event is
-        // anchored to the next working day rather than the current rest day.
-        let previewAt = nextStart.addingTimeInterval(-1)
-        return Array(shifts.shiftPreview(for: nextSnapshot, at: previewAt).upcoming.prefix(3))
+        return Array(shifts.shiftPreview(for: nextSnapshot, at: now).upcoming.prefix(3))
     }
 }

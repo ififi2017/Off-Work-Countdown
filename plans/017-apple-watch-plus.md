@@ -1,11 +1,24 @@
-# 017 · Apple Watch：Plus Watch App 与表盘组件
+# 017 · Apple Watch：免费只读 App、独立排班与表盘组件
 
-- **状态**：IN PROGRESS — 2026-09-08 确认产品边界，2026-09-12 按实时活动的现状及 018 修订：3.2.0 交付只读 Watch App 与两种表盘组件，控制明确延期，腕上实时活动倒计时保持免费。2026-09-13 本机收尾后：Watch targets、配对通信、只读 App、两种组件与智能叠放相关性提示已交付；用户确认 Ultra 2 真机运行良好、智能叠放正常。复选框按实际证据更新，剩余为真实 StoreKit 触发、逐项真机与耗电、Xcode Cloud／TestFlight、官网与商店文案、审核备注和 Watch 商店截图（见第 11 节）。
+- **状态**：IN PROGRESS — 2026-09-19 按用户确认改为全部免费，并实现 V2 共享规则长期独立排班；本轮自动化、视觉与待真机证据见验收记录。早期 Ultra 2 反馈属于 V1，不能替代 V2 后台接续验收。
 - **目标**：Plus 用户抬腕即可看到准确的班次状态、剩余工作时间和进度，短暂离开 iPhone 后仍可使用有效快照。
 - **依赖**：[006 权益模型](006-free-trial-subscription.md)、[018 架构整改](018-ios-3.2.0-architecture-remediation.md)、[移动端架构与 W0–W3](../docs/PLAN-MOBILE.md)、当前 TypeScript 规则和原生 iOS App。W0 工程／契约准备可提前开展，Watch 生产者在 018 P1／P2 提交与生命周期边界建立后接入。
 - **权威口径**：`docs/PLAN-MOBILE.md` 的 W0–W3 章节与本计划重复，冲突时以本文为准；W0 应把那一节收敛成指向本文的指针，避免两处漂移。
-- **范围**：同一产品中的 iPhone companion watchOS App、Watch Widget Extension、WatchConnectivity、Plus 权益投影与发布验收。
+- **范围**：配对 iPhone 的免费只读 Watch App、两种表盘组件、共享排班核心、WatchConnectivity V2 与发布前验收。
 - **交付方式**：feature branch → PR → main；本计划不代表授权上传或发布版本。各阶段全部保持未验收，完成时附实际证据。
+
+## 2026-09-19 · 当前契约（取代下文 V1 权益与快照限制）
+
+用户已确认 Watch App、圆形和长方形组件全部免费。本轮不增加腕上编辑、开始／停止、独立通知、收入显示或发布操作。下文关于 Plus 与单次绝对快照的段落仅保留为 V1 实施历史，不再约束 V2。
+
+- iPhone、Watch App、Watch Widgets 编译同一份 `Shared/ShiftRuleCore.swift`、`ScheduleRuleInput.swift`、`ExtendedSchedule.swift`、`ExtendedScheduleRules.swift`。薪资、记录库和提醒协调仍由 iPhone 持有。
+- V2 持久化模式、时区、班次类型、周期、自由日历及沿用来源；当前班次覆盖单独限定截止时刻。缓存规则不因下一班开始而失效。V1 仍可读，两端升级到 V2 才支持长期独立循环。
+- 保存、恢复、当前班次变化在手机前台也触发 Watch 发布，并等待记录持久化。小包使用 application context；超过 48 KiB 的配置使用文件传输，接收上限 2 MiB。共同经过配对世代、递增版本、重复包和原子落盘校验；大包握手持久化所期待版本。
+- receiver 由进程拥有；WatchConnectivity 后台任务等待缓存写入和组件刷新完成。投递由系统安排，已缓存规则的下一班不依赖后台准时唤醒。
+- App 与组件保留本地班次应对正常断连。首次无数据、缓存损坏、版本不兼容分别显示等待同步、重新同步、升级提示。
+- 真机必须另验：首次同步后不再打开 Watch App，跨多班／休息日／月界；离线和重启；手机改班后台抵达；旧文件迟到；表盘更新与耗电。模拟时间测试不代替这组证据。
+
+本轮实测、待确认项见 [2026-09-19 验收记录](../docs/reviews/2026-09-19-watch-calendar-acceptance.md)。
 
 ## 1. 已确认的产品决定
 

@@ -112,13 +112,11 @@ nonisolated struct ExtendedScheduleContent: Codable, Hashable, Sendable {
               Set(shiftTypes.map(\.id)).count == shiftTypes.count
         else { return false }
         guard let rule else { return true }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = zone
         let known = Set(shiftTypes.map(\.id))
         return !rule.days.isEmpty
             && rule.days.count <= ShiftCycleRule.maximumLength
             && rule.days.allSatisfy { known.contains($0) }
-            && RecordJSON.date(fromDayKey: rule.anchorDayKey, calendar: calendar) != nil
+            && ExtendedScheduleResolver.parse(dayKey: rule.anchorDayKey) != nil
     }
 }
 
@@ -133,8 +131,21 @@ nonisolated struct RosterDay: Equatable, Sendable {
 
     var dayKey: String
     var shiftTypeID: UUID
+    /// The assigned type as it stood when a past day was edited. Historical
+    /// plans must not change when that live type is later renamed or edited.
+    /// Nil keeps rows written by older builds and future roster assignments
+    /// on the live schedule type.
+    var assignedShiftType: ShiftType? = nil
     var timeZoneIdentifier: String
     var editedAt: Date
     var editCount: Int
     var editTieBreaker: UUID
+}
+
+/// Planned history for the roster editor. Actual overrides and leave are
+/// deliberately absent: the calendar edits the plan underneath those layers.
+nonisolated enum PlannedRosterPreview: Equatable, Sendable {
+    case shift(ShiftType)
+    case rest
+    case noPlan
 }
