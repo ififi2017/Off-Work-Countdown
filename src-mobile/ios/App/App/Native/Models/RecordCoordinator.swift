@@ -636,7 +636,10 @@ final class RecordCoordinator {
     }
 
     @ObservationIgnored private var planCache: (schedule: ExtendedSchedule?, rosterDays: [RosterDay], plan: ExtendedSchedulePlan?)?
-    @ObservationIgnored private var historicalPlanCache: (rosterDays: [RosterDay], plan: ExtendedSchedulePlan?)?
+    @ObservationIgnored private var fixedPlanCache: (
+        rosterDays: [RosterDay], types: [ShiftType], plans: [Bool: ExtendedSchedulePlan]
+    ) = ([], [], [:])
+    @ObservationIgnored private var extendedStartCache: (snapshots: [ScheduleSnapshot], start: Date?)?
     @ObservationIgnored private var planRevision = 0
 
     /// The extended schedule as the rules read it, switched on or not: days
@@ -812,7 +815,7 @@ final class RecordCoordinator {
         let period = DayRecordResolver.period(on: noon, from: state.periods),
         let snapshot = DayRecordResolver.snapshot(on: noon, in: period, from: state.snapshots),
         let configuration = previewHours(
-            from: snapshot.configurationData,
+            for: snapshot,
             ignoringRosterDayKey: ignoringRosterAssignment ? dayKey : nil
         ),
         let expansion = ScheduleRules.expandScheduleRange(
@@ -863,10 +866,10 @@ final class RecordCoordinator {
     }
 
     private func previewHours(
-        from data: Data,
+        for snapshot: ScheduleSnapshot,
         ignoringRosterDayKey: String?
     ) -> ScheduleHoursConfiguration? {
-        guard var hours = try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: data) else {
+        guard var hours = Self.decodeHours(snapshot.configurationData) else {
             return nil
         }
         let rosterDays = state.rosterDays.filter { $0.dayKey != ignoringRosterDayKey }
@@ -880,7 +883,12 @@ final class RecordCoordinator {
                 frozenShiftTypes: ExtendedSchedulePlan.frozenShiftTypes(from: rosterDays)
             )
         } else {
-            hours.extendedSchedule = ExtendedSchedulePlan(historicalRosterDays: rosterDays)
+            let includesLegacy = extendedScheduleStart.map { snapshot.effectiveFrom < $0 } ?? false
+            hours.extendedSchedule = ExtendedSchedulePlan(
+                historicalRosterDays: rosterDays,
+                legacyShiftTypes: state.extendedSchedule?.shiftTypes ?? [],
+                includesLegacyRows: includesLegacy
+            )
         }
         return hours
     }
@@ -894,28 +902,55 @@ final class RecordCoordinator {
         return (components.hour ?? 0) * 60 + (components.minute ?? 0)
     }
 
-    /// Stored hours, with their plan attached when they follow the extended
-    /// schedule. Every reader that expands a schedule snapshot goes through
-    /// here, so none of them can fall back to the fixed hours by forgetting
-    /// the roster.
-    func expandableHours(from data: Data) -> ScheduleHoursConfiguration? {
-        guard var hours = try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: data) else {
-            return nil
+    private nonisolated static func decodeHours(_ data: Data) -> ScheduleHoursConfiguration? {
+        try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: data)
+    }
+
+    var extendedScheduleStart: Date? {
+        let snapshots = state.snapshots
+        if let cached = extendedStartCache, cached.snapshots == snapshots { return cached.start }
+        let start = snapshots
+            .filter { Self.decodeHours($0.configurationData)?.extendedContent != nil }
+            .map(\.effectiveFrom)
+            .min()
+        extendedStartCache = (snapshots, start)
+        return start
+    }
+
+    private func fixedOverlayPlan(includesLegacyRows: Bool) -> ExtendedSchedulePlan? {
+        let rosterDays = state.rosterDays
+        let types = state.extendedSchedule?.shiftTypes ?? []
+        if fixedPlanCache.rosterDays != rosterDays || fixedPlanCache.types != types {
+            fixedPlanCache = (rosterDays, types, [:])
         }
+        if let cached = fixedPlanCache.plans[includesLegacyRows] { return cached }
+        planRevision += 1
+        let plan = ExtendedSchedulePlan(
+            historicalRosterDays: rosterDays,
+            legacyShiftTypes: types,
+            includesLegacyRows: includesLegacyRows,
+            revision: planRevision
+        )
+        if let plan { fixedPlanCache.plans[includesLegacyRows] = plan }
+        return plan
+    }
+
+    /// Snapshot-aware expansion keeps legacy rows on the old compatibility
+    /// boundary while allowing newly frozen historical edits on any fixed
+    /// snapshot inside a career period.
+    func expandableHours(for snapshot: ScheduleSnapshot) -> ScheduleHoursConfiguration? {
+        guard var hours = Self.decodeHours(snapshot.configurationData) else { return nil }
         if let content = hours.extendedContent {
             hours.extendedSchedule = extendedSchedulePlan(for: content)
         } else {
-            let rosterDays = state.rosterDays
-            if historicalPlanCache?.rosterDays != rosterDays {
-                planRevision += 1
-                historicalPlanCache = (
-                    rosterDays,
-                    ExtendedSchedulePlan(historicalRosterDays: rosterDays, revision: planRevision)
-                )
-            }
-            hours.extendedSchedule = historicalPlanCache?.plan
+            let includesLegacy = extendedScheduleStart.map { snapshot.effectiveFrom < $0 } ?? false
+            hours.extendedSchedule = fixedOverlayPlan(includesLegacyRows: includesLegacy)
         }
         return hours
+    }
+
+    nonisolated func fixedHours(for snapshot: ScheduleSnapshot) -> ScheduleHoursConfiguration? {
+        Self.decodeHours(snapshot.configurationData)
     }
 
     /// Saves a schedule edit — new shift types or rule, switching the schedule

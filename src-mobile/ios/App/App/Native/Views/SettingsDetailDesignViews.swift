@@ -120,7 +120,12 @@ struct ScheduleSettingsView: View {
             handSetDays: ExtendedScheduleEditing.handSetDays(shifts.preferences.handSetDays, applying: draft.rosterEdits)
         )
         let preserved = ExtendedScheduleEditing.keepingPattern(
-            plan, months: [0, 1].compactMap { ExtendedScheduleEditing.month(of: today, plus: $0) }, edits: draft.rosterEdits
+            plan,
+            months: [0, 1].compactMap { ExtendedScheduleEditing.month(of: today, plus: $0) },
+            from: shifts.records.extendedScheduleStart.map {
+                shifts.session.extendedTodayKey(at: $0)
+            } ?? today,
+            edits: draft.rosterEdits
         )
         // A template switch must not invent career history outside an existing
         // period. The explicit date editor enforces the same boundary.

@@ -60,8 +60,10 @@ or place salary values in widgets, URLs, analytics payloads or share metadata.
   shift types and rule it followed (`extendedContent`), never the hand-set
   days, which stay live; so every reader of
   `ScheduleSnapshot.configurationData` goes through
-  `RecordCoordinator.expandableHours`, which lays that content over the live
-  roster — decoding it directly silently falls back to the fixed hours. iOS has no JavaScriptCore rules bundle since plan 019 R4; do
+  `RecordCoordinator.expandableHours(for:)`, which lays that content over the
+  live roster. Frozen historical assignments also overlay fixed snapshots;
+  legacy assignments without frozen hours retain their pre-extended-schedule
+  boundary. Direct decoding silently loses these overlays. iOS has no JavaScriptCore rules bundle since plan 019 R4; do
   not bring one back to evaluate `lib/` at runtime — `npm run check:ios` fails
   if `CountdownRules.js` reappears.
 - Watch V2 compiles the same salary-free Swift scheduling core from

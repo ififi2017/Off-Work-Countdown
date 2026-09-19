@@ -75,8 +75,12 @@ struct ExtendedScheduleEditingTests {
     }
 
     private static func at(_ runtime: AppRuntime, _ day: Int, _ hour: Int, _ minute: Int = 0) throws -> Date {
+        try on(runtime, month: 10, day, hour, minute)
+    }
+
+    private static func on(_ runtime: AppRuntime, month: Int, _ day: Int, _ hour: Int, _ minute: Int = 0) throws -> Date {
         try #require(runtime.preferences.recordsCalendar.date(from: DateComponents(
-            year: 2026, month: 10, day: day, hour: hour, minute: minute
+            year: 2026, month: month, day: day, hour: hour, minute: minute
         )))
     }
 
@@ -97,13 +101,14 @@ struct ExtendedScheduleEditingTests {
     /// in force on it, and when it starts.
     private static func recorded(
         _ runtime: AppRuntime,
+        month: Int = 10,
         day: Int
     ) throws -> NativeScheduleDayExpansion {
-        let date = try at(runtime, day, 12)
+        let date = try on(runtime, month: month, day, 12)
         let snapshot = try #require(runtime.records.state.snapshots
             .filter { $0.effectiveFrom <= date }
             .max { $0.effectiveFrom < $1.effectiveFrom })
-        let hours = try #require(runtime.records.expandableHours(from: snapshot.configurationData))
+        let hours = try #require(runtime.records.expandableHours(for: snapshot))
         return try #require(ScheduleRules.expandScheduleRange(
             configuration: hours,
             from: date,
@@ -381,8 +386,12 @@ struct ExtendedScheduleEditingTests {
             handSetDays: ["2026-10-10": Self.night]
         )
         let months = try [0, 1].map { try #require(ExtendedScheduleEditing.month(of: "2026-10-17", plus: $0)) }
-        let edits = try #require(ExtendedScheduleEditing.keepingPattern(plan, months: months, edits: nil))
-        #expect(edits.count == 31 - 1 + 30)
+        #expect(ExtendedScheduleEditing.keepingPattern(plan, months: months, from: "2026-10-01", edits: nil)?.count == 31 - 1 + 30)
+        // Days before the pattern took effect stay on the fixed hours they had.
+        let edits = try #require(ExtendedScheduleEditing.keepingPattern(plan, months: months, from: "2026-10-05", edits: nil))
+        #expect(edits.count == 31 - 4 - 1 + 30)
+        #expect(edits["2026-10-04"] == nil)
+        #expect(edits["2026-10-05"] == .shift(Self.early))
         #expect(edits["2026-10-10"] == nil)
         #expect(edits["2026-11-30"] == .shift(Self.early))
 
@@ -397,6 +406,7 @@ struct ExtendedScheduleEditingTests {
         }
         #expect(try day("2026-10-10").shiftTypeID == Self.night)
         #expect(try day("2026-10-11").shiftTypeID == Self.early)
+        #expect(try day("2026-10-04").source == .unassigned)
         // December repeats November by date.
         #expect(try day("2026-12-31").source == .unassigned)
         #expect(try day("2026-12-10").source == .carriedOver)
@@ -415,6 +425,155 @@ struct ExtendedScheduleEditingTests {
         #expect(ExtendedScheduleEditing.editing(nil, dayKey: "2026-10-01", to: .followPattern, stored: [:]) == nil)
         #expect(ExtendedScheduleEditing.editing(nil, dayKey: "2026-10-01", to: .shift(Self.night), stored: [:])
             == ["2026-10-01": .shift(Self.night)])
+    }
+
+    // MARK: Filling in earlier days
+
+    @Test("A day filled in before the roster began counts in Records, and later fixed hours ignore the calendar")
+    func backfilledDaysCount() throws {
+        let runtime = try Self.runtime()
+        // Records begin on Monday 3 August, on fixed weekdays.
+        #expect(runtime.shifts.reconcileRecordSchedule(at: try Self.on(runtime, month: 8, 3, 10)).synchronousResult == true)
+        let monday = try Self.at(runtime, 5, 10)
+        #expect(Self.save(runtime, .applyToToday, at: monday) {
+            $0.extendedScheduleEnabled = true
+            $0.extendedContent = Self.everyDayEarly
+        })
+        #expect(runtime.records.extendedScheduleStart == runtime.preferences.recordsCalendar.startOfDay(for: monday))
+
+        // Saturday 8 August was a rest day; it was really an early shift.
+        #expect(Self.save(runtime, .applyToToday, at: monday) { $0.rosterEdits = ["2026-08-08": .shift(Self.early)] })
+        let saturday = try Self.recorded(runtime, month: 8, day: 8)
+        #expect(saturday.isWorkday)
+        #expect(saturday.shiftAnchorStartAtMs == Self.ms(try Self.on(runtime, month: 8, 8, 8)))
+        // The rest of that month keeps its fixed weekdays.
+        #expect(try Self.recorded(runtime, month: 8, day: 9).isWorkday == false)
+        let weekday = try Self.recorded(runtime, month: 8, day: 10)
+        #expect(weekday.isWorkday)
+        #expect(weekday.shiftAnchorStartAtMs == Self.ms(try Self.on(runtime, month: 8, 10, 9)))
+
+        // The calendar's view of the fixed schedule leaves the hand-set day out.
+        let fixed = runtime.queries.fixedPlannedWorkdays(
+            from: try Self.on(runtime, month: 8, 8, 0),
+            through: try Self.on(runtime, month: 8, 10, 0)
+        )
+        #expect(fixed == ["2026-08-08": false, "2026-08-09": false, "2026-08-10": true])
+        #expect(runtime.queries.fixedPlannedWorkdays(
+            from: try Self.on(runtime, month: 7, 31, 0),
+            through: try Self.on(runtime, month: 8, 1, 0)
+        ).isEmpty)
+
+        // Back on fixed hours from 12 October: the countdown ignores the
+        // calendar there, and so does Records.
+        let later = try Self.at(runtime, 12, 10)
+        #expect(Self.save(runtime, .applyToToday, at: later) { $0.extendedScheduleEnabled = false })
+        #expect(Self.save(runtime, .applyToToday, at: later) { $0.rosterEdits = ["2026-10-17": .shift(Self.early)] })
+        #expect(try Self.recorded(runtime, day: 17).isWorkday == false)
+        #expect(try Self.recorded(runtime, month: 8, day: 8).isWorkday)
+    }
+
+    @Test("Fixed hours are expanded exactly as before while no day is set by hand")
+    func fixedHoursWithoutBackfill() throws {
+        let runtime = try Self.runtime()
+        #expect(runtime.shifts.reconcileRecordSchedule(at: try Self.on(runtime, month: 8, 3, 10)).synchronousResult == true)
+        #expect(Self.save(runtime, .applyToToday, at: try Self.at(runtime, 5, 10)) {
+            $0.extendedScheduleEnabled = true
+            $0.extendedContent = Self.everyDayEarly
+        })
+        let fixed = try #require(runtime.records.state.snapshots.min { $0.effectiveFrom < $1.effectiveFrom })
+        let hours = try #require(runtime.records.expandableHours(for: fixed))
+        #expect(hours.extendedContent == nil)
+        #expect(hours.extendedSchedule == nil)
+    }
+
+    @Test("Legacy rows keep the old fixed boundary while frozen rows can repair later fixed history")
+    func legacyAndFrozenFixedHistory() throws {
+        let runtime = try Self.runtime()
+        #expect(runtime.shifts.reconcileRecordSchedule(
+            at: try Self.on(runtime, month: 8, 3, 10)
+        ).synchronousResult == true)
+        let extendedStart = try Self.at(runtime, 5, 10)
+        #expect(Self.save(runtime, .applyToToday, at: extendedStart) {
+            $0.extendedScheduleEnabled = true
+            $0.extendedContent = Self.everyDayEarly
+        })
+        let fixedAgain = try Self.at(runtime, 12, 10)
+        #expect(Self.save(runtime, .applyToToday, at: fixedAgain) { $0.extendedScheduleEnabled = false })
+
+        // Rows written by older builds have only the type id. Preserve their
+        // original compatibility boundary: pre-extended fixed history sees
+        // them, later fixed schedules do not.
+        runtime.records.upsertRosterDay(RosterDay(
+            dayKey: "2026-08-08", shiftTypeID: Self.early,
+            timeZoneIdentifier: Self.zoneIdentifier, editedAt: fixedAgain,
+            editCount: 0, editTieBreaker: UUID()
+        ))
+        runtime.records.upsertRosterDay(RosterDay(
+            dayKey: "2026-10-17", shiftTypeID: Self.early,
+            timeZoneIdentifier: Self.zoneIdentifier, editedAt: fixedAgain,
+            editCount: 0, editTieBreaker: UUID()
+        ))
+        #expect(try Self.recorded(runtime, month: 8, day: 8).isWorkday)
+        #expect(try Self.recorded(runtime, day: 17).isWorkday == false)
+
+        // Re-saving the later day as historical freezes the selected type and
+        // intentionally repairs that later fixed snapshot too.
+        #expect(Self.save(runtime, .applyToToday, at: try Self.at(runtime, 20, 10)) {
+            $0.rosterEdits = ["2026-10-17": .shift(Self.night)]
+        })
+        #expect(runtime.records.state.rosterDays.first(where: { $0.dayKey == "2026-10-17" })?.assignedShiftType
+            == Self.nightType)
+        let repaired = try Self.recorded(runtime, day: 17)
+        #expect(repaired.isWorkday)
+        #expect(repaired.shiftAnchorStartAtMs == Self.ms(try Self.at(runtime, 17, 20)))
+    }
+
+    @Test("An overlay decides only the days set by hand")
+    func overlayDecidesHandSetDaysOnly() throws {
+        let overlay = ExtendedSchedulePlan(
+            shiftTypes: Self.everyDayEarly.shiftTypes,
+            rule: Self.everyDayEarly.rule,
+            handSetDays: ["2026-08-08": Self.night],
+            fallsBackToBaseSchedule: true
+        )
+        let resolver = ExtendedScheduleResolver(plan: overlay)
+        let saturday = try #require(ExtendedScheduleResolver.dayNumber(dayKey: "2026-08-08"))
+        #expect(resolver.day(dayNumber: saturday).shiftTypeID == Self.night)
+        // Neither the rule nor the month being filled in decides another day.
+        #expect(resolver.day(dayNumber: saturday + 1).source == .unassigned)
+        #expect(resolver.day(dayNumber: saturday + 31).source == .unassigned)
+
+        let classic = ScheduleHoursConfiguration(
+            startTime: "09:00",
+            endTime: "17:00",
+            workdays: [1, 2, 3, 4, 5],
+            schedule: NativeWorkSchedule(
+                mode: "classic",
+                referenceWeekStartMs: nil,
+                referenceWeekType: nil,
+                singleWeekendWorkday: nil,
+                rotationAnchorMs: nil,
+                rotationWorkDays: nil,
+                rotationRestDays: nil
+            ),
+            breakStartTime: nil,
+            breakDurationMinutes: 0,
+            extendedSchedule: overlay
+        )
+        let zone = try #require(TimeZone(identifier: Self.zoneIdentifier))
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        let days = ScheduleRules.expandScheduleRange(
+            configuration: classic,
+            from: try #require(calendar.date(from: DateComponents(year: 2026, month: 8, day: 7))),
+            through: try #require(calendar.date(from: DateComponents(year: 2026, month: 8, day: 9))),
+            timeZone: zone
+        )
+        #expect(days.map(\.isWorkday) == [true, true, false])
+        let friday = try #require(calendar.date(from: DateComponents(year: 2026, month: 8, day: 7, hour: 9)))
+        let saturdayNight = try #require(calendar.date(from: DateComponents(year: 2026, month: 8, day: 8, hour: 20)))
+        #expect(days[0].shiftAnchorStartAtMs == Self.ms(friday))
+        #expect(days[1].shiftAnchorStartAtMs == Self.ms(saturdayNight))
     }
 
     // MARK: Pinning

@@ -210,7 +210,7 @@ final class RecordsQueries {
                   !table.failures.contains(snapshot.id)
             else { continue }
             let dayCalendar = period.civilCalendar()
-            if let configuration = records.expandableHours(from: snapshot.configurationData) {
+            if let configuration = records.expandableHours(for: snapshot) {
                 let days = ScheduleExpansionCache.shared.days(
                     configuration: configuration,
                     from: dayCalendar.startOfDay(for: from),
@@ -505,7 +505,7 @@ final class RecordsQueries {
                   period.startsOn <= end,
                   period.endsBefore.map({ $0 > start }) ?? true,
                   snapshot.effectiveFrom <= end,
-                  let configuration = records.expandableHours(from: snapshot.configurationData)
+                  let configuration = records.expandableHours(for: snapshot)
             else { continue }
             let dayCalendar = period.civilCalendar()
             await ScheduleExpansionCache.shared.prefetch(
@@ -519,8 +519,45 @@ final class RecordsQueries {
 
     /// A stored snapshot's hours, with the extended schedule attached when
     /// they follow it.
-    func expandableHours(from data: Data) -> ScheduleHoursConfiguration? {
-        records.expandableHours(from: data)
+    func expandableHours(for snapshot: ScheduleSnapshot) -> ScheduleHoursConfiguration? {
+        records.expandableHours(for: snapshot)
+    }
+
+    /// Whether each day was a planned workday under the snapshot in force on
+    /// it, ignoring days set by hand, keyed by records-zone day. Days no
+    /// period covers are left out. The calendar shows this for days before the
+    /// extended schedule began.
+    func fixedPlannedWorkdays(from: Date, through: Date) -> [String: Bool] {
+        let calendar = recordsCalendar
+        let periods = records.state.periods
+        let snapshots = records.state.snapshots
+        var bySnapshot: [UUID: [String: Bool]] = [:]
+        var result: [String: Bool] = [:]
+        var cursor = calendar.startOfDay(for: from)
+        let end = calendar.startOfDay(for: through)
+        while cursor <= end {
+            let key = RecordJSON.dayKey(cursor, calendar: calendar)
+            if let period = DayRecordResolver.period(on: cursor, from: periods),
+               let snapshot = DayRecordResolver.snapshot(on: cursor, in: period, from: snapshots) {
+                if bySnapshot[snapshot.id] == nil, let hours = records.fixedHours(for: snapshot) {
+                    let dayCalendar = period.civilCalendar()
+                    let days = ScheduleExpansionCache.shared.days(
+                        configuration: hours,
+                        from: dayCalendar.startOfDay(for: from),
+                        through: dayCalendar.startOfDay(for: through),
+                        timeZone: period.timeZone
+                    )
+                    bySnapshot[snapshot.id] = Dictionary(
+                        days.map { ($0.dayKey, $0.isWorkday) },
+                        uniquingKeysWith: { first, _ in first }
+                    )
+                }
+                result[key] = bySnapshot[snapshot.id]?[key]
+            }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
+            cursor = next
+        }
+        return result
     }
 
     func observations(on day: Date) -> [WorkObservation] {

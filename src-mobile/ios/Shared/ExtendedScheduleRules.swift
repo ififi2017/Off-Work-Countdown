@@ -144,13 +144,25 @@ nonisolated struct ExtendedSchedulePlan: Codable, Equatable, Sendable {
         }, uniquingKeysWith: { _, latest in latest })
     }
 
-    /// Exact historical roster assignments over an otherwise fixed snapshot.
-    init?(historicalRosterDays rosterDays: [RosterDay], revision: Int = 0) {
+    /// Historical assignments over an otherwise fixed snapshot. Frozen rows
+    /// always apply. Legacy rows can be included for fixed snapshots from
+    /// before extended scheduling began, using the live archived types older
+    /// builds left them pointing at.
+    init?(
+        historicalRosterDays rosterDays: [RosterDay],
+        legacyShiftTypes: [ShiftType] = [],
+        includesLegacyRows: Bool = false,
+        revision: Int = 0
+    ) {
         let frozen = Self.frozenShiftTypes(from: rosterDays)
-        guard !frozen.isEmpty else { return nil }
+        let handSet = Dictionary(uniqueKeysWithValues: rosterDays.compactMap { day in
+            if day.assignedShiftType != nil || includesLegacyRows { return (day.dayKey, day.shiftTypeID) }
+            return nil
+        })
+        guard !handSet.isEmpty else { return nil }
         self.init(
-            shiftTypes: [], rule: nil,
-            handSetDays: Dictionary(uniqueKeysWithValues: frozen.map { ($0.key, $0.value.id) }),
+            shiftTypes: legacyShiftTypes, rule: nil,
+            handSetDays: handSet,
             frozenShiftTypes: frozen,
             fallsBackToBaseSchedule: true,
             revision: revision
@@ -338,12 +350,13 @@ nonisolated final class ExtendedScheduleResolver {
         if let typeID = index.handSetByDayNumber[dayNumber] {
             return day(typeID: typeID, source: .handSet)
         }
+        if index.fallsBackToBaseSchedule { return .unassigned }
         if let rule = index.rule, !rule.days.isEmpty, let anchor = index.ruleAnchorDayNumber {
             let count = rule.days.count
             let position = ((dayNumber - anchor) % count + count) % count
             return day(typeID: rule.days[position], source: .rule)
         }
-        return index.fallsBackToBaseSchedule ? .unassigned : carriedOver(dayNumber: dayNumber)
+        return carriedOver(dayNumber: dayNumber)
     }
 
     /// A month the user never touched repeats the nearest earlier month it can

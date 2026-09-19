@@ -229,7 +229,7 @@ struct ExtendedScheduleWiringTests {
         let snapshotCount = runtime.records.state.snapshots.count
 
         func expansion() throws -> [NativeScheduleDayExpansion] {
-            let configuration = try #require(runtime.records.expandableHours(from: snapshot.configurationData))
+            let configuration = try #require(runtime.records.expandableHours(for: snapshot))
             return ScheduleRules.expandScheduleRange(
                 configuration: configuration,
                 from: try Self.at(runtime, 5, 0),
