@@ -67,6 +67,11 @@
 		E21900000000000000000105 /* WatchScheduleV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000005 /* WatchScheduleV2.swift */; };
 		E21900000000000000000205 /* WatchScheduleV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000005 /* WatchScheduleV2.swift */; };
 		E21900000000000000000305 /* WatchScheduleV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21900000000000000000005 /* WatchScheduleV2.swift */; };
+		E22000000000000000000101 /* HolidayCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000001 /* HolidayCalendar.swift */; };
+		E22000000000000000000102 /* HolidayTemplates.json in Resources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000002 /* HolidayTemplates.json */; };
+		E22000000000000000000103 /* HolidayTemplateAttributions.json in Resources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000003 /* HolidayTemplateAttributions.json */; };
+		E22000000000000000000201 /* HolidayCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000001 /* HolidayCalendar.swift */; };
+		E22000000000000000000301 /* HolidayCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22000000000000000000001 /* HolidayCalendar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -210,6 +215,9 @@
 		E21900000000000000000003 /* ExtendedSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtendedSchedule.swift; path = ../Shared/ExtendedSchedule.swift; sourceTree = SOURCE_ROOT; };
 		E21900000000000000000004 /* ExtendedScheduleRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtendedScheduleRules.swift; path = ../Shared/ExtendedScheduleRules.swift; sourceTree = SOURCE_ROOT; };
 		E21900000000000000000005 /* WatchScheduleV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WatchScheduleV2.swift; path = ../Shared/WatchScheduleV2.swift; sourceTree = SOURCE_ROOT; };
+		E22000000000000000000001 /* HolidayCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HolidayCalendar.swift; path = ../Shared/HolidayCalendar.swift; sourceTree = SOURCE_ROOT; };
+		E22000000000000000000002 /* HolidayTemplates.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = HolidayTemplates.json; path = ../Shared/Resources/HolidayTemplates.json; sourceTree = SOURCE_ROOT; };
+		E22000000000000000000003 /* HolidayTemplateAttributions.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = HolidayTemplateAttributions.json; path = ../Shared/Resources/HolidayTemplateAttributions.json; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -294,6 +302,9 @@
 				E21900000000000000000003 /* ExtendedSchedule.swift */,
 				E21900000000000000000004 /* ExtendedScheduleRules.swift */,
 				E21900000000000000000005 /* WatchScheduleV2.swift */,
+				E22000000000000000000001 /* HolidayCalendar.swift */,
+				E22000000000000000000002 /* HolidayTemplates.json */,
+				E22000000000000000000003 /* HolidayTemplateAttributions.json */,
 				B32000090000000000000009 /* WatchDisplayProjection.swift */,
 				B32000040000000000000004 /* WatchShiftEvaluation.swift */,
 				720000061234567890ABCDEF /* OffWorkCountdownWidget.swift */,
@@ -593,6 +604,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E22000000000000000000102 /* HolidayTemplates.json in Resources */,
+				E22000000000000000000103 /* HolidayTemplateAttributions.json in Resources */,
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
 				C40000010000000000000001 /* Localizable.xcstrings in Resources */,
@@ -646,6 +659,7 @@
 				E21900000000000000000103 /* ExtendedSchedule.swift in Sources */,
 				E21900000000000000000104 /* ExtendedScheduleRules.swift in Sources */,
 				E21900000000000000000105 /* WatchScheduleV2.swift in Sources */,
+				E22000000000000000000101 /* HolidayCalendar.swift in Sources */,
 				B320000A000000000000000A /* WatchDisplayProjection.swift in Sources */,
 				B32000030000000000000003 /* WatchShiftEvaluation.swift in Sources */,
 			);
@@ -684,6 +698,7 @@
 				E21900000000000000000203 /* ExtendedSchedule.swift in Sources */,
 				E21900000000000000000204 /* ExtendedScheduleRules.swift in Sources */,
 				E21900000000000000000205 /* WatchScheduleV2.swift in Sources */,
+				E22000000000000000000201 /* HolidayCalendar.swift in Sources */,
 				D11000000000000000000012 /* WatchDisplayProjection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -702,6 +717,7 @@
 				E21900000000000000000303 /* ExtendedSchedule.swift in Sources */,
 				E21900000000000000000304 /* ExtendedScheduleRules.swift in Sources */,
 				E21900000000000000000305 /* WatchScheduleV2.swift in Sources */,
+				E22000000000000000000301 /* HolidayCalendar.swift in Sources */,
 				D11000000000000000000013 /* WatchDisplayProjection.swift in Sources */,
 				D11000000000000000000016 /* WatchLocalizations.generated.swift in Sources */,
 			);

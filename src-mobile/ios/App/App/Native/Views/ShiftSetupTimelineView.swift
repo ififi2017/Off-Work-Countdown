@@ -55,6 +55,13 @@ struct ShiftSetupTimelineView: View {
                             row(entry, now: now, isLast: entry.id == upcoming.last?.id)
                         }
                     }
+                    HolidayCoverageNoticeView(
+                        regionIdentifier: holidayRegionIdentifier,
+                        dates: upcoming.compactMap(\.date),
+                        timeZone: shifts.preferences.recordsTimeZone,
+                        text: shifts.text
+                    )
+                    .padding(.top, 6)
                 }
             }
 
@@ -66,6 +73,11 @@ struct ShiftSetupTimelineView: View {
                 }
             }
         }
+    }
+
+    private var holidayRegionIdentifier: String? {
+        guard shifts.preferences.isExtendedScheduleEnabled else { return nil }
+        return shifts.preferences.extendedScheduleContent?.holidayRegionIdentifier
     }
 
     @ViewBuilder

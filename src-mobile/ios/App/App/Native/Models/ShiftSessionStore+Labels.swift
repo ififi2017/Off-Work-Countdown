@@ -20,6 +20,14 @@ extension ShiftSessionStore {
     }
 
     var scheduleLabel: String {
+        if preferences.isExtendedScheduleEnabled, let content = preferences.extendedScheduleContent {
+            return switch content.rule?.preset {
+            case .weekly: text.t("scheduleClassic")
+            case .alternatingWeeks: text.t("scheduleAlternating")
+            case .rotation, .custom: text.t("scheduleRotation")
+            case nil: text.t("scheduleFreeCalendar")
+            }
+        }
         return switch self.session.effectiveScheduleMode() {
         case .classic: text.t("scheduleClassic")
         case .alternating: text.t("scheduleAlternating")

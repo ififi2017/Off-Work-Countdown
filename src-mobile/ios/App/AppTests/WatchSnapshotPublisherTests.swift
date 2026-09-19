@@ -353,7 +353,7 @@ struct WatchSnapshotPublisherTests {
     _ = await publisher.handlePairingHello(try JSONEncoder().encode(hello))
     let initial = try #require(publisher.currentPackage)
     #expect(runtime.plus.isAuthorized == false)
-    #expect(initial.schemaVersion == 2)
+    #expect(initial.schemaVersion == WatchSnapshotContract.scheduleSchemaVersion)
     #expect(initial.access.status == .free)
     #expect(initial.content == nil)
     #expect(initial.schedule != nil)

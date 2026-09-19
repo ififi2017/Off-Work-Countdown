@@ -696,6 +696,7 @@ final class RecordCoordinator {
             shiftTypes: content.shiftTypes + liveTypes.filter { !saved.contains($0.id) },
             rule: content.rule,
             handSetDays: extendedSchedulePlan?.handSetDays ?? ExtendedSchedulePlan.handSetDays(from: rosterDays),
+            holidayRegionIdentifier: content.holidayRegionIdentifier,
             frozenShiftTypes: ExtendedSchedulePlan.frozenShiftTypes(from: rosterDays),
             revision: planRevision
         )
@@ -717,6 +718,8 @@ final class RecordCoordinator {
             shiftTypes: base.shiftTypes,
             rule: base.rule,
             handSetDays: ExtendedScheduleEditing.handSetDays(base.handSetDays, applying: edits),
+            holidayRegionIdentifier: base.holidayRegionIdentifier,
+            holidayOverrides: base.holidayOverrides,
             frozenShiftTypes: base.frozenShiftTypes.filter { edits[$0.key] == nil },
             revision: planRevision
         )
@@ -739,6 +742,8 @@ final class RecordCoordinator {
             shiftTypes: plan.shiftTypes,
             rule: plan.rule,
             handSetDays: days,
+            holidayRegionIdentifier: plan.holidayRegionIdentifier,
+            holidayOverrides: plan.holidayOverrides,
             frozenShiftTypes: plan.frozenShiftTypes,
             fallsBackToBaseSchedule: plan.fallsBackToBaseSchedule,
             pinnedDayKey: plan.pinnedDayKey,
@@ -880,6 +885,7 @@ final class RecordCoordinator {
                 shiftTypes: content.shiftTypes + liveTypes.filter { !saved.contains($0.id) },
                 rule: content.rule,
                 handSetDays: ExtendedSchedulePlan.handSetDays(from: rosterDays),
+                holidayRegionIdentifier: content.holidayRegionIdentifier,
                 frozenShiftTypes: ExtendedSchedulePlan.frozenShiftTypes(from: rosterDays)
             )
         } else {

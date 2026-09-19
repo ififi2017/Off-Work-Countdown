@@ -37,13 +37,15 @@ struct ScheduleSettingsView: View {
                     onRemovePattern: removePattern
                 )
                 .padding(.horizontal, OWCDesign.pageInset)
-                .padding(.top, 4)
+                .frame(maxWidth: 600)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 12)
                 .padding(.bottom, 24)
             }
         }
         .scrollBounceBehavior(.basedOnSize)
-        .safeAreaPadding(.bottom, OWCDesign.detailBottomInset)
         .background(OWCDesign.page)
+        .toolbar(.hidden, for: .tabBar)
         .navigationTitle(shifts.text.t("workSchedule"))
         .navigationBarTitleDisplayMode(.inline)
         .owcDetailBack(
@@ -117,7 +119,8 @@ struct ScheduleSettingsView: View {
         let today = shifts.session.extendedTodayKey(at: .now)
         let plan = ExtendedSchedulePlan(
             shiftTypes: content.shiftTypes, rule: content.rule,
-            handSetDays: ExtendedScheduleEditing.handSetDays(shifts.preferences.handSetDays, applying: draft.rosterEdits)
+            handSetDays: ExtendedScheduleEditing.handSetDays(shifts.preferences.handSetDays, applying: draft.rosterEdits),
+            holidayRegionIdentifier: content.holidayRegionIdentifier
         )
         let preserved = ExtendedScheduleEditing.keepingPattern(
             plan,

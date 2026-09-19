@@ -79,6 +79,8 @@ nonisolated struct ExtendedSchedule: Equatable, Sendable {
     var isEnabled: Bool
     var shiftTypes: [ShiftType]
     var rule: ShiftCycleRule?
+    /// Nil predates templates; an empty identifier explicitly disables them.
+    var holidayRegionIdentifier: String? = nil
     /// The zone whose civil dates the rule anchor and roster day keys name.
     var timeZoneIdentifier: String
     var editedAt: Date
@@ -86,10 +88,11 @@ nonisolated struct ExtendedSchedule: Equatable, Sendable {
     var editTieBreaker: UUID
 
     var content: ExtendedScheduleContent {
-        get { ExtendedScheduleContent(shiftTypes: shiftTypes, rule: rule) }
+        get { ExtendedScheduleContent(shiftTypes: shiftTypes, rule: rule, holidayRegionIdentifier: holidayRegionIdentifier) }
         set {
             shiftTypes = newValue.shiftTypes
             rule = newValue.rule
+            holidayRegionIdentifier = newValue.holidayRegionIdentifier
         }
     }
 
@@ -106,9 +109,11 @@ nonisolated struct ExtendedSchedule: Equatable, Sendable {
 nonisolated struct ExtendedScheduleContent: Codable, Hashable, Sendable {
     var shiftTypes: [ShiftType]
     var rule: ShiftCycleRule?
+    var holidayRegionIdentifier: String? = nil
 
     func isValid(in zone: TimeZone) -> Bool {
-        guard shiftTypes.allSatisfy(\.isValid),
+        guard HolidayCalendar.isValidRegionIdentifier(holidayRegionIdentifier),
+              shiftTypes.allSatisfy(\.isValid),
               Set(shiftTypes.map(\.id)).count == shiftTypes.count
         else { return false }
         guard let rule else { return true }

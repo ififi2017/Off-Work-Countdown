@@ -41,4 +41,10 @@ struct ReleaseNotesTests {
         #expect(!plus.hasSeenIntro)
         #expect(ReleaseNotes.shouldPresent(onboardingComplete: true, seenRelease: "3.1.8"))
     }
+
+    @Test func holidayIntroductionIsUpgradeOnlyAndShownOnce() {
+        #expect(!ReleaseNotes.shouldPresent(onboardingComplete: false, seenRelease: nil))
+        #expect(ReleaseNotes.shouldPresent(onboardingComplete: true, seenRelease: "3.1.9"))
+        #expect(!ReleaseNotes.shouldPresent(onboardingComplete: true, seenRelease: ReleaseNotes.current))
+    }
 }
