@@ -42,7 +42,7 @@ Watch 与排班、提醒、汇总与收入规则（019 R1–R3）的 Swift 差�
 
 ## 3.2.0 整改的 PR 门禁
 
-2026-09-19 远端核对：PR #207 的 `App | PR Check`、`App | PR Check | Test - iOS` 和 `App | PR Check | Test - watchOS` 均为 SUCCESS，说明下面的 PR 验证流程已实际运行。是否设置为必需合并检查需单独核对仓库规则；新版本的归档和 TestFlight 验收仍独立进行。
+2026-09-19 远端核对：PR #207 的 `App | PR Check`、`App | PR Check | Test - iOS` 和 `App | PR Check | Test - watchOS` 均为 SUCCESS，说明下面的 PR 验证流程已实际运行。main 的旧分支保护 API 返回 `Branch not protected`，生效 rulesets API 返回空列表，尚未设为强制合并门禁。新版本的归档和 TestFlight 验收仍独立进行。
 
 018 要求保留上面的 main 归档分发工作流，另建 PR 验证工作流。以下是工作流要求；修改此文档不代表 GitHub 合并规则已经生效。
 
