@@ -307,18 +307,22 @@ struct WatchIndependentScheduleTests {
         #expect(times.contains(date("2026-09-21T09:00:00Z")))
     }
 
-    @Test("Complication timelines bound render volume without dropping shift boundaries")
+    @Test("Complication timelines update each minute without dropping shift boundaries")
     func complicationRenderVolume() {
         let value = package(schedule())
         let start = date("2026-09-21T00:02:13Z")
         let now = Date(timeIntervalSince1970: Double(start) / 1_000)
         let dates = WatchDisplayProjection.timelineDates(for: value, from: now)
         let times = dates.map { Int64(($0.timeIntervalSince1970 * 1_000).rounded()) }
-        // Previously this ordinary two-day schedule produced over 250 views.
-        #expect(dates.count <= 80)
+        // Minute entries cover the next hour; later coverage stays sparse so
+        // this ordinary two-day schedule remains well below the old 250 views.
+        #expect(dates.count <= 128)
         #expect(times.first == start)
         #expect(times.last == start + 48 * 3_600_000)
         #expect(times == Array(Set(times)).sorted())
+        for offset in 1...60 {
+            #expect(times.contains(start + Int64(offset) * 60_000))
+        }
         for day in ["2026-09-21", "2026-09-22"] {
             for clock in ["01:00:00Z", "04:00:00Z", "05:00:00Z", "09:00:00Z", "16:00:00Z"] {
                 #expect(times.contains(date(day + "T" + clock)))
