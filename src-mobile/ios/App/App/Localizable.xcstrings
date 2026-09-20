@@ -2976,121 +2976,121 @@
         }
       }
     },
-    "appleWatchFreeSection": {
+    "appleWatchFeaturesSection": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "مجاني"
+            "value": "الميزات"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kostenlos"
+            "value": "Funktionen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Free"
+            "value": "Features"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratis"
+            "value": "Funciones"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratuit"
+            "value": "Fonctionnalités"
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "मुफ़्त"
+            "value": "सुविधाएँ"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratis"
+            "value": "Fitur"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratis"
+            "value": "Funzioni"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "無料"
+            "value": "機能"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "무료"
+            "value": "기능"
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "मोफत"
+            "value": "वैशिष्ट्ये"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratuito"
+            "value": "Recursos"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Бесплатно"
+            "value": "Возможности"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ฟรี"
+            "value": "คุณสมบัติ"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ücretsiz"
+            "value": "Özellikler"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Miễn phí"
+            "value": "Tính năng"
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "免费"
+            "value": "功能"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "免費"
+            "value": "功能"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "免費"
+            "value": "功能"
           }
         }
       }
@@ -96624,115 +96624,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "أصبح للنشاط المباشر الخاص بالعدّ التنازلي تصميم مضغوط خاص به على Apple Watch، ويظل مجانيًا للجميع."
+            "value": "أصبح للنشاط المباشر الخاص بالعدّ التنازلي تصميم مضغوط خاص به على Apple Watch."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Die Live-Aktivität des Feierabend-Countdowns hat jetzt ihr eigenes kompaktes Layout auf der Apple Watch – und bleibt für alle kostenlos."
+            "value": "Die Live-Aktivität des Feierabend-Countdowns hat jetzt ihr eigenes kompaktes Layout auf der Apple Watch."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The countdown Live Activity now has its own compact layout on Apple Watch, and it stays free for everyone."
+            "value": "The countdown Live Activity now has its own compact layout on Apple Watch."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "La actividad en vivo de la cuenta atrás ahora tiene su propio diseño compacto en el Apple Watch, y sigue siendo gratis para todos."
+            "value": "La actividad en vivo de la cuenta atrás ahora tiene su propio diseño compacto en el Apple Watch."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "L’activité en direct du compte à rebours a désormais sa propre mise en page compacte sur l’Apple Watch, et elle reste gratuite pour tout le monde."
+            "value": "L’activité en direct du compte à rebours a désormais sa propre mise en page compacte sur l’Apple Watch."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "काउंटडाउन की लाइव ऐक्टिविटी को अब Apple Watch पर अपना खास कॉम्पैक्ट लेआउट मिल गया है, और यह सबके लिए मुफ़्त बनी रहती है।"
+            "value": "काउंटडाउन की लाइव ऐक्टिविटी को अब Apple Watch पर अपना खास कॉम्पैक्ट लेआउट मिल गया है।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Live Activity hitung mundur kini punya tata letak ringkasnya sendiri di Apple Watch, dan tetap gratis untuk semua orang."
+            "value": "Live Activity hitung mundur kini punya tata letak ringkasnya sendiri di Apple Watch."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "L’attività in tempo reale del conto alla rovescia ha ora un suo layout compatto su Apple Watch, e resta gratuita per tutti."
+            "value": "L’attività in tempo reale del conto alla rovescia ha ora un suo layout compatto su Apple Watch."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "カウントダウンのライブアクティビティに、Apple Watch専用のコンパクトなレイアウトが追加されました。これからも無料でご利用いただけます。"
+            "value": "カウントダウンのライブアクティビティに、Apple Watch専用のコンパクトなレイアウトが追加されました。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "카운트다운 실시간 액티비티가 이제 Apple Watch에 맞는 컴팩트한 레이아웃을 갖췄고, 모두에게 계속 무료로 제공됩니다."
+            "value": "카운트다운 실시간 액티비티가 이제 Apple Watch에 맞는 컴팩트한 레이아웃을 갖췄습니다."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "काउंटडाउनच्या लाइव्ह ॲक्टिव्हिटीला आता Apple Watch वर स्वतःचा कॉम्पॅक्ट लेआउट मिळाला आहे, आणि तो सर्वांसाठी मोफतच राहतो."
+            "value": "काउंटडाउनच्या लाइव्ह ॲक्टिव्हिटीला आता Apple Watch वर स्वतःचा कॉम्पॅक्ट लेआउट मिळाला आहे."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "A Atividade ao Vivo da contagem regressiva agora tem seu próprio layout compacto no Apple Watch, e continua gratuita para todos."
+            "value": "A Atividade ao Vivo da contagem regressiva agora tem seu próprio layout compacto no Apple Watch."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Live-активность обратного отсчёта теперь получила отдельный компактный вид на Apple Watch и остаётся бесплатной для всех."
+            "value": "Live-активность обратного отсчёта теперь получила отдельный компактный вид на Apple Watch."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "กิจกรรมสดของตัวนับถอยหลังตอนนี้มีเลย์เอาต์ขนาดกะทัดรัดเฉพาะบน Apple Watch แล้ว และยังคงใช้งานได้ฟรีสำหรับทุกคน"
+            "value": "กิจกรรมสดของตัวนับถอยหลังตอนนี้มีเลย์เอาต์ขนาดกะทัดรัดเฉพาะบน Apple Watch แล้ว"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Geri sayımın Canlı Etkinliği artık Apple Watch’ta kendi kompakt düzenine sahip ve herkes için ücretsiz kalmaya devam ediyor."
+            "value": "Geri sayımın Canlı Etkinliği artık Apple Watch’ta kendi kompakt düzenine sahip."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoạt động trực tiếp của bộ đếm ngược giờ đây có bố cục gọn gàng riêng trên Apple Watch, và vẫn miễn phí cho tất cả mọi người."
+            "value": "Hoạt động trực tiếp của bộ đếm ngược giờ đây có bố cục gọn gàng riêng trên Apple Watch."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "倒计时实时活动在 Apple Watch 上有了专属的紧凑样式，所有人都可以免费使用。"
+            "value": "倒计时实时活动在 Apple Watch 上有了专属的紧凑样式。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "倒數即時動態在 Apple Watch 上有了專屬的精簡樣式，所有人都可以免費使用。"
+            "value": "倒數即時動態在 Apple Watch 上有了專屬的精簡樣式。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "倒數即時動態在 Apple Watch 上有了專屬的精簡樣式，所有人都能免費使用。"
+            "value": "倒數即時動態在 Apple Watch 上有了專屬的精簡樣式。"
           }
         }
       }
@@ -96981,115 +96981,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "مجاني — الحالة والوقت المتبقي والتقدم ووقت الانصراف في نظرة واحدة. حلقة تقدم دائرية، أو الوقت المتبقي ووقت الانصراف في إضافة مستطيلة."
+            "value": "الحالة والوقت المتبقي والتقدم ووقت الانصراف في نظرة واحدة. حلقة تقدم دائرية، أو الوقت المتبقي ووقت الانصراف في إضافة مستطيلة."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kostenlos — Status, verbleibende Zeit, Fortschritt und dein Feierabend auf einen Blick. Ein runder Fortschrittsring oder verbleibende Zeit und dein Feierabend in einer rechteckigen Komplikation."
+            "value": "Status, verbleibende Zeit, Fortschritt und dein Feierabend auf einen Blick. Ein runder Fortschrittsring oder verbleibende Zeit und dein Feierabend in einer rechteckigen Komplikation."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Free — Status, time left, progress and your off-work time in one glance. A circular progress ring, or time left and your off-work time in a rectangle."
+            "value": "Status, time left, progress and your off-work time in one glance. A circular progress ring, or time left and your off-work time in a rectangle."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratis — Estado, tiempo restante, progreso y tu hora de salida de un vistazo. Un anillo de progreso circular, o el tiempo restante y tu hora de salida en una complicación rectangular."
+            "value": "Estado, tiempo restante, progreso y tu hora de salida de un vistazo. Un anillo de progreso circular, o el tiempo restante y tu hora de salida en una complicación rectangular."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratuit — Statut, temps restant, progression et votre heure de départ en un coup d’œil. Un anneau de progression circulaire, ou le temps restant et votre heure de départ dans une complication rectangulaire."
+            "value": "Statut, temps restant, progression et votre heure de départ en un coup d’œil. Un anneau de progression circulaire, ou le temps restant et votre heure de départ dans une complication rectangulaire."
           }
         },
         "hi-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "मुफ़्त — एक नज़र में स्थिति, बचा हुआ समय, प्रगति और आपके छूटने का समय। एक गोल प्रगति रिंग, या एक आयताकार में बचा हुआ समय और आपके छूटने का समय।"
+            "value": "एक नज़र में स्थिति, बचा हुआ समय, प्रगति और आपके छूटने का समय। एक गोल प्रगति रिंग, या एक आयताकार में बचा हुआ समय और आपके छूटने का समय।"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratis — Status, sisa waktu, kemajuan, dan waktu pulang Anda sekilas. Cincin kemajuan bundar, atau sisa waktu dan waktu pulang Anda dalam bentuk persegi panjang."
+            "value": "Status, sisa waktu, kemajuan, dan waktu pulang Anda sekilas. Cincin kemajuan bundar, atau sisa waktu dan waktu pulang Anda dalam bentuk persegi panjang."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratis — Stato, tempo rimanente, avanzamento e la tua uscita in un colpo d’occhio. Un anello di avanzamento circolare, oppure tempo rimanente e la tua uscita in una complicazione rettangolare."
+            "value": "Stato, tempo rimanente, avanzamento e la tua uscita in un colpo d’occhio. Un anello di avanzamento circolare, oppure tempo rimanente e la tua uscita in una complicazione rettangolare."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "無料 — ステータス、残り時間、進捗、退勤時刻をひと目で。 丸型の進捗リング、または長方形で残り時間と退勤時刻を表示します。"
+            "value": "ステータス、残り時間、進捗、退勤時刻をひと目で。 丸型の進捗リング、または長方形で残り時間と退勤時刻を表示します。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "무료 — 상태, 남은 시간, 진행률, 퇴근 시간을 한눈에. 원형 진행률 링, 또는 사각형에 남은 시간과 퇴근 시간을 표시합니다."
+            "value": "상태, 남은 시간, 진행률, 퇴근 시간을 한눈에. 원형 진행률 링, 또는 사각형에 남은 시간과 퇴근 시간을 표시합니다."
           }
         },
         "mr-IN": {
           "stringUnit": {
             "state": "translated",
-            "value": "मोफत — स्थिती, उरलेला वेळ, प्रगती आणि तुमची सुट्टीची वेळ एका नजरेत. गोल प्रगती रिंग, किंवा आयताकृतीमध्ये उरलेला वेळ आणि तुमची सुट्टीची वेळ."
+            "value": "स्थिती, उरलेला वेळ, प्रगती आणि तुमची सुट्टीची वेळ एका नजरेत. गोल प्रगती रिंग, किंवा आयताकृतीमध्ये उरलेला वेळ आणि तुमची सुट्टीची वेळ."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gratuito — Status, tempo restante, progresso e sua hora de saída em um único olhar. Um anel de progresso circular, ou o tempo restante e sua hora de saída em formato retangular."
+            "value": "Status, tempo restante, progresso e sua hora de saída em um único olhar. Um anel de progresso circular, ou o tempo restante e sua hora de saída em formato retangular."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Бесплатно — Статус, оставшееся время, прогресс и время окончания работы одним взглядом. Круглое кольцо прогресса или прямоугольное расширение с оставшимся временем и временем окончания работы."
+            "value": "Статус, оставшееся время, прогресс и время окончания работы одним взглядом. Круглое кольцо прогресса или прямоугольное расширение с оставшимся временем и временем окончания работы."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ฟรี — สถานะ เวลาที่เหลือ ความคืบหน้า และเวลาเลิกงานของคุณในที่เดียว วงแหวนความคืบหน้าทรงกลม หรือเวลาที่เหลือและเวลาเลิกงานของคุณในกลไกทรงสี่เหลี่ยม"
+            "value": "สถานะ เวลาที่เหลือ ความคืบหน้า และเวลาเลิกงานของคุณในที่เดียว วงแหวนความคืบหน้าทรงกลม หรือเวลาที่เหลือและเวลาเลิกงานของคุณในกลไกทรงสี่เหลี่ยม"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ücretsiz — Durum, kalan süre, ilerleme ve iş çıkış saatiniz tek bakışta. Dairesel bir ilerleme halkası veya dikdörtgen bir komplikasyonda kalan süre ile iş çıkış saatiniz."
+            "value": "Durum, kalan süre, ilerleme ve iş çıkış saatiniz tek bakışta. Dairesel bir ilerleme halkası veya dikdörtgen bir komplikasyonda kalan süre ile iş çıkış saatiniz."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Miễn phí — Trạng thái, thời gian còn lại, tiến độ và giờ tan ca của bạn, xem trong nháy mắt. Vòng tiến độ hình tròn, hoặc thời gian còn lại và giờ tan ca của bạn trong tổ hợp hình chữ nhật."
+            "value": "Trạng thái, thời gian còn lại, tiến độ và giờ tan ca của bạn, xem trong nháy mắt. Vòng tiến độ hình tròn, hoặc thời gian còn lại và giờ tan ca của bạn trong tổ hợp hình chữ nhật."
           }
         },
         "zh-CN": {
           "stringUnit": {
             "state": "translated",
-            "value": "免费 — 一眼看到状态、剩余时间、进度和下班时间。 圆形显示进度环，长方形显示剩余时间和下班时间。"
+            "value": "一眼看到状态、剩余时间、进度和下班时间。 圆形显示进度环，长方形显示剩余时间和下班时间。"
           }
         },
         "zh-HK": {
           "stringUnit": {
             "state": "translated",
-            "value": "免費 — 一眼睇到狀態、剩餘時間、進度同下班時間。 圓形顯示進度環，長方形顯示剩餘時間同下班時間。"
+            "value": "一眼睇到狀態、剩餘時間、進度同下班時間。 圓形顯示進度環，長方形顯示剩餘時間同下班時間。"
           }
         },
         "zh-TW": {
           "stringUnit": {
             "state": "translated",
-            "value": "免費 — 一眼看到狀態、剩餘時間、進度和下班時間。 圓形顯示進度環，長方形顯示剩餘時間和下班時間。"
+            "value": "一眼看到狀態、剩餘時間、進度和下班時間。 圓形顯示進度環，長方形顯示剩餘時間和下班時間。"
           }
         }
       }

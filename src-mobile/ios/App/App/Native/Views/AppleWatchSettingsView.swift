@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// What DoneAt does on Apple Watch, its free features, and how to
-/// add it. Informational only: nothing on this page changes a setting.
+/// What DoneAt does on Apple Watch and how to add it. Informational
+/// only: nothing on this page changes a setting.
 struct AppleWatchSettingsView: View {
     let text: AppText
 
@@ -14,7 +14,7 @@ struct AppleWatchSettingsView: View {
             VStack(spacing: 22) {
                 intro
 
-                section(text.t("appleWatchFreeSection")) {
+                section(text.t("appleWatchFeaturesSection")) {
                     OWCRow(
                         icon: "square.stack",
                         title: text.t("appleWatchSmartStackTitle"),
