@@ -332,6 +332,29 @@ struct WatchIndependentScheduleTests {
         }
     }
 
+    @Test("V4 preserves cleared free schedules across offline months")
+    func clearedFreeSchedule() throws {
+        let type = ShiftType(id: UUID(), name: "Day", kind: .work, startMinutes: 540,
+                             endMinutes: 1020, breakEnabled: false, breakStartMinutes: 720,
+                             breakDurationMinutes: 0, colorHex: "#FF7A00", isArchived: false)
+        let plan = ExtendedSchedulePlan(shiftTypes: [type], rule: nil,
+            handSetDays: ["2026-08-21": type.id, "2026-09-22": type.id],
+            clearedFromDayKey: "2026-09-20")
+        let schedule = schedule(plan: plan)
+        #expect(package(schedule, schemaVersion: 3).isValid == false)
+        let value = try WatchSnapshotDecoderV1.decode(JSONEncoder().encode(package(schedule, schemaVersion: 4)))
+        for day in ["2026-09-21", "2026-10-22", "2027-09-22"] {
+            guard case .content(let display) = WatchDisplayProjection.project(value, nowMs: date(day + "T02:00:00Z")) else {
+                Issue.record("Cleared schedules remain valid offline"); return
+            }
+            #expect(display.phase == nil)
+        }
+        guard case .content(let assigned) = WatchDisplayProjection.project(value, nowMs: date("2026-09-22T02:00:00Z")) else {
+            Issue.record("Explicit day must survive clearing"); return
+        }
+        #expect(assigned.phase == .working)
+    }
+
     @Test("V2 remains atomic on disk, rejects late revisions and restores after restart")
     func durableSchedule() async throws {
         let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)

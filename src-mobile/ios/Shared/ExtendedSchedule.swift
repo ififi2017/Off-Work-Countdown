@@ -81,6 +81,8 @@ nonisolated struct ExtendedSchedule: Equatable, Sendable {
     var rule: ShiftCycleRule?
     /// Nil predates templates; an empty identifier explicitly disables them.
     var holidayRegionIdentifier: String? = nil
+    /// Free schedules stop automatic carry-over and holiday assignments from this civil day.
+    var clearedFromDayKey: String? = nil
     /// The zone whose civil dates the rule anchor and roster day keys name.
     var timeZoneIdentifier: String
     var editedAt: Date
@@ -88,11 +90,12 @@ nonisolated struct ExtendedSchedule: Equatable, Sendable {
     var editTieBreaker: UUID
 
     var content: ExtendedScheduleContent {
-        get { ExtendedScheduleContent(shiftTypes: shiftTypes, rule: rule, holidayRegionIdentifier: holidayRegionIdentifier) }
+        get { ExtendedScheduleContent(shiftTypes: shiftTypes, rule: rule, holidayRegionIdentifier: holidayRegionIdentifier, clearedFromDayKey: clearedFromDayKey) }
         set {
             shiftTypes = newValue.shiftTypes
             rule = newValue.rule
             holidayRegionIdentifier = newValue.holidayRegionIdentifier
+            clearedFromDayKey = newValue.clearedFromDayKey
         }
     }
 
@@ -110,9 +113,12 @@ nonisolated struct ExtendedScheduleContent: Codable, Hashable, Sendable {
     var shiftTypes: [ShiftType]
     var rule: ShiftCycleRule?
     var holidayRegionIdentifier: String? = nil
+    /// Free schedules stop automatic carry-over and holiday assignments from this civil day.
+    var clearedFromDayKey: String? = nil
 
     func isValid(in zone: TimeZone) -> Bool {
-        guard HolidayCalendar.isValidRegionIdentifier(holidayRegionIdentifier),
+        guard clearedFromDayKey.map({ ExtendedScheduleResolver.parse(dayKey: $0) != nil }) ?? true,
+              HolidayCalendar.isValidRegionIdentifier(holidayRegionIdentifier),
               shiftTypes.allSatisfy(\.isValid),
               Set(shiftTypes.map(\.id)).count == shiftTypes.count
         else { return false }
@@ -141,6 +147,8 @@ nonisolated struct RosterDay: Equatable, Sendable {
     /// Nil keeps rows written by older builds and future roster assignments
     /// on the live schedule type.
     var assignedShiftType: ShiftType? = nil
+    /// Missing on older rows, which must conservatively remain manual.
+    var generatedFromPattern: Bool? = nil
     var timeZoneIdentifier: String
     var editedAt: Date
     var editCount: Int

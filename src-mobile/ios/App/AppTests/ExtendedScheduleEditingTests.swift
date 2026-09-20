@@ -711,4 +711,103 @@ struct ExtendedScheduleEditingTests {
         #expect(runtime.preferences.extendedScheduleContent == saved)
     }
 
+    @Test("Opening the timer alone does not protect an unstarted planned shift")
+    func clearProtectsTimingNotVisits() throws {
+        let runtime = try Self.runtime()
+        let now = try Self.at(runtime, 7, 6)
+        let anchor = runtime.preferences.recordsCalendar.startOfDay(for: now)
+        runtime.records.recordObservation(kind: .timerSurfaceFirstSeen, eventID: UUID(),
+            shiftAnchorDate: anchor, occurredAt: now, snapshotID: UUID(), valueData: nil,
+            timeZoneIdentifier: Self.zoneIdentifier)
+        #expect(runtime.shifts.protectedRosterDays(at: now).contains("2026-10-07") == false)
+        runtime.records.recordObservation(kind: .countdownStarted, eventID: UUID(),
+            shiftAnchorDate: anchor, occurredAt: now, snapshotID: UUID(), valueData: nil,
+            timeZoneIdentifier: Self.zoneIdentifier)
+        #expect(runtime.shifts.protectedRosterDays(at: now).contains("2026-10-07"))
+    }
+
+    @Test("Clearing future plans preserves history, timing days and deliberate edits")
+    func clearOnlyExpectedDays() {
+        let content = ExtendedScheduleContent(shiftTypes: [Self.earlyType], rule: nil)
+        func row(_ day: String, generated: Bool?) -> RosterDay {
+            RosterDay(dayKey: day, shiftTypeID: Self.early, generatedFromPattern: generated,
+                      timeZoneIdentifier: Self.zoneIdentifier, editedAt: .now, editCount: 0, editTieBreaker: UUID())
+        }
+        let stored = [row("2026-10-06", generated: true), row("2026-10-07", generated: true),
+                      row("2026-10-08", generated: true), row("2026-10-09", generated: nil),
+                      row("2026-10-10", generated: true)]
+        let draft = ScheduleFieldChange(
+            rosterEdits: ["2026-10-10": .shift(Self.night), "2026-10-11": .shift(Self.early),
+                          "2026-10-12": .shift(Self.night)],
+            materializedRosterDays: ["2026-10-11"])
+        let cleared = ExtendedScheduleEditing.clearingExpectedDays(
+            draft: draft, content: content, stored: stored, from: "2026-10-07",
+            protectedDays: ["2026-10-07"])
+        #expect(cleared.extendedContent?.clearedFromDayKey == "2026-10-07")
+        #expect(cleared.rosterEdits?["2026-10-08"] == .followPattern)
+        #expect(cleared.rosterEdits?["2026-10-06"] == nil)
+        #expect(cleared.rosterEdits?["2026-10-07"] == nil)
+        #expect(cleared.rosterEdits?["2026-10-09"] == nil)
+        #expect(cleared.rosterEdits?["2026-10-10"] == .shift(Self.night))
+        #expect(cleared.rosterEdits?["2026-10-11"] == nil)
+        #expect(cleared.rosterEdits?["2026-10-12"] == .shift(Self.night))
+        #expect(cleared.materializedRosterDays.isEmpty)
+        var concurrentlyEdited = stored
+        concurrentlyEdited[2].generatedFromPattern = nil
+        let rebased = ExtendedScheduleEditing.clearingExpectedDays(
+            draft: cleared, content: content, stored: concurrentlyEdited,
+            from: "2026-10-07", protectedDays: ["2026-10-07"])
+        #expect(rebased.rosterEdits?["2026-10-08"] == nil)
+        var returningToPattern = cleared
+        returningToPattern.restorePatternAfterFreePreview()
+        #expect(returningToPattern.clearExpectedFromDayKey == nil)
+    }
+
+    @Test("Cleared free schedules stay empty across months, retaining explicit days and backup fields")
+    func clearedPlanSurvivesSaveAndBackup() throws {
+        let runtime = try Self.runtime()
+        let date = try Self.at(runtime, 7, 6)
+        let content = ExtendedScheduleContent(shiftTypes: [Self.earlyType], rule: nil,
+                                             holidayRegionIdentifier: "CN")
+        let initial = ScheduleFieldChange(extendedScheduleEnabled: true, extendedContent: content,
+            rosterEdits: ["2026-10-07": .shift(Self.early), "2026-10-08": .shift(Self.early),
+                          "2026-10-09": .shift(Self.early)],
+            materializedRosterDays: ["2026-10-07", "2026-10-08"])
+        #expect(runtime.shifts.applyScheduleChange(initial, decision: .applyToToday, at: date).synchronousResult == true)
+        let generated = try #require(runtime.records.state.rosterDays.first { $0.generatedFromPattern == true })
+        #expect(try JSONDecoder().decode(RosterDayDTO.self, from: JSONEncoder().encode(RosterDayDTO(generated))).value() == generated)
+        var legacy = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(RosterDayDTO(generated))) as? [String: Any])
+        legacy["generatedFromPattern"] = nil
+        #expect(try JSONDecoder().decode(RosterDayDTO.self, from: JSONSerialization.data(withJSONObject: legacy)).value()?.generatedFromPattern == nil)
+        let originalRecords = runtime.records.state.observations
+        #expect(runtime.preferences.recordsGeneratedRosterDays == ["2026-10-07", "2026-10-08"])
+        let cleared = ExtendedScheduleEditing.clearingExpectedDays(
+            draft: ScheduleFieldChange(), content: content, stored: runtime.records.state.rosterDays,
+            from: "2026-10-07", protectedDays: [])
+        #expect(runtime.shifts.applyScheduleChange(cleared, decision: .applyToToday, at: date).synchronousResult == true)
+        #expect(runtime.records.state.observations == originalRecords)
+        #expect(runtime.session.snapshot(at: date)?.isWorkday == false)
+        let emptyDay = try #require(runtime.queries.resolvedDays(from: Self.at(runtime, 8, 12), through: Self.at(runtime, 8, 12)).first)
+        #expect(emptyDay.isScheduledWorkday == false)
+        #expect(emptyDay.segments.isEmpty)
+        let manualDay = try #require(runtime.queries.resolvedDays(from: Self.at(runtime, 9, 12), through: Self.at(runtime, 9, 12)).first)
+        #expect(manualDay.isScheduledWorkday)
+        #expect(runtime.queries.recordsMetrics(for: [manualDay]).workDurationMs == 8 * 3_600_000)
+        let saved = try #require(runtime.records.state.extendedSchedule)
+        let dto = try JSONDecoder().decode(ExtendedScheduleDTO.self, from: JSONEncoder().encode(ExtendedScheduleDTO(saved)))
+        #expect(dto.value() == saved)
+        let plan = try #require(ExtendedSchedulePlan(schedule: dto.value(), rosterDays: runtime.records.state.rosterDays))
+        let decoded = try JSONDecoder().decode(ExtendedSchedulePlan.self, from: JSONEncoder().encode(plan))
+        #expect(decoded == plan)
+        let resolver = ExtendedScheduleResolver(plan: decoded)
+        for key in ["2026-10-07", "2026-10-08", "2026-10-10", "2026-11-09", "2027-10-09"] {
+            let day = resolver.day(dayNumber: try #require(ExtendedScheduleResolver.dayNumber(dayKey: key)))
+            #expect(day.source == .unassigned)
+            #expect(day.isWorkday == false)
+        }
+        #expect(resolver.day(dayNumber: try #require(ExtendedScheduleResolver.dayNumber(dayKey: "2026-10-09"))).isWorkday)
+        let row = try #require(runtime.records.state.rosterDays.first)
+        #expect(try JSONDecoder().decode(RosterDayDTO.self, from: JSONEncoder().encode(RosterDayDTO(row))).value() == row)
+    }
+
 }

@@ -6,6 +6,7 @@ extension ScheduleFieldChange {
     var isEmpty: Bool { self == ScheduleFieldChange() }
 
     mutating func restorePatternAfterFreePreview() {
+        clearExpectedFromDayKey = nil
         guard !materializedRosterDays.isEmpty else { return }
         rosterEdits = rosterEdits?.filter { !materializedRosterDays.contains($0.key) }
         if rosterEdits?.isEmpty == true { rosterEdits = nil }
@@ -38,7 +39,8 @@ extension ScheduleFieldChange {
             let stored = store.handSetDays
             let changed = edits.filter { key, edit in
                 switch edit {
-                case .shift(let id): stored[key] != id
+                case .shift(let id):
+                    stored[key] != id || (store.recordsGeneratedRosterDays.contains(key) && !next.materializedRosterDays.contains(key))
                 case .followPattern: stored[key] != nil
                 }
             }
@@ -53,6 +55,9 @@ extension ScheduleFieldChange {
            next.rotationCycleDay == store.rotationCycleDay(at: date) {
             next.rotationCycleDay = nil
         }
+        var fieldsOnly = next
+        fieldsOnly.clearExpectedFromDayKey = nil
+        if fieldsOnly.isEmpty { next.clearExpectedFromDayKey = nil }
         return next
     }
 }

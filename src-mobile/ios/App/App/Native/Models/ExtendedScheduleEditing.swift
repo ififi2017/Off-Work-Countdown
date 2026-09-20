@@ -1,6 +1,19 @@
 import Foundation
 
 extension ShiftSessionStore {
+    func protectedRosterDays(at now: Date) -> Set<String> {
+        let calendar = preferences.recordsCalendar
+        var protected = Set(records.state.observations.filter { $0.kind.isWorkSessionRecord }.map {
+            RecordJSON.dayKey($0.shiftAnchorDate, calendar: calendar)
+        })
+        protected.formUnion(records.state.overrides.filter { $0.kind != .cleared }.map(\.dayKey))
+        protected.formUnion(records.state.exceptions.filter { !$0.isCleared && $0.origin == .user }.map(\.dayKey))
+        if let snapshot = session.snapshot(at: now), snapshot.isWorkday, !snapshot.isBeforeStart(at: now) {
+            protected.insert(RecordJSON.dayKey(snapshot.startDate, calendar: calendar))
+        }
+        return protected
+    }
+
     /// Materialize the first-run holiday choice only after hours, breaks and
     /// the pattern are final. Replaying the welcome flow never replaces a plan.
     @discardableResult
@@ -164,6 +177,63 @@ nonisolated enum ExtendedScheduleEditing {
         return next.isEmpty ? nil : next
     }
 
+    /// Only generated assignments can be removed. Legacy rows without provenance
+    /// remain manual; neither time records nor user corrections are mutated.
+    static func clearingExpectedDays(
+        draft: ScheduleFieldChange,
+        content: ExtendedScheduleContent,
+        stored: [RosterDay],
+        from today: String,
+        protectedDays: Set<String>
+    ) -> ScheduleFieldChange {
+        var next = draft
+        next.clearExpectedFromDayKey = today
+        let previousClear = content.clearedFromDayKey
+        var content = content
+        content.rule = nil
+        content.clearedFromDayKey = min(content.clearedFromDayKey ?? today, today)
+        next.extendedContent = content
+        next.extendedScheduleEnabled = true
+        let generated = Set(stored.filter { $0.generatedFromPattern == true }.map(\.dayKey))
+            .union(draft.materializedRosterDays)
+        var edits = draft.rosterEdits ?? [:]
+        // A day may have been timed or manually changed since the button was
+        // pressed. Recheck this at commit, before any generated row is erased.
+        if draft.clearExpectedFromDayKey != nil {
+            for (key, edit) in edits where key >= today && edit == .followPattern {
+                if protectedDays.contains(key) || !stored.contains(where: { $0.dayKey == key && $0.generatedFromPattern == true }) {
+                    edits[key] = nil
+                }
+            }
+        }
+        for key in generated where key >= today && !protectedDays.contains(key) {
+            // An explicit edit made after materializing the pattern wins.
+            if edits[key] != nil && !draft.materializedRosterDays.contains(key) { continue }
+            if stored.contains(where: { $0.dayKey == key }) {
+                edits[key] = .followPattern
+            } else {
+                edits[key] = nil
+            }
+            next.materializedRosterDays.remove(key)
+        }
+        // Freeze a protected day's planned assignment before disabling carry-over.
+        let resolver = ExtendedScheduleResolver(plan: ExtendedSchedulePlan(
+            shiftTypes: content.shiftTypes, rule: nil,
+            handSetDays: handSetDays(ExtendedSchedulePlan.handSetDays(from: stored), applying: draft.rosterEdits),
+            holidayRegionIdentifier: content.holidayRegionIdentifier,
+            clearedFromDayKey: previousClear
+        ))
+        for key in protectedDays where key >= today && edits[key] == nil {
+            guard !stored.contains(where: { $0.dayKey == key }),
+                  let number = ExtendedScheduleResolver.dayNumber(dayKey: key),
+                  let id = resolver.day(dayNumber: number).shiftTypeID else { continue }
+            edits[key] = .shift(id)
+            next.materializedRosterDays.insert(key)
+        }
+        next.rosterEdits = edits.isEmpty ? nil : edits
+        return next
+    }
+
     static func daysIn(year: Int, month: Int) -> Int {
         let next = month == 12 ? (year + 1, 1) : (year, month + 1)
         return CivilZone.dayNumber(year: next.0, month: next.1, day: 1) - CivilZone.dayNumber(year: year, month: month, day: 1)
@@ -291,7 +361,8 @@ extension ShiftSession {
         }
         return ExtendedScheduleEditing.filling(
             ExtendedScheduleContent(shiftTypes: [work], rule: nil,
-                                    holidayRegionIdentifier: preferences.extendedScheduleContent?.holidayRegionIdentifier),
+                                    holidayRegionIdentifier: preferences.extendedScheduleContent?.holidayRegionIdentifier,
+                                    clearedFromDayKey: preferences.extendedScheduleContent?.clearedFromDayKey),
             preset: preset,
             pattern: schedulePattern(for: preset, applying: change, at: date),
             workType: work.id,

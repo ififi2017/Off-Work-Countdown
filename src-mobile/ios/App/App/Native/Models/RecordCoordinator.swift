@@ -697,6 +697,7 @@ final class RecordCoordinator {
             rule: content.rule,
             handSetDays: extendedSchedulePlan?.handSetDays ?? ExtendedSchedulePlan.handSetDays(from: rosterDays),
             holidayRegionIdentifier: content.holidayRegionIdentifier,
+            clearedFromDayKey: content.clearedFromDayKey,
             frozenShiftTypes: ExtendedSchedulePlan.frozenShiftTypes(from: rosterDays),
             revision: planRevision
         )
@@ -719,6 +720,7 @@ final class RecordCoordinator {
             rule: base.rule,
             handSetDays: ExtendedScheduleEditing.handSetDays(base.handSetDays, applying: edits),
             holidayRegionIdentifier: base.holidayRegionIdentifier,
+            clearedFromDayKey: base.clearedFromDayKey,
             holidayOverrides: base.holidayOverrides,
             frozenShiftTypes: base.frozenShiftTypes.filter { edits[$0.key] == nil },
             revision: planRevision
@@ -743,6 +745,7 @@ final class RecordCoordinator {
             rule: plan.rule,
             handSetDays: days,
             holidayRegionIdentifier: plan.holidayRegionIdentifier,
+            clearedFromDayKey: plan.clearedFromDayKey,
             holidayOverrides: plan.holidayOverrides,
             frozenShiftTypes: plan.frozenShiftTypes,
             fallsBackToBaseSchedule: plan.fallsBackToBaseSchedule,
@@ -756,7 +759,7 @@ final class RecordCoordinator {
     /// Writes the calendar's changed days: a shift sets the day by hand, and
     /// following the pattern erases the row, leaving a tombstone other devices
     /// honour.
-    func applyRosterEdits(_ edits: [String: RosterDayEdit], timeZoneIdentifier: String, at date: Date = .now) {
+    func applyRosterEdits(_ edits: [String: RosterDayEdit], generatedDays: Set<String> = [], timeZoneIdentifier: String, at date: Date = .now) {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: timeZoneIdentifier) ?? .current
         let todayKey = RecordJSON.dayKey(date, calendar: calendar)
@@ -768,6 +771,7 @@ final class RecordCoordinator {
                     dayKey: dayKey,
                     shiftTypeID: id,
                     assignedShiftType: dayKey < todayKey ? types[id] : nil,
+                    generatedFromPattern: generatedDays.contains(dayKey) ? true : nil,
                     timeZoneIdentifier: timeZoneIdentifier,
                     editedAt: date,
                     editCount: 0,
@@ -894,6 +898,7 @@ final class RecordCoordinator {
                 rule: content.rule,
                 handSetDays: ExtendedSchedulePlan.handSetDays(from: rosterDays),
                 holidayRegionIdentifier: content.holidayRegionIdentifier,
+                clearedFromDayKey: content.clearedFromDayKey,
                 frozenShiftTypes: ExtendedSchedulePlan.frozenShiftTypes(from: rosterDays)
             )
         } else {

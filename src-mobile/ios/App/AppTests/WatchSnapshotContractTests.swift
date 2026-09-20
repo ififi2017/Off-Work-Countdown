@@ -21,7 +21,7 @@ struct WatchSnapshotContractTests {
             try WatchSnapshotDecoderV1.decode(Data(repeating: 0, count: WatchSnapshotContract.maximumEncodedBytes + 1))
         }
         var object = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(makePackage())) as? [String: Any])
-        object["schemaVersion"] = 4
+        object["schemaVersion"] = 5
         #expect(throws: WatchSnapshotDecodeError.unsupportedSchema) { try WatchSnapshotDecoderV1.decode(try JSONSerialization.data(withJSONObject: object)) }
         object["schemaVersion"] = 1
         object["expiresAtMs"] = 100

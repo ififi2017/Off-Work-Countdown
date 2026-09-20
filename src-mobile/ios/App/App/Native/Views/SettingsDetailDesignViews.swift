@@ -34,7 +34,8 @@ struct ScheduleSettingsView: View {
                     onContentChange: updateContent,
                     onManualChange: setManual,
                     onSetDay: setDay,
-                    onRemovePattern: removePattern
+                    onRemovePattern: removePattern,
+                    onClearExpected: clearExpected
                 )
                 .padding(.horizontal, OWCDesign.pageInset)
                 .frame(maxWidth: 600)
@@ -80,7 +81,9 @@ struct ScheduleSettingsView: View {
         draft = next.settled(against: shifts.preferences)
     }
 
-    private func updateContent(_ next: ExtendedScheduleContent) {
+    private func updateContent(_ updated: ExtendedScheduleContent) {
+        var next = updated
+        if next.rule != nil { next.clearedFromDayKey = nil }
         edit {
             if next.rule != nil { $0.restorePatternAfterFreePreview() }
             $0.extendedContent = next
@@ -98,6 +101,7 @@ struct ScheduleSettingsView: View {
     private func setManual(_ manual: Bool) {
         guard let content else { return }
         edit {
+            $0.clearExpectedFromDayKey = nil
             $0.extendedContent = content
             $0.extendedScheduleEnabled = !manual
             $0.scheduleMode = manual ? .off : .classic
@@ -113,6 +117,9 @@ struct ScheduleSettingsView: View {
             $0.rosterEdits = ExtendedScheduleEditing.editing(
                 $0.rosterEdits, dayKey: key, to: change, stored: shifts.preferences.handSetDays
             )
+            if case .shift = change, shifts.preferences.recordsGeneratedRosterDays.contains(key) {
+                $0.rosterEdits = ($0.rosterEdits ?? [:]).merging([key: change]) { _, new in new }
+            }
         }
     }
 
@@ -122,7 +129,8 @@ struct ScheduleSettingsView: View {
         let plan = ExtendedSchedulePlan(
             shiftTypes: content.shiftTypes, rule: content.rule,
             handSetDays: ExtendedScheduleEditing.handSetDays(shifts.preferences.handSetDays, applying: draft.rosterEdits),
-            holidayRegionIdentifier: content.holidayRegionIdentifier
+            holidayRegionIdentifier: content.holidayRegionIdentifier,
+            clearedFromDayKey: content.clearedFromDayKey
         )
         let preserved = ExtendedScheduleEditing.keepingPattern(
             plan,
@@ -149,6 +157,16 @@ struct ScheduleSettingsView: View {
                 Set(draft.rosterEdits?.keys.map { $0 } ?? [])
             ))
         }
+    }
+
+    private func clearExpected() {
+        guard let content, content.rule == nil, !isManual else { return }
+        let now = Date.now
+        let calendar = shifts.preferences.recordsCalendar
+        draft = ExtendedScheduleEditing.clearingExpectedDays(
+            draft: draft, content: content, stored: shifts.records.state.rosterDays,
+            from: RecordJSON.dayKey(now, calendar: calendar), protectedDays: shifts.protectedRosterDays(at: now)
+        ).settled(against: shifts.preferences, at: now)
     }
 
     private func requestSave() {
