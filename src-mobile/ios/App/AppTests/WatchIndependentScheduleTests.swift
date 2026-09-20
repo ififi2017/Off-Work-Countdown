@@ -307,6 +307,31 @@ struct WatchIndependentScheduleTests {
         #expect(times.contains(date("2026-09-21T09:00:00Z")))
     }
 
+    @Test("Complication timelines bound render volume without dropping shift boundaries")
+    func complicationRenderVolume() {
+        let value = package(schedule())
+        let start = date("2026-09-21T00:02:13Z")
+        let now = Date(timeIntervalSince1970: Double(start) / 1_000)
+        let dates = WatchDisplayProjection.timelineDates(for: value, from: now)
+        let times = dates.map { Int64(($0.timeIntervalSince1970 * 1_000).rounded()) }
+        // Previously this ordinary two-day schedule produced over 250 views.
+        #expect(dates.count <= 80)
+        #expect(times.first == start)
+        #expect(times.last == start + 48 * 3_600_000)
+        #expect(times == Array(Set(times)).sorted())
+        for day in ["2026-09-21", "2026-09-22"] {
+            for clock in ["01:00:00Z", "04:00:00Z", "05:00:00Z", "09:00:00Z", "16:00:00Z"] {
+                #expect(times.contains(date(day + "T" + clock)))
+            }
+        }
+        for time in times {
+            guard case .content = WatchDisplayProjection.project(value, nowMs: time) else {
+                Issue.record("Every complication entry must resolve from the cached schedule")
+                return
+            }
+        }
+    }
+
     @Test("V2 remains atomic on disk, rejects late revisions and restores after restart")
     func durableSchedule() async throws {
         let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)

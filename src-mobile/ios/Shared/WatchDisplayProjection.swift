@@ -65,8 +65,8 @@ nonisolated enum WatchDisplayProjection {
     }
 
     /// Dates at which a cached package can change without a new phone delivery.
-    /// Minute entries keep the progress ring useful while the exact rule and
-    /// expiry boundaries ensure state changes are never rounded past their time.
+    /// Sparse progress samples keep the Watch's render archive small; exact
+    /// shift, break and day boundaries are always added separately.
     static func timelineDates(
         for package: WatchSnapshotPackageV1?,
         from now: Date,
@@ -83,12 +83,17 @@ nonisolated enum WatchDisplayProjection {
                 milliseconds.insert(Int64(midnight))
                 midnight = zone.addCivilDaysMs(midnight, 1)
             }
-            for offset in 1...192 {
-                let instant = nowMs + Int64(offset) * 900_000
+            // WidgetKit renders every entry, not just the currently visible
+            // one. Quarter-hour entries for two days plus minute entries for
+            // the first hour used to produce about 250 rendered watch views.
+            for offset in 1...48 {
+                let instant = nowMs + Int64(offset) * 3_600_000
                 if instant <= end { milliseconds.insert(instant) }
             }
             if minuteCount > 0 {
-                for offset in 1...min(minuteCount, 120) { milliseconds.insert(nowMs + Int64(offset) * 60_000) }
+                for offset in stride(from: 5, through: min(minuteCount, 120), by: 5) {
+                    milliseconds.insert(nowMs + Int64(offset) * 60_000)
+                }
             }
             var cursor = nowMs
             // At most a handful of shifts fit in 48 hours. Keep a hard bound

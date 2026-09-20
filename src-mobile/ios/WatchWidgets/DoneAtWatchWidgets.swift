@@ -23,8 +23,8 @@ private struct DoneAtWatchProvider: TimelineProvider {
             }
             let cache = await WatchSnapshotCache.open(fileURL: fileURL)
             let package = await cache.currentPackage()
-            // Minute entries plus every exact rule and expiry boundary. Values are
-            // minute-granular on purpose: no second ticks on the watch face.
+            // Keep the render archive small, preserving every exact rule and
+            // expiry boundary alongside sparse progress samples.
             let entries = WatchDisplayProjection.timelineDates(for: package, from: now).map {
                 DoneAtWatchEntry(date: $0, display: WatchDisplayProjection.project(
                     package, nowMs: Int64($0.timeIntervalSince1970 * 1_000)

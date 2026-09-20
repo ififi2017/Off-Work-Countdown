@@ -45,6 +45,23 @@ struct HolidayTemplateTests {
         #expect(calendar.defaultRegionIdentifier(locale: Locale(identifier: "en_US")) == "US")
     }
 
+    @Test("Taiwan's Traditional Chinese name follows the app language",
+          arguments: ["zh-TW", "zh_TW", "zh-HK", "zh-Hant", "zh-Hant-TW", "zh-Hant-CN"])
+    func traditionalChineseRegionName(language: String) {
+        #expect(HolidayCalendar.shared.regionName("TW", locale: Locale(identifier: language)) == "台灣")
+    }
+
+    @Test("Other region names retain Foundation localization",
+          arguments: ["zh-CN", "en", "ja", "ko", "de", "es", "fr", "it", "pt", "ru",
+                      "ar", "hi-IN", "mr-IN", "id", "th", "tr", "vi"])
+    func otherRegionNames(language: String) {
+        let locale = Locale(identifier: language)
+        for region in ["TW", "CN", "HK", "JP", "US"] {
+            #expect(HolidayCalendar.shared.regionName(region, locale: locale)
+                    == (locale.localizedString(forRegionCode: region) ?? region))
+        }
+    }
+
     @Test("Holiday names fall back to English")
     func englishNameFallback() throws {
         let json = #"{"schemaVersion":1,"datasetVersion":"test","names":[{"en":"Founders Day"}],"regions":{"US":{"coveredFromYear":2026,"coveredThroughYear":2026,"days":[[20260102,0,0]]}}}"#
