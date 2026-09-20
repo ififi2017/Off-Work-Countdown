@@ -94,7 +94,14 @@ nonisolated struct HolidayCalendar: Sendable {
     }
 
     func regionName(_ identifier: String, locale: Locale) -> String {
-        locale.localizedString(forRegionCode: identifier) ?? identifier
+        // Foundation's region aliases can vary with device configuration even
+        // for an explicit locale. Keep the Traditional Chinese display name
+        // tied to the app language, including zh-TW and zh-HK overrides.
+        if identifier == "TW", locale.language.languageCode?.identifier == "zh",
+           locale.language.script?.identifier == "Hant" {
+            return "台灣"
+        }
+        return locale.localizedString(forRegionCode: identifier) ?? identifier
     }
 
     func coveredThroughYear(regionIdentifier: String) -> Int? {
