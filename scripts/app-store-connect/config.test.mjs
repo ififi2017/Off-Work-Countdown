@@ -103,6 +103,9 @@ describe("App Store Connect config", () => {
     const config = validConfig();
     config.localizations["en-US"].description = "YOUR APP DESCRIPTION";
     expect(findPlaceholders(config)).toContain("localizations.en-US.description");
+
+    config.localizations["en-US"].description = "YOUR SCHEDULE, ON iPhone AND iPad";
+    expect(findPlaceholders(config)).not.toContain("localizations.en-US.description");
   });
 
   it("loads screenshot size and MD5 from disk", () => {

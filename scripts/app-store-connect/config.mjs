@@ -74,7 +74,8 @@ const PREVIEW_TYPES = new Set([
   "APPLE_VISION_PRO",
 ]);
 
-const PLACEHOLDER_PATTERN = /\bYOUR(?:\b|_)|^填写|^WHAT(?:'S| IS)\b/u;
+const PLACEHOLDER_PATTERN =
+  /(?:^|© \d{4} )YOUR (?:LEGAL NAME|SUBTITLE|PROMOTIONAL TEXT|APP DESCRIPTION)$|^YOUR,KEYWORDS$|^填写|^WHAT'S NEW IN THIS VERSION$/u;
 
 function fail(message) {
   throw new Error(`Invalid App Store Connect config: ${message}`);
