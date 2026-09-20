@@ -2,7 +2,6 @@ import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { setTimeout as sleep } from "node:timers/promises";
 
 const CHROME =
   process.env.CHROME_BIN || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -66,12 +65,16 @@ export async function captureHtml({ html, htmlPath, width, height, scale, outFil
     ],
     { stdio: "ignore" },
   );
+  const exited = new Promise((resolve) => {
+    chrome.once("exit", resolve);
+    chrome.once("error", resolve);
+  });
   try {
-    await waitForFile(outFile, 20000);
+    await waitForFile(outFile, 60000);
   } finally {
     chrome.kill("SIGKILL");
-    await sleep(50);
-    rmSync(profile, { recursive: true, force: true });
+    await exited;
+    rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 }
 

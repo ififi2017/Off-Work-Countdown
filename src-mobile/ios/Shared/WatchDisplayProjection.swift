@@ -19,6 +19,12 @@ nonisolated struct WatchDisplayContent: Equatable, Sendable {
     let nextBoundaryAtMs: Int64?
     let nextShiftStartAtMs: Int64?
     let presentation: WatchPresentationV1
+
+    /// Before clock-in the next boundary is today's start, not the following
+    /// recurrence. The full planned duration is not a running countdown yet.
+    var upcomingShiftStartAtMs: Int64? {
+        phase == .before ? nextBoundaryAtMs : nextShiftStartAtMs
+    }
 }
 
 nonisolated enum WatchDisplayProjection {
@@ -71,6 +77,12 @@ nonisolated enum WatchDisplayProjection {
         var milliseconds: Set<Int64> = [nowMs]
         if let schedule = package.schedule {
             let end = min(nowMs + 48 * 3_600_000, WatchSnapshotContract.maximumJSONTimestamp)
+            let zone = CivilZone(identifier: schedule.configuration.timeZoneIdentifier)
+            var midnight = zone.addCivilDaysMs(zone.startOfCivilDayMs(Double(nowMs)), 1)
+            for _ in 0..<3 where midnight <= Double(end) {
+                milliseconds.insert(Int64(midnight))
+                midnight = zone.addCivilDaysMs(midnight, 1)
+            }
             for offset in 1...192 {
                 let instant = nowMs + Int64(offset) * 900_000
                 if instant <= end { milliseconds.insert(instant) }
@@ -230,7 +242,7 @@ nonisolated enum WatchDisplayFormat {
         case .resting:
             content.nextBoundaryAtMs.map { Footnote(key: "watchBackAt", atMs: $0, includesWeekday: false) }
         case .before:
-            content.nextBoundaryAtMs.map { Footnote(key: "watchNextShiftAt", atMs: $0, includesWeekday: false) }
+            content.nextBoundaryAtMs.map { Footnote(key: "watchNextShiftAt", atMs: $0, includesWeekday: true) }
         case nil:
             content.nextShiftStartAtMs.map { Footnote(key: "watchNextShiftAt", atMs: $0, includesWeekday: true) }
         }

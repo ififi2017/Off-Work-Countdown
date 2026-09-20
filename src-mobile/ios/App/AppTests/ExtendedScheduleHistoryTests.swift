@@ -222,4 +222,24 @@ struct ExtendedScheduleHistoryTests {
             == "scheduleNextMonthPlanned")
         #expect(ShiftSessionStore.scheduleMonthStatusKey(for: later, relativeTo: now, calendar: calendar) == nil)
     }
+    @Test("Legacy fixed history borrows an unambiguous shift name without changing old breaks")
+    func legacyNamedPreview() throws {
+        let runtime = try Self.runtime()
+        var named = Self.early
+        named.name = "Day"
+        named.startMinutes = 540
+        named.endMinutes = 1020
+        named.breakEnabled = true
+        named.breakStartMinutes = 720
+        named.breakDurationMinutes = 60
+        let preview = runtime.records.plannedRosterPreview(
+            dayKey: "2026-09-08", timeZoneIdentifier: Self.zone.identifier, fallbackTypes: [named])
+        guard case .shift(let historical) = preview else { Issue.record("Expected fixed history"); return }
+        #expect(historical.name == "Day")
+        #expect(historical.breakEnabled == false)
+        #expect(historical.id != named.id)
+        let day = try #require(runtime.queries.resolvedDays(from: Self.date(8), through: Self.date(8)).first)
+        #expect(day.segments.reduce(0) { $0 + $1.endAtMs - $1.startAtMs } == 8 * 3_600_000)
+    }
+
 }

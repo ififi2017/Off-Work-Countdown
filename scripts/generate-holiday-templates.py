@@ -59,7 +59,14 @@ def translated_names(holidays, code: str, dates: set, default_language: str) -> 
     fallback_language = "en_US" if "en_US" in supported else default_language
     by_language = {}
     for app_language, source_language in LANGUAGES.items():
-        language = source_language if source_language in supported else fallback_language
+        # Some sources only expose a regional locale (for example pt_BR/pt_PT).
+        # Keep the country's native variant when the app requests that language.
+        native_language = (
+            default_language
+            if default_language and default_language.split("_")[0] == source_language
+            else fallback_language
+        )
+        language = source_language if source_language in supported else native_language
         calendar = holidays.country_holidays(code, years=YEARS, language=language)
         by_language[app_language] = {day: calendar.get(day) for day in dates}
     return by_language

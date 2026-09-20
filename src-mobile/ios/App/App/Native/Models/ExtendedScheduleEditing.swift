@@ -1,5 +1,26 @@
 import Foundation
 
+extension ShiftSessionStore {
+    /// Materialize the first-run holiday choice only after hours, breaks and
+    /// the pattern are final. Replaying the welcome flow never replaces a plan.
+    @discardableResult
+    func completeSetup(holidayRegionIdentifier: String, at date: Date = .now) -> RecordCommand<Void> {
+        records.submitCommand { [self] in
+            records.withBatchedWrites {
+                if !preferences.onboardingComplete {
+                    var content = session.seededExtendedContent(applying: ScheduleFieldChange(), at: date)
+                    content.holidayRegionIdentifier = holidayRegionIdentifier
+                    _ = records.updateExtendedSchedule(
+                        content: content, enabled: preferences.scheduleMode != .off,
+                        timeZoneIdentifier: preferences.recordsTimeZoneIdentifier, at: date
+                    )
+                }
+                _ = preferences.completeSetup(enableNotifications: false).synchronousResult
+            }
+        }
+    }
+}
+
 /// Reshaping an extended schedule on the schedule page (plan 018 P8-c1b).
 ///
 /// The page keeps `ExtendedScheduleContent` as a draft and saves it with the
@@ -269,7 +290,8 @@ extension ShiftSession {
         case .classic, .off: .weekly
         }
         return ExtendedScheduleEditing.filling(
-            ExtendedScheduleContent(shiftTypes: [work], rule: nil),
+            ExtendedScheduleContent(shiftTypes: [work], rule: nil,
+                                    holidayRegionIdentifier: preferences.extendedScheduleContent?.holidayRegionIdentifier),
             preset: preset,
             pattern: schedulePattern(for: preset, applying: change, at: date),
             workType: work.id,

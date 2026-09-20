@@ -540,7 +540,7 @@ struct LifeProfileEditView: View {
         OWCRow(title: title, isLast: isLast) {
             HStack(spacing: 8) {
                 if preferences.hideEarnings {
-                    Text("••••")
+                    Text(verbatim: "••••")
                     OWCEarningsVisibilityButton(preferences: preferences, text: text)
                 } else {
                     OWCNumberField(

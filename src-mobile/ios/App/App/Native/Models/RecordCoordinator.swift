@@ -855,7 +855,15 @@ final class RecordCoordinator {
                 && (breakWindow == nil || ($0.breakStartMinutes == breakWindow?.start
                     && $0.breakDurationMinutes == breakWindow?.duration))
         }) { return .shift(matching) }
-        let label = "\(ExtendedScheduleResolver.timeString(startMinutes))–\(ExtendedScheduleResolver.timeString(endMinutes))"
+        // Legacy fixed snapshots predate named shift types. A unique type with
+        // the same hours supplies the display name, while the snapshot's own
+        // break and duration remain untouched (and its identity stays frozen).
+        let namedMatches = fallbackTypes.filter {
+            !$0.isArchived && $0.kind == .work
+                && $0.startMinutes == startMinutes && $0.endMinutes == endMinutes
+        }
+        let label = namedMatches.count == 1 ? namedMatches[0].name
+            : "\(ExtendedScheduleResolver.timeString(startMinutes))–\(ExtendedScheduleResolver.timeString(endMinutes))"
         return .shift(ShiftType(
             id: ExtendedSchedulePlan.pinnedShiftTypeID,
             name: label,

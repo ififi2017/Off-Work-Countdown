@@ -5,6 +5,13 @@ import Foundation
 extension ScheduleFieldChange {
     var isEmpty: Bool { self == ScheduleFieldChange() }
 
+    mutating func restorePatternAfterFreePreview() {
+        guard !materializedRosterDays.isEmpty else { return }
+        rosterEdits = rosterEdits?.filter { !materializedRosterDays.contains($0.key) }
+        if rosterEdits?.isEmpty == true { rosterEdits = nil }
+        materializedRosterDays.removeAll()
+    }
+
     /// Drops every field that already matches what the store holds.
     ///
     /// Without this, opening a picker and putting the value back would leave
@@ -37,6 +44,7 @@ extension ScheduleFieldChange {
             }
             next.rosterEdits = changed.isEmpty ? nil : changed
         }
+        next.materializedRosterDays.formIntersection(Set(next.rosterEdits?.keys.map { $0 } ?? []))
         // The cycle day is only "unchanged" against the anchor it will land on.
         // Switching to rotation re-anchors to today, and a new work or rest
         // length changes what day N means, so with either in the same edit the
@@ -48,4 +56,3 @@ extension ScheduleFieldChange {
         return next
     }
 }
-

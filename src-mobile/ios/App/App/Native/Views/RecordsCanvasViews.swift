@@ -198,7 +198,7 @@ struct RecordsAllocationBar: View {
                 ForEach(visibleSlices) { item in
                     VStack(alignment: .leading, spacing: 4) {
                         if showsApproximateYears, let years = text.formatApproximateLifeYears(Double(item.ms)) {
-                            Text("\(text.t(item.kind.titleKey)) · \(years)")
+                            Text(verbatim: "\(text.t(item.kind.titleKey)) · \(years)")
                                 .font(.callout.weight(.medium))
                         } else {
                             Text(text.t(item.kind.titleKey)).fontWeight(.medium)
@@ -1483,12 +1483,12 @@ struct RecordsLifeCanvas: View {
                     VStack {
                         ForEach(stages) { stage in
                             if stage.kind == .retirement {
-                                Text("\(text.t(stage.titleKey)), \(stageRange(stage))")
+                                Text(verbatim: "\(text.t(stage.titleKey)), \(stageRange(stage))")
                             } else {
                                 Button {
                                     select(stage, date: nil)
                                 } label: {
-                                    Text("\(text.t(stage.titleKey)), \(stageRange(stage))")
+                                    Text(verbatim: "\(text.t(stage.titleKey)), \(stageRange(stage))")
                                 }
                                 .accessibilityAddTraits(selectedStageID == stage.id ? .isSelected : [])
                             }

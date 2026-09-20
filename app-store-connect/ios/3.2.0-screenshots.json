@@ -1,0 +1,421 @@
+{
+  "$schema": "../metadata.schema.json",
+  "schemaVersion": 1,
+  "screenshotBaseDir": "scripts/marketing-shots/ios/out/creative-3.2.0",
+  "app": {
+    "bundleId": "com.rainif.offworkcountdown.macappstore",
+    "platform": "IOS",
+    "versionString": "3.2.0",
+    "createVersionIfMissing": false
+  },
+  "localizations": {
+    "zh-Hans": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "zh-CN-iphone-01-countdown.png",
+          "zh-CN-iphone-02-countdown-detail.png",
+          "zh-CN-iphone-03-watch.png",
+          "zh-CN-iphone-04-calendar.png",
+          "zh-CN-iphone-05-records.png",
+          "zh-CN-iphone-06-focus.png",
+          "zh-CN-iphone-07-widgets.png",
+          "zh-CN-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "zh-CN-ipad-01-countdown.png",
+          "zh-CN-ipad-02-countdown-detail.png",
+          "zh-CN-ipad-03-watch.png",
+          "zh-CN-ipad-04-calendar.png",
+          "zh-CN-ipad-05-records.png",
+          "zh-CN-ipad-06-focus.png",
+          "zh-CN-ipad-07-widgets.png",
+          "zh-CN-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "zh-Hant": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "zh-TW-iphone-01-countdown.png",
+          "zh-TW-iphone-02-countdown-detail.png",
+          "zh-TW-iphone-03-watch.png",
+          "zh-TW-iphone-04-calendar.png",
+          "zh-TW-iphone-05-records.png",
+          "zh-TW-iphone-06-focus.png",
+          "zh-TW-iphone-07-widgets.png",
+          "zh-TW-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "zh-TW-ipad-01-countdown.png",
+          "zh-TW-ipad-02-countdown-detail.png",
+          "zh-TW-ipad-03-watch.png",
+          "zh-TW-ipad-04-calendar.png",
+          "zh-TW-ipad-05-records.png",
+          "zh-TW-ipad-06-focus.png",
+          "zh-TW-ipad-07-widgets.png",
+          "zh-TW-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "en-US": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "en-iphone-01-countdown.png",
+          "en-iphone-02-countdown-detail.png",
+          "en-iphone-03-watch.png",
+          "en-iphone-04-calendar.png",
+          "en-iphone-05-records.png",
+          "en-iphone-06-focus.png",
+          "en-iphone-07-widgets.png",
+          "en-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "en-ipad-01-countdown.png",
+          "en-ipad-02-countdown-detail.png",
+          "en-ipad-03-watch.png",
+          "en-ipad-04-calendar.png",
+          "en-ipad-05-records.png",
+          "en-ipad-06-focus.png",
+          "en-ipad-07-widgets.png",
+          "en-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "de-DE": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "de-iphone-01-countdown.png",
+          "de-iphone-02-countdown-detail.png",
+          "de-iphone-03-watch.png",
+          "de-iphone-04-calendar.png",
+          "de-iphone-05-records.png",
+          "de-iphone-06-focus.png",
+          "de-iphone-07-widgets.png",
+          "de-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "de-ipad-01-countdown.png",
+          "de-ipad-02-countdown-detail.png",
+          "de-ipad-03-watch.png",
+          "de-ipad-04-calendar.png",
+          "de-ipad-05-records.png",
+          "de-ipad-06-focus.png",
+          "de-ipad-07-widgets.png",
+          "de-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "fr-FR": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "fr-iphone-01-countdown.png",
+          "fr-iphone-02-countdown-detail.png",
+          "fr-iphone-03-watch.png",
+          "fr-iphone-04-calendar.png",
+          "fr-iphone-05-records.png",
+          "fr-iphone-06-focus.png",
+          "fr-iphone-07-widgets.png",
+          "fr-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "fr-ipad-01-countdown.png",
+          "fr-ipad-02-countdown-detail.png",
+          "fr-ipad-03-watch.png",
+          "fr-ipad-04-calendar.png",
+          "fr-ipad-05-records.png",
+          "fr-ipad-06-focus.png",
+          "fr-ipad-07-widgets.png",
+          "fr-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "es-ES": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "es-iphone-01-countdown.png",
+          "es-iphone-02-countdown-detail.png",
+          "es-iphone-03-watch.png",
+          "es-iphone-04-calendar.png",
+          "es-iphone-05-records.png",
+          "es-iphone-06-focus.png",
+          "es-iphone-07-widgets.png",
+          "es-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "es-ipad-01-countdown.png",
+          "es-ipad-02-countdown-detail.png",
+          "es-ipad-03-watch.png",
+          "es-ipad-04-calendar.png",
+          "es-ipad-05-records.png",
+          "es-ipad-06-focus.png",
+          "es-ipad-07-widgets.png",
+          "es-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "it": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "it-iphone-01-countdown.png",
+          "it-iphone-02-countdown-detail.png",
+          "it-iphone-03-watch.png",
+          "it-iphone-04-calendar.png",
+          "it-iphone-05-records.png",
+          "it-iphone-06-focus.png",
+          "it-iphone-07-widgets.png",
+          "it-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "it-ipad-01-countdown.png",
+          "it-ipad-02-countdown-detail.png",
+          "it-ipad-03-watch.png",
+          "it-ipad-04-calendar.png",
+          "it-ipad-05-records.png",
+          "it-ipad-06-focus.png",
+          "it-ipad-07-widgets.png",
+          "it-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "pt-BR": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "pt-iphone-01-countdown.png",
+          "pt-iphone-02-countdown-detail.png",
+          "pt-iphone-03-watch.png",
+          "pt-iphone-04-calendar.png",
+          "pt-iphone-05-records.png",
+          "pt-iphone-06-focus.png",
+          "pt-iphone-07-widgets.png",
+          "pt-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "pt-ipad-01-countdown.png",
+          "pt-ipad-02-countdown-detail.png",
+          "pt-ipad-03-watch.png",
+          "pt-ipad-04-calendar.png",
+          "pt-ipad-05-records.png",
+          "pt-ipad-06-focus.png",
+          "pt-ipad-07-widgets.png",
+          "pt-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "ja": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "ja-iphone-01-countdown.png",
+          "ja-iphone-02-countdown-detail.png",
+          "ja-iphone-03-watch.png",
+          "ja-iphone-04-calendar.png",
+          "ja-iphone-05-records.png",
+          "ja-iphone-06-focus.png",
+          "ja-iphone-07-widgets.png",
+          "ja-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "ja-ipad-01-countdown.png",
+          "ja-ipad-02-countdown-detail.png",
+          "ja-ipad-03-watch.png",
+          "ja-ipad-04-calendar.png",
+          "ja-ipad-05-records.png",
+          "ja-ipad-06-focus.png",
+          "ja-ipad-07-widgets.png",
+          "ja-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "ko": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "ko-iphone-01-countdown.png",
+          "ko-iphone-02-countdown-detail.png",
+          "ko-iphone-03-watch.png",
+          "ko-iphone-04-calendar.png",
+          "ko-iphone-05-records.png",
+          "ko-iphone-06-focus.png",
+          "ko-iphone-07-widgets.png",
+          "ko-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "ko-ipad-01-countdown.png",
+          "ko-ipad-02-countdown-detail.png",
+          "ko-ipad-03-watch.png",
+          "ko-ipad-04-calendar.png",
+          "ko-ipad-05-records.png",
+          "ko-ipad-06-focus.png",
+          "ko-ipad-07-widgets.png",
+          "ko-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "ru": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "ru-iphone-01-countdown.png",
+          "ru-iphone-02-countdown-detail.png",
+          "ru-iphone-03-watch.png",
+          "ru-iphone-04-calendar.png",
+          "ru-iphone-05-records.png",
+          "ru-iphone-06-focus.png",
+          "ru-iphone-07-widgets.png",
+          "ru-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "ru-ipad-01-countdown.png",
+          "ru-ipad-02-countdown-detail.png",
+          "ru-ipad-03-watch.png",
+          "ru-ipad-04-calendar.png",
+          "ru-ipad-05-records.png",
+          "ru-ipad-06-focus.png",
+          "ru-ipad-07-widgets.png",
+          "ru-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "tr": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "tr-iphone-01-countdown.png",
+          "tr-iphone-02-countdown-detail.png",
+          "tr-iphone-03-watch.png",
+          "tr-iphone-04-calendar.png",
+          "tr-iphone-05-records.png",
+          "tr-iphone-06-focus.png",
+          "tr-iphone-07-widgets.png",
+          "tr-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "tr-ipad-01-countdown.png",
+          "tr-ipad-02-countdown-detail.png",
+          "tr-ipad-03-watch.png",
+          "tr-ipad-04-calendar.png",
+          "tr-ipad-05-records.png",
+          "tr-ipad-06-focus.png",
+          "tr-ipad-07-widgets.png",
+          "tr-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "id": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "id-iphone-01-countdown.png",
+          "id-iphone-02-countdown-detail.png",
+          "id-iphone-03-watch.png",
+          "id-iphone-04-calendar.png",
+          "id-iphone-05-records.png",
+          "id-iphone-06-focus.png",
+          "id-iphone-07-widgets.png",
+          "id-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "id-ipad-01-countdown.png",
+          "id-ipad-02-countdown-detail.png",
+          "id-ipad-03-watch.png",
+          "id-ipad-04-calendar.png",
+          "id-ipad-05-records.png",
+          "id-ipad-06-focus.png",
+          "id-ipad-07-widgets.png",
+          "id-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "vi": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "vi-iphone-01-countdown.png",
+          "vi-iphone-02-countdown-detail.png",
+          "vi-iphone-03-watch.png",
+          "vi-iphone-04-calendar.png",
+          "vi-iphone-05-records.png",
+          "vi-iphone-06-focus.png",
+          "vi-iphone-07-widgets.png",
+          "vi-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "vi-ipad-01-countdown.png",
+          "vi-ipad-02-countdown-detail.png",
+          "vi-ipad-03-watch.png",
+          "vi-ipad-04-calendar.png",
+          "vi-ipad-05-records.png",
+          "vi-ipad-06-focus.png",
+          "vi-ipad-07-widgets.png",
+          "vi-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "th": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "th-iphone-01-countdown.png",
+          "th-iphone-02-countdown-detail.png",
+          "th-iphone-03-watch.png",
+          "th-iphone-04-calendar.png",
+          "th-iphone-05-records.png",
+          "th-iphone-06-focus.png",
+          "th-iphone-07-widgets.png",
+          "th-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "th-ipad-01-countdown.png",
+          "th-ipad-02-countdown-detail.png",
+          "th-ipad-03-watch.png",
+          "th-ipad-04-calendar.png",
+          "th-ipad-05-records.png",
+          "th-ipad-06-focus.png",
+          "th-ipad-07-widgets.png",
+          "th-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "hi": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "hi-IN-iphone-01-countdown.png",
+          "hi-IN-iphone-02-countdown-detail.png",
+          "hi-IN-iphone-03-watch.png",
+          "hi-IN-iphone-04-calendar.png",
+          "hi-IN-iphone-05-records.png",
+          "hi-IN-iphone-06-focus.png",
+          "hi-IN-iphone-07-widgets.png",
+          "hi-IN-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "hi-IN-ipad-01-countdown.png",
+          "hi-IN-ipad-02-countdown-detail.png",
+          "hi-IN-ipad-03-watch.png",
+          "hi-IN-ipad-04-calendar.png",
+          "hi-IN-ipad-05-records.png",
+          "hi-IN-ipad-06-focus.png",
+          "hi-IN-ipad-07-widgets.png",
+          "hi-IN-ipad-08-breaks.png"
+        ]
+      }
+    },
+    "ar-SA": {
+      "screenshots": {
+        "APP_IPHONE_67": [
+          "ar-iphone-01-countdown.png",
+          "ar-iphone-02-countdown-detail.png",
+          "ar-iphone-03-watch.png",
+          "ar-iphone-04-calendar.png",
+          "ar-iphone-05-records.png",
+          "ar-iphone-06-focus.png",
+          "ar-iphone-07-widgets.png",
+          "ar-iphone-08-breaks.png"
+        ],
+        "APP_IPAD_PRO_3GEN_129": [
+          "ar-ipad-01-countdown.png",
+          "ar-ipad-02-countdown-detail.png",
+          "ar-ipad-03-watch.png",
+          "ar-ipad-04-calendar.png",
+          "ar-ipad-05-records.png",
+          "ar-ipad-06-focus.png",
+          "ar-ipad-07-widgets.png",
+          "ar-ipad-08-breaks.png"
+        ]
+      }
+    }
+  }
+}

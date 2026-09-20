@@ -335,7 +335,7 @@ struct RecordsDayBand: View {
             ZStack(alignment: .leading) {
                 ForEach(model.intervals) { interval in
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("\(text.t(interval.kind.titleKey)) · \(range(of: interval))")
+                        Text(verbatim: "\(text.t(interval.kind.titleKey)) · \(range(of: interval))")
                             .fontWeight(.medium)
                         Text([
                             text.formatRelativeDuration(Double(interval.durationMs)),

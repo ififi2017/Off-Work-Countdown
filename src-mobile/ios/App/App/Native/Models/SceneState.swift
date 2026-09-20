@@ -99,6 +99,8 @@ final class SceneState {
     var dayEditor: RecordDayEditDraft?
     var showsFirstRunCloudChoice = false
     var showsReleaseNotes = false
+    // First-run choice only. Existing users keep their saved holiday opt-in.
+    var onboardingHolidayRegionIdentifier: String?
 
     func dismissReleaseNotes(preferences: PreferencesStore, plus: PlusEntitlement) {
         preferences.markReleaseNotesSeen()

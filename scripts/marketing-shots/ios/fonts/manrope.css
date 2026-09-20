@@ -1,0 +1,14 @@
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: block;
+  src: url(manrope-0.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url(manrope-1.ttf) format('truetype');
+}

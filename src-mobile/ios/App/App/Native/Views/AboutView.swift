@@ -32,10 +32,10 @@ struct AboutView<DebugMenu: View>: View {
                         Text(verbatim: OWCBrand.shortName)
                             .font(.title2.bold())
 #endif
-                        Text("fi_niaR Studio")
+                        Text(verbatim: "fi_niaR Studio")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(OWCDesign.secondary)
-                        Text("\(text.t("version")) \(version)")
+                        Text(verbatim: "\(text.t("version")) \(version)")
                             .font(.subheadline)
                             .foregroundStyle(OWCDesign.secondary)
                     }

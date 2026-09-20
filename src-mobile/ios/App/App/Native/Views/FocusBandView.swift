@@ -115,13 +115,12 @@ struct FocusBandView: View {
     }
 
     private var nowLine: some View {
-        HStack(spacing: 0) {
-            Circle()
-                .fill(OWCDesign.accent)
-                .frame(width: 7, height: 7)
-                .offset(x: -3.5)
-            Rectangle().fill(OWCDesign.accent).frame(height: 2)
-        }
+        // Keep the current-time marker on the rail so it never strikes
+        // through a task title as it moves through a block.
+        Circle()
+            .fill(OWCDesign.accent)
+            .frame(width: 7, height: 7)
+            .offset(x: -3.5)
         .accessibilityHidden(true)
     }
 

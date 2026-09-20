@@ -19903,7 +19903,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "{{done}} bloc(s) sur {{total}} terminé(s)"
+            "value": "Blocs terminés : {{done}} sur {{total}}"
           }
         },
         "hi-IN": {
@@ -98867,6 +98867,125 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bộ đếm thủ công"
+          }
+        }
+      }
+    },
+    "onboardingCustomScheduleNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can fully customize your schedule later in Settings."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "之后还可以在设置中完整自定义排班。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "之後也能在設定中完整自訂排班。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "之後也可在設定中完整自訂排班。"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deinen Dienstplan kannst du später in den Einstellungen individuell anpassen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous pourrez personnaliser entièrement votre planning dans les réglages."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Después podrás personalizar tu horario por completo en Ajustes."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Potrai personalizzare completamente i turni nelle impostazioni."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depois, você poderá personalizar toda a sua escala nos Ajustes."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あとから設定で、シフトを自由にカスタマイズできます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나중에 설정에서 근무 일정을 자유롭게 맞춤 설정할 수 있어요."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Позже вы сможете полностью настроить график в настройках."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Programını daha sonra Ayarlar’dan dilediğin gibi düzenleyebilirsin."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nanti kamu bisa menyesuaikan seluruh jadwal di Pengaturan."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sau này, bạn có thể tùy chỉnh toàn bộ lịch làm việc trong Cài đặt."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बाद में सेटिंग में अपना पूरा शेड्यूल अपनी ज़रूरत के अनुसार बदल सकते हैं।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नंतर सेटिंग्जमध्ये तुमचे संपूर्ण वेळापत्रक हवे तसे बदलू शकता."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يمكنك تخصيص جدول عملك بالكامل لاحقًا من الإعدادات."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คุณสามารถปรับตารางงานได้ตามต้องการในภายหลังที่การตั้งค่า"
           }
         }
       }

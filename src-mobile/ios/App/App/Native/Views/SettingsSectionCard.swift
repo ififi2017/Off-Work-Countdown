@@ -46,7 +46,7 @@ struct SettingsSectionCard: View {
                 shifts.disableAutomaticReviewPrompt()
                 openURL(URL(string: "https://apps.apple.com/app/id6802803318?action=write-review")!)
             } label: {
-                OWCRow(icon: "star.bubble", title: shifts.text.t("rateApp")) {
+                OWCRow(icon: "star.bubble", title: shifts.text.t("rateApp"), isLast: true) {
                     Image(systemName: "arrow.up.right")
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(OWCDesign.secondary)
@@ -54,15 +54,6 @@ struct SettingsSectionCard: View {
                 }
             }
             .buttonStyle(OWCRowButtonStyle())
-            OWCRow(icon: "tag", title: shifts.text.t("version"), isLast: true) {
-                // Version is informational, not a disclosure row. Keeping a
-                // value-only accessory lets the shared OWCRow template place
-                // it on the same trailing edge as other settings values,
-                // without reserving an empty chevron slot.
-                Text(shifts.text.appVersion)
-                    .font(.body.monospacedDigit())
-                    .foregroundStyle(OWCDesign.secondary)
-            }
         }
     }
 

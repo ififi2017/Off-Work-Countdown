@@ -1,0 +1,35 @@
+{
+  "pages": 272,
+  "findings": [],
+  "fontFindings": [],
+  "families": [
+    "Manrope",
+    "Noto Naskh Arabic",
+    "Noto Sans Arabic Medium",
+    "Manrope Medium",
+    "Charter",
+    "Noto Serif Devanagari",
+    "Noto Sans Devanagari Medium",
+    "Noto Serif JP",
+    "Noto Sans JP Medium",
+    "Noto Serif KR",
+    "Noto Sans KR Medium",
+    "Source Serif 4",
+    "Noto Serif Thai",
+    "Noto Sans Thai Medium",
+    "Noto Sans SC",
+    "Noto Serif SC",
+    "Noto Sans SC Medium",
+    "Noto Sans TC",
+    "Noto Serif TC",
+    "Noto Sans TC Medium"
+  ],
+  "checkedAt": "2026-09-19T17:13:42.499Z",
+  "scope": "Poster typography only; native screenshot pixels require separate visual acceptance.",
+  "inputs": {
+    "creative-compose.mjs": "ace32e423ee0ab56cb11d7b0e9b5ac059dfa5adbfafb76aeae4ff8f87b7a8069",
+    "creative-copy.mjs": "f25dcbffd16c54a7babb097825e00635e9f98825f744b926a501fc111f3c7f19",
+    "creative-fonts.mjs": "2163e5fc7949d97a8a90517bd77c7ede120acbee4be271eba194d798d92f5991",
+    "fonts/manifest.json": "a2e77efae54b2fb5d22fce08466106886cb07221dcd5af9f7cc9152211ed94d6"
+  }
+}

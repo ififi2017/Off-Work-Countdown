@@ -41,6 +41,9 @@ struct ScheduleFieldChange: Equatable {
     /// Plan 018 P8's calendar: days given a shift by hand, or put back on the
     /// pattern, keyed by civil day.
     var rosterEdits: [String: RosterDayEdit]?
+    /// Draft-only provenance for days expanded when trying free scheduling.
+    /// Returning to a pattern drops these, never the user's explicit edits.
+    var materializedRosterDays: Set<String> = []
 }
 
 /// One day changed in the extended schedule's calendar.

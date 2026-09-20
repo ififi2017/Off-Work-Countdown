@@ -357,4 +357,36 @@ struct WatchIndependentScheduleTests {
         let restored = await WatchSnapshotCache.open(fileURL: url)
         #expect(await restored.currentPackage() == newest)
     }
+    @Test("Sunday makeup starts stay consistent across midnight and both Watch surfaces")
+    func holidaySundayAcrossMidnight() throws {
+        let workID = UUID(), restID = UUID()
+        let work = ShiftType(id: workID, name: "Day", kind: .work,
+            startMinutes: 600, endMinutes: 1140, breakEnabled: true,
+            breakStartMinutes: 780, breakDurationMinutes: 90, colorHex: "#FF9500", isArchived: false)
+        var rest = work
+        rest.id = restID
+        rest.kind = .rest
+        let plan = ExtendedSchedulePlan(shiftTypes: [work, rest],
+            rule: .init(preset: .weekly, anchorDayKey: "2026-09-14", days: [workID, workID, workID, workID, workID, restID, restID]),
+            handSetDays: [:], holidayRegionIdentifier: "CN", holidayOverrides: [20260920: true])
+        let value = package(schedule(plan: plan), schemaVersion: 3)
+        let start = date("2026-09-20T02:00:00Z")
+        for instant in ["2026-09-19T15:48:00Z", "2026-09-19T16:00:00Z", "2026-09-20T01:59:00Z"] {
+            guard case .content(let display) = WatchDisplayProjection.project(value, nowMs: date(instant)) else {
+                Issue.record("Expected valid holiday projection"); return
+            }
+            #expect(display.upcomingShiftStartAtMs == start)
+            #expect(WatchDisplayFormat.footnote(for: display)?.atMs == start)
+        }
+        let dates = WatchDisplayProjection.timelineDates(for: value,
+            from: Date(timeIntervalSince1970: Double(date("2026-09-19T15:48:00Z")) / 1000), minuteCount: 0)
+            .map { Int64($0.timeIntervalSince1970 * 1000) }
+        #expect(dates.contains(date("2026-09-19T16:00:00Z")))
+        #expect(dates.contains(start))
+        guard case .content(let working) = WatchDisplayProjection.project(value, nowMs: start) else {
+            Issue.record("Expected makeup shift to start"); return
+        }
+        #expect(working.phase == .working)
+    }
+
 }
