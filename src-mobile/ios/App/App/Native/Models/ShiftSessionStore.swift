@@ -842,14 +842,34 @@ final class ShiftSessionStore {
         at date: Date = .now
     ) -> RecordCommand<Bool> {
         records.submitCommand { [self] in
-            let change = change.settled(against: preferences, at: date)
+            var change = change
+            if let from = change.clearExpectedFromDayKey,
+               let content = change.extendedContent ?? preferences.extendedScheduleContent {
+                change = ExtendedScheduleEditing.clearingExpectedDays(
+                    draft: change, content: content, stored: records.state.rosterDays,
+                    from: from, protectedDays: protectedRosterDays(at: date))
+            }
+            change = change.settled(against: preferences, at: date)
             guard !change.isEmpty, !records.blocksWrites else { return false }
+            // A clear action never restarts or truncates an existing session,
+            // but an untouched shift that has not started must clear today too.
+            let effectiveDecision: ScheduleChangeDecision
+            if change.clearExpectedFromDayKey != nil {
+                let today = RecordJSON.dayKey(date, calendar: preferences.recordsCalendar)
+                let started = session.snapshot(at: date).map { $0.isWorkday && !$0.isBeforeStart(at: date) } ?? false
+                effectiveDecision = started || protectedRosterDays(at: date).contains(today) ? .nextShiftOnly : .applyToToday
+            } else {
+                effectiveDecision = decision
+            }
+            let decision = effectiveDecision
             // The extended schedule is a record, not a synced preference, so
             // it is switched separately — and only when there is one to switch.
             var preferenceChange = change
             preferenceChange.extendedScheduleEnabled = nil
             preferenceChange.extendedContent = nil
             preferenceChange.rosterEdits = nil
+            preferenceChange.materializedRosterDays = []
+            preferenceChange.clearExpectedFromDayKey = nil
             // Checked here as well as by the archive, which would drop an
             // invalid schedule silently after the hours had already been saved.
             if let content = change.extendedContent {
@@ -907,7 +927,7 @@ final class ShiftSessionStore {
                     ) else { return false }
                 }
                 if let edits = change.rosterEdits {
-                    records.applyRosterEdits(edits, timeZoneIdentifier: preferences.recordsTimeZone.identifier, at: date)
+                    records.applyRosterEdits(edits, generatedDays: change.materializedRosterDays, timeZoneIdentifier: preferences.recordsTimeZone.identifier, at: date)
                 }
                 self.session.todayOverride = preservedSchedule
 

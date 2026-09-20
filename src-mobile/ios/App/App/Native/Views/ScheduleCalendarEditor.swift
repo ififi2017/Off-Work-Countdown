@@ -34,6 +34,7 @@ struct ScheduleCalendarEditor: View {
     let onManualChange: (Bool) -> Void
     let onSetDay: (String, RosterDayEdit) -> Void
     let onRemovePattern: () -> Void
+    let onClearExpected: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var selectionSpace
@@ -43,6 +44,7 @@ struct ScheduleCalendarEditor: View {
     @State private var selectedKey: String?
     @State private var selectedWeek = 0
     @State private var showsTypes = false
+    @State private var confirmsClearExpected = false
     @State private var showsHolidayRegions = false
     @State private var pendingMode: ScheduleEditorMode?
     @State private var patternDrafts: [ScheduleEditorMode: ShiftCycleRule] = [:]
@@ -58,6 +60,7 @@ struct ScheduleCalendarEditor: View {
         ExtendedScheduleResolver(plan: ExtendedSchedulePlan(
             shiftTypes: content.shiftTypes, rule: content.rule, handSetDays: handSetDays,
             holidayRegionIdentifier: content.holidayRegionIdentifier,
+            clearedFromDayKey: content.clearedFromDayKey,
             frozenShiftTypes: shifts.records.frozenRosterShiftTypes.filter { rosterEdits?[$0.key] == nil }
         ))
     }
@@ -89,6 +92,15 @@ struct ScheduleCalendarEditor: View {
         .tint(OWCDesign.accent)
         .sensoryFeedback(.selection, trigger: selectionFeedback)
         .sensoryFeedback(.selection, trigger: assignmentFeedback)
+        .confirmationDialog(text.t("scheduleClearExpected"), isPresented: $confirmsClearExpected, titleVisibility: .visible) {
+            Button(text.t("scheduleClearExpected"), role: .destructive) {
+                onClearExpected()
+                assignmentFeedback += 1
+            }
+            Button(text.t("cancelAction"), role: .cancel) {}
+        } message: {
+            Text(text.t("scheduleClearExpectedMessage"))
+        }
         .onAppear {
 #if DEBUG
             // Navigate screenshot demos without changing the clock or saved roster.
@@ -387,6 +399,16 @@ struct ScheduleCalendarEditor: View {
                 cycleGrid(rule)
             }
             .padding(.horizontal, 12).padding(.bottom, 12)
+        } else {
+            Button(role: .destructive) { confirmsClearExpected = true } label: {
+                Label(text.t("scheduleClearExpected"), systemImage: "calendar.badge.minus")
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.red)
+            .padding(.horizontal, 16).padding(.bottom, 4)
         }
     }
 

@@ -98989,6 +98989,244 @@
           }
         }
       }
+    },
+    "scheduleClearExpected": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear planned shifts"
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除预期排班"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除預定排班"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除預定排班"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "予定シフトをクリア"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예정된 근무 지우기"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geplante Schichten löschen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar turnos previstos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer les horaires prévus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancella i turni previsti"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar turnos previstos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить план смен"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسح الورديات المخططة"
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नियोजित शिफ़्ट हटाएँ"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नियोजित शिफ्ट साफ करा"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus jadwal yang direncanakan"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa ca dự kiến"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล้างกะที่วางแผนไว้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planlanan vardiyaları temizle"
+          }
+        }
+      }
+    },
+    "scheduleClearExpectedMessage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear automatic shifts from today onward. Keep past dates, days with timing records and manual changes. Future dates will no longer be filled from earlier months or holidays. Changes take effect when you save."
+          }
+        },
+        "zh-CN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除今天及以后的自动排班，保留历史日期、已有计时记录的日期和手动改班。未来日期不再自动沿用以前月份或节假日安排。保存后生效。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除今天起的自動排班，保留過去日期、已有計時紀錄的日期及手動調整。未來日期不再自動沿用先前月份或國定假日安排。儲存後生效。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除今天起的自動排班，保留過去日期、已有計時紀錄的日期及手動調整。未來日期不再自動沿用之前月份或公眾假期安排。儲存後生效。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今日以降の自動シフトをクリアします。過去の日付、計測記録のある日、手動で変更した日は残ります。今後の日付には以前の月や祝日の設定を自動適用しません。保存すると反映されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘부터 자동으로 배정된 근무를 지웁니다. 과거 날짜, 시간 기록이 있는 날, 직접 변경한 근무는 유지됩니다. 이후 날짜에는 이전 달이나 공휴일 일정이 자동 적용되지 않습니다. 저장하면 적용됩니다."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatische Schichten ab heute löschen. Vergangene Tage, Tage mit Zeiterfassung und manuelle Änderungen bleiben erhalten. Künftige Tage werden nicht mehr aus früheren Monaten oder Feiertagen übernommen. Die Änderungen gelten nach dem Speichern."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borra los turnos automáticos desde hoy. Se conservan las fechas pasadas, los días con tiempo registrado y los cambios manuales. Las fechas futuras ya no se rellenarán con meses anteriores ni festivos. Los cambios se aplican al guardar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efface les horaires automatiques à partir d’aujourd’hui. Les dates passées, les jours avec un temps enregistré et les modifications manuelles sont conservés. Les dates futures ne reprennent plus les mois précédents ni les jours fériés. Enregistrez pour appliquer."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancella i turni automatici da oggi in poi. Conserva le date passate, i giorni con tempi registrati e le modifiche manuali. Le date future non saranno più compilate dai mesi precedenti o dalle festività. Le modifiche si applicano al salvataggio."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpa os turnos automáticos a partir de hoje. Mantém as datas passadas, os dias com tempo registrado e as alterações manuais. As datas futuras não serão mais preenchidas com meses anteriores ou feriados. As alterações valem após salvar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить автоматические смены начиная с сегодняшнего дня. Прошлые даты, дни с учётом времени и ручные изменения сохранятся. Будущие даты больше не заполняются по прошлым месяцам или праздникам. Изменения вступят в силу после сохранения."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "امسح الورديات التلقائية من اليوم فصاعدًا. تبقى التواريخ السابقة والأيام ذات الوقت المسجّل والتعديلات اليدوية. لن تُملأ التواريخ القادمة تلقائيًا من الأشهر السابقة أو العطلات. تُطبّق التغييرات عند الحفظ."
+          }
+        },
+        "hi-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आज से आगे की अपने-आप तय हुई शिफ़्ट हटाएँ। पिछली तारीखें, दर्ज समय वाले दिन और मैन्युअल बदलाव बने रहेंगे। आगे की तारीखें पिछले महीनों या छुट्टियों से अपने-आप नहीं भरी जाएँगी। सहेजने पर बदलाव लागू होंगे।"
+          }
+        },
+        "mr-IN": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आजपासून पुढील आपोआप ठरवलेल्या शिफ्ट काढा. मागील तारखा, वेळ नोंदवलेले दिवस आणि स्वतः केलेले बदल कायम राहतील. पुढील तारखा मागील महिने किंवा सुट्ट्यांनुसार आपोआप भरल्या जाणार नाहीत. जतन केल्यावर बदल लागू होतील."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus giliran otomatis mulai hari ini. Tanggal lampau, hari dengan catatan waktu, dan perubahan manual tetap disimpan. Tanggal mendatang tidak lagi diisi dari bulan sebelumnya atau hari libur. Perubahan berlaku setelah disimpan."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa ca tự động từ hôm nay trở đi. Giữ các ngày trước, ngày có ghi nhận thời gian và thay đổi thủ công. Ngày sắp tới không còn tự điền theo tháng trước hoặc ngày lễ. Thay đổi có hiệu lực khi lưu."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ล้างกะอัตโนมัติตั้งแต่วันนี้เป็นต้นไป โดยเก็บวันที่ผ่านมา วันที่มีบันทึกเวลา และการแก้ไขด้วยตนเองไว้ วันที่ในอนาคตจะไม่ใช้ข้อมูลจากเดือนก่อนหรือวันหยุดโดยอัตโนมัติ การเปลี่ยนแปลงมีผลเมื่อบันทึก"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bugünden itibaren otomatik vardiyaları temizler. Geçmiş tarihler, süre kaydı olan günler ve elle yapılan değişiklikler korunur. Gelecek tarihler önceki aylardan veya tatillerden otomatik doldurulmaz. Değişiklikler kaydedilince uygulanır."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

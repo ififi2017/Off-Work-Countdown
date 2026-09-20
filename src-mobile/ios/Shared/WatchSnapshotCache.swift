@@ -293,7 +293,7 @@ actor WatchSnapshotCache {
         if let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
            let package = object["package"] as? [String: Any],
            let schema = package["schemaVersion"] as? Int,
-           ![1, 2, 3].contains(schema) {
+           ![1, 2, 3, 4].contains(schema) {
             return (nil, .incompatible)
         }
         guard let envelope = try? JSONDecoder().decode(WatchSnapshotCacheEnvelope.self, from: data),

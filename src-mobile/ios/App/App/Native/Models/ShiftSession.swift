@@ -44,6 +44,8 @@ struct ScheduleFieldChange: Equatable {
     /// Draft-only provenance for days expanded when trying free scheduling.
     /// Returning to a pattern drops these, never the user's explicit edits.
     var materializedRosterDays: Set<String> = []
+    /// Recheck protected days and concurrent manual edits when the draft saves.
+    var clearExpectedFromDayKey: String?
 }
 
 /// One day changed in the extended schedule's calendar.
@@ -1141,6 +1143,7 @@ extension ShiftSession {
             return ExtendedSchedulePlan(shiftTypes: plan.shiftTypes.filter { used.contains($0.id) },
                                         rule: plan.rule, handSetDays: days,
                                         holidayRegionIdentifier: plan.holidayRegionIdentifier,
+                                        clearedFromDayKey: plan.clearedFromDayKey,
                                         holidayOverrides: plan.holidayRegionIdentifier.flatMap { region in
                                             region.isEmpty ? nil : HolidayCalendar.shared.workdayOverrides(regionIdentifier: region)
                                         },

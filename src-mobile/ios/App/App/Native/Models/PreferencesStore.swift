@@ -193,6 +193,11 @@ final class PreferencesStore {
         records.extendedSchedulePlan(plan, keeping: day)
     }
 
+    /// New-version free-schedule rows expanded from a pattern preview.
+    var recordsGeneratedRosterDays: Set<String> {
+        Set(records.state.rosterDays.filter { $0.generatedFromPattern == true }.map(\.dayKey))
+    }
+
     /// The days the user gave a shift by hand, by civil day key.
     var handSetDays: [String: UUID] {
         records.extendedSchedulePlan?.handSetDays ?? ExtendedSchedulePlan.handSetDays(from: records.state.rosterDays)

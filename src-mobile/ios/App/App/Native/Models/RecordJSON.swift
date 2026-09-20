@@ -1270,6 +1270,7 @@ nonisolated struct ExtendedScheduleDTO: Codable, Equatable, Sendable {
     var shiftTypes: [ShiftType]
     var rule: ShiftCycleRule?
     var holidayRegionIdentifier: String? = nil
+    var clearedFromDayKey: String? = nil
     var timeZoneIdentifier: String
     var editedAtMs: Double
     var editCount: Int
@@ -1280,6 +1281,7 @@ nonisolated struct ExtendedScheduleDTO: Codable, Equatable, Sendable {
         shiftTypes = value.shiftTypes
         rule = value.rule
         holidayRegionIdentifier = value.holidayRegionIdentifier
+        clearedFromDayKey = value.clearedFromDayKey
         timeZoneIdentifier = value.timeZoneIdentifier
         editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
         editCount = value.editCount
@@ -1293,6 +1295,7 @@ nonisolated struct ExtendedScheduleDTO: Codable, Equatable, Sendable {
             shiftTypes: shiftTypes,
             rule: rule,
             holidayRegionIdentifier: holidayRegionIdentifier,
+            clearedFromDayKey: clearedFromDayKey,
             timeZoneIdentifier: timeZoneIdentifier,
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,
@@ -1306,6 +1309,7 @@ nonisolated struct RosterDayDTO: Codable, Equatable, Sendable {
     var dayKey: String
     var shiftTypeID: String
     var assignedShiftType: ShiftType? = nil
+    var generatedFromPattern: Bool? = nil
     var timeZoneIdentifier: String
     var editedAtMs: Double
     var editCount: Int
@@ -1315,6 +1319,7 @@ nonisolated struct RosterDayDTO: Codable, Equatable, Sendable {
         dayKey = value.dayKey
         shiftTypeID = value.shiftTypeID.uuidString
         assignedShiftType = value.assignedShiftType
+        generatedFromPattern = value.generatedFromPattern
         timeZoneIdentifier = value.timeZoneIdentifier
         editedAtMs = value.editedAt.timeIntervalSince1970 * 1_000
         editCount = value.editCount
@@ -1336,6 +1341,7 @@ nonisolated struct RosterDayDTO: Codable, Equatable, Sendable {
             dayKey: dayKey,
             shiftTypeID: shiftTypeID,
             assignedShiftType: assignedShiftType,
+            generatedFromPattern: generatedFromPattern,
             timeZoneIdentifier: timeZoneIdentifier,
             editedAt: Date(timeIntervalSince1970: editedAtMs / 1_000),
             editCount: editCount,
