@@ -127,7 +127,7 @@ struct LandscapeTimerView: View {
                                 Text(shifts.session.timeString(shifts.session.effectiveStartMinutes(at: date)))
                                     .position(x: 24, y: 8)
                                 if shifts.session.effectiveLunchEnabled(at: date), snapshot.segments.count > 1 {
-                                    Text("\(shifts.session.timeString(shifts.session.effectiveLunchStartMinutes(at: date))) · \(shifts.scheduledBreakTitle)")
+                                    Text(verbatim: "\(shifts.session.timeString(shifts.session.effectiveLunchStartMinutes(at: date))) · \(shifts.scheduledBreakTitle)")
                                         .position(x: max(110, min(proxy.size.width - 110, proxy.size.width * lunchWallRatio(snapshot))), y: 8)
                                 }
                                 Text(shifts.session.timeString(shifts.session.effectiveEndMinutes(at: date)))
@@ -183,7 +183,7 @@ struct LandscapeTimerView: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
             } else if immersive {
-                Text("—").font(.system(size: countdownSize, weight: .bold).monospacedDigit())
+                Text(verbatim: "—").font(.system(size: countdownSize, weight: .bold).monospacedDigit())
             } else {
                 TimerDesignView(
                     shifts: shifts,

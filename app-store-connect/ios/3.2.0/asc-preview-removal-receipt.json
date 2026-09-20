@@ -1,0 +1,146 @@
+{
+  "verifiedAt": "2026-09-20T03:10:22.792Z",
+  "versionId": "83a3fc1b-f8aa-4c17-99d0-20583d8f9926",
+  "version": "3.2.0",
+  "platform": "IOS",
+  "localesChecked": 17,
+  "remainingPreviewSets": 0,
+  "removed": [
+    {
+      "locale": "ar-SA",
+      "id": "a62ab823-bf09-4115-9703-00d0ddc27a94",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "tr",
+      "id": "959173fe-c82c-4fed-9e99-cad23584714b",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "de-DE",
+      "id": "02c6d7c4-49a4-43df-8924-31049366ae71",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "hi",
+      "id": "7740f1f3-8285-4193-b741-fca50d95916c",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "es-ES",
+      "id": "dfe53ae0-650d-4152-a8b6-a6dde80b5b6c",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "id",
+      "id": "9566bc55-cdc9-424f-b9c1-ee83dd4f3dad",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "zh-Hant",
+      "id": "bc9683b5-610e-4e6e-b66e-30c8ead7e95d",
+      "type": "IPHONE_67",
+      "files": [
+        "zh-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "zh-Hans",
+      "id": "1d6909c1-77d2-4a1c-9786-09ab1f7225e9",
+      "type": "IPHONE_67",
+      "files": [
+        "zh-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "th",
+      "id": "f9b8d6b6-3ce3-437e-b49c-9ed201e264de",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "ru",
+      "id": "4e370fc8-b427-4628-bfdb-169e7cd11939",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "it",
+      "id": "293ac92b-4bf1-4dd8-aa64-4990af1a18c0",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "en-US",
+      "id": "80a65518-d8a7-4031-8b82-4b43c4247cba",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "ko",
+      "id": "88b6c3ba-e08d-444a-8dd6-78976e6f4686",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "fr-FR",
+      "id": "6ec684fe-b615-40cb-a90c-4b90fcb527f9",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "ja",
+      "id": "2b912c93-9e1e-4b88-9707-fa6ef6616971",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "vi",
+      "id": "00f25fd2-250a-485a-8c58-1e28e2bc5c0c",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    },
+    {
+      "locale": "pt-BR",
+      "id": "f396c15d-9235-4496-997c-6e981b482c03",
+      "type": "IPHONE_67",
+      "files": [
+        "en-review-886x1920.mov"
+      ]
+    }
+  ]
+}

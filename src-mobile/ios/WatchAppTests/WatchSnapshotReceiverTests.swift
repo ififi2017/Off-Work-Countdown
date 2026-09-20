@@ -53,6 +53,9 @@ struct WatchSnapshotReceiverTests {
         await restored.start()
         #expect(restoredModel.connectionState == .ready)
         #expect(restoredModel.package?.revision == 2)
+        #expect(restoredTransport.reloads == 1)
+        restored.refreshWidgets()
+        #expect(restoredTransport.reloads == 2)
     }
 
     @Test("A paired V1 cache upgrades to free V2 and cannot be downgraded by a late V1 package")

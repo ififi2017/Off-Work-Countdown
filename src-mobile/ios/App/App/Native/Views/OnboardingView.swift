@@ -100,7 +100,10 @@ struct OnboardingView: View {
                                 logoSize: finaleLogoSize(in: proxy.size)
                             ) {
                                 Task {
-                                    await preferences.completeSetup(enableNotifications: false).value
+                                    await shifts.completeSetup(
+                                        holidayRegionIdentifier: scene.onboardingHolidayRegionIdentifier
+                                            ?? HolidayCalendar.shared.defaultRegionIdentifier() ?? ""
+                                    ).value
                                 }
                             }
                         }
@@ -826,6 +829,12 @@ private struct OnboardingSchedulePage: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var timeField: SetupTimeField?
     @State private var timeDraft = SettingsFieldDraft(0)
+    @State private var showsHolidayRegions = false
+
+    private var holidayRegion: String {
+        scene.onboardingHolidayRegionIdentifier
+            ?? HolidayCalendar.shared.defaultRegionIdentifier() ?? ""
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -870,6 +879,43 @@ private struct OnboardingSchedulePage: View {
             OnboardingScheduleDetailsView(preferences: preferences, text: text)
                 .padding(.top, 18)
 
+            Text(text.t("onboardingCustomScheduleNote"))
+                .font(.footnote)
+                .foregroundStyle(OWCDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 12)
+
+            OWCGroupCard {
+                Toggle(text.t("holidayCalendar"), isOn: Binding(
+                    get: { !holidayRegion.isEmpty },
+                    set: { enabled in
+                        scene.onboardingHolidayRegionIdentifier = enabled
+                            ? HolidayCalendar.shared.defaultRegionIdentifier() ?? "" : ""
+                        if enabled && holidayRegion.isEmpty { showsHolidayRegions = true }
+                    }
+                ))
+                .padding(16)
+                if !holidayRegion.isEmpty {
+                    Divider().padding(.leading, 16)
+                    Button { showsHolidayRegions = true } label: {
+                        HStack {
+                            let name = HolidayCalendar.shared.regionName(holidayRegion, locale: preferences.locale)
+                            Text(scene.onboardingHolidayRegionIdentifier == nil
+                                 ? text.t("holidayCalendarSystemDefault", values: ["region": name]) : name)
+                            Spacer()
+                            Image(systemName: "chevron.forward")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(OWCDesign.secondary)
+                        }
+                        .foregroundStyle(OWCDesign.primary)
+                        .padding(16)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(OWCRowButtonStyle())
+                }
+            }
+            .padding(.top, 18)
+
             Spacer(minLength: 18)
 
             onboardingDots
@@ -897,6 +943,12 @@ private struct OnboardingSchedulePage: View {
         // top again — the iPad landscape complaint.
         .padding(.horizontal, 28)
         .frame(maxWidth: 560)
+        .sheet(isPresented: $showsHolidayRegions) {
+            HolidayRegionPicker(text: text, locale: preferences.locale, selection: holidayRegion) {
+                scene.onboardingHolidayRegionIdentifier = $0
+                showsHolidayRegions = false
+            }
+        }
         .sheet(item: $timeField) { field in
             OWCSetupTimePickerSheet(
                 session: session,

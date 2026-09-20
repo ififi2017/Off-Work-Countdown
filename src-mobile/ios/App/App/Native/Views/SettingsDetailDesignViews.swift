@@ -45,7 +45,7 @@ struct ScheduleSettingsView: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .background(OWCDesign.page)
-        .toolbar(.hidden, for: .tabBar)
+        .toolbar(.visible, for: .tabBar)
         .navigationTitle(shifts.text.t("workSchedule"))
         .navigationBarTitleDisplayMode(.inline)
         .owcDetailBack(
@@ -82,6 +82,7 @@ struct ScheduleSettingsView: View {
 
     private func updateContent(_ next: ExtendedScheduleContent) {
         edit {
+            if next.rule != nil { $0.restorePatternAfterFreePreview() }
             $0.extendedContent = next
             $0.extendedScheduleEnabled = !isManual
             if isManual, let work = next.shiftTypes.first(where: { $0.kind == .work && !$0.isArchived }) {
@@ -106,6 +107,7 @@ struct ScheduleSettingsView: View {
     private func setDay(_ key: String, _ change: RosterDayEdit) {
         guard let content else { return }
         edit {
+            $0.materializedRosterDays.remove(key)
             $0.extendedContent = content
             $0.extendedScheduleEnabled = !isManual
             $0.rosterEdits = ExtendedScheduleEditing.editing(
@@ -143,6 +145,9 @@ struct ScheduleSettingsView: View {
             $0.extendedScheduleEnabled = true
             $0.scheduleMode = .classic
             $0.rosterEdits = edits
+            $0.materializedRosterDays.formUnion(Set(edits?.keys.map { $0 } ?? []).subtracting(
+                Set(draft.rosterEdits?.keys.map { $0 } ?? [])
+            ))
         }
     }
 
@@ -362,7 +367,7 @@ struct SalaryDesignView: View {
                         .font(.body)
                     Spacer()
                     if shifts.preferences.hideEarnings {
-                        Text("••••")
+                        Text(verbatim: "••••")
                         // This page has already authenticated the owner. A
                         // second prompt resigns active and re-locks the page,
                         // while the generic eye only restores hideEarnings.
@@ -586,6 +591,7 @@ struct SalaryDesignView: View {
             .font(.footnote)
             .foregroundStyle(OWCDesign.secondary)
             .lineSpacing(2)
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 36)
             .padding(.top, 8)
@@ -610,13 +616,15 @@ struct NotificationDesignView: View {
     @State private var activitiesEnabled = true
 
     var body: some View {
-        Group {
+        ScrollView {
             if notifications.status == .denied {
                 deniedContent
             } else {
                 settingsContent
             }
         }
+        .scrollBounceBehavior(.basedOnSize)
+        .safeAreaPadding(.bottom, OWCDesign.detailBottomInset)
         .background(OWCDesign.page)
         .task { activitiesEnabled = ActivityAuthorizationInfo().areActivitiesEnabled }
         // Coming back from Settings is exactly when this changes.
@@ -831,7 +839,7 @@ struct NotificationDesignView: View {
                             .foregroundStyle(activitiesEnabled ? OWCDesign.secondary : OWCDesign.orangeDeep)
                     }
                     OWCRow(title: shifts.text.t("notificationScheduledForShift"), isLast: true) {
-                        Text("0 / 0")
+                        Text(verbatim: "0 / 0")
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }
@@ -907,6 +915,7 @@ struct NotificationDesignView: View {
             .font(.footnote)
             .foregroundStyle(OWCDesign.secondary)
             .lineSpacing(2)
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 36)
             .padding(.top, 8)

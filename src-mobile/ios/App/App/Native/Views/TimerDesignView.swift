@@ -334,7 +334,7 @@ private struct RunningTimerDesignView: View {
     private var summaryCard: some View {
         OWCGroupCard {
             OWCRow(icon: "clock", title: shifts.text.t("todaysShift"), isLast: !shifts.session.presentationSalaryEnabled && !shifts.session.followsSchedule(at: now)) {
-                Text("\(shifts.text.formatTime(snapshot.startDate)) – \(shifts.text.formatTime(snapshot.endDate))")
+                Text(verbatim: "\(shifts.text.formatTime(snapshot.startDate)) – \(shifts.text.formatTime(snapshot.endDate))")
                     .font(.body.monospacedDigit())
                     .foregroundStyle(OWCDesign.secondary)
                     .environment(\.layoutDirection, .leftToRight)

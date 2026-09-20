@@ -200,7 +200,7 @@ struct OvertimeDesignView: View {
                             VStack(alignment: .leading, spacing: 0) {
                                 OWCGroupCard {
                                     OWCRow(icon: "clock", title: shifts.text.t("shiftEnded"), isLast: !shifts.session.presentationSalaryEnabled) {
-                                        Text("\(shifts.text.formatTime(snapshot.plannedEndDate)) · \(shifts.text.t("timeAgo", values: ["time": shifts.text.formatRelativeDuration(now.timeIntervalSince(snapshot.plannedEndDate) * 1_000)]))")
+                                        Text(verbatim: "\(shifts.text.formatTime(snapshot.plannedEndDate)) · \(shifts.text.t("timeAgo", values: ["time": shifts.text.formatRelativeDuration(now.timeIntervalSince(snapshot.plannedEndDate) * 1_000)]))")
                                             .font(.subheadline.monospacedDigit())
                                             .foregroundStyle(OWCDesign.secondary)
                                             .lineLimit(1)
@@ -511,7 +511,7 @@ struct CompletedShiftDesignView: View {
                         title: shifts.text.t("lunchTaken"),
                         isLast: !showsWeek
                     ) {
-                        Text("\(shifts.text.formatTime(lunch.start)) – \(shifts.text.formatTime(lunch.end))")
+                        Text(verbatim: "\(shifts.text.formatTime(lunch.start)) – \(shifts.text.formatTime(lunch.end))")
                             .font(.body.monospacedDigit())
                             .foregroundStyle(OWCDesign.secondary)
                     }

@@ -98,7 +98,7 @@ private struct DoneAtWatchWidgetView: View {
 
     @ViewBuilder private func circular(_ value: WatchDisplayContent) -> some View {
         let presentation = value.presentation
-        if let progress = value.progress, let phase = value.phase {
+        if let progress = value.progress, let phase = value.phase, phase != .before {
             Gauge(value: min(100, max(0, progress)), in: 0...100) {
                 Image(systemName: WatchDisplayFormat.symbol(for: phase))
             } currentValueLabel: {
@@ -129,7 +129,7 @@ private struct DoneAtWatchWidgetView: View {
             text($0.key, presentation, ["time": WatchDisplayFormat.footnoteTime($0, presentation)])
         }
         return VStack(alignment: .leading, spacing: 1) {
-            if let phase = value.phase {
+            if let phase = value.phase, phase != .before {
                 Label(WatchDisplayFormat.label(for: phase, presentation), systemImage: WatchDisplayFormat.symbol(for: phase))
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
@@ -166,7 +166,7 @@ private struct DoneAtWatchWidgetView: View {
                     .foregroundStyle(.secondary)
                     .widgetAccentable()
                 if let footnote { headline(footnote) }
-                if let next = value.nextShiftStartAtMs {
+                if let next = value.upcomingShiftStartAtMs {
                     Text(Date(timeIntervalSince1970: Double(next) / 1_000), style: .relative)
                         .font(.caption2)
                         .foregroundStyle(.secondary)

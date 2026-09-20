@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct DoneAtWatchApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var model: WatchAppModel
     private let receiver: WatchSnapshotReceiver
     private let showsReviewFixture: Bool
@@ -33,6 +34,10 @@ struct DoneAtWatchApp: App {
                 // A review fixture stands in for the phone; never overwrite real data with it.
                 guard !showsReviewFixture else { return }
                 await receiver.start()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active, !showsReviewFixture else { return }
+                receiver.refreshWidgets()
             }
         }
         .backgroundTask(.watchConnectivity) { [receiver] in
@@ -110,7 +115,7 @@ struct WatchRootView: View {
         }
         if value.scheduleState == .notConfigured {
             notice(text("watchOpenIPhone", presentation), symbol: "calendar.badge.exclamationmark")
-        } else if let phase = value.phase {
+        } else if let phase = value.phase, phase != .before {
             VStack(spacing: 4) {
                 Label(WatchDisplayFormat.label(for: phase, presentation), systemImage: WatchDisplayFormat.symbol(for: phase))
                     .font(.footnote.weight(.semibold))
@@ -144,7 +149,7 @@ struct WatchRootView: View {
                       systemImage: "moon.zzz")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.secondary)
-                if let next = value.nextShiftStartAtMs {
+                if let next = value.upcomingShiftStartAtMs {
                     Text(Date(timeIntervalSince1970: Double(next) / 1_000), style: .relative)
                         .font(.system(.title3, design: .rounded, weight: .semibold).monospacedDigit())
                         .lineLimit(1)
@@ -203,11 +208,15 @@ private struct WatchReviewFixture {
         let minute: Int64 = 60_000
         let hour = 60 * minute
         let chinese = locale.hasPrefix("zh")
+        let reviewTimeZone = Self.value(after: "-owcWatchReviewTimeZone", in: arguments)
+            .flatMap(TimeZone.init(identifier:)) ?? .current
         let presentation = WatchPresentationV1(
-            localeIdentifier: locale, timeZoneIdentifier: TimeZone.current.identifier,
-            workingLabel: chinese ? "工作中" : "Working", lunchLabel: chinese ? "午休" : "Lunch",
-            restingLabel: chinese ? "休息" : "Resting", overtimeLabel: chinese ? "加班" : "Overtime",
-            finishedLabel: chinese ? "已下班" : "Off work")
+            localeIdentifier: locale, timeZoneIdentifier: reviewTimeZone.identifier,
+            workingLabel: Self.value(after: "-owcWatchReviewWorkingLabel", in: arguments) ?? (chinese ? "工作中" : "Working"),
+            lunchLabel: Self.value(after: "-owcWatchReviewBreakLabel", in: arguments) ?? (chinese ? "中途休息" : "Break"),
+            restingLabel: Self.value(after: "-owcWatchReviewRestingLabel", in: arguments) ?? (chinese ? "休息" : "Resting"),
+            overtimeLabel: Self.value(after: "-owcWatchReviewOvertimeLabel", in: arguments) ?? (chinese ? "加班" : "Overtime"),
+            finishedLabel: Self.value(after: "-owcWatchReviewFinishedLabel", in: arguments) ?? (chinese ? "已下班" : "Off work"))
 
         func scheduled(_ shift: WatchShiftProjectionV1?, next: WatchNextShiftV1? = nil) -> WatchShiftContentV1 {
             .init(scheduleState: .scheduled, shift: shift, nextShift: next, presentation: presentation)

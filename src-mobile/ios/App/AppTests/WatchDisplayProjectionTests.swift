@@ -121,7 +121,7 @@ struct WatchDisplayProjectionTests {
         #expect(WatchDisplayFormat.footnote(for: content(.working)) == .init(key: "watchOffAt", atMs: 800, includesWeekday: false))
         #expect(WatchDisplayFormat.footnote(for: content(.overtime)) == .init(key: "watchOvertimeUntil", atMs: 800, includesWeekday: false))
         #expect(WatchDisplayFormat.footnote(for: content(.resting)) == .init(key: "watchBackAt", atMs: 600, includesWeekday: false))
-        #expect(WatchDisplayFormat.footnote(for: content(.before)) == .init(key: "watchNextShiftAt", atMs: 600, includesWeekday: false))
+        #expect(WatchDisplayFormat.footnote(for: content(.before)) == .init(key: "watchNextShiftAt", atMs: 600, includesWeekday: true))
         #expect(WatchDisplayFormat.footnote(for: content(.finished)) == .init(key: "watchOffAt", atMs: 800, includesWeekday: false))
         #expect(WatchDisplayFormat.footnote(for: content(nil)) == .init(key: "watchNextShiftAt", atMs: 900, includesWeekday: true))
         #expect(WatchDisplayFormat.footnote(for: content(nil, next: nil)) == nil)

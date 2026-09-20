@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Presentation-only modes. The persisted schedule retains its existing enum;
 /// automatic modes are represented by the same shared cycle/roster model.
-private enum ScheduleEditorMode: CaseIterable {
+private enum ScheduleEditorMode: CaseIterable, Hashable {
     case weekly, alternating, rotation, free, manual
 
     var titleKey: String {
@@ -45,6 +45,7 @@ struct ScheduleCalendarEditor: View {
     @State private var showsTypes = false
     @State private var showsHolidayRegions = false
     @State private var pendingMode: ScheduleEditorMode?
+    @State private var patternDrafts: [ScheduleEditorMode: ShiftCycleRule] = [:]
     @State private var editingType: ShiftTypeEditing?
     @ScaledMetric(relativeTo: .callout) private var cellHeight: CGFloat = 46
 
@@ -88,6 +89,22 @@ struct ScheduleCalendarEditor: View {
         .tint(OWCDesign.accent)
         .sensoryFeedback(.selection, trigger: selectionFeedback)
         .sensoryFeedback(.selection, trigger: assignmentFeedback)
+        .onAppear {
+#if DEBUG
+            // Navigate screenshot demos without changing the clock or saved roster.
+            if let key = UserDefaults.standard.string(forKey: "ios.native.qaScheduleDate"),
+               let date = RecordJSON.date(fromDayKey: key, calendar: shifts.preferences.recordsCalendar) {
+                let calendar = shifts.preferences.recordsCalendar
+                let target = calendar.dateComponents([.year, .month], from: date)
+                let current = calendar.dateComponents([.year, .month], from: .now)
+                if let year = target.year, let month = target.month,
+                   let currentYear = current.year, let currentMonth = current.month {
+                    monthOffset = (year - currentYear) * 12 + month - currentMonth
+                    selectedKey = key
+                }
+            }
+#endif
+        }
         .sheet(isPresented: $showsTypes) {
             NavigationStack {
                 ExtendedShiftTypesSection(
@@ -381,7 +398,10 @@ struct ScheduleCalendarEditor: View {
                 let type = content.shiftTypes.first { $0.id == rule.days[index] }
                 Menu {
                     ForEach(types) { option in
-                        Button(option.name) { onContentChange(ExtendedScheduleEditing.assigning(option.id, at: index, in: content)) }
+                        Button(option.name) {
+                            onContentChange(ExtendedScheduleEditing.assigning(option.id, at: index, in: content))
+                            assignmentFeedback += 1
+                        }
                     }
                 } label: {
                     VStack(spacing: 3) {
@@ -398,7 +418,7 @@ struct ScheduleCalendarEditor: View {
                     .padding(.horizontal, 2)
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(ScheduleCalendarPressStyle())
+                .buttonStyle(.plain)
                 .accessibilityLabel((mode == .rotation ? text.formatCount(index + 1) : weekdayLabels[index % 7]) + ", " + (type?.name ?? text.t("extendedUnassigned")))
             }
         }
@@ -565,13 +585,20 @@ struct ScheduleCalendarEditor: View {
     }
 
     private func applyMode(_ next: ScheduleEditorMode) {
+        if let rule = content.rule, !isManual { patternDrafts[mode] = rule }
         pendingMode = nil
         selectedWeek = 0
         if next == .manual { onManualChange(true); return }
         onManualChange(false)
         if next == .free { onRemovePattern() }
         else if let preset = next.preset {
-            onContentChange(session.applyingTemplate(preset, to: content, at: .now))
+            if let savedRule = patternDrafts[next] {
+                var restored = content
+                restored.rule = savedRule
+                onContentChange(restored)
+            } else {
+                onContentChange(session.applyingTemplate(preset, to: content, at: .now))
+            }
         }
     }
     private func editType(_ type: ShiftType) {
@@ -607,7 +634,7 @@ private struct ScheduleCalendarPressStyle: ButtonStyle {
     }
 }
 
-private struct HolidayRegionPicker: View {
+struct HolidayRegionPicker: View {
     let text: AppText
     let locale: Locale
     let selection: String?

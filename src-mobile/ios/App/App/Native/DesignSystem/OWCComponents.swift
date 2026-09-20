@@ -162,6 +162,7 @@ struct OWCContentSizedScrollView<Content: View>: View {
     private let showsIndicators: Bool
     private let content: Content
     @State private var contentHeight: CGFloat = 0
+    @State private var isAwayFromTop = false
 
     init(
         showsIndicators: Bool = true,
@@ -190,7 +191,14 @@ struct OWCContentSizedScrollView<Content: View>: View {
                     // point of this container.
                     .padding(.bottom, OWCDesign.detailBottomInset)
             }
-            .scrollDisabled(contentHeight <= viewport.size.height + 1)
+            // Collapsing a large navigation title grows the viewport. Never
+            // disable the pan while it still needs to return to the top.
+            .onScrollGeometryChange(for: Bool.self) { geometry in
+                geometry.contentOffset.y + geometry.contentInsets.top > 1
+            } action: { _, awayFromTop in
+                isAwayFromTop = awayFromTop
+            }
+            .scrollDisabled(!isAwayFromTop && contentHeight <= viewport.size.height + 1)
             .scrollBounceBehavior(.basedOnSize)
         }
         .onPreferenceChange(OWCScrollContentHeightKey.self) { contentHeight = $0 }

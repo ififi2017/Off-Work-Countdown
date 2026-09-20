@@ -54,7 +54,7 @@ struct WhatsNewView: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(text.t("whatsNewTitle")).font(.title2.bold())
                     .accessibilityAddTraits(.isHeader)
-                Text("DoneAt \(ReleaseNotes.current)")
+                Text(verbatim: "DoneAt \(ReleaseNotes.current)")
                     .font(.subheadline).foregroundStyle(.secondary)
             }
             .padding(.trailing, 36)

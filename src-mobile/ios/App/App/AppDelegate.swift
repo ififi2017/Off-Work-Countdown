@@ -219,6 +219,16 @@ struct OffWorkCountdownApp: App {
     @UIApplicationDelegateAdaptor(OffWorkCountdownApplicationDelegate.self) private var appDelegate
 
     init() {
+#if DEBUG
+        // Keep marketing fixtures and native date formatting in the same zone.
+        // This changes only this process, never the simulator or device settings.
+        if let identifier = UserDefaults.standard.string(forKey: "ios.native.qaTimeZone"),
+           let zone = TimeZone(identifier: identifier) {
+            setenv("TZ", zone.identifier, 1)
+            NSTimeZone.resetSystemTimeZone()
+            NSTimeZone.default = zone
+        }
+#endif
         LaunchTrace.beginAppInit()
         AppOrientationPolicy.prepare()
     }

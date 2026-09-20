@@ -98,6 +98,11 @@ final class WatchSnapshotReceiver: NSObject {
         await task.value
     }
 
+    func refreshWidgets() {
+        guard model.package != nil else { return }
+        transport.reloadWidgets()
+    }
+
     private func initialize() async {
         guard !usesSystemSession || WCSession.isSupported(),
               let fileURL = cacheURL ?? WatchSnapshotCache.appGroupFileURL() else {
@@ -114,6 +119,9 @@ final class WatchSnapshotReceiver: NSObject {
         case .incompatible: .cacheIncompatible
         }
         model.publish(restored, connectionState: state)
+        // WidgetKit may still hold a timeline produced by the previous app
+        // version. Reconcile it with the same durable cache shown on launch.
+        if restored != nil { transport.reloadWidgets() }
         guard usesSystemSession else { return }
         session.delegate = self
         session.activate()

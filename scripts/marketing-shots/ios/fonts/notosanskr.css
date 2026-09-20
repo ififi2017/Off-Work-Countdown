@@ -1,0 +1,14 @@
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 500;
+  font-display: block;
+  src: url(notosanskr-0.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url(notosanskr-1.ttf) format('truetype');
+}

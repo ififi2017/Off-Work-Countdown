@@ -33,7 +33,7 @@ struct ShiftHeroCard: View {
             .environment(\.layoutDirection, .leftToRight)
 
             Label {
-                Text("\(shifts.text.t("totalWorkTime")) · \(shifts.text.plannedWorkLabel(for: scene.setupSnapshot(using: shifts)))")
+                Text(verbatim: "\(shifts.text.t("totalWorkTime")) · \(shifts.text.plannedWorkLabel(for: scene.setupSnapshot(using: shifts)))")
             } icon: {
                 Image(systemName: "hourglass")
             }

@@ -1,0 +1,16 @@
+@font-face {
+  font-family: 'Noto Sans Thai';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: normal;
+  font-display: block;
+  src: url(notosansthai-0.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Noto Sans Thai';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: normal;
+  font-display: block;
+  src: url(notosansthai-1.ttf) format('truetype');
+}

@@ -675,4 +675,40 @@ struct ExtendedScheduleEditingTests {
         let weekly = try JSONEncoder().encode(ShiftCycleRule(preset: .weekly, anchorDayKey: "2026-10-05", days: []))
         #expect(String(decoding: weekly, as: UTF8.self).contains("\"weekly\""))
     }
+    @Test("Leaving an unsaved free preview discards generated days but keeps deliberate changes")
+    func freePreviewRestoresPattern() {
+        var draft = ScheduleFieldChange(
+            rosterEdits: ["2026-09-21": .shift(Self.early), "2026-09-22": .shift(Self.night)],
+            materializedRosterDays: ["2026-09-21"]
+        )
+        draft.restorePatternAfterFreePreview()
+        #expect(draft.rosterEdits == ["2026-09-22": .shift(Self.night)])
+        #expect(draft.materializedRosterDays.isEmpty)
+        let days = ExtendedScheduleEditing.handSetDays(["2026-09-23": Self.rest], applying: draft.rosterEdits)
+        #expect(days == ["2026-09-22": Self.night, "2026-09-23": Self.rest])
+    }
+
+    @Test("First-run holidays use final hours and breaks, while replay preserves a saved plan")
+    func firstRunHolidayPlan() throws {
+        let defaults = try #require(UserDefaults(suiteName: "FirstRunHoliday.\(UUID())"))
+        defaults.set(Self.zoneIdentifier, forKey: "ios.native.recordsTimeZone")
+        let runtime = AppRuntime(defaults: defaults, records: .inMemory())
+        runtime.preferences.applyPreferences {
+            $0.startMinutes = 600
+            $0.endMinutes = 1140
+            $0.lunchEnabled = true
+            $0.lunchStartMinutes = 780
+            $0.lunchDurationMinutes = 90
+        }
+        _ = runtime.shifts.completeSetup(holidayRegionIdentifier: "CN", at: try Self.at(runtime, 7, 10)).synchronousResult
+        let saved = try #require(runtime.preferences.extendedScheduleContent)
+        #expect(saved.holidayRegionIdentifier == "CN")
+        let work = try #require(saved.shiftTypes.first { $0.kind == .work })
+        #expect(work.startMinutes == 600 && work.endMinutes == 1140)
+        #expect(work.breakStartMinutes == 780 && work.breakDurationMinutes == 90)
+        #expect(runtime.preferences.onboardingComplete)
+        _ = runtime.shifts.completeSetup(holidayRegionIdentifier: "US").synchronousResult
+        #expect(runtime.preferences.extendedScheduleContent == saved)
+    }
+
 }
