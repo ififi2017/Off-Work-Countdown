@@ -220,7 +220,7 @@ Apple 明确说明第一步不会把内容送进审核队列，只有第二步�
 `886×1920`，并且必须带音轨——无声片用静音立体声 AAC 即可，缺音轨会被拒。不要仅凭
 设备营销名称改 API 枚举，尺寸与槽位要一起核对。
 
-3.2.0 截图按用户确认覆盖全部 17 个 ASC locale：每种语言八张 iPhone 和八张 iPad，共 272 张，配置为 `app-store-connect/ios/3.2.0-screenshots.json`。该配置只同步截图，保留已有文案和 Preview。用户已确认本版不需要 App Review 视频；不将其列为发布前置条件。
+3.2.0 截图按用户确认覆盖全部 17 个 ASC locale：每种语言八张 iPhone 和八张 iPad，共 272 张，配置为 `app-store-connect/ios/3.2.0-screenshots.json`。该配置只同步截图，保留已有文案。用户更正本版不需要商店 App Preview，已单独移除全部 17 个本地化的预览视频；本版也不另做 App Review 视频。
 
 替换截图后，删掉该 locale 上不再使用的 display type（例如旧的 `APP_IPHONE_65`）。
 Connect 控制台会优先展示闲置的旧槽，于是简体看起来还是旧图、繁体已经是新图。

@@ -121,7 +121,7 @@ P4/P5 的真机验收状态不因此改为完成。
   DeviceHero 方式叠层（框定盒子、截图铺屏洞、框叠上面），再压成不带 alpha 的
   1320×2868 / 2064×2752。当前竖图三张：计时、主屏幕小组件、午休。不要挖空边框或
   重画灵动岛。只改文案或排版时重跑 compose，不必重跑 Xcode。
-- 3.2.0 截图覆盖 17 个 ASC locale，每种语言八张 iPhone + 八张 iPad，共 272 张；使用独立截图配置同步，不改现有文案和 App Preview。用户已确认本版无需 App Review 视频。
+- 3.2.0 截图覆盖 17 个 ASC locale，每种语言八张 iPhone + 八张 iPad，共 272 张；使用独立截图配置同步，不改现有文案。用户更正本版无需商店 App Preview，已单独移除全部本地化预览视频；本版也不另做 App Review 视频。
   iPhone 槽位是 `APP_IPHONE_67`（没有 `APP_IPHONE_69`）。替换后要删掉旧的
   `APP_IPHONE_65` 等闲置槽，否则 Connect 界面会继续展示旧图。
 - Preview 是 `IPHONE_67` 竖版 886×1920，必须带音轨（无声立体声即可）。同步见
