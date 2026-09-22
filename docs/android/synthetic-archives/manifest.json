@@ -1,0 +1,23 @@
+{
+  "sourceCommit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
+  "provenance": "Constructed from RecordSchemaCompatibilityTests.fullState/downgraded plus one snapshot and one calendar exception so all 12 entity families are sampled. Not a live user export.",
+  "versions": {
+    "wire": 6,
+    "room": "not created",
+    "fixture": "not created",
+    "syncEnvelope": "not created"
+  },
+  "files": [
+    "v6.json",
+    "v5.json",
+    "v4.json",
+    "v3.json",
+    "v2.json",
+    "v1.json",
+    "illegal-v0.json",
+    "illegal-v7.json",
+    "illegal-invalid-date-v6.json",
+    "illegal-purchase-injected-v6.json",
+    "illegal-not-json.txt"
+  ]
+}

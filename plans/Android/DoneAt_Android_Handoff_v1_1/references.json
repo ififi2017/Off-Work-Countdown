@@ -1,0 +1,214 @@
+{
+  "checked_at": "2026-09-21",
+  "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
+  "references": {
+    "R01": {
+      "title": "仓库根 AGENTS：架构、隐私、规则与本地化契约",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/AGENTS.md"
+    },
+    "R02": {
+      "title": "iOS 快照与主倒计时显示规则",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Native/Models/CountdownRules.swift"
+    },
+    "R03": {
+      "title": "扩展排班数据模型",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/Shared/ExtendedSchedule.swift"
+    },
+    "R04": {
+      "title": "扩展排班解析器",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/Shared/ExtendedScheduleRules.swift"
+    },
+    "R05": {
+      "title": "Plus 权益与免费窗口",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Native/Models/PlusEntitlement.swift"
+    },
+    "R06": {
+      "title": "专注模型、模板与确定性会话 ID",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Native/Models/FocusModels.swift"
+    },
+    "R07": {
+      "title": "RecordJSON：跨平台备份协议与合并",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Native/Models/RecordJSON.swift"
+    },
+    "R08": {
+      "title": "记录日解析优先级",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Native/Models/DayRecordResolver.swift"
+    },
+    "R09": {
+      "title": "记录编辑、导入导出及隐私确认",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Native/Models/RecordsActions.swift"
+    },
+    "R10": {
+      "title": "当前汇总与人生收入规则",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Native/Models/SummaryRules.swift"
+    },
+    "R11": {
+      "title": "统一页面路由",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Native/Views/AppRouteDestination.swift"
+    },
+    "R12": {
+      "title": "同步设置、恢复与删除交互",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Native/Views/RecordsSyncSettingsView.swift"
+    },
+    "R13": {
+      "title": "计划 015：收入、设置同步与用户确认",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/plans/015-device-feedback-life-income-settings-sync.md"
+    },
+    "R14": {
+      "title": "计划 016：后续修订、首次恢复、固定月薪",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/plans/016-life-projection-first-run-native-ipad.md"
+    },
+    "R15": {
+      "title": "计划 012：周期总结与评价资格",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/plans/012-ios-retention-and-cycle-notifications.md"
+    },
+    "R16": {
+      "title": "共享 TypeScript 倒计时规范（实施阶段完整复核）",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/lib/countdown.ts"
+    },
+    "R17": {
+      "title": "共享 TypeScript 汇总规范（实施阶段完整复核）",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/lib/summary.ts"
+    },
+    "R18": {
+      "title": "共享提醒规范与测试入口（实施阶段完整复核）",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/lib/reminders.ts"
+    },
+    "R19": {
+      "title": "现有 TypeScript 规则 oracle（实施阶段读取接口）",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/scripts/ios-schedule-rule-oracle.mjs"
+    },
+    "R20": {
+      "title": "现有 Swift 跨语言规则测试（实施阶段完整复核）",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/AppTests/ScheduleRuleFixtureTests.swift"
+    },
+    "R21": {
+      "title": "iOS 翻译目录（已核实路径，实施阶段转换完整文件）",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/src-mobile/ios/App/App/Localizable.xcstrings"
+    },
+    "R22": {
+      "title": "计划 019：原生规则与翻译迁移（实施阶段复核）",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/plans/019-ios-native-rules-and-localization.md"
+    },
+    "R23": {
+      "title": "README：仅用作项目介绍，部分数据边界描述已落后",
+      "url": "https://github.com/ififi2017/Off-Work-Countdown/blob/9252fdfdc66aab88b4acb7493684f11991fd773d/README_CN.md"
+    },
+    "A01": {
+      "title": "Compose Material 3 发布说明",
+      "url": "https://developer.android.com/jetpack/androidx/releases/compose-material3"
+    },
+    "A02": {
+      "title": "Material 3 in Compose",
+      "url": "https://developer.android.com/develop/ui/compose/designsystems/material3"
+    },
+    "A03": {
+      "title": "Material 3 Expressive 设计入口（网页依赖 JavaScript）",
+      "url": "https://m3.material.io/blog/building-with-m3-expressive"
+    },
+    "A04": {
+      "title": "Google Play 目标 API 政策",
+      "url": "https://support.google.com/googleplay/android-developer/answer/11926878"
+    },
+    "A05": {
+      "title": "Play Billing 废弃周期",
+      "url": "https://developer.android.com/google/play/billing/deprecation-faq"
+    },
+    "A06": {
+      "title": "Play Billing 接入",
+      "url": "https://developer.android.com/google/play/billing/integrate"
+    },
+    "A07": {
+      "title": "Play Billing 安全及服务端验证",
+      "url": "https://developer.android.com/google/play/billing/security"
+    },
+    "A08": {
+      "title": "订阅生命周期",
+      "url": "https://developer.android.com/google/play/billing/lifecycle/subscriptions"
+    },
+    "A09": {
+      "title": "新个人开发者账户的测试要求",
+      "url": "https://support.google.com/googleplay/android-developer/answer/14151465"
+    },
+    "A10": {
+      "title": "AlarmManager 与精确闹钟权限",
+      "url": "https://developer.android.com/develop/background-work/services/alarms"
+    },
+    "A11": {
+      "title": "Live Update 通知及适用范围",
+      "url": "https://developer.android.com/develop/ui/views/notifications/live-update"
+    },
+    "A12": {
+      "title": "Glance 小组件更新与状态",
+      "url": "https://developer.android.com/develop/ui/compose/glance/glance-app-widget"
+    },
+    "A13": {
+      "title": "Google Drive 应用专用数据",
+      "url": "https://developers.google.com/workspace/drive/api/guides/appdata"
+    },
+    "A14": {
+      "title": "Google Play Data safety 申报",
+      "url": "https://support.google.com/googleplay/android-developer/answer/10787469"
+    },
+    "A15": {
+      "title": "Google Play 应用内评价",
+      "url": "https://developer.android.com/guide/playcore/in-app-review"
+    },
+    "A16": {
+      "title": "Android 数据备份默认行为",
+      "url": "https://developer.android.com/identity/data/backup"
+    },
+    "A17": {
+      "title": "16 KB 内存页兼容",
+      "url": "https://developer.android.com/guide/practices/page-sizes"
+    },
+    "A18": {
+      "title": "Compose 自适应导航",
+      "url": "https://developer.android.com/develop/ui/compose/layouts/adaptive/build-adaptive-navigation"
+    },
+    "A19": {
+      "title": "AGP 当前发布与兼容矩阵",
+      "url": "https://developer.android.com/build/releases/gradle-plugin"
+    },
+    "A20": {
+      "title": "Compose BOM 与显式版本覆盖",
+      "url": "https://developer.android.com/develop/ui/compose/bom"
+    },
+    "A21": {
+      "title": "Compose 编译器插件",
+      "url": "https://developer.android.com/develop/ui/compose/setup-compose-dependencies-and-compiler"
+    },
+    "A22": {
+      "title": "AGP 9 内置 Kotlin",
+      "url": "https://developer.android.com/build/migrate-to-built-in-kotlin"
+    },
+    "A23": {
+      "title": "Play 创建与设置应用",
+      "url": "https://support.google.com/googleplay/android-developer/answer/9859152"
+    },
+    "A24": {
+      "title": "前台服务类型与适用范围",
+      "url": "https://developer.android.com/develop/background-work/services/fgs/service-types"
+    },
+    "A25": {
+      "title": "Android App Links 校验",
+      "url": "https://developer.android.com/training/app-links/verify-applinks"
+    },
+    "A26": {
+      "title": "Play 商店预览素材规范",
+      "url": "https://support.google.com/googleplay/android-developer/answer/9866151"
+    },
+    "A27": {
+      "title": "Android 通知运行时权限",
+      "url": "https://developer.android.com/develop/ui/compose/notifications/notification-permission"
+    },
+    "A28": {
+      "title": "Android Auto Backup 排除规则",
+      "url": "https://developer.android.com/identity/data/autobackup"
+    },
+    "A29": {
+      "title": "Google Play 账号删除要求",
+      "url": "https://support.google.com/googleplay/android-developer/answer/13327111"
+    }
+  }
+}
