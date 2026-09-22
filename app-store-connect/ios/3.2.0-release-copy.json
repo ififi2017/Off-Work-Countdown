@@ -1,0 +1,80 @@
+{
+  "$schema": "../metadata.schema.json",
+  "schemaVersion": 1,
+  "app": {
+    "bundleId": "com.rainif.offworkcountdown.macappstore",
+    "platform": "IOS",
+    "versionString": "3.2.0",
+    "createVersionIfMissing": false
+  },
+  "localizations": {
+    "ar-SA": {
+      "promotionalText": "كم بقي حتى نهاية الدوام؟ تابع الوقت المتبقي ودخلك التقديري. الآن يمكنك متابعة العد التنازلي على Apple Watch مجانًا، دون الحاجة إلى DoneAt Plus.",
+      "whatsNew": "• تخطيط الورديات في تقويم شهري\nأنشئ جدولك وراجعه في تقويم شهري واحد. اختر أيامًا ثابتة، أو أسابيع متناوبة، أو دورات ورديات، أو جدولة حرة، أو تسجيلًا يدويًا؛ وتظهر التعديلات فورًا.\n\n• العطلات وأيام العمل التعويضية\nاختر بلدًا أو منطقة من «وقت العمل والجدول» لتطبيق تقويم العطلات. بعد التحديث من إصدار أقدم، فعّل الميزة يدويًا.\n\n• DoneAt على Apple Watch\nتابع ورديتك والعد التنازلي لنهاية الدوام من معصمك مجانًا، دون الحاجة إلى DoneAt Plus.\n\n• تحسينات الاستقرار\nأصلحنا مشكلات وحسّنا سلاسة الاستخدام اليومي."
+    },
+    "de-DE": {
+      "promotionalText": "Wie lange noch bis Feierabend? Sieh Restzeit und geschätzten Verdienst auf einen Blick. Jetzt auch als Countdown auf Apple Watch – kostenlos, ohne DoneAt Plus.",
+      "whatsNew": "• Dienstplan im Monatskalender\nErstelle und prüfe deinen Dienstplan in einem Monatskalender. Wähle feste Wochentage, wechselnde Wochen, Schichtfolgen, freie Planung oder manuelle Zeiterfassung; Änderungen erscheinen sofort.\n\n• Feiertage und Ersatzarbeitstage\nWähle unter „Arbeitszeit & Dienstplan“ ein Land oder eine Region, um den Feiertagskalender anzuwenden. Nach dem Update von einer älteren Version muss die Funktion manuell aktiviert werden.\n\n• DoneAt für Apple Watch\nSieh Schicht und Feierabend-Countdown kostenlos am Handgelenk, ohne DoneAt Plus.\n\n• Bessere Stabilität\nWir haben Fehler behoben und die tägliche Nutzung flüssiger gemacht."
+    },
+    "en-US": {
+      "promotionalText": "How long until you clock out? See your shift countdown and estimated pay at a glance. Now check your countdown on Apple Watch, free. No DoneAt Plus needed.",
+      "whatsNew": "• Monthly calendar scheduling\nBuild and review your schedule in one monthly calendar. Choose fixed weekdays, alternating weeks, shift rotations, free scheduling, or manual timing; edits appear immediately.\n\n• Holidays and makeup workdays\nChoose a country or region in Work Hours & Schedule to apply its holiday calendar. Existing users need to turn this on manually after updating.\n\n• DoneAt for Apple Watch\nCheck your shift and clock-out countdown on your wrist, free. No DoneAt Plus required.\n\n• Stability improvements\nWe fixed issues and made everyday use smoother."
+    },
+    "es-ES": {
+      "promotionalText": "¿Cuánto falta para salir? Consulta el tiempo que queda y tus ingresos estimados. Ahora, la cuenta atrás también en Apple Watch, gratis y sin DoneAt Plus.",
+      "whatsNew": "• Turnos en un calendario mensual\nCrea y revisa tu horario en un único calendario mensual. Elige días fijos, semanas alternas, rotaciones, planificación libre o registro manual; los cambios aparecen al instante.\n\n• Festivos y días laborables compensatorios\nElige un país o una región en «Horario laboral y turnos» para aplicar su calendario festivo. Si actualizas desde una versión anterior, debes activarlo manualmente.\n\n• DoneAt para Apple Watch\nConsulta el turno y la cuenta atrás para salir desde la muñeca, gratis y sin DoneAt Plus.\n\n• Mejoras de estabilidad\nHemos corregido errores y mejorado la fluidez diaria."
+    },
+    "fr-FR": {
+      "promotionalText": "Bientôt la fin de journée ? Gardez un œil sur le temps restant et vos gains estimés. Le décompte arrive sur Apple Watch, gratuitement et sans DoneAt Plus.",
+      "whatsNew": "• Planning dans un calendrier mensuel\nCréez et vérifiez votre planning dans un seul calendrier mensuel. Choisissez des jours fixes, des semaines alternées, une rotation, un planning libre ou un suivi manuel ; chaque modification s’affiche aussitôt.\n\n• Jours fériés et jours de rattrapage\nChoisissez un pays ou une région dans « Temps de travail et planning » pour appliquer son calendrier. Après une mise à jour depuis une ancienne version, activez cette option manuellement.\n\n• DoneAt sur Apple Watch\nSuivez votre service et le décompte jusqu’à la fin du travail au poignet, gratuitement et sans DoneAt Plus.\n\n• Stabilité améliorée\nNous avons corrigé des problèmes et fluidifié l’utilisation quotidienne."
+    },
+    "hi": {
+      "promotionalText": "शिफ़्ट खत्म होने में कितना समय है? बाकी समय और अनुमानित कमाई एक नज़र में देखें। अब Apple Watch पर भी काउंटडाउन मुफ़्त है। DoneAt Plus ज़रूरी नहीं।",
+      "whatsNew": "• मासिक कैलेंडर में शिफ़्ट प्लानिंग\nएक ही मासिक कैलेंडर में अपना शेड्यूल बनाएँ और देखें। तय कार्यदिवस, बारी-बारी वाले सप्ताह, शिफ़्ट चक्र, स्वतंत्र शेड्यूल या मैन्युअल टाइमिंग चुनें; बदलाव तुरंत दिखाई देते हैं।\n\n• छुट्टियाँ और प्रतिपूरक कार्यदिवस\nछुट्टी कैलेंडर लागू करने के लिए “काम के घंटे और शेड्यूल” में देश या क्षेत्र चुनें। पुराने संस्करण से अपडेट करने वाले उपयोगकर्ताओं को इसे मैन्युअल रूप से चालू करना होगा।\n\n• Apple Watch पर DoneAt\nअपनी शिफ़्ट और काम खत्म होने की उलटी गिनती कलाई पर मुफ़्त देखें। DoneAt Plus की ज़रूरत नहीं।\n\n• बेहतर स्थिरता\nहमने समस्याएँ ठीक कीं और रोज़मर्रा के उपयोग को अधिक सहज बनाया।"
+    },
+    "id": {
+      "promotionalText": "Berapa lama lagi sampai pulang? Lihat sisa waktu dan perkiraan penghasilanmu. Kini hitung mundur juga hadir di Apple Watch, gratis tanpa DoneAt Plus.",
+      "whatsNew": "• Jadwal di kalender bulanan\nBuat dan tinjau jadwal dalam satu kalender bulanan. Pilih hari kerja tetap, minggu bergantian, rotasi sif, jadwal bebas, atau pencatatan manual; perubahan langsung terlihat.\n\n• Hari libur dan hari kerja pengganti\nPilih negara atau wilayah di Waktu Kerja & Jadwal untuk menerapkan kalender hari liburnya. Pengguna yang memperbarui dari versi lama perlu mengaktifkannya secara manual.\n\n• DoneAt untuk Apple Watch\nLihat sif dan hitung mundur sampai selesai kerja dari pergelangan tangan, gratis tanpa DoneAt Plus.\n\n• Peningkatan stabilitas\nKami memperbaiki masalah dan membuat penggunaan sehari-hari lebih lancar."
+    },
+    "it": {
+      "promotionalText": "Quanto manca a fine turno? Tieni d’occhio il tempo rimasto e il guadagno stimato. Ora il conto alla rovescia è anche su Apple Watch, gratis e senza DoneAt Plus.",
+      "whatsNew": "• Turni nel calendario mensile\nCrea e controlla il tuo programma in un unico calendario mensile. Scegli giorni fissi, settimane alternate, rotazioni, pianificazione libera o conteggio manuale; le modifiche appaiono subito.\n\n• Festività e giorni lavorativi di recupero\nScegli un paese o un’area geografica in “Orario di lavoro e turni” per applicarne il calendario. Dopo l’aggiornamento da una versione precedente, attiva la funzione manualmente.\n\n• DoneAt per Apple Watch\nControlla il turno e il conto alla rovescia fino all’uscita dal polso, gratis e senza DoneAt Plus.\n\n• Stabilità migliorata\nAbbiamo risolto alcuni problemi e reso più fluido l’uso quotidiano."
+    },
+    "ja": {
+      "promotionalText": "退勤まであと何分？今日の収入見込みと残り時間をひと目で。Apple Watchでも退勤カウントダウンを確認できるようになりました。無料で使えて、DoneAt Plusは不要です。",
+      "whatsNew": "• 月間カレンダーでシフト管理\n1つの月間カレンダーで勤務予定を作成・確認できます。固定曜日、隔週、ローテーション、自由シフト、手動計測に対応し、変更はすぐにカレンダーへ反映されます。\n\n• 祝日・振替出勤日に対応\n「勤務時間とシフト」で国または地域を選ぶと、その祝日カレンダーを適用できます。旧バージョンから更新した場合は、手動で有効にしてください。\n\n• Apple Watchに対応\n勤務状況と退勤までのカウントダウンを手首で確認できます。無料で利用でき、DoneAt Plusは不要です。\n\n• 安定性を改善\n不具合を修正し、日々の操作をよりスムーズにしました。"
+    },
+    "ko": {
+      "promotionalText": "퇴근까지 얼마나 남았을까요? 남은 근무 시간과 오늘의 예상 수입을 한눈에 확인하세요. 이제 Apple Watch에서도 퇴근 카운트다운을 무료로 이용할 수 있어요. DoneAt Plus는 필요하지 않아요.",
+      "whatsNew": "• 월간 캘린더 근무 일정\n하나의 월간 캘린더에서 일정을 만들고 확인하세요. 고정 요일, 격주, 교대 순환, 자유 일정, 수동 측정을 지원하며 변경 내용이 바로 반영돼요.\n\n• 공휴일과 대체 근무일 지원\n‘근무 시간 및 일정’에서 국가 또는 지역을 선택하면 해당 공휴일 달력을 적용할 수 있어요. 이전 버전에서 업데이트한 경우 직접 켜 주세요.\n\n• Apple Watch 지원\n손목에서 근무 상태와 퇴근 카운트다운을 확인하세요. DoneAt Plus 없이 무료로 이용할 수 있어요.\n\n• 안정성 개선\n문제를 수정하고 일상적인 사용을 더 부드럽게 만들었어요."
+    },
+    "pt-BR": {
+      "promotionalText": "Falta quanto para sair? Veja o tempo restante e os ganhos estimados de hoje. Agora, acompanhe a contagem no Apple Watch, de graça e sem DoneAt Plus.",
+      "whatsNew": "• Escala no calendário mensal\nCrie e confira sua escala em um único calendário mensal. Escolha dias fixos, semanas alternadas, rotações, escala livre ou contagem manual; as mudanças aparecem na hora.\n\n• Feriados e dias de trabalho compensatórios\nEscolha um país ou região em “Jornada e escala” para aplicar o calendário de feriados. Quem atualizar de uma versão anterior precisa ativar o recurso manualmente.\n\n• DoneAt para Apple Watch\nVeja seu turno e a contagem até o fim do expediente no pulso, de graça e sem DoneAt Plus.\n\n• Melhorias de estabilidade\nCorrigimos problemas e deixamos o uso diário mais fluido."
+    },
+    "ru": {
+      "promotionalText": "Сколько осталось до конца смены? Следите за временем и примерным заработком. Теперь отсчёт доступен на Apple Watch — бесплатно, без DoneAt Plus.",
+      "whatsNew": "• График в месячном календаре\nСоздавайте и проверяйте график в одном календаре на месяц. Доступны фиксированные дни, чередование недель, циклы смен, свободное расписание и ручной учёт; изменения отображаются сразу.\n\n• Праздники и перенесённые рабочие дни\nВыберите страну или регион в разделе «Рабочее время и график», чтобы применить календарь праздников. После обновления со старой версии включите функцию вручную.\n\n• DoneAt для Apple Watch\nСледите за сменой и отсчётом до ухода с работы прямо на запястье — бесплатно, без DoneAt Plus.\n\n• Улучшена стабильность\nМы исправили ошибки и сделали повседневную работу плавнее."
+    },
+    "th": {
+      "promotionalText": "อีกกี่นาทีจะได้เลิกงาน? ดูเวลาที่เหลือและรายได้โดยประมาณ ตอนนี้ดูเวลานับถอยหลังบน Apple Watch ได้แล้ว ใช้ฟรี ไม่ต้องมี DoneAt Plus",
+      "whatsNew": "• จัดกะในปฏิทินรายเดือน\nสร้างและตรวจสอบตารางงานในปฏิทินรายเดือนเดียว เลือกวันทำงานประจำ สัปดาห์สลับ รอบกะ จัดตารางอิสระ หรือจับเวลาด้วยตนเองได้ โดยการแก้ไขจะแสดงทันที\n\n• วันหยุดและวันทำงานชดเชย\nเลือกประเทศหรือภูมิภาคใน “เวลาทำงานและตารางกะ” เพื่อใช้ปฏิทินวันหยุด ผู้ที่อัปเดตจากเวอร์ชันก่อนหน้าต้องเปิดฟีเจอร์นี้ด้วยตนเอง\n\n• DoneAt บน Apple Watch\nดูสถานะกะและเวลานับถอยหลังจนเลิกงานจากข้อมือได้ฟรี ไม่ต้องมี DoneAt Plus\n\n• ปรับปรุงความเสถียร\nแก้ไขปัญหาและทำให้การใช้งานประจำวันลื่นไหลยิ่งขึ้น"
+    },
+    "tr": {
+      "promotionalText": "Mesai bitimine ne kadar kaldı? Kalan süreyi ve tahmini kazancını bir bakışta gör. Geri sayım artık Apple Watch üzerinde de ücretsiz. DoneAt Plus gerekmez.",
+      "whatsNew": "• Aylık takvimde vardiya planı\nProgramını tek bir aylık takvimde oluştur ve gözden geçir. Sabit günler, dönüşümlü haftalar, vardiya döngüleri, serbest planlama veya elle süre tutma seçeneklerinden birini seç; değişiklikler anında görünür.\n\n• Tatiller ve telafi iş günleri\nTatil takvimini uygulamak için “Çalışma Süresi ve Program” bölümünde ülke veya bölge seç. Eski bir sürümden güncelleyenlerin bu özelliği elle açması gerekir.\n\n• Apple Watch için DoneAt\nVardiyanı ve mesai bitimine kalan süreyi bileğinden ücretsiz takip et. DoneAt Plus gerekmez.\n\n• Kararlılık iyileştirmeleri\nSorunları giderdik ve günlük kullanımı daha akıcı hâle getirdik."
+    },
+    "vi": {
+      "promotionalText": "Còn bao lâu nữa là tan ca? Xem thời gian còn lại và thu nhập ước tính. Nay có thể xem đếm ngược trên Apple Watch miễn phí, không cần DoneAt Plus.",
+      "whatsNew": "• Xếp ca trên lịch tháng\nTạo và xem lịch làm việc trong một lịch tháng duy nhất. Chọn ngày cố định, tuần luân phiên, chu kỳ ca, lịch tự do hoặc chấm giờ thủ công; thay đổi hiển thị ngay lập tức.\n\n• Ngày lễ và ngày làm bù\nChọn quốc gia hoặc khu vực trong “Thời gian làm việc & Lịch ca” để áp dụng lịch ngày lễ. Người dùng nâng cấp từ phiên bản cũ cần bật tính năng này theo cách thủ công.\n\n• DoneAt trên Apple Watch\nXem ca làm và đếm ngược đến giờ tan ca ngay trên cổ tay, miễn phí và không cần DoneAt Plus.\n\n• Cải thiện độ ổn định\nĐã sửa lỗi và giúp thao tác hằng ngày mượt mà hơn."
+    },
+    "zh-Hans": {
+      "promotionalText": "还有多久下班，今天预计赚了多少？用灵动岛和小组件随时查看。现在也能在 Apple Watch 上看下班倒计时，免费使用，无需 DoneAt Plus。",
+      "whatsNew": "• 月历排班\n在同一张月历中设置和预览排班，支持固定星期、单双休、轮班轮休、自由排班和手动计时；修改会立即显示在月历中。\n\n• 节假日与调休\n在“工作时间与排班”中选择国家或地区，即可让排班适配对应的节假日与调休。旧版本升级后需要手动开启。\n\n• 免费 Apple Watch\n抬腕查看班次和下班倒计时，无需 DoneAt Plus。\n\n• 性能优化\n修复问题并提升日常使用的稳定性。"
+    },
+    "zh-Hant": {
+      "promotionalText": "還有多久下班，今天預計賺了多少？透過動態島與小工具隨時查看。現在也能在 Apple Watch 上看下班倒數，免費使用，不需 DoneAt Plus。",
+      "whatsNew": "• 月曆排班\n在同一張月曆中設定與預覽班表，支援固定星期、大小週、輪班輪休、自由排班及手動計時；修改會立即顯示於月曆。\n\n• 假日與補班日\n在「工作時間與排班」選擇國家或地區，即可讓班表配合相應的假日安排。舊版本升級後需手動啟用。\n\n• 免費 Apple Watch\n抬腕查看班次和下班倒數，不需 DoneAt Plus。\n\n• 效能改善\n修正問題並提升日常使用穩定性。"
+    }
+  }
+}

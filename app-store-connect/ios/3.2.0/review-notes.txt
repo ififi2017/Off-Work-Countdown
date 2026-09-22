@@ -1,0 +1,34 @@
+DoneAt 3.2.0 adds free Apple Watch support and calendar-based schedule editing to the native iPhone and iPad app.
+
+New in this version and how to test:
+
+- Apple Watch: the Watch app and both complications are free. Pair an Apple Watch with the iPhone, install both apps, save a schedule on iPhone and open the Watch app for initial synchronization. After receiving the schedule, Watch resolves current and upcoming shifts locally, including configured holidays and make-up workdays. No Plus purchase is required. Watch is read-only; shift editing remains on iPhone. Only schedule data is sent to Watch, not salary or the record archive.
+- Schedule calendar: open Settings, then Work Hours & Schedule. Select a schedule pattern, choose dates and assign shifts; the calendar previews the draft immediately. Save to apply, or leave and discard changes. Schedule editing and planned historical assignments are free; editing actual historical records remains a Plus feature.
+- Holidays: in Work Hours & Schedule, open the holiday setting to select a supported country or region, or turn it off. Existing users must enable it manually. First-time setup recommends the system region and allows changing or disabling it. Built-in holiday and make-up workday data adjusts the schedule; manual day assignments take priority. Unsupported years do not invent holiday arrangements.
+- Fixes include schedule switching, scrolling, reminder text and Watch countdowns.
+
+This version has screenshots but no App Preview or review video.
+
+What to review:
+
+- Records: records from today and the previous six days are free to view in Week and Month; older days stay locked inside those views. Export and delete also remain free. DoneAt Plus unlocks older records, the Year view and editing a past day.
+- Life view: Plus uses optional life milestones and career salary periods to show past estimates, the current work stage and projected gross lifetime income.
+- Focus: Plus lets the user plan tasks and run focus and break sessions. A session respects lunch and shift-end boundaries.
+- iCloud: the user can choose private iCloud sync for schedules, records, salary, reminder preferences, appearance, language, Life profile and Focus data. Enabling sync is a Plus feature; sync that is already enabled continues after a subscription expires. Quick setup can restore iCloud records on a new device.
+- The real-time countdown, today’s schedule and earnings estimate remain free.
+
+How to reach the paid features:
+
+1. Finish or skip onboarding. On the optional Plus introduction, tap See plans to open the paywall or Skip to continue with the free countdown.
+2. Open Records. Week and Month show the free seven-day window. Tap an older locked day, Year, Life, Focus, editing a past day or Enable iCloud Sync to present the paywall. Continue viewing the list returns to the free window.
+3. Open Settings → DoneAt Plus to restore or manage purchases. Restore purchases is available without Plus.
+
+Products:
+
+- Yearly subscription: 7-day introductory free trial for eligible new subscribers.
+- Monthly subscription: no trial.
+- Lifetime: one-time non-consumable with Family Sharing. Buying lifetime does not cancel an active subscription; the app warns first and keeps Manage subscription available until that subscription ends.
+
+There is no DoneAt account or product sign-in. Please use a Sandbox Apple ID to test purchases.
+
+Privacy: data stays on the device by default. When the user enables iCloud sync, the listed synced data is stored in that user’s private iCloud database. Notification authorization, biometric protection, Live Activity settings and the running timer stay on each device. Salary never appears in widgets, notifications, Live Activities, share links or analytics. A backup export is created only when the user selects Export; the user chooses where to save or share it in the system sheet. A full backup includes records, synced settings, salary and career history.
