@@ -28,7 +28,7 @@ SwiftUI target 通过 JavaScriptCore 消费构建生成的共享规则 bundle；
 `lib/countdown.ts` / `lib/reminders.ts` 仍是排班与提醒的唯一实现。Swift 只负责本地状态、
 绝对时间通知预约、系统 UI 和 App 生命周期。
 
-> 2026-09-15 更新：这一段已被 [019](../plans/019-ios-native-rules-and-localization.md) 取代。iOS 的
+> 2026-09-15 更新：这一段已被 [019](../plans/iOS/019-ios-native-rules-and-localization.md) 取代。iOS 的
 > 排班、提醒、汇总与收入规则改由 Swift 实现，TS 作为规格并以差分 fixture 约束；R4 删除了
 > JavaScriptCore 规则包。
 

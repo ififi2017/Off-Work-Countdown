@@ -1,6 +1,6 @@
 # 3.1.9 真机反馈实施与验收
 
-范围与已确认口径见 [计划 015](../../plans/015-device-feedback-life-income-settings-sync.md)。本轮在隔离工作树实施，未改动用户原工作区的 Xcode 工程调整，未上传 App Store / TestFlight。
+范围与已确认口径见 [计划 015](../../plans/iOS/015-device-feedback-life-income-settings-sync.md)。本轮在隔离工作树实施，未改动用户原工作区的 Xcode 工程调整，未上传 App Store / TestFlight。
 
 ## 实施结果
 

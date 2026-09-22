@@ -25,7 +25,7 @@ App Store 免费下载，欢迎页之后展示一次可跳过的付费页，提�
 - iOS 与 Mac App Store 共用**同一个 App 记录**：bundle id
   `com.rainif.offworkcountdown.macappstore`，App Store id `6802803318`。
 - Mac App Store 上架的是 `src-tauri` 打出来的包，iOS 上架的是 `src-mobile/ios` 的 SwiftUI 包。
-  这是 [ADR-MOBILE-D0](../docs/ADR-MOBILE-D0.md) 已锁定的通用购买决策，`check:ios` 也在断言
+  这是 [ADR-MOBILE-D0](../../docs/ADR-MOBILE-D0.md) 已锁定的通用购买决策，`check:ios` 也在断言
   这个 bundle id。
 - 通用购买 = 一个记录 = **一个价格**。**记录已改为免费下载**（2026-08-27 确认；原先 US$0.99 / ¥8 买断不再是当前标价）。Mac 历史上那 1 单买断仍按下文用兑换码处理，不为此写迁移。
 

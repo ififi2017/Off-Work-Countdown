@@ -106,7 +106,7 @@ CI 在两个构建后执行产物级断言：Web 必须真实生成 robots、man
 
 Web 的 `Notification` API 在 Tauri webview 里表现不一致。改用官方插件，由 Rust 侧的定时器在到点时直接发出——**这正是桌面端存在的理由**，不能依赖 webview。
 
-现有的 [lib/notify.ts](../lib/notify.ts) 已经把通知发送抽象成一个函数，桌面端替换实现即可，调用方不用改。
+现有的 [lib/notify.ts](../../lib/notify.ts) 已经把通知发送抽象成一个函数，桌面端替换实现即可，调用方不用改。
 
 ### 决策 5：埋点在桌面端关闭
 
@@ -124,7 +124,7 @@ Web 端的布局是「大片背景中间浮一张 `max-w-md` 卡片」，这在�
 
 #### 布局：复用已有的无边距分支，不新写一套
 
-应用里已经有这条分支——PWA 独立窗口用的 `isPWA` 路径（[off-work-countdown.tsx](../components/off-work-countdown.tsx)）：
+应用里已经有这条分支——PWA 独立窗口用的 `isPWA` 路径（[off-work-countdown.tsx](../../components/off-work-countdown.tsx)）：
 
 | | 浏览器 | `isPWA` 分支 |
 |---|---|---|
@@ -211,7 +211,7 @@ Rust 后台线程每秒从 Tauri Store 读取绝对起止时间，并计算剩�
 
 **P3 实现记录（2026-08-09）**：
 
-1. 接入官方 notification、autostart 与 global-shortcut 插件。桌面端的通知权限与发送由 [lib/notify.ts](../lib/notify.ts) 切到 Tauri 插件，Web 端仍保留 Service Worker / Notification API 路径；桌面倒计时不再从 JS 重复发送提醒。
+1. 接入官方 notification、autostart 与 global-shortcut 插件。桌面端的通知权限与发送由 [lib/notify.ts](../../lib/notify.ts) 切到 Tauri 插件，Web 端仍保留 Service Worker / Notification API 路径；桌面倒计时不再从 JS 重复发送提醒。
 2. Rust 后台线程在提前 15 分钟与下班时刻推进两个独立提醒节点，并把节点状态持久化到 Store。短于 15 分钟才启动的倒计时不补发提前提醒；应用重启遇到已结束的旧快照也不补发；同一个结束时间的每个节点最多处理一次。下班后托盘文字归零；已经打开的 Windows 迷你窗不再被强制隐藏，而是回到“计时未开始”，由用户决定是否收起。
 3. 主设置页新增「登录时启动」开关和固定快捷键提示（`CommandOrControl+Shift+O`），文案覆盖 19 种语言。快捷键在主窗口聚焦时隐藏，否则从托盘/最小化状态恢复并聚焦；若组合键已被其他应用占用，只记录警告，不阻止客户端启动。
 4. macOS 实机自动化完成自启开关的开→关往返并恢复原状态；一分钟倒计时在主窗口关闭到托盘后仍由 Rust 线程把完成节点写为 `completionSent: true`，证明提醒链路不依赖 WebView 可见。桌面控制工具不能发送系统级全局快捷键，因此实际按键唤起/隐藏仍列人工验收；Windows 的通知、自启与快捷键也待实机验收。
@@ -265,11 +265,11 @@ P4 剩余两个验收门禁：第一，确认私钥和钥匙串口令已有一�
 
 | 风险 | 状态 | 应对 |
 |---|---|---|
-| canvas emoji 光栅化 | **已解决** | [lib/moods.ts](../lib/moods.ts) 已用 `public/emoji/*.png` 绕开——当初为 iOS Safari 做的修复，WKWebView 同属 Safari 引擎家族，直接受益 |
+| canvas emoji 光栅化 | **已解决** | [lib/moods.ts](../../lib/moods.ts) 已用 `public/emoji/*.png` 绕开——当初为 iOS Safari 做的修复，WKWebView 同属 Safari 引擎家族，直接受益 |
 | `ClipboardItem`（分享图复制） | 需处理 | 已有能力检测，WKWebView 下降级为「保存到文件」 |
 | `backdrop-filter`（玻璃拟态） | 部分规避 | macOS Mini Timer 已改用原生玻璃材质，不依赖 CSS；主窗口与 Windows WebView 仍需实机验证 |
 | framer-motion 掉帧 | 需实机验证 | 尊重 `prefers-reduced-motion`；托盘常驻态本就不该有动画 |
-| `window.location.search`（分享落地） | 需确认 | [off-work-countdown.tsx:161](../components/off-work-countdown.tsx#L161) 读取查询串。Tauri 用 asset 协议加载本地文件，查询串行为需实测；桌面端本身不处理分享落地，必要时按目标关闭该分支 |
+| `window.location.search`（分享落地） | 需确认 | [off-work-countdown.tsx:161](../../components/off-work-countdown.tsx#L161) 读取查询串。Tauri 用 asset 协议加载本地文件，查询串行为需实测；桌面端本身不处理分享落地，必要时按目标关闭该分支 |
 
 ### 其他风险
 
@@ -355,11 +355,11 @@ Releases
 
 ### 两条工作流
 
-**① [ci.yml](../.github/workflows/ci.yml) 已扩展**：在 lint / test / Web build 之外运行 `npm run build:desktop`。
+**① [ci.yml](../../.github/workflows/ci.yml) 已扩展**：在 lint / test / Web build 之外运行 `npm run build:desktop`。
 
 这一步**不编译 Rust**，只跑静态导出，几十秒即可完成，且只需 ubuntu runner。它的价值在于：桌面端最常见的破坏方式是有人加了一个 `force-dynamic` 路由或改了 middleware——这类问题会在每个 PR 上几秒内暴露，而不是等到某天打 tag 时才在二十分钟的 Rust 构建里发现。
 
-**② [release-desktop.yml](../.github/workflows/release-desktop.yml) 已启用**：`on: push: tags: ['desktop-v*']`，用 `tauri-apps/tauri-action`，矩阵覆盖 macOS arm64 / macOS x64 / Windows x64 / Windows ARM64。ARM64 在 GitHub 的原生 `windows-11-arm` runner 上构建，避免跨架构 MSVC 打包差异。
+**② [release-desktop.yml](../../.github/workflows/release-desktop.yml) 已启用**：`on: push: tags: ['desktop-v*']`，用 `tauri-apps/tauri-action`，矩阵覆盖 macOS arm64 / macOS x64 / Windows x64 / Windows ARM64。ARM64 在 GitHub 的原生 `windows-11-arm` runner 上构建，避免跨架构 MSVC 打包差异。
 
 必须**只在 tag 上触发**：来自 fork 的 PR 拿不到仓库 secrets（更新签名密钥也在其中），若让它跑发布流程只会得到一堆失败任务。
 
@@ -443,7 +443,7 @@ cask 定义里的版本号与 sha256 需随每次 Release 更新。
 - winget 是否接受未签名安装包——决定 Windows 侧走 winget 还是退到 Scoop（P6 第一件事）
 - Homebrew 安装未签名 cask 时的隔离属性行为，决定文档里那条命令要不要带 `--no-quarantine`（P6，必须实测）
 - 未来若有明确用户量增长且观察到安装环节流失，再评估是否购买证书（§6）
-- `dev` 分支目前无人使用，但 [ci.yml](../.github/workflows/ci.yml) 仍在监听它。近期流程都是「功能分支 → PR → main」。建议要么明确启用，要么删掉并从 CI 触发条件中移除，避免留一条谁都不看的分支
+- `dev` 分支目前无人使用，但 [ci.yml](../../.github/workflows/ci.yml) 仍在监听它。近期流程都是「功能分支 → PR → main」。建议要么明确启用，要么删掉并从 CI 触发条件中移除，避免留一条谁都不看的分支
 
 ### 已决（留档，避免重复讨论）
 
@@ -451,4 +451,4 @@ cask 定义里的版本号与 sha256 需随每次 Release 更新。
 - ~~主窗口被拉宽时观感失衡~~ → **不能只设一个宽松的 `maxWidth`**。实机复审后最终收敛为默认 430×430、宽高均限制在 420–450，并针对桌面端重排标题、表单、设置和倒计时页。P3 UI 复审已落地
 - ~~Windows 托盘不支持文字标题是否构成卖点缺口~~ → **不构成**。改用置顶迷你窗承担常驻显示（决策 7），托盘只负责菜单与显隐切换
 - ~~是否购买代码签名证书~~ → **不买**（§6）。代价转为首次安装摩擦，用文档补齐
-- ~~CI 是否加入 `npm run build:desktop`~~ → **已完成**。[ci.yml](../.github/workflows/ci.yml) 会在 PR / 主分支构建中验证桌面静态导出，tag 工作流另行编译四平台安装包
+- ~~CI 是否加入 `npm run build:desktop`~~ → **已完成**。[ci.yml](../../.github/workflows/ci.yml) 会在 PR / 主分支构建中验证桌面静态导出，tag 工作流另行编译四平台安装包

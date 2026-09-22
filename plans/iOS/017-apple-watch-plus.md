@@ -1,10 +1,10 @@
 # 017 · Apple Watch：免费只读 App、独立排班与表盘组件
 
 - **状态**：IN PROGRESS — 2026-09-19 按用户确认改为全部免费，并实现 V2 共享规则长期独立排班；本轮自动化、视觉与待真机证据见验收记录。早期 Ultra 2 反馈属于 V1，不能替代 V2 后台接续验收。
-- **自由排班清除增量**：2026-09-20 协议 V4 传递清空起点；继续读取 V1–V3，新旧设备不得静默忽略该边界。见 [验收记录](../docs/reviews/2026-09-20-free-roster-clear.md)。
-- **节假日增量**：2026-09-19 协议 V3 在共享核心上增加手机选定地区的日期效果；Watch 不携带全球名称库。继续读取 V1/V2 缓存，同配对世代不接受协议降级。两端升级后启用，见 [验收记录](../docs/reviews/2026-09-19-holiday-templates.md)。
+- **自由排班清除增量**：2026-09-20 协议 V4 传递清空起点；继续读取 V1–V3，新旧设备不得静默忽略该边界。见 [验收记录](../../docs/reviews/2026-09-20-free-roster-clear.md)。
+- **节假日增量**：2026-09-19 协议 V3 在共享核心上增加手机选定地区的日期效果；Watch 不携带全球名称库。继续读取 V1/V2 缓存，同配对世代不接受协议降级。两端升级后启用，见 [验收记录](../../docs/reviews/2026-09-19-holiday-templates.md)。
 - **目标**：所有用户均可免费抬腕查看班次状态、剩余工作时间和进度，首次同步后通过缓存规则独立接续排班。
-- **依赖**：[006 权益模型](006-free-trial-subscription.md)、[018 架构整改](018-ios-3.2.0-architecture-remediation.md)、[移动端架构与 W0–W3](../docs/PLAN-MOBILE.md)、当前 TypeScript 规则和原生 iOS App。W0 工程／契约准备可提前开展，Watch 生产者在 018 P1／P2 提交与生命周期边界建立后接入。
+- **依赖**：[006 权益模型](006-free-trial-subscription.md)、[018 架构整改](018-ios-3.2.0-architecture-remediation.md)、[移动端架构与 W0–W3](../../docs/PLAN-MOBILE.md)、当前 TypeScript 规则和原生 iOS App。W0 工程／契约准备可提前开展，Watch 生产者在 018 P1／P2 提交与生命周期边界建立后接入。
 - **权威口径**：`docs/PLAN-MOBILE.md` 的 W0–W3 章节与本计划重复，冲突时以本文为准；W0 应把那一节收敛成指向本文的指针，避免两处漂移。
 - **范围**：配对 iPhone 的免费只读 Watch App、两种表盘组件、共享排班核心、WatchConnectivity V2 与发布前验收。
 - **交付方式**：feature branch → PR → main；本计划不代表授权上传或发布版本。各阶段全部保持未验收，完成时附实际证据。
@@ -20,7 +20,7 @@
 - App 与组件保留本地班次应对正常断连。首次无数据、缓存损坏、版本不兼容分别显示等待同步、重新同步、升级提示。
 - 真机必须另验：首次同步后不再打开 Watch App，跨多班／休息日／月界；离线和重启；手机改班后台抵达；旧文件迟到；表盘更新与耗电。模拟时间测试不代替这组证据。
 
-本轮实测、待确认项见 [2026-09-19 验收记录](../docs/reviews/2026-09-19-watch-calendar-acceptance.md)。
+本轮实测、待确认项见 [2026-09-19 验收记录](../../docs/reviews/2026-09-19-watch-calendar-acceptance.md)。
 
 ## 1. 已确认的产品决定
 
@@ -202,13 +202,13 @@ Apple 文档支持 companion App 的通用内购；本项目采用 iPhone 购买
 
 ## 10. W0 实施记录（2026-09-12，未整体验收）
 
-已新增 [纯数据契约](../src-mobile/ios/Shared/WatchSnapshot.swift) 及 iPhone AppTests 中的契约测试。契约文件位于 iPhone 同步源码目录之外，目前只显式编入 App；测试通过 `@testable import App` 使用同一实现，不重复编译一份模型。
+已新增 [纯数据契约](../../src-mobile/ios/Shared/WatchSnapshot.swift) 及 iPhone AppTests 中的契约测试。契约文件位于 iPhone 同步源码目录之外，目前只显式编入 App；测试通过 `@testable import App` 使用同一实现，不重复编译一份模型。
 
 已覆盖锁定包省略班次、未配置／停止空态、解码大小及结构限制、两个截止值、来源替换、包／权益版本倒退、同权益版本篡改授权、损坏排序元数据、重复投递及候选持久化失败后重试。排序器仅返回待保存状态。
 
-新增 [原子缓存](../src-mobile/ios/Shared/WatchSnapshotCache.swift)：独立 actor 在后台恢复缓存，将有效包与排序元数据放进同一个文件原子保存，成功后才替换内存。失败保留旧内存和文件、允许同包重试；重复和拒绝包不写文件。来源基线必须由显式配对边界提供，不能从包内自认。测试验证真实写入次数、旧来源迟到、损坏恢复及未知薪资字段不会持久化；通信生产者的完整薪资哨兵验收仍未完成。
+新增 [原子缓存](../../src-mobile/ios/Shared/WatchSnapshotCache.swift)：独立 actor 在后台恢复缓存，将有效包与排序元数据放进同一个文件原子保存，成功后才替换内存。失败保留旧内存和文件、允许同包重试；重复和拒绝包不写文件。来源基线必须由显式配对边界提供，不能从包内自认。测试验证真实写入次数、旧来源迟到、损坏恢复及未知薪资字段不会持久化；通信生产者的完整薪资哨兵验收仍未完成。
 
-[绝对 segments 计算](../src-mobile/ios/Shared/WatchShiftEvaluation.swift) 只比较和求和；14 组 TypeScript bundle 生成的 fixture 覆盖午休冻结／恢复、跨午夜、夏令时、加班原下班边界及最终到点。`npm run check:watch-fixtures` 检查 fixture 新鲜度，已加入仓库的 Xcode Cloud 克隆脚本；这不代表远端 PR 工作流已经配置。
+[绝对 segments 计算](../../src-mobile/ios/Shared/WatchShiftEvaluation.swift) 只比较和求和；14 组 TypeScript bundle 生成的 fixture 覆盖午休冻结／恢复、跨午夜、夏令时、加班原下班边界及最终到点。`npm run check:watch-fixtures` 检查 fixture 新鲜度，已加入仓库的 Xcode Cloud 克隆脚本；这不代表远端 PR 工作流已经配置。
 
 本机 Xcode 26.6 / 17F113 下，三个共享文件通过 watchOS Simulator 26.5 SDK 的 Swift 6 严格并发类型检查；完整 iPhone 测试为 **610 个、32 个 suite 通过**，详见 [018 本批验证记录](018-ios-3.2.0-architecture-remediation.md)。Watch 专属 target、Watch 实际运行、通信、权益生产者、UI、两种组件、19 locale 文案和真机仍未完成。未实现控制、ACK 或命令接收器；W0–W3 复选框保持未完成。
 
