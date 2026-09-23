@@ -33,8 +33,10 @@ locale and validation rules apply.
 ## Rules parity
 
 - Shared rules (`lib/countdown.ts`, `lib/reminders.ts`, `lib/summary.ts`)
-  reach Kotlin through JSON fixtures generated from the TypeScript oracle
-  (T06). iOS-only rules (extended schedules, record resolution, focus) reach
+  reach Kotlin through `npm run generate:android-rule-fixtures`, which writes
+  `core/domain/src/test/resources/shared-rule-fixtures.json`: the iOS fixture
+  cases verbatim plus hashes of every `lib/`/oracle input. `npm test` fails
+  when it is stale, even if the iOS fixture is not. iOS-only rules (extended schedules, record resolution, focus) reach
   Kotlin through JSON exported by Swift tests; Swift and Kotlin tests read the
   same file with a stale check (T08). Decide which side is correct before
   regenerating; never regenerate to hide a failure.

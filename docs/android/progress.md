@@ -14,7 +14,9 @@
 | T01 | IMPLEMENTED | `source-inventory.md`、`feature-parity.md`、`conflicts.md`。源读自固定 SHA。未跑 iOS XCTest。 |
 | T02 | IMPLEMENTED | `wire-contract.md`、`synthetic-archives/`。检查：`node scripts/android-synthetic-archives.mjs --check`。Kotlin 导入 NOT_RUN。 |
 | T03 | IMPLEMENTED | `environment-lock.md`；`src-mobile/android`；`.github/workflows/android.yml`（CI 尚未在 GitHub 上运行）。domain 2 测试通过；Debug/R8 Release/AAB 成功；模拟器冷启动成功。 |
-| T04–T20 | NOT_STARTED | — |
+| T04–T05 | NOT_STARTED | — |
+| T06 | IMPLEMENTED | `scripts/generate-android-rule-fixtures.mjs` → `src-mobile/android/core/domain/src/test/resources/shared-rule-fixtures.json`：5087 条 TS oracle 用例，与 iOS `ScheduleRuleFixtures` 数据逐字相同，另记 6 个输入文件哈希。`npm test` 内含 stale 检查（手改一条用例、给 `lib/countdown.ts` 加注释均使检查失败，已验证）；Kotlin `SharedRuleFixturesTest` 3 条通过。Swift 特有规则的 fixtures 属 T08。 |
+| T07–T20 | NOT_STARTED | — |
 | T21 | DEFERRED | 服务端验证，首发后（D-08 修订） |
 | T22 | DEFERRED | Drive 同步，首发后（D-02 修订） |
 | T23–T26 | NOT_STARTED | — |
@@ -35,7 +37,7 @@
 
 - **T04 · 稳定版 Material3 与 DoneAt 设计 token 探针**（依赖 T03）。
 - **T05 · 翻译转换与质量检查**（依赖 T02+T03）。
-- **T06 · 导出共享规则差分 fixtures**（依赖 T01+T02，不需要 SDK）。T07 依赖它。
+- **T07 · 固定班次与时间核心**（依赖 T03+T06，已解锁）：用 `shared-rule-fixtures.json` 的 `snapshots`/`expansions`/`validateBreak` 等段驱动 Kotlin 实现。
 
 环境与命令见 `environment-lock.md`。候选默认（发布前冻结）：`applicationId=com.rainif.doneat`，minSdk 26，versionName 3.2.0，versionCode 1。
 
@@ -54,5 +56,6 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 ## 变更记录
 
 - 2026-09-21：T00–T02 完成。
+- 2026-09-23：T06 完成（共享规则 fixtures 与 stale 检查）。
 - 2026-09-23：T03 完成（最小工程、CI、环境锁）。
 - 2026-09-23：交接包 1.2（D-02/D-08 修订、新增 D-12），T21/T22 延后；进度只在本文件维护；本机 SDK 就绪。
