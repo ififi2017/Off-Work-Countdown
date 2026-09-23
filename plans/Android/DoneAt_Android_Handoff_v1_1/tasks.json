@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
   "created_at": "2026-09-21",
-  "meaning": "Implementation plan only. Product directions updated by owner approval; T00-T26 NOT_STARTED; T27 DEFERRED; no Android implementation verified.",
+  "meaning": "计划定义（依赖、范围、交付、验收）。不记录执行进度：每个任务的实际状态只在仓库根 docs/android/progress.md 维护。scope 字段表示首发/后续范围。",
   "tasks": [
     {
       "id": "T00",
@@ -10,12 +10,10 @@
       "title": "锁定基线与建立工作区",
       "depends_on": [],
       "requirements": [],
-      "status": "NOT_STARTED",
       "read_first": "00_START_HERE、decisions.json、根 AGENTS、git 状态、基线提交与实际 tag。",
       "instructions": "记录当前分支和未提交改动，不清理用户工作区；以固定 SHA 读取 iOS，开发分支只新增 Android 及必要测试工具。若当前源不是固定 SHA，列出差异后选择明确基线，不自行切走未提交修改。",
       "deliverables": "docs/android/baseline.md；源 SHA、版本、工作树状态、首发/后续范围声明；决策及外部配置台账。",
       "acceptance": "核实所有源码链接指向同一 SHA；登记已批准方向与真正未知的配置，不再把Drive/收费模式/验证服务列为待选；账户事实未知就保留UNKNOWN；仓库没有被reset/覆盖。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -49,12 +47,10 @@
         "FR-20",
         "FR-21"
       ],
-      "status": "NOT_STARTED",
       "read_first": "AppRouteDestination、所有 Views/设置入口、PreferencesStore、Shift/Records/Focus/Life 模型、AppTests、Shared、当前翻译 key；旧 plans 只作佐证。",
       "instructions": "列出每个可见入口、动作、开关、免费 gate、状态和测试；把未在本包细列的小功能添加为 FR 子项。枚举 source filenames 不是完成盘点，必须追到事件处理函数及持久化字段。将源 Bug/未签收行为单独列风险，不能未经批准复制或修正。",
       "deliverables": "feature-parity.md；source-inventory.md；conflicts.md；完整功能差异表。",
       "acceptance": "三主入口、横屏/平板和深链接目标均覆盖；所有设置 key 有去向或负责人批准的差异，无“暂未找到就视为不存在”。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -76,12 +72,10 @@
         "FR-14",
         "FR-15"
       ],
-      "status": "NOT_STARTED",
       "read_first": "完整 RecordJSON/RecordArchive、12 类实体 DTO、SyncedPreferences、ErasedID、源导入测试；02 第6章。",
       "instructions": "提取每个版本新增字段、默认值、枚举、键、日历/毫秒语义、引用关系；准备匿名合成 v1–v6 档案与非法档案。明确 wire v6、Room v1、fixture v1、sync envelope v1 是不同版本。",
       "deliverables": "wire-contract.md；synthetic-archives/；字段映射清单。",
       "acceptance": "抽样每一类实体；v6 中无自创字段和购买凭据；缺少真实旧样本时从源编码/测试构造并注明，不拿空对象代替。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -96,12 +90,10 @@
         "FR-19",
         "FR-20"
       ],
-      "status": "NOT_STARTED",
       "read_first": "02 第2、3、14章；Android 官方 AGP/Kotlin/Compose 当前文档。",
-      "instructions": "使用 Android Studio 当前可用稳定模板/官方配置；创建 app、domain、data、designsystem 等实际需要模块；确定包名候选；先成功运行空页面和纯 JVM 单元测试。不要一开始生成几十个空屏幕。",
+      "instructions": "使用 Android Studio 当前可用稳定模板/官方配置；创建 app、domain、data、designsystem 等实际需要模块；确定包名候选；先成功运行空页面和纯 JVM 单元测试。不要一开始生成几十个空屏幕。 JDK 使用 Android Studio 自带 arm64 JBR（本机 temurin-21 为 x86_64 不可用）；SDK 位于 ~/Library/Android/sdk（platforms android-37.0、build-tools 36.0.0），需补装 cmdline-tools。可选：用不超过半天评估 Swift SDK for Android 能否编译 src-mobile/ios/Shared 核心，结论写入 environment-lock.md，不阻塞本任务。",
       "deliverables": "可运行 Debug 工程；environment-lock.md；Gradle wrapper/version catalog；基础 CI。",
       "acceptance": "./gradlew --version、domain:test、app:assembleDebug 成功；不存在未声明版本动态依赖；实际 SDK/编译器兼容记录齐全。",
-      "evidence": [],
       "blocking_decisions": [
         "D-04",
         "D-10"
@@ -112,7 +104,7 @@
     {
       "id": "T04",
       "phase": "M1",
-      "title": "完成 Material3 Expressive 依赖与组件探针",
+      "title": "完成稳定版 Material3 与 DoneAt 设计 token 探针",
       "depends_on": [
         "T03"
       ],
@@ -120,14 +112,15 @@
         "FR-18",
         "FR-19"
       ],
-      "status": "NOT_STARTED",
-      "read_first": "01 第7章；A01/A20/A21/A22；所选版本 API reference。",
-      "instructions": "实现主题、主要按钮、分段选择、时间选择、进度与导航小样；记录 Experimental 注解及传递依赖；构建 Debug 与 R8 Release。探针中存在的试验组件不能散落到业务层。",
-      "deliverables": "designsystem 实现和 gallery 测试页面（Debug only）；expressive-adr.md；依赖树。",
-      "acceptance": "实际包含本项目需要的 Expressive 行为；没有把 stable1.4 API 与 alpha API 混用；减少动态效果及大字体探针通过。",
-      "evidence": [],
+      "read_first": "01 第7章；A01/A20；D-12；稳定版 Material3 API reference。",
+      "instructions": "锁定稳定 Compose BOM 与 Material3 1.4.x（D-12）；在 :core:designsystem 以自有 shape/motion/color token 实现 Expressive 风格；Release 依赖树中不得出现 alpha/beta 的 Compose/Material3。",
+      "deliverables": "designsystem 实现和 gallery 测试页面（Debug only）；design-tokens-adr.md（记录哪些 Expressive 行为由自有 token 实现、将来切换条件）；依赖树。",
+      "acceptance": "Release 依赖树无 alpha/beta Compose/Material3；主要状态/操作的 Expressive 风格经 token 实现；减少动态效果及大字体探针通过。",
       "blocking_decisions": [],
-      "scope": "FIRST_RELEASE"
+      "scope": "FIRST_RELEASE",
+      "approved_decisions": [
+        "D-12"
+      ]
     },
     {
       "id": "T05",
@@ -140,12 +133,10 @@
       "requirements": [
         "FR-18"
       ],
-      "status": "NOT_STARTED",
       "read_first": "Localizable.xcstrings、19 locale 目录、01/02 本地化约束。",
       "instructions": "实现离线生成器、key 映射、复数与格式转换；提交 Android 原生 strings/plurals；新增仅 Android 平台文案并补齐19语言；建立重复/缺失/参数类型检查。",
       "deliverables": "scripts/generate-android-strings.*；check 脚本；key-map；完整 resources。",
       "acceptance": "生成后无不应有 diff；XML 可编译；中文三变体、印度语言、阿语、长德文占位符各有专项测试。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -165,12 +156,10 @@
         "FR-08",
         "FR-10"
       ],
-      "status": "NOT_STARTED",
       "read_first": "lib/countdown、summary、reminders；现有 ios-schedule-rule-oracle 和 Swift FixtureTests。",
       "instructions": "复用现有 oracle 调用，不抄 Kotlin 结果；新增 JSON 输出并记录输入、expected、源 hashes、用例来源；规则生成和 stale-check 是两个独立命令。",
       "deliverables": "generate-android-rule-fixtures；共享 fixtures；CI stale guard。",
       "acceptance": "npm test 仍通过；生成用例数非零且不少于映射范围；手工改变一个源 fixture 后 stale guard 必定失败。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -187,12 +176,10 @@
         "FR-04",
         "FR-05"
       ],
-      "status": "NOT_STARTED",
       "read_first": "CountdownRules、Shared/ShiftRuleCore、ScheduleRules、TS 对应函数；02 第4章。",
       "instructions": "按有效段实现工作/休息/夜班、nextShift/nextRest、overtime、manual；注入 Clock/Zone；单独做 civil/DST adapter。先跑 domain fixture，不连接 UI。",
       "deliverables": "ShiftEngine 与纯 Kotlin 模型；TimeResolver；差分报告。",
       "acceptance": "固定规则 fixture 全通过；12:30午休与19:00加班算例正确；0时长、空workdays不崩溃或死循环。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -208,12 +195,10 @@
         "FR-03",
         "FR-04"
       ],
-      "status": "NOT_STARTED",
       "read_first": "ExtendedSchedule/Rules/Editing 与所有对应 Swift 测试。",
-      "instructions": "支持周期锚点、manual roster、carry-over、holiday、clearedFrom、frozen shift、base fallback；保持统一 segment 引擎；建立源 Swift 测试→Kotlin 对照。",
+      "instructions": "支持周期锚点、manual roster、carry-over、holiday、clearedFrom、frozen shift、base fallback；保持统一 segment 引擎；建立源 Swift 测试→Kotlin 对照。Swift 特有规则的 fixtures 作为 Swift 与 Kotlin 共用的检查：由 Swift 测试导出 JSON，Swift 测试与 Kotlin 测试读取同一份文件，并加 stale 检查，避免形成第三份无 oracle 的实现。",
       "deliverables": "ExtendedScheduleResolver；Swift parity fixtures；优先级决策表。",
       "acceptance": "锚点前 floorMod、短月、休息与未排、历史冻结、清空后重启均通过；不能用 TS 测试冒充覆盖 iOS 独有逻辑。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -230,19 +215,17 @@
         "FR-06",
         "FR-08"
       ],
-      "status": "NOT_STARTED",
       "read_first": "SummaryRules、lib/summary、LifeViewCalculator/LifeSummary、计划015/016最新修订和调用点。",
       "instructions": "分开 live earnings 与 records fixed monthly allocation；实现自然日分摊、实际/预测、年终奖、职业收入和未来比例；缓存不参与业务结果。",
       "deliverables": "SummaryEngine/LifetimeEngine；浮点/货币策略；分支测试。",
       "acceptance": "跨月周、请假固定月薪不扣、空档、重叠拒绝、一次性比例调整通过；所有相同语义 UI 投影引用统一服务。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
     {
       "id": "T10",
       "phase": "M3",
-      "title": "实现 Room、事务与迁移基础",
+      "title": "实现记录档案存储、事务写入与编解码",
       "depends_on": [
         "T02",
         "T03"
@@ -254,14 +237,15 @@
         "FR-14",
         "FR-15"
       ],
-      "status": "NOT_STARTED",
       "read_first": "实体字段契约、RecordCoordinator/Command 的行为与源写入错误处理。",
-      "instructions": "建立业务实体、索引、外键/逻辑引用校验、outbox、tombstone；实现事务写 API；schema 导出；写入错误保留原数据与草稿。",
-      "deliverables": "Room DB/DAO/mappers；Repository；MigrationTests；seed 测试。",
-      "acceptance": "进程重启读回一致；低空间/事务失败不部分提交；没有生产 destructive migration；data 模块测试真实数据库。",
-      "evidence": [],
+      "instructions": "D-13：与 iOS 相同，内存 RecordState + 原子替换的 RecordLocalFile（schema-6 文档 + 墓碑）；串行写协调器：计算→编码→回读校验→原子写→发布，任一步失败不改变已发布状态与文件；损坏档案阻断写入直到隔离；以 Swift RecordJSON 为 oracle 的编解码 fixtures。",
+      "deliverables": "records 模型与 RecordJson（:core:domain）；RecordArchive/RecordStore（:core:data）；record-json-fixtures；文件系统测试。",
+      "acceptance": "进程重启读回一致；写入失败/校验失败不部分提交；损坏档案不被当作空档案且不被覆盖；data 模块测试真实文件系统；编解码 fixture 全通过。",
       "blocking_decisions": [],
-      "scope": "FIRST_RELEASE"
+      "scope": "FIRST_RELEASE",
+      "approved_decisions": [
+        "D-13"
+      ]
     },
     {
       "id": "T11",
@@ -275,12 +259,10 @@
         "FR-14",
         "FR-17"
       ],
-      "status": "NOT_STARTED",
       "read_first": "完整 RecordJSON/RecordsActions/RecordArchive；02 第6章。",
       "instructions": "SAF选择、大小限制、版本校验、候选合并预览、原子写；同ID与墓碑处理；恢复UUID映射；排除人生导出；冲突中心。",
       "deliverables": "ArchiveCodec/ImportCoordinator；导入预览UI；双向往返测试。",
       "acceptance": "v1–v6 每版本成功与失败样例；v7明确拒绝；重复导入不重复；收入隐藏时身份确认；导入不能改购买状态。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -297,12 +279,10 @@
         "FR-06",
         "FR-07"
       ],
-      "status": "NOT_STARTED",
       "read_first": "DayRecordResolver/RecordActions/DayOverrideProjection/RecordDayEditDraft。",
       "instructions": "唯一 expandableHours 入口；实现覆盖/例外/快照链与观测分离；多个层同事务保存；历史编辑和薪资视图不互相污染。",
       "deliverables": "DayResolver/RecordCommandHandler；编辑状态机；来源标记DTO。",
       "acceptance": "cleared回退、手工例外优先、快照同日排序、保留休息、历史冻结均通过；不能用现在设置重算全部历史。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -317,12 +297,10 @@
       "requirements": [
         "FR-09"
       ],
-      "status": "NOT_STARTED",
       "read_first": "FocusModels/Planner/Store各分文件/LiveChain；对应源测试。",
       "instructions": "按源实现计划块、任务、收藏、模板、可开始条件与边界；实现确定性SHA256身份；持久化会话；以领域事件推进恢复，UI暂不复杂美化。",
       "deliverables": "FocusEngine/Repository；身份vectors；recovery tests。",
       "acceptance": "完整前缀任务放置、不重写当前终点、双击/重启/通知竞争不重复；结束原因完整；非工作块不能越界开始。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -340,12 +318,10 @@
         "FR-10",
         "FR-11"
       ],
-      "status": "NOT_STARTED",
       "read_first": "lib/reminders/ReminderRules、源健康/通知设置与计划012；A10/A24。",
       "instructions": "领域输出绝对提醒；Android实现权限状态、差量调度、稳定ID、重启/时间变化恢复；去重进度/周期/专注边界；非精确降级。",
       "deliverables": "ReminderPlanner；AlarmScheduler；Receiver/permission UI；notification tests。",
       "acceptance": "拒绝通知/精确权限不阻断主应用；无全天FGS；普通结束与周期总结不双响；系统强停限制写清楚。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -364,12 +340,10 @@
         "FR-18",
         "FR-19"
       ],
-      "status": "NOT_STARTED",
       "read_first": "01逐页规范、AppRouteDestination、FirstRunRecovery、源完整偏好清单。",
       "instructions": "三主入口独立导航栈；恢复/新建草稿流程；设置分组；错误/空/恢复态；窗口和后台重建保持状态；云入口先使用接口但不假装实现完成。",
       "deliverables": "导航、Onboarding、Settings；UI与状态恢复测试。",
       "acceptance": "免费离线用户能完成设置；默认值不变成dirty上传；back关闭弹窗不退出错误层；平板/横屏无重复状态。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -388,12 +362,10 @@
         "FR-04",
         "FR-05"
       ],
-      "status": "NOT_STARTED",
       "read_first": "01计时/排班/薪资规范与具体源视图动作。",
       "instructions": "所有状态接真实领域投影；排班日历、班型、循环、当日调整；收入隐藏和身份确认；按数字区域局部刷新，不用假倒计时。",
       "deliverables": "Timer/Schedule/Salary页面；interaction与截图基准。",
       "acceptance": "各状态图/语义树可验证；首尾相等夜班、休息、未排班都有UI；输入失败不提交；权限拒绝仍可用。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -412,12 +384,10 @@
         "FR-07",
         "FR-08"
       ],
-      "status": "NOT_STARTED",
       "read_first": "01记录/人生、现有日画布与LifeView；免费投影门禁。",
       "instructions": "日周月年/人生尺度；选中稳定ID；actual/projected文本标记；大屏独立滚动；图形等价列表；接真实编辑与导出。",
       "deliverables": "Records/Life UI；免费/Plus fake仅debug；截图/可访问测试。",
       "acceptance": "不以假图表示成功；隐藏值不在Semantics；200%字体和阿语无截断关键值；大数据不每秒全算。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -433,12 +403,10 @@
         "FR-09",
         "FR-18"
       ],
-      "status": "NOT_STARTED",
       "read_first": "FocusCanvas/BlockSheet/UsualScale/Template相关源UI与01规范。",
       "instructions": "完成任务新增编辑收藏、落位、计时、模板应用；拖动和非拖动路径均接同一命令；保存草稿；锁屏和通知入口返回同一任务上下文。",
       "deliverables": "Focus UI；拖动/替代动作测试；边界状态截图。",
       "acceptance": "未到时间/不够时间/其他会话占用各有正确反馈；重开恢复不新开第二计时；付费后续动作只执行一次。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -452,19 +420,22 @@
         "T16"
       ],
       "requirements": [
+        "FR-01",
         "FR-11",
         "FR-12",
         "FR-13",
+        "FR-15",
         "FR-17"
       ],
-      "status": "NOT_STARTED",
       "read_first": "源Widget投影、分享协议、当前品牌资产；A11/A12/A25；02第8/11章。",
-      "instructions": "安全Widget DTO、多尺寸Glance、过期态；普通通知适配；独立分享图渲染；SAF/FileProvider/AppLinks；备份排除规则。",
-      "deliverables": "Widgets/Share/LinkHandler；manifest与dataExtractionRules；链接配置说明。",
-      "acceptance": "薪资不会出现在组件/通知/分享元数据；组件多实例/重启/尺寸变化；链接预览不自动覆盖；不新增危险权限。",
-      "evidence": [],
+      "instructions": "安全Widget DTO、多尺寸Glance、过期态；普通通知适配；独立分享图渲染；SAF/FileProvider/AppLinks；备份规则。dataExtractionRules/fullBackupContent：业务 Room 库纳入 cloud backup 与 device transfer（一致性快照，处理 WAL）；排除购买缓存、待确认购买标记、Keystore 相关数据、令牌与 debug 设置（D-02 修订）。",
+      "deliverables": "Widgets/Share/LinkHandler；manifest与dataExtractionRules；链接配置说明；备份/恢复验证记录（QA-138～QA-140）。",
+      "acceptance": "薪资不会出现在组件/通知/分享元数据；组件多实例/重启/尺寸变化；链接预览不自动覆盖；不新增危险权限。业务数据可随系统备份/设备转移恢复，购买缓存与密钥不在备份内。",
       "blocking_decisions": [],
-      "scope": "FIRST_RELEASE"
+      "scope": "FIRST_RELEASE",
+      "approved_decisions": [
+        "D-02"
+      ]
     },
     {
       "id": "T20",
@@ -477,19 +448,18 @@
       "requirements": [
         "FR-16"
       ],
-      "status": "NOT_STARTED",
       "read_first": "PlusEntitlement、01矩阵、02第9章、A06/A08；D-01/D-07。",
-      "instructions": "状态机、ProductDetails本地价格、single-flight购买/恢复、pending/取消/失效/离线；连接真实验证接口；fake隔离debug；保存原操作上下文。",
+      "instructions": "状态机、ProductDetails本地价格、single-flight购买/恢复、pending/取消/失效/离线；权益只来自 queryPurchasesAsync 与 Play 公钥签名校验；客户端 acknowledge 并持久化待确认重试（3天窗口）；fake隔离debug；保存原操作上下文（D-08 修订：首发无自建服务）。",
       "deliverables": "EntitlementEngine/BillingRepository/Paywall；状态转移测试。",
       "acceptance": "取消续费未到期仍可用；Pending无权；断网不抹已验证缓存；同意D-07前保持源失效采集行为。",
-      "evidence": [],
       "blocking_decisions": [
         "D-07"
       ],
       "decision_gate_scope": "Fee-model and independent-store directions are approved. Price/trial configuration gates production selling and copy, not domain/debug work. D-07 remains a source-parity/product-signoff issue.",
       "approved_decisions": [
         "D-01",
-        "D-03"
+        "D-03",
+        "D-08"
       ],
       "pending_configuration": [
         "CFG-PRICE"
@@ -499,7 +469,7 @@
     {
       "id": "T21",
       "phase": "M6",
-      "title": "部署真实购买验证与通知处理",
+      "title": "（后续）服务端购买验证与 RTDN",
       "depends_on": [
         "T20"
       ],
@@ -507,26 +477,24 @@
         "FR-16",
         "FR-20"
       ],
-      "status": "NOT_STARTED",
       "read_first": "02第9章；A07/A08；D-08已确认记录、CFG-BACKEND与服务凭据边界。",
-      "instructions": "实现Publisher验证、幂等权益持久化、确认重试、RTDN重查、撤销/linkedToken、签名缓存；最小权限部署；不收工资或记录。",
-      "deliverables": "独立权益服务代码；部署runbook；监控/重试；接口contract tests。",
+      "instructions": "首发后按需启动。优先在现有 Next.js/Vercel Route Handlers 实现 Publisher 验证、幂等权益、RTDN 重查、撤销/linkedToken；不收工资或记录。",
+      "deliverables": "权益验证服务代码（优先现有 Vercel Route Handlers）；部署runbook；监控/重试；接口contract tests。",
       "acceptance": "真实许可测试账户购买、恢复、pending、退款、取消及重复RTDN；无密钥进Git/APK；只有mock通过不算生产完成。",
-      "evidence": [],
       "blocking_decisions": [],
-      "decision_gate_scope": "Architecture direction approved; implementation and local tests may proceed. Infrastructure, credentials and production-operation authorization remain required; no deployment has occurred.",
+      "decision_gate_scope": "D-08 修订：首发纯客户端；本任务为后续阶段，不阻塞首发。",
       "approved_decisions": [
         "D-08"
       ],
       "pending_configuration": [
         "CFG-BACKEND"
       ],
-      "scope": "FIRST_RELEASE"
+      "scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "T22",
       "phase": "M7",
-      "title": "实现 Android 私有云恢复与同步",
+      "title": "（后续）Android 私有云 Drive 同步",
       "depends_on": [
         "T10",
         "T11",
@@ -537,14 +505,12 @@
         "FR-01",
         "FR-15"
       ],
-      "status": "NOT_STARTED",
       "read_first": "源Recovery/RecordsCloudSync/SyncPayload/SyncLocalState与相关测试；02第10章；已确认D-02/D-03与CFG-OAUTH。",
       "instructions": "Google授权与私有scope；pull-before-push；不可变批次+墓碑；首次恢复/冲突；账号切换；reset fence；持久outbox与重试；明确无iCloud自动互通。",
       "deliverables": "SyncTransport/Coordinator；设置恢复页；sync-protocol.md；模拟传输contract tests。",
       "acceptance": "新设备旧机关闭恢复；双设备改不同日不丢；删除后离线旧设备不复活；授权取消/配额/分页失败不当空云；使用已批准Drive完成真实联调与双设备验收，不能只靠mock。",
-      "evidence": [],
       "blocking_decisions": [],
-      "decision_gate_scope": "Drive and Android-only automatic sync are approved and in first-release scope. Protocol development may proceed; real OAuth configuration and end-user consent remain necessary for cloud data transfer.",
+      "decision_gate_scope": "D-02 修订：首发以 Auto Backup/设备转移换机恢复；本任务为后续阶段，不阻塞首发。",
       "approved_decisions": [
         "D-02",
         "D-03"
@@ -552,7 +518,7 @@
       "pending_configuration": [
         "CFG-OAUTH"
       ],
-      "scope": "FIRST_RELEASE"
+      "scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "T23",
@@ -562,8 +528,7 @@
         "T17",
         "T18",
         "T19",
-        "T21",
-        "T22"
+        "T20"
       ],
       "requirements": [
         "FR-01",
@@ -587,12 +552,10 @@
         "FR-19",
         "FR-20"
       ],
-      "status": "NOT_STARTED",
       "read_first": "07完整用例；feature-parity.md；已批准D项。",
       "instructions": "移除所有生产mock占位；串联路由、通知、恢复、购买后续动作；使用真实发布配置，关闭Debug特权；补齐M0枚举的细小功能。",
       "deliverables": "全量traceability报告；阻塞清单；Release candidate。",
       "acceptance": "FR全映射；每条通过附测试名/证据；无“编译过所以功能完成”；功能数量和用例数均非零且无被偷偷删项。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -608,12 +571,10 @@
         "FR-19",
         "FR-20"
       ],
-      "status": "NOT_STARTED",
       "read_first": "01 NFR；04/07系统矩阵。",
       "instructions": "中档机宏基准、15k日历数据、长列表；手机平板折叠大字体RTL；Doze/重启/精确权限/强停；截图和TalkBack；必要native16KB验证。",
       "deliverables": "性能与真机报告；截图集合；修复与复测；baseline profile如有收益。",
       "acceptance": "按参考机型记录原始结果，不编百分比；每个外部能力单独签收；减少动效后无持续震动/循环动效。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -628,12 +589,10 @@
       "requirements": [
         "FR-20"
       ],
-      "status": "NOT_STARTED",
       "read_first": "04发布手册；D-10/D-11；当前Play Console实际提示。",
       "instructions": "负责人创建/核对应用与商品、签名、隐私链接、Data safety、内容分级、目标人群、App access、测试轨道；生成真实Android商店截图与审查说明；API版本重新核对。",
       "deliverables": "发布AAB/hash/mapping；store-listing；privacy-data-map；console checklist。",
       "acceptance": "商店宣称与实际功能/价格一致；涉及新个人账号的12人14天条件按实际账号核实；无已读事实被代填为已审批。",
-      "evidence": [],
       "blocking_decisions": [
         "D-10"
       ],
@@ -649,8 +608,6 @@
       ],
       "pending_configuration": [
         "CFG-PRICE",
-        "CFG-OAUTH",
-        "CFG-BACKEND",
         "CFG-PLAY-ACCOUNT",
         "CFG-APP-IDENTITY"
       ],
@@ -666,12 +623,10 @@
       "requirements": [
         "FR-20"
       ],
-      "status": "NOT_STARTED",
       "read_first": "04最终门禁与故障预案。",
       "instructions": "负责人审批生产提交；使用内部/封闭测试后再开放；能分阶段时分阶段发布并监测Android vitals/评价；回滚采用更高versionCode修复，保留数据库向前兼容。",
       "deliverables": "release-signoff.md；版本/commit/tag关联；事故runbook。",
       "acceptance": "签名和包名与Console一致；发布不自动执行未经授权账号操作；发现数据丢失/付费错误立即停止扩量。",
-      "evidence": [],
       "blocking_decisions": [],
       "scope": "FIRST_RELEASE"
     },
@@ -687,12 +642,10 @@
       "requirements": [
         "FR-21"
       ],
-      "status": "DEFERRED",
       "read_first": "源Shared/WatchApp/WatchWidgets、AGENTS当前免费定位；D-05；当时官方Wear文档。",
       "instructions": "本轮已确认延后，不参与手机/平板首发。后续阶段获准启动时：复用domain规则，Data Layer传工资无关排班与版本，独立离线解析、过期/未配对态，两类复杂功能；使用Wear Compose Material3而非手机布局缩小。",
       "deliverables": "Wear app/complications；手机配对说明；Wear发布矩阵。",
       "acceptance": "离开手机仍可解析未来排班、不靠短期过期snapshot；无工资/购买Token传输；Watch免费规则未经批准不改收费。",
-      "evidence": [],
       "blocking_decisions": [],
       "decision_gate_scope": "Deferral is approved. Excluded from first-release gate; retain task and test. Requires a later go-ahead to start the separate Wear milestone; not implemented or passed.",
       "scope": "POST_FIRST_RELEASE",
@@ -701,7 +654,7 @@
       ]
     }
   ],
-  "package_version": "1.1",
-  "updated_at": "2026-09-21",
+  "package_version": "1.2",
+  "updated_at": "2026-09-23",
   "decision_registry": "decisions.json"
 }

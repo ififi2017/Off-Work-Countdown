@@ -40,36 +40,37 @@
 
 ## 首发 / 后续范围
 
-首发必须：FR-01～FR-20（含 Drive 同步与购买验证服务）。  
-延后：FR-21 / T27 / QA-137（Wear OS）。延后不是已完成，也不阻塞首发。
+首发必须：FR-01～FR-20（FR-15 首发=系统备份换机恢复；FR-16 首发=客户端 Play 验证）。  
+延后：T21 服务端验证、T22 Drive 同步（QA-110～QA-122）、FR-21 / T27 / QA-137（Wear OS）。延后不是已完成，也不阻塞首发。
 
 ## 决策与外部配置
 
 | ID | 状态 | 批准范围 | 仍未知 |
 |---|---|---|---|
 | D-01 | APPROVED | 月/年订阅 + 终身买断 | CFG-PRICE |
-| D-02 | APPROVED | Drive `appDataFolder`；默认关；首发含 Android 多设备同步 | CFG-OAUTH |
+| D-02 | APPROVED（2026-09-23 修订） | 首发 Auto Backup/设备转移换机恢复（业务库纳入）；Drive 同步延后（T22） | 后续：CFG-OAUTH |
 | D-03 | APPROVED | 首发仅 JSON 互迁；商店权益独立 | — |
 | D-04 | PROPOSED | minSdk 26 建议 | 支持矩阵未代签 |
 | D-05 | APPROVED | Wear 延后 | 后续启动时间 |
 | D-06 | PROPOSED | 精确提醒可选、降级 | 未代签 |
 | D-07 | PROPOSED | 失效后停新增观测，先按源 | 未代签 |
-| D-08 | APPROVED | 小型购买验证服务，无 DoneAt 账号 | CFG-BACKEND |
+| D-08 | APPROVED（2026-09-23 修订） | 首发纯客户端 Play Billing；服务端验证延后（T21），优先现有 Vercel | 后续：CFG-BACKEND |
 | D-09 | PROPOSED | 敏感页保护，不全面禁截图 | 未代签 |
 | D-10 | PROPOSED | 候选 `com.rainif.doneat` | CFG-APP-IDENTITY |
 | D-11 | APPROVED_PROCESS_PENDING_FACTS | 按真实 Play 账户核验 | CFG-PLAY-ACCOUNT；账户事实 UNKNOWN |
+| D-12 | APPROVED（2026-09-23） | Release 只用稳定 Compose/Material3，Expressive 风格用 designsystem token | — |
 
-价格、OAuth、后端、Play 账户、正式包名均 **不阻塞** 源码审计与本地 Kotlin。  
+价格、Play 账户、正式包名均 **不阻塞** 源码审计与本地 Kotlin；OAuth 与后端已随 D-02/D-08 修订移出首发。  
 本轮未询问已确认方向，未部署、未改价、未操作 Play Console。
 
-## 本机环境（T00 登记，未冒充已构建）
+## 本机环境（T00 登记，2026-09-23 更新，未冒充已构建）
 
 | 项 | 事实 |
 |---|---|
 | 机器 | darwin arm64 |
-| JDK | 仅有 `temurin-21.jdk` **x86_64**；`java` 报 `Bad CPU type in executable` |
-| Android SDK | 未安装（`ANDROID_HOME` / `~/Library/Android/sdk` 均无） |
-| Android Studio | 负责人下载中 |
+| JDK | 系统 `temurin-21.jdk` 为 **x86_64**，不可用；可用 Android Studio 自带 JBR：`/Applications/Android Studio.app/Contents/jbr/Contents/Home`（arm64，OpenJDK 25.0.3） |
+| Android SDK | `~/Library/Android/sdk`：platforms `android-37.0`、build-tools `36.0.0`、platform-tools（adb 37.0.1）、emulator、system image `android-36.1/google_apis_playstore`；**无 cmdline-tools**；`ANDROID_HOME` 未设置（工程用 `local.properties` 的 `sdk.dir`） |
+| Android Studio | 2026.1；AVD `Pixel_10_Pro` |
 | `./gradlew` / `assembleDebug` | **NOT_RUN** |
 | 应用测试 | **NOT_RUN**（137 条 QA 仍全部 NOT_RUN） |
 

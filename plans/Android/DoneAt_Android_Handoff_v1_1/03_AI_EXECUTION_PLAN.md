@@ -8,9 +8,9 @@
 
 若外部账户、设备或商业决策阻塞：把该任务标记 BLOCKED，记录精确原因；继续做不依赖它的工作。不要把阻塞项删掉，也不要让没有必要的外部依赖阻塞纯 Kotlin 规则和本地 UI。
 
-`tasks.json` 的 `blocking_decisions` 只列真正未获批准的决策；`approved_decisions`/`approved_processes` 指向已确认项；`pending_configuration` 指向 decisions.json 中尚待落实的外部配置；`decision_gate_scope` 说明具体阻塞位置。D-01/D-02/D-03/D-05/D-08 的方向已确认，D-11 的核验流程已确认。T03可采用候选包名/minSdk完成本地Debug探针，正式签名/创建Play应用前冻结；价格未定不阻止领域和Debug接口；云服务尚未配置不阻止合成数据协议测试。生产部署、真实用户数据传输和发布仍需配置、最终用户同意及适当操作授权。
+`tasks.json` 的 `blocking_decisions` 只列真正未获批准的决策；`approved_decisions`/`approved_processes` 指向已确认项；`pending_configuration` 指向 decisions.json 中尚待落实的外部配置；`decision_gate_scope` 说明具体阻塞位置。D-01/D-02/D-03/D-05/D-08/D-12 的方向已确认（D-02、D-08 于 2026-09-23 修订），D-11 的核验流程已确认。T03可采用候选包名/minSdk完成本地Debug探针，正式签名/创建Play应用前冻结；价格未定不阻止领域和Debug接口；Drive 同步与服务端验证已移出首发，不阻塞首发任何任务。生产部署、真实用户数据传输和发布仍需配置、最终用户同意及适当操作授权。
 
-推荐任务状态：NOT_STARTED → IN_PROGRESS → IMPLEMENTED → VERIFIED；需要负责人签收的进入 WAITING_OWNER，阻塞为 BLOCKED，批准延后的范围为 DEFERRED。只有 VERIFIED 加相应外部签收才可算发布完成。1.1 中 T00～T26 均为 NOT_STARTED，T27 为 DEFERRED；方向获批不是实现进度。
+推荐任务状态：NOT_STARTED → IN_PROGRESS → IMPLEMENTED → VERIFIED；需要负责人签收的进入 WAITING_OWNER，阻塞为 BLOCKED，批准延后的范围为 DEFERRED。只有 VERIFIED 加相应外部签收才可算发布完成。任务实际状态只在仓库根 `docs/android/progress.md` 维护；`tasks.json` 只定义依赖与范围（`scope`），不再记录状态。1.2 起 T21、T22、T27 属首发后阶段；方向获批不是实现进度。
 
 ## 2. 阶段与门禁
 
@@ -22,8 +22,8 @@
 | M3 | 持久化与备份 | 事务/迁移/导入/解析/旧数据通过 |
 | M4 | 专注和调度模型 | 重启、重复动作、边界与权限测试通过 |
 | M5 | 所有业务 UI | 每屏接真实状态，主要路径不靠假数据 |
-| M6 | 系统集成与真实付费 | Widget/分享/权限和支付服务签收 |
-| M7 | 同步 | 双设备并发、删除、首次恢复与账号切换签收 |
+| M6 | 系统集成与真实付费 | Widget/分享/权限、系统备份恢复与客户端 Play Billing 签收（服务端验证 T21 为后续） |
+| M7 | 同步（首发后） | D-02 修订后不阻塞首发；启动后按双设备并发、删除、首次恢复与账号切换签收 |
 | M8 | 完整回归 | 全功能 traceability、真机、性能/无障碍通过 |
 | M9 | 上架 | 负责人完成 Console 与商业/隐私/签名签收 |
 | M10 | Wear（已确认延后） | 不阻塞首发；另行启动后执行独立手表矩阵与手机配对验收 |
@@ -45,7 +45,7 @@
 
 **必须交付**：docs/android/baseline.md；源 SHA、版本、工作树状态、首发/后续范围声明；决策及外部配置台账。
 
-**验收**：核实所有源码链接指向同一 SHA；登记已批准方向与真正未知的配置，不再把Drive/收费模式/验证服务列为待选；账户事实未知就保留UNKNOWN；仓库没有被reset/覆盖。
+**验收**：核实所有源码链接指向同一 SHA；登记已批准方向与真正未知的配置，不再把 Drive/收费模式/验证服务的首发取舍列为待选；账户事实未知就保留UNKNOWN；仓库没有被reset/覆盖。
 
 
 ### T01 · M0 · 完成逐入口功能与规则盘点
@@ -80,24 +80,28 @@
 
 **先读**：02 第2、3、14章；Android 官方 AGP/Kotlin/Compose 当前文档。
 
-**执行**：使用 Android Studio 当前可用稳定模板/官方配置；创建 app、domain、data、designsystem 等实际需要模块；确定包名候选；先成功运行空页面和纯 JVM 单元测试。不要一开始生成几十个空屏幕。
+**执行**：使用 Android Studio 当前可用稳定模板/官方配置；创建 app、domain、data、designsystem 等实际需要模块；确定包名候选；先成功运行空页面和纯 JVM 单元测试。不要一开始生成几十个空屏幕。 JDK 使用 Android Studio 自带 arm64 JBR（本机 temurin-21 为 x86_64 不可用）；SDK 位于 ~/Library/Android/sdk（platforms android-37.0、build-tools 36.0.0），需补装 cmdline-tools。可选：用不超过半天评估 Swift SDK for Android 能否编译 src-mobile/ios/Shared 核心，结论写入 environment-lock.md，不阻塞本任务。
 
 **必须交付**：可运行 Debug 工程；environment-lock.md；Gradle wrapper/version catalog；基础 CI。
 
 **验收**：./gradlew --version、domain:test、app:assembleDebug 成功；不存在未声明版本动态依赖；实际 SDK/编译器兼容记录齐全。
 
+**决策与配置**：未决 D-04, D-10。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
 
-### T04 · M1 · 完成 Material3 Expressive 依赖与组件探针
+
+### T04 · M1 · 完成稳定版 Material3 与 DoneAt 设计 token 探针
 
 **依赖**：T03。**覆盖需求**：FR-18, FR-19。
 
-**先读**：01 第7章；A01/A20/A21/A22；所选版本 API reference。
+**先读**：01 第7章；A01/A20；D-12；稳定版 Material3 API reference。
 
-**执行**：实现主题、主要按钮、分段选择、时间选择、进度与导航小样；记录 Experimental 注解及传递依赖；构建 Debug 与 R8 Release。探针中存在的试验组件不能散落到业务层。
+**执行**：锁定稳定 Compose BOM 与 Material3 1.4.x（D-12）；在 :core:designsystem 以自有 shape/motion/color token 实现 Expressive 风格；Release 依赖树中不得出现 alpha/beta 的 Compose/Material3。
 
-**必须交付**：designsystem 实现和 gallery 测试页面（Debug only）；expressive-adr.md；依赖树。
+**必须交付**：designsystem 实现和 gallery 测试页面（Debug only）；design-tokens-adr.md（记录哪些 Expressive 行为由自有 token 实现、将来切换条件）；依赖树。
 
-**验收**：实际包含本项目需要的 Expressive 行为；没有把 stable1.4 API 与 alpha API 混用；减少动态效果及大字体探针通过。
+**验收**：Release 依赖树无 alpha/beta Compose/Material3；主要状态/操作的 Expressive 风格经 token 实现；减少动态效果及大字体探针通过。
+
+**决策与配置**：已确认 D-12。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
 
 
 ### T05 · M1 · 建立翻译转换与质量检查
@@ -145,7 +149,7 @@
 
 **先读**：ExtendedSchedule/Rules/Editing 与所有对应 Swift 测试。
 
-**执行**：支持周期锚点、manual roster、carry-over、holiday、clearedFrom、frozen shift、base fallback；保持统一 segment 引擎；建立源 Swift 测试→Kotlin 对照。
+**执行**：支持周期锚点、manual roster、carry-over、holiday、clearedFrom、frozen shift、base fallback；保持统一 segment 引擎；建立源 Swift 测试→Kotlin 对照。Swift 特有规则的 fixtures 作为 Swift 与 Kotlin 共用的检查：由 Swift 测试导出 JSON，Swift 测试与 Kotlin 测试读取同一份文件，并加 stale 检查，避免形成第三份无 oracle 的实现。
 
 **必须交付**：ExtendedScheduleResolver；Swift parity fixtures；优先级决策表。
 
@@ -165,17 +169,19 @@
 **验收**：跨月周、请假固定月薪不扣、空档、重叠拒绝、一次性比例调整通过；所有相同语义 UI 投影引用统一服务。
 
 
-### T10 · M3 · 实现 Room、事务与迁移基础
+### T10 · M3 · 实现记录档案存储、事务写入与编解码
 
 **依赖**：T02, T03。**覆盖需求**：FR-06, FR-07, FR-09, FR-14, FR-15。
 
 **先读**：实体字段契约、RecordCoordinator/Command 的行为与源写入错误处理。
 
-**执行**：建立业务实体、索引、外键/逻辑引用校验、outbox、tombstone；实现事务写 API；schema 导出；写入错误保留原数据与草稿。
+**执行**：D-13：与 iOS 相同，内存 RecordState + 原子替换的 RecordLocalFile（schema-6 文档 + 墓碑）；串行写协调器：计算→编码→回读校验→原子写→发布，任一步失败不改变已发布状态与文件；损坏档案阻断写入直到隔离；以 Swift RecordJSON 为 oracle 的编解码 fixtures。
 
-**必须交付**：Room DB/DAO/mappers；Repository；MigrationTests；seed 测试。
+**必须交付**：records 模型与 RecordJson（:core:domain）；RecordArchive/RecordStore（:core:data）；record-json-fixtures；文件系统测试。
 
-**验收**：进程重启读回一致；低空间/事务失败不部分提交；没有生产 destructive migration；data 模块测试真实数据库。
+**验收**：进程重启读回一致；写入失败/校验失败不部分提交；损坏档案不被当作空档案且不被覆盖；data 模块测试真实文件系统；编解码 fixture 全通过。
+
+**决策与配置**：已确认 D-13。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
 
 
 ### T11 · M3 · 实现 JSON 导入导出与冲突管理
@@ -284,15 +290,17 @@
 
 ### T19 · M6 · 实现小组件、分享、链接与平台隐私
 
-**依赖**：T11, T14, T16。**覆盖需求**：FR-11, FR-12, FR-13, FR-17。
+**依赖**：T11, T14, T16。**覆盖需求**：FR-01, FR-11, FR-12, FR-13, FR-15, FR-17。
 
 **先读**：源Widget投影、分享协议、当前品牌资产；A11/A12/A25；02第8/11章。
 
-**执行**：安全Widget DTO、多尺寸Glance、过期态；普通通知适配；独立分享图渲染；SAF/FileProvider/AppLinks；备份排除规则。
+**执行**：安全Widget DTO、多尺寸Glance、过期态；普通通知适配；独立分享图渲染；SAF/FileProvider/AppLinks；备份规则。dataExtractionRules/fullBackupContent：业务 Room 库纳入 cloud backup 与 device transfer（一致性快照，处理 WAL）；排除购买缓存、待确认购买标记、Keystore 相关数据、令牌与 debug 设置（D-02 修订）。
 
-**必须交付**：Widgets/Share/LinkHandler；manifest与dataExtractionRules；链接配置说明。
+**必须交付**：Widgets/Share/LinkHandler；manifest与dataExtractionRules；链接配置说明；备份/恢复验证记录（QA-138～QA-140）。
 
-**验收**：薪资不会出现在组件/通知/分享元数据；组件多实例/重启/尺寸变化；链接预览不自动覆盖；不新增危险权限。
+**验收**：薪资不会出现在组件/通知/分享元数据；组件多实例/重启/尺寸变化；链接预览不自动覆盖；不新增危险权限。业务数据可随系统备份/设备转移恢复，购买缓存与密钥不在备份内。
+
+**决策与配置**：已确认 D-02。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
 
 
 ### T20 · M6 · 实现权益领域与 Billing 客户端
@@ -301,31 +309,35 @@
 
 **先读**：PlusEntitlement、01矩阵、02第9章、A06/A08；D-01/D-07。
 
-**执行**：状态机、ProductDetails本地价格、single-flight购买/恢复、pending/取消/失效/离线；连接真实验证接口；fake隔离debug；保存原操作上下文。
+**执行**：状态机、ProductDetails本地价格、single-flight购买/恢复、pending/取消/失效/离线；权益只来自 queryPurchasesAsync 与 Play 公钥签名校验；客户端 acknowledge 并持久化待确认重试（3天窗口）；fake隔离debug；保存原操作上下文（D-08 修订：首发无自建服务）。
 
 **必须交付**：EntitlementEngine/BillingRepository/Paywall；状态转移测试。
 
 **验收**：取消续费未到期仍可用；Pending无权；断网不抹已验证缓存；同意D-07前保持源失效采集行为。
 
-**决策与配置**：已确认 D-01, D-03；待配置 CFG-PRICE；未决 D-07。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
+**决策与配置**：已确认 D-01, D-03, D-08；待配置 CFG-PRICE；未决 D-07。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
 
 
-### T21 · M6 · 部署真实购买验证与通知处理
+### T21 · M6 · （后续）服务端购买验证与 RTDN
+
+**范围：首发后阶段，不阻塞首发。**
 
 **依赖**：T20。**覆盖需求**：FR-16, FR-20。
 
 **先读**：02第9章；A07/A08；D-08已确认记录、CFG-BACKEND与服务凭据边界。
 
-**执行**：实现Publisher验证、幂等权益持久化、确认重试、RTDN重查、撤销/linkedToken、签名缓存；最小权限部署；不收工资或记录。
+**执行**：首发后按需启动。优先在现有 Next.js/Vercel Route Handlers 实现 Publisher 验证、幂等权益、RTDN 重查、撤销/linkedToken；不收工资或记录。
 
-**必须交付**：独立权益服务代码；部署runbook；监控/重试；接口contract tests。
+**必须交付**：权益验证服务代码（优先现有 Vercel Route Handlers）；部署runbook；监控/重试；接口contract tests。
 
 **验收**：真实许可测试账户购买、恢复、pending、退款、取消及重复RTDN；无密钥进Git/APK；只有mock通过不算生产完成。
 
 **决策与配置**：已确认 D-08；待配置 CFG-BACKEND。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
 
 
-### T22 · M7 · 实现 Android 私有云恢复与同步
+### T22 · M7 · （后续）Android 私有云 Drive 同步
+
+**范围：首发后阶段，不阻塞首发。**
 
 **依赖**：T10, T11, T13, T20。**覆盖需求**：FR-01, FR-15。
 
@@ -342,7 +354,7 @@
 
 ### T23 · M8 · 全功能集成与权限/付费回归
 
-**依赖**：T17, T18, T19, T21, T22。**覆盖需求**：FR-01, FR-02, FR-03, FR-04, FR-05, FR-06, FR-07, FR-08, FR-09, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20。
+**依赖**：T17, T18, T19, T20。**覆盖需求**：FR-01, FR-02, FR-03, FR-04, FR-05, FR-06, FR-07, FR-08, FR-09, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20。
 
 **先读**：07完整用例；feature-parity.md；已批准D项。
 
@@ -378,7 +390,7 @@
 
 **验收**：商店宣称与实际功能/价格一致；涉及新个人账号的12人14天条件按实际账号核实；无已读事实被代填为已审批。
 
-**决策与配置**：已确认 D-01, D-02, D-03, D-08；流程已确认 D-11；待配置 CFG-PRICE, CFG-OAUTH, CFG-BACKEND, CFG-PLAY-ACCOUNT, CFG-APP-IDENTITY；未决 D-10。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
+**决策与配置**：已确认 D-01, D-02, D-03, D-08；流程已确认 D-11；待配置 CFG-PRICE, CFG-PLAY-ACCOUNT, CFG-APP-IDENTITY；未决 D-10。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
 
 
 ### T26 · M9 · 发布签收、分阶段上线与回滚
@@ -446,15 +458,15 @@ Protected files / uncommitted owner changes: <明确记录>
 | 时区变化给每条日期加减8小时 | 日期是标签，Instant才做时区换算 |
 | 月薪一律除21.75或按出勤扣款 | 区分计时页/记录页语义，按当前源与后续修订 |
 | Focus自动session用随机UUID或Java nameUUID | 精确实现源SHA256裁切与bit规则 |
-| Play购买回调成功就设置isPlus=true | 校验平台证据，持久化、确认、恢复与撤销完整走通 |
+| Play购买回调成功就设置isPlus=true | 以queryPurchasesAsync与Play公钥签名为准，持久化、确认（acknowledge）、恢复与撤销完整走通 |
 | 失去网络等于用户失去终身权益 | 区分不可用与确认无权益；保留最后已验证缓存 |
 | 云同步覆盖一个JSON，以时间较新胜出 | 保留每实体编辑戳与墓碑，多设备合并 |
 | 关闭同步就删云数据 | 区分暂停、云删除、本机移除 |
-| Auto Backup从未配置却宣传工资绝不上传 | 审计最终备份规则与数据流，必要时更正文案 |
+| 把业务库排除出Auto Backup，换机后记录全丢 | D-02修订：业务库纳入系统备份/设备转移，只排除购买缓存、密钥与令牌；隐私文案如实描述 |
 | 减少动画只把时长设小 | 移除连续循环/触感，保留静态可理解状态 |
 | 单元测试通过=通知、购买、云同步都通过 | 这些需要对应真机/真实服务证据 |
-| 编译报错就删Expressive控件换普通UI | 先检查锁定版本/API；需降级须负责人批准 |
-| 使用默认主题就称Material3 Expressive | 依据设计系统gallery及逐屏验收检查形状/层级/动作/动效 |
+| 为了Expressive引入alpha/beta Material3 | D-12：Release只用稳定版，Expressive风格由designsystem token实现 |
+| 使用默认主题就称已完成设计 | 依据设计系统gallery及逐屏验收检查形状/层级/动作/动效token |
 | 生成了AAB就说已上架 | 实际Console配置、测试资格与审查是独立发布门禁 |
 
 ## 7. 禁止自动改变的范围

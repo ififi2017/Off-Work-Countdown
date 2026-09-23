@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
-  "case_count": 137,
+  "case_count": 140,
   "execution_status": "NOT_RUN",
   "cases": [
     {
@@ -37,9 +37,9 @@
         "FR-20"
       ],
       "level": "UI",
-      "setup": "需要采用的Expressive主题、按钮及运动方案探针",
-      "action": "编译并在目标设备交互",
-      "expected": "使用真实已存在API；不因实验API编译失败私自换回普通Material样式。",
+      "setup": "稳定版 Material3（1.4.x）+ DoneAt 自有形状/动效/颜色 token 探针（D-12）",
+      "action": "编译Debug与R8 Release并在目标设备交互",
+      "expected": "Release依赖树不含alpha/beta的Compose或Material3；Expressive风格通过designsystem token实现；不引入实验API后再用@OptIn掩盖。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -999,7 +999,7 @@
       ],
       "level": "SYNC",
       "setup": "两台设备自动启动相同时间块，离线后重连",
-      "action": "合并会话",
+      "action": "先通过v6导出/导入合并（首发）；Drive同步阶段再以自动重连复测",
       "expected": "相同确定性ID合一；真正竞争会话按源规则保留supersededBySync历史。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
@@ -1459,7 +1459,7 @@
       "level": "PLAY",
       "setup": "月订阅成功且验证正常，重复回调",
       "action": "确认权益并处理pending action",
-      "expected": "服务端只验证/确认一次逻辑购买；原操作至多一次；真实价格与商品可追溯。",
+      "expected": "客户端只确认一次逻辑购买（acknowledge幂等）；原操作至多一次；真实价格与商品可追溯。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -1471,9 +1471,9 @@
         "FR-20"
       ],
       "level": "SEC",
-      "setup": "伪造isPlus、本地purchaseState、包名/商品/签名或导入权益",
-      "action": "提交verify和本地恢复",
-      "expected": "平台证据、allowlist和签名校验生效；不能靠本地布尔解锁。",
+      "setup": "伪造isPlus、本地purchaseState、包名/商品/签名，或通过v6导入/Auto Backup恢复带入权益",
+      "action": "本地恢复与重启",
+      "expected": "权益只来自当次Play查询及Billing签名校验（Play公钥）；不能靠本地布尔、备份或导入文件解锁。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -1500,8 +1500,8 @@
       ],
       "level": "PLAY",
       "setup": "平台宽限、account hold、暂停、恢复、到期",
-      "action": "测试时钟与Publisher API状态",
-      "expected": "按规范状态生效；不按purchaseTime+30天推断。",
+      "action": "用Play许可测试订阅周期推进，并调用queryPurchasesAsync",
+      "expected": "宽限期内仍授予；account hold/暂停/到期时查询不再返回即停止；不按purchaseTime+30天推断。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -1555,9 +1555,9 @@
         "FR-20"
       ],
       "level": "PLAY",
-      "setup": "服务器验证成功但ack失败，后续重试",
-      "action": "重发任务与回调",
-      "expected": "持久重试并告警；初次购买在规定窗口确认，终身绝不consume。",
+      "setup": "购买成功但客户端acknowledge失败/进程被杀",
+      "action": "下次启动或回到前台重试",
+      "expected": "持久化待确认标记并在3天窗口内重试确认；终身绝不consume；未确认前不重复授予或重复扣款。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -1569,9 +1569,9 @@
         "FR-20"
       ],
       "level": "PLAY",
-      "setup": "升级/替换订阅，RTDN乱序/重复，linked token仍缓存",
-      "action": "刷新 canonical状态",
-      "expected": "不出现旧新双份权益；RTDN不是唯一真实性依据。",
+      "setup": "升级/替换订阅（月↔年），旧token仍在本地缓存",
+      "action": "queryPurchasesAsync刷新",
+      "expected": "只以当次查询返回的有效购买为准，不出现旧新双份权益。RTDN/linkedPurchaseToken服务端处理属后续验证服务阶段（D-08修订）。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -1612,9 +1612,9 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "用户未点云功能；全新安装",
+      "setup": "首发不含任何Google授权；全新安装",
       "action": "完成本地使用并检查网络",
-      "expected": "不请求Google授权，不上传工资/默认设置；只允许明确记录的其他网络功能。",
+      "expected": "不请求Google登录/OAuth，不上传工资/默认设置；网络仅用于Play Billing与用户主动分享等已记录功能。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -1627,11 +1627,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "云端已有完整档案，旧设备关闭；新安装",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。云端已有完整档案，旧设备关闭；新安装",
       "action": "授权并首次恢复",
       "expected": "完整分页下载→预览→原子应用；不依赖旧设备上线发送当前快照。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-111",
@@ -1642,11 +1642,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "首次查询超时/401/配额错误",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。首次查询超时/401/配额错误",
       "action": "进入恢复选择",
       "expected": "显示未知/失败，不作为空云创建并上传欢迎默认值。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-112",
@@ -1657,11 +1657,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "设备A改日期甲，设备B离线改日期乙",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。设备A改日期甲，设备B离线改日期乙",
       "action": "恢复联网并双向同步",
       "expected": "两天修改都保留；不是最后整文件上传者抹除另一台。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-113",
@@ -1672,11 +1672,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "同ID并发编辑、时钟错误且网络乱序",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。同ID并发编辑、时钟错误且网络乱序",
       "action": "重复合并批次",
       "expected": "按编辑戳稳定收敛；不看墙钟/文件modifiedTime。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-114",
@@ -1687,11 +1687,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "一台删除，另一台持旧行，之后重连",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。一台删除，另一台持旧行，之后重连",
       "action": "同步墓碑",
       "expected": "旧行不复活；合法显式重新创建使用更高版本规则。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-115",
@@ -1702,11 +1702,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "上传成功但本地未确认即崩溃，云上同名文件多份",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。上传成功但本地未确认即崩溃，云上同名文件多份",
       "action": "恢复重试并拉取",
       "expected": "按batchId/hash去重，不以文件名唯一性假设创建重复业务。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-116",
@@ -1717,11 +1717,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "用户删除云端，老设备离线持旧generation",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。用户删除云端，老设备离线持旧generation",
       "action": "老设备晚到上传旧批次",
       "expected": "fence阻止旧数据复活；有未同步本地内容先审阅/导出。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-117",
@@ -1732,11 +1732,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "两台设备并发reset",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。两台设备并发reset",
       "action": "重新读取所有fence/batch",
       "expected": "固定有序规则选唯一新generation；输的一方不复活旧批次。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-118",
@@ -1747,11 +1747,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "用户在Drive外部删整个应用数据空间，旧机还配对",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。用户在Drive外部删整个应用数据空间，旧机还配对",
       "action": "自动同步触发",
       "expected": "暂停并请求选择；不能自动新建云空间把已删工资重新上传。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-119",
@@ -1762,11 +1762,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "Google账号A已同步，切到B",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。Google账号A已同步，切到B",
       "action": "打开同步设置",
       "expected": "旧本地数据不自动流入B；明确解除配对/导出/选择状态。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-120",
@@ -1777,11 +1777,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "依次暂停同步、删除云副本、移除此设备数据",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。依次暂停同步、删除云副本、移除此设备数据",
       "action": "检查三个作用范围",
       "expected": "行为不同且明确；暂停不删数据，本机移除不误删云；危险操作互斥。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-121",
@@ -1792,11 +1792,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "页数多、批次大、未知格式或哈希错误、恢复中断",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。页数多、批次大、未知格式或哈希错误、恢复中断",
       "action": "拉取全部后合并",
       "expected": "无静默漏页；错误候选不污染本地；重新执行可恢复且幂等。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-122",
@@ -1807,11 +1807,11 @@
         "FR-15"
       ],
       "level": "SYNC",
-      "setup": "数据同步收到主题/语言/薪资，也收到伪权限/权益字段",
+      "setup": "D-02修订：Drive同步延至首发后；同步阶段启动后执行。数据同步收到主题/语言/薪资，也收到伪权限/权益字段",
       "action": "映射业务和本机状态",
       "expected": "只接受协议内业务字段；通知权限、生物识别授权、Play权益不跨设备复制。",
       "status": "NOT_RUN",
-      "release_scope": "FIRST_RELEASE"
+      "release_scope": "POST_FIRST_RELEASE"
     },
     {
       "id": "QA-123",
@@ -2054,9 +2054,9 @@
         "FR-21"
       ],
       "level": "PLAY",
-      "setup": "当前实现含Drive授权和购买验证服务",
+      "setup": "首发实现含Play Billing与Auto Backup/设备转移，不含Drive授权或自建验证服务",
       "action": "逐项填写Data safety/隐私/删除入口",
-      "expected": "按真实离设备流向判断；不照搬iOS Data Not Collected，不谎称自建后端无数据。",
+      "expected": "按真实离设备流向填写（系统备份由Google处理、端到端加密条件如实描述）；不照搬iOS Data Not Collected；后续加Drive或验证服务时重做申报。",
       "status": "NOT_RUN",
       "release_scope": "FIRST_RELEASE"
     },
@@ -2097,8 +2097,52 @@
       "expected": "复用同一无薪资规则；离线可延续排班；具体版本/发布独立验证。当前保留NOT_RUN并从首发阻塞集合排除，不删除该用例或标PASS。",
       "status": "NOT_RUN",
       "release_scope": "POST_FIRST_RELEASE"
+    },
+    {
+      "id": "QA-138",
+      "group": "系统备份与换机恢复",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-20"
+      ],
+      "level": "DEVICE",
+      "setup": "旧机有完整记录/排班/专注/偏好，已设锁屏；新机登录同一Google账号",
+      "action": "通过设备转移及云端Auto Backup分别恢复",
+      "expected": "业务库完整恢复且Room版本迁移正常；首次启动重建提醒/小组件投影；恢复后首帧前完成数据一致性检查。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-139",
+      "group": "系统备份与换机恢复",
+      "requirements": [
+        "FR-16",
+        "FR-17",
+        "FR-20"
+      ],
+      "level": "SEC",
+      "setup": "旧机持有Plus缓存、待确认购买标记、Keystore密钥、通知/精确闹钟授权",
+      "action": "恢复到新机并启动",
+      "expected": "购买缓存、密钥与令牌不在备份内；权益重新经Play查询得出；权限状态按新机实际查询，不从备份恢复成已授予。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-140",
+      "group": "系统备份与换机恢复",
+      "requirements": [
+        "FR-14",
+        "FR-20"
+      ],
+      "level": "DB",
+      "setup": "备份时数据库处于WAL写入中；或备份来自较新Room版本",
+      "action": "执行备份代理/恢复后启动",
+      "expected": "备份为一致快照（非仅复制主.db）；新版本库恢复到旧APK时进入只读/提示升级，不销毁数据。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
     }
   ],
-  "package_version": "1.1",
+  "package_version": "1.2",
   "decision_registry": "decisions.json"
 }

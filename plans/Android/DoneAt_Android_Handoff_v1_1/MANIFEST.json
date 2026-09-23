@@ -1,79 +1,75 @@
 {
-  "package_version": "1.1",
+  "package_version": "1.2",
   "created_at": "2026-09-21",
-  "updated_at": "2026-09-21",
+  "updated_at": "2026-09-23",
   "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
   "implementation_status": "PLAN_ONLY",
-  "approval_status": "DIRECTIONS_CONFIRMED_CONFIGURATION_PENDING",
+  "approval_status": "DIRECTIONS_CONFIRMED_REVISED_2026_09_23",
   "counts": {
     "main_markdown_documents": 8,
     "tasks": 28,
-    "first_release_tasks": 27,
-    "deferred_tasks": 1,
-    "planned_test_cases": 137,
-    "first_release_test_cases": 136,
-    "post_first_release_test_cases": 1,
+    "first_release_tasks": 25,
+    "deferred_tasks": 3,
+    "planned_test_cases": 140,
+    "first_release_test_cases": 126,
+    "post_first_release_test_cases": 14,
     "independent_interval_examples": 10,
     "independent_identity_examples": 2,
     "source_references": 52,
-    "decision_records": 11,
+    "decision_records": 13,
     "external_configuration_records": 5
   },
-  "combined_document": {
-    "name": "DoneAt_Android_完整PRD与移植指南_v1.1.md",
-    "bytes": 228894,
-    "sha256": "3d38dd4e48724da59a84e671079765df16f17421886efaa23d4866545461ffa1"
-  },
+  "combined_document": null,
   "files": [
     {
       "name": "00_START_HERE.md",
-      "bytes": 10237,
-      "sha256": "effd75e6d0c35deb53eaef46074b38d3f4d5988f1442dec39217101062fb6089"
+      "bytes": 11073,
+      "sha256": "34edc9ba8de4903381f28b92f14ba4bf73f4b9da5f7a804d5d15662cbedc45fa"
     },
     {
       "name": "01_PRD.md",
-      "bytes": 35295,
-      "sha256": "b86a29eb79ba90d1dda8c918a55f6a3543ef83c43648f8dfc169fd766365d4f8"
+      "bytes": 36369,
+      "sha256": "33681b26a8cd028181835e534e97df23e745ca000bf35def7d23d378906c500d"
     },
     {
       "name": "02_TECHNICAL_GUIDE.md",
-      "bytes": 53668,
-      "sha256": "62927d3fc41582dbe1c5ed4a369ee6ef0b639c5413fc410ef8185c1b780a6f93"
+      "bytes": 57029,
+      "sha256": "426ed09de7cbe9de349cab87cfc58c0983cf2c618e130381b3226e123bc8b3d6"
     },
     {
       "name": "03_AI_EXECUTION_PLAN.md",
-      "bytes": 27436,
-      "sha256": "959d43ab863a9d944925bac9ff7f657a34334e2b7383f47e375cf8a486a2b555"
+      "bytes": 30135,
+      "sha256": "12d96c356d8aa21b12f80bcaeab8e473489cc29f498a74ed8227d2322bc4972d"
     },
     {
       "name": "04_QA_AND_PLAY_RELEASE.md",
-      "bytes": 21425,
-      "sha256": "ffa8964127b473be49d61ee73ecaa1f3d6aeed02c44e6ddc87ba57a6a7c99b49"
+      "bytes": 22063,
+      "sha256": "bebf7e49fe66667c149bc607ee406f074e505b7f2f55362529eaf208124b50f4"
     },
     {
       "name": "05_SOURCES_AND_DECISIONS.md",
-      "bytes": 33188,
-      "sha256": "53b61903decb7d77c5f87eada7d97eecc2a6c63463d7239231b5ec310469a8bd"
+      "bytes": 33987,
+      "sha256": "3e3f734771d8a2d421c6adf9ebfc2256b3cec630b7f16d0aa8f9abd42a3bcfb4"
     },
     {
       "name": "06_PROMPT_FOR_IMPLEMENTING_AI.md",
-      "bytes": 6376,
-      "sha256": "ca346c3a3f7acef5848dd0d500501bc6043a6c3de166b975fd9c2a88527591d5"
+      "bytes": 6836,
+      "sha256": "a25d074a362293a1c89fd331c0e7060907df540354142af1d6490932f6087c51"
     },
     {
       "name": "07_TEST_CATALOG.md",
-      "bytes": 38073,
-      "sha256": "c297069742c956425803e9607fea7ac3ecedeb34444a3691577c08bc5602f369"
+      "bytes": 41282,
+      "sha256": "4f10a36d6b31a0768da4d934bec069e103098831e4379f43a6103bfa550e0cd6"
     },
     {
       "name": "CHANGELOG.md",
-      "bytes": 1770,
-      "sha256": "7022ed728221c75419db93acbff931335a649f7a5d206583ca52caa7fcd2ac58"
+      "bytes": 3560,
+      "sha256": "50e4cb0a7e3ea6a60ecb3245c237ecf81065280e5d489434237587afc8bbffa3"
     },
     {
       "name": "PACKAGE_VALIDATION.md",
-      "bytes": 1656,
-      "sha256": "62e1757249ddf8e73a2eba6362d2c243cefd196cf951653ee3efc72513f37ac7"
+      "bytes": 2509,
+      "sha256": "87ef7bcacd1dabe0b9ea5cc7749e346a4939d6eb9571482a6742f74c4550f48b"
     },
     {
       "name": "acceptance_examples.json",
@@ -82,8 +78,8 @@
     },
     {
       "name": "decisions.json",
-      "bytes": 8426,
-      "sha256": "b766ef4f37f679ef107d937cc1161ef84d18293f65a8bebf2d61d4e074408c96"
+      "bytes": 12441,
+      "sha256": "3588e2f6c577cab5f4f1124d35fe4bea689348561cc86023c3e0d4a1030227f1"
     },
     {
       "name": "references.json",
@@ -92,13 +88,14 @@
     },
     {
       "name": "tasks.json",
-      "bytes": 29639,
-      "sha256": "e9a2477ea9434bbc482de920a3b7af2eb955fbc3931e507759996266f76d2dc5"
+      "bytes": 29748,
+      "sha256": "8cbd10585f2cefc902037f72286ceb3cceae26444cab541d87d872dcb0691691"
     },
     {
       "name": "test-catalog.json",
-      "bytes": 65993,
-      "sha256": "718f7691532a56392e99ba9ff9101408270272d929575958f9c3c0d408109942"
+      "bytes": 69389,
+      "sha256": "bd435b3e15056ce1ef93809c5bd7524efd4dc3870bbad4527eeea922bb7881f6"
     }
-  ]
+  ],
+  "combined_document_note": "1.1 的合并单文档不在仓库中，1.2 未重新生成；以本目录分文件为准。"
 }

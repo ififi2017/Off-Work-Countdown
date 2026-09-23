@@ -18,6 +18,7 @@ release gates. No rule, plan or script may depend on locally installed skills.
 |---|---|
 | Change, build or test iOS; change rules/locales consumed by iOS | [iOS](docs/agent-guides/ios.md) |
 | Desktop channels, signing, packaging, versions, release CI, store listings/media or release download counts | [Releases](docs/agent-guides/releases.md) |
+| Plan, change, build or test Android (`src-mobile/android`, `docs/android`, `plans/Android`) | [Android](docs/agent-guides/android.md) |
 | Select, use or install a repository skill | [Skills](docs/agent-guides/skills.md) |
 
 ## Privacy and product boundaries
@@ -185,7 +186,8 @@ Setup: `npm install`. Common checks: `npm run lint`, `npm test`,
 | Desktop Rust | Also `cargo fmt --check`, `cargo test`, release build; keep macOS/Windows PR CI (`fmt`, `clippy -- -D warnings`, tests) green |
 | Anything in `lib/`, `public/locales` or `src-mobile/` | Also local headless iOS simulator build |
 | Anything in `src-mobile/ios` | Also `npm run check:ios` |
-| Shared rules, including `lib/countdown.ts`, `lib/reminders.ts`, `lib/summary.ts` | Update matching Swift, `npm run generate:ios-rule-fixtures`, `npm test`, simulator build and passing `ScheduleRuleFixtureTests` |
+| Anything in `src-mobile/android` | Also the Android guide's Gradle checks |
+| Shared rules, including `lib/countdown.ts`, `lib/reminders.ts`, `lib/summary.ts` | Update matching Swift and Kotlin (`src-mobile/android/core/domain`), `npm run generate:ios-rule-fixtures` and `generate:android-rule-fixtures`, `npm test`, simulator build and passing `ScheduleRuleFixtureTests` |
 | UI | Real visual inspection on affected OS; iOS exception below |
 | Any packaging | `npm run check:version`; release guide |
 

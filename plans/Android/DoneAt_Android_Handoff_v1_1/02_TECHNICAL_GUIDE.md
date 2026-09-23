@@ -24,7 +24,7 @@ Kotlin、Jetpack Compose、Material 3 Expressive；Kotlin Coroutines/Flow；View
 |---|---|---|
 | Play 手机/平板 target | 当次查到新应用/更新最低 API 36 | `targetSdk >= 36`，发布前复核，不使用旧的 target 35 方案 [A04] |
 | minSdk | 不是 Play target 要求 | 建议 26，D-04 确认；不能因 min 26 推断所有新 API 可无条件调用 |
-| Material3 | 当前页 stable 1.4.0，expressive 路线 1.5.0-alpha28；1.4 稳定线曾移除实验 Expressive API | 候选锁 `1.5.0-alpha28`，仅在技术探针编译与 UI 验证后采用；风险需负责人签收 [A01] |
+| Material3 | 当前页 stable 1.4.0，expressive 路线 1.5.0-alpha28；1.4 稳定线曾移除实验 Expressive API | D-12（2026-09-23）：Release 锁稳定 1.4.x，不用 alpha；Expressive 风格由 designsystem token 实现，官方 Expressive 稳定后再评估 [A01] |
 | Compose BOM | 官方示例 `2026.09.00` | 稳定 BOM 为起点，显式覆盖 Material3；审查其传递依赖，不声称其他库一定仍稳定 [A20] |
 | Billing | 官方接入示例 `billing-ktx:9.1.0` | 候选锁 9.1.0；不用已越正常截止线的 v7 新建工程 [A05], [A06] |
 | AGP | 当前发布页给 9.4 的 Gradle 9.6.0 / JDK 17 / 最大 API 37 兼容信息 | M1 依据可用稳定渠道选择并记录，不把该表误当整个项目已兼容 [A19] |
@@ -34,7 +34,7 @@ Kotlin、Jetpack Compose、Material 3 Expressive；Kotlin Coroutines/Flow；View
 
 使用 AGP 9 内置 Kotlin 时，不再套用旧教程给 Android 模块重复应用 `org.jetbrains.kotlin.android`；`:core:domain` 纯 JVM 模块的插件另行配置。优先 KSP，不因旧 KAPT 示例复制出不兼容构建。[A22]
 
-不要使用 `+`、`latest.release`、未经验证的 alpha BOM 或全局强制降级。Material3 的预发布依赖可能传递带入其他预发布库，`:designsystem` 隔离的是 API 使用边界，不是能神奇隔离最终 APK 的运行时依赖。若负责人不接受预发布风险，须批准一个用稳定 API 实现 Expressive 设计语言的替代规范，而不是开发 AI 私自把 UI 改回普通 Material3。[A01], [A20]
+不要使用 `+`、`latest.release`、未经验证的 alpha BOM 或全局强制降级。Material3 的预发布依赖可能传递带入其他预发布库，`:designsystem` 隔离的是 API 使用边界，不是能神奇隔离最终 APK 的运行时依赖。负责人已按 D-12 选择稳定依赖：Expressive 设计语言用稳定 API + DoneAt 自有 shape/motion/color token 实现，记录在 `design-tokens-adr.md`；不是把 UI 改回未经设计的默认 Material3。[A01], [A20]
 
 ## 3. 推荐工程布局
 
@@ -62,8 +62,8 @@ src-mobile/android/
   core/data/                   # Room、DAO、实体映射、JSON codec、事务实现
   core/designsystem/           # Theme、tokens、组件、Expressive 包装与 previews
   core/platform/               # Alarm、通知、小组件投影、Biometric、Share、链接
-  core/billing/                # BillingClient、购买服务适配、缓存凭据
-  core/sync/                   # 批准后的 Drive transport、同步协调器
+  core/billing/                # BillingClient、客户端签名校验、权益缓存（首发无服务端适配）
+  core/sync/                   # 后续阶段（D-02 修订）：Drive transport、同步协调器；首发不创建
   baselineprofile/             # 到性能阶段才创建，不先生成空工程
 ```
 
@@ -171,7 +171,7 @@ payRatio          = elapsedMs / plannedDurationMs
 
 **共享规则**：TS `lib/countdown.ts`、`lib/summary.ts`、`lib/reminders.ts` 和现有 `scripts/ios-schedule-rule-oracle.mjs`。在开发环境生成独立 JSON fixtures 给 Kotlin；现有 Swift fixtures 可继续保留。只能在构建/测试阶段运行 Node，不带 JS 引擎进 APK。[R01], [R16], [R17], [R18], [R19]
 
-**iOS 独有规则**：扩展排班、记录编辑/冲突、专注细节、首次恢复等，源 Swift 与对应 Swift 测试是规范。新增 Swift→JSON 测试导出或等价手工测试映射；不能假称 TS oracle 覆盖了它们。[R04], [R06]
+**iOS 独有规则**：扩展排班、记录编辑/冲突、专注细节、首次恢复等，源 Swift 与对应 Swift 测试是规范。新增 Swift→JSON 测试导出或等价手工测试映射；不能假称 TS oracle 覆盖了它们。导出的 JSON 是 Swift 与 Kotlin **共用**的检查：Swift 测试和 Kotlin 测试读同一份文件并有 stale 检查，这样 iOS 改规则时 Kotlin 会在 CI 中失败，而不是悄悄形成第三份无 oracle 的实现。[R04], [R06]
 
 ### 5.2 Fixture 文件格式建议（新测试协议，不是用户备份协议）
 
@@ -223,6 +223,8 @@ payRatio          = elapsedMs / plannedDurationMs
 内部还需：ErasedID/tombstone、同步元信息与 outbox、冲突候选、已处理动作去重、导入作业/恢复信息。它们不是都应出现在用户 v6 导出里。
 
 ### 6.2 Room 与 DataStore 分工
+
+**D-13（2026-09-23）取代本节的 Room 部分**：记录与 iOS 一样保存在内存 `RecordState` + 一个原子替换的 JSON 文件（`RecordLocalFile`：schema-6 文档 + 墓碑），由 `:core:data` 的 `RecordStore` 串行写入。下文关于 Room 表、DAO、Migration 的要求不再适用；事务、失败不部分提交、损坏不自动删库等原则仍然适用。DataStore 仍用于本机显示偏好。
 
 Room：业务行、同步业务设置、会话状态、命令结果与 outbox，在同一事务中修改。核心保存失败时不能只把 DataStore 设置改掉，留下“新设置+旧历史”混合状态。
 
@@ -358,18 +360,22 @@ Glance 是 App Widget 层，不是普通 Compose 页面，禁止直接复用依�
 | 平台证据 | 应用权限 |
 |---|---|
 | 待支付 PENDING | 不授予，保留 pending UI 与原操作 |
-| 已验证有效订阅 | 授予到服务端确认的截止时间 |
+| 当次查询返回、签名校验通过的订阅 | 授予；首发不需到期时间，每次前台/启动重新查询 |
 | 用户取消自动续费但未到期 | 仍有效到实际截止时间 |
-| 已验证宽限期 | 按平台确认的 grace 状态/时间继续 |
-| Account hold / paused / expired | 按当前有效时间与服务端状态停止订阅权益，不删数据 |
+| 宽限期（查询仍返回） | 继续授予 |
+| Account hold / paused / expired（查询不再返回） | 停止订阅权益，不删数据 |
 | 已验证非消耗型终身且未撤销 | 终身授权 |
 | 退款/撤销 | 收到可靠证据后回收相应授权 |
-| 网络/验证服务暂不可用 | 保留最后已验证缓存，时间性权益仍检查期限 |
+| 网络或 Play 服务暂不可用 | 保留最后已验证缓存（订阅缓存设保守有效期，终身不过期） |
 | 成功完整查询确认无权益 | 可替换旧缓存；必须区别于查询失败 |
 
-Play 的 pending 生命周期不是 Apple Ask to Buy 的 24 小时规则。不能照搬 iOS 常量。客户端 Purchase 并不给出足够可靠的完整订阅到期语义，不可用 purchaseTime 加 30/365 天猜到期。[R05], [A06], [A08]
+Play 的 pending 生命周期不是 Apple Ask to Buy 的 24 小时规则。不能照搬 iOS 常量。客户端 Purchase 并不给出完整订阅到期语义，不可用 purchaseTime 加 30/365 天猜到期；首发也不需要：`queryPurchasesAsync` 只返回当前有效（含宽限期）的订阅与未撤销的非消耗商品，是首发的权益来源。[R05], [A06], [A08]
 
-### 9.3 已确认采用：小型无 DoneAt 账号的权益验证服务
+**首发（D-08 修订，2026-09-23）为纯客户端验证**，与 iOS `PlusEntitlement` 的纯客户端 StoreKit 对齐：用 Play Console 公钥校验 `originalJson`/`signature`，校验包名与商品 allowlist，客户端 acknowledge 并持久化待确认标记在 3 天窗口内重试。已知代价如实记录：退款/撤销在下一次成功查询时才生效；root 设备可篡改客户端判断。若后续出现明显盗版或需要实时撤销，再启动 9.3 的服务端阶段。
+
+### 9.3 后续阶段：小型无 DoneAt 账号的权益验证服务（首发不做）
+
+**D-08 修订**：本节保留为首发后的设计参考（T21）。届时优先放在现有 Next.js/Vercel Route Handlers（仓库已有 `app/api/` 路由），而不是新建 Ktor 服务。以下原文中的“已确认/可以开始”均指该后续阶段。
 
 D-08 已确认生产支付采用**只处理必要购买元数据**的小型验证服务；排班、工资、职业数据不得上传到该服务，不新增 DoneAt 用户登录账号。可以按本章开始实现、接口测试和部署脚本编写。部署平台、域名、预算、最小权限凭据与生产上线操作仍待落实，不能把方案获批当成服务已部署。服务可用 Kotlin + Ktor + 持久数据库实现，独立于 Android APK；该技术组合仍是实施建议，不代表负责人已经选择了云厂商。[A07]
 
@@ -406,11 +412,13 @@ APK 里只能包含公开服务地址/公钥/非秘密配置；Google service ac
 
 只维护一个应用级 BillingClient；注册更新监听早于首次查询；恢复前台时查当前购买；重连有退避。购买/恢复操作互斥，不在 recomposition 中启动支付；旋转重建页面不重复调用 launchBillingFlow。[A06]
 
-缓存已验证授权与来源、版本和时限，敏感 Token 使用 Keystore 支持的保护并排除备份；公钥验证不能被 Debug 分支覆盖。服务端超时不等于未购买。离线退款无法立即获知，应诚实接受“下一次成功验证后撤销”的边界，不能宣称永久离线与即时撤销同时保证。
+缓存已验证授权与来源、版本和时限，敏感 Token 使用 Keystore 支持的保护并排除备份；公钥验证不能被 Debug 分支覆盖。查询超时/服务断开不等于未购买。离线退款无法立即获知，应诚实接受“下一次成功验证后撤销”的边界，不能宣称永久离线与即时撤销同时保证。
 
 调试 FakeBilling 只在 debug/test source set，release 不能通过 deep link、偏好、环境变量或导入文件解锁。管理订阅按钮仅对订阅用户存在；购买终身不会自动取消其已有订阅，需明确提醒并提供平台管理入口，不能诱导重复付费。
 
-## 10. Android 私有同步方案（D-02 已确认，纳入手机/平板首发）
+## 10. Android 私有同步方案（D-02 修订：首发后阶段）
+
+**2026-09-23 修订**：首发不含 Drive 同步；换机恢复走第 11 章的系统备份/设备转移，跨平台走 v6 文件。本章保留为后续阶段（T22）的设计，章内“首发”字样均指该阶段。
 
 ### 10.1 选定主方案与不做的事
 
@@ -450,9 +458,16 @@ v1 先保证不可变批次合并正确；不要实现没有证明的自动历�
 
 ## 11. 隐私、安全与系统备份
 
-Android Auto Backup 默认可能包含应用文件，所以“数据只在本地”不能靠未设置网络代码来保证。显式制定 fullBackupContent/dataExtractionRules，排除业务库、敏感偏好、购买缓存、密钥与同步凭据；分别验证 cloud backup 与 device transfer 行为。不要以 `allowBackup=false` 一行就声称所有 OEM 都绝不会转移数据。[A16]
+Android Auto Backup 默认可能包含应用文件，所以“数据只在本地”不能靠未设置网络代码来保证。显式制定 fullBackupContent/dataExtractionRules，分别验证 cloud backup 与 device transfer 行为。[A16], [A28]
 
-主方案的跨设备数据传输走明确的文件导出或用户同意的 Drive，同意前不传工资/经历。Keystore 保护密钥不保证导出的明文 JSON 自动加密；导出前直说这是含个人信息的文件，不能用“安全备份”暗示端到端加密。
+**D-02 修订（2026-09-23）：业务 Room 库纳入备份**，与 iOS 主数据随 iCloud 设备备份（仅 `LifeSummaryCache`、Watch 快照排除）的行为一致，使换机不丢记录。要求：
+
+- 包含：业务库（`.db` 与同组 `-wal`/`-shm`，或在 BackupAgent 中先 checkpoint，二选一并以真机恢复验证）、需随用户迁移的 DataStore 偏好。
+- 排除：购买/权益缓存、待确认购买标记、Keystore 相关数据、任何令牌、debug 设置、可重建的缓存与小组件投影。
+- 恢复后首次启动：执行一致性检查与 Room 迁移，重建提醒/小组件，重新查询 Play 权益与系统权限，不从备份信任任何授权状态。
+- 云端备份在 Android 9+ 且设备设有锁屏时由系统端到端加密；未设锁屏时不是。隐私说明如实写明这一条件，不笼统宣称“端到端加密”。每应用 25MB 上限；超限时系统跳过备份，需在帮助中说明并建议 v6 导出。
+
+首发的跨设备数据传输是系统备份/设备转移与明确的文件导出；后续阶段加入用户同意的 Drive，同意前不向 Drive 传工资/经历。Keystore 保护密钥不保证导出的明文 JSON 自动加密；导出前直说这是含个人信息的文件，不能用“安全备份”暗示端到端加密。
 
 UI 隐藏、存储加密、传输 TLS、端到端加密是四件不同事情。默认不引入 SQLCipher 来宣称更安全；若需要数据库额外加密，先解决密钥丢失、迁移、备份恢复和 native 16KB 兼容，再做独立 ADR。应用解锁隐藏工资不等于能防 root/系统管理员取证。
 
@@ -497,7 +512,9 @@ Release 使用 R8，保留必需序列化映射并测试被混淆后的导入/�
 
 ## 14. CI 与现有仓库保护
 
-新增独立 Android workflow；仍保持现有 Web/Desktop/iOS 检查通过，不改现有部署触发来方便 Android。新增 fixture 生成器应只输出新 Android fixtures 或明确共享产物，不更改线上规则作为“适配”。
+新增独立 Android workflow；仍保持现有 Web/Desktop/iOS 检查通过，不改现有部署触发来方便 Android。
+
+**基线漂移**：每个里程碑结束时运行 `git log --oneline <基线SHA>..origin/main -- lib src-mobile/ios/App/App/Native/Models src-mobile/ios/Shared`，把影响已移植规则的提交登记到 `docs/android/progress.md`，决定跟进或推迟后再推进基线 SHA；不静默跟随 main。新增 fixture 生成器应只输出新 Android fixtures 或明确共享产物，不更改线上规则作为“适配”。
 
 建议阶段命令（相应脚本/模块创建后才可运行）：
 
@@ -540,6 +557,7 @@ CI 产物：JUnit/XML、coverage 与用例数、lint、截图差异、Room schem
 - **A13** · [Google Drive 应用专用数据](https://developers.google.com/workspace/drive/api/guides/appdata)
 - **A14** · [Google Play Data safety 申报](https://support.google.com/googleplay/android-developer/answer/10787469)
 - **A16** · [Android 数据备份默认行为](https://developer.android.com/identity/data/backup)
+- **A28** · [Android Auto Backup 排除规则](https://developer.android.com/identity/data/autobackup)
 - **A17** · [16 KB 内存页兼容](https://developer.android.com/guide/practices/page-sizes)
 - **A18** · [Compose 自适应导航](https://developer.android.com/develop/ui/compose/layouts/adaptive/build-adaptive-navigation)
 - **A19** · [AGP 当前发布与兼容矩阵](https://developer.android.com/build/releases/gradle-plugin)
@@ -577,6 +595,7 @@ CI 产物：JUnit/XML、coverage 与用例数、lint、截图差异、Room schem
 [A13]: https://developers.google.com/workspace/drive/api/guides/appdata
 [A14]: https://support.google.com/googleplay/android-developer/answer/10787469
 [A16]: https://developer.android.com/identity/data/backup
+[A28]: https://developer.android.com/identity/data/autobackup
 [A17]: https://developer.android.com/guide/practices/page-sizes
 [A18]: https://developer.android.com/develop/ui/compose/layouts/adaptive/build-adaptive-navigation
 [A19]: https://developer.android.com/build/releases/gradle-plugin
