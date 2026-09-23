@@ -72,6 +72,11 @@ locale and validation rules apply.
   entitlements come only from `queryPurchasesAsync` plus Play public-key
   signature checks, never from backups, imports or local booleans. Acknowledge
   on the client and retry within the three-day window.
+- Reminders are absolute alarms registered up front (`Reminders`, `ReminderSync`),
+  never a foreground service or a polling worker. Exact timing needs the
+  user-granted `SCHEDULE_EXACT_ALARM`; never declare `USE_EXACT_ALARM`. The
+  alarm registry lives in `noBackupFilesDir`; receivers stay unexported and
+  post only what the registry still holds.
 - First release requests no Google sign-in or OAuth. Salary never appears in
   widgets, notifications, share cards/links, logs or analytics.
 

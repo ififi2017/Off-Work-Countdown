@@ -13,7 +13,7 @@ Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 
 | expansions / expansionDigests | 40 / 40 | `ScheduleRules.expandScheduleRange` | 全部通过（含两年摘要） | T07 |
 | validateBreak | 240 | `ScheduleRules.validateBreak` | 全部通过 | T07 |
 | applyToday | 400 | `ScheduleRules.shouldPromptApplyToday` | 全部通过 | T07 |
-| reminders | 320 | — | 未实现 | T14 |
+| reminders | 320 | `ScheduleRules.reminders`（`ReminderRules`） | 全部通过（逐条 + 摘要） | T14 |
 | summaries、recordsIncome、monthlyEquivalent、lifetimeIncome、actualForecast | 322 / 80 / 32 / 160 / 120 | `SummaryRules` | 全部通过 | T09 |
 | watch | 1064 | — | 不在首发（Wear 延后，D-05） | T27 |
 
@@ -122,4 +122,13 @@ Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`
 - **自动会话**：分配即授权。当天剩余的已分配块排队为派生 id 的会话（本地，不同步）；恢复时按块自身的开始时间记录，醒得晚不会重开，已被清除的块不记录，重复恢复不产生第二条。
 
 植入错误验证：被其他计划引用的模板任务被删除、段尾空隙消失、再加一轮冲突报成无空间、重排不保留已开始的块、默认模板重复应用、自动会话以醒来时间开始、已清除块仍被记录、未授权画布泄露分配、有模板时仍可改节奏、投影覆盖他人任务、改名不按完成轮数抬高模板任务预估、整任务前缀跳过放不下的任务（后两项起初未被捕获，已补用例）。等价变异：去掉"未变模板直接返回"的短路（纯函数下结果本就相同，测试以 `assertSame` 断言）；投影中重复的用户休息判断。
+
+## 提醒（T14）
+
+- **规则**：`ReminderRules.buildShiftReminders` 逐条对应 `lib/reminders.ts`：里程碑阈值向上取整后落到有效段，恰好在段末时于段末触发；文案池以班次结束时刻为种子，结束时刻带小数时与 TS 一样取不到文案；健康提醒每段重新计数，单段上限 240 条；`{{minutes}}` 只替换第一处。ID 中的时刻按 JS `String(number)` 输出（整数不带小数点，小数取最短表示）。`selectDueReminders` 供桌面端逐拍消费，Android 与 iOS 一样一次性预约，不移植。
+- **周期总结**：`ScheduleCycleSummaryCalculator` 与 iOS 一致：只有紧接一个已解析的休息日时才成立，周期内任一天未解析则不发。加班取当天最后一次申报，开始时刻不早于当天常规工作结束。
+- **专注**：`FocusReminders.alerts` 对应 iOS `focusAlerts`（块结束与其后休息结束两条，固定槽位 ID）；计划接管只替换当前班次范围内的健康提醒，改为计划中的长休息，下一班次不动。
+- **调度**：`ReminderPlanner` 对应 iOS `performReschedule` 的筛选（将来、有文案、提前下班只留下一班次、关键提醒优先、60 条上限），另加 Android 需要的差量、重启恢复与定时方式选择。
+
+植入错误验证（25 项，全部被捕获）：规则 5 项（午休开始有效期不截断、小数结束时刻仍取文案、健康提醒跨段计数、替换全部占位符、总结不 trim）；规划 6 项（关键提醒不优先、提前下班不过滤、差量忽略内容变化、恢复时补发、闹钟时刻向下取整、休息日窗口照样提醒）；周期与专注 7 项（后一天未解析、加班与常规重叠、取最早申报、最后一块仍排休息、接管范围扩到下一班次、短休息也提醒、无任务的计划也接管）；登记 7 项（授权变化不重登、拒绝后不重试、重复触发、提前触发、过期仍发、覆盖其他前缀、前台每次都恢复）；另有 1 项等价变异（恢复时强制重登，与原逻辑结果相同）已删去冗余代码。起初未被捕获的 4 项已补用例。共享 fixture 中没有短于 2 分钟的午休，因此"午休开始有效期截断到午休结束"目前只由 Kotlin 单测锁定，建议日后在 TS oracle 中加入这类档案。
 

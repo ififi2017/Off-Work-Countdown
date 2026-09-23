@@ -132,6 +132,22 @@ object ScheduleRules {
             zone.isScheduledWorkday(resolveCurrentShift(input, zone).startAtMs, input.workdays, input.schedule)
         }
 
+    /**
+     * The current and next shift's reminders (iOS `ScheduleRules.reminders`).
+     * IDs carry the scope and the shift's end, so a rebuilt list keeps the IDs
+     * of reminders that did not move and a changed shift gets new ones.
+     */
+    fun reminders(input: ScheduleRuleInput, reminderInputs: ReminderInputs): List<Reminder> {
+        val zone = zoneFor(input)
+        val shift = resolveCurrentShift(input, zone)
+        fun project(timeline: ShiftTimeline, scope: String): List<Reminder> {
+            val prefix = "$scope:${ReminderRules.jsString(timeline.endAtMs)}:"
+            return ReminderRules.buildShiftReminders(timeline, reminderInputs).map { it.copy(id = prefix + it.id) }
+        }
+        val next = nextShift(shift, input, zone)?.let { project(it, "next") }.orEmpty()
+        return ReminderRules.sortedByTime(project(shift, "current") + next)
+    }
+
     private fun zoneFor(input: ScheduleRuleInput) =
         CivilZone(input.zone, input.hours.extended?.let(::ExtendedScheduleResolver))
 
