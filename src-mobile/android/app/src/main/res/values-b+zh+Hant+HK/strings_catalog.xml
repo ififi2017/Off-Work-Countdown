@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus 會打開你嘅全部記錄，然後用人生簡介去將你由第一份工到退休嘅工作放入透視角度。</string>
     <string name="onboardingPlusRecordsTitle">睇下你計劃嘅日子 — 同埋你過嘅日子</string>
     <string name="onboardingPrivacyBody">唔使帳戶。倒數計時同紀錄都喺呢部裝置，除非你自己去睇方案或者開 iCloud 同步。工作同薪金資料唔會傳去開發者。</string>
+    <string name="onboardingPrivacyBodyLocal">唔使帳戶。倒數計時同紀錄都喺呢部裝置；如果你開咗 Android 系統備份，都會包埋喺入面。工作同薪金資料唔會傳去開發者。</string>
     <string name="onboardingPrivacyTitle">資料留喺呢部裝置</string>
     <string name="onboardingPrivacyWorkBody">工時、人工、記錄同設定預設會保留喺呢部裝置上面。開啟 iCloud 同步功能，將佢哋喺你嘅裝置上面保持一致。</string>
     <string name="onboardingRemindersBody">午休會暫停倒數；到點自動提醒，唔使一直睇住。</string>
     <string name="onboardingRemindersMoreInSettings">更多提醒選項都喺設定度。</string>
     <string name="onboardingRemindersTitle">午休同提醒</string>
+    <string name="onboardingRestoreFromFile">舊用戶？由備份檔案還原</string>
     <string name="onboardingSalaryLockBody">由 %1$s 或裝置密碼保護。</string>
     <string name="onboardingScheduleBody">揀一種排班，或每日再決定。</string>
     <string name="onboardingScheduleTitle">你平時幾點上下班</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">私隱政策</string>
     <string name="progress">進度</string>
     <string name="rateApp">在 App Store 評分</string>
+    <string name="rateAppGooglePlay">在 Google Play 評分</string>
     <string name="recordsAllRecords">全部紀錄</string>
     <string name="recordsAllocationBasis">涵蓋 %1$s 個統計日期，包括跨夜延伸；睡眠與空閒為估算。</string>
     <string name="recordsAnnualSummary">%1$s 年總覽</string>
@@ -812,6 +815,7 @@
     <string name="unscheduledTitle">今日上唔上班？</string>
     <string name="version">版本</string>
     <string name="visitOfficialWebsite">DoneAt 官方網站</string>
+    <string name="wallpaperColors">使用桌布配色</string>
     <string name="watchBackAt">%1$s 繼續工作</string>
     <string name="watchCacheCorrupt">無法讀取已儲存的排班。請在 iPhone 上開啟 DoneAt。</string>
     <string name="watchNextShiftAt">下一更 %1$s</string>

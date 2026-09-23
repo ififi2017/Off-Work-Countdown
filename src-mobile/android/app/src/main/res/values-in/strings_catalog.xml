@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus membuka catatan lengkap Anda, lalu menggunakan profil kehidupan untuk menempatkan pekerjaan dalam perspektif dari pekerjaan pertama Anda hingga pensiun.</string>
     <string name="onboardingPlusRecordsTitle">Lihat hari yang Anda rencanakan - dan hari yang Anda jalani</string>
     <string name="onboardingPrivacyBody">Tanpa akun. Hitungan pulang dan catatan tetap di perangkat ini, kecuali kamu membuka paket atau menyalakan sinkronisasi iCloud. Data kerja dan gaji tidak pernah sampai ke pengembang.</string>
+    <string name="onboardingPrivacyBodyLocal">Tanpa akun. Hitung mundur dan catatanmu tetap di perangkat ini, juga di cadangan Android jika kamu mengaktifkannya. Data kerja dan gaji tidak pernah dikirim ke pengembang.</string>
     <string name="onboardingPrivacyTitle">Tetap di perangkat ini</string>
     <string name="onboardingPrivacyWorkBody">Jam kerja, gaji, catatan, dan pengaturan tetap ada di perangkat ini secara default. Aktifkan sinkronisasi iCloud untuk menyatukannya di seluruh perangkat Anda.</string>
     <string name="onboardingRemindersBody">Istirahat menjeda hitungan mundur. Pengingat datang sendiri.</string>
     <string name="onboardingRemindersMoreInSettings">Opsi pengingat lain ada di Pengaturan.</string>
     <string name="onboardingRemindersTitle">Istirahat dan pengingat</string>
+    <string name="onboardingRestoreFromFile">Pengguna lama? Pulihkan dari file cadangan</string>
     <string name="onboardingSalaryLockBody">Dilindungi %1$s atau kode perangkat.</string>
     <string name="onboardingScheduleBody">Pilih pola, atau putuskan setiap hari.</string>
     <string name="onboardingScheduleTitle">Jam kerja biasanya</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">Kebijakan privasi</string>
     <string name="progress">Kemajuan</string>
     <string name="rateApp">Beri nilai DoneAt</string>
+    <string name="rateAppGooglePlay">Beri nilai DoneAt</string>
     <string name="recordsAllRecords">Semua catatan</string>
     <string name="recordsAllocationBasis">Mencakup %1$s tanggal dalam ringkasan ini, termasuk kerja lewat tengah malam. Tidur dan waktu luang adalah perkiraan.</string>
     <string name="recordsAnnualSummary">Ringkasan %1$s</string>
@@ -812,6 +815,7 @@
     <string name="unscheduledTitle">Kerja hari ini?</string>
     <string name="version">Versi</string>
     <string name="visitOfficialWebsite">Kunjungi situs web resmi</string>
+    <string name="wallpaperColors">Gunakan warna wallpaper</string>
     <string name="watchBackAt">Kembali pukul %1$s</string>
     <string name="watchCacheCorrupt">Jadwal tersimpan tidak dapat dibaca. Buka DoneAt di iPhone.</string>
     <string name="watchNextShiftAt">Sif berikutnya pukul %1$s</string>

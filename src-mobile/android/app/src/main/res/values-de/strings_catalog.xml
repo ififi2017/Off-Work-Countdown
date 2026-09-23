@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus öffnet Ihre vollständige Akte und verwendet dann ein Lebensprofil, um die Arbeit von Ihrem ersten Job bis zur Pensionierung ins rechte Licht zu rücken.</string>
     <string name="onboardingPlusRecordsTitle">Sehen Sie sich den Tag an, den Sie geplant haben – und den Tag, an dem Sie gelebt haben</string>
     <string name="onboardingPrivacyBody">Kein Konto. Countdown und Aufzeichnungen bleiben auf diesem Gerät, sofern du nicht selbst Tarife lädst oder den iCloud-Sync einschaltest. Arbeits- und Gehaltsdaten gehen nie an den Entwickler.</string>
+    <string name="onboardingPrivacyBodyLocal">Kein Konto. Countdown und Aufzeichnungen bleiben auf diesem Gerät – und in der Android-Sicherung, falls du sie eingeschaltet hast. Arbeits- und Gehaltsdaten gehen nie an den Entwickler.</string>
     <string name="onboardingPrivacyTitle">Bleibt auf diesem Gerät</string>
     <string name="onboardingPrivacyWorkBody">Stunden, Gehalt, Aufzeichnungen und Einstellungen bleiben standardmäßig auf diesem Gerät. Aktivieren Sie die iCloud-Synchronisierung, um sie auf Ihren Geräten zusammenzuhalten.</string>
     <string name="onboardingRemindersBody">Die Pause hält den Countdown an. Erinnerungen kommen von selbst.</string>
     <string name="onboardingRemindersMoreInSettings">Weitere Erinnerungen sind in den Einstellungen.</string>
     <string name="onboardingRemindersTitle">Pause und Erinnerungen</string>
+    <string name="onboardingRestoreFromFile">Schon dabei? Aus einer Sicherungsdatei wiederherstellen</string>
     <string name="onboardingSalaryLockBody">Geschützt durch %1$s oder deinen Code.</string>
     <string name="onboardingScheduleBody">Wähle ein Muster, oder entscheide täglich.</string>
     <string name="onboardingScheduleTitle">Deine üblichen Zeiten</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">Datenschutzerklärung</string>
     <string name="progress">Fortschritt</string>
     <string name="rateApp">DoneAt bewerten</string>
+    <string name="rateAppGooglePlay">DoneAt bewerten</string>
     <string name="recordsAllRecords">Alle Einträge</string>
     <string name="recordsAllocationBasis">Umfasst %1$s Tage dieser Übersicht, einschließlich Arbeit über Mitternacht. Schlaf und Freizeit sind geschätzt.</string>
     <string name="recordsAnnualSummary">Jahresübersicht %1$s</string>
@@ -813,6 +816,7 @@
     <string name="unscheduledTitle">Heute arbeiten?</string>
     <string name="version">Version</string>
     <string name="visitOfficialWebsite">Offizielle Website besuchen</string>
+    <string name="wallpaperColors">Hintergrundfarben verwenden</string>
     <string name="watchBackAt">Zurück um %1$s</string>
     <string name="watchCacheCorrupt">Der gespeicherte Dienstplan konnte nicht gelesen werden. Öffne DoneAt auf deinem iPhone.</string>
     <string name="watchNextShiftAt">Nächste Schicht um %1$s</string>

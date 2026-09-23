@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus tüm kayıtlarınızı açar, ardından ilk işinizden emekliliğinize kadar olan süreci bir perspektife oturtmak için bir yaşam profili kullanır.</string>
     <string name="onboardingPlusRecordsTitle">Planladığınız ve yaşadığınız günü görün</string>
     <string name="onboardingPrivacyBody">Hesap gerekmez. Sen planlara bakmadıkça ya da iCloud eşitlemeyi açmadıkça geri sayım ve kayıtlar bu cihazda kalır. Çalışma ve maaş verileri geliştiriciye gitmez.</string>
+    <string name="onboardingPrivacyBodyLocal">Hesap gerekmez. Geri sayım ve kayıtların bu cihazda kalır; Android yedeklemesi açıksa orada da bulunur. İş ve maaş verileri asla geliştiriciye gönderilmez.</string>
     <string name="onboardingPrivacyTitle">Veriler bu cihazda kalır</string>
     <string name="onboardingPrivacyWorkBody">Çalışma saatleri, maaş, kayıtlar ve ayarlar varsayılan olarak bu cihazda kalır. Bunları aygıtlarınızda bir arada tutmak için iCloud senkronizasyonunu açın.</string>
     <string name="onboardingRemindersBody">Öğle arası geri sayımı durdurur. Hatırlatmalar kendiliğinden gelir.</string>
     <string name="onboardingRemindersMoreInSettings">Diğer hatırlatmalar Ayarlar’da.</string>
     <string name="onboardingRemindersTitle">Öğle arası ve hatırlatmalar</string>
+    <string name="onboardingRestoreFromFile">Daha önce kullandın mı? Yedek dosyasından geri yükle</string>
     <string name="onboardingSalaryLockBody">%1$s veya cihaz parolanız.</string>
     <string name="onboardingScheduleBody">Bir düzen seçin, ya da her gün karar verin.</string>
     <string name="onboardingScheduleTitle">Alışılmış saatleriniz</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">Gizlilik politikası</string>
     <string name="progress">İlerleme</string>
     <string name="rateApp">DoneAt’i değerlendir</string>
+    <string name="rateAppGooglePlay">DoneAt’i değerlendir</string>
     <string name="recordsAllRecords">Tüm kayıtlar</string>
     <string name="recordsAllocationBasis">Gece yarısını aşan çalışma dahil bu özetteki %1$s tarihi kapsar. Uyku ve boş zaman tahminidir.</string>
     <string name="recordsAnnualSummary">%1$s özeti</string>
@@ -813,6 +816,7 @@
     <string name="unscheduledTitle">Bugün çalışıyor musunuz?</string>
     <string name="version">Sürüm</string>
     <string name="visitOfficialWebsite">Resmî web sitesini ziyaret et</string>
+    <string name="wallpaperColors">Duvar kağıdı renklerini kullan</string>
     <string name="watchBackAt">Dönüş: %1$s</string>
     <string name="watchCacheCorrupt">Kayıtlı program okunamadı. iPhone’unuzda DoneAt’i açın.</string>
     <string name="watchNextShiftAt">Sonraki vardiya: %1$s</string>

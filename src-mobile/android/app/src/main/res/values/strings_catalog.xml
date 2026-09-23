@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus opens your full record, then uses a life profile to put work in perspective from your first job to retirement.</string>
     <string name="onboardingPlusRecordsTitle">See the day you planned — and the one you lived</string>
     <string name="onboardingPrivacyBody">No account. The countdown and your records stay on this device unless you choose to load purchases or turn on iCloud sync. Work and salary data are never sent to the developer.</string>
+    <string name="onboardingPrivacyBodyLocal">No account. The countdown and your records stay on this device, and in Android’s own backup if you have it turned on. Work and salary data are never sent to the developer.</string>
     <string name="onboardingPrivacyTitle">Stays on this device</string>
     <string name="onboardingPrivacyWorkBody">Hours, salary, records and settings stay on this device by default. Turn on iCloud sync to keep them together across your devices.</string>
     <string name="onboardingRemindersBody">Lunch pauses the countdown. Reminders reach you without keeping the app open.</string>
     <string name="onboardingRemindersMoreInSettings">More reminder options are in Settings.</string>
     <string name="onboardingRemindersTitle">Lunch and reminders</string>
+    <string name="onboardingRestoreFromFile">Returning user? Restore from a backup file</string>
     <string name="onboardingSalaryLockBody">Protected by %1$s or your passcode.</string>
     <string name="onboardingScheduleBody">Pick a pattern, or decide each day.</string>
     <string name="onboardingScheduleTitle">Your usual hours</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">Privacy Policy</string>
     <string name="progress">Progress</string>
     <string name="rateApp">Rate DoneAt</string>
+    <string name="rateAppGooglePlay">Rate DoneAt</string>
     <string name="recordsAllRecords">All records</string>
     <string name="recordsAllocationBasis">Covers %1$s dates in this summary, including overnight work. Sleep and free time are estimates.</string>
     <string name="recordsAnnualSummary">%1$s summary</string>
@@ -813,6 +816,7 @@
     <string name="unscheduledTitle">Working today?</string>
     <string name="version">Version</string>
     <string name="visitOfficialWebsite">DoneAt website</string>
+    <string name="wallpaperColors">Use wallpaper colors</string>
     <string name="watchBackAt">Back at %1$s</string>
     <string name="watchCacheCorrupt">The saved schedule couldn’t be read. Open DoneAt on your iPhone.</string>
     <string name="watchNextShiftAt">Next shift %1$s</string>

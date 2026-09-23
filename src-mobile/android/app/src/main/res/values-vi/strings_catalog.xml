@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus mở hồ sơ đầy đủ của bạn, sau đó sử dụng hồ sơ cuộc sống để xem xét công việc từ công việc đầu tiên của bạn cho đến khi nghỉ hưu.</string>
     <string name="onboardingPlusRecordsTitle">Xem ngày bạn đã lên kế hoạch - và ngày bạn đã sống</string>
     <string name="onboardingPrivacyBody">Không cần tài khoản. Đếm ngược và bản ghi nằm trên thiết bị này, trừ khi bạn tự xem các gói hoặc bật đồng bộ iCloud. Dữ liệu công việc và lương không bao giờ đến nhà phát triển.</string>
+    <string name="onboardingPrivacyBodyLocal">Không cần tài khoản. Đồng hồ đếm ngược và dữ liệu của bạn ở trên thiết bị này, và trong bản sao lưu của Android nếu bạn bật. Dữ liệu công việc và lương không bao giờ được gửi cho nhà phát triển.</string>
     <string name="onboardingPrivacyTitle">Ở lại trên thiết bị này</string>
     <string name="onboardingPrivacyWorkBody">Theo mặc định, giờ, lương, hồ sơ và cài đặt vẫn được lưu trên thiết bị này. Bật đồng bộ hóa iCloud để giữ chúng cùng nhau trên các thiết bị của bạn.</string>
     <string name="onboardingRemindersBody">Giờ nghỉ tạm dừng đếm ngược. Nhắc nhở tự đến, không cần mở app.</string>
     <string name="onboardingRemindersMoreInSettings">Tùy chọn nhắc khác nằm trong Cài đặt.</string>
     <string name="onboardingRemindersTitle">Giờ nghỉ và nhắc nhở</string>
+    <string name="onboardingRestoreFromFile">Đã dùng trước đây? Khôi phục từ tệp sao lưu</string>
     <string name="onboardingSalaryLockBody">Bảo vệ bằng %1$s hoặc mật mã máy.</string>
     <string name="onboardingScheduleBody">Chọn nhịp, hoặc mỗi ngày tự quyết.</string>
     <string name="onboardingScheduleTitle">Giờ làm quen thuộc</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">Chính sách quyền riêng tư</string>
     <string name="progress">Tiến độ</string>
     <string name="rateApp">Đánh giá DoneAt</string>
+    <string name="rateAppGooglePlay">Đánh giá DoneAt</string>
     <string name="recordsAllRecords">Mọi bản ghi</string>
     <string name="recordsAllocationBasis">Bao gồm %1$s ngày trong tổng kết này, kể cả công việc qua nửa đêm. Giấc ngủ và thời gian rảnh là ước tính.</string>
     <string name="recordsAnnualSummary">Tổng kết năm %1$s</string>
@@ -812,6 +815,7 @@
     <string name="unscheduledTitle">Hôm nay có làm không?</string>
     <string name="version">Phiên bản</string>
     <string name="visitOfficialWebsite">Truy cập trang web chính thức</string>
+    <string name="wallpaperColors">Dùng màu hình nền</string>
     <string name="watchBackAt">Quay lại lúc %1$s</string>
     <string name="watchCacheCorrupt">Không thể đọc lịch đã lưu. Hãy mở DoneAt trên iPhone.</string>
     <string name="watchNextShiftAt">Ca tiếp theo lúc %1$s</string>

@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus abre su registro completo y luego utiliza un perfil de vida para poner el trabajo en perspectiva desde su primer empleo hasta su jubilación.</string>
     <string name="onboardingPlusRecordsTitle">Mira el día que planeaste y el que viviste.</string>
     <string name="onboardingPrivacyBody">Sin cuentas. La cuenta atrás y los registros se quedan en este dispositivo, salvo que tú mires los planes o actives la sincronización con iCloud. Tus horas y tu sueldo nunca llegan al desarrollador.</string>
+    <string name="onboardingPrivacyBodyLocal">Sin cuenta. La cuenta atrás y tus registros se quedan en este dispositivo, y en la copia de seguridad de Android si la tienes activada. Los datos de trabajo y salario nunca se envían al desarrollador.</string>
     <string name="onboardingPrivacyTitle">Se queda en este dispositivo</string>
     <string name="onboardingPrivacyWorkBody">Las horas, el salario, los registros y la configuración permanecen en este dispositivo de forma predeterminada. Active la sincronización de iCloud para mantenerlos juntos en todos sus dispositivos.</string>
     <string name="onboardingRemindersBody">El almuerzo pausa la cuenta atrás. Los avisos llegan sin tener la app abierta.</string>
     <string name="onboardingRemindersMoreInSettings">Más opciones de aviso están en Ajustes.</string>
     <string name="onboardingRemindersTitle">Almuerzo y recordatorios</string>
+    <string name="onboardingRestoreFromFile">¿Ya lo usabas? Restaurar desde un archivo de copia</string>
     <string name="onboardingSalaryLockBody">Protegido con %1$s o tu código.</string>
     <string name="onboardingScheduleBody">Elige un patrón, o decide cada día.</string>
     <string name="onboardingScheduleTitle">Tus horas habituales</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">Política de privacidad</string>
     <string name="progress">Progreso</string>
     <string name="rateApp">Valorar DoneAt</string>
+    <string name="rateAppGooglePlay">Valorar DoneAt</string>
     <string name="recordsAllRecords">Todos los registros</string>
     <string name="recordsAllocationBasis">Incluye %1$s fechas de este resumen, incluido el trabajo después de medianoche. El sueño y el tiempo libre son estimaciones.</string>
     <string name="recordsAnnualSummary">Resumen de %1$s</string>
@@ -814,6 +817,7 @@
     <string name="unscheduledTitle">¿Trabajas hoy?</string>
     <string name="version">Versión</string>
     <string name="visitOfficialWebsite">Visitar el sitio web oficial</string>
+    <string name="wallpaperColors">Usar colores del fondo de pantalla</string>
     <string name="watchBackAt">Vuelta a las %1$s</string>
     <string name="watchCacheCorrupt">No se pudo leer el horario guardado. Abre DoneAt en tu iPhone.</string>
     <string name="watchNextShiftAt">Próximo turno a las %1$s</string>

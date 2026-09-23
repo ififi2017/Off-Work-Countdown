@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">플러스는 전체 기록을 연 다음 인생 프로필을 사용하여 첫 직장부터 은퇴까지의 일을 관점에서 살펴봅니다.</string>
     <string name="onboardingPlusRecordsTitle">계획한 하루와 살았던 하루를 확인하세요.</string>
     <string name="onboardingPrivacyBody">계정이 필요 없습니다. 직접 요금제를 보거나 iCloud 동기화를 켜지 않는다면 카운트다운과 기록은 이 기기에 남습니다. 근무와 급여 데이터는 개발자에게 가지 않습니다.</string>
+    <string name="onboardingPrivacyBodyLocal">계정이 필요 없습니다. 카운트다운과 기록은 이 기기에 남고, Android 백업을 켜 두었다면 백업에도 포함됩니다. 근무와 급여 데이터는 개발자에게 전송되지 않습니다.</string>
     <string name="onboardingPrivacyTitle">데이터는 이 기기에만</string>
     <string name="onboardingPrivacyWorkBody">근무 시간, 급여, 기록 및 설정은 기본적으로 이 장치에 유지됩니다. iCloud 동기화를 켜서 여러 기기에서 함께 보관하세요.</string>
     <string name="onboardingRemindersBody">점심시간에는 카운트다운이 멈춰요. 시간이 되면 알려 드려요.</string>
     <string name="onboardingRemindersMoreInSettings">다른 알림 옵션은 설정에 있어요.</string>
     <string name="onboardingRemindersTitle">점심시간과 알림</string>
+    <string name="onboardingRestoreFromFile">기존 사용자인가요? 백업 파일에서 복원</string>
     <string name="onboardingSalaryLockBody">%1$s 또는 기기 암호로 보호.</string>
     <string name="onboardingScheduleBody">고르거나, 일정 없이 매일 결정하세요.</string>
     <string name="onboardingScheduleTitle">평소 출퇴근 시간</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">개인정보 처리방침</string>
     <string name="progress">진행률</string>
     <string name="rateApp">DoneAt 평가하기</string>
+    <string name="rateAppGooglePlay">DoneAt 평가하기</string>
     <string name="recordsAllRecords">모든 기록</string>
     <string name="recordsAllocationBasis">이 요약의 %1$s일을 포함하며 자정을 넘긴 근무도 반영합니다. 수면과 자유 시간은 추정치입니다.</string>
     <string name="recordsAnnualSummary">%1$s년 요약</string>
@@ -812,6 +815,7 @@
     <string name="unscheduledTitle">오늘 출근하나요?</string>
     <string name="version">버전</string>
     <string name="visitOfficialWebsite">공식 웹사이트 방문</string>
+    <string name="wallpaperColors">배경화면 색상 사용</string>
     <string name="watchBackAt">%1$s에 복귀</string>
     <string name="watchCacheCorrupt">저장된 근무 일정을 읽을 수 없습니다. iPhone에서 DoneAt을 여세요.</string>
     <string name="watchNextShiftAt">다음 근무 %1$s</string>

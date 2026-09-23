@@ -29,6 +29,17 @@ locale and validation rules apply.
   from DoneAt shape/motion/colour tokens in `:core:designsystem`; no alpha or
   experimental Material3 APIs.
 - Four main destinations match iOS `AppTab`: timer, focus, records, settings.
+  Each has its own Navigation 3 back stack; routes are `ui/Route` keys and one
+  entry registry (`AppShell`) maps them to screens. Back pops the tab, then
+  returns to the timer, then leaves.
+- Committed settings live only in the archive's `syncedPreferences`, written
+  through `SettingsRepository`. Before first-run setup completes, edits go to
+  the device draft and nothing reaches the archive; an archive that already
+  holds settings (restored backup) counts as set up.
+- The in-app language is `languageOverride`. Android 13+ mirrors it into the
+  system per-app language both ways; earlier versions switch it inside Compose
+  (`AppLanguageScope` wraps the activity, never a bare configuration context).
+  AAB language splits stay disabled.
 - UI takes colour, shape, motion and type from `:core:designsystem` tokens
   (`docs/android/design-tokens-adr.md`); screens do not inline hex colours,
   radii or durations. Check new tokens in the Debug-only gallery

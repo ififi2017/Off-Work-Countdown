@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Плюс открывает вашу полную запись, а затем использует жизненный профиль, чтобы оценить работу от вашей первой работы до выхода на пенсию.</string>
     <string name="onboardingPlusRecordsTitle">Увидеть день, который ты запланировал — и тот, который ты прожил</string>
     <string name="onboardingPrivacyBody">Аккаунт не нужен. Обратный отсчёт и записи остаются на этом устройстве, пока вы сами не откроете тарифы или не включите синхронизацию с iCloud. Данные о работе и зарплате разработчику не уходят.</string>
+    <string name="onboardingPrivacyBodyLocal">Без аккаунта. Отсчёт и записи остаются на этом устройстве, а также в резервной копии Android, если она включена. Данные о работе и зарплате никогда не отправляются разработчику.</string>
     <string name="onboardingPrivacyTitle">Данные остаются на устройстве</string>
     <string name="onboardingPrivacyWorkBody">Часы, зарплата, записи и настройки по умолчанию остаются на этом устройстве. Включите синхронизацию iCloud, чтобы хранить их вместе на всех ваших устройствах.</string>
     <string name="onboardingRemindersBody">Обед ставит отсчёт на паузу. Напоминания приходят сами.</string>
     <string name="onboardingRemindersMoreInSettings">Другие напоминания — в Настройках.</string>
     <string name="onboardingRemindersTitle">Обед и напоминания</string>
+    <string name="onboardingRestoreFromFile">Уже пользовались? Восстановить из файла резервной копии</string>
     <string name="onboardingSalaryLockBody">Защищено %1$s или кодом устройства.</string>
     <string name="onboardingScheduleBody">Выберите ритм — или решайте каждый день.</string>
     <string name="onboardingScheduleTitle">Ваши обычные часы</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">Политика конфиденциальности</string>
     <string name="progress">Прогресс</string>
     <string name="rateApp">Оценить DoneAt</string>
+    <string name="rateAppGooglePlay">Оценить DoneAt</string>
     <string name="recordsAllRecords">Все записи</string>
     <string name="recordsAllocationBasis">Охватывает %1$s дат сводки, включая работу после полуночи. Сон и свободное время оценены приблизительно.</string>
     <string name="recordsAnnualSummary">Итоги за %1$s год</string>
@@ -815,6 +818,7 @@
     <string name="unscheduledTitle">Сегодня работаете?</string>
     <string name="version">Версия</string>
     <string name="visitOfficialWebsite">Посетить официальный сайт</string>
+    <string name="wallpaperColors">Цвета обоев</string>
     <string name="watchBackAt">Обратно в %1$s</string>
     <string name="watchCacheCorrupt">Не удалось прочитать сохранённое расписание. Откройте DoneAt на iPhone.</string>
     <string name="watchNextShiftAt">Следующая смена в %1$s</string>

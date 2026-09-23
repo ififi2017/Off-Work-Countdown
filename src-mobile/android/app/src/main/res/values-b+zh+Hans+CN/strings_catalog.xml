@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus 会打开完整记录，再用人生档案把工作放进从入职到退休的长期尺度里。</string>
     <string name="onboardingPlusRecordsTitle">看清计划的一天，也看清实际的一天</string>
     <string name="onboardingPrivacyBody">不用账号。倒计时和记录都在这台设备上，除非你自己去查看方案或开启 iCloud 同步。工作和薪资数据不会发给开发者。</string>
+    <string name="onboardingPrivacyBodyLocal">不用账号。倒计时和记录都在这台设备上；如果你开启了 Android 系统备份，也会包含在里面。工作和薪资数据不会发给开发者。</string>
     <string name="onboardingPrivacyTitle">数据留在这台设备上</string>
     <string name="onboardingPrivacyWorkBody">工时、薪资、记录和设置默认保存在本机。开启 iCloud 同步，可在你的设备间保持一致。</string>
     <string name="onboardingRemindersBody">午休会暂停倒计时；到点自动提醒，不用一直盯着。</string>
     <string name="onboardingRemindersMoreInSettings">更多提醒选项都在设置里。</string>
     <string name="onboardingRemindersTitle">午休和提醒</string>
+    <string name="onboardingRestoreFromFile">老用户？从备份文件恢复</string>
     <string name="onboardingSalaryLockBody">由%1$s或设备密码保护。</string>
     <string name="onboardingScheduleBody">选一种排班，或每天再决定。</string>
     <string name="onboardingScheduleTitle">你通常几点上下班</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">隐私政策</string>
     <string name="progress">进度</string>
     <string name="rateApp">在 App Store 评价</string>
+    <string name="rateAppGooglePlay">在 Google Play 评价</string>
     <string name="recordsAllRecords">全部记录</string>
     <string name="recordsAllocationBasis">覆盖 %1$s 个统计日期，含跨夜延伸；睡眠与空闲为估算。</string>
     <string name="recordsAnnualSummary">%1$s 年汇总</string>
@@ -812,6 +815,7 @@
     <string name="unscheduledTitle">今天上不上班？</string>
     <string name="version">版本</string>
     <string name="visitOfficialWebsite">DoneAt 官网</string>
+    <string name="wallpaperColors">使用壁纸配色</string>
     <string name="watchBackAt">%1$s 继续工作</string>
     <string name="watchCacheCorrupt">无法读取已保存的排班。请在 iPhone 上打开 DoneAt。</string>
     <string name="watchNextShiftAt">下一班 %1$s</string>

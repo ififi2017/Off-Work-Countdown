@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus は完全な記録を開き、人生プロフィールを使用して、最初の仕事から退職までの仕事を大局的に捉えます。</string>
     <string name="onboardingPlusRecordsTitle">あなたが計画した日、そしてあなたが生きた日を見てください</string>
     <string name="onboardingPrivacyBody">アカウントは不要です。自分でプランを見るか iCloud 同期を入れないかぎり、カウントダウンと記録はこの端末に残ります。勤務や給与のデータが開発者に届くことはありません。</string>
+    <string name="onboardingPrivacyBodyLocal">アカウントは不要です。カウントダウンと記録はこの端末に残り、Android のバックアップを有効にしている場合はそこにも含まれます。勤務や給与のデータが開発者に届くことはありません。</string>
     <string name="onboardingPrivacyTitle">データはこのデバイス内に</string>
     <string name="onboardingPrivacyWorkBody">時間、給与、記録、設定はデフォルトでこのデバイスに残ります。 iCloud 同期をオンにして、デバイス間で同期を維持します。</string>
     <string name="onboardingRemindersBody">休憩中はカウントダウンが止まります。時間になればお知らせします。</string>
     <string name="onboardingRemindersMoreInSettings">ほかのリマインダーは設定にあります。</string>
     <string name="onboardingRemindersTitle">休憩とリマインダー</string>
+    <string name="onboardingRestoreFromFile">以前から使っていますか？バックアップファイルから復元</string>
     <string name="onboardingSalaryLockBody">%1$s またはパスコードで保護。</string>
     <string name="onboardingScheduleBody">下から選ぶか、毎日自分で決めます。</string>
     <string name="onboardingScheduleTitle">いつもの勤務時間</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">プライバシーポリシー</string>
     <string name="progress">進捗</string>
     <string name="rateApp">DoneAtを評価</string>
+    <string name="rateAppGooglePlay">DoneAtを評価</string>
     <string name="recordsAllRecords">すべての記録</string>
     <string name="recordsAllocationBasis">この集計の %1$s 日が対象です。日をまたぐ勤務を含み、睡眠と自由時間は推定値です。</string>
     <string name="recordsAnnualSummary">%1$s年の集計</string>
@@ -812,6 +815,7 @@
     <string name="unscheduledTitle">今日は働きますか？</string>
     <string name="version">バージョン</string>
     <string name="visitOfficialWebsite">DoneAt 公式サイト</string>
+    <string name="wallpaperColors">壁紙の色を使用</string>
     <string name="watchBackAt">%1$sに復帰</string>
     <string name="watchCacheCorrupt">保存されたシフトを読み込めませんでした。iPhone で DoneAt を開いてください。</string>
     <string name="watchNextShiftAt">次の勤務は%1$s</string>

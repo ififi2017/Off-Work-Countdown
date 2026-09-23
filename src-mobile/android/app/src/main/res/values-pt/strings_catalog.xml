@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus abre seu registro completo e, em seguida, usa um perfil de vida para colocar o trabalho em perspectiva, desde seu primeiro emprego até a aposentadoria.</string>
     <string name="onboardingPlusRecordsTitle">Veja o dia que você planejou — e aquele que você viveu</string>
     <string name="onboardingPrivacyBody">Sem contas. A contagem decrescente e os registos ficam neste dispositivo, a não ser que veja os planos ou ative a sincronização com o iCloud. As horas e o salário nunca chegam ao desenvolvedor.</string>
+    <string name="onboardingPrivacyBodyLocal">Sem conta. A contagem regressiva e os seus registros ficam neste dispositivo, e no backup do Android se ele estiver ativado. Dados de trabalho e salário nunca são enviados ao desenvolvedor.</string>
     <string name="onboardingPrivacyTitle">Fica neste dispositivo</string>
     <string name="onboardingPrivacyWorkBody">Horário, salário, registros e configurações permanecem neste dispositivo por padrão. Ative a sincronização do iCloud para mantê-los juntos em todos os seus dispositivos.</string>
     <string name="onboardingRemindersBody">O almoço pausa a contagem. Os lembretes chegam sem manter o app aberto.</string>
     <string name="onboardingRemindersMoreInSettings">Mais opções de lembrete estão em Ajustes.</string>
     <string name="onboardingRemindersTitle">Almoço e lembretes</string>
+    <string name="onboardingRestoreFromFile">Já usava? Restaurar de um arquivo de backup</string>
     <string name="onboardingSalaryLockBody">Protegido por %1$s ou o seu código.</string>
     <string name="onboardingScheduleBody">Escolha um padrão, ou decida cada dia.</string>
     <string name="onboardingScheduleTitle">O seu horário habitual</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">Política de privacidade</string>
     <string name="progress">Progresso</string>
     <string name="rateApp">Avaliar o DoneAt</string>
+    <string name="rateAppGooglePlay">Avaliar o DoneAt</string>
     <string name="recordsAllRecords">Todos os registros</string>
     <string name="recordsAllocationBasis">Abrange %1$s datas deste resumo, incluindo trabalho após a meia-noite. Sono e tempo livre são estimativas.</string>
     <string name="recordsAnnualSummary">Resumo de %1$s</string>
@@ -814,6 +817,7 @@
     <string name="unscheduledTitle">Vai trabalhar hoje?</string>
     <string name="version">Versão</string>
     <string name="visitOfficialWebsite">Visitar o site oficial</string>
+    <string name="wallpaperColors">Usar cores do plano de fundo</string>
     <string name="watchBackAt">De volta às %1$s</string>
     <string name="watchCacheCorrupt">Não foi possível ler a escala salva. Abra o DoneAt no iPhone.</string>
     <string name="watchNextShiftAt">Próximo turno às %1$s</string>
