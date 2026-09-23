@@ -31,7 +31,9 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -59,6 +61,7 @@ import com.rainif.doneat.core.designsystem.ThemeMode
 import com.rainif.doneat.core.designsystem.supportsDynamicColor
 import com.rainif.doneat.core.designsystem.systemRemovesAnimations
 import com.rainif.doneat.ui.SystemBarsFollowTheme
+import kotlinx.coroutines.delay
 
 /**
  * Debug-only gallery of the DoneAt tokens (T04): the main-timer wireframe from
@@ -98,6 +101,7 @@ class DesignGalleryActivity : ComponentActivity() {
                     ) {
                         Controls(mode, { mode = it }, dynamic, { dynamic = it }, reduced, { reduced = it })
                         TimerWireframe()
+                        Rollover()
                         Meters()
                         Phases()
                         Actions()
@@ -148,7 +152,8 @@ private fun TimerWireframe() = Section("Main timer") {
         }
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.s)) {
             DoneAtPhaseBadge(DoneAtPhase.WORK, "Working")
-            DoneAtCountdown("03:25:18", "3 hours 25 minutes of work left")
+            val left = ticking(3 * 3600 + 25 * 60 + 18)
+            DoneAtCountdown(clock(left), "${left / 3600} hours ${left / 60 % 60} minutes of work left")
             Text("Effective work time left", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             DoneAtProgressMeter(62.4, "Progress", Modifier.padding(bottom = DoneAtSpacing.s))
         }
@@ -158,6 +163,28 @@ private fun TimerWireframe() = Section("Main timer") {
         Spacer(Modifier.height(DoneAtSpacing.s))
         DoneAtPrimaryButton("Start overtime", {}, Modifier.fillMaxWidth())
     }
+}
+
+/** Seconds left, ticking down once a second from [start] (restarts when it reaches zero). */
+@Composable
+private fun ticking(start: Int): Int {
+    var left by remember { mutableIntStateOf(start) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1_000)
+            left = if (left > 0) left - 1 else start
+        }
+    }
+    return left
+}
+
+private fun clock(seconds: Int) = "%02d:%02d:%02d".format(seconds / 3600, seconds / 60 % 60, seconds % 60)
+
+/** Every digit rolling at once: 01:00:00 → 00:59:59. */
+@Composable
+private fun Rollover() = Section("Countdown rollover (five digits change at 00:59:59)") {
+    val left = ticking(3600 + 5)
+    DoneAtCountdown(clock(left), "Rollover demo", Modifier.fillMaxWidth())
 }
 
 /** The bubble at both ends (pointer on the mark, bubble sliding), in overtime and paused for lunch. */

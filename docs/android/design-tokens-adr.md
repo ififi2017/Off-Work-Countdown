@@ -18,6 +18,7 @@ D-12 规定 Release 只用稳定版 Compose/Material3；Material 3 Expressive �
 | `DoneAtShapes` | 4 / 8 / 14 / 22 / 28 dp；主操作高 56 dp，按下时圆角降到 12 dp | 14、22 即 `OWCDesign.controlRadius`、`cardRadius` |
 | `DoneAtMotion` | press 140、selection 180、stateExit 100、stateEnter 180、phase 280 ms；强调减速曲线 cubic-bezier(0.23, 1, 0.32, 1)；空间变化用带少许回弹的 spring | 数值与 `OWCMotion` 一致 |
 | `DoneAtType.countdown` | 64 sp、等宽数字（`tnum`）、随系统字号缩放 | 计划 01 §7.2 的 56–72 sp 测试区间 |
+| `DoneAtCountdown` | 数字翻页：每一位单独过渡，只有变化的那位移动；倒数时旧数字向下滑出、新数字从上方滑入，伴随淡变与轻微模糊（Android 12+） | 对应 `OWCCountdownTextTransition` 的 `.numericText(countsDown: true)`，时长用 `countdownTick`（160 ms 线性） |
 | `DoneAtSpacing` | 4 dp 网格，页边距 16 dp，触达区 ≥ 48 dp | `OWCDesign.pageInset` 16 |
 | `DoneAtProgressMeter` | 班次进度条与浮动百分比气泡：指针固定在进度位置，气泡绕指针滑动，最多探出轨道 14 dp；加班换深橙，午休暂停为灰色加微光 | 几何与 `OWCProgressMeter` 相同 |
 
@@ -40,6 +41,13 @@ D-12 规定 Release 只用稳定版 Compose/Material3；Material 3 Expressive �
 - 从右到左的语言从右侧填充，气泡与指针随之镜像。
 - 每秒重算，几何不做动画；只有午休微光是动画，减少动态效果时去掉。
 
+## 数字翻页（`DoneAtCountdown`）
+
+- iOS 用系统的 `.numericText(countsDown:)`；Compose 没有等价 API，用稳定的 `AnimatedContent` 按位实现：每一位是一个独立过渡，冒号与未变的位保持不动，等宽数字保证每位宽度固定，不引起重新排版。
+- 位移为行高的 60%，同时淡入淡出；模糊用 `Modifier.blur`，只在 Android 12 以上生效，更低版本只有位移与淡变。苹果未公开其曲线、位移与模糊参数，Android 通过录屏对照达到观感接近，不追求逐帧一致。
+- `countsDown = false` 反向滚动，供记录等递增数字使用。
+- 减少动态效果时直接替换数字；读屏只读完整描述，不读逐秒变化。
+
 ## 可访问性
 
 - `DoneAtColorsTest` 检查两套配色中每一对"文字/底色"都 ≥ 4.5:1（含四种状态色），描边 ≥ 3:1。
@@ -57,6 +65,7 @@ Debug 专用 gallery：`adb shell am start -n com.rainif.doneat/.gallery.DesignG
 | 200% 字体 | 文字换行、状态标记改为多行排列、按钮随内容增高且仍为胶囊（修复前变成固定 28 dp 圆角）；倒计时由系统非线性缩放保持一行 |
 | 系统移除动画 | `DoneAtMotion.reduced` 读到开启 |
 | 长德文按钮 | 正常换行 |
+| 数字翻页 | 录屏逐帧：01:00:00 → 00:59:59 时只有变化的 5 位移动，首位 0 与冒号不动；旧数字向下淡出、新数字从上方带模糊淡入，约 160 ms |
 | 进度条 | 浅色、深色、0%、100%、加班、午休均与 iOS 一致；应用语言设为阿拉伯语时从右填充并显示阿拉伯-印度数字（修复前数字跟随系统语言） |
 
 检查中调整：浅色 `secondaryContainer` 原与 `primaryContainer` 几乎同色，改为暖灰 `#F5DED4`。

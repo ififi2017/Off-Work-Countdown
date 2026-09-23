@@ -31,8 +31,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 
@@ -117,22 +115,6 @@ fun DoneAtPhaseBadge(phase: DoneAtPhase, label: String, modifier: Modifier = Mod
             overflow = TextOverflow.Ellipsis,
         )
     }
-}
-
-/**
- * The main countdown. Tabular figures keep its width still; [spokenLabel]
- * replaces the digits for TalkBack so it is not re-read every second.
- */
-@Composable
-fun DoneAtCountdown(text: String, spokenLabel: String, modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.onSurface) {
-    Text(
-        text,
-        modifier = modifier.clearAndSetSemantics { contentDescription = spokenLabel },
-        style = DoneAtType.countdown,
-        color = color,
-        maxLines = 1,
-        textAlign = TextAlign.Center,
-    )
 }
 
 /** A label and value on one row that wraps under large fonts instead of truncating. */
