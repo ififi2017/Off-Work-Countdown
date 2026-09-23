@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">प्लस तुमचे संपूर्ण रेकॉर्ड उघडते, नंतर तुमच्या पहिल्या नोकरीपासून ते सेवानिवृत्तीपर्यंत कामाचा दृष्टीकोन ठेवण्यासाठी जीवन प्रोफाइल वापरते.</string>
     <string name="onboardingPlusRecordsTitle">तुम्ही नियोजित केलेला दिवस पहा — आणि तुम्ही जगलात</string>
     <string name="onboardingPrivacyBody">खाते नको. तुम्ही स्वतः योजना पाहिल्याशिवाय किंवा iCloud सिंक सुरू केल्याशिवाय काउंटडाउन आणि नोंदी या डिव्हाइसवरच राहतात. कामाचा आणि पगाराचा डेटा डेव्हलपरपर्यंत कधीही पोहोचत नाही.</string>
+    <string name="onboardingPrivacyBodyLocal">खाते नको. काउंटडाउन आणि तुमच्या नोंदी याच डिव्हाइसवर राहतात, आणि Android बॅकअप चालू असल्यास त्यातही. काम आणि पगाराचा डेटा कधीही डेव्हलपरला पाठवला जात नाही.</string>
     <string name="onboardingPrivacyTitle">डेटा या डिव्हाइसवर राहतो</string>
     <string name="onboardingPrivacyWorkBody">डीफॉल्टनुसार तास, पगार, रेकॉर्ड आणि सेटिंग्ज या डिव्हाइसवर राहतात. त्यांना तुमच्या डिव्हाइसवर एकत्र ठेवण्यासाठी iCloud सिंक चालू करा.</string>
     <string name="onboardingRemindersBody">लंच उलटगणती थांबवते. रिमाइंडर आपोआप येतात.</string>
     <string name="onboardingRemindersMoreInSettings">इतर रिमाइंडर सेटिंग्जमध्ये आहेत.</string>
     <string name="onboardingRemindersTitle">लंच आणि रिमाइंडर</string>
+    <string name="onboardingRestoreFromFile">आधीपासून वापरत आहात? बॅकअप फाइलमधून पुनर्संचयित करा</string>
     <string name="onboardingSalaryLockBody">%1$s किंवा डिव्हाइस पासकोडने सुरक्षित.</string>
     <string name="onboardingScheduleBody">नमुना निवडा, किंवा दररोज ठरवा.</string>
     <string name="onboardingScheduleTitle">तुमचे नेहमीचे तास</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">गोपनीयता धोरण</string>
     <string name="progress">प्रगती</string>
     <string name="rateApp">DoneAt ला रेट करा</string>
+    <string name="rateAppGooglePlay">DoneAt ला रेट करा</string>
     <string name="recordsAllRecords">सर्व नोंदी</string>
     <string name="recordsAllocationBasis">या सारांशातील %1$s तारखांचा समावेश आहे, मध्यरात्रीनंतरच्या कामासह. झोप आणि मोकळा वेळ अंदाजित आहेत.</string>
     <string name="recordsAnnualSummary">%1$s चा सारांश</string>
@@ -813,6 +816,7 @@
     <string name="unscheduledTitle">आज काम आहे का?</string>
     <string name="version">आवृत्ती</string>
     <string name="visitOfficialWebsite">अधिकृत वेबसाइटला भेट द्या</string>
+    <string name="wallpaperColors">वॉलपेपरचे रंग वापरा</string>
     <string name="watchBackAt">%1$s ला परत</string>
     <string name="watchCacheCorrupt">जतन केलेले वेळापत्रक वाचता आले नाही. iPhone वर DoneAt उघडा.</string>
     <string name="watchNextShiftAt">पुढील शिफ्ट %1$s ला</string>

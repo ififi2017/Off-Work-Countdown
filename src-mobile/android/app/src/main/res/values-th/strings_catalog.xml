@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus เปิดบันทึกทั้งหมดของคุณ จากนั้นใช้โปรไฟล์ชีวิตเพื่อนำเสนองานในมุมมองตั้งแต่งานแรกจนถึงวัยเกษียณ</string>
     <string name="onboardingPlusRecordsTitle">ดูวันที่คุณวางแผนไว้ และวันที่คุณมีชีวิตอยู่</string>
     <string name="onboardingPrivacyBody">ไม่ต้องมีบัญชี การนับถอยหลังและบันทึกอยู่ในเครื่องนี้ เว้นแต่คุณจะเปิดดูแผนหรือเปิดการซิงก์ iCloud เอง ข้อมูลงานและเงินเดือนไม่เคยไปถึงผู้พัฒนา</string>
+    <string name="onboardingPrivacyBodyLocal">ไม่ต้องมีบัญชี การนับถอยหลังและบันทึกของคุณอยู่ในอุปกรณ์นี้ และอยู่ในข้อมูลสำรองของ Android หากคุณเปิดไว้ ข้อมูลงานและเงินเดือนจะไม่ถูกส่งถึงผู้พัฒนา</string>
     <string name="onboardingPrivacyTitle">ข้อมูลอยู่บนเครื่องนี้</string>
     <string name="onboardingPrivacyWorkBody">ชั่วโมง เงินเดือน บันทึก และการตั้งค่าจะยังคงอยู่ในอุปกรณ์นี้ตามค่าเริ่มต้น เปิดการซิงค์ iCloud เพื่อรวมไว้ด้วยกันในอุปกรณ์ของคุณ</string>
     <string name="onboardingRemindersBody">พักกลางวันจะหยุดนับถอยหลัง ถึงเวลาแล้วจะเตือนเอง</string>
     <string name="onboardingRemindersMoreInSettings">ตัวเลือกเตือนอื่นอยู่ในหน้าตั้งค่า</string>
     <string name="onboardingRemindersTitle">พักกลางวันและการเตือน</string>
+    <string name="onboardingRestoreFromFile">เคยใช้อยู่แล้ว? กู้คืนจากไฟล์สำรอง</string>
     <string name="onboardingSalaryLockBody">ปกป้องด้วย %1$s หรือรหัสเครื่อง</string>
     <string name="onboardingScheduleBody">เลือกรูปแบบ หรือตัดสินใจทีละวัน</string>
     <string name="onboardingScheduleTitle">เวลาทำงานตามปกติ</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">นโยบายความเป็นส่วนตัว</string>
     <string name="progress">ความคืบหน้า</string>
     <string name="rateApp">ให้คะแนน DoneAt</string>
+    <string name="rateAppGooglePlay">ให้คะแนน DoneAt</string>
     <string name="recordsAllRecords">บันทึกทั้งหมด</string>
     <string name="recordsAllocationBasis">ครอบคลุม %1$s วันที่ในสรุปนี้ รวมงานที่ข้ามเที่ยงคืน เวลานอนและเวลาว่างเป็นค่าประมาณ</string>
     <string name="recordsAnnualSummary">สรุปปี %1$s</string>
@@ -812,6 +815,7 @@
     <string name="unscheduledTitle">วันนี้ทำงานไหม?</string>
     <string name="version">เวอร์ชัน</string>
     <string name="visitOfficialWebsite">เยี่ยมชมเว็บไซต์อย่างเป็นทางการ</string>
+    <string name="wallpaperColors">ใช้สีจากวอลเปเปอร์</string>
     <string name="watchBackAt">กลับ %1$s</string>
     <string name="watchCacheCorrupt">อ่านตารางงานที่บันทึกไว้ไม่ได้ โปรดเปิด DoneAt บน iPhone</string>
     <string name="watchNextShiftAt">กะถัดไป %1$s</string>

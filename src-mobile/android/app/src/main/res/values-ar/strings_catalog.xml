@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">يفتح Plus سجلك الكامل، ثم يستخدم ملف تعريف الحياة لوضع العمل في منظوره الصحيح منذ وظيفتك الأولى حتى التقاعد.</string>
     <string name="onboardingPlusRecordsTitle">شاهد اليوم الذي خططت له، والذي عشته</string>
     <string name="onboardingPrivacyBody">لا حساب. العد التنازلي والسجلات تبقى على هذا الجهاز، إلا إذا فتحت الخطط أو شغّلت مزامنة iCloud. ولا تصل بيانات العمل والراتب إلى المطوّر.</string>
+    <string name="onboardingPrivacyBodyLocal">لا حاجة إلى حساب. يبقى العد التنازلي وسجلاتك على هذا الجهاز، وفي النسخ الاحتياطي لنظام Android إن كان مفعّلًا. لا تُرسل بيانات العمل والراتب إلى المطوّر أبدًا.</string>
     <string name="onboardingPrivacyTitle">تبقى على هذا الجهاز</string>
     <string name="onboardingPrivacyWorkBody">تبقى الساعات والرواتب والسجلات والإعدادات على هذا الجهاز بشكل افتراضي. قم بتشغيل مزامنة iCloud لإبقائهم معًا عبر أجهزتك.</string>
     <string name="onboardingRemindersBody">الاستراحة توقف العد التنازلي. التنبيهات تصلك دون إبقاء التطبيق مفتوحًا.</string>
     <string name="onboardingRemindersMoreInSettings">خيارات التذكير الأخرى في الإعدادات.</string>
     <string name="onboardingRemindersTitle">الاستراحة والتذكيرات</string>
+    <string name="onboardingRestoreFromFile">مستخدم سابق؟ الاستعادة من ملف نسخة احتياطية</string>
     <string name="onboardingSalaryLockBody">محمي بـ %1$s أو رمز الجهاز.</string>
     <string name="onboardingScheduleBody">اختر نمطًا، أو قرّر كل يوم.</string>
     <string name="onboardingScheduleTitle">ساعاتك المعتادة</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">سياسة الخصوصية</string>
     <string name="progress">التقدم</string>
     <string name="rateApp">تقييم DoneAt</string>
+    <string name="rateAppGooglePlay">تقييم DoneAt</string>
     <string name="recordsAllRecords">كل السجلات</string>
     <string name="recordsAllocationBasis">يشمل %1$s من تواريخ هذا الملخص، بما فيها العمل بعد منتصف الليل. النوم ووقت الفراغ تقديريان.</string>
     <string name="recordsAnnualSummary">ملخص %1$s</string>
@@ -817,6 +820,7 @@
     <string name="unscheduledTitle">هل تعمل اليوم؟</string>
     <string name="version">الإصدار</string>
     <string name="visitOfficialWebsite">زيارة الموقع الرسمي</string>
+    <string name="wallpaperColors">استخدام ألوان الخلفية</string>
     <string name="watchBackAt">العودة عند %1$s</string>
     <string name="watchCacheCorrupt">تعذّرت قراءة الجدول المحفوظ. افتح DoneAt على iPhone.</string>
     <string name="watchNextShiftAt">الوردية التالية عند %1$s</string>

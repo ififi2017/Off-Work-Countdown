@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">Plus apre il tuo record completo, quindi utilizza un profilo di vita per mettere il lavoro in prospettiva dal tuo primo lavoro alla pensione.</string>
     <string name="onboardingPlusRecordsTitle">Guarda il giorno che hai pianificato e quello che hai vissuto</string>
     <string name="onboardingPrivacyBody">Nessun account. Conto alla rovescia e registri restano su questo dispositivo, a meno che tu guardi i piani o attivi la sincronizzazione iCloud. Orari e stipendio non arrivano mai allo sviluppatore.</string>
+    <string name="onboardingPrivacyBodyLocal">Nessun account. Il conto alla rovescia e i tuoi registri restano su questo dispositivo, e nel backup di Android se l’hai attivato. I dati su lavoro e stipendio non vengono mai inviati allo sviluppatore.</string>
     <string name="onboardingPrivacyTitle">Resta su questo dispositivo</string>
     <string name="onboardingPrivacyWorkBody">Orari, stipendio, record e impostazioni rimangono su questo dispositivo per impostazione predefinita. Attiva la sincronizzazione iCloud per tenerli insieme su tutti i tuoi dispositivi.</string>
     <string name="onboardingRemindersBody">La pausa ferma il conto alla rovescia. Gli avvisi arrivano da soli.</string>
     <string name="onboardingRemindersMoreInSettings">Altre opzioni di promemoria sono in Impostazioni.</string>
     <string name="onboardingRemindersTitle">Pausa e promemoria</string>
+    <string name="onboardingRestoreFromFile">Già utente? Ripristina da un file di backup</string>
     <string name="onboardingSalaryLockBody">Protetto da %1$s o dal tuo codice.</string>
     <string name="onboardingScheduleBody">Scegli uno schema, o decidi ogni giorno.</string>
     <string name="onboardingScheduleTitle">I tuoi orari abituali</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">Informativa sulla privacy</string>
     <string name="progress">Avanzamento</string>
     <string name="rateApp">Valuta DoneAt</string>
+    <string name="rateAppGooglePlay">Valuta DoneAt</string>
     <string name="recordsAllRecords">Tutti i registri</string>
     <string name="recordsAllocationBasis">Copre %1$s date del riepilogo, incluso il lavoro oltre mezzanotte. Sonno e tempo libero sono stime.</string>
     <string name="recordsAnnualSummary">Riepilogo %1$s</string>
@@ -814,6 +817,7 @@
     <string name="unscheduledTitle">Lavori oggi?</string>
     <string name="version">Versione</string>
     <string name="visitOfficialWebsite">Visita il sito ufficiale</string>
+    <string name="wallpaperColors">Usa i colori dello sfondo</string>
     <string name="watchBackAt">Rientro alle %1$s</string>
     <string name="watchCacheCorrupt">Impossibile leggere i turni salvati. Apri DoneAt sul tuo iPhone.</string>
     <string name="watchNextShiftAt">Prossimo turno alle %1$s</string>

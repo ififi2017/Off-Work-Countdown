@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -32,6 +33,16 @@ android {
     buildFeatures {
         compose = true
     }
+
+    bundle {
+        // The app switches language itself (per-app language); every language must ship in every install.
+        language { enableSplit = false }
+    }
+
+    sourceSets {
+        // The holiday calendar and its attributions, shared with iOS rather than copied.
+        getByName("main").assets.directories.add("../../ios/Shared/Resources")
+    }
 }
 
 dependencies {
@@ -42,6 +53,13 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3.navigation.suite)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.kotlinx.serialization.json)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
 }

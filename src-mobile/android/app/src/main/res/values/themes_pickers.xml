@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The platform time picker in DoneAt colours. The M3 Compose TimePicker is still
+  experimental (D-12 allows stable APIs only), so the framework dialog is themed
+  instead, light or dark by the app's own theme rather than the system's.
+-->
+<resources>
+    <style name="DoneAt.TimePickerDialog.Light" parent="android:Theme.Material.Light.Dialog">
+        <item name="android:colorAccent">#C2410C</item>
+        <item name="android:timePickerStyle">@style/DoneAt.TimePicker.Light</item>
+    </style>
+
+    <style name="DoneAt.TimePicker.Light" parent="android:Widget.Material.Light.TimePicker">
+        <item name="android:headerBackground">#C2410C</item>
+    </style>
+
+    <style name="DoneAt.TimePickerDialog.Dark" parent="android:Theme.Material.Dialog">
+        <item name="android:colorAccent">#FF9A5C</item>
+        <item name="android:timePickerStyle">@style/DoneAt.TimePicker.Dark</item>
+    </style>
+
+    <!-- White numerals need a dark header: the dark primary container, not the bright accent. -->
+    <style name="DoneAt.TimePicker.Dark" parent="android:Widget.Material.TimePicker">
+        <item name="android:headerBackground">#7A3000</item>
+    </style>
+</resources>

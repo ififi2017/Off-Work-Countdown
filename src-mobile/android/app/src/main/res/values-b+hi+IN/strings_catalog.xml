@@ -482,11 +482,13 @@
     <string name="onboardingPlusRecordsBody">प्लस आपका पूरा रिकॉर्ड खोलता है, फिर आपकी पहली नौकरी से सेवानिवृत्ति तक के परिप्रेक्ष्य में काम को रखने के लिए एक जीवन प्रोफ़ाइल का उपयोग करता है।</string>
     <string name="onboardingPlusRecordsTitle">वह दिन देखें जिसकी आपने योजना बनाई थी - और जिसे आपने जीया था</string>
     <string name="onboardingPrivacyBody">कोई खाता नहीं। जब तक आप ख़ुद प्लान न देखें या iCloud सिंक चालू न करें, काउंटडाउन और रिकॉर्ड इसी डिवाइस पर रहते हैं। काम और वेतन का डेटा डेवलपर तक कभी नहीं पहुँचता।</string>
+    <string name="onboardingPrivacyBodyLocal">कोई खाता नहीं। काउंटडाउन और आपके रिकॉर्ड इसी डिवाइस पर रहते हैं, और अगर Android बैकअप चालू है तो उसमें भी। काम और वेतन का डेटा कभी डेवलपर को नहीं भेजा जाता।</string>
     <string name="onboardingPrivacyTitle">डेटा इसी डिवाइस पर रहता है</string>
     <string name="onboardingPrivacyWorkBody">घंटे, वेतन, रिकॉर्ड और सेटिंग्स डिफ़ॉल्ट रूप से इस डिवाइस पर रहती हैं। उन्हें अपने डिवाइस पर एक साथ रखने के लिए iCloud सिंक चालू करें।</string>
     <string name="onboardingRemindersBody">लंच काउंटडाउन रोक देता है। रिमाइंडर खुद आ जाते हैं।</string>
     <string name="onboardingRemindersMoreInSettings">बाकी रिमाइंडर सेटिंग में हैं।</string>
     <string name="onboardingRemindersTitle">लंच और रिमाइंडर</string>
+    <string name="onboardingRestoreFromFile">पहले से इस्तेमाल कर रहे हैं? बैकअप फ़ाइल से वापस लाएँ</string>
     <string name="onboardingSalaryLockBody">%1$s या डिवाइस पासकोड से सुरक्षित।</string>
     <string name="onboardingScheduleBody">पैटर्न चुनें, या हर दिन तय करें।</string>
     <string name="onboardingScheduleTitle">आपके सामान्य घंटे</string>
@@ -560,6 +562,7 @@
     <string name="privacyPolicy">गोपनीयता नीति</string>
     <string name="progress">प्रगति</string>
     <string name="rateApp">DoneAt को रेट करें</string>
+    <string name="rateAppGooglePlay">DoneAt को रेट करें</string>
     <string name="recordsAllRecords">सारे रिकॉर्ड</string>
     <string name="recordsAllocationBasis">इस सारांश की %1$s तारीखें शामिल हैं, जिनमें आधी रात के बाद का काम भी है। नींद और खाली समय अनुमानित हैं।</string>
     <string name="recordsAnnualSummary">%1$s का सारांश</string>
@@ -813,6 +816,7 @@
     <string name="unscheduledTitle">आज काम है?</string>
     <string name="version">वर्शन</string>
     <string name="visitOfficialWebsite">आधिकारिक वेबसाइट पर जाएँ</string>
+    <string name="wallpaperColors">वॉलपेपर के रंग इस्तेमाल करें</string>
     <string name="watchBackAt">%1$s पर वापसी</string>
     <string name="watchCacheCorrupt">सेव किया गया शेड्यूल पढ़ा नहीं जा सका। अपने iPhone पर DoneAt खोलें।</string>
     <string name="watchNextShiftAt">अगली शिफ़्ट %1$s पर</string>

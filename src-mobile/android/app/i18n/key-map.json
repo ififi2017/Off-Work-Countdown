@@ -1706,6 +1706,10 @@
     "onboardingPrivacyBody": {
       "resource": "string/onboardingPrivacyBody"
     },
+    "onboardingPrivacyBodyLocal": {
+      "resource": "string/onboardingPrivacyBodyLocal",
+      "androidOnly": true
+    },
     "onboardingPrivacyTitle": {
       "resource": "string/onboardingPrivacyTitle"
     },
@@ -1720,6 +1724,10 @@
     },
     "onboardingRemindersTitle": {
       "resource": "string/onboardingRemindersTitle"
+    },
+    "onboardingRestoreFromFile": {
+      "resource": "string/onboardingRestoreFromFile",
+      "androidOnly": true
     },
     "onboardingSalaryLockBody": {
       "resource": "string/onboardingSalaryLockBody",
@@ -1948,6 +1956,10 @@
     },
     "rateApp": {
       "resource": "string/rateApp"
+    },
+    "rateAppGooglePlay": {
+      "resource": "string/rateAppGooglePlay",
+      "androidOnly": true
     },
     "recordsAllRecords": {
       "resource": "string/recordsAllRecords"
@@ -2760,6 +2772,10 @@
     },
     "visitOfficialWebsite": {
       "resource": "string/visitOfficialWebsite"
+    },
+    "wallpaperColors": {
+      "resource": "string/wallpaperColors",
+      "androidOnly": true
     },
     "watchBackAt": {
       "resource": "string/watchBackAt",
