@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- Debug only (T04): the design-token gallery. Exported so `adb shell am start` can open it; absent from release. -->
+        <activity
+            android:name=".gallery.DesignGalleryActivity"
+            android:exported="true"
+            android:label="DoneAt design gallery" />
+    </application>
+
+</manifest>

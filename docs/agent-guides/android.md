@@ -29,6 +29,11 @@ locale and validation rules apply.
   from DoneAt shape/motion/colour tokens in `:core:designsystem`; no alpha or
   experimental Material3 APIs.
 - Four main destinations match iOS `AppTab`: timer, focus, records, settings.
+- UI takes colour, shape, motion and type from `:core:designsystem` tokens
+  (`docs/android/design-tokens-adr.md`); screens do not inline hex colours,
+  radii or durations. Check new tokens in the Debug-only gallery
+  (`adb shell am start -n com.rainif.doneat/.gallery.DesignGalleryActivity`)
+  in light, dark, 200% font and with animations removed.
 
 ## Rules parity
 
