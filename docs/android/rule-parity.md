@@ -14,7 +14,7 @@ Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 
 | validateBreak | 240 | `ScheduleRules.validateBreak` | 全部通过 | T07 |
 | applyToday | 400 | `ScheduleRules.shouldPromptApplyToday` | 全部通过 | T07 |
 | reminders | 320 | — | 未实现 | T14 |
-| summaries、recordsIncome、monthlyEquivalent、lifetimeIncome、actualForecast | 322 / 80 / 32 / 160 / 120 | — | 未实现 | T09 |
+| summaries、recordsIncome、monthlyEquivalent、lifetimeIncome、actualForecast | 322 / 80 / 32 / 160 / 120 | `SummaryRules` | 全部通过 | T09 |
 | watch | 1064 | — | 不在首发（Wear 延后，D-05） | T27 |
 
 ## 有效性验证
@@ -27,6 +27,19 @@ Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 
 | DST 重叠时刻取较晚一侧（`minOrNull`→`maxOrNull`） | 2 个测试失败 |
 
 `ShiftExamplesTest` 另外锁定计划 02 §4.2 的算例（12:30 午休：已工作 3h、剩余 5h、收入 30；加班到 20:00 的 19:00：进度 90%、payRatio 1.125、收入 90 而非 72）以及空 workdays、manual、0 长度轮班、同一时钟（24h 班）和非法时钟不崩溃、不死循环。
+
+## 汇总与收入（T09）
+
+`summary/SummaryRules.kt` 覆盖周期汇总（计时页"本周/本年"）、记录收入、月薪折算、人生收入和记录页实际/预测。两种工资口径分开且都只在这里计算：
+
+- **计时页实时估算**（`summarize`）：日薪 × 已完成工作日 + 今日 payRatio。
+- **记录页固定月薪**（`recordsActualForecast`，月薪时）：月薪按所在月份的自然日数分摊到可见日期，以 `asOfMs` 所在民用日分成实际/预测，请假不扣。日薪时按每天 `工作时长/计划时长` 计。
+
+植入错误验证：固定月薪改按 30 天、接受重叠的职业区间、手动模式不计今天，各让 1 个测试失败。
+
+**浮点与货币策略**：规则层与 TS/Swift 一样全程用 `Double`，按同样的运算顺序，测试逐位相等；不在中间步骤舍入。金额只在显示时按币种最小单位格式化（UI 任务负责），输入保留用户键入的文本并用 `JavaScriptNumber` 解析。
+
+`LifeViewCalculator`（人生页的工作/生活时间分配）是 iOS 独有逻辑，依赖记录模型，随 T12/T17 移植，届时用 Swift 导出的 fixtures 校验。
 
 ## 与 Swift 的有意差异
 
