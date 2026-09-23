@@ -320,7 +320,7 @@ should use the [desktop app](https://doneat.app/en/download).
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-`plans/005-product-3.0.md` records the current roadmap along with the reasoning behind
+`plans/iOS/005-product-3.0.md` records the current roadmap along with the reasoning behind
 the decisions — including the things that were considered and deliberately not
 built.
 

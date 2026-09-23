@@ -64,11 +64,11 @@ P4/P5 的真机验收状态不因此改为完成。
 2026-09-05 记录页口径补充：已保存并生效的排班在过去日期默认按正常上下班计入画布与汇总，
 不以打开 App 或计时观察为出勤条件；手动覆盖与例外优先。人生档案补出的早期历史与未来
 仍是推算，不生成逐日事实。响应式点阵保留，工作阶段按现在分为已走过／未来推算两个
-选择区间；细节见 [010 的补充决策](../plans/010-records-ui-iteration.md)。真机触感与帧率仍待终验。
+选择区间；细节见 [010 的补充决策](../plans/iOS/010-records-ui-iteration.md)。真机触感与帧率仍待终验。
 
 当前执行顺序是：
 
-1. **[007](../plans/007-ios-stable-before-subscription.md)**：在记录（002）和订阅（006）之前，把 iOS 倒计时本体做成可过审的稳定版。main 现为 TestFlight；已送审包偏早，正式审核候选以 007 为准。计时页口径见 [IOS-TIMER-SURFACES.md](IOS-TIMER-SURFACES.md)；
+1. **[007](../plans/iOS/007-ios-stable-before-subscription.md)**：在记录（002）和订阅（006）之前，把 iOS 倒计时本体做成可过审的稳定版。main 现为 TestFlight；已送审包偏早，正式审核候选以 007 为准。计时页口径见 [IOS-TIMER-SURFACES.md](IOS-TIMER-SURFACES.md)；
 2. 保持 iPhone/iPad TestFlight 回归与 App Store 提交链路稳定；
 3. 开始 Apple Watch 的契约和 target 建设；
 4. 完成 Watch App、圆形与长方形表盘组件、双向状态联动；
@@ -265,7 +265,7 @@ App Group 不能用于 iPhone 和 iPad 跨设备同步，也不能让 iPad 与 A
 
 ## 4. Watch 当前范围与后续目标
 
-Watch 的产品边界、数据契约、权益与配对通信以 [017 Apple Watch 计划](../plans/017-apple-watch-plus.md)为唯一维护位置；工程实施顺序由 [018 架构整改](../plans/018-ios-3.2.0-architecture-remediation.md)约束。
+Watch 的产品边界、数据契约、权益与配对通信以 [017 Apple Watch 计划](../plans/iOS/017-apple-watch-plus.md)为唯一维护位置；工程实施顺序由 [018 架构整改](../plans/iOS/018-ios-3.2.0-architecture-remediation.md)约束。
 
 2026-09-19 更新：Watch App 与两种表盘组件全部免费。首次从配对 iPhone 同步后，Watch V2 通过共享 Swift 核心长期离线接续排班，后台接收后续手机修改。开始／停止控制和独立通知继续延期。V1 缓存保留读取，两端均升级后才能使用 V2 独立循环。实际后台投递与表盘验收见 [本轮记录](reviews/2026-09-19-watch-calendar-acceptance.md)。
 
@@ -275,11 +275,11 @@ Watch 的产品边界、数据契约、权益与配对通信以 [017 Apple Watch
 
 ## 5. Watch 表盘组件与小组件
 
-首版必需表面是 `accessoryCircular` 与 `accessoryRectangular`。尺寸、AOD、系统着色、过期占位、锁定与隐私要求统一见 [017 的表面范围及验收矩阵](../plans/017-apple-watch-plus.md)。Watch App 与组件使用 Watch 自己的共享容器；不能直接读取 iPhone App Group。
+首版必需表面是 `accessoryCircular` 与 `accessoryRectangular`。尺寸、AOD、系统着色、过期占位、锁定与隐私要求统一见 [017 的表面范围及验收矩阵](../plans/iOS/017-apple-watch-plus.md)。Watch App 与组件使用 Watch 自己的共享容器；不能直接读取 iPhone App Group。
 
 ## 6. Apple Watch 阶段与完成标准
 
-[017 的 W0–W3](../plans/017-apple-watch-plus.md)统一维护阶段清单及退出证据：W0 工程／契约、W1 只读联动及免费实时活动、W2 两种表盘组件、W3 真机／签名／发布。此处不再保留第二套清单，避免控制范围或发布要求漂移。
+[017 的 W0–W3](../plans/iOS/017-apple-watch-plus.md)统一维护阶段清单及退出证据：W0 工程／契约、W1 只读联动及免费实时活动、W2 两种表盘组件、W3 真机／签名／发布。此处不再保留第二套清单，避免控制范围或发布要求漂移。
 
 当前状态（2026-09-13 本机收尾后）：Watch App、Watch Widgets 与 WatchAppTests 已建为显式引用目标并嵌入 `App` scheme；iPhone 发布器、Watch 接收器、主界面与两种组件已实现，组件为智能叠放提供班次时段相关性提示。配对模拟器权益端到端通过，用户确认 Apple Watch Ultra 2 真机运行良好、智能叠放实时活动正常；本机 Release 归档导出已核嵌入、签名与 App Group。017 的复选框已按证据更新：仍未完成的是真实 StoreKit 恢复／购买触发、逐项真机检查（时间准确性、离线、VoiceOver、小屏真机、着色）、耗电、Xcode Cloud 归档与 TestFlight、官网／App Store 文案与审核备注、Watch 商店截图。
 
@@ -288,7 +288,7 @@ Watch 的产品边界、数据契约、权益与配对通信以 [017 Apple Watch
 ### 当前决定：用户选择开启私有 CloudKit 同步
 
 2026-09-05 的真机反馈与用户确认更新了早期独立运行决定，详见
-[计划 015](../plans/015-device-feedback-life-income-settings-sync.md)。iOS 已有记录、人生档案、专注任务与配置的 CloudKit 通路，本轮复用它同步排班、当前及职业阶段薪资、提醒偏好、主题与语言；不另建账号或 KVS 协议。
+[计划 015](../plans/iOS/015-device-feedback-life-income-settings-sync.md)。iOS 已有记录、人生档案、专注任务与配置的 CloudKit 通路，本轮复用它同步排班、当前及职业阶段薪资、提醒偏好、主题与语言；不另建账号或 KVS 协议。
 
 数据默认留在本机，只有用户开启同步后才进入其 Apple Account 的私有数据库。通知授权、生物识别、实时活动开关、运行中的倒计时与引导状态留在各设备。App Group、Widget、Live Activity 与分享仍不含薪资。用户主动导出的备份包含薪资与职业经历。
 
@@ -369,7 +369,7 @@ W0、X1 或 Android 立项时必须重新阅读官方文档，不把本计划中
 
 ### 2026-09-06：首次恢复与原生 iPad 导航
 
-计划 016 增加了首次 CloudKit 数据恢复；后续实机反馈将入口移到欢迎首屏的「老用户快速设置」，避免首次启动立即联网。进入该页后才检查并恢复，失败或离线不自动上传默认值。持续同步先拉取后上传，既有数据恢复与 Plus 权益查询分别处理。iPad 导航改用系统 `NavigationSplitView(.balanced)`，侧栏沿左侧进出；独立顶部玻璃 Tab 沿顶部进出，各入口保留独立导航路径。侧栏恢复 Logo、标题与班次倒计时，移除负边距修补。人生收入按用户修订采用阶跃调整：从起始年龄起按当前收入的固定比例计算到退休，历史收入不变；保留原比例字段以兼容已有档案。实现与真机验收范围见 [计划 016](../plans/016-life-projection-first-run-native-ipad.md)。
+计划 016 增加了首次 CloudKit 数据恢复；后续实机反馈将入口移到欢迎首屏的「老用户快速设置」，避免首次启动立即联网。进入该页后才检查并恢复，失败或离线不自动上传默认值。持续同步先拉取后上传，既有数据恢复与 Plus 权益查询分别处理。iPad 导航改用系统 `NavigationSplitView(.balanced)`，侧栏沿左侧进出；独立顶部玻璃 Tab 沿顶部进出，各入口保留独立导航路径。侧栏恢复 Logo、标题与班次倒计时，移除负边距修补。人生收入按用户修订采用阶跃调整：从起始年龄起按当前收入的固定比例计算到退休，历史收入不变；保留原比例字段以兼容已有档案。实现与真机验收范围见 [计划 016](../plans/iOS/016-life-projection-first-run-native-ipad.md)。
 
 2026-09-06 后续反馈进一步取消 iPad 单独的顶部 Tab 行，合并至现有工具行以避免侧栏开合上下挤动内容；侧栏按钮和三个 Tab 共用一个固定居中的玻璃栏，跨二级页保持原位；iPad 二级页使用固定内容页头，避免系统大标题展开造成边距回弹。记录汇总固定月收入保留年终奖平摊，但不因工时记录或出勤变化扣减，区间收入按日历日分摊。详见计划 016 后续反馈。
 
@@ -396,7 +396,7 @@ W0、X1 或 Android 立项时必须重新阅读官方文档，不把本计划中
 
 记录逐日解析、人生周格组装使用值快照在 `@concurrent` 上运行，返回时验证档案版本与时区，
 保留共享 TypeScript 日程／收入规则及人生档案 v4。年图单击立即选择月份，同时识别双击
-进入月份，避免单击等待双击超时。实现与验证边界见 [002](../plans/002-records-life-focus.md)。
+进入月份，避免单击等待双击超时。实现与验证边界见 [002](../plans/iOS/002-records-life-focus.md)。
 
 展开年图使用一套可滚动月份列表，替代两套 `ViewThatFits` 候选树；避免选择变化触发后台
 布局测量时调用主线程月份构建闭包的崩溃。空间充足时填满，空间不足时滚动。

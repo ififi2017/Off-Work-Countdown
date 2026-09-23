@@ -1,9 +1,9 @@
 # Off Work Countdown 3.0 升级计划
 
-> 状态：M1–M5 已完成 · 起草于 2026-08-08 · 进度更新于 2026-08-28 · 当前 Web / 客户端统一版本 `3.1.7`（[package.json](../package.json)）
+> 状态：M1–M5 已完成 · 起草于 2026-08-08 · 进度更新于 2026-08-28 · 当前 Web / 客户端统一版本 `3.1.7`（[package.json](../../package.json)）
 >
 > M6 的分发一节已被现实超车：计划里只写了包管理器，实际先上了 Microsoft Store，
-> 并且做到了推 tag 自动提交。详见 [PLAN-MSSTORE.md](../docs/PLAN-MSSTORE.md)。
+> 并且做到了推 tag 自动提交。详见 [PLAN-MSSTORE.md](../../docs/PLAN-MSSTORE.md)。
 
 ---
 
@@ -25,7 +25,7 @@
 
 ### 1.1 致命项：服务端渲染产出为空
 
-[components/off-work-countdown.tsx:378](../components/off-work-countdown.tsx#L378) 的 `if (!isMounted) return null;`，叠加 13 个组件全部 `"use client"`，导致：
+[components/off-work-countdown.tsx:378](../../components/off-work-countdown.tsx#L378) 的 `if (!isMounted) return null;`，叠加 13 个组件全部 `"use client"`，导致：
 
 ```
 线上 https://off.rainif.com/en
@@ -43,27 +43,27 @@ JSON-LD       无
 
 | 问题 | 位置 | 影响 |
 |---|---|---|
-| OG 图声明 1200×630，实际 894×1092 竖图 | [app/[lang]/layout.tsx](../app/[lang]/layout.tsx) | X/Telegram/Slack 大卡按 2:1 中心裁切，只露中间一条 |
+| OG 图声明 1200×630，实际 894×1092 竖图 | [app/[lang]/layout.tsx](../../app/[lang]/layout.tsx) | X/Telegram/Slack 大卡按 2:1 中心裁切，只露中间一条 |
 | OG 图托管在 GitHub raw | 同上 | 外部依赖，抓取不稳定 |
-| `icon-512x512.png` 实为 192×192（与 192 图 md5 相同） | [public/](../public/) | PWA 安装横幅、Android 启动图、iOS 主屏图标全是糊的 |
-| `sitemap.ts` 无 `alternates.languages` | [app/sitemap.ts](../app/sitemap.ts) | hreflang 信号弱 |
-| 另有一份手写 `hreflang-sitemap.xml` 做同样的事 | [app/hreflang-sitemap.xml/route.ts](../app/hreflang-sitemap.xml/route.ts) | 两份易不同步 |
-| `lastModified: new Date()` | [app/sitemap.ts](../app/sitemap.ts) | 每次抓取都「刚更新」，信号会被忽略 |
+| `icon-512x512.png` 实为 192×192（与 192 图 md5 相同） | [public/](../../public/) | PWA 安装横幅、Android 启动图、iOS 主屏图标全是糊的 |
+| `sitemap.ts` 无 `alternates.languages` | [app/sitemap.ts](../../app/sitemap.ts) | hreflang 信号弱 |
+| 另有一份手写 `hreflang-sitemap.xml` 做同样的事 | [app/hreflang-sitemap.xml/route.ts](../../app/hreflang-sitemap.xml/route.ts) | 两份易不同步 |
+| `lastModified: new Date()` | [app/sitemap.ts](../../app/sitemap.ts) | 每次抓取都「刚更新」，信号会被忽略 |
 | 无 JSON-LD 结构化数据 | — | 拿不到富摘要 |
 
 ### 1.3 产品缺口
 
-- **病毒闭环是断的。** [lib/share.ts](../lib/share.ts) 认真做了 UTM，但分享链接落到的是一个空配置页，而不是「对方还有 2 小时 13 分下班，你呢？」的接力页。
+- **病毒闭环是断的。** [lib/share.ts](../../lib/share.ts) 认真做了 UTM，但分享链接落到的是一个空配置页，而不是「对方还有 2 小时 13 分下班，你呢？」的接力页。
 - **URL 不承载状态。** 用户无法把自己的班次发给同事。
-- **提醒只在页面开着时有效。** Serwist 已就位（[app/sw.ts](../app/sw.ts)）但未用于推送。
+- **提醒只在页面开着时有效。** Serwist 已就位（[app/sw.ts](../../app/sw.ts)）但未用于推送。
 - **冷流量落地无解释。** 搜索进来第一眼是表单，没有一句话说明、没有截图。
 
 ### 1.4 工程与仓库
 
 - `electron/`、`scripts/`、`types/` 三个空目录，未被 git 跟踪 —— 早期 Electron 尝试的残留，应清理。
 - `out/` 是 5 月的静态导出残留，当前 `next.config.mjs` 已无 `output: 'export'`。
-- 起草时 CI（[.github/workflows/ci.yml](../.github/workflows/ci.yml)）只有 lint + test + Web build，**无发布自动化、无多平台矩阵**；该缺口已在 M5 解决。
-- 测试仅覆盖 [lib/countdown.test.ts](../lib/countdown.test.ts) 与 [lib/share.test.ts](../lib/share.test.ts)，纯函数层。
+- 起草时 CI（[.github/workflows/ci.yml](../../.github/workflows/ci.yml)）只有 lint + test + Web build，**无发布自动化、无多平台矩阵**；该缺口已在 M5 解决。
+- 测试仅覆盖 [lib/countdown.test.ts](../../lib/countdown.test.ts) 与 [lib/share.test.ts](../../lib/share.test.ts)，纯函数层。
 - GitHub 仓库 8 star、**0 个 topics**、Discussions 未开、无社交预览图。
 
 ---
@@ -74,8 +74,8 @@ JSON-LD       无
 
 桌面端需要 `output: 'export'`，而静态导出**不支持 middleware，也不支持 `force-dynamic` 路由处理器**。当前项目两样都在用：
 
-- [middleware.ts](../middleware.ts) —— 基于 Accept-Language 的语言重定向
-- [app/manifest.json/route.ts](../app/manifest.json/route.ts)、[app/robots.txt/route.ts](../app/robots.txt/route.ts) —— 均为 `force-dynamic`
+- [middleware.ts](../../middleware.ts) —— 基于 Accept-Language 的语言重定向
+- [app/manifest.json/route.ts](../../app/manifest.json/route.ts)、[app/robots.txt/route.ts](../../app/robots.txt/route.ts) —— 均为 `force-dynamic`
 
 **方案**：引入 `BUILD_TARGET` 环境变量。
 
@@ -102,7 +102,7 @@ src-tauri/src/
 └── settings.rs    # 班次/薪资配置读写（tauri-plugin-store）
 ```
 
-业务逻辑**不下沉到 Rust**。[lib/countdown.ts](../lib/countdown.ts) 是 69 行纯函数、已有单测，继续作为唯一事实来源；Rust 只在托盘刷新时调用一次 IPC 拿格式化字符串，或直接接收前端 push 的字符串。
+业务逻辑**不下沉到 Rust**。[lib/countdown.ts](../../lib/countdown.ts) 是 69 行纯函数、已有单测，继续作为唯一事实来源；Rust 只在托盘刷新时调用一次 IPC 拿格式化字符串，或直接接收前端 push 的字符串。
 
 依赖的官方插件：`tray-icon`(core) / `notification` / `autostart` / `global-shortcut` / `updater` / `store` / `single-instance`。
 
@@ -118,8 +118,8 @@ src-tauri/src/
 
 | 风险 | 缓解 |
 |---|---|
-| canvas emoji 光栅化 | **已解决** —— [lib/moods.ts](../lib/moods.ts) 已用 `public/emoji/*.png` 绕过（同一 Safari 引擎家族） |
-| `ClipboardItem`（[ShareDialog.tsx:198](../components/ShareDialog.tsx#L198)） | 已有能力检测；WKWebView 下降级为「保存到文件」 |
+| canvas emoji 光栅化 | **已解决** —— [lib/moods.ts](../../lib/moods.ts) 已用 `public/emoji/*.png` 绕过（同一 Safari 引擎家族） |
+| `ClipboardItem`（[ShareDialog.tsx:198](../../components/ShareDialog.tsx#L198)） | 已有能力检测；WKWebView 下降级为「保存到文件」 |
 | `backdrop-filter` 玻璃拟态 | WebView2 与 WKWebView 均支持，需实机验收 |
 | framer-motion 掉帧 | 尊重 `prefers-reduced-motion`，托盘常驻态降级为纯 CSS 动画 |
 
@@ -135,7 +135,7 @@ src-tauri/src/
 
 1. **消灭空壳 SSR** — ✅ 已完成（2026-08-08）
    - 移除 `off-work-countdown.tsx` 的 `if (!isMounted) return null`
-   - **根因不止于此**：[i18n.ts](../i18n.ts) 明确不在服务端加载翻译，只删 `return null` 会输出 `offWorkCountdown` 这类原始 key。改为在 layout 中用 [lib/server/i18n.ts](../lib/server/i18n.ts) 读文件，经 `resources` prop 注入 [I18nProvider](../components/I18nProvider.tsx)，并在渲染期（非 effect）同步灌入，保证首帧与 SSR 一致
+   - **根因不止于此**：[i18n.ts](../../i18n.ts) 明确不在服务端加载翻译，只删 `return null` 会输出 `offWorkCountdown` 这类原始 key。改为在 layout 中用 [lib/server/i18n.ts](../../lib/server/i18n.ts) 读文件，经 `resources` prop 注入 [I18nProvider](../../components/I18nProvider.tsx)，并在渲染期（非 effect）同步灌入，保证首帧与 SSR 一致
    - 服务端每次渲染新建 i18n 实例，避免 Node 进程内单例被并发请求改写导致语言串台
    - `app/layout.tsx` 合并进 `app/[lang]/layout.tsx`（Next 官方 i18n 结构），使 `<html lang>` / `<html dir>` 服务端渲染；顺带启用阿拉伯语 RTL，并把主流程的 `space-x-*` / `mr-*` / `right-*` 换成方向无关的 `gap` / `me-*` / `end-*`
    - 主题闪烁：`<head>` 内联脚本在首次绘制前给 `<html>` 打 class
@@ -144,36 +144,36 @@ src-tauri/src/
    - **验收结果**：19/19 语言预渲染 HTML 均含正确 `lang`/`dir`、`<h1>`、真实译文正文；构建通过、21 项测试通过、lint 干净；浏览器无 hydration 警告，深色主题无闪烁，软导航切换语言正常
    - **遗留**：正文仅 110–285 字符（页面目前只有表单标签）。要达到有竞争力的收录密度，依赖 M2 第 8 项的说明文案；`components/ui/*` 内 dialog/select 等 shadcn 组件的 RTL 适配也留待后续
 2. **OG 图重做** — ✅ 已完成（2026-08-08）
-   - 新增 [app/[lang]/opengraph-image.tsx](../app/[lang]/opengraph-image.tsx)，用 `ImageResponse` 生成 1200×630，19 个语言各一张，托管在自有域名
+   - 新增 [app/[lang]/opengraph-image.tsx](../../app/[lang]/opengraph-image.tsx)，用 `ImageResponse` 生成 1200×630，19 个语言各一张，托管在自有域名
    - 删除 metadata 里写死的 GitHub raw 链接；`og:image` / `twitter:image` 现由 Next 自动注入
    - **设计取舍**：图片刻意做成语言中性（仅拉丁字母与数字）。satori 需内嵌字体才能渲染字形，19 种语言涉及 CJK/阿拉伯/天城体/泰文多套字形，全量打包代价过高；而 localized 标题与描述本就通过 `og:title` / `og:description` 交给平台用系统字体渲染，图片只承担视觉部分
    - 已知小瑕疵：satori 默认字体只有常规字重，`fontWeight` 不生效。观感仍佳（层级靠字号拉开），如需加粗需另行打包一套静态字重字体
 3. **补齐真实 512×512 图标** — ✅ 已完成（2026-08-08）
    - 原 `icon-512x512.png` 实为 192×192（与 192 图 md5 相同）。以 ImageMagick 绘图基元按原设计重绘为真正的 512×512
    - **顺带修掉一个 PWA 反模式**：原 manifest 给两张图都标了 `purpose: "any maskable"`。maskable 图会被平台按自身形状（Android 圆形）裁切，需要满幅背景且内容落在 80% 安全区内，与保留透明圆角外形的 "any" 图无法共用。已拆为 `any`（192/512）+ 新增 `icon-maskable-512x512.png`（`maskable`，满幅白底，橙环半径 168 < 安全区 205）
-   - 同步放宽 [middleware.ts](../middleware.ts) 的静态资源正则：原 `^\/icon-\d+x\d+\.png$` 匹配不到带 `maskable` 的新文件名，会被重定向成 404
+   - 同步放宽 [middleware.ts](../../middleware.ts) 的静态资源正则：原 `^\/icon-\d+x\d+\.png$` 匹配不到带 `maskable` 的新文件名，会被重定向成 404
 4. **清理陈旧目录** — ✅ 已完成（2026-08-08）
    - `electron/`、`scripts/`、`types/` 三个空目录已不存在（git 不跟踪空目录，开发过程中的一次 `git stash -u` / `pop` 已将其清除）
    - 删除 `out/`（159 个文件，2026-05-17 的静态导出残留）。已确认：被 gitignore、当前 `next.config.mjs` 无 `output: 'export'` 故不会再生成、唯一引用是 eslint 的忽略规则
-   - **保留** [eslint.config.mjs](../eslint.config.mjs) 中的 `out/**` 忽略项 —— M5 桌面端按决策 A 会重新启用静态导出，届时仍需要
+   - **保留** [eslint.config.mjs](../../eslint.config.mjs) 中的 `out/**` 忽略项 —— M5 桌面端按决策 A 会重新启用静态导出，届时仍需要
 
-**附带完成**：移除 [i18n.ts](../i18n.ts) 模块加载时的翻译预取（服务端已注入，属重复请求），并加上 `initImmediate: false`。后者是必需的：i18next 默认把 `init()` 内部的语言加载推迟到下一个 tick，那时 `changeLanguage` 包装器已装上、React 却尚未渲染注入资源，既会多发一次请求，拉回的译文还会在 hydration 之后替换文本，造成 hydration 不匹配。改为同步初始化后两个问题一并消失。
+**附带完成**：移除 [i18n.ts](../../i18n.ts) 模块加载时的翻译预取（服务端已注入，属重复请求），并加上 `initImmediate: false`。后者是必需的：i18next 默认把 `init()` 内部的语言加载推迟到下一个 tick，那时 `changeLanguage` 包装器已装上、React 却尚未渲染注入资源，既会多发一次请求，拉回的译文还会在 hydration 之后替换文本，造成 hydration 不匹配。改为同步初始化后两个问题一并消失。
 
 ### M2 · 可被发现 —— 2 周 · P0 —— ✅ 全部完成（2026-08-08）
 
 5. **JSON-LD** — ✅ 已完成（2026-08-08）
-   - 在 [app/[lang]/layout.tsx](../app/[lang]/layout.tsx) 注入 `WebApplication` schema，含 `offers.price: 0`、`isAccessibleForFree`、`inLanguage`、`license`、`codeRepository`
+   - 在 [app/[lang]/layout.tsx](../../app/[lang]/layout.tsx) 注入 `WebApplication` schema，含 `offers.price: 0`、`isAccessibleForFree`、`inLanguage`、`license`、`codeRepository`
    - 序列化时转义 `<`，防止译文里出现 `</script>` 截断脚本块
    - 19/19 语言的 JSON-LD 均可正确解析，`inLanguage` 与 `url` 逐一匹配
 6. **sitemap 合并** — ✅ 已完成（2026-08-08）
-   - 统一到 [app/sitemap.ts](../app/sitemap.ts)，补 `alternates.languages` + `x-default`；删除手写的 `app/hreflang-sitemap.xml/route.ts`
+   - 统一到 [app/sitemap.ts](../../app/sitemap.ts)，补 `alternates.languages` + `x-default`；删除手写的 `app/hreflang-sitemap.xml/route.ts`
    - 产出 20 条 `<url>`、400 个 hreflang、20 个 x-default —— 每条 URL 都完整列出全部 alternates
    - `robots.txt` 只声明一份 sitemap；顺带移除其 `force-dynamic`，该路由无请求相关数据，现已变为静态预渲染
-   - **迁移处理**：`/hreflang-sitemap.xml` 曾写在 robots.txt 中、搜索引擎大概率已收录。仅从 middleware 排除列表移除会导致它被加上语言前缀重定向到不存在的路径（307 → 404 链）。已在 [next.config.mjs](../next.config.mjs) 加 308 永久重定向指向 `/sitemap.xml`（next.config 的 redirects 先于 middleware 执行）
+   - **迁移处理**：`/hreflang-sitemap.xml` 曾写在 robots.txt 中、搜索引擎大概率已收录。仅从 middleware 排除列表移除会导致它被加上语言前缀重定向到不存在的路径（307 → 404 链）。已在 [next.config.mjs](../../next.config.mjs) 加 308 永久重定向指向 `/sitemap.xml`（next.config 的 redirects 先于 middleware 执行）
    - 关于 `lastModified`：原诊断说「每次抓取都变成刚更新」**不准确** —— `/sitemap.xml` 是静态预渲染的，时间戳在构建时即固化。真实的（较弱的）问题是每次部署会刷新全部条目。已收敛为单个构建期常量，待内容页有独立更新节奏后再改为按页维护
 7. **内容层** — ✅ 已完成（2026-08-08）
    - 范围：2 个页面 × 2 种语言。`/about`、`/changelog` 暂缓——SEO 价值低于前两者，且 changelog 需持续维护，否则很快过期变成负资产
-   - **内容页只做中英两版**（[lib/content-locales.ts](../lib/content-locales.ts)）。这是刻意取舍而非未译完：长文案的翻译质量与维护成本远高于 UI 字符串，铺到 19 种语言只会产出大量无人校对的稿子。应用界面本身仍是 19 种语言
+   - **内容页只做中英两版**（[lib/content-locales.ts](../../lib/content-locales.ts)）。这是刻意取舍而非未译完：长文案的翻译质量与维护成本远高于 UI 字符串，铺到 19 种语言只会产出大量无人校对的稿子。应用界面本身仍是 19 种语言
    - 语言路由：中文界面（含 zh-TW / zh-HK）指向 `/zh-CN/*`，其余 16 种语言指向 `/en/*`，由界面直接生成正确链接，不经跳转重定向。内容页右上角提供 English / 中文 切换
    - 内容页是**纯服务端组件**，无客户端 i18n、无交互，全部文案随首屏 HTML 产出。文字量 799–3241 字符/页，对比主应用页的 110–285
    - FAQ 页附 `FAQPage` schema（10 组问答），Google 可在结果里折叠展示
@@ -199,7 +199,7 @@ src-tauri/src/
    - 工时推导加了纯函数 `getShiftLengthHours` 与单测（含跨零点与边界），断言四个预设的每日/每周工时与文案一致
    - sitemap 由 24 增至 32 条
 10. **可分享状态 URL** — ✅ 已完成（2026-08-08）
-    - `?s=0900-1800` 挂在根路径上，由 middleware 把接收者带到他自己的语言版本，19 种语言通用。`encodeShift` / `decodeShift` 见 [lib/share.ts](../lib/share.ts)
+    - `?s=0900-1800` 挂在根路径上，由 middleware 把接收者带到他自己的语言版本，19 种语言通用。`encodeShift` / `decodeShift` 见 [lib/share.ts](../../lib/share.ts)
     - **只编码上下班时间**。薪资属于敏感信息，绝不进入可被转发的链接——已加单测断言 URL 中不含任何薪资相关字段
     - 解析按不可信输入处理：格式、时分范围、零长度班次全部严格校验，任何不合法输入一律回落默认值
     - **修掉一个静默已久的 bug**：middleware 用 `new URL(path, base)` 生成重定向，第一个参数是绝对路径时会连查询串一起替换掉。分享链接指向根路径，`?s=` 与 `utm_*` 会在这次重定向中被整串丢弃——**现有的分享归因从来没有生效过**。改用 `nextUrl.clone()`
@@ -223,7 +223,7 @@ src-tauri/src/
     - 原计划写「基于已有 Serwist SW」，但 SW 里**根本没有 push 处理器**，它纯粹是个缓存 SW。Web Push 需要从零搭：VAPID 密钥、订阅存储、以及一个知道每个用户下班时刻的**服务端定时任务**
     - **两个否决理由**：一是必须把每个人的上下班时间存到服务端，直接推翻 FAQ 里「数据不出浏览器」的承诺——而这是当前一个相当有说服力的卖点；二是分钟级 cron 需要 Vercel Pro，约 $240/年。在没有留存数据证明「关页提醒」是真需求之前，代价不成比例
     - **改做的事**：修掉现有提醒在页面开着时也发不出的两个问题
-      - **安卓从来收不到**：Android Chrome 的 `new Notification()` 会抛 TypeError，只允许经 `registration.showNotification()`。原实现把异常吞掉了，安卓用户毫无迹象地收不到提醒。新增 [lib/notify.ts](../lib/notify.ts) 优先走 SW 注册。用 `getRegistration()` 而非 `serviceWorker.ready`——后者在未注册 SW 时永不 resolve，会挂死调用方
+      - **安卓从来收不到**：Android Chrome 的 `new Notification()` 会抛 TypeError，只允许经 `registration.showNotification()`。原实现把异常吞掉了，安卓用户毫无迹象地收不到提醒。新增 [lib/notify.ts](../../lib/notify.ts) 优先走 SW 注册。用 `getRegistration()` 而非 `serviceWorker.ready`——后者在未注册 SW 时永不 resolve，会挂死调用方
       - **后台标签页会跳过提醒窗口**：原条件要求 diff 落在 14–15 分钟之间，是个一分钟宽的窗口；而后台标签页的定时器被节流到约每分钟一次甚至更稀疏，tick 很容易整个跳过。改为只保留上界，由 ref 保证只发一次
     - FAQ 同步为准确描述：标签页可以在后台，但不能关闭
 14. **周期性总结** — ✅ 已完成（2026-08-08）
@@ -286,7 +286,7 @@ src-tauri/src/
 26. **包管理器上架** —— ⬜ Homebrew Cask、Scoop、winget，均未做
 27. **Microsoft Store** —— ✅ 已上架并跑通自动发版。MSIX 产线与 NSIS / MSI
     并行，推 `desktop-v*` tag 即自动提交；商店版由微软签名，因此没有 SmartScreen
-    警告，更新也由商店负责。完整设计与实测记录见 [PLAN-MSSTORE.md](../docs/PLAN-MSSTORE.md)
+    警告，更新也由商店负责。完整设计与实测记录见 [PLAN-MSSTORE.md](../../docs/PLAN-MSSTORE.md)
 28. **中文渠道（主场）** —— 小红书 / 抖音 / B站 短视频演示、少数派、V2EX、即刻。「下班倒计时」「摸鱼」本身就是中文互联网的梗，传播成本最低
 29. **英文渠道** —— Product Hunt、Show HN、r/productivity、alternativeto.net、awesome-nextjs / awesome-tauri 列表
 

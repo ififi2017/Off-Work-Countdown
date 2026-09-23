@@ -1,0 +1,325 @@
+{
+  "exampleSchemaVersion": 1,
+  "sourceCommitForReferencedContract": "9252fdfdc66aab88b4acb7493684f11991fd773d",
+  "origin": "Independently authored examples; NOT captured TS/Swift oracle outputs; NOT executed against an Android app.",
+  "timeSemantics": "UTC absolute half-open intervals; progressRatio is 0..1, not the source percentage unit. Raw elapsed is evaluated from supplied effective segments, not a full schedule resolver.",
+  "identitySemantics": "UTF-8 SHA-256, first 16 bytes; set byte 6 version bits to 0x50 and byte 8 variant bits to 0x80. This does NOT use Java UUID.nameUUIDFromBytes or standard SHA-1 UUIDv5.",
+  "timeCases": [
+    {
+      "id": "before-start",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1789977600000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789995600000,
+            "endAtMs": 1790013600000
+          }
+        ],
+        "plannedDurationMs": 28800000,
+        "dailySalaryDecimal": "80",
+        "activeBreakEndAtMs": null
+      },
+      "expected": {
+        "durationMs": 28800000,
+        "elapsedMs": 0,
+        "remainingMs": 28800000,
+        "heroRemainingMs": 3600000,
+        "progressRatio": 0.0,
+        "payRatio": 0.0,
+        "earnedSoFarDecimal": "0"
+      }
+    },
+    {
+      "id": "exact-start",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1789981200000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789995600000,
+            "endAtMs": 1790013600000
+          }
+        ],
+        "plannedDurationMs": 28800000,
+        "dailySalaryDecimal": "80",
+        "activeBreakEndAtMs": null
+      },
+      "expected": {
+        "durationMs": 28800000,
+        "elapsedMs": 0,
+        "remainingMs": 28800000,
+        "heroRemainingMs": 28800000,
+        "progressRatio": 0.0,
+        "payRatio": 0.0,
+        "earnedSoFarDecimal": "0"
+      }
+    },
+    {
+      "id": "working",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1789988400000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789995600000,
+            "endAtMs": 1790013600000
+          }
+        ],
+        "plannedDurationMs": 28800000,
+        "dailySalaryDecimal": "80",
+        "activeBreakEndAtMs": null
+      },
+      "expected": {
+        "durationMs": 28800000,
+        "elapsedMs": 7200000,
+        "remainingMs": 21600000,
+        "heroRemainingMs": 21600000,
+        "progressRatio": 0.25,
+        "payRatio": 0.25,
+        "earnedSoFarDecimal": "20"
+      }
+    },
+    {
+      "id": "break-start",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1789992000000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789995600000,
+            "endAtMs": 1790013600000
+          }
+        ],
+        "plannedDurationMs": 28800000,
+        "dailySalaryDecimal": "80",
+        "activeBreakEndAtMs": 1789995600000
+      },
+      "expected": {
+        "durationMs": 28800000,
+        "elapsedMs": 10800000,
+        "remainingMs": 18000000,
+        "heroRemainingMs": 3600000,
+        "progressRatio": 0.375,
+        "payRatio": 0.375,
+        "earnedSoFarDecimal": "30"
+      }
+    },
+    {
+      "id": "mid-break",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1789993800000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789995600000,
+            "endAtMs": 1790013600000
+          }
+        ],
+        "plannedDurationMs": 28800000,
+        "dailySalaryDecimal": "80",
+        "activeBreakEndAtMs": 1789995600000
+      },
+      "expected": {
+        "durationMs": 28800000,
+        "elapsedMs": 10800000,
+        "remainingMs": 18000000,
+        "heroRemainingMs": 1800000,
+        "progressRatio": 0.375,
+        "payRatio": 0.375,
+        "earnedSoFarDecimal": "30"
+      }
+    },
+    {
+      "id": "break-end",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1789995600000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789995600000,
+            "endAtMs": 1790013600000
+          }
+        ],
+        "plannedDurationMs": 28800000,
+        "dailySalaryDecimal": "80",
+        "activeBreakEndAtMs": null
+      },
+      "expected": {
+        "durationMs": 28800000,
+        "elapsedMs": 10800000,
+        "remainingMs": 18000000,
+        "heroRemainingMs": 18000000,
+        "progressRatio": 0.375,
+        "payRatio": 0.375,
+        "earnedSoFarDecimal": "30"
+      }
+    },
+    {
+      "id": "exact-end",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1790013600000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789995600000,
+            "endAtMs": 1790013600000
+          }
+        ],
+        "plannedDurationMs": 28800000,
+        "dailySalaryDecimal": "80",
+        "activeBreakEndAtMs": null
+      },
+      "expected": {
+        "durationMs": 28800000,
+        "elapsedMs": 28800000,
+        "remainingMs": 0,
+        "heroRemainingMs": 0,
+        "progressRatio": 1.0,
+        "payRatio": 1.0,
+        "earnedSoFarDecimal": "80"
+      }
+    },
+    {
+      "id": "after-end",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1790013900000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789995600000,
+            "endAtMs": 1790013600000
+          }
+        ],
+        "plannedDurationMs": 28800000,
+        "dailySalaryDecimal": "80",
+        "activeBreakEndAtMs": null
+      },
+      "expected": {
+        "durationMs": 28800000,
+        "elapsedMs": 28800000,
+        "remainingMs": 0,
+        "heroRemainingMs": 0,
+        "progressRatio": 1.0,
+        "payRatio": 1.0,
+        "earnedSoFarDecimal": "80"
+      }
+    },
+    {
+      "id": "overtime",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1790017200000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789995600000,
+            "endAtMs": 1790020800000
+          }
+        ],
+        "plannedDurationMs": 28800000,
+        "dailySalaryDecimal": "80",
+        "activeBreakEndAtMs": null
+      },
+      "expected": {
+        "durationMs": 36000000,
+        "elapsedMs": 32400000,
+        "remainingMs": 3600000,
+        "heroRemainingMs": 3600000,
+        "progressRatio": 0.9,
+        "payRatio": 1.125,
+        "earnedSoFarDecimal": "90"
+      }
+    },
+    {
+      "id": "multiple-gaps",
+      "kind": "independent-effective-segments-example",
+      "input": {
+        "timeZoneIdentifier": "UTC",
+        "nowMs": 1789986600000,
+        "segments": [
+          {
+            "startAtMs": 1789981200000,
+            "endAtMs": 1789984800000
+          },
+          {
+            "startAtMs": 1789988400000,
+            "endAtMs": 1789992000000
+          },
+          {
+            "startAtMs": 1789999200000,
+            "endAtMs": 1790006400000
+          }
+        ],
+        "plannedDurationMs": 14400000,
+        "dailySalaryDecimal": "40",
+        "activeBreakEndAtMs": 1789988400000
+      },
+      "expected": {
+        "durationMs": 14400000,
+        "elapsedMs": 3600000,
+        "remainingMs": 10800000,
+        "heroRemainingMs": 1800000,
+        "progressRatio": 0.25,
+        "payRatio": 0.25,
+        "earnedSoFarDecimal": "10"
+      }
+    }
+  ],
+  "identityCases": [
+    {
+      "id": "focus-block-id",
+      "seedUtf8": "owc.focus.block.v1|00000000-0000-0000-0000-000000000001|1789981200000|1789982700000",
+      "expectedUuid": "4a2cc914-0d4e-59f8-8710-87228d9a15a5"
+    },
+    {
+      "id": "focus-recovery-id",
+      "seedUtf8": "owc.focus.recovery.v1|4a2cc914-0d4e-59f8-8710-87228d9a15a5|shortBreak",
+      "expectedUuid": "7f78eeba-9e3f-5cc3-9cbe-efa2f29b6854"
+    }
+  ]
+}

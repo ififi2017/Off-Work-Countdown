@@ -1,13 +1,13 @@
 # Plans
 
-2026-09-19 最新范围：Duo 专属适配由用户延期至下一版本（依赖 iOS 27.1 SDK）。PR #208 已合并且 iOS／watchOS CI 通过；3.2.0 剩余执行项见 [发布核对](../docs/reviews/2026-09-19-3.2.0-release-readiness.md)。
+2026-09-19 最新范围：Duo 专属适配由用户延期至下一版本（依赖 iOS 27.1 SDK）。PR #208 已合并且 iOS／watchOS CI 通过；3.2.0 剩余执行项见 [发布核对](../../docs/reviews/2026-09-19-3.2.0-release-readiness.md)。
 
 带编号的产品计划收在这里，既包含归档记录，也包含仍在推进的路线图；需要长期按固定路径
 被代码与架构说明引用的跨版本技术计划留在 `docs/`。
 
 ## 索引
 
-2026-09-05 的 3.1.9 收尾结果与逐项待验步骤见 [发版检查记录](../docs/reviews/2026-09-05-3.1.9-release-closeout.md)。
+2026-09-05 的 3.1.9 收尾结果与逐项待验步骤见 [发版检查记录](../../docs/reviews/2026-09-05-3.1.9-release-closeout.md)。
 实现完成不等于发版验收通过；本次真机证据和剩余门禁以检查记录为准。
 
 | 编号 | 计划 | 起草 | 状态 | 备注 |
@@ -37,12 +37,12 @@
 这两份还在执行，并且被 `next.config.mjs`、`config/site.ts` 和 `AGENTS.md` 当作
 决策依据按路径引用，所以没有搬过来：
 
-- [`docs/PLAN-MOBILE.md`](../docs/PLAN-MOBILE.md) — Apple 移动端与 Watch
-- [`docs/PLAN-MSSTORE.md`](../docs/PLAN-MSSTORE.md) — 微软商店上架（MSIX）
+- [`docs/PLAN-MOBILE.md`](../../docs/PLAN-MOBILE.md) — Apple 移动端与 Watch
+- [`docs/PLAN-MSSTORE.md`](../../docs/PLAN-MSSTORE.md) — 微软商店上架（MSIX）
 
-2026-09-19 Watch 免费化、独立排班、019 与 P8 的本轮结果见 [验收记录](../docs/reviews/2026-09-19-watch-calendar-acceptance.md)；早期测试数量和 Ultra 2 反馈不代表新 V2 已完成真机验收。
+2026-09-19 Watch 免费化、独立排班、019 与 P8 的本轮结果见 [验收记录](../../docs/reviews/2026-09-19-watch-calendar-acceptance.md)；早期测试数量和 Ultra 2 反馈不代表新 V2 已完成真机验收。
 
-同日用户要求进一步重做 P8 排班 UI，并将每日颜色与记录月历对齐，最新个人实现与走查见 [排班 UI 重做记录](../docs/reviews/2026-09-19-schedule-ui-redesign.md)。此前节假日页面的视觉结论已标记为旧版；018／019 和发布门禁继续分别验收。
+同日用户要求进一步重做 P8 排班 UI，并将每日颜色与记录月历对齐，最新个人实现与走查见 [排班 UI 重做记录](../../docs/reviews/2026-09-19-schedule-ui-redesign.md)。此前节假日页面的视觉结论已标记为旧版；018／019 和发布门禁继续分别验收。
 
 ## 状态定义
 
@@ -63,4 +63,4 @@
 
 - [016 · 人生选择、收入递减、首次恢复与原生 iPad 导航](016-life-projection-first-run-native-ipad.md) — 实施中，真机验收待完成。
 
-2026-09-19 用户确认开始节假日与调休模板，实施范围、数据覆盖和验证证据见 [节假日模板验收](../docs/reviews/2026-09-19-holiday-templates.md)。不代表整个 018 或发布门禁完成。
+2026-09-19 用户确认开始节假日与调休模板，实施范围、数据覆盖和验证证据见 [节假日模板验收](../../docs/reviews/2026-09-19-holiday-templates.md)。不代表整个 018 或发布门禁完成。

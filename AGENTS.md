@@ -1,706 +1,206 @@
 # Off Work Countdown Agent Guide
 
-## Project overview
+## Scope and task-specific instructions
 
-Off Work Countdown is one product with three delivery targets:
+One product, three targets: Web (Next.js 15 App Router, React 19, TypeScript,
+Tailwind, Serwist); Desktop (the exported React frontend in Tauri v2 with
+Rust/AppKit); iOS (native SwiftUI + WidgetKit in `src-mobile/ios`). iOS has no
+WebView, Next.js pages or Capacitor; `cap`, `CapApp-SPM` and
+`capacitor.config` references are stale. Web/Desktop share a React tree;
+iOS shares business behaviour and translations, never markup.
 
-- Web: Next.js 15 App Router, React 19, TypeScript, Tailwind CSS and Serwist.
-- Desktop: Tauri v2 using the same exported frontend plus a small Rust/AppKit shell.
-- iOS: a native SwiftUI app in `src-mobile/ios`, with a WidgetKit extension.
-  It does **not** embed a WebView and does not render any Next.js page. The
-  Capacitor shell it replaced is gone; anything still mentioning `cap`,
-  `CapApp-SPM` or `capacitor.config` is stale.
+The following tracked documents continue this guide. Read the relevant one
+when its trigger applies; unrelated tasks do not require them. Skills remain
+optional and cannot override this guide's architecture, checks, locales or
+release gates. No rule, plan or script may depend on locally installed skills.
 
-The three targets share business rules and translations, never markup. Web and
-Desktop share the React tree; iOS reimplements the surface natively and runs a
-Swift port of the same rules, held to the TypeScript by generated fixtures (see
-below).
+| Task | Required instructions |
+|---|---|
+| Change, build or test iOS; change rules/locales consumed by iOS | [iOS](docs/agent-guides/ios.md) |
+| Desktop channels, signing, packaging, versions, release CI, store listings/media or release download counts | [Releases](docs/agent-guides/releases.md) |
+| Select, use or install a repository skill | [Skills](docs/agent-guides/skills.md) |
 
-The product is local-first. Work hours, salary and preferences stay on the
-user's device by default. The user-approved 2026-09-05 expansion permits these
-preferences and career salary history in opt-in private CloudKit sync and
-user-triggered backup exports (plan 015). Do not add a product account system,
-or place salary values in widgets, URLs, analytics payloads or share metadata.
+## Privacy and product boundaries
 
-## Important architecture boundaries
+- Local-first: hours, salary and preferences stay on-device by default.
+  The approved 2026-09-05 plan 015 exception permits preferences and career
+  salary history in opt-in private CloudKit sync and user-triggered backups.
+  No product accounts; no salary in widgets, URLs, analytics or share metadata.
+- Share URLs encode only start/end times. Analytics are anonymous aggregate
+  event counters: no cookies, identifiers, IP/User-Agent storage or histories.
+- Desktop networking is limited to updates, external links and user-triggered
+  sharing. The automatic launch version check sends no account, salary or
+  usage data; installer downloads require the user's request. A change to this
+  balance also requires updating the official About page at doneat.app.
 
-- `lib/countdown.ts` is the source of truth for shift calculations. Rust only
-  keeps an absolute running snapshot alive when the WebView is hidden; do not
-  create a second implementation of schedule rules in Rust.
-- `lib/reminders.ts` is the source of truth for reminder timing and copy. It
-  turns a shift into absolute trigger times; Rust only compares them against
-  the clock. Do not move milestone, lunch-boundary or micro-break derivation
-  back into Rust — that is what the 3.1.6 refactor removed. iOS schedules the
-  same list up front, because a phone cannot poll every second.
-  `lib/reminders.test.ts` is the acceptance spec for every consumer.
-- iOS runs every shared rule in Swift since plan 019 R1–R3, in
-  `src-mobile/ios/App/App/Native/Models/`. `ScheduleRules.swift` owns the
-  current shift, snapshots, the next shift and rest day, Widget shifts, the
-  Watch projection, range expansion, break validation, the reminder list (built
-  by `ReminderRules.swift` beside it) and whether a schedule edit asks about
-  today. `SummaryRules.swift` owns period summaries, Records income and
-  forecast, the monthly salary equivalent and lifetime income. The TypeScript
-  above stays the specification for everything iOS shares with Web and Desktop:
-  `scripts/ios-schedule-rule-oracle.mjs` keeps those entry points in TypeScript,
-  `npm run generate:ios-rule-fixtures` turns them into
-  `AppTests/ScheduleRuleFixtures.generated.swift`, and
-  `AppTests/ScheduleRuleFixtureTests.swift` holds the Swift port to it. A change
-  to shared behaviour therefore lands in `lib/` and the matching Swift file in
-  the same change, with regenerated fixtures — `npm test` fails while they are
-  stale. Never regenerate to make a Swift failure go away; decide which side is
-  right first. **Never add a second formula for a figure the rules already
-  produce**: a summary or salary calculation written twice is two answers, and
-  the "This week" row has already shipped disagreeing values that way. Behaviour
-  only iOS has, such as plan 018 P8's extended scheduling in
-  `ExtendedScheduleRules.swift`, is written and tested in Swift alone. That file
-  resolves each civil day to the same start/end/break/workday tuple the rules
-  already take and hands it to `CivilZone`, so extended scheduling stays one
-  schedule algorithm rather than a second one; a plan-free input keeps taking
-  exactly the path it took before. A stored schedule snapshot records the
-  shift types and rule it followed (`extendedContent`), never the hand-set
-  days, which stay live; so every reader of
-  `ScheduleSnapshot.configurationData` goes through
-  `RecordCoordinator.expandableHours(for:)`, which lays that content over the
-  live roster. Frozen historical assignments also overlay fixed snapshots;
-  legacy assignments without frozen hours retain their pre-extended-schedule
-  boundary. Direct decoding silently loses these overlays. iOS has no JavaScriptCore rules bundle since plan 019 R4; do
-  not bring one back to evaluate `lib/` at runtime — `npm run check:ios` fails
-  if `CountdownRules.js` reappears.
+## Shared rules and architecture
+
+- TypeScript is the specification: `lib/countdown.ts` owns shifts and salary
+  helpers; `lib/reminders.ts` owns reminder timing/copy and absolute triggers;
+  `lib/summary.ts` owns summaries. `lib/reminders.test.ts` is every consumer's
+  acceptance spec. Never duplicate a formula for a figure the rules produce.
+- Rust only maintains frontend-prepared absolute snapshots while the WebView
+  is hidden, compares trigger times and sums/compares absolute segments.
+  Never derive schedules, milestones, lunch boundaries or micro-breaks there.
+  It may switch only to a supplied `nextShift`; discard one crossed entirely
+  during sleep without backfilled notifications. iOS schedules the same
+  reminder list up front rather than polling every second.
+- A running shift is `segments + plannedEndAtMs + overtimeEndAtMs`.
+  Remaining time, progress, earnings, lunch gaps and micro-breaks use effective
+  segments, never `end - now` or a standalone start/end range. Overtime extends
+  the original hourly rate linearly: progress may use extended duration;
+  salary uses elapsed effective time / planned effective duration.
+- iOS implements shared rules in `src-mobile/ios/App/App/Native/Models/`:
+  `ScheduleRules.swift` owns current/next shifts, snapshots, rest days, Widget
+  shifts, Watch projection, range expansion, break validation, the reminder
+  list (via `ReminderRules.swift`) and whether schedule edits ask about today.
+  `SummaryRules.swift` owns period summaries, Records income/forecast, monthly
+  salary equivalent and lifetime income. Shared behaviour changes must update
+  `lib/` and the matching Swift implementation together, with regenerated
+  fixtures and the checks below. Decide which side is correct before
+  regenerating; never regenerate merely to hide a Swift failure.
+- iOS-only rules are written/tested in Swift. `ExtendedScheduleRules.swift`
+  resolves civil days to the existing start/end/break/workday tuple and passes
+  it to `CivilZone`; no second scheduling algorithm, and plan-free inputs keep
+  the existing path. Snapshots store shift types/rules in `extendedContent`,
+  never hand-set days, which stay live. Read `ScheduleSnapshot.configurationData`
+  through `RecordCoordinator.expandableHours(for:)` to overlay the live roster.
+  Frozen historical assignments also overlay fixed snapshots; legacy rows
+  without frozen hours retain their pre-extended-schedule boundary. Direct
+  decoding silently loses these overlays.
 - Watch V2 compiles the same salary-free Swift scheduling core from
   `src-mobile/ios/Shared/` into iPhone, Watch App and Watch widgets. Cached
   configuration resolves later shifts offline; do not implement another
   recurrence algorithm or impose a rolling snapshot expiry. Transport never
   includes salary, career income or the record archive. Watch App and both
   complications are free; entitlement fields exist only for V1 cache reading.
-- Since 3.1, a running shift is `segments + plannedEndAtMs + overtimeEndAtMs`.
-  Remaining time, progress and earnings must use effective segment duration;
-  never reintroduce `end - now` or a standalone start/end range. Rust may only
-  compare and sum the absolute segments prepared by the frontend.
-- Web and Desktop are separate build targets selected by `BUILD_TARGET`.
-  `npm run build` must preserve middleware and Route Handlers; `npm run
-  build:desktop` must produce a static export in `out/` without Web-only APIs.
-- Keep standard Next.js Route Handler filenames such as `route.ts`. Vercel's
-  output tracing relies on them. Desktop exclusion belongs in the build target
-  configuration, not in renamed route files.
-- macOS Mini Timer is native AppKit in
-  `src-tauri/native-mini/NativeMiniTimer.m`, linked by `src-tauri/build.rs`.
-  macOS 26 uses `NSGlassEffectView`; older macOS uses Vibrancy. Do not replace
-  it with a WebView or CSS glass effect.
-- macOS 3.1 also has an optional WebView floating timer for the standard and
-  woodfish skins. It is a separate window from the native menu-bar panel; do
-  not merge their window lifecycle or make either one appear automatically in
-  release builds.
-- Windows uses the lightweight `/[lang]/mini` Desktop page and programmatic
-  Tauri window creation. Platform-specific implementations are intentional.
+- No JavaScriptCore runtime rules bundle: do not restore `CountdownRules.js`
+  (`check:ios` rejects it).
+- `BUILD_TARGET` separates Web and Desktop. Web builds retain middleware and
+  Route Handlers; Desktop statically exports to `out/` without Web-only APIs. Keep standard
+  `route.ts` filenames for Vercel tracing; exclude Desktop APIs in build config.
+- macOS Mini Timer: native `src-tauri/native-mini/NativeMiniTimer.m`, linked by
+  `src-tauri/build.rs`; `NSGlassEffectView` on macOS 26, Vibrancy earlier.
+  Never replace it with WebView/CSS glass. The optional standard/woodfish
+  WebView floating timer has a separate lifecycle; neither appears
+  automatically in release builds. Windows intentionally uses `/[lang]/mini`
+  and programmatic Tauri window creation.
 
-## UI rules
+## UI and copy
 
-These first six are the default for every target. The platform-specific rules
-below them are exceptions that were argued for, not licence to restyle.
+- Default to restrained, platform-native UI; emphasis must earn its place.
+  Size/space by surface, density, conventions, usage frequency and hierarchy,
+  not universal numbers or importance alone. Keep settings, toggles, tools,
+  legends, info, expand/collapse and source labels out of the visual centre.
+- Use ordinary icon metaphors: SF Symbols on iOS/macOS, existing `lucide-react`
+  on Web/Desktop, or standard symbols. Custom marks retain familiar silhouette,
+  proportions and meaning. Prefer position, grouping, subtle colour, dividers,
+  state feedback, hover/tooltips over oversized elements, heavy blocks, radii,
+  borders, shadows, decorative gradients or marketing layouts.
+- Compare new UI with its whole screen; reduce excess weight/size or lost
+  density before hand-off. Preserve settled conventions: shared orange accent,
+  iOS `OWCDesign` 22 pt cards / 14 pt controls. Extend `OWCMotion` for curves and
+  durations rather than inlining numbers; the app already adopts Liquid Glass.
+- Desktop is a compact, non-resizable 420–450 px tool: single-line title, fixed
+  footer, settings subpage. Salary stays in the existing summary card; updater
+  state stays inline/in a toast, with no added window height. Dropdowns stay
+  above the footer and scroll internally. Disable shell/Mini Timer text
+  selection; inputs opt back in via `.select-none input`.
+- macOS Mini Timer is a non-draggable menu-bar panel. Windows Mini Timer is
+  draggable, remembers position, supports always-on-top and stays off taskbar.
+  Main window and both Mini Timers share the store's `hideEarnings`; no local
+  reveal state. Eye icons show the click's action, not current state.
+- Woodfish count/sound preference stay local; first tap is silent. Do not add
+  bundled or downloaded audio assets.
+- Desktop UI verification covers light/dark, long English labels and the
+  longest translated option within each fixed-width select trigger.
+- Debugging Windows on macOS: `open --env OWC_FORCE_WINDOWS_MINI=1 <app>` uses
+  the Windows Mini Timer; keep it behind `debug_assertions`, absent in release.
+  Plain `open` loses the variable; direct binary launch loses bundle identity.
+  With `npm run dev:desktop`, `?platform=windows` (also `macos` or `other`)
+  forces `desktopPlatform`; compile this override out of release. Windows calls
+  `set_decorations(false)` at runtime; keep macOS decorations for traffic lights
+  since `tauri.conf.json` has one cross-platform value.
+- Copy serves the user: lead with benefit, acknowledge their situation, offer
+  a clear next step, and stay warm/respectful/peer-level. No judging, lecturing,
+  correcting, scolding, defensive comparisons or implying a wrong choice.
+  Keep implementation trivia out of marketing and operational burden off the
+  user. Technical/privacy/security caveats are neutral, specific, actionable.
+  Review loading, empty, error, download and permission copy in context; avoid
+  condescending, bureaucratic or maintainer-facing language.
 
-- **Default to restraint.** New UI should first look unremarkable for its
-  platform, then earn any emphasis it gets. Visual weight is paid for by
-  everything else on the screen, so nothing receives it without a reason.
-- **Sizing and spacing are judgements, not a spec.** Decide them from the
-  surface type, the information density, the platform convention, how often the
-  control is used and where it sits in the hierarchy. Do not carry one set of
-  numbers across surfaces, and do not enlarge something because it is
-  important.
-- **Secondary entry points stay out of the visual centre.** Settings, toggles,
-  tool buttons, legends, info buttons, expand/collapse and source labels are
-  support. They must not compete with the countdown, the calendar or a screen's
-  main conclusion.
-- **Use the ordinary metaphor for an ordinary function.** Prefer SF Symbols on
-  iOS/macOS, the existing `lucide-react` set on Web and Desktop, or the
-  industry-standard symbol — never invent an icon for differentiation. A custom
-  mark still has to keep the common silhouette, proportion and meaning.
-- **Express hierarchy with the cheap tools first:** position, grouping, a
-  slight colour shift, a divider, state feedback, and — on pointer devices —
-  hover and tooltips. Exaggerated sizes, heavy colour blocks, large radii,
-  thick borders, strong shadows, decorative gradients and marketing-page
-  layouts are not hierarchy.
-- **Compare against the rest of the screen before calling it done.** If the new
-  element looks out of place, too large, too heavy, or thins out the
-  information density around it, pull it back rather than waiting for review.
+## Localization
 
-These are defaults for new work, not a reason to reopen the design systems
-already in place: the Desktop 420-450 px window, the iOS `OWCDesign` 22 pt card
-and 14 pt control radii, and the shared orange accent are settled conventions.
+- All user-facing app keys need translations in all 19 locales wherever stored,
+  preserving English placeholders. iOS edits
+  `src-mobile/ios/App/App/Localizable.xcstrings` directly; it is not generated.
+  `scripts/generate-watch-localizations.mjs` generates the Watch table from it.
+  Web/Desktop use `public/locales/*`, containing their keys plus all widget
+  keys. Shared keys deliberately live in both homes, not a shared runtime.
+- `WidgetCopy` (shared with Mac) reads `translation.json` from the widget
+  extension bundle. Copy `public/locales` into that extension only, not the App.
+- `npm run check:ios-strings` (also in `npm test` and Xcode Cloud) requires every
+  referenced Swift key, no unused catalog keys, all widget keys in
+  `public/locales`, and matching shared wording unless `INTENTIONAL_DIVERGENCE`
+  permits otherwise. iOS-only English requires `SAME_AS_ENGLISH_ON_PURPOSE`.
+  Use recognized key shapes: `t("…")`, `.string("…")`, `strings("…")`,
+  `localize("…")`; `…Key` property/function returns or constants; `…Key:`
+  arguments or same-file helper `…Key` parameters; key-labelled tuples; or
+  `focusIcon<Case>`. Other shapes are reported as unused.
+- Long-form pages only support English/Simplified Chinese through
+  `lib/content-locales.ts`; do not create unreviewed 19-locale copies. Chinese
+  UI variants link to Simplified Chinese content; others to English.
+- Desktop starts in the OS locale until a user persists an in-app language.
+  OS surfaces always follow system language: Finder/Dock/Launchpad/macOS menu
+  app names via localized `CFBundleName`/`CFBundleDisplayName`; tray/application
+  menus and About via `getFixedT(systemLocale)`. The desktop-menu effect must
+  not depend on `lang` (`docs/PLAN-MSSTORE.md` 9.7).
 
-- The Desktop main window is a compact tool, not the Web page squeezed into a
-  small viewport. Preserve its 420-450 px sizing range, single-line title,
-  fixed footer and settings subpage.
-- Avoid changes that increase window height when salary or update state is
-  shown. Salary belongs in the existing summary card; transient updater state
-  belongs inline or in a toast.
-- Desktop dropdowns must stay above the fixed footer and scroll internally.
-- The macOS Mini Timer is a non-draggable menu-bar panel. The Windows Mini
-  Timer remains draggable, remembers position, can stay on top and does not
-  occupy the taskbar.
-- Both Mini Timers and the main window share one `hideEarnings` value in the
-  store. Neither Mini Timer may keep its own local reveal state, and the eye
-  icon everywhere shows what the click will do, not the current state.
-- Lunch gaps and micro-break schedules are measured only from effective
-  `segments`. Overtime pay is a linear extension of the original hourly rate:
-  UI progress may use the extended duration, while salary uses elapsed
-  effective time divided by the planned effective duration.
-- Rust may switch only to a frontend-supplied `nextShift` snapshot. A stale
-  next shift crossed entirely during sleep must be discarded without
-  backfilled notifications.
-- The woodfish tap count and sound preference stay local. The first woodfish
-  tap is always silent; do not add bundled or downloaded audio assets.
-- `OWC_FORCE_WINDOWS_MINI=1` runs the Windows Mini Timer on macOS so it can be
-  reviewed without a Windows machine; it is gated on `debug_assertions` and is
-  absent from release builds. Launch with
-  `open --env OWC_FORCE_WINDOWS_MINI=1 <app>` — plain `open` drops the
-  variable, and running the binary directly loses the bundle identity.
-- `?platform=windows` (also `macos`, `other`) on the main window forces
-  `desktopPlatform`, so the Windows title bar can be reviewed on macOS with
-  `npm run dev:desktop`. Dev builds only — the branch is compiled out of
-  release bundles. Windows drops its native title bar at runtime
-  (`set_decorations(false)`), because `decorations` is one value for every
-  platform in `tauri.conf.json` and macOS needs it for the traffic lights.
-- The main window is not resizable. Text selection is off across the app shell
-  and the Mini Timer; inputs opt back in through `.select-none input`.
-- Verify both light and dark modes and long English labels before considering a
-  Desktop UI change complete. Select triggers have fixed widths — the longest
-  translated option must fit, not just the English one.
+## Work and validation
 
-## Internationalization and content
+- Preserve unrelated worktree changes. Normal flow: feature branch → PR → main;
+  no long-lived Desktop branch. Use focused commits; explain non-obvious
+  platform work's user-visible reason in PRs. PR titles use Conventional
+  Commits `type(scope): summary` (optional `!`): `feat`/`perf` → `enhancement`,
+  `fix` → `bug`, `docs` → `documentation`; other types remain unlabelled/Other
+  Changes. `.github/workflows/label-pr.yml` reads titles, not commit bodies;
+  `.github/release.yml` groups only by those labels.
+- When supported, sub-agents may handle useful independent subtasks. The
+  primary agent plans, coordinates, reviews and integrates. Use an appropriate
+  lower-tier model for sub-agents, never the highest tier available.
+- Do not commit `.next`, `out`, `src-tauri/target`, service-worker output,
+  installers, local environment files, updater private keys, passwords or
+  signing certificates. Only the updater public key belongs in the repository.
+- Keep `docs/PLAN-MSSTORE.md` and `docs/PLAN-MOBILE.md` aligned with material
+  architecture/milestones; remove stale TODOs when verified.
+- Stop `next dev` before a build: it shares `.next` with `next build`.
 
-- Product copy must sound like it is serving the user, not judging, lecturing
-  or correcting them. Lead with the benefit, acknowledge the user's situation
-  and offer a clear next step; keep the tone warm, respectful and peer-level.
-- Do not expose implementation trivia as marketing copy or make the user carry
-  the product's operational burden. Technical, privacy and security caveats
-  should be neutral, specific and actionable. Avoid scolding phrases such as
-  "if that matters to you", defensive comparisons, and language that implies
-  the user chose incorrectly.
-- Review user-facing copy in context, including loading, empty, error, download
-  and permission states. A technically accurate sentence is not finished if it
-  feels condescending, bureaucratic or written for maintainers instead of the
-  person using the product.
-- The application UI supports all 19 locales, and a user-facing key must carry
-  all 19 wherever it lives. Since plan 019 there are two homes:
-  - **iOS** copy lives in `src-mobile/ios/App/App/Localizable.xcstrings`,
-    edited directly (Xcode's String Catalog editor or the JSON). Nothing
-    generates it. The Watch's table is generated *from* it by
-    `scripts/generate-watch-localizations.mjs`.
-  - **Web and Desktop** copy lives in `public/locales/*`. Since L2b it holds
-    only the keys they use, plus the keys the iOS widget renders: the widget UI
-    shared with the Mac build (`WidgetCopy`) reads that folder from the widget
-    extension's bundle.
-  - A key both apps use is stored in both, deliberately — separate products'
-    copy, not a shared runtime.
+Setup: `npm install`. Common checks: `npm run lint`, `npm test`,
+`npm run check:version`. Complete the applicable gates before code hand-off:
 
-  `npm run check:ios-strings` (run by `npm test` and Xcode Cloud too) holds
-  the catalog to that: all 19 locales, translated, with English's
-  placeholders; no iOS-only copy left in English unless
-  `SAME_AS_ENGLISH_ON_PURPOSE` says so; shared keys worded the same on both
-  sides unless `INTENTIONAL_DIVERGENCE` says so; every key the Swift code asks
-  for present, and no catalog key that nothing asks for; every widget key
-  still in `public/locales`. It sees a key named in `t("…")`,
-  `.string("…")`, `strings("…")` or `localize("…")`; returned from a `…Key`
-  property or function; assigned to a `…Key` constant; passed as a `…Key:`
-  argument or to a same-file helper's `…Key` parameter; placed in a
-  key-labelled tuple; or built as `focusIcon<Case>`. Ask for new keys in one
-  of those shapes — anything else is reported as unused copy.
-- Long-form content pages intentionally support only English and Simplified
-  Chinese through `lib/content-locales.ts`. Do not create unreviewed copies for
-  all 19 locales.
-- Chinese UI variants link to Simplified Chinese content; other locales link to
-  English content.
-- Desktop startup language follows the OS locale until the user explicitly
-  selects and persists a language. That choice governs the in-app UI only.
-- OS-level surfaces follow the **system** language, not the in-app choice: the
-  app name in Finder/Dock/Launchpad and the macOS menu bar (localized
-  `CFBundleName` / `CFBundleDisplayName`), plus the tray menu, macOS application
-  menu and About panel (sent from the frontend with `getFixedT(systemLocale)`).
-  They belong to the OS shell and should speak the same language as the rest of
-  it, so the desktop-menu effect deliberately does not depend on `lang`.
-  See `docs/PLAN-MSSTORE.md` 9.7.
-
-## Privacy and analytics
-
-- Share URLs encode only start and end times. Never include salary.
-- Analytics are anonymous aggregate event counters. Do not add cookies,
-  identifiers, IP/User-Agent storage or individual histories.
-- Keep the desktop client local-only except for update traffic, external links
-  and user-triggered sharing. The version check runs automatically at launch
-  and carries no account, salary or usage data; the installer itself downloads
-  only after the user asks. Changing that balance means updating the About
-  page copy on the official About page at doneat.app, which states it.
-
-## Agent collaboration
-
-- When the environment supports sub-agents, they may be configured and used
-  for concrete, independent subtasks where delegation or parallel work is
-  useful. The primary agent remains responsible for planning, coordination,
-  reviewing the results and integrating the final change.
-- Do not assign the highest-tier model available in the environment to a
-  sub-agent. Choose a lower-tier model appropriate to the subtask's complexity.
-
-## Skills
-
-Skills are optional playbooks an agent loads mid-task. They live in
-`.agents/skills/` with symlinks in `.claude/skills/`, are recorded in
-`skills-lock.json`, and are installed with
-`npx skills add <owner>/<repo> --agent claude-code`.
-
-- **All three paths are excluded from git**, so skills exist on one machine
-  only. CI, Xcode Cloud and a fresh clone have none of them. Never write a rule
-  in this file, in a plan, or in a script that depends on a skill being
-  installed.
-- **This file wins.** A skill advises; it does not amend the boundaries above.
-  The checks a change owes before hand-off, the ban on porting schedule,
-  summary or salary rules into Swift, the 19-locale requirement and the release
-  gates are not negotiable by a loaded skill.
-- Skills run with full agent permissions. Read a `SKILL.md` before its first
-  use, and install with `--agent claude-code` rather than `--all` — `--all`
-  expands to every supported agent and writes an untracked `agent/skills/`
-  copy into the repository root.
-
-| Skill | Reach for it when |
+| Change | Required validation |
 |---|---|
-| `write-swift` | Writing or migrating Swift: value types, Swift 6 concurrency and data-race safety, `some` vs `any`, ARC, Swift Testing |
-| `swiftui-expert-skill` | Writing or refactoring SwiftUI, and for Instruments `.trace` analysis of hangs and view-update storms. Its default caution about Liquid Glass does not apply here — this app already adopts it |
-| `swiftui-pro` | A structured review pass over SwiftUI: deprecated API, view invalidation, data flow, navigation, HIG, accessibility, performance, hygiene |
-| `animate` | Building a new animation, in the order that decides whether it feels right. `OWCMotion` already holds this app's curves and durations — extend it rather than inlining new numbers |
-| `review-animations` | Judging the motion in a diff |
-| `improve-animations` | Auditing motion across a target and producing a plan; read-only, it does not apply fixes. Pairs with plan 001 |
-| `emil-design-eng` | UI polish and component-level design judgement, alongside the UI rules above |
-| `grill-me` | Pressure-testing a plan or a design decision before it is written down. Plans 007 and 008 were locked that way |
-| `ponytail` (+ `-review`, `-audit`, `-debt`, `-gain`, `-help`) | Cutting over-engineering: YAGNI, stdlib before custom code, native before dependencies, deletion before addition |
+| Any code | Checks proportional to scope |
+| Shared rendering, routes, locales or build config | Lint, unit tests, Web build + `check:build:web`, Desktop export + `check:build:desktop` |
+| Desktop Rust | Also `cargo fmt --check`, `cargo test`, release build; keep macOS/Windows PR CI (`fmt`, `clippy -- -D warnings`, tests) green |
+| Anything in `lib/`, `public/locales` or `src-mobile/` | Also local headless iOS simulator build |
+| Anything in `src-mobile/ios` | Also `npm run check:ios` |
+| Shared rules, including `lib/countdown.ts`, `lib/reminders.ts`, `lib/summary.ts` | Update matching Swift, `npm run generate:ios-rule-fixtures`, `npm test`, simulator build and passing `ScheduleRuleFixtureTests` |
+| UI | Real visual inspection on affected OS; iOS exception below |
+| Any packaging | `npm run check:version`; release guide |
 
-`ponytail` is a persistent mode, and three of its rules need a local
-translation before they fit this repository:
+**iOS simulator visual testing requires an explicit user request.** Implementing
+or fixing iOS UI is not that request. Do not proactively boot/open a simulator,
+launch for inspection or capture screenshots (including `qa:ios-shots`).
+Headless builds and automated XCTest/Swift Testing, including required simulator
+startup, may proceed without asking. Do not extend them into manual/visual QA.
+Without a visual-testing request, complete applicable automated checks, state
+that visual inspection was not performed, and hand off; do not block or ask
+solely to satisfy visual QA.
 
-- Its "one runnable check" rule is written for scripts. Here that check belongs
-  in `AppTests/*.swift` as Swift Testing — dropping the file in the directory
-  is enough, because `AppTests` is a synchronized folder — or in a vitest file
-  beside the module. Never an `assert`-based `__main__` block.
-- Its "at most three short lines" output rule does not govern commit messages
-  or pull request bodies. Those are deliberately long enough here to explain
-  the user-visible reason for non-obvious platform work.
-- A `ponytail:` comment marking a deliberate shortcut must name the ceiling and
-  the upgrade path in plain language, so it still reads correctly to someone
-  who has never heard of the skill.
-
-## Development commands
-
-Shared across every target:
-
-```bash
-npm install
-npm run lint
-npm test
-npm run check:version
-```
-
-`next dev` and `next build` share `.next`. Stop the dev server before running a
-build, otherwise the dev server may reference chunks replaced by the build.
-
-## Building each target
-
-`npm run check:version` gates all three: `package.json`, `src-tauri/Cargo.toml`,
-`src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json`, the macOS widget project
-and the iOS project (`MARKETING_VERSION`, all four build configurations) must
-carry the same product version. Run it before any packaging step.
-
-### Web
-
-```bash
-npm run dev                 # localhost:3000
-npm run build               # keeps middleware and Route Handlers
-npm run check:build:web
-```
-
-Release is a push to `main`, which triggers CI and the connected deployment.
-`npm run deploy:web` is an owner convenience that validates and pushes an
-already-committed local `main`; prefer the pull request flow.
-
-### Desktop (Tauri)
-
-```bash
-npm run tauri:dev                     # dev shell against the dev server
-npm run build:desktop                 # static export into out/
-npm run check:build:desktop           # validates that export
-npm run tauri:build                   # GitHub-channel bundle
-cargo test --manifest-path src-tauri/Cargo.toml
-```
-
-Three channels, and the channel is chosen at build time — a bundle built for
-one is not valid for another:
-
-| Channel | Frontend | Bundle |
+| Target | Development | Build and validation |
 |---|---|---|
-| `github` (default) | `npm run build:desktop` | `npm run tauri:build` |
-| Microsoft Store | `npm run build:desktop:msstore` | `npm run pack:msix` |
-| Mac App Store | `npm run build:desktop:macappstore` | `npm run tauri:build:macappstore` then `npm run pack:macappstore` |
-
-Store channels compile out the updater and the restart plugin; the GitHub
-channel compiles out the desktop widget (`docs/PLAN-MSSTORE.md` 9.9 — this is a
-product decision, not a gap). macOS GitHub builds are ad-hoc signed on purpose.
-
-Release: `npm run release:desktop -- [version]` requires a clean `main` exactly
-equal to `origin/main`, validates, and pushes `desktop-v<version>`. That tag
-drives `.github/workflows/release-desktop.yml`, which builds macOS Apple
-Silicon, macOS Intel, Windows x64 and Windows ARM64 into a Draft Release.
-Inspect the assets, `latest.json` and `latest-cn.json` before publishing.
-
-### Mac App Store (Tauri + WidgetKit)
-
-The store `.app` shares an App Store Connect record and bundle id with iOS
-(`com.rainif.offworkcountdown.macappstore`) through Universal Purchase. It is
-still a Tauri shell plus a nested WidgetKit `.appex`, not an iOS build.
-`npm run tauri:build:macappstore` already passes `--no-default-features`;
-omitting that flag produces a GitHub-channel binary even with the store config.
-
-**App Group.** iOS signs `group.com.rainif.offworkcountdown.macappstore`. macOS
-App Store validation rejects that string (409). With `OWC_APPLE_TEAM_ID` set,
-`build.rs` and `scripts/build-macos-widget.sh` prefix it automatically, so the
-signed value is `3GSK5B9S3T.group.com.rainif.offworkcountdown.macappstore`.
-Do not copy the iOS entitlements file onto the Mac host. Ad-hoc local packages
-strip App Groups entirely (`src-tauri/macappstore/README.md`).
-
-**Profiles.** Widget `distribution` signing needs an explicit Mac App Store
-`.provisionprofile`. The host profile can be omitted: `embed-macos-profile.mjs`
-then searches `~/Library/Developer/Xcode/UserData/Provisioning Profiles`.
-Current owner copies:
-
-| Role | File |
-|---|---|
-| Host | `~/Downloads/Off_Work_Countdown_macOS_App_Store.provisionprofile` |
-| Widget | `~/Downloads/Off_Work_Countdown_Widget_App_Store.provisionprofile` |
-
-Do not use iOS `.mobileprovision` files. The app is signed with **Apple
-Distribution**; look up the identity with
-`security find-identity -v -p codesigning`. The `.pkg` is signed separately
-with **Mac Installer Distribution** (`3rd Party Mac Developer Installer` in
-the keychain). `pack:macappstore` must not re-sign the `.app`.
-
-```bash
-OWC_WIDGET_SIGNING_MODE=distribution \
-OWC_APPLE_TEAM_ID=3GSK5B9S3T \
-OWC_WIDGET_PROVISION_PROFILE="$HOME/Downloads/Off_Work_Countdown_Widget_App_Store.provisionprofile" \
-OWC_MACOS_PROVISION_PROFILE="$HOME/Downloads/Off_Work_Countdown_macOS_App_Store.provisionprofile" \
-APPLE_SIGNING_IDENTITY="Apple Distribution: … (3GSK5B9S3T)" \
-npm run tauri:build:macappstore
-
-npm run pack:macappstore
-```
-
-After signing, the host entitlement must be the Team ID-prefixed group, not
-`group.com.rainif…`:
-
-```bash
-codesign -d --entitlements - --xml DoneAt.app \
-  | plutil -extract 'com.apple.security.application-groups' xml1 -o - -
-```
-
-`embed-macos-profile.mjs` and `pack-macappstore.sh` reject an iOS-style
-`group.*` locally. Past upload rejects and the profile/App Group pitfalls are
-in `docs/PLAN-MSSTORE.md` 9.11–9.12.
-
-### iOS (native SwiftUI)
-
-Nothing needs generating before a build. A change to shift, reminder, summary
-or salary rules needs the matching change in `ScheduleRules.swift`,
-`ReminderRules.swift` or `SummaryRules.swift` and
-`npm run generate:ios-rule-fixtures`. Open the project directly — there is no
-Capacitor sync step any more:
-
-```bash
-open src-mobile/ios/App/App.xcodeproj
-```
-
-Two targets share one App Store Connect record with the macOS build, through
-Universal Purchase:
-
-| Target | Scheme | Bundle id |
-|---|---|---|
-| App | `App` | `com.rainif.offworkcountdown.macappstore` |
-| Widget extension | `OffWorkCountdownWidgetsExtension` | `…macappstore.widget` |
-
-Both sign into App Group `group.com.rainif.offworkcountdown.macappstore`, which
-carries the salary-free `WidgetSnapshot` projection and nothing else. That
-`group.` identifier is iOS-only; the Mac App Store build uses the Team ID
-prefix described above.
-
-`App/Native` and `AppTests` are **synchronized folders**
-(`PBXFileSystemSynchronizedRootGroup`, project `objectVersion = 77`): Xcode
-takes their membership from the file system, so a new Swift file is compiled
-as soon as it lands in the directory, and `project.pbxproj` does not change.
-Create files in the subfolder that matches their kind — `Native/DesignSystem`,
-`Native/Models`, `Native/Services`, `Native/Views` — and do not hand-write
-`PBXFileReference` or `PBXBuildFile` entries for anything under them. The
-corollary is that a stray file in those directories now builds: a scratch or
-backup copy left beside real source will be compiled, not ignored.
-
-Everything else in the project is still an explicit reference, and must be
-registered by hand: `AppDelegate.swift`, the localized `InfoPlist.strings`,
-`Assets.xcassets`, `Localizable.xcstrings`, `WidgetExtension/`, and the two
-widget sources shared from `src-tauri/macos-widget`, and the `public/locales`
-folder reference, which is copied into the **widget extension only**: the App
-reads `Localizable.xcstrings`, while the widget UI shared with the Mac App
-Store build (`WidgetCopy`) reads `translation.json` from its own bundle.
-Plan 019 L1 removed the folder from both targets and every widget string fell
-back to its key name; `npm run check:ios` now pins each target. One file crosses targets —
-`Native/Models/LiveActivityAttributes.swift` is compiled into the widget as
-well, through the single `PBXFileSystemSynchronizedBuildFileExceptionSet` in
-the project. Anything else that needs to be shared with the widget goes in
-that same exception set.
-
-A view rasterised by `ImageRenderer` — the share card is the one today — is
-rendered with nothing above it, so it has no environment: an
-`@Environment(SomeObservable.self)` lookup inside it traps with "No Observable
-object of type … found" and takes the app down as the sheet opens. Pass such a
-view everything it draws, and cover it the way `ShareCardRenderTests` does, by
-rendering it exactly as the button does. Note what a crash looks like in that
-runner: the process restarts and the summary reads `Test run with 0 tests …
-passed` with exit code 0, so a crashing test is only visible if you count what
-actually ran.
-
-**iOS simulator visual testing is user-requested only.** Do not proactively
-open or boot a simulator, launch the app for visual inspection, or capture
-screenshots unless the user explicitly requests that testing. This includes
-`npm run qa:ios-shots` and other screenshot or visual QA scripts. A general
-request to implement or fix iOS UI does not authorize simulator visual testing.
-Headless simulator builds and automated XCTest / Swift Testing runs may proceed
-without a separate request, including simulator startup required by those tests.
-Do not extend an automated test run into screenshot or manual visual testing.
-
-When the user requests it, `npm run qa:ios-shots` walks every shell instead of
-every model. The app has
-three navigation shells — phone portrait, phone landscape and the iPad sidebar
-— sharing most of their views, so a change aimed at one lands in all three and
-no test notices: every test in `AppTests` is model-layer. The sweep launches
-eight surfaces on an iPhone and an iPad, both orientations, through the
-DEBUG-only launch arguments the app already reads, and writes
-`scripts/ios-qa-shots/index.html` — a contact sheet to scan for that requested QA. It
-verifies what it asked for rather than that a file appeared: a launch that
-fails, an app that is not running, or a shot that came back in the wrong
-orientation is reported as a miss with the reason, because a screenshot of the
-Home Screen is a perfectly valid PNG. `IOS_QA_SCENES`, `IOS_QA_THEME=both`,
-`IOS_QA_LANGUAGE`, `IOS_QA_IPHONE` / `IOS_QA_IPAD` and `IOS_QA_SKIP_BUILD=1`
-narrow or redirect it; it builds into its own DerivedData so it never fights
-Xcode. The `qaOrientation` hook goes through `AppOrientationPolicy`, which pins
-the requested mask before asking for the geometry update: requesting landscape
-on its own does not hold, because iOS re-reads the root controller's
-`supportedInterfaceOrientations`, still sees portrait allowed, and turns a
-physically portrait simulator straight back — that is what made those columns
-report "still portrait". A pin lasts the life of the process, so it belongs
-only in the DEBUG build. The app writes any geometry error to
-`ios.native.qaOrientationError`. The fix has not yet been confirmed by a full
-sweep; re-run one before trusting the landscape columns.
-
-`npm run check:ios` guards the shipping configuration of that project — bundle
-ids against Universal Purchase, the SwiftUI entry point, iPhone/iPad
-orientations, the App Group both targets share, the embedded widget, Live
-Activity support, and the Icon Composer app icon (`assets/brand/AppIcon.icon`,
-referenced by both the App and the Watch App, never symlinked). It reads the working tree
-directly, so it needs no build and runs on a clean clone. Run it after any
-change under `src-mobile/ios`.
-
-Test build on the simulator, headless:
-
-```bash
-npm run check:ios
-xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
-```
-
-`xcrun simctl list devices available` lists the installed simulators. For
-user-requested visual testing, install and launch a built `.app` with
-`xcrun simctl install <udid> <path>` and
-`xcrun simctl launch <udid> com.rainif.offworkcountdown.macappstore`.
-
-Three things about this runner will hand you a confident wrong answer if you
-do not know them. All three have already cost a wrong claim in a merged pull
-request.
-
-**`-only-testing` reports success when it matches nothing.** The identifier
-shape differs by how the test is declared, and the file name is never part of
-it:
-
-| Declared as | Identifier |
-|---|---|
-| a method inside a `@Suite` type (`RecordsPerformanceTests`) | `AppTests/RecordsPerformanceTests/surfaceCost()` |
-| a top-level `@Test` function (most of `FocusStoreTests.swift`) | `AppTests/newShiftDiscardsPreviousRecoveryPrompt()` |
-
-The parentheses are required, and `AppTests/FocusStoreTests` matches nothing
-because no such type exists — that is a file name. A miss is not an error:
-`xcodebuild` exits 0 and prints `** TEST SUCCEEDED **` having run zero tests.
-**Never read the exit code or that banner as "the test passed."** Count what
-actually ran:
-
-```bash
-grep -cE '✔ Test .* passed|✘ Test .* failed' test.log
-grep -oE 'Test run with [0-9]+ tests.*' test.log
-```
-
-**The simulator's time zone follows the Mac's, and `TZ=` does not reach it.**
-Setting `TZ` on the `xcodebuild` process changes nothing, so a time-zone
-problem cannot be reproduced or worked around from the environment — it has to
-be pinned inside the test, through `store.recordsTimeZoneIdentifier`. This
-matters because the store's default falls through to `TimeZone.current`, while
-everything it schedules against is civil time — the default shift is
-09:00–17:00, and day keys come from `recordsCalendar`. A test that injects an
-absolute instant therefore lands at a different hour, and sometimes a different
-day, on every machine: the same `Date(timeIntervalSince1970:)` that reads 15:40
-in UTC+8 reads 00:40 in UTC-7. Several tests that had passed for as long as
-everyone ran them in one zone failed the first time Xcode Cloud ran them in
-another. Prefer building instants from `DateComponents` through
-`store.recordsCalendar` over a raw epoch. Two shortcuts were tried and both
-made things worse, so neither is a way out. Setting `NSTimeZone.default` from
-the test helpers covers the store and the assertions together, and it crashed
-465 tests: it is process-global and Swift Testing runs tests in parallel in one
-process. Pinning only `store.recordsTimeZoneIdentifier` shares nothing and
-cannot crash, but it splits the run — the store then reads one zone while
-assertions building expected dates from `Calendar.current` read another, which
-turned five failures into about twenty-five. A suite-wide pin has to move both
-halves at once or neither; until someone does that, fix the affected tests
-individually by building their instants from civil dates.
-
-**Wall-clock assertions are meaningless under parallel testing.** Swift Testing
-runs tests in parallel *within one process*, so everything contends for the
-main actor — and `recordsDayCanvas` does part of its work there. Measured on one machine, one commit:
-`RecordsPerformanceTests.surfaceCost` reads `canvasMs` as 1.7 ms serially and
-5764 ms in the parallel suite. The assertion and the code are both fine; the
-parallel measurement is not. Work that stays off the main actor is unaffected,
-which is why `lifePrepareMs` carries 2543 ms of real computation and never
-trips. Run the suite with `-parallel-testing-enabled NO` when a perf assertion
-is in scope, and never "fix" one of these by raising its ceiling before
-measuring it serially.
-
-TestFlight and App Store builds are archived, not `build`. Bump
-`CURRENT_PROJECT_VERSION` (the build number) for every upload — App Store
-Connect rejects a repeated build number for the same `MARKETING_VERSION`:
-
-```bash
-npm run check:version
-xcodebuild -project src-mobile/ios/App/App.xcodeproj -scheme App \
-  -destination 'generic/platform=iOS' -configuration Release \
-  -archivePath build/OffWorkCountdown.xcarchive archive
-```
-
-Then distribute from Xcode's Organizer. There is no `ExportOptions.plist` and
-no fastlane in the repository, so the export half is deliberately manual — do
-not invent an automated path without agreeing on the signing setup first.
-
-GitHub Actions still has no iOS job. The repository is prepared for Xcode Cloud
-through `src-mobile/ios/App/ci_scripts/ci_post_clone.sh`, which installs the
-Node.js toolchain and checks the Watch and rule fixtures, the string catalog
-(`npm run check:ios-strings`) and `npm run check:ios` before Xcode builds. The App Store Connect workflow owns branch/path triggers,
-the Release archive action and TestFlight distribution; keep
-`docs/XCODE-CLOUD.md` aligned with that configuration. Any change touching
-`lib/`, `public/locales` or `src-mobile/` must still be built for the simulator
-locally before hand-off.
-
-CI compiles Rust for macOS and Windows on every pull request (`cargo fmt
---check`, `cargo clippy -- -D warnings`, `cargo test`). Before that job
-existed, a platform-specific Rust break stayed invisible until a release tag
-triggered the four-platform build. Keep it green rather than deferring to the
-release; the desktop shell is full of per-platform branches that a macOS-only
-local check cannot exercise.
-
-Before handing off a code change, run checks proportional to its scope. Any
-change touching shared rendering, routes, locales or build configuration must
-pass lint, unit tests, Web build validation and Desktop export validation.
-Desktop Rust changes must also pass `cargo fmt --check`, `cargo test` and a
-release build. UI changes require real visual inspection on the affected OS,
-except that iOS simulator visual inspection runs only when explicitly requested
-by the user. Without that request, complete the applicable build and automated
-test checks and note that visual inspection was not performed; do not block
-hand-off or ask for permission solely to satisfy visual QA.
-
-A change to `lib/countdown.ts`, `lib/reminders.ts` or `lib/summary.ts` reaches
-all three targets. It must pass `npm test`. iOS runs its own Swift port of
-every one of those rules since plan 019 R1–R3, so the change also needs the
-same change in `ScheduleRules.swift`, `ReminderRules.swift` or
-`SummaryRules.swift`, regenerated fixtures, a simulator build and a passing
-`ScheduleRuleFixtureTests` run — otherwise iOS keeps the previous behaviour and
-the divergence surfaces as a wrong number on a screen. `npm test` reports the
-fixtures stale until they are regenerated.
-
-## Version and release rules
-
-- Product versions must match in `package.json`, `package-lock.json`,
-  `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json`,
-  the macOS widget project and `src-mobile/ios/App/App.xcodeproj`
-  (`MARKETING_VERSION`, every build configuration of both targets). Run
-  `npm run check:version`.
-- `CURRENT_PROJECT_VERSION` in the iOS project is the build number and is
-  deliberately **not** tied to the product version. Bump it for every
-  TestFlight or App Store upload; App Store Connect rejects a repeated build
-  number under the same `MARKETING_VERSION`.
-- iOS ships through App Store Connect only — there is no GitHub channel and no
-  tag-driven workflow for it. Universal Purchase means iOS and the Mac App
-  Store build share one record and one bundle id, so an iOS submission is a
-  release of that shared product, not an independent one.
-- Store listing media is generated by `scripts/marketing-shots/` and synced
-  with `npm run asc:sync` (`docs/APP-STORE-CONNECT-SYNC.md`). Since the
-  user-approved 2026-09-08 decision, **screenshots** cover all 17 App Store
-  locales — six iPhone and six iPad shots each, 204 PNGs — because inherited
-  English shots left most stores showing English UI on a localized listing
-  (`docs/reviews/2026-09-08-ios-marketing-shots.md`). **App Previews** are
-  still `en-US`, `zh-Hans` and `zh-Hant` only; the other locales inherit
-  English video. The app's 19 UI locales do not map one-to-one onto store
-  locales: `zh-HK` and `zh-TW` share one Traditional Chinese store listing, and
-  `mr-IN` has no store locale at all.
-- 1320×2868 iPhone shots use API display type `APP_IPHONE_67` — there is no
-  `APP_IPHONE_69`. After replacing shots, delete leftover sets on unused
-  display types such as `APP_IPHONE_65`. The Connect UI prefers those leftovers,
-  so one locale can look stale while another already shows the new set.
-- App Info (name, subtitle, privacy URLs) is shared with the Mac listing. When
-  either platform version is in review, App Info is locked; `asc:sync` skips
-  those fields. Version-level screenshots and previews on an editable iOS
-  version still apply.
-- Compose official Apple frames the same way as the site DeviceHero: the frame
-  PNG sizes the box, the capture sits in the hole, the frame stacks on top.
-  Do not punch bezels or redraw the Dynamic Island. App Previews are
-  `IPHONE_67` 886×1920 portrait and must include an audio track (silent stereo
-  is fine).
-- Normal work uses `feature branch -> pull request -> main`. Do not maintain a
-  long-lived Desktop branch.
-- Pull request titles must be Conventional Commits: `type(scope): summary`,
-  with an optional `!`. `.github/workflows/label-pr.yml` derives the label
-  from the prefix — `feat`/`perf` to `enhancement`, `fix` to `bug`, `docs` to
-  `documentation` — and `.github/release.yml` groups the changelog by those
-  labels and nothing else. Any other prefix (`ci`, `chore`, `refactor`,
-  `test`) is deliberately left unlabelled and groups under Other Changes.
-  Only the title is read; commit message bodies do not affect grouping, so a
-  missing or wrong prefix silently misfiles the entry in the release notes.
-- `npm run deploy:web` is an owner convenience command for an already committed
-  local `main`. It validates and pushes `main`, triggering CI and the connected
-  Web deployment. Prefer the PR flow for ordinary changes.
-- `npm run release:desktop -- [version]` requires a clean `main` exactly equal
-  to `origin/main`, validates the release and pushes `desktop-v<version>`.
-- Desktop tags trigger `.github/workflows/release-desktop.yml`, which builds
-  macOS Apple Silicon, macOS Intel, Windows x64 and Windows ARM64 and creates a
-  Draft Release. Inspect assets, `latest.json` and `latest-cn.json` before
-  publishing it. `latest-cn.json` is the mirror manifest built by the
-  `mirror-manifest` job: same signatures, asset URLs rewritten through a
-  reverse proxy, used only after a direct download fails. Its absence, or a
-  copy whose URLs were not rewritten, silently disables the fallback.
-- Never commit updater private keys, passwords, signing certificates or local
-  environment files. Only the updater public key belongs in the repository.
-- GitHub-channel macOS builds use ad-hoc signing because the project
-  deliberately does not purchase Developer ID certificates. Installation
-  documentation must explain Gatekeeper and Windows SmartScreen accurately.
-  The Mac App Store channel is the exception: it uses Apple Distribution and
-  Mac Installer Distribution, as described above.
-
-## Repository hygiene
-
-- Preserve unrelated user changes in a dirty worktree.
-- Do not commit generated `.next`, `out`, `src-tauri/target`, service-worker
-  output, installers or local environment files.
-- Keep `docs/PLAN-MSSTORE.md` and `docs/PLAN-MOBILE.md`
-  aligned with material architecture or milestone changes. Remove stale TODOs
-  when work is verified.
-- The `mirror-manifest` job downloads every release asset to compute its
-  SHA-256, so each new Release starts at one download per asset (two for
-  `latest.json`). Subtract that before reading the counts as demand.
-- Use focused commits and describe the user-visible reason for non-obvious
-  platform work in the pull request.
+| Web | `npm run dev` (localhost:3000) | `npm run build`, `npm run check:build:web` |
+| Desktop | `npm run tauri:dev` | `npm run build:desktop`, `npm run check:build:desktop`, `npm run tauri:build` (GitHub bundle) |
+| Rust | | `cargo test --manifest-path src-tauri/Cargo.toml` |
+| iOS | Open `src-mobile/ios/App/App.xcodeproj`; no generation/sync prerequisite except changed fixtures | See iOS guide for headless build and test-runner pitfalls |

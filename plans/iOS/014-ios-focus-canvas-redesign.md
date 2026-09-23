@@ -1,6 +1,6 @@
 # 014 — 番茄钟画布重排：现在 / 今天 / 常用
 
-- **状态**：已在 `feat/ios-focus-canvas-redesign` 实施，2026-09-05 两轮 CR 修复与本次模拟器回归已完成；真机验收尚未签收，见[修复记录](../docs/IOS-FOCUS-REVIEW-FIXES.md)
+- **状态**：已在 `feat/ios-focus-canvas-redesign` 实施，2026-09-05 两轮 CR 修复与本次模拟器回归已完成；真机验收尚未签收，见[修复记录](../../docs/IOS-FOCUS-REVIEW-FIXES.md)
 - **日期**：2026-09-04
 - **范围**：iOS / iPadOS 原生 SwiftUI 的专注页、番茄钟计划页、快捷添加 sheet、计时页「接下来」时间线上的番茄钟行，以及这些界面涉及的 19 个 UI locale
 - **依赖**：[011](011-ios-records-focus-release-remediation.md) 已修的番茄钟行为、[013](013-records-day-canvas-and-visual-language.md) 的画布方法论与视觉语法、[006](006-free-trial-subscription.md) 的 Plus 权益模型

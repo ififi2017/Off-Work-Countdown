@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 2,
+  "exportedAtMs": 0,
+  "timeZoneIdentifier": "UTC",
+  "calendarIdentifier": "gregorian",
+  "careerPeriods": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "startsOn": "2026-08-24",
+      "endsBefore": null,
+      "label": "Current",
+      "timeZoneIdentifier": "UTC",
+      "calendarIdentifier": "gregorian",
+      "createdAtMs": 1787529600000,
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000002"
+    }
+  ],
+  "scheduleSnapshots": [
+    {
+      "id": "00000000-0000-0000-0000-000000000005",
+      "periodID": "00000000-0000-0000-0000-000000000001",
+      "effectiveFrom": "2026-08-24",
+      "configurationData": "eyJzdGFydFRpbWUiOiIwOTowMCIsImVuZFRpbWUiOiIxNzowMCIsIndvcmtkYXlzIjpbMSwyLDMsNCw1XSwic2NoZWR1bGUiOnsibW9kZSI6ImNsYXNzaWMifSwiYnJlYWtTdGFydFRpbWUiOiIxMjowMCIsImJyZWFrRHVyYXRpb25NaW51dGVzIjo2MH0=",
+      "fingerprint": "synthetic-hours-v1",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000021"
+    }
+  ],
+  "calendarExceptions": [
+    {
+      "dayKey": "2026-08-26#user",
+      "date": "2026-08-26",
+      "effect": "rest",
+      "origin": "user",
+      "isCleared": false,
+      "regionIdentifier": null,
+      "datasetVersion": null,
+      "label": "Personal rest",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000022",
+      "timeZoneIdentifier": "UTC"
+    }
+  ],
+  "dayOverrides": [
+    {
+      "dayKey": "2026-08-24",
+      "kind": "customSegments",
+      "segments": [
+        {
+          "startAtMs": 1787529600000,
+          "endAtMs": 1787558400000
+        }
+      ],
+      "note": "Worked a full shift",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000003",
+      "timeZoneIdentifier": "UTC"
+    }
+  ],
+  "workObservations": [
+    {
+      "eventID": "00000000-0000-0000-0000-000000000004",
+      "shiftAnchorDate": "2026-08-24",
+      "occurredAtMs": 1787529600000,
+      "kind": "countdownStarted",
+      "valueData": "bWFudWFs",
+      "scheduleSnapshotID": "00000000-0000-0000-0000-000000000005",
+      "schemaVersion": 2,
+      "timeZoneIdentifier": "UTC"
+    }
+  ],
+  "lifeProfile": {
+    "profileID": "00000000-0000-0000-0000-00574F524B01",
+    "birthYear": 1990,
+    "workStartedOn": "2026-08-24",
+    "retirementAge": 60,
+    "averageSleepHours": 7.5,
+    "hidesExactAges": false,
+    "editedAtMs": 1787529600000,
+    "editCount": 5,
+    "editTieBreaker": "00000000-0000-0000-0000-000000000015"
+  },
+  "focusTasks": [
+    {
+      "id": "00000000-0000-0000-0000-000000000007",
+      "createdAtMs": 1787529600000,
+      "plannedForDate": "2026-08-24",
+      "title": "Write release notes",
+      "estimatedPomodoros": 2,
+      "completedAtMs": null,
+      "sortIndex": 0,
+      "editedAtMs": 1787529600000,
+      "editCount": 2,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000008"
+    }
+  ],
+  "focusSessions": [
+    {
+      "id": "00000000-0000-0000-0000-000000000009",
+      "taskID": "00000000-0000-0000-0000-000000000007",
+      "shiftAnchorDate": "2026-08-24",
+      "startedAtMs": 1787529600000,
+      "plannedEndAtMs": 1787531100000,
+      "endedAtMs": 1787531100000,
+      "endReason": "completed",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000010"
+    }
+  ]
+}

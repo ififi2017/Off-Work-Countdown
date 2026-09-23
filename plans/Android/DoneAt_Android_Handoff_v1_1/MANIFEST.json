@@ -1,0 +1,104 @@
+{
+  "package_version": "1.1",
+  "created_at": "2026-09-21",
+  "updated_at": "2026-09-21",
+  "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
+  "implementation_status": "PLAN_ONLY",
+  "approval_status": "DIRECTIONS_CONFIRMED_CONFIGURATION_PENDING",
+  "counts": {
+    "main_markdown_documents": 8,
+    "tasks": 28,
+    "first_release_tasks": 27,
+    "deferred_tasks": 1,
+    "planned_test_cases": 137,
+    "first_release_test_cases": 136,
+    "post_first_release_test_cases": 1,
+    "independent_interval_examples": 10,
+    "independent_identity_examples": 2,
+    "source_references": 52,
+    "decision_records": 11,
+    "external_configuration_records": 5
+  },
+  "combined_document": {
+    "name": "DoneAt_Android_完整PRD与移植指南_v1.1.md",
+    "bytes": 228894,
+    "sha256": "3d38dd4e48724da59a84e671079765df16f17421886efaa23d4866545461ffa1"
+  },
+  "files": [
+    {
+      "name": "00_START_HERE.md",
+      "bytes": 10237,
+      "sha256": "effd75e6d0c35deb53eaef46074b38d3f4d5988f1442dec39217101062fb6089"
+    },
+    {
+      "name": "01_PRD.md",
+      "bytes": 35295,
+      "sha256": "b86a29eb79ba90d1dda8c918a55f6a3543ef83c43648f8dfc169fd766365d4f8"
+    },
+    {
+      "name": "02_TECHNICAL_GUIDE.md",
+      "bytes": 53668,
+      "sha256": "62927d3fc41582dbe1c5ed4a369ee6ef0b639c5413fc410ef8185c1b780a6f93"
+    },
+    {
+      "name": "03_AI_EXECUTION_PLAN.md",
+      "bytes": 27436,
+      "sha256": "959d43ab863a9d944925bac9ff7f657a34334e2b7383f47e375cf8a486a2b555"
+    },
+    {
+      "name": "04_QA_AND_PLAY_RELEASE.md",
+      "bytes": 21425,
+      "sha256": "ffa8964127b473be49d61ee73ecaa1f3d6aeed02c44e6ddc87ba57a6a7c99b49"
+    },
+    {
+      "name": "05_SOURCES_AND_DECISIONS.md",
+      "bytes": 33188,
+      "sha256": "53b61903decb7d77c5f87eada7d97eecc2a6c63463d7239231b5ec310469a8bd"
+    },
+    {
+      "name": "06_PROMPT_FOR_IMPLEMENTING_AI.md",
+      "bytes": 6376,
+      "sha256": "ca346c3a3f7acef5848dd0d500501bc6043a6c3de166b975fd9c2a88527591d5"
+    },
+    {
+      "name": "07_TEST_CATALOG.md",
+      "bytes": 38073,
+      "sha256": "c297069742c956425803e9607fea7ac3ecedeb34444a3691577c08bc5602f369"
+    },
+    {
+      "name": "CHANGELOG.md",
+      "bytes": 1770,
+      "sha256": "7022ed728221c75419db93acbff931335a649f7a5d206583ca52caa7fcd2ac58"
+    },
+    {
+      "name": "PACKAGE_VALIDATION.md",
+      "bytes": 1656,
+      "sha256": "62e1757249ddf8e73a2eba6362d2c243cefd196cf951653ee3efc72513f37ac7"
+    },
+    {
+      "name": "acceptance_examples.json",
+      "bytes": 9048,
+      "sha256": "09750b806b14b93501d0c6b69a49a5329531d61271e83073d1c4ca5473e03c87"
+    },
+    {
+      "name": "decisions.json",
+      "bytes": 8426,
+      "sha256": "b766ef4f37f679ef107d937cc1161ef84d18293f65a8bebf2d61d4e074408c96"
+    },
+    {
+      "name": "references.json",
+      "bytes": 10029,
+      "sha256": "0836623d3223164f76f072f856f98d959378e79ab985f6f0bff79a6cf971d831"
+    },
+    {
+      "name": "tasks.json",
+      "bytes": 29639,
+      "sha256": "e9a2477ea9434bbc482de920a3b7af2eb955fbc3931e507759996266f76d2dc5"
+    },
+    {
+      "name": "test-catalog.json",
+      "bytes": 65993,
+      "sha256": "718f7691532a56392e99ba9ff9101408270272d929575958f9c3c0d408109942"
+    }
+  ]
+}

@@ -5,7 +5,7 @@
 - **Severity**: HIGH
 - **Category**: iOS 产品结构 / 计时页 / App Store 首发
 - **Estimated scope**: `src-mobile/ios` + 19 份 UI 文案 + `OffWorkStoreTests` + iOS 外表面短名（InfoPlist / 启动页 / 灵动岛，**不改**共享 `translation.json`）。Widget / Live Activity / 通知只改与新标记同向的副作用。**不含** [002](002-records-life-focus.md) 记录层，**不含** [006](006-free-trial-subscription.md) 的 StoreKit / 试用 / 付费墙
-- **相关**: 计时页口径见 [docs/IOS-TIMER-SURFACES.md](../docs/IOS-TIMER-SURFACES.md)；图标与 mark 见 [008](008-brand-doneat.md)（008 的改名范围已在下方 Grill 锁定，不再单独立项拍板）
+- **相关**: 计时页口径见 [docs/IOS-TIMER-SURFACES.md](../../docs/IOS-TIMER-SURFACES.md)；图标与 mark 见 [008](008-brand-doneat.md)（008 的改名范围已在下方 Grill 锁定，不再单独立项拍板）
 
 ## 一句话
 
@@ -86,7 +86,7 @@ Watch、跨设备同步、Android 不在范围内。
 - 有排班没有停止倒计时。规则错误用横幅，不停表。
 - 不说「强制计时」「武装」。休息日与未排班的主按钮都叫「手动计时」；有排班的休息日进班后用横幅取消，不留「上过班」。
 
-完整形态、壳层、日历缝、分享表见 [docs/IOS-TIMER-SURFACES.md](../docs/IOS-TIMER-SURFACES.md)。
+完整形态、壳层、日历缝、分享表见 [docs/IOS-TIMER-SURFACES.md](../../docs/IOS-TIMER-SURFACES.md)。
 
 ## 未提交 diff 怎么处理
 

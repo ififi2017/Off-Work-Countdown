@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 6,
+  "exportedAtMs": 0,
+  "timeZoneIdentifier": "UTC",
+  "calendarIdentifier": "gregorian",
+  "careerPeriods": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "startsOn": "2026-08-24",
+      "endsBefore": null,
+      "label": "Current",
+      "timeZoneIdentifier": "UTC",
+      "calendarIdentifier": "gregorian",
+      "createdAtMs": 1787529600000,
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000002"
+    }
+  ],
+  "scheduleSnapshots": [
+    {
+      "id": "00000000-0000-0000-0000-000000000005",
+      "periodID": "00000000-0000-0000-0000-000000000001",
+      "effectiveFrom": "2026-08-24",
+      "configurationData": "eyJzdGFydFRpbWUiOiIwOTowMCIsImVuZFRpbWUiOiIxNzowMCIsIndvcmtkYXlzIjpbMSwyLDMsNCw1XSwic2NoZWR1bGUiOnsibW9kZSI6ImNsYXNzaWMifSwiYnJlYWtTdGFydFRpbWUiOiIxMjowMCIsImJyZWFrRHVyYXRpb25NaW51dGVzIjo2MH0=",
+      "fingerprint": "synthetic-hours-v1",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000021"
+    }
+  ],
+  "calendarExceptions": [
+    {
+      "dayKey": "2026-08-26#user",
+      "date": "2026-08-26",
+      "effect": "rest",
+      "origin": "user",
+      "isCleared": false,
+      "regionIdentifier": null,
+      "datasetVersion": null,
+      "label": "Personal rest",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000022",
+      "timeZoneIdentifier": "UTC"
+    }
+  ],
+  "dayOverrides": [
+    {
+      "dayKey": "2026-02-30",
+      "kind": "customSegments",
+      "segments": [
+        {
+          "startAtMs": 1787529600000,
+          "endAtMs": 1787558400000
+        }
+      ],
+      "note": "Worked a full shift",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000003",
+      "timeZoneIdentifier": "UTC"
+    }
+  ],
+  "workObservations": [
+    {
+      "eventID": "00000000-0000-0000-0000-000000000004",
+      "shiftAnchorDate": "2026-08-24",
+      "occurredAtMs": 1787529600000,
+      "kind": "countdownStarted",
+      "valueData": "bWFudWFs",
+      "scheduleSnapshotID": "00000000-0000-0000-0000-000000000005",
+      "schemaVersion": 2,
+      "timeZoneIdentifier": "UTC",
+      "editedAtMs": 1787529660000,
+      "editCount": 3,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000006"
+    }
+  ],
+  "lifeProfile": {
+    "profileID": "00000000-0000-0000-0000-00574F524B01",
+    "birthYear": 1990,
+    "workStartedOn": "2026-08-24",
+    "retirementAge": 60,
+    "averageSleepHours": 7.5,
+    "hidesExactAges": false,
+    "bornOn": {
+      "year": 1990,
+      "month": 3,
+      "day": 15,
+      "precision": "day"
+    },
+    "schoolStartedOn": {
+      "year": 1996,
+      "month": null,
+      "day": null,
+      "precision": "year"
+    },
+    "workStartedPartial": {
+      "year": 2015,
+      "month": 6,
+      "day": 1,
+      "precision": "day"
+    },
+    "retirementOn": {
+      "year": 2055,
+      "month": null,
+      "day": null,
+      "precision": "year"
+    },
+    "averageSleepMinutes": 480,
+    "sleepSource": "healthSuggested",
+    "sleepSourceUpdatedAtMs": 1787529600000,
+    "workHistoryMode": "detailed",
+    "roughCurrentSalary": {
+      "amount": 10000,
+      "cadence": "monthly"
+    },
+    "employmentPeriods": [
+      {
+        "id": "00000000-0000-0000-0000-000000000014",
+        "startsOn": {
+          "year": 2015,
+          "month": 6,
+          "day": 1,
+          "precision": "day"
+        },
+        "endsOn": null,
+        "salary": {
+          "amount": 120000,
+          "cadence": "yearly"
+        }
+      }
+    ],
+    "futureIncomeDecline": {
+      "startsAtAge": 45,
+      "retirementRatio": 0.6
+    },
+    "editedAtMs": 1787529600000,
+    "editCount": 5,
+    "editTieBreaker": "00000000-0000-0000-0000-000000000015"
+  },
+  "focusTasks": [
+    {
+      "id": "00000000-0000-0000-0000-000000000007",
+      "createdAtMs": 1787529600000,
+      "plannedForDate": "2026-08-24",
+      "scheduledStartAtMs": 1787533200000,
+      "title": "Write release notes",
+      "estimatedPomodoros": 2,
+      "icon": "writing",
+      "isFavorite": true,
+      "completedAtMs": null,
+      "deletedAtMs": null,
+      "sortIndex": 0,
+      "editedAtMs": 1787529600000,
+      "editCount": 2,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000008",
+      "templateID": null,
+      "templateTaskKey": null
+    }
+  ],
+  "focusSessions": [
+    {
+      "id": "00000000-0000-0000-0000-000000000009",
+      "taskID": "00000000-0000-0000-0000-000000000007",
+      "shiftAnchorDate": "2026-08-24",
+      "startedAtMs": 1787529600000,
+      "plannedEndAtMs": 1787531100000,
+      "endedAtMs": 1787531100000,
+      "endReason": "completed",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000010",
+      "kind": "focus",
+      "timeZoneIdentifier": "UTC",
+      "anchorDayKey": "2026-08-24",
+      "actualDurationSeconds": 1500,
+      "plannedEndReason": "completed"
+    }
+  ],
+  "focusPlanningConfiguration": {
+    "plans": [
+      {
+        "dayKey": "2026-08-24",
+        "shiftStartAtMs": 1787529600000,
+        "assignments": [
+          {
+            "blockStartAtMs": 1787529600000,
+            "kind": "task",
+            "taskID": "00000000-0000-0000-0000-000000000007",
+            "taskTitle": "Write release notes",
+            "taskIcon": "writing"
+          }
+        ],
+        "appliedTemplateID": "00000000-0000-0000-0000-000000000011"
+      }
+    ],
+    "templates": [
+      {
+        "id": "00000000-0000-0000-0000-000000000011",
+        "name": "Release day",
+        "slots": [
+          {
+            "blockIndex": 0,
+            "kind": "task",
+            "taskKey": "00000000-0000-0000-0000-000000000012",
+            "taskTitle": "Write release notes",
+            "taskIcon": "writing"
+          }
+        ],
+        "createdAtMs": 1787529600000,
+        "updatedAtMs": 1787529600000
+      }
+    ],
+    "defaultTemplateID": "00000000-0000-0000-0000-000000000011",
+    "autoAppliedDayKeys": [
+      "2026-08-24"
+    ],
+    "focusMinutes": 40,
+    "shortBreakMinutes": 8,
+    "longBreakMinutes": 20,
+    "longBreakEvery": 3,
+    "editedAtMs": 1787529600000,
+    "editCount": 4,
+    "editTieBreaker": "00000000-0000-0000-0000-000000000013"
+  },
+  "syncedPreferences": {
+    "startMinutes": 540,
+    "endMinutes": 1020,
+    "workdays": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "scheduleMode": "classic",
+    "alternatingWeekType": "double",
+    "alternatingWeekendWorkday": 6,
+    "alternatingReferenceWeekStartMs": 1787529600000,
+    "rotationWorkDays": 2,
+    "rotationRestDays": 2,
+    "rotationAnchorMs": 1787529600000,
+    "lunchEnabled": true,
+    "lunchStartMinutes": 720,
+    "lunchDurationMinutes": 60,
+    "recordsTimeZoneIdentifier": "UTC",
+    "salaryAmount": "64000",
+    "salaryEnabled": true,
+    "salaryType": "monthly",
+    "monthlyWorkingDays": 22,
+    "annualBonusEnabled": true,
+    "annualBonusMonths": 2,
+    "notificationMode": "milestones",
+    "cycleEndSummaryNotificationEnabled": true,
+    "lunchStartReminderEnabled": true,
+    "lunchEndReminderEnabled": true,
+    "microBreakEnabled": true,
+    "microBreakIntervalMinutes": 60,
+    "theme": "auto",
+    "languageOverride": null,
+    "editedAtMs": 1787529600000,
+    "editCount": 1,
+    "editTieBreaker": "00000000-0000-0000-0000-000000000016"
+  },
+  "recordsStartedOn": "2026-08-24",
+  "extendedSchedule": {
+    "isEnabled": true,
+    "shiftTypes": [
+      {
+        "id": "00000000-0000-0000-0000-000000000017",
+        "name": "Night",
+        "kind": "work",
+        "startMinutes": 1320,
+        "endMinutes": 360,
+        "breakEnabled": true,
+        "breakStartMinutes": 120,
+        "breakDurationMinutes": 30,
+        "colorHex": "#3A6EA5",
+        "isArchived": false
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000018",
+        "name": "Rest",
+        "kind": "rest",
+        "startMinutes": 0,
+        "endMinutes": 0,
+        "breakEnabled": false,
+        "breakStartMinutes": 0,
+        "breakDurationMinutes": 0,
+        "colorHex": "#9E9E9E",
+        "isArchived": false
+      }
+    ],
+    "rule": {
+      "preset": "rotation",
+      "anchorDayKey": "2026-08-24",
+      "days": [
+        "00000000-0000-0000-0000-000000000017",
+        "00000000-0000-0000-0000-000000000017",
+        "00000000-0000-0000-0000-000000000018"
+      ]
+    },
+    "holidayRegionIdentifier": null,
+    "clearedFromDayKey": null,
+    "timeZoneIdentifier": "UTC",
+    "editedAtMs": 1787529600000,
+    "editCount": 2,
+    "editTieBreaker": "00000000-0000-0000-0000-000000000019"
+  },
+  "rosterDays": [
+    {
+      "dayKey": "2026-08-25",
+      "shiftTypeID": "00000000-0000-0000-0000-000000000018",
+      "assignedShiftType": null,
+      "generatedFromPattern": null,
+      "timeZoneIdentifier": "UTC",
+      "editedAtMs": 1787529600000,
+      "editCount": 1,
+      "editTieBreaker": "00000000-0000-0000-0000-000000000020"
+    }
+  ]
+}

@@ -1,0 +1,2104 @@
+{
+  "schema_version": 1,
+  "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
+  "case_count": 137,
+  "execution_status": "NOT_RUN",
+  "cases": [
+    {
+      "id": "QA-001",
+      "group": "基线与工程门禁",
+      "requirements": [
+        "FR-20"
+      ],
+      "level": "CI",
+      "setup": "全新检出固定SHA，工作区另有用户未提交文件",
+      "action": "执行T00并创建Android分支",
+      "expected": "记录SHA和未提交文件；不reset、不覆盖、不以main最新内容混入固定基线。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-002",
+      "group": "基线与工程门禁",
+      "requirements": [
+        "FR-20"
+      ],
+      "level": "CI",
+      "setup": "空Android工程，锁定所有依赖版本",
+      "action": "构建Debug与启用R8的Release",
+      "expected": "两种构建实际成功；报告实际版本、JDK和依赖树，无动态+版本。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-003",
+      "group": "基线与工程门禁",
+      "requirements": [
+        "FR-20"
+      ],
+      "level": "UI",
+      "setup": "需要采用的Expressive主题、按钮及运动方案探针",
+      "action": "编译并在目标设备交互",
+      "expected": "使用真实已存在API；不因实验API编译失败私自换回普通Material样式。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-004",
+      "group": "基线与工程门禁",
+      "requirements": [
+        "FR-20"
+      ],
+      "level": "CI",
+      "setup": "AGP9内置Kotlin的候选工程",
+      "action": "检查Android和纯JVM模块插件",
+      "expected": "Android不重复应用冲突的旧kotlin-android插件；domain独立无android.*依赖。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-005",
+      "group": "基线与工程门禁",
+      "requirements": [
+        "FR-20"
+      ],
+      "level": "CI",
+      "setup": "原仓库TS/Swift fixtures与新增Android fixtures",
+      "action": "改规则但不更新生成文件，执行检查",
+      "expected": "检测源哈希/生成差异并失败；实际测试数量大于零，不接受空报告。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-006",
+      "group": "基线与工程门禁",
+      "requirements": [
+        "FR-20"
+      ],
+      "level": "SEC",
+      "setup": "Release APK/AAB与合并manifest",
+      "action": "扫描Debug gate、token、私钥、权限和测试地址",
+      "expected": "无调试解锁入口、测试支付适配器或密钥；无不相干敏感权限。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-007",
+      "group": "基线与工程门禁",
+      "requirements": [
+        "FR-20"
+      ],
+      "level": "CI",
+      "setup": "Android相关改动以及未修改的Web/Desktop/iOS",
+      "action": "执行原仓库适用检查与Android检查",
+      "expected": "报告真实回归结果；不能以Android成功替代其他目标保护。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-008",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "09–12、13–18；原计划8h；日薪80；现在08:00",
+      "action": "evaluateShift",
+      "expected": "elapsed=0、remaining=8h，主时间为距开始1h；收入0，非已工作。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-009",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "同上；现在09:00",
+      "action": "evaluateShift",
+      "expected": "工作开始边界正确；remaining=8h；无负数/NaN。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-010",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "同上；现在11:00",
+      "action": "evaluateShift",
+      "expected": "已工作2h，剩余6h，进度25%，收入20。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-011",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "同上；现在12:00与12:30",
+      "action": "分别evaluateShift",
+      "expected": "进入休息；12:30 elapsed=3h、remaining=5h、hero=30min、收入30。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-012",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "同上；现在13:00",
+      "action": "evaluateShift",
+      "expected": "休息结束；hero切为有效剩余5h，不残留0秒休息态。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-013",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "同上；现在18:00及18:05",
+      "action": "evaluateShift",
+      "expected": "完成态；remaining=0；不自动把晚到的5分钟算加班。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-014",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "同上延长末段到20:00；现在19:00",
+      "action": "evaluateShift",
+      "expected": "当前总长10h、planned8h、elapsed9h、remaining1h、进度90%、payRatio1.125、收入90。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-015",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "工作段09–10、11–12、14–16，now10:30",
+      "action": "计算有效累计与当前间隙",
+      "expected": "elapsed1h、remaining3h；休息hero直到11:00；不累计多个空隙。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-016",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "22:00–次日06:00；now次日01:00；无休息",
+      "action": "计算并查询日记录归属",
+      "expected": "已工作3h、剩余5h；班次归起始日，不在午夜生成第二份班次。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-017",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "09:00–09:00合法班型，无休息",
+      "action": "展开一日班次",
+      "expected": "依源定义终点在次日而非0h；仍执行源有效段校验。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-018",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "空段、0长度段、倒序段、重叠段或非法时间",
+      "action": "执行校验及恢复读取",
+      "expected": "按冻结源规范归一化或拒绝；绝不出现负长、重复累计、NaN或静默默认白班。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-019",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "now精确等于每个segment起止毫秒",
+      "action": "逐边界计算",
+      "expected": "使用半开区间语义；每个瞬间只计入一次；显示舍入与源oracle一致。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-020",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "周期锚点、跨年周、闰年2028-02-29",
+      "action": "按民用日展开",
+      "expected": "日期连续且身份唯一；不是每次加86400000毫秒。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-021",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "ORACLE",
+      "setup": "America/Los_Angeles夏令时跳过/重复时刻，含夜班",
+      "action": "TS/Swift与Kotlin同输入比较",
+      "expected": "与源缺失/重叠时刻选择一致；未生成源输出前不得猜测Java默认行为。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-022",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "历史记录时区Asia/Shanghai，设备改America/Los_Angeles",
+      "action": "重开记录及免费窗口",
+      "expected": "历史dayKey和原时区语义不变；设备时区不静默覆盖记录时区。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-023",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "JVM",
+      "setup": "同一前台时钟暂停tick90秒，然后恢复",
+      "action": "重新evaluate而非循环补tick",
+      "expected": "立即显示当前正确状态；不将缓存remaining减1作为长期事实。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-024",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "DEVICE",
+      "setup": "运行班次中修改系统时间/时区再重启",
+      "action": "重新计算和重建调度",
+      "expected": "执行已冻结的时钟变更语义；不重复完成/提醒；UI与历史分类一致。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-025",
+      "group": "有效时间段、跨日与时区",
+      "requirements": [
+        "FR-02",
+        "FR-04",
+        "FR-05"
+      ],
+      "level": "ORACLE",
+      "setup": "关闭自动模式、空工作日、无法解析下一班次",
+      "action": "比较源规则输出",
+      "expected": "准确区分手动可开始、休息与未排班；无下一班次不构造虚假的明天。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-026",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "班型名为空、仅空白、40与41个字符",
+      "action": "保存班型",
+      "expected": "与源trim/长度单位一致；临界Unicode组合字符另做对照，不直接等同UTF-16长度。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-027",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "周期长度0、1、366、367；未知新preset",
+      "action": "读取/保存规则",
+      "expected": "合法长度1–366；已定义的未知preset回退custom；不可保存空周期。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-028",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "三天周期锚点2026-09-21，查看锚点前一天",
+      "action": "解析周期位置",
+      "expected": "使用floorMod得到最后一项，不以负数数组索引崩溃。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-029",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "周期为工作，某日手动设休息",
+      "action": "解析该日再撤销手排",
+      "expected": "手排覆盖；撤销恢复下层规则，不把撤销保存为永久休息。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-030",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "手排引用尚未下载到的班型ID",
+      "action": "先到RosterDay后到类型",
+      "expected": "前者安全显示未分配；后者恢复正确班型，不改写原ID。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-031",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "过去一天存assignedShiftType冻结值；未来一天只指类型ID",
+      "action": "修改该班型名称/起止",
+      "expected": "过去保持冻结值；未来按源实时类型规则更新。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-032",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "历史使用扩展排班；当前关闭扩展排班",
+      "action": "读取历史图表与日详情",
+      "expected": "仍以历史extendedContent/冻结覆盖解析，不回退当前固定班而改变过去。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-033",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "ORACLE",
+      "setup": "无规则月继承前月，含31→30→28/29日和手工月份",
+      "action": "与Swift测试逐组合比较",
+      "expected": "严格匹配源继承/人工空档规则，不凭简单日数复制补齐不存在日期。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-034",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "ORACLE",
+      "setup": "holidayRegion=nil、空串、合法地区及clearedFromDayKey",
+      "action": "组合解析跨清空边界日期",
+      "expected": "保留nil与空串语义；清空后不会重启又自动填回；手排/节假日组合依源测试。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-035",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "已归档班型被历史引用",
+      "action": "从新建选择器与历史分别读取",
+      "expected": "不能新选的归档类型仍能解释旧记录；不级联删除历史。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-036",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "今天正在工作；修改常规班次",
+      "action": "分别选应用今天/从下一次开始",
+      "expected": "按源允许项固定当前快照/未来规则；不回写过去或无理由改当前专注终点。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-037",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "同一天有效override、user exception、bundled exception和snapshot并存",
+      "action": "解析，再逐层cleared",
+      "expected": "override优先；清除后正确回退；观测不参与计划优先链。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-038",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "多个同effectiveFrom快照，乱序查询返回",
+      "action": "解析并反转数据库返回顺序",
+      "expected": "按editCount/tieBreaker/ID确定同一胜者，而非最后一行。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-039",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "JVM",
+      "setup": "历史09–12、13–18，将上下界改10–17",
+      "action": "保存自定义工时",
+      "expected": "得到10–12、13–17；保留休息洞，不生成10–17连续7h。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-040",
+      "group": "排班、历史冻结与输入约束",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-07"
+      ],
+      "level": "DB",
+      "setup": "一天编辑需同时写override与exception，中途故障",
+      "action": "故障注入并重开",
+      "expected": "全部提交或全部回滚；草稿保留，不显示半成功。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-041",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "JVM",
+      "setup": "金额空、0、负数、极大值、NaN/Infinity及逗号小数地区",
+      "action": "校验输入和反序列化",
+      "expected": "空与0按源区分；非法值明确拒绝，不截断为另一个合法工资。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-042",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "ORACLE",
+      "setup": "固定月薪完整月，分别少记录工时、请假、正常出勤",
+      "action": "生成记录月汇总",
+      "expected": "依当前后续规则月基数不因请假扣减；年终奖份额与源一致。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-043",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "ORACLE",
+      "setup": "一周横跨两个不同天数月份；月薪不变",
+      "action": "生成周已过/剩余汇总",
+      "expected": "分别按所在月自然日分摊；不使用统一21.75或单月工作日作分母。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-044",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "ORACLE",
+      "setup": "日薪模式与固定月薪相同日历输入",
+      "action": "比较收入调用路径",
+      "expected": "日薪仍按源工作日/进度规则；不能套用固定月薪自然日口径。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-045",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "JVM",
+      "setup": "同一天已有实际，未来仍有计划",
+      "action": "计算实际+预计",
+      "expected": "对同一语义时间区间无重复计算；明细来源与汇总可对账。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-046",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "JVM",
+      "setup": "记录时区今天2026-09-21",
+      "action": "免费用户分别查看09-15/09-14/09-22",
+      "expected": "09-15至09-21是七个自然日窗口；09-14和未来不因数组条数而进入。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-047",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "JVM",
+      "setup": "从未购买与已订阅后到期两类用户",
+      "action": "产生新工作观测",
+      "expected": "默认基线前者继续后者停止；D-07变更必须连同预期显式修订。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-048",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "SEC",
+      "setup": "免费/过期用户打开受限图表/人生/专注",
+      "action": "检查UiState、Semantics和分享",
+      "expected": "受限真实值不传给隐藏布局；不能从可访问树、剪贴板或日志获取。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-049",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "UI",
+      "setup": "周/月相同结构图表、已选日、滚动位置",
+      "action": "切换尺度/返回/旋转",
+      "expected": "保持合理选择与位置；数字不重复跳动；宽窗两栏滚动互不抢占。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-050",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "JVM",
+      "setup": "两段职业之间有一年空档",
+      "action": "人生收入汇总",
+      "expected": "空档零收入；不延伸上一个工资自动填满。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-051",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "JVM",
+      "setup": "职业区间重叠或终点早于起点",
+      "action": "保存资料",
+      "expected": "清晰拒绝/展示校验；不能双算工资或静默抹除原经历。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-052",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "ORACLE",
+      "setup": "未来收入从45岁起60%，退休60岁",
+      "action": "计算跨45岁前后预测",
+      "expected": "45岁后一次性变60%并保持；不是逐年乘0.6，也不是线性递减。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-053",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "ORACLE",
+      "setup": "收入调整起始年龄已过去，存在历史收入",
+      "action": "重新估算",
+      "expected": "历史不变；只从当前预测起点应用比例。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-054",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "JVM",
+      "setup": "职业跨闰年及不同长度的部分月",
+      "action": "按月/年薪计算",
+      "expected": "部分月按本月实际日数；不统一按30天；终点排他性依源fixture。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-055",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "UI",
+      "setup": "选择原职业阶段，时间推进或刷新导致展示切段",
+      "action": "重新渲染人生画布",
+      "expected": "选中身份基于稳定阶段ID，不跳到另一段/数组位置。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-056",
+      "group": "记录、收入与人生",
+      "requirements": [
+        "FR-05",
+        "FR-06",
+        "FR-07",
+        "FR-08"
+      ],
+      "level": "PERF",
+      "setup": "15000日人生和十年真实/预计记录",
+      "action": "快速切换日期再离开页面",
+      "expected": "后台计算可取消；主线程不遍历全档案；旧结果不覆盖较新的选择。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-057",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "JVM",
+      "setup": "全新专注设置",
+      "action": "读取默认并输入超范围数值",
+      "expected": "默认25/5/15/4；规范化到10–60/1–15/5–30/2–6。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-058",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "JVM",
+      "setup": "专注已启动并保存plannedEnd",
+      "action": "修改专注时长",
+      "expected": "当前plannedEnd不变，下一会话使用新设置。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-059",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "JVM",
+      "setup": "固定任务UUID及start/end毫秒",
+      "action": "生成自动会话ID",
+      "expected": "匹配acceptance_examples的SHA256/位设置结果；禁止MD5或SHA1替代。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-060",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "DB",
+      "setup": "前台和通知动作同时启动同一块，随后重复回调",
+      "action": "并发执行两次命令",
+      "expected": "一个逻辑会话和一次状态转移；重复触发返回已处理结果。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-061",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "DEVICE",
+      "setup": "专注进行中进程被回收；20分钟后重开",
+      "action": "恢复本地会话",
+      "expected": "用持久时间重建，不从满时长重新开始；历史写入幂等。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-062",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "JVM",
+      "setup": "专注到期后到午休/下班边界",
+      "action": "重建计划和通知",
+      "expected": "遵循源停止/恢复策略；不越过不可工作边界虚构专注成果。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-063",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "JVM",
+      "setup": "模板任务轮数2、3、1，仅剩4个工作块",
+      "action": "应用模板",
+      "expected": "只放完整首任务2轮；不放第二任务部分，不跳过第二任务去塞第三任务。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-064",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "JVM",
+      "setup": "同模板分别应用长班与短班",
+      "action": "检查模板本体",
+      "expected": "模板轮数/任务不被短班裁剪永久覆盖。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-065",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "UI",
+      "setup": "放入下一块操作触发Plus购买",
+      "action": "成功后回到原操作",
+      "expected": "保留草稿及原落位，至多执行一次；取消购买仍可继续编辑草稿。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-066",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "UI",
+      "setup": "拖动任务到非法/冲突位置后取消",
+      "action": "查看原任务与计划",
+      "expected": "原任务位置保留；明确冲突原因；TalkBack可通过非拖动动作完成同类操作。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-067",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "SYNC",
+      "setup": "两台设备自动启动相同时间块，离线后重连",
+      "action": "合并会话",
+      "expected": "相同确定性ID合一；真正竞争会话按源规则保留supersededBySync历史。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-068",
+      "group": "专注任务与会话恢复",
+      "requirements": [
+        "FR-09"
+      ],
+      "level": "JVM",
+      "setup": "停止、自然完成、边界停止与废弃四种操作",
+      "action": "查询会话记录",
+      "expected": "各自保留对应结束原因；不删除或统统改为completed。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-069",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DB",
+      "setup": "iOS导出的schema1、2、3、4、5、6合法备份各一份",
+      "action": "逐个导入",
+      "expected": "全部支持既定旧版本默认/迁移；不得仅改版本号假装兼容。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-070",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DB",
+      "setup": "iOS v6包含12类实体、nil/空串、冻结手排、专注模板",
+      "action": "Android导入→导出→iOS重新导入",
+      "expected": "业务字段和身份语义无丢失；差分只含明确允许的导出时间/排序。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-071",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DB",
+      "setup": "schema7、错误根类型、截断JSON、非法时区/日期",
+      "action": "预览导入",
+      "expected": "整文档不支持/格式错误与行级拒绝按源策略区分；活跃库未被覆盖。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-072",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "SEC",
+      "setup": "超大数组、极深嵌套、重复身份、巨大金额/时间",
+      "action": "解析不可信导入文件",
+      "expected": "有限制与明确错误，不无限内存、不溢出、不绕过类型校验。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-073",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DB",
+      "setup": "本地和导入文件同ID不同内容",
+      "action": "默认导入预览并取消",
+      "expected": "展示冲突；默认不无提示覆盖本地；取消后状态不变。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-074",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DB",
+      "setup": "本地有ErasedID墓碑，导入旧备份含同ID",
+      "action": "默认skipErased",
+      "expected": "记录不复活，报告跳过数量；不能把墓碑仅当普通垃圾清理。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-075",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DB",
+      "setup": "明确restoreErased，涉及阶段/快照/任务依赖",
+      "action": "执行恢复",
+      "expected": "UUID身份依源规则重新分配并重映射引用；自然键保留合法语义。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-076",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DB",
+      "setup": "相同实体两份editCount相同、tieBreaker不同；系统时钟反向",
+      "action": "双向合并",
+      "expected": "结果与源固定比较一致；不根据editedAt或Drive modifiedTime选择。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-077",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DB",
+      "setup": "导入合法大档案，在提交前后分别模拟崩溃/低空间",
+      "action": "重开应用",
+      "expected": "保留旧完整状态或新完整状态；没有半份导入与伪保存成功。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-078",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "SEC",
+      "setup": "用户导出含收入档案与排除人生档案两种模式",
+      "action": "检查输出JSON和权限",
+      "expected": "仅实际v6导出字段；不带Play权益、OAuth token、本机权限或内部sync state。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-079",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DEVICE",
+      "setup": "通过SAF选云文档/只读URI/取消保存",
+      "action": "导入和导出",
+      "expected": "不用全盘文件权限；URI错误清晰，可取消；不把文件名当已成功写入。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-080",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DB",
+      "setup": "每个曾发布的Room schema升级到当前版本",
+      "action": "运行迁移及重开读取",
+      "expected": "实体/编辑戳/关系/墓碑保留；禁止fallbackToDestructiveMigration用于正式用户。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-081",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DEVICE",
+      "setup": "新用户无有效配置，欢迎草稿中途重启",
+      "action": "继续欢迎后完成",
+      "expected": "草稿可恢复；确认前不生成dirty业务设置或工作观测。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-082",
+      "group": "数据持久化、导出与跨端兼容",
+      "requirements": [
+        "FR-01",
+        "FR-14",
+        "FR-17"
+      ],
+      "level": "DEVICE",
+      "setup": "用户导入自己的数据但无Plus或已过期",
+      "action": "执行恢复/导出/删除",
+      "expected": "数据控制不要求重新付费；恢复不会伪造Plus或获得付费编辑权限。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-083",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "DEVICE",
+      "setup": "Android13+拒绝通知；基础班次正常",
+      "action": "完成欢迎并倒计时",
+      "expected": "本地功能可用；状态如实提示未授权，不重复强迫请求。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-084",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "DEVICE",
+      "setup": "精确提醒权限未授予/被拒绝",
+      "action": "启用普通提醒",
+      "expected": "有明确延迟降级；不调用无权限API致崩溃，不改用违规USE_EXACT_ALARM。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-085",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "DEVICE",
+      "setup": "已授权并排好未来提醒；运行中撤销精确权限",
+      "action": "返回应用并检查系统任务",
+      "expected": "重新检查能力并重建合法任务；不把旧已取消闹钟当仍有效。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-086",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "DEVICE",
+      "setup": "班次编辑/时区改变/重启/应用更新",
+      "action": "重建未来提醒",
+      "expected": "旧计划失效；新提醒去重；不在重启后补发已错过的一串通知。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-087",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "ORACLE",
+      "setup": "普通进度关闭，Plus周期总结开启；后一天可靠休息",
+      "action": "生成提醒列表",
+      "expected": "仍有周期总结；同结束点普通兜底不重复响。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-088",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "ORACLE",
+      "setup": "后一天排班解析失败或节假日覆盖不足",
+      "action": "计算周期末",
+      "expected": "不把未知当休息，不发送虚构周期总结。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-089",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "DEVICE",
+      "setup": "同一通知按钮连续点击；主界面也点相同操作",
+      "action": "执行命令",
+      "expected": "持久去重且及时更新通知；不重复结束/新增会话。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-090",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "DEVICE",
+      "setup": "工作日跨午休，显示持续通知计时",
+      "action": "进入休息并回到工作",
+      "expected": "不把全天end-now称为有效剩余；阶段/计时含义一致，受限时显示正确结束钟点。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-091",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "DEVICE",
+      "setup": "普通工作计时不符合Live Update展示资格",
+      "action": "检查前台/锁屏",
+      "expected": "普通通知回退可用；不宣称每台机都有灵动岛等效UI。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-092",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "DEVICE",
+      "setup": "桌面小组件缩放为紧凑/中/大，切主题与语言",
+      "action": "查看工作/休息/未排/过期",
+      "expected": "各布局内容准确可触达；无工资字段，过期不伪装实时。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-093",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "DEVICE",
+      "setup": "进程已死或设备Doze，桌面停留30分钟",
+      "action": "观察小组件和耗电/系统任务",
+      "expected": "不每秒调Worker；系统允许时刷新，不能承诺精确边界刷新；计时增强先过设备探针。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-094",
+      "group": "Android 调度、通知与小组件",
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ],
+      "level": "SEC",
+      "setup": "恶意外部Intent调用内部receiver/service或错误PendingIntent",
+      "action": "尝试执行修改命令",
+      "expected": "非公开组件不可外部调用；公开动作校验数据，无工资URI、可变Intent注入。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-095",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "实际可购月/年/终身商品，不同币种与offer资格",
+      "action": "加载付费页",
+      "expected": "价格/周期/试用来自ProductDetails；不硬编码或以月价乘12伪年价。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-096",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "商品加载失败/无GMS/用户无可购offer",
+      "action": "打开付费页",
+      "expected": "基础应用不阻断；失败与无资格区分，无必失败的试用按钮。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-097",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "PENDING购买，超过24小时仍待付款",
+      "action": "刷新与重装恢复",
+      "expected": "不授予Plus，也不套Apple AskToBuy24小时自动清除规则。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-098",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "月订阅成功且验证正常，重复回调",
+      "action": "确认权益并处理pending action",
+      "expected": "服务端只验证/确认一次逻辑购买；原操作至多一次；真实价格与商品可追溯。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-099",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "SEC",
+      "setup": "伪造isPlus、本地purchaseState、包名/商品/签名或导入权益",
+      "action": "提交verify和本地恢复",
+      "expected": "平台证据、allowlist和签名校验生效；不能靠本地布尔解锁。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-100",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "用户取消自动续费但订阅未来才到期",
+      "action": "恢复购买和重启",
+      "expected": "权益保持到真实截止；不因cancel标记立即撤销。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-101",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "平台宽限、account hold、暂停、恢复、到期",
+      "action": "测试时钟与Publisher API状态",
+      "expected": "按规范状态生效；不按purchaseTime+30天推断。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-102",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "网络失败或一个未验证条目，已有合法未到期缓存",
+      "action": "刷新",
+      "expected": "保留合法缓存及期限；失败不等于完整确认无权益。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-103",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "可靠完整查询确认为无权益/已退款撤销",
+      "action": "应用刷新",
+      "expected": "回收对应权利但保留用户数据与导出；不被旧cache永久覆盖。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-104",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "已持有终身，当前网络断开",
+      "action": "进入原付费功能",
+      "expected": "遵守已验证终身缓存策略；不会因网络问题当免费；在线撤销证据可更新。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-105",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "服务器验证成功但ack失败，后续重试",
+      "action": "重发任务与回调",
+      "expected": "持久重试并告警；初次购买在规定窗口确认，终身绝不consume。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-106",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "升级/替换订阅，RTDN乱序/重复，linked token仍缓存",
+      "action": "刷新 canonical状态",
+      "expected": "不出现旧新双份权益；RTDN不是唯一真实性依据。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-107",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "PLAY",
+      "setup": "已订阅用户购买终身",
+      "action": "完成后查看管理入口",
+      "expected": "不谎称原订阅自动取消；明确管理路径，避免重复付费。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-108",
+      "group": "购买、恢复与服务端证据",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "level": "DEVICE",
+      "setup": "付款页面旋转/退后台/进程恢复并再点购买",
+      "action": "检查BillingClient及请求次数",
+      "expected": "无多个客户端重复流程；购买/恢复互斥，UI重组不重复launch。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-109",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "用户未点云功能；全新安装",
+      "action": "完成本地使用并检查网络",
+      "expected": "不请求Google授权，不上传工资/默认设置；只允许明确记录的其他网络功能。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-110",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "云端已有完整档案，旧设备关闭；新安装",
+      "action": "授权并首次恢复",
+      "expected": "完整分页下载→预览→原子应用；不依赖旧设备上线发送当前快照。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-111",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "首次查询超时/401/配额错误",
+      "action": "进入恢复选择",
+      "expected": "显示未知/失败，不作为空云创建并上传欢迎默认值。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-112",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "设备A改日期甲，设备B离线改日期乙",
+      "action": "恢复联网并双向同步",
+      "expected": "两天修改都保留；不是最后整文件上传者抹除另一台。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-113",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "同ID并发编辑、时钟错误且网络乱序",
+      "action": "重复合并批次",
+      "expected": "按编辑戳稳定收敛；不看墙钟/文件modifiedTime。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-114",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "一台删除，另一台持旧行，之后重连",
+      "action": "同步墓碑",
+      "expected": "旧行不复活；合法显式重新创建使用更高版本规则。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-115",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "上传成功但本地未确认即崩溃，云上同名文件多份",
+      "action": "恢复重试并拉取",
+      "expected": "按batchId/hash去重，不以文件名唯一性假设创建重复业务。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-116",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "用户删除云端，老设备离线持旧generation",
+      "action": "老设备晚到上传旧批次",
+      "expected": "fence阻止旧数据复活；有未同步本地内容先审阅/导出。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-117",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "两台设备并发reset",
+      "action": "重新读取所有fence/batch",
+      "expected": "固定有序规则选唯一新generation；输的一方不复活旧批次。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-118",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "用户在Drive外部删整个应用数据空间，旧机还配对",
+      "action": "自动同步触发",
+      "expected": "暂停并请求选择；不能自动新建云空间把已删工资重新上传。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-119",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "Google账号A已同步，切到B",
+      "action": "打开同步设置",
+      "expected": "旧本地数据不自动流入B；明确解除配对/导出/选择状态。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-120",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "依次暂停同步、删除云副本、移除此设备数据",
+      "action": "检查三个作用范围",
+      "expected": "行为不同且明确；暂停不删数据，本机移除不误删云；危险操作互斥。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-121",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "页数多、批次大、未知格式或哈希错误、恢复中断",
+      "action": "拉取全部后合并",
+      "expected": "无静默漏页；错误候选不污染本地；重新执行可恢复且幂等。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-122",
+      "group": "同步、删除及新设备恢复",
+      "requirements": [
+        "FR-01",
+        "FR-09",
+        "FR-15"
+      ],
+      "level": "SYNC",
+      "setup": "数据同步收到主题/语言/薪资，也收到伪权限/权益字段",
+      "action": "映射业务和本机状态",
+      "expected": "只接受协议内业务字段；通知权限、生物识别授权、Play权益不跨设备复制。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-123",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "SEC",
+      "setup": "隐藏工资，生物识别取消/失败或无设备锁",
+      "action": "请求显示/导出敏感内容",
+      "expected": "失败/取消不泄露；无设备锁有明确降级说明，不假装验证成功。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-124",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "SEC",
+      "setup": "页面含工资、任务和职业信息，切后台/最近任务",
+      "action": "检查截图/任务缩略图/TalkBack",
+      "expected": "执行D-09批准策略；普通安全卡片分享不通过解除整个窗口保护实现。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-125",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "SEC",
+      "setup": "生成普通分享卡和班次链接",
+      "action": "检查图片、元数据、URL、日志",
+      "expected": "无工资/职业/身份/token；不截图整个屏幕。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-126",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "DEVICE",
+      "setup": "合法旧分享链接、恶意超长/错误参数、外部App启动",
+      "action": "预览并应用",
+      "expected": "严格校验后需用户确认；不无提示覆盖；App Links只匹配批准域名/路径。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-127",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "SEC",
+      "setup": "系统cloud backup和device transfer分别启用",
+      "action": "备份/恢复应用数据",
+      "expected": "业务库/秘密/购买缓存按显式规则排除；不能仅凭无上传代码声称数据未出设备。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-128",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "UI",
+      "setup": "19locale，包含阿拉伯语、长德语、简繁中及占位符",
+      "action": "自动资源检查及重点页视觉操作",
+      "expected": "无遗漏key/坏复数/格式崩溃；RTL可用，香港台湾资源不误丢。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-129",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "UI",
+      "setup": "系统字体200%、小窗320dp、键盘弹出",
+      "action": "编辑班次/工资/任务/付费页",
+      "expected": "信息可读且所有操作可滚动到；不缩文字或挡保存按钮。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-130",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "UI",
+      "setup": "窄窗→平板分屏→折叠展开；各主入口不同导航栈",
+      "action": "连续resize、返回、旋转",
+      "expected": "选择/草稿/栈不丢；无按设备名创建另一套规则；宽窗内容合理分栏。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-131",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "UI",
+      "setup": "TalkBack开启、仅键盘/方向导航、减少动画",
+      "action": "使用日历、图表和专注拖放替代",
+      "expected": "语义角色/状态完整；不每秒播倒计时；所有功能无需拖动也能完成。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-132",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "DEVICE",
+      "setup": "已完成计时后的合适启动与手动评价按钮",
+      "action": "触发评价流程",
+      "expected": "无评分/满意度预询问；系统不弹不循环；手动按钮直达Play页。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-133",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "PLAY",
+      "setup": "真实Play账号类型与创建日期已确认",
+      "action": "创建测试/申请生产访问",
+      "expected": "仅适用账号执行12人连续14日要求；完成后还需生产访问审核，不承诺自动通过。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-134",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "PLAY",
+      "setup": "Release AAB含全部依赖与可能的native .so",
+      "action": "检查target、签名、Billing和16KB兼容",
+      "expected": "以实际包为准；API/库符合发布当日要求；native依赖不能因主语言Kotlin被忽略。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-135",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "PLAY",
+      "setup": "当前实现含Drive授权和购买验证服务",
+      "action": "逐项填写Data safety/隐私/删除入口",
+      "expected": "按真实离设备流向判断；不照搬iOS Data Not Collected，不谎称自建后端无数据。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-136",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "PLAY",
+      "setup": "Android真实手机/平板截图和各语言商店文案",
+      "action": "检查商店素材及审核操作说明",
+      "expected": "不放iOS截图/假功能；审核员能访问合法测试流程，不提供工资真数据或暗门。",
+      "status": "NOT_RUN",
+      "release_scope": "FIRST_RELEASE"
+    },
+    {
+      "id": "QA-137",
+      "group": "隐私、UI、语言与 Play 发布",
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-17",
+        "FR-18",
+        "FR-19",
+        "FR-20",
+        "FR-21"
+      ],
+      "level": "WEAR",
+      "setup": "D-05已确认延后；仅后续Wear阶段获准启动并具备手机/手表环境后执行，手机离线/关机",
+      "action": "Watch端解析缓存排班并刷新复杂功能",
+      "expected": "复用同一无薪资规则；离线可延续排班；具体版本/发布独立验证。当前保留NOT_RUN并从首发阻塞集合排除，不删除该用例或标PASS。",
+      "status": "NOT_RUN",
+      "release_scope": "POST_FIRST_RELEASE"
+    }
+  ],
+  "package_version": "1.1",
+  "decision_registry": "decisions.json"
+}

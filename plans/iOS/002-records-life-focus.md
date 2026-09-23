@@ -398,7 +398,7 @@ Pro 模拟器，Debug，`RecordsPerformanceTests`）**：人生视图一次冷�
   视图滚动掉帧。P0A 必须产出这个数字，它就是门槛；在拿到它之前不迁移。
 - Web / Tauri 不再是一等消费者。
 
-注意 [AGENTS.md](../AGENTS.md) 目前禁止把规则移植到 Swift，而且带着案发记录——「本周」
+注意 [AGENTS.md](../../AGENTS.md) 目前禁止把规则移植到 Swift，而且带着案发记录——「本周」
 那一行已经因为两套实现发过不一致的数字。**扳机触发时必须同版更新 AGENTS.md 与相关 ADR**，
 不能让实施者同时拿到两个相反的指令。
 
@@ -672,7 +672,7 @@ enum CalendarExceptionOrigin: String {
 | 倒计时越过结束边界 | `TimerVisualPhase` 的 `.completed` | 更新派生状态 | 不生成实际下班 |
 | 跨日结算 / App 重启恢复 | `reconcileCountdownSession` + `.NSCalendarDayChanged` | 幂等重连已有观察 | 不重复记一次开始 |
 
-这些钩子今天都在 [OffWorkStore.swift](../src-mobile/ios/App/App/Native/Models/OffWorkStore.swift)
+这些钩子今天都在 [OffWorkStore.swift](../../src-mobile/ios/App/App/Native/Models/OffWorkStore.swift)
 里，是唯一的写入点；接入时不需要新机制。
 
 写入通过单一 RecordCoordinator 串行化。防重复靠**持久化的 `eventID`**：事件发生那一刻生成

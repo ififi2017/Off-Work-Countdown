@@ -1,0 +1,312 @@
+{
+  "schema_version": 1,
+  "package_version": "1.1",
+  "updated_at": "2026-09-21",
+  "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
+  "approval_evidence": {
+    "source": "current_conversation_user_message",
+    "text": "1-6 我觉得都 OK",
+    "date": "2026-09-21",
+    "numbering": "Previous assistant six-row proposal table, NOT sequential D-01 through D-06"
+  },
+  "release_scope": {
+    "first_release_requirements": [
+      "FR-01",
+      "FR-02",
+      "FR-03",
+      "FR-04",
+      "FR-05",
+      "FR-06",
+      "FR-07",
+      "FR-08",
+      "FR-09",
+      "FR-10",
+      "FR-11",
+      "FR-12",
+      "FR-13",
+      "FR-14",
+      "FR-15",
+      "FR-16",
+      "FR-17",
+      "FR-18",
+      "FR-19",
+      "FR-20"
+    ],
+    "deferred_requirements": [
+      "FR-21"
+    ],
+    "deferred_tasks": [
+      "T27"
+    ],
+    "deferred_test_cases": [
+      "QA-137"
+    ]
+  },
+  "decisions": [
+    {
+      "id": "D-01",
+      "conversation_item": 1,
+      "status": "APPROVED",
+      "decision": "保留月订阅、年订阅、终身买断。",
+      "approval_scope": "收费模式",
+      "approved_at": "2026-09-21",
+      "requirements": [
+        "FR-16"
+      ],
+      "tasks": [
+        "T20",
+        "T25"
+      ],
+      "remaining_configurations": [
+        "CFG-PRICE"
+      ]
+    },
+    {
+      "id": "D-02",
+      "conversation_item": 2,
+      "status": "APPROVED",
+      "decision": "Google Drive appDataFolder；默认关闭、用户主动授权；Android多设备同步纳入手机/平板首发。",
+      "approval_scope": "提供商、默认状态及首发范围",
+      "approved_at": "2026-09-21",
+      "requirements": [
+        "FR-01",
+        "FR-15"
+      ],
+      "tasks": [
+        "T22",
+        "T23",
+        "T25"
+      ],
+      "remaining_configurations": [
+        "CFG-OAUTH"
+      ]
+    },
+    {
+      "id": "D-03",
+      "conversation_item": 3,
+      "status": "APPROVED",
+      "decision": "首发不做iOS/Android自动同步；JSON双向迁移业务数据；商店购买权益独立。",
+      "approval_scope": "首发跨平台边界",
+      "approved_at": "2026-09-21",
+      "requirements": [
+        "FR-14",
+        "FR-15",
+        "FR-16"
+      ],
+      "tasks": [
+        "T13",
+        "T20",
+        "T22",
+        "T23"
+      ],
+      "remaining_configurations": []
+    },
+    {
+      "id": "D-04",
+      "conversation_item": null,
+      "status": "PROPOSED",
+      "decision": "沿用原建议：minSdk API26 / Android8，正式支持矩阵待确认。",
+      "approval_scope": "本轮未覆盖",
+      "approved_at": null,
+      "requirements": [
+        "FR-19",
+        "FR-20"
+      ],
+      "tasks": [
+        "T03",
+        "T24",
+        "T25"
+      ],
+      "remaining_configurations": []
+    },
+    {
+      "id": "D-05",
+      "conversation_item": 4,
+      "status": "APPROVED",
+      "decision": "手机/平板先发；Wear OS独立后续阶段，T27延后，不阻塞首发。",
+      "approval_scope": "本次首发排除Wear；保留后续路线",
+      "approved_at": "2026-09-21",
+      "requirements": [
+        "FR-21"
+      ],
+      "tasks": [
+        "T27"
+      ],
+      "remaining_configurations": []
+    },
+    {
+      "id": "D-06",
+      "conversation_item": null,
+      "status": "PROPOSED",
+      "decision": "沿用原建议：可选精准提醒授权，无授权可降级，不默认全天FGS。",
+      "approval_scope": "本轮未覆盖",
+      "approved_at": null,
+      "requirements": [
+        "FR-10",
+        "FR-11",
+        "FR-20"
+      ],
+      "tasks": [
+        "T14",
+        "T19",
+        "T24",
+        "T25"
+      ],
+      "remaining_configurations": []
+    },
+    {
+      "id": "D-07",
+      "conversation_item": null,
+      "status": "PROPOSED",
+      "decision": "未另行批准改变源权益失效后新增工作观测的策略；先按基线并完成调用链审计。",
+      "approval_scope": "本轮未覆盖",
+      "approved_at": null,
+      "requirements": [
+        "FR-06",
+        "FR-16"
+      ],
+      "tasks": [
+        "T01",
+        "T20",
+        "T23"
+      ],
+      "remaining_configurations": []
+    },
+    {
+      "id": "D-08",
+      "conversation_item": 5,
+      "status": "APPROVED",
+      "decision": "采用小型服务端验证必要购买信息；不接收工资/工作记录，不新增DoneAt账号。",
+      "approval_scope": "验证服务架构方向，不等于生产操作已授权或已执行",
+      "approved_at": "2026-09-21",
+      "requirements": [
+        "FR-16",
+        "FR-20"
+      ],
+      "tasks": [
+        "T21",
+        "T23",
+        "T25"
+      ],
+      "remaining_configurations": [
+        "CFG-BACKEND"
+      ]
+    },
+    {
+      "id": "D-09",
+      "conversation_item": null,
+      "status": "PROPOSED",
+      "decision": "沿用原建议：敏感页面保护，允许无敏感信息分享；不全面禁截图。",
+      "approval_scope": "本轮未覆盖",
+      "approved_at": null,
+      "requirements": [
+        "FR-05",
+        "FR-13",
+        "FR-20"
+      ],
+      "tasks": [
+        "T19",
+        "T24"
+      ],
+      "remaining_configurations": []
+    },
+    {
+      "id": "D-10",
+      "conversation_item": null,
+      "status": "PROPOSED",
+      "decision": "候选com.rainif.doneat，versionCode独立；生产标识/签名与版本待冻结。",
+      "approval_scope": "本轮未覆盖",
+      "approved_at": null,
+      "requirements": [
+        "FR-20"
+      ],
+      "tasks": [
+        "T03",
+        "T25"
+      ],
+      "remaining_configurations": [
+        "CFG-APP-IDENTITY"
+      ]
+    },
+    {
+      "id": "D-11",
+      "conversation_item": 6,
+      "status": "APPROVED_PROCESS_PENDING_FACTS",
+      "decision": "按实际Play Console核验账户验证、测试与生产访问要求。",
+      "approval_scope": "只确认核验流程，不确认任何账户事实",
+      "approved_at": "2026-09-21",
+      "requirements": [
+        "FR-20"
+      ],
+      "tasks": [
+        "T00",
+        "T25"
+      ],
+      "remaining_configurations": [
+        "CFG-PLAY-ACCOUNT"
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "id": "CFG-PRICE",
+      "decision_id": "D-01",
+      "status": "PENDING_CONFIGURATION",
+      "description": "地区价格、销售地区、试用/优惠及正式商品配置",
+      "blocks": "正式商品和销售文案签收",
+      "does_not_block": "Independent source audit, Kotlin domain implementation, and local tests/UI",
+      "evidence": []
+    },
+    {
+      "id": "CFG-OAUTH",
+      "decision_id": "D-02",
+      "status": "PENDING_CONFIGURATION",
+      "description": "实际Cloud/OAuth配置、签名关联和测试账户",
+      "blocks": "真实Drive授权联调和生产数据传输",
+      "does_not_block": "Independent source audit, Kotlin domain implementation, and local tests/UI",
+      "evidence": []
+    },
+    {
+      "id": "CFG-BACKEND",
+      "decision_id": "D-08",
+      "status": "PENDING_CONFIGURATION",
+      "description": "部署平台/域名/预算、最小权限凭据及RTDN配置",
+      "blocks": "真实服务部署/购买验证和运营签收",
+      "does_not_block": "Independent source audit, Kotlin domain implementation, and local tests/UI",
+      "evidence": []
+    },
+    {
+      "id": "CFG-PLAY-ACCOUNT",
+      "decision_id": "D-11",
+      "status": "PENDING_CONFIGURATION",
+      "description": "已有与否、个人/组织、创建日期、验证和生产访问证据",
+      "blocks": "实际Console配置及生产访问申请",
+      "does_not_block": "Independent source audit, Kotlin domain implementation, and local tests/UI",
+      "evidence": []
+    },
+    {
+      "id": "CFG-APP-IDENTITY",
+      "decision_id": "D-10",
+      "status": "PENDING_CONFIGURATION",
+      "description": "正式包名、版本、签名",
+      "blocks": "生产OAuth/商品/签名/首次上传",
+      "does_not_block": "Independent source audit, Kotlin domain implementation, and local tests/UI",
+      "evidence": []
+    }
+  ],
+  "account_facts": {
+    "exists": null,
+    "account_type": null,
+    "created_at": null,
+    "identity_verification_status": null,
+    "production_access_status": null,
+    "evidence": []
+  },
+  "execution_status": {
+    "android_implementation": "NOT_STARTED",
+    "repository_modified": false,
+    "production_deployment": "NOT_PERFORMED",
+    "play_console_actions": "NOT_PERFORMED",
+    "application_tests": "NOT_RUN"
+  }
+}
