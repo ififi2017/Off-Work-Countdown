@@ -18,6 +18,8 @@
     "check:android-extended-fixtures": "node scripts/generate-android-extended-fixtures.mjs --check",
     "generate:android-record-fixtures": "node scripts/generate-android-record-fixtures.mjs",
     "check:android-record-fixtures": "node scripts/generate-android-record-fixtures.mjs --check",
+    "generate:android-strings": "node scripts/generate-android-strings.mjs",
+    "check:android-strings": "node scripts/generate-android-strings.mjs --check",
     "build:desktop:msstore": "node scripts/build-desktop.mjs --channel=msstore",
     "build:desktop:macappstore": "node scripts/build-desktop.mjs --channel=macappstore",
     "build:widget": "./scripts/build-macos-widget.sh",

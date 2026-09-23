@@ -1,0 +1,49 @@
+{
+  "note": "Android-only copy, merged with src-mobile/ios/App/App/Localizable.xcstrings by scripts/generate-android-strings.mjs. Every key needs all 19 locales and the English placeholders; a key may not repeat a catalog key.",
+  "strings": {
+    "remindersMayBeLate": {
+      "comment": "Settings, reminders: shown when the exact-alarm grant is off (Android 12+).",
+      "en": "Reminders may arrive a few minutes late. Allow exact reminders to get them on time.",
+      "zh-CN": "提醒可能会晚几分钟送达。允许精确提醒即可准时收到。",
+      "zh-HK": "提醒可能會遲幾分鐘先到。允許精確提醒就可以準時收到。",
+      "zh-TW": "提醒可能會晚幾分鐘送達。允許精確提醒即可準時收到。",
+      "ja": "リマインダーが数分遅れて届くことがあります。正確なリマインダーを許可すると、時間どおりに届きます。",
+      "ko": "알림이 몇 분 늦게 도착할 수 있습니다. 정확한 알림을 허용하면 제시간에 받을 수 있습니다.",
+      "de": "Erinnerungen können ein paar Minuten später eintreffen. Erlaube exakte Erinnerungen, damit sie pünktlich kommen.",
+      "es": "Los recordatorios pueden llegar con unos minutos de retraso. Permite los recordatorios exactos para recibirlos a tiempo.",
+      "fr": "Les rappels peuvent arriver avec quelques minutes de retard. Autorisez les rappels exacts pour les recevoir à l’heure.",
+      "it": "I promemoria potrebbero arrivare con qualche minuto di ritardo. Consenti i promemoria esatti per riceverli puntuali.",
+      "pt": "Os lembretes podem chegar com alguns minutos de atraso. Permita lembretes exatos para recebê-los na hora certa.",
+      "ru": "Напоминания могут приходить с опозданием на несколько минут. Разрешите точные напоминания, чтобы получать их вовремя.",
+      "ar": "قد تصل التذكيرات متأخرة ببضع دقائق. اسمح بالتذكيرات الدقيقة لتصلك في موعدها.",
+      "hi-IN": "रिमाइंडर कुछ मिनट देर से आ सकते हैं। समय पर पाने के लिए सटीक रिमाइंडर की अनुमति दें।",
+      "mr-IN": "स्मरणपत्रे काही मिनिटे उशिरा येऊ शकतात. वेळेवर मिळवण्यासाठी अचूक स्मरणपत्रांना परवानगी द्या.",
+      "id": "Pengingat mungkin datang beberapa menit terlambat. Izinkan pengingat tepat waktu agar tiba sesuai jadwal.",
+      "th": "การแจ้งเตือนอาจมาช้าไม่กี่นาที อนุญาตการแจ้งเตือนแบบตรงเวลาเพื่อให้ได้รับตามเวลา",
+      "tr": "Hatırlatıcılar birkaç dakika gecikebilir. Zamanında almak için tam zamanlı hatırlatıcılara izin ver.",
+      "vi": "Lời nhắc có thể đến trễ vài phút. Hãy cho phép lời nhắc chính xác để nhận đúng giờ."
+    },
+    "allowExactReminders": {
+      "comment": "Settings, reminders: opens the system page that grants exact alarms.",
+      "en": "Allow exact reminders",
+      "zh-CN": "允许精确提醒",
+      "zh-HK": "允許精確提醒",
+      "zh-TW": "允許精確提醒",
+      "ja": "正確なリマインダーを許可",
+      "ko": "정확한 알림 허용",
+      "de": "Exakte Erinnerungen erlauben",
+      "es": "Permitir recordatorios exactos",
+      "fr": "Autoriser les rappels exacts",
+      "it": "Consenti promemoria esatti",
+      "pt": "Permitir lembretes exatos",
+      "ru": "Разрешить точные напоминания",
+      "ar": "السماح بالتذكيرات الدقيقة",
+      "hi-IN": "सटीक रिमाइंडर की अनुमति दें",
+      "mr-IN": "अचूक स्मरणपत्रांना परवानगी द्या",
+      "id": "Izinkan pengingat tepat waktu",
+      "th": "อนุญาตการแจ้งเตือนแบบตรงเวลา",
+      "tr": "Tam zamanlı hatırlatıcılara izin ver",
+      "vi": "Cho phép lời nhắc chính xác"
+    }
+  }
+}

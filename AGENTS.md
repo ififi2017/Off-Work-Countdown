@@ -135,7 +135,10 @@ release gates. No rule, plan or script may depend on locally installed skills.
 - All user-facing app keys need translations in all 19 locales wherever stored,
   preserving English placeholders. iOS edits
   `src-mobile/ios/App/App/Localizable.xcstrings` directly; it is not generated.
-  `scripts/generate-watch-localizations.mjs` generates the Watch table from it.
+  `scripts/generate-watch-localizations.mjs` generates the Watch table from it,
+  and `npm run generate:android-strings` the Android resources (with Android-only
+  copy from `src-mobile/android/app/i18n/android-strings.json`); `npm test`
+  fails until a catalog edit is regenerated.
   Web/Desktop use `public/locales/*`, containing their keys plus all widget
   keys. Shared keys deliberately live in both homes, not a shared runtime.
 - `WidgetCopy` (shared with Mac) reads `translation.json` from the widget

@@ -52,6 +52,22 @@ locale and validation rules apply.
 - Focus session IDs use the source SHA-256 truncation, not Java
   `nameUUIDFromBytes` or random UUIDs.
 
+## Localization
+
+- Android copy is generated, never hand-edited: `npm run generate:android-strings`
+  converts `Localizable.xcstrings` plus `app/i18n/android-strings.json` into
+  `res/values*/strings_catalog.xml`, `res/xml/locales_config.xml`,
+  `app/i18n/key-map.json` and the typed `l10n/Strings.kt` accessors. `npm test`
+  and Android CI fail when any of them is stale.
+- `{{name}}` becomes positional `%N$s` in English order; call strings with
+  arguments through `Strings` so names, not positions, are passed. Message
+  pools (`key.1…`) become string-arrays that keep `{{name}}` for the shared
+  rules to substitute. Keywords get a trailing underscore (`R.string.continue_`).
+- Android-only copy needs all 19 locales in `android-strings.json`, may not
+  reuse a catalog key, and follows the catalog's wording per locale (zh-HK is
+  colloquial Cantonese). Indonesian uses Android's legacy `in`; Hong Kong and
+  Taiwan stay separate; `pt` is not `pt-BR`.
+
 ## Data, purchases and privacy
 
 - User backups are `RecordJSON` schemaVersion 6, accepting 1–6. Records live
