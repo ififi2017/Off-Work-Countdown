@@ -40,9 +40,11 @@ locale and validation rules apply.
   Kotlin through JSON exported by Swift tests; Swift and Kotlin tests read the
   same file with a stale check (T08). Decide which side is correct before
   regenerating; never regenerate to hide a failure.
-- Once `src-mobile/android/core/domain` exists, a shared or iOS-only rule
-  change must update Kotlin in the same change, and the root validation table
-  gains an Android row. Add that row when T07 lands.
+- A shared or iOS-only rule change updates Kotlin in the same change
+  (`core/domain/.../schedule`, `salary`); `:core:domain:test` must stay green.
+  `docs/android/rule-parity.md` lists which fixture sections Kotlin covers.
+- Rule inputs take an explicit `ZoneId`; rules never read a default zone or
+  the current time.
 - Focus session IDs use the source SHA-256 truncation, not Java
   `nameUUIDFromBytes` or random UUIDs.
 
