@@ -15,7 +15,6 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.time.Instant
-import java.time.ZoneId
 
 /**
  * The local archive file, in iOS's `RecordLocalFile` shape: the schema-6
@@ -95,15 +94,11 @@ object RecordArchive {
     internal fun migrateLegacyAutomaticPeriod(state: RecordState, nowMs: Double): RecordState {
         val period = state.periods.singleOrNull() ?: return state
         if (period.label != null || period.startsOn != "2000-01-01") return state
-        val today = FoundationCompat.dayKey(Instant.ofEpochMilli(nowMs.toLong()).atZone(javaZone(period.timeZoneIdentifier)).toLocalDate())
+        val today = FoundationCompat.dayKey(Instant.ofEpochMilli(nowMs.toLong()).atZone(FoundationCompat.javaZone(period.timeZoneIdentifier)).toLocalDate())
         val earliest = (state.observations.map { it.shiftAnchorDate } + state.overrides.map { it.dayKey } + state.exceptions.map { it.date } + today).min()
         return state.copy(
             periods = listOf(period.copy(startsOn = earliest)),
             recordsStartedOn = state.recordsStartedOn ?: earliest,
         )
     }
-
-    /** A Foundation identifier as a `java.time` zone; abbreviations resolve like Foundation's dictionary. */
-    fun javaZone(identifier: String): ZoneId =
-        runCatching { ZoneId.of(identifier, ZoneId.SHORT_IDS) }.getOrElse { ZoneId.of("GMT") }
 }

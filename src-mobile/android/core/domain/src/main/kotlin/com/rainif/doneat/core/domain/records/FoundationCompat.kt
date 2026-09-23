@@ -40,6 +40,14 @@ object FoundationCompat {
 
     fun isValidTimeZone(raw: String) = timeZoneIdentifier(raw) != null
 
+    /**
+     * A stored identifier as a `java.time` zone for arithmetic. Abbreviations
+     * resolve through `SHORT_IDS` as Foundation's dictionary resolves them; an
+     * unusable name falls back to GMT (iOS falls back to the device zone).
+     */
+    fun javaZone(identifier: String): ZoneId =
+        runCatching { ZoneId.of(if (identifier == "UTC") "GMT" else identifier, ZoneId.SHORT_IDS) }.getOrElse { ZoneId.of("GMT") }
+
     private val UUID_TEXT = Regex("[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}")
 
     /** `UUID(uuidString:)?.uuidString`: strict shape, any case in, upper case out. */

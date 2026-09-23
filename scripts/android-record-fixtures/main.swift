@@ -6,9 +6,14 @@ import Foundation
 // named by argv[1]; `scripts/generate-android-record-fixtures.mjs` writes the
 // results for the Kotlin port. Not shipped.
 
+import CryptoKit
+
 struct Case: Decodable {
     let name: String
     let input: String
+    /// When "hours", `input` is a ScheduleHoursConfiguration re-encoded the way
+    /// Records stores snapshots (ScheduleHoursCodec: sorted keys, SHA-256).
+    let kind: String?
     /// Applied first, into an empty archive, when present.
     let base: String?
     /// `[entityType, logicalKey]` pairs erased after `base`.
@@ -51,6 +56,8 @@ struct Outcome: Encodable {
     var conflicts: [[String]]?
     var adopted: [[String]]?
     var exportJSON: String?
+    var encoded: String?
+    var fingerprint: String?
 }
 
 let cases = try JSONDecoder().decode([Case].self, from: Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[1])))
@@ -61,6 +68,19 @@ encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
 
 for item in cases {
     var result = Outcome(name: item.name, outcome: "ok")
+    if item.kind == "hours" {
+        if let hours = try? JSONDecoder().decode(ScheduleHoursConfiguration.self, from: Data(item.input.utf8)) {
+            let hoursEncoder = JSONEncoder()
+            hoursEncoder.outputFormatting = [.sortedKeys]
+            let data = try hoursEncoder.encode(hours)
+            result.encoded = String(decoding: data, as: UTF8.self)
+            result.fingerprint = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        } else {
+            result.outcome = "invalidHours"
+        }
+        lines.append(String(decoding: try encoder.encode(result), as: UTF8.self))
+        continue
+    }
     var state = RecordState()
     if let base = item.base {
         let document = try! RecordJSON.decode(Data(base.utf8))
