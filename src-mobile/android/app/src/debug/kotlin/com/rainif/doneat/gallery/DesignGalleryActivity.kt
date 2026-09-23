@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -50,6 +49,7 @@ import com.rainif.doneat.core.designsystem.DoneAtDestructiveButton
 import com.rainif.doneat.core.designsystem.DoneAtPhase
 import com.rainif.doneat.core.designsystem.DoneAtPhaseBadge
 import com.rainif.doneat.core.designsystem.DoneAtPrimaryButton
+import com.rainif.doneat.core.designsystem.DoneAtProgressMeter
 import com.rainif.doneat.core.designsystem.DoneAtShapes
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.designsystem.DoneAtTheme
@@ -98,6 +98,7 @@ class DesignGalleryActivity : ComponentActivity() {
                     ) {
                         Controls(mode, { mode = it }, dynamic, { dynamic = it }, reduced, { reduced = it })
                         TimerWireframe()
+                        Meters()
                         Phases()
                         Actions()
                         PeriodPicker()
@@ -149,13 +150,24 @@ private fun TimerWireframe() = Section("Main timer") {
             DoneAtPhaseBadge(DoneAtPhase.WORK, "Working")
             DoneAtCountdown("03:25:18", "3 hours 25 minutes of work left")
             Text("Effective work time left", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            LinearProgressIndicator(progress = { 0.62f }, modifier = Modifier.fillMaxWidth().padding(vertical = DoneAtSpacing.s))
+            DoneAtProgressMeter(62.4, "Progress", Modifier.padding(bottom = DoneAtSpacing.s))
         }
         HorizontalDivider()
         DoneAtValueRow("Next", "Lunch at 12:00")
         DoneAtValueRow("Worked today", "4 h 35 min")
         Spacer(Modifier.height(DoneAtSpacing.s))
         DoneAtPrimaryButton("Start overtime", {}, Modifier.fillMaxWidth())
+    }
+}
+
+/** The bubble at both ends (pointer on the mark, bubble sliding), in overtime and paused for lunch. */
+@Composable
+private fun Meters() = Section("Progress meter: 0 %, 100 %, overtime, lunch") {
+    Column(verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.l)) {
+        DoneAtProgressMeter(0.0, "Progress")
+        DoneAtProgressMeter(100.0, "Progress")
+        DoneAtProgressMeter(91.7, "Progress", overtime = true)
+        DoneAtProgressMeter(47.5, "Progress", paused = true)
     }
 }
 

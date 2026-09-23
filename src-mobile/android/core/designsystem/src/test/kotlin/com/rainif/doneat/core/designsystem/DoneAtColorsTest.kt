@@ -28,6 +28,7 @@ class DoneAtColorsTest {
         "primary/surfaceContainerLow" to (s.primary to s.surfaceContainerLow),
         "inverseOnSurface/inverseSurface" to (s.inverseOnSurface to s.inverseSurface),
         "error/surface" to (s.error to s.surface),
+        "paused meter bubble" to (s.surface to s.onSurfaceVariant),
     )
 
     private fun states(s: DoneAtStateColors) = listOf(
@@ -35,6 +36,7 @@ class DoneAtColorsTest {
         "rest" to (s.onRest to s.rest),
         "offWork" to (s.onOffWork to s.offWork),
         "overtime" to (s.onOvertime to s.overtime),
+        "overtime meter bubble" to (s.onOvertimeMeter to s.overtimeMeter),
     )
 
     @Test fun textPairsMeetAaInBothSchemes() {

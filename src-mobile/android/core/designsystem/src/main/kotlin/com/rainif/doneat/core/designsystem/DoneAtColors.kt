@@ -105,6 +105,9 @@ data class DoneAtStateColors(
     val onOffWork: Color,
     val overtime: Color,
     val onOvertime: Color,
+    /** The progress meter's fill in overtime: a deeper orange than `primary` (iOS `OWCDesign.orangeDeep`). */
+    val overtimeMeter: Color,
+    val onOvertimeMeter: Color,
 ) {
     companion object {
         fun from(scheme: ColorScheme, dark: Boolean) = DoneAtStateColors(
@@ -117,6 +120,8 @@ data class DoneAtStateColors(
             // Amber, apart from both the orange and the error red.
             overtime = if (dark) Color(0xFF5C4300) else Color(0xFFFFDEA6),
             onOvertime = if (dark) Color(0xFFFFDEA6) else Color(0xFF271900),
+            overtimeMeter = if (dark) Color(0xFFFF7A2E) else Color(0xFF9A3412),
+            onOvertimeMeter = if (dark) Color(0xFF3A1400) else Color(0xFFFFFFFF),
         )
     }
 }

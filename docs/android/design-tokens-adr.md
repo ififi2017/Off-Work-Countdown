@@ -19,6 +19,7 @@ D-12 规定 Release 只用稳定版 Compose/Material3；Material 3 Expressive �
 | `DoneAtMotion` | press 140、selection 180、stateExit 100、stateEnter 180、phase 280 ms；强调减速曲线 cubic-bezier(0.23, 1, 0.32, 1)；空间变化用带少许回弹的 spring | 数值与 `OWCMotion` 一致 |
 | `DoneAtType.countdown` | 64 sp、等宽数字（`tnum`）、随系统字号缩放 | 计划 01 §7.2 的 56–72 sp 测试区间 |
 | `DoneAtSpacing` | 4 dp 网格，页边距 16 dp，触达区 ≥ 48 dp | `OWCDesign.pageInset` 16 |
+| `DoneAtProgressMeter` | 班次进度条与浮动百分比气泡：指针固定在进度位置，气泡绕指针滑动，最多探出轨道 14 dp；加班换深橙，午休暂停为灰色加微光 | 几何与 `OWCProgressMeter` 相同 |
 
 由 token 实现的 Expressive 行为：
 
@@ -29,6 +30,15 @@ D-12 规定 Release 只用稳定版 Compose/Material3；Material 3 Expressive �
 - **主题**：品牌配色为默认；动态配色为可选开关，仅 Android 12+ 显示；浅色、深色、跟随系统与配色来源相互独立。`SystemBarsFollowTheme`（`:app`）让系统栏图标跟随应用主题而非系统主题。
 
 没有采用的：`MaterialExpressiveTheme`、`MotionScheme`、`ButtonGroup`、`LoadingIndicator`、`FloatingToolbar`、形状库 `MaterialShapes` 等 Expressive API。
+
+## 进度条（`DoneAtProgressMeter`）
+
+- 几何放在纯函数 `ProgressMeterGeometry.place`，单测按 iOS 公式核对 0%、5%、50%、100% 与越界值：指针始终对准进度，气泡在两端最多外探 14 dp，且指针总落在气泡的平直边上。
+- 气泡宽度按实际文字测量；字号固定 13 dp，不随系统字号放大（与 iOS 相同：进度条高度不变），读屏改用整数百分比，并暴露为进度范围。
+- 数字格式跟随应用当前语言（应用内语言），不是系统语言：阿拉伯语显示阿拉伯-印度数字，德语为 `62,4 %`。
+- 气泡文字用各配色的前景色（浅色白字、深色深字），不固定白色；iOS 深色下白字配亮橙对比度不足。
+- 从右到左的语言从右侧填充，气泡与指针随之镜像。
+- 每秒重算，几何不做动画；只有午休微光是动画，减少动态效果时去掉。
 
 ## 可访问性
 
@@ -47,10 +57,11 @@ Debug 专用 gallery：`adb shell am start -n com.rainif.doneat/.gallery.DesignG
 | 200% 字体 | 文字换行、状态标记改为多行排列、按钮随内容增高且仍为胶囊（修复前变成固定 28 dp 圆角）；倒计时由系统非线性缩放保持一行 |
 | 系统移除动画 | `DoneAtMotion.reduced` 读到开启 |
 | 长德文按钮 | 正常换行 |
+| 进度条 | 浅色、深色、0%、100%、加班、午休均与 iOS 一致；应用语言设为阿拉伯语时从右填充并显示阿拉伯-印度数字（修复前数字跟随系统语言） |
 
 检查中调整：浅色 `secondaryContainer` 原与 `primaryContainer` 几乎同色，改为暖灰 `#F5DED4`。
 
-动态配色仅在代码中接入，本次未在壁纸取色的设备上检查；阿拉伯语 RTL 与 TalkBack 的实际朗读随 T15 的真实页面检查。
+动态配色仅在代码中接入，本次未在壁纸取色的设备上检查；TalkBack 的实际朗读随 T15 的真实页面检查。
 
 ## 依赖树（releaseRuntimeClasspath）
 
