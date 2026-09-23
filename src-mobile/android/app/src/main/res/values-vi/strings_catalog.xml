@@ -82,6 +82,7 @@
     <string name="done">Xong</string>
     <string name="doubleRestWeek">Tuần nghỉ 2 ngày</string>
     <string name="downloadDesktopApp">Tải cho Mac &amp; Windows</string>
+    <string name="earningsShownWithoutLock">Thiết bị này chưa đặt khóa màn hình nên thu nhập được hiển thị mà không cần xác minh. Hãy đặt khóa màn hình để giữ riêng tư.</string>
     <string name="enableSalary">Hiển thị lương</string>
     <string name="enableSalaryDescription">Tắt theo mặc định. Lương được bao gồm nếu bạn bật đồng bộ hóa iCloud.</string>
     <string name="endTime">Giờ tan ca</string>

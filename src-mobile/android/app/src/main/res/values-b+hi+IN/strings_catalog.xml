@@ -82,6 +82,7 @@
     <string name="done">पूर्ण</string>
     <string name="doubleRestWeek">2 छुट्टी वाला सप्ताह</string>
     <string name="downloadDesktopApp">Mac और Windows के लिए डाउनलोड करें</string>
+    <string name="earningsShownWithoutLock">इस डिवाइस पर स्क्रीन लॉक नहीं है, इसलिए कमाई बिना जाँच के दिखाई जा रही है। इसे निजी रखने के लिए स्क्रीन लॉक सेट करें।</string>
     <string name="enableSalary">वेतन दिखाएँ</string>
     <string name="enableSalaryDescription">डिफ़ॉल्ट रूप से बंद. यदि आप आईक्लाउड सिंक चालू करते हैं तो वेतन शामिल है।</string>
     <string name="endTime">छुट्टी का समय</string>

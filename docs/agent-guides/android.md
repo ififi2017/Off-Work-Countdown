@@ -40,6 +40,15 @@ locale and validation rules apply.
   system per-app language both ways; earlier versions switch it inside Compose
   (`AppLanguageScope` wraps the activity, never a bare configuration context).
   AAB language splits stay disabled.
+- The running countdown is `session/ShiftSession` (reads) and
+  `SessionCommands` (writes), stored by `SessionStore`. Its state file is
+  device-local and never joins the archive (the frozen clock-off snapshot
+  carries salary). Screens read figures from the session's rules snapshot at
+  the current second; never compute `end - now`. A command's archive writes
+  (observations, today's override) go through `SessionStore.run`, never
+  straight to `RecordStore`.
+- Money reaches the screen only through `TimerText.money`, which masks it
+  while earnings are hidden. Revealing goes through `EarningsGate`.
 - UI takes colour, shape, motion and type from `:core:designsystem` tokens
   (`docs/android/design-tokens-adr.md`); screens do not inline hex colours,
   radii or durations. Check new tokens in the Debug-only gallery

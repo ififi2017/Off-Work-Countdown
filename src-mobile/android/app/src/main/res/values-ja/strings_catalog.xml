@@ -82,6 +82,7 @@
     <string name="done">完了</string>
     <string name="doubleRestWeek">週休2日</string>
     <string name="downloadDesktopApp">Mac・Windows版をダウンロード</string>
+    <string name="earningsShownWithoutLock">この端末には画面ロックが設定されていないため、確認なしで収入を表示しています。画面ロックを設定すると、自分だけが見られるようになります。</string>
     <string name="enableSalary">給与を表示</string>
     <string name="enableSalaryDescription">デフォルトではオフです。 iCloud 同期をオンにすると、給与が含まれます。</string>
     <string name="endTime">退勤時間</string>

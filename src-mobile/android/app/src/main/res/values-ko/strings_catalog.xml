@@ -82,6 +82,7 @@
     <string name="done">완료</string>
     <string name="doubleRestWeek">주 2일 휴무</string>
     <string name="downloadDesktopApp">Mac 및 Windows용 다운로드</string>
+    <string name="earningsShownWithoutLock">이 기기에는 화면 잠금이 없어 확인 없이 수입을 표시했습니다. 화면 잠금을 설정하면 나만 볼 수 있습니다.</string>
     <string name="enableSalary">급여 표시</string>
     <string name="enableSalaryDescription">기본적으로 꺼져 있습니다. iCloud 동기화를 켜면 급여가 포함됩니다.</string>
     <string name="endTime">퇴근 시간</string>

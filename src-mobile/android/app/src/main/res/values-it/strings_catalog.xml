@@ -82,6 +82,7 @@
     <string name="done">Fine</string>
     <string name="doubleRestWeek">Settimana con 2 giorni liberi</string>
     <string name="downloadDesktopApp">Scarica per Mac e Windows</string>
+    <string name="earningsShownWithoutLock">Questo dispositivo non ha un blocco schermo, quindi i guadagni vengono mostrati senza verifica. Imposta un blocco schermo per mantenerli privati.</string>
     <string name="enableSalary">Mostra stipendio</string>
     <string name="enableSalaryDescription">Disattivato per impostazione predefinita. Lo stipendio è incluso se attivi la sincronizzazione iCloud.</string>
     <string name="endTime">Ora di uscita</string>

@@ -82,6 +82,7 @@
     <string name="done">完成</string>
     <string name="doubleRestWeek">雙休週</string>
     <string name="downloadDesktopApp">下載 Mac 與 Windows 版</string>
+    <string name="earningsShownWithoutLock">這台裝置沒有設定螢幕鎖定，收入已直接顯示。設定螢幕鎖定後，就只有你自己看得到。</string>
     <string name="enableSalary">顯示薪資</string>
     <string name="enableSalaryDescription">預設關閉。如果您開啟 iCloud 同步，則薪資包含在內。</string>
     <string name="endTime">下班時間</string>

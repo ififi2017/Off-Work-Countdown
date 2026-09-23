@@ -82,6 +82,7 @@
     <string name="done">Fertig</string>
     <string name="doubleRestWeek">Woche mit 2 freien Tagen</string>
     <string name="downloadDesktopApp">Für Mac &amp; Windows laden</string>
+    <string name="earningsShownWithoutLock">Auf diesem Gerät ist keine Displaysperre eingerichtet, daher wird der Verdienst ohne Prüfung angezeigt. Richte eine Displaysperre ein, damit er privat bleibt.</string>
     <string name="enableSalary">Gehalt anzeigen</string>
     <string name="enableSalaryDescription">Standardmäßig deaktiviert. Das Gehalt ist inbegriffen, wenn Sie die iCloud-Synchronisierung aktivieren.</string>
     <string name="endTime">Feierabend</string>

@@ -365,6 +365,10 @@
     "downloadDesktopApp": {
       "resource": "string/downloadDesktopApp"
     },
+    "earningsShownWithoutLock": {
+      "resource": "string/earningsShownWithoutLock",
+      "androidOnly": true
+    },
     "enableSalary": {
       "resource": "string/enableSalary"
     },

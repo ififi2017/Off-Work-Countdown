@@ -69,7 +69,7 @@ class DoneAtMotion(val reduced: Boolean) {
     fun <T> selection(): AnimationSpec<T> = if (reduced) snap() else tween(SELECTION_MS, easing = FastOutSlowInEasing)
     fun <T> stateEnter(): AnimationSpec<T> = if (reduced) tween(REDUCED_MS) else tween(STATE_ENTER_MS, easing = emphasizedDecelerate)
     fun <T> stateExit(): AnimationSpec<T> = if (reduced) tween(REDUCED_MS) else tween(STATE_EXIT_MS, easing = emphasizedDecelerate)
-    fun <T> phase(): AnimationSpec<T> = if (reduced) tween(REDUCED_MS) else tween(PHASE_MS, easing = FastOutSlowInEasing)
+    fun <T> phase(): FiniteAnimationSpec<T> = if (reduced) tween(REDUCED_MS) else tween(PHASE_MS, easing = FastOutSlowInEasing)
 
     /** Shape and position changes; a little bounce, never on colour or opacity. */
     fun <T> spatial(): AnimationSpec<T> =

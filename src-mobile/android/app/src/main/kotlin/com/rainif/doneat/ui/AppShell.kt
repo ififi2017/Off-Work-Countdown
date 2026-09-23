@@ -31,6 +31,7 @@ import com.rainif.doneat.ui.settings.NotificationsScreen
 import com.rainif.doneat.ui.settings.PendingScreen
 import com.rainif.doneat.ui.settings.SettingsHomeScreen
 import com.rainif.doneat.ui.settings.ThemeScreen
+import com.rainif.doneat.ui.timer.TimerScreen
 import kotlinx.coroutines.launch
 
 /**
@@ -83,7 +84,15 @@ fun AppShell(graph: AppGraph) {
         NavDisplay(
             backStack = stack,
             onBack = { if (stack.size > 1) stack.removeAt(stack.lastIndex) },
-            entryProvider = { key -> entry(key, stack, graph) },
+            entryProvider = { key ->
+                entry(key, stack, graph) { route ->
+                    // The timer's shortcuts land in Settings, with the page already open.
+                    val settings = stacks.getValue(AppTab.SETTINGS)
+                    while (settings.size > 1) settings.removeAt(settings.lastIndex)
+                    route?.let(settings::add)
+                    select(AppTab.SETTINGS)
+                }
+            },
         )
     }
 }
@@ -105,7 +114,7 @@ private val AppTab.icon
     }
 
 /** The single destination registry every stack uses (iOS `AppRouteDestination`). */
-private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph): NavEntry<NavKey> = NavEntry(key) {
+private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph, openSettings: (Route?) -> Unit): NavEntry<NavKey> = NavEntry(key) {
     val scope = rememberCoroutineScope()
     val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
     val device by graph.settings.device.collectAsStateWithLifecycle()
@@ -116,7 +125,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph): Na
         { change -> scope.launch { graph.settings.edit(change) } }
     val settingsLabel = stringResource(R.string.settings)
     when (key) {
-        Route.TimerHome -> PendingScreen(stringResource(R.string.timerTab), null, null)
+        Route.TimerHome -> TimerScreen(graph, openSettings)
         Route.FocusHome -> PendingScreen(stringResource(R.string.focusTitle), null, null)
         Route.RecordsHome -> PendingScreen(stringResource(R.string.recordsTab), null, null)
         Route.SettingsHome -> SettingsHomeScreen(prefs, records, open)

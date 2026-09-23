@@ -82,6 +82,7 @@
     <string name="done">Done</string>
     <string name="doubleRestWeek">Double-rest week</string>
     <string name="downloadDesktopApp">Download for Mac &amp; Windows</string>
+    <string name="earningsShownWithoutLock">This device has no screen lock, so earnings are shown without a check. Set a screen lock to keep them private.</string>
     <string name="enableSalary">Show salary</string>
     <string name="enableSalaryDescription">Off by default. Salary is included if you turn on iCloud sync.</string>
     <string name="endTime">Clock-off</string>

@@ -82,6 +82,7 @@
     <string name="done">تم</string>
     <string name="doubleRestWeek">أسبوع بيومي راحة</string>
     <string name="downloadDesktopApp">تنزيل لـ Mac وWindows</string>
+    <string name="earningsShownWithoutLock">لا يوجد قفل شاشة على هذا الجهاز، لذا تُعرض الأرباح دون تحقق. اضبط قفل الشاشة لتبقى خاصة بك.</string>
     <string name="enableSalary">إظهار الراتب</string>
     <string name="enableSalaryDescription">إيقاف بشكل افتراضي. يتم تضمين الراتب إذا قمت بتشغيل مزامنة iCloud.</string>
     <string name="endTime">وقت الانصراف</string>

@@ -82,6 +82,7 @@
     <string name="done">Готово</string>
     <string name="doubleRestWeek">Неделя с 2 выходными</string>
     <string name="downloadDesktopApp">Скачать для Mac и Windows</string>
+    <string name="earningsShownWithoutLock">На этом устройстве не настроена блокировка экрана, поэтому заработок показан без проверки. Настройте блокировку экрана, чтобы видеть его могли только вы.</string>
     <string name="enableSalary">Показывать зарплату</string>
     <string name="enableSalaryDescription">По умолчанию выключено. Зарплата включена в стоимость, если вы включите синхронизацию с iCloud.</string>
     <string name="endTime">Конец работы</string>

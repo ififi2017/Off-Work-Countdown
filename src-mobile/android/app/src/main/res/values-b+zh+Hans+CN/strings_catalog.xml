@@ -82,6 +82,7 @@
     <string name="done">完成</string>
     <string name="doubleRestWeek">双休周</string>
     <string name="downloadDesktopApp">下载 Mac 与 Windows 版</string>
+    <string name="earningsShownWithoutLock">这台设备没有设置锁屏，收入已直接显示。设置锁屏后，就能只让自己看到。</string>
     <string name="enableSalary">显示薪资</string>
     <string name="enableSalaryDescription">默认关闭。开启 iCloud 同步后，薪资也会一起同步。</string>
     <string name="endTime">下班时间</string>

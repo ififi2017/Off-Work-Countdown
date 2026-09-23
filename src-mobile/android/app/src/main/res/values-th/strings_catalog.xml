@@ -82,6 +82,7 @@
     <string name="done">เสร็จสิ้น</string>
     <string name="doubleRestWeek">สัปดาห์หยุด 2 วัน</string>
     <string name="downloadDesktopApp">ดาวน์โหลดสำหรับ Mac และ Windows</string>
+    <string name="earningsShownWithoutLock">อุปกรณ์นี้ไม่ได้ตั้งค่าการล็อกหน้าจอ จึงแสดงรายได้โดยไม่ต้องยืนยัน ตั้งค่าการล็อกหน้าจอเพื่อให้เห็นได้เฉพาะคุณ</string>
     <string name="enableSalary">แสดงเงินเดือน</string>
     <string name="enableSalaryDescription">ปิดตามค่าเริ่มต้น รวมเงินเดือนแล้วหากคุณเปิดการซิงค์ iCloud</string>
     <string name="endTime">เวลาเลิกงาน</string>

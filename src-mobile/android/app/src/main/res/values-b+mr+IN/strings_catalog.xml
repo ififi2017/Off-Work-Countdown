@@ -82,6 +82,7 @@
     <string name="done">पूर्ण</string>
     <string name="doubleRestWeek">2 सुट्ट्यांचा आठवडा</string>
     <string name="downloadDesktopApp">Mac आणि Windows साठी डाउनलोड करा</string>
+    <string name="earningsShownWithoutLock">या डिव्हाइसवर स्क्रीन लॉक नाही, त्यामुळे कमाई पडताळणीशिवाय दाखवली आहे. ती खाजगी ठेवण्यासाठी स्क्रीन लॉक सेट करा.</string>
     <string name="enableSalary">पगार दाखवा</string>
     <string name="enableSalaryDescription">डीफॉल्टनुसार बंद. तुम्ही iCloud सिंक चालू केल्यास पगाराचा समावेश केला जातो.</string>
     <string name="endTime">सुट्टीची वेळ</string>

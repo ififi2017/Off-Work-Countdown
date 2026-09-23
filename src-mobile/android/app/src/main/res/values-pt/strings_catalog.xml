@@ -82,6 +82,7 @@
     <string name="done">Concluído</string>
     <string name="doubleRestWeek">Semana com 2 folgas</string>
     <string name="downloadDesktopApp">Baixar para Mac e Windows</string>
+    <string name="earningsShownWithoutLock">Este dispositivo não tem bloqueio de tela, por isso os ganhos são mostrados sem verificação. Configure um bloqueio de tela para mantê-los privados.</string>
     <string name="enableSalary">Mostrar salário</string>
     <string name="enableSalaryDescription">Desligado por padrão. O salário está incluído se você ativar a sincronização do iCloud.</string>
     <string name="endTime">Hora de saída</string>

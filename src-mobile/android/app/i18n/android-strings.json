@@ -132,6 +132,28 @@
       "th": "ไม่ต้องมีบัญชี การนับถอยหลังและบันทึกของคุณอยู่ในอุปกรณ์นี้ และอยู่ในข้อมูลสำรองของ Android หากคุณเปิดไว้ ข้อมูลงานและเงินเดือนจะไม่ถูกส่งถึงผู้พัฒนา",
       "tr": "Hesap gerekmez. Geri sayım ve kayıtların bu cihazda kalır; Android yedeklemesi açıksa orada da bulunur. İş ve maaş verileri asla geliştiriciye gönderilmez.",
       "vi": "Không cần tài khoản. Đồng hồ đếm ngược và dữ liệu của bạn ở trên thiết bị này, và trong bản sao lưu của Android nếu bạn bật. Dữ liệu công việc và lương không bao giờ được gửi cho nhà phát triển."
+    },
+    "earningsShownWithoutLock": {
+      "comment": "Timer: shown when earnings are revealed on a device without a screen lock, so no identity check was possible.",
+      "en": "This device has no screen lock, so earnings are shown without a check. Set a screen lock to keep them private.",
+      "zh-CN": "这台设备没有设置锁屏，收入已直接显示。设置锁屏后，就能只让自己看到。",
+      "zh-HK": "這部裝置未設定螢幕鎖定，收入已直接顯示。設定螢幕鎖定後，就只有你自己看到。",
+      "zh-TW": "這台裝置沒有設定螢幕鎖定，收入已直接顯示。設定螢幕鎖定後，就只有你自己看得到。",
+      "ja": "この端末には画面ロックが設定されていないため、確認なしで収入を表示しています。画面ロックを設定すると、自分だけが見られるようになります。",
+      "ko": "이 기기에는 화면 잠금이 없어 확인 없이 수입을 표시했습니다. 화면 잠금을 설정하면 나만 볼 수 있습니다.",
+      "de": "Auf diesem Gerät ist keine Displaysperre eingerichtet, daher wird der Verdienst ohne Prüfung angezeigt. Richte eine Displaysperre ein, damit er privat bleibt.",
+      "es": "Este dispositivo no tiene bloqueo de pantalla, así que los ingresos se muestran sin verificación. Configura un bloqueo de pantalla para mantenerlos en privado.",
+      "fr": "Cet appareil n’a pas de verrouillage d’écran : les gains s’affichent donc sans vérification. Définissez un verrouillage d’écran pour les garder privés.",
+      "it": "Questo dispositivo non ha un blocco schermo, quindi i guadagni vengono mostrati senza verifica. Imposta un blocco schermo per mantenerli privati.",
+      "pt": "Este dispositivo não tem bloqueio de tela, por isso os ganhos são mostrados sem verificação. Configure um bloqueio de tela para mantê-los privados.",
+      "ru": "На этом устройстве не настроена блокировка экрана, поэтому заработок показан без проверки. Настройте блокировку экрана, чтобы видеть его могли только вы.",
+      "ar": "لا يوجد قفل شاشة على هذا الجهاز، لذا تُعرض الأرباح دون تحقق. اضبط قفل الشاشة لتبقى خاصة بك.",
+      "hi-IN": "इस डिवाइस पर स्क्रीन लॉक नहीं है, इसलिए कमाई बिना जाँच के दिखाई जा रही है। इसे निजी रखने के लिए स्क्रीन लॉक सेट करें।",
+      "mr-IN": "या डिव्हाइसवर स्क्रीन लॉक नाही, त्यामुळे कमाई पडताळणीशिवाय दाखवली आहे. ती खाजगी ठेवण्यासाठी स्क्रीन लॉक सेट करा.",
+      "id": "Perangkat ini tidak memiliki kunci layar, jadi penghasilan ditampilkan tanpa verifikasi. Atur kunci layar agar tetap privat.",
+      "th": "อุปกรณ์นี้ไม่ได้ตั้งค่าการล็อกหน้าจอ จึงแสดงรายได้โดยไม่ต้องยืนยัน ตั้งค่าการล็อกหน้าจอเพื่อให้เห็นได้เฉพาะคุณ",
+      "tr": "Bu cihazda ekran kilidi yok, bu yüzden kazanç doğrulama olmadan gösteriliyor. Gizli tutmak için bir ekran kilidi ayarlayın.",
+      "vi": "Thiết bị này chưa đặt khóa màn hình nên thu nhập được hiển thị mà không cần xác minh. Hãy đặt khóa màn hình để giữ riêng tư."
     }
   }
 }

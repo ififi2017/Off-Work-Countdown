@@ -82,6 +82,7 @@
     <string name="done">Terminé</string>
     <string name="doubleRestWeek">Semaine à 2 jours de repos</string>
     <string name="downloadDesktopApp">Télécharger pour Mac et Windows</string>
+    <string name="earningsShownWithoutLock">Cet appareil n’a pas de verrouillage d’écran : les gains s’affichent donc sans vérification. Définissez un verrouillage d’écran pour les garder privés.</string>
     <string name="enableSalary">Afficher le salaire</string>
     <string name="enableSalaryDescription">Désactivé par défaut. Le salaire est inclus si vous activez la synchronisation iCloud.</string>
     <string name="endTime">Heure de départ</string>

@@ -82,6 +82,7 @@
     <string name="done">Bitti</string>
     <string name="doubleRestWeek">2 izin günlü hafta</string>
     <string name="downloadDesktopApp">Mac ve Windows için indir</string>
+    <string name="earningsShownWithoutLock">Bu cihazda ekran kilidi yok, bu yüzden kazanç doğrulama olmadan gösteriliyor. Gizli tutmak için bir ekran kilidi ayarlayın.</string>
     <string name="enableSalary">Maaşı göster</string>
     <string name="enableSalaryDescription">Varsayılan olarak kapalıdır. İCloud senkronizasyonunu açarsanız maaş dahildir.</string>
     <string name="endTime">İş çıkışı</string>
