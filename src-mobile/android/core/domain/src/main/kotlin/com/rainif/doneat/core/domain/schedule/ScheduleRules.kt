@@ -15,7 +15,7 @@ import kotlin.math.min
  */
 object ScheduleRules {
     fun snapshot(input: ScheduleRuleInput, salary: SalarySettings): ShiftSnapshot {
-        val zone = CivilZone(input.zone)
+        val zone = zoneFor(input)
         val shift = resolveCurrentShift(input, zone)
         val nextShift = nextShift(shift, input, zone)
         val clockIn = countdownProjection(input, shift, nextShift, zone)
@@ -52,7 +52,7 @@ object ScheduleRules {
      * countdown target even though a widget never draws it.
      */
     fun widgetShifts(input: ScheduleRuleInput, throughMs: Double, maximumCount: Int): List<WidgetShift> {
-        val zone = CivilZone(input.zone)
+        val zone = zoneFor(input)
         val options = ShiftOptions.of(input)
         val current = zone.shiftTimeline(input.startTime, input.endTime, input.nowMs, options)
         val shifts = ArrayList<WidgetShift>()
@@ -80,15 +80,16 @@ object ScheduleRules {
      * shift keys as the day it starts. Manual days are rest.
      */
     fun expandScheduleRange(hours: ScheduleHours, fromMs: Double, throughMs: Double, zoneId: ZoneId): List<ScheduleDayExpansion> {
-        val zone = CivilZone(zoneId)
+        val zone = CivilZone(zoneId, hours.extended?.let(::ExtendedScheduleResolver))
         val fromDay = zone.civil(fromMs).dayNumber
         val throughDay = zone.civil(throughMs).dayNumber
         if (throughDay < fromDay) return emptyList()
-        val start = WallClock.parse(hours.startTime)
-        val end = WallClock.parse(hours.endTime)
-        val breakClock = hours.breakStartTime?.takeIf { it.isNotEmpty() }?.let(WallClock::parse)
-        val breakDurationMs = hours.breakDurationMinutes * 60_000.0
         return (fromDay..throughDay).map { dayNumber ->
+            // Per day: an extended schedule gives each day its own shift.
+            val (start, end) = zone.dayClocks(dayNumber, hours.startTime, hours.endTime)
+            val (breakStartTime, breakMinutes) = zone.dayBreak(dayNumber, hours.breakStartTime, hours.breakDurationMinutes)
+            val breakClock = breakStartTime?.takeIf { it.isNotEmpty() }?.let(WallClock::parse)
+            val breakDurationMs = breakMinutes * 60_000.0
             val startAtMs = zone.utcMs(dayNumber, start)
             var endAtMs = zone.utcMs(dayNumber, end)
             if (endAtMs <= startAtMs) {
@@ -116,7 +117,7 @@ object ScheduleRules {
     fun validateBreak(input: ScheduleRuleInput): Boolean {
         val breakStartTime = input.hours.breakStartTime
         if (breakStartTime.isNullOrEmpty() || input.hours.breakDurationMinutes <= 0) return true
-        return CivilZone(input.zone)
+        return zoneFor(input)
             .shiftTimeline(input.startTime, input.endTime, input.nowMs, ShiftOptions.of(input))
             .segments.size > 1
     }
@@ -127,9 +128,12 @@ object ScheduleRules {
      */
     fun shouldPromptApplyToday(current: ScheduleRuleInput, candidate: ScheduleRuleInput) =
         listOf(current, candidate).any { input ->
-            val zone = CivilZone(input.zone)
+            val zone = zoneFor(input)
             zone.isScheduledWorkday(resolveCurrentShift(input, zone).startAtMs, input.workdays, input.schedule)
         }
+
+    private fun zoneFor(input: ScheduleRuleInput) =
+        CivilZone(input.zone, input.hours.extended?.let(::ExtendedScheduleResolver))
 
     internal fun resolveCurrentShift(input: ScheduleRuleInput, zone: CivilZone): ShiftTimeline {
         val options = ShiftOptions.of(input)

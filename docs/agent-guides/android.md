@@ -37,14 +37,18 @@ locale and validation rules apply.
   `core/domain/src/test/resources/shared-rule-fixtures.json`: the iOS fixture
   cases verbatim plus hashes of every `lib/`/oracle input. `npm test` fails
   when it is stale, even if the iOS fixture is not. iOS-only rules (extended schedules, record resolution, focus) reach
-  Kotlin through JSON exported by Swift tests; Swift and Kotlin tests read the
-  same file with a stale check (T08). Decide which side is correct before
+  Kotlin through `npm run generate:android-extended-fixtures` (macOS): it
+  compiles the real `src-mobile/ios/Shared` Swift with
+  `scripts/android-extended-fixtures/main.swift` and records its answers in
+  `extended-schedule-fixtures.json`. `npm test` fails on any platform once
+  those Swift sources change; regenerate on macOS, then fix Kotlin. Decide which side is correct before
   regenerating; never regenerate to hide a failure.
 - A shared or iOS-only rule change updates Kotlin in the same change
   (`core/domain/.../schedule`, `salary`); `:core:domain:test` must stay green.
   `docs/android/rule-parity.md` lists which fixture sections Kotlin covers.
 - Rule inputs take an explicit `ZoneId`; rules never read a default zone or
-  the current time.
+  the current time. The holiday calendar is loaded by the caller and passed
+  into `ExtendedSchedulePlan`; it is the same `HolidayTemplates.json` as iOS.
 - Focus session IDs use the source SHA-256 truncation, not Java
   `nameUUIDFromBytes` or random UUIDs.
 

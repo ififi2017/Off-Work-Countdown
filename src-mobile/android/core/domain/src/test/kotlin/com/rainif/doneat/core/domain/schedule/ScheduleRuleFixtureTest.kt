@@ -4,6 +4,7 @@ import com.rainif.doneat.core.domain.SharedRuleFixtures
 import com.rainif.doneat.core.domain.SharedRuleFixtures.integer
 import com.rainif.doneat.core.domain.SharedRuleFixtures.segments
 import com.rainif.doneat.core.domain.SharedRuleFixtures.segmentsText
+import com.rainif.doneat.core.domain.compareSnapshot
 import com.rainif.doneat.core.domain.asDouble
 import com.rainif.doneat.core.domain.bool
 import com.rainif.doneat.core.domain.double
@@ -114,37 +115,6 @@ class ScheduleRuleFixtureTest {
             assertEquals("apply today ${profile.id} → ${other.id} at $now", case.bool("expected"), ScheduleRules.shouldPromptApplyToday(current, candidate))
         }
         assertEquals(setOf(true, false), cases.map { it.bool("expected") }.toSet())
-    }
-
-    /** Field-by-field in generator order; doubles compare as IEEE values, so 0 and -0 agree as in Swift. */
-    private fun compareSnapshot(actual: ShiftSnapshot, expected: JsonArray): String? {
-        val expectedSegments = expected[0].jsonArray.map { pair ->
-            val (start, end) = pair.jsonArray.map { it.asDouble()!! }
-            ShiftSegment(start, end)
-        }
-        if (expectedSegments != actual.segments) return "segments ${actual.segments} ≠ $expectedSegments"
-        val fields = listOf(
-            "startAtMs" to actual.startAtMs, "endAtMs" to actual.endAtMs, "plannedEndAtMs" to actual.plannedEndAtMs,
-            "overtimeEndAtMs" to actual.overtimeEndAtMs, "durationMs" to actual.durationMs,
-            "plannedDurationMs" to actual.plannedDurationMs, "elapsedMs" to actual.elapsedMs,
-            "remainingMs" to actual.remainingMs, "progress" to actual.progress, "payRatio" to actual.payRatio,
-            "activeBreakEndAtMs" to actual.activeBreakEndAtMs, "isWorkday" to actual.isWorkday,
-            "nextRestAtMs" to actual.nextRestAtMs, "dailySalary" to actual.dailySalary,
-            "earnedSoFar" to actual.earnedSoFar, "nextShiftStartAtMs" to actual.nextShiftStartAtMs,
-            "nextShiftEndAtMs" to actual.nextShiftEndAtMs, "countdownTargetAtMs" to actual.countdownTargetAtMs,
-            "countdownAnchorAtMs" to actual.countdownAnchorAtMs, "countdownProgress" to actual.countdownProgress,
-        )
-        fields.forEachIndexed { index, (name, value) ->
-            val e = expected[index + 1]
-            val same = when (value) {
-                is Boolean -> e.jsonPrimitive.boolean == value
-                is Double -> e.asDouble()?.let { it == value } ?: false
-                null -> e.asDouble() == null
-                else -> false
-            }
-            if (!same) return "$name: expected $e, actual $value"
-        }
-        return null
     }
 
     private fun JsonObject.toWidgetShift() = WidgetShift(

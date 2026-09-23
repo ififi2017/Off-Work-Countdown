@@ -17,7 +17,8 @@
 | T04–T05 | NOT_STARTED | — |
 | T06 | IMPLEMENTED | `scripts/generate-android-rule-fixtures.mjs` → `src-mobile/android/core/domain/src/test/resources/shared-rule-fixtures.json`：5087 条 TS oracle 用例，与 iOS `ScheduleRuleFixtures` 数据逐字相同，另记 6 个输入文件哈希。`npm test` 内含 stale 检查（手改一条用例、给 `lib/countdown.ts` 加注释均使检查失败，已验证）；Kotlin `SharedRuleFixturesTest` 3 条通过。Swift 特有规则的 fixtures 属 T08。 |
 | T07 | IMPLEMENTED | `core/domain/.../schedule`（`CivilZone`、`ScheduleRules`、模型）与 `salary/SalaryRules`。fixture 的 snapshots/widget/expansion/validateBreak/applyToday 共 2927 条全部精确通过；植入错误测试有效；算例测试 5 条。见 `rule-parity.md`。 |
-| T08–T20 | NOT_STARTED | — |
+| T08 | IMPLEMENTED | `ExtendedSchedule.kt`（解析器、计划、校验）、`HolidayCalendar.kt`、`CivilZone` 扩展路径。Swift 导出的 fixtures 共约 7200 条全部通过，4 项植入错误均被捕获。编辑器逻辑移到 T15/T16，`expandableHours` 叠加移到 T12。见 `rule-parity.md`。 |
+| T09–T20 | NOT_STARTED | — |
 | T21 | DEFERRED | 服务端验证，首发后（D-08 修订） |
 | T22 | DEFERRED | Drive 同步，首发后（D-02 修订） |
 | T23–T26 | NOT_STARTED | — |
@@ -38,7 +39,7 @@
 
 - **T04 · 稳定版 Material3 与 DoneAt 设计 token 探针**（依赖 T03）。
 - **T05 · 翻译转换与质量检查**（依赖 T02+T03）。
-- **T08 · 扩展排班和 Swift 特有测试**（依赖 T02+T07）：先让 Swift 测试导出 JSON fixtures（Swift 与 Kotlin 共用），再给 `CivilZone` 接入按日班型。
+- **T09 · 记录汇总与人生计算**（依赖 T07+T08）：`summaries`、`recordsIncome`、`monthlyEquivalent`、`lifetimeIncome`、`actualForecast` 五段 TS fixture 已就位。
 - **T10 · Room、事务与迁移基础**（依赖 T02+T03）。
 - **T13 · 专注模型**（依赖 T07+T10）。
 
@@ -59,6 +60,7 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 ## 变更记录
 
 - 2026-09-21：T00–T02 完成。
+- 2026-09-23：T08 完成（扩展排班，Swift 导出 fixtures）。
 - 2026-09-23：T07 完成（固定班次核心，fixture 全通过）。
 - 2026-09-23：T06 完成（共享规则 fixtures 与 stale 检查）。
 - 2026-09-23：T03 完成（最小工程、CI、环境锁）。

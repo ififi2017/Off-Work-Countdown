@@ -33,3 +33,42 @@ Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 
 - **时区必须显式传入。** Swift 在缺少标识时回退 `TimeZone.current`；Kotlin 的 `ScheduleRuleInput.zone` 是必填的 `ZoneId`，调用方传记录时区或设备时区，规则内部不读默认值。
 - **扩展排班未接入。** `CivilZone` 目前只有固定班次路径；按日班型、节假日、冻结历史在 T08 加入，届时以 Swift 导出的 fixtures 校验。
 - DST 策略沿用源规则（重叠取较早、空缺取其后第一分钟），不使用 `java.time` 自带的 gap/fold 选择。时区数据来自 JDK tzdb；fixture 覆盖的 9 个时区（含 Lord Howe、Chatham、Santiago）在 2026–2027 年与 ICU 结果一致。
+
+## 扩展排班（T08，iOS 独有）
+
+没有 TypeScript oracle，Swift 即规范。`npm run generate:android-extended-fixtures`（仅 macOS）用 `swiftc` 编译真实的 `src-mobile/ios/Shared` 与规则模型，加上 `scripts/android-extended-fixtures/main.swift`，把 Swift 的答案写成 `extended-schedule-fixtures.json`；iOS 测试目标不改。`npm test` 在任何平台检查文件头记录的 Swift 源文件哈希，Swift 一改即失败；`check:android-extended-fixtures` 在 macOS 上完整重算比对（已验证输出确定）。
+
+| fixture 段 | 用例 | Kotlin | 状态 |
+|---|---|---|---|
+| days（14 个计划 × 3 段日期） | 3136 天 | `ExtendedScheduleResolver.day` | 全部通过 |
+| snapshots | 1728 | `ScheduleRules.snapshot`（带扩展计划） | 全部通过 |
+| widgetShifts / expansions | 48 / 48 | 同 T07 入口 | 全部通过 |
+| validateBreak / applyToday | 192 / 240 | 同上 | 全部通过 |
+| timelines（夜班后清晨的原始窗口） | 1764 | `CivilZone.shiftTimeline` | 全部通过 |
+| plannedHours | 24 × 40 天 | `CivilZone.plannedHours` | 全部通过 |
+| shiftTypeValidity / dayKeys / contentValidity | 22 / 19 / 14 | 校验函数 | 全部通过 |
+
+计划覆盖：周规则（锚点前用 floorMod）、14 天轮换、手排（含未知类型、归档类型、无效类型、非法 key）、按日号沿用上月（短月 29–31、闰年 2 月）、已编辑月份的空白日、`clearedFromDayKey`（有无规则两种）、CN 节假日与调休、显式 overrides、关闭节假日、归档默认类型、历史冻结（含/不含旧行）、从 `ExtendedSchedule` 构建、`pinning`。时区：上海、柏林、纽约（含 3 月夏令时）。
+
+植入错误验证：沿用月份取错、忽略 `clearedFromDayKey` 各让 6 个测试失败；去掉"昨夜夜班仍在进行"的回看、昨夜用今天的时钟，分别让 1 个和 3 个测试失败。第三项最初未被捕获（`resolveCurrentShift` 的结算回退掩盖了它），因此新增了 timelines 段。
+
+### 优先级决策表
+
+同一天由第一个命中的层决定（`ExtendedScheduleResolver.resolve`）：
+
+| 顺序 | 层 | 条件 | 结果 |
+|---|---|---|---|
+| 1 | 冻结类型 | 该日有有效的 `assignedShiftType` | 按冻结类型；来源 handSet |
+| 2 | 手排 | 该日在 `handSetDays`（含 `pinning` 的日） | 按类型；类型未定义或无效 → 未排 |
+| 3 | 历史回退 | `fallsBackToBaseSchedule` | 未排；`CivilZone` 改用基础班次 |
+| 4 | 清空 | 无规则且日期 ≥ `clearedFromDayKey` | 未排 |
+| 5 | 规则 / 沿用 | 有规则且锚点有效 → 周期位置；否则按日号沿用最近的已编辑月份 | 基础结论 |
+| 6 | 节假日 | 地区非空，且 overrides（若提供）或内置日历有该日 | 休：默认休息类型（无则无类型的休）；班：基础为工作日则保留、否则默认工作类型 |
+
+未排的日期保留调用方的时钟，因此补班日仍有形状可用；有扩展计划时，未排日一律不是工作日，只有历史回退计划才落回基础班次。
+
+### 不在 T08 范围
+
+- `ExtendedScheduleEditing.swift`（排班编辑器的建类型、改周期、填充月份等）依附 `ShiftSessionStore`，属于编辑 UI，随 T15/T16 移植。
+- 读取快照时叠加实时手排的 `RecordCoordinator.expandableHours(for:)` 属于记录层，随 T12 移植。
+- 应用运行时需要打包 `HolidayTemplates.json`（与 iOS 共用同一文件），在接入 UI 时由 app 模块把它作为 asset 引用。

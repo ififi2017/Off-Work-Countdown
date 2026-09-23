@@ -15,6 +15,14 @@ kotlin {
 }
 
 dependencies {
+    // JSON parsing only (no compiler plugin): the bundled holiday calendar.
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.serialization.json)
+}
+
+tasks.test {
+    // The holiday dataset is shared with iOS rather than copied.
+    val holidays = rootProject.file("../ios/Shared/Resources/HolidayTemplates.json")
+    inputs.file(holidays)
+    systemProperty("owc.holidayTemplates", holidays.absolutePath)
 }

@@ -6,6 +6,7 @@ import com.rainif.doneat.core.domain.schedule.ScheduleHours
 import com.rainif.doneat.core.domain.schedule.ScheduleMode
 import com.rainif.doneat.core.domain.schedule.ScheduleRuleInput
 import com.rainif.doneat.core.domain.schedule.ShiftSegment
+import com.rainif.doneat.core.domain.schedule.ShiftSnapshot
 import com.rainif.doneat.core.domain.schedule.WorkSchedule
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -106,3 +107,34 @@ fun JsonObject.double(key: String): Double? = (get(key) ?: JsonNull).asDouble()
 fun JsonObject.bool(key: String): Boolean = getValue(key).jsonPrimitive.boolean
 fun JsonElement.asDouble(): Double? = if (this is JsonNull) null else jsonPrimitive.content.toDouble()
 fun JsonElement.asArray(): JsonArray = jsonArray
+
+/** Field-by-field in generator order; doubles compare as IEEE values, so 0 and -0 agree as in Swift. */
+fun compareSnapshot(actual: ShiftSnapshot, expected: JsonArray): String? {
+    val expectedSegments = expected[0].jsonArray.map { pair ->
+        val (start, end) = pair.jsonArray.map { it.asDouble()!! }
+        ShiftSegment(start, end)
+    }
+    if (expectedSegments != actual.segments) return "segments ${actual.segments} ≠ $expectedSegments"
+    val fields = listOf(
+        "startAtMs" to actual.startAtMs, "endAtMs" to actual.endAtMs, "plannedEndAtMs" to actual.plannedEndAtMs,
+        "overtimeEndAtMs" to actual.overtimeEndAtMs, "durationMs" to actual.durationMs,
+        "plannedDurationMs" to actual.plannedDurationMs, "elapsedMs" to actual.elapsedMs,
+        "remainingMs" to actual.remainingMs, "progress" to actual.progress, "payRatio" to actual.payRatio,
+        "activeBreakEndAtMs" to actual.activeBreakEndAtMs, "isWorkday" to actual.isWorkday,
+        "nextRestAtMs" to actual.nextRestAtMs, "dailySalary" to actual.dailySalary,
+        "earnedSoFar" to actual.earnedSoFar, "nextShiftStartAtMs" to actual.nextShiftStartAtMs,
+        "nextShiftEndAtMs" to actual.nextShiftEndAtMs, "countdownTargetAtMs" to actual.countdownTargetAtMs,
+        "countdownAnchorAtMs" to actual.countdownAnchorAtMs, "countdownProgress" to actual.countdownProgress,
+    )
+    fields.forEachIndexed { index, (name, value) ->
+        val e = expected[index + 1]
+        val same = when (value) {
+            is Boolean -> e.jsonPrimitive.boolean == value
+            is Double -> e.asDouble()?.let { it == value } ?: false
+            null -> e.asDouble() == null
+            else -> false
+        }
+        if (!same) return "$name: expected $e, actual $value"
+    }
+    return null
+}

@@ -16,7 +16,11 @@ import kotlin.math.truncate
  *
  * Day numbers count days since 1970-01-01 in the proleptic Gregorian calendar.
  */
-class CivilZone(val zoneId: ZoneId) {
+class CivilZone(
+    val zoneId: ZoneId,
+    /** Per-day assignments of an extended schedule; null keeps every path on fixed hours. */
+    private val extended: ExtendedScheduleResolver? = null,
+) {
     data class Civil(
         val dayNumber: Int,
         val year: Int,
@@ -107,14 +111,70 @@ class CivilZone(val zoneId: ZoneId) {
 
     private fun dayDifference(fromMs: Double, toMs: Double) = civil(toMs).dayNumber - civil(fromMs).dayNumber
 
+    // Extended scheduling
+
+    /**
+     * The clocks one civil day works: the extended schedule's when it assigns
+     * that day a shift, otherwise the caller's pair. Rest and unassigned days
+     * keep the caller's hours, so a makeup day still has a shape to reuse.
+     */
+    fun dayClocks(dayNumber: Int, startTime: String, endTime: String): Pair<WallClock, WallClock> {
+        val hours = extended?.day(dayNumber)?.hours ?: return WallClock.parse(startTime) to WallClock.parse(endTime)
+        return WallClock.parse(hours.startTime) to WallClock.parse(hours.endTime)
+    }
+
+    /** The same for the in-shift break, which belongs to the day's shift type. */
+    fun dayBreak(dayNumber: Int, breakStartTime: String?, breakDurationMinutes: Int): Pair<String?, Int> {
+        val hours = extended?.day(dayNumber)?.hours ?: return breakStartTime to breakDurationMinutes
+        return hours.breakStartTime to hours.breakDurationMinutes
+    }
+
+    /** [options] carrying the break of the day the shift starts on. */
+    fun dayOptions(startingAtMs: Double, options: ShiftOptions): ShiftOptions {
+        val hours = extended?.day(civil(startingAtMs).dayNumber)?.hours ?: return options
+        return options.copy(breakStartTime = hours.breakStartTime, breakDurationMinutes = hours.breakDurationMinutes)
+    }
+
+    /**
+     * Effective hours one civil day is scheduled to work under an extended
+     * schedule, break already out; null when it assigns that day no work. Runs
+     * the same timeline the countdown runs rather than measuring a second way.
+     */
+    fun plannedHours(dayNumber: Int): Double? {
+        val hours = extended?.day(dayNumber)?.hours ?: return null
+        val (start, end) = shiftBounds(hours.startTime, hours.endTime, utcMs(dayNumber, WallClock.NOON))
+        if (end <= start) return 0.0
+        val options = dayOptions(start, ShiftOptions(breakStartTime = null, breakDurationMinutes = 0))
+        return timeline(start, end, options).plannedDurationMs / 3_600_000.0
+    }
+
+    /** One day's bounds, when that day's assignment crosses midnight. */
+    private fun overnightBounds(dayNumber: Int, startTime: String, endTime: String): Pair<Double, Double>? {
+        val (start, end) = dayClocks(dayNumber, startTime, endTime)
+        if (end.minutes > start.minutes) return null
+        val startAtMs = utcMs(dayNumber, start)
+        val endAtMs = utcMs(dayNumber + 1, end)
+        return if (endAtMs > startAtMs) startAtMs to endAtMs else null
+    }
+
+    /** An extended schedule answers for a day it assigns, or for every day unless it falls back. */
+    private fun extendedWorkday(shiftStartMs: Double): Boolean? {
+        val resolver = extended ?: return null
+        val day = resolver.day(civil(shiftStartMs).dayNumber)
+        return if (day.source != ExtendedScheduleDay.Source.UNASSIGNED || !resolver.fallsBackToBaseSchedule) day.isWorkday else null
+    }
+
     // Work patterns
 
     /** Manual (`off`) mode has no rest pattern, so every shift counts. */
-    fun isScheduledWorkday(shiftStartMs: Double, workdays: List<Int>, schedule: WorkSchedule) =
-        schedule.mode == ScheduleMode.OFF || isScheduledWorkdayInZone(shiftStartMs, workdays, schedule)
+    fun isScheduledWorkday(shiftStartMs: Double, workdays: List<Int>, schedule: WorkSchedule): Boolean {
+        extendedWorkday(shiftStartMs)?.let { return it }
+        return schedule.mode == ScheduleMode.OFF || isScheduledWorkdayInZone(shiftStartMs, workdays, schedule)
+    }
 
     /** As [isScheduledWorkday], except manual days are rest, so range expansion paints no seven-day week. */
     fun isScheduledWorkdayInZone(shiftStartMs: Double, workdays: List<Int>, schedule: WorkSchedule): Boolean {
+        extendedWorkday(shiftStartMs)?.let { return it }
         val weekday = civil(shiftStartMs).weekday
         return when (schedule.mode) {
             ScheduleMode.OFF -> false
@@ -138,7 +198,7 @@ class CivilZone(val zoneId: ZoneId) {
     }
 
     fun nextRestDayStartMs(afterMs: Double, workdays: List<Int>, schedule: WorkSchedule): Double? {
-        if (schedule.mode == ScheduleMode.OFF) return null
+        if (extended == null && schedule.mode == ScheduleMode.OFF) return null
         val first = civil(afterMs).dayNumber
         for (offset in 0..366) {
             val dayStartMs = utcMs(first + offset, WallClock.MIDNIGHT)
@@ -155,8 +215,14 @@ class CivilZone(val zoneId: ZoneId) {
      */
     fun shiftBounds(startTime: String, endTime: String, nowMs: Double): Pair<Double, Double> {
         val today = civil(nowMs).dayNumber
-        val start = WallClock.parse(startTime)
-        val end = WallClock.parse(endTime)
+        // With fixed clocks a running overnight shift is found by walking
+        // today's bounds back a day. Per-day assignments break that: last night
+        // can be a night shift while today is a day shift.
+        if (extended != null) {
+            val overnight = overnightBounds(today - 1, startTime, endTime)
+            if (overnight != null && nowMs >= overnight.first && nowMs < overnight.second) return overnight
+        }
+        val (start, end) = dayClocks(today, startTime, endTime)
         var startAtMs = utcMs(today, start)
         var endAtMs = utcMs(today, end)
         if (endAtMs <= startAtMs) {
@@ -164,7 +230,10 @@ class CivilZone(val zoneId: ZoneId) {
             // instant. That is not an overnight shift.
             if (end.minutes > start.minutes) return startAtMs to startAtMs
             if (nowMs < endAtMs) {
-                startAtMs = utcMs(today - 1, start)
+                // Last night's shift is still running: both ends are yesterday's assignment.
+                val (yesterdayStart, yesterdayEnd) = dayClocks(today - 1, startTime, endTime)
+                startAtMs = utcMs(today - 1, yesterdayStart)
+                endAtMs = utcMs(today, yesterdayEnd)
             } else {
                 endAtMs = utcMs(today + 1, end)
             }
@@ -174,7 +243,7 @@ class CivilZone(val zoneId: ZoneId) {
 
     fun shiftTimeline(startTime: String, endTime: String, nowMs: Double, options: ShiftOptions): ShiftTimeline {
         val (start, end) = shiftBounds(startTime, endTime, nowMs)
-        return timeline(start, end, options)
+        return timeline(start, end, dayOptions(start, options))
     }
 
     fun timeline(startAtMs: Double, plannedEndAtMs: Double, options: ShiftOptions): ShiftTimeline {
@@ -221,7 +290,7 @@ class CivilZone(val zoneId: ZoneId) {
             val counts = isScheduledWorkday(start, input.workdays, input.schedule) ||
                 (forcedDayMs != null && startOfCivilDayMs(start) == forcedDayMs)
             if (!counts) continue
-            val shift = timeline(start, end, options)
+            val shift = timeline(start, end, dayOptions(start, options))
             if (input.nowMs >= shift.startAtMs && input.nowMs < shift.endAtMs) return shift
             if (input.nowMs >= shift.endAtMs && startOfCivilDayMs(shift.endAtMs) == todayMs) return shift
         }
@@ -229,14 +298,16 @@ class CivilZone(val zoneId: ZoneId) {
     }
 
     fun nextShiftTimeline(hours: ScheduleHours, afterMs: Double, options: ShiftOptions): ShiftTimeline? {
-        if (hours.schedule.mode == ScheduleMode.OFF) return null
-        if (hours.schedule.mode == ScheduleMode.CLASSIC && hours.workdays.isEmpty()) return null
+        if (extended == null) {
+            if (hours.schedule.mode == ScheduleMode.OFF) return null
+            if (hours.schedule.mode == ScheduleMode.CLASSIC && hours.workdays.isEmpty()) return null
+        }
         val cursorMs = startOfCivilDayMs(afterMs)
         for (offset in 0..366) {
             val dayNumber = civil(addCivilDaysMs(cursorMs, offset)).dayNumber
             val (start, end) = shiftBounds(hours.startTime, hours.endTime, utcMs(dayNumber, WallClock.NOON))
             if (!isScheduledWorkdayInZone(start, hours.workdays, hours.schedule) || start <= afterMs) continue
-            return timeline(start, end, options)
+            return timeline(start, end, dayOptions(start, options))
         }
         return null
     }

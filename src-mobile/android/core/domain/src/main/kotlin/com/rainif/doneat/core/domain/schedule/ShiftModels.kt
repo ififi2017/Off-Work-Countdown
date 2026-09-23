@@ -42,6 +42,8 @@ data class ScheduleHours(
     val schedule: WorkSchedule,
     val breakStartTime: String?,
     val breakDurationMinutes: Int,
+    /** Plan 018 P8's per-day assignments, when switched on; null keeps the fixed-hours path. */
+    val extended: ExtendedSchedulePlan? = null,
 )
 
 /**
