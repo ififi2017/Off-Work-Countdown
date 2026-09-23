@@ -224,6 +224,8 @@ payRatio          = elapsedMs / plannedDurationMs
 
 ### 6.2 Room 与 DataStore 分工
 
+**D-13（2026-09-23）取代本节的 Room 部分**：记录与 iOS 一样保存在内存 `RecordState` + 一个原子替换的 JSON 文件（`RecordLocalFile`：schema-6 文档 + 墓碑），由 `:core:data` 的 `RecordStore` 串行写入。下文关于 Room 表、DAO、Migration 的要求不再适用；事务、失败不部分提交、损坏不自动删库等原则仍然适用。DataStore 仍用于本机显示偏好。
+
 Room：业务行、同步业务设置、会话状态、命令结果与 outbox，在同一事务中修改。核心保存失败时不能只把 DataStore 设置改掉，留下“新设置+旧历史”混合状态。
 
 DataStore：本机配色显示偏好、已看引导等不需与业务行原子一致的设置。源规定参与跨设备同步的语言/主题值要通过业务偏好模型与映射同步，而不是直接把整个 DataStore 上传。

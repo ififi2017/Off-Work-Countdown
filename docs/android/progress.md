@@ -19,7 +19,9 @@
 | T07 | IMPLEMENTED | `core/domain/.../schedule`（`CivilZone`、`ScheduleRules`、模型）与 `salary/SalaryRules`。fixture 的 snapshots/widget/expansion/validateBreak/applyToday 共 2927 条全部精确通过；植入错误测试有效；算例测试 5 条。见 `rule-parity.md`。 |
 | T08 | IMPLEMENTED | `ExtendedSchedule.kt`（解析器、计划、校验）、`HolidayCalendar.kt`、`CivilZone` 扩展路径。Swift 导出的 fixtures 共约 7200 条全部通过，4 项植入错误均被捕获。编辑器逻辑移到 T15/T16，`expandableHours` 叠加移到 T12。见 `rule-parity.md`。 |
 | T09 | IMPLEMENTED | `summary/SummaryRules.kt`：五段 TS fixture 共 714 条全部通过；3 项植入错误均被捕获。`LifeViewCalculator` 移到 T12/T17。见 `rule-parity.md`。 |
-| T10–T20 | NOT_STARTED | — |
+| T10 | IMPLEMENTED | D-13：与 iOS 相同的单文件档案。`:core:domain` 的 `records/`（模型、`RecordJson` 编解码与合并、`FoundationCompat`）；`:core:data` 的 `RecordArchive`、`RecordStore`。Swift RecordJSON oracle 的 88 个用例全部通过（含 v1–v6、非法档案、逐实体拒绝、三种合并模式）；5 项植入错误均被捕获；文件系统测试 8 条（重启读回、写失败不提交、校验失败不落盘、损坏阻断与隔离、墓碑、并发串行）。 |
+| T11 | IN_PROGRESS | 编解码、合并模式与冲突报告已随 T10 完成；待做：SAF 读写、25 MiB 上限、导入预检与报告 UI、`restoreErased` 的 UUID 重映射测试。 |
+| T12–T20 | NOT_STARTED | — |
 | T21 | DEFERRED | 服务端验证，首发后（D-08 修订） |
 | T22 | DEFERRED | Drive 同步，首发后（D-02 修订） |
 | T23–T26 | NOT_STARTED | — |
@@ -40,8 +42,8 @@
 
 - **T04 · 稳定版 Material3 与 DoneAt 设计 token 探针**（依赖 T03）。
 - **T05 · 翻译转换与质量检查**（依赖 T02+T03）。
-- **T10 · Room、事务与迁移基础**（依赖 T02+T03）。
-- **T13 · 专注模型**（依赖 T07+T10，T10 之后）。
+- **T12 · 日记录解析和编辑命令**（依赖 T08+T09+T10）：`DayRecordResolver`、`RecordsActions`、`expandableHours` 叠加、`LifeViewCalculator`。
+- **T13 · 专注模型**（依赖 T07+T10）。
 
 规则核心（M2）已完成 T07–T09；T14 的提醒规则依赖 T12+T13。
 
@@ -62,6 +64,7 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 ## 变更记录
 
 - 2026-09-21：T00–T02 完成。
+- 2026-09-23：T10 完成（D-13 单文件档案与 RecordJSON 编解码）。
 - 2026-09-23：T09 完成（汇总与收入）。M2 规则核心除提醒（T14）外完成。
 - 2026-09-23：T08 完成（扩展排班，Swift 导出 fixtures）。
 - 2026-09-23：T07 完成（固定班次核心，fixture 全通过）。

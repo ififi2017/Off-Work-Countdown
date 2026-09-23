@@ -16,7 +16,7 @@
     "independent_interval_examples": 10,
     "independent_identity_examples": 2,
     "source_references": 52,
-    "decision_records": 12,
+    "decision_records": 13,
     "external_configuration_records": 5
   },
   "combined_document": null,
@@ -33,13 +33,13 @@
     },
     {
       "name": "02_TECHNICAL_GUIDE.md",
-      "bytes": 56603,
-      "sha256": "33b6b4d8cdbe76ceb87f32e6f8db92c8f1c2447b814f0ebe676087452c6682d5"
+      "bytes": 57029,
+      "sha256": "426ed09de7cbe9de349cab87cfc58c0983cf2c618e130381b3226e123bc8b3d6"
     },
     {
       "name": "03_AI_EXECUTION_PLAN.md",
-      "bytes": 29684,
-      "sha256": "1a9adff0aa8cc99ab82ddb9bec3b61313b89e79379ee6e8a527bf919875ae6f4"
+      "bytes": 30135,
+      "sha256": "12d96c356d8aa21b12f80bcaeab8e473489cc29f498a74ed8227d2322bc4972d"
     },
     {
       "name": "04_QA_AND_PLAY_RELEASE.md",
@@ -78,8 +78,8 @@
     },
     {
       "name": "decisions.json",
-      "bytes": 11472,
-      "sha256": "e31d60ffaf8d9ef4b71d7cf863ce44a5b688f5bdad06abc8749806275a96b359"
+      "bytes": 12441,
+      "sha256": "3588e2f6c577cab5f4f1124d35fe4bea689348561cc86023c3e0d4a1030227f1"
     },
     {
       "name": "references.json",
@@ -88,8 +88,8 @@
     },
     {
       "name": "tasks.json",
-      "bytes": 29383,
-      "sha256": "1afd81f0b803691ba2c6b7800692a014169a9f80eb52490cb253a4fcb9b87311"
+      "bytes": 29748,
+      "sha256": "8cbd10585f2cefc902037f72286ceb3cceae26444cab541d87d872dcb0691691"
     },
     {
       "name": "test-catalog.json",

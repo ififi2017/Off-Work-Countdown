@@ -2,7 +2,7 @@
 
 源：`9252fdf` 的 `RecordJSON.swift`、`RecordArchive.swift`、12 类实体、`RecordSchemaCompatibilityTests.swift`。
 
-四套版本独立：**wire = 6**（接受 1…6）；Room / fixture / sync envelope **尚未创建**。禁止把 Room v1 写成备份 v6。
+版本独立：**wire = 6**（接受 1…6）；本地档案文件（`RecordLocalFile`）的 `schemaVersion` 跟随 wire；fixture 协议 v1；sync envelope 尚未创建。D-13：Android 不使用 Room 业务表。
 
 ## 1. 用户导出信封 `RecordJSONDocument`
 

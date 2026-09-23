@@ -6,11 +6,13 @@ on:
     paths:
       - 'src-mobile/android/**'
       - 'src-mobile/ios/Shared/**'
+      - 'docs/android/synthetic-archives/**'
       - '.github/workflows/android.yml'
   pull_request:
     paths:
       - 'src-mobile/android/**'
       - 'src-mobile/ios/Shared/**'
+      - 'docs/android/synthetic-archives/**'
       - '.github/workflows/android.yml'
 
 jobs:
@@ -27,7 +29,7 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
       - name: Unit tests, lint and builds
-        run: ./gradlew :core:domain:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease --console=plain
+        run: ./gradlew :core:domain:test :core:data:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease --console=plain
       - name: Reject pre-release Compose/Material3 in release
         run: |
           ./gradlew :app:dependencies --configuration releaseRuntimeClasspath -q > deps.txt

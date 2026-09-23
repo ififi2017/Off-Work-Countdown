@@ -287,6 +287,27 @@
         "T24"
       ],
       "remaining_configurations": []
+    },
+    {
+      "id": "D-13",
+      "conversation_item": null,
+      "status": "APPROVED",
+      "decision": "记录本地存储与 iOS 一致：内存 RecordState + 单个原子替换的 JSON 文件（iOS RecordLocalFile 格式：schema-6 备份文档 + 墓碑）。本地文件、导出与导入共用一个编解码；不使用 Room 业务表。",
+      "approval_scope": "T10 持久化方案；取代 02 §6.2 的 Room 建议",
+      "approved_at": "2026-09-23",
+      "rationale": "iOS 本身即如此存储；三处共用一个格式；写入失败不会部分提交；Auto Backup 得到一致快照（无 WAL 问题）；无 Room 迁移。代价：每次写入重编码整个档案（与 iOS 相同）。如查询变慢可另加 Room 只读缓存。",
+      "requirements": [
+        "FR-06",
+        "FR-07",
+        "FR-14",
+        "FR-15"
+      ],
+      "tasks": [
+        "T10",
+        "T11",
+        "T19"
+      ],
+      "remaining_configurations": []
     }
   ],
   "configurations": [

@@ -18,4 +18,5 @@ rootProject.name = "DoneAt"
 
 include(":app")
 include(":core:domain")
+include(":core:data")
 include(":core:designsystem")

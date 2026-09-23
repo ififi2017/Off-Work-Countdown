@@ -169,17 +169,19 @@
 **验收**：跨月周、请假固定月薪不扣、空档、重叠拒绝、一次性比例调整通过；所有相同语义 UI 投影引用统一服务。
 
 
-### T10 · M3 · 实现 Room、事务与迁移基础
+### T10 · M3 · 实现记录档案存储、事务写入与编解码
 
 **依赖**：T02, T03。**覆盖需求**：FR-06, FR-07, FR-09, FR-14, FR-15。
 
 **先读**：实体字段契约、RecordCoordinator/Command 的行为与源写入错误处理。
 
-**执行**：建立业务实体、索引、外键/逻辑引用校验、outbox、tombstone；实现事务写 API；schema 导出；写入错误保留原数据与草稿。
+**执行**：D-13：与 iOS 相同，内存 RecordState + 原子替换的 RecordLocalFile（schema-6 文档 + 墓碑）；串行写协调器：计算→编码→回读校验→原子写→发布，任一步失败不改变已发布状态与文件；损坏档案阻断写入直到隔离；以 Swift RecordJSON 为 oracle 的编解码 fixtures。
 
-**必须交付**：Room DB/DAO/mappers；Repository；MigrationTests；seed 测试。
+**必须交付**：records 模型与 RecordJson（:core:domain）；RecordArchive/RecordStore（:core:data）；record-json-fixtures；文件系统测试。
 
-**验收**：进程重启读回一致；低空间/事务失败不部分提交；没有生产 destructive migration；data 模块测试真实数据库。
+**验收**：进程重启读回一致；写入失败/校验失败不部分提交；损坏档案不被当作空档案且不被覆盖；data 模块测试真实文件系统；编解码 fixture 全通过。
+
+**决策与配置**：已确认 D-13。参见 decisions.json；配置缺失只阻塞相应外部阶段，不重新询问已确认方向。
 
 
 ### T11 · M3 · 实现 JSON 导入导出与冲突管理

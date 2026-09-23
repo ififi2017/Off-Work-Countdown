@@ -54,8 +54,15 @@ locale and validation rules apply.
 
 ## Data, purchases and privacy
 
-- User backups are `RecordJSON` schemaVersion 6, accepting 1–6. Room, fixture
-  and any future sync versions are independent numbers.
+- User backups are `RecordJSON` schemaVersion 6, accepting 1–6. Records live
+  as iOS keeps them (D-13): an in-memory `RecordState` saved by
+  `:core:data`'s `RecordStore` as one atomically replaced `RecordLocalFile`
+  (the v6 document plus tombstones). Every write is encoded, read back and
+  only then published; a damaged file blocks writes and is quarantined, never
+  overwritten. No Room tables.
+- `npm run generate:android-record-fixtures` (macOS) compiles the real iOS
+  `RecordJSON` and records its answers for 88 documents; `npm test` fails when
+  that Swift or the case list changes.
 - Android Auto Backup and device transfer include the business database (as
   iOS includes its main store in iCloud device backup). Exclude purchase
   caches, pending-acknowledge markers, Keystore material, tokens and debug

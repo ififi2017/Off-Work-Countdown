@@ -85,3 +85,13 @@ Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 
 - `ExtendedScheduleEditing.swift`（排班编辑器的建类型、改周期、填充月份等）依附 `ShiftSessionStore`，属于编辑 UI，随 T15/T16 移植。
 - 读取快照时叠加实时手排的 `RecordCoordinator.expandableHours(for:)` 属于记录层，随 T12 移植。
 - 应用运行时需要打包 `HolidayTemplates.json`（与 iOS 共用同一文件），在接入 UI 时由 app 模块把它作为 asset 引用。
+
+## 记录档案编解码（T10，iOS 独有）
+
+`RecordJSON`（v1–v6 解码、逐行校验、三种合并模式、v6 导出）没有 TS oracle。`npm run generate:android-record-fixtures`（macOS）编译真实的 `RecordJSON` 与 14 个模型文件，对 88 份文档给出答案：6 份合成档案、5 份非法档案、每类实体的拒绝与默认值、旧字段迁移、生命档案/专注计划被拒后的提前返回、12 个合并场景。Kotlin `RecordJsonFixtureTest` 比较结果类型、各项计数、拒绝/冲突/采纳列表，以及规范化后的整份 v6 导出，全部通过。
+
+植入错误验证（均被捕获）：`UTC` 不改写为 `GMT`、去掉生命档案被拒后的提前返回、同 editCount 时 tie-break 反向、睡眠分钟改为四舍六入五成双、接受无填充 base64。其中睡眠用例起初取值 7.00833 小时不能区分舍入方式，已改为 2.875 小时（172.5 分钟）。
+
+Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`、缩写（`EST`、`PST` 等）保留原样；UUID 严格 8-4-4-4-12、输出大写；日期键需 4-2-2 位且为真实公历日期；`PartialCivilDate` 的计算锚点按 `Calendar` 宽松进位（2 月 30 日 → 3 月 1 日）；`Double.rounded()` 为远离零的四舍五入；旧 `editedAt` 为 2001 年起的秒；base64 必须带填充。
+
+与 iOS 的有意差异：民用日期在内存中保持 `YYYY-MM-DD` 标签而非 `Date`，对所有合法输入与 iOS 的"日期→标签"往返结果相同；行级时区无效时 iOS 导出可能退回设备时区，Android 始终保持标签不变。

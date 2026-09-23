@@ -97,11 +97,20 @@ data class ExtendedScheduleContent(
         }
 }
 
-/** The stored schedule, as far as resolution needs it. */
+/** The stored schedule (one per archive, logical key `extended-schedule`). */
 data class ExtendedSchedule(
     val isEnabled: Boolean,
     val content: ExtendedScheduleContent,
-)
+    /** The zone whose civil dates the rule anchor and roster day keys name. */
+    val timeZoneIdentifier: String = "GMT",
+    val editedAtMs: Double = 0.0,
+    val editCount: Int = 0,
+    val editTieBreaker: String = "00000000-0000-0000-0000-000000000000",
+) {
+    companion object {
+        const val LOGICAL_KEY = "extended-schedule"
+    }
+}
 
 /** One day the user assigned by hand. Wins over the rule and over carry-over. */
 data class RosterDay(
@@ -109,6 +118,12 @@ data class RosterDay(
     val shiftTypeID: UUID,
     /** The type as it stood when a past day was edited, so renames never rewrite history. */
     val assignedShiftType: ShiftType? = null,
+    /** Missing on older rows, which must conservatively remain manual. */
+    val generatedFromPattern: Boolean? = null,
+    val timeZoneIdentifier: String = "GMT",
+    val editedAtMs: Double = 0.0,
+    val editCount: Int = 0,
+    val editTieBreaker: String = "00000000-0000-0000-0000-000000000000",
 )
 
 /** The clock readings one assigned day works, in the shape the rules take. */
