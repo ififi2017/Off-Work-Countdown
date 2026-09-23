@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.width
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.rainif.doneat.R
 import com.rainif.doneat.core.data.DeviceSettings
+import com.rainif.doneat.core.designsystem.CelebratingBrandMark
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.designsystem.supportsDynamicColor
 import com.rainif.doneat.core.domain.records.RecordState
@@ -281,6 +283,7 @@ fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(DoneAtSpacing.xs),
             ) {
+                CelebratingBrandMark(stringResource(R.string.app_name), Modifier.size(120.dp).padding(bottom = DoneAtSpacing.s), showsDepth = true)
                 Text("DoneAt", style = MaterialTheme.typography.headlineSmall)
                 Text("fi_niaR Studio", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("${stringResource(R.string.version)} $version", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

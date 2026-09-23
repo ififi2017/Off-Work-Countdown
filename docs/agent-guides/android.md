@@ -47,6 +47,9 @@ locale and validation rules apply.
   the current second; never compute `end - now`. A command's archive writes
   (observations, today's override) go through `SessionStore.run`, never
   straight to `RecordStore`.
+- The brand mark is drawn natively (`DoneAtBrandMark`, from the
+  `assets/brand` geometry), never as an embedded image; the launcher icon's
+  vectors in `res/drawable/ic_launcher_*` use the same paths.
 - Money reaches the screen only through `TimerText.money`, which masks it
   while earnings are hidden. Revealing goes through `EarningsGate`.
 - UI takes colour, shape, motion and type from `:core:designsystem` tokens

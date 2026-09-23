@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  App icon foreground: the ring, hands and dot of assets/brand/off-work-countdown-icon.svg.
+  The 1024 composition fills the adaptive icon's middle 72 of 108 dp (viewport 1536, offset 256),
+  so the whole ring stays inside the safe zone under every launcher mask.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1536"
+    android:viewportHeight="1536">
+    <group android:translateX="256" android:translateY="256">
+        <!-- The workday as a ring, broken open where the day ends. -->
+        <path
+            android:pathData="M415,793.8 A298,298 0 1,1 804.5,568.9"
+            android:strokeWidth="110"
+            android:strokeLineCap="round">
+            <aapt:attr name="android:strokeColor">
+                <gradient android:type="linear" android:startX="220" android:startY="220" android:endX="804" android:endY="804"
+                    android:startColor="#FFFF9A45" android:endColor="#FFF05218" />
+            </aapt:attr>
+        </path>
+        <!-- Hands at 17:00. -->
+        <path
+            android:pathData="M512,347 L512,512 L573,617.7"
+            android:strokeColor="#FFFFF1D8"
+            android:strokeWidth="88"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- Personal time, already past the boundary. -->
+        <path android:pathData="M578.5,776.1 a86,86 0 1,0 172,0 a86,86 0 1,0 -172,0">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="linear" android:startX="580" android:startY="690" android:endX="750" android:endY="860"
+                    android:startColor="#FFFF9A45" android:endColor="#FFF05218" />
+            </aapt:attr>
+        </path>
+    </group>
+</vector>

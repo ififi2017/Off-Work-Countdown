@@ -91,6 +91,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rainif.doneat.AppGraph
 import com.rainif.doneat.R
+import com.rainif.doneat.core.designsystem.CelebratingBrandMark
 import com.rainif.doneat.core.designsystem.DoneAtCountdown
 import com.rainif.doneat.core.designsystem.DoneAtPrimaryButton
 import com.rainif.doneat.core.designsystem.DoneAtProgressMeter
@@ -525,11 +526,7 @@ private fun UnscheduledSurface(session: ShiftSession, now: Double, text: TimerTe
     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = DoneAtSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Spacer(Modifier.size(DoneAtSpacing.xxl))
-            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(96.dp)) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Outlined.Schedule, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
-                }
-            }
+            CelebratingBrandMark(stringResource(R.string.app_name), Modifier.size(168.dp), showsDepth = true)
             Text(stringResource(R.string.unscheduledTitle), Modifier.padding(top = DoneAtSpacing.xl).semantics { heading() }, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
             Text(stringResource(R.string.unscheduledBody), Modifier.padding(top = DoneAtSpacing.m), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
             Text(
