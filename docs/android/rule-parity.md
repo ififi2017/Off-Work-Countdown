@@ -95,3 +95,12 @@ Kotlin `:core:domain` 对 TypeScript oracle（`shared-rule-fixtures.json`，与 
 Foundation 行为（`FoundationCompat`）：`UTC`→`GMT`、`GMT+8`→`GMT+0800`、缩写（`EST`、`PST` 等）保留原样；UUID 严格 8-4-4-4-12、输出大写；日期键需 4-2-2 位且为真实公历日期；`PartialCivilDate` 的计算锚点按 `Calendar` 宽松进位（2 月 30 日 → 3 月 1 日）；`Double.rounded()` 为远离零的四舍五入；旧 `editedAt` 为 2001 年起的秒；base64 必须带填充。
 
 与 iOS 的有意差异：民用日期在内存中保持 `YYYY-MM-DD` 标签而非 `Date`，对所有合法输入与 iOS 的"日期→标签"往返结果相同；行级时区无效时 iOS 导出可能退回设备时区，Android 始终保持标签不变。
+
+## 日记录解析与编辑（T12）
+
+- **解析**：`DayRecordResolver` 与 iOS 一一对应，`DayRecordResolverTests` 17 条逐条移植。顺序固定为：有效日修正 → 日历例外（用户优先，其次较新的内置数据集）→ 当日生效的快照（同日按 editCount、tie-breaker、id 排序）；`cleared` 一律向下落。`baseSchedule*` 保留快照原计划，供记录收入使用，请假和临时修改不改写薪资历史。
+- **唯一入口**：`RecordHistory.expandableHours(state, snapshot, holidays)`。扩展快照保留当时的班型与规则，叠加当前手排（以及之后新建的班型）；固定快照叠加冻结的历史分配，且只在早于第一个扩展快照时才叠加旧行。直接解码 `configurationData` 会丢失这些叠加，因此其它代码不直接解码。
+- **快照编码**：`ScheduleHoursCodec` 写出与 Swift `JSONEncoder(.sortedKeys)` 逐字节相同的 JSON，因此同样的班次在两端得到同一个 SHA-256 指纹。record oracle 新增 11 个用例；首次运行即发现 Kotlin 会把 `1767571200000.5` 写成 `1.7675712000005E12`，已改为普通小数。
+- **编辑**：`RecordEdits` 是纯函数，由 `RecordStore.update` 执行，因此一次编辑涉及的所有层要么一起落盘，要么都不落盘。盖戳规则、相同内容不写、墓碑之上复活（editCount 高于被埋版本）、首次写入播种、同日快照改写均与 iOS 相同。与 iOS 的有意差异：写入失败时 iOS 在内存中保留修改，Android 不发布（T10 验收要求）。
+
+植入错误验证：例外先于修正（2 条失败）、旧行叠加到所有固定快照（1 条）、复活忽略墓碑（1 条）、自定义工时丢掉午休（1 条）。第二项起初未被捕获，已补上"扩展之后再回到固定工时"的用例。

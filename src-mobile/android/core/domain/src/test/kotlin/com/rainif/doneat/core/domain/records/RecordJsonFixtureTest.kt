@@ -39,6 +39,7 @@ class RecordJsonFixtureTest {
 
     private fun check(case: JsonObject): String? {
         val expected = case.getValue("expected").jsonObject
+        if (case["kind"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content == "hours") return checkHours(case, expected)
         var state = RecordState()
         case["base"]?.takeIf { it !is JsonNull }?.let { base ->
             state = RecordJson.apply(RecordJson.decode(base.jsonPrimitive.content), state, RecordJson.ImportMode.SKIP_ERASED).first
@@ -88,6 +89,19 @@ class RecordJsonFixtureTest {
         val want = canonical(Json.parseToJsonElement(expected.getValue("exportJSON").jsonPrimitive.content))
         val got = canonical(Json.parseToJsonElement(exported))
         return if (want == got) null else "export differs:\n  swift  ${firstDifference(want, got)}"
+    }
+
+    /** Snapshot hours must re-encode to Swift's exact bytes, so fingerprints agree across platforms. */
+    private fun checkHours(case: JsonObject, expected: JsonObject): String? {
+        val decoded = ScheduleHoursCodec.decode(case.getValue("input").jsonPrimitive.content.toByteArray())
+        val outcome = expected.getValue("outcome").jsonPrimitive.content
+        if (decoded == null) return if (outcome == "invalidHours") null else "expected $outcome, hours did not decode"
+        if (outcome != "ok") return "expected $outcome, hours decoded"
+        val encoded = ScheduleHoursCodec.encode(decoded)
+        val want = expected.getValue("encoded").jsonPrimitive.content
+        val got = encoded.data.toString(Charsets.UTF_8)
+        if (want != got) return "encoded\n  swift  $want\n  kotlin $got"
+        return if (encoded.fingerprint == expected.getValue("fingerprint").jsonPrimitive.content) null else "fingerprint"
     }
 
     private fun rows(o: JsonObject, key: String) = o.getValue(key).jsonArray.map { row -> row.jsonArray.map { it.jsonPrimitive.content } }

@@ -21,7 +21,8 @@
 | T09 | IMPLEMENTED | `summary/SummaryRules.kt`：五段 TS fixture 共 714 条全部通过；3 项植入错误均被捕获。`LifeViewCalculator` 移到 T12/T17。见 `rule-parity.md`。 |
 | T10 | IMPLEMENTED | D-13：与 iOS 相同的单文件档案。`:core:domain` 的 `records/`（模型、`RecordJson` 编解码与合并、`FoundationCompat`）；`:core:data` 的 `RecordArchive`、`RecordStore`。Swift RecordJSON oracle 的 88 个用例全部通过（含 v1–v6、非法档案、逐实体拒绝、三种合并模式）；5 项植入错误均被捕获；文件系统测试 8 条（重启读回、写失败不提交、校验失败不落盘、损坏阻断与隔离、墓碑、并发串行）。 |
 | T11 | IN_PROGRESS | 编解码、合并模式与冲突报告已随 T10 完成；待做：SAF 读写、25 MiB 上限、导入预检与报告 UI、`restoreErased` 的 UUID 重映射测试。 |
-| T12–T20 | NOT_STARTED | — |
+| T12 | IMPLEMENTED | `records/`：`DayRecordResolver`（三层链与来源标记）、`RecordHistory.expandableHours`（唯一的快照读取入口，含名册叠加与旧行边界）、`ScheduleHoursCodec`（与 Swift 字节一致，指纹相同；由 11 个 oracle 用例把关）、`DayOverrideProjection`、`RecordEdits`（盖戳 upsert、墓碑之上复活、首次写入播种、同日快照改写、日写入计划）、`DayEditDraft`。移植 iOS `DayRecordResolverTests` 17 条与 `DayOverrideProjectionTests` 的 9 条纯函数用例，另有 13 条编辑/历史测试；4 项植入错误均被捕获。`LifeViewCalculator` 移到 T17；依赖计时会话的 10 条投影用例移到 T16。 |
+| T13–T20 | NOT_STARTED | — |
 | T21 | DEFERRED | 服务端验证，首发后（D-08 修订） |
 | T22 | DEFERRED | Drive 同步，首发后（D-02 修订） |
 | T23–T26 | NOT_STARTED | — |
@@ -42,7 +43,6 @@
 
 - **T04 · 稳定版 Material3 与 DoneAt 设计 token 探针**（依赖 T03）。
 - **T05 · 翻译转换与质量检查**（依赖 T02+T03）。
-- **T12 · 日记录解析和编辑命令**（依赖 T08+T09+T10）：`DayRecordResolver`、`RecordsActions`、`expandableHours` 叠加、`LifeViewCalculator`。
 - **T13 · 专注模型**（依赖 T07+T10）。
 
 规则核心（M2）已完成 T07–T09；T14 的提醒规则依赖 T12+T13。
@@ -64,6 +64,7 @@ git log --oneline 9252fdfdc66aab88b4acb7493684f11991fd773d..origin/main -- lib s
 ## 变更记录
 
 - 2026-09-21：T00–T02 完成。
+- 2026-09-23：T12 完成（日记录解析、编辑命令、快照编码与 iOS 字节一致）。
 - 2026-09-23：T10 完成（D-13 单文件档案与 RecordJSON 编解码）。
 - 2026-09-23：T09 完成（汇总与收入）。M2 规则核心除提醒（T14）外完成。
 - 2026-09-23：T08 完成（扩展排班，Swift 导出 fixtures）。

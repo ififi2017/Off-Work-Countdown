@@ -221,6 +221,21 @@ export function recordCases() {
     d.dayOverrides.push({ ...d.dayOverrides[0], dayKey: "2026-08-27", editTieBreaker: "00000000-0000-0000-0000-000000000033" });
     d.focusTasks.push({ ...d.focusTasks[0], id: "00000000-0000-0000-0000-000000000077", title: "Second" });
   }), { base, mode: "skipErased" });
+  // Snapshot hours as Records stores them (ScheduleHoursCodec): decoded, re-encoded with sorted keys, fingerprinted.
+  const hours = (name, value) => cases.push({ name: `hours/${name}`, kind: "hours", input: typeof value === "string" ? value : text(value) });
+  const classic = { startTime: "09:00", endTime: "17:00", workdays: [1, 2, 3, 4, 5], schedule: { mode: "classic" }, breakStartTime: "12:00", breakDurationMinutes: 60 };
+  hours("classic", classic);
+  hours("no-break", { ...classic, breakStartTime: null, breakDurationMinutes: 0 });
+  hours("alternating", { ...classic, schedule: { mode: "alternating", referenceWeekStartMs: 1767571200000, referenceWeekType: "single", singleWeekendWorkday: 6 } });
+  hours("rotation-fraction", { ...classic, schedule: { mode: "rotation", rotationAnchorMs: 1767571200000.5, rotationWorkDays: 4, rotationRestDays: 2 } });
+  hours("manual-unicode-slash", { ...classic, startTime: "22:00", endTime: "06:00", schedule: { mode: "off" } });
+  const ext = v6().extendedSchedule;
+  hours("extended", { ...classic, extendedContent: { shiftTypes: ext.shiftTypes, rule: ext.rule, holidayRegionIdentifier: "CN", clearedFromDayKey: null } });
+  hours("extended-names", { ...classic, extendedContent: { shiftTypes: [{ ...ext.shiftTypes[0], name: "夜班/Night \"A\" é\n" }], rule: null } });
+  hours("extended-no-region", { ...classic, extendedContent: { shiftTypes: ext.shiftTypes, rule: null, clearedFromDayKey: "2026-09-01" } });
+  hours("unknown-mode", { ...classic, schedule: { mode: "biweekly" } });
+  hours("missing-field", { startTime: "09:00", endTime: "17:00", workdays: [], schedule: { mode: "classic" } });
+  hours("extra-live-plan-key", { ...classic, extendedSchedule: { anything: true } });
   return cases;
 }
 
