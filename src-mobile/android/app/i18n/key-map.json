@@ -1,0 +1,2871 @@
+{
+  "generator": "scripts/generate-android-strings.mjs",
+  "locales": [
+    {
+      "id": "en",
+      "dir": "values",
+      "tag": "en"
+    },
+    {
+      "id": "ar",
+      "dir": "values-ar",
+      "tag": "ar"
+    },
+    {
+      "id": "de",
+      "dir": "values-de",
+      "tag": "de"
+    },
+    {
+      "id": "es",
+      "dir": "values-es",
+      "tag": "es"
+    },
+    {
+      "id": "fr",
+      "dir": "values-fr",
+      "tag": "fr"
+    },
+    {
+      "id": "hi-IN",
+      "dir": "values-b+hi+IN",
+      "tag": "hi-IN"
+    },
+    {
+      "id": "id",
+      "dir": "values-in",
+      "tag": "in"
+    },
+    {
+      "id": "it",
+      "dir": "values-it",
+      "tag": "it"
+    },
+    {
+      "id": "ja",
+      "dir": "values-ja",
+      "tag": "ja"
+    },
+    {
+      "id": "ko",
+      "dir": "values-ko",
+      "tag": "ko"
+    },
+    {
+      "id": "mr-IN",
+      "dir": "values-b+mr+IN",
+      "tag": "mr-IN"
+    },
+    {
+      "id": "pt",
+      "dir": "values-pt",
+      "tag": "pt"
+    },
+    {
+      "id": "ru",
+      "dir": "values-ru",
+      "tag": "ru"
+    },
+    {
+      "id": "th",
+      "dir": "values-th",
+      "tag": "th"
+    },
+    {
+      "id": "tr",
+      "dir": "values-tr",
+      "tag": "tr"
+    },
+    {
+      "id": "vi",
+      "dir": "values-vi",
+      "tag": "vi"
+    },
+    {
+      "id": "zh-CN",
+      "dir": "values-b+zh+Hans+CN",
+      "tag": "zh-Hans-CN"
+    },
+    {
+      "id": "zh-HK",
+      "dir": "values-b+zh+Hant+HK",
+      "tag": "zh-Hant-HK"
+    },
+    {
+      "id": "zh-TW",
+      "dir": "values-b+zh+Hant+TW",
+      "tag": "zh-Hant-TW"
+    }
+  ],
+  "keys": {
+    "aboutProject": {
+      "resource": "string/aboutProject"
+    },
+    "aboutSection": {
+      "resource": "string/aboutSection"
+    },
+    "acknowledgements": {
+      "resource": "string/acknowledgements"
+    },
+    "adjustOvertime": {
+      "resource": "string/adjustOvertime"
+    },
+    "allowExactReminders": {
+      "resource": "string/allowExactReminders",
+      "androidOnly": true
+    },
+    "alternatingCurrentWeek": {
+      "resource": "string/alternatingCurrentWeek"
+    },
+    "amount": {
+      "resource": "string/amount"
+    },
+    "annualBonus": {
+      "resource": "string/annualBonus"
+    },
+    "annualBonusMonths": {
+      "resource": "string/annualBonusMonths"
+    },
+    "appearanceSection": {
+      "resource": "string/appearanceSection"
+    },
+    "appleWatchAppBody": {
+      "resource": "string/appleWatchAppBody"
+    },
+    "appleWatchAppTitle": {
+      "resource": "string/appleWatchAppTitle"
+    },
+    "appleWatchComplicationsBody": {
+      "resource": "string/appleWatchComplicationsBody"
+    },
+    "appleWatchComplicationsTitle": {
+      "resource": "string/appleWatchComplicationsTitle"
+    },
+    "appleWatchFeaturesSection": {
+      "resource": "string/appleWatchFeaturesSection"
+    },
+    "appleWatchIntro": {
+      "resource": "string/appleWatchIntro"
+    },
+    "appleWatchLearnMore": {
+      "resource": "string/appleWatchLearnMore"
+    },
+    "appleWatchPrivacyNote": {
+      "resource": "string/appleWatchPrivacyNote"
+    },
+    "appleWatchSetupFace": {
+      "resource": "string/appleWatchSetupFace"
+    },
+    "appleWatchSetupInstall": {
+      "resource": "string/appleWatchSetupInstall"
+    },
+    "appleWatchSetupSection": {
+      "resource": "string/appleWatchSetupSection"
+    },
+    "appleWatchSmartStackBody": {
+      "resource": "string/appleWatchSmartStackBody"
+    },
+    "appleWatchSmartStackTitle": {
+      "resource": "string/appleWatchSmartStackTitle"
+    },
+    "applyFromNextShift": {
+      "resource": "string/applyFromNextShift"
+    },
+    "applyScheduleMessage": {
+      "resource": "string/applyScheduleMessage"
+    },
+    "applyScheduleTitle": {
+      "resource": "string/applyScheduleTitle"
+    },
+    "applyToToday": {
+      "resource": "string/applyToToday"
+    },
+    "auto": {
+      "resource": "string/auto"
+    },
+    "biometrics": {
+      "resource": "string/biometrics"
+    },
+    "biometricsLockoutHint": {
+      "resource": "string/biometricsLockoutHint",
+      "params": [
+        "biometry"
+      ]
+    },
+    "biometricsNotEnrolledHint": {
+      "resource": "string/biometricsNotEnrolledHint",
+      "params": [
+        "biometry"
+      ]
+    },
+    "biometricsUnavailableHint": {
+      "resource": "string/biometricsUnavailableHint",
+      "params": [
+        "app"
+      ]
+    },
+    "biometryFaceID": {
+      "resource": "string/biometryFaceID"
+    },
+    "biometryOpticID": {
+      "resource": "string/biometryOpticID"
+    },
+    "biometryTouchID": {
+      "resource": "string/biometryTouchID"
+    },
+    "breakReminder": {
+      "resource": "string/breakReminder"
+    },
+    "cancel": {
+      "resource": "string/cancel"
+    },
+    "cancelAction": {
+      "resource": "string/cancelAction"
+    },
+    "cancelManualTiming": {
+      "resource": "string/cancelManualTiming"
+    },
+    "cancelManualTimingConfirm": {
+      "resource": "string/cancelManualTimingConfirm"
+    },
+    "chooselanguage": {
+      "resource": "string/chooselanguage"
+    },
+    "clockInEarly": {
+      "resource": "string/clockInEarly"
+    },
+    "clockInEarlyConfirm": {
+      "resource": "string/clockInEarlyConfirm"
+    },
+    "clockOffEarly": {
+      "resource": "string/clockOffEarly"
+    },
+    "clockOffEarlyConfirm": {
+      "resource": "string/clockOffEarlyConfirm"
+    },
+    "clockedInEarlyNote": {
+      "resource": "string/clockedInEarlyNote",
+      "params": [
+        "time"
+      ]
+    },
+    "clockedOffEarlyNote": {
+      "resource": "string/clockedOffEarlyNote",
+      "params": [
+        "time"
+      ]
+    },
+    "close": {
+      "resource": "string/close"
+    },
+    "comingUp": {
+      "resource": "string/comingUp"
+    },
+    "confirmOvertime": {
+      "resource": "string/confirmOvertime"
+    },
+    "continue": {
+      "resource": "string/continue_"
+    },
+    "cycleEndSummaryNotificationBody": {
+      "resource": "string/cycleEndSummaryNotificationBody",
+      "params": [
+        "days",
+        "work",
+        "overtime"
+      ]
+    },
+    "cycleEndSummaryNotificationNote": {
+      "resource": "string/cycleEndSummaryNotificationNote"
+    },
+    "cycleEndSummaryNotificationTitle": {
+      "resource": "string/cycleEndSummaryNotificationTitle"
+    },
+    "daily": {
+      "resource": "string/daily"
+    },
+    "dark": {
+      "resource": "string/dark"
+    },
+    "daysShort": {
+      "resource": "string/daysShort",
+      "params": [
+        "count"
+      ]
+    },
+    "daysUntilRest": {
+      "resource": "string/daysUntilRest"
+    },
+    "debugCaptureScenarios": {
+      "resource": "string/debugCaptureScenarios"
+    },
+    "debugCaptureScenariosDetail": {
+      "resource": "string/debugCaptureScenariosDetail"
+    },
+    "debugLiveActivity": {
+      "resource": "string/debugLiveActivity"
+    },
+    "debugLiveActivityDetail": {
+      "resource": "string/debugLiveActivityDetail"
+    },
+    "debugMenu": {
+      "resource": "string/debugMenu"
+    },
+    "debugResetNextLaunch": {
+      "resource": "string/debugResetNextLaunch"
+    },
+    "debugResetNextLaunchDetail": {
+      "resource": "string/debugResetNextLaunchDetail"
+    },
+    "debugScenarioCompleted": {
+      "resource": "string/debugScenarioCompleted"
+    },
+    "debugScenarioLunch": {
+      "resource": "string/debugScenarioLunch"
+    },
+    "debugScenarioManual": {
+      "resource": "string/debugScenarioManual"
+    },
+    "debugScenarioOvertime": {
+      "resource": "string/debugScenarioOvertime"
+    },
+    "debugScenarioRestDay": {
+      "resource": "string/debugScenarioRestDay"
+    },
+    "debugScenarioWorking": {
+      "resource": "string/debugScenarioWorking"
+    },
+    "debugSeedRecords": {
+      "resource": "string/debugSeedRecords"
+    },
+    "debugSeedRecordsAlready": {
+      "resource": "string/debugSeedRecordsAlready"
+    },
+    "debugSeedRecordsDetail": {
+      "resource": "string/debugSeedRecordsDetail"
+    },
+    "debugSeedRecordsDone": {
+      "resource": "string/debugSeedRecordsDone"
+    },
+    "derivedFromThis": {
+      "resource": "string/derivedFromThis"
+    },
+    "disabledShort": {
+      "resource": "string/disabledShort"
+    },
+    "discardChanges": {
+      "resource": "string/discardChanges"
+    },
+    "done": {
+      "resource": "string/done"
+    },
+    "doubleRestWeek": {
+      "resource": "string/doubleRestWeek"
+    },
+    "downloadDesktopApp": {
+      "resource": "string/downloadDesktopApp"
+    },
+    "enableSalary": {
+      "resource": "string/enableSalary"
+    },
+    "enableSalaryDescription": {
+      "resource": "string/enableSalaryDescription"
+    },
+    "endTime": {
+      "resource": "string/endTime"
+    },
+    "extendedAddShiftType": {
+      "resource": "string/extendedAddShiftType"
+    },
+    "extendedApplyTemplateMessage": {
+      "resource": "string/extendedApplyTemplateMessage",
+      "params": [
+        "pattern"
+      ]
+    },
+    "extendedApplyTemplateTitle": {
+      "resource": "string/extendedApplyTemplateTitle"
+    },
+    "extendedBreak": {
+      "resource": "string/extendedBreak"
+    },
+    "extendedBreakDuration": {
+      "resource": "string/extendedBreakDuration"
+    },
+    "extendedBreakOutside": {
+      "resource": "string/extendedBreakOutside"
+    },
+    "extendedBreakStart": {
+      "resource": "string/extendedBreakStart"
+    },
+    "extendedCarriedOver": {
+      "resource": "string/extendedCarriedOver"
+    },
+    "extendedClearDay": {
+      "resource": "string/extendedClearDay"
+    },
+    "extendedColor": {
+      "resource": "string/extendedColor"
+    },
+    "extendedCycleDay": {
+      "resource": "string/extendedCycleDay",
+      "params": [
+        "day"
+      ]
+    },
+    "extendedCycleLength": {
+      "resource": "string/extendedCycleLength"
+    },
+    "extendedDefaultRest": {
+      "resource": "string/extendedDefaultRest"
+    },
+    "extendedDefaultWorkShift": {
+      "resource": "string/extendedDefaultWorkShift"
+    },
+    "extendedDeleteShiftType": {
+      "resource": "string/extendedDeleteShiftType"
+    },
+    "extendedEditShiftType": {
+      "resource": "string/extendedEditShiftType"
+    },
+    "extendedFollowPattern": {
+      "resource": "string/extendedFollowPattern"
+    },
+    "extendedHistoryNeedsCareer": {
+      "resource": "string/extendedHistoryNeedsCareer"
+    },
+    "extendedHoursOvernight": {
+      "resource": "string/extendedHoursOvernight",
+      "params": [
+        "start",
+        "end"
+      ]
+    },
+    "extendedKindRest": {
+      "resource": "string/extendedKindRest"
+    },
+    "extendedKindWork": {
+      "resource": "string/extendedKindWork"
+    },
+    "extendedNewShiftType": {
+      "resource": "string/extendedNewShiftType"
+    },
+    "extendedNextMonth": {
+      "resource": "string/extendedNextMonth"
+    },
+    "extendedOvernightNote": {
+      "resource": "string/extendedOvernightNote"
+    },
+    "extendedPattern": {
+      "resource": "string/extendedPattern"
+    },
+    "extendedPreviousMonth": {
+      "resource": "string/extendedPreviousMonth"
+    },
+    "extendedRemovePatternMessage": {
+      "resource": "string/extendedRemovePatternMessage"
+    },
+    "extendedRemovePatternTitle": {
+      "resource": "string/extendedRemovePatternTitle"
+    },
+    "extendedRestKindNote": {
+      "resource": "string/extendedRestKindNote"
+    },
+    "extendedSetByHand": {
+      "resource": "string/extendedSetByHand"
+    },
+    "extendedShiftNamePlaceholder": {
+      "resource": "string/extendedShiftNamePlaceholder"
+    },
+    "extendedShiftTypeInUse": {
+      "resource": "string/extendedShiftTypeInUse"
+    },
+    "extendedShiftTypes": {
+      "resource": "string/extendedShiftTypes"
+    },
+    "extendedToday": {
+      "resource": "string/extendedToday"
+    },
+    "extendedTodayIs": {
+      "resource": "string/extendedTodayIs"
+    },
+    "extendedUnassigned": {
+      "resource": "string/extendedUnassigned"
+    },
+    "extendedWeekNumber": {
+      "resource": "string/extendedWeekNumber",
+      "params": [
+        "week"
+      ]
+    },
+    "firstRunBackToWelcome": {
+      "resource": "string/firstRunBackToWelcome"
+    },
+    "firstRunCheckingCloud": {
+      "resource": "string/firstRunCheckingCloud"
+    },
+    "firstRunCheckingPurchase": {
+      "resource": "string/firstRunCheckingPurchase"
+    },
+    "firstRunCloudEmpty": {
+      "resource": "string/firstRunCloudEmpty"
+    },
+    "firstRunCloudNeedsSetup": {
+      "resource": "string/firstRunCloudNeedsSetup"
+    },
+    "firstRunCloudRestoring": {
+      "resource": "string/firstRunCloudRestoring"
+    },
+    "firstRunCloudUnavailable": {
+      "resource": "string/firstRunCloudUnavailable"
+    },
+    "firstRunContinueSetup": {
+      "resource": "string/firstRunContinueSetup"
+    },
+    "firstRunLocalDataNeedsReview": {
+      "resource": "string/firstRunLocalDataNeedsReview"
+    },
+    "firstRunPlusRestored": {
+      "resource": "string/firstRunPlusRestored"
+    },
+    "firstRunQuickSetup": {
+      "resource": "string/firstRunQuickSetup"
+    },
+    "firstRunReplaceConfirm": {
+      "resource": "string/firstRunReplaceConfirm"
+    },
+    "firstRunReplaceWithCloud": {
+      "resource": "string/firstRunReplaceWithCloud"
+    },
+    "firstRunRestoreTitle": {
+      "resource": "string/firstRunRestoreTitle"
+    },
+    "firstRunReturningTitle": {
+      "resource": "string/firstRunReturningTitle"
+    },
+    "focusActivityAddPomodoro": {
+      "resource": "string/focusActivityAddPomodoro"
+    },
+    "focusActivityChainDone": {
+      "resource": "string/focusActivityChainDone"
+    },
+    "focusActivityDayDone": {
+      "resource": "string/focusActivityDayDone"
+    },
+    "focusActivityNextUp": {
+      "resource": "string/focusActivityNextUp",
+      "params": [
+        "task",
+        "time"
+      ]
+    },
+    "focusActivityPomodoro": {
+      "resource": "string/focusActivityPomodoro",
+      "params": [
+        "index",
+        "total"
+      ]
+    },
+    "focusActivityTaskDone": {
+      "resource": "string/focusActivityTaskDone",
+      "params": [
+        "time"
+      ]
+    },
+    "focusActivityThenBreak": {
+      "resource": "string/focusActivityThenBreak",
+      "params": [
+        "count"
+      ]
+    },
+    "focusAddAndStart": {
+      "resource": "string/focusAddAndStart"
+    },
+    "focusAddPomodoroCapacity": {
+      "resource": "string/focusAddPomodoroCapacity",
+      "params": [
+        "count"
+      ]
+    },
+    "focusAddPomodoroCount": {
+      "resource": "string/focusAddPomodoroCount"
+    },
+    "focusAppliedTemplateNote": {
+      "resource": "string/focusAppliedTemplateNote",
+      "params": [
+        "name"
+      ]
+    },
+    "focusApplyTemplate": {
+      "resource": "string/focusApplyTemplate"
+    },
+    "focusBandBlockHint": {
+      "resource": "string/focusBandBlockHint"
+    },
+    "focusBandBreakMinutes": {
+      "resource": "string/focusBandBreakMinutes",
+      "params": [
+        "count"
+      ]
+    },
+    "focusBandEmptyBlock": {
+      "resource": "string/focusBandEmptyBlock"
+    },
+    "focusBandGapTooShort": {
+      "resource": "string/focusBandGapTooShort",
+      "params": [
+        "count"
+      ]
+    },
+    "focusBandNextShift": {
+      "resource": "string/focusBandNextShift",
+      "params": [
+        "day"
+      ]
+    },
+    "focusBandStateCurrent": {
+      "resource": "string/focusBandStateCurrent"
+    },
+    "focusBandStatePast": {
+      "resource": "string/focusBandStatePast"
+    },
+    "focusBlockClear": {
+      "resource": "string/focusBlockClear"
+    },
+    "focusBlockExisting": {
+      "resource": "string/focusBlockExisting"
+    },
+    "focusBlockMakeBreak": {
+      "resource": "string/focusBlockMakeBreak"
+    },
+    "focusBlocksDoneOfScheduled": {
+      "resource": "string/focusBlocksDoneOfScheduled",
+      "params": [
+        "done",
+        "total"
+      ]
+    },
+    "focusBreak": {
+      "resource": "string/focusBreak"
+    },
+    "focusBreakOver": {
+      "resource": "string/focusBreakOver"
+    },
+    "focusBreakReminderBody": {
+      "resource": "string/focusBreakReminderBody",
+      "params": [
+        "count"
+      ]
+    },
+    "focusBreakUntil": {
+      "resource": "string/focusBreakUntil",
+      "params": [
+        "count",
+        "time"
+      ]
+    },
+    "focusCadenceNote": {
+      "resource": "string/focusCadenceNote"
+    },
+    "focusChooseIcon": {
+      "resource": "string/focusChooseIcon"
+    },
+    "focusClearDayTasks": {
+      "resource": "string/focusClearDayTasks"
+    },
+    "focusClearDayTasksBody": {
+      "resource": "string/focusClearDayTasksBody"
+    },
+    "focusCompletedTasksTitle": {
+      "resource": "string/focusCompletedTasksTitle"
+    },
+    "focusDeleteTask": {
+      "resource": "string/focusDeleteTask"
+    },
+    "focusDemoLearning": {
+      "resource": "string/focusDemoLearning"
+    },
+    "focusDemoMessages": {
+      "resource": "string/focusDemoMessages"
+    },
+    "focusDemoWriting": {
+      "resource": "string/focusDemoWriting"
+    },
+    "focusEditTask": {
+      "resource": "string/focusEditTask"
+    },
+    "focusEndBreakBody": {
+      "resource": "string/focusEndBreakBody"
+    },
+    "focusEndBreakTitle": {
+      "resource": "string/focusEndBreakTitle"
+    },
+    "focusEndedAtBoundary": {
+      "resource": "string/focusEndedAtBoundary"
+    },
+    "focusEndedNaturally": {
+      "resource": "string/focusEndedNaturally"
+    },
+    "focusEndsAt": {
+      "resource": "string/focusEndsAt",
+      "params": [
+        "time"
+      ]
+    },
+    "focusEstimate": {
+      "resource": "string/focusEstimate"
+    },
+    "focusEstimateDetail": {
+      "resource": "string/focusEstimateDetail",
+      "params": [
+        "count",
+        "minutes"
+      ]
+    },
+    "focusEstimatedFinish": {
+      "resource": "string/focusEstimatedFinish",
+      "params": [
+        "time"
+      ]
+    },
+    "focusExtendConflict": {
+      "resource": "string/focusExtendConflict"
+    },
+    "focusExtendNoRoom": {
+      "resource": "string/focusExtendNoRoom"
+    },
+    "focusExtendOne": {
+      "resource": "string/focusExtendOne"
+    },
+    "focusExtendScheduled": {
+      "resource": "string/focusExtendScheduled",
+      "params": [
+        "time"
+      ]
+    },
+    "focusFavoriteLands": {
+      "resource": "string/focusFavoriteLands",
+      "params": [
+        "time"
+      ]
+    },
+    "focusFavorites": {
+      "resource": "string/focusFavorites"
+    },
+    "focusFocusDuration": {
+      "resource": "string/focusFocusDuration"
+    },
+    "focusHistory": {
+      "resource": "string/focusHistory"
+    },
+    "focusHistoryAbandoned": {
+      "resource": "string/focusHistoryAbandoned"
+    },
+    "focusHistoryBoundary": {
+      "resource": "string/focusHistoryBoundary"
+    },
+    "focusHistoryCompleted": {
+      "resource": "string/focusHistoryCompleted"
+    },
+    "focusHistoryStopped": {
+      "resource": "string/focusHistoryStopped"
+    },
+    "focusHistorySupersededBySync": {
+      "resource": "string/focusHistorySupersededBySync"
+    },
+    "focusIconCode": {
+      "resource": "string/focusIconCode"
+    },
+    "focusIconCommunication": {
+      "resource": "string/focusIconCommunication"
+    },
+    "focusIconFocus": {
+      "resource": "string/focusIconFocus"
+    },
+    "focusIconIdea": {
+      "resource": "string/focusIconIdea"
+    },
+    "focusIconMeeting": {
+      "resource": "string/focusIconMeeting"
+    },
+    "focusIconStudy": {
+      "resource": "string/focusIconStudy"
+    },
+    "focusIconWork": {
+      "resource": "string/focusIconWork"
+    },
+    "focusIconWriting": {
+      "resource": "string/focusIconWriting"
+    },
+    "focusLanding": {
+      "resource": "string/focusLanding"
+    },
+    "focusLandingNextBlock": {
+      "resource": "string/focusLandingNextBlock"
+    },
+    "focusLeaveUnscheduled": {
+      "resource": "string/focusLeaveUnscheduled"
+    },
+    "focusLockedBand": {
+      "resource": "string/focusLockedBand"
+    },
+    "focusLockedBody": {
+      "resource": "string/focusLockedBody"
+    },
+    "focusLockedTitle": {
+      "resource": "string/focusLockedTitle"
+    },
+    "focusLongBreak": {
+      "resource": "string/focusLongBreak"
+    },
+    "focusLongBreakDuration": {
+      "resource": "string/focusLongBreakDuration"
+    },
+    "focusLongBreakEvery": {
+      "resource": "string/focusLongBreakEvery"
+    },
+    "focusMakeFavorite": {
+      "resource": "string/focusMakeFavorite"
+    },
+    "focusNewTask": {
+      "resource": "string/focusNewTask"
+    },
+    "focusNextBlock": {
+      "resource": "string/focusNextBlock"
+    },
+    "focusNextFocusBody": {
+      "resource": "string/focusNextFocusBody"
+    },
+    "focusNoEmptyBlock": {
+      "resource": "string/focusNoEmptyBlock"
+    },
+    "focusNoEmptyBlockShort": {
+      "resource": "string/focusNoEmptyBlockShort"
+    },
+    "focusNoRoom": {
+      "resource": "string/focusNoRoom"
+    },
+    "focusNoRoomThisShift": {
+      "resource": "string/focusNoRoomThisShift"
+    },
+    "focusNoShift": {
+      "resource": "string/focusNoShift"
+    },
+    "focusNotificationIssue": {
+      "resource": "string/focusNotificationIssue"
+    },
+    "focusNotificationOpenSettings": {
+      "resource": "string/focusNotificationOpenSettings"
+    },
+    "focusNotificationPermissionDenied": {
+      "resource": "string/focusNotificationPermissionDenied"
+    },
+    "focusNotificationRetry": {
+      "resource": "string/focusNotificationRetry"
+    },
+    "focusOutsideWorkHours": {
+      "resource": "string/focusOutsideWorkHours"
+    },
+    "focusOverflowNote": {
+      "resource": "string/focusOverflowNote",
+      "params": [
+        "tasks"
+      ]
+    },
+    "focusPhaseComplete": {
+      "resource": "string/focusPhaseComplete"
+    },
+    "focusPlanTitle": {
+      "resource": "string/focusPlanTitle"
+    },
+    "focusPomodoroSummary": {
+      "resource": "string/focusPomodoroSummary",
+      "params": [
+        "count",
+        "minutes"
+      ]
+    },
+    "focusPomodoros": {
+      "resource": "string/focusPomodoros"
+    },
+    "focusQuickCreate": {
+      "resource": "string/focusQuickCreate"
+    },
+    "focusRemoveFavorite": {
+      "resource": "string/focusRemoveFavorite"
+    },
+    "focusRoundsValue": {
+      "resource": "string/focusRoundsValue",
+      "params": [
+        "count"
+      ]
+    },
+    "focusRunning": {
+      "resource": "string/focusRunning"
+    },
+    "focusSaveDayAsTemplate": {
+      "resource": "string/focusSaveDayAsTemplate"
+    },
+    "focusSaveTask": {
+      "resource": "string/focusSaveTask"
+    },
+    "focusSaveTodayAsUsual": {
+      "resource": "string/focusSaveTodayAsUsual"
+    },
+    "focusSaveTodayAsUsualDetail": {
+      "resource": "string/focusSaveTodayAsUsualDetail"
+    },
+    "focusScale": {
+      "resource": "string/focusScale"
+    },
+    "focusScaleToday": {
+      "resource": "string/focusScaleToday"
+    },
+    "focusScaleUsual": {
+      "resource": "string/focusScaleUsual"
+    },
+    "focusSchedule": {
+      "resource": "string/focusSchedule"
+    },
+    "focusSetDefaultTemplate": {
+      "resource": "string/focusSetDefaultTemplate"
+    },
+    "focusShortBreak": {
+      "resource": "string/focusShortBreak"
+    },
+    "focusShortBreakDuration": {
+      "resource": "string/focusShortBreakDuration"
+    },
+    "focusStart": {
+      "resource": "string/focusStart"
+    },
+    "focusStartAfter": {
+      "resource": "string/focusStartAfter",
+      "params": [
+        "time"
+      ]
+    },
+    "focusStartAlreadyRunning": {
+      "resource": "string/focusStartAlreadyRunning"
+    },
+    "focusStartNextFocus": {
+      "resource": "string/focusStartNextFocus"
+    },
+    "focusStartNow": {
+      "resource": "string/focusStartNow"
+    },
+    "focusStop": {
+      "resource": "string/focusStop"
+    },
+    "focusStopConfirm": {
+      "resource": "string/focusStopConfirm"
+    },
+    "focusStopTitle": {
+      "resource": "string/focusStopTitle"
+    },
+    "focusTaskPlaceholder": {
+      "resource": "string/focusTaskPlaceholder"
+    },
+    "focusTaskTitle": {
+      "resource": "string/focusTaskTitle"
+    },
+    "focusTemplateAuto": {
+      "resource": "string/focusTemplateAuto"
+    },
+    "focusTemplateCapacityWarning": {
+      "resource": "string/focusTemplateCapacityWarning"
+    },
+    "focusTemplateDelete": {
+      "resource": "string/focusTemplateDelete"
+    },
+    "focusTemplateDropped": {
+      "resource": "string/focusTemplateDropped",
+      "params": [
+        "count"
+      ]
+    },
+    "focusTemplateRemainingPomodoros": {
+      "resource": "string/focusTemplateRemainingPomodoros",
+      "params": [
+        "count"
+      ]
+    },
+    "focusTemplateSequenceNote": {
+      "resource": "string/focusTemplateSequenceNote"
+    },
+    "focusTemplateSlots": {
+      "resource": "string/focusTemplateSlots",
+      "params": [
+        "count"
+      ]
+    },
+    "focusTemplateTaskDoesNotFit": {
+      "resource": "string/focusTemplateTaskDoesNotFit"
+    },
+    "focusThisBlock": {
+      "resource": "string/focusThisBlock"
+    },
+    "focusTimerSettings": {
+      "resource": "string/focusTimerSettings"
+    },
+    "focusTimerSettingsBody": {
+      "resource": "string/focusTimerSettingsBody"
+    },
+    "focusTimerSettingsHint": {
+      "resource": "string/focusTimerSettingsHint"
+    },
+    "focusTimerSettingsLockedRunning": {
+      "resource": "string/focusTimerSettingsLockedRunning"
+    },
+    "focusTimerSettingsLockedTemplate": {
+      "resource": "string/focusTimerSettingsLockedTemplate"
+    },
+    "focusTimerSettingsSection": {
+      "resource": "string/focusTimerSettingsSection"
+    },
+    "focusTitle": {
+      "resource": "string/focusTitle"
+    },
+    "focusToday": {
+      "resource": "string/focusToday"
+    },
+    "focusTodayTasks": {
+      "resource": "string/focusTodayTasks"
+    },
+    "focusUnscheduled": {
+      "resource": "string/focusUnscheduled"
+    },
+    "focusUnsetDefaultTemplate": {
+      "resource": "string/focusUnsetDefaultTemplate"
+    },
+    "focusUsualDay": {
+      "resource": "string/focusUsualDay"
+    },
+    "focusUsualDayDefaultName": {
+      "resource": "string/focusUsualDayDefaultName"
+    },
+    "focusUsualDayName": {
+      "resource": "string/focusUsualDayName"
+    },
+    "focusUsualDays": {
+      "resource": "string/focusUsualDays"
+    },
+    "githubRepository": {
+      "resource": "string/githubRepository"
+    },
+    "goToLunchSettings": {
+      "resource": "string/goToLunchSettings"
+    },
+    "hideSalary": {
+      "resource": "string/hideSalary"
+    },
+    "holidayCalendar": {
+      "resource": "string/holidayCalendar"
+    },
+    "holidayCalendarOff": {
+      "resource": "string/holidayCalendarOff"
+    },
+    "holidayCalendarSearch": {
+      "resource": "string/holidayCalendarSearch"
+    },
+    "holidayCalendarSystemDefault": {
+      "resource": "string/holidayCalendarSystemDefault",
+      "params": [
+        "region"
+      ]
+    },
+    "holidayCoverageNextYearWarning": {
+      "resource": "string/holidayCoverageNextYearWarning",
+      "params": [
+        "year"
+      ]
+    },
+    "holidayCoverageYearWarning": {
+      "resource": "string/holidayCoverageYearWarning",
+      "params": [
+        "year"
+      ]
+    },
+    "holidayMakeupWorkday": {
+      "resource": "string/holidayMakeupWorkday"
+    },
+    "holidayRestDay": {
+      "resource": "string/holidayRestDay"
+    },
+    "holidaySource": {
+      "resource": "string/holidaySource"
+    },
+    "invalidLunchMessage": {
+      "resource": "string/invalidLunchMessage"
+    },
+    "invalidLunchTitle": {
+      "resource": "string/invalidLunchTitle"
+    },
+    "keepAtLeastOneWorkday": {
+      "resource": "string/keepAtLeastOneWorkday"
+    },
+    "keepEditing": {
+      "resource": "string/keepEditing"
+    },
+    "landingFeature1Title": {
+      "resource": "string/landingFeature1Title"
+    },
+    "landingTagline": {
+      "resource": "string/landingTagline"
+    },
+    "languageFooter": {
+      "resource": "string/languageFooter"
+    },
+    "lifeAddEmployment": {
+      "resource": "string/lifeAddEmployment"
+    },
+    "lifeAllocationMissing": {
+      "resource": "string/lifeAllocationMissing"
+    },
+    "lifeApproxYears": {
+      "resource": "string/lifeApproxYears",
+      "params": [
+        "years"
+      ]
+    },
+    "lifeBirthYear": {
+      "resource": "string/lifeBirthYear"
+    },
+    "lifeCurrentSalary": {
+      "resource": "string/lifeCurrentSalary"
+    },
+    "lifeDetailedIncomeHelp": {
+      "resource": "string/lifeDetailedIncomeHelp"
+    },
+    "lifeEditProfile": {
+      "resource": "string/lifeEditProfile"
+    },
+    "lifeEmploymentCurrent": {
+      "resource": "string/lifeEmploymentCurrent"
+    },
+    "lifeEmploymentEnd": {
+      "resource": "string/lifeEmploymentEnd"
+    },
+    "lifeEmploymentSalary": {
+      "resource": "string/lifeEmploymentSalary"
+    },
+    "lifeEmploymentStart": {
+      "resource": "string/lifeEmploymentStart"
+    },
+    "lifeEmptyBody": {
+      "resource": "string/lifeEmptyBody"
+    },
+    "lifeEmptyTitle": {
+      "resource": "string/lifeEmptyTitle"
+    },
+    "lifeEstimatedPast": {
+      "resource": "string/lifeEstimatedPast"
+    },
+    "lifeFutureIncomeDecline": {
+      "resource": "string/lifeFutureIncomeDecline"
+    },
+    "lifeFutureIncomeKeep": {
+      "resource": "string/lifeFutureIncomeKeep"
+    },
+    "lifeFutureIncomeMode": {
+      "resource": "string/lifeFutureIncomeMode"
+    },
+    "lifeHideAges": {
+      "resource": "string/lifeHideAges"
+    },
+    "lifeIncomeDeclinePreview": {
+      "resource": "string/lifeIncomeDeclinePreview",
+      "params": [
+        "age",
+        "percent"
+      ]
+    },
+    "lifeIncomeDeclineStartAge": {
+      "resource": "string/lifeIncomeDeclineStartAge"
+    },
+    "lifeIncomeFuture": {
+      "resource": "string/lifeIncomeFuture"
+    },
+    "lifeIncomeHistory": {
+      "resource": "string/lifeIncomeHistory"
+    },
+    "lifeIncomeMethod": {
+      "resource": "string/lifeIncomeMethod"
+    },
+    "lifeIncomeMethodDecline": {
+      "resource": "string/lifeIncomeMethodDecline",
+      "params": [
+        "age",
+        "percent"
+      ]
+    },
+    "lifeIncomeRetirementRatio": {
+      "resource": "string/lifeIncomeRetirementRatio"
+    },
+    "lifeIncomeTitle": {
+      "resource": "string/lifeIncomeTitle"
+    },
+    "lifeIncomeTotal": {
+      "resource": "string/lifeIncomeTotal"
+    },
+    "lifeLegendChildhood": {
+      "resource": "string/lifeLegendChildhood"
+    },
+    "lifeLegendEstimated": {
+      "resource": "string/lifeLegendEstimated"
+    },
+    "lifeLegendOverride": {
+      "resource": "string/lifeLegendOverride"
+    },
+    "lifeLegendProjected": {
+      "resource": "string/lifeLegendProjected"
+    },
+    "lifeLegendRetirement": {
+      "resource": "string/lifeLegendRetirement"
+    },
+    "lifeLegendStudy": {
+      "resource": "string/lifeLegendStudy"
+    },
+    "lifeOutsideZone": {
+      "resource": "string/lifeOutsideZone"
+    },
+    "lifeOwnShare": {
+      "resource": "string/lifeOwnShare"
+    },
+    "lifePrecisionDay": {
+      "resource": "string/lifePrecisionDay"
+    },
+    "lifePrecisionYear": {
+      "resource": "string/lifePrecisionYear"
+    },
+    "lifeProfileFooter": {
+      "resource": "string/lifeProfileFooter"
+    },
+    "lifeProfileTitle": {
+      "resource": "string/lifeProfileTitle"
+    },
+    "lifeProgressTitle": {
+      "resource": "string/lifeProgressTitle"
+    },
+    "lifeProjectedFuture": {
+      "resource": "string/lifeProjectedFuture"
+    },
+    "lifeRemoveEmployment": {
+      "resource": "string/lifeRemoveEmployment"
+    },
+    "lifeRetirementAge": {
+      "resource": "string/lifeRetirementAge"
+    },
+    "lifeRetirementDate": {
+      "resource": "string/lifeRetirementDate"
+    },
+    "lifeRoughIncomeHelp": {
+      "resource": "string/lifeRoughIncomeHelp"
+    },
+    "lifeRowPosition": {
+      "resource": "string/lifeRowPosition",
+      "params": [
+        "count",
+        "total"
+      ]
+    },
+    "lifeSalaryCadence": {
+      "resource": "string/lifeSalaryCadence"
+    },
+    "lifeSalaryMonthly": {
+      "resource": "string/lifeSalaryMonthly"
+    },
+    "lifeSalaryYearly": {
+      "resource": "string/lifeSalaryYearly"
+    },
+    "lifeSchoolStarted": {
+      "resource": "string/lifeSchoolStarted"
+    },
+    "lifeSetRetirement": {
+      "resource": "string/lifeSetRetirement"
+    },
+    "lifeSetUp": {
+      "resource": "string/lifeSetUp"
+    },
+    "lifeSetupOfferAction": {
+      "resource": "string/lifeSetupOfferAction"
+    },
+    "lifeSetupOfferBody": {
+      "resource": "string/lifeSetupOfferBody"
+    },
+    "lifeSetupOfferTitle": {
+      "resource": "string/lifeSetupOfferTitle"
+    },
+    "lifeSleepHours": {
+      "resource": "string/lifeSleepHours"
+    },
+    "lifeStageAgeRange": {
+      "resource": "string/lifeStageAgeRange"
+    },
+    "lifeStageChildhood": {
+      "resource": "string/lifeStageChildhood"
+    },
+    "lifeStageDuration": {
+      "resource": "string/lifeStageDuration",
+      "params": [
+        "years",
+        "days"
+      ]
+    },
+    "lifeStageDurationTitle": {
+      "resource": "string/lifeStageDurationTitle"
+    },
+    "lifeStageElapsed": {
+      "resource": "string/lifeStageElapsed"
+    },
+    "lifeStagePresent": {
+      "resource": "string/lifeStagePresent"
+    },
+    "lifeStageRemaining": {
+      "resource": "string/lifeStageRemaining"
+    },
+    "lifeStageRetirement": {
+      "resource": "string/lifeStageRetirement"
+    },
+    "lifeStageShare": {
+      "resource": "string/lifeStageShare",
+      "params": [
+        "percent"
+      ]
+    },
+    "lifeStageStudy": {
+      "resource": "string/lifeStageStudy"
+    },
+    "lifeStageUnset": {
+      "resource": "string/lifeStageUnset"
+    },
+    "lifeStageWork": {
+      "resource": "string/lifeStageWork"
+    },
+    "lifeStageWorkElapsed": {
+      "resource": "string/lifeStageWorkElapsed"
+    },
+    "lifeStageWorkFuture": {
+      "resource": "string/lifeStageWorkFuture"
+    },
+    "lifeSuggestedYear": {
+      "resource": "string/lifeSuggestedYear"
+    },
+    "lifeTitle": {
+      "resource": "string/lifeTitle"
+    },
+    "lifeUnset": {
+      "resource": "string/lifeUnset"
+    },
+    "lifeWeeksUnit": {
+      "resource": "string/lifeWeeksUnit",
+      "params": [
+        "count"
+      ]
+    },
+    "lifeWeeksWorked": {
+      "resource": "string/lifeWeeksWorked"
+    },
+    "lifeWhereTimeGoes": {
+      "resource": "string/lifeWhereTimeGoes"
+    },
+    "lifeWorkHistoryDetailed": {
+      "resource": "string/lifeWorkHistoryDetailed"
+    },
+    "lifeWorkHistoryMode": {
+      "resource": "string/lifeWorkHistoryMode"
+    },
+    "lifeWorkHistoryRough": {
+      "resource": "string/lifeWorkHistoryRough"
+    },
+    "lifeWorkPeriodBasis": {
+      "resource": "string/lifeWorkPeriodBasis"
+    },
+    "lifeWorkShare": {
+      "resource": "string/lifeWorkShare"
+    },
+    "lifeWorkStarted": {
+      "resource": "string/lifeWorkStarted"
+    },
+    "lifeYearApproximate": {
+      "resource": "string/lifeYearApproximate",
+      "params": [
+        "year"
+      ]
+    },
+    "lifeYouChanged": {
+      "resource": "string/lifeYouChanged"
+    },
+    "light": {
+      "resource": "string/light"
+    },
+    "liveActivity": {
+      "resource": "string/liveActivity"
+    },
+    "liveActivityLead": {
+      "resource": "string/liveActivityLead",
+      "params": [
+        "count"
+      ]
+    },
+    "liveActivityScheduleNote": {
+      "resource": "string/liveActivityScheduleNote"
+    },
+    "liveActivityStartTime": {
+      "resource": "string/liveActivityStartTime"
+    },
+    "lockScreenLiveActivity": {
+      "resource": "string/lockScreenLiveActivity"
+    },
+    "lunchBackAt": {
+      "resource": "string/lunchBackAt"
+    },
+    "lunchBreak": {
+      "resource": "string/lunchBreak"
+    },
+    "lunchDuration": {
+      "resource": "string/lunchDuration"
+    },
+    "lunchEndNotification": {
+      "resource": "string/lunchEndNotification"
+    },
+    "lunchEndReminder": {
+      "resource": "string/lunchEndReminder"
+    },
+    "lunchInProgress": {
+      "resource": "string/lunchInProgress"
+    },
+    "lunchPauseNote": {
+      "resource": "string/lunchPauseNote"
+    },
+    "lunchPauseNoteNoSalary": {
+      "resource": "string/lunchPauseNoteNoSalary"
+    },
+    "lunchShort": {
+      "resource": "string/lunchShort"
+    },
+    "lunchStartNotification": {
+      "resource": "string/lunchStartNotification"
+    },
+    "lunchStartReminder": {
+      "resource": "string/lunchStartReminder"
+    },
+    "lunchStartTime": {
+      "resource": "string/lunchStartTime"
+    },
+    "lunchTaken": {
+      "resource": "string/lunchTaken"
+    },
+    "lunchWindow": {
+      "resource": "string/lunchWindow",
+      "params": [
+        "start",
+        "end"
+      ]
+    },
+    "manualTiming": {
+      "resource": "string/manualTiming"
+    },
+    "manualTimingBanner": {
+      "resource": "string/manualTimingBanner"
+    },
+    "microBreakEffectiveTimeNote": {
+      "resource": "string/microBreakEffectiveTimeNote"
+    },
+    "microBreakFollowsFocus": {
+      "resource": "string/microBreakFollowsFocus"
+    },
+    "microBreakInterval": {
+      "resource": "string/microBreakInterval"
+    },
+    "microBreakMessages": {
+      "resource": "array/microBreakMessages",
+      "sourceKeys": [
+        "microBreakMessages.1",
+        "microBreakMessages.2",
+        "microBreakMessages.3",
+        "microBreakMessages.4"
+      ],
+      "verbatimPlaceholders": [
+        "minutes"
+      ]
+    },
+    "microBreakOpenFocus": {
+      "resource": "string/microBreakOpenFocus"
+    },
+    "microBreakReminder": {
+      "resource": "string/microBreakReminder"
+    },
+    "microBreakTakenOverNote": {
+      "resource": "string/microBreakTakenOverNote"
+    },
+    "minutesShort": {
+      "resource": "string/minutesShort",
+      "params": [
+        "count"
+      ]
+    },
+    "minutesUnit": {
+      "resource": "string/minutesUnit"
+    },
+    "moneyEarned": {
+      "resource": "string/moneyEarned"
+    },
+    "monthly": {
+      "resource": "string/monthly"
+    },
+    "monthlyWorkingDays": {
+      "resource": "string/monthlyWorkingDays"
+    },
+    "moodCelebrating": {
+      "resource": "string/moodCelebrating"
+    },
+    "moodCoffee": {
+      "resource": "string/moodCoffee"
+    },
+    "moodCounting": {
+      "resource": "string/moodCounting"
+    },
+    "moodExcited": {
+      "resource": "string/moodExcited"
+    },
+    "moodFiredUp": {
+      "resource": "string/moodFiredUp"
+    },
+    "moodHappy": {
+      "resource": "string/moodHappy"
+    },
+    "moodRelaxed": {
+      "resource": "string/moodRelaxed"
+    },
+    "moodTired": {
+      "resource": "string/moodTired"
+    },
+    "moreActions": {
+      "resource": "string/moreActions"
+    },
+    "nextShiftIn": {
+      "resource": "string/nextShiftIn",
+      "params": [
+        "time"
+      ]
+    },
+    "nextShiftLabelShort": {
+      "resource": "string/nextShiftLabelShort"
+    },
+    "nonWorkdayTapAgain": {
+      "resource": "string/nonWorkdayTapAgain"
+    },
+    "notNow": {
+      "resource": "string/notNow"
+    },
+    "notificationAllowedStatus": {
+      "resource": "string/notificationAllowedStatus"
+    },
+    "notificationCapability": {
+      "resource": "string/notificationCapability"
+    },
+    "notificationCapabilityNote": {
+      "resource": "string/notificationCapabilityNote"
+    },
+    "notificationDeniedBody": {
+      "resource": "string/notificationDeniedBody"
+    },
+    "notificationDeniedStatus": {
+      "resource": "string/notificationDeniedStatus"
+    },
+    "notificationDeniedTitle": {
+      "resource": "string/notificationDeniedTitle"
+    },
+    "notificationHomeWidget": {
+      "resource": "string/notificationHomeWidget"
+    },
+    "notificationLocal": {
+      "resource": "string/notificationLocal"
+    },
+    "notificationMilestone50": {
+      "resource": "string/notificationMilestone50"
+    },
+    "notificationMilestone75": {
+      "resource": "string/notificationMilestone75"
+    },
+    "notificationMilestone90": {
+      "resource": "string/notificationMilestone90"
+    },
+    "notificationMilestone95": {
+      "resource": "string/notificationMilestone95"
+    },
+    "notificationMilestoneTitle": {
+      "resource": "string/notificationMilestoneTitle",
+      "params": [
+        "percent"
+      ]
+    },
+    "notificationModeMilestones": {
+      "resource": "string/notificationModeMilestones"
+    },
+    "notificationModeOff": {
+      "resource": "string/notificationModeOff"
+    },
+    "notificationModeSimple": {
+      "resource": "string/notificationModeSimple"
+    },
+    "notificationOpenSettings": {
+      "resource": "string/notificationOpenSettings"
+    },
+    "notificationPrivacyNote": {
+      "resource": "string/notificationPrivacyNote"
+    },
+    "notificationScheduledForShift": {
+      "resource": "string/notificationScheduledForShift"
+    },
+    "notificationStillWorks": {
+      "resource": "string/notificationStillWorks"
+    },
+    "offWorkReminder": {
+      "resource": "string/offWorkReminder"
+    },
+    "offWorkTime": {
+      "resource": "string/offWorkTime"
+    },
+    "offWorkToday": {
+      "resource": "string/offWorkToday"
+    },
+    "offWorkWellDone": {
+      "resource": "string/offWorkWellDone"
+    },
+    "okAction": {
+      "resource": "string/okAction"
+    },
+    "onboardingAllSetTitle": {
+      "resource": "string/onboardingAllSetTitle"
+    },
+    "onboardingBack": {
+      "resource": "string/onboardingBack"
+    },
+    "onboardingCustomScheduleNote": {
+      "resource": "string/onboardingCustomScheduleNote"
+    },
+    "onboardingEnableBiometrics": {
+      "resource": "string/onboardingEnableBiometrics",
+      "params": [
+        "biometry"
+      ]
+    },
+    "onboardingEverywhereBody": {
+      "resource": "string/onboardingEverywhereBody"
+    },
+    "onboardingEverywhereBodyTablet": {
+      "resource": "string/onboardingEverywhereBodyTablet"
+    },
+    "onboardingEverywhereTitle": {
+      "resource": "string/onboardingEverywhereTitle"
+    },
+    "onboardingFinaleMessage": {
+      "resource": "string/onboardingFinaleMessage"
+    },
+    "onboardingLandscapeBody": {
+      "resource": "string/onboardingLandscapeBody"
+    },
+    "onboardingLandscapeTitle": {
+      "resource": "string/onboardingLandscapeTitle"
+    },
+    "onboardingLunchNotifyHint": {
+      "resource": "string/onboardingLunchNotifyHint"
+    },
+    "onboardingOfflineBody": {
+      "resource": "string/onboardingOfflineBody"
+    },
+    "onboardingOfflineTitle": {
+      "resource": "string/onboardingOfflineTitle"
+    },
+    "onboardingPlusFocusBody": {
+      "resource": "string/onboardingPlusFocusBody"
+    },
+    "onboardingPlusFocusBreakBody": {
+      "resource": "string/onboardingPlusFocusBreakBody"
+    },
+    "onboardingPlusFocusTask": {
+      "resource": "string/onboardingPlusFocusTask"
+    },
+    "onboardingPlusFocusTitle": {
+      "resource": "string/onboardingPlusFocusTitle"
+    },
+    "onboardingPlusLifeBody": {
+      "resource": "string/onboardingPlusLifeBody"
+    },
+    "onboardingPlusRecordsActual": {
+      "resource": "string/onboardingPlusRecordsActual"
+    },
+    "onboardingPlusRecordsBody": {
+      "resource": "string/onboardingPlusRecordsBody"
+    },
+    "onboardingPlusRecordsTitle": {
+      "resource": "string/onboardingPlusRecordsTitle"
+    },
+    "onboardingPrivacyBody": {
+      "resource": "string/onboardingPrivacyBody"
+    },
+    "onboardingPrivacyTitle": {
+      "resource": "string/onboardingPrivacyTitle"
+    },
+    "onboardingPrivacyWorkBody": {
+      "resource": "string/onboardingPrivacyWorkBody"
+    },
+    "onboardingRemindersBody": {
+      "resource": "string/onboardingRemindersBody"
+    },
+    "onboardingRemindersMoreInSettings": {
+      "resource": "string/onboardingRemindersMoreInSettings"
+    },
+    "onboardingRemindersTitle": {
+      "resource": "string/onboardingRemindersTitle"
+    },
+    "onboardingSalaryLockBody": {
+      "resource": "string/onboardingSalaryLockBody",
+      "params": [
+        "biometry"
+      ]
+    },
+    "onboardingScheduleBody": {
+      "resource": "string/onboardingScheduleBody"
+    },
+    "onboardingScheduleTitle": {
+      "resource": "string/onboardingScheduleTitle"
+    },
+    "onboardingShiftBody": {
+      "resource": "string/onboardingShiftBody"
+    },
+    "onboardingSidebarBody": {
+      "resource": "string/onboardingSidebarBody"
+    },
+    "onboardingSidebarTitle": {
+      "resource": "string/onboardingSidebarTitle"
+    },
+    "onboardingStartExperience": {
+      "resource": "string/onboardingStartExperience"
+    },
+    "onboardingSystemBody": {
+      "resource": "string/onboardingSystemBody"
+    },
+    "onboardingSystemTitle": {
+      "resource": "string/onboardingSystemTitle"
+    },
+    "openSourceLicenses": {
+      "resource": "string/openSourceLicenses"
+    },
+    "overtime": {
+      "resource": "string/overtime"
+    },
+    "overtimeDescription": {
+      "resource": "string/overtimeDescription"
+    },
+    "overtimeEndTime": {
+      "resource": "string/overtimeEndTime"
+    },
+    "overtimeNoMultiplier": {
+      "resource": "string/overtimeNoMultiplier"
+    },
+    "overtimeTimeLeftCaption": {
+      "resource": "string/overtimeTimeLeftCaption"
+    },
+    "overtimeTitle": {
+      "resource": "string/overtimeTitle"
+    },
+    "overtimeUntil": {
+      "resource": "string/overtimeUntil",
+      "params": [
+        "time"
+      ]
+    },
+    "pausedUntil": {
+      "resource": "string/pausedUntil",
+      "params": [
+        "time"
+      ]
+    },
+    "perEffectiveHour": {
+      "resource": "string/perEffectiveHour"
+    },
+    "perWorkday": {
+      "resource": "string/perWorkday"
+    },
+    "plusAutoRenew": {
+      "resource": "string/plusAutoRenew"
+    },
+    "plusBenefitCharts": {
+      "resource": "string/plusBenefitCharts"
+    },
+    "plusBenefitEdit": {
+      "resource": "string/plusBenefitEdit"
+    },
+    "plusBenefitFocus": {
+      "resource": "string/plusBenefitFocus"
+    },
+    "plusBenefitLife": {
+      "resource": "string/plusBenefitLife"
+    },
+    "plusBenefitSync": {
+      "resource": "string/plusBenefitSync"
+    },
+    "plusBestValue": {
+      "resource": "string/plusBestValue"
+    },
+    "plusBuyLifetime": {
+      "resource": "string/plusBuyLifetime"
+    },
+    "plusChartsLocked": {
+      "resource": "string/plusChartsLocked"
+    },
+    "plusContinueReadonly": {
+      "resource": "string/plusContinueReadonly"
+    },
+    "plusEditLocked": {
+      "resource": "string/plusEditLocked"
+    },
+    "plusFocusLocked": {
+      "resource": "string/plusFocusLocked"
+    },
+    "plusGracePeriod": {
+      "resource": "string/plusGracePeriod"
+    },
+    "plusIntroBody": {
+      "resource": "string/plusIntroBody"
+    },
+    "plusIntroTitle": {
+      "resource": "string/plusIntroTitle"
+    },
+    "plusLifeLocked": {
+      "resource": "string/plusLifeLocked"
+    },
+    "plusLifetime": {
+      "resource": "string/plusLifetime"
+    },
+    "plusLifetimeWhileSubscribed": {
+      "resource": "string/plusLifetimeWhileSubscribed"
+    },
+    "plusManage": {
+      "resource": "string/plusManage"
+    },
+    "plusMonthly": {
+      "resource": "string/plusMonthly"
+    },
+    "plusOwnedBody": {
+      "resource": "string/plusOwnedBody"
+    },
+    "plusOwnedTitle": {
+      "resource": "string/plusOwnedTitle"
+    },
+    "plusPrivacy": {
+      "resource": "string/plusPrivacy"
+    },
+    "plusPurchaseUnverified": {
+      "resource": "string/plusPurchaseUnverified"
+    },
+    "plusReplayCelebration": {
+      "resource": "string/plusReplayCelebration"
+    },
+    "plusRestore": {
+      "resource": "string/plusRestore"
+    },
+    "plusSection": {
+      "resource": "string/plusSection"
+    },
+    "plusSeePlans": {
+      "resource": "string/plusSeePlans"
+    },
+    "plusSettings": {
+      "resource": "string/plusSettings"
+    },
+    "plusSkip": {
+      "resource": "string/plusSkip"
+    },
+    "plusStartTrialShort": {
+      "resource": "string/plusStartTrialShort"
+    },
+    "plusStatus": {
+      "resource": "string/plusStatus"
+    },
+    "plusStatusGrace": {
+      "resource": "string/plusStatusGrace"
+    },
+    "plusStatusLifetime": {
+      "resource": "string/plusStatusLifetime"
+    },
+    "plusStatusNone": {
+      "resource": "string/plusStatusNone"
+    },
+    "plusStatusPending": {
+      "resource": "string/plusStatusPending"
+    },
+    "plusStatusSubscribed": {
+      "resource": "string/plusStatusSubscribed"
+    },
+    "plusStatusTrial": {
+      "resource": "string/plusStatusTrial"
+    },
+    "plusSubscribe": {
+      "resource": "string/plusSubscribe"
+    },
+    "plusSyncLocked": {
+      "resource": "string/plusSyncLocked"
+    },
+    "plusTerms": {
+      "resource": "string/plusTerms"
+    },
+    "plusThanksBody": {
+      "resource": "string/plusThanksBody"
+    },
+    "plusThanksContinue": {
+      "resource": "string/plusThanksContinue"
+    },
+    "plusThanksCurrentPlan": {
+      "resource": "string/plusThanksCurrentPlan"
+    },
+    "plusThanksManagePlan": {
+      "resource": "string/plusThanksManagePlan"
+    },
+    "plusThanksTitle": {
+      "resource": "string/plusThanksTitle"
+    },
+    "plusTrialBadge": {
+      "resource": "string/plusTrialBadge"
+    },
+    "plusUnavailable": {
+      "resource": "string/plusUnavailable"
+    },
+    "plusWaitingApproval": {
+      "resource": "string/plusWaitingApproval"
+    },
+    "plusYearly": {
+      "resource": "string/plusYearly"
+    },
+    "privacyPolicy": {
+      "resource": "string/privacyPolicy"
+    },
+    "progress": {
+      "resource": "string/progress"
+    },
+    "rateApp": {
+      "resource": "string/rateApp"
+    },
+    "recordsAllRecords": {
+      "resource": "string/recordsAllRecords"
+    },
+    "recordsAllocationBasis": {
+      "resource": "string/recordsAllocationBasis",
+      "params": [
+        "count"
+      ]
+    },
+    "recordsAnnualSummary": {
+      "resource": "string/recordsAnnualSummary",
+      "params": [
+        "year"
+      ]
+    },
+    "recordsArchiveDamagedBody": {
+      "resource": "string/recordsArchiveDamagedBody"
+    },
+    "recordsArchiveDamagedTitle": {
+      "resource": "string/recordsArchiveDamagedTitle"
+    },
+    "recordsArchiveQuarantine": {
+      "resource": "string/recordsArchiveQuarantine"
+    },
+    "recordsArchiveQuarantineConfirm": {
+      "resource": "string/recordsArchiveQuarantineConfirm"
+    },
+    "recordsArchiveSaveFailedBody": {
+      "resource": "string/recordsArchiveSaveFailedBody"
+    },
+    "recordsArchiveSaveFailedTitle": {
+      "resource": "string/recordsArchiveSaveFailedTitle"
+    },
+    "recordsBreakTime": {
+      "resource": "string/recordsBreakTime"
+    },
+    "recordsChooseShift": {
+      "resource": "string/recordsChooseShift"
+    },
+    "recordsClearDay": {
+      "resource": "string/recordsClearDay"
+    },
+    "recordsClearDayConfirm": {
+      "resource": "string/recordsClearDayConfirm"
+    },
+    "recordsClearDayDetail": {
+      "resource": "string/recordsClearDayDetail"
+    },
+    "recordsClearDayTitle": {
+      "resource": "string/recordsClearDayTitle"
+    },
+    "recordsCollapseChart": {
+      "resource": "string/recordsCollapseChart"
+    },
+    "recordsConfirmScheduled": {
+      "resource": "string/recordsConfirmScheduled"
+    },
+    "recordsConflictApplySelectedFields": {
+      "resource": "string/recordsConflictApplySelectedFields"
+    },
+    "recordsConflictCenter": {
+      "resource": "string/recordsConflictCenter"
+    },
+    "recordsConflictChooseOtherFields": {
+      "resource": "string/recordsConflictChooseOtherFields"
+    },
+    "recordsConflictCopy": {
+      "resource": "string/recordsConflictCopy"
+    },
+    "recordsConflictCount": {
+      "resource": "string/recordsConflictCount",
+      "params": [
+        "count"
+      ]
+    },
+    "recordsConflictCurrentVersion": {
+      "resource": "string/recordsConflictCurrentVersion"
+    },
+    "recordsConflictDetailsUnreadable": {
+      "resource": "string/recordsConflictDetailsUnreadable"
+    },
+    "recordsConflictFieldNote": {
+      "resource": "string/recordsConflictFieldNote"
+    },
+    "recordsConflictItems": {
+      "resource": "string/recordsConflictItems"
+    },
+    "recordsConflictKeepCloud": {
+      "resource": "string/recordsConflictKeepCloud"
+    },
+    "recordsConflictKeepCurrent": {
+      "resource": "string/recordsConflictKeepCurrent"
+    },
+    "recordsConflictKeepIncoming": {
+      "resource": "string/recordsConflictKeepIncoming"
+    },
+    "recordsConflictKeepLocal": {
+      "resource": "string/recordsConflictKeepLocal"
+    },
+    "recordsConflictNone": {
+      "resource": "string/recordsConflictNone"
+    },
+    "recordsConflictOtherVersion": {
+      "resource": "string/recordsConflictOtherVersion"
+    },
+    "recordsConflictReviewLegacyVersions": {
+      "resource": "string/recordsConflictReviewLegacyVersions"
+    },
+    "recordsConflictReviewVersions": {
+      "resource": "string/recordsConflictReviewVersions"
+    },
+    "recordsConflictUseOther": {
+      "resource": "string/recordsConflictUseOther"
+    },
+    "recordsDataSection": {
+      "resource": "string/recordsDataSection"
+    },
+    "recordsDataTitle": {
+      "resource": "string/recordsDataTitle"
+    },
+    "recordsDaySegments": {
+      "resource": "string/recordsDaySegments"
+    },
+    "recordsDeleteAll": {
+      "resource": "string/recordsDeleteAll"
+    },
+    "recordsDeleteAllConfirm": {
+      "resource": "string/recordsDeleteAllConfirm"
+    },
+    "recordsDiscardEdits": {
+      "resource": "string/recordsDiscardEdits"
+    },
+    "recordsEditDay": {
+      "resource": "string/recordsEditDay"
+    },
+    "recordsEditPlusHint": {
+      "resource": "string/recordsEditPlusHint"
+    },
+    "recordsEmptyBody": {
+      "resource": "string/recordsEmptyBody"
+    },
+    "recordsEmptyTitle": {
+      "resource": "string/recordsEmptyTitle"
+    },
+    "recordsExpandChart": {
+      "resource": "string/recordsExpandChart"
+    },
+    "recordsExport": {
+      "resource": "string/recordsExport"
+    },
+    "recordsExportFull": {
+      "resource": "string/recordsExportFull"
+    },
+    "recordsExportWithoutLife": {
+      "resource": "string/recordsExportWithoutLife"
+    },
+    "recordsForecastHours": {
+      "resource": "string/recordsForecastHours"
+    },
+    "recordsForecastIncome": {
+      "resource": "string/recordsForecastIncome"
+    },
+    "recordsFreeAwake": {
+      "resource": "string/recordsFreeAwake"
+    },
+    "recordsFreeAwakeFootnote": {
+      "resource": "string/recordsFreeAwakeFootnote"
+    },
+    "recordsFreeAwakeShort": {
+      "resource": "string/recordsFreeAwakeShort"
+    },
+    "recordsHeatScale": {
+      "resource": "string/recordsHeatScale"
+    },
+    "recordsHeatWithoutColor": {
+      "resource": "string/recordsHeatWithoutColor"
+    },
+    "recordsImport": {
+      "resource": "string/recordsImport"
+    },
+    "recordsImportAdded": {
+      "resource": "string/recordsImportAdded",
+      "params": [
+        "count"
+      ]
+    },
+    "recordsImportApplyNew": {
+      "resource": "string/recordsImportApplyNew"
+    },
+    "recordsImportConflicts": {
+      "resource": "string/recordsImportConflicts",
+      "params": [
+        "count"
+      ]
+    },
+    "recordsImportPreviewTitle": {
+      "resource": "string/recordsImportPreviewTitle"
+    },
+    "recordsImportReport": {
+      "resource": "string/recordsImportReport",
+      "params": [
+        "skipped"
+      ]
+    },
+    "recordsImportSame": {
+      "resource": "string/recordsImportSame",
+      "params": [
+        "count"
+      ]
+    },
+    "recordsImportSkipped": {
+      "resource": "string/recordsImportSkipped",
+      "params": [
+        "count"
+      ]
+    },
+    "recordsIncomeProgress": {
+      "resource": "string/recordsIncomeProgress",
+      "params": [
+        "amount",
+        "percent"
+      ]
+    },
+    "recordsKindCustomHours": {
+      "resource": "string/recordsKindCustomHours"
+    },
+    "recordsLegendCorrected": {
+      "resource": "string/recordsLegendCorrected"
+    },
+    "recordsLegendEstimated": {
+      "resource": "string/recordsLegendEstimated"
+    },
+    "recordsLegendLocked": {
+      "resource": "string/recordsLegendLocked"
+    },
+    "recordsLegendRecorded": {
+      "resource": "string/recordsLegendRecorded"
+    },
+    "recordsLegendTitle": {
+      "resource": "string/recordsLegendTitle"
+    },
+    "recordsLifeProfileReady": {
+      "resource": "string/recordsLifeProfileReady"
+    },
+    "recordsLifeProfileRow": {
+      "resource": "string/recordsLifeProfileRow"
+    },
+    "recordsLifeProfileUnset": {
+      "resource": "string/recordsLifeProfileUnset"
+    },
+    "recordsLifeSetupBody": {
+      "resource": "string/recordsLifeSetupBody"
+    },
+    "recordsLifeSetupLater": {
+      "resource": "string/recordsLifeSetupLater"
+    },
+    "recordsLifeSetupNow": {
+      "resource": "string/recordsLifeSetupNow"
+    },
+    "recordsLifeSetupTitle": {
+      "resource": "string/recordsLifeSetupTitle"
+    },
+    "recordsLockedDay": {
+      "resource": "string/recordsLockedDay"
+    },
+    "recordsLockedKeepsSaving": {
+      "resource": "string/recordsLockedKeepsSaving"
+    },
+    "recordsLockedScale": {
+      "resource": "string/recordsLockedScale"
+    },
+    "recordsLockedSummary": {
+      "resource": "string/recordsLockedSummary"
+    },
+    "recordsMarkLeave": {
+      "resource": "string/recordsMarkLeave"
+    },
+    "recordsMarkMakeup": {
+      "resource": "string/recordsMarkMakeup"
+    },
+    "recordsMarkRest": {
+      "resource": "string/recordsMarkRest"
+    },
+    "recordsMonthWorkdays": {
+      "resource": "plurals/recordsMonthWorkdays"
+    },
+    "recordsNextPeriod": {
+      "resource": "string/recordsNextPeriod"
+    },
+    "recordsNoObservations": {
+      "resource": "string/recordsNoObservations"
+    },
+    "recordsObservations": {
+      "resource": "string/recordsObservations"
+    },
+    "recordsObservedFirstSeen": {
+      "resource": "string/recordsObservedFirstSeen"
+    },
+    "recordsObservedOvertime": {
+      "resource": "string/recordsObservedOvertime"
+    },
+    "recordsObservedStarted": {
+      "resource": "string/recordsObservedStarted"
+    },
+    "recordsObservedStopped": {
+      "resource": "string/recordsObservedStopped"
+    },
+    "recordsOpenSelectedMonth": {
+      "resource": "string/recordsOpenSelectedMonth",
+      "params": [
+        "month"
+      ]
+    },
+    "recordsOperationExportFailed": {
+      "resource": "string/recordsOperationExportFailed"
+    },
+    "recordsOperationFileUnavailable": {
+      "resource": "string/recordsOperationFileUnavailable"
+    },
+    "recordsOperationImportFailed": {
+      "resource": "string/recordsOperationImportFailed"
+    },
+    "recordsOperationInvalidDocument": {
+      "resource": "string/recordsOperationInvalidDocument"
+    },
+    "recordsOperationOwnerAuthenticationFailed": {
+      "resource": "string/recordsOperationOwnerAuthenticationFailed"
+    },
+    "recordsOperationPreviewFailed": {
+      "resource": "string/recordsOperationPreviewFailed"
+    },
+    "recordsOperationReadFailed": {
+      "resource": "string/recordsOperationReadFailed"
+    },
+    "recordsOperationUnsupportedVersion": {
+      "resource": "string/recordsOperationUnsupportedVersion"
+    },
+    "recordsOvertime": {
+      "resource": "string/recordsOvertime"
+    },
+    "recordsOwnerAuthReason": {
+      "resource": "string/recordsOwnerAuthReason"
+    },
+    "recordsPlanned": {
+      "resource": "string/recordsPlanned"
+    },
+    "recordsPreviousPeriod": {
+      "resource": "string/recordsPreviousPeriod"
+    },
+    "recordsReplaceHoursConfirm": {
+      "resource": "string/recordsReplaceHoursConfirm"
+    },
+    "recordsReplaceHoursTitle": {
+      "resource": "string/recordsReplaceHoursTitle"
+    },
+    "recordsRestDay": {
+      "resource": "string/recordsRestDay"
+    },
+    "recordsRestoreConflict": {
+      "resource": "string/recordsRestoreConflict"
+    },
+    "recordsScaleLife": {
+      "resource": "string/recordsScaleLife"
+    },
+    "recordsScaleMonth": {
+      "resource": "string/recordsScaleMonth"
+    },
+    "recordsScaleWeek": {
+      "resource": "string/recordsScaleWeek"
+    },
+    "recordsScaleYear": {
+      "resource": "string/recordsScaleYear"
+    },
+    "recordsSectionHours": {
+      "resource": "string/recordsSectionHours"
+    },
+    "recordsSectionKind": {
+      "resource": "string/recordsSectionKind"
+    },
+    "recordsSeeThisDay": {
+      "resource": "string/recordsSeeThisDay"
+    },
+    "recordsSeeThisMonth": {
+      "resource": "string/recordsSeeThisMonth"
+    },
+    "recordsShareOfDay": {
+      "resource": "string/recordsShareOfDay"
+    },
+    "recordsSleep": {
+      "resource": "string/recordsSleep"
+    },
+    "recordsSleepEstimated": {
+      "resource": "string/recordsSleepEstimated"
+    },
+    "recordsSleepFromHealth": {
+      "resource": "string/recordsSleepFromHealth"
+    },
+    "recordsSourceAfterNow": {
+      "resource": "string/recordsSourceAfterNow"
+    },
+    "recordsSourceException": {
+      "resource": "string/recordsSourceException"
+    },
+    "recordsSourceNone": {
+      "resource": "string/recordsSourceNone"
+    },
+    "recordsSourceOverride": {
+      "resource": "string/recordsSourceOverride"
+    },
+    "recordsSourceProjection": {
+      "resource": "string/recordsSourceProjection"
+    },
+    "recordsSourceRecorded": {
+      "resource": "string/recordsSourceRecorded"
+    },
+    "recordsSourceSchedule": {
+      "resource": "string/recordsSourceSchedule"
+    },
+    "recordsSummaryHelp": {
+      "resource": "string/recordsSummaryHelp"
+    },
+    "recordsTab": {
+      "resource": "string/recordsTab"
+    },
+    "recordsTimeBreakdown": {
+      "resource": "string/recordsTimeBreakdown"
+    },
+    "recordsTimeZone": {
+      "resource": "string/recordsTimeZone"
+    },
+    "recordsTimeZoneDevice": {
+      "resource": "string/recordsTimeZoneDevice",
+      "params": [
+        "zone"
+      ]
+    },
+    "recordsTimeZoneFooter": {
+      "resource": "string/recordsTimeZoneFooter"
+    },
+    "recordsTimeZoneMigrate": {
+      "resource": "string/recordsTimeZoneMigrate"
+    },
+    "recordsTimeZoneMigrateConfirm": {
+      "resource": "string/recordsTimeZoneMigrateConfirm"
+    },
+    "recordsTimeZoneThisDevice": {
+      "resource": "string/recordsTimeZoneThisDevice"
+    },
+    "recordsTitle": {
+      "resource": "string/recordsTitle"
+    },
+    "recordsToday": {
+      "resource": "string/recordsToday"
+    },
+    "recordsUnclassified": {
+      "resource": "string/recordsUnclassified"
+    },
+    "recordsUnrecorded": {
+      "resource": "string/recordsUnrecorded"
+    },
+    "recordsWorkRegular": {
+      "resource": "string/recordsWorkRegular"
+    },
+    "recordsWorkdayCount": {
+      "resource": "string/recordsWorkdayCount",
+      "params": [
+        "count"
+      ]
+    },
+    "recordsWorkedTime": {
+      "resource": "string/recordsWorkedTime"
+    },
+    "remindersMayBeLate": {
+      "resource": "string/remindersMayBeLate",
+      "androidOnly": true
+    },
+    "remindersSection": {
+      "resource": "string/remindersSection"
+    },
+    "replayCelebration": {
+      "resource": "string/replayCelebration"
+    },
+    "retryAction": {
+      "resource": "string/retryAction"
+    },
+    "return": {
+      "resource": "string/return_"
+    },
+    "reviewPromptBody": {
+      "resource": "string/reviewPromptBody"
+    },
+    "reviewPromptLater": {
+      "resource": "string/reviewPromptLater"
+    },
+    "reviewPromptNever": {
+      "resource": "string/reviewPromptNever"
+    },
+    "reviewPromptRateNow": {
+      "resource": "string/reviewPromptRateNow"
+    },
+    "reviewPromptTitle": {
+      "resource": "string/reviewPromptTitle"
+    },
+    "rotationRestDays": {
+      "resource": "string/rotationRestDays"
+    },
+    "rotationRestdayOption": {
+      "resource": "string/rotationRestdayOption",
+      "params": [
+        "day"
+      ]
+    },
+    "rotationStartDay": {
+      "resource": "string/rotationStartDay",
+      "params": [
+        "day"
+      ]
+    },
+    "rotationWorkDays": {
+      "resource": "string/rotationWorkDays"
+    },
+    "rotationWorkdayOption": {
+      "resource": "string/rotationWorkdayOption",
+      "params": [
+        "day"
+      ]
+    },
+    "rulesErrorBanner": {
+      "resource": "string/rulesErrorBanner"
+    },
+    "salaryLocked": {
+      "resource": "string/salaryLocked"
+    },
+    "salaryPrivacyNote": {
+      "resource": "string/salaryPrivacyNote"
+    },
+    "salarySettings": {
+      "resource": "string/salarySettings"
+    },
+    "salaryType": {
+      "resource": "string/salaryType"
+    },
+    "saveAction": {
+      "resource": "string/saveAction"
+    },
+    "scheduleAlternating": {
+      "resource": "string/scheduleAlternating"
+    },
+    "scheduleAlternatingDescription": {
+      "resource": "string/scheduleAlternatingDescription"
+    },
+    "scheduleClassic": {
+      "resource": "string/scheduleClassic"
+    },
+    "scheduleClassicDescription": {
+      "resource": "string/scheduleClassicDescription"
+    },
+    "scheduleClearExpected": {
+      "resource": "string/scheduleClearExpected"
+    },
+    "scheduleClearExpectedMessage": {
+      "resource": "string/scheduleClearExpectedMessage"
+    },
+    "scheduleCurrentMonthActive": {
+      "resource": "string/scheduleCurrentMonthActive"
+    },
+    "scheduleFreeCalendar": {
+      "resource": "string/scheduleFreeCalendar"
+    },
+    "scheduleManualTimer": {
+      "resource": "string/scheduleManualTimer"
+    },
+    "scheduleNextMonthPlanned": {
+      "resource": "string/scheduleNextMonthPlanned"
+    },
+    "scheduleOff": {
+      "resource": "string/scheduleOff"
+    },
+    "scheduleOffDescription": {
+      "resource": "string/scheduleOffDescription"
+    },
+    "scheduleOffManualStart": {
+      "resource": "string/scheduleOffManualStart"
+    },
+    "scheduleRotation": {
+      "resource": "string/scheduleRotation"
+    },
+    "scheduleRotationDescription": {
+      "resource": "string/scheduleRotationDescription"
+    },
+    "settings": {
+      "resource": "string/settings"
+    },
+    "shareButton": {
+      "resource": "string/shareButton"
+    },
+    "shareComposerNote": {
+      "resource": "string/shareComposerNote"
+    },
+    "shareDone": {
+      "resource": "string/shareDone"
+    },
+    "shareLunchText": {
+      "resource": "string/shareLunchText",
+      "params": [
+        "time"
+      ]
+    },
+    "shareMoodLabel": {
+      "resource": "string/shareMoodLabel"
+    },
+    "shareNative": {
+      "resource": "string/shareNative"
+    },
+    "shareOffWorkText": {
+      "resource": "string/shareOffWorkText"
+    },
+    "sharePrivacyNote": {
+      "resource": "string/sharePrivacyNote"
+    },
+    "shareText": {
+      "resource": "string/shareText",
+      "params": [
+        "time"
+      ]
+    },
+    "shareUntilStartText": {
+      "resource": "string/shareUntilStartText",
+      "params": [
+        "time"
+      ]
+    },
+    "shiftEnded": {
+      "resource": "string/shiftEnded"
+    },
+    "shiftReminders": {
+      "resource": "string/shiftReminders"
+    },
+    "shiftSection": {
+      "resource": "string/shiftSection"
+    },
+    "showSidebar": {
+      "resource": "string/showSidebar"
+    },
+    "singleRestWeek": {
+      "resource": "string/singleRestWeek"
+    },
+    "singleWeekWorkday": {
+      "resource": "string/singleWeekWorkday"
+    },
+    "startTime": {
+      "resource": "string/startTime"
+    },
+    "summaryEstimateNote": {
+      "resource": "string/summaryEstimateNote"
+    },
+    "summaryThisWeek": {
+      "resource": "string/summaryThisWeek"
+    },
+    "summaryThisYear": {
+      "resource": "string/summaryThisYear"
+    },
+    "syncAccountChanged": {
+      "resource": "string/syncAccountChanged"
+    },
+    "syncDangerZone": {
+      "resource": "string/syncDangerZone"
+    },
+    "syncDeleted": {
+      "resource": "string/syncDeleted"
+    },
+    "syncDeleteiCloud": {
+      "resource": "string/syncDeleteiCloud"
+    },
+    "syncDeleteiCloudConfirm": {
+      "resource": "string/syncDeleteiCloudConfirm"
+    },
+    "syncDeleteiCloudDetail": {
+      "resource": "string/syncDeleteiCloudDetail"
+    },
+    "syncDeleteiCloudTitle": {
+      "resource": "string/syncDeleteiCloudTitle"
+    },
+    "syncDeleting": {
+      "resource": "string/syncDeleting"
+    },
+    "syncDisable": {
+      "resource": "string/syncDisable"
+    },
+    "syncDisableConfirm": {
+      "resource": "string/syncDisableConfirm"
+    },
+    "syncDisableTitle": {
+      "resource": "string/syncDisableTitle"
+    },
+    "syncFailed": {
+      "resource": "string/syncFailed"
+    },
+    "syncNeedNetwork": {
+      "resource": "string/syncNeedNetwork"
+    },
+    "syncNeedsPlus": {
+      "resource": "string/syncNeedsPlus"
+    },
+    "syncNoCloudRecords": {
+      "resource": "string/syncNoCloudRecords"
+    },
+    "syncOff": {
+      "resource": "string/syncOff"
+    },
+    "syncOn": {
+      "resource": "string/syncOn"
+    },
+    "syncPrivacyDetail": {
+      "resource": "string/syncPrivacyDetail"
+    },
+    "syncRemoveDevice": {
+      "resource": "string/syncRemoveDevice"
+    },
+    "syncRemoveDeviceConfirm": {
+      "resource": "string/syncRemoveDeviceConfirm"
+    },
+    "syncRemoveDeviceDetail": {
+      "resource": "string/syncRemoveDeviceDetail"
+    },
+    "syncRemoveDeviceTitle": {
+      "resource": "string/syncRemoveDeviceTitle"
+    },
+    "syncRestore": {
+      "resource": "string/syncRestore"
+    },
+    "syncRestoreDetail": {
+      "resource": "string/syncRestoreDetail"
+    },
+    "syncStatusOff": {
+      "resource": "string/syncStatusOff"
+    },
+    "syncStatusPaused": {
+      "resource": "string/syncStatusPaused"
+    },
+    "syncStatusReady": {
+      "resource": "string/syncStatusReady"
+    },
+    "syncTitle": {
+      "resource": "string/syncTitle"
+    },
+    "syncToggle": {
+      "resource": "string/syncToggle"
+    },
+    "theme": {
+      "resource": "string/theme"
+    },
+    "timeAgo": {
+      "resource": "string/timeAgo",
+      "params": [
+        "time"
+      ]
+    },
+    "timeLeftCaption": {
+      "resource": "string/timeLeftCaption"
+    },
+    "timelineCollapse": {
+      "resource": "string/timelineCollapse"
+    },
+    "timelineExpand": {
+      "resource": "string/timelineExpand",
+      "params": [
+        "count"
+      ]
+    },
+    "timerTab": {
+      "resource": "string/timerTab"
+    },
+    "todayInFull": {
+      "resource": "string/todayInFull"
+    },
+    "todaysShift": {
+      "resource": "string/todaysShift"
+    },
+    "tomorrow": {
+      "resource": "string/tomorrow"
+    },
+    "totalWorkTime": {
+      "resource": "string/totalWorkTime"
+    },
+    "undoClockInEarly": {
+      "resource": "string/undoClockInEarly"
+    },
+    "undoClockOffEarly": {
+      "resource": "string/undoClockOffEarly"
+    },
+    "unlockSalary": {
+      "resource": "string/unlockSalary"
+    },
+    "unlockSalaryReason": {
+      "resource": "string/unlockSalaryReason"
+    },
+    "unsavedChangesTitle": {
+      "resource": "string/unsavedChangesTitle"
+    },
+    "unscheduledBody": {
+      "resource": "string/unscheduledBody"
+    },
+    "unscheduledTitle": {
+      "resource": "string/unscheduledTitle"
+    },
+    "version": {
+      "resource": "string/version"
+    },
+    "visitOfficialWebsite": {
+      "resource": "string/visitOfficialWebsite"
+    },
+    "watchBackAt": {
+      "resource": "string/watchBackAt",
+      "params": [
+        "time"
+      ]
+    },
+    "watchCacheCorrupt": {
+      "resource": "string/watchCacheCorrupt"
+    },
+    "watchNextShiftAt": {
+      "resource": "string/watchNextShiftAt",
+      "params": [
+        "time"
+      ]
+    },
+    "watchOffAt": {
+      "resource": "string/watchOffAt",
+      "params": [
+        "time"
+      ]
+    },
+    "watchOpenIPhone": {
+      "resource": "string/watchOpenIPhone"
+    },
+    "watchOvertimeUntil": {
+      "resource": "string/watchOvertimeUntil",
+      "params": [
+        "time"
+      ]
+    },
+    "watchSyncExpired": {
+      "resource": "string/watchSyncExpired"
+    },
+    "watchTimeLeft": {
+      "resource": "string/watchTimeLeft",
+      "params": [
+        "duration"
+      ]
+    },
+    "watchTimeLeftTitle": {
+      "resource": "string/watchTimeLeftTitle"
+    },
+    "watchUpdateRequired": {
+      "resource": "string/watchUpdateRequired"
+    },
+    "watchWaitingForIPhone": {
+      "resource": "string/watchWaitingForIPhone"
+    },
+    "watchWidgetDescription": {
+      "resource": "string/watchWidgetDescription"
+    },
+    "weekdayRange": {
+      "resource": "string/weekdayRange",
+      "params": [
+        "start",
+        "end"
+      ]
+    },
+    "whatsNewContinue": {
+      "resource": "string/whatsNewContinue"
+    },
+    "whatsNewHolidayBody": {
+      "resource": "string/whatsNewHolidayBody",
+      "params": [
+        "schedule"
+      ]
+    },
+    "whatsNewHolidayTitle": {
+      "resource": "string/whatsNewHolidayTitle"
+    },
+    "whatsNewSmartStackBody": {
+      "resource": "string/whatsNewSmartStackBody"
+    },
+    "whatsNewSmartStackTitle": {
+      "resource": "string/whatsNewSmartStackTitle"
+    },
+    "whatsNewTitle": {
+      "resource": "string/whatsNewTitle"
+    },
+    "whatsNewWatchBody": {
+      "resource": "string/whatsNewWatchBody"
+    },
+    "whatsNewWatchTitle": {
+      "resource": "string/whatsNewWatchTitle"
+    },
+    "widgetRestDay": {
+      "resource": "string/widgetRestDay"
+    },
+    "widgetWorking": {
+      "resource": "string/widgetWorking"
+    },
+    "workOnWeekday": {
+      "resource": "string/workOnWeekday",
+      "params": [
+        "day"
+      ]
+    },
+    "workSchedule": {
+      "resource": "string/workSchedule"
+    },
+    "workdaysLabel": {
+      "resource": "string/workdaysLabel"
+    },
+    "worked": {
+      "resource": "string/worked"
+    }
+  }
+}
