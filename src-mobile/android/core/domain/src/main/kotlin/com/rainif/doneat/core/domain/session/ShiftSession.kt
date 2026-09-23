@@ -24,6 +24,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
+import java.util.UUID
 
 /** Which settings the rules read. iOS `RulesScheduleSource`. */
 enum class RulesSource {
@@ -79,6 +80,30 @@ class SessionEnvironment(
             holidays = holidays,
         )
     }
+
+    /** The days the user gave a shift by hand, by civil day key. */
+    val handSetDays: Map<String, UUID> get() = livePlan?.handSetDays ?: ExtendedSchedulePlan.handSetDays(rosterDays)
+
+    /** Days a pattern preview wrote out, which "clear expected days" may remove again. */
+    val generatedRosterDays: Set<String> get() = rosterDays.filter { it.generatedFromPattern == true }.map { it.dayKey }.toSet()
+
+    /** A schedule page draft as the rules would read it once saved. */
+    fun plan(content: ExtendedScheduleContent?, edits: Map<String, RosterDayEdit>?): ExtendedSchedulePlan? {
+        content ?: return null
+        val base = plan(content)
+        if (edits.isNullOrEmpty()) return base
+        return ExtendedSchedulePlan(
+            base.shiftTypes, base.rule, ScheduleEditing.handSetDays(base.handSetDays, edits), base.holidayRegionIdentifier,
+            base.clearedFromDayKey, base.holidayOverrides, base.frozenShiftTypes.filterKeys { it !in edits },
+            base.fallsBackToBaseSchedule, base.pinnedDayKey, base.holidays,
+        )
+    }
+
+    /** The same environment over a newer archive (its settings, schedule and calendar). */
+    fun with(records: com.rainif.doneat.core.domain.records.RecordState) = SessionEnvironment(
+        records.syncedPreferences?.takeIf { it.isValid } ?: preferences, onboardingComplete, records.extendedSchedule, records.rosterDays,
+        holidays, deviceZone, collectsObservations,
+    )
 
     /** [plan] with one day as it was before a save. */
     fun planKeeping(plan: ExtendedSchedulePlan, day: KeptRosterDay): ExtendedSchedulePlan {

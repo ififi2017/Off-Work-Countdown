@@ -85,6 +85,7 @@
     <string name="earningsShownWithoutLock">Thiết bị này chưa đặt khóa màn hình nên thu nhập được hiển thị mà không cần xác minh. Hãy đặt khóa màn hình để giữ riêng tư.</string>
     <string name="enableSalary">Hiển thị lương</string>
     <string name="enableSalaryDescription">Tắt theo mặc định. Lương được bao gồm nếu bạn bật đồng bộ hóa iCloud.</string>
+    <string name="enableSalaryDescriptionLocal">Mặc định tắt. Lương chỉ lưu trên thiết bị này, và trong bản sao lưu của Android nếu bạn đã bật.</string>
     <string name="endTime">Giờ tan ca</string>
     <string name="extendedAddShiftType">Thêm loại ca</string>
     <string name="extendedApplyTemplateMessage">Mọi ngày trong chu kỳ sẽ được điền lại theo “%1$s”. Chưa có gì thay đổi cho đến khi bạn lưu.</string>
@@ -729,6 +730,7 @@
     <string name="rulesErrorBanner">Quy tắc đếm ngược tạm thời không dùng được. Lịch của bạn vẫn chạy.</string>
     <string name="salaryLocked">Đã khóa</string>
     <string name="salaryPrivacyNote">«Kiếm được hôm nay» được ước tính từ đây và ca làm của bạn. Widget, thông báo và Hoạt động trực tiếp không bao giờ hiển thị con số này.</string>
+    <string name="salaryPrivacyNoteLocal">“Thu nhập hôm nay” được ước tính từ thông tin này và ca làm của bạn. Tiện ích và thông báo không bao giờ hiển thị nó.</string>
     <string name="salarySettings">Cài đặt lương</string>
     <string name="salaryType">Loại lương</string>
     <string name="saveAction">Lưu</string>

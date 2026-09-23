@@ -85,6 +85,7 @@
     <string name="earningsShownWithoutLock">Bu cihazda ekran kilidi yok, bu yüzden kazanç doğrulama olmadan gösteriliyor. Gizli tutmak için bir ekran kilidi ayarlayın.</string>
     <string name="enableSalary">Maaşı göster</string>
     <string name="enableSalaryDescription">Varsayılan olarak kapalıdır. İCloud senkronizasyonunu açarsanız maaş dahildir.</string>
+    <string name="enableSalaryDescriptionLocal">Varsayılan olarak kapalı. Maaş bu cihazda ve açıksa Android’in kendi yedeğinde kalır.</string>
     <string name="endTime">İş çıkışı</string>
     <string name="extendedAddShiftType">Vardiya türü ekle</string>
     <string name="extendedApplyTemplateMessage">Döngünün her günü “%1$s” düzenine göre yeniden doldurulur. Kaydedene kadar hiçbir şey değişmez.</string>
@@ -730,6 +731,7 @@
     <string name="rulesErrorBanner">Geri sayım kuralları yok. Programınız durmadı.</string>
     <string name="salaryLocked">Kilitli</string>
     <string name="salaryPrivacyNote">«Bugün kazanılan», buradaki bilgiler ve vardiyanızdan tahmin edilir. Widget\'lar, bildirimler ve Canlı Etkinlikler bunu asla göstermez.</string>
+    <string name="salaryPrivacyNoteLocal">“Bugün kazanılan” bu ayarlar ve vardiyanızdan tahmin edilir. Widget’lar ve bildirimler bunu asla göstermez.</string>
     <string name="salarySettings">Maaş ayarları</string>
     <string name="salaryType">Maaş türü</string>
     <string name="saveAction">Kaydet</string>

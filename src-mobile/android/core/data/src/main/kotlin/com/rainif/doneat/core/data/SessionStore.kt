@@ -7,6 +7,9 @@ import com.rainif.doneat.core.domain.schedule.ScheduleMode
 import com.rainif.doneat.core.domain.schedule.ShiftSegment
 import com.rainif.doneat.core.domain.schedule.ShiftSnapshot
 import com.rainif.doneat.core.domain.session.KeptRosterDay
+import com.rainif.doneat.core.domain.session.ScheduleDecision
+import com.rainif.doneat.core.domain.session.ScheduleFieldChange
+import com.rainif.doneat.core.domain.session.ScheduleSave
 import com.rainif.doneat.core.domain.session.SessionCommands
 import com.rainif.doneat.core.domain.session.SessionEnvironment
 import com.rainif.doneat.core.domain.session.SessionRecords
@@ -120,6 +123,29 @@ class SessionStore(
             val write = records.update { archive -> SessionRecords.apply(archive, result.effects, context) to Unit }
             if (write is WriteResult.Blocked) return@withLock false
         }
+        if (result.state != _state.value) {
+            write(result.state)
+            _state.value = result.state
+        }
+        true
+    }
+
+    /**
+     * Saves the schedule page (preferences, extended schedule, calendar and
+     * Records snapshot in one archive write) and moves today's marks as
+     * [decision] says. False when refused, unchanged or not written.
+     */
+    suspend fun applyScheduleChange(change: ScheduleFieldChange, decision: ScheduleDecision, nowMs: Double): Boolean = mutex.withLock {
+        if (records.blocksWrites) return@withLock false
+        val env = currentEnvironment()
+        var saved: ScheduleSave.Result? = null
+        val write = records.update { archive ->
+            val result = ScheduleSave.apply(archive, _state.value, env.with(archive), change, decision, nowMs, newId)
+            saved = result
+            (result?.records ?: archive) to Unit
+        }
+        val result = saved ?: return@withLock false
+        if (write !is WriteResult.Saved) return@withLock false
         if (result.state != _state.value) {
             write(result.state)
             _state.value = result.state

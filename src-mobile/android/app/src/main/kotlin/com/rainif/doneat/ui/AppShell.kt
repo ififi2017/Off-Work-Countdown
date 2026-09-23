@@ -129,8 +129,10 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph, ope
         Route.FocusHome -> PendingScreen(stringResource(R.string.focusTitle), null, null)
         Route.RecordsHome -> PendingScreen(stringResource(R.string.recordsTab), null, null)
         Route.SettingsHome -> SettingsHomeScreen(prefs, records, open)
-        Route.Schedule -> PendingScreen(stringResource(R.string.workSchedule), back, settingsLabel)
-        Route.Salary -> PendingScreen(stringResource(R.string.salarySettings), back, settingsLabel)
+        Route.Schedule -> com.rainif.doneat.ui.schedule.ScheduleScreen(graph, open, back)
+        Route.ShiftTypes -> com.rainif.doneat.ui.schedule.ShiftTypesScreen(graph, open, back)
+        is Route.ShiftTypeEdit -> com.rainif.doneat.ui.schedule.ShiftTypeEditScreen(graph, key.id, key.isNew, back)
+        Route.Salary -> com.rainif.doneat.ui.settings.SalaryScreen(graph, back)
         Route.RecordsData -> PendingScreen(stringResource(R.string.recordsDataTitle), back, settingsLabel)
         Route.Plus -> PendingScreen(stringResource(R.string.plusSettings), back, settingsLabel)
         Route.Notifications -> NotificationsScreen(

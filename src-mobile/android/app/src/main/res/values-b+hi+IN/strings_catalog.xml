@@ -85,6 +85,7 @@
     <string name="earningsShownWithoutLock">इस डिवाइस पर स्क्रीन लॉक नहीं है, इसलिए कमाई बिना जाँच के दिखाई जा रही है। इसे निजी रखने के लिए स्क्रीन लॉक सेट करें।</string>
     <string name="enableSalary">वेतन दिखाएँ</string>
     <string name="enableSalaryDescription">डिफ़ॉल्ट रूप से बंद. यदि आप आईक्लाउड सिंक चालू करते हैं तो वेतन शामिल है।</string>
+    <string name="enableSalaryDescriptionLocal">डिफ़ॉल्ट रूप से बंद। वेतन इसी डिवाइस पर रहता है, और अगर आपने Android का अपना बैकअप चालू रखा है तो उसमें भी।</string>
     <string name="endTime">छुट्टी का समय</string>
     <string name="extendedAddShiftType">शिफ़्ट का प्रकार जोड़ें</string>
     <string name="extendedApplyTemplateMessage">चक्र का हर दिन “%1$s” के अनुसार फिर से भरा जाएगा। सहेजने तक कुछ नहीं बदलेगा।</string>
@@ -730,6 +731,7 @@
     <string name="rulesErrorBanner">काउंटडाउन नियम उपलब्ध नहीं। आपका शिड्यूल चल रहा है।</string>
     <string name="salaryLocked">लॉक</string>
     <string name="salaryPrivacyNote">«आज की कमाई» इसी सेटिंग और आपकी शिफ़्ट से अनुमानित है। विजेट, नोटिफ़िकेशन और लाइव ऐक्टिविटी इसे कभी नहीं दिखाते।</string>
+    <string name="salaryPrivacyNoteLocal">“आज की कमाई” इसी और आपकी शिफ़्ट से अनुमानित होती है। विजेट और सूचनाएँ इसे कभी नहीं दिखाते।</string>
     <string name="salarySettings">वेतन सेटिंग्स</string>
     <string name="salaryType">वेतन प्रकार</string>
     <string name="saveAction">सहेजें</string>

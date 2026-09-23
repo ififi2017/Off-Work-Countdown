@@ -85,6 +85,7 @@
     <string name="earningsShownWithoutLock">Questo dispositivo non ha un blocco schermo, quindi i guadagni vengono mostrati senza verifica. Imposta un blocco schermo per mantenerli privati.</string>
     <string name="enableSalary">Mostra stipendio</string>
     <string name="enableSalaryDescription">Disattivato per impostazione predefinita. Lo stipendio è incluso se attivi la sincronizzazione iCloud.</string>
+    <string name="enableSalaryDescriptionLocal">Disattivato per impostazione predefinita. Lo stipendio resta su questo dispositivo e nel backup di Android, se lo hai attivato.</string>
     <string name="endTime">Ora di uscita</string>
     <string name="extendedAddShiftType">Aggiungi tipo di turno</string>
     <string name="extendedApplyTemplateMessage">Ogni giorno del ciclo verrà ricompilato secondo «%1$s». Non cambia nulla finché non salvi.</string>
@@ -731,6 +732,7 @@
     <string name="rulesErrorBanner">Le regole del timer non sono disponibili. L’orario resta attivo.</string>
     <string name="salaryLocked">Bloccato</string>
     <string name="salaryPrivacyNote">«Guadagnato oggi» è stimato da questo dato e dal tuo turno. Widget, notifiche e attività in tempo reale non lo mostrano mai.</string>
+    <string name="salaryPrivacyNoteLocal">«Guadagnato oggi» è stimato da questi dati e dal tuo turno. Widget e notifiche non lo mostrano mai.</string>
     <string name="salarySettings">Impostazioni stipendio</string>
     <string name="salaryType">Tipo di stipendio</string>
     <string name="saveAction">Salva</string>

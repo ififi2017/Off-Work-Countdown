@@ -26,6 +26,10 @@ sealed interface Route : NavKey {
     @Serializable data object Plus : Route
     @Serializable data object About : Route
     @Serializable data object Acknowledgements : Route
+
+    /** The schedule page's shift types, edited within its draft. */
+    @Serializable data object ShiftTypes : Route
+    @Serializable data class ShiftTypeEdit(val id: String, val isNew: Boolean) : Route
 }
 
 val AppTab.root: Route

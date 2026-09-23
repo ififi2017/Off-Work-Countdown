@@ -375,6 +375,10 @@
     "enableSalaryDescription": {
       "resource": "string/enableSalaryDescription"
     },
+    "enableSalaryDescriptionLocal": {
+      "resource": "string/enableSalaryDescriptionLocal",
+      "androidOnly": true
+    },
     "endTime": {
       "resource": "string/endTime"
     },
@@ -2500,6 +2504,10 @@
     },
     "salaryPrivacyNote": {
       "resource": "string/salaryPrivacyNote"
+    },
+    "salaryPrivacyNoteLocal": {
+      "resource": "string/salaryPrivacyNoteLocal",
+      "androidOnly": true
     },
     "salarySettings": {
       "resource": "string/salarySettings"

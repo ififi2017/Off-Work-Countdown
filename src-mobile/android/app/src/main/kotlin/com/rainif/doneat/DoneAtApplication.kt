@@ -6,6 +6,7 @@ import com.rainif.doneat.core.data.RecordStore
 import com.rainif.doneat.core.data.SessionStore
 import com.rainif.doneat.core.data.SettingsRepository
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
+import com.rainif.doneat.core.domain.session.ScheduleFieldChange
 import com.rainif.doneat.timer.TimerCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +49,12 @@ class AppGraph(app: Application) {
      * switching tabs never replays it, a cold launch may celebrate once more.
      */
     @Volatile var lastCelebratedEndAtMs = 0.0
+
+    /**
+     * The schedule page's unsaved draft (iOS keeps it on the scene), so
+     * rotating, or opening a shift type from the page, never loses it.
+     */
+    val scheduleDraft = MutableStateFlow(ScheduleFieldChange())
 
     private val _loaded = MutableStateFlow(false)
     /** False until the archive has been read: until then nothing can tell setup from a restored install. */

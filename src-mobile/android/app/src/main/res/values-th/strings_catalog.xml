@@ -85,6 +85,7 @@
     <string name="earningsShownWithoutLock">อุปกรณ์นี้ไม่ได้ตั้งค่าการล็อกหน้าจอ จึงแสดงรายได้โดยไม่ต้องยืนยัน ตั้งค่าการล็อกหน้าจอเพื่อให้เห็นได้เฉพาะคุณ</string>
     <string name="enableSalary">แสดงเงินเดือน</string>
     <string name="enableSalaryDescription">ปิดตามค่าเริ่มต้น รวมเงินเดือนแล้วหากคุณเปิดการซิงค์ iCloud</string>
+    <string name="enableSalaryDescriptionLocal">ปิดไว้เป็นค่าเริ่มต้น เงินเดือนจะอยู่ในอุปกรณ์นี้ และในการสำรองข้อมูลของ Android หากคุณเปิดไว้</string>
     <string name="endTime">เวลาเลิกงาน</string>
     <string name="extendedAddShiftType">เพิ่มประเภทกะ</string>
     <string name="extendedApplyTemplateMessage">ทุกวันในรอบจะถูกเติมใหม่ตาม “%1$s” และจะยังไม่เปลี่ยนจนกว่าจะบันทึก</string>
@@ -729,6 +730,7 @@
     <string name="rulesErrorBanner">กฎนับถอยหลังใช้ไม่ได้ ตารางของคุณยังทำงานอยู่</string>
     <string name="salaryLocked">ล็อกอยู่</string>
     <string name="salaryPrivacyNote">«รายได้วันนี้» ประมาณจากค่านี้และกะของคุณ วิดเจ็ต การแจ้งเตือน และกิจกรรมสดจะไม่แสดงตัวเลขนี้</string>
+    <string name="salaryPrivacyNoteLocal">“รายได้วันนี้” ประมาณจากข้อมูลนี้และกะของคุณ วิดเจ็ตและการแจ้งเตือนจะไม่แสดงเลย</string>
     <string name="salarySettings">การตั้งค่าเงินเดือน</string>
     <string name="salaryType">ประเภทเงินเดือน</string>
     <string name="saveAction">บันทึก</string>

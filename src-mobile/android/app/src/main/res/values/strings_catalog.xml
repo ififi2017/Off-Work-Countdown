@@ -85,6 +85,7 @@
     <string name="earningsShownWithoutLock">This device has no screen lock, so earnings are shown without a check. Set a screen lock to keep them private.</string>
     <string name="enableSalary">Show salary</string>
     <string name="enableSalaryDescription">Off by default. Salary is included if you turn on iCloud sync.</string>
+    <string name="enableSalaryDescriptionLocal">Off by default. Salary stays on this device, and in Android’s own backup if you have it turned on.</string>
     <string name="endTime">Clock-off</string>
     <string name="extendedAddShiftType">Add shift type</string>
     <string name="extendedApplyTemplateMessage">Every day of the cycle is refilled from %1$s. Nothing changes until you save.</string>
@@ -730,6 +731,7 @@
     <string name="rulesErrorBanner">Countdown rules are unavailable. Your schedule is still on.</string>
     <string name="salaryLocked">Locked</string>
     <string name="salaryPrivacyNote">Money Earned Today is estimated from this and your shift. Widgets, notifications and Live Activities never show it.</string>
+    <string name="salaryPrivacyNoteLocal">Money Earned Today is estimated from this and your shift. Widgets and notifications never show it.</string>
     <string name="salarySettings">Salary Settings</string>
     <string name="salaryType">Salary Type</string>
     <string name="saveAction">Save</string>
