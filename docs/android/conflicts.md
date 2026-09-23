@@ -10,6 +10,7 @@
 - 源 `SceneState.swift`：`AppTab` = `timer | focus | records | settings`。`TabletDesignView` 用 `.sidebarAdaptable` 四入口。
 - **裁决**：Android 按源做四个主导航，除非负责人另批。PRD 这句话视为过期摘要，不是删 Focus Tab 的授权。
 - 影响：FR-19、T15。
+- 1.2（2026-09-23）：交接包 01_PRD 已按四入口更正。
 
 ## C-10 · 分享链接用偏好起止，不是当日实际班次
 
@@ -55,8 +56,8 @@
 
 | iOS | Android 替代 | 批准 |
 |---|---|---|
-| CloudKit | Drive appDataFolder（D-02） | 已批方向；OAuth 未配 |
-| StoreKit | Play Billing + 验证服务（D-01/D-08） | 已批方向；价格未配 |
+| CloudKit | 首发：Auto Backup/设备转移（业务库纳入）；后续：Drive appDataFolder | D-02 于 2026-09-23 修订 |
+| StoreKit | 首发：纯客户端 Play Billing；后续：验证服务（D-01/D-08） | D-08 于 2026-09-23 修订；价格未配 |
 | Live Activity / 灵动岛 | 普通通知 + 可选系统计时 | 允许差异；不承诺一比一 |
 | `offworkcountdown://` | 同语义 intent / App Links（域名另配） | 链接预览不得自动覆盖 |
 | 评价预询问 | Play 禁止卡片前询问（C-07） | 已记录 |

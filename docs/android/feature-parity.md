@@ -6,7 +6,7 @@
 
 | ID | 源锚点 | Android 目标 | 子项 / 差异 |
 |---|---|---|---|
-| FR-01 | `FirstRunRecovery*`、`RecoveryStore`、Onboarding 页流 | 新建草稿 / JSON / Drive 恢复；默认值不上传 | 无 Google 账号可用性假设 |
+| FR-01 | `FirstRunRecovery*`、`RecoveryStore`、Onboarding 页流 | 新建草稿 / JSON 恢复 / 系统备份恢复后直接进主界面（Drive 恢复为后续） | 无 Google 账号可用性假设 |
 | FR-02 | `ScheduleRules`、`SyncedPreferences` 经典字段 | 上下班、工作日、午休、跨夜、时区 | 今天 / 从下一次 保存选项 |
 | FR-03 | `ExtendedSchedule*`、`HolidayCalendar` | 班型、周期、手排、清空、冻结、节假日包 | 节假日不按定位自动启用 |
 | FR-04 | `TimerVisualPhase`、`ShiftSessionStore`、`heroRemainingMs` | 八态 + 提前上下班/加班/撤销 | 5s 确认；加班 min=`max(plannedEnd,now)` |
@@ -20,9 +20,9 @@
 | FR-12 | `WidgetSnapshot*`、Glance | 小/中/大；无薪资 DTO | 不每秒刷新 |
 | FR-13 | `shareURL`、`ShareCard` | Sharesheet；链接只含起止 | 用偏好起止（C-10） |
 | FR-14 | `RecordJSON` schema 6 | 导入 1–6，导出 6 | 见 wire-contract |
-| FR-15 | `RecordsCloudSync` | Drive 批次+墓碑（D-02） | 无 iCloud 互通（D-03） |
-| FR-16 | `PlusEntitlement`、`PaywallView` | 月/年/终身 + 验证服务 | 价格未配；billingRetry 不授权 |
-| FR-17 | 设置分组、About、评价 | 平台入口替换（Play 订阅/Drive） | 无评价预询问 |
+| FR-15 | `RecordsCloudSync` | 首发：Auto Backup/设备转移换机恢复；后续：Drive 批次+墓碑（D-02 修订） | 无 iCloud 互通（D-03）；设置页首发无同步开关 |
+| FR-16 | `PlusEntitlement`、`PaywallView` | 月/年/终身；首发客户端查询+签名校验，服务端后续（D-08 修订） | 价格未配；billingRetry 不授权 |
+| FR-17 | 设置分组、About、评价 | 平台入口替换（Play 订阅；Drive 为后续） | 无评价预询问 |
 | FR-18 | xcstrings / 19 locales | 原生 strings + 检查脚本 | T05 |
 | FR-19 | 四 Tab、横屏 overlay、平板分栏 | NavigationSuite；同一 ViewModel | **按源四 Tab**（C-09） |
 | FR-20 | 签名、Data safety、轨道 | AAB + 申报 | 账户 UNKNOWN |
@@ -36,7 +36,7 @@
 | 新工作观测 | 采集 | 采集 | **停止** |
 | 近 7 自然日记录 | 窗内可看 | 全看 | 数据保留，窗外锁定 |
 | 图表/人生/记录编辑/Focus | 门禁 | 可用 | 门禁 |
-| 开启同步 / 周期总结开关 | 门禁 | 可开 | 已开同步不自动关 |
+| 开启同步（后续阶段）/ 周期总结开关 | 门禁 | 可开 | 已开同步不自动关 |
 | 恢复备份 | 不要求先买 | 可用 | 恢复 ≠ 付费编辑 |
 | 导出/删除自己的数据 | 可用 | 可用 | 可用 |
 | 小组件基础投影 | 可用 | 可用 | 无薪资 |

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "package_version": "1.1",
-  "updated_at": "2026-09-21",
+  "package_version": "1.2",
+  "updated_at": "2026-09-23",
   "source_commit": "9252fdfdc66aab88b4acb7493684f11991fd773d",
   "approval_evidence": {
     "source": "current_conversation_user_message",
@@ -36,11 +36,27 @@
       "FR-21"
     ],
     "deferred_tasks": [
+      "T21",
+      "T22",
       "T27"
     ],
     "deferred_test_cases": [
+      "QA-110",
+      "QA-111",
+      "QA-112",
+      "QA-113",
+      "QA-114",
+      "QA-115",
+      "QA-116",
+      "QA-117",
+      "QA-118",
+      "QA-119",
+      "QA-120",
+      "QA-121",
+      "QA-122",
       "QA-137"
-    ]
+    ],
+    "notes": "FR-15 首发范围=系统备份/设备转移换机恢复 + v6 文件迁移；Drive 多设备同步（T22）为后续阶段。FR-16 首发=纯客户端 Play Billing；服务端验证（T21）为后续阶段。"
   },
   "decisions": [
     {
@@ -65,21 +81,25 @@
       "id": "D-02",
       "conversation_item": 2,
       "status": "APPROVED",
-      "decision": "Google Drive appDataFolder；默认关闭、用户主动授权；Android多设备同步纳入手机/平板首发。",
-      "approval_scope": "提供商、默认状态及首发范围",
+      "decision": "首发不做 Drive 同步：换机恢复依靠 Android Auto Backup 与设备转移（业务库纳入备份，购买缓存/密钥/令牌排除），跨平台继续 v6 JSON。Google Drive appDataFolder 多设备同步保留为首发后阶段，届时默认关闭、用户主动授权。",
+      "approval_scope": "首发换机恢复方式与 Drive 同步延后；原 2026-09-21「Drive 纳入首发」被本次修订取代",
       "approved_at": "2026-09-21",
       "requirements": [
         "FR-01",
         "FR-15"
       ],
       "tasks": [
+        "T19",
         "T22",
         "T23",
         "T25"
       ],
       "remaining_configurations": [
         "CFG-OAUTH"
-      ]
+      ],
+      "revised_at": "2026-09-23",
+      "superseded": "2026-09-21：Drive appDataFolder 同步纳入手机/平板首发",
+      "rationale": "iOS 主数据随 iCloud 设备备份（仅 LifeSummaryCache、Watch 快照排除），Android 排除业务库会造成换机丢数据且与 iOS 不一致；Auto Backup 在 Android 9+ 设锁屏时端到端加密、零 OAuth；Drive 批次同步协议是首发中风险最高、需从零设计的部分。"
     },
     {
       "id": "D-03",
@@ -176,21 +196,24 @@
       "id": "D-08",
       "conversation_item": 5,
       "status": "APPROVED",
-      "decision": "采用小型服务端验证必要购买信息；不接收工资/工作记录，不新增DoneAt账号。",
-      "approval_scope": "验证服务架构方向，不等于生产操作已授权或已执行",
+      "decision": "首发采用纯客户端 Play Billing：queryPurchasesAsync 作为权益来源（只返回有效/宽限期内订阅与未撤销终身）、Play 公钥签名校验、客户端 acknowledge 与重试，与 iOS 纯客户端 StoreKit 对齐。服务端验证/RTDN 保留为后续阶段；届时优先放入现有 Vercel Route Handlers，而非新建独立服务。",
+      "approval_scope": "首发权益验证架构；原「首发含小型验证服务」被本次修订取代",
       "approved_at": "2026-09-21",
       "requirements": [
         "FR-16",
         "FR-20"
       ],
       "tasks": [
+        "T20",
         "T21",
-        "T23",
         "T25"
       ],
       "remaining_configurations": [
         "CFG-BACKEND"
-      ]
+      ],
+      "revised_at": "2026-09-23",
+      "superseded": "2026-09-21：首发采用小型服务端验证服务",
+      "rationale": "iOS PlusEntitlement 为纯客户端 StoreKit，无服务端；Play 客户端查询已给出到期语义，不需推算；独立服务增加部署、凭据、运维与 Data safety 负担。已知代价：退款/撤销在下一次成功查询时才生效，客户端可被 root 篡改。"
     },
     {
       "id": "D-09",
@@ -245,6 +268,25 @@
       "remaining_configurations": [
         "CFG-PLAY-ACCOUNT"
       ]
+    },
+    {
+      "id": "D-12",
+      "conversation_item": null,
+      "status": "APPROVED",
+      "decision": "Release 依赖只用稳定版 Compose/Material3（当前 1.4.x）；Expressive 风格由 :core:designsystem 的 DoneAt 形状/动效/颜色 token 实现，Material3 Expressive API 稳定后再评估切换。",
+      "approval_scope": "UI 依赖稳定性；取代 02 §2.2 的 1.5.0-alpha 候选锁",
+      "approved_at": "2026-09-23",
+      "rationale": "生产包不依赖预发布库；与仓库「克制、平台原生」的 UI 原则一致。",
+      "requirements": [
+        "FR-19",
+        "FR-20"
+      ],
+      "tasks": [
+        "T04",
+        "T15",
+        "T24"
+      ],
+      "remaining_configurations": []
     }
   ],
   "configurations": [
@@ -260,18 +302,18 @@
     {
       "id": "CFG-OAUTH",
       "decision_id": "D-02",
-      "status": "PENDING_CONFIGURATION",
+      "status": "DEFERRED",
       "description": "实际Cloud/OAuth配置、签名关联和测试账户",
-      "blocks": "真实Drive授权联调和生产数据传输",
+      "blocks": "仅阻塞首发后的 Drive 同步阶段（T22）",
       "does_not_block": "Independent source audit, Kotlin domain implementation, and local tests/UI",
       "evidence": []
     },
     {
       "id": "CFG-BACKEND",
       "decision_id": "D-08",
-      "status": "PENDING_CONFIGURATION",
-      "description": "部署平台/域名/预算、最小权限凭据及RTDN配置",
-      "blocks": "真实服务部署/购买验证和运营签收",
+      "status": "DEFERRED",
+      "description": "（后续阶段）部署位置优先现有 Vercel、Publisher API 身份、RTDN 配置",
+      "blocks": "仅阻塞首发后的 服务端验证阶段（T21）",
       "does_not_block": "Independent source audit, Kotlin domain implementation, and local tests/UI",
       "evidence": []
     },
@@ -304,9 +346,16 @@
   },
   "execution_status": {
     "android_implementation": "NOT_STARTED",
-    "repository_modified": false,
+    "repository_modified": true,
     "production_deployment": "NOT_PERFORMED",
     "play_console_actions": "NOT_PERFORMED",
-    "application_tests": "NOT_RUN"
+    "application_tests": "NOT_RUN",
+    "progress_source": "docs/android/progress.md"
+  },
+  "revision_evidence": {
+    "source": "current_conversation_user_message",
+    "text": "本机已经有Android SDK 了，其他的可以按照你的建议更新好",
+    "date": "2026-09-23",
+    "scope": "接受 2026-09-23 评审建议：首发去掉 Drive 同步与自建验证服务、改为 Auto Backup + 纯客户端 Billing；Material3 用稳定版；仓库治理与进度单一来源。"
   }
 }

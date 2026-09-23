@@ -18,6 +18,7 @@ release gates. No rule, plan or script may depend on locally installed skills.
 |---|---|
 | Change, build or test iOS; change rules/locales consumed by iOS | [iOS](docs/agent-guides/ios.md) |
 | Desktop channels, signing, packaging, versions, release CI, store listings/media or release download counts | [Releases](docs/agent-guides/releases.md) |
+| Plan, change, build or test Android (`src-mobile/android`, `docs/android`, `plans/Android`) | [Android](docs/agent-guides/android.md) |
 | Select, use or install a repository skill | [Skills](docs/agent-guides/skills.md) |
 
 ## Privacy and product boundaries

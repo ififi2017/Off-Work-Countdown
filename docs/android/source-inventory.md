@@ -29,7 +29,7 @@
 | language | `LanguageSettingsView` | |
 | recordsTimeZone | `RecordsTimeZoneSettingsView` | |
 | plus | `PlusSettingsView` | |
-| iCloudSync | `RecordsSyncSettingsView` | Android 文案改为 Drive |
+| iCloudSync | `RecordsSyncSettingsView` | 首发无此行（D-02 修订）；Drive 同步阶段再加入 |
 | recordsData | `RecordsDataSettingsView` | |
 | recordsConflicts | `RecordsConflictCenter` | |
 | focus / focusPlan | `FocusCanvasView` | 已合并 |
