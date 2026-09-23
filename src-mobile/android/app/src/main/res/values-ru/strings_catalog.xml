@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">Пока нет прихода и ухода</string>
     <string name="recordsExpandChart">Развернуть график</string>
     <string name="recordsExport">Экспортировать записи</string>
+    <string name="recordsExportFooterLocal">Резервная копия содержит ваши часы, зарплату, записи, профиль жизни и данные фокуса. Храните её там, где открыть её можете только вы.</string>
     <string name="recordsExportFull">Полная копия</string>
     <string name="recordsExportWithoutLife">Копия без профиля жизни</string>
     <string name="recordsForecastHours">Прогнозная работа</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">Импортировано. Пропущено %1$s безвозвратно удалённых записей.</string>
     <string name="recordsImportSame">%1$s без изменений</string>
     <string name="recordsImportSkipped">%1$s пропущено</string>
+    <string name="recordsImportTooLarge">Файл больше 25 МБ, поэтому он не был прочитан. Ничего не изменилось.</string>
     <string name="recordsIncomeProgress">Заработано %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Задать часы</string>
     <string name="recordsLegendCorrected">Карандаш — вы изменили</string>

@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">Ainda sem entradas ou saídas</string>
     <string name="recordsExpandChart">Expandir o gráfico</string>
     <string name="recordsExport">Exportar registos</string>
+    <string name="recordsExportFooterLocal">Um backup inclui seus horários, salário, registros, perfil de vida e dados de Foco. Guarde-o em um lugar que só você possa abrir.</string>
     <string name="recordsExportFull">Cópia completa</string>
     <string name="recordsExportWithoutLife">Cópia sem perfil de vida</string>
     <string name="recordsForecastHours">Previsão de trabalho</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">Importado. Foram ignoradas %1$s entradas apagadas definitivamente.</string>
     <string name="recordsImportSame">%1$s iguais</string>
     <string name="recordsImportSkipped">%1$s ignorados</string>
+    <string name="recordsImportTooLarge">Este arquivo tem mais de 25 MB, por isso não foi lido. Nada mudou.</string>
     <string name="recordsIncomeProgress">Já ganho: %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Definir o horário</string>
     <string name="recordsLegendCorrected">Lápis: alteraste tu</string>

@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">Pas encore de pointages</string>
     <string name="recordsExpandChart">Agrandir le graphique</string>
     <string name="recordsExport">Exporter le journal</string>
+    <string name="recordsExportFooterLocal">Une sauvegarde contient vos horaires, votre salaire, vos relevés, votre profil de vie et vos données de concentration. Conservez-la dans un endroit que vous seul pouvez ouvrir.</string>
     <string name="recordsExportFull">Sauvegarde complète</string>
     <string name="recordsExportWithoutLife">Sauvegarde sans profil de vie</string>
     <string name="recordsForecastHours">Travaux de prévision</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">Import terminé. %1$s entrées définitivement supprimées ont été ignorées.</string>
     <string name="recordsImportSame">%1$s inchangé(s)</string>
     <string name="recordsImportSkipped">%1$s ignoré(s)</string>
+    <string name="recordsImportTooLarge">Ce fichier dépasse 25 Mo, il n’a donc pas été lu. Rien n’a changé.</string>
     <string name="recordsIncomeProgress">Déjà gagné : %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Définir les horaires</string>
     <string name="recordsLegendCorrected">Crayon : modifié par vous</string>

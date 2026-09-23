@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">अजून ये-जा नोंद नाही</string>
     <string name="recordsExpandChart">आलेख मोठा करा</string>
     <string name="recordsExport">नोंदी निर्यात करा</string>
+    <string name="recordsExportFooterLocal">बॅकअपमध्ये तुमचे कामाचे तास, पगार, नोंदी, जीवन प्रोफाइल आणि फोकस डेटा असतो. तो फक्त तुम्हीच उघडू शकाल अशा ठिकाणी ठेवा.</string>
     <string name="recordsExportFull">पूर्ण बॅकअप</string>
     <string name="recordsExportWithoutLife">आयुष्य प्रोफाइलशिवाय बॅकअप</string>
     <string name="recordsForecastHours">अंदाज काम</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">आयात झाले. कायमचे हटवलेल्या %1$s नोंदी वगळल्या.</string>
     <string name="recordsImportSame">%1$s तशीच</string>
     <string name="recordsImportSkipped">%1$s वगळली</string>
+    <string name="recordsImportTooLarge">ही फाइल 25 MB पेक्षा मोठी आहे, त्यामुळे ती वाचली नाही. काहीही बदलले नाही.</string>
     <string name="recordsIncomeProgress">आतापर्यंत कमावले %1$s · %2$s</string>
     <string name="recordsKindCustomHours">तास स्वतः ठरवा</string>
     <string name="recordsLegendCorrected">पेन्सिल — तुम्ही बदलले</string>

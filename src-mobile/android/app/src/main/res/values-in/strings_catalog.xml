@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">Belum ada catatan masuk-pulang</string>
     <string name="recordsExpandChart">Perbesar bagan</string>
     <string name="recordsExport">Ekspor catatan</string>
+    <string name="recordsExportFooterLocal">Cadangan berisi jam kerja, gaji, catatan, profil hidup, dan data Fokus Anda. Simpan di tempat yang hanya bisa Anda buka.</string>
     <string name="recordsExportFull">Cadangan lengkap</string>
     <string name="recordsExportWithoutLife">Cadangan tanpa profil hidup</string>
     <string name="recordsForecastHours">Pekerjaan ramalan</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">Selesai diimpor. %1$s catatan yang sudah dihapus permanen dilewati.</string>
     <string name="recordsImportSame">%1$s sama</string>
     <string name="recordsImportSkipped">%1$s dilewati</string>
+    <string name="recordsImportTooLarge">File ini lebih dari 25 MB, jadi tidak dibaca. Tidak ada yang berubah.</string>
     <string name="recordsIncomeProgress">Sudah diperoleh %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Atur jamnya sendiri</string>
     <string name="recordsLegendCorrected">Pensil — kamu yang mengubah</string>

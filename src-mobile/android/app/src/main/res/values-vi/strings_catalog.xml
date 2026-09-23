@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">Chưa có giờ vào hay ra</string>
     <string name="recordsExpandChart">Mở rộng biểu đồ</string>
     <string name="recordsExport">Xuất nhật ký</string>
+    <string name="recordsExportFooterLocal">Bản sao lưu gồm giờ làm, lương, bản ghi, hồ sơ cuộc đời và dữ liệu Tập trung của bạn. Hãy cất ở nơi chỉ bạn mở được.</string>
     <string name="recordsExportFull">Sao lưu đầy đủ</string>
     <string name="recordsExportWithoutLife">Sao lưu không gồm hồ sơ đời</string>
     <string name="recordsForecastHours">Công tác dự báo</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">Đã nhập. Bỏ qua %1$s bản ghi đã xóa vĩnh viễn.</string>
     <string name="recordsImportSame">%1$s giữ nguyên</string>
     <string name="recordsImportSkipped">%1$s đã bỏ</string>
+    <string name="recordsImportTooLarge">Tệp này lớn hơn 25 MB nên chưa được đọc. Không có gì thay đổi.</string>
     <string name="recordsIncomeProgress">Đã kiếm được %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Tự đặt giờ</string>
     <string name="recordsLegendCorrected">Bút chì — bạn đã sửa</string>

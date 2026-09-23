@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">अभी कोई आना-जाना रिकॉर्ड नहीं</string>
     <string name="recordsExpandChart">चार्ट बड़ा करें</string>
     <string name="recordsExport">रिकॉर्ड निर्यात करें</string>
+    <string name="recordsExportFooterLocal">बैकअप में आपके कार्य घंटे, वेतन, रिकॉर्ड, जीवन प्रोफ़ाइल और फ़ोकस डेटा शामिल होते हैं। इसे ऐसी जगह रखें जिसे केवल आप खोल सकें।</string>
     <string name="recordsExportFull">पूरी बैकअप</string>
     <string name="recordsExportWithoutLife">जीवन प्रोफ़ाइल के बिना बैकअप</string>
     <string name="recordsForecastHours">पूर्वानुमान कार्य</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">आयात हो गया। हमेशा के लिए मिटाई गई %1$s एंट्री छोड़ दी गईं।</string>
     <string name="recordsImportSame">%1$s वैसे ही</string>
     <string name="recordsImportSkipped">%1$s छोड़े</string>
+    <string name="recordsImportTooLarge">यह फ़ाइल 25 MB से बड़ी है, इसलिए इसे पढ़ा नहीं गया। कुछ नहीं बदला।</string>
     <string name="recordsIncomeProgress">अब तक कमाए %1$s · %2$s</string>
     <string name="recordsKindCustomHours">घंटे ख़ुद तय करें</string>
     <string name="recordsLegendCorrected">पेंसिल — आपने बदला</string>

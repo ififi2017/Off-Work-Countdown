@@ -289,19 +289,8 @@ private fun WelcomePage(graph: AppGraph, onStart: () -> Unit, onRestoredWithoutS
 }
 
 /** Reads at most one byte past the limit, so an oversized file is refused without loading it whole. */
-private fun readBackup(context: Context, uri: Uri): ByteArray? = runCatching {
-    context.contentResolver.openInputStream(uri)?.use { input ->
-        val limit = FirstRunRestore.MAX_BYTES + 1
-        val out = java.io.ByteArrayOutputStream()
-        val buffer = ByteArray(64 * 1024)
-        while (out.size() < limit) {
-            val read = input.read(buffer, 0, minOf(buffer.size.toLong(), limit - out.size()).toInt())
-            if (read < 0) break
-            out.write(buffer, 0, read)
-        }
-        out.toByteArray()
-    }
-}.getOrNull()
+private fun readBackup(context: Context, uri: Uri): ByteArray? =
+    com.rainif.doneat.ui.files.BackupFiles.read(context, uri, FirstRunRestore.MAX_BYTES)
 
 @Composable
 private fun Feature(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, body: String) {

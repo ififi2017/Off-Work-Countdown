@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">Aún no hay fichajes</string>
     <string name="recordsExpandChart">Ampliar gráfico</string>
     <string name="recordsExport">Exportar registro</string>
+    <string name="recordsExportFooterLocal">Una copia de seguridad incluye tus horarios, salario, registros, perfil de vida y datos de Enfoque. Guárdala en un lugar que solo tú puedas abrir.</string>
     <string name="recordsExportFull">Copia completa</string>
     <string name="recordsExportWithoutLife">Copia sin perfil de vida</string>
     <string name="recordsForecastHours">Trabajo de previsión</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">Importado. Se omitieron %1$s entradas borradas de forma permanente.</string>
     <string name="recordsImportSame">%1$s iguales</string>
     <string name="recordsImportSkipped">%1$s omitidos</string>
+    <string name="recordsImportTooLarge">Este archivo supera los 25 MB, así que no se leyó. No ha cambiado nada.</string>
     <string name="recordsIncomeProgress">Ganado: %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Poner el horario</string>
     <string name="recordsLegendCorrected">Lápiz: lo cambiaste tú</string>

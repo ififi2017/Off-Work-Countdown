@@ -2111,6 +2111,10 @@
     "recordsExport": {
       "resource": "string/recordsExport"
     },
+    "recordsExportFooterLocal": {
+      "resource": "string/recordsExportFooterLocal",
+      "androidOnly": true
+    },
     "recordsExportFull": {
       "resource": "string/recordsExportFull"
     },
@@ -2176,6 +2180,10 @@
       "params": [
         "count"
       ]
+    },
+    "recordsImportTooLarge": {
+      "resource": "string/recordsImportTooLarge",
+      "androidOnly": true
     },
     "recordsIncomeProgress": {
       "resource": "string/recordsIncomeProgress",

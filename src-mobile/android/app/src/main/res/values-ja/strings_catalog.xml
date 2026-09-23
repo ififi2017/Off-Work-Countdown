@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">出退勤の記録はまだありません</string>
     <string name="recordsExpandChart">グラフを広げる</string>
     <string name="recordsExport">記録を書き出す</string>
+    <string name="recordsExportFooterLocal">バックアップには勤務時間、給与、記録、ライフプロフィール、集中のデータが含まれます。自分だけが開ける場所に保管してください。</string>
     <string name="recordsExportFull">完全なバックアップ</string>
     <string name="recordsExportWithoutLife">人生プロフィールなしのバックアップ</string>
     <string name="recordsForecastHours">予測作業</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">読み込みました。完全に削除済みの %1$s 件はスキップしました。</string>
     <string name="recordsImportSame">変更なし %1$s 件</string>
     <string name="recordsImportSkipped">スキップ %1$s 件</string>
+    <string name="recordsImportTooLarge">このファイルは 25 MB を超えているため読み込みませんでした。何も変更されていません。</string>
     <string name="recordsIncomeProgress">獲得済み %1$s · %2$s</string>
     <string name="recordsKindCustomHours">時間を自分で決める</string>
     <string name="recordsLegendCorrected">鉛筆＝自分で直した</string>

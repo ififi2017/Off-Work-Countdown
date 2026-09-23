@@ -122,7 +122,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph): Na
         Route.SettingsHome -> SettingsHomeScreen(prefs, records, open)
         Route.Schedule -> PendingScreen(stringResource(R.string.workSchedule), back, settingsLabel)
         Route.Salary -> PendingScreen(stringResource(R.string.salarySettings), back, settingsLabel)
-        Route.RecordsData -> PendingScreen(stringResource(R.string.recordsDataTitle), back, settingsLabel)
+        Route.RecordsData -> com.rainif.doneat.ui.settings.RecordsDataScreen(graph, back)
         Route.Plus -> PendingScreen(stringResource(R.string.plusSettings), back, settingsLabel)
         Route.Notifications -> NotificationsScreen(
             prefs, device.notificationPermissionRequested, edit,

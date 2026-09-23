@@ -610,6 +610,7 @@
     <string name="recordsEmptyTitle">Ancora nessun ingresso o uscita</string>
     <string name="recordsExpandChart">Espandi il grafico</string>
     <string name="recordsExport">Esporta registro</string>
+    <string name="recordsExportFooterLocal">Un backup include orari, stipendio, registrazioni, profilo di vita e dati di Concentrazione. Conservalo in un posto che solo tu puoi aprire.</string>
     <string name="recordsExportFull">Backup completo</string>
     <string name="recordsExportWithoutLife">Backup senza profilo vita</string>
     <string name="recordsForecastHours">Lavoro di previsione</string>
@@ -627,6 +628,7 @@
     <string name="recordsImportReport">Importato. Sono state ignorate %1$s voci eliminate definitivamente.</string>
     <string name="recordsImportSame">%1$s invariati</string>
     <string name="recordsImportSkipped">%1$s ignorati</string>
+    <string name="recordsImportTooLarge">Questo file supera i 25 MB, quindi non è stato letto. Non è cambiato nulla.</string>
     <string name="recordsIncomeProgress">Già guadagnato: %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Imposta l’orario</string>
     <string name="recordsLegendCorrected">Matita: l’hai modificato tu</string>
