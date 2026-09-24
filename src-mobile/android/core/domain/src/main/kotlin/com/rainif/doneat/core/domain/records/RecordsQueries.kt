@@ -238,6 +238,98 @@ class RecordsQueries(
         return periods to snapshots
     }
 
+    // Life
+
+    /**
+     * Days whose rows were written in a zone no career period uses (iOS
+     * `daysRecordedOutsidePeriodTimeZone`); Life marks the weeks holding them.
+     */
+    fun daysRecordedOutsidePeriodTimeZone(): List<String> {
+        val periodZones = state.periods.map { it.timeZoneIdentifier }.toSet()
+        val tagged = state.overrides.map { it.dayKey to it.timeZoneIdentifier } +
+            state.exceptions.map { it.dayKey to it.timeZoneIdentifier } +
+            state.observations.map { it.shiftAnchorDate to it.timeZoneIdentifier }
+        return tagged.filter { (_, zone) -> zone !in periodZones }.map { it.first }.toSet().sorted()
+    }
+
+    /**
+     * The Life model (iOS `LifeSummaryModel.prepareLifeViewModel`): the career
+     * walked day by day through the same chain as Records, with the profile's
+     * in-memory estimate for the years before Records, then the lifetime
+     * income. Null without a birth and retirement to span. It costs a career
+     * of days, so callers run it off the main thread.
+     *
+     * [configuredMonthly] is today's salary as a monthly figure, when salary
+     * is shown: it only projects forward; earlier salaries stay as entered.
+     */
+    fun lifeModel(nowMs: Double, configuredMonthly: Double?): LifeViewModel? {
+        val profile = RecordJson.migrateLegacyFields(state.lifeProfile ?: return null)
+        val lifeStart = profile.bornOn?.let(LifeDates::anchor) ?: return null
+        val lifeEnd = profile.retirementOn?.let(LifeDates::anchor) ?: return null
+        if (!lifeEnd.isAfter(lifeStart)) return null
+        val configuredWorkStart = profile.workStartedPartial?.let(LifeDates::anchor)
+            ?: profile.workStartedOn?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            ?: lifeStart.plusYears(22)
+        val workStart = maxOf(lifeStart, configuredWorkStart)
+        val outside = daysRecordedOutsidePeriodTimeZone().toSet()
+        val days = if (!workStart.isBefore(lifeEnd)) {
+            emptyList()
+        } else {
+            val (periods, snapshots) = lifeScheduleArchive(workStart, nowMs)
+            walk(workStart, lifeEnd.minusDays(1), periods, snapshots).mapNotNull { r ->
+                val periodID = r.periodID ?: return@mapNotNull null
+                LifeScheduleDay(
+                    periodID = periodID,
+                    dayKey = r.dayKey,
+                    anchorMs = dayStartMs(date(r.dayKey)),
+                    segments = r.segments,
+                    overtimeSegments = observationIndex[r.dayKey].orEmpty().mapNotNull { RecordsOvertime.declaredSegment(it, r, avoidingRegularWork = true) },
+                    isOverride = r.layer == DayResolutionLayer.OVERRIDE && r.segments.isNotEmpty(),
+                )
+            }
+        }
+        return LifeViewCalculator.build(profile, days, outside, nowMs, zone).copy(income = lifeIncome(profile, nowMs, configuredMonthly))
+    }
+
+    /** iOS `lifeIncomeSummary`: history as entered, the future at today's salary, an optional fixed-ratio step down. */
+    private fun lifeIncome(profile: LifeProfile, nowMs: Double, configuredMonthly: Double?): SummaryRules.LifetimeIncome? {
+        val retirement = profile.retirementOn?.let(LifeDates::anchor) ?: return null
+        val asOf = FoundationCompat.dayKey(today(nowMs))
+        fun day(value: PartialCivilDate) = LifeDates.anchor(value)?.let(FoundationCompat::dayKey)
+        fun valid(salary: LifeSalary?) = salary != null && with(LifeDates) { salary.isValid() }
+        val salary = profile.roughCurrentSalary ?: profile.employmentPeriods.firstOrNull { it.endsOn == null }?.salary
+        val projected = configuredMonthly?.takeIf { it > 0 }?.let { LifeSalary(it, LifeSalaryCadence.MONTHLY) } ?: salary
+        var currentStartsOn = asOf
+        val periods = when (profile.workHistoryMode) {
+            LifeWorkHistoryMode.ROUGH -> {
+                val start = profile.workStartedPartial ?: LifeDates.suggestedWorkYear(profile)?.let(LifeDates::yearOnly) ?: return null
+                if (salary == null || !valid(salary)) return null
+                val startsOn = day(start) ?: return null
+                currentStartsOn = maxOf(startsOn, asOf)
+                listOf(SummaryRules.IncomePeriod(startsOn, asOf, salary.amount, SummaryRules.Cadence.fromRaw(salary.cadence.raw)))
+            }
+            LifeWorkHistoryMode.DETAILED -> profile.employmentPeriods.mapNotNull { period ->
+                if (!valid(period.salary)) return@mapNotNull null
+                val startsOn = day(period.startsOn) ?: return@mapNotNull null
+                SummaryRules.IncomePeriod(
+                    startsOn, period.endsOn?.let(::day) ?: asOf, period.salary.amount, SummaryRules.Cadence.fromRaw(period.salary.cadence.raw),
+                )
+            }.also { if (it.isEmpty() && !valid(salary)) return null }
+        }
+        return SummaryRules.lifetimeIncome(
+            SummaryRules.LifetimeInput(
+                periods = periods,
+                currentSalary = projected?.let { SummaryRules.CurrentSalary(it.amount, SummaryRules.Cadence.fromRaw(it.cadence.raw), currentStartsOn) },
+                futureIncomeDecline = profile.futureIncomeDecline?.let { decline ->
+                    val birthYear = profile.bornOn?.year ?: profile.birthYear ?: return@let null
+                    day(LifeDates.yearOnly(birthYear + decline.startsAtAge))?.let { SummaryRules.IncomeDecline(it, decline.retirementRatio) }
+                },
+                asOf = asOf,
+                retirementOn = FoundationCompat.dayKey(retirement),
+            ),
+        )
+    }
+
     // Cells
 
     /**
@@ -539,14 +631,7 @@ class RecordsQueries(
         private const val LIFE_SNAPSHOT_ID = "00000000-0000-0000-0000-00000000L1F5"
 
         /** A year alone stands for 1 July: the middle of the year it names. */
-        fun calculationAnchor(date: PartialCivilDate): LocalDate? = when (date.precision) {
-            CivilDatePrecision.YEAR -> runCatching { LocalDate.of(date.year, 7, 1) }.getOrNull()
-            CivilDatePrecision.DAY -> {
-                val month = date.month
-                val day = date.day
-                if (month == null || day == null) null else runCatching { LocalDate.of(date.year, month, day) }.getOrNull()
-            }
-        }
+        fun calculationAnchor(date: PartialCivilDate): LocalDate? = LifeDates.anchor(date)
     }
 }
 

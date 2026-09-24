@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">正確な日付</string>
     <string name="lifePrecisionYear">年からの推定</string>
     <string name="lifeProfileFooter">この数字からグリッドを描いています。iCloud 同期を入れないかぎり、この端末に残ります。</string>
+    <string name="lifeProfileFooterLocal">この数字からグリッドを描いています。この端末に保存され、Android のバックアップをオンにしている場合はそこにも含まれます。</string>
     <string name="lifeProfileTitle">ライフプロフィール</string>
     <string name="lifeProgressTitle">退職までの進捗</string>
     <string name="lifeProjectedFuture">先の週はいまのペースで見ています。</string>

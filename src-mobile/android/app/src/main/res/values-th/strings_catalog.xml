@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">วันที่แน่นอน</string>
     <string name="lifePrecisionYear">ประมาณจากปี</string>
     <string name="lifeProfileFooter">ตัวเลขเหล่านี้ใช้วาดตาราง ข้อมูลจะอยู่ในเครื่องนี้ตราบใดที่คุณไม่เปิดการซิงก์ iCloud</string>
+    <string name="lifeProfileFooterLocal">ตัวเลขเหล่านี้ใช้วาดตาราง ข้อมูลจะอยู่ในอุปกรณ์นี้ และในการสำรองข้อมูลของ Android หากคุณเปิดไว้</string>
     <string name="lifeProfileTitle">โปรไฟล์ชีวิต</string>
     <string name="lifeProgressTitle">ความคืบหน้าสู่การเกษียณ</string>
     <string name="lifeProjectedFuture">สัปดาห์ข้างหน้าใช้จังหวะปัจจุบันของคุณ</string>

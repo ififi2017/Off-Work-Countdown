@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Fecha exacta</string>
     <string name="lifePrecisionYear">Estimado a partir del año</string>
     <string name="lifeProfileFooter">Con estos números se dibuja la cuadrícula. Se quedan en este dispositivo mientras no actives la sincronización con iCloud.</string>
+    <string name="lifeProfileFooterLocal">Con estos números se dibuja la cuadrícula. Se quedan en este dispositivo y en la copia de seguridad de Android si la tienes activada.</string>
     <string name="lifeProfileTitle">Perfil de vida</string>
     <string name="lifeProgressTitle">Progreso hacia la jubilación</string>
     <string name="lifeProjectedFuture">Las semanas futuras siguen tu ritmo actual.</string>

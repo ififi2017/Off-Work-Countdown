@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">정확한 날짜</string>
     <string name="lifePrecisionYear">연도로 추정</string>
     <string name="lifeProfileFooter">이 숫자들로 아래 격자를 그립니다. iCloud 동기화를 켜지 않으면 이 기기에만 남습니다.</string>
+    <string name="lifeProfileFooterLocal">이 숫자들로 아래 격자를 그립니다. 이 기기에만 저장되며, Android 자체 백업을 켜 두었다면 백업에도 포함됩니다.</string>
     <string name="lifeProfileTitle">인생 프로필</string>
     <string name="lifeProgressTitle">은퇴까지의 진행률</string>
     <string name="lifeProjectedFuture">앞으로의 주들은 지금의 리듬으로 봅니다.</string>

@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Exact date</string>
     <string name="lifePrecisionYear">Estimated from the year</string>
     <string name="lifeProfileFooter">These numbers draw the grid. They stay on this device unless you turn on iCloud sync.</string>
+    <string name="lifeProfileFooterLocal">These numbers draw the grid. They stay on this device, and in Android’s own backup if you have it turned on.</string>
     <string name="lifeProfileTitle">Life profile</string>
     <string name="lifeProgressTitle">Progress to retirement</string>
     <string name="lifeProjectedFuture">Future weeks assume the current rhythm.</string>

@@ -6,6 +6,7 @@ import com.rainif.doneat.core.data.RecordStore
 import com.rainif.doneat.core.data.SessionStore
 import com.rainif.doneat.core.data.SettingsRepository
 import com.rainif.doneat.core.domain.records.DayEditDraft
+import com.rainif.doneat.core.domain.records.LifeProfileDraft
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.session.ScheduleFieldChange
 import com.rainif.doneat.plus.PlusAccess
@@ -63,6 +64,9 @@ class AppGraph(app: Application) {
 
     /** The Records day editor's unsaved draft, kept like [scheduleDraft] so rotation never loses it. */
     val dayEditDraft = MutableStateFlow<DayEditDraft?>(null)
+
+    /** The Life profile editor's unsaved fields, likewise. */
+    val lifeEditDraft = MutableStateFlow<LifeProfileDraft?>(null)
 
     private val _loaded = MutableStateFlow(false)
     /** False until the archive has been read: until then nothing can tell setup from a restored install. */

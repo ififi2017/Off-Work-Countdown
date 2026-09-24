@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">नक्की तारीख</string>
     <string name="lifePrecisionYear">वर्षावरून अंदाज</string>
     <string name="lifeProfileFooter">या आकड्यांवरून खालची जाळी तयार होते. तुम्ही iCloud सिंक सुरू करेपर्यंत ते या डिव्हाइसवरच राहतात.</string>
+    <string name="lifeProfileFooterLocal">या आकड्यांवरून खालची जाळी तयार होते. ते याच डिव्हाइसवर राहतात, आणि तुम्ही Android चा स्वतःचा बॅकअप सुरू ठेवला असल्यास त्यातही.</string>
     <string name="lifeProfileTitle">जीवन प्रोफाइल</string>
     <string name="lifeProgressTitle">निवृत्तीपर्यंतची प्रगती</string>
     <string name="lifeProjectedFuture">पुढचे आठवडे तुमच्या आजच्या गतीने दाखवले आहेत.</string>

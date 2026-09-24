@@ -195,6 +195,18 @@ class RecordsQueriesTest {
         assertEquals(1, state.snapshots.size)
     }
 
+    @Test fun lifeWalksTheWholeCareerThroughTheSameChain() {
+        val state = seeded().copy(lifeProfile = lifeProfile(workStarted = "2020-03-01"))
+        val model = queries(state, currentHours = weekdays).lifeModel(now, configuredMonthly = null)!!
+        // 2020-03-01 to 2055-07-01 of weekday nine-to-six with lunch: about 35 years of 8-hour days.
+        val years = model.allocation.workMs / (8 * 3_600_000.0 * 261)
+        assertTrue("years of work: $years", years in 34.0..36.0)
+        assertEquals(model.allocation.dayLengthMs, model.allocation.totalMs)
+        assertTrue(model.cells.any { it.kind == LifeWeekKind.WORK_ESTIMATED })
+        assertTrue(model.cells.any { it.kind == LifeWeekKind.WORK_PROJECTED })
+        assertNull("no salary, no income", model.income)
+    }
+
     @Test fun theRecordDayIndexFindsLeaveAndRestEntriesToo() {
         var state = seeded()
         state = state.copy(

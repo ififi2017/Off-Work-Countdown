@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">सटीक तारीख</string>
     <string name="lifePrecisionYear">वर्ष से अनुमान</string>
     <string name="lifeProfileFooter">इन आँकड़ों से नीचे का ग्रिड बनता है। जब तक आप iCloud सिंक चालू न करें, ये इसी डिवाइस पर रहते हैं।</string>
+    <string name="lifeProfileFooterLocal">इन आँकड़ों से नीचे का ग्रिड बनता है। ये इसी डिवाइस पर रहते हैं, और अगर आपने Android का अपना बैकअप चालू रखा है तो उसमें भी।</string>
     <string name="lifeProfileTitle">जीवन प्रोफ़ाइल</string>
     <string name="lifeProgressTitle">सेवानिवृत्ति की ओर प्रगति</string>
     <string name="lifeProjectedFuture">आगे के हफ़्ते आपकी आज की रफ़्तार मानकर दिखाए गए हैं।</string>

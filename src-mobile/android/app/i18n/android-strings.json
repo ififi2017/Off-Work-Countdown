@@ -242,6 +242,28 @@
       "th": "“รายได้วันนี้” ประมาณจากข้อมูลนี้และกะของคุณ วิดเจ็ตและการแจ้งเตือนจะไม่แสดงเลย",
       "tr": "“Bugün kazanılan” bu ayarlar ve vardiyanızdan tahmin edilir. Widget’lar ve bildirimler bunu asla göstermez.",
       "vi": "“Thu nhập hôm nay” được ước tính từ thông tin này và ca làm của bạn. Tiện ích và thông báo không bao giờ hiển thị nó."
+    },
+    "lifeProfileFooterLocal": {
+      "comment": "Life profile editor footer. Android has no cloud sync: the profile stays on the device and in Android's own backup (iOS mentions iCloud sync).",
+      "en": "These numbers draw the grid. They stay on this device, and in Android’s own backup if you have it turned on.",
+      "zh-CN": "这几个数字用来画出下面的网格。它们只留在这台设备上；如果你开启了 Android 自带的备份，也会包含在备份中。",
+      "zh-HK": "呢幾個數字用嚟畫下面嘅格。佢哋只留喺呢部裝置；如果你開啟了 Android 內置的備份，也會包括在備份中。",
+      "zh-TW": "這幾個數字用來畫出下面的格線。它們只留在這台裝置上；如果你開啟了 Android 內建的備份，也會包含在備份中。",
+      "ja": "この数字からグリッドを描いています。この端末に保存され、Android のバックアップをオンにしている場合はそこにも含まれます。",
+      "ko": "이 숫자들로 아래 격자를 그립니다. 이 기기에만 저장되며, Android 자체 백업을 켜 두었다면 백업에도 포함됩니다.",
+      "de": "Aus diesen Zahlen entsteht das Raster. Sie bleiben auf diesem Gerät und in der Android-eigenen Sicherung, falls du sie aktiviert hast.",
+      "es": "Con estos números se dibuja la cuadrícula. Se quedan en este dispositivo y en la copia de seguridad de Android si la tienes activada.",
+      "fr": "Ces chiffres dessinent la grille. Ils restent sur cet appareil, et dans la sauvegarde d’Android si vous l’avez activée.",
+      "it": "Da questi numeri nasce la griglia. Restano su questo dispositivo e nel backup di Android, se lo hai attivato.",
+      "pt": "Estes números desenham a grelha. Ficam neste dispositivo e no backup do próprio Android, se ele estiver ativado.",
+      "ru": "По этим числам рисуется сетка. Они хранятся на этом устройстве и в резервной копии Android, если она включена.",
+      "ar": "هذه الأرقام هي ما يرسم الشبكة. وتبقى على هذا الجهاز، وفي النسخ الاحتياطي الخاص بـ Android إن كان مفعّلًا.",
+      "hi-IN": "इन आँकड़ों से नीचे का ग्रिड बनता है। ये इसी डिवाइस पर रहते हैं, और अगर आपने Android का अपना बैकअप चालू रखा है तो उसमें भी।",
+      "mr-IN": "या आकड्यांवरून खालची जाळी तयार होते. ते याच डिव्हाइसवर राहतात, आणि तुम्ही Android चा स्वतःचा बॅकअप सुरू ठेवला असल्यास त्यातही.",
+      "id": "Angka-angka ini yang menggambar kisinya. Semuanya tetap di perangkat ini, dan di cadangan bawaan Android jika kamu mengaktifkannya.",
+      "th": "ตัวเลขเหล่านี้ใช้วาดตาราง ข้อมูลจะอยู่ในอุปกรณ์นี้ และในการสำรองข้อมูลของ Android หากคุณเปิดไว้",
+      "tr": "Izgarayı bu sayılar çiziyor. Bu cihazda ve açıksa Android’in kendi yedeğinde kalırlar.",
+      "vi": "Những con số này vẽ nên lưới bên dưới. Chúng nằm trên thiết bị này, và trong bản sao lưu của Android nếu bạn đã bật."
     }
   }
 }

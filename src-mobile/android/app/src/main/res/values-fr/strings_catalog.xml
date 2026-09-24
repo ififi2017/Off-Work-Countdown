@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Date exacte</string>
     <string name="lifePrecisionYear">Estimé d’après l’année</string>
     <string name="lifeProfileFooter">Ces chiffres dessinent la grille. Ils restent sur cet appareil tant que vous n’activez pas la synchronisation iCloud.</string>
+    <string name="lifeProfileFooterLocal">Ces chiffres dessinent la grille. Ils restent sur cet appareil, et dans la sauvegarde d’Android si vous l’avez activée.</string>
     <string name="lifeProfileTitle">Profil de vie</string>
     <string name="lifeProgressTitle">Progression vers la retraite</string>
     <string name="lifeProjectedFuture">Les semaines à venir reprennent votre rythme actuel.</string>

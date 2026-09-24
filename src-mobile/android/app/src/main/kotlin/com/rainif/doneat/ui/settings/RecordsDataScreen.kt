@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FileUpload
@@ -42,6 +43,7 @@ import com.rainif.doneat.core.data.RecordsTransfer
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.ui.components.DoneAtPage
+import com.rainif.doneat.ui.components.NavigationRow
 import com.rainif.doneat.ui.components.RowDivider
 import com.rainif.doneat.ui.components.SettingsFooter
 import com.rainif.doneat.ui.components.SettingsGroup
@@ -67,7 +69,7 @@ import java.time.format.DateTimeFormatter
  * salary, so it opens no more easily than the hidden figure does.
  */
 @Composable
-fun RecordsDataScreen(graph: AppGraph, onBack: () -> Unit) {
+fun RecordsDataScreen(graph: AppGraph, open: (com.rainif.doneat.ui.Route) -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
     val res = LocalResources.current
     val scope = rememberCoroutineScope()
@@ -122,6 +124,19 @@ fun RecordsDataScreen(graph: AppGraph, onBack: () -> Unit) {
 
     DoneAtPage(stringResource(R.string.recordsDataTitle), onBack, stringResource(R.string.settings)) {
         SettingsGroup {
+            // The Life profile holds career and salary history: Plus opens it, as on iOS.
+            val records by graph.records.state.collectAsStateWithLifecycle()
+            val plus by graph.plus.authorized.collectAsStateWithLifecycle()
+            val recordsContext = com.rainif.doneat.ui.records.rememberRecordsContext(graph)
+            NavigationRow(
+                stringResource(R.string.recordsLifeProfileRow),
+                {
+                    if (plus) com.rainif.doneat.ui.records.beginLifeEdit(graph, recordsContext, open) else open(com.rainif.doneat.ui.Route.Plus)
+                },
+                Icons.Outlined.AccountCircle,
+                supporting = stringResource(if (records.lifeProfile == null) R.string.recordsLifeProfileUnset else R.string.recordsLifeProfileReady),
+            )
+            RowDivider()
             ValueRow(stringResource(R.string.recordsTimeZone), prefs.recordsTimeZoneIdentifier)
         }
         SettingsGroup(title = stringResource(R.string.recordsExport), footer = stringResource(R.string.recordsExportFooterLocal)) {

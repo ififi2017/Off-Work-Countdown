@@ -33,6 +33,7 @@ sealed interface Route : NavKey {
     @Serializable data class RecordsYear(val year: Int) : Route
     @Serializable data class RecordsMonth(val year: Int, val month: Int) : Route
     @Serializable data class RecordsDayEdit(val dayKey: String) : Route
+    @Serializable data object RecordsLifeEdit : Route
 
     /** The schedule page's shift types, edited within its draft. */
     @Serializable data object ShiftTypes : Route

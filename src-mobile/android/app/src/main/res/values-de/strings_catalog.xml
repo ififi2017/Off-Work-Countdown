@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Genaues Datum</string>
     <string name="lifePrecisionYear">Aus dem Jahr geschätzt</string>
     <string name="lifeProfileFooter">Aus diesen Zahlen entsteht das Raster. Sie bleiben auf diesem Gerät, solange du den iCloud-Sync nicht einschaltest.</string>
+    <string name="lifeProfileFooterLocal">Aus diesen Zahlen entsteht das Raster. Sie bleiben auf diesem Gerät und in der Android-eigenen Sicherung, falls du sie aktiviert hast.</string>
     <string name="lifeProfileTitle">Lebensprofil</string>
     <string name="lifeProgressTitle">Fortschritt bis zur Rente</string>
     <string name="lifeProjectedFuture">Künftige Wochen nehmen den heutigen Rhythmus an.</string>

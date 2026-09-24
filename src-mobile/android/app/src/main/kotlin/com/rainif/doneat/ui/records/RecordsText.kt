@@ -82,6 +82,18 @@ class RecordsText(
         maximumFractionDigits = fractionDigits
     }.format(value / 100)
 
+    /** "About 12.5 years": a duration equivalent at life scale, not an age. Null under a year. */
+    fun approximateLifeYears(ms: Double): String? {
+        val yearMs = 365.2425 * 86_400_000
+        if (!ms.isFinite() || ms < yearMs) return null
+        val years = NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 2 }.format(ms / yearMs)
+        return com.rainif.doneat.l10n.Strings.lifeApproxYears(res, years)
+    }
+
+    /** A civil year as a label; "about 1990" when the date was given as a year alone. */
+    fun lifeYear(year: Int, approximate: Boolean): String =
+        if (approximate) com.rainif.doneat.l10n.Strings.lifeYearApproximate(res, year.toString()) else year.toString()
+
     /** Every amount goes through the one mask. */
     fun money(value: Double?): String = timer.money(value)
 
