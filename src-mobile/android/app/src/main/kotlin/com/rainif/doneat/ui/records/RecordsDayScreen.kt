@@ -1,6 +1,15 @@
 package com.rainif.doneat.ui.records
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +73,7 @@ import java.time.LocalTime
  * waking time that was yours; the rest is the account of where the day went.
  */
 @Composable
-fun RecordsDayScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit, openSettings: (Route?) -> Unit) {
+fun RecordsDayScreen(graph: AppGraph, dayKey: String, open: (Route) -> Unit, onBack: () -> Unit, openSettings: (Route?) -> Unit) {
     val context = rememberRecordsContext(graph)
     val text = context.text
     val model by produceState<RecordsDayCanvasModel?>(null, context, dayKey) {
@@ -82,7 +91,7 @@ fun RecordsDayScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit, openSe
             Conclusion(current, text)
             Segments(current, text)
             Observations(context, dayKey)
-            // History edits arrive with the day editor; until then the page says what it can.
+            // A plan or a projection has no original input to open: it gets a sentence, not a button that cannot save.
             if (!context.queries.authorized) {
                 Text(
                     text.string(R.string.recordsEditPlusHint),
@@ -90,6 +99,8 @@ fun RecordsDayScreen(graph: AppGraph, dayKey: String, onBack: () -> Unit, openSe
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            } else if (current.editableShifts.isNotEmpty()) {
+                EditEntry(current, text) { anchor -> beginDayEdit(graph, context, anchor, open) }
             }
         }
     }
@@ -305,5 +316,45 @@ private fun Observations(context: RecordsContext, dayKey: String) {
                 Text("${text.time(item.occurredAtMs)} · $kind", style = MaterialTheme.typography.bodyMedium)
             }
         }
+    }
+}
+
+/**
+ * The way into the editor. When two shifts touch this day (last night's and
+ * tonight's), it asks which, naming each by its own hours.
+ */
+@Composable
+private fun EditEntry(model: RecordsDayCanvasModel, text: RecordsText, onEdit: (String) -> Unit) {
+    var choosing by rememberSaveable { mutableStateOf(false) }
+    RecordsCard {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                .clickable(role = Role.Button) {
+                    if (model.editableShifts.size == 1) onEdit(model.editableShifts.single().anchorDayKey) else choosing = true
+                }
+                .padding(horizontal = DoneAtSpacing.l),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Outlined.Edit, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text.string(R.string.recordsEditDay), Modifier.weight(1f).padding(horizontal = DoneAtSpacing.l), style = MaterialTheme.typography.bodyLarge)
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+    if (choosing) {
+        AlertDialog(
+            onDismissRequest = { choosing = false },
+            title = { Text(text.string(R.string.recordsChooseShift)) },
+            text = {
+                Column {
+                    model.editableShifts.forEach { shift ->
+                        TextButton(onClick = { choosing = false; onEdit(shift.anchorDayKey) }, Modifier.fillMaxWidth()) {
+                            Text(if (shift.hasHours) text.timeRange(shift.startAtMs, shift.endAtMs) else text.dayTitle(shift.anchorDayKey))
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { choosing = false }) { Text(text.string(R.string.cancelAction)) } },
+        )
     }
 }
