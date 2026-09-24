@@ -612,6 +612,7 @@
     <string name="recordsEmptyTitle">Henüz giriş-çıkış kaydı yok</string>
     <string name="recordsExpandChart">Grafiği genişlet</string>
     <string name="recordsExport">Kayıtları dışa aktar</string>
+    <string name="recordsExportFooterLocal">Yedek; çalışma saatlerinizi, maaşınızı, kayıtlarınızı, yaşam profilinizi ve Odak verilerinizi içerir. Yalnızca sizin açabileceğiniz bir yerde saklayın.</string>
     <string name="recordsExportFull">Tam yedek</string>
     <string name="recordsExportWithoutLife">Yaşam profili olmadan yedek</string>
     <string name="recordsForecastHours">Tahmin çalışması</string>
@@ -629,6 +630,7 @@
     <string name="recordsImportReport">İçe aktarıldı. Kalıcı olarak silinmiş %1$s kayıt atlandı.</string>
     <string name="recordsImportSame">%1$s aynı</string>
     <string name="recordsImportSkipped">%1$s atlandı</string>
+    <string name="recordsImportTooLarge">Bu dosya 25 MB’tan büyük olduğu için okunmadı. Hiçbir şey değişmedi.</string>
     <string name="recordsIncomeProgress">Kazanılan %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Saatleri kendin gir</string>
     <string name="recordsLegendCorrected">Kalem — sen değiştirdin</string>

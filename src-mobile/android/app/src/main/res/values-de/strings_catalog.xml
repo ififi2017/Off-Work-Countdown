@@ -612,6 +612,7 @@
     <string name="recordsEmptyTitle">Noch keine Kommen-Gehen-Einträge</string>
     <string name="recordsExpandChart">Diagramm vergrößern</string>
     <string name="recordsExport">Einträge exportieren</string>
+    <string name="recordsExportFooterLocal">Eine Sicherung enthält deine Arbeitszeiten, dein Gehalt, deine Aufzeichnungen, dein Lebensprofil und deine Fokusdaten. Bewahre sie an einem Ort auf, den nur du öffnen kannst.</string>
     <string name="recordsExportFull">Vollständiges Backup</string>
     <string name="recordsExportWithoutLife">Backup ohne Lebensprofil</string>
     <string name="recordsForecastHours">Prognosearbeit</string>
@@ -629,6 +630,7 @@
     <string name="recordsImportReport">Importiert. %1$s endgültig gelöschte Einträge übersprungen.</string>
     <string name="recordsImportSame">%1$s unverändert</string>
     <string name="recordsImportSkipped">%1$s übersprungen</string>
+    <string name="recordsImportTooLarge">Diese Datei ist größer als 25 MB und wurde nicht gelesen. Nichts wurde geändert.</string>
     <string name="recordsIncomeProgress">Bisher verdient: %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Zeiten selbst setzen</string>
     <string name="recordsLegendCorrected">Stift — von dir geändert</string>

@@ -612,6 +612,7 @@
     <string name="recordsEmptyTitle">لا سجلات حضور وانصراف بعد</string>
     <string name="recordsExpandChart">توسيع المخطط</string>
     <string name="recordsExport">تصدير السجل</string>
+    <string name="recordsExportFooterLocal">تتضمن النسخة الاحتياطية ساعات عملك وراتبك وسجلاتك وملف حياتك وبيانات التركيز. احفظها في مكان لا يفتحه غيرك.</string>
     <string name="recordsExportFull">نسخة كاملة</string>
     <string name="recordsExportWithoutLife">نسخة دون ملف العمر</string>
     <string name="recordsForecastHours">العمل التنبؤي</string>
@@ -629,6 +630,7 @@
     <string name="recordsImportReport">تم الاستيراد. وتم تجاوز %1$s سجلًا محذوفًا نهائيًا.</string>
     <string name="recordsImportSame">%1$s دون تغيير</string>
     <string name="recordsImportSkipped">%1$s متجاهَل</string>
+    <string name="recordsImportTooLarge">هذا الملف أكبر من 25 ميغابايت، لذا لم تتم قراءته. لم يتغير شيء.</string>
     <string name="recordsIncomeProgress">تم كسب %1$s · %2$s</string>
     <string name="recordsKindCustomHours">تحديد الساعات</string>
     <string name="recordsLegendCorrected">قلم — عدّلته أنت</string>

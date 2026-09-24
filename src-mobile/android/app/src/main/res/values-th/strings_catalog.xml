@@ -612,6 +612,7 @@
     <string name="recordsEmptyTitle">ยังไม่มีบันทึกเข้าออกงาน</string>
     <string name="recordsExpandChart">ขยายแผนภูมิ</string>
     <string name="recordsExport">ส่งออกบันทึก</string>
+    <string name="recordsExportFooterLocal">ข้อมูลสำรองมีชั่วโมงทำงาน เงินเดือน บันทึก โปรไฟล์ชีวิต และข้อมูลโฟกัสของคุณ เก็บไว้ในที่ที่มีเพียงคุณเปิดได้</string>
     <string name="recordsExportFull">สำรองทั้งหมด</string>
     <string name="recordsExportWithoutLife">สำรองโดยไม่มีโปรไฟล์ชีวิต</string>
     <string name="recordsForecastHours">งานพยากรณ์</string>
@@ -629,6 +630,7 @@
     <string name="recordsImportReport">นำเข้าแล้ว ข้ามบันทึกที่ลบถาวรแล้ว %1$s รายการ</string>
     <string name="recordsImportSame">เหมือนเดิม %1$s รายการ</string>
     <string name="recordsImportSkipped">ข้าม %1$s รายการ</string>
+    <string name="recordsImportTooLarge">ไฟล์นี้ใหญ่กว่า 25 MB จึงไม่ได้อ่าน ไม่มีสิ่งใดเปลี่ยนแปลง</string>
     <string name="recordsIncomeProgress">ได้รับแล้ว %1$s · %2$s</string>
     <string name="recordsKindCustomHours">กำหนดเวลาเอง</string>
     <string name="recordsLegendCorrected">ดินสอ — คุณแก้เอง</string>

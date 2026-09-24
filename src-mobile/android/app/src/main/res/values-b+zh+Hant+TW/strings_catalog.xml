@@ -612,6 +612,7 @@
     <string name="recordsEmptyTitle">還沒有上下班紀錄</string>
     <string name="recordsExpandChart">展開圖表</string>
     <string name="recordsExport">匯出紀錄</string>
+    <string name="recordsExportFooterLocal">備份包含你的工時、薪資、紀錄、人生檔案和專注資料。請存放在只有你能開啟的地方。</string>
     <string name="recordsExportFull">完整備份</string>
     <string name="recordsExportWithoutLife">不含人生檔案的備份</string>
     <string name="recordsForecastHours">預測工作</string>
@@ -629,6 +630,7 @@
     <string name="recordsImportReport">已匯入。略過了 %1$s 筆已永久刪除的紀錄。</string>
     <string name="recordsImportSame">%1$s 筆相同</string>
     <string name="recordsImportSkipped">%1$s 筆已略過</string>
+    <string name="recordsImportTooLarge">這個檔案超過 25 MB，未讀取。資料沒有任何變更。</string>
     <string name="recordsIncomeProgress">已賺 %1$s · %2$s</string>
     <string name="recordsKindCustomHours">自己填時間</string>
     <string name="recordsLegendCorrected">鉛筆 = 你改過</string>

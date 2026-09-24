@@ -612,6 +612,7 @@
     <string name="recordsEmptyTitle">출퇴근 기록이 아직 없습니다</string>
     <string name="recordsExpandChart">차트 펼치기</string>
     <string name="recordsExport">기록 내보내기</string>
+    <string name="recordsExportFooterLocal">백업에는 근무 시간, 급여, 기록, 인생 프로필, 집중 데이터가 포함됩니다. 나만 열 수 있는 곳에 보관하세요.</string>
     <string name="recordsExportFull">전체 백업</string>
     <string name="recordsExportWithoutLife">인생 프로필 없는 백업</string>
     <string name="recordsForecastHours">예측 작업</string>
@@ -629,6 +630,7 @@
     <string name="recordsImportReport">가져왔습니다. 완전히 삭제된 %1$s건은 건너뛰었습니다.</string>
     <string name="recordsImportSame">동일 %1$s개</string>
     <string name="recordsImportSkipped">건너뜀 %1$s개</string>
+    <string name="recordsImportTooLarge">이 파일은 25MB를 넘어 읽지 않았습니다. 변경된 내용은 없습니다.</string>
     <string name="recordsIncomeProgress">지금까지 번 금액 %1$s · %2$s</string>
     <string name="recordsKindCustomHours">시간 직접 지정</string>
     <string name="recordsLegendCorrected">연필 — 직접 수정함</string>

@@ -133,7 +133,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph, ope
         Route.ShiftTypes -> com.rainif.doneat.ui.schedule.ShiftTypesScreen(graph, open, back)
         is Route.ShiftTypeEdit -> com.rainif.doneat.ui.schedule.ShiftTypeEditScreen(graph, key.id, key.isNew, back)
         Route.Salary -> com.rainif.doneat.ui.settings.SalaryScreen(graph, back)
-        Route.RecordsData -> PendingScreen(stringResource(R.string.recordsDataTitle), back, settingsLabel)
+        Route.RecordsData -> com.rainif.doneat.ui.settings.RecordsDataScreen(graph, back)
         Route.Plus -> PendingScreen(stringResource(R.string.plusSettings), back, settingsLabel)
         Route.Notifications -> NotificationsScreen(
             prefs, device.notificationPermissionRequested, edit,

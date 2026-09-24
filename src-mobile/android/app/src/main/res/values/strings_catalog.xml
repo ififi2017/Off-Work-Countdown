@@ -612,6 +612,7 @@
     <string name="recordsEmptyTitle">No clock-in records yet</string>
     <string name="recordsExpandChart">Expand chart</string>
     <string name="recordsExport">Export records</string>
+    <string name="recordsExportFooterLocal">A backup includes your hours, salary, records, Life profile and Focus data. Keep it somewhere only you can open.</string>
     <string name="recordsExportFull">Full backup</string>
     <string name="recordsExportWithoutLife">Backup without life profile</string>
     <string name="recordsForecastHours">Forecast work</string>
@@ -629,6 +630,7 @@
     <string name="recordsImportReport">Imported. Skipped %1$s permanently deleted items.</string>
     <string name="recordsImportSame">%1$s unchanged</string>
     <string name="recordsImportSkipped">%1$s skipped</string>
+    <string name="recordsImportTooLarge">This file is larger than 25 MB, so it wasn’t read. Nothing changed.</string>
     <string name="recordsIncomeProgress">Earned %1$s · %2$s</string>
     <string name="recordsKindCustomHours">Set the hours</string>
     <string name="recordsLegendCorrected">Pencil — you changed it</string>
