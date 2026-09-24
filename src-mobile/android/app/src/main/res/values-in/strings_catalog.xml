@@ -82,8 +82,10 @@
     <string name="done">Selesai</string>
     <string name="doubleRestWeek">Minggu 2 hari libur</string>
     <string name="downloadDesktopApp">Unduh untuk Mac &amp; Windows</string>
+    <string name="earningsShownWithoutLock">Perangkat ini tidak memiliki kunci layar, jadi penghasilan ditampilkan tanpa verifikasi. Atur kunci layar agar tetap privat.</string>
     <string name="enableSalary">Tampilkan gaji</string>
     <string name="enableSalaryDescription">Mati secara default. Gaji sudah termasuk jika Anda mengaktifkan sinkronisasi iCloud.</string>
+    <string name="enableSalaryDescriptionLocal">Nonaktif secara default. Gaji tetap di perangkat ini, dan di cadangan bawaan Android jika Anda mengaktifkannya.</string>
     <string name="endTime">Jam pulang</string>
     <string name="extendedAddShiftType">Tambah jenis sif</string>
     <string name="extendedApplyTemplateMessage">Setiap hari dalam siklus akan diisi ulang berdasarkan “%1$s”. Tidak ada yang berubah sebelum disimpan.</string>
@@ -730,6 +732,7 @@
     <string name="rulesErrorBanner">Aturan hitung mundur tidak tersedia. Jadwal Anda tetap jalan.</string>
     <string name="salaryLocked">Terkunci</string>
     <string name="salaryPrivacyNote">«Pendapatan hari ini» diperkirakan dari sini dan dari shift-mu. Widget, notifikasi, dan Live Activity tidak pernah menampilkannya.</string>
+    <string name="salaryPrivacyNoteLocal">“Penghasilan hari ini” diperkirakan dari ini dan shift Anda. Widget dan notifikasi tidak pernah menampilkannya.</string>
     <string name="salarySettings">Pengaturan gaji</string>
     <string name="salaryType">Jenis gaji</string>
     <string name="saveAction">Simpan</string>

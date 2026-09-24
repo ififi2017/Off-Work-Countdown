@@ -82,8 +82,10 @@
     <string name="done">पूर्ण</string>
     <string name="doubleRestWeek">2 सुट्ट्यांचा आठवडा</string>
     <string name="downloadDesktopApp">Mac आणि Windows साठी डाउनलोड करा</string>
+    <string name="earningsShownWithoutLock">या डिव्हाइसवर स्क्रीन लॉक नाही, त्यामुळे कमाई पडताळणीशिवाय दाखवली आहे. ती खाजगी ठेवण्यासाठी स्क्रीन लॉक सेट करा.</string>
     <string name="enableSalary">पगार दाखवा</string>
     <string name="enableSalaryDescription">डीफॉल्टनुसार बंद. तुम्ही iCloud सिंक चालू केल्यास पगाराचा समावेश केला जातो.</string>
+    <string name="enableSalaryDescriptionLocal">डीफॉल्टनुसार बंद. पगार याच डिव्हाइसवर राहतो, आणि तुम्ही Android चा स्वतःचा बॅकअप सुरू ठेवला असल्यास त्यातही.</string>
     <string name="endTime">सुट्टीची वेळ</string>
     <string name="extendedAddShiftType">शिफ्टचा प्रकार जोडा</string>
     <string name="extendedApplyTemplateMessage">चक्रातील प्रत्येक दिवस “%1$s” नुसार पुन्हा भरला जाईल. जतन करेपर्यंत काहीही बदलणार नाही.</string>
@@ -731,6 +733,7 @@
     <string name="rulesErrorBanner">उलटगणतीचे नियम सध्या वापरता येत नाहीत. वेळापत्रक थांबलेले नाही.</string>
     <string name="salaryLocked">लॉक</string>
     <string name="salaryPrivacyNote">«आजची कमाई» याच सेटिंगवरून आणि तुमच्या शिफ्टवरून अंदाजित आहे. विजेट्स, सूचना आणि लाइव्ह ॲक्टिव्हिटी ती कधीही दाखवत नाहीत.</string>
+    <string name="salaryPrivacyNoteLocal">“आजची कमाई” यावरून आणि तुमच्या शिफ्टवरून अंदाजे काढली जाते. विजेट आणि सूचना ती कधीही दाखवत नाहीत.</string>
     <string name="salarySettings">पगार सेटिंग्ज</string>
     <string name="salaryType">पगार प्रकार</string>
     <string name="saveAction">जतन करा</string>

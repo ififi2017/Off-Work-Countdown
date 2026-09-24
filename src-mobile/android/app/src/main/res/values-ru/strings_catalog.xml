@@ -82,8 +82,10 @@
     <string name="done">Готово</string>
     <string name="doubleRestWeek">Неделя с 2 выходными</string>
     <string name="downloadDesktopApp">Скачать для Mac и Windows</string>
+    <string name="earningsShownWithoutLock">На этом устройстве не настроена блокировка экрана, поэтому заработок показан без проверки. Настройте блокировку экрана, чтобы видеть его могли только вы.</string>
     <string name="enableSalary">Показывать зарплату</string>
     <string name="enableSalaryDescription">По умолчанию выключено. Зарплата включена в стоимость, если вы включите синхронизацию с iCloud.</string>
+    <string name="enableSalaryDescriptionLocal">По умолчанию выключено. Зарплата хранится на этом устройстве и в резервной копии Android, если она включена.</string>
     <string name="endTime">Конец работы</string>
     <string name="extendedAddShiftType">Добавить тип смены</string>
     <string name="extendedApplyTemplateMessage">Каждый день цикла будет заполнен заново по шаблону «%1$s». Изменения вступят в силу после сохранения.</string>
@@ -733,6 +735,7 @@
     <string name="rulesErrorBanner">Правила таймера недоступны. График не остановлен.</string>
     <string name="salaryLocked">Заблокировано</string>
     <string name="salaryPrivacyNote">«Заработано сегодня» рассчитывается отсюда и из вашей смены. Виджеты, уведомления и Live-активности никогда его не показывают.</string>
+    <string name="salaryPrivacyNoteLocal">«Заработано сегодня» рассчитывается по этим данным и вашей смене. Виджеты и уведомления его не показывают.</string>
     <string name="salarySettings">Настройки зарплаты</string>
     <string name="salaryType">Тип зарплаты</string>
     <string name="saveAction">Сохранить</string>

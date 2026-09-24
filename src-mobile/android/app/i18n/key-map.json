@@ -365,11 +365,19 @@
     "downloadDesktopApp": {
       "resource": "string/downloadDesktopApp"
     },
+    "earningsShownWithoutLock": {
+      "resource": "string/earningsShownWithoutLock",
+      "androidOnly": true
+    },
     "enableSalary": {
       "resource": "string/enableSalary"
     },
     "enableSalaryDescription": {
       "resource": "string/enableSalaryDescription"
+    },
+    "enableSalaryDescriptionLocal": {
+      "resource": "string/enableSalaryDescriptionLocal",
+      "androidOnly": true
     },
     "endTime": {
       "resource": "string/endTime"
@@ -2504,6 +2512,10 @@
     },
     "salaryPrivacyNote": {
       "resource": "string/salaryPrivacyNote"
+    },
+    "salaryPrivacyNoteLocal": {
+      "resource": "string/salaryPrivacyNoteLocal",
+      "androidOnly": true
     },
     "salarySettings": {
       "resource": "string/salarySettings"

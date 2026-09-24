@@ -3,7 +3,11 @@ package com.rainif.doneat
 import android.app.Application
 import com.rainif.doneat.core.data.DeviceSettingsStore
 import com.rainif.doneat.core.data.RecordStore
+import com.rainif.doneat.core.data.SessionStore
 import com.rainif.doneat.core.data.SettingsRepository
+import com.rainif.doneat.core.domain.schedule.HolidayCalendar
+import com.rainif.doneat.core.domain.session.ScheduleFieldChange
+import com.rainif.doneat.timer.TimerCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -32,6 +36,26 @@ class AppGraph(app: Application) {
     val device = DeviceSettingsStore(files.resolve("device/settings.json"))
     val settings = SettingsRepository(records, device, scope, nowMs, systemZone, newId)
 
+    private val _holidays = MutableStateFlow(HolidayCalendar.EMPTY)
+    /** The bundled holiday dataset (shared with iOS); read once, off the main thread. */
+    val holidays: StateFlow<HolidayCalendar> = _holidays.asStateFlow()
+
+    /** The running countdown; its state file is device-local, beside the device settings. */
+    val sessions = SessionStore(files.resolve("device/session.json"), records, settings, scope, holidays, systemZone, newId)
+    val timer = TimerCoordinator(app, sessions, settings, scope, nowMs)
+
+    /**
+     * The completed run already celebrated in this process. Kept in memory only:
+     * switching tabs never replays it, a cold launch may celebrate once more.
+     */
+    @Volatile var lastCelebratedEndAtMs = 0.0
+
+    /**
+     * The schedule page's unsaved draft (iOS keeps it on the scene), so
+     * rotating, or opening a shift type from the page, never loses it.
+     */
+    val scheduleDraft = MutableStateFlow(ScheduleFieldChange())
+
     private val _loaded = MutableStateFlow(false)
     /** False until the archive has been read: until then nothing can tell setup from a restored install. */
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
@@ -39,7 +63,15 @@ class AppGraph(app: Application) {
     init {
         scope.launch {
             records.load()
+            sessions.load()
+            timer.reconcile()
             _loaded.value = true
+            timer.start()
+        }
+        scope.launch(Dispatchers.IO) {
+            // A damaged or missing dataset only turns holiday assignments off; the schedule still runs.
+            runCatching { app.assets.open("HolidayTemplates.json").use { HolidayCalendar.parse(it.readBytes().decodeToString()) } }
+                .onSuccess { _holidays.value = it }
         }
     }
 }

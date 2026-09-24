@@ -82,8 +82,10 @@
     <string name="done">Terminé</string>
     <string name="doubleRestWeek">Semaine à 2 jours de repos</string>
     <string name="downloadDesktopApp">Télécharger pour Mac et Windows</string>
+    <string name="earningsShownWithoutLock">Cet appareil n’a pas de verrouillage d’écran : les gains s’affichent donc sans vérification. Définissez un verrouillage d’écran pour les garder privés.</string>
     <string name="enableSalary">Afficher le salaire</string>
     <string name="enableSalaryDescription">Désactivé par défaut. Le salaire est inclus si vous activez la synchronisation iCloud.</string>
+    <string name="enableSalaryDescriptionLocal">Désactivé par défaut. Le salaire reste sur cet appareil, et dans la sauvegarde d’Android si vous l’avez activée.</string>
     <string name="endTime">Heure de départ</string>
     <string name="extendedAddShiftType">Ajouter un type de service</string>
     <string name="extendedApplyTemplateMessage">Chaque jour du cycle sera rempli à nouveau selon « %1$s ». Rien ne change avant l’enregistrement.</string>
@@ -732,6 +734,7 @@
     <string name="rulesErrorBanner">Les règles du compte à rebours sont indisponibles. Votre planning continue.</string>
     <string name="salaryLocked">Verrouillé</string>
     <string name="salaryPrivacyNote">« Gagné aujourd\'hui » est estimé à partir de ceci et de vos horaires. Les widgets, notifications et activités en direct ne l\'affichent jamais.</string>
+    <string name="salaryPrivacyNoteLocal">« Gagné aujourd’hui » est estimé à partir de ces réglages et de votre service. Les widgets et les notifications ne l’affichent jamais.</string>
     <string name="salarySettings">Paramètres de salaire</string>
     <string name="salaryType">Type de salaire</string>
     <string name="saveAction">Enregistrer</string>

@@ -82,8 +82,10 @@
     <string name="done">Fertig</string>
     <string name="doubleRestWeek">Woche mit 2 freien Tagen</string>
     <string name="downloadDesktopApp">Für Mac &amp; Windows laden</string>
+    <string name="earningsShownWithoutLock">Auf diesem Gerät ist keine Displaysperre eingerichtet, daher wird der Verdienst ohne Prüfung angezeigt. Richte eine Displaysperre ein, damit er privat bleibt.</string>
     <string name="enableSalary">Gehalt anzeigen</string>
     <string name="enableSalaryDescription">Standardmäßig deaktiviert. Das Gehalt ist inbegriffen, wenn Sie die iCloud-Synchronisierung aktivieren.</string>
+    <string name="enableSalaryDescriptionLocal">Standardmäßig aus. Das Gehalt bleibt auf diesem Gerät und in der Android-eigenen Sicherung, falls du sie aktiviert hast.</string>
     <string name="endTime">Feierabend</string>
     <string name="extendedAddShiftType">Schichtart hinzufügen</string>
     <string name="extendedApplyTemplateMessage">Jeder Tag des Zyklus wird nach „%1$s“ neu gefüllt. Übernommen wird erst beim Sichern.</string>
@@ -731,6 +733,7 @@
     <string name="rulesErrorBanner">Countdown-Regeln nicht verfügbar. Dein Plan läuft weiter.</string>
     <string name="salaryLocked">Gesperrt</string>
     <string name="salaryPrivacyNote">„Heute verdient“ wird hieraus und aus deiner Schicht geschätzt. In Widgets, Mitteilungen und Live-Aktivitäten erscheint der Betrag nie.</string>
+    <string name="salaryPrivacyNoteLocal">„Heute verdient“ wird aus diesen Angaben und deiner Schicht geschätzt. Widgets und Benachrichtigungen zeigen es nie.</string>
     <string name="salarySettings">Gehaltseinstellungen</string>
     <string name="salaryType">Gehaltstyp</string>
     <string name="saveAction">Sichern</string>

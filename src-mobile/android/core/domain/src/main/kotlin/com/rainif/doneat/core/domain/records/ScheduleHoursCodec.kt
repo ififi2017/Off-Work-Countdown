@@ -94,22 +94,23 @@ object ScheduleHoursCodec {
             rotationRestDays = schedule.opt("rotationRestDays")?.integer(),
             breakStartTime = o.opt("breakStartTime")?.string(),
             breakDurationMinutes = o.req("breakDurationMinutes").integer(),
-            extendedContent = o.opt("extendedContent")?.jsonObject?.let { c ->
-                ExtendedScheduleContent(
-                    shiftTypes = c.req("shiftTypes").jsonArray.map { RecordJson.shiftType(it.jsonObject) },
-                    rule = c.opt("rule")?.jsonObject?.let { r ->
-                        ShiftCycleRule(
-                            ShiftCycleRule.Preset.fromRaw(r.req("preset").string()),
-                            r.req("anchorDayKey").string(),
-                            r.req("days").jsonArray.map { java.util.UUID.fromString(FoundationCompat.uuid(it.string()) ?: error("uuid")) },
-                        )
-                    },
-                    holidayRegionIdentifier = c.opt("holidayRegionIdentifier")?.string(),
-                    clearedFromDayKey = c.opt("clearedFromDayKey")?.string(),
-                )
-            },
+            extendedContent = o.opt("extendedContent")?.jsonObject?.let(::decodeContent),
         )
     }.getOrNull()
+
+    /** Shift types and rule as a snapshot stores them; throws on a malformed object. */
+    fun decodeContent(c: JsonObject) = ExtendedScheduleContent(
+        shiftTypes = c.req("shiftTypes").jsonArray.map { RecordJson.shiftType(it.jsonObject) },
+        rule = c.opt("rule")?.jsonObject?.let { r ->
+            ShiftCycleRule(
+                ShiftCycleRule.Preset.fromRaw(r.req("preset").string()),
+                r.req("anchorDayKey").string(),
+                r.req("days").jsonArray.map { java.util.UUID.fromString(FoundationCompat.uuid(it.string()) ?: error("uuid")) },
+            )
+        },
+        holidayRegionIdentifier = c.opt("holidayRegionIdentifier")?.string(),
+        clearedFromDayKey = c.opt("clearedFromDayKey")?.string(),
+    )
 
     fun decodeBase64(configurationData: String): SnapshotHours? = FoundationCompat.base64(configurationData)?.let(::decode)
 
@@ -128,20 +129,20 @@ object ScheduleHoursCodec {
         ),
         "breakStartTime" to h.breakStartTime?.let(::JsonPrimitive),
         "breakDurationMinutes" to JsonPrimitive(h.breakDurationMinutes),
-        "extendedContent" to h.extendedContent?.let { c ->
+        "extendedContent" to h.extendedContent?.let(::contentJson),
+    )
+
+    fun contentJson(c: ExtendedScheduleContent): JsonObject = obj(
+        "shiftTypes" to JsonArray(c.shiftTypes.map(RecordJson::shiftTypeJson)),
+        "rule" to c.rule?.let { r ->
             obj(
-                "shiftTypes" to JsonArray(c.shiftTypes.map(RecordJson::shiftTypeJson)),
-                "rule" to c.rule?.let { r ->
-                    obj(
-                        "preset" to JsonPrimitive(r.preset.raw),
-                        "anchorDayKey" to JsonPrimitive(r.anchorDayKey),
-                        "days" to JsonArray(r.days.map { JsonPrimitive(it.toString().uppercase(Locale.ROOT)) }),
-                    )
-                },
-                "holidayRegionIdentifier" to c.holidayRegionIdentifier?.let(::JsonPrimitive),
-                "clearedFromDayKey" to c.clearedFromDayKey?.let(::JsonPrimitive),
+                "preset" to JsonPrimitive(r.preset.raw),
+                "anchorDayKey" to JsonPrimitive(r.anchorDayKey),
+                "days" to JsonArray(r.days.map { JsonPrimitive(it.toString().uppercase(Locale.ROOT)) }),
             )
         },
+        "holidayRegionIdentifier" to c.holidayRegionIdentifier?.let(::JsonPrimitive),
+        "clearedFromDayKey" to c.clearedFromDayKey?.let(::JsonPrimitive),
     )
 
     private fun obj(vararg pairs: Pair<String, JsonElement?>) = JsonObject(pairs.mapNotNull { (k, v) -> v?.let { k to it } }.toMap())

@@ -81,6 +81,7 @@ import com.rainif.doneat.core.data.FirstRunRestore
 import com.rainif.doneat.core.data.RestorePreview
 import com.rainif.doneat.core.designsystem.DoneAtMotion
 import com.rainif.doneat.core.designsystem.DoneAtPrimaryButton
+import com.rainif.doneat.core.designsystem.CelebratingBrandMark
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.designsystem.LocalDoneAtMotion
 import com.rainif.doneat.core.domain.records.SyncedPreferences
@@ -188,6 +189,7 @@ private fun SetupScaffold(
     onBack: (() -> Unit)?,
     continueLabel: String,
     onContinue: () -> Unit,
+    hero: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
@@ -201,6 +203,10 @@ private fun SetupScaffold(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(Modifier.widthIn(max = 560.dp).padding(horizontal = DoneAtSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally) {
+                if (hero != null) {
+                    hero()
+                    Spacer(Modifier.size(DoneAtSpacing.xl))
+                }
                 Text(title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
                 if (body != null) {
                     Text(
@@ -237,7 +243,10 @@ private fun WelcomePage(graph: AppGraph, onStart: () -> Unit, onRestoredWithoutS
         }
     }
 
-    SetupScaffold(stringResource(R.string.landingTagline), null, null, stringResource(R.string.continue_), onStart) {
+    SetupScaffold(
+        stringResource(R.string.landingTagline), null, null, stringResource(R.string.continue_), onStart,
+        hero = { CelebratingBrandMark(stringResource(R.string.app_name), Modifier.size(112.dp)) },
+    ) {
         SettingsGroup {
             Feature(Icons.Outlined.Schedule, stringResource(R.string.landingFeature1Title), stringResource(R.string.onboardingShiftBody))
             RowDivider()
@@ -400,7 +409,13 @@ private fun PrivacyPage(onBack: (() -> Unit)?, onContinue: () -> Unit) {
 
 @Composable
 private fun FinalePage(onBack: (() -> Unit)?, onFinish: () -> Unit) {
-    SetupScaffold(stringResource(R.string.onboardingFinaleMessage), null, onBack, stringResource(R.string.onboardingStartExperience), onFinish) {}
+    SetupScaffold(
+        stringResource(R.string.onboardingFinaleMessage), null, onBack, stringResource(R.string.onboardingStartExperience), onFinish,
+        hero = {
+            Spacer(Modifier.size(DoneAtSpacing.xxl))
+            CelebratingBrandMark(stringResource(R.string.app_name), Modifier.size(168.dp))
+        },
+    ) {}
 }
 
 /** The platform time picker in DoneAt colours and the device's 12/24-hour convention. */

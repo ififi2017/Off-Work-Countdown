@@ -82,8 +82,10 @@
     <string name="done">완료</string>
     <string name="doubleRestWeek">주 2일 휴무</string>
     <string name="downloadDesktopApp">Mac 및 Windows용 다운로드</string>
+    <string name="earningsShownWithoutLock">이 기기에는 화면 잠금이 없어 확인 없이 수입을 표시했습니다. 화면 잠금을 설정하면 나만 볼 수 있습니다.</string>
     <string name="enableSalary">급여 표시</string>
     <string name="enableSalaryDescription">기본적으로 꺼져 있습니다. iCloud 동기화를 켜면 급여가 포함됩니다.</string>
+    <string name="enableSalaryDescriptionLocal">기본값은 꺼짐입니다. 급여는 이 기기에만 저장되며, Android 자체 백업을 켜 두었다면 백업에도 포함됩니다.</string>
     <string name="endTime">퇴근 시간</string>
     <string name="extendedAddShiftType">근무 유형 추가</string>
     <string name="extendedApplyTemplateMessage">주기의 모든 날을 「%1$s」 기준으로 다시 채웁니다. 저장해야 적용됩니다.</string>
@@ -730,6 +732,7 @@
     <string name="rulesErrorBanner">카운트다운 규칙을 쓸 수 없습니다. 일정은 그대로입니다.</string>
     <string name="salaryLocked">잠김</string>
     <string name="salaryPrivacyNote">오늘 번 돈은 이 설정과 근무 시간으로 추산한 값입니다. 위젯, 알림, 실시간 액티비티에는 절대 표시되지 않습니다.</string>
+    <string name="salaryPrivacyNoteLocal">‘오늘 번 돈’은 이 설정과 근무 시간으로 추정합니다. 위젯과 알림에는 표시되지 않습니다.</string>
     <string name="salarySettings">급여 설정</string>
     <string name="salaryType">급여 유형</string>
     <string name="saveAction">저장</string>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App icon background: the evening gradient of assets/brand/off-work-countdown-icon.svg, full bleed. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+    <path android:pathData="M0,0h1024v1024h-1024z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="176"
+                android:startY="112"
+                android:endX="864"
+                android:endY="912"
+                android:startColor="#FF3B2048"
+                android:endColor="#FF1D1329" />
+        </aapt:attr>
+    </path>
+</vector>
