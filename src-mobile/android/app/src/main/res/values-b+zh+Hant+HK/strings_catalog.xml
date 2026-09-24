@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">精確日期</string>
     <string name="lifePrecisionYear">依年份估算</string>
     <string name="lifeProfileFooter">呢幾個數字用嚟畫下面嘅格。除非你開 iCloud 同步，佢哋只留喺呢部裝置。</string>
+    <string name="lifeProfileFooterLocal">呢幾個數字用嚟畫下面嘅格。佢哋只留喺呢部裝置；如果你開啟了 Android 內置的備份，也會包括在備份中。</string>
     <string name="lifeProfileTitle">人生檔案</string>
     <string name="lifeProgressTitle">距退休進度</string>
     <string name="lifeProjectedFuture">將來嘅格按現在嘅節奏推算。</string>

@@ -258,7 +258,14 @@ private fun FieldRow(title: String, field: @Composable () -> Unit) {
  * rather than landing beside a leading 0.
  */
 @Composable
-private fun NumberField(value: String, onValueChange: (String) -> Unit, onCommit: () -> Unit, emphasized: Boolean = false) {
+internal fun NumberField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onCommit: () -> Unit = {},
+    emphasized: Boolean = false,
+    placeholder: String = "0",
+    decimal: Boolean = true,
+) {
     var field by remember { mutableStateOf(TextFieldValue(value)) }
     if (field.text != value) field = field.copy(text = value, selection = TextRange(value.length))
     var focused by remember { mutableStateOf(false) }
@@ -281,11 +288,11 @@ private fun NumberField(value: String, onValueChange: (String) -> Unit, onCommit
         textStyle = style,
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+        keyboardOptions = KeyboardOptions(keyboardType = if (decimal) KeyboardType.Decimal else KeyboardType.Number, imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onCommit() }),
         decorationBox = { inner ->
             Box(contentAlignment = Alignment.CenterEnd) {
-                if (value.isEmpty()) Text("0", style = style.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                if (value.isEmpty()) Text(placeholder, style = style.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
                 inner()
             }
         },

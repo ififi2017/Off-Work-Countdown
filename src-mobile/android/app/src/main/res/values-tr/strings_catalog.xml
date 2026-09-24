@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Tam tarih</string>
     <string name="lifePrecisionYear">Yıldan tahmin</string>
     <string name="lifeProfileFooter">Izgarayı bu sayılar çiziyor. iCloud eşitlemeyi açmadığın sürece bu cihazda kalırlar.</string>
+    <string name="lifeProfileFooterLocal">Izgarayı bu sayılar çiziyor. Bu cihazda ve açıksa Android’in kendi yedeğinde kalırlar.</string>
     <string name="lifeProfileTitle">Yaşam profili</string>
     <string name="lifeProgressTitle">Emekliliğe ilerleme</string>
     <string name="lifeProjectedFuture">Gelecek haftalar bugünkü ritmini varsayar.</string>

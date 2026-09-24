@@ -364,16 +364,17 @@ fun MarkLegend(includesLock: Boolean, text: RecordsText) {
  * implementation, so every surface divides time into the same six colours.
  */
 @Composable
-fun AllocationBar(share: TimeAllocationShare, text: RecordsText) {
+fun AllocationBar(share: TimeAllocationShare, text: RecordsText, showsApproximateYears: Boolean = false) {
     val visible = TimeAllocationKind.entries.filter { share.duration(it) > 0 }
     var selectedKind by remember { mutableStateOf(TimeAllocationKind.WORK) }
     val active = visible.firstOrNull { it == selectedKind } ?: visible.firstOrNull() ?: return
     val total = max(1L, share.dayLengthMs).toDouble()
     fun exact(kind: TimeAllocationKind) = "${text.recordsDuration(share.duration(kind).toDouble())}, ${text.percent(share.duration(kind) / total * 100)}"
+    fun years(kind: TimeAllocationKind) = if (showsApproximateYears) text.approximateLifeYears(share.duration(kind).toDouble()) else null
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Column(Modifier.clearAndSetSemantics {}) {
-            Text(text.kindTitle(active), style = MaterialTheme.typography.labelLarge)
+            Text(listOfNotNull(text.kindTitle(active), years(active)).joinToString(" · "), style = MaterialTheme.typography.labelLarge)
             Text(exact(active), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
         }
         Row(
@@ -393,7 +394,7 @@ fun AllocationBar(share: TimeAllocationShare, text: RecordsText) {
                         .fillMaxHeight()
                         .clickable { selectedKind = kind }
                         .semantics {
-                            contentDescription = "${text.kindTitle(kind)}, ${exact(kind)}"
+                            contentDescription = listOfNotNull(text.kindTitle(kind), years(kind), exact(kind)).joinToString(", ")
                             selected = kind == active
                             role = Role.Button
                         },

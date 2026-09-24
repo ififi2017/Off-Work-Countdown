@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Data esatta</string>
     <string name="lifePrecisionYear">Stimato dall’anno</string>
     <string name="lifeProfileFooter">Da questi numeri nasce la griglia. Restano su questo dispositivo finché non attivi la sincronizzazione iCloud.</string>
+    <string name="lifeProfileFooterLocal">Da questi numeri nasce la griglia. Restano su questo dispositivo e nel backup di Android, se lo hai attivato.</string>
     <string name="lifeProfileTitle">Profilo di vita</string>
     <string name="lifeProgressTitle">Progresso verso la pensione</string>
     <string name="lifeProjectedFuture">Le settimane future seguono il tuo ritmo attuale.</string>

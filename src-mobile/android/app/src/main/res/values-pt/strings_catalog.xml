@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Data exata</string>
     <string name="lifePrecisionYear">Estimado pelo ano</string>
     <string name="lifeProfileFooter">Estes números desenham a grelha. Ficam neste dispositivo enquanto não ativar a sincronização com o iCloud.</string>
+    <string name="lifeProfileFooterLocal">Estes números desenham a grelha. Ficam neste dispositivo e no backup do próprio Android, se ele estiver ativado.</string>
     <string name="lifeProfileTitle">Perfil de vida</string>
     <string name="lifeProgressTitle">Progresso até à reforma</string>
     <string name="lifeProjectedFuture">As semanas futuras seguem o seu ritmo atual.</string>

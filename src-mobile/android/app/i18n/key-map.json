@@ -1249,6 +1249,10 @@
     "lifeProfileFooter": {
       "resource": "string/lifeProfileFooter"
     },
+    "lifeProfileFooterLocal": {
+      "resource": "string/lifeProfileFooterLocal",
+      "androidOnly": true
+    },
     "lifeProfileTitle": {
       "resource": "string/lifeProfileTitle"
     },

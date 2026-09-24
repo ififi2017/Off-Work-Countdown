@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Ngày chính xác</string>
     <string name="lifePrecisionYear">Ước từ năm</string>
     <string name="lifeProfileFooter">Những con số này vẽ nên lưới bên dưới. Chúng nằm trên thiết bị này trừ khi bạn bật đồng bộ iCloud.</string>
+    <string name="lifeProfileFooterLocal">Những con số này vẽ nên lưới bên dưới. Chúng nằm trên thiết bị này, và trong bản sao lưu của Android nếu bạn đã bật.</string>
     <string name="lifeProfileTitle">Hồ sơ cuộc đời</string>
     <string name="lifeProgressTitle">Tiến độ đến khi nghỉ hưu</string>
     <string name="lifeProjectedFuture">Các tuần sắp tới tính theo nhịp hiện nay của bạn.</string>

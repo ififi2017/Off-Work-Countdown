@@ -62,6 +62,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rainif.doneat.AppGraph
 import com.rainif.doneat.R
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
+import com.rainif.doneat.core.domain.records.LifeDates
+import com.rainif.doneat.core.domain.records.LifeStageCalculator
+import com.rainif.doneat.core.domain.records.LifeStageKind
+import com.rainif.doneat.core.domain.records.LifeViewModel
 import com.rainif.doneat.core.domain.records.RecordsDayAppearance
 import com.rainif.doneat.core.domain.records.RecordsDayCell
 import com.rainif.doneat.core.domain.records.RecordsHeadlineSummary
@@ -74,8 +78,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
-/** The scales this build draws; life follows in its own change. */
-private val SCALES = listOf(RecordsScale.WEEK, RecordsScale.MONTH, RecordsScale.YEAR)
+private val SCALES = RecordsScale.entries
 
 /**
  * The Records tab (iOS `RecordsDesignView`): a scale, the chart for its
@@ -95,18 +98,47 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     val anchor = LocalDate.parse(anchorKey)
     var selectedDayKey by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedMonth by rememberSaveable { mutableStateOf<Int?>(null) }
+    var selectedStageID by rememberSaveable { mutableStateOf<String?>(null) }
     var page by remember { mutableStateOf<RecordsPage?>(null) }
     val locked = scale.requiresPlus && !context.queries.authorized
+    val profile = context.queries.state.lifeProfile
 
     LaunchedEffect(context, scale, anchor, locked) {
-        // A locked scale is never computed: there is nothing it may show.
-        if (locked) return@LaunchedEffect
+        // A locked scale is never computed: there is nothing it may show. Life draws from the profile instead.
+        if (locked || scale == RecordsScale.LIFE) return@LaunchedEffect
         val loaded = withContext(Dispatchers.Default) { loadPage(context, scale, anchor) }
         page = loaded
         if (selectedDayKey != null && loaded.cells.none { it.dayKey == selectedDayKey }) selectedDayKey = null
     }
 
+    // Life's allocation walks a whole career, so it is built once per revision and only while Life is shown.
+    var lifeModel by remember { mutableStateOf<Pair<RecordsContext, LifeViewModel?>?>(null) }
+    LaunchedEffect(context, scale, locked) {
+        if (scale != RecordsScale.LIFE || locked || context.queries.state.lifeProfile == null) return@LaunchedEffect
+        if (lifeModel?.first?.queries?.state == context.queries.state && lifeModel?.first?.today == context.today) return@LaunchedEffect
+        val monthly = configuredMonthlySalary(graph)
+        lifeModel = context to withContext(Dispatchers.Default) { context.queries.lifeModel(context.nowMs, monthly) }
+    }
+    val lifeStages = remember(profile, context.today, context.queries.zone) {
+        profile?.let {
+            val now = LifeDates.ms(context.today, context.queries.zone)
+            val all = LifeStageCalculator.stages(it, context.queries.zone, now)
+            Triple(LifeStageCalculator.canvasStages(all, now), LifeStageCalculator.timelineBounds(all, now), now)
+        }
+    }
+    // The present stage starts selected; retirement is never a selection.
+    LaunchedEffect(lifeStages) {
+        val (stages, _, now) = lifeStages ?: return@LaunchedEffect
+        if (selectedStageID == null || stages.none { it.id == selectedStageID }) {
+            selectedStageID = LifeStageCalculator.stageAt(now - 1, stages)?.takeIf { it.kind != LifeStageKind.RETIREMENT }?.id
+        }
+    }
+
     fun tick() = view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+    fun editLife() = if (context.queries.authorized) beginLifeEdit(graph, context, open) else openSettings(Route.Plus)
+    fun dismissLifeSetup() {
+        scope.launch { graph.settings.updateDevice { it.copy(lifeSetupPromptDismissed = true) } }
+    }
     fun setScale(next: RecordsScale) {
         if (next == scale) return
         selectedDayKey = null
@@ -145,17 +177,40 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
 
     val current = page?.takeIf { it.scale == scale && !locked }
     val month = selectedMonth ?: context.today.monthValue
+    val life: @Composable () -> Unit = {
+        val stages = lifeStages
+        val bounds = stages?.second
+        if (stages == null || bounds == null) {
+            LifeSetupCard(text, ::editLife, ::dismissLifeSetup)
+        } else {
+            LifeCanvas(stages.first, bounds, stages.third, selectedStageID, text) { stage ->
+                if (selectedStageID != stage.id) tick()
+                selectedStageID = stage.id
+            }
+            if (profile?.retirementOn == null) {
+                TextButton(onClick = ::editLife) { Text(text.string(R.string.lifeSetRetirement), fontWeight = FontWeight.SemiBold) }
+            }
+        }
+    }
     val chart: @Composable () -> Unit = {
         ChartCard(
             context, scale, anchor, current, selectedDayKey, month, locked, ::shift, ::returnToToday, ::select, ::openDay,
-            ::selectMonth, ::openMonth, onUnlock = { openSettings(Route.Plus) },
+            ::selectMonth, ::openMonth, onUnlock = { openSettings(Route.Plus) }, life = life,
         )
     }
     val conclusion: @Composable () -> Unit = {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            // Life's conclusion is behind Plus too: a locked life never prints a projected number.
+            if (scale == RecordsScale.LIFE && !locked && profile != null) {
+                val loaded = lifeModel?.takeIf { it.first.queries.state == context.queries.state }
+                LifeAllocationCard(loaded?.second, loading = loaded == null, decline = profile.futureIncomeDecline, text = text)
+            }
+            if (context.queries.authorized && profile == null && !device.lifeSetupPromptDismissed && scale == RecordsScale.MONTH) {
+                LifeSetupCard(text, ::editLife, ::dismissLifeSetup)
+            }
             // As on iOS, a period without a summary shows none: locked, or nothing recorded yet.
             val headline = current?.headline
-            if (current != null && headline != null) {
+            if (scale != RecordsScale.LIFE && current != null && headline != null) {
                 val title = if (scale == RecordsScale.YEAR) {
                     Strings.recordsAnnualSummary(androidx.compose.ui.platform.LocalResources.current, current.first.year.toString())
                 } else {
@@ -266,18 +321,22 @@ private fun ChartCard(
     onSelectMonth: (Int) -> Unit,
     onOpenMonth: (Int) -> Unit,
     onUnlock: () -> Unit,
+    life: @Composable () -> Unit,
 ) {
     val text = context.text
     val (first, last) = context.queries.window(scale, anchor)
     val title = periodTitle(context, scale, first, last)
-    val showsToday = context.today.isBefore(first) || context.today.isAfter(last)
+    val isLife = scale == RecordsScale.LIFE
+    val showsToday = !isLife && (context.today.isBefore(first) || context.today.isAfter(last))
     val scheme = MaterialTheme.colorScheme
     RecordsCard {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             CappedFontScale {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    IconButton(onClick = { shift(-1) }) {
-                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, text.string(R.string.recordsPreviousPeriod), tint = scheme.onSurfaceVariant)
+                    if (!isLife) {
+                        IconButton(onClick = { shift(-1) }) {
+                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, text.string(R.string.recordsPreviousPeriod), tint = scheme.onSurfaceVariant)
+                        }
                     }
                     Row(
                         Modifier.weight(1f).heightIn(min = 44.dp).clip(RoundedCornerShape(12.dp))
@@ -297,8 +356,10 @@ private fun ChartCard(
                         Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         if (showsToday) Icon(Icons.Outlined.MyLocation, null, Modifier.padding(start = 6.dp).size(14.dp), tint = scheme.primary)
                     }
-                    IconButton(onClick = { shift(1) }) {
-                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, text.string(R.string.recordsNextPeriod), tint = scheme.onSurfaceVariant)
+                    if (!isLife) {
+                        IconButton(onClick = { shift(1) }) {
+                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, text.string(R.string.recordsNextPeriod), tint = scheme.onSurfaceVariant)
+                        }
                     }
                 }
             }
@@ -306,6 +367,10 @@ private fun ChartCard(
             val cells = page?.takeIf { it.first == first }?.cells
             if (locked) {
                 LockedPlaceholder(LockedKind.SCALE, text, onUnlock)
+                return@Column
+            }
+            if (isLife) {
+                life()
                 return@Column
             }
             if (cells == null) {

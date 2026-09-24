@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Точная дата</string>
     <string name="lifePrecisionYear">Оценка по году</string>
     <string name="lifeProfileFooter">По этим числам рисуется сетка. Они остаются на этом устройстве, пока вы не включите синхронизацию с iCloud.</string>
+    <string name="lifeProfileFooterLocal">По этим числам рисуется сетка. Они хранятся на этом устройстве и в резервной копии Android, если она включена.</string>
     <string name="lifeProfileTitle">Профиль жизни</string>
     <string name="lifeProgressTitle">Прогресс до пенсии</string>
     <string name="lifeProjectedFuture">Будущие недели берут ваш нынешний ритм.</string>

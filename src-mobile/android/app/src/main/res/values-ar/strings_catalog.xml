@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">تاريخ دقيق</string>
     <string name="lifePrecisionYear">مقدَّر من السنة</string>
     <string name="lifeProfileFooter">هذه الأرقام هي ما يرسم الشبكة. وتبقى على هذا الجهاز ما لم تُشغّل مزامنة iCloud.</string>
+    <string name="lifeProfileFooterLocal">هذه الأرقام هي ما يرسم الشبكة. وتبقى على هذا الجهاز، وفي النسخ الاحتياطي الخاص بـ Android إن كان مفعّلًا.</string>
     <string name="lifeProfileTitle">ملف الحياة</string>
     <string name="lifeProgressTitle">التقدم نحو التقاعد</string>
     <string name="lifeProjectedFuture">الأسابيع القادمة مبنية على وتيرتك الحالية.</string>

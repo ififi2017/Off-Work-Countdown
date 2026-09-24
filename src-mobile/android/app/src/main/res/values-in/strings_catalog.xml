@@ -339,6 +339,7 @@
     <string name="lifePrecisionDay">Tanggal pasti</string>
     <string name="lifePrecisionYear">Perkiraan dari tahun</string>
     <string name="lifeProfileFooter">Angka-angka ini yang menggambar kisinya. Semuanya tetap di perangkat ini kecuali kamu menyalakan sinkronisasi iCloud.</string>
+    <string name="lifeProfileFooterLocal">Angka-angka ini yang menggambar kisinya. Semuanya tetap di perangkat ini, dan di cadangan bawaan Android jika kamu mengaktifkannya.</string>
     <string name="lifeProfileTitle">Profil hidup</string>
     <string name="lifeProgressTitle">Progres menuju pensiun</string>
     <string name="lifeProjectedFuture">Minggu ke depan memakai ritmemu sekarang.</string>
