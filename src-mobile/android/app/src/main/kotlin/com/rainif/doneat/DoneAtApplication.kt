@@ -2,6 +2,7 @@ package com.rainif.doneat
 
 import android.app.Application
 import com.rainif.doneat.core.data.DeviceSettingsStore
+import com.rainif.doneat.core.data.FocusStore
 import com.rainif.doneat.core.data.RecordStore
 import com.rainif.doneat.core.data.SessionStore
 import com.rainif.doneat.core.data.SettingsRepository
@@ -10,6 +11,7 @@ import com.rainif.doneat.core.domain.records.LifeProfileDraft
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.session.ScheduleFieldChange
 import com.rainif.doneat.plus.PlusAccess
+import com.rainif.doneat.focus.FocusCoordinator
 import com.rainif.doneat.timer.TimerCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +19,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.ZoneId
 import java.util.Locale
@@ -45,10 +48,21 @@ class AppGraph(app: Application) {
 
     /** The running countdown; its state file is device-local, beside the device settings. */
     val sessions = SessionStore(files.resolve("device/session.json"), records, settings, scope, holidays, systemZone, newId)
-    val timer = TimerCoordinator(app, sessions, settings, scope, nowMs)
 
-    /** Plus, for the pages it gates: charts beyond the free week, Life and history edits. */
+    /** Plus, for the pages it gates: charts beyond the free week, Life, history edits and Focus. */
     val plus = PlusAccess(app)
+
+    /** Focus runs on the same archive; its queue of planned starts is device-local, beside the session. */
+    val focus = FocusStore(records, sessions.session, plus.authorized, files.resolve("device/focus-queue.json"), newId, { app.getString(R.string.focusTaskTitle) })
+    /** A sentence a focus editor leaves for the Focus page to show after it closes. */
+    val focusNotice = MutableStateFlow<String?>(null)
+    val focusCoordinator = FocusCoordinator(app, focus, records, sessions, settings, plus.authorized, scope, nowMs)
+
+    val timer = TimerCoordinator(
+        app, sessions, settings, scope, nowMs,
+        planChanges = combine(records.state, plus.authorized) { state, plus -> state.focusPlanningConfiguration to plus },
+        adjust = { prefs -> focusCoordinator.breakTakeover(records.state.value, prefs.microBreakEnabled) },
+    )
 
     /**
      * The completed run already celebrated in this process. Kept in memory only:
@@ -77,8 +91,10 @@ class AppGraph(app: Application) {
             records.load()
             sessions.load()
             timer.reconcile()
+            focusCoordinator.reconcile()
             _loaded.value = true
             timer.start()
+            focusCoordinator.start()
         }
         scope.launch(Dispatchers.IO) {
             // A damaged or missing dataset only turns holiday assignments off; the schedule still runs.

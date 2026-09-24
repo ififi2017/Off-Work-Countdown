@@ -32,7 +32,12 @@ class MainActivity : FragmentActivity() {
         lifecycleScope.launch(Dispatchers.IO) { Reminders.sync(applicationContext).revalidate(System.currentTimeMillis()) }
         // Midnight resets, expired marks and a finished manual run: settled before the timer draws.
         val graph = (application as DoneAtApplication).graph
-        lifecycleScope.launch { if (graph.loaded.value) graph.timer.reconcile() }
+        lifecycleScope.launch {
+            if (graph.loaded.value) {
+                graph.timer.reconcile()
+                graph.focusCoordinator.reconcile()
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

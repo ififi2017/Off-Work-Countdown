@@ -35,6 +35,11 @@ sealed interface Route : NavKey {
     @Serializable data class RecordsDayEdit(val dayKey: String) : Route
     @Serializable data object RecordsLifeEdit : Route
 
+    /** Focus: creating a task (in a block, the next free one, or a favourite), editing one, the timer. */
+    @Serializable data class FocusCreate(val blockStartAtMs: Long?, val currentOrNext: Boolean, val favoriteID: String?) : Route
+    @Serializable data class FocusTaskEdit(val taskID: String) : Route
+    @Serializable data object FocusTimerSettings : Route
+
     /** The schedule page's shift types, edited within its draft. */
     @Serializable data object ShiftTypes : Route
     @Serializable data class ShiftTypeEdit(val id: String, val isNew: Boolean) : Route

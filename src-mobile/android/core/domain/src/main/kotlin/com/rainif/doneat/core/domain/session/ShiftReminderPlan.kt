@@ -13,7 +13,7 @@ import com.rainif.doneat.core.domain.schedule.ScheduleRules
  * next shift's, read from the committed schedule when today keeps other hours.
  */
 object ShiftReminderPlan {
-    fun reminders(session: ShiftSession, nowMs: Double, inputs: ReminderInputs): List<Reminder> {
+    fun reminders(session: ShiftSession, nowMs: Double, inputs: ReminderInputs, adjust: (List<Reminder>) -> List<Reminder> = { it }): List<Reminder> {
         val current = session.snapshot(nowMs)
         val effective = ScheduleRules.reminders(session.rulesInput(nowMs), inputs)
         val nextSource = if (session.projectsFutureFromBase(nowMs)) RulesSource.BASE else RulesSource.EFFECTIVE
@@ -21,15 +21,19 @@ object ShiftReminderPlan {
         // Rest days and settlement still yield a `current:` window from the rules; neither is a shift to remind about.
         val includeCurrent = current == null ||
             ((current.isWorkday || session.isForcedWorkday(current)) && !session.isShiftComplete(current))
-        return ReminderPlanner.shiftReminders(effective, next, includeCurrent)
+        return ReminderPlanner.shiftReminders(effective, next, includeCurrent).let(adjust)
     }
 
-    /** Nothing before setup, or while neither a schedule nor a run is live. */
-    fun alarms(session: ShiftSession, nowMs: Double, inputs: ReminderInputs): List<PlannedReminder> {
+    /**
+     * Nothing before setup, or while neither a schedule nor a run is live.
+     * [adjust] lets a plan take over the break reminders (iOS
+     * `applyingFocusBreakTakeover`).
+     */
+    fun alarms(session: ShiftSession, nowMs: Double, inputs: ReminderInputs, adjust: (List<Reminder>) -> List<Reminder> = { it }): List<PlannedReminder> {
         if (!session.env.onboardingComplete || !session.shouldQuerySnapshot(nowMs)) return emptyList()
         val current = session.snapshot(nowMs)
         // After an early clock-off only the next shift remains; with no next shift, nothing does.
         val endedEarlyNext = current?.takeIf(session::isEndedEarly)?.let { it.nextShiftStartAtMs ?: Double.POSITIVE_INFINITY }
-        return ReminderPlanner.shiftAlarms(reminders(session, nowMs, inputs), nowMs, endedEarlyNext)
+        return ReminderPlanner.shiftAlarms(reminders(session, nowMs, inputs, adjust), nowMs, endedEarlyNext)
     }
 }
