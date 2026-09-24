@@ -74,8 +74,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
-/** The scales this build draws; year and life follow in their own changes. */
-private val SCALES = listOf(RecordsScale.WEEK, RecordsScale.MONTH)
+/** The scales this build draws; life follows in its own change. */
+private val SCALES = listOf(RecordsScale.WEEK, RecordsScale.MONTH, RecordsScale.YEAR)
 
 /**
  * The Records tab (iOS `RecordsDesignView`): a scale, the chart for its
@@ -94,9 +94,13 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     var anchorKey by rememberSaveable { mutableStateOf(context.today.toString()) }
     val anchor = LocalDate.parse(anchorKey)
     var selectedDayKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedMonth by rememberSaveable { mutableStateOf<Int?>(null) }
     var page by remember { mutableStateOf<RecordsPage?>(null) }
+    val locked = scale.requiresPlus && !context.queries.authorized
 
-    LaunchedEffect(context, scale, anchor) {
+    LaunchedEffect(context, scale, anchor, locked) {
+        // A locked scale is never computed: there is nothing it may show.
+        if (locked) return@LaunchedEffect
         val loaded = withContext(Dispatchers.Default) { loadPage(context, scale, anchor) }
         page = loaded
         if (selectedDayKey != null && loaded.cells.none { it.dayKey == selectedDayKey }) selectedDayKey = null
@@ -106,6 +110,7 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     fun setScale(next: RecordsScale) {
         if (next == scale) return
         selectedDayKey = null
+        selectedMonth = if (next == RecordsScale.YEAR) context.today.monthValue else null
         scope.launch { graph.settings.updateDevice { it.copy(recordsScale = next.raw) } }
         tick()
     }
@@ -116,6 +121,19 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
     fun openDay(cell: RecordsDayCell) {
         if (cell.appearance == RecordsDayAppearance.LOCKED) openSettings(Route.Plus) else open(Route.RecordsDay(cell.dayKey))
     }
+    fun openMonth(month: Int) {
+        anchorKey = LocalDate.of(anchor.year, month, 1).toString()
+        setScale(RecordsScale.MONTH)
+    }
+    fun selectMonth(month: Int) {
+        if (selectedMonth != month) tick()
+        selectedMonth = month
+    }
+    fun returnToToday() {
+        anchorKey = context.today.toString()
+        if (scale == RecordsScale.YEAR) selectedMonth = context.today.monthValue
+        tick()
+    }
     fun select(cell: RecordsDayCell) {
         if (selectedDayKey == cell.dayKey) {
             openDay(cell)
@@ -125,13 +143,29 @@ fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?)
         }
     }
 
-    val current = page?.takeIf { it.scale == scale }
+    val current = page?.takeIf { it.scale == scale && !locked }
+    val month = selectedMonth ?: context.today.monthValue
     val chart: @Composable () -> Unit = {
-        ChartCard(context, scale, anchor, current, selectedDayKey, ::shift, { anchorKey = context.today.toString(); tick() }, ::select, ::openDay)
+        ChartCard(
+            context, scale, anchor, current, selectedDayKey, month, locked, ::shift, ::returnToToday, ::select, ::openDay,
+            ::selectMonth, ::openMonth, onUnlock = { openSettings(Route.Plus) },
+        )
     }
     val conclusion: @Composable () -> Unit = {
-        if (current != null) {
-            HeadlineCard(context, periodTitle(context, scale, current.first, current.last), current.headline) { openSettings(Route.Plus) }
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            // As on iOS, a period without a summary shows none: locked, or nothing recorded yet.
+            val headline = current?.headline
+            if (current != null && headline != null) {
+                val title = if (scale == RecordsScale.YEAR) {
+                    Strings.recordsAnnualSummary(androidx.compose.ui.platform.LocalResources.current, current.first.year.toString())
+                } else {
+                    periodTitle(context, scale, current.first, current.last)
+                }
+                HeadlineCard(context, title, headline)
+            }
+            if (scale == RecordsScale.YEAR && !locked) {
+                OpenMonthButton(text, LocalDate.of(anchor.year, month, 1)) { openMonth(month) }
+            }
         }
     }
 
@@ -192,7 +226,17 @@ private fun ScalePicker(text: RecordsText, scale: RecordsScale, onSelect: (Recor
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
             SCALES.forEachIndexed { index, option ->
                 SegmentedButton(option == scale, { onSelect(option) }, SegmentedButtonDefaults.itemShape(index, SCALES.size)) {
-                    Text(text.string(if (option == RecordsScale.WEEK) R.string.recordsScaleWeek else R.string.recordsScaleMonth), maxLines = 1)
+                    Text(
+                        text.string(
+                            when (option) {
+                                RecordsScale.WEEK -> R.string.recordsScaleWeek
+                                RecordsScale.MONTH -> R.string.recordsScaleMonth
+                                RecordsScale.YEAR -> R.string.recordsScaleYear
+                                RecordsScale.LIFE -> R.string.recordsScaleLife
+                            },
+                        ),
+                        maxLines = 1,
+                    )
                 }
             }
         }
@@ -213,10 +257,15 @@ private fun ChartCard(
     anchor: LocalDate,
     page: RecordsPage?,
     selectedDayKey: String?,
+    selectedMonth: Int,
+    locked: Boolean,
     shift: (Long) -> Unit,
     returnToToday: () -> Unit,
     onSelect: (RecordsDayCell) -> Unit,
     onOpen: (RecordsDayCell) -> Unit,
+    onSelectMonth: (Int) -> Unit,
+    onOpenMonth: (Int) -> Unit,
+    onUnlock: () -> Unit,
 ) {
     val text = context.text
     val (first, last) = context.queries.window(scale, anchor)
@@ -255,12 +304,21 @@ private fun ChartCard(
             }
             HorizontalDivider(color = scheme.outlineVariant)
             val cells = page?.takeIf { it.first == first }?.cells
+            if (locked) {
+                LockedPlaceholder(LockedKind.SCALE, text, onUnlock)
+                return@Column
+            }
             if (cells == null) {
                 // The first load of a window: keep its height so the page does not jump.
                 Box(Modifier.fillMaxWidth().heightIn(min = if (scale == RecordsScale.WEEK) 188.dp else 280.dp))
+                return@Column
             } else {
                 when (scale) {
                     RecordsScale.WEEK -> WeekStrips(cells, selectedDayKey, text, onSelect, onOpen)
+                    RecordsScale.YEAR -> {
+                        YearCanvas(cells, first.year, selectedMonth, text, onSelectMonth, onOpenMonth)
+                        return@Column
+                    }
                     else -> MonthGrid(
                         cells, context.queries.gridLeadingBlanks(first),
                         weekdayLabels(text, context.queries.window(RecordsScale.WEEK, first).first),
@@ -311,30 +369,29 @@ private fun SelectedDay(cell: RecordsDayCell, text: RecordsText, onOpen: () -> U
 
 /**
  * The period's conclusion (iOS `RecordsHeadlineView`): work, overtime,
- * income, then the time breakdown. Without Plus it is a lock, built from
- * nothing, so no figure can reach it.
+ * income, then the time breakdown. Without Plus no summary is built, so
+ * there is no card for a figure to reach.
  */
 @Composable
-private fun HeadlineCard(context: RecordsContext, title: String, summary: RecordsHeadlineSummary?, onUnlock: () -> Unit) {
-    val text = context.text
-    val scheme = MaterialTheme.colorScheme
-    when {
-        summary != null -> RecordsCard {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(title, Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleMedium)
-                    HelpButton(title, text.string(R.string.recordsSummaryHelp))
-                }
-                HeadlineContent(text, summary)
+private fun HeadlineCard(context: RecordsContext, title: String, summary: RecordsHeadlineSummary) {
+    RecordsCard {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(title, Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleMedium)
+                HelpButton(title, context.text.string(R.string.recordsSummaryHelp))
             }
+            HeadlineContent(context.text, summary)
         }
-        context.queries.authorized -> RecordsCard {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(text.string(R.string.recordsUnrecorded), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
-            }
-        }
-        else -> LockedPlaceholder(LockedKind.SUMMARY, text, onUnlock)
+    }
+}
+
+/** From the year to one of its months (iOS "Open the selected month"). */
+@Composable
+private fun OpenMonthButton(text: RecordsText, month: LocalDate, onOpen: () -> Unit) {
+    val res = androidx.compose.ui.platform.LocalResources.current
+    TextButton(onClick = onOpen, modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp)) {
+        Text(Strings.recordsOpenSelectedMonth(res, text.month(month)))
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(18.dp))
     }
 }
 

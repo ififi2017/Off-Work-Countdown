@@ -5,6 +5,7 @@ import com.rainif.doneat.core.data.DeviceSettingsStore
 import com.rainif.doneat.core.data.RecordStore
 import com.rainif.doneat.core.data.SessionStore
 import com.rainif.doneat.core.data.SettingsRepository
+import com.rainif.doneat.core.domain.records.DayEditDraft
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.session.ScheduleFieldChange
 import com.rainif.doneat.plus.PlusAccess
@@ -59,6 +60,9 @@ class AppGraph(app: Application) {
      * rotating, or opening a shift type from the page, never loses it.
      */
     val scheduleDraft = MutableStateFlow(ScheduleFieldChange())
+
+    /** The Records day editor's unsaved draft, kept like [scheduleDraft] so rotation never loses it. */
+    val dayEditDraft = MutableStateFlow<DayEditDraft?>(null)
 
     private val _loaded = MutableStateFlow(false)
     /** False until the archive has been read: until then nothing can tell setup from a restored install. */

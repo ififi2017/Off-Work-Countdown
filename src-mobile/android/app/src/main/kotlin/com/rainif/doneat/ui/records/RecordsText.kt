@@ -36,6 +36,7 @@ class RecordsText(
     private val monthDay = pattern("MMMd")
     private val weekdayNarrow = pattern("EEEEE")
     private val monthYear = pattern("LLLLy")
+    private val month = pattern("LLLL")
     private val time = pattern(if (use24Hour) "Hm" else "hm")
 
     fun string(id: Int) = res.getString(id)
@@ -47,9 +48,14 @@ class RecordsText(
     fun monthDay(day: LocalDate): String = monthDay.format(day)
     fun weekdayNarrow(day: LocalDate): String = weekdayNarrow.format(day)
     fun monthYear(day: LocalDate): String = monthYear.format(day)
+    /** "August": a compact month control where the year is already visible. */
+    fun month(day: LocalDate): String = month.format(day)
 
     /** A clock time as read in the records zone. */
     fun time(atMs: Double): String = time.format(Instant.ofEpochMilli(atMs.toLong()).atZone(zone))
+
+    /** A wall-clock reading, as a picker shows it. */
+    fun clock(value: java.time.LocalTime): String = time.format(value)
 
     /** Each end isolated, so an AM/PM marker stays with its own digits in either direction. */
     fun timeRange(startMs: Double, endMs: Double) = "${TimerText.isolate(time(startMs))} – ${TimerText.isolate(time(endMs))}"

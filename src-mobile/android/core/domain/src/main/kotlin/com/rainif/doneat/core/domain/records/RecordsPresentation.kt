@@ -412,3 +412,99 @@ object RecordsAccess {
 
     fun canRevealDay(day: LocalDate, today: LocalDate, authorized: Boolean) = authorized || freeWindowContains(day, today)
 }
+
+/** One cell of the collapsed year: a slice of the year, however many days it covers. */
+data class RecordsYearBucket(
+    val index: Int,
+    /** Epoch days, half-open: `[start, end)`; fractional when a bucket splits a day. */
+    val start: Double,
+    val end: Double,
+    val month: Int,
+    val kind: RecordsDayAppearance,
+    val workMs: Long,
+    val isProjection: Boolean,
+    val hasEstimatedWork: Boolean,
+    val peakOvertimeMs: Long,
+    val isFuture: Boolean,
+)
+
+/** Samples a year of cells into a grid's worth of buckets (iOS `RecordsYearSampler`). */
+object RecordsYearSampler {
+    fun buckets(from: LocalDate, to: LocalDate, count: Int, cells: List<RecordsDayCell>): List<RecordsYearBucket> {
+        val lower = from.toEpochDay().toDouble()
+        val upper = to.toEpochDay().toDouble()
+        if (count <= 0 || upper <= lower) return emptyList()
+        val span = upper - lower
+        return (0 until count).map { index ->
+            val start = lower + span * index / count
+            val end = lower + span * (index + 1) / count
+            val inside = cells.filter { val day = it.date.toEpochDay().toDouble(); day >= start && day < end }
+            val kind = when {
+                inside.any { it.appearance == RecordsDayAppearance.CORRECTED } -> RecordsDayAppearance.CORRECTED
+                inside.any { it.appearance == RecordsDayAppearance.RECORDED } -> RecordsDayAppearance.RECORDED
+                // A historical projection keeps its honest "unrecorded" day; the heat map still draws its hours.
+                inside.any { it.isProjection && it.workMs + it.overtimeMs > 0 } -> RecordsDayAppearance.PLANNED
+                inside.any { it.appearance == RecordsDayAppearance.PLANNED } -> RecordsDayAppearance.PLANNED
+                inside.any { it.appearance == RecordsDayAppearance.LOCKED } -> RecordsDayAppearance.LOCKED
+                else -> RecordsDayAppearance.UNRECORDED
+            }
+            RecordsYearBucket(
+                index = index,
+                start = start,
+                end = end,
+                month = LocalDate.ofEpochDay(kotlin.math.floor(start).toLong()).monthValue,
+                kind = kind,
+                workMs = inside.sumOf { it.workMs },
+                isProjection = inside.any { it.isProjection },
+                hasEstimatedWork = inside.any {
+                    (it.isFuture || it.isProjection || it.appearance == RecordsDayAppearance.PLANNED) && it.workMs + it.overtimeMs > 0
+                },
+                peakOvertimeMs = inside.filter {
+                    !it.isFuture && !it.isProjection && (it.appearance == RecordsDayAppearance.RECORDED || it.appearance == RecordsDayAppearance.CORRECTED)
+                }.maxOfOrNull { it.overtimeMs } ?: 0,
+                isFuture = inside.isNotEmpty() && inside.all { it.isFuture },
+            )
+        }
+    }
+}
+
+/**
+ * A grid of square cells filling a size (iOS `RecordsCanvasGrid`): at least
+ * [minimumColumns] × [minimumRows], cells near [targetCell].
+ */
+class RecordsCanvasGrid(width: Float, height: Float, targetCell: Float, val gap: Float, minimumColumns: Int, minimumRows: Int) {
+    val columns = max(minimumColumns, ((width + gap) / (targetCell + gap)).toInt())
+    val rows = max(minimumRows, ((height + gap) / (targetCell + gap)).toInt())
+    val cell = max(2f, min((width - gap * max(columns - 1, 0)) / columns, (height - gap * max(rows - 1, 0)) / rows))
+    val count get() = columns * rows
+
+    fun origin(index: Int): Pair<Float, Float> = (index % columns) * (cell + gap) to (index / columns) * (cell + gap)
+
+    fun index(x: Float, y: Float): Int? {
+        val pitch = cell + gap
+        if (pitch <= 0 || x < 0 || y < 0) return null
+        val column = (x / pitch).toInt()
+        val row = (y / pitch).toInt()
+        return if (column < columns && row < rows) row * columns + column else null
+    }
+
+    /** A contiguous selection as one block per row, so a month reads as one range, not dozens of dots. */
+    fun selectionRows(indices: List<Int>): List<Pair<Int, Int>> {
+        val sorted = indices.toSortedSet().toList()
+        if (sorted.isEmpty()) return emptyList()
+        val ranges = mutableListOf<Pair<Int, Int>>()
+        var start = sorted[0]
+        var previous = sorted[0]
+        for (index in sorted.drop(1)) {
+            if (index == previous + 1 && index / columns == previous / columns) {
+                previous = index
+            } else {
+                ranges += start to previous
+                start = index
+                previous = index
+            }
+        }
+        ranges += start to previous
+        return ranges
+    }
+}

@@ -1,5 +1,15 @@
 package com.rainif.doneat.ui.records
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import com.rainif.doneat.core.domain.records.RecordsCanvasGrid
+import com.rainif.doneat.core.domain.records.RecordsYearSampler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -452,3 +462,126 @@ fun LockedPlaceholder(kind: LockedKind, text: RecordsText, onUnlock: () -> Unit)
 
 /** A narrow weekday label per grid column, in the week's order. */
 fun weekdayLabels(text: RecordsText, weekStart: LocalDate) = (0L until 7L).map { text.weekdayNarrow(weekStart.plusDays(it)) }
+
+/**
+ * The collapsed year (iOS `RecordsYearCanvas`): depth says when it was heavy,
+ * hatching marks estimated work, and the selected month is one outline. The
+ * month buttons under it carry the same choices for the screen reader.
+ */
+@Composable
+fun YearCanvas(
+    cells: List<RecordsDayCell>,
+    year: Int,
+    selectedMonth: Int?,
+    text: RecordsText,
+    onSelectMonth: (Int) -> Unit,
+    onOpenMonth: (Int) -> Unit,
+) {
+    val colors = LocalDoneAtRecordsColors.current
+    val scheme = MaterialTheme.colorScheme
+    val density = LocalDensity.current
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        BoxWithConstraints(Modifier.fillMaxWidth().height(220.dp).clearAndSetSemantics {}) {
+            val first = cells.firstOrNull()?.date ?: return@BoxWithConstraints
+            val end = (cells.lastOrNull()?.date ?: first).plusDays(1)
+            val grid = with(density) {
+                RecordsCanvasGrid(maxWidth.toPx(), maxHeight.toPx(), 12.dp.toPx(), 3.dp.toPx(), minimumColumns = 16, minimumRows = 8)
+            }
+            val buckets = remember(cells, grid.count) { RecordsYearSampler.buckets(first, end, grid.count, cells) }
+            val corner = with(density) { min(3.dp.toPx(), grid.cell / 3) }
+            val line = with(density) { 1.dp.toPx() }
+            Canvas(
+                Modifier.fillMaxSize().pointerInput(buckets, grid) {
+                    detectTapGestures(
+                        onTap = { point -> grid.index(point.x, point.y)?.let(buckets::getOrNull)?.let { onSelectMonth(it.month) } },
+                        onDoubleTap = { point -> grid.index(point.x, point.y)?.let(buckets::getOrNull)?.let { onOpenMonth(it.month) } },
+                    )
+                },
+            ) {
+                buckets.forEach { bucket ->
+                    val (x, y) = grid.origin(bucket.index)
+                    val fill = when (bucket.kind) {
+                        RecordsDayAppearance.LOCKED -> scheme.surfaceContainerHighest.copy(alpha = 0.86f)
+                        RecordsDayAppearance.UNRECORDED, RecordsDayAppearance.REST -> scheme.surfaceContainerHighest.copy(alpha = 0.65f)
+                        RecordsDayAppearance.PLANNED -> colors.work.copy(alpha = RecordsWorkIntensity.opacity(0, estimated = true).toFloat())
+                        RecordsDayAppearance.RECORDED, RecordsDayAppearance.CORRECTED ->
+                            colors.work.copy(alpha = RecordsWorkIntensity.opacity(bucket.peakOvertimeMs, bucket.isFuture).toFloat())
+                    }
+                    val size = Size(grid.cell, grid.cell)
+                    drawRoundRect(fill, Offset(x, y), size, CornerRadius(corner))
+                    if (bucket.hasEstimatedWork) {
+                        clipRect(x, y, x + grid.cell, y + grid.cell) {
+                            var lineX = x - grid.cell
+                            while (lineX <= x + grid.cell) {
+                                drawLine(colors.work.copy(alpha = 0.28f), Offset(lineX, y), Offset(lineX + grid.cell, y + grid.cell), line)
+                                lineX += 4.dp.toPx()
+                            }
+                        }
+                    }
+                    if (bucket.kind == RecordsDayAppearance.CORRECTED) {
+                        drawRoundRect(scheme.onSurface.copy(alpha = 0.72f), Offset(x + line / 2, y + line / 2), Size(grid.cell - line, grid.cell - line), CornerRadius(corner), style = Stroke(line))
+                    }
+                }
+                if (selectedMonth != null) {
+                    grid.selectionRows(buckets.filter { it.month == selectedMonth }.map { it.index }).forEach { (from, to) ->
+                        val (left, top) = grid.origin(from)
+                        val (right, _) = grid.origin(to)
+                        drawRoundRect(
+                            scheme.primary.copy(alpha = 0.8f),
+                            Offset(left - grid.gap / 2, top - grid.gap / 2),
+                            Size(right + grid.cell - left + grid.gap, grid.cell + grid.gap),
+                            CornerRadius(corner),
+                            style = Stroke(1.25.dp.toPx()),
+                        )
+                    }
+                }
+            }
+        }
+        CappedFontScale {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                (1..12).chunked(4).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        row.forEach { month ->
+                            val selected = month == selectedMonth
+                            val date = LocalDate.of(year, month, 1)
+                            Box(
+                                Modifier
+                                    .weight(1f)
+                                    .heightIn(min = 44.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(if (selected) scheme.primary.copy(alpha = 0.16f) else scheme.surfaceContainerHighest)
+                                    .border(if (selected) 1.25.dp else 0.dp, if (selected) scheme.primary else Color.Transparent, RoundedCornerShape(10.dp))
+                                    .pointerInput(month) { detectTapGestures(onTap = { onSelectMonth(month) }, onDoubleTap = { onOpenMonth(month) }) }
+                                    .semantics {
+                                        contentDescription = text.monthYear(date)
+                                        role = Role.Button
+                                        this.selected = selected
+                                        onClick { onSelectMonth(month); true }
+                                        customActions = listOf(CustomAccessibilityAction(text.string(R.string.recordsSeeThisMonth)) { onOpenMonth(month); true })
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text.month(date),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                                    color = if (selected) scheme.primary else scheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    modifier = Modifier.padding(horizontal = 4.dp).clearAndSetSemantics {},
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Text(
+            text.string(R.string.recordsHeatScale),
+            Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.labelSmall,
+            color = scheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
