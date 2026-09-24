@@ -46,6 +46,7 @@ fun DoneAtTheme(
     CompositionLocalProvider(
         LocalDoneAtStateColors provides DoneAtStateColors.from(scheme, dark),
         LocalDoneAtMotion provides DoneAtMotion(reduced),
+        LocalDoneAtRecordsColors provides if (dark) DoneAtRecordsColors.dark else DoneAtRecordsColors.light,
     ) {
         MaterialTheme(colorScheme = scheme, shapes = DoneAtShapes.material, typography = DoneAtType.material, content = content)
     }

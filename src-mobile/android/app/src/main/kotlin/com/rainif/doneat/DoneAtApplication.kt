@@ -7,6 +7,7 @@ import com.rainif.doneat.core.data.SessionStore
 import com.rainif.doneat.core.data.SettingsRepository
 import com.rainif.doneat.core.domain.schedule.HolidayCalendar
 import com.rainif.doneat.core.domain.session.ScheduleFieldChange
+import com.rainif.doneat.plus.PlusAccess
 import com.rainif.doneat.timer.TimerCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +44,9 @@ class AppGraph(app: Application) {
     /** The running countdown; its state file is device-local, beside the device settings. */
     val sessions = SessionStore(files.resolve("device/session.json"), records, settings, scope, holidays, systemZone, newId)
     val timer = TimerCoordinator(app, sessions, settings, scope, nowMs)
+
+    /** Plus, for the pages it gates: charts beyond the free week, Life and history edits. */
+    val plus = PlusAccess(app)
 
     /**
      * The completed run already celebrated in this process. Kept in memory only:
