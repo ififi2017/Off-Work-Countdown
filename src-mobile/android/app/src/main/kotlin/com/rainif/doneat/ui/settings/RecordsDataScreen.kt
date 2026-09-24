@@ -47,6 +47,7 @@ import com.rainif.doneat.ui.components.SettingsFooter
 import com.rainif.doneat.ui.components.SettingsGroup
 import com.rainif.doneat.ui.components.ValueRow
 import com.rainif.doneat.ui.files.BackupFiles
+import com.rainif.doneat.ui.timer.EarningsGate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,6 +61,10 @@ import java.time.format.DateTimeFormatter
  * An import is read (at most 25 MB), previewed on a copy, and written only
  * after the user confirms, in one archive write computed against the archive
  * as it is at that moment. Same-key conflicts keep this device's copy.
+ *
+ * While earnings are hidden, importing, exporting and deleting first ask for
+ * the device's owner (iOS `confirmRecordsOwnerIfNeeded`): a backup carries
+ * salary, so it opens no more easily than the hidden figure does.
  */
 @Composable
 fun RecordsDataScreen(graph: AppGraph, onBack: () -> Unit) {
@@ -67,6 +72,8 @@ fun RecordsDataScreen(graph: AppGraph, onBack: () -> Unit) {
     val res = LocalResources.current
     val scope = rememberCoroutineScope()
     val prefs by graph.settings.preferences.collectAsStateWithLifecycle()
+    val device by graph.settings.device.collectAsStateWithLifecycle()
+    val ownerReason = stringResource(R.string.recordsOwnerAuthReason)
     var pending by remember { mutableStateOf<Pair<ByteArray, ImportPreview.Ready>?>(null) }
     var reading by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
@@ -97,7 +104,17 @@ fun RecordsDataScreen(graph: AppGraph, onBack: () -> Unit) {
             if (!written) message = res.getString(R.string.recordsOperationExportFailed)
         }
     }
-    fun export(includeLife: Boolean) {
+    // With no screen lock nothing can confirm anyone, so the action goes ahead, as on iOS.
+    fun asOwner(action: suspend () -> Unit) {
+        scope.launch {
+            if (device.hideEarnings && EarningsGate.confirmOwner(context, ownerReason) == EarningsGate.Result.REFUSED) {
+                message = res.getString(R.string.recordsOperationOwnerAuthenticationFailed)
+            } else {
+                action()
+            }
+        }
+    }
+    fun export(includeLife: Boolean) = asOwner {
         exportWithLife = includeLife
         val date = DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now())
         create.launch(if (includeLife) "doneat-records-$date.json" else "doneat-records-without-life-$date.json")
@@ -134,7 +151,7 @@ fun RecordsDataScreen(graph: AppGraph, onBack: () -> Unit) {
             confirmButton = {
                 TextButton(onClick = {
                     pending = null
-                    scope.launch {
+                    asOwner {
                         val skipped = RecordsTransfer.commit(graph.records, bytes)
                         message = if (skipped != null) Strings.recordsImportReport(res, skipped.toString()) else res.getString(R.string.recordsOperationImportFailed)
                     }
@@ -151,7 +168,7 @@ fun RecordsDataScreen(graph: AppGraph, onBack: () -> Unit) {
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
-                    scope.launch { RecordsTransfer.deleteRecords(graph.records) }
+                    asOwner { RecordsTransfer.deleteRecords(graph.records) }
                 }) { Text(stringResource(R.string.recordsDeleteAll), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancelAction)) } },
