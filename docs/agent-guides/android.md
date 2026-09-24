@@ -52,6 +52,12 @@ locale and validation rules apply.
   vectors in `res/drawable/ic_launcher_*` use the same paths.
 - Money reaches the screen only through `TimerText.money`, which masks it
   while earnings are hidden. Revealing goes through `EarningsGate`.
+- Records pages read one archive revision through `records/RecordsQueries`
+  and draw finished models (`RecordsDayCanvasModel`, day cells, headline);
+  views never intersect shifts, clip overtime or derive lunch. Without Plus a
+  locked day or summary is never built, so nothing behind the lock can reach
+  a view or the accessibility tree. Plus comes from `PlusAccess`; its debug
+  switch lives only in the `debug` source set.
 - UI takes colour, shape, motion and type from `:core:designsystem` tokens
   (`docs/android/design-tokens-adr.md`); screens do not inline hex colours,
   radii or durations. Check new tokens in the Debug-only gallery

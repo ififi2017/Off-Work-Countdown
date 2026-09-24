@@ -1,0 +1,428 @@
+package com.rainif.doneat.ui.records
+
+import android.view.HapticFeedbackConstants
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.automirrored.outlined.ListAlt
+import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rainif.doneat.AppGraph
+import com.rainif.doneat.R
+import com.rainif.doneat.core.designsystem.DoneAtSpacing
+import com.rainif.doneat.core.domain.records.RecordsDayAppearance
+import com.rainif.doneat.core.domain.records.RecordsDayCell
+import com.rainif.doneat.core.domain.records.RecordsHeadlineSummary
+import com.rainif.doneat.core.domain.records.RecordsScale
+import com.rainif.doneat.l10n.Strings
+import com.rainif.doneat.ui.Route
+import com.rainif.doneat.ui.timer.EarningsVisibilityButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.time.LocalDate
+
+/** The scales this build draws; year and life follow in their own changes. */
+private val SCALES = listOf(RecordsScale.WEEK, RecordsScale.MONTH)
+
+/**
+ * The Records tab (iOS `RecordsDesignView`): a scale, the chart for its
+ * window, and the conclusion under it. On a wide window the chart and the
+ * conclusion scroll side by side.
+ */
+@Composable
+fun RecordsScreen(graph: AppGraph, open: (Route) -> Unit, openSettings: (Route?) -> Unit) {
+    val context = rememberRecordsContext(graph)
+    val text = context.text
+    val device by graph.settings.device.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    val view = LocalView.current
+    val snackbar = remember { SnackbarHostState() }
+    val scale = RecordsScale.fromRaw(device.recordsScale)?.takeIf { it in SCALES } ?: RecordsScale.MONTH
+    var anchorKey by rememberSaveable { mutableStateOf(context.today.toString()) }
+    val anchor = LocalDate.parse(anchorKey)
+    var selectedDayKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var page by remember { mutableStateOf<RecordsPage?>(null) }
+
+    LaunchedEffect(context, scale, anchor) {
+        val loaded = withContext(Dispatchers.Default) { loadPage(context, scale, anchor) }
+        page = loaded
+        if (selectedDayKey != null && loaded.cells.none { it.dayKey == selectedDayKey }) selectedDayKey = null
+    }
+
+    fun tick() = view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+    fun setScale(next: RecordsScale) {
+        if (next == scale) return
+        selectedDayKey = null
+        scope.launch { graph.settings.updateDevice { it.copy(recordsScale = next.raw) } }
+        tick()
+    }
+    fun shift(by: Long) {
+        anchorKey = context.queries.shiftAnchor(anchor, scale, by).toString()
+        selectedDayKey = null
+    }
+    fun openDay(cell: RecordsDayCell) {
+        if (cell.appearance == RecordsDayAppearance.LOCKED) openSettings(Route.Plus) else open(Route.RecordsDay(cell.dayKey))
+    }
+    fun select(cell: RecordsDayCell) {
+        if (selectedDayKey == cell.dayKey) {
+            openDay(cell)
+        } else {
+            selectedDayKey = cell.dayKey
+            tick()
+        }
+    }
+
+    val current = page?.takeIf { it.scale == scale }
+    val chart: @Composable () -> Unit = {
+        ChartCard(context, scale, anchor, current, selectedDayKey, ::shift, { anchorKey = context.today.toString(); tick() }, ::select, ::openDay)
+    }
+    val conclusion: @Composable () -> Unit = {
+        if (current != null) {
+            HeadlineCard(context, periodTitle(context, scale, current.first, current.last), current.headline) { openSettings(Route.Plus) }
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+            BoxWithConstraints(Modifier.safeDrawingPadding()) {
+                val twoColumns = maxWidth >= 720.dp
+                Column(Modifier.fillMaxSize()) {
+                    Header(graph, text, onAllRecords = { open(Route.RecordsAll) }) { note -> scope.launch { snackbar.showSnackbar(note) } }
+                    if (twoColumns) {
+                        Column(Modifier.padding(horizontal = DoneAtSpacing.page), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            ScalePicker(text, scale, ::setScale)
+                            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl)) { chart() }
+                                Column(Modifier.width(420.dp).verticalScroll(rememberScrollState()).padding(bottom = DoneAtSpacing.xl)) { conclusion() }
+                            }
+                        }
+                    } else {
+                        Column(
+                            Modifier.verticalScroll(rememberScrollState()).padding(horizontal = DoneAtSpacing.page).padding(bottom = DoneAtSpacing.xl),
+                            verticalArrangement = Arrangement.spacedBy(14.dp),
+                        ) {
+                            ScalePicker(text, scale, ::setScale)
+                            chart()
+                            conclusion()
+                        }
+                    }
+                }
+            }
+        }
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding())
+    }
+}
+
+@Composable
+private fun Header(graph: AppGraph, text: RecordsText, onAllRecords: () -> Unit, onShownWithoutLock: (String) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = DoneAtSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text.string(R.string.recordsTitle),
+            Modifier.weight(1f).padding(start = DoneAtSpacing.page - DoneAtSpacing.xs).semantics { heading() },
+            style = MaterialTheme.typography.headlineMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        EarningsVisibilityButton(graph, onShownWithoutLock)
+        IconButton(onClick = onAllRecords) {
+            Icon(Icons.AutoMirrored.Outlined.ListAlt, text.string(R.string.recordsAllRecords), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun ScalePicker(text: RecordsText, scale: RecordsScale, onSelect: (RecordsScale) -> Unit) {
+    CappedFontScale {
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            SCALES.forEachIndexed { index, option ->
+                SegmentedButton(option == scale, { onSelect(option) }, SegmentedButtonDefaults.itemShape(index, SCALES.size)) {
+                    Text(text.string(if (option == RecordsScale.WEEK) R.string.recordsScaleWeek else R.string.recordsScaleMonth), maxLines = 1)
+                }
+            }
+        }
+    }
+}
+
+fun periodTitle(context: RecordsContext, scale: RecordsScale, first: LocalDate, last: LocalDate): String = when (scale) {
+    RecordsScale.WEEK -> "${context.text.monthDay(first)} – ${context.text.monthDay(last)}"
+    RecordsScale.MONTH -> context.text.monthYear(first)
+    RecordsScale.YEAR -> first.year.toString()
+    RecordsScale.LIFE -> context.text.string(R.string.recordsScaleLife)
+}
+
+@Composable
+private fun ChartCard(
+    context: RecordsContext,
+    scale: RecordsScale,
+    anchor: LocalDate,
+    page: RecordsPage?,
+    selectedDayKey: String?,
+    shift: (Long) -> Unit,
+    returnToToday: () -> Unit,
+    onSelect: (RecordsDayCell) -> Unit,
+    onOpen: (RecordsDayCell) -> Unit,
+) {
+    val text = context.text
+    val (first, last) = context.queries.window(scale, anchor)
+    val title = periodTitle(context, scale, first, last)
+    val showsToday = context.today.isBefore(first) || context.today.isAfter(last)
+    val scheme = MaterialTheme.colorScheme
+    RecordsCard {
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            CappedFontScale {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    IconButton(onClick = { shift(-1) }) {
+                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, text.string(R.string.recordsPreviousPeriod), tint = scheme.onSurfaceVariant)
+                    }
+                    Row(
+                        Modifier.weight(1f).heightIn(min = 44.dp).clip(RoundedCornerShape(12.dp))
+                            .then(
+                                if (showsToday) {
+                                    Modifier.clickable(onClick = returnToToday).semantics {
+                                        contentDescription = text.string(R.string.recordsToday)
+                                        stateDescription = title
+                                    }
+                                } else {
+                                    Modifier.semantics { heading() }
+                                },
+                            ),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (showsToday) Icon(Icons.Outlined.MyLocation, null, Modifier.padding(start = 6.dp).size(14.dp), tint = scheme.primary)
+                    }
+                    IconButton(onClick = { shift(1) }) {
+                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, text.string(R.string.recordsNextPeriod), tint = scheme.onSurfaceVariant)
+                    }
+                }
+            }
+            HorizontalDivider(color = scheme.outlineVariant)
+            val cells = page?.takeIf { it.first == first }?.cells
+            if (cells == null) {
+                // The first load of a window: keep its height so the page does not jump.
+                Box(Modifier.fillMaxWidth().heightIn(min = if (scale == RecordsScale.WEEK) 188.dp else 280.dp))
+            } else {
+                when (scale) {
+                    RecordsScale.WEEK -> WeekStrips(cells, selectedDayKey, text, onSelect, onOpen)
+                    else -> MonthGrid(
+                        cells, context.queries.gridLeadingBlanks(first),
+                        weekdayLabels(text, context.queries.window(RecordsScale.WEEK, first).first),
+                        selectedDayKey, text, onSelect, onOpen,
+                    )
+                }
+                cells.firstOrNull { it.dayKey == selectedDayKey }?.let { SelectedDay(it, text) { onOpen(it) } }
+            }
+            MarkLegend(includesLock = !context.queries.authorized, text = text)
+        }
+    }
+}
+
+/** The selected day, and the way into its page (iOS `RecordsDayCellCallout`). */
+@Composable
+private fun SelectedDay(cell: RecordsDayCell, text: RecordsText, onOpen: () -> Unit) {
+    val locked = cell.appearance == RecordsDayAppearance.LOCKED
+    val scheme = MaterialTheme.colorScheme
+    Surface(onClick = onOpen, shape = RoundedCornerShape(16.dp), color = scheme.surfaceContainerHighest) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(if (locked) Icons.Outlined.Lock else Icons.Outlined.CalendarToday, null, Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
+            Column(Modifier.weight(1f)) {
+                Text(
+                    if (locked) text.string(R.string.recordsLockedDay) else text.dayTitle(cell.date),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                if (!locked) {
+                    Text(
+                        "${text.cellSource(cell)} · ${text.recordsDuration((cell.workMs + cell.overtimeMs).toDouble())}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Text(
+                text.string(if (locked) R.string.plusSeePlans else R.string.recordsSeeThisDay),
+                style = MaterialTheme.typography.labelLarge,
+                color = scheme.primary,
+            )
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(18.dp), tint = scheme.primary)
+        }
+    }
+}
+
+/**
+ * The period's conclusion (iOS `RecordsHeadlineView`): work, overtime,
+ * income, then the time breakdown. Without Plus it is a lock, built from
+ * nothing, so no figure can reach it.
+ */
+@Composable
+private fun HeadlineCard(context: RecordsContext, title: String, summary: RecordsHeadlineSummary?, onUnlock: () -> Unit) {
+    val text = context.text
+    val scheme = MaterialTheme.colorScheme
+    when {
+        summary != null -> RecordsCard {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(title, Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleMedium)
+                    HelpButton(title, text.string(R.string.recordsSummaryHelp))
+                }
+                HeadlineContent(text, summary)
+            }
+        }
+        context.queries.authorized -> RecordsCard {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(text.string(R.string.recordsUnrecorded), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+            }
+        }
+        else -> LockedPlaceholder(LockedKind.SUMMARY, text, onUnlock)
+    }
+}
+
+@Composable
+private fun HeadlineContent(text: RecordsText, summary: RecordsHeadlineSummary) {
+    val res = androidx.compose.ui.platform.LocalResources.current
+    val forecast = summary.actualForecast
+    val forecastOnly = forecast?.let { it.actual.days == 0.0 && it.forecast.hours > 0 } ?: false
+    val shown = forecast?.let { if (forecastOnly) it.forecast else it.actual }
+    val workedMs = shown?.let { it.hours * 3_600_000 } ?: (summary.regularWorkMs + summary.overtimeMs).toDouble()
+    val workdays = shown?.days ?: summary.workdays.toDouble()
+    val income = forecast?.total?.earnings ?: summary.estimatedIncome
+    val overtimeMs = forecast?.let { it.actualOvertimeHours * 3_600_000 } ?: summary.overtimeMs.toDouble()
+    Metric(
+        text.string(if (forecastOnly) R.string.recordsForecastHours else R.string.recordsWorkedTime),
+        text.duration(workedMs), prominent = true,
+        subtitle = Strings.recordsWorkdayCount(res, text.count(workdays.toInt())),
+    )
+    if (overtimeMs > 0) Metric(text.string(R.string.recordsOvertime), text.duration(overtimeMs))
+    if (income != null) {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        val progress = forecast?.actual?.earnings?.takeIf { income > 0 }?.let { earned ->
+            Strings.recordsIncomeProgress(res, text.money(earned), text.percent((earned / income * 100).coerceIn(0.0, 100.0)))
+        }
+        Metric(text.string(R.string.recordsForecastIncome), text.money(income), subtitle = progress)
+    }
+    if (summary.allocationDays > 0) {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text.string(R.string.recordsTimeBreakdown), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+            HelpButton(
+                text.string(R.string.recordsTimeBreakdown),
+                listOf(
+                    Strings.recordsAllocationBasis(res, text.count(summary.allocationDays)),
+                    text.string(if (summary.sleepFromHealth) R.string.recordsSleepFromHealth else R.string.recordsSleepEstimated),
+                ).joinToString("\n\n"),
+            )
+        }
+        AllocationBar(summary.allocation, text)
+    }
+}
+
+/** A label and its value on one line, or stacked when the text is large. */
+@Composable
+private fun Metric(title: String, value: String, prominent: Boolean = false, subtitle: String? = null) {
+    val scheme = MaterialTheme.colorScheme
+    val stacked = androidx.compose.ui.platform.LocalDensity.current.fontScale >= 1.5f
+    val labels: @Composable (Modifier) -> Unit = { modifier ->
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(title, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+            if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+        }
+    }
+    val number: @Composable () -> Unit = {
+        Text(
+            value,
+            style = if (prominent) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.bodyLarge,
+            fontWeight = if (prominent) FontWeight.SemiBold else FontWeight.Medium,
+        )
+    }
+    Box(Modifier.semantics(mergeDescendants = true) {}) {
+        if (stacked) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                labels(Modifier)
+                number()
+            }
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                labels(Modifier.weight(1f))
+                number()
+            }
+        }
+    }
+}
+
+/** A small "?" that explains how a figure was reached, in a dialog rather than beside it. */
+@Composable
+private fun HelpButton(title: String, message: String) {
+    var shows by remember { mutableStateOf(false) }
+    IconButton(onClick = { shows = true }) {
+        Icon(Icons.AutoMirrored.Outlined.HelpOutline, title, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.outline)
+    }
+    if (shows) {
+        AlertDialog(
+            onDismissRequest = { shows = false },
+            title = { Text(title) },
+            text = { Text(message) },
+            confirmButton = { TextButton(onClick = { shows = false }) { Text(stringResource(R.string.close)) } },
+        )
+    }
+}

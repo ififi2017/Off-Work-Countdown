@@ -127,7 +127,11 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph, ope
     when (key) {
         Route.TimerHome -> TimerScreen(graph, openSettings)
         Route.FocusHome -> PendingScreen(stringResource(R.string.focusTitle), null, null)
-        Route.RecordsHome -> PendingScreen(stringResource(R.string.recordsTab), null, null)
+        Route.RecordsHome -> com.rainif.doneat.ui.records.RecordsScreen(graph, open, openSettings)
+        is Route.RecordsDay -> com.rainif.doneat.ui.records.RecordsDayScreen(graph, key.dayKey, back, openSettings)
+        Route.RecordsAll -> com.rainif.doneat.ui.records.AllRecordsScreen(graph, open, back)
+        is Route.RecordsYear -> com.rainif.doneat.ui.records.YearRecordsScreen(graph, key.year, open, back)
+        is Route.RecordsMonth -> com.rainif.doneat.ui.records.MonthRecordsScreen(graph, key.year, key.month, open, back)
         Route.SettingsHome -> SettingsHomeScreen(prefs, records, open)
         Route.Schedule -> com.rainif.doneat.ui.schedule.ScheduleScreen(graph, open, back)
         Route.ShiftTypes -> com.rainif.doneat.ui.schedule.ShiftTypesScreen(graph, open, back)
@@ -154,7 +158,7 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph, ope
                 }
             }, back)
         }
-        Route.About -> AboutScreen(open, back)
+        Route.About -> AboutScreen(open, back) { com.rainif.doneat.plus.PlusDebugSection(graph.plus) }
         Route.Acknowledgements -> AcknowledgementsScreen(back)
         else -> PendingScreen("", back, settingsLabel)
     }

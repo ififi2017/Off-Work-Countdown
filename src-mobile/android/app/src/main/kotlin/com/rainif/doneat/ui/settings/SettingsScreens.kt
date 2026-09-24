@@ -273,7 +273,7 @@ fun HealthScreen(p: SyncedPreferences, edit: EditPreferences, onBack: () -> Unit
 
 /** Version, links and acknowledgements (iOS `AboutView`). */
 @Composable
-fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit) {
+fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit, debugSection: @Composable () -> Unit = {}) {
     val context = LocalContext.current
     val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "" }
     DoneAtPage(stringResource(R.string.aboutProject), onBack, stringResource(R.string.settings)) {
@@ -301,6 +301,7 @@ fun AboutScreen(open: (Route) -> Unit, onBack: () -> Unit) {
             RowDivider(inset = false)
             ActionRow(stringResource(R.string.downloadDesktopApp), { openUrl(context, "https://doneat.app/download") }, trailing = Icons.AutoMirrored.Outlined.OpenInNew)
         }
+        debugSection()
     }
 }
 

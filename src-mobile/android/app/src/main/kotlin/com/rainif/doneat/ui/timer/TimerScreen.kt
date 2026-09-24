@@ -45,8 +45,6 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.SportsScore
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material.icons.outlined.WbTwilight
 import androidx.compose.material3.AlertDialog
@@ -202,38 +200,13 @@ fun TimerScreen(graph: AppGraph, openSettings: (Route?) -> Unit) {
     }
     LaunchedEffect(phase) { graph.timer.reconcile() }
 
-    val revealReason = stringResource(R.string.unlockSalaryReason)
-    val noLockNote = stringResource(R.string.earningsShownWithoutLock)
     val prefs = session.env.preferences
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().safeDrawingPadding()) {
             // Settings-level controls stay small and out of the instrument's way.
             Row(Modifier.fillMaxWidth().padding(horizontal = DoneAtSpacing.xs), horizontalArrangement = Arrangement.End) {
-                IconButton(onClick = {
-                    if (!device.hideEarnings) {
-                        scope.launch { graph.settings.updateDevice { it.copy(hideEarnings = true) } }
-                    } else {
-                        scope.launch {
-                            when (EarningsGate.confirmOwner(context, revealReason)) {
-                                EarningsGate.Result.CONFIRMED -> graph.settings.updateDevice { it.copy(hideEarnings = false) }
-                                EarningsGate.Result.NO_LOCK -> {
-                                    graph.settings.updateDevice { it.copy(hideEarnings = false) }
-                                    snackbar.showSnackbar(noLockNote)
-                                }
-                                EarningsGate.Result.REFUSED -> Unit
-                            }
-                        }
-                    }
-                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                }) {
-                    // The eye shows what a tap does, not the current state.
-                    Icon(
-                        if (device.hideEarnings) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
-                        contentDescription = stringResource(if (device.hideEarnings) R.string.unlockSalary else R.string.salaryLocked),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                EarningsVisibilityButton(graph) { note -> scope.launch { snackbar.showSnackbar(note) } }
                 IconButton(onClick = { scope.launch { graph.settings.edit { it.copy(theme = PreferencesRules.nextQuickTheme(it.theme)) } } }) {
                     Icon(
                         when (prefs.theme) {
