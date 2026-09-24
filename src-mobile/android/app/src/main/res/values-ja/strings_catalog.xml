@@ -82,8 +82,10 @@
     <string name="done">完了</string>
     <string name="doubleRestWeek">週休2日</string>
     <string name="downloadDesktopApp">Mac・Windows版をダウンロード</string>
+    <string name="earningsShownWithoutLock">この端末には画面ロックが設定されていないため、確認なしで収入を表示しています。画面ロックを設定すると、自分だけが見られるようになります。</string>
     <string name="enableSalary">給与を表示</string>
     <string name="enableSalaryDescription">デフォルトではオフです。 iCloud 同期をオンにすると、給与が含まれます。</string>
+    <string name="enableSalaryDescriptionLocal">初期設定はオフです。給与はこの端末に保存され、Android のバックアップをオンにしている場合はそこにも含まれます。</string>
     <string name="endTime">退勤時間</string>
     <string name="extendedAddShiftType">シフトの種類を追加</string>
     <string name="extendedApplyTemplateMessage">周期のすべての日を「%1$s」で入れ直します。保存するまでは反映されません。</string>
@@ -728,6 +730,7 @@
     <string name="rulesErrorBanner">カウントダウン規則を読み込めません。スケジュールは止まっていません。</string>
     <string name="salaryLocked">ロック中</string>
     <string name="salaryPrivacyNote">本日の収入は、この設定とシフトから推算した値です。ウィジェット、通知、ライブアクティビティには一切表示されません。</string>
+    <string name="salaryPrivacyNoteLocal">「今日の収入」はこの設定とシフトから見積もります。ウィジェットや通知には表示されません。</string>
     <string name="salarySettings">給与設定</string>
     <string name="salaryType">給与タイプ</string>
     <string name="saveAction">保存</string>

@@ -1,7 +1,6 @@
 package com.rainif.doneat
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -11,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.rainif.doneat.core.designsystem.DoneAtTheme
@@ -24,11 +24,15 @@ import com.rainif.doneat.ui.onboarding.SetupFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+/** A [FragmentActivity] so `BiometricPrompt` can confirm the owner before earnings are revealed. */
+class MainActivity : FragmentActivity() {
     override fun onStart() {
         super.onStart()
         // Revoking the exact-alarm grant sends no broadcast; re-check it whenever the app comes back.
         lifecycleScope.launch(Dispatchers.IO) { Reminders.sync(applicationContext).revalidate(System.currentTimeMillis()) }
+        // Midnight resets, expired marks and a finished manual run: settled before the timer draws.
+        val graph = (application as DoneAtApplication).graph
+        lifecycleScope.launch { if (graph.loaded.value) graph.timer.reconcile() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

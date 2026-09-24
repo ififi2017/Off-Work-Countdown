@@ -82,8 +82,10 @@
     <string name="done">完成</string>
     <string name="doubleRestWeek">双休周</string>
     <string name="downloadDesktopApp">下载 Mac 与 Windows 版</string>
+    <string name="earningsShownWithoutLock">这台设备没有设置锁屏，收入已直接显示。设置锁屏后，就能只让自己看到。</string>
     <string name="enableSalary">显示薪资</string>
     <string name="enableSalaryDescription">默认关闭。开启 iCloud 同步后，薪资也会一起同步。</string>
+    <string name="enableSalaryDescriptionLocal">默认关闭。薪资只保存在这台设备上；如果你开启了 Android 自带的备份，也会包含在备份中。</string>
     <string name="endTime">下班时间</string>
     <string name="extendedAddShiftType">添加班次类型</string>
     <string name="extendedApplyTemplateMessage">周期里的每一天会按「%1$s」重新填写，保存后才会生效。</string>
@@ -728,6 +730,7 @@
     <string name="rulesErrorBanner">计时规则暂时不可用，排班没有停。</string>
     <string name="salaryLocked">已锁定</string>
     <string name="salaryPrivacyNote">今日已赚由这里和你的班次推算得出。小组件、通知和实时活动都不会显示它。</string>
+    <string name="salaryPrivacyNoteLocal">“今日收入”根据这里的设置和你的班次估算。小组件和通知都不会显示它。</string>
     <string name="salarySettings">薪资设置</string>
     <string name="salaryType">薪资类型</string>
     <string name="saveAction">保存</string>

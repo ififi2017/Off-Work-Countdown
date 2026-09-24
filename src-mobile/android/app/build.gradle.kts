@@ -60,6 +60,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.kotlinx.serialization.json)
+    // Owner confirmation before earnings are revealed; hosts BiometricPrompt, so MainActivity is a FragmentActivity.
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.fragment)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
 }

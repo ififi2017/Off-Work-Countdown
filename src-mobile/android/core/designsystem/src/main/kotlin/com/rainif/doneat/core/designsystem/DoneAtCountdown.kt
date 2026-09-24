@@ -14,15 +14,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 /**
@@ -48,16 +51,19 @@ fun DoneAtCountdown(
     countsDown: Boolean = true,
 ) {
     val motion = LocalDoneAtMotion.current
-    Row(
-        modifier.clearAndSetSemantics { contentDescription = spokenLabel },
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        text.forEach { char ->
-            if (motion.reduced || !char.isDigit()) {
-                Text(char.toString(), style = style, color = color, maxLines = 1)
-            } else {
-                RollingDigit(char, style, color, countsDown, motion)
+    // A clock reads left to right in every language; a mirrored row would show SS:MM:HH in Arabic.
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(
+            modifier.clearAndSetSemantics { contentDescription = spokenLabel },
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            text.forEach { char ->
+                if (motion.reduced || !char.isDigit()) {
+                    Text(char.toString(), style = style, color = color, maxLines = 1)
+                } else {
+                    RollingDigit(char, style, color, countsDown, motion)
+                }
             }
         }
     }

@@ -82,8 +82,10 @@
     <string name="done">Concluído</string>
     <string name="doubleRestWeek">Semana com 2 folgas</string>
     <string name="downloadDesktopApp">Baixar para Mac e Windows</string>
+    <string name="earningsShownWithoutLock">Este dispositivo não tem bloqueio de tela, por isso os ganhos são mostrados sem verificação. Configure um bloqueio de tela para mantê-los privados.</string>
     <string name="enableSalary">Mostrar salário</string>
     <string name="enableSalaryDescription">Desligado por padrão. O salário está incluído se você ativar a sincronização do iCloud.</string>
+    <string name="enableSalaryDescriptionLocal">Desativado por padrão. O salário fica neste dispositivo e no backup do próprio Android, se ele estiver ativado.</string>
     <string name="endTime">Hora de saída</string>
     <string name="extendedAddShiftType">Adicionar tipo de turno</string>
     <string name="extendedApplyTemplateMessage">Cada dia do ciclo será preenchido de novo segundo “%1$s”. Nada muda até guardar.</string>
@@ -730,6 +732,7 @@
     <string name="rulesErrorBanner">As regras da contagem estão indisponíveis. O horário continua.</string>
     <string name="salaryLocked">Bloqueado</string>
     <string name="salaryPrivacyNote">«Ganho hoje» é estimado a partir disto e do seu turno. Widgets, notificações e Atividades ao Vivo nunca o mostram.</string>
+    <string name="salaryPrivacyNoteLocal">“Ganho hoje” é estimado a partir disto e do seu turno. Widgets e notificações nunca o mostram.</string>
     <string name="salarySettings">Configurações de salário</string>
     <string name="salaryType">Tipo de salário</string>
     <string name="saveAction">Guardar</string>

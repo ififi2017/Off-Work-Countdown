@@ -82,8 +82,10 @@
     <string name="done">تم</string>
     <string name="doubleRestWeek">أسبوع بيومي راحة</string>
     <string name="downloadDesktopApp">تنزيل لـ Mac وWindows</string>
+    <string name="earningsShownWithoutLock">لا يوجد قفل شاشة على هذا الجهاز، لذا تُعرض الأرباح دون تحقق. اضبط قفل الشاشة لتبقى خاصة بك.</string>
     <string name="enableSalary">إظهار الراتب</string>
     <string name="enableSalaryDescription">إيقاف بشكل افتراضي. يتم تضمين الراتب إذا قمت بتشغيل مزامنة iCloud.</string>
+    <string name="enableSalaryDescriptionLocal">متوقف افتراضيًا. يبقى الراتب على هذا الجهاز، وفي النسخ الاحتياطي الخاص بـ Android إن كان مفعّلًا.</string>
     <string name="endTime">وقت الانصراف</string>
     <string name="extendedAddShiftType">إضافة نوع مناوبة</string>
     <string name="extendedApplyTemplateMessage">ستُعاد تعبئة كل أيام الدورة وفق «%1$s». لن يتغير شيء قبل الحفظ.</string>
@@ -733,6 +735,7 @@
     <string name="rulesErrorBanner">قواعد العد التنازلي غير متاحة. جدولك ما زال يعمل.</string>
     <string name="salaryLocked">مقفل</string>
     <string name="salaryPrivacyNote">يُقدَّر «ما كسبته اليوم» من هذه الإعدادات ومن دوامك. لا تعرضه الأدوات ولا الإشعارات ولا الأنشطة المباشرة أبدًا.</string>
+    <string name="salaryPrivacyNoteLocal">يُقدَّر «أرباح اليوم» من هذه الإعدادات ومن مناوبتك. لا تعرضه الأدوات ولا الإشعارات أبدًا.</string>
     <string name="salarySettings">إعدادات الراتب</string>
     <string name="salaryType">نوع الراتب</string>
     <string name="saveAction">حفظ</string>
