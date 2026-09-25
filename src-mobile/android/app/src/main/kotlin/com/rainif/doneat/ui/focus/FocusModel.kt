@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
@@ -91,14 +92,17 @@ fun rememberFocusContext(graph: AppGraph): FocusContext {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var now by remember { mutableDoubleStateOf(graph.nowMs()) }
     val canvas = remember(state, session, authorized, now) { graph.focus.canvas(now, state) }
-    LaunchedEffect(lifecycle, canvas) {
+    // Keyed on the lifecycle alone: a new canvas must not restart the clock,
+    // or setting `now` rebuilds the canvas and spins the page every frame.
+    val latestCanvas by rememberUpdatedState(canvas)
+    LaunchedEffect(lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             while (true) {
                 val current = graph.nowMs()
                 now = current
                 graph.focus.finishElapsed(current)
                 val nextMinute = (kotlin.math.floor(current / 60_000) + 1) * 60_000
-                val boundary = canvas.blocks.flatMap { listOf(it.startAtMs, it.endAtMs) }.map { it.toDouble() }.filter { it > current }.minOrNull() ?: nextMinute
+                val boundary = latestCanvas.blocks.flatMap { listOf(it.startAtMs, it.endAtMs) }.map { it.toDouble() }.filter { it > current }.minOrNull() ?: nextMinute
                 val end = graph.focus.activeSession(graph.records.state.value)?.plannedEndAtMs ?: nextMinute
                 delay((minOf(boundary, nextMinute, end) - current).toLong().coerceAtLeast(100))
             }

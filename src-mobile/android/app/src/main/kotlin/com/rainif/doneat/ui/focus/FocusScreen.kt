@@ -324,7 +324,7 @@ private fun NowBand(
                         val first = model.blocks.firstOrNull { it.isAssigned && !it.isUserBreak }
                         if (first != null) {
                             Text(first.taskTitle ?: stringResource(R.string.focusTitle), style = MaterialTheme.typography.titleMedium)
-                            Countdown(context, first.startAtMs.toDouble())
+                            Countdown(context, first.startAtMs.toDouble(), graph)
                             Text(context.range(first), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                         } else {
                             Text(stringResource(R.string.focusBandEmptyBlock), style = MaterialTheme.typography.titleMedium, color = scheme.onSurfaceVariant)
