@@ -57,12 +57,14 @@ struct ScheduleCalendarEditor: View {
     private var selected: String { selectedKey ?? today }
     private var types: [ShiftType] { ExtendedScheduleEditing.activeTypes(in: content) }
     private var resolver: ExtendedScheduleResolver {
-        ExtendedScheduleResolver(plan: ExtendedSchedulePlan(
-            shiftTypes: content.shiftTypes, rule: content.rule, handSetDays: handSetDays,
-            holidayRegionIdentifier: content.holidayRegionIdentifier,
-            clearedFromDayKey: content.clearedFromDayKey,
-            frozenShiftTypes: shifts.records.frozenRosterShiftTypes.filter { rosterEdits?[$0.key] == nil }
-        ))
+        LaunchTrace.interval("scheduleEditorResolver") {
+            ExtendedScheduleResolver(plan: ExtendedSchedulePlan(
+                shiftTypes: content.shiftTypes, rule: content.rule, handSetDays: handSetDays,
+                holidayRegionIdentifier: content.holidayRegionIdentifier,
+                clearedFromDayKey: content.clearedFromDayKey,
+                frozenShiftTypes: shifts.records.frozenRosterShiftTypes.filter { rosterEdits?[$0.key] == nil }
+            ))
+        }
     }
     private var mode: ScheduleEditorMode {
         if isManual { return .manual }

@@ -1080,6 +1080,8 @@ final class ShiftSession {
         snapshot: NativeShiftSnapshot,
         periodStartMs: Double? = nil
     ) -> NativePeriodSummary? {
+        let trace = LaunchTrace.signposter.beginInterval("periodSummary")
+        defer { LaunchTrace.signposter.endInterval("periodSummary", trace) }
         let usesExtended = usesExtendedSchedule(at: asOf)
         guard usesExtended || effectiveScheduleMode(at: asOf) != .off else { return nil }
         var summaryWorkdays = effectiveWorkdays(at: asOf)

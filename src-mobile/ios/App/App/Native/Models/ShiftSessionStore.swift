@@ -317,6 +317,8 @@ final class ShiftSessionStore {
         for snapshot: NativeShiftSnapshot,
         at now: Date = .now
     ) -> [UpcomingTimelineEvent] {
+        let trace = LaunchTrace.signposter.beginInterval("upcomingTimelineEvents")
+        defer { LaunchTrace.signposter.endInterval("upcomingTimelineEvents", trace) }
         let nowMs = now.timeIntervalSince1970 * 1_000
         var events: [UpcomingTimelineEvent] = []
 
