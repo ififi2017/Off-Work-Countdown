@@ -43,9 +43,9 @@ struct TimerDesignView: View {
         Group {
             if let timelineDate {
                 timerContent(at: timelineDate)
-            } else if timelineActive,
-                      shifts.session.visualPhase(at: shifts.session.timerDate(from: .now)).usesLiveTimeline {
-                TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            } else if shifts.session.visualPhase(at: shifts.session.timerDate(from: .now)).usesLiveTimeline {
+                // The tab only pauses the timeline; see `PausableSecondsSchedule`.
+                TimelineView(PausableSecondsSchedule(isPaused: !timelineActive)) { timeline in
                     timerContent(at: shifts.session.timerDate(from: timeline.date))
                 }
             } else {

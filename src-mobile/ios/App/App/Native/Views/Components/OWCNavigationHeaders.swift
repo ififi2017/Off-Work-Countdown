@@ -182,17 +182,21 @@ extension View {
     /// during tab changes so Liquid Glass does not flash; an ordinary
     /// `navigationTitle` on an invisible sibling can otherwise keep winning
     /// the shared NavigationStack's preference resolution.
-    @ViewBuilder
+    ///
+    /// The title rides on an empty background so the page keeps its identity
+    /// when the tab changes; wrapping the page itself in the condition rebuilt
+    /// all of Records on every switch.
     func owcNavigationTitle(
         _ title: String,
         displayMode: NavigationBarItem.TitleDisplayMode,
         isActive: Bool
     ) -> some View {
-        if isActive {
-            navigationTitle(title)
-                .navigationBarTitleDisplayMode(displayMode)
-        } else {
-            self
+        background {
+            if isActive {
+                Color.clear
+                    .navigationTitle(title)
+                    .navigationBarTitleDisplayMode(displayMode)
+            }
         }
     }
 
