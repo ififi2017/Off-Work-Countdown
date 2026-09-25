@@ -56,6 +56,8 @@ class AppGraph(app: Application) {
     val focus = FocusStore(records, sessions.session, plus.authorized, files.resolve("device/focus-queue.json"), newId, { app.getString(R.string.focusTaskTitle) })
     /** A sentence a focus editor leaves for the Focus page to show after it closes. */
     val focusNotice = MutableStateFlow<String?>(null)
+    /** The usual-day editor's working copy, shared with the task page it opens. */
+    val focusTemplateDraft = MutableStateFlow<com.rainif.doneat.ui.focus.FocusTemplateDraft?>(null)
     val focusCoordinator = FocusCoordinator(app, focus, records, sessions, settings, plus.authorized, scope, nowMs)
 
     val timer = TimerCoordinator(

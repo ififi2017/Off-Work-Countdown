@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">Nicht alle Aufgaben passen in diese Schicht</string>
     <string name="focusTemplateDelete">Vorlage löschen</string>
     <string name="focusTemplateDropped">%1$s Blöcke passen nicht in diese Schicht</string>
+    <string name="focusTemplateMoveDown">Nach unten</string>
+    <string name="focusTemplateMoveUp">Nach oben</string>
     <string name="focusTemplateRemainingPomodoros">In dieser Schicht ist Platz für %1$s weitere Pomodoros.</string>
     <string name="focusTemplateSequenceNote">Aufgaben werden in dieser Reihenfolge unter Auslassung der Pausen eingeplant. Reicht die Zeit nicht, bleiben die übrigen Aufgaben in der Vorlage erhalten.</string>
     <string name="focusTemplateSlots">%1$s Blöcke</string>

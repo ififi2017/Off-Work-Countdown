@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">Certaines tâches ne tiennent pas dans ce service</string>
     <string name="focusTemplateDelete">Supprimer le modèle</string>
     <string name="focusTemplateDropped">%1$s blocs n’entrent pas dans ce service</string>
+    <string name="focusTemplateMoveDown">Descendre</string>
+    <string name="focusTemplateMoveUp">Monter</string>
     <string name="focusTemplateRemainingPomodoros">Ce service peut accueillir %1$s pomodoros supplémentaires.</string>
     <string name="focusTemplateSequenceNote">Les tâches sont placées dans cet ordre, en évitant les pauses. Si le temps manque, les tâches restantes sont conservées dans le modèle.</string>
     <string name="focusTemplateSlots">%1$s blocs</string>

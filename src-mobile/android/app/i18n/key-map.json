@@ -992,6 +992,14 @@
         "count"
       ]
     },
+    "focusTemplateMoveDown": {
+      "resource": "string/focusTemplateMoveDown",
+      "androidOnly": true
+    },
+    "focusTemplateMoveUp": {
+      "resource": "string/focusTemplateMoveUp",
+      "androidOnly": true
+    },
     "focusTemplateRemainingPomodoros": {
       "resource": "string/focusTemplateRemainingPomodoros",
       "params": [

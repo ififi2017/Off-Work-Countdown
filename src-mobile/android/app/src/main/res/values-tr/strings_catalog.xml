@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">Tüm görevler bu vardiyaya sığmıyor</string>
     <string name="focusTemplateDelete">Şablonu sil</string>
     <string name="focusTemplateDropped">%1$s blok bu vardiyaya sığmıyor</string>
+    <string name="focusTemplateMoveDown">Aşağı taşı</string>
+    <string name="focusTemplateMoveUp">Yukarı taşı</string>
     <string name="focusTemplateRemainingPomodoros">Bu vardiyaya %1$s pomodoro daha eklenebilir.</string>
     <string name="focusTemplateSequenceNote">Görevler molalar atlanarak bu sırayla vardiyaya yerleştirilir. Zaman yetmezse kalan görevler şablonda saklanır.</string>
     <string name="focusTemplateSlots">%1$s blok</string>

@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">このシフトに収まらないタスクがあります</string>
     <string name="focusTemplateDelete">テンプレートを削除</string>
     <string name="focusTemplateDropped">%1$s ブロックはこのシフトに入りません</string>
+    <string name="focusTemplateMoveDown">下へ移動</string>
+    <string name="focusTemplateMoveUp">上へ移動</string>
     <string name="focusTemplateRemainingPomodoros">このシフトにはあと %1$s ポモドーロを配置できます。</string>
     <string name="focusTemplateSequenceNote">タスクは休憩を避け、この順番でシフトに配置されます。時間が足りない場合、残りのタスクはテンプレートに保存されたままになります。</string>
     <string name="focusTemplateSlots">%1$s ブロック</string>

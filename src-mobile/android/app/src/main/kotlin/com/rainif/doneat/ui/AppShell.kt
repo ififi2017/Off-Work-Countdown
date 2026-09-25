@@ -130,6 +130,8 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph, ope
         is Route.FocusCreate -> com.rainif.doneat.ui.focus.FocusCreateScreen(graph, key.blockStartAtMs, key.currentOrNext, key.favoriteID, back)
         is Route.FocusTaskEdit -> com.rainif.doneat.ui.focus.FocusTaskEditScreen(graph, key.taskID, back)
         Route.FocusTimerSettings -> com.rainif.doneat.ui.focus.FocusTimerSettingsScreen(graph, back)
+        is Route.FocusTemplateEdit -> com.rainif.doneat.ui.focus.FocusTemplateEditScreen(graph, key.templateID, open, back)
+        is Route.FocusTemplateTask -> com.rainif.doneat.ui.focus.FocusTemplateTaskScreen(graph, key.taskID, back)
         Route.RecordsHome -> com.rainif.doneat.ui.records.RecordsScreen(graph, open, openSettings)
         is Route.RecordsDay -> com.rainif.doneat.ui.records.RecordsDayScreen(graph, key.dayKey, open, back, openSettings)
         Route.RecordsAll -> com.rainif.doneat.ui.records.AllRecordsScreen(graph, open, back)

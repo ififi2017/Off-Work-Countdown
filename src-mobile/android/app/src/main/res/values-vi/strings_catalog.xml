@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">Không đủ thời gian cho mọi nhiệm vụ trong ca này</string>
     <string name="focusTemplateDelete">Xóa mẫu</string>
     <string name="focusTemplateDropped">%1$s ô không vừa ca này</string>
+    <string name="focusTemplateMoveDown">Di chuyển xuống</string>
+    <string name="focusTemplateMoveUp">Di chuyển lên</string>
     <string name="focusTemplateRemainingPomodoros">Ca này còn chỗ cho %1$s pomodoro nữa.</string>
     <string name="focusTemplateSequenceNote">Các nhiệm vụ được xếp vào ca theo thứ tự này, bỏ qua giờ nghỉ. Nếu không đủ thời gian, các nhiệm vụ còn lại vẫn được giữ trong mẫu.</string>
     <string name="focusTemplateSlots">%1$s ô</string>

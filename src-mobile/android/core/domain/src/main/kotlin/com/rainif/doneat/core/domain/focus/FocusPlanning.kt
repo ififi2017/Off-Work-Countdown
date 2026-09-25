@@ -491,11 +491,29 @@ class FocusPlanning(private val env: FocusEnvironment, private val defaultTaskTi
         return planning.templates.firstOrNull { it.id == id }
     }
 
+    /** The focus and recovery blocks of the shift the canvas draws (iOS `focusTemplateBlocks`). */
+    fun templateBlocks(state: RecordState, nowMs: Double): List<FocusWorkBlock> =
+        canvasShift(nowMs)?.first?.let { blocks(it, state) }.orEmpty()
+
+    /**
+     * Today's task order and estimates without the day's clock times (iOS
+     * `focusTemplateDraftFromToday`): what the usual-day editor starts from.
+     */
+    fun templateDraftFromToday(state: RecordState, nowMs: Double): List<FocusTemplateSlot> {
+        val shift = canvasShift(nowMs)?.first ?: return emptyList()
+        val assignments = planning(state).plans[dayKey(shift.startAtMs)]?.assignments.orEmpty()
+        val keys = HashMap<String, String>()
+        return blocks(shift, state).mapNotNull { block ->
+            if (block.kind != FocusPlanBlockKind.TASK) return@mapNotNull null
+            val assignment = assignments.firstOrNull { it.blockStartAtMs == block.startAtMs } ?: return@mapNotNull null
+            FocusTemplateSlot(block.index, assignment.kind, assignment.taskID?.let { keys.getOrPut(it) { env.newId() } }, assignment.taskTitle, assignment.taskIcon)
+        }
+    }
+
     /** Whole tasks that fit this shift, and the rounds dropped from the tail. */
     fun templateFit(state: RecordState, templateID: String, nowMs: Double): Pair<Int, Int> {
         val template = planning(state).templates.firstOrNull { it.id == templateID } ?: return 0 to 0
-        val blocks = canvasShift(nowMs)?.first?.let { blocks(it, state) }.orEmpty()
-        val fits = FocusTemplates.placedSlots(template, blocks).size
+        val fits = FocusTemplates.placedSlots(template, templateBlocks(state, nowMs)).size
         return fits to (FocusTemplates.tasks(template.slots).sumOf { it.pomodoros } - fits)
     }
 

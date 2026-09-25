@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">当前班次放不下全部任务</string>
     <string name="focusTemplateDelete">删除模板</string>
     <string name="focusTemplateDropped">有 %1$s 格放不进这个班次</string>
+    <string name="focusTemplateMoveDown">下移</string>
+    <string name="focusTemplateMoveUp">上移</string>
     <string name="focusTemplateRemainingPomodoros">按当前班次，还可安排 %1$s 个番茄。</string>
     <string name="focusTemplateSequenceNote">任务按顺序填入当天班次，自动避开休息。时间不够时，尾部任务不安排到当天，模板仍完整保留。</string>
     <string name="focusTemplateSlots">%1$s 个格子</string>

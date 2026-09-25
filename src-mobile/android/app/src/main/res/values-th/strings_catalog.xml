@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">กะนี้มีเวลาไม่พอสำหรับทุกงาน</string>
     <string name="focusTemplateDelete">ลบแม่แบบ</string>
     <string name="focusTemplateDropped">%1$s ช่วงไม่พอดีกับกะนี้</string>
+    <string name="focusTemplateMoveDown">ย้ายลง</string>
+    <string name="focusTemplateMoveUp">ย้ายขึ้น</string>
     <string name="focusTemplateRemainingPomodoros">กะนี้ยังจัดช่วงโพโมโดโรเพิ่มได้อีก %1$s ช่วง</string>
     <string name="focusTemplateSequenceNote">งานจะถูกจัดลงในกะตามลำดับนี้ โดยเว้นช่วงพัก หากเวลาไม่พอ งานที่เหลือจะยังคงอยู่ในแม่แบบ</string>
     <string name="focusTemplateSlots">%1$s ช่วง</string>

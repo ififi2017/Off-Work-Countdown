@@ -262,6 +262,8 @@
     <string name="focusTemplateCapacityWarning">目前班次無法排入全部任務</string>
     <string name="focusTemplateDelete">刪除範本</string>
     <string name="focusTemplateDropped">有 %1$s 格放不進這個班次</string>
+    <string name="focusTemplateMoveDown">下移</string>
+    <string name="focusTemplateMoveUp">上移</string>
     <string name="focusTemplateRemainingPomodoros">依目前班次，還可安排 %1$s 個番茄鐘。</string>
     <string name="focusTemplateSequenceNote">任務依序填入當天班次，自動避開休息。時間不足時，尾端任務不安排到當天，範本仍完整保留。</string>
     <string name="focusTemplateSlots">%1$s 個格子</string>
