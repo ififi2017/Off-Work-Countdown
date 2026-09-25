@@ -10,17 +10,35 @@
  *    1000ms 时，`floor(剩余/1000)` 一次掉两秒——实测表现为 9 直接跳到 7。
  *
  * 每次都重新算到下一个整秒还差多少，误差就不会累积，各处也会落在同一个边界上。
+ *
+ * 3. **不能正好卡在整秒上触发。** 浏览器的定时器可能提前约 1ms 触发（时钟精度
+ *    被刻意降低），落在 x.999 时读到的仍是上一秒：同一个数显示两次，下一拍就
+ *    一次掉两秒。Web 版数字有逐位过渡后，这个跳秒肉眼可见。所以瞄准整秒之后
+ *    TICK_OFFSET_MS，若仍然提前落在整秒之前，就补等到边界再触发。
  */
+
+/** 整秒之后再等这么久才触发，给定时器的提前 / 抖动留余量。 */
+export const TICK_OFFSET_MS = 20;
 export function startSecondTick(onTick: () => void): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let cancelled = false;
 
   const schedule = () => {
     if (cancelled) return;
-    // 距下一个整秒的毫秒数。取 1 是为了避免 delay 为 0 时空转。
-    const delay = Math.max(1, 1000 - (Date.now() % 1000));
+    // 距「下一个整秒 + TICK_OFFSET_MS」的毫秒数；刚过整秒不到 offset 时，
+    // 就是本秒的那个触发点。
+    const phase = Date.now() % 1000;
+    const delay =
+      phase < TICK_OFFSET_MS
+        ? TICK_OFFSET_MS - phase
+        : 1000 - phase + TICK_OFFSET_MS;
     timer = setTimeout(() => {
       if (cancelled) return;
+      // 提前触发、还没跨过整秒（相位落在后半秒）：不读数，补等到边界之后。
+      if (Date.now() % 1000 >= 500) {
+        schedule();
+        return;
+      }
       onTick();
       schedule();
     }, delay);
