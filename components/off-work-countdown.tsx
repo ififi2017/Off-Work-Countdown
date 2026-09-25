@@ -3195,6 +3195,7 @@ export function OffWorkCountdown({
                   overtime={Boolean(activeShift?.overtimeEndAtMs)}
                   status={showNextShiftStatus || showBeforeShiftStatus}
                   forceLtr={!showNextShiftStatus}
+                  rolling={IS_WEB_BUILD}
                 />
                 {IS_MOBILE_BUILD && (
                   <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[1.35rem] border border-white/80 bg-white/75 px-4 py-3.5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/35">

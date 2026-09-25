@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ProgressBar } from "./ProgressBar";
+import { RollingText } from "./RollingText";
 
 interface CountdownDisplayProps {
   timeLeft: string;
@@ -15,6 +16,8 @@ interface CountdownDisplayProps {
   standby?: boolean;
   mobile?: boolean;
   forceLtr?: boolean;
+  /** 网页版：每秒换数字时用 iOS 同款逐位滚动过渡（文案格式不变）。 */
+  rolling?: boolean;
 }
 
 export function CountdownDisplay({
@@ -28,6 +31,7 @@ export function CountdownDisplay({
   standby = false,
   mobile = false,
   forceLtr = false,
+  rolling = false,
 }: CountdownDisplayProps) {
   return (
     <motion.div
@@ -82,7 +86,7 @@ export function CountdownDisplay({
           maxWidth: "100%",
         }}
       >
-        {timeLeft}
+        {rolling ? <RollingText text={timeLeft} /> : timeLeft}
       </div>
       <ProgressBar progress={progress} compact={compact} dense={dense} overtime={overtime} standby={standby} />
     </motion.div>
