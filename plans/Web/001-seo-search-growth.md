@@ -1,6 +1,6 @@
 # Web 001 — 双域 SEO 优化计划（off.rainif.com + doneat.app）
 
-- **Status**: TODO — 2026-09-25 用户已拍板 §7-1、§7-3、§7-4；§7-2 按推荐方案执行（用户征询意见后采纳推荐）；§7-5 未定
+- **Status**: IN PROGRESS — 2026-09-25 §7 五项均已拍板；产品仓 P1-1、P1-2、P1-4、P1-5、P1-6 与 P2-1 已实现（分支 `claude/magical-goldberg-jjxpf0`，未合并、未上线）；P1-12 由用户在 Cloudflare 完成
 - **起草**: 2026-09-25
 - **数据来源**: Google Search Console 导出（两个属性，最近 3 个月，截至 2026-09-22）；Bing Webmaster 概览（两个属性，2026-09-09 至 09-22，只有每日汇总）
 - **代码对照**: 产品仓 `main` @ `e3c231f`；官网仓 `ififi2017/doneat.app` `main` @ `0b36f81`
@@ -131,7 +131,7 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
 
 **产品仓（off.rainif.com）**
 
-- [ ] **P1-1 标题换成「功能词在前、品牌在后」**（§7-1 已同意）。只改 `seo.json` 的 `title`，`keywords` 只增不删。建议稿按真实查询来写，由母语审阅后定稿：
+- [x] **P1-1 标题换成「功能词在前、品牌在后」**（§7-1 已同意）。只改 `seo.json` 的 `title`，`keywords` 只增不删。建议稿按真实查询来写，由母语审阅后定稿：
 
   | 语言 | 现在 | 建议 |
   |---|---|---|
@@ -145,21 +145,21 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
   | vi | DoneAt — Đếm ngược tan ca trong trình duyệt | Đếm giờ tan ca — đếm ngược giờ tan làm — DoneAt |
 
   其余语言等 P0 数据出来再改。ko 的「계산기」要等 P2-1 真有计算能力再写进标题，在那之前可以先用「퇴근시간」。
-- [ ] **P1-2 H1 带上功能词**：只改 Web 构建。H1 改成「DoneAt + 本地化功能行」，功能行用已有的 `offWorkCountdown` 键（如 zh-TW「下班倒數計時」、de「Feierabend-Countdown」），做成可见的小字副标题，不新增翻译键，也不用 `sr-only` 塞关键词。（`landingTagline` 是品牌句，不用于这里。）Desktop 的单行标题不动。
-- [ ] **P1-3 首屏下方加一段可见说明**：把现有 `seo.description` 显示在工具下方（不新增翻译键），再加上指向本语言预设页（仅 en / zh-CN）和官网 FAQ 的文字链。
-- [ ] **P1-4 「9 to 5 / 9 to 6」页面直接给答案**：改 `public/locales/{en,zh-CN}/presets.json` 的 `metaTitle` / `metaDescription` / `intro`，例如：
+- [x] **P1-2 H1 带上功能词**：只改 Web 构建。H1 改成「DoneAt + 本地化功能行」，功能行用已有的 `offWorkCountdown` 键（如 zh-TW「下班倒數計時」、de「Feierabend-Countdown」），做成可见的小字副标题，不新增翻译键，也不用 `sr-only` 塞关键词。（`landingTagline` 是品牌句，不用于这里。）Desktop 的单行标题不动。
+- [x] **P1-3 首屏下方加一段可见说明**（核对后发现 Web 首页已有说明区：品牌句 + `landingBody` + 三条特性，均在首屏 HTML 里。不再重复加。）：把现有 `seo.description` 显示在工具下方（不新增翻译键），再加上指向本语言预设页（仅 en / zh-CN）和官网 FAQ 的文字链。
+- [x] **P1-4 「9 to 5 / 9 to 6」页面直接给答案**（四个预设页都加了「扣掉不计薪午休后」对照表和工时计算器链接）：改 `public/locales/{en,zh-CN}/presets.json` 的 `metaTitle` / `metaDescription` / `intro`，例如：
   - title：`How many hours is 9 to 5? 8 hours (7–7.5 paid)`
   - description 第一句就是答案，然后是「一周 40 小时；午休不带薪时为 7 或 7.5 小时；可以直接用这组时间开始倒计时」。
   - 在 `facts` 下加一张小表：不扣午休 / 扣 30 分钟 / 扣 60 分钟。时长由 `lib/countdown.ts` 的 `getShiftLengthHours` 计算，不另写公式。
   - zh-CN 版同样处理（朝九晚五 / 朝九晚六 是几个小时）。
-- [ ] **P1-5 根路径与 x-default**（§7-2，按推荐方案）：
+- [x] **P1-5 根路径与 x-default**（产品仓已改；官网仓见 P1-8 同批改动）（§7-2，按推荐方案）：
   - 上线前先在 GSC 导出 `/` 的查询、国家和页面数据，作为对照基线。
   - 产品仓：`webAppAlternates()` 的 `x-default` 改成 `https://off.rainif.com/`（首页）；预设页的 `x-default` 仍指 `/en/{preset}`，因为 `/{preset}` 不存在对应的自动跳转页。HTML 和 sitemap 继续共用这一个函数。
   - 产品仓 `middleware.ts`：补语言跳转响应头 `Vary: Accept-Language, Cookie`，说明这次跳转取决于语言和已保存的语言设置。跳转状态码保持 307，查询参数照旧保留（分享链接依赖它）。
   - 官网仓：门厅的 `x-default` 同样改成 `https://doneat.app/`，根路径的 302 同样补 `Vary`。
   - 同步改两个仓的 `docs/seo.md`，删掉「x-default 不能是会 307 的裸域」这条旧规则，写清新规则和原因。
   - 验收：4 周后对比基线。`/` 的展示应该下降，`/en` 和各语言页的展示应该上升；如果英文页的总点击下降超过 15%，就改回 `x-default = /en`。
-- [ ] **P1-6 实体信号对齐**：`buildWebAppJsonLd` 的 Organization 与官网使用同一个 `@id`（已经一致），`sameAs` 改成和官网相同的列表（GitHub + X）；WebApplication 保留 `alternateName: "Off Work Countdown"`。
+- [x] **P1-6 实体信号对齐**：`buildWebAppJsonLd` 的 Organization 与官网使用同一个 `@id`（已经一致），`sameAs` 改成和官网相同的列表（GitHub + X）；WebApplication 保留 `alternateName: "Off Work Countdown"`。
 - [ ] **P1-7 搜索引擎接入**：
   - Naver Search Advisor 验证 `off.rainif.com` 并提交 sitemap（韩国是第三大市场，Naver 份额高）；
   - 两个域都接 IndexNow（Bing / Yandex / Naver / Seznam 共用）：放 key 文件，部署后用 GitHub Action 推送 sitemap 里变更过的 URL；
@@ -176,11 +176,11 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
   - 商店图里的标题是图片上的文字，搜索引擎读不到。每张图都要配一段页面上的文字说明，写清这个功能能做什么（小组件、实时活动、免费 Apple Watch App、月历排班、节假日），并给图片写具体的 `alt`。
   - FAQ 可以增加「有没有小组件 / Apple Watch」这类问题，只写 en / zh-CN。
   - **时间点**：3.2.0 还没上架（见 `docs/reviews/2026-09-19-3.2.0-release-readiness.md`）。官网这部分可以先在分支上做好，**等 3.2.0 在 App Store 上线当天再合并**，免得用户看到还下载不到的功能。
-- [ ] **P1-12 放行 AI 搜索检索爬虫**（§7-4 已同意）：继续屏蔽 `GPTBot`、`Google-Extended`、`CCBot` 等训练爬虫；放行 `OAI-SearchBot`、`ChatGPT-User`、`PerplexityBot`、`Claude-SearchBot`、`Claude-User`。两边文档都写明线上的 AI 爬虫规则来自 Cloudflare，不是仓库里的文件，所以要在 Cloudflare 后台两个域分别检查「托管 robots.txt」和「阻止 AI 机器人」两项设置（后者在防火墙层拦截，不看 `robots.txt`），改完再用 `curl` 核对线上 `robots.txt`。同步更新两个仓 `docs/seo.md` 里关于 AI 爬虫的说明。`llms.txt` 已存在，保持不变。
+- [x] **P1-12 放行 AI 搜索检索爬虫**（2026-09-25 用户确认已在 Cloudflare 设置好）（§7-4 已同意）：继续屏蔽 `GPTBot`、`Google-Extended`、`CCBot` 等训练爬虫；放行 `OAI-SearchBot`、`ChatGPT-User`、`PerplexityBot`、`Claude-SearchBot`、`Claude-User`。两边文档都写明线上的 AI 爬虫规则来自 Cloudflare，不是仓库里的文件，所以要在 Cloudflare 后台两个域分别检查「托管 robots.txt」和「阻止 AI 机器人」两项设置（后者在防火墙层拦截，不看 `robots.txt`），改完再用 `curl` 核对线上 `robots.txt`。同步更新两个仓 `docs/seo.md` 里关于 AI 爬虫的说明。`llms.txt` 已存在，保持不变。
 
 ### P2 — 内容与功能（1–2 个月）
 
-- [ ] **P2-1 工时计算（需要产品决定，§7-5）**：用户输入上班时间 + 工作时长 + 午休，得出下班时间，再一键开始倒计时。对应英文「how many hours is 9 to 5」、德国「Feierabendrechner / wann habe ich Feierabend」（现在排名 26–29）、韩国「퇴근시간 계산기」（55 次点击，CTR 79%）、「남은시간 계산기」（112 次展示，排名约 8）、日本「5時まであと何時間」。做成首页的一个模式，不另开一批页面；计算规则放在 `lib/countdown.ts`，不在组件里另写公式。
+- [x] **P2-1 工时计算**（§7-5：只做 Web，独立小工具，带 DoneAt 推荐位）：`/{lang}/work-hours-calculator`，19 种语言，仅 Web 构建。两种模式：「几点下班」（上班时刻 + 工作时长 + 不计薪休息）和「做了几个小时」（起止 + 休息 + 每周天数）；结果可一键带进倒计时（`from=calculator`，计为 `calculator_start`）；下方 DoneAt App 推荐卡片链到官网对应语言门厅（`calculator_app_open`）。计算在 `lib/work-hours.ts`，跨度复用 `getShiftLengthHours`，不进共享规则、不涉及 Swift / Kotlin。原始设想：对应英文「how many hours is 9 to 5」、德国「Feierabendrechner / wann habe ich Feierabend」（现在排名 26–29）、韩国「퇴근시간 계산기」（55 次点击，CTR 79%）、「남은시간 계산기」（112 次展示，排名约 8）、日本「5時まであと何時間」。做成首页的一个模式，不另开一批页面；计算规则放在 `lib/countdown.ts`，不在组件里另写公式。
 - [ ] **P2-2 官网下载页扩写**：现在只有约 270 个英文词。给每个平台补一段具体用法和截图说明，对准「下班倒计时 app」「feierabend app」这类词。仍然只写 en / zh-CN。
 - [ ] **P2-3 意大利语、葡语、印尼语**：展示主要来自不相关的「mezzanotte / 午夜倒计时」类查询。先不追，等 P0 查询数据确认有真实需求再改文案。
 - [ ] **P2-4 夜班**：`night-shift` 页排名 15–21，而跨夜是产品的差异点。可以按官网 backlog 的规则补一段 FAQ，不新开页面。
@@ -222,7 +222,7 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
 | 2 | 根路径与 `x-default` | **按推荐方案**：`x-default` 指向会按语言跳转的首页 `/`，跳转响应补 `Vary`，4 周后对照基线，不达标就改回。理由见下。 |
 | 3 | 官网写小组件 / 实时活动 / Watch | **同意**，条件是用 3.2.0 的营销截图更新 iOS 介绍（现在是 3.1.8）。3.2.0 上架当天再合并，见 P1-11。 |
 | 4 | AI 搜索检索爬虫 | **同意放行**，训练爬虫继续屏蔽，见 P1-12。 |
-| 5 | 工时计算功能 | 未定。它是产品功能，要进 `lib/countdown.ts`，需要决定只做 Web 还是 iOS / Android 一起做。 |
+| 5 | 工时计算功能 | **只做 Web**，做成独立于倒计时的小工具，界面要精致，并植入 DoneAt 产品推荐。已实现，见 P2-1。 |
 
 **§7-2 为什么选 `x-default = /`**
 
