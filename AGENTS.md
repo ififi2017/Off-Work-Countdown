@@ -102,8 +102,11 @@ release gates. No rule, plan or script may depend on locally installed skills.
   density before hand-off. Preserve settled conventions: shared orange accent,
   iOS `OWCDesign` 22 pt cards / 14 pt controls. Extend `OWCMotion` for curves and
   durations rather than inlining numbers; the app already adopts Liquid Glass.
-- Desktop is a compact, non-resizable 420–450 px tool: single-line title, fixed
-  footer, settings subpage. Salary stays in the existing summary card; updater
+- Desktop is a compact, non-resizable 420–450 px tool: the Web title block
+  (brand, localized function line below, each one truncated line), fixed
+  footer, settings subpage. Main window and Windows Mini Timer share Web's
+  Geist font and `RollingText` digits; the native macOS Mini Timer mirrors it
+  in `OWCRollingLabel`. Salary stays in the existing summary card; updater
   state stays inline/in a toast, with no added window height. Dropdowns stay
   above the footer and scroll internally. Disable shell/Mini Timer text
   selection; inputs opt back in via `.select-none input`.

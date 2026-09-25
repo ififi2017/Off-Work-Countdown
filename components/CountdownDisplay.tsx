@@ -16,7 +16,7 @@ interface CountdownDisplayProps {
   standby?: boolean;
   mobile?: boolean;
   forceLtr?: boolean;
-  /** 网页版：每秒换数字时用 iOS 同款逐位滚动过渡（文案格式不变）。 */
+  /** 网页版与桌面主窗：每秒换数字时用 iOS 同款逐位滚动过渡（文案格式不变）。 */
   rolling?: boolean;
 }
 

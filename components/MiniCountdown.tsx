@@ -22,6 +22,7 @@ import {
 } from "@/lib/desktop-state";
 import { isValidShiftTimeline } from "@/lib/countdown";
 import { startSecondTick } from "@/lib/second-tick";
+import { RollingText } from "./RollingText";
 import {
   formatWoodfishCountLabel,
   localDateKey,
@@ -597,7 +598,7 @@ export function MiniCountdown() {
                 <span
                   className={`whitespace-nowrap font-semibold leading-none tracking-[-0.035em] tabular-nums ${woodfishTimeSizeClass}`}
                 >
-                  {view.time}
+                  <RollingText text={view.time} />
                 </span>
               </p>
             ) : hasCountdown ? (
@@ -618,7 +619,7 @@ export function MiniCountdown() {
                 <span
                   className={`whitespace-nowrap font-semibold leading-none tracking-[-0.035em] tabular-nums ${woodfishTimeSizeClass}`}
                 >
-                  {view.time}
+                  <RollingText text={view.time} />
                 </span>
               </p>
             ) : (
@@ -646,7 +647,7 @@ export function MiniCountdown() {
                 {t("nextShiftLabelShort")}
               </span>
               <span className="truncate text-[19px] font-semibold tabular-nums tracking-[-0.035em]">
-                {view.time}
+                <RollingText text={view.time} />
               </span>
             </p>
           ) : hasCountdown ? (
@@ -661,7 +662,7 @@ export function MiniCountdown() {
                   isOnBreak ? "text-[20px]" : timeSizeClass
                 }`}
               >
-                {view.time}
+                <RollingText text={view.time} />
               </span>
             </p>
           ) : (

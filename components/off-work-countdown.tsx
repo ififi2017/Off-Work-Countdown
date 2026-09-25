@@ -2806,12 +2806,13 @@ export function OffWorkCountdown({
                 }
               >
                 {siteConfig.brandName}
-                {/* Web 首页的 H1 带上本地化功能行（下班倒數計時、Feierabend-Countdown…）：
-                    搜索者搜的是功能词，单写品牌名等于 H1 里没有关键词。桌面仍是单行标题。 */}
-                {IS_WEB_BUILD && (
+                {/* H1 带上本地化功能行（下班倒數計時、Feierabend-Countdown…）：网页版
+                    搜索者搜的是功能词，单写品牌名等于 H1 里没有关键词；桌面与网页版保持
+                    同一套标题。两行各自不换行，长语言截断。 */}
+                {(IS_WEB_BUILD || IS_DESKTOP_BUILD) && (
                   <>
                     <span className="sr-only"> — </span>
-                    <span className="mt-1.5 block text-xs font-medium tracking-normal text-gray-500 dark:text-gray-400">
+                    <span className="mt-1.5 block truncate text-xs font-medium tracking-normal text-gray-500 dark:text-gray-400">
                       {t("offWorkCountdown")}
                     </span>
                   </>
@@ -3201,7 +3202,7 @@ export function OffWorkCountdown({
                   overtime={Boolean(activeShift?.overtimeEndAtMs)}
                   status={showNextShiftStatus || showBeforeShiftStatus}
                   forceLtr={!showNextShiftStatus}
-                  rolling={IS_WEB_BUILD}
+                  rolling={IS_WEB_BUILD || IS_DESKTOP_BUILD}
                 />
                 {IS_MOBILE_BUILD && (
                   <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[1.35rem] border border-white/80 bg-white/75 px-4 py-3.5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/35">
@@ -3497,10 +3498,12 @@ export function OffWorkCountdown({
                       <Globe size={16} />
                       {t("chooselanguage")}
                     </Label>
+                    {/* 宽度随语言名走（与网页版标题栏同一种）：固定 92px 时
+                        「Bahasa Indonesia」会折成两行。 */}
                     <LanguageSelector
                       currentLang={lang}
                       languageMap={languageNames}
-                      compact
+                      fit
                       mobile={IS_MOBILE_BUILD}
                     />
                   </section>
