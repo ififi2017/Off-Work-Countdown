@@ -126,7 +126,10 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph, ope
     val settingsLabel = stringResource(R.string.settings)
     when (key) {
         Route.TimerHome -> TimerScreen(graph, openSettings)
-        Route.FocusHome -> PendingScreen(stringResource(R.string.focusTitle), null, null)
+        Route.FocusHome -> com.rainif.doneat.ui.focus.FocusScreen(graph, open, openSettings)
+        is Route.FocusCreate -> com.rainif.doneat.ui.focus.FocusCreateScreen(graph, key.blockStartAtMs, key.currentOrNext, key.favoriteID, back)
+        is Route.FocusTaskEdit -> com.rainif.doneat.ui.focus.FocusTaskEditScreen(graph, key.taskID, back)
+        Route.FocusTimerSettings -> com.rainif.doneat.ui.focus.FocusTimerSettingsScreen(graph, back)
         Route.RecordsHome -> com.rainif.doneat.ui.records.RecordsScreen(graph, open, openSettings)
         is Route.RecordsDay -> com.rainif.doneat.ui.records.RecordsDayScreen(graph, key.dayKey, open, back, openSettings)
         Route.RecordsAll -> com.rainif.doneat.ui.records.AllRecordsScreen(graph, open, back)

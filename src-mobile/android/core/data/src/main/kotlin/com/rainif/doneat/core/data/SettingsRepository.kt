@@ -43,6 +43,10 @@ data class DeviceSettings(
     val selectedTab: String = "timer",
     /** The first-run page to resume on, with [setupDraft], after any interruption. */
     val setupPage: String? = null,
+    /** Alerts when a focus phase ends; a device choice, as on iOS. */
+    val focusNotificationsEnabled: Boolean = true,
+    /** The Focus page's scale, "today" or "usual". */
+    val focusScale: String = "today",
 )
 
 /**
@@ -76,6 +80,8 @@ class DeviceSettingsStore(private val file: Path) {
             dynamicColor = bool("dynamicColor", false),
             selectedTab = o["selectedTab"]?.jsonPrimitive?.contentOrNull ?: "timer",
             setupPage = o["setupPage"]?.jsonPrimitive?.contentOrNull,
+            focusNotificationsEnabled = bool("focusNotificationsEnabled", true),
+            focusScale = o["focusScale"]?.jsonPrimitive?.contentOrNull ?: "today",
         )
     }.getOrElse { DeviceSettings() }
 
@@ -90,6 +96,8 @@ class DeviceSettingsStore(private val file: Path) {
             "dynamicColor" to JsonPrimitive(s.dynamicColor),
             "selectedTab" to JsonPrimitive(s.selectedTab),
             "setupPage" to (s.setupPage?.let(::JsonPrimitive) ?: JsonNull),
+            "focusNotificationsEnabled" to JsonPrimitive(s.focusNotificationsEnabled),
+            "focusScale" to JsonPrimitive(s.focusScale),
         ),
     ).toString()
 }

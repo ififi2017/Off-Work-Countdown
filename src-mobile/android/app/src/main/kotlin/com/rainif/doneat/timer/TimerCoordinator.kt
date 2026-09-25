@@ -10,6 +10,7 @@ import com.rainif.doneat.core.data.SettingsRepository
 import com.rainif.doneat.core.domain.records.SyncedPreferences
 import com.rainif.doneat.core.domain.reminders.ReminderChannel
 import com.rainif.doneat.core.domain.reminders.ReminderPlanner
+import com.rainif.doneat.core.domain.schedule.Reminder
 import com.rainif.doneat.core.domain.schedule.ReminderInputs
 import com.rainif.doneat.core.domain.session.ShiftReminderPlan
 import com.rainif.doneat.l10n.Strings
@@ -17,10 +18,13 @@ import com.rainif.doneat.reminders.Reminders
 import com.rainif.doneat.ui.AppLocale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -36,15 +40,19 @@ class TimerCoordinator(
     private val settings: SettingsRepository,
     private val scope: CoroutineScope,
     private val nowMs: () -> Double,
+    /** Changes that can move a reminder besides the session, such as today's focus plan. */
+    private val planChanges: Flow<Any?> = flowOf(Unit),
+    /** A plan taking over the break reminders; identity when there is none. */
+    private val adjust: (SyncedPreferences) -> (List<Reminder>) -> List<Reminder> = { { it } },
 ) {
     @OptIn(FlowPreview::class)
     fun start() {
         scope.launch {
             // Settings edits come in bursts (a time picker, a switch); schedule once they settle.
-            sessions.session.debounce(300).collectLatest { session ->
+            combine(sessions.session, planChanges) { session, _ -> session }.debounce(300).collectLatest { session ->
                 val now = nowMs()
                 val res = localizedResources(session.env.preferences.languageOverride)
-                val alarms = ShiftReminderPlan.alarms(session, now, reminderInputs(res, session.env.preferences))
+                val alarms = ShiftReminderPlan.alarms(session, now, reminderInputs(res, session.env.preferences), adjust(session.env.preferences))
                 Reminders.schedule(context, alarms, ReminderPlanner.SHIFT_PREFIX, channelNames(res))
             }
         }
@@ -78,6 +86,7 @@ class TimerCoordinator(
         fun channelNames(res: Resources) = mapOf(
             ReminderChannel.SHIFT to res.getString(R.string.shiftReminders),
             ReminderChannel.HEALTH to res.getString(R.string.microBreakReminder),
+            ReminderChannel.FOCUS to res.getString(R.string.focusTitle),
         )
 
         /** iOS `ShiftSessionStore.reminderInputs`, in the app's language. The cycle summary needs Plus (T20). */
