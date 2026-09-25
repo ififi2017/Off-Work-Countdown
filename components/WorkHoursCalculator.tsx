@@ -174,7 +174,7 @@ export function WorkHoursCalculator({
 
   return (
     <div className="space-y-4">
-      <section className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-800/40 sm:p-6">
+      <section className="rounded-[1.75rem] border border-black/[0.06] bg-white/90 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_28px_70px_-28px_rgba(15,23,42,0.22)] dark:border-white/[0.07] dark:bg-gray-900/80 dark:shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_28px_80px_-24px_rgba(0,0,0,0.7)] sm:p-6">
         <div
           role="radiogroup"
           aria-label={`${copy.modeFinish} / ${copy.modeHours}`}
@@ -417,7 +417,7 @@ export function WorkHoursCalculator({
         </div>
       </section>
 
-      <aside className="flex items-start gap-4 rounded-2xl border border-gray-200/80 bg-white/70 p-5 dark:border-gray-800 dark:bg-gray-800/25">
+      <aside className="flex items-start gap-4 rounded-[1.75rem] border border-black/[0.06] bg-white/70 p-5 dark:border-white/[0.07] dark:bg-white/[0.03]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/icon-192x192.png"

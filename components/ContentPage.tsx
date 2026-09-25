@@ -53,7 +53,7 @@ export function ContentPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

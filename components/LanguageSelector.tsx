@@ -18,6 +18,8 @@ interface LanguageSelectorProps {
   languageMap: Record<string, string>;
   compact?: boolean;
   mobile?: boolean;
+  /** 网页版标题栏：宽度随语言名伸缩，「繁體中文（台灣）」也不折行；随根字号缩放。 */
+  fit?: boolean;
 }
 
 export function LanguageSelector({
@@ -25,6 +27,7 @@ export function LanguageSelector({
   languageMap,
   compact = false,
   mobile = false,
+  fit = false,
 }: LanguageSelectorProps) {
   const router = useRouter();
   const { i18n } = useTranslation();
@@ -80,7 +83,9 @@ export function LanguageSelector({
           className={`${
             mobile
               ? "h-11 w-[132px] rounded-xl border-input bg-background px-3 text-sm shadow-sm [&>span]:truncate"
-              : compact
+              : fit
+                ? "h-9 w-auto max-w-[12rem] gap-1.5 whitespace-nowrap rounded-xl border-input bg-background px-3 text-xs shadow-sm"
+                : compact
                 ? "h-9 w-[92px] rounded-xl border-input bg-background px-2.5 text-xs shadow-sm"
                 : "w-[100px]"
           } ${
