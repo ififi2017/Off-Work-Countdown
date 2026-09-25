@@ -28,6 +28,7 @@ import {
   platformShareUrl,
   canNativeShare,
   canNativeShareFiles,
+  formatShareDisplayUrl,
   SHARE_IMAGE_FILENAME,
   type SharePlatform,
   type Shift,
@@ -262,6 +263,239 @@ export function ShareDialog({
       // A blocked system browser should not close or break the share dialog.
     }
   };
+
+  // 网页版分享面板。桌面窗口空间固定、另有一套紧凑排布（下方），这里只重排
+  // 网页版：预览是主角，操作收成一个主按钮加两个安静的图标按钮，平台在底栏。
+  if (!desktop) {
+    const segment = (selected: boolean) =>
+      `flex h-9 items-center justify-center gap-2 rounded-[0.6rem] text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 ${
+        selected
+          ? "bg-white text-gray-950 shadow-sm dark:bg-white/[0.14] dark:text-white"
+          : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+      }`;
+    const iconButton =
+      "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-black/[0.08] bg-white text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:border-white/[0.1] dark:bg-white/[0.04] dark:text-gray-200 dark:hover:bg-white/[0.08]";
+    const primaryButton =
+      "inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-gray-950 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-black disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus-visible:ring-offset-gray-900";
+
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-[26.5rem] gap-0 overflow-y-auto [&>*]:min-w-0 rounded-[1.75rem] border-black/[0.06] p-0 shadow-[0_1px_2px_rgba(15,23,42,0.05),0_40px_100px_-30px_rgba(15,23,42,0.45)] dark:border-white/[0.08] dark:bg-gray-900 dark:shadow-[0_40px_100px_-30px_rgba(0,0,0,0.8)] sm:rounded-[1.75rem] [&>button]:right-5 [&>button]:top-6 [&>button]:rounded-full [&>button]:p-1">
+          <div className="px-6 pt-6">
+            <DialogHeader className="space-y-0 text-start sm:text-start">
+              <DialogTitle className="pe-8 text-lg font-semibold tracking-tight">
+                {t("shareTitle")}
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                {t("shareTitle")}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div
+              role="tablist"
+              className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1 dark:bg-white/[0.06]"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === "image"}
+                onClick={() => setTab("image")}
+                className={segment(tab === "image")}
+              >
+                <ImageIcon className="h-4 w-4" aria-hidden="true" />
+                {t("shareTabImage")}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === "text"}
+                onClick={() => setTab("text")}
+                className={segment(tab === "text")}
+              >
+                <Type className="h-4 w-4" aria-hidden="true" />
+                {t("shareTabText")}
+              </button>
+            </div>
+          </div>
+
+          {/* 预览台：图片和文字共用同一块、同一高度，切换时面板不跳。 */}
+          <div className="px-6 pt-4">
+            <div className="relative flex h-[17.5rem] items-center justify-center overflow-hidden rounded-2xl bg-gray-100 ring-1 ring-inset ring-black/[0.04] dark:bg-black/30 dark:ring-white/[0.06]">
+              {tab === "image" ? (
+                <>
+                  {img.url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={img.url}
+                      alt={t("shareTitle")}
+                      // 图往上让出底部版式切换的位置，两者不重叠。
+                      className={`-mt-9 w-auto rounded-xl shadow-[0_18px_40px_-16px_rgba(15,23,42,0.45)] transition-opacity duration-200 ${
+                        format === "story" ? "max-h-[72%]" : "max-h-[66%]"
+                      } ${img.loading ? "opacity-60" : "opacity-100"}`}
+                    />
+                  )}
+                  {img.loading && !img.url && (
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" aria-hidden="true" />
+                  )}
+                  {!img.url && !img.loading && (
+                    <span className="text-sm text-gray-400">—</span>
+                  )}
+                  {/* 版式切换贴在预览台底部，改的就是它上面这张图。 */}
+                  <div className="absolute inset-x-0 bottom-3 flex justify-center">
+                    <div className="inline-flex gap-0.5 rounded-full bg-white/85 p-0.5 shadow-sm ring-1 ring-black/[0.05] backdrop-blur-md dark:bg-gray-900/80 dark:ring-white/[0.08]">
+                      {(["square", "story"] as ShareFormat[]).map((f) => (
+                        <button
+                          key={f}
+                          type="button"
+                          aria-pressed={format === f}
+                          onClick={() => setFormat(f)}
+                          className={`h-7 rounded-full px-3 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 ${
+                            format === f
+                              ? "bg-gray-950 text-white dark:bg-white dark:text-gray-950"
+                              : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                          }`}
+                        >
+                          {f === "square" ? t("shareFormatSquare") : t("shareFormatStory")}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                // 文字预览做成一条将要发出去的消息，而不是一个只读输入框。
+                <div className="flex h-full w-full min-w-0 items-end justify-end p-5">
+                  <p className="min-w-0 max-w-[88%] select-text break-words rounded-[1.25rem] rounded-ee-md bg-gray-950 px-4 py-3 text-[0.9rem] leading-6 text-white shadow-sm dark:bg-white dark:text-gray-950">
+                    {textWithEmoji}
+                    <span className="mt-1 block truncate text-xs opacity-60">
+                      {formatShareDisplayUrl(shareUrl)}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 心情 */}
+          <div className="px-6 pt-5">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              {t("shareMoodLabel")}
+            </p>
+            <div className="mt-2 flex justify-between gap-1">
+              {moods.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => chooseMood(m.id)}
+                  title={t(m.labelKey)}
+                  aria-label={t(m.labelKey)}
+                  aria-pressed={m.id === moodId}
+                  className={`flex h-10 w-10 items-center justify-center rounded-full text-[1.35rem] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 ${
+                    m.id === moodId
+                      ? "scale-110 bg-white shadow-[0_4px_14px_-4px_rgba(15,23,42,0.3)] ring-1 ring-black/[0.06] dark:bg-white/[0.14] dark:ring-white/[0.1]"
+                      : "opacity-60 grayscale-[35%] hover:bg-gray-100 hover:opacity-100 hover:grayscale-0 dark:hover:bg-white/[0.06]"
+                  }`}
+                >
+                  {m.emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 操作：一个主按钮，其余是安静的图标按钮。 */}
+          <div className="flex gap-2 px-6 pt-5">
+            {tab === "image" ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleNativeShareImage}
+                  disabled={!img.blob}
+                  className={primaryButton}
+                >
+                  {canNativeShare() ? (
+                    <Share2 className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Download className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  {canNativeShare() ? t("shareNative") : t("shareDownload")}
+                </button>
+                {canNativeShare() && (
+                  <button
+                    type="button"
+                    onClick={handleDownload}
+                    disabled={!img.url}
+                    title={t("shareDownload")}
+                    aria-label={t("shareDownload")}
+                    className={iconButton}
+                  >
+                    <Download className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                )}
+                {canCopyImage && (
+                  <button
+                    type="button"
+                    onClick={handleCopyImage}
+                    disabled={!img.blob}
+                    title={t("shareCopyImage")}
+                    aria-label={t("shareCopyImage")}
+                    className={iconButton}
+                  >
+                    {copied === "image" ? (
+                      <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                    ) : (
+                      <Copy className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <button type="button" onClick={handleCopyText} className={primaryButton}>
+                  {copied === "text" ? (
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Copy className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  {copied === "text" ? t("shareCopied") : t("shareCopyText")}
+                </button>
+                {canNativeShare() && (
+                  <button
+                    type="button"
+                    onClick={handleNativeShareText}
+                    title={t("shareNative")}
+                    aria-label={t("shareNative")}
+                    className={iconButton}
+                  >
+                    <Share2 className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* 平台底栏 + 隐私说明 */}
+          <div className="mt-6 border-t border-black/[0.06] bg-gray-50/70 px-6 pb-5 pt-4 dark:border-white/[0.06] dark:bg-white/[0.02]">
+            <div className="flex justify-between gap-1">
+              {PLATFORMS.map(({ id, Icon, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => void handlePlatform(id)}
+                  title={label}
+                  aria-label={label}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-600 ring-1 ring-black/[0.06] transition-all hover:-translate-y-0.5 hover:text-gray-950 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:bg-white/[0.06] dark:text-gray-300 dark:ring-white/[0.08] dark:hover:text-white"
+                >
+                  <Icon className="h-[1.1rem] w-[1.1rem]" />
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
+              {t("sharePrivacyNote")}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

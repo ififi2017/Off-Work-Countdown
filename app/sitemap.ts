@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { contentLocales } from "@/lib/content-locales";
 import { presetSlugs } from "@/lib/presets";
 import { webAppAlternates, webAppPageUrl } from "@/lib/site-urls";
+import { WORK_HOURS_CALCULATOR_SLUG } from "@/lib/work-hours";
 
 // Web 构建按 Next.js metadata 约定静态生成 sitemap。桌面构建不把普通
 // `.ts` 识别为路由，因此该文件不会进入 Tauri 静态导出。
@@ -23,6 +24,13 @@ const presetEntries = presetSlugs.flatMap((slug) => {
   }));
 });
 
+// 工时计算器的界面文案 19 种语言都有，和首页一样互为 alternate。
+const calculatorAlternates = webAppAlternates(locales, WORK_HOURS_CALCULATOR_SLUG);
+const calculatorEntries = locales.map((lang) => ({
+  url: webAppPageUrl(lang, WORK_HOURS_CALCULATOR_SLUG),
+  alternates: { languages: calculatorAlternates },
+}));
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...locales.map((lang) => ({
@@ -30,5 +38,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       alternates: { languages: appAlternates },
     })),
     ...presetEntries,
+    ...calculatorEntries,
   ];
 }

@@ -1,11 +1,28 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 /** 每项高度与可见行数决定滚轮的观感；两者一起决定容器高度和上下留白。 */
-const ITEM_HEIGHT = 34;
-const VISIBLE_ROWS = 5;
-const PADDING = ((VISIBLE_ROWS - 1) / 2) * ITEM_HEIGHT;
+const BASE_ITEM_HEIGHT = 34;
+const DEFAULT_VISIBLE_ROWS = 5;
+
+const useIsomorphicLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/**
+ * 行高跟着根字号走。网页版在大屏上会调大根字号（globals.css），文字随之变大，
+ * 行高若仍是固定 34px 就会显得挤；桌面与 iOS 壳根字号是 16px，结果不变。
+ */
+function useItemHeight(): number {
+  const [height, setHeight] = useState(BASE_ITEM_HEIGHT);
+  useIsomorphicLayoutEffect(() => {
+    const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    if (Number.isFinite(rootPx) && rootPx > 0) {
+      setHeight(Math.round((BASE_ITEM_HEIGHT * rootPx) / 16));
+    }
+  }, []);
+  return height;
+}
 
 interface WheelPickerProps {
   items: string[];
@@ -15,6 +32,8 @@ interface WheelPickerProps {
   /** 点击某一项时提交。点击是明确的「就它了」，调用方通常顺手收起菜单。 */
   onSelect?: (value: string) => void;
   ariaLabel: string;
+  /** 可见行数（奇数）。默认 5；网页版菜单空间大，用 7 行一次看到更多。 */
+  visibleRows?: number;
 }
 
 /**
@@ -30,7 +49,10 @@ export function WheelPicker({
   onChange,
   onSelect,
   ariaLabel,
+  visibleRows = DEFAULT_VISIBLE_ROWS,
 }: WheelPickerProps) {
+  const itemHeight = useItemHeight();
+  const padding = ((visibleRows - 1) / 2) * itemHeight;
   const listRef = useRef<HTMLDivElement>(null);
   const settleTimerRef = useRef<number | null>(null);
   // 记住最后一次「对外报出」的值，避免滚动过程中反复触发同一个值。
@@ -43,9 +65,9 @@ export function WheelPicker({
     if (!list) return;
     const index = items.indexOf(value);
     if (index < 0) return;
-    list.scrollTop = index * ITEM_HEIGHT;
+    list.scrollTop = index * itemHeight;
     reportedRef.current = value;
-  }, [items, value]);
+  }, [items, value, itemHeight]);
 
   useEffect(() => {
     return () => {
@@ -60,7 +82,7 @@ export function WheelPicker({
     // 滚动停下来之后才提交：滚动途中每经过一项就提交一次，会把中间划过的
     // 每个值都写进设置里。
     settleTimerRef.current = window.setTimeout(() => {
-      const index = Math.round(list.scrollTop / ITEM_HEIGHT);
+      const index = Math.round(list.scrollTop / itemHeight);
       const next = items[Math.min(items.length - 1, Math.max(0, index))];
       if (next && next !== reportedRef.current) {
         reportedRef.current = next;
@@ -70,12 +92,12 @@ export function WheelPicker({
   };
 
   return (
-    <div className="relative" style={{ height: VISIBLE_ROWS * ITEM_HEIGHT }}>
+    <div className="relative" style={{ height: visibleRows * itemHeight }}>
       {/* 中间的选中带。放在滚动层下面并且不吃指针事件，纯粹是视觉参考线。 */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-1 top-1/2 -translate-y-1/2 rounded-lg bg-accent/60"
-        style={{ height: ITEM_HEIGHT }}
+        style={{ height: itemHeight }}
       />
       <div
         ref={listRef}
@@ -86,7 +108,7 @@ export function WheelPicker({
         className="wheel-picker-scroll h-full overflow-y-auto overscroll-contain focus:outline-none"
         style={{
           scrollSnapType: "y mandatory",
-          paddingBlock: PADDING,
+          paddingBlock: padding,
           // 上下淡出，暗示列表还在继续，而不是被硬切断。
           maskImage:
             "linear-gradient(to bottom, transparent, black 22%, black 78%, transparent)",
@@ -111,7 +133,7 @@ export function WheelPicker({
                 ? "font-semibold text-foreground"
                 : "text-muted-foreground"
             }`}
-            style={{ height: ITEM_HEIGHT, scrollSnapAlign: "center" }}
+            style={{ height: itemHeight, scrollSnapAlign: "center" }}
           >
             {item}
           </div>

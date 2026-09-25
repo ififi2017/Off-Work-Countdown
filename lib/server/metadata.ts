@@ -63,7 +63,7 @@ export function buildWebAppJsonLd({
         "@id": organizationId,
         name: siteConfig.brandName,
         url: official,
-        sameAs: [siteConfig.github],
+        sameAs: [siteConfig.github, siteConfig.x],
       },
       {
         "@type": "WebSite",

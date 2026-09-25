@@ -30,6 +30,9 @@ export const siteConfig = {
     DEFAULT_OFFICIAL_SITE_URL
   ),
   github: "https://github.com/ififi2017/Off-Work-Countdown",
+  // 官方社交账号。Organization.sameAs 与官网仓 site.json 的 socials 保持同一组，
+  // 两个域对同一个 Organization @id 给出一致的实体信号。
+  x: "https://x.com/doneatapp",
   githubOwner: "ififi2017",
   githubRepo: "Off-Work-Countdown",
   releases: "https://github.com/ififi2017/Off-Work-Countdown/releases",

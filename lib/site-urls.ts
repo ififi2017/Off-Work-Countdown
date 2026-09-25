@@ -38,7 +38,24 @@ export function webAppPageUrl(lang: string, path = ""): string {
   return `${siteConfig.webAppUrl}/${lang}${suffix}`;
 }
 
-/** HTML 与 sitemap 共用的 hreflang 表。x-default 必须落在 /en，不能指向会 307 的裸域。 */
+/**
+ * 按浏览器语言跳转的首页。middleware 把 `/` 307 到 `/{lang}`（保留查询串），
+ * 这正是 Google 文档里 hreflang x-default 的典型用法：没有匹配语言的访客
+ * 从这里进入，由服务器挑语言。
+ */
+export function webAppRootUrl(): string {
+  return `${siteConfig.webAppUrl}/`;
+}
+
+/**
+ * HTML 与 sitemap 共用的 hreflang 表。
+ *
+ * - 首页（无 path）：x-default 指向会按语言跳转的 `/`。此前指向 `/en`，
+ *   结果 `/` 被当作一个独立的英文页收录，和 `/en` 分走了英文信号
+ *   （见 plans/Web/001-seo-search-growth.md §7-2）。
+ * - 其他页（预设页、工时计算器）：`/{path}` 没有对应的按语言跳转页，
+ *   x-default 仍落在 `/en/{path}`。
+ */
 export function webAppAlternates(
   langs: readonly string[],
   path = ""
@@ -47,6 +64,6 @@ export function webAppAlternates(
     ...Object.fromEntries(
       langs.map((lang) => [lang, webAppPageUrl(lang, path)])
     ),
-    "x-default": webAppPageUrl(defaultLocale, path),
+    "x-default": path ? webAppPageUrl(defaultLocale, path) : webAppRootUrl(),
   };
 }

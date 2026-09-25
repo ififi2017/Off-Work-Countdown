@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft,
   ArrowRight,
+  Calculator,
   CalendarDays,
   ChevronRight,
   Clock3,
@@ -57,6 +58,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { TimeSelector } from "./TimeSelector";
 import { LanguageSelector } from "./LanguageSelector";
+import { HeroScrollButton } from "./HeroScrollButton";
 import { ThemeToggle, Theme } from "./ThemeToggle";
 import { CountdownDisplay } from "./CountdownDisplay";
 import { Confetti } from "./Confetti";
@@ -104,6 +106,7 @@ import { decodeShift } from "@/lib/share";
 import { track } from "@/lib/track";
 import { siteConfig } from "@/config/site";
 import { officialHomeUrl, officialPageUrl } from "@/lib/site-urls";
+import { WORK_HOURS_CALCULATOR_SLUG } from "@/lib/work-hours";
 import {
   requestNotificationPermission,
   requestNotificationPermissionDetailed,
@@ -930,8 +933,14 @@ export function OffWorkCountdown({
     // 只有明确标记来自分享时才提示，直接手输 ?s= 的不打扰。
     const fromShare = params.get("from") === "share";
     setIsSharedView(fromShare);
-    // 分享落地与预设页 CTA 都带 ?s=，靠 from 区分，二者的转化路径不同。
-    track(fromShare ? "share_land" : "preset_start");
+    // 分享落地、预设页 CTA 与工时计算器都带 ?s=，靠 from 区分，三者的转化路径不同。
+    track(
+      fromShare
+        ? "share_land"
+        : params.get("from") === "calculator"
+          ? "calculator_start"
+          : "preset_start"
+    );
   }, [isMounted]);
 
   useEffect(() => {
@@ -2269,7 +2278,9 @@ export function OffWorkCountdown({
   const applyTheme = (newTheme: Theme, prefersDark: boolean) => {
     const root = document.documentElement;
     root.classList.remove("dark", "theme-cyberpunk", "theme-sunset");
-    document.body.className = ""; // Reset body class
+    // 只摘主题类。body 上还有 layout 挂的字体变量（--font-geist-sans）、
+    // antialiased 和壳层类；整串清空会连字体一起摘掉，换主题后字形会跳一下。
+    document.body.classList.remove("theme-cyberpunk", "theme-sunset");
 
     if (newTheme === "auto") {
       if (prefersDark) root.classList.add("dark");
@@ -2300,6 +2311,9 @@ export function OffWorkCountdown({
   // 的个性化配置在挂载后由上面的 effect 覆盖，默认值在服务端与客户端首帧
   // 一致，不会产生 hydration 不匹配。
   const isCustomTheme = theme === "cyberpunk" || theme === "sunset";
+  // 浏览器里打开的普通网页（非 PWA 独立窗口、非桌面 / iOS 壳）。只有它有
+  // 「首屏只放卡片、往下滚才是说明与下载」的版式；其余形态的排布一律不动。
+  const isWebPage = IS_WEB_BUILD && !isAppShell;
 
   // 本周与今年的累计，完全由配置推算（见 lib/summary.ts 的说明）。
   // 仅在倒计时视图下计算：它依赖当前时间，服务端渲染时算了也不能用。
@@ -2439,15 +2453,24 @@ export function OffWorkCountdown({
           ? "mobile-app-surface flex h-[100dvh] min-h-[100dvh] flex-col items-stretch overflow-hidden p-0 select-none"
           : isAppShell
             ? "min-h-screen select-none flex flex-col items-stretch justify-start p-0"
-            : "min-h-screen flex items-center justify-center p-4"
+            : isWebPage
+              ? "min-h-screen flex flex-col items-center px-4"
+              : "min-h-screen flex items-center justify-center p-4"
       } ${
-        isCustomTheme
-          ? IS_MOBILE_BUILD
+        IS_MOBILE_BUILD
+          ? isCustomTheme
             ? "mobile-custom-theme"
-            : ""
-          : IS_MOBILE_BUILD
-            ? "bg-[#f2f2f7] dark:bg-black"
-            : "bg-gray-100 dark:bg-gray-900"
+            : "bg-[#f2f2f7] dark:bg-black"
+          : // Web / 桌面：isolate 让外层成为层叠上下文，渐变主题层（Background，
+            // -z-10）因此画在这层底色之上、内容之下。渐变主题也保留底色：
+            // 切换过渡中两层都半透明时，透出来的是这层底色，而不是 body 的颜色。
+            `isolate ${
+              isWebPage
+                ? // 深色底压到 gray-950，卡片比底色亮一层，读起来是「浮起来」
+                  // 而不是此前 black/20 那样「陷下去」。
+                  "bg-gray-100 dark:bg-gray-950"
+                : "bg-gray-100 dark:bg-gray-900"
+            }`
       } ${
         isAppShell && !IS_MOBILE_BUILD
           ? "pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
@@ -2674,7 +2697,18 @@ export function OffWorkCountdown({
             ? "flex h-full min-h-0 w-full flex-1 flex-col"
             : isAppShell
               ? "flex min-h-0 flex-1 flex-col"
-              : "w-full max-w-md"
+              : "w-full"
+        }
+      >
+      {/* 首屏：只有卡片，上下左右居中。浏览器缩成小窗时看到的正好是整张卡片；
+          说明、下载与页脚都在首屏以下。其他形态用 contents 让这一层消失。 */}
+      <section
+        className={
+          isWebPage
+            ? // 手机上居中会在卡片上方空出一大截，窄屏改为靠上；仍占满一屏，
+              // 说明与下载照样在首屏以下。
+              "relative mx-auto flex min-h-[100svh] w-full max-w-md flex-col justify-start pb-16 pt-4 sm:justify-center sm:py-8"
+            : "contents"
         }
       >
       {/* 接力提示。分享链接落地后对方直接看到的是发送者的班次倒计时，
@@ -2697,11 +2731,13 @@ export function OffWorkCountdown({
       <Card className={`w-full border-0 ${
         IS_MOBILE_BUILD
           ? "mobile-app-card flex h-full min-h-0 max-w-none flex-col overflow-hidden rounded-none bg-transparent shadow-none"
-          : `glass dark:glass-dark ${
-              isAppShell
-                ? "max-w-none h-screen max-h-screen overflow-hidden rounded-none shadow-none border-none bg-transparent flex flex-col"
-                : ""
-            }`
+          : isAppShell
+            ? "glass dark:glass-dark max-w-none h-screen max-h-screen overflow-hidden rounded-none shadow-none border-none bg-transparent flex flex-col"
+            : isCustomTheme
+              ? "glass dark:glass-dark"
+              : // 网页版卡片：细描边 + 两层柔和阴影（贴地的一层、远处的一层），
+                // 不用渐变或厚边框制造分量。
+                "rounded-[1.75rem] border border-black/[0.06] bg-white/90 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_28px_70px_-28px_rgba(15,23,42,0.22)] backdrop-blur-xl dark:border-white/[0.07] dark:bg-gray-900/80 dark:shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_28px_80px_-24px_rgba(0,0,0,0.7)]"
       }`}>
         {/* 轨道：主页面与设置页各占一半，整条横移。Web 版没有设置页，用
             display:contents 让这两层在布局里消失。 */}
@@ -2769,6 +2805,16 @@ export function OffWorkCountdown({
                 }
               >
                 {siteConfig.brandName}
+                {/* Web 首页的 H1 带上本地化功能行（下班倒數計時、Feierabend-Countdown…）：
+                    搜索者搜的是功能词，单写品牌名等于 H1 里没有关键词。桌面仍是单行标题。 */}
+                {IS_WEB_BUILD && (
+                  <>
+                    <span className="sr-only"> — </span>
+                    <span className="mt-1.5 block text-xs font-medium tracking-normal text-gray-500 dark:text-gray-400">
+                      {t("offWorkCountdown")}
+                    </span>
+                  </>
+                )}
               </h1>
               {IS_MOBILE_BUILD && (
                 <p className="mt-0.5 line-clamp-2 text-[0.68rem] leading-4 text-gray-500 dark:text-gray-400">
@@ -2776,27 +2822,6 @@ export function OffWorkCountdown({
                 </p>
               )}
               </div>
-              {!showCountdown && IS_WEB_BUILD && (
-                <>
-                  <a
-                    href={officialHomeUrl(lang)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hidden text-sm font-medium text-gray-500 transition-colors hover:text-gray-800 sm:inline dark:text-gray-400 dark:hover:text-gray-200"
-                  >
-                    doneat.app
-                  </a>
-                  <a
-                    href={siteConfig.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
-                    title={t("githubRepository")}
-                  >
-                    <Github size={24} />
-                  </a>
-                </>
-              )}
             </div>
             <div
               data-tauri-drag-region="false"
@@ -2867,7 +2892,7 @@ export function OffWorkCountdown({
               <LanguageSelector
                 currentLang={lang}
                 languageMap={languageNames}
-                compact
+                fit
               />
             )}
             </div>
@@ -2952,7 +2977,11 @@ export function OffWorkCountdown({
                   className={
                     IS_MOBILE_BUILD
                       ? "space-y-5 rounded-[1.75rem] border border-white/70 bg-white/80 p-4 shadow-[0_12px_32px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/80"
-                      : "contents"
+                      : IS_WEB_BUILD
+                        ? // contents 会让外层 space-y 落不到里面，「工作日」
+                          // 因此贴着上面的时间框；网页版自己排间距。
+                          "space-y-5"
+                        : "contents"
                   }
                 >
                 {IS_MOBILE_BUILD && (
@@ -3171,6 +3200,7 @@ export function OffWorkCountdown({
                   overtime={Boolean(activeShift?.overtimeEndAtMs)}
                   status={showNextShiftStatus || showBeforeShiftStatus}
                   forceLtr={!showNextShiftStatus}
+                  rolling={IS_WEB_BUILD}
                 />
                 {IS_MOBILE_BUILD && (
                   <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[1.35rem] border border-white/80 bg-white/75 px-4 py-3.5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/35">
@@ -3276,7 +3306,7 @@ export function OffWorkCountdown({
             {!showCountdown ? (
               <motion.div
                 key="start"
-                className={IS_MOBILE_BUILD ? "w-full whitespace-nowrap" : "whitespace-nowrap"}
+                className={IS_MOBILE_BUILD || IS_WEB_BUILD ? "w-full whitespace-nowrap" : "whitespace-nowrap"}
                 initial={{ opacity: 0 }}
                 animate={{
                   opacity: 1,
@@ -3291,7 +3321,10 @@ export function OffWorkCountdown({
                   className={
                     IS_MOBILE_BUILD
                       ? "h-14 w-full rounded-2xl border-0 bg-[linear-gradient(110deg,#3b82f6_0%,#6366f1_58%,#8b5cf6_100%)] text-base font-semibold text-white shadow-lg shadow-indigo-500/25 active:scale-[0.99]"
-                      : undefined
+                      : IS_WEB_BUILD
+                        ? // 卡片里唯一的主操作：通栏、加高，不再是居中的小胶囊。
+                          "h-11 w-full rounded-xl text-[0.95rem] font-semibold"
+                        : undefined
                   }
                   onClick={handleStart}
                 >
@@ -4027,6 +4060,14 @@ export function OffWorkCountdown({
         )}
         </div>
       </Card>
+      {isWebPage && !showCountdown && (
+        <HeroScrollButton
+          targetId="about"
+          moreLabel={t("scrollToDetails")}
+          backLabel={t("backToTimer")}
+        />
+      )}
+      </section>
 
       {/* Browser-only preview/fallback. The iOS target hides this element at
           document start and supplies a real UITabBar, which receives the
@@ -4073,98 +4114,137 @@ export function OffWorkCountdown({
         </nav>
       )}
 
-      {/* 说明区。冷启动的搜索流量第一眼只看到一个表单，不知道这是什么，跳出率
-          会很高；同时主应用页的可见正文原本只有 110–285 字符，内容过薄。
-          与页脚同样渲染在设置态（服务端首屏状态），所以这些文字都在初始 HTML 里。
-          刻意不放截图：可交互的实物就在正上方，静态图既冗余又对文字量毫无贡献。 */}
-      {IS_WEB_BUILD && !showCountdown && !isAppShell && (
-        <section className="mt-10">
-          <h2 className="text-center text-lg font-semibold text-gray-800 dark:text-gray-100">
-            {t("landingTagline")}
-          </h2>
-          <p className="mx-auto mt-3 max-w-prose text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
-            {t("landingBody")}
-          </p>
+      {/* 首屏以下：说明、下载与页脚。与此前同样只在设置态渲染（服务端首屏就是
+          设置态），所以这些文字都在初始 HTML 里，搜索引擎读得到；运行态整页
+          只剩卡片。PWA 独立窗口里卡片占满全屏，不渲染这一段。 */}
+      {isWebPage && !showCountdown && (
+        // 底部留出悬浮「回到倒计时」按钮的高度，页脚链接不会被它盖住。
+        <div className="mx-auto w-full max-w-5xl pb-24">
+          <section
+            id="about"
+            className="scroll-mt-8 border-t border-gray-200/80 pt-16 dark:border-white/[0.07] sm:pt-20"
+          >
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white sm:text-3xl">
+                {t("landingTagline")}
+              </h2>
+              <p className="mt-4 text-base leading-7 text-gray-600 dark:text-gray-400">
+                {t("landingBody")}
+              </p>
+            </div>
 
-          <ul className="mt-8 space-y-5">
-            {[1, 2, 3].map((n) => (
-              <li key={n}>
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                  {t(
-                    n === 1
-                      ? "webLandingFeature1Title"
-                      : `landingFeature${n}Title`
-                  )}
-                </h3>
-                <p className="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-400">
-                  {t(`landingFeature${n}Body`)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+            <ul className="mt-14 grid gap-10 md:grid-cols-3 md:gap-12">
+              {(
+                [
+                  [1, Clock3],
+                  [2, Coins],
+                  [3, ShieldCheck],
+                ] as const
+              ).map(([n, Icon]) => (
+                <li key={n}>
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-gray-700 shadow-sm ring-1 ring-black/[0.06] dark:bg-white/[0.06] dark:text-gray-200 dark:ring-white/[0.08]">
+                    <Icon className="h-[1.1rem] w-[1.1rem]" aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-4 text-[0.95rem] font-semibold text-gray-900 dark:text-gray-100">
+                    {t(
+                      n === 1
+                        ? "webLandingFeature1Title"
+                        : `landingFeature${n}Title`
+                    )}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-6 text-gray-600 dark:text-gray-400">
+                    {t(`landingFeature${n}Body`)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-      {/* 下载与长文都归官网。设置态渲染在服务端首屏，所以这一条入口和页脚
-          会出现在初始 HTML 里。PWA 独立窗口下卡片占满全屏，页脚会落到屏幕外，
-          故不渲染。 */}
-      {IS_WEB_BUILD && !showCountdown && !isAppShell && (
-        <>
-        <div className="mt-8 flex w-full flex-col items-center">
-          <a
-            href={officialPageUrl(lang, "download")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-11 items-center gap-2 rounded-xl bg-gray-950 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus:ring-offset-gray-900"
-          >
-            <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
-            {t("getApp")}
-          </a>
-          <p className="mt-3 text-sm font-semibold tracking-tight text-gray-800 dark:text-gray-100">
-            {t("getAppPlatforms")}
-          </p>
-          <p className="mt-1 max-w-md text-center text-sm leading-6 text-gray-600 dark:text-gray-400">
-            {t("getAppPlatformsNote")}
-          </p>
-        </div>
-        <footer className="mt-8 flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-xs font-semibold text-gray-600 dark:text-gray-300">
-          <a
-            href={officialHomeUrl(lang)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {siteConfig.brandName}
-          </a>
-          <a
-            href={officialPageUrl(lang, "download")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("getApp")}
-          </a>
-          {(
-            [
-              ["download", t("getApp")],
-              ["faq", t("faq")],
-              ["how-it-works", t("howItWorks")],
-              ["about", t("aboutProject")],
-              ["privacy", t("privacyPolicy")],
-            ] as const
-          ).map(([slug, label]) => (
+          {/* 下载与长文都归官网。 */}
+          <section className="mt-16 flex flex-col gap-6 rounded-[1.75rem] border border-black/[0.06] bg-white/70 p-6 dark:border-white/[0.07] dark:bg-white/[0.03] sm:flex-row sm:items-center sm:justify-between sm:p-8">
+            <div className="min-w-0">
+              <p className="text-base font-semibold tracking-tight text-gray-950 dark:text-white">
+                {t("getAppPlatforms")}
+              </p>
+              {/* 电脑一行、手机和平板一行，各说各的好处。 */}
+              <p className="mt-1.5 max-w-2xl text-sm leading-6 text-gray-600 dark:text-gray-400">
+                <span className="block">{t("getAppNoteDesktop")}</span>
+                <span className="mt-1.5 block sm:mt-0">{t("getAppNoteMobile")}</span>
+              </p>
+            </div>
             <a
-              key={slug}
-              href={officialPageUrl(lang, slug)}
+              href={officialPageUrl(lang, "download")}
               target="_blank"
               rel="noopener noreferrer"
-              className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-gray-950 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-100 dark:focus-visible:ring-offset-gray-950"
             >
-              {label}
+              <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {t("getApp")}
             </a>
-          ))}
-        </footer>
-        </>
+          </section>
+
+          <a
+            href={`/${lang}/${WORK_HOURS_CALCULATOR_SLUG}`}
+            className="group mt-3 flex items-center justify-between gap-4 rounded-2xl px-6 py-4 text-sm font-medium text-gray-700 transition-colors hover:bg-white/70 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-white/[0.03] dark:hover:text-white sm:px-8"
+          >
+            <span className="inline-flex items-center gap-3">
+              <Calculator className="h-4 w-4 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+              {t("workHoursCalculator")}
+            </span>
+            <ArrowRight
+              className="h-4 w-4 text-gray-400 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 dark:text-gray-500"
+              aria-hidden="true"
+            />
+          </a>
+
+          <footer className="mt-14 flex flex-col gap-4 border-t border-gray-200/80 pt-6 text-xs text-gray-500 dark:border-white/[0.07] dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+            <nav className="flex flex-wrap gap-x-5 gap-y-2 font-medium">
+              <a
+                href={officialHomeUrl(lang)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                {siteConfig.brandName}
+              </a>
+              {(
+                [
+                  ["download", t("getApp")],
+                  ["faq", t("faq")],
+                  ["how-it-works", t("howItWorks")],
+                  ["about", t("aboutProject")],
+                  ["privacy", t("privacyPolicy")],
+                ] as const
+              ).map(([slug, label]) => (
+                <a
+                  key={slug}
+                  href={officialPageUrl(lang, slug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="whitespace-nowrap transition-colors hover:text-gray-900 dark:hover:text-gray-100"
+                >
+                  {label}
+                </a>
+              ))}
+              <a
+                href={`/${lang}/${WORK_HOURS_CALCULATOR_SLUG}`}
+                className="whitespace-nowrap transition-colors hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                {t("workHoursCalculator")}
+              </a>
+            </nav>
+            <a
+              href={siteConfig.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t("githubRepository")}
+              className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-gray-900 dark:hover:text-gray-100"
+            >
+              <Github className="h-3.5 w-3.5" aria-hidden="true" />
+              GitHub
+            </a>
+          </footer>
+        </div>
       )}
       </div>
     </div>

@@ -88,7 +88,12 @@ export function middleware(request: NextRequest) {
   const newUrl = request.nextUrl.clone();
   newUrl.pathname = `/${locale}${pathname}`;
 
-  return NextResponse.redirect(newUrl);
+  // 跳到哪种语言取决于 Accept-Language 与已保存的语言 cookie。声明 Vary，
+  // 让缓存与爬虫都知道同一个 URL 会按这两项给出不同的跳转目标；`/` 也因此
+  // 是 hreflang x-default 所指的按语言跳转首页（见 lib/site-urls.ts）。
+  const response = NextResponse.redirect(newUrl);
+  response.headers.set("Vary", "Accept-Language, Cookie");
+  return response;
 }
 
 export const config = {

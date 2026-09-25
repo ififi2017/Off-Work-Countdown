@@ -8,6 +8,11 @@
   "perWeekLabel": "Per week",
   "hoursUnit": "h",
   "otherPresetsHeading": "Other hour patterns",
+  "breakTableHeading": "Paid hours after an unpaid break",
+  "breakTableBreak": "Unpaid break",
+  "breakNone": "None",
+  "breakMinutes": "{{minutes}} min",
+  "calculatorLink": "Try other hours in the work hours calculator",
   "items": {
     "996": {
       "name": "996",
@@ -24,9 +29,9 @@
     },
     "9-to-5": {
       "name": "9 to 5",
-      "metaTitle": "9 to 5 hours — the standard eight-hour day",
-      "metaDescription": "Open the browser countdown with 09:00–17:00 filled in. Eight clock hours, forty a week. Lunch math included; shift planning stays on iOS.",
-      "intro": "Nine in the morning to five in the afternoon, five days a week — prefilled for the web countdown.",
+      "metaTitle": "How many hours is 9 to 5? 8 hours, 40 a week",
+      "metaDescription": "9 to 5 is 8 hours a day and 40 a week. With an unpaid 30- or 60-minute lunch it is 7.5 or 7 paid hours. Start a countdown with these times in your browser.",
+      "intro": "9 to 5 is 8 hours: 09:00 to 17:00, five days a week, 40 hours in total. If lunch is unpaid, it is 7.5 hours with a 30-minute break and 7 hours with a 60-minute break.",
       "body": [
         "Nine to five is the shorthand for a standard working day: eight hours at work, five days a week, forty hours in total. In the United States the forty-hour week was written into law by the Fair Labor Standards Act in 1938, and the phrase has since become the general name for regular office hours in English.",
         "Strictly speaking, nine to five is eight hours only where the lunch break is paid. Where it is unpaid, the same clock hours usually amount to seven or seven and a half hours of paid time — worth checking before you compare two offers by their hours alone.",
@@ -36,9 +41,9 @@
     },
     "9-to-6": {
       "name": "9 to 6",
-      "metaTitle": "9 to 6 hours — the nine-hour office day",
-      "metaDescription": "Open the browser countdown with 09:00–18:00 filled in. Nine clock hours, forty-five a week. Why it often matches 9 to 5 in paid time; shift planning is on iOS.",
-      "intro": "Nine in the morning to six in the evening, five days a week — prefilled for the web countdown.",
+      "metaTitle": "How many hours is 9 to 6? 9 hours, 45 a week",
+      "metaDescription": "9 to 6 is 9 hours a day and 45 a week. With an unpaid 60-minute lunch it is 8 paid hours, the same as 9 to 5. Start a countdown with these times in your browser.",
+      "intro": "9 to 6 is 9 hours: 09:00 to 18:00, five days a week, 45 hours in total. With an unpaid one-hour lunch it comes to 8 paid hours a day.",
       "body": [
         "Nine to six is the common office day across much of East and Southeast Asia: nine clock hours from start to finish, five days a week, forty-five in total.",
         "The extra hour compared with nine to five is usually the unpaid lunch break, which is why the two patterns often amount to the same quantity of paid work despite the different-looking numbers.",

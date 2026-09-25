@@ -22,6 +22,10 @@ describe("web JSON-LD", () => {
     );
     expect(byType.WebApplication.sameAs).toContain("https://doneat.app");
     expect(byType.Organization.url).toBe("https://doneat.app");
+    expect(byType.Organization.sameAs).toEqual([
+      "https://github.com/ififi2017/Off-Work-Countdown",
+      "https://x.com/doneatapp",
+    ]);
     expect(byType.WebSite.isPartOf).toEqual({
       "@type": "WebSite",
       name: "DoneAt",

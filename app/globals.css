@@ -10,6 +10,44 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* 浏览器里的网页版（桌面壳 html.desktop-shell、iOS 壳 html.mobile-shell 之外）。
+   Geist 早已随包加载（layout 里的 --font-geist-sans），此前却一直落到 Arial；
+   中日韩字形由 system-ui 交给系统按语言挑。桌面与 iOS 壳维持原字体。 */
+html:not(.desktop-shell):not(.mobile-shell) body {
+  font-family: var(--font-geist-sans, system-ui), system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+}
+
+/* 大屏按比例放大整页：Tailwind 的尺寸都是 rem，改根字号就等于在大显示器上
+   自动把网页放大一档（卡片、字号、间距一起变），小窗口保持原样。高度也要够，
+   否则带鱼屏上卡片会高过一屏。 */
+@media (min-width: 1600px) and (min-height: 860px) {
+  html:not(.desktop-shell):not(.mobile-shell) {
+    font-size: 17px;
+  }
+}
+@media (min-width: 1920px) and (min-height: 1000px) {
+  html:not(.desktop-shell):not(.mobile-shell) {
+    font-size: 18px;
+  }
+}
+@media (min-width: 2400px) and (min-height: 1250px) {
+  html:not(.desktop-shell):not(.mobile-shell) {
+    font-size: 20px;
+  }
+}
+/* 100% 缩放的 4K / 5K 屏：CSS 像素就是物理像素，还要再放大。 */
+@media (min-width: 3000px) and (min-height: 1650px) {
+  html:not(.desktop-shell):not(.mobile-shell) {
+    font-size: 24px;
+  }
+}
+@media (min-width: 3600px) and (min-height: 2000px) {
+  html:not(.desktop-shell):not(.mobile-shell) {
+    font-size: 27px;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

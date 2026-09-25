@@ -252,7 +252,10 @@ describe("SEO locale resources", () => {
     for (const locale of locales) {
       const seo = loadSeo(locale);
       expect(seo.siteName, locale).toBe("DoneAt");
-      expect(seo.title, locale).toMatch(/^DoneAt — /);
+      // 2026-09-25 起 Web App 标题改为「功能词 — DoneAt」：搜索者搜的是功能词
+      // （plans/Web/001-seo-search-growth.md §7-1）。尚未按搜索数据重写的语言
+      // 暂时保留「DoneAt — 功能解释」，两种写法都必须带品牌。
+      expect(seo.title, locale).toMatch(/^DoneAt — | — DoneAt$/);
       expect(seo.keywords.toLowerCase(), locale).toContain("doneat");
     }
 
