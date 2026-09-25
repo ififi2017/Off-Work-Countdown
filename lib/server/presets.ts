@@ -26,6 +26,11 @@ export interface PresetBundle {
   perWeekLabel: string;
   hoursUnit: string;
   otherPresetsHeading: string;
+  breakTableHeading: string;
+  breakTableBreak: string;
+  breakNone: string;
+  breakMinutes: string;
+  calculatorLink: string;
   items: Record<string, PresetCopy>;
 }
 

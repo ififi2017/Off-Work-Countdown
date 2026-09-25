@@ -41,11 +41,11 @@ describe("site URLs", () => {
     expect(officialPageUrl("ko", "how-it-works")).not.toContain("/ko/");
   });
 
-  it("points hreflang x-default at /en, not the bare host", () => {
+  it("points the home x-default at the language-redirecting root, other pages at /en", () => {
     const hall = webAppAlternates(locales);
     expect(hall.en).toBe("https://off.rainif.com/en");
     expect(hall.ja).toBe("https://off.rainif.com/ja");
-    expect(hall["x-default"]).toBe("https://off.rainif.com/en");
+    expect(hall["x-default"]).toBe("https://off.rainif.com/");
 
     const preset = webAppAlternates(contentLocales, "996");
     expect(preset["zh-CN"]).toBe("https://off.rainif.com/zh-CN/996");

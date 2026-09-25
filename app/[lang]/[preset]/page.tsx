@@ -6,6 +6,11 @@ import { ContentPage } from "@/components/ContentPage";
 import { getPresetCopy } from "@/lib/server/presets";
 import { presets, getPreset } from "@/lib/presets";
 import { getShiftLengthHours } from "@/lib/countdown";
+import { IS_WEB_BUILD } from "@/lib/build-target";
+import {
+  WORK_HOURS_CALCULATOR_SLUG,
+  calculateHoursWorked,
+} from "@/lib/work-hours";
 import { encodeShift } from "@/lib/share";
 import { localizedSocialMetadata } from "@/lib/server/metadata";
 import {
@@ -100,6 +105,28 @@ export default async function PresetPage({
     },
   ];
 
+  // 午休不计薪时的实际工时：「9 to 5 是几个小时」这类搜索要的就是这张表。
+  // 跨度与扣除都走 lib/work-hours（底层是 getShiftLengthHours），不另写公式。
+  const breakRows = [0, 30, 60].flatMap((minutes) => {
+    const worked = calculateHoursWorked(
+      definition.shift.start,
+      definition.shift.end,
+      minutes
+    );
+    if (!worked) return [];
+    const paid = worked.paidMinutes / 60;
+    return [
+      {
+        label:
+          minutes === 0
+            ? copy.breakNone
+            : copy.breakMinutes.replace("{{minutes}}", String(minutes)),
+        perDay: `${formatHours(paid)}${copy.hoursUnit}`,
+        perWeek: `${formatHours(paid * definition.daysPerWeek)}${copy.hoursUnit}`,
+      },
+    ];
+  });
+
   // 带上班次直接开始倒计时。不加 from=share —— 那是访问者自己选的作息，
   // 不该显示「有人分享给你」，也理应写入本地设置。
   const startHref = `/${lang}?s=${encodeShift(definition.shift)}`;
@@ -132,6 +159,56 @@ export default async function PresetPage({
           </div>
         ))}
       </dl>
+
+      <section className="mt-8">
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+          {copy.breakTableHeading}
+        </h2>
+        <table className="mt-3 w-full text-sm">
+          <thead>
+            <tr className="text-start text-xs text-gray-500 dark:text-gray-400">
+              <th scope="col" className="pb-2 text-start font-medium">
+                {copy.breakTableBreak}
+              </th>
+              <th scope="col" className="pb-2 text-end font-medium">
+                {copy.perDayLabel}
+              </th>
+              <th scope="col" className="pb-2 text-end font-medium">
+                {copy.perWeekLabel}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {breakRows.map((row) => (
+              <tr
+                key={row.label}
+                className="border-t border-gray-200 dark:border-gray-700"
+              >
+                <th
+                  scope="row"
+                  className="py-2 text-start font-normal text-gray-600 dark:text-gray-300"
+                >
+                  {row.label}
+                </th>
+                <td className="py-2 text-end font-semibold tabular-nums text-gray-900 dark:text-white">
+                  {row.perDay}
+                </td>
+                <td className="py-2 text-end tabular-nums text-gray-600 dark:text-gray-300">
+                  {row.perWeek}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {IS_WEB_BUILD && (
+          <Link
+            href={`/${lang}/${WORK_HOURS_CALCULATOR_SLUG}`}
+            className="mt-3 inline-block text-sm text-gray-600 underline underline-offset-4 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+          >
+            {copy.calculatorLink}
+          </Link>
+        )}
+      </section>
 
       <div className="mt-8 space-y-4">
         {item.body.map((para, i) => (

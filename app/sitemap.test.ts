@@ -8,6 +8,8 @@ describe("web sitemap", () => {
 
     expect(urls).toContain("https://off.rainif.com/en");
     expect(urls).toContain("https://off.rainif.com/zh-CN/996");
+    expect(urls).toContain("https://off.rainif.com/ko/work-hours-calculator");
+    expect(urls).toContain("https://off.rainif.com/de/work-hours-calculator");
     expect(urls.every((url) => url.startsWith("https://off.rainif.com/"))).toBe(
       true
     );
@@ -17,7 +19,7 @@ describe("web sitemap", () => {
     }
   });
 
-  it("points every x-default alternate at /en, not the bare host", () => {
+  it("points the home x-default at the root and every other x-default at /en", () => {
     const defaults = new Set(
       sitemap().flatMap((entry) => {
         const languages = entry.alternates?.languages ?? {};
@@ -25,11 +27,14 @@ describe("web sitemap", () => {
       })
     );
 
-    expect([...defaults].every((url) => url.startsWith("https://off.rainif.com/en"))).toBe(
-      true
-    );
-    expect(defaults.has("https://off.rainif.com")).toBe(false);
-    expect(defaults.has("https://off.rainif.com/en")).toBe(true);
+    expect(defaults.has("https://off.rainif.com/")).toBe(true);
+    expect(defaults.has("https://off.rainif.com/en")).toBe(false);
     expect(defaults.has("https://off.rainif.com/en/996")).toBe(true);
+    expect(defaults.has("https://off.rainif.com/en/work-hours-calculator")).toBe(true);
+    expect(
+      [...defaults]
+        .filter((url) => url !== "https://off.rainif.com/")
+        .every((url) => url.startsWith("https://off.rainif.com/en/"))
+    ).toBe(true);
   });
 });

@@ -9,6 +9,8 @@ Official site (brand, downloads, FAQ): ${siteConfig.officialSiteUrl}
 
 This host is the browser countdown. Set a start time and an end time, including overnight (end earlier than start). Remaining time and progress stay on this device. No account.
 
+Work hours calculator: ${siteConfig.webAppUrl}/en/work-hours-calculator — works out the finish time from a start time, hours and an unpaid break, or how many hours a shift is. Available in the same 19 languages as the timer.
+
 It does not plan a roster. Multiple shift kinds, rotating weeks and a calendar that repeats on its own are in the iOS app.
 
 Sitemap: ${siteConfig.webAppUrl}/sitemap.xml

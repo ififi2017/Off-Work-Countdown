@@ -104,6 +104,7 @@ import { decodeShift } from "@/lib/share";
 import { track } from "@/lib/track";
 import { siteConfig } from "@/config/site";
 import { officialHomeUrl, officialPageUrl } from "@/lib/site-urls";
+import { WORK_HOURS_CALCULATOR_SLUG } from "@/lib/work-hours";
 import {
   requestNotificationPermission,
   requestNotificationPermissionDetailed,
@@ -930,8 +931,14 @@ export function OffWorkCountdown({
     // 只有明确标记来自分享时才提示，直接手输 ?s= 的不打扰。
     const fromShare = params.get("from") === "share";
     setIsSharedView(fromShare);
-    // 分享落地与预设页 CTA 都带 ?s=，靠 from 区分，二者的转化路径不同。
-    track(fromShare ? "share_land" : "preset_start");
+    // 分享落地、预设页 CTA 与工时计算器都带 ?s=，靠 from 区分，三者的转化路径不同。
+    track(
+      fromShare
+        ? "share_land"
+        : params.get("from") === "calculator"
+          ? "calculator_start"
+          : "preset_start"
+    );
   }, [isMounted]);
 
   useEffect(() => {
@@ -2769,6 +2776,16 @@ export function OffWorkCountdown({
                 }
               >
                 {siteConfig.brandName}
+                {/* Web 首页的 H1 带上本地化功能行（下班倒數計時、Feierabend-Countdown…）：
+                    搜索者搜的是功能词，单写品牌名等于 H1 里没有关键词。桌面仍是单行标题。 */}
+                {IS_WEB_BUILD && (
+                  <>
+                    <span className="sr-only"> — </span>
+                    <span className="mt-1.5 block text-xs font-medium tracking-normal text-gray-500 dark:text-gray-400">
+                      {t("offWorkCountdown")}
+                    </span>
+                  </>
+                )}
               </h1>
               {IS_MOBILE_BUILD && (
                 <p className="mt-0.5 line-clamp-2 text-[0.68rem] leading-4 text-gray-500 dark:text-gray-400">
@@ -4163,6 +4180,12 @@ export function OffWorkCountdown({
               {label}
             </a>
           ))}
+          <a
+            href={`/${lang}/${WORK_HOURS_CALCULATOR_SLUG}`}
+            className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+          >
+            {t("workHoursCalculator")}
+          </a>
         </footer>
         </>
       )}

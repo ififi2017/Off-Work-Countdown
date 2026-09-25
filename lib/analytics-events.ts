@@ -13,6 +13,10 @@ export const trackedEvents = [
   "share_open",
   /** 从预设页的 CTA 进入并开始倒计时。 */
   "preset_start",
+  /** 从工时计算器把算出的时刻带进倒计时。 */
+  "calculator_start",
+  /** 工时计算器里的 DoneAt App 推荐被点击。 */
+  "calculator_app_open",
   /** 在表单里自己点了开始倒计时。 */
   "countdown_start",
   /** 倒计时自然走到下班时间。 */
