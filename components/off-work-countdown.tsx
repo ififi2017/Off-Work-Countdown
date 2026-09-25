@@ -4166,8 +4166,10 @@ export function OffWorkCountdown({
               <p className="text-base font-semibold tracking-tight text-gray-950 dark:text-white">
                 {t("getAppPlatforms")}
               </p>
-              <p className="mt-1.5 max-w-xl text-sm leading-6 text-gray-600 dark:text-gray-400">
-                {t("getAppPlatformsNote")}
+              {/* 电脑一行、手机和平板一行，各说各的好处。 */}
+              <p className="mt-1.5 max-w-2xl text-sm leading-6 text-gray-600 dark:text-gray-400">
+                <span className="block">{t("getAppNoteDesktop")}</span>
+                <span className="mt-1.5 block sm:mt-0">{t("getAppNoteMobile")}</span>
               </p>
             </div>
             <a
