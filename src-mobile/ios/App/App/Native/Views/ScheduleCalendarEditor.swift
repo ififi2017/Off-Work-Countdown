@@ -77,9 +77,11 @@ struct ScheduleCalendarEditor: View {
     }
 
     var body: some View {
+        // One plan per evaluation: building it parses every hand-set day.
+        let resolved = resolver
         VStack(alignment: .leading, spacing: 18) {
             if let month = ExtendedScheduleEditing.month(of: today, plus: monthOffset) {
-                calendar(month)
+                calendar(month, resolver: resolved)
             }
             VStack(spacing: 0) {
                 modePicker
@@ -88,7 +90,7 @@ struct ScheduleCalendarEditor: View {
                 holidayCalendarPicker
             }
             .background(OWCDesign.card, in: .rect(cornerRadius: OWCDesign.cardRadius))
-            selectedDay
+            selectedDay(resolver: resolved)
         }
         .fixedSize(horizontal: false, vertical: true)
         .tint(OWCDesign.accent)
@@ -243,13 +245,14 @@ struct ScheduleCalendarEditor: View {
         return Array(names.dropFirst()) + [names[0]]
     }
 
-    private func calendar(_ month: (year: Int, month: Int)) -> some View {
+    private func calendar(_ month: (year: Int, month: Int), resolver resolved: ExtendedScheduleResolver) -> some View {
         let first = CivilZone.dayNumber(year: month.year, month: month.month, day: 1)
         let weekday = ((first + 4) % 7 + 7) % 7
         let leading = (weekday - (shifts.queries.recordsGridCalendar.firstWeekday - 1) + 7) % 7
         let count = ExtendedScheduleEditing.daysIn(year: month.year, month: month.month)
         let slots = ((leading + count + 6) / 7) * 7
-        let resolved = resolver
+        let today = self.today
+        let previews = pastPreviews(first: first, count: count, today: today)
         return VStack(spacing: 8) {
             HStack(spacing: 0) {
                 Button { returnToToday() } label: {
@@ -284,7 +287,8 @@ struct ScheduleCalendarEditor: View {
                     if slot < leading || slot >= leading + count {
                         Color.clear.frame(height: cellHeight).accessibilityHidden(true)
                     } else {
-                        dayCell(number: first + slot - leading, day: slot - leading + 1, resolver: resolved)
+                        dayCell(number: first + slot - leading, day: slot - leading + 1, resolver: resolved,
+                                today: today, previews: previews)
                     }
                 }
             }
@@ -301,11 +305,14 @@ struct ScheduleCalendarEditor: View {
         .background(OWCDesign.card, in: .rect(cornerRadius: OWCDesign.cardRadius))
     }
 
-    private func dayCell(number: Int, day: Int, resolver: ExtendedScheduleResolver) -> some View {
+    private func dayCell(
+        number: Int, day: Int, resolver: ExtendedScheduleResolver,
+        today: String, previews: [String: PlannedRosterPreview]
+    ) -> some View {
         let key = ExtendedScheduleEditing.dayKey(dayNumber: number)
         let result = resolver.day(dayNumber: number)
-        let type = typeForDay(key, id: result.shiftTypeID)
-        let chosen = key == selected
+        let type = typeForDay(key, id: result.shiftTypeID, today: today, preview: previews[key])
+        let chosen = key == (selectedKey ?? today)
         let isToday = key == today
         let holiday = holidayDay(key)
         return Button { selectDay(key) } label: {
@@ -448,9 +455,9 @@ struct ScheduleCalendarEditor: View {
         }
     }
 
-    private var selectedDay: some View {
+    private func selectedDay(resolver: ExtendedScheduleResolver) -> some View {
         let result = ExtendedScheduleResolver.dayNumber(dayKey: selected).map { resolver.day(dayNumber: $0) }
-        let type = typeForDay(selected, id: result?.shiftTypeID)
+        let type = typeForDay(selected, id: result?.shiftTypeID, today: today)
         let canEdit = selected >= today || shifts.records.canEditRosterDay(selected, timeZoneIdentifier: session.rulesTimeZoneIdentifier ?? shifts.preferences.recordsTimeZone.identifier)
         return VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .center, spacing: 12) {
@@ -535,14 +542,35 @@ struct ScheduleCalendarEditor: View {
         assignmentFeedback += 1
     }
 
-    private func typeForDay(_ key: String, id: UUID?) -> ShiftType? {
+    /// Past days show the plan recorded for them. A month asks for all of its
+    /// past days together, so days under one snapshot share its roster plan.
+    private func pastPreviews(first: Int, count: Int, today: String) -> [String: PlannedRosterPreview] {
+        let keys = (0..<count).map { ExtendedScheduleEditing.dayKey(dayNumber: first + $0) }.filter { key in
+            guard key < today else { return false }
+            if case .shift = rosterEdits?[key] { return false }
+            return true
+        }
+        guard !keys.isEmpty else { return [:] }
+        return shifts.records.plannedRosterPreviews(
+            dayKeys: keys,
+            timeZoneIdentifier: previewTimeZoneIdentifier,
+            fallbackTypes: content.shiftTypes,
+            ignoringRosterAssignment: { rosterEdits?[$0] == .followPattern }
+        )
+    }
+
+    private var previewTimeZoneIdentifier: String {
+        session.rulesTimeZoneIdentifier ?? shifts.preferences.recordsTimeZone.identifier
+    }
+
+    private func typeForDay(_ key: String, id: UUID?, today: String, preview: PlannedRosterPreview? = nil) -> ShiftType? {
         if case .shift(let assigned) = rosterEdits?[key] {
             return content.shiftTypes.first { $0.id == assigned }
         }
         if key < today {
-            switch shifts.records.plannedRosterPreview(
+            switch preview ?? shifts.records.plannedRosterPreview(
                 dayKey: key,
-                timeZoneIdentifier: session.rulesTimeZoneIdentifier ?? shifts.preferences.recordsTimeZone.identifier,
+                timeZoneIdentifier: previewTimeZoneIdentifier,
                 fallbackTypes: content.shiftTypes,
                 ignoringRosterAssignment: rosterEdits?[key] == .followPattern
             ) {

@@ -62,6 +62,31 @@ struct ExtendedScheduleHistoryTests {
         ).synchronousResult == true
     }
 
+    @Test("A month's batched previews match asking day by day, before and after an edit")
+    func batchedPreviewsMatchSingleDays() throws {
+        let runtime = try Self.runtime()
+        let keys = (1...19).map { String(format: "2026-09-%02d", $0) }
+        func check(ignoring ignored: Set<String>) {
+            let batch = runtime.records.plannedRosterPreviews(
+                dayKeys: keys, timeZoneIdentifier: Self.zone.identifier,
+                fallbackTypes: [Self.early], ignoringRosterAssignment: { ignored.contains($0) }
+            )
+            for key in keys {
+                #expect(batch[key] == runtime.records.plannedRosterPreview(
+                    dayKey: key, timeZoneIdentifier: Self.zone.identifier,
+                    fallbackTypes: [Self.early], ignoringRosterAssignment: ignored.contains(key)
+                ), "\(key)")
+            }
+        }
+        check(ignoring: [])
+        #expect(runtime.records.frozenRosterShiftTypes.isEmpty)
+        #expect(try Self.savePast(runtime))
+        // The cached frozen types and overlay plan must follow the new roster row.
+        #expect(runtime.records.frozenRosterShiftTypes["2026-09-08"]?.id == Self.shiftID)
+        check(ignoring: [])
+        check(ignoring: ["2026-09-08"])
+    }
+
     @Test("A past assignment changes planned Records hours and income and stays frozen")
     func plannedHistoryAndIncomeStayFrozen() throws {
         let runtime = try Self.runtime()
