@@ -10,4 +10,6 @@
 
 截图上传状态：2026-09-20 已上传并回读通过。34 组、272 张均为 COMPLETE，顺序与本地 MD5 全部一致；17 个本地化的商店文字未改变。完整同步计划无差异，凭据见 [asc-upload-receipt.json](asc-upload-receipt.json)。未选择构建、提交审核或发布，版本仍为 PREPARE_FOR_SUBMISSION。
 
+发布状态（2026-09-25 核对）：3.2.0 已于 2026-09-21 01:32 UTC 在 App Store 发布（iTunes Lookup `currentVersionReleaseDate`）。上一段的 PREPARE_FOR_SUBMISSION 是 2026-09-20 上传截图时的状态；选构建、送审与发布由用户在 App Store Connect 完成，仓库内没有记录。详见 [发版核对](../../../docs/reviews/2026-09-19-3.2.0-release-readiness.md)。
+
 上传工具即时校验曾因图片处理尚未完成报差异；处理完成后重新只读校验通过，没有重复上传。
