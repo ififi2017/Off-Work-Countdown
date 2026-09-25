@@ -39,6 +39,9 @@ if (target === "web") {
   for (const path of ["out/en.html", "out/en/mini.html"]) {
     if (!existsSync(path)) fail(`Desktop export is missing ${path}.`);
   }
+  if (existsSync("out/showcase")) {
+    fail("Web-only App showcase images leaked into the desktop export: out/showcase");
+  }
   console.log("Desktop export excludes Web handlers and includes main/mini pages.");
 } else if (target === "mobile") {
   const leaked = webRouteManifests.filter((path) => existsSync(path));
@@ -66,6 +69,7 @@ if (target === "web") {
   }
   for (const path of [
     "out/demo",
+    "out/showcase",
     "out/badges",
     "out/baidu_verify_codeva-SXZydSeYe0.html",
     "out/sw.js",
