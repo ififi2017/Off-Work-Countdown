@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useMemo, useState } from "react";
 import { ArrowUpRight, Timer } from "lucide-react";
+import { TimeSelector } from "@/components/TimeSelector";
+import { Label } from "@/components/ui/label";
 import { encodeShift } from "@/lib/share";
 import { officialHomeUrl } from "@/lib/site-urls";
 import { track } from "@/lib/track";
@@ -160,8 +162,9 @@ export function WorkHoursCalculator({
   const appHref = `${officialHomeUrl(lang)}?utm_source=off.rainif.com&utm_medium=referral&utm_campaign=work-hours-calculator`;
 
   const inputClass =
-    "h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-base tabular-nums text-gray-950 shadow-sm outline-none transition-colors focus:border-gray-400 focus:ring-2 focus:ring-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:border-gray-500 dark:focus:ring-gray-700 [color-scheme:light] dark:[color-scheme:dark]";
-  const labelClass = "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300";
+    // 与 TimeSelector 的输入框同一套尺寸与配色，两组输入并排时看起来是一体的。
+    "h-10 w-full rounded-lg border border-input bg-background px-3 text-sm tabular-nums ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white";
+  const labelClass = "mb-2 block text-sm font-medium leading-none dark:text-gray-200";
   const chipClass = (selected: boolean) =>
     `h-9 min-w-[3rem] rounded-lg px-3 text-sm font-medium tabular-nums transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 ${
       selected
@@ -201,25 +204,26 @@ export function WorkHoursCalculator({
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor={`${id}-start`} className={labelClass}>
-              {copy.startLabel}
-            </label>
-            <input
-              id={`${id}-start`}
-              type="time"
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
-              className={inputClass}
-            />
-          </div>
+          {/* 与倒计时首页同一个时刻选择器（可键入 + 滚轮菜单），不用浏览器原生的
+              type="time"：各浏览器的原生弹层样式不一，也和首页对不上。 */}
+          <TimeSelector
+            id={`${id}-start`}
+            label={copy.startLabel}
+            value={start}
+            onChange={(hour, minute) => setStart(`${hour}:${minute}`)}
+          />
 
           {mode === "finish" ? (
-            <fieldset>
-              <legend className={labelClass}>{copy.workLabel}</legend>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="relative">
+            // 与 TimeSelector 同一结构（label + space-y-2 + 两格），两列的标签和输入框才对齐；
+            // fieldset/legend 的默认排版会让这一列比左边高出几像素。
+            <div role="group" aria-labelledby={`${id}-work-label`} className="space-y-2">
+              <Label id={`${id}-work-label`} htmlFor={`${id}-work-hours`} className="dark:text-gray-200">
+                {copy.workLabel}
+              </Label>
+              <div className="flex gap-2">
+                <div className="relative w-1/2">
                   <input
+                    id={`${id}-work-hours`}
                     type="number"
                     inputMode="numeric"
                     min={0}
@@ -233,7 +237,7 @@ export function WorkHoursCalculator({
                     {copy.hoursUnit}
                   </span>
                 </div>
-                <div className="relative">
+                <div className="relative w-1/2">
                   <input
                     type="number"
                     inputMode="numeric"
@@ -250,20 +254,14 @@ export function WorkHoursCalculator({
                   </span>
                 </div>
               </div>
-            </fieldset>
-          ) : (
-            <div>
-              <label htmlFor={`${id}-end`} className={labelClass}>
-                {copy.endLabel}
-              </label>
-              <input
-                id={`${id}-end`}
-                type="time"
-                value={end}
-                onChange={(e) => setEnd(e.target.value)}
-                className={inputClass}
-              />
             </div>
+          ) : (
+            <TimeSelector
+              id={`${id}-end`}
+              label={copy.endLabel}
+              value={end}
+              onChange={(hour, minute) => setEnd(`${hour}:${minute}`)}
+            />
           )}
         </div>
 

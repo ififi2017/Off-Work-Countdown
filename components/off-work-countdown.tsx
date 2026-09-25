@@ -2793,27 +2793,6 @@ export function OffWorkCountdown({
                 </p>
               )}
               </div>
-              {!showCountdown && IS_WEB_BUILD && (
-                <>
-                  <a
-                    href={officialHomeUrl(lang)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hidden text-sm font-medium text-gray-500 transition-colors hover:text-gray-800 sm:inline dark:text-gray-400 dark:hover:text-gray-200"
-                  >
-                    doneat.app
-                  </a>
-                  <a
-                    href={siteConfig.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
-                    title={t("githubRepository")}
-                  >
-                    <Github size={24} />
-                  </a>
-                </>
-              )}
             </div>
             <div
               data-tauri-drag-region="false"
@@ -4153,14 +4132,6 @@ export function OffWorkCountdown({
           >
             {siteConfig.brandName}
           </a>
-          <a
-            href={officialPageUrl(lang, "download")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
-          >
-            {t("getApp")}
-          </a>
           {(
             [
               ["download", t("getApp")],
@@ -4185,6 +4156,18 @@ export function OffWorkCountdown({
             className="whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
           >
             {t("workHoursCalculator")}
+          </a>
+          {/* 官网与源码原先挤在卡片标题旁，和品牌名、功能行抢位置；
+              官网入口即页脚首项 DoneAt，源码放在页脚末尾。 */}
+          <a
+            href={siteConfig.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={t("githubRepository")}
+            className="inline-flex items-center gap-1 whitespace-nowrap transition-colors hover:text-gray-800 dark:hover:text-gray-200"
+          >
+            <Github className="h-3.5 w-3.5" aria-hidden="true" />
+            GitHub
           </a>
         </footer>
         </>
