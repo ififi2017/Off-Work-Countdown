@@ -1,6 +1,6 @@
 # Web 001 — 双域 SEO 优化计划（off.rainif.com + doneat.app）
 
-- **Status**: DRAFT（附带需要拍板的决定，见 §7）
+- **Status**: TODO — 2026-09-25 用户已拍板 §7-1、§7-3、§7-4；§7-2 按推荐方案执行（用户征询意见后采纳推荐）；§7-5 未定
 - **起草**: 2026-09-25
 - **数据来源**: Google Search Console 导出（两个属性，最近 3 个月，截至 2026-09-22）；Bing Webmaster 概览（两个属性，2026-09-09 至 09-22，只有每日汇总）
 - **代码对照**: 产品仓 `main` @ `e3c231f`；官网仓 `ififi2017/doneat.app` `main` @ `0b36f81`
@@ -124,14 +124,14 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
 - [ ] **移动端**：按「设备 × 查询」拆分，确认移动端的低 CTR 主要是「9 to 5」和泛词，还是核心词也偏低。
 - [ ] **Bing**：两个属性都导出「搜索性能 → 查询 / 页面」；看 `doneat.app` 那 549 次展示是哪些词。
 - [ ] **百度**：产品仓已经做了百度验证（`layout.shell.tsx`），导出百度统计 / 站长平台的简中关键词，补进本计划的数据基线。
-- [ ] **AI 爬虫**：两边文档都说 Cloudflare 屏蔽了 `GPTBot`、`Google-Extended` 等训练爬虫。核对线上 `robots.txt`，确认 `OAI-SearchBot`、`PerplexityBot`、`Claude-SearchBot`、`Bingbot` 这类**搜索检索**爬虫有没有被一起挡掉。挡不挡由产品决定（§7-4）。
+- [ ] **AI 爬虫**：两边文档都说 Cloudflare 屏蔽了 `GPTBot`、`Google-Extended` 等训练爬虫。核对两个域线上的 `robots.txt` 和 Cloudflare「AI 爬虫」托管规则，确认 `OAI-SearchBot`、`PerplexityBot`、`Claude-SearchBot`、`Bingbot` 这类**搜索检索**爬虫有没有被一起挡掉。已决定放行检索爬虫（§7-4），改法见 P1-12。
 - [ ] 把以上结果和本文 §1 的数字一起存成基线（放在 `docs/reviews/`），之后每月对照。
 
 ### P1 — 页面信号（1–2 周）
 
 **产品仓（off.rainif.com）**
 
-- [ ] **P1-1 标题换成「功能词在前、品牌在后」**（需要先拍板 §7-1）。只改 `seo.json` 的 `title`，`keywords` 只增不删。建议稿按真实查询来写，由母语审阅后定稿：
+- [ ] **P1-1 标题换成「功能词在前、品牌在后」**（§7-1 已同意）。只改 `seo.json` 的 `title`，`keywords` 只增不删。建议稿按真实查询来写，由母语审阅后定稿：
 
   | 语言 | 现在 | 建议 |
   |---|---|---|
@@ -152,7 +152,13 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
   - description 第一句就是答案，然后是「一周 40 小时；午休不带薪时为 7 或 7.5 小时；可以直接用这组时间开始倒计时」。
   - 在 `facts` 下加一张小表：不扣午休 / 扣 30 分钟 / 扣 60 分钟。时长由 `lib/countdown.ts` 的 `getShiftLengthHours` 计算，不另写公式。
   - zh-CN 版同样处理（朝九晚五 / 朝九晚六 是几个小时）。
-- [ ] **P1-5 根路径与 x-default**：根据 P0 结果二选一（§7-2）。
+- [ ] **P1-5 根路径与 x-default**（§7-2，按推荐方案）：
+  - 上线前先在 GSC 导出 `/` 的查询、国家和页面数据，作为对照基线。
+  - 产品仓：`webAppAlternates()` 的 `x-default` 改成 `https://off.rainif.com/`（首页）；预设页的 `x-default` 仍指 `/en/{preset}`，因为 `/{preset}` 不存在对应的自动跳转页。HTML 和 sitemap 继续共用这一个函数。
+  - 产品仓 `middleware.ts`：补语言跳转响应头 `Vary: Accept-Language, Cookie`，说明这次跳转取决于语言和已保存的语言设置。跳转状态码保持 307，查询参数照旧保留（分享链接依赖它）。
+  - 官网仓：门厅的 `x-default` 同样改成 `https://doneat.app/`，根路径的 302 同样补 `Vary`。
+  - 同步改两个仓的 `docs/seo.md`，删掉「x-default 不能是会 307 的裸域」这条旧规则，写清新规则和原因。
+  - 验收：4 周后对比基线。`/` 的展示应该下降，`/en` 和各语言页的展示应该上升；如果英文页的总点击下降超过 15%，就改回 `x-default = /en`。
 - [ ] **P1-6 实体信号对齐**：`buildWebAppJsonLd` 的 Organization 与官网使用同一个 `@id`（已经一致），`sameAs` 改成和官网相同的列表（GitHub + X）；WebApplication 保留 `alternateName: "Off Work Countdown"`。
 - [ ] **P1-7 搜索引擎接入**：
   - Naver Search Advisor 验证 `off.rainif.com` 并提交 sitemap（韩国是第三大市场，Naver 份额高）；
@@ -164,7 +170,13 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
 - [ ] **P1-8 门厅标题带功能词**：`homeTitle` 改成 `DoneAt: {functionalSubtitle} — iPhone, Mac & Windows`（中文「DoneAt：下班倒计时 App — iPhone、Mac、Windows」）。门厅可见的品牌句不变，只改 `<title>`。这和 009 G1「副标题 / SEO 解释 = Work Shift Countdown」、Microsoft Store 的 `DoneAt: Work Shift Countdown` 一致。
 - [ ] **P1-9 WebSite 结构化数据**：在门厅加 `WebSite` 节点（`name: "DoneAt"`，`alternateName: ["Off Work Countdown", "下班倒计时"]`，`url: https://doneat.app/`），让 Google 显示正确的站点名，也帮助品牌词排名。
 - [ ] **P1-10 外部链接统一指向官网**：App Store Connect 的营销网址、Microsoft Store listing 的网站、GitHub 仓库的 Website 字段、X 的个人简介链接都填 `https://doneat.app`。这些是官网最有分量的外链。
-- [ ] **P1-11 下载页接住「App / 小组件」意图**：description 写明 iPhone、iPad、Mac、Windows 和 Apple Watch 能做什么。是否写小组件、实时活动要看 §7-3。
+- [ ] **P1-11 下载页接住「App / 小组件」意图**（§7-3 已同意，需要用 3.2.0 营销截图更新 iOS 介绍）：
+  - 素材：3.2.0 的 8 张 iPhone 商店图（倒计时、倒计时详情、Apple Watch、月历、记录、专注、小组件、午休），英文用 `en-iphone-0{1–8}-*.png`，简中用 `zh-CN-iphone-0{1–8}-*.png`。这些文件是 `scripts/marketing-shots/ios/out/creative-3.2.0/` 的生成产物，目录被 `.gitignore` 忽略，不在仓库里；需要从本机复制到官网仓，转成 WebP 或 AVIF 并控制体积后再放进 `assets/`。
+  - 替换下载页里 3.1.8 时期的 iOS 介绍；首页机位仍用现有的真机录屏（官网交接规则要求首页不用商店合成图），除非另外决定。
+  - 商店图里的标题是图片上的文字，搜索引擎读不到。每张图都要配一段页面上的文字说明，写清这个功能能做什么（小组件、实时活动、免费 Apple Watch App、月历排班、节假日），并给图片写具体的 `alt`。
+  - FAQ 可以增加「有没有小组件 / Apple Watch」这类问题，只写 en / zh-CN。
+  - **时间点**：3.2.0 还没上架（见 `docs/reviews/2026-09-19-3.2.0-release-readiness.md`）。官网这部分可以先在分支上做好，**等 3.2.0 在 App Store 上线当天再合并**，免得用户看到还下载不到的功能。
+- [ ] **P1-12 放行 AI 搜索检索爬虫**（§7-4 已同意）：继续屏蔽 `GPTBot`、`Google-Extended`、`CCBot` 等训练爬虫；放行 `OAI-SearchBot`、`ChatGPT-User`、`PerplexityBot`、`Claude-SearchBot`、`Claude-User`。两边文档都写明线上的 AI 爬虫规则来自 Cloudflare，不是仓库里的文件，所以要在 Cloudflare 后台两个域分别检查「托管 robots.txt」和「阻止 AI 机器人」两项设置（后者在防火墙层拦截，不看 `robots.txt`），改完再用 `curl` 核对线上 `robots.txt`。同步更新两个仓 `docs/seo.md` 里关于 AI 爬虫的说明。`llms.txt` 已存在，保持不变。
 
 ### P2 — 内容与功能（1–2 个月）
 
@@ -202,14 +214,19 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
 - 不买链接，不做 Indexing API 批量提交。
 - 不用隐藏文字或 `sr-only` 堆关键词。
 
-## 7. 需要拍板
+## 7. 决定记录
 
-1. **Web App 标题顺序**：009 P3 定的是「DoneAt — 功能解释」。数据显示用户搜的是功能词，品牌词只有约 100 次展示。建议只在 `off.rainif.com` 改成「功能词 — DoneAt」，官网继续品牌在前。这会改动 009 的一条锁定项。
-2. **根路径 `/`**：
-   - 方案甲（推荐）：`x-default` 改指 `/`。Google 文档把「按语言自动跳转的首页」列为 `x-default` 的典型用法。这会推翻 `docs/seo.md` 里「x-default 不能是会 307 的裸域」的规则。
-   - 方案乙：维持 `x-default = /en`，接受 `/` 被单独收录。改动为零，但英文信号会继续分在两个网址上。
-   - 不考虑把 `/` 改成固定跳到 `/en` 的永久跳转：那样非英语用户从根路径进来都会先看到英文。
-   - 等 P0 的根路径数据出来再定。
-3. **官网写不写小组件 / 实时活动 / Watch**：官网交接文档曾锁定「不写 Widget、灵动岛」；017 又把「官网与商店文案」列为待办。「下班倒计时组件」确实有搜索需求。
-4. **AI 搜索爬虫**：继续挡训练爬虫的同时，是否放行 `OAI-SearchBot`、`PerplexityBot`、`Claude-SearchBot` 这类检索爬虫。放行后才可能在 ChatGPT / Perplexity / Claude 的搜索结果里被引用。
-5. **工时计算功能**（P2-1）：这是产品功能，不只是 SEO，而且要进 `lib/countdown.ts`。是否只做 Web，还是 iOS / Android 同步。
+| # | 问题 | 结论（2026-09-25） |
+|---|---|---|
+| 1 | Web App 标题顺序 | **同意**。`off.rainif.com` 改成「功能词 — DoneAt」；官网继续品牌在前。这一条替换 009 P3 的「DoneAt — 功能解释」。 |
+| 2 | 根路径与 `x-default` | **按推荐方案**：`x-default` 指向会按语言跳转的首页 `/`，跳转响应补 `Vary`，4 周后对照基线，不达标就改回。理由见下。 |
+| 3 | 官网写小组件 / 实时活动 / Watch | **同意**，条件是用 3.2.0 的营销截图更新 iOS 介绍（现在是 3.1.8）。3.2.0 上架当天再合并，见 P1-11。 |
+| 4 | AI 搜索检索爬虫 | **同意放行**，训练爬虫继续屏蔽，见 P1-12。 |
+| 5 | 工时计算功能 | 未定。它是产品功能，要进 `lib/countdown.ts`，需要决定只做 Web 还是 iOS / Android 一起做。 |
+
+**§7-2 为什么选 `x-default = /`**
+
+- Google 的 hreflang 文档把「按用户语言自动跳转的首页」列为 `x-default` 的典型用法。现在 `/` 已经在按语言跳转，只是没有在 hreflang 里说明它的角色，于是 Google 把它当作一个单独的英文页收录，这就是 `/` 拿到 3,717 次展示、CTR 只有 9.3% 的原因。
+- 这个改动不改变用户看到的任何东西，分享链接的查询参数也不受影响，而且只改一个函数，随时可以改回。
+- 其他两个办法都更差：`/` 固定永久跳到 `/en` 会让非英语用户先看到英文；在 `/` 直接输出一份英文页面会造成和 `/en` 重复的内容。
+- 风险：部分第三方 SEO 工具会把「hreflang 指向跳转网址」标成错误，这类提示可以忽略；Google 最终怎么选规范网址仍由它决定，所以要用 4 周数据验证。
