@@ -167,8 +167,8 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
 
 **官网仓（doneat.app）**
 
-- [ ] **P1-8 门厅标题带功能词**：`homeTitle` 改成 `DoneAt: {functionalSubtitle} — iPhone, Mac & Windows`（中文「DoneAt：下班倒计时 App — iPhone、Mac、Windows」）。门厅可见的品牌句不变，只改 `<title>`。这和 009 G1「副标题 / SEO 解释 = Work Shift Countdown」、Microsoft Store 的 `DoneAt: Work Shift Countdown` 一致。
-- [ ] **P1-9 WebSite 结构化数据**：在门厅加 `WebSite` 节点（`name: "DoneAt"`，`alternateName: ["Off Work Countdown", "下班倒计时"]`，`url: https://doneat.app/`），让 Google 显示正确的站点名，也帮助品牌词排名。
+- [x] **P1-8 门厅标题带功能词**（官网仓 `locales/chrome.json` 的 `homeTitle`，19 语）：`homeTitle` 改成 `DoneAt: {functionalSubtitle} — iPhone, Mac & Windows`（中文「DoneAt：下班倒计时 App — iPhone、Mac、Windows」）。门厅可见的品牌句不变，只改 `<title>`。这和 009 G1「副标题 / SEO 解释 = Work Shift Countdown」、Microsoft Store 的 `DoneAt: Work Shift Countdown` 一致。
+- [x] **P1-9 WebSite 结构化数据**：在门厅加 `WebSite` 节点（`name: "DoneAt"`，`alternateName: ["Off Work Countdown", "下班倒计时"]`，`url: https://doneat.app/`），让 Google 显示正确的站点名，也帮助品牌词排名。
 - [ ] **P1-10 外部链接统一指向官网**：App Store Connect 的营销网址、Microsoft Store listing 的网站、GitHub 仓库的 Website 字段、X 的个人简介链接都填 `https://doneat.app`。这些是官网最有分量的外链。
 - [ ] **P1-11 下载页接住「App / 小组件」意图**（§7-3 已同意，需要用 3.2.0 营销截图更新 iOS 介绍）：
   - 素材：3.2.0 的 8 张 iPhone 商店图（倒计时、倒计时详情、Apple Watch、月历、记录、专注、小组件、午休），英文用 `en-iphone-0{1–8}-*.png`，简中用 `zh-CN-iphone-0{1–8}-*.png`。这些文件是 `scripts/marketing-shots/ios/out/creative-3.2.0/` 的生成产物，目录被 `.gitignore` 忽略，不在仓库里；需要从本机复制到官网仓，转成 WebP 或 AVIF 并控制体积后再放进 `assets/`。
