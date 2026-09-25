@@ -2,7 +2,8 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-// Web 版的 SwiftUI `.contentTransition(.numericText(countsDown: true))`，
+// Web 与桌面（主窗、Windows 迷你计时）的 SwiftUI `.contentTransition(.numericText(countsDown: true))`；
+// macOS 原生迷你计时在 NativeMiniTimer.m 的 OWCRollingLabel 里用同一套参数实现。
 // 与 iOS 的 OWCCountdownTextTransition 同一套参数：
 // - 只有变了的那一位在动，其余字符原地不动（外层用等宽数字，位置不会跳）；
 // - 倒计时方向：新数字从上方落下、旧数字向下淡出，带一点模糊；
