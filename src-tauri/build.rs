@@ -180,6 +180,8 @@ fn build_native_mini_timer() {
     println!("cargo:rustc-link-lib=static=NativeMiniTimer");
     println!("cargo:rustc-link-lib=framework=AppKit");
     println!("cargo:rustc-link-lib=framework=QuartzCore");
+    // 迷你计时的倒计时换字用 CIGaussianBlur 做模糊。
+    println!("cargo:rustc-link-lib=framework=CoreImage");
     println!("cargo:rustc-link-lib=framework=ServiceManagement");
     if include_widget_bridge {
         println!("cargo:rustc-link-search=native={sdk}/usr/lib/swift");

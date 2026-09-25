@@ -1,4 +1,5 @@
 #import <AppKit/AppKit.h>
+#import <CoreImage/CoreImage.h>
 #import <QuartzCore/QuartzCore.h>
 #import <ServiceManagement/ServiceManagement.h>
 #include <stddef.h>
@@ -69,8 +70,263 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
 }
 @end
 
+/// 与 Web / iOS 同一套倒计时换字参数（RollingText.tsx、OWCMotion.countdownTick）：
+/// 线性 0.16s；新字从上方 0.3em 落下，旧字向下 0.3em 淡出，带 3pt 模糊。
+static const CFTimeInterval OWCCountdownTickDuration = 0.16;
+static const CGFloat OWCCountdownTickOffsetEm = 0.3;
+static const CGFloat OWCCountdownTickBlur = 3.0;
+
+/// NSTextField 标签的文字左右各缩进 2pt，照抄，替换前后位置不差一点。
+static const CGFloat OWCLabelTextInset = 2.0;
+
+static BOOL OWCIsClockString(NSString *text) {
+    if (text.length == 0) return NO;
+    NSCharacterSet *allowed = [NSCharacterSet characterSetWithCharactersInString:@"0123456789:"];
+    return [text rangeOfCharacterFromSet:allowed.invertedSet].location == NSNotFound;
+}
+
+/// 标签里的一段文字：时间里的一个字符，或整句空闲文案。
+/// 用 AppKit 直接绘制并允许 vibrancy，和 NSTextField 标签在玻璃 / 毛玻璃上的观感一致。
+@interface OWCGlyphView : NSView
+@property(nonatomic, copy) NSString *text;
+@property(nonatomic, strong) NSFont *font;
+@property(nonatomic, strong) NSColor *textColor;
+@end
+
+@implementation OWCGlyphView
+- (BOOL)isFlipped { return YES; }
+- (BOOL)allowsVibrancy { return YES; }
+- (BOOL)isAccessibilityElement { return NO; }
+
+- (void)drawRect:(NSRect)dirtyRect {
+    if (self.text.length == 0 || self.font == nil) return;
+    [self.text drawAtPoint:NSZeroPoint
+            withAttributes:@{
+                NSFontAttributeName: self.font,
+                NSForegroundColorAttributeName: self.textColor ?: [NSColor labelColor],
+            }];
+}
+
+- (void)viewDidChangeEffectiveAppearance {
+    [super viewDidChangeEffectiveAppearance];
+    self.needsDisplay = YES;
+}
+@end
+
+/// 迷你计时的时间标签。接口沿用 NSTextField 的 stringValue / font / textColor /
+/// alignment，布局与自适应字号的代码不用改。
+///
+/// 只有纯数字加冒号的时间串（「2:37:50」）才按字符拆开，每秒只让变了的那一位滚动；
+/// 空闲文案有 19 种语言（阿拉伯文、天城文要字形连写），整句绘制、直接换字。
+/// 长度或字号变化、面板收起、系统开启「减少动态效果」时也直接换字。
+@interface OWCRollingLabel : NSView
+@property(nonatomic, copy) NSString *stringValue;
+@property(nonatomic, strong) NSFont *font;
+@property(nonatomic, strong) NSColor *textColor;
+@property(nonatomic) NSTextAlignment alignment;
+- (instancetype)initWithString:(NSString *)text;
+@end
+
+@implementation OWCRollingLabel {
+    NSMutableArray<OWCGlyphView *> *_glyphs;
+    NSMutableArray<OWCGlyphView *> *_outgoing;
+}
+
+- (instancetype)initWithString:(NSString *)text {
+    self = [super initWithFrame:NSZeroRect];
+    if (self) {
+        self.wantsLayer = YES;
+        _glyphs = [NSMutableArray array];
+        _outgoing = [NSMutableArray array];
+        _stringValue = [text copy] ?: @"";
+        _font = [NSFont systemFontOfSize:NSFont.systemFontSize];
+        _textColor = [NSColor labelColor];
+        _alignment = NSTextAlignmentLeft;
+        [self rebuildGlyphs];
+    }
+    return self;
+}
+
+- (BOOL)isFlipped { return YES; }
+- (BOOL)isAccessibilityElement { return YES; }
+- (NSAccessibilityRole)accessibilityRole { return NSAccessibilityStaticTextRole; }
+- (id)accessibilityValue { return self.stringValue; }
+
+- (void)setStringValue:(NSString *)stringValue {
+    NSString *next = [stringValue copy] ?: @"";
+    if ([next isEqualToString:_stringValue]) return;
+    NSString *previous = _stringValue;
+    _stringValue = next;
+    if ([self shouldRollFrom:previous to:next]) {
+        [self rollFrom:previous to:next];
+    } else {
+        [self rebuildGlyphs];
+    }
+}
+
+- (void)setFont:(NSFont *)font {
+    // -layout 每次都会重新赋字号；只有真的换了字号才重建，否则会打断正在滚动的数字。
+    if (font == nil || [font isEqual:_font]) return;
+    _font = font;
+    [self rebuildGlyphs];
+}
+
+- (void)setTextColor:(NSColor *)textColor {
+    _textColor = textColor ?: [NSColor labelColor];
+    for (OWCGlyphView *glyph in _glyphs) {
+        glyph.textColor = _textColor;
+        glyph.needsDisplay = YES;
+    }
+}
+
+- (void)setAlignment:(NSTextAlignment)alignment {
+    if (alignment == _alignment) return;
+    _alignment = alignment;
+    self.needsLayout = YES;
+}
+
+- (BOOL)shouldRollFrom:(NSString *)previous to:(NSString *)next {
+    if (!OWCIsClockString(previous) || !OWCIsClockString(next)) return NO;
+    if (previous.length != next.length || _glyphs.count != next.length) return NO;
+    if (NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) return NO;
+    // 面板收起时是 orderOut，isVisible 就够了。不看 occlusionState：实测菜单栏面板
+    // 明明在屏幕上也会报「被遮挡」，加上它数字就永远不滚。
+    return self.window.isVisible;
+}
+
+- (NSArray<NSString *> *)segmentsForString:(NSString *)text {
+    if (!OWCIsClockString(text)) return text.length > 0 ? @[text] : @[];
+    NSMutableArray<NSString *> *segments = [NSMutableArray arrayWithCapacity:text.length];
+    for (NSUInteger i = 0; i < text.length; i++) {
+        [segments addObject:[text substringWithRange:NSMakeRange(i, 1)]];
+    }
+    return segments;
+}
+
+- (OWCGlyphView *)makeGlyph:(NSString *)text {
+    OWCGlyphView *glyph = [[OWCGlyphView alloc] initWithFrame:NSZeroRect];
+    glyph.wantsLayer = YES;
+    // 换字时要用 CI 模糊。这个开关必须在建视图时就打开：动画开始时才设，AppKit 会
+    // 换掉底层图层，已经加上的动画随旧图层一起丢掉。
+    glyph.layerUsesCoreImageFilters = YES;
+    glyph.text = text;
+    glyph.font = self.font;
+    glyph.textColor = self.textColor;
+    [self addSubview:glyph];
+    return glyph;
+}
+
+- (void)rebuildGlyphs {
+    for (OWCGlyphView *glyph in _outgoing) [glyph removeFromSuperview];
+    [_outgoing removeAllObjects];
+    for (OWCGlyphView *glyph in _glyphs) [glyph removeFromSuperview];
+    [_glyphs removeAllObjects];
+    for (NSString *segment in [self segmentsForString:self.stringValue]) {
+        [_glyphs addObject:[self makeGlyph:segment]];
+    }
+    self.needsLayout = YES;
+}
+
+- (void)layout {
+    [super layout];
+    NSDictionary *attributes = @{NSFontAttributeName: self.font};
+    NSMutableArray<NSNumber *> *widths = [NSMutableArray arrayWithCapacity:_glyphs.count];
+    CGFloat total = 0.0;
+    for (OWCGlyphView *glyph in _glyphs) {
+        CGFloat width = [glyph.text sizeWithAttributes:attributes].width;
+        [widths addObject:@(width)];
+        total += width;
+    }
+
+    const CGFloat boundsWidth = self.bounds.size.width;
+    CGFloat x = OWCLabelTextInset;
+    if (self.alignment == NSTextAlignmentCenter) {
+        x = (boundsWidth - total) / 2.0;
+    } else if (self.alignment == NSTextAlignmentRight) {
+        x = boundsWidth - OWCLabelTextInset - total;
+    }
+
+    for (NSUInteger i = 0; i < _glyphs.count; i++) {
+        CGFloat width = widths[i].doubleValue;
+        // 多留 1pt，避免字形的抗锯齿边缘被视图边界切掉。
+        _glyphs[i].frame = NSMakeRect(x, 0.0, ceil(width) + 1.0, self.bounds.size.height);
+        x += width;
+    }
+}
+
+- (void)rollFrom:(NSString *)previous to:(NSString *)next {
+    const CGFloat offset = self.font.pointSize * OWCCountdownTickOffsetEm;
+    NSMutableArray<OWCGlyphView *> *leaving = [NSMutableArray array];
+
+    [CATransaction begin];
+    __weak OWCRollingLabel *weakSelf = self;
+    [CATransaction setCompletionBlock:^{
+        OWCRollingLabel *label = weakSelf;
+        for (OWCGlyphView *glyph in leaving) {
+            [glyph removeFromSuperview];
+            if (label) [label->_outgoing removeObjectIdenticalTo:glyph];
+        }
+    }];
+
+    for (NSUInteger i = 0; i < next.length; i++) {
+        if ([previous characterAtIndex:i] == [next characterAtIndex:i]) continue;
+        OWCGlyphView *old = _glyphs[i];
+        OWCGlyphView *incoming = [self makeGlyph:[next substringWithRange:NSMakeRange(i, 1)]];
+        incoming.frame = old.frame;
+        _glyphs[i] = incoming;
+        [_outgoing addObject:old];
+        [leaving addObject:old];
+
+        // 本视图 isFlipped，AppKit 让它的图层 geometryFlipped：位移 y 为正就是屏幕上向下。
+        // 新字从上方（-offset）落到原位，旧字向下（+offset）离开。
+        [self animateGlyph:incoming fromY:-offset toY:0.0 fromOpacity:0.0 toOpacity:1.0
+                  fromBlur:OWCCountdownTickBlur toBlur:0.0];
+        [self animateGlyph:old fromY:0.0 toY:offset fromOpacity:1.0 toOpacity:0.0
+                  fromBlur:0.0 toBlur:OWCCountdownTickBlur];
+    }
+    [CATransaction commit];
+}
+
+- (void)animateGlyph:(OWCGlyphView *)glyph
+               fromY:(CGFloat)fromY
+                 toY:(CGFloat)toY
+         fromOpacity:(float)fromOpacity
+           toOpacity:(float)toOpacity
+            fromBlur:(CGFloat)fromBlur
+              toBlur:(CGFloat)toBlur {
+    CALayer *layer = glyph.layer;
+    if (layer == nil) return;
+
+    CIFilter *blur = [CIFilter filterWithName:@"CIGaussianBlur"];
+    blur.name = @"blur";
+    [blur setValue:@(toBlur) forKey:kCIInputRadiusKey];
+    layer.filters = @[blur];
+    layer.transform = CATransform3DMakeTranslation(0.0, toY, 0.0);
+    layer.opacity = toOpacity;
+
+    CAMediaTimingFunction *linear =
+        [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    NSArray<CABasicAnimation *> *animations = @[
+        [CABasicAnimation animationWithKeyPath:@"transform.translation.y"],
+        [CABasicAnimation animationWithKeyPath:@"opacity"],
+        [CABasicAnimation animationWithKeyPath:@"filters.blur.inputRadius"],
+    ];
+    animations[0].fromValue = @(fromY);
+    animations[0].toValue = @(toY);
+    animations[1].fromValue = @(fromOpacity);
+    animations[1].toValue = @(toOpacity);
+    animations[2].fromValue = @(fromBlur);
+    animations[2].toValue = @(toBlur);
+    for (CABasicAnimation *animation in animations) {
+        animation.duration = OWCCountdownTickDuration;
+        animation.timingFunction = linear;
+        [layer addAnimation:animation forKey:[@"owc.roll." stringByAppendingString:animation.keyPath]];
+    }
+}
+@end
+
 @interface OWCMiniContentView : NSView
-@property(nonatomic, strong) NSTextField *timerLabel;
+@property(nonatomic, strong) OWCRollingLabel *timerLabel;
 @property(nonatomic, strong) NSTextField *detailLabel;
 @property(nonatomic, strong) NSTextField *salaryLabel;
 @property(nonatomic, strong) OWCNativeProgressView *progressView;
@@ -99,11 +355,9 @@ static const NSSize OWCPanelSize = {228.0, 70.0};
 - (instancetype)initWithFrame:(NSRect)frameRect {
     self = [super initWithFrame:frameRect];
     if (self) {
-        _timerLabel = [NSTextField labelWithString:@"--:--:--"];
+        _timerLabel = [[OWCRollingLabel alloc] initWithString:@"--:--:--"];
         _timerLabel.font = [NSFont monospacedDigitSystemFontOfSize:27.0 weight:NSFontWeightSemibold];
         _timerLabel.textColor = [NSColor labelColor];
-        _timerLabel.lineBreakMode = NSLineBreakByClipping;
-        _timerLabel.maximumNumberOfLines = 1;
 
         // 百分比是次要信息：进度条已经把它表达过一遍，这里只作精确读数。
         // 用等宽数字，否则每秒刷新时右对齐文本的左边缘会随字宽变化而抖动。
