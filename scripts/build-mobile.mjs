@@ -30,7 +30,7 @@ if (result.status !== 0) process.exit(result.status ?? 1);
 for (const locale of locales) {
   rmSync(resolve("out", locale), { recursive: true, force: true });
 }
-for (const path of ["out/demo", "out/badges"]) {
+for (const path of ["out/demo", "out/showcase", "out/badges"]) {
   rmSync(resolve(path), { recursive: true, force: true });
 }
 rmSync(resolve("out/baidu_verify_codeva-SXZydSeYe0.html"), { force: true });

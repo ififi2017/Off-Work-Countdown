@@ -59,6 +59,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TimeSelector } from "./TimeSelector";
 import { LanguageSelector } from "./LanguageSelector";
 import { HeroScrollButton } from "./HeroScrollButton";
+import { NativeShowcase } from "./NativeShowcase";
 import { ThemeToggle, Theme } from "./ThemeToggle";
 import { CountdownDisplay } from "./CountdownDisplay";
 import { Confetti } from "./Confetti";
@@ -4159,6 +4160,8 @@ export function OffWorkCountdown({
               ))}
             </ul>
           </section>
+
+          <NativeShowcase lang={lang} />
 
           {/* 下载与长文都归官网。 */}
           <section className="mt-16 flex flex-col gap-6 rounded-[1.75rem] border border-black/[0.06] bg-white/70 p-6 dark:border-white/[0.07] dark:bg-white/[0.03] sm:flex-row sm:items-center sm:justify-between sm:p-8">

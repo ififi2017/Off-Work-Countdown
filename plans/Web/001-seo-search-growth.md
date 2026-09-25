@@ -1,6 +1,6 @@
 # Web 001 — 双域 SEO 优化计划（off.rainif.com + doneat.app）
 
-- **Status**: IN PROGRESS — 2026-09-25 §7 五项均已拍板；产品仓 P1-1、P1-2、P1-4、P1-5、P1-6 与 P2-1 已实现（分支 `claude/magical-goldberg-jjxpf0`，未合并、未上线）；P1-12 由用户在 Cloudflare 完成
+- **Status**: IN PROGRESS — 2026-09-25 §7 五项均已拍板；产品仓 P1-1、P1-2、P1-4、P1-5、P1-6、P2-1 与官网 P1-8、P1-9、P1-11 已于 2026-09-25 合并到两仓 `main`；P1-12 由用户在 Cloudflare 完成
 - **起草**: 2026-09-25
 - **数据来源**: Google Search Console 导出（两个属性，最近 3 个月，截至 2026-09-22）；Bing Webmaster 概览（两个属性，2026-09-09 至 09-22，只有每日汇总）
 - **代码对照**: 产品仓 `main` @ `e3c231f`；官网仓 `ififi2017/doneat.app` `main` @ `0b36f81`
@@ -170,7 +170,7 @@ Bing 的 CTR 只有 Google 的一半左右。本次只有每日汇总，没有�
 - [x] **P1-8 门厅标题带功能词**（官网仓 `locales/chrome.json` 的 `homeTitle`，19 语）：`homeTitle` 改成 `DoneAt: {functionalSubtitle} — iPhone, Mac & Windows`（中文「DoneAt：下班倒计时 App — iPhone、Mac、Windows」）。门厅可见的品牌句不变，只改 `<title>`。这和 009 G1「副标题 / SEO 解释 = Work Shift Countdown」、Microsoft Store 的 `DoneAt: Work Shift Countdown` 一致。
 - [x] **P1-9 WebSite 结构化数据**：在门厅加 `WebSite` 节点（`name: "DoneAt"`，`alternateName: ["Off Work Countdown", "下班倒计时"]`，`url: https://doneat.app/`），让 Google 显示正确的站点名，也帮助品牌词排名。
 - [ ] **P1-10 外部链接统一指向官网**：App Store Connect 的营销网址、Microsoft Store listing 的网站、GitHub 仓库的 Website 字段、X 的个人简介链接都填 `https://doneat.app`。这些是官网最有分量的外链。
-- [ ] **P1-11 下载页接住「App / 小组件」意图**（§7-3 已同意，需要用 3.2.0 营销截图更新 iOS 介绍）：
+- [x] **P1-11 下载页接住「App / 小组件」意图**（§7-3 已同意，需要用 3.2.0 营销截图更新 iOS 介绍）（2026-09-25 完成：官网 [doneat.app#18](https://github.com/ififi2017/doneat.app/pull/18) 换上 3.2.0 review 录屏、iPhone 功能区四张商店图轮播 + 可见说明、对照表与两条 FAQ；网页版首屏以下也加了原生 App 展示，见 [#231](https://github.com/ififi2017/Off-Work-Countdown/pull/231)。3.2.0 已于此前上架，所以没有等上架日）：
   - 素材：3.2.0 的 8 张 iPhone 商店图（倒计时、倒计时详情、Apple Watch、月历、记录、专注、小组件、午休），英文用 `en-iphone-0{1–8}-*.png`，简中用 `zh-CN-iphone-0{1–8}-*.png`。这些文件是 `scripts/marketing-shots/ios/out/creative-3.2.0/` 的生成产物，目录被 `.gitignore` 忽略，不在仓库里；需要从本机复制到官网仓，转成 WebP 或 AVIF 并控制体积后再放进 `assets/`。
   - 替换下载页里 3.1.8 时期的 iOS 介绍；首页机位仍用现有的真机录屏（官网交接规则要求首页不用商店合成图），除非另外决定。
   - 商店图里的标题是图片上的文字，搜索引擎读不到。每张图都要配一段页面上的文字说明，写清这个功能能做什么（小组件、实时活动、免费 Apple Watch App、月历排班、节假日），并给图片写具体的 `alt`。

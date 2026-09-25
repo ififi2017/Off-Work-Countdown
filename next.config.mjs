@@ -209,6 +209,9 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV === 'development' || !isWeb,
   // Auto-register the worker (default), replacing next-pwa's `register: true`.
   register: true,
+  // 默认会把 public/ 全部预缓存。首屏以下的 App 展示图（public/showcase，19 种语言
+  // 约 2MB）只在浏览器页面上按需懒加载，不该在装 Service Worker 时整包下载。
+  globPublicPatterns: ['*', '!(showcase)/**/*'],
 });
 
 export default withSerwist(nextConfig);
