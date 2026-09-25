@@ -114,6 +114,7 @@ export function TimeSelector({
             items={items}
             value={type === "hour" ? hourInput : minuteInput}
             ariaLabel={type === "hour" ? "Select hour" : "Select minute"}
+            visibleRows={compact || mobile ? 5 : 7}
             onChange={(item) =>
               commitTime(
                 type === "hour" ? item : hourInput,

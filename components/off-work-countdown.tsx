@@ -24,7 +24,6 @@ import {
   ArrowRight,
   Calculator,
   CalendarDays,
-  ChevronDown,
   ChevronRight,
   Clock3,
   Github,
@@ -59,6 +58,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { TimeSelector } from "./TimeSelector";
 import { LanguageSelector } from "./LanguageSelector";
+import { HeroScrollButton } from "./HeroScrollButton";
 import { ThemeToggle, Theme } from "./ThemeToggle";
 import { CountdownDisplay } from "./CountdownDisplay";
 import { Confetti } from "./Confetti";
@@ -2278,7 +2278,9 @@ export function OffWorkCountdown({
   const applyTheme = (newTheme: Theme, prefersDark: boolean) => {
     const root = document.documentElement;
     root.classList.remove("dark", "theme-cyberpunk", "theme-sunset");
-    document.body.className = ""; // Reset body class
+    // 只摘主题类。body 上还有 layout 挂的字体变量（--font-geist-sans）、
+    // antialiased 和壳层类；整串清空会连字体一起摘掉，换主题后字形会跳一下。
+    document.body.classList.remove("theme-cyberpunk", "theme-sunset");
 
     if (newTheme === "auto") {
       if (prefersDark) root.classList.add("dark");
@@ -2455,17 +2457,20 @@ export function OffWorkCountdown({
               ? "min-h-screen flex flex-col items-center px-4"
               : "min-h-screen flex items-center justify-center p-4"
       } ${
-        isCustomTheme
-          ? IS_MOBILE_BUILD
+        IS_MOBILE_BUILD
+          ? isCustomTheme
             ? "mobile-custom-theme"
-            : ""
-          : IS_MOBILE_BUILD
-            ? "bg-[#f2f2f7] dark:bg-black"
-            : isWebPage
-              ? // 深色底压到 gray-950，卡片比底色亮一层，读起来是「浮起来」
-                // 而不是此前 black/20 那样「陷下去」。
-                "bg-gray-100 dark:bg-gray-950"
-              : "bg-gray-100 dark:bg-gray-900"
+            : "bg-[#f2f2f7] dark:bg-black"
+          : // Web / 桌面：isolate 让外层成为层叠上下文，渐变主题层（Background，
+            // -z-10）因此画在这层底色之上、内容之下。渐变主题也保留底色：
+            // 切换过渡中两层都半透明时，透出来的是这层底色，而不是 body 的颜色。
+            `isolate ${
+              isWebPage
+                ? // 深色底压到 gray-950，卡片比底色亮一层，读起来是「浮起来」
+                  // 而不是此前 black/20 那样「陷下去」。
+                  "bg-gray-100 dark:bg-gray-950"
+                : "bg-gray-100 dark:bg-gray-900"
+            }`
       } ${
         isAppShell && !IS_MOBILE_BUILD
           ? "pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
@@ -4056,14 +4061,11 @@ export function OffWorkCountdown({
         </div>
       </Card>
       {isWebPage && !showCountdown && (
-        <a
-          href="#about"
-          tabIndex={-1}
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-5 mx-auto hidden h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:text-gray-700 [@media(min-height:760px)]:flex dark:text-gray-600 dark:hover:text-gray-300"
-        >
-          <ChevronDown className="h-5 w-5" />
-        </a>
+        <HeroScrollButton
+          targetId="about"
+          moreLabel={t("scrollToDetails")}
+          backLabel={t("backToTimer")}
+        />
       )}
       </section>
 
@@ -4116,7 +4118,8 @@ export function OffWorkCountdown({
           设置态），所以这些文字都在初始 HTML 里，搜索引擎读得到；运行态整页
           只剩卡片。PWA 独立窗口里卡片占满全屏，不渲染这一段。 */}
       {isWebPage && !showCountdown && (
-        <div className="mx-auto w-full max-w-5xl pb-10">
+        // 底部留出悬浮「回到倒计时」按钮的高度，页脚链接不会被它盖住。
+        <div className="mx-auto w-full max-w-5xl pb-24">
           <section
             id="about"
             className="scroll-mt-8 border-t border-gray-200/80 pt-16 dark:border-white/[0.07] sm:pt-20"

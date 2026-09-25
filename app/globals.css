@@ -14,8 +14,8 @@ body {
    Geist 早已随包加载（layout 里的 --font-geist-sans），此前却一直落到 Arial；
    中日韩字形由 system-ui 交给系统按语言挑。桌面与 iOS 壳维持原字体。 */
 html:not(.desktop-shell):not(.mobile-shell) body {
-  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI",
-    sans-serif;
+  font-family: var(--font-geist-sans, system-ui), system-ui, -apple-system,
+    "Segoe UI", sans-serif;
 }
 
 /* 大屏按比例放大整页：Tailwind 的尺寸都是 rem，改根字号就等于在大显示器上
