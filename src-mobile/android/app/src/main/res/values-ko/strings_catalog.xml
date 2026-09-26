@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">시스템 설정 열기</string>
     <string name="focusNotificationPermissionDenied">알림이 꺼져 있어 타이머 종료를 놓칠 수 있습니다. 시스템 설정에서 켤 수 있습니다.</string>
     <string name="focusNotificationRetry">알림 다시 시도</string>
+    <string name="focusOngoing">진행 중인 단계를 알림에 표시</string>
     <string name="focusOutsideWorkHours">현재 근무 시간이 아닙니다.</string>
     <string name="focusOverflowNote">이번 근무에는 %1$s을(를) 넣을 자리가 없습니다.</string>
     <string name="focusPhaseComplete">이 블록이 완료되었습니다</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">경험 시작하기</string>
     <string name="onboardingSystemBody">시간, 상태, 진행률만 표시하고 급여는 절대 표시하지 않습니다.</string>
     <string name="onboardingSystemTitle">위젯과 잠금 화면</string>
+    <string name="ongoingNote">선택한 시작 시간부터 무음 알림이 알림 창과 잠금 화면에서 퇴근까지 카운트다운합니다. 배터리 설정에 따라 조금 늦게 표시될 수 있습니다.</string>
+    <string name="ongoingNotification">카운트다운 알림</string>
+    <string name="ongoingShowBeforeClockOff">퇴근 전에 표시</string>
     <string name="openSourceLicenses">오픈 소스 라이선스</string>
     <string name="overtime">초과 근무</string>
     <string name="overtimeDescription">이번 근무의 종료 시간을 늦춥니다.</string>

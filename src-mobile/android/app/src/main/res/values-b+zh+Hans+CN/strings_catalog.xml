@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">打开系统设置</string>
     <string name="focusNotificationPermissionDenied">通知已关闭，你可能错过计时结束提醒。可在系统设置中开启。</string>
     <string name="focusNotificationRetry">重试通知</string>
+    <string name="focusOngoing">在通知中显示进行中的阶段</string>
     <string name="focusOutsideWorkHours">当前不在工作时间内。</string>
     <string name="focusOverflowNote">这个班次剩下的格子放不下 %1$s。</string>
     <string name="focusPhaseComplete">本段已完成</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">开始体验</string>
     <string name="onboardingSystemBody">只显示时间、状态和进度，绝不显示薪资。</string>
     <string name="onboardingSystemTitle">小组件与锁定屏幕</string>
+    <string name="ongoingNote">从你选的开始时间起，一条静音通知会在通知栏和锁定屏幕上倒数到下班。电池设置可能让它晚一点出现。</string>
+    <string name="ongoingNotification">倒计时通知</string>
+    <string name="ongoingShowBeforeClockOff">下班前显示</string>
     <string name="openSourceLicenses">开源许可</string>
     <string name="overtime">加班</string>
     <string name="overtimeDescription">为当前班次选择一个更晚的结束时间。</string>

@@ -154,6 +154,8 @@ private fun entry(key: NavKey, stack: NavBackStack<NavKey>, graph: AppGraph, ope
             isPlus = false,
             open = open,
             onBack = back,
+            device = device,
+            editDevice = { change -> scope.launch { graph.settings.updateDevice(change) } },
         )
         Route.Health -> HealthScreen(prefs, edit, back)
         Route.Theme -> ThemeScreen(prefs, device, edit, { on -> scope.launch { graph.settings.updateDevice { it.copy(dynamicColor = on) } } }, back)

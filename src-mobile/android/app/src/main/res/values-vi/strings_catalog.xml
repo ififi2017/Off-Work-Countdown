@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">Mở cài đặt hệ thống</string>
     <string name="focusNotificationPermissionDenied">Thông báo đang tắt nên bạn có thể bỏ lỡ lúc hẹn giờ kết thúc. Bạn có thể bật trong cài đặt hệ thống.</string>
     <string name="focusNotificationRetry">Thử lại thông báo</string>
+    <string name="focusOngoing">Hiển thị giai đoạn đang chạy trong thông báo</string>
     <string name="focusOutsideWorkHours">Hiện không trong giờ làm việc.</string>
     <string name="focusOverflowNote">Ca này không còn chỗ cho %1$s.</string>
     <string name="focusPhaseComplete">Khối này đã hoàn tất</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">Bắt đầu trải nghiệm</string>
     <string name="onboardingSystemBody">Thời gian, trạng thái và tiến độ — không bao giờ có lương.</string>
     <string name="onboardingSystemTitle">Widget và Màn hình khóa</string>
+    <string name="ongoingNote">Từ thời điểm bắt đầu bạn chọn, một thông báo im lặng sẽ đếm ngược đến giờ tan làm trên bảng thông báo và màn hình khóa. Cài đặt pin có thể khiến nó hiện muộn hơn một chút.</string>
+    <string name="ongoingNotification">Thông báo đếm ngược</string>
+    <string name="ongoingShowBeforeClockOff">Hiển thị trước giờ tan làm</string>
     <string name="openSourceLicenses">Giấy phép nguồn mở</string>
     <string name="overtime">Làm thêm</string>
     <string name="overtimeDescription">Chọn giờ kết thúc muộn hơn cho ca này.</string>

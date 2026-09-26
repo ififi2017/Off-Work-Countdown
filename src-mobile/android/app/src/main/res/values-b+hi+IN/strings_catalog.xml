@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">सिस्टम सेटिंग खोलें</string>
     <string name="focusNotificationPermissionDenied">सूचनाएँ बंद हैं, इसलिए आप टाइमर का अंत भूल सकते हैं। इन्हें सिस्टम सेटिंग में चालू किया जा सकता है।</string>
     <string name="focusNotificationRetry">सूचना फिर आज़माएँ</string>
+    <string name="focusOngoing">चल रहा चरण सूचना में दिखाएँ</string>
     <string name="focusOutsideWorkHours">अभी काम का समय नहीं है।</string>
     <string name="focusOverflowNote">इस शिफ़्ट में %1$s के लिए जगह नहीं बची।</string>
     <string name="focusPhaseComplete">यह ब्लॉक पूरा हो गया</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">अनुभव शुरू करें</string>
     <string name="onboardingSystemBody">समय, स्थिति और प्रगति — वेतन कभी नहीं।</string>
     <string name="onboardingSystemTitle">विजेट और लॉक स्क्रीन</string>
+    <string name="ongoingNote">आपके चुने शुरू होने के समय से, एक बिना आवाज़ वाली सूचना सूचना पैनल और लॉक स्क्रीन पर छुट्टी तक उलटी गिनती दिखाती है। बैटरी सेटिंग्स इसे थोड़ी देर से दिखा सकती हैं।</string>
+    <string name="ongoingNotification">काउंटडाउन सूचना</string>
+    <string name="ongoingShowBeforeClockOff">छुट्टी से पहले दिखाएँ</string>
     <string name="openSourceLicenses">ओपन-सोर्स लाइसेंस</string>
     <string name="overtime">ओवरटाइम</string>
     <string name="overtimeDescription">इस शिफ्ट के लिए बाद का समाप्ति समय चुनें।</string>

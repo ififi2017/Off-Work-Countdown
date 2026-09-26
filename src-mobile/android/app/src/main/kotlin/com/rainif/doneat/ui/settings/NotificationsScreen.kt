@@ -23,10 +23,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.rainif.doneat.R
+import com.rainif.doneat.core.data.DeviceSettings
+import com.rainif.doneat.l10n.Strings
 import com.rainif.doneat.core.designsystem.DoneAtPrimaryButton
 import com.rainif.doneat.core.designsystem.DoneAtSpacing
 import com.rainif.doneat.core.domain.records.SyncedPreferences
@@ -67,6 +70,8 @@ fun NotificationsScreen(
     isPlus: Boolean,
     open: (Route) -> Unit,
     onBack: () -> Unit,
+    device: DeviceSettings = DeviceSettings(),
+    editDevice: ((DeviceSettings) -> DeviceSettings) -> Unit = {},
 ) {
     val context = LocalContext.current
     // Re-read on every return to the app: both grants change in system settings.
@@ -82,6 +87,11 @@ fun NotificationsScreen(
         markPermissionRequested()
         refresh++
         if (!granted) edit { it.copy(notificationMode = "off") }
+    }
+    val ongoingRequest = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        markPermissionRequested()
+        refresh++
+        if (!granted) editDevice { it.copy(ongoingEnabled = false) }
     }
     fun choose(mode: String) {
         edit { it.copy(notificationMode = mode) }
@@ -117,6 +127,23 @@ fun NotificationsScreen(
                 SwitchRow(stringResource(R.string.lunchStartReminder), p.lunchStartReminderEnabled, { on -> edit { it.copy(lunchStartReminderEnabled = on) } })
                 RowDivider(inset = false)
                 SwitchRow(stringResource(R.string.lunchEndReminder), p.lunchEndReminderEnabled, { on -> edit { it.copy(lunchEndReminderEnabled = on) } })
+            }
+        }
+        // iOS's Live Activity, as a quiet notification: the switch, then how early it appears.
+        SettingsGroup(stringResource(R.string.ongoingNotification), footer = stringResource(R.string.ongoingNote)) {
+            SwitchRow(stringResource(R.string.ongoingShowBeforeClockOff), device.ongoingEnabled, { on ->
+                editDevice { it.copy(ongoingEnabled = on) }
+                if (on && access == NotificationAccess.NOT_ASKED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ongoingRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            })
+        }
+        if (device.ongoingEnabled) {
+            SettingsGroup(stringResource(R.string.liveActivityStartTime)) {
+                DeviceSettings.ONGOING_LEAD_MINUTES.forEachIndexed { index, minutes ->
+                    if (index > 0) RowDivider(inset = false)
+                    ChoiceRow(Strings.liveActivityLead(LocalResources.current, minutes.toString()), device.ongoingLeadMinutes == minutes, { editDevice { it.copy(ongoingLeadMinutes = minutes) } })
+                }
             }
         }
         SettingsGroup(stringResource(R.string.cycleEndSummaryNotificationTitle), footer = stringResource(R.string.cycleEndSummaryNotificationNote)) {

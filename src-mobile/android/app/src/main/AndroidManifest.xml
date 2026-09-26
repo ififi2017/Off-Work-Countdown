@@ -63,6 +63,11 @@
             android:name=".widget.WidgetRefreshReceiver"
             android:exported="false" />
 
+        <!-- Not exported: only the countdown notification's own alarm reaches it. -->
+        <receiver
+            android:name=".ongoing.OngoingReceiver"
+            android:exported="false" />
+
         <!-- Lends the share card to the share sheet, one file in the cache, for that share only. -->
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -66,6 +66,9 @@ class AppGraph(app: Application) {
         adjust = { prefs -> focusCoordinator.breakTakeover(records.state.value, prefs.microBreakEnabled) },
     )
 
+    /** The countdown notification before clock-off and during focus phases. */
+    val ongoing = com.rainif.doneat.ongoing.OngoingCoordinator(app, sessions, records, settings, focus, plus.authorized, scope, nowMs)
+
     /** The home-screen widget's snapshot: rebuilt with the session, never with money in it. */
     val widgets = com.rainif.doneat.widget.WidgetCoordinator(app, sessions, scope, nowMs)
 
@@ -101,6 +104,7 @@ class AppGraph(app: Application) {
             timer.start()
             focusCoordinator.start()
             widgets.start()
+            ongoing.start()
         }
         scope.launch(Dispatchers.IO) {
             // A damaged or missing dataset only turns holiday assignments off; the schedule still runs.

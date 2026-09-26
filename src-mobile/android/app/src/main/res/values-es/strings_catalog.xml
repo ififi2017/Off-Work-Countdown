@@ -228,6 +228,7 @@
     <string name="focusNotificationOpenSettings">Abrir ajustes del sistema</string>
     <string name="focusNotificationPermissionDenied">Las notificaciones están desactivadas, así que podrías perderte el final del temporizador. Puedes activarlas en los ajustes del sistema.</string>
     <string name="focusNotificationRetry">Reintentar notificación</string>
+    <string name="focusOngoing">Mostrar la fase en curso en una notificación</string>
     <string name="focusOutsideWorkHours">Estás fuera del horario laboral.</string>
     <string name="focusOverflowNote">En este turno ya no cabe %1$s.</string>
     <string name="focusPhaseComplete">Este bloque ha terminado</string>
@@ -504,6 +505,9 @@
     <string name="onboardingStartExperience">Empezar a explorar</string>
     <string name="onboardingSystemBody">Hora, estado y progreso; nunca el sueldo.</string>
     <string name="onboardingSystemTitle">Widget y pantalla bloqueada</string>
+    <string name="ongoingNote">Desde la hora de inicio que elijas, una notificación silenciosa cuenta atrás hasta la salida en el panel de notificaciones y en la pantalla de bloqueo. Los ajustes de batería pueden retrasar un poco su aparición.</string>
+    <string name="ongoingNotification">Notificación de cuenta atrás</string>
+    <string name="ongoingShowBeforeClockOff">Mostrar antes de salir</string>
     <string name="openSourceLicenses">Licencias de código abierto</string>
     <string name="overtime">Horas extra</string>
     <string name="overtimeDescription">Elige una hora de salida posterior.</string>

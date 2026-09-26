@@ -409,6 +409,57 @@ class ShiftSessionTest {
         assertEquals("0000-0830", Regex("s=([0-9-]+)").find(ShareContent.url(24 * 60, 8 * 60 + 30))!!.groupValues[1])
     }
 
+    // Ongoing notification (iOS LiveActivityDecision and the work eligibility in LiveActivityService)
+
+    private fun phase(kind: com.rainif.doneat.core.domain.records.FocusSessionKind, start: Double, end: Double) =
+        com.rainif.doneat.core.domain.records.FocusSession(
+            "s", null, "2026-08-24", start, end, null, null, start, 0, "t", kind, ZONE, "2026-08-24", null,
+            com.rainif.doneat.core.domain.records.FocusEndReason.COMPLETED,
+        )
+
+    @Test fun `a focus or break phase keeps the notification, even inside the clock-off window`() {
+        val now = at(24, 16, 50)
+        val work = OngoingWorkWindow(at(24, 16, 45), at(24, 17))
+        val rest = phase(com.rainif.doneat.core.domain.records.FocusSessionKind.SHORT_BREAK, now - 60_000, now + 4 * 60_000)
+        assertEquals(OngoingSurface.SHORT_BREAK, OngoingPlan.choose(work, rest, now)?.surface)
+        assertEquals(OngoingSurface.SHORT_BREAK, OngoingPlan.choose(OngoingWorkWindow(now + 30 * 60_000, now + 60 * 60_000), rest, now)?.surface)
+        // Once it ends, the shift's window takes over.
+        assertEquals(OngoingSurface.WORK, OngoingPlan.choose(work, rest.copy(endedAtMs = now), now)?.surface)
+    }
+
+    @Test fun `the work countdown shows only inside its window`() {
+        val work = OngoingWorkWindow(at(24, 16, 45), at(24, 17))
+        assertNull(OngoingPlan.choose(work, null, at(24, 16, 44)))
+        assertEquals(OngoingDecision(OngoingSurface.WORK, at(24, 17)), OngoingPlan.choose(work, null, at(24, 16, 45)))
+        assertNull(OngoingPlan.choose(work, null, at(24, 17)))
+    }
+
+    @Test fun `the window opens before the planned end and runs to the overtime end`() {
+        val h = Harness()
+        h.run { start(h.state, at(24, 9)) }
+        assertEquals(OngoingWorkWindow(at(24, 16, 45), at(24, 17)), OngoingPlan.workWindow(h.session, at(24, 10), 15))
+        h.run { applyOvertime(h.state, at(24, 18), at(24, 10)) }
+        assertEquals(OngoingWorkWindow(at(24, 16, 30), at(24, 18)), OngoingPlan.workWindow(h.session, at(24, 10), 30))
+    }
+
+    @Test fun `no work countdown before clock-in, on a rest day, or after clocking off`() {
+        val h = Harness()
+        h.run { start(h.state, at(24, 8)) }
+        assertNull(OngoingPlan.workWindow(h.session, at(24, 8), 15))
+        assertNull(OngoingPlan.workWindow(h.session, at(29, 12), 15))
+        h.run { clockOffEarly(h.state, at(24, 12)) }
+        assertNull(OngoingPlan.workWindow(h.session, at(24, 12, 5), 15))
+    }
+
+    @Test fun `the next change is the nearest window edge or phase end`() {
+        val now = at(24, 10)
+        val work = OngoingWorkWindow(at(24, 16, 45), at(24, 17))
+        assertEquals(at(24, 16, 45), OngoingPlan.nextChangeAtMs(work, null, now))
+        val focus = phase(com.rainif.doneat.core.domain.records.FocusSessionKind.FOCUS, now, now + 25 * 60_000)
+        assertEquals(now + 25 * 60_000, OngoingPlan.nextChangeAtMs(work, focus, now))
+        assertNull(OngoingPlan.nextChangeAtMs(null, null, now))
+    }
+
     private companion object {
         const val ZONE = "UTC"
     }

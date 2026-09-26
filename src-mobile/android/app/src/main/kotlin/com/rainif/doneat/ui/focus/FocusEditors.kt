@@ -448,6 +448,7 @@ fun FocusTimerSettingsScreen(graph: AppGraph, onBack: () -> Unit) {
     var long by remember { mutableIntStateOf(current.longBreakMinutes) }
     var every by remember { mutableIntStateOf(current.longBreakEvery) }
     var notifications by remember { mutableStateOf(device.focusNotificationsEnabled) }
+    var ongoing by remember { mutableStateOf(device.focusOngoingEnabled) }
     val lockMessage = when {
         context.session != null -> stringResource(R.string.focusTimerSettingsLockedRunning)
         planning.planning(context.state).templates.isNotEmpty() -> stringResource(R.string.focusTimerSettingsLockedTemplate)
@@ -455,7 +456,7 @@ fun FocusTimerSettingsScreen(graph: AppGraph, onBack: () -> Unit) {
     }
     fun save() {
         scope.launch {
-            graph.settings.updateDevice { it.copy(focusNotificationsEnabled = notifications) }
+            graph.settings.updateDevice { it.copy(focusNotificationsEnabled = notifications, focusOngoingEnabled = ongoing) }
             if (lockMessage == null) {
                 val saved = graph.focus.plan { state, p -> p.updateTimerSettings(state, FocusTimerSettings(focus, short, long, every), graph.nowMs()) }
                 if (saved != true) return@launch
@@ -478,6 +479,8 @@ fun FocusTimerSettingsScreen(graph: AppGraph, onBack: () -> Unit) {
             StepRow(stringResource(R.string.focusLongBreakEvery), Strings.focusRoundsValue(res, every.toString()), every, 2..6, lockMessage == null) { every = it }
         }
         SettingsGroup {
+            SwitchRow(stringResource(R.string.focusOngoing), ongoing, { ongoing = it })
+            RowDivider(inset = false)
             SwitchRow(stringResource(R.string.notificationLocal), notifications, { notifications = it })
         }
         if (lockMessage != null) {
